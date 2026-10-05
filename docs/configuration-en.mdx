@@ -40,7 +40,7 @@ This reference is long. These are the main blocks:
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
 - [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; the [digits](#document-digits) (`numerals`) and the [text direction](#text-direction) (`direction`) it implies; and the [languages and scripts](#languages-and-scripts) Postext sets. The guide to right-to-left books is [Arabic layout](/en/docs/arabic-layout).
-- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby and warichu notes. The guide to all of it is [Chinese layout](/en/docs/chinese-layout).
+- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby, warichu notes and kanbun marks. The guides to all of it are [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout).
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
@@ -346,6 +346,12 @@ Three settings choose a numbering format, and each grew its own spelling: page l
     <tr><td>Chinese digits</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>, <code>〇</code></td></tr>
     <tr><td>Heavenly stems</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>, <code>甲</code></td></tr>
     <tr><td>Earthly branches</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
+    <tr><td>Japanese numerals</td><td>一, 十二, 百一, 一万一</td><td><code>japanese-informal</code>, <code>一</code> in a Japanese document</td></tr>
+    <tr><td>Japanese formal numerals</td><td>壱, 壱拾弐, 壱百</td><td><code>japanese-formal</code>, <code>壱</code></td></tr>
+    <tr><td>Hiragana, gojūon order</td><td>あ, い, う … ん, ああ</td><td><code>hiragana</code>, <code>あ</code></td></tr>
+    <tr><td>Katakana, gojūon order</td><td>ア, イ, ウ … ン, アア</td><td><code>katakana</code>, <code>ア</code></td></tr>
+    <tr><td>Hiragana, iroha order</td><td>い, ろ, は … す, いい</td><td><code>hiragana-iroha</code>, <code>い</code></td></tr>
+    <tr><td>Katakana, iroha order</td><td>イ, ロ, ハ … ス, イイ</td><td><code>katakana-iroha</code>, <code>イ</code></td></tr>
     <tr><td>Circled</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Fullwidth digits</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
     <tr><td>Arabic-Indic digits</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
@@ -358,6 +364,8 @@ Three settings choose a numbering format, and each grew its own spelling: page l
 </table>
 
 The East Asian styles keep their [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) names in all three settings. The informal Chinese numerals write 十 for 10 to 19 without a leading 一 (十二, but 一百一十), one 零 for a run of zeros inside the number (一百零一, 一千零五十), and 万 or 萬 for ten thousand, 亿 or 億 for a hundred million (一万零一十). Only `cjk-decimal` uses 〇, digit by digit, the way years are written (二〇二六, GB/T 15835—2011). The stems stop at 10, the branches at 12 and the circled digits at 50; past them the number prints in digits. `一` and `壹` follow the script of the document's `locale`: Traditional for `zh-Hant`, `zh-TW` or `zh-HK`, Simplified otherwise. Some older editions write 101 as 一百一 with no 零; Postext does not print that form.
+
+The Japanese styles (since postext 1.16) follow CSS Counter Styles too. `japanese-informal` writes 十 without a leading 一 and no 零 for an empty place (百一, 千十), and `japanese-formal` the 大字 壱 弐 参 拾 百 阡 with 壱 kept before each unit (壱拾, 壱百). CSS stops both at 9 999; Postext goes on in groups of four digits with 万 億 兆 (formal 萬 億 兆), each group keeping its 一 before a unit: 一万一 is 10 001, 一億一万 100 010 000. In a Japanese document (`ja`, `ja-JP`…) `一` means `japanese-informal`, so `第{1:一}章` prints 第百一章 there and 第一百零一章 in a Chinese one; `壹` stays the Chinese formal numerals. The kana series are the CSS lists: 48 kana in gojūon order (ゐ and ゑ included) and 47 in the order of the iroha poem; past the last they go on with two kana (ああ, いい), and they have no zero, so an item numbered 0 prints `0`. Positional kanji digits (二〇二六), the form of years and folios, are `cjk-decimal`.
 
 The Arabic styles keep the CSS names where CSS has one (`arabic-indic`, `persian`; `urdu` and `maghrebi-abjad` from the W3C *Ready-made Counter Styles* are read as `persian` and `arabic-abjad-maghrebi`). `arabic` keeps its old meaning, the European digits. `arabic-abjad` writes the additive abjad numerals of Classical Arabic and manuscript foliation, highest value first: 11 is يا, 1446 غتمو, and the thousands count goes before غ (2000 بغ, 1002 غب); past 999 999 the number prints in digits. The W3C note uses the name for a 28-letter series where 11 is ك; Postext calls that series `abjad`, the lettering of list items in abjad order (أ، ب، ج، د، هـ), and `hijai` the alphabetical order (أ، ب، ت، ث). Both write the first letter with its hamza (أ), and a heh that would stand alone as هـ, with a tatweel, so neither is read as the digits ١ and ٥; past 28 they double, as `lower-alpha` does (أأ, أب). The Maghrebi values follow the mnemonic صعفض قرست ثخذ ظغش (ص 60, ض 90); the W3C list swaps ص and ض. A single أ cannot tell the two letter series apart, so their tokens are their first four letters: `{1:أبجد}`, `{1:أبتث}`. A document's own digits are set with [`numerals`](#document-digits).
 
@@ -1593,9 +1601,9 @@ The top-level `locale` is the language of the document as a whole. It takes the 
 
 It picks the built-in resource types too. When `resourceTypes` is not set, `buildDocument` numbers and captions with `defaultResourceTypes(locale)`, so `locale: 'de'` alone gives *Abbildung 1.1* and *Tabelle 1.1*. When `locale` is unset, the hyphenation locale stands in for it, for the resource types and the table strings alike. An explicit `resourceTypes` list always wins. Earlier versions used the English types whatever the `locale` unless you passed `defaultResourceTypes(locale)` yourself; a document that sets `locale` and wants to keep the English labels passes `resourceTypes: defaultResourceTypes('en')`. Sandbox books and bundles carry their own list, so they are not affected.
 
-Any BCP 47 tag works here as in `hyphenation.locale`: `'de-AT'` gets the German strings. The built-in strings exist in the eight languages hyphenation supports and in Chinese, in Simplified and in Traditional characters; any other language gets the English ones.
+Any BCP 47 tag works here as in `hyphenation.locale`: `'de-AT'` gets the German strings. The built-in strings exist in the eight languages hyphenation supports, in Chinese (in Simplified and in Traditional characters), in Japanese and in Arabic; any other language gets the English ones.
 
-Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` and the long forms (`zh-Hant-TW`), in any case and with `-` or `_`. The strings follow the script, read with `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` and `zh-SG` are Simplified, `zh-TW`, `zh-HK` and `zh-MO` Traditional. The typographic defaults that depend on the language follow the region instead, as [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script) recommends: CN, SG and MY count as the mainland, TW as Taiwan, HK and MO as Hong Kong, and a tag without a region goes by its script (`zh-Hant` is Taiwan, `zh` and `zh-Hans` the mainland). `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` and `sameContentLocale(a, b)` give these readings, and `DOCUMENT_LANGUAGES` lists the languages with built-in strings, each named in its own language, as the Sandbox's Document language select shows them.
+Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` and the long forms (`zh-Hant-TW`), in any case and with `-` or `_`. The strings follow the script, read with `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` and `zh-SG` are Simplified, `zh-TW`, `zh-HK` and `zh-MO` Traditional. The typographic defaults that depend on the language follow the region instead, as [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script) recommends: CN, SG and MY count as the mainland, TW as Taiwan, HK and MO as Hong Kong, and a tag without a region goes by its script (`zh-Hant` is Taiwan, `zh` and `zh-Hans` the mainland). Japanese takes `ja`, `ja-JP`, `ja-Jpan` and any other `ja` tag (`isJapaneseLanguage(tag)`); since postext 1.16 it has its own strings and its own region, `japan`, whose typographic defaults follow JLReq (see [Japanese layout](/en/docs/japanese-layout)). A table of strings with no Japanese entry gives English, never Chinese. `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` and `sameContentLocale(a, b)` give these readings, and `DOCUMENT_LANGUAGES` lists the languages with built-in strings, each named in its own language (日本語 between the Chinese entries and العربية), as the Sandbox's Document language select shows them.
 
 <table>
   <thead>
@@ -1617,11 +1625,12 @@ Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `z
     <tr><td>Dutch (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>Chinese, Simplified (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>Chinese, Traditional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>Japanese (<code>ja</code>, <code>ja-JP</code>)</td><td>図, 図, 図</td><td>表, 表, 表</td><td>（続き）, 次ページへ続く</td></tr>
     <tr><td>Arabic (<code>ar</code>, <code>ar-EG</code>, <code>ar-MA</code>…)</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
+The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Japanese numbers its types the same way (図1-1), writes cross-references as 第3章, 2.3節 and 12ページ, titles the bibliography 参考文献, and its index prints 記号 and 数字 over symbols and numbers and writes its cross-references with an arrow, `→夏目漱石` for *see* and `→夏目漱石、森鷗外も見よ` after the pages for *see also*, the labels upright. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
 
 A Chinese, Japanese or Korean document declares its language in the HTML output (`lang` on the `.pt-doc` root, `zh-Hant-TW` kept whole) and on the canvas it paints (`ctx.lang`, in Chrome 136 and later), so the browser draws the region's glyph forms: Unicode unifies the Han characters, and one code point looks different in a Taiwanese and in a Japanese font. Other documents carry no `lang`, as before. The PDF declares `/Lang` from `locale` for every document, tagged or not, with its script and region. A document in a language written right to left (Arabic, Persian, Urdu, Hebrew…) declares its language too: the font's language forms (`locl`) and the fallback font follow it.
 
@@ -1680,13 +1689,14 @@ const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // forced
 
 ### Languages and scripts
 
-Postext sets alphabetic scripts written left to right, and Chinese across the page and down it. [Chinese layout](/en/docs/chinese-layout) explains how Chinese is set and which settings control it; the keys are under [East Asian typography](#east-asian-typography), [Vertical writing](#vertical-writing) and [Binding](#binding). What each script gets:
+Postext sets alphabetic scripts written left to right, and Chinese and Japanese across the page and down it. [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout) explain how they are set and which settings control them; the keys are under [East Asian typography](#east-asian-typography), [Vertical writing](#vertical-writing) and [Binding](#binding). What each script gets:
 
 - **Chinese** is set by the CJK composer when a paragraph holds more CJK characters than word spaces: its lines break between characters under the line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keep —— and ……, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure. Punctuation widths, hanging punctuation, the space between Han and Latin, the character grid, emphasis dots, the proper-name and book-title marks, ruby and warichu notes follow the region of `locale`, across the line or down it (`layout.writingMode: 'vertical-rl'`). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing.
-- **Japanese and Korean** go through the same composer and are set without hyphenation, but with the mainland Chinese defaults: their own rules (JLREQ, KLREQ) are not implemented. Korean text breaks between syllables as well as at its spaces.
+- **Japanese** goes through the same composer with rules of its own since postext 1.16, those of the W3C *Requirements for Japanese Text Layout* (JLReq) and JIS X 4051: a `ja` locale gives the `japan` region, whose auto values set the JLReq kinsoku levels (small kana and ー never open a line), full-width punctuation with pair compression, an em after ？！, the bracket that opens a paragraph in the second half of the indent, sesame emphasis marks over the text, 『』 book titles, furigana spaced 1:2:1, Japanese counters, notes and an index sorted by reading. Earlier versions set Japanese with the mainland Chinese defaults.
+- **Korean** goes through the same composer and is set without hyphenation, but with the mainland Chinese defaults: its own rules (KLREQ) are not implemented. Korean text breaks between syllables as well as at its spaces.
 - **Arabic and other right-to-left scripts** (Persian, Urdu, Hebrew…) are set right to left: [Arabic layout](/en/docs/arabic-layout) explains how. The document's [`direction`](#text-direction) comes from the script of `locale`, the Unicode Bidirectional Algorithm orders the Latin words and numbers inside each line, the book is bound on the right with its first column on the right, and every number the engine writes takes the region's [digits](#document-digits). A word that holds an Arabic-script letter is never hyphenated, letter-spaced or cut, and a justified Arabic line is stretched at its spaces and with kashidas. Vowel marks, emphasis, footnotes and the strings of Arabic are under [Arabic text](#arabic-text). Persian, Urdu and Hebrew get the direction, the digits and the whole-word rules, but no built-in strings of their own.
 
-Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight, in Chinese and in Arabic. Chinese, Japanese, Korean and the languages written right to left are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
+Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight, in Chinese, in Japanese and in Arabic. Chinese, Japanese, Korean and the languages written right to left are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
 
 ### Arabic text
 
@@ -1907,6 +1917,12 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>When <code>true</code>, a heading is never placed as the last element of a column or page. If the following block would not have at least <code>bodyText.widowMinLines</code> lines of room after the heading (or one line when <code>bodyText.avoidWidows</code> is <code>false</code>), the heading is pushed forward so it stays joined to its text. Interacts with <code>bodyText.keepColonWithList</code>: if that rule has to push a colon-paragraph whole, any trailing heading(s) in the column travel with it rather than being left stranded.</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNextSpread</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>With <code>keepWithNext</code>, still let a heading close the last text column of an even page, since its text then opens the facing odd page of the same spread (JLReq §4.1.7). The spreads are page 1 alone, then 2–3, 4–5…, counted with <code>pageIndexOffset</code>, in left- and right-bound books alike. Since postext 1.16.</td>
     </tr>
     <tr>
       <td><code>keepWithNextSplit</code></td>
@@ -2172,7 +2188,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Where the configuration was stored, the engine can tell and does it for you: the Sandbox for the books and configurations it saved then (see **Sandbox → Persistence**), and `openBundle` / `readBundle` for a `.postext` bundle written by postext 1.4 or earlier (see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)). A configuration you stored yourself can go through `migrateConfig(config)` from `postext/bundle`, which writes out the breaks 1.4 laid out (`pinLegacyHeadingBreaks`): `enabled: false` on an H1 that had no break, and `parity: 'any'` beside an `enabled: true` that named no parity, on H1 and on heading styles. It also pins the maths size, the space around inline figures (in boxes too), the headings' inline marks, the drop-cap sizes, the room under a colon line that introduces a list, the lines a box cut leaves of a paragraph or list item, the line breaks at dashes, the line-by-line breaking of ragged text, the split of a paragraph under a heading, the line breaks at a compound's hyphen and the space under `:::paragraphs` containers, as 1.4 set them. Pass the book's markdown as a third argument, `{ content }`, and it leaves out the maths pin when the text has no `$`, the gap pins when no line embeds a resource (the box-gap pin when none does inside a box), the heading-marks pin when no heading carries a mark, the colon-line pin when no list follows a line ending in a colon, the box-cut pin when the text opens no `:::callout`, the dash pin when no dash is set closed between words, the heading-split pin when the text has no heading, the container pin when the text opens no `:::paragraphs` container, and the compound pin when no hyphen stands between two letters; the ragged-breaking pin goes only to a configuration that sets some running text ragged, and the container pin only to one that declares a paragraph style (see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)). For the breaks alone, call `pinLegacyHeadingBreaks(config)`.
 
-Per-level overrides support the same properties as the general defaults — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — plus these level-only fields:
+Per-level overrides support the same properties as the general defaults — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — plus these level-only fields (a [heading style](#heading-styles) takes them too):
 
 <table>
   <thead>
@@ -2203,10 +2219,28 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td>Tracking after every glyph of the heading — spaces and the numbering prefix included — as CSS <code>letter-spacing</code>. Positive spreads the letters (capitals set with <code>textTransform: 'uppercase'</code> usually want a little: <code>&#123; value: 0.12, unit: 'em' &#125;</code>), negative tightens a display size. An <code>em</code> value is relative to the level's <code>fontSize</code>. The heading's lines are measured with it, so they wrap where the tracked text ends, and canvas, HTML and PDF paint it the same. A centred or right-aligned line is placed by its letters: the tracking after its last glyph is left out, as in design text, so a centred heading lines up with the default opener of a <code>span: 'page'</code> heading. A level drawn from its <code>advancedDesign</code> ignores it, like the other typography fields here: each design text element has its own <code>letterSpacing</code>. A <a href="#heading-styles">heading style</a> sets it too, for the headings that use it. Up to postext 1.4 headings had no tracking, and the key was dropped without a word.</td>
     </tr>
     <tr>
+      <td><code>lineSpan</code></td>
+      <td><code>number</code></td>
+      <td>unset</td>
+      <td>Lines taken (行取り, JLReq §4.1.6): the heading is set in a band of this many body lines, its characters centred in it, in place of <code>marginTop</code> and <code>marginBottom</code>; <code>3</code> is a 3行取り heading. The band starts on a body line when the heading snaps to the grid, and the text after it stays on the grid, in both writing modes and with <code>cjk.grid</code>; a heading whose lines need more takes the next whole number. The centre is that of the characters (the baseline less the face's ideographic centre), as JLReq measures it, not that of the line boxes. Not applied to openers (<code>span: 'page'</code>), headings drawn from an <code>advancedDesign</code>, hidden headings or headings inside boxes. A heading style may set <code>0</code> to take its level's off. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of the heading from the line start (字下げ), <code>em</code> being the <strong>body</strong> size, as Japanese books count heading indents in body characters (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> is 6字下げ whatever the heading's size. The measure narrows by it, and a centred heading centres in the rest. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>jidori</code></td>
+      <td><code>number</code></td>
+      <td>unset</td>
+      <td>Even spacing (字取り): a one-line heading narrower than this many of its <strong>own</strong> ems is spaced evenly to exactly that width, so <code>3</code> sets 序章 as 序　章. Wider titles and headings of several lines are left as they are. <code>&#123;jidori=N&#125;</code> after a heading's title sets one heading, and <code>&#123;jidori=0&#125;</code> turns its level's off. Since postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Template of the level's automatic number. A token <code>{'{1}'}</code> … <code>{'{6}'}</code> prints the running counter of that heading level, optionally formatted by a suffix — <code>{'{1:I}'}</code> upper roman, <code>{'{1:i}'}</code> lower roman, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alphabetic, <code>{'{1:01}'}</code> zero-padded, <code>{'{1:words}'}</code> spelled out (<em>twenty-one</em>), <code>{'{1:ordinal}'}</code> as an ordinal (<em>twenty-first</em>), <code>{'{1:一}'}</code> in Chinese numerals, <code>{'{1:〇}'}</code> digit by digit, <code>{'{1:壹}'}</code> in financial numerals and <code>{'{1:①}'}</code> circled, or any name of <a href="#numbering-format-spellings">Numbering format spellings</a> — and any other text is literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> for 第一百二十回; a backslash escapes a literal brace). A token whose counter is still empty collapses together with its adjacent separator. Empty (the default) means no automatic number. The rendered number is prepended to the title in the flow, feeds the <code>{'{number}'}</code> placeholder of an advanced design slot (where the prefix itself is not prepended) and is printed in the table of contents. See <a href="#spelled-out-numbers">Spelled-out numbers</a> for the words, and <a href="#heading-styles">Heading styles</a> for a template of its own on some headings of a level.</td>
+      <td>Template of the level's automatic number. A token <code>{'{1}'}</code> … <code>{'{6}'}</code> prints the running counter of that heading level, optionally formatted by a suffix — <code>{'{1:I}'}</code> upper roman, <code>{'{1:i}'}</code> lower roman, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alphabetic, <code>{'{1:01}'}</code> zero-padded, <code>{'{1:words}'}</code> spelled out (<em>twenty-one</em>), <code>{'{1:ordinal}'}</code> as an ordinal (<em>twenty-first</em>), <code>{'{1:一}'}</code> in Chinese numerals (Japanese ones in a Japanese document: 第百一章), <code>{'{1:〇}'}</code> digit by digit, <code>{'{1:壹}'}</code> in financial numerals and <code>{'{1:①}'}</code> circled, or any name of <a href="#numbering-format-spellings">Numbering format spellings</a> — and any other text is literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> for 第一百二十回; a backslash escapes a literal brace). A token whose counter is still empty collapses together with its adjacent separator. Empty (the default) means no automatic number. The rendered number is prepended to the title in the flow, feeds the <code>{'{number}'}</code> placeholder of an advanced design slot (where the prefix itself is not prepended) and is printed in the table of contents. See <a href="#spelled-out-numbers">Spelled-out numbers</a> for the words, and <a href="#heading-styles">Heading styles</a> for a template of its own on some headings of a level.</td>
     </tr>
     <tr>
       <td><code>numberSeparator</code></td>
@@ -3048,11 +3082,12 @@ The `footnotes` property sets where the notes cited with `[^id]` go, how they ar
 
 ```ts
 interface FootnotesConfig {
-  placement?: 'column' | 'chapterEnd'; // Foot of the citing column, or after the chapter.
-  numbering?: 'chapter' | 'document' | 'page' | 'column'; // Start again at each chapter, run on, or start again on each page / column.
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
-  markerPosition?: 'auto' | 'superscript' | 'inline'; // Raised, or on the baseline.
-  markerSize?: Dimension;     // Inline marker size; em is the text around it.
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
+  markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
+  numberGap?: 'en' | 'em';    // Space after the note's own number.
   chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes at the column foot, or under the text.
   fontSize?: Dimension;       // Note size; em is the body size.
   lineHeight?: Dimension;     // Note leading; em is the note size.
@@ -3083,15 +3118,15 @@ interface FootnotesConfig {
   <tbody>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'column' | 'chapterEnd'</code></td>
-      <td><code>'column'</code></td>
-      <td><code>'column'</code> sets each note at the foot of the column that holds the line citing it, under a short rule; in a one-column layout that is the foot of the page. <code>'chapterEnd'</code> sets every note of a chapter after its last block, in citation order.</td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code> (Japanese vertical books: <code>'chapterEnd'</code>)</td>
+      <td><code>'column'</code> sets each note at the foot of the column that holds the line citing it, under a short rule; in a one-column layout that is the foot of the page. <code>'chapterEnd'</code> sets every note of a chapter after its last block, in citation order. <code>'spread'</code> (傍注, vertical text only) sets the notes cited on both pages of a spread at the end of its odd page, the left page of a right-bound book, under the rule: notes cited on the even page wait for it, a note that would leave the odd page less than one line of text stays at the foot of the even page with the ones after it, and a chapter that ends on an even page keeps its waiting notes there. In horizontal text it falls back to <code>'column'</code> with an <code>unknownConfigValue</code> warning. Since postext 1.16.</td>
     </tr>
     <tr>
       <td><code>numbering</code></td>
-      <td><code>'chapter' | 'document' | 'page' | 'column'</code></td>
-      <td><code>'chapter'</code></td>
-      <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>). <code>'page'</code> starts again at 1 on every page and <code>'column'</code> in every column, counting the notes where the layout sets them (the columns of a page in reading order): the usual 页下注 of a Chinese book. The document is laid out, numbered where its notes landed and laid out again until the numbers hold (at most three more builds). Both apply to notes at the column foot: with <code>placement: 'chapterEnd'</code> the notes are numbered by chapter.</td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code> (Japanese horizontal books: <code>'page'</code>; with <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>). <code>'page'</code> starts again at 1 on every page and <code>'column'</code> in every column, counting the notes where the layout sets them (the columns of a page in reading order): the usual 页下注 of a Chinese book. The document is laid out, numbered where its notes landed and laid out again until the numbers hold (at most three more builds). Both apply to notes at the column foot: with <code>placement: 'chapterEnd'</code> the notes are numbered by chapter. <code>'spread'</code> starts again on every spread (pages 2–3, 4–5…), in citation order, for <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
@@ -3101,21 +3136,27 @@ interface FootnotesConfig {
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
-      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td><code>'superscript'</code> raises the marker in the text and the number that opens the note, at a reduced size. <code>'inline'</code> sets them on the baseline: the marker at <code>markerSize</code>, the note's number at the note size; in vertical text an inline circled marker stands upright in a cell of its own. <code>'auto'</code> is inline for <code>circled-decimal</code> and superscript for every other format. Either way the marker stays with the character before it and never opens a line.</td>
+      <td><code>'superscript'</code> raises the marker in the text and the number that opens the note, at a reduced size. <code>'inline'</code> sets them on the baseline: the marker at <code>markerSize</code>, the note's number at the note size; in vertical text an inline circled marker stands upright in a cell of its own. <code>'right'</code> sets a reduced marker flush with the right side of a vertical line, as Japanese vertical books set （1）; in horizontal text it is a superscript. <code>'side'</code> (合印) sets a small marker beside the marked word, on the side of its ruby, ending where the word's last character ends; it takes no room in the line, which breaks and justifies as if it were not there, and a line gap too narrow for it is reported as <code>rubyExceedsLeading</code>. <code>'auto'</code> is inline for <code>circled-decimal</code>, <code>'right'</code> in a Japanese vertical book, and superscript otherwise. Either way the marker stays with the character before it and never opens a line.</td>
     </tr>
     <tr>
       <td><code>markerSize</code></td>
       <td><code>Dimension</code></td>
-      <td><code>1em</code></td>
-      <td>Size of an inline marker; <code>em</code> is the size of the text around it (<code>0.75em</code> is a common reduction). No effect on a superscript marker.</td>
+      <td><code>1em</code>; <code>0.6em</code> for <code>'side'</code>, <code>0.7em</code> for <code>'right'</code></td>
+      <td>Size of an inline, side or right marker; <code>em</code> is the size of the text around it (<code>0.75em</code> is a common reduction). No effect on a superscript marker.</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code> (Japanese notes after the chapter: <code>'em'</code>)</td>
+      <td>The space after the number that opens a note: an en space, or a full note em (an ideographic space when the number or the note holds CJK text), never stretched or broken. Since postext 1.16.</td>
     </tr>
     <tr>
       <td><code>markerTemplate</code></td>
       <td><code>string</code></td>
-      <td><code>'{n}'</code></td>
-      <td>How a note's number is written, <code>{n}</code> standing for it in the number format and the document's digits: <code>'({n})'</code> gives the parenthesised markers of Arabic books, «(١)». It writes the marker in the text and the number that opens the note alike. A template without <code>{n}</code> is read as the default.</td>
+      <td><code>'&#123;n&#125;'</code> (Japanese vertical books: <code>'（&#123;n&#125;）'</code>)</td>
+      <td>How a note's number is written, <code>&#123;n&#125;</code> standing for it in the number format and the document's digits: <code>'(&#123;n&#125;)'</code> gives the parenthesised markers of Arabic books, «(١)». It writes the marker in the text and the number that opens the note alike. A template without <code>&#123;n&#125;</code> is read as the default.</td>
     </tr>
     <tr>
       <td><code>noteNumberPosition</code></td>
@@ -3213,6 +3254,8 @@ footnotes: {
 }
 ```
 
+**Japanese books.** A Japanese document (`locale: 'ja'`, since postext 1.16) gives the fields it leaves unset the values of JLReq §4.2. A vertical book sets its notes after the chapter (`placement: 'chapterEnd'`, 後注), numbered by chapter, with markers `（{n}）` right of the line (`markerPosition: 'right'`, digits upright by `cjk.uprightDigits`); a horizontal one sets them at the foot of the page, numbered per page, with superscript markers. Both draw the rule a third of the measure long (`separator.width: 1/3`), and notes after the chapter take `numberGap: 'em'` and a two-em hanging indent. An explicit value wins and is kept on save (`stripFootnotesDefaults` compares with the document's own defaults); Chinese, Arabic and Latin documents resolve as before. `footnoteDocumentDefaults(locale, writingMode, placement?)` returns these values. Write a marker before a sentence-final 。 (`先生[^1]。`): it stays with the character before it, and 。 never opens a line. See [Japanese layout › Notes](/en/docs/japanese-layout#notes).
+
 How the notes are laid out at the column foot:
 
 - **Note and citation share a column.** Before it places a line, the layout adds the height of the notes that line cites for the first time (and the rule, for the first note of the column). A line whose notes do not fit under it goes to the next column with the rest of its paragraph, under the orphan and widow rules. The column's text area shrinks by the notes' height, so the column balancing and the closing band of a chapter count only the text.
@@ -3226,7 +3269,9 @@ How the notes are laid out at the column foot:
 Resolver and stripper match the other sections:
 
 ```ts
-import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields take the Japanese vertical defaults
 ```
 
 
@@ -3338,7 +3383,7 @@ interface CitationsConfig {
       <td><code>locale</code></td>
       <td><code>string</code></td>
       <td>document language</td>
-      <td>The CSL locale the style writes its words in (<code>en-US</code>, <code>es-ES</code>, <code>zh-CN</code>, <code>zh-TW</code>…).</td>
+      <td>The CSL locale the style writes its words in (<code>en-US</code>, <code>es-ES</code>, <code>zh-CN</code>, <code>zh-TW</code>, <code>ja-JP</code>…). A Japanese document reads as <code>ja-JP</code>: narrative citations join two authors with と and shorten more with ほか.</td>
     </tr>
     <tr>
       <td><code>link</code></td>
@@ -3441,24 +3486,40 @@ interface CitationsConfig {
 
 ## East Asian typography
 
-The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the Chinese marks, ruby readings and warichu notes of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else. [Chinese layout](/en/docs/chinese-layout) explains the rules behind these settings, region by region, with two complete configurations.
+The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the emphasis marks, side lines, ruby readings, warichu notes and kanbun marks of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way, and one with `locale: 'ja'` the Japanese way, without setting anything else. [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout) explain the rules behind these settings, with two complete configurations each. The Japanese fields and values are there since postext 1.16.
 
 ```ts
 interface CjkConfig {
-  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Regional conventions.
-  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Which marks may not open or close a line.
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // Regional conventions.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // Which marks may not open or close a line.
   punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
   compressAdjacent?: 'auto' | boolean;      // Two marks that meet take 1.5 em.
   trimLineStart?: 'auto' | boolean;         // Brackets at a line edge lose their outer half.
-  hangingPunctuation?: 'none' | 'allow' | 'force';
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // One em after ？！ inside a paragraph (Japan).
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // A bracket opening an indented paragraph.
   latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
-  emphasis?: 'auto' | 'italic' | 'dots';    // What *…* does to Chinese characters.
+  emphasis?: 'auto' | 'italic' | 'dots';    // What *…* does to CJK characters.
+  emphasisMark?: {                          // The mark *…* and :dots[…] draw when they do not say.
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
   bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // What :book[…] prints.
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // The brackets, outermost first.
   annotationColor?: ColorValue;             // Dots and name/title lines; default the text colour.
-  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // How far a reading may run onto its neighbours.
+    align?: 'auto' | 'center' | 'jis' | 'start'; // How a reading shorter than its base is spaced.
+    smallKana?: 'keep' | 'full';                 // Small kana in readings as written, or full size.
+  };
   warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // Kanbun marks.
 }
 ```
 
@@ -3474,39 +3535,51 @@ interface CjkConfig {
   <tbody>
     <tr>
       <td><code>region</code></td>
-      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
       <td><code>'auto'</code></td>
-      <td>The conventions the text follows, after the regions the W3C <a href="https://www.w3.org/TR/clreq/">Requirements for Chinese Text Layout</a> (clreq) describes. <code>'auto'</code> reads the region from <code>locale</code>, or from <code>bodyText.hyphenation.locale</code> when <code>locale</code> is unset: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> and <code>zh-SG</code> give <code>'mainland'</code>; <code>zh-Hant</code> and <code>zh-TW</code> give <code>'taiwan'</code>; <code>zh-HK</code> and <code>zh-MO</code> give <code>'hongkong'</code>; any other language gives <code>'mainland'</code>. The region picks the defaults of <code>lineBreak</code>, <code>punctuationWidth</code>, <code>compressAdjacent</code> and <code>trimLineStart</code>.</td>
+      <td>The conventions the text follows, after the regions the W3C <a href="https://www.w3.org/TR/clreq/">Requirements for Chinese Text Layout</a> (clreq) describes. <code>'auto'</code> reads the region from <code>locale</code>, or from <code>bodyText.hyphenation.locale</code> when <code>locale</code> is unset: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> and <code>zh-SG</code> give <code>'mainland'</code>; <code>zh-Hant</code> and <code>zh-TW</code> give <code>'taiwan'</code>; <code>zh-HK</code> and <code>zh-MO</code> give <code>'hongkong'</code>; <code>ja</code> and every <code>ja-*</code> tag give <code>'japan'</code>, whose conventions follow the W3C <a href="https://www.w3.org/TR/jlreq/">Requirements for Japanese Text Layout</a> (JLReq); any other language gives <code>'mainland'</code>. The region picks the defaults of every <code>'auto'</code> field below. <code>'japan'</code> set by hand composes any document the Japanese way; the built-in strings and the defaults of the notes and the index still follow the language.</td>
     </tr>
     <tr>
       <td><code>lineBreak</code></td>
-      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
       <td><code>'auto'</code></td>
-      <td>Which marks may not open or close a line (clreq §6.1.1; see the table below). <code>'auto'</code>: <code>'gb'</code> for the mainland, <code>'basic'</code> for Taiwan and Hong Kong.</td>
+      <td>Which marks may not open or close a line (clreq §6.1.1 and JLReq Appendix C.3; see the tables below). <code>'auto'</code>: <code>'gb'</code> for the mainland, <code>'basic'</code> for Taiwan and Hong Kong, <code>'ja-very-strict'</code> for Japan. Every level can be chosen in any document.</td>
     </tr>
     <tr>
       <td><code>punctuationWidth</code></td>
       <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
       <td><code>'auto'</code></td>
-      <td>How wide the full-width marks are set (see <a href="#punctuation-widths">Punctuation widths</a>). <code>'auto'</code>: <code>'kaiming'</code> for the mainland, <code>'fullwidth'</code> for Taiwan and Hong Kong.</td>
+      <td>How wide the full-width marks are set (see <a href="#punctuation-widths">Punctuation widths</a>). <code>'auto'</code>: <code>'kaiming'</code> for the mainland, <code>'fullwidth'</code> for Taiwan, Hong Kong and Japan (in Japan with the JLReq rules for pairs, line ends and middle dots).</td>
     </tr>
     <tr>
       <td><code>compressAdjacent</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>Two marks that meet (<code>。」</code>, <code>》（</code>, <code>：“</code>) give up the half em of blank between them, so the pair takes 1.5 em instead of 2. <code>'auto'</code>: on for the mainland and Hong Kong, off for Taiwan.</td>
+      <td>Two marks that meet (<code>。」</code>, <code>》（</code>, <code>：“</code>) give up the half em of blank between them, so the pair takes 1.5 em instead of 2. <code>'auto'</code>: on for the mainland, Hong Kong and Japan, off for Taiwan.</td>
     </tr>
     <tr>
       <td><code>trimLineStart</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>An opening bracket or quote that starts a line gives up its leading half em, and a closing one that ends a line its trailing half. <code>'auto'</code>: on for the mainland and Hong Kong, off for Taiwan.</td>
+      <td>An opening bracket or quote that starts a line gives up its leading half em, and a closing one that ends a line its trailing half. <code>'auto'</code>: on for the mainland, Hong Kong and Japan, off for Taiwan. In Japan a closing mark keeps its half em at the line end until the line needs it (see <a href="#punctuation-widths">Punctuation widths</a>).</td>
     </tr>
     <tr>
       <td><code>hangingPunctuation</code></td>
-      <td><code>'none' | 'allow' | 'force'</code></td>
-      <td><code>'none'</code></td>
-      <td>Whether a pause or stop mark may hang past the end of the line (see <a href="#hanging-punctuation">Hanging punctuation</a>).</td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Whether a pause or stop mark may hang past the end of the line (see <a href="#hanging-punctuation">Hanging punctuation</a>). <code>'auto'</code>: <code>'allow'</code> in Japan (、。，． only), <code>'none'</code> elsewhere. Up to postext 1.15 the default was <code>'none'</code>, which <code>'auto'</code> still is outside Japan.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>One em of space after a full-width ？ or ！ (‼⁇⁈⁉ too, and after a note marker glued to them) inside a paragraph, as Japanese sets it (JLReq §3.1.6): not before a closing bracket or another such mark, not at the end of a paragraph, and dropped at the end of a line. A U+3000 or a space the author typed there becomes that space. It never stretches or shrinks. <code>'auto'</code>: on in Japan, off elsewhere.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How an opening bracket that starts a paragraph with a first-line indent is set (JLReq §3.1.5): <code>'indent'</code> keeps the indent and gives the bracket its em after it (pattern ①); <code>'half'</code> lets the bracket give up the blank before its glyph, which then fills the second half of a one-em indent, the text starting where the other paragraphs' text starts (pattern ③); <code>'flush'</code> sets the bracket at the edge with no indent (天付き). A paragraph with no indent or a hanging indent is left alone. <code>'auto'</code>: <code>'half'</code> in Japan; elsewhere the bracket is set as at any line start, as before.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3530,13 +3603,25 @@ interface CjkConfig {
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'dots'</code></td>
       <td><code>'auto'</code></td>
-      <td>What Markdown emphasis (<code>*…*</code>) does to Chinese characters: <code>'dots'</code> sets an emphasis dot under each (right of it in vertical text), as <code>:dots[…]</code> does, and Latin letters in the same emphasis keep their italics; <code>'italic'</code> slants them, which a Chinese face can only fake. <code>'auto'</code>: <code>'dots'</code> when the document language is Chinese, <code>'italic'</code> otherwise (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
+      <td>What Markdown emphasis (<code>*…*</code>) does to Chinese and Japanese characters: <code>'dots'</code> sets an emphasis mark beside each, as <code>:dots[…]</code> does (the shape and side of <code>emphasisMark</code>), and Latin letters in the same emphasis keep their italics; <code>'italic'</code> slants them, which a CJK face can only fake. <code>'auto'</code>: <code>'dots'</code> when the document language is Chinese or Japanese, <code>'italic'</code> otherwise (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td><code>'auto'</code> each</td>
+      <td>The mark that <code>*…*</code> and a <code>:dots[…]</code> without attributes draw: <code>style</code> <code>'dot'</code>, <code>'circle'</code> or <code>'sesame'</code> (﹅); <code>fill</code> <code>'filled'</code> or <code>'open'</code> (auto: open for a circle); <code>position</code> <code>'over'</code> (right of vertical text) or <code>'under'</code> (left of it). Auto: in Japan a filled sesame over the text and right of it in vertical text (JLReq §3.3.9); elsewhere a dot under the text and right of it in vertical text, as before. A mark's own attributes win.</td>
     </tr>
     <tr>
       <td><code>bookTitleMark</code></td>
       <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>What <code>:book[…]</code> prints: 《》 around the title (〈〉 inside another title), the wavy book-title line under it, or the bare title. <code>'auto'</code>: brackets for the mainland, the wavy line for Taiwan and Hong Kong.</td>
+      <td>What <code>:book[…]</code> prints: brackets around the title (<code>bookTitleBrackets</code>), the wavy book-title line under it, or the bare title. <code>'auto'</code>: brackets for the mainland and Japan, the wavy line for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td>The brackets of <code>:book[…]</code> under <code>'brackets'</code>, outermost first; a title nested deeper than the list takes the last pair. <code>'auto'</code> (or an empty list): 『』 then 「」 in Japan, 《》 then 〈〉 elsewhere.</td>
     </tr>
     <tr>
       <td><code>annotationColor</code></td>
@@ -3546,15 +3631,21 @@ interface CjkConfig {
     </tr>
     <tr>
       <td><code>ruby</code></td>
-      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
       <td>half-size, <code>'auto'</code></td>
-      <td>The readings of <code>:ruby[…]</code> and <code>&#123;紅樓|hóng|lóu&#125;</code>: face (default the text's), size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code> of the text; zhuyin at 60 % of it), colour, and where they go when a ruby does not say (<code>'auto'</code>: zhuyin right of each character, pinyin over the text in horizontal text and right of it in vertical text).</td>
+      <td>The readings of <code>:ruby[…]</code> and <code>&#123;紅樓|hóng|lóu&#125;</code>: face (default the text's), size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code> of the text; zhuyin at 60 % of it), colour, and where they go when a ruby does not say (<code>'auto'</code>: zhuyin right of each character, pinyin and kana over the text in horizontal text and right of it in vertical text). <code>overhang</code>: how far a reading longer than its base may run onto its neighbours: <code>'kana'</code> one ruby character onto kana, ー and the blank side of a mark, half of one onto an opening bracket, nothing onto kanji (JLReq §3.3.8); <code>'any'</code> half a ruby character onto any neighbour without a reading; <code>'none'</code> nothing; auto <code>'kana'</code> in Japan, elsewhere a quarter of the ruby size onto any neighbour without a reading, as before. <code>align</code>: how a reading shorter than its base is spaced: <code>'jis'</code> 1:2:1 (half a unit at the ends, one between), <code>'center'</code> solid and centred, <code>'start'</code> from the base's start; auto <code>'jis'</code> in Japan, <code>'center'</code> elsewhere. <code>smallKana: 'full'</code> sets the small kana of readings full size (<code>'keep'</code>, default, as written). A ruby's own <code>mode</code> and <code>align</code> win.</td>
     </tr>
     <tr>
       <td><code>warichu</code></td>
       <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
-      <td>half-size, no brackets</td>
-      <td>The two-row notes of <code>:warichu[…]</code>: the note's size (default half an em, so the two rows fill the line's em), its colour, and the brackets set at the text size before its first row and after its last (a note's own <code>open</code> / <code>close</code> win).</td>
+      <td>half-size; brackets （） in Japan, none elsewhere</td>
+      <td>The two-row notes of <code>:warichu[…]</code>: the note's size (default half an em, so the two rows fill the line's em), its colour, and the brackets set at the text size before its first row and after its last (a note's own <code>open</code> / <code>close</code> win). In Japan an empty <code>open</code> or <code>close</code> (<code>''</code>) sets the note without that bracket.</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>half-size, <code>'inline'</code></td>
+      <td>The kanbun marks of <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): their size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), their colour (default <code>annotationColor</code>, else the text's), and <code>placement</code>: <code>'inline'</code> sets the return marks after their character, taking half an em, as JIS sets them; <code>'interlinear'</code> puts every mark in the line gap, taking no advance. The same in every region (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -3572,6 +3663,22 @@ interface CjkConfig {
     <tr><td><code>basic</code></td><td>Pause and stop marks 、，；：。！？．‼⁇⁈⁉; closing quotes ” ’ 」 』 and brackets ）〕］｝】〗》〉; connectors – ～ ~ and a single — between two words; interpuncts · ‧ ・; iteration marks 々〻ゝゞヽヾ and ー; number units % ‰ ° ℃ ％ and the unit squares ㎡ ㎏ ㏄.</td><td>Opening quotes “ ‘ 「 『 and brackets （〔［｛【〖《〈; currency signs ¥ $ € £.</td></tr>
     <tr><td><code>gb</code></td><td><code>basic</code>, and the solidus / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, and the solidus.</td></tr>
     <tr><td><code>strict</code></td><td><code>gb</code>, and the two-em dash —— ⸺ and the ellipsis …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+The Japanese levels follow the three conventions of JLReq Appendix C.3. At each of them no line ends with an opening bracket or quote, a currency sign stays with its number (except at <code>ja-loose</code>), the solidus has no rule, and ——, ―― and …… may open a line but never split (nor do 〳〵):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Level</th>
+      <th>Never at the start of a line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>Closing brackets and quotes; 、，。．; the hyphens ‐ – ゠ 〜 ～; ？！‼⁇⁈⁉; ・：；; the iteration marks ゝゞヽヾ〻 and 々; ー; the small kana ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ (and their half-width forms); units ％ ℃. JIS X 4051's default.</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>, less the small kana, ー and 々 (JLReq's general books).</td></tr>
+    <tr><td><code>ja-loose</code></td><td>Closing brackets and quotes, 、， and 。． only (newspapers).</td></tr>
   </tbody>
 </table>
 
@@ -3610,6 +3717,8 @@ A full-width Chinese mark is half an em of glyph and half an em of blank, and wh
   </tbody>
 </table>
 
+In Japan (`punctuationWidth: 'fullwidth'`, the auto value) the marks follow JLReq §3.1 instead: 、，。． keep their blank after the glyph, ：； and ・ a quarter em on each side, and ？！ fill their em. A closing mark at the end of a line keeps its half em, and gives it up whole, first of all, when the line must take in one more character; the blank after 。 is never reduced inside the line. A line gives space back in the order of JLReq §3.8.3: word spaces, the blank of the mark ending the line, middle dots, brackets and 、，, then the space between Japanese and Latin; and it is spread without adding space after an opening bracket, before a closing one or next to 、。・：；？！ and U+3000 (§3.1.11). 、 and ・ between two kanji numerals are set solid and never break (二、三日, 三・一四). A Japanese document given another `punctuationWidth` (`kaiming`, `halfwidth`…) follows the clreq rules of this section instead.
+
 With `compressAdjacent`, two marks that meet give up the blank between them (the eight rules of the earlier clreq drafts): a closing bracket after another closing one or after a mainland pause or stop mark (`。」`, not after the centred marks of Taiwan and Hong Kong), a pause or stop mark after a closing bracket (`」，`), an opening bracket after any of them or after another opening one (`，「`, `》（`, `「『`), and a quarter em between an interpunct and a closing bracket before it or an opening one after it. Never more than takes the pair to 1.5 em: under Kaiming `。”` already takes 1.5 em and keeps it, `》（` takes one em. Kaiming sets a stop's blank after a closing mark that follows it, with `compressAdjacent` or without: the two glyphs sit together and the half em comes after the quote (`。”␣母`, not `。␣”母`), and it goes at the end of a line as a stop's does. With `trimLineStart`, an opening bracket that starts a line gives up its leading blank, so its ink lines up with the text edge (on the first line of a paragraph it sits half an em into the indent), and a closing one that ends a line its trailing blank. A centred mark gives up a quarter em on each side, never half on one. When a line breaks between two marks, neither keeps the compression: each is set as a mark at a line edge (a full-width `，` whose `「` opens the next line ends its own line a full em).
 
 A line takes in a character that may not open the next line (push-in) when the blank it may still give up covers the overflow, in clreq's order: word spaces down to a quarter em, then interpuncts, brackets, pause marks, the spaces between Han and Latin down to an eighth of an em, and stop marks last, each step shared equally. `kaiming` lets only its stop marks go down to half an em, and only in this case: a line that is merely short of one more character is spread, so 。？！ keep their em inside the line. `lineEndHalf` lets every mark go down to half an em; `fullwidth` marks give up nothing (a full-width book keeps its grid), and `halfwidth` marks have nothing left.
@@ -3622,7 +3731,7 @@ In the VDT a mark that gave up blank is a segment of its own, its `width` the ad
 
 ### Hanging punctuation
 
-`hangingPunctuation: 'allow'` lets one of 、，。． (on the mainland, whose marks sit at the start of their box, also ；：？！) hang past the end of the line when it would otherwise open the next one and compressing the line cannot take it in; never in horizontal Taiwan and Hong Kong text, whose centred marks would look cut off (in vertical text they may). In vertical text the hung mark sits under the foot of the line. `'force'` hangs such a mark whenever it ends a line (but the last line of a paragraph), and at once when it does not fit. A mark never hangs when another mark touches it (`。」`, `，「`). The hung segment is flagged `hangs`; the line's `bbox.width`, its justification and its alignment leave it out, and the canvas and PDF widen the column clip by the widest hung mark (`hangingPunctuationOverhang`), so it is never cut. Most Chinese books do not hang punctuation; clreq recommends it only with a character grid.
+`hangingPunctuation: 'allow'`, the auto value in Japan, lets one of 、，。． (on the mainland, whose marks sit at the start of their box, also ；：？！) hang past the end of the line when it would otherwise open the next one and compressing the line cannot take it in; never in horizontal Taiwan and Hong Kong text, whose centred marks would look cut off (in vertical text they may). In vertical text the hung mark sits under the foot of the line. `'force'` hangs such a mark whenever it ends a line (but the last line of a paragraph), and at once when it does not fit. A mark never hangs when another mark touches it (`。」`, `，「`). The hung segment is flagged `hangs`; the line's `bbox.width`, its justification and its alignment leave it out, and the canvas and PDF widen the column clip by the widest hung mark (`hangingPunctuationOverhang`), so it is never cut. Most Chinese books do not hang punctuation; clreq recommends it only with a character grid. Japanese books hang 、。，． (burasagari), never ；：？！ or brackets, in both writing modes, and only when compressing the line cannot take the mark in.
 
 ### Space between Han and Latin
 
@@ -3640,6 +3749,7 @@ In vertical text a Latin word or a long number is turned sideways, and a short n
 - Next to a sign Unicode sets upright each number takes its own cell: `30×40` is 30, ×, 40, all upright.
 - A cell of more characters than fit an em is squeezed across to the em; tracking and justification never go inside it, only after it.
 - For breaking and justifying, the cell counts as one Chinese character, and no Han–Latin space is set around it.
+- In Japan the pairs `!!`, `!?`, `?!` and `??`, half-width or full-width, stand in one upright cell too (`すごい！？`), unless a Latin letter, a digit or a third mark touches them; a full-width pair is painted with the half-width marks. Small kana, ：；, “ ” (painted 〝〟) and ・ take the Japanese vertical forms (see [Japanese layout › Vertical forms](/en/docs/japanese-layout#vertical-forms)).
 - The measurer and every renderer find the same cells: the canvas paints the digits turned back upright and squeezed, the PDF likewise with the horizontal font, and the HTML wraps them in `text-combine-upright: all`.
 
 By hand, three inline marks override the setting in vertical text and change nothing in horizontal text (see [Document format › Orientation in vertical text](/en/docs/document-format#orientation-in-vertical-text)):
@@ -3671,16 +3781,18 @@ Two layouts from Chinese practice, at 五号 (10.5 pt) with a 6 pt line gap (`li
 
 The markup of [Chinese marks, ruby and warichu](/en/docs/document-format#chinese-marks-ruby-and-warichu) keeps its text in the paragraph: search, the contents, index anchors and copied text read the characters as written, and only what is drawn around them depends on these settings.
 
-- **Emphasis dots** (着重号, `:dots[…]`, and `*…*` on Chinese characters under `emphasis: 'dots'`) take one dot per character, centred on it (the spacing of a justified line left out), never on punctuation or spaces: under the character in horizontal text, right of it in vertical text (clreq §5.3.1). `style` picks a filled dot, an open circle or a sesame dot, `fill="open"` draws the outline, `pos="over|under"` the side.
+- **Emphasis dots** (着重号, 傍点; `:dots[…]`, and `*…*` on CJK characters under `emphasis: 'dots'`) take one mark per character, centred on it (the spacing of a justified line left out), never on punctuation or spaces: under the character in horizontal text, right of it in vertical text (clreq §5.3.1). `style` picks a filled dot, an open circle or a sesame dot, `fill="open"` draws the outline, `pos="over|under"` the side; `emphasisMark` sets what a mark leaves unset (in Japan a sesame over the text, right of it in vertical text). A sesame stands the same way on the sheet in both writing modes, and marks on the side of a ruby reading go outside it.
+- **Side lines** (傍線, `:sideline[…]{style pos}`) run beside the text, punctuation and spaces included: `solid`, `double`, `wavy` or `dotted`, under the text across the page and right of it down the page by default; two lines that meet each give up an eighth of an em. They work in any script.
 - **Proper-name and book-title lines** (专名号 `:name[…]`, 书名号 `:book[…]` under `bookTitleMark: 'wavy'`) run under the characters' em box (left of it in vertical text), across the spaces inside the run. Where two runs meet, each end gives up an eighth of an em, so `:name[賈寶玉]:name[林黛玉]` reads as two names. When dots and a line mark the same text on one side, the line is nearer the text. Under `'brackets'` the 《》 are text the lines are broken with, painted and copied like any other character; they take no character of the plain text or the source map (the segments are flagged `inserted`).
-- **Ruby** readings sit in the line gap against the base's em box, centred on it; a reading that holds a Latin letter (pinyin) and stands over its base is raised by the depth of its face's descenders (g, j, p, q, y) and 0.04 em of the text more, so that they clear the base, and every reading of the line keeps one baseline; a reading wider than its base widens the base's box less a quarter of the ruby em it may pass onto a neighbour without a reading, and two readings keep a quarter of the ruby em apart (two zhuyin readings a quarter of the symbols' em, so three symbols beside each of two characters stay in their cells). A mono ruby (one reading per character) may break between its characters; a group ruby never breaks. At a line start or end, base and reading align to the edge (clreq §5.5.4). Zhuyin in horizontal text stands in a column right of each character, and the character's box grows by the column; in vertical text the same column runs down the right of the characters. The tone mark goes right of the column with half of its ink above the top of the last symbol (clreq §5.5.3.3), placed by its ink because fonts set these marks high in their em box, and in vertical text it stands upright, like the neutral-tone dot above the first symbol.
+- **Ruby** readings sit in the line gap against the base's em box, centred on it; a reading that holds a Latin letter (pinyin) and stands over its base is raised by the depth of its face's descenders (g, j, p, q, y) and 0.04 em of the text more, so that they clear the base, and every reading of the line keeps one baseline; a reading wider than its base widens the base's box less a quarter of the ruby em it may pass onto a neighbour without a reading, and two readings keep a quarter of the ruby em apart (two zhuyin readings a quarter of the symbols' em, so three symbols beside each of two characters stay in their cells). A mono ruby (one reading per character) may break between its characters; a group ruby never breaks. In Japan a reading follows `ruby.align` and `ruby.overhang` instead: spaced 1:2:1 when it is shorter than its base, running onto kana but not onto kanji when it is longer, the rest of the room coming from spacing the base out; a per-character ruby of two or more characters is jukugo ruby, each character keeping its reading, which may run onto the next character of the word but never overlaps another reading, the line still breaking between them (JLReq §3.3). At a line start or end, base and reading align to the edge (clreq §5.5.4). Zhuyin in horizontal text stands in a column right of each character, and the character's box grows by the column; in vertical text the same column runs down the right of the characters. The tone mark goes right of the column with half of its ink above the top of the last symbol (clreq §5.5.3.3), placed by its ink because fonts set these marks high in their em box, and in vertical text it stands upright, like the neutral-tone dot above the first symbol.
 - **Warichu** notes (双行夹注) fold into two rows at the note size, centred on the line with no gap between them. The upper row takes characters until it holds at least half of the part, so the second row is never the longer, and one more while the lower row would open with a mark that may not start a line. A note longer than the room left on a line fills it and goes on with the next line, column or page; its brackets go only before its first row and after its last. In vertical text the upper row is the right one, read first.
+- **Kanbun marks** (`:kunten[字]{kaeri okuri tate}`) set the return marks of the last character at the foot side of the line after it (lower left in vertical text), its okurigana on the head side from its middle, longer ones pushing the next character on, and the tatesen as a short rule to the next character (JIS X 4051 §5). Copied text and the PDF's `/ActualText` read the okurigana after their characters and leave the return marks out; a line gap too narrow for them is reported as `kuntenExceedsLeading`.
 
-The line pitch never changes: marks and readings live in the leading. A paragraph whose line gap (line height less the text size) is under half an em with marks on one side, or five eighths with marks on both sides (clreq §5.6.1), is reported as a `cjkMarksExceedLeading` content warning; one whose readings are taller than its gap (a pinyin reading counted with its lift), as `rubyExceedsLeading`. Give such paragraphs a paragraph style with more leading.
+The line pitch never changes: marks and readings live in the leading. A paragraph whose line gap (line height less the text size) is under half an em with marks on one side, or five eighths with marks on both sides (clreq §5.6.1), is reported as a `cjkMarksExceedLeading` content warning; one whose readings are taller than its gap (a pinyin reading counted with its lift), as `rubyExceedsLeading`. Give such paragraphs a paragraph style with more leading. Japanese books with furigana usually set a body line height of about 1.75 em (JLReq §2.4.2).
 
-In the VDT a marked segment carries `cjkMarks`, and the layout places the dots and lines on its lines as `VDTLine.marks` (dots, circles, sesames, straight and wavy lines, in the line's flow frame), which the canvas, HTML and PDF draw as they are (PDF: `Artifact /Layout`; HTML: `aria-hidden` boxes, dotted text in `<em>`). A ruby base's segment carries `ruby` (the reading and its runs) and paints its base at `inkOffset` when the reading spread it; a warichu note's part on a line is one segment whose `text` is its upper row then its lower one and whose `warichu` holds the rows the renderers paint instead. Tagged PDF puts a reading in the `RT` of its base's `Ruby` and a note in a `Warichu`, and the line's `/ActualText` reads the base text and the note once. Marks, readings and notes are drawn in body text, headings, lists and boxes, and in the captions, table cells and notes of resources, whose lines carry `marks` and `ruby` as body lines do; design text keeps the text without them.
+In the VDT a marked segment carries `cjkMarks`, and the layout places the dots and lines on its lines as `VDTLine.marks` (dots, circles, sesames, straight, double, dotted and wavy lines, in the line's flow frame), which the canvas, HTML and PDF draw as they are (PDF: `Artifact /Layout`; HTML: `aria-hidden` boxes, dotted text in `<em>`). A ruby base's segment carries `ruby` (the reading and its runs; for a Japanese reading also the `id` its annotation shares with the other characters of a jukugo word, and `jukugo`) and paints its base at `inkOffset`, with `tracking`, when the reading spread it; a character with kanbun marks carries `kunten` (its runs and its tatesen); a warichu note's part on a line is one segment whose `text` is its upper row then its lower one and whose `warichu` holds the rows the renderers paint instead. Tagged PDF puts a reading in the `RT` of its base's `Ruby` and a note in a `Warichu`, and the line's `/ActualText` reads the base text and the note once. Marks, readings and notes are drawn in body text, headings, lists and boxes, and in the captions, table cells and notes of resources, whose lines carry `marks` and `ruby` as body lines do; design text keeps the text without them.
 
-Resolver and stripper match the other sections; `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
+Resolver and stripper match the other sections. `spaceAfterQuestion` and `paragraphStartBracket`, and the ruby's `overhang`, `align` and `smallKana`, are in the resolved config only when they change something (in Japan, or when set). `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -3689,9 +3801,18 @@ resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
 //   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
 //   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
-//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
 //   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
-//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
 ```
 
 In the Sandbox these settings are in **Design › Writing system › East Asian typography**.
@@ -4744,6 +4865,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Indent of every line from the left edge of the column (or of the box the paragraphs sit in); <code>em</code> is the style's own size. The first-line and hanging indents are measured from it, so an indented line of verse can hang its turnover deeper than its own start: <code>indent: 1.5em</code> with <code>hangingIndent: 2.5em</code> sets the line at 1.5 em and its turnover at 4 em. A negative value counts as <code>0</code>.</td>
     </tr>
     <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of every line from the end side (the right of a horizontal line, the foot of a vertical one); <code>em</code> is the style's own size. With <code>textAlign: 'end'</code> it sets a line some characters up from the foot, the 地からN字上げ of a Japanese letter's date or signature. Since postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>body first-line indent</td>
@@ -4819,6 +4946,8 @@ A line in `verse-indented` starts at 1.5 em and its turnover at 4 em, level with
 ### The `:::paragraphs` container
 
 A `:::paragraphs{style="<id>"}` line opens the container and a bare `:::` line closes it; every paragraph in between takes the named style, while headings, lists, and other blocks inside keep their usual styling. Containers may be nested inside other fenced containers. An unknown `style` id is not an error: the paragraphs render as plain body text.
+
+The fence also takes `align` (`start`, `end`, `left`, `right`, `center`, `justify`), `indent` and `endIndent` (bare numbers are ems), with or without a style: with one, they override it; without, they apply over the enclosing container's style, or over the text style where the fence stands (the body, a part, a styled section or a box). `:::paragraphs{align=end}` sets a block flush with the end of the line (地付き) and `:::paragraphs{align=end endIndent=1}` one character up from it. Since postext 1.16.
 
 Inside the container the flow leaves the baseline grid — a 7pt entry with 1.2em leading cannot sit on an 8pt/1.5em grid — and the last paragraph snaps the flow back onto it (the grid wins; the space below is a minimum, the same convention headings follow). Entries split across columns and pages like body paragraphs, with the same orphan and widow protection; a heading immediately before the container keeps with its first paragraph.
 
@@ -5549,7 +5678,7 @@ const config: PostextConfig = {
       <td>level fields</td>
       <td>as in <code>headings.levels[]</code></td>
       <td>the level's values</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style. <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style. <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5741,7 +5870,7 @@ The page labels are the ones the document prints. `buildDocument()` lays a docum
 
 ## Back-of-book index
 
-The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter (by pinyin initial or stroke count in Chinese, see `groupBy`), each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
+The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter (by pinyin initial or stroke count in Chinese, by gojūon row in Japanese, see `groupBy`), each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
 
 ```ts
 const config: PostextConfig = {
@@ -5830,9 +5959,9 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>groupBy</code></td>
-      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>What the group heads are. <code>'letter'</code>: the first letter of the sort key. <code>'pinyin'</code>: an entry that starts with a Han character files under the Latin initial of its pinyin reading (贾宝玉 under <code>J</code>), and a Latin sort key under its letter, after that letter's Chinese entries (the collator sets Latin letters after Chinese characters): <code>sort="jia mu"</code> ends the <code>J</code>. <code>'stroke'</code>: under the stroke count of the first character, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… in Simplified Chinese). <code>'none'</code>: no heads; symbols, numbers and words are set apart by <code>groups.marginTop</code> only. <code>'auto'</code> groups a Simplified Chinese index (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) by pinyin, a Traditional one (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) by strokes, and every other language by letter. The entries sort in the collation the heads come from: a <code>zh-Hant</code> index grouped by pinyin sorts by pinyin. The readings and stroke counts are the collator's (CLDR); where it reads a character wrongly (重 as <em>zhòng</em> in 重阳, 行 as <em>xíng</em> in 行业), give the mark a <code>sort</code> key in characters that have only the reading you want, which sorts in place: <code>sort="崇阳"</code> for 重阳, <code>sort="航业"</code> for 行业. A browser without Chinese collation data prints a pinyin or stroke index with no heads.</td>
+      <td>What the group heads are. <code>'letter'</code>: the first letter of the sort key. <code>'pinyin'</code>: an entry that starts with a Han character files under the Latin initial of its pinyin reading (贾宝玉 under <code>J</code>), and a Latin sort key under its letter, after that letter's Chinese entries (the collator sets Latin letters after Chinese characters): <code>sort="jia mu"</code> ends the <code>J</code>. <code>'stroke'</code>: under the stroke count of the first character, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… in Simplified Chinese). <code>'gojuon'</code>: a kana entry files under its gojūon row, あ行, か行 … わ行, and <code>'kana'</code> under its first kana (katakana and hiragana sharing heads), in the JIS X 4061 order of a Japanese index: by the reading (<code>yomi</code> of the mark, else the kana reading of its ruby, else <code>sort</code>, else the text), katakana as hiragana, small kana as large ones, ー as the vowel before it, 清 before 濁 before 半濁; symbols, then numbers by value, then Latin words under their letters, then kana; an entry still headed by a kanji is reported as <code>indexReadingMissing</code> and set after the kana under no head. <code>'none'</code>: no heads; symbols, numbers and words are set apart by <code>groups.marginTop</code> only. <code>'auto'</code> groups a Japanese index (<code>ja</code>, <code>ja-*</code>) by gojūon row, a Simplified Chinese index (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) by pinyin, a Traditional one (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) by strokes, and every other language by letter. The entries sort in the collation the heads come from: a <code>zh-Hant</code> index grouped by pinyin sorts by pinyin. The readings and stroke counts are the collator's (CLDR); where it reads a character wrongly (重 as <em>zhòng</em> in 重阳, 行 as <em>xíng</em> in 行业), give the mark a <code>sort</code> key in characters that have only the reading you want, which sorts in place: <code>sort="崇阳"</code> for 重阳, <code>sort="航业"</code> for 行业. A browser without Chinese collation data prints a pinyin or stroke index with no heads.</td>
     </tr>
     <tr>
       <td><code>ignoreArticle</code></td>

@@ -128,7 +128,7 @@ Two attributes have a meaning of their own. `style="<id>"` applies a named [head
 # Contents {style="front-matter" toc="false"}
 ```
 
-Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
+Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `jidori=N` spaces a one-line heading evenly to `N` of its own characters (字取り: `# 序章 {jidori=3}` prints 序　章), and `jidori=0` turns off the even spacing its level or style sets (see [Configuration › Per-level overrides](/en/docs/configuration#per-level-overrides)). `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
 
 ```markdown
 # To my mother {hidden="true" toc="false"}
@@ -251,7 +251,7 @@ Four container names are recognized in the text flow (a fifth, `:::columns`, wor
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style.</td>
+      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style. <code>align</code>, <code>indent</code> and <code>endIndent</code> set the alignment and indents with or without a style: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> sets a date one character up from the end of the line (地から1字上げ).</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -425,6 +425,16 @@ The old chapter ends here.
 # A new chapter
 ```
 
+The flag `center` (`:::pagebreak{center}`, off with `center=false`) centres the text of the page the break opens between the head and the foot of the type area, across the page in vertical text: the ページの左右中央 of a Japanese part title or dedication. Floats, notes and running heads stay where they are, and a page already full is left alone. The flag does not end the page: close it with another `:::pagebreak`.
+
+```md
+:::pagebreak{center}
+
+# 上　先生と私
+
+:::pagebreak
+```
+
 #### Parity attribute
 
 The `parity` attribute accepts the same five values as `headings.levels[*].breakBefore.parity`:
@@ -469,7 +479,7 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
-`format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
+`format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal`, `一` and `あ` as well as `japanese-informal` and `hiragana` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
 
 ### `:::space`
 
@@ -736,7 +746,7 @@ In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand 
 
 ### Chinese marks, ruby and warichu
 
-Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. [Chinese layout](/en/docs/chinese-layout) explains the conventions behind them. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
+Chinese and Japanese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Seven directives do it. [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout) explain the conventions behind them. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -744,14 +754,20 @@ Chinese editions mark text between the lines rather than with italics or underli
 {滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
 
 寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+
+{東京|とう|きょう}の:ruby[紫陽花]{rt="あじさい"}は*とんと*:sideline[見事]だ。:book[こころ]を読む。
+
+:kunten[學]{okuri="ビテ"}而:kunten[時]{okuri="ニ"}:kunten[習]{kaeri="二" okuri="フ"}:kunten[之]{kaeri="一" okuri="ヲ"}。
 ```
 
-- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese document; Latin letters in the same emphasis stay italic.
-- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland, the wavy line in Taiwan and Hong Kong). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
-- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text. A backslash before the brace or the bar keeps a Chinese one as text: `\{紅|hóng}` and `{紅\|hóng}` print `{紅|hóng}`. A base that opens or closes a line aligns to that edge together with its reading.
-- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets. A note in Latin script breaks between its words.
+- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese or Japanese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese or Japanese document; Latin letters in the same emphasis stay italic. Attributes left out take `cjk.emphasisMark`: a dot under the text in Chinese, a sesame over it (right of it in vertical text) in Japanese.
+- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland and in Japan, the wavy line in Taiwan and Hong Kong). In a Japanese document the brackets are 『』, and 「」 for a title inside another (`cjk.bookTitleBrackets`). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
+- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text. A backslash before the brace or the bar keeps a Chinese one as text: `\{紅|hóng}` and `{紅\|hóng}` print `{紅|hóng}`. A base that opens or closes a line aligns to that edge together with its reading. `mode=mono|group|jukugo` chooses how the readings go over the base (`mode=group` is the same as `group`), and `align=center|jis|start` how a reading shorter than its base is spaced. In a Japanese document the per-character form of a word of two or more characters (`{東京|とう|きょう}`, `rt="とう|きょう"`) is jukugo ruby: each character keeps its reading, which may run onto the next character of the word, the line may break between them, and the readings are spaced and run onto kana as `cjk.ruby.align` and `cjk.ruby.overhang` say; one reading for the whole base (`{紫陽花|あじさい}`, Aozora's `《》`) is group ruby; `mode=mono` keeps a reading per character with no running onto the neighbours.
+- **`:sideline[text]`** draws a side line (傍線) beside the text, punctuation and spaces included: under it in horizontal text and right of it in vertical text. `style="solid|double|wavy|dotted"` (default `solid`), `pos="over|under"` (in vertical text over is right, under is left; `position=` works too). It works in any script, an underlined English phrase included.
+- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets (（） in a Japanese document). A note in Latin script breaks between its words.
+- **`:kunten[字]{kaeri="…" okuri="…" tate}`** sets the kanbun marks of the last character between the brackets: `kaeri` the return mark (レ, 一 二 三, 上 中 下, 甲 乙 丙, 天 地 人, and 一レ 上レ 甲レ 天レ; the code points ㆑ ㆒ … read the same), `okuri` the okurigana (Aozora's parentheses `（ヲ）` are dropped), and the flag `tate` the tatesen that joins it to the next character. The text is not reordered: the marks are set at half size beside it (`cjk.kunten`), and copied text reads 學ビテ而時ニ習フ之ヲ, with the okurigana and without the return marks. A ruby inside works for the characters read twice: `:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`.
 
-The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes, and in captions, table cells and notes too, whose leading is checked the same way; in running heads and designs the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
+The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`, `kuntenExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes, and in captions, table cells and notes too, whose leading is checked the same way; in running heads and designs the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
 
 
 ### Text direction in the markup
@@ -785,6 +801,7 @@ so he learned to count the steps in the dark.
 - **Marker.** `[^id]` prints the note's number as a superscript, glued to the word before it (write it after the punctuation, as above). The id takes letters, digits, `-`, `_`, `.` and `:`. The marker works in paragraphs, list items, blockquotes and callouts; in headings, captions and table cells it prints as written.
 - **Definition.** A paragraph that starts with `[^id]:`; its text runs to the next blank line and takes the usual inline marks (bold, italics, links, `:ref`, formulas, chips). Definitions leave the flow wherever they are written, so they can sit under the paragraph that cites them or all together at the end of the chapter. The first definition of an id wins.
 - **Numbers.** Notes are numbered in the order they are first cited, starting again at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs the numbers on through the book, and `'page'` starts them again on every page, as Chinese books do; `footnotes.numberFormat: 'circled-decimal'` writes ① ② ③ on the baseline.
+- **Japanese text.** Write the marker before a sentence-final 。 (`先生[^1]。`): it stays with the character before it, and 。 never opens a line. A Japanese vertical book sets its markers （1） right of the line and its notes after the chapter by default; `footnotes.markerPosition: 'side'` sets a small marker beside the word, taking no room in the line, and `footnotes.placement: 'spread'` sets the notes beside the text of each spread (see [Configuration › Footnotes](/en/docs/configuration#footnotes)).
 - **Where the note goes.** By default at the foot of the column that holds the line citing it, under a short rule: the line and its note always share a column, and a line whose note does not fit moves on with it. In a one-column layout that is the foot of the page. `footnotes.placement: 'chapterEnd'` sets all the notes of a chapter after its last block instead, by default at the foot of the column they close. See [Footnotes](/en/docs/configuration#footnotes) in the configuration reference for the sizes, the rule and the spacing.
 - **Checks.** A marker with no definition (`undefinedFootnote`) prints its number over an empty note; a definition no marker cites (`unusedFootnote`) is not set. The Sandbox lists both in the Checks panel.
 
@@ -962,6 +979,10 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
       <td>The sort key of the last level when it should sort by other letters: <code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>, <code>term="20th century" sort="twentieth century"</code>. A Chinese index sorts and groups by the reading the collator gives a character. For a polyphonic one read the other way, write the key in characters that have only the reading you want: <code>:index[重阳]&#123;sort="崇阳"&#125;</code> files 重阳 under C, between 程 and 崔, not under Z. A pinyin key (<code>sort="chong yang"</code>) reaches C too, but sorts after all of its Chinese entries, because the collator sets Latin letters after Chinese characters (see <a href="/en/docs/configuration#back-of-book-index">Configuration › Back-of-book index</a>, <code>groupBy</code>).</td>
     </tr>
     <tr>
+      <td><code>yomi</code>, <code>reading</code></td>
+      <td>The reading of the last level in kana, by which a Japanese index sorts and groups it: <code>:index[夏目漱石]&#123;yomi="なつめそうせき"&#125;</code> files under な, in the な行. Without it, a mark whose text carries furigana in kana is read through them (<code>:index[&#123;東京|とう|きょう&#125;]</code> sorts as とうきょう), then <code>sort</code>, then the text; an entry still headed by a kanji is reported as <code>indexReadingMissing</code>. In an index in another language <code>yomi</code> acts as <code>sort</code>. Write furigana inside a mark in the compact form: a <code>:ruby[…]</code> would need its brackets escaped. Since postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>main</code></td>
       <td>A flag: the principal discussion of the term. Its page number is set bold (<code>index.main</code>). A page marked both ways is bold.</td>
     </tr>
@@ -1000,7 +1021,7 @@ A mark with no term (`:index{}` or `:index{see="…"}` alone) indexes nothing an
 :::index
 ```
 
-- **Order.** Entries sort in the alphabetical order of the document language (`locale`, or `index.locale`): an accented letter files with its base letter (*Árbol* under A), and in Spanish *ñ* comes after *n*, under a head of its own. Entries that start with a symbol come first, then those that start with a digit, then the letters. Sub-entries sort the same way under their entry, indented one step per level.
+- **Order.** Entries sort in the alphabetical order of the document language (`locale`, or `index.locale`): an accented letter files with its base letter (*Árbol* under A), and in Spanish *ñ* comes after *n*, under a head of its own. Entries that start with a symbol come first, then those that start with a digit, then the letters. Sub-entries sort the same way under their entry, indented one step per level. A Japanese index sorts by reading in the order of JIS X 4061 and groups by gojūon row (あ行, か行…), its Latin entries before the kana (see [Japanese layout › Index in gojūon order](/en/docs/japanese-layout#index-in-gojūon-order)).
 - **Groups.** Each new first letter opens a group: a letter head (`index.groups`) and one line of space above it (none above the first group). The head is set in one block with the group's first entry, so it never ends a column alone; an entry with no page of its own (one that only heads its sub-entries) is set with its first sub-entry for the same reason.
 - **Page numbers.** The labels the pages print, roman ones in the front matter included. An entry's pages are sorted and each is listed once; consecutive pages join into a range (`12–14`, `index.mergeRanges`), a page that falls inside a range of the same entry folds into it (a main page there makes the range bold), and `index.rangeFormat: 'chicago'` shortens the second number (`234–37`). Bold (main) pages stay apart. In the PDF each number links to its page.
 - **Cross-references** close the entry: *Term. See Target* when the entry has no pages, *Term, 12. See also Target* when it has. The labels follow the document language (*See*, *Véase*…) and can be set in `index.see`.
@@ -1385,7 +1406,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 
-Beyond the syntax, Arabic and the other right-to-left scripts are set right to left, with the bidirectional algorithm and right binding (see [Arabic layout](/en/docs/arabic-layout)). Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight, Chinese and Arabic. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+Beyond the syntax, Arabic and the other right-to-left scripts are set right to left, with the bidirectional algorithm and right binding (see [Arabic layout](/en/docs/arabic-layout)). Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)). Japanese is set with its own rules, kinsoku, yakumono spacing, furigana, emphasis marks, kanbun marks and notes (see [Japanese layout](/en/docs/japanese-layout)); Korean goes through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight, Chinese, Japanese and Arabic. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions
@@ -1400,7 +1421,7 @@ A few conventions make the difference between a document that parses cleanly and
 - **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
 - **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.
 - **Escape dollar signs with `\$` when you do not mean math.** Postext interprets `$…$` as inline LaTeX, so a raw `$` in prose will start a formula. Prices, shell prompts, and anything else with a bare dollar sign should be written as `\$`.
-- **Type the markup in ASCII, also in Chinese text.** A Chinese or Japanese input method gives full-width forms: `：：：` for a fence, `＃` for a heading, `［＾1］` for a footnote marker, `｛…｝` for attributes, `＊＊` for bold. They print as text, and the build reports the line as a `fullwidthMarkup` warning that names the ASCII form to type. Attribute values may be in any script and quoted with `“…”` or `「…」`; keys stay ASCII.
+- **Type the markup in ASCII, also in Chinese and Japanese text.** A Chinese or Japanese input method gives full-width forms: `：：：` for a fence, `＃` for a heading, `［＾1］` for a footnote marker, `｛…｝` for attributes, `＊＊` for bold. They print as text, and the build reports the line as a `fullwidthMarkup` warning that names the ASCII form to type. Attribute values may be in any script and quoted with `“…”` or `「…」`; keys stay ASCII.
 
 
 ## Worked example
