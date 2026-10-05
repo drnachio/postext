@@ -69,16 +69,25 @@
   line-break: strict;
 }
 
-:lang(zh) em,
-:lang(zh) i {
+/* Matched on the element, so a Latin passage marked lang="en" keeps its
+   italic. `:root` lifts these over `.docs-content em` and the other Latin
+   italics, which come later in the sheet. */
+:root :is(em, i):lang(zh) {
   font-style: normal;
   text-emphasis: filled dot;
   text-emphasis-position: under right;
 }
 
-:lang(zh) :is(code, pre, kbd) em,
-:lang(zh) :is(.hero-title em, .hero-em) {
+:root :is(code, pre, kbd) em:lang(zh),
+:root :is(.hero-title em, .hero-em):lang(zh) {
   text-emphasis: none;
+}
+
+/* A Latin italic class (the hero's lead, pull quotes) or the hero's
+   italic accent word would slant Han with a synthesised oblique: Chinese
+   text stays upright. */
+:is(.italic, .hero-title em, .hero-em):lang(zh) {
+  font-style: normal;
 }
 
 /* Japanese: Noto Serif JP and Noto Sans JP (then the system's Japanese
