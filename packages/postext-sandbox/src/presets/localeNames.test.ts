@@ -40,5 +40,8 @@ describe('localeShortTag', () => {
     expect(localeShortTag('zh-Hant', ['ja', 'zh-Hant'])).toEqual({ text: '繁', lang: 'zh-Hant' });
     expect(localeDisplayName('ja', 'en')).toBe('Japanese');
     expect(localeDisplayName('ja', 'es')).toBe('japonés');
+    expect(localeShortTag('ja', ['es', 'en', 'ja'])).toEqual({ text: '日', lang: 'ja' });
+    expect(localeShortTag('ja-JP', ['ja-JP', 'en'])).toEqual({ text: '日', lang: 'ja' });
+    expect(localeShortTag('ja-JP', ['ja-JP', 'ja-Latn'])).toEqual({ text: 'ja-JP' });
   });
 });

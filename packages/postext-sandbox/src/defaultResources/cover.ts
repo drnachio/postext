@@ -181,6 +181,7 @@ const COVER_ARIA = byLang(
   '按引擎眼中的样子画出的一个跨页：基线网格上由词块组成的两端对齐的行、一条章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行',
   'Un plec obert dibuixat tal com el veu el motor: línies justificades de caixes de paraula sobre una retícula de línia de base, una banda de capítol, una figura flotant i una línia oberta en caixes, gomes i una penalització',
   'صفحتان متقابلتان مرسومتان كما يراهما المحرّك، تُقرآن من اليمين إلى اليسار: أسطر مضبوطة من صناديق الكلمات على شبكة خطوط القاعدة، وشريط فصل، وشكل عائم، وسطر مفتوح على صناديق ومسافات مرنة وجزاء',
+  'エンジンの目で描いた見開き：ベースライングリッドに乗る、語のボックスを並べた両端そろえの行、章扉の帯、フロートした図、そしてボックスとグルーとペナルティに分けた一行',
 );
 
 /** The cover art of an edition. The Arabic edition's spread is the mirror
@@ -268,13 +269,19 @@ export function coverArtSvg(lang: GuideLang): string {
 </svg>`;
 }
 
-/** Size of the Chinese edition's cover art in SVG units: 148 × 286 mm (the
- *  sheet's height with 3 mm of bleed at head and foot, from the left bleed
- *  to the title strip) at 5 units per millimetre. */
+/** Size of the vertical editions' cover art (Chinese, Japanese) in SVG
+ *  units: 148 × 286 mm (the sheet's height with 3 mm of bleed at head and
+ *  foot, from the left bleed to the title strip) at 5 units per
+ *  millimetre. */
 export const COVER_ZH_VW = 740;
 export const COVER_ZH_VH = 1430;
 
-const COVER_ZH_ARIA = '按引擎眼中的样子画出的一页竖排书页：上下两栏里由字格组成的竖行、页面右侧的章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行';
+/** The vertical cover art's label, and the indent its paragraphs open
+ *  with (in cells): two characters in Chinese, one in Japanese. */
+const VERTICAL_COVER: Partial<Record<GuideLang, { aria: string; indent: number }>> = {
+  'zh-Hans': { aria: '按引擎眼中的样子画出的一页竖排书页：上下两栏里由字格组成的竖行、页面右侧的章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行', indent: 2 },
+  ja: { aria: 'エンジンの目で描いた縦組みの一ページ：上下二段に並ぶ升目の縦行、ページ右端を走る章扉の帯、フロートした図、そしてボックスとグルーとペナルティに分けた一行', indent: 1 },
+};
 
 /** One vertical line of Chinese drawn in its flow frame: square cells, now
  *  and then a Latin word turned sideways (a longer, thinner box), and a
@@ -298,13 +305,14 @@ function cellLine(rand: () => number, x: number, y: number, length: number, o: {
   return out;
 }
 
-/** A tier of vertical lines, paragraph by paragraph, in the flow frame. */
-function tier(rand: () => number, x: number, length: number, top: number, bottom: number, fill: string): string {
+/** A tier of vertical lines, paragraph by paragraph, in the flow frame,
+ *  each paragraph indented `indent` cells. */
+function tier(rand: () => number, x: number, length: number, top: number, bottom: number, fill: string, indent = 2): string {
   let out = '';
   let left = 2 + Math.floor(rand() * 6);
   let first = true;
   for (let y = top; y + 9 <= bottom; y += 16) {
-    out += cellLine(rand, x, y, length, { indent: first ? 2 : 0, last: left === 1, fill });
+    out += cellLine(rand, x, y, length, { indent: first ? indent : 0, last: left === 1, fill });
     left--;
     first = false;
     if (left === 0) {
@@ -350,13 +358,15 @@ function modelColumn(x: number, y: number, length: number): string {
   return out;
 }
 
-/** The Chinese edition's cover art: one vertical page of the book as the
- *  engine lays it out — the flow drawn in its own frame and turned a
- *  quarter turn clockwise onto the sheet, so its lines stand as columns
- *  read from the right, the chapter band runs down the right edge and the
- *  two tiers are stacked — with one column opened into Knuth-Plass boxes,
- *  glue and a flagged penalty, and crop marks at the trim. */
-export function coverArtVerticalSvg(): string {
+/** A vertical edition's cover art (Chinese, Japanese): one vertical page
+ *  of the book as the engine lays it out — the flow drawn in its own frame
+ *  and turned a quarter turn clockwise onto the sheet, so its lines stand
+ *  as columns read from the right, the chapter band runs down the right
+ *  edge and the two tiers are stacked — with one column opened into
+ *  Knuth-Plass boxes, glue and a flagged penalty, and crop marks at the
+ *  trim. */
+export function coverArtVerticalSvg(lang: GuideLang = 'zh-Hans'): string {
+  const { aria, indent } = VERTICAL_COVER[lang] ?? VERTICAL_COVER['zh-Hans']!;
   const rand = prng(1983);
   const W = COVER_ZH_VW;
   const H = COVER_ZH_VH;
@@ -393,11 +403,11 @@ export function coverArtVerticalSvg(): string {
   const t2 = m.head + tierLen + gutter;
   const top = band + 24;
   const bottom = FH - m.side;
-  flow += tier(rand, t1, tierLen, top, top + 150, C.word);
+  flow += tier(rand, t1, tierLen, top, top + 150, C.word, indent);
   flow += rect(t1, top + 160, tierLen, 3, C.vermilion);
   flow += rect(t1, top + 172, tierLen * 0.9, 12, C.vermilion, 2);
   flow += rect(t1, top + 190, tierLen * 0.6, 12, C.vermilion, 2);
-  flow += tier(rand, t1, tierLen, top + 216, bottom, C.word);
+  flow += tier(rand, t1, tierLen, top + 216, bottom, C.word, indent);
   const figW = 130;
   flow += rect(t2, top, tierLen, figW, C.wordSoft, 2);
   // Bars that stand upright on the sheet: they grow up the flow's x.
@@ -407,7 +417,7 @@ export function coverArtVerticalSvg(): string {
     flow += rect(t2 + tierLen - 22 - len, top + 14 + i * (bw + 7), len, bw, i === 4 ? C.gilt : C.blueSoft, 1.5);
   });
   flow += rect(t2, top + figW + 8, tierLen * 0.7, 4, C.giltSoft, 1);
-  flow += tier(rand, t2, tierLen, top + figW + 26, bottom, C.word);
+  flow += tier(rand, t2, tierLen, top + figW + 26, bottom, C.word, indent);
 
   const pageW = FH;
   const pageH = FW;
@@ -420,7 +430,7 @@ export function coverArtVerticalSvg(): string {
   const ml = 520;
   const model = `<rect x="${mx - 30}" y="${my - 26}" width="${30 + 30 + 72}" height="${ml + 52}" rx="8" fill="${C.night}" stroke="${C.gilt}" stroke-width="2.4"/>${modelColumn(mx + 6, my, ml)}`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${COVER_ZH_ARIA}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}">
   <rect width="${W}" height="${H}" fill="${C.night}"/>
   ${grid}
   ${turned}
