@@ -149,6 +149,22 @@ export function along(p: Profile, s: number): [number, number, number] {
   return [x, z, slope];
 }
 
+/** The height of a side's top leaf `x` from the spine (the arc-length
+ *  table read the other way). */
+export function topAt(p: Profile, x: number): number {
+  const { xs, zs } = p;
+  let lo = 0;
+  let hi = xs.length - 1;
+  if (x <= xs[0]) return zs[0];
+  if (x >= xs[hi]) return zs[hi];
+  while (hi - lo > 1) {
+    const m = (lo + hi) >> 1;
+    if (xs[m] <= x) lo = m;
+    else hi = m;
+  }
+  return zs[lo] + ((zs[hi] - zs[lo]) * (x - xs[lo])) / (xs[hi] - xs[lo] || 1);
+}
+
 /** A lower leaf (fraction `lambda` of the way up the stack) at arc
  *  length s, approximately: the top curve scaled down to the base. */
 export function alongLayer(p: Profile, s: number, lambda: number): [number, number] {

@@ -43,7 +43,7 @@ import {
   type WebGLProgramParametersWithUniforms,
 } from "three";
 import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
-import { along, BINDINGS, gutterOcclusion, profiles, stackGeometry, type Profile } from "./bookGeometry";
+import { along, BINDINGS, gutterOcclusion, profiles, stackGeometry, topAt, type Profile } from "./bookGeometry";
 import { environment, type Environment, type EnvironmentKind } from "./environments";
 import { pagePaper, paperSpec, type PaperSpec } from "./paper";
 import { loadDeskMaps, type DeskMaps } from "./deskTextures";
@@ -980,6 +980,12 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
         const clear = pz - surfaceAt(book, px)[1] - lift;
         if (amp > 1e-6) pz += amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
       }
+      // Never into the book: over a block (and past its head or foot) a
+      // leaf stands at least just over its top. A fold's flap is carried
+      // level from the foot of its fold, and on a thin side hanging from
+      // the spine that foot lies low: the flap went through the tall block
+      // on the other side (#489).
+      if (!board && Math.abs(px) < (px >= 0 ? xr : xl)) pz = Math.max(pz, topAt(px >= 0 ? book.right : book.left, Math.abs(px)) + Math.min(lift, 0.5));
       pos.setXYZ(iy * (NX + 1) + ix, px, y, pz);
     }
   }
