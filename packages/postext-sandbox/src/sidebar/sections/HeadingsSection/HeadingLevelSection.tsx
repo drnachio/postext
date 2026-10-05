@@ -24,6 +24,9 @@ const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MIN_HEIGHT_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
 const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
+/** 字下げ counts body characters (`em` is the body size). */
+const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
+const ZERO_EM: Dimension = { value: 0, unit: 'em' };
 
 const D = DEFAULT_HEADINGS_CONFIG;
 /** Between a heading's number and its title: a space, the ideographic
@@ -179,6 +182,39 @@ export function HeadingLevelSection({
         tooltip={labels.headingLevelSnapToGridTooltip}
         isDefault={raw?.snapToGrid === undefined}
         onReset={() => onReset(level, 'snapToGrid')}
+      />
+      <NumberInput
+        label={labels.headingLineSpan}
+        value={resolved.lineSpan ?? 0}
+        onChange={(v) => (v >= 1 ? onUpdate(level, { lineSpan: Math.round(v) }) : onReset(level, 'lineSpan'))}
+        min={0}
+        max={20}
+        step={1}
+        tooltip={labels.headingLineSpanTooltip}
+        isDefault={raw?.lineSpan === undefined}
+        onReset={() => onReset(level, 'lineSpan')}
+      />
+      <DimensionInput
+        label={labels.headingIndent}
+        value={resolved.indent ?? ZERO_EM}
+        onChange={(dim) => onUpdate(level, { indent: dim })}
+        min={0}
+        step={0.5}
+        tooltip={labels.headingIndentTooltip}
+        isDefault={raw?.indent === undefined}
+        onReset={() => onReset(level, 'indent')}
+        units={INDENT_UNITS}
+      />
+      <NumberInput
+        label={labels.headingJidori}
+        value={resolved.jidori ?? 0}
+        onChange={(v) => (v > 1 ? onUpdate(level, { jidori: v }) : onReset(level, 'jidori'))}
+        min={0}
+        max={20}
+        step={0.5}
+        tooltip={labels.headingJidoriTooltip}
+        isDefault={raw?.jidori === undefined}
+        onReset={() => onReset(level, 'jidori')}
       />
       <ToggleSwitch
         label={labels.headingItalic}

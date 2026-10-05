@@ -261,6 +261,17 @@ export const HeadingsSection = memo(function HeadingsSection() {
       />
 
       {headings.keepWithNext && (
+        <ToggleSwitch
+          label={labels.headingsKeepWithNextSpread}
+          checked={headings.keepWithNextSpread === true}
+          onChange={(v) => (v ? updateHeadings({ keepWithNextSpread: true }) : resetField('keepWithNextSpread'))}
+          tooltip={labels.headingsKeepWithNextSpreadTooltip}
+          isDefault={headings.keepWithNextSpread !== true}
+          onReset={() => resetField('keepWithNextSpread')}
+        />
+      )}
+
+      {headings.keepWithNext && (
         <SelectInput
           label={labels.headingsKeepWithNextSplit}
           value={headings.keepWithNextSplit}

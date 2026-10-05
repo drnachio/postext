@@ -752,6 +752,8 @@ export interface SandboxLabels {
   headingsTextAlignRight: string;
   headingsKeepWithNext: string;
   headingsKeepWithNextTooltip: string;
+  headingsKeepWithNextSpread: string;
+  headingsKeepWithNextSpreadTooltip: string;
   headingsKeepWithNextSplit: string;
   headingsKeepWithNextSplitTooltip: string;
   headingsKeepWithNextSplitRules: string;
@@ -783,6 +785,12 @@ export interface SandboxLabels {
   headingTextTransformUppercase: string;
   headingLetterSpacing: string;
   headingLetterSpacingTooltip: string;
+  headingLineSpan: string;
+  headingLineSpanTooltip: string;
+  headingIndent: string;
+  headingIndentTooltip: string;
+  headingJidori: string;
+  headingJidoriTooltip: string;
   headingHidden: string;
   headingHiddenTooltip: string;
   headingAdvancedMinHeight: string;
@@ -1904,6 +1912,8 @@ export interface SandboxLabels {
   paragraphStyleNameAria: string;
   paragraphStyleIndent: string;
   paragraphStyleIndentTooltip: string;
+  paragraphStyleEndIndent: string;
+  paragraphStyleEndIndentTooltip: string;
   paragraphStyleFirstLineIndentTooltip: string;
   paragraphStyleHangingIndent: string;
   paragraphStyleHangingIndentTooltip: string;
