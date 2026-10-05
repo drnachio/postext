@@ -295,6 +295,8 @@ export interface SandboxLabels {
   warningsIndexSeeUnknownDetail: string;
   warningsIndexRangeUnclosedTitle: string;
   warningsIndexRangeUnclosedDetail: string;
+  warningsIndexReadingMissingTitle: string;
+  warningsIndexReadingMissingDetail: string;
   warningsUnknownHeadingStyleTitle: string;
   warningsUnknownHeadingStyleDetail: string;
   warningsChipOverlapTitle: string;
@@ -2357,6 +2359,8 @@ export interface SandboxLabels {
   indexGroupByLetter: string;
   indexGroupByPinyin: string;
   indexGroupByStroke: string;
+  indexGroupByGojuon: string;
+  indexGroupByKana: string;
   indexGroupByNone: string;
   indexGroups: string;
   indexGroupsEnabled: string;

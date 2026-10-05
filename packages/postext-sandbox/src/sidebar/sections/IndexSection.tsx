@@ -314,6 +314,8 @@ export const IndexSection = memo(function IndexSection() {
             { value: 'letter', label: labels.indexGroupByLetter },
             { value: 'pinyin', label: labels.indexGroupByPinyin },
             { value: 'stroke', label: labels.indexGroupByStroke },
+            { value: 'gojuon', label: labels.indexGroupByGojuon },
+            { value: 'kana', label: labels.indexGroupByKana },
             { value: 'none', label: labels.indexGroupByNone },
           ]}
           onChange={(v) => update({ groupBy: v as IndexGroupBy })}

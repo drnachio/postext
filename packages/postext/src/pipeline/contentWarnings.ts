@@ -647,6 +647,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'indexRangeUnclosed':
       text = `The index range of "${w.term}" has no range="${w.missing}" mark — it prints a single page`;
       break;
+    case 'indexReadingMissing':
+      text = `The index entry "${w.term}" has a kanji and no reading — add yomi="…" in kana to its mark; it files after the kana entries`;
+      break;
     case 'unknownHeadingStyle':
       text = `Unknown heading style "${w.style}" on an H${w.level} — the level's own settings apply`;
       break;

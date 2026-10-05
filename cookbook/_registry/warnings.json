@@ -2312,6 +2312,40 @@
       }
     }
   },
+  "indexReadingMissing": {
+    "source": "engine",
+    "label": {
+      "en": "Index entry without a reading",
+      "es": "Entrada del índice sin lectura",
+      "ca": "Entrada de l'índex sense lectura",
+      "zh": "索引词条缺少读音",
+      "ar": "مدخل فهرس بلا قراءة"
+    },
+    "cause": {
+      "en": "A Japanese index files entries by their reading, and no algorithm reads kanji reliably: this entry has a kanji and none of its marks gives a reading (yomi, kana ruby on the marked text, or a kana sort key), so it files after the kana entries, by code point.",
+      "es": "Un índice japonés ordena las entradas por su lectura, y ningún algoritmo lee los kanji con fiabilidad: esta entrada tiene un kanji y ninguna de sus marcas da una lectura (yomi, ruby en kana sobre el texto marcado o una clave sort en kana), así que se ordena después de las entradas en kana, por punto de código.",
+      "ca": "Un índex japonès ordena les entrades per la seva lectura, i cap algorisme no llegeix els kanji amb fiabilitat: aquesta entrada té un kanji i cap de les seves marques no en dona la lectura (yomi, ruby en kana sobre el text marcat o una clau sort en kana), de manera que s'ordena després de les entrades en kana, per punt de codi.",
+      "zh": "日文索引按读音排列词条，而汉字的读音无法可靠地自动推出：这个词条含有汉字，它的标记都没有给出读音（yomi、标记文字上的假名注音，或用假名写的sort键），因此它按码位排在假名词条之后。",
+      "ar": "يرتّب الفهرس الياباني المداخل حسب قراءتها، ولا توجد خوارزمية تقرأ الكانجي بموثوقية: هذا المدخل فيه حرف كانجي ولا تعطي أي من علاماته قراءة (yomi، أو روبي بالكانا على النص المعلَّم، أو مفتاح sort بالكانا)، فيُرتَّب بعد مداخل الكانا حسب نقطة الترميز."
+    },
+    "fix": {
+      "en": "Add yomi=\"…\" with the reading in kana to one of the entry's marks (:index[東京]{yomi=\"とうきょう\"}), or mark text that carries ruby ({東京|とう|きょう}).",
+      "es": "Añade yomi=\"…\" con la lectura en kana a una de las marcas de la entrada (:index[東京]{yomi=\"とうきょう\"}), o marca un texto que lleve ruby ({東京|とう|きょう}).",
+      "ca": "Afegeix yomi=\"…\" amb la lectura en kana a una de les marques de l'entrada (:index[東京]{yomi=\"とうきょう\"}), o marca un text que porti ruby ({東京|とう|きょう}).",
+      "zh": "在词条的某个标记上加 yomi=\"…\"，用假名写出读音（:index[東京]{yomi=\"とうきょう\"}），或标记带注音的文字（{東京|とう|きょう}）。",
+      "ar": "أضف yomi=\"…\" بالقراءة بالكانا إلى إحدى علامات المدخل (:index[東京]{yomi=\"とうきょう\"})، أو علّم نصًّا يحمل روبي ({東京|とう|きょう})."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico",
+        "ca": "Índex analític",
+        "zh": "索引",
+        "ar": "الفهرس الأبجدي"
+      }
+    }
+  },
   "missingGlyph": {
     "source": "sandbox",
     "label": {

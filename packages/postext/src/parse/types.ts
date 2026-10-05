@@ -379,6 +379,16 @@ export interface IndexMark {
   path: string[];
   /** Sort key of the last level (`sort="…"`), when it differs from it. */
   sort?: string;
+  /** Reading of the last level in kana (`yomi="…"`, or `reading="…"`,
+   *  #425): a Japanese index files the entry by it, before `sort`; any
+   *  other index sorts by it as by `sort`. */
+  yomi?: string;
+  /** The reading the ruby of a visible mark's text gives that text, when
+   *  the text is the last level, carries ruby, and every ruby reading is
+   *  kana (`:index[{東京|とう|きょう}]` → とうきょう): a Japanese index's
+   *  fallback when the mark has no `yomi`. Absent when a base character
+   *  is left without a reading. */
+  rubyYomi?: string;
   /** Cross-references: the entry prints *See* / *See also* the target
    *  instead of a page number for this mark. */
   see?: string;

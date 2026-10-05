@@ -2000,6 +2000,12 @@ export type ContentWarning = ContentWarningBase & (
    *  or closed with no opening (`missing: 'start'`): it prints as a single
    *  page. Points at the `:::index` line. */
   | { kind: 'indexRangeUnclosed'; term: string; missing: 'start' | 'end'; index: string }
+  /** An entry of a Japanese index (#425) whose text holds a kanji and that
+   *  no mark gives a reading (`yomi`, a kana ruby on the marked text, or a
+   *  `sort` key in kana): it files after the kana entries, by code point.
+   *  `term` is the entry's levels joined with `!`. Points at the `:::index`
+   *  line. */
+  | { kind: 'indexReadingMissing'; term: string; index: string }
   /** A heading's `{style}` attribute names no heading style: the heading
    *  and its section keep the level's own settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }

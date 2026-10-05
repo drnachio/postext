@@ -22,7 +22,7 @@ export const DEFAULT_INDEX_CONFIG = {
   groups: { enabled: true, fontWeight: 700 },
 };
 
-const GROUP_BY: readonly IndexGroupBy[] = ['auto', 'letter', 'pinyin', 'stroke', 'none'];
+const GROUP_BY: readonly IndexGroupBy[] = ['auto', 'letter', 'pinyin', 'stroke', 'gojuon', 'kana', 'none'];
 
 /** The defaults that follow the language the index sorts in: an index in
  *  Arabic script separates with the Arabic comma `،` and sets its

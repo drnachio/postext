@@ -38,6 +38,7 @@ export type WarningKind =
   | 'indexMarkInvalid'
   | 'indexSeeUnknown'
   | 'indexRangeUnclosed'
+  | 'indexReadingMissing'
   | 'unknownHeadingStyle'
   | 'chipOverlap'
   | 'numberingInvalidFormat'
@@ -178,6 +179,9 @@ export type WarningPayload =
   /** A page range of the index opened and never closed (or closed with no
    *  opening): it prints as a single page. */
   | { kind: 'indexRangeUnclosed'; term: string; missing: 'start' | 'end'; index: string }
+  /** An entry of a Japanese index with a kanji and no reading: it files
+   *  after the kana entries, with no head. */
+  | { kind: 'indexReadingMissing'; term: string; index: string }
   /** A heading's `{style="…"}` names no heading style; the heading keeps
    *  its level's settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }

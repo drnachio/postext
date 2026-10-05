@@ -21,9 +21,10 @@ import type { BlockMeasureContext, MeasuredContentBlock } from './measureContent
 import { stampSourceRanges } from './buildHelpers';
 import { bookTitlesAsConfigured } from './annotations';
 import { resolvedLocale } from './config';
-import { chineseScriptOf, localeScript, stringsFor } from '../locale';
+import { chineseScriptOf, languageOf, localeScript, stringsFor } from '../locale';
 import type { IndexGrouping } from './indexGroups';
 import { arabicSortKey, canGroupBy, indexGrouping, pinyinInitial, sortLocaleFor, strokeGroup, strokeLabel } from './indexGroups';
+import { compareJapanese, gojuonRow, gojuonRowLabel, hasKanji, japaneseLead, kanaLabel } from './indexJapanese';
 
 /** A page number's link target, carried as a Markdown link while the entry
  *  is measured and turned into `VDTLineSegment.pageLink` after. */
@@ -44,6 +45,10 @@ interface IndexNode {
   text: string;
   sort: string;
   sortSet: boolean;
+  /** The reading a mark gave (`yomi`), and the one the ruby of a marked
+   *  text gave (#425): the first of each wins, as for `sort`. */
+  yomi?: string;
+  rubyYomi?: string;
   children: Map<string, IndexNode>;
   locators: Locator[];
   see: string[];
@@ -212,6 +217,8 @@ function buildIndexTree(outline: readonly OutlineEntry[], name: string, mergeRan
       node.sort = mark.sort;
       node.sortSet = true;
     }
+    if (mark.yomi && node.yomi === undefined) node.yomi = mark.yomi;
+    if (mark.rubyYomi && node.rubyYomi === undefined) node.rubyYomi = mark.rubyYomi;
     if (mark.see && !node.see.includes(mark.see)) node.see.push(mark.see);
     if (mark.seeAlso && !node.seeAlso.includes(mark.seeAlso)) node.seeAlso.push(mark.seeAlso);
     // `see` sends the reader elsewhere: the mark has no page. A `seealso`
@@ -312,6 +319,45 @@ function groupOf(
   return { rank: 0, label: labels.symbols };
 }
 
+/**
+ * Group of a main entry of a Japanese index (#425), from its reading, in
+ * JIS X 4061 order: symbols, numbers, Latin letters (under their letter),
+ * the kana (under their gojūon row, or their own kana with `kana`; `letter`
+ * reads a kana's letter as the kana itself), then the entries left with a
+ * kanji at their head, which have no reading to file by: they follow with
+ * no head (`indexReadingMissing` names each).
+ */
+function japaneseGroupOf(
+  sortKey: string,
+  locale: string,
+  base: Intl.Collator,
+  labels: { symbols: string; numbers: string },
+  grouping: IndexGrouping,
+): EntryGroup {
+  const lead = japaneseLead(sortKey);
+  switch (lead.kind) {
+    case 'kana':
+      if (grouping === 'none') return { rank: 3, label: '' };
+      if (grouping === 'gojuon') {
+        const row = gojuonRow(lead.base);
+        return { rank: 3, label: gojuonRowLabel(row), order: row };
+      }
+      return { rank: 3, label: kanaLabel(lead.base), order: lead.base };
+    case 'kanji':
+      return { rank: 4, label: '' };
+    case 'latin': {
+      if (grouping === 'none') return { rank: 2, label: '' };
+      const { label } = groupOf(sortKey, locale, base, labels, 'letter');
+      const at = LATIN_INITIALS.indexOf(label);
+      return { rank: 2, label, order: at >= 0 ? at : LATIN_INITIALS.length };
+    }
+    case 'digit':
+      return { rank: 1, label: labels.numbers };
+    default:
+      return { rank: 0, label: labels.symbols };
+  }
+}
+
 /** The blocks of one `:::index` directive. */
 function indexBlocksFor(
   directive: ContentBlock,
@@ -346,24 +392,47 @@ function indexBlocksFor(
   // hamza seats or (with `ignoreArticle`) the article; an entry's own
   // `sort` key keeps its article. Any other index sorts by the text.
   const arabicKeys = localeScript(locale) === 'Arab' || cfg.ignoreArticle;
+  // Japanese (#425): entries file by their reading — `yomi`, else the kana
+  // ruby of the marked text, else `sort` — in JIS X 4061 order, not in the
+  // collator's (which orders kanji by code point). A gojūon or kana
+  // grouping asks for that order in any language.
+  const japanese = languageOf(locale) === 'ja' || grouping === 'gojuon' || grouping === 'kana';
   const keys = new Map<IndexNode, string>();
   const keyOf = (node: IndexNode): string => {
-    if (!arabicKeys) return node.sort;
+    if (japanese) return node.yomi ?? node.rubyYomi ?? node.sort;
+    if (!arabicKeys) return node.yomi ?? node.sort;
     let key = keys.get(node);
     if (key === undefined) {
-      key = arabicSortKey(node.sort, cfg.ignoreArticle && !node.sortSet);
+      key = arabicSortKey(node.yomi ?? node.sort, cfg.ignoreArticle && !node.sortSet && node.yomi === undefined);
       keys.set(node, key);
     }
     return key;
   };
-  const bySort = (a: IndexNode, b: IndexNode): number => {
-    const ka = keyOf(a);
-    const kb = keyOf(b);
-    return base.compare(ka, kb) || fine.compare(ka, kb) || fine.compare(a.text, b.text);
-  };
+  const bySort = japanese
+    ? (a: IndexNode, b: IndexNode): number => compareJapanese(keyOf(a), keyOf(b)) || compareJapanese(a.text, b.text)
+    : (a: IndexNode, b: IndexNode): number => {
+      const ka = keyOf(a);
+      const kb = keyOf(b);
+      return base.compare(ka, kb) || fine.compare(ka, kb) || fine.compare(a.text, b.text);
+    };
   const sortedRoots = roots
-    .map((node) => ({ node, group: groupOf(keyOf(node), locale, base, labels, grouping) }))
+    .map((node) => ({
+      node,
+      group: (japanese ? japaneseGroupOf : groupOf)(keyOf(node), locale, base, labels, grouping),
+    }))
     .sort((a, b) => a.group.rank - b.group.rank || (a.group.order ?? 0) - (b.group.order ?? 0) || bySort(a.node, b.node));
+  if (japanese) {
+    // An entry whose key still holds a kanji has no reading: it files by
+    // code point, after the kana (ja typography §13).
+    const unread = (nodes: Iterable<IndexNode>, path: readonly string[]): void => {
+      for (const node of nodes) {
+        const at = [...path, node.text];
+        if (hasKanji(keyOf(node))) warnings.push({ kind: 'indexReadingMissing', term: at.join('!'), index: name });
+        unread(node.children.values(), at);
+      }
+    };
+    unread(roots, []);
+  }
 
   const out: ContentBlock[] = [];
   const baseBlock = { sourceStart: directive.sourceStart, sourceEnd: directive.sourceEnd };

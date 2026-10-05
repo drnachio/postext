@@ -461,6 +461,10 @@ export interface OutlineIndexMark {
   /** The entry's levels, main term first. */
   path: string[];
   sort?: string;
+  /** The reading of the last level (`yomi="…"`), and the kana reading the
+   *  ruby of the marked text gives it (see {@link IndexMark.rubyYomi}). */
+  yomi?: string;
+  rubyYomi?: string;
   see?: string;
   seeAlso?: string;
   main?: boolean;
@@ -4727,11 +4731,26 @@ export interface IndexConfig {
    *    for 重阳);
    *  - `'stroke'`: under the stroke count of its first character (一畫,
    *    二畫 …; 一画 … in Simplified Chinese);
+   *  - `'gojuon'` (五十音, #425): under the gojūon row of the first kana of
+   *    the entry's reading (あ行 か行 さ行 た行 な行 は行 ま行 や行 ら行
+   *    わ行); see below for the order;
+   *  - `'kana'`: under the first kana of the reading itself (か for が,
+   *    カ and ヵ);
    *  - `'none'`: no heads; symbols, numbers and words are set apart by the
    *    groups' `marginTop` only;
    *  - `'auto'` (default): `'pinyin'` in Simplified Chinese (`zh`,
    *    `zh-Hans`, `zh-CN`), `'stroke'` in Traditional Chinese (`zh-Hant`,
-   *    `zh-TW`, `zh-HK`), `'letter'` in any other language.
+   *    `zh-TW`, `zh-HK`), `'gojuon'` in Japanese (`ja`, `ja-JP`),
+   *    `'letter'` in any other language.
+   *
+   *  A Japanese index (or one grouped by `gojuon` or `kana`) sorts by the
+   *  entries' readings in JIS X 4061 order: symbols, digits, Latin (under
+   *  their letters), then the kana rows; katakana file as hiragana, small
+   *  kana as large, voiced as plain (清 < 濁 < 半濁 break the ties), ー as
+   *  the vowel before it. The reading is the mark's `yomi` (alias
+   *  `reading`), else the kana ruby of the marked text, else `sort`; an
+   *  entry with a kanji and no reading raises `indexReadingMissing` and
+   *  files after the kana, with no head.
    *
    *  The entries sort in the collation the heads come from (a
    *  `zh-Hant` index grouped by pinyin sorts by pinyin). A browser without
@@ -4749,7 +4768,7 @@ export interface IndexConfig {
 }
 
 /** See {@link IndexConfig.groupBy}. */
-export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'none';
+export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none';
 
 export interface ResolvedIndexConfig {
   fontFamily: string;

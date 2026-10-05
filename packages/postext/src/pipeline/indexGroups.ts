@@ -22,12 +22,16 @@
  * index ignores (see {@link arabicSortKey}), in the `ar` collation, whose
  * order is the hijāʾī one (ا ب ت ث … ن ه و ي); the head of a group is the
  * key's first letter.
+ *
+ * Japanese (#425): see `indexJapanese.ts`.
  */
 
-import { chineseScriptOf } from '../locale';
+import { chineseScriptOf, languageOf } from '../locale';
 
 /** How the entries of an index are grouped under heads (`index.groupBy`). */
-export type IndexGrouping = 'letter' | 'pinyin' | 'stroke' | 'none';
+export type IndexGrouping = 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none';
+
+const GROUPINGS: readonly string[] = ['letter', 'pinyin', 'stroke', 'gojuon', 'kana', 'none'];
 
 /** The pinyin initials that open a group: no syllable starts with I, U or
  *  V. */
@@ -140,10 +144,11 @@ export function strokeLabel(strokes: number, traditional: boolean): string {
 }
 
 /** The grouping `index.groupBy` asks for in `locale`: `auto` groups a
- *  Simplified Chinese index by pinyin, a Traditional one by strokes, any
- *  other by first letter. */
+ *  Simplified Chinese index by pinyin, a Traditional one by strokes, a
+ *  Japanese one by gojūon row (#425), any other by first letter. */
 export function indexGrouping(groupBy: string | undefined, locale: string): IndexGrouping {
-  if (groupBy === 'letter' || groupBy === 'pinyin' || groupBy === 'stroke' || groupBy === 'none') return groupBy;
+  if (groupBy !== undefined && GROUPINGS.includes(groupBy)) return groupBy as IndexGrouping;
+  if (languageOf(locale) === 'ja') return 'gojuon';
   const script = chineseScriptOf(locale);
   return script === 'Hans' ? 'pinyin' : script === 'Hant' ? 'stroke' : 'letter';
 }

@@ -64,6 +64,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'indexMarkInvalid':
     case 'indexSeeUnknown':
     case 'indexRangeUnclosed':
+    case 'indexReadingMissing':
     case 'chipOverlap':
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
@@ -191,6 +192,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsIndexSeeUnknownTitle;
     case 'indexRangeUnclosed':
       return labels.warningsIndexRangeUnclosedTitle;
+    case 'indexReadingMissing':
+      return labels.warningsIndexReadingMissingTitle;
     case 'unknownHeadingStyle':
       return labels.warningsUnknownHeadingStyleTitle;
     case 'chipOverlap':
@@ -391,6 +394,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.index ? `:::index{index="${payload.index}"} · ` : ''}"${payload.target}" — ${labels.warningsIndexSeeUnknownDetail}`;
     case 'indexRangeUnclosed':
       return `:index{term="${payload.term}" range="${payload.missing}"} — ${labels.warningsIndexRangeUnclosedDetail}`;
+    case 'indexReadingMissing':
+      return `${payload.index ? `:::index{index="${payload.index}"} · ` : ''}"${payload.term}" — ${labels.warningsIndexReadingMissingDetail}`;
     case 'unknownHeadingStyle':
       return `H${payload.level} {style="${payload.style}"} — ${labels.warningsUnknownHeadingStyleDetail}`;
     case 'chipOverlap':

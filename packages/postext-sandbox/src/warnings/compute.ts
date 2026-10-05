@@ -113,7 +113,7 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
     // paragraphs whose leading is too tight for their Chinese marks, ruby
     // readings or Arabic vowel marks, the Arabic-script words wider than
     // their line and the styles whose letter-spacing such words do not take.
-    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine'
+    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'indexReadingMissing' && w.kind !== 'cjkLooseLine'
       && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
       && w.kind !== 'unbreakableWordOverflow' && w.kind !== 'joiningScriptLetterSpacing') return;
     const payload: Record<string, unknown> = { ...w };

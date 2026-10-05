@@ -43,6 +43,8 @@ function indexMarkEntries(b: ContentBlock): OutlineEntry[] {
       index: m.index,
       path: m.path,
       ...(m.sort !== undefined ? { sort: m.sort } : {}),
+      ...(m.yomi !== undefined ? { yomi: m.yomi } : {}),
+      ...(m.rubyYomi !== undefined ? { rubyYomi: m.rubyYomi } : {}),
       ...(m.see !== undefined ? { see: m.see } : {}),
       ...(m.seeAlso !== undefined ? { seeAlso: m.seeAlso } : {}),
       ...(m.main ? { main: true } : {}),
@@ -286,7 +288,7 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
 const FIELD_SEP = '';
 
 function indexMarkKey(m: NonNullable<OutlineEntry['indexMark']>): string {
-  return [m.index, m.path.join(FIELD_SEP), m.sort ?? '', m.see ?? '', m.seeAlso ?? '', m.main ? 1 : 0, m.range ?? '', m.sourceStart].join(FIELD_SEP);
+  return [m.index, m.path.join(FIELD_SEP), m.sort ?? '', m.see ?? '', m.seeAlso ?? '', m.main ? 1 : 0, m.range ?? '', m.sourceStart, m.yomi ?? '', m.rubyYomi ?? ''].join(FIELD_SEP);
 }
 
 /** A stable fingerprint of an outline — what a contents page depends on. */

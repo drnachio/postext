@@ -214,7 +214,7 @@ describe('index.groupBy', () => {
 
   it('resolves the auto rule per locale', () => {
     expect(['zh', 'zh-Hans', 'zh-CN', 'zh-SG', 'zh-Hant', 'zh-TW', 'zh-HK', 'zh_TW', 'en', 'es', 'ja'].map((l) => indexGrouping('auto', l)))
-      .toEqual(['pinyin', 'pinyin', 'pinyin', 'pinyin', 'stroke', 'stroke', 'stroke', 'stroke', 'letter', 'letter', 'letter']);
+      .toEqual(['pinyin', 'pinyin', 'pinyin', 'pinyin', 'stroke', 'stroke', 'stroke', 'stroke', 'letter', 'letter', 'gojuon']);
     expect(indexGrouping('none', 'zh')).toBe('none');
   });
 

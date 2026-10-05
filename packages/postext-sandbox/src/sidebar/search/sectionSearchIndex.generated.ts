@@ -2225,6 +2225,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'indexEntrySpacingTooltip',
       'indexGroupBy',
       'indexGroupByAuto',
+      'indexGroupByGojuon',
+      'indexGroupByKana',
       'indexGroupByLetter',
       'indexGroupByNone',
       'indexGroupByPinyin',
