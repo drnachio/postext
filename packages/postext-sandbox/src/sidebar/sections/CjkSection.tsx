@@ -5,7 +5,9 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../
 import {
   DEFAULT_CJK_CONFIG,
   cjkRegionOf,
+  defaultCjkBookTitleBrackets,
   defaultCjkBookTitleMark,
+  defaultCjkEmphasisMark,
   defaultCjkWarichuBrackets,
   defaultCjkCompression,
   defaultCjkEmphasis,
@@ -18,7 +20,7 @@ import {
   isCjkLanguage,
   resolveBodyTextConfig,
 } from 'postext';
-import type { CjkConfig, CjkGridConfig, CjkRubyConfig, CjkWarichuConfig } from 'postext';
+import type { CjkBracketPair, CjkConfig, CjkEmphasisMarkConfig, CjkGridConfig, CjkRubyConfig, CjkWarichuConfig } from 'postext';
 import { CollapsibleSection, ColorPicker, DimensionInput, FieldGroup, FontPicker, NumberInput, SelectInput, TextInput, ToggleSwitch } from '../../controls';
 import { Button } from '../../ui';
 import { useSettingsSearch } from '../search/SearchContext';
@@ -66,7 +68,7 @@ export const CjkSection = memo(function CjkSection() {
     write(next);
   };
   /** Merge `partial` into `cjk[key]`, dropping fields set back to unset. */
-  const writeNested = <K extends 'ruby' | 'warichu'>(key: K, partial: Partial<NonNullable<CjkConfig[K]>>) => {
+  const writeNested = <K extends 'ruby' | 'warichu' | 'emphasisMark'>(key: K, partial: Partial<NonNullable<CjkConfig[K]>>) => {
     const next = { ...raw?.[key], ...partial } as Record<string, unknown>;
     for (const k of Object.keys(next)) if (next[k] === undefined) delete next[k];
     const cjk: CjkConfig = { ...raw, [key]: next };
@@ -75,6 +77,9 @@ export const CjkSection = memo(function CjkSection() {
   };
   const writeRuby = (partial: Partial<CjkRubyConfig>) => writeNested('ruby', partial);
   const writeWarichu = (partial: Partial<CjkWarichuConfig>) => writeNested('warichu', partial);
+  /** An emphasis-mark field; `auto` leaves it unset. */
+  const writeMark = <K extends keyof CjkEmphasisMarkConfig>(key: K, value: string) =>
+    writeNested('emphasisMark', { [key]: value === 'auto' ? undefined : value } as Partial<CjkEmphasisMarkConfig>);
   const writeGrid = (partial: Partial<CjkGridConfig>) => {
     const next: CjkGridConfig = { ...raw?.grid, ...partial };
     for (const key of Object.keys(next) as (keyof CjkGridConfig)[]) if (next[key] === undefined) delete next[key];
@@ -135,6 +140,24 @@ export const CjkSection = memo(function CjkSection() {
   const autoBookTitle = defaultCjkBookTitleMark(resolvedRegion);
   const autoWarichu = defaultCjkWarichuBrackets(resolvedRegion);
   const bookTitleNames = { brackets: labels.cjkBookTitleBrackets, wavy: labels.cjkBookTitleWavy, none: labels.cjkBookTitleNone };
+  const mark = raw?.emphasisMark;
+  const autoMark = defaultCjkEmphasisMark(resolvedRegion);
+  const markStyleNames = { dot: labels.cjkEmphasisMarkDot, circle: labels.cjkEmphasisMarkCircle, sesame: labels.cjkEmphasisMarkSesame };
+  const markStyle = mark?.style ?? 'auto';
+  const markFill = mark?.fill ?? 'auto';
+  const markPosition = mark?.position ?? 'auto';
+  // Auto fill follows the shape: an outline for the circle.
+  const autoFill = (markStyle === 'auto' ? autoMark.style : markStyle) === 'circle' ? labels.cjkEmphasisMarkOpen : labels.cjkEmphasisMarkFilled;
+  const markSideNames = { over: labels.cjkEmphasisMarkOver, under: labels.cjkEmphasisMarkUnder, auto: labels.cjkEmphasisMarkByMode };
+  // The title brackets: the two regional sets by name, anything else as
+  // written in the configuration.
+  const pairsText = (pairs: readonly CjkBracketPair[]) => pairs.map((p) => `${p.open}${p.close}`).join(' ');
+  const japanPairs = defaultCjkBookTitleBrackets('japan');
+  const chinesePairs = defaultCjkBookTitleBrackets('mainland');
+  const rawPairs = raw?.bookTitleBrackets;
+  const pairsValue = rawPairs === undefined || rawPairs === 'auto'
+    ? 'auto'
+    : pairsText(rawPairs) === pairsText(japanPairs) ? 'japan' : pairsText(rawPairs) === pairsText(chinesePairs) ? 'chinese' : 'custom';
   const markColor = raw?.annotationColor ?? body.color;
   const ruby = raw?.ruby;
   const warichu = raw?.warichu;
@@ -331,6 +354,46 @@ export const CjkSection = memo(function CjkSection() {
               onReset={() => resetField('emphasis')}
             />
             <SelectInput
+              label={labels.cjkEmphasisMark}
+              value={markStyle}
+              options={[
+                { value: 'auto', label: auto(markStyleNames[autoMark.style]) },
+                { value: 'sesame', label: markStyleNames.sesame },
+                { value: 'dot', label: markStyleNames.dot },
+                { value: 'circle', label: markStyleNames.circle },
+              ]}
+              onChange={(v) => writeMark('style', v)}
+              tooltip={labels.cjkEmphasisMarkTooltip}
+              isDefault={markStyle === 'auto'}
+              onReset={() => writeMark('style', 'auto')}
+            />
+            <SelectInput
+              label={labels.cjkEmphasisMarkFill}
+              value={markFill}
+              options={[
+                { value: 'auto', label: auto(autoFill) },
+                { value: 'filled', label: labels.cjkEmphasisMarkFilled },
+                { value: 'open', label: labels.cjkEmphasisMarkOpen },
+              ]}
+              onChange={(v) => writeMark('fill', v)}
+              tooltip={labels.cjkEmphasisMarkFillTooltip}
+              isDefault={markFill === 'auto'}
+              onReset={() => writeMark('fill', 'auto')}
+            />
+            <SelectInput
+              label={labels.cjkEmphasisMarkPosition}
+              value={markPosition}
+              options={[
+                { value: 'auto', label: auto(markSideNames[autoMark.position]) },
+                { value: 'over', label: markSideNames.over },
+                { value: 'under', label: markSideNames.under },
+              ]}
+              onChange={(v) => writeMark('position', v)}
+              tooltip={labels.cjkEmphasisMarkPositionTooltip}
+              isDefault={markPosition === 'auto'}
+              onReset={() => writeMark('position', 'auto')}
+            />
+            <SelectInput
               label={labels.cjkBookTitleMark}
               value={bookTitleMark}
               options={[
@@ -343,6 +406,23 @@ export const CjkSection = memo(function CjkSection() {
               tooltip={labels.cjkBookTitleMarkTooltip}
               isDefault={bookTitleMark === DEFAULT_CJK_CONFIG.bookTitleMark}
               onReset={() => resetField('bookTitleMark')}
+            />
+            <SelectInput
+              label={labels.cjkBookTitleBracketPairs}
+              value={pairsValue}
+              options={[
+                { value: 'auto', label: auto(pairsText(defaultCjkBookTitleBrackets(resolvedRegion))) },
+                { value: 'japan', label: pairsText(japanPairs) },
+                { value: 'chinese', label: pairsText(chinesePairs) },
+                ...(pairsValue === 'custom' && Array.isArray(rawPairs) ? [{ value: 'custom', label: `${labels.cjkBookTitleBracketPairsCustom} ${pairsText(rawPairs)}` }] : []),
+              ]}
+              onChange={(v) => {
+                if (v === 'auto') resetField('bookTitleBrackets');
+                else if (v === 'japan' || v === 'chinese') write({ ...raw, bookTitleBrackets: v === 'japan' ? japanPairs : chinesePairs });
+              }}
+              tooltip={labels.cjkBookTitleBracketPairsTooltip}
+              isDefault={pairsValue === 'auto'}
+              onReset={() => resetField('bookTitleBrackets')}
             />
             <ColorPicker
               label={labels.cjkAnnotationColor}

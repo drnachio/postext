@@ -6,14 +6,15 @@ import type { CompletionContext, CompletionResult } from '@codemirror/autocomple
 import { findAnnotations, type AnnotationName } from 'postext';
 
 /**
- * Editor support for the Chinese annotations (#193–#195): `:dots[…]`,
- * `:name[…]`, `:book[…]`, `:ruby[…]{rt="…"}`, the compact ruby
- * `{紅樓|hóng|lóu}` and `:warichu[…]{…}`; and the directional isolates
- * `:rtl[…]` / `:ltr[…]` (#367). The highlighter marks each
- * directive's brackets and attributes and shows its text the way the mark
- * reads (dots under it, a straight or wavy line, a note in a smaller size);
- * the completion source offers the directives after `:do`, `:na`, `:bo`,
- * `:ru`, `:wa`, `:rt` or `:lt`.
+ * Editor support for the Chinese and Japanese annotations (#193–#195,
+ * #421): `:dots[…]`, `:name[…]`, `:book[…]`, `:sideline[…]{…}`,
+ * `:ruby[…]{rt="…"}`, the compact ruby `{紅樓|hóng|lóu}` and
+ * `:warichu[…]{…}`; and the directional isolates `:rtl[…]` / `:ltr[…]`
+ * (#367). The highlighter marks each directive's brackets and attributes
+ * and shows its text the way the mark reads (dots under it, a straight or
+ * wavy line, a note in a smaller size); the completion source offers the
+ * directives after `:do`, `:na`, `:bo`, `:si`, `:ru`, `:wa`, `:rt` or
+ * `:lt`.
  */
 
 const delimMark = Decoration.mark({ class: 'cm-annotation-delim' });
@@ -25,10 +26,11 @@ const TEXT_MARKS: Record<AnnotationName, Decoration> = {
   warichu: Decoration.mark({ class: 'cm-annotation-warichu' }),
   ltr: Decoration.mark({ class: 'cm-annotation-isolate' }),
   rtl: Decoration.mark({ class: 'cm-annotation-isolate' }),
+  sideline: Decoration.mark({ class: 'cm-annotation-sideline' }),
 };
 
 /** Openers the highlighter looks for before reading a line. */
-const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl)\[|\{[^{}\n|]*\|/;
+const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline)\[|\{[^{}\n|]*\|/;
 
 /** The decoration ranges of every annotation on a line, relative to it and
  *  sorted: the opener and closer (`delim`) and the text between. A nested
@@ -114,6 +116,12 @@ export const annotationTheme = Prec.highest(
       fontSize: '0.85em',
       color: 'var(--brand)',
     },
+    '.cm-annotation-sideline': {
+      textDecoration: 'underline',
+      textDecorationColor: 'var(--brand)',
+      textUnderlineOffset: '0.2em',
+      textDecorationSkipInk: 'none',
+    },
     '.cm-annotation-isolate': {
       textDecoration: 'underline dotted',
       textDecorationColor: 'var(--brand)',
@@ -127,6 +135,7 @@ const DIRECTIVES: ReadonlyArray<{ name: AnnotationName; prefix: RegExp; insert: 
   { name: 'dots', prefix: /:do(?:ts?)?$/, insert: ':dots[]', caret: 6 },
   { name: 'name', prefix: /:na(?:me?)?$/, insert: ':name[]', caret: 6 },
   { name: 'book', prefix: /:bo(?:ok?)?$/, insert: ':book[]', caret: 6 },
+  { name: 'sideline', prefix: /:si(?:d(?:e(?:l(?:i(?:ne?)?)?)?)?)?$/, insert: ':sideline[]', caret: 10 },
   { name: 'ruby', prefix: /:ru(?:by?)?$/, insert: ':ruby[]{rt=""}', caret: 6 },
   { name: 'warichu', prefix: /:wa(?:r(?:i(?:c(?:hu?)?)?)?)?$/, insert: ':warichu[]', caret: 9 },
   { name: 'rtl', prefix: /:rtl?$/, insert: ':rtl[]', caret: 5 },

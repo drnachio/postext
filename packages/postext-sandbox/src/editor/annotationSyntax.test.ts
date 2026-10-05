@@ -24,4 +24,13 @@ describe('annotation highlighting', () => {
     expect(kinds).toContainEqual(['warichu', '也']);
     expect(kinds.some(([, t]) => t.includes('x>0'))).toBe(false);
   });
+
+  it('marks a side line and its attributes', () => {
+    const line = '漱石の:sideline[こころ]{style="wavy" pos="over"}を';
+    expect(annotationRanges(line).map((r) => [r.kind, line.slice(r.from, r.to)])).toEqual([
+      ['delim', ':sideline['],
+      ['sideline', 'こころ'],
+      ['delim', ']{style="wavy" pos="over"}'],
+    ]);
+  });
 });
