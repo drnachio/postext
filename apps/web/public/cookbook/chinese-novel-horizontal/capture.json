@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-novel-horizontal",
-  "sourceHash": "c6e33d0d620c496fddfcbf24e47254a369ba501ca4893d45b4c390d00f6444a3",
+  "sourceHash": "91462de457a9cadb239a7deb44d3ff43b23df00176d045f8f6e8af4bcd9ab7b9",
   "engine": {
-    "postext": "1.9.2",
-    "postextPdf": "1.9.2",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:44:03.630Z",
+  "capturedAt": "2026-10-05T14:43:27.242Z",
   "variants": {
     "en": {
-      "hash8": "e473eba1",
+      "hash8": "a9ed5379",
       "vdtHash": "608e031e1bb1719ed4463a33ca71342e90ecc42e",
       "timings": {
-        "importMs": 5036,
-        "fontsMs": 4453,
-        "buildMs": 19,
-        "totalMs": 10577,
+        "importMs": 262,
+        "fontsMs": 290,
+        "buildMs": 14,
+        "totalMs": 1236,
         "builds": 2
       },
       "specimen": {
@@ -157,7 +157,7 @@
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391363,
+        "bytes": 391354,
         "folio": "77b45883"
       },
       "detected": {
@@ -354,11 +354,6 @@
             "detail": "the edition's images weigh 1.16 MB (warning at 0.9 MB for 7 pages)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 69: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -367,13 +362,13 @@
       }
     },
     "es": {
-      "hash8": "9a3f759d",
+      "hash8": "ae41316a",
       "vdtHash": "27f3916327caf4aff3f8eb8cd7ea1329b7162b13",
       "timings": {
-        "importMs": 5068,
-        "fontsMs": 1804,
+        "importMs": 191,
+        "fontsMs": 288,
         "buildMs": 14,
-        "totalMs": 7676,
+        "totalMs": 1132,
         "builds": 2
       },
       "specimen": {
@@ -513,7 +508,7 @@
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391428,
+        "bytes": 391420,
         "folio": "77b45883"
       },
       "detected": {
@@ -708,11 +703,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.16 MB (warning at 0.9 MB for 7 pages)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

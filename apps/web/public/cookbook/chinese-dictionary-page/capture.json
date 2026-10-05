@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-dictionary-page",
-  "sourceHash": "1ec87570de18f8f452ca0811e0a5212a0489057f41599711336b9548b02af451",
+  "sourceHash": "7b465b5275d2156fbd5be8bb093405d2e53cbcb69c2adcb35557991360cfe0fd",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:22.053Z",
+  "capturedAt": "2026-10-05T14:43:27.182Z",
   "variants": {
     "en": {
-      "hash8": "e25de80a",
+      "hash8": "94e0ea90",
       "vdtHash": "83c4dea9b86c080bc171ade893e793a82f7ea796",
       "timings": {
-        "importMs": 118,
-        "fontsMs": 4337,
+        "importMs": 297,
+        "fontsMs": 380,
         "buildMs": 13,
-        "totalMs": 5108,
+        "totalMs": 1441,
         "builds": 2
       },
       "specimen": {
@@ -117,7 +117,7 @@
       },
       "sandbox": {
         "file": "chinese-dictionary-page.postext",
-        "bytes": 26069,
+        "bytes": 26023,
         "folio": "662b056b"
       },
       "detected": {
@@ -300,13 +300,13 @@
       }
     },
     "es": {
-      "hash8": "846fa7e0",
+      "hash8": "53f1dcf3",
       "vdtHash": "97d639df1a3ade0191fd3263536c04070e71b84a",
       "timings": {
-        "importMs": 119,
-        "fontsMs": 271,
-        "buildMs": 11,
-        "totalMs": 1011,
+        "importMs": 247,
+        "fontsMs": 311,
+        "buildMs": 12,
+        "totalMs": 1220,
         "builds": 2
       },
       "specimen": {
@@ -406,7 +406,7 @@
       },
       "sandbox": {
         "file": "chinese-dictionary-page.postext",
-        "bytes": 26139,
+        "bytes": 26093,
         "folio": "662b056b"
       },
       "detected": {

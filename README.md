@@ -109,7 +109,7 @@ pretext gives you the measurements. postext gives you the layout.
 
 ## Features
 
-Everything below ships today in `postext` 1.15 and its companion packages (`postext-pdf`, `postext-epub`, `postext-folio`, `postext-citeproc`). A fuller list, with a link to the page that explains each part, is on the wiki's [Features](https://github.com/drnachio/postext/wiki/Features) page.
+Everything below ships today in `postext` 1.16 and its companion packages (`postext-pdf`, `postext-epub`, `postext-folio`, `postext-citeproc`). A fuller list, with a link to the page that explains each part, is on the wiki's [Features](https://github.com/drnachio/postext/wiki/Features) page.
 
 ### Column-based layouts
 
@@ -133,8 +133,10 @@ Everything below ships today in `postext` 1.15 and its companion packages (`post
 
 ### Resources as first-class citizens
 
-- Bitmaps, SVGs, and tables are declared once alongside the content and incorporated by inline `:ref{id="…"}` references — the first reference floats the resource into the first free top or bottom band after it, spanning the column, the page, or the side channel.
+- Bitmaps, SVGs, tables and videos are declared once alongside the content and incorporated by inline `:ref{id="…"}` references — the first reference floats the resource into the first free top or bottom band after it, spanning the column, the page, or the side channel.
 - Floats of one numbering sequence never overtake each other; figures can be fitted to the page, and an explicit `::resource{id="…"}` embeds a resource inline.
+- A picture may carry a safe area, the region that must stay in view: the engine crops it down to that area or lets it grow back to the whole picture, so a photo fills a short column or keeps an inline embed inside its column.
+- Videos (YouTube, Vimeo or your own MP4/WebM file) are placed, captioned and numbered like pictures (*Video 1.1*). Print shows the poster frame with a play mark and a QR code that opens the video, and the PDF links the poster; the HTML viewer and EPUB play the video with the book's player options (no download button, loop, muted…).
 - Typed first-reference numbering: `Figure` and `Table` built-ins (localized per document language) plus custom resource types, with configurable reference styles and caption prefixes.
 - Tables taller than the page split between rows across as many pages as needed, repeating their header rows and a *(cont.)* caption; rowspans and group-head rows are never cut.
 - Rotated tables (`placement.rotate`), cell fills, cell images (bitmap or SVG, aligned within the cell), in-cell lists, and inline colour swatches for legends.
@@ -160,7 +162,7 @@ Everything below ships today in `postext` 1.15 and its companion packages (`post
 - A document language (`locale`) drives hyphenation, built-in strings, numerals, text direction and the language tagged in the PDF.
 - Chinese (Simplified, Traditional, Hong Kong), horizontal or vertical: line breaking, punctuation widths and hanging punctuation, Han–Latin spacing, the character grid, emphasis dots, proper-name and book-title marks, ruby (pinyin, zhuyin) and warichu. See [Chinese layout](https://postext.dev/en/docs/chinese-layout).
 - Arabic (Modern Standard and Classical): the bidirectional algorithm, right-bound books with right-to-left spreads, words shaped whole through HarfBuzz in the PDF, kashida justification instead of letter-spacing, vowel marks, Arabic-Indic digits and number words, and classical verse. See [Arabic layout](https://postext.dev/en/docs/arabic-layout).
-- Japanese: the `ja` locale, the `japan` CJK region and Japanese numerals are in place; the rest of the programme is in progress (see the roadmap).
+- Japanese, vertical or horizontal, by JLReq and JIS X 4051: kinsoku, yakumono spacing and paragraph-start brackets, vertical forms and tate-chū-yoko, furigana (jukugo ruby, 1:2:1), sesame emphasis marks and side lines, kanbun kunten, Japanese counters (第一章), 行取り headings and 字下げ blocks, notes, a gojūon index with readings, SIST 02 citations and Aozora Bunko sources. See [Japanese layout](https://postext.dev/en/docs/japanese-layout).
 
 ### Books, parts and front matter
 
@@ -202,7 +204,7 @@ Everything below ships today in `postext` 1.15 and its companion packages (`post
 - A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / PDF / Folio (3D) / HTML previews with source ↔ preview sync, an EPUB 3 tab that writes, shows and downloads the book as an e-book, a Checks panel, permalinks to any page, and a phone layout.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
-- Showcase bundles — a magazine, literary editions (*Don Quijote*, an annotated *Paradise Lost*), an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual, the classic Chinese novel *Dream of the Red Chamber* (红楼梦) and *One Thousand and One Nights* in Arabic — plus a built-in guide to Postext, itself set as a book in English, Spanish, Catalan, Chinese (vertical) and Arabic (right to left).
+- Showcase bundles — a magazine, literary editions (*Don Quijote*, an annotated *Paradise Lost*), an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual, the classic Chinese novel *Dream of the Red Chamber* (红楼梦), Natsume Sōseki's *Kokoro* (こころ) set vertically and *One Thousand and One Nights* in Arabic — plus a built-in guide to Postext, itself set as a book in English, Spanish, Catalan, Chinese and Japanese (vertical) and Arabic (right to left).
 
 ### Cookbook
 
@@ -390,20 +392,6 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 
 Every milestone of the original roadmap is closed. Postext now typesets full books — textbooks, magazines, literary editions and catalogues — end to end, from enriched markdown to accessible, print-ready PDF, EPUB 3 and a 3D book. Work continues in programmes tracked as GitHub issues; the wiki's [Roadmap](https://github.com/drnachio/postext/wiki/Roadmap) page follows them.
 
-### In progress: Japanese typesetting (日本語組版)
-
-Tracking issue: [#440](https://github.com/drnachio/postext/issues/440).
-
-- [x] The `ja` document locale, the `japan` CJK region and Japanese built-in strings ([#416](https://github.com/drnachio/postext/issues/416))
-- [x] Japanese numeral and counter styles ([#420](https://github.com/drnachio/postext/issues/420))
-- [x] Japanese on the website: search, fonts, glossary ([#432](https://github.com/drnachio/postext/issues/432))
-- [ ] Line breaking (kinsoku shori, JLReq levels), yakumono spacing, vertical orientation of small kana and marks
-- [ ] Emphasis marks, side lines, furigana (jukugo ruby), warichu
-- [ ] Notes, headings in line units (行取り), indented and bottom-aligned blocks
-- [ ] A gojūon index with readings, Japanese citations (SIST 02)
-- [ ] PDF glyph forms, semantic ruby in HTML and reflowable EPUB, kanbun
-- [ ] Sandbox support, Cookbook recipes, a Japanese edition of the guide and the *Kokoro* showcase
-
 ### Phase 1: Foundation ✅
 
 - [x] Core layout data structures (columns, blocks, inline resources, break points)
@@ -454,11 +442,13 @@ Tracking issue: [#440](https://github.com/drnachio/postext/issues/440).
 - [x] Footnotes ([#162](https://github.com/drnachio/postext/issues/162)), CSL citations and bibliographies (`postext-citeproc`), a back-of-book index ([#165](https://github.com/drnachio/postext/issues/165))
 - [x] Chinese typesetting, horizontal and vertical ([#203](https://github.com/drnachio/postext/issues/203))
 - [x] Arabic typesetting, Modern Standard and Classical
+- [x] Japanese typesetting, vertical and horizontal ([#440](https://github.com/drnachio/postext/issues/440))
+- [x] Pictures with a safe area ([#442](https://github.com/drnachio/postext/issues/442)) and video resources: poster, play mark and QR code in print, players in HTML and EPUB ([#460](https://github.com/drnachio/postext/issues/460))
 - [x] The Cookbook, the showcase books and the built-in guide in five languages
 - [x] The `postext-port` agent skill
 - [x] The website in five languages, at WCAG 2.2 AAA
 
-Beyond the Japanese programme, what comes next is driven by the community: open an issue that describes the publication you are trying to set and where Postext falls short.
+What comes next is driven by the community: open an issue that describes the publication you are trying to set and where Postext falls short.
 
 ---
 

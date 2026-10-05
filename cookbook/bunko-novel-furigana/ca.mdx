@@ -1,0 +1,78 @@
+---
+title: "Una novel·la en format bunko, en vertical i amb furigana"
+summary: "Deu nits de somnis de Sōseki en un bunko A6: 38 caràcters per 15 línies llegides des de la dreta, lectures al costat dels kanji rars i títols de tres línies."
+plain: "El començament d'un clàssic japonès com a llibre de butxaca: el text va en columnes de dalt a baix, es llegeix de dreta a esquerra i porta kana petits al costat dels caràcters més difícils."
+description: "Yume Jūya de Sōseki com un bunko japonès amb Postext: línies verticals, llom a la dreta, furigana d'Aozora, títols de 3 línies i folis en kanji."
+question: "Com componc una novel·la japonesa en vertical, enquadernada per la dreta, com un bunko de butxaca?"
+aliases: ["bunko", "文庫", "文庫本", "tategaki", "縦組", "縦書き", "japonès vertical", "novel·la japonesa", "llibre de butxaca", "furigana", "ルビ", "振り仮名", "3行取り", "gyōdori", "hashira", "柱", "folis en kanji", "漢数字", "Aozora Bunko", "青空文庫", "夢十夜", "Deu nits de somnis", "Natsume Sōseki", "夏目漱石"]
+pageNotes: { "1": "La portada, sola a l'esquerra del llom: 夢十夜 en una Mincho gruixuda i gran, al centre d'un filet fi de color vermelló, 夏目漱石 més avall i a la seva esquerra, i un colofó de tres línies en castellà al peu.", "2": "La primera nit comença en una pàgina de la dreta: el títol 第一夜 és cinc caràcters més avall, en una franja de tres línies, i després こんな夢を見た。 i el text en columnes de 38 caràcters, amb lectures en kana petits al costat de paraules com 仰向 i 輪郭.", "3": "Una pàgina de l'esquerra: els diàlegs comencen amb 「 dins del sagnat d'un caràcter, el hashira 夢十夜 baixa pel marge exterior i el foli 三 queda al seu peu.", "6": "El títol de la segona nit, 第二夜, ocupa tres línies a mitja pàgina, i el text que el segueix continua en la mateixa retícula." }
+---
+
+## Què compondràs
+
+Nou pàgines d'un llibre de butxaca japonès (文庫, bunko) amb les dues primeres nits de *Deu nits de somnis* de Natsume Sōseki, en una pàgina A6 de 105 × 148 mm enquadernada per la dreta. La portada queda sola a l'esquerra del llom; des de la pàgina 2 el text baixa de dalt a baix en línies que es llegeixen des de la dreta, 38 caràcters per línia i 15 línies per pàgina, en Shippori Mincho B1 de 9 pt amb un pas d'1,75 em. Les lectures que Aozora Bunko dona per als kanji difícils van al seu costat en kana de mig cos, el títol de cada nit ocupa tres línies de la retícula i les pàgines de l'esquerra porten el títol del llibre pel tall, sobre un foli en numerals kanji. El llibre de butxaca europeu amb la mateixa estructura és la <RecipeLink slug="catalan-pocket-novella">Núm. 104</RecipeLink>, i la novel·la xinesa en vertical, la <RecipeLink slug="vertical-novel-right-bound">Núm. 075</RecipeLink>.
+
+## Elaboració
+
+### 1 · Gira la pàgina, compta-la en caràcters i etiqueta-la `ja`
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `layout.writingMode: 'vertical-rl'` compon cada pàgina com una pàgina horitzontal girada un quart de volta en el sentit de les agulles del rellotge, i `page.binding`, que es queda en `'auto'`, enquaderna per la dreta un llibre vertical: la pàgina 1 continua sent la senar, però cau a l'esquerra del llom, i `mirror: true` posa el seu marge interior a la dreta ([Escriptura vertical](/ca/docs/configuration#escriptura-vertical), [Enquadernació](/ca/docs/configuration#enquadernació)). La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) fa que la caixa de text mesuri 38 caràcters de 9 pt cap avall (120,7 mm) i 15 línies de 15,75 pt d'amplada (83,3 mm). Els marges de `page` són mínims i la retícula engrandeix cada parell en la mateixa mesura, de manera que el cap continua 4 mm més fondo que el peu. Si demanes més línies de les que caben entre els marges, la retícula en treu una sense avisar a la pàgina (`cjkGridClamped` a `doc.configWarnings`): el llom de 9 mm i el tall de 12 mm són els que deixen lloc a les 15.
+
+`locale: 'ja'` deixa la resta tal com la componen els llibres japonesos, així que les quatre línies de `cjk` escrites aquí no canvien res: mostren el que tria l'etiqueta. `ja-very-strict` és la regla d'inici de línia de JIS X 4051 (行頭禁則): cap línia no comença amb 、。」, ー ni amb un kana petit com っ. `hangingPunctuation: 'allow'` deixa que un 、 o un 。 que obriria la línia següent pengi sota l'últim caràcter (ぶら下げ), que és el que fan els bunko en lloc d'estrènyer la línia. `paragraphStartBracket: 'half'` és el patró ③ de JLReq: un paràgraf que comença amb 「 posa el claudàtor a la segona meitat del seu sagnat d'un caràcter, i el primer caràcter del diàleg queda on comença qualsevol altre paràgraf ([Tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)). Els llibres xinesos ho fan diferent en tots dos casos: per defecte no pengen cap signe i sagnen el paràgraf dos caràcters, tant si comença amb claudàtor com si no.
+
+### 2 · Dona a cada títol tres línies de la retícula
+
+<Excerpt region="nights" />
+
+Un títol japonès ocupa un nombre enter de línies del text, 行取り (gyōdori), perquè les línies que el segueixen quedin en la mateixa retícula que les anteriors. `lineSpan: 3` compon 第一夜 en una franja de tres línies de 15,75 pt amb els caràcters centrats; el cos de 12,5 pt del títol no mou la retícula, i a la pàgina 6 第二夜 cau a mitja pàgina amb el text que el segueix a les mateixes línies que l'anterior. `indent: em(5)` compta caràcters del text (五字下げ), que és com el text d'Aozora marca un 中見出し i com JLReq compta els sagnats dels títols ([Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)).
+
+### 3 · Porta el text i les lectures d'Aozora Bunko
+
+Les dues nits surten de la fitxa 799 d'Aozora Bunko, convertida amb `aozora.py`, de l'skill postext-port. El convertidor llegeix el fitxer com a CP932, converteix cada lectura escrita `仰向《あおむき》` en una lectura de grup `{仰向|あおむき}`, una sola tira de kana sobre tota la paraula, i cada `［＃５字下げ］…［＃「第一夜」は中見出し］` en un títol. En un document `ja` les lectures segueixen JIS X 4051: una lectura més curta que la seva base es reparteix al llarg d'ella en proporció 1:2:1, i una de més llarga pot envair un kana veí, però mai un kanji ([Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu)). L'interlineat d'1,75 em deixa 6,75 pt entre línies, prou per a lectures de 4,5 pt.
+
+### 4 · Posa el hashira al tall i els folis en kanji
+
+<Excerpt region="hashira" />
+
+En un bunko vertical la capçalera (柱, hashira) és petita i va al marge exterior. `anchor.to: 'outer'` hi col·loca un element, al marge esquerre d'una pàgina senar i al dret d'una de parella en un llibre enquadernat per la dreta, i `writingMode: 'vertical-rl'` el compon de dalt a baix ([Elements de text verticals](/ca/docs/configuration#elements-de-text-verticals)). El títol 夢十夜 va només a les pàgines de l'esquerra (`parity: 'odd'`), i `pages: 'body'` l'apartaria de qualsevol pàgina que obrís un capítol. `pageNumbering.format: 'japanese-informal'` imprimeix els folis 二, 三 … 九 ([Numeració](/ca/docs/configuration#numeració)).
+
+### 5 · Centra la portada en el format
+
+<Excerpt region="title-page" />
+
+La portada és un títol de primer nivell amb estil propi, `# 夢十夜 {style="title" …}`, el disseny del qual ocupa la pàgina. Els seus elements s'ancoren a la pàgina i no a la caixa de text, perquè la caixa d'una pàgina amb marges simètrics queda descentrada 1,5 mm: `x` baixa per la pàgina i `y` la travessa des de la vora dreta, així que `AXIS` és la meitat de l'amplada de la pàgina, sigui quin sigui el costat del llom. El colofó del peu va en Noto Sans JP: Shippori Mincho B1 no té ō ni ū, i el PDF dibuixaria caixes buides a «Sōseki».
+
+### 6 · Carrega cada pes amb els caràcters que compon
+
+<Excerpt region="voices" />
+
+Fontsource serveix cada pes d'una font japonesa en uns 120 fitxers, cadascun amb un tram de caràcters, i `loadCjkFonts` baixa els que toca el text que rep. El pes del text rep tota la mostra amb `vertical: true`, que a més carrega les formes verticals de la font per al llenç: 、。「」 i ー, i els kana petits, que en vertical van a la cantonada superior dreta de la seva casella. `renderToPdf` rep `cjkPdfProvider`, que incrusta aquests mateixos fitxers com a subconjunts.
+
+## Variants
+
+### Marca les paraules que l'original destaca
+
+Les dues primeres nits de Sōseki no tenen 傍点, però molts textos d'Aozora sí, i el convertidor els escriu `:dots[…]{style=sesame}`. En un document `ja`, `*…*` dona les mateixes marques de sèsam al costat de la línia, mai cursiva.
+
+```diff
+-こんな夢を見た。
++こんな*夢*を見た。
+```
+
+### Posa tots els claudàtors un caràcter més avall
+
+El patró ① conserva el sagnat d'un caràcter i posa el claudàtor al darrere, com fan moltes novel·les per a lectors joves.
+
+```diff
+-  paragraphStartBracket: 'half', // ③: a 「 that opens a paragraph fills the indent cell
++  paragraphStartBracket: 'indent', // ①: the bracket after the one-character indent
+```
+
+### Estreny en lloc de penjar
+
+Amb `hangingPunctuation: 'none'`, un 、 o un 。 que obriria la línia entra a l'anterior estrenyent-ne els claudàtors i les comes (追い込み), o l'últim caràcter d'aquella línia baixa amb ell (追い出し), i cap signe no queda sota la línia.
+
+```diff
+-  hangingPunctuation: 'allow', // ぶら下げ: a 、。 that would open a line hangs below the last
++  hangingPunctuation: 'none',
+```

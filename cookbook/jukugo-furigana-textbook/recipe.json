@@ -1,0 +1,78 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 124,
+  "status": "published",
+  "chapter": "type",
+  "order": 240,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["furigana", "ruby"],
+    "also": [
+      "kana-scripts",
+      "kenten",
+      "cjk-fonts",
+      "character-grid",
+      "yakumono",
+      "japanese-kinsoku",
+      "gyodori-headings",
+      "opener-design",
+      "heading-attributes",
+      "callout-styles",
+      "running-heads",
+      "mirrored-margins",
+      "page-background",
+      "paragraph-styles",
+      "color-palette",
+      "aozora-import",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q135"],
+  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "ruby-not-in-designs", "aozora-cp932", "headings-drop-h1-break", "fonts-first"],
+  "explainsWarnings": ["rubyExceedsLeading"],
+  "related": ["pinyin-primer", "zhuyin-vertical-reader", "reading-primer-syllables"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "timeoutMs": 120000 },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 90},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#b2402c"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "“Gon gitsune” (ごん狐), section 1, by Niimi Nankichi (1932): Aozora Bunko card 628, base text 新美南吉童話集 (Iwanami Bunko, 1996, second printing 1997), input by 林裕司, proofing by 浜野智",
+          "es": "«Gon gitsune» (ごん狐), sección 1, de Niimi Nankichi (1932): ficha 628 de Aozora Bunko, texto base 新美南吉童話集 (Iwanami Bunko, 1996, segunda tirada 1997), transcripción de 林裕司, corrección de 浜野智"
+        },
+        "who": "Niimi Nankichi (1913–1943)",
+        "source": "https://www.aozora.gr.jp/cards/000121/card628.html",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The readings over every kanji, the box on furigana and the opener’s labels",
+          "es": "Las lecturas sobre cada kanji, el recuadro sobre el furigana y los rótulos de la apertura"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Klee One", "license": "OFL-1.1" },
+      { "family": "Zen Maru Gothic", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

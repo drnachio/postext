@@ -1,0 +1,68 @@
+---
+title: "Una proclama Meiji en kanji y katakana"
+summary: "La Constitución de 1889 en vertical, en kanji y katakana: artículos 第一條 con un contador japanese-informal, un marco de filetes y los refrendos al pie."
+plain: "La constitución japonesa de 1889, escrita en kanji y katakana, en líneas de arriba abajo como la imprimió el boletín oficial, con los artículos numerados en kanji."
+description: "Un documento Meiji en Postext: texto en kanji y katakana en vertical sobre una retícula de 40 caracteres, artículos 第一條 de un contador, marco doble y sello."
+question: "¿Cómo compongo un texto Meiji en kanji y katakana y numero sus artículos 第一條, 第二條?"
+aliases: ["katakana", "kanji katakana majiri", "漢字カタカナ交じり文", "Constitución Meiji", "大日本帝國憲法", "官報", "artículos numerados en kanji", "第一條", "texto legal vertical", "formas antiguas de kanji"]
+pageNotes: { "1": "La portada: 大日本帝國憲法 en Mincho grueso por el centro de un filete grueso y otro fino, la fecha en bermellón a su derecha, 官報號外 a su izquierda y la línea en español girada al pie.", "2": "Las notas del editor, cuatro puntos abiertos cada uno con el carácter 一; después el título 上諭 y las primeras líneas del edicto, todo en kanji y katakana.", "4": "御名　御璽 en bermellón, la fecha y los diez refrendos, al pie de sus líneas.", "5": "El capítulo primero: 第一章　天皇 dos caracteres más abajo, los artículos 第一條 a 第八條 en negrita y la segunda cláusula del artículo 8 un carácter más abajo." }
+---
+
+## Lo que vas a componer
+
+Una reimpresión de ocho páginas de la Constitución Meiji tal como la publicó el Boletín Oficial (官報) el 11 de febrero de 1889: el edicto imperial, los refrendos de los ministros y los dos primeros capítulos, treinta y dos artículos. El texto está en 漢字カタカナ交じり文 (kanji-katakana majiri-bun), la lengua escrita del derecho Meiji: los kanji llevan las palabras y los katakana las terminaciones, sin marcas de sonorización, sin kana pequeños y sin puntuación. Las páginas son A5, en vertical y encuadernadas por la derecha, con una retícula de 40 × 15 caracteres dentro de un filete grueso y otro fino. Los artículos se numeran con un contador de lista en kanji, de 第一條 a 第三十二條, y el sello y los refrendos quedan donde los puso el Boletín.
+
+## Elaboración
+
+### 1 · Deja que un contador de lista escriba 第十八條
+
+El código está en [la respuesta corta](#la-respuesta-corta). Cada artículo es un elemento de una lista ordenada de Markdown, y `orderedLists` da a su número la forma del Boletín: `numberFormat: 'japanese-informal'` escribe 十八, no 一十八; `prefix: '第'` y `separator: '條'` lo rodean, y `gap: em(1)` deja el espacio de ancho completo del original. Con `hangingIndent: false` las líneas siguientes vuelven a la cabeza de la línea en vez de colgar bajo el texto, como en el Boletín. El capítulo segundo empieza su lista en `18.`, así que el contador sigue de un capítulo a otro, y los propios capítulos se numeran 第一章 y 第二章 con la plantilla de título `第{2:一}章`, en el mismo estilo ([listas ordenadas](/es/docs/configuration#listas-ordenadas)).
+
+<PageShot page={5} crop="0.1,0.12,0.8,0.76" caption="Página 5: 第一章　天皇 dos caracteres más abajo, los artículos 第一條 a 第八條 en negrita y la segunda cláusula del artículo 8 un carácter más abajo." />
+
+### 2 · Deja los katakana como los escribió el Boletín
+
+`locale: 'ja'` aplica las reglas japonesas, y ninguna reescribe el texto. 侵スヘカラス se queda sin sus marcas de sonorización (se lee *okasu bekarazu*), 行フ conserva su kana histórico y 奪ハルヽ su marca de repetición en katakana. Sin kana pequeños ni puntuación, la línea puede cortarse entre dos caracteres cualesquiera; el kinsoku sigue impidiendo que ヽ y 々 abran una línea. Las notas del editor, en japonés moderno con hiragana, quedan junto al edicto en la página 2, y así se comparan en una misma página las dos maneras de escribir el japonés.
+
+### 3 · Dibuja el marco en todas las páginas
+
+<Excerpt region="frame" />
+
+La ranura de la cabecera dibuja en milímetros de la hoja, no en el flujo vertical, así que el marco son dos cajas colocadas con los mismos números que colocan la caja de texto: `HEAD` desde arriba y `SIDE` desde cada borde. Los márgenes se calculan a partir de la retícula en vez de dejárselos a ella, y la caja de texto queda justo 6 mm dentro del filete fino. El folio, en kanji gracias a `pageNumbering.format: 'japanese-informal'`, va bajo el marco.
+
+### 4 · Compón la portada sobre el eje
+
+<Excerpt region="cover" />
+
+En un flujo vertical `x` baja por la hoja e `y` avanza hacia la izquierda, así que la columna del título se coloca por su distancia al borde derecho de la caja de texto. La fecha, en el color de acento, y el nombre del Boletín flanquean el título a 18 mm del eje.
+
+### 5 · Carga cada fuente con el texto que compone
+
+<Excerpt region="voices" />
+
+Shippori Mincho B1, un Mincho con las formas antiguas 國, 條 y 權, carga los archivos del texto y de los títulos; Noto Sans JP carga solo las notas del editor, los folios y la línea en español. Una fuente que recibe menos texto del que compone hace fallar la captura (C12).
+
+## Variantes
+
+### Cuelga las líneas siguientes bajo el texto
+
+Los códigos de hoy alinean la segunda línea de un artículo con su primer carácter de texto, no con 第.
+
+```diff
+-  indent: em(0), hangingIndent: false, fontFamily: MINCHO, fontWeight: 800,
++  indent: em(0), hangingIndent: true, fontFamily: MINCHO, fontWeight: 800,
+```
+
+### Numera los artículos en daiji
+
+Algunos textos legales y contables escriben 壱, 弐, 参: el token 壱 o el estilo `japanese-formal` dan 第壱條, 第弐條.
+
+```diff
+-  numberFormat: 'japanese-informal', prefix: '第', separator: '條', gap: em(1),
++  numberFormat: 'japanese-formal', prefix: '第', separator: '條', gap: em(1),
+```
+
+## Errores frecuentes
+
+- El Boletín compone los katakana de las terminaciones más pequeños que los kanji y reparte los cargos de los ministros a un mismo ancho (字取り). Postext compone todos los caracteres al cuerpo del texto, y su espaciado uniforme, `jidori`, solo vale para títulos, así que aquí los refrendos solo se alinean al pie de la línea.
+- El japonés y el chino no entienden igual este contador: en un documento `ja` el token `一` y `{2:一}` significan `japanese-informal` (百一, 十八); en uno chino, el estilo chino (一百零一, 十八). El libro chino <RecipeLink slug="chinese-dates-upright">Fechas y siglas en pie en texto vertical</RecipeLink> escribe sus 第一條 a mano.

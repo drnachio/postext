@@ -1,0 +1,54 @@
+---
+title: "Japanese in Latin letters: Takuboku's Rōmaji Diary"
+summary: "A rōmaji text tagged ja-Latn: Japanese rules for its kana, no hyphenation for its Latin, and the macrons of a Latin face carried into the PDF."
+plain: "The first entry of a 1909 diary that the poet Takuboku wrote in Japanese with Latin letters, with a reading in Japanese script under each paragraph."
+description: "Takuboku's Rōmaji Diary in Postext: Japanese in Latin letters tagged ja-Latn, no hyphenation, a kana reading under each paragraph, ō ū embedded in the PDF."
+question: "How do I set Japanese written in rōmaji: which language tag, what hyphenation, and macrons in the PDF?"
+aliases: ["rōmaji", "romaji", "ローマ字", "ja-Latn", "Japanese in Latin letters", "Takuboku", "石川啄木", "ローマ字日記", "Nippon-shiki", "Hepburn", "macrons", "ō ū", "latin-ext", "no hyphenation"]
+pageNotes: { "1": "The title page: the diary's own heading lines, NIKKI. I. MEIDI 42 NEN. 1909. APRIL. TOKYO., in tracked capitals on an indigo field, a short rule and a line about the edition.", "2": "The entry of 7 April: 7TH, WEDNESDAY. and the address in small capitals, then the rōmaji paragraphs, each followed by its reading in kana and kanji, smaller and indented.", "4": "The end of the entry, Kanasii koto da ! and 悲しいことだ！, and the note on the text in a small sans." }
+---
+
+## What you'll build
+
+Four pages of the *Rōmaji nikki*, the diary Ishikawa Takuboku kept in Tokyo in the spring of 1909 in Latin letters, so that his wife could not read it: the title lines of his notebook and the first entry, 7 April, to *Kanasii koto da!* The diary is set as a study edition on an A5 page: the rōmaji in Source Serif 4, justified and never hyphenated, and under each paragraph its reading in kana and kanji in Noto Serif JP, smaller, lighter and indented. Takuboku spells in the Nippon-shiki system, *si*, *tu*, *hu*, with circumflexes on long vowels, *Tôkyô*; the editor's lines use Hepburn with macrons, *Rōmaji*, and both reach the PDF.
+
+## Method
+
+### 1 · Tag the text ja-Latn
+
+The code is [the short answer](#the-short-answer) above. `ja-Latn` is BCP 47 for Japanese written in Latin script. Its language is `ja`, so the reading under each paragraph gets the Japanese rules: kinsoku, 、。 spacing, and the em space the engine adds after ！ inside a sentence, as in 「ええ！　ええ！」. Japanese has no hyphenation patterns, so the rōmaji is never divided; with `en`, English patterns would divide words such as *tatinobotta* or *Surigarasu* by English syllables, not by the morae a Japanese reader hears. Without hyphens the spaces take the slack, so the measure is about 70 characters and `maxWordSpacing` is 1.8 ([hyphenation](/en/docs/configuration#hyphenation)).
+
+<PageShot page={2} crop="0,0.1,1,0.45" caption="Page 2: the day, the address, the first two paragraphs of rōmaji and their readings in kana, set smaller and indented." />
+
+### 2 · Put the macrons in the PDF
+
+<Excerpt region="macrons" />
+
+Fontsource keeps ō ū ā in a `latin-ext` file of their own. The screen loads it (`loadFonts` sees the ō in the sample), and the kit's `cjkPdfProvider` does the same for the PDF. It serves Noto Serif JP from its Japanese slices, and when a Latin face sets a letter that only `latin-ext` holds, it answers with two files, `latin` and then `latin-ext`; postext-pdf takes each glyph from the first file that has it. The kit's plain `fontsourceProvider` hands the PDF the `latin` file only: with it, the PDF would have no glyph for ō.
+
+### 3 · Open on the diary's own lines
+
+<Excerpt region="title" />
+
+The notebook starts NIKKI. I. MEIDI 42 NEN. 1909. APRIL. TOKYO., one item to a line. The title heading takes them from an attribute, each `\n` a new line, and sets them in tracked capitals on an indigo field, the cloth of a notebook cover. Its page is an opener, so the running heads skip it.
+
+### 4 · Run heads by parity
+
+<Excerpt region="heads" />
+
+The verso carries the diary's name and the recto the place and month, with the folios on the outer corners, in Source Sans 3 at 7.5 pt.
+
+## Variations
+
+### Write the rōmaji in Hepburn
+
+A modern edition may respell the diary in Hepburn with macrons, *Tōkyō* for *Tôkyô*. The PDF already carries ō, so only the text changes; keep a note that says the spelling is the editor's.
+
+### Hyphenate between morae
+
+If a narrow column needs hyphens, give the rōmaji soft hyphens (U+00AD) between morae, `Su\u00adna-ho\u00adko\u00adri` in code or a typed U+00AD in the text: a document tagged `ja-Latn` never hyphenates by itself, but it breaks at a soft hyphen when a word does not fit.
+
+## Pitfalls
+
+- Shippori Mincho has no ō or ū; Noto Serif JP and Source Serif 4 have them in their `latin-ext` files. Check the face before you choose it for Hepburn text.
+- Chinese written in Latin letters is pinyin, set as ruby over the characters in <RecipeLink slug="pinyin-primer">A first reader with pinyin over every character</RecipeLink>; Takuboku's rōmaji is the text itself, so it is set as Latin text with its own spacing, not as annotation.

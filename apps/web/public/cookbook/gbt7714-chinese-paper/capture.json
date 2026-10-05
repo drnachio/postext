@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "gbt7714-chinese-paper",
-  "sourceHash": "81c87f2eac1073786df9a62cae1d1435711388e27e81c07f9e5a8bcf2ab203f7",
+  "sourceHash": "f916ca8f9906215a192de573fa5283070e542d63206a83608434ed5656283cc9",
   "engine": {
     "postext": "1.12.0",
     "postextPdf": "1.12.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:27:54.910Z",
+  "capturedAt": "2026-10-05T14:43:36.745Z",
   "variants": {
     "en": {
-      "hash8": "011f2a62",
+      "hash8": "84a88642",
       "vdtHash": "65f55cd9ecd163e15350308fca1524b8739e33d8",
       "timings": {
-        "importMs": 6141,
-        "fontsMs": 6772,
-        "buildMs": 25,
-        "totalMs": 13725,
+        "importMs": 820,
+        "fontsMs": 5789,
+        "buildMs": 14,
+        "totalMs": 7274,
         "builds": 2
       },
       "specimen": {
@@ -333,13 +333,13 @@
       }
     },
     "es": {
-      "hash8": "e8a7c6ce",
+      "hash8": "e1a266b8",
       "vdtHash": "eab749c90fd7f76e4f4bef2f54272e1daa5c95a0",
       "timings": {
-        "importMs": 6426,
-        "fontsMs": 4502,
-        "buildMs": 17,
-        "totalMs": 11754,
+        "importMs": 776,
+        "fontsMs": 1984,
+        "buildMs": 24,
+        "totalMs": 5774,
         "builds": 2
       },
       "specimen": {

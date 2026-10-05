@@ -1,0 +1,610 @@
+{
+  "schemaVersion": 1,
+  "slug": "jukugo-furigana-textbook",
+  "sourceHash": "5e35eb311f0e80e767730a05c5e5b3280afe71b218bfb35b02c38de1a7699d07",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.953Z",
+  "variants": {
+    "en": {
+      "hash8": "f095dac6",
+      "vdtHash": "46b3aa633741641ce902faf136384cec338f1712",
+      "timings": {
+        "importMs": 165,
+        "fontsMs": 217,
+        "buildMs": 61,
+        "totalMs": 1024,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          182,
+          257
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 14,
+          "leadingPt": 28
+        },
+        "families": [
+          "Klee One",
+          "Zen Maru Gothic"
+        ],
+        "pages": 3,
+        "ownLines": 136
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "24",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 58634,
+          "alt": "Opening page 24: ごんぎつね."
+        },
+        {
+          "n": 2,
+          "label": "25",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 83962,
+          "alt": "Page 25."
+        },
+        {
+          "n": 3,
+          "label": "26",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 63148,
+          "alt": "Page 26."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "jukugo-furigana-textbook.pdf",
+        "bytes": 129656,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "jukugo-furigana-textbook.postext",
+        "bytes": 22210,
+        "folio": "2b1033e5"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidRunts",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.align",
+          "cjk.ruby.color",
+          "cjk.ruby.fontSize",
+          "cjk.ruby.overhang",
+          "cjk.ruby.smallKana",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 218,
+        "designElements": 10,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "emphasis-marks",
+          "furigana",
+          "gyodori-headings",
+          "heading-attributes",
+          "off-grid-spacing",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "ruby"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.05
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 23: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "8cc8cfc6",
+      "vdtHash": "269d61745a8190a6b011f56a5856133565442470",
+      "timings": {
+        "importMs": 173,
+        "fontsMs": 204,
+        "buildMs": 54,
+        "totalMs": 1007,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          182,
+          257
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 14,
+          "leadingPt": 28
+        },
+        "families": [
+          "Klee One",
+          "Zen Maru Gothic"
+        ],
+        "pages": 3,
+        "ownLines": 136
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "24",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 58634,
+          "alt": "Página de apertura 24: ごんぎつね."
+        },
+        {
+          "n": 2,
+          "label": "25",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 83962,
+          "alt": "Página 25."
+        },
+        {
+          "n": 3,
+          "label": "26",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 64538,
+          "alt": "Página 26."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "jukugo-furigana-textbook.pdf",
+        "bytes": 129828,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "jukugo-furigana-textbook.postext",
+        "bytes": 22238,
+        "folio": "2b1033e5"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidRunts",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.align",
+          "cjk.ruby.color",
+          "cjk.ruby.fontSize",
+          "cjk.ruby.overhang",
+          "cjk.ruby.smallKana",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 218,
+        "designElements": 10,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "emphasis-marks",
+          "furigana",
+          "gyodori-headings",
+          "heading-attributes",
+          "off-grid-spacing",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "ruby"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.05
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 23: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}

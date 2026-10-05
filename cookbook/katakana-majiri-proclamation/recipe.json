@@ -1,0 +1,69 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 128,
+  "status": "published",
+  "chapter": "type",
+  "order": 330,
+  "level": 2,
+  "genres": ["report", "ephemera"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["kana-scripts", "japanese-numerals", "vertical-writing"],
+    "also": [
+      "right-binding", "character-grid", "cjk-fonts", "japanese-kinsoku", "gyodori-headings",
+      "numbered-lists", "bullet-lists", "opener-design", "heading-styles", "heading-attributes",
+      "paragraph-styles", "design-elements", "running-heads", "page-background", "color-palette",
+      "pdf-export", "pdf-fonts"
+    ]
+  },
+  "answers": ["Q149", "Q139", "Q145"],
+  "gaps": [],
+  "gotchas": [
+    "ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break",
+    "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["chinese-dates-upright", "chinese-official-document", "vertical-novel-right-bound"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [5, 8] } },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 70, "texture": "felt", "textureStrength": 0.5, "shade": "#fdfcf8"},
+    "binding": {"type": "saddleStitch", "cover": "case", "coverMaterial": "paper", "coverColor": "#e9e1cf"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The Constitution of the Empire of Japan, 11 February 1889: the imperial preamble (上諭) with its countersignatures, chapters 1 and 2, as printed in the Kanpō (Official Gazette) extra of that day",
+          "es": "La Constitución del Imperio del Japón, 11 de febrero de 1889: el preámbulo imperial (上諭) con sus refrendos y los capítulos 1 y 2, como los imprimió el número extraordinario del Kanpō (Boletín Oficial) de ese día"
+        },
+        "who": "Government of Japan; transcription by Japanese Wikisource editors",
+        "source": "https://ja.wikisource.org/w/index.php?title=%E5%A4%A7%E6%97%A5%E6%9C%AC%E5%B8%9D%E5%9C%8B%E6%86%B2%E6%B3%95&oldid=244180",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "The editor's notes (凡例), written in Japanese for this recipe",
+          "es": "Las notas del editor (凡例), escritas en japonés para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Shippori Mincho B1", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

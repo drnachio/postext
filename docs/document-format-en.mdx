@@ -1283,6 +1283,8 @@ The engine uses that room in three places:
 
 The VDT records the crop on the resource block: `bodySource` is the part of the picture shown in `bodyRect`, in the same fractions (absent when the whole picture fills it), and `bodyFlex` gives the px the body could still shrink and grow and the px the levers already changed it by (`{ shrink, grow, delta }`). The canvas preview and the PDF clip to the body and draw the whole picture at its uncropped size; the HTML viewer and fixed-layout EPUB set the image with `object-fit: cover` and a matching `object-position`; a reflowable EPUB, which has no page to fill, shows the whole picture. A host that draws pictures itself can use the helpers `postext` exports: `resourceSafeArea` and `normalizeSafeArea` (the area as the engine reads it, or `undefined`), `safeAreaHeightRange` (the shortest and tallest body at a width), `safeAreaSource` (the part shown at a given height) and `uncroppedPictureBox` (where to draw the whole picture before clipping), with the type `ResourceSafeArea`. In the Sandbox the field is **Safe area** on a picture in the [Resources panel](/en/docs/sandbox#resources-panel).
 
+Recipe Nº 116 in the Cookbook, [Photos that grow to fill a short column](/en/cookbook/photos-fill-short-columns), sets a two-column magazine feature twice, without and with safe areas, so you can compare the pages one beside the other.
+
 
 ### Videos
 
@@ -1389,6 +1391,8 @@ The text cites a video as it cites a figure: `:ref{id="keeper-talk"}` prints *Vi
 **In the VDT.** The resource block of a video has `kind: 'video'`, its poster as `fileId` / `format` (drawn like a bitmap), and `video` (`VDTResourceVideo`): the `link` a reader is sent to, the YouTube or Vimeo `embedUrl` with the player options applied, a file's `fileId` and `mimeType`, the `start` / `end` range, the resolved `player`, `linkPoster`, `html`, and the overlays `playMark` and `qr` (the QR modules as rows of `'0'` / `'1'`), with rects relative to the body's top-left corner. A host drawing videos itself can use the helpers `postext` exports: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` and `qrModuleRuns`.
 
 **In a bundle.** A `.postext` carries a file (`resources/<id>.mp4`) and the poster (`resources/<id>.poster.jpg`): the manifest entry names them in `file` and `poster`, gives the poster's size in `width` / `height`, and keeps the rest in `video` without file ids. `bundleVideoUrl(bundle)` is the `resourceVideoUrl` resolver over a bundle's files.
+
+Two Cookbook recipes set videos: Nº 131, [A film club programme with QR codes on the posters](/en/cookbook/film-club-video-qr), prints each film as a title card with a play mark and a QR code, and Nº 132, [A lab sheet whose clips play on screen and in the EPUB](/en/cookbook/pendulum-lab-video-players), sets the player options for the HTML edition and packs its own clips in a fixed-layout EPUB.
 
 ## What is NOT supported
 

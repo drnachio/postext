@@ -217,6 +217,22 @@ function slicedFamilies() {
   return out;
 }
 
+/** Families with loaded faces that declare a unicode-range of their own
+ *  (Fontsource's latin and latin-ext files, as loadFonts adds them), with
+ *  the code points those files cover. A face with no range (one built from
+ *  a recipe's assets) is left out: the PDF provider decides what it holds. */
+function rangedFamilies() {
+  const out = new Map();
+  for (const face of document.fonts) {
+    if (face.status !== 'loaded') continue;
+    const ranges = rangesOf(face.unicodeRange);
+    if (ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) continue;
+    const family = face.family.replace(/^["']|["']$/g, '');
+    out.set(family, [...(out.get(family) ?? []), ...ranges]);
+  }
+  return out;
+}
+
 /** A loaded FontFace covers exactly this family, weight and style. */
 function hasFace(faces, family, weight, style) {
   return faces.some((face) => {
@@ -569,9 +585,14 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // C12, C16, C25: the faces and text the renderer paints.
   const loaded = loadedFaces();
   const sliced = slicedFamilies();
+  const ranged = rangedFamilies();
   const used = new Map();
   const garbage = [];
   const outside = new Map();
+  // Characters outside latin that a loaded file of their own face holds
+  // (ō from the latin-ext file loadFonts adds): set on screen from it, and
+  // in the PDF when the provider adds that file too (cjkPdfProvider does).
+  const ownFile = new Map();
   // C12: a character set in a CJK or Arabic face from a file that was not
   // loaded when the layout ran was measured in a fallback face (loadCjkFonts
   // was not given it, or loadArabicFonts not the weight). The shim notes the
@@ -600,6 +621,10 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (LATIN.some(([a, b]) => cp >= a && cp <= b) || outside.has(ch)) continue;
       // A CJK or Arabic face loaded by slices takes the character from its own files.
       if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
+      if (face && ranged.get(face.family)?.some(([a, b]) => cp >= a && cp <= b)) {
+        if (!ownFile.has(ch)) ownFile.set(ch, where);
+        continue;
+      }
       outside.set(ch, where);
     }
     if (!face || !build.fonts || !atLayout.has(face.family)) return;
@@ -628,9 +653,11 @@ export function facts({ select = 'last', hero = [] } = {}) {
   out.faces.missing = out.faces.used.filter((f) => !hasFace(loaded, f.family, f.weight, f.style));
   if (late.size) out.faces.late = [...late.values()];
   out.garbage = garbage;
-  out.nonLatin = [...outside].slice(0, 40).map(([ch, where]) => ({
-    ch, code: `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`, where,
-  }));
+  const codeOf = (ch) => `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
+  out.nonLatin = [
+    ...[...outside].map(([ch, where]) => ({ ch, code: codeOf(ch), where })),
+    ...[...ownFile].filter(([ch]) => !outside.has(ch)).map(([ch, where]) => ({ ch, code: codeOf(ch), where, ownFile: true })),
+  ].slice(0, 40);
 
   // C17: the default skin, read off the resolved config and the pages.
   const all = pages.flatMap((p) => pageBlocks(p.page).map((block) => ({ block, n: p.n, doc: p.doc })));

@@ -1,0 +1,526 @@
+{
+  "schemaVersion": 1,
+  "slug": "genko-yoshi-manuscript",
+  "sourceHash": "7270a1f93f46a83b7539633be030ea03e5aa51487bc5d96fc11cac6701b81dc4",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.905Z",
+  "variants": {
+    "en": {
+      "hash8": "a964e91c",
+      "vdtHash": "44dd11cb28f9b492aa1dad48f8afec383a5e7361",
+      "timings": {
+        "importMs": 154,
+        "fontsMs": 191,
+        "buildMs": 35,
+        "totalMs": 925,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 20,
+          "leadingPt": 27
+        },
+        "families": [
+          "Klee One",
+          "Noto Sans JP"
+        ],
+        "pages": 3,
+        "ownLines": 128
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 870,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 101212,
+          "alt": "Opening page 1: 坊っちゃん."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 870,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 103614,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 870,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 62236,
+          "alt": "Page 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "genko-yoshi-manuscript.pdf",
+        "bytes": 155809,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "genko-yoshi-manuscript.postext",
+        "bytes": 28489
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.compressAdjacent",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.grid.show",
+          "cjk.hangingPunctuation",
+          "cjk.lineBreak",
+          "cjk.trimLineStart",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].endIndent",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 119,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "cjk-punctuation",
+          "column-balancing",
+          "gyodori-headings",
+          "heading-attributes",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "20011378",
+      "vdtHash": "c15ee38025d9a9478cfe194b1993a3483a7a29c6",
+      "timings": {
+        "importMs": 215,
+        "fontsMs": 168,
+        "buildMs": 39,
+        "totalMs": 961,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 20,
+          "leadingPt": 27
+        },
+        "families": [
+          "Klee One",
+          "Noto Sans JP"
+        ],
+        "pages": 3,
+        "ownLines": 128
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 870,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 101392,
+          "alt": "Página de apertura 1: 坊っちゃん."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 870,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 103614,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 870,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 62236,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "genko-yoshi-manuscript.pdf",
+        "bytes": 155808,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "genko-yoshi-manuscript.postext",
+        "bytes": 28523
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.compressAdjacent",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.grid.show",
+          "cjk.hangingPunctuation",
+          "cjk.lineBreak",
+          "cjk.trimLineStart",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].endIndent",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 119,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "cjk-punctuation",
+          "column-balancing",
+          "gyodori-headings",
+          "heading-attributes",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

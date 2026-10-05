@@ -1285,6 +1285,8 @@ const harbour: Resource = {
 
 VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示出来的部分，用同样的比例表示（完整显示时不出现）；`bodyFlex`给出图片主体还能缩短和增高的px数，以及各个手段已经改变的px数（`{ shrink, grow, delta }`）。Canvas预览和PDF把绘制范围限定在图片主体内，按未裁切的尺寸画出整幅图片；HTML查看器和固定版式EPUB用`object-fit: cover`加上相应的`object-position`显示图片；流式EPUB没有要填满的页面，显示整幅图片。自己绘制图片的宿主可以使用`postext`导出的函数：`resourceSafeArea`和`normalizeSafeArea`（引擎读到的安全区，或`undefined`）、`safeAreaHeightRange`（某一宽度下主体的最小和最大高度）、`safeAreaSource`（某一高度下显示的部分）和`uncroppedPictureBox`（裁切前整幅图片应画在哪里），以及类型`ResourceSafeArea`。在Sandbox中，这个字段是[资源面板](/zh/docs/sandbox#资源面板)里图片的**安全区**。
 
+排版食谱第116号[长高以填满短栏的照片](/zh/cookbook/photos-fill-short-columns)把一篇双栏杂志报道排了两遍，一遍没有安全区，一遍有，可以把页面并排对照。
+
 
 ### 视频
 
@@ -1391,6 +1393,8 @@ const talk: Resource = {
 **在VDT中。**视频的资源块带有`kind: 'video'`，以`fileId` / `format`表示它的封面（像位图一样绘制），还有`video`（`VDTResourceVideo`）：读者被引向的`link`、应用了播放器选项的YouTube或Vimeo `embedUrl`、文件的`fileId`和`mimeType`、`start` / `end`范围、解析后的`player`、`linkPoster`、`html`，以及叠加元素`playMark`和`qr`（二维码模块表示为由`'0'` / `'1'`组成的行），各矩形相对于主体的左上角。自己绘制视频的宿主可以使用`postext`导出的函数：`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`和`qrModuleRuns`。
 
 **在文件包中。**`.postext`携带视频文件（`resources/<id>.mp4`）和封面（`resources/<id>.poster.jpg`）：清单条目在`file`和`poster`中写明它们，在`width` / `height`中给出封面的尺寸，其余内容放在不含文件id的`video`中。`bundleVideoUrl(bundle)`是基于文件包中文件的`resourceVideoUrl`解析函数。
+
+排版食谱中有两篇用到视频：第131号[封面印有二维码的电影俱乐部节目单](/zh/cookbook/film-club-video-qr)把每部影片印成带播放标记和二维码的片名卡；第132号[视频在屏幕和EPUB里都能播放的实验报告单](/zh/cookbook/pendulum-lab-video-players)为HTML版设定播放器选项，并把自己的视频片段打包进固定版式EPUB。
 
 ## 不支持的内容
 

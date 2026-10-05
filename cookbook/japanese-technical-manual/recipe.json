@@ -1,0 +1,149 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 123,
+  "status": "published",
+  "chapter": "type",
+  "order": 230,
+  "level": 2,
+  "genres": [
+    "manual",
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "yakumono",
+      "japanese-kinsoku",
+      "han-latin-spacing"
+    ],
+    "also": [
+      "japanese-notes",
+      "footnotes",
+      "figure-numbering",
+      "localised-labels",
+      "heading-numbering",
+      "gyodori-headings",
+      "character-grid",
+      "cjk-fonts",
+      "chips",
+      "callout-styles",
+      "table-style",
+      "captions",
+      "resources",
+      "running-heads",
+      "opener-design",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q137",
+    "Q136",
+    "Q146"
+  ],
+  "gaps": [
+    "code-blocks"
+  ],
+  "gotchas": [
+    "ja-locale-tag",
+    "ja-fonts-kana",
+    "cjk-fonts-slices",
+    "svg-no-webfonts",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "related": [
+    "code-listings-and-keycaps",
+    "chinese-novel-horizontal",
+    "technical-book-crossref-chapters"
+  ],
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all",
+    "timeoutMs": 120000
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 70
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#0e5a6e"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#d9dee0"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Figure 3-1, the bytes of が, drawn in code in the page’s palette",
+          "es": "La figura 3-1, los bytes de が, dibujada en código con la paleta de la página"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Noto Serif JP",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans JP",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "BIZ UDGothic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

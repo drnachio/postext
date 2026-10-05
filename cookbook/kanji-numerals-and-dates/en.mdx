@@ -1,0 +1,64 @@
+---
+title: "Kanji numerals, counters and dates in vertical text"
+summary: "A vertical newsletter that writes each number as Japanese does: counted 百二十, positional 二〇二六, daiji 壱萬弐阡, counters （一） イ あ and 8月22日 upright."
+plain: "A Japanese neighbourhood newsletter printed in top-to-bottom lines. It shows the different ways Japanese writes numbers, and how dates stay readable in vertical text."
+description: "A Japanese newsletter in Postext: kanji numerals counted and positional, daiji amounts, list counters in kanji, iroha and hiragana, tate-chū-yoko dates."
+question: "How do I write numbers in vertical Japanese: 二千二十六 or 二〇二六, 壱萬 on a receipt, 8月22日 upright?"
+aliases: ["kanji numerals", "漢数字", "daiji", "大字", "壱弐参", "iroha", "イロハ", "hiragana counter", "tate-chu-yoko", "縦中横", "Japanese dates", "neighbourhood newsletter", "町内会報", "formatNumeral"]
+pageNotes: { "1": "The masthead: a green band down the right edge with 東若葉台だより in a rounded face, 第百二十号 and the date 二〇二六年（令和八年）八月一日発行; then the first section, 一、夏祭りのお知らせ, with 8月22日 and 23日 upright and the items （一） and イ.", "2": "The rest of the programme down to あ、い、う, the paragraph with !? in one cell, sections 二 and 三.", "3": "The receipt in a green tint with 壱萬弐阡 in red, then 四、町会の歩み: five years written digit by digit, 一九六〇年, and the colophon in Latin on its side.", "4": "The back page: the calendar of August 2026 as an upright table, the festival days in pink, other events in green, with the caption 表一." }
+---
+
+## What you'll build
+
+Four vertical pages of a neighbourhood newsletter, 東若葉台だより, issue 第百二十号, on a B5 page bound on the right: the summer festival notice, the August calendar, the dues and a donation receipt, and a short history of the association. The association is invented; its numbers are written the way a Japanese editor writes them. The issue, the festival's 第三十二回 and the 二千四百人 who came are counted with 十 百 千; the years are written digit by digit, 二〇二六年 and 一九六〇年; the receipt's amount is in daiji (大字), 壱萬弐阡, which cannot be altered with a stroke; the times and dates are Arabic, and 22 stands upright in one cell. Lists run 一、 → （一） → イ → あ, and the calendar is the back page.
+
+## Method
+
+### 1 · Choose the spelling by where the number stands
+
+The code is [the short answer](#the-short-answer) above. `formatNumeral` is the counter the engine numbers pages, lists and headings with, and the pen calls it for the numbers it composes itself: `japanese-informal` counts (120 → 百二十, with no 一 before 十 百 千), `cjk-decimal` writes digit by digit (2026 → 二〇二六) and `japanese-formal` gives the daiji of a sum (12000 → 壱萬弐阡). A `{{daiji:12000}}` in the text becomes the receipt's amount, so the figure is typed once, in digits. The same styles name the counters: the sections are `{2:一}、`, and `orderedLists.levels` sets （一）, then `katakana-iroha` (イ ロ ハ), then `hiragana` with 、 (あ、い、う). `cjk.uprightDigits: 2` stands 8月22日 and 23日 upright without markup, and the `!?` of 「雨が降ったら中止!?」 shares one cell, a Japanese default ([numbers in vertical text](/en/docs/configuration#numbers-in-vertical-text)).
+
+<PageShot page={2} crop="0.3,0.06,0.7,0.6" caption="Page 2: イ ロ ハ under （三）, あ、い、う under ハ, 23日 and 4時 upright, !? set in one cell." />
+
+### 2 · Put the masthead in a band down the right edge
+
+<Excerpt region="masthead" />
+
+On a vertical page the top of the flow is the sheet's right edge, so a heading design anchored to the top of the bleed is a band down that edge, and its `size.height` is its width on the sheet. The issue number and the date are design text built from `kan()` and `pos()`, and the date ends at the foot of the type area with `align: 'right'`.
+
+### 3 · Give the calendar a page of its own
+
+<Excerpt region="calendar" />
+
+A table stands upright on a vertical page and reads across, as Japanese books print their tables; it takes every line of the page it stands on. The calendar is cited after the last paragraph, as a page-wide float, so it becomes the back page and the text before it fills its pages. `resourceTypes` numbers it with the token `一` (表一), and a `ja` document sets the label 表一　 by itself: label and number solid, an ideographic space after.
+
+### 4 · Load each voice with the text it sets
+
+<Excerpt region="voices" />
+
+Noto Serif JP sets the text, Noto Sans JP the heads, lists, calendar and receipt label, and Zen Maru Gothic only the title. Each loads the Fontsource files of its own characters, plus the numbers the pen composes.
+
+## Variations
+
+### Write every year as a count
+
+Some writers prefer 二千二十六年 to 二〇二六年 in running text; change the style of `pos`.
+
+```diff
+-const pos = (n) => formatNumeral(n, 'cjk-decimal'); // 2026 → 二〇二六: digit by digit
++const pos = (n) => formatNumeral(n, 'japanese-informal'); // 2026 → 二千二十六
+```
+
+### Stand three digits upright
+
+With 3, a 100 or a 365 in the text takes one cell too.
+
+```diff
+-  uprightDigits: 2, // 8月22日: one or two Arabic digits stand in one cell (the default)
++  uprightDigits: 3,
+```
+
+## Pitfalls
+
+- The calendar is a page because an upright table takes all the lines of a vertical page (gap: tables set in vertical text). A table that should share its page with text needs a horizontal page, or an SVG drawing placed by a heading design.
+- In Chinese the same counter writes 一百二十 and 一千零一; in Japanese 百二十 and 千一. Write `locale: 'ja'` or the token 一 picks the Chinese style. The Chinese reader <RecipeLink slug="chinese-dates-upright">Dates and acronyms upright in vertical text</RecipeLink> sets its dates with the same `uprightDigits`.

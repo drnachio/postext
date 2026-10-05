@@ -1,0 +1,61 @@
+---
+title: "Un cuento japonés en dos pisos, con el título sobre ambos"
+summary: "Dos cuentos de Akutagawa en unas obras completas: dos pisos de 25 caracteres en un A5, cada título sobre ambos en página impar y finales tal como caen."
+plain: "Dos cuentos tal como los imprimen unas obras completas japonesas: el texto baja por la página en dos franjas apiladas, cada cuento abre en una página izquierda con el título a toda la altura, y su última página no se iguala."
+description: "Akutagawa en dos pisos verticales con Postext: títulos sobre ambos pisos, obras que abren en página impar, secciones de 3 líneas y finales sin igualar."
+question: "¿Cómo compongo un cuento japonés en dos pisos, con el título sobre ambos, abriendo en página izquierda?"
+aliases: ["二段組", "nidangumi", "dos pisos", "dos columnas en vertical", "段", "dan", "pisos", "zenshū", "全集", "obras completas", "tankōbon", "単行本", "成り行き", "nariyuki", "última página sin igualar", "título sobre los pisos", "Akutagawa", "芥川龍之介", "蜘蛛の糸", "El hilo de la araña", "尾生の信"]
+pageNotes: { "1": "La página 211 de unas obras completas, sola a la izquierda del lomo: 蜘蛛の糸 baja grande por la derecha de la página, atravesando los dos pisos, 芥川龍之介 cerca del pie, y luego el texto en dos pisos con un filete fino entre ellos, la sección 一 de tres líneas en el piso de arriba y un colofón de dos líneas en español al pie.", "4": "La última página de El hilo de la araña: el piso de arriba ocupa toda la página, con la sección 三, y el de abajo tiene tres líneas y la fecha （大正七年四月十六日）, levantada un carácter del pie.", "5": "El cuento siguiente, 尾生の信, abre en la página izquierda de enfrente con el título atravesando los dos pisos.", "7": "La última página: el texto acaba a un tercio del piso de arriba y el de abajo queda vacío." }
+---
+
+## Lo que vas a componer
+
+Siete páginas de un tomo de obras completas (全集) en una página A5 encuadernada por la derecha: *El hilo de la araña* y *La fe de Bisei*, de Akutagawa Ryūnosuke, compuestos en dos pisos (二段組) de 25 caracteres de alto y 21 líneas a lo ancho, en Noto Serif JP de 9 pt con un filete fino entre los pisos. Cada cuento abre en una página impar, la izquierda, con su título de 20 pt bajando por los dos pisos y el nombre del autor cerca del pie; los folios siguen desde la página 211. Las secciones 一 二 三 ocupan tres líneas de su piso. Cuando un cuento acaba, su última página queda tal como cae el texto, el 成り行き (nariyuki) japonés: en la página 214 el piso de arriba ocupa toda la página y el de abajo tiene tres líneas y la fecha. El periódico chino en pisos verticales es la <RecipeLink slug="vertical-newspaper-tiers">Nº 084</RecipeLink>, y un título de capítulo sobre dos columnas horizontales, la <RecipeLink slug="five-chapter-openers">Nº 017</RecipeLink>.
+
+## Elaboración
+
+### 1 · Dos columnas giradas un cuarto de vuelta son dos pisos
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. En una página con `writingMode: 'vertical-rl'`, `layoutType: 'double'` apila las dos columnas: la primera llena el piso de arriba desde la derecha, luego el de abajo, y el medianil es la franja entre ellos ([Escritura vertical](/es/docs/configuration#escritura-vertical)). La [retícula de caracteres](/es/docs/configuration#retícula-de-caracteres) cuenta los caracteres de un piso, así que cada piso mide 25 caracteres de 9 pt y el medianil se redondea a dos caracteres justos; las 21 líneas de 15,75 pt ocupan 116,7 mm de los 148 de la página. El filete entre los pisos cruza la página, de 0,4 pt y en un gris cálido.
+
+El equilibrado de Postext acabaría los dos pisos de la última página de un cuento a la misma altura, que es como cierran un capítulo los periódicos chinos y la mayoría de los libros europeos a dos columnas. Un libro japonés en pisos deja caer el texto: el piso de arriba recorre toda la página antes de que empiece el de abajo. `balancing.trailing: false` es esa decisión, y `enabled: false`, que la incluye, impide además que el equilibrado añada líneas sobre los títulos en una retícula de caracteres ([Equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas)).
+
+### 2 · Baja el título de la obra por los dos pisos
+
+<Excerpt region="opener" />
+
+Un nivel de título con `span: 'page'` se compone a toda la altura de la página, los dos pisos y el medianil, al principio del flujo, a la derecha de una página vertical; los pisos empiezan tras las siete líneas que reserva su diseño. Un título así siempre abre página, y `breakBefore.parity: 'odd'` hace que sea la izquierda: *El hilo de la araña* acaba en la página 214, que es par, de modo que *La fe de Bisei* abre en la 215 sin página en blanco entre ambos ([Span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). En el diseño, `x` baja por la página e `y` la cruza desde el borde derecho de la caja; el nombre del autor se coloca desde el pie del piso de abajo, tres caracteres más arriba.
+
+### 3 · Numera las secciones en tres líneas de su piso
+
+El segundo nivel, `lineSpan: 3` con `indent: em(8)`, compone 一 二 三 ocho caracteres más abajo en una franja de tres líneas, como las marca el texto de Aozora (八字下げ, 中見出し), así que el texto que sigue a un número de sección se mantiene en las líneas del piso de al lado ([Configuración por nivel](/es/docs/configuration#configuración-por-nivel)). Las fechas que cierran los cuentos, （大正七年四月十六日）, se levantan un carácter del pie de su piso (地から一字上げ) con `:::paragraphs{align=end endIndent=1}`; el conversor de Aozora las escribe como un estilo `aozora-end1` que las deja pegadas al pie, y los atributos del contenedor añaden la subida de un carácter.
+
+### 4 · Pon el tomo y la obra en el corte delantero
+
+<Excerpt region="furniture" />
+
+`anchor.to: 'outer'` coloca el hashira en el margen del corte delantero, el nombre del tomo, 芥川龍之介集, en las páginas derechas y el título de la obra en las izquierdas, y `pages: 'body'` los aparta de las páginas donde abre una obra ([Elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales)). El folio va de través en el margen, en cifras arábigas, como lo imprimen muchas obras completas: bajando por el corte, tres cifras quedarían tumbadas. `pageNumbering.startAt: 211` numera las páginas como el tomo. El estilo del título de la primera obra lleva el colofón con `pages: 'opener'`, porque el pie de un estilo sirve a todas las páginas de su sección.
+
+## Variantes
+
+### Iguala la última página
+
+Si quitas `balancing`, la última página de cada obra se corta a la misma altura: la página 214 acaba con 10 líneas en el piso de arriba y 11 en el de abajo, el cierre de un libro chino o europeo en columnas.
+
+```diff
+-const balancing = { enabled: false, trailing: false };
++const balancing = {}; // the defaults: the closing band is cut level
+```
+
+### Abre cada obra en la página siguiente
+
+`parity: 'any'` empieza una obra en la página que venga, como hacen las revistas y las antologías de piezas muy breves.
+
+```diff
+-const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' } };
++const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } };
+```
+
+### Compón el cuento en un solo piso
+
+Las novelas y los bunko componen el texto en un solo piso, sin medianil; la <RecipeLink slug="bunko-novel-furigana">Nº 117</RecipeLink> compone así un bunko.

@@ -1,0 +1,155 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 132,
+  "status": "published",
+  "chapter": "output",
+  "order": 170,
+  "level": 3,
+  "genres": [
+    "workbook",
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "html",
+    "pdf",
+    "epub"
+  ],
+  "features": {
+    "primary": [
+      "video-style",
+      "video-resources"
+    ],
+    "also": [
+      "epub-export",
+      "html-viewer",
+      "screen-overrides",
+      "table-model",
+      "table-style",
+      "callout-styles",
+      "nested-callouts",
+      "vertical-space",
+      "opener-design",
+      "heading-attributes",
+      "design-elements",
+      "running-heads",
+      "page-role-filters",
+      "resource-types",
+      "color-palette",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q134",
+    "Q133"
+  ],
+  "gotchas": [
+    "epub-embeds-given-fonts",
+    "latin-subset",
+    "pdf-provider-all-styles",
+    "headings-drop-h1-break",
+    "fonts-first",
+    "config-cache-identity",
+    "resource-types-locale",
+    "hyphenation-locales",
+    "overflow-ellipsis-default"
+  ],
+  "related": [
+    "epub-fixed-and-reflowable",
+    "print-and-screen-editions",
+    "lab-report-formulas"
+  ],
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "doc": "first"
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "file": "pendulum-small.mp4",
+        "what": {
+          "en": "Video 1: a pendulum 1 m long released from 10°, 8 s at 25 frames per second, rendered from an RK4 solution of the pendulum equation (1 ms steps) with Python and encoded with ffmpeg",
+          "es": "Vídeo 1: un péndulo de 1 m soltado desde 10°, 8 s a 25 fotogramas por segundo, generado a partir de una solución RK4 de la ecuación del péndulo (pasos de 1 ms) con Python y codificado con ffmpeg"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "pendulum-large.mp4",
+        "what": {
+          "en": "Video 2: the same pendulum released from 80°, rendered and encoded the same way",
+          "es": "Vídeo 2: el mismo péndulo soltado desde 80°, generado y codificado del mismo modo"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "pendulum-small-poster.jpg",
+        "what": {
+          "en": "The first frame of Video 1, its printed poster",
+          "es": "El primer fotograma del vídeo 1, su portada impresa"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "pendulum-large-poster.jpg",
+        "what": {
+          "en": "The first frame of Video 2, its printed poster",
+          "es": "El primer fotograma del vídeo 2, su portada impresa"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Red Hat Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Red Hat Mono",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

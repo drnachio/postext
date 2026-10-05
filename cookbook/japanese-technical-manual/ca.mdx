@@ -1,0 +1,73 @@
+---
+title: "Un manual tècnic japonès: kana, kanji i llatí"
+summary: "Un capítol A5 d'un llibre japonès de programació: talls i puntuació segons JLReq, un quart de quadratí davant el llatí, codi, 図3-1 i notes per pàgina."
+plain: "Un capítol d'un llibre japonès de programació, ple de paraules angleses, codi i xifres. Postext compon la puntuació i els talls de línia amb les regles japoneses i afegeix un espai fi allà on el japonès toca el llatí."
+description: "Un capítol tècnic japonès amb Postext: locale 'ja' activa el kinsoku i la puntuació de JLReq, el quart de quadratí davant el llatí i els peus 図3-1."
+question: "Com componc un llibre tècnic japonès amb paraules llatines, codi i les regles de puntuació japoneses?"
+aliases: ["llibre tècnic japonès", "技術書", "横組み", "japonès horitzontal", "kinsoku", "禁則処理", "yakumono", "約物", "四分アキ", "espai entre japonès i llatí", "和欧間", "JLReq", "JIS X 4051", "ぶら下げ", "puntuació penjada", "図3-1", "notes a peu de pàgina japoneses", "codi en línia", "normalització Unicode"]
+pageNotes: { "1": "L'obertura del capítol, pàgina 41: una banda verd blavós pàl·lid ocupa el terç superior, amb CHAPTER en versaletes espaiades, un 3 gran verd blavós i el títol 文字列の正規化 en gòtica negreta. A sota, una entradeta en gòtica, el primer paràgraf en mincho i l'apartat 3.1 sota un títol de tres línies; el foli 41, al peu.", "3": "Pàgina 43: les quatre formes de normalització en una llista amb pics verd blavós, un paràgraf que cita 表3-1, la taula amb la capçalera verd blavós 入力 NFC NFD NFKC i cinc files (が, ｶﾞ, ＡＢＣ, ①, ㍻), el seu peu 表3-1 en gòtica, i l'apartat 3.3 amb els noms de funció unicodedata i normalize() en una lletra monoespaiada verd blavós." }
+---
+
+## Què compondràs
+
+Cinc pàgines del capítol 3 d'un llibre japonès de programació inventat, 実践 日本語テキスト処理 (Processament pràctic de text japonès), sobre la normalització Unicode. Es compon com els llibres japonesos d'informàtica: A5, una columna de 36 caràcters per 29 línies de Noto Serif JP de 9 pt, títols en Noto Sans JP i codi en BIZ UDGothic. És el cas difícil de la composició japonesa, perquè gairebé cada frase porta una paraula llatina, un punt de codi, una xifra o un nom de funció. Els talls de línia segueixen el 禁則処理 (kinsoku shori) més estricte de JLReq, la puntuació conserva l'espaiat d'amplada completa i un quart de quadratí separa el japonès del llatí sense que ningú hi teclegi cap espai. Una figura, una taula, un llistat i les notes porten rètols japonesos: 図3-1, 表3-1 i números volats comptats per pàgina. <RecipeLink slug="code-listings-and-keycaps">Llistats de codi i tecles</RecipeLink> és el mateix tipus de pàgina en anglès.
+
+## Elaboració
+
+### 1 · Les regles japoneses arriben amb l'etiqueta
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `locale: 'ja'` activa les regles de JLReq, els *Requirements for Japanese Text Layout* del W3C, i els valors escrits sota `cjk` són els que `'auto'` tria per al japonès ([Tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)). Amb `ja-very-strict`, cap línia no comença per ー, un kana petit, 々 o un signe de tancament, i cap no acaba en un signe d'obertura. La puntuació (約物, yakumono) conserva el seu quadratí dins la línia, i dos signes que es troben, com 」、, en comparteixen un. A la <PageRef page={1}>pàgina 41</PageRef>, la línia que acaba en 実際に変換し、 treu el 、 més enllà del marge dret: és la ぶら下げ (burasage), i el motor només la fa servir quan, sense ella, hauria de passar el signe a la línia següent. `latinSpacing` posa un quart de quadratí (四分アキ, shibun aki) entre Unicode i では, i entre U+304C i を, tot i que el Markdown no hi porta cap espai.
+
+<PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Pàgina 41: un quart de quadratí a banda i banda d'Unicode i Python, escrits sense espai; el 、 del final de la segona línia penja fora de la mida." />
+
+La diferència amb el xinès és als signes. Un llibre xinès del continent posa 、 i ， a mitja amplada per defecte i 。 a amplada completa (Kaiming); un de japonès deixa tots els signes a amplada completa i només els estreny on se'n troben dos. El tall de línia xinès no té kana petits ni ー per apartar del començament de línia, així que `ja-very-strict` és un nivell a part.
+
+### 2 · El codi, en una lletra monoespaiada amb kana
+
+<Excerpt region="listing" />
+
+Postext no compon blocs de codi delimitats, així que el pen reescriu el Markdown abans de compondre. Cada línia del bloc es converteix en un paràgraf d'un recuadre tenyit, i cada `` `nom` ``, en un xip en BIZ UDGothic. La lletra hi compta: la cadena de l'exemple, ｶﾞｲﾄﾞ ＡＢＣ ①, necessita katakana de mitja amplada, lletres d'amplada completa i xifres encerclades, que una lletra de codi occidental no té. BIZ UDGothic compon el llatí de mitja amplada i el kana d'amplada completa amb pas fix, i el llistat conserva les columnes ([Xips en línia](/ca/docs/document-format#xips-en-línia)).
+
+### 3 · 図3-1 i 表3-1
+
+<Excerpt region="resources" />
+
+`defaultResourceTypes('ja')` anomena els tipus 図 i 表 i els numera per capítol amb un guionet, i `continuation.headings` fa d'aquest el capítol 3, així que la primera figura és 図3-1. Un document `ja` ajunta el rètol i el número i posa un espai ideogràfic després del número, com imprimeixen els llibres japonesos 図3-1　「が」の二つの表し方, de manera que l'estil de peu només tria la lletra i els colors. La taula va a `'here'`, sota el paràgraf que la cita. Els rètols de la figura són només llatins, U+304C i E3 81 8C, dibuixats amb el fitxer latin de la lletra de codi incrustat a l'SVG.
+
+### 4 · Notes per pàgina, a la japonesa
+
+<Excerpt region="notes" />
+
+Les notes no necessiten cap ajust a part del cos. En un document japonès horitzontal, els valors per defecte són els que JLReq descriu per als llibres horitzontals: la nota al peu de la columna on es cita, numerada des d'1 a cada pàgina, amb la crida volada i un filet d'un terç de la mida ([Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina)). La crida va abans del punt, `保存していた[^hfs]。`, i així el 。 no obre mai la línia següent separat d'ella.
+
+### 5 · Un títol d'apartat de tres línies
+
+<Excerpt region="opener" />
+
+L'obertura del capítol és un disseny sobre l'H1: una banda verd blavós, el número del capítol a 64 pt pres de `{numberDecimal}` i el títol. Els títols d'apartat fan servir `lineSpan: 3`, el 行取り (gyōdori): cadascun ocupa exactament tres línies de text, amb el text centrat dins seu, de manera que el text que el segueix continua al pas de la retícula. `headings.balancing.enabled: false` impedeix que el motor afegeixi línies sobre els títols per igualar una pàgina.
+
+## Variants
+
+### Deixa que el kana petit i ー obrin línia
+
+`ja-strict` és la regla de JLReq per als llibres generals: っ, ゃ i ー poden obrir línia, cosa que dona al tallador més punts de tall i menys línies espaiades.
+
+```diff
+-  lineBreak: 'ja-very-strict', // no line starts with ー, small kana, 々, 」、。？・ or ：
++  lineBreak: 'ja-strict', // small kana, ー and 々 may open a line
+```
+
+### Sense espai entre el japonès i el llatí
+
+Algunes editorials componen les paraules llatines enganxades al kana, sense el quart de quadratí.
+
+```diff
+-  latinSpacing: em(0.25), // 四分アキ between kana or kanji and Latin letters or digits
++  latinSpacing: em(0), // Unicodeでは, set solid
+```
+
+## Errors freqüents
+
+- Una paraula llatina no es pot tallar dins d'una línia japonesa, així que una de llarga al final de línia deixa l'anterior espaiada entre els caràcters. El primer esborrany d'aquest capítol glossava els termes en anglès, 正準等価（canonical equivalence）, i dues línies van sortir fluixes; es van treure els termes anglesos allà on no ajudaven el lector.
+- Tria la lletra del codi pels caràcters que conté. M PLUS 1 Code, la primera que es va provar aquí, no té katakana de mitja amplada: la pantalla va recórrer a una lletra del sistema per a ｶﾞｲﾄﾞ i al PDF hi faltaven els glifs.
+- Un llistat és un recuadre i, per defecte, no es parteix. A la pàgina 43 només quedaven quatre línies sota 3.3, massa poques per al llistat, així que obre la pàgina 44.

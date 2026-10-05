@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tang-poems-facing-english",
-  "sourceHash": "d67516feb2cfaf82027a6b54b599924f5aaeb346b2911d1be3c44dfdcc829182",
+  "sourceHash": "c5b9a94af2134015f6364e834600ef7bc8481a3629ccc2f9d92bef6736fb82d6",
   "engine": {
-    "postext": "1.11.0",
-    "postextPdf": "1.11.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T09:06:25.411Z",
+  "capturedAt": "2026-10-05T14:43:27.321Z",
   "variants": {
     "en": {
-      "hash8": "8d3f409b",
+      "hash8": "c6fb3272",
       "vdtHash": "dd9d33ac21f45294c82a1c76d75b26a102161cef",
       "timings": {
-        "importMs": 10629,
-        "fontsMs": 1615,
-        "buildMs": 36,
-        "totalMs": 14899,
+        "importMs": 162,
+        "fontsMs": 233,
+        "buildMs": 16,
+        "totalMs": 1103,
         "builds": 2
       },
       "specimen": {
@@ -195,12 +195,12 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 153720,
+        "bytes": 153814,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 14961,
+        "bytes": 14955,
         "folio": "e5860b68"
       },
       "detected": {
@@ -425,13 +425,13 @@
       }
     },
     "es": {
-      "hash8": "e140e057",
+      "hash8": "08daad15",
       "vdtHash": "3790ce61d78b2cc576613282dc9b71f2cad52d0f",
       "timings": {
-        "importMs": 6398,
-        "fontsMs": 1418,
-        "buildMs": 34,
-        "totalMs": 9542,
+        "importMs": 247,
+        "fontsMs": 245,
+        "buildMs": 22,
+        "totalMs": 1210,
         "builds": 2
       },
       "specimen": {
@@ -609,12 +609,12 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 155997,
+        "bytes": 156087,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 15231,
+        "bytes": 15225,
         "folio": "e5860b68"
       },
       "detected": {

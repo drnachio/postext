@@ -1,0 +1,61 @@
+---
+title: "A Japanese index in gojūon order, by reading"
+summary: "A chapter on Japanese typesetting terms and its index: each mark gives its reading by furigana or yomi, and the entries file under あ行, か行, さ行 in JIS order."
+plain: "A short chapter that explains the words Japanese typesetters use, with an index at the back. Each indexed word carries its pronunciation, and Postext uses it to sort the index in the Japanese kana order, under row heads あ行, か行 and so on."
+description: "A Japanese back-of-book index in Postext: :index marks with yomi or furigana readings, groupBy 'gojuon' row heads, JIS X 4061 order, → and も見よ cross-references."
+question: "How do I sort a Japanese index in gojūon order by its readings?"
+aliases: ["Japanese index", "索引", "五十音順", "gojūon", "gojuon", "あ行 か行", "yomi", "読み", "reading", "furigana reading", "JIS X 4061", "kana order", "見よ", "も見よ", "see also", "indexReadingMissing", "組版用語", "typesetting glossary"]
+pageNotes: { "1": "Page 9, the chapter opener: 第1章 in small vermilion gothic, the title 紙面を呼ぶ言葉 in bold, a short vermilion rule, an introductory paragraph and section 1.1 under a three-line heading. The terms 版面, 天, 地, 小口 and 柱 carry small kana readings on their first mention.", "3": "Page 11, the index: on a pale band, 五十音順 in vermilion and the title 索引; below, two columns of entries under vermilion heads D, J, か行, さ行, た行, な行, は行, ま行, や行, ら行 and わ行, each entry with its page in an ideographic space after it, the principal page bold, and cross-references such as 級　10　→歯も見よ and 振り仮名　→ルビ." }
+---
+
+## What you'll build
+
+A chapter of an invented handbook of Japanese typesetting, 組版の言葉 (The Words of Typesetting), and its index. The chapter explains the names of the parts of a page, of type sizes and of punctuation rules, on an A5 page of 36 characters by 28 lines; each term is marked for the index where it is explained. The index is the subject: Japanese has no alphabetical order for kanji, so an index files each entry by its reading in kana, in the order of the gojūon (五十音) table, under row heads あ行, か行, さ行. A term with furigana gives its reading by itself; any other term with a kanji says it in a `yomi` attribute. <RecipeLink slug="chinese-name-index">The Chinese name index</RecipeLink> sorts Chinese names by pinyin and by strokes instead.
+
+## Method
+
+### 1 · A reading for every term with a kanji
+
+The code is [the short answer](#the-short-answer) above. In the text, `:index[{版面|はん|めん}]{main}` prints 版面 with はんめん over it and files the entry as はんめん; `:index[明朝体]{yomi="みんちょうたい" main}` prints no reading and files it as みんちょうたい. Terms in kana, ノンブル or のど, and Latin terms, DTP or JIS X 4051, need nothing ([Index marks](/en/docs/document-format#index-marks)). The reading decides only the order: the entry prints as written. Kanji readings cannot be guessed, since 天 is てん here and あめ elsewhere, so the engine never tries.
+
+### 2 · JIS order and row heads
+
+`groupBy: 'gojuon'` is what `'auto'` picks for `locale: 'ja'`. The entries sort in the order of JIS X 4061: katakana as hiragana, small kana as large, a voiced kana right after its plain one, ー as the vowel before it. So 級 (きゅう) comes before 行取り (ぎょうどり), and ゴシック体 (ごしっくたい) after 小口 (こぐち). Latin terms come first, under their letters, as JIS orders them; symbols and digits would come before them ([Back-of-book index](/en/docs/configuration#back-of-book-index)).
+
+<PageShot page={3} crop="0.08,0.29,0.84,0.6" caption="Page 11: Latin terms under D and J, then the kana rows か行 to わ行, each entry by its reading." />
+
+### 3 · → and も見よ
+
+A see reference is a mark with `see`, `:index{term="振り仮名" yomi="ふりがな" see="ルビ"}`, and prints 振り仮名　→ルビ. A see-also reference uses `seealso` and prints the targets before も見よ, 級　10　→歯も見よ, as Japanese indexes word it. `see: { italic: false }` keeps the labels upright, since a Japanese face has no italic. The ideographic space after each term and the 、 between pages come from `separator` and `locatorSeparator`.
+
+### 4 · The index across two columns
+
+<Excerpt region="opener" />
+
+The index heading is a heading style with `span: 'page'` and a two-column `layout`: its design, a pale band with the title, spans the page, and `:::index` flows in two columns under it. The row heads are set in the vermilion gothic, the entries in the text’s mincho at 8.5 pt on a 14 pt line.
+
+## Variations
+
+### Heads by the first kana
+
+`'kana'` heads each group with the entry’s first kana, as dictionaries and long name indexes do: か, き, く instead of one か行.
+
+```diff
+-  groupBy: 'gojuon', // what 'auto' picks in a 'ja' document: heads あ行 か行 さ行 …
++  groupBy: 'kana', // heads か き く け こ…
+```
+
+### A reading without furigana in the text
+
+To keep a term’s first mention bare and still give its reading, move the reading to `yomi`.
+
+```diff
+-ページのうち、本文が組まれる範囲を:index[{版面|はん|めん}]{main}という。
++ページのうち、本文が組まれる範囲を:index[版面]{yomi="はんめん" main}という。
+```
+
+## Pitfalls
+
+- A term with a kanji and no reading raises `indexReadingMissing`. Without its `yomi`, 明朝体 dropped to the end of the index, after わ行, with no head, and the build warned that the entry “has a kanji and no reading”.
+- `:ruby[…]` inside `:index[…]` needs its brackets escaped, because the mark ends at the first `]`; write the compact form, `{版面|はん|めん}`.
+- A ruby reading counts only when it covers every kanji of the term: `:index[行{取|ど}り]` leaves 行 unread and warns. `{行取|ぎょう|ど}り` gives ぎょうどり.

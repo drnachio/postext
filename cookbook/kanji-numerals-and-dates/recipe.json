@@ -1,0 +1,61 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 129,
+  "status": "published",
+  "chapter": "type",
+  "order": 340,
+  "level": 2,
+  "genres": ["newsletter"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["japanese-numerals", "tate-chu-yoko", "numbered-lists"],
+    "also": [
+      "vertical-writing", "right-binding", "character-grid", "kana-scripts", "cjk-fonts",
+      "yakumono", "gyodori-headings", "heading-numbering", "opener-design", "heading-styles",
+      "paragraph-styles", "callout-styles", "table-styles", "resource-types", "page-background",
+      "color-palette", "pdf-export"
+    ]
+  },
+  "answers": ["Q139", "Q146"],
+  "gaps": ["vertical-tables"],
+  "gotchas": [
+    "ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break",
+    "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["chinese-dates-upright", "katakana-majiri-proclamation", "chinese-official-document"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [3, 5] } },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80, "texture": "smooth", "textureStrength": 0.4, "shade": "#fefefb"},
+    "binding": {"type": "saddleStitch", "cover": "case", "coverMaterial": "paper", "coverColor": "#2f6b3f"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The newsletter of a fictional neighbourhood association, written in Japanese for this recipe",
+          "es": "El boletín de una asociación de vecinos imaginaria, escrito en japonés para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif JP", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" },
+      { "family": "Zen Maru Gothic", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

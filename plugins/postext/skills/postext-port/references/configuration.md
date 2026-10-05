@@ -98,6 +98,7 @@ Conversion at `page.dpi` (default 300):
 | `tableStyles` | NamedTableStyleConfig[] | `[]` | §16 per-table via `resource.table.styleId` |
 | `captionStyle` | CaptionStyleConfig | §17 | + per-type overrides |
 | `diagramStyle` | DiagramStyleConfig | `{singleInk:false}` | §18 |
+| `videoStyle` | VideoStyleConfig | §18a | video resources (≥ 1.16): play mark, QR code, poster link, HTML/EPUB player options |
 | `math` | MathConfig | §19 | |
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
@@ -905,6 +906,32 @@ Caption text supports inline markdown; a bold lead sentence is written as `**…
 
 `{ singleInk = false, inkColor = main-color }` — recolours every SVG to tints of one ink by
 luminance (spot-colour books). Disables SVG `pdfFileId` print masters when on.
+
+## 18a. `videoStyle` — VideoStyleConfig (postext ≥ 1.16)
+
+How every `kind: 'video'` resource (project-format.md) prints and plays. Print (canvas, PDF, Folio)
+shows the poster with the overlays; the HTML viewer and EPUB play the video.
+
+```
+videoStyle
+├─ playMark { enabled=true, shape='circle'|'rounded'|'triangle', position='center', size=12mm,
+│             inset=4mm, color=#ffffff, background=main-color, backgroundOpacity=0.9 }
+├─ qr       { enabled=true, position='bottom-right', size=18mm, inset=3mm, errorCorrection='M'
+│             ('L'|'M'|'Q'|'H'), quietZone=2 (modules), color=#000000, background=#ffffff, radius=1mm }
+├─ linkPoster = true          PDF: URI link over the poster to video.link (EPUB: poster linked too)
+├─ html = 'player'|'poster'   HTML viewer: play in place, or show the printed poster
+└─ player { controls=true, download=true, fullscreen=true, playbackRate=true, pictureInPicture=true,
+            remotePlayback=true, autoplay=false, muted=false, loop=false, preload='metadata', privacy=true }
+```
+
+Positions: `'center'`, `'top-left'`, `'top'`, `'top-right'`, `'left'`, `'right'`, `'bottom-left'`,
+`'bottom'`, `'bottom-right'`. The QR code encodes `video.link` (the YouTube/Vimeo watch URL, or a
+self-hosted file's production `url`); a file without `url` prints no QR code and no link
+(`videoWithoutUrl` warning). `resource.video.player` overrides `player` for one video.
+`download: false` hides the HTML5 download button (`controlslist="nodownload"`); it does not
+protect the file. `privacy` embeds YouTube from youtube-nocookie.com and Vimeo with `dnt=1`. An
+EPUB never embeds a YouTube/Vimeo player (EPUBCheck RSC-006): those are the poster linked to the
+video; a self-hosted file is packed under `media/` and plays in `<video>`.
 
 ## 19. `math`
 

@@ -1,0 +1,61 @@
+---
+title: "Un relato en genkō yōshi, un carácter por casilla"
+summary: "Botchan en papel de manuscrito de 400 casillas: una retícula de 20 × 20 dibujada, un carácter o signo por casilla y los 、。 de inicio de línea, colgados."
+plain: "El papel de manuscrito japonés tiene una casilla para cada carácter. Esta página copia en él las primeras líneas de una novela famosa, con el título, el nombre del autor y cada signo donde los ponen las normas escolares japonesas."
+description: "Genkō yōshi en Postext: una retícula de 20 × 20 caracteres dibujada, un carácter por casilla, líneas de título y nombre, y 、。 colgados bajo la última casilla."
+question: "¿Cómo compongo japonés en papel de manuscrito, 20 casillas por 20 líneas, un carácter en cada casilla?"
+aliases: ["genkō yōshi", "genkouyoushi", "原稿用紙", "papel de manuscrito", "hoja de 400 caracteres", "400字詰", "papel cuadriculado", "retícula de caracteres", "マス目", "masume", "papel de redacción japonés", "作文", "sakubun", "kinsoku en manuscrito", "ぶら下げ", "burasage", "Botchan", "坊っちゃん", "Natsume Sōseki", "Klee One"]
+pageNotes: { "1": "La primera hoja, sola a la izquierda: un doble marco rojo pardo alrededor de 20 líneas de 20 casillas grises, 坊っちゃん en la primera línea desde la tercera casilla, 夏目　漱石 en la segunda acabando una casilla antes del pie, y después el texto de Botchan desde la tercera línea, un carácter o signo en cada casilla; un 、 que cae tras la vigésima casilla cuelga bajo ella. El número de hoja （1） y la etiqueta impresa 20×20 quedan bajo el marco.", "3": "La tercera hoja: el párrafo acaba en su línea decimotercera y el resto de las líneas son casillas vacías." }
+---
+
+## Lo que vas a componer
+
+Tres hojas de papel de manuscrito japonés (原稿用紙, genkō yōshi), del modelo de 400 casillas, con los tres primeros párrafos de *Botchan* de Natsume Sōseki copiados como lo haría un escritor o un alumno: 20 líneas de 20 casillas, leídas de arriba abajo desde la derecha, en Klee One, una letra dibujada con pluma. El título ocupa la primera línea desde la tercera casilla y el nombre del autor la segunda, una casilla antes del pie; cada párrafo empieza tras una casilla vacía. Cada carácter, kana pequeño y signo tiene su propia casilla, y un 、 o un 。 que abriría línea se escribe bajo la última casilla de la línea anterior. Un marco rojo pardo, el número de hoja y la etiqueta impresa del papel, 20×20, completan la hoja. La página china contada en caracteres es la <RecipeLink slug="chinese-official-document">Nº 082</RecipeLink>.
+
+## Elaboración
+
+### 1 · Dibuja las casillas y da a cada signo una entera
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La [retícula de caracteres](/es/docs/configuration#retícula-de-caracteres) hace que la caja mida 20 caracteres de 20 pt (7,1 mm) hacia abajo y 20 líneas de 27 pt (9,5 mm) a lo ancho, y `show: true` dibuja sus casillas en un gris claro propio, en pantalla, y en el PDF cuando `renderToPdf` recibe `characterGrid: true` (en un libro la retícula es una ayuda de prueba, así que el PDF la omite por defecto); la franja de 2,5 mm entre dos líneas es donde quien escribe añade lecturas y correcciones. Un signo japonés es medio glifo y media eme de blanco, y un libro recoge blancos donde se juntan dos signos o donde un corchete abre línea. En el papel de manuscrito cada signo conserva su casilla, así que `compressAdjacent: false` pone 。」 en dos casillas y `trimLineStart: false` deja a un corchete al principio de línea su casilla entera ([Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental)).
+
+### 2 · Sigue las normas de línea del manuscrito
+
+El papel de manuscrito tiene su propio kinsoku. Un kana pequeño o una ー pueden empezar línea, cada uno en su casilla; `ja-loose` lo permite. Un 、 o un 。 que abriría línea se escribe en la última casilla de la anterior, junto al carácter que hay allí, o justo debajo; `hangingPunctuation: 'force'` lo cuelga bajo la vigésima casilla, y ninguna línea se aprieta nunca. Con `'allow'`, el valor por defecto en japonés, el motor mete primero el signo en la línea apretando a media casilla otro 、 de dentro, lo que hace un libro impreso y nunca un manuscrito: el resto de esa línea quedaría media casilla más arriba, cruzando las líneas de la retícula.
+
+### 3 · Escribe el título y el nombre donde los ponen las normas
+
+<Excerpt region="heading" />
+
+El título es un título del cuerpo y la letra del texto, de modo que llena casillas como cualquier otra línea: `lineSpan: 1` lo mantiene en una línea de la retícula e `indent: em(2)` deja dos casillas vacías encima ([Configuración por nivel](/es/docs/configuration#configuración-por-nivel)). El nombre es un párrafo con `textAlign: 'end'` y `endIndent: em(1)`, que lo acaba una casilla antes del pie, y el Markdown escribe la casilla en blanco entre apellido y nombre como un espacio ideográfico: `夏目　漱石`. El texto empieza en la tercera línea, y cada párrafo tras una casilla vacía, la de `firstLineIndent: em(1)`.
+
+### 4 · Imprime la hoja alrededor de las casillas
+
+<Excerpt region="sheet" />
+
+Los elementos de la cabecera se dibujan sobre la propia hoja: en una página vertical, `x` va hacia la derecha e `y` hacia abajo desde la esquina superior izquierda, al revés que el diseño de un título, que se compone en el marco girado del texto. El doble marco queda a 1,5 mm de las casillas por tres lados y a 8 mm por debajo, donde caen los signos colgados. `GRID` y `MARGIN` lo colocan con los mismos números con que se hacen los márgenes de la página; los márgenes que recibe la página son medio milímetro más pequeños, porque la retícula los toma como mínimos y un ajuste exacto podría redondear a 19 líneas.
+
+### 5 · Compónlo en una letra de pluma
+
+<Excerpt region="pen" />
+
+Klee One está dibujada con pluma y conserva las formas japonesas de los kanji, así que las hojas se leen como manuscritas sin las irregularidades de un escaneado. Sus formas verticales ponen 、。 en la esquina superior derecha de su casilla y giran ー y los corchetes, que es donde los pone quien escribe. Como todas las familias japonesas de Fontsource, viene en unos 120 archivos, y `loadCjkFonts` descarga los que necesita el texto ([Fuentes chinas, japonesas y coreanas](/es/docs/configuration#fuentes-chinas-japonesas-y-coreanas)).
+
+## Variantes
+
+### Comprueba la retícula de un libro con las mismas casillas
+
+`show: true` sirve en cualquier retícula de caracteres: en el bunko de la <RecipeLink slug="bunko-novel-furigana">Nº 117</RecipeLink> dibuja las 38 × 15 casillas sobre el texto, una forma rápida de ver que cada línea se ciñe a la retícula y cada título a sus tres líneas.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+### Deja que los signos se aprieten, como en una página impresa
+
+Con el valor por defecto en japonés las hojas parecen un libro mecanografiado en papel cuadriculado: un 、 que abriría línea se recoge apretando otro, y el resto de esa línea queda media casilla fuera de la retícula.
+
+```diff
+-  hangingPunctuation: 'force',
++  hangingPunctuation: 'allow',
+```

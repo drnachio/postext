@@ -1,0 +1,74 @@
+---
+title: "Programa de cineclub con códigos QR en las portadas"
+summary: "Cada película es un recurso de vídeo cuya portada lleva una marca de reproducción y un código QR que la abre en YouTube; en el PDF, la portada es un enlace."
+plain: "Un programa de seis páginas para el ciclo de otoño de un cineclub, con cuatro cortometrajes. Cada página lleva una imagen con un código que el móvil escanea para ver la película, y en el PDF basta con pulsar la imagen."
+description: "Un programa de cineclub en Postext: cuatro películas de YouTube como recursos de vídeo, impresas como cartelas con marca de reproducción, QR de 20 mm y enlace."
+question: "¿Cómo imprimo un vídeo en un programa para que el lector lo abra escaneando la página o pulsando en el PDF?"
+aliases: ["vídeo impreso", "código QR", "YouTube", "botón de reproducir", "portada de vídeo", "fotograma", "programa de cine", "cineclub", "escanear para ver", "enlace de vídeo en PDF", "video"]
+pageNotes: { "1": "La cubierta: una banda negro pantalla en la mitad superior con el antetítulo Cineclub Lumen · Otoño de 2026 en dorado, PELÍCULAS ABIERTAS en mayúsculas altas y estrechas, una entradilla en cursiva, cuatro pastillas con los colores de las películas fechadas el 6, 13, 20 y 27 de noviembre y la línea de la sala; debajo, sobre papel crema, dos párrafos de presentación que citan las películas 1 a 4.", "2": "Sesión 1, Elephants Dream: el antetítulo en rojo, el título en mayúsculas estrechas y una línea de créditos; después la cartela, engranajes y cables de cobre sobre verde azulado con el nombre de la película, una marca de reproducción roja y redondeada en la esquina superior izquierda y un código QR sobre una placa crema en la inferior derecha; debajo, el pie Película 1 con la dirección corta youtu.be/TLkA0RELQ1g y dos párrafos sobre la película.", "3": "Sesión 2, Big Buck Bunny: una cartela con un sol melocotón sobre colinas verdes y mariposas, la misma marca y el mismo código, el pie Película 2 y dos párrafos.", "4": "Sesión 3, Tears of Steel: una cartela con un perfil urbano oscuro, la aguja de una iglesia y una luna con anillo en dorado, con la marca, el código QR, el pie Película 3 y dos párrafos.", "5": "Sesión 4, Spring: una cartela con crestas azules entre la niebla, abetos oscuros y una luz roja, con la marca, el código QR, el pie Película 4 y dos párrafos.", "6": "Información práctica: horarios y precios, por qué el cineclub puede proyectar estas películas, cómo verlas en casa, los créditos de las cuatro películas con sus licencias y el colofón." }
+---
+
+## Lo que vas a componer
+
+El programa de otoño del Cineclub Lumen, un cuadernillo de 165 × 235 mm sobre papel crema: una cubierta con una banda negro pantalla y el título del ciclo en Big Shoulders Display, y después una página para cada una de cuatro películas abiertas de la Blender Foundation. Cada página empieza con un antetítulo rojo para la sesión, el título en mayúsculas estrechas y una línea de créditos, y debajo va una cartela a todo el ancho de la caja, 125 mm. En su esquina superior izquierda hay una marca de reproducción roja, y en la inferior derecha, un código QR de 20 mm. El socio que se perdió un viernes apunta con el móvil al código y la película se abre en YouTube; en el PDF, la cartela entera es el enlace. La dirección corta del pie está para el móvil que no lea el código.
+
+## Elaboración
+
+### 1 · Cada película es un recurso de vídeo
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Un recurso de vídeo se coloca, se rotula y se numera como una figura, y el impreso lo muestra como su portada con dos elementos encima. La marca de reproducción y el código van a esquinas opuestas para no tocarse, y la portada, de 70 mm de alto, deja sitio a los dos. El código mide 20 mm con una zona de silencio de dos módulos: `https://youtu.be/` más un identificador de once caracteres da 29 módulos con el nivel Q, de modo que cada módulo mide 0,61 mm, el doble de lo que necesita la cámara de un móvil. Q es el nivel más alto que conserva los 29 módulos con esta longitud (el motor sube a él desde M por su cuenta); H necesitaría 33 y dejaría los módulos en 0,54 mm. El tipo `video` predefinido imprimiría *Vídeo 1.1*; renombrado como *Película* y contado con `{n}` en todo el documento, numera las cuatro sesiones del ciclo de *Película 1* a *Película 4*, y las citas de la cubierta imprimen las mismas palabras.
+
+### 2 · Escribe la dirección corta y deja que el motor la complete
+
+<Excerpt region="films" />
+
+La dirección de cada entrada es la que va impresa bajo la cartela, `youtu.be/TLkA0RELQ1g`, que un lector puede teclear. `parseVideoUrl` lee cualquier forma de dirección de YouTube o de Vimeo, y `videoWatchUrl` escribe a partir de lo leído la dirección canónica: el código QR y el enlace del PDF guardan los dos `https://youtu.be/<id>`. Una errata que no deje un identificador válido hace que `parseVideoUrl` devuelva `undefined`, y el script se detiene antes de componer, así que un enlace roto nunca llega a la imprenta.
+
+### 3 · Dibuja una cartela como portada
+
+<Excerpt region="art" />
+
+En la mayoría de los proyectos la portada es un fotograma de la película: el Sandbox la descarga al escribir la dirección, y en código `youtubePosterUrls(id)` da las miniaturas de YouTube de la mayor (1280 × 720) a la menor. Los fotogramas de las plataformas pertenecen a las películas y a sus licencias, y un programa impreso puede usar cartelas propias, así que cada película lleva aquí una dibujada en un canvas con su color, su motivo, su título, su año y su director. La cartela deja libres la esquina superior izquierda y la inferior derecha para la marca y el código. Es un canvas y no un SVG porque un SVG dibujado como imagen no llega a las fuentes web de la página, y las cartelas componen su texto con las letras del cuadernillo. Cada cartela mide 1600 × 900 píxeles, el 16:9 de las películas, y `video.poster` declara ese tamaño: a 125 mm de ancho se imprime a 325 ppp. Un vídeo sin portada se imprime como una caja oscura en 16:9 con la misma marca y el mismo código, y la composición avisa.
+
+### 4 · La portada va bajo la apertura
+
+<Excerpt region="furniture" />
+
+Cada película es un título de primer nivel cuya apertura apila el antetítulo de la sesión, el título y la línea de créditos, los tres tomados de atributos del título. `::resource` coloca la portada justo debajo con `position: 'here'`, de modo que todas las páginas de película siguen el mismo orden. La cubierta es un estilo de título cuyos banda, título y pastillas son elementos de diseño; las cuatro pastillas toman de la paleta los colores de las películas, igual que las cartelas.
+
+### 5 · Una paleta para las páginas y las cartelas
+
+<Excerpt region="palette" />
+
+La tinta, el rojo y el crema son los del cuadernillo; los cuatro colores de película (con los nombres de los proyectos de Blender Orange, Peach y Mango, más Spring) pintan las pastillas de la cubierta y las cartelas. La marca de reproducción tiene el mismo rojo que los antetítulos, y la placa del QR es el crema de la página con los módulos en tinta: un código oscuro sobre una placa clara, el contraste que esperan todos los lectores de códigos.
+
+## Variantes
+
+### Imprime el fotograma de la propia película
+
+Descarga la miniatura más grande de YouTube en lugar de dibujar una cartela, si la licencia de la película y tu alojamiento lo permiten, y declara el tamaño del fotograma.
+
+```diff
+-for (const f of FILMS) await titleCard(f); // after the fonts: the cards set type too
++for (const f of FILMS) { // 1280 × 720, maxresdefault.jpg, the first of youtubePosterUrls
++  await loadImage(`${f.id}.png`, youtubePosterUrls(parseVideoUrl(f.address).id)[0]);
++}
+```
+
+### Reproduce las películas en la edición HTML
+
+`renderToHtml` pone en cada vídeo el reproductor de YouTube con privacidad mejorada, y un EPUB muestra la portada enlazada con la película; con `videoStyle.html: 'poster'` la cartela impresa se ve también en pantalla. Consulta [Vídeos](/es/docs/document-format#vídeos) y [Estilo de vídeo](/es/docs/configuration#estilo-de-vídeo).
+
+### Centra una marca más grande
+
+Una marca en el centro de la cartela se reconoce como un reproductor desde el fondo de la sala; las cartelas dejan sin texto su franja central, así que la marca solo tapa el motivo.
+
+```diff
+-  playMark: { shape: 'rounded', position: 'top-left', size: mm(8), inset: mm(4),
++  playMark: { shape: 'rounded', position: 'center', size: mm(14), inset: mm(4),
+```
+
+## Errores frecuentes
+
+- El motor limita el código al 45 % del lado corto de la portada y la marca al 40 %. En una portada pequeña, un código de 20 mm se reduce, y sus módulos con él: un código de 20 mm necesita una portada de 45 mm de alto como mínimo.
+- Dos elementos con la misma posición se tapan. Da a la marca y al código esquinas distintas, y dibuja la portada con esas esquinas libres.

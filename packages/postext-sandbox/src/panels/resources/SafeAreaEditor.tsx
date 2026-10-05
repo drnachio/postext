@@ -42,6 +42,8 @@ function intrinsicOf(resource: Resource): { width: number; height: number } | un
   if (resource.kind === 'svg' && resource.svg?.width && resource.svg.height) {
     return { width: resource.svg.width, height: resource.svg.height };
   }
+  const poster = resource.kind === 'video' ? resource.video?.poster : undefined;
+  if (poster && poster.width > 0 && poster.height > 0) return { width: poster.width, height: poster.height };
   return undefined;
 }
 
@@ -91,10 +93,13 @@ interface SafeAreaFieldProps {
   onChange: (safeArea: ResourceSafeArea | undefined) => void;
 }
 
-/** The "Safe area" field of a bitmap or SVG resource. */
+/** The "Safe area" field of a bitmap or SVG resource, or of a video's
+ *  poster (the engine crops a poster like a picture). */
 export function SafeAreaField({ resource, onChange }: SafeAreaFieldProps) {
   const labels = useSandboxLabels();
-  const fileId = resource.kind === 'bitmap' ? resource.bitmap?.fileId : resource.svg?.fileId;
+  const fileId = resource.kind === 'bitmap'
+    ? resource.bitmap?.fileId
+    : resource.kind === 'video' ? resource.video?.poster?.fileId : resource.svg?.fileId;
   const url = useBlobObjectUrl(fileId);
   const area = normalizeSafeArea(resource.safeArea);
   const [open, setOpen] = useState(false);

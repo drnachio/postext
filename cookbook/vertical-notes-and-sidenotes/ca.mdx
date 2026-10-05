@@ -1,0 +1,61 @@
+---
+title: "Notes al costat d'un text japonès vertical, en el plec"
+summary: "El primer capítol de Jocs d'infants d'Ichiyō amb set notes com a 傍注: （1） a la dreta de la línia i les notes del plec al tall de la pàgina de l'esquerra."
+plain: "Un conte clàssic japonès amb explicacions breus dels seus vells topònims. Els números petits van al costat del text, i les explicacions de les dues pàgines obertes s'apleguen a la vora exterior de la pàgina de l'esquerra."
+description: "Takekurabe d'Ichiyō amb Postext i notes de plec: crides （1） a la dreta de la línia, notes al tall de la pàgina de l'esquerra, sèsam i 後注."
+question: "Com componc les notes d'un llibre japonès vertical al costat del text, en el plec?"
+aliases: ["傍注", "bōchū", "notes laterals", "notes al marge", "後注", "kōchū", "notes finals", "notes japoneses", "注", "（1）", "crides de nota", "notes de plec", "notes al tall", "傍点", "bōten", "sèsam", "たけくらべ", "Takekurabe", "Jocs d'infants", "Higuchi Ichiyō", "樋口一葉", "Yoshiwara"]
+pageNotes: { "1": "La portada, sola a l'esquerra: たけくらべ en Mincho negreta al centre de la pàgina amb un filet curt de color pruna al costat, 樋口一葉 més avall i el colofó al peu.", "2": "El primer capítol comença en una pàgina de la dreta: 一 queda set caràcters més avall en una franja de tres línies, i el text porta les crides （1） a （6） a la dreta de la línia, les quatre primeres a la llarga primera frase, després de 見返り柳, お齒ぐろ溝, 三階 i 大音寺前.", "3": "La pàgina de l'esquerra: vuit línies de text amb la crida （7） i després, al tall, un filet curt de color pruna i les set notes del plec en un cos més petit, cadascuna amb el seu número i un espai sencer.", "4": "L'última pàgina del capítol, amb ぎつちよんちよん marcat amb punts de sèsam a la dreta dels caràcters." }
+---
+
+## Què compondràs
+
+Quatre pàgines d'una edició 四六判 de *Jocs d'infants* (たけくらべ, 1895–96) de Higuchi Ichiyō, el seu primer capítol, amb set notes sobre el vell barri de Yoshiwara que descriu. Les notes són 傍注 (bōchū), les notes laterals dels clàssics japonesos de butxaca: un （1） petit va a la dreta de la línia després de la paraula que explica, i les notes citades a les dues pàgines d'un plec es componen al tall de la pàgina de l'esquerra, sota un filet d'un terç de línia, en un cos una cinquena part més petit. El lector troba cada nota sense girar full. El text, de 42 caràcters per 17 línies en Shippori Mincho de 9,25 pt, conserva l'únic paràgraf llarguíssim d'Ichiyō i les seves marques de sèsam sobre ぎつちよんちよん. Les notes al peu de columna d'una novel·la europea són la <RecipeLink slug="novel-footnotes-column-foot">Núm. 071</RecipeLink>.
+
+## Elaboració
+
+### 1 · Aplega les notes del plec al tall de la pàgina de l'esquerra
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `footnotes.placement: 'spread'` compon les notes citades a les pàgines 2 i 3 al final del text de la pàgina 3, que en un llibre enquadernat per la dreta és el seu tall, i `numbering: 'spread'` comença en （1） les notes de cada plec ([Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina)). Una nota citada a la pàgina de la dreta espera a la de l'esquerra; si les notes deixessin a la pàgina de l'esquerra menys d'una línia de text, les que sobren es queden al peu de la pàgina de la dreta, com permet JLReq. Un document `ja` ja compon les crides d'un llibre vertical com `（{n}）` a la dreta de la línia, a 0,7 em i amb les xifres dretes, no ajagudes: les dues línies escrites aquí ho mostren. `numberGap: 'em'` deixa un caràcter sencer de nota després del número i `hangingIndent: em(2)` alinea les línies següents al darrere.
+
+### 2 · Escriu les crides on les posa el japonès
+
+El Markdown escriu `見返り柳[^1]` després de la paraula que explica la nota, i les notes com a paràgrafs `[^1]: …` al final del capítol. La crida segueix la paraula que explica; si tanca una frase, va abans del seu 。 (`…先生[^1]。`), i el motor mai no deixa que un 。 o una crida comencin línia. Les set notes es van escriure per a aquesta recepta: què eren el 見返り柳 i la お齒ぐろ溝, on era 大音寺前, què es venia al 酉の市, en un japonès modern i planer.
+
+### 3 · Conserva les marques de sèsam de l'original
+
+`cjk.emphasisMark` decideix què imprimeixen `*…*` i `:dots[…]` en aquest llibre: punts de sèsam, a la dreta d'una línia vertical. Un document `ja` ja els fa servir; escrits, activen el kenten a la llista de funcions. El text d'Aozora marca ぎつちよんちよん amb 傍点, i `aozora.py` el va escriure `:dots[ぎつちよんちよん]{style=sesame}`; els llibres xinesos posen els punts sota la línia ([Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu)).
+
+### 4 · Comença en un plec
+
+<Excerpt region="opener" />
+
+La primera frase del capítol cita quatre notes a les seves tres primeres línies. Sota un títol a la pàgina 1 deixarien lloc per a tres línies de text: la pàgina de l'esquerra només porta les seves pròpies notes. Una portada sola a la pàgina 1 porta el capítol a la pàgina 2, una pàgina de la dreta, i el primer plec aplega el text i totes les seves notes. La portada és un títol de primer nivell el disseny del qual ocupa la pàgina, ancorat al format perquè el títol quedi a l'eix de la pàgina.
+
+### 5 · Posa el hashira i els folis al tall
+
+<Excerpt region="furniture" />
+
+El títol baixa pel marge exterior de les pàgines de l'esquerra, per fora de les notes, i els folis en kanji van al peu de totes les pàgines menys la portada.
+
+## Variants
+
+### Aplega les notes al final del capítol
+
+Sense `placement`, un llibre `ja` vertical compon les notes com a 後注 (kōchū): després del text del capítol, sota el mateix filet i numerades al llarg del capítol. Aquí ocupen la meitat esquerra de la pàgina 4.
+
+```diff
+-  placement: 'spread', // 傍注; 'chapterEnd' sets 後注 after the chapter instead
+-  numbering: 'spread',
++  placement: 'chapterEnd', // 後注, the default for a vertical ja book
++  numbering: 'chapter',
+```
+
+### Posa la crida al costat de la paraula
+
+`markerPosition: 'side'` compon una crida més petita al buit del costat de la línia, com un ruby entre línies, de manera que no ocupa lloc a la línia.
+
+```diff
+-  markerPosition: 'right', markerTemplate: '（{n}）', // written out: 'ja' sets them so
++  markerPosition: 'side', markerTemplate: '{n}',
+```

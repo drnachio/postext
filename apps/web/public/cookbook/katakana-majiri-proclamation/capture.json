@@ -1,0 +1,768 @@
+{
+  "schemaVersion": 1,
+  "slug": "katakana-majiri-proclamation",
+  "sourceHash": "001d243b6867bfd837d6da2b5faf659d57a0b7f2f2c88fcaa4be464a84507d97",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.997Z",
+  "variants": {
+    "en": {
+      "hash8": "3ba810f8",
+      "vdtHash": "a17da693e39e181b4c7841ba7c618b8d40db2109",
+      "timings": {
+        "importMs": 176,
+        "fontsMs": 3594,
+        "buildMs": 11,
+        "totalMs": 8651,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Shippori Mincho B1",
+          "sizePt": 10,
+          "leadingPt": 18
+        },
+        "families": [
+          "Noto Sans JP",
+          "Shippori Mincho B1"
+        ],
+        "pages": 8,
+        "ownLines": 160
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 16830,
+          "alt": "Opening page 一: 大日本帝國憲法."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 62018,
+          "alt": "Page 二: 凡例."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 73114,
+          "alt": "Page 三."
+        },
+        {
+          "n": 4,
+          "label": "四",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 30616,
+          "alt": "Page 四."
+        },
+        {
+          "n": 5,
+          "label": "五",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 60902,
+          "alt": "Page 五: 大日本帝國憲法."
+        },
+        {
+          "n": 6,
+          "label": "六",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 61952,
+          "alt": "Page 六."
+        },
+        {
+          "n": 7,
+          "label": "七",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 68892,
+          "alt": "Page 七: 第二章 臣民權利義務."
+        },
+        {
+          "n": 8,
+          "label": "八",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 49128,
+          "alt": "Page 八."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "katakana-majiri-proclamation.pdf",
+        "bytes": 340690,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "katakana-majiri-proclamation.postext",
+        "bytes": 9960,
+        "folio": "d5f2cfd5"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].indent",
+          "headingStyles[].lineSpan",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.gap",
+          "orderedLists.hangingIndent",
+          "orderedLists.indent",
+          "orderedLists.itemSpacing",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "orderedLists.prefix",
+          "orderedLists.separator",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.fontFamily",
+          "unorderedLists.gap",
+          "unorderedLists.indent",
+          "unorderedLists.itemSpacing",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 210,
+        "designElements": 7,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Shippori Mincho B1",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Shippori Mincho B1",
+            "weight": 800,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "unnumbered-headings",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "66c9d75b",
+      "vdtHash": "97f190eae280c1879948e9bb3b51c2c32f1bbcc4",
+      "timings": {
+        "importMs": 179,
+        "fontsMs": 469,
+        "buildMs": 10,
+        "totalMs": 1259,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Shippori Mincho B1",
+          "sizePt": 10,
+          "leadingPt": 18
+        },
+        "families": [
+          "Noto Sans JP",
+          "Shippori Mincho B1"
+        ],
+        "pages": 8,
+        "ownLines": 160
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 16934,
+          "alt": "Página de apertura 一: 大日本帝國憲法."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 62018,
+          "alt": "Página 二: 凡例."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 73114,
+          "alt": "Página 三."
+        },
+        {
+          "n": 4,
+          "label": "四",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 30616,
+          "alt": "Página 四."
+        },
+        {
+          "n": 5,
+          "label": "五",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 60902,
+          "alt": "Página 五: 大日本帝國憲法."
+        },
+        {
+          "n": 6,
+          "label": "六",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 61952,
+          "alt": "Página 六."
+        },
+        {
+          "n": 7,
+          "label": "七",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 68892,
+          "alt": "Página 七: 第二章 臣民權利義務."
+        },
+        {
+          "n": 8,
+          "label": "八",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 50824,
+          "alt": "Página 八."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "katakana-majiri-proclamation.pdf",
+        "bytes": 341140,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "katakana-majiri-proclamation.postext",
+        "bytes": 9996,
+        "folio": "d5f2cfd5"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].indent",
+          "headingStyles[].lineSpan",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.gap",
+          "orderedLists.hangingIndent",
+          "orderedLists.indent",
+          "orderedLists.itemSpacing",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "orderedLists.prefix",
+          "orderedLists.separator",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.fontFamily",
+          "unorderedLists.gap",
+          "unorderedLists.indent",
+          "unorderedLists.itemSpacing",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 210,
+        "designElements": 7,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Shippori Mincho B1",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Shippori Mincho B1",
+            "weight": 800,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "unnumbered-headings",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

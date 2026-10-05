@@ -1,0 +1,64 @@
+---
+title: "Numerals kanji, comptadors i dates en text vertical"
+summary: "Un butlletí vertical que escriu cada nombre com el japonès: 百二十 comptat, 二〇二六 xifra a xifra, 壱萬弐阡 en daiji, comptadors （一） イ あ i 8月22日 dret."
+plain: "Un butlletí de veïns japonès imprès en línies de dalt a baix. Mostra les maneres d'escriure els nombres en japonès i com les dates es llegeixen bé en vertical."
+description: "Un butlletí japonès en Postext: numerals kanji comptats i xifra a xifra, imports en daiji, comptadors en kanji, iroha i hiragana, dates en tate-chū-yoko."
+question: "Com escric els nombres en japonès vertical: 二千二十六 o 二〇二六, 壱萬 en un rebut, 8月22日 dret?"
+aliases: ["numerals kanji", "漢数字", "daiji", "大字", "壱弐参", "iroha", "イロハ", "comptador hiragana", "tate-chu-yoko", "縦中横", "dates en japonès", "butlletí de veïns", "町内会報", "formatNumeral"]
+pageNotes: { "1": "La capçalera: una banda verda per la vora dreta amb 東若葉台だより en una lletra arrodonida, 第百二十号 i la data 二〇二六年（令和八年）八月一日発行; després la primera secció, 一、夏祭りのお知らせ, amb 8月22日 i 23日 drets i els punts （一） i イ.", "2": "La resta del programa fins a あ、い、う, el paràgraf amb !? en una casella i les seccions 二 i 三.", "3": "El rebut sobre un tint verd amb 壱萬弐阡 en vermell; després 四、町会の歩み: cinc anys escrits xifra a xifra, 一九六〇年, i el colofó en llatí, girat.", "4": "La contraportada: el calendari d'agost de 2026 com a taula dreta, els dies de festa en rosa i els altres actes en verd, amb el peu 表一." }
+---
+
+## Què compondràs
+
+Quatre pàgines verticals d'un butlletí de veïns, 東若葉台だより, número 第百二十号, en una pàgina B5 enquadernada per la dreta: l'avís de la festa d'estiu, el calendari d'agost, les quotes amb un rebut de donatiu i una breu història de l'associació. L'associació és inventada; els seus nombres estan escrits com els escriu un editor japonès. El número del butlletí, el 第三十二回 de la festa i els 二千四百人 que hi van anar es compten amb 十 百 千; els anys van xifra a xifra, 二〇二六年 i 一九六〇年; l'import del rebut va en daiji (大字), 壱萬弐阡, que no es pot alterar amb un traç; les hores i les dates van en xifres aràbigues, i el 22 es posa dret en una casella. Les llistes baixen 一、 → （一） → イ → あ, i el calendari ocupa la contraportada.
+
+## Elaboració
+
+### 1 · Tria la grafia segons on va el nombre
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `formatNumeral` és el comptador amb què el motor numera pàgines, llistes i títols, i la recepta el crida per als nombres que compon ella mateixa: `japanese-informal` compta (120 → 百二十, sense 一 davant de 十 百 千), `cjk-decimal` escriu xifra a xifra (2026 → 二〇二六) i `japanese-formal` dona el daiji d'un import (12000 → 壱萬弐阡). Un `{{daiji:12000}}` al text es converteix en l'import del rebut, de manera que la xifra s'escriu una sola vegada, en dígits. Els mateixos estils anomenen els comptadors: les seccions són `{2:一}、`, i `orderedLists.levels` fixa （一）, després `katakana-iroha` (イ ロ ハ) i després `hiragana` amb 、 (あ、い、う). `cjk.uprightDigits: 2` posa drets 8月22日 i 23日 sense marques, i el `!?` de 「雨が降ったら中止!?」 comparteix una casella, un valor per defecte del japonès ([nombres en text vertical](/ca/docs/configuration#nombres-en-text-vertical)).
+
+<PageShot page={2} crop="0.3,0.06,0.7,0.6" caption="Pàgina 2: イ ロ ハ sota （三）, あ、い、う sota ハ, 23日 i 4時 drets i !? en una sola casella." />
+
+### 2 · Posa la capçalera en una banda per la vora dreta
+
+<Excerpt region="masthead" />
+
+En una pàgina vertical, el capdamunt del flux és la vora dreta del full, així que un disseny de títol ancorat a dalt del sagnat és una banda per aquesta vora, i el seu `size.height` és la seva amplada al full. El número i la data són text de disseny construït amb `kan()` i `pos()`, i la data acaba al peu de la caixa de text amb `align: 'right'`.
+
+### 3 · Dona al calendari una pàgina pròpia
+
+<Excerpt region="calendar" />
+
+Una taula queda dreta en una pàgina vertical i es llegeix en horitzontal, com imprimeixen les taules els llibres japonesos; ocupa totes les línies de la pàgina on és. El calendari es cita després de l'últim paràgraf com a flotant de pàgina sencera, així que passa a la contraportada i el text anterior omple les seves pàgines. `resourceTypes` el numera amb el token `一` (表一), i un document `ja` compon tot sol l'etiqueta 表一　: el rètol i el número junts i un espai ideogràfic al darrere.
+
+### 4 · Carrega cada veu amb el text que compon
+
+<Excerpt region="voices" />
+
+Noto Serif JP compon el text; Noto Sans JP, els títols, les llistes, el calendari i l'etiqueta del rebut, i Zen Maru Gothic només el títol. Cadascuna carrega els fitxers de Fontsource dels seus propis caràcters, més els nombres que compon la recepta.
+
+## Variants
+
+### Escriu tots els anys comptats
+
+Hi ha qui prefereix 二千二十六年 a 二〇二六年 en el text corrent; canvia l'estil de `pos`.
+
+```diff
+-const pos = (n) => formatNumeral(n, 'cjk-decimal'); // 2026 → 二〇二六: digit by digit
++const pos = (n) => formatNumeral(n, 'japanese-informal'); // 2026 → 二千二十六
+```
+
+### Posa drets nombres de tres xifres
+
+Amb 3, un 100 o un 365 del text també ocupen una casella.
+
+```diff
+-  uprightDigits: 2, // 8月22日: one or two Arabic digits stand in one cell (the default)
++  uprightDigits: 3,
+```
+
+## Errors freqüents
+
+- El calendari ocupa una pàgina perquè una taula dreta pren totes les línies d'una pàgina vertical (llacuna: taules compostes en text vertical). Si una taula ha de compartir pàgina amb el text, necessita una pàgina horitzontal o un dibuix SVG col·locat per un disseny de títol.
+- En xinès el mateix comptador escriu 一百二十 i 一千零一; en japonès, 百二十 i 千一. Escriu `locale: 'ja'`, o el token 一 triarà l'estil xinès. El llibre xinès <RecipeLink slug="chinese-dates-upright">Dates i sigles dretes en text vertical</RecipeLink> compon les dates amb el mateix `uprightDigits`.

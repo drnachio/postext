@@ -1,0 +1,68 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 130,
+  "status": "published",
+  "chapter": "type",
+  "order": 350,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["kana-scripts", "hyphenation-languages"],
+    "also": [
+      "cjk-fonts", "yakumono", "japanese-kinsoku", "body-typography",
+      "opener-design", "heading-styles", "heading-attributes", "paragraph-styles",
+      "running-heads", "page-role-filters", "mirrored-margins", "page-background",
+      "color-palette", "pdf-export", "pdf-fonts"
+    ]
+  },
+  "answers": ["Q150", "Q145"],
+  "gaps": [],
+  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break", "config-cache-identity",
+    "fonts-first"],
+  "explainsWarnings": [],
+  "related": ["tang-poems-facing-english", "catalan-pocket-novella", "pinyin-primer"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [4, 5] } },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 70, "texture": "laid", "textureStrength": 0.5, "shade": "#fdfcf8"},
+    "binding": {"type": "sewn", "cover": "case", "coverMaterial": "cloth", "coverColor": "#34497a"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Ishikawa Takuboku, ROMAZI NIKKI (the Rōmaji Diary), the entry of 7 April 1909 to “Kanasii koto da!”, in Latin letters as he wrote it, after the Iwanami Bunko edition (ed. Kuwabara Takeo, 1977) as transcribed on the blog 啄木の息",
+          "es": "Ishikawa Takuboku, ROMAZI NIKKI (el Diario en rōmaji), la entrada del 7 de abril de 1909 hasta «Kanasii koto da!», en letras latinas como la escribió, según la edición de Iwanami Bunko (ed. Kuwabara Takeo, 1977) transcrita en el blog 啄木の息"
+        },
+        "who": "Ishikawa Takuboku (1886–1912)",
+        "source": "https://takuboku-no-iki.hatenablog.com/entry/20130519/p1",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The transcription into kana and kanji under each paragraph and the note on the text, written for this recipe",
+          "es": "La transcripción en kana y kanji bajo cada párrafo y la nota sobre el texto, escritas para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Source Serif 4", "license": "OFL-1.1" },
+      { "family": "Source Sans 3", "license": "OFL-1.1" },
+      { "family": "Noto Serif JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

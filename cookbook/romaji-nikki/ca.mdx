@@ -1,0 +1,54 @@
+---
+title: "Japonès en lletres llatines: el diari en rōmaji de Takuboku"
+summary: "Un text en rōmaji etiquetat ja-Latn: regles japoneses per als kana, sense partició de mots en el llatí i els macrons d'una font llatina portats al PDF."
+plain: "La primera entrada d'un diari de 1909 que el poeta Takuboku va escriure en japonès amb lletres llatines, amb la lectura en escriptura japonesa sota cada paràgraf."
+description: "El diari en rōmaji de Takuboku en Postext: japonès en lletres llatines amb l'etiqueta ja-Latn, sense guions, una lectura en kana per paràgraf i ō ū al PDF."
+question: "Com componc japonès escrit en rōmaji: quina etiqueta d'idioma, quina partició de mots i els macrons al PDF?"
+aliases: ["rōmaji", "romaji", "ローマ字", "ja-Latn", "japonès en lletres llatines", "Takuboku", "石川啄木", "ローマ字日記", "Nippon-shiki", "Hepburn", "macrons", "ō ū", "latin-ext", "sense partició de mots"]
+pageNotes: { "1": "La portada: les línies d'encapçalament del mateix diari, NIKKI. I. MEIDI 42 NEN. 1909. APRIL. TOKYO., en versals espaiades sobre un camp índigo, un filet curt i una línia sobre l'edició.", "2": "L'entrada del 7 d'abril: 7TH, WEDNESDAY. i l'adreça en versaletes, i després els paràgrafs en rōmaji, cadascun seguit de la seva lectura en kana i kanji, més petita i sagnada.", "4": "El final de l'entrada, Kanasii koto da ! i 悲しいことだ！, i la nota sobre el text en una pal sec petita." }
+---
+
+## Què compondràs
+
+Quatre pàgines del *Rōmaji nikki*, el diari que Ishikawa Takuboku va dur a Tòquio la primavera de 1909 en lletres llatines perquè la seva dona no el pogués llegir: les línies que encapçalen el quadern i la primera entrada, la del 7 d'abril, fins a *Kanasii koto da!* El diari es compon com una edició d'estudi en una pàgina A5: el rōmaji en Source Serif 4, justificat i sense partir mai cap mot, i sota cada paràgraf la seva lectura en kana i kanji en Noto Serif JP, més petita, més clara i sagnada. Takuboku escriu en el sistema Nippon-shiki, *si*, *tu*, *hu*, amb circumflex a les vocals llargues, *Tôkyô*; les línies de l'editor fan servir Hepburn amb macrons, *Rōmaji*, i totes dues arriben al PDF.
+
+## Elaboració
+
+### 1 · Etiqueta el text com a ja-Latn
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `ja-Latn` és l'etiqueta BCP 47 del japonès escrit en alfabet llatí. El seu idioma és `ja`, així que la lectura sota cada paràgraf segueix les regles japoneses: kinsoku, l'espaiat de 、。 i el quadratí que el motor afegeix després de ！ dins d'una frase, com a 「ええ！　ええ！」. El japonès no té patrons de partició de mots, així que el rōmaji no es parteix mai; amb `en`, els patrons anglesos dividirien mots com *tatinobotta* o *Surigarasu* per síl·labes angleses, no per les mores que sent un lector japonès. Sense guions, els espais absorbeixen la folgança, per això la mesura ronda els 70 caràcters i `maxWordSpacing` val 1,8 ([partició de mots](/ca/docs/configuration#partició-de-mots)).
+
+<PageShot page={2} crop="0,0.1,1,0.45" caption="Pàgina 2: el dia, l'adreça, els dos primers paràgrafs en rōmaji i les seves lectures en kana, més petites i sagnades." />
+
+### 2 · Porta els macrons al PDF
+
+<Excerpt region="macrons" />
+
+Fontsource guarda ō ū ā en un fitxer `latin-ext` a part. La pantalla el carrega (`loadFonts` veu la ō de la mostra), i el `cjkPdfProvider` del kit fa el mateix amb el PDF. Serveix Noto Serif JP des dels seus fragments japonesos i, quan una font llatina compon una lletra que només és a `latin-ext`, respon amb dos fitxers, `latin` i després `latin-ext`; postext-pdf pren cada glif del primer fitxer que el té. El `fontsourceProvider` simple del kit només lliura al PDF el fitxer `latin`: amb ell, el PDF no tindria glif per a la ō.
+
+### 3 · Obre amb les línies del mateix diari
+
+<Excerpt region="title" />
+
+El quadern comença NIKKI. I. MEIDI 42 NEN. 1909. APRIL. TOKYO., una cosa per línia. El títol les pren d'un atribut, cada `\n` una línia nova, i les compon en versals espaiades sobre un camp índigo, la tela de la tapa d'un quadern. La seva pàgina és una obertura, així que les capçaleres no hi apareixen.
+
+### 4 · Capçaleres segons la paritat
+
+<Excerpt region="heads" />
+
+La pàgina parella porta el nom del diari i la senar el lloc i el mes, amb els folis a les cantonades exteriors, en Source Sans 3 de 7,5 pt.
+
+## Variants
+
+### Escriu el rōmaji en Hepburn
+
+Una edició moderna pot reescriure el diari en Hepburn amb macrons, *Tōkyō* per *Tôkyô*. El PDF ja porta la ō, així que només canvia el text; afegeix una nota que digui que la grafia és de l'editor.
+
+### Parteix entre mores
+
+Si una columna estreta necessita guions, posa guions tous (U+00AD) entre les mores del rōmaji, `Su­na-ho­ko­ri` al codi o un U+00AD escrit al text: un document `ja-Latn` no parteix mai per si sol, però talla en un guionet tou quan un mot no hi cap.
+
+## Errors freqüents
+
+- Shippori Mincho no té ō ni ū; Noto Serif JP i Source Serif 4 les tenen als fitxers `latin-ext`. Comprova la font abans de triar-la per a un text en Hepburn.
+- El xinès en lletres llatines és el pinyin, que va com a ruby sobre els caràcters a <RecipeLink slug="pinyin-primer">Una cartilla amb pinyin sobre cada caràcter</RecipeLink>; el rōmaji de Takuboku és el text mateix, així que es compon com a text llatí amb el seu espaiat, no com a anotació.

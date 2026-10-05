@@ -755,9 +755,17 @@ function captionText(rb: ResolvedResourceBlock): string {
 }
 
 /** Alt text of a figure: the resource's `altText`, else its caption, else
- *  its label (`Figure 1.2`) — PDF/UA-1 §7.3 requires one on every figure. */
+ *  its label (`Figure 1.2`) — PDF/UA-1 §7.3 requires one on every figure.
+ *  A video's text says what the picture is, in its type's name (`Video: …`):
+ *  the reader hears a poster that links to a video, not a still. */
 function figureAlt(rb: ResolvedResourceBlock): string {
-  return rb.resource.altText?.trim() || captionText(rb) || `${rb.captionPrefix} ${rb.number}`.trim();
+  const label = `${rb.captionPrefix} ${rb.number}`.trim();
+  const text = rb.resource.altText?.trim() || captionText(rb);
+  if (rb.kind !== 'video') return text || label;
+  const name = rb.captionPrefix.trim() || 'Video';
+  // A Chinese or Japanese name takes the full-width colon (视频：…).
+  const colon = /[\u3040-\u30ff\u3400-\u9fff]$/.test(name) ? '：' : ': ';
+  return text ? `${name}${colon}${text}` : label || name;
 }
 
 /** Rows whose every cell is a header cell: the column-header rows, which

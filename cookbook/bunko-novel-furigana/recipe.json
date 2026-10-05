@@ -1,0 +1,55 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 117,
+  "status": "published",
+  "chapter": "page",
+  "order": 140,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["vertical-writing", "furigana", "gyodori-headings"],
+    "also": ["right-binding", "japanese-kinsoku", "yakumono", "character-grid", "japanese-numerals", "aozora-import", "kana-scripts", "cjk-fonts", "ruby", "running-heads", "page-role-filters", "mirrored-margins", "heading-styles", "heading-typography", "page-background", "color-palette", "pdf-export"]
+  },
+  "answers": ["Q147", "Q135", "Q144", "Q140"],
+  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "aozora-cp932", "quote-frontmatter", "font-range-holes", "vertical-two-frames"],
+  "related": ["vertical-novel-right-bound", "trade-paperback-novel", "catalan-pocket-novella", "arabic-novel-right-bound"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "spread",
+    "pages": [1, 2, 3, 4, 5, 6, 7]
+  },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 52, "texture": "smooth", "shade": "#fdfbf6"},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#a8392b"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "夏目漱石『坊っちゃん』 (Botchan, 1906), the opening of chapter one; Aozora Bunko card 752, from 「ちくま日本文学全集　夏目漱石」 (Chikuma Shobō, 1992), input 真先芳秋, proofreading 柳沢成雄, converted with aozora.py",
+          "es": "夏目漱石『坊っちゃん』 (Botchan, 1906), comienzo del capítulo primero; ficha 752 de Aozora Bunko, según 「ちくま日本文学全集　夏目漱石」 (Chikuma Shobō, 1992), transcripción de 真先芳秋, corrección de 柳沢成雄, convertida con aozora.py"
+        },
+        "who": "Natsume Sōseki; Aozora Bunko volunteers",
+        "source": "https://www.aozora.gr.jp/cards/000148/card752.html",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Shippori Mincho B1", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

@@ -89,7 +89,7 @@ The resolvers (`resolve*Config`), strippers (`strip*Defaults`), `DEFAULT_*` cons
 | Field | Type | Description |
 |---|---|---|
 | `markdown` | `string` | Enriched markdown: headings, lists, `:ref{id="…"}` citations, `::resource{id="…"}` embeds, `:::callout`, `:::part`, `:::toc`, `$…$` math, … |
-| `resources?` | `Resource[]` | Bitmaps, SVGs and tables, referenced by `id` from the markdown. Binary payloads are referenced by `fileId`; tables carry their model inline. |
+| `resources?` | `Resource[]` | Bitmaps, SVGs, tables and videos, referenced by `id` from the markdown. Binary payloads (pictures, a video's poster and own file) are referenced by `fileId`; tables carry their model inline. |
 | `metadata?` | `DocumentMetadata` | Title, author and dates (also read from the markdown's YAML frontmatter). |
 | `continuation?` | `LayoutContinuation` | Counters, page numbering and parity carried over from the chapters before, for a book laid out chapter by chapter. |
 | `outline?` | `OutlineEntry[]` | The book's outline, for a `:::toc` in a chapter laid out on its own. |

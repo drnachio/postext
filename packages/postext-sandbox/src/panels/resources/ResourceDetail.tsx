@@ -493,7 +493,7 @@ export function ResourceDetail({
             <SvgUploader onUploaded={applySvg} compact={!!resource.svg} />
           </Field>
         )}
-        {((resource.kind === 'bitmap' && resource.bitmap?.fileId) || (resource.kind === 'svg' && resource.svg?.fileId)) && (
+        {((resource.kind === 'bitmap' && resource.bitmap?.fileId) || (resource.kind === 'svg' && resource.svg?.fileId) || (resource.kind === 'video' && resource.video?.poster?.fileId)) && (
           <SafeAreaField
             resource={resource}
             onChange={(safeArea) => {

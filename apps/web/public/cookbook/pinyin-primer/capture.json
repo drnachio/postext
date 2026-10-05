@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "pinyin-primer",
-  "sourceHash": "a9c09732333be6ba217a7833bf816f27853ee55358087cca9bbde2a41d874749",
+  "sourceHash": "df519886ddb821f614be02efa297825dff21fc62c2a308b756b07b3861c75bf6",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:48:56.755Z",
+  "capturedAt": "2026-10-05T14:43:27.268Z",
   "variants": {
     "en": {
-      "hash8": "5a5533d5",
+      "hash8": "28f704eb",
       "vdtHash": "ee9ec130030daadd0fe4e88625c9cbd18e373e31",
       "timings": {
-        "importMs": 353,
-        "fontsMs": 1182,
-        "buildMs": 15,
-        "totalMs": 2280,
+        "importMs": 130,
+        "fontsMs": 136,
+        "buildMs": 8,
+        "totalMs": 920,
         "builds": 2
       },
       "specimen": {
@@ -110,7 +110,7 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 205890,
+        "bytes": 205865,
         "folio": "4f4bf2f0"
       },
       "detected": {
@@ -302,11 +302,6 @@
         },
         "findings": [
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 35: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -315,13 +310,13 @@
       }
     },
     "es": {
-      "hash8": "8be72c35",
+      "hash8": "9a0c947d",
       "vdtHash": "16d5d6c68d0b5cfc6d7a35df17e43eb18eb2a117",
       "timings": {
-        "importMs": 125,
-        "fontsMs": 135,
-        "buildMs": 8,
-        "totalMs": 979,
+        "importMs": 138,
+        "fontsMs": 138,
+        "buildMs": 9,
+        "totalMs": 916,
         "builds": 2
       },
       "specimen": {
@@ -415,7 +410,7 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 206355,
+        "bytes": 206327,
         "folio": "4f4bf2f0"
       },
       "detected": {
@@ -606,11 +601,6 @@
           "worst": 0
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

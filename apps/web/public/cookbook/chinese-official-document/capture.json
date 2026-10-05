@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-official-document",
-  "sourceHash": "29cc396146864130713d07de07562f85f250b3d65371992ff70ac1a43716333f",
+  "sourceHash": "c0a4c657d26ac61d0699f6ba595afbf30d0fe80e45590a774a5de7bcf95a92c2",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:22.001Z",
+  "capturedAt": "2026-10-05T14:43:27.259Z",
   "variants": {
     "en": {
-      "hash8": "094d6094",
+      "hash8": "e126172d",
       "vdtHash": "16149f3f2cece312f8444b5285767b3619148576",
       "timings": {
-        "importMs": 119,
-        "fontsMs": 672,
-        "buildMs": 9,
-        "totalMs": 1409,
+        "importMs": 162,
+        "fontsMs": 226,
+        "buildMs": 10,
+        "totalMs": 1020,
         "builds": 2
       },
       "specimen": {
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129561,
+        "bytes": 129554,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20558,
+        "bytes": 20545,
         "folio": "f2e4b92d"
       },
       "detected": {
@@ -362,13 +362,13 @@
       }
     },
     "es": {
-      "hash8": "03b3dd12",
+      "hash8": "8a93a703",
       "vdtHash": "f97c4ead35ec3c7dca8ce5f0e6d83e5731444be0",
       "timings": {
-        "importMs": 118,
-        "fontsMs": 184,
+        "importMs": 159,
+        "fontsMs": 224,
         "buildMs": 10,
-        "totalMs": 917,
+        "totalMs": 1013,
         "builds": 2
       },
       "specimen": {
@@ -466,12 +466,12 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129838,
+        "bytes": 129831,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20577,
+        "bytes": 20565,
         "folio": "f2e4b92d"
       },
       "detected": {

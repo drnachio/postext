@@ -82,10 +82,10 @@ const chapter = { id: 'capitol',
 // #endregion
 
 // #region front: half-title, frontispiece, title page and the edition's note, one page each
-const front = (id, elements, extra = {}) => ({ id, breakBefore: { enabled: true, parity: 'any' },
-  marginBottom: pt(0), header: { elements: [] }, footer: { elements: [] }, ...extra,
-  advancedDesign: { enabled: true, ...(extra.minHeight && { minHeight: extra.minHeight }),
-    slot: { elements } } });
+const front = (id, elements, { minHeight, ...extra } = {}) => ({ id,
+  breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(0),
+  header: { elements: [] }, footer: { elements: [] }, ...extra,
+  advancedDesign: { enabled: true, ...(minHeight && { minHeight }), slot: { elements } } });
 const FRONTIS = { width: MEASURE, height: MEASURE * 1.5 }; // mm: the engraving is 2:3
 const headingStyles = [
   front('avantportada', [text('title', '{titleText}', DISPLAY, 19,
@@ -155,7 +155,7 @@ const resources = Object.entries(PICTURES).map(([id, [fileId, w, h, altText]]) =
 const paragraphStyles = [
   { id: 'nota', fontSize: pt(9), lineHeight: pt(LEAD * 0.9), color: col('muted'),
     italicColor: col('muted'), firstLineIndent: mm(4.5) },
-  { id: 'fi', fontFamily: LABEL, fontSize: pt(9), letterSpacing: pt(2), color: col('vermell'),
+  { id: 'fi', fontFamily: LABEL, fontSize: pt(9), color: col('vermell'),
     textAlign: 'center', firstLineIndent: pt(0), marginTop: pt(LEAD) },
   { id: 'colofo', fontSize: pt(7.5), lineHeight: pt(10), color: col('muted'),
     italicColor: col('muted'), textAlign: 'center', firstLineIndent: pt(0),

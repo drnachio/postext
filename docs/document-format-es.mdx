@@ -1283,6 +1283,8 @@ El motor aprovecha ese margen en tres casos:
 
 El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la imagen que se ve en `bodyRect`, en las mismas fracciones (no aparece cuando se ve la imagen entera), y `bodyFlex` da los px que el cuerpo aún podría encoger y crecer y los px que ya le cambiaron las palancas (`{ shrink, grow, delta }`). La previsualización en canvas y el PDF recortan al cuerpo y dibujan la imagen entera a su tamaño sin recortar; el visor HTML y el EPUB de maquetación fija ponen la imagen con `object-fit: cover` y el `object-position` correspondiente; un EPUB adaptable, que no tiene página que llenar, muestra la imagen entera. Un anfitrión que dibuje las imágenes por su cuenta tiene las funciones que exporta `postext`: `resourceSafeArea` y `normalizeSafeArea` (la zona tal como la lee el motor, o `undefined`), `safeAreaHeightRange` (el cuerpo más bajo y el más alto a una anchura), `safeAreaSource` (la parte que se ve a una altura dada) y `uncroppedPictureBox` (dónde dibujar la imagen entera antes de recortar), con el tipo `ResourceSafeArea`. En el Sandbox el campo es **Zona segura**, en una imagen del [panel de Recursos](/es/docs/sandbox#panel-de-recursos).
 
+La receta nº 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/cookbook/photos-fill-short-columns), compone dos veces un reportaje de revista a dos columnas, sin zonas seguras y con ellas, para comparar las páginas una junto a otra.
+
 
 ### Vídeos
 
@@ -1389,6 +1391,8 @@ El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime
 **En el VDT.** El bloque de recurso de un vídeo lleva `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un bitmap) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o Vimeo con las opciones del reproductor aplicadas, el `fileId` y el `mimeType` de un archivo, el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda del cuerpo. Un anfitrión que dibuje los vídeos por su cuenta tiene las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
 
 **En un paquete.** Un `.postext` lleva el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los nombra en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor `resourceVideoUrl` sobre los archivos de un paquete.
+
+Dos recetas del Recetario ponen vídeos: la nº 131, [Programa de cineclub con códigos QR en las portadas](/es/cookbook/film-club-video-qr), imprime cada película como una cartela con la marca de reproducción y un código QR, y la nº 132, [Hoja de prácticas con vídeos que se ven en pantalla y EPUB](/es/cookbook/pendulum-lab-video-players), fija las opciones del reproductor de la edición HTML y empaqueta sus propios vídeos en un EPUB de maquetación fija.
 
 ## Qué NO se soporta
 

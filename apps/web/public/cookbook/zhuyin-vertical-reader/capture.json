@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "zhuyin-vertical-reader",
-  "sourceHash": "16108bb195eff5f4ed6c6840924c28f0317be7457b44349ba458f72ce5002742",
+  "sourceHash": "d327d9b503467c08bddeb5d03ddf1b40a1c51b325c53494350ca20789b7df97e",
   "engine": {
-    "postext": "1.9.2",
-    "postextPdf": "1.9.2",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:45:58.657Z",
+  "capturedAt": "2026-10-05T14:43:27.414Z",
   "variants": {
     "en": {
-      "hash8": "c2c9a532",
+      "hash8": "fd28032f",
       "vdtHash": "522843d863498ed4af274649e676a64bd5ee9cc4",
       "timings": {
-        "importMs": 954,
-        "fontsMs": 17361,
-        "buildMs": 17,
-        "totalMs": 19166,
+        "importMs": 162,
+        "fontsMs": 373,
+        "buildMs": 12,
+        "totalMs": 1182,
         "builds": 2
       },
       "specimen": {
@@ -118,7 +118,7 @@
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 507706,
+        "bytes": 507689,
         "folio": "351449da"
       },
       "detected": {
@@ -375,13 +375,13 @@
       }
     },
     "es": {
-      "hash8": "b3fa0945",
+      "hash8": "3b4f1ea1",
       "vdtHash": "add9581c8d2fc07b11d4f735eaae4d55f2ef84a9",
       "timings": {
-        "importMs": 380,
-        "fontsMs": 15267,
-        "buildMs": 18,
-        "totalMs": 16974,
+        "importMs": 534,
+        "fontsMs": 6964,
+        "buildMs": 13,
+        "totalMs": 8179,
         "builds": 2
       },
       "specimen": {
@@ -482,7 +482,7 @@
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 507742,
+        "bytes": 507724,
         "folio": "351449da"
       },
       "detected": {

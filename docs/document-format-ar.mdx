@@ -1283,6 +1283,8 @@ const harbour: Resource = {
 
 تسجّل شجرة VDT القصّ على كتلة المورد: `bodySource` هو الجزء الظاهر من الصورة داخل `bodyRect`، بالكسور نفسها (ويغيب حين تظهر الصورة كاملة)، و`bodyFlex` يعطي عدد px التي لا يزال جسم الصورة يستطيع أن يقصر أو يطول بها، وعدد px التي غيّرته بها الأدوات (`{ shrink, grow, delta }`). معاينة Canvas وملف PDF يقصّان الرسم إلى جسم الصورة ويرسمان الصورة كاملة بحجمها غير المقصوص؛ وعارض HTML وEPUB ذو التخطيط الثابت يضعان الصورة بـ`object-fit: cover` مع `object-position` المطابق؛ أما EPUB المرن، الذي لا صفحة فيه تُملأ، فيعرض الصورة كاملة. والمضيف الذي يرسم الصور بنفسه يجد الدوال التي يصدّرها `postext`: `resourceSafeArea` و`normalizeSafeArea` (المنطقة كما يقرؤها المحرّك، أو `undefined`)، و`safeAreaHeightRange` (أقصر جسم وأطوله عند عرض معيّن)، و`safeAreaSource` (الجزء الظاهر عند ارتفاع معيّن)، و`uncroppedPictureBox` (أين تُرسم الصورة كاملة قبل القصّ)، مع النوع `ResourceSafeArea`. وفي Sandbox يحمل الحقل اسم **المنطقة الآمنة**، في صورة من [لوحة الموارد](/ar/docs/sandbox#لوحة-الموارد).
 
+تنضد الوصفة رقم 116 في دليل الوصفات، [صور تطول لتملأ العمود القصير](/ar/cookbook/photos-fill-short-columns)، تحقيقَ مجلة بعمودين مرتين، بلا مناطق آمنة ومعها، لتقارن الصفحات جنبًا إلى جنب.
+
 
 ### مقاطع الفيديو
 
@@ -1389,6 +1391,8 @@ const talk: Resource = {
 **في VDT.** لكتلة مورد الفيديو `kind: 'video'`، وغلافها في `fileId` / `format` (يُرسم كالصورة النقطية)، و`video` (`VDTResourceVideo`): الرابط `link` الذي يُرسَل إليه القارئ، و`embedUrl` ليوتيوب أو فيميو بعد تطبيق خيارات المشغّل، و`fileId` و`mimeType` للملف، والمجال `start` / `end`، و`player` المحسوم، و`linkPoster`، و`html`، والطبقتان `playMark` و`qr` (وحدات رمز QR صفوفًا من `'0'` / `'1'`)، بمستطيلات تُقاس من الزاوية العليا اليسرى لجسم المورد. والمضيف الذي يرسم مقاطع الفيديو بنفسه يجد الدوال التي يصدّرها `postext`: `parseVideoUrl` و`videoWatchUrl` و`resourceVideoLink` و`videoEmbedUrl` و`videoEmbedAllow` و`videoElementAttributes` و`mediaFragment` و`videoMimeType` و`youtubePosterUrls` و`encodeQr` و`layoutVideo` و`playMarkTriangle` و`qrModuleRuns`.
 
 **في الحزمة.** يحمل ملف `.postext` ملفَّ الفيديو (`resources/<id>.mp4`) والغلاف (`resources/<id>.poster.jpg`): يسمّيهما مدخل البيان (manifest) في `file` و`poster`، ويعطي حجم الغلاف في `width` / `height`، ويحفظ الباقي في `video` بلا معرّفات ملفات. و`bundleVideoUrl(bundle)` هي دالة الحلّ `resourceVideoUrl` على ملفات الحزمة.
+
+وصفتان في دليل الوصفات تضعان مقاطع فيديو: الوصفة رقم 131، [برنامج نادٍ سينمائي برموز QR على الأغلفة](/ar/cookbook/film-club-video-qr)، تطبع كل فيلم بطاقةَ عنوان عليها علامة التشغيل ورمز QR، والوصفة رقم 132، [ورقة تجربة تُعرض مقاطعها على الشاشة وفي EPUB](/ar/cookbook/pendulum-lab-video-players)، تضبط خيارات المشغّل في نسخة HTML وتحزم مقاطعها في EPUB ثابت التخطيط.
 
 ## ما لا يدعمه Postext
 

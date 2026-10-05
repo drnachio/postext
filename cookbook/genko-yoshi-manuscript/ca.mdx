@@ -1,0 +1,61 @@
+---
+title: "Un relat en genkō yōshi, un caràcter per casella"
+summary: "Botchan en paper de manuscrit de 400 caselles: una retícula de 20 × 20 dibuixada, un caràcter o signe per casella i els 、。 d'inici de línia, penjats."
+plain: "El paper de manuscrit japonès té una casella per a cada caràcter. Aquesta pàgina hi copia les primeres línies d'una novel·la famosa, amb el títol, el nom de l'autor i cada signe on els posen les normes escolars japoneses."
+description: "Genkō yōshi amb Postext: una retícula de 20 × 20 caràcters dibuixada, un caràcter per casella, línies de títol i nom, i 、。 penjats sota l'última casella."
+question: "Com componc japonès en paper de manuscrit, 20 caselles per 20 línies, un caràcter a cada casella?"
+aliases: ["genkō yōshi", "genkouyoushi", "原稿用紙", "paper de manuscrit", "full de 400 caràcters", "400字詰", "paper quadriculat", "retícula de caràcters", "マス目", "masume", "paper de redacció japonès", "作文", "sakubun", "kinsoku en manuscrit", "ぶら下げ", "burasage", "Botchan", "坊っちゃん", "Natsume Sōseki", "Klee One"]
+pageNotes: { "1": "El primer full, sol a l'esquerra: un doble marc vermell terrós al voltant de 20 línies de 20 caselles grises, 坊っちゃん a la primera línia des de la tercera casella, 夏目　漱石 a la segona acabant una casella abans del peu, i després el text de Botchan des de la tercera línia, un caràcter o signe a cada casella; un 、 que cau després de la vintena casella penja sota d'ella. El número de full （1） i l'etiqueta impresa 20×20 queden sota el marc.", "3": "El tercer full: el paràgraf acaba a la tretzena línia i la resta de línies són caselles buides." }
+---
+
+## Què compondràs
+
+Tres fulls de paper de manuscrit japonès (原稿用紙, genkō yōshi), del model de 400 caselles, amb els tres primers paràgrafs de *Botchan* de Natsume Sōseki copiats com ho faria un escriptor o un alumne: 20 línies de 20 caselles, llegides de dalt a baix des de la dreta, en Klee One, una lletra dibuixada amb ploma. El títol ocupa la primera línia des de la tercera casella i el nom de l'autor la segona, una casella abans del peu; cada paràgraf comença després d'una casella buida. Cada caràcter, kana petit i signe té la seva pròpia casella, i un 、 o un 。 que obriria línia s'escriu sota l'última casella de la línia anterior. Un marc vermell terrós, el número de full i l'etiqueta impresa del paper, 20×20, completen el full. La pàgina xinesa comptada en caràcters és la <RecipeLink slug="chinese-official-document">Núm. 082</RecipeLink>.
+
+## Elaboració
+
+### 1 · Dibuixa les caselles i dona a cada signe una de sencera
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) fa que la caixa de text mesuri 20 caràcters de 20 pt (7,1 mm) cap avall i 20 línies de 27 pt (9,5 mm) d'amplada, i `show: true` en dibuixa les caselles en un gris clar propi a la pantalla, i al PDF quan `renderToPdf` rep `characterGrid: true` (en un llibre la retícula és una ajuda per a les proves, així que el PDF l'omet per defecte); la franja de 2,5 mm entre dues línies és on qui escriu afegeix lectures i correccions. Un signe japonès és mig glif i mig quadratí de blanc, i un llibre recull blancs on es troben dos signes o on un claudàtor obre línia. Al paper de manuscrit cada signe conserva la seva casella, així que `compressAdjacent: false` posa 。」 en dues caselles i `trimLineStart: false` deixa a un claudàtor a l'inici de línia la seva casella sencera ([Tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)).
+
+### 2 · Segueix les normes de línia del manuscrit
+
+El paper de manuscrit té el seu propi kinsoku. Un kana petit o una ー poden començar línia, cadascun a la seva casella; `ja-loose` ho permet. Un 、 o un 。 que obriria línia s'escriu a l'última casella de l'anterior, al costat del caràcter que hi ha, o just a sota; `hangingPunctuation: 'force'` el penja sota la vintena casella, i cap línia no s'estreny mai. Amb `'allow'`, el valor per defecte en japonès, el motor primer fa entrar el signe a la línia estrenyent fins a mitja casella un altre 、 de dins, cosa que fa un llibre imprès i mai un manuscrit: la resta d'aquella línia quedaria mitja casella més amunt, travessant les línies de la retícula.
+
+### 3 · Escriu el títol i el nom on els posen les normes
+
+<Excerpt region="heading" />
+
+El títol té el cos i la lletra del text, de manera que omple caselles com qualsevol altra línia: `lineSpan: 1` el manté en una línia de la retícula i `indent: em(2)` deixa dues caselles buides al damunt ([Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). El nom és un paràgraf amb `textAlign: 'end'` i `endIndent: em(1)`, que l'acaba una casella abans del peu, i el Markdown escriu la casella en blanc entre cognom i nom com un espai ideogràfic: `夏目　漱石`. El text comença a la tercera línia, i cada paràgraf després d'una casella buida, la de `firstLineIndent: em(1)`.
+
+### 4 · Imprimeix el full al voltant de les caselles
+
+<Excerpt region="sheet" />
+
+Els elements de la capçalera es dibuixen sobre el mateix full: en una pàgina vertical, `x` va cap a la dreta i `y` cap avall des de la cantonada superior esquerra, al revés que el disseny d'un títol, que es compon en el marc girat del text. El doble marc queda a 1,5 mm de les caselles per tres costats i a 8 mm per sota, on cauen els signes penjats. `GRID` i `MARGIN` el col·loquen amb els mateixos números amb què es fan els marges de la pàgina; els marges que rep la pàgina són mig mil·límetre més petits, perquè la retícula els pren com a mínims i un ajust exacte podria arrodonir a 19 línies.
+
+### 5 · Compon-lo en una lletra de ploma
+
+<Excerpt region="pen" />
+
+Klee One està dibuixada amb ploma i conserva les formes japoneses dels kanji, així que els fulls es llegeixen com a manuscrits sense les irregularitats d'un escaneig. Les seves formes verticals posen 、。 a la cantonada superior dreta de la casella i giren ー i els claudàtors, que és on els posa qui escriu. Com totes les famílies japoneses de Fontsource, arriba en uns 120 fitxers, i `loadCjkFonts` baixa els que necessita el text ([Fonts xineses, japoneses i coreanes](/ca/docs/configuration#fonts-xineses-japoneses-i-coreanes)).
+
+## Variants
+
+### Comprova la retícula d'un llibre amb les mateixes caselles
+
+`show: true` funciona en qualsevol retícula de caràcters: al bunko de la <RecipeLink slug="bunko-novel-furigana">Núm. 117</RecipeLink> dibuixa les 38 × 15 caselles sobre el text, una manera ràpida de veure que cada línia s'ajusta a la retícula i cada títol a les seves tres línies.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+### Deixa que els signes s'estrenyin, com en una pàgina impresa
+
+Amb el valor per defecte en japonès, els fulls semblen un llibre mecanografiat en paper quadriculat: un 、 que obriria línia es recull estrenyent-ne un altre, i la resta d'aquella línia queda mitja casella fora de la retícula.
+
+```diff
+-  hangingPunctuation: 'force',
++  hangingPunctuation: 'allow',
+```

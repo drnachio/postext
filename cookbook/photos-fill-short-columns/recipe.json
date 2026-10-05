@@ -1,0 +1,206 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 116,
+  "status": "published",
+  "chapter": "figures",
+  "order": 60,
+  "level": 2,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "picture-safe-area",
+      "column-balancing",
+      "float-placement"
+    ],
+    "also": [
+      "resources",
+      "figure-citations",
+      "inline-embeds",
+      "captions",
+      "resource-types",
+      "opener-design",
+      "design-images",
+      "heading-attributes",
+      "column-layouts",
+      "mirrored-margins",
+      "running-heads",
+      "page-role-filters",
+      "color-palette",
+      "paragraph-styles",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q132",
+    "Q19",
+    "Q64"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "opener-image-no-reserve",
+    "overflow-ellipsis-default",
+    "resource-types-locale",
+    "hyphenation-locales",
+    "fonts-first"
+  ],
+  "related": [
+    "figures-float-where-cited",
+    "photo-essay-full-bleed"
+  ],
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "es",
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "pages": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ]
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "coatedSilk",
+      "grammage": 115,
+      "shade": "#fbfbfa"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#2f5d73"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The feature, the captions and the colophon, in Spanish and English; Arnela and its people are imaginary",
+          "es": "El reportaje, los pies y el colofón, en español y en inglés; Arnela y sus vecinos son imaginarios"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The estuary at low water at dawn, with shellfish gatherers",
+          "es": "La ría en bajamar al amanecer, con mariscadoras"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "estuario-1700.jpg"
+      },
+      {
+        "what": {
+          "en": "A shellfish gatherer kneeling on the wet sand",
+          "es": "Una mariscadora de rodillas en la arena mojada"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mariscadora-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "A net mender on the quay",
+          "es": "Una redeira en el muelle"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "redeira-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "A shipwright planing a wooden boat in his shed",
+          "es": "Un carpintero de ribera cepillando una barca en su nave"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "carpintero-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "A lighthouse on a granite point and a walker below it",
+          "es": "Un faro sobre una punta de granito y una caminante a sus pies"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "faro-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "A cook lifting an octopus from a copper cauldron at a market",
+          "es": "Una pulpeira sacando un pulpo de un caldero de cobre en el mercado"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "pulpeira-1600.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Archivo",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Archivo Narrow",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

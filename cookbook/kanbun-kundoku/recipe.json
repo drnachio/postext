@@ -1,0 +1,51 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 122,
+  "status": "published",
+  "chapter": "type",
+  "order": 310,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["kanbun-kunten", "furigana", "vertical-writing"],
+    "also": ["right-binding", "ruby", "paragraph-styles", "gyodori-headings", "kana-scripts", "japanese-kinsoku", "japanese-numerals", "character-grid", "cjk-fonts", "heading-styles", "opener-design", "running-heads", "page-role-filters", "mirrored-margins", "color-palette", "pdf-export"]
+  },
+  "answers": ["Q143", "Q135"],
+  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "cjk-grid-balancing"],
+  "related": ["tang-poems-facing-english", "zhuyin-vertical-reader", "haiku-and-tanka", "red-ink-commentary"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "loupe", "focus": { "page": 1, "x": 0.36, "y": 0.19, "w": 0.52, "h": 0.45 }, "pages": "all" },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "texture": "smooth", "shade": "#fdfdfa"},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#c0392b"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "論語 (the Analects of Confucius), 學而 1 and 3, 爲政 11, and 孟浩然「春曉」 (Spring Dawn), in shinjitai; the kunten (返り点, 送り仮名) and the yomikudashi follow the usual Japanese school reading and were set for this recipe (CC BY 4.0)",
+          "es": "論語 (las Analectas de Confucio), 學而 1 y 3, 爲政 11, y 孟浩然「春曉」 (Amanecer de primavera), en shinjitai; los kunten (返り点, 送り仮名) y el yomikudashi siguen la lectura escolar japonesa habitual y se compusieron para esta receta (CC BY 4.0)"
+        },
+        "who": "Confucius and his disciples; Meng Haoran; Ignacio Ferro (kunten and reading)",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Zen Old Mincho", "license": "OFL-1.1" },
+      { "family": "Klee One", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

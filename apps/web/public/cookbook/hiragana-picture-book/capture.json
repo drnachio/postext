@@ -1,0 +1,732 @@
+{
+  "schemaVersion": 1,
+  "slug": "hiragana-picture-book",
+  "sourceHash": "9a6019607c06118fc246d1f424578b6d7bf1f679ca16f47da337ab73684ce4ec",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.980Z",
+  "variants": {
+    "en": {
+      "hash8": "c6b3d730",
+      "vdtHash": "c3a875d829f896de88c2f21e4031ea72b255abec",
+      "timings": {
+        "importMs": 173,
+        "fontsMs": 138,
+        "buildMs": 49,
+        "totalMs": 937,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          260,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 14.100000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 20,
+          "leadingPt": 36
+        },
+        "families": [
+          "Klee One",
+          "Zen Maru Gothic"
+        ],
+        "pages": 10,
+        "ownLines": 120
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 769,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 13844,
+          "alt": "Opening page 1: かみの ふね."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 9332,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 12322,
+          "alt": "Page 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 12338,
+          "alt": "Page 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 13536,
+          "alt": "Page 5."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 12080,
+          "alt": "Page 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 10050,
+          "alt": "Page 7."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 12232,
+          "alt": "Page 8."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 10736,
+          "alt": "Page 9."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 12254,
+          "alt": "Page 10."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "hiragana-picture-book.pdf",
+        "bytes": 56339,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "hiragana-picture-book.postext",
+        "bytes": 27718,
+        "folio": "ada4348a"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.wordBreak",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 120,
+        "designElements": 3,
+        "directives": [
+          "::resource",
+          ":::pagebreak",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 10,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "column-and-a-half",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "side-column-floats",
+          "unnumbered-headings",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "6cda0bca",
+      "vdtHash": "42d07e790806f41857f6dcb1b9d80c646f3d2560",
+      "timings": {
+        "importMs": 214,
+        "fontsMs": 167,
+        "buildMs": 47,
+        "totalMs": 994,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          260,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 14.100000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 20,
+          "leadingPt": 36
+        },
+        "families": [
+          "Klee One",
+          "Zen Maru Gothic"
+        ],
+        "pages": 10,
+        "ownLines": 120
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 769,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 13972,
+          "alt": "Página de apertura 1: かみの ふね."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 9332,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 12322,
+          "alt": "Página 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 12338,
+          "alt": "Página 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 13536,
+          "alt": "Página 5."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 12080,
+          "alt": "Página 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 10050,
+          "alt": "Página 7."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 12232,
+          "alt": "Página 8."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 10736,
+          "alt": "Página 9."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 769,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 12558,
+          "alt": "Página 10."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "hiragana-picture-book.pdf",
+        "bytes": 56401,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "hiragana-picture-book.postext",
+        "bytes": 27753,
+        "folio": "ada4348a"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.wordBreak",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 120,
+        "designElements": 3,
+        "directives": [
+          "::resource",
+          ":::pagebreak",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 10,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Maru Gothic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "column-and-a-half",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "side-column-floats",
+          "unnumbered-headings",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "vertical-book-with-jiazhu-citations",
-  "sourceHash": "f2cf9655492fb2606af8d6c7c83e8fea30576dae2c2db8912c25e684e406ae8e",
+  "sourceHash": "df2d4fa6c9e60d2610844c15ef1131286376cabf2c0237ccc45a7b01652e9f00",
   "engine": {
     "postext": "1.12.0",
     "postextPdf": "1.12.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:27:54.926Z",
+  "capturedAt": "2026-10-05T14:43:36.754Z",
   "variants": {
     "en": {
-      "hash8": "d860425a",
+      "hash8": "50ce49f5",
       "vdtHash": "94e7910f065afdfa6f1bd9f95ec475b696889574",
       "timings": {
-        "importMs": 3126,
-        "fontsMs": 936,
-        "buildMs": 72,
-        "totalMs": 4795,
+        "importMs": 478,
+        "fontsMs": 362,
+        "buildMs": 68,
+        "totalMs": 1574,
         "builds": 1
       },
       "specimen": {
@@ -101,7 +101,7 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178199,
+        "bytes": 178198,
         "pages": 3
       },
       "sandbox": {
@@ -292,13 +292,13 @@
       }
     },
     "es": {
-      "hash8": "07f8ae4e",
+      "hash8": "322116bc",
       "vdtHash": "80ab2571708a674f5955d6e48a482c48e16bdb28",
       "timings": {
-        "importMs": 708,
-        "fontsMs": 972,
-        "buildMs": 85,
-        "totalMs": 2346,
+        "importMs": 181,
+        "fontsMs": 280,
+        "buildMs": 64,
+        "totalMs": 1093,
         "builds": 1
       },
       "specimen": {
@@ -382,7 +382,7 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178154,
+        "bytes": 178157,
         "pages": 3
       },
       "sandbox": {

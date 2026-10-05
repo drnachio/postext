@@ -1,0 +1,61 @@
+---
+title: "Notes beside a vertical Japanese text, across the spread"
+summary: "The first chapter of Ichiyō's Child's Play with seven notes as 傍注: （1） at the right of the line, the notes of both pages at the fore-edge of the left-hand page."
+plain: "A classic Japanese story with short explanations of its old place names. The small numbers sit beside the text, and the explanations for both open pages are gathered at the outer edge of the left page."
+description: "Ichiyō's Takekurabe in Postext with spread sidenotes: （1） markers at the right of the line, notes at the left page's fore-edge, sesame emphasis, 後注 too."
+question: "How do I set the notes of a vertical Japanese book beside the text, across the spread?"
+aliases: ["傍注", "bōchū", "sidenotes", "side notes", "後注", "kōchū", "endnotes", "Japanese notes", "注", "（1）", "割注", "note markers", "spread notes", "fore-edge notes", "傍点", "bōten", "sesame", "たけくらべ", "Takekurabe", "Child's Play", "Higuchi Ichiyō", "樋口一葉", "Yoshiwara"]
+pageNotes: { "1": "The title page, alone on the left: たけくらべ in bold Mincho down the middle of the page with a short plum rule beside it, 樋口一葉 lower down, and the colophon across the foot.", "2": "Chapter one opens on a right-hand page: 一 stands seven characters down in a band of three lines, and the text carries the small markers （1） to （6） at the right of the line, the first four in the long first sentence, after 見返り柳, お齒ぐろ溝, 三階 and 大音寺前.", "3": "The left-hand page: eight lines of text with the marker （7）, then, at the fore-edge, a short plum rule and the seven notes of the spread in smaller type, each opening with its number and a full space.", "4": "The chapter's last page, with ぎつちよんちよん marked by sesame dots at the right of the characters." }
+---
+
+## What you'll build
+
+Four pages of a 四六判 edition of Higuchi Ichiyō's *Child's Play* (たけくらべ, 1895–96), its first chapter, with seven notes on the old Yoshiwara quarter it describes. The notes are 傍注 (bōchū), the sidenotes of Japanese classics in paperback: a small （1） stands at the right of the line after the word it explains, and the notes cited on both pages of a spread are set at the fore-edge of the left-hand page, under a rule a third of the line long, in type a fifth smaller. Readers find each note without turning a page. The text, 42 characters down 17 lines in Shippori Mincho at 9.25 pt, keeps Ichiyō's single long paragraph and her sesame marks over ぎつちよんちよん. Notes at the column foot in a European novel are <RecipeLink slug="novel-footnotes-column-foot">Nº 071</RecipeLink>.
+
+## Method
+
+### 1 · Gather the spread's notes at the left page's fore-edge
+
+The code is [the short answer](#the-short-answer) above. `footnotes.placement: 'spread'` sets the notes cited on pages 2 and 3 at the end of page 3's text, which in a book bound on the right is its fore-edge, and `numbering: 'spread'` starts each spread's notes at （1） ([Footnotes](/en/docs/configuration#footnotes)). A note cited on the right-hand page waits for the left one; if the notes leave the left page less than one line of text, the rest stay at the foot of the right page, as JLReq allows. A document tagged `ja` already sets a vertical book's markers as `（{n}）` at the right of the line, 0.7 em, with digits upright: the two lines written out show it. `numberGap: 'em'` puts a full note-character after the number and `hangingIndent: em(2)` lines the turnovers up past it.
+
+### 2 · Write the markers where Japanese puts them
+
+The Markdown writes `見返り柳[^1]` after the word the note explains and the notes as `[^1]: …` paragraphs at the end of the chapter. The marker follows the word the note explains; one that ends a sentence goes before its 。 (`…先生[^1]。`), and the engine never lets 。 or a marker start a line. The seven notes were written for this recipe: what the 見返り柳 and the お齒ぐろ溝 were, where 大音寺前 lay, what was sold at the 酉の市, in plain modern Japanese.
+
+### 3 · Keep the source's sesame marks
+
+`cjk.emphasisMark` decides what `*…*` and `:dots[…]` print in this book: sesame dots, at the right of a vertical line. A `ja` document already uses them; written out, they turn on the kenten in the feature list. The Aozora text marks ぎつちよんちよん with 傍点, and `aozora.py` wrote it as `:dots[ぎつちよんちよん]{style=sesame}`; Chinese books put dots under the line instead ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)).
+
+### 4 · Open on a spread
+
+<Excerpt region="opener" />
+
+The chapter's first sentence cites four notes in its first three lines. Set under a title on page 1, they would leave room for three lines of text: the left-hand page holds its own notes and nobody else's. A title page alone on page 1 moves the chapter to page 2, a right-hand page, so the first spread holds the text and all its notes. The title page is a level-1 heading whose design fills the page, anchored to the trim so the title stands on the page's axis.
+
+### 5 · Put the hashira and folios down the fore-edge
+
+<Excerpt region="furniture" />
+
+The title runs down the outer margin of the left-hand pages, outside the notes, and the kanji folios at the foot of every page but the title page.
+
+## Variations
+
+### Gather the notes at the chapter's end
+
+Without `placement`, a vertical `ja` book sets its notes as 後注 (kōchū): after the chapter's text, under the same rule, numbered through the chapter. Here they fill the left half of page 4.
+
+```diff
+-  placement: 'spread', // 傍注; 'chapterEnd' sets 後注 after the chapter instead
+-  numbering: 'spread',
++  placement: 'chapterEnd', // 後注, the default for a vertical ja book
++  numbering: 'chapter',
+```
+
+### Set the marker beside the word
+
+`markerPosition: 'side'` sets a smaller marker in the gap beside the line, as interlinear ruby is set, so it takes no room in the line at all.
+
+```diff
+-  markerPosition: 'right', markerTemplate: '（{n}）', // written out: 'ja' sets them so
++  markerPosition: 'side', markerTemplate: '{n}',
+```

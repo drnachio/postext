@@ -30,6 +30,7 @@ const DOC_PAGES: Record<string, string> = {
   "document-format": "Document-Format",
   "chinese-layout": "Chinese-Layout",
   "arabic-layout": "Arabic-Layout",
+  "japanese-layout": "Japanese-Layout",
   contributing: "Contributing",
   sandbox: "Sandbox",
   skill: "Agent-Skill",

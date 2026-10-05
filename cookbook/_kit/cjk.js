@@ -99,9 +99,10 @@ async function loadCjkFonts(faces, text, { vertical = false } = {}) {
 /** The PDF font provider for recipes with CJK faces: a family whose
  *  Fontsource subsets are Chinese, Japanese or Korean gets the files that
  *  hold the characters its pages set (`request.codePoints`); any other
- *  family goes to fontsourceProvider (the "pdf" block). */
+ *  family gets the latin file fontsourceProvider fetches (the "pdf" block)
+ *  and, when the face sets letters only latin-ext has, that file too. */
 async function cjkPdfProvider(family, weight, style, request) {
-  if (!(await isCjkFamily(family))) return fontsourceProvider(family, weight, style);
+  if (!(await isCjkFamily(family))) return cjkLatinPdfFiles(family, weight, style, request);
   const meta = await fontsourceMeta(family);
   const weights = meta.weights?.length ? meta.weights : [400, 700];
   const w = weights.reduce((a, b) => (Math.abs(b - weight) < Math.abs(a - weight) ? b : a));
@@ -118,6 +119,36 @@ async function cjkPdfProvider(family, weight, style, request) {
     if (!res.ok) throw new Error(`Fontsource file ${slice.url} (${res.status})`);
     return decompressWoff2(new Uint8Array(await res.arrayBuffer()));
   }));
+}
+
+/** A Latin family set next to the CJK faces: its latin file, then its
+ *  latin-ext file when the face sets letters only latin-ext has (ō ū in
+ *  Hepburn rōmaji, ǎ in pinyin), the file loadFonts adds on screen for
+ *  them. Latin comes first: postext-pdf draws a character from the first
+ *  file that has it, as the browser takes a character both files hold from
+ *  latin. A face Fontsource ships without latin-ext, or whose file does
+ *  not come, gets latin alone, and the PDF names the letters it lacks. */
+async function cjkLatinPdfFiles(family, weight, style, request) {
+  const meta = await fontsourceMeta(family);
+  const beyond = [...(request?.codePoints ?? [])].some(cjkLatinExtOnly);
+  if (!beyond || !meta?.subsets?.includes('latin-ext')) return fontsourceProvider(family, weight, style);
+  const weights = meta.weights?.length ? meta.weights : [400, 700];
+  const w = weights.reduce((a, b) => (Math.abs(b - weight) < Math.abs(a - weight) ? b : a));
+  const s = style === 'italic' && !meta.styles.includes('italic') ? 'normal' : style;
+  const id = fontsourceId(family);
+  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-ext-${w}-${s}.woff2`;
+  const [latin, ext] = await Promise.all([fontsourceProvider(family, weight, style), fetch(url)
+    .then(async (res) => (res.ok ? decompressWoff2(new Uint8Array(await res.arrayBuffer())) : null), () => null)]);
+  return ext ? [latin, ext] : latin;
+}
+
+/** Whether code point `cp` is in Fontsource's latin-ext file and not in
+ *  its latin file: Latin Extended-A and -B, IPA, the spacing modifiers and
+ *  Latin Extended Additional (loadFonts's test for latin-ext), less the
+ *  few latin holds too (ı Œ œ ʻ ʼ ˆ ˚ ˜). */
+function cjkLatinExtOnly(cp) {
+  if (!((cp >= 0x100 && cp <= 0x2ff) || (cp >= 0x1e00 && cp <= 0x1eff))) return false;
+  return ![0x131, 0x152, 0x153, 0x2bb, 0x2bc, 0x2c6, 0x2da, 0x2dc].includes(cp);
 }
 
 /** showPages for a book bound on either edge. A right-bound book (the

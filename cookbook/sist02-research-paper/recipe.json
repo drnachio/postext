@@ -1,0 +1,69 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 125,
+  "status": "published",
+  "chapter": "structure",
+  "order": 240,
+  "level": 2,
+  "genres": ["paper"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["citation-styles", "generated-bibliography", "japanese-notes"],
+    "also": [
+      "footnotes",
+      "figure-numbering",
+      "localised-labels",
+      "table-style",
+      "captions",
+      "resources",
+      "inline-embeds",
+      "heading-numbering",
+      "gyodori-headings",
+      "column-layouts",
+      "character-grid",
+      "opener-design",
+      "heading-styles",
+      "cjk-fonts",
+      "chips",
+      "running-heads",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q106", "Q142"],
+  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "cjk-grid-balancing", "svg-no-webfonts", "headings-drop-h1-break", "quote-frontmatter", "fonts-first"],
+  "related": ["gbt7714-chinese-paper", "arabic-research-article", "apa-thesis-with-bibtex"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "pages": "all", "timeoutMs": 120000 },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 80},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#d6dcd8"},
+    "lighting": {"environment": "overcast"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Figure 1, the three series of type sizes, drawn in code to scale",
+          "es": "La figura 1, las tres series de cuerpos, dibujada en código a escala"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Noto Serif JP", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" },
+      { "family": "Shippori Mincho B1", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

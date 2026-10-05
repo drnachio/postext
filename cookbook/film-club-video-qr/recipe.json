@@ -1,0 +1,104 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 131,
+  "status": "published",
+  "chapter": "figures",
+  "order": 70,
+  "level": 2,
+  "genres": ["ephemera", "magazine"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["video-resources", "video-style"],
+    "also": [
+      "resources",
+      "resource-types",
+      "figure-numbering",
+      "figure-citations",
+      "inline-embeds",
+      "captions",
+      "credit-notes",
+      "localised-labels",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "design-elements",
+      "page-background",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q133"],
+  "gotchas": [
+    "svg-no-webfonts",
+    "bitmap-print-size",
+    "resource-types-locale",
+    "resource-double-quotes",
+    "headings-drop-h1-break",
+    "overflow-ellipsis-default",
+    "fonts-first"
+  ],
+  "explainsWarnings": ["videoWithoutPoster"],
+  "related": ["figures-float-where-cited", "photo-essay-full-bleed"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "pages": "all", "expect": { "pages": [6, 6] } },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": { "type": "uncoated", "grammage": 120, "shade": "#fbf8f3" },
+    "binding": { "type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#1d1b20" },
+    "surface": { "type": "plain", "color": "#dcd6cc" },
+    "lighting": { "environment": "night" }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Title card for Elephants Dream, drawn in code. The film, © 2006 Blender Foundation and Netherlands Media Art Institute, CC BY 2.5, is linked from the page, not reproduced",
+          "es": "Cartela de Elephants Dream, dibujada en código. La película, © 2006 Blender Foundation e Instituto Neerlandés de Arte Mediático, CC BY 2.5, se enlaza desde la página, no se reproduce"
+        },
+        "who": "Ignacio Ferro",
+        "source": "https://studio.blender.org/films/elephants-dream/",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Title card for Big Buck Bunny, drawn in code. The film, © 2008 Blender Foundation, CC BY 3.0, is linked from the page, not reproduced",
+          "es": "Cartela de Big Buck Bunny, dibujada en código. La película, © 2008 Blender Foundation, CC BY 3.0, se enlaza desde la página, no se reproduce"
+        },
+        "who": "Ignacio Ferro",
+        "source": "https://studio.blender.org/films/big-buck-bunny/",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Title card for Tears of Steel, drawn in code. The film, © 2012 Blender Foundation, CC BY 3.0, is linked from the page, not reproduced",
+          "es": "Cartela de Tears of Steel, dibujada en código. La película, © 2012 Blender Foundation, CC BY 3.0, se enlaza desde la página, no se reproduce"
+        },
+        "who": "Ignacio Ferro",
+        "source": "https://studio.blender.org/films/tears-of-steel/",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Title card for Spring, drawn in code. The film, © 2019 Blender Foundation (Blender Studio), CC BY 4.0, is linked from the page, not reproduced",
+          "es": "Cartela de Spring, dibujada en código. La película, © 2019 Blender Foundation (Blender Studio), CC BY 4.0, se enlaza desde la página, no se reproduce"
+        },
+        "who": "Ignacio Ferro",
+        "source": "https://studio.blender.org/films/spring/",
+        "license": "original"
+      }
+    ],
+    "fonts": [
+      { "family": "Literata", "license": "OFL-1.1" },
+      { "family": "Big Shoulders Display", "license": "OFL-1.1" },
+      { "family": "Barlow Semi Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

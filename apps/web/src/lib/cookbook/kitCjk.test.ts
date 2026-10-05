@@ -190,3 +190,61 @@ describe("kit block cjk: Japanese faces", () => {
     expect(fetched.filter((url) => url.endsWith(".css"))).toEqual(["https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho-b1@5/400.css"]);
   });
 });
+
+// #466: a Latin face next to the CJK ones (the rōmaji of Nº 130, the pinyin
+// of a dictionary) sets letters that are in Fontsource's latin-ext file only.
+describe("kit block cjk: Latin faces in the PDF", () => {
+  const meta: Record<string, unknown> = {
+    newsreader: LATIN_META,
+    "latin-only": { subsets: ["latin"], weights: [400], styles: ["normal"] },
+  };
+  const fetched: string[] = [];
+  const serve = (missing: string[] = []): Fetch => async (url) => {
+    fetched.push(url);
+    const api = /api\.fontsource\.org\/v1\/fonts\/(.+)$/.exec(url);
+    if (api) return meta[api[1]] ? response(meta[api[1]]) : response("", 404);
+    const file = /\/files\/([\w-]+)\.woff2$/.exec(url);
+    return file && !missing.includes(file[1]) ? response(file[1]) : response("", 404);
+  };
+  const decompressWoff2 = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
+  const codes = (text: string) => ({ codePoints: [...text].map((ch) => ch.codePointAt(0)!) });
+
+  it("adds the latin-ext file after latin for letters only it has", async () => {
+    const fontsourceProvider = vi.fn(async () => "latin face");
+    const { cjkPdfProvider } = kitWith(serve(), { decompressWoff2, fontsourceProvider });
+    fetched.length = 0;
+    expect(await cjkPdfProvider("Newsreader", 400, "normal", codes("Tōkyō, Rōmaji Nikki"))).toEqual([
+      "latin face", "newsreader-latin-ext-400-normal",
+    ]);
+    expect(fontsourceProvider).toHaveBeenCalledWith("Newsreader", 400, "normal");
+    // Pinyin tone marks, and a letter of Latin Extended Additional (ḥ).
+    expect(await cjkPdfProvider("Newsreader", 700, "italic", codes("zhāi yǎn ḥ"))).toEqual([
+      "latin face", "newsreader-latin-ext-700-italic",
+    ]);
+    // The nearest weight the family ships, as fontsourceProvider snaps it.
+    await cjkPdfProvider("Newsreader", 600, "normal", codes("ū"));
+    expect(fetched.filter((url) => url.endsWith(".woff2")).at(-1)).toMatch(/newsreader-latin-ext-700-normal\.woff2$/);
+  });
+
+  it("gives latin alone to a face that sets nothing beyond it", async () => {
+    const fontsourceProvider = vi.fn(async () => "latin face");
+    const { cjkPdfProvider } = kitWith(serve(), { decompressWoff2, fontsourceProvider });
+    fetched.length = 0;
+    // Latin-1 letters, curly quotes and dashes, and the few letters past
+    // U+00FF that the latin file holds (ı Œ œ ʻ ˆ ˜).
+    expect(await cjkPdfProvider("Newsreader", 400, "normal", codes("Café “déjà” — ı Œœ ʻ ˆ ˜ ô û"))).toBe("latin face");
+    expect(await cjkPdfProvider("Newsreader", 400, "normal", undefined)).toBe("latin face");
+    expect(fetched.some((url) => url.includes("latin-ext"))).toBe(false);
+  });
+
+  it("falls back to latin when there is no latin-ext file to add", async () => {
+    const fontsourceProvider = vi.fn(async () => "latin face");
+    const { cjkPdfProvider } = kitWith(serve(["newsreader-latin-ext-400-normal"]), { decompressWoff2, fontsourceProvider });
+    fetched.length = 0;
+    // The family ships no latin-ext: no file is asked for.
+    expect(await cjkPdfProvider("Latin Only", 400, "normal", codes("Tōkyō"))).toBe("latin face");
+    expect(fetched.some((url) => url.includes("latin-ext"))).toBe(false);
+    // The file does not come: latin alone, and postext-pdf reports the ō.
+    expect(await cjkPdfProvider("Newsreader", 400, "normal", codes("Tōkyō"))).toBe("latin face");
+  });
+});

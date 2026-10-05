@@ -1,0 +1,139 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 126,
+  "status": "published",
+  "chapter": "structure",
+  "order": 250,
+  "level": 2,
+  "genres": [
+    "manual",
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "gojuon-index",
+      "back-of-book-index"
+    ],
+    "also": [
+      "furigana",
+      "ruby",
+      "cjk-fonts",
+      "japanese-kinsoku",
+      "yakumono",
+      "heading-styles",
+      "unnumbered-headings",
+      "heading-numbering",
+      "gyodori-headings",
+      "column-layouts",
+      "character-grid",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "mirrored-margins",
+      "paragraph-styles",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q141"
+  ],
+  "gotchas": [
+    "ja-locale-tag",
+    "ja-fonts-kana",
+    "cjk-fonts-slices",
+    "cjk-no-italic",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "explainsWarnings": [
+    "indexReadingMissing"
+  ],
+  "related": [
+    "chinese-name-index",
+    "back-of-book-index",
+    "names-and-subjects-indexes"
+  ],
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "cjk"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 3,
+    "card": "loupe",
+    "focus": {
+      "page": 3,
+      "x": 0.08,
+      "y": 0.07,
+      "w": 0.84,
+      "h": 0.5
+    },
+    "pages": "all",
+    "timeoutMs": 120000
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 70,
+      "shade": "#fdfcf9"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#b33a22"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Noto Serif JP",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans JP",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

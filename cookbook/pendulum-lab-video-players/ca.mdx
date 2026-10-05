@@ -1,0 +1,77 @@
+---
+title: "Full de pràctiques amb vídeos per a la pantalla i l'EPUB"
+summary: "Dos recursos de vídeo amb el seu propi MP4: l'imprès hi posa el primer fotograma amb un codi QR; renderToHtml i postext-epub reprodueixen els fitxers."
+plain: "Un full de pràctiques de física amb dos vídeos curts d'un pèndol. En paper cada vídeo és una imatge fixa amb un codi per escanejar; en pantalla i al llibre electrònic el vídeo es reprodueix a la pàgina."
+description: "Un full de pràctiques de física amb dos vídeos MP4: impresos com a portada amb codi QR, reproduïts a l'edició HTML i empaquetats en un EPUB de maquetació fixa."
+question: "Com reprodueixen l'edició de pantalla i l'EPUB els vídeos del llibre, i com amago el botó de baixada?"
+aliases: ["vídeo", "MP4", "vídeo HTML5", "reproductor de vídeo", "botó de baixada", "nodownload", "controlslist", "codi QR", "vídeo en EPUB", "full de pràctiques", "quadern d'exercicis", "resourceVideoUrl", "videoStyle"]
+pageNotes: { "1": "L'obertura de la pràctica 4.2: una banda de color teula amb el títol i tres camps blancs per al nom, el grup i la data; a sota, l'objectiu, els dos vídeos i el fonament a dues columnes. Al peu, el primer fotograma del vídeo 1 i del vídeo 2, cadascun amb una marca de reproducció fosca i un codi QR.", "2": "El procediment en un requadre crema, una taula de mesures en blanc, una taula de períodes exactes de 5° a 90° i quatre qüestions amb requadres blancs per respondre." }
+---
+
+## Què compondràs
+
+La pràctica 4.2 de *Física al laboratori*, un quadern A4 per a batxillerat, sobre el període d'un pèndol. Una banda de color teula porta el títol i els camps per al nom, el grup i la data. Al peu de la primera pàgina, dos vídeos del mateix pèndol, deixat anar des de 10° i des de 80°, queden l'un al costat de l'altre. En paper, cada vídeo és el seu primer fotograma amb una marca de reproducció i un codi QR que obre el MP4. A l'edició de pantalla que acompanya les pàgines, i a l'EPUB que escriu el codi, aquests mateixos recursos es reprodueixen al reproductor de vídeo del lector. La segona pàgina recull el procediment, una taula per omplir, els períodes exactes que calcula el codi i quatre qüestions amb el seu requadre per a la resposta.
+
+## Elaboració
+
+### 1 · Dona a cada vídeo una adreça de producció i un fitxer
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un vídeo propi té dues adreces. `video.url` és on el trobarà el llibre publicat: el codi QR la imprimeix i el PDF hi enllaça la portada, així que aquí és l'adreça del vídeo a jsDelivr, la que un mòbil pot obrir avui. `video.fileId` anomena el fitxer, que es desa a part com un mapa de bits, per a les sortides que el poden portar o reproduir des d'un altre lloc (vegeu [Format del document › Vídeos](/ca/docs/document-format#vídeos)). Les opcions de `videoStyle.player` valen per a tots els vídeos: es repeteixen en bucle, comencen sense so, es carreguen sencers (27 i 61 KB) i no ofereixen baixada, imatge dins d'imatge ni enviament a una altra pantalla, de manera que el vídeo es queda al full.
+
+### 2 · Compon l'edició de pantalla amb el mateix original
+
+<Excerpt region="screen" />
+
+L'edició de pantalla viu a la configuració, a `htmlViewer.overrides`, que el llenç i el PDF no llegeixen. A 122 ppp cada mida en punts surt una quarta part més gran que a 96, així que el text de 9,4 pt es llegeix a 16 px al plafó, i els peus, els requadres i les taules creixen amb ell. L'obertura conserva el títol i deixa la banda i els camps, que són cosa del paper.
+
+### 3 · Reprodueix els vídeos al plafó
+
+<Excerpt region="pane" />
+
+`renderToHtml` compon cada recurs de vídeo com un `<video>` d'HTML5 amb les opcions del reproductor com a atributs: `controls`, `muted`, `loop`, `playsinline`, `preload="auto"`, `disablepictureinpicture`, `disableremoteplayback` i `controlslist="nodownload"`. Aquest últim només amaga el botó. Qui tingui l'adreça pot desar el fitxer igualment, així que és ordre a la interfície, no protecció. `resourceVideoUrl` dona al motor una adreça reproduïble per a cada `fileId`, igual que `resourceImageUrl` fa amb les portades. Aquí és el recurs publicat; un lloc que desi els fitxers en una altra banda torna la seva pròpia URL, o la URL d'un blob amb els bytes. Sense ella, el reproductor fa servir `video.url`, i sense cap de les dues el plafó mostra la portada.
+
+### 4 · Posa els vídeos en un EPUB de maquetació fixa
+
+<Excerpt region="epub" />
+
+El full s'organitza al voltant de dos vídeos l'un al costat de l'altre i de requadres buits per escriure, així que la maquetació fixa el conserva: cada pàgina com s'imprimeix, amb un reproductor on hi havia la portada. Un EPUB fluid també reproduiria els vídeos, l'un sota l'altre i a l'amplada del text. `resourceBytes` respon `video/mp4` per a cada vídeo i un JPEG per a cada portada, i l'escriptor els desa a `media/` i a `images/`. L'EPUB només conserva els atributs que admet el seu esquema (`controls`, `autoplay`, `muted`, `loop`, `playsinline`, `preload`), de manera que el botó de baixada i la resta queden en mans del sistema de lectura. El fitxer passa EPUBCheck sense errors ni avisos.
+
+### 5 · Compon θ i π al llenç, al PDF i a l'EPUB
+
+<Excerpt region="greek" />
+
+El kit carrega el fitxer `latin` de Fontsource de cada font, que no porta grec. El codi hi afegeix els fitxers `greek` de Source Serif 4 com a fonts limitades al bloc grec, passa al PDF els dos fitxers de cada font del text (cada caràcter surt del primer que el té) i dona a l'EPUB els fitxers grecs després dels llatins, cadascun amb el seu `unicodeRange`. La captura encara avisa que θ i π queden fora del subconjunt llatí; el PDF els porta.
+
+### 6 · Calcula la taula al codi
+
+<Excerpt region="periods" />
+
+El període exacte necessita la integral el·líptica completa *K*, i la mitjana aritmeticogeomètrica la dona en uns quants passos: *T* = *T*~0~ / AGM(1, cos ½θ~0~). La taula imprimeix tres decimals amb coma decimal en castellà, i les files de 10° i 80° coincideixen amb els vídeos: 2,010 s i 2,282 s, un 0,2 % i un 13,8 % més que *T*~0~ = 2,006 s. En 8 s surten gairebé quatre oscil·lacions completes al primer vídeo i tres i mitja al segon.
+
+## Variants
+
+### Fes que un vídeo comenci tot sol
+
+El `player` de cada vídeo se superposa a `videoStyle.player`. La reproducció automàtica sempre comença sense so, com exigeixen els navegadors.
+
+```diff
+ ];
++clips[0].video.player = { autoplay: true }; // the 10° clip starts as the pane opens
+```
+
+### Mostra la portada impresa en pantalla
+
+Amb `html: 'poster'`, l'edició HTML compon la portada amb la seva marca de reproducció i el seu codi QR, enllaçada a l'adreça de producció, en lloc del reproductor.
+
+```diff
+ const videoStyle = {
++  html: 'poster',
+```
+
+### Fes servir un vídeo de YouTube o de Vimeo
+
+`source: 'youtube'` amb l'adreça del vídeo insereix el reproductor de YouTube des de `youtube-nocookie.com` (`privacy` està activat per defecte). Aquest reproductor atén menys opcions: controls, pantalla completa, reproducció automàtica, silenci i bucle; el de Vimeo hi afegeix el menú de velocitat i la imatge dins d'imatge, i cap dels dos no ofereix baixada. Un EPUB no pot inserir el reproductor d'una pàgina web, així que allà el vídeo és la seva portada enllaçada. Les opcions i el seu abast són a [Configuració › Estil de vídeo](/ca/docs/configuration#estil-de-vídeo).
+
+## Errors freqüents
+
+Els MP4 són H.264. Chrome, Edge, Safari i Firefox els reprodueixen, i també el Chrome for Testing de la captura. Un Chromium compilat sense els seus còdecs propietaris, que és el que fa per defecte el projecte obert, no els reprodueix; codifica els vídeos en WebM (`format: 'webm'`) si això importa als teus lectors.

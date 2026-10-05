@@ -1,0 +1,78 @@
+---
+title: "A bunko novel set vertically, with furigana"
+summary: "Sōseki's Ten Nights of Dreams on an A6 bunko page: 38 characters down 15 lines, read from the right, readings beside the rare kanji, titles in three lines."
+plain: "The opening of a classic Japanese book as a pocket paperback: the text runs in columns from top to bottom, read from right to left, with small kana beside the harder characters."
+description: "Sōseki's Yume Jūya as a Japanese bunko in Postext: vertical lines bound on the right, Aozora furigana, 3-line headings, a fore-edge hashira, kanji folios."
+question: "How do I set a Japanese novel vertically, bound on the right, like a bunko paperback?"
+aliases: ["bunko", "文庫", "文庫本", "tategaki", "縦組", "縦書き", "vertical Japanese", "Japanese novel", "pocket paperback", "furigana", "ルビ", "振り仮名", "3行取り", "gyōdori", "hashira", "柱", "kanji folios", "漢数字", "Aozora Bunko", "青空文庫", "夢十夜", "Ten Nights of Dreams", "Natsume Sōseki", "夏目漱石"]
+pageNotes: { "1": "The title page, alone on the left of the spine: 夢十夜 in large heavy Mincho down the middle of a thin vermilion frame, 夏目漱石 lower and to its left, and a three-line colophon in English across the foot.", "2": "The first night opens on a right-hand page: the title 第一夜 stands five characters down in a band three lines wide, then こんな夢を見た。 and the text in columns of 38 characters, with small kana readings beside words such as 仰向 and 輪郭.", "3": "A left-hand page: dialogue paragraphs open with 「 inside the one-character indent, the hashira 夢十夜 runs down the outer margin and the folio 三 stands at its foot.", "6": "The second night's title 第二夜 takes three lines in the middle of a page, and the text after it continues on the same line grid." }
+---
+
+## What you'll build
+
+Nine pages of a Japanese pocket paperback (文庫, bunko) of Natsume Sōseki's *Ten Nights of Dreams*, the first and second nights, on an A6 page of 105 × 148 mm bound on the right. The title page lies alone on the left of the spine; from page 2 the text runs top to bottom in lines read from the right, 38 characters down and 15 lines across, Shippori Mincho B1 at 9 pt on a pitch of 1.75 em. The readings Aozora Bunko gives for the harder kanji stand beside them in half-size kana, each night's title takes three lines of the grid, and the left-hand pages carry the book's title down the fore-edge over a folio in kanji numerals. The European pocket book with the same structure is <RecipeLink slug="catalan-pocket-novella">Nº 104</RecipeLink>, and the Chinese vertical novel is <RecipeLink slug="vertical-novel-right-bound">Nº 075</RecipeLink>.
+
+## Method
+
+### 1 · Turn the page, count it in characters and tag it `ja`
+
+The code is [the short answer](#the-short-answer) above. `layout.writingMode: 'vertical-rl'` lays each page out as a horizontal page turned a quarter turn clockwise, and `page.binding`, left at `'auto'`, binds a vertical book on the right: page 1 is still the recto, but it lies on the left of the spine, and `mirror: true` puts its inner margin on its right ([Vertical writing](/en/docs/configuration#vertical-writing), [Binding](/en/docs/configuration#binding)). The [character grid](/en/docs/configuration#character-grid) makes the type area 38 characters of 9 pt down (120.7 mm) and 15 lines of 15.75 pt across (83.3 mm); the margins in `page` are minimums, and the grid grows each pair by the same amount, so the head stays 4 mm deeper than the foot. Ask for more lines than the margins leave room for and the grid quietly drops one (`cjkGridClamped` in `doc.configWarnings`): the 9 mm spine and 12 mm fore-edge are what lets 15 lines fit.
+
+`locale: 'ja'` sets the rest the way Japanese books are set, so the four `cjk` lines written out here change nothing; they show what the tag picks. `ja-very-strict` is JIS X 4051's line-start rule (行頭禁則): no line opens with 、。」, ー or a small kana such as っ. `hangingPunctuation: 'allow'` lets a 、 or 。 that would otherwise open a line hang below the last character (ぶら下げ), which bunko do instead of squeezing the line. `paragraphStartBracket: 'half'` is JLReq's pattern ③: a paragraph that opens with 「 sets the bracket in the second half of its one-character indent, so the first character of speech stands where every other paragraph's does ([East Asian typography](/en/docs/configuration#east-asian-typography)). Chinese books differ on both counts: they hang no mark by default and indent a paragraph two characters, bracket or not.
+
+### 2 · Give each night's title three lines of the grid
+
+<Excerpt region="nights" />
+
+A Japanese heading takes a whole number of body lines, 行取り (gyōdori), so the lines after it stay on the same grid as the lines before. `lineSpan: 3` sets 第一夜 in a band of three 15.75 pt lines with its characters centred across them; the heading's 12.5 pt does not move the grid, and on page 6 第二夜 lands mid-page with the text after it on the same lines as the text before. `indent: em(5)` reads body characters (五字下げ), which is how the Aozora text marks a 中見出し and how JLReq counts heading indents ([Per-level overrides](/en/docs/configuration#per-level-overrides)).
+
+### 3 · Bring the text and its readings from Aozora Bunko
+
+The two nights come from Aozora Bunko's card 799, converted with `aozora.py` from the postext-port skill. The converter reads the file as CP932, turns each reading written `仰向《あおむき》` into a group reading `{仰向|あおむき}`, one run of kana over the whole word, and each `［＃５字下げ］…［＃「第一夜」は中見出し］` into a heading. In a `ja` document the readings follow JIS X 4051: a reading shorter than its base is spread along it 1:2:1, and a longer one may run onto a neighbouring kana but never onto a kanji ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)). The leading of 1.75 em leaves 6.75 pt between lines, room for the 4.5 pt readings.
+
+### 4 · Put the hashira down the fore-edge, the folios in kanji
+
+<Excerpt region="hashira" />
+
+In a vertical bunko the running head (柱, hashira) is small and sits in the outer margin. `anchor.to: 'outer'` places an element there, the left margin of an odd page and the right one of an even page in a book bound on the right, and `writingMode: 'vertical-rl'` sets it top to bottom ([Vertical text elements](/en/docs/configuration#vertical-text-elements)). The title 夢十夜 runs on the left-hand pages only (`parity: 'odd'`), and `pages: 'body'` would keep it off any page that opens a chapter. `pageNumbering.format: 'japanese-informal'` prints the folios 二, 三 … 九 ([Numbering](/en/docs/configuration#numbering)).
+
+### 5 · Centre the title page on the trim
+
+<Excerpt region="title-page" />
+
+The title page is a level-1 heading with a style of its own, `# 夢十夜 {style="title" …}`, whose design fills the page. Its elements are anchored to the page itself, not the type area, because the type area of a mirrored page sits 1.5 mm off centre: `x` runs down the page and `y` across it from the right edge, so `AXIS` is half the page's width on either side of the spine. The colophon in the footer is set in Noto Sans JP: Shippori Mincho B1 has no ō or ū, and the PDF would draw empty boxes for Sōseki.
+
+### 6 · Load each weight with the characters it sets
+
+<Excerpt region="voices" />
+
+Fontsource serves each weight of a Japanese face as about 120 files, each covering a range of characters, and `loadCjkFonts` fetches the files the text it is given touches. The text weight gets the whole sample with `vertical: true`, which also loads the face's vertical forms for the canvas: 、。「」 and ー, and the small kana, which stand in the upper right of their cell in vertical text. `renderToPdf` takes `cjkPdfProvider`, which embeds the same files as subsets.
+
+## Variations
+
+### Mark the words the source stresses
+
+Sōseki's first two nights have no 傍点, but much of Aozora does, and the converter writes it as `:dots[…]{style=sesame}`. In a `ja` document `*…*` gives the same sesame marks beside the line, never italics.
+
+```diff
+-こんな夢を見た。
++こんな*夢*を見た。
+```
+
+### Set every bracket a full character down
+
+Pattern ① keeps the one-character indent and sets the bracket after it, as many novels for younger readers do.
+
+```diff
+-  paragraphStartBracket: 'half', // ③: a 「 that opens a paragraph fills the indent cell
++  paragraphStartBracket: 'indent', // ①: the bracket after the one-character indent
+```
+
+### Squeeze instead of hanging
+
+With `hangingPunctuation: 'none'` a 、 or 。 that would open a line is taken into the line before it by squeezing its brackets and commas (追い込み), or the line's last character goes down with it (追い出し), and no mark stands below the line.
+
+```diff
+-  hangingPunctuation: 'allow', // ぶら下げ: a 、。 that would open a line hangs below the last
++  hangingPunctuation: 'none',
+```
