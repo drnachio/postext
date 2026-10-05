@@ -1,0 +1,43 @@
+name: Showcase pagination
+
+# The Release workflow lays out the showcase bundles again after every
+# version bump (scripts/presets/ci-layouts.sh) and commits their
+# `layouts.<locale>.json`. This runs the same script when it changes, on
+# the same runner, without committing: the job log shows how the files it
+# writes differ from the committed ones, and the artifact holds them.
+on:
+  push:
+    branches: [develop]
+    paths:
+      - scripts/presets/layouts.mjs
+      - scripts/presets/ci-layouts.sh
+      - .github/workflows/presets-layouts.yml
+  workflow_dispatch:
+
+jobs:
+  paginate:
+    name: Paginate the showcase bundles
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: scripts/presets/ci-layouts.sh
+
+      - name: Differences with the committed pagination
+        run: git diff --stat -- apps/web/public/presets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: showcase-layouts
+          path: apps/web/public/presets/*/layouts.*.json

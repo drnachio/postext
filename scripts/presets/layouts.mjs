@@ -13,14 +13,15 @@
 //
 // The records are stamped with the engine (`postext` version + record
 // format), the configuration and the resources they were laid out with, so
-// they go stale on a release: run this after raising `postext` to the
-// version the release will publish (the release publishes a version raised
-// by hand as-is). `--verify` writes nothing: it opens each edition again and
+// they go stale on every release, which lays them out again (see below).
+// `--verify` writes nothing: it opens each edition again and
 // fails when the Sandbox lays out any chapter instead of taking the shipped
 // record.
 //
 // Needs the web app serving this checkout (`next dev -p 3107`, the
-// `web-only` launch entry) and Google Chrome.
+// `web-only` launch entry) and Google Chrome. The Release workflow runs it
+// through ci-layouts.sh after bumping the version, and commits the files
+// with the release.
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
@@ -48,7 +49,8 @@ const flag = (name) => {
 const BASE = flag('--base') ?? 'http://localhost:3107';
 const VERIFY = args.includes('--verify') ? (args.splice(args.indexOf('--verify'), 1), true) : false;
 const ONLY = args; // preset or preset:lang
-const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const CHROME = process.env.CHROME_PATH
+  ?? (process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/google-chrome');
 /** The longest one edition may take to paginate (ms). */
 const TIMEOUT_MS = 30 * 60_000;
 
@@ -105,7 +107,9 @@ async function paginate(edition) {
     executablePath: CHROME,
     headless: true,
     userDataDir: profile,
-    args: ['--no-first-run', '--window-size=1600,1000'],
+    // A CI runner's Chrome cannot use its sandbox (unprivileged user
+    // namespaces are off on Ubuntu runners).
+    args: ['--no-first-run', '--window-size=1600,1000', ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [])],
     protocolTimeout: TIMEOUT_MS,
   });
   try {
