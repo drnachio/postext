@@ -4,8 +4,11 @@ import {
   EXACT_IDENTIFIER_BONUS,
   MINISEARCH_OPTIONS,
   SEARCH_BOOSTS,
+  cjkAwareTokenizer,
+  cjkWords,
   exactIdentifierBonus,
-  hanWords,
+  foldKana,
+  kanaInsensitive,
   matchReason,
   processTerm,
   recipeIdentifiers,
@@ -50,7 +53,7 @@ describe("tokenize", () => {
     expect(tokenize("用renderToPdf导出PDF书签")).toEqual([
       "用", "renderToPdf", "render", "To", "Pdf", "导", "导出", "出", "PDF", "书", "书签", "签",
     ]);
-    expect(hanWords("怎么给 PDF 加书签和目录")).toEqual(["给", "加书签", "目录"]);
+    expect(cjkWords("怎么给 PDF 加书签和目录")).toEqual(["给", "加书签", "目录"]);
   });
 });
 
@@ -274,4 +277,136 @@ describe("processTerm in Arabic", () => {
   it("keeps Arabic words when tokenizing", () => {
     expect(tokenize("كيف أضيف حاشية سفلية، في PDF؟")).toEqual(["كيف", "أضيف", "حاشية", "سفلية", "في", "PDF"]);
   });
+});
+
+describe("Japanese", () => {
+  it("indexes kana: runs of kanji and kana become characters and pairs", () => {
+    expect(tokenize("縦書き")).toEqual(["縦", "縦書", "書", "書き", "き"]);
+    expect(tokenize("ふりがな")).toEqual(["ふ", "ふり", "り", "りが", "が", "がな", "な"]);
+    expect(tokenize("ノンブル")).toEqual(["の", "のん", "ん", "んぶ", "ぶ", "ぶる", "る"]);
+  });
+
+  it("folds katakana to hiragana and half-width katakana to full width", () => {
+    expect(tokenize("ルビ")).toEqual(tokenize("るび"));
+    expect(tokenize("ﾙﾋﾞ")).toEqual(tokenize("ルビ"));
+    expect(tokenize("ｶﾀｶﾅ")).toEqual(tokenize("カタカナ"));
+    expect(foldKana("カタカナとひらがな、ヽヾ")).toBe("かたかなとひらがな、ゝゞ");
+    expect(foldKana("ヷ")).toBe("ヷ");
+    // Full-width Latin is narrowed; other compatibility forms are not touched.
+    expect(tokenize("ＰＤＦで出力")).toEqual(["PDF", "出", "出力", "力"]);
+    expect(tokenize("① ㍻")).toEqual([]);
+  });
+
+  it("keeps the long-vowel mark and leaves the middle dot as a separator", () => {
+    expect(tokenize("ルーラー")).toEqual(["る", "るー", "ー", "ーら", "ら", "らー", "ー"]);
+    expect(cjkWords("傍点・圏点")).toEqual(["傍点", "圏点"]);
+  });
+
+  it("breaks a run at particles only where a word has ended", () => {
+    expect(cjkWords("ルビの位置")).toEqual(["るび", "位置"]);
+    expect(cjkWords("縦書きには")).toEqual(["縦書き"]);
+    expect(cjkWords("ふりがなを付ける方法")).toEqual(["ふりがな", "付ける方法"]);
+    expect(cjkWords("ひらがなとカタカナ")).toEqual(["ひらがな", "かたかな"]);
+    expect(cjkWords("禁則処理とは何ですか")).toEqual(["禁則処理", "何"]);
+    // Inside a word the same kana stay: が in ふりがな, か in 書かれた.
+    expect(cjkWords("ふりがな")).toEqual(["ふりがな"]);
+    expect(cjkWords("書かれた")).toEqual(["書かれた"]);
+  });
+
+  it("does not cut a Japanese run at the Chinese function words", () => {
+    expect(cjkWords("和文と欧文")).toEqual(["和文", "欧文"]);
+    // A run without kana is read as Chinese, as before.
+    expect(cjkWords("页眉的高度")).toEqual(["页眉", "高度"]);
+  });
+
+  it("keeps single kana and kanji as terms, and pairs whole", () => {
+    expect(processTerm("る", "en")).toBe("る");
+    expect(processTerm("が", "es")).toBe("が");
+    expect(processTerm("るび", "ar")).toBe("るび");
+    expect(processTerm("字", "zh")).toBe("字");
+    expect(processTerm("是", "zh")).toBeNull();
+  });
+
+  it("separates an identifier from the Japanese around it", () => {
+    expect(exactIdentifierBonus("renderToPdfの使い方", ["renderToPdf"])).toBe(EXACT_IDENTIFIER_BONUS);
+    expect(exactIdentifierBonus("ルビcalloutStylesとは", ["calloutStyles"])).toBe(EXACT_IDENTIFIER_BONUS);
+  });
+
+  it("marks a folded term in either kana", () => {
+    const pattern = new RegExp(kanaInsensitive("るび"), "u");
+    expect(pattern.test("ルビ")).toBe(true);
+    expect(pattern.test("るび")).toBe(true);
+    expect(pattern.test("ルヒ")).toBe(false);
+  });
+
+  it("wraps another tokenizer, cutting only the Chinese and Japanese runs", () => {
+    const words = cjkAwareTokenizer((text) => text.split(/[\s,.()]+/));
+    expect(words("Ruby (ルビ) and 縦中横.")).toEqual(["Ruby", "る", "るび", "び", "and", "縦", "縦中", "中", "中横", "横"]);
+  });
+
+  it("lets a docs index with MiniSearch's own splitting find quoted Japanese", () => {
+    // As DocsSearchPalette builds the en/es/ca/ar docs index.
+    const mini = new MiniSearch<{ id: string; body: string }>({
+      fields: ["body"],
+      tokenize: cjkAwareTokenizer(MiniSearch.getDefault("tokenize") as (text: string) => string[]),
+      searchOptions: { prefix: true },
+    });
+    mini.addAll([
+      { id: "ruby", body: "Furigana (振り仮名, ルビ) sits over the base text." },
+      { id: "vertical", body: "Vertical writing (縦書き) with tate-chū-yoko (縦中横)." },
+      { id: "latin", body: "Headings and running heads." },
+    ]);
+    const ids = (query: string) => mini.search(query).map((r) => r.id);
+    expect(ids("ルビ")).toEqual(["ruby"]);
+    expect(ids("振り仮名")).toEqual(["ruby"]);
+    expect(ids("縦書き")).toEqual(["vertical"]);
+    expect(ids("縦中横")).toEqual(["vertical"]);
+    expect(ids("running heads")).toEqual(["latin"]);
+  });
+
+  const RECIPES_JA = [
+    recipe("furigana", {
+      title: "Furigana over kanji",
+      summary: "ルビ（振り仮名）を親文字の上に組む。熟語ルビとグループルビ。",
+      search: { aliases: ["ふりがな", "ruby"] },
+    }),
+    recipe("vertical-bunko", {
+      title: "A vertical bunko page",
+      summary: "縦書きの文庫本。ノンブルと柱。",
+      search: { aliases: ["tategaki"] },
+    }),
+    recipe("kinsoku", {
+      title: "Line-start and line-end rules",
+      summary: "禁則処理：小書きの仮名や句読点を行頭に置かない。",
+      search: { aliases: ["kinsoku shori"] },
+    }),
+    recipe("kana-tables", {
+      title: "A kana chart",
+      summary: "ひらがなとカタカナの五十音表。",
+    }),
+    recipe("chinese-ruby", {
+      title: "注音与拼音",
+      summary: "在汉字上方排注音。",
+    }),
+  ];
+
+  for (const locale of ["en", "es", "ca", "zh", "ar"] as const) {
+    it(`finds recipes by their Japanese words in the ${locale} index`, () => {
+      const mini = new MiniSearch<SearchDocument>(MINISEARCH_OPTIONS[locale]);
+      mini.addAll(RECIPES_JA.map((r) => searchDocument(r, FACETS)));
+      const ids = (query: string) => mini.search(query).map((r) => r.id);
+      expect(ids("ルビ")).toEqual(["furigana"]);
+      expect(ids("るび")).toEqual(["furigana"]);
+      expect(ids("ﾙﾋﾞ")).toEqual(["furigana"]);
+      expect(ids("ふりがな")).toEqual(["furigana"]);
+      expect(ids("フリガナ")).toEqual(["furigana"]);
+      expect(ids("縦書き")).toEqual(["vertical-bunko"]);
+      expect(ids("縦書きのノンブル")).toEqual(["vertical-bunko"]);
+      expect(ids("禁則処理")).toEqual(["kinsoku"]);
+      expect(ids("カタカナ")).toEqual(["kana-tables"]);
+      expect(ids("ひらがな")).toEqual(["kana-tables"]);
+      expect(ids("熟語ルビ")).toEqual(["furigana"]);
+      expect(ids("注音")).toEqual(["chinese-ruby"]);
+    });
+  }
 });

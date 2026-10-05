@@ -8,8 +8,8 @@ import MiniSearch from "minisearch";
 import {
   MINISEARCH_OPTIONS,
   exactIdentifierBonus,
-  hanWords,
-  hasHan,
+  cjkWords,
+  hasCjk,
   matchReason,
   processTerm,
   recipeIdentifiers,
@@ -255,25 +255,27 @@ function facetCounts(pool: CatalogRecipe[], state: GalleryState): FacetCounts {
 export type GapEntry = NonNullable<Catalog["gaps"]>[number];
 
 /** Words of a text as the index sees them (folded, singular, no stop
- *  words), joined by single spaces. Chinese runs stay whole (cut only at
- *  function words) after the Latin words: they have no word boundaries to
- *  match on, so a gap term in Chinese is found as a substring. */
+ *  words), joined by single spaces. Chinese and Japanese runs stay whole
+ *  (cut only at function words and particles, katakana folded to hiragana)
+ *  after the Latin words: they have no word boundaries to match on, so a
+ *  gap term in Chinese or Japanese is found as a substring. */
 function normalWords(text: string, locale: Locale): string {
-  return tokenize(text.replace(/\p{Script=Han}+/gu, " "))
+  return tokenize(text)
+    .filter((word) => !hasCjk(word))
     .map((word) => processTerm(word, locale))
     .filter((word): word is string => Boolean(word))
-    .concat(hanWords(text))
+    .concat(cjkWords(text))
     .join(" ");
 }
 
 /** A gap term's `normalWords` is long enough to be named on purpose. */
 function namable(words: string): boolean {
-  return words.length >= (hasHan(words) ? 2 : 3);
+  return words.length >= (hasCjk(words) ? 2 : 3);
 }
 
 /** `query` (padded with spaces) names `words` whole. */
 function names(query: string, words: string): boolean {
-  return hasHan(words) ? query.includes(words) : query.includes(` ${words} `);
+  return hasCjk(words) ? query.includes(words) : query.includes(` ${words} `);
 }
 
 /** Gaps whose label or an alias the query names in full ("footnotes",
@@ -296,7 +298,7 @@ function gapRemainder(q: string, gaps: readonly GapEntry[], locale: Locale): str
   for (const gap of gaps) {
     for (const term of [gap.label, ...gap.aliases]) {
       const words = normalWords(term, locale);
-      if (namable(words)) rest = rest.split(hasHan(words) ? words : ` ${words} `).join(" ");
+      if (namable(words)) rest = rest.split(hasCjk(words) ? words : ` ${words} `).join(" ");
     }
   }
   return rest.trim();

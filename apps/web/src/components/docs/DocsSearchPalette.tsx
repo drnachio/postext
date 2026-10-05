@@ -6,7 +6,16 @@ import { Dialog } from "@base-ui/react/dialog";
 import MiniSearch from "minisearch";
 import type { SearchSection } from "@/lib/docs";
 import { usePathname } from "@/i18n/navigation";
-import { cookbookPaletteEntries, makeProcessTerm, searchLocale, tokenize } from "@/lib/cookbook/search";
+import {
+  cjkAwareTokenizer,
+  cookbookPaletteEntries,
+  foldKana,
+  hasCjk,
+  kanaInsensitive,
+  makeProcessTerm,
+  searchLocale,
+  tokenize,
+} from "@/lib/cookbook/search";
 import type { Catalog, PartColor } from "@/lib/cookbook/types";
 import { unpackCatalog, type PackedCatalog } from "@/lib/cookbook/wire";
 import { findPhrase, foldQuery, phraseTier, rankByPhrase } from "@/lib/searchPhrase";
@@ -51,7 +60,8 @@ function buildSnippet(body: string, terms: string[], phrase: string): string {
     const end = Math.min(body.length, Math.max(start + SNIPPET_LEN, literal[1]));
     return (start > 0 ? "…" : "") + body.slice(start, end) + (end < body.length ? "…" : "");
   }
-  const lower = body.toLowerCase();
+  // Folded as the terms are (ルビ found by るび), one code unit for one.
+  const lower = foldKana(body.toLowerCase());
   let bestIdx = -1;
   for (const term of terms) {
     const idx = lower.indexOf(term.toLowerCase());
@@ -80,8 +90,17 @@ function highlight(text: string, terms: string[], phrase = "") {
   }
   if (!terms.length) return text;
   // Marks whole words: the Cookbook index matches folded stems ("head" for
-  // "heads"), so a match runs on to the end of its word.
-  const source = "(?:" + terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")[\\p{L}\\p{N}]*";
+  // "heads"), so a match runs on to the end of its word. A Chinese or
+  // Japanese term is a character or a pair, marked as it stands (a word
+  // there runs on to the end of the sentence) and in either kana (るび
+  // marks ルビ); longer terms come first so a pair wins over its character.
+  const alternatives = [...terms]
+    .sort((a, b) => b.length - a.length)
+    .map((t) => {
+      const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return hasCjk(t) ? kanaInsensitive(escaped) : escaped + "[\\p{L}\\p{N}]*";
+    });
+  const source = "(?:" + alternatives.join("|") + ")";
   const pattern = new RegExp(`(${source})`, "giu");
   const whole = new RegExp(`^${source}$`, "iu");
   const parts = text.split(pattern);
@@ -108,13 +127,20 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   return res.ok ? ((await res.json()) as T) : null;
 }
 
+/** MiniSearch's own word splitting, with Chinese and Japanese runs cut into
+ *  characters and pairs. */
+const docsTokenize = cjkAwareTokenizer(MiniSearch.getDefault("tokenize") as (text: string) => string[]);
+
 /** The docs' sections. Chinese has no spaces between words, so a zh index
  *  splits its text with the Cookbook's tokenizer (characters and character
- *  pairs); the other languages keep MiniSearch's word splitting. */
+ *  pairs). The other languages keep MiniSearch's word splitting and term
+ *  handling, except for the Chinese or Japanese a page quotes (縦中横,
+ *  ルビ), which is cut the same way, so a query typed in kana or hanzi
+ *  finds it on any locale's pages. */
 function docsIndex(sections: SearchSection[], locale: string): MiniSearch<SearchSection> {
   const chinese = searchLocale(locale) === "zh";
   const ms = new MiniSearch<SearchSection>({
-    ...(chinese ? { tokenize, processTerm: makeProcessTerm("zh") } : {}),
+    ...(chinese ? { tokenize, processTerm: makeProcessTerm("zh") } : { tokenize: docsTokenize }),
     fields: ["sectionTitle", "docTitle", "breadcrumb", "body"],
     storeFields: ["id"],
     idField: "id",
