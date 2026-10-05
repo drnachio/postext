@@ -135,9 +135,19 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
 
   // --- headings ------------------------------------------------------------
   const headings = config.headings;
+  /** The body's line pitch, px: a 行取り heading (`lineSpan`, #424) takes
+   *  whole numbers of it. */
+  const bodyLinePx = body.lineHeight.unit === 'em' || body.lineHeight.unit === 'rem'
+    ? body.lineHeight.value * bodyPx
+    : px(body.lineHeight);
   for (const level of headings.levels) {
     if (level.level < 1 || level.level > 6) continue;
     const hPx = px(level.fontSize);
+    // 行取り: the heading's line centred in N body lines, its margins the
+    // rest of them (a reflowable book has no grid to keep).
+    const lineSpanMargin = level.lineSpan !== undefined
+      ? Math.max(0, (level.lineSpan * bodyLinePx - (level.lineHeight.unit === 'em' || level.lineHeight.unit === 'rem' ? level.lineHeight.value * hPx : px(level.lineHeight, hPx))) / 2)
+      : undefined;
     out.push(rule(`h${level.level}`, [
       fam(level.fontFamily || headings.fontFamily),
       `font-size: ${round(hPx / bodyPx)}em`,
@@ -148,7 +158,11 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       `text-align: ${ALIGN[headings.textAlign] ?? 'start'}`,
       level.letterSpacing.value !== 0 && `letter-spacing: ${em(level.letterSpacing, hPx)}`,
       level.textTransform === 'uppercase' && 'text-transform: uppercase',
-      `margin: ${round(px(level.marginTop, hPx) / hPx)}em 0 ${round(px(level.marginBottom, hPx) / hPx)}em`,
+      lineSpanMargin !== undefined
+        ? `margin: ${round(lineSpanMargin / hPx)}em 0`
+        : `margin: ${round(px(level.marginTop, hPx) / hPx)}em 0 ${round(px(level.marginBottom, hPx) / hPx)}em`,
+      // 字下げ: the indent counts body characters.
+      level.indent && px(level.indent) > 0 && `margin-inline-start: ${round(px(level.indent) / hPx)}em`,
       'hyphens: manual',
       '-epub-hyphens: manual',
       'page-break-after: avoid',
@@ -343,6 +357,8 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       !s.hyphenation && 'hyphens: manual',
       s.textTransform === 'uppercase' && 'text-transform: uppercase',
       px(s.indent, sPx) > 0 && `margin-inline-start: ${round(px(s.indent, sPx) / sPx)}em`,
+      // 地からN字上げ (#424).
+      s.endIndent && px(s.endIndent, sPx) > 0 && `margin-inline-end: ${round(px(s.endIndent, sPx) / sPx)}em`,
       `text-indent: ${round(px(s.firstLineIndent, sPx) / sPx)}em`,
       px(s.marginTop, sPx) > 0 && `margin-block-start: ${round(px(s.marginTop, sPx) / sPx)}em`,
       px(s.marginBottom, sPx) > 0 && `margin-block-end: ${round(px(s.marginBottom, sPx) / sPx)}em`,

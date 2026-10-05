@@ -291,6 +291,25 @@ describe('buildReflowablePublication', () => {
     expect(css).toContain('p.pt-index-l1 {\n  margin-inline-start: 1em;');
   });
 
+  it('carries a heading\'s 行取り and 字下げ and a style\'s end indent into the stylesheet (#424)', async () => {
+    const config = {
+      ...baseConfig,
+      bodyText: { ...baseConfig.bodyText, fontSize: pt(10), lineHeight: pt(17.5) },
+      headings: { levels: [{ level: 2, fontSize: pt(14), lineHeight: pt(21), lineSpan: 3, indent: { value: 4, unit: 'em' as const } }] },
+      paragraphStyles: [{ id: 'sign', textAlign: 'end' as const, endIndent: { value: 1, unit: 'em' as const } }],
+    };
+    const { pub } = await render([layOut('## 一\n\nText.\n\n:::paragraphs{style="sign"}\nK\n:::', config)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    // (3 × 17.5 − 21) / 2 = 15.75 px above and below a 14 px heading;
+    // 4 body ems are 40 px, 2.857 of its own.
+    expect(css).toMatch(/h2 \{[^}]*margin: 1\.125em 0;\n {2}margin-inline-start: 2\.857em;/);
+    expect(css).toMatch(/p\.ps-sign[^{]*\{[^}]*margin-inline-end: 1em;/);
+    // Nothing of it without the settings.
+    const plain = (await render([layOut('## One\n\nText.')])).pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(plain).not.toContain('margin-inline-end');
+    expect(plain).not.toMatch(/h2 \{[^}]*margin-inline-start/);
+  });
+
   it('gives a part its own opener document', async () => {
     const docs = layOutBook([
       ':::part{number="I" title="Foundations"}\n:::\n\n# One\n\nText of one.',
