@@ -60,6 +60,14 @@ describe.skipIf(!python)("postext-port lint on Chinese text", () => {
     expect(out).toContain("：：： typed with an input method prints as text (fullwidthMarkup): type :::");
   });
 
+  it("knows the Japanese numbering formats and their tokens", () => {
+    const fence = (format: string) => `${CHAPTER}\n:::numbering{format=${format}}\n`;
+    for (const format of ["japanese-informal", "japanese-formal", "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "あ", "イ", "壱"]) {
+      expect(lint(project({ locale: "zh-Hant" }, fence(format))).out, format).not.toContain("numbering format");
+    }
+    expect(lint(project({ locale: "zh-Hant" }, fence("japanese"))).out).toContain("numbering format 'japanese' is invalid");
+  });
+
   it("counts Chinese in the family that sets it: paragraph and heading styles, not heading attributes", () => {
     const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-"));
     mkdirSync(path.join(dir, "chapters"));
