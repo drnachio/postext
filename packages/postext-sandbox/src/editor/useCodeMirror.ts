@@ -36,12 +36,22 @@ interface UseCodeMirrorOptions {
   /** The interface runs right to left: so does the editor (its gutter at
    *  the right), each line still set the way its own text reads. */
   rtl?: boolean;
+  /** The document language, as the `lang` of the text: the browser then
+   *  draws kanji in their Japanese or Chinese forms (直, 骨, 角 differ),
+   *  whatever the interface language. */
+  lang?: string;
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false }: UseCodeMirrorOptions) {
+/** The `lang` attribute of the editor's text, when there is one. */
+function langAttributes(lang: string | undefined) {
+  return EditorView.contentAttributes.of(lang ? { lang } : {});
+}
+
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false, lang }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
+  const langCompartment = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -70,6 +80,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
 
     const extensions = [
       ...(ariaLabel ? [EditorView.contentAttributes.of({ 'aria-label': ariaLabel, 'aria-multiline': 'true', tabindex: '0', ...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {}) })] : []),
+      langCompartment.current.of(langAttributes(lang)),
       lineNumbers(),
       highlightActiveLine(),
       history(),
@@ -138,6 +149,12 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       effects: themeCompartment.current.reconfigure(getEditorTheme(isDark ?? true)),
     });
   }, [isDark]);
+
+  // Follow the document language.
+  useEffect(() => {
+    if (!viewRef.current) return;
+    viewRef.current.dispatch({ effects: langCompartment.current.reconfigure(langAttributes(lang)) });
+  }, [lang]);
 
   // Sync external value (e.g. after hydration or reset)
   useEffect(() => {
