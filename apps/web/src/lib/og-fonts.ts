@@ -46,15 +46,18 @@ export async function loadMarkFont() {
   return [{ name: "Fraunces", data: await load(FRAUNCES_800_URL), weight: 800 as const, style: "normal" as const }];
 }
 
-// ─── Chinese ────────────────────────────────────────────────────────────────
-// The brand cuts have no Chinese glyphs. A card with Chinese text gets
-// Noto Serif SC (with Fraunces and Lora) and Noto Sans SC (with Geist),
-// cut by Google Fonts' `text=` parameter to exactly the characters it
-// draws: a whole Simplified Chinese face is about 10 MB per weight, a
-// card's subset a few kilobytes.
+// ─── Chinese and Japanese ───────────────────────────────────────────────────
+// The brand cuts have no Chinese or Japanese glyphs. A card with Chinese
+// text gets Noto Serif SC (with Fraunces and Lora) and Noto Sans SC (with
+// Geist); a text with kana gets Noto Serif JP and Noto Sans JP instead, so
+// its kanji take their Japanese forms (直, 骨, 角 differ). Each is cut by
+// Google Fonts' `text=` parameter to exactly the characters it draws: a
+// whole face is about 10 MB per weight, a card's subset a few kilobytes.
 
 export const CJK_SERIF = "Noto Serif SC";
 export const CJK_SANS = "Noto Sans SC";
+export const JA_SERIF = "Noto Serif JP";
+export const JA_SANS = "Noto Sans JP";
 
 type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 export interface OgFont {
@@ -64,12 +67,27 @@ export interface OgFont {
   style: "normal" | "italic";
 }
 
-/** Han characters, CJK punctuation and fullwidth forms (，：（）). */
-const CJK_CHAR = /[\p{Script=Han}⺀-⿟　-〿＀-￯]/gu;
+/** Han characters, kana (with ー, ・ and the small kana), CJK punctuation
+ *  and the full-width and half-width forms (，：（）ｶﾅ). */
+const CJK_CHAR = /[\p{Script=Han}⺀-⿟　-〿\u3040-\u30FF\u31F0-\u31FF＀-￯]/gu;
 
-/** The distinct Chinese characters of a text, in code point order ("" when none). */
+/** Hiragana or katakana (half-width included): a text that holds any is
+ *  Japanese. Kanji alone cannot tell Japanese from Chinese, and are drawn
+ *  in the Chinese faces. */
+const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
+
+/** The distinct Chinese and Japanese characters of a text, in code point
+ *  order ("" when none). */
 export function cjkChars(text: string | undefined): string {
   return [...new Set(text?.match(CJK_CHAR) ?? [])].sort().join("");
+}
+
+/** The CJK face a text is drawn in, serif or sans: the Japanese one when
+ *  it holds kana, the Simplified Chinese one otherwise. */
+export function cjkFamily(text: string | undefined, kind: "serif" | "sans"): string {
+  const japanese = !!text && KANA.test(text);
+  if (kind === "serif") return japanese ? JA_SERIF : CJK_SERIF;
+  return japanese ? JA_SANS : CJK_SANS;
 }
 
 /** Google Fonts sends TTF to an old Safari and WOFF2 to anything newer,
@@ -104,7 +122,7 @@ function cjkCut(name: string, weight: Weight, text: string): Promise<OgFont | nu
       (data): OgFont => ({ name, data, weight, style: "normal" }),
       (error: unknown) => {
         cjkCuts.delete(key);
-        console.warn(`og: no Chinese face for this card (${(error as Error).message}); drawing it with the Latin fonts`);
+        console.warn(`og: no ${name} for this card (${(error as Error).message}); drawing it with the Latin fonts`);
         return null;
       },
     );
@@ -113,15 +131,16 @@ function cjkCut(name: string, weight: Weight, text: string): Promise<OgFont | nu
   return cut;
 }
 
-/** The Chinese cuts a card needs, for the characters of each of its texts:
- *  the title in Noto Serif SC 900 (by Fraunces 800), the lead in Noto
- *  Serif SC 400 (by Lora) and the kicker in Noto Sans SC 600 (by Geist).
- *  Empty when the card has no Chinese. */
+/** The CJK cuts a card needs, for the characters of each of its texts:
+ *  the title in Noto Serif SC or JP 900 (by Fraunces 800), the lead in
+ *  Noto Serif SC or JP 400 (by Lora) and the kicker in Noto Sans SC or JP
+ *  600 (by Geist), each text in the face `cjkFamily` picks for it. Empty
+ *  when the card has no Chinese or Japanese. */
 export async function loadCjkOgFonts(texts: { display?: string; lead?: string; kicker?: string }): Promise<OgFont[]> {
   const wanted: [string, Weight, string][] = [
-    [CJK_SERIF, 900, cjkChars(texts.display)],
-    [CJK_SERIF, 400, cjkChars(texts.lead)],
-    [CJK_SANS, 600, cjkChars(texts.kicker)],
+    [cjkFamily(texts.display, "serif"), 900, cjkChars(texts.display)],
+    [cjkFamily(texts.lead, "serif"), 400, cjkChars(texts.lead)],
+    [cjkFamily(texts.kicker, "sans"), 600, cjkChars(texts.kicker)],
   ];
   const cuts = await Promise.all(wanted.filter(([, , text]) => text).map(([name, weight, text]) => cjkCut(name, weight, text)));
   return cuts.filter((cut): cut is OgFont => cut !== null);

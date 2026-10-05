@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { HeroArt, HERO_ART_NIGHT } from "@/components/landing/HeroArt";
-import { CJK_SANS, CJK_SERIF, loadCjkOgFonts, loadOgFonts } from "./og-fonts";
+import { cjkFamily, loadCjkOgFonts, loadOgFonts } from "./og-fonts";
 import { svgMarkup } from "./og-svg";
 
 // The landing's hero in the dark theme, as a social card: night ground
@@ -68,16 +68,27 @@ function heroArtSrc() {
   return artSrc;
 }
 
-/** A Chinese character with the punctuation that may not start or end a
- *  line on its side (（书眉）, 页面，), or a run of anything else. */
-const HAN_PIECE = /[（「『《“‘]*\p{Script=Han}[，。、：；！？）」』》”’]*|[^\p{Script=Han}]+/gu;
-const HAN = /\p{Script=Han}/u;
+/** Chinese and Japanese letters: Han, 〆, kana and ー. */
+const CJK_LETTER = "\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}\u3006\u30FC";
+/** Marks that may not start a line, so they ride on the letter before them:
+ *  closing punctuation (页面，, （书眉）) and, for Japanese, the small kana,
+ *  ー, the iteration marks and the middle dot (JLReq cl-11, cl-10, cl-09,
+ *  cl-05: ショート breaks as ショー|ト, never before ョ or ー). */
+const NO_LINE_START = "，。、：；！？）］〕】」』》”’),.:;!?\\]ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶㇰ-ㇿーゝゞヽヾ々〻・";
+/** Opening brackets, which may not end a line. */
+const NO_LINE_END = "（［〔【「『《“‘(\\[";
+/** A Chinese or Japanese letter with the opening punctuation before it and
+ *  the marks that may not start a line after it, or a run of anything else. */
+const CJK_PIECE = new RegExp(`[${NO_LINE_END}]*[${CJK_LETTER}][${NO_LINE_START}]*|[^${CJK_LETTER}]+`, "gu");
+const CJK = new RegExp(`[${CJK_LETTER}]`, "u");
+const STARTS_BANNED = new RegExp(`^[${NO_LINE_START}]`, "u");
 
-/** Words of a title, with those inside `<em>…</em>` flagged. Chinese has
- *  no spaces to wrap at, so each character is a piece of its own; a piece
- *  is followed by a word space (`gap`) only where the title has one, so
- *  an `<em>` inside a Chinese phrase (与<em>下沉</em>章首) stays tight. */
-function titleWords(title: string) {
+/** Words of a title, with those inside `<em>…</em>` flagged. Chinese and
+ *  Japanese have no spaces to wrap at, so each character is a piece of its
+ *  own; a piece is followed by a word space (`gap`) only where the title
+ *  has one, so an `<em>` inside a Chinese phrase (与<em>下沉</em>章首)
+ *  stays tight. */
+function titlePieces(title: string) {
   const parts = title.split(/(<em>.*?<\/em>)/).map((part) => {
     const em = part.startsWith("<em>");
     return { em, text: em ? part.slice(4, -5) : part };
@@ -86,16 +97,32 @@ function titleWords(title: string) {
     const words = text.split(/\s+/).filter(Boolean);
     const spaceAfter = /\s$/.test(text) || /^\s/.test(parts[p + 1]?.text ?? " ");
     return words.flatMap((word, w) => {
-      const pieces = word.match(HAN_PIECE) ?? [word];
+      const pieces = word.match(CJK_PIECE) ?? [word];
       const last = w === words.length - 1;
       return pieces.map((piece, i) => ({
         word: piece,
         em,
-        han: HAN.test(piece),
+        cjk: CJK.test(piece),
         gap: i === pieces.length - 1 && (!last || spaceAfter),
       }));
     });
   });
+}
+
+export type TitlePiece = ReturnType<typeof titlePieces>[number];
+
+/** The pieces of a title in clusters that never break apart: a piece that
+ *  may not start a line and has no space before it joins the cluster before
+ *  it, which happens where an `<em>` ends just before the mark
+ *  (<em>熟語ルビ</em>、…), so 、 cannot open the second line. */
+export function titleClusters(title: string): TitlePiece[][] {
+  const clusters: TitlePiece[][] = [];
+  for (const piece of titlePieces(title)) {
+    const cluster = clusters[clusters.length - 1];
+    if (cluster && !cluster[cluster.length - 1]!.gap && STARTS_BANNED.test(piece.word)) cluster.push(piece);
+    else clusters.push([piece]);
+  }
+  return clusters;
 }
 
 export async function generateOgImage({
@@ -127,9 +154,9 @@ export async function generateOgImage({
     loadCjkOgFonts({ display: plainTitle, lead: description, kicker }),
   ]);
   const fonts = [...latin, ...cjk];
-  const words = titleWords(title);
-  // In Latin letters: a Chinese character is about as wide as two.
-  const length = words.reduce((n, w) => n + (w.han ? 2 * [...w.word].length : w.word.length + 1), 0);
+  const clusters = titleClusters(title);
+  // In Latin letters: a Chinese or Japanese character is about as wide as two.
+  const length = clusters.flat().reduce((n, w) => n + (w.cjk ? 2 * [...w.word].length : w.word.length + 1), 0);
   const size = length <= 26 ? 66 : length <= 44 ? 58 : 48;
 
   return new ImageResponse(
@@ -156,30 +183,34 @@ export async function generateOgImage({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
-            <div style={{ fontFamily: `Geist, ${CJK_SANS}`, fontSize: 16, fontWeight: 600, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
+            <div style={{ fontFamily: `Geist, ${cjkFamily(kicker, "sans")}`, fontSize: 16, fontWeight: 600, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
               {kicker}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", marginTop: 16, maxWidth: 540 + size * 0.24, lineHeight: 1.02 }}>
-              {words.map(({ word, em, han, gap }, i) => (
-                <div
-                  key={i}
-                  style={{
-                    fontFamily: `Fraunces, ${CJK_SERIF}`,
-                    fontSize: size,
-                    fontWeight: em ? 600 : 800,
-                    fontStyle: em ? "italic" : "normal",
-                    color: em ? GILT : "#ffffff",
-                    letterSpacing: em || han ? 0 : -size * 0.02,
-                    marginRight: gap ? size * 0.24 : 0,
-                  }}
-                >
-                  {word}
+              {clusters.map((cluster, c) => (
+                <div key={c} style={{ display: "flex" }}>
+                  {cluster.map(({ word, em, cjk, gap }, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        fontFamily: `Fraunces, ${cjkFamily(plainTitle, "serif")}`,
+                        fontSize: size,
+                        fontWeight: em ? 600 : 800,
+                        fontStyle: em ? "italic" : "normal",
+                        color: em ? GILT : "#ffffff",
+                        letterSpacing: em || cjk ? 0 : -size * 0.02,
+                        marginRight: gap ? size * 0.24 : 0,
+                      }}
+                    >
+                      {word}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
             <div style={{ width: 56, height: 4, backgroundColor: GILT, marginTop: 26 }} />
             {description && (
-              <div style={{ fontFamily: `Lora, ${CJK_SERIF}`, fontStyle: "italic", fontSize: 23, color: MIST, lineHeight: 1.42, marginTop: 20, maxWidth: 520 }}>
+              <div style={{ fontFamily: `Lora, ${cjkFamily(description, "serif")}`, fontStyle: "italic", fontSize: 23, color: MIST, lineHeight: 1.42, marginTop: 20, maxWidth: 520 }}>
                 {description}
               </div>
             )}
