@@ -7,6 +7,8 @@ import {
   Geist,
   Noto_Sans_SC,
   Noto_Serif_SC,
+  Noto_Sans_JP,
+  Noto_Serif_JP,
   Noto_Naskh_Arabic,
   Noto_Sans_Arabic,
   Noto_Kufi_Arabic,
@@ -64,6 +66,21 @@ const notoSansSc = Noto_Sans_SC({
 
 const notoSerifSc = Noto_Serif_SC({
   variable: "--font-noto-serif-sc",
+  preload: false,
+});
+
+// Japanese fallbacks, switched on for text marked lang="ja" only (globals.css
+// `:lang(ja)`): a glossary term's native form or a sample in a docs page,
+// whose kanji would otherwise take the Chinese forms of Noto SC on a
+// Chinese page. Sliced like the SC faces, so nothing loads on a page
+// without Japanese.
+const notoSansJp = Noto_Sans_JP({
+  variable: "--font-noto-sans-jp",
+  preload: false,
+});
+
+const notoSerifJp = Noto_Serif_JP({
+  variable: "--font-noto-serif-jp",
   preload: false,
 });
 
@@ -205,6 +222,8 @@ export default async function LocaleLayout({
         jetbrainsMono.variable,
         notoSansSc.variable,
         notoSerifSc.variable,
+        notoSansJp.variable,
+        notoSerifJp.variable,
         notoNaskhArabic.variable,
         notoSansArabic.variable,
         notoKufiArabic.variable

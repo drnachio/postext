@@ -81,6 +81,43 @@
   text-emphasis: none;
 }
 
+/* Japanese: Noto Serif JP and Noto Sans JP (then the system's Japanese
+   faces) behind the Latin ones, on whatever carries lang="ja", the page
+   (a future ja locale) or a part of it (a glossary native term, a sample
+   in a docs page), so kanji take their Japanese forms and do not fall to
+   Noto SC on a Chinese page or to Naskh on an Arabic one. A custom
+   property is resolved where it is declared, so the font stacks are
+   restated here too: an element under lang="ja" that sets its own family
+   (a font-* class, .display, .kicker) gets the Japanese stack. One that
+   only inherits keeps its parent's, already resolved; give it a font
+   role to switch faces. */
+:lang(ja) {
+  --cjk-serif: var(--font-noto-serif-jp), "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+  --cjk-sans: var(--font-noto-sans-jp), "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Meiryo", sans-serif;
+  --font-display: var(--font-fraunces), var(--cjk-serif);
+  --font-head: var(--font-bricolage), var(--cjk-sans);
+  --font-body: var(--font-lora), var(--cjk-serif);
+  --font-mono: var(--font-jetbrains), var(--cjk-sans);
+  --font-sans: var(--font-geist), var(--cjk-sans);
+  text-autospace: normal;
+  line-break: strict;
+}
+
+/* Japanese emphasis is set upright with sesame dots over the letters
+   (to their right in vertical text), JLReq §3.3.9; kanji and kana have no
+   italic. Matched on the element, so an <em> inside a Japanese sample on a
+   Chinese page takes sesame dots, not the Chinese dots under. */
+:is(em, i):lang(ja) {
+  font-style: normal;
+  text-emphasis: filled sesame;
+  text-emphasis-position: over right;
+}
+
+:is(code, pre, kbd) em:lang(ja),
+:is(.hero-title em, .hero-em):lang(ja) {
+  text-emphasis: none;
+}
+
 :root,
 :root.dark,
 .on-night {
@@ -1137,13 +1174,13 @@ html[data-rp-spacing="wide"] .book-prose p + p {
 }
 
 /* Line length: 80 characters at most (about 36em of Lora or Geist), 40
-   glyphs in Chinese; two-column prose becomes one column. */
+   glyphs in Chinese or Japanese; two-column prose becomes one column. */
 html[data-rp-width="narrow"] #main-content :is(p, li, dd, blockquote),
 html[data-rp-width="narrow"] :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, li, dd, blockquote) {
   max-inline-size: 36em;
 }
-html[data-rp-width="narrow"]:lang(zh) #main-content :is(p, li, dd, blockquote),
-html[data-rp-width="narrow"]:lang(zh) :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, li, dd, blockquote) {
+html[data-rp-width="narrow"]:is(:lang(zh), :lang(ja)) #main-content :is(p, li, dd, blockquote),
+html[data-rp-width="narrow"]:is(:lang(zh), :lang(ja)) :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, li, dd, blockquote) {
   max-inline-size: 40em;
 }
 html[data-rp-width="narrow"] :is(.book-prose, .text-justify, .rp-prose) {
@@ -1151,7 +1188,7 @@ html[data-rp-width="narrow"] :is(.book-prose, .text-justify, .rp-prose) {
   column-count: 1;
   max-inline-size: 36em;
 }
-html[data-rp-width="narrow"]:lang(zh) :is(.book-prose, .text-justify, .rp-prose) {
+html[data-rp-width="narrow"]:is(:lang(zh), :lang(ja)) :is(.book-prose, .text-justify, .rp-prose) {
   max-inline-size: 40em;
 }
 

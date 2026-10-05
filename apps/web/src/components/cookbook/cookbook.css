@@ -374,12 +374,12 @@ html:has(.cb-bar) {
 
 /* Han has no italic (a slanted Chinese face is a synthetic oblique): on a
    Chinese page the italic leads, notes and captions stand upright, as
-   globals.css sets `em`. An English fallback write-up (lang="en") keeps
-   its italics. */
-.italic:lang(zh),
-.cb-lt-empty:lang(zh),
-.docs-content .cb-answers ul:lang(zh),
-.docs-content .cb-excerpt-caption:lang(zh) {
+   globals.css sets `em`. Kanji and kana have none either. An English
+   fallback write-up (lang="en") keeps its italics. */
+.italic:is(:lang(zh), :lang(ja)),
+.cb-lt-empty:is(:lang(zh), :lang(ja)),
+.docs-content .cb-answers ul:is(:lang(zh), :lang(ja)),
+.docs-content .cb-excerpt-caption:is(:lang(zh), :lang(ja)) {
   font-style: normal;
 }
 
