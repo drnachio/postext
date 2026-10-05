@@ -19,6 +19,7 @@ import type {
   Dimension,
   DesignTextElement,
   FootnoteNumbering,
+  ResolvedFootnotesConfig,
   FootnotesConfig,
   HeadingLevelConfig,
   OrderedListLevelConfig,
@@ -129,7 +130,7 @@ export type JapaneseDefaultValue =
   | { kind: 'align'; value: TextAlign }
   | { kind: 'writingMode'; value: WritingMode; binding: 'left' | 'right' }
   | { kind: 'binding'; value: 'left' | 'right'; auto?: boolean }
-  | { kind: 'footnotes'; marker: string; position: 'superscript' | 'inline'; numbering: FootnoteNumbering }
+  | { kind: 'footnotes'; marker: string; position: ResolvedFootnotesConfig['markerPosition']; numbering: FootnoteNumbering }
   /** Settings the row names (by their `cjk` keys). */
   | { kind: 'cjkFields'; fields: JapaneseRuleField[] }
   /** Auto, which in a Japanese book follows the japan region. */
