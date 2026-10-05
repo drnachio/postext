@@ -837,9 +837,11 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                         rep.warn(where, "callout titles are plain text: ** / * print literally")
                 elif fname == "paragraphs":
                     s = attrs.get("style")
-                    if not s:
-                        rep.error(where, ":::paragraphs needs style=\"…\"")
-                    elif s not in ids["paragraphs"]:
+                    # align / indent / endIndent alone set the text around it
+                    # (地付き is {align=end}, 地から1字上げ {align=end endIndent=1}).
+                    if not s and not any(k in attrs for k in ("align", "indent", "endIndent")):
+                        rep.error(where, ":::paragraphs needs style=\"…\" (or align / indent / endIndent)")
+                    elif s and s not in ids["paragraphs"]:
                         rep.error(where, f"paragraph style {s!r} is not in paragraphStyles {sorted(ids['paragraphs'])}")
                 elif fname == "part":
                     for pid in re.findall(r"([A-Za-z0-9_-]+)\s*[=:]\s*#?[0-9a-fA-F]{3,8}", attrs.get("palette", "")):
