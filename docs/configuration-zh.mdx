@@ -279,7 +279,7 @@ page: {
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>画布上以及RGB或灰度PDF中裁切标记的颜色。CMYK的PDF则改用套准色绘制（见下文）。</td>
+      <td>画布（屏幕预览）上裁切标记的颜色。PDF中始终用套准色绘制（见下文）。</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ page: {
 
 出血区域之外，除了标记什么都不印。页面绘制的一切，包括锚定到`'page'`或`'bleed'`的设计元素，在Canvas、PDF和HTML输出中都会被裁到出血框以内，与桌面排版软件导出时的裁切一致：有意超出出血放置的色带或图片，在出血边缘被截断，反正裁切时那部分也会被切掉。postext 1.4及以前，这样的元素会越过标记一直延伸到纸张边缘。
 
-在PDF（`postext-pdf`）中，每页的MediaBox是整张纸。页面还带有TrimBox（裁切后的成品页面）和BleedBox（成品加出血），供拼版和印前检查工具读取。PDF以CMYK写出时（`colorSpace: 'cmyk'`，或`pdfGeneration.forceColorSpace`配合`colorSpace: 'cmyk'`），标记用套准色即`/All`分色绘制，因此每块印版上都会印出。RGB和灰度PDF则用`color`绘制。
+在PDF（`postext-pdf`）中，每页的MediaBox是整张纸。页面还带有TrimBox（裁切后的成品页面）和BleedBox（成品加出血），供拼版和印前检查工具读取。标记用套准色即`/All`分色绘制，因此每块印版上都会印出。无论PDF以何种色彩空间写出（RGB、灰度或CMYK）都是如此：普通黑色到了印厂会变成四色叠黑，或只落在黑版上。`color`只用于画布。
 
 ### 页码编号
 
@@ -7733,7 +7733,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 用于正式印刷流程时，在渲染前调整以下配置选项：
 
 - **`page.cutLines.enabled: true`**：在成品尺寸周围加上出血区域和裁切标记，并给每一页设置TrimBox和BleedBox。见[裁切线](#裁切线)。
-- **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：把postext绘制的颜色（文字、线条、填充、矢量图）写成DeviceCMYK，并用套准色绘制裁切标记，使其印在每一块印版上。位图和PDF印刷母版原样嵌入，所以RGB照片仍是RGB：请在添加之前先转换。
+- **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：把postext绘制的颜色（文字、线条、填充、矢量图）写成DeviceCMYK（裁切标记始终用套准色）。位图和PDF印刷母版原样嵌入，所以RGB照片仍是RGB：请在添加之前先转换。
 - **`page.dpi: 300`**（或更高）：PDF的点固定为每英寸72点，但Postext的排版计算以像素为单位；较高的DPI能为以`mm`或`cm`度量的元素提供更细的划分。
 - **`colors.model: 'cmyk'`**：保留颜色是在CMYK空间中定义的这一意图。目前实际绘制到PDF时仍使用`hex`后备值；这里记录`model`，是因为它会随VDT一起传给下游工具。
 - `RenderToPdfOptions`中的**`{ pageNegative: true }`**：用Difference混合模式反转成品区域（裁切标记不反转）。适合对浅底深字的排版做印前检查。

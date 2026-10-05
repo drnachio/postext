@@ -279,7 +279,7 @@ Al activarse, el lienzo se expande para incluir una zona de sangrado y el motor 
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>Color de las marcas de corte en el lienzo y en los PDF en RGB o en escala de grises. Un PDF en CMYK las pinta en color de registro (ver más abajo).</td>
+      <td>Color de las marcas de corte en el lienzo (la vista en pantalla). El PDF las pinta siempre en color de registro (ver más abajo).</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ El pliego crece `bleed + markOffset + markLength` por cada lado, y la página co
 
 Fuera del sangrado solo se imprimen las marcas. Todo lo que pinta la página, incluidos los elementos de diseño anclados a `'page'` o a `'bleed'`, se recorta a la caja de sangrado en el canvas, en el PDF y en la salida HTML, como lo recorta una exportación de maquetación: una banda o una imagen que se sale del sangrado a propósito se corta en el borde del sangrado, donde la guillotina la perdería de todos modos. Hasta postext 1.4 un elemento así seguía por encima de las marcas hasta el borde del pliego.
 
-En el PDF (`postext-pdf`), la MediaBox de cada página es el pliego entero. La página lleva además una TrimBox, la página cortada, y una BleedBox, el corte más el sangrado, que leen las herramientas de imposición y de preflight. Cuando el PDF se escribe en CMYK (`colorSpace: 'cmyk'`, o `pdfGeneration.forceColorSpace` con `colorSpace: 'cmyk'`), las marcas se pintan en color de registro, la separación `/All`, y se imprimen en todas las planchas. Los PDF en RGB y en escala de grises las pintan en `color`.
+En el PDF (`postext-pdf`), la MediaBox de cada página es el pliego entero. La página lleva además una TrimBox, la página cortada, y una BleedBox, el corte más el sangrado, que leen las herramientas de imposición y de preflight. Las marcas se pintan en color de registro, la separación `/All`, y se imprimen en todas las planchas. Es así en cualquier espacio de color en que se escriba el PDF (RGB, escala de grises o CMYK): un negro corriente llegaría a la imprenta como negro enriquecido o solo en la plancha del negro. `color` solo se aplica al lienzo.
 
 ### Numeración
 
@@ -7740,7 +7740,7 @@ El worker de composición de `postext/worker` necesita el mismo envoltorio alred
 Para flujos de trabajo de impresión en producción, ajusta estas opciones de configuración antes de renderizar:
 
 - **`page.cutLines.enabled: true`** — añade área de sangrado y marcas de corte alrededor del trim, y da a cada página una TrimBox y una BleedBox. Ver [Marcas de corte](#marcas-de-corte).
-- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escribe en DeviceCMYK los colores que pinta postext (texto, filetes, fondos, figuras vectoriales) y pinta las marcas de corte en color de registro, para que se impriman en todas las planchas. Los mapas de bits y los originales de impresión en PDF se insertan tal como son, así que una foto RGB sigue en RGB: conviértela antes de añadirla.
+- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escribe en DeviceCMYK los colores que pinta postext (texto, filetes, fondos, figuras vectoriales) (las marcas de corte van siempre en color de registro). Los mapas de bits y los originales de impresión en PDF se insertan tal como son, así que una foto RGB sigue en RGB: conviértela antes de añadirla.
 - **`page.dpi: 300`** (o superior) — los puntos PDF están fijos a 72/pulgada, pero la aritmética de maquetación de Postext corre en píxeles; un DPI mayor da una subdivisión más fina para elementos medidos en `mm` o `cm`.
 - **`colors.model: 'cmyk'`** — preserva la intención de que los colores se definieron en espacio CMYK. El fallback `hex` sigue siendo el que se usa para dibujar realmente al PDF hoy; `model` se documenta aquí porque viaja junto al VDT para herramientas aguas abajo.
 - **`{ pageNegative: true }`** en `RenderToPdfOptions` — invierte el área de trim usando un blend mode de tipo Difference (las marcas de corte quedan sin invertir). Útil para comprobaciones de preflight sobre tipografía oscura-sobre-claro.

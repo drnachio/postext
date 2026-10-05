@@ -585,9 +585,10 @@ export interface CutLinesConfig {
   markOffset?: Dimension;
   /** Stroke width of the marks. Default 0.25 pt. */
   markWidth?: Dimension;
-  /** Colour of the marks on the canvas and in RGB or grayscale PDFs. A
-   *  CMYK PDF paints them in registration colour (the `/All`
-   *  separation), so they print on every plate. Default black. */
+  /** Colour of the marks on the canvas (the screen preview). A PDF
+   *  always paints them in registration colour (the `/All` separation),
+   *  whatever its colour space, so they print on every plate. Default
+   *  black. */
   color?: ColorValue;
 }
 

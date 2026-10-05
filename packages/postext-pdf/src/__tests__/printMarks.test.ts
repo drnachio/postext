@@ -149,16 +149,18 @@ describe('crop marks in the PDF (EF-120)', () => {
   });
 });
 
-// EF-125. A CMYK file printed the marks '0 0 0 1 K', on the black plate
-// alone; crop marks belong on every plate, in registration colour.
+// EF-125, #452. A CMYK file printed the marks '0 0 0 1 K', on the black
+// plate alone; crop marks belong on every plate, in registration colour.
 describe('crop mark colour (EF-125)', () => {
-  it('paints the marks in the /All separation in CMYK output', async () => {
-    const { content, page, pdf } = await render({ enabled: true, bleed: mm(5) }, 'cmyk');
+  // A print editor found RGB and grayscale files still painting the marks
+  // in plain black, which the printer turns into rich black or K alone.
+  it.each(['cmyk', 'rgb', 'grayscale'] as const)('paints the marks in the /All separation in %s output', async (colorSpace) => {
+    const { content, page, pdf } = await render({ enabled: true, bleed: mm(5), color: { hex: '#ff0000', model: 'hex' } }, colorSpace);
     const lines = strokedLines(content);
     expect(lines).toHaveLength(8);
     for (const l of lines) {
       expect(l.ops).toMatch(/\/(\S+) CS\s+1 SCN/);
-      expect(l.ops).not.toMatch(/\bK\b/);
+      expect(l.ops).not.toMatch(/\b(K|RG|G)\b/);
     }
     const name = /\/(\S+) CS\s+1 SCN/.exec(lines[0]!.ops)![1]!;
     const resources = page.node.Resources()!;
@@ -170,17 +172,5 @@ describe('crop mark colour (EF-125)', () => {
     expect(String(alternate)).toBe('/DeviceCMYK');
     const c1 = (fn as PDFDict).lookup(PDFName.of('C1'), PDFArray).asArray().map((n) => (n as PDFNumber).asNumber());
     expect(c1).toEqual([1, 1, 1, 1]);
-  });
-
-  it('keeps the configured colour in RGB and grayscale output', async () => {
-    for (const [space, ink] of [['rgb', /0 0 0 RG/], ['grayscale', /0 G/]] as const) {
-      const { content } = await render({ enabled: true, color: { hex: '#000000', model: 'hex' } }, space);
-      const lines = strokedLines(content);
-      expect(lines).toHaveLength(8);
-      for (const l of lines) {
-        expect(l.ops).toMatch(ink);
-        expect(l.ops).not.toMatch(/SCN/);
-      }
-    }
   });
 });

@@ -279,7 +279,7 @@ When enabled, the canvas expands to include a bleed area and the engine draws cr
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>Color of the crop marks on the canvas and in RGB or grayscale PDFs. A CMYK PDF paints them in registration colour instead (see below).</td>
+      <td>Color of the crop marks on the canvas (the screen preview). The PDF always paints them in registration colour (see below).</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ The sheet grows by `bleed + markOffset + markLength` on every side, and the trim
 
 Nothing but the marks prints outside the bleed. Everything the page paints, the design elements anchored to `'page'` or `'bleed'` included, is clipped to the bleed box on the canvas, in the PDF and in the HTML output, as a DTP export clips it: a band or a picture set past the bleed on purpose is cut at the bleed edge, where the trimmer would lose it anyway. Up to postext 1.4 such an element ran on over the marks to the edge of the sheet.
 
-In the PDF (`postext-pdf`), the MediaBox of each page is the whole sheet. The page also carries a TrimBox, the trimmed page, and a BleedBox, the trim plus the bleed, which imposition and preflight tools read. When the PDF is written in CMYK (`colorSpace: 'cmyk'`, or `pdfGeneration.forceColorSpace` with `colorSpace: 'cmyk'`), the marks are painted in registration colour, the `/All` separation, so they print on every plate. RGB and grayscale PDFs paint them in `color`.
+In the PDF (`postext-pdf`), the MediaBox of each page is the whole sheet. The page also carries a TrimBox, the trimmed page, and a BleedBox, the trim plus the bleed, which imposition and preflight tools read. The marks are painted in registration colour, the `/All` separation, so they print on every plate. This holds whatever colour space the PDF is written in (RGB, grayscale or CMYK): a plain black would reach the printer as rich black or as the black plate alone. `color` only applies to the canvas.
 
 ### Numbering
 
@@ -7738,7 +7738,7 @@ The layout worker from `postext/worker` needs the same wrapper around `postext/w
 For production print workflows, tune these configuration options before rendering:
 
 - **`page.cutLines.enabled: true`** — adds bleed area and crop marks around the trim, and gives every page a TrimBox and a BleedBox. See [Cut lines](#cut-lines).
-- **`colorSpace: 'cmyk'`** (or `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — writes the colours postext paints (text, rules, fills, vector figures) in DeviceCMYK and paints the crop marks in registration colour, so they print on every plate. Bitmaps and PDF print masters are embedded as they are, so an RGB photo stays RGB: convert it before you add it.
+- **`colorSpace: 'cmyk'`** (or `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — writes the colours postext paints (text, rules, fills, vector figures) in DeviceCMYK (crop marks are always in registration colour). Bitmaps and PDF print masters are embedded as they are, so an RGB photo stays RGB: convert it before you add it.
 - **`page.dpi: 300`** (or higher) — PDF points are fixed at 72/inch, but Postext's layout math runs in pixels; a higher DPI gives finer subdivision for elements measured in `mm` or `cm`.
 - **`colors.model: 'cmyk'`** — preserves the intent that colours were authored in CMYK space. The `hex` fallback is still used to actually draw to the PDF today; `model` is documented here because it rides along into the VDT for downstream tooling.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` — inverts the trim area using a Difference blend mode (cut marks stay un-inverted). Useful for preflight checks on dark-on-light typography.

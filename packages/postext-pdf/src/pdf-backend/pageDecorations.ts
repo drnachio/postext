@@ -96,26 +96,23 @@ export function renderCutLines(ctx: PageCtx, page: VDTPage, doc: VDTDocument): v
   const markWidthPx = dimensionToPx(cutLines.markWidth, dpi);
   // Round the trim box the `TrimBox` of the page is written from.
   const segments = cropMarkSegments(page, doc.config.page, doc.trimOffset);
-  if (ctx.colorSpace === 'cmyk') {
-    // A CMYK file goes to separations: crop marks belong on every plate.
-    const { scale, pageHeightPt } = ctx;
-    const space = registrationSpaceName(ctx.page);
-    for (const seg of segments) {
-      ctx.page.pushOperators(
-        pushGraphicsState(),
-        PDFOperator.of(PDFOperatorNames.StrokingColorspace, [space]),
-        PDFOperator.of(PDFOperatorNames.StrokingColorN, [PDFNumber.of(1)]),
-        setLineWidth(Math.max(0.01, markWidthPx * scale)),
-        moveTo(seg.x1 * scale, pageHeightPt - seg.y1 * scale),
-        lineTo(seg.x2 * scale, pageHeightPt - seg.y2 * scale),
-        stroke(),
-        popGraphicsState(),
-      );
-    }
-    return;
+  // Crop marks belong on every plate, whatever colour space the rest of the
+  // file is written in: an RGB or gray black turns into rich black or K
+  // alone at the printer. `cutLines.color` is for the screen only.
+  const { scale, pageHeightPt } = ctx;
+  const space = registrationSpaceName(ctx.page);
+  for (const seg of segments) {
+    ctx.page.pushOperators(
+      pushGraphicsState(),
+      PDFOperator.of(PDFOperatorNames.StrokingColorspace, [space]),
+      PDFOperator.of(PDFOperatorNames.StrokingColorN, [PDFNumber.of(1)]),
+      setLineWidth(Math.max(0.01, markWidthPx * scale)),
+      moveTo(seg.x1 * scale, pageHeightPt - seg.y1 * scale),
+      lineTo(seg.x2 * scale, pageHeightPt - seg.y2 * scale),
+      stroke(),
+      popGraphicsState(),
+    );
   }
-  const color = colorFromHex(cutLines.color.hex, ctx.colorSpace);
-  for (const seg of segments) drawLinePx(ctx, seg.x1, seg.y1, seg.x2, seg.y2, color, markWidthPx);
 }
 
 /** The registration colour space, `[/Separation /All /DeviceCMYK f]` with a

@@ -279,7 +279,7 @@ En activar-se, el llenç s'expandeix per incloure una zona de sang i el motor di
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>Color de les marques de tall al llenç i als PDF en RGB o en escala de grisos. Un PDF en CMYK les pinta en color de registre (mira més avall).</td>
+      <td>Color de les marques de tall al llenç (la vista en pantalla). El PDF les pinta sempre en color de registre (mira més avall).</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ El plec creix `bleed + markOffset + markLength` per cada costat, i la pàgina ta
 
 Fora de la sang només s'imprimeixen les marques. Tot el que pinta la pàgina, inclosos els elements de disseny ancorats a `'page'` o a `'bleed'`, es retalla a la caixa de sang al canvas, al PDF i a la sortida HTML, com ho retalla una exportació de maquetació: una banda o una imatge que surt de la sang a propòsit es talla a la vora de la sang, on la guillotina la perdria de tota manera. Fins a postext 1.4 un element així continuava per damunt de les marques fins a la vora del plec.
 
-Al PDF (`postext-pdf`), la MediaBox de cada pàgina és el plec sencer. La pàgina porta a més una TrimBox, la pàgina tallada, i una BleedBox, el tall més la sang, que llegeixen les eines d'imposició i de preflight. Quan el PDF s'escriu en CMYK (`colorSpace: 'cmyk'`, o `pdfGeneration.forceColorSpace` amb `colorSpace: 'cmyk'`), les marques es pinten en color de registre, la separació `/All`, i s'imprimeixen en totes les planxes. Els PDF en RGB i en escala de grisos les pinten en `color`.
+Al PDF (`postext-pdf`), la MediaBox de cada pàgina és el plec sencer. La pàgina porta a més una TrimBox, la pàgina tallada, i una BleedBox, el tall més la sang, que llegeixen les eines d'imposició i de preflight. Les marques es pinten en color de registre, la separació `/All`, i s'imprimeixen en totes les planxes. És així en qualsevol espai de color en què s'escrigui el PDF (RGB, escala de grisos o CMYK): un negre corrent arribaria a la impremta com a negre enriquit o només a la planxa del negre. `color` només s'aplica al llenç.
 
 ### Numeració
 
@@ -7717,7 +7717,7 @@ El worker de composició de `postext/worker` necessita el mateix embolcall al vo
 Per a fluxos de treball d'impressió en producció, ajusta aquestes opcions de configuració abans de renderitzar:
 
 - **`page.cutLines.enabled: true`** — afegeix àrea de sang i marques de tall al voltant del trim, i dona a cada pàgina una TrimBox i una BleedBox. Vegeu [Marques de tall](#marques-de-tall).
-- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escriu en DeviceCMYK els colors que pinta postext (text, filets, fons, figures vectorials) i pinta les marques de tall en color de registre, perquè s'imprimeixin en totes les planxes. Els mapes de bits i els originals d'impressió en PDF s'insereixen tal com són, així que una foto RGB continua en RGB: converteix-la abans d'afegir-la.
+- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escriu en DeviceCMYK els colors que pinta postext (text, filets, fons, figures vectorials) (les marques de tall van sempre en color de registre). Els mapes de bits i els originals d'impressió en PDF s'insereixen tal com són, així que una foto RGB continua en RGB: converteix-la abans d'afegir-la.
 - **`page.dpi: 300`** (o superior) — els punts PDF són fixos a 72/polzada, però l'aritmètica de maquetació de Postext funciona en píxels; un DPI més alt dona una subdivisió més fina per a elements mesurats en `mm` o `cm`.
 - **`colors.model: 'cmyk'`** — preserva la intenció que els colors es van definir en espai CMYK. El fallback `hex` continua sent el que s'utilitza per dibuixar realment al PDF avui; `model` es documenta aquí perquè viatja juntament amb el VDT per a eines posteriors.
 - **`{ pageNegative: true }`** a `RenderToPdfOptions` — inverteix l'àrea de trim amb un blend mode de tipus Difference (les marques de tall queden sense invertir). Útil per a comprovacions de preflight sobre tipografia fosca sobre clar.
