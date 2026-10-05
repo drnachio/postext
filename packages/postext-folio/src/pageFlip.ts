@@ -124,6 +124,9 @@ export const BLOCK_PAGES = 10;
 /** How long a block of leaves takes to go over (ms), a little longer for
  *  a thicker one. */
 const BLOCK_DURATION = 1150;
+/** A page is taken by its outer part only: from this fraction of its
+ *  width from the spine out to the fore-edge (#494). */
+const GRIP = 0.5;
 /** A leaf follows the one before it once that one is this far through its turn. */
 const GAP = 0.14;
 
@@ -2512,12 +2515,13 @@ export class PageFlipper {
     return this.specOf(k).rigidity > 0.5;
   }
 
-  /** The page under the pointer: +1 the one a forward turn takes (the
-   *  recto), −1 the other, 0 none. */
+  /** The page under the pointer, by its outer part (where a hand takes
+   *  it): +1 the one a forward turn takes (the recto), −1 the other, 0
+   *  none (off the pages, or nearer the spine). */
   hit(event: { clientX: number; clientY: number }): 1 | -1 | 0 {
     if (!this.surfaces) this.layout();
     const { x, y } = this.toWorld(event);
-    if (Math.abs(y) > this.H / 2 || Math.abs(x) > this.W * 1.05) return 0;
+    if (Math.abs(y) > this.H / 2 || Math.abs(x) > this.W * 1.05 || Math.abs(x) < GRIP * this.W) return 0;
     return x > 0 ? 1 : -1;
   }
 
@@ -2530,7 +2534,7 @@ export class PageFlipper {
     const at = this.settledAt();
     const forward = x > 0;
     const k = forward ? at : at - 1;
-    if (k < 0 || k >= this.turned.length || Math.abs(x) > this.W * 1.05 || Math.abs(y) > this.H / 2) return false;
+    if (k < 0 || k >= this.turned.length || Math.abs(x) > this.W * 1.05 || Math.abs(x) < GRIP * this.W || Math.abs(y) > this.H / 2) return false;
     const G = { u: Math.max(0.15 * this.W, Math.min(this.W, Math.abs(x))), v: y };
     this.turns.set(k, { forward, G, P: { ...G }, held: { aim: { ...G }, samples: [] }, rigid: this.rigidOf(k) });
     this.lastFrame = performance.now();
