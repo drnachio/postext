@@ -12,6 +12,7 @@ import type {
   EmphasisStyle,
   FootnoteNumbering,
   FootnotesConfig,
+  ResolvedFootnotesConfig,
   HeadingLevelConfig,
   OrderedListLevelConfig,
   PostextConfig,
@@ -92,7 +93,7 @@ export type ArabicDefaultValue =
     kind: 'footnotes';
     /** The marker as the text shows it, its template applied: «(١)». */
     marker: string;
-    position: 'superscript' | 'inline';
+    position: ResolvedFootnotesConfig['markerPosition'];
     numbering: FootnoteNumbering;
     /** Where the note's own number stands, when not as the marker. */
     noteNumber?: 'superscript' | 'inline';

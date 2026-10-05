@@ -396,6 +396,14 @@ export interface SandboxLabels {
   footnotesMarkerPositionAuto: string;
   footnotesMarkerPositionSuperscript: string;
   footnotesMarkerPositionInline: string;
+  footnotesPlacementSpread: string;
+  footnotesNumberingSpread: string;
+  footnotesMarkerPositionSide: string;
+  footnotesMarkerPositionRight: string;
+  footnotesNumberGap: string;
+  footnotesNumberGapTooltip: string;
+  footnotesNumberGapEn: string;
+  footnotesNumberGapEm: string;
   footnotesMarkerSize: string;
   footnotesMarkerSizeTooltip: string;
   footnotesChapterEndAlign: string;

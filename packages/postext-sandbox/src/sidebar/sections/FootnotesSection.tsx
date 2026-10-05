@@ -34,7 +34,14 @@ export const FootnotesSection = memo(function FootnotesSection() {
   const raw = useSandboxSelector((s) => s.config.footnotes);
   const bodyColor = useSandboxSelector((s) => s.config.bodyText?.color);
   const bodyAlign = useSandboxSelector((s) => s.config.bodyText?.textAlign);
-  const fn = resolveFootnotesConfig(raw);
+  const locale = useSandboxSelector((s) => s.config.locale);
+  const writingMode = useSandboxSelector((s) => s.config.layout?.writingMode);
+  const fn = resolveFootnotesConfig(raw, locale, writingMode);
+  // What the unset fields come to in this document: a Japanese one sets its
+  // notes after JLReq (endnotes with （1） markers in a vertical book), and
+  // spread sidenotes number per spread.
+  const DD = resolveFootnotesConfig(raw?.placement ? { placement: raw.placement } : undefined, locale, writingMode);
+  const vertical = writingMode === 'vertical-rl';
   const textSide = flowSideLabels(useRightToLeftFlow(), labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
 
   const write = (next: FootnotesConfig | undefined) => {
@@ -58,7 +65,8 @@ export const FootnotesSection = memo(function FootnotesSection() {
   };
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
-  const columnFoot = fn.placement === 'column';
+  const columnFoot = fn.placement === 'column' || fn.placement === 'spread';
+  const defaultTemplate = DD.markerTemplate ?? '{n}';
 
   return (
     <CollapsibleSection
@@ -77,13 +85,15 @@ export const FootnotesSection = memo(function FootnotesSection() {
         options={[
           { value: 'column', label: labels.footnotesPlacementColumn },
           { value: 'chapterEnd', label: labels.footnotesPlacementChapterEnd },
+          // Sidenotes on the spread are a vertical book's.
+          ...(vertical || raw?.placement === 'spread' ? [{ value: 'spread', label: labels.footnotesPlacementSpread }] : []),
         ]}
         onChange={(v) => update({ placement: v as FootnotesConfig['placement'] })}
         tooltip={labels.footnotesPlacementTooltip}
-        isDefault={fn.placement === D.placement}
+        isDefault={raw?.placement === undefined || raw.placement === resolveFootnotesConfig(undefined, locale, writingMode).placement}
         onReset={() => resetField('placement')}
       />
-      {!columnFoot && (
+      {fn.placement === 'chapterEnd' && (
         <SelectInput
           label={labels.footnotesChapterEndAlign}
           value={fn.chapterEndAlign}
@@ -114,10 +124,11 @@ export const FootnotesSection = memo(function FootnotesSection() {
                 { value: 'column', label: labels.footnotesNumberingColumn },
               ]
             : []),
+          ...(fn.placement === 'spread' ? [{ value: 'spread', label: labels.footnotesNumberingSpread }] : []),
         ]}
         onChange={(v) => update({ numbering: v as FootnotesConfig['numbering'] })}
         tooltip={labels.footnotesNumberingTooltip}
-        isDefault={fn.numbering === D.numbering}
+        isDefault={fn.numbering === DD.numbering}
         onReset={() => resetField('numbering')}
       />
       <SelectInput
@@ -138,13 +149,15 @@ export const FootnotesSection = memo(function FootnotesSection() {
           { value: 'auto', label: labels.footnotesMarkerPositionAuto },
           { value: 'superscript', label: labels.footnotesMarkerPositionSuperscript },
           { value: 'inline', label: labels.footnotesMarkerPositionInline },
+          { value: 'side', label: labels.footnotesMarkerPositionSide },
+          { value: 'right', label: labels.footnotesMarkerPositionRight },
         ]}
         onChange={(v) => update({ markerPosition: v as FootnotesConfig['markerPosition'] })}
         tooltip={labels.footnotesMarkerPositionTooltip}
         isDefault={(raw?.markerPosition ?? 'auto') === 'auto'}
         onReset={() => resetField('markerPosition')}
       />
-      {fn.markerPosition === 'inline' && (
+      {fn.markerPosition !== 'superscript' && (
         <NestedGroup>
           <DimensionInput
             label={labels.footnotesMarkerSize}
@@ -153,7 +166,7 @@ export const FootnotesSection = memo(function FootnotesSection() {
             min={0.3}
             step={0.05}
             tooltip={labels.footnotesMarkerSizeTooltip}
-            isDefault={dimensionsEqual(fn.markerSize, D.markerSize)}
+            isDefault={raw?.markerSize === undefined || dimensionsEqual(fn.markerSize, resolveFootnotesConfig({ markerPosition: fn.markerPosition }).markerSize)}
             onReset={() => resetField('markerSize')}
             units={MARKER_UNITS}
           />
@@ -176,10 +189,10 @@ export const FootnotesSection = memo(function FootnotesSection() {
       />
       <TextInput
         label={labels.footnotesMarkerTemplate}
-        value={raw?.markerTemplate ?? '{n}'}
-        onChange={(v) => (v.trim() === '' || v === '{n}' ? resetField('markerTemplate') : update({ markerTemplate: v }))}
+        value={raw?.markerTemplate ?? defaultTemplate}
+        onChange={(v) => (v.trim() === '' || v === defaultTemplate ? resetField('markerTemplate') : update({ markerTemplate: v }))}
         tooltip={labels.footnotesMarkerTemplateTooltip}
-        isDefault={raw?.markerTemplate === undefined || raw.markerTemplate === '{n}'}
+        isDefault={raw?.markerTemplate === undefined || raw.markerTemplate === defaultTemplate}
         onReset={() => resetField('markerTemplate')}
         widthCh={8}
       />
@@ -232,9 +245,23 @@ export const FootnotesSection = memo(function FootnotesSection() {
         min={0}
         step={0.1}
         tooltip={labels.footnotesHangingIndentTooltip}
-        isDefault={dimensionsEqual(fn.hangingIndent, D.hangingIndent)}
+        isDefault={dimensionsEqual(fn.hangingIndent, DD.hangingIndent)}
         onReset={() => resetField('hangingIndent')}
         units={SPACE_UNITS}
+      />
+      <SelectInput
+        label={labels.footnotesNumberGap}
+        value={fn.numberGap ?? 'en'}
+        variant="segmented"
+        stacked
+        options={[
+          { value: 'en', label: labels.footnotesNumberGapEn },
+          { value: 'em', label: labels.footnotesNumberGapEm },
+        ]}
+        onChange={(v) => update({ numberGap: v as FootnotesConfig['numberGap'] })}
+        tooltip={labels.footnotesNumberGapTooltip}
+        isDefault={(fn.numberGap ?? 'en') === (DD.numberGap ?? 'en')}
+        onReset={() => resetField('numberGap')}
       />
       <DimensionInput
         label={labels.footnotesSpaceBetween}
@@ -287,7 +314,7 @@ export const FootnotesSection = memo(function FootnotesSection() {
             max={1}
             step={0.05}
             tooltip={labels.footnotesSeparatorWidthTooltip}
-            isDefault={fn.separator.width === D.separator.width}
+            isDefault={fn.separator.width === DD.separator.width}
             onReset={() => resetSeparatorField('width')}
           />
           <DimensionInput

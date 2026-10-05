@@ -8,6 +8,7 @@ import type {
   Dimension,
   FootnoteNumbering,
   FootnotesConfig,
+  ResolvedFootnotesConfig,
   TextAlign,
   HeadingLevelConfig,
   OrderedListLevelConfig,
@@ -82,7 +83,7 @@ export type ChineseDefaultValue =
   | { kind: 'align'; value: TextAlign }
   | { kind: 'writingMode'; value: WritingMode; binding: 'left' | 'right' }
   | { kind: 'binding'; value: 'left' | 'right'; auto?: boolean }
-  | { kind: 'footnotes'; marker: string; position: 'superscript' | 'inline'; numbering: FootnoteNumbering }
+  | { kind: 'footnotes'; marker: string; position: ResolvedFootnotesConfig['markerPosition']; numbering: FootnoteNumbering }
   | { kind: 'none' };
 
 export interface ChineseDefaultChange {
