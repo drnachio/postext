@@ -1,0 +1,77 @@
+---
+title: "A lab sheet whose clips play on screen and in the EPUB"
+summary: "Two video resources with their own MP4 files: print sets each as its first frame with a QR code, renderToHtml and postext-epub play the files."
+plain: "A physics worksheet with two short films of a pendulum. On paper each film is a still picture with a code to scan; on screen and in the e-book the films play on the page."
+description: "A physics lab sheet with two MP4 clips, printed as posters with QR codes, played by the HTML edition's video players and carried inside a fixed-layout EPUB."
+question: "How do the screen edition and the EPUB play the book's clips, and how do I hide the download button?"
+aliases: ["video", "MP4", "HTML5 video", "video player", "download button", "nodownload", "controlslist", "QR code", "EPUB video", "lab sheet", "worksheet", "resourceVideoUrl", "videoStyle"]
+pageNotes: { "1": "The opener of lab sheet 4.2: a rust band with the title The period of a pendulum and three white fields for name, group and date, then the aim, the two clips and the background in two columns. At the foot, the first frames of Video 1 and Video 2, each with a dark play mark and a QR code.", "2": "The method in a cream box, a blank table of measurements, a table of exact periods from 5° to 90°, and four questions with white answer boxes." }
+---
+
+## What you'll build
+
+Lab sheet 4.2 of *Bench Physics*, an A4 workbook for students of 16 to 18, on the period of a pendulum. A rust band carries the title and the fields for name, group and date. At the foot of the first page two clips of the same pendulum, released from 10° and from 80°, sit side by side. On paper each clip is its first frame, with a play mark and a QR code that opens the MP4. In the screen edition beside the pages, and in the EPUB the pen writes, the same two resources play in the reader's own video player. The second page holds the method, a table to fill in, the exact periods worked out by the code, and four questions with boxes for the answers.
+
+## Method
+
+### 1 · Give each clip a production address and a file
+
+The code is [the short answer](#the-short-answer) above. A clip of your own has two addresses. `video.url` is where the published book will find it: the QR code prints it and the PDF links the poster to it, so here it is the clip's jsDelivr address, the one a phone can open today. `video.fileId` names the file itself, kept out of band like a bitmap, for the outputs that can carry it or play it from somewhere else (see [Document format › Videos](/en/docs/document-format#videos)). The player options in `videoStyle.player` apply to every clip: they loop, start muted, load in full (27 and 61 KB) and offer no download, picture in picture or casting, so the clips stay on the sheet.
+
+### 2 · Lay out the screen edition from the same source
+
+<Excerpt region="screen" />
+
+The screen edition lives in the configuration as `htmlViewer.overrides`, which canvas and PDF ignore. At 122 dpi every size given in points comes out about a quarter larger than at 96, so the 9.4 pt text reads at 16 px in the pane and the captions, boxes and tables grow with it. The opener keeps its title and drops its band and fields, which belong to paper.
+
+### 3 · Play the clips in the pane
+
+<Excerpt region="pane" />
+
+`renderToHtml` sets each video resource as an HTML5 `<video>` with the player options as attributes: `controls`, `muted`, `loop`, `playsinline`, `preload="auto"`, `disablepictureinpicture`, `disableremoteplayback` and `controlslist="nodownload"`. That last one only hides the button. Anyone with the address can still save the file, so treat it as tidiness, not protection. `resourceVideoUrl` hands the backend a playable address for each `fileId`, as `resourceImageUrl` does for the posters. Here it is the published asset; a site that keeps uploads elsewhere returns its own URL, or a blob URL of the bytes. Without it the player falls back to `video.url`, and with neither the pane shows the poster.
+
+### 4 · Pack the clips into a fixed-layout EPUB
+
+<Excerpt region="epub" />
+
+The sheet is built around two clips side by side and empty boxes to write in, so the fixed layout keeps it: every page as printed, with a player where the poster was. A reflowable EPUB would play the clips too, one under the other at the width of the text. `resourceBytes` answers `video/mp4` for each clip and a JPEG for each poster, and the writer packs them under `media/` and `images/`. The EPUB keeps only the attributes its schema knows (`controls`, `autoplay`, `muted`, `loop`, `playsinline`, `preload`), so the download button and the rest are left to the reading system. The file passes EPUBCheck with no errors or warnings.
+
+### 5 · Set θ and π in canvas, PDF and EPUB
+
+<Excerpt region="greek" />
+
+The kit loads each face's Fontsource `latin` file, which has no Greek. The pen adds Source Serif 4's `greek` files as faces limited to the Greek block, hands the PDF both files of each text face (a character comes from the first file that has it) and gives the EPUB the Greek files after the Latin ones, each with its `unicodeRange`. The capture still warns that θ and π lie outside the latin subset; the PDF has them.
+
+### 6 · Work the table out in the code
+
+<Excerpt region="periods" />
+
+The exact period needs the complete elliptic integral *K*, and the arithmetic-geometric mean gives it in a handful of steps: *T* = *T*~0~ / AGM(1, cos ½θ~0~). The table prints three decimals with the decimal comma in Spanish, and the 10° and 80° rows match the clips: 2.010 s and 2.282 s, 0.2 % and 13.8 % longer than *T*~0~ = 2.006 s. In 8 s that is just under four full swings for the first clip and three and a half for the second.
+
+## Variations
+
+### Start one clip on its own
+
+A video's own `player` is laid over `videoStyle.player`. Autoplay always starts muted, as browsers require.
+
+```diff
+ ];
++clips[0].video.player = { autoplay: true }; // the 10° clip starts as the pane opens
+```
+
+### Show the printed poster on screen
+
+With `html: 'poster'` the HTML edition sets the poster with its play mark and QR code, linked to the production address, in place of the player.
+
+```diff
+ const videoStyle = {
++  html: 'poster',
+```
+
+### Use a YouTube or Vimeo video
+
+`source: 'youtube'` with the video's address embeds YouTube's player from `youtube-nocookie.com` (`privacy` is on by default). That player honours fewer options: controls, full screen, autoplay, muted and loop, and Vimeo's adds the speed menu and picture in picture; neither offers a download. An EPUB may not embed a web page's player, so there the video is its poster linked to the video. The options and their reach are listed under [Configuration › Video style](/en/docs/configuration#video-style).
+
+## Pitfalls
+
+The MP4s are H.264. Chrome, Edge, Safari and Firefox play them, and so does the Chrome for Testing the capture runs. A Chromium compiled without its proprietary codecs, the open-source default, does not; encode the clips as WebM (`format: 'webm'`) if that matters to your readers.

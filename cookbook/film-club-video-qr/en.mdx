@@ -1,0 +1,74 @@
+---
+title: "A film club programme with QR codes on the posters"
+summary: "Each film is a video resource whose poster prints with a play mark and a QR code that opens it on YouTube; in the PDF the poster is a link too."
+plain: "A six-page programme for a film club's autumn season of four short films. Every film page shows a picture with a code a phone can scan to watch the film, and in the PDF the picture can be clicked."
+description: "A film club programme in Postext: four YouTube films as video resources, printed as title cards with a play mark, a 20 mm QR code and a PDF link."
+question: "How do I print a video in a programme so that a reader can scan it from the page or click it in the PDF?"
+aliases: ["video in print", "QR code", "YouTube", "play button", "poster frame", "film programme", "cineclub", "scan to watch", "video link in PDF", "vídeo"]
+pageNotes: { "1": "The cover: a screen-black band over the top half with the kicker Lumen Film Club · Autumn 2026 in gold, OPEN MOVIES in tall condensed capitals, an italic standfirst, four chips in the films' colours dated 6, 13, 20 and 27 Nov, and the venue line; two paragraphs of introduction follow on cream paper, citing Film 1 to Film 4.", "2": "Session 1, Elephants Dream: the kicker in red, the title in condensed capitals and a credits line, then the title card, copper gears and cables on deep teal with the film's name, a red rounded play mark in the top left corner and a QR code on a cream plate in the bottom right; the caption Film 1 and the short address youtu.be/TLkA0RELQ1g under it, and two paragraphs on the film.", "3": "Session 2, Big Buck Bunny: a title card with a peach sun over green hills and butterflies, the same play mark and QR code, the caption Film 2 and two paragraphs.", "4": "Session 3, Tears of Steel: a title card with a dark skyline, a church spire and a ringed moon in gold, with the play mark, the QR code, the caption Film 3 and two paragraphs.", "5": "Session 4, Spring: a title card with misty blue ridges, dark firs and one red light, with the play mark, the QR code, the caption Film 4 and two paragraphs.", "6": "Practical notes: times and prices, why the club may screen these films, how to watch at home, the four films' credits with their licences, and the colophon." }
+---
+
+## What you'll build
+
+The autumn programme of the Lumen Film Club, a 165 × 235 mm booklet on cream paper: a screen-black cover band with the season's title in Big Shoulders Display, then one page for each of four open movies of the Blender Foundation. Each film page opens with a red kicker for the session, the title in condensed capitals and a credits line, then a title card at the full 125 mm measure. A red play mark sits in the card's top left corner and a 20 mm QR code in the bottom right. A member who missed a Friday points a phone at the code and the film opens on YouTube; in the PDF the whole card is the link. The short address under each card is there for a phone that will not read the code.
+
+## Method
+
+### 1 · Make each film a video resource
+
+The code is [the short answer](#the-short-answer) above. A video resource is placed, captioned and numbered like a figure, and print shows it as its poster with two overlays. The play mark and the code go to opposite corners, so they never meet, and the poster at 70 mm tall leaves room for both. The code is 20 mm with a quiet zone of two modules: `https://youtu.be/` plus an eleven-character id makes 29 modules at level Q, so each module measures 0.61 mm, about twice what a phone camera needs. Q is the highest level that keeps 29 modules at this length (the engine raises M to it on its own); H would take 33 and shrink the modules to 0.54 mm. The built-in `video` type would print *Video 1.1*; renamed to *Film* and counted with `{n}` across the whole document, it numbers the season's four sessions *Film 1* to *Film 4*, and the cover's citations print the same words.
+
+### 2 · Keep the address short and let the engine expand it
+
+<Excerpt region="films" />
+
+The address in each entry is the one printed under the card, `youtu.be/TLkA0RELQ1g`, which a reader can type. `parseVideoUrl` reads any YouTube or Vimeo form, and `videoWatchUrl` writes the canonical address from what it read: the QR code and the PDF link both hold `https://youtu.be/<id>`. A typing mistake that leaves no valid id makes `parseVideoUrl` return `undefined`, and the pen stops before the build, so a broken link never reaches the printer.
+
+### 3 · Draw a title card for the poster
+
+<Excerpt region="art" />
+
+In most projects the poster is a frame of the film: the Sandbox fetches it when you enter the address, and in code `youtubePosterUrls(id)` lists YouTube's thumbnails from the largest (1280 × 720) down. The platforms' frames belong to the films and their licences, and a printed programme can use title cards of its own, so each film here gets one drawn on a canvas in its colour, with the film's motif, title, year and director. The card keeps the top left and bottom right corners clear for the overlays. A canvas and not an SVG, because an SVG drawn as an image cannot reach the page's web fonts, and the cards set their type in the booklet's faces. The card is 1600 × 900 pixels, the films' 16:9, and `video.poster` declares that size: at the 125 mm measure it prints at 325 dpi. A video with no poster prints as a dark 16:9 box with the same mark and code, and the build warns about it.
+
+### 4 · Set the poster under the opener
+
+<Excerpt region="furniture" />
+
+Each film is a first-level heading whose opener stacks the session kicker, the title and the credits line, all three from heading attributes. `::resource` sets the poster right under it with `position: 'here'`, so every film page has the same order. The cover is a heading style whose band, title and chips are design elements; the four chips take the films' colours from the palette, as the title cards do.
+
+### 5 · One palette for the pages and the cards
+
+<Excerpt region="palette" />
+
+The ink, the red and the cream are the booklet's; the four film colours (named after the Blender projects Orange, Peach and Mango, plus Spring) paint both the cover chips and the cards. The play mark is the same red as the kickers, and the QR plate is the page's cream with modules in ink: a dark code on a light plate, the contrast every reader app expects.
+
+## Variations
+
+### Print the film's own frame
+
+Fetch YouTube's largest thumbnail instead of drawing a card, when the film's licence and your host allow it, and declare the frame's own size.
+
+```diff
+-for (const f of FILMS) await titleCard(f); // after the fonts: the cards set type too
++for (const f of FILMS) { // 1280 × 720, maxresdefault.jpg, the first of youtubePosterUrls
++  await loadImage(`${f.id}.png`, youtubePosterUrls(parseVideoUrl(f.address).id)[0]);
++}
+```
+
+### Play the films in the HTML edition
+
+`renderToHtml` sets each video as YouTube's privacy-enhanced player, and an EPUB shows the poster linked to the film; `videoStyle.html: 'poster'` keeps the printed card on screen too. See [Videos](/en/docs/document-format#videos) and [Video style](/en/docs/configuration#video-style).
+
+### Centre a larger play mark
+
+A mark in the middle of the card reads as a video player from across the room; the cards keep their middle band free of type, so it covers only the motif.
+
+```diff
+-  playMark: { shape: 'rounded', position: 'top-left', size: mm(8), inset: mm(4),
++  playMark: { shape: 'rounded', position: 'center', size: mm(14), inset: mm(4),
+```
+
+## Pitfalls
+
+- The engine caps the code at 45 % of the poster's shorter side and the play mark at 40 %. On a small poster a 20 mm code becomes smaller, and its modules with it: a 20 mm code needs a poster at least 45 mm tall.
+- Two overlays given the same position cover each other. Give the play mark and the code different corners, and draw the poster with those corners free.

@@ -1,0 +1,77 @@
+---
+title: "视频在屏幕和EPUB里都能播放的实验报告单"
+summary: "两个自带MP4文件的视频资源：印刷版印出首帧和二维码，renderToHtml和postext-epub直接播放文件。"
+plain: "一份物理实验报告单，附两段单摆的短视频。纸上每段视频是一张静止画面和一个可扫的码；在屏幕上和电子书里，视频就在页面上播放。"
+description: "一份物理实验报告单，附两段MP4视频：印刷时是带二维码的海报帧，在HTML版里用浏览器播放器播放，并装进固定版式的EPUB。"
+question: "屏幕版和EPUB怎样播放书中的视频？怎样隐藏下载按钮？"
+aliases: ["视频", "MP4", "HTML5视频", "视频播放器", "下载按钮", "nodownload", "controlslist", "二维码", "EPUB视频", "实验报告单", "练习册", "resourceVideoUrl", "videoStyle"]
+pageNotes: { "1": "实验4.2的首页：一条砖红色色带，上面是标题The period of a pendulum和三个白色填写栏（姓名、小组、日期）；下面分两栏排目的、两段视频和原理。页脚是视频1和视频2的首帧，各带一个深色播放标记和一个二维码。", "2": "奶油色框里的步骤、一张空白的测量表、一张5°到90°的精确周期表，以及四道带白色答题框的问题。" }
+---
+
+## 成品一览
+
+《Bench Physics》是一本给16到18岁学生用的A4实验练习册，这里是其中的实验4.2：单摆的周期。砖红色色带上印着标题和姓名、小组、日期三个填写栏。第一页页脚并排放着同一个单摆的两段视频，一段从10°释放，一段从80°释放。纸上每段视频是它的首帧，带播放标记和一个能打开MP4的二维码。在页面旁边的屏幕版里，以及代码写出的EPUB里，这两个资源在读者自己的视频播放器里播放。第二页是步骤、一张待填的表、代码算出的精确周期，以及四道带答题框的问题。
+
+## 做法
+
+### 1 · 给每段视频一个正式地址和一个文件
+
+代码就是上面的[简短回答](#简短回答)。自己的视频有两个地址。`video.url`是出版后的书找到它的地方：二维码印的是它，PDF把海报帧链接到它，所以这里用的是视频在jsDelivr上的地址，手机现在就能打开。`video.fileId`指文件本身，像位图一样另外存放，供能够携带它或从别处播放它的输出使用（见[文档格式 › 视频](/zh/docs/document-format#视频)）。`videoStyle.player`里的选项对所有视频生效：循环播放、静音开始、整段预载（27 KB和61 KB），不提供下载、画中画和投屏，让视频留在这张单子上。
+
+### 2 · 用同一份源文件排屏幕版
+
+<Excerpt region="screen" />
+
+屏幕版放在配置的`htmlViewer.overrides`里，画布和PDF不读它。在122 dpi下，所有以点为单位的尺寸都比96 dpi时大约大四分之一，所以9.4 pt的正文在面板里是16 px，图注、框和表格也随之放大。章首页保留标题，去掉色带和填写栏，那是纸面上的东西。
+
+### 3 · 在面板里播放视频
+
+<Excerpt region="pane" />
+
+`renderToHtml`把每个视频资源排成一个HTML5的`<video>`，播放器选项成为它的属性：`controls`、`muted`、`loop`、`playsinline`、`preload="auto"`、`disablepictureinpicture`、`disableremoteplayback`和`controlslist="nodownload"`。最后这个只是隐藏按钮。知道地址的人照样可以保存文件，所以它只是界面上的整洁，不是保护。`resourceVideoUrl`为每个`fileId`给出可播放的地址，就像`resourceImageUrl`为海报帧做的那样。这里给的是已发布的资源文件；把文件存在别处的网站返回自己的URL，或者字节的blob URL。没有它，播放器就用`video.url`；两者都没有，面板显示海报帧。
+
+### 4 · 把视频装进固定版式的EPUB
+
+<Excerpt region="epub" />
+
+这张单子围绕并排的两段视频和留给学生书写的空框来安排，所以用固定版式保留它：每一页都和印刷时一样，海报帧的位置换成播放器。流式EPUB也能播放这些视频，只是一个在另一个下面，宽度与正文相同。`resourceBytes`为每段视频返回`video/mp4`，为每张海报帧返回JPEG，写入器把它们分别放在`media/`和`images/`下。EPUB只保留其规范承认的属性（`controls`、`autoplay`、`muted`、`loop`、`playsinline`、`preload`），下载按钮之类交给阅读系统决定。这个文件通过EPUBCheck，没有错误也没有警告。
+
+### 5 · 在画布、PDF和EPUB里排出θ和π
+
+<Excerpt region="greek" />
+
+工具包为每种字体加载Fontsource的`latin`文件，里面没有希腊字母。代码另外把Source Serif 4的`greek`文件加载为只覆盖希腊字母区段的字体，把正文字体的两个文件都交给PDF（每个字符取自第一个包含它的文件），并把希腊字母文件放在拉丁文件之后交给EPUB，各带自己的`unicodeRange`。截图检查仍会提示θ和π不在latin子集里；PDF里有这两个字。
+
+### 6 · 在代码里算出这张表
+
+<Excerpt region="periods" />
+
+精确周期需要第一类完全椭圆积分*K*，算术几何平均几步就能求出：*T* = *T*~0~ / AGM(1, cos ½θ~0~)。表格保留三位小数，西班牙语版用小数逗号；10°和80°两行与视频一致：2.010 s和2.282 s，比*T*~0~ = 2.006 s长0.2 %和13.8 %。8秒里，第一段视频差一点就是四次完整摆动，第二段是三次半。
+
+## 变化
+
+### 让一段视频自动开始
+
+每段视频自己的`player`叠加在`videoStyle.player`之上。自动播放总是静音开始，这是浏览器的要求。
+
+```diff
+ ];
++clips[0].video.player = { autoplay: true }; // the 10° clip starts as the pane opens
+```
+
+### 在屏幕上显示印刷用的海报帧
+
+设为`html: 'poster'`时，HTML版排出带播放标记和二维码的海报帧，链接到正式地址，代替播放器。
+
+```diff
+ const videoStyle = {
++  html: 'poster',
+```
+
+### 改用YouTube或Vimeo视频
+
+`source: 'youtube'`加上视频地址，会从`youtube-nocookie.com`嵌入YouTube的播放器（`privacy`默认开启）。这个播放器能遵守的选项更少：控件、全屏、自动播放、静音和循环；Vimeo的播放器还支持倍速菜单和画中画，两者都不提供下载。EPUB不能嵌入网页的播放器，所以在EPUB里视频是链接到视频的海报帧。各选项及其适用范围见[配置 › 视频样式](/zh/docs/configuration#视频样式)。
+
+## 常见问题
+
+这两个MP4是H.264编码。Chrome、Edge、Safari和Firefox都能播放，截图用的Chrome for Testing也能。不带专有编解码器编译的Chromium（开源项目的默认做法）不能播放；如果你的读者用得到，就把视频编码成WebM（`format: 'webm'`）。

@@ -1,0 +1,74 @@
+---
+title: "Programa de cineclub amb codis QR a les portades"
+summary: "Cada pel·lícula és un recurs de vídeo amb una portada que porta una marca de reproducció i un codi QR que l'obre a YouTube; al PDF, la portada és un enllaç."
+plain: "Un programa de sis pàgines per al cicle de tardor d'un cineclub, amb quatre curtmetratges. Cada pàgina porta una imatge amb un codi que el mòbil escaneja per veure la pel·lícula, i al PDF n'hi ha prou de prémer la imatge."
+description: "Un programa de cineclub amb Postext: quatre pel·lícules de YouTube com a recursos de vídeo, impreses com a cartel·les amb marca, QR de 20 mm i enllaç."
+question: "Com imprimeixo un vídeo en un programa perquè el lector l'obri escanejant la pàgina o prement al PDF?"
+aliases: ["vídeo imprès", "codi QR", "YouTube", "botó de reproduir", "portada de vídeo", "fotograma", "programa de cinema", "cineclub", "escanejar per veure", "enllaç de vídeo al PDF", "video"]
+pageNotes: { "1": "La coberta: una banda negre pantalla a la meitat superior amb l'avantítol Cineclub Lumen · Otoño de 2026 en daurat, PELÍCULAS ABIERTAS en majúscules altes i estretes, una entradeta en cursiva, quatre pastilles amb els colors de les pel·lícules datades el 6, 13, 20 i 27 de novembre i la línia de la sala; a sota, sobre paper crema, dos paràgrafs de presentació que citen les pel·lícules 1 a 4.", "2": "Sessió 1, Elephants Dream: l'avantítol en vermell, el títol en majúscules estretes i una línia de crèdits; després la cartel·la, engranatges i cables de coure sobre verd blavós amb el nom de la pel·lícula, una marca de reproducció vermella i arrodonida a la cantonada superior esquerra i un codi QR sobre una placa crema a la inferior dreta; a sota, el peu Película 1 amb l'adreça curta youtu.be/TLkA0RELQ1g i dos paràgrafs sobre la pel·lícula.", "3": "Sessió 2, Big Buck Bunny: una cartel·la amb un sol préssec sobre turons verds i papallones, la mateixa marca i el mateix codi, el peu Película 2 i dos paràgrafs.", "4": "Sessió 3, Tears of Steel: una cartel·la amb un perfil urbà fosc, l'agulla d'una església i una lluna amb anell en daurat, amb la marca, el codi QR, el peu Película 3 i dos paràgrafs.", "5": "Sessió 4, Spring: una cartel·la amb carenes blaves entre la boira, avets foscos i una llum vermella, amb la marca, el codi QR, el peu Película 4 i dos paràgrafs.", "6": "Informació pràctica: horaris i preus, per què el cineclub pot projectar aquestes pel·lícules, com veure-les a casa, els crèdits de les quatre pel·lícules amb les seves llicències i el colofó." }
+---
+
+## Què compondràs
+
+El programa de tardor del Cineclub Lumen, un quadernet de 165 × 235 mm sobre paper crema: una coberta amb una banda negre pantalla i el títol del cicle en Big Shoulders Display, i després una pàgina per a cadascuna de quatre pel·lícules obertes de la Blender Foundation. Cada pàgina comença amb un avantítol vermell per a la sessió, el títol en majúscules estretes i una línia de crèdits, i a sota hi va una cartel·la a tota l'amplada de la caixa, 125 mm. A la cantonada superior esquerra hi ha una marca de reproducció vermella, i a la inferior dreta, un codi QR de 20 mm. El soci que es va perdre un divendres apunta el mòbil al codi i la pel·lícula s'obre a YouTube; al PDF, tota la cartel·la és l'enllaç. L'adreça curta del peu hi és per al mòbil que no llegeixi el codi.
+
+## Elaboració
+
+### 1 · Cada pel·lícula és un recurs de vídeo
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Un recurs de vídeo es col·loca, es retola i es numera com una figura, i l'imprès el mostra com la seva portada amb dos elements a sobre. La marca de reproducció i el codi van a cantonades oposades perquè no es toquin, i la portada, de 70 mm d'alt, deixa lloc per a tots dos. El codi fa 20 mm amb una zona de silenci de dos mòduls: `https://youtu.be/` més un identificador d'onze caràcters dona 29 mòduls amb el nivell Q, de manera que cada mòdul fa 0,61 mm, el doble del que necessita la càmera d'un mòbil. Q és el nivell més alt que conserva els 29 mòduls amb aquesta longitud (el motor hi puja des de M pel seu compte); H en necessitaria 33 i deixaria els mòduls en 0,54 mm. El tipus `video` predefinit imprimiria *Vídeo 1.1*; reanomenat i comptat amb `{n}` a tot el document, numera les quatre sessions del cicle de *Película 1* a *Película 4* en l'edició castellana, i les cites de la coberta imprimeixen les mateixes paraules.
+
+### 2 · Escriu l'adreça curta i deixa que el motor la completi
+
+<Excerpt region="films" />
+
+L'adreça de cada entrada és la que va impresa sota la cartel·la, `youtu.be/TLkA0RELQ1g`, que un lector pot teclejar. `parseVideoUrl` llegeix qualsevol forma d'adreça de YouTube o de Vimeo, i `videoWatchUrl` n'escriu l'adreça canònica: el codi QR i l'enllaç del PDF guarden tots dos `https://youtu.be/<id>`. Una errata que no deixi un identificador vàlid fa que `parseVideoUrl` torni `undefined`, i l'script s'atura abans de compondre, així que un enllaç trencat no arriba mai a la impremta.
+
+### 3 · Dibuixa una cartel·la com a portada
+
+<Excerpt region="art" />
+
+En la majoria de projectes la portada és un fotograma de la pel·lícula: el Sandbox la descarrega quan escrius l'adreça, i en codi `youtubePosterUrls(id)` dona les miniatures de YouTube de la més gran (1280 × 720) a la més petita. Els fotogrames de les plataformes pertanyen a les pel·lícules i a les seves llicències, i un programa imprès pot fer servir cartel·les pròpies, així que cada pel·lícula en porta aquí una dibuixada en un canvas amb el seu color, el seu motiu, el seu títol, el seu any i el seu director. La cartel·la deixa lliures la cantonada superior esquerra i la inferior dreta per a la marca i el codi. És un canvas i no un SVG perquè un SVG dibuixat com a imatge no arriba a les fonts web de la pàgina, i les cartel·les componen el text amb les lletres del quadernet. Cada cartel·la fa 1600 × 900 píxels, el 16:9 de les pel·lícules, i `video.poster` declara aquesta mida: a 125 mm d'amplada s'imprimeix a 325 ppp. Un vídeo sense portada s'imprimeix com una capsa fosca en 16:9 amb la mateixa marca i el mateix codi, i la composició avisa.
+
+### 4 · La portada va sota l'obertura
+
+<Excerpt region="furniture" />
+
+Cada pel·lícula és un títol de primer nivell l'obertura del qual apila l'avantítol de la sessió, el títol i la línia de crèdits, tots tres presos d'atributs del títol. `::resource` col·loca la portada just a sota amb `position: 'here'`, de manera que totes les pàgines de pel·lícula segueixen el mateix ordre. La coberta és un estil de títol amb la banda, el títol i les pastilles fets d'elements de disseny; les quatre pastilles prenen de la paleta els colors de les pel·lícules, igual que les cartel·les.
+
+### 5 · Una paleta per a les pàgines i les cartel·les
+
+<Excerpt region="palette" />
+
+La tinta, el vermell i el crema són els del quadernet; els quatre colors de pel·lícula (amb els noms dels projectes de Blender Orange, Peach i Mango, més Spring) pinten les pastilles de la coberta i les cartel·les. La marca de reproducció té el mateix vermell que els avantítols, i la placa del QR és el crema de la pàgina amb els mòduls en tinta: un codi fosc sobre una placa clara, el contrast que esperen tots els lectors de codis.
+
+## Variants
+
+### Imprimeix el fotograma de la mateixa pel·lícula
+
+Descarrega la miniatura més gran de YouTube en lloc de dibuixar una cartel·la, si la llicència de la pel·lícula i el teu allotjament ho permeten, i declara la mida del fotograma.
+
+```diff
+-for (const f of FILMS) await titleCard(f); // after the fonts: the cards set type too
++for (const f of FILMS) { // 1280 × 720, maxresdefault.jpg, the first of youtubePosterUrls
++  await loadImage(`${f.id}.png`, youtubePosterUrls(parseVideoUrl(f.address).id)[0]);
++}
+```
+
+### Reprodueix les pel·lícules a l'edició HTML
+
+`renderToHtml` posa a cada vídeo el reproductor de YouTube amb privadesa millorada, i un EPUB mostra la portada enllaçada amb la pel·lícula; amb `videoStyle.html: 'poster'` la cartel·la impresa es veu també en pantalla. Consulta [Vídeos](/ca/docs/document-format#vídeos) i [Estil de vídeo](/ca/docs/configuration#estil-de-vídeo).
+
+### Centra una marca més gran
+
+Una marca al centre de la cartel·la es reconeix com un reproductor des del fons de la sala; les cartel·les deixen sense text la franja central, així que la marca només tapa el motiu.
+
+```diff
+-  playMark: { shape: 'rounded', position: 'top-left', size: mm(8), inset: mm(4),
++  playMark: { shape: 'rounded', position: 'center', size: mm(14), inset: mm(4),
+```
+
+## Errors freqüents
+
+- El motor limita el codi al 45 % del costat curt de la portada i la marca al 40 %. En una portada petita, un codi de 20 mm es redueix, i els seus mòduls amb ell: un codi de 20 mm necessita una portada de 45 mm d'alt com a mínim.
+- Dos elements amb la mateixa posició es tapen. Dona a la marca i al codi cantonades diferents, i dibuixa la portada amb aquestes cantonades lliures.
