@@ -17,6 +17,8 @@ import {
   DEFAULT_VIDEO_PLAYER_OPTIONS,
 } from '../index';
 import { collectContentWarnings } from '../pipeline/contentWarnings';
+import { layoutResourceBlock } from '../pipeline/resourceLayout';
+import { resolveAllConfig } from '../pipeline/config';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../index';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -261,6 +263,71 @@ describe('video resources in layout', () => {
     expect(kinds).toContain('videoWithoutPoster');
     expect(kinds).toContain('videoUrlInvalid');
     expect(kinds).toContain('videoWithoutUrl');
+  });
+});
+
+describe('video posters set like pictures', () => {
+  it('cites a video as Video 1.1 in the running text', () => {
+    const doc = buildDocument(
+      { markdown: '# One\n\nThe keeper speaks in :ref{id="talk"}.\n\n::resource{id="talk"}', resources: [youtube()] },
+      PAGE,
+    );
+    const text = doc.pages
+      .flatMap((p) => p.columns.flatMap((c) => c.blocks))
+      .filter((b) => b.type === 'paragraph')
+      .flatMap((b) => (b.lines ?? []).map((l) => l.text))
+      .join(' ')
+      .replace(/\u00a0/g, ' ');
+    expect(text).toContain('Video 1.1');
+  });
+
+  it('crops a poster within its safe area to fit the page (fitFiguresToPage)', () => {
+    // A 3:2 poster at the 600 px measure stands 400 px: too tall for a 400 px page with its caption.
+    const config: PostextConfig = {
+      ...PAGE,
+      page: { ...PAGE.page, height: px(400) },
+      layout: { layoutType: 'single', fitFiguresToPage: true },
+    };
+    const r = youtube({ safeArea: { x: 0, y: 0.1, width: 1, height: 0.5 } });
+    r.video!.poster = { fileId: 'poster', format: 'jpeg', width: 3000, height: 2000 };
+    const doc = buildDocument({ markdown: '::resource{id="talk"}', resources: [r] }, config);
+    const block = resourceBlocks(doc)[0]!;
+    const rb = block.resourceBlock!;
+    expect(rb.bodyRect.width).toBeCloseTo(600, 3);
+    expect(block.bbox.height).toBeLessThanOrEqual(400);
+    expect(rb.bodySource!.height).toBeLessThan(1);
+    expect(rb.bodySource!.y).toBeLessThanOrEqual(0.1);
+    // The overlays sit on the cropped body.
+    const qr = rb.video!.qr!;
+    expect(qr.rect.y + qr.rect.height).toBeLessThanOrEqual(rb.bodyRect.height);
+  });
+
+  it('turns a poster like a picture of its size, overlays on the turned body', () => {
+    const resourceTypes = defaultResourceTypes();
+    const turn = (resource: Resource) => layoutResourceBlock({
+      resource,
+      resourceType: resourceTypes.find((t) => t.id === resource.typeId),
+      number: '1.1',
+      resolved: resolveAllConfig(PAGE),
+      columnWidth: 300,
+      resourceNumbering: {},
+      resourceTypes,
+      resources: [resource],
+      rotate: 'ccw',
+      rotatedLength: 800,
+    }).block;
+    const video = turn(youtube());
+    const still = turn({
+      id: 'still', typeId: 'figure', kind: 'bitmap', caption: 'The talk.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'poster', format: 'jpeg', width: 1280, height: 720 },
+    });
+    expect(video.rotation?.direction).toBe('ccw');
+    expect(video.bodyRect.width).toBeCloseTo(still.bodyRect.width, 6);
+    expect(video.bodyRect.height).toBeCloseTo(still.bodyRect.height, 6);
+    const { playMark, qr } = video.video!;
+    expect(playMark!.rect.x + playMark!.rect.width / 2).toBeCloseTo(video.bodyRect.width / 2, 3);
+    expect(qr!.rect.x + qr!.rect.width).toBeLessThanOrEqual(video.bodyRect.width);
+    expect(qr!.rect.y + qr!.rect.height).toBeLessThanOrEqual(video.bodyRect.height);
   });
 });
 
