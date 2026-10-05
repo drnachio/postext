@@ -1134,7 +1134,7 @@ export class PageFlipper {
     this.key.castShadow = r.lighting.shadows;
     this.key.shadow.radius = 6 + env.softness * 18;
     // Soft light round the key fills its shadows: never black.
-    this.key.shadow.intensity = 0.55 + 0.25 * (1 - env.softness);
+    this.key.shadow.intensity = env.shadowIntensity ?? 0.55 + 0.25 * (1 - env.softness);
     this.renderer.toneMappingExposure = env.exposure * r.lighting.intensity;
     this.edges.color.set(r.paper.shade.hex);
     edgeUniforms.uEdgeRelief.value = r.paper.finish === "uncoated" ? 1 : r.paper.finish === "matte" ? 0.7 : 0.5;

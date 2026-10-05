@@ -26,6 +26,10 @@ export interface Environment {
   keyIntensity: number;
   /** How soft the key light's shadows are (its apparent size, 0 … 1). */
   softness: number;
+  /** How much of the key's light its shadow takes away (0 … 1). By
+   *  default the softness sets it (a small, hard light also shadows
+   *  darker); a light in a room that fills its shadows sets its own. */
+  shadowIntensity?: number;
   /** Exposure, so paper at rest reads as its own colour. */
   exposure: number;
 }
@@ -102,12 +106,24 @@ export function environment(kind: EnvironmentKind): Environment {
         exposure: 1.2,
       };
     case "lamp":
+      // A reading lamp under a shade, its pool of light on the desk and the
+      // room round it dim and warm. The shade is wide and close: the shadow
+      // of a leaf in the air on the page under it is soft-edged, and the
+      // lamp's light bounced off the desk and the walls fills it (#446:
+      // it was a near-black, hard-edged wedge).
       return {
-        scene: sceneOf(room("#2a2420", 0.6), sphere("#ffdcb4", 60, [-2.2, 1.8, 3.4], 0.45), panel(3, 3, "#ffd2a4", 0.8, [-2.2, 1.8, 4.2], [-2.2, 1.8, 0])),
+        scene: sceneOf(
+          room("#2a2420", 1.6),
+          sphere("#ffdcb4", 60, [-2.2, 1.8, 3.4], 0.45),
+          panel(3, 3, "#ffd2a4", 0.8, [-2.2, 1.8, 4.2], [-2.2, 1.8, 0]),
+          // The pool of light on the desk under the lamp, bouncing back up.
+          panel(6, 5, "#ffcf9e", 1.6, [-1.6, 1.2, -1.9], [-1.6, 1.2, 5]),
+        ),
         key: new Vector3(-0.5, 0.42, 0.76).normalize(),
         keyColor: new Color("#ffe2c0"),
         keyIntensity: 1.8,
-        softness: 0.18,
+        softness: 0.55,
+        shadowIntensity: 0.45,
         exposure: 1.15,
       };
     case "overcast":
