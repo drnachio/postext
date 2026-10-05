@@ -104,8 +104,9 @@ export function spreadsOf(list: number[], first: number | ReadonlyMap<number, nu
 }
 
 /** A [verso, recto] pair as it lies open, left page first: a right-bound
- *  book (vertical Chinese, `page.binding: 'right'`) has its recto on the
- *  left of the spine, so page 1 stands on the left and pairs read [3 | 2]. */
+ *  book (vertical Chinese or Japanese, `page.binding: 'right'`) has its
+ *  recto on the left of the spine, so page 1 stands on the left and pairs
+ *  read [3 | 2]. */
 export function sidesOf<T>(pair: readonly [T, T], binding: "left" | "right" | undefined): [T, T] {
   return binding === "right" ? [pair[1], pair[0]] : [pair[0], pair[1]];
 }

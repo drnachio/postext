@@ -4,13 +4,20 @@ import { readKit } from "./sources.ts";
 // The cjk kit block run in Node with a stubbed browser: Fontsource's API
 // and stylesheets from fixtures, document.fonts as a list.
 
-type Fetch = (url: string) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown>; text: () => Promise<string> }>;
+type Fetch = (url: string) => Promise<{
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+  text: () => Promise<string>;
+  arrayBuffer?: () => Promise<ArrayBuffer>;
+}>;
 
 const response = (body: unknown, status = 200) => ({
   ok: status >= 200 && status < 300,
   status,
   json: async () => body,
   text: async () => String(body),
+  arrayBuffer: async () => new TextEncoder().encode(String(body)).buffer as ArrayBuffer,
 });
 
 /** A Fontsource stylesheet: one @font-face per [file, unicode-range]. */
@@ -20,7 +27,12 @@ const stylesheet = (id: string, slices: [string, string][]) =>
 const CJK_META = { subsets: ["chinese-traditional", "latin"], weights: [400, 700], styles: ["normal"] };
 const LATIN_META = { subsets: ["latin", "latin-ext"], weights: [400, 700], styles: ["normal", "italic"] };
 
-function kitWith(fetch: Fetch) {
+type Kit = {
+  loadCjkFonts: (faces: Record<string, string[]>, text: string, options?: { vertical?: boolean }) => Promise<number>;
+  cjkPdfProvider: (family: string, weight: number, style: string, request?: { codePoints: number[] }) => Promise<unknown[]>;
+};
+
+function kitWith(fetch: Fetch, extra: Record<string, unknown> = {}) {
   const kit = readKit();
   const added: { family: string; range: string }[] = [];
   class FontFace {
@@ -35,10 +47,10 @@ function kitWith(fetch: Fetch) {
   };
   const kitFail = vi.fn();
   const run = new Function(
-    "fetch", "document", "FontFace", "kitStatus", "kitFail",
+    "fetch", "document", "FontFace", "kitStatus", "kitFail", ...Object.keys(extra),
     `${kit.fonts}\n${kit.cjk}\nreturn { loadCjkFonts, cjkPdfProvider };`,
-  ) as (...args: unknown[]) => { loadCjkFonts: (faces: Record<string, string[]>, text: string) => Promise<number> };
-  return { ...run(vi.fn(fetch), document, FontFace, () => {}, kitFail), added, kitFail };
+  ) as (...args: unknown[]) => Kit;
+  return { ...run(vi.fn(fetch), document, FontFace, () => {}, kitFail, ...Object.values(extra)), added, kitFail };
 }
 
 describe("kit block cjk: loadCjkFonts", () => {
@@ -100,5 +112,81 @@ describe("kit block cjk: showBook", () => {
     // A canvas draws text in the direction its element inherits: under the
     // spread's rtl every sideways run and every bracket pair moved (Nº 081).
     expect(showBookWith("right").css).toMatch(/\.pt-spread\[dir="rtl"\] canvas\s*\{\s*direction:\s*ltr;?\s*\}/);
+  });
+});
+
+// Japanese faces: Fontsource's metadata and stylesheet as they are served
+// for Noto Serif JP (checked 2026-10-05). The subsets list `japanese` among
+// others; the stylesheet declares about 120 numbered files by frequency,
+// with lowercase ranges and no spaces, then cyrillic, vietnamese, latin-ext
+// and latin, so a character in both a numbered file and latin (S, the
+// space) is taken from latin, as the browser does.
+const JP_META = { subsets: ["cyrillic", "japanese", "latin", "latin-ext", "vietnamese"], weights: [200, 300, 400, 500, 600, 700, 800, 900], styles: ["normal"] };
+const JP_FILES: [string, string][] = [
+  ["0-400-normal", "U+25ee8,U+25f23"],
+  ["60-400-normal", "U+4e,U+a0,U+3000,U+300c-300d,U+4e00,U+4e0a,U+5148,U+751f,U+79c1"],
+  ["118-400-normal", "U+21-22,U+2c-3b,U+41-4d,U+4f-5d"],
+  ["119-400-normal", "U+20,U+2027,U+3001-3002,U+3041-307f,U+3081-308f,U+3091-3093,U+30a1-30e1,U+30fc"],
+  ["latin-400-normal", "U+0000-00FF,U+2000-206F"],
+];
+
+describe("kit block cjk: Japanese faces", () => {
+  const served = new Map([
+    ["noto-serif-jp@5/400.css", stylesheet("noto-serif-jp", JP_FILES)],
+    ["shippori-mincho-b1@5/400.css", stylesheet("shippori-mincho-b1", JP_FILES)],
+  ]);
+  const meta: Record<string, unknown> = {
+    "noto-serif-jp": JP_META,
+    "shippori-mincho-b1": { subsets: ["japanese", "latin", "latin-ext"], weights: [400, 500, 600, 700, 800], styles: ["normal"] },
+    newsreader: LATIN_META,
+  };
+  const fetched: string[] = [];
+  const serve: Fetch = async (url) => {
+    fetched.push(url);
+    const api = /api\.fontsource\.org\/v1\/fonts\/(.+)$/.exec(url);
+    if (api) return meta[api[1]] ? response(meta[api[1]]) : response("", 404);
+    for (const [path, css] of served) if (url.includes(`@fontsource/${path}`)) return response(css);
+    const file = /\/files\/([\w-]+)\.woff2$/.exec(url);
+    return file ? response(file[1]) : response("", 404);
+  };
+  const decompressWoff2 = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
+
+  it("loads a Japanese face by its files, kana and kanji alike", async () => {
+    const { loadCjkFonts, added } = kitWith(serve);
+    await loadCjkFonts({ "Noto Serif JP": ["400"] }, "上　先生と私。こころ、Sensei");
+    expect(added.map((f) => f.range)).toEqual(JP_FILES.map(([, range]) => range).reverse());
+  });
+
+  it("names a hentaigana no Japanese file holds", async () => {
+    const { loadCjkFonts, kitFail } = kitWith(serve);
+    await expect(loadCjkFonts({ "Noto Serif JP": ["400"] }, "こころ𛀁")).rejects.toThrow(
+      "Noto Serif JP 400 has no file for 𛀁: give each face the text it sets (loadCjkFonts({ 'Noto Serif JP': ['400'] }, text))",
+    );
+    expect(kitFail).toHaveBeenCalled();
+  });
+
+  it("gives the vertical twin every file of the face", async () => {
+    const twins: [string, { unicodeRange: string; weight: string }[]][] = [];
+    const loadVerticalAlternates = async (family: string, faces: { unicodeRange: string; weight: string }[]) => {
+      twins.push([family, faces]);
+      return true;
+    };
+    const { loadCjkFonts } = kitWith(serve, { loadVerticalAlternates });
+    await loadCjkFonts({ "Noto Serif JP": ["400"], Newsreader: ["400"] }, "「こころ」、先生。", { vertical: true });
+    expect(twins.map(([family]) => family)).toEqual(["Noto Serif JP"]);
+    expect(twins[0][1].map((f) => f.unicodeRange)).toEqual(JP_FILES.map(([, range]) => range).reverse());
+    expect(new Set(twins[0][1].map((f) => f.weight))).toEqual(new Set(["400"]));
+  });
+
+  it("hands the PDF the files of the characters it sets, Latin from the latin file", async () => {
+    const fontsourceProvider = vi.fn(async () => "latin face");
+    const { cjkPdfProvider } = kitWith(serve, { decompressWoff2, fontsourceProvider });
+    const files = await cjkPdfProvider("Noto Serif JP", 400, "normal", { codePoints: [..."先生とS 、"].map((ch) => ch.codePointAt(0)!) });
+    expect(files).toEqual(["noto-serif-jp-latin-400-normal", "noto-serif-jp-119-400-normal", "noto-serif-jp-60-400-normal"]);
+    expect(fontsourceProvider).not.toHaveBeenCalled();
+    // A weight the family lacks takes the nearest; no italic, so upright.
+    fetched.length = 0;
+    await cjkPdfProvider("Shippori Mincho B1", 300, "italic", { codePoints: [0x3053] });
+    expect(fetched.filter((url) => url.endsWith(".css"))).toEqual(["https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho-b1@5/400.css"]);
   });
 });

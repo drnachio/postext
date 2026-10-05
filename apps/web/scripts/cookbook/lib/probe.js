@@ -193,7 +193,8 @@ function rangesOf(unicodeRange) {
 }
 
 /** Families served by unicode-range slices that reach the Han ideographs
- *  (the cjk kit block adds every file of such a face, loaded or not) or the
+ *  or the hiragana (a kana-only Japanese display face has no kanji; the cjk
+ *  kit block adds every file of such a face, loaded or not) or the
  *  Arabic letters (the arabic block adds each face's arabic file next to
  *  the latin ones loadFonts adds), with the code points their files cover:
  *  the PDF's cjkPdfProvider and arabicPdfProvider hand over whichever of
@@ -209,7 +210,7 @@ function slicedFamilies() {
   }
   for (const [family, ranges] of out) {
     const reaches = (cp) => ranges.some(([lo, hi]) => lo <= cp && hi >= cp);
-    if (!(reaches(0x4e00) || reaches(0x0627)) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
+    if (!(reaches(0x4e00) || reaches(0x3042) || reaches(0x0627)) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
       out.delete(family);
     }
   }
