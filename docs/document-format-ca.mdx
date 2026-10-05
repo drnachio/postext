@@ -1282,6 +1282,8 @@ El motor aprofita aquest marge en tres casos:
 
 El VDT anota el retall al bloc del recurs: `bodySource` és la part de la imatge que es veu a `bodyRect`, en les mateixes fraccions (no hi és quan es veu la imatge sencera), i `bodyFlex` dona els px que el cos encara podria encongir i créixer i els px que ja li han canviat les palanques (`{ shrink, grow, delta }`). La previsualització en canvas i el PDF retallen al cos i dibuixen la imatge sencera a la seva mida sense retallar; el visor HTML i l'EPUB de maquetació fixa posen la imatge amb `object-fit: cover` i l'`object-position` corresponent; un EPUB adaptable, que no té pàgina per omplir, mostra la imatge sencera. Un amfitrió que dibuixi les imatges pel seu compte té les funcions que exporta `postext`: `resourceSafeArea` i `normalizeSafeArea` (la zona tal com la llegeix el motor, o `undefined`), `safeAreaHeightRange` (el cos més baix i el més alt a una amplada), `safeAreaSource` (la part que es veu a una alçada donada) i `uncroppedPictureBox` (on dibuixar la imatge sencera abans de retallar), amb el tipus `ResourceSafeArea`. Al Sandbox el camp és **Zona segura**, en una imatge del [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos).
 
+La recepta núm. 116 del Receptari, [Fotos que creixen fins a omplir la columna](/ca/cookbook/photos-fill-short-columns), compon dues vegades un reportatge de revista a dues columnes, sense zones segures i amb elles, per comparar les pàgines l'una al costat de l'altra.
+
 
 ### Vídeos
 

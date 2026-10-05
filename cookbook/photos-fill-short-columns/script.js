@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 116 · Photos that grow to fill a short column ═══════════
 // https://postext.dev/en/cookbook/photos-fill-short-columns
 // Code: MIT · Text: original (CC BY 4.0) · Photos: diffusion models
-// Fonts: Newsreader, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.16.0
+// Fonts: Newsreader, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.16.1
 //
 // A magazine feature set twice. Without safe areas some columns end short; with them the
 // engine crops each photo outside its area to set it taller, and the photos fill those lines.
