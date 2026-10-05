@@ -87,6 +87,7 @@ function formatOf(seg: { bold?: boolean; italic?: boolean }, full?: VDTLineSegme
   if (full.cjkMarks?.dots) fmt.dots = true;
   if (full.cjkMarks?.properName !== undefined) fmt.proper = true;
   if (full.cjkMarks?.bookTitle !== undefined) fmt.book = true;
+  if (full.cjkMarks?.sideline) fmt.side = { style: full.cjkMarks.sideline.style, position: full.cjkMarks.sideline.position };
   if (full.tcy) fmt.tcy = true;
   if (full.orientation) fmt.orientation = full.orientation;
   if (full.warichu) fmt.warichu = true;
@@ -146,6 +147,9 @@ export function wrapFormat(inner: string, fmt: Format): string {
     fmt.dots && 'pt-dots',
     fmt.proper && 'pt-proper',
     fmt.book && 'pt-book',
+    fmt.side && 'pt-side',
+    fmt.side && fmt.side.position === 'over' && 'pt-side-over',
+    fmt.side && fmt.side.style !== 'solid' && `pt-side-${fmt.side.style}`,
     fmt.tcy && 'pt-tcy',
     fmt.orientation && `pt-${fmt.orientation}`,
     fmt.warichu && 'pt-warichu',
@@ -335,7 +339,7 @@ export function linkKey(link: LinkTarget | undefined): string {
 export function formatKey(fmt: Format): string {
   return [
     fmt.bold ? 'b' : '', fmt.italic ? 'i' : '', fmt.script ?? '', fmt.smallCaps ? 'c' : '', fmt.label ? 'l' : '',
-    fmt.dots ? 'd' : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
+    fmt.dots ? 'd' : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.side ? `s${fmt.side.style}${fmt.side.position}` : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
     fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '',
   ].join('|');
 }

@@ -32,6 +32,9 @@ export interface Format {
   dots?: boolean;
   proper?: boolean;
   book?: boolean;
+  /** A side line (傍線, `:sideline[…]`): how it is drawn and on which
+   *  side of the text in its flow (over: right of vertical text). */
+  side?: { style: 'solid' | 'double' | 'wavy' | 'dotted'; position: 'over' | 'under' };
   /** Vertical text: tate-chu-yoko, author's orientation. */
   tcy?: boolean;
   orientation?: 'upright' | 'sideways';

@@ -151,6 +151,19 @@ describe('joining lines', () => {
   });
 });
 
+describe('side lines (傍線, #421)', () => {
+  it('mark the run with its style and side, drawn by text-decoration', async () => {
+    const docs = [layOut('A :sideline[side line]{style="wavy" pos="over"} and :sideline[plain] text.')];
+    const { pub, all } = await render(docs);
+    expect(all).toContain('<span class="pt-side pt-side-over pt-side-wavy">side line</span>');
+    expect(all).toContain('<span class="pt-side">plain</span>');
+    const css = pub.items.filter((i) => i.mediaType === 'text/css').map((i) => String(i.data)).join('\n');
+    expect(css).toMatch(/\.pt-side \{[^}]*text-decoration-line: underline;[^}]*text-decoration-skip-ink: none;[^}]*text-underline-position: under left/);
+    expect(css).toMatch(/\.pt-side\.pt-side-over \{[^}]*text-decoration-line: overline/);
+    for (const style of ['double', 'wavy', 'dotted']) expect(css).toContain(`.pt-side.pt-side-${style} {`);
+  });
+});
+
 describe('buildReflowablePublication', () => {
   it('writes one sound content document per chapter, with page starts and navigation', async () => {
     const docs = layOutBook([

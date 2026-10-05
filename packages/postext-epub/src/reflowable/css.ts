@@ -427,6 +427,12 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('.pt-dots', ['font-style: normal', 'text-emphasis: filled dot', '-epub-text-emphasis-style: filled dot', '-webkit-text-emphasis-style: filled dot', 'text-emphasis-position: under right', '-webkit-text-emphasis-position: under right']));
   out.push(rule('.pt-proper', ['text-decoration: underline']));
   out.push(rule('.pt-book', ['text-decoration: underline wavy']));
+  // Side lines (傍線): under horizontal text and left of vertical text, or
+  // over and right of it; one unbroken line, descenders and all.
+  const underSide = ['text-underline-position: under left', '-epub-text-underline-position: under left', '-webkit-text-underline-position: under left'];
+  out.push(rule('.pt-side', ['text-decoration-line: underline', 'text-decoration-skip-ink: none', ...underSide]));
+  out.push(rule('.pt-side.pt-side-over', ['text-decoration-line: overline']));
+  for (const style of ['double', 'wavy', 'dotted']) out.push(rule(`.pt-side.pt-side-${style}`, [`text-decoration-style: ${style}`]));
   out.push(rule('.pt-tcy', ['text-combine-upright: all', '-epub-text-combine: horizontal', '-webkit-text-combine: horizontal']));
   out.push(rule('.pt-upright', ['text-orientation: upright', '-epub-text-orientation: upright', '-webkit-text-orientation: upright']));
   out.push(rule('.pt-sideways', ['text-orientation: sideways', '-epub-text-orientation: sideways', '-webkit-text-orientation: sideways']));
