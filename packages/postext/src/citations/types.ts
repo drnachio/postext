@@ -113,6 +113,11 @@ export interface CitationProcessor {
   readonly kind: 'in-text' | 'note';
   /** `true` for a numbered style (IEEE, Vancouver, GB/T 7714 numeric). */
   readonly numeric: boolean;
+  /** The locale's words for a sentence that names two authors or more
+   *  (the CSL terms `and` and `et-al`: と and ほか in ja-JP). A Japanese
+   *  narrative citation the engine writes itself takes them (#426);
+   *  without them it keeps 、 and 等. */
+  readonly terms?: { readonly and: string; readonly etAl: string };
   /** Format every citation of the book, in reading order: disambiguation,
    *  numbering and *ibid.* see all of them. */
   cite(clusters: readonly CitationClusterInput[]): FormattedCitation[];

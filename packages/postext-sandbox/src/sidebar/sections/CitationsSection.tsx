@@ -31,22 +31,27 @@ const SPACE_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
 
 type Bibliography = NonNullable<CitationsConfig['bibliography']>;
 
-/** Works the preview cites: a book, an article, a chapter, and a Chinese
- *  book for the Chinese styles. */
+/** Works the preview cites: a book, an article, a chapter, a Chinese book
+ *  for the Chinese styles, and a Japanese book and article for a Japanese
+ *  locale or SIST 02. */
 const SAMPLE_ITEMS: CslItem[] = [
   { id: 'garcia2020', type: 'book', author: [{ family: 'García', given: 'Ana' }], title: 'Tipografía y lectura', issued: { 'date-parts': [[2020]] }, publisher: 'Trea', 'publisher-place': 'Gijón', language: 'es' },
   { id: 'lopez2019', type: 'article-journal', author: [{ family: 'López', given: 'Luis' }, { family: 'Ruiz', given: 'Eva' }], title: 'Leer en pantalla', 'container-title': 'Revista de Letras', volume: '12', issue: '3', page: '45-67', issued: { 'date-parts': [[2019]] }, DOI: '10.1000/xyz', language: 'es' },
   { id: 'bringhurst2004', type: 'book', author: [{ family: 'Bringhurst', given: 'Robert' }], title: 'The Elements of Typographic Style', edition: '3', issued: { 'date-parts': [[2004]] }, publisher: 'Hartley & Marks', 'publisher-place': 'Vancouver', language: 'en' },
   { id: 'zhang2018', type: 'book', language: 'zh-CN', author: [{ family: '张三' }, { family: '李四' }, { family: '王五' }, { family: '赵六' }], title: '排版学', issued: { 'date-parts': [[2018]] }, publisher: '商务印书馆', 'publisher-place': '北京' },
+  { id: 'natsume1914', type: 'book', language: 'ja', author: [{ family: '夏目', given: '漱石' }], title: 'こころ', issued: { 'date-parts': [[1914]] }, publisher: '岩波書店', 'publisher-place': '東京' },
+  { id: 'yamada2015', type: 'article-journal', language: 'ja', author: [{ family: '山田', given: '太郎' }, { family: '佐藤', given: '花子' }, { family: '鈴木', given: '一郎' }], title: '縦組みの行間について', 'container-title': '印刷雑誌', volume: '98', issue: '4', page: '12-19', issued: { 'date-parts': [[2015]] } },
 ];
 
 /** The preview's citations: parenthetical with a page, narrative, and two
- *  works together. */
-function sampleContext(chinese: boolean): CitationContext {
+ *  works together; in Japanese, the Japanese works (a narrative one with
+ *  three authors shows the locale's ほか). */
+function sampleContext(script: 'chinese' | 'japanese' | undefined): CitationContext {
+  const japanese = script === 'japanese';
   const clusters: CitationContext['clusters'] = [
-    { mode: 'parenthetical', items: [{ id: 'garcia2020', locator: '33', label: 'page' }], noteIndex: 1 },
-    { mode: 'narrative', items: [{ id: 'bringhurst2004' }], noteIndex: 2 },
-    { mode: 'parenthetical', items: [{ id: chinese ? 'zhang2018' : 'lopez2019' }, { id: 'garcia2020' }], noteIndex: 3 },
+    { mode: 'parenthetical', items: [{ id: japanese ? 'natsume1914' : 'garcia2020', locator: '33', label: 'page' }], noteIndex: 1 },
+    { mode: 'narrative', items: [{ id: japanese ? 'yamada2015' : 'bringhurst2004' }], noteIndex: 2 },
+    { mode: 'parenthetical', items: [{ id: script === 'chinese' ? 'zhang2018' : japanese ? 'natsume1914' : 'lopez2019' }, { id: 'garcia2020' }], noteIndex: 3 },
   ];
   return { items: SAMPLE_ITEMS, nocite: [], clusters, local: [0, 1, 2], placed: true, last: true, issues: [] };
 }
@@ -78,8 +83,9 @@ function CitationPreview({ raw, locale }: { raw: CitationsConfig | undefined; lo
     const citations = resolveCitationsConfig(raw);
     const resolved = { citations } as unknown as ResolvedConfig;
     const cslLocale = citationLocale(resolved, locale);
-    const chinese = cslLocale.startsWith('zh') || citations.style.includes('gb-t-7714');
-    return processCitations(sampleContext(chinese), resolved, cslLocale);
+    const script = cslLocale.startsWith('zh') || citations.style.includes('gb-t-7714') ? 'chinese'
+      : cslLocale.startsWith('ja') || citations.style === 'sist02' ? 'japanese' : undefined;
+    return processCitations(sampleContext(script), resolved, cslLocale);
   }, [ready, raw, locale]);
   const note = preview?.processor.kind === 'note';
   return (
