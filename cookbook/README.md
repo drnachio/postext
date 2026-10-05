@@ -295,7 +295,7 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `loadImage(id, url)`, `loadSvg(id, svg)` | images | Register pictures for the canvas and keep their bytes. |
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
 | `loadCjkFonts(faces, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `faces` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files `text` touches; fails on a character no file has, or when api.fontsource.org does not answer. One face: `loadCjkFonts(FONTS, markdown)`. Several voices: one call per voice with the text it sets, `loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)`, so the Kai and Hei faces do not fetch a file for every character of the book (C12 fails a character set from a file that was not loaded). `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
-| `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters (other families go to `fontsourceProvider`, so list `pdf` too). |
+| `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters. Other families get `fontsourceProvider`'s latin file (so list `pdf` too), and their latin-ext file as well when the face sets letters only that file has: ō ū in rōmaji, ǎ in pinyin. |
 | `loadArabicFonts(faces, text)` | arabic | The arabic file of every listed weight of each Arabic family (Amiri, Noto Naskh Arabic, Scheherazade New…; the other families of `faces` are left alone), after `loadFonts`, which loads their latin files. Fails on an Arabic-script character the arabic files lack, or when api.fontsource.org does not answer. List every weight the pages set in Arabic in `FONTS`: a weight `buildWithFonts` loads late gets its latin file only (C12 fails it). |
 | `arabicPdfProvider` | arabic | The PDF font provider for such faces: the arabic file when the face sets Arabic, then latin, and latin-ext for letters such as ā ḥ ʿ; postext-pdf shapes the Arabic with HarfBuzz from those bytes. Other families go to `fontsourceProvider`, so list `pdf` too. |
 | `showBook(doc \| docs, { title, binding })` | book | `showPages` for a book bound on either edge: a right-bound document (`doc.binding`, `'right'` for `page.binding: 'right'` and, with the binding left to `'auto'`, for right-to-left text and vertical text) lies mirrored, page 1 alone on the left of the spine, then `[3 \| 2]`. The `cjk` block carries the same function for the Chinese recipes captured with it; a recipe lists one of the two. |
@@ -331,7 +331,7 @@ whole Cookbook is verified again.
 | Captured pages | 2–12 |
 | Each asset / all assets | ≤ 400 KB / ≤ 2 MB; images ≤ 2400 px on the long side, JPEG q80 |
 | Captured media per edition (PDF excluded) | warning at 0.9 MB (0.1 MB per published page past 9), failure at 1.4 MB |
-| PDF text | inside Fontsource's `latin` range, or set in a CJK face loaded by the `cjk` block or an Arabic face completed by the `arabic` block (the lint and C25 warn otherwise) |
+| PDF text | inside Fontsource's `latin` range, or set in a CJK face loaded by the `cjk` block or an Arabic face completed by the `arabic` block; with the `cjk` block, also latin-ext letters in a Latin face (the lint and C25 warn otherwise) |
 
 A pen may fetch from `esm.sh`, `cdn.jsdelivr.net/npm/@fontsource/*`,
 `cdn.jsdelivr.net/gh/drnachio/postext@main/cookbook/*`, `api.fontsource.org` and
@@ -493,6 +493,8 @@ Japanese text; most of what follows is what `locale: 'ja'` does by itself.
       original Japanese prose; both editions (`en`, `es`) carry the Japanese text, and the
       chrome, captions and any translation change with the edition.
 - [ ] Modern kana: Fontsource's Japanese files have no hentaigana (the lint warns).
+- [ ] Rōmaji with macrons (ō ū) in a Latin face: `cjkPdfProvider` embeds the face's
+      latin-ext file for them. Shippori Mincho has no ō or ū; Noto Serif JP has them.
 - [ ] The write-up names the Latin-script or Chinese recipe it pairs with, and says where
       the Japanese rule differs from the Chinese one.
 
@@ -793,8 +795,9 @@ its kind in `expect.warnings`.
 pages not listed in `expect.nearEmptyPages` (C23), loose lines over 2 % (C24; a Chinese,
 Japanese or Korean line is loose when it needed more than half an em between its characters
 and ends short, `cjkLoose`, and one is enough), characters a PDF recipe's faces cannot set
-(C25: outside Fontsource latin and not covered by a CJK face the `cjk` block loaded or an
-Arabic face the `arabic` block completed, or reported missing by postext-pdf), a hero with too little picture or display type (C26), a
+(C25: outside Fontsource latin and not covered by a CJK face the `cjk` block loaded, an
+Arabic face the `arabic` block completed or, in a `cjk` recipe, the latin-ext file of the
+Latin face that sets them; or reported missing by postext-pdf), a hero with too little picture or display type (C26), a
 primary feature whose detect rule did not fire (C27), a level two steps from the suggested
 one (C28), a page count outside `expect.pages` (C29), a `fontFamily` written as a CSS font stack,
 which the engine sets in its first family (C31, `fontFamilyStack`), and a config warning of a
