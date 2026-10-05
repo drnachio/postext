@@ -318,7 +318,7 @@
      "unit": "mm"
     },
     "bottom": {
-     "value": 22.381,
+     "value": 22.733,
      "unit": "mm"
     },
     "left": {
@@ -346,7 +346,7 @@
     "unit": "pt"
    },
    "lineHeight": {
-    "value": 23.0,
+    "value": 24.0,
     "unit": "pt"
    },
    "textAlign": "justify",
@@ -403,7 +403,7 @@
       "parity": "any"
      },
      "marginBottom": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "advancedDesign": {
@@ -543,7 +543,7 @@
      },
      "fontWeight": 700,
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "color": {
@@ -552,11 +552,11 @@
       "paletteId": "rubric"
      },
      "marginTop": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginBottom": {
-      "value": 11.5,
+      "value": 12.0,
       "unit": "pt"
      }
     },
@@ -569,15 +569,15 @@
      },
      "fontWeight": 700,
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginTop": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginBottom": {
-      "value": 11.5,
+      "value": 12.0,
       "unit": "pt"
      }
     },
@@ -590,15 +590,15 @@
      },
      "fontWeight": 700,
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginTop": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginBottom": {
-      "value": 11.5,
+      "value": 12.0,
       "unit": "pt"
      }
     },
@@ -611,11 +611,11 @@
      },
      "fontWeight": 700,
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginTop": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginBottom": {
@@ -632,11 +632,11 @@
      },
      "fontWeight": 700,
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginTop": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "marginBottom": {
@@ -660,7 +660,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 186.619,
+      "value": 186.267,
       "unit": "mm"
      },
      "slot": {
@@ -1032,7 +1032,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 186.619,
+      "value": 186.267,
       "unit": "mm"
      },
      "slot": {
@@ -1061,7 +1061,7 @@
            "unit": "mm"
           },
           "height": {
-           "value": 203.619,
+           "value": 203.267,
            "unit": "mm"
           }
          }
@@ -1108,7 +1108,7 @@
            "unit": "mm"
           },
           "height": {
-           "value": 201.019,
+           "value": 200.667,
            "unit": "mm"
           }
          }
@@ -1398,7 +1398,7 @@
            "unit": "mm"
           },
           "y": {
-           "value": 183.619,
+           "value": 183.267,
            "unit": "mm"
           }
          },
@@ -1426,7 +1426,7 @@
            "unit": "mm"
           },
           "y": {
-           "value": 205.619,
+           "value": 205.267,
            "unit": "mm"
           }
          },
@@ -1602,7 +1602,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -1649,7 +1649,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -1780,7 +1780,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -1827,7 +1827,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -2004,7 +2004,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -2051,7 +2051,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -2182,7 +2182,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -2229,7 +2229,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -2385,7 +2385,7 @@
      ]
     },
     "marginBottom": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     }
    },
@@ -2507,7 +2507,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -2554,7 +2554,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -2685,7 +2685,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -2732,7 +2732,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -2909,7 +2909,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -2956,7 +2956,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -3087,7 +3087,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -3134,7 +3134,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -3290,7 +3290,7 @@
      ]
     },
     "marginBottom": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     },
     "toc": false
@@ -3413,7 +3413,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -3460,7 +3460,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -3591,7 +3591,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -3638,7 +3638,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -3815,7 +3815,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -3862,7 +3862,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -3993,7 +3993,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -4040,7 +4040,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -4196,7 +4196,7 @@
      ]
     },
     "marginBottom": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     }
    },
@@ -4286,7 +4286,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -4333,7 +4333,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -4464,7 +4464,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -4511,7 +4511,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -4688,7 +4688,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -4735,7 +4735,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -4866,7 +4866,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 203.619,
+          "value": 203.267,
           "unit": "mm"
          }
         }
@@ -4913,7 +4913,7 @@
           "unit": "mm"
          },
          "height": {
-          "value": 201.019,
+          "value": 200.667,
           "unit": "mm"
          }
         }
@@ -5069,7 +5069,7 @@
      ]
     },
     "marginBottom": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     }
    },
@@ -5528,7 +5528,7 @@
     },
     "fontWeight": 700,
     "lineHeight": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     },
     "color": {
@@ -5537,7 +5537,7 @@
      "paletteId": "rubric"
     },
     "marginTop": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     },
     "marginBottom": {
@@ -5547,7 +5547,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 8.114,
+      "value": 8.467,
       "unit": "mm"
      },
      "slot": {
@@ -5588,7 +5588,7 @@
         "italic": false,
         "align": "center",
         "verticalAlign": "middle",
-        "lineHeight": 1.7037037037037037,
+        "lineHeight": 1.7777777777777777,
         "overflow": "wrap",
         "color": {
          "hex": "#9a2f1f",
@@ -5678,15 +5678,19 @@
      "unit": "pt"
     },
     "marginTop": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     }
    },
    {
     "id": "verse",
     "name": "شعر",
+    "lineHeight": {
+     "value": 26.0,
+     "unit": "pt"
+    },
     "marginTop": {
-     "value": 11.5,
+     "value": 12.0,
      "unit": "pt"
     }
    },
@@ -5740,7 +5744,7 @@
          "unit": "mm"
         },
         "height": {
-         "value": 203.619,
+         "value": 203.267,
          "unit": "mm"
         }
        }
@@ -5787,7 +5791,7 @@
          "unit": "mm"
         },
         "height": {
-         "value": 201.019,
+         "value": 200.667,
          "unit": "mm"
         }
        }
@@ -5968,7 +5972,7 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 23.0,
+     "value": 24.0,
      "unit": "pt"
     },
     "textAlign": "center"
@@ -5985,7 +5989,7 @@
      },
      "fontWeight": 700,
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "color": {
@@ -6014,7 +6018,7 @@
       "unit": "pt"
      },
      "lineHeight": {
-      "value": 23.0,
+      "value": 24.0,
       "unit": "pt"
      },
      "color": {
@@ -6063,11 +6067,11 @@
    "parts": {
     "enabled": true,
     "height": {
-     "value": 46.0,
+     "value": 48.0,
      "unit": "pt"
     },
     "marginTop": {
-     "value": 11.5,
+     "value": 12.0,
      "unit": "pt"
     },
     "design": {
@@ -6146,7 +6150,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 203.619,
+        "value": 203.267,
         "unit": "mm"
        }
       }
@@ -6193,7 +6197,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 201.019,
+        "value": 200.667,
         "unit": "mm"
        }
       }
@@ -6324,7 +6328,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 203.619,
+        "value": 203.267,
         "unit": "mm"
        }
       }
@@ -6371,7 +6375,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 201.019,
+        "value": 200.667,
         "unit": "mm"
        }
       }
@@ -6548,7 +6552,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 203.619,
+        "value": 203.267,
         "unit": "mm"
        }
       }
@@ -6595,7 +6599,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 201.019,
+        "value": 200.667,
         "unit": "mm"
        }
       }
@@ -6726,7 +6730,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 203.619,
+        "value": 203.267,
         "unit": "mm"
        }
       }
@@ -6773,7 +6777,7 @@
         "unit": "mm"
        },
        "height": {
-        "value": 201.019,
+        "value": 200.667,
         "unit": "mm"
        }
       }

@@ -61,7 +61,7 @@ paragraph), and the engine floats it to the next free slot.
 ## The book
 
 `build.py`: 17 × 24 cm, right-bound (the Arabic locale binds it), one column
-of Amiri 13/23 pt in a ruled double frame on every page, running heads in the
+of Amiri 13/24 pt in a ruled double frame on every page, running heads in the
 frame's head, folios in abjad letters (front matter) then Arabic-Indic
 digits. Openers under a headpiece drawn by `ornaments.py` (sarlawḥ and
 rosettes, plain SVG); nights as red headings in feminine ordinal words

@@ -134,14 +134,22 @@ def pt_to_mm(v: float) -> float:
     return v * 25.4 / 72
 
 
+# The poems' pitch, off the body's grid (see the "verse" paragraph style).
+VERSE_LEAD_PT = 26.0
+
+
 class Geometry:
     """17 × 24 cm, a single column of `lines` lines on a `lead_pt` pitch.
     `inner` is the spine side. The book is bound on the right: an odd page
     (a recto) is the left-hand page, its inner margin on its right."""
 
     width, height = 170.0, 240.0
-    body_pt, lead_pt = 13.0, 23.0
-    lines = 23
+    # 13/24 pt: Amiri's fully vocalised lines (a shadda and fatḥa over a
+    # kasra or a tanwīn hanging from the line above) need up to about 1.83 em
+    # where they stand over each other; 23 pt (1.77 em) let them touch (#445).
+    # 22 lines of 24 pt keep the type area of 23 of 23 pt within 0.4 mm.
+    body_pt, lead_pt = 13.0, 24.0
+    lines = 22
     top, inner, text_w = 31.0, 21.0, 124.0
     # The frame: `side` beyond the type area left and right, `head` above it
     # (room for the running head), `foot` below; the inner rule `gap` inside.
@@ -449,10 +457,12 @@ def paragraph_styles() -> list[dict]:
         {"id": "imprint", "name": "بيانات الطبع", "fontSize": pt(10.5), "lineHeight": pt(17), "textAlign": "center", "firstLineIndent": zero, "spaceBetween": pt(4)},
         {"id": "credits", "name": "المصادر", "fontSize": pt(11.5), "lineHeight": pt(19), "textAlign": "justify", "firstLineIndent": zero, "spaceBetween": pt(6)},
         {"id": "credits-en", "name": "Sources (English)", "fontSize": pt(10), "lineHeight": pt(14.5), "textAlign": "left", "firstLineIndent": zero, "spaceBetween": pt(4), "marginTop": lead},
-        # The poems (`:::verse{style="verse"}`): the body's face and pitch,
-        # half a line above; the text after a poem goes back to the grid,
-        # which leaves half a line below it too.
-        {"id": "verse", "name": "شعر", "marginTop": pt(G.lead_pt / 2)},
+        # The poems (`:::verse{style="verse"}`): the body's face, half a line
+        # above; the text after a poem goes back to the grid, which leaves
+        # half a line below it too. Poems are fully vocalised, a shadda and
+        # its vowel over the tanwīn of the line above: they need about 2 em
+        # where prose needs 1.85 (#445), so their lines stand 26 pt apart.
+        {"id": "verse", "name": "شعر", "lineHeight": pt(VERSE_LEAD_PT), "marginTop": pt(G.lead_pt / 2)},
         {"id": "note", "name": "تنبيه", "textAlign": "justify", "firstLineIndent": {"value": 1, "unit": "em"}},
     ]
 
