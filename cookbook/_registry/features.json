@@ -9016,13 +9016,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "East Asian typography",
-        "es": "Tipografía de Asia oriental",
-        "ca": "Tipografia de l'Àsia oriental",
-        "zh": "东亚排版",
-        "ar": "تنضيد نصوص شرق آسيا"
+        "en": "Line breaking (kinsoku)",
+        "es": "Corte de líneas (kinsoku)",
+        "ca": "Tall de línies (kinsoku)",
+        "zh": "断行（禁则）",
+        "ar": "كسر الأسطر (كينسوكو)"
       }
     },
     "since": "1.16.0"
@@ -9092,13 +9092,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Punctuation widths",
-        "es": "Anchos de la puntuación",
-        "ca": "Amplades de la puntuació",
-        "zh": "标点宽度",
-        "ar": "عروض علامات الترقيم"
+        "en": "Yakumono: punctuation spacing",
+        "es": "Yakumono: el espaciado de la puntuación",
+        "ca": "Yakumono: l'espaiat de la puntuació",
+        "zh": "约物：标点间距",
+        "ar": "الياكومونو: بياض علامات الترقيم"
       }
     },
     "since": "1.16.0"
@@ -9173,13 +9173,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Chinese marks, ruby and warichu",
-        "es": "Marcas chinas, ruby y warichu",
-        "ca": "Marques xineses, ruby i warichu",
-        "zh": "中文标记、注音和双行夹注",
-        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+        "en": "Furigana",
+        "es": "Furigana",
+        "ca": "Furigana",
+        "zh": "振假名",
+        "ar": "الفوريغانا"
       }
     },
     "since": "1.16.0",
@@ -9259,13 +9259,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Chinese marks, ruby and warichu",
-        "es": "Marcas chinas, ruby y warichu",
-        "ca": "Marques xineses, ruby i warichu",
-        "zh": "中文标记、注音和双行夹注",
-        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+        "en": "Emphasis marks (bōten)",
+        "es": "Marcas de énfasis (bōten)",
+        "ca": "Marques d'èmfasi (bōten)",
+        "zh": "傍点",
+        "ar": "علامات التوكيد (بوتين)"
       }
     },
     "since": "1.16.0",
@@ -9338,13 +9338,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Chinese marks, ruby and warichu",
-        "es": "Marcas chinas, ruby y warichu",
-        "ca": "Marques xineses, ruby i warichu",
-        "zh": "中文标记、注音和双行夹注",
-        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+        "en": "Side lines (bōsen)",
+        "es": "Líneas laterales (bōsen)",
+        "ca": "Línies laterals (bōsen)",
+        "zh": "傍线",
+        "ar": "الخطوط الجانبية (بوسين)"
       }
     },
     "since": "1.16.0",
@@ -9429,13 +9429,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Numbering",
-        "es": "Numeración",
-        "ca": "Numeració",
-        "zh": "页码编号",
-        "ar": "ترقيم الصفحات"
+        "en": "Numerals and counters",
+        "es": "Numerales y contadores",
+        "ca": "Numerals i comptadors",
+        "zh": "数字与编号",
+        "ar": "الأعداد والعدّادات"
       }
     },
     "since": "1.16.0"
@@ -9503,13 +9503,13 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Per-level overrides",
-        "es": "Configuración por nivel",
-        "ca": "Configuració per nivell",
-        "zh": "按级别覆盖",
-        "ar": "تجاوزات كل مستوى"
+        "en": "Headings and blocks",
+        "es": "Títulos y bloques",
+        "ca": "Títols i blocs",
+        "zh": "标题与文字块",
+        "ar": "العناوين والكتل"
       }
     },
     "since": "1.16.0",
@@ -9584,13 +9584,13 @@
     },
     "group": "structure",
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Back-of-book index",
-        "es": "Índice analítico",
-        "ca": "Índex analític",
-        "zh": "索引",
-        "ar": "الفهرس الأبجدي"
+        "en": "Index in gojūon order",
+        "es": "Índice en orden gojūon",
+        "ca": "Índex en ordre gojūon",
+        "zh": "五十音顺索引",
+        "ar": "الفهرس بترتيب غوجوون"
       }
     },
     "since": "1.16.0",
@@ -9662,13 +9662,13 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Footnotes",
-        "es": "Notas al pie",
-        "ca": "Notes a peu de pàgina",
-        "zh": "脚注",
-        "ar": "الحواشي السفلية"
+        "en": "Notes",
+        "es": "Notas",
+        "ca": "Notes",
+        "zh": "注释",
+        "ar": "الحواشي"
       }
     },
     "since": "1.16.0"
@@ -9744,13 +9744,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Chinese marks, ruby and warichu",
-        "es": "Marcas chinas, ruby y warichu",
-        "ca": "Marques xineses, ruby i warichu",
-        "zh": "中文标记、注音和双行夹注",
-        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+        "en": "Kanbun",
+        "es": "Kanbun",
+        "ca": "Kanbun",
+        "zh": "汉文训读",
+        "ar": "الكانبون"
       }
     },
     "since": "1.16.0",
@@ -9825,13 +9825,13 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "skill",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Scripts",
-        "es": "Scripts",
-        "ca": "Scripts",
-        "zh": "脚本",
-        "ar": "البرامج النصية"
+        "en": "Aozora Bunko sources",
+        "es": "Textos de Aozora Bunko",
+        "ca": "Textos d'Aozora Bunko",
+        "zh": "青空文库源文本",
+        "ar": "نصوص أوزورا بونكو"
       }
     },
     "since": "1.16.0"
@@ -9912,13 +9912,13 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Chinese, Japanese and Korean fonts",
-        "es": "Fuentes chinas, japonesas y coreanas",
-        "ca": "Fonts xineses, japoneses i coreanes",
-        "zh": "中文、日文和韩文字体",
-        "ar": "خطوط الصينية واليابانية والكورية"
+        "en": "Kanji, kana and rōmaji",
+        "es": "Kanji, kana y rōmaji",
+        "ca": "Kanji, kana i rōmaji",
+        "zh": "汉字、假名与罗马字",
+        "ar": "الكانجي والكانا والروماجي"
       }
     },
     "since": "1.16.0"

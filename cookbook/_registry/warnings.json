@@ -2370,13 +2370,13 @@
       "ar": "أضف yomi=\"…\" بالقراءة بالكانا إلى إحدى علامات المدخل (:index[東京]{yomi=\"とうきょう\"})، أو علّم نصًّا يحمل روبي ({東京|とう|きょう})."
     },
     "docs": {
-      "slug": "document-format",
+      "slug": "japanese-layout",
       "heading": {
-        "en": "Back-of-book index",
-        "es": "Índice analítico",
-        "ca": "Índex analític",
-        "zh": "索引",
-        "ar": "الفهرس الأبجدي"
+        "en": "Index in gojūon order",
+        "es": "Índice en orden gojūon",
+        "ca": "Índex en ordre gojūon",
+        "zh": "五十音顺索引",
+        "ar": "الفهرس بترتيب غوجوون"
       }
     }
   },
