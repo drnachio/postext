@@ -550,7 +550,8 @@ describe('reflowable rendition: Japanese note markers (JLReq §4.2.3)', () => {
   it('sets a right marker of a vertical book reduced against the line\'s right side', async () => {
     const doc = layOut(md, { ...baseConfig, locale: 'ja', layout: { writingMode: 'vertical-rl' }, footnotes: { placement: 'column' } });
     const { pub, all } = await render([doc]);
-    expect(all).toMatch(/<a epub:type="noteref"[^>]*><span class="pt-note-right">（1）<\/span><\/a>/);
+    // The digit stands upright in its own cell (automatic tate-chū-yoko, #428).
+    expect(all).toMatch(/<a epub:type="noteref"[^>]*><span class="pt-note-right">（<\/span><span class="pt-note-right"><span class="pt-tcy">1<\/span><\/span><span class="pt-note-right">）<\/span><\/a>/);
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
     expect(css).toMatch(/\.pt-note-right \{[^}]*font-size: 0\.7em;/);
   });
