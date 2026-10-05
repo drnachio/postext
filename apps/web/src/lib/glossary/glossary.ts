@@ -12,8 +12,10 @@ export interface GlossaryEntry {
   id: string;
   term: string;
   definition: string;
-  /** The Chinese or Arabic name, outside the pages written in it. */
+  /** The Chinese, Japanese or Arabic name, outside the pages written in
+   *  it, and its language tag. */
   native?: string;
+  nativeLang?: string;
 }
 
 export interface GlossarySections {
@@ -21,7 +23,8 @@ export interface GlossarySections {
   abbreviations: { id: string; abbr: string; title: string }[];
 }
 
-/** Whether a locale already writes a category's terms in their native script. */
+/** Whether a locale already writes a category's terms in their native
+ *  script. No site locale writes Japanese, so Japanese names always show. */
 const writesNative = (locale: SiteLocale, category: GlossaryCategory) =>
   (locale === "zh" && category === "cjk") || (locale === "ar" && category === "arabic");
 
@@ -38,7 +41,11 @@ export function glossarySections(locale: SiteLocale): GlossarySections {
         id: t.id,
         term: t.text[locale][0],
         definition: t.text[locale][1],
-        ...(t.native && !writesNative(locale, t.category) ? { native: t.native } : {}),
+        // A Chinese page that names a Japanese term with the same characters
+        // (外字) does not repeat them.
+        ...(t.native && !writesNative(locale, t.category) && t.native !== t.text[locale][0]
+          ? { native: t.native, nativeLang: t.nativeLang }
+          : {}),
       }))
       .sort((a, b) => collator.compare(sortKey(locale, a.term), sortKey(locale, b.term))),
   }));

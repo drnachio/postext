@@ -989,7 +989,13 @@ export const GLOSSARY_PATH = "/glossary";
 export function glossaryMarkdown(locale: string): string {
   const t = messagesFor(locale).Glossary;
   const { categories, abbreviations } = glossarySections(siteLocale(locale));
-  const title = { type: t.categoryType, cjk: t.categoryCjk, arabic: t.categoryArabic, web: t.categoryWeb } as const;
+  const title = {
+    type: t.categoryType,
+    cjk: t.categoryCjk,
+    japanese: t.categoryJapanese,
+    arabic: t.categoryArabic,
+    web: t.categoryWeb,
+  } as const;
   const out = [header({ title: t.title, description: t.metaDescription, locale, path: GLOSSARY_PATH }), t.lead, ""];
   for (const c of categories) {
     out.push(`## ${title[c.category]}`, "");

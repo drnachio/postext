@@ -33,6 +33,39 @@ describe("glossary", () => {
     expect(glossarySections("en").categories.find((c) => c.category === "arabic")!.terms.some((t) => t.native)).toBe(true);
   });
 
+  it("tags every native name with its own language", () => {
+    for (const t of GLOSSARY_TERMS.filter((term) => term.native)) {
+      const lang = { cjk: "zh-Hans", japanese: "ja", arabic: "ar" }[t.category as "cjk" | "japanese" | "arabic"];
+      expect(t.nativeLang, t.id).toBe(lang);
+    }
+    const en = glossarySections("en").categories;
+    const furigana = en.find((c) => c.category === "japanese")!.terms.find((t) => t.id === "furigana")!;
+    expect([furigana.native, furigana.nativeLang]).toEqual(["振り仮名", "ja"]);
+    const kashida = en.find((c) => c.category === "arabic")!.terms.find((t) => t.native === "كشيدة")!;
+    expect(kashida.nativeLang).toBe("ar");
+    expect(en.find((c) => c.category === "cjk")!.terms.find((t) => t.id === "han")!.nativeLang).toBe("zh-Hans");
+  });
+
+  it("lists the Japanese terms in every locale, with their names in Japanese", () => {
+    const ids = GLOSSARY_TERMS.filter((t) => t.category === "japanese").map((t) => t.id);
+    expect(ids).toEqual(expect.arrayContaining([
+      "kana", "hiragana", "katakana", "romaji", "furigana", "jukugo-ruby", "group-ruby", "boten", "bosen",
+      "yakumono", "kinsoku-shori", "oikomi-oidashi", "burasagari", "gyodori", "gojuon", "yomi", "hashira",
+      "nombre", "bunko", "tankobon", "genko-yoshi", "aozora-notation", "gaiji", "choon", "small-kana",
+      "bochu", "kochu", "kunten", "jlreq", "jis-x-4051",
+    ]));
+    for (const t of GLOSSARY_TERMS.filter((term) => term.category === "japanese")) {
+      expect(t.native, t.id).toMatch(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u);
+    }
+    // No site locale writes Japanese: the native name shows everywhere,
+    // unless the Chinese name is the same characters (外字).
+    for (const l of ["en", "es", "ca", "zh", "ar"] as const) {
+      const japanese = glossarySections(l).categories.find((c) => c.category === "japanese")!.terms;
+      expect(japanese.length).toBeGreaterThanOrEqual(30);
+      expect(japanese.filter((t) => !t.native).map((t) => t.id), l).toEqual(l === "zh" ? ["gaiji"] : []);
+    }
+  });
+
   it("has a Markdown rendition in every locale", () => {
     for (const l of ["en", "es", "ca", "zh", "ar"]) {
       expect(markdownPaths(l)).toContain("/glossary");

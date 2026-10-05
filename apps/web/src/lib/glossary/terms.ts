@@ -1,6 +1,6 @@
 /**
- * The glossary's terms (WCAG 3.1.3 Unusual Words): the typesetting, Chinese
- * and Arabic layout and software jargon the docs, the Cookbook and the landing use,
+ * The glossary's terms (WCAG 3.1.3 Unusual Words): the typesetting, Chinese,
+ * Japanese and Arabic layout and software jargon the docs, the Cookbook and the landing use,
  * each with a short definition in every locale. `id` is the anchor on
  * /<locale>/glossary and never changes once published.
  *
@@ -8,22 +8,41 @@
  */
 import type { SiteLocale } from "@/i18n/locales";
 
-export type GlossaryCategory = "type" | "cjk" | "arabic" | "web";
+export type GlossaryCategory = "type" | "cjk" | "japanese" | "arabic" | "web";
 
 export interface GlossaryTerm {
   id: string;
   category: GlossaryCategory;
   /** [term, definition] per locale. */
   text: Record<SiteLocale, readonly [string, string]>;
-  /** The native name of a Chinese- or Arabic-layout term (中文 or العربية),
-   *  shown beside the term in the locales that do not write it already. */
+  /** The native name of a Chinese-, Japanese- or Arabic-layout term (中文,
+   *  日本語 or العربية), shown beside the term in the locales that do not
+   *  write it already. */
   native?: string;
+  /** The BCP 47 tag of `native`, so the page marks it in its language: a
+   *  Japanese name drawn with Chinese glyph forms, or Arabic taken for
+   *  Chinese, would read wrong. */
+  nativeLang?: string;
 }
 
-type Text = GlossaryTerm["text"];
-const term = (id: string, category: GlossaryCategory, text: Text, native?: string): GlossaryTerm => ({ id, category, text, ...(native ? { native } : {}) });
+/** The language a category's native names are written in. */
+const NATIVE_LANG: Record<GlossaryCategory, string> = {
+  type: "en",
+  cjk: "zh-Hans",
+  japanese: "ja",
+  arabic: "ar",
+  web: "en",
+};
 
-export const GLOSSARY_CATEGORIES: readonly GlossaryCategory[] = ["type", "cjk", "arabic", "web"];
+type Text = GlossaryTerm["text"];
+const term = (id: string, category: GlossaryCategory, text: Text, native?: string, nativeLang = NATIVE_LANG[category]): GlossaryTerm => ({
+  id,
+  category,
+  text,
+  ...(native ? { native, nativeLang } : {}),
+});
+
+export const GLOSSARY_CATEGORIES: readonly GlossaryCategory[] = ["type", "cjk", "japanese", "arabic", "web"];
 
 export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
   // ── Typesetting and the page ────────────────────────────────────────────
@@ -513,18 +532,18 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ar: ["أحجام الحرف الصينية", "أحجام حرف لها أسماء تُستعمل في الصين: 五号 تساوي 10.5 pt، وهو الحجم المعتاد في الكتب؛ 小五 تساوي 9 pt؛ 四号 تساوي 14 pt."],
   }, "字号"),
   term("vertical-writing", "cjk", {
-    en: ["Vertical writing", "Text set in columns that run from top to bottom, read from right to left, as in many Taiwanese and classical Chinese books."],
-    es: ["Escritura vertical", "Texto compuesto en columnas que van de arriba abajo y se leen de derecha a izquierda, como en muchos libros de Taiwán y en los clásicos chinos."],
-    zh: ["竖排", "文字自上而下排成列、从右往左阅读的排法，常见于台湾书籍和古籍。"],
-    ca: ["Escriptura vertical", "Text compost en columnes que van de dalt a baix i es llegeixen de dreta a esquerra, com en molts llibres de Taiwan i en els clàssics xinesos."],
-    ar: ["الكتابة العمودية", "نص منضّد في أعمدة تمتد من الأعلى إلى الأسفل، وتُقرأ من اليمين إلى اليسار، كما في كثير من الكتب التايوانية والصينية الكلاسيكية."],
+    en: ["Vertical writing", "Text set in columns that run from top to bottom, read from right to left, as in Japanese novels and in many Taiwanese and classical Chinese books."],
+    es: ["Escritura vertical", "Texto compuesto en columnas que van de arriba abajo y se leen de derecha a izquierda, como en las novelas japonesas, en muchos libros de Taiwán y en los clásicos chinos."],
+    zh: ["竖排", "文字自上而下排成列、从右往左阅读的排法，常见于日文小说、台湾书籍和古籍。"],
+    ca: ["Escriptura vertical", "Text compost en columnes que van de dalt a baix i es llegeixen de dreta a esquerra, com en les novel·les japoneses, en molts llibres de Taiwan i en els clàssics xinesos."],
+    ar: ["الكتابة العمودية", "نص منضّد في أعمدة تمتد من الأعلى إلى الأسفل، وتُقرأ من اليمين إلى اليسار، كما في الروايات اليابانية وفي كثير من الكتب التايوانية والصينية الكلاسيكية."],
   }, "竖排"),
   term("right-binding", "cjk", {
-    en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese books and Arabic books are bound this way."],
-    es: ["Encuadernación por la derecha", "Libro encuadernado por el borde derecho, que se abre por lo que un lector occidental consideraría el final. Los libros chinos en vertical y los libros árabes se encuadernan así."],
-    zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排中文书和阿拉伯文书采用这种装订。"],
-    ca: ["Enquadernació per la dreta", "Llibre enquadernat per la vora dreta, que s'obre pel que un lector occidental consideraria el final. Els llibres xinesos en vertical i els llibres àrabs s'enquadernen així."],
-    ar: ["التجليد من اليمين", "كتاب مجلّد من حافته اليمنى، يُفتح مما يعدّه القارئ الغربي ظهر الكتاب. هكذا تُجلّد الكتب الصينية العمودية والكتب العربية."],
+    en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese and Japanese books and Arabic books are bound this way."],
+    es: ["Encuadernación por la derecha", "Libro encuadernado por el borde derecho, que se abre por lo que un lector occidental consideraría el final. Los libros chinos y japoneses en vertical y los libros árabes se encuadernan así."],
+    zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排的中文书和日文书，以及阿拉伯文书，都采用这种装订。"],
+    ca: ["Enquadernació per la dreta", "Llibre enquadernat per la vora dreta, que s'obre pel que un lector occidental consideraria el final. Els llibres xinesos i japonesos en vertical i els llibres àrabs s'enquadernen així."],
+    ar: ["التجليد من اليمين", "كتاب مجلّد من حافته اليمنى، يُفتح مما يعدّه القارئ الغربي ظهر الكتاب. هكذا تُجلّد الكتب الصينية واليابانية العمودية والكتب العربية."],
   }, "右装"),
   term("tier", "cjk", {
     en: ["Tier", "In vertical writing, one of the horizontal bands a page is divided into, the vertical counterpart of a column."],
@@ -534,11 +553,11 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ar: ["الطبقة (tier)", "في الكتابة العمودية، أحد الأشرطة الأفقية التي تُقسَم إليها الصفحة، وهو نظير العمود في الكتابة الأفقية."],
   }, "栏"),
   term("tate-chu-yoko", "cjk", {
-    en: ["Tate-chu-yoko", "Setting a short number or acronym across the column, upright in a single cell, inside vertical text. The name is Japanese for “horizontal in vertical”."],
-    es: ["Tate-chu-yoko", "Componer un número corto o una sigla en horizontal, de pie en una sola celda, dentro de un texto vertical. El nombre significa en japonés «horizontal dentro de vertical»."],
-    zh: ["纵中横", "在竖排文字中把短数字或缩写横着排在一个字格里。日文称 tate-chu-yoko。"],
-    ca: ["Tate-chu-yoko", "Compondre un número curt o una sigla en horitzontal, dret en una sola cel·la, dins d'un text vertical. El nom significa en japonès «horitzontal dins de vertical»."],
-    ar: ["الأفقي داخل العمودي (tate-chu-yoko)", "تنضيد رقم قصير أو اختصار بعرض العمود، قائمًا في خانة واحدة، داخل نص عمودي. والاسم ياباني معناه «أفقي داخل عمودي»."],
+    en: ["Tate-chū-yoko", "Setting a short number or acronym across the column, upright in a single cell, inside vertical text. The name is Japanese, 縦中横, “horizontal in vertical”."],
+    es: ["Tate-chū-yoko", "Componer un número corto o una sigla en horizontal, de pie en una sola celda, dentro de un texto vertical. El nombre es japonés, 縦中横, y significa «horizontal dentro de vertical»."],
+    zh: ["纵中横", "在竖排文字中把短数字或缩写横着排在一个字格里。日文写作縦中横（tate-chū-yoko）。"],
+    ca: ["Tate-chū-yoko", "Compondre un número curt o una sigla en horitzontal, dret en una sola cel·la, dins d'un text vertical. El nom és japonès, 縦中横, i significa «horitzontal dins de vertical»."],
+    ar: ["الأفقي داخل العمودي (tate-chū-yoko)", "تنضيد رقم قصير أو اختصار بعرض العمود، قائمًا في خانة واحدة، داخل نص عمودي. والاسم ياباني، 縦中横، ومعناه «أفقي داخل عمودي»."],
   }, "纵中横"),
   term("emphasis-dots", "cjk", {
     en: ["Emphasis dots", "Dots set under each character (beside it in vertical text) to stress a phrase. Chinese uses them where Latin text uses italics."],
@@ -562,11 +581,11 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ar: ["علامة عنوان الكتاب", "العلامات التي تميّز عنوان كتاب أو مقال: 《》 في النصوص الحديثة في البر الرئيسي، أو خط متموّج تحته في الطبعات الكلاسيكية والتايوانية."],
   }, "书名号"),
   term("ruby", "cjk", {
-    en: ["Ruby", "Small text set above or beside characters to give their reading, such as pinyin or zhuyin."],
-    es: ["Ruby", "Texto pequeño que se pone encima o al lado de los caracteres para indicar su lectura, como el pinyin o el zhuyin."],
-    zh: ["注音（ruby）", "排在字的上方或旁边、标明读音的小字，例如拼音或注音符号。"],
-    ca: ["Ruby", "Text petit que es posa damunt o al costat dels caràcters per indicar-ne la lectura, com el pinyin o el zhuyin."],
-    ar: ["الروبي (ruby)", "نص صغير يوضع فوق الحروف أو بجانبها ليبيّن نطقها، مثل pinyin أو zhuyin."],
+    en: ["Ruby", "Small text set above or beside characters to give their reading, such as pinyin, zhuyin or Japanese furigana."],
+    es: ["Ruby", "Texto pequeño que se pone encima o al lado de los caracteres para indicar su lectura, como el pinyin, el zhuyin o el furigana japonés."],
+    zh: ["注音（ruby）", "排在字的上方或旁边、标明读音的小字，例如拼音、注音符号或日文的振假名。"],
+    ca: ["Ruby", "Text petit que es posa damunt o al costat dels caràcters per indicar-ne la lectura, com el pinyin, el zhuyin o el furigana japonès."],
+    ar: ["الروبي (ruby)", "نص صغير يوضع فوق الحروف أو بجانبها ليبيّن نطقها، مثل pinyin أو zhuyin أو الفوريغانا اليابانية."],
   }, "注音"),
   term("pinyin", "cjk", {
     en: ["Pinyin", "The official romanisation of Mandarin, with tone marks: hóng lóu."],
@@ -583,11 +602,11 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ar: ["تشويين (zhuyin أو bopomofo)", "أبجدية صوتية للماندرينية تُستعمل في تايوان (ㄅㄆㄇㄈ)، وتوضع في عمود بجانب كل حرف."],
   }, "注音符号"),
   term("warichu", "cjk", {
-    en: ["Warichu", "A note set in two half-size rows inside the line, the form of commentary in classical Chinese editions. The name is Japanese."],
-    es: ["Warichu", "Nota compuesta en dos filas de medio cuerpo dentro de la propia línea, la forma de los comentarios en las ediciones clásicas chinas. El nombre es japonés."],
-    zh: ["双行夹注", "在行内用两行半号小字排出的注文，是古籍中评注的形式。日文称割注（warichu）。"],
-    ca: ["Warichu", "Nota composta en dues files de mig cos dins de la mateixa línia, la forma dels comentaris en les edicions clàssiques xineses. El nom és japonès."],
-    ar: ["الشرح ذو السطرين (warichu)", "تعليق منضّد في سطرين بنصف الحجم داخل السطر، وهو شكل الشروح في الطبعات الصينية الكلاسيكية. والاسم ياباني."],
+    en: ["Warichu", "A note set in two half-size rows inside the line, the form of commentary in classical Chinese editions and of short glosses in Japanese books. The name is Japanese, 割注."],
+    es: ["Warichu", "Nota compuesta en dos filas de medio cuerpo dentro de la propia línea, la forma de los comentarios en las ediciones clásicas chinas y de las glosas breves en los libros japoneses. El nombre es japonés, 割注."],
+    zh: ["双行夹注", "在行内用两行半号小字排出的注文，是古籍中评注的形式，日文书籍也用它排简短的注释。日文称割注（warichu）。"],
+    ca: ["Warichu", "Nota composta en dues files de mig cos dins de la mateixa línia, la forma dels comentaris en les edicions clàssiques xineses i de les glosses breus en els llibres japonesos. El nom és japonès, 割注."],
+    ar: ["الشرح ذو السطرين (warichu)", "تعليق منضّد في سطرين بنصف الحجم داخل السطر، وهو شكل الشروح في الطبعات الصينية الكلاسيكية والتعليقات القصيرة في الكتب اليابانية. والاسم ياباني، 割注."],
   }, "双行夹注"),
   term("kaiming", "cjk", {
     en: ["Kaiming style", "A punctuation style that sets pause marks (、，) half-width and stops (。) full-width, a compromise between full-width and half-width setting."],
@@ -603,6 +622,225 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ca: ["Capçaleres al tall", "En els llibres verticals, el títol del capítol i el foli compostos al llarg del marge exterior de la pàgina i no a dalt."],
     ar: ["ترويسات الحافة الخارجية", "في الكتب العمودية، عنوان الفصل ورقم الصفحة منضّدان نزولًا على الهامش الخارجي للصفحة بدل أن يمتدا عبر أعلاها."],
   }, "书口"),
+
+  // ── Japanese layout ────────────────────────────────────────────────────
+  term("kanji", "japanese", {
+    en: ["Kanji", "The Chinese characters as written in Japanese, mixed with kana in running text. Most have a native Japanese reading (kun) and one or more readings taken from Chinese (on); 2,136 are listed for everyday use (jōyō kanji)."],
+    es: ["Kanji", "Los caracteres chinos tal como se escriben en japonés, mezclados con los kana en el texto. La mayoría tiene una lectura japonesa (kun) y una o varias tomadas del chino (on); 2136 figuran en la lista de uso común (jōyō kanji)."],
+    zh: ["日文汉字", "日文中使用的汉字，在正文中与假名混排。多数汉字有日语固有的读法（训读）和一个或多个源自汉语的读法（音读）；常用汉字表收录 2136 字。"],
+    ca: ["Kanji", "Els caràcters xinesos tal com s'escriuen en japonès, barrejats amb els kana en el text. La majoria tenen una lectura japonesa (kun) i una o més de preses del xinès (on); 2.136 figuren a la llista d'ús comú (jōyō kanji)."],
+    ar: ["الكانجي (kanji)", "الحروف الصينية كما تُكتب في اليابانية، ممزوجة بالكانا في النص. لأغلبها قراءة يابانية أصيلة (kun) وقراءة أو أكثر مأخوذة من الصينية (on). وتضم قائمة الاستعمال اليومي 2136 حرفًا، وتُسمّى jōyō kanji."],
+  }, "漢字"),
+  term("kana", "japanese", {
+    en: ["Kana", "The two Japanese syllabaries, hiragana and katakana, in which each sign stands for a syllable. Japanese text mixes them with kanji."],
+    es: ["Kana", "Los dos silabarios japoneses, el hiragana y el katakana, en los que cada signo representa una sílaba. El texto japonés los mezcla con los kanji."],
+    zh: ["假名", "日文的两套音节文字，即平假名和片假名，每个符号代表一个音节。日文把假名与汉字混合书写。"],
+    ca: ["Kana", "Els dos sil·labaris japonesos, l'hiragana i el katakana, en què cada signe representa una síl·laba. El text japonès els barreja amb els kanji."],
+    ar: ["الكانا (kana)", "المقطعيّتان اليابانيّتان، الهيراغانا والكاتاكانا، ويمثّل كل رمز فيهما مقطعًا صوتيًا. ويمزج النص الياباني بينهما وبين الكانجي."],
+  }, "仮名"),
+  term("hiragana", "japanese", {
+    en: ["Hiragana", "The rounded kana. It writes grammatical endings and particles, native words with no kanji or a rare one, and furigana."],
+    es: ["Hiragana", "El kana de trazo redondeado. Con él se escriben las terminaciones gramaticales y las partículas, las palabras japonesas sin kanji o con un kanji poco común, y el furigana."],
+    zh: ["平假名", "字形圆转的假名，用来书写词尾、助词、没有汉字或汉字生僻的日语固有词，以及振假名。"],
+    ca: ["Hiragana", "El kana de traç arrodonit. S'hi escriuen les terminacions gramaticals i les partícules, les paraules japoneses sense kanji o amb un kanji poc comú, i el furigana."],
+    ar: ["الهيراغانا (hiragana)", "الكانا ذات الخط المستدير، وتُكتب بها اللواحق النحوية والأدوات، والكلمات اليابانية التي لا كانجي لها أو لها كانجي نادر، وكذلك الفوريغانا."],
+  }, "平仮名"),
+  term("katakana", "japanese", {
+    en: ["Katakana", "The angular kana. It writes words taken from other languages (コーヒー, coffee), foreign names and sound words, and sometimes stands in for italics to stress a word."],
+    es: ["Katakana", "El kana de trazo anguloso. Con él se escriben las palabras tomadas de otras lenguas (コーヒー, café), los nombres extranjeros y las onomatopeyas, y a veces hace de cursiva para resaltar una palabra."],
+    zh: ["片假名", "字形方折的假名，用来书写外来语（コーヒー，咖啡）、外国人名地名和拟声词，有时也像西文斜体那样用来强调某个词。"],
+    ca: ["Katakana", "El kana de traç angulós. S'hi escriuen les paraules preses d'altres llengües (コーヒー, cafè), els noms estrangers i les onomatopeies, i de vegades fa de cursiva per remarcar una paraula."],
+    ar: ["الكاتاكانا (katakana)", "الكانا ذات الخط الزاوي، وتُكتب بها الكلمات المأخوذة من لغات أخرى (コーヒー، أي القهوة) والأسماء الأجنبية وألفاظ المحاكاة الصوتية، وقد تقوم مقام الحروف المائلة لتوكيد كلمة."],
+  }, "片仮名"),
+  term("romaji", "japanese", {
+    en: ["Rōmaji", "Japanese written in Latin letters. Books mostly use Hepburn romanisation, which marks long vowels with a macron: Tōkyō, Sōseki."],
+    es: ["Rōmaji", "El japonés escrito con letras latinas. Los libros suelen usar la transcripción Hepburn, que marca las vocales largas con un macrón: Tōkyō, Sōseki."],
+    zh: ["罗马字", "用拉丁字母书写的日文。书籍多用黑本式拼写，在长元音上加长音符号，如 Tōkyō、Sōseki。"],
+    ca: ["Rōmaji", "El japonès escrit amb lletres llatines. Els llibres solen fer servir la transcripció Hepburn, que marca les vocals llargues amb un macró: Tōkyō, Sōseki."],
+    ar: ["الروماجي (rōmaji)", "كتابة اليابانية بالحروف اللاتينية. وتستعمل الكتب في الغالب نظام هيبورن (Hepburn)، الذي يضع خطًا فوق الصوائت الطويلة: Tōkyō وSōseki."],
+  }, "ローマ字"),
+  term("furigana", "japanese", {
+    en: ["Furigana", "Small kana set over kanji (to their right in vertical text) to give the reading: in children's books, over rare characters and over names. It is the Japanese use of ruby."],
+    es: ["Furigana", "Kana pequeños que se ponen sobre los kanji (a su derecha en texto vertical) para indicar la lectura: en los libros infantiles, sobre los caracteres poco comunes y sobre los nombres. Es el uso japonés del ruby."],
+    zh: ["振假名", "排在汉字上方（竖排时在右侧）标明读音的小号假名，用于儿童读物、生僻字和人名。它是日文中的注音（ruby）。"],
+    ca: ["Furigana", "Kana petits que es posen damunt dels kanji (a la seva dreta en text vertical) per indicar-ne la lectura: als llibres infantils, damunt dels caràcters poc comuns i damunt dels noms. És l'ús japonès del ruby."],
+    ar: ["الفوريغانا (furigana)", "كانا صغيرة توضع فوق الكانجي (وعلى يمينه في النص العمودي) لتبيّن قراءته: في كتب الأطفال، وفوق الحروف النادرة والأسماء. وهي الاستعمال الياباني للروبي."],
+  }, "振り仮名"),
+  term("jukugo-ruby", "japanese", {
+    en: ["Jukugo ruby", "Ruby for a compound of two or more kanji. Each reading sits over its own kanji, a longer one may spread over its neighbour in the same word, and the word may still break between its kanji at a line end."],
+    es: ["Ruby de compuesto (jukugo)", "Ruby de una palabra compuesta de dos o más kanji. Cada lectura va sobre su kanji, una más larga puede extenderse sobre el kanji vecino de la misma palabra, y la palabra aún puede partirse entre sus kanji al final de la línea."],
+    zh: ["熟语注音", "为两个以上汉字组成的词语加的注音。每个字的读音排在该字上方，较长的读音可以伸到同一词内相邻的字上，词语在行末仍可在字与字之间断开。"],
+    ca: ["Ruby de compost (jukugo)", "Ruby d'una paraula composta de dos o més kanji. Cada lectura va damunt del seu kanji, una de més llarga es pot estendre sobre el kanji veí de la mateixa paraula, i la paraula encara es pot partir entre els seus kanji al final de la línia."],
+    ar: ["روبي الكلمة المركبة (jukugo ruby)", "روبي لكلمة مركبة من كانجي اثنين أو أكثر. تقع كل قراءة فوق الكانجي الخاص بها، ويجوز للقراءة الأطول أن تمتد فوق الكانجي المجاور في الكلمة نفسها، ويبقى ممكنًا أن تنقسم الكلمة بين حروفها في نهاية السطر."],
+  }, "熟語ルビ"),
+  term("group-ruby", "japanese", {
+    en: ["Group ruby", "Ruby whose reading belongs to the whole word and is spread evenly over it, as for a name or a word with a special reading (今日 read きょう). The word never breaks across lines."],
+    es: ["Ruby de grupo", "Ruby cuya lectura corresponde a la palabra entera y se reparte por igual sobre ella, como en un nombre o en una palabra de lectura especial (今日, que se lee きょう). La palabra nunca se parte entre dos líneas."],
+    zh: ["整词注音", "读音属于整个词语、均匀分布在整个词上方的注音，用于人名或读法特殊的词（今日读作きょう）。该词不会跨行断开。"],
+    ca: ["Ruby de grup", "Ruby la lectura del qual correspon a la paraula sencera i es reparteix per igual sobre ella, com en un nom o en una paraula de lectura especial (今日, que es llegeix きょう). La paraula mai no es parteix entre dues línies."],
+    ar: ["روبي المجموعة (group ruby)", "روبي تخص قراءته الكلمة كلها وتتوزع فوقها بالتساوي، كما في الأسماء أو في كلمة ذات قراءة خاصة (今日 وتُقرأ きょう). ولا تنقسم الكلمة بين سطرين أبدًا."],
+  }, "グループルビ"),
+  term("boten", "japanese", {
+    en: ["Bōten (kenten)", "Marks set beside each character to stress a word, the Japanese counterpart of italics: usually a sesame dot (﹅), over each character in horizontal text and to its right in vertical text. Chinese puts its emphasis dots under the text."],
+    es: ["Bōten (kenten)", "Marcas que se ponen junto a cada carácter para resaltar una palabra, el equivalente japonés de la cursiva: suele ser un punto en forma de sésamo (﹅), encima de cada carácter en texto horizontal y a su derecha en texto vertical. El chino pone sus puntos de énfasis debajo."],
+    zh: ["傍点与圈点", "加在每个字旁边、用来强调词语的符号，相当于西文的斜体。通常是芝麻点（﹅），横排时在字上方，竖排时在字右侧；中文的着重号则排在字下方。"],
+    ca: ["Bōten (kenten)", "Marques que es posen al costat de cada caràcter per remarcar una paraula, l'equivalent japonès de la cursiva: sol ser un punt en forma de sèsam (﹅), damunt de cada caràcter en text horitzontal i a la seva dreta en text vertical. El xinès posa els seus punts d'èmfasi a sota."],
+    ar: ["نقاط التوكيد اليابانية (bōten / kenten)", "علامات توضع بجانب كل حرف لتوكيد كلمة، وهي نظير الحروف المائلة في اليابانية: غالبًا نقطة على شكل حبة سمسم (﹅) فوق كل حرف في النص الأفقي وعلى يمينه في النص العمودي. أما الصينية فتضع نقاط التوكيد تحت النص."],
+  }, "傍点・圏点"),
+  term("bosen", "japanese", {
+    en: ["Bōsen", "A line drawn beside a run of text, to its right in vertical writing and under it in horizontal, to stress it or mark a passage. It can be single, double, dashed or wavy."],
+    es: ["Bōsen", "Línea que se traza junto a un tramo de texto, a su derecha en la escritura vertical y debajo en la horizontal, para resaltarlo o señalar un pasaje. Puede ser simple, doble, discontinua u ondulada."],
+    zh: ["傍线", "画在一段文字旁边的线，竖排时在右侧，横排时在下方，用于强调或标示某段文字。可为单线、双线、虚线或波浪线。"],
+    ca: ["Bōsen", "Línia que es traça al costat d'un tram de text, a la seva dreta en l'escriptura vertical i a sota en l'horitzontal, per remarcar-lo o assenyalar un passatge. Pot ser simple, doble, discontínua o ondulada."],
+    ar: ["الخط الجانبي (bōsen)", "خط يُرسم بجانب مقطع من النص، على يمينه في الكتابة العمودية وتحته في الأفقية، لتوكيده أو لتمييز فقرة. وقد يكون مفردًا أو مزدوجًا أو متقطعًا أو متموّجًا."],
+  }, "傍線"),
+  term("yakumono", "japanese", {
+    en: ["Yakumono", "Japanese punctuation and other marks: brackets, 、 and 。, the middle dot ・, dashes and ellipses. Most are a full em wide, half glyph and half blank, and that blank is what the spacing rules compress or keep."],
+    es: ["Yakumono", "Los signos de puntuación y demás marcas del japonés: paréntesis y comillas, 、 y 。, el punto medio ・, rayas y puntos suspensivos. Casi todos miden un cuadratín, mitad glifo y mitad blanco, y ese blanco es lo que las reglas de espaciado comprimen o conservan."],
+    zh: ["约物", "日文的标点及其他符号：括号、、和。、中点・、破折号和省略号。大多占一个 em，一半是字形一半是空白，间距规则挤压或保留的正是这部分空白。"],
+    ca: ["Yakumono", "Els signes de puntuació i altres marques del japonès: parèntesis i cometes, 、 i 。, el punt central ・, guions i punts suspensius. Gairebé tots fan un quadratí, meitat glif i meitat blanc, i aquest blanc és el que les regles d'espaiat comprimeixen o conserven."],
+    ar: ["علامات الياكومونو (yakumono)", "علامات الترقيم اليابانية وما يشبهها: الأقواس، و、 و。، والنقطة الوسطى ・، والشرطات، ونقاط الحذف. وعرض أغلبها em كامل، نصفه رسم ونصفه فراغ، وهذا الفراغ هو ما تضغطه قواعد التباعد أو تُبقيه."],
+  }, "約物"),
+  term("kinsoku-shori", "japanese", {
+    en: ["Kinsoku shori", "The Japanese line-breaking rules: closing brackets, 、 and 。, small kana, ー and iteration marks may not start a line, and opening brackets may not end one. Books follow a strict set; newspapers a looser one that lets small kana and ー start a line."],
+    es: ["Kinsoku shori", "Las reglas japonesas de corte de línea: los cierres de paréntesis y comillas, 、 y 。, los kana pequeños, ー y los signos de repetición no pueden abrir una línea, y las aperturas no pueden cerrarla. Los libros siguen un juego estricto; los periódicos, uno más laxo que deja abrir línea a los kana pequeños y a ー."],
+    zh: ["禁则处理", "日文的断行规则：后括号、、和。、小写假名、长音符ー和叠字符不能出现在行首，前括号不能出现在行末。书籍采用严格的一套，报纸采用较宽松的一套，允许小写假名和ー出现在行首。"],
+    ca: ["Kinsoku shori", "Les regles japoneses de tall de línia: els tancaments de parèntesis i cometes, 、 i 。, els kana petits, ー i els signes de repetició no poden obrir una línia, i les obertures no la poden tancar. Els llibres segueixen un joc estricte; els diaris, un de més laxe que deixa obrir línia als kana petits i a ー."],
+    ar: ["معالجة الكنسوكو (kinsoku shori)", "قواعد تقسيم الأسطر في اليابانية: لا يبدأ السطر بقوس غالق ولا بـ、 أو 。 ولا بكانا صغيرة ولا بـ ー ولا بعلامات التكرار، ولا ينتهي بقوس فاتح. وتتبع الكتب مجموعة صارمة، والصحف مجموعة أخفّ تسمح بأن يبدأ السطر بكانا صغيرة أو بـ ー."],
+  }, "禁則処理"),
+  term("oikomi-oidashi", "japanese", {
+    en: ["Oikomi and oidashi", "The two ways to keep a forbidden mark off the start of a line: oikomi tightens the line so the mark fits at its end; oidashi sends the line's last character down with the mark and spaces out what remains. JLReq prefers oikomi."],
+    es: ["Oikomi y oidashi", "Las dos maneras de evitar que un signo prohibido abra una línea: el oikomi aprieta la línea para que el signo quepa al final; el oidashi baja el último carácter a la línea siguiente junto con el signo y reparte el espacio en lo que queda. JLReq prefiere el oikomi."],
+    zh: ["追入与追出", "避免禁则符号落到行首的两种方法：追入压紧本行，把符号收进行末；追出把本行最后一个字连同符号移到下一行，再把本行剩下的部分拉开。JLReq 优先采用追入。"],
+    ca: ["Oikomi i oidashi", "Les dues maneres d'evitar que un signe prohibit obri una línia: l'oikomi estreny la línia perquè el signe hi càpiga al final; l'oidashi baixa l'últim caràcter a la línia següent juntament amb el signe i reparteix l'espai en el que queda. JLReq prefereix l'oikomi."],
+    ar: ["الإدخال والإخراج (oikomi وoidashi)", "طريقتان لمنع علامة ممنوعة من أن تبدأ السطر: الـoikomi يضغط السطر حتى تتسع العلامة في آخره، والـoidashi ينقل آخر حرف في السطر مع العلامة إلى السطر التالي ويوزّع الفراغ على ما بقي. ويفضّل JLReq الإدخال."],
+  }, "追い込み・追い出し"),
+  term("burasagari", "japanese", {
+    en: ["Burasagari", "Hanging 、 or 。 just past the end of a full line instead of moving a character down. Japanese books do it only for these marks (and ， and ．), and only when the mark would otherwise start the next line."],
+    es: ["Burasagari", "Colgar 、 o 。 justo fuera del final de una línea llena en lugar de bajar un carácter. Los libros japoneses solo lo hacen con estos signos (y con ， y ．), y solo cuando el signo abriría, si no, la línea siguiente."],
+    zh: ["行末悬挂", "把、或。悬在满行的行末之外，而不是把一个字移到下一行。日文书籍只对这几个符号（以及，和．）这样处理，而且只在符号否则会落到下一行行首时才用。"],
+    ca: ["Burasagari", "Penjar 、 o 。 just fora del final d'una línia plena en lloc de baixar un caràcter. Els llibres japonesos només ho fan amb aquests signes (i amb ， i ．), i només quan el signe, si no, obriria la línia següent."],
+    ar: ["التعليق (burasagari)", "تعليق 、 أو 。 بعد نهاية سطر ممتلئ مباشرةً بدل إنزال حرف إلى السطر التالي. ولا تفعل ذلك الكتب اليابانية إلا مع هذه العلامات (ومع ， و．)، وحين تكون العلامة ستبدأ السطر التالي لولا ذلك."],
+  }, "ぶら下げ"),
+  term("gyodori", "japanese", {
+    en: ["Gyōdori", "Sizing a heading by the body lines it takes up: a heading set 3行取り is centred in the space of three lines, so the text after it stays on the line grid."],
+    es: ["Gyōdori", "Medir el espacio de un título en líneas de texto: un título a 3行取り se centra en el espacio de tres líneas, de modo que el texto que lo sigue se mantiene en la retícula de líneas."],
+    zh: ["占行", "以正文行数确定标题所占的空间：“3行取り”（占三行）的标题在三行的空间里居中，后面的正文仍落在行网格上。"],
+    ca: ["Gyōdori", "Mesurar l'espai d'un títol en línies de text: un títol a 3行取り es centra en l'espai de tres línies, de manera que el text que el segueix es manté a la retícula de línies."],
+    ar: ["حجز الأسطر (gyōdori)", "تحديد المساحة التي يشغلها العنوان بعدد أسطر المتن: العنوان المنضّد 3行取り يتوسّط مساحة ثلاثة أسطر، فيبقى النص الذي يليه على شبكة الأسطر."],
+  }, "行取り"),
+  term("gojuon", "japanese", {
+    en: ["Gojūon order", "The order of the kana table, あいうえお, かきくけこ and so on: one row per consonant, five vowels to a row. Japanese dictionaries and indexes sort by it, using each entry's reading in kana."],
+    es: ["Orden gojūon", "El orden de la tabla de los kana, あいうえお, かきくけこ y así sucesivamente: una fila por consonante, con cinco vocales cada una. Los diccionarios y los índices japoneses se ordenan así, por la lectura en kana de cada entrada."],
+    zh: ["五十音顺序", "假名表的排列顺序，即あいうえお、かきくけこ等：每个辅音一行，每行五个元音。日文词典和索引按各条目的假名读音以此排序。"],
+    ca: ["Ordre gojūon", "L'ordre de la taula dels kana, あいうえお, かきくけこ i així successivament: una fila per consonant, amb cinc vocals cadascuna. Els diccionaris i els índexs japonesos s'ordenen així, per la lectura en kana de cada entrada."],
+    ar: ["ترتيب الغوجوأون (gojūon)", "ترتيب جدول الكانا: あいうえお ثم かきくけこ وهكذا، صفًا لكل حرف ساكن، في كل صف خمسة صوائت. وعليه تُرتَّب المعاجم والفهارس اليابانية، بحسب قراءة كل مدخل بالكانا."],
+  }, "五十音"),
+  term("yomi", "japanese", {
+    en: ["Yomi", "The reading of a word written in kanji, spelled out in kana. An index files kanji entries by their yomi, and furigana prints it on the page."],
+    es: ["Yomi", "La lectura de una palabra escrita con kanji, deletreada en kana. Los índices ordenan las entradas con kanji por su yomi, y el furigana la imprime en la página."],
+    zh: ["读音", "用假名拼出的汉字词读法。索引按读音排列汉字条目，振假名则把读音印在页面上。"],
+    ca: ["Yomi", "La lectura d'una paraula escrita amb kanji, lletrejada en kana. Els índexs ordenen les entrades amb kanji pel seu yomi, i el furigana la imprimeix a la pàgina."],
+    ar: ["القراءة (yomi)", "قراءة كلمة مكتوبة بالكانجي، مكتوبةً بالكانا. وتُرتَّب مداخل الكانجي في الفهرس بحسب قراءتها، وتطبعها الفوريغانا على الصفحة."],
+  }, "読み"),
+  term("hashira", "japanese", {
+    en: ["Hashira", "The running head of a Japanese book: the book, part or chapter title set small in a margin, often on only one page of each spread."],
+    es: ["Hashira", "La cabecera de un libro japonés: el título del libro, de la parte o del capítulo en cuerpo pequeño en un margen, a menudo solo en una página de cada doble página."],
+    zh: ["书眉（hashira）", "日文书籍的书眉：以小字排在页边的书名、篇名或章名，常常每个跨页只排一页。"],
+    ca: ["Hashira", "La capçalera d'un llibre japonès: el títol del llibre, de la part o del capítol en cos petit en un marge, sovint només en una pàgina de cada doble pàgina."],
+    ar: ["الترويسة اليابانية (hashira)", "ترويسة الكتاب الياباني: عنوان الكتاب أو الجزء أو الفصل منضّدًا بحرف صغير في أحد الهوامش، وكثيرًا ما يُطبع في صفحة واحدة فقط من كل صفحتين متقابلتين."],
+  }, "柱"),
+  term("nombre", "japanese", {
+    en: ["Nombre", "The page number, in the words of Japanese printers, who took it from French. It is usually in Arabic numerals, even in vertical books; a folio set vertically uses kanji numerals (一, 二, 三)."],
+    es: ["Nombre", "El número de página, en la jerga de la imprenta japonesa, que tomó la palabra del francés. Suele ir en cifras arábigas, incluso en los libros verticales; un folio compuesto en vertical usa numerales kanji (一, 二, 三)."],
+    zh: ["页码（nombre）", "日本印刷业对页码的叫法，借自法语。即使是竖排书，页码通常也用阿拉伯数字；竖排的页码则用汉字数字（一、二、三）。"],
+    ca: ["Nombre", "El número de pàgina, en l'argot de la impremta japonesa, que va prendre la paraula del francès. Sol anar en xifres aràbigues, fins i tot als llibres verticals; un foli compost en vertical fa servir numerals kanji (一, 二, 三)."],
+    ar: ["رقم الصفحة (nombre)", "رقم الصفحة بلغة الطباعة اليابانية، التي أخذت الكلمة من الفرنسية. ويُكتب عادةً بأرقام مثل 1 و2 و3 حتى في الكتب العمودية، أما الرقم المنضّد عموديًا فيُكتب بأرقام الكانجي (一، 二، 三)."],
+  }, "ノンブル"),
+  term("bunko", "japanese", {
+    en: ["Bunko", "The Japanese pocket paperback, A6 (105 × 148 mm) and usually set vertically: the cheap edition a novel gets a few years after its first one (tankōbon)."],
+    es: ["Bunko", "El libro de bolsillo japonés, en A6 (105 × 148 mm) y casi siempre compuesto en vertical: la edición barata que recibe una novela unos años después de la primera (tankōbon)."],
+    zh: ["文库本", "日本的口袋平装书，A6 开本（105 × 148 mm），多为竖排，是小说在初版单行本之后几年推出的廉价版本。"],
+    ca: ["Bunko", "El llibre de butxaca japonès, en A6 (105 × 148 mm) i gairebé sempre compost en vertical: l'edició barata que rep una novel·la uns anys després de la primera (tankōbon)."],
+    ar: ["البونكو (bunko)", "كتاب الجيب الياباني بقطع A6 (105 × 148 mm)، ويُنضّد في الغالب عموديًا، وهو الطبعة الرخيصة التي تصدر للرواية بعد بضع سنوات من طبعتها الأولى (tankōbon)."],
+  }, "文庫"),
+  term("tankobon", "japanese", {
+    en: ["Tankōbon", "A book published as a volume of its own, not in a magazine or a pocket series: the first edition of a novel, larger than a bunko (often 四六判, about 127 × 188 mm), and the collected volumes of a manga."],
+    es: ["Tankōbon", "Libro publicado como volumen propio, no en una revista ni en una colección de bolsillo: la primera edición de una novela, mayor que un bunko (a menudo 四六判, unos 127 × 188 mm), y los tomos recopilatorios de un manga."],
+    zh: ["单行本", "单独成册出版的书，而非刊载于杂志或收入口袋丛书：小说的初版，开本比文库本大（常为四六判，约 127 × 188 mm），也指漫画的结集本。"],
+    ca: ["Tankōbon", "Llibre publicat com a volum propi, no en una revista ni en una col·lecció de butxaca: la primera edició d'una novel·la, més gran que un bunko (sovint 四六判, uns 127 × 188 mm), i els volums recopilatoris d'un manga."],
+    ar: ["التانكوبون (tankōbon)", "كتاب يصدر في مجلد مستقل، لا في مجلة ولا في سلسلة كتب الجيب: الطبعة الأولى للرواية، وهي أكبر من البونكو (غالبًا بقطع 四六判، نحو 127 × 188 mm)، وكذلك المجلدات التي تجمع فصول المانغا."],
+  }, "単行本"),
+  term("genko-yoshi", "japanese", {
+    en: ["Genkō yōshi", "Japanese manuscript paper with a grid of squares, usually 20 by 20, one character or mark to a square. Lengths are still counted in these 400-character sheets."],
+    es: ["Genkō yōshi", "Papel de manuscrito japonés con una cuadrícula, normalmente de 20 por 20, con un carácter o un signo en cada casilla. Las extensiones se siguen contando en estas hojas de 400 caracteres."],
+    zh: ["稿纸", "印有方格的日文稿纸，通常为 20 × 20 格，每格写一个字或一个符号。至今仍以这种 400 字的稿纸计算篇幅。"],
+    ca: ["Genkō yōshi", "Paper de manuscrit japonès amb una quadrícula, normalment de 20 per 20, amb un caràcter o un signe a cada casella. Les extensions encara es compten en aquests fulls de 400 caràcters."],
+    ar: ["ورق المخطوطات الياباني (genkō yōshi)", "ورق للكتابة اليابانية مقسّم إلى مربعات، عادةً 20 في 20، في كل مربع حرف أو علامة واحدة. وما زال طول النصوص يُحسب بعدد هذه الأوراق ذات الأربعمئة حرف."],
+  }, "原稿用紙"),
+  term("aozora-notation", "japanese", {
+    en: ["Aozora Bunko notation", "The plain-text markup of Aozora Bunko, the Japanese online library of out-of-copyright books: ruby written 漢字《かんじ》, and notes in ［＃…］ that call for emphasis marks, indents, headings, page breaks and characters outside the usual set."],
+    es: ["Notación de Aozora Bunko", "El marcado en texto plano de Aozora Bunko, la biblioteca japonesa en línea de libros de dominio público: el ruby se escribe 漢字《かんじ》, y unas notas entre ［＃…］ piden marcas de énfasis, sangrías, títulos, saltos de página y caracteres fuera del juego habitual."],
+    zh: ["青空文库标记", "日本网上公版书库青空文库使用的纯文本标记：注音写作 漢字《かんじ》，［＃…］中的注记则指定着重号、缩进、标题、换页以及常用字符集以外的字。"],
+    ca: ["Notació d'Aozora Bunko", "El marcatge en text pla d'Aozora Bunko, la biblioteca japonesa en línia de llibres de domini públic: el ruby s'escriu 漢字《かんじ》, i unes notes entre ［＃…］ demanen marques d'èmfasi, sagnats, títols, salts de pàgina i caràcters fora del joc habitual."],
+    ar: ["ترميز أوزورا بونكو (Aozora Bunko)", "الترميز بالنص الخام الذي تستعمله أوزورا بونكو، المكتبة اليابانية على الإنترنت لكتب الملك العام: يُكتب الروبي هكذا 漢字《かんじ》، وتطلب ملاحظات بين ［＃…］ نقاط التوكيد والمسافات البادئة والعناوين وفواصل الصفحات والحروف الخارجة عن المجموعة المعتادة."],
+  }, "青空文庫注記"),
+  term("gaiji", "japanese", {
+    en: ["Gaiji", "A character outside the standard character set, such as a rare kanji variant. Aozora Bunko texts describe each one in a note and give its JIS X 0213 position or its Unicode code point when it has one."],
+    es: ["Gaiji", "Carácter que queda fuera del juego de caracteres estándar, como una variante rara de un kanji. Los textos de Aozora Bunko describen cada uno en una nota y dan su posición en JIS X 0213 o su punto de código Unicode cuando lo tiene."],
+    zh: ["外字", "标准字符集以外的字，例如罕见的汉字异体。青空文库的文本用注记描述每个外字，有对应时注明其 JIS X 0213 位置或 Unicode 码位。"],
+    ca: ["Gaiji", "Caràcter que queda fora del joc de caràcters estàndard, com una variant rara d'un kanji. Els textos d'Aozora Bunko descriuen cadascun en una nota i en donen la posició a JIS X 0213 o el punt de codi Unicode quan en té."],
+    ar: ["الحرف الخارجي (gaiji)", "حرف خارج مجموعة الحروف المعيارية، كصيغة نادرة من كانجي. وتصف نصوص أوزورا بونكو كل حرف منها في ملاحظة، وتذكر موضعه في JIS X 0213 أو رمزه في Unicode إن كان له رمز."],
+  }, "外字"),
+  term("choon", "japanese", {
+    en: ["Chōon mark", "The long-vowel mark ー, used mostly in katakana (コーヒー). In vertical text it turns to run down the column, and it may not start a line."],
+    es: ["Chōon", "El signo de vocal larga ー, propio sobre todo del katakana (コーヒー). En texto vertical gira para correr a lo largo de la columna, y no puede abrir una línea."],
+    zh: ["长音符", "表示长元音的符号ー，主要用于片假名（コーヒー）。竖排时转为竖向，且不能出现在行首。"],
+    ca: ["Chōon", "El signe de vocal llarga ー, propi sobretot del katakana (コーヒー). En text vertical gira per córrer al llarg de la columna, i no pot obrir una línia."],
+    ar: ["علامة المدّ (chōon)", "علامة الصائت الطويل ー، وتُستعمل غالبًا مع الكاتاكانا (コーヒー). وفي النص العمودي تدور لتمتد مع العمود، ولا يجوز أن يبدأ بها سطر."],
+  }, "長音符"),
+  term("small-kana", "japanese", {
+    en: ["Small kana", "The reduced kana that attach to the sign before them: っ (sokuon) doubles the next consonant, ゃ ゅ ょ make contracted sounds, ァ ィ ゥ ェ ォ spell loanwords. Strict kinsoku keeps them off the start of a line; in vertical text they sit toward the upper right of their cell."],
+    es: ["Kana pequeños", "Los kana reducidos que se unen al signo anterior: っ (sokuon) dobla la consonante siguiente, ゃ ゅ ょ forman sílabas contraídas, ァ ィ ゥ ェ ォ sirven para escribir préstamos. El kinsoku estricto no les deja abrir línea; en texto vertical se colocan hacia la parte superior derecha de su celda."],
+    zh: ["小写假名", "依附于前一个假名的缩小假名：っ（促音）使后一个辅音重叠，ゃゅょ构成拗音，ァィゥェォ用于书写外来语。严格的禁则不让它们出现在行首；竖排时它们偏向字格的右上方。"],
+    ca: ["Kana petits", "Els kana reduïts que s'uneixen al signe anterior: っ (sokuon) dobla la consonant següent, ゃ ゅ ょ formen síl·labes contretes, ァ ィ ゥ ェ ォ serveixen per escriure manlleus. El kinsoku estricte no els deixa obrir línia; en text vertical es col·loquen cap a la part superior dreta de la seva cel·la."],
+    ar: ["الكانا الصغيرة (small kana)", "كانا مصغّرة تلتصق بالرمز الذي قبلها: っ (sokuon) تضاعف الحرف الساكن التالي، وゃ وゅ وょ تكوّن المقاطع المدمجة، وァ وィ وゥ وェ وォ تُكتب بها الكلمات المقترضة. وتمنعها قواعد الكنسوكو الصارمة من بدء السطر، وفي النص العمودي تميل إلى أعلى يمين خانتها."],
+  }, "小書き仮名"),
+  term("bochu", "japanese", {
+    en: ["Bōchū", "Sidenotes in a vertical book: the notes of a spread gathered on the fore-edge side of its left-hand page, after the last line of text. They interrupt the reading least, though endnotes are more common."],
+    es: ["Bōchū", "Notas laterales de un libro vertical: las notas de una doble página reunidas en el lado del corte de su página izquierda, tras la última línea de texto. Son las que menos interrumpen la lectura, aunque las notas finales son más frecuentes."],
+    zh: ["旁注", "竖排书的边注：一个跨页的注释集中排在左页靠书口一侧、正文最后一行之后。对阅读的打扰最小，但不如后注常见。"],
+    ca: ["Bōchū", "Notes laterals d'un llibre vertical: les notes d'una doble pàgina reunides al costat del tall de la seva pàgina esquerra, després de l'última línia de text. Són les que menys interrompen la lectura, tot i que les notes finals són més freqüents."],
+    ar: ["الحواشي الجانبية (bōchū)", "حواشي الكتاب العمودي: تُجمع حواشي الصفحتين المتقابلتين على جهة الحافة الخارجية من الصفحة اليسرى، بعد آخر سطر من النص. وهي أقل الحواشي قطعًا للقراءة، وإن كانت الحواشي الختامية أكثر شيوعًا."],
+  }, "傍注"),
+  term("kochu", "japanese", {
+    en: ["Kōchū", "Notes gathered after the text they belong to: at the end of a paragraph, a section, a chapter or the book. They are the usual notes in vertical books, where footnotes are rare."],
+    es: ["Kōchū", "Notas reunidas después del texto al que pertenecen: al final de un párrafo, de una sección, de un capítulo o del libro. Son las notas habituales en los libros verticales, donde las notas al pie son raras."],
+    zh: ["后注", "集中排在所属文字之后的注释：位于段落、节、章或全书末尾。是竖排书最常见的注释形式，竖排书很少用脚注。"],
+    ca: ["Kōchū", "Notes reunides després del text a què pertanyen: al final d'un paràgraf, d'una secció, d'un capítol o del llibre. Són les notes habituals als llibres verticals, on les notes a peu de pàgina són rares."],
+    ar: ["الحواشي الختامية (kōchū)", "حواشٍ تُجمع بعد النص الذي تخصه: في آخر الفقرة أو القسم أو الفصل أو الكتاب. وهي الحواشي المعتادة في الكتب العمودية، التي يندر فيها استعمال الحواشي السفلية."],
+  }, "後注"),
+  term("kunten", "japanese", {
+    en: ["Kunten", "Reading marks added to classical Chinese (kanbun) so a Japanese reader can read it in Japanese order. In vertical text, kaeriten (レ, 一, 二, 上, 下) at the lower left of a character show where to jump back, and okurigana in small katakana at the lower right add the Japanese endings; the characters themselves are not reordered."],
+    es: ["Kunten", "Marcas de lectura que se añaden al chino clásico (kanbun) para que un lector japonés lo lea en el orden del japonés. En texto vertical, los kaeriten (レ, 一, 二, 上, 下), abajo a la izquierda de un carácter, indican adónde volver, y los okurigana, en katakana pequeño abajo a la derecha, añaden las terminaciones japonesas; los caracteres no se reordenan."],
+    zh: ["训点", "为汉文（文言文）加的阅读符号，使日本读者能按日语语序阅读。竖排时，返点（レ、一、二、上、下）标在字的左下方，指示回读的位置；送假名以小号片假名标在右下方，补出日语词尾。原文的字序不变。"],
+    ca: ["Kunten", "Marques de lectura que s'afegeixen al xinès clàssic (kanbun) perquè un lector japonès el llegeixi en l'ordre del japonès. En text vertical, els kaeriten (レ, 一, 二, 上, 下), a baix a l'esquerra d'un caràcter, indiquen on cal tornar, i els okurigana, en katakana petit a baix a la dreta, hi afegeixen les terminacions japoneses; els caràcters no es reordenen."],
+    ar: ["علامات القراءة (kunten)", "علامات تُضاف إلى النص الصيني الكلاسيكي (kanbun) ليقرأه القارئ الياباني بترتيب اليابانية. ففي النص العمودي تبيّن علامات الرجوع (kaeriten: レ و一 و二 و上 و下) أسفل يسار الحرف إلى أين يُرجع، وتضيف الـokurigana بالكاتاكانا الصغيرة أسفل يمينه اللواحق اليابانية، ولا يُعاد ترتيب الحروف نفسها."],
+  }, "訓点・返り点"),
+  term("jlreq", "japanese", {
+    en: ["JLReq", "Requirements for Japanese Text Layout, the W3C document, in Japanese and English, that describes how Japanese text is set. It follows JIS X 4051; the Postext docs cite it by section."],
+    es: ["JLReq", "Requirements for Japanese Text Layout, el documento del W3C, en japonés y en inglés, que describe cómo se compone el texto japonés. Sigue la norma JIS X 4051; la documentación de Postext lo cita por apartados."],
+    zh: ["JLReq", "W3C 的《日文排版需求》，以日英两种语言描述日文文本的排版规则。它以 JIS X 4051 为基础，Postext 文档按章节引用它。"],
+    ca: ["JLReq", "Requirements for Japanese Text Layout, el document del W3C, en japonès i en anglès, que descriu com es compon el text japonès. Segueix la norma JIS X 4051; la documentació de Postext el cita per apartats."],
+    ar: ["JLReq", "متطلبات تخطيط النص الياباني (Requirements for Japanese Text Layout)، وهي وثيقة W3C باليابانية والإنجليزية تصف طريقة تنضيد النص الياباني. وتتبع معيار JIS X 4051، ويستشهد بها توثيق Postext بأرقام أقسامها."],
+  }, "日本語組版処理の要件"),
+  term("jis-x-4051", "japanese", {
+    en: ["JIS X 4051", "The Japanese Industrial Standard for the composition of Japanese documents, first issued in 1993 and last revised in 2004. JLReq describes the same rules in English."],
+    es: ["JIS X 4051", "La norma industrial japonesa sobre la composición de documentos en japonés, publicada en 1993 y revisada por última vez en 2004. JLReq describe las mismas reglas en inglés."],
+    zh: ["JIS X 4051", "日本工业标准中关于日文文档排版方法的标准，1993 年首次发布，2004 年最近一次修订。JLReq 用英文阐述了同样的规则。"],
+    ca: ["JIS X 4051", "La norma industrial japonesa sobre la composició de documents en japonès, publicada el 1993 i revisada per última vegada el 2004. JLReq descriu les mateixes regles en anglès."],
+    ar: ["JIS X 4051", "المعيار الصناعي الياباني لتنضيد الوثائق اليابانية، صدر أول مرة سنة 1993 ونُقّح آخر مرة سنة 2004. ويعرض JLReq القواعد نفسها بالإنجليزية."],
+  }, "日本語文書の組版方法"),
 
   // ── Arabic layout ──────────────────────────────────────────────────────
   term("bidi", "arabic", {
