@@ -45,6 +45,7 @@
     "clsx": "^2.1.1",
     "colorjs.io": "^0.7.1",
     "fflate": "^0.8.3",
+    "hls.js": "^1.7.3",
     "lucide-react": "^1.42.0",
     "postext-citeproc": "workspace:*",
     "postext-epub": "workspace:*",

@@ -1,5 +1,5 @@
 import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig } from "postext";
-import { canFlip, PageFlipper, type FlipAppearance, type PageSource, type SpreadSrc } from "./pageFlip";
+import { canFlip, PageFlipper, type FlipAppearance, type PageSource, type PageVideoFrame, type SpreadSrc } from "./pageFlip";
 import { spreadOfPage, spreadsOf, type Spread } from "./spreads";
 import { injectStyles } from "./styles";
 
@@ -50,6 +50,13 @@ export interface FolioPagePoint {
   y: number;
 }
 
+/** A video drawn on a page of the book (#477): the element playing it and
+ *  where its picture lies on the page (see `PageVideoFrame`). */
+export interface FolioPageVideo extends PageVideoFrame {
+  page: number;
+  element: HTMLVideoElement;
+}
+
 export interface FolioLabels {
   /** The viewer's accessible name. */
   region: string;
@@ -97,6 +104,13 @@ export interface FolioOptions {
   /** Told as soon as the book is sent to another spread (a button, a key,
    *  a page let go past halfway), before its leaves have landed. */
   onTarget?: (state: FolioState) => void;
+  /** A click on a page in `hand` mode, before it turns the page: return
+   *  true to keep the page where it is (the click did something else,
+   *  such as playing a video printed there). */
+  onPageClick?: (point: FolioPagePoint) => boolean;
+  /** Whether a click at this point of a page acts on it (`onPageClick`):
+   *  the pointer shows a hand there. */
+  isPageAction?: (point: FolioPagePoint) => boolean;
   /** Told when the page slots change size: a host painting pages for the
    *  viewer paints them at `deviceWidth` × `deviceHeight` pixels, so they
    *  are shown 1:1 both at rest and on a turning leaf. */
@@ -148,6 +162,9 @@ export interface FolioViewer {
   setInteraction(mode: FolioInteraction): void;
   /** A page's canvas was drawn again in place: shows it again. */
   refreshPage(src: PageSource): void;
+  /** Plays a video on a page (#477): drawn over the page's painting, on
+   *  the leaf that carries it as it lies or turns; `null` takes it off. */
+  setPageVideo(video: FolioPageVideo | null): void;
   /** The page under a pointer and where on it, as the book is seen (the
    *  tilted, orbited 3D book included); null off the open pages. */
   pageAt(event: { clientX: number; clientY: number }): FolioPagePoint | null;
@@ -271,6 +288,10 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   let swipe: { x: number; y: number } | null = null;
   let disposed = false;
   let slot: FolioPageSize = { width: 0, height: 0, deviceWidth: 0, deviceHeight: 0 };
+  let pageVideo: FolioPageVideo | null = null;
+  /** Where a press on a page began, on the page (a click there may act on
+   *  it rather than turn it). */
+  let pressPoint: FolioPagePoint | null = null;
 
   const rtl = () => binding === "right";
   const pagesOf = (s: Spread | undefined) => (s ?? [null, null]).filter((i): i is number => i !== null);
@@ -410,6 +431,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       slot = next;
       options.onLayout?.(slot);
     }
+    placeDomVideo();
     flipper?.redraw();
   }
 
@@ -449,6 +471,46 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     return el;
   }
 
+  /** Shows the page video: on the WebGL book, drawn by the leaf that
+   *  carries its page; on the DOM spread, laid over the page. */
+  function applyVideo() {
+    const v = pageVideo;
+    flipper?.setVideo(v ? { src: sourceOf(pages[v.page]), element: v.element, frame: v } : null);
+    placeDomVideo();
+  }
+
+  /** The DOM spread (no WebGL): the video element over its page, mapped
+   *  onto the picture's place by a transform (it may lie turned). */
+  function placeDomVideo() {
+    const v = pageVideo;
+    if (!v || flipper) {
+      if (v?.element.classList.contains("postext-folio-video")) {
+        v.element.classList.remove("postext-folio-video");
+        v.element.remove();
+      }
+      return;
+    }
+    const els = [...spreadEl.children] as HTMLElement[];
+    const s = spreads[shown] ?? [null, null];
+    const slots = single && !singleGl() ? [s[0] ?? s[1]] : s;
+    const at = slots.indexOf(v.page);
+    const el = at >= 0 ? els[at] : undefined;
+    if (!el) {
+      v.element.remove();
+      return;
+    }
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    const unit = 100;
+    v.element.classList.add("postext-folio-video");
+    Object.assign(v.element.style, {
+      width: `${unit}px`,
+      height: `${unit}px`,
+      transform: `matrix(${(v.across.x * w) / unit}, ${(v.across.y * h) / unit}, ${(v.down.x * w) / unit}, ${(v.down.y * h) / unit}, ${v.origin.x * w}, ${v.origin.y * h})`,
+    });
+    if (v.element.parentElement !== el) el.append(v.element);
+  }
+
   function render() {
     const s = spreads[shown] ?? [null, null];
     const slots = single && !singleGl() ? [s[0] ?? s[1]] : s;
@@ -462,6 +524,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     count.textContent = on.length ? labels.count(on, pages.length) : "";
     prevBtn.disabled = current <= 0;
     nextBtn.disabled = current >= spreads.length - 1;
+    placeDomVideo();
     // The settled spread, drawn at rest.
     flipper?.clear();
   }
@@ -526,6 +589,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     );
     const rgb = rgbOf(paper);
     if (rgb) flipper.setPaper(...rgb);
+    if (pageVideo) applyVideo();
   }
 
   /** Lays the book out again: spreads, mode, flipper. */
@@ -603,9 +667,14 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   });
   // Select mode: a text cursor over the pages as the book is seen.
   root.addEventListener("pointermove", (event) => {
-    if (interaction !== "select" || event.buttons) return;
-    root.classList.toggle("is-over-page", !!pageAt(event));
+    if (event.buttons) return;
+    if (interaction === "select") root.classList.toggle("is-over-page", !!pageAt(event));
+    else if (interaction === "hand" && options.isPageAction) {
+      const point = holding ? null : pageAt(event);
+      root.classList.toggle("is-over-action", !!point && options.isPageAction(point));
+    }
   });
+  root.addEventListener("pointerleave", () => root.classList.remove("is-over-action"));
   root.addEventListener("pointerdown", (event) => {
     // Only the hand takes pages, swipes and clicks them over.
     if (interaction !== "hand") return;
@@ -628,6 +697,8 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     if (target.closest(".postext-folio-nav")) return false;
     if (flipper ? !flipper.hit(event) : !target.closest(".postext-folio-spread")) return false;
     press = { x: event.clientX, y: event.clientY };
+    // Where it was pressed, read before the hand lifts the leaf.
+    pressPoint = options.onPageClick ? pageAt(event) : null;
     if (singleGl()) {
       decide(event);
       return true;
@@ -672,8 +743,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       press = null;
       const dx = e.clientX - start.x;
       const dy = e.clientY - start.y;
-      if (Math.hypot(dx, dy) < CLICK_SLOP) go(current + 1);
-      else if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy) && Math.sign(dx) === -toSpine) go(current - 1);
+      if (Math.hypot(dx, dy) < CLICK_SLOP) {
+        if (!pageClick()) go(current + 1);
+      } else if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy) && Math.sign(dx) === -toSpine) go(current - 1);
       e.stopPropagation();
     };
     const onCancel = (e: PointerEvent) => {
@@ -710,7 +782,8 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       spreadEl.classList.remove("is-held");
       holding = null;
       press = null;
-      flipper?.release(click);
+      // A click that acts on the page (a video) lets the leaf fall back.
+      flipper?.release(click && !pageClick());
     };
     window.addEventListener("pointermove", onMove);
     // Captured, so the stage's swipe does not hear the hold's release.
@@ -732,6 +805,10 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     press = null;
     const click = !!start && Math.hypot(event.clientX - start.x, event.clientY - start.y) < CLICK_SLOP;
     if (!click) return;
+    if (pageClick()) {
+      swipe = null;
+      return;
+    }
     // A click on the recto turns forward, on the verso back (pages already
     // in the air: it joins them).
     if (flipper) {
@@ -746,6 +823,14 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     if (single) go(current + 1);
     else go(current + ((event.clientX > rect.left + rect.width / 2) !== rtl() ? 1 : -1));
   });
+
+  /** A click at the point pressed: the host's to act on (true), or the
+   *  page's to turn. */
+  function pageClick(): boolean {
+    const point = pressPoint;
+    pressPoint = null;
+    return !!point && !!options.onPageClick?.(point);
+  }
 
   /** The page index in slot `side` (0 the verso, 1 the recto) of the
    *  spread on show. */
@@ -843,6 +928,14 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     refreshPage(src) {
       flipper?.touch(src);
     },
+    setPageVideo(video) {
+      if (pageVideo && pageVideo.element !== video?.element && pageVideo.element.classList.contains("postext-folio-video")) {
+        pageVideo.element.classList.remove("postext-folio-video");
+        pageVideo.element.remove();
+      }
+      pageVideo = video;
+      applyVideo();
+    },
     setAppearance(next) {
       appearance = { ...appearance, ...next };
       const flip = flipAppearance();
@@ -880,11 +973,15 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       }
       papersKey = papers;
       if (opts.at !== undefined) current = shown = spreadOfPage(spreads, opts.at);
+      // The video's page may be painted on another canvas now.
+      if (pageVideo) flipper?.setVideo({ src: sourceOf(pages[pageVideo.page]), element: pageVideo.element, frame: pageVideo });
       fit();
       render();
     },
     dispose() {
       disposed = true;
+      pageVideo?.element.remove();
+      pageVideo = null;
       observer.disconnect();
       holding?.(false);
       flipper?.dispose();

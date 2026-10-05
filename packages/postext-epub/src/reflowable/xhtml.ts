@@ -1,7 +1,7 @@
 // The semantic model to EPUB 3 XHTML content documents: one per chapter
 // (or part opener), with its footnotes after the text.
 
-import { bidiClassOf, mediaFragment, type VDTResourceVideo } from 'postext';
+import { bidiClassOf, isHlsMimeType, mediaFragment, type VDTResourceVideo } from 'postext';
 import type {
   FileModel,
   InlineItem,
@@ -363,14 +363,16 @@ class Writer {
   }
 
   /** A video (#454): a self-hosted file in the reader's own player; a
-   *  YouTube or Vimeo one as its poster, linked to the video unless
-   *  `videoStyle.linkPoster` is off (an EPUB may not embed a web page's
-   *  player: EPUBCheck RSC-006). */
+   *  YouTube or Vimeo one, or an HLS stream, as its poster, linked to the
+   *  video unless `videoStyle.linkPoster` is off (an EPUB may not embed a
+   *  web page's player: EPUBCheck RSC-006, nor play an HLS playlist). */
   private videoBody(video: VDTResourceVideo, posterSrc: string | undefined, alt: string): string {
     const label = alt || 'Video';
     if (video.source === 'file') {
       const own = video.fileId ? this.ctx.videoHref?.(video.fileId) : undefined;
-      const src = own ? relativeHref(this.file.href, own) : video.link;
+      // An HLS stream is no media type an EPUB may play (#476): its poster
+      // is printed, linked to it.
+      const src = own ? relativeHref(this.file.href, own) : isHlsMimeType(video.mimeType) ? undefined : video.link;
       if (src) {
         const p = video.player;
         const attrs = [

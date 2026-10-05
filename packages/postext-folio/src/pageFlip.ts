@@ -32,6 +32,7 @@ import {
   Vector2,
   Vector3,
   Vector4,
+  VideoTexture,
   WebGLRenderer,
   WebGLRenderTarget,
   type BufferGeometry,
@@ -53,6 +54,23 @@ export type PageSource = string | HTMLCanvasElement | HTMLImageElement | null;
 export type SpreadSrc = [PageSource, PageSource];
 
 type Drawn = Exclude<PageSource, null | "">;
+
+/**
+ * A video drawn on a page (#477): the element playing it and where its
+ * picture lies on the page, in fractions of the page's width and height
+ * from its top left corner — the point the picture's top left corner lands
+ * on (`origin`), and the picture's top edge (`across`) and left edge
+ * (`down`) as vectors, so a picture set turned (a quarter turn, a
+ * vertical page) is drawn turned. `crop` is the part of the picture shown
+ * (fractions of it; a poster cropped within its safe area), the whole
+ * picture when absent.
+ */
+export interface PageVideoFrame {
+  origin: { x: number; y: number };
+  across: { x: number; y: number };
+  down: { x: number; y: number };
+  crop?: { x: number; y: number; width: number; height: number };
+}
 
 /** How the book is presented: the `folio` settings, the page's physical
  *  width, the leaves of the book outside the pages shown (counted for the
@@ -306,6 +324,15 @@ type PageUniforms = {
   /** Paper closer above a point than this (px) does not occlude it: a
    *  leaf's own surface round a point is not a blocker. */
   uOccBias: { value: number };
+  /** A video playing on one of the leaf's pages (#477): its picture, the
+   *  face it is on (0 none, 1 front, 2 back) and where it lies there (see
+   *  {@link PageVideoFrame}). */
+  uVideo: { value: Texture | null };
+  uVidFace: { value: number };
+  uVidO: { value: Vector2 };
+  uVidA: { value: Vector2 };
+  uVidB: { value: Vector2 };
+  uVidCrop: { value: Vector4 };
 };
 
 type PageMaterial = MeshPhysicalMaterial & { userData: { uniforms: PageUniforms; spec?: PaperSpec | null } };
@@ -331,6 +358,12 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uPaper: { value: new Color(1, 1, 1) },
     uLeafOcc: { value: 0.45 },
     uOccBias: { value: 6 },
+    uVideo: { value: null },
+    uVidFace: { value: 0 },
+    uVidO: { value: new Vector2() },
+    uVidA: { value: new Vector2(1, 0) },
+    uVidB: { value: new Vector2(0, 1) },
+    uVidCrop: { value: new Vector4(0, 0, 1, 1) },
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -364,6 +397,12 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         uniform vec3 uPaper;
         uniform float uLeafOcc;
         uniform float uSign;
+        uniform sampler2D uVideo;
+        uniform float uVidFace;
+        uniform vec2 uVidO;
+        uniform vec2 uVidA;
+        uniform vec2 uVidB;
+        uniform vec4 uVidCrop;
         varying float vAo;
         varying vec2 vPageUv;
         varying vec3 vBookPos;
@@ -380,6 +419,18 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           vec2 uvB = vec2(1.0 - u, vPageUv.y);
           vec3 ink = uPaper;
           if (has > 0.5 && has < 1.5) ink = front ? texture2D(uFront, uvF).rgb : texture2D(uBack, uvB).rgb;
+          // A video playing on this face, printed over its poster: the
+          // point of the page (from its top left corner) in the picture's
+          // own frame, which may lie turned on the page.
+          if (uVidFace > 0.5 && (uVidFace < 1.5) == front) {
+            vec2 tuv = front ? uvF : uvB;
+            vec2 p = vec2(tuv.x, 1.0 - tuv.y) - uVidO;
+            vec2 st = vec2(dot(p, uVidA) / dot(uVidA, uVidA), dot(p, uVidB) / dot(uVidB, uVidB));
+            if (st.x >= 0.0 && st.x <= 1.0 && st.y >= 0.0 && st.y <= 1.0) {
+              vec2 v = uVidCrop.xy + st * uVidCrop.zw;
+              ink = texture2D(uVideo, vec2(v.x, 1.0 - v.y)).rgb;
+            }
+          }
           // The other side's print, seen through the sheet (the same point
           // of paper, so mirrored as it should be).
           float other = front ? uHasBack : uHasFront;
@@ -1709,6 +1760,75 @@ export class PageFlipper {
     this.redraw();
   }
 
+  /** The video playing on a page (#477), or none. */
+  private video: { src: PageSource; element: HTMLVideoElement; texture: VideoTexture; frame: PageVideoFrame; callback: number } | null = null;
+
+  /**
+   * Draws a video on the page whose source is `src` (see
+   * {@link PageVideoFrame}), over its painting, on whichever face of
+   * whichever leaf carries that page: lying open or turning, the picture
+   * bends with the paper. `null` takes it off. The book is drawn again at
+   * every new frame of the video.
+   */
+  setVideo(video: { src: PageSource; element: HTMLVideoElement; frame: PageVideoFrame } | null) {
+    const old = this.video;
+    if (old && (!video || video.element !== old.element)) {
+      old.element.cancelVideoFrameCallback?.(old.callback);
+      old.texture.dispose();
+      this.video = null;
+    }
+    if (video) {
+      let texture = this.video?.texture;
+      if (!texture) {
+        texture = new VideoTexture(video.element);
+        texture.colorSpace = SRGBColorSpace;
+        texture.minFilter = LinearFilter;
+        texture.generateMipmaps = false;
+      }
+      this.video = { ...video, texture, callback: this.video?.callback ?? 0 };
+      if (!this.video.callback) this.watchVideo();
+    }
+    for (const mesh of this.pageMeshes()) this.dressVideo(mesh);
+    this.redraw();
+  }
+
+  /** Draws the book again at each new frame of the video (a turning book
+   *  is drawn by its own frames). */
+  private watchVideo() {
+    const v = this.video;
+    if (!v) return;
+    const el = v.element;
+    const next = () => {
+      if (this.video?.element !== el || this.disposed) return;
+      this.redraw();
+      v.callback = el.requestVideoFrameCallback ? el.requestVideoFrameCallback(next) : requestAnimationFrame(next);
+      if (this.video) this.video.callback = v.callback;
+    };
+    v.callback = el.requestVideoFrameCallback ? el.requestVideoFrameCallback(next) : requestAnimationFrame(next);
+  }
+
+  /** The meshes that show pages: the open ones, the leaves in the air and
+   *  the block. */
+  private pageMeshes(): PageMesh[] {
+    return [this.left, this.right, ...this.leaves.values(), ...(this.blockMesh ? [this.blockMesh] : [])];
+  }
+
+  /** Sets a mesh's video uniforms: on the face that shows the video's
+   *  page, off elsewhere. */
+  private dressVideo(mesh: PageMesh) {
+    const u = mesh.material.userData.uniforms;
+    const v = this.video;
+    const face = v && v.src ? (mesh.userData.Front === v.src ? 1 : mesh.userData.Back === v.src ? 2 : 0) : 0;
+    u.uVidFace.value = face;
+    u.uVideo.value = face && v ? v.texture : null;
+    if (!face || !v) return;
+    const { origin, across, down, crop } = v.frame;
+    u.uVidO.value.set(origin.x, origin.y);
+    u.uVidA.value.set(across.x, across.y);
+    u.uVidB.value.set(down.x, down.y);
+    u.uVidCrop.value.set(crop?.x ?? 0, crop?.y ?? 0, crop?.width ?? 1, crop?.height ?? 1);
+  }
+
   /** A page source drawn again in place (a canvas repainted): its
    *  texture is uploaded again and the book redrawn. */
   touch(src: PageSource) {
@@ -1802,6 +1922,7 @@ export class PageFlipper {
     const u = mesh.material.userData.uniforms;
     if (mesh.userData[face] === src) return;
     mesh.userData[face] = src;
+    this.dressVideo(mesh);
     u[`uHas${face}`].value = 0;
     u[`u${face}`].value = null;
     if (src === "") u[`uHas${face}`].value = 2;
@@ -2380,6 +2501,7 @@ export class PageFlipper {
 
   dispose() {
     this.disposed = true;
+    this.setVideo(null);
     cancelAnimationFrame(this.raf);
     cancelAnimationFrame(this.still);
     cancelAnimationFrame(this.orbitFrame);

@@ -444,6 +444,9 @@ importers:
       eslint:
         specifier: ^9.39.4
         version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      hls.js:
+        specifier: ^1.7.3
+        version: 1.7.3
       postext:
         specifier: workspace:*
         version: link:../postext
@@ -538,6 +541,9 @@ importers:
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
+      hls.js:
+        specifier: ^1.7.3
+        version: 1.7.3
       lucide-react:
         specifier: ^1.42.0
         version: 1.42.0(react@19.2.8)

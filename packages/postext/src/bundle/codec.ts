@@ -204,7 +204,7 @@ export async function readBundle(
     const merged: BundleResourceSpec = { ...spec, ...wording, id: spec.id };
     // Artwork swapped for this locale: the shared spec's intrinsic size
     // describes the other file, so it is read from the bytes instead.
-    if (wording.file && wording.file !== spec.file) {
+    if ((wording.file && wording.file !== spec.file) || (wording.poster && wording.poster !== spec.poster)) {
       if (wording.width === undefined) delete merged.width;
       if (wording.height === undefined) delete merged.height;
       if (wording.pdfFile === undefined) delete merged.pdfFile;

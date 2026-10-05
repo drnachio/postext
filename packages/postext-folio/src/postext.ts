@@ -1,7 +1,8 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
 import { resolveFolioConfig, type FolioPaperConfig } from "postext";
 import { BLOCK_PAGES } from "./pageFlip";
-import { createFolio, type FolioAppearance, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
+import { createFolio, type FolioAppearance, type FolioOptions, type FolioPagePoint, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
+import { attachVideoSource, isHlsVideo, pageVideoSpots, spotContains, type PageVideoSpot } from "./videos";
 
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
   /** The page to open on (0-based). Default 0. */
@@ -22,6 +23,23 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
    * when a page is painted and on `redecorate`.
    */
   decorate?: (index: number, ctx: CanvasRenderingContext2D) => boolean;
+  /**
+   * Videos printed on the pages play there (#477): in `hand` mode a click
+   * on a video's poster plays it on the page, a click on it again pauses
+   * it, and it goes on playing while its leaf turns. Starting another
+   * stops the one playing; it stops too when the book comes to rest on a
+   * spread that does not show it. Self-hosted videos only (a file, or its
+   * address: MP4, WebM or an HLS stream); a YouTube or Vimeo poster turns
+   * the page as any other. The video's server must allow cross-origin
+   * reads (CORS) for WebGL to draw it. Default true.
+   */
+  videos?: boolean;
+  /** The address a self-hosted video's file plays from (an object URL for
+   *  its `fileId`); without one, its production address (`video.url`). */
+  videoUrl?: (fileId: string) => string | undefined;
+  /** Told when a video on a page starts playing, pauses, stops or cannot
+   *  play (`error`: no address, a refused cross-origin read, no HLS). */
+  onVideo?: (event: { resourceId: string; page: number; state: "playing" | "paused" | "stopped" | "error" }) => void;
 }
 
 export interface FolioDocumentViewer extends FolioViewer {
@@ -35,6 +53,11 @@ export interface FolioDocumentViewer extends FolioViewer {
   /** Draws the decorations (`decorate`) again on these pages, or on every
    *  painted page; the book shows them at once, on a turning leaf too. */
   redecorate(pages?: Iterable<number>): void;
+  /** Plays or pauses the video printed at a point of a page, as a click
+   *  there does; false when no playable video lies there. */
+  toggleVideoAt(point: FolioPagePoint): boolean;
+  /** Stops the video playing on a page (its poster shows again). */
+  stopVideo(): void;
 }
 
 /** Whether the document's first page is a recto: page 1, or a chapter
@@ -364,6 +387,139 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     return [...pages, pages[0] - 2, pages[0] - 1, pages[pages.length - 1] + 1, pages[pages.length - 1] + 2];
   };
 
+  // ── Videos on the pages (#477) ──
+  /** The video spots of each page of the current document, as found. */
+  let spots = new Map<number, PageVideoSpot[]>();
+  /** The video playing (or paused) on a page. */
+  let playing: { page: number; spot: PageVideoSpot; element: HTMLVideoElement; release?: () => void; shown: boolean } | null = null;
+
+  const spotsOf = (i: number): PageVideoSpot[] => {
+    let found = spots.get(i);
+    if (!found) {
+      const page = current.pages[i];
+      found = page ? pageVideoSpots(page, current) : [];
+      spots.set(i, found);
+    }
+    return found;
+  };
+  /** Where a self-hosted video plays from: its file, else its address. */
+  const urlOf = (spot: PageVideoSpot): string | undefined => {
+    const v = spot.video;
+    if (v.source !== "file") return undefined;
+    return (v.fileId ? options.videoUrl?.(v.fileId) : undefined) ?? v.link;
+  };
+  const spotAt = (point: FolioPagePoint): PageVideoSpot | undefined =>
+    options.videos === false ? undefined : spotsOf(point.page).find((s) => urlOf(s) && spotContains(s, point.x, point.y));
+
+  const report = (state: "playing" | "paused" | "stopped" | "error") => {
+    if (playing) options.onVideo?.({ resourceId: playing.spot.resourceId, page: playing.page, state });
+  };
+
+  /** Shows the playing video on its page (once it has a frame to show). */
+  function showVideo() {
+    if (!playing) return;
+    playing.shown = true;
+    viewer.setPageVideo({ page: playing.page, element: playing.element, origin: playing.spot.origin, across: playing.spot.across, down: playing.spot.down, ...(playing.spot.crop ? { crop: playing.spot.crop } : {}) });
+  }
+
+  function stopVideo(state: "stopped" | "error" = "stopped") {
+    const p = playing;
+    if (!p) return;
+    report(state);
+    playing = null;
+    p.element.pause();
+    p.release?.();
+    if (p.shown) viewer.setPageVideo(null);
+  }
+
+  function startVideo(page: number, spot: PageVideoSpot) {
+    stopVideo();
+    const url = urlOf(spot);
+    if (!url) return;
+    const element = document.createElement("video");
+    element.playsInline = true;
+    element.preload = "auto";
+    // WebGL draws the picture only when its server allows the read.
+    if (!/^(blob|data):/i.test(url)) element.crossOrigin = "anonymous";
+    const player = spot.video.player;
+    element.muted = player.muted;
+    const entry: NonNullable<typeof playing> = { page, spot, element, shown: false };
+    playing = entry;
+    const live = () => playing === entry;
+    const range = { start: spot.video.start ?? 0, end: spot.video.end };
+    element.addEventListener("error", () => live() && stopVideo("error"));
+    element.addEventListener("loadedmetadata", () => {
+      if (range.start) element.currentTime = range.start;
+    }, { once: true });
+    element.addEventListener("loadeddata", () => live() && showVideo(), { once: true });
+    element.addEventListener("playing", () => live() && report("playing"));
+    element.addEventListener("pause", () => live() && !element.ended && report("paused"));
+    const atEnd = () => {
+      if (!live()) return;
+      if (player.loop) {
+        element.currentTime = range.start;
+        void element.play().catch(() => {});
+      } else stopVideo();
+    };
+    element.addEventListener("ended", atEnd);
+    element.addEventListener("timeupdate", () => {
+      if (range.end && element.currentTime >= range.end) atEnd();
+    });
+    // The picture's height on screen: an HLS stream needs no larger variant.
+    const size = viewer.pageSize;
+    const maxHeight = Math.max(Math.hypot(spot.down.x * size.deviceWidth, spot.down.y * size.deviceHeight), Math.hypot(spot.across.x * size.deviceWidth, spot.across.y * size.deviceHeight));
+    void attachVideoSource(element, url, { hls: isHlsVideo(spot.video, url), maxHeight }).then(
+      (release) => {
+        if (!live()) return release();
+        entry.release = release;
+        // The click's gesture lets it play with sound; a browser that still
+        // refuses gets it muted.
+        element.play().catch((err: unknown) => {
+          if (!live()) return;
+          if ((err as { name?: string })?.name === "NotAllowedError" && !element.muted) {
+            element.muted = true;
+            return element.play();
+          }
+          throw err;
+        }).catch(() => live() && stopVideo("error"));
+      },
+      () => live() && stopVideo("error"),
+    );
+  }
+
+  /** A click at a point of a page: plays, pauses or resumes the video
+   *  printed there. */
+  function toggleVideoAt(point: FolioPagePoint): boolean {
+    const spot = spotAt(point);
+    if (!spot) return false;
+    if (playing && playing.page === point.page && playing.spot.key === spot.key) {
+      if (playing.element.paused) void playing.element.play().catch(() => {});
+      else playing.element.pause();
+      return true;
+    }
+    startVideo(point.page, spot);
+    return true;
+  }
+
+  /** A new layout: the playing video follows its resource to where the
+   *  layout puts it, or stops when it is gone. */
+  function followVideo() {
+    spots = new Map();
+    const p = playing;
+    if (!p) return;
+    const near = [p.page, ...viewer.state.pages];
+    for (let i = 0; i < current.pages.length; i++) near.push(i);
+    for (const i of near) {
+      const spot = spotsOf(i).find((s) => s.key === p.spot.key && urlOf(s) === urlOf(p.spot));
+      if (!spot) continue;
+      p.page = i;
+      p.spot = spot;
+      if (p.shown) showVideo();
+      return;
+    }
+    stopVideo();
+  }
+
   const first = doc.pages[0];
   const viewer = createFolio(container, {
     ...options,
@@ -384,7 +540,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       refresh(around(state));
       options.onTarget?.(state);
     },
+    onPageClick: (point) => toggleVideoAt(point) || !!options.onPageClick?.(point),
+    isPageAction: (point) => !!spotAt(point) || !!options.isPageAction?.(point),
     onChange: (state) => {
+      // A video whose page has turned away stops.
+      if (playing && !state.pages.includes(playing.page)) stopVideo();
       focus = state.pages;
       settled = state.pages;
       turning = false;
@@ -409,6 +569,21 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   settled = viewer.state.pages;
   refresh(around(viewer.state));
 
+  // Space plays or pauses the first video on the spread on show.
+  viewer.element.addEventListener("keydown", (event) => {
+    if (event.target !== viewer.element || (event.key !== " " && event.key !== "Enter") || options.videos === false) return;
+    const on = viewer.state.pages;
+    if (playing && on.includes(playing.page)) {
+      if (playing.element.paused) void playing.element.play().catch(() => {});
+      else playing.element.pause();
+    } else {
+      const page = on.find((i) => spotsOf(i).some((s) => urlOf(s)));
+      if (page === undefined) return;
+      startVideo(page, spotsOf(page).find((s) => urlOf(s))!);
+    }
+    event.preventDefault();
+  });
+
   return {
     element: viewer.element,
     goToPage: viewer.goToPage,
@@ -417,6 +592,9 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     prev: viewer.prev,
     setPages: viewer.setPages,
     refreshPage: viewer.refreshPage,
+    setPageVideo: viewer.setPageVideo,
+    toggleVideoAt,
+    stopVideo: () => stopVideo(),
     setLabels: viewer.setLabels,
     resetView: viewer.resetView,
     getView: viewer.getView,
@@ -485,6 +663,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
         run = null;
       }
       refresh(around(viewer.state));
+      followVideo();
     },
     redecorate(pages?: Iterable<number>) {
       let swapped = false;
@@ -497,6 +676,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       if (swapped) viewer.setPages(sources());
     },
     dispose() {
+      stopVideo();
       cancelIdle(idle);
       cancelAnimationFrame(sweepFrame);
       clearTimeout(resizeTimer);

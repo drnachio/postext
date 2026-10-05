@@ -149,7 +149,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     const rendered = renderToHtmlIndexed(doc, {
       resourceImageUrl: imageUrl,
       resourceVideoUrl: videoUrl,
-      videos: { files: 'player', streams: 'poster' },
+      videos: { files: 'player', streams: 'poster', hls: 'poster' },
       singleInk: false,
       refTargets: [...refTargets],
     });

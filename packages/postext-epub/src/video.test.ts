@@ -66,6 +66,17 @@ describe.each(['fixed', 'reflowable'] as const)('videos in a %s EPUB', (layout) 
     expect(page).toMatch(/<a\b[^>]*href="https:\/\/(www\.)?youtu[^"]*"[^>]*>\s*(<[^>]+>\s*)*<img\b/);
   });
 
+  it('prints an HLS stream as its linked poster, no remote item (#476)', async () => {
+    const book = readEpub(await renderToEpub(videoSampleBook(), options(layout)));
+    const reel = 'https://media.example.org/reel/master.m3u8';
+    expect([...book.manifest.values()].some((i) => i.path.includes('m3u8') || i.mediaType.includes('mpegurl'))).toBe(false);
+    const [page] = pagesWith(book, reel);
+    expect(page).toBeDefined();
+    const xhtml = text(book, page!);
+    expect(xhtml).not.toMatch(/<video\b[^>]*m3u8/);
+    expect(xhtml).toMatch(/<a\b[^>]*href="https:\/\/media\.example\.org\/reel\/master\.m3u8"/);
+  });
+
   it('leaves the poster unlinked when videoStyle.linkPoster is off', async () => {
     const book = readEpub(await renderToEpub(videoSampleBook({ videoStyle: { linkPoster: false } }), options(layout)));
     const pages = book.spine.map((s) => text(book, s.path)).join('\n');

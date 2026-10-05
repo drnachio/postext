@@ -11,7 +11,7 @@ import { layoutCacheKey } from '../book/layoutKeys';
 import { chapterLayoutFromDoc, leadingBlankPageCount } from '../book/pagination';
 import { stitchDocuments, type StitchedBook } from '../book/stitch';
 import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
-import { ensureResourceImages } from '../controls/resourceImages';
+import { ensureResourceImages, ensureResourceVideoUrls, getResourceVideoUrl } from '../controls/resourceImages';
 import { getBlob } from '../storage/blobStore';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { useCompactLayout } from '../hooks/useCompactLayout';
@@ -346,6 +346,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         if (!cancelled && changed) setPaintKey((k) => k + 1);
       })
       .catch(() => { /* leave placeholders */ });
+    // Uploaded videos, played on the pages from their object URLs (#477).
+    void ensureResourceVideoUrls(deferredResources).catch(() => false);
     return () => {
       cancelled = true;
     };
@@ -396,6 +398,9 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current, extraPages: shownDoc.extraPages },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         decorate: (index, ctx) => selectionRef.current.decorate(index, ctx),
+        // Videos play on the pages (#477): an uploaded file from its object
+        // URL, else from its address.
+        videoUrl: getResourceVideoUrl,
         onTarget: (state) => {
           callbacksRef.current.onSpreadChange?.(state.pages);
           selectionRef.current.onSpread();

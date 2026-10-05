@@ -9,7 +9,7 @@ import { createBoundingBox } from '../vdt';
 import { dimensionToPx } from '../units';
 import { resolveVideoPlayerOptions } from '../defaults/videoStyle';
 import { encodeQr } from '../video/qr';
-import { parseVideoUrl, resourceVideoLink, videoEmbedUrl, videoMimeType } from '../video/url';
+import { parseVideoUrl, resourceVideoFormat, resourceVideoLink, videoEmbedUrl, videoMimeType } from '../video/url';
 
 /** The play mark's share of the poster's shorter side, at most. */
 const PLAY_MARK_MAX_SHARE = 0.4;
@@ -60,7 +60,10 @@ export function layoutVideo(
     source,
     ...(link ? { link } : {}),
     ...(parsed && parsed.source === source ? { embedUrl: videoEmbedUrl(parsed, player, range) } : {}),
-    ...(source === 'file' && v?.fileId ? { fileId: v.fileId, mimeType: videoMimeType(v.format) } : {}),
+    // A self-hosted video's media type: of its file, or of its address
+    // alone (an MP4 on a server, an HLS stream).
+    ...(source === 'file' && v?.fileId ? { fileId: v.fileId } : {}),
+    ...(source === 'file' && (v?.fileId || link) ? { mimeType: videoMimeType(resourceVideoFormat(v)) } : {}),
     ...range,
     player,
     linkPoster: style.linkPoster && !!link,

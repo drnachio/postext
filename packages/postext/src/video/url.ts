@@ -183,6 +183,9 @@ export function mediaFragment(range: { start?: number; end?: number }): string {
   return `#t=${range.start ?? 0}${range.end ? `,${range.end}` : ''}`;
 }
 
+/** The media type of an HLS playlist (`.m3u8`, format `hls`). */
+export const HLS_MIME_TYPE = 'application/vnd.apple.mpegurl';
+
 const MIME_BY_FORMAT: Record<string, string> = {
   mp4: 'video/mp4',
   m4v: 'video/mp4',
@@ -190,11 +193,46 @@ const MIME_BY_FORMAT: Record<string, string> = {
   ogv: 'video/ogg',
   ogg: 'video/ogg',
   mov: 'video/quicktime',
+  hls: HLS_MIME_TYPE,
+  m3u8: HLS_MIME_TYPE,
 };
 
-/** The media type of a self-hosted video by its format (`mp4`, `webm`…). */
+/** The media type of a self-hosted video by its format (`mp4`, `webm`,
+ *  `hls`…). */
 export function videoMimeType(format: string | undefined): string {
   return MIME_BY_FORMAT[(format ?? 'mp4').toLowerCase()] ?? 'video/mp4';
+}
+
+const FORMAT_BY_EXTENSION: Record<string, string> = { mp4: 'mp4', m4v: 'mp4', webm: 'webm', ogv: 'ogv', ogg: 'ogv', mov: 'mov', m3u8: 'hls' };
+
+/** The format of a video at a web address, by the extension of its path
+ *  (`.m3u8` is an HLS stream, `hls`); undefined when the path does not
+ *  tell (no extension, or one that is no video). */
+export function videoFormatOfUrl(url: string | undefined): string | undefined {
+  const t = url?.trim();
+  if (!t) return undefined;
+  let path: string;
+  try {
+    path = new URL(t).pathname;
+  } catch {
+    path = t.split(/[?#]/)[0] ?? '';
+  }
+  const ext = /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase();
+  return ext ? FORMAT_BY_EXTENSION[ext] : undefined;
+}
+
+/** The format a self-hosted video plays in: its `format`, else the one its
+ *  address tells (`videoFormatOfUrl`), else `mp4`. */
+export function resourceVideoFormat(video: { format?: string; url?: string } | undefined): string {
+  return (video?.format || videoFormatOfUrl(video?.url) || 'mp4').toLowerCase();
+}
+
+/** Whether a media type is an HLS playlist (`.m3u8`): Safari plays one in
+ *  a `<video>` natively, other browsers through Media Source Extensions
+ *  (hls.js). */
+export function isHlsMimeType(mimeType: string | undefined): boolean {
+  const t = mimeType?.toLowerCase();
+  return t === HLS_MIME_TYPE || t === 'application/x-mpegurl' || t === 'audio/mpegurl';
 }
 
 /** YouTube's poster frames for a video, largest first: `maxresdefault`

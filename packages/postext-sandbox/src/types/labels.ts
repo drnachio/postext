@@ -1668,6 +1668,10 @@ export interface SandboxLabels {
   resourceVideoProductionUrl: string;
   resourceVideoProductionUrlHelp: string;
   resourceVideoProductionUrlMissing: string;
+  resourceVideoSourceUrl: string;
+  resourceVideoSourceUrlHelp: string;
+  resourceVideoHls: string;
+  resourceVideoFrameBlocked: string;
   resourceVideoPoster: string;
   resourceVideoPosterHelp: string;
   resourceVideoStart: string;

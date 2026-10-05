@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, Film, Loader2, RefreshCw } from 'lucide-react';
-import { parseVideoUrl, type Resource, type ResourceVideo, type ResourceVideoPoster, type VideoPlayerOptions, type VideoSource } from 'postext';
+import { parseVideoUrl, videoFormatOfUrl, type Resource, type ResourceVideo, type ResourceVideoPoster, type VideoPlayerOptions, type VideoSource } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
 import { FieldRow } from '../../controls/FieldRow';
@@ -10,6 +10,7 @@ import { useFieldIds } from '../../controls/fieldContext';
 import { NumberInput, SelectInput } from '../../controls';
 import { Button } from '../../ui';
 import { putBlob } from '../../storage/blobStore';
+import { attachVideoSource } from 'postext-folio';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { useBlobObjectUrl } from './ResourcePreview';
 import {
@@ -228,7 +229,10 @@ function StreamVideo({ resource, video, source, setVideo }: PartProps & { source
   );
 }
 
-/** A self-hosted file: the upload, the frame picker and the production
+const isHttp = (url: string | undefined): url is string => !!url && /^https?:\/\/\S+$/i.test(url.trim());
+
+/** A self-hosted video: the upload or its address alone (an MP4 or WebM on
+ *  a server, an HLS stream, #476), the frame picker and the production
  *  address. */
 function FileVideo({ video, setVideo }: PartProps) {
   const labels = useSandboxLabels();
@@ -239,6 +243,27 @@ function FileVideo({ video, setVideo }: PartProps) {
   const [urlDraft, setUrlDraft] = useState(video.url ?? '');
   const src = useBlobObjectUrl(video.fileId);
   useEffect(() => setUrlDraft(video.url ?? ''), [video.url]);
+  /** A new address was typed: its size and length are read once it loads
+   *  (opening the editor reads nothing, so it never edits the video). */
+  const readNext = useRef(false);
+  // No file: the video plays from its address (hls.js for a stream the
+  // browser does not play itself).
+  const address = !video.fileId && isHttp(video.url) ? video.url.trim() : undefined;
+  const hls = (video.format ?? videoFormatOfUrl(address)) === 'hls';
+  useEffect(() => {
+    const el = playerRef.current;
+    if (!el || !address) return;
+    let release: (() => void) | undefined;
+    let gone = false;
+    void attachVideoSource(el, address, { hls }).then(
+      (r) => (gone ? r() : (release = r)),
+      () => !gone && setError(labels.resourceVideoInvalid),
+    );
+    return () => {
+      gone = true;
+      release?.();
+    };
+  }, [address, hls, labels.resourceVideoInvalid]);
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -274,22 +299,43 @@ function FileVideo({ video, setVideo }: PartProps) {
     const el = playerRef.current;
     if (!el || el.readyState < 2) return;
     el.pause();
-    const poster = await captureFrame(el);
-    setVideo({ poster, posterTime: Math.round(el.currentTime * 100) / 100 });
+    setError(null);
+    try {
+      const poster = await captureFrame(el);
+      setVideo({ poster, posterTime: Math.round(el.currentTime * 100) / 100 });
+    } catch {
+      // A frame from a server that refuses cross-origin reads taints the
+      // canvas.
+      setError(labels.resourceVideoFrameBlocked);
+    }
   };
 
   const commitUrl = () => {
     const url = urlDraft.trim();
-    if (url !== (video.url ?? '')) setVideo({ url: url || undefined });
+    if (url === (video.url ?? '')) return;
+    setError(null);
+    readNext.current = !video.fileId;
+    // Without a file the address is the source: its format comes with it.
+    setVideo(video.fileId ? { url: url || undefined } : { url: url || undefined, format: videoFormatOfUrl(url), width: undefined, height: undefined, duration: undefined });
+  };
+
+  /** An address's size and length, read once it loads. */
+  const readAddress = (el: HTMLVideoElement) => {
+    if (!address || !readNext.current) return;
+    readNext.current = false;
+    const duration = Number.isFinite(el.duration) ? Math.round(el.duration * 100) / 100 : undefined;
+    const width = el.videoWidth || undefined;
+    const height = el.videoHeight || undefined;
+    if (width !== video.width || height !== video.height || duration !== video.duration) setVideo({ width, height, duration });
   };
 
   return (
     <>
       <FieldRow stacked label={labels.resourceVideoFile} className="mb-0">
         <div className="flex w-full min-w-0 flex-col">
-        {video.fileId && (
+        {(video.fileId || address) && (
           <span style={noteStyle} className="mb-1">
-            {[video.format?.toUpperCase(), video.width && video.height ? `${video.width}×${video.height}px` : '', video.duration ? formatDuration(video.duration) : '']
+            {[hls ? labels.resourceVideoHls : (video.format ?? videoFormatOfUrl(address))?.toUpperCase(), video.width && video.height ? `${video.width}×${video.height}px` : '', video.duration ? formatDuration(video.duration) : '']
               .filter(Boolean)
               .join(' · ')}
           </span>
@@ -323,12 +369,15 @@ function FileVideo({ video, setVideo }: PartProps) {
         {error && <span role="alert" style={{ ...noteStyle, color: 'var(--danger, #c0392b)' }}>{error}</span>}
         </div>
       </FieldRow>
-      {video.fileId && src && (
+      {((video.fileId && src) || address) && (
         <FieldRow stacked label={labels.resourceVideoFrame} tooltip={labels.resourceVideoFrameHelp} className="mb-0">
           <div className="flex w-full min-w-0 flex-col">
           <video
+            key={video.fileId ? 'file' : address}
             ref={playerRef}
-            src={src}
+            src={video.fileId ? src ?? undefined : undefined}
+            crossOrigin={address ? 'anonymous' : undefined}
+            onLoadedMetadata={(e) => readAddress(e.currentTarget)}
             controls
             muted
             playsInline
@@ -348,7 +397,12 @@ function FileVideo({ video, setVideo }: PartProps) {
           </div>
         </FieldRow>
       )}
-      <FieldRow stacked label={labels.resourceVideoProductionUrl} tooltip={labels.resourceVideoProductionUrlHelp} className="mb-0">
+      <FieldRow
+        stacked
+        label={video.fileId ? labels.resourceVideoProductionUrl : labels.resourceVideoSourceUrl}
+        tooltip={video.fileId ? labels.resourceVideoProductionUrlHelp : labels.resourceVideoSourceUrlHelp}
+        className="mb-0"
+      >
         <div className="flex w-full min-w-0 flex-col">
           <UrlControl value={urlDraft} placeholder="https://" onChange={setUrlDraft} onCommit={commitUrl} />
           {!/^https?:\/\/\S+$/i.test(urlDraft.trim()) && (

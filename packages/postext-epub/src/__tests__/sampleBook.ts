@@ -136,12 +136,18 @@ const videoResources: Resource[] = [
     createdAt: 0, updatedAt: 0,
     video: { source: 'youtube', url: 'https://youtu.be/dQw4w9WgXcQ', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
   },
+  {
+    id: 'reel', typeId: 'video', kind: 'video', caption: 'The reel, streamed.', altText: 'A reel of the lighthouse',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'file', url: 'https://media.example.org/reel/master.m3u8', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
 ];
 
-/** A chapter with three videos (#454): a self-hosted file the book carries,
- *  one that plays from its production address, and a YouTube one. */
+/** A chapter with four videos (#454): a self-hosted file the book carries,
+ *  one that plays from its production address, a YouTube one and an HLS
+ *  stream (#476). */
 export function videoSampleBook(overrides: PostextConfig = {}): VDTDocument[] {
-  const markdown = ['# Videos', '', `The lamp in :ref{id=clip}, the keeper in :ref{id=remote} and a talk in :ref{id=talk}. ${para.repeat(2)}`, '', para.repeat(6)].join('\n');
+  const markdown = ['# Videos', '', `The lamp in :ref{id=clip}, the keeper in :ref{id=remote}, a talk in :ref{id=talk} and the reel in :ref{id=reel}. ${para.repeat(2)}`, '', para.repeat(6)].join('\n');
   return buildBundle({ chapters: [{ markdown }], config: { ...config, ...overrides }, resources: videoResources });
 }
 

@@ -22,6 +22,7 @@ import type { ComposedBook } from '../../book/types';
 import { useShadowDom } from '../../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, missingConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImageUrls, ensureResourceVideoUrls, getResourceImageUrl, getResourceVideoUrl } from '../../controls/resourceImages';
+import { attachHlsPlayers } from '../../controls/hlsPlayers';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
@@ -585,6 +586,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           }
         }
       }
+
+      // Videos streamed over HLS get their player (#476).
+      attachHlsPlayers(scroll);
 
       docRef.current = doc;
       builtSourceRef.current = currentSource;
