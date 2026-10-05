@@ -637,7 +637,6 @@
   max-height: calc(100vh - 6rem);
   overflow-y: auto;
   padding-bottom: 2rem;
-  scrollbar-width: thin;
 }
 .cb-aside-title {
   margin-bottom: 0.6rem;

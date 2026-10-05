@@ -150,6 +150,8 @@ function wireFrame(
   const doc = frame.contentDocument;
   if (!doc) return;
   doc.documentElement?.style.setProperty('touch-action', SWIPE_TOUCH_ACTION);
+  // A page a pixel larger than its frame scrolls without showing a bar.
+  doc.documentElement?.style.setProperty('scrollbar-width', 'none');
   doc.addEventListener('pointerdown', (e) => swipe.down(e, frame));
   doc.addEventListener('pointerup', (e) => swipe.up(e, frame));
   doc.addEventListener('pointercancel', (e) => swipe.cancel(e));
@@ -321,7 +323,7 @@ function pagedCss(width: number, height: number, fontScale: number, vertical: bo
   const columns = vertical
     ? `column-width: ${height - 2 * pv}px !important; column-gap: ${2 * pv}px !important;`
     : `column-width: ${width - 2 * ph}px !important; column-gap: ${2 * ph}px !important;`;
-  return `html { margin: 0 !important; padding: 0 !important; overflow: hidden !important; font-size: ${Math.round(fontScale * 100)}% !important; }
+  return `html { margin: 0 !important; padding: 0 !important; overflow: hidden !important; scrollbar-width: none !important; font-size: ${Math.round(fontScale * 100)}% !important; }
 body { box-sizing: border-box !important; margin: 0 !important; max-width: none !important; max-height: none !important; width: ${width}px !important; height: ${height}px !important; padding: ${pv}px ${ph}px !important; ${columns} column-fill: auto !important; overflow: visible !important; }
 img, svg, video { max-width: ${width - 2 * ph}px !important; max-height: ${height - 2 * pv}px !important; object-fit: contain; }
 figure, img, svg { break-inside: avoid; }`;

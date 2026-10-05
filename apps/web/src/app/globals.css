@@ -576,6 +576,17 @@ main[tabindex="-1"]:focus {
 html {
   scroll-padding-top: 5.5rem;
 }
+/* Scrollbars stay hidden on every platform. Windows and Linux browsers
+   draw classic bars that take room from the layout (a column, a panel, a
+   toolbar narrows by their width); boxes still scroll by wheel, trackpad,
+   touch and keyboard. The prefixed rule covers engines before the
+   standard property. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
 
 /* ── Part colours ──
    `--part` fills bands and stripes, `--part-ink` sets text on the page

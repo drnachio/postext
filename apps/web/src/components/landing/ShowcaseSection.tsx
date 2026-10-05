@@ -123,7 +123,7 @@ export async function ShowcaseSection() {
         </div>
       </div>
 
-      <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 [scrollbar-width:thin] md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
+      <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
         <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas`} name={t("guideName")} description={t("guideDescription")}>
           <GuideCover kicker={hero("kicker")} title="Postext" subtitle={hero("colophon")} label={hero("artAlt")} />
         </Book>
