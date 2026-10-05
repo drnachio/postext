@@ -3577,8 +3577,8 @@ export interface ResolvedFootnotesConfig {
  *  resolves to. */
 export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong' | 'japan';
 
-/** How strictly lines of CJK text avoid starting or ending with a mark
- *  (clreq §6.1.1):
+/** How strictly lines of CJK text avoid starting or ending with a mark.
+ *  The Chinese levels (clreq §6.1.1):
  *  - `none`: a line may break between any two characters (Taiwan and Hong
  *    Kong newspapers);
  *  - `basic`: no line starts with a pause or stop mark (、，；：。！？), a
@@ -3589,10 +3589,25 @@ export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong' | 'japan';
  *    15834—2011 §5.1.9);
  *  - `strict`: `gb`, and no line starts with a two-em dash (——) or an
  *    ellipsis (……).
+ *  The Japanese levels (kinsoku shori, JLReq §3.1.7–§3.1.10 and Appendix
+ *  C.3, JIS X 4051). At each no line starts with a closing bracket or
+ *  quote, 、，。． or a closing warichu bracket, and none ends with an
+ *  opening one; a line may start with ―― or …… (never break inside them,
+ *  nor inside ‥‥ or 〳〵); the solidus has no rule:
+ *  - `ja-very-strict` (JIS X 4051's default): no line starts with a small
+ *    kana (ぁ っ ゃ ァ ッ ョ ㇰ…), the prolonged sound mark ー, an iteration
+ *    mark (々 ゝ ゞ ヽ ヾ 〻), a hyphen (‐ ゠ 〜 ～ –), ？！ or a middle dot
+ *    (・ ： ；);
+ *  - `ja-strict`: `ja-very-strict`, but a small kana, ー and 々 may start a
+ *    line (JLReq's convention for general books);
+ *  - `ja-loose` (newspapers): only the marks named first stay off the line
+ *    start; hyphens, ？！, middle dots and every iteration mark may open a
+ *    line, and a currency sign or a unit may stand at a line end or start
+ *    away from a number.
  *  At every level —— and …… never split, a number keeps its signs and its
  *  unit (¥5,999, 50%), a Latin word stays whole unless it is wider than the
  *  line, and a footnote marker stays with the character it follows. */
-export type CjkLineBreak = 'none' | 'basic' | 'gb' | 'strict';
+export type CjkLineBreak = 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose';
 
 /** East Asian typography: how Chinese, Japanese and Korean text is
  *  composed. Every field is optional; `'auto'` follows the region of the
@@ -3608,7 +3623,7 @@ export interface CjkConfig {
   region?: 'auto' | CjkRegion;
   /** Where lines may break (see {@link CjkLineBreak}). `'auto'` (the
    *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong,
-   *  `strict` for Japan. */
+   *  `ja-very-strict` for Japan. */
   lineBreak?: 'auto' | CjkLineBreak;
   /** How wide the full-width marks are set (see
    *  {@link CjkPunctuationWidth}). `'auto'` (the default): `kaiming` for

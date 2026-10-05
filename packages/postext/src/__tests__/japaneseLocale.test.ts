@@ -73,10 +73,10 @@ describe('Japanese locale tags', () => {
 });
 
 describe('cjk defaults for Japan', () => {
-  it('resolves auto: strict breaks, full-width marks with compression and trimming, emphasis dots, bare titles, （） warichu', () => {
+  it('resolves auto: JIS X 4051 breaks (ja-very-strict), full-width marks with compression and trimming, emphasis dots, bare titles, （） warichu', () => {
     expect(resolveCjkConfig(undefined, 'ja')).toMatchObject({
       region: 'japan',
-      lineBreak: 'strict',
+      lineBreak: 'ja-very-strict',
       punctuationWidth: 'fullwidth',
       compressAdjacent: true,
       trimLineStart: true,
@@ -89,7 +89,7 @@ describe('cjk defaults for Japan', () => {
   });
 
   it('per region, through the default resolvers', () => {
-    expect(defaultCjkLineBreak('japan')).toBe('strict');
+    expect(defaultCjkLineBreak('japan')).toBe('ja-very-strict');
     expect(defaultCjkPunctuationWidth('japan')).toBe('fullwidth');
     expect(defaultCjkCompression('japan')).toBe(true);
     expect(defaultCjkBookTitleMark('japan')).toBe('none');

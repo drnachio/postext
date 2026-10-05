@@ -34,8 +34,8 @@ describe('cjk config', () => {
     expect(resolveCjkConfig(undefined, 'zh-HK')).toMatchObject({ region: 'hongkong', lineBreak: 'basic' });
     expect(resolveCjkConfig(undefined, 'en')).toMatchObject({ region: 'mainland', lineBreak: 'gb' });
     expect(resolveCjkConfig({ region: 'taiwan' }, 'zh-CN')).toMatchObject({ region: 'taiwan', lineBreak: 'basic' });
-    expect(resolveCjkConfig(undefined, 'ja')).toMatchObject({ region: 'japan', lineBreak: 'strict' });
-    expect(resolveCjkConfig({ region: 'japan' }, 'zh-CN')).toMatchObject({ region: 'japan', lineBreak: 'strict' });
+    expect(resolveCjkConfig(undefined, 'ja')).toMatchObject({ region: 'japan', lineBreak: 'ja-very-strict' });
+    expect(resolveCjkConfig({ region: 'japan' }, 'zh-CN')).toMatchObject({ region: 'japan', lineBreak: 'ja-very-strict' });
     expect(resolveCjkConfig({ lineBreak: 'strict' }, 'zh-TW')).toMatchObject({ region: 'taiwan', lineBreak: 'strict' });
     expect(resolveCjkConfig({ lineBreak: 'bogus' as never, region: 'mars' as never }, 'zh-HK')).toMatchObject({ region: 'hongkong', lineBreak: 'basic' });
   });

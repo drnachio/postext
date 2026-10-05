@@ -98,19 +98,17 @@ function resolveWarichu(warichu: CjkWarichuConfig | undefined, region: CjkRegion
 }
 
 const REGIONS: readonly CjkRegion[] = ['mainland', 'taiwan', 'hongkong', 'japan'];
-const LINE_BREAKS: readonly CjkLineBreak[] = ['none', 'basic', 'gb', 'strict'];
+const LINE_BREAKS: readonly CjkLineBreak[] = ['none', 'basic', 'gb', 'strict', 'ja-very-strict', 'ja-strict', 'ja-loose'];
 const PUNCTUATION_WIDTHS: readonly CjkPunctuationWidth[] = ['fullwidth', 'kaiming', 'lineEndHalf', 'halfwidth'];
 const HANGING: readonly CjkHangingPunctuation[] = ['none', 'allow', 'force'];
 const LENGTH_UNITS = new Set(['cm', 'mm', 'in', 'pt', 'px', 'em', 'rem']);
 
 /** The line-break level a region's text is set with by default: GB/T
  *  15834's for the mainland, clreq's basic set for Taiwan and Hong Kong,
- *  the strict set for Japan (iteration marks and ー stay off the line
- *  start, as JIS X 4051 asks; no solidus rule, which is GB/T's). */
+ *  JIS X 4051's for Japan (`ja-very-strict`: small kana, ー, the iteration
+ *  marks and the hyphens stay off the line start; JLReq Appendix C.3). */
 export function defaultCjkLineBreak(region: CjkRegion): CjkLineBreak {
-  // J2 (#417): Japan moves to the JLReq levels (ja-very-strict, with the
-  // small kana and hyphen classes) once they exist.
-  if (region === 'japan') return 'strict';
+  if (region === 'japan') return 'ja-very-strict';
   return region === 'mainland' ? 'gb' : 'basic';
 }
 

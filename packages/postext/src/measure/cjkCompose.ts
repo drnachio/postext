@@ -58,6 +58,7 @@ import {
   isCjkGrapheme,
   isFullwidthAlnum,
   isFullwidthDigit,
+  isJapaneseLineBreak,
   isLineEndProhibited,
   isLineStartProhibited,
   isWordInnerMark,
@@ -1057,6 +1058,26 @@ function fullwidthGlue(units: readonly Unit[], k: number): boolean {
   return fullwidthUnit(a, isFullwidthNumberJoin) && fullwidthUnit(b, isFullwidthDigit) && fullwidthUnit(units[k - 2], isFullwidthDigit);
 }
 
+/** The grapheme a unit opens (`first`) or ends (`last`) with, which a
+ *  Japanese level reads the unit's class from (small kana, ー, hyphens…:
+ *  `breakClassOf`); undefined under a Chinese level, and for an inline box
+ *  (a chip, a formula, a marker), whose class stands as it is. */
+function edgeGrapheme(u: Unit, edge: 'first' | 'last', level: CjkLineBreakLevel): string | undefined {
+  if (u.kind !== 'text' || u.text === '' || !isJapaneseLineBreak(level)) return undefined;
+  return edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text);
+}
+
+/** Whether unit `b` may not open a line at `level` (see
+ *  {@link edgeGrapheme}). */
+function startProhibited(b: Unit, level: CjkLineBreakLevel): boolean {
+  return isLineStartProhibited(b.first, level, edgeGrapheme(b, 'first', level));
+}
+
+/** Whether unit `a` may not close a line at `level`. */
+function endProhibited(a: Unit, level: CjkLineBreakLevel): boolean {
+  return isLineEndProhibited(a.last, level, edgeGrapheme(a, 'last', level));
+}
+
 /** Whether a line may break before each unit (index 0 is never a break).
  *  A word space is a break unless the unit after it may not open a line,
  *  the last one before it may not close one, or they are a number and its
@@ -1078,7 +1099,7 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
     }
     if (a.kind === 'space') {
       const p = ink >= 0 ? units[ink]! : undefined;
-      if (!p || (!numberGlue(p, b) && !isLineStartProhibited(b.first, level) && !isLineEndProhibited(p.last, level))) out[k] = 1;
+      if (!p || (!numberGlue(p, b) && !startProhibited(b, level) && !endProhibited(p, level))) out[k] = 1;
       continue;
     }
     if (a.noteSpace) {
@@ -1086,12 +1107,12 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
       let q = k - 1;
       while (q > 0 && units[q]!.noteSpace) q--;
       const p = units[q]!;
-      if (!p.noteSpace && !numberGlue(p, b) && !isLineStartProhibited(b.first, level) && !isLineEndProhibited(p.last, level)) out[k] = 1;
+      if (!p.noteSpace && !numberGlue(p, b) && !startProhibited(b, level) && !endProhibited(p, level)) out[k] = 1;
       continue;
     }
     if (b.glueBefore) continue;
     if (numberGlue(a, b) || fullwidthGlue(units, k)) continue;
-    if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level)) out[k] = 1;
+    if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level, edgeGrapheme(a, 'last', level), edgeGrapheme(b, 'first', level))) out[k] = 1;
   }
   return out;
 }
@@ -1328,15 +1349,15 @@ function breakUnits(
   let noteBase = 0;
   const foldOf = (from: number, to: number): number => {
     const widths: number[] = [];
-    const startProhibited: boolean[] = [];
-    const endProhibited: boolean[] = [];
+    const startNo: boolean[] = [];
+    const endNo: boolean[] = [];
     for (let q = from; q <= to; q++) {
       const uq = unitAt(q);
       widths.push(uq.width);
-      startProhibited.push(noteRowStartProhibited(uq, level));
-      endProhibited.push(isLineEndProhibited(uq.last, level));
+      startNo.push(noteRowStartProhibited(uq, level));
+      endNo.push(endProhibited(uq, level));
     }
-    return foldWidth(widths, splitNote(widths, startProhibited, endProhibited));
+    return foldWidth(widths, splitNote(widths, startNo, endNo));
   };
   for (let li = 0; ; li++) {
     while (i < n && unitAt(i).kind === 'space') i++;
@@ -1521,9 +1542,10 @@ interface ComposeContext {
 }
 
 /** Whether a note's unit may not open its lower row: a mark that may not
- *  start a line, or a word space (it ends the upper row instead). */
+ *  start a line (the small kana and the rest of the Japanese classes under
+ *  a Japanese level), or a word space (it ends the upper row instead). */
 function noteRowStartProhibited(u: Unit, level: CjkLineBreakLevel): boolean {
-  return u.noteSpace === true || isLineStartProhibited(u.first, level);
+  return u.noteSpace === true || startProhibited(u, level);
 }
 
 /** Replace each run of a warichu note's characters on a line by the part
@@ -1552,7 +1574,7 @@ function foldNotes(us: Unit[], level: CjkLineBreakLevel, em: number): void {
 function noteFragment(part: readonly Unit[], level: CjkLineBreakLevel, em: number): Unit {
   const note = part[0]!.note!;
   const widths = part.map((u) => u.width);
-  const at = splitNote(widths, part.map((u) => noteRowStartProhibited(u, level)), part.map((u) => isLineEndProhibited(u.last, level)));
+  const at = splitNote(widths, part.map((u) => noteRowStartProhibited(u, level)), part.map((u) => endProhibited(u, level)));
   const noteFont = note.fontString ?? part[0]!.style.font;
   const rows = noteRowBaselines(em, fontEm(noteFont));
   const runs: VDTAnnotationRun[] = [];
