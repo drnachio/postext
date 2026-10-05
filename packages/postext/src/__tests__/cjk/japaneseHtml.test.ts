@@ -45,6 +45,19 @@ function expectNested(html: string): void {
   expect(stack).toEqual([]);
 }
 
+/** The number of <ruby> elements `segs` make: one per ruby id, one per
+ *  segment without an id. */
+function rubyGroups(segs: { ruby?: VDTRuby }[]): number {
+  const ids = new Set<number>();
+  let n = 0;
+  for (const s of segs) {
+    const id = (s.ruby as VDTRuby & { id?: number } | undefined)?.id;
+    if (id === undefined) n += 1;
+    else ids.add(id);
+  }
+  return n + ids.size;
+}
+
 /** A copy of `doc` whose ruby segments at `indices` (in reading order)
  *  carry the annotation id `id` (`VDTRuby.id`, #422). */
 function withRubyId(doc: VDTDocument, indices: number[], id: number): VDTDocument {
@@ -61,13 +74,15 @@ describe('semantic ruby in horizontal HTML (#428)', () => {
     const segs = rubySegs(doc);
     // 猫, 漢, 字 (mono: one reading each), 東京 (group), 学.
     expect(segs.map((s) => s.text)).toEqual(['猫', '漢', '字', '東京', '学']);
-    expect(html.match(/<ruby\b/g)).toHaveLength(segs.length);
+    // One <ruby> per annotation: the bases of a word that shares a ruby id
+    // (#422: 漢字 is a jukugo word in a Japanese document) stand in one.
+    expect(html.match(/<ruby\b/g)).toHaveLength(rubyGroups(segs));
     for (const s of segs) {
       const run = s.ruby!.runs[0]!;
       // The base box (painted from its ink offset), then the reading's box
       // at its place (the segment's start plus the run's dx), without
       // aria-hidden.
-      const m = new RegExp(`${RUBY_OPEN}(?:<a [^>]*>)?<span style="position:absolute;left:([\\d.]+)px;top:0;white-space:pre;">${s.text}</span>${RT_OPEN}<span style="position:absolute;left:([\\d.]+)px;top:(-?[\\d.]+)px;white-space:pre;"><span style="font:[^"]*">${s.ruby!.text}</span></span></rt></ruby>`).exec(html);
+      const m = new RegExp(`(?:${RUBY_OPEN})?(?:<a [^>]*>)?<span style="position:absolute;left:([\\d.]+)px;top:0;white-space:pre;">${s.text}</span>${RT_OPEN}<span style="position:absolute;left:([\\d.]+)px;top:(-?[\\d.]+)px;white-space:pre;"><span style="font:[^"]*">${s.ruby!.text}</span></span></rt>`).exec(html);
       expect(m, s.text).not.toBeNull();
       expect(+m![2]! - +m![1]!).toBeCloseTo(run.dx - (s.inkOffset ?? 0), 3);
       expect(+m![3]!).toBeCloseTo(run.dy, 3);
@@ -121,7 +136,9 @@ describe('semantic ruby in vertical HTML (#428)', () => {
     const doc = buildDocument({ markdown: MD }, vertical());
     const html = renderToHtml(doc, { mode: 'single' });
     const segs = rubySegs(doc);
-    expect(html.match(/<ruby\b/g)).toHaveLength(segs.length);
+    // One <ruby> per annotation: the bases of a word that shares a ruby id
+    // (#422: 漢字 is a jukugo word in a Japanese document) stand in one.
+    expect(html.match(/<ruby\b/g)).toHaveLength(rubyGroups(segs));
     expectNested(html);
     const up = uprights(html).join('');
     // The reading of 猫 at the base's place plus its dx, beside the column.
