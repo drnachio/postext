@@ -90,6 +90,9 @@ export const CjkSection = memo(function CjkSection() {
     basic: labels.cjkLineBreakBasic,
     gb: labels.cjkLineBreakGb,
     strict: labels.cjkLineBreakStrict,
+    'ja-very-strict': labels.cjkLineBreakJaVeryStrict,
+    'ja-strict': labels.cjkLineBreakJaStrict,
+    'ja-loose': labels.cjkLineBreakJaLoose,
   };
   const widthNames = {
     kaiming: labels.cjkPunctuationWidthKaiming,
@@ -177,6 +180,9 @@ export const CjkSection = memo(function CjkSection() {
                 { value: 'basic', label: lineBreakNames.basic },
                 { value: 'gb', label: lineBreakNames.gb },
                 { value: 'strict', label: lineBreakNames.strict },
+                { value: 'ja-very-strict', label: lineBreakNames['ja-very-strict'] },
+                { value: 'ja-strict', label: lineBreakNames['ja-strict'] },
+                { value: 'ja-loose', label: lineBreakNames['ja-loose'] },
               ]}
               onChange={(v) => write({ ...raw, lineBreak: v as CjkConfig['lineBreak'] })}
               tooltip={labels.cjkLineBreakTooltip}
