@@ -66,7 +66,7 @@ export interface VerseSettings {
 
 /** `2em`, `12mm`, `1.5` (ems) as px at `fontSizePx`; undefined when it is
  *  not a length. */
-function lengthAttr(value: string | undefined, dpi: number, fontSizePx: number): number | undefined {
+export function lengthAttr(value: string | undefined, dpi: number, fontSizePx: number): number | undefined {
   const m = /^\s*(\d+(?:\.\d+)?|\.\d+)\s*(cm|mm|in|pt|px|em|rem)?\s*$/.exec(value ?? '');
   if (!m) return undefined;
   return dimensionToPx({ value: Number(m[1]), unit: (m[2] ?? 'em') as DimensionUnit }, dpi, fontSizePx);

@@ -110,7 +110,7 @@ import {
   rollbackTrailingBlocks,
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
-import { paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
+import { containerStyle, paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
 import {
   appendChapterEndNotes,
   footnoteIdsOfLines,
@@ -126,6 +126,7 @@ import {
 import { planParts, derivePartMeasureContext } from './parts';
 import {
   layoutCallout,
+  offsetBlock,
   offsetCalloutToAbsolute,
   pickCalloutStyle,
   planCallouts,
@@ -190,6 +191,7 @@ import { tashkilFor } from './tashkil';
 import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
+import { headingLineSpanBand } from './lineSpan';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -1150,6 +1152,8 @@ function placeDocumentPass(
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
   const floatReserved = new Map<VDTColumn, { top: number; bottom: number }>();
+  /** Pages a `:::pagebreak{center}` opened (#424). */
+  const centredPages = new Set<number>();
   const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
     floatReserved.get(col) ?? { top: 0, bottom: 0 };
   const floatHeadOf = (col: VDTColumn): number => reservedOf(col).top;
@@ -2754,6 +2758,19 @@ function placeDocumentPass(
     pendingNumberingChange = null;
   };
 
+  /** `headings.keepWithNextSpread` (#424): whether a heading may close
+   *  `col` even so — the last text column of an even page, whose text then
+   *  opens the facing odd page of the same spread (JLReq §4.1.7 b). Pages
+   *  count as printed (`pageIndexOffset` of a chapter laid out after
+   *  others), page 1 being the lone recto. */
+  const headingMayCloseColumn = (col: VDTColumn): boolean => {
+    if (!resolved.headings.keepWithNextSpread) return false;
+    const page = doc.pages[cursor.pageIndex];
+    if (!page || !page.columns.includes(col)) return false;
+    if ((page.index + (doc.pageIndexOffset ?? 0) + 1) % 2 !== 0) return false;
+    const flow = page.columns.filter((c) => c.kind !== 'side' && c.kind !== 'span');
+    return flow[flow.length - 1] === col;
+  };
   /** Heading blocks that are not part of a callout — the only ones the
    *  keep-with-next rollbacks may pull along (a callout is one unbreakable
    *  unit; its children never leave it). */
@@ -2761,7 +2778,7 @@ function placeDocumentPass(
   /** Free headings closing `col` (its trailing run), 0 unless keep-with-next
    *  is on: the headings a block moving on would strand. */
   const trailingHeadingRun = (col: VDTColumn): number => {
-    if (!resolved.headings.keepWithNext) return 0;
+    if (!resolved.headings.keepWithNext || headingMayCloseColumn(col)) return 0;
     let n = 0;
     for (let j = col.blocks.length - 1; j >= 0 && isFreeHeading(col.blocks[j]!); j--) n++;
     return n;
@@ -4192,6 +4209,10 @@ function placeDocumentPass(
         // parity padding, so a blank parity page never carries a float.
         flushFloatsIntoPage(doc.pages[cursor.pageIndex]!);
         flushPendingNumberingAtBoundary();
+        // `:::pagebreak{center}` (ページの左右中央, #424): the text of the page
+        // the break opens is centred between the head and the foot of the
+        // type area once the pass is done (`centrePageText`).
+        if (attrs.center !== undefined && attrs.center.trim().toLowerCase() !== 'false') centredPages.add(cursor.pageIndex);
       } else if (name === 'columnbreak') {
         // Explicit column break: end the current column here (its bottom
         // gap is intentional, so balancing skips it) and continue in the
@@ -4449,7 +4470,9 @@ function placeDocumentPass(
       ? { ...containerTail.tailStyle, marginBottomPx: blockMeasureCtx.bodyStyle.marginBottomPx }
       : containerTail?.tailStyle;
     const styleOverride = paragraphContainer
-      ? (isContainerTail ? tailStyle ?? paragraphContainer.tailStyle : paragraphContainer.style)
+      ? (paragraphContainer.overBody
+        ? containerStyle(paragraphContainer, isContainerTail, blockMeasureCtx.bodyStyle, dpi)
+        : isContainerTail ? tailStyle ?? paragraphContainer.tailStyle : paragraphContainer.style)
       : undefined;
     // Column balancing "run a paragraph long": the loose path is taken only
     // for the paragraphs the driver asked for, so the common case keeps its
@@ -4539,7 +4562,16 @@ function placeDocumentPass(
     // break, keep-with-next and grid snap apply — but with no line height
     // and no margins: it takes no room, and renderers skip it.
     const hiddenHeading = vdtType === 'heading' && headingIsHidden(rawBlock, headingLevels.forBlock(rawBlock));
-    const style = hiddenHeading ? { ...kind.style, lineHeightPx: 0, marginTopPx: 0, marginBottomPx: 0 } : kind.style;
+    // 行取り (#424): a heading with a `lineSpan` takes that many body grid
+    // lines, its text centred in them; the band replaces its margins. Not a
+    // heading painted as a page opener or from its own design.
+    const lineSpan = vdtType === 'heading' && !hiddenHeading && kind.style.lineSpan !== undefined
+      && !headingSetsOwnBand(headingLevels.forBlock(rawBlock))
+      ? kind.style.lineSpan
+      : undefined;
+    const style = hiddenHeading
+      ? { ...kind.style, lineHeightPx: 0, marginTopPx: 0, marginBottomPx: 0 }
+      : lineSpan !== undefined ? { ...kind.style, marginTopPx: 0, marginBottomPx: 0 } : kind.style;
 
     // --- Resource blocks (image / svg / table + caption) -----------------
     // Placed atomically (kept-together) — no mid-content split for v1.
@@ -4817,6 +4849,12 @@ function placeDocumentPass(
         spacingBefore = pendingSpacing;
         if (vdtType === 'heading' || vdtType === 'mathDisplay') {
           spacingBefore = Math.max(partIndex === 0 ? pendingBeforeSelfSnapping(blockIdx) : spacingBefore, style.marginTopPx);
+          // A 行取り band opens on a grid line when its heading snaps to the
+          // grid, so its lines are body lines (#424).
+          if (lineSpan !== undefined && partIndex === 0 && (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)) {
+            const usedHeight = curCol.bbox.height - curCol.availableHeight;
+            spacingBefore = Math.ceil((usedHeight + spacingBefore - 0.01) / baselineGrid) * baselineGrid - usedHeight;
+          }
           // Column balancing: extra whole grid lines above this heading so
           // the column it sits in ends flush with the page bottom. Applied
           // after margin collapsing — the heading's effective top margin
@@ -4927,6 +4965,21 @@ function placeDocumentPass(
       // actual content bottom so the reserved block height (and the
       // subsequent marginBottom + grid snap) starts from there.
       let effectiveRemainHeight = totalRemainHeight;
+      /** How far the lines of a 行取り heading go down its band (#424). */
+      let lineSpanShift = 0;
+      if (lineSpan !== undefined && partIndex === 0) {
+        const bodyBlockStyle = blockMeasureCtx.bodyStyle;
+        const band = headingLineSpanBand(
+          lineSpan,
+          remainingLines.length,
+          style.lineHeightPx,
+          { font: style.fontString, sizePx: style.fontSizePx },
+          { font: bodyBlockStyle.fontString, sizePx: bodyBlockStyle.fontSizePx },
+          baselineGrid,
+        );
+        effectiveRemainHeight = band.height;
+        lineSpanShift = band.shift;
+      }
       /** The heading's design and the values it is laid out with, kept for
        *  the side-column obstacles once the block is placed (EF-78). */
       let headingDesign: { lvl: ResolvedHeadingLevelConfig; info: HeadingPlaceholderInfo } | undefined;
@@ -5202,6 +5255,7 @@ function placeDocumentPass(
           && !nextIsHeading
           && nextBlock !== null
           && (curCol.blocks.length > trailingHeadingRun(curCol) || shortColumn)
+          && !headingMayCloseColumn(curCol)
         ) {
           const wouldUsedHeight =
             (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
@@ -5266,7 +5320,7 @@ function placeDocumentPass(
           const mathLine = { ...remainingLines[0]!, bbox: { ...remainingLines[0]!.bbox, y: 0 } };
           blk.lines = [mathLine];
         } else {
-          blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
+          blk.lines = shiftLinesDown(resetLinePositions(remainingLines, style.lineHeightPx), lineSpanShift);
         }
         blk.dirty = false;
         blk.snappedToGrid = shouldSnapToGrid && partIndex === 0;
@@ -5628,7 +5682,7 @@ function placeDocumentPass(
         blk.titleBreaks = rawBlock.titleBreaks;
         blk.titleLength = rawBlock.text.length;
       }
-      blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
+      blk.lines = shiftLinesDown(resetLinePositions(remainingLines, style.lineHeightPx), lineSpanShift);
       blk.dirty = false;
       blk.snappedToGrid = false;
       if (remainingLines.length > 0) {
@@ -5681,6 +5735,10 @@ function placeDocumentPass(
   // to its foot: the room left over stays between the text and them.
   if (chapterEndNotes && resolved.footnotes.chapterEndAlign === 'foot') dropChapterEndNotes();
   if (chapterEndNotes) ruleChapterEndNotes();
+  for (const index of centredPages) {
+    const page = doc.pages[index];
+    if (page) centrePageText(page, reservedOf);
+  }
 
   // A band that is still cut at the end of the pass (a trailing cap: the
   // closing band of a chapter or of the document) must hold what it took,
@@ -6401,4 +6459,66 @@ function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
 function verseSnaps(styleId: string | undefined, resolved: ResolvedConfig): boolean {
   const key = styleId?.trim();
   return !key || resolved.paragraphStyles.find((s) => s.id === key)?.snapToGrid !== false;
+}
+
+/** `lines` (block-relative, as `resetLinePositions` sets them) moved `dy`
+ *  px down their block: a 行取り heading's lines in its band (#424). */
+function shiftLinesDown(lines: VDTLine[], dy: number): VDTLine[] {
+  if (dy === 0) return lines;
+  for (const line of lines) {
+    line.bbox.y += dy;
+    line.baseline += dy;
+  }
+  return lines;
+}
+
+/** Whether a heading level sets the band it takes itself — a page opener
+ *  (`span: 'page'`) or a heading painted from its `advancedDesign` — so a
+ *  `lineSpan` (#424) does not apply to it. */
+function headingSetsOwnBand(lvl: ResolvedHeadingLevelConfig | undefined): boolean {
+  return lvl !== undefined && (lvl.span === 'page' || lvl.advancedDesign.enabled);
+}
+
+/**
+ * ページの左右中央 (#424): the text on `page` centred between the head and
+ * the foot of its type area — across the page in vertical text, down it in
+ * horizontal text — as a dedication or a part title is set on a page of its
+ * own. The extent is measured from the first line box to the last one of
+ * every text column (a box or a figure by its frame), and the room taken by
+ * floats at the head or foot of a column is left out; every block of the
+ * columns moves by the same amount, so columns and the text in them keep
+ * their places relative to each other. Floats, notes and running heads stay
+ * where they are. A page whose text already fills the area is left alone.
+ */
+function centrePageText(page: VDTPage, reservedOf: (col: VDTColumn) => { top: number; bottom: number }): void {
+  const cols = page.columns.filter((c) => c.kind !== 'side' && c.blocks.length > 0);
+  if (cols.length === 0) return;
+  let top = Infinity;
+  let bottom = -Infinity;
+  let areaTop = Infinity;
+  let areaBottom = -Infinity;
+  for (const col of cols) {
+    const reserved = reservedOf(col);
+    areaTop = Math.min(areaTop, col.bbox.y + reserved.top);
+    areaBottom = Math.max(areaBottom, col.bbox.y + col.bbox.height - reserved.bottom);
+    for (const b of col.blocks) {
+      if (b.hidden) continue;
+      const first = b.lines[0];
+      const last = b.lines[b.lines.length - 1];
+      const textual = first !== undefined && last !== undefined && b.type !== 'resource' && b.containerId === undefined;
+      top = Math.min(top, textual ? first.bbox.y : b.bbox.y);
+      bottom = Math.max(bottom, textual ? last.bbox.y + last.bbox.height : b.bbox.y + b.bbox.height);
+    }
+  }
+  if (!Number.isFinite(top) || !Number.isFinite(bottom)) return;
+  const dy = (areaTop + areaBottom) / 2 - (top + bottom) / 2;
+  if (dy < 0.5) return;
+  const moved = new Set<VDTBlock>();
+  for (const col of cols) {
+    for (const b of col.blocks) {
+      if (moved.has(b)) continue;
+      moved.add(b);
+      offsetBlock(b, 0, dy);
+    }
+  }
 }

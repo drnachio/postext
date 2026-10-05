@@ -64,7 +64,7 @@ import {
 } from '../vdt';
 import { buildFontString, measureBlock, measureRichBlock } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
-import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
+import { applyStyleAttrs, isMarkerBlock, widthLessEndIndent } from './buildHelpers';
 import { resetLinePositions } from './placement';
 import { raggedLooseLines } from './raggedLines';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
@@ -73,7 +73,7 @@ import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlock
 import { uppercasePreservingLength } from './buildBlockKind';
 import { headingIsHidden } from './headingStyles';
 import { directDesignTextBlock } from '../design/bidiText';
-import { paragraphStyleIdOf, type ParagraphContainerPlan } from './paragraphContainers';
+import { containerStyle, paragraphStyleIdOf, type ParagraphContainerPlan } from './paragraphContainers';
 import { joiningScriptIn } from '../measure/joining';
 import { getMeasureDirection, shiftLineX } from '../measure/bidiLines';
 
@@ -393,7 +393,7 @@ function offsetResourceBlock(rb: ResolvedResourceBlock, ox: number, oy: number):
 }
 
 /** Shift one block (lines, bullet, resource geometry) by `(ox, oy)`. */
-function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
+export function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
   blk.bbox.x += ox;
   blk.bbox.y += oy;
   for (const line of blk.lines) {
@@ -743,7 +743,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const container = input.paragraphContainers?.byBlock[blockIdx];
     const next = children[k + 1];
     const isContainerTail = container !== undefined && next?.type === 'containerEnd' && next.containerId === container.id;
-    const styleOverride = container ? (isContainerTail ? container.tailStyle : container.style) : undefined;
+    const styleOverride = container ? containerStyle(container, isContainerTail, bodyStyle, derivedCtx.resolved.page.dpi) : undefined;
     const measuredBlock = measureFirstChildAcrossWidths(raw, blockIdx, k, width, styleOverride)
       ?? measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride });
     if (!measuredBlock) return undefined;
@@ -848,7 +848,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
 
     // Relocate to the inner rect (box-relative).
-    blk.bbox = createBoundingBox(x, st.cursorY, width, height);
+    blk.bbox = createBoundingBox(x, st.cursorY, widthLessEndIndent(blk, width), height);
     for (const line of blk.lines) {
       shiftLineX(line, x);
       line.bbox.y += st.cursorY;

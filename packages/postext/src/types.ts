@@ -1830,6 +1830,14 @@ export interface ParagraphStyleConfig {
    *  `hangingIndent: 2.5em` sets the line at 1.5 em and its turnover at
    *  4 em. Default `0`; a negative value counts as `0`. */
   indent?: Dimension;
+  /** Indent of every line from the side lines end on (the right of an
+   *  English paragraph, the foot of a vertical line), `em` being the
+   *  style's own size: the measure narrows by it and lines set flush to the
+   *  end (`textAlign: 'end'`) stop that far short of it. A date or a
+   *  signature raised N characters off the foot of a Japanese letter (地から
+   *  N字上げ) is `textAlign: 'end'` with `endIndent: 'Nem'`; 地付き is the
+   *  same at `0`. Default `0`; a negative value counts as `0`. */
+  endIndent?: Dimension;
   /** Defaults to the body first-line indent. Ignored when
    *  {@link hangingIndent} is non-zero. */
   firstLineIndent?: Dimension;
@@ -1881,6 +1889,8 @@ export interface ResolvedParagraphStyleConfig {
   smallCaps: boolean;
   hyphenation: boolean;
   indent: Dimension;
+  /** Absent when the style sets none (or `0`). */
+  endIndent?: Dimension;
   firstLineIndent: Dimension;
   hangingIndent: Dimension;
   spaceBetween: Dimension;
@@ -2609,6 +2619,31 @@ export interface HeadingLevelConfig {
    *  a half above its text while an H3 stays on the grid. A heading style
    *  may set it too. */
   snapToGrid?: boolean;
+  /** 行取り (gyōdori, JLReq §4.1.6): the heading takes exactly this many
+   *  lines of the body grid (N × the body line pitch), its text centred in
+   *  them, in place of its `marginTop` and `marginBottom` — "3行取り" is
+   *  `lineSpan: 3`. The band starts on the grid when the heading snaps to it
+   *  (`snapToGrid`), keeps its lines at the head of a column and after
+   *  another heading, and holds its text centred across the line in
+   *  vertical text too. A heading whose lines need more room than N body
+   *  lines takes the next whole number of lines. Not read by a heading set
+   *  as a page opener (`span: 'page'`) or from its `advancedDesign`, nor
+   *  inside a box. Unset (default): the margins apply. */
+  lineSpan?: number;
+  /** Indent of the heading's lines from the side lines start on (字下げ:
+   *  the top of a vertical line, the left of an English one), in which `em`
+   *  is the BODY size, as Japanese books count a heading's indent in body
+   *  characters (JLReq §4.1.3: 4, 6 and 8 字 for the levels of a vertical
+   *  book). The measure narrows by it; a centred heading centres in what is
+   *  left. Default `0`. */
+  indent?: Dimension;
+  /** 字取り (jidori, JLReq §3.7.3, §4.1): a heading shorter than this many
+   *  of its own characters is spaced out evenly to fill exactly that width
+   *  (`jidori: 3` sets 序章 as 序　章). Applies to a heading that fits one
+   *  line; a longer title is set as it is. A heading overrides it with
+   *  `{jidori=N}` (`{jidori=0}` turns it off). Unset (default): no
+   *  spacing. */
+  jidori?: number;
 }
 
 export type HeadingTextTransform = 'none' | 'uppercase';
@@ -2640,6 +2675,12 @@ export interface ResolvedHeadingLevelConfig {
   hidden: boolean;
   /** The level's own value, else `headings.snapToGrid`. */
   snapToGrid: boolean;
+  /** Absent unless set (see {@link HeadingLevelConfig.lineSpan}). */
+  lineSpan?: number;
+  /** Absent unless set (see {@link HeadingLevelConfig.indent}). */
+  indent?: Dimension;
+  /** Absent unless set (see {@link HeadingLevelConfig.jidori}). */
+  jidori?: number;
 }
 
 export interface HeadingsConfig {
@@ -2657,6 +2698,12 @@ export interface HeadingsConfig {
    *  rule too: the cut is taken lower (or dropped) rather than leave a
    *  heading closing a column while its text opens the next. Default true. */
   keepWithNext?: boolean;
+  /** With {@link keepWithNext} on, let a heading close the last column of an
+   *  even page all the same: its text opens the facing odd page, which the
+   *  reader sees beside it in the same spread (JLReq §4.1.7 b allows it in
+   *  vertical books; the spread is the same in a left-bound book). Default
+   *  `false`. */
+  keepWithNextSpread?: boolean;
   /** How a paragraph that does not fit under a heading at a column's foot
    *  is split, when pushing it whole would leave the heading behind
    *  (`keepWithNext`):
@@ -2796,6 +2843,8 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
+  /** Present (`true`) only when set. */
+  keepWithNextSpread?: boolean;
   keepWithNextSplit: KeepWithNextSplit;
   snapToGrid: boolean;
   inlineMarks: boolean;

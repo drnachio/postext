@@ -499,6 +499,38 @@ export function measureContentBlock(
     }
   }
 
+  // 字取り (jidori, JLReq §3.7.3, #424): a one-line heading narrower than
+  // its `jidori` width is spaced out evenly to fill it, 序章 at three
+  // characters set as 序　章. The space goes between the characters as
+  // tracking: the advance after the last one is no part of the width (the
+  // renderers align a tracked line by its letters, EF-153), so `n`
+  // characters fill the width with `n - 1` equal gaps. How many tracked
+  // advances the line holds is read off a trial setting, so a tate-chu-yoko
+  // number or a ruby base counts as the composer counts it.
+  const jidori = vdtType === 'heading' ? headingJidori(style, rawBlock) : undefined;
+  if (jidori !== undefined && hasRichFonts && measured.lines.length === 1 && opts?.trackingEm === undefined) {
+    const target = jidori * style.fontSizePx;
+    const naturalWidth = measured.lines[0]!.bbox.width;
+    const tracked = (spacing: number) => runMeasurement({
+      vdtType, rawBlock, contentBlock, style, measureMaxWidth, mathEnabled, cache,
+      measureOptions: { ...measureOptions, letterSpacingPx: spacing !== 0 ? spacing : undefined },
+      useRich: true,
+    }).measured;
+    if (naturalWidth < target - 0.5) {
+      const probe = tracked(trackingPx + 1);
+      const advances = probe.lines.length === 1 ? Math.round(probe.lines[0]!.bbox.width - naturalWidth) : 0;
+      if (advances >= 2) {
+        const untracked = naturalWidth - advances * trackingPx;
+        const spacing = (target - untracked) / (advances - 1);
+        const spaced = tracked(spacing);
+        if (spaced.lines.length === 1) {
+          measured = spaced;
+          trackingPx = spacing;
+        }
+      }
+    }
+  }
+
   if (measured.lines.length === 0) return null;
 
   // A paragraph whose direction opposes its frame's (the document's: a
@@ -532,6 +564,18 @@ export function measureContentBlock(
     kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender,
     ...(trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}),
   };
+}
+
+/** A heading's jidori width in its own ems: its `{jidori=N}` attribute
+ *  (`0` or anything under 1 turns the level's off), else its level's
+ *  `jidori`. Undefined: none. */
+function headingJidori(style: BlockStyle, block: ContentBlock): number | undefined {
+  const own = block.attrs?.jidori;
+  if (own !== undefined) {
+    const n = Number(own.trim());
+    return Number.isFinite(n) && n > 1 ? n : undefined;
+  }
+  return style.jidori;
 }
 
 /** How loose a paragraph's justified lines are: the widest word spacing of

@@ -140,11 +140,12 @@ describe('unknown heading settings are reported (EF-83)', () => {
       fontWeight: 700, marginTop: pt(10), marginBottom: pt(5), numberingTemplate: '', numberSeparator: ' ', numberPosition: 'before', italic: false,
       letterSpacing: pt(0), breakBefore: { enabled: true }, span: 'column',
       advancedDesign: { enabled: false, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true,
+      lineSpan: 3, indent: pt(18), jidori: 3,
     };
     expect(collectConfigWarnings({
       headings: {
         fontFamily: 'Lora', lineHeight: pt(20), color: { hex: '#000000', model: 'hex' }, textAlign: 'left', fontWeight: 700,
-        marginTop: pt(1), marginBottom: pt(1), keepWithNext: true, snapToGrid: true, balancing: { enabled: true }, levels: [level],
+        marginTop: pt(1), marginBottom: pt(1), keepWithNext: true, keepWithNextSpread: true, snapToGrid: true, balancing: { enabled: true }, levels: [level],
       },
       headingStyles: [{ id: 'a', name: 'A', numbered: false, toc: false, numberingTemplate: '', palette: {}, letterSpacing: pt(1) }],
     })).toEqual([]);

@@ -14,7 +14,7 @@ import {
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes, hasFloatSideColumn } from './config';
-import { contentAreaForPage, flowPageMirrored, mirrorContentArea, pageMirrored, sheetRectToFlow, type PageMetrics } from './buildHelpers';
+import { contentAreaForPage, flowPageMirrored, mirrorContentArea, pageMirrored, sheetRectToFlow, widthLessEndIndent, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
 import { measuringVertically } from '../measure/vertical';
 import { shiftLineX } from '../measure/bidiLines';
@@ -495,7 +495,7 @@ export function placeBlockInColumn(
   cursor: PlacementCursor,
 ): void {
   const y = col.bbox.y + (col.bbox.height - col.availableHeight);
-  block.bbox = createBoundingBox(col.bbox.x, y, col.bbox.width, blockHeight);
+  block.bbox = createBoundingBox(col.bbox.x, y, widthLessEndIndent(block, col.bbox.width), blockHeight);
   block.pageIndex = cursor.pageIndex;
   block.columnIndex = cursor.columnIndex;
 

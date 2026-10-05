@@ -122,7 +122,7 @@ function collectNumeralsWarnings(config: PostextConfig): ConfigWarning[] {
 // here, so the check never flags a setting the engine reads.
 const HEADINGS_KEYS = {
   fontFamily: true, lineHeight: true, color: true, textAlign: true, fontWeight: true,
-  marginTop: true, marginBottom: true, keepWithNext: true, keepWithNextSplit: true, snapToGrid: true, inlineMarks: true, balancing: true, levels: true,
+  marginTop: true, marginBottom: true, keepWithNext: true, keepWithNextSpread: true, keepWithNextSplit: true, snapToGrid: true, inlineMarks: true, balancing: true, levels: true,
 } satisfies Record<keyof HeadingsConfig, true>;
 const BALANCING_KEYS = {
   enabled: true, maxLinesPerHeading: true, stretchAfterLists: true, maxLinesAfterList: true,
@@ -133,18 +133,19 @@ const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
   marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
+  lineSpan: true, indent: true, jidori: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
   margins: true, layout: true, bodyStyle: true, palette: true,
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
   marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
-  advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
+  advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, lineSpan: true, indent: true, jidori: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {
   id: true, name: true, fontFamily: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
-  hyphenation: true, indent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
+  hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
   marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
 
