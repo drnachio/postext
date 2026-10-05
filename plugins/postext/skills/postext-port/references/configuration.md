@@ -348,7 +348,9 @@ headings
                                        more lines when its own need them; not for span:'page' openers,
                                        advancedDesign or headings in boxes; follows cjk.grid
   indent: Dimension                    0 (≥ 1.16) 字下げ from the line start, em = the BODY size (4/6/8 字 by
-                                       level in a vertical book); a centred heading centres in the rest
+                                       level in a vertical book); a centred heading centres in the rest;
+                                       `{indent=N}` on a heading line overrides it (body ems), `{indent=0}`
+                                       sets that heading at the line start
   jidori: number                       unset (≥ 1.16) 字取り: a one-line heading narrower than N of its OWN ems
                                        is spaced evenly to exactly that width (3: 序章 → 序　章); `{jidori=N}`
                                        on a heading line overrides it, `{jidori=0}` turns it off
@@ -719,7 +721,8 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
   hangingIndent: Dimension = 0   (non-zero replaces firstLineIndent; counts from indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
-  textTransform = 'none'         ('uppercase' = capitals, chip words and :ref labels too, length-preserving; maths untouched) }
+  textTransform = 'none'         ('uppercase' = capitals, chip words and :ref labels too, length-preserving; maths untouched)
+  wordBreak?: 'normal'|'keep-all' (≥ 1.16; unset = cjk.wordBreak; CJK lines only) }
 ```
 Inside the container the flow leaves the baseline grid. When it closes on a paragraph, the space under it merges
 with the next block's own (a heading's `marginTop`) and is at least the text's paragraph spacing
@@ -887,6 +890,7 @@ align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
    Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
+   Japanese documents (locale ja, ≥ 1.16): those two are the defaults when unset → 図1-1　題 (don't restate them)
 descriptionItalic = false
 position = 'below' | 'above'
 backgroundEnabled = false, background = main, padding = 0.35em   (bar behind caption)
@@ -1051,6 +1055,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `hangingPunctuation` | `'auto'`: none / none / none / allow | `'none'` \| `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; `'allow'` never in horizontal TW/HK, `'force'` there too. Japan hangs 、，。． only, in both directions, only when the mark would otherwise open the next line (ぶら下げ) |
 | `spaceAfterQuestion` | `'auto'`: off / off / off / on | ≥ 1.16; one em after ？！ inside a paragraph unless a closing bracket or another mark follows; a typed U+3000 there becomes that space; none at a line end |
 | `paragraphStartBracket` | `'auto'`: as any line start (Chinese) / `half` (Japan) | ≥ 1.16; a paragraph whose first-line indent meets an opening bracket: `'indent'` (JLReq ①, indent then 「), `'half'` (③, the bracket fills the indent cell, text at 1 em: Japanese novels), `'flush'` (天付き) |
+| `wordBreak` | `'normal'` | ≥ 1.16; `'keep-all'`: lines break only at spaces (U+0020, U+3000) and next to punctuation the level allows, never between two letters (kana, kanji, hangul, Latin): kana written with a space between phrases (分かち書き: picture books, primers) and Korean; a phrase longer than the line breaks inside. Replaces word joiners (U+2060) between kana. A paragraph style may set its own `wordBreak` |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
 | `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4), but not inside a Latin sentence (a Latin word on both sides, past spaces, numbers and marks), where they run sideways with it; `:tcy[…]` / `:sideways[…]` by hand |
 | `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |
@@ -1096,6 +1101,8 @@ Guide: https://postext.dev/en/docs/japanese-layout. Everything below follows fro
 | hanging 、。 (ぶら下げ) | `cjk.hangingPunctuation` | `allow` (、，。． only, horizontal and vertical) |
 | space after ？！ | `cjk.spaceAfterQuestion` | on (1 em inside a paragraph) |
 | 「 opening a paragraph | `cjk.paragraphStartBracket` | `half` (JLReq ③: the bracket fills the 1-em indent) |
+| phrases spaced by the author (分かち書き) | `cjk.wordBreak` | `normal`; `keep-all` breaks only at the spaces (picture books, primers) |
+| caption label | `captionStyle.labelNumberGap` / `labelSeparator` | `''` / `'　'`: 図1-1　題 (≥ 1.16; set only to change it) |
 | paragraph indent | `bodyText.firstLineIndent` | not set by the locale: write `{value: 1, unit: 'em'}` (Chinese books use 2) |
 | `*…*` | `cjk.emphasis`, `cjk.emphasisMark` | sesame bōten ﹅ over (right in vertical text) |
 | `:book[…]` | `cjk.bookTitleMark`, `bookTitleBrackets` | 『』, a title inside one 「」 |

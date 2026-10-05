@@ -48,6 +48,17 @@ describe('Japanese stylesheet', () => {
     expect(ruleOf((await render([layOut(TEXT, ja({ cjk: { lineBreak: 'strict' } }))])).css, 'body')).not.toContain('line-break');
   });
 
+  it('writes keep-all for a book or a paragraph style that breaks lines between phrases (#463)', async () => {
+    const PHRASES = 'むかし むかし、 ある ところに おじいさんと おばあさんが すんで いました。';
+    const keepAll = (await render([layOut(PHRASES, ja({ cjk: { wordBreak: 'keep-all' } }))])).css;
+    expect(ruleOf(keepAll, 'body')).toContain('word-break: keep-all;');
+    const styled = (await render([layOut(PHRASES, ja({ paragraphStyles: [{ id: 'primer', wordBreak: 'keep-all' }, { id: 'prose', wordBreak: 'normal' }] }))])).css;
+    expect(ruleOf(styled, 'body')).not.toContain('word-break');
+    expect(ruleOf(styled, 'p.ps-primer, div.pt-verse.ps-primer')).toContain('word-break: keep-all;');
+    expect(ruleOf(styled, 'p.ps-prose, div.pt-verse.ps-prose')).toContain('word-break: normal;');
+    expect((await render([layOut(PHRASES, ja())])).css).not.toContain('word-break');
+  });
+
   it('writes nothing new for a Chinese or a Latin book', async () => {
     for (const config of [
       { ...baseConfig, locale: 'zh-Hans', layout: { writingMode: 'vertical-rl' as const } },
@@ -55,7 +66,7 @@ describe('Japanese stylesheet', () => {
       baseConfig,
     ]) {
       const { css, all } = await render([layOut('天地玄黄，*宇宙*洪荒？日月12盈昃!?', config)], 'zh-Hans');
-      expect(css).not.toMatch(/line-break|hanging-punctuation|\.pt-dots\.pt-dots-/);
+      expect(css).not.toMatch(/line-break|hanging-punctuation|word-break|\.pt-dots\.pt-dots-/);
       expect(all).not.toContain('pt-tcy');
       expect(all).not.toContain('　');
       expect(all).not.toMatch(/pt-dots-/);

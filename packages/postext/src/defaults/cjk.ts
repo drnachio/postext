@@ -18,6 +18,7 @@ import type {
   CjkRubyOverhang,
   CjkRubyPosition,
   CjkWarichuConfig,
+  CjkWordBreak,
   ColorValue,
   Dimension,
   ResolvedCjkConfig,
@@ -31,8 +32,8 @@ import { cjkRegionOf, isJapaneseLanguage, languageOf } from '../locale';
 import { dimensionsEqual } from './shared';
 
 /** `cjk` as written when nothing is set: everything follows the locale
- *  (marks hang in Japan only), a quarter em between Han and Latin, no
- *  grid; readings, warichu notes and kanbun marks at half the text size
+ *  (marks hang in Japan only), lines break between characters (no
+ *  `keep-all`), a quarter em between Han and Latin, no grid; readings, warichu notes and kanbun marks at half the text size
  *  (the 返り点 after their character, JIS X 4051 §5.5), warichu brackets
  *  by region (none but in Japan, `defaultCjkWarichuBrackets`), marks in
  *  the text colour (`annotationColor` unset). */
@@ -45,6 +46,7 @@ export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & 
   hangingPunctuation: 'auto',
   spaceAfterQuestion: 'auto',
   paragraphStartBracket: 'auto',
+  wordBreak: 'normal',
   latinSpacing: { value: 0.25, unit: 'em' },
   uprightDigits: 2,
   grid: { enabled: false, show: false },
@@ -189,6 +191,7 @@ const LINE_BREAKS: readonly CjkLineBreak[] = ['none', 'basic', 'gb', 'strict', '
 const PUNCTUATION_WIDTHS: readonly CjkPunctuationWidth[] = ['fullwidth', 'kaiming', 'lineEndHalf', 'halfwidth'];
 const HANGING: readonly CjkHangingPunctuation[] = ['none', 'allow', 'force'];
 const PARAGRAPH_START_BRACKETS: readonly CjkParagraphStartBracket[] = ['indent', 'half', 'flush'];
+const WORD_BREAKS: readonly CjkWordBreak[] = ['normal', 'keep-all'];
 const LENGTH_UNITS = new Set(['cm', 'mm', 'in', 'pt', 'px', 'em', 'rem']);
 
 /** The line-break level a region's text is set with by default: GB/T
@@ -288,6 +291,7 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
   const paragraphStartBracket = partial?.paragraphStartBracket && PARAGRAPH_START_BRACKETS.includes(partial.paragraphStartBracket as CjkParagraphStartBracket)
     ? (partial.paragraphStartBracket as CjkParagraphStartBracket)
     : defaultCjkParagraphStartBracket(region);
+  const wordBreak = partial?.wordBreak && WORD_BREAKS.includes(partial.wordBreak) ? partial.wordBreak : DEFAULT_CJK_CONFIG.wordBreak;
   const latinSpacing = isLength(partial?.latinSpacing) && partial.latinSpacing.value >= 0
     ? { value: partial.latinSpacing.value, unit: partial.latinSpacing.unit }
     : { ...DEFAULT_CJK_CONFIG.latinSpacing };
@@ -304,6 +308,7 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     // resolved config is what it was before they existed.
     ...(spaceAfterQuestion ? { spaceAfterQuestion: true as const } : {}),
     ...(paragraphStartBracket ? { paragraphStartBracket } : {}),
+    ...(wordBreak === 'keep-all' ? { wordBreak } : {}),
     latinSpacing,
     uprightDigits,
     grid: resolveGrid(partial?.grid),
@@ -404,6 +409,7 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (cjk.hangingPunctuation !== undefined && cjk.hangingPunctuation !== d.hangingPunctuation) result.hangingPunctuation = cjk.hangingPunctuation;
   if (cjk.spaceAfterQuestion !== undefined && cjk.spaceAfterQuestion !== d.spaceAfterQuestion) result.spaceAfterQuestion = cjk.spaceAfterQuestion;
   if (cjk.paragraphStartBracket !== undefined && cjk.paragraphStartBracket !== d.paragraphStartBracket) result.paragraphStartBracket = cjk.paragraphStartBracket;
+  if (cjk.wordBreak !== undefined && cjk.wordBreak !== d.wordBreak) result.wordBreak = cjk.wordBreak;
   if (cjk.latinSpacing !== undefined && !dimensionsEqual(cjk.latinSpacing, d.latinSpacing)) result.latinSpacing = cjk.latinSpacing;
   if (cjk.uprightDigits !== undefined && cjk.uprightDigits !== d.uprightDigits) result.uprightDigits = cjk.uprightDigits;
   const grid = stripGridDefaults(cjk.grid);

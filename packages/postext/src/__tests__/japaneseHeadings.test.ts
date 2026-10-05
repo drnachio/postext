@@ -195,6 +195,54 @@ describe('字下げ: a heading indented in body ems (indent)', () => {
     const long = buildDocument({ markdown: `## ${'見'.repeat(12)}\n\n${LINE}` }, config({}, [lvl]));
     expect(heading(long).lines).toHaveLength(2);
   });
+
+  // A heading's own `{indent=N}` (#467): Aozora records each heading's
+  // 字下げ (［＃５字下げ］一), so the converter's attribute is read as is.
+  it('takes a heading attribute in body ems, with no indent on the level, in both writing modes', () => {
+    for (const c of [config(), vertical()]) {
+      const doc = buildDocument({ markdown: `## 一 {indent="5"}\n\n${LINE}\n\n## 二\n\n${LINE}` }, c);
+      const h = heading(doc, '一');
+      expect(firstLine(h).bbox.x - h.bbox.x).toBeCloseTo(5 * BODY, 6);
+      // A heading without the attribute stays at the line start.
+      const other = heading(doc, '二');
+      expect(firstLine(other).bbox.x - other.bbox.x).toBeCloseTo(0, 6);
+    }
+  });
+
+  it('overrides the level: another length, 0 at the line start, and the level kept for a value that is no length', () => {
+    const lvl: HeadingLevelConfig = { level: 2, fontSize: pt(14), lineHeight: pt(21), indent: em(4) };
+    const markdown = [
+      `## 甲 {indent=2}`, `## 乙 {indent=0}`, `## 丙 {indent="3em"}`, `## 丁 {indent=7pt}`, `## 戊 {indent=wide}`, `## 己`,
+    ].map((h) => `${h}\n\n${LINE}`).join('\n\n');
+    for (const c of [config({}, [lvl]), vertical({}, [lvl])]) {
+      const doc = buildDocument({ markdown }, c);
+      const offset = (text: string): number => { const h = heading(doc, text); return firstLine(h).bbox.x - h.bbox.x; };
+      expect(offset('甲')).toBeCloseTo(2 * BODY, 6);
+      expect(offset('乙')).toBeCloseTo(0, 6);
+      // `em` counts body characters too, as the level's indent does.
+      expect(offset('丙')).toBeCloseTo(3 * BODY, 6);
+      expect(offset('丁')).toBeCloseTo(7, 6);
+      expect(offset('戊')).toBeCloseTo(4 * BODY, 6);
+      expect(offset('己')).toBeCloseTo(4 * BODY, 6);
+    }
+  });
+
+  it('overrides a heading style, narrows the measure as the level indent does, and sets the heading as the level would', () => {
+    const cfg = config({ headingStyles: [{ id: 'deep', indent: em(6) }] });
+    const doc = buildDocument({ markdown: `## 一 {style="deep" indent=1}\n\n${LINE}\n\n## 二 {style="deep"}\n\n${LINE}` }, cfg);
+    const one = heading(doc, '一');
+    expect(firstLine(one).bbox.x - one.bbox.x).toBeCloseTo(1 * BODY, 6);
+    const two = heading(doc, '二');
+    expect(firstLine(two).bbox.x - two.bbox.x).toBeCloseTo(6 * BODY, 6);
+    // The attribute and a level indent of the same width lay the heading
+    // out alike (the converter's Kokoro headings restate the level's 5字).
+    const lvl: HeadingLevelConfig = { level: 2, fontSize: pt(14), lineHeight: pt(21), indent: em(5) };
+    const long = `${'見'.repeat(12)}`;
+    const byAttr = buildDocument({ markdown: `## ${long} {indent=5}\n\n${LINE}` }, config());
+    const byLevel = buildDocument({ markdown: `## ${long}\n\n${LINE}` }, config({}, [lvl]));
+    expect(heading(byAttr).lines).toHaveLength(2);
+    expect(heading(byAttr).lines.map((l) => [l.text, l.bbox.x, l.bbox.width])).toEqual(heading(byLevel).lines.map((l) => [l.text, l.bbox.x, l.bbox.width]));
+  });
 });
 
 describe('字取り: a short heading spaced to a width (jidori)', () => {

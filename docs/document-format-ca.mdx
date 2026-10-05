@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Format del document',
   description: 'El subconjunt de markdown que analitza Postext i les normes per escriure els documents font',
   lang: 'ca',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-05',
   readingTime: '10 min',
   order: 5,
   plainSummary: "Aquesta pàgina explica com s'escriu un text que Postext pugui compondre. S'escriu en Markdown, una manera senzilla d'escriure en què uns pocs signes marquen els títols, les llistes, les negretes i els enllaços. A més, Postext entén algunes marques pròpies per a requadres, notes a peu de pàgina, imatges, taules i fórmules. La pàgina enumera totes les marques que accepta i les que no té en compte. Acaba amb consells per escriure un text fàcil de llegir.",
@@ -82,7 +82,7 @@ Postext reconeix set tipus de bloc de prosa, a més de les directives i les inse
     <tr>
       <td>Llista no ordenada</td>
       <td><code>- element</code>, <code>* element</code>, <code>+ element</code></td>
-      <td>S'accepta qualsevol de les tres vinyetes. La imbricació fa servir <strong>exactament dos espais per nivell</strong>, fins a una profunditat màxima de 5.</td>
+      <td>S'accepta qualsevol de les tres vinyetes. Un element s'imbrica en el de dalt quan la seva marca té almenys dues columnes més de sagnat que la d'aquell element: dos espais sota <code>-</code>, dos o tres sota <code>1.</code> (la columna del seu text, com a CommonMark), fins a una profunditat màxima de 5.</td>
     </tr>
     <tr>
       <td>Llista ordenada</td>
@@ -106,7 +106,7 @@ Es tolera una única línia en blanc entre dos elements de llista — la llista 
 
 S'accepten llistes de tipus mixtos a la mateixa profunditat (pots passar de no ordenada a ordenada a mig camí), però el motor tracta cada tram per separat a efectes de numeració. A la pràctica, convé mantenir un únic tipus per profunditat llevat que hi hagi un motiu clar per barrejar-los.
 
-<Illustration name="ListNesting" data='{"title": "Profunditat d’imbricació de llistes", "desc": "Les llistes s’imbriquen fent servir exactament dos espais per nivell, fins a una profunditat màxima de cinc. Cada nivell té més sagnat i pot fer servir un estil de vinyeta diferent.", "caption": "Dos espais per nivell. Profunditat màxima: cinc.", "level1": "Nivell 1", "level2": "Nivell 2 — dos espais", "level3": "Nivell 3 — quatre espais", "indentNote": "Exactament dos espais per nivell. Profunditat màxima: 5."}' />
+<Illustration name="ListNesting" data='{"title": "Profunditat d’imbricació de llistes", "desc": "Un element s’imbrica en el de dalt quan té més sagnat que la seva marca: dos espais sota una vinyeta, fins a una profunditat màxima de cinc. Cada nivell té més sagnat i pot fer servir un estil de vinyeta diferent.", "caption": "Dos espais per nivell sota una vinyeta. Profunditat màxima: cinc.", "level1": "Nivell 1", "level2": "Nivell 2 — dos espais", "level3": "Nivell 3 — quatre espais", "indentNote": "Dos espais sota una vinyeta, tres sota 1. Profunditat màxima: 5."}' />
 
 ### Atributs d'encapçalament
 
@@ -128,7 +128,7 @@ Dos atributs tenen un significat propi. `style="<id>"` aplica a l'encapçalament
 # Índex {style="preliminar" toc="false"}
 ```
 
-Uns altres dos canvien el que imprimeix un encapçalament i com compta. `hidden="true"` (o `"false"`) sobreescriu el `hidden` del nivell o de l'estil de l'encapçalament: un encapçalament ocult no imprimeix res ni ocupa espai —ni al flux ni dins d'una caixa `:::callout`—, però continua obrint la seva pàgina, compta i apareix a l'índex, a les capçaleres amb `{chapterTitle}` i als marcadors del PDF. `jidori=N` espaia per igual un encapçalament d'una línia fins a `N` dels seus propis caràcters (字取り: `# 序章 {jidori=3}` imprimeix 序　章), i `jidori=0` desactiva l'espaiat uniforme que fixa el seu nivell o el seu estil (vegeu [Configuració › Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). `startAt=N`, un enter positiu, posa el comptador del nivell de l'encapçalament a `N` en lloc d'avançar-lo; els encapçalaments següents compten a partir d'aquí, també en els capítols posteriors, i els nivells inferiors es reinicien a sota com sempre. Amb un estil d'encapçalament que numera els apèndixs amb lletra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apèndix reinicia el compte perquè es llegeixi *Apèndix A* en lloc de continuar el dels capítols:
+Uns altres dos canvien el que imprimeix un encapçalament i com compta. `hidden="true"` (o `"false"`) sobreescriu el `hidden` del nivell o de l'estil de l'encapçalament: un encapçalament ocult no imprimeix res ni ocupa espai —ni al flux ni dins d'una caixa `:::callout`—, però continua obrint la seva pàgina, compta i apareix a l'índex, a les capçaleres amb `{chapterTitle}` i als marcadors del PDF. `jidori=N` espaia per igual un encapçalament d'una línia fins a `N` dels seus propis caràcters (字取り: `# 序章 {jidori=3}` imprimeix 序　章), i `jidori=0` desactiva l'espaiat uniforme que fixa el seu nivell o el seu estil (vegeu [Configuració › Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). `indent=N` sagna un sol encapçalament `N` caràcters del text des del principi de la línia (字下げ: `## 一 {indent=5}`) i s'imposa a l'`indent` del seu nivell o del seu estil; un nombre sense unitat compta quadratins del text, `0` el deixa al principi de la línia, i funciona igual en text vertical i horitzontal. `startAt=N`, un enter positiu, posa el comptador del nivell de l'encapçalament a `N` en lloc d'avançar-lo; els encapçalaments següents compten a partir d'aquí, també en els capítols posteriors, i els nivells inferiors es reinicien a sota com sempre. Amb un estil d'encapçalament que numera els apèndixs amb lletra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apèndix reinicia el compte perquè es llegeixi *Apèndix A* en lloc de continuar el dels capítols:
 
 ```markdown
 # A la meva mare {hidden="true" toc="false"}
@@ -1414,7 +1414,7 @@ Unes poques normes marquen la diferència entre un document que s'analitza netam
 
 - **Deixa una línia en blanc entre blocs.** Dos paràgrafs separats per una línia en blanc són dos paràgrafs. Dos paràgrafs en línies consecutives es converteixen en un — cada línia s'afegeix al paràgraf anterior.
 - **Les línies en blanc de més no afegeixen espai.** Tres línies en blanc separen dos blocs exactament igual que una. Si vols més aire entre ells, escriu una línia [`:::space`](#space).
-- **Nia les llistes amb exactament dos espais per nivell.** Un únic espai s'analitza com un element de nivell 1. Tres o quatre espais s'arrodoneixen cap avall al nivell 2 (el motor aplica `floor(leading / 2) + 1`, limitat a profunditat 5). Les tabulacions no es reconeixen — converteix-les en espais.
+- **Sagna un element imbricat fins al text de l'element de dalt.** Dos espais sota una vinyeta (`- `), tres sota `1. `, quatre sota `10. `, com imbrica les llistes CommonMark; dos espais sota `1.` també imbriquen. Un element s'imbrica sota l'element obert més proper la marca del qual queda almenys dues columnes a la seva esquerra, de manera que un sol espai no imbrica res i mai no se salta cap nivell, sigui quin sigui el pas (fins a postext 1.15 la profunditat era `floor(espais / 2) + 1`, i un `      1.` sota `   1.` sortia al nivell 4). Un tabulador arriba al múltiple de quatre columnes següent. La profunditat màxima és 5.
 - **No sagnis el primer element de la llista.** Els elements de nivell 1 comencen a la columna 0. Qualsevol espai en blanc inicial augmenta la profunditat de manera implícita.
 - **Les marques de tasca van entre claudàtors amb un únic espai.** `[ ]`, `[x]`, `[X]` — sense variacions. `[*]` o `[-]` no són marques de tasca; es renderitzen com a text literal.
 - **No s'admeten citacions dins de llistes.** Comença la citació a la columna 0, fora de la llista.

@@ -1404,18 +1404,50 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   return c.spaceAfterQuestion ? questionSpaces(spaced) : spaced;
 }
 
+/** The character a chip's words open (`first`) or close (`last`) with, in
+ *  their logical order; undefined for a unit that is not a chip, or a chip
+ *  in a superscript or a subscript. */
+function chipEdgeGrapheme(u: Unit, edge: 'first' | 'last'): string | undefined {
+  const runs = u.kind === 'atomic' && !u.style.script ? u.token?.chip?.runs : undefined;
+  if (!runs) return undefined;
+  const text = runs.map((r) => r.text).join('');
+  if (text === '') return undefined;
+  return edge === 'first' ? String.fromCodePoint(text.codePointAt(0)!) : lastGrapheme(text);
+}
+
 /** `units` with the Han–Latin spaces of `cjk.latinSpacing` (see
- *  {@link prepareUnits}). */
+ *  {@link prepareUnits}).
+ *
+ *  A chip (`:chip[…]`) is a box of text: on each side it takes the space
+ *  its own words would (#462). `:chip[unicodedata]` between kana is Latin
+ *  on both sides and gets the quarter em JLReq §3.2.2 puts between
+ *  Japanese and Western text, as `unicodedata` set plain would;
+ *  `:chip[漢字]` is Han on both sides, so a Latin word touching it gets
+ *  the space and a kana does not. Its line-break class stays that of an
+ *  inline box. The rest follows from the rule for plain text: the space
+ *  goes at a line end and is dropped at a line start like any space, and
+ *  a bracket, a mark or a sign next to the chip is neither Han nor Latin,
+ *  so 「:chip[x]」 takes none. Down a vertical line the chip is set
+ *  sideways, as a Latin run is, and the same rule holds. */
 function latinSpaces(units: Unit[], c: CjkComposition): Unit[] {
   const out: Unit[] = [];
-  const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !u.run && !u.note && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+  const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean => {
+    if (!u) return false;
+    const chipEdge = chipEdgeGrapheme(u, edge);
+    if (chipEdge !== undefined) return isLatinSpacingHan(chipEdge);
+    return u.kind === 'text' && !u.run && !u.note && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+  };
   // A run whose edge is a number set in one upright cell (vertical text)
   // takes no Han–Latin space on that side; neither does a unit the author
-  // set upright or in one cell.
-  const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !!u.run && !u.note && !u.style.script && !(edge === 'first' ? u.cellStart : u.cellEnd)
-    && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+  // set upright or in one cell. A chip's edge is Latin when its character
+  // is a letter or a digit that is not CJK (a full-width Ａ is not).
+  const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean => {
+    if (!u) return false;
+    const chipEdge = chipEdgeGrapheme(u, edge);
+    if (chipEdge !== undefined) return !isCjkGrapheme(chipEdge) && !isLatinSpacingHan(chipEdge) && isLatinSpacingLatin(chipEdge);
+    return u.kind === 'text' && !!u.run && !u.note && !u.style.script && !(edge === 'first' ? u.cellStart : u.cellEnd)
+      && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+  };
   const spaceOf = (h: Unit): number => latinSpacingPx(c, emOfFont(h.style.font));
   for (let k = 0; k < units.length; k++) {
     const u = units[k]!;
@@ -1589,6 +1621,42 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
     if (b.glueBefore || a.solid || b.solid) continue;
     if (numberGlue(a, b) || fullwidthGlue(units, k)) continue;
     if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level, edgeGrapheme(a, 'last', level), edgeGrapheme(b, 'first', level))) out[k] = 1;
+  }
+  return out;
+}
+
+/** Whether a unit opens (`first`) or ends (`last`) with a letter, which
+ *  `keep-all` never parts from a letter next to it: a CJK character (kanji,
+ *  kana, hangul, an iteration mark, ー), a Western run or a sign glued to
+ *  a number, an inline box. Punctuation, dashes, ellipses, connectors and
+ *  the ideographic space are not letters: lines still break next to them
+ *  where the level allows (after 、。」, before 「). */
+function isLetterEdge(u: Unit, edge: 'first' | 'last'): boolean {
+  if (u.kind === 'space') return false;
+  const cls = edge === 'first' ? u.first : u.last;
+  return cls === 'ideograph' || cls === 'iteration' || cls === 'western' || cls === 'prefix' || cls === 'postfix';
+}
+
+/** The breaks of `cjk.wordBreak: 'keep-all'` (CSS `word-break: keep-all`)
+ *  out of the paragraph's `breaks`: those after a space the author typed,
+ *  a warichu note's word space or before a zero-width space stay, and so
+ *  do those next to punctuation; none is left between two letters
+ *  ({@link isLetterEdge}), so a phrase of kana written between spaces
+ *  (分かち書き) is never divided while it fits a line. The Han–Latin space
+ *  the composition inserts (`Unit.auto`, no text) is no space between
+ *  phrases: `Tシャツ` stays whole. */
+function keepAllBreaks(units: readonly Unit[], breaks: Uint8Array): Uint8Array {
+  const out = breaks.slice();
+  for (let k = 1; k < units.length; k++) {
+    if (!out[k]) continue;
+    let a = units[k - 1]!;
+    const b = units[k]!;
+    if (a.noteSpace || b.zwspBefore) continue;
+    if (a.kind === 'space') {
+      if (!(a.auto && a.text === '') || k < 2) continue;
+      a = units[k - 2]!;
+    }
+    if (isLetterEdge(a, 'last') && isLetterEdge(b, 'first')) out[k] = 0;
   }
   return out;
 }
@@ -1853,6 +1921,10 @@ function breakUnits(
   stop?: { line: number; at: number },
   /** Line `pull` takes every unit left when it can give up the blank. */
   pull?: number,
+  /** Under `keep-all` (`breaks` holds only the breaks between phrases): the
+   *  breaks the level allows between any two characters, where a phrase
+   *  longer than the line is broken. */
+  emergency?: Uint8Array,
 ): LineRange[] {
   const out: LineRange[] = [];
   const n = units.length;
@@ -2006,6 +2078,16 @@ function breakUnits(
         }
         end = k + 1;
         break;
+      }
+      if (emergency) {
+        // A phrase longer than the line (keep-all): it is broken inside,
+        // at the last place the level allows.
+        let q = k;
+        while (q > i && !emergency[q]) q--;
+        if (q > i) {
+          end = q;
+          break;
+        }
       }
       // Nothing on the line may end it: break before the unit anyway.
       end = k;
@@ -2410,9 +2492,19 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
           }
           for (const j of autos) us[j] = { ...us[j]!, width: us[j]!.width + tracking };
         }
+      } else if (spaces > 0 && us.some((u) => u.kind === 'text' && (u.firstCjk || u.lastCjk))) {
+        // CJK characters with no gap between them that may spread (phrases
+        // glued by word joiners, marks JLReq never spreads next to), and
+        // word spaces (#463): the spaces take it all and the line ends on
+        // the measure. Their final width is the segments', as every gap of
+        // a composed line is; a Latin word space's stretch limit
+        // (`justifiedSpaceRatio`, which sets a looser line ragged) is not
+        // the rule of a CJK line, so the line reports none.
+        spaceWidth = (natural + slack) / spaces;
       } else if (spaces > 0) {
-        // No gap between characters: the spaces take it all, as in a Latin
-        // line (the renderers stretch them).
+        // Latin words only (an English sentence in a CJK paragraph): the
+        // spaces take it all, as in a Latin line (the renderers stretch
+        // them, and a line past the ratio is set ragged).
         if (ctx.normalSpace > 0) spaceRatio = (natural + slack) / spaces / ctx.normalSpace;
       } else if (us.some((u) => u.kind === 'text' && (u.firstCjk || u.lastCjk))) {
         // A CJK character with nothing to spread against.
@@ -2686,7 +2778,12 @@ export function composeCjkParagraph(
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const fit = lineFitOf(composition);
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
-  const breaks = breakOpportunities(units, level);
+  // `keep-all` (the paragraph's own, else the document's): lines break
+  // between phrases, and inside one only when it is longer than the line.
+  const keepAll = options?.cjkWordBreak !== undefined ? options.cjkWordBreak === 'keep-all' : composition.keepAll === true;
+  const levelBreaks = breakOpportunities(units, level);
+  const breaks = keepAll ? keepAllBreaks(units, levelBreaks) : levelBreaks;
+  const emergency = keepAll ? levelBreaks : undefined;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
   const firstIndent = hanging ? 0 : paragraphStartIndent(units, indentPx, composition);
@@ -2713,7 +2810,7 @@ export function composeCjkParagraph(
   };
   const compose = (ranges: LineRange[]): VDTLine[] => ranges.map((r, li) => composeLine(units, r, li, li === ranges.length - 1, ctx));
 
-  const ranges = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level);
+  const ranges = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, undefined, undefined, emergency);
   let lines = compose(ranges);
   // 孤字 (clreq §7.2), where the paragraph avoids runts (`bodyText.avoidRunts`
   // gives it a runt penalty): a last line that holds one character, alone
@@ -2724,7 +2821,7 @@ export function composeCjkParagraph(
   // above takes the character in by giving up blank (push-in), and the
   // paragraph is a line shorter.
   if ((options?.runtPenalty ?? 0) > 0 && endsOnOneCharacter(lines) && fit?.jlreq) {
-    const pulled = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, undefined, ranges.length - 2);
+    const pulled = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, undefined, ranges.length - 2, emergency);
     if (pulled.length === ranges.length - 1) {
       const set = compose(pulled);
       if (!set.some((l) => l.cjkLoose) && !endsOnOneCharacter(set)) lines = set;
@@ -2736,7 +2833,7 @@ export function composeCjkParagraph(
     let at = above.end - 1;
     while (at > above.start && !breaks[at]) at--;
     if (!above.head && !above.hyphenated && !ranges[li + 1]!.first && at > above.start) {
-      const pushed = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, { line: li, at });
+      const pushed = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, { line: li, at }, undefined, emergency);
       if (pushed.length === ranges.length) {
         const set = compose(pushed);
         if (!set[li]!.cjkLoose && !endsOnOneCharacter(set)) lines = set;
@@ -2753,7 +2850,7 @@ export function composeCjkParagraph(
   if (looseness > 0) {
     const target = lines.length + looseness;
     for (let step = 1; step <= 16; step++) {
-      const ranges = breakUnits(units, breaks, measureOf, (step * em) / 8, letterSpacingPx, fit, level);
+      const ranges = breakUnits(units, breaks, measureOf, (step * em) / 8, letterSpacingPx, fit, level, undefined, undefined, emergency);
       if (ranges.length < target) continue;
       if (ranges.length > target) break;
       const loose = compose(ranges);

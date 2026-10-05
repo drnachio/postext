@@ -151,7 +151,7 @@ const PARAGRAPH_STYLE_KEYS = {
   id: true, name: true, fontFamily: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
   hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
-  marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true,
+  marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
 
 /** Edit distance with transpositions (optimal string alignment), capped:

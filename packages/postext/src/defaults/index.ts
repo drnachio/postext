@@ -33,7 +33,7 @@ export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripL
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
 export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './tableStyle';
-export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle } from './captionStyle';
+export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, defaultCaptionLabels } from './captionStyle';
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
 export { DEFAULT_VIDEO_STYLE_CONFIG, DEFAULT_VIDEO_PLAYER_OPTIONS, resolveVideoStyleConfig, resolveVideoPlayerOptions, stripVideoStyleDefaults } from './videoStyle';
 export { DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults } from './paragraphStyles';
@@ -97,7 +97,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.tableStyles;
   }
-  const strippedCaptionStyle = stripCaptionStyleDefaults(config.captionStyle);
+  const strippedCaptionStyle = stripCaptionStyleDefaults(config.captionStyle, config.locale);
   if (strippedCaptionStyle) {
     result.captionStyle = strippedCaptionStyle;
   } else {

@@ -6,6 +6,7 @@ import { resolveBodyTextConfig, resolveCaptionStyleConfig } from 'postext';
 import type { CaptionStyleConfig } from 'postext';
 import { CollapsibleSection } from '../../controls';
 import { CaptionStyleFields } from './CaptionStyleFields';
+import { documentLanguage } from '../../context/documentDirection';
 
 /** Config-panel section for styling resource captions: the shared caption
  *  typography, placement (above/below the body), an optional background bar,
@@ -19,7 +20,10 @@ export const CaptionStyleSection = memo(function CaptionStyleSection() {
   const raw = useSandboxSelector((s) => s.config.captionStyle);
   const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
   const bodyText = resolveBodyTextConfig(bodyTextRaw);
-  const cs = resolveCaptionStyleConfig(raw, bodyText);
+  // The document language: the label's gap and separator follow it when
+  // unset (図1-1　 in a Japanese book, #464).
+  const language = useSandboxSelector((s) => documentLanguage(s.config, s.locale));
+  const cs = resolveCaptionStyleConfig(raw, bodyText, language);
 
   const update = (partial: Partial<CaptionStyleConfig>) => {
     dispatch({ type: 'UPDATE_CONFIG', payload: { captionStyle: { ...raw, ...partial } } });

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-05',
   readingTime: '10 min',
   order: 5,
   plainSummary: "This page explains how to write a text that Postext can lay out. You write in Markdown, a simple way of writing where a few symbols mark headings, lists, bold words and links. Postext also understands some extra marks for boxes, footnotes, pictures, tables and formulas. The page lists every mark it accepts and the ones it ignores. It ends with advice on writing text that is easy to read.",
@@ -82,7 +82,7 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Unordered list</td>
       <td><code>- item</code>, <code>* item</code>, <code>+ item</code></td>
-      <td>Any of the three bullet markers is accepted. Nesting uses <strong>exactly two spaces per level</strong>, up to a maximum depth of 5.</td>
+      <td>Any of the three bullet markers is accepted. An item nests under the item above when its marker is indented at least two columns past that item's marker: two spaces under <code>-</code>, two or three under <code>1.</code> (the column of its text, as in CommonMark), up to a maximum depth of 5.</td>
     </tr>
     <tr>
       <td>Ordered list</td>
@@ -106,7 +106,7 @@ A single blank line between two list items is tolerated — the list stays toget
 
 Lists of mixed kinds at the same depth are accepted (you can switch from unordered to ordered mid-run), but the engine treats the runs as separate for numbering purposes. In practice, keep one kind per depth unless you have a reason to mix them.
 
-<Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
+<Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "A list item nests under the item above when it is indented past that item’s marker: two spaces under a bullet, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level under a bullet. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Two spaces in under a bullet, three under 1. Max depth: 5."}' />
 
 ### Heading attributes
 
@@ -128,7 +128,7 @@ Two attributes have a meaning of their own. `style="<id>"` applies a named [head
 # Contents {style="front-matter" toc="false"}
 ```
 
-Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `jidori=N` spaces a one-line heading evenly to `N` of its own characters (字取り: `# 序章 {jidori=3}` prints 序　章), and `jidori=0` turns off the even spacing its level or style sets (see [Configuration › Per-level overrides](/en/docs/configuration#per-level-overrides)). `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
+Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `jidori=N` spaces a one-line heading evenly to `N` of its own characters (字取り: `# 序章 {jidori=3}` prints 序　章), and `jidori=0` turns off the even spacing its level or style sets (see [Configuration › Per-level overrides](/en/docs/configuration#per-level-overrides)). `indent=N` lowers one heading `N` characters of the body text from the line start (字下げ: `## 一 {indent=5}`), over the `indent` of its level or style; a bare number counts body ems, `0` sets the heading at the line start, and it works the same in vertical and horizontal text. `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
 
 ```markdown
 # To my mother {hidden="true" toc="false"}
@@ -1415,8 +1415,8 @@ A few conventions make the difference between a document that parses cleanly and
 
 - **Leave a blank line between blocks.** Two paragraphs separated by a blank line are two paragraphs. Two paragraphs on consecutive lines become one — every line collapses into the preceding paragraph.
 - **Extra blank lines add no space.** Three blank lines separate two blocks exactly like one. When you want more room between them, write a [`:::space`](#space) line.
-- **Nest lists with exactly two spaces per level.** One space is parsed as a level-1 item. Three or four spaces round down to level 2 (the engine uses `floor(leading / 2) + 1`, clamped to depth 5). Tab indentation is not recognised — convert tabs to spaces.
-- **Do not indent the first list item.** Level-1 items start at column 0. Leading whitespace on a bullet implicitly raises the depth.
+- **Indent a nested item to the text of the item above.** Two spaces under a bullet (`- `), three under `1. `, four under `10. `, as CommonMark nests lists; two spaces under `1.` nest too. An item nests under the nearest open item whose marker sits at least two columns to its left, so one space nests nothing and a level is never skipped, whatever the step (up to postext 1.15 the depth was `floor(spaces / 2) + 1`, and a `      1.` under `   1.` came out at level 4). A tab reaches the next multiple of four columns. Depth is capped at 5.
+- **Do not indent the first list item.** Level-1 items start at column 0. A list's first item opens level 1 however far it is indented (up to postext 1.15 its leading spaces raised the depth), so nesting needs an item above to nest under.
 - **Task markers must be in square brackets with a single space.** `[ ]`, `[x]`, `[X]` — no variations. `[*]` or `[-]` are not task markers; they render as literal text.
 - **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
 - **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.

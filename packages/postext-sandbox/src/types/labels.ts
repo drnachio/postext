@@ -463,6 +463,10 @@ export interface SandboxLabels {
   cjkLineBreakJaVeryStrict: string;
   cjkLineBreakJaStrict: string;
   cjkLineBreakJaLoose: string;
+  cjkWordBreak: string;
+  cjkWordBreakTooltip: string;
+  cjkWordBreakNormal: string;
+  cjkWordBreakKeepAll: string;
   cjkPunctuationWidth: string;
   cjkPunctuationWidthTooltip: string;
   cjkPunctuationWidthKaiming: string;

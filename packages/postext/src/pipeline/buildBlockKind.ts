@@ -13,6 +13,7 @@ import type { BlockStyle } from './styles';
 import { resolveHeadingStyle, resolveMathDisplayStyle, resolveParagraphStyle } from './styles';
 import type { ListBulletStyle, ListItemResolved, OrderedListMetrics } from './lists';
 import type { HeadingLevelResolver } from './headingStyles';
+import { lengthAttr } from './verse';
 import {
   resolveOrderedListItemStyle,
   resolveUnorderedListItemStyle,
@@ -68,6 +69,24 @@ export interface BlockKindContext {
   headingLevels?: HeadingLevelResolver;
 }
 
+/** A heading's own `{indent=N}` (字下げ, #467) over its level's or style's
+ *  `indent`: counted in body characters as the level's is (JLReq §4.1.3
+ *  sets headings 4, 6 or 8 字 down by level, and Aozora records each
+ *  heading's own: ［＃５字下げ］一), so a bare number and `em` are body
+ *  ems; `0` sets the heading at the line start.
+ *  Anything that is not a length leaves the level's indent as it is. */
+export function withHeadingIndentAttr(style: BlockStyle, value: string | undefined, resolved: ResolvedConfig): BlockStyle {
+  if (value === undefined) return style;
+  const dpi = resolved.page.dpi;
+  const indentPx = lengthAttr(value, dpi, dimensionToPx(resolved.bodyText.fontSize, dpi));
+  if (indentPx === undefined || !Number.isFinite(indentPx)) return style;
+  if (indentPx > 0) return { ...style, indentPx };
+  if (style.indentPx === undefined) return style;
+  const { indentPx: _cleared, ...rest } = style;
+  void _cleared;
+  return rest;
+}
+
 /** Upper-case `text` one UTF-16 code unit at a time, keeping any character
  *  whose upper-case form is not exactly one code unit (`ß` → `SS`, ligatures)
  *  so the result has the same length as the input and per-character source
@@ -120,7 +139,10 @@ export function resolveBlockKind(
     case 'heading': {
       const level = rawBlock.level ?? 1;
       const levelCfg = ctx.headingLevels?.forBlock(rawBlock) ?? resolved.headings.levels.find((l) => l.level === level);
-      const style = resolveHeadingStyle(level, resolved, levelCfg, rawBlock.spans.some((s) => s.bold));
+      const style = withHeadingIndentAttr(
+        resolveHeadingStyle(level, resolved, levelCfg, rawBlock.spans.some((s) => s.bold)),
+        rawBlock.attrs?.indent, resolved,
+      );
       const numberPrefix = headingPrefixes[blockIdx];
       const headingNumber = ctx.headingNumbers?.[blockIdx];
       let contentBlock: ContentBlock = rawBlock;

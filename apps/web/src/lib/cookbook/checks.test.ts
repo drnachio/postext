@@ -264,3 +264,55 @@ describe("C30: the EPUBs a pen writes (#404)", () => {
     expect(of("C30", runChecks(input()))).toEqual([]);
   });
 });
+
+describe("C31: config values the engine replaced (#468)", () => {
+  const grid = { kind: "cjkGridClamped", path: "cjk.grid.linesPerPage", value: "15", used: "14" };
+
+  it("fails a character grid the page cannot hold", () => {
+    expect(of("C31", runChecks(input({ facts: facts({ configWarnings: [grid] }) })))).toEqual([{
+      check: "C31",
+      severity: "fail",
+      detail: "cjkGridClamped: cjk.grid.linesPerPage asks for 15, the margins leave room for 14; the grid sets 14",
+    }]);
+  });
+
+  it("fails every substitution that changes the page, and warns on a font stack", () => {
+    const configWarnings = [
+      { kind: "sideColumnPercentClamped", path: "layout.sideColumnPercent", value: "120", used: "66.67" },
+      { kind: "unknownNumberFormat", path: "orderedLists.levels[1].numberFormat", value: "kanji", used: "arabic" },
+      { kind: "unknownNumerals", path: "numerals", value: "hindi", used: "arab" },
+      { kind: "unknownConfigValue", path: "footnotes.placement", value: "spread", used: "column" },
+      { kind: "unknownConfigKey", path: "headingStyles[3].minHeight", value: "minHeight", used: "", suggestion: "lineHeight" },
+      { kind: "fontFamilyStack", path: "bodyText.fontFamily", value: "Zen Old Mincho, serif", used: "Zen Old Mincho" },
+    ];
+    const c31 = of("C31", runChecks(input({ facts: facts({ configWarnings }) })));
+    expect(c31.map((f) => [f.severity, f.detail])).toEqual([
+      ["fail", 'sideColumnPercentClamped: layout.sideColumnPercent "120" leaves a column with no width; the columns are cut at 66.67 %'],
+      ["fail", 'unknownNumberFormat: orderedLists.levels[1].numberFormat "kanji" is no format the engine knows; it numbers in arabic'],
+      ["fail", 'unknownNumerals: numerals "hindi" names no digit system; the digits are arab'],
+      ["fail", 'unknownConfigValue: footnotes.placement "spread" is not one of its choices; the engine used column'],
+      ["fail", "unknownConfigKey: headingStyles[3].minHeight is no key of that setting (lineHeight?); the engine ignores it"],
+      ["warn", 'fontFamilyStack: bodyText.fontFamily "Zen Old Mincho, serif" is a font stack; the text is set in Zen Old Mincho alone'],
+    ]);
+  });
+
+  it("warns on a kind it does not know yet", () => {
+    const future = { kind: "someNewClamp", path: "page.x", value: "3", used: "2" };
+    expect(of("C31", runChecks(input({ facts: facts({ configWarnings: [future] }) })))).toEqual([
+      { check: "C31", severity: "warn", detail: 'someNewClamp: page.x "3"; the engine used 2' },
+    ]);
+  });
+
+  it("lets a recipe that shows one list it in expect.warnings", () => {
+    const m = meta({ capture: { hero: 1, card: "page", expect: { warnings: ["cjkGridClamped"] } } } as Partial<RecipeMeta>);
+    const found = runChecks(input({ meta: m, facts: facts({ configWarnings: [grid] }) }));
+    expect(of("C31", found)).toEqual([]);
+    // Listed and present: C5 does not call it absent.
+    expect(of("C5", found)).toEqual([]);
+  });
+
+  it("passes a capture without config warnings, or from an engine that records none", () => {
+    expect(of("C31", runChecks(input({ facts: facts({ configWarnings: [] }) })))).toEqual([]);
+    expect(of("C31", runChecks(input()))).toEqual([]);
+  });
+});

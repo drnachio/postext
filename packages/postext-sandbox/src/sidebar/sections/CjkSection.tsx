@@ -120,6 +120,7 @@ export const CjkSection = memo(function CjkSection() {
   const hanging = raw?.hangingPunctuation ?? DEFAULT_CJK_CONFIG.hangingPunctuation;
   const spaceAfterQuestion = raw?.spaceAfterQuestion ?? DEFAULT_CJK_CONFIG.spaceAfterQuestion;
   const paragraphStartBracket = raw?.paragraphStartBracket ?? DEFAULT_CJK_CONFIG.paragraphStartBracket;
+  const wordBreak = raw?.wordBreak ?? DEFAULT_CJK_CONFIG.wordBreak;
   const latinSpacing = raw?.latinSpacing ?? DEFAULT_CJK_CONFIG.latinSpacing;
   const uprightDigits = raw?.uprightDigits ?? DEFAULT_CJK_CONFIG.uprightDigits;
   const autoRegion = cjkRegionOf(locale) ?? 'mainland';
@@ -242,6 +243,18 @@ export const CjkSection = memo(function CjkSection() {
               tooltip={labels.cjkLineBreakTooltip}
               isDefault={lineBreak === DEFAULT_CJK_CONFIG.lineBreak}
               onReset={() => resetField('lineBreak')}
+            />
+            <SelectInput
+              label={labels.cjkWordBreak}
+              value={wordBreak}
+              options={[
+                { value: 'normal', label: labels.cjkWordBreakNormal },
+                { value: 'keep-all', label: labels.cjkWordBreakKeepAll },
+              ]}
+              onChange={(v) => write({ ...raw, wordBreak: v as CjkConfig['wordBreak'] })}
+              tooltip={labels.cjkWordBreakTooltip}
+              isDefault={wordBreak === DEFAULT_CJK_CONFIG.wordBreak}
+              onReset={() => resetField('wordBreak')}
             />
             <SelectInput
               label={labels.cjkTrimLineStart}

@@ -77,6 +77,7 @@ import { dimensionToPx } from '../units';
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
 import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import { sliceSpan } from '../parse/links';
+import { indentColumn, listDepth, nestListItem } from '../parse/listNesting';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { pickTableStyle } from '../defaults/tableStyle';
@@ -405,12 +406,13 @@ interface TableLayoutStyle {
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
- *  authored, the whitespace that follows it, and the nesting depth (from the
- *  leading indentation, two spaces per level). */
+ *  authored, the whitespace that follows it, and the column of its leading
+ *  indentation (the cell nests its items as the parser nests a list's, see
+ *  `parse/listNesting.ts`). */
 interface CellItemMarker {
   text: string;
   ws: string;
-  level: number;
+  column: number;
 }
 
 /** Markers a cell paragraph may open with: bullets, dashes, a number with
@@ -461,7 +463,7 @@ function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarker; span
   const [whole, indent, text, ws] = m as unknown as [string, string, string, string];
   const rest = first.text.slice(whole.length);
   const stripped = rest.length > 0 ? [first.links ? sliceSpan(first, whole.length) : { ...first, text: rest }, ...spans.slice(1)] : spans.slice(1);
-  return { marker: { text, ws, level: Math.min(5, 1 + Math.floor(indent.length / 2)) }, spans: stripped };
+  return { marker: { text, ws, column: indentColumn(indent) }, spans: stripped };
 }
 
 /** The four faces a caption or note run is set in (normal, bold, italic,
@@ -544,9 +546,13 @@ function measureCellContent(
       : textAlign === 'right' ? Math.max(0, width - ink)
         : 0;
   };
+  // Marker columns of the open items: an item nests under the one it is
+  // indented past (#465); a plain paragraph closes the list.
+  let openItems: readonly number[] = [];
   for (const paragraph of paragraphs) {
     const item = takeCellItemMarker(paragraph);
     if (!item) {
+      openItems = [];
       const m = measure(paragraph, width);
       lines.push(...m.lines.map((line) => shiftLines([line], slack(line), y)[0]!));
       y += m.lines.length * set.lineHeightPx;
@@ -554,7 +560,8 @@ function measureCellContent(
     }
     const markerWidth = measureTextWidth(item.marker.text, set.fontString) + tracking * graphemeCount(item.marker.text);
     const indentPx = markerWidth + listGapPx;
-    const levelOffset = (item.marker.level - 1) * indentPx;
+    openItems = nestListItem(openItems, item.marker.column);
+    const levelOffset = (listDepth(openItems) - 1) * indentPx;
     const textX = levelOffset + indentPx;
     const m = measure(item.spans, width - textX);
     m.lines.forEach((line, i) => {

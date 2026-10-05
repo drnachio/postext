@@ -1868,6 +1868,11 @@ export interface ParagraphStyleConfig {
    *  is longer (`ß` → `SS`) is left as it is. Maths is left alone. Default
    *  `'none'`. */
   textTransform?: ParagraphTextTransform;
+  /** Where CJK lines of the paragraphs break between characters (see
+   *  {@link CjkWordBreak}): `'keep-all'` only at spaces and next to
+   *  punctuation (phrase-spaced kana text, 分かち書き), `'normal'` between
+   *  any two characters. Unset: the document's `cjk.wordBreak`. */
+  wordBreak?: CjkWordBreak;
 }
 
 export type ParagraphTextTransform = 'none' | 'uppercase';
@@ -1898,6 +1903,8 @@ export interface ResolvedParagraphStyleConfig {
   marginBottom: Dimension;
   snapToGrid: boolean;
   textTransform: ParagraphTextTransform;
+  /** Absent when the style sets none (the document's `cjk.wordBreak`). */
+  wordBreak?: CjkWordBreak;
 }
 
 // ---------------------------------------------------------------------------
@@ -3765,6 +3772,12 @@ export interface CjkConfig {
    *  convention of literary books), and for the Chinese regions the
    *  bracket is set as at any line start (`trimLineStart`). */
   paragraphStartBracket?: 'auto' | CjkParagraphStartBracket;
+  /** Where a line of CJK text may break between characters (see
+   *  {@link CjkWordBreak}): `'keep-all'` breaks only at the spaces between
+   *  phrases, for kana text written with spaces (分かち書き: primers,
+   *  picture books) and Korean. Default `'normal'`. A paragraph style may
+   *  set its own (`ParagraphStyleConfig.wordBreak`). */
+  wordBreak?: CjkWordBreak;
   /** The space set between a Han character (or kana) and a Latin letter or
    *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
    *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
@@ -4044,6 +4057,18 @@ export type CjkHangingPunctuation = 'none' | 'allow' | 'force';
  *  `trimLineStart`. */
 export type CjkParagraphStartBracket = 'indent' | 'half' | 'flush';
 
+/** Where a line of CJK text may break between two characters (CSS
+ *  `word-break`):
+ *  - `normal`: between any two characters, as `cjk.lineBreak` allows;
+ *  - `keep-all`: only at a space (U+0020, U+3000), at a zero-width space,
+ *    and next to punctuation where `cjk.lineBreak` allows it (after 、。」,
+ *    before 「); never between two letters (kana, kanji, hangul, Latin).
+ *    The text is written with a space between phrases (分かち書き in
+ *    picture books and first readers set in kana, Korean 어절), and lines
+ *    break only there; kinsoku still applies. A phrase longer than the
+ *    line is broken inside it anyway, where `normal` would break it. */
+export type CjkWordBreak = 'normal' | 'keep-all';
+
 /** The character grid of `cjk.grid`: the type area is derived from the
  *  body size, not authored as margins. Each column is `charsPerLine` ems
  *  wide and holds `linesPerPage` lines of the body's line height; with two
@@ -4086,6 +4111,9 @@ export interface ResolvedCjkConfig {
   /** Set only when it differs from a line start: absent, a bracket that
    *  opens a paragraph is set as at any line start. */
   paragraphStartBracket?: CjkParagraphStartBracket;
+  /** Set only when `'keep-all'`: absent, lines break between any two
+   *  characters (`normal`). */
+  wordBreak?: 'keep-all';
   latinSpacing: Dimension;
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;

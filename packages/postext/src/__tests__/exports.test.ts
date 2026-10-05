@@ -199,6 +199,7 @@ describe("package exports", () => {
       "resolveCaptionStyleConfig",
       "stripCaptionStyleDefaults",
       "mergeCaptionStyle",
+      "defaultCaptionLabels",
       "DEFAULT_DIAGRAM_STYLE_CONFIG",
       "resolveDiagramStyleConfig",
       "stripDiagramStyleDefaults",

@@ -101,10 +101,11 @@ def read_source(src: str | Path | bytes) -> str:
 # --- character classes ---------------------------------------------------------
 
 # The base of a reading written without ｜ is the run of characters of one
-# kind before 《 (注記一覧「ルビ」): kanji (々〆〇ヶ仝 count as kanji, and a
-# resolved or unresolved 外字), hiragana, katakana, full-width or half-width
-# Latin letters and digits.
-_KANJI_RE = re.compile(r"[㐀-䶿一-鿿豈-﫿\U00020000-\U0003FFFF々〆〇ヶ仝〓]")
+# kind before 《 (注記一覧「ルビ」): kanji (the marks 々〻〆〇ヶ仝 count as
+# kanji, so 日〻《ひび》 reads over both characters, and a resolved or
+# unresolved 外字), hiragana, katakana, full-width or half-width Latin
+# letters and digits.
+_KANJI_RE = re.compile(r"[㐀-䶿一-鿿豈-﫿\U00020000-\U0003FFFF々〻〆〇ヶ仝〓]")
 _HIRA_RE = re.compile(r"[ぁ-ゟー]")
 _KATA_RE = re.compile(r"[゠-ヿㇰ-ㇿー]")
 _ZEN_RE = re.compile(r"[Ａ-Ｚａ-ｚ０-９Α-ωА-я]")
@@ -113,7 +114,7 @@ _CLASSES = (_KANJI_RE, _HIRA_RE, _KATA_RE, _ZEN_RE, _HAN_RE)
 
 # A compact ruby `{base|reading}` needs a Han, kana or bopomofo letter in
 # its base (packages/postext/src/parse/annotations.ts RUBY_BASE_RE).
-_COMPACT_BASE_RE = re.compile(r"[㐀-䶿一-鿿豈-﫿\U00020000-\U0003FFFFぁ-ヿㇰ-ㇿ㄀-ㄯ々〇]")
+_COMPACT_BASE_RE = re.compile(r"[㐀-䶿一-鿿豈-﫿\U00020000-\U0003FFFFぁ-ヿㇰ-ㇿ㄀-ㄯ々〻〇]")
 
 # Opening brackets a paragraph may start with (JLReq cl-01).
 OPENING_BRACKETS = "「『（〔［｛〈《【〘〖〝“‘(["
@@ -929,7 +930,7 @@ class InlineParser:
             target.attrs["okuri"] = target.attrs.get("okuri", "") + okuri
 
 
-_HAN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U0003ffff々〇]")
+_HAN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U0003ffff々〻〇]")
 
 
 def _has_kunten(nodes: list) -> bool:

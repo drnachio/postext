@@ -56,6 +56,16 @@ class Ruby(unittest.TestCase):
         self.assertEqual(md("　雑司ヶ谷《ぞうしがや》へ"), "{雑司ヶ谷|ぞうしがや}へ")
         self.assertEqual(md("　あのタバコ《たばこ》"), "あの{タバコ|たばこ}")
 
+    def test_iteration_marks_belong_to_the_kanji_base(self):
+        # 〻 (U+303B), like 々, repeats the kanji before it: the reading
+        # covers both (日〻 is read ひび), not the mark alone.
+        self.assertEqual(md("　日〻《ひび》の"), "{日〻|ひび}の")
+        self.assertEqual(md("　時々《ときどき》"), "{時々|ときどき}")
+        self.assertEqual(md("　〆切《しめきり》"), "{〆切|しめきり}")
+        self.assertEqual(md("　八ヶ岳《やつがたけ》"), "{八ヶ岳|やつがたけ}")
+        # A run of kanji and marks starts at the change of script.
+        self.assertEqual(md("　その日〻《ひび》"), "その{日〻|ひび}")
+
     def test_explicit_base(self):
         self.assertEqual(md("　先生一人｜麦藁帽《むぎわらぼう》を"), "先生一人{麦藁帽|むぎわらぼう}を")
         self.assertEqual(md("　夕方｜折戸《おりど》の"), "夕方{折戸|おりど}の")
@@ -222,6 +232,22 @@ class Blocks(unittest.TestCase):
         self.assertEqual(out, '二人は風呂へはいった。\n\n:::paragraphs{style="aozora-end"}\n\n（『十番随筆』所収）\n\n:::')
         out = md("［＃ここから地付き］\n（一）\n（二）\n［＃ここで地付き終わり］")
         self.assertEqual(out, ':::paragraphs{style="aozora-end"}\n\n（一）\n\n（二）\n\n:::')
+
+    def test_raised_end_blocks_take_an_end_indent(self):
+        # ここから地からN字上げ: the block's lines end N body ems short of
+        # the line end, through the style's endIndent; nothing is a gap.
+        r = result("［＃ここから地から３字上げ］\n明治四十年\n夏目金之助\n［＃ここで字上げ終わり］\n　本文。")
+        self.assertEqual(r.markdown.strip(), ':::paragraphs{style="aozora-end3"}\n\n明治四十年\n\n夏目金之助\n\n:::\n\n本文。')
+        self.assertEqual(r.styles, [{
+            "id": "aozora-end3", "name": "Aozora 地から3字上げ", "textAlign": "end",
+            "firstLineIndent": {"value": 0, "unit": "em"}, "endIndent": {"value": 3, "unit": "em"},
+        }])
+        self.assertEqual(r.style_gaps, [])
+        self.assertEqual(r.report["gaps"], {})
+        # The one-line form says the same with a full-width digit.
+        r = result("［＃地から１字上げ］（明治四十年）")
+        self.assertEqual(r.styles[0]["endIndent"], {"value": 1, "unit": "em"})
+        self.assertEqual(r.report["gaps"], {})
 
     def test_breaks_blank_lines_and_editorial_notes(self):
         out = md("　一。\n［＃改ページ］\n　二。\n［＃改丁］\n　三。\n［＃改見開き］\n［＃改段］\n　四。\n\n　五。")

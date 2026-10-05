@@ -1625,7 +1625,7 @@ El xinès admet `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, 
   </tbody>
 </table>
 
-El prefix del peu és el nom del tipus (*Figura 1.1.*). Els tipus xinesos numeren dins del capítol amb un guionet, `{h1}-{n}` (图 1-1); amb els ajustos de peu `labelNumberGap: ''` i `labelSeparator: '　'` el peu es llegeix 图1-1　标题 (vegeu [Estil de peus de recurs](#estil-dels-peus-de-recurs)). L'índex alfabètic també segueix la llengua: 见 i 另见 davant d'una remissió, 符号 i 数字 sobre els símbols i els números en xinès simplificat; 見, 另見, 符號 i 數字 en tradicional. El japonès numera els seus tipus de la mateixa manera (図1-1), escriu les referències creuades com 第3章, 2.3節 i 12ページ, titula la bibliografia 参考文献, i el seu índex imprimeix 記号 i 数字 sobre els símbols i els números i escriu les remissions amb una fletxa, `→夏目漱石` per a *vegeu* i `→夏目漱石、森鷗外も見よ` després de les pàgines per a *vegeu també*, amb les etiquetes en rodona. L'àrab numera els seus tipus de la mateixa manera, `{h1}-{n}` (شكل 2-3), escriu les referències creuades com الفصل 3, القسم 2-1 i ص 12, titula la bibliografia المراجع, i el seu índex imprimeix انظر / انظر أيضًا, رموز i أرقام, amb la coma i el punt i coma àrabs (، ؛).
+El prefix del peu és el nom del tipus (*Figura 1.1.*). Els tipus xinesos numeren dins del capítol amb un guionet, `{h1}-{n}` (图 1-1); amb els ajustos de peu `labelNumberGap: ''` i `labelSeparator: '　'` el peu es llegeix 图1-1　标题 (vegeu [Estil de peus de recurs](#estil-dels-peus-de-recurs)). L'índex alfabètic també segueix la llengua: 见 i 另见 davant d'una remissió, 符号 i 数字 sobre els símbols i els números en xinès simplificat; 見, 另見, 符號 i 數字 en tradicional. El japonès numera els seus tipus de la mateixa manera i compon els seus peus com 図1-1　題 sense els dos ajustos, escriu les referències creuades com 第3章, 2.3節 i 12ページ, titula la bibliografia 参考文献, i el seu índex imprimeix 記号 i 数字 sobre els símbols i els números i escriu les remissions amb una fletxa, `→夏目漱石` per a *vegeu* i `→夏目漱石、森鷗外も見よ` després de les pàgines per a *vegeu també*, amb les etiquetes en rodona. L'àrab numera els seus tipus de la mateixa manera, `{h1}-{n}` (شكل 2-3), escriu les referències creuades com الفصل 3, القسم 2-1 i ص 12, titula la bibliografia المراجع, i el seu índex imprimeix انظر / انظر أيضًا, رموز i أرقام, amb la coma i el punt i coma àrabs (، ؛).
 
 Un document en xinès, japonès o coreà declara la seva llengua a la sortida HTML (`lang` a l'arrel `.pt-doc`, amb `zh-Hant-TW` complet) i al canvas que pinta (`ctx.lang`, a Chrome 136 i posteriors), de manera que el navegador dibuixa les formes de glif de la seva regió: Unicode unifica els caràcters han, i un mateix punt de codi es veu diferent en una font taiwanesa i en una de japonesa. Els altres documents no porten `lang`, com abans. El PDF declara `/Lang` a partir de `locale` per a tot document, etiquetat o no, amb la seva escriptura i la seva regió. Un document en una llengua que s'escriu de dreta a esquerra (àrab, persa, urdú, hebreu…) també declara la seva llengua: les formes de la llengua de la font (`locl`) i la font de reserva la segueixen.
 
@@ -3487,6 +3487,7 @@ interface CjkConfig {
   hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
   spaceAfterQuestion?: 'auto' | boolean;    // Un quadratí després de ？！ dins d'un paràgraf (Japó).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un parèntesi que obre un paràgraf sagnat.
+  wordBreak?: 'normal' | 'keep-all';        // keep-all: tallar només als espais (分かち書き, coreà).
   latinSpacing?: Dimension;                 // Entre xinès i llatí; per defecte 0,25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Text vertical: nombres en una casella; per defecte 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -3568,6 +3569,12 @@ interface CjkConfig {
       <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
       <td><code>'auto'</code></td>
       <td>Com es compon un parèntesi d'obertura que comença un paràgraf amb sagnat de primera línia (JLReq §3.1.5): <code>'indent'</code> conserva el sagnat i dona al parèntesi el seu quadratí després d'aquest (patró ①); <code>'half'</code> deixa que el parèntesi cedeixi el blanc que hi ha davant del seu dibuix, que omple llavors la segona meitat d'un sagnat d'un quadratí, i el text comença on comença el dels altres paràgrafs (patró ③); <code>'flush'</code> posa el parèntesi a la vora, sense sagnat (天付き). Un paràgraf sense sagnat o amb sagnat francès es queda com és. <code>'auto'</code>: <code>'half'</code> al Japó; a les altres regions el parèntesi es compon com al principi de qualsevol línia, igual que abans.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>On es talla una línia entre dos caràcters. <code>'keep-all'</code> talla només en un espai (U+0020, U+3000) i al costat de la puntuació on <code>lineBreak</code> ho permet (després de 、。」, abans de 「), mai entre dues lletres (kana, kanji, hangul, llatines): per a kana escrit amb un espai entre frases (分かち書き), com als llibres il·lustrats i les cartilles, i per al coreà. Una frase més llarga que la línia es talla per dins com la tallaria <code>'normal'</code>. Un estil de paràgraf pot fixar el seu (<code>wordBreak</code>). Des de postext 1.16.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3779,7 +3786,7 @@ El pas de línia no canvia mai: marques i lectures viuen a l'interlineat. Un par
 
 Al VDT un segment marcat porta `cjkMarks`, i la composició col·loca els punts i les línies de les seves línies a `VDTLine.marks` (punts, cercles, sèsams, línies rectes, dobles, de punts i ondulades, en el marc de flux de la línia), que el canvas, l'HTML i el PDF dibuixen tal qual (PDF: `Artifact /Layout`; HTML: caixes `aria-hidden` i el text amb punts dins `<em>`). El segment de la base d'un ruby porta `ruby` (la lectura i els seus trossos; en una lectura japonesa, també l'`id` que la seva anotació comparteix amb els altres caràcters d'una paraula jukugo, i `jukugo`) i pinta la base a `inkOffset`, amb `tracking`, quan la lectura l'ha eixamplada; un caràcter amb marques de kanbun porta `kunten` (els seus trossos i el seu tatesen); el fragment d'una nota warichu en una línia és un segment el `text` del qual és la fila de dalt i després la de baix, i el `warichu` del qual guarda les files que els renderitzadors pinten al seu lloc. El PDF etiquetat posa la lectura al `RT` del `Ruby` de la seva base i la nota en un `Warichu`, i l'`/ActualText` de la línia llegeix el text de la base i la nota una sola vegada. Les marques, lectures i notes es dibuixen al text, els títols, les llistes i els requadres, i als peus de figura, les cel·les de taula i les notes dels recursos, les línies dels quals porten `marks` i `ruby` com les del text; el text de disseny conserva el text sense elles.
 
-El resolutor i el depurador segueixen el patró de les altres seccions. `spaceAfterQuestion` i `paragraphStartBracket`, i l'`overhang`, l'`align` i el `smallKana` del ruby, només són a la configuració resolta quan canvien alguna cosa (al Japó, o quan es fixen). `setCjkLineBreak` i `setCjkComposition` fixen el nivell i la composició (amplades de la puntuació, puntuació penjada, espai entre xinès i llatí; `cjkCompositionOf(resolved.cjk, dpi)`) per a les mesures fetes fora de `buildDocument`, que els pren de la configuració. Fora d'una composició, els signes conserven tot el seu avanç i no es posa espai entre xinès i llatí:
+El resolutor i el depurador segueixen el patró de les altres seccions. `spaceAfterQuestion`, `paragraphStartBracket` i `wordBreak`, i l'`overhang`, l'`align` i el `smallKana` del ruby, només són a la configuració resolta quan canvien alguna cosa (al Japó, o quan es fixen). `setCjkLineBreak` i `setCjkComposition` fixen el nivell i la composició (amplades de la puntuació, puntuació penjada, espai entre xinès i llatí; `cjkCompositionOf(resolved.cjk, dpi)`) per a les mesures fetes fora de `buildDocument`, que els pren de la configuració. Fora d'una composició, els signes conserven tot el seu avanç i no es posa espai entre xinès i llatí:
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -4390,14 +4397,14 @@ const config: PostextConfig = {
     <tr>
       <td><code>labelNumberGap</code></td>
       <td><code>string</code></td>
-      <td>espai de no separació</td>
-      <td>El que separa l'etiqueta del número, al peu i en una <code>:ref</code> en línia: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El xinès els compon junts: <code>''</code> dona 图1-1.</td>
+      <td>espai de no separació; <code>''</code> en un document japonès</td>
+      <td>El que separa l'etiqueta del número, al peu i en una <code>:ref</code> en línia: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El xinès i el japonès els componen junts: <code>''</code> dona 图1-1, i és el valor per defecte en un document japonès (図1-1).</td>
     </tr>
     <tr>
       <td><code>labelSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>'. '</code></td>
-      <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题). Una etiqueta sense número conserva la seva pròpia regla: un punt, llevat que el prefix ja acabi en punt.</td>
+      <td><code>'. '</code>; <code>'　'</code> en un document japonès</td>
+      <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题), i els japonesos també, per defecte (図1-1　東京の地図, JLReq §4.3). Una etiqueta sense número conserva la seva pròpia regla: un punt, llevat que el prefix ja acabi en punt.</td>
     </tr>
   </tbody>
 </table>
@@ -4897,6 +4904,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
       <td>Caixa dels paràgrafs: <code>'uppercase'</code> els compon en majúscules (un repartiment, una acotació), també les paraules d'un xip i l'etiqueta d'una <code>:ref</code>. Conserva la longitud lletra a lletra, perquè el mapa de posicions de l'editor continuï sent un a un: una lletra la majúscula de la qual és més llarga (<code>ß</code>) es queda tal qual. Les fórmules no canvien, i un titolet que llegeix el paràgraf com a marca (<code>&#123;firstMark.<em>estil</em>&#125;</code>) pren el text tal com està escrit; el <code>textTransform</code> propi d'un text de disseny el passa a majúscules.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>On es tallen entre caràcters les línies CJK dels paràgrafs (vegeu <code>cjk.wordBreak</code>): <code>'keep-all'</code> per a una cartilla en kana amb espais entre frases citada en un llibre de prosa corrent, <code>'normal'</code> per al contrari. Des de postext 1.16.</td>
     </tr>
   </tbody>
 </table>

@@ -1,4 +1,4 @@
-import type { EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
+import type { CjkWordBreak, EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
@@ -63,6 +63,9 @@ export interface BlockStyle {
    *  or bold (`'bold'`), and `'overline'` draws a rule over the runs.
    *  Unset: in italics. */
   emphasis?: Exclude<EmphasisStyle, 'italic'>;
+  /** Where the block's CJK lines break between characters (a paragraph
+   *  style's `wordBreak`). Unset: the document's `cjk.wordBreak`. */
+  cjkWordBreak?: CjkWordBreak;
 }
 
 /** The four faces of a text style: `italic` sets the regular text in
@@ -310,5 +313,6 @@ export function resolveParagraphStyle(
     ...(Number.isFinite(endIndentPx) && endIndentPx > 0 ? { endIndentPx } : {}),
     ...(style.smallCaps ? { smallCaps: true } : {}),
     ...(style.textTransform === 'uppercase' ? { uppercase: true } : {}),
+    ...(style.wordBreak ? { cjkWordBreak: style.wordBreak } : {}),
   };
 }

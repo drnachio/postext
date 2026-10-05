@@ -1630,7 +1630,7 @@ Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `z
   </tbody>
 </table>
 
-The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Japanese numbers its types the same way (図1-1), writes cross-references as 第3章, 2.3節 and 12ページ, titles the bibliography 参考文献, and its index prints 記号 and 数字 over symbols and numbers and writes its cross-references with an arrow, `→夏目漱石` for *see* and `→夏目漱石、森鷗外も見よ` after the pages for *see also*, the labels upright. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
+The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Japanese numbers its types the same way and sets its captions 図1-1　題 without the two settings, writes cross-references as 第3章, 2.3節 and 12ページ, titles the bibliography 参考文献, and its index prints 記号 and 数字 over symbols and numbers and writes its cross-references with an arrow, `→夏目漱石` for *see* and `→夏目漱石、森鷗外も見よ` after the pages for *see also*, the labels upright. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
 
 A Chinese, Japanese or Korean document declares its language in the HTML output (`lang` on the `.pt-doc` root, `zh-Hant-TW` kept whole) and on the canvas it paints (`ctx.lang`, in Chrome 136 and later), so the browser draws the region's glyph forms: Unicode unifies the Han characters, and one code point looks different in a Taiwanese and in a Japanese font. Other documents carry no `lang`, as before. The PDF declares `/Lang` from `locale` for every document, tagged or not, with its script and region. A document in a language written right to left (Arabic, Persian, Urdu, Hebrew…) declares its language too: the font's language forms (`locl`) and the fallback font follow it.
 
@@ -3499,6 +3499,7 @@ interface CjkConfig {
   hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
   spaceAfterQuestion?: 'auto' | boolean;    // One em after ？！ inside a paragraph (Japan).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // A bracket opening an indented paragraph.
+  wordBreak?: 'normal' | 'keep-all';        // keep-all: break only at spaces (分かち書き, Korean).
   latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -3580,6 +3581,12 @@ interface CjkConfig {
       <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
       <td><code>'auto'</code></td>
       <td>How an opening bracket that starts a paragraph with a first-line indent is set (JLReq §3.1.5): <code>'indent'</code> keeps the indent and gives the bracket its em after it (pattern ①); <code>'half'</code> lets the bracket give up the blank before its glyph, which then fills the second half of a one-em indent, the text starting where the other paragraphs' text starts (pattern ③); <code>'flush'</code> sets the bracket at the edge with no indent (天付き). A paragraph with no indent or a hanging indent is left alone. <code>'auto'</code>: <code>'half'</code> in Japan; elsewhere the bracket is set as at any line start, as before.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>Where a line breaks between two characters. <code>'keep-all'</code> breaks only at a space (U+0020, U+3000) and next to punctuation where <code>lineBreak</code> allows it (after 、。」, before 「), never between two letters (kana, kanji, hangul, Latin): for kana written with a space between phrases (分かち書き), as in picture books and first readers, and for Korean. A phrase longer than the line is broken inside it as <code>'normal'</code> would break it. A paragraph style may set its own (<code>wordBreak</code>). Since postext 1.16.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3792,7 +3799,7 @@ The line pitch never changes: marks and readings live in the leading. A paragrap
 
 In the VDT a marked segment carries `cjkMarks`, and the layout places the dots and lines on its lines as `VDTLine.marks` (dots, circles, sesames, straight, double, dotted and wavy lines, in the line's flow frame), which the canvas, HTML and PDF draw as they are (PDF: `Artifact /Layout`; HTML: `aria-hidden` boxes, dotted text in `<em>`). A ruby base's segment carries `ruby` (the reading and its runs; for a Japanese reading also the `id` its annotation shares with the other characters of a jukugo word, and `jukugo`) and paints its base at `inkOffset`, with `tracking`, when the reading spread it; a character with kanbun marks carries `kunten` (its runs and its tatesen); a warichu note's part on a line is one segment whose `text` is its upper row then its lower one and whose `warichu` holds the rows the renderers paint instead. Tagged PDF puts a reading in the `RT` of its base's `Ruby` and a note in a `Warichu`, and the line's `/ActualText` reads the base text and the note once. Marks, readings and notes are drawn in body text, headings, lists and boxes, and in the captions, table cells and notes of resources, whose lines carry `marks` and `ruby` as body lines do; design text keeps the text without them.
 
-Resolver and stripper match the other sections. `spaceAfterQuestion` and `paragraphStartBracket`, and the ruby's `overhang`, `align` and `smallKana`, are in the resolved config only when they change something (in Japan, or when set). `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
+Resolver and stripper match the other sections. `spaceAfterQuestion`, `paragraphStartBracket` and `wordBreak`, and the ruby's `overhang`, `align` and `smallKana`, are in the resolved config only when they change something (in Japan, or when set). `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -4404,14 +4411,14 @@ const config: PostextConfig = {
     <tr>
       <td><code>labelNumberGap</code></td>
       <td><code>string</code></td>
-      <td>no-break space</td>
-      <td>What stands between the label and the number, in the caption and in an inline <code>:ref</code>: <em>Figure 1.7</em>, <em>Fig. 1.7</em>. Chinese sets them solid: <code>''</code> gives 图1-1.</td>
+      <td>no-break space; <code>''</code> in a Japanese document</td>
+      <td>What stands between the label and the number, in the caption and in an inline <code>:ref</code>: <em>Figure 1.7</em>, <em>Fig. 1.7</em>. Chinese and Japanese set them solid: <code>''</code> gives 图1-1, and is the default in a Japanese document (図1-1).</td>
     </tr>
     <tr>
       <td><code>labelSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>'. '</code></td>
-      <td>What follows the number, before the description: <em>Figure 1.7. A caption</em>. Chinese captions take an ideographic space, <code>'　'</code> (图1-1　标题). A label without a number keeps its own rule: a full stop, unless the prefix ends in one.</td>
+      <td><code>'. '</code>; <code>'　'</code> in a Japanese document</td>
+      <td>What follows the number, before the description: <em>Figure 1.7. A caption</em>. Chinese captions take an ideographic space, <code>'　'</code> (图1-1　标题), and so do Japanese ones, by default (図1-1　東京の地図, JLReq §4.3). A label without a number keeps its own rule: a full stop, unless the prefix ends in one.</td>
     </tr>
   </tbody>
 </table>
@@ -4911,6 +4918,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
       <td>Letter case of the paragraphs: <code>'uppercase'</code> sets them in capitals (a cast list, a line of stage business), the words of a chip and the label of a <code>:ref</code> included. Length for length, so the editor's source map stays one to one: a letter whose capital is longer (<code>ß</code>) is left as written. Maths is left alone, and a running head that reads the paragraph as a mark (<code>&#123;firstMark.<em>style</em>&#125;</code>) takes the text as written; a design text's own <code>textTransform</code> sets it in capitals.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>Where the paragraphs' CJK lines break between characters (see <code>cjk.wordBreak</code>): <code>'keep-all'</code> for a primer in phrase-spaced kana quoted in a book of ordinary prose, <code>'normal'</code> for the reverse. Since postext 1.16.</td>
     </tr>
   </tbody>
 </table>

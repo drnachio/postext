@@ -52,7 +52,7 @@ export const metadata = {
   </tbody>
 </table>
 
-والكلمات المدمجة يابانية أيضًا: تطبع الإحالات <span lang="ja" className="font-body">第3章</span> و<span lang="ja" className="font-body">2.3節</span> و<span lang="ja" className="font-body">12ページ</span>، وعنوان قائمة المراجع <span lang="ja" className="font-body">参考文献</span>، والجدول أو الإطار المقسوم يقول <span lang="ja" className="font-body">次ページへ続く</span>، ويعنون الفهرس رموزه وأرقامه بـ <span lang="ja" className="font-body">記号</span> و<span lang="ja" className="font-body">数字</span> ويكتب إحالاته بسهم (<span lang="ja" className="font-body">金之助　→夏目漱石</span>، و<span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> بعد الصفحات)، ويسمّي كتاب EPUB عناصر تنقّله <span lang="ja" className="font-body">目次</span> و<span lang="ja" className="font-body">表紙</span> و<span lang="ja" className="font-body">本文</span>. وجدول الكلمات الذي لا مدخل ياباني فيه يعطي الإنجليزية، ولا يعطي الصينية أبدًا. وأنواع الأشكال والجداول تُرقَّم بحسب الفصل (<span lang="ja" className="font-body">図1-1</span>)، ويجعل `captionStyle: { labelNumberGap: '', labelSeparator: '　' }` التعليق <span lang="ja" className="font-body">図1-1　東京の地図</span>. وتقسيم الكلمات بالواصلة معطّل، كما في كل مستند CJK، ما لم تفعّله للكلمات اللاتينية.
+والكلمات المدمجة يابانية أيضًا: تطبع الإحالات <span lang="ja" className="font-body">第3章</span> و<span lang="ja" className="font-body">2.3節</span> و<span lang="ja" className="font-body">12ページ</span>، وعنوان قائمة المراجع <span lang="ja" className="font-body">参考文献</span>، والجدول أو الإطار المقسوم يقول <span lang="ja" className="font-body">次ページへ続く</span>، ويعنون الفهرس رموزه وأرقامه بـ <span lang="ja" className="font-body">記号</span> و<span lang="ja" className="font-body">数字</span> ويكتب إحالاته بسهم (<span lang="ja" className="font-body">金之助　→夏目漱石</span>، و<span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> بعد الصفحات)، ويسمّي كتاب EPUB عناصر تنقّله <span lang="ja" className="font-body">目次</span> و<span lang="ja" className="font-body">表紙</span> و<span lang="ja" className="font-body">本文</span>. وجدول الكلمات الذي لا مدخل ياباني فيه يعطي الإنجليزية، ولا يعطي الصينية أبدًا. وأنواع الأشكال والجداول تُرقَّم بحسب الفصل، ويُقرأ التعليق <span lang="ja" className="font-body">図1-1　東京の地図</span>: التسمية والرقم متلاصقان، ومسافة إيديوغرافية قبل النص، ولا نقطة (JLReq §4.3). ويُقرأ `:ref` <span lang="ja" className="font-body">図1-1</span>، والجدول المستمر <span lang="ja" className="font-body">表1-1　東京の区（続き）</span>. هذه هي القيم الافتراضية لـ`captionStyle.labelNumberGap` و`labelSeparator` في المستند الياباني؛ والقيمة المضبوطة هناك هي التي تُعتمد. وتقسيم الكلمات بالواصلة معطّل، كما في كل مستند CJK، ما لم تفعّله للكلمات اللاتينية.
 
 ويُعلَن الوسم نفسه في المُخرَجات: يحمل مستند HTML وكل صفحة من صفحاته `lang="ja"`، وترسم اللوحة (Canvas) مع `ctx.lang`، ويعلن PDF `/Lang (ja)` ويشكّل نصه بأشكال الرسوم اليابانية (انظر [الخطوط](#الخطوط)). فـ Unicode يعطي 直 و骨 و角 نقطة ترميز واحدة لكل منها، والخط الياباني يرسمها رسمًا يختلف عن الخط الصيني.
 
@@ -99,6 +99,8 @@ export const metadata = {
 في كل المستويات اليابانية لا ينتهي سطر بقوس أو علامة اقتباس فاتحة، ويبقى رمز العملة مع رقمه (إلا في `ja-loose`)، ولا قاعدة للخط المائل (فتلك قاعدة GB/T 15834). ويجوز للعلامتين بعرض 2 em ―― و…… أن تفتتحا سطرًا، كما تسمح JLReq، لكنهما لا تنقسمان أبدًا، وكذلك 〳〵. ويبقى الرقم مع إشارته ووحدته (<span lang="ja" className="font-body">¥1,500</span>، <span lang="ja" className="font-body">５０％</span>)، وتبقى الكلمة اللاتينية كاملة ما لم تكن أعرض من السطر، ولا تفتتح علامة الحاشية سطرًا أبدًا: تبقى مع المحرف الذي يسبقها.
 
 حين لا يجوز للمحرف التالي أن يفتتح سطرًا، يحاول المنضِّد أولًا أن يستوعبه بالتخلي عن بياض في السطر (أويكومي، الدفع إلى الداخل)، بترتيب JLReq الوارد أدناه، ولا ينزل بالمحرف الذي قبله إلى السطر التالي (أويداشي، الدفع إلى الخارج) إلا بعد ذلك. ولا يُستبدل `々` أبدًا بالكانجي الذي يكرّره في بداية السطر (تذكر JLReq هذه الممارسة، لكنها تغيّر النص).
+
+تضع كتب الأطفال المصوّرة وكتب القراءة الأولى المكتوبة بالكانا مسافةً بين العبارات (<span lang="ja" className="font-body">分かち書き</span>، <span lang="ja" className="font-body">むかし むかし、 ある ところに</span>) ولا تكسر السطر إلا عندها. والإعداد `cjk.wordBreak: 'keep-all'` يكسر الأسطر على هذا النحو: عند مسافة (U+0020 أو U+3000) وبجوار علامات الترقيم حيث يسمح المستوى (بعد <span lang="ja" className="font-body">、。」</span> وقبل <span lang="ja" className="font-body">「</span>)، ولا يكسر أبدًا بين حرفين، كانا كانا أو كانجي أو لاتينيين. وتبقى قواعد المستوى سارية عند المسافات، أما العبارة الأطول من السطر فتنكسر من داخلها كما يكسرها المستوى. ويحدّد نمط الفقرة ما يخصّه بـ`wordBreak`، لكتاب قراءة يُقتبس في كتاب نثر عادي. والسطر المضبوط يوزّع البياض على مسافاته أولًا، حتى نصف em لكل منها، ثم بين محارفه. ويكتب EPUB المرن `word-break: keep-all`. والكورية التي تفصل كلماتها (어절) بالمسافات تستعمل الإعداد نفسه.
 
 ### الياكومونو: بياض علامات الترقيم
 
@@ -280,7 +282,7 @@ orderedLists: {
 
 ### المسافات البادئة والتوزيع المتساوي
 
-يُزيح `indent` على مستوى أو على نمط العنوانَ عن بداية السطر بوحدات em من **المتن** (字下げ): فـ `indent: { value: 6, unit: 'em' }` هو 6字下げ، مهما كان حجم العنوان نفسه. ويوزّع `jidori` العنوانَ ذا السطر الواحد بالتساوي على ذلك العدد من وحدات em **الخاصة به** (字取り): مع `jidori: 3` يُنضَّد 序章 هكذا 序　章، فيملأ ثلاثة محارف. و`{jidori=5}` بعد عنوان ما يضبط عنوانًا واحدًا، و`{jidori=0}` يلغي ما يضبطه مستواه.
+يُزيح `indent` على مستوى أو على نمط العنوانَ عن بداية السطر بوحدات em من **المتن** (字下げ): فـ `indent: { value: 6, unit: 'em' }` هو 6字下げ، مهما كان حجم العنوان نفسه. ويوزّع `jidori` العنوانَ ذا السطر الواحد بالتساوي على ذلك العدد من وحدات em **الخاصة به** (字取り): مع `jidori: 3` يُنضَّد 序章 هكذا 序　章، فيملأ ثلاثة محارف. و`{jidori=5}` بعد عنوان ما يضبط عنوانًا واحدًا، و`{jidori=0}` يلغي ما يضبطه مستواه. ويمكن للعنوان أيضًا أن يحمل `{indent=N}` خاصًّا به، بوحدات em من المتن، يتجاوز ما يضبطه مستواه أو نمطه: `## 一 {indent=3}`، و`{indent=0}` يعيده إلى بداية السطر. ويكتبه محوّل Aozora على كل عنوان انطلاقًا من ［＃N字下げ］ في المصدر.
 
 ```ts
 headings: {
@@ -531,7 +533,6 @@ python3 aozora.py 773_ruby_5968.zip -o kokoro.md --report report.json --styles s
       { "level": 5, "numberFormat": "circled-decimal", "separator": "" }
     ]
   },
-  "captionStyle": { "labelNumberGap": "", "labelSeparator": "　" },
   "header": { "elements": [] },
   "footer": {
     "elements": [

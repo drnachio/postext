@@ -14,6 +14,7 @@ import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
 import { joinEastAsianLines } from './softBreaks';
 import { asciiDigits } from '../arabicNumerals';
+import { indentColumn, listDepth, nestListItem } from './listNesting';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
@@ -370,6 +371,12 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
    *  ended a paragraph run, or it follows such a display directly. */
   const displayInterrupts = (k: number): boolean => k === interruptingDisplayAt || k === lastDisplayEnd + 1;
 
+  /** Marker columns of the list items open at the latest list item,
+   *  outermost first (see `listNesting.ts`). A list continues across blank
+   *  lines (the pipeline numbers adjacent items as one list); any other
+   *  block closes it. */
+  let openListItems: readonly number[] = [];
+
   let i = 0;
   while (i < rawLines.length) {
     const line = rawLines[i]!;
@@ -643,6 +650,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
     const isListStart =
       TASK_ITEM_RE.test(line) || ORDERED_LIST_ITEM_RE.test(line) || LIST_ITEM_RE.test(line);
     if (isListStart) {
+      if (blocks[blocks.length - 1]?.type !== 'listItem') openListItems = [];
       while (i < rawLines.length) {
         const curRaw = rawLines[i]!;
         const taskMatch = curRaw.match(TASK_ITEM_RE);
@@ -651,7 +659,10 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         const anyMatch = taskMatch ?? orderedMatch ?? unorderedMatch;
         if (anyMatch) {
           const leading = anyMatch[1]!.length;
-          const depth = Math.max(1, Math.min(5, Math.floor(leading / 2) + 1));
+          // Depth from the items this one is indented past (#465), not
+          // from a count of spaces.
+          openListItems = nestListItem(openListItems, indentColumn(anyMatch[1]!));
+          const depth = listDepth(openListItems);
           const srcStart = lineOffsets[i]!;
           const srcEnd = lineEndOffset(i);
 

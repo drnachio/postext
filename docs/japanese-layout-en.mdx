@@ -52,7 +52,7 @@ A document whose `locale` is Japanese (`ja`, `ja-JP`, `ja-Jpan`, in any case and
   </tbody>
 </table>
 
-The built-in words are Japanese too: cross-references print <span lang="ja" className="font-body">第3章</span>, <span lang="ja" className="font-body">2.3節</span> and <span lang="ja" className="font-body">12ページ</span>, the bibliography is titled <span lang="ja" className="font-body">参考文献</span>, a split table or box says <span lang="ja" className="font-body">次ページへ続く</span>, the index heads its symbols and numbers <span lang="ja" className="font-body">記号</span> and <span lang="ja" className="font-body">数字</span> and writes its cross-references with an arrow (<span lang="ja" className="font-body">金之助　→夏目漱石</span>, and <span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> after the pages), and an EPUB names its navigation <span lang="ja" className="font-body">目次</span>, <span lang="ja" className="font-body">表紙</span>, <span lang="ja" className="font-body">本文</span>. A table of strings with no Japanese entry gives English, never Chinese. The figure and table types number by chapter (<span lang="ja" className="font-body">図1-1</span>), and `captionStyle: { labelNumberGap: '', labelSeparator: '　' }` sets a caption as <span lang="ja" className="font-body">図1-1　東京の地図</span>. Hyphenation is off, as in every CJK document, unless it is turned on for the Latin words.
+The built-in words are Japanese too: cross-references print <span lang="ja" className="font-body">第3章</span>, <span lang="ja" className="font-body">2.3節</span> and <span lang="ja" className="font-body">12ページ</span>, the bibliography is titled <span lang="ja" className="font-body">参考文献</span>, a split table or box says <span lang="ja" className="font-body">次ページへ続く</span>, the index heads its symbols and numbers <span lang="ja" className="font-body">記号</span> and <span lang="ja" className="font-body">数字</span> and writes its cross-references with an arrow (<span lang="ja" className="font-body">金之助　→夏目漱石</span>, and <span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> after the pages), and an EPUB names its navigation <span lang="ja" className="font-body">目次</span>, <span lang="ja" className="font-body">表紙</span>, <span lang="ja" className="font-body">本文</span>. A table of strings with no Japanese entry gives English, never Chinese. The figure and table types number by chapter, and a caption reads <span lang="ja" className="font-body">図1-1　東京の地図</span>: the label and the number solid, an ideographic space before the text, no full stop (JLReq §4.3). A `:ref` reads <span lang="ja" className="font-body">図1-1</span>, and a continued table <span lang="ja" className="font-body">表1-1　東京の区（続き）</span>. These are the defaults of `captionStyle.labelNumberGap` and `labelSeparator` in a Japanese document; a value set there wins. Hyphenation is off, as in every CJK document, unless it is turned on for the Latin words.
 
 The same tag is declared in the outputs: the HTML document and each of its pages carry `lang="ja"`, the canvas paints with `ctx.lang`, and the PDF declares `/Lang (ja)` and shapes its text with the Japanese glyph forms (see [Fonts](#fonts)). Unicode gives 直, 骨 and 角 one code point each, and a Japanese face draws them differently from a Chinese one.
 
@@ -99,6 +99,8 @@ Kinsoku shori (禁則処理) keeps some characters off the start of a line and o
 At every Japanese level no line ends with an opening bracket or quote, a currency sign stays with its number (except at `ja-loose`), and the solidus has no rule (that rule is GB/T 15834's). The two-em marks ―― and …… may open a line, as JLReq allows, but never split, and neither does 〳〵. A number keeps its sign and unit (<span lang="ja" className="font-body">¥1,500</span>, <span lang="ja" className="font-body">５０％</span>), a Latin word stays whole unless it is wider than the line, and a note marker never opens a line: it stays with the character before it.
 
 When the next character may not open a line, the composer first tries to take it in by giving up space in the line (oikomi, push-in), in the JLReq order below, and only then carries the character before it down (oidashi, push-out). `々` is never replaced by the kanji it repeats at a line start (JLReq mentions the practice; it changes the text).
+
+Picture books and first readers set in kana put a space between phrases (<span lang="ja" className="font-body">分かち書き</span>, <span lang="ja" className="font-body">むかし むかし、 ある ところに</span>) and break lines only there. `cjk.wordBreak: 'keep-all'` breaks them so: at a space (U+0020 or U+3000) and next to punctuation where the level allows it (after <span lang="ja" className="font-body">、。」</span>, before <span lang="ja" className="font-body">「</span>), never between two letters, kana, kanji or Latin. The rules of the level still apply at the spaces, and a phrase longer than the line is broken inside it as the level would break it. A paragraph style sets its own with `wordBreak`, for a primer quoted in a book of ordinary prose. A justified line takes the slack in its spaces first, up to half an em each, then between its characters. The reflowable EPUB writes `word-break: keep-all`. Korean, whose words (어절) are spaced, takes the same setting.
 
 ### Yakumono: punctuation spacing
 
@@ -280,7 +282,7 @@ Japanese headings are placed in body lines and indented in body characters, and 
 
 ### Indents and even spacing
 
-`indent` on a level or a style indents the heading from the line start in **body** ems (字下げ): `indent: { value: 6, unit: 'em' }` is 6字下げ, whatever the heading's own size. `jidori` spaces a one-line heading evenly to that many of its **own** ems (字取り): with `jidori: 3`, 序章 is set 序　章, filling three characters. `{jidori=5}` after a heading's title sets one heading, and `{jidori=0}` turns its level's off.
+`indent` on a level or a style indents the heading from the line start in **body** ems (字下げ): `indent: { value: 6, unit: 'em' }` is 6字下げ, whatever the heading's own size. `jidori` spaces a one-line heading evenly to that many of its **own** ems (字取り): with `jidori: 3`, 序章 is set 序　章, filling three characters. `{jidori=5}` after a heading's title sets one heading, and `{jidori=0}` turns its level's off. A heading may also carry its own `{indent=N}`, in body ems, over its level's or style's: `## 一 {indent=3}`, and `{indent=0}` sets it at the line start. The Aozora converter writes it on every heading from the source's ［＃N字下げ］.
 
 ```ts
 headings: {
@@ -531,7 +533,6 @@ A B5 book (182 × 257 mm) set across the page in Noto Serif JP at 9.5 pt, headin
       { "level": 5, "numberFormat": "circled-decimal", "separator": "" }
     ]
   },
-  "captionStyle": { "labelNumberGap": "", "labelSeparator": "　" },
   "header": { "elements": [] },
   "footer": {
     "elements": [

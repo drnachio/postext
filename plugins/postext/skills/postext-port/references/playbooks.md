@@ -760,8 +760,8 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   em between Japanese and Latin. JLReq advises against hanging punctuation in text mixed with much Latin:
   `hangingPunctuation: 'none'` when the source's line ends are flush. Keep the source's ，． or 、。.
 - Numbering in Arabic digits: `numberingTemplate: '第{1}章'` with `numberSeparator: '　'`, sections
-  `'{1}.{2}'`; resource types 図/表 come with the locale (図1-1); `captionStyle: {labelNumberGap: '',
-  labelSeparator: '　'}`; lists in the official order 1. （1） ア （ア） ① (configuration.md §10).
+  `'{1}.{2}'`; resource types 図/表 and the caption label 図1-1　 come with the locale (nothing to set);
+  lists in the official order 1. （1） ア （ア） ① (configuration.md §10).
 - Notes: by default at the column foot, numbered per page, superscript, a ⅓ rule (nothing to set).
 - Headings: often centred (`headings.textAlign: 'center'`) and taking a fixed number of lines (`lineSpan`).
 - Index: `:index[…]{yomi="…"}` on every kanji entry; `groupBy` auto = gojūon rows (あ行 か行 …). Citations:
@@ -789,7 +789,8 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   margin about one body em above the type area at its fore-edge (left) side; folio in Arabic digits at the
   foot, fore-edge side (left on odd pages, right on even). Fore-edge vertical heads: configuration.md §19c.
 - Aozora sources: `aozora.py` (sources.md, "Japanese sources"); merge its `styles.json` into
-  `paragraphStyles`, turn its heading `{indent="N"}` into the level's `indent`, print its credits.
+  `paragraphStyles`, set the level's `indent` to the usual heading `{indent="N"}` (the attribute itself
+  is read, so the few that differ stay as written), print its credits.
 - Letters inside a novel: an indented block (`:::paragraphs{indent=2}`), the date and signature
   `:::paragraphs{align=end}` or `{align=end endIndent=1}`; paragraphs that each open with 「 and close once
   stay so.

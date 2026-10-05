@@ -79,7 +79,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     headings,
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText, config?.locale),
     tableStyles: resolveTableStylesConfig(config?.tableStyles, config?.tableStyle, bodyText, config?.locale),
-    captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
+    captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText, documentLocale),
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
     videoStyle: resolveVideoStyleConfig(config?.videoStyle),
     paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),

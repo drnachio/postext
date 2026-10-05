@@ -272,7 +272,7 @@ formats above read the same way; what differs:
   |---|---|
   | header (title, author), `-----` legend | dropped from the text; title and author in `credits` |
   | footer from `底本：` (or after ［＃本文終わり］) | `credits` (底本, 初出, 入力, 校正, dates): print it in the colophon |
-  | `漢字《かんじ》` (base = the run of one script before 《), `｜base《よみ》` | `{漢字\|かんじ}`: one group reading (Aozora never splits a reading per character) |
+  | `漢字《かんじ》` (base = the run of one script before 《; 々〻〆〇ヶ仝 count as kanji: `日〻《ひび》` reads over 日〻), `｜base《よみ》` | `{漢字\|かんじ}`: one group reading (Aozora never splits a reading per character) |
   | reading with spaces, a base of Latin or marks, `--ruby directive` | `:ruby[base]{rt="…" group}` |
   | ［＃「X」の左に「r」のルビ］, ［＃「X」に「r」の注記］ (ママ) | `:ruby[X]{rt="r" group pos=under}` / reading over X |
   | 《〔r〕》 (the edition's added reading) | kept as ruby without 〔〕 (`editorial_ruby="drop"` removes it) |
@@ -284,7 +284,7 @@ formats above read the same way; what differs:
   | 上付き小文字, 行右小書き / 下付き小文字, 行左小書き | `^X^` / `~X~` |
   | ［＃割り注］…［＃割り注終わり］ | `:warichu[…]` (source （） consumed into `open`/`close`); ［＃改行］ inside → U+3000 (gap) |
   | `字［＃（ヲ）］［＃レ］`, ［＃一レ］, 竪点 `敬‐［＃二］` | `:kunten[字]{kaeri="レ" okuri="ヲ"}`, `{tate kaeri="二"}` |
-  | 大/中/小見出し (forward, block, ここから), 同行/窓 | `#` `##` `###` (`--heading-levels`), `{indent="N"}` from ［＃N字下げ］ (set the level's `indent` from it), `kind="runin"`/`"window"` (gap) |
+  | 大/中/小見出し (forward, block, ここから), 同行/窓 | `#` `##` `###` (`--heading-levels`), `{indent="N"}` from ［＃N字下げ］ (read by the engine; set the level's `indent` to the common value too, so headings written by hand match), `kind="runin"`/`"window"` (gap) |
   | ［＃改ページ］, ［＃改丁］, ［＃改見開き］, ［＃改段］ | `:::pagebreak`, `{parity="odd"}`, `{parity="even"}`, `:::columnbreak` |
   | a paragraph's leading U+3000 / 「 with none / neither | dropped (the body's 1-em indent) / plain (the engine's bracket rule) / `:::paragraphs{style="aozora-f0"}` (flush) |
   | ［＃N字下げ］, ここからN字下げ, 折り返してM字下げ, 改行天付き | `aozora-iN-fK`, `aozora-iN-hM`, `aozora-hN` styles |
