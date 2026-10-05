@@ -1,6 +1,6 @@
 {
   "name": "postext-folio",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A 3D book viewer for Postext documents and page images: three.js leaves that curl, cast real shadows and turn by hand, for left- and right-bound books.",
   "type": "module",
   "license": "MIT",
