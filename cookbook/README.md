@@ -781,7 +781,13 @@ PDF errors (C14), a tainted canvas (C15), "undefined" or "NaN" printed (C16), th
 skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a warm build over
 4 s (C21), and, for an `epub` output, no EPUB written before the module settled, or a file
 that `readEpub` cannot read back in its own layout (C30; the writer's `missingFont` and
-`missingImage` reports are warnings).
+`missingImage` reports are warnings), and a config value the engine could not use as written
+(C31, from `doc.configWarnings`): a character grid or a side column cut to what the page holds
+(`cjkGridClamped`, `sideColumnPercentClamped`), a numbering format or `numerals` value it does
+not know (`unknownNumberFormat`, `unknownNumerals`), a value outside a setting's choices
+(`unknownConfigValue`) and a key no heading setting or paragraph style has (`unknownConfigKey`).
+Each sets a page other than the one the config claims; a recipe that shows one on purpose lists
+its kind in `expect.warnings`.
 
 **Warnings** go into `capture.json` for the reviewer: blank-page cascades (C22), near-empty
 pages not listed in `expect.nearEmptyPages` (C23), loose lines over 2 % (C24; a Chinese,
@@ -790,7 +796,9 @@ and ends short, `cjkLoose`, and one is enough), characters a PDF recipe's faces 
 (C25: outside Fontsource latin and not covered by a CJK face the `cjk` block loaded or an
 Arabic face the `arabic` block completed, or reported missing by postext-pdf), a hero with too little picture or display type (C26), a
 primary feature whose detect rule did not fire (C27), a level two steps from the suggested
-one (C28), a page count outside `expect.pages` (C29).
+one (C28), a page count outside `expect.pages` (C29), a `fontFamily` written as a CSS font stack,
+which the engine sets in its first family (C31, `fontFamilyStack`), and a config warning of a
+kind the capture does not know yet (C31).
 
 A right-bound book (`doc.binding: 'right'`: `page.binding: 'right'`, or a binding left to
 `'auto'` in a document whose text runs right to left or is vertical) records

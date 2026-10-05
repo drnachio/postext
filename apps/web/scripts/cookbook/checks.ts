@@ -27,6 +27,16 @@ export interface ProbeFace {
   where?: string;
 }
 
+/** A `ConfigWarning` of the engine (`kind`, where it sits in the config,
+ *  the value as written and the one used instead). */
+export interface ProbeConfigWarning {
+  kind: string;
+  path: string;
+  value: string;
+  used: string;
+  suggestion?: string;
+}
+
 export interface ProbePage {
   /** 1-based from the build's first page. */
   n: number;
@@ -100,6 +110,9 @@ export interface ProbeFacts {
    *  `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), with the
    *  words they name. */
   textWarnings?: { kind: string; page: number | null; detail: string }[];
+  /** `doc.configWarnings` of the builds, one per value: settings the engine
+   *  could not use as written and what it used instead (C31). */
+  configWarnings?: ProbeConfigWarning[];
   converged?: boolean;
   iterationCount?: number;
   loose?: {
@@ -398,6 +411,40 @@ const firstLines = (text: string, n = 3) => text.split("\n").slice(0, n).join(" 
 const pct = (share: number) => `${(share * 100).toFixed(1)} %`;
 const stem = (file: string) => file.replace(/^.*\//, "").replace(/\.[^.]+$/, "").toLowerCase();
 
+/** How C31 judges each `ConfigWarning` kind of the engine. */
+const CONFIG_WARNING_SEVERITY: Record<string, Severity> = {
+  cjkGridClamped: "fail",
+  sideColumnPercentClamped: "fail",
+  unknownNumberFormat: "fail",
+  unknownNumerals: "fail",
+  unknownConfigValue: "fail",
+  unknownConfigKey: "fail",
+  fontFamilyStack: "warn",
+};
+
+/** A config warning as C31 prints it: the kind, where, and what the engine did. */
+export function configWarningText(w: ProbeConfigWarning): string {
+  const value = JSON.stringify(w.value);
+  switch (w.kind) {
+    case "cjkGridClamped":
+      return `cjkGridClamped: ${w.path} asks for ${w.value}, the margins leave room for ${w.used}; the grid sets ${w.used}`;
+    case "sideColumnPercentClamped":
+      return `sideColumnPercentClamped: ${w.path} ${value} leaves a column with no width; the columns are cut at ${w.used} %`;
+    case "unknownNumberFormat":
+      return `unknownNumberFormat: ${w.path} ${value} is no format the engine knows; it numbers in ${w.used}`;
+    case "unknownNumerals":
+      return `unknownNumerals: ${w.path} ${value} names no digit system; the digits are ${w.used}`;
+    case "unknownConfigValue":
+      return `unknownConfigValue: ${w.path} ${value} is not one of its choices; the engine used ${w.used}`;
+    case "unknownConfigKey":
+      return `unknownConfigKey: ${w.path} is no key of that setting${w.suggestion ? ` (${w.suggestion}?)` : ""}; the engine ignores it`;
+    case "fontFamilyStack":
+      return `fontFamilyStack: ${w.path} ${value} is a font stack; the text is set in ${w.used} alone`;
+    default:
+      return `${w.kind}: ${w.path} ${value}${w.used ? `; the engine used ${w.used}` : ""}`;
+  }
+}
+
 /** Folds identical findings into one, counted. */
 function dedupe(findings: Finding[]): Finding[] {
   const counts = new Map<string, { finding: Finding; n: number }>();
@@ -471,8 +518,20 @@ function collect(input: CheckInput): Finding[] {
     if (!expected.has(w.kind)) add("C5", "fail", `${w.kind}${w.detail ? ` "${w.detail}"` : ""}${w.page ? ` on page ${w.page}` : ""}`);
   }
   for (const kind of expected) {
-    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? []), ...(facts.textWarnings ?? [])];
+    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? []), ...(facts.textWarnings ?? []), ...(facts.configWarnings ?? [])];
     if (!seen.some((w) => w.kind === kind)) add("C5", "info", `expect.warnings lists ${kind}, which did not occur`);
+  }
+
+  // C31: config values the engine replaced. A clamped grid or side column,
+  // a numbering format or digit system it does not know, a value outside a
+  // setting's choices and a key no setting has all give a page other than
+  // the one the recipe's config claims, and a reader copies that config: they
+  // fail. A font stack is set in its first family, the face the recipe loads,
+  // so the page is the one shown: a warning. A kind this list does not know
+  // yet (a newer engine) warns until it is judged here.
+  for (const w of facts.configWarnings ?? []) {
+    if (expected.has(w.kind)) continue;
+    add("C31", CONFIG_WARNING_SEVERITY[w.kind] ?? "warn", configWarningText(w));
   }
 
   // C6: convergence.

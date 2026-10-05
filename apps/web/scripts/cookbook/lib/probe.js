@@ -687,6 +687,19 @@ export function facts({ select = 'last', hero = [] } = {}) {
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
       detail: w.text ?? '',
     })));
+  // C31: config values the engine replaced (a character grid cut to the
+  // page, an unknown numbering format, a key no setting has). Every
+  // chapter of a book carries its build's warnings: one entry per value.
+  const configWarnings = new Map();
+  for (const doc of docs) {
+    for (const w of doc.configWarnings ?? []) {
+      const key = `${w.kind}\0${w.path}\0${w.value}`;
+      if (!configWarnings.has(key)) {
+        configWarnings.set(key, { kind: w.kind, path: w.path, value: w.value, used: w.used ?? '', ...(w.suggestion ? { suggestion: w.suggestion } : {}) });
+      }
+    }
+  }
+  out.configWarnings = [...configWarnings.values()];
   out.converged = docs.every((doc) => doc.converged !== false);
   out.iterationCount = Math.max(...docs.map((doc) => doc.iterationCount ?? 0));
   let justified = 0;
