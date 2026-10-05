@@ -2022,13 +2022,16 @@ export class PageFlipper {
       if (block && this.blockMesh && [covers?.front, covers?.back].some((c) => c !== undefined && c >= block.lo && c < block.hi)) at = Math.min(at, spineZ(this.blockMesh));
     }
     const { top, back, side } = this.fold;
-    // A hair under the cover: it never shows through it.
-    const reach = at - 0.1;
+    // Right under the cover, and a little in under it past the spine: a
+    // slot left between the two showed the page under the cover, seen
+    // low over the spine.
+    const reach = at - 0.03;
+    const inner = 0.3;
     this.hinge.visible = top > 0 && reach > top;
     if (!this.hinge.visible) return;
     const depth = reach - top + 0.05;
-    this.hinge.scale.set(back / 2, this.H, depth);
-    this.hinge.position.set((side * back) / 4, 0, top - 0.05 + depth / 2);
+    this.hinge.scale.set(back / 2 + inner, this.H, depth);
+    this.hinge.position.set((side * (back / 2 - inner)) / 2, 0, top - 0.05 + depth / 2);
   }
 
   /** A board leaf's other face and edges, carried with its mesh. */
