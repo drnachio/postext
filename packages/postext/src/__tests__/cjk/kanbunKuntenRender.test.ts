@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index';
 import { renderToHtml } from '../../html-backend';
-import type { PostextConfig } from '../../types';
+import type { PostextConfig, Resource } from '../../types';
 import type { VDTDocument, VDTLine } from '../../vdt';
 import { installSizedStub, stubCharWidth } from '../vertical/stub';
 
@@ -105,5 +105,31 @@ describe('kanbun marks in HTML', () => {
     expect(html).toContain('color:#c00000;');
     expect(html).toMatch(/opacity:0;[^"]*">ビテ<\/span>/);
     expect(html.indexOf('學')).toBeLessThan(html.search(/opacity:0;[^"]*">ビテ/));
+  });
+});
+
+describe('kanbun marks in table cells and captions (#429 path)', () => {
+  const TABLE: Resource = {
+    id: 'tab', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+    caption: ':kunten[學]{okuri="ビテ"}而',
+    table: { model: { rows: [[{ content: ':kunten[習]{kaeri="レ" okuri="フ"}之' }]] } },
+  };
+  const doc = buildDocument({ markdown: '表を見よ :ref{id="tab"}。', resources: [TABLE] }, config({ captionStyle: { fontSize: pt(20) }, tableStyle: { bodyFontSize: pt(20) } }));
+  const rb = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].find((b) => b.resourceBlock)!.resourceBlock!;
+
+  it('are measured as in the body', () => {
+    const cell = rb.table!.cells[0]!.lines[0]!;
+    expect(cell.text).toBe('習之');
+    expect(cell.segments!.find((s) => s.text === '習')!.kunten!.runs.map((r) => [r.role, r.text])).toEqual([['kaeri', 'レ'], ['okuri', 'フ']]);
+    expect(rb.captionLines.flatMap((l) => l.segments ?? []).find((s) => s.kunten)!.kunten!.okuri).toBe('ビテ');
+  });
+
+  it('are painted on the canvas and in HTML', () => {
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(doc.pages[0]!, doc, canvas);
+    const painted = calls.filter((c) => c.op === 'fillText').map((c) => String(c.args[0]));
+    for (const t of ['レ', 'フ', 'ビテ']) expect(painted).toContain(t);
+    const html = renderToHtml(doc, { mode: 'single' });
+    expect(html).toMatch(/opacity:0;white-space:pre;">フ<\/span>/);
   });
 });

@@ -69,7 +69,7 @@ import {
 } from './primitives';
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { paintChip } from './chip';
-import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { paintKunten, paintLineMarks, paintRuby, paintWarichu } from './annotations';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import {
@@ -706,6 +706,12 @@ function paintLineRuns(
         if (seg.ruby) {
           if (tracking !== 0) setTrackingPx(ctx, 0);
           paintRuby(ctx, seg.ruby, x, line.baseline, segColor, fontCache, baseFont, rubyElem);
+          if (tracking !== 0) setTrackingPx(ctx, tracking);
+        }
+        if (seg.kunten) {
+          // Kanbun marks (#430), with the character's text.
+          if (tracking !== 0) setTrackingPx(ctx, 0);
+          paintKunten(ctx, seg.kunten, x, line.baseline, segColor, fontCache, baseFont, holder);
           if (tracking !== 0) setTrackingPx(ctx, tracking);
         }
       }

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
 import { buildDocument } from 'postext';
-import type { PostextConfig, VDTDocument } from 'postext';
+import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend';
 import { cjkLineText, readText } from '../pdf-backend/primitives';
 
@@ -79,4 +79,13 @@ describe('kanbun marks in the PDF', () => {
       expect(c).toMatch(/1\.2 w\b[\s\S]*?\bS\b/);
     });
   }
+
+  it('a table cell reads its 送り仮名 too', async () => {
+    const table: Resource = {
+      id: 'tab', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+      table: { model: { rows: [[{ content: ':kunten[習]{kaeri="レ" okuri="フ"}:kunten[之]{okuri="ヲ"}' }]] } },
+    };
+    const c = await content(buildDocument({ markdown: '表 :ref{id="tab"}。', resources: [table] }, config({ tableStyle: { bodyFontFamily: 'Lora', bodyFontSize: pt(20) } })));
+    expect(actualTexts(c)).toContain('習フ之ヲ');
+  });
 });

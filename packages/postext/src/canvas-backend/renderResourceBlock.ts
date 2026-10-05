@@ -26,7 +26,7 @@ import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk';
 import { fillSegmentWord, type WordRun } from './wordRuns';
 import { uncroppedPictureBox } from '../pipeline/safeArea';
 import { mirroredPaintActive } from './mirrorFrame';
-import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { paintKunten, paintLineMarks, paintRuby, paintWarichu } from './annotations';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -411,6 +411,8 @@ function paintLineRuns(
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       // A ruby base's reading (#194, #429).
       if (seg.ruby) paintRuby(ctx, seg.ruby, x, line.baseline, fill);
+      // Kanbun marks (#430).
+      if (seg.kunten) paintKunten(ctx, seg.kunten, x, line.baseline, fill);
       x += seg.width;
     }
     // Emphasis marks, side lines, the proper-name and book-title lines

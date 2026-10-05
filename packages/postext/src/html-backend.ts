@@ -1597,6 +1597,11 @@ function renderResourceLine(
       parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
       // A ruby base's reading (#194, #429).
       if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, segColorOf(seg), quoteFontString));
+      // Kanbun marks (#430), the 送り仮名 read after their character.
+      if (seg.kunten) {
+        parts.push(kuntenHtml(seg.kunten, x, segColorOf(seg), quoteFontString));
+        if (seg.kunten.okuri) parts.push(lineEndHtml(seg.kunten.okuri, x + seg.width));
+      }
       x += seg.width;
     }
     parts.push(links.end());
