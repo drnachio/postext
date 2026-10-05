@@ -325,7 +325,7 @@ describe("lintPen (a Chinese recipe)", () => {
   it("counts Chinese characters, 1.7 to the word", () => {
     const long = { en: `# 一\n\n${"天".repeat(4300)}\n`, es: "# 一\n" };
     expect(lintCjk(undefined, long).fails).toContain(
-      "content.en.md: 4,301 Chinese or Japanese characters, about 2,530 words (at most 2,500; 1.7 characters count as a word)",
+      "content.en.md: 4,301 Chinese characters, about 2,530 words (at most 2,500; 1.7 characters count as a word)",
     );
     const fits = { en: `# 一\n\n${"天".repeat(4000)}\n`, es: "# 一\n" };
     expect(lintCjk(undefined, fits).fails.filter((f) => f.includes("words"))).toEqual([]);
@@ -351,7 +351,7 @@ describe("lintPen (a Chinese recipe)", () => {
     );
     const lang = lintCjk((s) => s.replace("  locale: 'zh-Hant',", "  locale: LANG,")).warns;
     expect(lang).toContain(
-      "script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)",
+      "script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant', 'ja'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)",
     );
     const vertical = (s: string) => s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  layout: { writingMode: 'vertical-rl' },");
     const shown = lintCjk((s) => vertical(s).replace("showBook(doc,", "showPages(doc,")).warns;
@@ -395,6 +395,100 @@ describe("lintPen (a Chinese recipe)", () => {
     );
   });
 });
+
+// ─── Japanese recipes (the cjk kit block) ───────────────────────────────────
+
+/** The opening of こころ (Aozora 773), kana and kanji with a Latin marker. */
+const KOKORO = "私はその人を常に先生と呼んでいた。だからここでもただ先生と書くだけで本名は打ち明けない。Sensei.";
+
+/** The fixture turned into a Japanese recipe: a Japanese face loaded by
+ *  slices, its PDF from cjkPdfProvider, its locale 'ja'. */
+function jaScript(s: string): string {
+  return cjkScript(s).replace("'Noto Serif TC': ['400']", "'Noto Serif JP': ['400']").replace("  locale: 'zh-Hant',", "  locale: 'ja',");
+}
+
+function jaMeta(): RecipeMeta {
+  const meta = cjkMeta();
+  return { ...meta, credits: { ...meta.credits, fonts: meta.credits.fonts.map((f) => (f.family === "Noto Serif TC" ? { ...f, family: "Noto Serif JP" } : f)) } };
+}
+
+describe("lintPen (a Japanese recipe)", () => {
+  const jaContent = { en: `# 上　先生と私\n\n${KOKORO}\n`, es: `# 上　先生と私\n\n${KOKORO}\n` };
+  const lintJa = (edit: (s: string) => string = (s) => s, content: Record<string, string> = jaContent) =>
+    lint((s) => edit(jaScript(s)), { meta: jaMeta(), sources: { content } });
+
+  it("passes a pen that loads a Japanese face through the cjk block and tags the text 'ja'", () => {
+    const { fails, warns } = lintJa();
+    expect(fails).toEqual([]);
+    expect(warns.filter((w) => /cjk|CJK|Chinese|Japanese|latin|locale|kana/.test(w))).toEqual([]);
+    for (const tag of ["ja-JP", "ja-Jpan"]) {
+      expect(lintJa((s) => s.replace("'ja'", `'${tag}'`)).fails).toEqual([]);
+    }
+  });
+
+  it("counts Japanese characters, 2.2 to the word, and a mix by each language's rate", () => {
+    const long = { en: `# 一\n\n${"あ".repeat(5600)}\n`, es: "# 一\n" };
+    expect(lintJa(undefined, long).fails).toContain(
+      "content.en.md: 5,601 Japanese characters, about 2,546 words (at most 2,500; 2.2 characters count as a word)",
+    );
+    // 5,400 kana letters would be 3,176 words of Chinese, 2,455 of Japanese.
+    const fits = { en: `# 一\n\n${"あ".repeat(5400)}\n`, es: "# 一\n" };
+    expect(lintJa(undefined, fits).fails.filter((f) => f.includes("words"))).toEqual([]);
+    const mixed = { en: `${"天".repeat(3000)}。\n${"あ".repeat(2000)}。\n`, es: "# 一\n" };
+    expect(lintCjkMixed(mixed)).toContain(
+      "content.en.md: 3,000 Chinese and 2,000 Japanese characters, about 2,674 words (at most 2,500; Chinese counts 1.7 characters to the word, Japanese 2.2)",
+    );
+  });
+
+  it("fails Japanese text under a Chinese or Korean tag and names 'ja' when the tag is missing", () => {
+    for (const tag of ["zh-Hans", "zh-Hant", "zh", "ko"]) {
+      expect(lintJa((s) => s.replace("'ja'", `'${tag}'`)).fails).toContain(
+        `script.js: the text is Japanese (it is written with kana) but config.locale is '${tag}': write 'ja', which sets the Japanese line breaking, punctuation and labels (gotcha ja-locale-tag)`,
+      );
+    }
+    expect(lintJa((s) => s.replace("  locale: 'ja',", "  locale: LANG,")).warns).toContain(
+      "script.js: set config.locale to the text's language ('ja'), not LANG: the tag picks the Japanese conventions and turns hyphenation off (gotcha ja-locale-tag)",
+    );
+    // A Chinese page that quotes a Japanese title stays Chinese.
+    const quoting = { en: `# 第一回\n\n${OPENING}「こころ」\n`, es: `# 第一回\n\n${OPENING}\n` };
+    const chinese = lint((s) => cjkScript(s), { meta: cjkMeta(), sources: { content: quoting } });
+    expect(chinese.fails).toEqual([]);
+    expect(chinese.warns.filter((w) => w.includes("ja-locale-tag"))).toEqual([]);
+  });
+
+  it("recognises kana-only and half-width text as CJK", () => {
+    const kana = { en: "# かな\n\nひらがなとカタカナだけの文。ｶﾀｶﾅ。\n", es: "# かな\n\nひらがなとカタカナだけの文。\n" };
+    const plain = lint((s) => s, { sources: { content: kana } }).warns;
+    expect(plain).toContain(
+      "content.en.md: Chinese, Japanese or Korean text needs the cjk kit block: load its faces with loadCjkFonts(FONTS, markdown) (gotcha cjk-fonts-slices)",
+    );
+    expect(plain.filter((w) => w.includes("outside Fontsource latin"))).toEqual([]);
+    expect(lintJa(undefined, kana).fails).toEqual([]);
+  });
+
+  it("warns on hentaigana, which no Fontsource file holds, and on a Chinese face for Japanese text", () => {
+    const hentaigana = { en: `# 一\n\n${KOKORO}𛀁𛂞\n`, es: `# 一\n\n${KOKORO}\n` };
+    const warns = lintJa(undefined, hentaigana).warns;
+    expect(warns.filter((w) => w.includes("hentaigana"))).toEqual([
+      "content.en.md: hentaigana and archaic kana (𛀁 𛂞) are in no file of a Fontsource Japanese face: loadCjkFonts fails on them and the PDF prints boxes; " +
+        "write the modern kana, or set them in a face the recipe ships in its assets (gotcha ja-fonts-kana)",
+    ]);
+    // They are CJK: no "outside latin" warning on top.
+    expect(warns.filter((w) => w.includes("outside Fontsource latin"))).toEqual([]);
+    const sc = lint((s) => cjkScript(s).replace("'Noto Serif TC'", "'Noto Serif SC'").replace("'zh-Hant'", "'ja'"), {
+      meta: { ...cjkMeta(), credits: { ...cjkMeta().credits, fonts: cjkMeta().credits.fonts.map((f) => (f.family === "Noto Serif TC" ? { ...f, family: "Noto Serif SC" } : f)) } },
+      sources: { content: jaContent },
+    }).warns;
+    expect(sc.filter((w) => w.includes("ja-fonts-kana"))).toHaveLength(1);
+    expect(sc.find((w) => w.includes("ja-fonts-kana"))).toMatch(/^script\.js: Japanese text with Noto Serif SC in FONTS: a Chinese face draws the kanji in Chinese forms/);
+    expect(lintJa().warns.filter((w) => w.includes("ja-fonts-kana"))).toEqual([]);
+  });
+});
+
+/** A Chinese recipe linted with `content`. */
+function lintCjkMixed(content: Record<string, string>): string[] {
+  return lint((s) => cjkScript(s), { meta: cjkMeta(), sources: { content } }).fails;
+}
 
 // ─── Arabic recipes (the arabic and book kit blocks) ────────────────────────
 

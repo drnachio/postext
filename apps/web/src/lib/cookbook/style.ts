@@ -6,9 +6,12 @@
  * can be fine in context (a literal journey, a bustling market in a
  * novel). Code, excerpts and MDX tags are ignored. Chinese prose, in a
  * write-up or in an original sample, is checked against a Chinese list
- * whatever the file's language (值得一提的是, 众所周知, 总而言之); quoted
- * classics are left alone, since sample files are only checked when the
- * text is the recipe's own.
+ * whatever the file's language (值得一提的是, 众所周知, 总而言之), and
+ * Japanese prose against a Japanese one (と言えるでしょう, シームレス,
+ * 重要な役割を果たす). A sentence with kana in it is Japanese, so the kanji
+ * words both languages write (極致, 全方位) are judged by the Japanese list
+ * alone. Quoted classics are left alone, since sample files are only
+ * checked when the text is the recipe's own.
  *
  * Isomorphic and pure.
  */
@@ -207,6 +210,53 @@ const SOFT_ZH: Rule[] = [
   rule("(?:^|[。！？]\\s*)(?:首先|其次|最后|最後)，[^。！？]*[。！？]\\s*(?:其次|最后|最後)，", "首先……其次……最后"),
 ];
 
+/** Stock phrases of Japanese prose written by machine: the hedged close
+ *  (と言えるでしょう), the importance formula (することが重要です, 重要な
+ *  役割を果たす), the reader invited along (一緒に見ていきましょう), the
+ *  welcome and the wrap-up (の世界へようこそ, いかがでしたか, まとめると、)
+ *  and the katakana of marketing copy (シームレス, ゲームチェンジャー). They
+ *  are judged in Japanese sentences only (see `styleFindings`), and match
+ *  characters, as the Chinese rules do. */
+const HARD_JA: Rule[] = [
+  rule("と(?:言|い)える(?:でしょう|だろう)", "と言えるでしょう"),
+  rule("と(?:言|い)っても過言では(?:ありません|ない)", "と言っても過言ではありません"),
+  rule("(?:こと|の)が(?:重要|大切|肝要|不可欠)(?:です|である|となります)", "することが重要です"),
+  rule("(?:重要|大切|大き|中心的|不可欠|決定的|欠かせない|極めて重要)な?役割を(?:果た|担)", "重要な役割を果たす"),
+  rule("(?:の世界|の旅|の旅路)へようこそ", "の世界へようこそ"),
+  rule("いかがでしたか", "いかがでしたか"),
+  rule("(?:^|[。！？\\s])(?:まとめると|結論として|要約すると|総じて言えば)、", "まとめると、"),
+  rule("言うまでもなく|言うまでもありません", "言うまでもなく"),
+  rule("(?:周知の|ご存じの|ご存知の)(?:とおり|通り)", "周知のとおり"),
+  rule("(?:特筆|注目)すべき(?:点|こと)?は", "特筆すべきは"),
+  rule("(?:今日|現代|昨今)の[^、。！？\\s]{0,12}?(?:社会|時代|世界)(?:において|では)", "現代の…社会において"),
+  rule("(?:一緒に|共に|ともに)(?:見て|探って|学んで|考えて|掘り下げて)(?:いきましょう|みましょう)", "一緒に見ていきましょう"),
+  rule("(?:掘り下げ|深掘り)(?:して)?(?:て)?(?:いきましょう|みましょう)", "掘り下げていきましょう"),
+  rule("想像してみて(?:ください|下さい)", "想像してみてください"),
+  rule("(?:可能性|潜在能力|ポテンシャル|真価)を(?:解き放|最大限に引き出)", "可能性を解き放つ"),
+  rule("新たな(?:扉|地平|次元|可能性)を(?:開|拓|切り開|切り拓)", "新たな扉を開く"),
+  rule("次の(?:レベル|ステージ)(?:へ|に)", "次のレベルへ"),
+  rule("シームレス", "シームレス"),
+  rule("ゲームチェンジャー|エンパワー", "ゲームチェンジャー/エンパワー"),
+  rule("ワンストップ", "ワンストップ"),
+  rule("の宝庫", "の宝庫"),
+  rule("徹底(?:解説|解剖)", "徹底解説"),
+];
+
+const SOFT_JA: Rule[] = [
+  rule("まさに", "まさに"),
+  rule("(?:革新|画期|魅力|圧倒|包括)的な", "革新的な/魅力的な"),
+  rule("唯一無二|比類(?:の|な)き", "唯一無二"),
+  rule("堅牢な|ロバストな|最先端の", "堅牢な/最先端の"),
+  rule("不可欠|極めて重要", "不可欠"),
+  rule("(?:鍵|カギ)(?:となる|を握る)|重要な(?:鍵|カギ)", "鍵となる"),
+  rule("を実現(?:します|できます|しました)", "を実現します"),
+  rule("ではないでしょうか", "ではないでしょうか"),
+  rule("単に[^。！？]{1,30}?(?:だけ|のみ)で(?:は)?なく", "単に…だけでなく"),
+  rule("(?:その)?(?:答え|結果|秘密|秘訣|鍵|カギ)は[？?]", "その答えは？（種明かし）"),
+  rule("奥深い世界|の奥深さ|の魅力に迫", "奥深い世界/魅力に迫る"),
+  rule("まず、[^。！？]*[。！？][\\s\\S]{0,200}?次に、[\\s\\S]{0,200}?最後に、", "まず……次に……最後に"),
+];
+
 /** Letters of Chinese and Japanese writing (Han, kana with the long-vowel
  *  mark ー, bopomofo): what a Chinese reader counts as characters. Korean
  *  spaces its words, so hangul is counted in words like Latin text. */
@@ -218,23 +268,80 @@ const HANGUL = /\p{Script=Hangul}/u;
  *  (hangul included: an em dash against it is Korean punctuation). */
 const CJK_TEXT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}\u30fc\u3000-\u303f\uff00-\uffef\ufe10-\ufe1f\ufe30-\ufe4f]/gu;
 
+/** Hiragana and katakana, the kana supplement and the half-width forms
+ *  included: no Chinese text writes them, so a sentence holding one is
+ *  Japanese. (ー and ・ are shared with Chinese typography: not counted.) */
+const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
+
 /** How many CJK characters a text of one English word runs to: a Chinese
  *  translation takes about 1.7 characters for each English word, so the
  *  Cookbook's 2,500-word sample holds about 4,250 characters. */
 export const CJK_CHARS_PER_WORD = 1.7;
 
+/** The same for Japanese, whose kana spell out the particles, endings and
+ *  loanwords Chinese writes in one character or leaves out. Translators
+ *  bill 2 to 2.5 Japanese characters (punctuation included, about 7 % of
+ *  them) to the English word; counted in letters as here, that is 1.9–2.3.
+ *  Two literary pairs measured with this module's letter count: Akutagawa's
+ *  羅生門 (Aozora 127) against Kojima Takashi's 1952 translation, 5,087
+ *  letters for 2,270 words (2.24); Sōseki's 坊っちゃん (Aozora 752) against
+ *  Morri's freer 1919 version, 82,063 for 47,719 (1.72). 2.2 sits in the
+ *  translators' range and near the closer translation, so a Japanese
+ *  sample holds about 5,500 letters. */
+export const JAPANESE_CHARS_PER_WORD = 2.2;
+
+/** The sentences of a text (cut after 。！？ and at line ends) and whether
+ *  each is Japanese: it holds kana, or it is all kanji (a heading, a
+ *  kanbun line) in a text whose kana sentences outweigh the others. */
+function sentences(text: string): { start: number; end: number; japanese: boolean }[] {
+  const out: { start: number; end: number; japanese: boolean; letters: number }[] = [];
+  let start = 0;
+  for (let i = 0; i <= text.length; i++) {
+    if (i < text.length && !"。！？\n".includes(text[i])) continue;
+    const end = Math.min(i + 1, text.length);
+    if (end > start) {
+      const slice = text.slice(start, end);
+      out.push({ start, end, japanese: KANA.test(slice), letters: (slice.match(CJK_LETTER) ?? []).length });
+    }
+    start = end;
+  }
+  const sum = (japanese: boolean) => out.reduce((n, s) => n + (s.japanese === japanese ? s.letters : 0), 0);
+  if (sum(true) > sum(false)) for (const s of out) if (s.letters) s.japanese = true;
+  return out;
+}
+
 /** The length of a text for the Cookbook's caps: `words` counts the
  *  whitespace-separated tokens holding a letter or a digit once Chinese and
  *  Japanese text is taken out (fullwidth Ａ１ read as A1, Korean by its
- *  spaced words), `cjk` the Han, kana and bopomofo characters, and `total`
- *  both in words (`cjk / 1.7`, rounded). */
-export function textLength(text: string): { words: number; cjk: number; total: number } {
+ *  spaced words), `cjk` the Han, kana and bopomofo characters, `japanese`
+ *  those of them in Japanese sentences, and `total` all in words (Chinese
+ *  `/ 1.7`, Japanese `/ 2.2`, rounded). */
+export function textLength(text: string): { words: number; cjk: number; japanese: number; total: number } {
   const cjk = (text.match(CJK_LETTER) ?? []).length;
+  const japanese = sentences(text)
+    .filter((s) => s.japanese)
+    .reduce((n, s) => n + (text.slice(s.start, s.end).match(CJK_LETTER) ?? []).length, 0);
   const latin = text
     .replace(FULLWIDTH_ALNUM, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
     .replace(CJK_TEXT, (ch) => (HANGUL.test(ch) ? ch : " "));
   const words = latin.split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
-  return { words, cjk, total: Math.round(words + cjk / CJK_CHARS_PER_WORD) };
+  const total = words + (cjk - japanese) / CJK_CHARS_PER_WORD + japanese / JAPANESE_CHARS_PER_WORD;
+  return { words, cjk, japanese, total: Math.round(total) };
+}
+
+/** `prose` split for the language lists: `japanese` keeps its Japanese
+ *  sentences and blanks the rest, `other` the reverse. Blanking keeps every
+ *  offset, so a match points into `prose` for its context. */
+function splitJapanese(prose: string): { japanese: string; other: string } {
+  const blank = (s: string) => " ".repeat(s.length);
+  let japanese = "";
+  let other = "";
+  for (const s of sentences(prose)) {
+    const slice = prose.slice(s.start, s.end);
+    japanese += s.japanese ? slice : blank(slice);
+    other += s.japanese ? blank(slice) : slice;
+  }
+  return { japanese, other };
 }
 
 /** Prose only: drops fenced code, inline code, MDX/HTML tags, frontmatter
@@ -251,7 +358,8 @@ export function proseOf(text: string): string {
     .replace(/\$\$[\s\S]*?\$\$|\$[^$\n]*\$/g, " ");
 }
 
-/** Where sentences end: a full stop, a line break, or a Chinese stop mark. */
+/** Where sentences end: a full stop, a line break, or a Chinese or
+ *  Japanese stop mark. */
 const SENTENCE_END = [".", "\n", "。", "！", "？"];
 
 function sentenceAround(text: string, index: number): string {
@@ -274,18 +382,22 @@ function latinDashes(prose: string): number {
 export function styleFindings(text: string, locale: Locale, { emDashLimit = 90 }: { emDashLimit?: number } = {}): StyleFinding[] {
   const prose = proseOf(text);
   const findings: StyleFinding[] = [];
-  const scan = (rules: Rule[], severity: StyleFinding["severity"]) => {
+  const scan = (rules: Rule[], severity: StyleFinding["severity"], source = prose) => {
     for (const { re, label } of rules) {
       re.lastIndex = 0;
-      for (const match of prose.matchAll(re)) {
+      for (const match of source.matchAll(re)) {
         findings.push({ severity, phrase: match[0].replace(/^[.!?。！？\s]+/, "").trim(), rule: label, context: sentenceAround(prose, match.index ?? 0) });
       }
     }
   };
+  // Chinese rules outside the Japanese sentences, Japanese rules inside them.
+  const { japanese, other } = splitJapanese(prose);
   scan(HARD[locale], "fail");
-  scan(HARD_ZH, "fail");
+  scan(HARD_ZH, "fail", other);
+  scan(HARD_JA, "fail", japanese);
   scan(SOFT[locale], "warn");
-  scan(SOFT_ZH, "warn");
+  scan(SOFT_ZH, "warn", other);
+  scan(SOFT_JA, "warn", japanese);
   if (emDashLimit > 0) {
     const words = textLength(prose).total;
     const dashes = latinDashes(prose);

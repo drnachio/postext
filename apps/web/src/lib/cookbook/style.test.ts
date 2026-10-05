@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { proseOf, styleFindings, styleMessages, textLength } from "./style";
+import { CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, proseOf, styleFindings, styleMessages, textLength } from "./style";
 
 const phrases = (text: string, locale: "en" | "es" | "zh", options?: { emDashLimit?: number }) =>
   styleFindings(text, locale, options).map((f) => `${f.severity}:${f.phrase}`);
@@ -55,14 +55,62 @@ describe("style: machine-written phrasing", () => {
     expect(styleFindings(zh, "en")).toEqual([]);
     const mixed = `The dash stays whole: ${zh} It is one mark of two ems — set as the font sets the pair.`;
     expect(phrases(mixed, "en")).toEqual([]);
-    expect(textLength("此開卷第一回也。作者自云：因曾歷過一番夢幻之後")).toEqual({ words: 0, cjk: 21, total: 12 });
-    expect(textLength("用iPhone拍照 and three words")).toEqual({ words: 4, cjk: 3, total: 6 });
+    expect(textLength("此開卷第一回也。作者自云：因曾歷過一番夢幻之後")).toEqual({ words: 0, cjk: 21, japanese: 0, total: 12 });
+    expect(textLength("用iPhone拍照 and three words")).toEqual({ words: 4, cjk: 3, japanese: 0, total: 6 });
     // Fullwidth letters and digits are words; Korean spaces its words.
-    expect(textLength("ＡＢＣ１２３ 和 ＮＡＳＡ")).toEqual({ words: 2, cjk: 1, total: 3 });
-    expect(textLength("第３版用ＩＳＯ纸")).toEqual({ words: 2, cjk: 4, total: 4 });
-    expect(textLength("안녕하세요 세계 여러분")).toEqual({ words: 3, cjk: 0, total: 3 });
-    expect(textLength("かな漢字")).toEqual({ words: 0, cjk: 4, total: 2 });
-    expect(textLength("コーヒーを飲む")).toEqual({ words: 0, cjk: 7, total: 4 });
+    expect(textLength("ＡＢＣ１２３ 和 ＮＡＳＡ")).toEqual({ words: 2, cjk: 1, japanese: 0, total: 3 });
+    expect(textLength("第３版用ＩＳＯ纸")).toEqual({ words: 2, cjk: 4, japanese: 0, total: 4 });
+    expect(textLength("안녕하세요 세계 여러분")).toEqual({ words: 3, cjk: 0, japanese: 0, total: 3 });
+  });
+
+  it("reads Japanese: kana mark its sentences, 2.2 letters to the word", () => {
+    expect(JAPANESE_CHARS_PER_WORD).toBeGreaterThan(CJK_CHARS_PER_WORD);
+    expect(textLength("かな漢字")).toEqual({ words: 0, cjk: 4, japanese: 4, total: 2 });
+    expect(textLength("コーヒーを飲む")).toEqual({ words: 0, cjk: 7, japanese: 7, total: 3 });
+    // Half-width katakana and hentaigana are kana too.
+    expect(textLength("ｺｰﾋｰ").japanese).toBe(4);
+    expect(textLength("𛀁").japanese).toBe(1);
+    // A kanji heading in a Japanese text is Japanese: 3 + 16 letters.
+    expect(textLength("第一章\n\n私はその人を常に先生と呼んでいた。")).toEqual({ words: 0, cjk: 19, japanese: 19, total: 9 });
+    // A Chinese text quoting one Japanese title keeps its Chinese count.
+    expect(textLength("此開卷第一回也。作者自云：因曾歷過一番夢幻之後。「こころ」")).toEqual({ words: 0, cjk: 24, japanese: 3, total: 14 });
+    // 4,400 kana letters are 2,000 words: within the 2,500-word cap.
+    expect(textLength("あ".repeat(4400)).total).toBe(2000);
+  });
+
+  it("fails the stock phrases of Japanese prose and warns on the softer ones", () => {
+    expect(phrases("版面の設計は読みやすさにおいて重要な役割を果たすと言えるでしょう。", "en")).toEqual(
+      expect.arrayContaining(["fail:重要な役割を果た", "fail:と言えるでしょう"]),
+    );
+    expect(phrases("縦組みの世界へようこそ。ルビを正しく付けることが重要です。いかがでしたか。", "es")).toEqual(
+      expect.arrayContaining(["fail:の世界へようこそ", "fail:いかがでしたか"]),
+    );
+    expect(phrases("ルビを正しく付けることが重要です。一緒に見ていきましょう。", "zh")).toEqual(
+      expect.arrayContaining(["fail:ことが重要です", "fail:一緒に見ていきましょう"]),
+    );
+    expect(phrases("シームレスな組版を実現します。まさに革新的なエンジンです。", "en")).toEqual(
+      expect.arrayContaining(["fail:シームレス", "warn:を実現します", "warn:まさに", "warn:革新的な"]),
+    );
+    expect(phrases("まとめると、組版は奥深い世界ではないでしょうか。", "en")).toEqual(
+      expect.arrayContaining(["fail:まとめると、", "warn:奥深い世界", "warn:ではないでしょうか"]),
+    );
+    expect(styleFindings("こころの世界へようこそ。", "en").every((f) => f.severity === "fail")).toBe(true);
+  });
+
+  it("leaves plain Japanese alone and judges shared kanji words by the Japanese list", () => {
+    const plain = [
+      "本文は明朝体で組み、見出しはゴシック体にする。行送りは文字サイズの1.75倍で、ルビが入る余白を残す。",
+      "縦組みでは句読点が字面の右上に寄り、行末の句点はぶら下げる。`cjk.lineBreak` は既定のままでよい。",
+      "芸の極致を語る随筆で、全方位に目を配る編集者の話が出てくる。",
+    ].join("\n");
+    expect(styleFindings(plain, "en")).toEqual([]);
+    expect(styleFindings(plain, "zh")).toEqual([]);
+    // Classical Japanese, quoted.
+    expect(styleFindings("私はその人を常に先生と呼んでいた。だからここでもただ先生と書くだけで本名は打ち明けない。", "en")).toEqual([]);
+    // The Chinese list still reads the Chinese sentences of a Chinese page
+    // that quotes Japanese; in a Japanese text a kanji-only line is Japanese.
+    expect(phrases("全方位的排版方案，适用于横排和竖排的书。縦組みの頁を全方位から見る。", "en")).toEqual(["warn:全方位"]);
+    expect(phrases("全方位。縦組みの頁を全方位から見る。", "en")).toEqual([]);
   });
 
   it("fails the stock phrases of Chinese prose, in both scripts", () => {
