@@ -90,7 +90,8 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const floatSide = flowSideLabels(useRightToLeftFlow(), labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes(locale);
   // The previews number in the document's digits, as the pages do.
-  const digits = documentDigits(config.numerals, documentLanguage(config, locale ?? 'en'));
+  const language = documentLanguage(config, locale ?? 'en');
+  const digits = documentDigits(config.numerals, language);
   const isDefault = config.resourceTypes === undefined;
   // Per-type caption overrides are shown merged over the resolved global
   // caption style so every control displays the value that will render.
@@ -282,7 +283,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeCounterFormatLabel} tooltip={labels.resourceTypeCounterFormatTooltip}>
                 <select
-                  value={resourceCounterFormat(type.counterFormat)}
+                  value={resourceCounterFormat(type.counterFormat, language)}
                   onChange={(e) =>
                     updateType(type.id, { counterFormat: e.target.value as ResourceCounterFormat })
                   }
@@ -437,7 +438,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                 dir="auto"
                 style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
               >
-                {renderResourceTypePreview(type, digits)}
+                {renderResourceTypePreview(type, digits, language)}
               </span>
             </div>
           </div>

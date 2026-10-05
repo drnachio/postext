@@ -152,6 +152,12 @@ export interface SandboxLabels {
   numberFormatTradChineseInformal: string;
   numberFormatSimpChineseFormal: string;
   numberFormatTradChineseFormal: string;
+  numberFormatJapaneseInformal: string;
+  numberFormatJapaneseFormal: string;
+  numberFormatHiragana: string;
+  numberFormatKatakana: string;
+  numberFormatHiraganaIroha: string;
+  numberFormatKatakanaIroha: string;
   numberFormatCjkDecimal: string;
   numberFormatCjkHeavenlyStem: string;
   numberFormatCjkEarthlyBranch: string;
