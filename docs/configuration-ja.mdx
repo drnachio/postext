@@ -3361,6 +3361,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3429,6 +3430,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>注方式のスタイルで引用を組む場所です。脚注（<code>footnotes</code>の設定どおりに配置・番号付け）か、行の中に2行で組む割注（夹注）かを選びます。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>引用を本全体で通して扱うか、章ごとに扱うか（各文書、および引用のあとの各レベル1見出し）。章ごとでは、番号方式のスタイルは各章を 1 から数え、二つの章で引用された文献はそれぞれの章の番号を取ります。注のスタイルは各章の最初の引用で文献を完全な形で書きます。<code>bibliography.scope: 'chapter'</code>と組み合わせて使い、章の一覧はその章の番号になります。</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>

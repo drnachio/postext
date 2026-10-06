@@ -42,6 +42,11 @@ export interface CitationContext {
    *  where the resource is placed: right after the block that first
    *  refers to it in the book (its `::resource` block or first `:ref`). */
   captions?: Record<string, CaptionCitationIndexes>;
+  /** The chapter of each citation of {@link clusters} (#537): counted
+   *  through the book, a new one at each document and at each level-1
+   *  heading after a citation. `citations.numbering: 'chapter'` processes
+   *  each chapter's citations on their own. */
+  chapters?: number[];
 }
 
 /** Where a resource's caption and note citations sit in a book's
@@ -145,21 +150,40 @@ export function bookCitationContexts(
   }
   // Note order: number the notes, then sort the citations by note.
   let note = 0;
-  type Entry = { cluster: CitationClusterInput; doc: number; order: number; noteIndex: number; seq: number; caption?: { id: string; part: 'caption' | 'note' } };
+  type Entry = { cluster: CitationClusterInput; doc: number; order: number; noteIndex: number; seq: number; chapter: number; caption?: { id: string; part: 'caption' | 'note' } };
   const entries: Entry[] = [];
   let seq = 0;
+  // A chapter opens with each document and each level-1 heading; one with
+  // no citation yet is not counted again.
+  let chapter = -1;
+  let chapterCites = true;
+  const openChapter = (): void => {
+    if (!chapterCites) return;
+    chapter++;
+    chapterCites = false;
+  };
   sources.forEach((src, doc) => {
     const noteOf = new Map<string, number>();
+    const noteChapter = new Map<string, number>();
     const inNotes: { cluster: CitationClusterInput; note: string; order: number }[] = [];
     let order = 0;
+    openChapter();
     for (const b of src.blocks) {
       if (b.footnoteDef !== undefined) {
         for (const s of b.spans) if (s.citation) inNotes.push({ cluster: s.citation.cluster, note: b.footnoteDef, order: order++ });
         continue;
       }
+      if (b.type === 'heading' && b.level === 1) openChapter();
       for (const s of b.spans) {
-        if (s.footnote && !noteOf.has(s.footnote.id)) noteOf.set(s.footnote.id, ++note);
-        if (s.citation) entries.push({ cluster: s.citation.cluster, doc, order: order++, noteIndex: ++note, seq: seq++ });
+        if (s.footnote && !noteOf.has(s.footnote.id)) {
+          noteOf.set(s.footnote.id, ++note);
+          noteChapter.set(s.footnote.id, chapter);
+          chapterCites = true;
+        }
+        if (s.citation) {
+          entries.push({ cluster: s.citation.cluster, doc, order: order++, noteIndex: ++note, seq: seq++, chapter });
+          chapterCites = true;
+        }
       }
       if (captionClusters.size === 0) continue;
       for (const id of blockResourceIds(b, isResource)) {
@@ -167,14 +191,16 @@ export function bookCitationContexts(
         if (!cited || anchored.has(id)) continue;
         anchored.add(id);
         for (const part of ['caption', 'note'] as const) {
-          for (const cluster of cited[part]) entries.push({ cluster, doc, order: -1, noteIndex: note, seq: seq++, caption: { id, part } });
+          for (const cluster of cited[part]) entries.push({ cluster, doc, order: -1, noteIndex: note, seq: seq++, chapter, caption: { id, part } });
+          chapterCites ||= cited[part].length > 0;
         }
       }
     }
-    for (const c of inNotes) entries.push({ cluster: c.cluster, doc, order: c.order, noteIndex: noteOf.get(c.note) ?? 0, seq: seq++ });
+    for (const c of inNotes) entries.push({ cluster: c.cluster, doc, order: c.order, noteIndex: noteOf.get(c.note) ?? 0, seq: seq++, chapter: noteChapter.get(c.note) ?? chapter });
   });
   const sorted = [...entries].sort((a, b) => a.doc - b.doc || a.noteIndex - b.noteIndex || a.seq - b.seq);
   const clusters = sorted.map((e) => ({ ...e.cluster, noteIndex: e.noteIndex }));
+  const chapters = sorted.map((e) => e.chapter);
   const placed = sources.some((s) => hasBibliographyDirective(s.blocks));
   return sources.map((_, doc) => {
     const ofDoc = sorted.map((e, i) => ({ e, i })).filter(({ e }) => e.doc === doc);
@@ -194,6 +220,7 @@ export function bookCitationContexts(
       last: doc === sources.length - 1,
       issues: issues[doc] ?? [],
       ...(captions ? { captions } : {}),
+      chapters,
     };
   });
 }
@@ -203,5 +230,5 @@ export function bookCitationContexts(
  *  layout went stale). */
 export function citationContextKey(ctx: CitationContext | undefined): string {
   if (!ctx) return '';
-  return JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, ctx.local, ctx.placed, ctx.last, ctx.captions ?? null]);
+  return JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, ctx.local, ctx.placed, ctx.last, ctx.captions ?? null, ctx.chapters ?? null]);
 }

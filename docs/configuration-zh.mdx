@@ -3358,6 +3358,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3426,6 +3427,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>注释体样式放置引用的方式：脚注（按<code>footnotes</code>设置）或行内双行夹注。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>引用在全书连续处理，或每章单独处理（每个文档，以及引用之后的每个一级标题）：顺序编码制每章从 1 编号，两章都引用的文献在各章取各自的编号；注释样式在每章第一次引用时写出完整著录。与<code>bibliography.scope: 'chapter'</code>配合使用，章内列表随之采用本章的编号。</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>

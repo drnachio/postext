@@ -72,6 +72,10 @@ export interface ProcessedCitations {
   target: (string | undefined)[];
   /** Every work the bibliography lists for the whole book, in order. */
   entries: BibliographyEntryOutput[];
+  /** With `citations.numbering: 'chapter'` (#537): each chapter's list
+   *  (the works it cites, labelled with its own numbers), by the chapter
+   *  index of `CitationContext.chapters`. */
+  chapterEntries?: ReadonlyMap<number, BibliographyEntryOutput[]>;
   numbered: boolean;
   hangingIndent: boolean;
   labelColumn: boolean;
@@ -196,7 +200,10 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
   if (!engine || ctx.items.length === 0) return null;
   const cfg = resolved.citations;
   const style = cfg.style === 'custom' && cfg.customStyle ? cfg.customStyle : cfg.style;
-  const key = JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, style, locale, cfg.marker, cfg.collapseRanges, cfg.notes, cfg.bibliography.doi, cfg.bibliography.includeUncited, cfg.bibliography.groupByLanguage]);
+  // Each chapter on its own (#537): its citations processed apart, so a
+  // numbered style numbers them from 1.
+  const byChapter = cfg.numbering === 'chapter' && ctx.chapters !== undefined && ctx.chapters.length === ctx.clusters.length;
+  const key = JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, byChapter ? ctx.chapters : null, style, locale, cfg.marker, cfg.collapseRanges, cfg.notes, cfg.bibliography.doi, cfg.bibliography.includeUncited, cfg.bibliography.groupByLanguage]);
   const hit = memo.find((m) => m.key === key);
   if (hit) return hit.value;
   let value: ProcessedCitations | null = null;
@@ -210,39 +217,80 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
     const clusters = ctx.clusters.map((c) => ({ ...c, noteIndex: processor.kind === 'note' ? c.noteIndex ?? 0 : 0 }));
     // Affixes reach the processor as CSL rich text: their Markdown
     // emphasis as `<i>`/`<b>` (#528).
-    const html = processor.cite(clusters.map((c) => (c.items.some((it) => it.prefix || it.suffix)
+    const rich = clusters.map((c) => (c.items.some((it) => it.prefix || it.suffix)
       ? { ...c, items: c.items.map((it) => ({ ...it, ...(it.prefix ? { prefix: affixRichText(it.prefix) } : {}), ...(it.suffix ? { suffix: affixRichText(it.suffix) } : {}) })) }
-      : c)));
-    const numbers = processor.citationNumbers();
+      : c));
+    /** A list as the settings print it. */
+    const shaped = (list: BibliographyEntryOutput[]): BibliographyEntryOutput[] => {
+      let out = list;
+      // A numbered list is in the order of its numbers: grouping by
+      // language would set [3] before [1].
+      if (cfg.bibliography.groupByLanguage && !processor.numeric) {
+        out = [...out.filter((e) => isCjkItem(byId.get(e.id))), ...out.filter((e) => !isCjkItem(byId.get(e.id)))];
+      }
+      if (cfg.bibliography.doi === 'text') out = out.map((e) => ({ ...e, html: e.html.replace(/<\/?a\b[^>]*>/g, '') }));
+      return out;
+    };
+    const override = processor.numeric && cfg.marker !== 'style' && processor.kind === 'in-text';
+    const formatted: (InlineSpan[] | undefined)[] = new Array(clusters.length).fill(undefined);
+    // The clusters of each chapter (one group of them all, numbered through
+    // the book, unless `numbering: 'chapter'`).
+    const groups = new Map<number, number[]>();
+    clusters.forEach((_, i) => {
+      const g = byChapter ? ctx.chapters![i]! : 0;
+      const list = groups.get(g);
+      if (list) list.push(i);
+      else groups.set(g, [i]);
+    });
+    const chapterEntries = new Map<number, BibliographyEntryOutput[]>();
+    let bib: ReturnType<CitationProcessor['bibliography']> | undefined;
+    for (const [chapter, indexes] of groups) {
+      const html = processor.cite(indexes.map((i) => rich[i]!));
+      const numbers = processor.citationNumbers();
+      indexes.forEach((i, j) => {
+        const c = clusters[i]!;
+        const known = c.items.filter((it) => byId.has(it.id));
+        if (known.length === 0) return;
+        if (override) {
+          const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id), locale, processor.terms)).filter(Boolean).join('; ') : undefined;
+          formatted[i] = markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false }, locale);
+        } else {
+          formatted[i] = htmlToSpans(html[j] ?? '');
+        }
+      });
+      if (byChapter) {
+        bib = processor.bibliography([...new Set(indexes.flatMap((i) => clusters[i]!.items.map((it) => it.id)))].filter((id) => byId.has(id)));
+        chapterEntries.set(chapter, shaped(bib.entries));
+      }
+    }
     const listedIds = cfg.bibliography.includeUncited || ctx.nocite.includes('*')
       ? items.map((i) => i.id)
       : [...new Set([...clusters.flatMap((c) => c.items.map((it) => it.id)), ...ctx.nocite])].filter((id) => byId.has(id));
-    const bib = processor.bibliography(listedIds);
-    let entries = bib.entries;
-    // A numbered list is in the order of its numbers: grouping by language
-    // would set [3] before [1].
-    if (cfg.bibliography.groupByLanguage && !processor.numeric) {
-      entries = [...entries.filter((e) => isCjkItem(byId.get(e.id))), ...entries.filter((e) => !isCjkItem(byId.get(e.id)))];
+    let entries: BibliographyEntryOutput[];
+    if (byChapter) {
+      // The book's list: every chapter's entries, a work at its first
+      // chapter, then the works no chapter cites (`nocite`).
+      const seen = new Set<string>();
+      entries = [...chapterEntries.values()].flat().filter((e) => !seen.has(e.id) && seen.add(e.id));
+      const rest = listedIds.filter((id) => !seen.has(id));
+      if (rest.length > 0 || !bib) {
+        bib = processor.bibliography(rest);
+        entries = [...entries, ...shaped(bib.entries).filter((e) => !seen.has(e.id))];
+      }
+    } else {
+      bib = processor.bibliography(listedIds);
+      entries = shaped(bib.entries);
     }
-    if (cfg.bibliography.doi === 'text') entries = entries.map((e) => ({ ...e, html: e.html.replace(/<\/?a\b[^>]*>/g, '') }));
-    const override = processor.numeric && cfg.marker !== 'style' && processor.kind === 'in-text';
     value = {
       processor,
-      formatted: clusters.map((c, i) => {
-        const known = c.items.filter((it) => byId.has(it.id));
-        if (known.length === 0) return undefined;
-        if (override) {
-          const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id), locale, processor.terms)).filter(Boolean).join('; ') : undefined;
-          return markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false }, locale);
-        }
-        return htmlToSpans(html[i] ?? '');
-      }),
+      formatted,
       unknown: clusters.map((c) => c.items.filter((it) => !byId.has(it.id)).map((it) => it.id)),
       target: clusters.map((c) => c.items.find((it) => byId.has(it.id))?.id),
       entries,
+      ...(byChapter ? { chapterEntries } : {}),
       numbered: processor.numeric,
-      hangingIndent: bib.hangingIndent || !bib.labelColumn,
-      labelColumn: bib.labelColumn,
+      hangingIndent: bib!.hangingIndent || !bib!.labelColumn,
+      labelColumn: bib!.labelColumn,
     };
   } catch {
     value = null;
@@ -308,6 +356,10 @@ export interface CitationIssue {
   sourceStart: number;
   sourceEnd: number;
 }
+
+/** Which works a list prints: all the book's (`'book'`) or the chapter's
+ *  (`'chapter'`). */
+type BibliographyScope = 'book' | 'chapter';
 
 /** What {@link applyCitations} gives the build. */
 export interface AppliedCitations {
@@ -440,6 +492,15 @@ export function applyCitations(
   const notes: ContentBlock[] = [];
   let k = 0;
   const citedHere = new Set<string>();
+  /** The chapter (`CitationContext.chapters`) of the last citation read. */
+  let chapterAt: number | undefined;
+  /** Cluster `g`, formatted, read here: its works counted. */
+  const counted = (g: number): void => {
+    for (const it of ctx.clusters[g]?.items ?? []) {
+      citedHere.add(it.id);
+    }
+    chapterAt = ctx.chapters?.[g] ?? chapterAt;
+  };
   let bibliographySet = false;
   let labelChars = 0;
   let containerSeq = 0;
@@ -477,15 +538,19 @@ export function applyCitations(
       if (!at || captions.has(id)) continue;
       const base: InlineSpan = { text: '', bold: false, italic: false };
       for (const g of [...at.caption, ...at.note]) {
-        if (processed?.formatted[g]) for (const it of ctx.clusters[g]?.items ?? []) citedHere.add(it.id);
+        if (processed?.formatted[g]) counted(g);
       }
       captions.set(id, { caption: at.caption.map((g) => formattedText(g, base)), note: at.note.map((g) => formattedText(g, base)) });
     }
   };
 
-  const bibliographyBlocks = (at: number, scope: 'book' | 'chapter', title: string | undefined): ContentBlock[] => {
+  const bibliographyBlocks = (at: number, scope: BibliographyScope, title: string | undefined): ContentBlock[] => {
     if (!processed) return [];
-    const entries = scope === 'chapter' ? processed.entries.filter((e) => citedHere.has(e.id)) : processed.entries;
+    // Numbered by chapter (#537), a chapter's list takes its own labels.
+    const pool = scope !== 'book' && processed.chapterEntries && chapterAt !== undefined
+      ? processed.chapterEntries.get(chapterAt) ?? processed.entries
+      : processed.entries;
+    const entries = scope === 'chapter' ? pool.filter((e) => citedHere.has(e.id)) : pool;
     if (entries.length === 0) return [];
     bibliographySet = true;
     const alignRight = cfg.bibliography.labelAlign === 'right';
@@ -559,7 +624,7 @@ export function applyCitations(
         replace.set(i, [plain(span.citation.raw, span)]);
         return;
       }
-      for (const it of span.citation.cluster.items) citedHere.add(it.id);
+      counted(g);
       if (note && block.footnoteDef === undefined) {
         // "As @howse1980 says": the sentence keeps the author's name, the
         // reference goes to the note.

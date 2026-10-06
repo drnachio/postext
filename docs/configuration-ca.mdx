@@ -3350,6 +3350,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3418,6 +3419,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>On posa les seves cites un estil de notes: notes a peu de pàgina (com diu <code>footnotes</code>) o notes de dues línies dins del rengle (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Les citacions al llarg del llibre, o cada capítol pel seu compte (cada document, i cada encapçalament de nivell 1 després d'una citació): un estil numèric numera cada capítol des d'1 i una obra citada en dos capítols pren el número de cadascun; un estil de notes escriu l'obra completa a la seva primera citació de cada capítol. Pensat per a <code>bibliography.scope: 'chapter'</code>, les llistes del qual prenen llavors els números del capítol.</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>

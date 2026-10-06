@@ -3361,6 +3361,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3429,6 +3430,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>Where a note style sets its citations: footnotes (placed and numbered as <code>footnotes</code> says), or two-row notes inside the line (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Citations through the book, or each chapter on its own (each document, and each level-1 heading after a citation): a numbered style numbers each chapter from 1 and a work cited in two chapters takes each chapter's number; a note style writes a work in full at its first citation in each chapter. Meant with <code>bibliography.scope: 'chapter'</code>, whose lists then take the chapter's numbers.</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>

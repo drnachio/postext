@@ -3630,6 +3630,15 @@ export interface CitationsConfig {
    *  says) or, in Chinese text, as an inline two-row note (`'warichu'`,
    *  夹注). */
   notes?: 'footnote' | 'warichu';
+  /** How far the citations run together (#537): through the book
+   *  (`'book'`, default), or each chapter on its own (`'chapter'`, a new
+   *  one at each document and each level-1 heading): a numbered style
+   *  numbers each chapter's citations from 1 and a work cited in two
+   *  chapters takes each chapter's number; a note style writes a work in
+   *  full at its first citation in each chapter. Meant for chapter lists
+   *  (`bibliography.scope: 'chapter'`): the proceedings, the bulletin, the
+   *  edited volume. */
+  numbering?: 'book' | 'chapter';
   /** The list of works cited. */
   bibliography?: {
     /** Title printed above the list (a bold paragraph). Unset: the
@@ -3680,6 +3689,7 @@ export interface ResolvedCitationsConfig {
   marker: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges: boolean;
   notes: 'footnote' | 'warichu';
+  numbering: 'book' | 'chapter';
   bibliography: {
     title?: string;
     scope: 'book' | 'chapter';

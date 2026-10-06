@@ -3361,6 +3361,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3429,6 +3430,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>أين يضع نمطُ الحواشي استشهاداته: في حواشٍ سفلية (توضع وتُرقَّم كما تحدد <code>footnotes</code>)، أو في تعليقات من صفين داخل السطر (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>الاستشهادات عبر الكتاب كله، أو كل فصل وحده (كل مستند، وكل عنوان من المستوى 1 بعد استشهاد): يرقّم النمط الرقمي كل فصل من 1، ويأخذ العمل المستشهد به في فصلين رقم كل فصل؛ ويكتب نمط الحواشي العمل كاملًا عند أول استشهاد به في كل فصل. يُستعمل مع <code>bibliography.scope: 'chapter'</code>، فتأخذ قوائم الفصول أرقام فصولها.</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>

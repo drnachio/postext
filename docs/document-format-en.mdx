@@ -901,6 +901,8 @@ In a BibTeX name list, `and others` stands for the names left out (`author = {Ta
 
 `:::bibliography` sets the list of works cited where it stands; without one, the list follows the last chapter, titled in the document language (*References*, *Referencias*, *参考文献*). `:::bibliography{title="Works cited"}` changes the title and `title=""` leaves it out; `scope=chapter` lists the works the chapter cites (an edited volume). Each entry is an anchor (`ref-<key>`), so a Markdown link to `#ref-garcia2020` reaches it, and the PDF tags it as a `BibEntry`.
 
+A numbered style counts its citations through the book; with `citations.numbering: 'chapter'` each chapter (each document, and each level-1 heading after a citation) numbers its own from 1, and its chapter list takes those numbers, as the reports of a bulletin or the papers of proceedings do.
+
 ### Styles
 
 The style decides what a citation and an entry say. The bundled styles are listed below; any other CSL style (there are more than ten thousand in the Zotero style repository) can be loaded from its `.csl` file in **Settings → Citations**.

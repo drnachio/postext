@@ -901,6 +901,8 @@ En una llista de noms BibTeX, `and others` representa els noms omesos (`author =
 
 `:::bibliography` posa la llista d'obres citades on és; sense aquest bloc, la llista va després de l'últim capítol, amb el títol en la llengua del document (*Referències*, *References*, *参考文献*). `:::bibliography{title="Obras citadas"}` canvia el títol i `title=""` el treu; `scope=chapter` llista les obres que cita el capítol (una obra col·lectiva). Cada entrada és una àncora (`ref-<clave>`), de manera que un enllaç Markdown a `#ref-garcia2020` hi porta, i el PDF l'etiqueta com a `BibEntry`.
 
+Un estil numèric compta les citacions al llarg del llibre; amb `citations.numbering: 'chapter'` cada capítol (cada document, i cada encapçalament de nivell 1 després d'una citació) numera les seves des d'1, i la seva llista de capítol pren aquests números, com els informes d'un butlletí o les ponències d'unes actes.
+
 ### Estils
 
 L'estil decideix què diuen una citació i una entrada. Els estils inclosos són a la taula; qualsevol altre estil CSL (el repositori d'estils de Zotero en té més de deu mil) es carrega des del seu fitxer `.csl` a **Configuració → Citacions**.

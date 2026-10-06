@@ -305,6 +305,20 @@ export const CitationsSection = memo(function CitationsSection() {
           isDefault={b.scope === D.bibliography.scope}
           onReset={() => resetBib('scope')}
         />
+        <SelectInput
+          label={labels.citationsNumbering}
+          value={c.numbering}
+          variant="segmented"
+          stacked
+          options={[
+            { value: 'book', label: labels.citationsNumberingBook },
+            { value: 'chapter', label: labels.citationsNumberingChapter },
+          ]}
+          onChange={(v) => update({ numbering: v as CitationsConfig['numbering'] })}
+          tooltip={labels.citationsNumberingTooltip}
+          isDefault={c.numbering === D.numbering}
+          onReset={() => resetField('numbering')}
+        />
         <ToggleSwitch
           label={labels.citationsBibliographyAuto}
           checked={b.auto}

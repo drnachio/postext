@@ -2403,6 +2403,10 @@ export interface SandboxLabels {
   citationsBibliographyScopeBook: string;
   citationsBibliographyScopeChapter: string;
   citationsBibliographyScopeTooltip: string;
+  citationsNumbering: string;
+  citationsNumberingBook: string;
+  citationsNumberingChapter: string;
+  citationsNumberingTooltip: string;
   citationsBibliographyAuto: string;
   citationsBibliographyAutoTooltip: string;
   citationsBibliographyFontSize: string;
