@@ -35,12 +35,16 @@ function ruleTop(col: VDTColumn): number {
 /**
  * Compute the column-rule segments of a page: one per gutter between
  * adjacent text columns of the same band, spanning the taller of the two
- * columns. Full-width `kind: 'span'` columns (page-span blocks) and
- * zero-height columns (bands closed before any text landed) never take
+ * columns. Full-width `kind: 'span'` columns (page-span blocks) never take
  * part, so the rule stops at a span block and resumes with the next band
  * — the ruling a compositor would draw. Under a page-span heading's opener
- * band it starts where the text does. Bands are visited in column order,
- * which is band order because bands are always appended.
+ * band it starts where the text does. A gutter between two columns that
+ * hold nothing (a band closed before any text landed, the empty columns
+ * left beside a closing page's text) is not ruled; a zero-height column
+ * (one a float filled) still bounds its gutters, which then run the length
+ * of its neighbour — beside the float, never through it (#505). Bands are
+ * visited in column order, which is band order because bands are always
+ * appended.
  */
 export function columnRuleSegments(
   columns: readonly VDTColumn[],
@@ -57,24 +61,33 @@ export function columnRuleSegments(
   };
   const byBand = new Map<number, VDTColumn[]>();
   for (const col of columns) {
-    if (col.kind === 'span' || col.bbox.height <= 0.5) continue;
+    if (col.kind === 'span') continue;
     const band = col.band ?? 0;
     const list = byBand.get(band);
     if (list) list.push(col);
     else byBand.set(band, [col]);
   }
+  const tall = (col: VDTColumn): boolean => col.bbox.height > 0.5;
+  // A page with no text at all (a blank page) keeps its rules, as it did.
+  const anyText = columns.some((c) => c.kind !== 'span' && c.blocks.length > 0);
+  const empty = (col: VDTColumn): boolean => col.kind !== 'side' && col.blocks.length === 0;
   const segments: ColumnRuleSegment[] = [];
   for (const cols of byBand.values()) {
     // Reading order is not always geometric order (a side column at the
     // left of the main column): rule the gutters from left to right.
     cols.sort((a, b) => a.bbox.x - b.bbox.x);
     for (let i = 0; i < cols.length - 1; i++) {
-      const left = cols[i]!.bbox;
-      const right = cols[i + 1]!.bbox;
+      const a = cols[i]!;
+      const b = cols[i + 1]!;
+      if (!tall(a) && !tall(b)) continue;
+      // Two columns of nothing beside a page's text (a side column of
+      // floats, which holds no blocks, still rules its gutter).
+      if (anyText && empty(a) && empty(b)) continue;
+      const extent = [a, b].filter(tall);
       segments.push({
-        x: (left.x + left.width + right.x) / 2,
-        top: Math.min(ruleTop(cols[i]!), ruleTop(cols[i + 1]!)),
-        bottom: Math.max(footOf(cols[i]!), footOf(cols[i + 1]!)),
+        x: (a.bbox.x + a.bbox.width + b.bbox.x) / 2,
+        top: Math.min(...extent.map(ruleTop)),
+        bottom: Math.max(...extent.map(footOf)),
       });
     }
   }

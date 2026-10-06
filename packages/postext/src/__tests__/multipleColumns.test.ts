@@ -124,3 +124,22 @@ describe('floats across several columns (#505)', () => {
     expect(floatOf(doc, 'a')!.f.bbox.width).toBeCloseTo((740 - 3 * 12) / 4, 3);
   });
 });
+
+describe('column rules on a page of several columns (#505)', () => {
+  const col = (index: number, x: number, y: number, height: number, blocks: number) => ({
+    index, bbox: { x, y, width: 100, height }, availableHeight: 0, band: 0,
+    blocks: Array.from({ length: blocks }, () => ({})),
+  }) as unknown as VDTPage['columns'][number];
+
+  it('rules the gutters of a column a float filled beside it, never through it', () => {
+    // The third column is all picture: no height left, no text.
+    const cols = [col(0, 0, 0, 500, 3), col(1, 110, 0, 500, 3), col(2, 220, 520, 0, 0), col(3, 330, 0, 500, 2)];
+    const xs = columnRuleSegments(cols).map((s) => s.x);
+    expect(xs).toEqual([105, 215, 325]);
+  });
+
+  it('leaves the gutters between the empty columns of a closing page unruled', () => {
+    const cols = [col(0, 0, 0, 300, 4), col(1, 110, 200, 30, 0), col(2, 220, 200, 30, 0), col(3, 330, 200, 30, 0)];
+    expect(columnRuleSegments(cols).map((s) => s.x)).toEqual([105]);
+  });
+});
