@@ -129,10 +129,6 @@ export function WholeRecipeTabs({ panels, data }: { panels: WholeRecipePanel[]; 
             <Copy aria-hidden="true" className="size-3.5" />
             {t("copyShort")}
           </button>
-          <button type="button" className="cb-code-button" onClick={codepen} title={t("openInCodePenTitle")}>
-            <Play aria-hidden="true" className="size-3.5 fill-current" />
-            {t("openInCodePenShort")}
-          </button>
           {data.sandbox && (
             <a
               href={data.sandbox.href}
@@ -143,6 +139,10 @@ export function WholeRecipeTabs({ panels, data }: { panels: WholeRecipePanel[]; 
               {t("openInSandboxShort")}
             </a>
           )}
+          <button type="button" className="cb-code-button" onClick={codepen} title={t("openInCodePenTitle")}>
+            <Play aria-hidden="true" className="size-3.5 fill-current" />
+            {t("openInCodePenShort")}
+          </button>
           <button type="button" className="cb-code-button" onClick={download} title={t("downloadHtmlTitle")}>
             <Download aria-hidden="true" className="size-3.5" />
             {t("downloadHtml")}

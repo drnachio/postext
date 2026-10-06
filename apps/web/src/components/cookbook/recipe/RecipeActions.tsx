@@ -36,12 +36,12 @@ export interface RecipeActionsData {
   githubUrl: string;
 }
 
-/** Open in Sandbox, as a band action or a bar action. */
+/** Open in Sandbox, the lead action of the band or the bar. */
 function SandboxAction({ sandbox, short }: { sandbox: NonNullable<RecipeActionsData["sandbox"]>; short?: boolean }) {
   const t = useTranslations("CookbookRecipe");
   const title = t(sandbox.live ? "openInSandboxTitleLive" : "openInSandboxTitle");
   return (
-    <a href={sandbox.href} className="cb-action cb-action-sandbox" title={title} aria-label={short ? title : undefined}>
+    <a href={sandbox.href} className="cb-action cb-action-primary" title={title} aria-label={short ? title : undefined}>
       <AppWindow aria-hidden="true" className="size-3.5" />
       {t(short ? "openInSandboxShort" : "openInSandbox")}
     </a>
@@ -100,17 +100,23 @@ export function useRecipeActions(data: RecipeActionsData) {
   };
 }
 
-/** The band's actions: Open in CodePen and Open in Sandbox (both filled), Copy
+/** Open in CodePen leads when the recipe has no Sandbox bundle and follows
+ *  Open in Sandbox, in the lighter fill, when it has one. */
+function codepenClass(data: RecipeActionsData): string {
+  return cn("cb-action", data.sandbox ? "cb-action-secondary" : "cb-action-primary");
+}
+
+/** The band's actions: Open in Sandbox and Open in CodePen (both filled), Copy
  *  code, the `.html` and PDF downloads and the GitHub folder. */
 export function RecipeActions({ data, className }: { data: RecipeActionsData; className?: string }) {
   const { t, codepen, copy, download } = useRecipeActions(data);
   return (
     <div role="group" aria-label={t("actionsLabel")} className={cn("cb-actions", className)}>
-      <button type="button" className="cb-action cb-action-primary" title={t("openInCodePenTitle")} onClick={codepen}>
+      {data.sandbox && <SandboxAction sandbox={data.sandbox} />}
+      <button type="button" className={codepenClass(data)} title={t("openInCodePenTitle")} onClick={codepen}>
         <Play aria-hidden="true" className="size-3.5 fill-current" />
         {t("openInCodePen")}
       </button>
-      {data.sandbox && <SandboxAction sandbox={data.sandbox} />}
       <button type="button" className="cb-action" title={t("copyCodeTitle")} onClick={copy}>
         <Copy aria-hidden="true" className="size-3.5" />
         {t("copyCode")}
@@ -145,18 +151,18 @@ export function RecipeActions({ data, className }: { data: RecipeActionsData; cl
   );
 }
 
-/** Below `sm` the band drops its actions; CodePen, Sandbox, Copy and PDF
+/** Below `sm` the band drops its actions; Sandbox, CodePen, Copy and PDF
  *  sit in a bar fixed to the foot of the screen instead. */
 export function RecipeActionBar({ data }: { data: RecipeActionsData }) {
   const { t, codepen, copy } = useRecipeActions(data);
   return (
     <div className="cb-action-bar on-night">
       <div role="group" aria-label={t("actionsLabel")} className="cb-action-bar-row">
-        <button type="button" className="cb-action cb-action-primary" onClick={codepen} title={t("openInCodePenTitle")}>
+        {data.sandbox && <SandboxAction sandbox={data.sandbox} short />}
+        <button type="button" className={codepenClass(data)} onClick={codepen} title={t("openInCodePenTitle")}>
           <Play aria-hidden="true" className="size-3.5 fill-current" />
           {t("openInCodePenShort")}
         </button>
-        {data.sandbox && <SandboxAction sandbox={data.sandbox} short />}
         <button type="button" className="cb-action" onClick={copy} title={t("copyCodeTitle")}>
           <Copy aria-hidden="true" className="size-3.5" />
           {t("copyShort")}
