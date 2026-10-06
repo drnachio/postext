@@ -1,0 +1,60 @@
+---
+title: "A living newspaper whose pictures move"
+summary: "Six video resources set as press photographs on a four-column tabloid; autoplay, loop and exclusive: false make the clips play together in Folio."
+plain: "A 1930s-style local newspaper where every photograph is a short silent film. On paper they are still pictures; in the 3D viewer all of them move together, over and over, like a newspaper in a fairy tale."
+description: "A four-page tabloid in four columns whose six pictures are black-and-white video loops, playing together on folded newsprint in the Folio viewer."
+question: "How do I make several silent video loops play at once on a newspaper page?"
+aliases: ["living newspaper", "moving pictures", "video loop", "autoplay", "loop", "several videos at once", "exclusive", "play alongside", "tabloid", "newspaper", "four columns", "Folio", "newsprint", "folded"]
+pageNotes: { "1": "The front page of The Wexcombe Lantern, 10 June 1933: a condensed black nameplate, the headline Trams run to the sea at last, a picture of the mayor speaking at a podium across three columns, a picture of a woman waving from a biplane across two, and a tinted In brief strip at the foot.", "2": "Town & Harbour: a clock tower picture in one column, a laughing fisherman holding a huge cod across two, a fares box, a tide table and five short stories in four ruled columns.", "3": "Stage & Screen: an actress on a garden stage set across two columns, a review, cinema and wireless tables, letters to the editor and a ruled box of small advertisements.", "4": "Sport: a goalkeeper crouched on his line across three columns, the cup report, fixture, cricket and cycling tables and the imprint." }
+---
+
+## What you'll build
+
+*The Wexcombe Lantern*, an invented seaside weekly of June 1933, on a 280 × 430 mm tabloid page in four ruled columns: a condensed nameplate, a lead story with its picture across three columns, a second across two, tide tables, small ads and a sports page. Every picture is a five-second black-and-white film. In print, and in the flat pages under the viewer, each one is its first frame. Opened in Folio as a folded newspaper on light newsprint, the pictures on the open pages move at once and keep moving: the mayor speaks, the aviator waves, the fisherman laughs, the goalkeeper dives and gets up again. Nothing is drawn by the page; the layout is an ordinary newspaper, and the clips do the rest.
+
+## Method
+
+### 1 · Make every picture a clip that loops with the others
+
+The code is [the short answer](#the-short-answer) above. A video resource prints its poster as a picture, so the clips take the place of photographs and caption like them. Three player options make the page alive: `autoplay` starts a clip when its page is on show (always muted, as browsers require), `loop` plays it again from the start, and `exclusive: false` lets it run alongside the other clips. By default a video is exclusive: starting it pauses whatever else is playing, which suits a lecture but not a page of moving photographs. The play mark and the QR code are switched off, so on paper the clips read as press photographs.
+
+### 2 · Give each loop its place on the grid
+
+<Excerpt region="clips" />
+
+The layout is `layoutType: 'multiple'` with `columnCount: 4`. A float's `columns` sets how many of them it takes: the mayor three, the aviator, the fisherman and the actress two, the clock tower one. A float across several columns takes the head of a run of empty columns that start level, or the foot of the column it is cited in and the empty ones after it, so where the `::resource` line stands decides the slot. The mayor is cited after the first paragraph, which leaves column 1 to the text and puts the picture over columns 2 to 4.
+
+### 3 · Set the masthead and the section pages
+
+<Excerpt region="nameplate" />
+
+The front page's level-1 heading is the paper's name, drawn from a design slot: two ears above it, the name in Oswald capitals, and a dateline between a thin and a heavy rule. The inside pages open with a red section flag on a 3 pt bar (the `pages` region), and a folio line at the head of every page but the first.
+
+### 4 · Open the paper in Folio
+
+<Excerpt region="folio" />
+
+`config.folio` lays the paper on oak in daylight: 45 g/m² newsprint, which the next page shows through, and `binding.type: 'folded'`, sheets folded once and laid one inside the other with no staples and no spine, the way a newspaper is put together. Folio draws every clip on the open spread into one texture, up to eight at a time, starts the autoplaying loops each time a turn settles on their page and stops them when the page is turned away. A click on an exclusive video still plays it alone, with its sound, and the loops wait until it stops.
+
+## Variations
+
+### Let the reader start each clip
+
+Without `autoplay` the pictures stay still until the reader clicks one; the loops still play together once started.
+
+```diff
+-  player: { autoplay: true, loop: true, muted: true, exclusive: false, controls: false },
++  player: { loop: true, muted: true, exclusive: false, controls: false },
+```
+
+### One exclusive clip with its sound
+
+A single video can keep the default and play on its own terms: set `player: { exclusive: true, muted: false }` on that resource's `video`, and starting it holds the loops until it ends.
+
+### A broadsheet in six columns
+
+<RecipeLink slug="newspaper-front-page">The two-column front page</RecipeLink> sets a smaller paper with still photographs; the same grid takes six columns on a broadsheet trim with `sizePreset: 'broadsheet'`.
+
+## Pitfalls
+
+A newspaper section is a level-1 heading that opens a page, and a float never crosses it. A picture that finds no slot on its section's last page is set on a page of its own before the next section, so fit the copy to the page: here the trams story jumps to page 2 rather than push the aviator off the front page.

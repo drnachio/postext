@@ -1,0 +1,238 @@
+{
+  "$schema": "../../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 136,
+  "status": "draft",
+  "chapter": "output",
+  "order": 180,
+  "level": 3,
+  "genres": [
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "video-loops",
+      "multiple-columns"
+    ],
+    "also": [
+      "video-resources",
+      "video-style",
+      "float-columns",
+      "newspaper-trims",
+      "folded-binding",
+      "folio-viewer",
+      "folio-appearance",
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "design-elements",
+      "running-heads",
+      "column-rule",
+      "callout-styles",
+      "callout-columns",
+      "paragraph-styles",
+      "credit-notes"
+    ]
+  },
+  "answers": [
+    "Q152",
+    "Q153"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first",
+    "overflow-ellipsis-default",
+    "callout-columns"
+  ],
+  "related": [
+    "newspaper-front-page",
+    "pendulum-lab-video-players",
+    "folio-book-on-a-desk",
+    "paper-swatch-book"
+  ],
+  "engine": {
+    "postext": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 960
+    },
+    "pages": "all"
+  },
+  "folio": {
+    "tilt": 24,
+    "paper": {
+      "type": "newsprint",
+      "grammage": 45,
+      "shade": "#f9f7f1"
+    },
+    "binding": {
+      "type": "folded",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "file": "mayor-loop.mp4",
+        "what": {
+          "en": "Mrs Edith Rowe speaks at the opening of the Harbour line: a black-and-white loop of 5 s, a still generated from a text prompt and animated with the same first and last frame, encoded with ffmpeg",
+          "es": "Mrs Edith Rowe habla en la inauguración de la línea del puerto: un bucle en blanco y negro de 5 s, una imagen generada a partir de un texto y animada con el mismo primer y último fotograma, codificada con ffmpeg"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "mayor-poster.jpg",
+        "what": {
+          "en": "The first frame of the mayor loop, its printed picture",
+          "es": "El primer fotograma del bucle «mayor», su imagen impresa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "clock-loop.mp4",
+        "what": {
+          "en": "The Guildhall clock tower: a black-and-white loop of 5 s, a still generated from a text prompt and animated with the same first and last frame, encoded with ffmpeg",
+          "es": "La torre del reloj del Guildhall: un bucle en blanco y negro de 5 s, una imagen generada a partir de un texto y animada con el mismo primer y último fotograma, codificada con ffmpeg"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "clock-poster.jpg",
+        "what": {
+          "en": "The first frame of the clock loop, its printed picture",
+          "es": "El primer fotograma del bucle «clock», su imagen impresa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "fisherman-loop.mp4",
+        "what": {
+          "en": "Skipper Jacob Hosking with the cod: a black-and-white loop of 5 s, a still generated from a text prompt and animated with the same first and last frame, encoded with ffmpeg",
+          "es": "El patrón Jacob Hosking con el bacalao: un bucle en blanco y negro de 5 s, una imagen generada a partir de un texto y animada con el mismo primer y último fotograma, codificada con ffmpeg"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "fisherman-poster.jpg",
+        "what": {
+          "en": "The first frame of the fisherman loop, its printed picture",
+          "es": "El primer fotograma del bucle «fisherman», su imagen impresa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "aviator-loop.mp4",
+        "what": {
+          "en": "Miss Constance Lacey in the cockpit: a black-and-white loop of 5 s, a still generated from a text prompt and animated with the same first and last frame, encoded with ffmpeg",
+          "es": "La señorita Constance Lacey en la cabina: un bucle en blanco y negro de 5 s, una imagen generada a partir de un texto y animada con el mismo primer y último fotograma, codificada con ffmpeg"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "aviator-poster.jpg",
+        "what": {
+          "en": "The first frame of the aviator loop, its printed picture",
+          "es": "El primer fotograma del bucle «aviator», su imagen impresa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "actress-loop.mp4",
+        "what": {
+          "en": "Miss Rosalind Avery on the stage: a black-and-white loop of 5 s, a still generated from a text prompt and animated with the same first and last frame, encoded with ffmpeg",
+          "es": "La señorita Rosalind Avery en el escenario: un bucle en blanco y negro de 5 s, una imagen generada a partir de un texto y animada con el mismo primer y último fotograma, codificada con ffmpeg"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "actress-poster.jpg",
+        "what": {
+          "en": "The first frame of the actress loop, its printed picture",
+          "es": "El primer fotograma del bucle «actress», su imagen impresa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "keeper-loop.mp4",
+        "what": {
+          "en": "Tom Rundle in goal: a black-and-white loop of 5 s, a still generated from a text prompt and animated with the same first and last frame, encoded with ffmpeg",
+          "es": "Tom Rundle en la portería: un bucle en blanco y negro de 5 s, una imagen generada a partir de un texto y animada con el mismo primer y último fotograma, codificada con ffmpeg"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "file": "keeper-poster.jpg",
+        "what": {
+          "en": "The first frame of the keeper loop, its printed picture",
+          "es": "El primer fotograma del bucle «keeper», su imagen impresa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Libre Caslon Text",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Oswald",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Courier Prime",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06"
+}

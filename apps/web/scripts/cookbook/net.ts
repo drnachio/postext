@@ -45,6 +45,8 @@ const TYPES: Record<string, string> = {
   ".ttf": "font/ttf",
   ".otf": "font/otf",
   ".pdf": "application/pdf",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
   ".postext": "application/zip",
   ".zip": "application/zip",
 };
