@@ -1,73 +1,3 @@
-# Stage & Screen {style="section"}
-
-## A Lady of the Garden at the Pavilion {style="second"}
-
-:::paragraphs{style="byline"}
-Reviewed by **Harold Vosper**
-:::
-
-:::paragraphs{style="flush"}
-The Pavilion Players opened their summer season on Monday with *A Lady of the Garden*, a comedy in three acts by a playwright who prefers to remain anonymous, and whose modesty the second act fully justifies. The first and third, however, are a delight, and the evening belongs to Miss Rosalind Avery.
-:::
-
-::resource{id="actress"}
-
-As Miss Hester Lane, a gardener’s daughter who inherits the great house where her father kept the roses, Miss Avery is by turns wistful, imperious and very funny. Her long speech to the assembled relations in the third act, delivered from the top of the garden steps with one arm flung out towards the vegetable beds, stopped the play for a full minute of applause on the first night.
-
-Mr Frank Polglase is a fine, glowering butler, who conveys more with one raised eyebrow than the second act manages with its whole cast, and Miss Daisy Kitto, as the cousin who expected to inherit, is spiteful in the best possible way. The painted garden by Mr Tom Rule, the company’s carpenter, is so convincing that a lady in the second row was heard to ask where she might buy the delphiniums.
-
-The second act is another matter. It is set in a solicitor’s office, it lasts fifty minutes, and it consists almost entirely of people reading a will aloud to one another. Miss Avery does her best with a scene in which she must faint on to a filing cabinet, but the audience on Monday was plainly waiting for the garden to come back, and when it did, so did the play.
-
-*A Lady of the Garden* runs nightly at eight until the 24th, with a matinée on Wednesdays at half past two. Seats from sixpence to three shillings; the box office at the Pavilion is open from ten.
-
-## On the screen this week {style="second"}
-
-::resource{id="pictures"}
-
-At the **Regal**, the picture of the week is a musical comedy of shipboard life, with the news and a coloured cartoon. At the **Electric**, a western in the old style, and a serial whose heroine has now been tied to a railway line for three weeks running. Children’s matinée on Saturday mornings at both houses, price twopence.
-
-## Band concert on the Parade {style="third"}
-
-The Wexcombe Silver Band gives the first of its Sunday concerts on the Parade bandstand tomorrow at three, under its new conductor, Mr Alfred Penna, late of the Royal Marines. The programme includes a selection from *The Gondoliers*, the overture to *Poet and Peasant* and a march of Mr Penna’s own, *The Harbour Line*, written for the opening of the trams and played for the first time in public. Deck chairs twopence; the collection is for the hospital.
-
-## Harbour paintings at the Institute {style="third"}
-
-The Wexcombe Art Society’s summer exhibition opened at the Literary Institute on Wednesday, with a hundred and twelve pictures by forty-one members, the largest show in the society’s history. The harbour, as ever, is the favourite subject: there are nineteen views of it, at every hour and in every weather, and one, by Miss Phyllis Body, painted from the top of the Guildhall tower while the clockmakers were at work. The prize for the best picture in oils went to Mr Ernest Lugg for *Pilchard Boats, Evening*, and the prize for water-colours to Mrs Jane Treloar, whose *Quay Hill in Rain* shows the new tram lines glistening, two days before they were finished. The exhibition is open daily from ten until six, until the 1st of July. Admission threepence; members free.
-
-## Wireless this evening {style="third"}
-
-::resource{id="wireless"}
-
-## Letters to the Editor {style="second"}
-
-**Sir,** — Now that we have trams to the harbour, may I ask when we are to have a seat at the top of Quay Hill? Those of us who walk up it, as I have done every morning for forty years, would be glad of somewhere to recover. — *Yours, &c.,* **J. Trevenna**, Saltings Row.
-
-**Sir,** — Your correspondent of last week complains of the noise of the gulls on the Strand. I would remind him that the gulls were here first, and that they do not, so far as I know, write to the newspapers about him. — *Yours, &c.,* **Ellen Rodda**, Fore Street.
-
-**Sir,** — I see the Guildhall clock is going again. Might the Council now turn its attention to the one at the station, which has been five minutes fast since the Coronation and has caused me to miss nothing, but has caused my wife to wait for a great many trains? — *Yours, &c.,* **H. B. Clemo**, The Parade.
-
-**Sir,** — Your report of the Harbour line says the cars will run until half past eleven at night. Will somebody tell the Regal, whose second house does not come out until twenty to twelve? — *Yours, &c.,* **A Picturegoer**, Fennick Lane.
-
-:::callout{type="ads" span="page" placement="bottom" title="Small advertisements"}
-:::columns{count=4 breaks="3,5,7"}
-**TO LET.** Furnished rooms, sea view, use of piano. Suit quiet gentleman. Apply Mrs Jose, 3 Marine Terrace.
-
-**BICYCLE** for sale, lady’s, three-speed, little used, £2 10s. or near offer. Box 112, Lantern Office.
-
-**WANTED,** a smart boy to deliver groceries, must be able to ride. Apply Hicks & Son, Market Street.
-
-**DANCING** every Saturday at the Assembly Rooms, eight till midnight, Billy Rowse and his Melodians. Admission one shilling.
-
-**PIANO TUNING** by an experienced man, late of Broadwood’s. Terms moderate. Write J. Kemp, 9 Chapel Street.
-
-**LOST** on the Common, Wednesday evening, a child’s red woollen glove. Finder please return to the Mermaid. Reward.
-
-**MOTOR COACH** to St Ives every Thursday, leaving Market Cross at 9.30, returning by 7. Fare 3s. 6d. Book at Rodda’s Garage.
-
-**FOR SALE,** pram, navy blue, good springs, 25s. Also cot. Apply after six, 21 Saltings Row.
-:::
-:::
-
 # Sport {style="section"}
 
 ## Rundle saves the Cup {style="second"}
@@ -94,7 +24,7 @@ The final, against Penhallow Rovers, will be played at Gannet Park on the 24th, 
 
 Penhallow Rovers, Athletic’s opponents in the final, have needed three replays to get there. They drew with St Just twice, the second time after extra time in a thunderstorm, and beat them at the third attempt at Camborne, where the match was stopped for a quarter of an hour while a horse was led off the pitch. Their semi-final against Porthleven was settled by a goal from their captain, Arthur Kitto, the Penhallow blacksmith, who is forty-one and says this will be his last season, as he has said for the past four.
 
-Rovers have the stronger side on paper, with three men who have played for the county, and they beat Athletic twice in the league this winter. But they have never won the Cup, and they have never played at Gannet Park, where the slope from the town end is worth a goal to anyone who knows it. Athletic’s trainer, Mr Sam Rowe, has asked the groundsman not to cut the grass this week.
+Rovers have the stronger side on paper, with three men who have played for the county, and they beat Athletic twice in the league this winter. But they have never won the Cup, and they have never played at Gannet Park, where the slope from the town end is worth a goal to anyone who knows it. Athletic’s trainer, Mr Sam Rowe, has asked the groundsman not to cut the grass this week. Tickets for the stand, at a shilling, go on sale at Hicks & Son on Monday morning, and the club expects them to be gone by dinner time.
 
 ## The Harbour Mile {style="third"}
 
@@ -125,6 +55,14 @@ The Wexcombe Wheelers held their fifty-mile time trial on Sunday morning over th
 ::resource{id="wheelers"}
 
 The club’s next event is the hill climb up Quay Hill on the 25th, which the Watch Committee has allowed on the condition that the riders keep clear of the tram lines, and the trams of the riders.
+
+## Gigs on the bay {style="third"}
+
+The pilot gigs were out on the bay on Wednesday evening for the first time this summer, six boats in a practice race from the lifeboat slip round the Stags and back. The Wexcombe crew in the old *Bonnet*, built in 1838 and still the fastest boat on this coast in a flat sea, led from the start and won by four lengths from Penhallow. The crews race for the Harbour Cup at the Regatta on the 1st of July, when nine gigs are expected.
+
+## Angling {style="third"}
+
+Sea fishing from the pier has been good all week, with mackerel taken on feathers at every tide and a bass of nine pounds by Mr Fred Curnow on Tuesday evening, the best of the season so far. The Sea Angling Club’s monthly competition on Sunday was won by Mr Curnow again, with a catch of eleven pounds. Visitors may fish from the pier on payment of twopence to the pier master.
 
 ## Racing at Penhallow {style="third"}
 

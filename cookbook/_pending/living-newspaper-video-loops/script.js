@@ -68,7 +68,7 @@ const resources = [
       + 'the ribbon.',
     'A woman in a dark coat and small hat speaks at a draped podium, one hand raised.'),
   clip('clock', asset('clock-loop.mp4'), [480, 640],
-    { position: 'top', span: 'column' },
+    { position: 'top', span: 'column', columns: 2 },
     '**Twelve o’clock** on the Guildhall tower, for the first time since 1924.',
     'A stone clock tower against clouds, pigeons on its ledge.'),
   clip('fisherman', asset('fisherman-loop.mp4'), [640, 480],
@@ -237,8 +237,9 @@ const resourceTypes = [{ id: 'picture', name: 'Picture', shortLabel: 'Picture',
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const front = /* @content */ ''; // content.en.md: the front page and Town & Harbour
-const back = /* @content:back */ ''; // content.back.en.md: Stage & Screen and Sport
-const markdown = `${front}\n\n${back}`; // one document, four pages
+const arts = /* @content:stage */ ''; // content.stage.en.md: Stage & Screen
+const sport = /* @content:sport */ ''; // content.sport.en.md: Sport
+const markdown = [front, arts, sport].join('\n\n'); // one document, four pages
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Libre Caslon Text': ['400', '400i', '700'], Oswald: ['600', '700'],

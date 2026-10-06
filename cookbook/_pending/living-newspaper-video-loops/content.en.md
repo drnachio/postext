@@ -49,7 +49,9 @@ She stayed the night at the Mermaid, where the landlord refused to take her mone
 
 ### The weather
 
-Fair at first, with a fresh breeze from the west; cloud later and a little rain in the evening, clearing overnight. Sea moderate. Sunrise 4.58, sunset 9.31. Yesterday’s highest temperature in the town was 68 degrees, at the Fish Market at three o’clock, and the lowest 51, at the coastguard station at dawn. The Harbour Master reports the best visibility of the year from Gannet Point, where the Stags could be seen plainly at noon.
+Fair at first, with a fresh breeze from the west; cloud later and a little rain in the evening, clearing overnight. Sea moderate, with a swell on the bar at low water. Sunrise 4.58, sunset 9.31. Yesterday’s highest temperature in the town was 68 degrees, at the Fish Market at three o’clock, and the lowest 51, at the coastguard station at dawn. The Harbour Master reports the best visibility of the year from Gannet Point, where the Stags could be seen plainly at noon and the smoke of the Scilly packet an hour before she was due.
+
+*Tomorrow:* bright, a light northerly air, good drying weather. Bathers are reminded that the red flag on West Sands means what it says.
 
 :::callout{type="briefs" span="page" placement="bottom" title="In brief"}
 :::columns{count=4 breaks="2,3,4"}
@@ -137,6 +139,10 @@ The fare is one penny all the way, a halfpenny for children under fourteen. Work
 
 ::resource{id="tides"}
 
+## From the Guildhall {style="third"}
+
+The Watch Committee has fixed the speed of the trams on Quay Hill at four miles an hour going down and eight coming up, and a man is to stand at the Fish Market corner with a red flag on market days until the public is used to the cars. The Finance Committee reports that the rates will not rise this year, for the first time since 1927, and the Libraries Committee that the new reading room at Saltings Row has lent 2,140 books in its first month, chiefly detective stories. A proposal to ring the restored Guildhall bell at midnight on New Year’s Eve was carried with one vote against, from the councillor who lives next door.
+
 ## Shipping {style="third"}
 
-**Arrived:** *Mary Jane*, ketch, from Swansea with coal; *Goldfinch*, steamer, from Rotterdam with timber; *Ellen*, schooner, from Fowey with china clay for the potteries. **Sailed:** *Morning Star* and *Brothers’ Pride* for the mackerel grounds; *Lynher*, barge, for Plymouth with pit props. **In harbour:** the training ship *Exe*, until Wednesday; visitors on board each afternoon from two.
+**Arrived:** *Mary Jane*, ketch, from Swansea with coal; *Goldfinch*, steamer, from Rotterdam with timber; *Ellen*, schooner, from Fowey with china clay for the potteries; *Pride of Wexcombe*, trawler, from the Smalls with a full hold. **Sailed:** *Morning Star* and *Brothers’ Pride* for the mackerel grounds; *Lynher*, barge, for Plymouth with pit props; *Goldfinch*, in ballast, for Cardiff. **In harbour:** the training ship *Exe*, until Wednesday; visitors on board each afternoon from two, and the band of the ship plays on the quarterdeck at four. **Fish Market:** mackerel 9s. the box, pilchards 6s., hake scarce at 2s. 6d. the stone; crab plentiful and cheap.

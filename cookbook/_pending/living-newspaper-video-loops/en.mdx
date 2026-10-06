@@ -5,7 +5,7 @@ plain: "A 1930s-style local newspaper where every photograph is a short silent f
 description: "A four-page tabloid in four columns whose six pictures are black-and-white video loops, playing together on folded newsprint in the Folio viewer."
 question: "How do I make several silent video loops play at once on a newspaper page?"
 aliases: ["living newspaper", "moving pictures", "video loop", "autoplay", "loop", "several videos at once", "exclusive", "play alongside", "tabloid", "newspaper", "four columns", "Folio", "newsprint", "folded"]
-pageNotes: { "1": "The front page of The Wexcombe Lantern, 10 June 1933: a condensed black nameplate, the headline Trams run to the sea at last, a picture of the mayor speaking at a podium across three columns, a picture of a woman waving from a biplane across two, and a tinted In brief strip at the foot.", "2": "Town & Harbour: a clock tower picture in one column, a laughing fisherman holding a huge cod across two, a fares box, a tide table and five short stories in four ruled columns.", "3": "Stage & Screen: an actress on a garden stage set across two columns, a review, cinema and wireless tables, letters to the editor and a ruled box of small advertisements.", "4": "Sport: a goalkeeper crouched on his line across three columns, the cup report, fixture, cricket and cycling tables and the imprint." }
+pageNotes: { "1": "The front page of The Wexcombe Lantern, 10 June 1933: a condensed black nameplate, the headline Trams run to the sea at last, a picture of the mayor speaking at a podium across three columns, a picture of a woman waving from a biplane across two, and a tinted In brief strip at the foot.", "2": "Town & Harbour: a clock tower picture and a laughing fisherman holding a huge cod, each across two columns, the end of the trams story, a fares box, a tide table, council notes, shipping news and five short stories in four ruled columns.", "3": "Stage & Screen: an actress on a garden stage set across two columns, a review, cinema and wireless tables, letters to the editor and a ruled box of small advertisements.", "4": "Sport: a goalkeeper crouched on his line across three columns, the cup report, fixture, cricket and cycling tables and the imprint." }
 ---
 
 ## What you'll build
@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. A video resource prints
 
 <Excerpt region="clips" />
 
-The layout is `layoutType: 'multiple'` with `columnCount: 4`. A float's `columns` sets how many of them it takes: the mayor three, the aviator, the fisherman and the actress two, the clock tower one. A float across several columns takes the head of a run of empty columns that start level, or the foot of the column it is cited in and the empty ones after it, so where the `::resource` line stands decides the slot. The mayor is cited after the first paragraph, which leaves column 1 to the text and puts the picture over columns 2 to 4.
+The layout is `layoutType: 'multiple'` with `columnCount: 4`. A float's `columns` sets how many of them it takes: the mayor and the goalkeeper three, the aviator, the clock tower, the fisherman and the actress two. A float across several columns takes the head of a run of empty columns that start level, or the foot of the column it is cited in and the empty ones after it, so where the `::resource` line stands decides the slot. The mayor is cited after the first paragraph, which leaves column 1 to the text and puts the picture over columns 2 to 4.
 
 ### 3 · Set the masthead and the section pages
 
