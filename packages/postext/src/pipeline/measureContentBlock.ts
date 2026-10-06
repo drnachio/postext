@@ -34,6 +34,7 @@ import type { ResourceNumberingMap } from './resourceNumbering';
 import type { CaptionCitations } from './citations';
 import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
+import { flushEndMark } from './statementNumbering';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 import { dimensionToPx } from '../units';
 import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
@@ -465,7 +466,8 @@ export function measureContentBlock(
   // segments of their own, so the link covers them and nothing else (the
   // lines are the same on both paths).
   const cjkLinks = contentBlock.spans.some((s) => s.links !== undefined && s.links.length > 0) && composesAsCjk(contentBlock.text);
-  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned || cjkLinks);
+  // A box's end mark (#530) is moved on its line segment by segment.
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned || cjkLinks || contentBlock.endMark !== undefined);
 
   const first = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
@@ -545,6 +547,10 @@ export function measureContentBlock(
   }
 
   if (measured.lines.length === 0) return null;
+
+  // A callout style's end mark (a proof's ∎, #530): flush right on the
+  // last line.
+  if (contentBlock.endMark !== undefined) measured = flushEndMark(measured, contentBlock.endMark, measureMaxWidth);
 
   // A paragraph whose direction opposes its frame's (the document's: a
   // right-to-left document's pages are mirrored, #370), such as an Arabic

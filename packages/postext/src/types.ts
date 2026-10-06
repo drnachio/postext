@@ -551,6 +551,11 @@ export interface OutlineEntry {
   /** The page-number format of the entry's page, once laid out (an index
    *  merges consecutive pages of one format into a range). */
   pageFormat?: string;
+  /** What a reference to a counted anchor prints by default (#530): a
+   *  labelled equation's number in its `format` ("(3)", what `\eqref`
+   *  prints), a numbered statement's label and number ("Theorem 2").
+   *  `number` holds the bare number. Absent on every other entry. */
+  numberLabel?: string;
 }
 
 /** Heading counters (1-indexed by level) in effect at a point in a document. */
@@ -624,6 +629,12 @@ export interface LayoutContinuation {
    *  last chapter. It only feeds running heads and design text, never the
    *  page breaks, so a host can take it from a layout of the same book. */
   bookPageCount?: number;
+  /** The counters of labelled equations and numbered statements at the
+   *  end of the preceding content (#530), by counter name — `'equation'`
+   *  for the equations (`math.equationNumbering`), a callout style's
+   *  `numbering.counter` for its statements — each with the heading
+   *  counters of its last count, which decide `resetOn`. */
+  statementCounters?: Record<string, { counter: number; heading: HeadingCounters }>;
 }
 
 /** A part (section) as the running heads see it: number and title as
@@ -2319,6 +2330,64 @@ export interface CalloutStyleConfig {
   continuesMarkerAlign?: CalloutMarkerTextAlign;
   /** Set the marker in italics. Default `true`. */
   continuesMarkerItalic?: boolean;
+  /** Count the boxes of this style as numbered statements — theorems,
+   *  lemmas, definitions (#530): each prints its label and number
+   *  ("Theorem 2."), and a reference to the fence's `{#id}` prints them
+   *  too. Unset: the boxes are not counted. */
+  numbering?: CalloutNumberingConfig;
+  /** A mark set flush right at the end of the box's last line, as
+   *  amsthm's `\qed` ends a proof: `'∎'` or `'□'`. It goes on the last
+   *  line when there is room for it after a space, else on a line of its
+   *  own. Default `''` (none). */
+  endMark?: string;
+}
+
+/** How the boxes of a callout style are counted (#530): the counter they
+ *  advance, how its number is written and where the label goes. */
+export interface CalloutNumberingConfig {
+  /** The word before the number: `'Theorem'`, `'Lemma'`, `'Definition'`. */
+  label: string;
+  /** The counter the boxes advance. Styles that name one counter share
+   *  it, as amsthm's `\newtheorem{lemma}[theorem]` does: Lemma 1, then
+   *  Theorem 2. `'equation'` counts with the labelled equations. `false`
+   *  prints the label with no number ("Proof."). Default: the style's id. */
+  counter?: string | false;
+  /** Template of the number: `{n}` (the counter) and `{h1}`..`{h6}`
+   *  (heading numbers), as a resource type's. Default `'{n}'`;
+   *  `'{h1}.{n}'` numbers by chapter (with `resetOn: 'h1'`). */
+  numberingTemplate?: string;
+  /** When the counter starts again at 1. Default `'never'`. */
+  resetOn?: ResourceCounterReset;
+  /** How `{n}` is written. Default `'decimal'`. */
+  counterFormat?: ResourceCounterFormat;
+  /** Where the label goes: `'runIn'` (default) opens the box's first
+   *  paragraph ("**Theorem 2** (Bradley–Terry)**.** Let…"); `'title'`
+   *  makes it the box's title, in the title style ("Theorem 2
+   *  (Bradley–Terry)"). The fence's `title` follows the number, in
+   *  parentheses. */
+  placement?: 'runIn' | 'title';
+  /** Set the run-in label (and its suffix) in bold. Default `true`. The
+   *  `title` in parentheses is set in the regular weight. */
+  bold?: boolean;
+  /** Set the run-in label in italics, whatever the box's body (an italic
+   *  body leaves an upright label upright). Default `false`. */
+  italic?: boolean;
+  /** Set after the run-in label (and its title). Default `'.'`. */
+  suffix?: string;
+}
+
+/** {@link CalloutNumberingConfig} with every value resolved; `counter` is
+ *  `''` for a label without a number. */
+export interface ResolvedCalloutNumberingConfig {
+  label: string;
+  counter: string;
+  numberingTemplate: string;
+  resetOn: ResourceCounterReset;
+  counterFormat: ResourceCounterFormat;
+  placement: 'runIn' | 'title';
+  bold: boolean;
+  italic: boolean;
+  suffix: string;
 }
 
 /** Alignment of a split callout's continuation marker. */
@@ -2436,6 +2505,9 @@ export interface ResolvedCalloutStyleConfig {
   continuesMarker: string;
   continuesMarkerAlign: CalloutMarkerTextAlign;
   continuesMarkerItalic: boolean;
+  /** Absent when the style counts nothing. */
+  numbering?: ResolvedCalloutNumberingConfig;
+  endMark: string;
 }
 
 /**
@@ -3410,6 +3482,39 @@ export interface MathConfig {
    *  when `avoidWidows` is on). The carried line stands alone at the head
    *  of the next column. Default `false`: the formula alone moves on. */
   keepWithLeadIn?: boolean;
+  /** Number the display formulas that carry a `\label` (#530). */
+  equationNumbering?: EquationNumberingConfig;
+}
+
+/** How labelled display formulas are numbered (#530): a `\label{eq:x}`
+ *  in a display formula (on a row of an `align` or `gather`) numbers it in
+ *  reading order, unless the row says `\nonumber` or `\notag`. An
+ *  explicit `\tag{…}` prints as written and is not counted. */
+export interface EquationNumberingConfig {
+  /** Default `true`. `false` prints no number (a `\label` is dropped)
+   *  and a reference prints the equation's page. */
+  enabled?: boolean;
+  /** Template of the number: `{n}` (the counter) and `{h1}`..`{h6}`
+   *  (heading numbers), as a resource type's. Default `'{n}'`;
+   *  `'{h1}.{n}'` numbers by chapter (with `resetOn: 'h1'`). */
+  numberingTemplate?: string;
+  /** When the counter starts again at 1. Default `'never'`. */
+  resetOn?: ResourceCounterReset;
+  /** How `{n}` is written. Default `'decimal'`. */
+  counterFormat?: ResourceCounterFormat;
+  /** The number as the formula and `\eqref` print it, `{n}` standing for
+   *  the number: `'({n})'` (default), `'[{n}]'`, `'{n}'`. `\ref` prints
+   *  the bare number. */
+  format?: string;
+}
+
+/** {@link EquationNumberingConfig} with every value resolved. */
+export interface ResolvedEquationNumberingConfig {
+  enabled: boolean;
+  numberingTemplate: string;
+  resetOn: ResourceCounterReset;
+  counterFormat: ResourceCounterFormat;
+  format: string;
 }
 
 export interface ResolvedMathConfig {
@@ -3420,6 +3525,7 @@ export interface ResolvedMathConfig {
   marginBottom: Dimension;
   indentAfterDisplay: boolean;
   keepWithLeadIn: boolean;
+  equationNumbering: ResolvedEquationNumberingConfig;
 }
 
 /** Where footnotes (`[^id]` markers) are set:

@@ -56,6 +56,12 @@ export function locateAnchors(
   const lines: { start: number; end: number; page: number; x: number; y: number }[] = [];
   const add = (b: VDTBlock): void => {
     if (b.pageIndex < 0 || b.hidden) return;
+    // A display formula's line maps no source of its own: the formula is
+    // where its labels' anchors land (#530).
+    if (b.type === 'mathDisplay' && b.sourceStart !== undefined && b.sourceEnd !== undefined) {
+      lines.push({ start: b.sourceStart, end: b.sourceEnd, page: b.pageIndex, x: b.bbox.x, y: b.bbox.y });
+      return;
+    }
     for (const l of b.lines) {
       if (l.sourceStart !== undefined && l.sourceEnd !== undefined) {
         lines.push({ start: l.sourceStart, end: l.sourceEnd, page: b.pageIndex, x: l.bbox.x, y: l.bbox.y });

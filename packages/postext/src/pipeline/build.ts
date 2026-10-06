@@ -60,6 +60,7 @@ import { applyCitations, citationLocale, processCitations, withBibliographyStyle
 import { bookCitationContexts, needsCitationContext } from '../citations/context';
 import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
+import { applyStatementNumbering, numberStatements, outlineLookup } from './statementNumbering';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
@@ -631,12 +632,20 @@ function placeDocumentPass(
   const resourceIds = new Set((content.resources ?? []).map((r) => r.id));
   const anchorRefs = hasAnchorRefs(parsedBlocks, resourceIds);
   const outline = content.outline
-    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) || anchorRefs ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
+    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) || anchorRefs ? computeOutline(parsedBlocks, resolved, headingStart, continuation?.statementCounters) : undefined);
   const anchorRefContext: AnchorRefContext | undefined = anchorRefs
     ? { targets: anchorTargetsOf(outline), strings: resolved.crossRefs }
     : undefined;
   const indexExpanded = expandIndexDirectives(expandTocDirectives(parsedBlocks, outline, resolved), outline, resolved);
-  const contentBlocks = indexExpanded.blocks;
+  // Labelled equations and counted boxes (#530): the numbers go into the
+  // formulas (as tags) and the boxes (a run-in label or a title), a
+  // reference inside a formula prints the number it names, and a style's
+  // end mark closes its boxes.
+  const statementNumbering = numberStatements(parsedBlocks, resolved, {
+    ...(headingStart ? { headings: headingStart } : {}),
+    ...(continuation?.statementCounters ? { counters: continuation.statementCounters } : {}),
+  });
+  const contentBlocks = applyStatementNumbering(indexExpanded.blocks, statementNumbering, resolved, outlineLookup(content.outline ? anchorTargetsOf(content.outline) : undefined));
   if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
@@ -6123,10 +6132,10 @@ function* buildDocumentRounds(
     const pageRefs = (): boolean => {
       if (!hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id)))) return false;
       const resolved = resolveAllConfig(config);
-      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolved, content.continuation?.headings)), resolved.crossRefs.defaultStyle);
+      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolved, content.continuation?.headings, content.continuation?.statementCounters)), resolved.crossRefs.defaultStyle);
     };
     if (hasTocDirective(parsed) || hasIndexDirective(parsed) || pageRefs()) {
-      let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
+      let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings, content.continuation?.statementCounters);
       let doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, 0), content);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);

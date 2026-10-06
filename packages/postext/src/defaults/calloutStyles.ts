@@ -1,11 +1,13 @@
 import { floatColumnCount } from './shared';
 import type {
   CalloutFixedConfig,
+  CalloutNumberingConfig,
   CalloutStyleConfig,
   ColorValue,
   Dimension,
   ElementAnchor,
   ResolvedBodyTextConfig,
+  ResolvedCalloutNumberingConfig,
   ResolvedCalloutStyleConfig,
   ResolvedHeadingsConfig,
   ResolvedUnorderedListsConfig,
@@ -269,6 +271,25 @@ function resolveCalloutStyleConfig(
     continuesMarker: partial.continuesMarker ?? strings.continuesMarker,
     continuesMarkerAlign: partial.continuesMarkerAlign ?? d.continuesMarkerAlign,
     continuesMarkerItalic: partial.continuesMarkerItalic ?? d.continuesMarkerItalic,
+    ...(partial.numbering ? { numbering: resolveCalloutNumbering(partial.numbering, partial.id) } : {}),
+    endMark: partial.endMark ?? '',
+  };
+}
+
+/** A style's statement numbering (#530) with its defaults: the counter
+ *  named after the style, `{n}` never reset, a bold run-in label ending in
+ *  a full stop. */
+function resolveCalloutNumbering(partial: CalloutNumberingConfig, styleId: string): ResolvedCalloutNumberingConfig {
+  return {
+    label: partial.label ?? '',
+    counter: partial.counter === false ? '' : (partial.counter?.trim() || styleId),
+    numberingTemplate: partial.numberingTemplate ?? '{n}',
+    resetOn: partial.resetOn ?? 'never',
+    counterFormat: partial.counterFormat ?? 'decimal',
+    placement: partial.placement === 'title' ? 'title' : 'runIn',
+    bold: partial.bold ?? true,
+    italic: partial.italic ?? false,
+    suffix: partial.suffix ?? '.',
   };
 }
 
@@ -466,6 +487,8 @@ export function stripCalloutStylesDefaults(
     if (s.continuesMarkerItalic !== undefined && s.continuesMarkerItalic !== d.continuesMarkerItalic) {
       r.continuesMarkerItalic = s.continuesMarkerItalic;
     }
+    if (s.numbering) r.numbering = s.numbering;
+    if (s.endMark) r.endMark = s.endMark;
     return r;
   });
   // The built-in default (a single bare `note` style) needs no persisting.
