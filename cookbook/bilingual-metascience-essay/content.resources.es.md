@@ -23,8 +23,8 @@ No	$cR\beta^n/(R+1)$	$c(1-\alpha)^n/(R+1)$	$c([1-\alpha]^n+R\beta^n)/(R+1)$
 Total	$cR/(R+1)$	$c/(R+1)$	$c$
 
 id: tbl-ppv
-caption: VPP de los resultados de la investigación para varias combinaciones de potencia, razón entre relaciones verdaderas y no verdaderas (*R*) y sesgo (*u*)
-note: Los VPP (valores predictivos positivos) estimados suponen una tasa de error de tipo I de 0,05 para un único estudio; aquí se calculan con la ecuación (2).\\ECA, ensayo controlado aleatorizado.
+caption: VPP de los resultados de la investigación para varias combinaciones de potencia ($1-\beta$), razón entre relaciones verdaderas y no verdaderas ($R$) y sesgo ($u$)
+note: Los VPP (valores predictivos positivos) estimados suponen $\alpha = 0{,}05$ para un único estudio; aquí se calculan con la ecuación (2).\\ECA, ensayo controlado aleatorizado.
 $1-\beta$	$R$	$u$	Ejemplo práctico	VPP
 0,80	1:1	0,10	ECA con potencia adecuada, poco sesgo y una razón previa de 1:1	
 0,95	2:1	0,30	Metaanálisis confirmatorio de ECA de buena calidad	
@@ -37,11 +37,11 @@ $1-\beta$	$R$	$u$	Ejemplo práctico	VPP
 0,20	1:1000	0,20	Como el anterior, pero con un sesgo más limitado (más normalizada)	
 
 id: fig-bias
-caption: VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para varios niveles de sesgo, *u*
-note: Los paneles corresponden a una potencia de 0,80, 0,50 y 0,20. Dibujada en código con la ecuación (2) para los valores de *u* de la leyenda de 2005, con la curva sin sesgo (*u* = 0) en trazo discontinuo; las curvas impresas en 2005 corresponden a *u* = 0; 0,05; 0,20 y 0,80.
+caption: VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para varios niveles de sesgo, $u$
+note: Los paneles corresponden a una potencia de 0,80, 0,50 y 0,20. Dibujada en código con la ecuación (2) para los valores de $u$ de la leyenda de 2005, con la curva sin sesgo ($u = 0$) en trazo discontinuo; las curvas impresas en 2005 corresponden a $u = 0$; 0,05; 0,20 y 0,80.
 alt: Tres paneles de curvas crecientes: el VPP aumenta con la razón previa y baja cuando crece el sesgo.
 
 id: fig-teams
-caption: VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para distintos números de estudios, *n*
+caption: VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para distintos números de estudios, $n$
 note: Los paneles corresponden a una potencia de 0,80, 0,50 y 0,20. Dibujada en código con la ecuación (3).
 alt: Tres paneles de curvas crecientes: el VPP baja cuando más equipos estudian la misma pregunta.

@@ -41,22 +41,22 @@
 @article{taubes1995, author = {Taubes, G.},
   title = {Epidemiology faces its limits},
   journal = {Science}, year = 1995, volume = 269, pages = {164--169}}
-@article{golub1999, author = {Golub, T. R. and Slonim, D. K. and Tamayo, P. and Huard, C. and Gaasenbeek, M. and Mesirov, J. P. and Coller, H.},
+@article{golub1999, author = {Golub, T. R. and Slonim, D. K. and Tamayo, P. and Huard, C. and Gaasenbeek, M. and others},
   title = {Molecular classification of cancer: class discovery and class prediction by gene expression monitoring},
   journal = {Science}, year = 1999, volume = 286, pages = {531--537}}
 @article{moher2001, author = {Moher, D. and Schulz, K. F. and Altman, D. G.},
   title = {The {CONSORT} statement: revised recommendations for improving the quality of reports of parallel-group randomised trials},
   journal = {Lancet}, year = 2001, volume = 357, pages = {1191--1194}}
-@article{ioannidis2004, author = {Ioannidis, J. P. and Evans, S. J. and Gøtzsche, P. C. and O'Neill, R. T. and Altman, D. G. and Schulz, K. and Moher, D.},
+@article{ioannidis2004, author = {Ioannidis, J. P. and Evans, S. J. and Gøtzsche, P. C. and O'Neill, R. T. and Altman, D. G. and others},
   title = {Better reporting of harms in randomized trials: an extension of the {CONSORT} statement},
   journal = {Ann Intern Med}, year = 2004, volume = 141, pages = {781--788}}
 @article{ich1999, author = {{International Conference on Harmonisation E9 Expert Working Group}},
   title = {{{ICH}} {{Harmonised Tripartite Guideline}}. Statistical principles for clinical trials},
   journal = {Stat Med}, year = 1999, volume = 18, pages = {1905--1942}}
-@article{moher1999, author = {Moher, D. and Cook, D. J. and Eastwood, S. and Olkin, I. and Rennie, D. and Stroup, D. F.},
+@article{moher1999, author = {Moher, D. and Cook, D. J. and Eastwood, S. and Olkin, I. and Rennie, D. and others},
   title = {Improving the quality of reports of meta-analyses of randomised controlled trials: the {QUOROM} statement. {Quality of Reporting of Meta-analyses}},
   journal = {Lancet}, year = 1999, volume = 354, pages = {1896--1900}}
-@article{stroup2000, author = {Stroup, D. F. and Berlin, J. A. and Morton, S. C. and Olkin, I. and Williamson, G. D. and Rennie, D. and Moher, D.},
+@article{stroup2000, author = {Stroup, D. F. and Berlin, J. A. and Morton, S. C. and Olkin, I. and Williamson, G. D. and others},
   title = {Meta-analysis of observational studies in epidemiology: a proposal for reporting. {Meta-analysis Of Observational Studies in Epidemiology} ({MOOSE}) group},
   journal = {JAMA}, year = 2000, volume = 283, pages = {2008--2012}}
 @article{chan2004, author = {Chan, A. W. and Hróbjartsson, A. and Haahr, M. T. and Gøtzsche, P. C. and Altman, D. G.},
@@ -65,7 +65,7 @@
 @article{krimsky1998, author = {Krimsky, S. and Rothenberg, L. S. and Stott, P. and Kyle, G.},
   title = {Scientific journals and their authors' financial interests: a pilot study},
   journal = {Psychother Psychosom}, year = 1998, volume = 67, pages = {194--201}}
-@article{papanikolaou2001, author = {Papanikolaou, G. N. and Baltogianni, M. S. and Contopoulos-Ioannidis, D. G. and Haidich, A. B. and Giannakakis, I. A. and Ioannidis, J. P.},
+@article{papanikolaou2001, author = {Papanikolaou, G. N. and Baltogianni, M. S. and Contopoulos-Ioannidis, D. G. and Haidich, A. B. and Giannakakis, I. A. and others},
   title = {Reporting of conflicts of interest in guidelines of preventive and therapeutic interventions},
   journal = {BMC Med Res Methodol}, year = 2001, volume = 1, pages = {3}}
 @article{antman1992, author = {Antman, E. M. and Lau, J. and Kupelnick, B. and Mosteller, F. and Chalmers, T. C.},
@@ -87,7 +87,7 @@
 @article{senn2001, author = {Senn, S. J.},
   title = {Two cheers for {P}-values?},
   journal = {J Epidemiol Biostat}, year = 2001, volume = 6, pages = {193--204}}
-@article{deangelis2004, author = {De Angelis, C. and Drazen, J. M. and Frizelle, F. A. and Haug, C. and Hoey, J. and Horton, R. and Kotzin, S.},
+@article{deangelis2004, author = {De Angelis, C. and Drazen, J. M. and Frizelle, F. A. and Haug, C. and Hoey, J. and others},
   title = {Clinical trial registration: a statement from the {International Committee of Medical Journal Editors}},
   journal = {N Engl J Med}, year = 2004, volume = 351, pages = {1250--1251}}
 @article{ioannidis2005c, author = {Ioannidis, J. P. A.},

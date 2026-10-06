@@ -16,13 +16,13 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 ### 1 · 给公式和命题加标签，按键名引用
 
-代码就是上面的[简短回答](#简短回答)。Postext会给带`\tag{7}`的行间公式编号，`:ref`也能链接到任何[锚点](/zh/docs/document-format#交叉引用与锚点)，但它不替你数公式和定理。`latex()`在排版前补上这个计数器：行间公式里的`\label{eq:dpo}`变成下一个`\tag`，`:::callout{type="lemma" #lem:same-policy}`得到下一个引理编号和同行的标签，正文里的`\eqref{eq:dpo}`或`\ref{lem:same-policy}`变成一个打印编号并链接过去的`:ref`。每个带标签的公式要紧接在引出它的那一行下面写，中间不空行，因为链接跳转的锚点就放在那一行上。章节不需要帮忙：编号来自标题模板，`{startAt=3}`在删去第2节之后保留论文原来的编号，`crossRefs.section`像原文一样印出首字母大写的“Section 5”。
+代码就是上面的[简短回答](#简短回答)。从postext 1.19起，引擎自己维护LaTeX的那些计数器。行间公式里的`\label{eq:dpo}`按阅读顺序给它编号；`align`里每一行带标签的各得一个编号，标了`\notag`的行没有；`resetOn: 'never'`让编号从(1)一直数到附录里的(13)，与这篇节选论文重新编排的编号一致。用`:::callout{type="lemma" #lem:same-policy}`打开的框以“**Lemma 2.**”开头，因为它的样式带有`numbering: { label: 'Lemma' }`和独立的计数器。正文里`\eqref{eq:dpo}`印出(7)，`\ref{lem:same-policy}`印出2，`:ref{id="lem:same-policy"}`印出Lemma 2，都链接到各自的目标；`Eq.~\eqref{…}`保留LaTeX的不断行空格。附录里重述的引理以`***:ref{id="lem:same-preference"} Restated.***`开头，引用沿用周围标签的粗体。章节不需要帮忙：编号来自标题模板，`{startAt=3}`在删去第2节之后保留论文原来的编号，`crossRefs.section`像原文一样印出首字母大写的“Section 5”。
 
 ### 2 · 每种环境一种框
 
 <Excerpt region="theorems" />
 
-每种环境都是一个[标注框样式](/zh/docs/configuration#标注框样式)，只用一种手段：定义用灰色侧边条，引理用梅紫色侧边条，定理用浅梅紫色底。`body.italic`像amsthm的plain样式一样把陈述排成斜体，写成`***Theorem 1.***`的标签在其中恢复为正体。证明不加框，只有斜体的同行标签和`latex()`在末尾补上的方块；`keepTogether: false`让较长的证明可以转到下一页。`snapToGrid: false`让每个命题上下的空白都相同：单栏没有相邻栏需要对齐，精确的间距比取整到基线网格的更好看。
+每种环境都是一个[标注框样式](/zh/docs/configuration#标注框样式)，只用一种手段：定义用灰色侧边条，引理用梅紫色侧边条，定理用浅梅紫色底。`box()`把这些外观加在简短回答的编号设置上。`body.italic`像amsthm的plain样式一样把陈述排成斜体，同行标签在其中保持粗正体。证明不加框：标签为斜体、不带编号（`counter: false`），最后一行以正文里写的`$\square$`结束；`keepTogether: false`让较长的证明可以转到下一页。`snapToGrid: false`让每个命题上下的空白都相同：单栏没有相邻栏需要对齐，精确的间距比取整到基线网格的更好看。
 
 ### 3 · 用论文自己的文献表做作者–年份引用
 
@@ -55,15 +55,15 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 ### 引理和定理统一编号
 
-有些期刊把所有命题排成一个序列（引理1、引理2、定理3）。让所有类型共用一个计数器即可。
+有些期刊把所有命题排成一个序列（引理1、引理2、定理3），就像`\newtheorem{lemma}[theorem]`那样。让引理使用定理的计数器。
 
 ```diff
--    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
-+    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+-  { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
++  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' } },
 ```
 
 ## 常见问题
 
-- 粗体标签里的`:ref`采用引用的样式，而不是周围的粗体：在“Lemma 1 Restated.”里，编号会印成普通字重。重述命题的标签编号请直接写成文字。
-- 栏平衡会把结束一个短页的框推到页脚，这里在标题区下面留出了空隙。`balancing: { enabled: false }`让摘要紧跟作者行，各节标题保持原有间距，代价是某一页可能少排一行。
+- 在证明样式上设`endMark: '□'`，方块会排在最后一行右端，但用的是框内正文的字体。Spectral没有□（Fontsource正文字体的latin文件都不含这个字符），屏幕上会借用系统字形，PDF里则印出缺字框。请在证明末尾写`$\square$`，或选一个字体能排的结束符。
+- 栏平衡会在标题上方加基线网格行，把被高公式留短的页面填满。`balancing: { maxLinesPerHeading: 1 }`让论文的标题基本保持原有间距，这样的页面可能会提前几行结束。
 - `\underbrace`的说明文字比括号还宽时（如第4节的梯度公式），需要用`aligned`拆成两行；比版心宽的公式会向右溢出。

@@ -10,7 +10,7 @@ pageNotes: { "1": "第1页：蓝色眉题Letter · Gravitational-wave astronomy�
 
 ## 成品一览
 
-宣布首次探测到引力波的那篇快报《Observation of Gravitational Waves from a Binary Black Hole Merger》（Abbott et al., 2016）的五页删节重排本，美国信纸开本，双栏。第1页以证据开篇：Hanford和Livingston记录到的应变，用引力波开放科学中心（GWOSC）的开放数据文件重新绘制，在标题下横跨两栏。下面是合作组署名及其脚注、通栏摘要和正文，引用按APS期刊的习惯编号为[1,2]和[25–27]。啁啾质量是公式(1)。表I把非对称误差排成上下叠放的上标和下标，由MathJax在单元格里画出。换上你自己的BibTeX和数据文件，同一个脚本就能排出你的快报。
+宣布首次探测到引力波的那篇快报《Observation of Gravitational Waves from a Binary Black Hole Merger》（Abbott et al., 2016）的五页删节重排本，美国信纸开本，双栏。第1页以证据开篇：Hanford和Livingston记录到的应变，用引力波开放科学中心（GWOSC）的开放数据文件重新绘制，在标题下横跨两栏。下面是合作组署名及其脚注、通栏摘要和正文，引用按APS期刊的习惯编号为[1,2]和[25–27]。啁啾质量是公式(1)。表I把非对称误差排成上下叠放的上标和下标，在单元格里直接写成公式，图注也印出快报原有的公式。换上你自己的BibTeX和数据文件，同一个脚本就能排出你的快报。
 
 ## 做法
 
@@ -22,13 +22,13 @@ pageNotes: { "1": "第1页：蓝色眉题Letter · Gravitational-wave astronomy�
 
 <Excerpt region="title" />
 
-浮动体不会出现在引用它的那一行之上，而带`span: 'page'`的标题总是另起一页，所以图1无法浮动到第1页的顶部。这篇快报直接把它放在那里：`::resource{id="fig1"}`配合`placement.position: 'here'`，放在紧接标题的`plate`框里，这个框占满整个页宽。署名和摘要放在第二个通栏框`front`中，框里的`:::paragraphs`块把署名居中，并用小字号排日期。*et al.*后面的脚注标记把注文送到第一栏底部，APS期刊的作者说明就印在那里；`footnotes.numberFormat: 'lower-alpha'`用字母给脚注编号，读者不会把它们误认为参考文献。参见[块级嵌入](/zh/docs/document-format#块级嵌入可选显式的行内放置)和[脚注](/zh/docs/configuration#脚注)。
+浮动体不会出现在引用它的那一行之上，而正文第一次引用图1是在第II节，所以作为浮动体它到不了第1页。这篇快报直接把它放在那里：`::resource{id="fig1"}`紧跟在标题之后，其放置方式`{ position: 'here', span: 'page' }`让它在这一位置横跨两栏，两栏正文在它下方继续。署名和摘要随后放在通栏框`front`中，框里的`:::paragraphs`块把署名居中，并用小字号排日期。*et al.*后面的脚注标记把注文送到第一栏底部，APS期刊的作者说明就印在那里；`footnotes.numberFormat: 'lower-alpha'`用字母给脚注编号，读者不会把它们误认为参考文献。参见[块级嵌入](/zh/docs/document-format#块级嵌入可选显式的行内放置)和[脚注](/zh/docs/configuration#脚注)。
 
 ### 3 · 单元格里有公式的表I
 
 <Excerpt region="table" />
 
-表格单元格不按数学公式解析，`^+5^~−4~`会把两个误差一前一后地印出来。所以每个数值都由`renderMath`排出，写成SVG中的路径，再通过`TableCell.image`画进单元格；单元格的`width`是公式宽度占单元格宽度的比例，因此无论栏宽如何，每个数值都以9 pt印出。资源类型在图注中印出*FIG. 1*和*TABLE I*，在正文中印出*Fig. 1*和*Table I*：靠的是`captionPrefix`，表格再加上`counterFormat: 'upper-roman'`。图注同样不支持公式，两款字体也都没有希腊字母，所以图注只用拉丁字母加`^sup^`和`~sub~`。
+从postext 1.19起，单元格和正文一样排`$…$`公式，所以每个数值都写成TeX，如`$36^{+5}_{-4}\,M_\odot$`，两个误差叠放在数字的上方和下方，并缩放到单元格的行高之内；若用Markdown的`^+5^~−4~`，两个误差会一前一后地印出来。图注和注释也支持同样的公式：图2写`$R_S = 2GM/c^2$`，图4写`$5.1\sigma$`，用的是MathJax的字形，其中有两款正文字体都没有的希腊字母，PDF把它们保留为矢量路径。资源类型在图注中印出*FIG. 1*和*TABLE I*，在正文中印出*Fig. 1*和*Table I*：靠的是`captionPrefix`，表格再加上`counterFormat: 'upper-roman'`。参见[数学公式](/zh/docs/document-format#数学公式)。
 
 ### 4 · 用开放数据绘制的图
 
@@ -67,7 +67,7 @@ Nature样式用上标数字，并列出文献标题；它是附带样式之一�
 
 ## 常见问题
 
-- 在双栏排版中，带`span: 'page'`的`'here'`资源只有一栏宽。把它放进样式带有`span: 'page'`的框里，就像这里的`plate`框。
-- 图注或单元格里的希腊字母、⊙或≃在屏幕上会落到系统字体，在PDF中则会缺字，因为PDF只嵌入每款字体的拉丁字符文件。在正文中把这些符号写成公式，在图和单元格中把它们画出来。
+- 在postext 1.18及更早版本中，双栏排版里带`span: 'page'`的`'here'`资源只有一栏宽，图注或单元格里的`$`也照原样印出。请指定1.19或更高版本。
+- 在图注或单元格里直接键入的希腊字母、⊙或≃在屏幕上会落到系统字体，在PDF中则会缺字，因为PDF只嵌入每款字体的拉丁字符文件。把它写成公式，如`$\sigma$`或`$M_\odot$`，在图中则把它画出来。
 - 数百位作者的名单不适合写进BibTeX文件。按期刊印出的样子写名字，并用双层花括号括起：`author={{B. Abbott et al.}}`。
 - 保留论文和数据的许可证说明。这里由一条脚注和版权页说明删去了哪些内容，每个图注的说明行写明数据来源以及重绘图省略的部分。

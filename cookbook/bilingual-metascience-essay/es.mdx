@@ -22,7 +22,7 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. El Recetario 
 
 <Excerpt region="tables" />
 
-Las celdas de una tabla no se analizan en busca de matemáticas, y los archivos latin de Fontsource no traen letras griegas, así que una celda que en el TSV dice `$c(1-\beta)R/(R+1)$` se compone como imagen: `renderMath` dibuja la fórmula con los trazados de MathJax al cuerpo de 8 pt de las celdas, y `setCellImage` la coloca en la celda con un ancho expresado como fracción de la celda. Cada imagen mide una línea de celda de alto y tiene la línea de base donde la tienen las celdas de texto, de modo que *Sí*, *No* y las fórmulas quedan en una misma línea, y el PDF las conserva como contornos vectoriales. `mergeCells` une *Resultado de la investigación* sobre las dos filas de cabecera y *Relación verdadera* sobre tres columnas, y escribe las celdas ocultas que necesita una celda combinada.
+Desde postext 1.19, una celda compone `$…$` como el texto, así que una celda que en el TSV dice `$c(1-\beta)R/(R+1)$` es una fórmula: trazados de MathJax al cuerpo de 8 pt de las celdas, sobre la línea de base de la línea de la celda, de modo que *Sí*, *No* y las fórmulas quedan en una misma línea, y contornos vectoriales en el PDF. Los archivos latin de Fontsource no traen letras griegas, y las fórmulas no las necesitan. Los pies y las notas también admiten matemáticas: el pie de la tabla 4 nombra la potencia como 1 − β y su nota supone α = 0,05, como en el artículo de 2005. `setAlignment` alinea a la derecha los números de la tabla 4, y `mergeCells` une *Resultado de la investigación* sobre las dos filas de cabecera y *Relación verdadera* sobre tres columnas, y escribe las celdas ocultas que necesita una celda combinada.
 
 ### 3 · Pies y tablas desde la ranura, números desde la fórmula
 
@@ -66,10 +66,9 @@ El BibTeX de esta receta no guarda los DOI, para no pasar del tamaño del script
 
 ### Compón las tablas en una columna
 
-Una tabla de 2×2 con fórmulas más cortas cabe en una columna: quita el `span: 'page'` y mide las celdas con `COLUMN`, como la tabla 4. En <RecipeLink slug="journal-article-with-maths">Artículo a dos columnas con ecuaciones numeradas</RecipeLink> hay una tabla a una columna.
+Una tabla de 2×2 con fórmulas más cortas cabe en una columna: quítale el `span: 'page'`, que la tabla 4 no lleva. En <RecipeLink slug="journal-article-with-maths">Artículo a dos columnas con ecuaciones numeradas</RecipeLink> hay una tabla a una columna.
 
 ## Errores frecuentes
 
-- Una lista de autores de BibTeX que termina en `and others` imprime un coautor llamado *others*. Esta receta da los siete primeros autores de las listas largas, y `elsevier-vancouver` escribe seis y *et al.*
-- Los pies y las notas no admiten matemáticas ni letras griegas de un archivo latin de Fontsource, así que el pie de la tabla 4 nombra la potencia con palabras y su nota dice *una tasa de error de tipo I de 0,05*, no α = 0,05.
+- Donde la lista de 2005 se queda en cinco autores y *et al.*, el BibTeX termina la lista en `and others`, y `elsevier-vancouver` escribe *et al.* en su lugar (desde postext 1.19; las versiones anteriores imprimían un coautor llamado *others*).
 - Las páginas no coinciden entre ediciones: el texto español es más largo y la tabla 4 cae una página después. La captura publica las páginas 1, 2, 3, 5, 6 y 7 de las dos, para que las imágenes no pasen del límite de peso y la tabla 4 se vea en ambas.

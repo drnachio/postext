@@ -53,8 +53,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "math": true
   },
   "kit": [
@@ -157,15 +157,7 @@
   "workarounds": [
     {
       "package": "postext",
-      "note": "no counter of equations or theorem-like statements: latex() turns \\label into \\tag{n}, numbers callouts per kind, puts an :anchor on the lead-in line and rewrites \\eqref / \\ref as :ref with text=\"n\""
-    },
-    {
-      "package": "postext",
-      "note": "a :ref inside ***…*** prints with the reference style (referenceBold false, upright), not the bold of its emphasis: the restated Lemma 1 label writes its number as text"
-    },
-    {
-      "package": "postext",
-      "note": "balancing's closing-box lever pushed the abstract box (the last block of page 1) down by the room under its foot, opening a 25 mm gap under the title block; balancing is disabled"
+      "note": "a callout style's endMark is set as text in the body face, and Spectral (like every Fontsource latin file) has no □ U+25A1: the canvas falls back to a system glyph and the PDF prints .notdef. The proofs end with $\\square$ written in the text; the formula-tag path already maps □ to \\square"
     }
   ]
 }

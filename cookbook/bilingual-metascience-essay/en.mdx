@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. The Cookbook composes t
 
 <Excerpt region="tables" />
 
-Table cells are not parsed for maths, and Fontsource's latin files have no Greek letters, so a cell that reads `$c(1-\beta)R/(R+1)$` in the TSV is set as a picture: `renderMath` draws the formula as MathJax paths at the cells' 8 pt, and `setCellImage` puts it in the cell with a width given as a share of the cell. Each picture is one cell line tall with its baseline where the text cells have theirs, so *Yes*, *No* and the formulas stand on one line, and the PDF keeps them as vector outlines. `mergeCells` joins *Research finding* over both header rows and *True relationship* over three columns; it also writes the hidden placeholder cells a merged cell needs.
+A table cell sets `$…$` as the text does (since postext 1.19), so a cell that reads `$c(1-\beta)R/(R+1)$` in the TSV is a formula: MathJax paths at the cells' 8 pt, on the baseline of the cell's line, so *Yes*, *No* and the formulas stand on one line, and vector outlines in the PDF. Fontsource's latin files have no Greek letters, and the formulas need none. Captions and notes take maths too: Table 4's caption names power as 1 − β and its note assumes α = 0.05, as the 2005 paper prints them. `setAlignment` sets the numbers of Table 4 flush right, and `mergeCells` joins *Research finding* over both header rows and *True relationship* over three columns; it also writes the hidden placeholder cells a merged cell needs.
 
 ### 3 · Captions and tables from the slot, numbers from the formula
 
@@ -66,10 +66,9 @@ The BibTeX in this recipe keeps no DOIs, to stay within the pen's size. Keep the
 
 ### Set the tables in one column
 
-A 2×2 table with shorter formulas fits a column: drop the page span and measure the cells against `COLUMN`, as Table 4 does. See <RecipeLink slug="journal-article-with-maths">Two-column paper with numbered equations</RecipeLink> for a one-column table.
+A 2×2 table with shorter formulas fits a column: drop its `span: 'page'`, as Table 4 has none. See <RecipeLink slug="journal-article-with-maths">Two-column paper with numbered equations</RecipeLink> for a one-column table.
 
 ## Pitfalls
 
-- A BibTeX author list that ends in `and others` prints a co-author named *others*. This recipe lists the first seven authors of the long lists, and `elsevier-vancouver` writes six of them and *et al.*
-- Captions and notes take no maths and no Greek from a Fontsource latin file, so Table 4's caption names power in words and its note writes *a Type I error rate of 0.05*, not α = 0.05.
+- Where the 2005 list stops at five authors and *et al.*, the BibTeX ends the list in `and others`, and `elsevier-vancouver` prints *et al.* in its place (since postext 1.19; earlier versions printed a co-author named *others*).
 - Pages differ between the editions: the Spanish text is longer, so Table 4 lands one page later. The capture publishes pages 1, 2, 3, 5, 6 and 7 of both, to keep the page images under the size limit and still show Table 4 in each.

@@ -10,7 +10,7 @@ pageNotes: { "1": "Página 1: el antetítulo azul Letter · Gravitational-wave a
 
 ## Lo que vas a componer
 
-Cinco páginas de la carta que anunció las primeras ondas gravitacionales, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), abreviada y compuesta de nuevo en tamaño carta a dos columnas. La página 1 abre con la prueba: la deformación registrada en Hanford y en Livingston, redibujada con los ficheros de datos abiertos del Gravitational Wave Open Science Center, cruza las dos columnas bajo el título. Debajo van la firma de la colaboración con su nota, el resumen a toda página y el texto, con las citas numeradas [1,2] y [25–27] como las imprimen las revistas de la APS. La masa de chirrido es la ecuación (1). La Tabla I pone sus errores asimétricos como superíndice y subíndice apilados, dibujados por MathJax dentro de las celdas. Trae tu BibTeX y tus ficheros de datos, y el mismo guion compone tu carta.
+Cinco páginas de la carta que anunció las primeras ondas gravitacionales, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), abreviada y compuesta de nuevo en tamaño carta a dos columnas. La página 1 abre con la prueba: la deformación registrada en Hanford y en Livingston, redibujada con los ficheros de datos abiertos del Gravitational Wave Open Science Center, cruza las dos columnas bajo el título. Debajo van la firma de la colaboración con su nota, el resumen a toda página y el texto, con las citas numeradas [1,2] y [25–27] como las imprimen las revistas de la APS. La masa de chirrido es la ecuación (1). La Tabla I pone sus errores asimétricos como superíndice y subíndice apilados, escritos como fórmulas en las celdas, y los pies imprimen las fórmulas de la propia carta. Trae tu BibTeX y tus ficheros de datos, y el mismo guion compone tu carta.
 
 ## Elaboración
 
@@ -22,13 +22,13 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. postext-citep
 
 <Excerpt region="title" />
 
-Un flotante nunca queda por encima de la línea que lo cita, y un título con `span: 'page'` abre siempre una página nueva, así que la Figura 1 no puede flotar a la cabeza de la página 1. La carta la pone ahí directamente: `::resource{id="fig1"}`, con `placement.position: 'here'`, va dentro del recuadro `plate`, que ocupa toda la página, justo después del título. La firma y el resumen siguen en un segundo recuadro a toda página, `front`, cuyos bloques `:::paragraphs` centran la firma y componen las fechas en cuerpo pequeño. La llamada de nota tras *et al.* manda su texto al pie de la primera columna, donde las revistas de la APS imprimen la nota de autoría, y `footnotes.numberFormat: 'lower-alpha'` marca las notas con letras para que nunca se lean como referencias. Consulta [Inserción en bloque](/es/docs/document-format#inserción-en-bloque-opcional-colocación-en-línea-explícita) y [Notas al pie](/es/docs/configuration#notas-al-pie).
+Un flotante nunca queda por encima de la línea que lo cita, y el texto cita la Figura 1 por primera vez en la sección II, así que como flotante no llegaría a la página 1. La carta la pone ahí directamente: `::resource{id="fig1"}` va justo después del título, y su colocación, `{ position: 'here', span: 'page' }`, la extiende sobre las dos columnas en ese punto; las columnas siguen debajo. La firma y el resumen van después en un recuadro a toda página, `front`, cuyos bloques `:::paragraphs` centran la firma y componen las fechas en cuerpo pequeño. La llamada de nota tras *et al.* manda su texto al pie de la primera columna, donde las revistas de la APS imprimen la nota de autoría, y `footnotes.numberFormat: 'lower-alpha'` marca las notas con letras para que nunca se lean como referencias. Consulta [Inserción en bloque](/es/docs/document-format#inserción-en-bloque-opcional-colocación-en-línea-explícita) y [Notas al pie](/es/docs/configuration#notas-al-pie).
 
 ### 3 · La Tabla I, con fórmulas en las celdas
 
 <Excerpt region="table" />
 
-Las celdas de una tabla no se leen como matemáticas, y `^+5^~−4~` imprimiría los dos errores uno detrás de otro. Cada valor lo compone `renderMath`, se escribe como trazados en un SVG y se dibuja en su celda con `TableCell.image`; el `width` de la celda es el ancho de la fórmula como fracción de la celda, así que todos los valores salen a 9 pt sea cual sea la columna. Los tipos de recurso imprimen *FIG. 1* y *TABLE I* en los pies y *Fig. 1* y *Table I* en el texto: un `captionPrefix`, y `counterFormat: 'upper-roman'` para las tablas. Los pies tampoco admiten matemáticas y ninguna de las dos fuentes trae griego, así que los pies se quedan en letras con `^sup^` y `~sub~`.
+Desde postext 1.19 una celda compone `$…$` igual que el texto, así que cada valor se escribe en TeX, `$36^{+5}_{-4}\,M_\odot$`, y sus dos errores se apilan encima y debajo de la cifra, ajustados a la línea de la celda; con el `^+5^~−4~` de Markdown saldrían uno detrás de otro. Los pies y las notas admiten las mismas fórmulas: la Figura 2 escribe `$R_S = 2GM/c^2$` y la Figura 4 `$5.1\sigma$`, con los glifos de MathJax, que tienen el griego que no trae ninguna de las dos fuentes del texto, y el PDF los conserva como trazados vectoriales. Los tipos de recurso imprimen *FIG. 1* y *TABLE I* en los pies y *Fig. 1* y *Table I* en el texto: un `captionPrefix`, y `counterFormat: 'upper-roman'` para las tablas. Consulta [Fórmulas matemáticas](/es/docs/document-format#fórmulas-matemáticas).
 
 ### 4 · Figuras dibujadas con los datos abiertos
 
@@ -67,7 +67,7 @@ Cambia el formato; la medida, las columnas y todas las figuras se derivan de él
 
 ## Errores frecuentes
 
-- Un recurso `'here'` con `span: 'page'` en un flujo a dos columnas sale del ancho de una columna. Mételo en un recuadro cuyo estilo tenga `span: 'page'`, como el recuadro `plate` de esta receta.
-- Una letra griega, ⊙ o ≃ en un pie o en una celda cae en una fuente del sistema en pantalla y falta en el PDF, que incrusta los ficheros latinos de cada fuente. Escribe esos símbolos como matemáticas en el texto, y dibújalos en figuras y celdas.
+- Hasta postext 1.18 un recurso `'here'` con `span: 'page'` salía del ancho de una columna en un flujo a dos columnas, y un `$` en un pie o en una celda se imprimía tal cual. Fija la 1.19 o una posterior.
+- Una letra griega, ⊙ o ≃ tecleada como carácter en un pie o en una celda cae en una fuente del sistema en pantalla y falta en el PDF, que incrusta los ficheros latinos de cada fuente. Escríbela como fórmula, `$\sigma$` o `$M_\odot$`, y dibújala en las figuras.
 - Una lista de cientos de autores no cabe en un fichero BibTeX. Escribe el nombre como lo imprime la revista, entre llaves dobles: `author={{B. Abbott et al.}}`.
 - Conserva la línea de licencia del artículo y la de los datos. Aquí una nota al pie y el colofón dicen qué se ha cortado, y la nota de cada pie nombra los datos y lo que la figura redibujada deja fuera.

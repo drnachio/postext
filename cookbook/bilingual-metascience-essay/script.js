@@ -1,11 +1,10 @@
 // ═══ Postext Cookbook · Nº 141 · A metascience essay in English and Spanish ═══════
 // https://postext.dev/en/cookbook/bilingual-metascience-essay
 // Code: MIT · Text: J. P. A. Ioannidis, PLoS Med 2005 (CC BY) · Figures: drawn in code (CC BY 4.0)
-// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.19.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  registerCitationEngine, defaultResourceTypes, initMathEngine, renderMath, parseTSV, mergeCells,
-  setCellContent, setCellImage, setAlignment,
+  registerCitationEngine, defaultResourceTypes, initMathEngine, parseTSV, mergeCells, setAlignment,
 } from 'https://esm.sh/postext?bundle';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -25,10 +24,8 @@ const [SERIF, SANS] = ['Gelasio', 'Sofia Sans Semi Condensed'];
 // mm: the 210 × 280 trim, head, foot, inner and outer margins, and the gutter
 const [TRIM_W, TRIM_H, TOP, BOTTOM, INNER, OUTER, GUTTER] = [210, 280, 22, 22, 19, 17, 6];
 const MEASURE = TRIM_W - INNER - OUTER; // 174 mm across both columns
-const COLUMN = (MEASURE - GUTTER) / 2; // 84 mm
 const [BODY, LEAD] = [9.4, 13]; // pt
 const [FIG_W, FIG_H] = [MEASURE, 60]; // mm: Figures 1 and 2, across both columns
-const MM_PER_PT = 25.4 / 72;
 
 // #region answer: one script, two editions: LANG picks the text, the language and the numbers
 // The Cookbook composes the pen once per edition: content.<LANG>.md and each named slot
@@ -160,45 +157,21 @@ const markdown = [
 // Captions, notes and the tables as tab-separated text with TeX in the cells, one block each.
 const blocks = /* @content:resources */ '';
 
-// #region tables: TSV in, a merged header, and every $…$ cell set as a formula picture
-// Cells are not parsed for maths (gap: math-in-captions), and the faces' latin files have no
-// α or β (gotcha: latin-subset): each $…$ cell gets an SVG of MathJax paths as its image,
-// at the cells' type size, vector on screen and in the PDF.
-const [CELL_PT, CELL_LEAD, PAD] = [8, 10.5, 1]; // cell type and line pitch (pt), padding (mm)
-const formulas = []; // [id, svg, resource] of each formula picture
-function formulaCell(tex, innerMm, color) {
-  const r = renderMath(tex, false, 100); // paths in MathJax units, baseline at y = 0
-  const unit = r.viewBox.width / (r.widthPx / 100); // MathJax units per em
-  const width = (r.widthPx / 100) * CELL_PT * MM_PER_PT; // mm
-  // One cell line tall, baseline where the text cells have theirs: Yes, No and the formulas
-  // of a row stand on one line.
-  const top = 0.5 * (CELL_LEAD / CELL_PT) + 0.33; // ems from the top to the baseline
-  const [w, h] = [Math.round(width * 40), Math.round(CELL_LEAD * MM_PER_PT * 40)];
-  const id = `f${formulas.length}`;
-  formulas.push([id, `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" `
-    + `viewBox="${r.viewBox.minX} ${-top * unit} ${r.viewBox.width} ${CELL_LEAD / CELL_PT * unit}"`
-    + `><g fill="${palette[color]}">${r.paths.map((p) => `<path d="${p.d}"/>`).join('')}</g></svg>`,
-  { id, typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, altText: tex,
-    svg: { fileId: `${id}.svg`, width: w, height: h } }]);
-  return { resourceId: id, width: Math.min(1, width / innerMm) }; // a share of the cell
-}
-function tableModel(tsv, widths, tableWidth, headerRows, merges = [], right = []) {
+// #region tables: TSV in, a merged header, and the $…$ cells set as formulas by the engine
+// A cell, a caption or a note sets $…$ as the text does (postext ≥ 1.19): MathJax paths at
+// the cell's 8 pt, on the baseline of its line and aligned with the cell, vector in the PDF.
+// The faces' latin files have no α or β (gotcha: latin-subset); the formulas need none.
+const [CELL_PT, PAD] = [8, 1]; // cell type (pt), cell padding (mm)
+function tableModel(tsv, widths, headerRows, merges = [], right = []) {
   let model = { ...parseTSV(tsv, { headerRows }), columnWidths: widths };
-  const total = widths.reduce((sum, w) => sum + w);
-  model.rows.forEach((row, r) => row.forEach((cell, c) => {
-    const at = { row: r, col: c };
-    if (right.includes(c)) model = setAlignment(model, at, 'right'); // images follow the cell
-    const tex = /^\$(.+)\$$/.exec(cell.content.trim());
-    if (!tex) return;
-    const inner = (tableWidth * widths[c]) / total - 2 * PAD; // mm inside the padding
-    model = setCellImage(setCellContent(model, at, ''),
-      at, formulaCell(tex[1], inner, r < headerRows ? 'paper' : 'ink'));
+  model.rows.forEach((_, row) => right.forEach((c) => {
+    model = setAlignment(model, { row, col: c }, 'right'); // the numbers, the PPV and their heads
   }));
   for (const range of merges) model = mergeCells(model, range); // gotcha: merged-cells-hiddenby
   return model;
 }
 // "Research finding" over both header rows, "True relationship" over Yes, No and Total.
-const twoByTwo = (tsv) => tableModel(tsv, [1.1, 1.6, 1.6, 2.5], MEASURE, 2, [
+const twoByTwo = (tsv) => tableModel(tsv, [1.1, 1.6, 1.6, 2.5], 2, [
   { start: { row: 0, col: 0 }, end: { row: 1, col: 0 } },
   { start: { row: 0, col: 1 }, end: { row: 0, col: 3 } }]);
 // Table 4's last column is computed from Eq. (2), α = 0.05: two significant figures, as in 2005.
@@ -207,9 +180,9 @@ const ppv = (power, R, u, alpha = 0.05) => (power * R + u * (1 - power) * R)
 const read = (s) => Number(s.replace(',', '.'));
 const odds = (s) => s.split(':').map((x) => Number(x.replace(/\D/g, ''))).reduce((a, b) => a / b);
 const ppvRows = (tsv) => tsv.split('\n').map((line, r) => {
-  const [power, R, u, example] = line.split('\t');
+  const [power, R, u, example, head] = line.split('\t');
   const p = ppv(read(power), odds(R), read(u)); // 0.0010: as many decimals as 2 figures need
-  return [power, R, u, example, r ? number(p, 1 - Math.floor(Math.log10(p))) : 'PPV'].join('\t');
+  return [power, R, u, example, r ? number(p, 1 - Math.floor(Math.log10(p))) : head].join('\t');
 }).join('\n');
 // #endregion
 
@@ -225,8 +198,7 @@ const parsed = blocks.trim().split(/\n\s*\n/).map((block) => {
 });
 const tables = parsed.filter((b) => b.tsv).map(({ id, caption, note, tsv }) => {
   const model = id === 'tbl-ppv'
-    ? tableModel(ppvRows(tsv), [0.8, 0.95, 0.75, 3.8, 1.05], COLUMN, 1, [],
-    [0, 1, 2, 4])
+    ? tableModel(ppvRows(tsv), [0.8, 0.95, 0.75, 3.8, 1.05], 1, [], [0, 1, 2, 4])
     : twoByTwo(tsv);
   return { id, typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0, caption, note,
     table: { model }, placement: { position: 'auto', ...(id !== 'tbl-ppv' && { span: 'page' }) } };
@@ -235,7 +207,7 @@ const figures = parsed.filter((b) => !b.tsv).map(({ id, caption, note, alt }) =>
   typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, caption, note, altText: alt,
   placement: { position: 'auto', span: 'page' },
   svg: { fileId: `${id}.svg`, width: FIG_W * 10, height: FIG_H * 10 } }));
-const resources = [...tables, ...figures, ...formulas.map(([, , resource]) => resource),
+const resources = [...tables, ...figures,
   { id: 'band-art', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
     svg: { fileId: 'band-art.svg', width: 1400, height: BAND * 10 } }];
 const tableStyle = { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
@@ -322,7 +294,6 @@ await loadSvg('fig-bias.svg', panels(face, ppv, [0.05, 0.2, 0.5, 0.8], 'u', 2,
   (power, R) => ppv(power, R, 0)));
 await loadSvg('fig-teams.svg', panels(face, teams, [1, 5, 10, 50], 'n', 0));
 await loadSvg('band-art.svg', bandArt());
-for (const [id, svg] of formulas) await loadSvg(`${id}.svg`, svg);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: t({ en: 'A metascience essay in English and Spanish',
   es: 'Un ensayo de metaciencia en inglés y en español' }) });

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 138 · Machine-learning paper with theorems and proofs ═══
 // https://postext.dev/en/cookbook/ml-paper-theorems-proofs
 // Code: MIT · Text: Rafailov et al. 2023, arXiv:2305.18290 (CC BY 4.0), abridged · Art: code
-// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.0
 // DPO (NeurIPS 2023) re-set as a preprint: numbered equations with labels and references,
 // definition, lemma and theorem boxes, proofs that end in a square, author–year citations.
 import {
@@ -30,58 +30,39 @@ const [BODY, LEAD] = [9.6, 13.4]; // pt: one column of 130 mm, about 74 characte
 const [TRIM_W, TRIM_H, TOP, BOTTOM, INNER, OUTER] = [178, 254, 22, 22, 21, 27];
 const MEASURE = TRIM_W - INNER - OUTER;
 
-// #region answer: amsthm in Markdown: labelled equations, numbered theorems, proofs with □
-// Postext numbers a display formula with \tag{…} and links :ref to any anchor, but it keeps
-// no counter of equations or theorems. latex() is that counter: write \label{eq:x} in a
-// display, :::callout{type="lemma" #lem:x} for a statement, then \eqref{eq:x} or \ref{lem:x}.
-const KINDS = { definition: 'Definition', lemma: 'Lemma', theorem: 'Theorem' };
-function latex(md) {
-  const labels = new Map();
-  const count = { equation: 0 };
-  // A statement opens with its run-in label. The box is italic, so ***…*** sets it upright.
-  md = md.replace(/^(:::callout\{type="(\w+)" #([\w:.-]+)\}\n)/gm, (all, open, kind, key) => {
-    if (!KINDS[kind]) return all;
-    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
-    return `${open}***${KINDS[kind]} ${labels.get(key)}.*** `;
-  });
-  // Each \label in a display becomes \tag{n}, numbered in reading order (on its row of an
-  // align), and the line that leads into the display carries the anchor a reference jumps to.
-  md = md.replace(/([^\n]*)\n(\$\$\n[\s\S]*?\n\$\$)/g, (all, lead, display) => {
-    const keys = [];
-    const body = display.replace(/\\label\{([^}]+)\}/g, (_, key) => {
-      labels.set(key, String(++count.equation));
-      keys.push(key);
-      return `\\tag{${count.equation}}`;
-    });
-    return `${lead}${keys.map((key) => ` :anchor{#${key}}`).join('')}\n${body}`;
-  });
-  // A proof ends with the square, as amsthm's \qed sets it.
-  md = md.replace(/(:::callout\{type="proof"\}\n[\s\S]*?)\n:::$/gm, '$1 $\\square$\n:::');
-  // In the text a reference is a link (~ ties it to "Eq."); inside a formula, the number.
-  return md.split(/(\$\$[\s\S]*?\$\$)/).map((part, i) => part.replace(
-    /(~?)\\(eq)?ref\{([^}]+)\}/g, (_, tie, eq, key) => {
-      const n = eq ? `(${labels.get(key)})` : labels.get(key);
-      return i % 2 ? `${tie}${n}` : `${tie ? '\u00a0' : ''}:ref{id="${key}" text="${n}"}`;
-    })).join('');
-}
+// #region answer: amsthm in Markdown: numbered equations, theorems and proofs
+// \label{eq:x} in a display formula numbers it, on its row of an align; a box opened as
+// :::callout{type="lemma" #lem:x} counts as a statement. \eqref{eq:x}, \ref{lem:x} and
+// :ref{id="lem:x"} print the number and link to it.
+const equationNumbering = { // (1) to (13): one sequence through the paper and its appendix
+  numberingTemplate: '{n}', resetOn: 'never', format: '({n})' };
+// A proof's label has no number. Its □ is $\square$ in the text: an endMark: '□' would be set
+// in Spectral, which has no such glyph.
+const proofLabel = (label) => ({ label, counter: false, bold: false, italic: true });
+const statements = [ // a counter per kind, as the paper has it: Definition 1, Lemma 1, Theorem 1
+  { id: 'definition', numbering: { label: 'Definition' } },
+  { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
+  { id: 'theorem', numbering: { label: 'Theorem' } },
+  { id: 'proof', numbering: proofLabel('Proof') },
+  { id: 'sketch', numbering: proofLabel('Proof Sketch') },
+];
 // #endregion
 
-// #region theorems: one callout style per environment, the statements set in italics
-const box = (id, extra) => ({ id, marginTop: pt(LEAD * 0.6), marginBottom: pt(LEAD * 0.6),
+// #region theorems: one look per environment, the statements set in italics
+const box = ({ id, ...numbered }, extra) => ({ id, marginTop: pt(LEAD * 0.6),
+  marginBottom: pt(LEAD * 0.6), backgroundEnabled: false,
   snapToGrid: false, // exact space round a statement, as amsthm's \topsep; one column, no grid
-  padding: { top: mm(1.8), right: mm(4), bottom: mm(1.8), left: mm(4) }, backgroundEnabled: false,
-  body: { italic: true, firstLineIndent: pt(0), boldColor: col('ink') }, ...extra });
+  padding: { top: mm(1.8), right: mm(4), bottom: mm(1.8), left: mm(4) },
+  body: { italic: true, firstLineIndent: pt(0), boldColor: col('ink') }, ...extra, ...numbered });
 const stripe = (color) => ({ enabled: true, side: 'left', width: pt(3), color: col(color) });
-const theoremStyles = [
-  box('definition', { stripe: stripe('rule') }),
-  box('lemma', { stripe: stripe('accent') }),
-  box('restated', { stripe: stripe('accent') }),
-  box('theorem', { backgroundEnabled: true, background: col('tint') }),
+const proof = { keepTogether: false, // a long proof runs on to the next page
   // A proof is upright text with an italic run-in label, set off by space alone.
-  box('proof', { keepTogether: false, // a long proof runs on to the next page
-    padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
-    body: { firstLineIndent: pt(0), italicColor: col('ink') } }),
-];
+  padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
+  body: { firstLineIndent: pt(0), italicColor: col('ink') } };
+const look = { definition: { stripe: stripe('rule') }, lemma: { stripe: stripe('accent') },
+  theorem: { backgroundEnabled: true, background: col('tint') }, proof, sketch: proof };
+const theoremStyles = [...statements.map((s) => box(s, look[s.id])),
+  box({ id: 'restated' }, look.lemma)]; // Lemma 1 again in the appendix, with no new number
 // #endregion
 
 // #region title: a plum band with the title, the byline under it, the source at the foot
@@ -154,11 +135,11 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
-  math: { marginTop: pt(LEAD / 2), marginBottom: pt(LEAD / 2) },
+  math: { marginTop: pt(LEAD / 2), marginBottom: pt(LEAD / 2), equationNumbering },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 600,
-  // No balancing: a paper's page may end a line short, but its heads keep their spacing, and
-  // the abstract stays under the title (gotcha: float-stretch-closing-page)
-  balancing: { enabled: false },
+  // A short page takes at most one grid line more above a heading: a paper's heads keep their
+  // spacing, and a page held short by a tall display may end a few lines up.
+  balancing: { maxLinesPerHeading: 1 },
   levels: [
     { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
     { level: 2, numberingTemplate: '{2}', fontSize: pt(11.5), lineHeight: pt(LEAD),
@@ -328,7 +309,7 @@ await initMathEngine(); // gotcha: math-bundle. Unawaited, formulas paint as gre
 await loadFonts(FONTS, source);
 await loadSvg('sigmoids.svg', sigmoids());
 await loadSvg('pipeline.svg', pipeline(await inlineFace(SANS, 400) + await inlineFace(SANS, 600)));
-const content = () => ({ markdown: latex(source), resources: resources() });
+const content = () => ({ markdown: source, resources: resources() });
 const doc = await buildWithFonts(() => buildDocument(content(), config()), source);
 showPages(doc, { title: 'Machine-learning paper with theorems and proofs' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

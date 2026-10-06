@@ -22,7 +22,7 @@ John Ioannidis的论文*Why Most Published Research Findings Are False*（PLoS M
 
 <Excerpt region="tables" />
 
-表格单元格不解析数学公式，Fontsource的latin文件里也没有希腊字母，所以TSV里写作`$c(1-\beta)R/(R+1)$`的单元格被排成图片：`renderMath`以单元格的8 pt字号把公式画成MathJax路径，`setCellImage`把它放进单元格，宽度用占单元格的比例表示。每张图片高一个单元格行，基线与文字单元格的基线对齐，于是*Yes*、*No*和公式站在同一条线上，PDF里也保持为矢量轮廓。`mergeCells`让“Research finding”跨两行表头、“True relationship”跨三栏，并写出合并单元格需要的隐藏占位单元格。
+从postext 1.19起，表格单元格像正文一样排`$…$`，所以TSV里写作`$c(1-\beta)R/(R+1)$`的单元格就是公式：以单元格的8 pt字号画成MathJax路径，落在单元格那一行的基线上，于是*Yes*、*No*和公式站在同一条线上，PDF里是矢量轮廓。Fontsource的latin文件没有希腊字母，公式也用不到它们。题注和注释同样可以写公式：表4的题注把检验效能写成1 − β，注释写α = 0.05，与2005年的原文一致。`setAlignment`让表4的数字右对齐，`mergeCells`让“Research finding”跨两行表头、“True relationship”跨三栏，并写出合并单元格需要的隐藏占位单元格。
 
 ### 3 · 槽位里的表格和题注，公式算出的数字
 
@@ -66,10 +66,9 @@ John Ioannidis的论文*Why Most Published Research Findings Are False*（PLoS M
 
 ### 表格排在一栏里
 
-公式较短的2×2表可以放进一栏：去掉`span: 'page'`，按`COLUMN`计算单元格宽度，像表4那样。单栏表格的例子见<RecipeLink slug="journal-article-with-maths">带编号公式的双栏论文</RecipeLink>。
+公式较短的2×2表可以放进一栏：去掉它的`span: 'page'`，表4就没有这一项。单栏表格的例子见<RecipeLink slug="journal-article-with-maths">带编号公式的双栏论文</RecipeLink>。
 
 ## 常见问题
 
-- BibTeX作者列表以`and others`结尾时，会印出一个名叫*others*的合著者。本例为长作者列表只给出前七位，`elsevier-vancouver`印出六位再加*et al.*
-- 题注和注释不排数学公式，Fontsource的latin文件也没有希腊字母，所以表4的题注用文字写出检验效能，注释写“a Type I error rate of 0.05”，而不是α = 0.05。
+- 2005年的参考文献列出五位作者后写et al.的地方，BibTeX的作者列表以`and others`结尾，`elsevier-vancouver`在那里印出*et al.*（postext 1.19起；更早的版本会印出一个名叫*others*的合著者）。
 - 两个版本的页面并不对应：西班牙文更长，表4晚一页出现。截图发布两个版本的第1、2、3、5、6、7页，既不超出图片大小限制，又能在两个版本里都看到表4。

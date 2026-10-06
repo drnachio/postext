@@ -5,7 +5,7 @@ plain: "一份1981年的公共卫生周报，用信纸开本重新排版。报�
 description: "用Postext排流行病学周报：报头，病例，Reported by与编者按的段落样式，括号中的AMA引用序号，以及由制表符分隔文本生成的表格。"
 question: "怎样排周报中的报告，包括病例、编者按和编号参考文献？"
 aliases: ["MMWR", "流行病学周报", "病例系列", "病例报告", "监测报告", "公共卫生", "Reported by", "编者按", "法定报告传染病", "AMA样式", "艾滋病", "1981"]
-pageNotes: { "1": "第1页：深蓝色色带上是白色的刊名Surveillance Notes，下面是期号说明和三条目录、一条双线，然后是第一篇报告Pneumocystis Pneumonia — Los Angeles（1981年6月5日）。两栏正文开始病例，Patient 1、Patient 2、Patient 3为蓝色粗体标签；左栏底部是一条关于配对标本的脚注。页面底部横排图1：五名患者从1980年9月到1981年5月的时间线，灰条表示肺炎之前的病程，蓝点表示确诊月份，空心菱形表示有日期的CMV检查结果，叉号表示两例死亡。", "2": "第2页：通栏的表1，五个病例一览（年龄、确诊月份、CMV证据、其他发现、转归）；下面是最后几个病例、总结段、灰色小号斜体的Reported by一行，以及编者按的开头，标签为蓝色粗体。", "3": "第3页：左栏是编者按的结尾和五条编号参考文献；一条双线之下，第二篇报告Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California从栏底开始；它的表1（20名患者的首发症状）位于右栏底部。", "4": "第4页：7月报告继续，包括小号斜体的长篇Reported by名单和编者按。", "5": "第5页：7月报告的参考文献，编号为4和6至23，两栏平衡。", "6": "第6页：单栏的封底Notifiable Diseases — United States，两行表头下是29种疾病的每周汇总表，最后是版权说明。" }
+pageNotes: { "1": "第1页：深蓝色色带上是白色的刊名Surveillance Notes，下面是期号说明和三条目录、一条双线，然后是第一篇报告Pneumocystis Pneumonia — Los Angeles（1981年6月5日）。两栏正文开始病例，Patient 1、Patient 2、Patient 3为蓝色粗体标签；左栏底部是一条关于配对标本的脚注。页面底部横排图1：五名患者从1980年9月到1981年5月的时间线，灰条表示肺炎之前的病程，蓝点表示确诊月份，空心菱形表示有日期的CMV检查结果，叉号表示两例死亡。", "2": "第2页：通栏的表1，五个病例一览（年龄、确诊月份、CMV证据、其他发现、转归）；下面是最后几个病例、总结段、灰色小号斜体的Reported by一行，以及编者按的开头，标签为蓝色粗体。", "3": "第3页：左栏是编者按的结尾，右栏是五条编号参考文献，两栏底部齐平；一条通栏双线之下，第二篇报告Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California从页面下半部开始，在两栏中接排；它的表1（20名患者的首发症状）位于右栏底部。", "4": "第4页：7月报告继续，包括小号斜体的长篇Reported by名单和编者按。", "5": "第5页：7月报告的最后几行和它的参考文献，编号为1至19，两栏平衡。", "6": "第6页：单栏的封底Notifiable Diseases — United States，两行表头下是29种疾病的每周汇总表，最后是版权说明。" }
 ---
 
 ## 成品一览
@@ -16,13 +16,13 @@ pageNotes: { "1": "第1页：深蓝色色带上是白色的刊名Surveillance No
 
 ### 1 · 每种声音一个段落样式
 
-代码就是上面的[简短回答](#简短回答)。周报中的报告有几种语域：病例、报告人名单和编者的评论。用`:::paragraphs{style="…"}`把每一段包起来，就能在不改动文字的情况下给它一种外观：*Reported by*一行缩到7.8 pt的压缩斜体，脱离基线网格；病例则保持正文的质感，`**Patient 1:**`标签用强调色。引用写作`[@walzer1974]`；`american-medical-association`加上`marker: 'parentheses'`把它们印成(1)，并按引用顺序排列文献表，与周报当年一致；`scope: 'chapter'`在每篇报告下各放一份文献表。
+代码就是上面的[简短回答](#简短回答)。周报中的报告有几种语域：病例、报告人名单和编者的评论。用`:::paragraphs{style="…"}`把每一段包起来，就能在不改动文字的情况下给它一种外观：*Reported by*一行缩到7.8 pt的压缩斜体，脱离基线网格；病例则保持正文的质感，`**Patient 1:**`标签用强调色。引用写作`[@walzer1974]`；`american-medical-association`加上`marker: 'parentheses'`把它们印成(1)，并按引用顺序排列文献表，与周报当年一致；`numbering: 'chapter'`让每篇报告的引用从1开始编号，`scope: 'chapter'`在每篇报告下放一份使用同样编号的文献表。
 
 ### 2 · 开启第一篇报告的报头
 
 <Excerpt region="masthead" />
 
-报头是第一篇报告标题样式的设计，所以只在第1页出现一次，书眉跳过这一页（`pages: 'body'`）。眉题、标题和日期行都来自每篇报告H1的属性。`display`带着属名斜体的标题，因为`{titleText}`是纯文本。第二篇报告以一栏的宽度使用同样的三个元素：`span: 'page'`的标题总是另起一页，而周报的报告是接排的。
+报头是第一篇报告标题样式的设计，所以只在第1页出现一次，书眉跳过这一页（`pages: 'body'`）。眉题和日期行来自每篇报告H1的属性，标题则是`{titleText}`：文本元素设了`inlineMarks: true`，就保留标题中属名的斜体。7月的报告在一条双线下用同样的三个元素开头。它的标题样式以`spanBreak: false`横跨整页，所以标题从6月报告结束的地方开始：上方各栏底部齐平，下方正文在两栏中继续，就像周报把一篇报告接在另一篇之后那样。
 
 ### 3 · 由制表符分隔文本生成的三张表
 
@@ -52,8 +52,8 @@ pageNotes: { "1": "第1页：深蓝色色带上是白色的刊名Surveillance No
 分篇归档的重印系列让每篇报告从新的一页开始。
 
 ```diff
--    { level: 1, breakBefore: { enabled: false } },
-+    { level: 1, breakBefore: { enabled: true, parity: 'any' } },
+-    { id: 'report', span: 'page', spanBreak: false, advancedDesign: opener },
++    { id: 'report', span: 'page', advancedDesign: opener },
 ```
 
 ### 温哥华格式的文献表
@@ -62,6 +62,6 @@ pageNotes: { "1": "第1页：深蓝色色带上是白色的刊名Surveillance No
 
 ## 常见问题
 
-- 参考文献序号贯穿整个文档：citeproc把一个文档（或`buildBundle`的整本书）中的所有引用排成一个序列，`scope: 'chapter'`只是把文献表分开。这里7月的报告引用第4和第6至23号文献，而周报当年印的是1至19号，版权说明里写明了这一点。要让每篇报告从1开始编号，就用各自的`buildDocument`排每篇报告，再用`continuation`串起来。
-- 脚注标记是数字：Postext没有星号、剑号的序列，所以1981年*Paired specimens not run in parallel*上的星号印成1。
+- 不设`numbering: 'chapter'`时，参考文献序号贯穿整个文档，`scope: 'chapter'`只是把文献表分开：7月的报告会引用第4和第6至23号文献，而周报当年印的是1至19号。
+- 1981年的脚注*Paired specimens not run in parallel*用星号标注：`footnotes.numberFormat: 'symbols'`依次使用*、†、‡，并在每页重新开始。这些符号中只有星号在Fontsource字体的latin文件里（剑号在latin-ext里，双剑号两者都没有），所以一页有两三条脚注时，需要换用带这些符号的字体，或者设`symbols: ['*', '§', '¶']`。
 - 1981年的文字按原样保留，包括当时的术语，版权说明里写明了这一点。重印不修改所复制的正文；编者添加的内容（时间线、病例表、第一段下面的蓝色斜体说明）用自己的样式并加以标注。

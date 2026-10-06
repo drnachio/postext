@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-metascience-essay",
-  "sourceHash": "aa8f42637c67216b72467c9174c73d0369ed934b6ab558f77725978f7e127816",
+  "sourceHash": "12f342872dd70b70f1b1db89f98881a280f5d8c1c298296455fa29cc850d9616",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:46:16.019Z",
+  "capturedAt": "2026-10-06T16:11:56.393Z",
   "variants": {
     "en": {
-      "hash8": "1c3b712d",
-      "vdtHash": "45fa38425119d3daabec2377125c847b65398782",
+      "hash8": "07b2f42e",
+      "vdtHash": "52c7a2bcc70be7c69040a6f28213828fe92c0df8",
       "timings": {
-        "importMs": 661,
-        "fontsMs": 2813,
-        "buildMs": 558,
-        "totalMs": 4591,
+        "importMs": 1065,
+        "fontsMs": 2994,
+        "buildMs": 591,
+        "totalMs": 5229,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Sofia Sans Semi Condensed"
         ],
         "pages": 7,
-        "ownLines": 250
+        "ownLines": 221
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 182584,
+          "bytes": 182544,
           "alt": "Page 2: Bias. Table 1. Research Findings and True Relationships."
         },
         {
@@ -72,8 +72,8 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 114114,
-          "alt": "Page 3: Corollaries. Table 2. Research Findings and True Relationships in the Presence of Bias · Figure 1. PPV (Probability That a Research Finding Is True) as a Function of the Pre-Study Odds for Various Levels of Bias, u · Table 3. Research Findings and True Relationships in…"
+          "bytes": 114166,
+          "alt": "Page 3: Corollaries. Table 2. Research Findings and True Relationships in the Presence of Bias · Figure 1. PPV (Probability That a Research Finding Is True) as a Function of the Pre-Study Odds for Various Levels of Bias, ￼ · Table 3. Research Findings and True Relationships in…"
         },
         {
           "n": 5,
@@ -83,8 +83,8 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 202224,
-          "alt": "Page 5: Most Research Findings Are False for Most Research Designs and for Most Fields. Table 4. PPV of Research Findings for Various Combinations of Power, Ratio of True to Not-True Relationships (R), and Bias (u)."
+          "bytes": 202026,
+          "alt": "Page 5: Most Research Findings Are False for Most Research Designs and for Most Fields. Table 4. PPV of Research Findings for Various Combinations of Power (￼), Ratio of True to Not-True Relationships (￼), and Bias (￼)."
         },
         {
           "n": 6,
@@ -105,7 +105,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 162602,
+          "bytes": 161094,
           "alt": "Page 7: REFERENCES."
         }
       ],
@@ -141,12 +141,12 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 851564,
+        "bytes": 783317,
         "pages": 7
       },
       "sandbox": {
         "file": "bilingual-metascience-essay.postext",
-        "bytes": 193959,
+        "bytes": 90820,
         "folio": "a418809e"
       },
       "detected": {
@@ -163,12 +163,9 @@
           "parseTSV",
           "registerCitationEngine",
           "registerResourceImage",
-          "renderMath",
           "renderPageToCanvas",
           "renderToPdf",
-          "setAlignment",
-          "setCellContent",
-          "setCellImage"
+          "setAlignment"
         ],
         "configKeys": [
           "bodyText",
@@ -404,7 +401,7 @@
           ":chip"
         ],
         "resources": {
-          "svg": 33,
+          "svg": 3,
           "bitmap": 0,
           "table": 4
         },
@@ -453,7 +450,6 @@
         "features": [
           "callout-columns",
           "callout-styles",
-          "cell-images",
           "chips",
           "citation-styles",
           "figure-citations",
@@ -477,7 +473,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 4,
         "looseLines": {
           "count": 5,
           "share": 0.0156,
@@ -490,21 +486,21 @@
             "detail": "the edition's images weigh 1.16 MB (warning at 0.9 MB for 6 pages)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "ac5e40fa",
-      "vdtHash": "7821283aeca52db6a0d4f5f3202d643bde42f1f1",
+      "hash8": "77a26618",
+      "vdtHash": "12998927793173f946a0c06b165ddf5435e27291",
       "timings": {
-        "importMs": 339,
-        "fontsMs": 171,
-        "buildMs": 482,
-        "totalMs": 1617,
+        "importMs": 671,
+        "fontsMs": 170,
+        "buildMs": 641,
+        "totalMs": 2131,
         "builds": 1
       },
       "specimen": {
@@ -526,7 +522,7 @@
           "Sofia Sans Semi Condensed"
         ],
         "pages": 7,
-        "ownLines": 250
+        "ownLines": 221
       },
       "pages": [
         {
@@ -548,7 +544,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 186184,
+          "bytes": 186152,
           "alt": "Página 2: El sesgo. Tabla 1. Resultados de la investigación y relaciones verdaderas."
         },
         {
@@ -559,7 +555,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 118944,
+          "bytes": 118766,
           "alt": "Página 3: Corolarios. Tabla 2. Resultados de la investigación y relaciones verdaderas en presencia de sesgo · Figura 1. VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para varios niveles de se…"
         },
         {
@@ -581,8 +577,8 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 206724,
-          "alt": "Página 6: ¿Cómo podemos mejorar la situación?. Tabla 4. VPP de los resultados de la investigación para varias combinaciones de potencia, razón entre relaciones verdaderas y no verdaderas (R) y sesgo (u)."
+          "bytes": 206410,
+          "alt": "Página 6: ¿Cómo podemos mejorar la situación?. Tabla 4. VPP de los resultados de la investigación para varias combinaciones de potencia (￼), razón entre relaciones verdaderas y no verdaderas (￼) y sesgo (￼)."
         },
         {
           "n": 7,
@@ -592,7 +588,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 213846,
+          "bytes": 212060,
           "alt": "Página 7: INFORMACIÓN DEL ARTÍCULO."
         }
       ],
@@ -628,12 +624,12 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 889425,
+        "bytes": 821180,
         "pages": 7
       },
       "sandbox": {
         "file": "bilingual-metascience-essay.postext",
-        "bytes": 196537,
+        "bytes": 93412,
         "folio": "a418809e"
       },
       "detected": {
@@ -650,12 +646,9 @@
           "parseTSV",
           "registerCitationEngine",
           "registerResourceImage",
-          "renderMath",
           "renderPageToCanvas",
           "renderToPdf",
-          "setAlignment",
-          "setCellContent",
-          "setCellImage"
+          "setAlignment"
         ],
         "configKeys": [
           "bodyText",
@@ -891,7 +884,7 @@
           ":chip"
         ],
         "resources": {
-          "svg": 33,
+          "svg": 3,
           "bitmap": 0,
           "table": 4
         },
@@ -940,7 +933,6 @@
         "features": [
           "callout-columns",
           "callout-styles",
-          "cell-images",
           "chips",
           "citation-styles",
           "figure-citations",
@@ -977,9 +969,9 @@
             "detail": "the edition's images weigh 1.26 MB (warning at 0.9 MB for 6 pages)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
           }
         ]
       }

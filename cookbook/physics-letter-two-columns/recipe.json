@@ -21,7 +21,7 @@
     ],
     "also": [
       "math",
-      "cell-images",
+      "table-model",
       "figure-numbering",
       "resource-types",
       "captions",
@@ -45,9 +45,7 @@
     "Q48",
     "Q154"
   ],
-  "gaps": [
-    "math-in-captions"
-  ],
+  "gaps": [],
   "gotchas": [
     "math-bundle",
     "svg-no-webfonts",
@@ -63,8 +61,8 @@
     "figures-float-where-cited"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "math": true
   },
   "kit": [
@@ -163,16 +161,7 @@
     "code": "MIT",
     "content": "CC-BY-4.0"
   },
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "a ::resource with placement { position: 'here', span: 'page' } in a 'double' layout is set one column wide: Figure 1 sits inside a callout whose style has span: 'page' (the plate box), which gives it the full measure"
-    },
-    {
-      "package": "postext",
-      "note": "table cells and captions take no maths: each Table I value is a MathJax SVG drawn in its cell with TableCell.image, its width a fraction of the cell's inner width; captions keep to ^sup^ and ~sub~ and no Greek"
-    }
-  ],
+  "workarounds": [],
   "created": "2026-10-06",
   "updated": "2026-10-06"
 }

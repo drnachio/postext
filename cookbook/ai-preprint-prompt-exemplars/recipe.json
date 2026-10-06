@@ -53,8 +53,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0"
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0"
   },
   "kit": [
     "core",
@@ -140,15 +140,5 @@
     "code-listings-and-keycaps"
   ],
   "created": "2026-10-06",
-  "updated": "2026-10-06",
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "a citation suffix with no locator, [@key, inter alia], loses its comma and space ((Brown et al., 2020inter alia)) and its inline marks print as asterisks; the text writes [@key, , inter alia]"
-    },
-    {
-      "package": "postext",
-      "note": "citations inside a resource caption print literally ([@cobbe2021training]); the captions name the works in plain text and the works cited only there are listed in nocite"
-    }
-  ]
+  "updated": "2026-10-06"
 }

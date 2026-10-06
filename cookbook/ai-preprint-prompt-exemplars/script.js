@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 137 · An AI preprint with prompt exemplars in boxes ═══════
 // https://postext.dev/en/cookbook/ai-preprint-prompt-exemplars
 // Code: MIT · Text: Wei et al. 2022, arXiv:2201.11903 (CC BY 4.0) · Charts: drawn in code
-// Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
   registerResourceImage,
@@ -208,15 +208,15 @@ const resources = () => [
   svg('fig-gsm8k', 'fig2', 'gsm8k.svg', [860, 380],
     'PaLM 540B uses chain-of-thought prompting to achieve new state-of-the-art performance '
       + 'on the GSM8K benchmark of math word problems. Finetuned GPT-3 and prior best are '
-      + 'from Cobbe et al. (2021).',
+      + 'from @cobbe2021training.',
     'Redrawn from the values in the paper’s Figure 2.',
     'Bars of GSM8K solve rate: finetuned GPT-3 175B 33, prior best 55, PaLM 540B with '
       + 'standard prompting 18 and with chain-of-thought prompting 57.'),
   svg('fig-scale', 'fig4', 'scale.svg', [1780, 900],
     'Chain-of-thought prompting enables large language models to solve challenging math '
       + 'problems. Notably, chain-of-thought reasoning is an emergent ability of increasing '
-      + 'model scale. Prior best numbers are from Cobbe et al. (2021) for GSM8K, Jie et al. '
-      + '(2022) for SVAMP, and Lan et al. (2021) for MAWPS.',
+      + 'model scale. Prior best numbers are from @cobbe2021training for GSM8K, '
+      + '@jie2022learning for SVAMP, and @lan2021mwptoolkit for MAWPS.',
     'Redrawn from the solve rates in the paper’s Table 2; the prior-best lines are those '
       + 'of its Figure 4.',
     'Nine small charts of solve rate against model size. For LaMDA, GPT and PaLM on GSM8K, '

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ml-paper-theorems-proofs",
-  "sourceHash": "c2ef306d41355d499a209ea182133c7b8dddab3b031e9bd501d66a2fb7081169",
+  "sourceHash": "078289af93c50b3a637d0e58886168c7e419b61e06aa26a9b1ce6a272161eafe",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:32:11.999Z",
+  "capturedAt": "2026-10-06T16:11:20.266Z",
   "variants": {
     "en": {
-      "hash8": "7735fd5d",
-      "vdtHash": "6f062a6ac28c59ebddc166718018d9a22cd1499e",
+      "hash8": "0d0336d0",
+      "vdtHash": "ef0a1d82fe7dbb4bfbc9272ff708e99df5989213",
       "timings": {
-        "importMs": 275,
-        "fontsMs": 119,
-        "buildMs": 40,
-        "totalMs": 1345,
+        "importMs": 351,
+        "fontsMs": 129,
+        "buildMs": 73,
+        "totalMs": 1518,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Work Sans"
         ],
         "pages": 10,
-        "ownLines": 237
+        "ownLines": 218
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1427,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167420,
+          "bytes": 167554,
           "alt": "Page 2: 1 Introduction."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1427,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 121232,
+          "bytes": 120250,
           "alt": "Page 3. Figure 1. DPO optimizes for human preferences while avoiding reinforcement learning. Existing methods for fine-tuning language models with human feedback first fit a reward model to a dataset of prompts and human preferences over pairs of responses, and then use RL to…"
         },
         {
@@ -94,7 +94,7 @@
           "h": 1427,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 143316,
+          "bytes": 143534,
           "alt": "Page 5."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1427,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 140210,
+          "bytes": 140200,
           "alt": "Page 6: 5 Theoretical Analysis of DPO."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1427,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 110978,
+          "bytes": 112868,
           "alt": "Page 7: 6 Experiments. Table 1. GPT-4 win rates vs. ground truth summaries for out-of-distribution CNN/DailyMail input articles."
         },
         {
@@ -127,7 +127,7 @@
           "h": 1427,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 130804,
+          "bytes": 130696,
           "alt": "Page 8: A Mathematical Derivations."
         },
         {
@@ -138,7 +138,7 @@
           "h": 1427,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 92282,
+          "bytes": 92410,
           "alt": "Page 9: A.5 Proof of Lemma 1 and 2."
         },
         {
@@ -193,12 +193,12 @@
       },
       "pdf": {
         "file": "ml-paper-theorems-proofs.pdf",
-        "bytes": 1165756,
+        "bytes": 1166566,
         "pages": 10
       },
       "sandbox": {
         "file": "ml-paper-theorems-proofs.postext",
-        "bytes": 86677,
+        "bytes": 86654,
         "folio": "70aa8698"
       },
       "detected": {
@@ -250,6 +250,11 @@
           "calloutStyles[].keepTogether",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
+          "calloutStyles[].numbering",
+          "calloutStyles[].numbering.bold",
+          "calloutStyles[].numbering.counter",
+          "calloutStyles[].numbering.italic",
+          "calloutStyles[].numbering.label",
           "calloutStyles[].padding",
           "calloutStyles[].padding.bottom",
           "calloutStyles[].padding.left",
@@ -339,7 +344,7 @@
           "headingStyles[].numberingTemplate",
           "headings",
           "headings.balancing",
-          "headings.balancing.enabled",
+          "headings.balancing.maxLinesPerHeading",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -355,6 +360,10 @@
           "layout.layoutType",
           "locale",
           "math",
+          "math.equationNumbering",
+          "math.equationNumbering.format",
+          "math.equationNumbering.numberingTemplate",
+          "math.equationNumbering.resetOn",
           "math.marginBottom",
           "math.marginTop",
           "page",
@@ -419,7 +428,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 435,
+        "configLeaves": 461,
         "designElements": 13,
         "directives": [
           ":::callout",
@@ -434,6 +443,7 @@
           "\\\\",
           "$…$",
           "^…^",
+          "~…~",
           ":ref"
         ],
         "resources": {
@@ -523,7 +533,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,

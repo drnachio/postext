@@ -5,18 +5,18 @@ plain: "一篇被大量引用的生物学论文，经删节后按期刊样式重
 description: "用Postext重排AlphaFold论文：Nature式上标引用，字号更小、序号连续的方法部分，34位作者，以及用PDB数据绘制的插图。"
 question: "怎样在正文之后用小一号字排方法部分，并让其中的引用序号接着正文往下编？"
 aliases: ["方法部分", "Methods", "Nature格式", "上标引用", "生命科学", "结构生物学", "计算生物学", "AlphaFold", "蛋白质结构", "PDB", "pLDDT", "长作者名单", "摘要", "数据可用性", "代码可用性", "Jumper et al. 2021"]
-pageNotes: { "1": "第1页：顶部一条深蓝色色带，白色大写的ARTICLE · STRUCTURAL BIOLOGY；两行无衬线粗体标题Highly accurate protein structure prediction with AlphaFold；34位作者排成小号字，带上标的单位序号；一行来源信息，含DOI和许可协议；随后是横跨全页的粗体摘要，带上标引用1–4至15。接着是四行双栏正文，页脚是图1：a为CASP14中位r.m.s.d.95的柱状图，AlphaFold为0.96和1.5 Å，次优方法为2.8和3.5 Å，1.4 Å处有一条虚线；b为靶标T1049的灰色实验主链，模型的轨迹画在其中，按pLDDT着蓝色和黄色。", "2": "第2页：引言结束，接着是The AlphaFold network和Evoformer两节，两端对齐的衬线体双栏，无衬线小标题，上标引用序号。", "3": "第3页：左栏是End-to-end structure prediction和Discussion；Discussion在右栏结束，Methods在一个较大的标题下开始，字号更小，蓝色小标题为IPA和Inputs and data sources。", "4": "第4页：Methods的其余部分，表头为蓝色的推理时间表1，Metrics、Data availability、Code availability，右栏是前24条编号参考文献。", "5": "第5页：参考文献25至55，随后是致谢、作者单位和关于本版本的说明，用小号无衬线字。" }
+pageNotes: { "1": "第1页：顶部一条深蓝色色带，白色大写的ARTICLE · STRUCTURAL BIOLOGY；两行无衬线粗体标题Highly accurate protein structure prediction with AlphaFold；34位作者排成小号字，带上标的单位序号；一行来源信息，含DOI和许可协议；随后是横跨全页的粗体摘要，带上标引用1–4至15，下方是横跨全页的图1：a为CASP14中位r.m.s.d.95的柱状图，AlphaFold为0.96和1.5 Å，次优方法为2.8和3.5 Å，1.4 Å处有一条虚线；b为靶标T1049的灰色实验主链，模型的轨迹画在其中，按pLDDT着蓝色和黄色。页面最后是五行双栏正文。", "2": "第2页：引言结束，接着是The AlphaFold network和Evoformer两节，两端对齐的衬线体双栏，无衬线小标题，上标引用序号。", "3": "第3页：左栏是End-to-end structure prediction和Discussion；Discussion在右栏结束，其后是一个蓝色小标题下的正文参考文献1至15。", "4": "第4页：参考文献15至35，接着Methods在一个较大的标题下开始，字号更小，蓝色小标题为IPA、Inputs and data sources和Inference regimen，表头为蓝色的推理时间表1，以及Metrics的开头。", "5": "第5页：Methods的结尾、Data availability和Code availability，然后是第二份参考文献表，36至55，即方法部分首次引用的文献，随后是致谢、作者单位和关于本版本的说明，用小号无衬线字。" }
 ---
 
 ## 成品一览
 
-在A4上排出五页生命科学期刊论文：Jumper等人的*Highly accurate protein structure prediction with AlphaFold*，依据CC BY 4.0许可从Nature原文删节。第一页由一条蓝色色带开头，下面是标题、7.4 pt的全部34位作者（单位序号为上标）和横跨全页的粗体摘要。页脚是图1：一幅柱状图，画的是正文引用的CASP14精度；另一幅是根据PDB描出的靶标T1049主链，AlphaFold模型画在其中，按置信度着色。正文用Nature的上标数字引用。方法部分接在讨论之后，排成8.2 pt；方法部分第一次引用的文献，取正文最后一个序号之后的数字，因此文末只有一份参考文献表。
+在A4上排出五页生命科学期刊论文：Jumper等人的*Highly accurate protein structure prediction with AlphaFold*，依据CC BY 4.0许可从Nature原文删节。第一页由一条蓝色色带开头，下面是标题、7.4 pt的全部34位作者（单位序号为上标）和横跨全页的粗体摘要。其下是横跨全页的图1：一幅柱状图，画的是正文引用的CASP14精度；另一幅是根据PDB描出的靶标T1049主链，AlphaFold模型画在其中，按置信度着色。正文用Nature的上标数字引用。正文以参考文献1–35结束。方法部分随后排成8.2 pt；方法部分第一次引用的文献取下一个序号，所以它自己的文献表从36开始，与期刊原版相同。
 
 ## 做法
 
-### 1 · 正文和方法部分共用一套序号
+### 1 · 两份参考文献表，一套序号
 
-代码就是上面的[简短回答](#简短回答)。引用按首次出现的先后编号，所以续编序号不需要任何设置：方法部分排在正文之后，在那里首次引用的jackhmmer得到36，而正文中已引用过的Amber力场仍然是30。方法部分的标题是一个一级标题，带有自己的样式；标题样式开启的一节一直延续到下一个一级标题，其`bodyStyle`把这一节的正文排成8.2 pt字号、10.8 pt行距。`breakBefore: { enabled: false }`让它留在栏内，`runningChapter: false`让书眉继续显示论文标题。内置的`nature`样式需要改一处：有DOI但尚无卷号的文章，原来会把DOI印两遍。排你自己的论文时，把`.bib`导出内容贴进`:::references{format=bibtex}`块（这里分成两个块，一个放正文引用的文献，一个放方法部分的文献），在词后紧接着写`[@key]`引用，再把`nature`换成你投稿期刊的样式。
+代码就是上面的[简短回答](#简短回答)。引用按首次出现的先后编号，所以续编序号不需要任何设置：在方法部分首次引用的jackhmmer得到36，而正文中已引用过的Amber力场仍然是30。两份文献表来自`:::bibliography{scope=new}`，它只列出此前任何一份文献表都没有列过的文献。脚本把同一个块放在讨论之后和方法部分之后：第一份排出1–35，第二份排出36–55，Amber不会重复出现。方法部分的标题是一个一级标题，带有自己的样式；其`bodyStyle`把这一节排成8.2 pt字号、10.8 pt行距，`breakBefore: { enabled: false }`让它留在栏内，`runningChapter: false`让书眉继续显示论文标题。排你自己的论文时，把`.bib`导出内容贴进`:::references{format=bibtex}`块，在词后紧接着写`[@key]`引用，再把`nature`换成你投稿期刊的样式。
 
 ### 2 · 容纳34位作者的标题区
 
@@ -24,11 +24,11 @@ pageNotes: { "1": "第1页：顶部一条深蓝色色带，白色大写的ARTICL
 
 作者名单是标题的一个属性，`authors="John Jumper^1,4^, Richard Evans^1,4^, …"`，用7.4 pt的Noto Sans排满整个版心宽度，34个名字占五行。`inlineMarks`把单位序号排成上标。作者单位和同等贡献的说明放在文末的*Author information*下，与Nature的做法相同，这样第一页能留出摘要和插图的位置。没有删去任何作者：只有偶数页的书眉把名单缩写为*Jumper et al.*
 
-### 3 · 横跨全页的摘要，页脚的图1
+### 3 · 横跨全页的摘要，其下的图1
 
 <Excerpt region="resources" />
 
-摘要是一个`span: 'page'`、没有边框的框，正文用Noto Sans半粗体。紧接着是第二个无边框的框，设为`placement: 'bottom'`，里面放`::resource{id="fig1"}`：这个框浮动到第一页的页脚，双栏正文从摘要下方开始，排在它上面。图注以一句粗体开头，和Nature的图注一样；资源类型的`captionPrefix`和图注样式的`labelSeparator`让标签读作*Fig. 1 |*。表1用`position: 'here'`嵌在方法部分中它所在的位置。
+摘要是一个`span: 'page'`、没有边框的框，正文用Noto Sans半粗体。图1紧接其后，写作`::resource{id="fig1"}`，它的位置设置`{ position: 'here', span: 'page' }`让它在这一处横跨两栏；双栏正文从图注下方开始。图注以一句粗体开头，和Nature的图注一样；资源类型的`captionPrefix`和图注样式的`labelSeparator`让标签读作*Fig. 1 |*。表1用`position: 'here'`嵌在方法部分中它所在的位置，宽度限于所在的栏。
 
 ### 4 · 用公开坐标画出的蛋白质主链
 
@@ -58,8 +58,17 @@ Fontsource把每款字体按文字系统拆分成多个文件。工具包会加�
 同一领域的有些期刊把[1]排在行内。
 
 ```diff
--  style: 'custom', customStyle: nature, // raised 1–4, "Nature 577, 706–710 (2020)." entries
-+  style: 'custom', customStyle: nature, marker: 'brackets',
+-  style: 'nature', // raised 1–4, "Nature 577, 706–710 (2020)." entries
++  style: 'nature', marker: 'brackets',
+```
+
+### 文末只排一份文献表
+
+有些期刊把全部参考文献排在方法部分之后，例如*Science*，这时只保留第二个块。
+
+```diff
+-const markdown = [/* @content */ '', references, /* @content:methods */ '', references,
++const markdown = [/* @content */ '', /* @content:methods */ '', references,
 ```
 
 ### 改用温哥华格式的文献表
@@ -68,6 +77,5 @@ Fontsource把每款字体按文字系统拆分成多个文件。工具包会加�
 
 ## 常见问题
 
-- BibTeX中的`and others`会被读成一位名叫*others*的作者。Nature样式在一篇文献有六位及以上作者时，于第一作者后写*et al.*，所以这里的参考文献列出了从Crossref取得的前六位作者。
-- Nature把正文的参考文献排在方法部分之前，把新增的排在其后。Postext只排一份文献表：`:::bibliography{scope=chapter}`会列出一章引用的全部文献，所以放在方法部分之后的文献表会重复其中再次引用的文献。
+- Nature最多列出五位作者，更长的名单只留第一作者，后接*et al.*。原文献表这样处理的条目，在BibTeX里写`and others`（`{Senior, Andrew W. and others}`），样式就会印出*Senior, A. W. et al.*；在CSL-YAML中，以`"others"`结束名单。
 - 标题样式的`bodyStyle`改变正文的字号和行距，但不改变基线网格：方法部分的小标题用了`snapToGrid: false`，否则每个小标题下的那一行会跳到正文网格的下一行。

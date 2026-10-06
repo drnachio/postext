@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ai-preprint-prompt-exemplars",
-  "sourceHash": "42dcf8ee8017938e531817b1119f7e6c632ee33f486782b55d17eadd4cee1acf",
+  "sourceHash": "9b3f0aeb5b404fc99dd622bf44e9fd1545f90bb8469c4742d11fc76c024953cd",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:33:11.942Z",
+  "capturedAt": "2026-10-06T16:08:17.511Z",
   "variants": {
     "en": {
-      "hash8": "ed8574ad",
-      "vdtHash": "47eda5f3f60d01ea1469652372e55f9f408a6169",
+      "hash8": "c66a5d34",
+      "vdtHash": "5d4b1cb8ec878b3f00785096c47dcd019b5a2c93",
       "timings": {
-        "importMs": 263,
-        "fontsMs": 94,
-        "buildMs": 372,
-        "totalMs": 2366,
+        "importMs": 325,
+        "fontsMs": 84,
+        "buildMs": 389,
+        "totalMs": 2412,
         "builds": 2
       },
       "specimen": {
@@ -62,7 +62,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 230934,
+          "bytes": 231084,
           "alt": "Page 2: 1 Introduction."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 200498,
+          "bytes": 200502,
           "alt": "Page 3: 3 Arithmetic Reasoning. Figure 2. PaLM 540B uses chain-of-thought prompting to achieve new state-of-the-art performance on the GSM8K benchmark of math word problems. Finetuned GPT-3 and prior best are from Cobbe et al. (2021)."
         },
         {
@@ -106,7 +106,7 @@
           "h": 1294,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 209306,
+          "bytes": 209020,
           "alt": "Page 6: 6 Discussion."
         },
         {
@@ -153,12 +153,12 @@
       },
       "pdf": {
         "file": "ai-preprint-prompt-exemplars.pdf",
-        "bytes": 598003,
+        "bytes": 598376,
         "pages": 7
       },
       "sandbox": {
         "file": "ai-preprint-prompt-exemplars.postext",
-        "bytes": 153278,
+        "bytes": 153274,
         "folio": "055119a2"
       },
       "detected": {

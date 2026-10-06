@@ -3,7 +3,7 @@ title: "Pneumocystis Pneumonia — Los Angeles"
 author: "Centers for Disease Control"
 ---
 
-# *Pneumocystis* Pneumonia — Los Angeles {style="lead" display="*Pneumocystis* Pneumonia — Los Angeles" kicker="Epidemiologic Notes and Reports" dateline="June 5, 1981 · Vol. 30, No. 21 · pp. 250–252"}
+# *Pneumocystis* Pneumonia — Los Angeles {style="lead" kicker="Epidemiologic Notes and Reports" dateline="June 5, 1981 · Vol. 30, No. 21 · pp. 250–252"}
 
 In the period October 1980-May 1981, 5 young men, all active homosexuals, were treated for biopsy-confirmed *Pneumocystis carinii* pneumonia at 3 different hospitals in Los Angeles, California. Two of the patients died. All 5 patients had laboratory-confirmed previous or current cytomegalovirus (CMV) infection and candidal mucosal infection. Case reports of these patients follow.
 

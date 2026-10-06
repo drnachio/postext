@@ -36,14 +36,14 @@ $$
 $$
 for all $x\in\mathcal{D}$. This completes the derivation.
 
-### Proof of Lemma 1 and 2 {#app:lemmas style="appendix-sub" startAt=5}
+### Proof of Lemma \ref{lem:same-preference} and \ref{lem:same-policy} {#app:lemmas style="appendix-sub" startAt=5}
 
 :::callout{type="restated"}
-***Lemma 1 Restated.*** Under the Plackett-Luce preference framework, and in particular the Bradley-Terry framework, two reward functions from the same equivalence class induce the same preference distribution.
+***:ref{id="lem:same-preference"} Restated.*** Under the Plackett-Luce preference framework, and in particular the Bradley-Terry framework, two reward functions from the same equivalence class induce the same preference distribution.
 :::
 
 :::callout{type="proof"}
-*Proof.* We say that two reward functions $r(x, y)$ and $r'(x, y)$ are from the same equivalence class if $r'(x, y) = r(x, y) + f(x)$ for some function $f$. We consider the general Plackett-Luce (with the Bradley-Terry model a special case for $K=2$) and denote the probability distribution over rankings induced by a particular reward function $r(x, y)$ as $p_r$. For any prompt $x$, answers $y_1,\ldots, y_K$ and ranking $\tau$ we have:
+We say that two reward functions $r(x, y)$ and $r'(x, y)$ are from the same equivalence class if $r'(x, y) = r(x, y) + f(x)$ for some function $f$. We consider the general Plackett-Luce (with the Bradley-Terry model a special case for $K=2$) and denote the probability distribution over rankings induced by a particular reward function $r(x, y)$ as $p_r$. For any prompt $x$, answers $y_1,\ldots, y_K$ and ranking $\tau$ we have:
 $$
 \begin{aligned}
 p_{r'}(\tau| y_1,\ldots, y_K, x) &= \prod_{k=1}^{K}\frac{\exp(r'(x, y_{\tau(k)}))}{\sum_{j=k}^{K}\exp(r'(x, y_{\tau(j)}))} \\
@@ -53,7 +53,7 @@ p_{r'}(\tau| y_1,\ldots, y_K, x) &= \prod_{k=1}^{K}\frac{\exp(r'(x, y_{\tau(k)})
 &= p_{r}(\tau| y_1,\ldots, y_K, x),
 \end{aligned}
 $$
-which completes the proof.
+which completes the proof. $\square$
 :::
 
 :::paragraphs{style="colophon"}

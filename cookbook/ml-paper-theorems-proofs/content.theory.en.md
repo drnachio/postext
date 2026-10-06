@@ -24,12 +24,12 @@ The proofs are straightforward and we defer them to Appendix :ref{id="app:lemmas
 Under mild assumptions, all reward classes consistent with the Plackett-Luce (and Bradley-Terry in particular) models can be represented with the reparameterization $r(x, y) = \beta \log \frac{\pi(y\mid x)}{\pi_\text{ref}(y\mid x)}$ for some model $\pi(y\mid x)$ and a given reference model $\pi_\text{ref}(y \mid x)$.
 :::
 
-:::callout{type="proof"}
-*Proof Sketch.* Consider any reward function $r(x, y)$, which induces a corresponding optimal model $\pi_r(y \mid x)$, specified by Eq.~\eqref{eq:op-policy}. We will show that a reward function from the equivalence class of $r$ can be represented using the reparameterization given above. We define the projection $f$ as
+:::callout{type="sketch"}
+Consider any reward function $r(x, y)$, which induces a corresponding optimal model $\pi_r(y \mid x)$, specified by Eq.~\eqref{eq:op-policy}. We will show that a reward function from the equivalence class of $r$ can be represented using the reparameterization given above. We define the projection $f$ as
 $$
 f(r; \pi_\text{ref}, \beta)(x, y) = r(x, y) - \beta\log\sum_{y}\pi_\text{ref}(y\mid x)\exp\left(\frac{1}{\beta}r(x, y)\right) \label{eq:projection}
 $$
-The operator $f$ simply normalizes the reward function with the logarithm of the partition function of $\pi_r$. Since the added normalization term is only a function of the prefix $x$, $f(r; \pi_\text{ref}, \beta)(x, y)$ is a reward function in the equivalence class of $r(x, y)$. Finally, replacing $r$ with the RHS of Eq.~\eqref{eq:main} (which holds for any reward function), we have $f(r; \pi_\text{ref}, \beta)(x, y) = \beta \log \frac{\pi_r(y\mid x)}{\pi_\text{ref}(y\mid x)}$. That is, the projection $f$ produces a member of the equivalence class of $r$ with the desired form, and we do not lose any generality in our reward model from the proposed reparameterization.
+The operator $f$ simply normalizes the reward function with the logarithm of the partition function of $\pi_r$. Since the added normalization term is only a function of the prefix $x$, $f(r; \pi_\text{ref}, \beta)(x, y)$ is a reward function in the equivalence class of $r(x, y)$. Finally, replacing $r$ with the RHS of Eq.~\eqref{eq:main} (which holds for any reward function), we have $f(r; \pi_\text{ref}, \beta)(x, y) = \beta \log \frac{\pi_r(y\mid x)}{\pi_\text{ref}(y\mid x)}$. That is, the projection $f$ produces a member of the equivalence class of $r$ with the desired form, and we do not lose any generality in our reward model from the proposed reparameterization. $\square$
 :::
 
 ## Experiments {#sec:experiments}

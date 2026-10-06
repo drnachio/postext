@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. The figure is one page-
 
 <Excerpt region="citations" />
 
-ML venues use natbib's author–year look: a comma between the names and the year, *et al.* from three authors on. Chicago author-date is the bundled style closest to it, so the recipe edits one group of its CSL, the one that joins author and year, from a space to a comma. Bring your own `.bib` file as it is: paste it into a `:::references{format=bibtex}` block, cite with `[@key]` for *(Brown et al., 2020)* and `@key` for *Brown et al. (2020)*. Works named only in a caption go into `nocite`, because captions are not scanned for citations.
+ML venues use natbib's author–year look: a comma between the names and the year, *et al.* from three authors on. Chicago author-date is the bundled style closest to it, so the recipe edits one group of its CSL, the one that joins author and year, from a space to a comma. Bring your own `.bib` file as it is: paste it into a `:::references{format=bibtex}` block, cite with `[@key]` for *(Brown et al., 2020)* and `@key` for *Brown et al. (2020)*. A suffix keeps the comma written before it and its emphasis, so `[@brown2020language, *inter alia*]` prints (Brown et al., 2020, *inter alia*) as the paper does. Captions cite the same way: Figure 4's caption writes `@jie2022learning` and `@lan2021mwptoolkit`, and both works enter the reference list with no `nocite`.
 
 ### 3 · The title block
 
@@ -70,5 +70,4 @@ For prompts with code in them, the listing boxes of <RecipeLink slug="code-listi
 
 ## Pitfalls
 
-- A citation whose suffix has no locator, `[@brown2020language, inter alia]`, lost its comma in postext 1.18.0 and printed *2020inter alia*; inline marks in the suffix printed as asterisks. The recipe writes `[@brown2020language, , inter alia]`, which prints *2020, inter alia* in roman.
 - A page-wide box in a two-column layout goes on the current page only when it fits with at least a couple of body lines below it. Figure 1 sits on page 1 because the abstract is set in 9.3 pt with tight padding; a longer abstract sends the figure to page 2.

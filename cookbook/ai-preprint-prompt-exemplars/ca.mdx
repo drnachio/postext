@@ -22,7 +22,7 @@ El codi és [la resposta curta](#la-resposta-curta). La figura és un requadre a
 
 <Excerpt region="citations" />
 
-Els congressos d'aprenentatge automàtic fan servir l'aspecte autor-any de natbib: una coma entre el nom i l'any, i *et al.* a partir de tres autors. L'estil inclòs més semblant és Chicago autor-data, així que la recepta canvia un grup del seu CSL, el que uneix autor i any, d'un espai a una coma. Porta el teu fitxer `.bib` tal com és: enganxa'l en un bloc `:::references{format=bibtex}` i cita amb `[@clau]` per a *(Brown et al., 2020)* i amb `@clau` per a *Brown et al. (2020)*. Les obres que només anomena un peu de figura van a `nocite`, perquè als peus no s'hi busquen cites.
+Els congressos d'aprenentatge automàtic fan servir l'aspecte autor-any de natbib: una coma entre el nom i l'any, i *et al.* a partir de tres autors. L'estil inclòs més semblant és Chicago autor-data, així que la recepta canvia un grup del seu CSL, el que uneix autor i any, d'un espai a una coma. Porta el teu fitxer `.bib` tal com és: enganxa'l en un bloc `:::references{format=bibtex}` i cita amb `[@clau]` per a *(Brown et al., 2020)* i amb `@clau` per a *Brown et al. (2020)*. Un sufix conserva la coma que el precedeix i el seu èmfasi, així que `[@brown2020language, *inter alia*]` imprimeix (Brown et al., 2020, *inter alia*) com l'article. Els peus citen igual: el de la figura 4 escriu `@jie2022learning` i `@lan2021mwptoolkit`, i les dues obres entren a la llista de referències sense `nocite`.
 
 ### 3 · El bloc del títol
 
@@ -70,5 +70,4 @@ Si els teus prompts porten codi, els requadres de <RecipeLink slug="code-listing
 
 ## Errors freqüents
 
-- Una cita amb sufix i sense localitzador, `[@brown2020language, inter alia]`, perdia la coma a postext 1.18.0 i sortia *2020inter alia*; les marques de format del sufix sortien com a asteriscs. La recepta escriu `[@brown2020language, , inter alia]`, que imprimeix *2020, inter alia* en rodona.
 - Un requadre a tota l'amplada en una maqueta de dues columnes entra a la pàgina actual només si hi cap amb almenys un parell de línies de text a sota. La figura 1 queda a la pàgina 1 perquè el resum va en cos 9,3 amb un farciment ajustat; un resum més llarg l'envia a la pàgina 2.
