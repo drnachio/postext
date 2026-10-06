@@ -1,0 +1,499 @@
+{
+  "schemaVersion": 1,
+  "slug": "business-section-on-salmon",
+  "sourceHash": "26ec5b8ecced163b8d016c317c445d938ea8e1a4491c4126a00f0c4ef889faa6",
+  "engine": {
+    "postext": "1.18.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-06T13:18:54.455Z",
+  "variants": {
+    "en": {
+      "hash8": "a6def7aa",
+      "vdtHash": "cca3cd24ff16e07d4cb514310ccfafaa519ae0ae",
+      "timings": {
+        "importMs": 1115,
+        "fontsMs": 297,
+        "buildMs": 826,
+        "totalMs": 4360,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          315,
+          470
+        ],
+        "dpi": 150,
+        "layoutType": "multiple",
+        "columnCount": 5,
+        "gutterMm": 4.5,
+        "mirror": false,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 9.4,
+          "leadingPt": 11.4
+        },
+        "families": [
+          "Archivo Narrow",
+          "Playfair Display",
+          "Source Serif 4"
+        ],
+        "pages": 8,
+        "ownLines": 244
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 180560,
+          "alt": "Opening page 1: The Marrowick Ledger. The Marrow Barrier at 9.30pm on Monday, its gates closed against the surge. The river behind them rose by 30 centimetres."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 150834,
+          "alt": "Opening page 2: City. First week: apprentices welding a hull section in the fabrication hall at Brackwater. · How a gate turns. Each segment turns on a pin in the pier, from its sill on the riverbed to stand against the sea."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 152352,
+          "alt": "Opening page 3: Region. Where the money goes · Weather · Tides at Kingsquay · The Holm Maid leaves Skerra pier on her first crossing since May."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 176688,
+          "alt": "Opening page 4: Opinion. Holding the line, by Kit Carrow."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 178280,
+          "alt": "Opening page 5: Business. The Outer Quay at dawn. The new berth would take ships three times the size of those the port handles now. · Containers through Marrowick, thousands of twenty-foot units a year."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 111122,
+          "alt": "Opening page 6: Markets. The MX 40 over the past year, daily closes. · Sectors on the Marrowick Exchange, change on the day. · Indices · Currencies · Commodities · Most traded."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1492,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 133844,
+          "alt": "Opening page 7: Companies. Results · Company diary · Halden’s Quayside plant bakes 1.1 million loaves a week."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "business-section-on-salmon.postext",
+        "bytes": 1216089,
+        "folio": "77d83e3b"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxJustifyTracking",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italic",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].columns",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].bodyStyle",
+          "headingStyles[].bodyStyle.fontSize",
+          "headingStyles[].bodyStyle.lineHeight",
+          "headingStyles[].color",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.columnCount",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headingStyles[].palette",
+          "headingStyles[].palette.accent",
+          "headingStyles[].palette.paper",
+          "headingStyles[].palette.tint",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.marginBottom",
+          "layout",
+          "layout.columnCount",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.fontSize",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].bodyFontSize",
+          "tableStyles[].cellPadding",
+          "tableStyles[].headerBackground",
+          "tableStyles[].headerFontSize",
+          "tableStyles[].id"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyles"
+        ],
+        "configLeaves": 990,
+        "designElements": 46,
+        "directives": [
+          ":::callout",
+          "::resource",
+          ":::columns",
+          ":::paragraphs",
+          ":::space",
+          ":::paper"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 6,
+          "table": 20
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Playfair Display",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Playfair Display",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Playfair Display",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "column-rule",
+          "figure-citations",
+          "float-columns",
+          "floated-callouts",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "multiple-columns",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paper-runs",
+          "paragraph-styles",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "span-boxes",
+          "table-styles",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 9,
+        "looseLines": {
+          "count": 22,
+          "share": 0.0445,
+          "worst": 2.98
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.27 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "22 of 494 justified lines (4.5 %) stretch past 2× (worst 2.98×); loosest: p. 3 2.98× “Saltmarsh, Fenner’s Green and”, p. 1 2.86× “council had expected, and the”, p. 7 2.71× “The company estimated”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

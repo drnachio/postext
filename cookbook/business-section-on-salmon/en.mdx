@@ -1,0 +1,68 @@
+---
+title: "A business section on salmon newsprint"
+summary: "An eight-page Berliner daily whose Business pages take one heading style: salmon paper, six columns, a petrol accent and a :::paper run for Folio."
+plain: "Eight pages of an invented daily newspaper. The first four are news on grey-white paper; the business pages that follow are printed on salmon paper, with narrower columns and their own colours."
+description: "A Berliner daily in Postext with the code: news in five columns, then a salmon Business section in six, with market data, charts and Folio’s stock."
+question: "How do I print a newspaper's business pages on salmon paper, with their own grid, in the 3D viewer too?"
+aliases: ["salmon pages", "pink paper", "business section", "financial pages", "newspaper section", "Berliner", "share prices", "market data", "folded newspaper", "section colour", "papel salmón"]
+pageNotes: { "1": "The front page of The Marrowick Ledger: the nameplate between a grey weather ear and a salmon ear pointing to the business pages, the banner Barrier holds back the Marrow’s highest tide in forty years, a photograph of steel flood gates in a storm across all five columns, the story in five ruled columns, a second story on night trams and a salmon strip of teasers at the foot.", "5": "The Business front on salmon paper: a petrol Business title, a strip of six market closes, the banner Harbour board backs £640 million deep-water terminal, a container port at dawn across the page, a floated box of figures across two columns, a bar chart across two more, six columns of text and a bank advertisement at the foot.", "8": "Share prices: a Your money column with a best-buys table, then ten sectors of share prices in five narrow columns, over an advertisement for a building society." }
+---
+
+## What you'll build
+
+Eight pages of *The Marrowick Ledger*, an invented daily, on the 315 × 470 mm Berliner sheet. Pages 1 to 4 carry the news on grey-white newsprint in five ruled columns, with a red section flag on each page. From page 5 the paper changes. The Business section is printed on salmon stock, as financial pages have been for well over a century: the page turns #f2d3c0, the grid tightens to six columns, the accent turns from red to petrol, and a strip of the day's market closes sits under the section title. Inside it are a markets page with a year of the city's index, a sector chart and four data tables, company news, and a page of share prices. In Folio's 3D view the sheets fold one inside the other and the last four pages come off a salmon stock.
+
+## Method
+
+### 1 · Two papers in one palette
+
+<Excerpt region="palette" />
+
+Every colour in the configuration links to one of eight palette entries. The news pages use `paper` (#f6f4ef) for the page and `accent` (#b3261e) for flags, kickers and chart marks. The Business pages keep those links and change the values: the section palette sets `paper` to salmon, `accent` to petrol (#0f4c5c) and `tint` to a deeper salmon. `salmon` has an entry of its own as well, for the ear and the teaser strip on page 1, which stay salmon on the white pages.
+
+### 2 · One heading style makes a page a Business page
+
+The code is [the short answer](#the-short-answer) above. `# Markets {style="business"}` opens a section, and its pages take the style's `palette`, `layout` and `bodyStyle`: six columns with a 4 mm gutter (45.2 mm each, against 54.6 mm in the news), body at 8.8 pt on the same 11.4 pt leading. The page colour follows the palette as well. `page.backgroundColor` links to `paper`, and when a section's palette gives `paper` another value, every page of the section is painted in it: the page its heading opens and any page its copy runs on to. So the Business pages turn salmon edge to edge, and the column rule, which the style's `layout` leaves as the document sets it, runs between the six columns as it does between the five.
+
+### 3 · Every page opens on a flag
+
+<Excerpt region="flags" />
+
+The H1 is a page-wide opener with `breakBefore` parity `'any'`, so each heading opens the next page whatever its side. Its design is a flag on a 3 pt bar, three grid lines deep. The folio line is a header anchored 9 mm from the top edge: page number, paper and date on the outside, `{chapterTitle}` on the inside in the accent, which the palette turns petrol on the salmon pages.
+
+### 4 · Pictures and charts across k columns
+
+<Excerpt region="floats" />
+
+`top(3)` is `placement: { position: 'top', columns: 3 }`: the shipyard photograph takes three of the five news columns, the ferry four, the bakery three of the six Business columns and the port chart two. A float cited from a paragraph in column 1 takes the head of the next columns that are still empty, so these pictures start in column 2 and the story runs down beside them. Such a picture stays with its story only while no other story is set below it on that page: a page-wide story placed after it can carry the picture into its own band or on to the next page. So pages 2 and 3 close on an advertisement floated to the foot rather than on one more story. The photographs that span the whole page sit inline (`here`) in the banner box under their headline. The tables sit in the flow too, inside page-wide boxes at the foot.
+
+### 5 · Headlines, panels, data and adverts are boxes
+
+<Excerpt region="boxes" />
+
+A headline across the page is a frameless page-wide box holding an H2 in one of three sizes, and a 1 pt rule above it marks the next story. On page 5 the panel *The terminal in numbers* floats across two of the six columns (`columns="2"` on its fence), and the pull quote on page 4 does the same through `columns: 2` in its style. The data boxes hold two to four tables side by side in a `:::columns` group, and the advertisements are page-wide boxes floated to the foot, framed in a 0.75 pt rule.
+
+### 6 · The stock Folio prints on
+
+The news pages need nothing: `folio.paper` is newsprint at 45 g/m², and `binding: { type: 'folded', cover: 'pages' }` nests the two folded sheets with page 1 outside and page 8 as the back. The Business pages sit in one run:
+
+```markdown
+:::paper{type="newsprint" shade="#faede6"}
+# Business {style="business-front"}
+…
+# Share prices {style="business"}
+…
+:::
+```
+
+Each page in the run carries `page.paper` with that shade, and Folio prints it on that stock. The shade is the page colour taken 60 % of the way to white (README §4): the flat page already paints #f2d3c0, and a full salmon stock under it would tint it twice. The canvas, the HTML and the PDF ignore `:::paper` and paint the page colour, which is why the section palette sets `paper` too.
+
+## Variations
+
+### Change the paper and keep the grid
+
+A heading style with a `palette` and no `layout` keeps the document's five ruled columns and still paints every page of its section: `{ id: 'weekend', palette: { paper: '#efe6cf' } }` puts a weekend supplement on cream newsprint. Wrap its pages in a `:::paper` run too, with the shade taken 60 % of the way to white, so Folio prints them on a matching stock.
+
+### Make the Business section a pull-out
+
+The eight pages fold as two sheets, one inside the other: pages 1–2 and 7–8 on the outer sheet, 3–6 on the inner one. Folio gives each leaf the stock of its recto, so pages 7–8 come out salmon, though a press would print them on the same sheet as the front page. Move the Business pages to 3–6 and they make up the inner sheet, which a press can run on salmon stock and a reader can pull out whole.

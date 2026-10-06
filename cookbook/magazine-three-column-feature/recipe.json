@@ -1,0 +1,226 @@
+{
+  "$schema": "../../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 135,
+  "status": "published",
+  "chapter": "figures",
+  "order": 80,
+  "level": 3,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "multiple-columns",
+      "float-columns"
+    ],
+    "also": [
+      "floated-callouts",
+      "callout-styles",
+      "float-placement",
+      "opener-design",
+      "design-images",
+      "drop-caps",
+      "heading-attributes",
+      "heading-styles",
+      "running-heads",
+      "page-role-filters",
+      "captions",
+      "credit-notes",
+      "chips",
+      "resource-types",
+      "resources",
+      "color-palette",
+      "mirrored-margins"
+    ]
+  },
+  "answers": [
+    "Q78",
+    "Q64",
+    "Q57",
+    "Q28"
+  ],
+  "gotchas": [
+    "top-float-next-page",
+    "opener-image-no-reserve",
+    "page-span-heading-new-page",
+    "parity-page1-recto",
+    "bitmap-print-size",
+    "empty-chip",
+    "headings-drop-h1-break",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "hyphenation-locales",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "magazine-feature-opener",
+    "photo-essay-full-bleed",
+    "figures-float-where-cited",
+    "magazine-cover-and-contents"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break)"
+    },
+    {
+      "followup": "EF-02",
+      "package": "postext",
+      "note": "the end mark is a chip holding a U+2060 word joiner, since a chip of spaces prints its markup (gotcha empty-chip)"
+    }
+  ],
+  "engine": {
+    "postext": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "expect": {
+      "pages": [
+        6,
+        6
+      ],
+      "nearEmptyPages": [
+        1
+      ]
+    }
+  },
+  "folio": {
+    "paper": {
+      "type": "coatedSilk",
+      "grammage": 90
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Sunrise on the salt pans (the opening spread, in two halves)",
+          "es": "Amanecer en las salinas (el pliego de apertura, en dos mitades)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "spread-left-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Sunrise on the salt pans, the recto's half",
+          "es": "Amanecer en las salinas, la mitad de la página impar"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "spread-right-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "A rake drawing up wet salt",
+          "es": "Un rastrillo que arrastra sal húmeda"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "raker-1500.jpg"
+      },
+      {
+        "what": {
+          "en": "The salt flats from above",
+          "es": "Las salinas desde lo alto"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "pans-1840.jpg"
+      },
+      {
+        "what": {
+          "en": "A salt maker with a basket of flor de sal",
+          "es": "Una salinera con una cesta de flor de sal"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "flor-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Skimming flor de sal with a sieve",
+          "es": "Recogiendo flor de sal con un cedazo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "sieve-1500.jpg"
+      },
+      {
+        "what": {
+          "en": "Salt sacks on a harbour quay at dusk",
+          "es": "Sacos de sal en un muelle al atardecer"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "quay-960.jpg"
+      },
+      {
+        "what": {
+          "en": "The sidebar's map of Marisal, drawn in code",
+          "es": "El mapa de Marisal del recuadro, dibujado con código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fraunces",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Barlow Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06"
+}

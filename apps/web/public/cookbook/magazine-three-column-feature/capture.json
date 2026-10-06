@@ -1,0 +1,421 @@
+{
+  "schemaVersion": 1,
+  "slug": "magazine-three-column-feature",
+  "sourceHash": "42f64cb5a6f37dc70538191cc32f751e3d1591a740c1aa1130b6b8cd05d20f7f",
+  "engine": {
+    "postext": "1.18.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-06T13:03:53.550Z",
+  "variants": {
+    "en": {
+      "hash8": "015ee4ae",
+      "vdtHash": "a33c4aed1e14d88f2591d7721cdd5fcfad712fa9",
+      "timings": {
+        "importMs": 12969,
+        "fontsMs": 240,
+        "buildMs": 70,
+        "totalMs": 14405,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          225,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "multiple",
+        "columnCount": 3,
+        "gutterMm": 5,
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 14
+        },
+        "families": [
+          "Barlow Condensed",
+          "Fraunces",
+          "Source Serif 4"
+        ],
+        "pages": 6,
+        "ownLines": 209
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "84",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 119466,
+          "alt": "Opening page 84: The Salt Rakers of Marisal."
+        },
+        {
+          "n": 2,
+          "label": "85",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 147090,
+          "alt": "Opening page 85: On a flat island at the edge of the Atlantic, nine families still make salt by hand, with sun, wind and a wooden rake. Their season lasts eleven weeks, and every year it starts a little later."
+        },
+        {
+          "n": 3,
+          "label": "86",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 228710,
+          "alt": "Page 86: Water, sun and wind. Raking the crystallisers at dawn. The salt rolls up in a ridge; a rake that digs in tears the clay floor and greys the harvest."
+        },
+        {
+          "n": 4,
+          "label": "87",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 176898,
+          "alt": "Page 87: The flower of the salt. The Alvarra flats from the lighthouse hill. The pink basins are nearly ready: an alga colours the brine once it holds more than 200 grams of salt a litre."
+        },
+        {
+          "n": 5,
+          "label": "88",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 222862,
+          "alt": "Page 88: The herons’ share. Skimming the flower: the sieve works the downwind edge of the pan, where the breeze has drifted the crust. · Amélia Sousa with an afternoon’s flor de sal, about four kilos from two pans."
+        },
+        {
+          "n": 6,
+          "label": "89",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 152004,
+          "alt": "Page 89. The Alvarra pans (pink) lie on the eastern flats, 6 km from Porto Velho (the squares) by the coast road. The lighthouse hill is the triangle; the ferry, dashed. · Porto Velho, the last week of September: fifty-kilo sacks wait for the mainland boat."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "magazine-three-column-feature.postext",
+        "bytes": 1847591,
+        "folio": "579e6f1a"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxJustifyTracking",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.fontWeight",
+          "calloutStyles[].body.hyphenation",
+          "calloutStyles[].body.italic",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columns",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.align",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.fontWeight",
+          "captionStyle.gap",
+          "captionStyle.lineHeight",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "captionStyle.note.gap",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.columnCount",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 334,
+        "designElements": 13,
+        "directives": [
+          "::resource",
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 7,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Barlow Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Fraunces",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Fraunces",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "chips",
+          "drop-caps",
+          "float-columns",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "multiple-columns",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 4,
+          "share": 0.0152,
+          "worst": 2.88
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.23 MB (warning at 0.9 MB for 6 pages)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 83: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}
