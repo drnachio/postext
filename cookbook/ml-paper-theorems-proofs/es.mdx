@@ -22,7 +22,7 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. Desde postext
 
 <Excerpt region="theorems" />
 
-Cada entorno es un [estilo de recuadro](/es/docs/configuration#estilos-de-aviso) con un solo recurso: un filete gris para la definición, uno ciruela para los lemas y un fondo ciruela pálido para el teorema. `box()` pone ese aspecto sobre la numeración de la respuesta corta. `body.italic` pone el enunciado en cursiva, como el estilo *plain* de amsthm, y la etiqueta en línea queda en negrita redonda dentro de él. La demostración no lleva recuadro: su etiqueta va en cursiva y sin número (`counter: false`), su última línea acaba con `$\square$` escrito en el texto, y `keepTogether: false` deja que una demostración larga pase a la página siguiente. `snapToGrid: false` mantiene el mismo espacio alrededor de cada enunciado; en una sola columna, sin vecina con la que alinearse, un blanco exacto se lee mejor que uno redondeado a la rejilla base.
+Cada entorno es un [estilo de recuadro](/es/docs/configuration#estilos-de-aviso) con un solo recurso: un filete gris para la definición, uno ciruela para los lemas y un fondo ciruela pálido para el teorema. `box()` pone ese aspecto sobre la numeración de la respuesta corta. `body.italic` pone el enunciado en cursiva, como el estilo *plain* de amsthm, y la etiqueta en línea queda en negrita redonda dentro de él. La demostración no lleva recuadro: su etiqueta va en cursiva y sin número (`counter: false`), `endMark: '□'` pone un cuadrado alineado a la derecha en su última línea, dibujado con el `\square` de TeX porque las matemáticas están activas, y `keepTogether: false` deja que una demostración larga pase a la página siguiente. `snapToGrid: false` mantiene el mismo espacio alrededor de cada enunciado; en una sola columna, sin vecina con la que alinearse, un blanco exacto se lee mejor que uno redondeado a la rejilla base.
 
 ### 3 · Cita en autor–año desde la bibliografía del propio artículo
 
@@ -64,6 +64,6 @@ Algunas revistas numeran todos los enunciados en una sola serie (lema 1, lema 2,
 
 ## Errores frecuentes
 
-- `endMark: '□'` en el estilo de la demostración pondría el cuadrado al final de la última línea, alineado a la derecha, pero con la fuente del cuerpo del recuadro. Spectral no tiene □ (ninguna fuente de texto de Fontsource lo trae en su archivo latin), así que la pantalla toma un glifo del sistema y el PDF imprime la caja de glifo ausente. Escribe `$\square$` al final de la demostración, o elige una marca que la fuente pueda componer.
+- `endMark` dibuja sus cuadrados (□ ∎ ■) con TeX solo cuando las matemáticas están activas. En un documento sin `initMathEngine()` la marca se compone con la fuente del cuerpo del recuadro, y Spectral, como todos los archivos latin de Fontsource, no tiene □: elige ahí una marca que la fuente pueda componer.
 - El equilibrado de columnas llena la página que una fórmula alta deja corta añadiendo líneas de la rejilla base sobre sus títulos. `balancing: { maxLinesPerHeading: 1 }` deja los títulos de un artículo cerca de su espacio propio; esa página puede acabar entonces unas líneas más arriba.
 - Una fórmula con un rótulo de `\underbrace` más ancho que la llave, como el gradiente de la sección 4, necesita un corte con `aligned`; si queda más ancha que la medida, se sale por la derecha.

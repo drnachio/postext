@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 138 · Machine-learning paper with theorems and proofs ═══
 // https://postext.dev/en/cookbook/ml-paper-theorems-proofs
 // Code: MIT · Text: Rafailov et al. 2023, arXiv:2305.18290 (CC BY 4.0), abridged · Art: code
-// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.0
+// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 // DPO (NeurIPS 2023) re-set as a preprint: numbered equations with labels and references,
 // definition, lemma and theorem boxes, proofs that end in a square, author–year citations.
 import {
@@ -36,15 +36,16 @@ const MEASURE = TRIM_W - INNER - OUTER;
 // :ref{id="lem:x"} print the number and link to it.
 const equationNumbering = { // (1) to (13): one sequence through the paper and its appendix
   numberingTemplate: '{n}', resetOn: 'never', format: '({n})' };
-// A proof's label has no number. Its □ is $\square$ in the text: an endMark: '□' would be set
-// in Spectral, which has no such glyph.
-const proofLabel = (label) => ({ label, counter: false, bold: false, italic: true });
+// A proof: an italic label with no number, and a □ flush right on its last line, drawn
+// from TeX's \square because maths runs (Spectral has no □ of its own).
+const proofOf = (label) => ({ endMark: '□',
+  numbering: { label, counter: false, bold: false, italic: true } });
 const statements = [ // a counter per kind, as the paper has it: Definition 1, Lemma 1, Theorem 1
   { id: 'definition', numbering: { label: 'Definition' } },
   { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
   { id: 'theorem', numbering: { label: 'Theorem' } },
-  { id: 'proof', numbering: proofLabel('Proof') },
-  { id: 'sketch', numbering: proofLabel('Proof Sketch') },
+  { id: 'proof', ...proofOf('Proof') },
+  { id: 'sketch', ...proofOf('Proof Sketch') },
 ];
 // #endregion
 

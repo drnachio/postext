@@ -22,7 +22,7 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 <Excerpt region="theorems" />
 
-每种环境都是一个[标注框样式](/zh/docs/configuration#标注框样式)，只用一种手段：定义用灰色侧边条，引理用梅紫色侧边条，定理用浅梅紫色底。`box()`把这些外观加在简短回答的编号设置上。`body.italic`像amsthm的plain样式一样把陈述排成斜体，同行标签在其中保持粗正体。证明不加框：标签为斜体、不带编号（`counter: false`），最后一行以正文里写的`$\square$`结束；`keepTogether: false`让较长的证明可以转到下一页。`snapToGrid: false`让每个命题上下的空白都相同：单栏没有相邻栏需要对齐，精确的间距比取整到基线网格的更好看。
+每种环境都是一个[标注框样式](/zh/docs/configuration#标注框样式)，只用一种手段：定义用灰色侧边条，引理用梅紫色侧边条，定理用浅梅紫色底。`box()`把这些外观加在简短回答的编号设置上。`body.italic`像amsthm的plain样式一样把陈述排成斜体，同行标签在其中保持粗正体。证明不加框：标签为斜体、不带编号（`counter: false`），`endMark: '□'`在最后一行右端排一个方块，因为数学引擎在运行，方块用TeX的`\square`绘制；`keepTogether: false`让较长的证明可以转到下一页。`snapToGrid: false`让每个命题上下的空白都相同：单栏没有相邻栏需要对齐，精确的间距比取整到基线网格的更好看。
 
 ### 3 · 用论文自己的文献表做作者–年份引用
 
@@ -64,6 +64,6 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 ## 常见问题
 
-- 在证明样式上设`endMark: '□'`，方块会排在最后一行右端，但用的是框内正文的字体。Spectral没有□（Fontsource正文字体的latin文件都不含这个字符），屏幕上会借用系统字形，PDF里则印出缺字框。请在证明末尾写`$\square$`，或选一个字体能排的结束符。
+- 只有数学引擎运行时，`endMark`才用TeX绘制方块（□ ∎ ■）。没有`initMathEngine()`的文档里，结束符用框内正文的字体排，而Spectral和Fontsource所有latin文件一样没有□：这时请选一个字体能排的结束符。
 - 栏平衡会在标题上方加基线网格行，把被高公式留短的页面填满。`balancing: { maxLinesPerHeading: 1 }`让论文的标题基本保持原有间距，这样的页面可能会提前几行结束。
 - `\underbrace`的说明文字比括号还宽时（如第4节的梯度公式），需要用`aligned`拆成两行；比版心宽的公式会向右溢出。

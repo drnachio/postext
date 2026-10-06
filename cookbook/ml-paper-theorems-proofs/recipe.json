@@ -53,8 +53,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "math": true
   },
   "kit": [
@@ -153,11 +153,5 @@
     "lighting": {
       "environment": "overcast"
     }
-  },
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "a callout style's endMark is set as text in the body face, and Spectral (like every Fontsource latin file) has no □ U+25A1: the canvas falls back to a system glyph and the PDF prints .notdef. The proofs end with $\\square$ written in the text; the formula-tag path already maps □ to \\square"
-    }
-  ]
+  }
 }

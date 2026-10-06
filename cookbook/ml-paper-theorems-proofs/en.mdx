@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. Since postext 1.19 the 
 
 <Excerpt region="theorems" />
 
-Each environment is a [callout style](/en/docs/configuration#callout-styles) with one device: a grey stripe for the definition, a plum stripe for the lemmas, a pale plum tint for the theorem. `box()` lays that look over the numbering of the short answer. `body.italic` sets the statement in italics as amsthm's plain style does, and the run-in label stays bold and upright inside it. A proof has no box at all: its label is italic and has no number (`counter: false`), its last line ends with `$\square$` written in the text, and `keepTogether: false` lets a long proof run on to the next page. `snapToGrid: false` keeps the same space around every statement; in one column with no neighbour to line up with, an exact gap reads better than one rounded to the grid.
+Each environment is a [callout style](/en/docs/configuration#callout-styles) with one device: a grey stripe for the definition, a plum stripe for the lemmas, a pale plum tint for the theorem. `box()` lays that look over the numbering of the short answer. `body.italic` sets the statement in italics as amsthm's plain style does, and the run-in label stays bold and upright inside it. A proof has no box at all: its label is italic and has no number (`counter: false`), `endMark: '□'` sets a square flush right on its last line, drawn from TeX's `\square` because maths runs, and `keepTogether: false` lets a long proof run on to the next page. `snapToGrid: false` keeps the same space around every statement; in one column with no neighbour to line up with, an exact gap reads better than one rounded to the grid.
 
 ### 3 · Cite author–year from the paper's own reference list
 
@@ -64,6 +64,6 @@ Some journals number every statement in one sequence (Lemma 1, Lemma 2, Theorem 
 
 ## Pitfalls
 
-- `endMark: '□'` on the proof style would set the square flush right on the last line, but in the box's body face. Spectral has no □ (no Fontsource text face carries it in its latin file), so the screen borrows a system glyph and the PDF prints the font's missing-glyph box. Write `$\square$` at the end of the proof, or pick an end mark the face can set.
+- `endMark` draws its squares (□ ∎ ■) from TeX only when maths runs. In a document without `initMathEngine()` the mark is set in the box's body face, and Spectral, like every Fontsource latin file, has no □: pick a mark the face can set there.
 - Column balancing fills a page that a tall display leaves short by adding grid lines above its headings. `balancing: { maxLinesPerHeading: 1 }` keeps a paper's heads close to their own spacing; such a page may then end a few lines up.
 - A display with an `\underbrace` label wider than the brace, such as the gradient in section 4, needs an `aligned` break; set wider than the measure, it overflows to the right.

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ml-paper-theorems-proofs",
-  "sourceHash": "078289af93c50b3a637d0e58886168c7e419b61e06aa26a9b1ce6a272161eafe",
+  "sourceHash": "29ff8bf09b7f5e71f87bb2bcb10f77b72b02cac2f966b8d11e6effb7d076160c",
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T16:11:20.266Z",
+  "capturedAt": "2026-10-06T17:33:20.306Z",
   "variants": {
     "en": {
-      "hash8": "0d0336d0",
-      "vdtHash": "ef0a1d82fe7dbb4bfbc9272ff708e99df5989213",
+      "hash8": "13599ff3",
+      "vdtHash": "9d4b6e85431982908f2f84b7eeae0d8c04a74d46",
       "timings": {
-        "importMs": 351,
-        "fontsMs": 129,
-        "buildMs": 73,
-        "totalMs": 1518,
+        "importMs": 18316,
+        "fontsMs": 141,
+        "buildMs": 63,
+        "totalMs": 19463,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Work Sans"
         ],
         "pages": 10,
-        "ownLines": 218
+        "ownLines": 219
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1427,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167554,
+          "bytes": 167276,
           "alt": "Page 2: 1 Introduction."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1427,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 144312,
+          "bytes": 144390,
           "alt": "Page 4: 4 Direct Preference Optimization."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1427,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 112868,
+          "bytes": 113158,
           "alt": "Page 7: 6 Experiments. Table 1. GPT-4 win rates vs. ground truth summaries for out-of-distribution CNN/DailyMail input articles."
         },
         {
@@ -149,7 +149,7 @@
           "h": 1427,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 32600,
+          "bytes": 32628,
           "alt": "Page 10."
         }
       ],
@@ -193,12 +193,12 @@
       },
       "pdf": {
         "file": "ml-paper-theorems-proofs.pdf",
-        "bytes": 1166566,
+        "bytes": 1165790,
         "pages": 10
       },
       "sandbox": {
         "file": "ml-paper-theorems-proofs.postext",
-        "bytes": 86654,
+        "bytes": 86663,
         "folio": "70aa8698"
       },
       "detected": {
@@ -246,6 +246,7 @@
           "calloutStyles[].body.italic",
           "calloutStyles[].body.italicColor",
           "calloutStyles[].body.lineHeight",
+          "calloutStyles[].endMark",
           "calloutStyles[].id",
           "calloutStyles[].keepTogether",
           "calloutStyles[].marginBottom",
@@ -428,7 +429,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 461,
+        "configLeaves": 463,
         "designElements": 13,
         "directives": [
           ":::callout",

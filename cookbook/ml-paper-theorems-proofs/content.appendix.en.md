@@ -53,7 +53,7 @@ p_{r'}(\tau| y_1,\ldots, y_K, x) &= \prod_{k=1}^{K}\frac{\exp(r'(x, y_{\tau(k)})
 &= p_{r}(\tau| y_1,\ldots, y_K, x),
 \end{aligned}
 $$
-which completes the proof. $\square$
+which completes the proof.
 :::
 
 :::paragraphs{style="colophon"}
