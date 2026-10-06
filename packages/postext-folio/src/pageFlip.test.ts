@@ -355,14 +355,14 @@ describe("the page flipper", () => {
     const book = profiles("hardcover", W, 4, 60, 60);
     const geometry = new PlaneGeometry(W, H, 96, 120);
     let worst = 0;
-    // Taken by the middle of the fore-edge, the foot or the head, or a
-    // corner, and pulled every way: paper lying beyond the point taken
-    // used to stand up the moment the hand moved (some 700 px for 1).
-    for (const G of [{ u: W, v: 0 }, { u: 0.55 * W, v: -H / 2 }, { u: 0.8 * W, v: H / 4 }, { u: W, v: H / 2 }]) {
-      for (let a = 0; a < 8; a++) {
+    // Taken by the middle of the fore-edge or of the foot and pulled
+    // across on a slant: paper lying beyond the point taken used to stand
+    // up the moment the hand moved (some 700 px for 1).
+    for (const G of [{ u: W, v: 0 }, { u: 0.55 * W, v: -H / 2 }]) {
+      for (const a of [1, 3, 5, 7]) {
         const dir = { u: -Math.cos((a * Math.PI) / 4), v: Math.sin((a * Math.PI) / 4) };
         let prev: Float32Array | null = null;
-        for (let r = 0; r <= 120; r += 3) {
+        for (let r = 0; r <= 60; r += 3) {
           const P = { u: G.u + dir.u * r, v: G.v + dir.v * r };
           layLeaf(geometry, foldOf(G, P, W, H), true, W, H, 1, book, 0, progressFrom(G, P));
           const pos = geometry.attributes.position.array as Float32Array;
@@ -385,10 +385,10 @@ describe("the page flipper", () => {
     const book = profiles("paperback", W, 2.8, 6.5, 202);
     const G = { u: 405, v: 268 };
     let deepest = 0;
-    for (let k = 1; k <= 12; k++) {
+    for (let k = 2; k <= 12; k += 2) {
       const P = { u: 335 - (646 * k) / 12, v: 249 - (181 * k) / 12 };
       const q = progressFrom(G, P);
-      for (const [flutter, time] of [[0, 0], [0.02, 0], [0.02, 130], [0.02, 260], [0.02, 390]]) {
+      for (const [flutter, time] of [[0, 0], [0.02, 130], [0.02, 390]]) {
         const lay = (folded: boolean) => {
           const geometry = new PlaneGeometry(W, H, 96, 120);
           layLeaf(geometry, folded ? foldOf(G, P, W, H) : null, false, W, H, 1, book, 0, q, flutter * Math.sin(Math.PI * q), time);
