@@ -26,6 +26,8 @@ import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
 import type { TableCellPos, TableModel } from 'postext';
 import { flowSideLabels, useRightToLeftFlow } from '../../sidebar/settings/flowSides';
+import { hasSeveralColumns } from '../../sidebar/settings/multiColumnBook';
+import { MULTIPLE_COLUMNS_MAX } from '../../sidebar/settings/multipleColumns';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-2 py-1.5';
 const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' } as const;
@@ -135,6 +137,10 @@ export function ResourceDetail({
     else next[key] = value;
     onChange(touch({ placement: Object.keys(next).length > 0 ? next : undefined }));
   };
+  // How many columns a column float takes (#505): offered when a page of
+  // the book has more than one, or when the resource sets it.
+  const placementColumns = currentPlacement.columns ?? typePlacement.columns ?? 1;
+  const severalColumns = useSandboxSelector((s) => hasSeveralColumns(s.config));
   const placementWidthPercent = Math.round((currentPlacement.width ?? typePlacement.width ?? 1) * 100);
   // An inline embed is never turned; a turned resource is a page-span float.
   const placementInline = placementPosition === 'here';
@@ -425,6 +431,19 @@ export function ResourceDetail({
               onChange={(v) => setPlacementKey('span', v as PlacementSpan)}
               isDefault={currentPlacement.span === undefined}
               onReset={() => setPlacementKey('span', undefined)}
+            />
+          )}
+          {!placementInline && !placementRotated && placementSpan === 'column' && (severalColumns || currentPlacement.columns !== undefined) && (
+            <NumberInput
+              label={labels.resourceTypePlacementColumns}
+              tooltip={labels.resourceTypePlacementColumnsTooltip}
+              value={placementColumns}
+              onChange={(v) => setPlacementKey('columns', Math.max(1, Math.round(v)))}
+              min={1}
+              max={MULTIPLE_COLUMNS_MAX}
+              step={1}
+              isDefault={currentPlacement.columns === undefined}
+              onReset={() => setPlacementKey('columns', undefined)}
             />
           )}
           {/* Width fraction and alignment of a resource narrower than its

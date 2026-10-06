@@ -252,7 +252,10 @@ reads it, so set it from facts, not taste.
 - **Binding.** Case-bound with boards → `hardcover`; glued softcover →
   `paperback`; sewn softcover (opens flat-ish) → `sewn`; spiral/lay-flat →
   `layflat`; stapled through the fold (magazines, booklets, programmes) →
-  `saddleStitch` (no spine image then).
+  `saddleStitch` (no spine image then); a newspaper (sheets folded once and
+  nested, nothing holding them) → `folded` (≥ 1.18; no spine image either),
+  with `paper.type: "newsprint"` and a salmon section as
+  `:::paper{shade=#f4cfb5}` around its pages.
 - **Covers.** When the port includes the cover as its first page (A1) and,
   for an even page count, the back cover as the last, set
   `binding.cover: "pages"`: the book lies closed on it and opens as the

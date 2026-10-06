@@ -549,6 +549,20 @@ describe('config values the engine replaces', () => {
     expect(kinds('Text.', { layout: { layoutType: 'oneAndHalf', sideColumnPercent: 14 } })).not.toContain('sideColumnPercentClamped');
     expect(kinds('Text.', { layout: { layoutType: 'double', sideColumnPercent: 120 } })).not.toContain('sideColumnPercentClamped');
   });
+
+  it('reports a column count outside 3 to 8, the document\u2019s and a section\u2019s, with the count used', () => {
+    const config: PostextConfig = {
+      layout: { layoutType: 'multiple', columnCount: 12 },
+      headingStyles: [{ id: 'news', layout: { layoutType: 'multiple', columnCount: 2 } }],
+    };
+    const hits = find('Text.', 'columnCountClamped', config);
+    expect(hits.map((w) => [w.payload.path, w.payload.value, w.payload.used])).toEqual([
+      ['layout.columnCount', '12', '8'],
+      ['headingStyles[0].layout.columnCount', '2', '3'],
+    ]);
+    expect(kinds('Text.', { layout: { layoutType: 'multiple', columnCount: 5 } })).not.toContain('columnCountClamped');
+    expect(kinds('Text.', { layout: { layoutType: 'double', columnCount: 12 } })).not.toContain('columnCountClamped');
+  });
 });
 
 describe('hyphenation locale warnings', () => {

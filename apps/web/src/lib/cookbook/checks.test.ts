@@ -291,6 +291,7 @@ describe("C31: config values the engine replaced (#468)", () => {
   it("fails every substitution that changes the page, and warns on a font stack", () => {
     const configWarnings = [
       { kind: "sideColumnPercentClamped", path: "layout.sideColumnPercent", value: "120", used: "66.67" },
+      { kind: "columnCountClamped", path: "layout.columnCount", value: "12", used: "8" },
       { kind: "unknownNumberFormat", path: "orderedLists.levels[1].numberFormat", value: "kanji", used: "arabic" },
       { kind: "unknownNumerals", path: "numerals", value: "hindi", used: "arab" },
       { kind: "unknownConfigValue", path: "footnotes.placement", value: "spread", used: "column" },
@@ -300,6 +301,7 @@ describe("C31: config values the engine replaced (#468)", () => {
     const c31 = of("C31", runChecks(input({ facts: facts({ configWarnings }) })));
     expect(c31.map((f) => [f.severity, f.detail])).toEqual([
       ["fail", 'sideColumnPercentClamped: layout.sideColumnPercent "120" leaves a column with no width; the columns are cut at 66.67 %'],
+      ["fail", 'columnCountClamped: layout.columnCount "12" is not a column count from 3 to 8; the page is cut into 8 columns'],
       ["fail", 'unknownNumberFormat: orderedLists.levels[1].numberFormat "kanji" is no format the engine knows; it numbers in arabic'],
       ["fail", 'unknownNumerals: numerals "hindi" names no digit system; the digits are arab'],
       ["fail", 'unknownConfigValue: footnotes.placement "spread" is not one of its choices; the engine used column'],

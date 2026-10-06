@@ -185,10 +185,16 @@ const document = buildDocument(content, {
     <tr><td><code>'12x19'</code></td><td>12 cm</td><td>19 cm</td><td>標準的なペーパーバック</td></tr>
     <tr><td><code>'17x24'</code></td><td>17 cm</td><td>24 cm</td><td>技術書、教科書</td></tr>
     <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>雑誌、報告書（A4に近い）</td></tr>
+    <tr><td><code>'broadsheet'</code></td><td>375 mm</td><td>597 mm</td><td>ブランケット判の新聞</td></tr>
+    <tr><td><code>'berliner'</code></td><td>315 mm</td><td>470 mm</td><td>ベルリナー判の新聞</td></tr>
+    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>タブロイド判の新聞</td></tr>
+    <tr><td><code>'compact'</code></td><td>297 mm</td><td>420 mm</td><td>コンパクト判の新聞（ブランケット判を半分に折った大きさ）</td></tr>
   </tbody>
 </table>
 
 <Illustration name="PageSizes" data='{"title": "ページサイズのプリセット", "desc": "組み込みの4つのページサイズのプリセットを同じ縮尺で描いた図。ポケット判11x17、ペーパーバック12x19、技術書17x24、A4に近い21x28 cm。", "caption": "同じ縮尺で描いたプリセット。", "sizes": [{"name": "11×17", "dims": "ポケット判", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "ペーパーバック", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "教科書", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "A4相当", "wmm": 210, "hmm": 280}]}' />
+
+4つの新聞の判型はpostext 1.18で加わったもので、図には含めていません。ブランケット判の1ページは21 × 28のページのほぼ4倍の面積です。通常は[`'multiple'`レイアウト](#レイアウトの種類)で組み、ブランケット判では6段、タブロイド判では5段がよく使われます。
 
 ### ベースライングリッド
 
@@ -401,9 +407,15 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
   <tbody>
     <tr>
       <td><code>layoutType</code></td>
-      <td><code>'single' | 'double' | 'oneAndHalf'</code></td>
+      <td><code>'single' | 'double' | 'oneAndHalf' | 'multiple'</code></td>
       <td><code>'double'</code></td>
       <td>段の配置。各タイプの詳細は後述します。</td>
+    </tr>
+    <tr>
+      <td><code>columnCount</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td><code>'multiple'</code>レイアウトが本文を分ける同じ幅の段の数です。3〜8の整数を指定します。範囲外の値や整数でない値は範囲内に収められ、報告されます（<a href="#レイアウトの種類">レイアウトの種類</a>を参照）。見出しスタイル自身の<code>'multiple'</code>レイアウトは、独自に設定しない限り文書の段数を使います。postext 1.18以降。</td>
     </tr>
     <tr>
       <td><code>gutterWidth</code></td>
@@ -537,6 +549,8 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
 - **`'double'`**：同じ幅の2段。古典的な編集レイアウトで、1行の長さを読みやすい40〜50文字の範囲に保ちます。
 
 - **`'oneAndHalf'`**：メインの段と、それより狭いサイド段からなる非対称のレイアウト。サイド段（`sideColumnPercent`で制御）は、傍注、小さな図、補足的な内容に適しています。25〜40%の値が使いやすく、行番号や欄外の記号のための細い欄なら10〜15%程度です。サイド段は版面の幅の`sideColumnPercent`%で、メインの段は段間を引いた残りです。そのため50%では、サイド段のほうがメインの段より段間1つ分広くなります。両方の段が版面の幅の1%以上を保つ限り、どの値も書いたとおりにレイアウトされます。どちらかがそれより狭くなる値（0以下、あるいはメインの段が段間に隠れて消えるほど大きな値）は、両方を保てる最も近い値に制限され、数値でない値は既定値の33になります。そのとき文書の`configWarnings`には`{ kind: 'sideColumnPercentClamped', path: 'layout.sideColumnPercent', value, used }`が入ります。見出しスタイル自身の`layout`の場合、パスは`headingStyles[2].layout.sideColumnPercent`のようにそのスタイルを指し、値はそのスタイルの余白で計測されます。Sandboxはこれを**検査**パネルに表示し、`collectConfigWarnings(config)`は何もレイアウトせずに同じリストを返します。`'oneAndHalf'`以外のレイアウトはこの値を読まず、報告もしません。`sideColumnRole: 'floats'`では本文がサイド段に入ることはなく、サイド段は`span: 'side'`で配置した図、表、囲みのための欄になります。サイドの図や表は、最初に参照されたページで欄の先頭から積まれます。教科書の欄外の図は、本文での参照がページの下のほうであっても、ページの上端に置かれます。欄の残りに収まらないものは次のページの欄に回ります。サイドの囲みは、中断したテキストの横に積まれます。欄の残りに収まらない場合は、収まる範囲で最も低い位置（囲みの下端が欄の下端に接する位置）まで上にずれるか、次のページに回ります。囲みのフェンスのあとのテキストが次のページに続く場合（段がいっぱいのときや、分割の規則がそのテキストを送るとき）、囲みはフェンスの位置、つまりその前のテキストの横に残ります。`sideAtColumnEnd: 'after'`を指定したスタイルでは、代わりにフェンスのあとのテキストの最初の行と同じ高さ、つまり次のページの欄に置かれます。行の前に書く行番号や欄外見出しには、この動作が必要です。欄の中に立つ見出しデザインの要素（外側の余白に固定した章番号など）も、積み重ねと重ならないように避けられます（[確保する高さ](#確保する高さ)を参照）。`span: 'page'`のフロートと囲みは引き続き両方の段にまたがり、`placement.captionSide`を指定した段のフロートは、キャプションを欄の中、図と同じ高さに置きます。見開きの余白と`sideColumnSide: 'outer'`を組み合わせると、欄はすべてのページの外側の辺に置かれます。教科書の欄外段の形です。
+
+- **`'multiple'`**：3〜8段の同じ幅の段組みで、段数は`columnCount`で指定します（既定は3）。新聞や多くの雑誌のグリッドです（postext 1.18以降）。各段の幅は`(内容の幅 − (n − 1) × gutterWidth) / n`です。本文は2段組みと同じように段から段へ流れます。段間罫はすべての段間に引かれ、段のそろえは章の最終ページとページ幅の囲みの前ですべての段の高さをそろえ、脚注はどの段でも使え、ページ幅の図、囲み、見出しはページ全体にまたがります。図やフロートする囲みは一部の段だけを使うこともできます。`placement.columns`（[リソースの種類](#リソースの種類)を参照）と囲みスタイルの`columns`です。`columnCount`が3〜8の範囲外か整数でない場合は、丸めたうえでいちばん近い有効な段数に収め（数値でない値は3）、文書の`configWarnings`に`{ kind: 'columnCountClamped', path: 'layout.columnCount', value, used }`が入ります（見出しスタイル自身の`layout`の場合、パスは`headingStyles[1].layout.columnCount`のようにスタイルを示します）。ほかの種類のレイアウトはこの値を読みません。`layout`が`'multiple'`の見出しスタイルは、独自に設定しない限り文書の`columnCount`を使うので、5段組みの新聞でオピニオン面だけを4段にすることもできます。
 
 
 ## 柱とノンブル
@@ -3860,6 +3874,7 @@ interface ResourcePlacement {
   width?: number;                                // fraction (0 < width < 1) of the column or page width; default: the whole width
   align?: 'left' | 'center' | 'right';           // where a float narrower than its column sits; default 'left'
   captionSide?: boolean;                         // caption beside the figure, in the side column of a oneAndHalf layout (column floats only)
+  columns?: number;                              // 'column'フロートがまたがる隣り合う段の数（1.18以降）
 }
 
 interface ResourceType {
@@ -3876,6 +3891,8 @@ interface ResourceType {
 ```
 
 `ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。
+
+`columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
 
 <table>
   <thead>
@@ -3929,7 +3946,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code>（省略可）</td>
-      <td>自身の<code>placement</code>を設定しない、この種類のリソースが使う配置です。<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>はそれぞれ個別に解決されます。リソースも種類もあるフィールドを設定しない場合は、組み込みの既定値が適用されます。<code>auto</code>／<code>column</code>、回転なし、全幅、左そろえ、キャプションは図の下です。解決の順序は下の<a href="#番号付けと参照">番号付けと参照</a>を、回転したリソースを含む各値の動作は<a href="/ja/docs/document-format#リソース">文書形式 › リソース</a>を参照してください。</td>
+      <td>自身の<code>placement</code>を設定しない、この種類のリソースが使う配置です。<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>、<code>columns</code>はそれぞれ個別に解決されます。リソースも種類もあるフィールドを設定しない場合は、組み込みの既定値が適用されます。<code>auto</code>／<code>column</code>、回転なし、全幅、左そろえ、キャプションは図の下です。解決の順序は下の<a href="#番号付けと参照">番号付けと参照</a>を、回転したリソースを含む各値の動作は<a href="/ja/docs/document-format#リソース">文書形式 › リソース</a>を参照してください。</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -4717,12 +4734,15 @@ const config: PostextConfig = {
     <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>自動で再生を始めます。ブラウザーの要件どおり、常にミュートされます。</td></tr>
     <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>音を消した状態で始めます。</td></tr>
     <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>最後まで再生したら、最初から再び再生します。</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、HTMLビューアー、EPUB（スクリプト実行時）／ファイル</td><td>この動画を再生すると、表示中のほかの動画は一時停止し、一度に1本だけが再生されます。<code>false</code>にすると、ほかの動画と同時に再生されます。ページ上の無音のループ動画を何本も同時に流す場合です。postext 1.18以降。</td></tr>
     <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>ファイル</td><td>再生前にブラウザーが読み込む量です。<code>'none'</code>、<code>'metadata'</code>、<code>'auto'</code>のいずれかです。</td></tr>
     <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>プライバシー強化モードの埋め込みです。YouTubeは<code>youtube-nocookie.com</code>から、Vimeoは<code>dnt=1</code>付きで埋め込みます。</td></tr>
   </tbody>
 </table>
 
-EPUBはスキーマが認める属性だけを残します。ファイルは<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>、<code>preload</code>付きで再生され、それ以外はリーディングシステムが決めます。
+EPUBはスキーマが認める属性だけを残します。ファイルは<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>、<code>preload</code>付きで再生され、<code>data-pt-alongside</code>の印も残ります。それ以外はリーディングシステムが決めます。
+
+排他的でない動画には、HTML出力で`data-pt-alongside`が付きます。`coordinateVideoPlayback(root)`は、`root`（`renderToHtml`の出力を収める要素）の下のプレーヤーにこの規則を守らせます。排他的な動画を再生すると再生中のほかの動画がすべて一時停止し、同時に再生する動画を再生すると排他的な動画だけが一時停止します。戻り値は監視をやめる関数です。`playsAlongside(el)`と`videosToPause(started, videos, alongside)`は、独自のプレーヤーを持つホストに同じ規則を提供します。[Folio](/ja/docs/document-format#folioのページで再生する動画)では、自動再生でほかの動画と同時に再生する動画（`autoplay`と`exclusive: false`）は、そのページが表示されるたびに無音で始まり、ページがめくられると止まります。何本でも同時に再生され、`loop`を付けると最後まで行ったあと最初から繰り返します。EPUBでは、調整が必要な動画（2本以上で、そのうち少なくとも1本が排他的）を含むページや章が、同じ規則を小さなスクリプト`scripts/videos.js`（エクスポートされている`VIDEO_PLAYBACK_SCRIPT`）として読み込み、パッケージはその文書を`scripted`と宣言します。スクリプトを実行するリーディングシステムでは、その文書の動画がこの規則に従います。ただし、向かいのページは別の文書なので対象外です。スクリプトを実行しないリーディングシステムは、YouTubeやVimeoのプレーヤーと同じく、それぞれの決まりで動画を再生します。
 
 解決関数と既定値の除去関数は、ほかのセクションと同じ形で、型`VideoStyleConfig` / `ResolvedVideoStyleConfig`とともに提供されます。
 
@@ -5203,6 +5223,12 @@ The glass stays hot for an hour after the flame is out.
       <td>横方向の広がりです。段、版面の全幅、または1段半レイアウトのフロート専用のサイド段（<code>layout.sideColumnRole: 'floats'</code>）のいずれかです。サイド段のとき、囲みは流れから外れ、割り込んだ位置のテキストの横にあるその段に積まれます。<code>span</code>属性で個別に上書きできます。段組みのレイアウトでは<code>'page'</code>の囲みは<em>ページ幅のブロック</em>（span block）になります。ページを段の帯に分け、全幅の独自の段に収まります（後述のコンテナーの節を参照）。</td>
     </tr>
     <tr>
+      <td><code>columns</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>フロートする囲み（<code>placement</code>が<code>'auto'</code>、<code>'top'</code>、<code>'bottom'</code>のいずれかで、<code>span: 'column'</code>）がまたがる隣り合う段の数です。図の<code>placement.columns</code>と同じ働きで、新聞の5段のうち3段にまたがる記事の囲みなどに使います。ページの段数以上を指定すると、ページ幅の囲みになります。流れの中に組む囲み（<code>'here'</code>）は自分の段に収まります。インスタンスごとに<code>columns</code>属性で上書きできます。postext 1.18以降。</td>
+    </tr>
+    <tr>
       <td><code>placement</code></td>
       <td><code>'here' | 'auto' | 'top' | 'bottom' | 'fixed'</code></td>
       <td><code>'here'</code></td>
@@ -5372,7 +5398,7 @@ The glass stays hot for an hour after the flame is out.
 
 ### `:::callout`コンテナー
 
-`:::callout{type="<id>"}`の行で囲みを開き、`:::`だけの行で閉じます。フェンスは4つの属性を受け付けます。`type`（スタイルのid）、`title`（スタイルのタイトルを上書き）、`span`と`placement`（スタイルの値を上書き）です。間の内容は囲みの中に組まれます。省略できるタイトルの後に段落、リスト、引用、数式、リソースの埋め込みが続き、それぞれスタイルの`body`/`lists`の文字組みで組まれます（見出しは通常のスタイルのままです）。子要素の間のマージンは本文と同じく相殺されます。囲みの内部はベースライングリッドから外れ、囲みの後で流れはグリッドに戻り、下に少なくとも`marginBottom`のアキを取ります（グリッドが優先され、マージンは最小値です。リソースと同じ約束です）。`snapToGrid: false`のスタイルでは代わりに正確な`marginBottom`を保ち、囲みの後のテキストは次の見出しかリストの終わりまでグリッドから外れます。囲みの直前の見出しは囲みと一緒に送られます。
+`:::callout{type="<id>"}`の行で囲みを開き、`:::`だけの行で閉じます。フェンスは5つの属性を受け付けます。`type`（スタイルのid）、`title`（スタイルのタイトルを上書き）、`span`、`placement`、`columns`（スタイルの値を上書き）です。間の内容は囲みの中に組まれます。省略できるタイトルの後に段落、リスト、引用、数式、リソースの埋め込みが続き、それぞれスタイルの`body`/`lists`の文字組みで組まれます（見出しは通常のスタイルのままです）。子要素の間のマージンは本文と同じく相殺されます。囲みの内部はベースライングリッドから外れ、囲みの後で流れはグリッドに戻り、下に少なくとも`marginBottom`のアキを取ります（グリッドが優先され、マージンは最小値です。リソースと同じ約束です）。`snapToGrid: false`のスタイルでは代わりに正確な`marginBottom`を保ち、囲みの後のテキストは次の見出しかリストの終わりまでグリッドから外れます。囲みの直前の見出しは囲みと一緒に送られます。
 
 このバージョンでの制約は次のとおりです。
 
@@ -5380,11 +5406,11 @@ The glass stays hot for an hour after the flame is out.
 - フロートは分割できない囲みに譲ります。図の参照の直後のブロックが`keepTogether`の囲みのとき、その囲みが現在の帯の中で入る段（フロートの前に囲みを収めていた参照元の段、またはその後の空の段）をなくしてしまう位置は使いません。図は次の候補の位置（たいていは次のページ）に移り、囲みは流れの中にとどまります。囲みをページから押し出して段に図だけを残すのではなく、組版者が組むとおりに組みます。
 - 段組みのレイアウトで`span: 'page'`を指定すると、囲みは**ページ幅のブロック**になります。版面の全幅で組まれ、ページを段の帯に分けます。囲みの上の段は切れ目の線で閉じ、囲みは全幅の独自の段に入り、その下で新しい段の帯が始まるので、流れはすべての段で囲みの下に続きます。段の高さが*そろっている*位置（ページの先頭、`span: 'page'`の章扉の見出しの直下、別のページ幅のブロックの直下、上のフロートの帯の直下）では、囲みはそこでそのまま切ります。段の高さがそろわないページの途中に来たときは、組版者が組むとおりに組みます。囲みの上のテキストをすべての段で同じ高さに切り（エンジンは帯の段を同じグリッド行数に縮めて配置をやり直すので、テキストは段から段へ自然にあふれ、オーファン、ウィドウ、次と分離しない規則もすべて適用されます）、囲みはページ全幅に広がり、その下で段が再開します。切るには配置を何回か余分にやり直します。切れ目の線で、囲みと、その下にウィドウの最小行数分の本文行を入れる余地がなくなるとき、または数回試しても収まる配置がないときは、囲みを次のページの先頭へ送ります。囲みの上のテキストは切れ目に従います。図の下で段が上に残す数行に入りきらない段落は次の段に送り（その図は段の中で単独になります）、それでもあるブロックが切れ目を越えるときは、そのブロックの終わる位置ではなく、切れ目を1行下げます。帯を開く分割された囲みもそこで切るので、残りが切れ目を越えることはありません。`headings.balancing.beforeSpan`（既定）のときは、囲みが抜けた帯は章の最後の帯と同じように後ろで高さをそろえて切ります。スタイルが分割を許す（`keepTogether: false`）ときは、高さをそろえた段の下に収まる囲みの部分がページを締めくくり、残りが次のページの先頭に来ます。`beforeSpan: false`のときは、抜けたページは通常どおり段末をそろえるだけで、改ページは強制しません。ページ幅のブロックの直前の見出しは、囲みと一緒には送られません。1段のレイアウトでは、`span: 'page'`はただのインラインです。
 - `placement: 'fixed'`は囲みを流れから外します。囲みは組まれた後（`width: 'auto'`はタイトルに合わせて縮み、`'fill'`はアンカーの点の下にあるテキストの段の幅を取ります）、流れの中で現れたページの、`fixed.anchor`/`fixed.offset`が示す位置に固定されます。既定は版面の左下の角です。囲みが覆うテキストの段は、フロートの帯とまったく同じようにその領域を明け渡します（下から削り、段がまだ空なら上から削ります）。その領域にすでにテキスト、フロート、ページ幅のブロックがあるときは、囲みを次のページへ送ります。章を締めくくる固定の囲み（次のブロックが章扉、`:::part`、フロートの区切りの囲み、または文書の末尾のもの）は、まず上の段の高さをそろえる（`headings.balancing.trailing`）ので、短い最終ページは下のバッジとそろって終わります。枠と子要素は`page.floats`に入り、どのバックエンドでも段のクリップの外に描画されます。
-- `placement: 'top' | 'bottom'`は囲みをリソースと同じように**フロート**として配置します。囲みは現れた位置で流れから外れ、その位置以降で最初に空いている帯（現在のページの下（`'bottom'`）、または流れが次に開くページの上か下）に、段の幅（`span: 'column'`）または版面の全幅（`span: 'page'`）で入ります。後に続くテキストが、囲みの抜けたページを埋めます。枠と子要素は、固定の囲みと同じく`page.floats`に入ります。新しいページの先頭に来るフロートの囲みは、そのページを待っている図より先に組まれます。前のページで引用され、その下に収まる図は、テキストが3行未満しか残らないときでも、そのページの残りを使います（図版のページ：囲みと図だけで、間にテキストはありません）。`span: 'side'`の囲みはフロートになりません。placementにかかわらず、テキストの横に積まれます。
+- `placement: 'top' | 'bottom'`は囲みをリソースと同じように**フロート**として配置します。囲みは現れた位置で流れから外れ、その位置以降で最初に空いている帯（現在のページの下（`'bottom'`）、または流れが次に開くページの上か下）に、段の幅（`span: 'column'`）または版面の全幅（`span: 'page'`）で入ります。後に続くテキストが、囲みの抜けたページを埋めます。枠と子要素は、固定の囲みと同じく`page.floats`に入ります。新しいページの先頭に来るフロートの囲みは、そのページを待っている図より先に組まれます。前のページで引用され、その下に収まる図は、テキストが3行未満しか残らないときでも、そのページの残りを使います（図版のページ：囲みと図だけで、間にテキストはありません）。`span: 'side'`の囲みはフロートになりません。placementにかかわらず、テキストの横に積まれます。`columns`が1より大きいとき（スタイルでもフェンスの属性でも指定でき、postext 1.18以降）、`span: 'column'`の囲みはその数の隣り合う段を使います。上端のそろった空の段の並びの頭か、現在の段とその後の空の段の足です。例：`:::callout{placement="top" columns="2"}`。
 - `width: 'auto'`はタイトルにだけ合わせて縮み、子要素は無視します。
 - ほかの囲みの中に入れ子にした`:::callout`は、独立した囲みです。自分のスタイル（背景、枠線、角の半径、内側余白、帯、タイトル、アイコン、マーカー、ラベル、文字組み）で、親の内側の全幅に組まれ、親の子要素の1つとして積まれます。`marginTop`/`marginBottom`は隣の要素と相殺されます。`span`と`placement`（フェンスまたはスタイル）は無視され、入れ子の囲みは常に親の中を流れます。`floatBarrier`と`snapToGrid`も無視されます。囲みは何重にでも入れ子にでき、`:::columns`グループの中にも置けます（それぞれ1つの段にまるごと入ります）。親が分割されるとき、切れ目は入れ子の囲みの前後に入り、入れ子のスタイルが分割を許すときはその中にも入ります。どの断片も、切れ目が通る枠を描き直します。前の断片から続く入れ子の囲みは、トップレベルの続きと同じく、タイトルとアイコンを省きます。
 - 子要素の中の`:::columns{count=N}`…`:::`グループは、囲みの中で、その子要素を等幅の`N`段に`columnGap`の間隔で組みます。段の高さが最もそろうブロックや行の境界で切り（途中で切れた段落やリスト項目は、次の段の先頭で行頭記号なしに続きます）、どの段もグループの上端から始まり、グループの高さは最も高い段に合わせます。グループの後の子要素は全幅に戻ります。分割された囲み（`keepTogether: false`）は、グループの中では切りません。要点を2段にまとめたり、幅の広い囲みで表を横に並べたりするのに使います。
-- フェンスの5つ目の属性`label`は、スタイルのラベルタブに印字されます（前述の`label`を参照）。例：`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`。`label`スタイルがなければこの属性は無視されます。
+- フェンスの6つ目の属性`label`は、スタイルのラベルタブに印字されます（前述の`label`を参照）。例：`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`。`label`スタイルがなければこの属性は無視されます。
 
 VDTでは、囲みは`type: 'callout'`の枠ブロックになり、その装飾（背景、帯、アイコン、タイトル）は`designOverlay`に入ります。その後に、同じ段の中で子ブロックが続きます。枠とすべての子要素はフェンスの`containerId`を持ちます。入れ子の囲みは、子要素の中の独立した`type: 'callout'`の枠で、その後に自分のブロックが続きます。それらはトップレベルのフェンスの`containerId`を保ち（配置と段末そろえからは1つの単位に見えます）、`calloutPath`を加えます。これは周りの入れ子のフェンスのコンテナーidを外側から順に並べたものです（入れ子の枠自身のidが最後の要素です）。タグ付きPDFは、入れ子の囲みごとに、親の囲みの中に`Div`を作ります。アイコンの画像はリソースの画像と同じ方法で解決されます。canvasの画像レジストリー、HTMLの`resourceImageUrl`オプション、PDFの`resourceBytes`プロバイダーです。
 
@@ -5727,7 +5753,7 @@ const config: PostextConfig = {
       <td><code>palette</code></td>
       <td><code>Record&lt;string, string&gt;</code></td>
       <td><code>{'{}'}</code></td>
-      <td>節のページのパレットの上書き（id → 16進数）で、現在の部の上書きに重ねて適用します。部の<code>palette</code>属性と同じしくみで、及ぶ範囲も同じです。それらのページに組まれるデザインスロット（柱、章扉の帯。上書きしたidにリンクしたすべての色）だけでなく、テキストの流れにも値で及びます。上書きした要素の基本値と等しい流れの色（見出し、太字、イタリック、参照の色、行頭記号とリストの番号、キャプションのラベルとキャプションのバー、表のテキスト、罫線、塗り、囲み（背景、枠線、帯、タイトル）、チップ（塗り、輪郭、テキスト））はすべて、部の下と同じように節の値を取ります。同じ基本値を持つ2つの要素についての規則も同じです（<a href="#partコンテナー"><code>:::part</code>コンテナー</a>を参照）。インラインのスウォッチは書かれた色のままです。</td>
+      <td>節のページのパレットの上書き（id → 16進数）で、現在の部の上書きに重ねて適用します。部の<code>palette</code>属性と同じしくみで、及ぶ範囲も同じです。それらのページに組まれるデザインスロット（柱、章扉の帯。上書きしたidにリンクしたすべての色）だけでなく、テキストの流れにも値で及びます。上書きした要素の基本値と等しい流れの色（見出し、太字、イタリック、参照の色、行頭記号とリストの番号、キャプションのラベルとキャプションのバー、表のテキスト、罫線、塗り、囲み（背景、枠線、帯、タイトル）、チップ（塗り、輪郭、テキスト））はすべて、部の下と同じように節の値を取ります。同じ基本値を持つ2つの要素についての規則も同じです（<a href="#partコンテナー"><code>:::part</code>コンテナー</a>を参照）。インラインのスウォッチは書かれた色のままです。ページの地色も変わります。<code>page.backgroundColor</code>が上書きされた項目にリンクしている（またはリンクなしでその基本値を持つ）とき、節のページは節の値で塗られます。新聞の経済面がサーモンピンクの紙に刷られ、ほかの面は白のままになるのはこのためです。postext 1.18以降。</td>
     </tr>
   </tbody>
 </table>
@@ -6410,7 +6436,7 @@ interface FolioConfig {
     showThrough?: boolean;
   };
   binding?: {
-    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
     cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
@@ -6453,7 +6479,7 @@ interface FolioConfig {
     <tr>
       <td><code>paper.type</code></td>
       <td><code>FolioPaperType</code></td>
-      <td><code>'uncoated'</code></td>
+      <td><code>'uncoated'</code>、新聞の判型では<code>'newsprint'</code></td>
       <td>用紙です。下の5つのフィールドの既定値を与えます（用紙の表を参照）。<code>cardStock</code>は表紙用の厚紙、<code>board</code>はボードブックに使うような硬い板紙で、その丁は曲がらずにめくれます。</td>
     </tr>
     <tr>
@@ -6496,13 +6522,13 @@ interface FolioConfig {
       <td><code>paper.showThrough</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>薄い紙では、ページの裏面がかすかに透けて見えます。</td>
+      <td>薄い紙では、ページの裏面がかすかに透けて見えます。<code>bible</code>に次いで裏がよく透けるのは新聞用紙です。インキが紙の中にしみ込むためです。</td>
     </tr>
     <tr>
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
-      <td><code>'hardcover'</code></td>
-      <td><code>hardcover</code>：上製本で、表紙ボードはページよりわずかに大きくなります。<code>paperback</code>：無線綴じ（背を削って糊付け）で、平らに開きにくくなります。<code>sewn</code>：折丁を糸でかがったソフトカバーです。<code>layflat</code>：のどにくぼみができず、平らに開きます。<code>saddleStitch</code>：雑誌や小冊子のように、折った紙を折り目でホチキス留めします。平らな背はありません。</td>
+      <td><code>'hardcover'</code>、新聞の判型では<code>'folded'</code></td>
+      <td><code>hardcover</code>：上製本で、表紙ボードはページよりわずかに大きくなります。<code>paperback</code>：無線綴じ（背を削って糊付け）で、平らに開きにくくなります。<code>sewn</code>：折丁を糸でかがったソフトカバーです。<code>layflat</code>：のどにくぼみができず、平らに開きます。<code>saddleStitch</code>：雑誌や小冊子のように、折った紙を折り目でホチキス留めします。平らな背はありません。<code>folded</code>（postext 1.18以降）：新聞です。一度折った紙を重ねて差し込んだだけで、留めるものはありません。針金も背も表紙のボードもなく、最初のページが1面になります。<code>shade</code>を付けた<a href="/ja/docs/document-format#paper"><code>:::paper</code></a>の区間で、経済面などをサーモンピンクの新聞用紙に刷れます。</td>
     </tr>
     <tr>
       <td><code>binding.cover</code></td>
@@ -6526,7 +6552,7 @@ interface FolioConfig {
       <td><code>binding.spineImage</code></td>
       <td><code>string</code></td>
       <td>なし</td>
-      <td>背に印刷するビットマップまたはSVGリソースのidです。画像は、本を天を上にして立て、表表紙を右に向けたときに見える背の向きで用意します。背を覆うように、中央にそろえて収めます。中綴じでは無視されます。</td>
+      <td>背に印刷するビットマップまたはSVGリソースのidです。画像は、本を天を上にして立て、表表紙を右に向けたときに見える背の向きで用意します。背を覆うように、中央にそろえて収めます。中綴じと折りでは無視されます。</td>
     </tr>
     <tr>
       <td><code>surface.type</code></td>
@@ -6597,6 +6623,16 @@ folio: {
   surface: { type: 'walnut' },
   lighting: { environment: 'lamp' },
 }
+```
+
+新聞の判型（`page.sizePreset`が`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）のページは、設定が用紙も綴じも指定していなければ新聞として表示されます。用紙は`newsprint`、綴じは`folded`です（postext 1.18以降）。設定が指定した用紙や綴じはそのまま使われるので、`paper: { type: 'uncoated' }`とすればタブロイドが上質紙に刷られます。用紙を指定せずに設定した紙のフィールド（`grammage`や`shade`）は新聞用紙に適用されます。リゾルバーとストリッパーは判型を2番目の引数に取り、`folioForTrim(folio, sizePreset)`はこの2つの既定値を設定に書き込みます：
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
 ```
 
 色は、設定のほかの色と同じくパレットのリンク（`paletteId`）に従います。リゾルバーとストリッパーはほかのセクションと同じです。ストリッパーは、選んだ用紙の値と等しい紙の値を取り除きます：
@@ -6836,11 +6872,12 @@ debug: {
 
 ### 設定の警告
 
-設定そのものにある次の6種類の誤りは、決して黙って処理されず、どの切り替えでも隠せません。エンジンはどれについても失敗せず、値を置き換えるか設定を除外し、そのことを報告します：
+設定そのものにある次の7種類の誤りは、決して黙って処理されず、どの切り替えでも隠せません。エンジンはどれについても失敗せず、値を置き換えるか設定を除外し、そのことを報告します：
 
 - **不明な番号形式**：番号付きリストの`numberFormat`、`page.pageNumbering.format`、リソースタイプの`counterFormat`のいずれかが、[番号書式の表記](#番号書式の表記)のどれでもない場合です。10進数で番号を振ります。
 - **フォントファミリーにフォントスタックを指定**：`fontFamily`（または任意の`…FontFamily`）がCSSのフォントスタックを持つ場合です。テキストはスタックの最初のファミリーで組まれます（[`fontFamily`には1つのファミリー](#fontfamilyには1つのファミリー)を参照）。
 - **範囲外のサイド段**：`'oneAndHalf'`レイアウトの`sideColumnPercent`（文書のもの、または見出しスタイル自身の`layout`のもの）が、いずれかの段を内容幅の1%未満にしてしまう場合、または数値でない場合です。段は両方が取れる最も近い値で分けられ、`used`がその値を示します（`sideColumnPercentClamped`。[`'oneAndHalf'`レイアウト](#レイアウトの種類)を参照）。
+- **範囲外の段数**：`'multiple'`レイアウトの`columnCount`（文書のもの、または見出しスタイル自身の`layout`のもの）が3〜8の整数ではない場合です。ページはいちばん近い有効な段数で分けられ（数値でなければ3）、`used`がその数を示します（`columnCountClamped`。[`'multiple'`レイアウト](#レイアウトの種類)を参照）。
 - **大きすぎる文字グリッド**：`cjk.grid`の1行の字数または1ページの行数が、余白の内側に収まる数より多い場合です。グリッドは収まる最大の数で組まれ、`used`がその数を示します（`cjkGridClamped`。[文字グリッド](#文字グリッド)を参照）。
 - **不明な設定**：`headings`、`headings.balancing`、見出しレベル、見出しスタイル、段落スタイルにないキーです。たとえば綴りを誤った`letterSpacng`、別のツールから持ち込んだ`tracking`、見出しスタイルに付けた`level`、段落スタイルに付けた`fontStyle: 'italic'`（段落スタイルは`italic: true`を取ります）などです。エンジンはこれを無視します（postext 1.4までは何も知らせずに無視していました）。`value`はそのキー、`used`は空で、`suggestion`は、1、2文字の違いか大文字小文字の違いだけで済む設定があれば、その最も近い設定の名前を示します（`unknownConfigKey`）。
 - **不明な設定値**：いくつかの語のうち1つを取る設定に、別の値が入っている場合です。たとえば`direction: 'right'`です（`auto`、`ltr`、`rtl`のいずれかを取ります）。エンジンは代わりに既定値を読み、`used`がその結果を示します。`direction`なら文書の言語の方向になります（`unknownConfigValue`）。
@@ -8072,11 +8109,11 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 
 - **ページは必要になったときに描かれます**。`createFolioFromDocument`は各ページを、ページ枠のデバイスピクセルちょうどの大きさで`renderPageToCanvas`により描きます（WebGLはそれをテクセル対ピクセルで表示するので、Canvasのプレビューと同じくらい鮮明です）。描くのは、開いている見開きの周りの見開きだけです（`window`、既定では前後に3つずつ）。その範囲から外れたページは解放されるので、1000ページの本でも数ページ分のメモリーしか使いません。遠いページに移動するときは、その見開きを最初に描きます。10ページ先まではページが1枚ずつめくられ、それより遠いと、間にあるページのかたまりが、それらのページを合わせた厚さ（紙厚の合計）を持つ1枚の板として持ち上がり、反対側に着地します。`setDocument`は、新しいレイアウトでも内容が同じページの描画を保持します（`{ repaint: true }`を指定すると、画像が届いた後などに、すべてを描き直します）。
 - **ドキュメントが本を決めます**。最初のページが奇数ページ（`pageIndexOffset`が偶数）なら、右側に単独で開きます。右綴じの本（`page.binding: 'right'`、または縦組みのドキュメント）は左右反転して置かれ、左向きにめくられます。空白ページはページの背景色になり、ページの仕上がり幅（`pageWidthMm`）に応じて紙厚と表紙の板の縮尺が決まります。`continuation`付きでレイアウトした章は、本のほかのページ（前は`pageIndexOffset`、後は`bookPageCount`まで）を、描かずに2つのページブロックの厚さに数えます（`extraPages`）。
-- **ドキュメントが見た目を決めます**。紙、綴じ、机、光は、ドキュメントの[`folio`設定](#folioビューアー設定)（`doc.config.folio`）で決まります。`:::paper`の範囲内で組まれたページは独自の用紙（`VDTPage.paper`）を持ち、その丁は、その紙の色、表面、厚さ、こしで描かれます。`binding.cover: 'pages'`では、最初のページが表表紙の板になり、最後のページが偶数ページなら裏表紙の板になります（`covers`）。
+- **ドキュメントが見た目を決めます**。紙、綴じ、机、光は、ドキュメントの[`folio`設定](#folioビューアー設定)（`doc.config.folio`）で決まります。`:::paper`の範囲内で組まれたページは独自の用紙（`VDTPage.paper`）を持ち、その丁は、その紙の色、表面、厚さ、こしで描かれます。`binding.cover: 'pages'`では、最初のページが表表紙の板になり、最後のページが偶数ページなら裏表紙の板になります（`covers`）。新聞の判型（`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）で、設定が用紙も綴じも指定していなければ、折った新聞用紙として置かれます。ホストが独自の`folio`を渡した場合も同じです。
 - **コンテナーが大きさを決めます**。本はコンテナーいっぱいに広がり、ボタンとページ数は余白に置かれるので、コンテナーには高さを指定してください。リサイズすると、新しい大きさでページを描き直します。幅が560 px未満では1ページずつ表示します（`mode: 'auto'`。`'single'`と`'double'`はどちらかに固定します）。背はページの内側の端に沿い、丁はその上でめくられます。背の方向へのドラッグで先へめくり、背から離れる方向へのスワイプで前に戻り、タップでめくります。
 - **ポインターの動作**。`interaction`（後からは`setInteraction`）は、左ボタン、1本指、ペンが本に対して何をするかを決めます。`'hand'`（既定）はページをつかんでめくり、`'orbit'`は右ドラッグと同じように視点を回し（トラックパッドやタブレット向け）、`'select'`はポインターをホストに任せます（テキストの選択などのため）。`pageAt(event)`は、傾けたり回したりした見た目のままの本の上で、ポインターの下にあるページとその位置（`{ page, x, y }`。ページの左上隅からの割合）を返します。`pointOnScreen(point)`はその逆で、ページ上にキャレットや選択範囲を描くためのものです。`refreshPage(src)`は、ホストがその場で描き直したページのキャンバスを再表示します。Sandboxはこれらをすべて使って、3Dのページ上でテキストを選択し、エディターのキャレットを追います。
 - **読者は本の周りを見回せます**。右ドラッグで本の周りを視点が回り（真上から70°まで）、丁がめくられている間も回せます。`resetView()`は設定の`tilt`と`yaw`へ滑らかに戻し、`getView()`は現在見えている視点（`{ tilt, yaw }`、度単位）を返すので、それを設定として保存できます。Sandboxはこれらを2つのボタン、**視点をリセット**と**既定の視点として保存**に割り当てています。
-- **動画はページの上で再生されます**。動画のポスター画像をクリックすると、`interaction`がどのモードでもページの上で再生が始まり、その丁をめくっている間も止まりません。もう一度クリックすると一時停止し、その動画が見えない見開きで本が静止すると停止します。`player.autoplay`を指定した動画は、その見開きが初めて表示されたときにひとりでに再生を始めます。オプションは`videos`、`videoUrl`、`onVideo`、ビューアーのメソッドは`stopVideo()`です。[文書形式 › Folioのページで再生する動画](/ja/docs/document-format#folioのページで再生する動画)を参照してください。
+- **動画はページの上で再生されます**。動画のポスター画像をクリックすると、`interaction`がどのモードでもページの上で再生が始まり、その丁をめくっている間も止まりません。もう一度クリックすると一時停止し、その動画が見えない見開きで本が静止すると停止します。`player.autoplay`を指定した動画は、その見開きが初めて表示されたときにひとりでに再生を始めます。ほかの動画と同時に再生する設定（`player.exclusive: false`）なら、表示されるたびに無音で始まり、めくられると止まり、何本でも同時に再生されます。オプションは`videos`、`videoUrl`、`onVideo`、ビューアーのメソッドは`stopVideo()`です。[文書形式 › Folioのページで再生する動画](/ja/docs/document-format#folioのページで再生する動画)を参照してください。
 - **フォントと画像を先に**。`renderPage`と同じく、ページを描く前に、ドキュメントが使うフェイスを`document.fonts`に読み込み、リソースの画像を`registerResourceImage`で登録しておく必要があります。
 - **アクセシブル**。ビューアーはフォーカス可能なグループで、←/→（右綴じの本では反転）、Page Up/Down、Home、Endを受け付けます。ボタンとページ数にはラベルが付き（`labels`で翻訳できます）、各ページのキャンバスには`alt`テキストが付きます（`alt: (index) => …`）。
 - **WebGL2がない場合**、または読者が動きを減らす設定にしている場合は、見開きが単に切り替わります。WebGLの本はスマートフォンには重いため（ページの面ごとにテクスチャーを1枚使います）、SandboxはWebGL2が使え、画面の短辺が600 px以上の場合にだけFolioタブを表示します。`canFlip()`は、その環境で丁が3Dでめくられるかどうか（WebGL2があり、動きを減らす設定でないこと）を返します。

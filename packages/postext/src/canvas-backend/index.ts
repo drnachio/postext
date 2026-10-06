@@ -149,7 +149,8 @@ function paintContext(
     ctx.filter = 'invert(1)';
   }
 
-  const bgColor = doc.config.page.backgroundColor.hex;
+  // A part's or a styled section's palette may give the page its own paper.
+  const bgColor = page.background ?? doc.config.page.backgroundColor.hex;
   const trimOff = doc.trimOffset;
   // Single-ink diagrams: SVG pictures are tinted to this ink as they paint
   // (those the host flags, or every unflagged one when the render asks).

@@ -62,4 +62,17 @@ describe('PagePreview', () => {
     expect(folios(draw(PAGE, { writingMode: 'vertical-rl' }, false))).toEqual([]);
     expect(folios(draw({ ...PAGE, margins: { ...PAGE.margins, mirror: false } }, {}))).toEqual([]);
   });
+
+  it('draws the columns of a multiple layout, clamped as the engine does, with a rule in each gutter', () => {
+    const cols = (svg: string) => [...svg.matchAll(/<rect [^>]*fill="url\(#[^"]+\)"[^>]*>/g)].map((m) => m[0]);
+    const rules = (svg: string) => [...svg.matchAll(/<line /g)].length;
+    const four = draw({ ...PAGE, binding: 'left' }, { layoutType: 'multiple', columnCount: 4, columnRule: { enabled: true } });
+    // Two pages of four columns, three rules each.
+    expect(cols(four)).toHaveLength(8);
+    expect(rules(four)).toBe(6);
+    const widths = cols(four).slice(0, 4).map((r) => numbers(r, 'width')[0]!);
+    for (const w of widths) expect(w).toBeCloseTo(widths[0]!, 6);
+    // 12 is cut as 8.
+    expect(cols(draw({ ...PAGE, binding: 'left' }, { layoutType: 'multiple', columnCount: 12 }))).toHaveLength(16);
+  });
 });

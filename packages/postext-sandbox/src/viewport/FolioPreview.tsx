@@ -119,9 +119,10 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const folioConfigRef = useRef(folioConfig);
   folioConfigRef.current = folioConfig;
   const resources = useSandboxSelector((s) => s.resources);
-  // The picture on the spine (none on a saddle stitch): its stored image,
-  // handed to the viewer as an object URL.
-  const spineId = folioConfig?.binding?.type === 'saddleStitch' ? undefined : folioConfig?.binding?.spineImage;
+  // The picture on the spine (none on a saddle stitch or a folded
+  // newspaper): its stored image, handed to the viewer as an object URL.
+  const bindingType = folioConfig?.binding?.type;
+  const spineId = bindingType === 'saddleStitch' || bindingType === 'folded' ? undefined : folioConfig?.binding?.spineImage;
   const spineFileId = useMemo(() => {
     const r = spineId ? resources.find((x) => x.id === spineId) : undefined;
     return r?.bitmap?.fileId ?? r?.svg?.fileId;

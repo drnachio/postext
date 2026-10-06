@@ -25,8 +25,9 @@ guide needs a fix.
   and correct.
 - **Runs on its own.** The composed `script.js` runs in CodePen, in a downloaded `.html`
   file or pasted into any `<script type="module">`, with no build step.
-- **Honest about gaps.** When Postext cannot do something (line numbers, pipe tables, three
-  body columns), the recipe shows the workaround and says so; it never fakes the feature.
+- **Honest about gaps.** When Postext cannot do something (line numbers, pipe tables, text
+  wrapped around a picture), the recipe shows the workaround and says so; it never fakes the
+  feature.
 - **Permanent.** A recipe has a catalogue number (Nº) that is never reused and an English
   slug that never changes (renames go through `formerSlugs`).
 - **Bilingual where it can be.** Samples come in English and, most of them, Spanish; their
@@ -348,7 +349,9 @@ every box before you ask for a review. The ranges come from the showcase books.
       168 × 237 mm, trade book 155 × 235, catalogue 210 × 270, textbook 210 × 275–280.
 - [ ] `mirror: true`; top margin 22–24 mm, bottom 20–24, sides 14–22 (a wide outer margin
       when one column needs a readable measure).
-- [ ] The layout the genre needs: `double` with a 6–9 mm gutter for magazines; `oneAndHalf`
+- [ ] The layout the genre needs: `double` with a 6–9 mm gutter for magazines (`multiple`
+      with `columnCount: 3` for a three-column feature); `multiple` with 5–8 columns and a
+      4–5 mm gutter for newspapers (`broadsheet`, `berliner`, `tabloid` or `compact` trim); `oneAndHalf`
       with a 26–30 % side column (`sideColumnRole: 'floats'`, `sideColumnSide: 'outer'`) for
       glosses and textbooks; `single` for catalogues and literary books.
 - [ ] A measure of 45–75 characters.
@@ -732,8 +735,8 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `features.json` | about 150 user-facing features: label, definition, search aliases, group, docs anchor, research ids, optional detect rules | kebab-case id |
 | `apis.json` | exported engine symbols → docs section | symbol name |
 | `config.json` | top-level config keys → docs section | key |
-| `questions.json` | the reader questions Q01–Q150, how/why, index form, theme, gap | `Qnn` |
-| `gaps.json` | what Postext does not do, with aliases and the workaround | kebab-case id |
+| `questions.json` | the reader questions Q01–Q153, how/why, index form, theme, gap | `Qnn` |
+| `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the recipes and questions that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
 | `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them | kebab-case id |
 | `collections.json` | featured recipes and curated reading paths | kebab-case id |

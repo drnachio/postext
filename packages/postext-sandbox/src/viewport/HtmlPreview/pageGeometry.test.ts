@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { VDTDocument } from 'postext';
-import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx } from './pageGeometry';
+import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx, viewerLayoutType } from './pageGeometry';
 
 const base = { columnGapPx: 50, gutterPx: 20, targetColumnPx: 400, sideFraction: 0.3 };
 
@@ -53,6 +53,19 @@ describe('pickPageGeometry', () => {
   it('never returns a page narrower than 80px', () => {
     const g = pickPageGeometry({ ...base, layoutType: 'single', innerViewportW: 30 });
     expect(g).toEqual({ pageWidthPx: 80, visibleColumns: 1 });
+  });
+});
+
+describe('viewerLayoutType', () => {
+  it('reads a newspaper grid as two columns, leaving the other layouts as they are', () => {
+    expect(viewerLayoutType('multiple')).toBe('double');
+    for (const t of ['single', 'double', 'oneAndHalf'] as const) expect(viewerLayoutType(t)).toBe(t);
+  });
+
+  it('shows as many columns of a multiple layout as fit the measure', () => {
+    // Read as double: three columns at 1270px, as for a two-column book.
+    const g = pickPageGeometry({ ...base, layoutType: viewerLayoutType('multiple'), innerViewportW: 1270 });
+    expect(g).toEqual({ pageWidthPx: 820, visibleColumns: 3 });
   });
 });
 

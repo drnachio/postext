@@ -105,6 +105,47 @@ describe('character grid (cjk.grid)', () => {
     expect(cols[1]!.bbox.x - (cols[0]!.bbox.x + cols[0]!.bbox.width)).toBeCloseTo(18, 9);
   });
 
+  it.each([
+    [3, 14],
+    [4, 10],
+  ])('cuts a multiple layout of %i columns into %i whole characters each, whole-em gutters between them (#505)', (n, chars) => {
+    // 16开 (184 × 260 mm), 小五 (9 pt), 6 mm gutters (2 characters). The
+    // 154 mm inside the margins (436.5 pt) less the gutters, in whole 9 pt
+    // characters per column: 14 on three columns, 10 on four.
+    const config: PostextConfig = {
+      ...bookConfig({ enabled: true, show: true }),
+      page: { width: mm(184), height: mm(260), dpi: 72, margins: { top: mm(15), bottom: mm(15), left: mm(15), right: mm(15) } },
+      layout: { layoutType: 'multiple', columnCount: n, gutterWidth: mm(6) },
+      bodyText: { fontSize: pt(9), lineHeight: pt(13.5), textAlign: 'justify', hyphenation: { enabled: false } },
+    };
+    const g = cjkGridGeometry(config)!;
+    expect(g).toMatchObject({ columns: n, gutterEm: 2, charsPerLine: chars, clamped: {} });
+    expect(g.inline).toBeCloseTo(n * chars * 9 + (n - 1) * 18, 9);
+    // The type area is centred: the slack is shared by both side margins.
+    const area = computePageMetrics(resolveAllConfig(config)).contentArea;
+    expect(area.width).toBeCloseTo(g.inline, 9);
+    expect(area.x).toBeCloseTo(15 * MM + (154 * MM - g.inline) / 2, 9);
+    const han = PASSAGE.replace(/[^一-鿿]/g, '');
+    const doc = buildDocument({ markdown: han.repeat(12) }, config);
+    const page = doc.pages[0]!;
+    const cols = [...page.columns].sort((a, b) => a.bbox.x - b.bbox.x);
+    expect(cols).toHaveLength(n);
+    for (let i = 0; i < n; i++) {
+      expect(cols[i]!.bbox.width).toBeCloseTo(chars * 9, 9);
+      if (i > 0) expect(cols[i]!.bbox.x - (cols[i - 1]!.bbox.x + cols[i - 1]!.bbox.width)).toBeCloseTo(18, 9);
+      // Han text set solid: every full line fills the column.
+      for (const block of cols[i]!.blocks) {
+        for (const line of block.lines.slice(0, -1)) {
+          expect(line.bbox.x - block.bbox.x + line.bbox.width).toBeCloseTo(chars * 9, 6);
+        }
+      }
+    }
+    // The overlay draws a set of cells on every column.
+    const cells = cjkGridCells(doc.config, page.contentArea, doc.baselineGrid, page.columns)!;
+    expect(cells.columns).toEqual(cols.map((c) => c.bbox.x));
+    expect(cells.columnChars).toEqual(cols.map(() => chars));
+  });
+
   it('cuts a oneAndHalf page into columns of whole characters and draws the grid on each', () => {
     // 大32开 as above, mirrored, the side column outside: 30 % of the 104 mm
     // inside the margins is 88.4 pt, 8 characters; the 6 mm gutter 2; the

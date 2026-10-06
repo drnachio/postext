@@ -152,7 +152,7 @@ export interface RecipeFolio {
     showThrough?: boolean;
   };
   binding?: {
-    type?: "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch";
+    type?: "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch" | "folded";
     cover?: "case" | "pages";
     coverMaterial?: "cloth" | "paper" | "leather";
     coverColor?: string;
@@ -356,6 +356,10 @@ export interface Gap {
   aliases: Localized<string[]>;
   explanation: Localized;
   docs?: DocAnchor;
+  /** The engine version that closed this gap. A fixed gap stays in the
+   *  registry so the recipes and questions that name it still resolve, but
+   *  it is no longer offered as a gap and gives no Workaround badge. */
+  fixedIn?: SemVer;
 }
 
 export interface WarningEntry {
@@ -475,6 +479,8 @@ export interface CaptureVariant {
     trimMm: [number, number];
     dpi: number;
     layoutType: string;
+    /** `multiple` layouts: the body's column count, as the engine cuts it. */
+    columnCount?: number;
     gutterMm?: number;
     mirror: boolean;
     body: { family: string; sizePt: number; leadingPt: number };

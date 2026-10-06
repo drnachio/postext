@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { mediaLang } from "@/i18n/locales";
 import { MEDIA_BASE, ShowreelVideo } from "@/components/landing/ShowreelVideo";
 import { VideoTranscript } from "@/components/landing/VideoTranscript";
 
@@ -9,10 +10,7 @@ export async function TutorialVideo() {
   if (!MEDIA_BASE) return null;
   const t = await getTranslations("Tutorial");
   const locale = await getLocale();
-  // No Catalan cut: Catalan pages play the Spanish one. No Arabic or
-  // Japanese cut: those pages play the English one, with their own
-  // transcript underneath.
-  const lang = /^(es|ca)/.test(locale) ? "es" : locale.startsWith("zh") ? "zh" : "en";
+  const lang = mediaLang(locale);
 
   return (
     <div className="my-6">

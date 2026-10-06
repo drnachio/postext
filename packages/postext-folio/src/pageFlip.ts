@@ -35,7 +35,6 @@ import {
   Vector2,
   Vector3,
   Vector4,
-  VideoTexture,
   WebGLRenderer,
   WebGLRenderTarget,
   type Material,
@@ -51,6 +50,7 @@ import { along, BINDINGS, gutterOcclusion, profiles, stackGeometry, topAt, type 
 import { environment, type Environment, type EnvironmentKind } from "./environments";
 import { pagePaper, paperSpec, type PaperSpec } from "./paper";
 import { loadDeskMaps, type DeskMaps } from "./deskTextures";
+import { ATLAS_MAX, MAX_PAGE_VIDEOS, VideoAtlas } from "./videoAtlas";
 import { cachedDesk, cachedRelief, type DeskKind } from "./procedural";
 
 /** A page: an image URL, or a canvas or a decoded image to draw; "" is a
@@ -77,6 +77,13 @@ export interface PageVideoFrame {
   across: { x: number; y: number };
   down: { x: number; y: number };
   crop?: { x: number; y: number; width: number; height: number };
+}
+
+/** A video drawn on the page whose source is `src`. */
+export interface PageVideo {
+  src: PageSource;
+  element: HTMLVideoElement;
+  frame: PageVideoFrame;
 }
 
 /** How the book is presented: the `folio` settings, the page's physical
@@ -386,15 +393,17 @@ type PageUniforms = {
   /** Paper closer above a point than this (px) does not occlude it: a
    *  leaf's own surface round a point is not a blocker. */
   uOccBias: { value: number };
-  /** A video playing on one of the leaf's pages (#477): its picture, the
-   *  face it is on (0 none, 1 front, 2 back) and where it lies there (see
-   *  {@link PageVideoFrame}). */
+  /** The videos playing on the leaf's pages (#477, #507): the atlas their
+   *  pictures are drawn into, one texel of it, how many there are and, for
+   *  each, where it lies on its page (`origin`, `across`: xy, zw; see
+   *  {@link PageVideoFrame}), its `down` and face (xy; z 1 front, 2
+   *  back) and its slot in the atlas (fractions from its top left). */
   uVideo: { value: Texture | null };
-  uVidFace: { value: number };
-  uVidO: { value: Vector2 };
-  uVidA: { value: Vector2 };
-  uVidB: { value: Vector2 };
-  uVidCrop: { value: Vector4 };
+  uVidTexel: { value: Vector2 };
+  uVidCount: { value: number };
+  uVidOA: { value: Vector4[] };
+  uVidDF: { value: Vector4[] };
+  uVidRect: { value: Vector4[] };
   /** The leaves in the air as a gloss open page mirrors them (#483): the
    *  picture (drawn from the camera mirrored in the page's plane, so a
    *  point of the page finds what it mirrors at its own place on screen,
@@ -435,11 +444,11 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uLeafOcc: { value: 0.45 },
     uOccBias: { value: 6 },
     uVideo: { value: null },
-    uVidFace: { value: 0 },
-    uVidO: { value: new Vector2() },
-    uVidA: { value: new Vector2(1, 0) },
-    uVidB: { value: new Vector2(0, 1) },
-    uVidCrop: { value: new Vector4(0, 0, 1, 1) },
+    uVidTexel: { value: new Vector2(1, 1) },
+    uVidCount: { value: 0 },
+    uVidOA: { value: Array.from({ length: MAX_PAGE_VIDEOS }, () => new Vector4()) },
+    uVidDF: { value: Array.from({ length: MAX_PAGE_VIDEOS }, () => new Vector4()) },
+    uVidRect: { value: Array.from({ length: MAX_PAGE_VIDEOS }, () => new Vector4()) },
     uReflection: { value: null },
     uReflectionOn: { value: 0 },
     uReflectionSize: { value: new Vector2(1, 1) },
@@ -492,11 +501,11 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         uniform float uLeafOcc;
         uniform float uSign;
         uniform sampler2D uVideo;
-        uniform float uVidFace;
-        uniform vec2 uVidO;
-        uniform vec2 uVidA;
-        uniform vec2 uVidB;
-        uniform vec4 uVidCrop;
+        uniform vec2 uVidTexel;
+        uniform float uVidCount;
+        uniform vec4 uVidOA[${MAX_PAGE_VIDEOS}];
+        uniform vec4 uVidDF[${MAX_PAGE_VIDEOS}];
+        uniform vec4 uVidRect[${MAX_PAGE_VIDEOS}];
         uniform sampler2D uReflection;
         uniform float uReflectionOn;
         uniform vec2 uReflectionSize;
@@ -517,15 +526,22 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           vec2 uvB = vec2(1.0 - u, vPageUv.y);
           vec3 ink = uPaper;
           if (has > 0.5 && has < 1.5) ink = front ? texture2D(uFront, uvF).rgb : texture2D(uBack, uvB).rgb;
-          // A video playing on this face, printed over its poster: the
-          // point of the page (from its top left corner) in the picture's
-          // own frame, which may lie turned on the page.
-          if (uVidFace > 0.5 && (uVidFace < 1.5) == front) {
-            vec2 tuv = front ? uvF : uvB;
-            vec2 p = vec2(tuv.x, 1.0 - tuv.y) - uVidO;
-            vec2 st = vec2(dot(p, uVidA) / dot(uVidA, uVidA), dot(p, uVidB) / dot(uVidB, uVidB));
+          // The videos playing on this face, printed over their posters:
+          // the point of the page (from its top left corner) in each
+          // picture's own frame, which may lie turned on the page, then in
+          // its slot of the atlas (kept half a texel inside it, clear of
+          // the next slot).
+          vec2 tuv = front ? uvF : uvB;
+          for (int i = 0; i < ${MAX_PAGE_VIDEOS}; i++) {
+            if (float(i) >= uVidCount) break;
+            vec4 oa = uVidOA[i];
+            vec4 df = uVidDF[i];
+            if ((df.z < 1.5) != front) continue;
+            vec2 p = vec2(tuv.x, 1.0 - tuv.y) - oa.xy;
+            vec2 st = vec2(dot(p, oa.zw) / dot(oa.zw, oa.zw), dot(p, df.xy) / dot(df.xy, df.xy));
             if (st.x >= 0.0 && st.x <= 1.0 && st.y >= 0.0 && st.y <= 1.0) {
-              vec2 v = uVidCrop.xy + st * uVidCrop.zw;
+              vec4 r = uVidRect[i];
+              vec2 v = clamp(r.xy + st * r.zw, r.xy + 0.5 * uVidTexel, r.xy + r.zw - 0.5 * uVidTexel);
               ink = texture2D(uVideo, vec2(v.x, 1.0 - v.y)).rgb;
             }
           }
@@ -1356,7 +1372,8 @@ export class PageFlipper {
   setAppearance(appearance: FlipAppearance) {
     this.appearance = appearance;
     this.resolved = resolveFolioConfig(withStockForExtent(appearance.folio, this.pageCount(appearance)));
-    this.bookSpec = paperSpec(this.resolved.paper);
+    const mm = appearance.pageWidthMm;
+    this.bookSpec = paperSpec(this.resolved.paper, mm);
     // The settings now give the view the reader orbited to (it was just
     // saved as the book's): they drive it again, so editing them moves it.
     const { yaw, pitch } = this.orbit;
@@ -1370,20 +1387,22 @@ export class PageFlipper {
       if (!own) return this.bookSpec;
       const key = JSON.stringify(own);
       let spec = specs.get(key);
-      if (!spec) specs.set(key, (spec = paperSpec(pagePaper(appearance.folio, own))));
+      if (!spec) specs.set(key, (spec = paperSpec(pagePaper(appearance.folio, own), mm)));
       return spec;
     });
     const r = this.resolved;
     const covers = appearance.coverLeaves;
     const ownCovers = !!covers && (covers.front !== undefined || covers.back !== undefined);
-    this.coverSpec = !ownCovers
+    // A newspaper's front page is the outer sheet, no heavier than the
+    // others: it turns as a page does.
+    this.coverSpec = !ownCovers || r.binding.type === "folded"
       ? null
       : r.binding.type === "saddleStitch"
         ? // A stapled booklet's cover is a sheet like the others, of the same
           // finish and a little heavier: it bends and turns as a page does.
-          paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false })
+          paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false }, mm)
         : {
-            ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
+            ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }, mm),
             // The book's own printed covers: in a case binding a printed
             // (litho-laminated) case, on the case's 2–3 mm board; on a
             // paperback a laminated cover card, about 0.3 mm.
@@ -1428,9 +1447,17 @@ export class PageFlipper {
     c.clearcoat = mat === "paper" ? 0.35 : 0;
     c.normalMap?.dispose();
     c.normalMap = mat === "cloth" ? cachedRelief("linen").normal.clone() : mat === "leather" ? cachedDesk("leather").normal.clone() : null;
+    if (r.binding.type === "folded") {
+      // No cover at all: the back of the fold is the outer sheet's paper.
+      c.color.set(r.paper.shade.hex);
+      c.roughness = this.bookSpec.roughness;
+      c.sheen = this.bookSpec.sheen;
+      c.sheenColor.set(1, 1, 1);
+      c.clearcoat = this.bookSpec.clearcoat;
+    }
     c.needsUpdate = true;
-    // The spine.
-    const spine = r.binding.type === "saddleStitch" ? null : (appearance.spineImage ?? null);
+    // The spine: none on a stapled or folded book.
+    const spine = r.binding.type === "saddleStitch" || r.binding.type === "folded" ? null : (appearance.spineImage ?? null);
     if (spine !== this.spineSrc) {
       this.spineSrc = spine;
       this.spineTex?.dispose();
@@ -1696,8 +1723,8 @@ export class PageFlipper {
     const tR = thick(right, extra.after);
     const binding = this.resolved.binding.type;
     // A board on top of a stack lies flat; the document's own covers
-    // replace the case.
-    const noCase = !!this.coverSpec;
+    // replace the case, and folded sheets have none.
+    const noCase = !!this.coverSpec || binding === "folded";
     const rigid = (leaf: number | undefined) => leaf !== undefined && this.specOf(leaf).rigidity > 0.5;
     const { left: pl, right: pr, board } = profiles(binding, this.W, k, tL, tR, {
       flatLeft: rigid(left[left.length - 1]),
@@ -1760,7 +1787,7 @@ export class PageFlipper {
       this.stacks.push(mesh);
       this.stage.add(mesh);
     }
-    if (noCase) this.coverMaterial.color.copy(this.boardColor());
+    if (noCase && binding !== "folded") this.coverMaterial.color.copy(this.boardColor());
     // The back of the block: the folds sewn at the spine, under the line
     // where the two open pages meet (nothing shows through the gutter).
     // Beside an empty side (the book closed, or opened at its first or
@@ -1881,6 +1908,8 @@ export class PageFlipper {
       for (const mesh of [this.left, this.right, ...this.leaves.values()]) mesh.material.userData.spec = null;
     }
     this.buildBook();
+    // The videos' slots follow the size the pages are seen at.
+    if (this.videos.length) this.packVideos();
     // The desk: far wider than the view, tiled at its physical scale.
     const k = this.pxPerMm();
     const size = 40 * Math.max(W, H);
@@ -2042,51 +2071,66 @@ export class PageFlipper {
     this.redraw();
   }
 
-  /** The video playing on a page (#477), or none. */
-  private video: { src: PageSource; element: HTMLVideoElement; texture: VideoTexture; frame: PageVideoFrame; callback: number } | null = null;
+  /** The videos playing on the pages (#477, #507). */
+  private videos: PageVideo[] = [];
+  /** Their pictures, drawn into one texture. */
+  private atlas: VideoAtlas | null = null;
+  /** The slot sizes the atlas was packed for. */
+  private atlasKey = "";
 
   /**
-   * Draws a video on the page whose source is `src` (see
-   * {@link PageVideoFrame}), over its painting, on whichever face of
-   * whichever leaf carries that page: lying open or turning, the picture
-   * bends with the paper. `null` takes it off. The book is drawn again at
-   * every new frame of the video.
+   * Draws videos on the pages whose sources are their `src` (see
+   * {@link PageVideoFrame}), over their paintings, on whichever face of
+   * whichever leaf carries each page: lying open or turning, a picture
+   * bends with the paper. Any number play together, up to
+   * `MAX_PAGE_VIDEOS` (8) drawn at once; an empty list takes them all off.
+   * The book is drawn again at every new frame of any of them.
    */
-  setVideo(video: { src: PageSource; element: HTMLVideoElement; frame: PageVideoFrame } | null) {
-    const old = this.video;
-    if (old && (!video || video.element !== old.element)) {
-      old.element.cancelVideoFrameCallback?.(old.callback);
-      old.texture.dispose();
-      this.video = null;
-    }
-    if (video) {
-      let texture = this.video?.texture;
-      if (!texture) {
-        texture = new VideoTexture(video.element);
-        texture.colorSpace = SRGBColorSpace;
-        texture.minFilter = LinearFilter;
-        texture.generateMipmaps = false;
-      }
-      this.video = { ...video, texture, callback: this.video?.callback ?? 0 };
-      if (!this.video.callback) this.watchVideo();
-    }
-    for (const mesh of this.pageMeshes()) this.dressVideo(mesh);
+  setVideos(videos: readonly PageVideo[]) {
+    const crop = (v: PageVideo) => JSON.stringify(v.frame.crop ?? null);
+    // The same pictures (a page painted on a new canvas, a layout that
+    // moved one): the atlas stays as it is unless their sizes changed.
+    const same = videos.length === this.videos.length && videos.every((v, i) => v.element === this.videos[i]!.element && crop(v) === crop(this.videos[i]!));
+    this.videos = videos.slice();
+    if (!same) this.atlasKey = "";
+    this.packVideos();
+    this.dressVideos();
     this.redraw();
   }
 
-  /** Draws the book again at each new frame of the video (a turning book
-   *  is drawn by its own frames). */
-  private watchVideo() {
-    const v = this.video;
-    if (!v) return;
-    const el = v.element;
-    const next = () => {
-      if (this.video?.element !== el || this.disposed) return;
-      this.redraw();
-      v.callback = el.requestVideoFrameCallback ? el.requestVideoFrameCallback(next) : requestAnimationFrame(next);
-      if (this.video) this.video.callback = v.callback;
-    };
-    v.callback = el.requestVideoFrameCallback ? el.requestVideoFrameCallback(next) : requestAnimationFrame(next);
+  /** One video on a page, or none (see {@link setVideos}). */
+  setVideo(video: PageVideo | null) {
+    this.setVideos(video ? [video] : []);
+  }
+
+  /** Packs the videos' pictures into the atlas, each at about the size it
+   *  is seen on screen at rest, again when the book's size changes. */
+  private packVideos() {
+    const sizes = this.videos.map(({ frame }) => {
+      const w = Math.hypot(frame.across.x * this.W, frame.across.y * this.H) * this.dpr;
+      const h = Math.hypot(frame.down.x * this.W, frame.down.y * this.H) * this.dpr;
+      return { width: Math.max(16, Math.round(w)), height: Math.max(16, Math.round(h)) };
+    });
+    const key = this.videos.map((v, i) => `${sizes[i]!.width}x${sizes[i]!.height}`).join(",") + `|${this.videos.length}`;
+    if (key === this.atlasKey && (this.atlas || !this.videos.length)) return;
+    this.atlasKey = key;
+    if (!this.videos.length) {
+      this.atlas?.dispose();
+      this.atlas = null;
+    } else {
+      const max = Math.min(ATLAS_MAX, (this.renderer.capabilities as { maxTextureSize?: number }).maxTextureSize ?? ATLAS_MAX);
+      this.atlas ??= new VideoAtlas((first) => {
+        if (first) this.dressVideos();
+        this.redraw();
+      }, max);
+      this.atlas.set(this.videos.map((v, i) => ({ element: v.element, ...(v.frame.crop ? { crop: v.frame.crop } : {}), ...sizes[i]! })));
+    }
+    this.dressVideos();
+    this.redraw();
+  }
+
+  private dressVideos() {
+    for (const mesh of this.pageMeshes()) this.dressVideo(mesh);
   }
 
   /** The meshes that show pages: the open ones, the leaves in the air and
@@ -2095,20 +2139,30 @@ export class PageFlipper {
     return [this.left, this.right, ...this.leaves.values(), ...(this.blockMesh ? [this.blockMesh] : [])];
   }
 
-  /** Sets a mesh's video uniforms: on the face that shows the video's
-   *  page, off elsewhere. */
+  /** Sets a mesh's video uniforms: the videos on the faces that show their
+   *  pages (once their pictures are in the atlas), none elsewhere. */
   private dressVideo(mesh: PageMesh) {
     const u = mesh.material.userData.uniforms;
-    const v = this.video;
-    const face = v && v.src ? (mesh.userData.Front === v.src ? 1 : mesh.userData.Back === v.src ? 2 : 0) : 0;
-    u.uVidFace.value = face;
-    u.uVideo.value = face && v ? v.texture : null;
-    if (!face || !v) return;
-    const { origin, across, down, crop } = v.frame;
-    u.uVidO.value.set(origin.x, origin.y);
-    u.uVidA.value.set(across.x, across.y);
-    u.uVidB.value.set(down.x, down.y);
-    u.uVidCrop.value.set(crop?.x ?? 0, crop?.y ?? 0, crop?.width ?? 1, crop?.height ?? 1);
+    const atlas = this.atlas;
+    let n = 0;
+    for (const v of atlas ? this.videos : []) {
+      if (n >= MAX_PAGE_VIDEOS) break;
+      // A blank page ("") is no page of its own: it shows no video.
+      const face = v.src ? (mesh.userData.Front === v.src ? 1 : mesh.userData.Back === v.src ? 2 : 0) : 0;
+      const rect = face ? atlas!.rectOf(v.element) : null;
+      if (!rect) continue;
+      const { origin, across, down } = v.frame;
+      u.uVidOA.value[n]!.set(origin.x, origin.y, across.x, across.y);
+      u.uVidDF.value[n]!.set(down.x, down.y, face, 0);
+      u.uVidRect.value[n]!.set(rect.x, rect.y, rect.width, rect.height);
+      n++;
+    }
+    u.uVidCount.value = n;
+    u.uVideo.value = n ? atlas!.texture : null;
+    if (n) {
+      const size = atlas!.size;
+      u.uVidTexel.value.set(1 / size.width, 1 / size.height);
+    }
   }
 
   /** A page source drawn again in place (a canvas repainted): its
@@ -2990,7 +3044,7 @@ export class PageFlipper {
 
   dispose() {
     this.disposed = true;
-    this.setVideo(null);
+    this.setVideos([]);
     cancelAnimationFrame(this.raf);
     cancelAnimationFrame(this.still);
     cancelAnimationFrame(this.orbitFrame);

@@ -21,6 +21,7 @@ export const DEFAULT_VIDEO_PLAYER_OPTIONS: ResolvedVideoPlayerOptions = {
   autoplay: false,
   muted: false,
   loop: false,
+  exclusive: true,
   preload: 'metadata',
   privacy: true,
 };

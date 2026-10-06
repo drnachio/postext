@@ -91,6 +91,15 @@ export interface ResourcePlacement {
    *  mirrored pages `'left'` is the sheet's right; `'start'` / `'end'`
    *  (#371) are the same sides by their logical names. */
   align?: 'left' | 'center' | 'right' | 'start' | 'end';
+  /** How many adjacent columns a `span: 'column'` float takes, on a page of
+   *  more than one text column: a picture across two of a newspaper's four
+   *  columns (#505). A whole number, default 1. The float's measure is
+   *  those columns and the gutters between them; it takes the head or foot
+   *  of all of them at once, the columns after the first empty on the
+   *  current page. As many columns as the page has (or more) is a
+   *  `span: 'page'` float. Ignored by `'page'` and `'side'` spans, by a
+   *  rotated resource and by an inline (`position: 'here'`) embed. */
+  columns?: number;
   /** Set the caption beside the figure, in the float-only side column of
    *  a `oneAndHalf` layout (`layout.sideColumnRole: 'floats'`): the body
    *  keeps its column, the caption goes to the margin level with the
@@ -176,6 +185,17 @@ export interface VideoPlayerOptions {
   muted?: boolean;
   /** Play again from the start at the end. Default `false`. */
   loop?: boolean;
+  /** Starting this video pauses the others on show, so one plays at a
+   *  time. Default `true`. `false` lets it play alongside the others: the
+   *  silent looping clips of a "living" page, several running at once
+   *  (#507). Folio (which also starts an autoplaying, non-exclusive video
+   *  each time its page comes into view and stops it when the page is
+   *  turned away), the HTML5 player of the HTML viewer, and EPUB where the
+   *  reading system runs scripts (a page or chapter with videos to
+   *  coordinate links a small playback script; the videos of one content
+   *  document are kept to the rule, not those of a facing page). The
+   *  YouTube and Vimeo embeds play each video on its own terms. */
+  exclusive?: boolean;
   /** How much of a self-hosted file the browser loads before play:
    *  `'none'`, `'metadata'` (the default) or `'auto'`. HTML5 only. */
   preload?: 'none' | 'metadata' | 'auto';
@@ -642,7 +662,11 @@ export interface Dimension {
   unit: DimensionUnit;
 }
 
-export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'custom';
+/** A trim size by name: the book sizes in centimetres, and the newspaper
+ *  formats (#506) — `'broadsheet'` 375 × 597 mm, `'berliner'` 315 × 470 mm
+ *  `'tabloid'` 280 × 430 mm and `'compact'` 297 × 420 mm (a half-broadsheet
+ *  fold). */
+export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'broadsheet' | 'berliner' | 'tabloid' | 'compact' | 'custom';
 
 export interface PageMargins {
   top?: Dimension;
@@ -763,7 +787,11 @@ export interface ResolvedPageConfig {
   binding: 'left' | 'right';
 }
 
-export type LayoutType = 'single' | 'double' | 'oneAndHalf';
+/** How the body is divided into columns. `'single'`, `'double'` and
+ *  `'oneAndHalf'` (a main column and a narrower side column); `'multiple'`:
+ *  {@link LayoutConfig.columnCount} equal columns, the grid of newspapers
+ *  and of many magazines (since postext 1.18, #505). */
+export type LayoutType = 'single' | 'double' | 'oneAndHalf' | 'multiple';
 
 /** The direction lines run in (see `LayoutConfig.writingMode`). */
 export type WritingMode = 'horizontal-tb' | 'vertical-rl';
@@ -793,6 +821,12 @@ export interface ColumnRuleConfig {
 
 export interface LayoutConfig {
   layoutType?: LayoutType;
+  /** `multiple` only: how many equal columns the body runs in, 3 to 8.
+   *  Default 3. A value outside that range (or not a whole number) is
+   *  clamped to the nearest whole count that is, and reported on
+   *  `VDTDocument.configWarnings` (`columnCountClamped`). Every column is
+   *  `(content width − (n − 1) × gutterWidth) / n` wide. */
+  columnCount?: number;
   gutterWidth?: Dimension;
   /** `oneAndHalf` only: width of the side column, in percent of the content
    *  width; the main column takes what is left after the gutter. Default
@@ -871,6 +905,9 @@ export type InlineResourceGap = 'around' | 'above';
 
 export interface ResolvedLayoutConfig {
   layoutType: LayoutType;
+  /** As written (a `multiple` layout clamps it when it cuts the columns,
+   *  see {@link columnCountUsed}). */
+  columnCount: number;
   gutterWidth: Dimension;
   sideColumnPercent: number;
   sideColumnRole: SideColumnRole;
@@ -2161,6 +2198,12 @@ export interface CalloutStyleConfig {
   title?: string;
   /** Default `'column'`. Overridable per instance with the `span` attribute. */
   span?: CalloutSpan;
+  /** How many adjacent columns a floated `span: 'column'` box (`placement`
+   *  `auto`, `top` or `bottom`) takes, as `ResourcePlacement.columns` does
+   *  for a figure: a story's box across two of a newspaper's five columns
+   *  (#505). Default 1. Overridable per instance with the `columns`
+   *  attribute. A box set in the flow (`here`) keeps to its column. */
+  columns?: number;
   /** Default `'here'`. Overridable per instance with the `placement` attribute. */
   placement?: CalloutPlacement;
   /** Where a side box (`span: 'side'`) stands when the text after its
@@ -2286,6 +2329,7 @@ export interface ResolvedCalloutStyleConfig {
   name: string;
   title: string;
   span: CalloutSpan;
+  columns: number;
   placement: CalloutPlacement;
   sideAtColumnEnd: CalloutSideAtColumnEnd;
   fixed: { anchor: ElementAnchor; offset: { x: Dimension; y: Dimension } };
@@ -3199,10 +3243,12 @@ export type FolioPaperTexture = 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' |
 
 /** How the book is bound: a hardcover (case bound, boards larger than the
  *  pages), a paperback (perfect bound: glued, opens less flat), a sewn
- *  softcover, a lay-flat binding that opens without a gutter dip, or a
+ *  softcover, a lay-flat binding that opens without a gutter dip, a
  *  saddle stitch (folded sheets stapled through the fold, as a magazine or
- *  a booklet: no flat spine). */
-export type FolioBindingType = 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
+ *  a booklet: no flat spine), or folded (#506): sheets folded once and
+ *  laid one inside the other with nothing holding them, as a newspaper —
+ *  no staples, no spine, no cover board; the first page is the front. */
+export type FolioBindingType = 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
 
 /** What the cover is made of. `auto`: cloth on a hardcover, card on a
  *  softcover. */
@@ -4770,7 +4816,10 @@ export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | '
    *  numbers, captions and caption bars, table text, rules and fills
    *  (header, body, zebra rows, a cell's own fill), callout boxes
    *  (background, border, stripe, title) and chips (fill, outline, text) —
-   *  takes the section's value. Inline swatches keep theirs. Where two
+   *  takes the section's value. Inline swatches keep theirs. The page
+   *  colour too: when `page.backgroundColor` links to an overridden entry
+   *  (or, unlinked, has its base value), the section's pages paint the
+   *  section's value (`VDTPage.background`, since postext 1.18). Where two
    *  entries share a base value and the section gives them different
    *  values, each flow colour takes the value its own settings link to: a
    *  block's text, bold, italic, reference, marker and separator colours

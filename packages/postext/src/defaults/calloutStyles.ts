@@ -1,3 +1,4 @@
+import { floatColumnCount } from './shared';
 import type {
   CalloutFixedConfig,
   CalloutStyleConfig,
@@ -22,6 +23,7 @@ const PT0: Dimension = { value: 0, unit: 'pt' };
 export const DEFAULT_CALLOUT_STYLE_STATIC = {
   title: '',
   span: 'column' as const,
+  columns: 1,
   placement: 'here' as const,
   sideAtColumnEnd: 'before' as const,
   fixed: {
@@ -124,6 +126,7 @@ function resolveCalloutStyleConfig(
     name: partial.name ?? partial.id,
     title: partial.title ?? d.title,
     span: partial.span ?? d.span,
+    columns: floatColumnCount(partial.columns),
     placement: partial.placement ?? d.placement,
     // Any other value reads as the default.
     sideAtColumnEnd: partial.sideAtColumnEnd === 'after' ? 'after' : d.sideAtColumnEnd,
@@ -306,6 +309,7 @@ export function stripCalloutStylesDefaults(
     if (s.name !== undefined && s.name !== s.id) r.name = s.name;
     if (s.title !== undefined && s.title !== d.title) r.title = s.title;
     if (s.span !== undefined && s.span !== d.span) r.span = s.span;
+    if (s.columns !== undefined && s.columns !== d.columns) r.columns = s.columns;
     if (s.placement !== undefined && s.placement !== d.placement) r.placement = s.placement;
     if (s.sideAtColumnEnd !== undefined && s.sideAtColumnEnd !== d.sideAtColumnEnd) r.sideAtColumnEnd = s.sideAtColumnEnd;
     if (s.fixed) {

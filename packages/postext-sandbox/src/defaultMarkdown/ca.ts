@@ -36,6 +36,8 @@ Aquest llibre és la seva pròpia demostració. La coberta, l'índex que es nume
 Obre el tauler **Text** i tria aquest capítol al selector de capítols de la seva capçalera. Canvia una paraula d'aquest paràgraf o esborra una frase: la pàgina es torna a compondre, les columnes es reequilibren i els folis dels capítols següents s'actualitzen.
 :::
 
+Si prefereixes veure-ho abans de llegir-ho, :ref{id="postext-showreel"} ho recorre en dos minuts; a la vista Folio es reprodueix sobre la mateixa pàgina.
+
 ## Com llegir aquest llibre
 
 El llibre s'organitza en tres parts. **Fonaments**, la part en què ets, explica el problema que resol Postext i com està construït el motor: què hi entra, què en surt i què passa entremig. **L'ofici** tracta de tipografia: com es compon una línia, com s'emmarca una pàgina, on van les figures i les taules i com un conjunt de capítols es converteix en un llibre. **La pràctica** s'ocupa de les eines: el format del document, el Sandbox, els quatre formats de sortida —canvas, HTML, PDF i EPUB— i el projecte que els envolta.
@@ -65,7 +67,7 @@ CSS resol el primer cas de manera brillant. Per al segon, la plataforma no ha of
 _La tipografia editorial és un problema de satisfacció de restriccions. Al navegador no se li va donar mai el llenguatge per enunciar-les._
 :::
 
-CSS descriu amb gran detall l'_aparença_ de qualsevol regió de text. El que li falta és _optimització global_: la capacitat de sospesar un paràgraf, una columna i una pàgina sencers abans de decidir res.
+CSS descriu amb gran detall l'_aparença_ de qualsevol regió de text. El que li falta és _optimització global_: la capacitat de sospesar un paràgraf, una columna i una pàgina sencers abans de decidir res. Un navegador tanca cada línia quan hi arriba i no hi torna quan la següent planteja un problema, de manera que no pot escurçar un paràgraf per evitar una vídua.
 
 ## El que no resolen les eines existents
 
@@ -99,7 +101,7 @@ El que comparteixen és la preferència per descriure el resultat en lloc de col
 
 Tenir clar l'abast manté esmolat el nucli. Postext no substitueix CSS a les interfícies: és un motor especialitzat en contingut extens i estructurat. No és un editor WYSIWYG: tu escrius Markdown i descrius el disseny, i el motor compon les pàgines. No gestiona punts de ruptura adaptables: triar una configuració per a cada mida de pantalla és decisió de l'aplicació que l'allotja. No carrega les fonts per tu: el motor mesura amb les fonts que el navegador ja té, així que una pàgina ha de carregar els seus tipus abans de maquetar. I, de moment, el motor de maquetació només funciona al navegador, perquè les seves mesures provenen de les mètriques de font del canvas d'un navegador real; el renderitzador de PDF i el generador d'EPUB, en canvi, també funcionen a Node.
 
-La mateixa modèstia s'aplica al contingut. Postext no intenta entendre el text que compon; aplica regles a l'estructura que rep. Un títol ha d'estar marcat com a títol, una figura s'ha de declarar com a recurs i una taula ha de ser una taula. A canvi, mai no esmena l'autor: res no es mou, no es reanomena ni es reescriu, i cada decisió que pren el motor és visible a la maquetació i es pot rastrejar fins a una regla de la configuració.
+La mateixa modèstia s'aplica al contingut. Postext no intenta entendre el text que compon; aplica regles a l'estructura que rep. Un títol ha d'estar marcat com a títol, una figura s'ha de declarar com a recurs i una taula ha de ser una taula. A canvi, mai no esmena l'autor: res no es mou, no es reanomena ni es reescriu, i cada decisió que pren el motor és visible a la maquetació i es pot rastrejar fins a una regla de la configuració. Si una decisió no convenç, es canvia la regla, no el text.
 
 # Com funciona el motor {lead="Hi entren Markdown i un objecte de configuració; en surt un arbre en què cada línia té una posició en unitats reals. Entremig, una canonada breu que mesura el text sense tocar el DOM i itera fins que la pàgina s'assenta." summary="Analitzar, mesurar, maquetar, convergir"}
 
@@ -442,7 +444,7 @@ Fes clic al peu de qualsevol figura del canvas: el tauler Recursos s'obre en aqu
 
 Un vídeo és un recurs més. Es menciona, es numera a part (Vídeo 1.1 al costat de Figura 1.1) i flota fins al primer buit lliure, com una figura. Pot venir de YouTube o de Vimeo, d'un fitxer desat al llibre o d'una adreça web: un MP4 o un WebM en un servidor, o un flux HLS, la llista \`.m3u8\` amb què se serveix un vídeo llarg a trossos i en diverses qualitats.
 
-En paper s'imprimeix la seva portada, un fotograma triat, amb una marca de reproducció i un codi QR que obre el vídeo; al PDF la portada també és un enllaç. La vista HTML i l'EPUB el reprodueixen amb el seu propi reproductor, llevat dels de YouTube i Vimeo i dels fluxos HLS, que un llibre electrònic només pot enllaçar. A la vista Folio, un clic a la portada el reprodueix a la mateixa pàgina, i el vídeo continua mentre es passa el full.
+En paper s'imprimeix la seva portada, un fotograma triat, amb una marca de reproducció i un codi QR que obre el vídeo; al PDF la portada també és un enllaç. La vista HTML i l'EPUB el reprodueixen amb el seu propi reproductor, llevat dels de YouTube i Vimeo i dels fluxos HLS, que un llibre electrònic només pot enllaçar. A la vista Folio, un clic a la portada el reprodueix a la mateixa pàgina, i el vídeo continua mentre es passa el full. Els vídeos d'aquest llibre, com :ref{id="postext-showreel"}, són fluxos HLS servits des d'una xarxa de distribució de continguts, cadascun en la llengua d'aquesta edició.
 
 # Llibres, parts i capçaleres {lead="Un llibre és més que els seus capítols: una coberta, un índex que es manté al dia, portadelles de part, obertures que anuncien cada capítol i capçaleres que saben on és el lector. Tot això és configuració." summary="Capítols, estils de títol, dissenys, parts, índex i folis"}
 
@@ -623,7 +625,7 @@ El Sandbox també és un paquet, _postext-sandbox_, un component de React que qu
 
 # Sortida: canvas, HTML, PDF i EPUB {lead="Un arbre, quatre sortides. El canvas previsualitza, l'HTML es llegeix en pantalla, el PDF va a impremta i l'EPUB va al dispositiu de qui llegeix, i totes surten de la mateixa maquetació." summary="Els renderitzadors, el PDF accessible, els llibres EPUB i l'ús de la biblioteca"}
 
-Com que tots els renderitzadors llegeixen el mateix VDT, la promesa de _el que veus és el que obtens_ és literal: els salts de línia, els límits de pàgina i la posició de cada figura coincideixen al canvas, a l'HTML i al PDF, i un EPUB de maquetació fixa també els conserva. Un EPUB de maquetació fluida renuncia expressament a la pàgina i conserva tota la resta del que ha resolt la maquetació: els números, les notes, les referències i els folis impresos.
+Com que tots els renderitzadors llegeixen el mateix VDT, la promesa de _el que veus és el que obtens_ és literal: els salts de línia, els límits de pàgina i la posició de cada figura coincideixen al canvas, a l'HTML i al PDF, i un EPUB de maquetació fixa també els conserva. Un EPUB de maquetació fluida renuncia expressament a la pàgina i conserva tota la resta del que ha resolt la maquetació: els números, les notes, les referències i els folis impresos. L'skill d'agent que adapta llibres existents a Postext revisa la seva feina amb aquestes sortides, com mostra :ref{id="skill-tutorial"}.
 
 ## Canvas
 
@@ -641,7 +643,7 @@ El renderitzador rep una funció que converteix l'identificador de fitxer d'un r
 
 El paquet _postext-pdf_ converteix el VDT en un PDF real, d'un document o d'un llibre sencer. No torna a mesurar mai: les mètriques del canvas són la referència i el PDF només les transporta, per això les línies es tallen exactament als mateixos llocs. Incrusta fonts reals, una d'estàtica per pes, així que la negreta és negreta, la cursiva és cursiva i el text es pot seleccionar. Sobre les pàgines hi afegeix marcadors a partir dels títols i les parts, etiquetes de pàgina que coincideixen amb els folis impresos, referències clicables, figures SVG com a vectors i una elecció d'espai de color —RGB, CMYK o escala de grisos— per a la impremta.
 
-Les fonts arriben al PDF a través d'un **proveïdor de fonts**, una funció que retorna els bytes d'una família en un pes i un estil donats. El proveïdor del Sandbox baixa cares estàtiques de Fontsource, un fitxer per pes, i les descomprimeix des de WOFF2; les fonts pròpies vénen del tauler Fonts. Els bytes dels recursos es lliuren de la mateixa manera, per identificador de fitxer. El renderitzat informa del seu progrés, s'executa en un worker propi quan se li demana i accepta un llibre sencer com una llista de documents de capítol, del qual produeix un únic PDF amb etiquetes de pàgina contínues, marcadors i enllaços.
+Les fonts arriben al PDF a través d'un **proveïdor de fonts**, una funció que retorna els bytes d'una família en un pes i un estil donats. El proveïdor del Sandbox baixa cares estàtiques de Fontsource, un fitxer per pes, i les descomprimeix des de WOFF2; les fonts pròpies vénen del tauler Fonts. Els bytes dels recursos es lliuren de la mateixa manera, per identificador de fitxer. El renderitzat informa del seu progrés, s'executa en un worker propi quan se li demana i accepta un llibre sencer com una llista de documents de capítol, del qual produeix un únic PDF amb etiquetes de pàgina contínues, marcadors i enllaços que porten d'un capítol a qualsevol altre.
 
 ## Accessible per defecte
 
@@ -703,6 +705,8 @@ El motor i el seu renderitzador de PDF es publiquen junts, amb el mateix número
 ## Pàgines com a imatges
 
 Una pàgina no necessita un navegador per convertir-se en imatge. El renderitzador de canvas dibuixa en qualsevol canvas que parli la interfície de dibuix del navegador, i a Node ho fa un canvas precompilat: es maqueta el llibre, es dibuixa la pàgina i es codifica com a JPEG o PNG. Així revisa la seva pròpia feina l'skill d'agent que adapta llibres existents a Postext. Després de cada canvi a la configuració o al text torna a maquetar el llibre, dibuixa només les pàgines en què treballa i les llegeix com a imatges, en un segon o dos, sense generar un PDF ni retallar-ne imatges. El PDF es genera al final, per a les comprovacions que només un PDF pot respondre: les fonts incrustades, les imatges a la seva resolució, l'estructura etiquetada.
+
+:ref{id="skill-tutorial"} mostra l'skill de principi a fi: rep el PDF de referència, les fonts i les il·lustracions originals, proposa una fitxa d'especificacions, compon el primer capítol i revisa cada pàgina que compon.
 
 # El llibre en 3D {lead="Una maquetació és un conjunt de pàgines, però un llibre és un objecte: un paper d'un cert gramatge i color, una enquadernació que obre d'una certa manera, un gruix que nota la mà. La vista Folio mostra les pàgines com aquest objecte abans d'imprimir res." summary="La vista Folio, els papers, les enquadernacions, les cobertes i la llum"}
 

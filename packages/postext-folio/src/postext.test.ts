@@ -95,4 +95,24 @@ describe("appearanceOf", () => {
       extraPages: { before: 10, after: 16 },
     });
   });
+
+  // A newspaper with no folio settings of its own (#506).
+  const news = (sizePreset: string, folio?: unknown) =>
+    ({ pages: [0, 1, 2, 3].map((i) => page(i)), trimOffset: 0, config: { page: { dpi: 300, sizePreset }, ...(folio ? { folio } : {}) } }) as unknown as VDTDocument;
+
+  it("shows a newspaper trim on folded newsprint (#506)", () => {
+    for (const preset of ["broadsheet", "berliner", "tabloid", "compact"]) {
+      expect(appearanceOf(news(preset), undefined).folio).toEqual({ paper: { type: "newsprint" }, binding: { type: "folded" } });
+    }
+    // The host's settings get the same defaults (the Sandbox passes its raw config).
+    expect(appearanceOf(news("tabloid"), { folio: { tilt: 30 } }).folio).toEqual({ tilt: 30, paper: { type: "newsprint" }, binding: { type: "folded" } });
+    expect(appearanceOf(news("tabloid"), { folio: undefined }).folio).toEqual({ paper: { type: "newsprint" }, binding: { type: "folded" } });
+  });
+
+  it("keeps the stock and binding a newspaper names, and a book's defaults (#506)", () => {
+    const chosen = { paper: { type: "uncoated" }, binding: { type: "saddleStitch" } };
+    expect(appearanceOf(news("broadsheet", chosen), undefined).folio).toEqual(chosen);
+    expect(appearanceOf(news("broadsheet"), { folio: chosen as never }).folio).toEqual(chosen);
+    expect(appearanceOf(news("17x24"), undefined).folio).toBeUndefined();
+  });
 });

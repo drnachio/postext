@@ -98,6 +98,8 @@ function localImports(): Record<string, string> {
   imports.harfbuzzjs = `${LOCAL_PREFIX}harfbuzzjs/index.mjs`;
   imports.citeproc = esm("postext-citeproc", "citeproc");
   imports.three = esm("postext-folio", "three");
+  // Its post-processing passes (SMAA): three's own example modules.
+  imports["three/"] = `${esm("postext-folio", "three")}/`;
   return imports;
 }
 

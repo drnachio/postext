@@ -1,0 +1,64 @@
+---
+title: "Reportaje de revista en una retícula de tres columnas"
+summary: "layoutType 'multiple' divide la página en tres columnas; placement.columns pone fotos y una cita flotante sobre dos de ellas, o sobre las tres."
+plain: "Un reportaje de viajes de seis páginas de una revista mensual, compuesto en tres columnas estrechas. Enseña a colocar fotos y una cita grande sobre dos columnas o sobre toda la página, y un recuadro de consejos prácticos en una."
+description: "Un reportaje de viajes en Postext a tres columnas: doble página de apertura con foto, fotos a una, dos o tres columnas, una cita flotante y un recuadro lateral."
+question: "¿Puede Postext componer una página de revista a tres columnas, con fotos sobre dos de ellas?"
+aliases: ["revista a tres columnas", "tres columnas", "retícula de revista", "foto a dos columnas", "cita a dos columnas", "cita destacada", "recuadro lateral", "reportaje de viajes", "doble página de apertura", "foto a doble página", "capitular", "entradilla", "firma", "signo final", "mapa de situación"]
+pageNotes: { "1": "La página par de la apertura: unas salinas al amanecer llenan la página, con el antetítulo Islands · The Atlantic y el titular The Salt Rakers of Marisal en blanco sobre el agua oscura del pie.", "2": "La página impar: la misma foto sigue por arriba, un salinero con su rastrillo de madera ante una hilera de montones de sal; debajo, el primer párrafo con una capitular azul de cuatro líneas en la primera columna, la entradilla en cursiva y la firma en las otras dos, y después tres columnas de texto.", "3": "Tres columnas justificadas con ladillos azules; la foto de un rastrillo que empuja un caballón de sal húmeda encabeza la segunda y la tercera columna.", "4": "Una foto de las salinas rosadas vistas desde arriba ocupa todo el ancho; debajo, una cita bajo un filete azul cruza la segunda y la tercera columna.", "5": "La foto de un cedazo que recoge cristales de sal encabeza la segunda y la tercera columna; el retrato de una salinera mayor con una cesta queda al pie de la primera.", "6": "La página de cierre: un recuadro tintado, Visiting Marisal, con un mapa pequeño de la isla, encabeza la primera columna; una foto alta de un puerto al anochecer ocupa las otras dos; el reportaje termina a la misma altura en las tres columnas con un cuadradito azul." }
+---
+
+## Lo que vas a componer
+
+Seis páginas del número de noviembre de *Meridian*, revista mensual de viajes, en página de 225 × 297 mm. El reportaje se abre en doble página: una sola foto de unas salinas al amanecer cruza las dos, con el titular en blanco sobre el agua en la par y, en la impar, bajo la imagen, el primer párrafo con su capitular, la entradilla y la firma. Después el texto corre en tres columnas justificadas de 61,7 mm. Las fotos ocupan dos columnas, todo el ancho o una sola; una cita destacada se cruza sobre dos columnas entre los párrafos; un recuadro tintado con el mapa de la isla abre la página de cierre. Un cuadradito azul cierra el texto.
+
+## Elaboración
+
+### 1 · Divide la página en tres columnas y deja que los flotantes tomen una, dos o tres
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `layoutType: 'multiple'` con `columnCount: 3` reparte la caja de texto de 195 mm en tres columnas iguales; con un medianil de 5 mm, cada una mide 61,7 mm, unos 40 caracteres de Source Serif a 9,6 pt. El `placement.columns` de una imagen toma ese número de columnas contiguas y los medianiles que hay entre ellas: la foto del rastrillo mide 128,3 mm, y la de las salinas, con `span: 'page'`, los 195 mm enteros. El estilo de la cita hace lo mismo con un recuadro: `columns: 2` en un estilo con `placement: 'top'` lo lleva a la cabeza de dos columnas libres, y el texto sigue alrededor. La retícula de tres columnas conviene a un reportaje con muchas fotos, porque cada una puede ocupar una, dos o tres columnas. Un texto largo con pocas imágenes se lee mejor en dos columnas más anchas.
+
+### 2 · Abre en doble página, con una foto que cruza las dos
+
+<Excerpt region="spread" />
+
+Cada mitad de la foto pertenece a un estilo de título con `span: 'page'`, y un título a toda la página siempre abre página nueva, así que la página del titular y la de la entradilla van seguidas. La mitad izquierda llena la página par y no reserva altura (`reserve: false`), de modo que el titular puede ir sobre el agua del pie. La derecha se corta a 165 mm, y el primer párrafo, la entradilla y la firma cuelgan del contenedor por debajo. Ese párrafo es un texto de diseño con una capitular (`dropCap`) de cuatro líneas, del ancho de una columna; su relleno inferior vacío cuenta en la altura de la apertura, así que las columnas arrancan 6 mm más abajo. `continuation.pageIndexOffset: 83` hace de la 84 una página par, y las dos mitades quedan enfrentadas.
+
+### 3 · Declara las fotos y cita cada una donde debe caer
+
+<Excerpt region="resources" />
+
+Un flotante va a la primera cabeza (o pie) libre de sus columnas después de la línea que lo cita, así que las líneas `::resource` deciden las páginas. La foto del cedazo se cita arriba de la primera columna de la quinta página, cuando la segunda y la tercera siguen vacías, y las encabeza en esa misma página. La del puerto se cita al final de esa página y encabeza dos columnas de la siguiente. Las fotos de un mismo tipo nunca se adelantan unas a otras, así que sus citas van en el orden del reportaje. Los mapas de bits se miden a los 150 ppp de la página: 1500 px dan 254 mm y se reducen a los 128,3 mm de dos columnas.
+
+### 4 · Cabeceras y folios fuera de la doble página de apertura
+
+<Excerpt region="heads" />
+
+Los elementos de cabecera se pintan sobre la página y no reservan sitio, así que el folio y la etiqueta se anclan a la página, en el margen superior. `pages: 'body'` los aparta de las dos páginas de la apertura, que son páginas de apertura porque cada una empieza con un título a toda la página. La impar de la apertura lleva su folio al pie, con `pages: 'opener'` y `parity: 'odd'`; la par, toda foto, no lleva ninguno.
+
+### 5 · Dibuja con código el mapa del recuadro
+
+<Excerpt region="art" />
+
+El mapa es un recurso SVG con `placement: 'here'`, citado dentro de la valla del recuadro, así que queda bajo el título del recuadro, a su medida. No lleva rótulos: el texto de un SVG no puede usar las fuentes web de la página, y el pie nombra las formas en su lugar. La punta de flecha de la ruta del ferri es un trazado, porque un `<marker>` no sobreviviría a la exportación a PDF.
+
+## Variantes
+
+### Pon la cita sobre las tres columnas
+
+Un recuadro flotante toma el atributo `columns` de la valla antes que el de su estilo, así que una cita puede ocupar todo el ancho.
+
+```diff
+- :::callout{type="pull"}
++ :::callout{type="pull" columns="3"}
+```
+
+### Compón el reportaje a dos columnas
+
+Para un reportaje con menos fotos y párrafos más largos, mira <RecipeLink slug="magazine-feature-opener">Reportaje de revista: de la foto de apertura al signo final</RecipeLink>, con disposición `double`.
+
+## Errores frecuentes
+
+- Una foto a dos columnas encabeza dos columnas que siguen vacías. Si se cita en la segunda columna, no encuentra ese par en su página, porque solo queda la tercera, y espera a la siguiente.
+- El reportaje está ajustado para terminar a la misma altura en la sexta página, bajo la foto del puerto. Después de editar, comprueba que la última página sigue llena: con unas líneas menos, la foto se va a una página para ella sola.
+- Con líneas de 40 caracteres, un párrafo justificado tiene pocos puntos de corte. `maxJustifyTracking: 15` deja que una línea que no cabe con el doble del espacio normal tome hasta 0,015 em de espaciado entre letras. Las líneas finales de una sola palabra se arreglan retocando el texto, como en estas páginas.

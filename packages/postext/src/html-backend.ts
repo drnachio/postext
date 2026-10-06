@@ -2443,7 +2443,7 @@ export function renderToHtmlIndexed(
         }
       : { ...options, linkTargets, ...anchorPaint };
     const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
-    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
+    const detail = renderPageDetailed(p, p.background ?? background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({
       index: p.index,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { MediaLang } from "@/i18n/locales";
 
 /** A narrated video (the home page showreel, the skill tutorial), streamed as
  *  HLS from Cloudflare R2 through the `postext-media` Worker. Safari and iOS play HLS natively; other browsers
@@ -40,7 +41,7 @@ export function ShowreelVideo({
   exitFullscreenLabel,
 }: {
   video?: MediaVideo;
-  lang: "en" | "es" | "zh";
+  lang: MediaLang;
   title: string;
   playLabel: string;
   watchLabel: string;

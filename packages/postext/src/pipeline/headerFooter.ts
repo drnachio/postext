@@ -2,7 +2,7 @@ import { fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWrit
 import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
 import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../parse/inlineFormatting';
-import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig, TextAlign } from '../types';
+import type { ColorPaletteEntry, ColorValue, DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig, TextAlign } from '../types';
 import {
   createBoundingBox,
   flowRectToPage,
@@ -1068,6 +1068,9 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
   });
   // The same overrides recolour the palette-linked colours of the flow.
   applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
+  // And the paper: a page whose overrides change the entry the page colour
+  // links to paints that colour instead.
+  stampPageBackgrounds(doc, partPaletteByPageIndex, resolved.page.backgroundColor, resolved.colorPalette);
 
   for (const page of doc.pages) {
     // Text in the flow (openers, part pages, in-column designs) reads as the
@@ -1399,5 +1402,29 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         sheetExtras,
       )));
     }
+  }
+}
+
+/** Set `page.background` on the pages whose palette overrides (part and
+ *  styled section) change the colour `page.backgroundColor` follows: the
+ *  entry it links to (`paletteId`), or, unlinked, an entry of the same
+ *  value, as the flow's colours are matched. */
+export function stampPageBackgrounds(
+  doc: { pages: { index: number; background?: string }[] },
+  palettes: readonly (Record<string, string> | undefined)[],
+  pageColor: ColorValue,
+  basePalette: readonly ColorPaletteEntry[] | undefined,
+): void {
+  const base = pageColor.hex?.toLowerCase();
+  if (!base || base === 'transparent') return;
+  const linked = pageColor.paletteId;
+  const sameValue = (basePalette ?? []).filter((e) => e.value.hex.toLowerCase() === base).map((e) => e.id);
+  for (const page of doc.pages) {
+    const overrides = palettes[page.index];
+    if (!overrides) continue;
+    const id = linked && overrides[linked] !== undefined ? linked : sameValue.find((e) => overrides[e] !== undefined);
+    if (!id) continue;
+    const hex = overrides[id]!.startsWith('#') ? overrides[id]! : `#${overrides[id]}`;
+    if (hex.toLowerCase() !== base) page.background = hex;
   }
 }

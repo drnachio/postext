@@ -24,7 +24,7 @@ import {
 
 const SIZE_UNITS: DimensionUnit[] = ['mm', 'cm', 'in', 'pt', 'px'];
 
-type PlayerSwitch = Exclude<keyof VideoPlayerOptions, 'preload'>;
+type PlayerSwitch = Exclude<keyof VideoPlayerOptions, 'preload' | 'exclusive'>;
 
 /** Config-panel section for video resources (#454): what is printed on a
  *  video's poster (the play mark, the QR code), whether the poster links to
@@ -305,6 +305,16 @@ export const VideoStyleSection = memo(function VideoStyleSection() {
             onReset={() => setIn('player', s.key, undefined)}
           />
         ))}
+        {/* Stored as `exclusive`, shown the positive way round: on means
+            the video does not pause the others. */}
+        <ToggleSwitch
+          label={labels.videoPlayerAlongside}
+          tooltip={labels.videoPlayerAlongsideHelp}
+          checked={!vs.player.exclusive}
+          onChange={(v) => setIn('player', 'exclusive', !v)}
+          isDefault={raw?.player?.exclusive === undefined}
+          onReset={() => setIn('player', 'exclusive', undefined)}
+        />
         <SelectInput
           label={labels.videoPlayerPreload}
           tooltip={labels.videoPlayerPreloadHelp}

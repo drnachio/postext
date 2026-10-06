@@ -289,6 +289,7 @@ Plan: , 299-318`. Placement: .
 | `label` | text | `''` | Printed in the label tab, **only if the style configures `label`**. E.g. `label="BOX 1-1"`. |
 | `span` | `column` \| `page` \| `side` | the style's `span` (default `column`) | `page`: full-width band cutting the columns. `side`: into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole:'floats'`), otherwise acts as `column`. Invalid values are ignored. |
 | `placement` | `here` \| `auto` \| `top` \| `bottom` \| `fixed` | the style's `placement` (default `here`) | `here`: inline in the flow. `auto`/`top`/`bottom`: floated to the first free band after its position while the text continues. `fixed`: pinned to page coordinates by the style's `fixed.anchor/offset`. Invalid values are ignored. |
+| `columns` | whole number ≥ 1 | the style's `columns` (default 1) | postext ≥ 1.18. A floated (`auto`/`top`/`bottom`) `span="column"` box across this many adjacent columns: the head of a run of empty level columns, or the foot of the current column and the empty ones after it. ≥ the page's column count = page-wide. Ignored for in-flow (`here`), `fixed`, `page` and `side` boxes. |
 
 - Style-level only (not attributes): `icon`, `marker`, `stripe`, `border`, `background`, `width: fill|auto`, `keepTogether` (default `true`), `splitMinLines` (default 2), the continuation marks (`repeatTitle`, `continuedSuffix`, `continuesMarkerEnabled`, `continuesMarker`, `continuesMarkerAlign`, `continuesMarkerItalic`), `floatBarrier`, `snapToGrid`, `columnGap`, and the body/list typography. **There is no per-instance `icon` or `keepTogether` attribute.** To vary them, define another style and select it with `type`.
 - **Nesting:** a `:::callout` inside a callout is its own box with its own style, at the parent's inner width. Its `span`/`placement` are ignored. Each `:::` closes the innermost box.
@@ -466,7 +467,8 @@ Source: , 259-263`.
 
 ### 9.4 Placement (resource JSON, not Markdown)
 
-`placement: { position: auto|top|bottom|here, span: column|page|side, rotate?: ccw|cw, width?: 0..1, align?: left|center|right, captionSide?: bool }`.
+`placement: { position: auto|top|bottom|here, span: column|page|side, rotate?: ccw|cw, width?: 0..1, align?: left|center|right, captionSide?: bool, columns?: int }`.
+- `columns` (≥ 1.18): a `span: column` float across that many adjacent columns (a newspaper picture across 2 of 5 columns); as many as the page has = page-wide; ignored for page/side spans, rotated resources and `here` embeds; `captionSide` only on 1-column floats.
 - A resource's own placement falls back to its type's `defaultPlacement`, then to `auto`/`column`.
 
 ### 9.5 Tables

@@ -17,8 +17,7 @@ describe('the six editions of the guide', () => {
     const shape = (md: string) => ({
       chapters: sampleChapterTexts(md).length,
       h2: (md.match(/^## /gm) ?? []).length,
-      // The videos are in the editions they were cut in (#478).
-      refs: refsOf(md).filter((id) => !VIDEO_IDS.has(id)),
+      refs: refsOf(md),
       directives: (md.match(/^:::[a-z]+/gm) ?? []).join(' '),
       maths: (md.match(/\$\$/g) ?? []).length,
     });
@@ -39,11 +38,9 @@ describe('the six editions of the guide', () => {
     }
   });
 
-  it('show the videos in English, Spanish and Chinese only, the languages they were cut in', () => {
+  it('show both videos in every edition, each in its own cut (#510)', () => {
     for (const [lang, md] of Object.entries(EDITIONS)) {
-      const videos = refsOf(md).filter((id) => VIDEO_IDS.has(id));
-      if (lang === 'en' || lang === 'es' || lang === 'zh-Hans') expect(new Set(videos), lang).toEqual(VIDEO_IDS);
-      else expect(videos, lang).toEqual([]);
+      expect(refsOf(md).filter((id) => VIDEO_IDS.has(id)), lang).toEqual(refsOf(DEFAULT_MARKDOWN_EN).filter((id) => VIDEO_IDS.has(id)));
     }
   });
 

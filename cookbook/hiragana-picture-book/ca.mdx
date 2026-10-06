@@ -10,7 +10,7 @@ pageNotes: { "1": "La portada: l'escena del riu a tota pàgina, un vaixell de pa
 
 ## Què compondràs
 
-Un llibre il·lustrat de deu pàgines, かみの ふね (*El vaixell de paper*), escrit i dibuixat per a la recepta: després de la pluja una nena plega un vaixell de paper vermell, i el vaixell baixa pel riu, deixa enrere una granota, un bernat i la lluna, i arriba al mar. Està compost com els llibres japonesos per als lectors més petits: només hiragana, a 20 pt en Klee One, una lletra feta a partir del model dels llibres de text escolars, i un espai entre frases, 分かち書き (wakachigaki), perquè l'infant llegeixi frase a frase. Les pàgines són apaïsades, de 260 × 200 mm, en vertical i enquadernades per la dreta: el dibuix a dalt, a sota línies curtes de vuit caràcters, i el vaixell avança cap a l'esquerra, al ritme de les pàgines.
+Un llibre il·lustrat de deu pàgines, かみの ふね (*El vaixell de paper*), escrit per a la recepta i il·lustrat amb deu pintures: després de la pluja una nena plega un vaixell de paper vermell, i el vaixell baixa pel riu, deixa enrere una granota, un bernat i la lluna, i arriba al mar. Està compost com els llibres japonesos per als lectors més petits: només hiragana, a 20 pt en Klee One, una lletra feta a partir del model dels llibres de text escolars, i un espai entre frases, 分かち書き (wakachigaki), perquè l'infant llegeixi frase a frase. Les pàgines són apaïsades, de 260 × 200 mm, en vertical i enquadernades per la dreta: el dibuix a dalt, a sota línies curtes de vuit caràcters, i el vaixell avança cap a l'esquerra, al ritme de les pàgines.
 
 ## Elaboració
 
@@ -34,11 +34,11 @@ En el text vertical `'left'` és el capdamunt de la pàgina, així que una maque
 
 La portada és un disseny de títol a tota la pàgina: el dibuix s'ancora al sagnat amb la mida de la pàgina (en el flux vertical el seu `width` baixa pel full), i el títol baixa pel cel, a la dreta, en Zen Maru Gothic de 60 pt.
 
-### 4 · Dibuixa les escenes en codi
+### 4 · Carrega les pintures com a mapes de bits
 
-<Excerpt region="art" />
+<Excerpt region="pictures" />
 
-Les deu escenes són SVG fets amb unes poques formes, el vaixell, la nena, la granota, el bernat, i un generador amb llavor per a les ones i les estrelles, de manera que totes les captures són idèntiques. Al PDF també són dibuixos vectorials.
+Les deu il·lustracions són pintures, fitxers JPEG a `assets/` de la recepta. Les nou escenes estan tallades amb la forma de la franja, 612 : 280, i la portada amb la de la pàgina, 260 : 200, de manera que cadascuna omple el seu marc i no es retalla res. Cadascuna és un recurs `bitmap` declarat amb la seva mida en píxels, amb text alternatiu en la llengua del llibre, i el seu fitxer es carrega amb el `fileId` del recurs abans de compondre. Amb 1.400 px d'amplada, les escenes s'imprimeixen a uns 165 ppp al llarg de la franja ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)).
 
 ## Variants
 

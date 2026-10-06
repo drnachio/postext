@@ -53,6 +53,7 @@ export type WarningKind =
   | 'calloutOverflow'
   | 'headingDesignCut'
   | 'sideColumnPercentClamped'
+  | 'columnCountClamped'
   | 'cjkGridClamped'
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
@@ -209,6 +210,10 @@ export type WarningPayload =
    *  width (`collectConfigWarnings`): `path` names the setting, `used`
    *  the percentage the engine cuts the columns at instead. */
   | { kind: 'sideColumnPercentClamped'; path: string; value: string; used: string }
+  /** A `multiple` layout's column count that is not a whole number from 3
+   *  to 8 (`collectConfigWarnings`): `path` names the setting, `used` the
+   *  count the engine cuts the columns at instead. */
+  | { kind: 'columnCountClamped'; path: string; value: string; used: string }
   /** A character grid (`cjk.grid`) with more characters per line or lines
    *  per page than the margins leave room for (`collectConfigWarnings`):
    *  the grid is set with `used`. */

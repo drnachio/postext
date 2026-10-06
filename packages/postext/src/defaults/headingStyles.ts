@@ -60,6 +60,8 @@ function resolveHeadingStyleConfig(
     out.layout = docLayout
       ? {
           ...layout,
+          // The document's column count, unless the section sets its own.
+          columnCount: partial.layout.columnCount ?? docLayout.columnCount,
           // The document's writing mode, unless the section sets its own.
           writingMode: partial.layout.writingMode === 'vertical-rl' || partial.layout.writingMode === 'horizontal-tb'
             ? partial.layout.writingMode

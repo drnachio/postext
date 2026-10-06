@@ -1562,7 +1562,7 @@
       "ja": "3段組みと回り込み、代替手段"
     },
     "theme": "page",
-    "gap": "three-columns"
+    "gap": "text-wrap"
   },
   "Q79": {
     "kind": "how",
@@ -3005,5 +3005,65 @@
       "ja": "ローマ字、ラテン文字で書いた日本語"
     },
     "theme": "type"
+  },
+  "Q151": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a newspaper page: five columns on a broadsheet, a picture across two of them and a story box across three?",
+      "es": "¿Cómo compongo una página de periódico: cinco columnas en formato sábana, una foto sobre dos de ellas y un recuadro sobre tres?",
+      "ca": "Com componc una pàgina de diari: cinc columnes en format llençol, una foto sobre dues d'elles i un requadre sobre tres?",
+      "zh": "报纸版面怎么排：对开报纸分五栏，一张照片横跨两栏，一个新闻框横跨三栏？",
+      "ar": "كيف أنضّد صفحة جريدة: خمسة أعمدة على القطع الكبير، وصورة تمتد على عمودين منها، وإطار خبر على ثلاثة؟",
+      "ja": "新聞のページを組むには（ブランケット判に5段、2段にまたがる写真、3段にまたがる記事の囲み）？"
+    },
+    "index": {
+      "en": "Newspaper columns, pictures and boxes across",
+      "es": "Columnas de periódico, fotos y recuadros a varias",
+      "ca": "Columnes de diari, fotos i requadres a diverses",
+      "zh": "报纸分栏，跨栏的图片和框",
+      "ar": "أعمدة الجريدة، الصور والإطارات الممتدة عبرها",
+      "ja": "新聞の段組み、段抜きの写真と囲み"
+    },
+    "theme": "page"
+  },
+  "Q152": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make several silent video loops play at once on a page, and start again each time the page is turned to?",
+      "es": "¿Cómo hago que varios vídeos cortos sin sonido se reproduzcan a la vez en una página y vuelvan a empezar cada vez que se pasa a ella?",
+      "ca": "Com faig que diversos vídeos curts sense so es reprodueixin alhora en una pàgina i tornin a començar cada cop que s'hi passa?",
+      "zh": "怎样让一页上的几段无声循环视频同时播放，并在每次翻到这一页时重新开始？",
+      "ar": "كيف أجعل عدة مقاطع فيديو صامتة متكررة تعمل معًا في صفحة، وتبدأ من جديد كلما قُلبت الصفحة إليها؟",
+      "ja": "1ページにある無音のループ動画をいくつも同時に再生し、そのページを開くたびに始まるようにするには？"
+    },
+    "index": {
+      "en": "Video loops, several at once",
+      "es": "Vídeos en bucle, varios a la vez",
+      "ca": "Vídeos en bucle, diversos alhora",
+      "zh": "循环视频，多个同时播放",
+      "ar": "مقاطع الفيديو المتكررة، عدة في وقت واحد",
+      "ja": "ループ動画、複数同時"
+    },
+    "theme": "figures"
+  },
+  "Q153": {
+    "kind": "how",
+    "text": {
+      "en": "How do I show a newspaper in the 3D viewer as folded sheets, with the business pages on salmon paper?",
+      "es": "¿Cómo muestro un periódico en el visor 3D como pliegos doblados, con las páginas de economía en papel salmón?",
+      "ca": "Com mostro un diari al visor 3D com a plecs doblegats, amb les pàgines d'economia en paper salmó?",
+      "zh": "怎样在3D阅读器里把报纸显示成对折的纸张，并把财经版印在鲑鱼色纸上？",
+      "ar": "كيف أعرض جريدة في العارض ثلاثي الأبعاد أفرخًا مطوية، وصفحات الاقتصاد على ورق بلون السلمون؟",
+      "ja": "3Dビューアーで新聞を折った紙として見せ、経済面をサーモンピンクの紙にするには？"
+    },
+    "index": {
+      "en": "Newspaper, folded, in the 3D viewer",
+      "es": "Periódico plegado en el visor 3D",
+      "ca": "Diari plegat al visor 3D",
+      "zh": "报纸，对折，在3D阅读器中",
+      "ar": "الجريدة المطوية في العارض ثلاثي الأبعاد",
+      "ja": "新聞、折った形で3Dビューアーに"
+    },
+    "theme": "output"
   }
 }

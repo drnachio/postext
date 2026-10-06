@@ -1,0 +1,63 @@
+---
+title: "六栏对开大报"
+summary: "一份日报在对开大报版面上的四个版：六栏加栏线，照片和框横跨其中两到五栏，通栏广告，评论版改为五栏。"
+plain: "一份大开本日报的四个版，排成六个窄栏。示例演示怎样让照片或框横跨几栏，以及怎样让某一版改成五栏。"
+description: "用Postext排的六栏对开大报及代码：multiple分栏版式、横跨k栏的照片和框、通栏广告，以及改为五栏的一个栏目。这四个版按真报纸的方式逐版拼版。"
+question: "怎样把对开大报排成六栏，让照片和框占其中两栏、三栏或四栏？"
+aliases: ["对开大报", "broadsheet", "报纸", "日报", "六栏", "五栏", "多栏", "报纸网格", "跨栏照片", "资料框", "简讯", "评论版", "读者来信", "转第2版"]
+pageNotes: { "1": "《The Corrington Despatch》头版：报头夹在天气报眼和潮汐报眼之间，一条浅色导读条有四条提要；头条标题Tram to the docks wins council vote after six-hour debate横跨四栏，下面是一张日出时铺石码头和起重机的照片；头条正文在其下分四栏，第3、4栏底部是一张资金来源表；第5、6栏是第二条新闻，配三名工程师望着防潮闸门的照片，正文在第5栏；第6栏是简讯，下方是浅色资料框；页脚是一则通栏的十公里长跑广告。", "2": "第2版City：一个通栏的转版标题压在六段短栏上；接着是租金新闻Rents rise 9% in a year as students return，第1、2栏是印有五个大数字的浅色框，旁边第3至6栏是一张红砖排屋街道的照片，正文在其下六栏，页脚是一则大幅房产中介广告。", "3": "第3版Opinion，五栏：第1栏是两篇社论，第2至4栏是一篇评论Close the Albert Baths and the city loses more than a pool，标题压在一张维多利亚式游泳池的照片上，正文在第2至4栏，第5栏是读者来信，下半版是一则通栏音乐会广告。", "4": "第4版Arts & Weather：通栏的戏剧标题，一张横跨五栏的照片，三名演员身处1920年代的航运公司办公室；剧评在其下分五栏，第6栏是演出信息，页脚是浅色天气框，内有五日预报表和手绘天气符号。" }
+---
+
+## 成品一览
+
+虚构日报《The Corrington Despatch》的四个版，开本为375 × 597 mm的对开大报。正文分六栏，每栏55.2 mm，栏距4 mm，每条栏距里一条细栏线：9 pt字号下每行约38个字符，正是真实大报的行长。头版有带两个报眼的报头、一条导读条、标题和照片都横跨四栏的头条、配两栏照片的第二条新闻、一栏简讯、一张资金表和一个两栏宽的资料框，页脚是一则广告。第2版以头版的转版开头，第3版改为五栏，排社论、一篇评论和读者来信，末版是剧评和天气。
+
+## 做法
+
+### 1 · 对开大报上的六栏
+
+这一步的代码就是上面的[简短回答](#简短回答)。`page.sizePreset: 'broadsheet'`设定375 × 597 mm的开本，`layoutType: 'multiple'`加`columnCount: 6`把351 mm宽的版心切成六个等宽的栏（[版式类型](/zh/docs/configuration#版式类型)）。每栏宽(351 − 5 × 4) / 6 = 55.2 mm，9 pt的Newsreader每行约38个字符，所以正文需要断词，用`minWordSpacing: 0.8`防止词距收得过紧，用`maxJustifyTracking: 15`把松散行的空隙分摊到字母之间。栏线在每条栏距里画一条0.4 pt的细线，遇到横跨的浮动体或框就断开。postext 1.17及以前，正文最多两栏，所以<RecipeLink slug="newspaper-front-page">第027号</RecipeLink>只能把四栏简讯放进一个框里。
+
+### 2 · 跨k栏的浮动体占用第一组空栏
+
+<Excerpt region="pictures" highlight="1-6" />
+
+`placement.columns`以栏数给出照片或表格的宽度，包括其间的栏距：头版的四栏是232.7 mm。引擎从正文所在的栏开始，从左往右找位置。`top`浮动体占用第一组还没有正文、顶边齐平的k个栏的栏头；`bottom`浮动体占用正文所在栏及其后各空栏的栏脚。所以资金表在第3栏的段落里被引用，就落在第3、4栏底部。在<PageRef page={2}>第2版</PageRef>，资料框先开，占了第1、2栏，第3至6栏便成为后面那张四栏照片的第一组齐平空栏。顺序反过来，框就会叠在照片下面。k等于或大于本页栏数时就是通栏，与`span: 'page'`相同。
+
+### 3 · 标题框、资料框和广告
+
+<Excerpt region="boxes" />
+
+带`placement="top"`和`columns="4"`的`:::callout`像照片一样浮动在四栏上。头条的标题和导语就是这样一个框，放在正文之前，所以占第1至4栏，照片叠在它下面。第二条新闻的标题框放在头条之后、一个`:::columnbreak`后面：这时正文已在第5栏，第5、6栏是第一对空栏。每则广告都是`columns="6"`的通栏框，在本版开头就开出，使其底部在正文到来之前就预留好；第2版和第4版的转版标题是通页宽的框，与第027号相同。`balancing.trailing: false`让每一版都把各栏填到底，因为这里每一版都结束一个栏目。
+
+### 4 · 报头是头版的H1
+
+<Excerpt region="nameplate" />
+
+`# The Corrington Despatch`使用`front`标题样式：报名为64 pt的Playfair Display Black，两个报眼由标题属性填充，日期行夹在一细一粗两条线之间。首页设计高九条网格线。在1.18.0中，首页设计占着第1栏，所以紧接其后开出的跨k栏浮动体会从第2栏开始；浅色导读条是一个通页宽的框，它开出新的一条横带，其第1栏为空，头条于是占第1至4栏。
+
+### 5 · 评论版改为五栏
+
+<Excerpt region="sections" />
+
+`# Opinion {style="opinion"}`开出一个栏目，其标题样式设定`layout: { layoutType: 'multiple', columnCount: 5 }`。栏目沿用文档的栏距和栏线，只改栏数，所以社论、评论和来信的行长为67 mm，约47个字符。评论的标题框是`columns="3"`，在社论已从第1栏开始之后才开出，因而落在第2至4栏，照片在其下；两行`:::columnbreak`把评论送到第2栏，把来信送到第5栏。
+
+## 变化
+
+### 排成五栏的柏林版
+
+同一份报纸改用315 × 470 mm的柏林版：五栏，每栏55 mm，与对开大报六栏的行长相同。页眉线也改用较窄的宽度，然后逐版重新拼版。
+
+```diff
+-const layout = { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(GUTTER),
++const layout = { layoutType: 'multiple', columnCount: 5, gutterWidth: mm(GUTTER),
+-      size: { width: mm(375 - 2 * MARGIN.side) } }] };
++      size: { width: mm(315 - 2 * MARGIN.side) } }] };
+-  page: { sizePreset: 'broadsheet', dpi: 150, backgroundColor: col('paper'), // 375 × 597 mm
++  page: { sizePreset: 'berliner', dpi: 150, backgroundColor: col('paper'), // 315 × 470 mm
+```
+
+## 常见问题
+
+- 浮动体若在正文已经走过它的那几栏之后才开出，本版就没有位置，会开到下一版。头版的头条必须在第4栏结束：多一段，第二条新闻的标题和照片就会移到第2版。
+- 每一版都要像编辑拼版那样手工调整：广告里的`:::space`行数和每篇稿子的长度决定各栏在哪里结束。改了一篇稿子，就要重新拼那一版。

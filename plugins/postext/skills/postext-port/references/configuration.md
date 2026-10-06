@@ -82,7 +82,7 @@ Conversion at `page.dpi` (default 300):
 | key | type | default | notes |
 |---|---|---|---|
 | `page` | PageConfig | §2 | trim size, margins, bleed/cut marks, grid overlay, folio format |
-| `layout` | LayoutConfig | §3 | `single` / `double` / `oneAndHalf` |
+| `layout` | LayoutConfig | §3 | `single` / `double` / `oneAndHalf` / `multiple` (3–8 columns, ≥ 1.18) |
 | `bodyText` | BodyTextConfig | §4 | also H&J, KP, widows/orphans/runts |
 | `headings` | HeadingsConfig | §5 | per-level typography, chapter openers, **column balancing** |
 | `headingStyles` | HeadingStyleConfig[] | `[]` | §6 named heading/section styles |
@@ -129,6 +129,8 @@ not from the config.
 ```
 page
 ├─ sizePreset   '11x17'|'12x19'|'17x24'|'21x28'|'custom'   default '17x24' (cm, W×H)
+│               + 'broadsheet' 375×597 mm | 'berliner' 315×470 mm | 'tabloid' 280×430 mm
+│                 | 'compact' 297×420 mm (half-broadsheet fold)   postext ≥ 1.18
 ├─ width        Dimension   default from preset (17 cm)    explicit value always wins
 ├─ height       Dimension   default from preset (24 cm)
 ├─ margins      PageMargins
@@ -169,7 +171,8 @@ Gotchas
 
 ```
 layout
-├─ layoutType         'single' | 'double' | 'oneAndHalf'     default 'double'  (!)
+├─ layoutType         'single' | 'double' | 'oneAndHalf' | 'multiple'   default 'double'  (!)   'multiple' postext ≥ 1.18
+├─ columnCount        number, whole 3–8                       default 3   multiple only (else clamped + columnCountClamped)
 ├─ gutterWidth        Dimension (absolute!)                  default 0.75 cm
 ├─ sideColumnPercent  number (0–100)                         default 33   oneAndHalf only
 ├─ sideColumnRole     'text' | 'floats'                      default 'text'   oneAndHalf only
@@ -184,6 +187,10 @@ layout
 ```
 Geometry:
 - `double`: two equal columns, `colW = (contentW − gutter)/2`.
+- `multiple` (≥ 1.18): `columnCount` = n equal columns, `colW = (contentW − (n−1)·gutter)/n` (newspapers:
+  broadsheet 6–8, tabloid 4–5). Column rules, balancing, footnotes, page-span floats/boxes/headings work
+  across all of them. A heading style's own `multiple` layout takes the document's `columnCount` unless it
+  sets its own. A count outside 3–8 or fractional is clamped and reported (`columnCountClamped`).
 - `oneAndHalf`: `sideW = contentW × sideColumnPercent/100`; `mainW = contentW − sideW − gutter`.
   So to reproduce a book with main column M mm, side column S mm, gutter G mm:
   `contentW = M+S+G` (= page width − inner − outer margin), `sideColumnPercent = 100·S/contentW`
@@ -466,7 +473,8 @@ running heads, margins, layout, body typography, palette.
   layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!),
                                                  except columnRule: its unset fields take the document's, and the section's pages draw it
   bodyStyle?: PartsBodyStyleConfig               (§8) typography of paragraphs/lists in the section
-  palette?: Record<paletteId, '#hex'>            recolours palette-linked design colours + flow colours on the section's pages
+  palette?: Record<paletteId, '#hex'>            recolours palette-linked design colours + flow colours on the section's pages,
+                                                 and the page itself when page.backgroundColor links to an overridden id (1.18+)
 }
 ```
 Gotcha: `layout` in a heading style goes through `resolveLayoutConfig` alone, so
@@ -591,6 +599,9 @@ left on even + 1pt rule (Open Sans 8pt/600, main colour); footer = centred `{pag
 ### 7.5 Palette overrides in designs
 Elements whose colours carry `paletteId` are recoloured on pages ruled by a part
 (`:::part{palette="band=#f6c297"}`) or a styled section (`headingStyles[].palette`).
+Since 1.18 the page colour follows too: link `page.backgroundColor` to e.g. `paper` and a
+section with `palette: { paper: '#f2d3c0' }` prints its pages on salmon (a newspaper's business
+pages); pair it with `:::paper{shade=…}` so Folio shows the same stock.
 Unlinked hex colours never change.
 
 ---------------------------------------------------------------------------------
@@ -735,13 +746,15 @@ unset fields inherit the document body text, not the box's `body`.
 
 ## 12. `calloutStyles[]` — CalloutStyleConfig
 
-`:::callout{type="id" title="…" span="…" placement="…" label="…"}` … `:::`. Unknown/missing
+`:::callout{type="id" title="…" span="…" placement="…" columns="…" label="…"}` … `:::`. Unknown/missing
 type → first style. Declaring the array replaces the default `note`.
 All em values = the callout body font size.
 ```
 { id (REQUIRED), name?,
   title = ''                         default title; fence title overrides
   span = 'column'                    'column' | 'page' (span block across columns) | 'side' (float-only side column)
+  columns = 1                        ≥ 1.18: a floated (auto/top/bottom) span:'column' box across this many adjacent
+                                     columns; ≥ the page's count = page-wide; in-flow boxes keep their column
   placement = 'here'                 'here' | 'auto' | 'top' | 'bottom' | 'fixed'   (side boxes never float)
   sideAtColumnEnd = 'before'         side box whose following text continues on the next page (full column, or a
                                      paragraph/heading the break rules move on): 'before' = at the fence, beside
@@ -842,6 +855,9 @@ rotate?:  'ccw' | 'cw'   (landscape: page-span float on its own page)
 width?:   0 < w < 1 fraction of column/page width (default whole)
 align?:   'left' (default) | 'center' | 'right'
 captionSide?: boolean    caption in the float-only side column, level with the figure (column floats, oneAndHalf+floats)
+columns?: number         ≥ 1.18: a span:'column' float across this many adjacent columns (picture across 2 of 5);
+                         ≥ the page's column count = page-wide; ignored for page/side spans, rotate, here;
+                         captionSide only on 1-column floats
 ```
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the
@@ -921,13 +937,20 @@ videoStyle
 ├─ linkPoster = true          PDF: URI link over the poster to video.link (EPUB: poster linked too)
 ├─ html = 'player'|'poster'   HTML viewer: play in place, or show the printed poster
 └─ player { controls=true, download=true, fullscreen=true, playbackRate=true, pictureInPicture=true,
-            remotePlayback=true, autoplay=false, muted=false, loop=false, preload='metadata', privacy=true }
+            remotePlayback=true, autoplay=false, muted=false, loop=false, exclusive=true, preload='metadata', privacy=true }
 ```
 
 Positions: `'center'`, `'top-left'`, `'top'`, `'top-right'`, `'left'`, `'right'`, `'bottom-left'`,
 `'bottom'`, `'bottom-right'`. The QR code encodes `video.link` (the YouTube/Vimeo watch URL, or a
 self-hosted file's production `url`); a file without `url` prints no QR code and no link
 (`videoWithoutUrl` warning). `resource.video.player` overrides `player` for one video.
+`exclusive: false` (≥ 1.18) lets a video play alongside the others (HTML marks it `data-pt-alongside`; the
+host calls `coordinateVideoPlayback(root)` to pause what a started video does not play with). In Folio an
+`autoplay` + `exclusive: false` video starts muted each time its page comes into view and stops when it is
+turned away, several at once: the silent loops (`loop: true`) of a "living" page. In an EPUB, a page or
+chapter with two or more players, one of them exclusive, links the same rule as `scripts/videos.js`
+(`VIDEO_PLAYBACK_SCRIPT`, the document declared `scripted`): readers that run scripts keep to it within
+that document. YouTube/Vimeo embeds play on their own terms.
 `download: false` hides the HTML5 download button (`controlslist="nodownload"`); it does not
 protect the file. `privacy` embeds YouTube from youtube-nocookie.com and Vimeo with `dnt=1`. An
 EPUB never embeds a YouTube/Vimeo player (EPUBCheck RSC-006): those are the poster linked to the
@@ -1275,6 +1298,7 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
   "yaw": 0,                           // degrees round the book, −180–180 (wrapped); + = eye to the right
   "paper": {
     "type": "uncoated",               // uncoated | bookWove | coatedMatte | coatedSilk | coatedGloss | bible | newsprint | cardStock | board
+                                      // default newsprint on a newspaper trim (broadsheet | berliner | tabloid | compact)
     "grammage": 90,                   // g/m², 20–2500; default: the stock's
     "bulk": 1.25,                     // cm³/g, 0.5–3; caliper µm = grammage × bulk
     "finish": "auto",                 // auto | uncoated | matte | silk | gloss
@@ -1284,11 +1308,12 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
     "showThrough": true
   },
   "binding": {
-    "type": "hardcover",              // hardcover | paperback | sewn | layflat | saddleStitch
+    "type": "hardcover",              // hardcover | paperback | sewn | layflat | saddleStitch | folded (≥ 1.18: newspaper)
+                                      // default folded on a newspaper trim
     "cover": "case",                  // case (drawn round the pages) | pages (first page = front board, last verso = back board)
     "coverMaterial": "auto",          // auto (cloth on hardcover, card otherwise) | cloth | paper | leather
     "coverColor": { "hex": "#2c3e57", "model": "hex" },
-    "spineImage": "spine"             // a bitmap/SVG resource id; ignored on saddleStitch
+    "spineImage": "spine"             // a bitmap/SVG resource id; ignored on saddleStitch and folded
   },
   "surface": { "type": "oak", "color": null },   // oak | walnut | linen | felt | leather | marble | plain | none; color tints (plain: is the colour)
   "lighting": { "environment": "studio", "intensity": 1, "shadows": true }  // studio | daylight | lamp | overcast | night; intensity 0.25–2
@@ -1325,7 +1350,13 @@ How the viewer reads it:
 
 Match the printed book: a novel on cream book wove → `{ "paper": { "type": "bookWove" }, "binding": { "type": "paperback" } }`;
 an art book → `coatedSilk` 150 g/m², hardcover, cloth `coverColor`; a magazine → `coatedGloss` 90 g/m², `saddleStitch`,
-`cover: "pages"` when the cover is page 1; a board book for children → `board`, hardcover.
+`cover: "pages"` when the cover is page 1; a board book for children → `board`, hardcover; a newspaper →
+`newsprint`, `folded` (sheets folded once and nested: no staples, spine or boards), with
+`:::paper{shade=#f4cfb5}` around a section printed on salmon stock (the business pages). On a newspaper
+trim (`page.sizePreset` broadsheet | berliner | tabloid | compact) those two are the defaults (≥ 1.18): leave
+`paper.type` and `binding.type` unset and Folio shows folded newsprint; a stock or binding you set wins
+(`resolveFolioConfig(folio, sizePreset)`, `stripFolioDefaults(folio, sizePreset)`, `folioForTrim`). Newsprint
+shows the reverse page more than any stock but bible (its coldset ink soaks into the sheet).
 
 `debug`: `cursorSync {enabled=true,color}`, `selectionSync {enabled=true,color}`,
 `looseLineHighlight {enabled=false,color,threshold=3}`, `pageNegative {enabled=false}`,

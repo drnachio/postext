@@ -199,6 +199,18 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
         pass
     elif "layout" not in cfg or "layoutType" not in (cfg.get("layout") or {}):
         rep.info(where, "layout.layoutType not set: the default is 'double' (two columns)")
+    # `multiple` (postext >= 1.18): columnCount equal columns, a whole number 3-8.
+    layouts = [("layout", cfg.get("layout"))] + [
+        (f"headingStyles[{i}].layout", hs.get("layout")) for i, hs in enumerate(cfg.get("headingStyles") or [])
+        if isinstance(hs, dict)]
+    for lpath, lay in layouts:
+        if not isinstance(lay, dict) or "columnCount" not in lay:
+            continue
+        n = lay["columnCount"]
+        if lay.get("layoutType") != "multiple":
+            rep.info(where, f"{lpath}.columnCount is read only by layoutType 'multiple' (ignored here)")
+        elif not isinstance(n, (int, float)) or isinstance(n, bool) or n != int(n) or not 3 <= n <= 8:
+            rep.warn(where, f"{lpath}.columnCount {n!r} is clamped to a whole number from 3 to 8 (columnCountClamped)")
     if "locale" not in cfg and not partial:
         rep.info(where, "config.locale not set: hyphenation and table continuation strings default to en-us")
     body = cfg.get("bodyText") or {}
@@ -214,7 +226,7 @@ FOLIO_ENUMS = {
     "paper.type": {"uncoated", "bookWove", "coatedMatte", "coatedSilk", "coatedGloss", "bible", "newsprint", "cardStock", "board"},
     "paper.finish": {"auto", "uncoated", "matte", "silk", "gloss"},
     "paper.texture": {"auto", "smooth", "vellum", "wove", "laid", "linen", "felt"},
-    "binding.type": {"hardcover", "paperback", "sewn", "layflat", "saddleStitch"},
+    "binding.type": {"hardcover", "paperback", "sewn", "layflat", "saddleStitch", "folded"},
     "binding.cover": {"case", "pages"},
     "binding.coverMaterial": {"auto", "cloth", "paper", "leather"},
     "surface.type": {"oak", "walnut", "linen", "felt", "leather", "marble", "plain", "none"},
@@ -272,6 +284,8 @@ def check_folio(cfg: dict, where: str, resources: list[dict], rep: Report) -> No
         kinds = {r.get("id"): r.get("kind") for r in resources}
         if binding.get("type") == "saddleStitch":
             rep.warn(f"{w}.binding.spineImage", "ignored: a saddle-stitched book has no flat spine")
+        elif binding.get("type") == "folded":
+            rep.warn(f"{w}.binding.spineImage", "ignored: a folded newspaper has no spine")
         elif spine not in kinds:
             rep.error(f"{w}.binding.spineImage", f"{spine!r} is not a resource id")
         elif kinds[spine] not in ("bitmap", "svg", None):
@@ -997,6 +1011,12 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     for k, allowed in (("span", {"column", "page", "side"}), ("placement", {"here", "auto", "top", "bottom", "fixed"})):
                         if k in attrs and attrs[k] not in allowed:
                             rep.error(where, f"callout {k}={attrs[k]!r} is ignored (allowed: {sorted(allowed)})")
+                    if "columns" in attrs:
+                        # postext >= 1.18: a floated box across several columns.
+                        if not re.fullmatch(r"[1-9]\d*", attrs["columns"]):
+                            rep.error(where, f"callout columns={attrs['columns']!r} is not a whole number from 1 (read as 1)")
+                        elif attrs.get("placement") in ("here", "fixed") or attrs.get("span") in ("page", "side"):
+                            rep.warn(where, "callout columns only applies to a floated span='column' box (placement auto/top/bottom)")
                     if "title" in attrs and re.search(r"\*\*|\*[^*]+\*", attrs["title"]):
                         rep.warn(where, "callout titles are plain text: ** / * print literally")
                 elif fname == "paragraphs":

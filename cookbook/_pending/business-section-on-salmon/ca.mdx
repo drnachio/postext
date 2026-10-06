@@ -1,0 +1,68 @@
+---
+title: "Una secció d'economia en paper salmó"
+summary: "Un diari berlinès de vuit pàgines les pàgines d'economia del qual prenen un estil de títol: paper salmó, sis columnes, accent petroli i un bloc :::paper."
+plain: "Vuit pàgines d'un diari inventat. Les quatre primeres són de notícies, en paper blanc grisenc; les d'economia que segueixen van en paper salmó, amb columnes més estretes i colors propis."
+description: "Un diari berlinès en Postext amb el codi: notícies a cinc columnes i una secció d'economia en salmó a sis, amb mercats, gràfics i el paper de Folio."
+question: "Com imprimeixo les pàgines d'economia d'un diari en paper salmó, amb la seva retícula, també en 3D?"
+aliases: ["pàgines salmó", "paper rosa", "secció d'economia", "pàgines de mercats", "secció de diari", "format berlinès", "cotitzacions", "dades de mercat", "diari plegat", "color de secció", "salmon pages"]
+pageNotes: { "1": "La portada de The Marrowick Ledger: la capçalera entre una orella grisa amb el temps i una altra de salmó que remet a les pàgines d'economia, el titular Barrier holds back the Marrow’s highest tide in forty years, una foto de comportes d'acer en plena tempesta a cinc columnes, la notícia en cinc columnes amb filets, una segona notícia sobre els tramvies nocturns i una franja salmó de crides al peu.", "5": "La portada d'economia en paper salmó: el títol Business en petroli, una franja amb sis tancaments de mercat, el titular Harbour board backs £640 million deep-water terminal, un port de contenidors a l'alba a tota l'amplada, un requadre flotant de xifres a dues columnes, un gràfic de barres a dues més, sis columnes de text i un anunci d'un banc al peu.", "8": "Cotitzacions: una columna Your money amb una taula dels millors dipòsits i deu sectors de cotitzacions en cinc columnes estretes, sobre l'anunci d'una mútua." }
+---
+
+## Què compondràs
+
+Vuit pàgines de *The Marrowick Ledger*, un diari inventat, en el plec berlinès de 315 × 470 mm. Les pàgines 1 a 4 porten les notícies en paper premsa blanc grisenc, a cinc columnes amb filets i amb una pestanya vermella de secció a cada pàgina. A la 5 canvia el paper. La secció d'economia s'imprimeix en paper salmó, com les pàgines financeres des de fa més d'un segle: la pàgina passa a #f2d3c0, la retícula s'estreny a sis columnes, l'accent passa del vermell al petroli i sota el títol de secció hi ha una franja amb els tancaments del dia. A dins hi ha una pàgina de mercats amb un any de l'índex de la ciutat, un gràfic per sectors i quatre taules, notícies d'empreses i una pàgina de cotitzacions. A la vista 3D de Folio els plecs es dobleguen l'un dins de l'altre i les quatre últimes pàgines surten en paper salmó.
+
+## Elaboració
+
+### 1 · Dos papers en una paleta
+
+<Excerpt region="palette" />
+
+Tots els colors de la configuració van enllaçats a una de les vuit entrades de la paleta. Les pàgines de notícies fan servir `paper` (#f6f4ef) per a la pàgina i `accent` (#b3261e) per a pestanyes, avanttítols i marques dels gràfics. Les d'economia conserven aquests enllaços i en canvien els valors: la paleta de la secció posa `paper` en salmó, `accent` en petroli (#0f4c5c) i `tint` en un salmó més fosc. `salmon` té a més la seva pròpia entrada, per a l'orella i la franja de crides de la portada, que segueixen en salmó sobre les pàgines blanques.
+
+### 2 · Un estil de títol converteix la pàgina en pàgina d'economia
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `# Markets {style="business"}` obre una secció, i les seves pàgines prenen la `palette`, el `layout` i el `bodyStyle` de l'estil: sis columnes amb 4 mm d'espai entre columnes (45,2 mm cadascuna, davant de 54,6 mm a notícies) i el text a 8,8 pt sobre el mateix interlineat d'11,4 pt. El color de la pàgina també segueix la paleta. `page.backgroundColor` va enllaçat a `paper`, i quan la paleta d'una secció dona a `paper` un altre valor, totes les pàgines de la secció es pinten amb aquest valor: la que obre el seu títol i qualsevol pàgina a la qual passi el seu text. Així les pàgines d'economia queden en salmó de vora a vora, i el filet de columna, que el `layout` de l'estil deixa tal com el fixa el document, corre entre les sis columnes igual que entre les cinc.
+
+### 3 · Cada pàgina obre amb una pestanya
+
+<Excerpt region="flags" />
+
+L'H1 és una obertura a tota l'amplada amb `breakBefore` de paritat `'any'`, de manera que cada títol obre la pàgina següent, caigui del costat que caigui. El seu disseny és una pestanya sobre una barra de 3 pt, de tres línies de reixeta. La línia de foli és una capçalera ancorada a 9 mm de la vora superior: número de pàgina, capçalera del diari i data per fora, i `{chapterTitle}` per dins en el color d'accent, que la paleta torna petroli a les pàgines salmó.
+
+### 4 · Fotos i gràfics a diverses columnes
+
+<Excerpt region="floats" />
+
+`top(3)` és `placement: { position: 'top', columns: 3 }`: la foto de la drassana ocupa tres de les cinc columnes de notícies, el ferri quatre, la fleca tres de les sis d'economia i el gràfic del port dues. Un flotant citat des d'un paràgraf de la columna 1 pren el cap de les columnes següents que encara són buides, així que aquestes fotos comencen a la columna 2 i la notícia baixa al seu costat. Les fotos que travessen tota la pàgina van en línia (`here`) dins del requadre del titular. Les taules també van en el flux, dins de requadres a tota l'amplada al peu.
+
+### 5 · Titulars, requadres, dades i anuncis són requadres
+
+<Excerpt region="boxes" />
+
+Un titular a tota l'amplada és un requadre sense marc que conté un H2 en un de tres cossos, i un filet d'1 pt a sobre assenyala la notícia següent. A la pàgina 5 el requadre *The terminal in numbers* sura sobre dues de les sis columnes (`columns="2"` al seu bloc), i la cita destacada de la pàgina 4 fa el mateix amb `columns: 2` al seu estil. Els requadres de dades posen de dues a quatre taules en paral·lel amb un grup `:::columns`, i els anuncis són requadres a tota l'amplada que suren al peu, amb un filet de 0,75 pt.
+
+### 6 · El paper que imprimeix Folio
+
+Les pàgines de notícies no necessiten res: `folio.paper` és paper premsa de 45 g/m², i `binding: { type: 'folded', cover: 'pages' }` posa un plec doblegat dins de l'altre, amb la pàgina 1 per fora i la 8 com a contraportada. Les d'economia van en un sol bloc:
+
+```markdown
+:::paper{type="newsprint" shade="#faede6"}
+# Business {style="business-front"}
+…
+# Share prices {style="business"}
+…
+:::
+```
+
+Cada pàgina del bloc porta `page.paper` amb aquest to, i Folio la imprimeix en aquest paper. El to és el color de la pàgina portat un 60 % cap al blanc (README §4): la pàgina plana ja pinta #f2d3c0, i un paper salmó sencer a sota la tenyiria dues vegades. El canvas, l'HTML i el PDF no llegeixen `:::paper` i pinten el color de la pàgina, i per això la paleta de la secció canvia també `paper`.
+
+## Variants
+
+### Canvia el paper sense canviar la retícula
+
+Un estil de títol amb `palette` i sense `layout` conserva les cinc columnes amb filets del document i pinta igualment totes les pàgines de la seva secció: `{ id: 'weekend', palette: { paper: '#efe6cf' } }` posa un suplement de cap de setmana en paper premsa crema. Posa també les seves pàgines en un bloc `:::paper`, amb el to portat un 60 % cap al blanc, perquè Folio les imprimeixi en un paper a joc.
+
+### Fes de la secció d'economia un quadernet
+
+Les vuit pàgines es dobleguen en dos plecs, l'un dins de l'altre: les pàgines 1–2 i 7–8 a l'exterior, les 3–6 a l'interior. Folio dona a cada full el paper de la seva pàgina senar, així que la 7 i la 8 surten en salmó, encara que una rotativa les imprimiria en el mateix plec que la portada. Passa les pàgines d'economia a la 3–6 i formaran el plec interior, que la rotativa pot tirar en paper salmó i el lector treure sencer.

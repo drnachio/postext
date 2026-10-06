@@ -1,0 +1,64 @@
+---
+title: "Magazine feature on a three-column grid"
+summary: "layoutType 'multiple' cuts the page into three columns; placement.columns sets photos and a floated pull quote across two of them, or across all three."
+plain: "A six-page travel story from a monthly magazine, set in three narrow columns. It shows how to place photos and a large quotation across two columns or the whole page, and a box of practical tips in one."
+description: "A magazine travel feature in Postext on three columns: an opening photo spread, photos across one, two or three columns, a floated pull quote and a sidebar."
+question: "Can Postext set a magazine page in three columns, with photos across two of them?"
+aliases: ["three-column magazine", "three columns", "magazine grid", "photo across two columns", "two-column photo", "pull quote across columns", "sidebar", "travel feature", "opening spread", "photo spread", "drop cap", "standfirst", "byline", "end mark", "locator map"]
+pageNotes: { "1": "The verso of the opening spread: salt pans at sunrise fill the page, with the kicker Islands · The Atlantic and the headline The Salt Rakers of Marisal in white over the dark water at the foot.", "2": "The recto: the same photograph runs on across the top, a salt raker with his wooden rake before a row of white salt heaps; below it, a lead paragraph with a four-line blue drop cap in the first column, the italic standfirst and the byline across the other two, then three columns of text.", "3": "Three justified columns with blue crossheads; a photograph of a rake pushing a ridge of wet salt heads the second and third columns.", "4": "A photograph of the pink salt pans from above runs across the page; under it a blue-ruled pull quote spans the second and third columns.", "5": "A photograph of a sieve skimming salt crystals heads the second and third columns; a portrait of an older salt maker with a basket stands at the foot of the first.", "6": "The closing page: a tinted sidebar, Visiting Marisal, with a small map of the island, fills the head of the first column; a tall harbour photograph at dusk spans the other two; the story ends level in all three columns with a small blue square." }
+---
+
+## What you'll build
+
+Six pages from the November issue of *Meridian*, a travel monthly, on a 225 × 297 mm page. The feature opens on a spread: one photograph of salt pans at sunrise runs across both pages, with the headline reversed out of the water on the left and the lead, its drop cap, the standfirst and the byline under the picture on the right. The story then runs in three justified columns, 61.7 mm each. Photographs take two columns, the whole width or one column; a pull quote sits across two columns between the paragraphs; a tinted sidebar with a map of the island opens the closing page. A small blue square ends the text.
+
+## Method
+
+### 1 · Cut the page into three columns, and let floats take one, two or three
+
+The code is [the short answer](#the-short-answer) above. `layoutType: 'multiple'` with `columnCount: 3` divides the 195 mm text block into three equal columns, so with a 5 mm gutter each one is 61.7 mm wide, about 40 characters of 9.6 pt Source Serif. A picture's `placement.columns` takes that many adjacent columns and the gutters between them: the raking photograph is 128.3 mm wide, and the pans, with `span: 'page'`, the full 195 mm. The pull quote's style does the same for a box, with `columns: 2` on a `placement: 'top'` style, so it floats to the head of two free columns and the text runs on around it. A three-column grid suits a magazine feature with many pictures, because each picture can take one, two or three columns. Long text with few pictures reads better in two wider columns.
+
+### 2 · Open on a spread, one photograph across two pages
+
+<Excerpt region="spread" />
+
+Each half of the photograph belongs to a heading style with `span: 'page'`, and a page-span heading always opens a new page, so the headline's page and the standfirst's page follow each other. The left half fills the verso and reserves nothing (`reserve: false`), so the headline can sit over the water at the foot. The right half is cut to 165 mm, and the lead, the standfirst and the byline hang from the container under it. The lead is a design text with a four-line `dropCap`, one column wide; its empty bottom padding counts towards the opener's height, so the columns start 6 mm under it. `continuation.pageIndexOffset: 83` makes page 84 a verso, so the two halves face each other.
+
+### 3 · Declare the photographs, and cite each where it should land
+
+<Excerpt region="resources" />
+
+A float goes to the first free head (or foot) of its columns after the line that cites it, so the `::resource` lines decide the pages. The sieve photograph is cited at the top of the fifth page's first column, and the second and third columns are still empty there, so it heads them on the same page. The harbour photograph is cited late on that page and heads two columns of the next. Photographs of one type never overtake each other, so their citations stay in story order. Bitmaps are measured at the page's 150 dpi: 1500 px make 254 mm and shrink to the 128.3 mm of two columns.
+
+### 4 · Running heads and folios off the opening spread
+
+<Excerpt region="heads" />
+
+Header elements paint over the page and reserve no room, so the folio and the label are anchored to the page in the top margin. `pages: 'body'` keeps them off both pages of the spread, which are opener pages because each starts with a page-span heading. The recto of the spread gets its folio at the foot instead, through `pages: 'opener'` and `parity: 'odd'`; the verso, all photograph, carries none.
+
+### 5 · Draw the sidebar's map in code
+
+<Excerpt region="art" />
+
+The map is an SVG resource with `placement: 'here'`, cited inside the sidebar's fence, so it sits under the box title at the box's measure. It has no lettering: text inside an SVG cannot use the page's web fonts, so the caption names the shapes instead. The arrowhead on the ferry route is a path, because a `<marker>` would not survive a PDF export.
+
+## Variations
+
+### Put the pull quote across all three columns
+
+A floated box takes the fence's `columns` attribute over its style's, so one quote can run the full width.
+
+```diff
+- :::callout{type="pull"}
++ :::callout{type="pull" columns="3"}
+```
+
+### Set the story in two columns
+
+For a feature with fewer pictures and longer paragraphs, see <RecipeLink slug="magazine-feature-opener">Magazine feature: photo opener to end mark</RecipeLink>, on a `double` layout.
+
+## Pitfalls
+
+- A photograph across two columns heads two columns that are still empty. Cited in the second column, it finds no such pair on its page, since only the third column is left, and waits for the next page.
+- The story is fitted to end level on the sixth page under the harbour photograph. After an edit, check that the last page still fills: a few lines fewer and the photograph moves to a page of its own.
+- With 40-character lines, a justified paragraph has few break points. `maxJustifyTracking: 15` lets a line that cannot be set within twice the normal space take up to 0.015 em of tracking instead. Fix a one-word last line by editing the copy, as the pages here were.

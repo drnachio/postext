@@ -9,6 +9,7 @@ import {
 } from 'postext';
 import type { Dimension, DesignSlot, LayoutType, PageMargins, PostextConfig, ResolvedHeadingsConfig } from 'postext';
 import { htmlViewerDpi, PADDING_PX, type ColumnMode } from './constants';
+import { viewerLayoutType } from './pageGeometry';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
 
 /** The leaf a heading design was drawn on: its size and the margins that
@@ -389,12 +390,13 @@ export function buildHtmlConfigOverride(
     fontScale,
     columnMode,
     pageWidthPx,
-    layoutType,
     viewportHeightPx,
     locale,
     optimalLineBreaking,
     partTitles,
   } = opts;
+  // A newspaper grid reads as two columns here (see viewerLayoutType).
+  const layoutType = viewerLayoutType(opts.layoutType);
 
   // Font scale: the viewer renders at HTML_DPI (8pt ≈ 16px at fontScale=1)
   // and scales by changing the DPI itself, so every absolute size in the
@@ -587,6 +589,11 @@ export function buildHtmlConfigOverride(
             ...(style.breakBefore ? { breakBefore: { ...style.breakBefore, parity: 'any' as const } } : {}),
             header: { elements: [] },
             footer: { elements: [] },
+            // A section set in a newspaper grid reads as two columns, as
+            // the document's does.
+            ...(style.layout?.layoutType === 'multiple'
+              ? { layout: { ...style.layout, layoutType: viewerLayoutType(style.layout.layoutType) } }
+              : {}),
             // A style's page geometry belongs to the leaf it was measured
             // for — a cover's text box in the lower corner of a 225 mm page
             // leaves no content area at all on a viewer page.

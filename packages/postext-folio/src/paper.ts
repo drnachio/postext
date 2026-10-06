@@ -44,8 +44,18 @@ const OPACITY_K: Record<ResolvedPaper["type"], number> = {
   board: 0.03,
 };
 
+/** How much more of the reverse's print shows than the sheet's opacity
+ *  alone lets through: on newsprint the coldset ink is not dried on the
+ *  surface but soaks into the open groundwood sheet (strike-through), so
+ *  the other side reads through more than its 90 % opacity suggests. */
+const STRIKE_THROUGH: Partial<Record<ResolvedPaper["type"], number>> = {
+  newsprint: 1.7,
+};
+
 /** The reference leaf: 90 g/m² × 1.25 cm³/g. */
 const REF_CALIPER_UM = 112.5;
+/** Pages up to this wide (mm) curl as their stock alone says. */
+const LARGE_PAGE_MM = 230;
 
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -62,22 +72,30 @@ const smooth = (a: number, b: number, x: number) => {
  * through about twice the light its opacity loses (opacity is a contrast
  * over a black backing; diffuse transmittance runs 15–20 % for 80 g/m²
  * offset, a third and more for bible paper).
+ *
+ * That bending length is the stock's, in millimetres, so across a sheet
+ * wider than a book's page (`pageWidthMm`: a tabloid, a Berliner, a
+ * broadsheet) it is a smaller share of the page: such a sheet rolls
+ * tighter for its width, flutters more and swings back more slowly, as a
+ * longer pendulum does. A broadsheet of newsprint flops where a book page
+ * of the same paper curls.
  */
-export function paperSpec(paper: ResolvedPaper): PaperSpec {
+export function paperSpec(paper: ResolvedPaper, pageWidthMm?: number): PaperSpec {
   const caliperUm = paper.grammage * paper.bulk;
   const ratio = Math.pow(caliperUm / REF_CALIPER_UM, 2 / 3);
+  const size = pageWidthMm && pageWidthMm > LARGE_PAGE_MM ? LARGE_PAGE_MM / pageWidthMm : 1;
   const opacity = 1 - Math.exp(-OPACITY_K[paper.type] * paper.grammage);
   const finish = paper.finish;
   return {
     paper,
     caliperMm: caliperUm / 1000,
-    roll: Math.min(6, Math.max(0.45, ratio)),
+    roll: Math.min(6, Math.max(0.45, ratio)) * size,
     rigidity: smooth(1.3, 4, ratio),
     opacity,
-    showThrough: paper.showThrough ? Math.min(0.4, (1 - opacity) * 1.25) : 0,
+    showThrough: paper.showThrough ? Math.min(0.4, (1 - opacity) * 1.25 * (STRIKE_THROUGH[paper.type] ?? 1)) : 0,
     transmission: paper.showThrough ? Math.min(0.5, (1 - opacity) * 2) : 0,
     follow: 0.35 / (1 + 0.35 * Math.max(0, Math.log(ratio))),
-    spring: 0.0085 * Math.min(1.6, Math.max(0.75, Math.sqrt(ratio))),
+    spring: 0.0085 * Math.min(1.6, Math.max(0.75, Math.sqrt(ratio))) * Math.sqrt(size),
     roughness: finish === "gloss" ? 0.32 : finish === "silk" ? 0.5 : finish === "matte" ? 0.7 : 0.88,
     clearcoat: finish === "gloss" ? 1 : finish === "silk" ? 0.45 : finish === "matte" ? 0.12 : 0,
     clearcoatRoughness: finish === "gloss" ? 0.06 : finish === "silk" ? 0.28 : 0.6,

@@ -27,6 +27,7 @@ import type {
 import { defaultAccessibility } from '../shared/accessibility';
 import { fontAssets, imageAssets, pageProgressionOf, remoteVideoItems, videoAssets } from '../shared/assets';
 import { decodeEntities, escapeAttr, escapeXml, htmlToXhtml, xhtmlDocument, xmlId } from '../shared/xml';
+import { videoScriptItem, VIDEO_SCRIPT_HREF, withVideoScript } from '../shared/videoScript';
 import { navStrings } from '../package/strings';
 import { fontUses, missingFaces, type FontUse } from './fontUse';
 import { contentsRows, headingTitle, nestOutline, pageHeadings, partTitle, type OutlineEntry } from './outline';
@@ -199,6 +200,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
   const pageList: EpubPageTarget[] = [];
   const uses: FontUse[] = [];
   let describedImages = true;
+  let scripted = false;
   for (const [n, plan] of plans.entries()) {
     const { doc, page, file } = plan;
     const geo = pageGeometry(doc, page);
@@ -224,7 +226,8 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
       `width:${num(page.width)}px;height:${num(page.height)}px;${bg}` +
       `transform:scale(${num(geo.scale)})${geo.offset ? ` translate(-${num(geo.offset)}px,-${num(geo.offset)}px)` : ''};`;
     const label = page.pageLabel || String(plan.bookIndex + 1);
-    const xhtml = xhtmlDocument({
+    // A page with videos to coordinate links the playback script (#507).
+    const xhtml = withVideoScript(xhtmlDocument({
       lang: plan.lang,
       dir: directionOf(plan.lang),
       title: `${metadata.title} (${label})`,
@@ -234,7 +237,8 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
         (styles.length ? `<style>${escapeXml(styles.join('\n'))}</style>\n` : ''),
       bodyAttrs: ` style="width:${geo.width}px;height:${geo.height}px;${bg}"`,
       body: `<div class="pt-page" id="${escapeAttr(plan.ids[0]!)}" dir="${pageDir(doc)}" style="${pageStyle}">${body}</div>`,
-    });
+    }), `../${VIDEO_SCRIPT_HREF}`);
+    if (xhtml.includes('<script')) scripted = true;
     const id = file.replace(/\.xhtml$/, '');
     pageItems.push({ id, href: `${PAGES_DIR}${file}`, mediaType: 'application/xhtml+xml', data: xhtml });
     // A left-bound book's first page is a recto on the right; a right-bound
@@ -293,6 +297,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
 
   items.push({ id: 'style', href: STYLESHEET_HREF, mediaType: 'text/css', data: css });
   items.push(...fonts.items, ...imageItems, ...pageItems);
+  if (scripted) items.push(videoScriptItem());
   const toc = nestOutline(outline, PAGES_DIR);
   const hasImages = imageItems.length > 0 || options.cover !== undefined;
   return {

@@ -70,14 +70,33 @@ export function enumerateCurrentPageSlots(
   }
 
   // A page-span float crosses the side column too: the band it takes is
-  // reserved in every column of the band, the side column included.
-  if (f.span === 'page' && (cols.length > 1 || sideColumns(page).length > 0)) {
+  // reserved in every column of the band, the side column included. A
+  // float across as many columns as the band has is one.
+  const textCols = cols.filter((c) => c.kind !== 'side');
+  const across = Math.min(f.columns ?? 1, textCols.length);
+  if ((f.span === 'page' || (across > 1 && across === textCols.length)) && (cols.length > 1 || sideColumns(page).length > 0)) {
     if (!wantsBottom) return [];
     if (!cols.every(bottomFree)) return [];
     return [{ cols: [...cols, ...sideColumns(page).filter((c) => (c.band ?? 0) === band)], position: 'bottom', pageSpan: true }];
   }
 
   const slots: FloatSlot[] = [];
+  // A float across several columns (#505): the head of a run of empty
+  // columns that start level (no float above one of them alone), or the
+  // foot of the cursor's column and the empty ones after it.
+  if (across > 1) {
+    const from = textCols.findIndex((c) => c.index === cursorCol.index);
+    if (from < 0) return [];
+    for (let i = from; i + across <= textCols.length; i++) {
+      const group = textCols.slice(i, i + across);
+      if (i > from && group[0]!.blocks.length > 0) continue;
+      if (!group.slice(1).every((c) => c.blocks.length === 0)) continue;
+      const level = group.every((c) => Math.abs(c.bbox.y - group[0]!.bbox.y) < 0.5);
+      if (wantsTop && level && group[0]!.blocks.length === 0) slots.push({ cols: group, position: 'top', pageSpan: false });
+      if (wantsBottom && group.every(bottomFree)) slots.push({ cols: group, position: 'bottom', pageSpan: false });
+    }
+    return slots;
+  }
   const start = cols.findIndex((c) => c.index === cursorCol.index);
   if (start < 0) return [];
   for (let i = start; i < cols.length; i++) {

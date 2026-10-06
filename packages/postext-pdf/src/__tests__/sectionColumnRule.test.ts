@@ -115,6 +115,40 @@ describe('a heading style\'s column rule in the PDF (EF-112)', () => {
   });
 });
 
+describe('column rules of a multiple layout in the PDF (#505)', () => {
+  it.each([3, 4, 6])('strokes one rule in each of the %i columns\' gutters, where the layout puts them', async (n) => {
+    const config: PostextConfig = {
+      page: { width: pt(800), height: pt(600), margins: { top: pt(30), bottom: pt(30), left: pt(30), right: pt(30) } },
+      layout: { layoutType: 'multiple', columnCount: n, gutterWidth: pt(12), columnRule: { enabled: true, color: hex('#2266aa'), lineWidth: pt(1) } },
+      locale: 'en-us',
+      header: { elements: [] },
+      footer: { elements: [] },
+    };
+    const doc = buildDocument({ markdown: `${BODY}\n\n${BODY}\n\n${BODY}\n\n${BODY}\n\n${BODY}` }, config);
+    const page = doc.pages[0]!;
+    expect(page.columns.filter((c) => c.blocks.length > 0)).toHaveLength(n);
+    const segments = columnRuleSegments(page.columns);
+    expect(segments).toHaveLength(n - 1);
+    const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: false, outlines: false }));
+    const vertical = strokedLines(pageContent(pdf.getPage(0)))
+      .filter((l) => Math.abs(l.x1 - l.x2) < 0.01 && l.rgb === '0.133 0.400 0.667');
+    expect(vertical).toHaveLength(n - 1);
+    // Each rule in the middle of its gutter, top to bottom as the layout says.
+    const scale = 72 / doc.config.page.dpi;
+    const heightPt = pdf.getPage(0).getHeight();
+    const xs = vertical.map((l) => l.x1).sort((a, b) => a - b);
+    const width = (740 - (n - 1) * 12) / n;
+    xs.forEach((x, i) => expect(x).toBeCloseTo(30 + (i + 1) * width + i * 12 + 6, 2));
+    for (const seg of segments) {
+      const line = vertical.find((l) => Math.abs(l.x1 - seg.x * scale) < 0.01)!;
+      expect(line).toBeDefined();
+      expect(Math.max(line.y1, line.y2)).toBeCloseTo(heightPt - seg.top * scale, 2);
+      expect(Math.min(line.y1, line.y2)).toBeCloseTo(heightPt - seg.bottom * scale, 2);
+      expect(line.width).toBeCloseTo(1, 3);
+    }
+  }, 60_000);
+});
+
 describe('justified design text in the PDF (EF-109)', () => {
   it('paints each word of a justified line where the layout put it', async () => {
     const config: PostextConfig = {

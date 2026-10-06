@@ -13,19 +13,26 @@ export const LOCALE_INFO = {
 
 export type SiteLocale = keyof typeof LOCALE_INFO;
 
-/** Each locale's YouTube playlist, opened on its first video (the showreel)
- *  so the rest of the list plays on in the same language. */
+/** Each locale's YouTube playlist, opened on its first video (the showreel,
+ *  or the tutorial while that language's showreel is not public yet) so the
+ *  rest of the list plays on in the same language. */
 const YOUTUBE_PLAYLIST: Record<SiteLocale, { video: string; list: string }> = {
-  en: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
-  es: { video: "UFme-Yw6Q0k", list: "PLb9LUQYJSvyg" },
-  // No Catalan cut: the Spanish playlist is the nearest.
-  ca: { video: "UFme-Yw6Q0k", list: "PLb9LUQYJSvyg" },
-  zh: { video: "lFy_VLFuWqA", list: "PLIfpGQLFoR8k" },
-  // No Arabic cut: the English playlist, with Arabic transcripts on the site.
-  ar: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
-  // No Japanese cut: the English playlist, with Japanese transcripts on the site.
-  ja: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
+  en: { video: "pTVl1TWvu-A", list: "PLXV_YSL9ROv0" },
+  es: { video: "X7DEVCVz5sk", list: "PLb9LUQYJSvyg" },
+  ca: { video: "s18kxneB05w", list: "PLbA04WsEy-wQ" },
+  zh: { video: "z9OhKCK270M", list: "PLIfpGQLFoR8k" },
+  ar: { video: "CuI63kdIlK0", list: "PLft7wmxPkdGo" },
+  // No Japanese playlist yet: the English one, with Japanese transcripts on the site.
+  ja: { video: "pTVl1TWvu-A", list: "PLXV_YSL9ROv0" },
 };
+
+/** The cuts of the narrated videos on the media CDN: one per site locale (#510). */
+export type MediaLang = SiteLocale;
+
+/** The cut a route locale plays. */
+export function mediaLang(locale: string): MediaLang {
+  return siteLocale(locale);
+}
 
 /** The header's YouTube link for a route locale. */
 export function youtubeUrl(locale: string): string {

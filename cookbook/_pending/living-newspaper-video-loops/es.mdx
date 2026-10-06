@@ -1,0 +1,60 @@
+---
+title: "Un periódico vivo con fotos que se mueven"
+summary: "Seis recursos de vídeo compuestos como fotos de prensa en un tabloide a cuatro columnas; autoplay, loop y exclusive: false los reproducen a la vez en Folio."
+plain: "Un periódico local al estilo de los años treinta en el que cada foto es una película muda y corta. En papel son imágenes fijas; en el visor 3D se mueven todas a la vez, una y otra vez, como un periódico de cuento."
+description: "Tabloide de cuatro páginas a cuatro columnas cuyas seis fotos son vídeos en bucle en blanco y negro, reproducidos juntos sobre papel prensa doblado en Folio."
+question: "¿Cómo hago que varios vídeos mudos en bucle se reproduzcan a la vez en una página de periódico?"
+aliases: ["periódico vivo", "fotos que se mueven", "vídeo en bucle", "reproducción automática", "autoplay", "loop", "varios vídeos a la vez", "exclusive", "reproducir a la vez", "tabloide", "periódico", "cuatro columnas", "Folio", "papel prensa", "periódico plegado"]
+pageNotes: { "1": "La portada de The Wexcombe Lantern del 10 de junio de 1933: una mancheta negra en letra estrecha, el titular Trams run to the sea at last, una foto de la alcaldesa hablando en un atril a lo ancho de tres columnas, otra de una mujer que saluda desde un biplano a dos y, al pie, una franja In brief sobre fondo de color.", "2": "Town & Harbour: una foto de la torre del reloj y otra de un pescador que ríe con un bacalao enorme en las manos, cada una a dos columnas, el final de la noticia de los tranvías, un recuadro de tarifas, una tabla de mareas, notas del ayuntamiento, noticias del puerto y cinco noticias breves en cuatro columnas con filete.", "3": "Stage & Screen: una actriz en un decorado de jardín a dos columnas, una crítica, tablas de cine y de radio, cartas al director y un recuadro con filete de anuncios por palabras.", "4": "Sport: un portero agachado sobre su línea a lo ancho de tres columnas, la crónica de la copa, tablas del calendario, de críquet y de ciclismo, y el pie de imprenta." }
+---
+
+## Lo que vas a componer
+
+*The Wexcombe Lantern*, un semanario costero inventado de junio de 1933, en una página tabloide de 280 × 430 mm a cuatro columnas con filete: una mancheta estrecha, una noticia principal con su foto a tres columnas, otra a dos, tablas de mareas, anuncios por palabras y una página de deportes. Cada foto es una película de cinco segundos en blanco y negro. En el impreso, y en las páginas planas bajo el visor, cada una es su primer fotograma. Cuando se abre en Folio como un periódico doblado, en papel prensa claro, las fotos de las páginas abiertas se mueven a la vez y no paran: la alcaldesa habla, la aviadora saluda, el pescador ríe, el portero se lanza y vuelve a levantarse. La página no dibuja nada; la maquetación es la de un periódico corriente y los clips hacen el resto.
+
+## Elaboración
+
+### 1 · Haz de cada foto un clip que se repite junto a los demás
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un recurso de vídeo imprime su portada como una imagen, así que los clips ocupan el lugar de las fotografías y llevan pie como ellas. Tres opciones del reproductor dan vida a la página: `autoplay` arranca un clip cuando su página está a la vista (siempre sin sonido, como exigen los navegadores), `loop` lo vuelve a reproducir desde el principio y `exclusive: false` deja que corra junto a los demás clips. Por defecto un vídeo es exclusivo: al arrancarlo se pausa todo lo que se esté reproduciendo, lo que sirve para una clase pero no para una página de fotos en movimiento. La marca de reproducción y el código QR están desactivados, así que en papel los clips se leen como fotos de prensa.
+
+### 2 · Da a cada bucle su sitio en la retícula
+
+<Excerpt region="clips" />
+
+La maquetación es `layoutType: 'multiple'` con `columnCount: 4`. El `columns` de un flotante fija cuántas ocupa: los clips de la alcaldesa y del portero, tres; los de la aviadora, la torre del reloj, el pescador y la actriz, dos. Un flotante a varias columnas toma la cabeza de una serie de columnas vacías que empiezan a la misma altura, o el pie de la columna en la que se cita y de las vacías que la siguen, así que el sitio de la línea `::resource` decide el hueco. La alcaldesa se cita tras el primer párrafo, lo que deja la columna 1 al texto y pone la foto sobre las columnas 2 a 4.
+
+### 3 · Compón la mancheta y las páginas de sección
+
+<Excerpt region="nameplate" />
+
+El título de nivel 1 de la portada es el nombre del periódico, compuesto en una ranura de elementos: dos orejas encima, el nombre en mayúsculas de Oswald y una línea de fecha entre un filete fino y otro grueso. Las páginas interiores abren con un rótulo rojo de sección sobre una barra de 3 pt (la región `pages`), y todas las páginas menos la primera llevan una línea de folio en la cabeza.
+
+### 4 · Abre el periódico en Folio
+
+<Excerpt region="folio" />
+
+`config.folio` pone el periódico sobre roble con luz de día: papel prensa de 45 g/m², que deja ver al trasluz la página siguiente, y `binding.type: 'folded'`, pliegos doblados una vez y metidos uno dentro de otro, sin grapas ni lomo, como se monta un periódico. Folio dibuja todos los clips de la doble página abierta en una sola textura, hasta ocho a la vez, arranca los bucles automáticos cada vez que un pase de página se detiene en la suya y los para cuando esa página se pasa. Un clic en un vídeo exclusivo lo sigue reproduciendo solo, con su sonido, y los bucles esperan a que termine.
+
+## Variantes
+
+### Deja que el lector arranque cada clip
+
+Sin `autoplay`, las fotos siguen quietas hasta que el lector hace clic en una; una vez arrancados, los bucles se reproducen juntos igualmente.
+
+```diff
+-  player: { autoplay: true, loop: true, muted: true, exclusive: false, controls: false },
++  player: { loop: true, muted: true, exclusive: false, controls: false },
+```
+
+### Un clip exclusivo con su sonido
+
+Un vídeo puede quedarse con el valor por defecto y reproducirse a su manera: pon `player: { exclusive: true, muted: false }` en el `video` de ese recurso, y al arrancarlo los bucles esperan hasta que acabe.
+
+### Un periódico de gran formato a seis columnas
+
+<RecipeLink slug="newspaper-front-page">La portada a dos columnas</RecipeLink> compone un periódico más pequeño con fotos fijas; la misma retícula admite seis columnas en un formato sábana con `sizePreset: 'broadsheet'`.
+
+## Errores frecuentes
+
+Una sección de periódico es un título de nivel 1 que abre página, y un flotante nunca lo cruza. Una foto que no encuentra hueco en la última página de su sección se coloca en una página propia antes de la sección siguiente, así que ajusta el texto a la página: aquí la noticia de los tranvías salta a la página 2 en lugar de echar a la aviadora de la portada.

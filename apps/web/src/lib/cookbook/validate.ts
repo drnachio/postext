@@ -360,7 +360,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
           type: "object",
           additionalProperties: false,
           properties: {
-            type: { enum: ["hardcover", "paperback", "sewn", "layflat", "saddleStitch"] },
+            type: { enum: ["hardcover", "paperback", "sewn", "layflat", "saddleStitch", "folded"] },
             cover: { enum: ["case", "pages"] },
             coverMaterial: { enum: ["cloth", "paper", "leather"] },
             coverColor: ref("hex"),
@@ -968,6 +968,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
   for (const [id, gap] of Object.entries(registry.gaps ?? {})) {
     if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [], ca: [], zh: [], ar: [], ja: [] }`);
     if (gap.docs !== undefined) anchorErrors(gap.docs, `gaps.${id}.docs`, errors);
+    if (gap.fixedIn !== undefined && !SEMVER.test(gap.fixedIn)) errors.push(`gaps.${id}.fixedIn: must be a version`);
   }
   for (const [kind, warning] of Object.entries(registry.warnings ?? {})) {
     if (!["engine", "parse", "sandbox"].includes(warning.source)) errors.push(`warnings.${kind}.source: must be engine, parse or sandbox`);

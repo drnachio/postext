@@ -8,9 +8,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
-    // One test renders the Markdown of every docs and Cookbook page. It
-    // takes well under a second, but past vitest's 5 s default when the
-    // machine is busy with other suites.
-    testTimeout: 30_000,
+    // One test renders the Markdown of every docs and Cookbook page: about
+    // a second on a workstation, close to 30 s on CI, which runs every
+    // package's suite at once on a small runner.
+    testTimeout: process.env.CI ? 120_000 : 30_000,
   },
 });

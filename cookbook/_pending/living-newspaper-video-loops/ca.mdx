@@ -1,0 +1,60 @@
+---
+title: "Un diari viu amb fotos que es mouen"
+summary: "Sis recursos de vídeo compostos com a fotos de premsa en un tabloide a quatre columnes; autoplay, loop i exclusive: false els reprodueixen alhora a Folio."
+plain: "Un diari local a l'estil dels anys trenta en què cada foto és una pel·lícula muda i curta. En paper són imatges fixes; al visor 3D es mouen totes alhora, una vegada i una altra, com un diari de conte."
+description: "Un tabloide de quatre pàgines a quatre columnes amb sis fotos que són vídeos en bucle en blanc i negre, reproduïts junts sobre paper premsa doblegat a Folio."
+question: "Com faig que diversos vídeos muts en bucle es reprodueixin alhora en una pàgina de diari?"
+aliases: ["diari viu", "fotos que es mouen", "vídeo en bucle", "reproducció automàtica", "autoplay", "loop", "diversos vídeos alhora", "exclusive", "reproduir alhora", "tabloide", "diari", "quatre columnes", "Folio", "paper premsa", "diari doblegat"]
+pageNotes: { "1": "La portada de The Wexcombe Lantern del 10 de juny de 1933: una capçalera negra en lletra estreta, el titular Trams run to the sea at last, una foto de l'alcaldessa parlant en un faristol a l'amplada de tres columnes, una altra d'una dona que saluda des d'un biplà a dues i, al peu, una franja In brief sobre fons de color.", "2": "Town & Harbour: una foto de la torre del rellotge i una altra d'un pescador que riu amb un bacallà enorme a les mans, cadascuna a dues columnes, el final de la notícia dels tramvies, un requadre de tarifes, una taula de marees, notes de l'ajuntament, notícies del port i cinc notícies breus en quatre columnes amb filet.", "3": "Stage & Screen: una actriu en un decorat de jardí a dues columnes, una crítica, taules de cinema i de ràdio, cartes al director i un requadre amb filet d'anuncis per paraules.", "4": "Sport: un porter ajupit sobre la seva línia a l'amplada de tres columnes, la crònica de la copa, taules del calendari, de criquet i de ciclisme, i el peu d'impremta." }
+---
+
+## Què compondràs
+
+*The Wexcombe Lantern*, un setmanari costaner inventat de juny de 1933, en una pàgina tabloide de 280 × 430 mm a quatre columnes amb filet: una capçalera estreta, una notícia principal amb la seva foto a tres columnes, una altra a dues, taules de marees, anuncis per paraules i una pàgina d'esports. Cada foto és una pel·lícula de cinc segons en blanc i negre. A l'imprès, i a les pàgines planes sota el visor, cadascuna és el seu primer fotograma. Quan s'obre a Folio com un diari doblegat, sobre paper premsa clar, les fotos de les pàgines obertes es mouen alhora i no s'aturen: l'alcaldessa parla, l'aviadora saluda, el pescador riu, el porter es llança i es torna a aixecar. La pàgina no dibuixa res; la maquetació és la d'un diari corrent i els clips fan la resta.
+
+## Elaboració
+
+### 1 · Fes de cada foto un clip que es repeteix amb els altres
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un recurs de vídeo imprimeix la seva portada com una imatge, així que els clips ocupen el lloc de les fotografies i porten peu com elles. Tres opcions del reproductor donen vida a la pàgina: `autoplay` engega un clip quan la seva pàgina és a la vista (sempre sense so, com exigeixen els navegadors), `loop` el torna a reproduir des del principi i `exclusive: false` deixa que corri al costat dels altres clips. Per defecte un vídeo és exclusiu: quan s'engega, posa en pausa tot el que s'estigui reproduint, cosa que serveix per a una classe però no per a una pàgina de fotos en moviment. La marca de reproducció i el codi QR estan desactivats, de manera que en paper els clips es llegeixen com a fotos de premsa.
+
+### 2 · Dona a cada bucle el seu lloc a la retícula
+
+<Excerpt region="clips" />
+
+La maquetació és `layoutType: 'multiple'` amb `columnCount: 4`. El `columns` d'un flotant fixa quantes n'ocupa: els clips de l'alcaldessa i del porter, tres; els de l'aviadora, la torre del rellotge, el pescador i l'actriu, dues. Un flotant a diverses columnes pren el capdamunt d'una sèrie de columnes buides que comencen a la mateixa altura, o el peu de la columna on es cita i de les buides que la segueixen, així que el lloc de la línia `::resource` decideix el buit. L'alcaldessa es cita després del primer paràgraf, cosa que deixa la columna 1 al text i posa la foto sobre les columnes 2 a 4.
+
+### 3 · Compon la capçalera i les pàgines de secció
+
+<Excerpt region="nameplate" />
+
+El títol de nivell 1 de la portada és el nom del diari, compost en una ranura d'elements: dues orelles a sobre, el nom en majúscules d'Oswald i una línia de data entre un filet fi i un de gruixut. Les pàgines interiors obren amb un rètol vermell de secció sobre una barra de 3 pt (la regió `pages`), i totes les pàgines menys la primera porten una línia de foli al capdamunt.
+
+### 4 · Obre el diari a Folio
+
+<Excerpt region="folio" />
+
+`config.folio` posa el diari sobre roure amb llum de dia: paper premsa de 45 g/m², que deixa veure per transparència la pàgina següent, i `binding.type: 'folded'`, plecs doblegats una vegada i posats l'un dins de l'altre, sense grapes ni llom, com es munta un diari. Folio dibuixa tots els clips de la doble pàgina oberta en una sola textura, fins a vuit alhora, engega els bucles automàtics cada vegada que un pas de pàgina s'atura a la seva i els atura quan aquesta pàgina es passa. Un clic en un vídeo exclusiu el continua reproduint tot sol, amb el seu so, i els bucles esperen que s'acabi.
+
+## Variants
+
+### Deixa que el lector engegui cada clip
+
+Sense `autoplay`, les fotos es queden quietes fins que el lector en clica una; un cop engegats, els bucles es reprodueixen junts igualment.
+
+```diff
+-  player: { autoplay: true, loop: true, muted: true, exclusive: false, controls: false },
++  player: { loop: true, muted: true, exclusive: false, controls: false },
+```
+
+### Un clip exclusiu amb el seu so
+
+Un vídeo es pot quedar amb el valor per defecte i reproduir-se pel seu compte: posa `player: { exclusive: true, muted: false }` al `video` d'aquest recurs, i quan s'engega els bucles esperen fins que s'acaba.
+
+### Un diari de gran format a sis columnes
+
+<RecipeLink slug="newspaper-front-page">La portada a dues columnes</RecipeLink> compon un diari més petit amb fotos fixes; la mateixa retícula admet sis columnes en un format llençol amb `sizePreset: 'broadsheet'`.
+
+## Errors freqüents
+
+Una secció de diari és un títol de nivell 1 que obre pàgina, i un flotant no el travessa mai. Una foto que no troba buit a l'última pàgina de la seva secció es col·loca en una pàgina pròpia abans de la secció següent, així que ajusta el text a la pàgina: aquí la notícia dels tramvies salta a la pàgina 2 en lloc de fer fora l'aviadora de la portada.

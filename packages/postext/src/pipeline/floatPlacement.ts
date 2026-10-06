@@ -25,7 +25,9 @@ import type {
   ResourceFloatSpan,
   ResourceRotation,
 } from '../types';
-import { startEndAsLeftRight } from '../defaults/shared';
+import { floatColumnCount, startEndAsLeftRight } from '../defaults/shared';
+
+export { floatColumnCount };
 
 /** Resolved placement for a resource: never `undefined` fields (but
  *  `rotate`, absent for an upright resource). */
@@ -37,6 +39,8 @@ export interface ResolvedPlacement {
   widthFraction: number;
   align: 'left' | 'center' | 'right';
   captionSide: boolean;
+  /** Adjacent columns a column float takes (1 = its own column). */
+  columns: number;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -64,6 +68,9 @@ export interface PlannedFloat {
   widthFraction?: number;
   align?: 'left' | 'center' | 'right';
   captionSide?: boolean;
+  /** A `span: 'column'` float across this many adjacent columns (absent
+   *  for one; see `ResourcePlacement.columns`). */
+  columns?: number;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -99,7 +106,8 @@ export function resolveResourcePlacement(
   const widthFraction = typeof rawWidth === 'number' && rawWidth > 0 && rawWidth < 1 ? rawWidth : 1;
   const align = startEndAsLeftRight(resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left');
   const captionSide = resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide ?? false;
-  return { position, span, widthFraction, align, captionSide, ...(rotate ? { rotate } : {}) };
+  const columns = floatColumnCount(resource.placement?.columns ?? type?.defaultPlacement?.columns);
+  return { position, span, widthFraction, align, captionSide, columns, ...(rotate ? { rotate } : {}) };
 }
 
 /**
@@ -141,7 +149,7 @@ export function computeFloatPlan(
     if (!resource) return;
     const type = typeById.get(resource.typeId);
     const upright = noRotationAt(blockIdx);
-    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type, upright);
+    const { position, span, rotate, widthFraction, align, captionSide, columns } = resolveResourcePlacement(resource, type, upright);
     if (position === 'here') return;
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
@@ -150,7 +158,8 @@ export function computeFloatPlan(
         ? { widthFraction, align }
         // A vertical flow's upright figure keeps its alignment along the tier.
         : upright && align !== 'left' ? { align } : {}),
-      ...(captionSide && span === 'column' ? { captionSide } : {}),
+      ...(captionSide && span === 'column' && columns === 1 ? { captionSide } : {}),
+      ...(columns > 1 && span === 'column' && !rotate ? { columns } : {}),
     });
   };
 

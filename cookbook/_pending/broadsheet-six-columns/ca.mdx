@@ -1,0 +1,63 @@
+---
+title: "Un diari llençol a sis columnes"
+summary: "Quatre pàgines d'un diari llençol: sis columnes amb filet, fotos i requadres sobre dues a cinc d'elles, anuncis a tota l'amplada i opinió a cinc."
+plain: "Quatre pàgines d'un diari gran, compostes en sis columnes estretes. Ensenya a posar una foto o un requadre sobre diverses columnes i a donar cinc columnes a una pàgina."
+description: "Un diari llençol a sis columnes en Postext, amb el codi: disposició múltiple, fotos i requadres sobre k columnes, anuncis i una secció a cinc columnes."
+question: "Com componc un diari llençol a sis columnes, amb fotos i requadres que n'ocupin dues, tres o quatre?"
+aliases: ["llençol", "broadsheet", "diari", "sis columnes", "cinc columnes", "diverses columnes", "retícula de diari", "foto a diverses columnes", "requadre de dades", "breus", "pàgina d'opinió", "cartes al director", "continua a la pàgina 2"]
+pageNotes: { "1": "La portada de The Corrington Despatch: la capçalera entre una orella amb el temps i una altra amb les marees, una franja tintada amb quatre crides, el titular principal Tram to the docks wins council vote after six-hour debate a quatre columnes sobre una foto d'un moll empedrat amb grues a l'alba, la notícia a quatre columnes a sota amb una taula de finançament al peu de les columnes 3 i 4, una segona notícia a les columnes 5 i 6 amb una foto de tres enginyers davant d'una comporta, el seu text a la columna 5, una columna de breus a la 6 sobre un requadre tintat de dades i, al peu, un anunci a tota l'amplada d'una cursa de 10 km.", "2": "La pàgina 2, City: un titular de continuació a tota l'amplada sobre sis columnes curtes; després la notícia dels lloguers, amb un requadre tintat de cinc xifres grans a les columnes 1 i 2 al costat d'una foto d'un carrer de cases de maó a les columnes 3 a 6, el text a les sis columnes a sota i un gran anunci d'una immobiliària al peu.", "3": "La pàgina 3, Opinion, a cinc columnes: els dos editorials a la columna 1, una tribuna a les columnes 2 a 4 sobre una foto d'una piscina victoriana, el seu text a les columnes 2 a 4, les cartes a la columna 5 i un anunci de concerts a tota l'amplada a la meitat inferior.", "4": "La pàgina 4, Arts & Weather: un titular de teatre a tota l'amplada, una foto de tres actors en una oficina naviliera dels anys vint a cinc columnes, la crítica a cinc columnes a sota, una cartellera a la columna 6 i, al peu, un requadre tintat amb el temps: una taula de cinc dies amb símbols dibuixats." }
+---
+
+## Què compondràs
+
+Quatre pàgines de *The Corrington Despatch*, un diari inventat, en format llençol de 375 × 597 mm. El text corre en sis columnes de 55,2 mm amb mitgeres de 4 mm i un filet fi a cadascuna: uns 38 caràcters per línia en cos 9, la mesura d'un diari llençol de debò. La portada porta la capçalera amb dues orelles, una franja de crides, una notícia principal amb el titular i la foto a quatre columnes, una segona notícia amb foto a dues columnes, una columna de breus, una taula de finançament i un requadre de dades a dues columnes, i un anunci al peu. La pàgina 2 obre amb la continuació de la portada, la 3 passa a cinc columnes per als editorials, una tribuna i les cartes, i la contraportada porta una crítica de teatre i el temps.
+
+## Elaboració
+
+### 1 · Sis columnes en format llençol
+
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de dalt. `page.sizePreset: 'broadsheet'` fixa el format de 375 × 597 mm, i `layoutType: 'multiple'` amb `columnCount: 6` talla els 351 mm de caixa en sis columnes iguals ([Tipus de disposició](/ca/docs/configuration#tipus-de-disposició)). Cadascuna fa (351 − 5 × 4) / 6 = 55,2 mm, i en Newsreader de 9 pt hi caben uns 38 caràcters, així que el text necessita partició de mots, `minWordSpacing: 0.8` perquè els espais no es tanquin i `maxJustifyTracking: 15` per repartir una línia fluixa entre les seves lletres. El filet de columna traça una línia de 0,4 pt a cada mitgera i es talla on el creua un flotant o un requadre. Fins a postext 1.17 el cos tenia dues columnes com a molt, i per això la <RecipeLink slug="newspaper-front-page">Nº 027</RecipeLink> posava les seves quatre columnes de breus dins d'un requadre.
+
+### 2 · Un flotant a k columnes pren la primera tanda de columnes buides
+
+<Excerpt region="pictures" highlight="1-6" />
+
+`placement.columns` dona a una foto o a una taula la seva amplada en columnes, mitgeres incloses: quatre columnes de la portada són 232,7 mm. El motor busca el buit des de la columna on va el text, d'esquerra a dreta. Un flotant `top` pren el capdamunt de la primera tanda de k columnes que encara no tenen text i comencen a la mateixa altura; un `bottom` pren el peu de la columna del text i de les buides que la segueixen. Per això la taula de finançament, citada en un paràgraf de la columna 3, cau al peu de les columnes 3 i 4, i a la <PageRef page={2}>pàgina 2</PageRef> el requadre de dades, que s'obre abans, pren les columnes 1 i 2 i deixa les 3 a 6 com a primera tanda a la mateixa altura per a la foto a quatre columnes que ve després. En l'ordre invers, el requadre s'apilaria sota la foto. Una k igual al nombre de columnes de la pàgina, o més gran, ocupa tota l'amplada, com `span: 'page'`.
+
+### 3 · Titulars, requadres de dades i anuncis
+
+<Excerpt region="boxes" />
+
+Un `:::callout` amb `placement="top"` i `columns="4"` flota sobre quatre columnes igual que una foto. El titular i l'entradeta de la notícia principal són un requadre així, obert abans del text, de manera que pren les columnes 1 a 4 i la foto s'apila a sota. El requadre del titular de la segona notícia va després de la principal, darrere d'un `:::columnbreak`: el text ja és a la columna 5, i la 5 i la 6 són la primera parella buida. Cada anunci és un requadre amb `columns="6"`, a tota l'amplada, obert al principi de la seva pàgina perquè el peu quedi reservat abans que arribi el text; els titulars de continuació de les pàgines 2 i 4 són requadres a tota l'amplada, com a la Nº 027. `balancing.trailing: false` deixa que cada pàgina ompli les columnes fins al peu, perquè aquí cada pàgina tanca una secció.
+
+### 4 · La capçalera és l'H1 de la portada
+
+<Excerpt region="nameplate" />
+
+`# The Corrington Despatch` pren l'estil de títol `front`: el nom en Playfair Display Black de 64 pt, dues orelles que s'omplen amb els atributs del títol i la línia de data entre un filet fi i un altre de gruixut. L'obertura fa nou línies de la reixeta base. A 1.18.0 una obertura ocupa la columna 1, així que un flotant a k columnes obert just darrere comença a la columna 2; la franja tintada de crides, un requadre a tota l'amplada, obre una banda nova amb la primera columna buida, i la notícia principal pren les columnes 1 a 4.
+
+### 5 · La pàgina d'opinió va a cinc columnes
+
+<Excerpt region="sections" />
+
+`# Opinion {style="opinion"}` obre una secció l'estil de títol de la qual fixa `layout: { layoutType: 'multiple', columnCount: 5 }`. La secció conserva la mitgera i el filet del document i només canvia el nombre de columnes, així que els editorials, la tribuna i les cartes corren a 67 mm, uns 47 caràcters. El requadre del titular de la tribuna porta `columns="3"` i s'obre quan l'editorial ja ha començat a la columna 1, de manera que cau a les columnes 2 a 4 amb la foto a sota; dues línies `:::columnbreak` envien la tribuna a la columna 2 i les cartes a la 5.
+
+## Variants
+
+### Compon un berlinès a cinc columnes
+
+El mateix diari en format berlinès de 315 × 470 mm: cinc columnes de 55 mm, la mesura de les sis del format llençol. El filet del foli pren també l'amplada menor; després cal tornar a ajustar cada pàgina.
+
+```diff
+-const layout = { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(GUTTER),
++const layout = { layoutType: 'multiple', columnCount: 5, gutterWidth: mm(GUTTER),
+-      size: { width: mm(375 - 2 * MARGIN.side) } }] };
++      size: { width: mm(315 - 2 * MARGIN.side) } }] };
+-  page: { sizePreset: 'broadsheet', dpi: 150, backgroundColor: col('paper'), // 375 × 597 mm
++  page: { sizePreset: 'berliner', dpi: 150, backgroundColor: col('paper'), // 315 × 470 mm
+```
+
+## Errors freqüents
+
+- Un flotant que s'obre quan el text ja ha passat per les seves columnes no troba buit a la pàgina i obre la següent. A la portada la notícia principal ha d'acabar a la columna 4: amb un paràgraf més, el titular i la foto de la segona notícia passen a la pàgina 2.
+- Cada pàgina s'ajusta a mà, com ajusta un diari el redactor de tancament: les línies `:::space` dels anuncis i la llargada de cada notícia decideixen on acaben les columnes. Si canvies una notícia, torna a ajustar-ne la pàgina.

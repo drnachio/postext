@@ -382,7 +382,8 @@ function paintPage(
   tagArtifact(ctx, { type: 'Background' });
   fillRectPx(ctx, 0, 0, vdtPage.width, vdtPage.height, whiteColor(colorSpace));
 
-  const bgHex = doc.config.page.backgroundColor.hex;
+  // A part's or a styled section's palette may give the page its own paper.
+  const bgHex = vdtPage.background ?? doc.config.page.backgroundColor.hex;
   const trimOff = doc.trimOffset;
   const bleedPx = trimOff > 0
     ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi)

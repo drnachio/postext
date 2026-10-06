@@ -141,16 +141,16 @@
 .cb-action-primary svg {
   color: var(--brand-gilt);
 }
-.cb-action-sandbox {
+.cb-action-secondary {
   border-color: var(--brand-cream);
   background: var(--brand-cream);
   color: var(--brand-night);
 }
-.cb-action-sandbox:hover {
+.cb-action-secondary:hover {
   border-color: #fff;
   background: #fff;
 }
-.cb-action-sandbox svg {
+.cb-action-secondary svg {
   color: var(--brand-blue);
 }
 .cb-action-link {
@@ -1457,10 +1457,10 @@
     min-height: 2.75rem;
     padding-inline: 0.6rem;
   }
-  /* Four actions (CodePen, Sandbox, Copy, PDF) do not fit at 375 px: Copy
+  /* Four actions (Sandbox, CodePen, Copy, PDF) do not fit at 375 px: Copy
      and PDF keep their icons only (the text stays in the DOM as the
      buttons' names). */
-  .cb-action-bar-row:has(> :nth-child(4)) .cb-action:not(.cb-action-primary, .cb-action-sandbox) {
+  .cb-action-bar-row:has(> :nth-child(4)) .cb-action:not(.cb-action-primary, .cb-action-secondary) {
     flex: 0 0 3rem;
     font-size: 0;
     gap: 0;

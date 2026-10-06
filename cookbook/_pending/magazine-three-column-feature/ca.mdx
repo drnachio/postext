@@ -1,0 +1,64 @@
+---
+title: "Reportatge de revista en una retícula de tres columnes"
+summary: "layoutType 'multiple' divideix la pàgina en tres columnes; placement.columns posa fotos i una cita flotant sobre dues d'elles, o sobre les tres."
+plain: "Un reportatge de viatges de sis pàgines d'una revista mensual, compost en tres columnes estretes. Ensenya a col·locar fotos i una cita gran sobre dues columnes o sobre tota la pàgina, i un requadre de consells pràctics en una."
+description: "Un reportatge de viatges amb Postext a tres columnes: doble pàgina d'obertura, fotos a una, dues o tres columnes, una cita flotant i un requadre lateral."
+question: "Pot Postext compondre una pàgina de revista a tres columnes, amb fotos sobre dues d'elles?"
+aliases: ["revista a tres columnes", "tres columnes", "retícula de revista", "foto a dues columnes", "cita a dues columnes", "cita destacada", "requadre lateral", "reportatge de viatges", "doble pàgina d'obertura", "foto a doble pàgina", "caplletra", "entradeta", "signatura", "signe final", "mapa de situació"]
+pageNotes: { "1": "La pàgina parella de l'obertura: unes salines a l'alba omplen la pàgina, amb l'avantítol Islands · The Atlantic i el titular The Salt Rakers of Marisal en blanc sobre l'aigua fosca del peu.", "2": "La pàgina senar: la mateixa foto continua per dalt, un saliner amb el rasclet de fusta davant una filera de munts de sal; a sota, el primer paràgraf amb una caplletra blava de quatre línies a la primera columna, l'entradeta en cursiva i la signatura a les altres dues, i després tres columnes de text.", "3": "Tres columnes justificades amb intertítols blaus; la foto d'un rasclet que empeny un cavalló de sal humida encapçala la segona i la tercera columna.", "4": "Una foto de les salines rosades vistes des de dalt ocupa tota l'amplada; a sota, una cita sota un filet blau travessa la segona i la tercera columna.", "5": "La foto d'un sedàs que recull cristalls de sal encapçala la segona i la tercera columna; el retrat d'una salinera gran amb una cistella queda al peu de la primera.", "6": "La pàgina de tancament: un requadre tintat, Visiting Marisal, amb un mapa petit de l'illa, encapçala la primera columna; una foto alta d'un port al vespre ocupa les altres dues; el reportatge acaba a la mateixa altura a les tres columnes amb un quadradet blau." }
+---
+
+## Què compondràs
+
+Sis pàgines del número de novembre de *Meridian*, revista mensual de viatges, en pàgina de 225 × 297 mm. El reportatge s'obre en doble pàgina: una sola foto d'unes salines a l'alba travessa les dues, amb el titular en blanc sobre l'aigua a la parella i, a la senar, sota la imatge, el primer paràgraf amb la caplletra, l'entradeta i la signatura. Després el text corre en tres columnes justificades de 61,7 mm. Les fotos ocupen dues columnes, tota l'amplada o una de sola; una cita destacada travessa dues columnes entre els paràgrafs; un requadre tintat amb el mapa de l'illa obre la pàgina de tancament. Un quadradet blau tanca el text.
+
+## Elaboració
+
+### 1 · Divideix la pàgina en tres columnes i deixa que els flotants en prenguin una, dues o tres
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `layoutType: 'multiple'` amb `columnCount: 3` reparteix la caixa de text de 195 mm en tres columnes iguals; amb un mitjanil de 5 mm, cadascuna fa 61,7 mm, uns 40 caràcters de Source Serif a 9,6 pt. El `placement.columns` d'una imatge pren aquest nombre de columnes contigües i els mitjanils que hi ha entre elles: la foto del rasclet fa 128,3 mm, i la de les salines, amb `span: 'page'`, els 195 mm sencers. L'estil de la cita fa el mateix amb un requadre: `columns: 2` en un estil amb `placement: 'top'` el porta al capdamunt de dues columnes lliures, i el text continua al voltant. La retícula de tres columnes escau a un reportatge amb moltes fotos, perquè cadascuna pot ocupar una, dues o tres columnes. Un text llarg amb poques imatges es llegeix millor en dues columnes més amples.
+
+### 2 · Obre en doble pàgina, amb una foto que travessa les dues
+
+<Excerpt region="spread" />
+
+Cada meitat de la foto pertany a un estil de títol amb `span: 'page'`, i un títol a tota la pàgina sempre obre pàgina nova, així que la pàgina del titular i la de l'entradeta van seguides. La meitat esquerra omple la pàgina parella i no reserva alçada (`reserve: false`), de manera que el titular pot anar sobre l'aigua del peu. La dreta es talla a 165 mm, i el primer paràgraf, l'entradeta i la signatura pengen del contenidor per sota. Aquest paràgraf és un text de disseny amb una caplletra (`dropCap`) de quatre línies, de l'amplada d'una columna; el seu farciment inferior buit compta en l'alçada de l'obertura, així que les columnes comencen 6 mm més avall. `continuation.pageIndexOffset: 83` fa de la 84 una pàgina parella, i les dues meitats queden encarades.
+
+### 3 · Declara les fotos i cita cadascuna on ha de caure
+
+<Excerpt region="resources" />
+
+Un flotant va al primer capdamunt (o peu) lliure de les seves columnes després de la línia que el cita, així que les línies `::resource` decideixen les pàgines. La foto del sedàs es cita a dalt de la primera columna de la cinquena pàgina, quan la segona i la tercera encara són buides, i les encapçala en aquesta mateixa pàgina. La del port es cita al final d'aquesta pàgina i encapçala dues columnes de la següent. Les fotos d'un mateix tipus no s'avancen mai les unes a les altres, així que les seves cites van en l'ordre del reportatge. Els mapes de bits es mesuren als 150 ppp de la pàgina: 1500 px donen 254 mm i es redueixen als 128,3 mm de dues columnes.
+
+### 4 · Capçaleres i folis fora de la doble pàgina d'obertura
+
+<Excerpt region="heads" />
+
+Els elements de capçalera es pinten sobre la pàgina i no reserven lloc, així que el foli i l'etiqueta s'ancoren a la pàgina, al marge superior. `pages: 'body'` els aparta de les dues pàgines de l'obertura, que són pàgines d'obertura perquè cadascuna comença amb un títol a tota la pàgina. La senar de l'obertura porta el foli al peu, amb `pages: 'opener'` i `parity: 'odd'`; la parella, tota foto, no en porta cap.
+
+### 5 · Dibuixa amb codi el mapa del requadre
+
+<Excerpt region="art" />
+
+El mapa és un recurs SVG amb `placement: 'here'`, citat dins la tanca del requadre, així que queda sota el títol del requadre, a la seva mida. No porta rètols: el text d'un SVG no pot fer servir les fonts web de la pàgina, i el peu anomena les formes en lloc seu. La punta de fletxa de la ruta del ferri és un traçat, perquè un `<marker>` no sobreviuria a l'exportació a PDF.
+
+## Variants
+
+### Posa la cita sobre les tres columnes
+
+Un requadre flotant pren l'atribut `columns` de la tanca abans que el del seu estil, així que una cita pot ocupar tota l'amplada.
+
+```diff
+- :::callout{type="pull"}
++ :::callout{type="pull" columns="3"}
+```
+
+### Compon el reportatge a dues columnes
+
+Per a un reportatge amb menys fotos i paràgrafs més llargs, mira <RecipeLink slug="magazine-feature-opener">Reportatge de revista: de la foto d'obertura al signe final</RecipeLink>, amb disposició `double`.
+
+## Errors freqüents
+
+- Una foto a dues columnes encapçala dues columnes que encara són buides. Si es cita a la segona columna, no troba aquest parell a la seva pàgina, perquè només queda la tercera, i espera a la següent.
+- El reportatge està ajustat per acabar a la mateixa altura a la sisena pàgina, sota la foto del port. Després d'editar, comprova que l'última pàgina continua plena: amb unes quantes línies menys, la foto se'n va a una pàgina per a ella sola.
+- Amb línies de 40 caràcters, un paràgraf justificat té pocs punts de tall. `maxJustifyTracking: 15` deixa que una línia que no cap amb el doble de l'espai normal prengui fins a 0,015 em d'espaiat entre lletres. Les línies finals d'una sola paraula s'arreglen retocant el text, com en aquestes pàgines.

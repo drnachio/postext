@@ -6,7 +6,8 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**'],
     // citeproc-js parses a whole CSL style per processor (Chicago's is
-    // 240 KB): a few seconds each on a slow CI runner.
-    testTimeout: 30_000,
+    // 240 KB): a few seconds each on a slow CI runner, more while it runs
+    // every package's suite at once.
+    testTimeout: process.env.CI ? 120_000 : 30_000,
   },
 });

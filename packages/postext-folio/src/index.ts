@@ -1,6 +1,7 @@
 export { PageFlipper, canFlip } from "./pageFlip";
 export { FlatPageFlipper } from "./pageFlipFlat";
-export type { PageSource, PageVideoFrame, SpreadSrc } from "./pageFlip";
+export type { PageSource, PageVideo, PageVideoFrame, SpreadSrc } from "./pageFlip";
+export { MAX_PAGE_VIDEOS } from "./videoAtlas";
 export { spreadsOf, spreadOfPage } from "./spreads";
 export type { Spread } from "./spreads";
 export { createFolio } from "./viewer";

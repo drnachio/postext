@@ -50,7 +50,8 @@ const arabic = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => (
   cover: { bytes: PNG, mediaType: 'image/png', alt: 'غلاف الكتاب' },
 });
 
-/** The videos sample (#454): a poster and an MP4 the book carries. */
+/** The videos sample (#454): a poster and an MP4 the book carries; its
+ *  page or chapter of two players links the playback script (#507). */
 const video = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => ({
   ...base(layout),
   resourceBytes: (fileId) => fileId === 'f1.png'
@@ -74,6 +75,8 @@ const samples: { name: string; options: RenderToEpubOptions; book?: () => Return
   { name: 'arabic-reflowable', options: arabic('reflowable'), book: arabicSampleBook },
   { name: 'video-fixed', options: video('fixed'), book: videoSampleBook },
   { name: 'video-reflowable', options: video('reflowable'), book: videoSampleBook },
+  // Players that play alongside the others (#507): marked, no script.
+  { name: 'video-alongside-fixed', options: video('fixed'), book: () => videoSampleBook({ videoStyle: { player: { exclusive: false } } }) },
   { name: 'japanese-fixed', options: japanese('fixed'), book: japaneseSampleBook },
   { name: 'japanese-reflowable', options: japanese('reflowable'), book: japaneseSampleBook },
 ];

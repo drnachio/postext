@@ -59,7 +59,7 @@ function UrlControl({ value, placeholder, onChange, onCommit }: {
 
 /** The per-video player switches the panel offers, and which sources honour
  *  each (the rest are left to the book's Video style). */
-const PLAYER_SWITCHES: { key: Exclude<PlayerKey, 'preload'>; label: (l: SandboxLabels) => string; help: (l: SandboxLabels) => string; sources: VideoSource[] }[] = [
+const PLAYER_SWITCHES: { key: Exclude<PlayerKey, 'preload'>; label: (l: SandboxLabels) => string; help: (l: SandboxLabels) => string; sources: VideoSource[]; inverted?: boolean }[] = [
   { key: 'controls', label: (l) => l.videoPlayerControls, help: (l) => l.videoPlayerControlsHelp, sources: ['youtube', 'vimeo', 'file'] },
   { key: 'download', label: (l) => l.videoPlayerDownload, help: (l) => l.videoPlayerDownloadHelp, sources: ['file'] },
   { key: 'fullscreen', label: (l) => l.videoPlayerFullscreen, help: (l) => l.videoPlayerFullscreenHelp, sources: ['youtube', 'vimeo', 'file'] },
@@ -69,6 +69,8 @@ const PLAYER_SWITCHES: { key: Exclude<PlayerKey, 'preload'>; label: (l: SandboxL
   { key: 'autoplay', label: (l) => l.videoPlayerAutoplay, help: (l) => l.videoPlayerAutoplayHelp, sources: ['youtube', 'vimeo', 'file'] },
   { key: 'muted', label: (l) => l.videoPlayerMuted, help: (l) => l.videoPlayerMutedHelp, sources: ['youtube', 'vimeo', 'file'] },
   { key: 'loop', label: (l) => l.videoPlayerLoop, help: (l) => l.videoPlayerLoopHelp, sources: ['youtube', 'vimeo', 'file'] },
+  // `exclusive`, shown the positive way round: "on" stores `false`.
+  { key: 'exclusive', label: (l) => l.videoPlayerAlongside, help: (l) => l.videoPlayerAlongsideHelp, sources: ['file'], inverted: true },
   { key: 'privacy', label: (l) => l.videoPlayerPrivacy, help: (l) => l.videoPlayerPrivacyHelp, sources: ['youtube', 'vimeo'] },
 ];
 
@@ -442,11 +444,11 @@ function PosterField({ video, setVideo }: PartProps) {
 function PlayerOverrides({ video, setVideo }: PartProps) {
   const labels = useSandboxLabels();
   const player = video.player ?? {};
-  const set = (key: PlayerKey, value: string) => {
+  const set = (key: PlayerKey, value: string, inverted = false) => {
     const next: VideoPlayerOptions = { ...player };
     if (value === 'inherit') delete next[key];
     else if (key === 'preload') next.preload = value as VideoPlayerOptions['preload'];
-    else (next as Record<string, unknown>)[key] = value === 'on';
+    else (next as Record<string, unknown>)[key] = (value === 'on') !== inverted;
     setVideo({ player: Object.keys(next).length > 0 ? next : undefined });
   };
   const options = [
@@ -462,11 +464,11 @@ function PlayerOverrides({ video, setVideo }: PartProps) {
             key={s.key}
             label={s.label(labels)}
             tooltip={s.help(labels)}
-            value={player[s.key] === undefined ? 'inherit' : player[s.key] ? 'on' : 'off'}
+            value={player[s.key] === undefined ? 'inherit' : !player[s.key] === !!s.inverted ? 'on' : 'off'}
             options={options}
             isDefault={player[s.key] === undefined}
             onReset={() => set(s.key, 'inherit')}
-            onChange={(v) => set(s.key, v)}
+            onChange={(v) => set(s.key, v, s.inverted)}
           />
         ))}
         {video.source === 'file' && (

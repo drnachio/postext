@@ -524,3 +524,10 @@ export function startEndAsLeftRight<T extends string>(value: T | 'start' | 'end'
   if (value === 'end') return 'right';
   return value as Exclude<T, 'start' | 'end'>;
 }
+
+/** A `columns` value as a float takes it: a whole number, at least 1 (any
+ *  other value is 1). */
+export function floatColumnCount(value: unknown): number {
+  const n = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+  return Number.isFinite(n) && n >= 1 ? Math.round(n) : 1;
+}

@@ -1,8 +1,8 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
-import { resolveFolioConfig, type FolioPaperConfig } from "postext";
+import { folioForTrim, resolveFolioConfig, type FolioPaperConfig } from "postext";
 import { BLOCK_PAGES } from "./pageFlip";
 import { createFolio, type FolioAppearance, type FolioOptions, type FolioPagePoint, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
-import { attachVideoSource, isHlsVideo, pageVideoSpots, spotContains, type PageVideoSpot } from "./videos";
+import { attachVideoSource, autoKey, autoplayPlan, isHlsVideo, makeWay, pageVideoSpots, spotContains, type PageVideoSpot } from "./videos";
 
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
   /** The page to open on (0-based). Default 0. */
@@ -26,11 +26,17 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
   /**
    * Videos printed on the pages play there (#477): a click on a video's
    * poster plays it on the page (in every pointer mode), a click on it
-   * again pauses it, and it goes on playing while its leaf turns. A video
-   * with `player.autoplay` starts by itself the first time its spread is
-   * shown (muted until the reader has interacted with the page). Starting another
-   * stops the one playing; it stops too when the book comes to rest on a
-   * spread that does not show it. Self-hosted videos only (a file, or its
+   * again pauses it, and it goes on playing while its leaf turns. Several
+   * may play at once (#507, up to eight drawn): starting a video stops the
+   * other exclusive ones (`player.exclusive`, the default) and holds those
+   * playing alongside (`exclusive: false`) until it pauses or ends; one
+   * playing alongside pauses only the exclusive ones. A video with
+   * `player.autoplay` starts by itself, muted: an exclusive one the first
+   * time its spread is shown (with its sound once the reader has
+   * interacted with the page), one playing alongside each time its page
+   * comes into view, unless the reader asks for less motion
+   * (`prefers-reduced-motion`). A video stops when the book comes to rest
+   * on a spread that does not show it. Self-hosted videos only (a file, or its
    * address: MP4, WebM or an HLS stream); a YouTube or Vimeo poster turns
    * the page as any other. The video's server must allow cross-origin
    * reads (CORS) for WebGL to draw it. Default true.
@@ -58,7 +64,7 @@ export interface FolioDocumentViewer extends FolioViewer {
   /** Plays or pauses the video printed at a point of a page, as a click
    *  there does; false when no playable video lies there. */
   toggleVideoAt(point: FolioPagePoint): boolean;
-  /** Stops the video playing on a page (its poster shows again). */
+  /** Stops the videos playing on the pages (their posters show again). */
   stopVideo(): void;
 }
 
@@ -87,12 +93,15 @@ function paperOf(doc: VDTDocument): string {
  *  book), with the host's own appearance laid over them. The pages round
  *  it are the host's word when it gives them (`extraPages`: a host laying
  *  a book out a chapter at a time knows the chapters after this one, which
- *  the document only knows when it was given the book's page count). */
+ *  the document only knows when it was given the book's page count). A
+ *  newspaper trim (`page.sizePreset` broadsheet, berliner, tabloid or
+ *  compact) shows folded newsprint unless the settings name a stock or a
+ *  binding (#506). */
 export function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): FolioAppearance {
   const page = doc.pages[0];
   const before = Math.max(0, own?.extraPages?.before ?? doc.pageIndexOffset ?? 0);
   const after = Math.max(0, own?.extraPages?.after ?? (doc.bookPageCount ?? 0) - before - doc.pages.length);
-  const folio = own && "folio" in own ? own.folio : doc.config.folio;
+  const folio = folioForTrim(own && "folio" in own ? own.folio : doc.config.folio, doc.config.page.sizePreset);
   // The document's own covers: the book's first page (a recto) and its
   // last, when that is a verso (an even page number). A chapter from the
   // middle of the book has neither: its first and last leaves are paper
@@ -100,11 +109,11 @@ export function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined)
   const ownCovers = resolveFolioConfig(folio).binding.cover === "pages";
   const total = before + doc.pages.length;
   return {
-    folio: doc.config.folio,
     covers: { front: ownCovers && before === 0, back: ownCovers && after === 0 && total % 2 === 0 },
     // Page sizes are in device pixels at the page's dpi.
     ...(page ? { pageWidthMm: (trimmedSize(page, doc).width * 25.4) / (doc.config.page.dpi || 300) } : {}),
     ...own,
+    folio,
     extraPages: { before, after },
   };
 }
@@ -196,6 +205,25 @@ export function sweepFor(run: SweepRun | null, settled: number[], target: number
 }
 /** Painting time per frame while leaves are in the air. */
 const SWEEP_BUDGET_MS = 8;
+
+/** A video playing (or paused) on a page: its element, the spot it fills,
+ *  whether it has a frame on show, whether it plays muted only because it
+ *  started on its own, whether it plays alongside the others
+ *  (`player.exclusive: false`) and the exclusive video it waits for. */
+interface PagePlayer {
+  page: number;
+  spot: PageVideoSpot;
+  element: HTMLVideoElement;
+  release?: () => void;
+  shown: boolean;
+  autoMuted: boolean;
+  alongside: boolean;
+  heldBy: PagePlayer | null;
+}
+
+/** The reader has asked for less motion: no video starts on its own to
+ *  play alongside the others. */
+const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** How long the book must stay as it is before a video set to play on its
  *  own starts (a host's layouts settling, a run of turns). */
@@ -393,14 +421,18 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     return [...pages, pages[0] - 2, pages[0] - 1, pages[pages.length - 1] + 1, pages[pages.length - 1] + 2];
   };
 
-  // ── Videos on the pages (#477) ──
+  // ── Videos on the pages (#477, #507) ──
   /** The video spots of each page of the current document, as found. */
   let spots = new Map<number, PageVideoSpot[]>();
-  /** The video playing (or paused) on a page; `autoMuted` while it plays
-   *  muted because it started on its own. */
-  let playing: { page: number; spot: PageVideoSpot; element: HTMLVideoElement; release?: () => void; shown: boolean; autoMuted: boolean } | null = null;
-  /** The videos that have started on their own once (`player.autoplay`). */
+  /** The videos playing (or paused) on the pages, in the order they
+   *  started. */
+  let players: PagePlayer[] = [];
+  /** The videos that have started on their own once (`player.autoplay`
+   *  with `exclusive`). */
   const autoplayed = new Set<string>();
+  /** The videos playing alongside that have started on their own since
+   *  their page last came into view (`page|key`). */
+  const autoStarted = new Set<string>();
 
   const spotsOf = (i: number): PageVideoSpot[] => {
     let found = spots.get(i);
@@ -419,60 +451,116 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   };
   const spotAt = (point: FolioPagePoint): PageVideoSpot | undefined =>
     options.videos === false ? undefined : spotsOf(point.page).find((s) => urlOf(s) && spotContains(s, point.x, point.y));
+  const playerOf = (page: number, spot: PageVideoSpot) => players.find((p) => p.page === page && p.spot.key === spot.key);
+  const onShow = (p: PagePlayer) => viewer.state.pages.includes(p.page);
 
-  const report = (state: "playing" | "paused" | "stopped" | "error") => {
-    if (playing) options.onVideo?.({ resourceId: playing.spot.resourceId, page: playing.page, state });
+  const report = (p: PagePlayer, state: "playing" | "paused" | "stopped" | "error") => {
+    options.onVideo?.({ resourceId: p.spot.resourceId, page: p.page, state });
   };
 
-  /** Shows the playing video on its page (once it has a frame to show). */
-  function showVideo() {
-    if (!playing) return;
-    playing.shown = true;
-    viewer.setPageVideo({ page: playing.page, element: playing.element, origin: playing.spot.origin, across: playing.spot.across, down: playing.spot.down, ...(playing.spot.crop ? { crop: playing.spot.crop } : {}) });
+  /** Shows the videos that have a frame to show on their pages. */
+  function showVideos() {
+    viewer.setPageVideos(
+      players
+        .filter((p) => p.shown)
+        .map((p) => ({ page: p.page, element: p.element, origin: p.spot.origin, across: p.spot.across, down: p.spot.down, ...(p.spot.crop ? { crop: p.spot.crop } : {}) })),
+    );
   }
 
-  function stopVideo(state: "stopped" | "error" = "stopped") {
-    const p = playing;
-    if (!p) return;
-    report(state);
-    playing = null;
+  /** Stops a video: its poster shows again, and the videos it held go on. */
+  function stopPlayer(p: PagePlayer, state: "stopped" | "error" = "stopped") {
+    if (!players.includes(p)) return;
+    players = players.filter((q) => q !== p);
+    report(p, state);
     p.element.pause();
     p.release?.();
-    if (p.shown) viewer.setPageVideo(null);
+    if (p.shown) showVideos();
+    resumeHeld(p);
   }
 
+  function stopVideos() {
+    for (const p of [...players]) stopPlayer(p);
+  }
+
+  /** The videos playing alongside that `by` held go on (on show only),
+   *  and those set to play on their own that have not started yet start. */
+  function resumeHeld(by: PagePlayer) {
+    if (by.alongside) return;
+    for (const q of players) {
+      if (q.heldBy !== by) continue;
+      q.heldBy = null;
+      if (onShow(q)) void q.element.play().catch(() => {});
+    }
+    if (!turning) autoplayOn(viewer.state.pages, { exclusive: false });
+  }
+
+  /** A video starts (or goes on): the others make way for it (see
+   *  `makeWay`). */
+  function makeWayFor(p: PagePlayer) {
+    p.heldBy = null;
+    // Those waiting for another exclusive video wait for this one now.
+    if (!p.alongside) for (const q of players) if (q.heldBy) q.heldBy = p;
+    const list = [...players.filter((q) => q !== p), p].map((q) => ({ q, alongside: q.alongside, paused: q.element.paused }));
+    const way = makeWay(list[list.length - 1]!, list);
+    for (const { q } of way.hold) {
+      q.heldBy = p;
+      q.element.pause();
+    }
+    for (const { q } of way.pause) q.element.pause();
+    for (const { q } of way.stop) stopPlayer(q);
+  }
+
+  /** Plays the video at `spot` on `page`, from its start; `auto` when it
+   *  starts on its own. */
   function startVideo(page: number, spot: PageVideoSpot, auto = false) {
-    stopVideo();
     const url = urlOf(spot);
     if (!url) return;
+    const player = spot.video.player;
+    const alongside = player.exclusive === false;
     const element = document.createElement("video");
     element.playsInline = true;
     element.preload = "auto";
     // WebGL draws the picture only when its server allows the read.
     if (!/^(blob|data):/i.test(url)) element.crossOrigin = "anonymous";
-    const player = spot.video.player;
+    const range = { start: spot.video.start ?? 0, end: spot.video.end };
+    // A loop from the file's start loops by itself (seamlessly); one from
+    // later on is sent back by hand.
+    element.loop = player.loop && !range.start;
     // A video that starts on its own has its sound once the reader has
     // clicked or typed on the page (the browser allows it then); before
     // that it starts muted, as browsers require, and a click unmutes it.
+    // One playing alongside always starts muted on its own: a page of
+    // living pictures is a quiet one.
     const activated = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive ?? false;
-    element.muted = player.muted || (auto && !activated);
-    const entry: NonNullable<typeof playing> = { page, spot, element, shown: false, autoMuted: !player.muted && element.muted };
-    playing = entry;
-    const live = () => playing === entry;
-    const range = { start: spot.video.start ?? 0, end: spot.video.end };
-    element.addEventListener("error", () => live() && stopVideo("error"));
+    element.muted = player.muted || (auto && (alongside || !activated));
+    const entry: PagePlayer = { page, spot, element, shown: false, autoMuted: !player.muted && element.muted, alongside, heldBy: null };
+    // The others make way at once (an exclusive one, still loading, holds
+    // the videos playing alongside from now).
+    players = [...players, entry];
+    makeWayFor(entry);
+    const live = () => players.includes(entry);
+    element.addEventListener("error", () => live() && stopPlayer(entry, "error"));
     element.addEventListener("loadedmetadata", () => {
       if (range.start) element.currentTime = range.start;
     }, { once: true });
-    element.addEventListener("loadeddata", () => live() && showVideo(), { once: true });
-    element.addEventListener("playing", () => live() && report("playing"));
-    element.addEventListener("pause", () => live() && !element.ended && report("paused"));
+    element.addEventListener("loadeddata", () => {
+      if (!live()) return;
+      entry.shown = true;
+      showVideos();
+    }, { once: true });
+    element.addEventListener("play", () => live() && makeWayFor(entry));
+    element.addEventListener("playing", () => live() && report(entry, "playing"));
+    element.addEventListener("pause", () => {
+      if (!live() || element.ended) return;
+      report(entry, "paused");
+      resumeHeld(entry);
+    });
     const atEnd = () => {
       if (!live()) return;
       if (player.loop) {
         element.currentTime = range.start;
         void element.play().catch(() => {});
-      } else stopVideo();
+      } else stopPlayer(entry);
     };
     element.addEventListener("ended", atEnd);
     element.addEventListener("timeupdate", () => {
@@ -485,6 +573,8 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       (release) => {
         if (!live()) return release();
         entry.release = release;
+        // Held back already (an exclusive video started meanwhile).
+        if (entry.heldBy) return;
         // The click's gesture lets it play with sound; a browser that still
         // refuses gets it muted.
         element.play().catch((err: unknown) => {
@@ -495,9 +585,9 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
             return element.play();
           }
           throw err;
-        }).catch(() => live() && stopVideo("error"));
+        }).catch(() => live() && stopPlayer(entry, "error"));
       },
-      () => live() && stopVideo("error"),
+      () => live() && stopPlayer(entry, "error"),
     );
   }
 
@@ -506,16 +596,15 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   function toggleVideoAt(point: FolioPagePoint): boolean {
     const spot = spotAt(point);
     if (!spot) return false;
-    if (playing && playing.page === point.page && playing.spot.key === spot.key) togglePlaying();
+    const p = playerOf(point.page, spot);
+    if (p) togglePlaying(p);
     else startVideo(point.page, spot);
     return true;
   }
 
-  /** A click (or Space) on the video playing: one that started on its own
+  /** A click (or Space) on a video playing: one that started on its own
    *  is unmuted first; otherwise it pauses or resumes. */
-  function togglePlaying() {
-    const p = playing;
-    if (!p) return;
+  function togglePlaying(p: PagePlayer) {
     if (p.autoMuted && !p.element.paused) {
       p.autoMuted = false;
       p.element.muted = false;
@@ -536,37 +625,47 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     }, AUTOPLAY_SETTLE_MS);
   };
 
-  /** The first time a spread shows a video set to play on its own
-   *  (`player.autoplay`), it starts, muted; never again in this viewer. */
-  function autoplayOn(pages: number[]) {
-    if (options.videos === false || playing) return;
-    for (const page of pages) {
-      for (const spot of spotsOf(page)) {
-        if (!spot.video.player.autoplay || !urlOf(spot) || autoplayed.has(spot.key)) continue;
-        autoplayed.add(spot.key);
-        startVideo(page, spot, true);
-        return;
-      }
+  /**
+   * The videos on show set to play on their own (`player.autoplay`) start,
+   * muted. One playing alongside the others (`exclusive: false`) starts
+   * each time its page comes into view (not while an exclusive video
+   * plays there, nor when the reader asks for less motion); an exclusive
+   * one, the first time its spread is shown and never again in this
+   * viewer, when no other exclusive video is on.
+   */
+  function autoplayOn(pages: number[], { exclusive = true }: { exclusive?: boolean } = {}) {
+    if (options.videos === false) return;
+    const state = {
+      players: players.map((p) => ({ page: p.page, key: p.spot.key, alongside: p.alongside, paused: p.element.paused, shown: p.shown })),
+      autoplayed,
+      autoStarted,
+    };
+    for (const { page, spot } of autoplayPlan(pages, spotsOf, (s) => !!urlOf(s), state, { exclusive, reducedMotion: reducedMotion() })) {
+      if (spot.video.player.exclusive === false) autoStarted.add(autoKey(page, spot.key));
+      else autoplayed.add(spot.key);
+      startVideo(page, spot, true);
     }
   }
 
-  /** A new layout: the playing video follows its resource to where the
-   *  layout puts it, or stops when it is gone. */
-  function followVideo() {
+  /** A new layout: each video follows its resource to where the layout
+   *  puts it, or stops when it is gone (or, at rest, off the pages on
+   *  show). */
+  function followVideos() {
     spots = new Map();
-    const p = playing;
-    if (!p) return;
-    const near = [p.page, ...viewer.state.pages];
-    for (let i = 0; i < current.pages.length; i++) near.push(i);
-    for (const i of near) {
-      const spot = spotsOf(i).find((s) => s.key === p.spot.key && urlOf(s) === urlOf(p.spot));
-      if (!spot) continue;
-      p.page = i;
-      p.spot = spot;
-      if (p.shown) showVideo();
-      return;
+    let moved = false;
+    for (const p of [...players]) {
+      const near = [p.page, ...viewer.state.pages];
+      for (let i = 0; i < current.pages.length; i++) near.push(i);
+      const at = near.find((i) => spotsOf(i).some((s) => s.key === p.spot.key && urlOf(s) === urlOf(p.spot)));
+      if (at === undefined || (!turning && !viewer.state.pages.includes(at))) {
+        stopPlayer(p);
+        continue;
+      }
+      p.page = at;
+      p.spot = spotsOf(at).find((s) => s.key === p.spot.key && urlOf(s) === urlOf(p.spot))!;
+      moved ||= p.shown;
     }
-    stopVideo();
+    if (moved) showVideos();
   }
 
   const first = doc.pages[0];
@@ -593,8 +692,9 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     isPageAction: (point) => !!spotAt(point) || !!options.isPageAction?.(point),
     onChange: (state) => {
       // A video whose page has turned away stops; one set to play on its
-      // own starts the first time its spread is shown.
-      if (playing && !state.pages.includes(playing.page)) stopVideo();
+      // own starts when its spread is shown (see `autoplayOn`).
+      for (const p of [...players]) if (!state.pages.includes(p.page)) stopPlayer(p);
+      for (const key of [...autoStarted]) if (!state.pages.some((i) => key.startsWith(autoKey(i, "")))) autoStarted.delete(key);
       scheduleAutoplay();
       focus = state.pages;
       settled = state.pages;
@@ -623,7 +723,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   // Debugging (`__postextFolioPreserve`, as for the renderer): the videos.
   if ((globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve) {
     (globalThis as { __postextFolioVideos?: unknown }).__postextFolioVideos = {
-      playing: () => playing,
+      playing: () => players,
       autoplayed,
       spots: (i: number) => spotsOf(i),
       state: () => viewer.state,
@@ -635,7 +735,9 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   viewer.element.addEventListener("keydown", (event) => {
     if (event.target !== viewer.element || (event.key !== " " && event.key !== "Enter") || options.videos === false) return;
     const on = viewer.state.pages;
-    if (playing && on.includes(playing.page)) togglePlaying();
+    const shown = players.filter((p) => on.includes(p.page));
+    const p = shown.find((x) => !x.alongside) ?? shown[0];
+    if (p) togglePlaying(p);
     else {
       const page = on.find((i) => spotsOf(i).some((s) => urlOf(s)));
       if (page === undefined) return;
@@ -653,8 +755,9 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     setPages: viewer.setPages,
     refreshPage: viewer.refreshPage,
     setPageVideo: viewer.setPageVideo,
+    setPageVideos: viewer.setPageVideos,
     toggleVideoAt,
-    stopVideo: () => stopVideo(),
+    stopVideo: stopVideos,
     setLabels: viewer.setLabels,
     resetView: viewer.resetView,
     getView: viewer.getView,
@@ -723,7 +826,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
         run = null;
       }
       refresh(around(viewer.state));
-      followVideo();
+      followVideos();
       scheduleAutoplay();
     },
     redecorate(pages?: Iterable<number>) {
@@ -738,7 +841,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     },
     dispose() {
       clearTimeout(autoTimer);
-      stopVideo();
+      stopVideos();
       cancelIdle(idle);
       cancelAnimationFrame(sweepFrame);
       clearTimeout(resizeTimer);
