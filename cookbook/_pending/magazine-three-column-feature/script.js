@@ -19,7 +19,7 @@ const palette = {
   ink: '#1c2024', // text: a blue-black
   sea: '#1d5470', // the accent: kickers, crossheads, the quote, the drop cap
   tint: '#edf1f2', // the sidebar's ground
-  rule: '#c5ced3', // hairlines
+  rule: '#c5ced3', // the map's resting pans
   muted: '#5c656d', // running heads, credits, the colophon
   paper: '#ffffff', // the page, and the headline reversed out of the photograph
   salt: '#dfa79c', // the pans on the sidebar's map, the pink of ripe brine
@@ -43,7 +43,7 @@ const at = (to, edge, x = 0, y = 0, width) => ({ anchor: { to, edge },
 // #region answer: three equal columns, and floats that take one, two or all three of them
 const GUTTER = 5; // mm between the columns
 const WIDTH = TRIM.width - MARGIN.inner - MARGIN.outer; // the text block, 195 mm
-const COLUMN = (WIDTH - 2 * GUTTER) / 3; // 61.7 mm: about 40 characters of 9.5 pt text
+const COLUMN = (WIDTH - 2 * GUTTER) / 3; // 61.7 mm: about 40 characters of 9.6 pt text
 const layout = { layoutType: 'multiple', columnCount: 3, gutterWidth: mm(GUTTER) };
 // A float takes `columns` adjacent columns and the gutters between them: the head (or foot)
 // of the first run of columns that are still empty, on its page or the next. As many columns
@@ -52,7 +52,7 @@ const across = {
   raker: { position: 'top', columns: 2 }, // 128.3 mm wide, at the head of two columns
   pans: { position: 'top', span: 'page' }, // 195 mm, the whole text block
   flor: { position: 'bottom' }, // 61.7 mm: one column, the default
-  sieve: { position: 'top', columns: 2 },
+  sieve: { position: 'top', columns: 2 }, // cited in the first column: heads the other two
   quay: { position: 'top', columns: 2 }, // two columns again, on the closing page
 };
 // A floated box takes `columns` the same way: the style sets it, a fence may override it
@@ -81,7 +81,10 @@ const spread = { id: 'spread', span: 'page', advancedDesign: { enabled: true, sl
   { kind: 'image', id: 'photo', resourceId: 'spread-left', reserve: false,
     placement: { ...at('bleed', 'top-left'), size: { width: 'fill', height: 'fill' } } },
   { kind: 'text', id: 'kicker', content: '{attr.kicker}', ...label, fontSize: pt(10),
-    letterSpacing: pt(2), color: col('paper'), placement: at('page', 'top-left', 20, 190) },
+    letterSpacing: pt(2), color: col('paper'), // on a sea-blue tab: the water is too bright
+    box: { backgroundColor: col('sea'), padding: { top: mm(1.2), right: mm(2.4),
+      bottom: mm(1.2), left: mm(2.4) } },
+    placement: at('page', 'top-left', 20, 188) },
   { kind: 'text', id: 'headline', content: '{titleText}', fontFamily: 'Fraunces',
     fontWeight: 600, fontSize: pt(66), lineHeight: 0.96, // a multiple of the size
     color: col('paper'), align: 'left', overflow: 'wrap', // gotcha: overflow-ellipsis-default
