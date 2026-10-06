@@ -4812,7 +4812,10 @@ export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | '
    *  numbers, captions and caption bars, table text, rules and fills
    *  (header, body, zebra rows, a cell's own fill), callout boxes
    *  (background, border, stripe, title) and chips (fill, outline, text) —
-   *  takes the section's value. Inline swatches keep theirs. Where two
+   *  takes the section's value. Inline swatches keep theirs. The page
+   *  colour too: when `page.backgroundColor` links to an overridden entry
+   *  (or, unlinked, has its base value), the section's pages paint the
+   *  section's value (`VDTPage.background`, since postext 1.18). Where two
    *  entries share a base value and the section gives them different
    *  values, each flow colour takes the value its own settings link to: a
    *  block's text, bold, italic, reference, marker and separator colours

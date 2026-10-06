@@ -1877,6 +1877,12 @@ export interface VDTPage {
    *  `classifyPages`. Drives the per-element `pages` filter of design
    *  slots. Absent until headers/footers are built. */
   role?: PageRole;
+  /** The page's own paper colour (`#rrggbb`), when a part's or a styled
+   *  section's palette overrides the entry `page.backgroundColor` links to:
+   *  the salmon pages of a newspaper's business section. Absent on a page
+   *  that paints the document's colour. The renderers paint it in place of
+   *  `page.backgroundColor` (#506). */
+  background?: string;
   /** Present on part-divider pages: the part number and title. Marks the
    *  page as `role: 'part'`. */
   partInfo?: {
