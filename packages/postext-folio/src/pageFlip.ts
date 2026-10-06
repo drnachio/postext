@@ -109,7 +109,9 @@ export interface FlipAppearance {
 /** Columns and rows of a leaf's mesh: fine enough for a tight roll. */
 const NX = 96;
 /** How far a leaf's folded paper stays over its own paper beneath it. */
-const OWN_GAP = 0.6;
+const OWN_GAP = 1.2;
+/** How much higher than at rest a leaf in the air stays over a block. */
+const BLOCK_GAP = 1.5;
 const NY = 120;
 /** Columns of a page lying open (its curve runs across only). */
 const NX_OPEN = 72;
@@ -952,13 +954,29 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
     }
     return [px, pz];
   };
-  // Where the leaf's paper lies unfolded, column by column: [out from
-  // the spine, u, height].
+  // Thin paper ripples in the air, more towards its free edge. Never
+  // down into the pages under it: the ripple dies away where the leaf
+  // lies close over them (it stays at least `lift` above them), or a
+  // leaf held low over its stack dipped into the page under it, whose
+  // print then showed through (#447).
+  const ripple = (u: number, v: number, px: number, pz: number) => {
+    const amp = flutter * W * (u / W) * (u / W);
+    if (flutter <= 0 || amp <= 1e-6) return 0;
+    const clear = pz - surfaceAt(book, px)[1] - lift;
+    return amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
+  };
+  // Where the leaf's paper lies unfolded, column by column (before it
+  // ripples): [out from the spine, u, height].
+  const clearing = BLOCK_GAP * smooth(0, 0.06, q) * smooth(0, 0.06, 1 - q);
   const own: [number, number, number][] = [];
   if (fold) {
     for (let ix = 0; ix <= NX; ix++) {
       const u = column(ix / NX) * W;
-      const [ox, oz] = onBook(sx * u, 0);
+      let [ox, oz] = onBook(sx * u, 0);
+      if (r > 0) {
+        ox += (u * Math.cos(phi) - offset * Math.sin(phi) - ox) * r;
+        oz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - oz) * r;
+      }
       own.push([sx * ox, u, oz]);
     }
   }
@@ -992,11 +1010,21 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
         const w = smooth(0, 0.05 * W, z);
         px += (fx + sx * fold.n.u * dd - px) * w;
         pz += (fz + z - pz) * w;
-        // Never through the leaf's own paper not yet folded: carried level
-        // from a fold low on a side sloping up to the spine, the paper
-        // folded back over it ran under it, crossing it.
+      }
+      if (r > 0) {
+        px += (u * Math.cos(phi) - offset * Math.sin(phi) - px) * r;
+        y += (v - y) * r;
+        pz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - pz) * r;
+      }
+      pz += ripple(u, v, px, pz);
+      // Never through the leaf's own paper not yet folded, as it ripples
+      // too: carried level from a fold low on a side sloping up to the
+      // spine, the paper folded back over it ran under it, crossing it.
+      if (fold && d > 0) {
         const at = sx * px;
-        if (at > own[0][0] && at < own[NX][0] && Math.abs(y) <= H / 2 + 1e-6) {
+        // (A row past the head and foot too: a triangle reaching past them
+        // from paper kept over sagged through.)
+        if (at > own[0][0] && at < own[NX][0] && Math.abs(y) <= H / 2 + (1.5 * H) / NY) {
           let lo = 0;
           let hi = NX;
           while (hi - lo > 1) {
@@ -1006,30 +1034,21 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
           }
           const f = (at - own[lo][0]) / (own[hi][0] - own[lo][0] || 1);
           const ou = own[lo][1] + (own[hi][1] - own[lo][1]) * f;
-          if ((ou - fold.F.u) * fold.n.u + (y - fold.F.v) * fold.n.v < 0) pz = Math.max(pz, own[lo][2] + (own[hi][2] - own[lo][2]) * f + OWN_GAP);
+          if ((ou - fold.F.u) * fold.n.u + (y - fold.F.v) * fold.n.v < 0) {
+            const oz = own[lo][2] + (own[hi][2] - own[lo][2]) * f;
+            pz = Math.max(pz, oz + ripple(ou, y, px, oz) + OWN_GAP);
+          }
         }
-      }
-      if (r > 0) {
-        px += (u * Math.cos(phi) - offset * Math.sin(phi) - px) * r;
-        y += (v - y) * r;
-        pz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - pz) * r;
-      }
-      // Thin paper ripples in the air, more towards its free edge. Never
-      // down into the pages under it: the ripple dies away where the leaf
-      // lies close over them (it stays at least `lift` above them), or a
-      // leaf held low over its stack dipped into the page under it, whose
-      // print then showed through (#447).
-      if (flutter > 0) {
-        const amp = flutter * W * (u / W) * (u / W);
-        const clear = pz - surfaceAt(book, px)[1] - lift;
-        if (amp > 1e-6) pz += amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
       }
       // Never into the book: over a block (and past its head or foot) a
       // leaf stands at least just over its top. A fold's flap is carried
       // level from the foot of its fold, and on a thin side hanging from
       // the spine that foot lies low: the flap went through the tall block
       // on the other side (#489).
-      if (!board && Math.abs(px) < (px >= 0 ? xr : xl)) pz = Math.max(pz, topAt(px >= 0 ? book.right : book.left, Math.abs(px)) + Math.min(lift, 0.5));
+      // In the air a little higher still (until it lands): half a pixel
+      // over the block is hardly any depth at the view's distance, and a
+      // leaf lying over a tall block's top drew through its page in teeth.
+      if (!board && Math.abs(px) < (px >= 0 ? xr : xl)) pz = Math.max(pz, topAt(px >= 0 ? book.right : book.left, Math.abs(px)) + Math.min(lift, 0.5) + clearing);
       pos.setXYZ(iy * (NX + 1) + ix, px, y, pz);
     }
   }
