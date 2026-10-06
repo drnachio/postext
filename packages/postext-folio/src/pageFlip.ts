@@ -949,13 +949,17 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
   // corner barely lifted, a few degrees through the middle of the turn.
   const inAir = smooth(0.02, 0.22, q) * smooth(0.02, 0.22, 1 - q);
   const lean = LEAN * inAir;
-  const cosA = Math.cos(lean);
-  const sinA = Math.sin(lean);
   // Each side's chord, from the spine to its fore-edge: a side hanging
   // from a standing spine slopes down to the desk, and a leaf leaning off
   // it leans off that slope, not off a level plane over it.
   const chordR = (zr - zr0) / (xr || 1);
   const chordL = (zl - zl0) / (xl || 1);
+  // The plane a leaf lifts off along, by side: the chord turned up by the
+  // lean. A leaf keeps its width along it (stepping the chord's rise per
+  // unit across, on a side sloping to the desk, stretched it by a tenth
+  // and more, #495).
+  const tiltR = Math.atan(chordR) + lean;
+  const tiltL = Math.atan(chordL) + lean;
   // Onto the book. At rest (and as it lands) the leaf lies on the open
   // book's surface, into the gutter and out. In the air it is lifted off
   // at the spine: its own plane rises from the gutter's floor at a small
@@ -966,8 +970,9 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
     let px = rx;
     let pz = rz + z + lift;
     if (inAir > 0) {
-      const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
-      const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
+      const tilt = s >= 0 ? tiltR : tiltL;
+      const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * Math.cos(tilt);
+      const plane = (s >= 0 ? zr0 : zl0) + Math.abs(s) * Math.sin(tilt) + z + lift;
       const under = surfaceAt(book, fx)[1] + lift + 0.6;
       const flying = smoothMax(plane, under, 0.006 * W);
       px += (fx - px) * inAir;
