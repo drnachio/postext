@@ -16,13 +16,13 @@ pageNotes: { "1": "A plum band across the top of the page holds a fan of pale lo
 
 ### 1 · Label equations and statements, refer to them by key
 
-The code is [the short answer](#the-short-answer) above. Postext numbers a display formula that carries `\tag{7}` and links a `:ref` to any [anchor](/en/docs/document-format#cross-references-and-anchors), but it keeps no counter of equations or theorems. `latex()` adds that counter before the build: a `\label{eq:dpo}` inside a display becomes the next `\tag`, a `:::callout{type="lemma" #lem:same-policy}` gets the next lemma number and its run-in label, and `\eqref{eq:dpo}` or `\ref{lem:same-policy}` in the text becomes a `:ref` that prints the number and links to it. Write each labelled display directly under the line that leads into it, with no blank line, since that line carries the anchor the link jumps to. Sections need no help: their numbers come from the heading templates, `{startAt=3}` keeps the paper's own numbering after the cut section 2, and `crossRefs.section` prints “Section 5” with a capital, as the paper does.
+The code is [the short answer](#the-short-answer) above. Since postext 1.19 the engine keeps LaTeX's counters. A `\label{eq:dpo}` in a display formula numbers it in reading order, one number for each labelled row of an `align` and none for a row marked `\notag`; `resetOn: 'never'` carries the count from (1) through the appendix to (13), as this abridged paper is renumbered. A box opened as `:::callout{type="lemma" #lem:same-policy}` starts with “**Lemma 2.**”, because its style has `numbering: { label: 'Lemma' }` and a counter of its own. In the text, `\eqref{eq:dpo}` prints (7), `\ref{lem:same-policy}` prints 2 and `:ref{id="lem:same-policy"}` prints Lemma 2, each a link to its target; `Eq.~\eqref{…}` keeps LaTeX's tie. The restated lemma of the appendix opens with `***:ref{id="lem:same-preference"} Restated.***`, and the reference takes the bold of the label around it. Sections need no help: their numbers come from the heading templates, `{startAt=3}` keeps the paper's own numbering after the cut section 2, and `crossRefs.section` prints “Section 5” with a capital, as the paper does.
 
 ### 2 · Give each environment its own box
 
 <Excerpt region="theorems" />
 
-Each environment is a [callout style](/en/docs/configuration#callout-styles) with one device: a grey stripe for the definition, a plum stripe for the lemmas, a pale plum tint for the theorem. `body.italic` sets the statement in italics as amsthm's plain style does, and the label written `***Theorem 1.***` turns back upright inside it. The proof has no box at all, only its italic run-in label and the square that `latex()` adds at its end, and `keepTogether: false` lets a long proof run on to the next page. `snapToGrid: false` keeps the same space around every statement; in one column with no neighbour to line up with, an exact gap reads better than one rounded to the grid.
+Each environment is a [callout style](/en/docs/configuration#callout-styles) with one device: a grey stripe for the definition, a plum stripe for the lemmas, a pale plum tint for the theorem. `box()` lays that look over the numbering of the short answer. `body.italic` sets the statement in italics as amsthm's plain style does, and the run-in label stays bold and upright inside it. A proof has no box at all: its label is italic and has no number (`counter: false`), its last line ends with `$\square$` written in the text, and `keepTogether: false` lets a long proof run on to the next page. `snapToGrid: false` keeps the same space around every statement; in one column with no neighbour to line up with, an exact gap reads better than one rounded to the grid.
 
 ### 3 · Cite author–year from the paper's own reference list
 
@@ -55,15 +55,15 @@ The original paper uses natbib's numbered citations; IEEE prints [1] in the text
 
 ### Count lemmas and theorems together
 
-Some journals number every statement in one sequence (Lemma 1, Lemma 2, Theorem 3). Point every kind at one counter.
+Some journals number every statement in one sequence (Lemma 1, Lemma 2, Theorem 3), as `\newtheorem{lemma}[theorem]` does. Point the lemmas at the theorem counter.
 
 ```diff
--    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
-+    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+-  { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
++  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' } },
 ```
 
 ## Pitfalls
 
-- A `:ref` inside a bold label takes the reference style, not the bold around it: in “Lemma 1 Restated.” the number would come out regular. Write the number of a restated label as text.
-- A box that ends a short page is pushed down to its foot by column balancing, which opened a gap under the title block here. `balancing: { enabled: false }` keeps the abstract under the byline and the section heads at their own spacing, at the cost of a page that may end a line short.
+- `endMark: '□'` on the proof style would set the square flush right on the last line, but in the box's body face. Spectral has no □ (no Fontsource text face carries it in its latin file), so the screen borrows a system glyph and the PDF prints the font's missing-glyph box. Write `$\square$` at the end of the proof, or pick an end mark the face can set.
+- Column balancing fills a page that a tall display leaves short by adding grid lines above its headings. `balancing: { maxLinesPerHeading: 1 }` keeps a paper's heads close to their own spacing; such a page may then end a few lines up.
 - A display with an `\underbrace` label wider than the brace, such as the gradient in section 4, needs an `aligned` break; set wider than the measure, it overflows to the right.

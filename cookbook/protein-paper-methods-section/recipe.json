@@ -25,7 +25,6 @@
       "heading-attributes",
       "callout-styles",
       "span-boxes",
-      "floated-callouts",
       "running-heads",
       "page-role-filters",
       "inline-embeds",
@@ -53,8 +52,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0"
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0"
   },
   "kit": [
     "core",
@@ -74,7 +73,7 @@
     "focus": {
       "page": 1,
       "x": 0.435,
-      "y": 0.637,
+      "y": 0.541,
       "w": 0.475,
       "h": 0.203
     },
@@ -157,22 +156,5 @@
   },
   "created": "2026-10-06",
   "updated": "2026-10-06",
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "BibTeX `and others` is read as an author named 'others' (parseNames in src/citations/bibtex.ts), so the Nature style prints '& others' instead of et al.; the works with more authors list their first six from Crossref, which the style's et-al-min of 6 turns into 'First, A. et al.'"
-    },
-    {
-      "package": "postext",
-      "note": "an inline `::resource` with placement { position: 'here', span: 'page' } is set at the width of its column; Fig. 1 sits in a frameless page-span callout floated to the page foot (placement: 'bottom')"
-    },
-    {
-      "package": "postext",
-      "note": "postext-citeproc: the bundled nature.csl prints the DOI twice for an article-journal with no volume yet (issuance prints https://doi.org/…, access prints doi:…); one string edit adds article-journal to the access macro's exclusion"
-    },
-    {
-      "package": "postext",
-      "note": "a reference list cannot hold only the works first cited since the previous list (Nature's Methods references): :::bibliography{scope=chapter} lists every work the chapter cites; the article ends on one list"
-    }
-  ]
+  "workarounds": []
 }

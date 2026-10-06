@@ -144,13 +144,17 @@ export function bandPlainToSource(block: VDTDesignTextBlock, plainIdx: number): 
 }
 
 /** Index of the first title character whose source offset is ≥ `offset`
- *  (title length when the offset lies past the title). */
+ *  (the title's end when the offset lies past the title). What the design
+ *  prints before the title (a heading number, #546) is never reached: the
+ *  title starts after it. */
 export function bandSourceToPlain(block: VDTDesignTextBlock, offset: number): number {
   const map = block.sourceMap;
   const len = titleTextOf(block).length;
   if (map && map.length > 0) {
-    if (offset >= (block.sourceEnd ?? Infinity)) return len;
-    let lo = 0;
+    const end = block.sourceEnd ?? Infinity;
+    // Past the title: where it ends, before what the design prints after it.
+    if (offset >= end) offset = end;
+    let lo = Math.min(map.length, Math.max(0, block.sourcePrefixLen ?? 0));
     let hi = map.length;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "outbreak-report-bulletin",
-  "sourceHash": "a928a8e1ccc6a89543fcf30ee506badab34e2d7c37746893a5f237877cd6b755",
+  "sourceHash": "80b22f02547da1d896e3adcfd10756e86cf9b7b9cdf8868aa5f1b749f47cb975",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:40:37.510Z",
+  "capturedAt": "2026-10-06T16:08:49.258Z",
   "variants": {
     "en": {
-      "hash8": "be157456",
-      "vdtHash": "bd948a81a89dcf5541077f09a305e239b390454a",
+      "hash8": "6679adff",
+      "vdtHash": "46d66da5fee06b63912ff8df266ad87d7414076a",
       "timings": {
-        "importMs": 287,
-        "fontsMs": 101,
-        "buildMs": 1252,
-        "totalMs": 3515,
+        "importMs": 267,
+        "fontsMs": 88,
+        "buildMs": 292,
+        "totalMs": 1677,
         "builds": 2
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Libre Franklin"
         ],
         "pages": 6,
-        "ownLines": 206
+        "ownLines": 180
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 136576,
+          "bytes": 136552,
           "alt": "Opening page 1: Pneumocystis Pneumonia — Los Angeles. Figure 1. The five patients, September 1980 to May 1981, by month. The illness before the pneumonia is counted back from the month of diagnosis, as each report gives it."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 196692,
+          "bytes": 174376,
           "alt": "Page 3: REFERENCES. Table 1. Presenting complaints in 20 patients with Kaposi’s sarcoma."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 233374,
+          "bytes": 242658,
           "alt": "Page 4."
         },
         {
@@ -95,7 +95,7 @@
           "h": 1294,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 103574,
+          "bytes": 118194,
           "alt": "Page 5: REFERENCES."
         },
         {
@@ -106,7 +106,7 @@
           "h": 1294,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 83854,
+          "bytes": 80464,
           "alt": "Opening page 6: Notifiable Diseases — United States. Table 1. Summary — cases of specified notifiable diseases, United States."
         }
       ],
@@ -142,12 +142,12 @@
       },
       "pdf": {
         "file": "outbreak-report-bulletin.pdf",
-        "bytes": 378847,
+        "bytes": 379132,
         "pages": 6
       },
       "sandbox": {
         "file": "outbreak-report-bulletin.postext",
-        "bytes": 73886,
+        "bytes": 73732,
         "folio": "0cf5d184"
       },
       "detected": {
@@ -168,24 +168,17 @@
         ],
         "configKeys": [
           "bodyText",
-          "bodyText.avoidOrphans",
-          "bodyText.avoidRunts",
-          "bodyText.avoidWidows",
           "bodyText.boldColor",
           "bodyText.color",
           "bodyText.firstLineIndent",
           "bodyText.fontFamily",
           "bodyText.fontSize",
-          "bodyText.hyphenation",
-          "bodyText.hyphenation.enabled",
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
           "bodyText.maxJustifyTracking",
-          "bodyText.optimalLineBreaking",
           "bodyText.referenceBold",
           "bodyText.referenceColor",
-          "bodyText.textAlign",
           "captionStyle",
           "captionStyle.color",
           "captionStyle.fontFamily",
@@ -204,6 +197,7 @@
           "citations.bibliography.lineHeight",
           "citations.bibliography.scope",
           "citations.marker",
+          "citations.numbering",
           "citations.style",
           "colorPalette",
           "colorPalette[].id",
@@ -228,6 +222,7 @@
           "footnotes.color",
           "footnotes.fontSize",
           "footnotes.lineHeight",
+          "footnotes.numberFormat",
           "header",
           "header.elements",
           "header.elements[].align",
@@ -255,6 +250,7 @@
           "headingStyles[].layout",
           "headingStyles[].layout.layoutType",
           "headingStyles[].span",
+          "headingStyles[].spanBreak",
           "headings",
           "headings.color",
           "headings.fontFamily",
@@ -348,7 +344,7 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 572,
+        "configLeaves": 570,
         "designElements": 26,
         "directives": [
           ":::paragraphs",
@@ -436,7 +432,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 5,
         "looseLines": {
           "count": 1,
           "share": 0.0047,
@@ -446,7 +442,7 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.07 MB (warning at 0.9 MB for 6 pages)"
+            "detail": "the edition's images weigh 1.06 MB (warning at 0.9 MB for 6 pages)"
           }
         ]
       }

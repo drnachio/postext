@@ -88,6 +88,13 @@ function markEtAl(item: CslItem): CslItem {
  *  when the style sets its `<et-al>` so). A comma before the last name
  *  stays before "et al." ("Tan, Wei, et al.", "张三, 李四, 等"); an "and"
  *  goes ("Tan, W. et al."). */
+/** "et al." kept on one line: the spaces inside the locale's term become
+ *  no-break spaces, so a list never ends a line on "et" (#544). */
+function keepEtAl(html: string, etAl: string): string {
+  const term = escapeHtml(etAl);
+  return term.includes(' ') ? html.split(term).join(term.replace(/ /g, '\u00a0')) : html;
+}
+
 function writeEtAl(html: string, and: string, etAl: string, italic: boolean): string {
   if (!html.includes(ET_AL_MARK)) return html;
   const andWord = and.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -241,7 +248,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
             if (c.mode === 'narrative' && kind === 'in-text' && numeric && c.items.length > 0) {
               const who = c.items.map((it) => narrativeAuthors(items.get(it.id), and, etAl, japanese)).filter(Boolean).join('; ');
               const glue = /^<sup>/.test(html) || CJK.test(who) ? '' : ' ';
-              return who ? `${escapeHtml(who)}${glue}${html}` : html;
+              return who ? keepEtAl(`${escapeHtml(who)}${glue}${html}`, etAl) : html;
             }
             html = writeEtAl(html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, ''), and, etAl, etAlItalic);
             // A narrative citation's suffix inside its parentheses: "García
@@ -253,6 +260,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
               html = /\)\s*$/.test(html) ? html.replace(/\)(\s*)$/, `${glue}${rich})$1`) : `${html.trimEnd()}${glue}${rich}`;
             }
             if (chineseText && kind === 'in-text' && !numeric) html = fullWidthCitation(html);
+            html = keepEtAl(html, etAl);
             // An author-page style with nothing for the parentheses (MLA,
             // "as Stillinger records") leaves the space before them.
             return c.mode === 'narrative' && kind === 'in-text' && !numeric ? html.trim() : html;
@@ -274,7 +282,8 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
             const body = /<div class="csl-right-inline">([\s\S]*?)<\/div>\s*<\/div>\s*$/.exec(raw)?.[1]
               ?? /<div class="csl-entry">([\s\S]*?)<\/div>\s*$/.exec(raw)?.[1]
               ?? raw;
-            entries.push({ id, html: writeEtAl(body.replace(/\s+/g, ' ').trim(), and, etAl, etAlItalic), ...(label ? { label } : {}) });
+            const entry = writeEtAl(body.replace(/\s+/g, ' ').trim(), and, etAl, etAlItalic);
+            entries.push({ id, html: keepEtAl(entry, etAl), ...(label ? { label } : {}) });
           });
           return {
             entries,

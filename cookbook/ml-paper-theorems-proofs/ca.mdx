@@ -16,13 +16,13 @@ pageNotes: { "1": "Una banda pruna al capdamunt de la pàgina amb un ventall de 
 
 ### 1 · Etiqueta equacions i enunciats, i remet-hi per la clau
 
-El codi és [la resposta curta](#la-resposta-curta) de dalt. Postext numera una fórmula destacada que porta `\tag{7}` i enllaça un `:ref` amb qualsevol [àncora](/ca/docs/document-format#referències-creuades-i-àncores), però no porta el compte d'equacions ni de teoremes. `latex()` afegeix aquest comptador abans de compondre: un `\label{eq:dpo}` dins d'una fórmula destacada es converteix en el `\tag` següent, un `:::callout{type="lemma" #lem:same-policy}` rep el número de lema següent i la seva etiqueta en línia, i `\eqref{eq:dpo}` o `\ref{lem:same-policy}` al text passen a ser un `:ref` que imprimeix el número i hi enllaça. Escriu cada fórmula amb etiqueta just sota la línia que la introdueix, sense línia en blanc, perquè aquesta línia porta l'àncora on salta l'enllaç. Les seccions no necessiten ajuda: els seus números surten de les plantilles dels títols, `{startAt=3}` conserva la numeració de l'article després de la secció 2 suprimida, i `crossRefs.section` escriu «Section 5» amb majúscula, com l'original.
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Des de postext 1.19 el motor porta els comptadors de LaTeX. Un `\label{eq:dpo}` dins d'una fórmula destacada la numera per ordre de lectura, amb un número per cada fila etiquetada d'un `align` i cap en una fila marcada amb `\notag`; `resetOn: 'never'` fa que el compte segueixi de (1) a (13) a través de l'apèndix, com es renumera aquest article abreujat. Un requadre obert amb `:::callout{type="lemma" #lem:same-policy}` comença per «**Lemma 2.**», perquè el seu estil porta `numbering: { label: 'Lemma' }` i un comptador propi. Al text, `\eqref{eq:dpo}` imprimeix (7), `\ref{lem:same-policy}` imprimeix 2 i `:ref{id="lem:same-policy"}` imprimeix Lemma 2, cadascun enllaçat amb la seva destinació; `Eq.~\eqref{…}` conserva l'espai inseparable de LaTeX. El lema repetit de l'apèndix comença per `***:ref{id="lem:same-preference"} Restated.***`, i la referència pren la negreta de l'etiqueta que l'envolta. Les seccions no necessiten ajuda: els seus números surten de les plantilles dels títols, `{startAt=3}` conserva la numeració de l'article després de la secció 2 suprimida, i `crossRefs.section` escriu «Section 5» amb majúscula, com l'original.
 
 ### 2 · Dona a cada entorn el seu requadre
 
 <Excerpt region="theorems" />
 
-Cada entorn és un [estil de requadre](/ca/docs/configuration#estils-davís) amb un sol recurs: un filet gris per a la definició, un de pruna per als lemes i un fons pruna pàl·lid per al teorema. `body.italic` posa l'enunciat en cursiva, com l'estil *plain* d'amsthm, i l'etiqueta escrita `***Theorem 1.***` torna a rodona a dins. La demostració no porta requadre: només la seva etiqueta en cursiva i el quadrat que `latex()` afegeix al final, i `keepTogether: false` deixa que una demostració llarga passi a la pàgina següent. `snapToGrid: false` manté el mateix espai al voltant de cada enunciat; en una sola columna, sense veïna amb què alinear-se, un blanc exacte es llegeix millor que un d'arrodonit a la reixeta base.
+Cada entorn és un [estil de requadre](/ca/docs/configuration#estils-davís) amb un sol recurs: un filet gris per a la definició, un de pruna per als lemes i un fons pruna pàl·lid per al teorema. `box()` posa aquest aspecte sobre la numeració de la resposta curta. `body.italic` posa l'enunciat en cursiva, com l'estil *plain* d'amsthm, i l'etiqueta en línia queda en negreta rodona a dins. La demostració no porta requadre: la seva etiqueta va en cursiva i sense número (`counter: false`), la seva última línia acaba amb `$\square$` escrit al text, i `keepTogether: false` deixa que una demostració llarga passi a la pàgina següent. `snapToGrid: false` manté el mateix espai al voltant de cada enunciat; en una sola columna, sense veïna amb què alinear-se, un blanc exacte es llegeix millor que un d'arrodonit a la reixeta base.
 
 ### 3 · Cita en autor–any des de la bibliografia del mateix article
 
@@ -55,15 +55,15 @@ L'article original fa servir les cites numerades de natbib; IEEE posa [1] al tex
 
 ### Compta lemes i teoremes junts
 
-Algunes revistes numeren tots els enunciats en una sola sèrie (lema 1, lema 2, teorema 3). Fes que tots els tipus comparteixin un comptador.
+Algunes revistes numeren tots els enunciats en una sola sèrie (lema 1, lema 2, teorema 3), com fa `\newtheorem{lemma}[theorem]`. Fes que els lemes facin servir el comptador dels teoremes.
 
 ```diff
--    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
-+    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+-  { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
++  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' } },
 ```
 
 ## Errors freqüents
 
-- Un `:ref` dins d'una etiqueta en negreta pren l'estil de les referències, no la negreta que l'envolta: a «Lemma 1 Restated.» el número sortiria en rodona normal. Escriu com a text el número d'una etiqueta repetida.
-- L'equilibrat de columnes baixa un requadre que tanca una pàgina curta fins al peu, i aquí obria un buit sota el bloc del títol. `balancing: { enabled: false }` deixa el resum sota els autors i els títols de secció amb el seu espai de sempre, a canvi que una pàgina pugui acabar una línia més amunt.
+- `endMark: '□'` a l'estil de la demostració posaria el quadrat al final de l'última línia, alineat a la dreta, però amb la font del cos del requadre. Spectral no té □ (cap font de text de Fontsource no el porta al fitxer latin), així que la pantalla agafa un glif del sistema i el PDF imprimeix la caixa de glif absent. Escriu `$\square$` al final de la demostració, o tria una marca que la font pugui compondre.
+- L'equilibrat de columnes omple la pàgina que una fórmula alta deixa curta afegint línies de la reixeta base sobre els seus títols. `balancing: { maxLinesPerHeading: 1 }` deixa els títols d'un article a prop del seu espai propi; aquella pàgina pot acabar llavors unes quantes línies més amunt.
 - Una fórmula amb un rètol de `\underbrace` més ample que la clau, com el gradient de la secció 4, necessita un tall amb `aligned`; si queda més ampla que la mesura, surt per la dreta.

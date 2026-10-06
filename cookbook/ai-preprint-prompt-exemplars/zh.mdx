@@ -22,7 +22,7 @@ pageNotes: { "1": "第1页：一行蓝色等宽字体的会议信息，两行粗
 
 <Excerpt region="citations" />
 
-机器学习会议采用natbib的作者–年份样式：姓名和年份之间加逗号，三位作者以上写*et al.*。引擎自带的样式中最接近的是Chicago author-date，所以本例把其CSL中连接作者和年份的那一组，从空格改成逗号。你的`.bib`文件可以原样带来：粘贴进`:::references{format=bibtex}`块，用`[@key]`得到*(Brown et al., 2020)*，用`@key`得到*Brown et al. (2020)*。只在图注里提到的文献要列进`nocite`，因为图注中的引用不会被识别。
+机器学习会议采用natbib的作者–年份样式：姓名和年份之间加逗号，三位作者以上写*et al.*。引擎自带的样式中最接近的是Chicago author-date，所以本例把其CSL中连接作者和年份的那一组，从空格改成逗号。你的`.bib`文件可以原样带来：粘贴进`:::references{format=bibtex}`块，用`[@key]`得到*(Brown et al., 2020)*，用`@key`得到*Brown et al. (2020)*。后缀保留前面写的逗号和其中的强调，所以`[@brown2020language, *inter alia*]`印成(Brown et al., 2020, *inter alia*)，与原文一致。图注的引用写法相同：图4的图注写`@jie2022learning`和`@lan2021mwptoolkit`，这两部文献不用`nocite`也会进入参考文献表。
 
 ### 3 · 标题区
 
@@ -70,5 +70,4 @@ NeurIPS式的单栏需要更宽的左右页边距，才能保持易读的行长�
 
 ## 常见问题
 
-- 只有后缀、没有定位符的引用，如`[@brown2020language, inter alia]`，在postext 1.18.0中会丢掉逗号，印成*2020inter alia*；后缀中的行内标记会印成星号。本例写作`[@brown2020language, , inter alia]`，印出正体的*2020, inter alia*。
 - 双栏版式中，通栏框只有在放得下、且下方至少还能排两行正文时，才留在当前页。图1之所以在第1页，是因为摘要用9.3 pt、内边距较紧；摘要再长一些，图就会移到第2页。

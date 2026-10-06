@@ -1735,6 +1735,11 @@ export interface VDTDesignTextBlock {
    *  per-character source offsets, when the text mirrors document text. */
   sourceText?: string;
   sourceMap?: number[];
+  /** Characters of `sourceText` printed before the mirrored text (#546): a
+   *  heading number the design writes before `{titleText}`, "4. ". They map
+   *  to the title's start; a caret or a selection of the title starts
+   *  after them. Absent = none. */
+  sourcePrefixLen?: number;
   /** Pagination furniture rather than document text — the title a split
    *  callout repeats on a continuation, its "Continued" marker: a tagged
    *  PDF marks it an artifact and the HTML hides it from assistive

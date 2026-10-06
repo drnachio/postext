@@ -1,4 +1,4 @@
-# Kaposi's Sarcoma and *Pneumocystis* Pneumonia Among Homosexual Men — New York City and California {style="report" display="Kaposi’s Sarcoma and *Pneumocystis* Pneumonia Among Homosexual Men — New York City and California" kicker="Epidemiologic Notes and Reports" dateline="July 3, 1981 · Vol. 30, No. 25 · pp. 305–308"}
+# Kaposi’s Sarcoma and *Pneumocystis* Pneumonia Among Homosexual Men — New York City and California {style="report" kicker="Epidemiologic Notes and Reports" dateline="July 3, 1981 · Vol. 30, No. 25 · pp. 305–308"}
 
 During the past 30 months, Kaposi’s sarcoma (KS), an uncommonly reported malignancy in the United States, has been diagnosed in 26 homosexual men (20 in New York City [NYC]; 6 in California). The 26 patients range in age from 26-51 years (mean 39 years). Eight of these patients died (7 in NYC, 1 in California)—all 8 within 24 months after KS was diagnosed. The diagnoses in all 26 cases were based on histopathological examination of skin lesions, lymph nodes, or tumor in other organs. Twenty-five of the 26 patients were white, 1 was black. Presenting complaints from 20 of these patients are shown in :ref{id="tbl-complaints"}.
 
@@ -109,7 +109,7 @@ Although it is not certain that the increase in KS and PC pneumonia is restricte
   journal = {South Med J}, year = 1977, volume = 70, pages = {1011--1013}}
 :::
 
-# Notifiable Diseases — United States {style="back" display="Notifiable Diseases — United States" kicker="From the issue of July 3, 1981" dateline="25th week ending June 27, 1981 · Vol. 30, No. 25 · p. 308"}
+# Notifiable Diseases — United States {style="back" kicker="From the issue of July 3, 1981" dateline="25th week ending June 27, 1981 · Vol. 30, No. 25 · p. 308"}
 
 :::paragraphs{style="editor"}
 Each weekly issue carried the counts of notifiable diseases that the states reported to CDC. The summary table of the July 3 issue is reprinted as it was printed (:ref{id="tbl-notifiable"}).
@@ -118,5 +118,5 @@ Each weekly issue carried the counts of notifiable diseases that the states repo
 ::resource{id="tbl-notifiable"}
 
 :::paragraphs{style="colophon"}
-Surveillance Notes, Reprint No. 1. Re-set from the printed issues of June 5 and July 3, 1981 (Morbidity and Mortality Weekly Report, vol. 30, nos. 21 and 25, Centers for Disease Control, Atlanta), which are in the public domain. The text and the tables keep the wording and figures of 1981, including the terminology of the time. Figure 1 and the case table on page 2 were added by the editors. Each report printed its own reference list from 1; here the numbers run on through the issue, so the July report cites works 4 and 6–23 where the weekly printed 1–19. Set in IBM Plex Serif, Libre Franklin and IBM Plex Sans Condensed (SIL Open Font License).
+Surveillance Notes, Reprint No. 1. Re-set from the printed issues of June 5 and July 3, 1981 (Morbidity and Mortality Weekly Report, vol. 30, nos. 21 and 25, Centers for Disease Control, Atlanta), which are in the public domain. The text and the tables keep the wording and figures of 1981, including the terminology of the time. Figure 1 and the case table on page 2 were added by the editors. Set in IBM Plex Serif, Libre Franklin and IBM Plex Sans Condensed (SIL Open Font License).
 :::

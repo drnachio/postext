@@ -1,11 +1,9 @@
 // ═══ Postext Cookbook · Nº 143 · A weekly bulletin report: the first AIDS reports ═══
 // https://postext.dev/en/cookbook/outbreak-report-bulletin
 // Code: MIT · Text: CDC, MMWR 1981;30:250–252 and 305–308 (public domain) · Chart: original
-// Fonts: IBM Plex Serif, Libre Franklin, Plex Sans Condensed (OFL) · Needs postext ≥ 1.18.0
-import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, parseTSV, mergeCells,
-} from 'https://esm.sh/postext';
+// Fonts: IBM Plex Serif, Libre Franklin, Plex Sans Condensed (OFL) · Needs postext ≥ 1.19.0
+import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  registerResourceImage, defaultResourceTypes, parseTSV, mergeCells } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -31,58 +29,52 @@ const at = (to, edge, x, y, width) => ({ anchor: { to, edge }, offset: { x: mm(x
   ...(width && { size: { width: mm(width), height: 'auto' } }) });
 const caps = (size, extra) => ({ fontFamily: LABEL, fontSize: pt(size), fontWeight: 600,
   letterSpacing: pt(size * 0.18), textTransform: 'uppercase', ...extra });
-const rule = (id, y, thickness, width = MEASURE) => ({ kind: 'rule', id, color: col('accent'),
-  thickness: pt(thickness), placement: at('container', 'top-left', 0, y, width) });
+const rule = (id, y, thickness) => ({ kind: 'rule', id, color: col('accent'),
+  thickness: pt(thickness), placement: at('container', 'top-left', 0, y, MEASURE) });
 
 // #region masthead: the bulletin's band, issue strip and contents over the first report
-// The report's kicker, title and dateline come from attributes of its H1 (`display` keeps
-// the italic genus: {titleText} is plain text), so the second report reuses the same three
-// elements, a column wide, under a double rule: it runs on in the column, as in the weekly.
-const reportHead = (y, width, size) => [
+// Kicker and dateline are attributes of each report's H1; {titleText} read with inlineMarks
+// keeps the italic genus. The July report opens where June ends, under a double rule.
+const reportHead = (y, size) => [
   text('kicker', '{attr.kicker}', LABEL, 8.5, { ...caps(8.5), color: col('accent'),
-    placement: at('container', 'top-left', 0, y, width) }),
-  text('title', '{attr.display}', DISPLAY, size, { fontWeight: 800, lineHeight: 1.08,
-    inlineMarks: true, placement: at('#kicker', 'below', 0, 2.2, width) }),
+    placement: at('container', 'top-left', 0, y, MEASURE) }),
+  text('title', '{titleText}', DISPLAY, size, { fontWeight: 800, lineHeight: 1.08,
+    inlineMarks: true, placement: at('#kicker', 'below', 0, 2.2, MEASURE) }),
   text('dateline', '{attr.dateline}', LABEL, 9, { fontStyle: 'italic', color: col('muted'),
-    placement: at('#title', 'below', 0, 2, width) }),
+    placement: at('#title', 'below', 0, 2, MEASURE) }),
 ];
-const COLUMN = (MEASURE - GUTTER) / 2;
-const white = col('paper');
 const masthead = { enabled: true, minHeight: mm(72), slot: { elements: [
-  { kind: 'box', id: 'band', style: { backgroundColor: col('accent') },
-    placement: { anchor: { to: 'page', edge: 'top-left' },
-      size: { width: 'fill', height: mm(49) } } },
+  { kind: 'box', id: 'band', style: { backgroundColor: col('accent') }, placement: {
+    anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill', height: mm(49) } } },
   text('series', 'A reprint series in public health history', LABEL, 8,
-    { ...caps(8), color: white, placement: at('page', 'top-left', SIDE, 11, 120) }),
-  text('number', 'Reprint No. 1', LABEL, 8, { ...caps(8), color: white, align: 'right',
+    { ...caps(8), color: col('paper'), placement: at('page', 'top-left', SIDE, 11, 120) }),
+  text('number', 'Reprint No. 1', LABEL, 8, { ...caps(8), color: col('paper'), align: 'right',
     placement: at('page', 'top-right', -SIDE, 11, 50) }),
-  text('wordmark', 'Surveillance Notes', DISPLAY, 50, { fontWeight: 800, color: white,
+  text('wordmark', 'Surveillance Notes', DISPLAY, 50, { fontWeight: 800, color: col('paper'),
     letterSpacing: pt(-1), lineHeight: 1, placement: at('page', 'top-left', SIDE - 1, 18) }),
   text('issue', 'Two reports of June 5 and July 3, 1981: the first published accounts of '
     + 'what became known as AIDS, as the Centers for Disease Control printed them', TEXT, 9.5,
   { fontStyle: 'italic', lineHeight: 1.3, placement: at('container', 'top-left', 0, 29, 92) }),
-  text('contents', '**1** *Pneumocystis* Pneumonia — Los Angeles\n**3** Kaposi\'s Sarcoma '
+  text('contents', '**1** *Pneumocystis* Pneumonia — Los Angeles\n**3** Kaposi’s Sarcoma '
     + 'and *Pneumocystis* Pneumonia Among Homosexual Men — New York City and California\n'
     + '**6** Notifiable diseases, week ending June 27, 1981',
   LABEL, 8, { inlineMarks: true, lineHeight: 1.3, boldColor: col('accent'),
     placement: at('container', 'top-right', 0, 29, 76), align: 'left' }),
-  rule('rule-a', 46.5, 2), rule('rule-b', 48, 0.5), ...reportHead(52, MEASURE, 23),
+  rule('rule-a', 46.5, 2), rule('rule-b', 48, 0.5), ...reportHead(52, 23),
 ] } };
-const opener = (width, size, minHeight) => ({ enabled: true, minHeight: mm(minHeight),
-  slot: { elements: [rule('rule-a', 0, 2, width), rule('rule-b', 1.5, 0.5, width),
-    ...reportHead(5, width, size)] } });
+const opener = { enabled: true, minHeight: mm(26), slot: { elements: [rule('rule-a', 0, 2),
+  rule('rule-b', 1.5, 0.5), ...reportHead(5, 18)] } };
 // #endregion
 
 const head = (id, content, parity, edge, x, extra) => text(id, content, LABEL, 8, {
   parity, pages: 'body', fontWeight: 500, letterSpacing: pt(0.3), color: col('muted'),
   overflow: 'clip', placement: at('page', edge, x, 12, 150), ...extra });
 const folio = { fontWeight: 700, color: col('accent') };
-const right = { align: 'right' };
 const header = { elements: [
   head('v-folio', '{pageNumber}', 'even', 'top-left', SIDE, folio),
   head('v-title', 'Surveillance Notes · Reprint No. 1', 'even', 'top-left', SIDE + 8),
-  head('r-title', '{chapterTitleAtTop}', 'odd', 'top-right', -SIDE - 8, right),
-  head('r-folio', '{pageNumber}', 'odd', 'top-right', -SIDE, { ...folio, ...right }),
+  head('r-title', '{chapterTitleAtTop}', 'odd', 'top-right', -SIDE - 8, { align: 'right' }),
+  head('r-folio', '{pageNumber}', 'odd', 'top-right', -SIDE, { ...folio, align: 'right' }),
 ] };
 const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 0,
   { ...folio, align: 'center', pages: 'opener', placement: at('page', 'bottom', 0, -11, 20) })] };
@@ -91,67 +83,55 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
 // :::paragraphs{style="…"} wraps the blocks of each voice; **Patient 1:** is a run-in label.
 const voice = (id, family, size, lead, extra) => ({ id, fontFamily: family, fontSize: pt(size),
   lineHeight: pt(lead), color: col('ink'), boldColor: col('ink'), ...extra });
+const aside = { textAlign: 'left', firstLineIndent: pt(0), snapToGrid: false };
 const paragraphStyles = [
-  // The case histories: the body voice with each label in the accent.
+  // Case histories and the Editorial Note: the body texture, bold labels in the accent.
   voice('case', TEXT, 9.5, LEAD, { boldColor: col('accent'), boldFontWeight: 600 }),
-  // "Reported by …": the authors' line, italic small type in the condensed sans, off the grid.
-  voice('reported', LABEL, 7.8, 10.2, { italic: true, color: col('muted'), textAlign: 'left',
-    firstLineIndent: pt(0), hyphenation: false, marginTop: pt(4), marginBottom: pt(6),
-    snapToGrid: false }),
-  // The Editorial Note: the body texture, opened by its bold label in the accent.
   voice('editorial', TEXT, 9.5, LEAD, { boldColor: col('accent'), boldFontWeight: 600 }),
+  // "Reported by …": the authors' line, italic small type in the condensed sans, off the grid.
+  voice('reported', LABEL, 7.8, 10.2, { ...aside, italic: true, color: col('muted'),
+    hyphenation: false, marginTop: pt(4), marginBottom: pt(6) }),
   // A line the reprint adds, in the label face and the accent: never taken for 1981 text.
-  voice('editor', LABEL, 8, 10.6, { italic: true, color: col('accent'), firstLineIndent: pt(0),
-    textAlign: 'left', marginTop: pt(3), marginBottom: pt(5), snapToGrid: false }),
-  voice('colophon', LABEL, 7.4, 9.6, { color: col('muted'), textAlign: 'left',
-    firstLineIndent: pt(0), marginTop: pt(LEAD), snapToGrid: false }),
+  voice('editor', LABEL, 8, 10.6, { ...aside, italic: true, color: col('accent'),
+    marginTop: pt(3), marginBottom: pt(5) }),
+  voice('colophon', LABEL, 7.4, 9.6, { ...aside, color: col('muted'), marginTop: pt(LEAD) }),
 ];
-// MMWR cited by number in parentheses, (1), and listed the works in citation order, "1.".
+// MMWR cited (1) in citation order, and each report (its H1 is a chapter) counted from 1.
 registerCitationEngine(createCiteprocEngine({ styles: STYLES, locales: LOCALES }));
 const citations = { style: 'american-medical-association', marker: 'parentheses',
-  bibliography: { scope: 'chapter', // a list under each report: its own H1 is its chapter
-    fontSize: em(0.86), lineHeight: pt(10.6), entrySpacing: pt(1.5),
-    labelAlign: 'right' } };
+  numbering: 'chapter', bibliography: { scope: 'chapter', fontSize: em(0.86),
+    lineHeight: pt(10.6), entrySpacing: pt(1.5), labelAlign: 'right' } };
 // #endregion
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: 'en-us',
-  // Each report numbers its own tables from 1, as the weekly did: the counter restarts at
-  // every H1, and :ref prints the full word, "Table 1".
+  locale: 'en-us', colorPalette, citations, paragraphStyles, header, footer,
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, shortLabel: type.name,
-    resetOn: 'h1', numberingTemplate: '{n}',
+    resetOn: 'h1', numberingTemplate: '{n}', // each report counts its tables from 1
     ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
-  colorPalette, citations, paragraphStyles, header, footer,
   headingStyles: [
     { id: 'lead', span: 'page', advancedDesign: masthead },
-    { id: 'report', advancedDesign: opener(COLUMN, 16, 44) }, // runs on in the column
-    // The back page: a page of its own, in one column, for the wide weekly table.
-    { id: 'back', span: 'page', breakBefore: { enabled: true, parity: 'any' },
-      layout: { layoutType: 'single' }, advancedDesign: opener(MEASURE, 20, 26) },
+    { id: 'report', span: 'page', spanBreak: false, advancedDesign: opener },
+    { id: 'back', span: 'page', breakBefore: { enabled: true, parity: 'any' }, // one column
+      layout: { layoutType: 'single' }, advancedDesign: opener },
   ],
-  page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
-    margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(SIDE), right: mm(SIDE),
-      mirror: true } },
+  page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, margins: {
+    top: mm(TOP), bottom: mm(BOTTOM), left: mm(SIDE), right: mm(SIDE), mirror: true } },
   layout: { layoutType: 'double', gutterWidth: mm(GUTTER) },
   bodyText: { fontFamily: TEXT, fontSize: pt(9.5), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
-    referenceBold: false, textAlign: 'justify', firstLineIndent: mm(4),
-    indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
-    maxJustifyTracking: 10, // up to 1 % tracking for a line spaces alone would leave loose
-    avoidWidows: true, avoidOrphans: true, avoidRunts: true },
+    referenceBold: false, firstLineIndent: mm(4), indentAfterHeading: false,
+    maxJustifyTracking: 10 }, // up to 1 % tracking for a line spaces alone would leave loose
   headings: { fontFamily: LABEL, color: col('accent'), fontWeight: 600, levels: [
-    // gotcha: headings-drop-h1-break. The reports run on, as in the weekly: no page break.
-    { level: 1, breakBefore: { enabled: false } },
-    { level: 3, ...caps(8), lineHeight: pt(LEAD), marginTop: pt(LEAD / 2),
-      marginBottom: pt(0) },
+    { level: 1, breakBefore: { enabled: false } }, // gotcha: headings-drop-h1-break
+    { level: 3, ...caps(8), lineHeight: pt(LEAD), marginTop: pt(LEAD / 2), marginBottom: pt(0) },
   ] },
-  footnotes: { fontSize: pt(7.6), lineHeight: pt(10), color: col('muted') },
+  footnotes: { fontSize: pt(7.6), lineHeight: pt(10), color: col('muted'),
+    numberFormat: 'symbols' }, // the 1981 asterisk: *, †, ‡ …
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     headerBackground: col('accent'), headerColor: col('paper'), headerBold: true,
     headerFontFamily: LABEL, headerFontSize: pt(7.8), bodyFontFamily: LABEL,
     bodyFontSize: pt(7.8), bodyColor: col('ink'), cellPadding: mm(1.3) },
-  // The weekly tables were set solid: a tighter style for the 29-row summary.
-  tableStyles: [{ id: 'weekly', bodyFontSize: pt(7.4), headerFontSize: pt(7.2),
+  tableStyles: [{ id: 'weekly', bodyFontSize: pt(7.4), headerFontSize: pt(7.2), // set solid
     cellPadding: mm(0.75) }],
   captionStyle: { fontFamily: LABEL, fontSize: pt(8.2), color: col('ink'), labelBold: true,
     labelColor: col('accent'), gap: mm(2), note: { fontSize: pt(7), color: col('muted') } },
@@ -166,23 +146,18 @@ const NOTIFIABLE = /* @content:notifiable */ ''; // TSV: Table I of the July 3 i
 const markdown = `${june}\n\n${july}`; // one document: the July report runs on
 
 // #region resources: three tables read from TSV, and the chart built from the case reports
-// Each table is tab-separated text, as a spreadsheet exports it. A column of counts aligns
-// right, its heading centred; a column of words stays ranged left.
-const NUMBER = /^[\d,.()% –]*$/;
+const NUMBER = /^[\d,.()% –]*$/; // a column of counts aligns right, its heading centred
 const table = (tsv, headerRows, columnWidths) => {
   const model = parseTSV(tsv, { headerRows });
-  const body = model.rows.slice(headerRows);
-  const numeric = model.rows[0].map((_, c) => body.every((row) => NUMBER.test(row[c].content)));
-  const rows = model.rows.map((cells, r) => cells.map((cell, c) => (numeric[c]
-    ? { ...cell, align: r < headerRows ? 'center' : 'right' } : cell)));
-  return { ...model, rows, columnWidths };
+  const numeric = model.rows[0].map((_, c) => model.rows.slice(headerRows)
+    .every((row) => NUMBER.test(row[c].content)));
+  return { ...model, columnWidths, rows: model.rows.map((cells, r) => cells.map((cell, c) =>
+    (numeric[c] ? { ...cell, align: r < headerRows ? 'center' : 'right' } : cell))) };
 };
-// The notifiable-diseases summary has two header rows: "25th week ending" spans two columns,
-// "Disease" and the medians span both rows, as the weekly printed them.
-const span = (m, [r1, c1], [r2, c2]) => mergeCells(m, { start: { row: r1, col: c1 },
-  end: { row: r2, col: c2 } });
-const notifiable = [[[0, 0], [1, 0]], [[0, 1], [0, 2]], [[0, 3], [1, 3]], [[0, 4], [0, 6]]]
-  .reduce((m, [a, b]) => span(m, a, b), table(NOTIFIABLE, 2, [3.6, 1, 1, 1, 1.1, 1.1, 1.1]));
+// Two header rows, as the weekly printed them: "25th week ending" spans two columns.
+const notifiable = [[0, 0, 1, 0], [0, 1, 0, 2], [0, 3, 1, 3], [0, 4, 0, 6]]
+  .reduce((m, [r1, c1, r2, c2]) => mergeCells(m, { start: { row: r1, col: c1 },
+    end: { row: r2, col: c2 } }), table(NOTIFIABLE, 2, [3.6, 1, 1, 1, 1.1, 1.1, 1.1]));
 const added = 'Compiled for this reprint from the case reports; not part of the 1981 report.';
 const res = (id, typeId, kind, placement, more) => ({ id, typeId, kind, placement,
   createdAt: 0, updatedAt: 0, ...more });
@@ -288,8 +263,7 @@ const FONTS = { 'IBM Plex Serif': ['400', '400i', '600', '600i'], 'Libre Frankli
 await loadFonts(FONTS, markdown);
 const faces = await inlineFace(LABEL, 400) + await inlineFace(LABEL, 600);
 await loadSvg('timeline.svg', timeline(faces));
-const content = { markdown, resources };
-const doc = await buildWithFonts(() => buildDocument(content, config()), markdown);
+const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: 'Surveillance Notes · Reprint No. 1' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider,
   resourceBytes: imageBytes }), `${RECIPE}.pdf`);

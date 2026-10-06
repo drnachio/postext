@@ -15,12 +15,11 @@
   ],
   "features": {
     "primary": [
-      "cell-images",
+      "math",
       "table-model",
       "hyphenation-languages"
     ],
     "also": [
-      "math",
       "table-style",
       "localised-labels",
       "citation-styles",
@@ -45,9 +44,7 @@
     "Q48",
     "Q154"
   ],
-  "gaps": [
-    "math-in-captions"
-  ],
+  "gaps": [],
   "gotchas": [
     "math-bundle",
     "latin-subset",
@@ -66,8 +63,8 @@
     "lab-report-formulas"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "math": true
   },
   "kit": [

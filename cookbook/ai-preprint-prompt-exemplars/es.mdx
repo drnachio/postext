@@ -22,7 +22,7 @@ El código es [la respuesta corta](#la-respuesta-corta). La figura es un recuadr
 
 <Excerpt region="citations" />
 
-Los congresos de aprendizaje automático usan el aspecto autor-año de natbib: una coma entre el nombre y el año, y *et al.* a partir de tres autores. El estilo incluido más parecido es Chicago autor-fecha, así que la receta cambia un grupo de su CSL, el que une autor y año, de un espacio a una coma. Trae tu archivo `.bib` tal cual: pégalo en un bloque `:::references{format=bibtex}` y cita con `[@clave]` para *(Brown et al., 2020)* y con `@clave` para *Brown et al. (2020)*. Las obras que solo nombra un pie de figura van en `nocite`, porque en los pies no se buscan citas.
+Los congresos de aprendizaje automático usan el aspecto autor-año de natbib: una coma entre el nombre y el año, y *et al.* a partir de tres autores. El estilo incluido más parecido es Chicago autor-fecha, así que la receta cambia un grupo de su CSL, el que une autor y año, de un espacio a una coma. Trae tu archivo `.bib` tal cual: pégalo en un bloque `:::references{format=bibtex}` y cita con `[@clave]` para *(Brown et al., 2020)* y con `@clave` para *Brown et al. (2020)*. Un sufijo conserva la coma que lo precede y su énfasis, así que `[@brown2020language, *inter alia*]` imprime (Brown et al., 2020, *inter alia*) como el artículo. Los pies citan igual: el de la figura 4 escribe `@jie2022learning` y `@lan2021mwptoolkit`, y las dos obras entran en la lista de referencias sin `nocite`.
 
 ### 3 · El bloque del título
 
@@ -70,5 +70,4 @@ Si tus prompts llevan código, los recuadros de <RecipeLink slug="code-listings-
 
 ## Errores frecuentes
 
-- Una cita con sufijo y sin localizador, `[@brown2020language, inter alia]`, perdía la coma en postext 1.18.0 y salía *2020inter alia*; las marcas de formato del sufijo salían como asteriscos. La receta escribe `[@brown2020language, , inter alia]`, que imprime *2020, inter alia* en redonda.
 - Un recuadro a todo el ancho en una maqueta de dos columnas entra en la página actual solo si cabe con al menos un par de líneas de texto debajo. La figura 1 queda en la página 1 porque el resumen va en cuerpo 9,3 con un relleno ajustado; un resumen más largo la manda a la página 2.

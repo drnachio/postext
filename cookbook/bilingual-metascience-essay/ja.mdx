@@ -22,7 +22,7 @@ John Ioannidisの論文*Why Most Published Research Findings Are False*（PLoS M
 
 <Excerpt region="tables" />
 
-表のセルは数式として解析されず、Fontsourceのlatinファイルにはギリシャ文字がありません。そこでTSVで`$c(1-\beta)R/(R+1)$`と書いたセルは画像として組みます。`renderMath`がセルの8 ptの大きさで式をMathJaxのパスとして描き、`setCellImage`がセル幅に対する割合で幅を指定してセルに入れます。各画像の高さはセル1行分で、ベースラインは文字のセルと同じ位置にあるので、*Yes*、*No*と式が1本の線にそろい、PDFでもベクターの輪郭のまま残ります。`mergeCells`はResearch findingを2行の見出しにまたがらせ、True relationshipを3列にまたがらせて、結合セルに必要な隠れたセルも書き込みます。
+postext 1.19から、表のセルは本文と同じように`$…$`を組みます。TSVで`$c(1-\beta)R/(R+1)$`と書いたセルはそのまま数式になり、セルの8 ptの大きさでMathJaxのパスとして描かれ、セルの行のベースラインに乗るので、*Yes*、*No*と式が1本の線にそろい、PDFではベクターの輪郭になります。Fontsourceのlatinファイルにはギリシャ文字がありませんが、式には必要ありません。キャプションと注にも数式が書けるので、2005年の原文どおり、表4のキャプションは検出力を1 − βと書き、注はα = 0.05を仮定します。`setAlignment`は表4の数値を右にそろえ、`mergeCells`はResearch findingを2行の見出しにまたがらせ、True relationshipを3列にまたがらせて、結合セルに必要な隠れたセルも書き込みます。
 
 ### 3 · スロットから表とキャプション、式から数値
 
@@ -66,10 +66,9 @@ John Ioannidisの論文*Why Most Published Research Findings Are False*（PLoS M
 
 ### 表を1段に組む
 
-式の短い2×2表なら1段に収まります。`span: 'page'`を外し、表4のように`COLUMN`でセルを測ります。1段の表の例は<RecipeLink slug="journal-article-with-maths">番号付きの数式がある2段組みの論文</RecipeLink>にあります。
+式の短い2×2表なら1段に収まります。`span: 'page'`を外します（表4にはこの指定がありません）。1段の表の例は<RecipeLink slug="journal-article-with-maths">番号付きの数式がある2段組みの論文</RecipeLink>にあります。
 
 ## よくあるつまずき
 
-- BibTeXの著者リストが`and others`で終わると、*others*という名前の共著者が印刷されます。このレシピは長い著者リストの最初の7人を書き、`elsevier-vancouver`がそのうち6人と*et al.*を印刷します。
-- キャプションと注は数式を組まず、Fontsourceのlatinファイルにはギリシャ文字もないので、表4のキャプションは検出力を言葉で書き、注は「a Type I error rate of 0.05」と書きます。α = 0.05とは書きません。
+- 2005年の文献リストが5人の著者のあとにet al.と書いているところは、BibTeXの著者リストを`and others`で終えます。`elsevier-vancouver`はそこに*et al.*を印刷します（postext 1.19から。以前の版は*others*という名前の共著者を印刷していました）。
 - 2つの版でページは一致しません。スペイン語の本文のほうが長く、表4が1ページ後ろに来ます。キャプチャは両方の版の1、2、3、5、6、7ページを公開し、画像の重さを上限内に収めながら、どちらの版でも表4が見えるようにしています。

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "physics-letter-two-columns",
-  "sourceHash": "d24ccc3cd6b3f2abde39950318044b77094816ff11982f9aadc72428182b051e",
+  "sourceHash": "9f9405836a0503b913a289ab6fc3d17e2ae2a5abd12d4fe18440903329a00ed0",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:41:30.603Z",
+  "capturedAt": "2026-10-06T16:10:07.814Z",
   "variants": {
     "en": {
-      "hash8": "9dc550de",
-      "vdtHash": "cd6e76a673264054142ae798d5b3f2042082ddca",
+      "hash8": "76cc83e6",
+      "vdtHash": "0cab2c2a4562718f44a44dcd2e7e9de133637b21",
       "timings": {
-        "importMs": 253,
-        "fontsMs": 141,
-        "buildMs": 57,
-        "totalMs": 1258,
+        "importMs": 297,
+        "fontsMs": 137,
+        "buildMs": 40,
+        "totalMs": 1236,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Gelasio"
         ],
         "pages": 5,
-        "ownLines": 210
+        "ownLines": 189
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 154622,
+          "bytes": 152526,
           "alt": "Opening page 1: Observation of Gravitational Waves from a Binary Black Hole Merger. FIG. 1. The gravitational-wave event GW150914 observed by the LIGO Hanford (H1, left column panels) and Livingston (L1, right column panels) detectors. Times are shown relative to September 14,…"
         },
         {
@@ -61,7 +61,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 243094,
+          "bytes": 250454,
           "alt": "Page 2: II. Observation."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 177494,
+          "bytes": 181446,
           "alt": "Page 3: IV. Searches. FIG. 2. Top: Estimated gravitational-wave strain amplitude from GW150914 projected onto H1. This shows the full bandwidth of the waveforms, without the filtering used for Fig. 1. Bottom: The Keplerian effective black hole separation in units of Schwarzsch…"
         },
         {
@@ -83,7 +83,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 185160,
+          "bytes": 188944,
           "alt": "Page 4: V. Source discussion. FIG. 4. Search results from the generic transient search (left) and the binary coalescence search (right). These histograms show the number of candidate events (orange markers) and the mean number of background events (black lines) in the search c…"
         },
         {
@@ -94,7 +94,7 @@
           "h": 1294,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 218472,
+          "bytes": 217740,
           "alt": "Page 5: VI. Conclusion. TABLE I. Source parameters for GW150914. We report median values with 90% credible intervals that include statistical errors, and systematic errors from averaging the results of different waveform models. Masses are given in the source frame; to convert…"
         }
       ],
@@ -126,12 +126,12 @@
       },
       "pdf": {
         "file": "physics-letter-two-columns.pdf",
-        "bytes": 571366,
+        "bytes": 573458,
         "pages": 5
       },
       "sandbox": {
         "file": "physics-letter-two-columns.postext",
-        "bytes": 173714,
+        "bytes": 150997,
         "folio": "72637274"
       },
       "detected": {
@@ -171,13 +171,10 @@
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].background",
-          "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
           "calloutStyles[].body.firstLineIndent",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
-          "calloutStyles[].border",
-          "calloutStyles[].border.enabled",
           "calloutStyles[].id",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
@@ -342,11 +339,11 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 317,
+        "configLeaves": 310,
         "designElements": 8,
         "directives": [
-          ":::callout",
           "::resource",
+          ":::callout",
           ":::paragraphs",
           "$$",
           ":::bibliography",
@@ -360,16 +357,11 @@
           ":ref"
         ],
         "resources": {
-          "svg": 10,
+          "svg": 4,
           "bitmap": 0,
           "table": 1
         },
         "fonts": [
-          {
-            "family": "Albert Sans",
-            "weight": 400,
-            "style": "italic"
-          },
           {
             "family": "Albert Sans",
             "weight": 400,
@@ -438,7 +430,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 2,
+        "iterationCount": 1,
         "looseLines": {
           "count": 2,
           "share": 0.0085,
@@ -448,7 +440,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.12 MB (warning at 0.9 MB for 5 pages)"
+            "detail": "the edition's images weigh 1.13 MB (warning at 0.9 MB for 5 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

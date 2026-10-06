@@ -10,7 +10,7 @@ pageNotes: { "1": "Page 1: a blue kicker, Letter · Gravitational-wave astronomy
 
 ## What you'll build
 
-Five pages of the letter that announced the first gravitational waves, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), abridged and re-set on US Letter in two columns. Page 1 opens with the evidence: the strain recorded at Hanford and Livingston, redrawn from the open data files of the Gravitational Wave Open Science Center, runs across both columns under the title. Below it come the collaboration byline with its footnote, the abstract across the page and the text, with citations numbered [1,2] and [25–27] as the APS journals print them. The chirp mass is equation (1). Table I sets its asymmetric errors as stacked super- and subscripts, drawn by MathJax inside the cells. Bring your own BibTeX and data files, and the same script sets your letter.
+Five pages of the letter that announced the first gravitational waves, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), abridged and re-set on US Letter in two columns. Page 1 opens with the evidence: the strain recorded at Hanford and Livingston, redrawn from the open data files of the Gravitational Wave Open Science Center, runs across both columns under the title. Below it come the collaboration byline with its footnote, the abstract across the page and the text, with citations numbered [1,2] and [25–27] as the APS journals print them. The chirp mass is equation (1). Table I sets its asymmetric errors as stacked super- and subscripts, written as maths in the cells, and the captions print the letter's own formulas. Bring your own BibTeX and data files, and the same script sets your letter.
 
 ## Method
 
@@ -22,13 +22,13 @@ The code is [the short answer](#the-short-answer) above. postext-citeproc bundle
 
 <Excerpt region="title" />
 
-A float can never stand above the line that cites it, and a heading with `span: 'page'` always opens a fresh page, so Figure 1 cannot float to the head of page 1. The letter puts it there directly: `::resource{id="fig1"}`, with `placement.position: 'here'`, sits inside the `plate` box, which spans the page, right after the title. The byline and the abstract follow in a second page-wide box, `front`, whose `:::paragraphs` blocks centre the byline and set the dates small. The footnote marker after *et al.* sends its note to the foot of the first column, as the APS journals print the author note, and `footnotes.numberFormat: 'lower-alpha'` letters the notes so they never read as references. See [Block embed](/en/docs/document-format#block-embed-optional-explicit-inline-placement) and [Footnotes](/en/docs/configuration#footnotes).
+A float never stands above the line that cites it, and the text first cites Figure 1 in Section II, so as a float it could not reach page 1. The letter puts it there directly: `::resource{id="fig1"}` comes right after the title, and its placement, `{ position: 'here', span: 'page' }`, sets it across both columns at that point, with the columns going on under it. The byline and the abstract follow in a page-wide box, `front`, whose `:::paragraphs` blocks centre the byline and set the dates small. The footnote marker after *et al.* sends its note to the foot of the first column, as the APS journals print the author note, and `footnotes.numberFormat: 'lower-alpha'` letters the notes so they never read as references. See [Block embed](/en/docs/document-format#block-embed-optional-explicit-inline-placement) and [Footnotes](/en/docs/configuration#footnotes).
 
 ### 3 · Table I, with maths in its cells
 
 <Excerpt region="table" />
 
-Table cells are not parsed for maths, and `^+5^~−4~` would print the two errors one after the other. Each value is set by `renderMath` instead, written into an SVG as paths and drawn in its cell through `TableCell.image`; the cell's `width` is the formula's width as a fraction of the cell, so every value prints at 9 pt whatever the column. The resource types print *FIG. 1* and *TABLE I* in the captions and *Fig. 1* and *Table I* in the text: a `captionPrefix`, and `counterFormat: 'upper-roman'` for tables. Captions take no maths either, and neither face carries Greek, so the captions keep to letters with `^sup^` and `~sub~`.
+A table cell sets `$…$` as the text does (since postext 1.19), so each value is written as TeX, `$36^{+5}_{-4}\,M_\odot$`, and its two errors stack over and under the number, scaled to the cell's line; Markdown's `^+5^~−4~` would print them one after the other. Captions and notes take the same maths: Figure 2 writes `$R_S = 2GM/c^2$` and Figure 4 `$5.1\sigma$`, set in MathJax's glyphs, which have the Greek that neither text face carries, and the PDF keeps them as vector paths. The resource types print *FIG. 1* and *TABLE I* in the captions and *Fig. 1* and *Table I* in the text: a `captionPrefix`, and `counterFormat: 'upper-roman'` for tables. See [Mathematical formulas](/en/docs/document-format#mathematical-formulas).
 
 ### 4 · Figures drawn from the open data
 
@@ -67,7 +67,7 @@ Change the trim; the measure, the columns and every figure follow from it.
 
 ## Pitfalls
 
-- A `'here'` resource with `span: 'page'` in a two-column flow is set one column wide. Put it in a box whose style has `span: 'page'`, as the `plate` box does here.
-- A Greek letter, ⊙ or ≃ in a caption or a table cell falls back to a system face on screen and is missing from the PDF, which embeds the Latin files of each face. Write those symbols as maths in the text, and draw them in figures and cells.
+- Up to postext 1.18 a `'here'` resource with `span: 'page'` was set one column wide in a two-column flow, and a `$` in a caption or a cell printed as typed. Pin 1.19 or later.
+- A Greek letter, ⊙ or ≃ typed as a character in a caption or a cell falls back to a system face on screen and is missing from the PDF, which embeds the Latin files of each face. Write it as maths, `$\sigma$` or `$M_\odot$`, and draw it in figures.
 - A list of hundreds of authors does not belong in a BibTeX file. Write the name as the journal prints it, in double braces: `author={{B. Abbott et al.}}`.
 - Keep the licence line of the paper and of the data. Here a footnote and the colophon say what was cut, and each caption's note names the data and what the redrawn figure leaves out.

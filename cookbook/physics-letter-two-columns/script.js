@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 140 · A physics letter with a data figure across the top ═══
 // https://postext.dev/en/cookbook/physics-letter-two-columns
 // Code: MIT · Text: Abbott et al., PRL 116, 061102 (CC BY 3.0) · Data: GWOSC (CC BY 4.0)
-// Fonts: Gelasio, Albert Sans (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Gelasio, Albert Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   registerCitationEngine, defaultResourceTypes, initMathEngine, renderMath,
@@ -60,7 +60,7 @@ const citations = { style: 'custom', customStyle: aps, link: true,
     labelWidth: mm(6.2) } }; // the [64] column: turnovers line up after the widest label
 // #endregion
 
-// #region title: the title, Figure 1 in a page-wide box, then the byline and the abstract
+// #region title: the title, Figure 1 across the page, then the byline and the abstract
 const text = (id, content, family, size, extra) => ({ kind: 'text', id, content, align: 'left',
   fontFamily: family, fontSize: pt(size), color: col('ink'), overflow: 'wrap', ...extra });
 const at = (to, edge, x, y, width) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
@@ -77,10 +77,8 @@ const letter = { id: 'letter', numbered: false, span: 'page', marginBottom: pt(0
 const box = { padding: { top: mm(2.6), right: mm(12), bottom: mm(2.4), left: mm(12) },
   background: col('tint'), marginTop: pt(0), marginBottom: pt(LEAD), span: 'page',
   body: { fontSize: pt(9.3), lineHeight: pt(12.6), firstLineIndent: pt(0) } };
-// A 'here' figure inside a page-wide box spans the page: ::resource{id="fig1"} in the box
-// sets Figure 1 under the title, on page 1, where a float could only follow its citation.
-const plate = { id: 'plate', span: 'page', backgroundEnabled: false, border: { enabled: false },
-  padding: mm(0), marginTop: pt(0), marginBottom: pt(LEAD / 2) };
+// ::resource{id="fig1"} right under the title, placed { position: 'here', span: 'page' }:
+// it spans both columns on page 1, where a float could only follow its citation.
 const paragraphStyles = [
   { id: 'byline', fontFamily: SANS, fontSize: pt(10), lineHeight: pt(12.6), fontWeight: 600,
     textAlign: 'center', firstLineIndent: pt(0) },
@@ -121,7 +119,7 @@ const config = () => ({ // a factory (gotcha: config-cache-identity)
     resetOn: 'never', ...(type.id === 'figure' ? { captionPrefix: 'FIG.' }
       : { captionPrefix: 'TABLE', counterFormat: 'upper-roman', shortLabel: 'Table',
         captionStyle: { position: 'above' } }) })),
-  calloutStyles: [{ id: 'front', ...box }, plate],
+  calloutStyles: [{ id: 'front', ...box }],
   headingStyles: [letter, { id: 'back', numbered: false, ...sans(8, 700),
     textTransform: 'uppercase', color: col('ink') }],
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -146,7 +144,7 @@ const config = () => ({ // a factory (gotcha: config-cache-identity)
   ] },
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     headerBackgroundEnabled: false, bodyFontFamily: SANS, bodyFontSize: pt(8.2),
-    bodyColor: col('ink'), cellPadding: mm(CELL_PAD) },
+    bodyColor: col('ink'), cellPadding: mm(0.9) },
   captionStyle: { fontFamily: SANS, fontSize: pt(7.6), lineHeight: pt(10), color: col('ink'),
     labelBold: true, labelColor: col('accent'), gap: mm(2),
     note: { fontSize: pt(6.8), color: col('muted') } },
@@ -161,25 +159,16 @@ const source = [markdown, results, refs].join('\n\n');
 const caption = Object.fromEntries(captions.trim().split(/\n\s*\n/)
   .map((part) => [part.slice(0, part.indexOf('\n')), part.slice(part.indexOf('\n') + 1)]));
 
-// #region table: Table I, its asymmetric errors set by MathJax and drawn into the cells
-// Cells take no maths: each value is an SVG of MathJax paths at 9 pt, its width given as a
-// fraction of the cell's inner width.
-const CELL_PAD = 0.9; // mm
-const VALUE_W = COLUMN * (1 / 2.3) - 2 * CELL_PAD; // the value column: weights [1.3, 1]
-const VALUES = [['Primary black hole mass', '36^{+5}_{-4}\\,M_\\odot'],
-  ['Secondary black hole mass', '29^{+4}_{-4}\\,M_\\odot'],
-  ['Final black hole mass', '62^{+4}_{-4}\\,M_\\odot'],
-  ['Final black hole spin', '0.67^{+0.05}_{-0.07}'],
-  ['Luminosity distance', '410^{+160}_{-180}\\;\\mathrm{Mpc}'],
-  ['Source redshift *z*', '0.09^{+0.03}_{-0.04}']];
-const valueSvg = (tex) => { // 9 pt maths: 1000 MathJax units to the em
-  const r = renderMath(tex, false, 100);
-  const k = (9 * 25.4) / 72 / 1000; // mm per unit
-  const [w, h] = [r.viewBox.width * k, r.viewBox.height * k];
-  return { w, h, svg: svg(w, h, `<g transform="scale(${k}) translate(${-r.viewBox.minX} `
-    + `${-r.viewBox.minY})" fill="${palette.ink}">${r.paths.map((p) => `<path d="${p.d}"/>`)
-      .join('')}</g>`) };
-};
+// #region table: Table I, its asymmetric errors written as maths in the cells
+// A cell sets $…$ in the line, at the table's size: the errors stack over and under the value.
+const VALUES = [['Primary black hole mass', '$36^{+5}_{-4}\\,M_\\odot$'],
+  ['Secondary black hole mass', '$29^{+4}_{-4}\\,M_\\odot$'],
+  ['Final black hole mass', '$62^{+4}_{-4}\\,M_\\odot$'],
+  ['Final black hole spin', '$0.67^{+0.05}_{-0.07}$'],
+  ['Luminosity distance', '$410^{+160}_{-180}$ Mpc'],
+  ['Source redshift $z$', '$0.09^{+0.03}_{-0.04}$']];
+const table = { model: { columnWidths: [1.3, 1], rows: VALUES.map(([label, value]) =>
+  [{ content: label, verticalAlign: 'middle' }, { content: value }]) } };
 // #endregion
 
 // #region art: the four figures, drawn from GWOSC's open data in the page's palette
@@ -450,18 +439,8 @@ for (const [id, [width, draw, placement, altText]] of Object.entries(figures)) {
     svg: { fileId: `${id}.svg`, width: width * PX_PER_MM, height: height * PX_PER_MM },
     caption: caption[id], note: caption[`${id}.note`], altText });
 }
-const rows = [];
-for (const [i, [label, tex]] of VALUES.entries()) {
-  const { w, h, svg: markup } = valueSvg(tex);
-  await loadSvg(`v${i}.svg`, markup);
-  resources.push({ id: `v${i}`, typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-    svg: { fileId: `v${i}.svg`, width: w * PX_PER_MM, height: h * PX_PER_MM }, altText: tex });
-  rows.push([{ content: label, verticalAlign: 'middle' },
-    { content: '', image: { resourceId: `v${i}`, width: Math.min(1, w / VALUE_W) } }]);
-}
 resources.push({ id: 'tab1', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
-  placement: { position: 'auto' }, caption: caption.tab1, note: caption['tab1.note'],
-  table: { model: { columnWidths: [1.3, 1], rows } } });
+  placement: { position: 'auto' }, caption: caption.tab1, note: caption['tab1.note'], table });
 const doc = await buildWithFonts(
   () => buildDocument({ markdown: source, resources }, config()), source);
 showPages(doc, { title: 'A physics letter with its figure across both columns' });

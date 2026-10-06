@@ -22,7 +22,7 @@ El codi és [la resposta curta](#la-resposta-curta) de dalt. El Receptari compon
 
 <Excerpt region="tables" />
 
-Les cel·les d'una taula no s'analitzen a la recerca de matemàtiques, i els fitxers latin de Fontsource no porten lletres gregues, així que una cel·la que al TSV diu `$c(1-\beta)R/(R+1)$` es compon com a imatge: `renderMath` dibuixa la fórmula amb els traçats de MathJax al cos de 8 pt de les cel·les, i `setCellImage` la col·loca a la cel·la amb una amplada expressada com a fracció de la cel·la. Cada imatge fa una línia de cel·la d'alt i té la línia de base on la tenen les cel·les de text, de manera que *Sí*, *No* i les fórmules queden en una mateixa línia, i el PDF les conserva com a contorns vectorials. `mergeCells` uneix el rètol de la primera columna sobre les dues files de capçalera i el de la relació veritable sobre tres columnes, i escriu les cel·les ocultes que necessita una cel·la combinada.
+Des de postext 1.19, una cel·la compon `$…$` com el text, de manera que una cel·la que al TSV diu `$c(1-\beta)R/(R+1)$` és una fórmula: traçats de MathJax al cos de 8 pt de les cel·les, sobre la línia de base de la línia de la cel·la, de manera que *Sí*, *No* i les fórmules queden en una mateixa línia, i contorns vectorials al PDF. Els fitxers latin de Fontsource no porten lletres gregues, i les fórmules no les necessiten. Els peus i les notes també admeten matemàtiques: el peu de la taula 4 anomena la potència 1 − β i la nota suposa α = 0,05, com a l'article de 2005. `setAlignment` alinea a la dreta els nombres de la taula 4, i `mergeCells` uneix el rètol de la primera columna sobre les dues files de capçalera i el de la relació veritable sobre tres columnes, i escriu les cel·les ocultes que necessita una cel·la combinada.
 
 ### 3 · Peus i taules des de la ranura, nombres des de la fórmula
 
@@ -66,10 +66,9 @@ El BibTeX d'aquesta recepta no guarda els DOI, per no passar de la mida de l'scr
 
 ### Compon les taules en una columna
 
-Una taula de 2×2 amb fórmules més curtes cap en una columna: treu el `span: 'page'` i mesura les cel·les amb `COLUMN`, com la taula 4. A <RecipeLink slug="journal-article-with-maths">Article a dues columnes amb equacions numerades</RecipeLink> hi ha una taula a una columna.
+Una taula de 2×2 amb fórmules més curtes cap en una columna: treu-li el `span: 'page'`, que la taula 4 no porta. A <RecipeLink slug="journal-article-with-maths">Article a dues columnes amb equacions numerades</RecipeLink> hi ha una taula a una columna.
 
 ## Errors freqüents
 
-- Una llista d'autors de BibTeX que acaba en `and others` imprimeix un coautor anomenat *others*. Aquesta recepta dona els set primers autors de les llistes llargues, i `elsevier-vancouver` n'escriu sis i *et al.*
-- Els peus i les notes no admeten matemàtiques ni lletres gregues d'un fitxer latin de Fontsource, així que el peu de la taula 4 anomena la potència amb paraules i la nota diu *una taxa d'error de tipus I de 0,05*, no α = 0,05.
+- On la llista de 2005 es queda en cinc autors i *et al.*, el BibTeX acaba la llista en `and others`, i `elsevier-vancouver` escriu *et al.* al seu lloc (des de postext 1.19; les versions anteriors imprimien un coautor anomenat *others*).
 - Les pàgines no coincideixen entre edicions: el text castellà és més llarg i la taula 4 cau una pàgina després. La captura publica les pàgines 1, 2, 3, 5, 6 i 7 de les dues, perquè les imatges no passin del límit de pes i la taula 4 es vegi en totes dues.

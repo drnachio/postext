@@ -5,9 +5,7 @@ author: "B. P. Abbott et al. (LIGO Scientific Collaboration and Virgo Collaborat
 
 # Observation of Gravitational Waves \\ from a Binary Black Hole Merger {style="letter" kicker="Letter · Gravitational-wave astronomy"}
 
-:::callout{type="plate"}
 ::resource{id="fig1"}
-:::
 
 :::callout{type="front"}
 :::paragraphs{style="byline"}

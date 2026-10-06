@@ -16,13 +16,13 @@ Rafailov、Sharma、Mitchell、Ermon、Manning、Finnの論文*Direct Preference
 
 ### 1 · 数式と命題にラベルを付け、キーで参照する
 
-コードは上の[手短な答え](#手短な答え)です。Postextは`\tag{7}`を付けたディスプレイ数式に番号を振り、`:ref`はどの[アンカー](/ja/docs/document-format#相互参照とアンカー)にもリンクできますが、数式や定理の数は数えてくれません。`latex()`が組版の前にその数え役を担います。ディスプレイ数式の中の`\label{eq:dpo}`は次の`\tag`に、`:::callout{type="lemma" #lem:same-policy}`は次の補題番号と行頭の見出しになり、本文の`\eqref{eq:dpo}`や`\ref{lem:same-policy}`は番号を印字してそこへリンクする`:ref`に変わります。ラベル付きの数式は、それを導く行のすぐ下に空行を入れずに書いてください。リンクの飛び先となるアンカーをその行に置くためです。節番号は手を加える必要がありません。番号は見出しのテンプレートから決まり、`{startAt=3}`で2節を削った後も論文本来の番号を保ち、`crossRefs.section`で原文どおり頭文字が大文字の「Section 5」になります。
+コードは上の[手短な答え](#手短な答え)です。postext 1.19からは、LaTeXのカウンターをエンジンが持ちます。ディスプレイ数式の中の`\label{eq:dpo}`は読む順に番号を付け、`align`ではラベルのある行ごとに一つ付き、`\notag`の行には付きません。`resetOn: 'never'`で番号は(1)から付録の(13)まで続き、この抄録版で振り直した番号と一致します。`:::callout{type="lemma" #lem:same-policy}`で開いた囲みは「**Lemma 2.**」で始まります。スタイルに`numbering: { label: 'Lemma' }`と専用のカウンターがあるためです。本文では`\eqref{eq:dpo}`が(7)、`\ref{lem:same-policy}`が2、`:ref{id="lem:same-policy"}`がLemma 2を印字し、どれも参照先へのリンクになります。`Eq.~\eqref{…}`ではLaTeXと同じく改行しない空白が入ります。付録で再掲する補題は`***:ref{id="lem:same-preference"} Restated.***`で始まり、参照は周りの見出しの太字を受け継ぎます。節番号は手を加える必要がありません。番号は見出しのテンプレートから決まり、`{startAt=3}`で2節を削った後も論文本来の番号を保ち、`crossRefs.section`で原文どおり頭文字が大文字の「Section 5」になります。
 
 ### 2 · 環境ごとに囲みを一つ
 
 <Excerpt region="theorems" />
 
-各環境は[囲みスタイル](/ja/docs/configuration#囲みスタイル)で、使う手立ては一つだけです。定義は灰色の縦罫、補題はプラム色の縦罫、定理は淡いプラム色の地。`body.italic`でamsthmのplainスタイルのように命題をイタリックにし、`***Theorem 1.***`と書いた見出しはその中で立体に戻ります。証明には囲みを付けず、イタリックの行頭見出しと、`latex()`が末尾に加える四角だけです。`keepTogether: false`で長い証明は次のページへ送れます。`snapToGrid: false`で各命題の前後の空きをそろえます。隣の段とそろえる必要のない1段組みでは、ベースライングリッドに丸めた空きより正確な空きのほうが読みやすくなります。
+各環境は[囲みスタイル](/ja/docs/configuration#囲みスタイル)で、使う手立ては一つだけです。定義は灰色の縦罫、補題はプラム色の縦罫、定理は淡いプラム色の地。`box()`がその見た目を手短な答えの番号設定に重ねます。`body.italic`でamsthmのplainスタイルのように命題をイタリックにし、行頭見出しはその中でも太字の立体のままです。証明には囲みを付けません。見出しはイタリックで番号がなく（`counter: false`）、最後の行は本文に書いた`$\square$`で終わります。`keepTogether: false`で長い証明は次のページへ送れます。`snapToGrid: false`で各命題の前後の空きをそろえます。隣の段とそろえる必要のない1段組みでは、ベースライングリッドに丸めた空きより正確な空きのほうが読みやすくなります。
 
 ### 3 · 論文自身の文献リストから著者–年形式で引く
 
@@ -55,15 +55,15 @@ Rafailov、Sharma、Mitchell、Ermon、Manning、Finnの論文*Direct Preference
 
 ### 補題と定理を通し番号にする
 
-すべての命題を一つの系列で数える雑誌もあります（補題1、補題2、定理3）。すべての種類で一つのカウンターを共有させます。
+すべての命題を一つの系列で数える雑誌もあります（補題1、補題2、定理3）。`\newtheorem{lemma}[theorem]`と同じく、補題に定理のカウンターを使わせます。
 
 ```diff
--    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
-+    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+-  { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
++  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' } },
 ```
 
 ## よくあるつまずき
 
-- 太字の見出しの中の`:ref`は、周りの太字ではなく参照のスタイルになります。「Lemma 1 Restated.」では番号が普通の太さで出てしまうので、再掲の見出しの番号は文字で書きます。
-- 段の均等化は、短いページを締めくくる囲みをページ下端まで下げます。ここでは表題部の下に隙間が開きました。`balancing: { enabled: false }`にすると要旨は著者行のすぐ下に、各節の見出しは本来の空きのままになり、その代わりにページが1行短く終わることがあります。
+- 証明のスタイルに`endMark: '□'`を設定すると、四角は最後の行の右端に置かれますが、囲みの本文の書体で組まれます。Spectralには□がなく（Fontsourceの本文用書体のlatinファイルには含まれません）、画面ではシステムの字形を借り、PDFでは欠字の箱が印字されます。証明の末尾に`$\square$`と書くか、書体が持っている終わりの記号を選んでください。
+- 段の均等化は、背の高い数式のせいで短くなったページを、見出しの上にベースライングリッドの行を足して埋めます。`balancing: { maxLinesPerHeading: 1 }`なら論文の見出しはほぼ本来の空きを保ち、そうしたページは数行短く終わることがあります。
 - `\underbrace`の注記が括弧より広い式（4節の勾配など）は`aligned`で2行に分けます。版面より広い式は右へはみ出します。

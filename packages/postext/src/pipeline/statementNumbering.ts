@@ -16,6 +16,8 @@
  */
 
 import type { ContentBlock, InlineSpan } from '../parse';
+import { MATH_PLACEHOLDER } from '../parse';
+import { isMathReady } from '../math/engine';
 import { TEX_LABEL_RE } from '../parse/equationLabels';
 import type { HeadingCounters, ResolvedCalloutNumberingConfig, ResolvedCalloutStyleConfig } from '../types';
 import type { ResolvedConfig, VDTLine, VDTLineSegment } from '../vdt';
@@ -343,7 +345,7 @@ export function applyStatementNumbering(
       open.pop();
       if (top!.owed) out.push(paragraphOf(runInSpans(top!.owed), b.sourceStart));
       const mark = top!.style?.endMark ?? '';
-      if (mark) setEndMark(out, mark, b.sourceStart, top!.style!.body.italic);
+      if (mark) setEndMark(out, mark, b.sourceStart, top!.style!.body.italic, resolved.math.enabled && isMathReady());
       out.push(b);
       continue;
     }
@@ -355,19 +357,24 @@ export function applyStatementNumbering(
 /** Set a box's end mark after the last block of `out` (the box's last
  *  child): on its last line, or a line of its own. A formula takes it as
  *  its tag when it has none. */
-function setEndMark(out: ContentBlock[], mark: string, at: number, bodyItalic: boolean): void {
+function setEndMark(out: ContentBlock[], mark: string, at: number, bodyItalic: boolean, maths: boolean): void {
   const last = out[out.length - 1];
-  const spans: InlineSpan[] = [{ text: ' ', bold: false, italic: false }, { text: mark, bold: false, italic: bodyItalic }];
+  const texMark = MARK_TEX[mark];
+  // With maths running, a square is drawn from TeX's own glyph: text faces
+  // served by Fontsource's latin files have no □ or ∎ (#545).
+  const markSpan: InlineSpan = maths && texMark
+    ? { text: MATH_PLACEHOLDER, bold: false, italic: false, math: { tex: texMark, sourceStart: at, sourceEnd: at } }
+    : { text: mark, bold: false, italic: bodyItalic };
+  const spans: InlineSpan[] = [{ text: ' ', bold: false, italic: false }, markSpan];
   if (last && TEXT_HOSTS.has(last.type) && last.toc === undefined && last.text.length > 0) {
     out[out.length - 1] = { ...withSpans(last, spans, 'end'), endMark: mark };
     return;
   }
-  const texMark = MARK_TEX[mark];
   if (last && last.type === 'mathDisplay' && last.tex !== undefined && texMark && !/\\tag\b/.test(last.tex)) {
     out[out.length - 1] = { ...last, tex: `${last.tex}\\tag*{$${texMark}$}` };
     return;
   }
-  out.push({ ...paragraphOf([{ text: mark, bold: false, italic: bodyItalic }], at), endMark: mark });
+  out.push({ ...paragraphOf([markSpan], at), endMark: mark });
 }
 
 /** The targets a book outline's counted anchors name, for references
@@ -391,7 +398,8 @@ export function flushEndMark(measured: MeasuredBlock, mark: string, measureWidth
   if (!last || !segs || segs.length === 0 || last.order) return measured;
   const k = segs.length - 1;
   const seg = segs[k]!;
-  if (seg.kind !== 'text' || seg.text !== mark) return measured;
+  // The mark as text, or drawn from TeX (a math segment, see setEndMark).
+  if (!(seg.kind === 'text' && seg.text === mark) && seg.kind !== 'math') return measured;
   const extra = measureWidth - (last.bbox.x + last.bbox.width);
   if (extra <= 0.01) return measured;
   const prev = segs[k - 1];

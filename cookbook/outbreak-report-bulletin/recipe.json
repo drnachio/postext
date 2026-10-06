@@ -50,8 +50,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0"
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0"
   },
   "kit": [
     "core",
@@ -144,19 +144,5 @@
     "one-text-four-citation-styles"
   ],
   "created": "2026-10-06",
-  "updated": "2026-10-06",
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "citations are numbered once per document (and per buildBundle book); bibliography.scope 'chapter' splits the lists but not the numbers, so the second report cites 4 and 6–23 where the weekly printed 1–19 (said in the colophon). Two buildDocument calls chained with continuation would restart the numbers, but the capture's C14 then fails the one PDF of both documents and the Sandbox bundle keeps only the first build"
-    },
-    {
-      "package": "postext",
-      "note": "footnotes.numberFormat has no symbol sequence (*, †, ‡), so the 1981 asterisk footnote prints as 1"
-    },
-    {
-      "package": "postext",
-      "note": "{titleText} is plain text in a heading design, so the italic genus in each report title comes from a display attribute set with inlineMarks"
-    }
-  ]
+  "updated": "2026-10-06"
 }

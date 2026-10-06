@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 139 · A protein paper with a Methods section ════════════
 // https://postext.dev/en/cookbook/protein-paper-methods-section
 // Code: MIT · Text: Jumper et al. 2021, abridged (CC BY 4.0) · Figures: drawn in code
-// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
   registerResourceImage, defaultResourceTypes,
@@ -26,20 +26,19 @@ const MEASURE = TRIM_W - INNER - OUTER;
 const LEAD = 12.6; // pt: 9.3 pt type in two columns of 85 mm
 const SMALL = 10.8; // pt: the Methods, at 8.2 pt
 
-// #region answer: Methods in smaller type, its citations numbered on from the main text
+// #region answer: Methods in smaller type, with a second reference list that numbers on
 // [@key] prints a raised number in order of first citation, so a work the Methods cite for
 // the first time takes the next number after the main text's last, and one cited again
-// keeps its number. One list after the Methods holds them all.
+// keeps its number. Nature prints two lists, and :::bibliography{scope=new} lists only the
+// works no earlier list printed: the same block after the main text and after the Methods
+// sets references 1–35, then 36–55.
 registerCitationEngine(createCiteprocEngine({ styles: STYLES, locales: LOCALES }));
-// The bundled Nature style prints a DOI twice for an article with no volume yet ("Proteins
-// https://doi.org/… (2021) doi:…"): one edit keeps the first.
-const nature = STYLES.nature.replace('<if variable="volume" type="article dataset software"',
-  '<if variable="volume" type="article article-journal dataset software"');
 const citations = {
-  style: 'custom', customStyle: nature, // raised 1–4, "Nature 577, 706–710 (2020)." entries
+  style: 'nature', // raised 1–4, "Nature 577, 706–710 (2020)." entries
   bibliography: { fontSize: em(0.8), lineHeight: pt(9.6), entrySpacing: pt(0.8),
     labelWidth: mm(5), labelAlign: 'right' }, // 9. and 10. end together
 };
+const references = '### References\n\n:::bibliography{title="" scope=new}';
 // "# Methods {style=\"methods\"}" opens a section that runs to the end of the article: an H1
 // that breaks nothing, names no running chapter and sets its body two sizes down.
 const methods = { id: 'methods', numbered: false, runningChapter: false,
@@ -81,8 +80,6 @@ const calloutStyles = [
   { id: 'summary', span: 'page', ...flat, marginBottom: pt(LEAD), // the bold summary
     body: { fontFamily: SANS, fontSize: pt(9.4), lineHeight: pt(LEAD + 0.6), fontWeight: 600,
       boldColor: col('ink'), textAlign: 'justify', firstLineIndent: pt(0) } },
-  // Fig. 1 floats to the foot of the first page, under the opening paragraphs
-  { id: 'plate', span: 'page', placement: 'bottom', ...flat, marginBottom: pt(0) },
 ];
 
 const head = (id, content, parity, edge, x, extra) => text(id, content, SANS, 7.8, {
@@ -140,8 +137,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
-const markdown = [/* @content */ '', /* @content:methods */ '', /* @content:back */ '',
-  /* @content:refs */ '', /* @content:mrefs */ ''].join('\n\n');
+const markdown = [/* @content */ '', references, /* @content:methods */ '', references,
+  /* @content:back */ '', /* @content:refs */ '', /* @content:mrefs */ ''].join('\n\n');
 
 // #region resources: Fig. 1 across the page under the summary, the timings table in Methods
 const resources = () => [

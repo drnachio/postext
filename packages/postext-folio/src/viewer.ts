@@ -1237,6 +1237,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       if (relayout) return rebuild(atPage);
       // Same spreads: the leaves take their new pages where they lie.
       flipper?.setBook(bookOf(), opts.at !== undefined ? spreadOfPage(spreads, opts.at) : undefined);
+      // The glass's paintings follow pages that came as other sources (a
+      // page decorated for the first time, #543).
+      scheduleDetail(0);
       // Pages that came with another paper (a relayout moved a plate run).
       const papers = JSON.stringify(pages.map(paperOf));
       if (flipper && papers !== papersKey) {

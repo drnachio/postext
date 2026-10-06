@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "protein-paper-methods-section",
-  "sourceHash": "ddf43dff9edf15590aca8a848199e688f32a969233aace5f3c9652678aeef38b",
+  "sourceHash": "0079284ed7905b307437cc7ba49d76edd077a81c28a6af3b6141ebb6bc58c3e6",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.0",
+    "postextPdf": "1.19.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:37:21.873Z",
+  "capturedAt": "2026-10-06T16:10:41.413Z",
   "variants": {
     "en": {
-      "hash8": "7e92f9da",
-      "vdtHash": "7a0b4eb9c5a5d732f4719b08f2009aeaee40b1be",
+      "hash8": "1f9a1c62",
+      "vdtHash": "0bb9d1cffef73a32f6d3f79950c61697a815d23b",
       "timings": {
-        "importMs": 283,
-        "fontsMs": 109,
-        "buildMs": 693,
-        "totalMs": 2601,
+        "importMs": 204,
+        "fontsMs": 93,
+        "buildMs": 831,
+        "totalMs": 2619,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif"
         ],
         "pages": 5,
-        "ownLines": 195
+        "ownLines": 192
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 189080,
+          "bytes": 189364,
           "alt": "Opening page 1: Highly accurate protein structure prediction with AlphaFold. Fig. 1 | AlphaFold produces highly accurate structures. a, Median accuracy on the CASP14 domains of AlphaFold and of the next best method, as r.m.s.d.95 over Cα atoms (backbone) and over all atoms, wi…"
         },
         {
@@ -72,7 +72,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 270618,
+          "bytes": 266900,
           "alt": "Page 3: End-to-end structure prediction."
         },
         {
@@ -83,8 +83,8 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 253286,
-          "alt": "Page 4: Inference regimen. Table 1 | Inference times. One model on one V100 GPU, by protein length."
+          "bytes": 264446,
+          "alt": "Page 4: Methods. Table 1 | Inference times. One model on one V100 GPU, by protein length."
         },
         {
           "n": 5,
@@ -94,8 +94,8 @@
           "h": 1414,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 195664,
-          "alt": "Page 5."
+          "bytes": 197584,
+          "alt": "Page 5: Data availability."
         }
       ],
       "spreads": [
@@ -126,12 +126,12 @@
       },
       "pdf": {
         "file": "protein-paper-methods-section.pdf",
-        "bytes": 514635,
+        "bytes": 515437,
         "pages": 5
       },
       "sandbox": {
         "file": "protein-paper-methods-section.postext",
-        "bytes": 66985,
+        "bytes": 64388,
         "folio": "9eaee533"
       },
       "detected": {
@@ -187,7 +187,6 @@
           "calloutStyles[].padding.left",
           "calloutStyles[].padding.right",
           "calloutStyles[].padding.top",
-          "calloutStyles[].placement",
           "calloutStyles[].span",
           "captionStyle",
           "captionStyle.color",
@@ -207,7 +206,6 @@
           "citations.bibliography.labelAlign",
           "citations.bibliography.labelWidth",
           "citations.bibliography.lineHeight",
-          "citations.customStyle",
           "citations.style",
           "colorPalette",
           "colorPalette[].id",
@@ -337,7 +335,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 335,
+        "configLeaves": 323,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -412,7 +410,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 5,
         "looseLines": {
           "count": 4,
           "share": 0.0153,
@@ -422,12 +420,17 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.32 MB (warning at 0.9 MB for 5 pages)"
+            "detail": "the edition's images weigh 1.33 MB (warning at 0.9 MB for 5 pages)"
           },
           {
             "check": "C25",
             "severity": "warn",
             "detail": "outside the latin subset: α U+03B1, Ž U+017D, χ U+03C7, Š U+0160"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
