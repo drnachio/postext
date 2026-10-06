@@ -23,6 +23,10 @@ const PAGE_SIZE_OPTIONS = [
   { value: '12x19', label: '12 \u00d7 19 cm' },
   { value: '17x24', label: '17 \u00d7 24 cm' },
   { value: '21x28', label: '21 \u00d7 28 cm' },
+  // Newspaper formats: named, their trim after the name.
+  { value: 'broadsheet', label: '375 \u00d7 597 mm' },
+  { value: 'berliner', label: '315 \u00d7 470 mm' },
+  { value: 'tabloid', label: '280 \u00d7 430 mm' },
   { value: 'custom', label: 'Custom' },
 ];
 
@@ -180,7 +184,15 @@ export const PageSection = memo(function PageSection() {
     '12x19': labels.pageSize12x19,
     '17x24': labels.pageSize17x24,
     '21x28': labels.pageSize21x28,
+    broadsheet: labels.pageSizeBroadsheetDescription,
+    berliner: labels.pageSizeBerlinerDescription,
+    tabloid: labels.pageSizeTabloidDescription,
     custom: labels.pageSizeCustomDescription,
+  };
+  const PAGE_SIZE_NAMES: Record<string, string> = {
+    broadsheet: labels.pageSizeBroadsheet,
+    berliner: labels.pageSizeBerliner,
+    tabloid: labels.pageSizeTabloid,
   };
 
   return (
@@ -198,7 +210,7 @@ export const PageSection = memo(function PageSection() {
           value={page.sizePreset}
           options={PAGE_SIZE_OPTIONS.map((o) => ({
             ...o,
-            label: o.value === 'custom' ? labels.custom : o.label,
+            label: o.value === 'custom' ? labels.custom : PAGE_SIZE_NAMES[o.value] ? `${PAGE_SIZE_NAMES[o.value]} (${o.label})` : o.label,
             description: PAGE_SIZE_DESCRIPTIONS[o.value],
           }))}
           onChange={handlePresetChange}

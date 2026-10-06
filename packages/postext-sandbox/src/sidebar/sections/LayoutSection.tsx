@@ -16,6 +16,7 @@ import {
 } from '../../controls';
 import { HighlightZone } from '../settings/previewHighlight';
 import { ColumnsPicture } from '../settings/pictures';
+import { MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../settings/multipleColumns';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const D = DEFAULT_LAYOUT_CONFIG;
@@ -70,6 +71,7 @@ export const LayoutSection = memo(function LayoutSection() {
       // Remove gutter and side column when switching to single
       const next: LayoutConfig = { ...raw, layoutType };
       delete next.gutterWidth;
+      delete next.columnCount;
       delete next.sideColumnPercent;
       delete next.sideColumnRole;
       delete next.sideColumnSide;
@@ -88,6 +90,7 @@ export const LayoutSection = memo(function LayoutSection() {
     { value: 'single', label: labels.layoutSingle, description: labels.layoutSingleDescription, picture: <ColumnsPicture kind="single" /> },
     { value: 'double', label: labels.layoutDouble, description: labels.layoutDoubleDescription, picture: <ColumnsPicture kind="double" /> },
     { value: 'oneAndHalf', label: labels.layoutOneAndHalf, description: labels.layoutOneAndHalfDescription, picture: <ColumnsPicture kind="oneAndHalf" /> },
+    { value: 'multiple', label: labels.layoutMultiple, description: labels.layoutMultipleDescription, picture: <ColumnsPicture kind="multiple" /> },
   ];
 
   const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'writingMode');
@@ -115,7 +118,8 @@ export const LayoutSection = memo(function LayoutSection() {
   const isCrColorDefault = colorsEqual(layout.columnRule.color, DEFAULT_COLUMN_RULE.color);
   const isCrLineWidthDefault = dimensionsEqual(layout.columnRule.lineWidth, DEFAULT_COLUMN_RULE.lineWidth);
 
-  const showGutter = layout.layoutType === 'double' || layout.layoutType === 'oneAndHalf';
+  const showGutter = layout.layoutType !== 'single';
+  const showColumnCount = layout.layoutType === 'multiple';
   const showSideCol = layout.layoutType === 'oneAndHalf';
 
   return (
@@ -139,6 +143,7 @@ export const LayoutSection = memo(function LayoutSection() {
           const next = { ...raw };
           delete next.layoutType;
           delete next.gutterWidth;
+          delete next.columnCount;
           delete next.sideColumnPercent;
           delete next.sideColumnRole;
           delete next.sideColumnSide;
@@ -149,6 +154,19 @@ export const LayoutSection = memo(function LayoutSection() {
 
       {(showGutter || showSideCol) && (
         <NestedGroup>
+          {showColumnCount && (
+            <NumberInput
+              label={labels.columnCount}
+              value={layout.columnCount}
+              onChange={(v) => updateLayout({ columnCount: v })}
+              min={MULTIPLE_COLUMNS_MIN}
+              max={MULTIPLE_COLUMNS_MAX}
+              step={1}
+              tooltip={labels.columnCountTooltip}
+              isDefault={layout.columnCount === D.columnCount}
+              onReset={() => resetField('columnCount')}
+            />
+          )}
           {showGutter && (
             <HighlightZone part="gutter">
             <DimensionInput

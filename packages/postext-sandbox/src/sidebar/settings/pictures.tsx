@@ -9,7 +9,7 @@ function Lines({ x, w, y0 = 5, y1 = 23, step = 3 }: { x: number; w: number; y0?:
   return <>{ys.map((y) => <rect key={y} x={x} y={y} width={w} height={1.2} rx={0.6} fill="currentColor" opacity={0.75} />)}</>;
 }
 
-export function ColumnsPicture({ kind }: { kind: 'single' | 'double' | 'oneAndHalf' }) {
+export function ColumnsPicture({ kind }: { kind: 'single' | 'double' | 'oneAndHalf' | 'multiple' }) {
   const inner = { x: PAGE.x + 3, w: PAGE.w - 6 };
   return (
     <svg width={38} height={28} viewBox="0 0 38 28" fill="none">
@@ -27,6 +27,8 @@ export function ColumnsPicture({ kind }: { kind: 'single' | 'double' | 'oneAndHa
           <Lines x={inner.x + 12} w={4} y0={5} y1={11} />
         </>
       )}
+      {/* Four narrow columns, as a newspaper page. */}
+      {kind === 'multiple' && [0, 1, 2, 3].map((i) => <Lines key={i} x={inner.x + i * 4.25} w={3.25} />)}
     </svg>
   );
 }

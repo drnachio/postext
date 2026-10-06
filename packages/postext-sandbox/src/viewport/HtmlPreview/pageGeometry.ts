@@ -24,6 +24,15 @@ export interface PageGeometry {
 
 const MIN_COLUMN_PX = 40;
 
+/** The column structure a viewer page lays out with for a document (or a
+ *  section) of `layoutType`. The newspaper grid of a `multiple` layout
+ *  reads as a two-column one: the viewer then shows as many of its columns
+ *  side by side as the screen fits at the measure (see pickPageGeometry),
+ *  instead of cutting a screen-wide page into three to eight slivers. */
+export function viewerLayoutType(layoutType: LayoutType): LayoutType {
+  return layoutType === 'multiple' ? 'double' : layoutType;
+}
+
 /** Move a float and everything drawn inside it `dy` down the page. The
  *  geometry a renderer reads is part block-relative and part absolute — a
  *  figure's body sits inside its block, its caption lines and caption bar do

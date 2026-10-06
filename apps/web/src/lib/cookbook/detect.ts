@@ -529,7 +529,7 @@ export function staticLevel(js: string, detected: Pick<DetectedPen, "apis" | "co
     keys.includes("parts") ||
     /\bnew\s+Worker\s*\(/.test(code) ||
     /\brotate\s*:\s*['"](ccw|cw)['"]/.test(code) ||
-    /\blayoutType\s*:\s*['"]oneAndHalf['"]/.test(code) ||
+    /\blayoutType\s*:\s*['"](oneAndHalf|multiple)['"]/.test(code) ||
     /\baddEventListener\s*\(\s*['"](input|change)['"]/.test(code);
   if (advanced) return 3;
   const intermediate =

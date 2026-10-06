@@ -479,6 +479,8 @@ export interface CaptureVariant {
     trimMm: [number, number];
     dpi: number;
     layoutType: string;
+    /** `multiple` layouts: the body's column count, as the engine cuts it. */
+    columnCount?: number;
     gutterMm?: number;
     mirror: boolean;
     body: { family: string; sizePt: number; leadingPt: number };

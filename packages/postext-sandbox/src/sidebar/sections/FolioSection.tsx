@@ -55,6 +55,7 @@ const BINDINGS: readonly [FolioBindingType, keyof SandboxLabels][] = [
   ['sewn', 'folioBindingSewn'],
   ['layflat', 'folioBindingLayflat'],
   ['saddleStitch', 'folioBindingSaddleStitch'],
+  ['folded', 'folioBindingFolded'],
 ];
 
 const COVER_MATERIALS: readonly [Exclude<FolioCoverMaterial, 'auto'>, keyof SandboxLabels][] = [
@@ -291,8 +292,9 @@ export const FolioSection = memo(function FolioSection() {
           onReset={() => writeBinding({ coverColor: undefined })}
           fieldId="folio-binding-coverColor"
         />
-        {/* A saddle stitch has no flat spine to print on. */}
-        {cfg.binding.type !== 'saddleStitch' && (
+        {/* A saddle stitch and a folded newspaper have no flat spine to
+            print on. */}
+        {cfg.binding.type !== 'saddleStitch' && cfg.binding.type !== 'folded' && (
           <SelectInput
             label={labels.folioSpineImage}
             value={b?.spineImage ?? ''}

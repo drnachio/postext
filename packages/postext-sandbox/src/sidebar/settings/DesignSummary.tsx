@@ -13,6 +13,7 @@ import { documentLocaleLabel } from '../sections/BodyTextSection/constants';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
 import { documentDirection, documentLanguage } from '../../context/documentDirection';
 import { PagePreview } from './PagePreview';
+import { columnCountUsed } from './multipleColumns';
 
 interface DesignSummaryProps {
   onOpenGroup: (id: SettingsGroupId) => void;
@@ -45,7 +46,8 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   const columns =
     layout.layoutType === 'double' ? labels.settingsSummaryTwoColumns
       : layout.layoutType === 'oneAndHalf' ? labels.settingsSummaryOneAndHalf
-        : labels.settingsSummaryOneColumn;
+        : layout.layoutType === 'multiple' ? labels.settingsSummaryColumns.replace('__count__', n(columnCountUsed(layout.columnCount)))
+          : labels.settingsSummaryOneColumn;
   const type = `${body.fontFamily} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
   // Writing system: the language, with the direction and the binding when
   // they are a choice (Chinese text, vertical lines, right-to-left text, a

@@ -375,6 +375,18 @@ describe('buildHtmlConfigOverride', () => {
     expect(buildHtmlConfigOverride(styled, opts).headingStyles![0]!.breakBefore).toEqual({ enabled: true, parity: 'any' });
   });
 
+  it('lays a newspaper grid out as two columns, the document\u2019s and a section\u2019s', () => {
+    const news: PostextConfig = {
+      ...base,
+      layout: { layoutType: 'multiple', columnCount: 6 },
+      headingStyles: [{ id: 'sport', layout: { layoutType: 'multiple', columnCount: 4 } }, { id: 'essay', layout: { layoutType: 'single' } }],
+    };
+    const out = buildHtmlConfigOverride(news, { ...opts, layoutType: 'multiple' });
+    expect(out.layout!.layoutType).toBe('double');
+    expect(out.headingStyles![0]!.layout!.layoutType).toBe('double');
+    expect(out.headingStyles![1]!.layout!.layoutType).toBe('single');
+  });
+
   it('fits figures to the screen-tall page', () => {
     expect(buildHtmlConfigOverride(base, opts).layout!.fitFiguresToPage).toBe(true);
   });

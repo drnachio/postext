@@ -10,6 +10,7 @@ import {
   resolveDiagramStyleConfig,
   resolveColorValue,
   resolveLayoutConfig,
+  coordinateVideoPlayback,
 } from 'postext';
 import type {
   VDTDocument,
@@ -40,7 +41,7 @@ import {
   composePageBackground,
 } from './constants';
 import { buildHtmlConfigOverride, measureColumnWidthPx, partTitlesOf } from './configOverride';
-import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx } from './pageGeometry';
+import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx, viewerLayoutType } from './pageGeometry';
 import { cssEscape, measureBodyBaselineOffset } from './baseline';
 
 interface HtmlPreviewProps {
@@ -201,6 +202,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       window.open((anchor as HTMLAnchorElement).href, '_blank', 'noopener,noreferrer');
     };
     scroll.addEventListener('click', onLinkClick);
+    // One video at a time, save those set to play alongside the others
+    // (#507): starting a video pauses what it does not play with. The
+    // listener sits on the root, so the players of every relayout follow it.
+    const stopVideoCoordination = coordinateVideoPlayback(scroll);
     // The DOM that lastRender was diffing against is gone — force a full
     // rebuild on the next relayout.
     lastRenderRef.current = null;
@@ -209,6 +214,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     return () => {
       linkObserver.disconnect();
       scroll.removeEventListener('click', onLinkClick);
+      stopVideoCoordination();
       scrollHostRef.current = null;
       contentHostRef.current = null;
       lastRenderRef.current = null;
@@ -351,7 +357,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     // text here as it does on the leaf (at the right, per the override).
     let docLayoutType = currentColumnMode === 'single'
       ? (layoutResolved.layoutType === 'oneAndHalf' ? 'oneAndHalf' : 'single')
-      : layoutResolved.layoutType;
+      : viewerLayoutType(layoutResolved.layoutType);
     const gutterPx = dimensionToPx(layoutResolved.gutterWidth, viewerDpi);
     const sideFraction = layoutResolved.sideColumnPercent / 100;
 

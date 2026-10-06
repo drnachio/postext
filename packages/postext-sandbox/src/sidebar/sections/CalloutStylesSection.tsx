@@ -61,6 +61,8 @@ import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
+import { hasSeveralColumns } from '../settings/multiColumnBook';
+import { MULTIPLE_COLUMNS_MAX } from '../settings/multipleColumns';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -354,6 +356,9 @@ function CalloutStyleCard({
   const markerSide = flowSideLabels(rtl, labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   // Ragged bodies hyphenate too once the body text turns ragged hyphenation on.
   const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
+  // A floated box across several columns (#505): offered when a page of the
+  // book has more than one, or when the style sets it.
+  const severalColumns = useSandboxSelector((s) => hasSeveralColumns(s.config));
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -622,6 +627,21 @@ function CalloutStyleCard({
         isDefault={unset('placement')}
         onReset={() => onResetField('placement')}
       />
+      {resolved.span === 'column'
+        && (resolved.placement === 'auto' || resolved.placement === 'top' || resolved.placement === 'bottom')
+        && (severalColumns || !unset('columns')) && (
+        <NumberInput
+          label={labels.calloutStyleColumns}
+          value={resolved.columns}
+          onChange={(v) => onChange({ columns: Math.max(1, Math.round(v)) })}
+          min={1}
+          max={MULTIPLE_COLUMNS_MAX}
+          step={1}
+          tooltip={labels.calloutStyleColumnsTooltip}
+          isDefault={unset('columns')}
+          onReset={() => onResetField('columns')}
+        />
+      )}
       {resolved.placement === 'fixed' && (
         <>
           <SelectInput

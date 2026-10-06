@@ -3,6 +3,7 @@
 import { useId } from 'react';
 import type { ResolvedLayoutConfig, ResolvedPageConfig } from 'postext';
 import { toPt } from '../../controls/units';
+import { columnCountUsed } from './multipleColumns';
 
 export type PagePreviewHighlight = 'top' | 'bottom' | 'inner' | 'outer' | 'gutter' | null;
 
@@ -75,8 +76,9 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
     const rects = cols.map((c) => (vertical
       ? { x: tx, y: ty + c.x, w: tw, h: c.w, side: c.side }
       : { x: tx + c.x, y: ty, w: c.w, h: th, side: c.side }));
-    const first = rects[0];
-    const second = rects[1];
+    // Each pair of neighbouring columns (or tiers): the gutter between
+    // them, and the rule down its middle.
+    const pairs = rects.slice(1).map((second, i) => ({ first: rects[i]!, second }));
     // Vertical lines start at the right edge of the type area.
     const fill = vertical ? `${patternId}${spineLeft ? 'r' : 'l'}` : patternId;
     return (
@@ -96,11 +98,12 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
         {rects.map((r, i) => (
           <rect key={i} x={r.x} y={r.y} width={r.w} height={r.h} fill={`url(#${fill})`} opacity={r.side ? 0.45 : 1} />
         ))}
-        {highlight === 'gutter' && first && second && (vertical
-          ? <rect x={tx} y={first.y + first.h} width={tw} height={second.y - first.y - first.h} fill={hl} />
-          : <rect x={first.x + first.w} y={ty} width={second.x - first.x - first.w} height={th} fill={hl} />)}
-        {layout.columnRule.enabled && first && second && (vertical ? (
+        {highlight === 'gutter' && pairs.map(({ first, second }, i) => (vertical
+          ? <rect key={`g${i}`} x={tx} y={first.y + first.h} width={tw} height={second.y - first.y - first.h} fill={hl} />
+          : <rect key={`g${i}`} x={first.x + first.w} y={ty} width={second.x - first.x - first.w} height={th} fill={hl} />))}
+        {layout.columnRule.enabled && pairs.map(({ first, second }, i) => (vertical ? (
           <line
+            key={`r${i}`}
             x1={tx}
             x2={tx + tw}
             y1={(first.y + first.h + second.y) / 2}
@@ -111,6 +114,7 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
           />
         ) : (
           <line
+            key={`r${i}`}
             x1={(first.x + first.w + second.x) / 2}
             x2={(first.x + first.w + second.x) / 2}
             y1={ty}
@@ -119,7 +123,7 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
             strokeOpacity={0.5}
             strokeWidth={w / 300}
           />
-        ))}
+        )))}
         {folios && folio !== undefined && (
           <text
             x={spineLeft ? x + w - m.outer : x + m.outer}
@@ -170,12 +174,16 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
 
 interface Col { x: number; w: number; side?: boolean }
 
+/** `n` equal columns across `length`, `g` apart. */
+function equalColumns(n: number, length: number, g: number): Col[] {
+  const cw = Math.max((length - (n - 1) * g) / n, 1);
+  return Array.from({ length: n }, (_, i) => ({ x: i * (cw + g), w: cw }));
+}
+
 function columnsOf(layout: ResolvedLayoutConfig, tw: number, spineLeft: boolean): Col[] {
   const g = toPt(layout.gutterWidth);
-  if (layout.layoutType === 'double') {
-    const cw = Math.max((tw - g) / 2, 1);
-    return [{ x: 0, w: cw }, { x: cw + g, w: cw }];
-  }
+  if (layout.layoutType === 'double') return equalColumns(2, tw, g);
+  if (layout.layoutType === 'multiple') return equalColumns(columnCountUsed(layout.columnCount), tw, g);
   if (layout.layoutType === 'oneAndHalf') {
     const sw = Math.max(((tw - g) * layout.sideColumnPercent) / 100, 1);
     const mw = Math.max(tw - g - sw, 1);
@@ -196,10 +204,8 @@ function columnsOf(layout: ResolvedLayoutConfig, tw: number, spineLeft: boolean)
  *  in the bottom one, as the engine reads them. */
 function tiersOf(layout: ResolvedLayoutConfig, th: number): Col[] {
   const g = toPt(layout.gutterWidth);
-  if (layout.layoutType === 'double') {
-    const cw = Math.max((th - g) / 2, 1);
-    return [{ x: 0, w: cw }, { x: cw + g, w: cw }];
-  }
+  if (layout.layoutType === 'double') return equalColumns(2, th, g);
+  if (layout.layoutType === 'multiple') return equalColumns(columnCountUsed(layout.columnCount), th, g);
   if (layout.layoutType === 'oneAndHalf') {
     const sw = Math.max(((th - g) * layout.sideColumnPercent) / 100, 1);
     const mw = Math.max(th - g - sw, 1);

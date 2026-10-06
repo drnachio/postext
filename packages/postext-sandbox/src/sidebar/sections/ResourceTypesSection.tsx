@@ -31,6 +31,7 @@ import { CaptionStyleFields } from './CaptionStyleFields';
 import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview';
 import { documentDigits, documentLanguage } from '../../context/documentDirection';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
+import { MULTIPLE_COLUMNS_MAX } from '../settings/multipleColumns';
 
 function newTypeId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -355,6 +356,19 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       <option value="side">{labels.resourceSpanSide}</option>
                     </select>
                   </Field>
+                  {(type.defaultPlacement?.span ?? 'column') === 'column' && (
+                    <NumberInput
+                      label={labels.resourceTypePlacementColumns}
+                      value={type.defaultPlacement?.columns ?? 1}
+                      onChange={(v) => updateTypePlacement(type, { columns: v <= 1 ? undefined : Math.round(v) })}
+                      min={1}
+                      max={MULTIPLE_COLUMNS_MAX}
+                      step={1}
+                      tooltip={labels.resourceTypePlacementColumnsTooltip}
+                      isDefault={type.defaultPlacement?.columns === undefined}
+                      onReset={() => updateTypePlacement(type, { columns: undefined })}
+                    />
+                  )}
                   <NumberInput
                     label={labels.resourceTypePlacementWidth}
                     value={Math.round((type.defaultPlacement?.width ?? 1) * 100)}

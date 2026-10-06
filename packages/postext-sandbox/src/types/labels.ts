@@ -267,6 +267,8 @@ export interface SandboxLabels {
    *  another value. `__used__` is that value, in percent. */
   warningsSideColumnPercentClampedTitle: string;
   warningsSideColumnPercentClampedDetail: string;
+  warningsColumnCountClampedTitle: string;
+  warningsColumnCountClampedDetail: string;
   warningsCjkGridClampedTitle: string;
   warningsCjkGridClampedDetail: string;
   warningsInvalidMathTitle: string;
@@ -1025,8 +1027,11 @@ export interface SandboxLabels {
   layoutSingle: string;
   layoutDouble: string;
   layoutOneAndHalf: string;
+  layoutMultiple: string;
   gutterWidth: string;
   gutterWidthTooltip: string;
+  columnCount: string;
+  columnCountTooltip: string;
   sideColumnPercent: string;
   sideColumnPercentTooltip: string;
   sideColumnRole: string;
@@ -1161,6 +1166,7 @@ export interface SandboxLabels {
   folioBindingSewn: string;
   folioBindingLayflat: string;
   folioBindingSaddleStitch: string;
+  folioBindingFolded: string;
   folioCoverMaterial: string;
   folioCoverSource: string;
   folioCoverSourceTooltip: string;
@@ -1741,6 +1747,8 @@ export interface SandboxLabels {
   videoPlayerMutedHelp: string;
   videoPlayerLoop: string;
   videoPlayerLoopHelp: string;
+  videoPlayerAlongside: string;
+  videoPlayerAlongsideHelp: string;
   videoPlayerPrivacy: string;
   videoPlayerPrivacyHelp: string;
   videoPlayerPreload: string;
@@ -2059,6 +2067,8 @@ export interface SandboxLabels {
   calloutStyleSideAtColumnEndAfter: string;
   calloutStylePlacement: string;
   calloutStylePlacementTooltip: string;
+  calloutStyleColumns: string;
+  calloutStyleColumnsTooltip: string;
   calloutStylePlacementHere: string;
   calloutStylePlacementAuto: string;
   calloutStylePlacementTop: string;
@@ -2541,6 +2551,7 @@ export interface SandboxLabels {
   settingsSummaryOneColumn: string;
   settingsSummaryTwoColumns: string;
   settingsSummaryOneAndHalf: string;
+  settingsSummaryColumns: string;
   settingsSummaryBoundLeft: string;
   settingsSummaryBoundRight: string;
   settingsGroupPage: string;
@@ -2572,6 +2583,7 @@ export interface SandboxLabels {
   layoutSingleDescription: string;
   layoutDoubleDescription: string;
   layoutOneAndHalfDescription: string;
+  layoutMultipleDescription: string;
   fitFiguresToPage: string;
   fitFiguresToPageTooltip: string;
   hugClosingFloats: string;
@@ -2600,6 +2612,12 @@ export interface SandboxLabels {
   pageSize17x24: string;
   pageSize21x28: string;
   pageSizeCustomDescription: string;
+  pageSizeBroadsheet: string;
+  pageSizeBroadsheetDescription: string;
+  pageSizeBerliner: string;
+  pageSizeBerlinerDescription: string;
+  pageSizeTabloid: string;
+  pageSizeTabloidDescription: string;
   /** Phone layout: the panel-bar entry that closes the open panel and shows the preview. */
   navPreview: string;
   navPreviewHint: string;
@@ -2685,6 +2703,8 @@ export interface SandboxLabels {
   resourceTypeCaptionPrefixTooltip: string;
   resourceTypePlacementPositionTooltip: string;
   resourceTypePlacementSpanTooltip: string;
+  resourceTypePlacementColumns: string;
+  resourceTypePlacementColumnsTooltip: string;
   resourceTypePlacementRotateTooltip: string;
   tableBodyFillTooltip: string;
   tableHeaderFillTooltip: string;

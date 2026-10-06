@@ -19,7 +19,7 @@ export function Tombstone({ view, t }: { view: RecipeView; t: RecipeT }) {
     const grid =
       s.layoutType === "oneAndHalf"
         ? t("columnAndHalf")
-        : t("columns", { count: s.layoutType === "double" ? 2 : 1 });
+        : t("columns", { count: specimenColumns(s) });
     facts.push(s.gutterMm && s.layoutType !== "single" ? `${grid}, ${t("gutter", { mm: round(s.gutterMm) })}` : grid);
     facts.push(`${s.body.family} ${round(s.body.sizePt)}/${round(s.body.leadingPt)}`);
     for (const family of s.families) if (family !== s.body.family) facts.push(family);
@@ -43,4 +43,11 @@ export function Tombstone({ view, t }: { view: RecipeView; t: RecipeT }) {
       </ul>
     </div>
   );
+}
+
+/** The body columns of the captured page: a `multiple` layout's own count
+ *  (3 when the capture predates it), two for `double`, one otherwise. */
+function specimenColumns(s: { layoutType: string; columnCount?: number }): number {
+  if (s.layoutType === "multiple") return s.columnCount ?? 3;
+  return s.layoutType === "double" ? 2 : 1;
 }

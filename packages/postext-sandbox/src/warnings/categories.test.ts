@@ -16,6 +16,7 @@ describe('warningCategory', () => {
     // the markup rows, which jump to the editor.
     expect(warningCategory('fontFamilyStack')).toBe('fonts');
     expect(warningCategory('sideColumnPercentClamped')).toBe('design');
+    expect(warningCategory('columnCountClamped')).toBe('design');
     expect(warningCategory('unknownNumberFormat')).toBe('design');
   });
   it('files the PDF font warnings with the fonts', () => {

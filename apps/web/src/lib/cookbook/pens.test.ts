@@ -670,6 +670,8 @@ describe("detect", () => {
     expect(detected.resources).toEqual({ svg: 0, bitmap: 1, table: 0 });
     expect(staticLevel("const config = () => ({ page: {} });", { apis: ["buildDocument"], configKeys: ["page"] })).toBe(1);
     expect(staticLevel("", { apis: ["buildBundle"], configKeys: [] })).toBe(3);
+    // A newspaper grid is a level-3 layout, as a column and a half is.
+    expect(staticLevel("const config = () => ({ layout: { layoutType: 'multiple', columnCount: 5 } });", { apis: ["buildDocument"], configKeys: ["layout"] })).toBe(3);
   });
 
   it("reads image sizes", () => {

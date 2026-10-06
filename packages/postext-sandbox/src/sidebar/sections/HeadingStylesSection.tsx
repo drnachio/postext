@@ -49,6 +49,7 @@ import {
   ChoiceInput,
 } from '../../controls';
 import { ColumnsPicture } from '../settings/pictures';
+import { MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../settings/multipleColumns';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
@@ -198,6 +199,8 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
   const resolvedLayout = layout
     ? {
         ...resolveLayoutConfig(layout),
+        // The document's column count, unless the section sets its own.
+        columnCount: layout.columnCount ?? base.layout.columnCount,
         columnRule: {
           enabled: layout.columnRule?.enabled ?? base.layout.columnRule.enabled,
           color: layout.columnRule?.color ?? base.layout.columnRule.color,
@@ -214,7 +217,8 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     if (next) updateLayout({ columnRule: next });
     else resetLayoutField('columnRule');
   };
-  const showGutter = resolvedLayout.layoutType === 'double' || resolvedLayout.layoutType === 'oneAndHalf';
+  const showGutter = resolvedLayout.layoutType !== 'single';
+  const showColumnCount = resolvedLayout.layoutType === 'multiple';
   const showSideCol = resolvedLayout.layoutType === 'oneAndHalf';
 
   const body = style.bodyStyle;
@@ -254,6 +258,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     { value: 'single' as const, label: labels.layoutSingle, description: labels.layoutSingleDescription, picture: <ColumnsPicture kind="single" /> },
     { value: 'double' as const, label: labels.layoutDouble, description: labels.layoutDoubleDescription, picture: <ColumnsPicture kind="double" /> },
     { value: 'oneAndHalf' as const, label: labels.layoutOneAndHalf, description: labels.layoutOneAndHalfDescription, picture: <ColumnsPicture kind="oneAndHalf" /> },
+    { value: 'multiple' as const, label: labels.layoutMultiple, description: labels.layoutMultipleDescription, picture: <ColumnsPicture kind="multiple" /> },
   ];
   const SIDE_ROLE_OPTIONS = [
     { value: 'text', label: labels.sideColumnRoleText },
@@ -688,6 +693,19 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
         />
         {(showGutter || showSideCol) && (
           <NestedGroup>
+            {showColumnCount && (
+              <NumberInput
+                label={labels.columnCount}
+                value={resolvedLayout.columnCount}
+                onChange={(v) => updateLayout({ columnCount: v })}
+                min={MULTIPLE_COLUMNS_MIN}
+                max={MULTIPLE_COLUMNS_MAX}
+                step={1}
+                tooltip={labels.columnCountTooltip}
+                isDefault={layout?.columnCount === undefined}
+                onReset={() => resetLayoutField('columnCount')}
+              />
+            )}
             {showGutter && (
               <DimensionInput
                 label={labels.gutterWidth}
