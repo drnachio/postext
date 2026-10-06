@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "gojuon-index",
-  "sourceHash": "9ec65882d95630e0eb265d272440fd9ae0e364ad8e7ef39e4d928d7a0896635b",
+  "sourceHash": "0d545b0d7fcad7be8d6365a269f49d500524b726863f2816239278acabbb7a23",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.972Z",
+  "capturedAt": "2026-10-06T18:34:18.988Z",
   "variants": {
     "en": {
-      "hash8": "270505d3",
+      "hash8": "74693f85",
       "vdtHash": "18dce1d881f62362350eea00b62c2c3a43f7b67d",
       "timings": {
-        "importMs": 181,
-        "fontsMs": 258,
-        "buildMs": 71,
-        "totalMs": 1085,
+        "importMs": 212,
+        "fontsMs": 300,
+        "buildMs": 77,
+        "totalMs": 1136,
         "builds": 1
       },
       "specimen": {
@@ -99,7 +99,7 @@
       },
       "pdf": {
         "file": "gojuon-index.pdf",
-        "bytes": 136977,
+        "bytes": 136974,
         "pages": 3
       },
       "sandbox": {
@@ -326,13 +326,13 @@
       }
     },
     "es": {
-      "hash8": "5d3dc89d",
+      "hash8": "11da7e6c",
       "vdtHash": "9e2635e46d6bd57c2923e851e08a119457806369",
       "timings": {
-        "importMs": 256,
-        "fontsMs": 254,
-        "buildMs": 65,
-        "totalMs": 1152,
+        "importMs": 206,
+        "fontsMs": 270,
+        "buildMs": 77,
+        "totalMs": 1099,
         "builds": 1
       },
       "specimen": {
@@ -414,7 +414,7 @@
       },
       "pdf": {
         "file": "gojuon-index.pdf",
-        "bytes": 136937,
+        "bytes": 136936,
         "pages": 3
       },
       "sandbox": {

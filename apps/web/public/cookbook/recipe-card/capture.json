@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "recipe-card",
-  "sourceHash": "058bfea9b1315b5beac6538beb15c1d39b6e131b8f8ecd55163b55079d36bb8f",
+  "sourceHash": "eb2bbe2ec03f9d7e11a008182e14e72a6b5081c21106fae0784287bac6730a01",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:49:36.051Z",
+  "capturedAt": "2026-10-06T18:34:19.363Z",
   "variants": {
     "en": {
-      "hash8": "bf8201cd",
+      "hash8": "2555e884",
       "vdtHash": "ffcb9dcd33fccccf5ff020fc94282fe7cb4c1622",
       "timings": {
-        "importMs": 202,
-        "fontsMs": 36,
-        "buildMs": 9,
-        "totalMs": 1146,
+        "importMs": 146,
+        "fontsMs": 44,
+        "buildMs": 10,
+        "totalMs": 830,
         "builds": 2
       },
       "specimen": {
@@ -311,11 +311,6 @@
         },
         "findings": [
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 57: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -324,13 +319,13 @@
       }
     },
     "es": {
-      "hash8": "f85cbd27",
+      "hash8": "3f3c2183",
       "vdtHash": "f2ade94d5f4b68473c10144c5100a54c672008fa",
       "timings": {
-        "importMs": 514,
-        "fontsMs": 845,
-        "buildMs": 13,
-        "totalMs": 2323,
+        "importMs": 150,
+        "fontsMs": 41,
+        "buildMs": 9,
+        "totalMs": 1596,
         "builds": 2
       },
       "specimen": {
@@ -624,11 +619,6 @@
           "worst": 0
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

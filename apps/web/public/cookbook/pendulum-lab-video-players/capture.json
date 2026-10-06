@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "pendulum-lab-video-players",
-  "sourceHash": "013528090f45fb6996377bd4ca93d03e9125f684f8661797bbdcc168354752a0",
+  "sourceHash": "abb05f821c366f464f77a94b3142ebbcee0f1bd867064008b09a21c9fb936d80",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T15:08:23.551Z",
+  "capturedAt": "2026-10-06T18:29:57.983Z",
   "variants": {
     "en": {
-      "hash8": "f7332a74",
+      "hash8": "c7eeb54a",
       "vdtHash": "94759318a3e45b73760fbb922e9ad52f9d61dc59",
       "timings": {
-        "importMs": 969,
-        "fontsMs": 121,
-        "buildMs": 203,
-        "totalMs": 2148,
+        "importMs": 947,
+        "fontsMs": 1407,
+        "buildMs": 199,
+        "totalMs": 3366,
         "builds": 3
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Source Serif 4"
         ],
         "pages": 2,
-        "ownLines": 250
+        "ownLines": 239
       },
       "pages": [
         {
@@ -90,7 +90,7 @@
       },
       "pdf": {
         "file": "pendulum-lab-video-players.pdf",
-        "bytes": 84001,
+        "bytes": 84028,
         "pages": 2
       },
       "sandbox": {
@@ -426,11 +426,6 @@
         },
         "findings": [
           {
-            "check": "C25",
-            "severity": "warn",
-            "detail": "outside the latin subset: θ U+03B8, π U+03C0"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "small: video file pendulum-small.mp4 left out (it plays from video.url)"
@@ -444,13 +439,13 @@
       }
     },
     "es": {
-      "hash8": "cb09dec3",
+      "hash8": "911ad308",
       "vdtHash": "3319433561377b893b4c0d9f9f215b446b89ed68",
       "timings": {
-        "importMs": 517,
-        "fontsMs": 57,
-        "buildMs": 148,
-        "totalMs": 1577,
+        "importMs": 432,
+        "fontsMs": 139,
+        "buildMs": 163,
+        "totalMs": 1666,
         "builds": 3
       },
       "specimen": {
@@ -473,7 +468,7 @@
           "Source Serif 4"
         ],
         "pages": 2,
-        "ownLines": 250
+        "ownLines": 239
       },
       "pages": [
         {
@@ -523,7 +518,7 @@
       },
       "pdf": {
         "file": "pendulum-lab-video-players.pdf",
-        "bytes": 86775,
+        "bytes": 86783,
         "pages": 2
       },
       "sandbox": {
@@ -858,11 +853,6 @@
           "worst": 1.8
         },
         "findings": [
-          {
-            "check": "C25",
-            "severity": "warn",
-            "detail": "outside the latin subset: θ U+03B8, π U+03C0"
-          },
           {
             "check": "sandbox",
             "severity": "info",

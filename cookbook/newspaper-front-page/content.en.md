@@ -11,8 +11,6 @@ publishDate: "Thursday 24 September 2026"
 
 *Elverdale backs its own wind farm by 62% on a 71% turnout. Now the cooperative must raise £9.8 million*
 
-:::space{lines=0.5}
-
 ::resource{id="ridge"}
 :::
 

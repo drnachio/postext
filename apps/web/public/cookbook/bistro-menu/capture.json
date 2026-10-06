@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "bistro-menu",
-  "sourceHash": "3bd0d1d48b33b18dd98971c3850743012ac48530e9195eebab26b22dd562c479",
+  "sourceHash": "89f4587a9b0e785a45f8c5be2d2754927ff58d0ca3365735cdd5272cfacba436",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:58:56.073Z",
+  "capturedAt": "2026-10-06T18:34:18.702Z",
   "variants": {
     "en": {
-      "hash8": "5da612fc",
+      "hash8": "6eac598d",
       "vdtHash": "ea916ad1081e90ade4234f4ce4e935877a96d01b",
       "timings": {
-        "importMs": 188,
-        "fontsMs": 783,
-        "buildMs": 4,
-        "totalMs": 1588,
+        "importMs": 176,
+        "fontsMs": 33,
+        "buildMs": 7,
+        "totalMs": 858,
         "builds": 2
       },
       "specimen": {
@@ -88,7 +88,7 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 25981,
+        "bytes": 26001,
         "folio": "bda6e41d"
       },
       "detected": {
@@ -266,13 +266,13 @@
       }
     },
     "es": {
-      "hash8": "5f1bb543",
+      "hash8": "28ee820b",
       "vdtHash": "a0db979bcfd05eacd43b6a286b7926c7d4c7c405",
       "timings": {
-        "importMs": 77,
-        "fontsMs": 20,
-        "buildMs": 3,
-        "totalMs": 763,
+        "importMs": 160,
+        "fontsMs": 39,
+        "buildMs": 9,
+        "totalMs": 831,
         "builds": 2
       },
       "specimen": {
@@ -344,7 +344,7 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 26312,
+        "bytes": 26331,
         "folio": "bda6e41d"
       },
       "detected": {

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "cv-with-sidebar",
-  "sourceHash": "7a27f3d9250f1d85da0401d6f5fa2bc748b25741d18e737a3e4afc253f600145",
+  "sourceHash": "139df91d2dab8a87c5048be5e9f0fb2e21e0593ce43223d13d1c24e6974b092a",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:03:51.845Z",
+  "capturedAt": "2026-10-06T18:34:18.888Z",
   "variants": {
     "en": {
-      "hash8": "6768ca91",
-      "vdtHash": "6f2e25bbf722ea5029f3c4ed87f45c8fa350b753",
+      "hash8": "19e7c766",
+      "vdtHash": "92600c27d780bd4fb06c0c104b39322d0186616d",
       "timings": {
-        "importMs": 177,
-        "fontsMs": 752,
-        "buildMs": 5,
-        "totalMs": 1532,
+        "importMs": 145,
+        "fontsMs": 27,
+        "buildMs": 9,
+        "totalMs": 1834,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 121570,
+          "bytes": 121530,
           "alt": "Page 1: Irene Salcedo."
         }
       ],
@@ -73,7 +73,7 @@
       },
       "sandbox": {
         "file": "cv-with-sidebar.postext",
-        "bytes": 29185,
+        "bytes": 29193,
         "folio": "4fd007fe"
       },
       "detected": {
@@ -262,13 +262,13 @@
       }
     },
     "es": {
-      "hash8": "d7751900",
-      "vdtHash": "20cdaf24337119824009c3c30ffc3134c5197110",
+      "hash8": "010a5cef",
+      "vdtHash": "44f7eab9b9c0d2daf9dc1441a3c6b92fbccaef08",
       "timings": {
-        "importMs": 74,
-        "fontsMs": 13,
-        "buildMs": 5,
-        "totalMs": 749,
+        "importMs": 160,
+        "fontsMs": 27,
+        "buildMs": 9,
+        "totalMs": 826,
         "builds": 2
       },
       "specimen": {
@@ -325,7 +325,7 @@
       },
       "sandbox": {
         "file": "cv-with-sidebar.postext",
-        "bytes": 31509,
+        "bytes": 31518,
         "folio": "4fd007fe"
       },
       "detected": {
@@ -510,13 +510,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

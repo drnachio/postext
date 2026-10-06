@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "textbook-margin-column",
-  "sourceHash": "cc854f94f00aac8349cd9ea9e50c2ab76b3b89cdb24183ea38a203ac0709fcc8",
+  "sourceHash": "7eef75118d75b27dd9cdb76fde7aba9d6a5a145692c1b29031987a63b2afbbb8",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T20:50:07.073Z",
+  "capturedAt": "2026-10-06T18:34:19.511Z",
   "variants": {
     "en": {
-      "hash8": "2d818d14",
-      "vdtHash": "d553fd886894052ae983976b21b4206d3ac78239",
+      "hash8": "af83a123",
+      "vdtHash": "a601945d5147436ead9c994844b45ac4ec76a676",
       "timings": {
-        "importMs": 1165,
-        "fontsMs": 21,
-        "buildMs": 20,
-        "totalMs": 2403,
+        "importMs": 143,
+        "fontsMs": 36,
+        "buildMs": 19,
+        "totalMs": 880,
         "builds": 2
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1310,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 146938,
+          "bytes": 146766,
           "alt": "Page 88: 4.2 Dispersion. Figure 4.2. Entering glass, a ray bends towards the normal (dashed): the angle of refraction (green) is less than the angle of incidence (amber). · Figure 4.3. Rays aimed at the centre of a semicircular block. At 25° the ray escapes, bent away from the…"
         },
         {
@@ -71,7 +71,7 @@
           "h": 1310,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 88188,
+          "bytes": 88124,
           "alt": "Page 89: 4.3 Lenses. Figure 4.5. Dispersion. The prism bends every colour towards its base, red least and violet most (the spread is exaggerated). · Figure 4.6. The three principal rays from the tip of an object beyond 2F meet at the tip of a real, inverted, smaller image (gre…"
         },
         {
@@ -114,7 +114,7 @@
       },
       "sandbox": {
         "file": "textbook-margin-column.postext",
-        "bytes": 29409,
+        "bytes": 29407,
         "folio": "ccdc6a5d"
       },
       "detected": {
@@ -289,7 +289,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 293,
+        "configLeaves": 301,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -349,8 +349,8 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
           "column-and-a-half",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -375,17 +375,23 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":3,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "b846206b",
-      "vdtHash": "00681c4643a388f762f90ce6a597027b02d5ec21",
+      "hash8": "ed02ec3b",
+      "vdtHash": "d981da01d244693a337bfbf8fe84d097564a7a42",
       "timings": {
-        "importMs": 406,
-        "fontsMs": 38,
-        "buildMs": 19,
-        "totalMs": 1194,
+        "importMs": 144,
+        "fontsMs": 24,
+        "buildMs": 22,
+        "totalMs": 819,
         "builds": 2
       },
       "specimen": {
@@ -429,7 +435,7 @@
           "h": 1310,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 150152,
+          "bytes": 150170,
           "alt": "Página 88: 4.2 Dispersión. Figura 4.2. Al entrar en el vidrio, el rayo se acerca a la normal (a trazos): el ángulo de refracción (verde) es menor que el de incidencia (ámbar). · Figura 4.3. Rayos dirigidos al centro de un bloque semicircular. A 25° el rayo sale, alejándose de…"
         },
         {
@@ -440,7 +446,7 @@
           "h": 1310,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 89826,
+          "bytes": 89830,
           "alt": "Página 89: 4.3 Lentes. Figura 4.5. Dispersión. El prisma desvía todos los colores hacia su base: el rojo, menos, y el violeta, más (la separación está exagerada). · Figura 4.6. Los tres rayos principales que parten de la punta de un objeto situado más allá de 2F se cortan en l…"
         },
         {
@@ -451,7 +457,7 @@
           "h": 1310,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 118140,
+          "bytes": 118150,
           "alt": "Página 90: Preguntas. Figura 4.7. Una lente divergente. Los rayos paralelos salen como si vinieran del foco situado delante de la lente (líneas a trazos), así que la imagen es virtual."
         }
       ],
@@ -483,7 +489,7 @@
       },
       "sandbox": {
         "file": "textbook-margin-column.postext",
-        "bytes": 29814,
+        "bytes": 29853,
         "folio": "ccdc6a5d"
       },
       "detected": {
@@ -658,7 +664,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 293,
+        "configLeaves": 301,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -718,8 +724,8 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
           "column-and-a-half",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -744,7 +750,13 @@
           "share": 0,
           "worst": 1.76
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":3,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     }
   }

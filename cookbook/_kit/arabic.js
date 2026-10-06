@@ -1,4 +1,4 @@
-// ─── Kit · arabic v1 ── Arabic-script faces · postext.dev/cookbook ───────────
+// ─── Kit · arabic v1 ── Arabic-script faces · postext.dev/cookbook
 // Fontsource ships an Arabic family as one file per subset and weight: the
 // `arabic` file holds the letters, the harakat, the Arabic-Indic digits, the
 // Arabic punctuation and the presentation forms; `latin` and `latin-ext`
@@ -83,7 +83,7 @@ async function loadArabicFonts(faces, text = '') {
  *  shaped as one run and not cut at every space. Any other family goes to
  *  fontsourceProvider (the "pdf" block). */
 async function arabicPdfProvider(family, weight, style, request) {
-  if (!(await isArabicFamily(family))) return fontsourceProvider(family, weight, style);
+  if (!(await isArabicFamily(family))) return fontsourceProvider(family, weight, style, request);
   const meta = await fontsourceMeta(family);
   const weights = meta.weights?.length ? meta.weights : [400, 700];
   const w = weights.reduce((a, b) => (Math.abs(b - weight) < Math.abs(a - weight) ? b : a));

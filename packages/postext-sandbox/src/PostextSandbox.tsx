@@ -205,7 +205,9 @@ function SandboxLayout({
   };
 
   // Until the fonts are in, and while the page opens on a link to another
-  // book than the stored one (the stored book is never shown then).
+  // book than the stored one (the stored book is never shown then). A
+  // bundle link to a book imported before asks its question while booting
+  // (#549): the boot waits for the answer, so the dialog is here too.
   if (!fontsReady || booting) {
     return (
       <main
@@ -219,6 +221,8 @@ function SandboxLayout({
           <Spinner />
           <span className="sr-only">{loadingLabel}</span>
         </div>
+        <PortalHost />
+        <BundleReplaceDialog />
       </main>
     );
   }

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "epub-fixed-and-reflowable",
-  "sourceHash": "3ba13491c74a13f1ee6084eb82b61f16889ed73d8e1abf19995c5676ea7e5fa1",
+  "sourceHash": "05a9dec55e2cc714e12fd376d180b283338ebf879e1484a6af676811d9f0f1e5",
   "engine": {
-    "postext": "1.15.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:45:30.005Z",
+  "capturedAt": "2026-10-06T18:34:18.920Z",
   "variants": {
     "en": {
       "hash8": "3670184b",
       "vdtHash": "c96216bea05311b078948a2306d76538cec6bd71",
       "timings": {
-        "importMs": 2582,
-        "fontsMs": 3746,
-        "buildMs": 26,
-        "totalMs": 7019,
+        "importMs": 153,
+        "fontsMs": 33,
+        "buildMs": 34,
+        "totalMs": 874,
         "builds": 2
       },
       "specimen": {
@@ -222,7 +222,6 @@
           "headings.levels[].fontFamily",
           "headings.levels[].fontSize",
           "headings.levels[].italic",
-          "headings.levels[].keepWithNext",
           "headings.levels[].level",
           "headings.levels[].lineHeight",
           "headings.levels[].marginBottom",
@@ -249,7 +248,6 @@
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
           "paragraphStyles[].italicColor",
-          "paragraphStyles[].letterSpacing",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginBottom",
           "paragraphStyles[].marginTop",
@@ -268,7 +266,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 272,
+        "configLeaves": 270,
         "designElements": 12,
         "directives": [
           ":::pagebreak",
@@ -344,10 +342,10 @@
       "hash8": "3e78fe7f",
       "vdtHash": "c8c457410ceb3f9647d1d1ca3698831678e7f732",
       "timings": {
-        "importMs": 2490,
-        "fontsMs": 29,
-        "buildMs": 329,
-        "totalMs": 5635,
+        "importMs": 157,
+        "fontsMs": 25,
+        "buildMs": 322,
+        "totalMs": 1488,
         "builds": 2
       },
       "specimen": {
@@ -553,7 +551,6 @@
           "headings.levels[].fontFamily",
           "headings.levels[].fontSize",
           "headings.levels[].italic",
-          "headings.levels[].keepWithNext",
           "headings.levels[].level",
           "headings.levels[].lineHeight",
           "headings.levels[].marginBottom",
@@ -580,7 +577,6 @@
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
           "paragraphStyles[].italicColor",
-          "paragraphStyles[].letterSpacing",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginBottom",
           "paragraphStyles[].marginTop",
@@ -599,7 +595,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 272,
+        "configLeaves": 270,
         "designElements": 12,
         "directives": [
           ":::pagebreak",

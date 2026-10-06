@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-official-document",
-  "sourceHash": "c0a4c657d26ac61d0699f6ba595afbf30d0fe80e45590a774a5de7bcf95a92c2",
+  "sourceHash": "fbaba62c6372d8527cd52c64f2608cd19b74a09c5704e9da800131f0c2ac25df",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:27.259Z",
+  "capturedAt": "2026-10-06T18:34:18.840Z",
   "variants": {
     "en": {
-      "hash8": "e126172d",
+      "hash8": "216be3f0",
       "vdtHash": "16149f3f2cece312f8444b5285767b3619148576",
       "timings": {
-        "importMs": 162,
-        "fontsMs": 226,
-        "buildMs": 10,
-        "totalMs": 1020,
+        "importMs": 203,
+        "fontsMs": 224,
+        "buildMs": 12,
+        "totalMs": 1049,
         "builds": 2
       },
       "specimen": {
@@ -362,13 +362,13 @@
       }
     },
     "es": {
-      "hash8": "8a93a703",
+      "hash8": "7a079429",
       "vdtHash": "f97c4ead35ec3c7dca8ce5f0e6d83e5731444be0",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 224,
-        "buildMs": 10,
-        "totalMs": 1013,
+        "importMs": 193,
+        "fontsMs": 217,
+        "buildMs": 11,
+        "totalMs": 1084,
         "builds": 2
       },
       "specimen": {
@@ -466,7 +466,7 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129831,
+        "bytes": 129832,
         "pages": 4
       },
       "sandbox": {

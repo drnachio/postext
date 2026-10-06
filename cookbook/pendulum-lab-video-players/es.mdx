@@ -38,9 +38,7 @@ La hoja se organiza en torno a dos vídeos uno junto al otro y a recuadros vací
 
 ### 5 · Compón θ y π en el lienzo, el PDF y el EPUB
 
-<Excerpt region="greek" />
-
-El kit carga el archivo `latin` de Fontsource de cada fuente, que no trae griego. El código añade los archivos `greek` de Source Serif 4 como fuentes limitadas al bloque griego, le pasa al PDF los dos archivos de cada fuente del texto (cada carácter sale del primero que lo tiene) y le da al EPUB los archivos griegos después de los latinos, cada uno con su `unicodeRange`. La captura sigue avisando de que θ y π quedan fuera del subconjunto latino; el PDF los lleva.
+Source Serif 4 guarda las letras griegas en un archivo de Fontsource propio, `greek`, junto al `latin`. `loadFonts(FONTS, markdown)` encuentra letras griegas en el texto y carga ese archivo para cada fuente de la familia, y `fontsourceProvider` lo incrusta en el PDF junto al latino en cada fuente que compone θ o π, así que esas dos letras no necesitan código. El EPUB solo incrusta las fuentes que le pasa el código, por eso el paso 4 añade los archivos griegos de la fuente del texto después de los latinos, cada uno limitado al bloque griego por su `unicodeRange`.
 
 ### 6 · Calcula la tabla en el código
 

@@ -1,4 +1,4 @@
-// ─── Kit · core v1 ── the same in every recipe · postext.dev/cookbook ─────────
+// ─── Kit · core v1 ── the same in every recipe · postext.dev/cookbook
 function mm(value) { return { value, unit: 'mm' }; }
 function pt(value) { return { value, unit: 'pt' }; }
 function em(value) { return { value, unit: 'em' }; }

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "apa-thesis-with-bibtex",
-  "sourceHash": "e48400d66ed0809be47fd100cee127868ea455c3f87b926654301cdbd1115e17",
+  "sourceHash": "cd1c5cff431a9cc14b8e982513bbfedb616be625432807d1cf155ebebea90f55",
   "engine": {
-    "postext": "1.12.0",
-    "postextPdf": "1.12.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:27:47.700Z",
+  "capturedAt": "2026-10-06T18:34:18.618Z",
   "variants": {
     "en": {
-      "hash8": "1828b492",
-      "vdtHash": "2cd2c8278e3f96d5a580aff1035e24e6f5dd5a6a",
+      "hash8": "a8b3536b",
+      "vdtHash": "064168bafa9f29102ffa317ff0a1cacd624073cc",
       "timings": {
-        "importMs": 4285,
-        "fontsMs": 71,
-        "buildMs": 19,
-        "totalMs": 5448,
+        "importMs": 249,
+        "fontsMs": 65,
+        "buildMs": 20,
+        "totalMs": 1284,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 127874,
+          "bytes": 127842,
           "alt": "Opening page 1: 2 Reading on Paper and on Screens: The State of the Evidence."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 142076,
+          "bytes": 141920,
           "alt": "Page 2: 2.2 Speed and line length."
         },
         {
@@ -99,12 +99,12 @@
       },
       "pdf": {
         "file": "apa-thesis-with-bibtex.pdf",
-        "bytes": 60513,
+        "bytes": 60462,
         "pages": 3
       },
       "sandbox": {
         "file": "apa-thesis-with-bibtex.postext",
-        "bytes": 18566,
+        "bytes": 18556,
         "folio": "2af3feac"
       },
       "detected": {
@@ -262,8 +262,8 @@
         ],
         "features": [
           "citation-styles",
-          "citations",
           "cross-references",
+          "figure-citations",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",
@@ -288,13 +288,13 @@
       }
     },
     "es": {
-      "hash8": "a32c15bf",
-      "vdtHash": "f9c9bf022d0ead5eca0da1072385bb33e9eb055f",
+      "hash8": "b559db38",
+      "vdtHash": "22875495bd6613d87ca6bb628d6be8c26b147d03",
       "timings": {
-        "importMs": 1545,
-        "fontsMs": 101,
-        "buildMs": 26,
-        "totalMs": 2829,
+        "importMs": 271,
+        "fontsMs": 73,
+        "buildMs": 25,
+        "totalMs": 1337,
         "builds": 2
       },
       "specimen": {
@@ -337,7 +337,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 149356,
+          "bytes": 149296,
           "alt": "Página 2: 2.2 Velocidad y longitud de línea."
         },
         {
@@ -376,12 +376,12 @@
       },
       "pdf": {
         "file": "apa-thesis-with-bibtex.pdf",
-        "bytes": 66507,
+        "bytes": 66515,
         "pages": 3
       },
       "sandbox": {
         "file": "apa-thesis-with-bibtex.postext",
-        "bytes": 18521,
+        "bytes": 18502,
         "folio": "2af3feac"
       },
       "detected": {
@@ -539,8 +539,8 @@
         ],
         "features": [
           "citation-styles",
-          "citations",
           "cross-references",
+          "figure-citations",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tahqiq-critical-edition",
-  "sourceHash": "baa8e1d525d1f6ad6bd5b2261deb69fd6ab84f64025d9b8d47cecab401fb40a2",
+  "sourceHash": "894c91ec34557630a4ccbbba40ec22fa44bbee17d706f1ad562a1b9f5fb89c67",
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:44:54.521Z",
+  "capturedAt": "2026-10-06T18:34:19.466Z",
   "variants": {
     "en": {
-      "hash8": "c2bcfe9a",
+      "hash8": "5ffd8e7e",
       "vdtHash": "450e833fb8a7df45805cb108debda8aee3d87a64",
       "timings": {
-        "importMs": 468,
-        "fontsMs": 2376,
-        "buildMs": 206,
-        "totalMs": 3982,
+        "importMs": 184,
+        "fontsMs": 73,
+        "buildMs": 217,
+        "totalMs": 1406,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1412,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 22318,
+          "bytes": 22314,
           "alt": "Opening page أ: مقدمة ابن خلدون."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1412,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 16358,
+          "bytes": 16352,
           "alt": "Opening page ب: الطبعة."
         },
         {
@@ -204,7 +204,7 @@
       },
       "pdf": {
         "file": "tahqiq-critical-edition.pdf",
-        "bytes": 153125,
+        "bytes": 153120,
         "pages": 11
       },
       "sandbox": {
@@ -433,13 +433,13 @@
       }
     },
     "es": {
-      "hash8": "6eff2f5c",
+      "hash8": "2f3f29b8",
       "vdtHash": "67748458f8413e649340d042e072eef7e43cf3de",
       "timings": {
-        "importMs": 183,
-        "fontsMs": 78,
-        "buildMs": 209,
-        "totalMs": 1449,
+        "importMs": 184,
+        "fontsMs": 75,
+        "buildMs": 229,
+        "totalMs": 1429,
         "builds": 2
       },
       "specimen": {

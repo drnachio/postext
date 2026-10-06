@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "textbook-box-family",
-  "sourceHash": "1d9028dad4ea2b3f5ff48166613811defb7295903b07fb677f50555ef59b6cb8",
+  "sourceHash": "fa03a0397611956564a51fac8683f52bb75aa01397459fca4e08c611e0ba36a4",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T20:57:42.742Z",
+  "capturedAt": "2026-10-06T18:34:19.505Z",
   "variants": {
     "en": {
-      "hash8": "00ce4347",
-      "vdtHash": "0417bd36286c4e49ed50416f615104774bde80f4",
+      "hash8": "bc5684d7",
+      "vdtHash": "dc28595e779ffca5d21fcfb164e4e34256c3f5e4",
       "timings": {
-        "importMs": 435,
-        "fontsMs": 822,
-        "buildMs": 14,
-        "totalMs": 1928,
+        "importMs": 151,
+        "fontsMs": 45,
+        "buildMs": 24,
+        "totalMs": 924,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 138344,
+          "bytes": 138420,
           "alt": "Page 28: 2.3 Crossing the membrane. Figure 2.2. Mouse proteins in green, human proteins in magenta (the red dye): the two cells, the hybrid just after fusion and the same hybrid 40 minutes later. · Figure 2.1. The fluid mosaic: magenta phospholipids, green proteins, an amber c…"
         },
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 134224,
+          "bytes": 134204,
           "alt": "Page 29: 2.4 Moving in bulk. Figure 2.3. Red blood cells in a hypertonic, an isotonic and a hypotonic solution. Arrows show the net flow of water."
         }
       ],
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "textbook-box-family.postext",
-        "bytes": 45478,
+        "bytes": 45433,
         "folio": "4d63ba9f"
       },
       "detected": {
@@ -358,7 +358,7 @@
           "callout-label-tabs",
           "callout-marker",
           "callout-styles",
-          "citations",
+          "figure-citations",
           "floated-callouts",
           "heading-attributes",
           "heading-numbering",
@@ -385,21 +385,21 @@
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "continuation.headings {\"h1\":1,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "b1177702",
-      "vdtHash": "6b76a4ac4da47e3b34c06fd47b44034ccdd410bc",
+      "hash8": "c5c92e47",
+      "vdtHash": "b95d9fed920cda47bd315548b4bf324147383d0b",
       "timings": {
-        "importMs": 115,
-        "fontsMs": 38,
-        "buildMs": 15,
-        "totalMs": 920,
+        "importMs": 139,
+        "fontsMs": 36,
+        "buildMs": 24,
+        "totalMs": 872,
         "builds": 2
       },
       "specimen": {
@@ -433,7 +433,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 166876,
+          "bytes": 166874,
           "alt": "Página de apertura 27: Células y membranas."
         },
         {
@@ -444,7 +444,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 140112,
+          "bytes": 140146,
           "alt": "Página 28: 2.3 Atravesar la membrana. Figura 2.2. En verde, las proteínas de ratón; en magenta, las humanas (el colorante rojo): las dos células, el híbrido recién fusionado y el mismo híbrido 40 minutos después. · Figura 2.1. El mosaico fluido: fosfolípidos magenta, proteínas…"
         },
         {
@@ -455,7 +455,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 142386,
+          "bytes": 142354,
           "alt": "Página 29: 2.4 Cargas a granel. Figura 2.3. Glóbulos rojos en una disolución hipertónica, una isotónica y una hipotónica. Las flechas indican el flujo neto de agua."
         }
       ],
@@ -483,7 +483,7 @@
       },
       "sandbox": {
         "file": "textbook-box-family.postext",
-        "bytes": 44097,
+        "bytes": 44130,
         "folio": "4d63ba9f"
       },
       "detected": {
@@ -741,7 +741,7 @@
           "callout-label-tabs",
           "callout-marker",
           "callout-styles",
-          "citations",
+          "figure-citations",
           "floated-callouts",
           "heading-attributes",
           "heading-numbering",
@@ -766,7 +766,13 @@
           "share": 0,
           "worst": 1.95
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":1,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     }
   }

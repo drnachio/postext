@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "living-newspaper-video-loops",
-  "sourceHash": "a2be4889c775f3a0c6df7579f377212c1fbcec431ec56ac694bce5346bb98ea4",
+  "sourceHash": "1449608fcf4151dbde911adfed7709d920413b5e536f684df4b99c60bda50693",
   "engine": {
-    "postext": "1.18.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:21:38.562Z",
+  "capturedAt": "2026-10-06T18:34:19.140Z",
   "variants": {
     "en": {
-      "hash8": "51d466ae",
+      "hash8": "08e47f2b",
       "vdtHash": "7809539a24b7c8335b2d4fd79847d0a4220ccff3",
       "timings": {
-        "importMs": 658,
-        "fontsMs": 110,
-        "buildMs": 530,
-        "totalMs": 4390,
+        "importMs": 165,
+        "fontsMs": 41,
+        "buildMs": 1169,
+        "totalMs": 8584,
         "builds": 2
       },
       "specimen": {
@@ -116,7 +116,7 @@
       },
       "sandbox": {
         "file": "living-newspaper-video-loops.postext",
-        "bytes": 294982,
+        "bytes": 294956,
         "folio": "dca9ec8b"
       },
       "detected": {

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ieee-conference-paper",
-  "sourceHash": "f27a7386f22f7872864c8d1d7d6a392cb7aeacf4cdc701150b45811867c8f400",
+  "sourceHash": "e8df4a3d15793a6689217e9babd06e1be3363c63c16582dda16b0e645d98d8c1",
   "engine": {
-    "postext": "1.12.0",
-    "postextPdf": "1.12.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:27:55.053Z",
+  "capturedAt": "2026-10-06T18:34:19.022Z",
   "variants": {
     "en": {
-      "hash8": "2706da6e",
-      "vdtHash": "29a80c43b90ffc9a5d8650b51dcd6c2d5f2326b0",
+      "hash8": "9929aca0",
+      "vdtHash": "a7deaa0f1a97485124d6bd47275305a161055c6b",
       "timings": {
-        "importMs": 8585,
-        "fontsMs": 1774,
-        "buildMs": 409,
-        "totalMs": 11474,
+        "importMs": 219,
+        "fontsMs": 69,
+        "buildMs": 381,
+        "totalMs": 1242,
         "builds": 1
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 202950,
+          "bytes": 202498,
           "alt": "Page 2: III. METHOD."
         }
       ],
@@ -89,12 +89,12 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 81193,
+        "bytes": 82276,
         "pages": 2
       },
       "sandbox": {
         "file": "ieee-conference-paper.postext",
-        "bytes": 29460,
+        "bytes": 29450,
         "folio": "9f7fbdf3"
       },
       "detected": {
@@ -286,8 +286,8 @@
         "features": [
           "callout-styles",
           "citation-styles",
-          "citations",
           "cross-references",
+          "figure-citations",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",
@@ -312,13 +312,13 @@
       }
     },
     "es": {
-      "hash8": "87af5623",
-      "vdtHash": "ddd42728e28d0a80412b0196e87fe88cb49dc34c",
+      "hash8": "7a79669c",
+      "vdtHash": "d4da76d880d1b66ac924fa5412e02479ed910d3d",
       "timings": {
-        "importMs": 7253,
-        "fontsMs": 1094,
-        "buildMs": 262,
-        "totalMs": 9390,
+        "importMs": 225,
+        "fontsMs": 63,
+        "buildMs": 194,
+        "totalMs": 1069,
         "builds": 1
       },
       "specimen": {
@@ -362,7 +362,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 232136,
+          "bytes": 232208,
           "alt": "Página 2: III. MÉTODO."
         }
       ],
@@ -390,12 +390,12 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 93422,
+        "bytes": 94291,
         "pages": 2
       },
       "sandbox": {
         "file": "ieee-conference-paper.postext",
-        "bytes": 29974,
+        "bytes": 29964,
         "folio": "9f7fbdf3"
       },
       "detected": {
@@ -587,8 +587,8 @@
         "features": [
           "callout-styles",
           "citation-styles",
-          "citations",
           "cross-references",
+          "figure-citations",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",

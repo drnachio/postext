@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "live-palette-retint",
-  "sourceHash": "48b5ceb6f6fbab0176c1778cd237c8b9e7488d1412e2aca2e6d440d62ef84e93",
+  "sourceHash": "44abee636d5134f8203cd008fc13d19f403e95824d39827b00fb14330f221825",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:01:42.936Z",
+  "capturedAt": "2026-10-06T18:34:19.130Z",
   "variants": {
     "en": {
-      "hash8": "cfb3bc74",
-      "vdtHash": "d5d94a710bed437915b8ba712fc54210b55c1e1c",
+      "hash8": "fba47188",
+      "vdtHash": "ce42663071ecbbb873b40a3533ad122a520ac726",
       "timings": {
-        "importMs": 565,
-        "fontsMs": 653,
-        "buildMs": 3,
-        "totalMs": 1979,
+        "importMs": 170,
+        "fontsMs": 46,
+        "buildMs": 8,
+        "totalMs": 877,
         "builds": 5
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1000,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 82900,
+          "bytes": 82892,
           "alt": "Opening page 1: Riverside Music Week."
         },
         {
@@ -88,7 +88,7 @@
       },
       "sandbox": {
         "file": "live-palette-retint.postext",
-        "bytes": 31221,
+        "bytes": 31255,
         "folio": "de4718c0"
       },
       "detected": {
@@ -255,7 +255,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 514,
+        "configLeaves": 522,
         "designElements": 35,
         "directives": [
           ":::callout",
@@ -302,7 +302,7 @@
         "features": [
           "callout-styles",
           "chips",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "localised-labels",
           "opener-band",
@@ -326,13 +326,13 @@
       }
     },
     "es": {
-      "hash8": "b16743cd",
-      "vdtHash": "1be95eeb4270b3629002ee74f5894b23588641f2",
+      "hash8": "14b8ccfc",
+      "vdtHash": "fe8350d344a9788a6012a65a4fa241d4b88953dc",
       "timings": {
-        "importMs": 227,
-        "fontsMs": 16,
-        "buildMs": 3,
-        "totalMs": 978,
+        "importMs": 169,
+        "fontsMs": 27,
+        "buildMs": 6,
+        "totalMs": 828,
         "builds": 5
       },
       "specimen": {
@@ -404,7 +404,7 @@
       },
       "sandbox": {
         "file": "live-palette-retint.postext",
-        "bytes": 31809,
+        "bytes": 31824,
         "folio": "de4718c0"
       },
       "detected": {
@@ -571,7 +571,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 514,
+        "configLeaves": 522,
         "designElements": 35,
         "directives": [
           ":::callout",
@@ -618,7 +618,7 @@
         "features": [
           "callout-styles",
           "chips",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "localised-labels",
           "opener-band",
@@ -638,13 +638,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

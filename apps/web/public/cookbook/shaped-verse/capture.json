@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "shaped-verse",
-  "sourceHash": "230b989fc659820e32963b9a613077cdce4d13116f9b615ef7e6196c508b04cc",
+  "sourceHash": "321d9cebb0ed650f15757f30128b3b3832da7a1eff26024f8845166aa8d1740a",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:15:41.688Z",
+  "capturedAt": "2026-10-06T18:34:19.430Z",
   "variants": {
     "en": {
-      "hash8": "d18f3c85",
-      "vdtHash": "03c8d302a3fd45bf9da749671dfe2cc5d949b21b",
+      "hash8": "dc0a7851",
+      "vdtHash": "e68d134f3f30cd3f24d988e99b3f3a1d9ea8578a",
       "timings": {
-        "importMs": 326,
-        "fontsMs": 861,
-        "buildMs": 4,
-        "totalMs": 1819,
+        "importMs": 152,
+        "fontsMs": 31,
+        "buildMs": 6,
+        "totalMs": 769,
         "builds": 2
       },
       "specimen": {
@@ -82,7 +82,7 @@
           "h": 1419,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 63266,
+          "bytes": 63104,
           "alt": "Page 4: Herbert’s motto."
         }
       ],
@@ -114,7 +114,7 @@
       },
       "sandbox": {
         "file": "shaped-verse.postext",
-        "bytes": 19438,
+        "bytes": 19435,
         "folio": "900eced1"
       },
       "detected": {
@@ -231,13 +231,13 @@
       }
     },
     "es": {
-      "hash8": "d74e5f10",
-      "vdtHash": "b5b6a2332c81ef2ef2eca86e17be2dc40d33003a",
+      "hash8": "5466efaf",
+      "vdtHash": "41a22084e64aec2a822b75bbd8eb77fceb4ecb07",
       "timings": {
-        "importMs": 134,
-        "fontsMs": 29,
-        "buildMs": 4,
-        "totalMs": 819,
+        "importMs": 160,
+        "fontsMs": 26,
+        "buildMs": 6,
+        "totalMs": 774,
         "builds": 2
       },
       "specimen": {
@@ -335,7 +335,7 @@
       },
       "sandbox": {
         "file": "shaped-verse.postext",
-        "bytes": 19331,
+        "bytes": 19326,
         "folio": "900eced1"
       },
       "detected": {
@@ -448,13 +448,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "seed-catalogue",
-  "sourceHash": "9523fb0fd6a742009eee56f4af448b53b348ba086b35d276ab7b2ed94ca08d97",
+  "sourceHash": "85e4df81ee8dc50fbdb95946d47a55aa291120ca5239d607f49f34b8218f268a",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:50:53.042Z",
+  "capturedAt": "2026-10-06T18:34:19.428Z",
   "variants": {
     "en": {
-      "hash8": "2912aa53",
+      "hash8": "ddd982db",
       "vdtHash": "7b51fa4173870c535d343310cf1dc9e53f354c34",
       "timings": {
-        "importMs": 130,
-        "fontsMs": 52,
-        "buildMs": 15,
-        "totalMs": 820,
+        "importMs": 159,
+        "fontsMs": 46,
+        "buildMs": 19,
+        "totalMs": 870,
         "builds": 2
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "seed-catalogue.postext",
-        "bytes": 713772,
+        "bytes": 713748,
         "folio": "d45f6f65"
       },
       "detected": {
@@ -350,7 +350,7 @@
           "cell-fills",
           "cell-images",
           "chips",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "inline-embeds",
@@ -376,13 +376,7 @@
           "share": 0,
           "worst": 1.33
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

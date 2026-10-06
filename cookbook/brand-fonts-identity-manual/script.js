@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 040 · Brand fonts in layout, PDF and bundle ════════════
 // https://postext.dev/en/cookbook/brand-fonts-identity-manual
 // Code: MIT · Text and drawings: original (CC BY 4.0) · Metro de Alba is a fictional network
-// Fonts: Public Sans, Big Shoulders Display, Spline Sans Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Public Sans, Big Shoulders Display, Spline Sans Mono (OFL 1.1) · Needs postext ≥ 1.19.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   defaultResourceTypes, setCellBackground, createBundle,

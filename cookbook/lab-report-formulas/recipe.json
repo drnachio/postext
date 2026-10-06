@@ -84,11 +84,6 @@
       "note": "every symbol is imported from esm.sh/postext?bundle and initMathEngine() is awaited before the build"
     },
     {
-      "followup": "EF-75",
-      "package": "postext",
-      "note": "no math.fontSizeScale: 1.4.1 gives a formula an x-height of half the type size, about 13 % above MathJax's own 0.442 em, which happens to match Inria Serif's 0.495 em; set math.fontSizeScale near 1.12 (0.495 / 0.442) once the scale is fixed"
-    },
-    {
       "followup": "EF-80",
       "package": "postext",
       "note": "~sub~ drops its figure a third of an em, as far as ^sup^ rises: the 15 pt leading on 10.5 pt keeps every dropped subscript clear of the next line"
@@ -107,11 +102,6 @@
       "followup": "EF-66",
       "package": "postext",
       "note": "a no-break space still breaks, so the text uses none: units are written mol·dm^−3^ (one word), and every number–unit pair was checked to sit mid-line in both editions"
-    },
-    {
-      "followup": "EF-93",
-      "package": "postext",
-      "note": "the inline table gets no space below it: ::resource is followed by :::space{lines=1}"
     },
     {
       "followup": "EF-73",
@@ -165,7 +155,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "postextPdf": "1.4.1",
     "math": true
   },
@@ -241,5 +231,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-06"
 }

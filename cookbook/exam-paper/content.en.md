@@ -33,25 +33,25 @@ subtitle: "The American Civil War, 1863"
 Shade one bubble for each question in the grid on page 1:
 
 1. The Emancipation Proclamation took effect on 1 January 1863. Where did it declare enslaved people free?
-  - :chip[A] every state :chip[B] border states :chip[C] rebel states :chip[D] western states
+- :chip[A] every state :chip[B] border states :chip[C] rebel states :chip[D] western states
 2. Who commanded the Union army at the Battle of Gettysburg?
-  - :chip[A] U. S. Grant :chip[B] G. G. Meade :chip[C] G. B. McClellan :chip[D] W. T. Sherman
+- :chip[A] U. S. Grant :chip[B] G. G. Meade :chip[C] G. B. McClellan :chip[D] W. T. Sherman
 3. Which Confederate stronghold surrendered on 4 July 1863?
-  - :chip[A] New Orleans :chip[B] Vicksburg :chip[C] Memphis :chip[D] Baton Rouge
+- :chip[A] New Orleans :chip[B] Vicksburg :chip[C] Memphis :chip[D] Baton Rouge
 4. How many years are “four score and seven”?
-  - :chip[A] 47 :chip[B] 67 :chip[C] 87 :chip[D] 107
+- :chip[A] 47 :chip[B] 67 :chip[C] 87 :chip[D] 107
 5. Who gave the two-hour main oration at the dedication of the cemetery at Gettysburg?
-  - :chip[A] E. Everett :chip[B] F. Douglass :chip[C] W. H. Seward :chip[D] J. Hay
+- :chip[A] E. Everett :chip[B] F. Douglass :chip[C] W. H. Seward :chip[D] J. Hay
 6. Under the Enrollment Act of March 1863, what could a drafted man pay to be excused from service?
-  - :chip[A] \$100 :chip[B] \$300 :chip[C] \$500 :chip[D] \$1,000
+- :chip[A] \$100 :chip[B] \$300 :chip[C] \$500 :chip[D] \$1,000
 7. Which regiment of Black soldiers led the assault on Fort Wagner, South Carolina, in July 1863?
-  - :chip[A] 20th Maine :chip[B] 9th Ohio :chip[C] 2nd Iowa :chip[D] 54th Massachusetts
+- :chip[A] 20th Maine :chip[B] 9th Ohio :chip[C] 2nd Iowa :chip[D] 54th Massachusetts
 8. Which state joined the Union on 20 June 1863?
-  - :chip[A] Nevada :chip[B] West Virginia :chip[C] Kansas :chip[D] Nebraska
+- :chip[A] Nevada :chip[B] West Virginia :chip[C] Kansas :chip[D] Nebraska
 9. At which battle in May 1863 was General Thomas “Stonewall” Jackson mortally wounded?
-  - :chip[A] Chancellorsville :chip[B] Antietam :chip[C] Fredericksburg :chip[D] Shiloh
+- :chip[A] Chancellorsville :chip[B] Antietam :chip[C] Fredericksburg :chip[D] Shiloh
 10. Which city saw four days of riots against the draft in July 1863?
-  - :chip[A] Boston :chip[B] Philadelphia :chip[C] New York :chip[D] Chicago
+- :chip[A] Boston :chip[B] Philadelphia :chip[C] New York :chip[D] Chicago
 
 :::pagebreak
 

@@ -5,7 +5,7 @@ plain: "一本讲字体排印的小杂志，排成两端对齐的窄栏。示例
 description: "一份A5的字体期刊排了两遍：词间距限定在0.8–1.6的Knuth–Plass断行对照首次适配断行，过松的行、孤行和孤字都根据VDT标出。"
 question: "怎样在窄栏中得到均匀的两端对齐，并为每种语言使用正确的断词？"
 aliases: ["两端对齐", "词间距", "白色河流", "过松的行", "Knuth-Plass", "贪心断行", "首次适配", "段末孤行", "段首孤行", "孤字", "断词", "断词语言", "窄栏", "调整篇幅", "justification", "word spacing", "rivers", "hyphenation", "justifiedSpaceRatio", "minWordSpacing", "maxWordSpacing"]
-pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12 · Justification、白色标题The river problem和一段斜体导语，接着是一幅示意图：一排白色单词框由短短的黄色弹簧相连，最后一个单词越过了表示行长的虚线；下面是同一排单词经过断词后，弹簧被拉伸到正好填满行长。色带下方，文章以两栏两端对齐开始。", "2": "排满的两栏：Greedy and total fit、Fences for the glue、Hyphens和Widows, orphans and runts几节，生效的设置（minWordSpacing 0.8、maxWordSpacing 1.6；widowPenalty、orphanPenalty、slackWeight）用等宽字体排在一条石墨色竖线旁。", "3": "文章结尾，两栏平齐，含孤字设置和版权页信息；页面底部是一个石墨色的对照测试：同一段文字分别排成齐左、不断词的两端对齐（空隙很宽）和断词的两端对齐，另有一段白字说明。" }
+pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12 · Justification、白色标题The river problem和一段斜体导语，接着是一幅示意图：一排白色单词框由短短的黄色弹簧相连，最后一个单词越过了表示行长的虚线；下面是同一排单词经过断词后，弹簧被拉伸到正好填满行长。色带下方，文章以两栏两端对齐开始。", "2": "排满的两栏：Greedy and total fit、Fences for the glue、Hyphens和Widows, orphans and runts几节，生效的设置（minWordSpacing 0.8、maxWordSpacing 1.6；widowPenalty、orphanPenalty、slackWeight）用等宽字体排在一条石墨色竖线旁。", "3": "文章结尾，两栏平齐，含孤字设置和版权页信息；页面底部是一个石墨色的对照测试：同一段文字分别排成齐左、不断词的两端对齐（空隙很宽，前两行排成齐左）和断词的两端对齐，另有一段白字说明。" }
 ---
 
 ## 成品一览
@@ -65,4 +65,4 @@ pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12
 ## 常见问题
 
 - 留在栏尾的框，在各栏齐底时会掉到栏底，离开它所属的段落。调整文字篇幅让这一栏排满，“Fences for the glue”下面的设置框就需要这样处理。
-- 在postext 1.4.1中，框内的行无论拉得多宽都不会排成齐左：不断词样条保留了超过正常空格三倍的行（有一行达到六倍），换作正文就会排成齐左。
+- 不断词样条看不到它本来需要的最宽空隙。两端对齐的行若要把空格拉到正常宽度的三倍以上，就按自然间距排成齐左，框内和正文一样，所以这张样条的前两行没有排满行长。没到这个上限的行仍然两端对齐，样条上那些宽空隙就出自这些行。

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "parts-in-colour",
-  "sourceHash": "56de9256109add39a27a245ea778ad06463e6b18fc5dbe1521f666bd5e60cad8",
+  "sourceHash": "0bcec9222fba7f1980486fdcc0236db86348b3b98aa0dd0eb7fd6e4251eb7cf7",
   "engine": {
-    "postext": "1.8.3",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T19:59:48.733Z",
+  "capturedAt": "2026-10-06T18:34:19.238Z",
   "variants": {
     "en": {
-      "hash8": "09352ee0",
+      "hash8": "9b90d500",
       "vdtHash": "0e5889b3360077090ccfa5da2047c750f0b77848",
       "timings": {
-        "importMs": 291,
-        "fontsMs": 114,
-        "buildMs": 21,
-        "totalMs": 1284,
+        "importMs": 155,
+        "fontsMs": 1752,
+        "buildMs": 72,
+        "totalMs": 4907,
         "builds": 2
       },
       "specimen": {
@@ -192,7 +192,7 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 843904,
+        "bytes": 843881,
         "folio": "a033cff5"
       },
       "detected": {
@@ -481,23 +481,17 @@
           "share": 0,
           "worst": 1.3800000000000001
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "a51a2e0a",
+      "hash8": "72259df1",
       "vdtHash": "31d347092a81c1b9efa5c01bdc022c9921779bf7",
       "timings": {
-        "importMs": 172,
-        "fontsMs": 51,
-        "buildMs": 18,
-        "totalMs": 909,
+        "importMs": 151,
+        "fontsMs": 48,
+        "buildMs": 19,
+        "totalMs": 912,
         "builds": 2
       },
       "specimen": {
@@ -673,7 +667,7 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 843834,
+        "bytes": 843811,
         "folio": "a033cff5"
       },
       "detected": {
@@ -962,13 +956,7 @@
           "share": 0,
           "worst": 1.54
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

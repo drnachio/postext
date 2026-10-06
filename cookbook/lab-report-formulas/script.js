@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 028 · Lab report: formulas, subscripts and a titration curve ═══
 // https://postext.dev/en/cookbook/lab-report-formulas
 // Code: MIT · Text: original (CC BY 4.0) · Figures: drawn in code (CC BY 4.0)
-// Fonts: Inria Serif, Inria Sans, Sometype Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Inria Serif, Inria Sans, Sometype Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   defaultResourceTypes, initMathEngine, renderMath, mergeCells,
@@ -50,8 +50,9 @@ const heads = t({ es: ['Valoración', 'V~inicial~', 'V~final~', 'V~b~ gastado'],
 // initMathEngine() throw, and a build that starts before it resolves prints grey boxes
 // (gotcha: math-bundle).
 await initMathEngine();
-// No math.fontSizeScale: 1.4.1 draws formulas with an x-height of half the type size, and
-// Inria Serif's is 0.495 em, so at the default scale their lowercase matches the text's.
+// A formula's x-height is TeX's 0.442 em of the type size and Inria Serif's is 0.495 em, so
+// math.fontSizeScale lifts the formulas' lowercase to the height of the text's.
+const MATH_SCALE = 0.495 / 0.442; // about 1.12
 // #endregion
 
 // #region hanging: section numbers hung in the margin, titles on the text edge
@@ -184,7 +185,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: SANS, color: col('ink'), levels },
   // A display's marginBottom is a minimum that the 15 pt grid rounds up: at the default
   // 0.8 em a fraction got a line more air under it than over it.
-  math: { marginBottom: em(0.3) },
+  math: { fontSizeScale: MATH_SCALE, marginBottom: em(0.3) },
   headingStyles: [report, back],
   unorderedLists: { bulletChar: '–', color: col('phenol'), marginTop: pt(0), marginBottom: pt(0) },
   orderedLists: { fontFamily: SANS, fontWeight: 700, color: col('phenol'), marginTop: pt(0),

@@ -42,8 +42,7 @@
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
     "config-cache-identity",
-    "quote-frontmatter",
-    "nbsp-breaks"
+    "quote-frontmatter"
   ],
   "workarounds": [
     {
@@ -72,18 +71,13 @@
       "note": "every frontmatter value is quoted: the band prints {title} · {subtitle}, and the PDF takes its title and author from them"
     },
     {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "'line 3' is glued with U+00A0 in a plain paragraph; the map paragraph, which holds :ref runs, was reworded instead, since U+00A0 still breaks in rich paragraphs"
-    },
-    {
       "followup": "EF-149",
       "package": "postext",
       "note": "the Do and Don't types keep numberingTemplate '{n}', so the captions read 'Do 1.' and 'Don't 1.': with an empty template 1.4.1 prints 'Do .' before the caption text and 'Do' plus a no-break space for a :ref"
     }
   ],
   "related": ["pdf-with-embedded-fonts", "fonts-before-layout", "parts-in-colour", "technical-datasheet"],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "engine": { "postext": "1.19.1", "postextPdf": "1.19.1" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -129,5 +123,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-06"
 }

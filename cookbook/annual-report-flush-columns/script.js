@@ -138,7 +138,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
       right: mm(MARGIN.outer), mirror: true } },
-  layout: { gutterWidth: mm(GUTTER) }, // two columns, the default
+  layout: { gutterWidth: mm(GUTTER), inlineResourceGap: 'above' }, // no air under the signature
   // Bold, italic and references default to the engine's blue, so all three are restated in ink.
   bodyText: { ...flowText, color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
     referenceColor: col('ink'), referenceBold: false },

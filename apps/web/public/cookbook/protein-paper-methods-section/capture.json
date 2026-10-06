@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "protein-paper-methods-section",
-  "sourceHash": "0079284ed7905b307437cc7ba49d76edd077a81c28a6af3b6141ebb6bc58c3e6",
+  "sourceHash": "42114df2d3cdc22b1135c185cf15361547c7a7dd19d0c15ec4e55a4281ededbc",
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T16:10:41.413Z",
+  "capturedAt": "2026-10-06T18:34:19.326Z",
   "variants": {
     "en": {
-      "hash8": "1f9a1c62",
-      "vdtHash": "0bb9d1cffef73a32f6d3f79950c61697a815d23b",
+      "hash8": "ba79ec83",
+      "vdtHash": "7d65b4d482af7e0ae5727f913c9c9a21dd94b38d",
       "timings": {
-        "importMs": 204,
-        "fontsMs": 93,
-        "buildMs": 831,
-        "totalMs": 2619,
+        "importMs": 221,
+        "fontsMs": 103,
+        "buildMs": 828,
+        "totalMs": 2765,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif"
         ],
         "pages": 5,
-        "ownLines": 192
+        "ownLines": 173
       },
       "pages": [
         {
@@ -126,7 +126,7 @@
       },
       "pdf": {
         "file": "protein-paper-methods-section.pdf",
-        "bytes": 515437,
+        "bytes": 514913,
         "pages": 5
       },
       "sandbox": {
@@ -421,16 +421,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.33 MB (warning at 0.9 MB for 5 pages)"
-          },
-          {
-            "check": "C25",
-            "severity": "warn",
-            "detail": "outside the latin subset: α U+03B1, Ž U+017D, χ U+03C7, Š U+0160"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

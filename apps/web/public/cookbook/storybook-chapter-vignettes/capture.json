@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "storybook-chapter-vignettes",
-  "sourceHash": "d8122db53c7ec1fdbf6e64dcb58ceb78687f70a5d018000602975ddd4868d647",
+  "sourceHash": "77d126642e3a6fb630c6f7957d6b332486438224cd98477f3144b4ac0989e95c",
   "engine": {
-    "postext": "1.8.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T13:54:04.033Z",
+  "capturedAt": "2026-10-06T18:34:19.460Z",
   "variants": {
     "en": {
-      "hash8": "7335cd03",
+      "hash8": "e7cb97cd",
       "vdtHash": "32a6dbf2b64de486bd6fc2cd0ab3ec6f0eb1325f",
       "timings": {
-        "importMs": 20304,
-        "fontsMs": 60,
-        "buildMs": 161,
-        "totalMs": 21511,
+        "importMs": 175,
+        "fontsMs": 56,
+        "buildMs": 126,
+        "totalMs": 1108,
         "builds": 2
       },
       "specimen": {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "storybook-chapter-vignettes.postext",
-        "bytes": 820974,
+        "bytes": 820948,
         "folio": "ebfafef3"
       },
       "detected": {
@@ -323,11 +323,6 @@
             "detail": "3 of 43 justified lines (7.0 %) stretch past 1.45× (worst 1.58×); loosest: p. 3 1.58× “— Ho capito; — disse allora ridendo e grattando…”, p. 4 1.55× “Questa volta il povero maestro Ciliegia cadde g…”, p. 3 1.48× “E ripresa l’ascia in mano, tirò giù un solennis…”"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 5: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -336,13 +331,13 @@
       }
     },
     "es": {
-      "hash8": "b34a59f6",
+      "hash8": "184e0591",
       "vdtHash": "32a6dbf2b64de486bd6fc2cd0ab3ec6f0eb1325f",
       "timings": {
-        "importMs": 14393,
-        "fontsMs": 2290,
-        "buildMs": 195,
-        "totalMs": 19753,
+        "importMs": 157,
+        "fontsMs": 56,
+        "buildMs": 125,
+        "totalMs": 1150,
         "builds": 2
       },
       "specimen": {
@@ -451,7 +446,7 @@
       },
       "sandbox": {
         "file": "storybook-chapter-vignettes.postext",
-        "bytes": 821021,
+        "bytes": 820995,
         "folio": "ebfafef3"
       },
       "detected": {
@@ -647,11 +642,6 @@
             "check": "C24",
             "severity": "warn",
             "detail": "3 of 43 justified lines (7.0 %) stretch past 1.45× (worst 1.58×); loosest: p. 3 1.58× “— Ho capito; — disse allora ridendo e grattando…”, p. 4 1.55× “Questa volta il povero maestro Ciliegia cadde g…”, p. 3 1.48× “E ripresa l’ascia in mano, tirò giù un solennis…”"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "research-poster",
-  "sourceHash": "7be04e637bb70c50032dc7677225ea2485e6cd9d365de74cfcd0fdb5d2d2c45c",
+  "sourceHash": "b446d839bb7daee81a72a4348038af7476dedba8d86f2bf88ae2c596c8c92880",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:10:53.680Z",
+  "capturedAt": "2026-10-06T18:34:19.392Z",
   "variants": {
     "en": {
-      "hash8": "14a5def7",
-      "vdtHash": "f0743b9c43456acb58666b0f252e02bd7f02bf42",
+      "hash8": "e5f465b6",
+      "vdtHash": "fb8032f8a2bc5b9c6a9ebb6d93afa45b4fc89a7f",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 784,
-        "buildMs": 8,
-        "totalMs": 1592,
+        "importMs": 157,
+        "fontsMs": 40,
+        "buildMs": 19,
+        "totalMs": 848,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Saira Condensed"
         ],
         "pages": 1,
-        "ownLines": 204
+        "ownLines": 207
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175282,
+          "bytes": 174194,
           "alt": "Opening page 1: Street trees and sidewalk heat. Figure 1. Ashby Road, schematic plan: crowns from the canopy survey and the 16 loggers (orange). Widths across the street are not to scale. · Figure 2. Canopy cover per block (bars, %) and the air at head height against the stree…"
         }
       ],
@@ -74,7 +74,7 @@
       },
       "sandbox": {
         "file": "research-poster.postext",
-        "bytes": 94252,
+        "bytes": 94047,
         "folio": "7c6d9248"
       },
       "detected": {
@@ -95,6 +95,7 @@
           "bodyText.fontSize",
           "bodyText.italicColor",
           "bodyText.lineHeight",
+          "bodyText.paragraphContainerSpacing",
           "bodyText.paragraphSpacing",
           "bodyText.textAlign",
           "calloutStyles",
@@ -203,7 +204,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 251,
+        "configLeaves": 252,
         "designElements": 7,
         "directives": [
           ":::callout",
@@ -265,7 +266,7 @@
           "callout-columns",
           "callout-styles",
           "chips",
-          "citations",
+          "figure-citations",
           "floated-callouts",
           "heading-attributes",
           "inline-embeds",
@@ -295,13 +296,13 @@
       }
     },
     "es": {
-      "hash8": "d1772603",
-      "vdtHash": "b717fc638f7b5d90f019ccf8d28d46dda7cf1ca9",
+      "hash8": "6249df7b",
+      "vdtHash": "3aca65b06b8b33f0d5c6636424051b2c8b3a1437",
       "timings": {
-        "importMs": 73,
-        "fontsMs": 32,
-        "buildMs": 8,
-        "totalMs": 765,
+        "importMs": 231,
+        "fontsMs": 42,
+        "buildMs": 18,
+        "totalMs": 920,
         "builds": 2
       },
       "specimen": {
@@ -324,7 +325,7 @@
           "Saira Condensed"
         ],
         "pages": 1,
-        "ownLines": 204
+        "ownLines": 207
       },
       "pages": [
         {
@@ -335,7 +336,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 182712,
+          "bytes": 181148,
           "alt": "Página de apertura 1: Arbolado viario y calor en la acera. Figura 1. La avenida en plano esquemático: las copas del inventario de arbolado y los 16 registradores (naranja). Los anchos transversales no están a escala. · Figura 2. Copa por manzana (barras, %) y aire a la altura…"
         }
       ],
@@ -359,7 +360,7 @@
       },
       "sandbox": {
         "file": "research-poster.postext",
-        "bytes": 94936,
+        "bytes": 94716,
         "folio": "7c6d9248"
       },
       "detected": {
@@ -380,6 +381,7 @@
           "bodyText.fontSize",
           "bodyText.italicColor",
           "bodyText.lineHeight",
+          "bodyText.paragraphContainerSpacing",
           "bodyText.paragraphSpacing",
           "bodyText.textAlign",
           "calloutStyles",
@@ -488,7 +490,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 251,
+        "configLeaves": 252,
         "designElements": 7,
         "directives": [
           ":::callout",
@@ -550,7 +552,7 @@
           "callout-columns",
           "callout-styles",
           "chips",
-          "citations",
+          "figure-citations",
           "floated-callouts",
           "heading-attributes",
           "inline-embeds",
@@ -576,13 +578,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "medical-article-vancouver",
-  "sourceHash": "2cfc410cb4dda5718cf8c258ae4a95ffc57e529777579edd5797a54524c74ec0",
+  "sourceHash": "9eab7cad3463897d9924ec691bfd5a0b1caaada5c7a72b75bc1e158b660e6031",
   "engine": {
-    "postext": "1.12.1",
-    "postextPdf": "1.12.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T21:33:20.687Z",
+  "capturedAt": "2026-10-06T18:34:19.180Z",
   "variants": {
     "en": {
-      "hash8": "ed0f3f61",
-      "vdtHash": "b7e5923f2c7d88a959944c816ae0e042f77f80b2",
+      "hash8": "d153faa6",
+      "vdtHash": "32d7294ce826407b5b17b743481064bc094dd576",
       "timings": {
-        "importMs": 360,
-        "fontsMs": 1394,
-        "buildMs": 41,
-        "totalMs": 2514,
+        "importMs": 230,
+        "fontsMs": 77,
+        "buildMs": 49,
+        "totalMs": 1064,
         "builds": 2
       },
       "specimen": {
@@ -73,7 +73,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 116294,
+          "bytes": 116214,
           "alt": "Page 183: References."
         }
       ],
@@ -101,12 +101,12 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 178237,
+        "bytes": 181035,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 53192,
+        "bytes": 53214,
         "folio": "b245c39c"
       },
       "detected": {
@@ -315,7 +315,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 392,
+        "configLeaves": 400,
         "designElements": 14,
         "directives": [
           ":::callout",
@@ -403,13 +403,13 @@
       }
     },
     "es": {
-      "hash8": "9bd46a18",
+      "hash8": "80e51e47",
       "vdtHash": "7d8767dd0bf652221b9d21ed3150ad072901f5b3",
       "timings": {
-        "importMs": 149,
-        "fontsMs": 69,
-        "buildMs": 42,
-        "totalMs": 1031,
+        "importMs": 214,
+        "fontsMs": 77,
+        "buildMs": 53,
+        "totalMs": 1066,
         "builds": 2
       },
       "specimen": {
@@ -465,7 +465,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 149572,
+          "bytes": 149628,
           "alt": "Página 183: Información del artículo."
         }
       ],
@@ -493,12 +493,12 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 187618,
+        "bytes": 190291,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 54419,
+        "bytes": 54443,
         "folio": "b245c39c"
       },
       "detected": {
@@ -707,7 +707,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 392,
+        "configLeaves": 400,
         "designElements": 14,
         "directives": [
           ":::callout",

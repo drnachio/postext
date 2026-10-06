@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "one-text-four-citation-styles",
-  "sourceHash": "390caceb5b9a1dfe9a252b72fc3b7c9697279fa527b80f7e6675a6e35fe66adb",
+  "sourceHash": "c280f55409742257a475e0b4b7ad54a07939dd35a11782a3535e1b62fa5984f7",
   "engine": {
-    "postext": "1.12.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:27:55.075Z",
+  "capturedAt": "2026-10-06T18:34:19.221Z",
   "variants": {
     "en": {
-      "hash8": "10048327",
-      "vdtHash": "a2742cd03163f506406168139c43704d7fa5c11d",
+      "hash8": "589f0701",
+      "vdtHash": "738c861917f1a894851698719dbc92df71bf120f",
       "timings": {
-        "importMs": 1537,
-        "fontsMs": 197,
-        "buildMs": 298,
-        "totalMs": 3316,
+        "importMs": 158,
+        "fontsMs": 33,
+        "buildMs": 291,
+        "totalMs": 1535,
         "builds": 4
       },
       "specimen": {
@@ -48,7 +48,7 @@
           "h": 1516,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 141048,
+          "bytes": 141094,
           "alt": "Opening page 1: The page that is not seen."
         },
         {
@@ -70,7 +70,7 @@
           "h": 1516,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 138496,
+          "bytes": 138684,
           "alt": "Opening page 1: The page that is not seen."
         },
         {
@@ -109,7 +109,7 @@
       },
       "sandbox": {
         "file": "one-text-four-citation-styles.postext",
-        "bytes": 17092,
+        "bytes": 21301,
         "folio": "973c2e27"
       },
       "detected": {
@@ -259,19 +259,34 @@
           {
             "check": "sandbox",
             "severity": "info",
+            "detail": "build 2: its configuration differs from the first's, which the book keeps"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "build 3: its configuration differs from the first's, which the book keeps"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "build 4: its configuration differs from the first's, which the book keeps"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
           }
         ]
       }
     },
     "es": {
-      "hash8": "16b47d17",
-      "vdtHash": "b5aa9f85e1e0048cb99347aa04c370fcffa12123",
+      "hash8": "cf8cf400",
+      "vdtHash": "169ddf78ce9d908bcc79982fe2ab5872f24edcea",
       "timings": {
-        "importMs": 558,
-        "fontsMs": 169,
-        "buildMs": 304,
-        "totalMs": 2362,
+        "importMs": 168,
+        "fontsMs": 29,
+        "buildMs": 292,
+        "totalMs": 1525,
         "builds": 4
       },
       "specimen": {
@@ -303,7 +318,7 @@
           "h": 1516,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 147046,
+          "bytes": 146984,
           "alt": "Página de apertura 1: La página que no se ve."
         },
         {
@@ -325,7 +340,7 @@
           "h": 1516,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 145496,
+          "bytes": 145556,
           "alt": "Página de apertura 1: La página que no se ve."
         },
         {
@@ -336,7 +351,7 @@
           "h": 1516,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 150702,
+          "bytes": 150786,
           "alt": "Página de apertura 1: La página que no se ve."
         }
       ],
@@ -364,7 +379,7 @@
       },
       "sandbox": {
         "file": "one-text-four-citation-styles.postext",
-        "bytes": 17816,
+        "bytes": 22459,
         "folio": "973c2e27"
       },
       "detected": {
@@ -511,6 +526,21 @@
           "worst": 1.67
         },
         "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "build 2: its configuration differs from the first's, which the book keeps"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "build 3: its configuration differs from the first's, which the book keeps"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "build 4: its configuration differs from the first's, which the book keeps"
+          },
           {
             "check": "sandbox",
             "severity": "info",

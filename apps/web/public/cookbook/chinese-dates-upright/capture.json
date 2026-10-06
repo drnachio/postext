@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-dates-upright",
-  "sourceHash": "4e29a4c6c2fb4845afdc82d2dee8fab44c34d952cb6408ce710abe0f6b90c3f9",
+  "sourceHash": "20c66a8276e4c93173d5753c7120d68c07d833b50067b6c8e273ed30b124b5d9",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:49.850Z",
+  "capturedAt": "2026-10-06T18:34:18.799Z",
   "variants": {
     "en": {
-      "hash8": "5598c74e",
+      "hash8": "6668b99a",
       "vdtHash": "ec36a99bb1848c89d578e641ede8f72b6d77ab73",
       "timings": {
-        "importMs": 586,
-        "fontsMs": 2275,
-        "buildMs": 10,
-        "totalMs": 3481,
+        "importMs": 200,
+        "fontsMs": 489,
+        "buildMs": 13,
+        "totalMs": 3673,
         "builds": 2
       },
       "specimen": {
@@ -153,7 +153,7 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 311140,
+        "bytes": 311142,
         "pages": 7
       },
       "sandbox": {
@@ -354,13 +354,13 @@
       }
     },
     "es": {
-      "hash8": "a14259cc",
+      "hash8": "58a11c35",
       "vdtHash": "a7ee20363f99c4ac3349d778e006dd3f48f0873f",
       "timings": {
-        "importMs": 226,
-        "fontsMs": 435,
-        "buildMs": 11,
-        "totalMs": 1364,
+        "importMs": 201,
+        "fontsMs": 408,
+        "buildMs": 12,
+        "totalMs": 1231,
         "builds": 2
       },
       "specimen": {
@@ -496,7 +496,7 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 311174,
+        "bytes": 311177,
         "pages": 7
       },
       "sandbox": {

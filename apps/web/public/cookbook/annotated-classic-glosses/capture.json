@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "annotated-classic-glosses",
-  "sourceHash": "5905be732a52a0bb598359780f397c4edfb3abdcc1512d33ad44df86e9ed0ca8",
+  "sourceHash": "44cbdcc0ed145614e59f961e6d6962f7697fabc01d6919c1845180473db2ab24",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:44:11.782Z",
+  "capturedAt": "2026-10-06T18:34:18.595Z",
   "variants": {
     "en": {
-      "hash8": "0e29f810",
+      "hash8": "da536ebb",
       "vdtHash": "049a0a0d8b1d507eb126c2b88daebb95f4deb600",
       "timings": {
-        "importMs": 195,
-        "fontsMs": 46,
-        "buildMs": 38,
-        "totalMs": 976,
+        "importMs": 152,
+        "fontsMs": 42,
+        "buildMs": 43,
+        "totalMs": 918,
         "builds": 2
       },
       "specimen": {
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "annotated-classic-glosses.postext",
-        "bytes": 319081,
+        "bytes": 319056,
         "folio": "923d57f4"
       },
       "detected": {

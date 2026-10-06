@@ -134,6 +134,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   // The summary's type; the boxes take the family, the rag and the paragraph spacing from it.
   bodyText: { fontFamily: 'Rethink Sans', fontSize: pt(28), lineHeight: pt(LEAD),
     color: col('ink'), textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true,
+    // The space under a :::paragraphs group as in 1.4.1: the style's own, with no line added
+    // under −4.2 °C and the references (the :::space under them sets the gap).
+    paragraphContainerSpacing: 'add',
     // Bold in the boxes and the :ref labels copy boldColor, and the italics of the references'
     // paragraph style take italicColor (gotcha: style-italic-colour); both are green otherwise.
     boldColor: col('ink'), italicColor: col('ink') },
@@ -217,7 +220,7 @@ const channel = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
 const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 - k)
   + channel(b, i) * k).toString(16).padStart(2, '0')).join('')}`; // a towards b by k
 
-const FIG = { plan: [175, 62], heat: [175, 126], bars: [175, 83] }; // mm, at column width
+const FIG = { plan: [175, 62], heat: [175, 126], bars: [175, 75] }; // mm, at column width
 const LABEL = 5.4; // mm: figure labels, about 15 pt
 
 function planSvg(face) { // Figure 1: a schematic plan, west on the left

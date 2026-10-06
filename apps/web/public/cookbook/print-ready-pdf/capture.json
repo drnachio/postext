@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "print-ready-pdf",
-  "sourceHash": "dfb0c7a02fc2ffa049430985157290963a7066091b89deed075ea8cf4fc0efaa",
+  "sourceHash": "958d27904ad66bd995f149a663f2f9d7398da3355e69dbeba824fcf735e9e139",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:28:37.305Z",
+  "capturedAt": "2026-10-06T18:34:19.302Z",
   "variants": {
     "es": {
-      "hash8": "cb185f61",
-      "vdtHash": "b9dd7d0c1ff9b17ea9d5dc9276a49be55ecb7711",
+      "hash8": "16feb863",
+      "vdtHash": "d75476b65d721b2af71c3ac07956033c86c6b167",
       "timings": {
-        "importMs": 653,
+        "importMs": 199,
         "fontsMs": 73,
-        "buildMs": 11,
-        "totalMs": 1537,
+        "buildMs": 12,
+        "totalMs": 923,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1297,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 100906,
+          "bytes": 100656,
           "alt": "Página 2: Sala 1 Una isla en ninguna parte."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1297,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 109798,
+          "bytes": 108674,
           "alt": "Página 3: Sala 3 El océano en blanco."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1297,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 53962,
+          "bytes": 53948,
           "alt": "Página de apertura 4: Información práctica. Figura 1. Plano de la exposición, con el itinerario en naranja."
         }
       ],
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "print-ready-pdf.pdf",
-        "bytes": 360523,
+        "bytes": 356514,
         "pages": 4
       },
       "sandbox": {
         "file": "print-ready-pdf.postext",
-        "bytes": 101976,
+        "bytes": 102088,
         "folio": "2465c19b"
       },
       "detected": {
@@ -251,7 +251,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 374,
+        "configLeaves": 382,
         "designElements": 23,
         "directives": [
           ":::pagebreak",
@@ -310,7 +310,7 @@
         ],
         "features": [
           "bleed-and-crop-marks",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -339,9 +339,19 @@
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "cubierta: print master cubierta.pdf left out (the SVG stays)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "banda: print master banda.pdf left out (the SVG stays)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "plano: print master plano.pdf left out (the SVG stays)"
           }
         ]
       }

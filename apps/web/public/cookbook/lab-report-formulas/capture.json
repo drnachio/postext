@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "lab-report-formulas",
-  "sourceHash": "fb524c041d1944cc07ebd97d8f02833b379e861f62ea3f2293ebada47fd35a56",
+  "sourceHash": "792da7af9d0cdfa37c9503ce150838d8a123158b614de51a49217b42015ade86",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:28:22.140Z",
+  "capturedAt": "2026-10-06T18:34:19.107Z",
   "variants": {
     "en": {
-      "hash8": "bde3e6c8",
-      "vdtHash": "e09a83536f9753f2dc7a2398bf89e21fab8126ef",
+      "hash8": "972da2bc",
+      "vdtHash": "b3bd3f6cf3a3b1034cbc94f67eff7a19f8c704ae",
       "timings": {
-        "importMs": 1035,
-        "fontsMs": 178,
-        "buildMs": 12,
-        "totalMs": 2180,
+        "importMs": 289,
+        "fontsMs": 115,
+        "buildMs": 18,
+        "totalMs": 1111,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Sometype Mono"
         ],
         "pages": 4,
-        "ownLines": 241
+        "ownLines": 242
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 89290,
+          "bytes": 90048,
           "alt": "Opening page 1: Acid–base titration: how acidic is vinegar?."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 121086,
+          "bytes": 120558,
           "alt": "Page 2: 3 Apparatus and chemicals."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 100572,
+          "bytes": 100160,
           "alt": "Page 3: 5 Results. Table 1. Burette readings, titrating 25.0 cm3 of diluted vinegar with 0.100 mol·dm−3 NaOH."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 63552,
+          "bytes": 63628,
           "alt": "Page 4: 7 Conclusion. Figure 1. Titration curve of 25.0 cm3 of diluted vinegar with 0.100 mol·dm−3 NaOH: pH meter readings (dots) and the model with Ka = 1.75 × 10−5 (line). The pink band is the range over which phenolphthalein turns, pH 8.2 to 10.0."
         }
       ],
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "lab-report-formulas.pdf",
-        "bytes": 200002,
+        "bytes": 193492,
         "pages": 4
       },
       "sandbox": {
         "file": "lab-report-formulas.postext",
-        "bytes": 36466,
+        "bytes": 36491,
         "folio": "977c8d61"
       },
       "detected": {
@@ -251,6 +251,7 @@
           "layout.layoutType",
           "locale",
           "math",
+          "math.fontSizeScale",
           "math.marginBottom",
           "orderedLists",
           "orderedLists.color",
@@ -327,13 +328,12 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 512,
+        "configLeaves": 521,
         "designElements": 24,
         "directives": [
           ":::callout",
           "$$",
           "::resource",
-          ":::space",
           ":::paragraphs"
         ],
         "inline": [
@@ -402,7 +402,7 @@
         "features": [
           "bibliography",
           "callout-styles",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -418,8 +418,7 @@
           "resources",
           "super-subscripts",
           "table-model",
-          "unnumbered-headings",
-          "vertical-space"
+          "unnumbered-headings"
         ],
         "suggestedLevel": 3
       },
@@ -435,13 +434,13 @@
       }
     },
     "es": {
-      "hash8": "15754343",
-      "vdtHash": "8f647e1ebbceb64aef5679f4be4d955b019790d8",
+      "hash8": "7b17640a",
+      "vdtHash": "4bcd8b5d059dd6466290e1cb9a0f121064aa8ca2",
       "timings": {
-        "importMs": 2080,
-        "fontsMs": 1021,
-        "buildMs": 19,
-        "totalMs": 4096,
+        "importMs": 292,
+        "fontsMs": 117,
+        "buildMs": 23,
+        "totalMs": 1126,
         "builds": 2
       },
       "specimen": {
@@ -463,7 +462,7 @@
           "Sometype Mono"
         ],
         "pages": 4,
-        "ownLines": 241
+        "ownLines": 242
       },
       "pages": [
         {
@@ -474,7 +473,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 93654,
+          "bytes": 93936,
           "alt": "Página de apertura 1: Valoración ácido-base: la acidez de un vinagre."
         },
         {
@@ -485,7 +484,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 125196,
+          "bytes": 124794,
           "alt": "Página 2: 3 Materiales y reactivos."
         },
         {
@@ -496,7 +495,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 100210,
+          "bytes": 100294,
           "alt": "Página 3: 5 Resultados. Tabla 1. Lecturas de la bureta: 25,0 cm3 de vinagre diluido frente a NaOH 0,100 mol·dm−3."
         },
         {
@@ -507,7 +506,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 76402,
+          "bytes": 76410,
           "alt": "Página 4: 7 Conclusiones. Figura 1. Curva de valoración de 25,0 cm3 de vinagre diluido con NaOH 0,100 mol·dm−3: lecturas del pH-metro (puntos) y el cálculo con Ka = 1,75 × 10−5 (línea). La banda rosa es el viraje de la fenolftaleína, de pH 8,2 a 10,0."
         }
       ],
@@ -539,12 +538,12 @@
       },
       "pdf": {
         "file": "lab-report-formulas.pdf",
-        "bytes": 212171,
+        "bytes": 205498,
         "pages": 4
       },
       "sandbox": {
         "file": "lab-report-formulas.postext",
-        "bytes": 37840,
+        "bytes": 37862,
         "folio": "977c8d61"
       },
       "detected": {
@@ -675,6 +674,7 @@
           "layout.layoutType",
           "locale",
           "math",
+          "math.fontSizeScale",
           "math.marginBottom",
           "orderedLists",
           "orderedLists.color",
@@ -751,13 +751,12 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 512,
+        "configLeaves": 521,
         "designElements": 24,
         "directives": [
           ":::callout",
           "$$",
           "::resource",
-          ":::space",
           ":::paragraphs"
         ],
         "inline": [
@@ -826,7 +825,7 @@
         "features": [
           "bibliography",
           "callout-styles",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -842,8 +841,7 @@
           "resources",
           "super-subscripts",
           "table-model",
-          "unnumbered-headings",
-          "vertical-space"
+          "unnumbered-headings"
         ],
         "suggestedLevel": 3
       },

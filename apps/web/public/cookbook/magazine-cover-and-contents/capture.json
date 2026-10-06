@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-cover-and-contents",
-  "sourceHash": "4ea44f648b9dafadf9fa3fcab97f7783b3e6d3615abb3ba5e4be150503a3ac32",
+  "sourceHash": "3335c6641f8a983bf62ca556ed431504a894a32414dc3472d2238d1d8091d18d",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:45:53.073Z",
+  "capturedAt": "2026-10-06T18:34:19.145Z",
   "variants": {
     "en": {
-      "hash8": "bcc05980",
+      "hash8": "c765d989",
       "vdtHash": "df0858ff3432514c448b2daceae76992cfffce7a",
       "timings": {
-        "importMs": 663,
-        "fontsMs": 1789,
-        "buildMs": 403,
-        "totalMs": 4091,
+        "importMs": 143,
+        "fontsMs": 71,
+        "buildMs": 398,
+        "totalMs": 1690,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 242870,
+          "bytes": 242826,
           "alt": "Opening page 1: Fallow."
         },
         {
@@ -446,13 +446,13 @@
       }
     },
     "es": {
-      "hash8": "084be3d4",
+      "hash8": "e7ebb916",
       "vdtHash": "878cf6b8e25dea2d54d06d1ce1ef7d332d455493",
       "timings": {
-        "importMs": 204,
-        "fontsMs": 75,
-        "buildMs": 63,
-        "totalMs": 1200,
+        "importMs": 148,
+        "fontsMs": 63,
+        "buildMs": 70,
+        "totalMs": 998,
         "builds": 2
       },
       "specimen": {
@@ -877,11 +877,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.35 MB (warning at 0.9 MB for 6 pages)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

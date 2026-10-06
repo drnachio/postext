@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "catalan-pocket-novella",
-  "sourceHash": "c7d1a4af01f7e8c763c17d90880d5c26cf95ead70702ae56fdf7ef1e000dd4d4",
+  "sourceHash": "bf935dd6ff934846a34578dcd997df081b2cc4866533e5fd58bff2f428d5db35",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:27.452Z",
+  "capturedAt": "2026-10-06T18:34:18.758Z",
   "variants": {
     "en": {
-      "hash8": "8e835a26",
+      "hash8": "e4a3489c",
       "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
       "timings": {
-        "importMs": 195,
-        "fontsMs": 94,
-        "buildMs": 2611,
-        "totalMs": 6187,
+        "importMs": 198,
+        "fontsMs": 97,
+        "buildMs": 1156,
+        "totalMs": 3207,
         "builds": 2
       },
       "specimen": {
@@ -167,7 +167,7 @@
       },
       "pdf": {
         "file": "catalan-pocket-novella.pdf",
-        "bytes": 1777441,
+        "bytes": 1777440,
         "pages": 32
       },
       "sandbox": {
@@ -370,23 +370,18 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.01 MB (warning at 0.9 MB for 8 pages)"
-          },
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 2611 ms (warning at 1.5 s)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "e4040fa0",
+      "hash8": "0dc07127",
       "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
       "timings": {
-        "importMs": 201,
-        "fontsMs": 87,
-        "buildMs": 983,
-        "totalMs": 2994,
+        "importMs": 208,
+        "fontsMs": 101,
+        "buildMs": 1111,
+        "totalMs": 4382,
         "builds": 2
       },
       "specimen": {
@@ -536,7 +531,7 @@
       },
       "pdf": {
         "file": "catalan-pocket-novella.pdf",
-        "bytes": 1777441,
+        "bytes": 1777440,
         "pages": 32
       },
       "sandbox": {

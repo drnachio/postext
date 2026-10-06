@@ -94,7 +94,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     { level: 1, fontFamily: DISPLAY, fontSize: pt(28),
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), italic: true, color: col('accent'),
-      marginTop: pt(LEAD), marginBottom: pt(LEAD / 2), keepWithNext: true },
+      marginTop: pt(LEAD), marginBottom: pt(LEAD / 2) }, // kept with its text by default
   ] },
   headingStyles: [titlePage],
   paragraphStyles: [
@@ -105,7 +105,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     { id: 'imprint', fontFamily: TEXT, fontSize: pt(8), lineHeight: pt(11.5),
       color: col('muted'), italicColor: col('muted'), textAlign: 'left',
       firstLineIndent: pt(0), spaceBetween: pt(5) },
-    { id: 'asterism', fontSize: pt(9), letterSpacing: pt(3), color: col('accent'),
+    { id: 'asterism', fontSize: pt(9), color: col('accent'),
       textAlign: 'center', firstLineIndent: pt(0), marginTop: pt(LEAD / 2),
       marginBottom: pt(LEAD / 2) },
   ],

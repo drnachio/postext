@@ -160,7 +160,7 @@ const back = { id: 'back', span: 'page', // the setting moon runs past the text 
   advancedDesign: { enabled: true, minHeight: mm(MEASURE / 4 + 6), slot: { elements: [
     { kind: 'image', id: 'blind', resourceId: 'blind',
       placement: at('container', 'top-left', 0, 0, { width: mm(MEASURE), height: 'auto' }) },
-    { kind: 'image', id: 'moonset', resourceId: 'moon',
+    { kind: 'image', id: 'moonset', resourceId: 'moon', reserve: false, // the text runs above it
       placement: at('page', 'bottom-right', 30, 34, { width: mm(76), height: mm(76) }) },
   ] } } };
 

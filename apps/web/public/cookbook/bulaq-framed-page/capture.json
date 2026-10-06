@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bulaq-framed-page",
-  "sourceHash": "87ec1c669ec588ea8e0eb8036b030997c9ca364c8389964a516d094b49f4385a",
+  "sourceHash": "80ad153b0eea7c51557082d59f9bdbd5b2ea27978f9689ea6da41656960e7cc3",
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:44:59.273Z",
+  "capturedAt": "2026-10-06T18:34:18.739Z",
   "variants": {
     "en": {
-      "hash8": "ea0ee764",
-      "vdtHash": "5e40b1c5c7dc7263dc4e08132e06e1c0db360423",
+      "hash8": "1dc4c6ee",
+      "vdtHash": "acddaade55c702ea22d1cfb43fd75ed936cfb706",
       "timings": {
-        "importMs": 471,
-        "fontsMs": 1547,
-        "buildMs": 102,
-        "totalMs": 2705,
+        "importMs": 206,
+        "fontsMs": 80,
+        "buildMs": 107,
+        "totalMs": 960,
         "builds": 1
       },
       "specimen": {
@@ -105,7 +105,7 @@
           "h": 1412,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 44514,
+          "bytes": 44502,
           "alt": "Page ٦."
         }
       ],
@@ -142,7 +142,7 @@
       },
       "pdf": {
         "file": "bulaq-framed-page.pdf",
-        "bytes": 110049,
+        "bytes": 110090,
         "pages": 6
       },
       "sandbox": {
@@ -365,13 +365,13 @@
       }
     },
     "es": {
-      "hash8": "8c5592a2",
+      "hash8": "97e7b14d",
       "vdtHash": "bc5305865b5f1064b0d873e4b2c8774cd596d796",
       "timings": {
-        "importMs": 185,
-        "fontsMs": 83,
-        "buildMs": 103,
-        "totalMs": 1038,
+        "importMs": 194,
+        "fontsMs": 103,
+        "buildMs": 109,
+        "totalMs": 977,
         "builds": 1
       },
       "specimen": {
@@ -459,7 +459,7 @@
           "h": 1412,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 44706,
+          "bytes": 44732,
           "alt": "Página ٦."
         }
       ],
@@ -496,7 +496,7 @@
       },
       "pdf": {
         "file": "bulaq-framed-page.pdf",
-        "bytes": 110943,
+        "bytes": 110972,
         "pages": 6
       },
       "sandbox": {

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "running-heads-by-parity",
-  "sourceHash": "669bfe0ca4eff5e8b8670c530b7c07c2117e994762be6bcb2f6f6952013586a9",
+  "sourceHash": "a2ac0f24a1f78208af08b55405b2e18c5611f046a9bcde996612d3545687bb73",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T20:49:58.373Z",
+  "capturedAt": "2026-10-06T18:34:19.406Z",
   "variants": {
     "en": {
-      "hash8": "d12b98ff",
-      "vdtHash": "0d1b4f750f1ddd1ed37e5e9b3516b0d8b87eb4cc",
+      "hash8": "0933ea33",
+      "vdtHash": "0fd2ce0f5bc9963d0e66b0da481d735d672036c2",
       "timings": {
-        "importMs": 1292,
-        "fontsMs": 15,
-        "buildMs": 47,
-        "totalMs": 2352,
+        "importMs": 159,
+        "fontsMs": 25,
+        "buildMs": 67,
+        "totalMs": 981,
         "builds": 2
       },
       "specimen": {
@@ -93,7 +93,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 95740,
+          "bytes": 95736,
           "alt": "Opening page 33: Whether the governor of a place besieged ought himself to go out to parley."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "running-heads-by-parity.postext",
-        "bytes": 24111,
+        "bytes": 24096,
         "folio": "95f31ab7"
       },
       "detected": {
@@ -306,17 +306,23 @@
           "share": 0,
           "worst": 1.6400000000000001
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 28 dropped (even: same page sides)"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "5c2949b1",
-      "vdtHash": "6316f410b1665e842209d0f8768f3662fdec04fd",
+      "hash8": "c8b04492",
+      "vdtHash": "03511421b5d1dfa2a26bebd282903dc09494abdc",
       "timings": {
-        "importMs": 213,
-        "fontsMs": 16,
-        "buildMs": 12,
-        "totalMs": 986,
+        "importMs": 162,
+        "fontsMs": 26,
+        "buildMs": 16,
+        "totalMs": 836,
         "builds": 2
       },
       "specimen": {
@@ -425,7 +431,7 @@
       },
       "sandbox": {
         "file": "running-heads-by-parity.postext",
-        "bytes": 22554,
+        "bytes": 22538,
         "folio": "95f31ab7"
       },
       "detected": {
@@ -606,7 +612,13 @@
           "share": 0,
           "worst": 1.53
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 28 dropped (even: same page sides)"
+          }
+        ]
       }
     }
   }

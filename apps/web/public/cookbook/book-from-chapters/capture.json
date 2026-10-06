@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "book-from-chapters",
-  "sourceHash": "4a0b28b880f4a0bae7e3a62c50cd4ebae326e16f3a752a28425fee895c80a452",
+  "sourceHash": "2a5b20f2f9e34fef7c14e199d2b070fb07d9cffecd55d7f99be8e2c04e8b713c",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T20:57:08.130Z",
+  "capturedAt": "2026-10-06T18:34:18.706Z",
   "variants": {
     "en": {
-      "hash8": "1e83538b",
-      "vdtHash": "ccd63bc46dbe4bab30b1e8bce50100b4cfd07e5d",
+      "hash8": "2f13683c",
+      "vdtHash": "f30a948b0460cc11bb87a060ab7f7d4773874543",
       "timings": {
-        "importMs": 1483,
-        "fontsMs": 1025,
-        "buildMs": 17,
-        "totalMs": 3204,
+        "importMs": 207,
+        "fontsMs": 70,
+        "buildMs": 28,
+        "totalMs": 985,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 45402,
+          "bytes": 44440,
           "alt": "Opening page 2: Contents."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 109348,
+          "bytes": 109356,
           "alt": "Opening page 3: 1 Autumn."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 78774,
+          "bytes": 78780,
           "alt": "Opening page 5: 2 Winter. Figure 2.1. The same frame in January: the cluster (dark) eats its way up from empty comb (pale)."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 108702,
+          "bytes": 108712,
           "alt": "Opening page 7: 3 Spring."
         },
         {
@@ -138,7 +138,7 @@
           "h": 1333,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 83348,
+          "bytes": 83346,
           "alt": "Opening page 9: 4 Summer. Figure 4.1. The same frame in July: an arch of new honey presses down on the brood."
         },
         {
@@ -160,7 +160,7 @@
           "h": 1333,
           "file": "p11.webp",
           "strip": "p11.s.webp",
-          "bytes": 76336,
+          "bytes": 76394,
           "alt": "Page 11."
         }
       ],
@@ -204,12 +204,12 @@
       },
       "pdf": {
         "file": "book-from-chapters.pdf",
-        "bytes": 132211,
+        "bytes": 121181,
         "pages": 11
       },
       "sandbox": {
         "file": "book-from-chapters.postext",
-        "bytes": 46855,
+        "bytes": 46862,
         "folio": "0459f0ab"
       },
       "detected": {
@@ -435,7 +435,7 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -468,13 +468,13 @@
       }
     },
     "es": {
-      "hash8": "93a10785",
-      "vdtHash": "26e1dde4beb50c3d38880114aad7813f674a0b93",
+      "hash8": "784781a3",
+      "vdtHash": "4318a5ee42febf16ef120e79bed345170046a19a",
       "timings": {
-        "importMs": 543,
-        "fontsMs": 68,
-        "buildMs": 21,
-        "totalMs": 1357,
+        "importMs": 198,
+        "fontsMs": 64,
+        "buildMs": 34,
+        "totalMs": 985,
         "builds": 2
       },
       "specimen": {
@@ -518,7 +518,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 44540,
+          "bytes": 43614,
           "alt": "Página de apertura 2: Índice."
         },
         {
@@ -529,7 +529,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 107092,
+          "bytes": 107098,
           "alt": "Página de apertura 3: 1 Otoño."
         },
         {
@@ -540,7 +540,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 114870,
+          "bytes": 113902,
           "alt": "Página 4: Reservas para el invierno. Figura 1.1. Un cuadro en octubre: la miel (dorada) rodea la última cría (marrón) y el polen (rojizo)."
         },
         {
@@ -551,7 +551,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 84626,
+          "bytes": 84628,
           "alt": "Página de apertura 5: 2 Invierno. Figura 2.1. El mismo cuadro en enero: el racimo (oscuro) deja la cera vacía (clara) y sube."
         },
         {
@@ -573,7 +573,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 109090,
+          "bytes": 109102,
           "alt": "Página de apertura 7: 3 Primavera."
         },
         {
@@ -595,7 +595,7 @@
           "h": 1333,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 90530,
+          "bytes": 90526,
           "alt": "Página de apertura 9: 4 Verano. Figura 4.1. El mismo cuadro en julio: un arco de miel nueva aprieta la cría hacia abajo."
         },
         {
@@ -617,7 +617,7 @@
           "h": 1333,
           "file": "p11.webp",
           "strip": "p11.s.webp",
-          "bytes": 89276,
+          "bytes": 89260,
           "alt": "Página 11: Del panal al tarro."
         }
       ],
@@ -661,12 +661,12 @@
       },
       "pdf": {
         "file": "book-from-chapters.pdf",
-        "bytes": 141755,
+        "bytes": 130434,
         "pages": 11
       },
       "sandbox": {
         "file": "book-from-chapters.postext",
-        "bytes": 47307,
+        "bytes": 47317,
         "folio": "0459f0ab"
       },
       "detected": {
@@ -892,7 +892,7 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -921,13 +921,7 @@
           "share": 0,
           "worst": 1.61
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "kanbun-kundoku",
-  "sourceHash": "a34cb1f3409fe3deb7dc95a91f91a43164532b72a47a707597c63b830a6969a4",
+  "sourceHash": "8309492b53dd784f13561a54e4a9baee451ef63e8b8b1cf6f4f7e57e2e5139e2",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.931Z",
+  "capturedAt": "2026-10-06T18:34:19.066Z",
   "variants": {
     "en": {
-      "hash8": "4627ced8",
+      "hash8": "596c5a2a",
       "vdtHash": "cea294344d4ba3029b117bd33687c965b41d48c7",
       "timings": {
-        "importMs": 146,
-        "fontsMs": 300,
-        "buildMs": 42,
-        "totalMs": 1041,
+        "importMs": 191,
+        "fontsMs": 336,
+        "buildMs": 50,
+        "totalMs": 1143,
         "builds": 1
       },
       "specimen": {
@@ -101,7 +101,7 @@
       },
       "pdf": {
         "file": "kanbun-kundoku.pdf",
-        "bytes": 138104,
+        "bytes": 138098,
         "pages": 3
       },
       "sandbox": {
@@ -298,13 +298,13 @@
       }
     },
     "es": {
-      "hash8": "913ff90e",
+      "hash8": "4d47d427",
       "vdtHash": "eeffa96ae9ff865139c37006dc7fc4599bc7e1e1",
       "timings": {
-        "importMs": 185,
-        "fontsMs": 258,
-        "buildMs": 45,
-        "totalMs": 1039,
+        "importMs": 199,
+        "fontsMs": 313,
+        "buildMs": 50,
+        "totalMs": 1129,
         "builds": 1
       },
       "specimen": {
@@ -388,7 +388,7 @@
       },
       "pdf": {
         "file": "kanbun-kundoku.pdf",
-        "bytes": 138020,
+        "bytes": 138022,
         "pages": 3
       },
       "sandbox": {

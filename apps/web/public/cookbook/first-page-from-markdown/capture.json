@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "first-page-from-markdown",
-  "sourceHash": "bcd5380e600ce9eb7125e20d856d16f33c5e4465f306cedb87c38e43767193ba",
+  "sourceHash": "51b42ea0c4b9ff508c0e7841cc77e552066c1f5f94cb53feb82b20adb757d858",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:48:34.217Z",
+  "capturedAt": "2026-10-06T18:34:18.946Z",
   "variants": {
     "en": {
-      "hash8": "c6d0ba74",
+      "hash8": "2049ef23",
       "vdtHash": "07c56b8d23023596323db7886c283256ac133054",
       "timings": {
-        "importMs": 1822,
-        "fontsMs": 38,
-        "buildMs": 89,
-        "totalMs": 2736,
+        "importMs": 152,
+        "fontsMs": 41,
+        "buildMs": 77,
+        "totalMs": 2155,
         "builds": 2
       },
       "specimen": {
@@ -276,23 +276,17 @@
           "share": 0,
           "worst": 1.79
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "8cf2c6ca",
+      "hash8": "ff561f3f",
       "vdtHash": "1e26a3350d2d18641aafd17b9408bbe5a95fba4b",
       "timings": {
-        "importMs": 446,
-        "fontsMs": 58,
-        "buildMs": 29,
-        "totalMs": 1319,
+        "importMs": 157,
+        "fontsMs": 38,
+        "buildMs": 21,
+        "totalMs": 887,
         "builds": 2
       },
       "specimen": {
@@ -552,13 +546,7 @@
           "share": 0.0147,
           "worst": 1.98
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

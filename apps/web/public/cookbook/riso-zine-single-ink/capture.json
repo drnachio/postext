@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "riso-zine-single-ink",
-  "sourceHash": "f2875ace087e4e6c30cbaedde50eb68d23f164d44aeb46d0d8e11104dc435b4b",
+  "sourceHash": "572b7a80663d09cfeb129735633ccca1aef2dab0e76b69566c7aa949efbb3e8b",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T13:05:48.454Z",
+  "capturedAt": "2026-10-06T18:34:19.397Z",
   "variants": {
     "en": {
-      "hash8": "024aa742",
-      "vdtHash": "16bfdaa8b08bee5e6e00619cf87919f08bbd8fc9",
+      "hash8": "8106a798",
+      "vdtHash": "3913ca9fad97e41776a3228dcd935007e6a0e3c5",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 75,
-        "buildMs": 6,
-        "totalMs": 828,
+        "importMs": 196,
+        "fontsMs": 87,
+        "buildMs": 10,
+        "totalMs": 939,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 137592,
+          "bytes": 137226,
           "alt": "Opening page 2: After the Last Train."
         },
         {
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "riso-zine-single-ink.pdf",
-        "bytes": 301675,
+        "bytes": 198843,
         "pages": 4
       },
       "sandbox": {
         "file": "riso-zine-single-ink.postext",
-        "bytes": 68746,
+        "bytes": 68869,
         "folio": "ead0b06f"
       },
       "detected": {
@@ -292,7 +292,7 @@
           "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 394,
+        "configLeaves": 395,
         "designElements": 22,
         "directives": [
           ":::callout",
@@ -338,7 +338,7 @@
         "features": [
           "callout-styles",
           "chips",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "opener-design",

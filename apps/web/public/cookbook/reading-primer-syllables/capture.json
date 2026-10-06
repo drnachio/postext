@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "reading-primer-syllables",
-  "sourceHash": "af5822ce0088bd38bafd51eb904f5d70b206f0c6b8ab3259fa0e6e75a10d977a",
+  "sourceHash": "d4bd6bb3ced86cc1d4c25e411408c586a3af88b32a9b9423140715078d4dada8",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:46:11.801Z",
+  "capturedAt": "2026-10-06T18:34:19.352Z",
   "variants": {
     "es": {
-      "hash8": "a1ec815f",
+      "hash8": "4a9afd62",
       "vdtHash": "d877dbbfa2de48b77266bbc02d7611c16274a1ec",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 37,
-        "buildMs": 8,
-        "totalMs": 846,
+        "importMs": 146,
+        "fontsMs": 45,
+        "buildMs": 9,
+        "totalMs": 819,
         "builds": 2
       },
       "specimen": {
@@ -99,7 +99,7 @@
       },
       "sandbox": {
         "file": "reading-primer-syllables.postext",
-        "bytes": 284669,
+        "bytes": 284639,
         "folio": "6010a127"
       },
       "detected": {

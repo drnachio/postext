@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "vertical-book-with-jiazhu-citations",
-  "sourceHash": "df2d4fa6c9e60d2610844c15ef1131286376cabf2c0237ccc45a7b01652e9f00",
+  "sourceHash": "1156e71c64ffab67d2ac145d6b62a6256b0a64ca61f36680e966f5b8ab2ec0c2",
   "engine": {
-    "postext": "1.12.0",
-    "postextPdf": "1.12.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:36.754Z",
+  "capturedAt": "2026-10-06T18:34:19.543Z",
   "variants": {
     "en": {
-      "hash8": "50ce49f5",
-      "vdtHash": "94e7910f065afdfa6f1bd9f95ec475b696889574",
+      "hash8": "c165f24b",
+      "vdtHash": "145ae37043f79b2d0f52558a88dac9c4ff75d044",
       "timings": {
-        "importMs": 478,
-        "fontsMs": 362,
-        "buildMs": 68,
-        "totalMs": 1574,
+        "importMs": 199,
+        "fontsMs": 2488,
+        "buildMs": 298,
+        "totalMs": 8212,
         "builds": 1
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1450,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 80144,
+          "bytes": 80100,
           "alt": "Opening page 四十五: 第三章 宋刻本的版式."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1450,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 117164,
+          "bytes": 117156,
           "alt": "Page 四十六."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1450,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 47856,
+          "bytes": 47806,
           "alt": "Page 四十七."
         }
       ],
@@ -101,12 +101,12 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178198,
+        "bytes": 178146,
         "pages": 3
       },
       "sandbox": {
         "file": "vertical-book-with-jiazhu-citations.postext",
-        "bytes": 19902,
+        "bytes": 19865,
         "folio": "3a3c9a0c"
       },
       "detected": {
@@ -292,13 +292,13 @@
       }
     },
     "es": {
-      "hash8": "322116bc",
-      "vdtHash": "80ab2571708a674f5955d6e48a482c48e16bdb28",
+      "hash8": "df53e44c",
+      "vdtHash": "83e36ad2ad05da7d3aa5cc40f6a50bebfb723e9a",
       "timings": {
-        "importMs": 181,
-        "fontsMs": 280,
-        "buildMs": 64,
-        "totalMs": 1093,
+        "importMs": 241,
+        "fontsMs": 319,
+        "buildMs": 93,
+        "totalMs": 1238,
         "builds": 1
       },
       "specimen": {
@@ -331,7 +331,7 @@
           "h": 1450,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 80180,
+          "bytes": 80248,
           "alt": "Página de apertura 四十五: 第三章 宋刻本的版式."
         },
         {
@@ -342,7 +342,7 @@
           "h": 1450,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 117164,
+          "bytes": 117156,
           "alt": "Página 四十六."
         },
         {
@@ -353,7 +353,7 @@
           "h": 1450,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 47856,
+          "bytes": 47806,
           "alt": "Página 四十七."
         }
       ],
@@ -382,12 +382,12 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178157,
+        "bytes": 178089,
         "pages": 3
       },
       "sandbox": {
         "file": "vertical-book-with-jiazhu-citations.postext",
-        "bytes": 19955,
+        "bytes": 19918,
         "folio": "3a3c9a0c"
       },
       "detected": {

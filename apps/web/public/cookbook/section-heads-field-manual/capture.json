@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "section-heads-field-manual",
-  "sourceHash": "bda6b0593d4d7d3f0948240254a5dcf2035c15dd23873ab5b1a053b87f93de33",
+  "sourceHash": "dd65ddcdccd8746279469ee995ebd138d20959afb77808e26411a2a061046c92",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:14:25.653Z",
+  "capturedAt": "2026-10-06T18:34:19.423Z",
   "variants": {
     "en": {
-      "hash8": "e0857f02",
-      "vdtHash": "cf6a2f7aa9f313d4eacf1fffb177bc9442106c41",
+      "hash8": "10432282",
+      "vdtHash": "bb842014497648d6e62a3f660d19a469c114aeb1",
       "timings": {
-        "importMs": 582,
-        "fontsMs": 758,
-        "buildMs": 16,
-        "totalMs": 2164,
+        "importMs": 153,
+        "fontsMs": 34,
+        "buildMs": 23,
+        "totalMs": 888,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1420,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 126440,
+          "bytes": 126426,
           "alt": "Opening page 1: 1 Drainage."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1420,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 132436,
+          "bytes": 132418,
           "alt": "Page 3: 1.8 Lead-off ditches."
         }
       ],
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "section-heads-field-manual.postext",
-        "bytes": 31327,
+        "bytes": 31305,
         "folio": "0260efa6"
       },
       "detected": {
@@ -327,23 +327,17 @@
           "share": 0.0196,
           "worst": 1.78
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "8d73ffab",
-      "vdtHash": "ac5b0e7b519ca0695cce626ee3bf1b304a8c6bfb",
+      "hash8": "904d3552",
+      "vdtHash": "e435c4dc3a3581b9691ecb4da3ca88efd1e9587b",
       "timings": {
-        "importMs": 232,
-        "fontsMs": 44,
-        "buildMs": 14,
-        "totalMs": 1097,
+        "importMs": 159,
+        "fontsMs": 28,
+        "buildMs": 54,
+        "totalMs": 2721,
         "builds": 2
       },
       "specimen": {
@@ -377,7 +371,7 @@
           "h": 1420,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 129126,
+          "bytes": 129110,
           "alt": "Página de apertura 1: 1 Drenaje."
         },
         {
@@ -399,7 +393,7 @@
           "h": 1420,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 169562,
+          "bytes": 169492,
           "alt": "Página 3: 1.7 Escalones de retención."
         }
       ],
@@ -427,7 +421,7 @@
       },
       "sandbox": {
         "file": "section-heads-field-manual.postext",
-        "bytes": 31528,
+        "bytes": 31504,
         "folio": "0260efa6"
       },
       "detected": {
@@ -654,13 +648,7 @@
           "share": 0.0172,
           "worst": 1.46
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

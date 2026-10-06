@@ -38,9 +38,7 @@ The coordinates were read once, when the recipe was written, from PDB entry 6Y4F
 
 ### 5 · Greek letters and accents in the PDF
 
-<Excerpt region="subsets" />
-
-Fontsource splits each face by script. The kit loads the latin files, and latin-ext when the text needs it, but not greek, so Cα and χ would come from a fallback face on screen and be missing from the PDF. The region loads each face's greek file for the canvas and gives `renderToPdf` a font provider that adds the latin-ext and greek files of a face when the text it sets needs them.
+Fontsource splits each face by script. `loadFonts(FONTS, markdown)` reads the text it is given and loads each face's latin-ext file when it sets Ž or Š and its greek file when it sets α or χ; `fontsourceProvider` embeds the same files in the PDF from the characters each face sets. Cα, χ, Žídek and Šali take no code of their own: the recipe passes the markdown, which holds every content slot, and the kit's provider.
 
 ## Variations
 

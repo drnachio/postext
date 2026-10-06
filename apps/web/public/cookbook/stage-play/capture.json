@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "stage-play",
-  "sourceHash": "e3dab34bc81a2b90dff686f39f8018063fd4a2278c4293de0997858a8e2dbfa8",
+  "sourceHash": "4ca21c85b0916156fc7b1cac50d422ddbd4ef0f3bcaa5479d56250bb420655fa",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T19:41:03.080Z",
+  "capturedAt": "2026-10-06T18:34:19.453Z",
   "variants": {
     "en": {
-      "hash8": "3641a2dc",
-      "vdtHash": "83e6658c393011f7896bc422c894609381364713",
+      "hash8": "1ecca2b6",
+      "vdtHash": "b12614a321672887d08e9b5256516fee7625679d",
       "timings": {
-        "importMs": 183,
-        "fontsMs": 1117,
-        "buildMs": 7,
-        "totalMs": 1932,
+        "importMs": 137,
+        "fontsMs": 29,
+        "buildMs": 12,
+        "totalMs": 817,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1543,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 33708,
+          "bytes": 33672,
           "alt": "Opening page 1: THE IMPORTANCE OF BEING EARNEST."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1543,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 67948,
+          "bytes": 67974,
           "alt": "Page 2: The Persons of the Play."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1543,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 117858,
+          "bytes": 117860,
           "alt": "Opening page 3: FIRST ACT."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1543,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 147976,
+          "bytes": 147942,
           "alt": "Page 5."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "stage-play.postext",
-        "bytes": 22819,
+        "bytes": 22834,
         "folio": "059474f1"
       },
       "detected": {
@@ -340,23 +340,17 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "ff2781e4",
-      "vdtHash": "8bcbe8b2337208c31995e87fd83fd32855487447",
+      "hash8": "c10c31dc",
+      "vdtHash": "1756aa6f89b40c1a24819d3fad53cd247b69f6c8",
       "timings": {
-        "importMs": 68,
-        "fontsMs": 21,
-        "buildMs": 7,
-        "totalMs": 775,
+        "importMs": 141,
+        "fontsMs": 35,
+        "buildMs": 16,
+        "totalMs": 824,
         "builds": 2
       },
       "specimen": {
@@ -389,7 +383,7 @@
           "h": 1543,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 33804,
+          "bytes": 33664,
           "alt": "Página de apertura 1: LA IMPORTANCIA DE LLAMARSE ERNESTO."
         },
         {
@@ -400,7 +394,7 @@
           "h": 1543,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 73138,
+          "bytes": 73222,
           "alt": "Página 2: Personajes de la obra."
         },
         {
@@ -411,7 +405,7 @@
           "h": 1543,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 131080,
+          "bytes": 131040,
           "alt": "Página de apertura 3: PRIMER ACTO."
         },
         {
@@ -422,7 +416,7 @@
           "h": 1543,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 155276,
+          "bytes": 155282,
           "alt": "Página 4."
         },
         {
@@ -433,7 +427,7 @@
           "h": 1543,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 121532,
+          "bytes": 121600,
           "alt": "Página 5."
         }
       ],
@@ -465,7 +459,7 @@
       },
       "sandbox": {
         "file": "stage-play.postext",
-        "bytes": 22934,
+        "bytes": 22893,
         "folio": "059474f1"
       },
       "detected": {
@@ -680,13 +674,7 @@
           "share": 0,
           "worst": 1.59
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "red-ink-commentary",
-  "sourceHash": "7c57552972f28994bd062c8769ca7992b37d8ddeb92f42bb85eb41e9573d1f91",
+  "sourceHash": "f518fff7543737d41e1ea2662b52b3ce4e6366aa951f0ab0ca985f8c2a8c58c7",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:27.301Z",
+  "capturedAt": "2026-10-06T18:34:19.383Z",
   "variants": {
     "en": {
-      "hash8": "9a8a9d24",
+      "hash8": "08ac8b52",
       "vdtHash": "cb5419a1491f7c61c6e139e4041ee857e8876006",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 2880,
+        "importMs": 198,
+        "fontsMs": 443,
         "buildMs": 12,
-        "totalMs": 3651,
+        "totalMs": 4198,
         "builds": 2
       },
       "specimen": {
@@ -143,7 +143,7 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 513286,
+        "bytes": 513284,
         "pages": 6
       },
       "sandbox": {
@@ -358,13 +358,13 @@
       }
     },
     "es": {
-      "hash8": "9b3df602",
+      "hash8": "cd1c10b0",
       "vdtHash": "edaa0e1f2d45fb28b7512b355be1a6fc17ad8df5",
       "timings": {
-        "importMs": 165,
-        "fontsMs": 411,
-        "buildMs": 11,
-        "totalMs": 1240,
+        "importMs": 200,
+        "fontsMs": 416,
+        "buildMs": 12,
+        "totalMs": 1238,
         "builds": 2
       },
       "specimen": {

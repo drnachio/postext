@@ -22,7 +22,7 @@ El codi és [la resposta curta](#la-resposta-curta) de dalt. Des de postext 1.19
 
 <Excerpt region="theorems" />
 
-Cada entorn és un [estil de requadre](/ca/docs/configuration#estils-davís) amb un sol recurs: un filet gris per a la definició, un de pruna per als lemes i un fons pruna pàl·lid per al teorema. `box()` posa aquest aspecte sobre la numeració de la resposta curta. `body.italic` posa l'enunciat en cursiva, com l'estil *plain* d'amsthm, i l'etiqueta en línia queda en negreta rodona a dins. La demostració no porta requadre: la seva etiqueta va en cursiva i sense número (`counter: false`), la seva última línia acaba amb `$\square$` escrit al text, i `keepTogether: false` deixa que una demostració llarga passi a la pàgina següent. `snapToGrid: false` manté el mateix espai al voltant de cada enunciat; en una sola columna, sense veïna amb què alinear-se, un blanc exacte es llegeix millor que un d'arrodonit a la reixeta base.
+Cada entorn és un [estil de requadre](/ca/docs/configuration#estils-davís) amb un sol recurs: un filet gris per a la definició, un de pruna per als lemes i un fons pruna pàl·lid per al teorema. `box()` posa aquest aspecte sobre la numeració de la resposta curta. `body.italic` posa l'enunciat en cursiva, com l'estil *plain* d'amsthm, i l'etiqueta en línia queda en negreta rodona a dins. La demostració no porta requadre: la seva etiqueta va en cursiva i sense número (`counter: false`), `endMark: '□'` posa un quadrat alineat a la dreta a la seva última línia, dibuixat amb el `\square` de TeX perquè les matemàtiques són actives, i `keepTogether: false` deixa que una demostració llarga passi a la pàgina següent. `snapToGrid: false` manté el mateix espai al voltant de cada enunciat; en una sola columna, sense veïna amb què alinear-se, un blanc exacte es llegeix millor que un d'arrodonit a la reixeta base.
 
 ### 3 · Cita en autor–any des de la bibliografia del mateix article
 
@@ -64,6 +64,6 @@ Algunes revistes numeren tots els enunciats en una sola sèrie (lema 1, lema 2, 
 
 ## Errors freqüents
 
-- `endMark: '□'` a l'estil de la demostració posaria el quadrat al final de l'última línia, alineat a la dreta, però amb la font del cos del requadre. Spectral no té □ (cap font de text de Fontsource no el porta al fitxer latin), així que la pantalla agafa un glif del sistema i el PDF imprimeix la caixa de glif absent. Escriu `$\square$` al final de la demostració, o tria una marca que la font pugui compondre.
+- `endMark` dibuixa els seus quadrats (□ ∎ ■) amb TeX només quan les matemàtiques són actives. En un document sense `initMathEngine()` la marca es compon amb la font del cos del requadre, i Spectral, com tots els fitxers latin de Fontsource, no té □: tria-hi una marca que la font pugui compondre.
 - L'equilibrat de columnes omple la pàgina que una fórmula alta deixa curta afegint línies de la reixeta base sobre els seus títols. `balancing: { maxLinesPerHeading: 1 }` deixa els títols d'un article a prop del seu espai propi; aquella pàgina pot acabar llavors unes quantes línies més amunt.
 - Una fórmula amb un rètol de `\underbrace` més ample que la clau, com el gradient de la secció 4, necessita un tall amb `aligned`; si queda més ampla que la mesura, surt per la dreta.

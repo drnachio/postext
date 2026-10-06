@@ -1,4 +1,4 @@
-// ─── Kit · book v1 ── books bound on either edge · postext.dev/cookbook ──────
+// ─── Kit · book v1 ── books bound on either edge · postext.dev/cookbook
 // A book bound on the right (Arabic, Hebrew or Persian text, vertical
 // Chinese, or page.binding 'right') opens from what a Latin reader calls
 // the back: page 1 lies alone on the left of the spine, then [3 | 2].

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-arabic-english-report",
-  "sourceHash": "16705e1be6659c6d72b6af35e6a7c1f3328bf33d38dde7acaa27f2da82f950b4",
+  "sourceHash": "23195cb02ca8468d14443a420a1326e7e1a58b8e503f73db9a1ea1647c54dec8",
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:44:18.288Z",
+  "capturedAt": "2026-10-06T18:34:18.680Z",
   "variants": {
     "en": {
-      "hash8": "887ebc6d",
+      "hash8": "c46f84cf",
       "vdtHash": "4bceb305cd96b95e4ecc6e961222346b21659658",
       "timings": {
-        "importMs": 458,
-        "fontsMs": 1201,
-        "buildMs": 17,
-        "totalMs": 2322,
+        "importMs": 222,
+        "fontsMs": 76,
+        "buildMs": 19,
+        "totalMs": 952,
         "builds": 2
       },
       "specimen": {
@@ -100,12 +100,12 @@
       },
       "pdf": {
         "file": "bilingual-arabic-english-report.pdf",
-        "bytes": 82782,
+        "bytes": 82783,
         "pages": 3
       },
       "sandbox": {
         "file": "bilingual-arabic-english-report.postext",
-        "bytes": 16478,
+        "bytes": 16522,
         "folio": "3c25eba8"
       },
       "detected": {
@@ -244,7 +244,7 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 185,
+        "configLeaves": 193,
         "designElements": 5,
         "directives": [
           ":::paragraphs",
@@ -332,13 +332,13 @@
       }
     },
     "es": {
-      "hash8": "bfcf1e2b",
+      "hash8": "55a7bce6",
       "vdtHash": "5566b29fc623b9305db2e752679458380661b1bf",
       "timings": {
-        "importMs": 176,
-        "fontsMs": 76,
-        "buildMs": 26,
-        "totalMs": 989,
+        "importMs": 209,
+        "fontsMs": 70,
+        "buildMs": 29,
+        "totalMs": 948,
         "builds": 2
       },
       "specimen": {
@@ -421,12 +421,12 @@
       },
       "pdf": {
         "file": "bilingual-arabic-english-report.pdf",
-        "bytes": 83719,
+        "bytes": 83717,
         "pages": 3
       },
       "sandbox": {
         "file": "bilingual-arabic-english-report.postext",
-        "bytes": 16759,
+        "bytes": 16802,
         "folio": "3c25eba8"
       },
       "detected": {
@@ -565,7 +565,7 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 185,
+        "configLeaves": 193,
         "designElements": 5,
         "directives": [
           ":::paragraphs",

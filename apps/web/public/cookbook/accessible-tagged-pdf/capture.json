@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "accessible-tagged-pdf",
-  "sourceHash": "30f14047d1f4c1acc791ee5b13ce6b2b3bb68682c68f92fe80e3f79f0673751a",
+  "sourceHash": "d37f212cb11bb9efd1a262753475ffee71bfbceb45d9f49efdf90926084393fe",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:41:08.005Z",
+  "capturedAt": "2026-10-06T18:34:41.256Z",
   "variants": {
     "es": {
-      "hash8": "4d7ac2a6",
-      "vdtHash": "55647460c653392f0d98d3848cb4f238bc4ece53",
+      "hash8": "a42b675b",
+      "vdtHash": "b4d90a107216c3f089ce544b14ad07edef22c525",
       "timings": {
-        "importMs": 577,
-        "fontsMs": 65,
-        "buildMs": 13,
-        "totalMs": 1338,
+        "importMs": 777,
+        "fontsMs": 9786,
+        "buildMs": 30,
+        "totalMs": 11309,
         "builds": 2
       },
       "specimen": {
@@ -62,7 +62,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 150908,
+          "bytes": 150894,
           "alt": "Página de apertura 2: Índice."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 148700,
+          "bytes": 148742,
           "alt": "Página de apertura 3: 1 Qué va en cada contenedor. Figura 1.1. Una isla del barrio: de izquierda a derecha, amarillo, azul, verde, marrón y gris. · Tabla 1.1. Los residuos que más dudas dan."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 123962,
+          "bytes": 124048,
           "alt": "Página de apertura 4: 2 Lo que no va al contenedor. Tabla 2.1. Días y horas de recogida."
         }
       ],
@@ -116,12 +116,12 @@
       },
       "pdf": {
         "file": "accessible-tagged-pdf.pdf",
-        "bytes": 60224,
+        "bytes": 58360,
         "pages": 4
       },
       "sandbox": {
         "file": "accessible-tagged-pdf.postext",
-        "bytes": 36308,
+        "bytes": 36453,
         "folio": "ccb10a06"
       },
       "detected": {
@@ -351,7 +351,7 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -383,13 +383,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

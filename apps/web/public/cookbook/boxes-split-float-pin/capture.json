@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "boxes-split-float-pin",
-  "sourceHash": "a598a930a801297f57bfaf955a74400b6d9edb4bf61fdeb73c7ea31e65ca0193",
+  "sourceHash": "9a058fb7c7cb48ae852d87205d8140b363d54d3d8d1a06134fc94633dc5d6e29",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:16:36.546Z",
+  "capturedAt": "2026-10-06T18:34:18.718Z",
   "variants": {
     "es": {
-      "hash8": "b181456a",
-      "vdtHash": "3f65f6339c3275780c494077672bc8fcdd483949",
+      "hash8": "684f8d21",
+      "vdtHash": "731766a34e54522c0cbf634b2c7f9ff4a2b60ec3",
       "timings": {
-        "importMs": 293,
-        "fontsMs": 42,
-        "buildMs": 37,
-        "totalMs": 1078,
+        "importMs": 187,
+        "fontsMs": 26,
+        "buildMs": 58,
+        "totalMs": 994,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Host Grotesk"
         ],
         "pages": 4,
-        "ownLines": 226
+        "ownLines": 227
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1308,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 134274,
+          "bytes": 134146,
           "alt": "Página de apertura 41: Construye un reloj de sol."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1308,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 162132,
+          "bytes": 162154,
           "alt": "Página 42: 4.2 Una esfera con dos caras."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1308,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 147972,
+          "bytes": 147444,
           "alt": "Página 43: 4.4 Hora solar y hora oficial. Tabla 4.1. Mediodía solar en Madrid, día 15 de cada mes de 2026. De abril a octubre rige el horario de verano."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1308,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 72592,
+          "bytes": 72646,
           "alt": "Página 44. Figura 4.1. El reloj visto desde el este. A mediodía, el Sol ilumina la cara superior en verano (izquierda) y la inferior en invierno. · Tabla 4.2. Tus lecturas. La primera fila es la del ejemplo."
         }
       ],
@@ -114,7 +114,7 @@
       },
       "sandbox": {
         "file": "boxes-split-float-pin.postext",
-        "bytes": 34818,
+        "bytes": 34838,
         "folio": "bcf271e0"
       },
       "detected": {
@@ -241,6 +241,7 @@
           "headings.levels[].span",
           "layout",
           "layout.gutterWidth",
+          "layout.inlineResourceGapInBoxes",
           "layout.layoutType",
           "locale",
           "orderedLists",
@@ -303,7 +304,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 366,
+        "configLeaves": 367,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -354,8 +355,8 @@
           "callout-marker",
           "callout-splitting",
           "callout-styles",
-          "citations",
           "column-balancing",
+          "figure-citations",
           "fixed-callouts",
           "floated-callouts",
           "heading-attributes",
@@ -383,9 +384,9 @@
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "continuation.headings {\"h1\":3} dropped (chapter numbers restart)"
           }
         ]
       }

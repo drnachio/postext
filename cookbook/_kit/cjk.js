@@ -1,4 +1,4 @@
-// ─── Kit · cjk v1 ── Chinese, Japanese and Korean books · postext.dev/cookbook ─
+// ─── Kit · cjk v1 ── Chinese, Japanese and Korean books · postext.dev/cookbook
 // Fontsource ships a CJK family as about a hundred files per weight, each
 // declared in its stylesheet with the unicode-range it covers. The screen
 // loads the files the sample touches; the PDF gets the same files for the

@@ -48,7 +48,7 @@
   "gotchas": [
     "svg-no-webfonts",
     "svg-no-marker-filters",
-    "latin-subset",
+    "math-bundle",
     "merged-cells-hiddenby",
     "dollar-math",
     "headings-drop-h1-break",
@@ -58,7 +58,8 @@
   ],
   "engine": {
     "postext": "1.18.0",
-    "postextPdf": "1.18.0"
+    "postextPdf": "1.18.0",
+    "math": true
   },
   "kit": [
     "core",
@@ -88,7 +89,13 @@
       5,
       6,
       7
-    ]
+    ],
+    "expect": {
+      "console": [
+        "module \"buffer\" not found",
+        "module \"esprima\" not found"
+      ]
+    }
   },
   "downloads": {
     "pdf": true

@@ -147,7 +147,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, margins: { top: mm(TOP),
     bottom: mm(TRIM_H - TOP - LINES * LEAD * PT), left: mm(INNER), right: mm(OUTER),
     mirror: true } }, // a text block of LINES whole lines; left is the inner margin on a recto
-  layout: { layoutType: 'double', gutterWidth: mm(GUTTER) },
+  // A table set in a box sits right under the text above it, with no extra line of air.
+  layout: { layoutType: 'double', gutterWidth: mm(GUTTER), inlineResourceGapInBoxes: false },
   bodyText: { fontFamily: TEXT, fontSize: pt(9.4), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), // references follow the bold colour
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },

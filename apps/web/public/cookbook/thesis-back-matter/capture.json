@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "thesis-back-matter",
-  "sourceHash": "706ce88e2fefbaa34331d7e3d4dc013398a49fbc2e5207ff51aabd73ba8303ed",
+  "sourceHash": "9b404c868f21f54dd9f1437a4db43452cc52766b1b63cdb51a83d9d7ae367e94",
   "engine": {
-    "postext": "1.7.0",
-    "postextPdf": "1.7.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T09:58:55.423Z",
+  "capturedAt": "2026-10-06T18:34:19.518Z",
   "variants": {
     "en": {
-      "hash8": "ca82c0ba",
+      "hash8": "a36fa4b9",
       "vdtHash": "e9d60ef100984eb6334908fe197d3daf771f2b26",
       "timings": {
-        "importMs": 141,
-        "fontsMs": 49,
-        "buildMs": 63,
-        "totalMs": 970,
+        "importMs": 189,
+        "fontsMs": 62,
+        "buildMs": 80,
+        "totalMs": 2556,
         "builds": 2
       },
       "specimen": {
@@ -152,12 +152,12 @@
       },
       "pdf": {
         "file": "thesis-back-matter.pdf",
-        "bytes": 116193,
+        "bytes": 116195,
         "pages": 7
       },
       "sandbox": {
         "file": "thesis-back-matter.postext",
-        "bytes": 20426,
+        "bytes": 20434,
         "folio": "8d599631"
       },
       "detected": {
@@ -347,7 +347,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 857,
+        "configLeaves": 865,
         "designElements": 51,
         "directives": [
           ":::paragraphs",
@@ -394,8 +394,8 @@
           "back-of-book-index",
           "bibliography",
           "callout-styles",
-          "citations",
           "column-balancing",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",

@@ -130,7 +130,7 @@ describe("kit block arabic: arabicPdfProvider", () => {
       `${FILES}/noto-naskh-arabic@5/files/noto-naskh-arabic-latin-700-normal.woff2`,
     ]);
     expect(await arabicPdfProvider("Newsreader", 400, "normal", codePoints("A"))).toBe("latin:Newsreader");
-    expect(fontsourceProvider).toHaveBeenCalledWith("Newsreader", 400, "normal");
+    expect(fontsourceProvider).toHaveBeenCalledWith("Newsreader", 400, "normal", codePoints("A"));
   });
 });
 

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "woodblock-leaf",
-  "sourceHash": "5a7ae9a5d2b3ae1fd828edb9ad03d78d634f1ab361250ba6c905baefd428648f",
+  "sourceHash": "68859460cba09e8208f7e2271f553f855cfea3f7b1184d294c88c4b25f76abc9",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:27.389Z",
+  "capturedAt": "2026-10-06T18:34:19.624Z",
   "variants": {
     "en": {
-      "hash8": "3a8f6fa5",
+      "hash8": "fd4d83dd",
       "vdtHash": "91ea12b4e4b739496a275ae667b92b4fef3b7255",
       "timings": {
-        "importMs": 180,
-        "fontsMs": 194,
-        "buildMs": 10,
-        "totalMs": 1021,
+        "importMs": 196,
+        "fontsMs": 199,
+        "buildMs": 12,
+        "totalMs": 1032,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1764,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 32968,
+          "bytes": 32978,
           "alt": "Opening page 1: 論語集註."
         },
         {
@@ -300,13 +300,13 @@
       }
     },
     "es": {
-      "hash8": "ce8ee859",
+      "hash8": "6d541ffe",
       "vdtHash": "644b1ce8232fdd9b1350f719fe85772a763d0d2d",
       "timings": {
-        "importMs": 150,
-        "fontsMs": 207,
-        "buildMs": 10,
-        "totalMs": 953,
+        "importMs": 184,
+        "fontsMs": 198,
+        "buildMs": 12,
+        "totalMs": 1024,
         "builds": 2
       },
       "specimen": {

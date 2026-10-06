@@ -52,8 +52,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0"
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1"
   },
   "kit": [
     "core",

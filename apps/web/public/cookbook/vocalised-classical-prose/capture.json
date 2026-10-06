@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "vocalised-classical-prose",
-  "sourceHash": "b8b4c7594ab1cde8859b9242c6515c24f22046d986afc8e682275e0f663df316",
+  "sourceHash": "be76d77b175e82f181554fb333b8a62d297069d4286245a61634f9c3b63c1e85",
   "engine": {
-    "postext": "1.15.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:44:42.690Z",
+  "capturedAt": "2026-10-06T18:34:19.571Z",
   "variants": {
     "en": {
       "hash8": "e2100c7f",
       "vdtHash": "19f1fc45f2f16b0bdbeb7e787694a9850d547d8e",
       "timings": {
-        "importMs": 341,
-        "fontsMs": 1072,
-        "buildMs": 82,
-        "totalMs": 2054,
+        "importMs": 141,
+        "fontsMs": 44,
+        "buildMs": 92,
+        "totalMs": 827,
         "builds": 1
       },
       "specimen": {
@@ -243,13 +243,13 @@
       }
     },
     "es": {
-      "hash8": "31692c9f",
+      "hash8": "f0e75d8f",
       "vdtHash": "63bdfc263bbdec2ad7bca8e8b6f3ef2e15d0a9ae",
       "timings": {
-        "importMs": 128,
-        "fontsMs": 51,
-        "buildMs": 114,
-        "totalMs": 921,
+        "importMs": 138,
+        "fontsMs": 40,
+        "buildMs": 116,
+        "totalMs": 838,
         "builds": 1
       },
       "specimen": {
@@ -281,7 +281,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 83664,
+          "bytes": 83666,
           "alt": "Página de apertura ١: المقامة المارستانية."
         },
         {
@@ -314,7 +314,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 72556,
+          "bytes": 72606,
           "alt": "Página ٤."
         }
       ],

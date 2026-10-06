@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "five-chapter-openers",
-  "sourceHash": "7a991a7d44316e708c989ac90d223ecb9db0458698622f70278c326c65e85c00",
+  "sourceHash": "2f7ea41a08d58a3a406885386490344bc59411fae0386f495f9feaeceda0df60",
   "engine": {
-    "postext": "1.8.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T13:54:04.083Z",
+  "capturedAt": "2026-10-06T18:34:18.953Z",
   "variants": {
     "en": {
-      "hash8": "13cc5237",
+      "hash8": "0c3f9cf4",
       "vdtHash": "d3ca5795d2de5c0ffbb1f843d8ececf3f187c2e5",
       "timings": {
-        "importMs": 449,
-        "fontsMs": 47,
-        "buildMs": 154,
-        "totalMs": 1517,
+        "importMs": 156,
+        "fontsMs": 44,
+        "buildMs": 116,
+        "totalMs": 2319,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 101138,
+          "bytes": 101126,
           "alt": "Opening page 1: The Voice."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 67354,
+          "bytes": 67330,
           "alt": "Opening page 5: Say it out loud."
         },
         {
@@ -152,7 +152,7 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28627,
+        "bytes": 28562,
         "folio": "8cdc51df"
       },
       "detected": {
@@ -395,23 +395,17 @@
           "share": 0.0143,
           "worst": 1.62
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "9cbabe9a",
+      "hash8": "147fba9a",
       "vdtHash": "463172280380e8471d29bd1270fda4670df8753c",
       "timings": {
-        "importMs": 194,
-        "fontsMs": 77,
-        "buildMs": 30,
-        "totalMs": 1030,
+        "importMs": 156,
+        "fontsMs": 35,
+        "buildMs": 23,
+        "totalMs": 883,
         "builds": 2
       },
       "specimen": {
@@ -489,7 +483,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 71394,
+          "bytes": 71398,
           "alt": "Página de apertura 5: Salta a la vista."
         },
         {
@@ -547,7 +541,7 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28316,
+        "bytes": 28252,
         "folio": "8cdc51df"
       },
       "detected": {
@@ -790,13 +784,7 @@
           "share": 0.0143,
           "worst": 1.61
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

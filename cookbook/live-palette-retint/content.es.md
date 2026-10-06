@@ -44,7 +44,7 @@ La novena Música en la Ribera no se aleja del agua: todos los escenarios quedan
 - **23.45** :chip[Gratis]{style="free"} El Coro Popular canta a medianoche en la escalinata del Puente de Hierro. A las 23.15 se reparten velas.
 
 :::callout{type="tickets" title="Entradas"}
-El **abono de la semana** (48 €) da acceso a los seis conciertos con entrada. Entradas sueltas en la taquilla del Mercado desde el 7 de junio, de 10 a 14 h, o en la puerta 45 minutos antes. Los **menores de dieciséis años** entran gratis con un adulto.
+El **abono de la semana** (48 €) da acceso a los seis conciertos con entrada. Entradas sueltas en la taquilla del Mercado desde el 7 de junio, de 10 a 14 h, o en la puerta 45 minutos antes. Los **menores de dieciséis años** entran gratis con un adulto.
 :::
 
 :::paragraphs{style="colophon"}

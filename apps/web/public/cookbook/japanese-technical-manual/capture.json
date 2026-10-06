@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "japanese-technical-manual",
-  "sourceHash": "64f118827e58ee817f563075f7a6a3cc9feff8b74c1f4b1e1fa9334e1efb9042",
+  "sourceHash": "c2e08e9fb64b99f6604a110eb7e10960e39fdd19d94abeaa47bf9c00bcb93f19",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.943Z",
+  "capturedAt": "2026-10-06T18:34:19.041Z",
   "variants": {
     "en": {
-      "hash8": "6ec2d639",
+      "hash8": "6ad1bfb2",
       "vdtHash": "6ebacac9c1240a7f3aa380915dd7a81edf714dd1",
       "timings": {
-        "importMs": 183,
-        "fontsMs": 263,
-        "buildMs": 18,
-        "totalMs": 1111,
+        "importMs": 215,
+        "fontsMs": 278,
+        "buildMs": 22,
+        "totalMs": 1188,
         "builds": 2
       },
       "specimen": {
@@ -419,13 +419,13 @@
       }
     },
     "es": {
-      "hash8": "b77ac675",
+      "hash8": "962a1409",
       "vdtHash": "f6f5bd6600ba1d9e372c397e6a8cce24efaf2ec2",
       "timings": {
-        "importMs": 191,
-        "fontsMs": 269,
+        "importMs": 196,
+        "fontsMs": 257,
         "buildMs": 21,
-        "totalMs": 1125,
+        "totalMs": 3012,
         "builds": 2
       },
       "specimen": {

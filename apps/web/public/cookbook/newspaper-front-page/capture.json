@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "newspaper-front-page",
-  "sourceHash": "d4a9fb59f62f64415fa526cd5cf41396c52ab3ec3f055594a50736416576fd76",
+  "sourceHash": "eb1d15f115951857623a75a21a3d6005bb55db7d8622fcb67f72bff6acc935bb",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T07:53:42.456Z",
+  "capturedAt": "2026-10-06T18:34:19.203Z",
   "variants": {
     "en": {
-      "hash8": "12406580",
-      "vdtHash": "df5a9268d7b539bfdd41256d5bba9f7df83eb84f",
+      "hash8": "aee917ba",
+      "vdtHash": "644a18bf31dec623c4df2fa15227455ffe9d8baf",
       "timings": {
-        "importMs": 76,
-        "fontsMs": 41,
-        "buildMs": 19,
-        "totalMs": 795,
+        "importMs": 156,
+        "fontsMs": 67,
+        "buildMs": 34,
+        "totalMs": 927,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "PT Serif"
         ],
         "pages": 2,
-        "ownLines": 235
+        "ownLines": 237
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 154166,
+          "bytes": 154398,
           "alt": "Opening page 1: The Elverdale Courier. File picture: turbines on an upland ridge. Each of the three planned for Harrow Ridge would generate 2.3 megawatts."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 181328,
+          "bytes": 181208,
           "alt": "Opening page 2: Town & Valley. The rebuilt pier. Its new concrete footing (red) goes six metres below the riverbed. Both arches were relaid with their own stones. · The next five days · How the wards voted."
         }
       ],
@@ -89,7 +89,7 @@
       },
       "sandbox": {
         "file": "newspaper-front-page.postext",
-        "bytes": 199712,
+        "bytes": 200459,
         "folio": "7d33b710"
       },
       "detected": {
@@ -213,6 +213,7 @@
           "layout.columnRule.enabled",
           "layout.columnRule.lineWidth",
           "layout.gutterWidth",
+          "layout.inlineResourceGap",
           "layout.layoutType",
           "page",
           "page.backgroundColor",
@@ -278,11 +279,10 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 504,
+        "configLeaves": 505,
         "designElements": 22,
         "directives": [
           ":::callout",
-          ":::space",
           "::resource",
           ":::columns",
           ":::paragraphs",
@@ -349,8 +349,8 @@
           "callout-columns",
           "callout-styles",
           "chips",
-          "citations",
           "column-rule",
+          "figure-citations",
           "floated-callouts",
           "heading-attributes",
           "heading-styles",
@@ -364,8 +364,7 @@
           "resources",
           "section-running-heads",
           "span-boxes",
-          "table-styles",
-          "vertical-space"
+          "table-styles"
         ],
         "suggestedLevel": 3
       },

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-research-article",
-  "sourceHash": "50aefb441515399649006e63dea8b516ca21957d2d64239baa0fd24e19810264",
+  "sourceHash": "c41e929f0963937fdcc2dad24c4800f1d91b084d38661bfd06af0ceb0b4f5b08",
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:44:26.448Z",
+  "capturedAt": "2026-10-06T18:34:18.649Z",
   "variants": {
     "en": {
-      "hash8": "47b8aa2d",
+      "hash8": "76b5ae6d",
       "vdtHash": "16c436f40ba1b93d20fa56d7590bb222a7e9915a",
       "timings": {
-        "importMs": 2960,
-        "fontsMs": 2123,
-        "buildMs": 37,
-        "totalMs": 6263,
+        "importMs": 247,
+        "fontsMs": 89,
+        "buildMs": 43,
+        "totalMs": 1554,
         "builds": 2
       },
       "specimen": {
@@ -386,13 +386,13 @@
       }
     },
     "es": {
-      "hash8": "19a54d1d",
+      "hash8": "f7c2283e",
       "vdtHash": "b5e797f89542a90d0f4e6f5f3964039b6598a078",
       "timings": {
-        "importMs": 2855,
-        "fontsMs": 90,
-        "buildMs": 40,
-        "totalMs": 4180,
+        "importMs": 256,
+        "fontsMs": 83,
+        "buildMs": 133,
+        "totalMs": 5657,
         "builds": 2
       },
       "specimen": {
@@ -501,7 +501,7 @@
       },
       "pdf": {
         "file": "arabic-research-article.pdf",
-        "bytes": 98919,
+        "bytes": 98917,
         "pages": 5
       },
       "sandbox": {

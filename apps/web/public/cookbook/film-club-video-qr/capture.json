@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "film-club-video-qr",
-  "sourceHash": "7f81aa7a4c5a00b3000a704523640171d736973d75abdd66a529b690f58a20b1",
+  "sourceHash": "2bcebc7d3170ffdffd8fe30db1606f55091b11985e6b9fa6610717d96cba0c90",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T15:08:23.538Z",
+  "capturedAt": "2026-10-06T18:34:18.937Z",
   "variants": {
     "en": {
-      "hash8": "4d71815e",
+      "hash8": "fa121685",
       "vdtHash": "3a0bdec19ce7c4f9ff84113449547eb0830ba503",
       "timings": {
-        "importMs": 439,
-        "fontsMs": 160,
-        "buildMs": 22,
-        "totalMs": 1529,
+        "importMs": 221,
+        "fontsMs": 130,
+        "buildMs": 24,
+        "totalMs": 1028,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1424,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 84112,
+          "bytes": 84110,
           "alt": "Opening page 1: Open Movies."
         },
         {
@@ -141,7 +141,7 @@
       },
       "pdf": {
         "file": "film-club-video-qr.pdf",
-        "bytes": 299435,
+        "bytes": 299442,
         "pages": 6
       },
       "sandbox": {
@@ -402,13 +402,13 @@
       }
     },
     "es": {
-      "hash8": "ca8f820c",
+      "hash8": "01230f67",
       "vdtHash": "80469d22f149be1907cf7e9ea6c697761367045f",
       "timings": {
-        "importMs": 589,
-        "fontsMs": 217,
-        "buildMs": 38,
-        "totalMs": 1536,
+        "importMs": 221,
+        "fontsMs": 119,
+        "buildMs": 26,
+        "totalMs": 1044,
         "builds": 2
       },
       "specimen": {
@@ -441,7 +441,7 @@
           "h": 1424,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 95462,
+          "bytes": 95440,
           "alt": "Página de apertura 1: Películas abiertas."
         },
         {
@@ -532,7 +532,7 @@
       },
       "pdf": {
         "file": "film-club-video-qr.pdf",
-        "bytes": 313737,
+        "bytes": 313740,
         "pages": 6
       },
       "sandbox": {

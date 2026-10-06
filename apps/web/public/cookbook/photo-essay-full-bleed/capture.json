@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "photo-essay-full-bleed",
-  "sourceHash": "4a94176fda7be4b58f4b996f587d56b4bdafad45e5419837c965872c701ee7bc",
+  "sourceHash": "a813df7398a1a243991df689cdd54f67d6f771faaa7a641ed3eae4eb7dd145b8",
   "engine": {
-    "postext": "1.8.3",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T18:00:44.056Z",
+  "capturedAt": "2026-10-06T18:34:19.251Z",
   "variants": {
     "en": {
-      "hash8": "5a6adaf2",
+      "hash8": "3f09c3df",
       "vdtHash": "06ae992e932298dabfe0bf8739364d0527d93c0d",
       "timings": {
-        "importMs": 622,
-        "fontsMs": 2004,
-        "buildMs": 8,
-        "totalMs": 3373,
+        "importMs": 159,
+        "fontsMs": 62,
+        "buildMs": 10,
+        "totalMs": 838,
         "builds": 2
       },
       "specimen": {
@@ -177,7 +177,7 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 1718569,
+        "bytes": 1718542,
         "folio": "fb4fa41a"
       },
       "detected": {
@@ -316,7 +316,7 @@
           }
         ],
         "features": [
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "opener-design",
@@ -336,23 +336,17 @@
           "share": 0,
           "worst": 1.51
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "903762c8",
+      "hash8": "6ec7453b",
       "vdtHash": "abac35841ff68aa65b21c2e5fc629d2386c01d45",
       "timings": {
-        "importMs": 664,
-        "fontsMs": 3231,
-        "buildMs": 11,
-        "totalMs": 4581,
+        "importMs": 141,
+        "fontsMs": 61,
+        "buildMs": 10,
+        "totalMs": 822,
         "builds": 2
       },
       "specimen": {
@@ -513,7 +507,7 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 1718718,
+        "bytes": 1718691,
         "folio": "fb4fa41a"
       },
       "detected": {
@@ -652,7 +646,7 @@
           }
         ],
         "features": [
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "opener-design",
@@ -672,13 +666,7 @@
           "share": 0,
           "worst": 1.45
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

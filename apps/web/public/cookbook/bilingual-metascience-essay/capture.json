@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-metascience-essay",
-  "sourceHash": "12f342872dd70b70f1b1db89f98881a280f5d8c1c298296455fa29cc850d9616",
+  "sourceHash": "18646043ff447b873dc0ef506e64932ea638f315007b46701c362c2ddf8e8678",
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T16:11:56.393Z",
+  "capturedAt": "2026-10-06T18:34:18.692Z",
   "variants": {
     "en": {
-      "hash8": "07b2f42e",
-      "vdtHash": "52c7a2bcc70be7c69040a6f28213828fe92c0df8",
+      "hash8": "00c27ea1",
+      "vdtHash": "1a2618d11698ead020024ad1a2162631052e37ba",
       "timings": {
-        "importMs": 1065,
-        "fontsMs": 2994,
-        "buildMs": 591,
-        "totalMs": 5229,
+        "importMs": 313,
+        "fontsMs": 124,
+        "buildMs": 585,
+        "totalMs": 1571,
         "builds": 1
       },
       "specimen": {
@@ -105,7 +105,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 161094,
+          "bytes": 161040,
           "alt": "Page 7: REFERENCES."
         }
       ],
@@ -141,7 +141,7 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 783317,
+        "bytes": 783183,
         "pages": 7
       },
       "sandbox": {
@@ -494,13 +494,13 @@
       }
     },
     "es": {
-      "hash8": "77a26618",
+      "hash8": "8e48b8c1",
       "vdtHash": "12998927793173f946a0c06b165ddf5435e27291",
       "timings": {
-        "importMs": 671,
-        "fontsMs": 170,
-        "buildMs": 641,
-        "totalMs": 2131,
+        "importMs": 313,
+        "fontsMs": 116,
+        "buildMs": 539,
+        "totalMs": 1535,
         "builds": 1
       },
       "specimen": {

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "short-chapters-run-on",
-  "sourceHash": "adbcf55a4480f052ef53d6185b0c29bddde8ba4f9e61ca388770b11afb213fe2",
+  "sourceHash": "25bf77c365ca04d722c14e7da43423eb7daf1288574d670f97df34d01c0ea682",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:51:11.465Z",
+  "capturedAt": "2026-10-06T18:34:19.437Z",
   "variants": {
     "en": {
-      "hash8": "8e5bc37f",
+      "hash8": "cd3503a3",
       "vdtHash": "8c777fd896afc31dbcaa664ec56281f651b23034",
       "timings": {
-        "importMs": 901,
-        "fontsMs": 807,
-        "buildMs": 25,
-        "totalMs": 2449,
+        "importMs": 415,
+        "fontsMs": 1303,
+        "buildMs": 59,
+        "totalMs": 84924,
         "builds": 2
       },
       "specimen": {
@@ -151,7 +151,7 @@
       },
       "sandbox": {
         "file": "short-chapters-run-on.postext",
-        "bytes": 322281,
+        "bytes": 322274,
         "folio": "badc8643"
       },
       "detected": {
@@ -343,6 +343,11 @@
             "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 7 pages)"
           },
           {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the pen took 84.9 s to finish (warning at 30 s)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.headings {\"h1\":118,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
@@ -351,13 +356,13 @@
       }
     },
     "es": {
-      "hash8": "c4316612",
+      "hash8": "99a63d00",
       "vdtHash": "8c777fd896afc31dbcaa664ec56281f651b23034",
       "timings": {
-        "importMs": 214,
-        "fontsMs": 41,
-        "buildMs": 21,
-        "totalMs": 1033,
+        "importMs": 188,
+        "fontsMs": 58,
+        "buildMs": 26,
+        "totalMs": 971,
         "builds": 2
       },
       "specimen": {
@@ -492,7 +497,7 @@
       },
       "sandbox": {
         "file": "short-chapters-run-on.postext",
-        "bytes": 322295,
+        "bytes": 322288,
         "folio": "badc8643"
       },
       "detected": {

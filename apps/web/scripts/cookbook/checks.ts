@@ -737,11 +737,12 @@ function collect(input: CheckInput): Finding[] {
   // cjk block loads by slices covers its own, an Arabic face the arabic
   // block completes covers the Arabic letters), and what postext-pdf drew
   // with no glyph (its missingGlyph warning, printed to the console). The
-  // cjk block's provider also embeds a Latin face's latin-ext file (#466),
-  // so there a latin-ext letter that file holds on screen is in the PDF.
+  // kit's providers also embed a face's latin-ext file (#466) and, in the
+  // pdf block, its greek file (#541), so a letter of those files that the
+  // face holds on screen is in the PDF.
   const pdfRecipe = meta.outputs.includes("pdf") || !!meta.downloads?.pdf;
-  const latinExtInPdf = meta.kit.includes("cjk");
-  const outside = (facts.nonLatin ?? []).filter((c) => !(latinExtInPdf && c.ownFile && latinExtOnly(c.ch.codePointAt(0) ?? 0)));
+  const embedded = (cp: number) => latinExtOnly(cp) || (!meta.kit.includes("cjk") && cp >= 0x370 && cp <= 0x3ff);
+  const outside = (facts.nonLatin ?? []).filter((c) => !(c.ownFile && embedded(c.ch.codePointAt(0) ?? 0)));
   if (pdfRecipe && outside.length) {
     add("C25", "warn", `outside the latin subset: ${outside.map((c) => `${c.ch} ${c.code}`).join(", ")}`);
   }

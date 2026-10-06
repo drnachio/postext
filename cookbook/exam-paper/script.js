@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 049 · Exam paper with an answer sheet ═════════════════
 // https://postext.dev/en/cookbook/exam-paper
 // Code: MIT · Text: Lincoln (PD); questions, Spanish translation (CC BY 4.0) · Art: in code
-// Fonts: PT Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: PT Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -50,16 +50,16 @@ const answerLines = (id, part, rows) => table(id, 'lines', { columnWidths: [1, 5
 const [NUMBER, GAP] = [12.5, 6]; // pt: the question numbers' size; number to text
 const orderedLists = { fontFamily: LABEL, color: col('ink'), // bold, by default
   separatorColor: col('crimson'), gap: pt(GAP), marginTop: pt(LEAD / 2), marginBottom: pt(0),
-  itemSpacing: pt(5), // after every numbered item: to a question's options, or the next part
+  itemSpacing: pt(5), numberWidth: 'level', // 5 pt to the options or next part; text after '10.'
   levels: [{ level: 1, fontSize: pt(NUMBER) }, // 'arabic', '.' (gotcha: numbering-vocabularies)
     { level: 2, numberFormat: 'lower-alpha', separator: ')' },
     { level: 3, numberFormat: 'lower-roman', separator: ')' }] };
-// Options: a nested item with no bullet, indented by the widest number ('10.') plus GAP.
+// Options: a bulletless item at the questions' depth, '10.' plus GAP in (boxes set their own).
 const width = (s) => { const ctx = new OffscreenCanvas(1, 1).getContext('2d');
   ctx.font = `700 ${NUMBER}pt "${LABEL}"`; return ctx.measureText(s).width * 0.75; }; // pt
 const unorderedLists = () => ({ gap: pt(0), marginTop: pt(0), marginBottom: pt(0),
   itemSpacing: pt(LEAD), // after the options: a line before the next question
-  levels: [{ level: 2, bulletChar: '', indent: pt(width('10') + width('.') + GAP) }] });
+  indent: pt(width('10') + width('.') + GAP), levels: [{ level: 1, bulletChar: '' }] });
 // #endregion
 
 // #region chips: bubbles that read as circles, and marks at the end of a part
@@ -165,7 +165,7 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
     marginTop: pt(0), marginBottom: pt(0), advancedDesign: section }] },
   calloutStyles: [{ id: 'rubric', background: col('tint'), borderRadius: mm(2), columnGap: mm(8),
     padding: { top: mm(4), right: mm(5), bottom: mm(4), left: mm(5) }, marginTop: pt(0),
-    marginBottom: pt(0), lists: { bulletChar: '–', color: col('crimson'), gap: mm(2),
+    marginBottom: pt(0), lists: { bulletChar: '–', color: col('crimson'), gap: mm(2), indent: pt(0),
       itemSpacing: pt(3) }, body: { fontFamily: LABEL, fontSize: pt(9.4), lineHeight: pt(13),
       boldColor: col('crimson'), paragraphSpacing: false } },
   { id: 'source', backgroundEnabled: false, marginTop: pt(LEAD), stripe: { enabled: true,

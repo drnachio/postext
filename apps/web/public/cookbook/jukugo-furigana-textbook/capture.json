@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "jukugo-furigana-textbook",
-  "sourceHash": "5e35eb311f0e80e767730a05c5e5b3280afe71b218bfb35b02c38de1a7699d07",
+  "sourceHash": "1d17f01fff5a775a55f793bebe2385aa18fa35ad7d4c661de31554da7592e554",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.953Z",
+  "capturedAt": "2026-10-06T18:34:19.053Z",
   "variants": {
     "en": {
-      "hash8": "f095dac6",
+      "hash8": "445b78f4",
       "vdtHash": "46b3aa633741641ce902faf136384cec338f1712",
       "timings": {
-        "importMs": 165,
-        "fontsMs": 217,
-        "buildMs": 61,
-        "totalMs": 1024,
+        "importMs": 194,
+        "fontsMs": 230,
+        "buildMs": 73,
+        "totalMs": 1084,
         "builds": 1
       },
       "specimen": {
@@ -99,7 +99,7 @@
       },
       "pdf": {
         "file": "jukugo-furigana-textbook.pdf",
-        "bytes": 129656,
+        "bytes": 129655,
         "pages": 3
       },
       "sandbox": {
@@ -309,13 +309,13 @@
       }
     },
     "es": {
-      "hash8": "8cc8cfc6",
+      "hash8": "4f2c1d6a",
       "vdtHash": "269d61745a8190a6b011f56a5856133565442470",
       "timings": {
-        "importMs": 173,
-        "fontsMs": 204,
-        "buildMs": 54,
-        "totalMs": 1007,
+        "importMs": 230,
+        "fontsMs": 228,
+        "buildMs": 62,
+        "totalMs": 1101,
         "builds": 1
       },
       "specimen": {
@@ -397,7 +397,7 @@
       },
       "pdf": {
         "file": "jukugo-furigana-textbook.pdf",
-        "bytes": 129828,
+        "bytes": 129827,
         "pages": 3
       },
       "sandbox": {

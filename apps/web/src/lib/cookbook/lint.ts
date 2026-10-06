@@ -179,6 +179,13 @@ function isLatinExtOnly(code: number): boolean {
   return !isLatin(code);
 }
 
+/** Whether a code point is in Fontsource's `greek` file (the Greek and
+ *  Coptic block): what the kit's PDF provider adds for a face that ships
+ *  it. */
+function isGreek(code: number): boolean {
+  return code >= 0x370 && code <= 0x3ff;
+}
+
 /** Characters outside Fontsource's `latin` subset (what a PDF recipe
  *  embeds), split into those in the CJK blocks, those in the Arabic blocks
  *  and the rest. */
@@ -558,16 +565,20 @@ export function lintPen(
           "loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)");
       }
     }
-    // cjkPdfProvider adds a Latin face's latin-ext file for the letters only
-    // it has (ō ǎ), so with the cjk block those reach the PDF as they reach
-    // the screen; the capture's C25 names any face that still lacks one.
-    const beyond = cjkKit ? odd.other.filter((ch) => !isLatinExtOnly(ch.codePointAt(0) ?? 0)) : odd.other;
+    // The kit's PDF providers add a face's latin-ext file for the letters only
+    // it has (ō ǎ č †), and fontsourceProvider its greek file (α χ), so those
+    // reach the PDF as they reach the screen; the capture's C25 names any
+    // face that ships no such file.
+    const beyond = odd.other.filter((ch) => {
+      const code = ch.codePointAt(0) ?? 0;
+      return !isLatinExtOnly(code) && (cjkKit || !isGreek(code));
+    });
     if (pdfOutput && beyond.length) {
       const shown = beyond.slice(0, 8).join(" ");
       warns.push(cjkKit
         ? `${file}: characters outside Fontsource latin, latin-ext and the CJK blocks (${shown}) reach the PDF only in a CJK face ` +
           "(cjkPdfProvider takes every file it needs) or a face the pen's own provider serves"
-        : `${file}: characters outside Fontsource latin (${shown}) need latin-ext faces in the PDF`);
+        : `${file}: characters outside Fontsource latin, latin-ext and greek (${shown}) reach the PDF only in a face the pen's own provider serves`);
     }
   }
   if (cjkKit) lintCjk(scan, ownCode, ownBare, postextNames, pdfOutput && cjkText, cjkText, japaneseText, fails, warns);

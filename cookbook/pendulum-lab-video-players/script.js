@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 132 · A lab sheet whose clips play on screen and in the EPUB ════
 // https://postext.dev/en/cookbook/pendulum-lab-video-players
 // Code: MIT · Text: original (CC BY 4.0) · Clips: rendered in code (CC BY 4.0)
-// Fonts: Source Serif 4, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Source Serif 4, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 import {
   buildDocument, renderPageToCanvas, renderToHtml, applyHtmlViewerOverrides,
   clearMeasurementCache, registerResourceImage, defaultResourceTypes, resourceVideoLink,
@@ -189,43 +189,31 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
   'Source Serif 4': ['400', '400i', '700', '700i'], 'Red Hat Display': ['700', '800'],
   'Red Hat Mono': ['400', '500', '600', '700'] };
 
-// #region greek: θ and π come from the text face's greek file, which the kit does not load
-// Fontsource cuts each face by script, and the PDF keeps its latin file (gotcha: latin-subset).
-const GREEK = 'U+0370-03FF'; // Greek and Coptic
-const file = (family, subset, [weight, style]) => 'https://cdn.jsdelivr.net/npm/@fontsource/'
-  + `${fontsourceId(family)}@5/files/${fontsourceId(family)}-${subset}-${weight}-${style}.woff2`;
-const faceOf = (spec) => [parseInt(spec, 10), spec.endsWith('i') ? 'italic' : 'normal'];
-const bytesOf = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer());
-const greek = FONTS[TEXT].map(faceOf).map(([weight, style]) => ({ family: TEXT, weight, style,
-  url: file(TEXT, 'greek', [weight, style]) }));
-const loadGreek = () => Promise.all(greek.map(async ({ weight, style, url }) => document.fonts.add(
-  await new FontFace(TEXT, `url(${url})`, { weight: `${weight}`, style, unicodeRange: GREEK })
-    .load())));
-// The PDF takes both files of a text face; it asks for every weight, and Source Serif 4 ships
-// 200 to 900 (gotcha: pdf-provider-all-styles). A character comes from the first file with it.
-const pdfFont = async (family, weight, style) => {
-  const latin = await fontsourceProvider(family, weight, style);
-  return family !== TEXT ? latin : [latin, await decompressWoff2(await bytesOf(file(TEXT,
-    'greek', [Math.max(weight, 200), style])))];
-};
-// #endregion
-
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown), loadGreek(),
+// θ and π: markdown has Greek letters, so the kit loads Source Serif 4's greek file too
+// and the PDF provider embeds it beside the latin one (gotcha: latin-subset).
+await Promise.all([loadFonts(FONTS, markdown),
   ...clips.map(({ video }) => loadImage(video.poster.fileId, asset(video.poster.fileId)))]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: t({ en: 'The period of a pendulum', es: 'El periodo de un péndulo' }) });
-offerPdf(() => renderToPdf(doc, { fontProvider: pdfFont, resourceBytes: imageBytes }),
+offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 
 // #region epub: a fixed-layout EPUB that carries both MP4 files and plays them on the page
+const bytesOf = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer());
 const media = new Map(await Promise.all(clips.map(async ({ video }) =>
   [video.fileId, { bytes: await bytesOf(asset(video.fileId)), mediaType: 'video/mp4' }])));
-const fonts = await Promise.all([ // every face as bytes (gotcha: epub-embeds-given-fonts)
-  ...Object.entries(FONTS).flatMap(([family, specs]) => specs.map(faceOf).map(([w, s]) =>
-    ({ family, weight: w, style: s, url: file(family, 'latin', [w, s]) }))),
-  ...greek.map((face) => ({ ...face, unicodeRange: GREEK })), // after latin: tried first
-].map(async ({ url, ...face }) => ({ ...face, format: 'woff2', bytes: await bytesOf(url) })));
+// Every face as bytes (gotcha: epub-embeds-given-fonts): the files loadFonts loaded, latin
+// for each face and greek for the text face, limited to the Greek block and listed after
+// latin, so a reading system tries it first for θ and π.
+const faces = Object.entries(FONTS).flatMap(([family, specs]) => specs.map((spec) =>
+  ({ family, weight: parseInt(spec, 10), style: spec.endsWith('i') ? 'italic' : 'normal' })));
+const fonts = await Promise.all([...faces.map((face) => [face, 'latin']),
+  ...faces.filter(({ family }) => family === TEXT)
+    .map((face) => [{ ...face, unicodeRange: 'U+0370-03FF' }, 'greek'])]
+  .map(async ([face, subset]) => ({ ...face, format: 'woff2', bytes: await bytesOf(
+    `https://cdn.jsdelivr.net/npm/@fontsource/${fontsourceId(face.family)}@5/files/`
+    + `${fontsourceId(face.family)}-${subset}-${face.weight}-${face.style}.woff2`) })));
 const epub = await renderToEpub([doc], { layout: 'fixed', fonts,
   metadata: { title: doc.metadata.title, creators: ['Postext Cookbook'], language: LANG,
     rights: 'CC BY 4.0', modified: new Date('2026-10-05T00:00:00Z') }, // the same bytes each run
