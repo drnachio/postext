@@ -325,11 +325,12 @@ export function resolveRefSpans(
       ...span,
       ref,
       text: text ?? resolveRefLabel(ref, resourceNumbering, resourceTypes, resources, refStyle?.labelNumberGap),
-      // Reference labels carry their own emphasis (bold/italic) so the measurer
-      // selects the matching font; colour is applied by renderers via
-      // `refResourceId`.
-      bold: refStyle?.bold ?? span.bold,
-      italic: refStyle?.italic ?? span.italic,
+      // Reference labels keep the emphasis of the run they sit in, and the
+      // reference style adds its own on top where it sets it (#531), so the
+      // measurer selects the matching font; colour is applied by renderers
+      // via `refResourceId`.
+      bold: span.bold || (refStyle?.bold ?? false),
+      italic: span.italic || (refStyle?.italic ?? false),
     };
   });
 }
