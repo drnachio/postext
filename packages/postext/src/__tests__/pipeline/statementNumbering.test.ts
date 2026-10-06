@@ -211,13 +211,17 @@ describe('numbered statements (#530)', () => {
     const md = ':::callout{type="proof"}\nShort proof.\n:::';
     const { blocks } = numbered(md);
     const p = blocks.find((b) => b.type === 'paragraph')!;
-    expect(p.text).toBe('Proof. Short proof. □');
+    // With maths running the square is TeX's own glyph: Fontsource's latin
+    // files have no □ (#545).
+    expect(p.text).toBe('Proof. Short proof. \uFFFC');
+    expect(p.spans[p.spans.length - 1]!.math?.tex).toBe('\\square');
     expect(p.endMark).toBe('□');
     const doc = build(md);
     const para = blocksOf(doc).find((b) => b.type === 'paragraph')!;
     const line = para.lines[para.lines.length - 1]!;
     const segs = line.segments!;
-    expect(segs[segs.length - 1]!.text).toBe('□');
+    const markSeg = segs[segs.length - 1]!;
+    expect(markSeg.kind).toBe('math');
     const before = segs[segs.length - 2]!;
     expect(before.kind).toBe('space');
     expect(before.labelTab).toBe(true);
@@ -226,6 +230,11 @@ describe('numbered statements (#530)', () => {
     const markEnd = line.bbox.x + segs.reduce((w, s) => w + s.width, 0);
     expect(markEnd).toBeLessThanOrEqual(right + 0.5);
     expect(line.bbox.width).toBeCloseTo(segs.reduce((w, s) => w + s.width, 0), 3);
+  });
+
+  it('sets the mark as text when maths is off', () => {
+    const { blocks } = numbered(':::callout{type="proof"}\nShort proof.\n:::', { ...PAGE, math: { enabled: false } });
+    expect(blocks.find((b) => b.type === 'paragraph')!.text).toBe('Proof. Short proof. □');
   });
 
   it('takes a proof ending in a formula as the formula\'s tag', () => {
