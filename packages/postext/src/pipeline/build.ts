@@ -61,6 +61,7 @@ import { bookCitationContexts, needsCitationContext } from '../citations/context
 import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
 import { applyStatementNumbering, numberStatements, outlineLookup } from './statementNumbering';
+import { spanEmbedStyle, wrapPageSpanEmbeds } from './spanEmbeds';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
@@ -166,6 +167,7 @@ import {
   type ResourceNumberingMap,
 } from './resourceNumbering';
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
+import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, headingTitleText, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
@@ -645,7 +647,12 @@ function placeDocumentPass(
     ...(headingStart ? { headings: headingStart } : {}),
     ...(continuation?.statementCounters ? { counters: continuation.statementCounters } : {}),
   });
-  const contentBlocks = applyStatementNumbering(indexExpanded.blocks, statementNumbering, resolved, outlineLookup(content.outline ? anchorTargetsOf(content.outline) : undefined));
+  const numberedBlocks = applyStatementNumbering(indexExpanded.blocks, statementNumbering, resolved, outlineLookup(content.outline ? anchorTargetsOf(content.outline) : undefined));
+  // An inline `::resource` placed `here` with `span: 'page'` spans the
+  // page where it stands (#535): each goes in a frameless page-span box,
+  // set by the span-block path like any other.
+  const spanEmbeds = wrapPageSpanEmbeds(numberedBlocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []));
+  const contentBlocks = spanEmbeds.blocks;
   if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
@@ -691,6 +698,12 @@ function placeDocumentPass(
 
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);
+  // The callout styles, with the frameless box of the page-span embeds
+  // when there are any: the float gap (a line) above and below it, as an
+  // inline resource keeps in a column.
+  const calloutStyles = spanEmbeds.wrapped
+    ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig([spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')], resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
+    : resolved.calloutStyles;
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
   const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
   const orderedMetrics = computeOrderedListRunMetrics(contentBlocks, resolved, bodyStyle.fontSizePx);
@@ -1831,7 +1844,7 @@ function placeDocumentPass(
     const b = contentBlocks[idx];
     if (!b || b.type !== 'containerStart' || b.containerName !== 'callout') return null;
     const plan = calloutPlan.get(idx);
-    const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+    const style = plan ? pickCalloutStyle(calloutStyles, plan.attrs.type) : undefined;
     if (!plan || !style || !style.keepTogether) return null;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     if (placement !== 'here') return null;
@@ -1958,7 +1971,7 @@ function placeDocumentPass(
     const b = contentBlocks[idx];
     if (!b || b.type !== 'containerStart' || b.containerName !== 'callout') return false;
     const plan = calloutPlan.get(idx);
-    const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+    const style = plan ? pickCalloutStyle(calloutStyles, plan.attrs.type) : undefined;
     if (!style) return false;
     const { span, placement } = resolveCalloutAttrs(style, plan!.attrs);
     if (span !== 'page' || placement !== 'here') return false;
@@ -3751,7 +3764,7 @@ function placeDocumentPass(
         if (b.containerName === 'part') return true;
         if (b.containerName === 'callout') {
           const plan = calloutPlan.get(i);
-          const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+          const style = plan ? pickCalloutStyle(calloutStyles, plan.attrs.type) : undefined;
           return style?.floatBarrier === true;
         }
         continue;
@@ -4108,7 +4121,7 @@ function placeDocumentPass(
    * `callout.placement` records the request.
    */
   const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
-    const style = pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!;
+    const style = pickCalloutStyle(calloutStyles, plan.attrs.type)!;
     const firstFrameId = `block-${blockIdCounter++}`;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     const L = makeCalloutLayouter(startIdx, plan, style);
@@ -4519,14 +4532,14 @@ function placeDocumentPass(
     }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
-      if (plan && pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)) {
+      if (plan && pickCalloutStyle(calloutStyles, plan.attrs.type)) {
         // A float barrier box (e.g. a chapter's closing "key points")
         // takes every pending float first — in the current page's free
         // slots, else on pages opened ahead of it — so no float escapes
         // past it. The page stays balanceable (no forced break).
         // A page-span barrier box drains inside `placeCalloutSpan`, once
         // the page-span figures before it have taken the band cut.
-        if (pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!.floatBarrier && !spanBoxAt(blockIdx)) {
+        if (pickCalloutStyle(calloutStyles, plan.attrs.type)!.floatBarrier && !spanBoxAt(blockIdx)) {
           tryPlacePendingFloatsOnCurrentPage();
           drainPendingFloats();
         }
