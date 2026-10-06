@@ -3174,13 +3174,13 @@ interface FootnotesConfig {
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>How the numbers are written, in any spelling the numbering settings take: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (or <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… The marker and the number that opens the note both use it. <code>circled-decimal</code> writes numbers past 50 in decimal. An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning. <code>'symbols'</code> (or <code>'*'</code>) marks the notes with reference symbols, <code>symbols</code> in turn: * † ‡ § ‖ ¶, then doubled (** †† ‡‡…) and tripled; the notes are then counted again on every page unless <code>numbering</code> is set. Since postext 1.19.</td>
+      <td>How the numbers are written, in any spelling the numbering settings take: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (or <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… The marker and the number that opens the note both use it. <code>circled-decimal</code> writes numbers past 50 in decimal. An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning. <code>'symbols'</code> (or <code>'&#42;'</code>) marks the notes with reference symbols, <code>symbols</code> in turn: &#42; † ‡ § ‖ ¶, then doubled (&#42;&#42; †† ‡‡…) and tripled; the notes are then counted again on every page unless <code>numbering</code> is set. Since postext 1.19.</td>
     </tr>
     <tr>
       <td><code>symbols</code></td>
       <td><code>string[]</code></td>
-      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
-      <td>The sequence <code>numberFormat: 'symbols'</code> writes, doubled and then tripled once it runs out. The Latin files of Google Fonts and Fontsource carry * † § ¶ (the dagger in <code>latin-ext</code>) but neither ‡ nor ‖, which the PDF then draws as the face's <code>.notdef</code> glyph with a <code>missingGlyph</code> warning: with such a face, leave them out (<code>['*', '†', '§', '¶']</code>) or set the notes in a face that has them. Empty strings are dropped and an empty list keeps the default. Since postext 1.19.</td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>The sequence <code>numberFormat: 'symbols'</code> writes, doubled and then tripled once it runs out. The Latin files of Google Fonts and Fontsource carry &#42; † § ¶ (the dagger in <code>latin-ext</code>) but neither ‡ nor ‖, which the PDF then draws as the face's <code>.notdef</code> glyph with a <code>missingGlyph</code> warning: with such a face, leave them out (<code>['&#42;', '†', '§', '¶']</code>) or set the notes in a face that has them. Empty strings are dropped and an empty list keeps the default. Since postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

@@ -3174,13 +3174,13 @@ interface FootnotesConfig {
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>Cómo se escriben los números, con cualquiera de las grafías que aceptan los ajustes de numeración: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… Lo usan la llamada y el número que abre la nota. <code>circled-decimal</code> escribe en decimal los números mayores que 50. Un nombre desconocido numera en decimal, con un aviso <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'*'</code>) marca las notas con símbolos de llamada, los de <code>symbols</code> por orden: * † ‡ § ‖ ¶, luego dobles (** †† ‡‡…) y triples; las notas se cuentan entonces de nuevo en cada página salvo que se fije <code>numbering</code>. Desde postext 1.19.</td>
+      <td>Cómo se escriben los números, con cualquiera de las grafías que aceptan los ajustes de numeración: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… Lo usan la llamada y el número que abre la nota. <code>circled-decimal</code> escribe en decimal los números mayores que 50. Un nombre desconocido numera en decimal, con un aviso <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'&#42;'</code>) marca las notas con símbolos de llamada, los de <code>symbols</code> por orden: &#42; † ‡ § ‖ ¶, luego dobles (&#42;&#42; †† ‡‡…) y triples; las notas se cuentan entonces de nuevo en cada página salvo que se fije <code>numbering</code>. Desde postext 1.19.</td>
     </tr>
     <tr>
       <td><code>symbols</code></td>
       <td><code>string[]</code></td>
-      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
-      <td>La secuencia que escribe <code>numberFormat: 'symbols'</code>, doblada y luego triplicada cuando se agota. Los archivos latinos de Google Fonts y Fontsource traen * † § ¶ (la cruz, en <code>latin-ext</code>) pero ni ‡ ni ‖, que el PDF dibuja entonces con el glifo <code>.notdef</code> de la fuente y un aviso <code>missingGlyph</code>: con una fuente así, quítalos (<code>['*', '†', '§', '¶']</code>) o compón las notas en una fuente que los tenga. Las cadenas vacías se descartan y una lista vacía conserva la secuencia por defecto. Desde postext 1.19.</td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>La secuencia que escribe <code>numberFormat: 'symbols'</code>, doblada y luego triplicada cuando se agota. Los archivos latinos de Google Fonts y Fontsource traen &#42; † § ¶ (la cruz, en <code>latin-ext</code>) pero ni ‡ ni ‖, que el PDF dibuja entonces con el glifo <code>.notdef</code> de la fuente y un aviso <code>missingGlyph</code>: con una fuente así, quítalos (<code>['&#42;', '†', '§', '¶']</code>) o compón las notas en una fuente que los tenga. Las cadenas vacías se descartan y una lista vacía conserva la secuencia por defecto. Desde postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

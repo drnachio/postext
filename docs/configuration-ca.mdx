@@ -3163,13 +3163,13 @@ interface FootnotesConfig {
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'*'</code>) marca les notes amb símbols de crida, els de <code>symbols</code> per ordre: * † ‡ § ‖ ¶, després dobles (** †† ‡‡…) i triples; aleshores les notes es tornen a comptar a cada pàgina tret que es fixi <code>numbering</code>. Des de postext 1.19.</td>
+      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'&#42;'</code>) marca les notes amb símbols de crida, els de <code>symbols</code> per ordre: &#42; † ‡ § ‖ ¶, després dobles (&#42;&#42; †† ‡‡…) i triples; aleshores les notes es tornen a comptar a cada pàgina tret que es fixi <code>numbering</code>. Des de postext 1.19.</td>
     </tr>
     <tr>
       <td><code>symbols</code></td>
       <td><code>string[]</code></td>
-      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
-      <td>La seqüència que escriu <code>numberFormat: 'symbols'</code>, doblada i després triplicada quan s'esgota. Els fitxers llatins de Google Fonts i Fontsource porten * † § ¶ (la creu, a <code>latin-ext</code>) però ni ‡ ni ‖, que el PDF dibuixa llavors amb el glif <code>.notdef</code> de la font i un avís <code>missingGlyph</code>: amb una font així, traieu-los (<code>['*', '†', '§', '¶']</code>) o componeu les notes en una font que els tingui. Les cadenes buides es descarten i una llista buida conserva la seqüència per defecte. Des de postext 1.19.</td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>La seqüència que escriu <code>numberFormat: 'symbols'</code>, doblada i després triplicada quan s'esgota. Els fitxers llatins de Google Fonts i Fontsource porten &#42; † § ¶ (la creu, a <code>latin-ext</code>) però ni ‡ ni ‖, que el PDF dibuixa llavors amb el glif <code>.notdef</code> de la font i un avís <code>missingGlyph</code>: amb una font així, traieu-los (<code>['&#42;', '†', '§', '¶']</code>) o componeu les notes en una font que els tingui. Les cadenes buides es descarten i una llista buida conserva la seqüència per defecte. Des de postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

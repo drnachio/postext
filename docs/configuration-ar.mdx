@@ -3174,13 +3174,13 @@ interface FootnotesConfig {
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>. وتُعلِّم <code>'symbols'</code> (أو <code>'*'</code>) الحواشي برموز الإحالة، رموز <code>symbols</code> بالترتيب: * † ‡ § ‖ ¶، ثم مضاعفةً (** †† ‡‡…) ثم مثلَّثة؛ وعندئذ يُعاد عدّ الحواشي في كل صفحة ما لم يُضبط <code>numbering</code>. منذ postext 1.19.</td>
+      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>. وتُعلِّم <code>'symbols'</code> (أو <code>'&#42;'</code>) الحواشي برموز الإحالة، رموز <code>symbols</code> بالترتيب: &#42; † ‡ § ‖ ¶، ثم مضاعفةً (&#42;&#42; †† ‡‡…) ثم مثلَّثة؛ وعندئذ يُعاد عدّ الحواشي في كل صفحة ما لم يُضبط <code>numbering</code>. منذ postext 1.19.</td>
     </tr>
     <tr>
       <td><code>symbols</code></td>
       <td><code>string[]</code></td>
-      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
-      <td>التسلسل الذي يكتبه <code>numberFormat: 'symbols'</code>، يُضاعَف ثم يُثلَّث متى نفد. تحمل الملفات اللاتينية في Google Fonts وFontsource الرموز * † § ¶ (الخنجر في <code>latin-ext</code>) دون ‡ و‖، فيرسمهما ملف PDF بمحرف <code>.notdef</code> في الخط مع تحذير <code>missingGlyph</code>: مع خط كهذا احذفهما (<code>['*', '†', '§', '¶']</code>) أو صُفَّ الحواشي بخط يحتويهما. تُهمَل السلاسل الفارغة، وتُبقي القائمة الفارغة التسلسل الافتراضي. منذ postext 1.19.</td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>التسلسل الذي يكتبه <code>numberFormat: 'symbols'</code>، يُضاعَف ثم يُثلَّث متى نفد. تحمل الملفات اللاتينية في Google Fonts وFontsource الرموز &#42; † § ¶ (الخنجر في <code>latin-ext</code>) دون ‡ و‖، فيرسمهما ملف PDF بمحرف <code>.notdef</code> في الخط مع تحذير <code>missingGlyph</code>: مع خط كهذا احذفهما (<code>['&#42;', '†', '§', '¶']</code>) أو صُفَّ الحواشي بخط يحتويهما. تُهمَل السلاسل الفارغة، وتُبقي القائمة الفارغة التسلسل الافتراضي. منذ postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

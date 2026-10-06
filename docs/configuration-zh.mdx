@@ -3171,13 +3171,13 @@ interface FootnotesConfig {
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。<code>'symbols'</code>（或<code>'*'</code>）用参见符号标注，依次取<code>symbols</code>中的符号：* † ‡ § ‖ ¶，用完后成对（** †† ‡‡……）、再三个重复；此时除非设置了<code>numbering</code>，注释每页重新计数。postext 1.19 起。</td>
+      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。<code>'symbols'</code>（或<code>'&#42;'</code>）用参见符号标注，依次取<code>symbols</code>中的符号：&#42; † ‡ § ‖ ¶，用完后成对（&#42;&#42; †† ‡‡……）、再三个重复；此时除非设置了<code>numbering</code>，注释每页重新计数。postext 1.19 起。</td>
     </tr>
     <tr>
       <td><code>symbols</code></td>
       <td><code>string[]</code></td>
-      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
-      <td><code>numberFormat: 'symbols'</code>所用的符号序列，用完后成对、再三个重复。Google Fonts 与 Fontsource 的拉丁文件含有 * † § ¶（剑号在<code>latin-ext</code>中），但没有 ‡ 和 ‖，PDF 会以该字体的<code>.notdef</code>字形绘制，并给出<code>missingGlyph</code>警告：使用这类字体时，请去掉这两个符号（<code>['*', '†', '§', '¶']</code>），或用含有它们的字体排注文。空字符串会被忽略，空列表保留默认序列。postext 1.19 起。</td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td><code>numberFormat: 'symbols'</code>所用的符号序列，用完后成对、再三个重复。Google Fonts 与 Fontsource 的拉丁文件含有 &#42; † § ¶（剑号在<code>latin-ext</code>中），但没有 ‡ 和 ‖，PDF 会以该字体的<code>.notdef</code>字形绘制，并给出<code>missingGlyph</code>警告：使用这类字体时，请去掉这两个符号（<code>['&#42;', '†', '§', '¶']</code>），或用含有它们的字体排注文。空字符串会被忽略，空列表保留默认序列。postext 1.19 起。</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
