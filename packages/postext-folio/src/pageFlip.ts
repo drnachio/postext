@@ -42,6 +42,10 @@ import {
   type Object3D,
   type WebGLProgramParametersWithUniforms,
 } from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
 import { along, BINDINGS, gutterOcclusion, profiles, stackGeometry, topAt, type Profile } from "./bookGeometry";
 import { environment, type Environment, type EnvironmentKind } from "./environments";
@@ -108,6 +112,10 @@ export interface FlipAppearance {
 
 /** Columns and rows of a leaf's mesh: fine enough for a tight roll. */
 const NX = 96;
+/** How far a leaf's folded paper stays over its own paper beneath it. */
+const OWN_GAP = 1.2;
+/** How much higher than at rest a leaf in the air stays over a block. */
+const BLOCK_GAP = 1.5;
 const NY = 120;
 /** Columns of a page lying open (its curve runs across only). */
 const NX_OPEN = 72;
@@ -124,6 +132,9 @@ export const BLOCK_PAGES = 10;
 /** How long a block of leaves takes to go over (ms), a little longer for
  *  a thicker one. */
 const BLOCK_DURATION = 1150;
+/** A page is taken by its outer part only: from this fraction of its
+ *  width from the spine out to the fore-edge (#494). */
+const GRIP = 0.5;
 /** A leaf follows the one before it once that one is this far through its turn. */
 const GAP = 0.14;
 
@@ -819,13 +830,32 @@ export function foldOf(G: Pt, P: Pt, W: number, H: number, roll = 1) {
   // straight, lands over the hand: R sinθ + (c − Rθ) cosθ = c − D.
   const arc = R * theta;
   const k = arc > 0 ? Math.min(1, D / arc) : 0;
-  let c = (D + k * (R * Math.sin(theta) - arc * Math.cos(theta))) / (1 - Math.cos(theta));
+  const free = (D + k * (R * Math.sin(theta) - arc * Math.cos(theta))) / (1 - Math.cos(theta));
+  let c = free;
   for (const S of [-H / 2, H / 2]) c = Math.min(c, G.u * n.u + (G.v - S) * n.v);
   if (c <= 0) return null;
-  return { F: { u: G.u - n.u * c, v: G.v - n.v * c }, n, R, theta };
+  const F = { u: G.u - n.u * c, v: G.v - n.v * c };
+  // Never all at once (#502). Paper lying beyond the point taken, along
+  // the pull (a page taken by the middle of an edge and pulled across),
+  // turns over as the hand carries it away, not the moment it moves (a
+  // pixel's pull stood half the page up). A fold held off the spine short
+  // of the hand turns the less the nearer it comes to the point taken, so
+  // that it is gone, not dropped, when it reaches it.
+  let beyond = 0;
+  for (const u of [0, W]) for (const v of [-H / 2, H / 2]) beyond = Math.max(beyond, (u - G.u) * n.u + (v - G.v) * n.v);
+  const turns = (c / free) * (beyond > 0 ? smooth(0, 0.5 * beyond, D) : 1);
+  return { F, n, R, theta: theta * turns };
 }
 
 type Fold = NonNullable<ReturnType<typeof foldOf>>;
+
+/** Paper `d` past the fold, round a roll of radius R and straight on at
+ *  θ: how far it reaches back across the page, and how high it stands. */
+function rollOf(d: number, R: number, theta: number): [number, number] {
+  if (R > 1e-3 && d < R * theta) return [R * Math.sin(d / R), R * (1 - Math.cos(d / R))];
+  const rest = d - R * theta;
+  return [R * Math.sin(theta) + rest * Math.cos(theta), R * (1 - Math.cos(theta)) + rest * Math.sin(theta)];
+}
 
 /** How far through its turn a leaf is: the point taken, from where it
  *  was to its mirror image across the spine. */
@@ -908,13 +938,17 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
   // corner barely lifted, a few degrees through the middle of the turn.
   const inAir = smooth(0.02, 0.22, q) * smooth(0.02, 0.22, 1 - q);
   const lean = LEAN * inAir;
-  const cosA = Math.cos(lean);
-  const sinA = Math.sin(lean);
   // Each side's chord, from the spine to its fore-edge: a side hanging
   // from a standing spine slopes down to the desk, and a leaf leaning off
   // it leans off that slope, not off a level plane over it.
   const chordR = (zr - zr0) / (xr || 1);
   const chordL = (zl - zl0) / (xl || 1);
+  // The plane a leaf lifts off along, by side: the chord turned up by the
+  // lean. A leaf keeps its width along it (stepping the chord's rise per
+  // unit across, on a side sloping to the desk, stretched it by a tenth
+  // and more, #495).
+  const tiltR = Math.atan(chordR) + lean;
+  const tiltL = Math.atan(chordL) + lean;
   // Onto the book. At rest (and as it lands) the leaf lies on the open
   // book's surface, into the gutter and out. In the air it is lifted off
   // at the spine: its own plane rises from the gutter's floor at a small
@@ -925,8 +959,9 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
     let px = rx;
     let pz = rz + z + lift;
     if (inAir > 0) {
-      const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
-      const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
+      const tilt = s >= 0 ? tiltR : tiltL;
+      const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * Math.cos(tilt);
+      const plane = (s >= 0 ? zr0 : zl0) + Math.abs(s) * Math.sin(tilt) + z + lift;
       const under = surfaceAt(book, fx)[1] + lift + 0.6;
       const flying = smoothMax(plane, under, 0.006 * W);
       px += (fx - px) * inAir;
@@ -934,6 +969,32 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
     }
     return [px, pz];
   };
+  // Thin paper ripples in the air, more towards its free edge. Never
+  // down into the pages under it: the ripple dies away where the leaf
+  // lies close over them (it stays at least `lift` above them), or a
+  // leaf held low over its stack dipped into the page under it, whose
+  // print then showed through (#447).
+  const ripple = (u: number, v: number, px: number, pz: number) => {
+    const amp = flutter * W * (u / W) * (u / W);
+    if (flutter <= 0 || amp <= 1e-6) return 0;
+    const clear = pz - surfaceAt(book, px)[1] - lift;
+    return amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
+  };
+  // Where the leaf's paper lies unfolded, column by column (before it
+  // ripples): [out from the spine, u, height].
+  const clearing = BLOCK_GAP * smooth(0, 0.06, q) * smooth(0, 0.06, 1 - q);
+  const own: [number, number, number][] = [];
+  if (fold) {
+    for (let ix = 0; ix <= NX; ix++) {
+      const u = column(ix / NX) * W;
+      let [ox, oz] = onBook(sx * u, 0);
+      if (r > 0) {
+        ox += (u * Math.cos(phi) - offset * Math.sin(phi) - ox) * r;
+        oz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - oz) * r;
+      }
+      own.push([sx * ox, u, oz]);
+    }
+  }
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
@@ -944,21 +1005,13 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
       let d = 0;
       let dd = 0;
       if (fold) {
-        const { F, n, R } = fold;
+        const { F, n } = fold;
         d = (u - F.u) * n.u + (v - F.v) * n.v;
         if (d > 0) {
           // Round the roll, then straight on at the fold's angle.
-          const theta = fold.theta;
-          if (R > 1e-3 && d < R * theta) {
-            dd = R * Math.sin(d / R);
-            z = R * (1 - Math.cos(d / R));
-          } else {
-            const rest = d - R * theta;
-            dd = R * Math.sin(theta) + rest * Math.cos(theta);
-            z = R * (1 - Math.cos(theta)) + rest * Math.sin(theta);
-          }
-          x = u - n.u * (d - dd);
+          [dd, z] = rollOf(d, fold.R, fold.theta);
           y = v - n.v * (d - dd);
+          x = u - n.u * (d - dd);
         }
       }
       let [px, pz] = onBook(sx * x, z);
@@ -978,22 +1031,39 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
         y += (v - y) * r;
         pz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - pz) * r;
       }
-      // Thin paper ripples in the air, more towards its free edge. Never
-      // down into the pages under it: the ripple dies away where the leaf
-      // lies close over them (it stays at least `lift` above them), or a
-      // leaf held low over its stack dipped into the page under it, whose
-      // print then showed through (#447).
-      if (flutter > 0) {
-        const amp = flutter * W * (u / W) * (u / W);
-        const clear = pz - surfaceAt(book, px)[1] - lift;
-        if (amp > 1e-6) pz += amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
+      pz += ripple(u, v, px, pz);
+      // Never through the leaf's own paper not yet folded, as it ripples
+      // too: carried level from a fold low on a side sloping up to the
+      // spine, the paper folded back over it ran under it, crossing it.
+      if (fold && d > 0) {
+        const at = sx * px;
+        // (A row past the head and foot too: a triangle reaching past them
+        // from paper kept over sagged through.)
+        if (at > own[0][0] && at < own[NX][0] && Math.abs(y) <= H / 2 + (1.5 * H) / NY) {
+          let lo = 0;
+          let hi = NX;
+          while (hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            if (own[mid][0] <= at) lo = mid;
+            else hi = mid;
+          }
+          const f = (at - own[lo][0]) / (own[hi][0] - own[lo][0] || 1);
+          const ou = own[lo][1] + (own[hi][1] - own[lo][1]) * f;
+          if ((ou - fold.F.u) * fold.n.u + (y - fold.F.v) * fold.n.v < 0) {
+            const oz = own[lo][2] + (own[hi][2] - own[lo][2]) * f;
+            pz = Math.max(pz, oz + ripple(ou, y, px, oz) + OWN_GAP);
+          }
+        }
       }
       // Never into the book: over a block (and past its head or foot) a
       // leaf stands at least just over its top. A fold's flap is carried
       // level from the foot of its fold, and on a thin side hanging from
       // the spine that foot lies low: the flap went through the tall block
       // on the other side (#489).
-      if (!board && Math.abs(px) < (px >= 0 ? xr : xl)) pz = Math.max(pz, topAt(px >= 0 ? book.right : book.left, Math.abs(px)) + Math.min(lift, 0.5));
+      // In the air a little higher still (until it lands): half a pixel
+      // over the block is hardly any depth at the view's distance, and a
+      // leaf lying over a tall block's top drew through its page in teeth.
+      if (!board && Math.abs(px) < (px >= 0 ? xr : xl)) pz = Math.max(pz, topAt(px >= 0 ? book.right : book.left, Math.abs(px)) + Math.min(lift, 0.5) + clearing);
       pos.setXYZ(iy * (NX + 1) + ix, px, y, pz);
     }
   }
@@ -1089,6 +1159,7 @@ export class PageFlipper {
   private renderer: WebGLRenderer;
   private scene = new Scene();
   private camera = new PerspectiveCamera(FOV, 1, 1, 10000);
+  private composer: EffectComposer;
   private left: PageMesh;
   private right: PageMesh;
   private desk: Mesh<PlaneGeometry, Material>;
@@ -1199,10 +1270,20 @@ export class PageFlipper {
     this.staticCaster = casterMaterial(false);
     // `__postextFolioPreserve`: keep the drawing buffer (to read the canvas back while debugging).
     const preserveDrawingBuffer = !!(globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve;
-    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, preserveDrawingBuffer });
+    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: false, premultipliedAlpha: true, preserveDrawingBuffer });
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = NeutralToneMapping;
     this.renderer.setClearColor(0x000000, 0);
+    // Edges smoothed by SMAA over the finished picture (#503), not by the
+    // canvas's own four samples a pixel: those left steps on long, nearly
+    // level edges of strong contrast (a light page over the dark block)
+    // and cost the most of a frame (resolved into a preserved drawing
+    // buffer); SMAA smooths them better for a fraction of it. The scene
+    // is drawn into a float picture, toned for the screen, then smoothed.
+    this.composer = new EffectComposer(this.renderer, new WebGLRenderTarget(1, 1, { type: HalfFloatType }));
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.composer.addPass(new OutputPass());
+    this.composer.addPass(new SMAAPass());
     if (this.renderer.shadowMap) {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = PCFShadowMap;
@@ -1787,6 +1868,8 @@ export class PageFlipper {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.renderer.setPixelRatio(1);
     this.renderer.setSize(Math.round(cw * dpr), Math.round(ch * dpr), false);
+    this.composer.setPixelRatio(1);
+    this.composer.setSize(Math.round(cw * dpr), Math.round(ch * dpr));
     this.buffer.set(Math.round(cw * dpr), Math.round(ch * dpr));
     this.dpr = dpr;
     const spread = this.spread.getBoundingClientRect();
@@ -2471,12 +2554,13 @@ export class PageFlipper {
     return this.specOf(k).rigidity > 0.5;
   }
 
-  /** The page under the pointer: +1 the one a forward turn takes (the
-   *  recto), −1 the other, 0 none. */
+  /** The page under the pointer, by its outer part (where a hand takes
+   *  it): +1 the one a forward turn takes (the recto), −1 the other, 0
+   *  none (off the pages, or nearer the spine). */
   hit(event: { clientX: number; clientY: number }): 1 | -1 | 0 {
     if (!this.surfaces) this.layout();
     const { x, y } = this.toWorld(event);
-    if (Math.abs(y) > this.H / 2 || Math.abs(x) > this.W * 1.05) return 0;
+    if (Math.abs(y) > this.H / 2 || Math.abs(x) > this.W * 1.05 || Math.abs(x) < GRIP * this.W) return 0;
     return x > 0 ? 1 : -1;
   }
 
@@ -2489,7 +2573,7 @@ export class PageFlipper {
     const at = this.settledAt();
     const forward = x > 0;
     const k = forward ? at : at - 1;
-    if (k < 0 || k >= this.turned.length || Math.abs(x) > this.W * 1.05 || Math.abs(y) > this.H / 2) return false;
+    if (k < 0 || k >= this.turned.length || Math.abs(x) > this.W * 1.05 || Math.abs(x) < GRIP * this.W || Math.abs(y) > this.H / 2) return false;
     const G = { u: Math.max(0.15 * this.W, Math.min(this.W, Math.abs(x))), v: y };
     this.turns.set(k, { forward, G, P: { ...G }, held: { aim: { ...G }, samples: [] }, rigid: this.rigidOf(k) });
     this.lastFrame = performance.now();
@@ -2722,7 +2806,7 @@ export class PageFlipper {
     }
     this.mirror(air.length > 0 || this.block !== null);
     this.behind(air.map((a) => a.mesh));
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
   }
 
   /**
@@ -2912,6 +2996,7 @@ export class PageFlipper {
     cancelAnimationFrame(this.orbitFrame);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
+    this.composer.dispose();
     this.mirrors.left?.dispose();
     this.mirrors.right?.dispose();
     this.behindTarget?.depthTexture?.dispose();

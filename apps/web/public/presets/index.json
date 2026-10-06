@@ -24,7 +24,8 @@
         "parts"
       ],
       "binding": "right",
-      "shelfOrder": 1
+      "shelfOrder": 1,
+      "coverFit": "fill"
     },
     {
       "id": "bioquimica-feduchi",

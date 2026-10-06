@@ -672,6 +672,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     const point = holding ? null : pageAt(event);
     if (interaction === "select") root.classList.toggle("is-over-page", !!point);
     if (options.isPageAction) root.classList.toggle("is-over-action", !!point && options.isPageAction(point));
+    // Hand mode: the hand shows only where a page can be taken, its
+    // outer half (#494).
+    root.classList.toggle("is-over-grip", interaction === "hand" && !holding && !!flipper && flipper.hit(event) !== 0);
   });
   // Orbit and select modes: a click on something a click acts on (a video)
   // acts on it, as in hand mode. The press is taken before the host hears
@@ -722,7 +725,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     },
     true,
   );
-  root.addEventListener("pointerleave", () => root.classList.remove("is-over-action"));
+  root.addEventListener("pointerleave", () => root.classList.remove("is-over-action", "is-over-grip"));
   root.addEventListener("pointerdown", (event) => {
     // Only the hand takes pages, swipes and clicks them over.
     if (interaction !== "hand") return;
@@ -928,6 +931,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     root.classList.toggle("is-orbit", interaction === "orbit");
     root.classList.toggle("is-select", interaction === "select");
     if (interaction !== "select") root.classList.remove("is-over-page");
+    if (interaction !== "hand") root.classList.remove("is-over-grip");
   }
 
   let lastWidth = -1;

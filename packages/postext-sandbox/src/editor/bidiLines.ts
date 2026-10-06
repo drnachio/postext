@@ -190,6 +190,10 @@ export const bidiLines = [
   bidiPlugin,
   EditorView.baseTheme({
     '.cm-bidi-ltr': { unicodeBidi: 'isolate', direction: 'ltr' },
+    // CodeMirror pads a line on physical sides, 6px left and 2px right;
+    // the wider gap belongs where the line starts, the right of a
+    // right-to-left line.
+    '.cm-content > .cm-line': { paddingInline: '6px 2px' },
     // A right-to-left line starts at the right edge; the wrapped lines of
     // a long paragraph follow it.
     '.cm-line[dir="rtl"]': { textAlign: 'right' },

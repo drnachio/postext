@@ -1022,8 +1022,10 @@ def main() -> None:
     if out == OUT:
         # A right-bound book: its shelf spine and cover open from the right.
         # The two right-bound books stand last on the shelf: this one, then
-        # 紅樓夢 (`shelfOrder` 2).
-        _common.register(PRESET_ID, {**{k: v for k, v in META.items() if k != "id"}, "binding": "right", "shelfOrder": 1})
+        # 紅樓夢 (`shelfOrder` 2). The cover is a little taller than the
+        # shelf's 3:4 frame: flattened into it, its double-ruled border shows
+        # whole instead of cut at the head and foot.
+        _common.register(PRESET_ID, {**{k: v for k, v in META.items() if k != "id"}, "binding": "right", "shelfOrder": 1, "coverFit": "fill"})
     print(f"wrote {out} ({_common.bundle_size(out):.1f} MB, {len(chapters)} chapter files)")
 
 

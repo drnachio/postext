@@ -22,6 +22,19 @@ vi.mock("three", async (importOriginal) => {
   }
   return { ...three, WebGLRenderer };
 });
+// The passes that finish the picture (#503) need a real GL context.
+vi.mock("three/examples/jsm/postprocessing/EffectComposer.js", () => ({
+  EffectComposer: class {
+    addPass() {}
+    setPixelRatio() {}
+    setSize() {}
+    render() {}
+    dispose() {}
+  },
+}));
+vi.mock("three/examples/jsm/postprocessing/RenderPass.js", () => ({ RenderPass: class {} }));
+vi.mock("three/examples/jsm/postprocessing/OutputPass.js", () => ({ OutputPass: class {} }));
+vi.mock("three/examples/jsm/postprocessing/SMAAPass.js", () => ({ SMAAPass: class {} }));
 
 const { PageFlipper, pagePlane } = await import("./pageFlip");
 type FlipAppearance = import("./pageFlip").FlipAppearance;
@@ -333,6 +346,97 @@ describe("the page flipper", () => {
     // It bends no tighter than its roll (radius over 10 px here): it used
     // to dip into the gutter, creased where it passed over the spine.
     expect(worst).toBeLessThan(0.1);
+  });
+
+  it("never jumps: a few pixels of the hand move the leaf a few pixels, wherever it is taken (#502)", async () => {
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
+    const W = 476;
+    const H = 672;
+    const book = profiles("hardcover", W, 4, 60, 60);
+    const geometry = new PlaneGeometry(W, H, 96, 120);
+    let worst = 0;
+    // Taken by the middle of the fore-edge or of the foot and pulled
+    // across on a slant: paper lying beyond the point taken used to stand
+    // up the moment the hand moved (some 700 px for 1).
+    for (const G of [{ u: W, v: 0 }, { u: 0.55 * W, v: -H / 2 }]) {
+      for (const a of [1, 3, 5, 7]) {
+        const dir = { u: -Math.cos((a * Math.PI) / 4), v: Math.sin((a * Math.PI) / 4) };
+        let prev: Float32Array | null = null;
+        for (let r = 0; r <= 60; r += 3) {
+          const P = { u: G.u + dir.u * r, v: G.v + dir.v * r };
+          layLeaf(geometry, foldOf(G, P, W, H), true, W, H, 1, book, 0, progressFrom(G, P));
+          const pos = geometry.attributes.position.array as Float32Array;
+          if (prev) for (let i = 0; i < pos.length; i += 3) worst = Math.max(worst, Math.hypot(pos[i] - prev[i], pos[i + 1] - prev[i + 1], pos[i + 2] - prev[i + 2]) / 3);
+          prev = Float32Array.from(pos);
+        }
+      }
+    }
+    geometry.dispose();
+    expect(worst).toBeLessThan(15);
+  });
+
+  it("folds a leaf back over its own paper, never through it, rippling or not (#499, #500)", async () => {
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
+    // A thick paperback, the leaf turning off the thin side, which hangs
+    // from the spine; its top outer corner carried down to the middle of
+    // the other page.
+    const W = 476;
+    const H = 672;
+    const book = profiles("paperback", W, 2.8, 6.5, 202);
+    const G = { u: 405, v: 268 };
+    let deepest = 0;
+    for (let k = 2; k <= 12; k += 2) {
+      const P = { u: 335 - (646 * k) / 12, v: 249 - (181 * k) / 12 };
+      const q = progressFrom(G, P);
+      for (const [flutter, time] of [[0, 0], [0.02, 130], [0.02, 390]]) {
+        const lay = (folded: boolean) => {
+          const geometry = new PlaneGeometry(W, H, 96, 120);
+          layLeaf(geometry, folded ? foldOf(G, P, W, H) : null, false, W, H, 1, book, 0, q, flutter * Math.sin(Math.PI * q), time);
+          const out = Float32Array.from(geometry.attributes.position.array as Float32Array);
+          geometry.dispose();
+          return out;
+        };
+        const a = lay(true);
+        const b = lay(false);
+        // Where the paper not folded lies (by cell), and its height there:
+        // along the row of the leaf laid without a fold at that height.
+        const there = new Set<string>();
+        const flap: number[] = [];
+        for (let i = 0; i < a.length; i += 3) {
+          if (Math.hypot(a[i] - b[i], a[i + 1] - b[i + 1], a[i + 2] - b[i + 2]) > 1e-3) flap.push(i);
+          else there.add(`${Math.round(a[i] / 2)},${Math.round(a[i + 1] / 2)}`);
+        }
+        const heightAt = (x: number, y: number) => {
+          const iy = Math.round((0.5 - y / H) * 120);
+          const row: [number, number][] = [];
+          for (let ix = 0; ix <= 96; ix++) row.push([b[(iy * 97 + ix) * 3], b[(iy * 97 + ix) * 3 + 2]]);
+          row.sort((p, q) => p[0] - q[0]);
+          if (x < row[0][0] || x > row[row.length - 1][0]) return -Infinity;
+          let j = 1;
+          while (j < row.length - 1 && row[j][0] < x) j++;
+          const [x0, z0] = row[j - 1];
+          const [x1, z1] = row[j];
+          return z0 + ((z1 - z0) * (x - x0)) / (x1 - x0 || 1);
+        };
+        // The folded paper's points, and the middles of its edges (its
+        // triangles are flat between them).
+        const isFlap = new Set(flap);
+        const points: number[][] = [];
+        for (const i of flap) {
+          points.push([a[i], a[i + 1], a[i + 2]]);
+          for (const j of [i + 3, i + 97 * 3, i + 98 * 3]) if (isFlap.has(j)) points.push([(a[i] + a[j]) / 2, (a[i + 1] + a[j + 1]) / 2, (a[i + 2] + a[j + 2]) / 2]);
+        }
+        for (const [x, y, z] of points) {
+          if (Math.abs(y) > H / 2 || !there.has(`${Math.round(x / 2)},${Math.round(y / 2)}`)) continue;
+          deepest = Math.max(deepest, heightAt(x, y) - z);
+        }
+      }
+    }
+    // Carried level from its fold, low on the side sloping up to the
+    // spine, the folded paper ran 3 px under the leaf's own and crossed
+    // it; kept over it before the ripple, the ripple still took it under,
+    // and so did the triangles reaching past the head or foot.
+    expect(deepest).toBeLessThan(0.3);
   });
 
   it("finds the printed point under the pointer on either open page, and back", () => {

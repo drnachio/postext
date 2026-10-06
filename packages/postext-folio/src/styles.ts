@@ -35,7 +35,10 @@ export const FOLIO_CSS = `
 .postext-folio-spread.is-gl > .postext-folio-page {
   opacity: 0;
 }
-.postext-folio-spread.is-by-hand > .postext-folio-page:not(.is-empty) {
+/* Hand mode: a page is taken by its outer half, and the hand shows only
+   there (the viewer marks it as the pointer moves). */
+.postext-folio.is-over-grip,
+.postext-folio.is-over-grip .postext-folio-spread.is-by-hand > .postext-folio-page:not(.is-empty) {
   cursor: grab;
 }
 .postext-folio-spread.is-held,
