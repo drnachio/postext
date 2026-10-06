@@ -42,6 +42,10 @@ import {
   type Object3D,
   type WebGLProgramParametersWithUniforms,
 } from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
 import { along, BINDINGS, gutterOcclusion, profiles, stackGeometry, topAt, type Profile } from "./bookGeometry";
 import { environment, type Environment, type EnvironmentKind } from "./environments";
@@ -1155,6 +1159,7 @@ export class PageFlipper {
   private renderer: WebGLRenderer;
   private scene = new Scene();
   private camera = new PerspectiveCamera(FOV, 1, 1, 10000);
+  private composer: EffectComposer;
   private left: PageMesh;
   private right: PageMesh;
   private desk: Mesh<PlaneGeometry, Material>;
@@ -1265,10 +1270,20 @@ export class PageFlipper {
     this.staticCaster = casterMaterial(false);
     // `__postextFolioPreserve`: keep the drawing buffer (to read the canvas back while debugging).
     const preserveDrawingBuffer = !!(globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve;
-    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, preserveDrawingBuffer });
+    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: false, premultipliedAlpha: true, preserveDrawingBuffer });
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = NeutralToneMapping;
     this.renderer.setClearColor(0x000000, 0);
+    // Edges smoothed by SMAA over the finished picture (#503), not by the
+    // canvas's own four samples a pixel: those left steps on long, nearly
+    // level edges of strong contrast (a light page over the dark block)
+    // and cost the most of a frame (resolved into a preserved drawing
+    // buffer); SMAA smooths them better for a fraction of it. The scene
+    // is drawn into a float picture, toned for the screen, then smoothed.
+    this.composer = new EffectComposer(this.renderer, new WebGLRenderTarget(1, 1, { type: HalfFloatType }));
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.composer.addPass(new OutputPass());
+    this.composer.addPass(new SMAAPass());
     if (this.renderer.shadowMap) {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = PCFShadowMap;
@@ -1853,6 +1868,8 @@ export class PageFlipper {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.renderer.setPixelRatio(1);
     this.renderer.setSize(Math.round(cw * dpr), Math.round(ch * dpr), false);
+    this.composer.setPixelRatio(1);
+    this.composer.setSize(Math.round(cw * dpr), Math.round(ch * dpr));
     this.buffer.set(Math.round(cw * dpr), Math.round(ch * dpr));
     this.dpr = dpr;
     const spread = this.spread.getBoundingClientRect();
@@ -2789,7 +2806,7 @@ export class PageFlipper {
     }
     this.mirror(air.length > 0 || this.block !== null);
     this.behind(air.map((a) => a.mesh));
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
   }
 
   /**
@@ -2979,6 +2996,7 @@ export class PageFlipper {
     cancelAnimationFrame(this.orbitFrame);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
+    this.composer.dispose();
     this.mirrors.left?.dispose();
     this.mirrors.right?.dispose();
     this.behindTarget?.depthTexture?.dispose();

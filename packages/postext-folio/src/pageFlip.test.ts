@@ -22,6 +22,19 @@ vi.mock("three", async (importOriginal) => {
   }
   return { ...three, WebGLRenderer };
 });
+// The passes that finish the picture (#503) need a real GL context.
+vi.mock("three/examples/jsm/postprocessing/EffectComposer.js", () => ({
+  EffectComposer: class {
+    addPass() {}
+    setPixelRatio() {}
+    setSize() {}
+    render() {}
+    dispose() {}
+  },
+}));
+vi.mock("three/examples/jsm/postprocessing/RenderPass.js", () => ({ RenderPass: class {} }));
+vi.mock("three/examples/jsm/postprocessing/OutputPass.js", () => ({ OutputPass: class {} }));
+vi.mock("three/examples/jsm/postprocessing/SMAAPass.js", () => ({ SMAAPass: class {} }));
 
 const { PageFlipper, pagePlane } = await import("./pageFlip");
 type FlipAppearance = import("./pageFlip").FlipAppearance;
