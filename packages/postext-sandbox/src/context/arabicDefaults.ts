@@ -29,6 +29,8 @@ import {
   dimensionsEqual,
   documentNumeralStyle,
   formatNumeral,
+  formatFootnoteNumber,
+  footnoteFormatOf,
   localeScript,
   parseNumberFormat,
   resolveBodyTextConfig,
@@ -532,7 +534,7 @@ export function arabicDefaults(config: PostextConfig, options: ArabicDefaultsOpt
   const toNotes = resolveFootnotesConfig({ ...config.footnotes, ...ARABIC_FOOTNOTES }, locale);
   const notesValue = (f: typeof fromNotes, d: DigitSystem): ArabicDefaultValue => ({
     kind: 'footnotes',
-    marker: (f.markerTemplate ?? '{n}').replace('{n}', formatNumeral(1, documentNumeralStyle(f.numberFormat, d))),
+    marker: formatFootnoteNumber(1, footnoteFormatOf(f, d), f.markerTemplate),
     position: f.markerPosition,
     numbering: f.numbering,
     ...(f.noteNumberPosition && f.noteNumberPosition !== f.markerPosition ? { noteNumber: f.noteNumberPosition } : {}),

@@ -40,7 +40,12 @@ export const FootnotesSection = memo(function FootnotesSection() {
   // What the unset fields come to in this document: a Japanese one sets its
   // notes after JLReq (endnotes with （1） markers in a vertical book), and
   // spread sidenotes number per spread.
-  const DD = resolveFootnotesConfig(raw?.placement ? { placement: raw.placement } : undefined, locale, writingMode);
+  // Reference symbols count per page by default (#538).
+  const ddInput = {
+    ...(raw?.placement ? { placement: raw.placement } : {}),
+    ...(raw?.numberFormat !== undefined ? { numberFormat: raw.numberFormat } : {}),
+  };
+  const DD = resolveFootnotesConfig(Object.keys(ddInput).length > 0 ? ddInput : undefined, locale, writingMode);
   const vertical = writingMode === 'vertical-rl';
   const textSide = flowSideLabels(useRightToLeftFlow(), labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
 
@@ -133,8 +138,8 @@ export const FootnotesSection = memo(function FootnotesSection() {
       />
       <SelectInput
         label={labels.footnotesNumberFormat}
-        value={listNumberFormatValue(fn.numberFormat)}
-        options={numberFormatOptions(labels)}
+        value={fn.numberFormat === 'symbols' ? 'symbols' : listNumberFormatValue(fn.numberFormat)}
+        options={[...numberFormatOptions(labels), { label: labels.footnotesNumberFormatSymbols, value: 'symbols' }]}
         onChange={(v) => update({ numberFormat: v === 'arabic' ? 'decimal' : v })}
         tooltip={labels.footnotesNumberFormatTooltip}
         isDefault={raw?.numberFormat === undefined}

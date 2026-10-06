@@ -391,6 +391,7 @@ export interface SandboxLabels {
   footnotesNumberingColumn: string;
   footnotesNumberFormat: string;
   footnotesNumberFormatTooltip: string;
+  footnotesNumberFormatSymbols: string;
   footnotesMarkerPosition: string;
   footnotesMarkerPositionTooltip: string;
   footnotesMarkerTemplate: string;

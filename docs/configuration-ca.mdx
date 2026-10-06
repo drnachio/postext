@@ -3088,6 +3088,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Peu de la columna que cita, després del capítol, o al costat del text d'un plec.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Reiniciar a cada capítol, continuar, o reiniciar a cada pàgina / columna / plec.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // Els símbols de crida de numberFormat: 'symbols'.
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Volada, sobre la línia de base, al costat de la paraula, o a la dreta d'una línia vertical.
   markerSize?: Dimension;     // Mida de la crida en línia, lateral o a la dreta; em és el text que l'envolta.
   numberGap?: 'en' | 'em';    // Espai després del número de la nota mateixa.
@@ -3128,14 +3129,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code> (llibres japonesos horitzontals: <code>'page'</code>; amb <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> (llibres japonesos horitzontals: <code>'page'</code>; amb <code>placement: 'spread'</code>: <code>'spread'</code>; amb <code>numberFormat: 'symbols'</code> al peu de la columna: <code>'page'</code>)</td>
       <td><code>'chapter'</code> torna a començar per 1 sota cada títol de nivell 1 i al principi de cada document. <code>'document'</code> continua per tot el document i, en un llibre maquetat capítol a capítol, d'un capítol al següent (<code>continuationAfter</code> porta l'últim número a <code>continuation.footnoteNumber</code>). <code>'page'</code> torna a començar per 1 a cada pàgina i <code>'column'</code> a cada columna, comptant les notes on les col·loca la maquetació (les columnes d'una pàgina en ordre de lectura): el 页下注 habitual d'un llibre xinès. El document es maqueta, es numera segons on han caigut les seves notes i es torna a maquetar fins que els números es mantenen (com a màxim tres vegades més). Tots dos valen per a les notes al peu de la columna: amb <code>placement: 'chapterEnd'</code> les notes es numeren per capítol. <code>'spread'</code> torna a començar a cada plec (pàgines 2–3, 4–5…), en l'ordre de cita, per a <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>.</td>
+      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'*'</code>) marca les notes amb símbols de crida, els de <code>symbols</code> per ordre: * † ‡ § ‖ ¶, després dobles (** †† ‡‡…) i triples; aleshores les notes es tornen a comptar a cada pàgina tret que es fixi <code>numbering</code>. Des de postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>La seqüència que escriu <code>numberFormat: 'symbols'</code>, doblada i després triplicada quan s'esgota. Els fitxers llatins de Google Fonts i Fontsource porten * † § ¶ (la creu, a <code>latin-ext</code>) però ni ‡ ni ‖, que el PDF dibuixa llavors amb el glif <code>.notdef</code> de la font i un avís <code>missingGlyph</code>: amb una font així, traieu-los (<code>['*', '†', '§', '¶']</code>) o componeu les notes en una font que els tingui. Les cadenes buides es descarten i una llista buida conserva la seqüència per defecte. Des de postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

@@ -53,7 +53,7 @@ export { defaultResourceTypes, defaultVideoResourceType, effectiveResourceTypes 
 export { DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults } from './parts';
 export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesDefaults } from './headingStyles';
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
-export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from './footnotes';
+export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, parseFootnoteNumberFormat } from './footnotes';
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './crossRefs';
 export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './citations';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';

@@ -322,6 +322,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     footnotesNumberingColumn: t("footnotesNumberingColumn"),
     footnotesNumberFormat: t("footnotesNumberFormat"),
     footnotesNumberFormatTooltip: t("footnotesNumberFormatTooltip"),
+    footnotesNumberFormatSymbols: t("footnotesNumberFormatSymbols"),
     footnotesMarkerPosition: t("footnotesMarkerPosition"),
     footnotesMarkerPositionTooltip: t("footnotesMarkerPositionTooltip"),
     footnotesMarkerTemplate: t("footnotesMarkerTemplate"),

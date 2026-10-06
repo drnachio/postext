@@ -2670,6 +2670,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'footnotesNoteNumberPositionAuto',
       'footnotesNoteNumberPositionTooltip',
       'footnotesNumberFormat',
+      'footnotesNumberFormatSymbols',
       'footnotesNumberFormatTooltip',
       'footnotesNumberGap',
       'footnotesNumberGapEm',

@@ -26,6 +26,8 @@ import {
   defaultResourceTypes,
   dimensionsEqual,
   formatNumeral,
+  formatFootnoteNumber,
+  footnoteFormatOf,
   isCjkLanguage,
   parseNumberFormat,
   resolveBodyTextConfig,
@@ -455,7 +457,7 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
   const toNotes = resolveFootnotesConfig({ ...config.footnotes, ...CHINESE_FOOTNOTES }, locale);
   const notesValue = (f: typeof fromNotes): ChineseDefaultValue => ({
     kind: 'footnotes',
-    marker: formatNumeral(1, f.numberFormat),
+    marker: formatFootnoteNumber(1, footnoteFormatOf(f)),
     position: f.markerPosition,
     numbering: f.numbering,
   });

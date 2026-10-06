@@ -3096,6 +3096,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // 引用所在栏的栏底、章末，或跨页正文旁。
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // 每章重新开始、连续编号，或每页／每栏／每个跨页重新开始。
   numberFormat?: string;      // decimal、lower-roman、circled-decimal（①）……
+  symbols?: string[];         // numberFormat: 'symbols' 所用的注释符号。
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // 上标、排在基线上、排在词旁，或排在竖排行的右侧。
   markerSize?: Dimension;     // 行内、词旁或右侧注码的字号；em指所在正文。
   numberGap?: 'en' | 'em';    // 注文编号之后的空白。
@@ -3136,14 +3137,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code>（日文横排书：<code>'page'</code>；使用<code>placement: 'spread'</code>时：<code>'spread'</code>）</td>
+      <td><code>'chapter'</code>（日文横排书：<code>'page'</code>；使用<code>placement: 'spread'</code>时：<code>'spread'</code>；栏脚注使用<code>numberFormat: 'symbols'</code>时：<code>'page'</code>）</td>
       <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。<code>'page'</code>每页从1重新编号，<code>'column'</code>每栏重新编号，按版面中注文实际所在的位置计数（同一页的各栏按阅读顺序）：这就是中文书常见的页下注。文档先排版，再按注文落在的位置编号，然后重新排版，直到编号不再变化（最多再排三次）。二者只适用于栏脚注：<code>placement: 'chapterEnd'</code>时按章编号。<code>'spread'</code>在每个跨页（第2–3页、4–5页……）按引用顺序重新编号，用于<code>placement: 'spread'</code>。</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。</td>
+      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。<code>'symbols'</code>（或<code>'*'</code>）用参见符号标注，依次取<code>symbols</code>中的符号：* † ‡ § ‖ ¶，用完后成对（** †† ‡‡……）、再三个重复；此时除非设置了<code>numbering</code>，注释每页重新计数。postext 1.19 起。</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
+      <td><code>numberFormat: 'symbols'</code>所用的符号序列，用完后成对、再三个重复。Google Fonts 与 Fontsource 的拉丁文件含有 * † § ¶（剑号在<code>latin-ext</code>中），但没有 ‡ 和 ‖，PDF 会以该字体的<code>.notdef</code>字形绘制，并给出<code>missingGlyph</code>警告：使用这类字体时，请去掉这两个符号（<code>['*', '†', '§', '¶']</code>），或用含有它们的字体排注文。空字符串会被忽略，空列表保留默认序列。postext 1.19 起。</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

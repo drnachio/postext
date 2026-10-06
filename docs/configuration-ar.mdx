@@ -3099,6 +3099,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // رموز الإحالة التي يكتبها numberFormat: 'symbols'.
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
   markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
   numberGap?: 'en' | 'em';    // Space after the note's own number.
@@ -3139,14 +3140,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code> (الكتب اليابانية الأفقية: <code>'page'</code>؛ ومع <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> (الكتب اليابانية الأفقية: <code>'page'</code>؛ ومع <code>placement: 'spread'</code>: <code>'spread'</code>؛ ومع <code>numberFormat: 'symbols'</code> في ذيل العمود: <code>'page'</code>)</td>
       <td><code>'chapter'</code> تبدأ من 1 من جديد تحت كل عنوان من المستوى 1 وفي بداية كل مستند. و<code>'document'</code> تستمر عبر المستند، وفي الكتاب الذي يُخرَج فصلًا فصلًا تستمر من فصل إلى الذي يليه (تحمل <code>continuationAfter</code> الرقم الأخير في <code>continuation.footnoteNumber</code>). و<code>'page'</code> تبدأ من 1 من جديد في كل صفحة، و<code>'column'</code> في كل عمود، فتعدّ الحواشي حيث يضعها الإخراج (أعمدة الصفحة بترتيب القراءة): وهي الحواشي المعتادة أسفل الصفحة في الكتاب الصيني، 页下注. يُخرَج المستند، ثم يُرقَّم بحسب المواضع التي وقعت فيها حواشيه، ثم يُعاد إخراجه حتى تثبت الأرقام (ثلاث عمليات بناء إضافية على الأكثر). كلتاهما تنطبقان على الحواشي في أسفل العمود: مع <code>placement: 'chapterEnd'</code> تُرقَّم الحواشي بحسب الفصل. و<code>'spread'</code> تبدأ من جديد في كل صفحتين متقابلتين (الصفحتان 2–3، و4–5…)، بترتيب الاستشهاد، مع <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>.</td>
+      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>. وتُعلِّم <code>'symbols'</code> (أو <code>'*'</code>) الحواشي برموز الإحالة، رموز <code>symbols</code> بالترتيب: * † ‡ § ‖ ¶، ثم مضاعفةً (** †† ‡‡…) ثم مثلَّثة؛ وعندئذ يُعاد عدّ الحواشي في كل صفحة ما لم يُضبط <code>numbering</code>. منذ postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>التسلسل الذي يكتبه <code>numberFormat: 'symbols'</code>، يُضاعَف ثم يُثلَّث متى نفد. تحمل الملفات اللاتينية في Google Fonts وFontsource الرموز * † § ¶ (الخنجر في <code>latin-ext</code>) دون ‡ و‖، فيرسمهما ملف PDF بمحرف <code>.notdef</code> في الخط مع تحذير <code>missingGlyph</code>: مع خط كهذا احذفهما (<code>['*', '†', '§', '¶']</code>) أو صُفَّ الحواشي بخط يحتويهما. تُهمَل السلاسل الفارغة، وتُبقي القائمة الفارغة التسلسل الافتراضي. منذ postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

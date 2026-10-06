@@ -3099,6 +3099,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // The note symbols of numberFormat: 'symbols'.
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
   markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
   numberGap?: 'en' | 'em';    // Space after the note's own number.
@@ -3139,14 +3140,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code> (Japanese horizontal books: <code>'page'</code>; with <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> (Japanese horizontal books: <code>'page'</code>; with <code>placement: 'spread'</code>: <code>'spread'</code>; with <code>numberFormat: 'symbols'</code> at the column foot: <code>'page'</code>)</td>
       <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>). <code>'page'</code> starts again at 1 on every page and <code>'column'</code> in every column, counting the notes where the layout sets them (the columns of a page in reading order): the usual 页下注 of a Chinese book. The document is laid out, numbered where its notes landed and laid out again until the numbers hold (at most three more builds). Both apply to notes at the column foot: with <code>placement: 'chapterEnd'</code> the notes are numbered by chapter. <code>'spread'</code> starts again on every spread (pages 2–3, 4–5…), in citation order, for <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>How the numbers are written, in any spelling the numbering settings take: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (or <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… The marker and the number that opens the note both use it. <code>circled-decimal</code> writes numbers past 50 in decimal. An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning.</td>
+      <td>How the numbers are written, in any spelling the numbering settings take: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (or <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… The marker and the number that opens the note both use it. <code>circled-decimal</code> writes numbers past 50 in decimal. An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning. <code>'symbols'</code> (or <code>'*'</code>) marks the notes with reference symbols, <code>symbols</code> in turn: * † ‡ § ‖ ¶, then doubled (** †† ‡‡…) and tripled; the notes are then counted again on every page unless <code>numbering</code> is set. Since postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>The sequence <code>numberFormat: 'symbols'</code> writes, doubled and then tripled once it runs out. The Latin files of Google Fonts and Fontsource carry * † § ¶ (the dagger in <code>latin-ext</code>) but neither ‡ nor ‖, which the PDF then draws as the face's <code>.notdef</code> glyph with a <code>missingGlyph</code> warning: with such a face, leave them out (<code>['*', '†', '§', '¶']</code>) or set the notes in a face that has them. Empty strings are dropped and an empty list keeps the default. Since postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

@@ -3099,6 +3099,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // numberFormat: 'symbols' で使う参照記号。
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
   markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
   numberGap?: 'en' | 'em';    // Space after the note's own number.
@@ -3139,14 +3140,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code>（日本語の横組みの本：<code>'page'</code>、<code>placement: 'spread'</code>の場合：<code>'spread'</code>）</td>
+      <td><code>'chapter'</code>（日本語の横組みの本：<code>'page'</code>、<code>placement: 'spread'</code>の場合：<code>'spread'</code>、段の下端の注で<code>numberFormat: 'symbols'</code>の場合：<code>'page'</code>）</td>
       <td><code>'chapter'</code>は、レベル1の見出しのたびと文書の始まりで、1から番号を振り直します。<code>'document'</code>は文書全体を通して番号を続け、章ごとにレイアウトする本では章から章へと続けます（<code>continuationAfter</code>が最後の番号を<code>continuation.footnoteNumber</code>として引き継ぎます）。<code>'page'</code>はページごとに、<code>'column'</code>は段ごとに1から振り直し、レイアウトが注を組んだ位置で（ページ内の段は読む順に）注を数えます。中国語の本で一般的な页下注です。文書はいったんレイアウトされ、注が置かれた位置で番号が付けられ、番号が安定するまで再びレイアウトされます（追加のビルドは最大3回）。どちらも段の下端の注に適用され、<code>placement: 'chapterEnd'</code>では注は章ごとに番号が付きます。<code>'spread'</code>は、<code>placement: 'spread'</code>用に、見開き（2–3ページ、4–5ページ…）ごとに引用順で振り直します。</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>番号の書き方です。番号付けの設定が受け付けるどの表記でも指定できます（<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（または<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>…）。本文中の合印と、注の冒頭の番号の両方に使われます。<code>circled-decimal</code>は50を超える番号を10進数で書きます。未知の名前は、<code>unknownNumberFormat</code>の警告とともに10進数で番号を付けます。</td>
+      <td>番号の書き方です。番号付けの設定が受け付けるどの表記でも指定できます（<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（または<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>…）。本文中の合印と、注の冒頭の番号の両方に使われます。<code>circled-decimal</code>は50を超える番号を10進数で書きます。未知の名前は、<code>unknownNumberFormat</code>の警告とともに10進数で番号を付けます。<code>'symbols'</code>（または<code>'*'</code>）は、<code>symbols</code>の参照記号を順に使って注を示します（* † ‡ § ‖ ¶、使い切ると二つ重ね（** †† ‡‡…）、さらに三つ重ね）。このとき注は、<code>numbering</code>を指定しない限りページごとに数え直されます。postext 1.19から。</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['*', '†', '‡', '§', '‖', '¶']</code></td>
+      <td><code>numberFormat: 'symbols'</code>が書く記号の並びです。使い切ると二つ重ね、さらに三つ重ねになります。Google FontsとFontsourceのラテン文字ファイルには * † § ¶ があります（ダガーは<code>latin-ext</code>）が、‡ と ‖ はなく、PDFではフォントの<code>.notdef</code>グリフで描かれ、<code>missingGlyph</code>の警告が出ます。そのようなフォントでは、この二つを外す（<code>['*', '†', '§', '¶']</code>）か、それらを持つフォントで注を組んでください。空の文字列は無視され、空のリストは既定の並びのままです。postext 1.19から。</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>

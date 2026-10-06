@@ -3448,6 +3448,10 @@ export type FootnotePlacement = 'column' | 'chapterEnd' | 'spread';
  *  they number by chapter. */
 export type FootnoteNumbering = 'chapter' | 'document' | 'page' | 'column' | 'spread';
 
+/** How footnote numbers are written: a numeral style, or `'symbols'`
+ *  (* † ‡ § ‖ ¶, then doubled; see {@link FootnotesConfig.symbols}). */
+export type FootnoteNumberFormat = NumberFormatStyle | 'symbols';
+
 /** How the marker in the text is set:
  *  - `'superscript'`: raised and reduced, as a superscript (`text¹`);
  *  - `'inline'`: on the baseline at `markerSize` (`text①`), centred in its
@@ -3630,8 +3634,18 @@ export interface FootnotesConfig {
   /** How the numbers are written, in any spelling of a number format
    *  (`decimal`, `lower-roman`, `circled-decimal` / `①`, `cjk-decimal`…, see
    *  `parseNumberFormat`). Default `'decimal'`. `circled-decimal` writes
-   *  numbers past 50 in decimal. */
+   *  numbers past 50 in decimal. `'symbols'` (or `'*'`) marks the notes
+   *  with reference symbols, {@link symbols} in turn: * † ‡ § ‖ ¶, then
+   *  doubled (** †† …), tripled… (#538); its notes are counted again on
+   *  every page unless `numbering` says otherwise. */
   numberFormat?: string;
+  /** The sequence `numberFormat: 'symbols'` writes, doubled and then
+   *  tripled once it runs out. Default `['*', '†', '‡', '§', '‖', '¶']`.
+   *  The Latin files of Google Fonts / Fontsource carry * † § ¶ but not
+   *  ‡ or ‖: with such a face, leave those two out or set the notes in a
+   *  face that has them. Empty strings are dropped; an empty list keeps
+   *  the default. */
+  symbols?: string[];
   /** Default `'auto'` (see {@link FootnoteMarkerPosition}). The number
    *  that opens the note itself follows it too: raised, or set at the size
    *  of the note text. */
@@ -3690,7 +3704,10 @@ export interface FootnotesConfig {
 export interface ResolvedFootnotesConfig {
   placement: FootnotePlacement;
   numbering: FootnoteNumbering;
-  numberFormat: NumberFormatStyle;
+  numberFormat: FootnoteNumberFormat;
+  /** Set when it is not the default sequence (see
+   *  {@link FootnotesConfig.symbols}). */
+  symbols?: string[];
   /** `'auto'` resolved against the number format. */
   markerPosition: 'superscript' | 'inline' | 'side' | 'right';
   markerSize: Dimension;

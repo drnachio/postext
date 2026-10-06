@@ -27,6 +27,7 @@ import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
 import { isDigitSystem } from './locale';
 import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText';
+import { parseFootnoteNumberFormat } from './defaults/footnotes';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -245,7 +246,9 @@ function collectValueWarnings(config: PostextConfig): ConfigWarning[] {
       const at = path ? `${path}.${key}` : key;
       if (typeof value === 'string') {
         const fallback = numberFormatFallback(key, parentKey);
-        if (fallback !== undefined && parseNumberFormat(value) === undefined) {
+        // Footnotes take reference symbols too (`'symbols'`, #538).
+        const known = key === 'numberFormat' && parentKey === 'footnotes' ? parseFootnoteNumberFormat(value) : parseNumberFormat(value);
+        if (fallback !== undefined && known === undefined) {
           out.push({ kind: 'unknownNumberFormat', path: at, value, used: fallback });
         } else if (isFontFamilyKey(key) && isFontStack(value)) {
           out.push({ kind: 'fontFamilyStack', path: at, value, used: primaryFontFamily(value) });

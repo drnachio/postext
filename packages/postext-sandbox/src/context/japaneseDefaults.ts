@@ -41,6 +41,8 @@ import {
   defaultResourceTypes,
   dimensionsEqual,
   formatNumeral,
+  formatFootnoteNumber,
+  footnoteFormatOf,
   isCjkLanguage,
   isJapaneseLanguage,
   parseNumberFormat,
@@ -773,7 +775,7 @@ export function japaneseDefaults(config: PostextConfig, options: JapaneseDefault
     const f = resolveFootnotesConfig(notes, fromLocale);
     rows.push({
       id: 'footnotes',
-      from: { kind: 'footnotes', marker: (f.markerTemplate ?? '{n}').replace('{n}', formatNumeral(1, f.numberFormat)), position: f.markerPosition, numbering: f.numbering },
+      from: { kind: 'footnotes', marker: formatFootnoteNumber(1, footnoteFormatOf(f), f.markerTemplate), position: f.markerPosition, numbering: f.numbering },
       to: { kind: 'japanAuto' },
       customised: false,
       apply: (c) => {

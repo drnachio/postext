@@ -1,4 +1,4 @@
-import type { Dimension, FootnoteNumbering, FootnotePlacement, FootnotesConfig, ResolvedFootnotesConfig } from '../types';
+import type { Dimension, FootnoteNumberFormat, FootnoteNumbering, FootnotePlacement, FootnotesConfig, ResolvedFootnotesConfig } from '../types';
 import { isJapaneseLanguage } from '../locale';
 import { parseNumberFormat } from '../numbering';
 import { dimensionsEqual, colorsEqual, startEndAsLeftRight } from './shared';
@@ -35,6 +35,38 @@ const RIGHT_MARKER_SIZE: Dimension = { value: 0.7, unit: 'em' };
 /** The default `markerSize` of a marker set at `position`. */
 function markerSizeFor(position: FootnotesConfig['markerPosition']): Dimension {
   return position === 'side' ? SIDE_MARKER_SIZE : position === 'right' ? RIGHT_MARKER_SIZE : DEFAULT_FOOTNOTES_CONFIG.markerSize;
+}
+
+/** The reference-symbol sequence (#538), as `pipeline/footnotes` writes it. */
+const DEFAULT_SYMBOLS: readonly string[] = ['*', '†', '‡', '§', '‖', '¶'];
+
+/** A footnote `numberFormat` in any spelling: `'symbols'` (or `'*'`) for
+ *  the reference symbols, else any spelling of a numeral style (see
+ *  `parseNumberFormat`). `undefined` for anything else. */
+export function parseFootnoteNumberFormat(value: unknown, locale?: string): FootnoteNumberFormat | undefined {
+  if (typeof value === 'string' && (value.trim() === '*' || value.trim().toLowerCase() === 'symbols')) return 'symbols';
+  return parseNumberFormat(value, locale);
+}
+
+/** `footnotes.symbols` with its empty entries dropped, `undefined` when
+ *  that leaves the default sequence (or nothing). */
+function symbolsOf(symbols: unknown): string[] | undefined {
+  if (!Array.isArray(symbols)) return undefined;
+  const seq = symbols.filter((v): v is string => typeof v === 'string' && v.length > 0);
+  if (seq.length === 0 || (seq.length === DEFAULT_SYMBOLS.length && seq.every((v, i) => v === DEFAULT_SYMBOLS[i]))) return undefined;
+  return seq;
+}
+
+/** The numbering an unset `numbering` takes: the document's (Japanese,
+ *  spread), else per page for reference symbols at the column foot (they
+ *  start again on every page), else by chapter. */
+function defaultNumbering(
+  doc: { numbering?: FootnoteNumbering },
+  numberFormat: FootnoteNumberFormat | undefined,
+  placement: FootnotePlacement,
+): FootnoteNumbering {
+  if (doc.numbering) return doc.numbering;
+  return numberFormat === 'symbols' && placement === 'column' ? 'page' : DEFAULT_FOOTNOTES_CONFIG.numbering;
 }
 
 /** The marker template of a Japanese vertical book: the number between
@@ -94,7 +126,8 @@ export function resolveFootnotesConfig(
   const p: FootnotesConfig = partial ?? {};
   const sep = p.separator;
   const width = sep?.width;
-  const numberFormat = parseNumberFormat(p.numberFormat, locale) ?? d.numberFormat;
+  const numberFormat = parseFootnoteNumberFormat(p.numberFormat, locale) ?? d.numberFormat;
+  const symbols = numberFormat === 'symbols' ? symbolsOf(p.symbols) : undefined;
   const position = p.markerPosition;
   const markerPosition: ResolvedFootnotesConfig['markerPosition'] = position === 'superscript' || position === 'inline' || position === 'side' || position === 'right'
     ? position
@@ -107,8 +140,9 @@ export function resolveFootnotesConfig(
   const numberGap = p.numberGap === 'em' || p.numberGap === 'en' ? p.numberGap : doc.numberGap;
   return {
     placement,
-    numbering: typeof p.numbering === 'string' && NUMBERINGS.has(p.numbering) ? p.numbering : doc.numbering ?? d.numbering,
+    numbering: typeof p.numbering === 'string' && NUMBERINGS.has(p.numbering) ? p.numbering : defaultNumbering(doc, numberFormat, placement),
     numberFormat,
+    ...(symbols ? { symbols } : {}),
     markerPosition,
     markerSize: markerSize && Number.isFinite(markerSize.value) && markerSize.value > 0 ? markerSize : markerSizeFor(markerPosition),
     ...(typeof template === 'string' && template !== '{n}' && template.includes('{n}')
@@ -150,8 +184,11 @@ export function stripFootnotesDefaults(
   const doc = footnoteDocumentDefaults(locale, writingMode, footnotes.placement);
   const result: FootnotesConfig = {};
   if (footnotes.placement !== undefined && footnotes.placement !== (doc.placement ?? d.placement)) result.placement = footnotes.placement;
-  if (footnotes.numbering !== undefined && footnotes.numbering !== (doc.numbering ?? d.numbering)) result.numbering = footnotes.numbering;
-  if (footnotes.numberFormat !== undefined && parseNumberFormat(footnotes.numberFormat) !== d.numberFormat) result.numberFormat = footnotes.numberFormat;
+  const numberFormat = parseFootnoteNumberFormat(footnotes.numberFormat);
+  const placement = footnotes.placement ?? doc.placement ?? d.placement;
+  if (footnotes.numbering !== undefined && footnotes.numbering !== defaultNumbering(doc, numberFormat, placement)) result.numbering = footnotes.numbering;
+  if (footnotes.numberFormat !== undefined && numberFormat !== d.numberFormat) result.numberFormat = footnotes.numberFormat;
+  if (footnotes.symbols !== undefined && symbolsOf(footnotes.symbols)) result.symbols = footnotes.symbols;
   if (footnotes.markerPosition !== undefined && footnotes.markerPosition !== 'auto' && footnotes.markerPosition !== doc.markerPosition) result.markerPosition = footnotes.markerPosition;
   if (footnotes.markerSize && !dimensionsEqual(footnotes.markerSize, markerSizeFor(footnotes.markerPosition ?? doc.markerPosition))) result.markerSize = footnotes.markerSize;
   if (footnotes.markerTemplate !== undefined && footnotes.markerTemplate !== (doc.markerTemplate ?? '{n}')) result.markerTemplate = footnotes.markerTemplate;
