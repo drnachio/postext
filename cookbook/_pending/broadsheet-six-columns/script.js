@@ -77,7 +77,8 @@ const layout = { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(GUTTER)
 //   :::callout{type="head" placement="top" columns="2"}  ← columns 5–6: 1–4 hold text now
 const photo = (id, file, [w, h], columns, extra) => ({ id, typeId: 'photo', kind: 'bitmap',
   createdAt: 0, updatedAt: 0, bitmap: { fileId: file, format: 'jpeg', width: w, height: h },
-  placement: { position: 'top', span: 'column', columns }, ...extra });
+  placement: { position: 'top', span: 'column', columns },
+  note: 'Photograph: Despatch picture desk', ...extra });
 // A table across two columns, at the foot of the column that cites it and the next one.
 const panel = (id, model, extra) => ({ id, typeId: 'panel', kind: 'table', createdAt: 0,
   updatedAt: 0, table: { model }, placement: { position: 'bottom', columns: 2 }, ...extra });
@@ -140,8 +141,7 @@ const header = { elements: [...folio('even', 'left', 1), ...folio('odd', 'right'
     placement: { ...at('page', 'top-left', MARGIN.side, FOLIO + 4.5),
       size: { width: mm(375 - 2 * MARGIN.side) } } }] };
 const opinion = { id: 'opinion', advancedDesign: flag, // its section runs in five columns
-  layout: { layoutType: 'multiple', columnCount: 5 }, // 67 mm: a 45-character measure
-  bodyStyle: { fontSize: pt(9.5), lineHeight: pt(13) } }; // comment reads a size larger
+  layout: { layoutType: 'multiple', columnCount: 5 } }; // 67 mm: a 47-character measure
 // #endregion
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
@@ -153,7 +153,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { fontFamily: 'Newsreader', fontSize: pt(9), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: mm(3), indentAfterHeading: false,
-    maxJustifyTracking: 15, // a 38-character measure: a little tracking before wide spaces
+    minWordSpacing: 0.8, // a 38-character measure: spaces never close up,
+    maxJustifyTracking: 15, // and a little tracking comes before a wide one
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'Playfair Display', fontWeight: 700, color: col('ink'),
@@ -170,6 +171,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     opinion,
     headline('lead', 50, { fontWeight: 800 }), headline('second', 25), headline('third', 30),
     headline('ad-title', 40, { fontWeight: 900 }), headline('ad-big', 60, { fontWeight: 900 }),
+    headline('ad-huge', 88, { fontWeight: 900, lineHeight: pt(84) }), headline('ad-date', 32),
     headline('stat', 26, { marginTop: pt(LEAD * 0.5), marginBottom: pt(0) }), // a fact box's figure
   ],
   calloutStyles: [head, jump, facts, weather, ad, sky],
@@ -203,6 +205,7 @@ const unnumbered = (id, name, captionStyle) => ({ id, name, shortLabel: name, ca
   numberingTemplate: '', resetOn: 'never', counterFormat: 'decimal', captionStyle });
 const resourceTypes = [unnumbered('photo', 'Photo'),
   unnumbered('panel', 'Panel', { position: 'above', fontSize: pt(9.5) })];
+// #region art: the two tables as data, and the forecast's sky icons drawn in code
 const cell = (content, extra = {}) => ({ content, ...extra });
 const th = (content, align = 'left') => cell(content, { isHeader: true, align });
 const funding = { headerRowCount: 1, columnWidths: [62, 18, 20], rows: [
@@ -211,14 +214,14 @@ const funding = { headerRowCount: 1, columnWidths: [62, 18, 20], rows: [
     ['Eastern Quays developers', 46], ['**Total**', 640]].map(([who, m]) => [cell(who),
     cell(m === 640 ? '**640**' : String(m), { align: 'right' }),
     cell(`${Math.round((100 * m) / 640)}%`, { align: 'right' })])] };
-// #region art: the forecast's sky icons, drawn in code in the paper's palette
 const cloud = (x, y, k, fill) => `<path fill="${fill}" d="M${x} ${y}h${60 * k}a${16 * k} ${16 * k} `
   + `0 0 0-6-31a${22 * k} ${22 * k} 0 0 0-40-6a${15 * k} ${15 * k} 0 0 0-14 37z"/>`;
 const sun = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${palette.accent}"/>`
   + [...Array(8)].map((_, i) => { const a = (i * Math.PI) / 4; const c = Math.cos(a);
     const s = Math.sin(a); return `<path d="M${(x + c * r * 1.35).toFixed(1)} `
       + `${(y + s * r * 1.35).toFixed(1)}L${(x + c * r * 1.75).toFixed(1)} `
-      + `${(y + s * r * 1.75).toFixed(1)}" stroke="${palette.accent}" stroke-width="4"/>`; }).join('');
+      + `${(y + s * r * 1.75).toFixed(1)}" stroke="${palette.accent}" stroke-width="4"/>`;
+  }).join('');
 const rain = [0, 1, 2].map((i) => `<path d="M${98 + i * 18} 92l-6 16" stroke="${palette.accent}" `
   + 'stroke-width="4"/>').join('');
 const svg = (body) => '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" '
@@ -229,7 +232,6 @@ const SKY = { // 240 × 120 units: a symbol per kind of day
   'sky-cloudy': svg(cloud(80, 90, 1.2, palette.rule)),
   'sky-rain': svg(cloud(84, 80, 1.1, palette.muted) + rain),
 };
-// #endregion
 function forecast() { // Thursday to Monday: sky, outlook, °C, wind, rain, sun, high water
   const days = [['Thu', 'rain', 'Rain from midday, clearing late', 14, 9, 'W 18', 12, '7.31',
     '18.12', '7.21 · 19.40'], ['Fri', 'bright', 'Bright and blustery', 13, 6, 'NW 22', 1, '7.33',
@@ -238,7 +240,7 @@ function forecast() { // Thursday to Monday: sky, outlook, °C, wind, rain, sun,
     '18.05', '9.27 · 21.48'], ['Mon', 'sunny', 'Frost, then sunshine', 13, 2, 'E 6', 0, '7.38',
     '18.03', '10.13 · 22.37']];
   const right = (v) => cell(String(v), { align: 'right' });
-  return { headerRowCount: 1, columnWidths: [8, 10, 26, 7, 7, 10, 9, 9, 9, 15], rows: [
+  return { headerRowCount: 1, columnWidths: [7, 15, 25, 6, 6, 8, 8, 8, 8, 13], rows: [
     [th('Day'), th(''), th('Outlook'), th('High', 'right'), th('Low', 'right'),
       th('Wind mph', 'right'), th('Rain mm', 'right'), th('Sunrise', 'right'),
       th('Sunset', 'right'), th('High water', 'right')],
@@ -246,29 +248,26 @@ function forecast() { // Thursday to Monday: sky, outlook, °C, wind, rain, sun,
       cell('', { image: { resourceId: `sky-${sky}` } }), cell(text), right(`${hi}°`),
       right(`${lo}°`), right(wind), right(mm), right(rise), right(set), right(tide)])] };
 }
+// #endregion
 const resources = [
-  photo('quays', 'quays-1365.jpg', [1365, 1024], 4, {
+  photo('quays', 'quays-1440.jpg', [1440, 1080], 4, {
     altText: 'A cobbled harbour quay at sunrise, with old rail tracks, three dockside cranes '
       + 'and brick warehouses beside calm water.',
     caption: '**The end of the line.** The Eastern Quays at sunrise. The trams will run on '
-      + 'the old dock railway’s route past the bonded warehouses.',
-    note: 'Photograph: Despatch picture desk' }),
+      + 'the old dock railway’s route past the bonded warehouses.' }),
   photo('barrier', 'barrier-1152.jpg', [1152, 1152], 2, {
     altText: 'Three engineers in orange jackets watch a steel flood gate hold back a high '
       + 'tide between two concrete towers.',
-    caption: '**Holding.** Engineers watch the gate at 6.40 yesterday morning.',
-    note: 'Photograph: Despatch picture desk' }),
-  photo('terrace', 'terrace-1365.jpg', [1365, 1024], 4, {
+    caption: '**Holding.** Engineers watch the gate at 6.40 yesterday morning.' }),
+  photo('terrace', 'terrace-1440.jpg', [1440, 1080], 4, {
     altText: 'A woman carries a box up the steps of a red-brick terraced house on an '
       + 'autumn street.',
-    caption: '**Moving day** on Albion Terrace, where a two-bedroom flat now lets for £1,240.',
-    note: 'Photograph: Despatch picture desk' }),
+    caption: '**Moving day** on Albion Terrace, where a two-bedroom flat now lets for £1,240.' }),
   photo('baths', 'baths-1536x768.jpg', [1536, 768], 3, {
     altText: 'A long Victorian swimming pool under an iron and glass roof, with one woman '
       + 'swimming and wooden cubicles along both sides.',
-    caption: '**Forty lengths.** The Albert Baths, opened in 1894, on a weekday morning.',
-    note: 'Photograph: Despatch picture desk' }),
-  photo('stage', 'stage-1365.jpg', [1365, 1024], 5, {
+    caption: '**Forty lengths.** The Albert Baths, opened in 1894, on a weekday morning.' }),
+  photo('stage', 'stage-1800.jpg', [1800, 1350], 5, {
     altText: 'Three actors in 1920s costume in a shipping office set on a theatre stage.',
     caption: '**Ledgers and lies.** The shipping office of *The Tally Clerk*.',
     note: 'Photograph: Corrington Playhouse' }),
@@ -293,11 +292,11 @@ const FONTS = { // text, display and label faces, loaded before the build (gotch
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown);
-await Promise.all([loadImage('quays-1365.jpg', asset('quays-1365.jpg')),
+await Promise.all([loadImage('quays-1440.jpg', asset('quays-1440.jpg')),
   loadImage('barrier-1152.jpg', asset('barrier-1152.jpg')),
-  loadImage('terrace-1365.jpg', asset('terrace-1365.jpg')),
+  loadImage('terrace-1440.jpg', asset('terrace-1440.jpg')),
   loadImage('baths-1536x768.jpg', asset('baths-1536x768.jpg')),
-  loadImage('stage-1365.jpg', asset('stage-1365.jpg')),
+  loadImage('stage-1800.jpg', asset('stage-1800.jpg')),
   ...Object.entries(SKY).map(([id, svg]) => loadSvg(`${id}.svg`, svg))]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: 'The Corrington Despatch' });

@@ -62,15 +62,15 @@ Residents of the Eastern Quays spoke mostly in favour. Amira Haddad, who chairs 
 
 The city’s share is the largest it has borrowed for a single project :ref{id="funding" text="(table)"}. Officers expect fares to cover the running costs from the third year, and the council will charge the developers of the Eastern Quays £46 million towards the stops that serve their land. The port authority will pay £64 million, most of it in land and in the rebuilding of the swing bridge at Salter’s Cut, which will carry the trams over the inner basin.
 
-The council’s finance director, Paul Okonedo, told councillors that the borrowing would be repaid from fares, from a levy on the new car parks at the Eastern Quays and from the business rates of the shops and offices planned beside the stops.
+Paul Okonedo, the council’s finance director, told councillors that the borrowing would be repaid from fares, from a levy on the new car parks at the Eastern Quays and from the business rates of the shops and offices planned beside the stops.
 
 Work starts in September 2027 with the depot at Northgate, where the trams will be kept and cleaned. The track along the quays comes next, because the old railway is already clear, and the city centre last, from the spring of 2029. The council has set aside £31 million for delays and higher costs, about one pound in every twenty.
 
-The first of the trams are due for testing on the quays in the autumn of 2030. Fares will be the same as the buses, £2 for a single journey anywhere on the network, with a free change between tram and bus within the hour.
+The first of the trams are due for testing on the quays in the autumn of 2030. Fares will be the same as the buses, £2 for a single ride anywhere on the network, with a free change between tram and bus within the hour.
 
 ### What happens next
 
-The council will publish the full timetable of the works on its website on Friday, street by street. Residents along the route will receive a letter by the end of the month. A drop-in exhibition opens at the Corn Hall on Monday 19 October, from ten until seven every weekday for a fortnight. Councillors also agreed to name the stops after the streets and landmarks they serve, not after sponsors, and to ask the schools along the route to name the first four trams. The opposition has said it will ask for the decision to be reviewed by the council’s scrutiny committee, which could delay the first contracts by up to six weeks but cannot overturn the vote.
+The council will publish the full timetable of the works on its website on Friday, street by street. Residents along the route will receive a letter by the end of the month. A drop-in exhibition opens at the Corn Hall on Monday 19 October, from ten until seven every weekday for a fortnight. The opposition has said it will ask for the decision to be reviewed by the council’s scrutiny committee, which could delay the first contracts by up to six weeks but cannot overturn the vote.
 
 :::paragraphs{style="turn"}
 Market Street traders count the cost, page 2

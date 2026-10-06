@@ -53,20 +53,38 @@ beds in the new halls on Gasworks Lane, from September 2028
 Homes to let in Corrington since 1926. Every flat inspected by us, every deposit protected.
 :::
 
-:::space{lines=2}
+:::space{lines=5}
 
-:::columns{count=3 breaks="3,5"}
-**Westfield, £1,240 a month.** Two bedrooms in a Victorian terrace, ten minutes’ walk from the university. Garden, gas central heating. From 1 November.
+:::columns{count=3 breaks="5,9"}
+### £1,240 a month {style="ad-date"}
 
-**Old Town, £895 a month.** One bedroom over a bakery on Ropewalk, with a view of the river from the kitchen.
+**Westfield.** Two bedrooms in a Victorian terrace, ten minutes’ walk from the university. Garden, gas central heating. From 1 November.
 
-**Harbourside, £1,650 a month.** Three bedrooms on the fourth floor of the Wool Exchange, with a lift and a parking space.
+### £895 a month {style="ad-date"}
 
-**Northgate, £720 a month.** A furnished studio by the station, bills included.
+**Old Town.** One bedroom over a bakery on Ropewalk, with a view of the river from the kitchen.
 
-**Hollin Point, £980 a month.** A fisherman’s cottage with two bedrooms, five minutes from the ferry.
+### £1,650 a month {style="ad-date"}
 
-**22 Castle Street, Corrington.** Open six days a week, from nine until half past five. Ask for Joanna or Kwame.
+**Harbourside.** Three bedrooms on the fourth floor of the Wool Exchange, with a lift and a parking space.
+
+### £720 a month {style="ad-date"}
+
+**Northgate.** A furnished studio by the station, bills included.
+
+### £980 a month {style="ad-date"}
+
+**Hollin Point.** A fisherman’s cottage with two bedrooms, five minutes from the ferry.
+
+### 22 Castle Street {style="ad-date"}
+
+Open six days a week, from nine until half past five. Ask for Joanna or Kwame.
+:::
+
+:::space{lines=6}
+
+:::paragraphs{style="ad-deck"}
+Thinking of letting your home? We will tell you what it would fetch, free, within a week.
 :::
 :::
 
@@ -89,6 +107,8 @@ The university has begun work on halls for 900 students on the site of the old g
 
 Landlords say the rise reflects their own costs. Duncan Fairley, who lets 34 flats in Westfield and chairs the Corrington Landlords’ Association, said mortgage rates, insurance and the cost of meeting new energy rules had all gone up faster than rents. “Nobody is getting rich on a student house in Westfield,” he said. “The ones who could have sold.”
 
+Not every landlord agrees. Rachel Obi, who lets two houses in Albion to nurses from the General, said she had kept her rents level for three years. “I would rather have tenants who stay than squeeze the last fifty pounds out of them,” she said.
+
 The council’s housing committee will discuss the licence scheme on 3 November. Residents can give their views on its website or at the Corn Hall exhibition on the tram line, where housing officers will have a stand.
 
 ### Sharing a kitchen with nine
@@ -96,3 +116,5 @@ The council’s housing committee will discuss the licence scheme on 3 November.
 Some of those who found a room have found it in houses the council says are too full. Its housing officers inspected 140 shared houses in Westfield and Albion in September and found 31 with more tenants than their licence allows. One, on Mafeking Street, had ten students sharing a kitchen and a single bathroom. The landlord has been fined £12,000.
 
 Students who think their house is overcrowded or unsafe can ask the council to inspect it, and their name will not be passed to the landlord. The students’ union runs a free advice session every Wednesday afternoon in the union building, where a housing lawyer checks tenancy agreements before they are signed.
+
+The council’s inspectors say the worst houses are rarely the ones students complain about. “The tenants who need us most are often the ones who are afraid to call,” said its chief housing officer, Grace Adeyemi. “They think they will lose the room, and they have nowhere else to go.” Her team will knock on the door of every licensed shared house in Westfield before Christmas, the first time it has done so since the licences were introduced in 2017.
