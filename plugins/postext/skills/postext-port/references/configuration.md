@@ -82,7 +82,7 @@ Conversion at `page.dpi` (default 300):
 | key | type | default | notes |
 |---|---|---|---|
 | `page` | PageConfig | §2 | trim size, margins, bleed/cut marks, grid overlay, folio format |
-| `layout` | LayoutConfig | §3 | `single` / `double` / `oneAndHalf` / `multiple` (3–8 columns, ≥ 1.17) |
+| `layout` | LayoutConfig | §3 | `single` / `double` / `oneAndHalf` / `multiple` (3–8 columns, ≥ 1.18) |
 | `bodyText` | BodyTextConfig | §4 | also H&J, KP, widows/orphans/runts |
 | `headings` | HeadingsConfig | §5 | per-level typography, chapter openers, **column balancing** |
 | `headingStyles` | HeadingStyleConfig[] | `[]` | §6 named heading/section styles |
@@ -129,7 +129,7 @@ not from the config.
 ```
 page
 ├─ sizePreset   '11x17'|'12x19'|'17x24'|'21x28'|'custom'   default '17x24' (cm, W×H)
-│               + 'broadsheet' 375×597 mm | 'berliner' 315×470 mm | 'tabloid' 280×430 mm   postext ≥ 1.17
+│               + 'broadsheet' 375×597 mm | 'berliner' 315×470 mm | 'tabloid' 280×430 mm   postext ≥ 1.18
 ├─ width        Dimension   default from preset (17 cm)    explicit value always wins
 ├─ height       Dimension   default from preset (24 cm)
 ├─ margins      PageMargins
@@ -170,7 +170,7 @@ Gotchas
 
 ```
 layout
-├─ layoutType         'single' | 'double' | 'oneAndHalf' | 'multiple'   default 'double'  (!)   'multiple' postext ≥ 1.17
+├─ layoutType         'single' | 'double' | 'oneAndHalf' | 'multiple'   default 'double'  (!)   'multiple' postext ≥ 1.18
 ├─ columnCount        number, whole 3–8                       default 3   multiple only (else clamped + columnCountClamped)
 ├─ gutterWidth        Dimension (absolute!)                  default 0.75 cm
 ├─ sideColumnPercent  number (0–100)                         default 33   oneAndHalf only
@@ -186,7 +186,7 @@ layout
 ```
 Geometry:
 - `double`: two equal columns, `colW = (contentW − gutter)/2`.
-- `multiple` (≥ 1.17): `columnCount` = n equal columns, `colW = (contentW − (n−1)·gutter)/n` (newspapers:
+- `multiple` (≥ 1.18): `columnCount` = n equal columns, `colW = (contentW − (n−1)·gutter)/n` (newspapers:
   broadsheet 6–8, tabloid 4–5). Column rules, balancing, footnotes, page-span floats/boxes/headings work
   across all of them. A heading style's own `multiple` layout takes the document's `columnCount` unless it
   sets its own. A count outside 3–8 or fractional is clamped and reported (`columnCountClamped`).
@@ -748,7 +748,7 @@ All em values = the callout body font size.
 { id (REQUIRED), name?,
   title = ''                         default title; fence title overrides
   span = 'column'                    'column' | 'page' (span block across columns) | 'side' (float-only side column)
-  columns = 1                        ≥ 1.17: a floated (auto/top/bottom) span:'column' box across this many adjacent
+  columns = 1                        ≥ 1.18: a floated (auto/top/bottom) span:'column' box across this many adjacent
                                      columns; ≥ the page's count = page-wide; in-flow boxes keep their column
   placement = 'here'                 'here' | 'auto' | 'top' | 'bottom' | 'fixed'   (side boxes never float)
   sideAtColumnEnd = 'before'         side box whose following text continues on the next page (full column, or a
@@ -850,7 +850,7 @@ rotate?:  'ccw' | 'cw'   (landscape: page-span float on its own page)
 width?:   0 < w < 1 fraction of column/page width (default whole)
 align?:   'left' (default) | 'center' | 'right'
 captionSide?: boolean    caption in the float-only side column, level with the figure (column floats, oneAndHalf+floats)
-columns?: number         ≥ 1.17: a span:'column' float across this many adjacent columns (picture across 2 of 5);
+columns?: number         ≥ 1.18: a span:'column' float across this many adjacent columns (picture across 2 of 5);
                          ≥ the page's column count = page-wide; ignored for page/side spans, rotate, here;
                          captionSide only on 1-column floats
 ```
@@ -939,7 +939,7 @@ Positions: `'center'`, `'top-left'`, `'top'`, `'top-right'`, `'left'`, `'right'`
 `'bottom'`, `'bottom-right'`. The QR code encodes `video.link` (the YouTube/Vimeo watch URL, or a
 self-hosted file's production `url`); a file without `url` prints no QR code and no link
 (`videoWithoutUrl` warning). `resource.video.player` overrides `player` for one video.
-`exclusive: false` (≥ 1.17) lets a video play alongside the others (HTML marks it `data-pt-alongside`; the
+`exclusive: false` (≥ 1.18) lets a video play alongside the others (HTML marks it `data-pt-alongside`; the
 host calls `coordinateVideoPlayback(root)` to pause what a started video does not play with). In Folio an
 `autoplay` + `exclusive: false` video starts muted each time its page comes into view and stops when it is
 turned away, several at once: the silent loops (`loop: true`) of a "living" page. EPUB readers and
@@ -1300,7 +1300,7 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
     "showThrough": true
   },
   "binding": {
-    "type": "hardcover",              // hardcover | paperback | sewn | layflat | saddleStitch | folded (≥ 1.17: newspaper)
+    "type": "hardcover",              // hardcover | paperback | sewn | layflat | saddleStitch | folded (≥ 1.18: newspaper)
     "cover": "case",                  // case (drawn round the pages) | pages (first page = front board, last verso = back board)
     "coverMaterial": "auto",          // auto (cloth on hardcover, card otherwise) | cloth | paper | leather
     "coverColor": { "hex": "#2c3e57", "model": "hex" },

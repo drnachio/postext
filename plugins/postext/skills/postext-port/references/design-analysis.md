@@ -34,10 +34,10 @@ columns, the gutter and **the leading** (the baseline grid).
 
 | Fact | How | Config |
 |---|---|---|
-| Trim W×H | page size (minus bleed/slug; see trimbox) | `page.sizePreset: "custom"`, `width`, `height` (mm); newspapers (≥ 1.17): `'broadsheet'` 375×597, `'berliner'` 315×470, `'tabloid'` 280×430 mm |
+| Trim W×H | page size (minus bleed/slug; see trimbox) | `page.sizePreset: "custom"`, `width`, `height` (mm); newspapers (≥ 1.18): `'broadsheet'` 375×597, `'berliner'` 315×470, `'tabloid'` 280×430 mm |
 | Facing pages | margins differ per parity | `page.margins.mirror: true`; `left` = inner (spine), `right` = outer |
 | Text block | first body line top → last body line bottom; column extents | `page.margins` (top/bottom/left/right) |
-| Columns | body line x-starts cluster | `layout.layoutType`: `single`, `double`, `oneAndHalf` (default is `double`!); 3–8 equal columns: `multiple` + `columnCount` (≥ 1.17) |
+| Columns | body line x-starts cluster | `layout.layoutType`: `single`, `double`, `oneAndHalf` (default is `double`!); 3–8 equal columns: `multiple` + `columnCount` (≥ 1.18) |
 | Gutter | gap between column extents | `layout.gutterWidth` (mm) |
 | Column-and-a-half | main M, side S, gutter G | `contentW = M+S+G`; `sideColumnPercent = 100·S/contentW`; `sideColumnRole: "floats"` when the side column only holds figures/boxes/notes; `sideColumnSide: "outer"` |
 | Baseline grid | median distance between consecutive body baselines; confirm by counting lines per column | `bodyText.lineHeight` in **pt** |
@@ -278,7 +278,7 @@ per-resource `placement`:
 | Exactly where it is mentioned, including ornaments and small tables under their paragraph | `position: "here"` + `::resource{id}` |
 | In the outer margin column | `span: "side"` (layout `oneAndHalf`, side role `floats`) |
 | Figure in the main column with its caption in the margin | `span: "column"`, `captionSide: true` |
-| Across some of a newspaper's columns (2 of 5) | `span: "column"`, `columns: 2` (≥ 1.17; boxes: callout `columns`) |
+| Across some of a newspaper's columns (2 of 5) | `span: "column"`, `columns: 2` (≥ 1.18; boxes: callout `columns`) |
 | Narrower than the column | `width: 0.7`, `align: "center"` |
 | Landscape table on its own page | `span: "page"`, `rotate: "ccw"` |
 | Tall plate that must fit the page | `width = min(1, aspect × maxHeight / textWidth)`: the engine does not shrink an over-tall page float |

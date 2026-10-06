@@ -193,7 +193,7 @@ const document = buildDocument(content, {
 
 <Illustration name="PageSizes" data='{"title": "页面尺寸预设", "desc": "按比例绘制的四种内置页面尺寸预设：口袋书11x17、平装书12x19、技术书17x24，以及接近A4的21x28 cm。", "caption": "各预设按比例绘制。", "sizes": [{"name": "11×17", "dims": "口袋书", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "平装书", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "教材", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "~A4", "wmm": 210, "hmm": 280}]}' />
 
-三种报纸开本是postext 1.17新增的，没有画在图中：对开大报一页的面积将近21 × 28页面的四倍。它们通常用[`'multiple'`版式](#版式类型)排，对开大报常见六栏，小报常见五栏。
+三种报纸开本是postext 1.18新增的，没有画在图中：对开大报一页的面积将近21 × 28页面的四倍。它们通常用[`'multiple'`版式](#版式类型)排，对开大报常见六栏，小报常见五栏。
 
 ### 基线网格
 
@@ -414,7 +414,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>columnCount</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td><code>'multiple'</code>版式把正文分成多少个等宽的栏：3到8之间的整数。超出这个范围或不是整数的值会被限定并报告（见<a href="#版式类型">版式类型</a>）。标题样式自己的<code>'multiple'</code>版式沿用文档的栏数，除非它设定了自己的栏数。postext 1.17起。</td>
+      <td><code>'multiple'</code>版式把正文分成多少个等宽的栏：3到8之间的整数。超出这个范围或不是整数的值会被限定并报告（见<a href="#版式类型">版式类型</a>）。标题样式自己的<code>'multiple'</code>版式沿用文档的栏数，除非它设定了自己的栏数。postext 1.18起。</td>
     </tr>
     <tr>
       <td><code>gutterWidth</code></td>
@@ -549,7 +549,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
 
 - **`'oneAndHalf'`**：非对称版式，一个主栏加一个较窄的侧栏。侧栏（由`sideColumnPercent`控制）适合放边注、小图或辅助内容。取值在25–40%之间效果较好；用于行号或边缘标记的窄栏，约取10–15%。侧栏占内容宽度的`sideColumnPercent`%，主栏是扣除栏间距后剩下的部分，所以取50%时侧栏比主栏宽一个栏间距。只要两栏都至少保有内容宽度的1%，任何值都按原样排版；会让任一栏更窄的值（0或以下，或者宽到主栏被栏间距吞没）会被限制到能保住两栏的最近值，非数字的值则取默认值33。这时文档的`configWarnings`会带有`{ kind: 'sideColumnPercentClamped', path: 'layout.sideColumnPercent', value, used }`。标题样式自己的`layout`的路径会指明该样式，例如`headingStyles[2].layout.sideColumnPercent`，并按该样式的页边距来度量。沙盒在其**检查**面板中列出这些警告；`collectConfigWarnings(config)`不做排版就返回同样的列表。不是`'oneAndHalf'`的版式从不读取这个值，也从不报告它。设了`sideColumnRole: 'floats'`时，正文从不进入侧栏：侧栏成为一条通道，专门容纳用`span: 'side'`放置的图、表和标注框。侧栏中的图或表，在首次引用它的那一页从通道顶端开始叠放，所以即使正文在更靠下的位置才引用，教材的边栏图也位于该页顶部；通道剩余空间放不下的，等到下一页的通道。侧栏中的框叠放在它所打断的文字旁边；如果通道剩余空间放不下，它就上移到仍能放下的最低位置（底边与通道底边齐平），或者等到下一页。框的围栏之后的文字接到下一页时（栏已排满，或断页规则把那段文字移到后面），框留在围栏处，位于前面文字的旁边；设了`sideAtColumnEnd: 'after'`的样式则把它放在下一页的通道里，与围栏后文字的第一行平齐，写在所属行之前的行号和边栏标题需要这样。标题版面设计中位于通道内的元素（锚定在外侧页边距的章序号）也会被叠放内容避开（见[预留高度](#保留高度)）。`span: 'page'`浮动体和框仍然横跨两栏，带`placement.captionSide`的栏内浮动体则把题注放在通道中，与图平齐。与镜像页边距和`sideColumnSide: 'outer'`配合，通道就位于每一页的外侧边缘，即教材的边栏。
 
-- **`'multiple'`**：三到八个等宽的栏，栏数由`columnCount`给出（默认3），是报纸和许多杂志的版式网格（postext 1.17起）。每栏宽为`(内容宽度 − (n − 1) × gutterWidth) / n`。正文像双栏版式一样从一栏接到下一栏；每个栏间距都画栏线，齐栏在章末页和通栏框之前让所有栏平齐，脚注在每一栏中都可用，通栏的图、框和标题横跨整个页面。图或浮动框可以只占其中几栏：`placement.columns`（见[资源类型](#资源类型)）和标注框样式的`columns`。`columnCount`超出3–8或不是整数时，取整并限定到最接近的有效栏数（不是数字的值取3），文档的`configWarnings`带有`{ kind: 'columnCountClamped', path: 'layout.columnCount', value, used }`（标题样式自己的`layout`的路径会写出样式，如`headingStyles[1].layout.columnCount`）。其他类型的版式从不读取这个值。`layout`为`'multiple'`的标题样式沿用文档的`columnCount`，除非它设定了自己的栏数，因此一份五栏的报纸可以把评论版排成四栏。
+- **`'multiple'`**：三到八个等宽的栏，栏数由`columnCount`给出（默认3），是报纸和许多杂志的版式网格（postext 1.18起）。每栏宽为`(内容宽度 − (n − 1) × gutterWidth) / n`。正文像双栏版式一样从一栏接到下一栏；每个栏间距都画栏线，齐栏在章末页和通栏框之前让所有栏平齐，脚注在每一栏中都可用，通栏的图、框和标题横跨整个页面。图或浮动框可以只占其中几栏：`placement.columns`（见[资源类型](#资源类型)）和标注框样式的`columns`。`columnCount`超出3–8或不是整数时，取整并限定到最接近的有效栏数（不是数字的值取3），文档的`configWarnings`带有`{ kind: 'columnCountClamped', path: 'layout.columnCount', value, used }`（标题样式自己的`layout`的路径会写出样式，如`headingStyles[1].layout.columnCount`）。其他类型的版式从不读取这个值。`layout`为`'multiple'`的标题样式沿用文档的`columnCount`，除非它设定了自己的栏数，因此一份五栏的报纸可以把评论版排成四栏。
 ## 页眉与页脚
 
 `header`和`footer`属性控制每一页的页眉和页脚槽位。页眉和页脚渲染在**现有的页边距之内**：它们不另外占用空间，也不会缩小内容区。
@@ -3870,7 +3870,7 @@ interface ResourcePlacement {
   width?: number;                                // 栏宽或页宽的比例（0 < width < 1）；默认占满整个宽度
   align?: 'left' | 'center' | 'right';           // 比所在栏窄的浮动体放在哪里；默认'left'
   captionSide?: boolean;                         // 题注放在图旁，位于oneAndHalf版式的侧栏中（仅限栏内浮动体）
-  columns?: number;                              // 'column'浮动体横跨的相邻栏数（1.17起）
+  columns?: number;                              // 'column'浮动体横跨的相邻栏数（1.18起）
 }
 
 interface ResourceType {
@@ -3888,7 +3888,7 @@ interface ResourceType {
 
 `ResourcePlacement`与资源自身的`placement`形状相同。`position`选择浮动体可占用的空位种类：`auto`（默认）取第一次引用之后的第一个空位，`top` / `bottom`把范围限定在该种版带，`here`把资源行内嵌入。`span`设定浮动体的宽度范围：一栏、整个内容宽度，或一栏半版式中只放浮动体的侧栏。`rotate`把资源旋转四分之一圈，并使它成为单独占一页的通栏浮动体。`width`把浮动体收窄为所在栏宽的一个比例（通栏浮动体则为页宽的比例），比如宽栏里的一张小表。`align`说明这种较窄的浮动体放在哪里（默认靠左，也可居中或靠右），也说明比空位窄的图片在空位中的位置：比栏窄的位图，或被`layout.fitFiguresToPage`缩小的图像。题注和注释保持空位的行长。（postext 1.4及以前，这类图片总是左对齐排放。）`captionSide`把题注放在图旁，位于一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），与图的顶边平齐（底部浮动体则与底边平齐）；它只作用于栏内浮动体，没有这种侧栏的页面仍把题注放在图下。资源和它的类型都没有设定位置时，内置默认值为`auto` / `column`。
 
-`columns`（postext 1.17起）让`span: 'column'`浮动体在多栏页面上横跨这么多相邻的栏，例如报纸五栏中横跨两栏的照片。它的宽度是这些栏加上其间的栏间距。它占用一组顶端平齐的空栏的栏首，或者引用它的那一栏及其后空栏的栏脚；栏数等于或大于页面的栏数时，它就是通栏浮动体。`'page'`和`'side'`跨度、旋转的资源（`rotate`）以及行内嵌入（`here`）忽略此项；`captionSide`只对一栏宽的浮动体有效。
+`columns`（postext 1.18起）让`span: 'column'`浮动体在多栏页面上横跨这么多相邻的栏，例如报纸五栏中横跨两栏的照片。它的宽度是这些栏加上其间的栏间距。它占用一组顶端平齐的空栏的栏首，或者引用它的那一栏及其后空栏的栏脚；栏数等于或大于页面的栏数时，它就是通栏浮动体。`'page'`和`'side'`跨度、旋转的资源（`rotate`）以及行内嵌入（`here`）忽略此项；`captionSide`只对一栏宽的浮动体有效。
 
 <table>
   <thead>
@@ -4730,7 +4730,7 @@ const config: PostextConfig = {
     <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>自动开始播放，按浏览器的要求始终静音。</td></tr>
     <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>开始时关闭声音。</td></tr>
     <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>播完后从头再播。</td></tr>
-    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、文件</td><td>开始播放这段视频会暂停正在显示的其他视频，一次只播放一段。<code>false</code>让它与其他视频同时播放：一页上无声循环的短片，几段一起播放。postext 1.17起。</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、文件</td><td>开始播放这段视频会暂停正在显示的其他视频，一次只播放一段。<code>false</code>让它与其他视频同时播放：一页上无声循环的短片，几段一起播放。postext 1.18起。</td></tr>
     <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>文件</td><td>播放前浏览器预先加载多少：<code>'none'</code>、<code>'metadata'</code>或<code>'auto'</code>。</td></tr>
     <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>增强隐私的嵌入：YouTube从<code>youtube-nocookie.com</code>加载，Vimeo带<code>dnt=1</code>。</td></tr>
   </tbody>
@@ -5220,7 +5220,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>columns</code></td>
       <td><code>number</code></td>
       <td><code>1</code></td>
-      <td>浮动框（<code>placement</code>为<code>'auto'</code>、<code>'top'</code>或<code>'bottom'</code>，且<code>span: 'column'</code>）占用的相邻栏数，与图的<code>placement.columns</code>作用相同：例如报纸五栏中横跨三栏的新闻框。栏数等于或大于页面的栏数时，就是通栏框。排在文字流中的框（<code>'here'</code>）只占自己的栏。每个实例可用<code>columns</code>属性覆盖。postext 1.17起。</td>
+      <td>浮动框（<code>placement</code>为<code>'auto'</code>、<code>'top'</code>或<code>'bottom'</code>，且<code>span: 'column'</code>）占用的相邻栏数，与图的<code>placement.columns</code>作用相同：例如报纸五栏中横跨三栏的新闻框。栏数等于或大于页面的栏数时，就是通栏框。排在文字流中的框（<code>'here'</code>）只占自己的栏。每个实例可用<code>columns</code>属性覆盖。postext 1.18起。</td>
     </tr>
     <tr>
       <td><code>placement</code></td>
@@ -5400,7 +5400,7 @@ The glass stays hot for an hour after the flame is out.
 - 浮动体让位于不可拆分的框。当图的引用之后紧接的块是`keepTogether`标注框时，如果某个位置会让这个框在当前栏带中无栏可落（引用所在的栏，或它之后的空栏，在浮动之前本可容纳它），就不采用这个位置：图移到它的下一个位置，通常是下一页，框留在文字流中。这正是排版工人的做法：不会把框挤出页面，只在栏里留下那张图。
 - 在多栏版式中，`span: 'page'`让框成为**通栏块**：它按整个版心宽度排布，把页面切分成栏带。它上方的各栏文字在切线处结束，框自己占一个通栏宽的栏，下方新开一组文字栏，文字流在每一栏中都从框下继续。在各栏*平齐*的地方，即页面顶端、`span: 'page'`的章首标题正下方、另一个通栏块正下方，或顶部浮动区带正下方，框直接在那里切开。如果它在页面中部出现、各栏参差不齐，就按排版工人的方式处理：它上方的正文在所有栏中齐平切断（引擎把该栏带的各栏缩短到相同的网格行数后重新排布，于是文字自然地从一栏流向下一栏，所有段首孤行、段末孤行和与下文同栏的规则照样生效），框横跨整页，各栏在它下方继续。切断要多跑几遍排布；如果切线下方放不下框加上段首孤行（widow）规则所需的最少正文行数，或者尝试几次后仍没有合适的排法，框就移到下一页顶端。上方的正文遵守这条切线：一栏在图下方只剩几行、放不下一个段落的开头时，该段落移到下一栏（图于是单独占据那一栏）；当某个块仍会越过切线时，切线下移一行，而不是移到那个块结束的地方。开启栏带的拆分框也在那里切断，所以它的其余部分不会越过切线。在`headings.balancing.beforeSpan`（默认开启）下，框离开的栏带在它后面齐平切断，就像一章的收尾栏带；样式允许拆分时（`keepTogether: false`），框中能放进拉齐后各栏下方的部分结束这一页，其余部分开启下一页。设`beforeSpan: false`时，框离开的页面只做常规的各栏齐底，不强制分页。紧挨在通栏块之前的标题不随它移动。在单栏版式中，`span: 'page'`就是普通的行内排布。
 - `placement: 'fixed'`把框移出文字流：先排出框（`width: 'auto'`按标题收缩宽度；`'fill'`取锚点下方那一栏的文字宽度），再把它固定在它在文字流中所在的页面上，位置由`fixed.anchor` / `fixed.offset`描述，默认为内容区的左下角。它覆盖的文字栏让出这块区域（从底部截去，栏仍为空时从顶部截去），与浮动区带完全相同；如果这块区域中已经有正文、浮动体或通栏块，框就移到下一页。收尾一章的固定框（下一个块是章首页、`:::part`、浮动体屏障框或文档末尾）会先把它上方的各栏拉齐（`headings.balancing.trailing`），这样较短的收尾页会齐底结束，下方是徽标。框形和子块放在`page.floats`中，在所有后端中都在栏的裁切区之外渲染。
-- `placement: 'top' | 'bottom'`让框像资源一样**浮动**：它在出现处离开文字流，占用该处之后第一个空闲区带，即当前页的页脚（`'bottom'`），或文字流打开的下一页的页首 / 页脚，宽度为一栏（`span: 'column'`）或整个版心（`span: 'page'`）；它之后的正文填满它离开的那一页。它的框形和子块进入`page.floats`，与固定框一样。位于新一页页首的浮动框排在等待该页的图之前；在较早一页引用、随后能放在它下方的图，即使剩下的正文不足三行，也会占满该页其余部分（图集页：框加图，中间没有正文）。`span: 'side'`框从不浮动：无论placement如何，它都叠放在正文旁边。`columns`大于1时（在样式中或作为围栏属性，postext 1.17起），`span: 'column'`框占用这么多相邻的栏：一组顶端平齐的空栏的栏首，或者当前栏及其后空栏的栏脚，例如`:::callout{placement="top" columns="2"}`。
+- `placement: 'top' | 'bottom'`让框像资源一样**浮动**：它在出现处离开文字流，占用该处之后第一个空闲区带，即当前页的页脚（`'bottom'`），或文字流打开的下一页的页首 / 页脚，宽度为一栏（`span: 'column'`）或整个版心（`span: 'page'`）；它之后的正文填满它离开的那一页。它的框形和子块进入`page.floats`，与固定框一样。位于新一页页首的浮动框排在等待该页的图之前；在较早一页引用、随后能放在它下方的图，即使剩下的正文不足三行，也会占满该页其余部分（图集页：框加图，中间没有正文）。`span: 'side'`框从不浮动：无论placement如何，它都叠放在正文旁边。`columns`大于1时（在样式中或作为围栏属性，postext 1.18起），`span: 'column'`框占用这么多相邻的栏：一组顶端平齐的空栏的栏首，或者当前栏及其后空栏的栏脚，例如`:::callout{placement="top" columns="2"}`。
 - `width: 'auto'`只按标题收缩宽度，子内容被忽略。
 - 嵌套在另一个标注框中的`:::callout`是一个独立的框：它按自己的样式（底色、边框、圆角、内边距、色条、标题、图标、标记、标签、排版）以父框的全部内宽排布，作为父框的一个子块叠放，其`marginTop` / `marginBottom`与相邻块合并。它的`span`和`placement`（围栏或样式中的）被忽略，嵌套框总是在父框内顺排；`floatBarrier`和`snapToGrid`同样被忽略。框可以任意层级嵌套，也可以放在`:::columns`组中（每个框完整地位于一栏中）。父框拆分时，切口落在嵌套框之前或之后，嵌套样式允许拆分时也可以落在它内部；每个片段都会重画它切过的框形，从上一个片段接续过来的嵌套框不带标题和图标，与顶层的接续部分一样。
 - 子块中的`:::columns{count=N}` … `:::`组在框内把这些子块排成`N`个等宽的栏，间距为`columnGap`：这一串内容在最能让各栏平齐的块边界或行边界处切开（在中途切开的段落或列表项在下一栏开头继续，不带项目符号），每一栏都从组的顶部开始，组的高度等于最高的一栏；组之后的子块恢复全宽。拆分框（`keepTogether: false`）绝不在组内部切开。可用来排两栏的要点小结，或让宽框中的几张表并排。
@@ -6523,7 +6523,7 @@ interface FolioConfig {
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
-      <td><code>hardcover</code>：精装，硬纸板封面略大于书页。<code>paperback</code>：无线胶装（铣背上胶），打开不够平。<code>sewn</code>：锁线平装。<code>layflat</code>：平摊装，书脊处不下陷。<code>saddleStitch</code>：骑马钉，折好的纸张在折缝处装订，如杂志或小册子，没有平书脊。<code>folded</code>（postext 1.17起）：报纸，纸张对折一次，一张套一张，没有任何东西固定；没有订书钉、没有书脊、没有封面板，第一页就是头版。带<code>shade</code>的<a href="/zh/docs/document-format#paper"><code>:::paper</code></a>段可以把某一版（例如财经版）印在鲑鱼色新闻纸上。</td>
+      <td><code>hardcover</code>：精装，硬纸板封面略大于书页。<code>paperback</code>：无线胶装（铣背上胶），打开不够平。<code>sewn</code>：锁线平装。<code>layflat</code>：平摊装，书脊处不下陷。<code>saddleStitch</code>：骑马钉，折好的纸张在折缝处装订，如杂志或小册子，没有平书脊。<code>folded</code>（postext 1.18起）：报纸，纸张对折一次，一张套一张，没有任何东西固定；没有订书钉、没有书脊、没有封面板，第一页就是头版。带<code>shade</code>的<a href="/zh/docs/document-format#paper"><code>:::paper</code></a>段可以把某一版（例如财经版）印在鲑鱼色新闻纸上。</td>
     </tr>
     <tr>
       <td><code>binding.cover</code></td>

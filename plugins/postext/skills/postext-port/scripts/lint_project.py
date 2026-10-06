@@ -199,7 +199,7 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
         pass
     elif "layout" not in cfg or "layoutType" not in (cfg.get("layout") or {}):
         rep.info(where, "layout.layoutType not set: the default is 'double' (two columns)")
-    # `multiple` (postext >= 1.17): columnCount equal columns, a whole number 3-8.
+    # `multiple` (postext >= 1.18): columnCount equal columns, a whole number 3-8.
     layouts = [("layout", cfg.get("layout"))] + [
         (f"headingStyles[{i}].layout", hs.get("layout")) for i, hs in enumerate(cfg.get("headingStyles") or [])
         if isinstance(hs, dict)]
@@ -1012,7 +1012,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                         if k in attrs and attrs[k] not in allowed:
                             rep.error(where, f"callout {k}={attrs[k]!r} is ignored (allowed: {sorted(allowed)})")
                     if "columns" in attrs:
-                        # postext >= 1.17: a floated box across several columns.
+                        # postext >= 1.18: a floated box across several columns.
                         if not re.fullmatch(r"[1-9]\d*", attrs["columns"]):
                             rep.error(where, f"callout columns={attrs['columns']!r} is not a whole number from 1 (read as 1)")
                         elif attrs.get("placement") in ("here", "fixed") or attrs.get("span") in ("page", "side"):

@@ -164,7 +164,7 @@
         "ja": "ページサイズのプリセット"
       }
     },
-    "since": "1.17.0"
+    "since": "1.18.0"
   },
   "mirrored-margins": {
     "label": {
@@ -843,7 +843,7 @@
         "ja": "レイアウトの種類"
       }
     },
-    "since": "1.17.0",
+    "since": "1.18.0",
     "detect": {
       "config": [
         "layout.columnCount",
@@ -6191,7 +6191,7 @@
         "ja": "配置"
       }
     },
-    "since": "1.17.0",
+    "since": "1.18.0",
     "detect": {
       "config": [
         "calloutStyles[].columns"
@@ -13143,7 +13143,7 @@
         "ja": "Folioビューアー（設定）"
       }
     },
-    "since": "1.17.0"
+    "since": "1.18.0"
   },
   "paper-runs": {
     "label": {
@@ -13567,7 +13567,7 @@
         "ja": "プレーヤーのオプション"
       }
     },
-    "since": "1.17.0",
+    "since": "1.18.0",
     "detect": {
       "config": [
         "videoStyle.player.exclusive"

@@ -786,7 +786,7 @@ export interface ResolvedPageConfig {
 /** How the body is divided into columns. `'single'`, `'double'` and
  *  `'oneAndHalf'` (a main column and a narrower side column); `'multiple'`:
  *  {@link LayoutConfig.columnCount} equal columns, the grid of newspapers
- *  and of many magazines (since postext 1.17, #505). */
+ *  and of many magazines (since postext 1.18, #505). */
 export type LayoutType = 'single' | 'double' | 'oneAndHalf' | 'multiple';
 
 /** The direction lines run in (see `LayoutConfig.writingMode`). */

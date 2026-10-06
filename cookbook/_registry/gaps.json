@@ -326,12 +326,12 @@
       ]
     },
     "explanation": {
-      "en": "Fixed in postext 1.17: layoutType 'multiple' sets 3 to 8 equal body columns, and placement.columns sets a figure or a floated box across several of them. Up to 1.16 three or more columns existed only inside a box: a :::columns group in a page-span callout.",
-      "es": "Resuelto en postext 1.17: layoutType 'multiple' compone de 3 a 8 columnas de texto iguales, y placement.columns coloca una figura o un recuadro flotante sobre varias de ellas. Hasta la 1.16, tres o más columnas solo existían dentro de un recuadro: un grupo :::columns en un recuadro a todo el ancho.",
-      "ca": "Resolt a postext 1.17: layoutType 'multiple' compon de 3 a 8 columnes de text iguals, i placement.columns col·loca una figura o un requadre flotant sobre diverses d'elles. Fins a la 1.16, tres o més columnes només existien dins d'un requadre: un grup :::columns en un requadre a tota l'amplada.",
-      "zh": "已在postext 1.17中解决：layoutType 'multiple'排3到8个等宽的正文栏，placement.columns让图或浮动框横跨其中几栏。1.16及以前，三栏及以上只能出现在框内：放在通栏标注框中的:::columns组。",
-      "ar": "حُلّت في postext 1.17: يضع layoutType 'multiple' من 3 إلى 8 أعمدة متن متساوية، ويضع placement.columns شكلًا أو إطارًا عائمًا عبر عدة منها. وحتى 1.16 لم تكن ثلاثة أعمدة أو أكثر توجد إلا داخل صندوق: مجموعة :::columns في إطار بعرض الصفحة.",
-      "ja": "postext 1.17で解決しました。layoutType 'multiple'で3〜8段の同じ幅の本文段を組み、placement.columnsで図やフロートする囲みを複数の段にまたがって置けます。1.16までは、3段以上を作れるのは囲みの中だけで、ページ幅の囲みに入れた:::columnsグループとして組んでいました。"
+      "en": "Fixed in postext 1.18: layoutType 'multiple' sets 3 to 8 equal body columns, and placement.columns sets a figure or a floated box across several of them. Up to 1.16 three or more columns existed only inside a box: a :::columns group in a page-span callout.",
+      "es": "Resuelto en postext 1.18: layoutType 'multiple' compone de 3 a 8 columnas de texto iguales, y placement.columns coloca una figura o un recuadro flotante sobre varias de ellas. Hasta la 1.16, tres o más columnas solo existían dentro de un recuadro: un grupo :::columns en un recuadro a todo el ancho.",
+      "ca": "Resolt a postext 1.18: layoutType 'multiple' compon de 3 a 8 columnes de text iguals, i placement.columns col·loca una figura o un requadre flotant sobre diverses d'elles. Fins a la 1.16, tres o més columnes només existien dins d'un requadre: un grup :::columns en un requadre a tota l'amplada.",
+      "zh": "已在postext 1.18中解决：layoutType 'multiple'排3到8个等宽的正文栏，placement.columns让图或浮动框横跨其中几栏。1.16及以前，三栏及以上只能出现在框内：放在通栏标注框中的:::columns组。",
+      "ar": "حُلّت في postext 1.18: يضع layoutType 'multiple' من 3 إلى 8 أعمدة متن متساوية، ويضع placement.columns شكلًا أو إطارًا عائمًا عبر عدة منها. وحتى 1.16 لم تكن ثلاثة أعمدة أو أكثر توجد إلا داخل صندوق: مجموعة :::columns في إطار بعرض الصفحة.",
+      "ja": "postext 1.18で解決しました。layoutType 'multiple'で3〜8段の同じ幅の本文段を組み、placement.columnsで図やフロートする囲みを複数の段にまたがって置けます。1.16までは、3段以上を作れるのは囲みの中だけで、ページ幅の囲みに入れた:::columnsグループとして組んでいました。"
     },
     "docs": {
       "slug": "configuration",
@@ -344,7 +344,7 @@
         "ja": "レイアウトの種類"
       }
     },
-    "fixedIn": "1.17.0"
+    "fixedIn": "1.18.0"
   },
   "text-wrap": {
     "label": {
