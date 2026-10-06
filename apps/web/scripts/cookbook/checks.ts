@@ -589,10 +589,14 @@ function collect(input: CheckInput): Finding[] {
       if (pdf.bytes && pdf.pages !== null) {
         if (pdf.pages === 0) add("C14", "warn", "could not count the PDF's pages");
         else {
-          // Of a capture of several builds, the PDF is one of them.
+          // Of a capture of several builds, the PDF is one of them, or all
+          // of them chained into one publication (#540): their pages summed.
           const counts = (facts.selectedBuilds ?? []).map((i) => facts.builds[i]?.pages ?? 0);
           if (counts.length > 1) {
-            if (!counts.includes(pdf.pages)) add("C14", "fail", `the PDF has ${pdf.pages} pages, the documents ${counts.join(" and ")}`);
+            const sum = counts.reduce((a, b) => a + b, 0);
+            if (!counts.includes(pdf.pages) && pdf.pages !== sum) {
+              add("C14", "fail", `the PDF has ${pdf.pages} pages, the documents ${counts.join(" and ")} (${sum} together)`);
+            }
           } else if (pdf.pages !== pages.length) add("C14", "fail", `the PDF has ${pdf.pages} pages, the document ${pages.length}`);
         }
       }

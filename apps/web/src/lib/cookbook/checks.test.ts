@@ -153,6 +153,27 @@ describe("C14: a PDF shaped without HarfBuzz", () => {
   });
 });
 
+describe("C14: the PDF's pages against the selected builds (#540)", () => {
+  const builds = [
+    { kind: "document", shim: "postext", ms: 300, at: 900, pages: 3 },
+    { kind: "document", shim: "postext", ms: 300, at: 1200, pages: 3 },
+  ] as ProbeFacts["builds"];
+  const pdf = (pages: number) => ({ button: true, timedOut: false, error: null, fontFailures: [], bytes: 90_000, pages });
+  const run = (pages: number) => of("C14", runChecks(input({ facts: facts({ builds, selectedBuilds: [0, 1] }), pdf: pdf(pages) })));
+
+  it("takes a PDF of one of the builds", () => {
+    expect(run(3)).toEqual([]);
+  });
+
+  it("takes a PDF of all the chained builds, their pages summed", () => {
+    expect(run(6)).toEqual([]);
+  });
+
+  it("fails a PDF of any other length", () => {
+    expect(run(5).map((f) => f.detail)).toEqual(["the PDF has 5 pages, the documents 3 and 3 (6 together)"]);
+  });
+});
+
 describe("C12: CJK and Arabic files loaded after the layout", () => {
   it("fails a face that set characters it had not loaded", () => {
     const late = [{ family: "Noto Sans TC", weight: 700, style: "normal" as const, where: "p3 heading", chars: "章回" }];
