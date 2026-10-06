@@ -4,7 +4,7 @@
 // the left) and its leaves turn from left to right.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlaneGeometry, Vector3, type Mesh, type ShaderMaterial } from "three";
-import { along, profiles, topAt } from "./bookGeometry";
+import { along, profiles } from "./bookGeometry";
 
 vi.mock("three", async (importOriginal) => {
   const three = await importOriginal<typeof import("three")>();
@@ -259,7 +259,7 @@ describe("the page flipper", () => {
   });
 
   it("never ripples a thin leaf held low down into the page under it", async () => {
-    const { curlLeaf, progressFrom } = await import("./pageFlip");
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
     const W = 650;
     const H = 920;
     const book = profiles("hardcover", W, 4, 60, 60);
@@ -276,13 +276,14 @@ describe("the page flipper", () => {
       const G = { u: 0.92 * W, v: -0.4 * H };
       const P = { u: reach * G.u, v: G.v };
       const q = progressFrom(G, P);
+      const fold = foldOf(G, P, W, H, 0.4);
       const geometry = new PlaneGeometry(W, H, 96, 120);
       const rest = new PlaneGeometry(W, H, 96, 120);
-      curlLeaf(rest, G, P, true, W, H, lift, book, 0.4, 0);
+      layLeaf(rest, fold, true, W, H, lift, book, 0, q);
       // Bible paper: a floppy leaf, rippling (as `draw` sets it for roll 0.4).
       const flutter = 0.012 * (1 / 0.4 - 0.75) * Math.sin(Math.PI * q);
       for (let time = 0; time < 1040; time += 65) {
-        curlLeaf(geometry, G, P, true, W, H, lift, book, 0.4, 0, flutter, time);
+        layLeaf(geometry, fold, true, W, H, lift, book, 0, q, flutter, time);
         const pos = geometry.attributes.position;
         for (let i = 0; i < pos.count; i++) {
           const x = pos.getX(i);
@@ -301,7 +302,7 @@ describe("the page flipper", () => {
   });
 
   it("keeps the paper curled up over the gutter free of creases", async () => {
-    const { curlLeaf } = await import("./pageFlip");
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
     // The middle of a thick book: a deep gutter between two level pages.
     const W = 600;
     const H = 850;
@@ -311,8 +312,9 @@ describe("the page flipper", () => {
     for (let k = 1; k < 20; k++) {
       const G = { u: W, v: -0.4 * H };
       const P = { u: W - (2 * W * k) / 20, v: -0.36 * H };
+      const fold = foldOf(G, P, W, H);
       const geometry = new PlaneGeometry(W, H, 96, 120);
-      curlLeaf(geometry, G, P, true, W, H, 1, book, 1, 0);
+      layLeaf(geometry, fold, true, W, H, 1, book, 0, progressFrom(G, P));
       const pos = geometry.attributes.position;
       for (let iy = 0; iy <= 120; iy += 4) {
         for (let ix = 1; ix < 96; ix++) {
@@ -331,6 +333,44 @@ describe("the page flipper", () => {
     // It bends no tighter than its roll (radius over 10 px here): it used
     // to dip into the gutter, creased where it passed over the spine.
     expect(worst).toBeLessThan(0.1);
+  });
+
+  it("tucks a folded corner back along the head or foot, never past the book (#498)", async () => {
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
+    // A thick paperback, the thin side hanging from the spine.
+    const W = 476;
+    const H = 672;
+    const book = profiles("paperback", W, 2.8, 6.5, 202);
+    const lay = (G: { u: number; v: number }, P: { u: number; v: number }) => {
+      const geometry = new PlaneGeometry(W, H, 96, 120);
+      layLeaf(geometry, foldOf(G, P, W, H), true, W, H, 1, book, 0, progressFrom(G, P));
+      const out = Float32Array.from(geometry.attributes.position.array as Float32Array);
+      geometry.dispose();
+      return out;
+    };
+    // The top outer corner carried down to the middle of the other page
+    // (it used to fold some 140 px past the foot), and a click's turn from
+    // the bottom corner, lifted on its way (up to 90 px past the head).
+    const paths = [
+      (t: number) => [{ u: 405, v: 268 }, { u: 335 - 646 * t, v: 249 - 181 * t }],
+      (t: number) => [{ u: W, v: -H / 2 }, { u: W - 2 * W * t, v: -H / 2 + 0.28 * H * Math.sin(Math.PI * t) }],
+    ];
+    let past = 0;
+    let jump = 0;
+    for (const path of paths) {
+      for (let k = 1; k < 40; k++) {
+        const [G, P] = path(k / 40);
+        const a = lay(G, P);
+        const b = lay(G, { u: P.u - 1, v: P.v - 1 });
+        for (let i = 0; i < a.length; i += 3) {
+          past = Math.max(past, Math.abs(a[i + 1]) - H / 2);
+          jump = Math.max(jump, Math.hypot(a[i] - b[i], a[i + 1] - b[i + 1], a[i + 2] - b[i + 2]));
+        }
+      }
+    }
+    expect(past).toBeLessThanOrEqual(1e-3);
+    // It goes on following the hand: a pixel's move moves the paper a few.
+    expect(jump).toBeLessThan(12);
   });
 
   it("finds the printed point under the pointer on either open page, and back", () => {
@@ -401,114 +441,6 @@ describe("the page flipper", () => {
     expect(most).toBeGreaterThan(0);
     expect(settled).toEqual([27]);
   }, 30_000); // a 40-leaf book flipped tick by tick: 5.8 s on the CI runner
-});
-
-describe("a paper leaf turning by hand (#495)", () => {
-  // A leaf is laid on a 96 × 120 grid whose columns crowd towards the spine.
-  const column = (t: number) => Math.pow(t, 1.45);
-  const reachOf = (G: { u: number; v: number }, P: { u: number; v: number }, H: number) => {
-    let { u, v } = P;
-    for (let i = 0; i < 4; i++) {
-      for (const S of [-H / 2, H / 2]) {
-        const r = Math.hypot(G.u, G.v - S);
-        const d = Math.hypot(u, v - S);
-        if (d > r) {
-          u *= r / d;
-          v = S + ((v - S) * r) / d;
-        }
-      }
-    }
-    return { u, v };
-  };
-  // A thick book opened near its start: a tall block on one side, a thin
-  // one hanging from the spine down to the desk on the other.
-  const W = 476;
-  const H = 672;
-  const book = profiles("paperback", W, 2.8, 6.5, 202, { noCase: true });
-  const turns = () => {
-    let seed = 7;
-    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    const out: { G: { u: number; v: number }; P: { u: number; v: number }; forward: boolean }[] = [];
-    for (const forward of [true, false]) {
-      for (let n = 0; n < 12; n++) {
-        const G = { u: (0.5 + 0.5 * rnd()) * W, v: (-0.5 + rnd()) * H };
-        for (let m = 0; m < 6; m++) out.push({ G, P: reachOf(G, { u: (-1 + 2 * rnd()) * W, v: (-0.7 + 1.4 * rnd()) * H }, H), forward });
-      }
-    }
-    return out;
-  };
-
-  it("keeps its size, stays between the book's head and foot and never goes into a block", async () => {
-    const { curlLeaf } = await import("./pageFlip");
-    const geometry = new PlaneGeometry(1, 1, 96, 120);
-    let stretch = 0;
-    let past = 0;
-    let into = 0;
-    for (const { G, P, forward } of turns()) {
-      curlLeaf(geometry, G, P, forward, W, H, 0.5, book, 0.45, 0);
-      const pos = geometry.attributes.position;
-      for (let r = 0; r <= 120; r++) {
-        for (let c = 0; c <= 96; c++) {
-          const i = r * 97 + c;
-          past = Math.max(past, Math.abs(pos.getY(i)) - H / 2);
-          const x = pos.getX(i);
-          const side = x >= 0 ? book.right : book.left;
-          if (Math.abs(x) < along(side, W)[0]) into = Math.max(into, topAt(side, Math.abs(x)) - pos.getZ(i));
-          for (const [dr, dc] of [[0, 1], [1, 0]]) {
-            if (r + dr > 120 || c + dc > 96) continue;
-            const j = (r + dr) * 97 + c + dc;
-            const rest = dc ? (column((c + 1) / 96) - column(c / 96)) * W : H / 120;
-            const len = Math.hypot(pos.getX(i) - pos.getX(j), pos.getY(i) - pos.getY(j), pos.getZ(i) - pos.getZ(j));
-            stretch = Math.max(stretch, len / rest - 1);
-          }
-        }
-      }
-    }
-    // Paper bent round a cone keeps its size (a fold laid flat stretched
-    // it by up to two thirds over a sloping side), a cone draws the paper
-    // towards its apex and never past the far end (the fold reached ~150
-    // past the foot on a diagonal pull, #493), and the leaf hugs the
-    // shoulder of the block it leaves rather than cutting through it.
-    expect(stretch).toBeLessThan(0.03);
-    expect(past).toBeLessThanOrEqual(1e-6);
-    expect(into).toBeLessThan(0.01);
-  });
-
-  it("follows the hand without jumps", async () => {
-    const { curlLeaf } = await import("./pageFlip");
-    const a = new PlaneGeometry(1, 1, 96, 120);
-    const b = new PlaneGeometry(1, 1, 96, 120);
-    let worst = 0;
-    for (const { G, P, forward } of turns()) {
-      curlLeaf(a, G, P, forward, W, H, 0.5, book, 0.45, 0);
-      curlLeaf(b, G, reachOf(G, { u: P.u - 1, v: P.v - 1 }, H), forward, W, H, 0.5, book, 0.45, 0);
-      const pa = a.attributes.position;
-      const pb = b.attributes.position;
-      for (let i = 0; i < pa.count; i++) worst = Math.max(worst, Math.hypot(pa.getX(i) - pb.getX(i), pa.getY(i) - pb.getY(i), pa.getZ(i) - pb.getZ(i)));
-    }
-    // A hand moved by a pixel moves no point of the leaf by more than a few
-    // tens of pixels (the fold leapt by hundreds where it met the spine).
-    expect(worst).toBeLessThan(25);
-  });
-
-  it("lies exactly on the pages it leaves and lands on", async () => {
-    const { curlLeaf } = await import("./pageFlip");
-    const geometry = new PlaneGeometry(1, 1, 96, 120);
-    const G = { u: 0.8 * W, v: 0.3 * H };
-    for (const [P, side, sign] of [
-      [G, book.right, 1],
-      [{ u: -G.u, v: G.v }, book.left, -1],
-    ] as const) {
-      curlLeaf(geometry, G, P, true, W, H, 0.5, book, 0.45, 0);
-      const pos = geometry.attributes.position;
-      let off = 0;
-      for (let c = 0; c <= 96; c++) {
-        const [x, z] = along(side, column(c / 96) * W);
-        off = Math.max(off, Math.hypot(pos.getX(c) - sign * x, pos.getZ(c) - (z + 0.5)), Math.abs(pos.getY(c) - H / 2));
-      }
-      expect(off).toBeLessThan(1e-3);
-    }
-  });
 });
 
 describe("pagePlane (#483)", () => {

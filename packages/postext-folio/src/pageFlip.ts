@@ -830,6 +830,14 @@ export function foldOf(G: Pt, P: Pt, W: number, H: number, roll = 1) {
 
 type Fold = NonNullable<ReturnType<typeof foldOf>>;
 
+/** Paper `d` past the fold, round a roll of radius R and straight on at
+ *  θ: how far it reaches back across the page, and how high it stands. */
+function rollOf(d: number, R: number, theta: number): [number, number] {
+  if (R > 1e-3 && d < R * theta) return [R * Math.sin(d / R), R * (1 - Math.cos(d / R))];
+  const rest = d - R * theta;
+  return [R * Math.sin(theta) + rest * Math.cos(theta), R * (1 - Math.cos(theta)) + rest * Math.sin(theta)];
+}
+
 /** How far through its turn a leaf is: the point taken, from where it
  *  was to its mirror image across the spine. */
 export function progressFrom(G: Pt, P: Pt) {
@@ -952,21 +960,30 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
       let d = 0;
       let dd = 0;
       if (fold) {
-        const { F, n, R } = fold;
+        const { F, n } = fold;
         d = (u - F.u) * n.u + (v - F.v) * n.v;
         if (d > 0) {
           // Round the roll, then straight on at the fold's angle.
-          const theta = fold.theta;
-          if (R > 1e-3 && d < R * theta) {
-            dd = R * Math.sin(d / R);
-            z = R * (1 - Math.cos(d / R));
-          } else {
-            const rest = d - R * theta;
-            dd = R * Math.sin(theta) + rest * Math.cos(theta);
-            z = R * (1 - Math.cos(theta)) + rest * Math.sin(theta);
+          [dd, z] = rollOf(d, fold.R, fold.theta);
+          y = v - n.v * (d - dd);
+          // A fold across the page carries the paper past it beyond the
+          // head or foot (a corner pulled down across the spine: far past
+          // the foot, over the edge of the block, #498). There it tucks
+          // back along the book's end, on the inner side of the paper it
+          // folds from (under it, once it lies over): no part of the leaf
+          // reaches past the book. The crease runs straight along the end
+          // (a band a mesh row wide lies on it, or the rows' corners stuck
+          // out past it in teeth).
+          const past = Math.abs(y) - H / 2;
+          if (past > 0) {
+            const back = Math.max(0, past - (1.5 * H) / NY);
+            y = Math.sign(y) * (H / 2 - back);
+            const a = fold.R > 1e-3 ? Math.min(d / fold.R, fold.theta) : fold.theta;
+            const under = Math.min(back, 1.2);
+            dd -= under * Math.sin(a);
+            z += under * Math.cos(a);
           }
           x = u - n.u * (d - dd);
-          y = v - n.v * (d - dd);
         }
       }
       let [px, pz] = onBook(sx * x, z);
@@ -1010,292 +1027,6 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
   return { phi, pivot: hinge + lift };
 }
 
-/**
- * How far a paper leaf bends through its turn, as the angle its fore-edge
- * turns through round the bend: none lying on either side, most in the
- * air; a thinner sheet (`roll` under 1) bends more, card hardly at all.
- */
-export function bendOf(q: number, roll: number, rigidity = 0): number {
-  return Math.min(2.2, 1.25 / Math.max(0.55, roll)) * Math.pow(Math.max(0, Math.sin(Math.PI * q)), 0.8) * (1 - rigidity);
-}
-
-/**
- * A leaf's shape bent round a cone whose apex lies on the spine's line at
- * `apex` (below the foot, `apex` < −H/2), in the leaf's own frame:
- * `xi` out from the spine, `eta` along it; [across, along, off] the
- * leaf's plane. A cone is developable: the paper keeps its size, the
- * spine stays where it is, and every point is drawn towards the apex,
- * never past the far end (Hong et al., "Turning pages of 3D electronic
- * books", 2006). `sinT` is the sine of the cone's half-angle (1 flat).
- */
-function onCone(xi: number, eta: number, apex: number, sinT: number, cosT: number): [number, number, number] {
-  const R = Math.hypot(xi, eta - apex);
-  if (R < 1e-9 || sinT >= 1) return [xi, eta, 0];
-  const psi = Math.asin(Math.min(1, xi / R));
-  const beta = psi / sinT;
-  const r = R * sinT;
-  const lift = r * (1 - Math.cos(beta));
-  return [r * Math.sin(beta), apex + R - lift * sinT, lift * cosT];
-}
-
-/** The same bend with the apex infinitely far: a cylinder along the
- *  spine, its radius `rho` (none: flat). */
-function onCylinder(xi: number, eta: number, rho: number): [number, number, number] {
-  if (!(rho < 1e9)) return [xi, eta, 0];
-  return [rho * Math.sin(xi / rho), eta, rho * (1 - Math.cos(xi / rho))];
-}
-
-/** A curl: the bend at the fore-edge and where its apex lies (Infinity: a
- *  cylinder), for a leaf `W` wide and `H` high; `down`: the apex below
- *  the foot (the point taken is drawn down), else above the head. */
-interface Curl {
-  bend: number;
-  apex: number;
-  down: boolean;
-}
-
-/** Where a point of the leaf goes under a curl, in the leaf's frame. */
-function curlPoint(xi: number, eta: number, c: Curl, W: number): [number, number, number] {
-  if (c.bend <= 1e-6) return [xi, eta, 0];
-  const e = c.down ? eta : -eta;
-  let p: [number, number, number];
-  if (!Number.isFinite(c.apex)) p = onCylinder(xi, e, W / c.bend);
-  else {
-    // The cone that bends a point of the leaf as far round as the cylinder
-    // would at the same distance from the spine: at the fore-edge's middle
-    // its angle round the axis is the bend.
-    const R = Math.hypot(W, -c.apex);
-    const psi = Math.asin(Math.min(1, W / R));
-    const sinT = Math.min(1, psi / c.bend);
-    p = onCone(xi, e, c.apex, sinT, Math.sqrt(Math.max(0, 1 - sinT * sinT)));
-  }
-  return c.down ? p : [p[0], -p[1], p[2]];
-}
-
-/**
- * The curl that carries the point `G` of a leaf (bent by `bend`) as near
- * as the paper allows to the height `targetV` along the spine: a level
- * pull bends it round a cylinder; drawn down or up, the apex comes in from
- * infinitely far below the foot or above the head, which draws the point
- * that way. A curl can only draw a point towards its apex, and only so
- * far: beyond that the leaf stays at the nearest it can reach.
- */
-function curlFor(G: { u: number; v: number }, targetV: number, bend: number, W: number, H: number): Curl {
-  const down = targetV < G.v;
-  const level: Curl = { bend, apex: Infinity, down };
-  if (bend <= 1e-6 || Math.abs(targetV - G.v) < 1e-3) return level;
-  const want = Math.abs(targetV - G.v);
-  // How far the point is drawn with the apex `t` (1/distance past the end).
-  const drawn = (t: number) => {
-    const c: Curl = { bend, apex: t <= 0 ? Infinity : -(H / 2 + 1 / t), down };
-    const [, y] = curlPoint(G.u, down ? G.v : G.v, c, W);
-    return Math.abs(y - G.v);
-  };
-  // The apex never nearer the end than a quarter of the page: nearer, a
-  // hair more of a pull twisted the whole leaf round (the far corner swung
-  // tens of pixels for one of the hand). Within that, the farthest reach,
-  // past which a nearer apex draws it less again.
-  const tMax = 1 / (0.25 * H);
-  let best = 0;
-  let bestT = 0;
-  for (let i = 1; i <= 32; i++) {
-    const t = tMax * Math.pow(i / 32, 2);
-    const d = drawn(t);
-    if (d > best) {
-      best = d;
-      bestT = t;
-    }
-  }
-  let t = bestT;
-  if (best > want) {
-    let lo = 0;
-    let hi = bestT;
-    for (let i = 0; i < 30; i++) {
-      const mid = (lo + hi) / 2;
-      if (drawn(mid) < want) lo = mid;
-      else hi = mid;
-    }
-    t = hi;
-  }
-  // No more twist than the pull asks for: a point the cone hardly moves
-  // (the middle of the fore-edge) reached its few pixels only with the
-  // leaf twisted all the way, and the far corners swung with every pixel
-  // of the hand. The twist grows with how far the hand pulls up or down;
-  // a corner, which the cone carries well, still follows the hand.
-  t = Math.min(t, tMax * smooth(0, 0.5 * H, want));
-  return { bend, apex: t > 0 ? -(H / 2 + 1 / t) : Infinity, down };
-}
-
-/**
- * Where a leaf turned to the angle `phi` leaves the pages it lies on or
- * comes down onto: it hugs a shoulder that rises steeper than it (the
- * gutter of a thick book, from the spine up over the block) and goes on
- * straight from where the shoulder grows flatter. In the turn's own frame
- * (x out from the spine on the side it leaves): arc length from the spine
- * and that point.
- */
-function departure(from: Profile, to: Profile, phi: number, W: number): { s: number; x: number; z: number } {
-  const upFrom = (s: number) => Math.atan(along(from, s)[2]);
-  const upTo = (s: number) => Math.PI - Math.atan(along(to, s)[2]);
-  const onFrom = phi <= Math.PI / 2;
-  // Still hugging at arc length s: its shoulder there turns past the leaf.
-  const hugs = (s: number) => (onFrom ? upFrom(s) > phi : upTo(s) < phi);
-  let s = 0;
-  if (hugs(0)) {
-    const step = W / 128;
-    while (s + step < W && hugs(s + step)) s += step;
-    // Where between the two samples the shoulder's angle meets the leaf's.
-    const a = onFrom ? upFrom(s) - phi : phi - upTo(s);
-    const b = onFrom ? upFrom(Math.min(W, s + step)) - phi : phi - upTo(Math.min(W, s + step));
-    s += a > b ? (step * a) / (a - b) : 0;
-    s = Math.min(W, s);
-  }
-  const [x, z] = along(onFrom ? from : to, s);
-  return { s, x: onFrom ? x : -x, z };
-}
-
-/**
- * Lays a paper leaf out as it turns (#495). The hand carries the point
- * `G` of it to `P` (`P.u` from the spine across to the other side, as
- * `progressFrom` reads it). The leaf turns on the spine as a whole, by
- * the angle that keeps that point under the hand: it hugs the shoulder of
- * the pages it leaves or comes down onto as far as that rises steeper
- * than it, and past there bends round a cone (a cylinder when the hand
- * pulls level) that carries the point up or down with the hand as far as
- * the paper lets it. Paper bent so keeps its size, and a cone draws every
- * point towards its apex, never past the far end: a fold laid flat over
- * itself reached past the book's head or foot on a diagonal pull, and
- * held level it stretched.
- */
-export function curlLeaf(
-  geometry: BufferGeometry,
-  G: { u: number; v: number },
-  P: { u: number; v: number },
-  forward: boolean,
-  W: number,
-  H: number,
-  lift: number,
-  book: Surfaces,
-  roll: number,
-  rigidity: number,
-  flutter = 0,
-  time = 0,
-): { phi: number } {
-  const pos = geometry.attributes.position;
-  const sx = forward ? 1 : -1;
-  const q = progressFrom(G, P);
-  const from = forward ? book.right : book.left;
-  const to = forward ? book.left : book.right;
-  const bend = bendOf(q, roll, rigidity);
-  // Lying on either side it lies as the pages there do.
-  const a0 = Math.atan(along(from, W)[2]);
-  const a1 = Math.PI - Math.atan(along(to, W)[2]);
-  // How far round the spine the hand has carried the point taken: from
-  // where it lay to where it will lie, so that on a book lying flat it
-  // stands right under the hand (x = u·cos ω, q = (1 − cos ω)/2).
-  const hinge = along(from, 0)[1];
-  const restFrom = along(from, G.u);
-  const restTo = along(to, G.u);
-  const w0 = Math.atan2(restFrom[1] - hinge, restFrom[0]);
-  const w1 = Math.PI - Math.atan2(restTo[1] - hinge, restTo[0]);
-  // Round the spine from the side it leaves, past upright to the other
-  // (past half a turn on a side sloping to the desk, not wrapped round).
-  const roundOf = (x: number, z: number) => {
-    const a = Math.atan2(z - hinge, x);
-    return a < -Math.PI / 2 ? a + 2 * Math.PI : a;
-  };
-  // Near either end x = u·cos ω asks a great turn of a small reach of the
-  // hand (the edge leapt up as it was first moved): there the turn goes
-  // evenly with the hand, the point a little short of it.
-  const round = (k: number) => Math.acos(Math.min(1, Math.max(-1, 1 - 2 * k))) / Math.PI;
-  const EVEN = 0.1;
-  const share = q < EVEN ? (round(EVEN) * q) / EVEN : q > 1 - EVEN ? 1 - (round(EVEN) * (1 - q)) / EVEN : round(q);
-  const target = w0 + (w1 - w0) * share;
-  // The leaf at the angle phi: where it leaves the pages, its curl, and
-  // how far round the spine the point taken then stands. Turned further,
-  // it stands further round (its place across does not always grow: a
-  // leaf lifting off a side that slopes away first swings outwards, and
-  // one curled past upright comes back, so matching it found two angles
-  // and jumped between them).
-  const pose = (phi: number) => {
-    const dep = departure(from, to, phi, W);
-    const free = Math.max(1e-3, W - dep.s);
-    const g = { u: Math.max(0, G.u - dep.s), v: G.v };
-    const curl = curlFor(g, P.v, bend, W, H);
-    const [cx, , cz] = curlPoint(g.u, g.v, curl, W);
-    const x = dep.x + cx * Math.cos(phi) - cz * Math.sin(phi);
-    const z = dep.z + cx * Math.sin(phi) + cz * Math.cos(phi);
-    return { dep, free, curl, round: roundOf(x, z) };
-  };
-  let lo = Math.min(a0, a1);
-  let hi = Math.max(a0, a1);
-  for (let i = 0; i < 40; i++) {
-    const mid = (lo + hi) / 2;
-    if (pose(mid).round < target) lo = mid;
-    else hi = mid;
-  }
-  const phi = (lo + hi) / 2;
-  const { dep, free, curl } = pose(phi);
-  const cosP = Math.cos(phi);
-  const sinP = Math.sin(phi);
-  const hugged = phi <= Math.PI / 2 ? from : to;
-  const hugSign = phi <= Math.PI / 2 ? 1 : -1;
-  // Exactly as the pages lie, taken up and laid down over the same first
-  // and last stretch of the turn.
-  const leave = smooth(0, EVEN, q);
-  const land = smooth(1 - EVEN, 1, q);
-  const xr = along(book.right, W)[0];
-  const xl = along(book.left, W)[0];
-  for (let iy = 0; iy <= NY; iy++) {
-    const v = (0.5 - iy / NY) * H;
-    for (let ix = 0; ix <= NX; ix++) {
-      const u = column(ix / NX) * W;
-      let x: number;
-      let z: number;
-      let y = v;
-      if (u <= dep.s) {
-        const [hx, hz] = along(hugged, u);
-        x = hugSign * hx;
-        z = hz;
-      } else {
-        const [cx, cy, cz] = curlPoint(u - dep.s, v, curl, W);
-        x = dep.x + cx * cosP - cz * sinP;
-        z = dep.z + cx * sinP + cz * cosP;
-        // A cone twisted all the way draws the corner by its apex a hair
-        // past that end (a few pixels): held to it.
-        y = Math.max(-H / 2, Math.min(H / 2, cy));
-      }
-      let px = sx * x;
-      let pz = z + lift;
-      if (leave < 1) {
-        const [bx, bz] = surfaceAt(book, sx * u);
-        px = bx + (px - bx) * leave;
-        pz = bz + lift + (pz - bz - lift) * leave;
-        y = v + (y - v) * leave;
-      }
-      if (land > 0) {
-        const [bx, bz] = surfaceAt(book, -sx * u);
-        px += (bx - px) * land;
-        pz += (bz + lift - pz) * land;
-        y += (v - y) * land;
-      }
-      // Thin paper ripples in the air, more towards its free edge, never
-      // down into the pages under it (#447).
-      if (flutter > 0) {
-        const amp = flutter * W * (u / W) * (u / W);
-        const clear = pz - surfaceAt(book, px)[1] - lift;
-        if (amp > 1e-6) pz += amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
-      }
-      // Never into the book (#489).
-      if (Math.abs(px) < (px >= 0 ? xr : xl)) pz = Math.max(pz, topAt(px >= 0 ? book.right : book.left, Math.abs(px)) + Math.min(lift, 0.5));
-      pos.setXYZ(iy * (NX + 1) + ix, px, y, pz);
-    }
-  }
-  pos.needsUpdate = true;
-  geometry.computeVertexNormals();
-  return { phi };
-}
-
 type PageMesh = Mesh<BufferGeometry, PageMaterial>;
 
 interface BoardParts {
@@ -1336,8 +1067,6 @@ interface Turn {
 interface Airborne {
   k: number;
   q: number;
-  G: Pt;
-  P: Pt;
   forward: boolean;
   fold: Fold | null;
   mesh: PageMesh;
@@ -2921,11 +2650,11 @@ export class PageFlipper {
       .sort(([a], [b]) => a - b)
       .map(([k, turn]) => {
         const spec = this.specOf(k);
-        return { k, q: progressFrom(turn.G, turn.P), G: turn.G, P: turn.P, forward: turn.forward, fold: foldOf(turn.G, turn.P, W, H, spec.roll), mesh: this.leaf(k), spec };
+        return { k, q: progressFrom(turn.G, turn.P), forward: turn.forward, fold: foldOf(turn.G, turn.P, W, H, spec.roll), mesh: this.leaf(k), spec };
       });
     for (const leaf of this.leaves.values()) leaf.visible = (leaf.userData.caster as Mesh).visible = false;
     const k = this.pxPerMm();
-    air.forEach(({ k: leafK, q, G, P, forward, fold, mesh, spec }, i) => {
+    air.forEach(({ k: leafK, q, forward, fold, mesh, spec }, i) => {
       // Leaf k lies over leaf k + 1 on the right and under it on the left.
       const side = forward ? q : 1 - q;
       const lift = (0.5 + 0.6 * ((1 - side) * (air.length - 1 - i) + side * i)) * Math.max(1, spec.caliperMm * k);
@@ -2946,7 +2675,7 @@ export class PageFlipper {
         parts.slab.material.color.copy(spec === this.coverSpec ? this.boardColor() : new Color(spec.paper.shade.hex));
         parts.back.visible = parts.slab.visible = true;
       } else {
-        curlLeaf(mesh.geometry, G, P, forward, W, H, lift, book, spec.roll, spec.rigidity, flutter, now);
+        layLeaf(mesh.geometry, fold, forward, W, H, lift, book, spec.rigidity, q, flutter, now);
         const parts = mesh.userData.board as BoardParts | undefined;
         if (parts) parts.back.visible = parts.slab.visible = false;
       }
