@@ -2177,8 +2177,16 @@ export class PageFlipper {
   touch(src: PageSource) {
     if (!src || typeof src === "string") return;
     const tex = this.ready.get(src);
-    if (!tex) return;
-    tex.needsUpdate = true;
+    // A sharper painting for the glass too (its decorations drawn again,
+    // #543).
+    let detail = false;
+    for (const d of this.details.values()) {
+      if (d.src !== src || !d.tex) continue;
+      d.tex.needsUpdate = true;
+      detail = true;
+    }
+    if (!tex && !detail) return;
+    if (tex) tex.needsUpdate = true;
     this.redraw();
   }
 
