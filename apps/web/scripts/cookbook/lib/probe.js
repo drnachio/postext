@@ -817,6 +817,9 @@ export function facts({ select = 'last', hero = [] } = {}) {
   out.specimen = {
     trimMm: first ? [mm(first.width - 2 * trim), mm(first.height - 2 * trim)] : [0, 0],
     dpi, layoutType: resolved.layout.layoutType,
+    // A grid of three or more columns names its count (absent otherwise, so older captures match).
+    ...(resolved.layout.layoutType === 'multiple'
+      ? { columnCount: Math.max(3, Math.min(8, Math.round(Number(resolved.layout.columnCount) || 3))) } : {}),
     gutterMm: resolved.layout.layoutType === 'single' ? undefined : round((dimPt(resolved.layout.gutterWidth, dpi, bodyPt) / 72) * 25.4, 0.1),
     mirror: !!resolved.page.margins?.mirror,
     body: { family: bt.fontFamily, sizePt: round(bodyPt, 0.1), leadingPt: round(dimPt(bt.lineHeight, dpi, bodyPt), 0.1) },
