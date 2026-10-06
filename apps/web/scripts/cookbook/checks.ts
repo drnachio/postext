@@ -417,6 +417,7 @@ const stem = (file: string) => file.replace(/^.*\//, "").replace(/\.[^.]+$/, "")
 const CONFIG_WARNING_SEVERITY: Record<string, Severity> = {
   cjkGridClamped: "fail",
   sideColumnPercentClamped: "fail",
+  columnCountClamped: "fail",
   unknownNumberFormat: "fail",
   unknownNumerals: "fail",
   unknownConfigValue: "fail",
@@ -432,6 +433,8 @@ export function configWarningText(w: ProbeConfigWarning): string {
       return `cjkGridClamped: ${w.path} asks for ${w.value}, the margins leave room for ${w.used}; the grid sets ${w.used}`;
     case "sideColumnPercentClamped":
       return `sideColumnPercentClamped: ${w.path} ${value} leaves a column with no width; the columns are cut at ${w.used} %`;
+    case "columnCountClamped":
+      return `columnCountClamped: ${w.path} ${value} is not a column count from 3 to 8; the page is cut into ${w.used} columns`;
     case "unknownNumberFormat":
       return `unknownNumberFormat: ${w.path} ${value} is no format the engine knows; it numbers in ${w.used}`;
     case "unknownNumerals":

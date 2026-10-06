@@ -2166,6 +2166,44 @@
       }
     }
   },
+  "columnCountClamped": {
+    "source": "engine",
+    "label": {
+      "en": "Column count clamped",
+      "es": "Número de columnas ajustado",
+      "ca": "Nombre de columnes ajustat",
+      "zh": "栏数被限定",
+      "ar": "تقييد عدد الأعمدة",
+      "ja": "範囲外の段数"
+    },
+    "cause": {
+      "en": "A 'multiple' layout's columnCount is not a whole number from 3 to 8, so the engine cuts the page into the nearest count that is.",
+      "es": "El columnCount de una maqueta 'multiple' no es un número entero de 3 a 8, así que el motor divide la página en el número más cercano que lo sea.",
+      "ca": "El columnCount d'una maqueta 'multiple' no és un nombre enter de 3 a 8, de manera que el motor divideix la pàgina en el nombre més proper que ho sigui.",
+      "zh": "'multiple'版式的columnCount不是3到8之间的整数，因此引擎按最接近的有效栏数分栏。",
+      "ar": "قيمة columnCount في تخطيط 'multiple' ليست عددًا صحيحًا من 3 إلى 8، فيقسم المحرّك الصفحة إلى أقرب عدد صالح.",
+      "ja": "'multiple'レイアウトのcolumnCountが3〜8の整数ではないため、エンジンはいちばん近い有効な段数でページを分けます。"
+    },
+    "fix": {
+      "en": "Set `columnCount` to a whole number from 3 to 8; for one or two columns use `layoutType` `single` or `double`.",
+      "es": "Pon en `columnCount` un número entero de 3 a 8; para una o dos columnas usa `layoutType` `single` o `double`.",
+      "ca": "Posa a `columnCount` un nombre enter de 3 a 8; per a una o dues columnes fes servir `layoutType` `single` o `double`.",
+      "zh": "把`columnCount`设为3到8之间的整数；单栏或双栏请用`layoutType`的`single`或`double`。",
+      "ar": "اجعل `columnCount` عددًا صحيحًا من 3 إلى 8؛ ولعمود واحد أو عمودين استعمل `layoutType` بالقيمة `single` أو `double`.",
+      "ja": "`columnCount`を3〜8の整数にしてください。1段や2段には`layoutType`の`single`か`double`を使います。"
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración",
+        "ca": "Avisos de configuració",
+        "zh": "配置警告",
+        "ar": "تحذيرات الإعدادات",
+        "ja": "設定の警告"
+      }
+    }
+  },
   "cjkGridClamped": {
     "source": "engine",
     "label": {

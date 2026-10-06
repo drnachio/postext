@@ -67,6 +67,8 @@ export function catalogRecipe(recipe: Recipe, locale: Locale, registry: Registry
   const captured = recipe.capture?.variants[variant] ?? recipe.capture?.variants[meta.sample.locales[0]];
   const card = cardImage(recipe, locale);
   const gaps = (meta.gaps ?? []).map((id) => registry.gaps[id]).filter(Boolean);
+  // A gap the engine has since closed still feeds search, not the badge.
+  const openGaps = gaps.filter((gap) => !gap.fixedIn);
   return {
     slug: recipe.slug,
     number: meta.number,
@@ -79,7 +81,7 @@ export function catalogRecipe(recipe: Recipe, locale: Locale, registry: Registry
     primary: meta.features.primary,
     warnings: meta.explainsWarnings ?? [],
     collections,
-    gap: gaps.length > 0,
+    gap: openGaps.length > 0,
     ...(meta.status === "draft" ? { draft: true as const } : {}),
     created: meta.created,
     updated: meta.updated,
@@ -168,7 +170,7 @@ export function buildCatalog(locale: Locale): Catalog {
   };
   const versions = recipes.map((r) => r.capture?.engine.postext).filter((v): v is NonNullable<typeof v> => Boolean(v));
   catalog.testedWith = versions.sort(compareSemVer)[0] ?? "";
-  catalog.gaps = Object.entries(registry.gaps).map(([id, gap]) => ({
+  catalog.gaps = Object.entries(registry.gaps).filter(([, gap]) => !gap.fixedIn).map(([id, gap]) => ({
     id,
     label: gap.label[locale],
     aliases: gap.aliases[locale],

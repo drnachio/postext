@@ -95,6 +95,77 @@
       "PG-6"
     ]
   },
+  "newspaper-trims": {
+    "label": {
+      "en": "Newspaper trim sizes",
+      "es": "Formatos de periódico",
+      "ca": "Formats de diari",
+      "zh": "报纸开本",
+      "ar": "مقاسات الصحف",
+      "ja": "新聞の判型"
+    },
+    "definition": {
+      "en": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm) and 'tabloid' (280 × 430 mm).",
+      "es": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm) y 'tabloid' (280 × 430 mm).",
+      "ca": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm) i 'tabloid' (280 × 430 mm).",
+      "zh": "page.sizePreset的'broadsheet'（375 × 597 mm）、'berliner'（315 × 470 mm）和'tabloid'（280 × 430 mm）。",
+      "ar": "قيم page.sizePreset 'broadsheet' (375 × 597 mm) و'berliner' (315 × 470 mm) و'tabloid' (280 × 430 mm).",
+      "ja": "page.sizePresetの'broadsheet'（375 × 597 mm）、'berliner'（315 × 470 mm）、'tabloid'（280 × 430 mm）です。"
+    },
+    "aliases": {
+      "en": [
+        "broadsheet",
+        "berliner",
+        "tabloid",
+        "newspaper size"
+      ],
+      "es": [
+        "sábana",
+        "berlinés",
+        "tabloide",
+        "formato de periódico"
+      ],
+      "ca": [
+        "llençol",
+        "berlinès",
+        "tabloide",
+        "format de diari"
+      ],
+      "zh": [
+        "对开报纸",
+        "柏林版",
+        "小报",
+        "报纸尺寸",
+        "broadsheet",
+        "tabloid"
+      ],
+      "ar": [
+        "القطع الكبير",
+        "قطع برلينر",
+        "تابلويد",
+        "مقاس الجريدة"
+      ],
+      "ja": [
+        "ブランケット判",
+        "ベルリナー判",
+        "タブロイド判",
+        "新聞のサイズ"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Page size presets",
+        "es": "Tamaños de página predefinidos",
+        "ca": "Mides de pàgina predefinides",
+        "zh": "页面尺寸预设",
+        "ar": "مقاسات الصفحة المسبقة",
+        "ja": "ページサイズのプリセット"
+      }
+    },
+    "since": "1.17.0"
+  },
   "mirrored-margins": {
     "label": {
       "en": "Mirrored margins",
@@ -691,6 +762,94 @@
       "LY-2",
       "LY-3"
     ]
+  },
+  "multiple-columns": {
+    "label": {
+      "en": "Three or more columns",
+      "es": "Tres o más columnas",
+      "ca": "Tres o més columnes",
+      "zh": "三栏及以上",
+      "ar": "ثلاثة أعمدة أو أكثر",
+      "ja": "3段以上の段組み"
+    },
+    "definition": {
+      "en": "layoutType 'multiple' cuts the body into columnCount equal columns, 3 to 8, for newspapers and magazines; rules, balancing, footnotes and page-wide floats work across all of them.",
+      "es": "layoutType 'multiple' divide el texto en columnCount columnas iguales, de 3 a 8, para periódicos y revistas; los filetes, el equilibrado, las notas al pie y los flotantes a todo el ancho funcionan en todas ellas.",
+      "ca": "layoutType 'multiple' divideix el text en columnCount columnes iguals, de 3 a 8, per a diaris i revistes; els filets, l'equilibri, les notes al peu i els flotants a tota l'amplada funcionen en totes.",
+      "zh": "layoutType 'multiple'把正文分成columnCount个等宽的栏（3到8栏），用于报纸和杂志；栏线、齐栏、脚注和通栏浮动体在所有栏中都适用。",
+      "ar": "يقسم layoutType 'multiple' المتن إلى columnCount من الأعمدة المتساوية، من 3 إلى 8، للصحف والمجلات؛ وتعمل الخطوط الفاصلة وموازنة الأعمدة والحواشي والعناصر العائمة بعرض الصفحة عبرها كلها.",
+      "ja": "layoutType 'multiple'は本文をcolumnCount個の同じ幅の段（3〜8段）に分けます。新聞や雑誌向けで、段間罫、段のそろえ、脚注、ページ幅のフロートはすべての段で働きます。"
+    },
+    "aliases": {
+      "en": [
+        "three columns",
+        "four columns",
+        "five columns",
+        "newspaper columns",
+        "columnCount",
+        "layoutType multiple"
+      ],
+      "es": [
+        "tres columnas",
+        "cuatro columnas",
+        "cinco columnas",
+        "columnas de periódico",
+        "columnCount",
+        "layoutType multiple"
+      ],
+      "ca": [
+        "tres columnes",
+        "quatre columnes",
+        "cinc columnes",
+        "columnes de diari",
+        "columnCount",
+        "layoutType multiple"
+      ],
+      "zh": [
+        "三栏",
+        "四栏",
+        "五栏",
+        "多栏",
+        "报纸分栏",
+        "columnCount",
+        "layoutType multiple"
+      ],
+      "ar": [
+        "ثلاثة أعمدة",
+        "أربعة أعمدة",
+        "خمسة أعمدة",
+        "أعمدة الجريدة",
+        "columnCount",
+        "layoutType multiple"
+      ],
+      "ja": [
+        "3段組み",
+        "4段組み",
+        "5段組み",
+        "新聞の段組み",
+        "columnCount",
+        "layoutType multiple"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout types",
+        "es": "Tipos de disposición",
+        "ca": "Tipus de disposició",
+        "zh": "版式类型",
+        "ar": "أنواع التخطيط",
+        "ja": "レイアウトの種類"
+      }
+    },
+    "since": "1.17.0",
+    "detect": {
+      "config": [
+        "layout.columnCount",
+        "headingStyles[].layout.columnCount"
+      ]
+    }
   },
   "column-rule": {
     "label": {
@@ -5958,6 +6117,89 @@
       "RS-WIDTH",
       "RT-8"
     ]
+  },
+  "float-columns": {
+    "label": {
+      "en": "Floats across several columns",
+      "es": "Flotantes a varias columnas",
+      "ca": "Flotants a diverses columnes",
+      "zh": "跨多栏的浮动体",
+      "ar": "عناصر عائمة عبر عدة أعمدة",
+      "ja": "複数段にまたがるフロート"
+    },
+    "definition": {
+      "en": "placement.columns sets a figure or table across k adjacent columns, and a callout style's columns (or the fence's columns attribute) does the same for a floated box: a picture across two of a newspaper's five columns.",
+      "es": "placement.columns coloca una figura o una tabla sobre k columnas contiguas, y el columns de un estilo de recuadro (o el atributo columns de la valla) hace lo mismo con un recuadro flotante: una foto sobre dos de las cinco columnas de un periódico.",
+      "ca": "placement.columns col·loca una figura o una taula sobre k columnes contigües, i el columns d'un estil de requadre (o l'atribut columns de la tanca) fa el mateix amb un requadre flotant: una foto sobre dues de les cinc columnes d'un diari.",
+      "zh": "placement.columns让图或表横跨k个相邻的栏，标注框样式的columns（或围栏的columns属性）对浮动框也一样：报纸五栏中横跨两栏的照片。",
+      "ar": "يضع placement.columns شكلًا أو جدولًا عبر k من الأعمدة المتجاورة، ويفعل columns في نمط الإطار (أو سمة columns في السياج) الشيء نفسه للإطار العائم: صورة تمتد على عمودين من أعمدة الجريدة الخمسة.",
+      "ja": "placement.columnsは図や表を隣り合うk段にまたがって置きます。囲みスタイルのcolumns（またはフェンスのcolumns属性）はフロートする囲みに同じことをします。新聞の5段のうち2段にまたがる写真などです。"
+    },
+    "aliases": {
+      "en": [
+        "picture across two columns",
+        "two-column figure",
+        "placement.columns",
+        "box across columns",
+        "multi-column float"
+      ],
+      "es": [
+        "foto a dos columnas",
+        "figura a dos columnas",
+        "placement.columns",
+        "recuadro a varias columnas",
+        "flotante a varias columnas"
+      ],
+      "ca": [
+        "foto a dues columnes",
+        "figura a dues columnes",
+        "placement.columns",
+        "requadre a diverses columnes",
+        "flotant a diverses columnes"
+      ],
+      "zh": [
+        "跨两栏的图",
+        "跨栏图片",
+        "placement.columns",
+        "跨栏框",
+        "跨栏浮动体"
+      ],
+      "ar": [
+        "صورة على عمودين",
+        "شكل بعرض عمودين",
+        "placement.columns",
+        "إطار عبر عدة أعمدة",
+        "عنصر عائم عبر الأعمدة"
+      ],
+      "ja": [
+        "2段抜きの写真",
+        "2段にまたがる図",
+        "placement.columns",
+        "複数段の囲み",
+        "段抜きのフロート"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置"
+      }
+    },
+    "since": "1.17.0",
+    "detect": {
+      "config": [
+        "calloutStyles[].columns"
+      ],
+      "markdown": [
+        "^:::callout\\{[^}]*columns=\""
+      ]
+    }
   },
   "inline-embeds": {
     "label": {
@@ -12828,6 +13070,81 @@
       ]
     }
   },
+  "folded-binding": {
+    "label": {
+      "en": "Folded newspaper (Folio)",
+      "es": "Periódico plegado (Folio)",
+      "ca": "Diari plegat (Folio)",
+      "zh": "对折的报纸（Folio）",
+      "ar": "جريدة مطوية (Folio)",
+      "ja": "折った新聞（Folio）"
+    },
+    "definition": {
+      "en": "folio.binding.type 'folded': sheets folded once and laid one inside the other, with no staples, spine or cover board; a :::paper run with a shade prints a section on salmon newsprint.",
+      "es": "folio.binding.type 'folded': pliegos doblados una vez y metidos uno dentro de otro, sin grapas, lomo ni tapas; un tramo :::paper con shade imprime una sección en papel prensa salmón.",
+      "ca": "folio.binding.type 'folded': plecs doblegats un cop i posats l'un dins de l'altre, sense grapes, llom ni tapes; un tram :::paper amb shade imprimeix una secció en paper de diari salmó.",
+      "zh": "folio.binding.type 'folded'：纸张对折一次，一张套一张，不用订书钉，没有书脊和封面板；带shade的:::paper段把某一版印在鲑鱼色新闻纸上。",
+      "ar": "folio.binding.type 'folded': أفرخ مطوية مرة واحدة يوضع بعضها داخل بعض، بلا دبابيس ولا كعب ولا غلاف مقوّى؛ ويطبع مقطع :::paper ذو shade قسمًا على ورق صحف بلون السلمون.",
+      "ja": "folio.binding.type 'folded'は、一度折った紙を重ねて差し込んだだけの綴じで、針金も背も表紙もありません。shadeを付けた:::paperの区間で、ある面をサーモンピンクの新聞用紙に刷れます。"
+    },
+    "aliases": {
+      "en": [
+        "newspaper in 3D",
+        "folded sheets",
+        "salmon paper",
+        "newsprint",
+        "no staples"
+      ],
+      "es": [
+        "periódico en 3D",
+        "pliegos doblados",
+        "papel salmón",
+        "papel prensa",
+        "sin grapas"
+      ],
+      "ca": [
+        "diari en 3D",
+        "plecs doblegats",
+        "paper salmó",
+        "paper de diari",
+        "sense grapes"
+      ],
+      "zh": [
+        "3D报纸",
+        "对折纸张",
+        "鲑鱼色纸",
+        "新闻纸",
+        "无钉"
+      ],
+      "ar": [
+        "جريدة ثلاثية الأبعاد",
+        "أفرخ مطوية",
+        "ورق بلون السلمون",
+        "ورق الصحف",
+        "بلا دبابيس"
+      ],
+      "ja": [
+        "3Dの新聞",
+        "折った紙",
+        "サーモンピンクの紙",
+        "新聞用紙",
+        "針金なし"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Folio viewer (config)",
+        "es": "Visor Folio (configuración)",
+        "ca": "Visor Folio (configuració)",
+        "zh": "书页视图（配置）",
+        "ar": "عارض Folio (الإعدادات)",
+        "ja": "Folioビューアー（設定）"
+      }
+    },
+    "since": "1.17.0"
+  },
   "paper-runs": {
     "label": {
       "en": "A different paper for a run of pages",
@@ -13174,6 +13491,86 @@
     "detect": {
       "config": [
         "videoStyle"
+      ]
+    }
+  },
+  "video-loops": {
+    "label": {
+      "en": "Videos that play alongside",
+      "es": "Vídeos que se reproducen a la vez",
+      "ca": "Vídeos que es reprodueixen alhora",
+      "zh": "同时播放的视频",
+      "ar": "مقاطع فيديو تعمل معًا",
+      "ja": "同時に再生する動画"
+    },
+    "definition": {
+      "en": "player.exclusive: false lets a video play alongside the others; with autoplay, loop and muted, the silent clips of a page start each time it comes into view in Folio and run together.",
+      "es": "player.exclusive: false deja que un vídeo se reproduzca junto a los demás; con autoplay, loop y muted, los clips sin sonido de una página arrancan cada vez que esta aparece en Folio y corren a la vez.",
+      "ca": "player.exclusive: false deixa que un vídeo es reprodueixi amb els altres; amb autoplay, loop i muted, els clips sense so d'una pàgina arrenquen cada cop que aquesta apareix a Folio i corren alhora.",
+      "zh": "player.exclusive: false让一个视频与其他视频同时播放；配合autoplay、loop和muted，一页上的无声短片每次在Folio中翻到时都会开始，并一起播放。",
+      "ar": "يسمح player.exclusive: false لمقطع فيديو بأن يعمل إلى جانب غيره؛ ومع autoplay وloop وmuted تبدأ المقاطع الصامتة في الصفحة كلما ظهرت في Folio وتعمل معًا.",
+      "ja": "player.exclusive: falseにすると、動画はほかの動画と同時に再生されます。autoplay、loop、mutedと組み合わせると、ページの無音のクリップはFolioでそのページが表示されるたびに始まり、いっしょに流れます。"
+    },
+    "aliases": {
+      "en": [
+        "video loop",
+        "autoplay video",
+        "several videos at once",
+        "living page",
+        "exclusive"
+      ],
+      "es": [
+        "vídeo en bucle",
+        "vídeo con reproducción automática",
+        "varios vídeos a la vez",
+        "página viva",
+        "exclusive"
+      ],
+      "ca": [
+        "vídeo en bucle",
+        "vídeo amb reproducció automàtica",
+        "diversos vídeos alhora",
+        "pàgina viva",
+        "exclusive"
+      ],
+      "zh": [
+        "循环视频",
+        "自动播放视频",
+        "多个视频同时播放",
+        "活的页面",
+        "exclusive"
+      ],
+      "ar": [
+        "فيديو متكرر",
+        "تشغيل تلقائي للفيديو",
+        "عدة مقاطع في وقت واحد",
+        "صفحة حية",
+        "exclusive"
+      ],
+      "ja": [
+        "ループ動画",
+        "自動再生の動画",
+        "複数の動画を同時に",
+        "動くページ",
+        "exclusive"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Player options",
+        "es": "Opciones del reproductor",
+        "ca": "Opcions del reproductor",
+        "zh": "播放器选项",
+        "ar": "خيارات المشغّل",
+        "ja": "プレーヤーのオプション"
+      }
+    },
+    "since": "1.17.0",
+    "detect": {
+      "config": [
+        "videoStyle.player.exclusive"
       ]
     }
   }

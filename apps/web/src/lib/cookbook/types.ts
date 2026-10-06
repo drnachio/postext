@@ -356,6 +356,10 @@ export interface Gap {
   aliases: Localized<string[]>;
   explanation: Localized;
   docs?: DocAnchor;
+  /** The engine version that closed this gap. A fixed gap stays in the
+   *  registry so the recipes and questions that name it still resolve, but
+   *  it is no longer offered as a gap and gives no Workaround badge. */
+  fixedIn?: SemVer;
 }
 
 export interface WarningEntry {
