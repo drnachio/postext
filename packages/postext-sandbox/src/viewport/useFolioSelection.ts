@@ -72,9 +72,9 @@ interface Options {
  * the editor's caret and selection are painted on the pages they fall on
  * (into the pages' textures, so they lie on the 3D book, tilted, curving
  * into the gutter, on a turning leaf), the book turns to the caret's page
- * when the caret moves there in the editor, and in select mode a click or
- * a drag on the projected pages places the caret or selects in the
- * editor. Returns the viewer's `decorate` and the hook to wire a new
+ * when the caret moves there in the editor, and in select mode (and under
+ * the magnifying glass, at its centre) a click or a drag on the projected
+ * pages places the caret or selects in the editor. Returns the viewer's `decorate` and the hook to wire a new
  * viewer's pointer.
  */
 export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsRef, sourceRef, interactionRef, docKey }: Options) {
@@ -216,7 +216,8 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
   }, [refresh, docKey]);
   useEffect(() => () => window.clearTimeout(followTimerRef.current), []);
 
-  /** A new viewer: its pointer selects on the pages in select mode, and
+  /** A new viewer: its pointer selects on the pages in select and magnify
+   *  modes, and
    *  the marks follow the spreads it opens. */
   const attach = useCallback((viewer: FolioDocumentViewer) => {
     const el = viewer.element;
@@ -242,7 +243,8 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
       setCursor: (cursor) => {
         el.style.cursor = cursor === 'pointer' ? 'pointer' : '';
       },
-      enabled: () => interactionRef.current === 'select',
+      // Under the magnifying glass too: what lies at its centre (#543).
+      enabled: () => interactionRef.current === 'select' || interactionRef.current === 'magnify',
       touchSelects: true,
     });
   }, [docRef, sourceRef, interactionRef, navigateRef]);

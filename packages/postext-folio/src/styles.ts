@@ -73,6 +73,13 @@ export const FOLIO_CSS = `
 .postext-folio.is-select.is-over-page .postext-folio-spread > .postext-folio-page {
   cursor: text;
 }
+/* Under the glass the pointer selects what lies at its centre (#543): a
+   text cursor there, over the pages. */
+.postext-folio.is-magnify.is-over-page,
+.postext-folio.is-magnify.is-over-page .postext-folio-spread > .postext-folio-page,
+.postext-folio.is-magnify.is-over-page .postext-folio-flip {
+  cursor: text;
+}
 /* Over something a click acts on (a video that plays on the page), in
    every pointer mode. */
 .postext-folio.is-over-action,

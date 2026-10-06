@@ -42,7 +42,9 @@ export interface FolioAppearance {
  *  select text: `pageAt` says where on which page it is), `magnify` holds
  *  a magnifying glass over the book where the pointer is (#527; a finger
  *  holds it above itself while it touches the screen): the wheel, + and −
- *  change how much it magnifies, Esc puts it away. */
+ *  change how much it magnifies, Esc puts it away. The pointer is left to
+ *  the host under the glass too, a text cursor over the pages (#543):
+ *  `pageAt` then says what lies under the glass's centre. */
 export type FolioInteraction = "hand" | "orbit" | "select" | "magnify";
 
 /** The magnifying glass (`interaction: 'magnify'`). */
@@ -207,7 +209,9 @@ export interface FolioViewer {
    *  spread lays each element over its page. */
   setPageVideos(videos: readonly FolioPageVideo[]): void;
   /** The page under a pointer and where on it, as the book is seen (the
-   *  tilted, orbited 3D book included); null off the open pages. */
+   *  tilted, orbited 3D book included); null off the open pages. In
+   *  magnify mode, the point under the glass's centre (#543), which a
+   *  finger holds above itself. */
   pageAt(event: { clientX: number; clientY: number }): FolioPagePoint | null;
   /** Where a point of a page lies on screen (client px), when the page
    *  lies open; null otherwise. */
@@ -741,17 +745,17 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   // Select mode: a text cursor over the pages as the book is seen.
   root.addEventListener("pointermove", (event) => {
     if (event.buttons) return;
-    const point = holding ? null : pageAt(event);
-    if (interaction === "select") root.classList.toggle("is-over-page", !!point);
+    const point = holding ? null : aimedPageAt(event);
+    if (interaction === "select" || interaction === "magnify") root.classList.toggle("is-over-page", !!point);
     if (options.isPageAction) root.classList.toggle("is-over-action", !!point && options.isPageAction(point));
     // Hand mode: the hand shows only where a page can be taken, its
     // outer half (#494).
     root.classList.toggle("is-over-grip", interaction === "hand" && !holding && !!flipper && flipper.hit(event) !== 0);
   });
-  // Orbit and select modes: a click on something a click acts on (a video)
-  // acts on it, as in hand mode. The press is taken before the host hears
-  // it in select mode (no caret, no link followed); in orbit mode a drag
-  // from it still turns the view.
+  // Orbit, select and magnify modes: a click on something a click acts on
+  // (a video) acts on it, as in hand mode. The press is taken before the
+  // host hears it in select and magnify modes (no caret, no link
+  // followed); in orbit mode a drag from it still turns the view.
   let actionPress: { x: number; y: number; id: number; point: FolioPagePoint } | null = null;
   let swallowClick = false;
   root.addEventListener(
@@ -760,17 +764,17 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       actionPress = null;
       if (interaction === "hand" || event.button !== 0 || !options.onPageClick || !options.isPageAction) return;
       if ((event.target as Element).closest(".postext-folio-nav")) return;
-      const point = pageAt(event);
+      const point = aimedPageAt(event);
       if (!point || !options.isPageAction(point)) return;
       actionPress = { x: event.clientX, y: event.clientY, id: event.pointerId, point };
-      if (interaction === "select") event.stopPropagation();
+      if (leftToHost()) event.stopPropagation();
     },
     true,
   );
   root.addEventListener(
     "pointermove",
     (event) => {
-      if (actionPress && interaction === "select" && event.pointerId === actionPress.id) event.stopPropagation();
+      if (actionPress && leftToHost() && event.pointerId === actionPress.id) event.stopPropagation();
     },
     true,
   );
@@ -780,7 +784,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       const press = actionPress;
       if (!press || event.pointerId !== press.id) return;
       actionPress = null;
-      if (interaction === "select") {
+      if (leftToHost()) {
         event.stopPropagation();
         swallowClick = true;
       }
@@ -798,7 +802,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     true,
   );
   root.addEventListener("pointerleave", (event) => {
-    root.classList.remove("is-over-action", "is-over-grip");
+    root.classList.remove("is-over-action", "is-over-grip", "is-over-page");
     if (event.pointerType === "mouse") hideLens();
   });
 
@@ -823,11 +827,16 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     const rim = clamp(diameter * 0.045, 8, 18);
     return { x: at.x, y: at.y, radius: diameter / 2 - rim, rim, zoom: zoomNow() };
   }
+  /** Where the glass is held for a pointer: under a mouse or a pen, but
+   *  a finger holds it above itself, where it does not hide it. */
+  function heldAt(event: { clientX: number; clientY: number; pointerType?: string }): { x: number; y: number } {
+    if (event.pointerType !== "touch") return { x: event.clientX, y: event.clientY };
+    const lens = lensOf({ x: event.clientX, y: event.clientY });
+    return { x: lens.x, y: lens.y - (lens.radius + lens.rim + 28) };
+  }
   function placeLens(event: PointerEvent) {
     if (!flipper) return;
-    const lens = lensOf({ x: event.clientX, y: event.clientY });
-    // A finger holds the glass above itself, where it does not hide it.
-    if (event.pointerType === "touch") lens.y -= lens.radius + lens.rim + 28;
+    const lens = lensOf(heldAt(event));
     lensAt = { x: lens.x, y: lens.y };
     root.classList.add("is-magnifying");
     flipper.setLens(lens);
@@ -1103,6 +1112,20 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     return null;
   }
 
+  /** The pointer is the host's to select with (select mode, and under the
+   *  glass in magnify mode, #543). */
+  function leftToHost(): boolean {
+    return interaction === "select" || interaction === "magnify";
+  }
+
+  /** The page point a pointer aims at: under it, or in magnify mode under
+   *  the glass's centre (#543). */
+  function aimedPageAt(event: { clientX: number; clientY: number; pointerType?: string }): FolioPagePoint | null {
+    if (interaction !== "magnify") return pageAt(event);
+    const at = heldAt(event);
+    return pageAt({ clientX: at.x, clientY: at.y });
+  }
+
   function pointOnScreen(point: FolioPagePoint): { x: number; y: number } | null {
     const s = spreads[shown];
     if (!s) return null;
@@ -1121,7 +1144,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     root.classList.toggle("is-orbit", interaction === "orbit");
     root.classList.toggle("is-select", interaction === "select");
     root.classList.toggle("is-magnify", interaction === "magnify");
-    if (interaction !== "select") root.classList.remove("is-over-page");
+    if (!leftToHost()) root.classList.remove("is-over-page");
     if (interaction !== "hand") root.classList.remove("is-over-grip");
     if (interaction === "magnify") scheduleDetail(0);
     else releaseLens();
@@ -1173,7 +1196,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       if (lensAt) flipper?.setLens(lensOf(lensAt));
       scheduleDetail(250);
     },
-    pageAt,
+    pageAt: aimedPageAt,
     pointOnScreen,
     refreshPage(src) {
       flipper?.touch(src);
