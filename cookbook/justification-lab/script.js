@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 014 · Justification lab ════════════════════════════════
 // https://postext.dev/en/cookbook/justification-lab
 // Code: MIT · Text: original (CC BY 4.0) · Diagram: generated in code (CC BY 4.0)
-// Fonts: Petrona, Bricolage Grotesque, Source Code Pro (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Petrona, Bricolage Grotesque, Source Code Pro (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 // A type journal's essay set twice from one design, Knuth–Plass and greedy: the two page 2s
 // side by side with their loose lines marked from the layout tree, then the published pages.
 import {

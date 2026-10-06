@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "baseline-grid-book-page",
-  "sourceHash": "a74c7041ea077aacfec0503038f5b6fa47ccfcb7f34455d08c5bf1c12d439d8d",
+  "sourceHash": "0ac6d39838cc87e570dafa24df0d9200204d17940b7b61957625709d4c82e25e",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:09:42.087Z",
+  "capturedAt": "2026-10-06T18:34:18.672Z",
   "variants": {
     "en": {
-      "hash8": "c84fb2ef",
-      "vdtHash": "1db771a94182d399a98b03702ed5c456afde39a7",
+      "hash8": "98ebf19f",
+      "vdtHash": "e34bb0c4f98af58e2a09050a71580f54f4aa2825",
       "timings": {
-        "importMs": 542,
-        "fontsMs": 789,
-        "buildMs": 37,
-        "totalMs": 2087,
+        "importMs": 154,
+        "fontsMs": 34,
+        "buildMs": 54,
+        "totalMs": 1951,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 182228,
+          "bytes": 182012,
           "alt": "Page 10: Lines to stand on."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 36406,
+          "bytes": 36326,
           "alt": "Page 11. Figure 1.2. This book’s 210 × 280 mm page twice. Left, divided by the canon into ninths, with a text block of 140 × 187 mm. Right, as the book sets it: margins of 16, 24, 32 and 48 mm and two columns of 44 lines."
         }
       ],
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 43278,
+        "bytes": 43297,
         "folio": "e8c31713"
       },
       "detected": {
@@ -283,9 +283,9 @@
         ],
         "features": [
           "baseline-grid",
-          "citations",
           "column-balancing",
           "column-rule",
+          "figure-citations",
           "localised-labels",
           "page-background",
           "page-role-filters",
@@ -305,21 +305,21 @@
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "continuation.pageIndexOffset 8 dropped (even: same page sides)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "3a0b0753",
-      "vdtHash": "2778057818a1ec18c07ecacfff3b2e3fa3a73b3a",
+      "hash8": "59c99ad0",
+      "vdtHash": "3ec9824bf629a4c985cc966b0148c0d4767ceb63",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 27,
-        "buildMs": 21,
-        "totalMs": 955,
+        "importMs": 162,
+        "fontsMs": 24,
+        "buildMs": 34,
+        "totalMs": 901,
         "builds": 2
       },
       "specimen": {
@@ -375,7 +375,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 41068,
+          "bytes": 41160,
           "alt": "Página 11. Figura 1.2. La página de 210 × 280 mm de este libro, dos veces. A la izquierda, dividida en novenos por el canon, con una caja de 140 × 187 mm. A la derecha, tal como la compone el libro: márgenes de 16, 24, 32 y 48 mm y dos columnas de 44 líneas."
         }
       ],
@@ -403,7 +403,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 44030,
+        "bytes": 44050,
         "folio": "e8c31713"
       },
       "detected": {
@@ -586,9 +586,9 @@
         ],
         "features": [
           "baseline-grid",
-          "citations",
           "column-balancing",
           "column-rule",
+          "figure-citations",
           "localised-labels",
           "page-background",
           "page-role-filters",
@@ -608,9 +608,9 @@
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "continuation.pageIndexOffset 8 dropped (even: same page sides)"
           }
         ]
       }

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "legal-opinion-oscola",
-  "sourceHash": "5a6be45026efdbb42a521dabce907441613ac043d055a262972e15b7d02bcbc8",
+  "sourceHash": "70bd13eb2c0ff5d26c2124f0108c096885548de798e6ca73a52001467cccde3c",
   "engine": {
-    "postext": "1.12.1",
-    "postextPdf": "1.12.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T21:30:17.348Z",
+  "capturedAt": "2026-10-06T18:34:19.115Z",
   "variants": {
     "en": {
-      "hash8": "04eafcbc",
+      "hash8": "f75e32fe",
       "vdtHash": "befe6b0e5fca16cba211cfd372710d730d74c63a",
       "timings": {
-        "importMs": 416,
-        "fontsMs": 1922,
-        "buildMs": 47,
-        "totalMs": 3128,
+        "importMs": 252,
+        "fontsMs": 69,
+        "buildMs": 56,
+        "totalMs": 1160,
         "builds": 2
       },
       "specimen": {
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "legal-opinion-oscola.pdf",
-        "bytes": 89501,
+        "bytes": 89511,
         "pages": 4
       },
       "sandbox": {
         "file": "legal-opinion-oscola.postext",
-        "bytes": 23003,
+        "bytes": 22983,
         "folio": "223edec1"
       },
       "detected": {
@@ -329,13 +329,13 @@
       }
     },
     "es": {
-      "hash8": "a69d9ce1",
+      "hash8": "bb314b6c",
       "vdtHash": "a98f2a9e46d9aa968d59092714341f6cb8924bbc",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 65,
-        "buildMs": 353,
-        "totalMs": 1694,
+        "importMs": 232,
+        "fontsMs": 67,
+        "buildMs": 390,
+        "totalMs": 1833,
         "builds": 2
       },
       "specimen": {
@@ -433,12 +433,12 @@
       },
       "pdf": {
         "file": "legal-opinion-oscola.pdf",
-        "bytes": 93455,
+        "bytes": 93457,
         "pages": 4
       },
       "sandbox": {
         "file": "legal-opinion-oscola.postext",
-        "bytes": 23007,
+        "bytes": 22987,
         "folio": "223edec1"
       },
       "detected": {

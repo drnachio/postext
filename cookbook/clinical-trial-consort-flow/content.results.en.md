@@ -4,7 +4,7 @@
 
 ### Attrition
 
-Of the randomized participants, 83% (58/70) went on to provide partial or complete data at T2 representing an overall attrition rate of 17%. Attrition was not equal between the arms and was greater among the information control group (31% vs 9%; chi-square~1~=5.16; *P*=.023). However, independent *t* tests and chi-square analyses failed to detect evidence of significant differences at baseline between those who dropped out of the study versus those who did not on age (*t*~68~=1.18; *P*=.24); GAD-7 (*t*~68~=1.28; *P*=.89); PHQ-9 (*t*~68~=.63; *P*=.59); PANAS positive (*t*~68~=.79; *P*=.43) and negative (*t*~68~=.02; *P*=.98) affect scores; or on gender (chi-square~1~=1.75; *P*=.18) or ethnicity (chi-square~1~=.066; *P*=.79).
+Of the randomized participants, 83% (58/70) went on to provide partial or complete data at T2 representing an overall attrition rate of 17%. Attrition was not equal between the arms and was greater among the information control group (31% vs 9%; $\chi^2_1$=5.16; *P*=.023). However, independent *t* tests and chi-square analyses failed to detect evidence of significant differences at baseline between those who dropped out of the study versus those who did not on age (*t*~68~=1.18; *P*=.24); GAD-7 (*t*~68~=1.28; *P*=.89); PHQ-9 (*t*~68~=.63; *P*=.59); PANAS positive (*t*~68~=.79; *P*=.43) and negative (*t*~68~=.02; *P*=.98) affect scores; or on gender ($\chi^2_1$=1.75; *P*=.18) or ethnicity ($\chi^2_1$=.066; *P*=.79).
 
 ### Participant Demographics
 
@@ -85,5 +85,5 @@ The second author (AMD) is the founder of a commercial entity Woebot Labs Inc. (
 :::paragraphs{style="colophon"}
 Abridged from Fitzpatrick KK, Darcy A, Vierhile M. Delivering Cognitive Behavior Therapy to Young Adults With Symptoms of Depression and Anxiety Using a Fully Automated Conversational Agent (Woebot): A Randomized Controlled Trial. JMIR Mental Health 2017;4(2):e19. doi:10.2196/mental.7785. © Kathleen Kara Fitzpatrick, Alison Darcy, Molly Vierhile. Originally published in JMIR Mental Health (http://mental.jmir.org), 06.06.2017. This is an open-access article distributed under the terms of the Creative Commons Attribution License (https://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work, first published in JMIR Mental Health, is properly cited.
 
-Changes: sections, paragraphs and sentences cut; the original Figure 2 and Multimedia Appendix 1 left out; citations converted from numbered to APA author–date; Figure 1 redrawn as a CONSORT diagram and Figures 3 and 4 redrawn as bar charts (Figures 2 and 3 here); the bot’s quoted messages gathered in a box; the chi-square symbol spelled out. Set in Lora and Nunito Sans (SIL OFL) for the Postext Cookbook.
+Changes: sections, paragraphs and sentences cut; the original Figure 2 and Multimedia Appendix 1 left out; citations converted from numbered to APA author–date; Figure 1 redrawn as a CONSORT diagram and Figures 3 and 4 redrawn as bar charts (Figures 2 and 3 here); the bot’s quoted messages gathered in a box. Set in Lora and Nunito Sans (SIL OFL) for the Postext Cookbook.
 :::

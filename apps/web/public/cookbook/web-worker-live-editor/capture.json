@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "web-worker-live-editor",
-  "sourceHash": "add0356aae9b050ca7f3ae952f5f1892e841cf34c1f4c3d734225f6480a0952f",
+  "sourceHash": "bf9a106e31e45a09b59237ff55a5cb78d240e521d1163f17258e7f9bb4d1f78c",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:54:46.740Z",
+  "capturedAt": "2026-10-06T18:34:19.614Z",
   "variants": {
     "en": {
-      "hash8": "be69bc7a",
+      "hash8": "8de5d8ef",
       "vdtHash": "718485d3ed3a2ab318607b517bc6378593a62ca7",
       "timings": {
-        "importMs": 765,
-        "fontsMs": 675,
-        "buildMs": 110,
-        "totalMs": 2120,
+        "importMs": 1134,
+        "fontsMs": 705,
+        "buildMs": 104,
+        "totalMs": 2507,
         "builds": 1
       },
       "specimen": {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "web-worker-live-editor.postext",
-        "bytes": 218017,
+        "bytes": 218791,
         "folio": "ddaa1eeb"
       },
       "detected": {
@@ -298,11 +298,6 @@
             "check": "C3",
             "severity": "info",
             "detail": "a worker recipe: captured without request interception (hosts checked, network not cached)"
-          },
-          {
-            "check": "H6",
-            "severity": "info",
-            "detail": "the layout worker ran postext 1.10.0 (workers ignore the import map; pages painted with 1.9.2)"
           }
         ]
       }

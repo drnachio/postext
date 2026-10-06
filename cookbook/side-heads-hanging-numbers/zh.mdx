@@ -16,7 +16,7 @@ pageNotes: { "1": "任务书第一页：左上角分两行印着市政府的名�
 
 ### 1 · 用旁栏中的一个框印出节标题
 
-代码见上面的[简短回答](#简短回答)。标题会为其版面设计中最低的那个元素预留空间，所以如果在旁栏中画一个与本节第一行对齐的标题，正文会被推下一行，两行的标题则推下两行。因此标题的版面设计只画编号和分隔线，而`sideHeads()`把每个`## Title`的文字复制到紧随标题之后的一个`:::callout`中。设为`span="side"`后，这个框脱离正文流，立在旁栏中正文接续的那条网格线上（[标注框样式](/zh/docs/configuration#标注框样式)）。框和正文都把一行的基线放在行高的0.8处，所以按正文14 pt行距排的框，会让两行标题的每一行都落在旁边段落某一行的基线上。Markdown仍是普通的`## Programa de necesidades`。由于标题的版面设计没有印`{titleText}`，沙盒会列出警告*未引用标题文字*，尽管框里印出了标题。
+代码见上面的[简短回答](#简短回答)。标题会为其版面设计中最低的那个元素预留空间，所以如果在旁栏中画一个与本节第一行对齐的标题，正文会被推下一行，两行的标题则推下两行。因此标题的版面设计只画编号和分隔线，而`sideHeads()`把每个`## Title`的文字复制到紧随标题之后的一个`:::callout`中。设为`span="side"`后，这个框脱离正文流，立在旁栏中正文接续的那条网格线上（[标注框样式](/zh/docs/configuration#标注框样式)）。编号和分隔线设了`reserve: false`：否则旁栏中的框会在立于旁栏的标题元素下方留出一行的浮动间距，标题就会落到正文的第二行。框和正文都把一行的基线放在行高的0.8处，所以按正文14 pt行距排的框，会让两行标题的每一行都落在旁边段落某一行的基线上。Markdown仍是普通的`## Programa de necesidades`。由于标题的版面设计没有印`{titleText}`，沙盒会列出警告*未引用标题文字*，尽管框里印出了标题。
 
 <PageShot page={2} crop="0,0.068,1,0.292" caption="Page 2: the number and the rule come from the heading, the title from the box in the channel, level with the first line of the text. The plot plan stacks under it." />
 

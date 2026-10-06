@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "genko-yoshi-manuscript",
-  "sourceHash": "7270a1f93f46a83b7539633be030ea03e5aa51487bc5d96fc11cac6701b81dc4",
+  "sourceHash": "a689c92acb386ad226fcd6e9ba4aad58d7d33f2d4f74f2908f5b5aeb0205a4a7",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.905Z",
+  "capturedAt": "2026-10-06T18:34:18.984Z",
   "variants": {
     "en": {
-      "hash8": "a964e91c",
+      "hash8": "5cf434da",
       "vdtHash": "44dd11cb28f9b492aa1dad48f8afec383a5e7361",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 191,
-        "buildMs": 35,
-        "totalMs": 925,
+        "importMs": 216,
+        "fontsMs": 197,
+        "buildMs": 44,
+        "totalMs": 1005,
         "builds": 1
       },
       "specimen": {
@@ -100,7 +100,7 @@
       },
       "pdf": {
         "file": "genko-yoshi-manuscript.pdf",
-        "bytes": 155809,
+        "bytes": 155807,
         "pages": 3
       },
       "sandbox": {
@@ -267,13 +267,13 @@
       }
     },
     "es": {
-      "hash8": "20011378",
+      "hash8": "2e8e8e1a",
       "vdtHash": "c15ee38025d9a9478cfe194b1993a3483a7a29c6",
       "timings": {
-        "importMs": 215,
-        "fontsMs": 168,
-        "buildMs": 39,
-        "totalMs": 961,
+        "importMs": 212,
+        "fontsMs": 173,
+        "buildMs": 41,
+        "totalMs": 982,
         "builds": 1
       },
       "specimen": {
@@ -356,7 +356,7 @@
       },
       "pdf": {
         "file": "genko-yoshi-manuscript.pdf",
-        "bytes": 155808,
+        "bytes": 155806,
         "pages": 3
       },
       "sandbox": {

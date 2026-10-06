@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "technical-datasheet",
-  "sourceHash": "39ce14199c51c1edb43a32949a1d127192937c770952a4562182d6e6ff5bc6a1",
+  "sourceHash": "9617333df64c5a7cdc5273998444d8e27867fb242aa79f467a3044721f7d4ceb",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-25T18:45:17.546Z",
+  "capturedAt": "2026-10-06T18:34:19.499Z",
   "variants": {
     "en": {
-      "hash8": "b0677359",
-      "vdtHash": "fd1d4233a6199d2d17a5bcb18e5c56f922c09464",
+      "hash8": "ce239e70",
+      "vdtHash": "3a9b91ec355070ecf8c0d62f5a22ae56ce432a1a",
       "timings": {
-        "importMs": 1317,
-        "fontsMs": 506,
-        "buildMs": 34,
-        "totalMs": 3785,
+        "importMs": 238,
+        "fontsMs": 149,
+        "buildMs": 41,
+        "totalMs": 1079,
         "builds": 2
       },
       "specimen": {
@@ -51,7 +51,7 @@
           "h": 1292,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 103726,
+          "bytes": 103710,
           "alt": "Opening page 1: PX-7021. Figure 1. Pin configuration, 8-pin DFN, top view. · Figure 2. Typical application, bus address 48h."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1292,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 101186,
+          "bytes": 100802,
           "alt": "Page 2: 4 Specifications. Table 1. Electrical characteristics, VDD = 1.6 V to 5.5 V and TA = −40 °C to 125 °C unless noted."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1292,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 121148,
+          "bytes": 120788,
           "alt": "Page 3: 6 Detailed description. Table 2. Pin functions · Table 3. Register map."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1292,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 124554,
+          "bytes": 124994,
           "alt": "Page 4: 6.3 Alert output. Table 3. Register map (continued) · Figure 3. Package outline and land pattern, 8-pin DFN, in mm. · Table 4. Order codes."
         }
       ],
@@ -116,12 +116,12 @@
       },
       "pdf": {
         "file": "technical-datasheet.pdf",
-        "bytes": 137141,
+        "bytes": 134546,
         "pages": 4
       },
       "sandbox": {
         "file": "technical-datasheet.postext",
-        "bytes": 108729,
+        "bytes": 108628,
         "folio": "ca48c30e"
       },
       "detected": {
@@ -324,7 +324,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 434,
+        "configLeaves": 442,
         "designElements": 21,
         "directives": [
           ":::columnbreak",
@@ -394,7 +394,7 @@
           "callout-styles",
           "cell-fills",
           "chips",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -428,11 +428,6 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

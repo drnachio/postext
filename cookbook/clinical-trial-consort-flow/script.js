@@ -4,8 +4,8 @@
 // Fonts: Lora, Nunito Sans (SIL OFL 1.1) · Needs postext ≥ 1.18.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, mergeCells,
-} from 'https://esm.sh/postext';
+  registerResourceImage, defaultResourceTypes, mergeCells, initMathEngine,
+} from 'https://esm.sh/postext?bundle'; // with MathJax (gotcha: math-bundle)
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -226,8 +226,7 @@ const resources = () => [consort,
 // #region art: the CONSORT diagram and the theme charts, their labels in Nunito Sans inline
 const n2 = (v) => +v.toFixed(2);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so each
-// drawing carries its faces inline, as data URLs of the Fontsource files.
+// An SVG image sees no web fonts (gotcha: svg-no-webfonts): faces go inline.
 async function inlineFaces(family, weights) {
   const id = family.toLowerCase().replace(/\s+/g, '-');
   let css = '';
@@ -245,8 +244,8 @@ async function inlineFaces(family, weights) {
 const label = (x, y, s, size, weight, fill, anchor = 'middle') => `<text x="${n2(x)}" `
   + `y="${n2(y)}" font-size="${size}" font-weight="${weight}" fill="${fill}" `
   + `text-anchor="${anchor}">${esc(s)}</text>`;
-// A box of centred lines: the first bold, an "n = …" line bold in the accent (white on a
-// filled box), the rest regular. Every box is 64, 56 or 26 mm wide; lines 1.3 × the size.
+// A box of centred lines: the first bold, "n = …" bold in the accent (white on a
+// filled box), the rest regular.
 function node(cx, y, w, lines, { size = 2.6, fill = palette.tint, stroke = palette.accent } = {}) {
   const lh = size * 1.3;
   const h = lines.length * lh + 2.2;
@@ -305,7 +304,7 @@ function consortSvg(face) { // 176 mm wide, the full measure; one unit is a mill
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="${CONSORT_H * 10}" `
     + `viewBox="0 0 ${W} ${CONSORT_H}">${face}${parts.join('')}</svg>`;
 }
-// Figures 3 and 4 of the original are thematic maps; here they are bars, one per subtheme.
+// The thematic maps (Figs 3, 4) as bars.
 const THEMES = [
   { id: 'fig-best', file: 'best.svg', themes: [['Process', 31, [['Checking in / accountability', 9],
     ['Empathy / personality', 7], ['Learning', 12, [['Emotions', 5], ['General insight', 5],
@@ -367,6 +366,7 @@ await loadFonts(FONTS, paper);
 const face = await inlineFaces(SANS, [400, 800]);
 await loadSvg('consort.svg', consortSvg(face));
 for (const fig of THEMES) await loadSvg(fig.file, themeSvg(fig, face));
+await initMathEngine(); // χ² is maths: no Lora file has χ, not even its math file
 const content = { markdown: paper, resources: resources() };
 const doc = await buildWithFonts(() => buildDocument(content, config()), paper);
 showPages(doc, { title: 'A clinical trial report with a CONSORT diagram' });

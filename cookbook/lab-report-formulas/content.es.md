@@ -61,8 +61,6 @@ Las lecturas de la bureta están en la :ref{id="lecturas" style="full" case="low
 
 ::resource{id="lecturas"}
 
-:::space{lines=1}
-
 Como cada alícuota era de *V*~a~ = 25,0 cm^3^ de vinagre diluido diez veces, con un factor *f* = 10, la concentración de ácido acético en el vinagre es
 
 $$c_\mathrm{vinagre} = f\,\frac{c_\mathrm{b}\,V_\mathrm{b}}{V_\mathrm{a}} = 10\cdot\frac{0{,}100 \cdot 20{,}87}{25{,}0}\ \mathrm{mol{\cdot}dm^{-3}} = 0{,}835\ \mathrm{mol{\cdot}dm^{-3}}$$

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 139 · A protein paper with a Methods section ════════════
 // https://postext.dev/en/cookbook/protein-paper-methods-section
 // Code: MIT · Text: Jumper et al. 2021, abridged (CC BY 4.0) · Figures: drawn in code
-// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.0
+// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
   registerResourceImage, defaultResourceTypes,
@@ -325,35 +325,15 @@ const figure1 = (face) => '<svg xmlns="http://www.w3.org/2000/svg" width="1780" 
 const FONTS = { 'Noto Serif': ['400', '400i', '700', '700i'],
   'Noto Sans': ['400', '400i', '600', '700'] };
 
-// #region subsets: Cα and χ come from each face's greek file, which the kit does not load
-// Fontsource cuts each face by script. The PDF gets every file the text of a face needs and
-// draws a character from the first file that has it (gotcha: latin-subset).
-const SUBSETS = [['latin-ext', /[\u0100-\u024f]/u], ['greek', /[\u0370-\u03ff]/u]];
-const fileOf = (family, subset, weight, style) => 'https://cdn.jsdelivr.net/npm/@fontsource/'
-  + `${fontsourceId(family)}@5/files/${fontsourceId(family)}-${subset}-${weight}-${style}.woff2`;
-const woff = async (url) => decompressWoff2(new Uint8Array(await (await fetch(url)).arrayBuffer()));
-const loadGreek = () => Promise.all(Object.entries(FONTS).flatMap(([family, specs]) =>
-  specs.map(async (spec) => {
-    const [weight, style] = [parseInt(spec, 10), spec.endsWith('i') ? 'italic' : 'normal'];
-    const url = fileOf(family, 'greek', weight, style);
-    const face = new FontFace(family, `url(${url})`, { weight: `${weight}`, style,
-      unicodeRange: 'U+0370-03FF' });
-    document.fonts.add(await face.load());
-  })));
-async function fontProvider(family, weight, style, request) {
-  const text = String.fromCodePoint(...(request?.codePoints ?? []));
-  const more = SUBSETS.filter(([, test]) => test.test(text))
-    .map(([subset]) => woff(fileOf(family, subset, weight, style)));
-  return [await fontsourceProvider(family, weight, style), ...(await Promise.all(more))];
-}
-// #endregion
-
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown), loadGreek()]); // Žídek: latin-ext comes too
+// Cα, χ, Žídek and Šali: the kit adds the greek and latin-ext files the text needs, on screen
+// and in the PDF (gotcha: latin-subset); markdown carries every content slot
+await loadFonts(FONTS, markdown);
 await loadSvg('fig1.svg', figure1(await inlineFace(SANS, 400)));
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources: resources() },
   config()), markdown);
 showPages(doc, { title: 'A protein paper with a Methods section' });
-offerPdf(() => renderToPdf(doc, { fontProvider, resourceBytes: imageBytes }), `${RECIPE}.pdf`);
+offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+  `${RECIPE}.pdf`);
 
 // @kit

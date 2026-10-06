@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "names-and-subjects-indexes",
-  "sourceHash": "7d6a3f8726a6063853f41ea48439e00bf8521e6dc07ea9aa6a673b6e644541ec",
+  "sourceHash": "250c8006d2919e649632eb23fd3711b8422e36d7fbceaa1c26f97323539a58b3",
   "engine": {
-    "postext": "1.7.0",
-    "postextPdf": "1.7.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T09:58:55.414Z",
+  "capturedAt": "2026-10-06T18:34:19.196Z",
   "variants": {
     "en": {
-      "hash8": "e57b1277",
+      "hash8": "c7a96649",
       "vdtHash": "abc2b6e55e034adc2d9612c30c36cc1d0b6a5e84",
       "timings": {
-        "importMs": 243,
-        "fontsMs": 62,
-        "buildMs": 76,
-        "totalMs": 1174,
+        "importMs": 192,
+        "fontsMs": 73,
+        "buildMs": 265,
+        "totalMs": 2659,
         "builds": 2
       },
       "specimen": {
@@ -152,12 +152,12 @@
       },
       "pdf": {
         "file": "names-and-subjects-indexes.pdf",
-        "bytes": 116574,
+        "bytes": 116589,
         "pages": 7
       },
       "sandbox": {
         "file": "names-and-subjects-indexes.postext",
-        "bytes": 17049,
+        "bytes": 17026,
         "folio": "581a62c9"
       },
       "detected": {
@@ -391,13 +391,13 @@
       }
     },
     "es": {
-      "hash8": "7d751274",
+      "hash8": "62276c58",
       "vdtHash": "b48ac6ef8eac5e87e51db729d46c10bd1c1c3a7b",
       "timings": {
-        "importMs": 129,
-        "fontsMs": 51,
-        "buildMs": 68,
-        "totalMs": 949,
+        "importMs": 205,
+        "fontsMs": 72,
+        "buildMs": 78,
+        "totalMs": 1113,
         "builds": 2
       },
       "specimen": {
@@ -532,12 +532,12 @@
       },
       "pdf": {
         "file": "names-and-subjects-indexes.pdf",
-        "bytes": 130360,
+        "bytes": 130375,
         "pages": 7
       },
       "sandbox": {
         "file": "names-and-subjects-indexes.postext",
-        "bytes": 17499,
+        "bytes": 17474,
         "folio": "581a62c9"
       },
       "detected": {

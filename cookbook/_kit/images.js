@@ -1,4 +1,4 @@
-// ─── Kit · images v1 ── recipes with pictures · postext.dev/cookbook ──────────
+// ─── Kit · images v1 ── recipes with pictures · postext.dev/cookbook
 /** Registers a photo or PNG for the canvas and keeps its bytes for the PDF.
  *  fetch → ImageBitmap never taints the canvas (a plain cross-origin <img> would). */
 async function loadImage(fileId, url) {

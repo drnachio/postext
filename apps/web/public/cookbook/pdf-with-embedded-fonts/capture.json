@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "pdf-with-embedded-fonts",
-  "sourceHash": "c77cfd4507804e51ea86079c98400f0f4cff881ed69e97eaf9d5503fcf007669",
+  "sourceHash": "496ff3dbb91e502fe9def7815b5eecc0cc30d029be722aa819e73c172d5ca8aa",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:22:38.747Z",
+  "capturedAt": "2026-10-06T18:34:19.246Z",
   "variants": {
     "en": {
-      "hash8": "6caf7089",
-      "vdtHash": "02e3850133c3627dcae2403100403fc881346baa",
+      "hash8": "b17656f6",
+      "vdtHash": "6614b01a37d0ff6a777bd67b097f1a4e32a7cf36",
       "timings": {
-        "importMs": 377,
-        "fontsMs": 72,
-        "buildMs": 39,
-        "totalMs": 1084,
+        "importMs": 193,
+        "fontsMs": 59,
+        "buildMs": 57,
+        "totalMs": 864,
         "builds": 1
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1419,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 161862,
+          "bytes": 161834,
           "alt": "Opening page 1: Home from Sea."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 101124,
+          "bytes": 101076,
           "alt": "Opening page 2: Programme."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 63236,
+          "bytes": 63228,
           "alt": "Opening page 3: The texts."
         },
         {
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "pdf-with-embedded-fonts.pdf",
-        "bytes": 94940,
+        "bytes": 89367,
         "pages": 4
       },
       "sandbox": {
         "file": "pdf-with-embedded-fonts.postext",
-        "bytes": 30366,
+        "bytes": 30452,
         "folio": "885e614d"
       },
       "detected": {
@@ -193,6 +193,7 @@
           "headings.marginBottom",
           "headings.marginTop",
           "layout",
+          "layout.inlineResourceGap",
           "layout.layoutType",
           "page",
           "page.backgroundColor",
@@ -246,7 +247,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 233,
+        "configLeaves": 234,
         "designElements": 11,
         "directives": [
           "::resource",
@@ -316,13 +317,7 @@
           "share": 0,
           "worst": 1.56
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

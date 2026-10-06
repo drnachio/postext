@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "print-and-screen-editions",
-  "sourceHash": "1125cc673d6716df4b06d0b4d1b44be870401a0429c4c3a5c6755ffd6a5553a6",
+  "sourceHash": "9fba039b7d43d32382be135d3e9599fde58f5f3b058f0103fc4a8e42e69033a7",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:47:36.754Z",
+  "capturedAt": "2026-10-06T18:34:19.298Z",
   "variants": {
     "en": {
-      "hash8": "fbb4255f",
+      "hash8": "59e5e740",
       "vdtHash": "cc87c7261b2e48619ba709c49b9fb9a15ec7ee96",
       "timings": {
-        "importMs": 972,
-        "fontsMs": 892,
-        "buildMs": 251,
-        "totalMs": 2900,
+        "importMs": 156,
+        "fontsMs": 51,
+        "buildMs": 272,
+        "totalMs": 1250,
         "builds": 3
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 186526,
+        "bytes": 186550,
         "folio": "d9a24b31"
       },
       "detected": {
@@ -252,7 +252,7 @@
           "parts",
           "resourceTypes"
         ],
-        "configLeaves": 336,
+        "configLeaves": 344,
         "designElements": 14,
         "directives": [
           ":::part",
@@ -310,8 +310,8 @@
           }
         ],
         "features": [
-          "citations",
           "column-balancing",
+          "figure-citations",
           "heading-attributes",
           "html-viewer",
           "localised-labels",
@@ -335,23 +335,17 @@
           "share": 0,
           "worst": 1.84
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "1d757813",
+      "hash8": "af4e6fa5",
       "vdtHash": "b21de88e54730916b7395c401324be276c556e68",
       "timings": {
-        "importMs": 273,
-        "fontsMs": 70,
-        "buildMs": 139,
-        "totalMs": 1224,
+        "importMs": 163,
+        "fontsMs": 40,
+        "buildMs": 106,
+        "totalMs": 968,
         "builds": 3
       },
       "specimen": {
@@ -450,7 +444,7 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 187207,
+        "bytes": 187233,
         "folio": "d9a24b31"
       },
       "detected": {
@@ -587,7 +581,7 @@
           "parts",
           "resourceTypes"
         ],
-        "configLeaves": 336,
+        "configLeaves": 344,
         "designElements": 14,
         "directives": [
           ":::part",
@@ -645,8 +639,8 @@
           }
         ],
         "features": [
-          "citations",
           "column-balancing",
+          "figure-citations",
           "heading-attributes",
           "html-viewer",
           "localised-labels",
@@ -670,13 +664,7 @@
           "share": 0,
           "worst": 1.83
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-novel-right-bound",
-  "sourceHash": "1d78ce7ab001659d73e6750a5888e35445cad7f8d0302af301e42da34143823c",
+  "sourceHash": "69c9046db3ba45269e4d7e47542dcf4021299ad567d138f158fb908f92c578f2",
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T21:44:14.242Z",
+  "capturedAt": "2026-10-06T18:34:18.639Z",
   "variants": {
     "en": {
-      "hash8": "51fb1da6",
+      "hash8": "ab0f80b5",
       "vdtHash": "228ba9f283926971b507cfd33681a3d1e4d915c7",
       "timings": {
-        "importMs": 8419,
-        "fontsMs": 2280,
-        "buildMs": 45,
-        "totalMs": 11413,
+        "importMs": 199,
+        "fontsMs": 75,
+        "buildMs": 53,
+        "totalMs": 993,
         "builds": 2
       },
       "specimen": {
@@ -353,13 +353,13 @@
       }
     },
     "es": {
-      "hash8": "5d091862",
+      "hash8": "2293cb11",
       "vdtHash": "5b351374d59c99b443d9d730fcdda48da34370b8",
       "timings": {
-        "importMs": 8345,
-        "fontsMs": 102,
+        "importMs": 206,
+        "fontsMs": 69,
         "buildMs": 46,
-        "totalMs": 9246,
+        "totalMs": 964,
         "builds": 2
       },
       "specimen": {

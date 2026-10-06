@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bunko-novel-furigana",
-  "sourceHash": "9823378ee84c267bc6d44c3eb711475bcdaa733fe30a2bf2170c96f294d9d41f",
+  "sourceHash": "a6eb0d4957ec9622254b71829cee7fd1e75731126e59221e4bb03374d52b37ae",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:37.841Z",
+  "capturedAt": "2026-10-06T18:34:41.261Z",
   "variants": {
     "en": {
-      "hash8": "845c434a",
+      "hash8": "57e5aaba",
       "vdtHash": "ae497d72124770c9b1aea2745ff736b9d1e127b4",
       "timings": {
-        "importMs": 646,
-        "fontsMs": 2386,
-        "buildMs": 14,
-        "totalMs": 3734,
+        "importMs": 741,
+        "fontsMs": 2274,
+        "buildMs": 57,
+        "totalMs": 8846,
         "builds": 2
       },
       "specimen": {
@@ -342,13 +342,13 @@
       }
     },
     "es": {
-      "hash8": "4924b63f",
+      "hash8": "cdf9c246",
       "vdtHash": "72eb958384aeb0aaac00a9ffe41d7026da546383",
       "timings": {
-        "importMs": 260,
-        "fontsMs": 387,
+        "importMs": 238,
+        "fontsMs": 435,
         "buildMs": 16,
-        "totalMs": 1365,
+        "totalMs": 1426,
         "builds": 2
       },
       "specimen": {

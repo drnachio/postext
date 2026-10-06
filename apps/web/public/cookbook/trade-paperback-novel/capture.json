@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "trade-paperback-novel",
-  "sourceHash": "d910c7cd6d7810a3f81c5c3f7730498300d12de44f4f28ccc8372ee00850cad3",
+  "sourceHash": "1c0ffcd345748c63902a51a579d46f1421343d04be544d56b96c517a1992edb3",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:40:37.099Z",
+  "capturedAt": "2026-10-06T18:34:19.525Z",
   "variants": {
     "en": {
-      "hash8": "de19147c",
+      "hash8": "e3570a0f",
       "vdtHash": "74d74a3090b02cab00c23ec4eb835daace1283ca",
       "timings": {
-        "importMs": 131,
-        "fontsMs": 42,
-        "buildMs": 16,
-        "totalMs": 821,
+        "importMs": 147,
+        "fontsMs": 53,
+        "buildMs": 20,
+        "totalMs": 891,
         "builds": 2
       },
       "specimen": {
@@ -166,7 +166,7 @@
       },
       "sandbox": {
         "file": "trade-paperback-novel.postext",
-        "bytes": 374217,
+        "bytes": 374210,
         "folio": "846eba29"
       },
       "detected": {
@@ -352,11 +352,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.09 MB (warning at 0.9 MB for 8 pages)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

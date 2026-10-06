@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 027 · Newspaper front page ═══════════════════════════
 // https://postext.dev/en/cookbook/newspaper-front-page
 // Code: MIT · Text: original (CC BY 4.0) · Photo: Jason Blackeye (CC0)
-// Fonts: Grenze Gotisch, PT Serif, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Grenze Gotisch, PT Serif, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -145,7 +145,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
       left: mm(MARGIN.side), right: mm(MARGIN.side) } },
-  layout,
+  // An inline picture or drawing keeps a line of air above it, in a box too, and none below:
+  // the caption's note sits on the text that follows, which keeps the copy fitted.
+  layout: { ...layout, inlineResourceGap: 'above' },
   // Hyphenation stays at its defaults: on, in 'en-us'.
   bodyText: { fontFamily: 'PT Serif', fontSize: pt(9.4), lineHeight: pt(LEAD), color: col('ink'),
     // boldColor is restated: :ref labels take it, because 1.4.1 never points referenceColor
@@ -348,7 +350,7 @@ const resource = (id, typeId, kind, body, extra) => ({ id, typeId, kind, [kind]:
   createdAt: 0, updatedAt: 0, ...extra });
 const resources = [
   // Set inline in the page-span banner box: a 'top' float never lands above the line that
-  // cites it (gotcha: top-float-next-page). A :::space gives it air (gotcha: box-embed-no-gap).
+  // cites it (gotcha: top-float-next-page). It keeps the float gap above it, inside the box too.
   // 2400 px at 150 dpi is 406 mm: the photo shrinks to the box (gotcha: bitmap-print-size).
   resource('ridge', 'picture', 'bitmap', { fileId: 'ridge-2400.jpg', format: 'jpeg', width: 2400,
     height: 800 }, { placement: { position: 'here' },

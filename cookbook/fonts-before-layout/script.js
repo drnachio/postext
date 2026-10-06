@@ -95,7 +95,8 @@ const config = () => ({ // a new object per build (gotcha: config-cache-identity
   page: { width: mm(PAGE.width), height: mm(PAGE.height), dpi: DPI,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
       right: mm(MARGIN.outer), mirror: true } },
-  bodyText: bodyText(), paragraphStyles: paragraphStyles(), chipStyles: chipStyles(),
+  bodyText: { ...bodyText(), paragraphContainerSpacing: 'add' }, // samples stay two leads apart
+  paragraphStyles: paragraphStyles(), chipStyles: chipStyles(),
   headings: { fontFamily: DISPLAY, fontWeight: 900, color: col('ink'), levels: [cover(),
     { level: 2, fontSize: pt(16), lineHeight: pt(2 * LEAD), marginTop: pt(LEAD),
       marginBottom: pt(0) }] },

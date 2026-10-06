@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "code-listings-and-keycaps",
-  "sourceHash": "8bc19597e2255026d044ea9744533d0f49ea6f874a31d994f48f3831818c406a",
+  "sourceHash": "128163734d40f6ef3abd3e258d2a7093fcd5df91d8772ea0dcf2b72d103c27f8",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:59:12.376Z",
+  "capturedAt": "2026-10-06T18:34:18.860Z",
   "variants": {
     "en": {
-      "hash8": "541c0f54",
-      "vdtHash": "f82a560fd9736505c08acabe99076e61e6b86870",
+      "hash8": "0c86805c",
+      "vdtHash": "ddd5bcee45064eb7a44250e3f89ae31c1ac7a72b",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 924,
-        "buildMs": 7,
-        "totalMs": 1731,
+        "importMs": 160,
+        "fontsMs": 35,
+        "buildMs": 15,
+        "totalMs": 873,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1287,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 74022,
+          "bytes": 74026,
           "alt": "Opening page 49: Small tools, joined."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1287,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 92184,
+          "bytes": 92244,
           "alt": "Page 51: A script to keep."
         }
       ],
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "code-listings-and-keycaps.postext",
-        "bytes": 24597,
+        "bytes": 24557,
         "folio": "e7298095"
       },
       "detected": {
@@ -354,17 +354,23 @@
           "share": 0,
           "worst": 1.32
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 48 dropped (even: same page sides)"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "3cdc0b73",
-      "vdtHash": "47fdaf608e0b564345fb760067a9ec319894a451",
+      "hash8": "49365852",
+      "vdtHash": "9f072fae6f594938c4d73209868336609bc46a95",
       "timings": {
-        "importMs": 95,
-        "fontsMs": 16,
-        "buildMs": 8,
-        "totalMs": 732,
+        "importMs": 158,
+        "fontsMs": 25,
+        "buildMs": 15,
+        "totalMs": 821,
         "builds": 2
       },
       "specimen": {
@@ -398,7 +404,7 @@
           "h": 1287,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 75762,
+          "bytes": 75858,
           "alt": "Página de apertura 49: Piezas que encajan."
         },
         {
@@ -420,7 +426,7 @@
           "h": 1287,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 98938,
+          "bytes": 98972,
           "alt": "Página 51: Un guion para guardar."
         }
       ],
@@ -448,7 +454,7 @@
       },
       "sandbox": {
         "file": "code-listings-and-keycaps.postext",
-        "bytes": 24931,
+        "bytes": 24890,
         "folio": "e7298095"
       },
       "detected": {
@@ -702,7 +708,13 @@
           "share": 0,
           "worst": 1.3800000000000001
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 48 dropped (even: same page sides)"
+          }
+        ]
       }
     }
   }

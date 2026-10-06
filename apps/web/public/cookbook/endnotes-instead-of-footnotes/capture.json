@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "endnotes-instead-of-footnotes",
-  "sourceHash": "d6a5f15e5152af4d6cefde92d6ed0e0a3a55c6b9067297b346269f0722723939",
+  "sourceHash": "c36d178139e4f0cf7846ff8dacda9283dbfba96f400c48e8d5bf5aac34696c34",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:55:07.213Z",
+  "capturedAt": "2026-10-06T18:34:18.917Z",
   "variants": {
     "en": {
-      "hash8": "99a4d31c",
+      "hash8": "2e4fde9e",
       "vdtHash": "2bceacc428ae878a57ec22b4f6c556577b50651c",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 32,
-        "buildMs": 23,
-        "totalMs": 885,
+        "importMs": 161,
+        "fontsMs": 33,
+        "buildMs": 31,
+        "totalMs": 916,
         "builds": 2
       },
       "specimen": {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "endnotes-instead-of-footnotes.postext",
-        "bytes": 78145,
+        "bytes": 78138,
         "folio": "3d3a1e90"
       },
       "detected": {
@@ -317,8 +317,8 @@
         ],
         "features": [
           "bibliography",
-          "citations",
           "column-rule",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "opener-band",
@@ -342,11 +342,6 @@
           "worst": 1.78
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

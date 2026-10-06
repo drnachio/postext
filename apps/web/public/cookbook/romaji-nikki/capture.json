@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "romaji-nikki",
-  "sourceHash": "cdef91055c6037907903fcc04bc464d92c7da1eeea4167c4b182ddd54423c553",
+  "sourceHash": "676ecbba50cc4eb863d5eb281dc840037d1f4c7f2865a98e972b4278f7d82b6c",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:17.017Z",
+  "capturedAt": "2026-10-06T18:34:19.402Z",
   "variants": {
     "en": {
-      "hash8": "d9887115",
+      "hash8": "ed7a9d9a",
       "vdtHash": "7bb93b9bbaa0b252c27068235e4fd8aabff1c60d",
       "timings": {
-        "importMs": 181,
-        "fontsMs": 121,
-        "buildMs": 12,
-        "totalMs": 917,
+        "importMs": 199,
+        "fontsMs": 137,
+        "buildMs": 13,
+        "totalMs": 1006,
         "builds": 2
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "pdf": {
         "file": "romaji-nikki.pdf",
-        "bytes": 124442,
+        "bytes": 124443,
         "pages": 4
       },
       "sandbox": {
@@ -308,13 +308,13 @@
       }
     },
     "es": {
-      "hash8": "dd99a8e5",
+      "hash8": "8da8081b",
       "vdtHash": "d9d129e2a3e148050f130784d6cda2b64ffb58bf",
       "timings": {
-        "importMs": 241,
-        "fontsMs": 103,
-        "buildMs": 12,
-        "totalMs": 1005,
+        "importMs": 195,
+        "fontsMs": 127,
+        "buildMs": 13,
+        "totalMs": 986,
         "builds": 2
       },
       "specimen": {
@@ -412,7 +412,7 @@
       },
       "pdf": {
         "file": "romaji-nikki.pdf",
-        "bytes": 125073,
+        "bytes": 125078,
         "pages": 4
       },
       "sandbox": {

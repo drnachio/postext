@@ -129,9 +129,13 @@ describe("C25: characters the PDF cannot set", () => {
     // ō from the latin-ext file loadFonts added to Newsreader: cjkPdfProvider adds that file too.
     const romaji = [{ ch: "ō", code: "U+014D", where: "page 2", ownFile: true }];
     expect(of("C25", runChecks(input({ facts: facts({ nonLatin: romaji }) })))).toEqual([]);
-    // fontsourceProvider (the pdf block alone) embeds the latin file only.
+    // fontsourceProvider (the pdf block alone) embeds the latin-ext and greek
+    // files the face holds on screen too (#541); a letter no loaded file holds is named.
     const latinKit = meta({ kit: ["core", "fonts", "viewer", "pdf"] });
-    expect(of("C25", runChecks(input({ meta: latinKit, facts: facts({ nonLatin: romaji }) })))[0].detail).toBe("outside the latin subset: ō U+014D");
+    const chi = [...romaji, { ch: "χ", code: "U+03C7", where: "page 4", ownFile: true }];
+    expect(of("C25", runChecks(input({ meta: latinKit, facts: facts({ nonLatin: chi }) })))).toEqual([]);
+    const stray = [{ ch: "ō", code: "U+014D", where: "page 2" }];
+    expect(of("C25", runChecks(input({ meta: latinKit, facts: facts({ nonLatin: stray }) })))[0].detail).toBe("outside the latin subset: ō U+014D");
     // A Greek letter from a greek file the recipe loaded itself: the provider adds latin-ext only.
     const greek = [...romaji, { ch: "λ", code: "U+03BB", where: "page 3", ownFile: true }];
     expect(of("C25", runChecks(input({ facts: facts({ nonLatin: greek }) })))[0].detail).toBe("outside the latin subset: λ U+03BB");

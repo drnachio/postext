@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "haiku-and-tanka",
-  "sourceHash": "2b3b3481a82db4ceac1f09914241ce3a6b014e9af019d31307d2ca8eae424814",
+  "sourceHash": "b8e15956e93e2e8755994f9b1a79a5706e9f88eca370df8d0c79789847da6112",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.894Z",
+  "capturedAt": "2026-10-06T18:34:18.995Z",
   "variants": {
     "en": {
-      "hash8": "f01b09e2",
+      "hash8": "2f5fd74c",
       "vdtHash": "dd665adf477343b4015910b2dfe3e4e9e458f551",
       "timings": {
-        "importMs": 149,
-        "fontsMs": 300,
-        "buildMs": 51,
-        "totalMs": 1063,
+        "importMs": 215,
+        "fontsMs": 313,
+        "buildMs": 61,
+        "totalMs": 1171,
         "builds": 1
       },
       "specimen": {
@@ -368,13 +368,13 @@
       }
     },
     "es": {
-      "hash8": "2b371a91",
+      "hash8": "37f80a3f",
       "vdtHash": "bd8892e326a453bb715b186c1d64f935a83d4b61",
       "timings": {
-        "importMs": 173,
-        "fontsMs": 283,
-        "buildMs": 52,
-        "totalMs": 1076,
+        "importMs": 207,
+        "fontsMs": 302,
+        "buildMs": 59,
+        "totalMs": 1142,
         "builds": 1
       },
       "specimen": {

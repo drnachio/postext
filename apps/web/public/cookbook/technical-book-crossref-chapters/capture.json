@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "technical-book-crossref-chapters",
-  "sourceHash": "aac602101c1cf937abed1bfaa30377abd969507eedf5aa394a8484d8e38da2a6",
+  "sourceHash": "287760a0f32113acdfd5806268c90c04f5eef1ca47b514ee3d47fc92cf7ed4af",
   "engine": {
-    "postext": "1.12.1",
-    "postextPdf": "1.12.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T21:33:42.395Z",
+  "capturedAt": "2026-10-06T18:34:19.486Z",
   "variants": {
     "en": {
-      "hash8": "7dc87f5c",
+      "hash8": "ce5f4702",
       "vdtHash": "e1f58045d77de2db248f5072a9578a5e8b54f424",
       "timings": {
-        "importMs": 329,
-        "fontsMs": 2115,
-        "buildMs": 37,
-        "totalMs": 3136,
+        "importMs": 187,
+        "fontsMs": 78,
+        "buildMs": 50,
+        "totalMs": 1033,
         "builds": 2
       },
       "specimen": {
@@ -178,12 +178,12 @@
       },
       "pdf": {
         "file": "technical-book-crossref-chapters.pdf",
-        "bytes": 445297,
+        "bytes": 445303,
         "pages": 9
       },
       "sandbox": {
         "file": "technical-book-crossref-chapters.postext",
-        "bytes": 66703,
+        "bytes": 66684,
         "folio": "e5e8575d"
       },
       "detected": {
@@ -376,7 +376,7 @@
           "tableStyle",
           "toc"
         ],
-        "configLeaves": 434,
+        "configLeaves": 442,
         "designElements": 20,
         "directives": [
           ":::toc",
@@ -473,13 +473,13 @@
       }
     },
     "es": {
-      "hash8": "a76c93d0",
+      "hash8": "b5bb37c6",
       "vdtHash": "b4b0b8a6a796295037cf26db3e4cb19c2f61731b",
       "timings": {
-        "importMs": 134,
-        "fontsMs": 66,
-        "buildMs": 35,
-        "totalMs": 943,
+        "importMs": 174,
+        "fontsMs": 65,
+        "buildMs": 49,
+        "totalMs": 1001,
         "builds": 2
       },
       "specimen": {
@@ -645,7 +645,7 @@
       },
       "sandbox": {
         "file": "technical-book-crossref-chapters.postext",
-        "bytes": 68021,
+        "bytes": 68002,
         "folio": "e5e8575d"
       },
       "detected": {
@@ -838,7 +838,7 @@
           "tableStyle",
           "toc"
         ],
-        "configLeaves": 434,
+        "configLeaves": 442,
         "designElements": 20,
         "directives": [
           ":::toc",
@@ -931,13 +931,7 @@
           "share": 0,
           "worst": 1.73
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

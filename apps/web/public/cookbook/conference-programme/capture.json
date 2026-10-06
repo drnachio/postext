@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "conference-programme",
-  "sourceHash": "b9d3cc49176caf41f9707830c6fb9270e38555752af795f583bd8f86eeaf5215",
+  "sourceHash": "1afc8302e3c17caa514a7837bc97e2875ce17a0b5271273341badda73fe732df",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:01:46.915Z",
+  "capturedAt": "2026-10-06T18:34:18.872Z",
   "variants": {
     "en": {
-      "hash8": "b86ce7cb",
-      "vdtHash": "09cdd3d0682320955e576308bc3c4a3083478b0a",
+      "hash8": "32f53acf",
+      "vdtHash": "de4ea46dde1c68725e907636d3a4d6b6e0c843dc",
       "timings": {
-        "importMs": 195,
-        "fontsMs": 1076,
-        "buildMs": 14,
-        "totalMs": 1918,
+        "importMs": 154,
+        "fontsMs": 39,
+        "buildMs": 27,
+        "totalMs": 898,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1412,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 132176,
+          "bytes": 132014,
           "alt": "Opening page 2: Dijous."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1412,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 75874,
+          "bytes": 75884,
           "alt": "Page 3. Taula 1. Dijous 12 de novembre. ⁤ Tipografia · ⁤ Digital · ⁤ Edició."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1412,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 121140,
+          "bytes": 121046,
           "alt": "Page 4: Al vespre. Taula 1. Dijous 12 de novembre. ⁤ Tipografia · ⁤ Digital · ⁤ Edició (continuació)."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1412,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 81392,
+          "bytes": 81316,
           "alt": "Opening page 5: Divendres. Taula 2. Divendres 13 de novembre. ⁤ Tipografia · ⁤ Digital · ⁤ Edició."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1412,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 97434,
+          "bytes": 97458,
           "alt": "Page 6: Com arribar. Figura 1. La Impremta, planta baixa."
         }
       ],
@@ -141,7 +141,7 @@
       },
       "sandbox": {
         "file": "conference-programme.postext",
-        "bytes": 32703,
+        "bytes": 32740,
         "folio": "1751ca77"
       },
       "detected": {
@@ -305,7 +305,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 357,
+        "configLeaves": 365,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
@@ -376,7 +376,7 @@
         "features": [
           "bibliography",
           "cell-fills",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "localised-labels",
@@ -403,23 +403,17 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "b86ce7cb",
-      "vdtHash": "09cdd3d0682320955e576308bc3c4a3083478b0a",
+      "hash8": "bbb9c703",
+      "vdtHash": "de4ea46dde1c68725e907636d3a4d6b6e0c843dc",
       "timings": {
-        "importMs": 71,
-        "fontsMs": 21,
-        "buildMs": 14,
-        "totalMs": 792,
+        "importMs": 163,
+        "fontsMs": 35,
+        "buildMs": 28,
+        "totalMs": 900,
         "builds": 2
       },
       "specimen": {
@@ -464,7 +458,7 @@
           "h": 1412,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 132176,
+          "bytes": 132014,
           "alt": "Página de apertura 2: Dijous."
         },
         {
@@ -475,7 +469,7 @@
           "h": 1412,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 75874,
+          "bytes": 75884,
           "alt": "Página 3. Taula 1. Dijous 12 de novembre. ⁤ Tipografia · ⁤ Digital · ⁤ Edició."
         },
         {
@@ -486,7 +480,7 @@
           "h": 1412,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 121140,
+          "bytes": 121046,
           "alt": "Página 4: Al vespre. Taula 1. Dijous 12 de novembre. ⁤ Tipografia · ⁤ Digital · ⁤ Edició (continuació)."
         },
         {
@@ -497,7 +491,7 @@
           "h": 1412,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 81392,
+          "bytes": 81316,
           "alt": "Página de apertura 5: Divendres. Taula 2. Divendres 13 de novembre. ⁤ Tipografia · ⁤ Digital · ⁤ Edició."
         },
         {
@@ -508,7 +502,7 @@
           "h": 1412,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 97434,
+          "bytes": 97458,
           "alt": "Página 6: Com arribar. Figura 1. La Impremta, planta baixa."
         }
       ],
@@ -544,7 +538,7 @@
       },
       "sandbox": {
         "file": "conference-programme.postext",
-        "bytes": 32707,
+        "bytes": 32745,
         "folio": "1751ca77"
       },
       "detected": {
@@ -708,7 +702,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 357,
+        "configLeaves": 365,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
@@ -779,7 +773,7 @@
         "features": [
           "bibliography",
           "cell-fills",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "localised-labels",
@@ -806,13 +800,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

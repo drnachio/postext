@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "business-section-on-salmon",
-  "sourceHash": "26ec5b8ecced163b8d016c317c445d938ea8e1a4491c4126a00f0c4ef889faa6",
+  "sourceHash": "2045330640994ad4d77b50d6cc67c1caea3fcc4ab1b33d3d243a7af5d002cadf",
   "engine": {
-    "postext": "1.18.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:18:54.455Z",
+  "capturedAt": "2026-10-06T18:34:18.755Z",
   "variants": {
     "en": {
       "hash8": "a6def7aa",
       "vdtHash": "cca3cd24ff16e07d4cb514310ccfafaa519ae0ae",
       "timings": {
-        "importMs": 1115,
-        "fontsMs": 297,
-        "buildMs": 826,
-        "totalMs": 4360,
+        "importMs": 155,
+        "fontsMs": 89,
+        "buildMs": 612,
+        "totalMs": 6704,
         "builds": 2
       },
       "specimen": {
@@ -486,11 +486,6 @@
             "check": "C24",
             "severity": "warn",
             "detail": "22 of 494 justified lines (4.5 %) stretch past 2× (worst 2.98×); loosest: p. 3 2.98× “Saltmarsh, Fenner’s Green and”, p. 1 2.86× “council had expected, and the”, p. 7 2.71× “The company estimated”"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

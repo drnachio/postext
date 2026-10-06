@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-dictionary-page",
-  "sourceHash": "7b465b5275d2156fbd5be8bb093405d2e53cbcb69c2adcb35557991360cfe0fd",
+  "sourceHash": "d272ce5bb56933f29779da3dd4f9ef0df3d89f79216af4e5054ca98929540d22",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:27.182Z",
+  "capturedAt": "2026-10-06T18:34:18.806Z",
   "variants": {
     "en": {
-      "hash8": "94e0ea90",
+      "hash8": "bdf16374",
       "vdtHash": "83c4dea9b86c080bc171ade893e793a82f7ea796",
       "timings": {
-        "importMs": 297,
-        "fontsMs": 380,
+        "importMs": 204,
+        "fontsMs": 349,
         "buildMs": 13,
-        "totalMs": 1441,
+        "totalMs": 1224,
         "builds": 2
       },
       "specimen": {
@@ -300,13 +300,13 @@
       }
     },
     "es": {
-      "hash8": "53f1dcf3",
+      "hash8": "663bd9ae",
       "vdtHash": "97d639df1a3ade0191fd3263536c04070e71b84a",
       "timings": {
-        "importMs": 247,
-        "fontsMs": 311,
-        "buildMs": 12,
-        "totalMs": 1220,
+        "importMs": 265,
+        "fontsMs": 321,
+        "buildMs": 14,
+        "totalMs": 1241,
         "builds": 2
       },
       "specimen": {

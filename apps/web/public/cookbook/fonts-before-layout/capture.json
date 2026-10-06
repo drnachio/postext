@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "fonts-before-layout",
-  "sourceHash": "7d01c616bc1f9f375228900d2d8b117c7c85625e95cba9919d3e66acc21e0455",
+  "sourceHash": "59395e8c61be6294fb8494fb2e58adf36fa0253f94e587ac7c2d3a13b1dbbf41",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:26:39.036Z",
+  "capturedAt": "2026-10-06T18:34:18.960Z",
   "variants": {
     "en": {
-      "hash8": "5357fb32",
-      "vdtHash": "9100be99e7b287372855704f742b2b360b51b9a8",
+      "hash8": "5d3ea477",
+      "vdtHash": "e5a86dd0a8926294941f562709b7d700cfc0b283",
       "timings": {
-        "importMs": 215,
-        "fontsMs": 1,
-        "buildMs": 4,
-        "totalMs": 9153,
+        "importMs": 159,
+        "fontsMs": 2,
+        "buildMs": 11,
+        "totalMs": 8687,
         "builds": 3
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Ysabeau Office"
         ],
         "pages": 4,
-        "ownLines": 216
+        "ownLines": 217
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 60234,
+          "bytes": 60122,
           "alt": "Opening page 1: Three faces, proofed."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 68716,
+          "bytes": 68914,
           "alt": "Page 3: The proof. Table 1. Faces this document asked for, read from its own layout."
         },
         {
@@ -82,8 +82,8 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 84148,
-          "alt": "Page 4: What the first build got wrong. Figure 1. The first paragraph of page 1 as the first build set it, measured before the fonts had arrived (above), and as the last build set it (below). The first build broke 22 of its 43 lines of text elsewhere. The rule marks the measure."
+          "bytes": 83752,
+          "alt": "Page 4: What the first build got wrong. Figure 1. The first paragraph of page 1 as the first build set it, measured before the fonts had arrived (above), and as the last build set it (below). The first build broke 23 of its 43 lines of text elsewhere. The rule marks the measure."
         }
       ],
       "spreads": [
@@ -114,7 +114,7 @@
       },
       "sandbox": {
         "file": "fonts-before-layout.postext",
-        "bytes": 417411,
+        "bytes": 423773,
         "folio": "4b67afad"
       },
       "detected": {
@@ -134,6 +134,7 @@
           "bodyText.fontSize",
           "bodyText.italicColor",
           "bodyText.lineHeight",
+          "bodyText.paragraphContainerSpacing",
           "bodyText.paragraphSpacing",
           "bodyText.referenceColor",
           "bodyText.textAlign",
@@ -251,7 +252,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 268,
+        "configLeaves": 277,
         "designElements": 10,
         "directives": [
           ":::paragraphs",

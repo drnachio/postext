@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "side-heads-hanging-numbers",
-  "sourceHash": "66c23601d25ffbb515c785214ec3674b7630e6fc0568f23615c3b2351484ed5f",
+  "sourceHash": "4b58824ca9547e5d3b5ebd9a5255a33df6d353d0336555034ae34a923ba50d9d",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:56:32.274Z",
+  "capturedAt": "2026-10-06T18:34:19.443Z",
   "variants": {
     "es": {
-      "hash8": "104f0ba1",
-      "vdtHash": "01020a5562df7f1a5d64a0f24f562308b409b3a1",
+      "hash8": "47014947",
+      "vdtHash": "cc90da5f778b435d2f2a01e5a54259e7f794e1a7",
       "timings": {
-        "importMs": 233,
+        "importMs": 157,
         "fontsMs": 33,
-        "buildMs": 12,
-        "totalMs": 985,
+        "buildMs": 20,
+        "totalMs": 873,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif Display"
         ],
         "pages": 5,
-        "ownLines": 249
+        "ownLines": 250
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 93452,
+          "bytes": 93400,
           "alt": "Página de apertura 1: Bases del concurso."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 134322,
+          "bytes": 134278,
           "alt": "Página 2: 2 El emplazamiento. Figura 1. La parcela, 1:2000. Lonja y caseta de básculas, en gris; seis tamarindos en el borde norte. Flechas rojas: accesos posibles; flecha gris: servicio."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 77472,
+          "bytes": 77024,
           "alt": "Página 3: 3.2 Áreas internas. Figura 2. Fachada al muelle, 1:300. En rojo, los cuatro pórticos del extremo este, con las armaduras corroídas. · Tabla 1. Programa de superficies útiles por zonas."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 117254,
+          "bytes": 117270,
           "alt": "Página 4: 5 Entrega de propuestas."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1414,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 46508,
+          "bytes": 46378,
           "alt": "Página 5: 6.2 Premios. Tabla 2. Calendario del concurso."
         }
       ],
@@ -126,7 +126,7 @@
       },
       "sandbox": {
         "file": "side-heads-hanging-numbers.postext",
-        "bytes": 27459,
+        "bytes": 27487,
         "folio": "2324bd6f"
       },
       "detected": {
@@ -273,7 +273,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 323,
+        "configLeaves": 333,
         "designElements": 15,
         "directives": [
           ":::callout",
@@ -323,9 +323,9 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
           "column-and-a-half",
           "column-balancing",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bundle-round-trip",
-  "sourceHash": "ad5e266bca297197ab0bad99f5d2d2cf2c5f05beefe0105b47fa0b59e154c44f",
+  "sourceHash": "8420c03e87a46bf1d1dff541e94bdb660e270a0f2104d91c4141444aaeae4740",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:40:48.507Z",
+  "capturedAt": "2026-10-06T18:34:18.747Z",
   "variants": {
     "en": {
-      "hash8": "c823c651",
-      "vdtHash": "d2fe912e592ee9899c2345dd91df86aa2b3ff987",
+      "hash8": "87ed4cb2",
+      "vdtHash": "9d78aec63b8001efc6fe8ab9462147635d9429b5",
       "timings": {
-        "importMs": 580,
-        "fontsMs": 158,
-        "buildMs": 110,
-        "totalMs": 1768,
+        "importMs": 209,
+        "fontsMs": 119,
+        "buildMs": 151,
+        "totalMs": 1754,
         "builds": 1
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 2121,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 69566,
+          "bytes": 69496,
           "alt": "Opening page 1: The Tide Mill."
         },
         {
@@ -61,7 +61,7 @@
           "h": 2121,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 137618,
+          "bytes": 137574,
           "alt": "Page 2: Two tides a day. Figure 1. Two hours after high water: the pond turns the wheel, and the estuary has fallen below the dashed line. · Table 1. Opening hours. Last entry 45 minutes before closing."
         }
       ],
@@ -89,12 +89,12 @@
       },
       "pdf": {
         "file": "bundle-round-trip.pdf",
-        "bytes": 40282,
+        "bytes": 39053,
         "pages": 2
       },
       "sandbox": {
         "file": "bundle-round-trip.postext",
-        "bytes": 147607,
+        "bytes": 147674,
         "folio": "c651b1f6"
       },
       "detected": {
@@ -174,6 +174,7 @@
           "headings.levels[].marginTop",
           "headings.levels[].span",
           "layout",
+          "layout.inlineResourceGap",
           "layout.layoutType",
           "locale",
           "page",
@@ -230,7 +231,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 239,
+        "configLeaves": 249,
         "designElements": 8,
         "directives": [
           ":::pagebreak",
@@ -286,8 +287,8 @@
         ],
         "features": [
           "bundles",
-          "citations",
           "custom-fonts",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "inline-embeds",
@@ -313,23 +314,17 @@
           "share": 0,
           "worst": 1.31
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "2262a441",
-      "vdtHash": "b8016586a7b5c4982f6a8c8b14793753600ce3bb",
+      "hash8": "bc4175ae",
+      "vdtHash": "671bbcedbc544bcd4c4314863a203f82da3b2c79",
       "timings": {
-        "importMs": 291,
-        "fontsMs": 72,
-        "buildMs": 36,
-        "totalMs": 1041,
+        "importMs": 201,
+        "fontsMs": 65,
+        "buildMs": 42,
+        "totalMs": 879,
         "builds": 1
       },
       "specimen": {
@@ -362,7 +357,7 @@
           "h": 2121,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 80322,
+          "bytes": 80266,
           "alt": "Página de apertura 1: El molino de mareas."
         },
         {
@@ -373,7 +368,7 @@
           "h": 2121,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 143460,
+          "bytes": 143422,
           "alt": "Página 2: Dos mareas al día. Figura 1. Dos horas tras la pleamar: el estanque mueve el rodezno y la ría ha quedado por debajo de la línea discontinua. · Tabla 1. Horario. Última entrada 45 minutos antes del cierre."
         }
       ],
@@ -401,12 +396,12 @@
       },
       "pdf": {
         "file": "bundle-round-trip.pdf",
-        "bytes": 42550,
+        "bytes": 41383,
         "pages": 2
       },
       "sandbox": {
         "file": "bundle-round-trip.postext",
-        "bytes": 149473,
+        "bytes": 149506,
         "folio": "c651b1f6"
       },
       "detected": {
@@ -486,6 +481,7 @@
           "headings.levels[].marginTop",
           "headings.levels[].span",
           "layout",
+          "layout.inlineResourceGap",
           "layout.layoutType",
           "locale",
           "page",
@@ -542,7 +538,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 239,
+        "configLeaves": 249,
         "designElements": 8,
         "directives": [
           ":::pagebreak",
@@ -598,8 +594,8 @@
         ],
         "features": [
           "bundles",
-          "citations",
           "custom-fonts",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "inline-embeds",
@@ -625,13 +621,7 @@
           "share": 0,
           "worst": 1.29
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

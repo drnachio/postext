@@ -16,9 +16,9 @@ Take the values from the table, never from a screenshot, an old sign or a colour
 
 ## Colour and contrast
 
-Line colours are for fills. A line badge is a square in the line colour with the number inside it: white on lines :swatch{color="line-1"} 1, :swatch{color="line-4"} 4 and :swatch{color="line-5"} 5, ink on lines :swatch{color="line-2"} 2 and :swatch{color="line-3"} 3, whose teal and yellow measure 2.3:1 and 1.5:1 against white, below the 3:1 that large type needs.
+Line colours are for fills. A line badge is a square in the line colour with the number inside it: white on lines :swatch{color="line-1"} 1, :swatch{color="line-4"} 4 and :swatch{color="line-5"} 5, ink on lines :swatch{color="line-2"} 2 and :swatch{color="line-3"} 3, whose teal and yellow measure 2.3:1 and 1.5:1 against white, below the 3:1 that large type needs.
 
-Small text is never set in a line colour. Warnings and confirmations use :swatch{color="signal-red"} Signal red and :swatch{color="signal-green"} Signal green, which reach 5.5:1 and 5.1:1 on white.
+Small text is never set in a line colour. Warnings and confirmations use :swatch{color="signal-red"} Signal red and :swatch{color="signal-green"} Signal green, which reach 5.5:1 and 5.1:1 on white.
 
 ## Neutrals
 

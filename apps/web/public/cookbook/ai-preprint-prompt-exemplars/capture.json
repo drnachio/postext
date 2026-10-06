@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ai-preprint-prompt-exemplars",
-  "sourceHash": "9b3f0aeb5b404fc99dd622bf44e9fd1545f90bb8469c4742d11fc76c024953cd",
+  "sourceHash": "560048c6bb16b9fab95a059cbc4a268182671d275e939fc07567b51fe17ea3b3",
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T16:08:17.511Z",
+  "capturedAt": "2026-10-06T18:34:18.583Z",
   "variants": {
     "en": {
-      "hash8": "c66a5d34",
-      "vdtHash": "5d4b1cb8ec878b3f00785096c47dcd019b5a2c93",
+      "hash8": "844ed938",
+      "vdtHash": "4813f98bfd4fbd520eabf7f094830a42cf259800",
       "timings": {
-        "importMs": 325,
-        "fontsMs": 84,
-        "buildMs": 389,
-        "totalMs": 2412,
+        "importMs": 644,
+        "fontsMs": 546,
+        "buildMs": 1581,
+        "totalMs": 9052,
         "builds": 2
       },
       "specimen": {
@@ -62,7 +62,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 231084,
+          "bytes": 230844,
           "alt": "Page 2: 1 Introduction."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 200502,
+          "bytes": 200556,
           "alt": "Page 3: 3 Arithmetic Reasoning. Figure 2. PaLM 540B uses chain-of-thought prompting to achieve new state-of-the-art performance on the GSM8K benchmark of math word problems. Finetuned GPT-3 and prior best are from Cobbe et al. (2021)."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 157792,
+          "bytes": 157806,
           "alt": "Page 4: 4 Commonsense Reasoning. Figure 4. Chain-of-thought prompting enables large language models to solve challenging math problems. Notably, chain-of-thought reasoning is an emergent ability of increasing model scale. Prior best numbers are from Cobbe et al. (2021) for GSM…"
         },
         {
@@ -95,7 +95,7 @@
           "h": 1294,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 146816,
+          "bytes": 146820,
           "alt": "Page 5: 5 Symbolic Reasoning. Table 2. Standard prompting versus chain of thought prompting on five arithmetic reasoning benchmarks. Note that chain of thought prompting is an emergent ability of model scale—it does not positively impact performance until used with a model of…"
         },
         {
@@ -106,7 +106,7 @@
           "h": 1294,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 209020,
+          "bytes": 208972,
           "alt": "Page 6: 6 Discussion."
         },
         {
@@ -153,7 +153,7 @@
       },
       "pdf": {
         "file": "ai-preprint-prompt-exemplars.pdf",
-        "bytes": 598376,
+        "bytes": 597230,
         "pages": 7
       },
       "sandbox": {
@@ -527,7 +527,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.33 MB (warning at 0.9 MB for 7 pages)"
+            "detail": "the edition's images weigh 1.32 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the build took 1581 ms (warning at 1.5 s)"
           }
         ]
       }

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "puzzle-book",
-  "sourceHash": "f785423a4df9010796234153b40f605fcde1afcefdf9046be441f7e18d68ce1d",
+  "sourceHash": "b522dafbe732f67ba70dbabd59f29e75937f321e92d96c211fbdf3894d2c9750",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T19:35:08.003Z",
+  "capturedAt": "2026-10-06T18:34:19.336Z",
   "variants": {
     "en": {
-      "hash8": "70c93870",
-      "vdtHash": "380ace4990721b61eb9e9aafe90cc47051ddbf40",
+      "hash8": "d5442695",
+      "vdtHash": "360ddfa64775389f28df5511693914c6f437027e",
       "timings": {
-        "importMs": 80,
-        "fontsMs": 24,
-        "buildMs": 7,
-        "totalMs": 783,
+        "importMs": 148,
+        "fontsMs": 39,
+        "buildMs": 15,
+        "totalMs": 826,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1000,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 45348,
+          "bytes": 45358,
           "alt": "Opening page 1: Summer Workbook."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1000,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 52236,
+          "bytes": 52312,
           "alt": "Opening page 3: Word Search."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1000,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 72610,
+          "bytes": 72650,
           "alt": "Opening page 5: Answers. Solution 1. Crossword · Solution 2. Word search · Solution 3. Maze."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "puzzle-book.postext",
-        "bytes": 23206,
+        "bytes": 23203,
         "folio": "c8e0f46e"
       },
       "detected": {
@@ -365,13 +365,13 @@
       }
     },
     "es": {
-      "hash8": "91b919bc",
-      "vdtHash": "73e2b176974477cab7120bc126a1621151a9fd63",
+      "hash8": "2ebfc266",
+      "vdtHash": "b3e5133b790dae57c42f4766e86aded1420114ee",
       "timings": {
-        "importMs": 180,
-        "fontsMs": 977,
-        "buildMs": 7,
-        "totalMs": 1785,
+        "importMs": 157,
+        "fontsMs": 40,
+        "buildMs": 30,
+        "totalMs": 3246,
         "builds": 2
       },
       "specimen": {
@@ -404,7 +404,7 @@
           "h": 1000,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 46830,
+          "bytes": 46850,
           "alt": "Página de apertura 1: Cuaderno de verano."
         },
         {
@@ -426,7 +426,7 @@
           "h": 1000,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 54210,
+          "bytes": 54204,
           "alt": "Página de apertura 3: Sopa de letras."
         },
         {
@@ -448,7 +448,7 @@
           "h": 1000,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 74450,
+          "bytes": 74350,
           "alt": "Página de apertura 5: Soluciones. Solución 1. Crucigrama · Solución 2. Sopa de letras · Solución 3. Laberinto."
         }
       ],
@@ -480,7 +480,7 @@
       },
       "sandbox": {
         "file": "puzzle-book.postext",
-        "bytes": 24012,
+        "bytes": 24011,
         "folio": "c8e0f46e"
       },
       "detected": {

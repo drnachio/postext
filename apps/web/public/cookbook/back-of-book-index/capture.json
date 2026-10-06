@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "back-of-book-index",
-  "sourceHash": "2fc65028c8b80777c956586a9f4aece60180fe1283014393fa3aa42984129d89",
+  "sourceHash": "320a01d5ea0e7717aa7a1dadbb692a0d1a2b0283c0f2c9ce520d877520dba1c6",
   "engine": {
-    "postext": "1.7.0",
-    "postextPdf": "1.7.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T09:58:55.403Z",
+  "capturedAt": "2026-10-06T18:34:18.662Z",
   "variants": {
     "en": {
-      "hash8": "a50f38fd",
+      "hash8": "dcea6941",
       "vdtHash": "c7f1e624bf90550bed5b62f69b3d301932919a12",
       "timings": {
-        "importMs": 495,
-        "fontsMs": 6244,
-        "buildMs": 59,
-        "totalMs": 7533,
+        "importMs": 199,
+        "fontsMs": 63,
+        "buildMs": 73,
+        "totalMs": 1046,
         "builds": 2
       },
       "specimen": {
@@ -198,7 +198,7 @@
       },
       "sandbox": {
         "file": "back-of-book-index.postext",
-        "bytes": 29715,
+        "bytes": 29689,
         "folio": "8dec2b23"
       },
       "detected": {
@@ -408,7 +408,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 420,
+        "configLeaves": 429,
         "designElements": 17,
         "directives": [
           ":::callout",
@@ -471,8 +471,8 @@
         "features": [
           "back-of-book-index",
           "callout-styles",
-          "citations",
           "column-and-a-half",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -518,13 +518,13 @@
       }
     },
     "es": {
-      "hash8": "dbd4142c",
+      "hash8": "69f7fa97",
       "vdtHash": "9d1482384dc3a95e72c83b7edb688a3adeff615f",
       "timings": {
-        "importMs": 474,
-        "fontsMs": 1481,
-        "buildMs": 198,
-        "totalMs": 5650,
+        "importMs": 218,
+        "fontsMs": 62,
+        "buildMs": 81,
+        "totalMs": 1089,
         "builds": 2
       },
       "specimen": {
@@ -700,12 +700,12 @@
       },
       "pdf": {
         "file": "back-of-book-index.pdf",
-        "bytes": 218646,
+        "bytes": 218671,
         "pages": 10
       },
       "sandbox": {
         "file": "back-of-book-index.postext",
-        "bytes": 30295,
+        "bytes": 30276,
         "folio": "8dec2b23"
       },
       "detected": {
@@ -915,7 +915,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 420,
+        "configLeaves": 429,
         "designElements": 17,
         "directives": [
           ":::callout",
@@ -978,8 +978,8 @@
         "features": [
           "back-of-book-index",
           "callout-styles",
-          "citations",
           "column-and-a-half",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",

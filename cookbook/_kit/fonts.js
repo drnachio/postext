@@ -1,10 +1,9 @@
-// ─── Kit · fonts v1 ── the same in every recipe · postext.dev/cookbook ────────
-// Postext measures text with the faces the browser has loaded, and caches the
-// widths, so every face must be ready before the first build. Faces come from
-// Fontsource: the same static files the PDF embeds, so screen and PDF agree.
+// ─── Kit · fonts v2 ── the same in every recipe · postext.dev/cookbook
+// Postext measures with the loaded faces and caches the widths: load every face
+// before the first build, from Fontsource, the files the PDF embeds too.
 
 /** faces = { 'Family Name': ['400', '400i', '700'] }. `text` is the sample:
- *  letters beyond Latin-1 (č, ł, ő…) also load the latin-ext files. With
+ *  č ł † α χ also load latin-ext and greek files (kitSubsetsFor). With
  *  `optional`, a face Fontsource does not ship is skipped instead of failing.
  *  Resolves to the number of faces added. */
 async function loadFonts(faces, text = '', { optional = false } = {}) {
@@ -14,17 +13,17 @@ async function loadFonts(faces, text = '', { optional = false } = {}) {
       + 'U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
     'latin-ext': 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,'
       + 'U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF',
+    greek: 'U+0370-03FF',
   };
-  const subsets = /[Ā-˿Ḁ-ỿ]/.test(text) ? ['latin', 'latin-ext'] : ['latin'];
   const jobs = [];
   let added = 0;
   for (const [family, specs] of Object.entries(faces)) {
     const id = fontsourceId(family);
-    const meta = optional ? await fontsourceMeta(family) : null;
-    for (const spec of new Set(specs)) {
-      const weight = parseInt(spec, 10);
-      const style = spec.endsWith('i') ? 'italic' : 'normal';
-      if (hasFace(family, weight, style)) continue;
+    const todo = [...new Set(specs)].map((spec) => [parseInt(spec, 10), spec.endsWith('i') ? 'italic' : 'normal'])
+      .filter(([weight, style]) => !hasFace(family, weight, style)); // before any await
+    const meta = optional || /[^\0-ÿ]/u.test(text) ? await fontsourceMeta(family) : null;
+    const subsets = ['latin', ...kitSubsetsFor(text, meta)];
+    for (const [weight, style] of todo) {
       if (optional && !(meta?.weights.includes(weight) && meta.styles.includes(style))) continue;
       for (const subset of subsets) {
         const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-${subset}-${weight}-${style}.woff2`;
@@ -40,10 +39,8 @@ async function loadFonts(faces, text = '', { optional = false } = {}) {
   return added;
 }
 
-/** Runs `build` (a buildDocument or buildBundle call) and checks the faces
- *  the pages use. A regular face missing from FONTS is loaded with a warning;
- *  bold and italic variants are loaded when the family ships them. Then the
- *  measurement caches are cleared and the build runs again. */
+/** Runs `build` and loads any face the pages use that FONTS missed (a regular
+ *  one with a warning), then clears the measurement cache and builds again. */
 async function buildWithFonts(build, text = '') {
   const tried = new Set();
   for (let round = 0; round < 3; round++) {
@@ -68,8 +65,7 @@ async function buildWithFonts(build, text = '') {
   throw new Error('The fonts did not settle after three builds.');
 }
 
-/** Every font string of the layout. `base` marks a block's own face; its
- *  bold, italic and bold-italic variants are listed whether or not used. */
+/** Every font string of the layout; `base` marks a block's own face. */
 function fontStringsOf(doc) {
   const found = new Map();
   const walk = (node) => {
@@ -95,8 +91,8 @@ function parseFont(font) {
   return { family: m[3].replace(/^["']|["']$/g, ''), weight, style: m[1] ? 'italic' : 'normal' };
 }
 
-/** True when a loaded FontFace covers exactly this family, weight and style
- *  (document.fonts.check() is also true for families nobody declared). */
+/** A loaded FontFace covers this family, weight and style (fonts.check() would
+ *  also say yes for families nobody declared). */
 function hasFace(family, weight, style) {
   for (const face of document.fonts) {
     if (face.status !== 'loaded' || face.style !== style) continue;
@@ -107,10 +103,16 @@ function hasFace(family, weight, style) {
   return false;
 }
 
+/** The files beyond latin `text` needs that `meta`'s family ships. */
+function kitSubsetsFor(text, meta) {
+  return [[/[Ā-˿ᴀ-ᶿḀ-ỿ†ℓⱠ-Ɀ꜠-ꟿ]/u, 'latin-ext'], [/[Ͱ-Ͽ]/u, 'greek']]
+    .filter(([re, x]) => re.test(text) && meta?.subsets?.includes(x)).map(([, x]) => x);
+}
+
 /** Fontsource's id for a family: 'Source Serif 4' → 'source-serif-4'. */
 function fontsourceId(family) { return family.toLowerCase().replace(/\s+/g, '-'); }
 
-/** The weights and styles a family ships ({ weights: [400, 700], styles: ['normal', 'italic'] }), or null. */
+/** The family's Fontsource metadata (weights, styles, subsets), or null. */
 function fontsourceMeta(family) {
   fontsourceMeta.cache ??= new Map();
   const id = fontsourceId(family);

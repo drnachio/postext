@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "spanish-pocket-novel",
-  "sourceHash": "9ac065aa9d49163470ed6b7bae39f11f10801d3f9508d7e4a49d1630601d8491",
+  "sourceHash": "890a9e92a57813fb57c052cea6e984520df5fbb3d1975841f2c4660ec51f8a7c",
   "engine": {
-    "postext": "1.12.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-02T20:05:29.382Z",
+  "capturedAt": "2026-10-06T18:34:19.450Z",
   "variants": {
     "es": {
-      "hash8": "69df0069",
+      "hash8": "d23e4327",
       "vdtHash": "6e5b9cab7670dce9f2eaaca91437208943bc0ac8",
       "timings": {
-        "importMs": 10832,
-        "fontsMs": 54,
-        "buildMs": 18,
-        "totalMs": 11562,
+        "importMs": 151,
+        "fontsMs": 33,
+        "buildMs": 16,
+        "totalMs": 828,
         "builds": 2
       },
       "specimen": {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "spanish-pocket-novel.postext",
-        "bytes": 43108,
+        "bytes": 43118,
         "folio": "bb7ddf9c"
       },
       "detected": {
@@ -251,7 +251,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 238,
+        "configLeaves": 246,
         "designElements": 11,
         "directives": [
           "::resource",
@@ -331,11 +331,6 @@
           "worst": 1.6500000000000001
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

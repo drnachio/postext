@@ -117,14 +117,14 @@ const aside = { id: 'aside', breakBefore: { enabled: false }, advancedDesign: { 
 // #endregion
 
 const config = () => ({ // a new object per build (gotcha: config-cache-identity)
-  colorPalette, resourceTypes: [plain],
+  colorPalette, resourceTypes: [plain], headings, headingStyles: [cover, aside],
   page: { width: mm(PAGE.width), height: mm(PAGE.height), backgroundColor: col('paper'),
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
       right: mm(MARGIN.outer), mirror: true } },
   bodyText: { fontFamily: 'Crimson Text', fontSize: pt(10), lineHeight: pt(LEAD),
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), boldFontWeight: 600,
     firstLineIndent: mm(4.5), indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.6 },
-  headings, headingStyles: [cover, aside], layout: { layoutType: 'single' },
+  layout: { layoutType: 'single', inlineResourceGap: 'above' }, // no line under the table
   paragraphStyles: [ // verse: a paragraph per line, never stretched if a line ever turns over
     { id: 'verse', textAlign: 'left', firstLineIndent: pt(0) },
     { id: 'verse-in', textAlign: 'left' }, // a line the poet indented: the body's 4.5 mm

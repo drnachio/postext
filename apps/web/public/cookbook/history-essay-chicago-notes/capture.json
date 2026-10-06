@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "history-essay-chicago-notes",
-  "sourceHash": "5d105bc4042112624f65ec71d639a3a790a45532af23b8d086c5981cf05e5642",
+  "sourceHash": "4180e417c38338d53866bc2d4324441ab5faff39c6edd9800409d3d06036bdaf",
   "engine": {
-    "postext": "1.12.0",
-    "postextPdf": "1.12.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:28:04.704Z",
+  "capturedAt": "2026-10-06T18:34:19.018Z",
   "variants": {
     "en": {
-      "hash8": "588de022",
-      "vdtHash": "335f98aa4bb7cc89a97f1e0c44b8f89b7f8cc0ca",
+      "hash8": "e3194070",
+      "vdtHash": "898072464f8c5741c20e334b5d6a640a744ecd01",
       "timings": {
-        "importMs": 2868,
-        "fontsMs": 3202,
-        "buildMs": 14,
-        "totalMs": 7370,
+        "importMs": 230,
+        "fontsMs": 75,
+        "buildMs": 57,
+        "totalMs": 4602,
         "builds": 2
       },
       "specimen": {
@@ -82,7 +82,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 126806,
+          "bytes": 126812,
           "alt": "Page 4: A SETTLEMENT, NOT A CONQUEST."
         }
       ],
@@ -114,12 +114,12 @@
       },
       "pdf": {
         "file": "history-essay-chicago-notes.pdf",
-        "bytes": 86183,
+        "bytes": 86072,
         "pages": 4
       },
       "sandbox": {
         "file": "history-essay-chicago-notes.postext",
-        "bytes": 17390,
+        "bytes": 17373,
         "folio": "d7c0312b"
       },
       "detected": {
@@ -323,13 +323,13 @@
       }
     },
     "es": {
-      "hash8": "13d95f84",
-      "vdtHash": "9a927afa006421a4d75974cde6d54175e40e6472",
+      "hash8": "a86eb772",
+      "vdtHash": "bf4264bd051500f1780024e7d1f064ef0bde8c52",
       "timings": {
-        "importMs": 2827,
-        "fontsMs": 1316,
-        "buildMs": 25,
-        "totalMs": 5446,
+        "importMs": 227,
+        "fontsMs": 65,
+        "buildMs": 28,
+        "totalMs": 1441,
         "builds": 2
       },
       "specimen": {
@@ -394,7 +394,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 131654,
+          "bytes": 131650,
           "alt": "Página 4: UN ACUERDO, NO UNA CONQUISTA."
         }
       ],
@@ -426,12 +426,12 @@
       },
       "pdf": {
         "file": "history-essay-chicago-notes.pdf",
-        "bytes": 90800,
+        "bytes": 90724,
         "pages": 4
       },
       "sandbox": {
         "file": "history-essay-chicago-notes.postext",
-        "bytes": 18132,
+        "bytes": 18114,
         "folio": "d7c0312b"
       },
       "detected": {

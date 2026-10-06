@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "figures-float-where-cited",
-  "sourceHash": "f2a27584eeedf9fb24bfb7ac0a91c067e005c0e591d93df00efae0032a764419",
+  "sourceHash": "4d031e4fefea254806374213334c1bb6d1882edfe74d5704dd5b5b5ebbefc847",
   "engine": {
-    "postext": "1.8.3",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T19:59:48.721Z",
+  "capturedAt": "2026-10-06T18:34:18.930Z",
   "variants": {
     "en": {
-      "hash8": "52f0294f",
+      "hash8": "60029e79",
       "vdtHash": "a60e59f1072698bac136056b366a185a5af49dfd",
       "timings": {
-        "importMs": 809,
-        "fontsMs": 1226,
-        "buildMs": 383,
-        "totalMs": 4741,
+        "importMs": 154,
+        "fontsMs": 142,
+        "buildMs": 700,
+        "totalMs": 3328,
         "builds": 2
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 1458232,
+        "bytes": 1458252,
         "folio": "3d25f7bf"
       },
       "detected": {
@@ -298,8 +298,8 @@
           }
         ],
         "features": [
-          "citations",
           "column-balancing",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
@@ -324,11 +324,6 @@
         },
         "findings": [
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.headings {\"h1\":1,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
@@ -337,13 +332,13 @@
       }
     },
     "es": {
-      "hash8": "c28c3021",
+      "hash8": "39a66c0a",
       "vdtHash": "f8d3efa1b0ff98ae8bdc20a85f61261d7734e080",
       "timings": {
-        "importMs": 852,
-        "fontsMs": 4385,
-        "buildMs": 347,
-        "totalMs": 6642,
+        "importMs": 156,
+        "fontsMs": 136,
+        "buildMs": 372,
+        "totalMs": 1710,
         "builds": 2
       },
       "specimen": {
@@ -442,7 +437,7 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 1459987,
+        "bytes": 1460010,
         "folio": "3d25f7bf"
       },
       "detected": {
@@ -625,8 +620,8 @@
           }
         ],
         "features": [
-          "citations",
           "column-balancing",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
@@ -650,11 +645,6 @@
           "worst": 1.92
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

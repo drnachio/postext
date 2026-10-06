@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "atlas-map-sheet",
-  "sourceHash": "970f018813378d321fd8f911a159b09c523735ae91b44995e616e28e47063bec",
+  "sourceHash": "3bea5b9ca3df4ded86ff4e4765a9037b1ba6927fdbf8c9f4106b482e37c032c5",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:21:17.944Z",
+  "capturedAt": "2026-10-06T18:34:18.656Z",
   "variants": {
     "en": {
-      "hash8": "9a83a15c",
-      "vdtHash": "db780010cde544a273645fbb3e93294387f5de7f",
+      "hash8": "cf413456",
+      "vdtHash": "c0198ebf0d4818c7e03a23e60ccabae747e764d0",
       "timings": {
-        "importMs": 320,
-        "fontsMs": 2543,
-        "buildMs": 10,
-        "totalMs": 3496,
+        "importMs": 167,
+        "fontsMs": 1130,
+        "buildMs": 21,
+        "totalMs": 1943,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 134008,
+          "bytes": 134004,
           "alt": "Page 2: The north end of Brannay. Map 2. The north end of Brannay · Map 3. Kirkwick harbour."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1304,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 56978,
+          "bytes": 56986,
           "alt": "Page 3. Map 4. The islands and their approaches, with the gazetteer’s grid."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1304,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 69548,
+          "bytes": 69322,
           "alt": "Page 4: Finding a place. Table 1. Gazetteer of the numbered places."
         }
       ],
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "atlas-map-sheet.postext",
-        "bytes": 512946,
+        "bytes": 512941,
         "folio": "415ce2a3"
       },
       "detected": {
@@ -325,7 +325,7 @@
         ],
         "features": [
           "cell-fills",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "localised-labels",
@@ -350,23 +350,17 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "069e199a",
-      "vdtHash": "6d5a5437f9e874d87689ade2da52625efb169b2d",
+      "hash8": "acad0582",
+      "vdtHash": "5ba6ab722b92c3720a9778169d45ee9a8d8a558b",
       "timings": {
-        "importMs": 109,
-        "fontsMs": 1035,
-        "buildMs": 10,
-        "totalMs": 1811,
+        "importMs": 163,
+        "fontsMs": 1036,
+        "buildMs": 19,
+        "totalMs": 1848,
         "builds": 2
       },
       "specimen": {
@@ -411,7 +405,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 135462,
+          "bytes": 135440,
           "alt": "Página 2: El extremo norte de Brannay. Mapa 2. El extremo norte de Brannay · Mapa 3. El puerto de Kirkwick."
         },
         {
@@ -422,7 +416,7 @@
           "h": 1304,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 56880,
+          "bytes": 56820,
           "alt": "Página 3. Mapa 4. Las islas y sus accesos, con la cuadrícula del nomenclátor."
         },
         {
@@ -433,7 +427,7 @@
           "h": 1304,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 73942,
+          "bytes": 73378,
           "alt": "Página 4: Cómo encontrar un lugar. Tabla 1. Nomenclátor de los lugares numerados."
         }
       ],
@@ -465,7 +459,7 @@
       },
       "sandbox": {
         "file": "atlas-map-sheet.postext",
-        "bytes": 513416,
+        "bytes": 513409,
         "folio": "415ce2a3"
       },
       "detected": {
@@ -675,7 +669,7 @@
         ],
         "features": [
           "cell-fills",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "localised-labels",
@@ -700,13 +694,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

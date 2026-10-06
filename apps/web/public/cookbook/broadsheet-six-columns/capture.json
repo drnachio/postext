@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "broadsheet-six-columns",
-  "sourceHash": "dfb3ef8a7421be82a68528c4b4fe952076b6027f4f58f7b03ac1fdbdf43f82c5",
+  "sourceHash": "1142f36d82050818d3d2afad752e8eff265c9f0db26ebf37fdc3c335a35218c9",
   "engine": {
-    "postext": "1.18.0",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:03:53.509Z",
+  "capturedAt": "2026-10-06T18:34:18.730Z",
   "variants": {
     "en": {
       "hash8": "49f78219",
       "vdtHash": "6ba0d9f1ae397abe97c836bdba853d2592ae5618",
       "timings": {
-        "importMs": 13068,
-        "fontsMs": 13197,
-        "buildMs": 173,
-        "totalMs": 27622,
+        "importMs": 156,
+        "fontsMs": 74,
+        "buildMs": 148,
+        "totalMs": 1233,
         "builds": 2
       },
       "specimen": {

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "paper-swatch-book",
-  "sourceHash": "b26e4c87792fb8bdc90e596f02520c0e6e901077f317e6bdf9e821c40166902e",
+  "sourceHash": "4825ef6b4677202f040bcd0fc4cbecae77bf1c0313286a5ee07b92d1fd772012",
   "engine": {
-    "postext": "1.13.4",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T10:06:58.536Z",
+  "capturedAt": "2026-10-06T18:34:19.233Z",
   "variants": {
     "en": {
-      "hash8": "19630f35",
+      "hash8": "96497d59",
       "vdtHash": "ca5cf49b23a242d725eea9a31c91c29469b8f4c4",
       "timings": {
-        "importMs": 534,
-        "fontsMs": 1741,
-        "buildMs": 28,
-        "totalMs": 5075,
+        "importMs": 164,
+        "fontsMs": 36,
+        "buildMs": 21,
+        "totalMs": 861,
         "builds": 2
       },
       "specimen": {
@@ -218,7 +218,7 @@
       },
       "sandbox": {
         "file": "paper-swatch-book.postext",
-        "bytes": 31118,
+        "bytes": 30842,
         "folio": "c0edc776"
       },
       "detected": {

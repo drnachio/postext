@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "zotero-bibtex-nocite",
-  "sourceHash": "4af358dd174159a6800814204ad3f929d00cb74a9cb2a397d8520830f7ffc60c",
+  "sourceHash": "be0bf13dc448f2ad9710ece71bfce709c11cf319b7d7d988df694d0060dc012f",
   "engine": {
-    "postext": "1.12.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T21:25:19.233Z",
+  "capturedAt": "2026-10-06T18:34:19.646Z",
   "variants": {
     "en": {
-      "hash8": "40a01388",
+      "hash8": "09e2b65f",
       "vdtHash": "58b2adb558c4b1f4d991a09587851a71d25acbf0",
       "timings": {
-        "importMs": 691,
-        "fontsMs": 477,
-        "buildMs": 52,
-        "totalMs": 3119,
+        "importMs": 159,
+        "fontsMs": 35,
+        "buildMs": 57,
+        "totalMs": 2788,
         "builds": 2
       },
       "specimen": {
@@ -88,7 +88,7 @@
       },
       "sandbox": {
         "file": "zotero-bibtex-nocite.postext",
-        "bytes": 19114,
+        "bytes": 19091,
         "folio": "059452bc"
       },
       "detected": {
@@ -266,13 +266,13 @@
       }
     },
     "es": {
-      "hash8": "e11674e3",
+      "hash8": "9682f092",
       "vdtHash": "655bcf601c1bf04052d6efffa40d159ce5cd7e18",
       "timings": {
-        "importMs": 303,
-        "fontsMs": 52,
-        "buildMs": 24,
-        "totalMs": 1628,
+        "importMs": 166,
+        "fontsMs": 33,
+        "buildMs": 26,
+        "totalMs": 1382,
         "builds": 2
       },
       "specimen": {
@@ -344,7 +344,7 @@
       },
       "sandbox": {
         "file": "zotero-bibtex-nocite.postext",
-        "bytes": 19771,
+        "bytes": 19747,
         "folio": "059452bc"
       },
       "detected": {

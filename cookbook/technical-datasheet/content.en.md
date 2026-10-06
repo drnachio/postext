@@ -57,7 +57,7 @@ Stress beyond these ratings can damage the device for good. Design to the operat
 
 ### Recommended operating conditions
 
-Operate the sensor from 1.6 V to 5.5 V, at ambient temperatures from −40 °C to 125 °C, with less than 50 mV of ripple on the supply. The bus pull-ups may return to any supply up to 5.5 V, so a sensor run from 1.8 V can share a bus with 5 V parts without a level shifter.
+Operate the sensor from 1.6 V to 5.5 V, at ambient temperatures from −40 °C to 125 °C, with less than 50 mV of ripple on the supply. The bus pull-ups may return to any supply up to 5.5 V, so a sensor run from 1.8 V can share a bus with 5 V parts without a level shifter.
 
 ### Electrical characteristics
 

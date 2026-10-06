@@ -38,9 +38,7 @@ Las coordenadas se leyeron una sola vez, al escribir la receta, de la entrada 6Y
 
 ### 5 · Letras griegas y acentos en el PDF
 
-<Excerpt region="subsets" />
-
-Fontsource parte cada fuente por sistemas de escritura. El kit carga los archivos latin, y latin-ext cuando el texto los necesita, pero no los griegos, de modo que Cα y χ saldrían en pantalla de una fuente de reserva y faltarían en el PDF. La región carga el archivo griego de cada fuente para el lienzo y da a `renderToPdf` un proveedor de fuentes que añade los archivos latin-ext y griego de una fuente cuando el texto que compone los necesita.
+Fontsource parte cada fuente por sistemas de escritura. `loadFonts(FONTS, markdown)` lee el texto que recibe y carga el archivo latin-ext de cada fuente cuando compone Ž o Š, y el griego cuando compone α o χ; `fontsourceProvider` incrusta esos mismos archivos en el PDF a partir de los caracteres que compone cada fuente. Cα, χ, Žídek y Šali no piden código propio: la receta pasa el markdown, que reúne todos los bloques de contenido, y el proveedor del kit.
 
 ## Variantes
 

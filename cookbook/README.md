@@ -288,11 +288,11 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `mm(n)`, `pt(n)`, `em(n)` | core | Dimensions: `mm(18)` is `{ value: 18, unit: 'mm' }`. |
 | `t({ en, es })` | core | The string for the sample's language. |
 | `asset(file)` | core | The jsDelivr URL of `cookbook/<slug>/assets/<file>`. |
-| `loadFonts(FONTS, text)` | fonts | Loads every face from Fontsource before the first build (latin-ext too when the text needs it). |
+| `loadFonts(FONTS, text)` | fonts | Loads every face from Fontsource before the first build: the latin file, plus latin-ext when the text has letters such as č ł †, and greek when it has Greek letters, for the families that ship those files (`kitSubsetsFor`; Lora and Gelasio have no greek file: set Greek in them as maths, `$\chi^2$`). Pass every slot whose text the pages set. |
 | `buildWithFonts(build, text)` | fonts | Runs the build, loads any face the pages use that `FONTS` forgot (with a warning the capture fails on), and rebuilds. |
 | `showPages(doc \| docs, { title })` | viewer | The dark desk with facing spreads; sets `data-postext="ready"`. |
 | `offerPdf(makePdf, filename)` | pdf | A "Build the PDF" button, then open and download links. |
-| `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics. |
+| `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics, and embeds the latin file, then the latin-ext and greek files a face's letters need, as `loadFonts` loads them on screen. |
 | `loadImage(id, url)`, `loadSvg(id, svg)` | images | Register pictures for the canvas and keep their bytes. |
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
 | `loadCjkFonts(faces, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `faces` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files `text` touches; fails on a character no file has, or when api.fontsource.org does not answer. One face: `loadCjkFonts(FONTS, markdown)`. Several voices: one call per voice with the text it sets, `loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)`, so the Kai and Hei faces do not fetch a file for every character of the book (C12 fails a character set from a file that was not loaded). `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
@@ -332,7 +332,7 @@ whole Cookbook is verified again.
 | Captured pages | 2–12 |
 | Each asset / all assets | ≤ 400 KB / ≤ 2 MB; images ≤ 2400 px on the long side, JPEG q80 |
 | Captured media per edition (PDF excluded) | warning at 0.9 MB (0.1 MB per published page past 9), failure at 1.4 MB |
-| PDF text | inside Fontsource's `latin` range, or set in a CJK face loaded by the `cjk` block or an Arabic face completed by the `arabic` block; with the `cjk` block, also latin-ext letters in a Latin face (the lint and C25 warn otherwise) |
+| PDF text | letters in a face's Fontsource `latin`, `latin-ext` or `greek` files, or set in a CJK face loaded by the `cjk` block or an Arabic face completed by the `arabic` block (with the `cjk` block, Greek reaches the PDF only from a face the pen serves itself); symbols such as → ≈ ✓ ★ are in none of these files (the lint and C25 warn) |
 
 A pen may fetch from `esm.sh`, `cdn.jsdelivr.net/npm/@fontsource/*`,
 `cdn.jsdelivr.net/gh/drnachio/postext@main/cookbook/*`, `api.fontsource.org` and
@@ -799,8 +799,8 @@ pages not listed in `expect.nearEmptyPages` (C23), loose lines over 2 % (C24; a 
 Japanese or Korean line is loose when it needed more than half an em between its characters
 and ends short, `cjkLoose`, and one is enough), characters a PDF recipe's faces cannot set
 (C25: outside Fontsource latin and not covered by a CJK face the `cjk` block loaded, an
-Arabic face the `arabic` block completed or, in a `cjk` recipe, the latin-ext file of the
-Latin face that sets them; or reported missing by postext-pdf), a hero with too little picture or display type (C26), a
+Arabic face the `arabic` block completed, or the latin-ext or greek file the kit loaded for
+the face that sets them; or reported missing by postext-pdf), a hero with too little picture or display type (C26), a
 primary feature whose detect rule did not fire (C27), a level two steps from the suggested
 one (C28), a page count outside `expect.pages` (C29), a `fontFamily` written as a CSS font stack,
 which the engine sets in its first family (C31, `fontFamilyStack`), and a config warning of a

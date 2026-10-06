@@ -38,9 +38,7 @@ The sheet is built around two clips side by side and empty boxes to write in, so
 
 ### 5 · Set θ and π in canvas, PDF and EPUB
 
-<Excerpt region="greek" />
-
-The kit loads each face's Fontsource `latin` file, which has no Greek. The pen adds Source Serif 4's `greek` files as faces limited to the Greek block, hands the PDF both files of each text face (a character comes from the first file that has it) and gives the EPUB the Greek files after the Latin ones, each with its `unicodeRange`. The capture still warns that θ and π lie outside the latin subset; the PDF has them.
+Source Serif 4 keeps its Greek letters in a Fontsource file of their own, `greek`, beside `latin`. `loadFonts(FONTS, markdown)` finds Greek letters in the text and loads that file for every face of the family, and `fontsourceProvider` embeds it in the PDF next to the latin file for each face that sets θ or π, so the two letters need no code. The EPUB embeds only the fonts the pen hands it, so step 4 lists the text face's greek files after the latin ones, each limited to the Greek block by its `unicodeRange`.
 
 ### 6 · Work the table out in the code
 

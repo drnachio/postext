@@ -631,20 +631,20 @@
   },
   "latin-subset": {
     "title": {
-      "en": "Fontsource latin files drop glyphs outside Latin",
-      "es": "Los archivos latin de Fontsource solo traen glifos del rango latino",
-      "ca": "Els fitxers latin de Fontsource només porten glifs de l'interval llatí",
-      "zh": "Fontsource的latin文件不含拉丁字母以外的字形",
-      "ar": "ملفات latin من Fontsource تُسقط الحروف خارج اللاتينية",
-      "ja": "Fontsourceのlatinファイルにはラテン文字以外のグリフがない"
+      "en": "Fontsource files cover letters, not symbols",
+      "es": "Los archivos de Fontsource cubren letras, no símbolos",
+      "ca": "Els fitxers de Fontsource cobreixen lletres, no símbols",
+      "zh": "Fontsource的文件只覆盖字母，不含符号",
+      "ar": "ملفات Fontsource تغطي الحروف لا الرموز",
+      "ja": "Fontsourceのファイルは文字を収め、記号は収めない"
     },
     "body": {
-      "en": "The PDF provider embeds Fontsource's latin files, which cover Spanish and Western European text but not →, ≈, ✓, ★, Greek or Central European letters; those glyphs go missing in the PDF. Keep PDF text inside the latin range.",
-      "es": "El proveedor del PDF incrusta los archivos latin de Fontsource, que cubren el español y las lenguas de Europa occidental pero no →, ≈, ✓, ★, el griego ni las letras de Europa central; esos glifos faltan en el PDF. Mantén el texto del PDF dentro del rango latin.",
-      "ca": "El proveïdor del PDF incrusta els fitxers latin de Fontsource, que cobreixen el castellà i les llengües de l'Europa occidental però no →, ≈, ✓, ★, el grec ni les lletres de l'Europa central; aquests glifs falten al PDF. Mantén el text del PDF dins de l'interval latin.",
-      "zh": "PDF字体提供函数嵌入的是Fontsource的latin文件，它们覆盖西班牙语和西欧文字，但不包括→、≈、✓、★、希腊字母或中欧字母；这些字形在PDF中会缺失。PDF中的文字要保持在latin范围内。",
-      "ar": "يضمّن مزوّد PDF ملفات latin من Fontsource، وهي تغطي الإسبانية ونصوص أوروبا الغربية لكنها لا تغطي → و≈ و✓ و★ ولا الحروف اليونانية أو حروف أوروبا الوسطى؛ فتغيب تلك الحروف عن PDF. أبقِ نص PDF ضمن نطاق latin.",
-      "ja": "PDFプロバイダーが埋め込むのはFontsourceのlatinファイルです。スペイン語や西欧語のテキストは収まりますが、→、≈、✓、★、ギリシャ文字、中欧語の文字は含まれず、PDFではそれらのグリフが欠けます。PDFのテキストはlatinの範囲に収めてください。"
+      "en": "The kit embeds a face's Fontsource latin file, plus its latin-ext file for č, ł, † and its greek file for α, χ (in a family that ships one: Lora and Gelasio do not), when the text sets them, on screen and in the PDF. Symbols such as →, ≈, ✓ and ★ are in none of those files and go missing in the PDF: draw them, set them as maths, or choose a face whose files hold them.",
+      "es": "El kit incrusta el archivo latin de Fontsource de cada fuente y, cuando el texto los usa, su archivo latin-ext para č, ł, † y su archivo greek para α, χ (en una familia que lo tenga: Lora y Gelasio no), en pantalla y en el PDF. Símbolos como →, ≈, ✓ y ★ no están en ninguno de esos archivos y faltan en el PDF: dibújalos, escríbelos como matemáticas o elige una fuente cuyos archivos los tengan.",
+      "ca": "El kit incrusta el fitxer latin de Fontsource de cada font i, quan el text els fa servir, el seu fitxer latin-ext per a č, ł, † i el seu fitxer greek per a α, χ (en una família que en tingui: Lora i Gelasio no), a la pantalla i al PDF. Símbols com →, ≈, ✓ i ★ no són a cap d'aquests fitxers i falten al PDF: dibuixa'ls, escriu-los com a matemàtiques o tria una font els fitxers de la qual els tinguin.",
+      "zh": "工具包嵌入每种字体在Fontsource的latin文件；正文用到č、ł、†时再嵌入latin-ext文件，用到α、χ时再嵌入greek文件（字体族须有该文件：Lora和Gelasio没有），屏幕和PDF都一样。→、≈、✓、★等符号不在这些文件里，会在PDF中缺失：把它们画出来、写成数学公式，或换用文件中包含它们的字体。",
+      "ar": "تضمّن العُدّة ملف latin من Fontsource لكل خط، ومعه ملف latin-ext للحروف č وł و†، وملف greek للحروف α وχ (في عائلة تضمه: لا يضمه Lora ولا Gelasio)، حين يستعملها النص، على الشاشة وفي PDF. أما رموز مثل → و≈ و✓ و★ فليست في أي من هذه الملفات فتغيب عن PDF: ارسمها، أو اكتبها رياضيات، أو اختر خطًا تضمها ملفاته.",
+      "ja": "キットは各書体のFontsourceのlatinファイルを埋め込み、本文にč、ł、†があればlatin-extファイルを、α、χがあればgreekファイル（それを持つファミリーのみ。LoraとGelasioにはない）を、画面でもPDFでも加えます。→、≈、✓、★などの記号はどのファイルにもなく、PDFでは欠けます。図として描くか、数式で書くか、それを収めたファイルを持つ書体を選んでください。"
     },
     "feature": "pdf-fonts"
   },

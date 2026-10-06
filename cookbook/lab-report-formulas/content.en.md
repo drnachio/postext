@@ -61,9 +61,7 @@ NaOH solution irritates the eyes and skin even when dilute, so we wore safety gl
 
 ::resource{id="lecturas"}
 
-:::space{lines=1}
-
-Since each aliquot was *V*~a~ = 25.0 cm^3^ of vinegar diluted ten times (*f* = 10), the concentration of acetic acid in the vinegar is
+Each aliquot was *V*~a~ = 25.0 cm^3^ of vinegar diluted ten times (*f* = 10), so the concentration of acetic acid in the vinegar is
 
 $$c_\mathrm{vinegar} = f\,\frac{c_\mathrm{b}\,V_\mathrm{b}}{V_\mathrm{a}} = 10\cdot\frac{0.100 \cdot 20.87}{25.0}\ \mathrm{mol{\cdot}dm^{-3}} = 0.835\ \mathrm{mol{\cdot}dm^{-3}}$$
 

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-feature-opener",
-  "sourceHash": "cdba38b1dfa51ef838e80da5e11a7465dcfffeca63b5bdedbc4f7eeff43c8b9b",
+  "sourceHash": "d9b1cdf549e38e62fda88f0833e9dfa5ae9fc8c4c3583c2a503c07f1a80dcdfd",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T20:55:09.073Z",
+  "capturedAt": "2026-10-06T18:34:19.154Z",
   "variants": {
     "en": {
-      "hash8": "368b8149",
-      "vdtHash": "1f4f5de52af95708b2dfb0b24ec3004db6b8bc18",
+      "hash8": "a9e48589",
+      "vdtHash": "8ec19b83be518534c718c9ebf0cfe01191e476f8",
       "timings": {
-        "importMs": 559,
-        "fontsMs": 972,
-        "buildMs": 49,
-        "totalMs": 2302,
+        "importMs": 148,
+        "fontsMs": 62,
+        "buildMs": 72,
+        "totalMs": 989,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1320,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 171798,
+          "bytes": 171756,
           "alt": "Opening page 57: The Lake That Keeps Time."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1320,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 178576,
+          "bytes": 178630,
           "alt": "Page 59: 31. Early March in the pine wood above the shore: the snow goes first where the sun reaches the ground, weeks before the ice lets go of the lake."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1320,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 103926,
+          "bytes": 103896,
           "alt": "Opening page 60: Five Kinds of Ice."
         }
       ],
@@ -397,13 +397,13 @@
       }
     },
     "es": {
-      "hash8": "abf71079",
-      "vdtHash": "b099da4d3159fc63f731a9020f3a1178e2414abd",
+      "hash8": "601abaf8",
+      "vdtHash": "56bd2a999f90be001e267e01002006bc64369925",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 75,
-        "buildMs": 58,
-        "totalMs": 1077,
+        "importMs": 164,
+        "fontsMs": 66,
+        "buildMs": 76,
+        "totalMs": 1073,
         "builds": 2
       },
       "specimen": {
@@ -437,7 +437,7 @@
           "h": 1320,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 172002,
+          "bytes": 172054,
           "alt": "Página de apertura 57: El lago que lleva la cuenta."
         },
         {
@@ -459,7 +459,7 @@
           "h": 1320,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 181768,
+          "bytes": 181788,
           "alt": "Página 59: 31. Principios de marzo en el pinar sobre la orilla: la nieve se retira primero donde el sol llega al suelo, semanas antes de que el hielo suelte el lago."
         },
         {
@@ -470,7 +470,7 @@
           "h": 1320,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 105572,
+          "bytes": 105618,
           "alt": "Página de apertura 60: Cinco clases de hielo."
         }
       ],
@@ -502,7 +502,7 @@
       },
       "sandbox": {
         "file": "magazine-feature-opener.postext",
-        "bytes": 768173,
+        "bytes": 768177,
         "folio": "da2eb3c6"
       },
       "detected": {

@@ -51,7 +51,6 @@
   "gotchas": [
     "callout-columns",
     "column-rule-through-opener",
-    "box-embed-no-gap",
     "top-float-next-page",
     "bitmap-print-size",
     "headings-drop-h1-break",
@@ -73,11 +72,6 @@
       "followup": "EF-101",
       "package": "postext",
       "note": "each opener design starts with an empty box a whole number of grid lines deep (7 for the nameplate, 2 for the section flag) and hangs its rules from the box's foot. The opener then ends on a grid line and leaves no sliver of column beside it for 1.4.1 to rule down through (gotcha column-rule-through-opener). With the nameplate box 6.6 lines deep, the rule crosses the nameplate and the dateline"
-    },
-    {
-      "followup": "EF-117",
-      "package": "postext",
-      "note": "a :::space{lines=0.5} sits between the deck and the ::resource line in the front-page banner box, because a picture set inline inside a box gets no space above it in 1.4.1 (gotcha box-embed-no-gap)"
     },
     {
       "followup": "EF-71",
@@ -106,7 +100,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.19.1"
   },
   "kit": [
     "core",
@@ -190,5 +184,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-06"
 }

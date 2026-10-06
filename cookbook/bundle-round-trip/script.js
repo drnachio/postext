@@ -64,7 +64,7 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
   page: { sizePreset: 'custom', width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150,
     margins: { top: mm(PAGE.top), bottom: mm(PAGE.bottom), left: mm(PAGE.side),
       right: mm(PAGE.side) } }, // a flyer printed both sides: nothing to mirror
-  layout: { layoutType: 'single' },
+  layout: { layoutType: 'single', inlineResourceGap: 'above' }, // no line under the figures
   bodyText: { fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), firstLineIndent: mm(4),
     indentAfterHeading: false, minWordSpacing: 0.75, maxWordSpacing: 1.6 },

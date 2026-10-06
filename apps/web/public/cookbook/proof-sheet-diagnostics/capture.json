@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "proof-sheet-diagnostics",
-  "sourceHash": "8f37b5b6ce9b6fb53ee23ca99e5a0bd7f58783341577d0c55302dcb719499efd",
+  "sourceHash": "fcc8848286efaf772729f03b7a540febfc1baf9e158bf2cdedb614de40660a28",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:51:26.570Z",
+  "capturedAt": "2026-10-06T18:34:19.312Z",
   "variants": {
     "en": {
-      "hash8": "a178eccc",
+      "hash8": "55870391",
       "vdtHash": "bbf2e803033cdc865c0c79a1eb80c5e70690e8c0",
       "timings": {
-        "importMs": 1408,
-        "fontsMs": 414,
+        "importMs": 168,
+        "fontsMs": 37,
         "buildMs": 14,
-        "totalMs": 2633,
+        "totalMs": 947,
         "builds": 3
       },
       "specimen": {
@@ -89,7 +89,7 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 106018,
+        "bytes": 105997,
         "folio": "3db66766"
       },
       "detected": {
@@ -315,9 +315,9 @@
           "callout-columns",
           "callout-splitting",
           "callout-styles",
-          "citations",
           "column-and-a-half",
           "diagnostics",
+          "figure-citations",
           "fixed-callouts",
           "heading-attributes",
           "opener-band",
@@ -342,13 +342,13 @@
       }
     },
     "es": {
-      "hash8": "6cd785db",
+      "hash8": "200c4555",
       "vdtHash": "7865a446137e4ba693e2346a1c2dd66092f97a16",
       "timings": {
-        "importMs": 348,
-        "fontsMs": 109,
-        "buildMs": 15,
-        "totalMs": 1376,
+        "importMs": 149,
+        "fontsMs": 33,
+        "buildMs": 19,
+        "totalMs": 2762,
         "builds": 3
       },
       "specimen": {
@@ -421,7 +421,7 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 108327,
+        "bytes": 98797,
         "folio": "3db66766"
       },
       "detected": {
@@ -647,9 +647,9 @@
           "callout-columns",
           "callout-splitting",
           "callout-styles",
-          "citations",
           "column-and-a-half",
           "diagnostics",
+          "figure-citations",
           "fixed-callouts",
           "heading-attributes",
           "opener-band",

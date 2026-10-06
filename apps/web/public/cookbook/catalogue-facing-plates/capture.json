@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "catalogue-facing-plates",
-  "sourceHash": "08ac46ac844095e47c4bb445c933919e5911f17ca64571a38c953fffbf64b4a9",
+  "sourceHash": "17e33fcea2897649cbe0114d9a38d10b87fe2be11490297f9320da47b4bca5a2",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:36:55.774Z",
+  "capturedAt": "2026-10-06T18:34:18.779Z",
   "variants": {
     "en": {
-      "hash8": "60f7e6f8",
-      "vdtHash": "8c0453181a2925dcc4b9c2285c882b9ae8fdbb93",
+      "hash8": "930835fe",
+      "vdtHash": "3b2678f8a64d5cb05a5c03af9181cd077fd9692d",
       "timings": {
-        "importMs": 115,
-        "fontsMs": 53,
-        "buildMs": 12,
-        "totalMs": 844,
+        "importMs": 165,
+        "fontsMs": 64,
+        "buildMs": 18,
+        "totalMs": 902,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1217,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115368,
+          "bytes": 115444,
           "alt": "Opening page 1: Doré."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1217,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 240888,
+          "bytes": 240882,
           "alt": "Page 3. Cat. 1. Don Quixote in His Library."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1217,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 153800,
+          "bytes": 153802,
           "alt": "Page 5. Cat. 2. The Vigil of Arms."
         },
         {
@@ -127,7 +127,7 @@
           "h": 1217,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 60478,
+          "bytes": 60332,
           "alt": "Opening page 8: Works in the Exhibition."
         }
       ],
@@ -167,7 +167,7 @@
       },
       "sandbox": {
         "file": "catalogue-facing-plates.postext",
-        "bytes": 1603930,
+        "bytes": 1603934,
         "folio": "2f38e47f"
       },
       "detected": {
@@ -361,9 +361,9 @@
           }
         ],
         "features": [
-          "citations",
           "column-and-a-half",
           "drop-caps",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -394,11 +394,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.21 MB (warning at 0.9 MB for 8 pages)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

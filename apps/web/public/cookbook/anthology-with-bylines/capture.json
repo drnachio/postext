@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "anthology-with-bylines",
-  "sourceHash": "196e2ae6cd37cecbb9f6a1bfd081946fd8381abaaa03b42587d5038e3cf423b5",
+  "sourceHash": "50648987540d0f86fd15df48d5e6c7908646ee1bbf547ae3624eae4223f1b5b2",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:44:10.079Z",
+  "capturedAt": "2026-10-06T18:34:18.605Z",
   "variants": {
     "en": {
-      "hash8": "46703375",
+      "hash8": "510db69f",
       "vdtHash": "324ae92df9cd4b804d32a39018f9e201cd575b78",
       "timings": {
-        "importMs": 443,
-        "fontsMs": 63,
-        "buildMs": 33,
-        "totalMs": 1296,
+        "importMs": 163,
+        "fontsMs": 51,
+        "buildMs": 29,
+        "totalMs": 930,
         "builds": 2
       },
       "specimen": {
@@ -177,7 +177,7 @@
       },
       "sandbox": {
         "file": "anthology-with-bylines.postext",
-        "bytes": 243474,
+        "bytes": 243458,
         "folio": "6cdad6f3"
       },
       "detected": {
@@ -412,11 +412,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 0.93 MB (warning at 0.9 MB for 9 pages)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

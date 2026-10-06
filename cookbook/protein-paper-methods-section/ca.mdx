@@ -38,9 +38,7 @@ Les coordenades es van llegir un sol cop, en escriure la recepta, de l'entrada 6
 
 ### 5 · Lletres gregues i accents al PDF
 
-<Excerpt region="subsets" />
-
-Fontsource parteix cada font per sistemes d'escriptura. El kit carrega els fitxers latin, i latin-ext quan el text els necessita, però no els grecs, de manera que Cα i χ sortirien en pantalla d'una font de reserva i faltarien al PDF. La regió carrega el fitxer grec de cada font per al llenç i dona a `renderToPdf` un proveïdor de fonts que afegeix els fitxers latin-ext i grec d'una font quan el text que compon els necessita.
+Fontsource parteix cada font per sistemes d'escriptura. `loadFonts(FONTS, markdown)` llegeix el text que rep i carrega el fitxer latin-ext de cada font quan compon Ž o Š, i el grec quan compon α o χ; `fontsourceProvider` incrusta aquests mateixos fitxers al PDF a partir dels caràcters que compon cada font. Cα, χ, Žídek i Šali no demanen codi propi: la recepta passa el markdown, que aplega tots els blocs de contingut, i el proveïdor del kit.
 
 ## Variants
 

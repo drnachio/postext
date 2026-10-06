@@ -1,7 +1,6 @@
-// ─── Kit · viewer v1 ── the same in every recipe · postext.dev/cookbook ───────
-/** Shows the pages as facing spreads on a dark desk: the first page is a
- *  recto on its own, then verso | recto pairs, as in a bound book. Pages
- *  are painted when they scroll near the screen. */
+// ─── Kit · viewer v1 ── the same in every recipe · postext.dev/cookbook
+/** The pages as spreads on a dark desk, page 1 alone, then verso | recto,
+ *  each painted when it scrolls near. */
 function showPages(docs, { title, width = 460 } = {}) {
   const root = viewer(title);
   const pages = [docs].flat().flatMap((doc) =>

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 002 · Two-column paper with numbered equations ══════════
 // https://postext.dev/en/cookbook/journal-article-with-maths
 // Code: MIT · Text: original (CC BY 4.0) · Figures: generated in code (CC BY 4.0)
-// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 // A research article in a fictional physics journal: a title block across the page, numbered
 // sections, MathJax formulas in the text and in the figures, a table computed from the data.
 import {
@@ -39,13 +39,13 @@ const PT_PER_MM = 72 / 25.4; // a point is 1/72 in, and an inch 25.4 mm
 // 1.4.1 the plain URL makes initMathEngine() throw "Can't find handler for document".
 await initMathEngine(); // gotcha: math-bundle. Unawaited, formulas paint as grey boxes, unwarned
 const math = { // on by default: $…$ inline, $$…$$ display, and \$ for a literal dollar sign
-  fontSizeScale: 0.94, // 1.4.1 gives maths an x-height of 0.5 em, STIX Two Text 0.473 em
+  fontSizeScale: 1.07, // TeX's x-height is 0.442 em, STIX Two Text's 0.473 em: ×1.07
   marginTop: pt(LEAD), // display maths: a line above, half a line below, and the grid snap
   marginBottom: pt(LEAD / 2), // then rounds the space below up to the next baseline
 };
 // Equation numbers: in 1.4.1 a \tag makes a formula 0 wide, so it vanishes unwarned (gotcha:
 // math-tag-vanishes). numbered() sets the line instead: the formula centred, its number flush
-// right, in ems of the maths as drawn (1 ex is half the size, TeX's x-height 0.442 em: ×1.13).
+// right, in ems of the maths as drawn, measured once rather than assumed.
 const MATH_EM = renderMath('\\mathmakebox[10em]{}', true, 100).widthPx / 1000;
 const COLUMN_EM = (COLUMN * PT_PER_MM) / (BODY * math.fontSizeScale * MATH_EM);
 const NUMBER_EM = 3; // room for "(7)", and as much on the left so the formula stays centred

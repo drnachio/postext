@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 045 · Side heads, hanging numbers and run-in heads ═══════
 // https://postext.dev/en/cookbook/side-heads-hanging-numbers
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: made in code (MIT)
-// Fonts: Mona Sans, Noto Serif Display, DM Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Mona Sans, Noto Serif Display, DM Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   defaultResourceTypes,
@@ -55,7 +55,8 @@ const layout = {
 
 // #region answer: side heads: the heading draws a number and a rule, a box prints the title
 // The heading stays in the flow and keeps its number, but its design has no {titleText}:
-// it prints the number in the channel and a rule from there to the column's right edge.
+// it prints the number in the channel and a rule from there to the column's right edge,
+// both reserve: false, or the box below would keep a float gap under them (a line lower).
 const [NUMBER, RULE] = [8.5, 0.75]; // pt: the DM Mono number, whose figures are 0.7 em tall
 // Centre the rule on the figures: their baseline is 0.8 of the line down, less 0.35 em.
 const RULE_Y = pt(NUMBER * (0.8 - 0.7 / 2) - RULE / 2);
@@ -63,9 +64,9 @@ const h2 = { level: 2, numberingTemplate: '{2}', lineHeight: pt(LEAD), // one gr
   marginTop: pt(2 * LEAD), marginBottom: pt(0), advancedDesign: { enabled: true, slot: {
     elements: [
       { kind: 'text', id: 'number', content: '{number}', fontFamily: LABEL, fontWeight: 500,
-        fontSize: pt(NUMBER), lineHeight: 1, color: col('signal'),
+        fontSize: pt(NUMBER), lineHeight: 1, color: col('signal'), reserve: false,
         placement: at('container', 'top-left', mm(-HANG)) },
-      { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(RULE),
+      { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(RULE), reserve: false,
         color: col('ink'), placement: { ...at('#number', 'right-of', mm(2), RULE_Y),
           size: { width: 'fill' } } },
     ] } } };

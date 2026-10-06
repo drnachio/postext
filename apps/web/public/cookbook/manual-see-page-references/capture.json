@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "manual-see-page-references",
-  "sourceHash": "37b8dffd87fc6aefab7a48e2aff40409df4ad381b20fae20bc9f7722731d5f45",
+  "sourceHash": "264edd83ec65253bba9dc44b0fbd5e71dbdfc38f310de50056dbee49d8b33ea6",
   "engine": {
-    "postext": "1.12.0",
-    "postextPdf": "1.12.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T15:28:04.717Z",
+  "capturedAt": "2026-10-06T18:34:19.175Z",
   "variants": {
     "en": {
-      "hash8": "191a53bf",
+      "hash8": "d98ca060",
       "vdtHash": "3ba854082e4fdcb3e7d5c0d43282cdfbf5948622",
       "timings": {
-        "importMs": 504,
-        "fontsMs": 121,
-        "buildMs": 20,
-        "totalMs": 1421,
+        "importMs": 197,
+        "fontsMs": 58,
+        "buildMs": 25,
+        "totalMs": 931,
         "builds": 2
       },
       "specimen": {
@@ -119,7 +119,7 @@
       },
       "sandbox": {
         "file": "manual-see-page-references.postext",
-        "bytes": 12486,
+        "bytes": 12425,
         "folio": "4335096f"
       },
       "detected": {
@@ -299,8 +299,8 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
           "cross-references",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "opener-design",
@@ -323,13 +323,13 @@
       }
     },
     "es": {
-      "hash8": "cbf4ee2d",
+      "hash8": "089fb0d9",
       "vdtHash": "db847e4158e9c364fdb1c2fbd1427e13f081f2a7",
       "timings": {
-        "importMs": 539,
-        "fontsMs": 65,
-        "buildMs": 20,
-        "totalMs": 1295,
+        "importMs": 205,
+        "fontsMs": 44,
+        "buildMs": 49,
+        "totalMs": 2321,
         "builds": 2
       },
       "specimen": {
@@ -431,7 +431,7 @@
       },
       "sandbox": {
         "file": "manual-see-page-references.postext",
-        "bytes": 13045,
+        "bytes": 12984,
         "folio": "4335096f"
       },
       "detected": {
@@ -611,8 +611,8 @@
         ],
         "features": [
           "callout-styles",
-          "citations",
           "cross-references",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "opener-design",

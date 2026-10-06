@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "garden-almanac",
-  "sourceHash": "64b9b923f8d3f5478092ed59d011d87bd33fa52162822543f7a4920a37af57b6",
+  "sourceHash": "a48bffc052278ea7d657e7ed4643baeda8873ca04016de31537e25f09b14876e",
   "engine": {
-    "postext": "1.9.2",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-01T06:52:18.359Z",
+  "capturedAt": "2026-10-06T18:34:18.974Z",
   "variants": {
     "en": {
-      "hash8": "14bc4f3d",
+      "hash8": "3bc42d60",
       "vdtHash": "a20d77284011ed50dcea8a967e12f1dd70557b55",
       "timings": {
-        "importMs": 706,
-        "fontsMs": 922,
-        "buildMs": 36,
-        "totalMs": 2435,
+        "importMs": 186,
+        "fontsMs": 91,
+        "buildMs": 34,
+        "totalMs": 951,
         "builds": 2
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "garden-almanac.postext",
-        "bytes": 190229,
+        "bytes": 190192,
         "folio": "49229ae8"
       },
       "detected": {
@@ -364,7 +364,7 @@
           "callout-styles",
           "cell-fills",
           "cell-images",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "nested-callouts",
           "opener-band",
@@ -389,23 +389,17 @@
           "share": 0,
           "worst": 1.56
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "ec892e1e",
+      "hash8": "3e9169c6",
       "vdtHash": "a20d77284011ed50dcea8a967e12f1dd70557b55",
       "timings": {
-        "importMs": 288,
-        "fontsMs": 81,
-        "buildMs": 31,
-        "totalMs": 1176,
+        "importMs": 284,
+        "fontsMs": 102,
+        "buildMs": 49,
+        "totalMs": 1102,
         "builds": 2
       },
       "specimen": {
@@ -504,7 +498,7 @@
       },
       "sandbox": {
         "file": "garden-almanac.postext",
-        "bytes": 190230,
+        "bytes": 190192,
         "folio": "49229ae8"
       },
       "detected": {
@@ -753,7 +747,7 @@
           "callout-styles",
           "cell-fills",
           "cell-images",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "nested-callouts",
           "opener-band",
@@ -778,13 +772,7 @@
           "share": 0,
           "worst": 1.56
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

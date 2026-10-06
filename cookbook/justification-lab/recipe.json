@@ -99,15 +99,10 @@
       "followup": "EF-105",
       "package": "postext",
       "note": "column balancing pushes a box that ends a column down to the column's foot, away from its paragraph (drop the sentence 'Much tighter… sees the gaps.' and the minWordSpacing box on p. 2 sits two lines under its paragraph): the essay is copy-fitted so every non-final column is full"
-    },
-    {
-      "followup": "EF-104",
-      "package": "postext",
-      "note": "a justified line inside a box is never set ragged past 3× (raggedLooseLines runs in the body flow only): the unhyphenated slip keeps lines past 3× (6.2× in English, 3.9× in Spanish), which the bench shows on purpose; the recipe's Pitfalls say so"
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.19.1"
   },
   "kit": [
     "core",
@@ -183,6 +178,6 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-26",
+  "updated": "2026-10-06",
   "related": ["spanish-pocket-novel", "proof-sheet-diagnostics", "baseline-grid-book-page", "section-heads-field-manual"]
 }

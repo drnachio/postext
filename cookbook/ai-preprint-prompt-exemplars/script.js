@@ -21,7 +21,7 @@ const colorPalette = Object.entries({ ...palette, 'main-color': palette.accent }
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
 // #endregion
 const [SERIF, SANS, MONO] = ['Newsreader', 'IBM Plex Sans', 'IBM Plex Mono'];
-// US letter in two columns of 85.5 mm, as ML venues print: about 55 characters a line.
+// US letter, two columns of 85.5 mm as ML venues print.
 const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 22, 22, 19, 7];
 const MEASURE = TRIM_W - 2 * SIDE;
 const COLUMN = (MEASURE - GUTTER) / 2;
@@ -237,8 +237,7 @@ const resources = () => [
 
 // #region art: the two charts and the two marks, labels in IBM Plex Sans carried in the SVG
 const n2 = (v) => +v.toFixed(2);
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so each
-// chart carries its face inline, as a data URL of the Fontsource file.
+// An SVG image sees no web fonts (gotcha: svg-no-webfonts): the face goes inline.
 async function inlineFace(family, weight) {
   const id = family.toLowerCase().replace(/\s+/g, '-');
   const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`

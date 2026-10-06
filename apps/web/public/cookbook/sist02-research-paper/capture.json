@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "sist02-research-paper",
-  "sourceHash": "ef5d6289c1b9ed4032fe29219ee34d6279268a2bebc8415345dbd32850e9e8dc",
+  "sourceHash": "6b3717793897761b1aee9d9f8e24ed60954c99dddbb6d4e7f88f46ad6ff89c01",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.961Z",
+  "capturedAt": "2026-10-06T18:34:19.445Z",
   "variants": {
     "en": {
-      "hash8": "58f91766",
+      "hash8": "85f75243",
       "vdtHash": "03cb3867fe7c3c99fdc9a17f973b69fec46ad3b3",
       "timings": {
-        "importMs": 2680,
-        "fontsMs": 2222,
-        "buildMs": 137,
-        "totalMs": 9224,
+        "importMs": 223,
+        "fontsMs": 324,
+        "buildMs": 26,
+        "totalMs": 1268,
         "builds": 2
       },
       "specimen": {
@@ -90,7 +90,7 @@
       },
       "pdf": {
         "file": "sist02-research-paper.pdf",
-        "bytes": 226918,
+        "bytes": 226920,
         "pages": 2
       },
       "sandbox": {
@@ -377,13 +377,13 @@
       }
     },
     "es": {
-      "hash8": "a492cfbb",
+      "hash8": "a7fcb92f",
       "vdtHash": "21cff54640c4ea41ce1b30974ae61f880b4b83ed",
       "timings": {
-        "importMs": 1218,
-        "fontsMs": 305,
-        "buildMs": 20,
-        "totalMs": 2218,
+        "importMs": 227,
+        "fontsMs": 318,
+        "buildMs": 87,
+        "totalMs": 3418,
         "builds": 2
       },
       "specimen": {
@@ -456,7 +456,7 @@
       },
       "pdf": {
         "file": "sist02-research-paper.pdf",
-        "bytes": 226824,
+        "bytes": 226825,
         "pages": 2
       },
       "sandbox": {

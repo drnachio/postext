@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "certificate-single-page",
-  "sourceHash": "295693b38f9d891115d9b28b2435111ccf06facb6fe99a18ff24278ec930df60",
+  "sourceHash": "0701720fad693f764ea0a3f7d679170b24307e9a8bb94ef0f500a069146ade02",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:11:29.460Z",
+  "capturedAt": "2026-10-06T18:34:18.783Z",
   "variants": {
     "en": {
-      "hash8": "3523b0d1",
-      "vdtHash": "ea269ad84733b89a5c70802d7d438bf02fd93cca",
+      "hash8": "88be1952",
+      "vdtHash": "4546b25334e3cf1dd9847da678179afb126bd00a",
       "timings": {
-        "importMs": 263,
-        "fontsMs": 1254,
-        "buildMs": 21,
-        "totalMs": 2098,
+        "importMs": 201,
+        "fontsMs": 59,
+        "buildMs": 27,
+        "totalMs": 829,
         "builds": 1
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 130240,
+          "bytes": 130200,
           "alt": "Opening page 1: Imogen Achterberg."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 128080,
+          "bytes": 127404,
           "alt": "Opening page 2: Tomás Okafor."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 127226,
+          "bytes": 127414,
           "alt": "Opening page 3: Ruth Adair."
         }
       ],
@@ -100,12 +100,12 @@
       },
       "pdf": {
         "file": "certificate-single-page.pdf",
-        "bytes": 710600,
+        "bytes": 259523,
         "pages": 3
       },
       "sandbox": {
         "file": "certificate-single-page.postext",
-        "bytes": 30255,
+        "bytes": 30247,
         "folio": "a05bb7c0"
       },
       "detected": {
@@ -240,13 +240,13 @@
       }
     },
     "es": {
-      "hash8": "ac4a0e3f",
-      "vdtHash": "f0807748484107f549a1c89476de133aff775b65",
+      "hash8": "7549fe04",
+      "vdtHash": "d090ff63e40e1a7c3a99c69edb00df8b538ebf61",
       "timings": {
-        "importMs": 94,
-        "fontsMs": 50,
-        "buildMs": 17,
-        "totalMs": 783,
+        "importMs": 240,
+        "fontsMs": 60,
+        "buildMs": 29,
+        "totalMs": 870,
         "builds": 1
       },
       "specimen": {
@@ -279,7 +279,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 137174,
+          "bytes": 137324,
           "alt": "Página de apertura 1: Lucía Beltrán Ochoa."
         },
         {
@@ -290,7 +290,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 134428,
+          "bytes": 135134,
           "alt": "Página de apertura 2: Íñigo Sarasola."
         },
         {
@@ -301,7 +301,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 132498,
+          "bytes": 132426,
           "alt": "Página de apertura 3: Ana Rius."
         }
       ],
@@ -329,12 +329,12 @@
       },
       "pdf": {
         "file": "certificate-single-page.pdf",
-        "bytes": 686473,
+        "bytes": 251253,
         "pages": 3
       },
       "sandbox": {
         "file": "certificate-single-page.postext",
-        "bytes": 28753,
+        "bytes": 28772,
         "folio": "a05bb7c0"
       },
       "detected": {

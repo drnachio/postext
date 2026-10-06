@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "front-matter-roman-to-arabic",
-  "sourceHash": "628d401346f43d6baff8bf200dad5ce653c69358bc0727502436418b07e61f26",
+  "sourceHash": "a54c854eed7ff71c35a7c7c2c1f88db1b971c473ceb492ee8f4ee5f68ca0105c",
   "engine": {
-    "postext": "1.8.3",
-    "postextPdf": "1.8.3",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T18:00:44.071Z",
+  "capturedAt": "2026-10-06T18:34:18.964Z",
   "variants": {
     "en": {
-      "hash8": "f1cde812",
+      "hash8": "303dd849",
       "vdtHash": "aa74dbade306e0cc15d98c918a8d36b8bce9c862",
       "timings": {
-        "importMs": 304,
-        "fontsMs": 106,
-        "buildMs": 92,
-        "totalMs": 1431,
+        "importMs": 195,
+        "fontsMs": 95,
+        "buildMs": 85,
+        "totalMs": 1149,
         "builds": 2
       },
       "specimen": {
@@ -223,12 +223,12 @@
       },
       "pdf": {
         "file": "front-matter-roman-to-arabic.pdf",
-        "bytes": 814755,
+        "bytes": 815689,
         "pages": 14
       },
       "sandbox": {
         "file": "front-matter-roman-to-arabic.postext",
-        "bytes": 713743,
+        "bytes": 713726,
         "folio": "ba949066"
       },
       "detected": {
@@ -461,13 +461,7 @@
           "share": 0,
           "worst": 1.71
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

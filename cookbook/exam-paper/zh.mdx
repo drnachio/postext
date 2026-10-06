@@ -18,7 +18,7 @@ pageNotes: { "1": "顶部三分之一是一条深红色色带，里面有场次�
 
 <Excerpt region="numbering" />
 
-`orderedLists`的每一级各自选择`numberFormat`和`separator`，`separatorColor`把句点和括号印成强调色，数字本身仍为墨色（[有序列表](/zh/docs/configuration#有序列表)）。列表的编号按同一组中最宽的编号右对齐，所以每道题的文字都从23 pt处开始：“10.”的17 pt加上`GAP`。四个选项是一个嵌套的无序列表项，其`bulletChar`为空。它的文字从该级的`indent`开始，这个值是用编号字体测得的“10.”宽度加上`GAP`，所以无论用什么字体，选项都与题目的第一个字母对齐。间距取决于它前面的项：编号项之后为5 pt，选项行之后为15 pt。
+`orderedLists`的每一级各自选择`numberFormat`和`separator`，`separatorColor`把句点和括号印成强调色，数字本身仍为墨色（[有序列表](/zh/docs/configuration#有序列表)）。设了`numberWidth: 'level'`后，编号按同一层级中最宽的编号右对齐，所以每道题的文字都从23 pt处开始：“10.”的17 pt加上`GAP`。四个选项是一个`bulletChar`为空的无序列表项，与题目处于同一层级，而不是嵌套在题目之下。它的文字从列表的`indent`开始，这个值是用编号字体测得的“10.”宽度加上`GAP`，所以无论用什么字体，选项都与题目的第一个字母对齐；说明框设了`indent: pt(0)`，因为框里的列表沿用文档的缩进。同一层级的两项之间，间距取前一项的`itemSpacing`：编号项之后为5 pt，选项行之后为15 pt。如果把选项行嵌套在题目之下，它两侧都会取题目列表的5 pt。
 
 ### 2 · 用行内标签做涂卡圆圈和分值
 

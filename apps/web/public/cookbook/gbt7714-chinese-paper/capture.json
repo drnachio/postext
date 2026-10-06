@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "gbt7714-chinese-paper",
-  "sourceHash": "f916ca8f9906215a192de573fa5283070e542d63206a83608434ed5656283cc9",
+  "sourceHash": "cfc6cf81eca78049632eb6fde0e411608abe71b68518f060b0db883ed6a965e1",
   "engine": {
-    "postext": "1.12.0",
-    "postextPdf": "1.12.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:43:36.745Z",
+  "capturedAt": "2026-10-06T18:34:18.979Z",
   "variants": {
     "en": {
-      "hash8": "84a88642",
-      "vdtHash": "65f55cd9ecd163e15350308fca1524b8739e33d8",
+      "hash8": "850cb9e8",
+      "vdtHash": "fc3a1dd3675e72a0ad7c17019265ae23296c87f4",
       "timings": {
-        "importMs": 820,
-        "fontsMs": 5789,
-        "buildMs": 14,
-        "totalMs": 7274,
+        "importMs": 373,
+        "fontsMs": 339,
+        "buildMs": 20,
+        "totalMs": 1442,
         "builds": 2
       },
       "specimen": {
@@ -62,7 +62,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 122448,
+          "bytes": 122370,
           "alt": "Page 42: 2 结果."
         }
       ],
@@ -90,7 +90,7 @@
       },
       "pdf": {
         "file": "gbt7714-chinese-paper.pdf",
-        "bytes": 164031,
+        "bytes": 165099,
         "pages": 2
       },
       "sandbox": {
@@ -333,13 +333,13 @@
       }
     },
     "es": {
-      "hash8": "e1a266b8",
-      "vdtHash": "eab749c90fd7f76e4f4bef2f54272e1daa5c95a0",
+      "hash8": "3013d0cb",
+      "vdtHash": "0cba51f594f0c080e436a0b79c3bffa53179267e",
       "timings": {
-        "importMs": 776,
-        "fontsMs": 1984,
-        "buildMs": 24,
-        "totalMs": 5774,
+        "importMs": 254,
+        "fontsMs": 296,
+        "buildMs": 18,
+        "totalMs": 1241,
         "builds": 2
       },
       "specimen": {
@@ -384,7 +384,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 122266,
+          "bytes": 122586,
           "alt": "Página 42: 2 结果."
         }
       ],
@@ -412,7 +412,7 @@
       },
       "pdf": {
         "file": "gbt7714-chinese-paper.pdf",
-        "bytes": 164093,
+        "bytes": 165172,
         "pages": 2
       },
       "sandbox": {

@@ -33,25 +33,25 @@ subtitle: "La guerra de Secesión, 1863"
 Rellena una burbuja por pregunta en la plantilla de la página 1:
 
 1. La Proclamación de Emancipación entró en vigor el 1 de enero de 1863. ¿En qué estados declaraba libres a las personas esclavizadas?
-  - :chip[A] todos :chip[B] los fronterizos :chip[C] los rebeldes :chip[D] los del Oeste
+- :chip[A] todos :chip[B] los fronterizos :chip[C] los rebeldes :chip[D] los del Oeste
 2. ¿Quién mandaba el ejército de la Unión en la batalla de Gettysburg?
-  - :chip[A] U. S. Grant :chip[B] G. G. Meade :chip[C] G. B. McClellan :chip[D] W. T. Sherman
+- :chip[A] U. S. Grant :chip[B] G. G. Meade :chip[C] G. B. McClellan :chip[D] W. T. Sherman
 3. ¿Qué plaza fuerte confederada se rindió el 4 de julio de 1863?
-  - :chip[A] Nueva Orleans :chip[B] Vicksburg :chip[C] Memphis :chip[D] Baton Rouge
+- :chip[A] Nueva Orleans :chip[B] Vicksburg :chip[C] Memphis :chip[D] Baton Rouge
 4. Si una *score* son veinte años, ¿cuántos son «four score and seven»?
-  - :chip[A] 47 :chip[B] 67 :chip[C] 87 :chip[D] 107
+- :chip[A] 47 :chip[B] 67 :chip[C] 87 :chip[D] 107
 5. ¿Quién pronunció el discurso principal, de dos horas, en la inauguración del cementerio de Gettysburg?
-  - :chip[A] E. Everett :chip[B] F. Douglass :chip[C] W. H. Seward :chip[D] J. Hay
+- :chip[A] E. Everett :chip[B] F. Douglass :chip[C] W. H. Seward :chip[D] J. Hay
 6. Con la Ley de Reclutamiento de marzo de 1863, ¿cuánto podía pagar un reclutado para quedar exento del servicio?
-  - :chip[A] 100 dólares :chip[B] 300 dólares :chip[C] 500 dólares :chip[D] 1000 dólares
+- :chip[A] 100 dólares :chip[B] 300 dólares :chip[C] 500 dólares :chip[D] 1000 dólares
 7. ¿Qué regimiento de soldados negros encabezó el asalto a Fort Wagner (Carolina del Sur) en julio de 1863?
-  - :chip[A] 20.º Maine :chip[B] 9.º Ohio :chip[C] 2.º Iowa :chip[D] 54.º Massachusetts
+- :chip[A] 20.º Maine :chip[B] 9.º Ohio :chip[C] 2.º Iowa :chip[D] 54.º Massachusetts
 8. ¿Qué estado se incorporó a la Unión el 20 de junio de 1863?
-  - :chip[A] Nevada :chip[B] Virginia Occidental :chip[C] Kansas :chip[D] Nebraska
+- :chip[A] Nevada :chip[B] Virginia Occidental :chip[C] Kansas :chip[D] Nebraska
 9. ¿En qué batalla de mayo de 1863 fue herido de muerte el general Thomas «Stonewall» Jackson?
-  - :chip[A] Chancellorsville :chip[B] Antietam :chip[C] Fredericksburg :chip[D] Shiloh
+- :chip[A] Chancellorsville :chip[B] Antietam :chip[C] Fredericksburg :chip[D] Shiloh
 10. ¿En qué ciudad hubo cuatro días de disturbios contra el reclutamiento en julio de 1863?
-  - :chip[A] Boston :chip[B] Filadelfia :chip[C] Nueva York :chip[D] Chicago
+- :chip[A] Boston :chip[B] Filadelfia :chip[C] Nueva York :chip[D] Chicago
 
 :::pagebreak
 

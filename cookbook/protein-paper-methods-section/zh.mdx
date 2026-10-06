@@ -38,9 +38,7 @@ pageNotes: { "1": "第1页：顶部一条深蓝色色带，白色大写的ARTICL
 
 ### 5 · PDF中的希腊字母和带变音符号的字母
 
-<Excerpt region="subsets" />
-
-Fontsource把每款字体按文字系统拆分成多个文件。工具包会加载latin文件，正文需要时也加载latin-ext，但不加载希腊字母文件，于是Cα和χ在屏幕上会用后备字体显示，在PDF中则会缺失。这个区块为画布加载每款字体的希腊字母文件，并给`renderToPdf`一个字体提供函数：某款字体排的文字需要时，就附上它的latin-ext和希腊字母文件。
+Fontsource把每款字体按文字系统拆分成多个文件。`loadFonts(FONTS, markdown)`读取传给它的文本：排到Ž或Š时加载每款字体的latin-ext文件，排到α或χ时加载希腊字母文件；`fontsourceProvider`根据每款字体所排的字符，把同样的文件嵌入PDF。Cα、χ、Žídek和Šali不需要另写代码：配方只需传入包含全部内容块的markdown和工具包的字体提供函数。
 
 ## 变化
 

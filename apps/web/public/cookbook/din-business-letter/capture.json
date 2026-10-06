@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "din-business-letter",
-  "sourceHash": "1a932581e62b69438d1e9a9a2f9c6fc72560dd40615484b7c7345fef37abb655",
+  "sourceHash": "31939e02cfa86e5b2085614e373291ecc3dfe188476e7bebbb8d4a82b33b4803",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:07:44.482Z",
+  "capturedAt": "2026-10-06T18:34:41.272Z",
   "variants": {
     "en": {
-      "hash8": "5cf359b0",
-      "vdtHash": "b6b87c1275cdf52447f16a5913cb27bf3d87ed3f",
+      "hash8": "d78ac161",
+      "vdtHash": "2868fac92bfb197f431966eaea63875960d41f5a",
       "timings": {
-        "importMs": 379,
-        "fontsMs": 1180,
-        "buildMs": 76,
-        "totalMs": 2344,
+        "importMs": 230,
+        "fontsMs": 65,
+        "buildMs": 103,
+        "totalMs": 1152,
         "builds": 2
       },
       "specimen": {
@@ -89,12 +89,12 @@
       },
       "pdf": {
         "file": "din-business-letter.pdf",
-        "bytes": 44368,
+        "bytes": 40894,
         "pages": 2
       },
       "sandbox": {
         "file": "din-business-letter.postext",
-        "bytes": 23168,
+        "bytes": 23172,
         "folio": "2ea14ffd"
       },
       "detected": {
@@ -276,13 +276,13 @@
       }
     },
     "es": {
-      "hash8": "471cd508",
-      "vdtHash": "b6b87c1275cdf52447f16a5913cb27bf3d87ed3f",
+      "hash8": "11983496",
+      "vdtHash": "2868fac92bfb197f431966eaea63875960d41f5a",
       "timings": {
-        "importMs": 174,
-        "fontsMs": 43,
-        "buildMs": 82,
-        "totalMs": 1077,
+        "importMs": 222,
+        "fontsMs": 59,
+        "buildMs": 102,
+        "totalMs": 1127,
         "builds": 2
       },
       "specimen": {
@@ -354,12 +354,12 @@
       },
       "pdf": {
         "file": "din-business-letter.pdf",
-        "bytes": 44368,
+        "bytes": 40894,
         "pages": 2
       },
       "sandbox": {
         "file": "din-business-letter.postext",
-        "bytes": 23191,
+        "bytes": 23195,
         "folio": "2ea14ffd"
       },
       "detected": {

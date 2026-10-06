@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "clinical-trial-consort-flow",
-  "sourceHash": "0b37319b32bff670d3f81d13a6e4adccdc1c027e84c122692f4b64456335c325",
+  "sourceHash": "eb0bac01a4eed7c1576bf0c55690360f3fc8fa81fc99e0be1de1044f8c062e9a",
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.19.1",
+    "postextPdf": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:28:53.540Z",
+  "capturedAt": "2026-10-06T18:34:18.851Z",
   "variants": {
     "en": {
-      "hash8": "75cc1800",
-      "vdtHash": "4d90a6e19e1c047f45942b93adbd6514f591f965",
+      "hash8": "08811864",
+      "vdtHash": "66b11a839c07e8e426215b1a76cdc3646a75a866",
       "timings": {
-        "importMs": 320,
-        "fontsMs": 87,
-        "buildMs": 192,
-        "totalMs": 1765,
+        "importMs": 340,
+        "fontsMs": 115,
+        "buildMs": 540,
+        "totalMs": 3337,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Nunito Sans"
         ],
         "pages": 8,
-        "ownLines": 226
+        "ownLines": 227
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 157204,
+          "bytes": 157212,
           "alt": "Opening page 1: Delivering Cognitive Behavior Therapy to Young Adults With Symptoms of Depression and Anxiety Using a Fully Automated Conversational Agent (Woebot): A Randomized Controlled Trial."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 200408,
+          "bytes": 200236,
           "alt": "Page 3: Woebot."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 109944,
+          "bytes": 114236,
           "alt": "Page 5: Completer Analysis. Figure 1. Participant flow through the trial (CONSORT diagram). · Table 1. Demographic and clinical variables of participants at baseline."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 147348,
+          "bytes": 142072,
           "alt": "Page 6: Qualitative Results. Table 2. Results of ITT analysis of entire sample on primary outcomes in the study at T2. · Figure 2. Best features of the Woebot experience: themes of the answers to “What was the best thing about your experience using Woebot?” · Figure 3. Least f…"
         },
         {
@@ -94,7 +94,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 210710,
+          "bytes": 211016,
           "alt": "Page 7: Limitations."
         }
       ],
@@ -130,12 +130,12 @@
       },
       "pdf": {
         "file": "clinical-trial-consort-flow.pdf",
-        "bytes": 774261,
+        "bytes": 775751,
         "pages": 8
       },
       "sandbox": {
         "file": "clinical-trial-consort-flow.postext",
-        "bytes": 121794,
+        "bytes": 121783,
         "folio": "a7ebcb67"
       },
       "detected": {
@@ -147,6 +147,7 @@
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "initMathEngine",
           "mergeCells",
           "registerCitationEngine",
           "registerResourceImage",
@@ -382,7 +383,8 @@
           "^…^",
           "{attrs}",
           "~…~",
-          ":ref"
+          ":ref",
+          "$…$"
         ],
         "resources": {
           "svg": 3,
@@ -450,6 +452,7 @@
           "heading-attributes",
           "heading-styles",
           "localised-labels",
+          "math",
           "nested-callouts",
           "opener-design",
           "page-role-filters",
@@ -468,10 +471,10 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 3,
         "looseLines": {
-          "count": 10,
-          "share": 0.0296,
+          "count": 11,
+          "share": 0.0326,
           "worst": 2.49
         },
         "findings": [
@@ -483,7 +486,7 @@
           {
             "check": "C24",
             "severity": "warn",
-            "detail": "10 of 338 justified lines (3.0 %) stretch past 2× (worst 2.49×); loosest: p. 2 2.49× “Potential participants were recruited using a f…”, p. 7 2.36× “less demonstrates that a text-based conversatio…”, p. 5 2.25× “baseline and T2, regardless of the group to whi…”"
+            "detail": "11 of 337 justified lines (3.3 %) stretch past 2× (worst 2.49×); loosest: p. 2 2.49× “Potential participants were recruited using a f…”, p. 7 2.36× “less demonstrates that a text-based conversatio…”, p. 5 2.25× “baseline and T2, regardless of the group to whi…”"
           }
         ]
       }

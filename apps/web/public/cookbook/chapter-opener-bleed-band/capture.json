@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "chapter-opener-bleed-band",
-  "sourceHash": "b12953b62374da5da124cb245c3d03d77e7eefeb0b4a5f673747028d8182644e",
+  "sourceHash": "b83ec37c5f21ccfb7e518635867aad91e53d0d008299b762282efec80ef6615c",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T20:56:43.000Z",
+  "capturedAt": "2026-10-06T18:34:18.791Z",
   "variants": {
     "en": {
-      "hash8": "1e51b4f6",
-      "vdtHash": "0902a8ab8e5894cebae1ea4bdc4423f05133742f",
+      "hash8": "50f20e00",
+      "vdtHash": "09940d9699e7702a8cda351e3491448efa48de26",
       "timings": {
-        "importMs": 1170,
-        "fontsMs": 16,
-        "buildMs": 103,
-        "totalMs": 2471,
+        "importMs": 150,
+        "fontsMs": 30,
+        "buildMs": 177,
+        "totalMs": 1240,
         "builds": 2
       },
       "specimen": {
@@ -83,7 +83,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 151064,
+          "bytes": 150986,
           "alt": "Page 44: 4.3 Living with volcanoes. Figure 4.1. Two volcanoes in cross-section: a broad shield built of runny basalt flows (left) and a steep stratovolcano of lava and ash layers (right)."
         }
       ],
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34509,
+        "bytes": 34536,
         "folio": "43da5799"
       },
       "detected": {
@@ -302,7 +302,7 @@
         ],
         "features": [
           "bleed-and-crop-marks",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -322,27 +322,27 @@
         "converged": true,
         "iterationCount": 4,
         "looseLines": {
-          "count": 1,
-          "share": 0.0049,
-          "worst": 2.08
+          "count": 0,
+          "share": 0,
+          "worst": 1.98
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "continuation.headings {\"h1\":2,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "03edc7fa",
-      "vdtHash": "d1d00ab3ff736ce7b1d8d5206ac740614048080a",
+      "hash8": "3abb992d",
+      "vdtHash": "256f874234a5d86a1ea1a8b1319f24f1128a52f6",
       "timings": {
-        "importMs": 321,
+        "importMs": 156,
         "fontsMs": 24,
-        "buildMs": 29,
-        "totalMs": 1095,
+        "buildMs": 42,
+        "totalMs": 919,
         "builds": 2
       },
       "specimen": {
@@ -441,7 +441,7 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34731,
+        "bytes": 34757,
         "folio": "43da5799"
       },
       "detected": {
@@ -628,7 +628,7 @@
         ],
         "features": [
           "bleed-and-crop-marks",
-          "citations",
+          "figure-citations",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -652,7 +652,13 @@
           "share": 0,
           "worst": 1.99
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":2,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     }
   }

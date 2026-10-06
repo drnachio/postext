@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "exam-paper",
-  "sourceHash": "6a26a3822b8f7ae299a489401a9200bad3084b1487a101166cca45934c1d3bfa",
+  "sourceHash": "8f7eaecb814f3776004a7da97d7d3717c9ebca6b9030cc517be7d354d411a284",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.19.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T12:50:02.737Z",
+  "capturedAt": "2026-10-06T18:34:18.924Z",
   "variants": {
     "en": {
-      "hash8": "325014cc",
-      "vdtHash": "57106050800bde3a92f8385fc10761ec5bff0686",
+      "hash8": "a3741e28",
+      "vdtHash": "404fad4279d9ebe8644ce42e9f0d8cb0b8850f91",
       "timings": {
-        "importMs": 252,
-        "fontsMs": 968,
-        "buildMs": 9,
-        "totalMs": 1855,
+        "importMs": 154,
+        "fontsMs": 37,
+        "buildMs": 19,
+        "totalMs": 873,
         "builds": 2
       },
       "specimen": {
@@ -48,7 +48,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 67452,
+          "bytes": 67528,
           "alt": "Opening page 1: History. Section A answer grid."
         },
         {
@@ -59,7 +59,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 85550,
+          "bytes": 85554,
           "alt": "Page 2: Multiple choice."
         },
         {
@@ -70,7 +70,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 120524,
+          "bytes": 120790,
           "alt": "Page 3: Source-based questions."
         },
         {
@@ -81,7 +81,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 16234,
+          "bytes": 16240,
           "alt": "Page 4."
         }
       ],
@@ -113,7 +113,7 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23314,
+        "bytes": 23315,
         "folio": "059452bc"
       },
       "detected": {
@@ -153,6 +153,7 @@
           "calloutStyles[].lists.bulletChar",
           "calloutStyles[].lists.color",
           "calloutStyles[].lists.gap",
+          "calloutStyles[].lists.indent",
           "calloutStyles[].lists.itemSpacing",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
@@ -262,6 +263,7 @@
           "orderedLists.levels[].separator",
           "orderedLists.marginBottom",
           "orderedLists.marginTop",
+          "orderedLists.numberWidth",
           "orderedLists.separatorColor",
           "page",
           "page.dpi",
@@ -304,10 +306,10 @@
           "tableStyles[].rules",
           "unorderedLists",
           "unorderedLists.gap",
+          "unorderedLists.indent",
           "unorderedLists.itemSpacing",
           "unorderedLists.levels",
           "unorderedLists.levels[].bulletChar",
-          "unorderedLists.levels[].indent",
           "unorderedLists.levels[].level",
           "unorderedLists.marginBottom",
           "unorderedLists.marginTop"
@@ -331,7 +333,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 422,
+        "configLeaves": 424,
         "designElements": 16,
         "directives": [
           "::resource",
@@ -418,13 +420,13 @@
       }
     },
     "es": {
-      "hash8": "d106922a",
-      "vdtHash": "389a757ce718a8ff05876f7b8cb85f2d6326e5ee",
+      "hash8": "e650602e",
+      "vdtHash": "421b8820269cb541ebd3caa3a403fef3f7d9a763",
       "timings": {
-        "importMs": 90,
-        "fontsMs": 26,
-        "buildMs": 10,
-        "totalMs": 855,
+        "importMs": 148,
+        "fontsMs": 24,
+        "buildMs": 21,
+        "totalMs": 2841,
         "builds": 2
       },
       "specimen": {
@@ -467,7 +469,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 95878,
+          "bytes": 95882,
           "alt": "Página 2: Preguntas tipo test."
         },
         {
@@ -478,7 +480,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 123642,
+          "bytes": 123682,
           "alt": "Página 3: Comentario de una fuente."
         },
         {
@@ -489,7 +491,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 17376,
+          "bytes": 17378,
           "alt": "Página 4."
         }
       ],
@@ -561,6 +563,7 @@
           "calloutStyles[].lists.bulletChar",
           "calloutStyles[].lists.color",
           "calloutStyles[].lists.gap",
+          "calloutStyles[].lists.indent",
           "calloutStyles[].lists.itemSpacing",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
@@ -670,6 +673,7 @@
           "orderedLists.levels[].separator",
           "orderedLists.marginBottom",
           "orderedLists.marginTop",
+          "orderedLists.numberWidth",
           "orderedLists.separatorColor",
           "page",
           "page.dpi",
@@ -712,10 +716,10 @@
           "tableStyles[].rules",
           "unorderedLists",
           "unorderedLists.gap",
+          "unorderedLists.indent",
           "unorderedLists.itemSpacing",
           "unorderedLists.levels",
           "unorderedLists.levels[].bulletChar",
-          "unorderedLists.levels[].indent",
           "unorderedLists.levels[].level",
           "unorderedLists.marginBottom",
           "unorderedLists.marginTop"
@@ -739,7 +743,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 422,
+        "configLeaves": 424,
         "designElements": 16,
         "directives": [
           "::resource",
