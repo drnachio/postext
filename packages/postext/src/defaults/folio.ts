@@ -94,7 +94,7 @@ export function resolveFolioConfig(partial?: FolioConfig): ResolvedFolioConfig {
       cover: partial?.binding?.cover === 'pages' ? 'pages' : 'case',
       coverMaterial: material && material !== 'auto' ? material : binding === 'hardcover' ? 'cloth' : 'paper',
       coverColor: partial?.binding?.coverColor ?? d.binding.coverColor,
-      ...(partial?.binding?.spineImage && binding !== 'saddleStitch' ? { spineImage: partial.binding.spineImage } : {}),
+      ...(partial?.binding?.spineImage && binding !== 'saddleStitch' && binding !== 'folded' ? { spineImage: partial.binding.spineImage } : {}),
     },
     surface: {
       type: partial?.surface?.type ?? d.surface.type,

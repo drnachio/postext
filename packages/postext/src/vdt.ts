@@ -1967,6 +1967,9 @@ export interface ConfigWarning {
    *  `sideColumnPercentClamped`: a `oneAndHalf` layout's
    *  `sideColumnPercent` that would leave one of its columns with no width
    *  (or is not a number); the columns are cut at `used` percent instead.
+   *  `columnCountClamped`: a `multiple` layout's `columnCount` outside 3 … 8
+   *  or not a whole number (or not a number); the page is cut into `used`
+   *  columns instead (#505).
    *  `cjkGridClamped`: a character grid (`cjk.grid`) with more characters
    *  per line or lines per page than the margins leave room for; the grid
    *  is reduced to `used`.
@@ -1984,7 +1987,7 @@ export interface ConfigWarning {
    *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
    *  language, and `used` is the digit system that gives. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals';
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */

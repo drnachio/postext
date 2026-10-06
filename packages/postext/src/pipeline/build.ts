@@ -141,6 +141,7 @@ import {
   computeFloatPlan,
   floatedResourceIds,
   type PlannedFloat,
+  floatColumnCount,
 } from './floatPlacement';
 import {
   enumerateCurrentPageSlots,
@@ -888,6 +889,7 @@ function placeDocumentPass(
     span: CalloutSpan,
   ): void => {
     const key = `${CALLOUT_FLOAT_PREFIX}${startIdx}`;
+    const columns = plan.attrs.columns !== undefined ? floatColumnCount(plan.attrs.columns) : style.columns;
     // A keep-with-next replay passes the fence again: enqueue once.
     if (!enqueuedFloatIds.has(key)) {
       enqueuedFloatIds.add(key);
@@ -899,12 +901,21 @@ function placeDocumentPass(
         firstBlockIdx: startIdx,
         position: placement,
         span: span === 'page' ? 'page' : 'column',
+        ...(span === 'column' && columns > 1 ? { columns } : {}),
         callout: { startIdx },
         ...(col ? { refPageIndex: page!.index, refY: col.bbox.y + (col.bbox.height - col.availableHeight) } : {}),
       });
     }
     // Floats first referenced inside the box enqueue in reading order.
     for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
+  };
+  /** The measure of `n` adjacent text columns of `col`'s band from `col`
+   *  on, gutters included (as many as the band has). */
+  const acrossWidth = (page: VDTPage, col: VDTColumn, n: number): number => {
+    if (n <= 1) return col.bbox.width;
+    const run = bandColumns(page, col.band ?? 0).filter((c) => c.kind !== 'side' && c.kind !== 'span' && c.bbox.x >= col.bbox.x - 0.5).slice(0, n);
+    const last = run[run.length - 1] ?? col;
+    return last.bbox.x + last.bbox.width - col.bbox.x;
   };
   const floatGapPx = bodyStyle.lineHeightPx;
   const minTextPx = bodyStyle.lineHeightPx * 3;
@@ -1307,7 +1318,9 @@ function placeDocumentPass(
     refY?: number,
   ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined; aside?: CaptionAside; sideCol?: VDTColumn } | null => {
     const first = targetCols[0]!;
-    const slotWidth = pageSpan ? page.contentArea.width : first.bbox.width;
+    const last = targetCols[targetCols.length - 1]!;
+    // A float across several columns takes their measure, gutters included.
+    const slotWidth = pageSpan ? page.contentArea.width : side ? first.bbox.width : last.bbox.x + last.bbox.width - first.bbox.x;
     const slotX = pageSpan ? page.contentArea.x : first.bbox.x;
     // A narrower float (`placement.width`) sits in its slot per `align`.
     const width = f.widthFraction && f.widthFraction < 1 ? slotWidth * f.widthFraction : slotWidth;
@@ -1320,7 +1333,7 @@ function placeDocumentPass(
     // The caption beside the figure, in the band's side column.
     let aside: CaptionAside | undefined;
     let sideCol: VDTColumn | undefined;
-    if (f.captionSide && !pageSpan && !side && !rotated && !captionUnder?.has(f.resourceId)) {
+    if (f.captionSide && !pageSpan && !side && !rotated && targetCols.length === 1 && !captionUnder?.has(f.resourceId)) {
       const sc = sideColumnOf(page, first.band ?? 0);
       if (sc && sc.bbox.width > 0.5) {
         sideCol = sc;
@@ -1710,6 +1723,24 @@ function placeDocumentPass(
       }
       return best;
     };
+    /** The run of `n` adjacent text columns a float across several
+     *  columns takes on a fresh page: the least reserved at the head (or
+     *  foot) of those whose bands start (or end) level, the leftmost of
+     *  equals, after a split table's previous slice. */
+    const leastReservedGroup = (f: PlannedFloat, n: number, pos: FloatSlotPosition): VDTColumn[] | undefined => {
+      const after = f.notBefore && f.notBefore.pageIndex === page.index ? f.notBefore.columnIndex : -1;
+      let best: VDTColumn[] | undefined;
+      let bestLoad = Infinity;
+      for (let i = 0; i + n <= textCols.length; i++) {
+        const group = textCols.slice(i, i + n);
+        if (group[0]!.index <= after) continue;
+        const edge = (c: VDTColumn): number => (pos === 'top' ? c.bbox.y : c.bbox.y + c.bbox.height);
+        if (!group.every((c) => Math.abs(edge(c) - edge(group[0]!)) < 0.5)) continue;
+        const load = group.reduce((m, c) => Math.max(m, reservedOf(c).top + reservedOf(c).bottom), 0);
+        if (load < bestLoad - 0.5) { best = group; bestLoad = load; }
+      }
+      return best;
+    };
     // Order of the passes: page-span floats take the outer bands; column
     // floats whose caption goes to the side column reserve it before the
     // waiting side boxes and side floats stack there; the rest follow.
@@ -1728,7 +1759,8 @@ function placeDocumentPass(
         let i = 0;
         while (i < pendingFloats.length) {
           const f = pendingFloats[i]!;
-          const isPageSpan = f.span === 'page' && (textCols.length > 1 || sideCols.length > 0);
+          const across = Math.min(f.columns ?? 1, textCols.length);
+          const isPageSpan = (f.span === 'page' || (across > 1 && across === textCols.length)) && (textCols.length > 1 || sideCols.length > 0);
           const isSide = !isPageSpan && f.span === 'side' && sideCols.length > 0;
           const kind = isPageSpan ? 'page' : isSide ? 'side' : f.captionSide && sideCols.length > 0 ? 'aside' : 'column';
           if (kind !== pass || heldBack(i)) { i++; continue; }
@@ -1739,6 +1771,13 @@ function placeDocumentPass(
             r = placeFloatInColumns(page, f, [sideCols[0]!], 'top', false, 'fresh', false, true);
           } else {
             for (const pos of positionsFor(f)) {
+              if (!isPageSpan && across > 1) {
+                const group = leastReservedGroup(f, across, pos);
+                if (!group) continue;
+                r = placeFloatInColumns(page, f, group, pos, false, 'fresh');
+                if (r !== 'defer') break;
+                continue;
+              }
               const col = isPageSpan ? undefined : leastReserved(f);
               if (!isPageSpan && !col) break;
               const cols = isPageSpan ? pageCols : [col!];
@@ -4055,7 +4094,9 @@ function placeDocumentPass(
     const floating = (placement === 'auto' || placement === 'top' || placement === 'bottom') && span !== 'side';
     if (floating) {
       const page = doc.pages[cursor.pageIndex]!;
-      const width = span === 'page' ? page.contentArea.width : currentColumn(doc, cursor).bbox.width;
+      const col = currentColumn(doc, cursor);
+      const across = span === 'column' ? (plan.attrs.columns !== undefined ? floatColumnCount(plan.attrs.columns) : style.columns) : 1;
+      const width = span === 'page' ? page.contentArea.width : acrossWidth(page, col, across);
       const inFlow = tallerThanColumn(L.layoutRange(CUT_START, L.end, width, 'float-probe', false))
         && splitCalloutFragment(L, CUT_START, width, contentArea.height, 'float-probe', false, style.splitMinLines) !== null;
       if (!inFlow) {

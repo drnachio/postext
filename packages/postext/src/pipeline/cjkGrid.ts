@@ -27,7 +27,7 @@
 import type { PostextConfig, Dimension } from '../types';
 import { resolvePageConfig } from '../defaults/page';
 import { resolveBodyTextConfig } from '../defaults/bodyText';
-import { DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig } from '../defaults/layout';
+import { columnCountUsed, DEFAULT_LAYOUT_CONFIG, layoutColumnCount, resolveLayoutConfig } from '../defaults/layout';
 import { dimensionToPx } from '../units';
 
 /** The grid of a config as the pre-pass sets it (px at the page's dpi). */
@@ -37,7 +37,7 @@ export interface CjkGridGeometry {
   linesPerPage: number;
   /** The numbers as written, when the grid had to reduce them. */
   clamped: { charsPerLine?: number; linesPerPage?: number };
-  columns: 1 | 2;
+  columns: number;
   /** Characters per line of a `oneAndHalf` layout's side column; 0 for
    *  the other layouts. */
   sideChars: number;
@@ -90,8 +90,8 @@ export function cjkGridGeometry(config: PostextConfig | undefined): CjkGridGeome
   const availInline = vertical ? height - top - bottom : width - left - right;
   const availBlock = vertical ? width - left - right : height - top - bottom;
   const oneAndHalf = layout.layoutType === 'oneAndHalf';
-  const columns: 1 | 2 = layout.layoutType === 'double' || oneAndHalf ? 2 : 1;
-  const gutterEm = columns === 2 ? Math.max(1, Math.round(px(layout.gutterWidth, dpi, em) / em)) : 0;
+  const columns = layoutColumnCount(layout);
+  const gutterEm = columns > 1 ? Math.max(1, Math.round(px(layout.gutterWidth, dpi, em) / em)) : 0;
   // The side column of a oneAndHalf layout: the whole ems nearest the
   // width its percentage gives it inside the margins, leaving the main
   // column at least one character.
@@ -140,7 +140,7 @@ function positiveInt(n: unknown): number | undefined {
 
 /**
  * The config with the character grid applied (see the module comment):
- * `page.margins`, `layout.gutterWidth` (two columns) and the grid's numbers
+ * `page.margins`, `layout.gutterWidth` (two or more columns) and the grid's numbers
  * in use, written in px. The same object when the grid is off.
  */
 export function applyCjkGrid(config: PostextConfig | undefined): PostextConfig | undefined {
@@ -149,7 +149,7 @@ export function applyCjkGrid(config: PostextConfig | undefined): PostextConfig |
   const dim = (value: number): Dimension => ({ value, unit: 'px' });
   // A oneAndHalf side column's share of the type area, so both columns
   // are cut in whole ems.
-  const layout = g.columns === 2
+  const layout = g.columns > 1
     ? {
         ...config.layout,
         gutterWidth: dim(g.gutterEm * g.em),
@@ -204,7 +204,7 @@ export interface CjkGridCells {
  * puts it. Without them the columns are cut from the content area.
  */
 export function cjkGridCells(
-  resolved: { cjk?: { grid?: { show?: boolean; charsPerLine?: number; linesPerPage?: number } }; bodyText: { fontSize: Dimension; fontFamily?: string }; layout: { layoutType: string; gutterWidth: Dimension }; page: { dpi: number } },
+  resolved: { cjk?: { grid?: { show?: boolean; charsPerLine?: number; linesPerPage?: number } }; bodyText: { fontSize: Dimension; fontFamily?: string }; layout: { layoutType: string; columnCount?: number; gutterWidth: Dimension }; page: { dpi: number } },
   contentArea: { x: number; y: number },
   pitch: number,
   pageColumns?: readonly { bbox: { x: number; width: number }; kind?: string }[],
@@ -227,8 +227,9 @@ export function cjkGridCells(
       columnChars.push(Math.floor(c.bbox.width / em + 1e-6));
     }
   } else {
-    const count = resolved.layout.layoutType === 'double' ? 2 : 1;
-    const gutter = count === 2 ? dimensionToPx(resolved.layout.gutterWidth, dpi, em) : 0;
+    const count = resolved.layout.layoutType === 'double' ? 2
+      : resolved.layout.layoutType === 'multiple' ? columnCountUsed(resolved.layout.columnCount ?? 3) : 1;
+    const gutter = count > 1 ? dimensionToPx(resolved.layout.gutterWidth, dpi, em) : 0;
     for (let c = 0; c < count; c++) {
       columns.push(contentArea.x + c * (grid.charsPerLine * em + gutter));
       columnChars.push(grid.charsPerLine);

@@ -23,4 +23,14 @@ describe('resolvePageConfig size presets', () => {
     expect(page.width).toEqual({ value: 30, unit: 'cm' });
     expect(page.height).toEqual({ value: 40, unit: 'cm' });
   });
+
+  it.each([
+    ['broadsheet', 375, 597],
+    ['berliner', 315, 470],
+    ['tabloid', 280, 430],
+  ] as const)('sizes the %s newspaper format in millimetres (#506)', (preset, w, h) => {
+    const page = resolvePageConfig({ sizePreset: preset });
+    expect(page.width).toEqual({ value: w, unit: 'mm' });
+    expect(page.height).toEqual({ value: h, unit: 'mm' });
+  });
 });

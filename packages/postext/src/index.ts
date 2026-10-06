@@ -33,6 +33,7 @@ export { collectHeadingDesignCuts } from './pipeline/headingDesignCuts';
 export { normalizeSafeArea, resourceSafeArea, safeAreaHeightRange, safeAreaSource, uncroppedPictureBox } from './pipeline/safeArea';
 export { layoutVideo, playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 export { encodeQr } from './video/qr';
+export { coordinateVideoPlayback, playsAlongside, videosToPause } from './video/playback';
 export type { QrMatrix, QrErrorCorrection } from './video/qr';
 export { parseVideoUrl, videoWatchUrl, resourceVideoLink, videoEmbedUrl, videoEmbedAllow, videoElementAttributes, mediaFragment, videoMimeType, videoFormatOfUrl, resourceVideoFormat, isHlsMimeType, HLS_MIME_TYPE, youtubePosterUrls } from './video/url';
 export type { ParsedVideoUrl } from './video/url';

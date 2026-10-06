@@ -62,11 +62,11 @@ describe('float planning (pure)', () => {
       defaultPlacement: { position: 'bottom', span: 'page' },
     };
     // Built-in default when nothing set.
-    expect(resolveResourcePlacement(figure('a'), undefined)).toEqual({ position: 'auto', span: 'column', widthFraction: 1, align: 'left', captionSide: false });
+    expect(resolveResourcePlacement(figure('a'), undefined)).toEqual({ position: 'auto', span: 'column', widthFraction: 1, align: 'left', captionSide: false, columns: 1 });
     // Type default applies.
-    expect(resolveResourcePlacement(figure('a'), type)).toEqual({ position: 'bottom', span: 'page', widthFraction: 1, align: 'left', captionSide: false });
+    expect(resolveResourcePlacement(figure('a'), type)).toEqual({ position: 'bottom', span: 'page', widthFraction: 1, align: 'left', captionSide: false, columns: 1 });
     // Resource overrides type.
-    expect(resolveResourcePlacement(figure('a', { position: 'top' }), type)).toEqual({ position: 'top', span: 'page', widthFraction: 1, align: 'left', captionSide: false });
+    expect(resolveResourcePlacement(figure('a', { position: 'top' }), type)).toEqual({ position: 'top', span: 'page', widthFraction: 1, align: 'left', captionSide: false, columns: 1 });
   });
 
   it('plans a float at the first reference, whether :ref or ::resource', () => {

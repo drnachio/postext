@@ -1,4 +1,4 @@
-import type { LayoutConfig, ResolvedLayoutConfig } from '../types';
+import type { LayoutConfig, LayoutType, ResolvedLayoutConfig } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_COLUMN_RULE = {
@@ -9,6 +9,7 @@ export const DEFAULT_COLUMN_RULE = {
 
 export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   layoutType: 'double',
+  columnCount: 3,
   gutterWidth: { value: 0.75, unit: 'cm' },
   sideColumnPercent: 33,
   sideColumnRole: 'text',
@@ -27,6 +28,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
 
   return {
     layoutType: partial.layoutType ?? DEFAULT_LAYOUT_CONFIG.layoutType,
+    columnCount: partial.columnCount ?? DEFAULT_LAYOUT_CONFIG.columnCount,
     gutterWidth: partial.gutterWidth ?? DEFAULT_LAYOUT_CONFIG.gutterWidth,
     sideColumnPercent: partial.sideColumnPercent ?? DEFAULT_LAYOUT_CONFIG.sideColumnPercent,
     sideColumnRole: partial.sideColumnRole ?? DEFAULT_LAYOUT_CONFIG.sideColumnRole,
@@ -59,6 +61,10 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
 
   if (layout.layoutType !== undefined && layout.layoutType !== DEFAULT_LAYOUT_CONFIG.layoutType) {
     result.layoutType = layout.layoutType;
+    hasOverride = true;
+  }
+  if (layout.columnCount !== undefined && layout.columnCount !== DEFAULT_LAYOUT_CONFIG.columnCount) {
+    result.columnCount = layout.columnCount;
     hasOverride = true;
   }
   if (layout.gutterWidth !== undefined && !dimensionsEqual(layout.gutterWidth, DEFAULT_LAYOUT_CONFIG.gutterWidth)) {
@@ -123,4 +129,26 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
 
   return hasOverride ? result : undefined;
+}
+
+/** The fewest and most columns of a `multiple` layout. */
+export const MULTIPLE_COLUMNS_MIN = 3;
+export const MULTIPLE_COLUMNS_MAX = 8;
+
+/** The column count a `multiple` layout cuts its columns with: `value`
+ *  rounded to a whole number and clamped to 3 … 8; a value that is not a
+ *  number takes the default (3). `collectConfigWarnings` reports each value
+ *  this changes. */
+export function columnCountUsed(value: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return DEFAULT_LAYOUT_CONFIG.columnCount;
+  return Math.max(MULTIPLE_COLUMNS_MIN, Math.min(MULTIPLE_COLUMNS_MAX, Math.round(n)));
+}
+
+/** How many body columns a layout cuts a page into (the side column of a
+ *  `oneAndHalf` layout counts). */
+export function layoutColumnCount(layout: { layoutType: LayoutType; columnCount: number }): number {
+  if (layout.layoutType === 'single') return 1;
+  if (layout.layoutType === 'multiple') return columnCountUsed(layout.columnCount);
+  return 2;
 }

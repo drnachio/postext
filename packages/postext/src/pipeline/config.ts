@@ -1,4 +1,7 @@
 import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types';
+import { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../defaults/layout';
+
+export { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN };
 import {
   resolvePageConfig,
   resolveLayoutConfig,
@@ -248,12 +251,12 @@ export function computeColumnBboxes(
 
   const gutterPx = dimensionToPx(gutterWidth, dpi);
 
-  if (layoutType === 'double') {
-    const colWidth = (contentArea.width - gutterPx) / 2;
-    return [
-      createBoundingBox(contentArea.x, contentArea.y, colWidth, contentArea.height),
-      createBoundingBox(contentArea.x + colWidth + gutterPx, contentArea.y, colWidth, contentArea.height),
-    ];
+  if (layoutType === 'double' || layoutType === 'multiple') {
+    const n = layoutType === 'double' ? 2 : columnCountUsed(resolved.layout.columnCount);
+    const colWidth = (contentArea.width - (n - 1) * gutterPx) / n;
+    return Array.from({ length: n }, (_, i) =>
+      createBoundingBox(contentArea.x + i * (colWidth + gutterPx), contentArea.y, colWidth, contentArea.height),
+    );
   }
 
   // oneAndHalf

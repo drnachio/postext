@@ -154,7 +154,8 @@ export function videoEmbedAllow(player: ResolvedVideoPlayerOptions): string {
  *  the order they are written: `controls`, `controlslist` (the buttons the
  *  browser hides: `nodownload`, `nofullscreen`, `noremoteplayback`,
  *  `noplaybackrate`), `disablepictureinpicture`, `disableremoteplayback`,
- *  `autoplay`, `muted`, `loop`, `playsinline`, `preload`. Each value is
+ *  `autoplay`, `muted`, `loop`, `playsinline`, `preload`, and
+ *  `data-pt-alongside` for a video that is not `exclusive`. Each value is
  *  `true` for a boolean attribute. */
 export function videoElementAttributes(player: ResolvedVideoPlayerOptions): Array<[string, string | true]> {
   const attrs: Array<[string, string | true]> = [];
@@ -172,6 +173,8 @@ export function videoElementAttributes(player: ResolvedVideoPlayerOptions): Arra
   if (player.autoplay || player.muted) attrs.push(['muted', true]);
   if (player.loop) attrs.push(['loop', true]);
   attrs.push(['playsinline', true]);
+  // Plays alongside the others (see `coordinateVideoPlayback`).
+  if (!player.exclusive) attrs.push(['data-pt-alongside', true]);
   attrs.push(['preload', player.preload]);
   return attrs;
 }

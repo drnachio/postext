@@ -21,7 +21,7 @@ import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
 import { isFontStack, primaryFontFamily } from './measure/font';
 import { dimensionToPx } from './units';
-import { resolveAllConfig, resolveDirection, resolvedLocale, sideColumnPercentUsed } from './pipeline/config';
+import { resolveAllConfig, resolveDirection, resolvedLocale, sideColumnPercentUsed, columnCountUsed } from './pipeline/config';
 import { computePageMetrics } from './pipeline/buildHelpers';
 import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
@@ -64,7 +64,7 @@ function percentText(n: number): string {
 export function collectConfigWarnings(config: PostextConfig | undefined): ConfigWarning[] {
   if (!config) return [];
   return [
-    ...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config),
+    ...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectColumnCountWarnings(config), ...collectUnknownKeyWarnings(config),
     ...collectCjkGridWarnings(config), ...collectChoiceWarnings(config), ...collectNumeralsWarnings(config),
   ];
 }
@@ -277,6 +277,27 @@ function collectSideColumnWarnings(config: PostextConfig): ConfigWarning[] {
   check(resolved, resolved.layout, 'layout.sideColumnPercent');
   resolved.headingStyles.forEach((style, i) => {
     if (style.layout) check(deriveSectionGeometryConfig(resolved, style), style.layout, `headingStyles[${i}].layout.sideColumnPercent`);
+  });
+  return out;
+}
+
+/** The column counts of the `multiple` layouts (the document's and each
+ *  heading style's own) that are not a whole number from 3 to 8. A layout
+ *  of another type never reads the value and is not reported. */
+function collectColumnCountWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  const check = (layout: { layoutType?: string; columnCount?: number } | undefined, path: string): void => {
+    if (layout?.layoutType !== 'multiple' || layout.columnCount === undefined) return;
+    const used = columnCountUsed(layout.columnCount);
+    if (used === layout.columnCount) return;
+    out.push({ kind: 'columnCountClamped', path, value: String(layout.columnCount), used: String(used) });
+  };
+  check(config.layout, 'layout.columnCount');
+  // A heading style's own `multiple` layout (its count is the document's
+  // when it sets none, reported there).
+  (config.headingStyles ?? []).forEach((style, i) => {
+    if (style.layout?.columnCount === undefined) return;
+    check(style.layout, `headingStyles[${i}].layout.columnCount`);
   });
   return out;
 }
