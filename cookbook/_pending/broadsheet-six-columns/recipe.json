@@ -1,0 +1,175 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 133,
+  "status": "draft",
+  "chapter": "page",
+  "order": 170,
+  "level": 3,
+  "genres": [
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "multiple-columns",
+      "float-columns"
+    ],
+    "also": [
+      "newspaper-trims",
+      "column-rule",
+      "span-boxes",
+      "floated-callouts",
+      "callout-columns",
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "section-geometry",
+      "design-elements",
+      "running-heads",
+      "callout-styles",
+      "paragraph-styles",
+      "credit-notes",
+      "table-styles",
+      "resource-types",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q151",
+    "Q78"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "overflow-ellipsis-default",
+    "design-lineheight-multiple",
+    "fonts-first",
+    "bitmap-print-size"
+  ],
+  "engine": {
+    "postext": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.5
+    },
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "The Eastern Quays at sunrise (the front-page lead photograph)",
+          "es": "Los muelles del este al amanecer (la foto de la noticia principal de portada)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "quays-1365.jpg"
+      },
+      {
+        "what": {
+          "en": "Engineers watching a river flood gate (front page, second story)",
+          "es": "Ingenieros ante una compuerta contra crecidas (portada, segunda noticia)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "barrier-1152.jpg"
+      },
+      {
+        "what": {
+          "en": "A terraced street on moving day (page 2)",
+          "es": "Una calle de casas adosadas en día de mudanza (página 2)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "terrace-1365.jpg"
+      },
+      {
+        "what": {
+          "en": "A Victorian swimming baths on a weekday morning (page 3)",
+          "es": "Unos baños victorianos un día laborable por la mañana (página 3)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "baths-1536x768.jpg"
+      },
+      {
+        "what": {
+          "en": "A period drama on a theatre stage (page 4)",
+          "es": "Un drama de época en un escenario (página 4)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "CC-BY-4.0",
+        "file": "stage-1365.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playfair Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Archivo Narrow",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06",
+  "folio": {
+    "paper": {
+      "type": "newsprint",
+      "grammage": 45,
+      "shade": "#fbfaf7"
+    },
+    "binding": {
+      "type": "folded",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  }
+}
