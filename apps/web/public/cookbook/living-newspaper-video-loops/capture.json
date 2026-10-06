@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "slug": "living-newspaper-video-loops",
+  "sourceHash": "3d573d8a127175500c8e0f0c3e93586e3a5c5339dec39f53a668771cdf24e36a",
+  "engine": {
+    "postext": "1.18.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-06T13:03:53.562Z",
+  "variants": {
+    "en": {
+      "hash8": "08e47f2b",
+      "vdtHash": "7809539a24b7c8335b2d4fd79847d0a4220ccff3",
+      "timings": {
+        "importMs": 2686,
+        "fontsMs": 63,
+        "buildMs": 412,
+        "totalMs": 4887,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          280,
+          430
+        ],
+        "dpi": 150,
+        "layoutType": "multiple",
+        "columnCount": 4,
+        "gutterMm": 4.5,
+        "mirror": false,
+        "body": {
+          "family": "Libre Caslon Text",
+          "sizePt": 8.8,
+          "leadingPt": 11.600000000000001
+        },
+        "families": [
+          "Courier Prime",
+          "Libre Caslon Text",
+          "Oswald"
+        ],
+        "pages": 4,
+        "ownLines": 251
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1536,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 177106,
+          "alt": "Opening page 1: The Wexcombe Lantern. Mrs Edith Rowe speaks from the platform at the foot of Quay Hill before cutting the ribbon. · Miss Constance Lacey waves from the cockpit on Wexcombe Common."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1536,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 256532,
+          "alt": "Opening page 2: Town & Harbour. High water at Wexcombe Quay · Twelve o’clock on the Guildhall tower, for the first time since 1924. · Skipper Jacob Hosking and the 82-pound cod on the quay."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1536,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 242482,
+          "alt": "Opening page 3: Stage & Screen. This week at the picture houses · The Regional programme · Miss Rosalind Avery as Hester Lane, on the garden steps in Act III."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1536,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 264044,
+          "alt": "Opening page 4: Sport. This week’s fixtures · Wexcombe v. St Austell · Fifty miles: the first five · Tom Rundle at Gannet Park, before the penalty he saved."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "living-newspaper-video-loops.postext",
+        "bytes": 294956,
+        "folio": "dca9ec8b"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "createFolioFromDocument",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.lineHeight",
+          "bodyText.maxJustifyTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.optimalLineBreaking",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.marginBottom",
+          "layout",
+          "layout.columnCount",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "videoStyle",
+          "videoStyle.linkPoster",
+          "videoStyle.playMark",
+          "videoStyle.playMark.enabled",
+          "videoStyle.player",
+          "videoStyle.player.autoplay",
+          "videoStyle.player.controls",
+          "videoStyle.player.exclusive",
+          "videoStyle.player.loop",
+          "videoStyle.player.muted",
+          "videoStyle.qr",
+          "videoStyle.qr.enabled"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "videoStyle"
+        ],
+        "configLeaves": 439,
+        "designElements": 16,
+        "directives": [
+          ":::callout",
+          ":::paragraphs",
+          "::resource",
+          ":::columns"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 6
+        },
+        "fonts": [
+          {
+            "family": "Courier Prime",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Courier Prime",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Courier Prime",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Oswald",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Oswald",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "column-rule",
+          "floated-callouts",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "multiple-columns",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "span-boxes",
+          "video-loops",
+          "video-style"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 5,
+        "looseLines": {
+          "count": 43,
+          "share": 0.0845,
+          "worst": 2.3000000000000003
+        },
+        "findings": [
+          {
+            "check": "C3",
+            "severity": "warn",
+            "detail": "HTTP 404: https://cdn.jsdelivr.net/npm/@fontsource/libre-caslon-text@5/files/libre-caslon-text-latin-700-italic.woff2"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.12 MB (warning at 0.9 MB for 4 pages)"
+          },
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "43 of 509 justified lines (8.4 %) stretch past 1.6× (worst 2.3000000000000003×); loosest: p. 2 2.3000000000000003× “The Petrel was towed into harbour”, p. 1 2.27× “good drying weather. Bathers are re-”, p. 2 1.8900000000000001× “net Point with three men aboard, and”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "mayor: video file mayor-loop.mp4 left out (it plays from video.url)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "clock: video file clock-loop.mp4 left out (it plays from video.url)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "fisherman: video file fisherman-loop.mp4 left out (it plays from video.url)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "aviator: video file aviator-loop.mp4 left out (it plays from video.url)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "actress: video file actress-loop.mp4 left out (it plays from video.url)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "keeper: video file keeper-loop.mp4 left out (it plays from video.url)"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "slug": "broadsheet-six-columns",
+  "sourceHash": "dfb3ef8a7421be82a68528c4b4fe952076b6027f4f58f7b03ac1fdbdf43f82c5",
+  "engine": {
+    "postext": "1.18.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-06T13:03:53.509Z",
+  "variants": {
+    "en": {
+      "hash8": "49f78219",
+      "vdtHash": "6ba0d9f1ae397abe97c836bdba853d2592ae5618",
+      "timings": {
+        "importMs": 13068,
+        "fontsMs": 13197,
+        "buildMs": 173,
+        "totalMs": 27622,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          375,
+          597
+        ],
+        "dpi": 150,
+        "layoutType": "multiple",
+        "columnCount": 6,
+        "gutterMm": 4,
+        "mirror": false,
+        "body": {
+          "family": "Newsreader",
+          "sizePt": 9,
+          "leadingPt": 12.200000000000001
+        },
+        "families": [
+          "Archivo Narrow",
+          "Newsreader",
+          "Playfair Display"
+        ],
+        "pages": 4,
+        "ownLines": 247
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1592,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 259072,
+          "alt": "Opening page 1: The Corrington Despatch. The end of the line. The Eastern Quays at sunrise. The trams will run on the old dock railway’s route past the bonded warehouses. · Paying for the line · Holding. Engineers watch the gate at 6.40 yesterday morning."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1592,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 203584,
+          "alt": "Opening page 2: City. Moving day on Albion Terrace, where a two-bedroom flat now lets for £1,240."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1592,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 194138,
+          "alt": "Opening page 3: Opinion. Forty lengths. The Albert Baths, opened in 1894, on a weekday morning."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1592,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 153094,
+          "alt": "Opening page 4: Arts & Weather. Ledgers and lies. The shipping office of The Tally Clerk. · The next five days in Corrington."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "broadsheet-six-columns.postext",
+        "bytes": 1366180,
+        "folio": "ac94dacf"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxJustifyTracking",
+          "bodyText.minWordSpacing",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italic",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.columnCount",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headingStyles[].marginTop",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.trailing",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.columnCount",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.fontSize",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 704,
+        "designElements": 27,
+        "directives": [
+          ":::callout",
+          ":::columns",
+          "::resource",
+          ":::paragraphs",
+          ":::columnbreak",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 5,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Playfair Display",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Playfair Display",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Playfair Display",
+            "weight": 900,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-splitting",
+          "callout-styles",
+          "column-balancing",
+          "column-rule",
+          "figure-citations",
+          "float-columns",
+          "floated-callouts",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "multiple-columns",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "span-boxes",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 6,
+          "share": 0.0112,
+          "worst": 2.59
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 4 pages)"
+          }
+        ]
+      }
+    }
+  }
+}
