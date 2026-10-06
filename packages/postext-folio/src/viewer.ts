@@ -164,8 +164,14 @@ export interface FolioViewer {
   /** A page's canvas was drawn again in place: shows it again. */
   refreshPage(src: PageSource): void;
   /** Plays a video on a page (#477): drawn over the page's painting, on
-   *  the leaf that carries it as it lies or turns; `null` takes it off. */
+   *  the leaf that carries it as it lies or turns; `null` takes it off.
+   *  The same as `setPageVideos` with one video or none. */
   setPageVideo(video: FolioPageVideo | null): void;
+  /** Plays these videos on their pages together (#507), in place of the
+   *  ones shown before; an empty list takes them all off. The WebGL book
+   *  draws up to eight at once (any more show their posters); the DOM
+   *  spread lays each element over its page. */
+  setPageVideos(videos: readonly FolioPageVideo[]): void;
   /** The page under a pointer and where on it, as the book is seen (the
    *  tilted, orbited 3D book included); null off the open pages. */
   pageAt(event: { clientX: number; clientY: number }): FolioPagePoint | null;
@@ -289,7 +295,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   let swipe: { x: number; y: number } | null = null;
   let disposed = false;
   let slot: FolioPageSize = { width: 0, height: 0, deviceWidth: 0, deviceHeight: 0 };
-  let pageVideo: FolioPageVideo | null = null;
+  let pageVideos: FolioPageVideo[] = [];
   /** Where a press on a page began, on the page (a click there may act on
    *  it rather than turn it). */
   let pressPoint: FolioPagePoint | null = null;
@@ -472,44 +478,48 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     return el;
   }
 
-  /** Shows the page video: on the WebGL book, drawn by the leaf that
-   *  carries its page; on the DOM spread, laid over the page. */
+  /** Shows the page videos: on the WebGL book, drawn by the leaves that
+   *  carry their pages; on the DOM spread, laid over the pages. */
   function applyVideo() {
-    const v = pageVideo;
-    flipper?.setVideo(v ? { src: sourceOf(pages[v.page]), element: v.element, frame: v } : null);
+    flipper?.setVideos(pageVideos.map((v) => ({ src: sourceOf(pages[v.page]), element: v.element, frame: v })));
     placeDomVideo();
   }
 
-  /** The DOM spread (no WebGL): the video element over its page, mapped
+  /** Takes a video element laid over a DOM page off it. */
+  const unplace = (v: FolioPageVideo) => {
+    if (!v.element.classList.contains("postext-folio-video")) return;
+    v.element.classList.remove("postext-folio-video");
+    v.element.remove();
+  };
+
+  /** The DOM spread (no WebGL): each video element over its page, mapped
    *  onto the picture's place by a transform (it may lie turned). */
   function placeDomVideo() {
-    const v = pageVideo;
-    if (!v || flipper) {
-      if (v?.element.classList.contains("postext-folio-video")) {
-        v.element.classList.remove("postext-folio-video");
-        v.element.remove();
-      }
+    if (flipper) {
+      for (const v of pageVideos) unplace(v);
       return;
     }
     const els = [...spreadEl.children] as HTMLElement[];
     const s = spreads[shown] ?? [null, null];
     const slots = single && !singleGl() ? [s[0] ?? s[1]] : s;
-    const at = slots.indexOf(v.page);
-    const el = at >= 0 ? els[at] : undefined;
-    if (!el) {
-      v.element.remove();
-      return;
+    for (const v of pageVideos) {
+      const at = slots.indexOf(v.page);
+      const el = at >= 0 ? els[at] : undefined;
+      if (!el) {
+        v.element.remove();
+        continue;
+      }
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      const unit = 100;
+      v.element.classList.add("postext-folio-video");
+      Object.assign(v.element.style, {
+        width: `${unit}px`,
+        height: `${unit}px`,
+        transform: `matrix(${(v.across.x * w) / unit}, ${(v.across.y * h) / unit}, ${(v.down.x * w) / unit}, ${(v.down.y * h) / unit}, ${v.origin.x * w}, ${v.origin.y * h})`,
+      });
+      if (v.element.parentElement !== el) el.append(v.element);
     }
-    const w = el.clientWidth;
-    const h = el.clientHeight;
-    const unit = 100;
-    v.element.classList.add("postext-folio-video");
-    Object.assign(v.element.style, {
-      width: `${unit}px`,
-      height: `${unit}px`,
-      transform: `matrix(${(v.across.x * w) / unit}, ${(v.across.y * h) / unit}, ${(v.down.x * w) / unit}, ${(v.down.y * h) / unit}, ${v.origin.x * w}, ${v.origin.y * h})`,
-    });
-    if (v.element.parentElement !== el) el.append(v.element);
   }
 
   function render() {
@@ -590,7 +600,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     );
     const rgb = rgbOf(paper);
     if (rgb) flipper.setPaper(...rgb);
-    if (pageVideo) applyVideo();
+    if (pageVideos.length) applyVideo();
   }
 
   /** Lays the book out again: spreads, mode, flipper. */
@@ -981,11 +991,11 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       flipper?.touch(src);
     },
     setPageVideo(video) {
-      if (pageVideo && pageVideo.element !== video?.element && pageVideo.element.classList.contains("postext-folio-video")) {
-        pageVideo.element.classList.remove("postext-folio-video");
-        pageVideo.element.remove();
-      }
-      pageVideo = video;
+      this.setPageVideos(video ? [video] : []);
+    },
+    setPageVideos(videos) {
+      for (const v of pageVideos) if (!videos.some((n) => n.element === v.element)) unplace(v);
+      pageVideos = videos.slice();
       applyVideo();
     },
     setAppearance(next) {
@@ -1025,15 +1035,15 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       }
       papersKey = papers;
       if (opts.at !== undefined) current = shown = spreadOfPage(spreads, opts.at);
-      // The video's page may be painted on another canvas now.
-      if (pageVideo) flipper?.setVideo({ src: sourceOf(pages[pageVideo.page]), element: pageVideo.element, frame: pageVideo });
+      // The videos' pages may be painted on other canvases now.
+      if (pageVideos.length) flipper?.setVideos(pageVideos.map((v) => ({ src: sourceOf(pages[v.page]), element: v.element, frame: v })));
       fit();
       render();
     },
     dispose() {
       disposed = true;
-      pageVideo?.element.remove();
-      pageVideo = null;
+      for (const v of pageVideos) v.element.remove();
+      pageVideos = [];
       observer.disconnect();
       holding?.(false);
       flipper?.dispose();

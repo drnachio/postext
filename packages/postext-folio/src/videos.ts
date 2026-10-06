@@ -1,4 +1,4 @@
-import { flowToPage, isHlsMimeType, resourceBlockToPage, type VDTBlock, type VDTDocument, type VDTPage, type VDTResourceVideo } from "postext";
+import { flowToPage, isHlsMimeType, resourceBlockToPage, videosToPause, type VDTBlock, type VDTDocument, type VDTPage, type VDTResourceVideo } from "postext";
 import type { PageVideoFrame } from "./pageFlip";
 
 /**
@@ -86,6 +86,76 @@ export function spotContains(spot: PageVideoFrame, x: number, y: number): boolea
   const s = (px * spot.across.x + py * spot.across.y) / (spot.across.x ** 2 + spot.across.y ** 2);
   const t = (px * spot.down.x + py * spot.down.y) / (spot.down.x ** 2 + spot.down.y ** 2);
   return s >= 0 && s <= 1 && t >= 0 && t <= 1;
+}
+
+/** A video on the pages as the playback rules see it (#507): the page
+ *  and spot it plays at, whether it plays alongside the others
+ *  (`player.exclusive: false`), whether it is paused and whether it has
+ *  shown a frame yet (one still loading has not). */
+export interface PlayState {
+  page: number;
+  key: string;
+  alongside: boolean;
+  paused: boolean;
+  shown: boolean;
+}
+
+/**
+ * What the other videos do when `started` starts (or goes on): an
+ * exclusive video stops the other exclusive ones (one at a time) and holds
+ * those playing alongside until it pauses or ends; one playing alongside
+ * pauses the exclusive ones playing, and leaves the others be.
+ */
+export function makeWay<T extends Pick<PlayState, "alongside" | "paused">>(started: T, videos: readonly T[]): { stop: T[]; hold: T[]; pause: T[] } {
+  const out = { stop: [] as T[], hold: [] as T[], pause: [] as T[] };
+  const playing = videosToPause(started, videos, (v) => v.alongside);
+  if (started.alongside) out.pause = playing;
+  else {
+    out.hold = playing.filter((v) => v.alongside);
+    // Paused ones too: their frame gives way to the new one's.
+    out.stop = videos.filter((v) => v !== started && !v.alongside);
+  }
+  return out;
+}
+
+/** The key that remembers a video playing alongside has started on its
+ *  own while its page is on show. */
+export const autoKey = (page: number, key: string) => `${page}|${key}`;
+
+/**
+ * The videos on `pages` to start on their own now (`player.autoplay`), in
+ * order. An exclusive one starts once ever (`autoplayed`), when no other
+ * exclusive video is on, and alone: the ones playing alongside wait for
+ * it. Those playing alongside start each time their page comes into view
+ * (`autoStarted` holds the ones started since), not while an exclusive
+ * video plays there or is on its way, and not at all when the reader asks
+ * for less motion. `exclusive: false` looks at those playing alongside
+ * only (an exclusive video has just stopped).
+ */
+export function autoplayPlan(
+  pages: readonly number[],
+  spotsOf: (page: number) => readonly PageVideoSpot[],
+  playable: (spot: PageVideoSpot) => boolean,
+  state: { players: readonly PlayState[]; autoplayed: ReadonlySet<string>; autoStarted: ReadonlySet<string> },
+  { exclusive = true, reducedMotion = false }: { exclusive?: boolean; reducedMotion?: boolean } = {},
+): { page: number; spot: PageVideoSpot }[] {
+  const { players } = state;
+  if (exclusive && !players.some((p) => !p.alongside)) {
+    for (const page of pages) {
+      const spot = spotsOf(page).find((s) => s.video.player.autoplay && s.video.player.exclusive !== false && playable(s) && !state.autoplayed.has(s.key));
+      if (spot) return [{ page, spot }];
+    }
+  }
+  if (reducedMotion || players.some((p) => !p.alongside && pages.includes(p.page) && (!p.paused || !p.shown))) return [];
+  const out: { page: number; spot: PageVideoSpot }[] = [];
+  for (const page of pages) {
+    for (const spot of spotsOf(page)) {
+      if (!spot.video.player.autoplay || spot.video.player.exclusive !== false || !playable(spot)) continue;
+      if (state.autoStarted.has(autoKey(page, spot.key)) || players.some((p) => p.page === page && p.key === spot.key)) continue;
+      out.push({ page, spot });
+    }
+  }
+  return out;
 }
 
 /** hls.js, as much of it as is used here. */

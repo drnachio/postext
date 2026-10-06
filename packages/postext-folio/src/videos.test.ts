@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { VDTDocument, VDTPage } from "postext";
-import { corsTagged, hlsLevelCap, isHlsVideo, pageVideoSpots, spotContains } from "./videos";
+import { autoKey, autoplayPlan, corsTagged, hlsLevelCap, isHlsVideo, makeWay, pageVideoSpots, spotContains, type PageVideoSpot, type PlayState } from "./videos";
 
 // A 200 × 300 px sheet with a 10 px bleed (trimmed: 180 × 280) and one
 // video whose body is 100 × 50 px.
@@ -99,5 +99,91 @@ describe("corsTagged", () => {
     expect(corsTagged("https://x.org/a/master.m3u8?v=2#t=3")).toBe("https://x.org/a/master.m3u8?v=2&pt-cors=1#t=3");
     expect(corsTagged("https://x.org/a.m4s?pt-cors=1")).toBe("https://x.org/a.m4s?pt-cors=1");
     expect(corsTagged("blob:http://x/1")).toBe("blob:http://x/1");
+  });
+});
+
+describe("makeWay (#507)", () => {
+  const v = (alongside: boolean, paused = false) => ({ alongside, paused });
+
+  it("lets an exclusive video stop the other exclusive ones and hold the loops", () => {
+    const loop = v(true);
+    const quiet = v(true, true);
+    const other = v(false);
+    const pausedOther = v(false, true);
+    const started = v(false, true);
+    const way = makeWay(started, [loop, quiet, other, pausedOther, started]);
+    expect(way.hold).toEqual([loop]);
+    expect(way.stop).toEqual([other, pausedOther]);
+    expect(way.pause).toEqual([]);
+  });
+
+  it("lets a video playing alongside pause only the exclusive ones", () => {
+    const loop = v(true);
+    const film = v(false);
+    const started = v(true, true);
+    const way = makeWay(started, [loop, film, started]);
+    expect(way.pause).toEqual([film]);
+    expect(way.hold).toEqual([]);
+    expect(way.stop).toEqual([]);
+  });
+});
+
+describe("autoplayPlan (#507)", () => {
+  const spot = (key: string, player: Record<string, unknown>) =>
+    ({ key, resourceId: key, video: { source: "file", link: `https://x.org/${key}.mp4`, player: { autoplay: true, muted: false, loop: false, exclusive: true, ...player } } }) as unknown as PageVideoSpot;
+  const loops: Record<number, PageVideoSpot[]> = {
+    2: [spot("wave", { exclusive: false, loop: true }), spot("smoke", { exclusive: false, loop: true })],
+    3: [spot("film", {}), spot("still", { autoplay: false, exclusive: false })],
+    4: [spot("tide", { exclusive: false, loop: true })],
+  };
+  const spotsOf = (i: number) => loops[i] ?? [];
+  const keys = (plan: { page: number; spot: PageVideoSpot }[]) => plan.map((p) => `${p.page}:${p.spot.key}`);
+  const fresh = () => ({ players: [] as PlayState[], autoplayed: new Set<string>(), autoStarted: new Set<string>() });
+
+  it("starts an exclusive video alone, the first time only", () => {
+    const state = fresh();
+    expect(keys(autoplayPlan([2, 3], spotsOf, () => true, state))).toEqual(["3:film"]);
+    state.autoplayed.add("film");
+    expect(keys(autoplayPlan([2, 3], spotsOf, () => true, state))).toEqual(["2:wave", "2:smoke"]);
+  });
+
+  it("starts the loops each time their page comes into view", () => {
+    const state = fresh();
+    state.autoplayed.add("film");
+    const first = autoplayPlan([4], spotsOf, () => true, state);
+    expect(keys(first)).toEqual(["4:tide"]);
+    // Started (and still playing, or ended) while the page is on show: not again.
+    state.autoStarted.add(autoKey(4, "tide"));
+    expect(autoplayPlan([4], spotsOf, () => true, state)).toEqual([]);
+    // Turned away and back: the host forgets it, and it starts again.
+    state.autoStarted.clear();
+    expect(keys(autoplayPlan([4], spotsOf, () => true, state))).toEqual(["4:tide"]);
+  });
+
+  it("holds the loops back while an exclusive video plays or loads on show", () => {
+    const state = fresh();
+    state.autoplayed.add("film");
+    state.players = [{ page: 3, key: "film", alongside: false, paused: false, shown: true }];
+    expect(autoplayPlan([2, 3], spotsOf, () => true, state)).toEqual([]);
+    state.players = [{ page: 3, key: "film", alongside: false, paused: true, shown: false }];
+    expect(autoplayPlan([2, 3], spotsOf, () => true, state)).toEqual([]);
+    // Paused by the reader: the loops may go on.
+    state.players = [{ page: 3, key: "film", alongside: false, paused: true, shown: true }];
+    expect(keys(autoplayPlan([2, 3], spotsOf, () => true, state))).toEqual(["2:wave", "2:smoke"]);
+  });
+
+  it("starts no loop for a reader who asks for less motion, nor one already on", () => {
+    const state = fresh();
+    state.autoplayed.add("film");
+    expect(autoplayPlan([2], spotsOf, () => true, state, { reducedMotion: true })).toEqual([]);
+    state.players = [{ page: 2, key: "wave", alongside: true, paused: true, shown: true }];
+    expect(keys(autoplayPlan([2], spotsOf, () => true, state))).toEqual(["2:smoke"]);
+    // Nor one that cannot play here (no address).
+    expect(keys(autoplayPlan([2], spotsOf, (s) => s.key !== "smoke", state))).toEqual([]);
+  });
+
+  it("looks at the loops only once an exclusive video has stopped", () => {
+    const state = fresh();
+    expect(keys(autoplayPlan([2, 3], spotsOf, () => true, state, { exclusive: false }))).toEqual(["2:wave", "2:smoke"]);
   });
 });

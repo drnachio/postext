@@ -4,7 +4,7 @@ import { BufferAttribute, BufferGeometry } from "three";
 // positive), y up the page (0 at its middle), z up from the desk; lengths
 // in the units the page is drawn in (CSS px of its width at rest).
 
-export type BindingKind = "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch";
+export type BindingKind = "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch" | "folded";
 
 /** How each binding opens. `gutter`: the width over which the pages bend
  *  into the spine (a fraction of the page width, plus `perThickness` × the
@@ -20,6 +20,11 @@ export const BINDINGS: Record<BindingKind, { gutter: number; perThickness: numbe
   // Folded sheets stapled through the fold: the centre spread opens flat,
   // the cover is a sheet like the others.
   saddleStitch: { gutter: 0.05, perThickness: 1.4, spine: 0.9, power: 2.2, dipMm: 1.5, boardMm: 0.25, squareMm: 0, jointMm: 0 },
+  // Sheets folded once and laid one inside the other, nothing holding
+  // them (a newspaper, #506): the fold gapes a little, so the leaves meet
+  // lower and roll into it over a wider, softer shoulder. Its "board" is
+  // the outer sheet round the fold.
+  folded: { gutter: 0.075, perThickness: 1.6, spine: 0.8, power: 1.9, dipMm: 2.5, boardMm: 0.1, squareMm: 0, jointMm: 0 },
 };
 
 /** A side's top surface: `x(s)`, `z(s)` for arc length `s` from the spine

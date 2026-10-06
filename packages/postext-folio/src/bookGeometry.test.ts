@@ -44,4 +44,15 @@ describe("the open book's shape", () => {
     expect(b.right.rise).toBeCloseTo(a.left.rise, 6);
     expect(b.left.rise).toBe(0);
   });
+
+  it("lets folded sheets gape at the fold more than stapled ones (#506)", () => {
+    const t = 3 * k;
+    const stapled = profiles("saddleStitch", W, k, t, t, { noCase: true });
+    const folded = profiles("folded", W, k, t, t, { noCase: true });
+    // The top leaves meet lower in the fold, over a wider shoulder.
+    expect(along(folded.right, 0)[1]).toBeLessThan(along(stapled.right, 0)[1]);
+    expect(folded.right.g).toBeGreaterThan(stapled.right.g);
+    // Away from the fold both lie on their stacks.
+    expect(along(folded.right, W)[1]).toBeCloseTo(along(stapled.right, W)[1], 1);
+  });
 });

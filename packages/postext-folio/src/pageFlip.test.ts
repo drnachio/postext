@@ -250,6 +250,42 @@ describe("the page flipper", () => {
     expect(spec(plain.f).paper.grammage).toBeGreaterThan(48);
   });
 
+  it("lays folded sheets out as a newspaper: no case, no spine, the front a page like the others (#506)", () => {
+    const salmon = { shade: { hex: "#f3d7c3", model: "hex" as const } };
+    const folio = { tilt: 0, paper: { type: "newsprint" as const, grammage: 45 }, binding: { type: "folded" as const, cover: "pages" as const, spineImage: "spine.png" } };
+    const news = flipper("left", 1, { folio, pageWidthMm: 375, coverLeaves: { front: 0 }, leafPapers: [undefined, salmon, undefined], spineImage: "spine.png" });
+    const f = inside(news.f) as unknown as {
+      specOf(k: number): { paper: { type: string; grammage: number; shade: { hex: string } }; rigidity: number };
+      coverSpec: unknown;
+      covers: { children: unknown[] };
+      spineSrc: unknown;
+      layout(): void;
+    };
+    f.layout();
+    expect(f.coverSpec).toBeNull();
+    // The front sheet is newsprint as heavy as the rest, and bends.
+    expect(f.specOf(0).paper.grammage).toBe(45);
+    expect(f.specOf(0).rigidity).toBe(0);
+    // A section printed on salmon stock shows salmon.
+    expect(f.specOf(1).paper.shade.hex).toBe("#f3d7c3");
+    // Nothing round the sheets: no boards, no printed spine.
+    expect(f.covers.children).toHaveLength(0);
+    expect(f.spineSrc).toBeNull();
+  });
+
+  it("lets a broadsheet flop where a book page of the same paper curls (#506)", () => {
+    const folio = { tilt: 0, paper: { type: "newsprint" as const, grammage: 45 }, binding: { type: "folded" as const } };
+    const spec = (mm: number) => (inside(flipper("left", 1, { folio, pageWidthMm: mm }).f) as unknown as { bookSpec: { roll: number; spring: number } }).bookSpec;
+    const book = spec(150);
+    const tabloid = spec(280);
+    const broadsheet = spec(375);
+    expect(tabloid.roll).toBeLessThan(book.roll);
+    expect(broadsheet.roll).toBeLessThan(tabloid.roll);
+    expect(broadsheet.spring).toBeLessThan(book.spring);
+    // A book's page keeps the curl it always had.
+    expect(spec(210).roll).toBe(book.roll);
+  });
+
   it("turns a board leaf as a rigid plate", () => {
     const board = flipper("left", 1, { folio: { tilt: 0 }, leafPapers: [undefined, { type: "board" }, undefined] });
     board.f.grab(onPage("right"));
