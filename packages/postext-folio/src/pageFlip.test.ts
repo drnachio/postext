@@ -335,6 +335,33 @@ describe("the page flipper", () => {
     expect(worst).toBeLessThan(0.1);
   });
 
+  it("never jumps: a few pixels of the hand move the leaf a few pixels, wherever it is taken (#502)", async () => {
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
+    const W = 476;
+    const H = 672;
+    const book = profiles("hardcover", W, 4, 60, 60);
+    const geometry = new PlaneGeometry(W, H, 96, 120);
+    let worst = 0;
+    // Taken by the middle of the fore-edge, the foot or the head, or a
+    // corner, and pulled every way: paper lying beyond the point taken
+    // used to stand up the moment the hand moved (some 700 px for 1).
+    for (const G of [{ u: W, v: 0 }, { u: 0.55 * W, v: -H / 2 }, { u: 0.8 * W, v: H / 4 }, { u: W, v: H / 2 }]) {
+      for (let a = 0; a < 8; a++) {
+        const dir = { u: -Math.cos((a * Math.PI) / 4), v: Math.sin((a * Math.PI) / 4) };
+        let prev: Float32Array | null = null;
+        for (let r = 0; r <= 120; r += 3) {
+          const P = { u: G.u + dir.u * r, v: G.v + dir.v * r };
+          layLeaf(geometry, foldOf(G, P, W, H), true, W, H, 1, book, 0, progressFrom(G, P));
+          const pos = geometry.attributes.position.array as Float32Array;
+          if (prev) for (let i = 0; i < pos.length; i += 3) worst = Math.max(worst, Math.hypot(pos[i] - prev[i], pos[i + 1] - prev[i + 1], pos[i + 2] - prev[i + 2]) / 3);
+          prev = Float32Array.from(pos);
+        }
+      }
+    }
+    geometry.dispose();
+    expect(worst).toBeLessThan(15);
+  });
+
   it("folds a leaf back over its own paper, never through it, rippling or not (#499, #500)", async () => {
     const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
     // A thick paperback, the leaf turning off the thin side, which hangs

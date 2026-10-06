@@ -826,10 +826,21 @@ export function foldOf(G: Pt, P: Pt, W: number, H: number, roll = 1) {
   // straight, lands over the hand: R sinθ + (c − Rθ) cosθ = c − D.
   const arc = R * theta;
   const k = arc > 0 ? Math.min(1, D / arc) : 0;
-  let c = (D + k * (R * Math.sin(theta) - arc * Math.cos(theta))) / (1 - Math.cos(theta));
+  const free = (D + k * (R * Math.sin(theta) - arc * Math.cos(theta))) / (1 - Math.cos(theta));
+  let c = free;
   for (const S of [-H / 2, H / 2]) c = Math.min(c, G.u * n.u + (G.v - S) * n.v);
   if (c <= 0) return null;
-  return { F: { u: G.u - n.u * c, v: G.v - n.v * c }, n, R, theta };
+  const F = { u: G.u - n.u * c, v: G.v - n.v * c };
+  // Never all at once (#502). Paper lying beyond the point taken, along
+  // the pull (a page taken by the middle of an edge and pulled across),
+  // turns over as the hand carries it away, not the moment it moves (a
+  // pixel's pull stood half the page up). A fold held off the spine short
+  // of the hand turns the less the nearer it comes to the point taken, so
+  // that it is gone, not dropped, when it reaches it.
+  let beyond = 0;
+  for (const u of [0, W]) for (const v of [-H / 2, H / 2]) beyond = Math.max(beyond, (u - G.u) * n.u + (v - G.v) * n.v);
+  const turns = (c / free) * (beyond > 0 ? smooth(0, 0.5 * beyond, D) : 1);
+  return { F, n, R, theta: theta * turns };
 }
 
 type Fold = NonNullable<ReturnType<typeof foldOf>>;
