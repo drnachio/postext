@@ -901,7 +901,7 @@ En una lista de nombres BibTeX, `and others` representa los nombres omitidos (`a
 
 `:::bibliography` pone la lista de obras citadas donde está; sin él, la lista va tras el último capítulo, con el título en el idioma del documento (*Referencias*, *References*, *参考文献*). `:::bibliography{title="Obras citadas"}` cambia el título y `title=""` lo quita; `scope=chapter` lista las obras que cita el capítulo (una obra colectiva). Cada entrada es un ancla (`ref-<clave>`), así que un enlace Markdown a `#ref-garcia2020` lleva a ella, y el PDF la etiqueta como `BibEntry`.
 
-Un estilo numérico cuenta sus citas a lo largo del libro; con `citations.numbering: 'chapter'` cada capítulo (cada documento, y cada encabezado de nivel 1 tras una cita) numera las suyas desde 1, y su lista de capítulo toma esos números, como los informes de un boletín o las ponencias de unas actas.
+`scope=new` lista las obras citadas hasta ese punto del documento que ninguna lista anterior imprimió, en el orden del estilo y con sus números: un `:::bibliography{scope=new}` tras el texto principal y otro tras los métodos dan las dos listas de un artículo de Nature, la segunda numerada a continuación de la primera. Un estilo numérico cuenta sus citas a lo largo del libro; con `citations.numbering: 'chapter'` cada capítulo (cada documento, y cada encabezado de nivel 1 tras una cita) numera las suyas desde 1, y su lista de capítulo toma esos números, como los informes de un boletín o las ponencias de unas actas.
 
 ### Estilos
 

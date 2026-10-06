@@ -357,9 +357,10 @@ export interface CitationIssue {
   sourceEnd: number;
 }
 
-/** Which works a list prints: all the book's (`'book'`) or the chapter's
- *  (`'chapter'`). */
-type BibliographyScope = 'book' | 'chapter';
+/** Which works a list prints: all the book's (`'book'`), the chapter's
+ *  (`'chapter'`), or those cited so far in the document that no list
+ *  before it printed (`'new'`, `:::bibliography{scope=new}`, #534). */
+type BibliographyScope = 'book' | 'chapter' | 'new';
 
 /** What {@link applyCitations} gives the build. */
 export interface AppliedCitations {
@@ -492,12 +493,17 @@ export function applyCitations(
   const notes: ContentBlock[] = [];
   let k = 0;
   const citedHere = new Set<string>();
+  /** Every work this document has cited so far, and those a list has
+   *  printed (`scope=new`, #534). */
+  const citedSoFar = new Set<string>();
+  const printed = new Set<string>();
   /** The chapter (`CitationContext.chapters`) of the last citation read. */
   let chapterAt: number | undefined;
   /** Cluster `g`, formatted, read here: its works counted. */
   const counted = (g: number): void => {
     for (const it of ctx.clusters[g]?.items ?? []) {
       citedHere.add(it.id);
+      citedSoFar.add(it.id);
     }
     chapterAt = ctx.chapters?.[g] ?? chapterAt;
   };
@@ -550,7 +556,11 @@ export function applyCitations(
     const pool = scope !== 'book' && processed.chapterEntries && chapterAt !== undefined
       ? processed.chapterEntries.get(chapterAt) ?? processed.entries
       : processed.entries;
-    const entries = scope === 'chapter' ? pool.filter((e) => citedHere.has(e.id)) : pool;
+    const entries = scope === 'chapter'
+      ? pool.filter((e) => citedHere.has(e.id))
+      // The works cited so far that no list before printed (#534).
+      : scope === 'new' ? pool.filter((e) => citedSoFar.has(e.id) && !printed.has(e.id)) : pool;
+    for (const e of entries) printed.add(e.id);
     if (entries.length === 0) return [];
     bibliographySet = true;
     const alignRight = cfg.bibliography.labelAlign === 'right';
@@ -595,7 +605,7 @@ export function applyCitations(
     if (block.type === 'directive' && block.directiveName === 'references') continue;
     if (block.type === 'directive' && block.directiveName === 'bibliography') {
       const scopeAttr = block.directiveAttrs?.scope;
-      const scope = scopeAttr === 'chapter' || scopeAttr === 'book' ? scopeAttr : cfg.bibliography.scope;
+      const scope = scopeAttr === 'chapter' || scopeAttr === 'book' || scopeAttr === 'new' ? scopeAttr : cfg.bibliography.scope;
       out.push(...bibliographyBlocks(block.sourceStart, scope, block.directiveAttrs?.title ?? cfg.bibliography.title));
       chapterListed = true;
       continue;

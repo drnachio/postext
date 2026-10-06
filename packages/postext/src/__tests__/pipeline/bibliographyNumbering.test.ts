@@ -93,3 +93,15 @@ describe("citations.numbering: 'chapter' (#537)", () => {
     expect(c2!.chapters).toEqual(c1!.chapters);
   });
 });
+
+describe(':::bibliography{scope=new} (#534)', () => {
+  beforeAll(() => registerCitationEngine(numbered));
+  afterAll(() => registerCitationEngine(undefined));
+
+  it('lists the works cited so far that no list before printed, numbered on', () => {
+    const md = `${front}Main text [@a] and [@b].\n\n:::bibliography{scope=new}\n\n## Methods\n\nWe used [@b], [@c] and [@d].\n\n:::bibliography{scope=new title="Methods references"}\n`;
+    const doc = buildDocument({ markdown: md }, { page, citations: { marker: 'brackets', bibliography: { title: 'References' } } });
+    expect(text(doc).find((t) => t.startsWith('We used'))).toBe('We used [2], [3] and [4].');
+    expect(lists(doc)).toEqual([['[1] Alpha', '[2] Beta'], ['[3] Gamma', '[4] Delta']]);
+  });
+});
