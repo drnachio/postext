@@ -1,72 +1,60 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat del plec són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "Un diari viu amb fotos que es mouen"
+summary: "Sis recursos de vídeo compostos com a fotos de premsa en un tabloide a quatre columnes; autoplay, loop i exclusive: false els reprodueixen alhora a Folio."
+plain: "Un diari local a l'estil dels anys trenta en què cada foto és una pel·lícula muda i curta. En paper són imatges fixes; al visor 3D es mouen totes alhora, una vegada i una altra, com un diari de conte."
+description: "Un tabloide de quatre pàgines a quatre columnes amb sis fotos que són vídeos en bucle en blanc i negre, reproduïts junts sobre paper premsa doblegat a Folio."
+question: "Com faig que diversos vídeos muts en bucle es reprodueixin alhora en una pàgina de diari?"
+aliases: ["diari viu", "fotos que es mouen", "vídeo en bucle", "reproducció automàtica", "autoplay", "loop", "diversos vídeos alhora", "exclusive", "reproduir alhora", "tabloide", "diari", "quatre columnes", "Folio", "paper premsa", "diari doblegat"]
+pageNotes: { "1": "La portada de The Wexcombe Lantern del 10 de juny de 1933: una capçalera negra en lletra estreta, el titular Trams run to the sea at last, una foto de l'alcaldessa parlant en un faristol a l'amplada de tres columnes, una altra d'una dona que saluda des d'un biplà a dues i, al peu, una franja In brief sobre fons de color.", "2": "Town & Harbour: una foto de la torre del rellotge en una columna, un pescador que riu amb un bacallà enorme a les mans a dues, un requadre de tarifes, una taula de marees i cinc notícies breus en quatre columnes amb filet.", "3": "Stage & Screen: una actriu en un decorat de jardí a dues columnes, una crítica, taules de cinema i de ràdio, cartes al director i un requadre amb filet d'anuncis per paraules.", "4": "Sport: un porter ajupit sobre la seva línia a l'amplada de tres columnes, la crònica de la copa, taules del calendari, de criquet i de ciclisme, i el peu d'impremta." }
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que es reflecteixen en el plec, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+*The Wexcombe Lantern*, un setmanari costaner inventat de juny de 1933, en una pàgina tabloide de 280 × 430 mm a quatre columnes amb filet: una capçalera estreta, una notícia principal amb la seva foto a tres columnes, una altra a dues, taules de marees, anuncis per paraules i una pàgina d'esports. Cada foto és una pel·lícula de cinc segons en blanc i negre. A l'imprès, i a les pàgines planes sota el visor, cadascuna és el seu primer fotograma. Quan s'obre a Folio com un diari doblegat, sobre paper premsa clar, les fotos de les pàgines obertes es mouen alhora i no s'aturen: l'alcaldessa parla, l'aviadora saluda, el pescador riu, el porter es llança i es torna a aixecar. La pàgina no dibuixa res; la maquetació és la d'un diari corrent i els clips fan la resta.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Fes de cada foto un clip que es repeteix amb els altres
 
-### 1 · L'obertura és un disseny, no un títol
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un recurs de vídeo imprimeix la seva portada com una imatge, així que els clips ocupen el lloc de les fotografies i porten peu com elles. Tres opcions del reproductor donen vida a la pàgina: `autoplay` engega un clip quan la seva pàgina és a la vista (sempre sense so, com exigeixen els navegadors), `loop` el torna a reproduir des del principi i `exclusive: false` deixa que corri al costat dels altres clips. Per defecte un vídeo és exclusiu: quan s'engega, posa en pausa tot el que s'estigui reproduint, cosa que serveix per a una classe però no per a una pàgina de fotos en moviment. La marca de reproducció i el codi QR estan desactivats, de manera que en paper els clips es llegeixen com a fotos de premsa.
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una ranura d'elements: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
+### 2 · Dona a cada bucle el seu lloc a la retícula
 
-### 2 · Les capçaleres saben en quina pàgina són
+<Excerpt region="clips" />
 
-<Excerpt region="running-heads" />
+La maquetació és `layoutType: 'multiple'` amb `columnCount: 4`. El `columns` d'un flotant fixa quantes n'ocupa: el clip de l'alcaldessa, tres; els de l'aviadora, el pescador i l'actriu, dues; el de la torre del rellotge, una. Un flotant a diverses columnes pren el capdamunt d'una sèrie de columnes buides que comencen a la mateixa altura, o el peu de la columna on es cita i de les buides que la segueixen, així que el lloc de la línia `::resource` decideix el buit. L'alcaldessa es cita després del primer paràgraf, cosa que deixa la columna 1 al text i posa la foto sobre les columnes 2 a 4.
 
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
+### 3 · Compon la capçalera i les pàgines de secció
 
-### 3 · Un sol accent, enllaçat a tot arreu
+<Excerpt region="nameplate" />
 
-<Excerpt region="palette" />
+El títol de nivell 1 de la portada és el nom del diari, compost en una ranura d'elements: dues orelles a sobre, el nom en majúscules d'Oswald i una línia de data entre un filet fi i un de gruixut. Les pàgines interiors obren amb un rètol vermell de secció sobre una barra de 3 pt (la regió `pages`), i totes les pàgines menys la primera porten una línia de foli al capdamunt.
 
-Cada color de la configuració anomena la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil de títol poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+### 4 · Obre el diari a Folio
+
+<Excerpt region="folio" />
+
+`config.folio` posa el diari sobre roure amb llum de dia: paper premsa de 45 g/m², que deixa veure per transparència la pàgina següent, i `binding.type: 'folded'`, plecs doblegats una vegada i posats l'un dins de l'altre, sense grapes ni llom, com es munta un diari. Folio dibuixa tots els clips de la doble pàgina oberta en una sola textura, fins a vuit alhora, engega els bucles automàtics cada vegada que un pas de pàgina s'atura a la seva i els atura quan aquesta pàgina es passa. Un clic en un vídeo exclusiu el continua reproduint tot sol, amb el seu so, i els bucles esperen que s'acabi.
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Deixa que el lector engegui cada clip
 
-### Compon el text a dues columnes
-
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+Sense `autoplay`, les fotos es queden quietes fins que el lector en clica una; un cop engegats, els bucles es reprodueixen junts igualment.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  player: { autoplay: true, loop: true, muted: true, exclusive: false, controls: false },
++  player: { loop: true, muted: true, exclusive: false, controls: false },
 ```
+
+### Un clip exclusiu amb el seu so
+
+Un vídeo es pot quedar amb el valor per defecte i reproduir-se pel seu compte: posa `player: { exclusive: true, muted: false }` al `video` d'aquest recurs, i quan s'engega els bucles esperen fins que s'acaba.
+
+### Un diari de gran format a sis columnes
+
+<RecipeLink slug="newspaper-front-page">La portada a dues columnes</RecipeLink> compon un diari més petit amb fotos fixes; la mateixa retícula admet sis columnes en un format llençol amb `sizePreset: 'broadsheet'`.
 
 ## Errors freqüents
 
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+Una secció de diari és un títol de nivell 1 que obre pàgina, i un flotant no el travessa mai. Una foto que no troba buit a l'última pàgina de la seva secció es col·loca en una pàgina pròpia abans de la secció següent, així que ajusta el text a la pàgina: aquí la notícia dels tramvies salta a la pàgina 2 en lloc de fer fora l'aviadora de la portada.
