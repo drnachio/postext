@@ -27,6 +27,10 @@ interface PresetEntry {
    *  index order (by id) and come first, the others follow by this number
    *  (ألف ليلة وليلة, 紅樓夢 and こころ, the right-bound books, stand last). */
   shelfOrder?: number;
+  /** How the cover meets the shelf's 3:4 frame: cropped to it (`cover`, the
+   *  default) or flattened into it (`fill`), for a cover a little taller than
+   *  the frame whose outer border would show the crop (ألف ليلة وليلة). */
+  coverFit?: "cover" | "fill";
 }
 
 /** The bundle's content hash (`fingerprint.json`, rewritten by every build),
@@ -145,7 +149,7 @@ export async function ShowcaseSection() {
               width={544}
               height={720}
               unoptimized
-              className="block aspect-[210/280] h-auto w-full object-cover"
+              className={`block aspect-[210/280] h-auto w-full ${p.coverFit === "fill" ? "object-fill" : "object-cover"}`}
             />
           </Book>
           );
