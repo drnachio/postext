@@ -118,6 +118,7 @@ import {
   noteContentBlock,
   noteNumberPositionOf,
   numberFootnotes,
+  footnoteFormatOf,
   numberFootnotesByPlacement,
   sameFootnoteNumbers,
   splitFootnoteDefinitions,
@@ -584,7 +585,7 @@ function placeDocumentPass(
   // (#376), for the outline and the layout alike.
   const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
-    ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }])[0] : undefined);
+    ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }], content.resources)[0] : undefined);
   const citationsApplied = citationContext
     ? applyCitations(
       parsedBody,
@@ -594,6 +595,9 @@ function placeDocumentPass(
       resolvedLocale(resolved),
     )
     : undefined;
+  // The citations of resource captions and notes (#529), formatted with
+  // the text's.
+  const captionCitations = citationsApplied && citationsApplied.captions.size > 0 ? citationsApplied.captions : undefined;
   const footnoteSplit = splitFootnoteDefinitions(citationsApplied?.blocks ?? parsedBody);
   const footnoteDefs = footnoteSplit.defs;
   // Numbered by page or column (`numbering: 'page'`), a note takes the
@@ -604,7 +608,7 @@ function placeDocumentPass(
     footnoteSplit.blocks,
     resolved.footnotes.numbering,
     resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
-    documentNumeralStyle(resolved.footnotes.numberFormat, resolved.numerals),
+    footnoteFormatOf(resolved.footnotes, resolved.numerals),
     resolved.footnotes.markerTemplate,
   );
   if (hints.footnoteNumbers) {
@@ -1004,6 +1008,7 @@ function placeDocumentPass(
       resourceNumbering,
       resourceTypes,
       resources,
+      ...(captionCitations ? { captionCitations } : {}),
       ...(slice ? { slice } : {}),
       ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
@@ -2000,6 +2005,7 @@ function placeDocumentPass(
     resources,
     resourceTypes,
     resourceNumbering,
+    ...(captionCitations ? { captionCitations } : {}),
     floatedIds,
     leftFlow: calloutsOutOfFlow,
     joiningLetterSpacing,
@@ -6178,7 +6184,7 @@ function* buildDocumentNumbered(
     // A spread counts its notes in citation order: the order of the first
     // markers, which `used` holds.
     const order = f.numbering === 'spread' ? new Map([...used.keys()].map((id, i) => [id, i])) : undefined;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate, doc.pageIndexOffset ?? 0, order).numbers;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, footnoteFormatOf(f, doc.config.numerals), f.markerTemplate, doc.pageIndexOffset ?? 0, order).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);

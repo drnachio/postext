@@ -2,6 +2,7 @@ import type { InlineSpan } from './types';
 import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, protectDollarEscapes, replaceSnippetBreaks } from './inlineFormatting';
 import { computeSourceMap } from './sourceMapping';
 import { joinEastAsianSnippetLines } from './softBreaks';
+import { extractInlineCitations, injectCitationSpans } from './citations';
 
 /**
  * Inline snippets — the self-contained rich-text runs held by a resource
@@ -28,16 +29,26 @@ import { joinEastAsianSnippetLines } from './softBreaks';
  *  maths: a `$` prints as written, and `\$` prints a dollar sign, as it does
  *  in the body. A link destination reads its own escapes, and a directive's
  *  attributes (a ref's `text="…"`) are printed as written. A line end
- *  between two East Asian characters is taken out (see `softBreaks.ts`). */
-export function parseInlineSnippetSpans(content: string): InlineSpan[] {
+ *  between two East Asian characters is taken out (see `softBreaks.ts`).
+ *  With `citations` (a caption or a note, #529) a citation (`[@key]`,
+ *  `@key`) becomes a citation span, as in the body; elsewhere (a table
+ *  cell) it stays text. */
+export function parseInlineSnippetSpans(content: string, options?: { citations?: boolean }): InlineSpan[] {
   const chips = extractInlineChips(protectDollarEscapes(replaceSnippetBreaks(protectCodeSpans(content))), 0);
   const { cleaned, refs } = extractInlineRefs(chips.cleaned, 0);
-  const sw = extractInlineSwatches(cleaned, 0);
+  const cites = options?.citations ? extractInlineCitations(cleaned, 0) : { cleaned, citations: [] };
+  const sw = extractInlineSwatches(cites.cleaned, 0);
   // A line end between two Chinese or Japanese characters is no space
   // (#181); elsewhere it stays whitespace.
   return joinEastAsianSnippetLines(
-    injectChipSpans(injectRefSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), refs), chips.chips),
+    injectChipSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), cites.citations), refs), chips.chips),
   );
+}
+
+/** The citations of a resource's caption and note, in order (#529). */
+export function snippetCitations(content: string | undefined): NonNullable<InlineSpan['citation']>[] {
+  if (!content || !content.includes('@')) return [];
+  return parseInlineSnippetSpans(content, { citations: true }).flatMap((s) => (s.citation ? [s.citation] : []));
 }
 
 /** A parsed snippet with its plain text and per-character source map. */

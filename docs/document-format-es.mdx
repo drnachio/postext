@@ -860,9 +860,10 @@ Como muestra [@garcia2020, pág. 33], se lee más rápido en papel [véase @lope
 
 - **`[@clave]`** cita entre paréntesis; varias obras van en un mismo par de corchetes, separadas por `;`.
 - **Localizador:** tras una coma, `p. 33`, `pp. 4–6`, `pág. 33`, `cap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `§ 4.2`; un número solo es una página. También valen las palabras inglesas y chinas (`页`, `章`).
-- **Prefijo y sufijo:** texto antes de la `@` (`véase`) y tras el localizador (`, la cursiva es nuestra`).
+- **Prefijo y sufijo:** texto antes de la `@` (`véase`) y tras la clave o el localizador (`, la cursiva es nuestra`). El sufijo conserva la coma escrita delante, haya localizador o no: `[@brown2020, entre otros]` imprime *(Brown et al., 2020, entre otros)*, como Pandoc; escrito sin coma (`[@brown2020 entre otros]`) no la lleva. El énfasis de un prefijo o un sufijo sale como énfasis en todos los estilos: `[*p. ej.*, @brown2020, *inter alia*]`.
 - **`[-@clave]`** omite el autor, para una frase que ya lo nombra.
 - **`@clave`** cita dentro de la frase (*García (2020)*); `@clave [pág. 4]` añade un localizador.
+- **En los pies:** el pie de una figura o de una tabla, y su nota, citan como el texto (`El mejor resultado previo [@cobbe2021].`). Sus obras entran en la bibliografía sin `nocite`, y un estilo numérico las numera donde se coloca el recurso: tras las citas del párrafo que lo menciona por primera vez (su bloque `::resource` o su primera `:ref`). Una cita en una celda de tabla queda como texto.
 - Una `@` pegada a una letra o a una cifra (una dirección de correo), una `@` en código y `\@` son texto. Una cita sin referencia en el libro se imprime tal como se escribió, así que un documento sin referencias se lee como antes. En una cita de varias obras, una clave que ninguna referencia define se imprime en negrita tras las demás (`(Glen, 1955) **@nye1953**`), de modo que la obra que falta se ve en la página además de en los avisos. Unos dos puntos tras una cita son texto: `[@french2018]: el terreno…`.
 - En texto chino, japonés y coreano la cita sigue al último carácter sin espacio (`周明远@zhou2019认为`), y una cita autor-fecha toma los signos de ancho completo del texto que la rodea: `（施雅风等，1988；刘时银等，2015）`.
 
@@ -893,6 +894,8 @@ o en un bloque `:::references`, en BibTeX (lo que exportan Zotero, JabRef o Goog
 ```
 
 El bloque no imprime nada. `nocite` lista obras sin citarlas (`@*`: todas). En un libro, las referencias escritas en cualquier capítulo valen para todo el libro.
+
+En una lista de nombres BibTeX, `and others` representa los nombres omitidos (`author = {Tan, Wei and others}`): todos los estilos imprimen *et al.* en su lugar. En YAML, escribe `others` como último nombre de la lista.
 
 ### La bibliografía
 

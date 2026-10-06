@@ -31,6 +31,7 @@ import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRe
 import { chipContextOf, resolveChipSpans } from './chips';
 import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
+import type { CaptionCitations } from './citations';
 import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
@@ -56,6 +57,8 @@ export interface BlockMeasureContext
   resources: Resource[];
   resourceTypes: ResourceType[];
   resourceNumbering: ResourceNumberingMap;
+  /** The formatted citations of resource captions and notes (#529). */
+  captionCitations?: ReadonlyMap<string, CaptionCitations>;
   /** Ids of resources that float to page bands (never placed inline). */
   floatedIds: ReadonlySet<string>;
   /** Content indices of the `containerStart` markers of the boxes that left
@@ -190,6 +193,7 @@ export function measureContentBlock(
       resources: ctx.resources,
       resourceTypes: ctx.resourceTypes,
       resourceNumbering: ctx.resourceNumbering,
+      ...(ctx.captionCitations ? { captionCitations: ctx.captionCitations } : {}),
       resource: kind.resource,
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,

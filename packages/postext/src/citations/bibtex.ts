@@ -103,6 +103,18 @@ function splitTopLevel(text: string, sep: RegExp): string[] {
   return out.map((s) => s.trim()).filter((s) => s.length > 0);
 }
 
+/** The name that ends a list cut short: BibTeX's `and others`, written
+ *  `{literal: others}` as Pandoc writes it (#533). A style prints "et al."
+ *  in its place. */
+export const ET_AL_NAME: CslName = { literal: 'others' };
+
+/** Whether `name` stands for the names left out (`others`). */
+export function isEtAlName(name: CslName | undefined): boolean {
+  if (!name) return false;
+  const text = name.literal ?? (name.given ? undefined : name.family);
+  return typeof text === 'string' && text.trim().toLowerCase() === 'others';
+}
+
 const CJK = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}]/u;
 
 /** One BibTeX name (`Last, First`, `Last, Jr, First`, `First von Last`, a
@@ -143,8 +155,10 @@ function withParticle(name: CslName): CslName {
   return m ? { ...name, family: m[2]!, 'non-dropping-particle': m[1]!.trim() } : name;
 }
 
+/** A name list; `and others` after the first name stands for the names
+ *  left out ({@link ET_AL_NAME}: the style prints "et al.", #533). */
 function parseNames(value: string): CslName[] {
-  return splitTopLevel(value, /\s+and\s+/gi).map(parseName);
+  return splitTopLevel(value, /\s+and\s+/gi).map((raw, i) => (i > 0 && raw.trim().toLowerCase() === 'others' ? { ...ET_AL_NAME } : parseName(raw)));
 }
 
 function parseDate(fields: Readonly<Record<string, string>>): CslDate | undefined {

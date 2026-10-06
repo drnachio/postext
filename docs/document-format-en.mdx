@@ -860,9 +860,10 @@ As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap.
 
 - **`[@key]`** cites in parentheses; several works go in one pair of brackets, separated by `;`.
 - **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too.
-- **Prefix and suffix:** text before the `@` (`see`) and after the locator (`, emphasis added`).
+- **Prefix and suffix:** text before the `@` (`see`) and after the key or the locator (`, emphasis added`). The suffix keeps the comma written before it, with a locator or without one: `[@brown2020, inter alia]` prints *(Brown et al., 2020, inter alia)*, as Pandoc does; written without a comma (`[@brown2020 inter alia]`) it has none. Emphasis in a prefix or a suffix is set as emphasis in every style: `[*e.g.*, @brown2020, *inter alia*]`.
 - **`[-@key]`** leaves the author out, for a sentence that names the author already.
 - **`@key`** cites in the sentence (*García (2020)*); `@key [p. 4]` adds a locator.
+- **In captions:** the caption of a figure or a table, and its note, cite as the text does (`Prior best from [@cobbe2021].`). Their works go into the bibliography with no `nocite`, and a numbered style numbers them where the resource is placed: after the citations of the paragraph that first refers to it (its `::resource` block or first `:ref`). A citation in a table cell stays text.
 - An `@` glued to a letter or a digit (an e-mail address), an `@` in inline code and `\@` are text. A citation the book has no reference for prints as written, so a document without references reads as before. In a citation of several works, a key no reference defines is printed in bold after the others (`(Glen, 1955) **@nye1953**`), so the missing work shows on the page as well as among the warnings. A colon after a citation is text: `[@french2018]: the land…`.
 - In Chinese, Japanese and Korean text a citation follows the last character with no space (`周明远@zhou2019认为`), and an author-date citation takes the full-width marks of the text around it: `（施雅风等，1988；刘时银等，2015）`.
 
@@ -893,6 +894,8 @@ or in a `:::references` block, in BibTeX (a Zotero, JabRef or Google Scholar exp
 ```
 
 The block prints nothing. `nocite` lists works without citing them (`@*`: all of them). In a book, references written in any chapter count for the whole book.
+
+In a BibTeX name list, `and others` stands for the names left out (`author = {Tan, Wei and others}`): every style prints *et al.* in its place. In YAML, write `others` as the last name of the list.
 
 ### The bibliography
 

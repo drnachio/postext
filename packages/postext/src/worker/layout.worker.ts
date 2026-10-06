@@ -191,7 +191,8 @@ async function runBuild(msg: BuildRequest): Promise<void> {
     // grey boxes instead of glyphs. Skipped for docs that contain no `$…$`.
     // The citation engine (when the host set a loader) before a document
     // that cites works.
-    if (!citationEngine() && mayNeedCitations(content.markdown)) {
+    // A chapter placing a figure whose caption cites (#529) needs it too.
+    if (!citationEngine() && (mayNeedCitations(content.markdown) || content.citations?.captions !== undefined)) {
       await ensureCitationEngine();
     }
     if (!isMathReady() && /\$/.test(content.markdown)) {

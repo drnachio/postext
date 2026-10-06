@@ -12,11 +12,13 @@ import { FOOTNOTE_PLACEHOLDER } from '../parse/inlineFormatting';
 import type { Dimension } from '../types';
 import type { ResolvedConfig } from '../vdt';
 import type { ResolvedParagraphStyleConfig } from '../types';
-import type { CitationContext } from '../citations/context';
+import { blockResourceIds, type CitationContext } from '../citations/context';
 import { citationEngine } from '../citations/registry';
-import type { BibliographyEntryOutput, CitationClusterInput, CitationProcessor, CslItem } from '../citations/types';
+import type { BibliographyEntryOutput, CitationClusterInput, CitationProcessor, CslItem, CslName } from '../citations/types';
+import { isEtAlName } from '../citations/bibtex';
 import { htmlToSpans, decodeEntities } from '../citations/html';
 import { languageOf, stringsFor } from '../locale';
+import { affixRichText, affixSpans } from '../parse/citations';
 
 /** Id of the paragraph style the bibliography is set in. */
 export const BIBLIOGRAPHY_STYLE_ID = '__postext-bibliography';
@@ -137,6 +139,13 @@ function markerSpans(
   const span = (text: string, extra: Partial<InlineSpan> = {}): InlineSpan => ({ text, bold: base.bold, italic: base.italic, ...extra });
   const out: InlineSpan[] = [];
   if (narrative) out.push(span(cfg.marker === 'superscript' || cfg.marker === 'corner' ? narrative : `${narrative} `));
+  // The first work's prefix before the marker and the last one's suffix
+  // after it, their emphasis read (#528): "see [1], *inter alia*", as
+  // citeproc-js sets a bracketed number.
+  const prefix = known[0]?.prefix;
+  const suffix = known[known.length - 1]?.suffix;
+  const affix = (text: string): InlineSpan[] => affixSpans(text).map((s) => ({ ...s, bold: s.bold || base.bold, italic: s.italic !== base.italic }));
+  if (prefix && !narrative) out.push(...affix(/[\s([{]$/u.test(prefix) ? prefix : `${prefix} `));
   switch (cfg.marker) {
     case 'parentheses':
       out.push(span(`(${list}${loc ? `${comma} ${loc}` : ''})`));
@@ -150,6 +159,7 @@ function markerSpans(
     default:
       out.push(span(`[${list}${loc ? `${comma} ${loc}` : ''}]`));
   }
+  if (suffix) out.push(...affix(/^[\s\p{P}]/u.test(suffix) ? suffix : ` ${suffix}`));
   return out;
 }
 
@@ -157,13 +167,16 @@ function markerSpans(
  *  Japanese locale a CJK name takes the locale's words for "and" and "et
  *  al.", set solid (夏目と森, 夏目ほか, #426); Chinese keeps 、 and 等. */
 function narrativeName(item: CslItem | undefined, locale: string, terms: CitationProcessor['terms']): string {
-  const names = (item?.author ?? item?.editor ?? []) as { family?: string; literal?: string }[];
+  const listed = (item?.author ?? item?.editor ?? []) as CslName[];
+  // `and others` (#533): the names left out make it "et al.".
+  const names = listed.filter((n) => !isEtAlName(n));
   if (names.length === 0) return '';
   const first = names[0]!.literal ?? names[0]!.family ?? '';
   const cjk = CJK.test(first);
   // An Arabic name takes the Arabic conjunction, joined to the word it
   // precedes: «الجاحظ والمبرد», «الجاحظ وآخرون».
   const arabic = ARABIC.test(first);
+  if (names.length < listed.length) return cjk && terms && languageOf(locale) === 'ja' ? `${first}${terms.etAl}` : cjk ? `${first}等` : arabic ? `${first} وآخرون` : `${first} et al.`;
   if (names.length === 1) return first;
   const second = names[1]!.literal ?? names[1]!.family ?? '';
   if (cjk && terms && languageOf(locale) === 'ja') return names.length === 2 ? `${first}${terms.and}${second}` : `${first}${terms.etAl}`;
@@ -195,7 +208,11 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
     const byId = new Map(items.map((i) => [i.id, i]));
     const processor = engine.createProcessor({ style, locale, items, collapseRanges: cfg.collapseRanges, unnumberedNotes: cfg.notes === 'warichu' });
     const clusters = ctx.clusters.map((c) => ({ ...c, noteIndex: processor.kind === 'note' ? c.noteIndex ?? 0 : 0 }));
-    const html = processor.cite(clusters);
+    // Affixes reach the processor as CSL rich text: their Markdown
+    // emphasis as `<i>`/`<b>` (#528).
+    const html = processor.cite(clusters.map((c) => (c.items.some((it) => it.prefix || it.suffix)
+      ? { ...c, items: c.items.map((it) => ({ ...it, ...(it.prefix ? { prefix: affixRichText(it.prefix) } : {}), ...(it.suffix ? { suffix: affixRichText(it.suffix) } : {}) })) }
+      : c)));
     const numbers = processor.citationNumbers();
     const listedIds = cfg.bibliography.includeUncited || ctx.nocite.includes('*')
       ? items.map((i) => i.id)
@@ -300,6 +317,32 @@ export interface AppliedCitations {
   labelChars: number;
   /** A bibliography was set in this document. */
   bibliography: boolean;
+  /** The formatted citations of the captions and notes of the resources
+   *  this document places (#529), by resource id: one entry per citation
+   *  in the caption's (the note's) text, undefined for one that prints as
+   *  written. Set plain: the caption's emphasis goes on when it is laid
+   *  out (see `resolveCitationSpans`). */
+  captions: Map<string, CaptionCitations>;
+}
+
+/** The formatted citations of a resource's caption and note. */
+export interface CaptionCitations {
+  caption: (InlineSpan[] | undefined)[];
+  note: (InlineSpan[] | undefined)[];
+}
+
+/** `spans` with each citation span replaced by its formatted text from
+ *  `formatted`, in order, with the emphasis of the text around it; a
+ *  citation with none prints as written. */
+export function resolveCitationSpans(spans: InlineSpan[], formatted: readonly (InlineSpan[] | undefined)[] | undefined): InlineSpan[] {
+  if (!spans.some((s) => s.citation)) return spans;
+  let k = 0;
+  return spans.flatMap((span) => {
+    if (!span.citation) return [span];
+    const text = formatted?.[k++];
+    if (!text) return [plain(span.citation.raw, span)];
+    return text.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
+  });
 }
 
 /** A Chinese mark that ends a clause or a sentence, at the start of a text. */
@@ -403,6 +446,42 @@ export function applyCitations(
   const listedIds = new Set(processed?.entries.map((e) => e.id) ?? []);
   const itemsById = new Map(ctx.items.map((i) => [i.id, i]));
   const willList = (id: string | undefined): boolean => id !== undefined && listedIds.has(id) && (cfg.bibliography.auto || ctx.placed);
+  /** The printed text of cluster `g` with the emphasis of `span` (the
+   *  citation's span), linked to its entry; undefined when it prints as
+   *  written. */
+  const formattedText = (g: number | undefined, span: InlineSpan): InlineSpan[] | undefined => {
+    const spans = g !== undefined ? processed?.formatted[g] : undefined;
+    if (g === undefined || !spans) return undefined;
+    const target = processed!.target[g];
+    const href = cfg.link && willList(target) ? `#${BIBLIOGRAPHY_ANCHOR_PREFIX}${target}` : undefined;
+    // The citation takes the emphasis of the text around it.
+    const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
+    const linkedText = href ? linked(styled, href) : styled;
+    // A key no reference defines, in a citation of several works: set in
+    // bold after it, as written, so the missing work shows on the page
+    // and not only among the warnings.
+    const missing = processed!.unknown[g] ?? [];
+    return missing.length > 0
+      ? [...linkedText, plain(' ', span), { ...plain(missing.map((id) => `@${id}`).join('; '), span), bold: true }]
+      : linkedText;
+  };
+  // Captions and notes (#529): formatted in the text's way (a note style
+  // sets them in the caption too: a caption takes no note), their works
+  // counted where the block that places the resource is read.
+  const captions = new Map<string, CaptionCitations>();
+  const captionIds = new Set(Object.keys(ctx.captions ?? {}));
+  const captionAnchors = (block: ContentBlock): void => {
+    if (captionIds.size === 0) return;
+    for (const id of blockResourceIds(block, (rid) => captionIds.has(rid))) {
+      const at = ctx.captions?.[id];
+      if (!at || captions.has(id)) continue;
+      const base: InlineSpan = { text: '', bold: false, italic: false };
+      for (const g of [...at.caption, ...at.note]) {
+        if (processed?.formatted[g]) for (const it of ctx.clusters[g]?.items ?? []) citedHere.add(it.id);
+      }
+      captions.set(id, { caption: at.caption.map((g) => formattedText(g, base)), note: at.note.map((g) => formattedText(g, base)) });
+    }
+  };
 
   const bibliographyBlocks = (at: number, scope: 'book' | 'chapter', title: string | undefined): ContentBlock[] => {
     if (!processed) return [];
@@ -466,6 +545,7 @@ export function applyCitations(
     }
     if (!block.spans.some((s) => s.citation)) {
       out.push(block);
+      captionAnchors(block);
       continue;
     }
     const replace = new Map<number, InlineSpan[]>();
@@ -473,25 +553,13 @@ export function applyCitations(
     block.spans.forEach((span, i) => {
       if (!span.citation) return;
       const g = ctx.local[k++];
-      const spans = g !== undefined ? processed?.formatted[g] : undefined;
-      if (g === undefined || !spans) {
+      const text = formattedText(g, span);
+      if (g === undefined || !text) {
         // No reference: the citation prints as it was written.
         replace.set(i, [plain(span.citation.raw, span)]);
         return;
       }
       for (const it of span.citation.cluster.items) citedHere.add(it.id);
-      const target = processed!.target[g];
-      const href = cfg.link && willList(target) ? `#${BIBLIOGRAPHY_ANCHOR_PREFIX}${target}` : undefined;
-      // The citation takes the emphasis of the text around it.
-      const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
-      const linkedText = href ? linked(styled, href) : styled;
-      // A key no reference defines, in a citation of several works: set in
-      // bold after it, as written, so the missing work shows on the page
-      // and not only among the warnings.
-      const missing = processed!.unknown[g] ?? [];
-      const text = missing.length > 0
-        ? [...linkedText, plain(' ', span), { ...plain(missing.map((id) => `@${id}`).join('; '), span), bold: true }]
-        : linkedText;
       if (note && block.footnoteDef === undefined) {
         // "As @howse1980 says": the sentence keeps the author's name, the
         // reference goes to the note.
@@ -524,6 +592,7 @@ export function applyCitations(
       if (next && !next.citation && next.text.startsWith('.') && !next.text.startsWith('..') && /\.$/.test(text.map((t) => t.text).join(''))) dropLead.add(i + 1);
     });
     out.push(withSpans(block, replace, dropLead));
+    captionAnchors(block);
   }
   // Nothing places the list: it goes after the text (the book's last
   // document for a book-wide list).
@@ -533,7 +602,7 @@ export function applyCitations(
     const at = blocks[blocks.length - 1]?.sourceEnd ?? 0;
     out.push(...bibliographyBlocks(at, cfg.bibliography.scope, cfg.bibliography.title));
   }
-  return { blocks: [...out, ...notes], labelChars, bibliography: bibliographySet };
+  return { blocks: [...out, ...notes], labelChars, bibliography: bibliographySet, captions };
 }
 
 /** The issues of a document's citations, for the content warnings. */

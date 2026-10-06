@@ -86,6 +86,7 @@ import { resolveBodyStyle } from './styles';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
+import { resolveCitationSpans, type CaptionCitations } from './citations';
 
 /**
  * A caption's, a note's or a cell's spans with their Chinese and Japanese
@@ -135,6 +136,9 @@ export interface ResourceLayoutInput {
   resourceNumbering: ResourceNumberingMap;
   resourceTypes: ResourceType[];
   resources: Resource[];
+  /** The formatted citations of resource captions and notes, by resource
+   *  id (#529); a citation without one prints as written. */
+  captionCitations?: ReadonlyMap<string, CaptionCitations>;
   /** Lay out only these rows of a table (a slice of a table split across
    *  pages). Ignored for figures. */
   slice?: TableSliceSpec;
@@ -1284,7 +1288,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     // style slants the description: a caption set in italics is no
     // emphasis.
     const resolvedSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseInlineSnippetSpans(captionText),
+      resolveCitationSpans(parseInlineSnippetSpans(captionText, { citations: true }), input.captionCitations?.get(resource.id)?.caption),
       resourceNumbering,
       resourceTypes,
       resources,
@@ -1333,7 +1337,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
     const noteSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseInlineSnippetSpans(noteText),
+      resolveCitationSpans(parseInlineSnippetSpans(noteText, { citations: true }), input.captionCitations?.get(resource.id)?.note),
       resourceNumbering,
       resourceTypes,
       resources,

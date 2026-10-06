@@ -860,9 +860,10 @@ Com mostra [@garcia2020, pág. 33], es llegeix més de pressa en paper [véase @
 
 - **`[@clave]`** cita entre parèntesis; diverses obres van en un mateix parell de claudàtors, separades per `;`.
 - **Localitzador:** després d'una coma, `p. 33`, `pp. 4–6`, `pág. 33`, `cap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `§ 4.2`; un número sol és una pàgina. També valen les paraules angleses i xineses (`页`, `章`).
-- **Prefix i sufix:** text abans de la `@` (`véase`) i després del localitzador (`, la cursiva es nuestra`).
+- **Prefix i sufix:** text abans de la `@` (`vegeu`) i després de la clau o del localitzador (`, la cursiva és nostra`). El sufix conserva la coma escrita al davant, hi hagi localitzador o no: `[@brown2020, entre altres]` imprimeix *(Brown et al., 2020, entre altres)*, com Pandoc; escrit sense coma (`[@brown2020 entre altres]`) no en porta. L'èmfasi d'un prefix o d'un sufix surt com a èmfasi en tots els estils: `[*p. ex.*, @brown2020, *inter alia*]`.
 - **`[-@clave]`** omet l'autor, per a una frase que ja l'anomena.
 - **`@clave`** cita dins de la frase (*García (2020)*); `@clave [pág. 4]` hi afegeix un localitzador.
+- **Als peus:** el peu d'una figura o d'una taula, i la seva nota, citen com el text (`El millor resultat previ [@cobbe2021].`). Les seves obres entren a la bibliografia sense `nocite`, i un estil numèric les numera on es col·loca el recurs: després de les citacions del paràgraf que l'esmenta per primer cop (el seu bloc `::resource` o la seva primera `:ref`). Una citació en una cel·la de taula queda com a text.
 - Una `@` enganxada a una lletra o a una xifra (una adreça de correu), una `@` en codi i `\@` són text. Una citació sense referència al llibre s'imprimeix tal com es va escriure, de manera que un document sense referències es llegeix com abans. En una citació de diverses obres, una clau que cap referència no defineix s'imprimeix en negreta després de les altres (`(Glen, 1955) **@nye1953**`), de manera que l'obra que falta es veu a la pàgina a més d'als avisos. Uns dos punts després d'una citació són text: `[@french2018]: el terreno…`.
 - En text xinès, japonès i coreà la citació segueix l'últim caràcter sense espai (`周明远@zhou2019认为`), i una citació autor-data pren els signes d'amplada completa del text que l'envolta: `（施雅风等，1988；刘时银等，2015）`.
 
@@ -893,6 +894,8 @@ o en un bloc `:::references`, en BibTeX (el que exporten Zotero, JabRef o Google
 ```
 
 El bloc no imprimeix res. `nocite` llista obres sense citar-les (`@*`: totes). En un llibre, les referències escrites en qualsevol capítol valen per a tot el llibre.
+
+En una llista de noms BibTeX, `and others` representa els noms omesos (`author = {Tan, Wei and others}`): tots els estils hi imprimeixen *et al.* En YAML, escriu `others` com a últim nom de la llista.
 
 ### La bibliografia
 
