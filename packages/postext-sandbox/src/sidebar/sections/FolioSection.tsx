@@ -94,13 +94,17 @@ function prune<T extends object>(obj: T): T | undefined {
 }
 
 /** Design-panel section for `config.folio`: how the Folio viewer shows the
- *  printed book in 3D. Unset paper fields show the stock's values. */
+ *  printed book in 3D. Unset paper fields show the stock's values, and an
+ *  unset stock and binding those of the page's trim. */
 export const FolioSection = memo(function FolioSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.folio);
   const resources = useSandboxSelector((s) => s.resources);
-  const cfg = resolveFolioConfig(raw);
+  // A newspaper trim shows on folded newsprint unless the stock or the
+  // binding is chosen here.
+  const sizePreset = useSandboxSelector((s) => s.config.page?.sizePreset);
+  const cfg = resolveFolioConfig(raw, sizePreset);
   const stock = FOLIO_PAPER_STOCKS[cfg.paper.type];
 
   const commit = (next: FolioConfig) => {

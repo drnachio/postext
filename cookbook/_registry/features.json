@@ -105,30 +105,33 @@
       "ja": "新聞の判型"
     },
     "definition": {
-      "en": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm) and 'tabloid' (280 × 430 mm).",
-      "es": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm) y 'tabloid' (280 × 430 mm).",
-      "ca": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm) i 'tabloid' (280 × 430 mm).",
-      "zh": "page.sizePreset的'broadsheet'（375 × 597 mm）、'berliner'（315 × 470 mm）和'tabloid'（280 × 430 mm）。",
-      "ar": "قيم page.sizePreset 'broadsheet' (375 × 597 mm) و'berliner' (315 × 470 mm) و'tabloid' (280 × 430 mm).",
-      "ja": "page.sizePresetの'broadsheet'（375 × 597 mm）、'berliner'（315 × 470 mm）、'tabloid'（280 × 430 mm）です。"
+      "en": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm), 'tabloid' (280 × 430 mm) and 'compact' (297 × 420 mm).",
+      "es": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm), 'tabloid' (280 × 430 mm) y 'compact' (297 × 420 mm).",
+      "ca": "page.sizePreset 'broadsheet' (375 × 597 mm), 'berliner' (315 × 470 mm), 'tabloid' (280 × 430 mm) i 'compact' (297 × 420 mm).",
+      "zh": "page.sizePreset的'broadsheet'（375 × 597 mm）、'berliner'（315 × 470 mm）、'tabloid'（280 × 430 mm）和'compact'（297 × 420 mm）。",
+      "ar": "قيم page.sizePreset 'broadsheet' (375 × 597 mm) و'berliner' (315 × 470 mm) و'tabloid' (280 × 430 mm) و'compact' (297 × 420 mm).",
+      "ja": "page.sizePresetの'broadsheet'（375 × 597 mm）、'berliner'（315 × 470 mm）、'tabloid'（280 × 430 mm）、'compact'（297 × 420 mm）です。"
     },
     "aliases": {
       "en": [
         "broadsheet",
         "berliner",
         "tabloid",
+        "compact",
         "newspaper size"
       ],
       "es": [
         "sábana",
         "berlinés",
         "tabloide",
+        "compacto",
         "formato de periódico"
       ],
       "ca": [
         "llençol",
         "berlinès",
         "tabloide",
+        "compacte",
         "format de diari"
       ],
       "zh": [
@@ -137,18 +140,21 @@
         "小报",
         "报纸尺寸",
         "broadsheet",
-        "tabloid"
+        "tabloid",
+        "紧凑版"
       ],
       "ar": [
         "القطع الكبير",
         "قطع برلينر",
         "تابلويد",
+        "القطع المدمج",
         "مقاس الجريدة"
       ],
       "ja": [
         "ブランケット判",
         "ベルリナー判",
         "タブロイド判",
+        "コンパクト判",
         "新聞のサイズ"
       ]
     },

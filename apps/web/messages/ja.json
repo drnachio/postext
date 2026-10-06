@@ -3143,6 +3143,8 @@
     "pageSizeBerlinerDescription": "中判の新聞",
     "pageSizeTabloid": "タブロイド判",
     "pageSizeTabloidDescription": "小判の新聞",
+    "pageSizeCompact": "コンパクト判",
+    "pageSizeCompactDescription": "ブランケット判の半裁",
     "navPreview": "プレビュー",
     "navPreviewHint": "組み上がったページ",
     "navBooks": "本",

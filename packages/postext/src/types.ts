@@ -664,8 +664,9 @@ export interface Dimension {
 
 /** A trim size by name: the book sizes in centimetres, and the newspaper
  *  formats (#506) — `'broadsheet'` 375 × 597 mm, `'berliner'` 315 × 470 mm
- *  and `'tabloid'` 280 × 430 mm. */
-export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'broadsheet' | 'berliner' | 'tabloid' | 'custom';
+ *  `'tabloid'` 280 × 430 mm and `'compact'` 297 × 420 mm (a half-broadsheet
+ *  fold). */
+export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'broadsheet' | 'berliner' | 'tabloid' | 'compact' | 'custom';
 
 export interface PageMargins {
   top?: Dimension;

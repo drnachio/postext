@@ -44,6 +44,14 @@ const OPACITY_K: Record<ResolvedPaper["type"], number> = {
   board: 0.03,
 };
 
+/** How much more of the reverse's print shows than the sheet's opacity
+ *  alone lets through: on newsprint the coldset ink is not dried on the
+ *  surface but soaks into the open groundwood sheet (strike-through), so
+ *  the other side reads through more than its 90 % opacity suggests. */
+const STRIKE_THROUGH: Partial<Record<ResolvedPaper["type"], number>> = {
+  newsprint: 1.7,
+};
+
 /** The reference leaf: 90 g/m² × 1.25 cm³/g. */
 const REF_CALIPER_UM = 112.5;
 /** Pages up to this wide (mm) curl as their stock alone says. */
@@ -84,7 +92,7 @@ export function paperSpec(paper: ResolvedPaper, pageWidthMm?: number): PaperSpec
     roll: Math.min(6, Math.max(0.45, ratio)) * size,
     rigidity: smooth(1.3, 4, ratio),
     opacity,
-    showThrough: paper.showThrough ? Math.min(0.4, (1 - opacity) * 1.25) : 0,
+    showThrough: paper.showThrough ? Math.min(0.4, (1 - opacity) * 1.25 * (STRIKE_THROUGH[paper.type] ?? 1)) : 0,
     transmission: paper.showThrough ? Math.min(0.5, (1 - opacity) * 2) : 0,
     follow: 0.35 / (1 + 0.35 * Math.max(0, Math.log(ratio))),
     spring: 0.0085 * Math.min(1.6, Math.max(0.75, Math.sqrt(ratio))) * Math.sqrt(size),

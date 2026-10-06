@@ -3143,6 +3143,8 @@
     "pageSizeBerlinerDescription": "中开本报纸",
     "pageSizeTabloid": "小报",
     "pageSizeTabloidDescription": "小开本报纸",
+    "pageSizeCompact": "紧凑版",
+    "pageSizeCompactDescription": "大报对折",
     "navPreview": "预览",
     "navPreviewHint": "排好的页面",
     "navBooks": "书库",

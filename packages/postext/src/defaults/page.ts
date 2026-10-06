@@ -14,6 +14,8 @@ export const PAGE_SIZE_PRESETS: Record<
   broadsheet: { width: { value: 375, unit: 'mm' }, height: { value: 597, unit: 'mm' } },
   berliner: { width: { value: 315, unit: 'mm' }, height: { value: 470, unit: 'mm' } },
   tabloid: { width: { value: 280, unit: 'mm' }, height: { value: 430, unit: 'mm' } },
+  // A broadsheet folded in half: the compact some dailies moved to.
+  compact: { width: { value: 297, unit: 'mm' }, height: { value: 420, unit: 'mm' } },
 };
 
 const DEFAULT_PAGE_MARGINS: Required<PageMargins> = {

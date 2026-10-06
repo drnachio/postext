@@ -28,6 +28,7 @@ describe('resolvePageConfig size presets', () => {
     ['broadsheet', 375, 597],
     ['berliner', 315, 470],
     ['tabloid', 280, 430],
+    ['compact', 297, 420],
   ] as const)('sizes the %s newspaper format in millimetres (#506)', (preset, w, h) => {
     const page = resolvePageConfig({ sizePreset: preset });
     expect(page.width).toEqual({ value: w, unit: 'mm' });

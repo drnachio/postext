@@ -187,13 +187,14 @@ A book written right to left (Arabic, Persian, Hebrew…) is bound on the right 
     <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>Magazines, reports (near A4)</td></tr>
     <tr><td><code>'broadsheet'</code></td><td>375 mm</td><td>597 mm</td><td>Broadsheet newspapers</td></tr>
     <tr><td><code>'berliner'</code></td><td>315 mm</td><td>470 mm</td><td>Berliner newspapers</td></tr>
-    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>Tabloid and compact newspapers</td></tr>
+    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>Tabloid newspapers</td></tr>
+    <tr><td><code>'compact'</code></td><td>297 mm</td><td>420 mm</td><td>Compact newspapers (a broadsheet folded in half)</td></tr>
   </tbody>
 </table>
 
 <Illustration name="PageSizes" data='{"title": "Page size presets", "desc": "Four built-in page size presets drawn to proportional scale: pocket 11x17, paperback 12x19, technical 17x24, and near-A4 21x28 cm.", "caption": "Presets drawn to proportional scale.", "sizes": [{"name": "11×17", "dims": "Pocket", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "Paperback", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "Textbook", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "~A4", "wmm": 210, "hmm": 280}]}' />
 
-The three newspaper formats are new in postext 1.18 and are left out of the drawing: a broadsheet page has almost four times the area of a 21 × 28 one. They are usually set with the [`'multiple'` layout](#layout-types); six columns are common on a broadsheet and five on a tabloid.
+The four newspaper formats are new in postext 1.18 and are left out of the drawing: a broadsheet page has almost four times the area of a 21 × 28 one. They are usually set with the [`'multiple'` layout](#layout-types); six columns are common on a broadsheet and five on a tabloid.
 
 ### Baseline grid
 
@@ -6479,7 +6480,7 @@ interface FolioConfig {
     <tr>
       <td><code>paper.type</code></td>
       <td><code>FolioPaperType</code></td>
-      <td><code>'uncoated'</code></td>
+      <td><code>'uncoated'</code>; <code>'newsprint'</code> on a newspaper trim</td>
       <td>The paper stock. It supplies the defaults of the five fields below (see the table of stocks). <code>cardStock</code> is cover card; <code>board</code> is rigid board, as in a board book, and its leaves turn without bending.</td>
     </tr>
     <tr>
@@ -6522,12 +6523,12 @@ interface FolioConfig {
       <td><code>paper.showThrough</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>The reverse of a page shows faintly through thin paper.</td>
+      <td>The reverse of a page shows faintly through thin paper. After bible paper, newsprint shows it most: its ink soaks into the sheet.</td>
     </tr>
     <tr>
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
-      <td><code>'hardcover'</code></td>
+      <td><code>'hardcover'</code>; <code>'folded'</code> on a newspaper trim</td>
       <td><code>hardcover</code>: case bound, boards slightly larger than the pages. <code>paperback</code>: perfect bound (milled and glued), opens less flat. <code>sewn</code>: a softcover with sewn sections. <code>layflat</code>: opens flat, with no dip at the gutter. <code>saddleStitch</code>: folded sheets stapled through the fold, as a magazine or a booklet; no flat spine. <code>folded</code> (since postext 1.18): a newspaper, sheets folded once and laid one inside the other with nothing holding them; no staples, no spine and no cover board, and the first page is the front. A <a href="/en/docs/document-format#paper"><code>:::paper</code></a> run with a <code>shade</code> prints a section, the business pages say, on salmon newsprint.</td>
     </tr>
     <tr>
@@ -6623,6 +6624,16 @@ folio: {
   surface: { type: 'walnut' },
   lighting: { environment: 'lamp' },
 }
+```
+
+A page on a newspaper trim (`page.sizePreset` `'broadsheet'`, `'berliner'`, `'tabloid'` or `'compact'`) is shown as a newspaper when the config names no stock and no binding: `newsprint` paper and a `folded` binding (since postext 1.18). A stock or a binding the config names is kept, so `paper: { type: 'uncoated' }` prints a tabloid on offset paper. Paper fields set without a stock (a `grammage`, a `shade`) apply to the newsprint. The resolver and the stripper take the trim as a second argument, and `folioForTrim(folio, sizePreset)` writes the two defaults into the config:
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
 ```
 
 The colours follow palette links like any other colour of the config (`paletteId`). Resolver and stripper match the other sections; the stripper drops paper values equal to the chosen stock's:
@@ -8099,7 +8110,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 
 - **Pages are painted as they are needed.** `createFolioFromDocument` paints each page with `renderPageToCanvas` at exactly the device pixels of a page slot (WebGL then shows it texel for pixel, as sharp as the canvas preview), and only the spreads around the open one (`window`, three either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. A jump to a far page paints that spread first. Up to ten pages away the leaves turn one by one; farther, the block of pages in between lifts as one slab, as thick as those pages (their calipers summed), and lands on the other side. `setDocument` keeps the painting of every page that reads the same in the new layout (`{ repaint: true }` paints them all again, after an image came in).
 - **The document sets the book.** Its first page opens alone on the right when it is a recto (`pageIndexOffset` even), a right-bound book (`page.binding: 'right'`, or a vertical document) lies mirrored and turns leftward, blank pages take the page's background colour, and the page's trim width (`pageWidthMm`) scales the paper's caliper and the boards. A chapter laid out with a `continuation` counts the book's other pages (`pageIndexOffset` before it, `bookPageCount` after it) into the thickness of the two page blocks without drawing them (`extraPages`).
-- **The document sets the look.** The paper, the binding, the desk and the light are the document's [`folio` settings](#folio-viewer-config) (`doc.config.folio`). A page set inside a `:::paper` run carries its own stock (`VDTPage.paper`), and its leaf is drawn with that paper's colour, surface, thickness and stiffness. With `binding.cover: 'pages'` the first page is the front board and the last, when it is a verso, the back board (`covers`).
+- **The document sets the look.** The paper, the binding, the desk and the light are the document's [`folio` settings](#folio-viewer-config) (`doc.config.folio`). A page set inside a `:::paper` run carries its own stock (`VDTPage.paper`), and its leaf is drawn with that paper's colour, surface, thickness and stiffness. With `binding.cover: 'pages'` the first page is the front board and the last, when it is a verso, the back board (`covers`). A newspaper trim (`'broadsheet'`, `'berliner'`, `'tabloid'`, `'compact'`) whose settings name no stock and no binding lies as folded newsprint, also when the host passes its own `folio`.
 - **The container sets the size.** The book fills it, with the buttons and the page count in the margins, so give the container a height; a resize paints the pages again at the new size. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either): the spine runs along the page's inner edge and the leaf turns over it, a drag towards the spine turns forward, a swipe away from it goes back, a tap turns.
 - **What the pointer does.** `interaction` (and `setInteraction` later) sets what the left button, one finger or a pen does on the book: `'hand'` (the default) takes and turns the pages, `'orbit'` turns the view as a right-drag does (for trackpads and tablets), `'select'` leaves the pointer to the host, to select text, say. `pageAt(event)` gives the page under a pointer and where on it (`{ page, x, y }`, fractions of the page from its top left corner), on the book as it is seen, tilted or orbited; `pointOnScreen(point)` goes the other way, for drawing a caret or a selection over the page. `refreshPage(src)` shows again a page canvas the host drew anew in place. The sandbox uses all of them to select text and follow the editor's caret on the 3D pages.
 - **The reader can look round it.** A right-drag orbits the view round the book (down to 70° from overhead), also while leaves are turning; `resetView()` eases it back to the settings' `tilt` and `yaw`, and `getView()` gives the view as it is seen now (`{ tilt, yaw }`, degrees) to store as those settings. The sandbox puts them on two buttons, **Reset view** and **Save as default view**.

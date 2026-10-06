@@ -351,7 +351,7 @@ every box before you ask for a review. The ranges come from the showcase books.
       when one column needs a readable measure).
 - [ ] The layout the genre needs: `double` with a 6–9 mm gutter for magazines (`multiple`
       with `columnCount: 3` for a three-column feature); `multiple` with 5–8 columns and a
-      4–5 mm gutter for newspapers (`broadsheet`, `berliner` or `tabloid` trim); `oneAndHalf`
+      4–5 mm gutter for newspapers (`broadsheet`, `berliner`, `tabloid` or `compact` trim); `oneAndHalf`
       with a 26–30 % side column (`sideColumnRole: 'floats'`, `sideColumnSide: 'outer'`) for
       glosses and textbooks; `single` for catalogues and literary books.
 - [ ] A measure of 45–75 characters.

@@ -118,7 +118,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     // Not used by layout: carried in the VDT for the PDF backend.
     ...(config?.pdfGeneration ? { pdfGeneration: resolvePdfGenerationConfig(config.pdfGeneration) } : {}),
     // Not used by layout either: the Folio 3D viewer reads it.
-    ...(config?.folio ? { folio: resolveFolioConfig(config.folio) } : {}),
+    ...(config?.folio ? { folio: resolveFolioConfig(config.folio, page.sizePreset) } : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }

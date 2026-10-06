@@ -34,7 +34,7 @@ columns, the gutter and **the leading** (the baseline grid).
 
 | Fact | How | Config |
 |---|---|---|
-| Trim W×H | page size (minus bleed/slug; see trimbox) | `page.sizePreset: "custom"`, `width`, `height` (mm); newspapers (≥ 1.18): `'broadsheet'` 375×597, `'berliner'` 315×470, `'tabloid'` 280×430 mm |
+| Trim W×H | page size (minus bleed/slug; see trimbox) | `page.sizePreset: "custom"`, `width`, `height` (mm); newspapers (≥ 1.18): `'broadsheet'` 375×597, `'berliner'` 315×470, `'tabloid'` 280×430, `'compact'` 297×420 mm |
 | Facing pages | margins differ per parity | `page.margins.mirror: true`; `left` = inner (spine), `right` = outer |
 | Text block | first body line top → last body line bottom; column extents | `page.margins` (top/bottom/left/right) |
 | Columns | body line x-starts cluster | `layout.layoutType`: `single`, `double`, `oneAndHalf` (default is `double`!); 3–8 equal columns: `multiple` + `columnCount` (≥ 1.18) |

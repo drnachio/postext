@@ -17,7 +17,7 @@ export interface SectionSearchKeys {
 export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> = {
   'page': {
     sources: ['color', 'dimension'],
-    literals: ["11 × 17 cm", "12 × 19 cm", "17 × 24 cm", "21 × 28 cm", "280 × 430 mm", "315 × 470 mm", "375 × 597 mm", "Custom"],
+    literals: ["11 × 17 cm", "12 × 19 cm", "17 × 24 cm", "21 × 28 cm", "280 × 430 mm", "297 × 420 mm", "315 × 470 mm", "375 × 597 mm", "Custom"],
     keys: [
       'baselineGrid',
       'binding',
@@ -98,6 +98,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'pageSizeBerlinerDescription',
       'pageSizeBroadsheet',
       'pageSizeBroadsheetDescription',
+      'pageSizeCompact',
+      'pageSizeCompactDescription',
       'pageSizeCustomDescription',
       'pageSizeTabloid',
       'pageSizeTabloidDescription',

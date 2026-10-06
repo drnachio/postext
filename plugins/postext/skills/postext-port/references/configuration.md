@@ -129,7 +129,8 @@ not from the config.
 ```
 page
 ├─ sizePreset   '11x17'|'12x19'|'17x24'|'21x28'|'custom'   default '17x24' (cm, W×H)
-│               + 'broadsheet' 375×597 mm | 'berliner' 315×470 mm | 'tabloid' 280×430 mm   postext ≥ 1.18
+│               + 'broadsheet' 375×597 mm | 'berliner' 315×470 mm | 'tabloid' 280×430 mm
+│                 | 'compact' 297×420 mm (half-broadsheet fold)   postext ≥ 1.18
 ├─ width        Dimension   default from preset (17 cm)    explicit value always wins
 ├─ height       Dimension   default from preset (24 cm)
 ├─ margins      PageMargins
@@ -1297,6 +1298,7 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
   "yaw": 0,                           // degrees round the book, −180–180 (wrapped); + = eye to the right
   "paper": {
     "type": "uncoated",               // uncoated | bookWove | coatedMatte | coatedSilk | coatedGloss | bible | newsprint | cardStock | board
+                                      // default newsprint on a newspaper trim (broadsheet | berliner | tabloid | compact)
     "grammage": 90,                   // g/m², 20–2500; default: the stock's
     "bulk": 1.25,                     // cm³/g, 0.5–3; caliper µm = grammage × bulk
     "finish": "auto",                 // auto | uncoated | matte | silk | gloss
@@ -1307,6 +1309,7 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
   },
   "binding": {
     "type": "hardcover",              // hardcover | paperback | sewn | layflat | saddleStitch | folded (≥ 1.18: newspaper)
+                                      // default folded on a newspaper trim
     "cover": "case",                  // case (drawn round the pages) | pages (first page = front board, last verso = back board)
     "coverMaterial": "auto",          // auto (cloth on hardcover, card otherwise) | cloth | paper | leather
     "coverColor": { "hex": "#2c3e57", "model": "hex" },
@@ -1349,7 +1352,11 @@ Match the printed book: a novel on cream book wove → `{ "paper": { "type": "bo
 an art book → `coatedSilk` 150 g/m², hardcover, cloth `coverColor`; a magazine → `coatedGloss` 90 g/m², `saddleStitch`,
 `cover: "pages"` when the cover is page 1; a board book for children → `board`, hardcover; a newspaper →
 `newsprint`, `folded` (sheets folded once and nested: no staples, spine or boards), with
-`:::paper{shade=#f4cfb5}` around a section printed on salmon stock (the business pages).
+`:::paper{shade=#f4cfb5}` around a section printed on salmon stock (the business pages). On a newspaper
+trim (`page.sizePreset` broadsheet | berliner | tabloid | compact) those two are the defaults (≥ 1.18): leave
+`paper.type` and `binding.type` unset and Folio shows folded newsprint; a stock or binding you set wins
+(`resolveFolioConfig(folio, sizePreset)`, `stripFolioDefaults(folio, sizePreset)`, `folioForTrim`). Newsprint
+shows the reverse page more than any stock but bible (its coldset ink soaks into the sheet).
 
 `debug`: `cursorSync {enabled=true,color}`, `selectionSync {enabled=true,color}`,
 `looseLineHighlight {enabled=false,color,threshold=3}`, `pageNegative {enabled=false}`,

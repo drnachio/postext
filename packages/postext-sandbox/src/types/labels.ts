@@ -2618,6 +2618,8 @@ export interface SandboxLabels {
   pageSizeBerlinerDescription: string;
   pageSizeTabloid: string;
   pageSizeTabloidDescription: string;
+  pageSizeCompact: string;
+  pageSizeCompactDescription: string;
   /** Phone layout: the panel-bar entry that closes the open panel and shows the preview. */
   navPreview: string;
   navPreviewHint: string;

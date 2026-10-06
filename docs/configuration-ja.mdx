@@ -187,13 +187,14 @@ const document = buildDocument(content, {
     <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>雑誌、報告書（A4に近い）</td></tr>
     <tr><td><code>'broadsheet'</code></td><td>375 mm</td><td>597 mm</td><td>ブランケット判の新聞</td></tr>
     <tr><td><code>'berliner'</code></td><td>315 mm</td><td>470 mm</td><td>ベルリナー判の新聞</td></tr>
-    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>タブロイド判・コンパクト判の新聞</td></tr>
+    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>タブロイド判の新聞</td></tr>
+    <tr><td><code>'compact'</code></td><td>297 mm</td><td>420 mm</td><td>コンパクト判の新聞（ブランケット判を半分に折った大きさ）</td></tr>
   </tbody>
 </table>
 
 <Illustration name="PageSizes" data='{"title": "ページサイズのプリセット", "desc": "組み込みの4つのページサイズのプリセットを同じ縮尺で描いた図。ポケット判11x17、ペーパーバック12x19、技術書17x24、A4に近い21x28 cm。", "caption": "同じ縮尺で描いたプリセット。", "sizes": [{"name": "11×17", "dims": "ポケット判", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "ペーパーバック", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "教科書", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "A4相当", "wmm": 210, "hmm": 280}]}' />
 
-3つの新聞の判型はpostext 1.18で加わったもので、図には含めていません。ブランケット判の1ページは21 × 28のページのほぼ4倍の面積です。通常は[`'multiple'`レイアウト](#レイアウトの種類)で組み、ブランケット判では6段、タブロイド判では5段がよく使われます。
+4つの新聞の判型はpostext 1.18で加わったもので、図には含めていません。ブランケット判の1ページは21 × 28のページのほぼ4倍の面積です。通常は[`'multiple'`レイアウト](#レイアウトの種類)で組み、ブランケット判では6段、タブロイド判では5段がよく使われます。
 
 ### ベースライングリッド
 
@@ -6478,7 +6479,7 @@ interface FolioConfig {
     <tr>
       <td><code>paper.type</code></td>
       <td><code>FolioPaperType</code></td>
-      <td><code>'uncoated'</code></td>
+      <td><code>'uncoated'</code>、新聞の判型では<code>'newsprint'</code></td>
       <td>用紙です。下の5つのフィールドの既定値を与えます（用紙の表を参照）。<code>cardStock</code>は表紙用の厚紙、<code>board</code>はボードブックに使うような硬い板紙で、その丁は曲がらずにめくれます。</td>
     </tr>
     <tr>
@@ -6521,12 +6522,12 @@ interface FolioConfig {
       <td><code>paper.showThrough</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>薄い紙では、ページの裏面がかすかに透けて見えます。</td>
+      <td>薄い紙では、ページの裏面がかすかに透けて見えます。<code>bible</code>に次いで裏がよく透けるのは新聞用紙です。インキが紙の中にしみ込むためです。</td>
     </tr>
     <tr>
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
-      <td><code>'hardcover'</code></td>
+      <td><code>'hardcover'</code>、新聞の判型では<code>'folded'</code></td>
       <td><code>hardcover</code>：上製本で、表紙ボードはページよりわずかに大きくなります。<code>paperback</code>：無線綴じ（背を削って糊付け）で、平らに開きにくくなります。<code>sewn</code>：折丁を糸でかがったソフトカバーです。<code>layflat</code>：のどにくぼみができず、平らに開きます。<code>saddleStitch</code>：雑誌や小冊子のように、折った紙を折り目でホチキス留めします。平らな背はありません。<code>folded</code>（postext 1.18以降）：新聞です。一度折った紙を重ねて差し込んだだけで、留めるものはありません。針金も背も表紙のボードもなく、最初のページが1面になります。<code>shade</code>を付けた<a href="/ja/docs/document-format#paper"><code>:::paper</code></a>の区間で、経済面などをサーモンピンクの新聞用紙に刷れます。</td>
     </tr>
     <tr>
@@ -6622,6 +6623,16 @@ folio: {
   surface: { type: 'walnut' },
   lighting: { environment: 'lamp' },
 }
+```
+
+新聞の判型（`page.sizePreset`が`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）のページは、設定が用紙も綴じも指定していなければ新聞として表示されます。用紙は`newsprint`、綴じは`folded`です（postext 1.18以降）。設定が指定した用紙や綴じはそのまま使われるので、`paper: { type: 'uncoated' }`とすればタブロイドが上質紙に刷られます。用紙を指定せずに設定した紙のフィールド（`grammage`や`shade`）は新聞用紙に適用されます。リゾルバーとストリッパーは判型を2番目の引数に取り、`folioForTrim(folio, sizePreset)`はこの2つの既定値を設定に書き込みます：
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
 ```
 
 色は、設定のほかの色と同じくパレットのリンク（`paletteId`）に従います。リゾルバーとストリッパーはほかのセクションと同じです。ストリッパーは、選んだ用紙の値と等しい紙の値を取り除きます：
@@ -8098,7 +8109,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 
 - **ページは必要になったときに描かれます**。`createFolioFromDocument`は各ページを、ページ枠のデバイスピクセルちょうどの大きさで`renderPageToCanvas`により描きます（WebGLはそれをテクセル対ピクセルで表示するので、Canvasのプレビューと同じくらい鮮明です）。描くのは、開いている見開きの周りの見開きだけです（`window`、既定では前後に3つずつ）。その範囲から外れたページは解放されるので、1000ページの本でも数ページ分のメモリーしか使いません。遠いページに移動するときは、その見開きを最初に描きます。10ページ先まではページが1枚ずつめくられ、それより遠いと、間にあるページのかたまりが、それらのページを合わせた厚さ（紙厚の合計）を持つ1枚の板として持ち上がり、反対側に着地します。`setDocument`は、新しいレイアウトでも内容が同じページの描画を保持します（`{ repaint: true }`を指定すると、画像が届いた後などに、すべてを描き直します）。
 - **ドキュメントが本を決めます**。最初のページが奇数ページ（`pageIndexOffset`が偶数）なら、右側に単独で開きます。右綴じの本（`page.binding: 'right'`、または縦組みのドキュメント）は左右反転して置かれ、左向きにめくられます。空白ページはページの背景色になり、ページの仕上がり幅（`pageWidthMm`）に応じて紙厚と表紙の板の縮尺が決まります。`continuation`付きでレイアウトした章は、本のほかのページ（前は`pageIndexOffset`、後は`bookPageCount`まで）を、描かずに2つのページブロックの厚さに数えます（`extraPages`）。
-- **ドキュメントが見た目を決めます**。紙、綴じ、机、光は、ドキュメントの[`folio`設定](#folioビューアー設定)（`doc.config.folio`）で決まります。`:::paper`の範囲内で組まれたページは独自の用紙（`VDTPage.paper`）を持ち、その丁は、その紙の色、表面、厚さ、こしで描かれます。`binding.cover: 'pages'`では、最初のページが表表紙の板になり、最後のページが偶数ページなら裏表紙の板になります（`covers`）。
+- **ドキュメントが見た目を決めます**。紙、綴じ、机、光は、ドキュメントの[`folio`設定](#folioビューアー設定)（`doc.config.folio`）で決まります。`:::paper`の範囲内で組まれたページは独自の用紙（`VDTPage.paper`）を持ち、その丁は、その紙の色、表面、厚さ、こしで描かれます。`binding.cover: 'pages'`では、最初のページが表表紙の板になり、最後のページが偶数ページなら裏表紙の板になります（`covers`）。新聞の判型（`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）で、設定が用紙も綴じも指定していなければ、折った新聞用紙として置かれます。ホストが独自の`folio`を渡した場合も同じです。
 - **コンテナーが大きさを決めます**。本はコンテナーいっぱいに広がり、ボタンとページ数は余白に置かれるので、コンテナーには高さを指定してください。リサイズすると、新しい大きさでページを描き直します。幅が560 px未満では1ページずつ表示します（`mode: 'auto'`。`'single'`と`'double'`はどちらかに固定します）。背はページの内側の端に沿い、丁はその上でめくられます。背の方向へのドラッグで先へめくり、背から離れる方向へのスワイプで前に戻り、タップでめくります。
 - **ポインターの動作**。`interaction`（後からは`setInteraction`）は、左ボタン、1本指、ペンが本に対して何をするかを決めます。`'hand'`（既定）はページをつかんでめくり、`'orbit'`は右ドラッグと同じように視点を回し（トラックパッドやタブレット向け）、`'select'`はポインターをホストに任せます（テキストの選択などのため）。`pageAt(event)`は、傾けたり回したりした見た目のままの本の上で、ポインターの下にあるページとその位置（`{ page, x, y }`。ページの左上隅からの割合）を返します。`pointOnScreen(point)`はその逆で、ページ上にキャレットや選択範囲を描くためのものです。`refreshPage(src)`は、ホストがその場で描き直したページのキャンバスを再表示します。Sandboxはこれらをすべて使って、3Dのページ上でテキストを選択し、エディターのキャレットを追います。
 - **読者は本の周りを見回せます**。右ドラッグで本の周りを視点が回り（真上から70°まで）、丁がめくられている間も回せます。`resetView()`は設定の`tilt`と`yaw`へ滑らかに戻し、`getView()`は現在見えている視点（`{ tilt, yaw }`、度単位）を返すので、それを設定として保存できます。Sandboxはこれらを2つのボタン、**視点をリセット**と**既定の視点として保存**に割り当てています。

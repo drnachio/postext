@@ -1,5 +1,5 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
-import { resolveFolioConfig, type FolioPaperConfig } from "postext";
+import { folioForTrim, resolveFolioConfig, type FolioPaperConfig } from "postext";
 import { BLOCK_PAGES } from "./pageFlip";
 import { createFolio, type FolioAppearance, type FolioOptions, type FolioPagePoint, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 import { attachVideoSource, autoKey, autoplayPlan, isHlsVideo, makeWay, pageVideoSpots, spotContains, type PageVideoSpot } from "./videos";
@@ -93,12 +93,15 @@ function paperOf(doc: VDTDocument): string {
  *  book), with the host's own appearance laid over them. The pages round
  *  it are the host's word when it gives them (`extraPages`: a host laying
  *  a book out a chapter at a time knows the chapters after this one, which
- *  the document only knows when it was given the book's page count). */
+ *  the document only knows when it was given the book's page count). A
+ *  newspaper trim (`page.sizePreset` broadsheet, berliner, tabloid or
+ *  compact) shows folded newsprint unless the settings name a stock or a
+ *  binding (#506). */
 export function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): FolioAppearance {
   const page = doc.pages[0];
   const before = Math.max(0, own?.extraPages?.before ?? doc.pageIndexOffset ?? 0);
   const after = Math.max(0, own?.extraPages?.after ?? (doc.bookPageCount ?? 0) - before - doc.pages.length);
-  const folio = own && "folio" in own ? own.folio : doc.config.folio;
+  const folio = folioForTrim(own && "folio" in own ? own.folio : doc.config.folio, doc.config.page.sizePreset);
   // The document's own covers: the book's first page (a recto) and its
   // last, when that is a verso (an even page number). A chapter from the
   // middle of the book has neither: its first and last leaves are paper
@@ -106,11 +109,11 @@ export function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined)
   const ownCovers = resolveFolioConfig(folio).binding.cover === "pages";
   const total = before + doc.pages.length;
   return {
-    folio: doc.config.folio,
     covers: { front: ownCovers && before === 0, back: ownCovers && after === 0 && total % 2 === 0 },
     // Page sizes are in device pixels at the page's dpi.
     ...(page ? { pageWidthMm: (trimmedSize(page, doc).width * 25.4) / (doc.config.page.dpi || 300) } : {}),
     ...own,
+    folio,
     extraPages: { before, after },
   };
 }

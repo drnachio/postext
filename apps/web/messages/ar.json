@@ -3143,6 +3143,8 @@
     "pageSizeBerlinerDescription": "صحيفة بالقطع المتوسط",
     "pageSizeTabloid": "تابلويد",
     "pageSizeTabloidDescription": "صحيفة بالقطع الصغير",
+    "pageSizeCompact": "مدمج",
+    "pageSizeCompactDescription": "صحيفة برودشيت مطوية إلى نصفين",
     "navPreview": "المعاينة",
     "navPreviewHint": "الصفحات المنضّدة",
     "navBooks": "الكتب",

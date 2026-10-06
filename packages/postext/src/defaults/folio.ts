@@ -4,6 +4,7 @@ import type {
   FolioPaperFinish,
   FolioPaperTexture,
   FolioPaperType,
+  PageSizePreset,
   ResolvedFolioConfig,
 } from '../types';
 
@@ -54,6 +55,51 @@ export const DEFAULT_FOLIO_CONFIG: ResolvedFolioConfig = {
   lighting: { environment: 'studio', intensity: 1, shadows: true },
 };
 
+/** The trims that are newspapers (#506). */
+export const NEWSPAPER_SIZE_PRESETS: readonly PageSizePreset[] = ['broadsheet', 'berliner', 'tabloid', 'compact'];
+
+export const isNewspaperSizePreset = (preset: PageSizePreset | undefined): boolean =>
+  !!preset && NEWSPAPER_SIZE_PRESETS.includes(preset);
+
+/** The book Folio shows on a newspaper trim: sheets of newsprint folded
+ *  once and laid one inside the other. */
+export const NEWSPAPER_FOLIO_CONFIG: ResolvedFolioConfig = {
+  ...DEFAULT_FOLIO_CONFIG,
+  paper: {
+    ...DEFAULT_FOLIO_CONFIG.paper,
+    type: 'newsprint',
+    grammage: FOLIO_PAPER_STOCKS.newsprint.grammage,
+    bulk: FOLIO_PAPER_STOCKS.newsprint.bulk,
+    finish: FOLIO_PAPER_STOCKS.newsprint.finish,
+    texture: FOLIO_PAPER_STOCKS.newsprint.texture,
+    shade: hex(FOLIO_PAPER_STOCKS.newsprint.shade),
+  },
+  binding: { ...DEFAULT_FOLIO_CONFIG.binding, type: 'folded', coverMaterial: 'paper' },
+};
+
+/** The defaults `config.folio` falls back to on a page of this trim: a
+ *  newspaper's newsprint and fold, a book's woodfree offset and hardcover
+ *  otherwise. */
+export function folioDefaultsFor(sizePreset?: PageSizePreset): ResolvedFolioConfig {
+  return isNewspaperSizePreset(sizePreset) ? NEWSPAPER_FOLIO_CONFIG : DEFAULT_FOLIO_CONFIG;
+}
+
+/** `config.folio` with the stock and the binding its trim implies written
+ *  in where it names none: on a newspaper trim (`broadsheet`, `berliner`,
+ *  `tabloid`, `compact`) `paper.type: 'newsprint'` and `binding.type:
+ *  'folded'`. A stock or binding the config names is kept. Other trims
+ *  return it unchanged. */
+export function folioForTrim(folio: FolioConfig | undefined, sizePreset: PageSizePreset | undefined): FolioConfig | undefined {
+  if (!isNewspaperSizePreset(sizePreset)) return folio;
+  const d = NEWSPAPER_FOLIO_CONFIG;
+  const paperType = folio?.paper?.type && folio.paper.type in FOLIO_PAPER_STOCKS ? folio.paper.type : d.paper.type;
+  return {
+    ...folio,
+    paper: { ...folio?.paper, type: paperType },
+    binding: { ...folio?.binding, type: folio?.binding?.type ?? d.binding.type },
+  };
+}
+
 const clamp = (value: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, value));
 const finite = (value: number | undefined): value is number => typeof value === 'number' && Number.isFinite(value);
 
@@ -68,9 +114,11 @@ export function wrapFolioYaw(deg: number): number {
 
 /** `config.folio` with every setting filled in: a paper's unset fields
  *  follow its stock, `auto` finishes and textures too, and the cover
- *  material follows the binding. */
-export function resolveFolioConfig(partial?: FolioConfig): ResolvedFolioConfig {
+ *  material follows the binding. `sizePreset`, the page's trim, picks the
+ *  stock and binding left unset (see {@link folioForTrim}). */
+export function resolveFolioConfig(config?: FolioConfig, sizePreset?: PageSizePreset): ResolvedFolioConfig {
   const d = DEFAULT_FOLIO_CONFIG;
+  const partial = folioForTrim(config, sizePreset);
   const paper = partial?.paper;
   const type = paper?.type && paper.type in FOLIO_PAPER_STOCKS ? paper.type : d.paper.type;
   const stock = FOLIO_PAPER_STOCKS[type];
@@ -112,10 +160,12 @@ const sameColor = (a: ColorValue | undefined, b: ColorValue) =>
   !!a && a.hex.toLowerCase() === b.hex.toLowerCase() && !a.paletteId;
 
 /** `config.folio` without the settings equal to their defaults (a paper's
- *  against its stock's); undefined when nothing is left. */
-export function stripFolioDefaults(folio?: FolioConfig): FolioConfig | undefined {
+ *  against its stock's); undefined when nothing is left. The defaults are
+ *  those of the page's trim (`sizePreset`): on a newspaper a `newsprint`
+ *  stock and a `folded` binding go, a woodfree or hardcover one stays. */
+export function stripFolioDefaults(folio?: FolioConfig, sizePreset?: PageSizePreset): FolioConfig | undefined {
   if (!folio) return undefined;
-  const d = DEFAULT_FOLIO_CONFIG;
+  const d = folioDefaultsFor(sizePreset);
   const result: FolioConfig = {};
   if (folio.tilt !== undefined && folio.tilt !== d.tilt) result.tilt = folio.tilt;
   if (folio.yaw !== undefined && wrapFolioYaw(folio.yaw) !== d.yaw) result.yaw = folio.yaw;

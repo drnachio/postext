@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_FOLIO_CONFIG,
   FOLIO_PAPER_STOCKS,
+  folioDefaultsFor,
+  folioForTrim,
+  isNewspaperSizePreset,
   resolveFolioConfig,
   stripFolioDefaults,
 } from '../../defaults/folio';
 import { applyPaletteToConfig, stripConfigDefaults } from '../../defaults';
 import { resolveAllConfig } from '../../pipeline/config';
-import type { ColorValue, FolioPaperType } from '../../types';
+import type { ColorValue, FolioPaperType, PageSizePreset } from '../../types';
 
 const hex = (value: string): ColorValue => ({ hex: value, model: 'hex' });
 
@@ -196,5 +199,68 @@ describe('folio spine image', () => {
   it('keeps the spine picture when defaults are stripped', () => {
     expect(stripFolioDefaults({ binding: { spineImage: 'spine' } })).toEqual({ binding: { spineImage: 'spine' } });
     expect(stripFolioDefaults({ binding: { spineImage: '' } })).toBeUndefined();
+  });
+});
+
+describe('folio on a newspaper trim (#506)', () => {
+  const NEWSPAPERS: PageSizePreset[] = ['broadsheet', 'berliner', 'tabloid', 'compact'];
+
+  it('tells the newspaper trims from the book sizes', () => {
+    for (const preset of NEWSPAPERS) expect(isNewspaperSizePreset(preset)).toBe(true);
+    for (const preset of ['11x17', '12x19', '17x24', '21x28', 'custom'] as const) expect(isNewspaperSizePreset(preset)).toBe(false);
+    expect(isNewspaperSizePreset(undefined)).toBe(false);
+  });
+
+  it.each(NEWSPAPERS)('lays a %s out on folded newsprint when the config names no stock or binding', (preset) => {
+    const r = resolveFolioConfig(undefined, preset);
+    expect(r.paper).toMatchObject({ type: 'newsprint', grammage: 48, bulk: 1.5, finish: 'uncoated', texture: 'wove', shade: hex('#ebe7dc') });
+    expect(r.binding).toMatchObject({ type: 'folded', coverMaterial: 'paper' });
+    expect(r).toEqual(folioDefaultsFor(preset));
+    // The rest of the config is the book's.
+    expect(resolveFolioConfig({ tilt: 30 }, preset)).toMatchObject({ tilt: 30, paper: { type: 'newsprint' }, binding: { type: 'folded' } });
+  });
+
+  it('keeps the stock and the binding the config names', () => {
+    const r = resolveFolioConfig({ paper: { type: 'uncoated' }, binding: { type: 'saddleStitch' } }, 'tabloid');
+    expect(r.paper.type).toBe('uncoated');
+    expect(r.paper.grammage).toBe(FOLIO_PAPER_STOCKS.uncoated.grammage);
+    expect(r.binding.type).toBe('saddleStitch');
+    // Paper fields without a stock apply to the newsprint.
+    expect(resolveFolioConfig({ paper: { grammage: 42, shade: hex('#f3d7c3') } }, 'broadsheet').paper).toMatchObject({
+      type: 'newsprint', grammage: 42, bulk: 1.5, shade: hex('#f3d7c3'),
+    });
+  });
+
+  it('leaves a book trim on woodfree offset in a hardcover', () => {
+    expect(resolveFolioConfig(undefined, '17x24')).toEqual(DEFAULT_FOLIO_CONFIG);
+    expect(resolveFolioConfig(undefined, 'custom')).toEqual(DEFAULT_FOLIO_CONFIG);
+    expect(folioForTrim(undefined, '21x28')).toBeUndefined();
+  });
+
+  it('writes the trim\'s stock and binding into the config, for a page that names a stock of its own', () => {
+    expect(folioForTrim(undefined, 'berliner')).toEqual({ paper: { type: 'newsprint' }, binding: { type: 'folded' } });
+    expect(folioForTrim({ paper: { grammage: 45 }, binding: { cover: 'pages' } }, 'compact')).toEqual({
+      paper: { type: 'newsprint', grammage: 45 },
+      binding: { type: 'folded', cover: 'pages' },
+    });
+  });
+
+  it('strips against the trim\'s defaults, so a chosen stock survives', () => {
+    expect(stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'broadsheet')).toBeUndefined();
+    expect(stripFolioDefaults({ paper: { type: 'uncoated' }, binding: { type: 'hardcover' } }, 'broadsheet')).toEqual({
+      paper: { type: 'uncoated' },
+      binding: { type: 'hardcover' },
+    });
+    expect(stripConfigDefaults({ page: { sizePreset: 'tabloid' }, folio: { paper: { type: 'uncoated' } } }).folio).toEqual({ paper: { type: 'uncoated' } });
+    expect(stripConfigDefaults({ page: { sizePreset: 'tabloid' }, folio: { paper: { type: 'newsprint', grammage: 48 } } }).folio).toBeUndefined();
+    const folio = { paper: { type: 'bookWove' as const, grammage: 70 }, lighting: { environment: 'overcast' as const } };
+    expect(resolveFolioConfig(stripFolioDefaults(folio, 'berliner'), 'berliner')).toEqual(resolveFolioConfig(folio, 'berliner'));
+  });
+
+  it('resolves the document\'s folio against its trim', () => {
+    const doc = resolveAllConfig({ page: { sizePreset: 'compact' }, folio: { tilt: 18 } }).folio!;
+    expect(doc.paper.type).toBe('newsprint');
+    expect(doc.binding.type).toBe('folded');
+    expect(resolveAllConfig({ page: { sizePreset: 'compact' }, folio: { paper: { type: 'coatedSilk' } } }).folio?.paper.type).toBe('coatedSilk');
   });
 });

@@ -2528,6 +2528,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     pageSizeBerlinerDescription: t("pageSizeBerlinerDescription"),
     pageSizeTabloid: t("pageSizeTabloid"),
     pageSizeTabloidDescription: t("pageSizeTabloidDescription"),
+    pageSizeCompact: t("pageSizeCompact"),
+    pageSizeCompactDescription: t("pageSizeCompactDescription"),
     navPreview: t("navPreview"),
     navPreviewHint: t("navPreviewHint"),
     navBooks: t("navBooks"),

@@ -33,3 +33,27 @@ describe("paperSpec: a block's thickness", () => {
     expect(blockMm({ type: "bible" }, 2000)).toBeLessThan(50);
   });
 });
+
+describe("paperSpec: show-through", () => {
+  const spec = (paper: FolioPaperConfig) => paperSpec(resolveFolioConfig({ paper }).paper);
+
+  it("lets newsprint show its reverse strongly, ink and all (#506)", () => {
+    const news = spec({ type: "newsprint" });
+    const offset = spec({ type: "uncoated" });
+    const wove = spec({ type: "bookWove" });
+    // About 90 % opaque, as mill sheets give for 45–48 g/m² newsprint.
+    expect(news.opacity).toBeGreaterThan(0.88);
+    expect(news.opacity).toBeLessThan(0.92);
+    // Its print reads through well over twice as much as a book's offset.
+    expect(news.showThrough).toBeGreaterThan(2 * offset.showThrough);
+    expect(news.showThrough).toBeGreaterThan(wove.showThrough);
+    // Bible paper, thinner still, stays the one that shows through most.
+    expect(spec({ type: "bible" }).showThrough).toBeGreaterThan(news.showThrough);
+    // The light through the sheet follows the opacity alone.
+    expect(news.transmission).toBeCloseTo((1 - news.opacity) * 2, 6);
+  });
+
+  it("shows nothing through when show-through is off", () => {
+    expect(spec({ type: "newsprint", showThrough: false }).showThrough).toBe(0);
+  });
+});

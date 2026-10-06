@@ -27,6 +27,7 @@ const PAGE_SIZE_OPTIONS = [
   { value: 'broadsheet', label: '375 \u00d7 597 mm' },
   { value: 'berliner', label: '315 \u00d7 470 mm' },
   { value: 'tabloid', label: '280 \u00d7 430 mm' },
+  { value: 'compact', label: '297 \u00d7 420 mm' },
   { value: 'custom', label: 'Custom' },
 ];
 
@@ -187,12 +188,14 @@ export const PageSection = memo(function PageSection() {
     broadsheet: labels.pageSizeBroadsheetDescription,
     berliner: labels.pageSizeBerlinerDescription,
     tabloid: labels.pageSizeTabloidDescription,
+    compact: labels.pageSizeCompactDescription,
     custom: labels.pageSizeCustomDescription,
   };
   const PAGE_SIZE_NAMES: Record<string, string> = {
     broadsheet: labels.pageSizeBroadsheet,
     berliner: labels.pageSizeBerliner,
     tabloid: labels.pageSizeTabloid,
+    compact: labels.pageSizeCompact,
   };
 
   return (

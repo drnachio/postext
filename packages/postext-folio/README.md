@@ -96,6 +96,8 @@ book.setAppearance({ folio: { lighting: { environment: 'daylight' } } });
 </tbody>
 </table>
 
+A document on a newspaper trim (`page.sizePreset` `broadsheet`, `berliner`, `tabloid` or `compact`) lies as a newspaper when its settings, or the host's `appearance.folio`, name no stock and no binding: `newsprint` folded once, the sheets nested with nothing round them. A stock or binding that is set wins. Newsprint shows the reverse page more than any stock but bible paper, as its ink soaks into the sheet.
+
 A `:::paper{type=coatedGloss}` run in the markdown (a plate section, say) stamps its pages with their own stock; the viewer gives those leaves that paper's look, thickness and stiffness. With `createFolio`, a page may carry its own `paper` the same way: `{ src, paper: { type: 'coatedGloss' } }`.
 
 ## Page images
