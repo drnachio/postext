@@ -1,72 +1,63 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "A broadsheet on six columns"
+summary: "Four pages of a daily on a broadsheet: six ruled columns, photos and boxes across two to five of them, page-wide ads and an opinion page in five columns."
+plain: "Four pages of a big daily newspaper, set in six narrow columns. It shows how to run a photo or a box across several columns and how to give one page five columns."
+description: "A six-column broadsheet in Postext, with the code: the multiple layout, photos and boxes across k columns, page-wide ads, and a section in five columns."
+question: "How do I set a broadsheet in six columns, with photos and boxes that take two, three or four of them?"
+aliases: ["broadsheet", "newspaper", "six columns", "five columns", "multiple columns", "newspaper grid", "picture across columns", "story box", "fact box", "news in brief", "opinion page", "letters page", "jump", "continued on page 2"]
+pageNotes: { "1": "The front page of The Corrington Despatch: the nameplate between a weather ear and a tides ear, a tinted strip of four teasers, the lead headline Tram to the docks wins council vote after six-hour debate across four columns over a photograph of a cobbled harbour quay with cranes at sunrise, the lead story in four columns under it with a funding table at the foot of columns 3 and 4, a second story across columns 5 and 6 with a photograph of three engineers watching a flood gate, its text in column 5, an In brief column in column 6 above a tinted fact box, and a page-wide advertisement for a 10 km run at the foot.", "2": "Page 2, City: a page-wide jump head Market Street traders count the cost of two years of digging over six short legs, then the housing story Rents rise 9% in a year as students return, with a tinted box of five large figures across columns 1 and 2 beside a photograph of a red-brick terrace across columns 3 to 6, the story in all six columns under them, and a large estate agent's advertisement across the foot.", "3": "Page 3, Opinion, in five columns: the paper's two leaders in column 1, a comment piece headed Close the Albert Baths and the city loses more than a pool across columns 2 to 4 over a photograph of a Victorian swimming pool, its text in columns 2 to 4, the letters in column 5, and a page-wide concert advertisement across the lower half.", "4": "Page 4, Arts & Weather: a page-wide theatre headline, a photograph of three actors in a 1920s shipping office across five columns, the review in five columns under it, a What's on column in column 6, and a tinted weather box across the foot with a five-day table and drawn sky symbols." }
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+Four pages of *The Corrington Despatch*, an invented daily, on a 375 × 597 mm broadsheet. The body runs in six columns of 55.2 mm with 4 mm gutters and a hairline in each: a measure of about 38 characters at 9 pt, the measure of a real broadsheet. The front page carries a nameplate with two ears, a strip of teasers, a lead whose headline and photograph take four columns, a second story with a two-column photograph, a column of briefs, a funding table and a fact box across two columns, and an advertisement across the foot. Page 2 opens on a jump from the front, page 3 switches to five columns for the leaders, a comment piece and the letters, and the back page carries a theatre review and the weather.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Six columns on a broadsheet trim
 
-### 1 · The opener is a design, not a heading
+The code for this step is [the short answer](#the-short-answer) above. `page.sizePreset: 'broadsheet'` sets the 375 × 597 mm trim, and `layoutType: 'multiple'` with `columnCount: 6` cuts the 351 mm text width into six equal columns ([Layout types](/en/docs/configuration#layout-types)). Each is (351 − 5 × 4) / 6 = 55.2 mm wide, which at 9 pt Newsreader holds about 38 characters, so the text needs hyphenation, `minWordSpacing: 0.8` to keep spaces open and `maxJustifyTracking: 15` to spread a loose line through its letters. The column rule draws a 0.4 pt hairline in every gutter, cut where a float or a box crosses it. Up to postext 1.17 a body had two columns at most, and <RecipeLink slug="newspaper-front-page">Nº 027</RecipeLink> set its four columns of briefs inside a box for that reason.
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+### 2 · A float across k columns takes the first run of empty columns
 
-### 2 · Running heads know which page they are on
+<Excerpt region="pictures" highlight="1-6" />
 
-<Excerpt region="running-heads" />
+`placement.columns` gives a photo or a table its width in columns, gutters included: four columns of the front page are 232.7 mm. The engine looks for its slot from the column the text is in, left to right. A `top` float takes the head of the first run of k columns that hold no text yet and start level; a `bottom` float takes the foot of the column the text is in and of the empty ones after it. So the funding table, cited in a paragraph of column 3, sits at the foot of columns 3 and 4, and on <PageRef page={2}>page 2</PageRef> the fact box, fenced first, takes columns 1 and 2, which leaves columns 3 to 6 as the first level run for the four-column photo fenced after it. Fenced the other way round, the box would stack under the photo. A k as large as the page's column count (or larger) is page-wide, the same as `span: 'page'`.
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+### 3 · Headline boxes, fact boxes and advertisements
 
-### 3 · One accent, linked everywhere
+<Excerpt region="boxes" />
 
-<Excerpt region="palette" />
+A `:::callout` with `placement="top"` and `columns="4"` floats across four columns as a photo does. The lead's headline and deck are such a box, fenced before the lead's text, so it takes columns 1 to 4 and the photograph stacks under it. The second story's headline box comes after the lead in the text, behind a `:::columnbreak`: the text is in column 5 by then, and columns 5 and 6 are the first empty pair. Each advertisement is a box with `columns="6"`, page-wide, fenced first on its page so that its foot is reserved before any text arrives, and the jump heads on pages 2 and 4 are page-span boxes, as in Nº 027. `balancing.trailing: false` lets every page fill its columns to the foot, since every page here closes a section.
 
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+### 4 · The nameplate is the front page's H1
+
+<Excerpt region="nameplate" />
+
+`# The Corrington Despatch` takes the `front` heading style: the name in Playfair Display Black at 64 pt, two ears filled from the heading's attributes, the dateline between a thin and a heavy rule. The opener is nine grid lines deep. An opener holds column 1 in 1.18.0, so a float across k columns fenced right after it starts in column 2; the tinted teaser strip, a page-span box, opens a new band whose first column is empty, and the lead takes columns 1 to 4.
+
+### 5 · The opinion page runs in five columns
+
+<Excerpt region="sections" />
+
+`# Opinion {style="opinion"}` opens a section whose heading style sets `layout: { layoutType: 'multiple', columnCount: 5 }`. The section keeps the document's gutter and column rule and changes only the count, so the leaders, the comment piece and the letters run on a 67 mm measure, about 47 characters. The comment's headline box is `columns="3"`, fenced once the leader has begun in column 1, so it lands on columns 2 to 4 with its photograph under it, and two `:::columnbreak` lines send the column to column 2 and the letters to column 5.
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### Set a Berliner in five columns
 
-### Set the text in two columns
-
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+The same paper on a 315 × 470 mm Berliner: five columns of 55 mm, the measure of the broadsheet's six. The folio rule takes the narrower width too; then refit each page.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-const layout = { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(GUTTER),
++const layout = { layoutType: 'multiple', columnCount: 5, gutterWidth: mm(GUTTER),
+-      size: { width: mm(375 - 2 * MARGIN.side) } }] };
++      size: { width: mm(315 - 2 * MARGIN.side) } }] };
+-  page: { sizePreset: 'broadsheet', dpi: 150, backgroundColor: col('paper'), // 375 × 597 mm
++  page: { sizePreset: 'berliner', dpi: 150, backgroundColor: col('paper'), // 315 × 470 mm
 ```
 
 ## Pitfalls
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+- A float fenced after the text has passed its columns finds no slot on the page and opens the next one. On the front page the lead must end in column 4: one paragraph more and the second story's headline box and photograph move to page 2.
+- Each page here is fitted by hand, as a sub-editor fits a newspaper: the advertisements' `:::space` lines and the length of each story set where the columns end. Change a story and refit its page.

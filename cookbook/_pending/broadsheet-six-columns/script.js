@@ -37,7 +37,8 @@ const text = (id, content, look, placement) => ({ kind: 'text', id, content, ali
   overflow: 'wrap', color: col('ink'), ...look, placement }); // (gotcha: overflow-ellipsis-default)
 const rule = (id, under, weight, gap = 0) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...at(under, 'above', 0, -gap), size: { width: 'fill' } } });
-// An empty box a whole number of grid lines deep sets each opener's depth.
+// An empty box a whole number of grid lines deep sets each opener's depth, so no sliver of
+// column is left beside it for the rule to run through (gotcha: column-rule-through-opener).
 const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
   ...at('container', 'top-left'), size: { width: 'fill', height: pt(lines * LEAD) } } });
 
@@ -249,6 +250,7 @@ function forecast() { // Thursday to Monday: sky, outlook, °C, wind, rain, sun,
       right(`${lo}°`), right(wind), right(mm), right(rise), right(set), right(tide)])] };
 }
 // #endregion
+// #region pictures: each photo names how many columns it takes; the fences place it
 const resources = [
   photo('quays', 'quays-1440.jpg', [1440, 1080], 4, {
     altText: 'A cobbled harbour quay at sunrise, with old rail tracks, three dockside cranes '
@@ -279,6 +281,7 @@ const resources = [
   ...Object.keys(SKY).map((id) => ({ id, typeId: 'photo', kind: 'svg', createdAt: 0,
     updatedAt: 0, svg: { fileId: `${id}.svg`, width: 240, height: 120 }, altText: id.slice(4) })),
 ];
+// #endregion
 const front = /* @content */ ''; // content.en.md: the front page
 const city = /* @content:city */ ''; // content.city.en.md: page 2
 const views = /* @content:opinion */ ''; // content.opinion.en.md: page 3

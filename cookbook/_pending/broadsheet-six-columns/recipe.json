@@ -19,6 +19,7 @@
     ],
     "also": [
       "newspaper-trims",
+      "folded-binding",
       "column-rule",
       "span-boxes",
       "floated-callouts",
@@ -31,10 +32,9 @@
       "running-heads",
       "callout-styles",
       "paragraph-styles",
-      "credit-notes",
       "table-styles",
-      "resource-types",
-      "color-palette"
+      "cell-images",
+      "resource-types"
     ]
   },
   "answers": [
@@ -42,11 +42,12 @@
     "Q78"
   ],
   "gotchas": [
+    "column-rule-through-opener",
+    "bitmap-print-size",
     "headings-drop-h1-break",
     "overflow-ellipsis-default",
     "design-lineheight-multiple",
-    "fonts-first",
-    "bitmap-print-size"
+    "fonts-first"
   ],
   "engine": {
     "postext": "1.18.0"
@@ -159,7 +160,7 @@
     "paper": {
       "type": "newsprint",
       "grammage": 45,
-      "shade": "#fbfaf7"
+      "shade": "#fcfbf9"
     },
     "binding": {
       "type": "folded",
@@ -171,5 +172,17 @@
     "lighting": {
       "environment": "overcast"
     }
-  }
+  },
+  "related": [
+    "newspaper-front-page",
+    "arabic-newspaper-two-columns",
+    "boxes-split-float-pin",
+    "figures-float-where-cited"
+  ],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "a tinted page-span teaser strip (:::callout{type=\"sky\" span=\"page\"}) opens the front page under the nameplate. An opener (a span: 'page' H1) counts as a block of column 1 in 1.18.0, so a float across k columns fenced right after it cannot take the head of column 1 and lands from column 2; the strip opens a new band whose first column is empty, and the lead's headline box and photo take columns 1-4. Pages 2 and 4 open on page-span jump heads for the same reason"
+    }
+  ]
 }
