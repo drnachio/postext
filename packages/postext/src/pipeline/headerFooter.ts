@@ -450,6 +450,44 @@ function sourceForElement(
   return null;
 }
 
+/**
+ * A title element's source as its lines print it (#546): the template
+ * round `{titleText}` (a heading's number and its point, "4. ") is printed
+ * too, so the text and its map take it in, the characters before the
+ * title mapped to its start and those after it to its end, and
+ * `prefixLen` counts the ones before. The source as it was when the
+ * printed text does not hold the title as written.
+ */
+function withPrintedTitle(
+  el: ResolvedDesignTextElement,
+  src: { start: number; end: number; text?: string; sourceMap?: number[] },
+  placeholders: DesignPlaceholderContext,
+): { start: number; end: number; text?: string; sourceMap?: number[]; prefixLen?: number } {
+  const at = el.content.indexOf('{titleText}');
+  const map = src.sourceMap;
+  if (at < 0 || src.text === undefined || !map || map.length !== src.text.length) return src;
+  // As the layout prints it: placeholders filled, marks dropped, the case
+  // transformed.
+  const upper = el.textTransform === 'uppercase';
+  const print = (template: string): string => {
+    const resolved = resolveDesignText(template, placeholders, el.inlineMarks === true);
+    const plain = el.inlineMarks ? plainDesignText(resolved) : resolved;
+    return upper ? plain.toLocaleUpperCase() : plain;
+  };
+  const text = print(el.content);
+  const title = upper ? src.text.toLocaleUpperCase() : src.text;
+  if (text === title) return title === src.text ? src : { ...src, text };
+  const prefixLen = print(el.content.slice(0, at)).length;
+  if (title.length !== src.text.length || text.slice(prefixLen, prefixLen + title.length) !== title) return src;
+  const suffixLen = text.length - prefixLen - title.length;
+  return {
+    ...src,
+    text,
+    sourceMap: [...new Array<number>(prefixLen).fill(src.start), ...map, ...new Array<number>(suffixLen).fill(src.end)],
+    ...(prefixLen ? { prefixLen } : {}),
+  };
+}
+
 /** A range plus a per-character map when the rendered value is exactly the
  *  source span (so the caret lands on the clicked glyph). */
 function withMap(range: { start: number; end: number }, value: string): { start: number; end: number; text?: string; sourceMap?: number[] } {
@@ -477,7 +515,7 @@ export function layoutSlotToVdt(
     pageIndex,
   );
   if (result.primitives.length === 0) return undefined;
-  const sourceByElement = new Map<string, { start: number; end: number; text?: string; sourceMap?: number[] }>();
+  const sourceByElement = new Map<string, { start: number; end: number; text?: string; sourceMap?: number[]; prefixLen?: number }>();
   if (extras) {
     for (const el of slot.elements) {
       if (el.kind !== 'text') continue;
@@ -489,7 +527,7 @@ export function layoutSlotToVdt(
       // maps back.
       const keepMap = !el.inlineMarks || src.text === undefined
         || plainDesignText(resolveDesignText(el.content, placeholders, el.inlineMarks === true)).includes(src.text);
-      sourceByElement.set(el.id, keepMap ? src : { start: src.start, end: src.end });
+      sourceByElement.set(el.id, keepMap ? withPrintedTitle(el, src, placeholders) : { start: src.start, end: src.end });
     }
   }
   const blocks = result.primitives.map((prim) => {
@@ -501,6 +539,7 @@ export function layoutSlotToVdt(
       if (src.text !== undefined && src.sourceMap && src.sourceMap.length === src.text.length) {
         block.sourceText = src.text;
         block.sourceMap = src.sourceMap;
+        if (src.prefixLen) block.sourcePrefixLen = src.prefixLen;
       }
     }
     return block;

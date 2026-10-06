@@ -89,6 +89,10 @@ describe('design text → source ranges', () => {
       headingSource: { start: 190, end: 212 },
     });
     expect(blocks.t!.sourceStart).toBe(200);
-    expect(blocks.t!.sourceMap).toHaveLength(12);
+    // The text as printed, the number and its point before the title
+    // mapped to its start (#546).
+    expect(blocks.t!.sourceText).toBe('1. Capítulo uno');
+    expect(blocks.t!.sourcePrefixLen).toBe(3);
+    expect(blocks.t!.sourceMap).toEqual([200, 200, 200, ...Array.from({ length: 12 }, (_, i) => 200 + i)]);
   });
 });

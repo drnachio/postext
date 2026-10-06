@@ -120,3 +120,52 @@ describe('attribute source ranges with frontmatter', () => {
     expect(markdown.slice(author!.sourceStart, author!.sourceEnd)).toBe('J. Doe');
   });
 });
+
+describe('a title printed after a number (#546)', () => {
+  const withTitle = (content: string, textTransform?: 'uppercase'): PostextConfig => {
+    const level = config.headings!.levels![0]!;
+    const slot = level.advancedDesign!.slot!;
+    return {
+      ...config,
+      headings: {
+        levels: [{
+          ...level,
+          advancedDesign: {
+            ...level.advancedDesign!,
+            slot: { ...slot, elements: [{ ...slot.elements[0]!, content, ...(textTransform ? { textTransform } : {}) } as (typeof slot.elements)[number]] },
+          },
+        }],
+      },
+    };
+  };
+  const titleOf = (markdown: string, cfg: PostextConfig) =>
+    buildDocument({ markdown }, cfg).pages[0]!.openerBand!.blocks.find((b): b is VDTDesignTextBlock => b.kind === 'text' && b.sourceStart !== undefined)!;
+  const markdown = '# Health and Illness\n\nBody text after the opener.';
+
+  it('maps the text as printed, the number before the title counted apart', () => {
+    const title = titleOf(markdown, withTitle('{chapterNumber}. {titleText} ·'));
+    expect(title.lines.map((l) => l.text).join(' ')).toBe('1. Health and Illness ·');
+    expect(title.sourceText).toBe('1. Health and Illness ·');
+    expect(title.sourcePrefixLen).toBe(3);
+    expect(title.sourceMap).toHaveLength(title.sourceText!.length);
+    // The number and its point map to the title's start, the trailing
+    // mark to its end, every title character to itself.
+    expect(title.sourceMap!.slice(0, 3)).toEqual([title.sourceStart, title.sourceStart, title.sourceStart]);
+    expect(title.sourceMap!.slice(-2)).toEqual([title.sourceEnd, title.sourceEnd]);
+    const word = title.sourceText!.indexOf('Illness');
+    expect(markdown.slice(title.sourceMap![word], title.sourceMap![word]! + 7)).toBe('Illness');
+  });
+
+  it('maps an upper-case title as printed', () => {
+    const title = titleOf(markdown, withTitle('{chapterNumber}. {titleText}', 'uppercase'));
+    expect(title.sourceText).toBe('1. HEALTH AND ILLNESS');
+    expect(title.sourcePrefixLen).toBe(3);
+    expect(title.sourceMap).toHaveLength(title.sourceText!.length);
+  });
+
+  it('keeps a title printed alone as it was', () => {
+    const title = titleOf(markdown, config);
+    expect(title.sourceText).toBe('Health and Illness');
+    expect(title.sourcePrefixLen).toBeUndefined();
+  });
+});
