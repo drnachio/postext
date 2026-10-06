@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "living-newspaper-video-loops",
-  "sourceHash": "3d573d8a127175500c8e0f0c3e93586e3a5c5339dec39f53a668771cdf24e36a",
+  "sourceHash": "a2be4889c775f3a0c6df7579f377212c1fbcec431ec56ac694bce5346bb98ea4",
   "engine": {
     "postext": "1.18.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T13:03:53.562Z",
+  "capturedAt": "2026-10-06T13:21:38.562Z",
   "variants": {
     "en": {
-      "hash8": "08e47f2b",
+      "hash8": "51d466ae",
       "vdtHash": "7809539a24b7c8335b2d4fd79847d0a4220ccff3",
       "timings": {
-        "importMs": 2686,
-        "fontsMs": 63,
-        "buildMs": 412,
-        "totalMs": 4887,
+        "importMs": 658,
+        "fontsMs": 110,
+        "buildMs": 530,
+        "totalMs": 4390,
         "builds": 2
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Oswald"
         ],
         "pages": 4,
-        "ownLines": 251
+        "ownLines": 250
       },
       "pages": [
         {
@@ -116,7 +116,7 @@
       },
       "sandbox": {
         "file": "living-newspaper-video-loops.postext",
-        "bytes": 294956,
+        "bytes": 294982,
         "folio": "dca9ec8b"
       },
       "detected": {

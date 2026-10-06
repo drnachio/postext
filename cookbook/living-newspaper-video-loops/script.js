@@ -258,8 +258,7 @@ const stage = Object.assign(document.createElement('section'),
 stage.style.cssText = 'height: min(82vh, 820px); margin: 0 auto; max-width: 1280px';
 document.getElementById('pages').before(stage);
 createFolioFromDocument(stage, doc, {
-  // Each clip plays from its video.url. Folio starts the autoplaying ones, muted, whenever
-  // their page is on show, and stops them when it is turned away.
+  // Folio plays each clip from its video.url, muted, while its page is on show.
   appearance: { textureBaseUrl: 'https://postext.dev/folio/textures' },
   onChange: ({ pages }) => kitStatus(`${doc.pages.length} pages · open at `
     + pages.map((i) => doc.pages[i].pageLabel || i + 1).join('–')),
