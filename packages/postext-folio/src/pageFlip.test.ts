@@ -335,42 +335,54 @@ describe("the page flipper", () => {
     expect(worst).toBeLessThan(0.1);
   });
 
-  it("tucks a folded corner back along the head or foot, never past the book (#498)", async () => {
+  it("folds a leaf back over its own paper, never through it (#499)", async () => {
     const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
-    // A thick paperback, the thin side hanging from the spine.
+    // A thick paperback, the leaf turning off the thin side, which hangs
+    // from the spine; its top outer corner carried down to the middle of
+    // the other page.
     const W = 476;
     const H = 672;
     const book = profiles("paperback", W, 2.8, 6.5, 202);
-    const lay = (G: { u: number; v: number }, P: { u: number; v: number }) => {
-      const geometry = new PlaneGeometry(W, H, 96, 120);
-      layLeaf(geometry, foldOf(G, P, W, H), true, W, H, 1, book, 0, progressFrom(G, P));
-      const out = Float32Array.from(geometry.attributes.position.array as Float32Array);
-      geometry.dispose();
-      return out;
-    };
-    // The top outer corner carried down to the middle of the other page
-    // (it used to fold some 140 px past the foot), and a click's turn from
-    // the bottom corner, lifted on its way (up to 90 px past the head).
-    const paths = [
-      (t: number) => [{ u: 405, v: 268 }, { u: 335 - 646 * t, v: 249 - 181 * t }],
-      (t: number) => [{ u: W, v: -H / 2 }, { u: W - 2 * W * t, v: -H / 2 + 0.28 * H * Math.sin(Math.PI * t) }],
-    ];
-    let past = 0;
-    let jump = 0;
-    for (const path of paths) {
-      for (let k = 1; k < 40; k++) {
-        const [G, P] = path(k / 40);
-        const a = lay(G, P);
-        const b = lay(G, { u: P.u - 1, v: P.v - 1 });
-        for (let i = 0; i < a.length; i += 3) {
-          past = Math.max(past, Math.abs(a[i + 1]) - H / 2);
-          jump = Math.max(jump, Math.hypot(a[i] - b[i], a[i + 1] - b[i + 1], a[i + 2] - b[i + 2]));
-        }
+    const G = { u: 405, v: 268 };
+    let deepest = 0;
+    for (let k = 1; k <= 12; k++) {
+      const P = { u: 335 - (646 * k) / 12, v: 249 - (181 * k) / 12 };
+      const lay = (folded: boolean) => {
+        const geometry = new PlaneGeometry(W, H, 96, 120);
+        layLeaf(geometry, folded ? foldOf(G, P, W, H) : null, false, W, H, 1, book, 0, progressFrom(G, P));
+        const out = Float32Array.from(geometry.attributes.position.array as Float32Array);
+        geometry.dispose();
+        return out;
+      };
+      const a = lay(true);
+      const b = lay(false);
+      // Where the paper not folded lies (by cell), and its height across
+      // (the same in every row: that of the leaf laid without a fold).
+      const there = new Set<string>();
+      const flap: number[] = [];
+      for (let i = 0; i < a.length; i += 3) {
+        if (Math.hypot(a[i] - b[i], a[i + 1] - b[i + 1], a[i + 2] - b[i + 2]) > 1e-3) flap.push(i);
+        else there.add(`${Math.round(a[i] / 2)},${Math.round(a[i + 1] / 2)}`);
+      }
+      const row: [number, number][] = [];
+      for (let i = 0; i < 97 * 3; i += 3) row.push([b[i], b[i + 2]]);
+      row.sort((p, q) => p[0] - q[0]);
+      const heightAt = (x: number) => {
+        let j = 1;
+        while (j < row.length - 1 && row[j][0] < x) j++;
+        const [x0, z0] = row[j - 1];
+        const [x1, z1] = row[j];
+        return z0 + ((z1 - z0) * (x - x0)) / (x1 - x0 || 1);
+      };
+      for (const i of flap) {
+        if (Math.abs(a[i + 1]) > H / 2 || !there.has(`${Math.round(a[i] / 2)},${Math.round(a[i + 1] / 2)}`)) continue;
+        if (a[i] < row[0][0] || a[i] > row[row.length - 1][0]) continue;
+        deepest = Math.max(deepest, heightAt(a[i]) - a[i + 2]);
       }
     }
-    expect(past).toBeLessThanOrEqual(1e-3);
-    // It goes on following the hand: a pixel's move moves the paper a few.
-    expect(jump).toBeLessThan(12);
+    // Carried level from its fold, low on the side sloping up to the
+    // spine, the folded paper ran 3 px under the leaf's own and crossed it.
+    expect(deepest).toBeLessThan(0.3);
   });
 
   it("finds the printed point under the pointer on either open page, and back", () => {

@@ -108,6 +108,8 @@ export interface FlipAppearance {
 
 /** Columns and rows of a leaf's mesh: fine enough for a tight roll. */
 const NX = 96;
+/** How far a leaf's folded paper stays over its own paper beneath it. */
+const OWN_GAP = 0.6;
 const NY = 120;
 /** Columns of a page lying open (its curve runs across only). */
 const NX_OPEN = 72;
@@ -950,6 +952,16 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
     }
     return [px, pz];
   };
+  // Where the leaf's paper lies unfolded, column by column: [out from
+  // the spine, u, height].
+  const own: [number, number, number][] = [];
+  if (fold) {
+    for (let ix = 0; ix <= NX; ix++) {
+      const u = column(ix / NX) * W;
+      const [ox, oz] = onBook(sx * u, 0);
+      own.push([sx * ox, u, oz]);
+    }
+  }
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
@@ -966,23 +978,6 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
           // Round the roll, then straight on at the fold's angle.
           [dd, z] = rollOf(d, fold.R, fold.theta);
           y = v - n.v * (d - dd);
-          // A fold across the page carries the paper past it beyond the
-          // head or foot (a corner pulled down across the spine: far past
-          // the foot, over the edge of the block, #498). There it tucks
-          // back along the book's end, on the inner side of the paper it
-          // folds from (under it, once it lies over): no part of the leaf
-          // reaches past the book. The crease runs straight along the end
-          // (a band a mesh row wide lies on it, or the rows' corners stuck
-          // out past it in teeth).
-          const past = Math.abs(y) - H / 2;
-          if (past > 0) {
-            const back = Math.max(0, past - (1.5 * H) / NY);
-            y = Math.sign(y) * (H / 2 - back);
-            const a = fold.R > 1e-3 ? Math.min(d / fold.R, fold.theta) : fold.theta;
-            const under = Math.min(back, 1.2);
-            dd -= under * Math.sin(a);
-            z += under * Math.cos(a);
-          }
           x = u - n.u * (d - dd);
         }
       }
@@ -997,6 +992,22 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
         const w = smooth(0, 0.05 * W, z);
         px += (fx + sx * fold.n.u * dd - px) * w;
         pz += (fz + z - pz) * w;
+        // Never through the leaf's own paper not yet folded: carried level
+        // from a fold low on a side sloping up to the spine, the paper
+        // folded back over it ran under it, crossing it.
+        const at = sx * px;
+        if (at > own[0][0] && at < own[NX][0] && Math.abs(y) <= H / 2 + 1e-6) {
+          let lo = 0;
+          let hi = NX;
+          while (hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            if (own[mid][0] <= at) lo = mid;
+            else hi = mid;
+          }
+          const f = (at - own[lo][0]) / (own[hi][0] - own[lo][0] || 1);
+          const ou = own[lo][1] + (own[hi][1] - own[lo][1]) * f;
+          if ((ou - fold.F.u) * fold.n.u + (y - fold.F.v) * fold.n.v < 0) pz = Math.max(pz, own[lo][2] + (own[hi][2] - own[lo][2]) * f + OWN_GAP);
+        }
       }
       if (r > 0) {
         px += (u * Math.cos(phi) - offset * Math.sin(phi) - px) * r;
