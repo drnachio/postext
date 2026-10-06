@@ -48,7 +48,98 @@
         "license": "CC-BY-4.0"
       }
     ],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The cover: a red paper boat on a river through green meadows, a clear sky on the right for the title",
+          "es": "La portada: un barco de papel rojo en un río entre prados verdes, con el cielo despejado a la derecha para el título"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cover-1430.jpg"
+      },
+      {
+        "what": {
+          "en": "Mii-chan folding the red paper boat at a low table by the window, after the rain",
+          "es": "Mii-chan dobla el barco de papel rojo en una mesa baja junto a la ventana, después de la lluvia"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "rain-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "Mii-chan waving goodbye to the boat on the stream",
+          "es": "Mii-chan dice adiós al barco en el arroyo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "stream-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "A frog on a stone talking to the boat",
+          "es": "Una rana sobre una piedra habla con el barco"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "frog-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "The boat under a wooden footbridge, little fish following it",
+          "es": "El barco bajo un puente de madera, seguido por peces pequeños"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bridge-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "A white heron on the bank watching the boat on the wide river",
+          "es": "Una garza blanca en la orilla mira el barco en el río ancho"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "heron-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "Dusk: a pink sky over the river mouth and the sea beyond",
+          "es": "Atardecer: un cielo rosa sobre la desembocadura y el mar al fondo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "dusk-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "Night: the full moon's reflection lighting the boat's way",
+          "es": "Noche: el reflejo de la luna llena alumbra el camino del barco"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "night-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "The boat at sea, greeted by seagulls",
+          "es": "El barco en el mar, saludado por las gaviotas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "sea-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "Mii-chan at her window, looking towards the distant sea",
+          "es": "Mii-chan en su ventana, mirando hacia el mar lejano"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "window-1400.jpg"
+      }
+    ],
     "fonts": [
       { "family": "Klee One", "license": "OFL-1.1" },
       { "family": "Zen Maru Gothic", "license": "OFL-1.1" }
@@ -56,5 +147,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-06"
 }

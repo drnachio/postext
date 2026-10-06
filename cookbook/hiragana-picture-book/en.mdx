@@ -10,7 +10,7 @@ pageNotes: { "1": "The cover: the river scene across the whole page, a red paper
 
 ## What you'll build
 
-A ten-page picture book, かみの ふね (*The Paper Boat*), written and drawn for the recipe: a girl folds a red paper boat after the rain, and the boat travels down the river past a frog, a heron and the moon to the sea. It is set the way Japanese books for the youngest readers are set: hiragana only, 20 pt in Klee One, a hand modelled on the school textbook face, and a space between phrases, 分かち書き (wakachigaki), so a child reads one phrase at a time. The pages are landscape, 260 × 200 mm, vertical and bound on the right: the picture across the top of the page, short lines of eight characters under it, and the boat travelling leftward, as the pages turn.
+A ten-page picture book, かみの ふね (*The Paper Boat*), written for the recipe and illustrated with ten paintings: a girl folds a red paper boat after the rain, and the boat travels down the river past a frog, a heron and the moon to the sea. It is set the way Japanese books for the youngest readers are set: hiragana only, 20 pt in Klee One, a hand modelled on the school textbook face, and a space between phrases, 分かち書き (wakachigaki), so a child reads one phrase at a time. The pages are landscape, 260 × 200 mm, vertical and bound on the right: the picture across the top of the page, short lines of eight characters under it, and the boat travelling leftward, as the pages turn.
 
 ## Method
 
@@ -26,7 +26,7 @@ The text is set ragged. Justified, a short line would stretch its spaces and the
 
 <Excerpt region="layout" />
 
-In vertical text `'left'` is the top of the page, so a column-and-a-half layout with its side column on the left is two tiers: the pictures float into the upper tier (14 characters deep), and the text runs in the lower one (8 characters). Each page cites its picture with `::resource{id="…"}` and ends with `:::pagebreak`. The picture type has no caption prefix, and the drawings are 2.186 times as wide as they are tall, the shape of the tier, so each fills it ([vertical writing](/en/docs/configuration#vertical-writing)).
+In vertical text `'left'` is the top of the page, so a column-and-a-half layout with its side column on the left is two tiers: the pictures float into the upper tier (14 characters deep), and the text runs in the lower one (8 characters). Each page cites its picture with `::resource{id="…"}` and ends with `:::pagebreak`. The picture type has no caption prefix, and the pictures are 2.186 times as wide as they are tall, the shape of the tier, so each fills it ([vertical writing](/en/docs/configuration#vertical-writing)).
 
 ### 3 · Make the cover a full-page picture
 
@@ -34,11 +34,11 @@ In vertical text `'left'` is the top of the page, so a column-and-a-half layout 
 
 The cover is a page-wide heading design: the picture is anchored to the bleed with the page's own size (in the vertical flow its `width` runs down the sheet), and the title is set down the sky on the right in Zen Maru Gothic, 60 pt.
 
-### 4 · Draw the scenes in code
+### 4 · Load the paintings as bitmaps
 
-<Excerpt region="art" />
+<Excerpt region="pictures" />
 
-The ten scenes are SVG drawn from a few shapes, the boat, the girl, the frog, the heron, with a seeded generator for the waves and stars, so every capture is identical. They are vector pictures in the PDF too.
+The ten pictures are paintings, JPEG files in the recipe's `assets/`. The nine scenes are cut to the tier's shape, 612 : 280, and the cover to the page's, 260 : 200, so each fills its frame and nothing is cropped. Each is a `bitmap` resource declared at its pixel size, with alt text in the book's language, and its file is loaded under the resource's `fileId` before the build. Scenes 1,400 px wide print at about 165 dpi across the tier ([resource types](/en/docs/configuration#resource-types)).
 
 ## Variations
 

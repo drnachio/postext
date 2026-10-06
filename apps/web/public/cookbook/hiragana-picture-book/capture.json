@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "hiragana-picture-book",
-  "sourceHash": "9a6019607c06118fc246d1f424578b6d7bf1f679ca16f47da337ab73684ce4ec",
+  "sourceHash": "54d20cba43fd4897020e4c896e0c12b4914e0fa3471b6187a9306cecf1fc33ac",
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1",
+    "postext": "1.17.1",
+    "postextPdf": "1.17.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-05T14:41:16.980Z",
+  "capturedAt": "2026-10-06T10:04:44.806Z",
   "variants": {
     "en": {
-      "hash8": "c6b3d730",
-      "vdtHash": "c3a875d829f896de88c2f21e4031ea72b255abec",
+      "hash8": "d3a13148",
+      "vdtHash": "fab1c640acf944c90bc939ff1c1d2a32f6913c3f",
       "timings": {
-        "importMs": 173,
-        "fontsMs": 138,
-        "buildMs": 49,
-        "totalMs": 937,
+        "importMs": 9323,
+        "fontsMs": 1204,
+        "buildMs": 82,
+        "totalMs": 11478,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Zen Maru Gothic"
         ],
         "pages": 10,
-        "ownLines": 120
+        "ownLines": 136
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 769,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 13844,
+          "bytes": 121528,
           "alt": "Opening page 1: かみの ふね."
         },
         {
@@ -61,7 +61,7 @@
           "h": 769,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 9332,
+          "bytes": 66052,
           "alt": "Page 2."
         },
         {
@@ -72,7 +72,7 @@
           "h": 769,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 12322,
+          "bytes": 92188,
           "alt": "Page 3."
         },
         {
@@ -83,7 +83,7 @@
           "h": 769,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 12338,
+          "bytes": 83690,
           "alt": "Page 4."
         },
         {
@@ -94,7 +94,7 @@
           "h": 769,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 13536,
+          "bytes": 85690,
           "alt": "Page 5."
         },
         {
@@ -105,7 +105,7 @@
           "h": 769,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 12080,
+          "bytes": 77890,
           "alt": "Page 6."
         },
         {
@@ -116,7 +116,7 @@
           "h": 769,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 10050,
+          "bytes": 60382,
           "alt": "Page 7."
         },
         {
@@ -127,7 +127,7 @@
           "h": 769,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 12232,
+          "bytes": 69432,
           "alt": "Page 8."
         },
         {
@@ -138,7 +138,7 @@
           "h": 769,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 10736,
+          "bytes": 63326,
           "alt": "Page 9."
         },
         {
@@ -149,7 +149,7 @@
           "h": 769,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 12254,
+          "bytes": 74242,
           "alt": "Page 10."
         }
       ],
@@ -194,12 +194,12 @@
       },
       "pdf": {
         "file": "hiragana-picture-book.pdf",
-        "bytes": 56339,
+        "bytes": 1737332,
         "pages": 10
       },
       "sandbox": {
         "file": "hiragana-picture-book.postext",
-        "bytes": 27718,
+        "bytes": 1737446,
         "folio": "ada4348a"
       },
       "detected": {
@@ -320,8 +320,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 10,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 10,
           "table": 0
         },
         "fonts": [
@@ -370,13 +370,13 @@
       }
     },
     "es": {
-      "hash8": "6cda0bca",
-      "vdtHash": "42d07e790806f41857f6dcb1b9d80c646f3d2560",
+      "hash8": "34343797",
+      "vdtHash": "91d2d29c617f08ba4a220dce5adf8c0e49fd91f3",
       "timings": {
-        "importMs": 214,
-        "fontsMs": 167,
-        "buildMs": 47,
-        "totalMs": 994,
+        "importMs": 1935,
+        "fontsMs": 939,
+        "buildMs": 69,
+        "totalMs": 3842,
         "builds": 1
       },
       "specimen": {
@@ -398,7 +398,7 @@
           "Zen Maru Gothic"
         ],
         "pages": 10,
-        "ownLines": 120
+        "ownLines": 136
       },
       "pages": [
         {
@@ -409,7 +409,7 @@
           "h": 769,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 13972,
+          "bytes": 121644,
           "alt": "Página de apertura 1: かみの ふね."
         },
         {
@@ -420,7 +420,7 @@
           "h": 769,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 9332,
+          "bytes": 66052,
           "alt": "Página 2."
         },
         {
@@ -431,7 +431,7 @@
           "h": 769,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 12322,
+          "bytes": 92188,
           "alt": "Página 3."
         },
         {
@@ -442,7 +442,7 @@
           "h": 769,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 12338,
+          "bytes": 83690,
           "alt": "Página 4."
         },
         {
@@ -453,7 +453,7 @@
           "h": 769,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 13536,
+          "bytes": 85690,
           "alt": "Página 5."
         },
         {
@@ -464,7 +464,7 @@
           "h": 769,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 12080,
+          "bytes": 77890,
           "alt": "Página 6."
         },
         {
@@ -475,7 +475,7 @@
           "h": 769,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 10050,
+          "bytes": 60382,
           "alt": "Página 7."
         },
         {
@@ -486,7 +486,7 @@
           "h": 769,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 12232,
+          "bytes": 69432,
           "alt": "Página 8."
         },
         {
@@ -497,7 +497,7 @@
           "h": 769,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 10736,
+          "bytes": 63326,
           "alt": "Página 9."
         },
         {
@@ -508,7 +508,7 @@
           "h": 769,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 12558,
+          "bytes": 74532,
           "alt": "Página 10."
         }
       ],
@@ -553,12 +553,12 @@
       },
       "pdf": {
         "file": "hiragana-picture-book.pdf",
-        "bytes": 56401,
+        "bytes": 1736828,
         "pages": 10
       },
       "sandbox": {
         "file": "hiragana-picture-book.postext",
-        "bytes": 27753,
+        "bytes": 1737386,
         "folio": "ada4348a"
       },
       "detected": {
@@ -679,8 +679,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 10,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 10,
           "table": 0
         },
         "fonts": [
