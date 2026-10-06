@@ -69,6 +69,8 @@ The rise puts the Mutual at the top of the easy-access tables, a few points belo
 
 *Insurers recover as the barrier holds; the pound slips against the dollar*
 
+::resource{id="mx40"}
+
 :::paragraphs{style="byline"}
 By **Nadia Brennan** · Markets Reporter
 :::
@@ -87,7 +89,7 @@ By **Nadia Brennan** · Markets Reporter
 :::
 
 :::paragraphs{style="flush"}
-The MX 40 closed at a record 8,412.6 last night, up 0.8% on the day, as investors bought shipping and port stocks after the harbour board’s vote and insurers recovered from a nervous start :ref{id="mx40" text="(chart)"}.
+The MX 40 closed at a record 8,412.6 last night, up 0.8% on the day, as investors bought shipping and port stocks after the harbour board’s vote and insurers recovered from a nervous start.
 :::
 
 Corvane Group led the index with a rise of 6.2% to 1,184p. Skerra Lines gained 3.1% and the stevedoring firm Fenner Holdings 2.7%. Brokers said the terminal would add traffic to the whole of the port, not only the new berth.
@@ -101,6 +103,12 @@ Not every sector shared the gains. Retailers slipped after the September sales f
 In the currency market the pound fell 0.2% against the dollar to \$1.3218, after a speech by a central bank official was read as a hint that interest rates could be cut before Christmas. Gold slipped and crude oil rose 1.1% to \$71.40 a barrel.
 
 Turnover on the Marrowick Exchange was 412 million shares, about a fifth above the average for the past month. The busiest stock was Corvane, with 31 million shares traded.
+
+:::callout{type="story" span="page" title="Sectors"}
+## Ports and insurers led, the shops lagged {style="second"}
+
+::resource{id="sectors"}
+:::
 
 # Companies {style="business"}
 
@@ -118,6 +126,8 @@ By **Callum Reid**
 ## Corran Shipbuilders {style="ad"}
 
 **Apprenticeships 2027: welding, plating, pipework, electrical and design**
+
+:::space{lines=15}
 
 Four years, paid from the first day, with a job at the end. Applications close on 30 November.
 :::
@@ -142,9 +152,9 @@ Halden’s sales rose 11% to £214 million in the year to June, and its profit b
 
 Flour costs, which rose by almost half in 2023, have fallen back by a fifth, but wages and energy take a growing share of each loaf. The company says it will pay the new night staff a premium of 20%.
 
-:::callout{type="story" span="page" title="Results"}
-## Skerra Lines profit halves as the ferry is laid up {style="second"}
-:::
+The new shift will run from ten at night to six in the morning, five nights a week, and Halden is recruiting through the city college and the job centre on Dock Street. About a third of the 90 posts are for engineers to keep the ovens and the slicing lines running; the rest are on the line and in dispatch, where 14 lorries leave the yard each night.
+
+## Skerra Lines profit halves as the ferry is laid up
 
 :::paragraphs{style="flush"}
 Skerra Lines, which runs the ferries to the islands, made a profit of £3.1 million in the half year to September, down from £6.4 million, after its largest boat spent five months in dry dock.
@@ -152,9 +162,7 @@ Skerra Lines, which runs the ferries to the islands, made a profit of £3.1 mill
 
 The company chartered a smaller vessel for the summer at a cost of £1.9 million and lost most of its freight trade while it was away. The *Holm Maid* returned to service yesterday. Skerra Lines expects the full year to come in close to last year’s £11 million, and has kept its dividend at 4.2p.
 
-:::callout{type="story" span="page" title="Insurance"}
-## Tessary puts the cost of Monday’s storm at £9 million {style="second"}
-:::
+## Tessary puts the cost of Monday’s storm at £9 million
 
 :::paragraphs{style="flush"}
 Tessary Insurance expects claims of about £9 million from Monday’s gales, mostly for roofs, fences and cars, a fraction of what it would have paid if the Lower Town had flooded.
@@ -162,7 +170,19 @@ Tessary Insurance expects claims of about £9 million from Monday’s gales, mos
 
 The company estimated that a repeat of the 1986 flood would have cost it £140 million. Its chief executive, Laura Dunmore, said the barrier was the reason Tessary had cut premiums in the Lower Town by 8% this year, and would cut them again if the gates kept working.
 
+Most of the claims came from the Outer Quay and the islands, outside the barrier’s shelter. The company has 40 assessors in the city this week and says it expects to settle nine in ten claims before the end of the month.
+
 # Share prices {style="business"}
+
+:::callout{type="ad" span="page" placement="bottom" title="Advertisement"}
+## Marrow Mutual {style="ad-big"}
+
+**Easy access at 3.85%, held until March**
+
+:::space{lines=15}
+
+Owned by our 212,000 members since 1867 · 14 branches from Kingsquay to Skerra · Open an account with £1
+:::
 
 :::paragraphs{style="kicker"}
 Your money
@@ -180,9 +200,6 @@ Anyone with more than the £85,000 the deposit scheme protects should spread it 
 
 ::resource{id="savings"}
 
-:::paragraphs{style="imprint"}
-Closing prices on the Marrowick Exchange, in pence, with the day’s change, the high and low of the past 52 weeks and the dividend yield. Source: Ledger Data. The Marrowick Ledger is an imaginary daily; its people, companies and figures are invented. Text CC BY 4.0. Set in Source Serif 4, Playfair Display and Archivo Narrow (SIL OFL).
-:::
 
 ::resource{id="prices-1"}
 
@@ -203,5 +220,9 @@ Closing prices on the Marrowick Exchange, in pence, with the day’s change, the
 ::resource{id="prices-9"}
 
 ::resource{id="prices-10"}
+
+:::paragraphs{style="imprint"}
+Closing prices on the Marrowick Exchange, in pence, with the day’s change and the high and low of the past 52 weeks. Source: Ledger Data. The Marrowick Ledger is an imaginary daily; its people, companies and figures are invented. Text CC BY 4.0. Set in Source Serif 4, Playfair Display and Archivo Narrow (SIL OFL).
+:::
 
 :::

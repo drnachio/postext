@@ -1,72 +1,68 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat del plec són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "Una secció d'economia en paper salmó"
+summary: "Un diari berlinès de vuit pàgines les pàgines d'economia del qual prenen un estil de títol: paper salmó, sis columnes, accent petroli i un bloc :::paper."
+plain: "Vuit pàgines d'un diari inventat. Les quatre primeres són de notícies, en paper blanc grisenc; les d'economia que segueixen van en paper salmó, amb columnes més estretes i colors propis."
+description: "Un diari berlinès en Postext amb el codi: notícies a cinc columnes i una secció d'economia en salmó a sis, amb mercats, gràfics i el paper de Folio."
+question: "Com imprimeixo les pàgines d'economia d'un diari en paper salmó, amb la seva retícula, també en 3D?"
+aliases: ["pàgines salmó", "paper rosa", "secció d'economia", "pàgines de mercats", "secció de diari", "format berlinès", "cotitzacions", "dades de mercat", "diari plegat", "color de secció", "salmon pages"]
+pageNotes: { "1": "La portada de The Marrowick Ledger: la capçalera entre una orella grisa amb el temps i una altra de salmó que remet a les pàgines d'economia, el titular Barrier holds back the Marrow’s highest tide in forty years, una foto de comportes d'acer en plena tempesta a cinc columnes, la notícia en cinc columnes amb filets, una segona notícia sobre els tramvies nocturns i una franja salmó de crides al peu.", "5": "La portada d'economia en paper salmó: el títol Business en petroli, una franja amb sis tancaments de mercat, el titular Harbour board backs £640 million deep-water terminal, un port de contenidors a l'alba a tota l'amplada, un requadre flotant de xifres a dues columnes, un gràfic de barres a dues més, sis columnes de text i un anunci d'un banc al peu.", "8": "Cotitzacions: una columna Your money amb una taula dels millors dipòsits i deu sectors de cotitzacions en cinc columnes estretes, sobre l'anunci d'una mútua." }
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que es reflecteixen en el plec, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+Vuit pàgines de *The Marrowick Ledger*, un diari inventat, en el plec berlinès de 315 × 470 mm. Les pàgines 1 a 4 porten les notícies en paper premsa blanc grisenc, a cinc columnes amb filets i amb una pestanya vermella de secció a cada pàgina. A la 5 canvia el paper. La secció d'economia s'imprimeix en paper salmó, com les pàgines financeres des de fa més d'un segle: la pàgina passa a #f2d3c0, la retícula s'estreny a sis columnes, l'accent passa del vermell al petroli i sota el títol de secció hi ha una franja amb els tancaments del dia. A dins hi ha una pàgina de mercats amb un any de l'índex de la ciutat, un gràfic per sectors i quatre taules, notícies d'empreses i una pàgina de cotitzacions. A la vista 3D de Folio els plecs es dobleguen l'un dins de l'altre i les quatre últimes pàgines surten en paper salmó.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
-
-### 1 · L'obertura és un disseny, no un títol
-
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una ranura d'elements: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
-
-### 2 · Les capçaleres saben en quina pàgina són
-
-<Excerpt region="running-heads" />
-
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
-
-### 3 · Un sol accent, enllaçat a tot arreu
+### 1 · Dos papers en una paleta
 
 <Excerpt region="palette" />
 
-Cada color de la configuració anomena la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil de títol poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+Tots els colors de la configuració van enllaçats a una de les vuit entrades de la paleta. Les pàgines de notícies fan servir `paper` (#f6f4ef) per a la pàgina i `accent` (#b3261e) per a pestanyes, avanttítols i marques dels gràfics. Les d'economia conserven aquests enllaços i en canvien els valors: la paleta de la secció posa `paper` en salmó, `accent` en petroli (#0f4c5c) i `tint` en un salmó més fosc. `salmon` té a més la seva pròpia entrada, per a l'orella i la franja de crides de la portada, que segueixen en salmó sobre les pàgines blanques.
+
+### 2 · Un estil de títol converteix la pàgina en pàgina d'economia
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `# Markets {style="business"}` obre una secció, i les seves pàgines prenen la `palette`, el `layout` i el `bodyStyle` de l'estil: sis columnes amb 4 mm d'espai entre columnes (45,2 mm cadascuna, davant de 54,6 mm a notícies) i el text a 8,8 pt sobre el mateix interlineat d'11,4 pt. La pàgina plana necessita el seu propi color perquè `page.backgroundColor` es pinta una sola vegada per a tot el document i la paleta d'una secció no hi arriba. Per això l'obertura posa a sota de tot una caixa de la mida de la pàgina, plena de `paper`, i la paleta la torna salmó. Les obertures es pinten sota el text, i `reserve: false` deixa la caixa fora de l'alçada que reserva l'obertura. La caixa tapa també el filet de columna, de manera que la retícula d'economia no en porta, i només es pinta en una pàgina que obre amb el títol de l'estil: cada pàgina d'economia té la seva pestanya, i el text està ajustat perquè cap notícia no passi a una pàgina sense.
+
+### 3 · Cada pàgina obre amb una pestanya
+
+<Excerpt region="flags" />
+
+L'H1 és una obertura a tota l'amplada amb `breakBefore` de paritat `'any'`, de manera que cada títol obre la pàgina següent, caigui del costat que caigui. El seu disseny és una pestanya sobre una barra de 3 pt, de tres línies de reixeta. La línia de foli és una capçalera ancorada a 9 mm de la vora superior: número de pàgina, capçalera del diari i data per fora, i `{chapterTitle}` per dins en el color d'accent, que la paleta torna petroli a les pàgines salmó.
+
+### 4 · Fotos i gràfics a diverses columnes
+
+<Excerpt region="floats" />
+
+`top(3)` és `placement: { position: 'top', columns: 3 }`: la foto de la drassana ocupa tres de les cinc columnes de notícies, el ferri quatre, la fleca tres de les sis d'economia i el gràfic del port dues. Un flotant citat des d'un paràgraf de la columna 1 pren el cap de les columnes següents que encara són buides, així que aquestes fotos comencen a la columna 2 i la notícia baixa al seu costat. Les fotos que travessen tota la pàgina van en línia (`here`) dins del requadre del titular. Les taules també van en el flux, dins de requadres a tota l'amplada al peu.
+
+### 5 · Titulars, requadres, dades i anuncis són requadres
+
+<Excerpt region="boxes" />
+
+Un titular a tota l'amplada és un requadre sense marc que conté un H2 en un de tres cossos, i un filet d'1 pt a sobre assenyala la notícia següent. A la pàgina 5 el requadre *The terminal in numbers* sura sobre dues de les sis columnes (`columns="2"` al seu bloc), i la cita destacada de la pàgina 4 fa el mateix amb `columns: 2` al seu estil. Els requadres de dades posen de dues a quatre taules en paral·lel amb un grup `:::columns`, i els anuncis són requadres a tota l'amplada que suren al peu, amb un filet de 0,75 pt.
+
+### 6 · El paper que imprimeix Folio
+
+Les pàgines de notícies no necessiten res: `folio.paper` és paper premsa de 45 g/m², i `binding: { type: 'folded', cover: 'pages' }` posa un plec doblegat dins de l'altre, amb la pàgina 1 per fora i la 8 com a contraportada. Les d'economia van en un sol bloc:
+
+```markdown
+:::paper{type="newsprint" shade="#faede6"}
+# Business {style="business-front"}
+…
+# Share prices {style="business"}
+…
+:::
+```
+
+Cada pàgina del bloc porta `page.paper` amb aquest to, i Folio la imprimeix en aquest paper. El to és el color de la pàgina portat un 60 % cap al blanc (README §4): la pàgina plana ja pinta #f2d3c0, i un paper salmó sencer a sota la tenyiria dues vegades. El canvas, l'HTML i el PDF no llegeixen `:::paper`, i per això l'obertura pinta també el color.
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Conserva el filet de columna a les pàgines salmó
 
-### Compon el text a dues columnes
+Dibuixa tu els filets com a elements de filet verticals a l'obertura, després de la caixa de paper, als cinc espais entre columnes. Van de dalt a baix de la caixa de text, així que travessen qualsevol requadre o taula que ocupi diverses columnes.
 
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+### Fes de la secció d'economia un quadernet
 
-```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
-```
-
-## Errors freqüents
-
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+Les vuit pàgines es dobleguen en dos plecs, l'un dins de l'altre: les pàgines 1–2 i 7–8 a l'exterior, les 3–6 a l'interior. Folio dona a cada full el paper de la seva pàgina senar, així que la 7 i la 8 surten en salmó, encara que una rotativa les imprimiria en el mateix plec que la portada. Passa les pàgines d'economia a la 3–6 i formaran el plec interior, que la rotativa pot tirar en paper salmó i el lector treure sencer.

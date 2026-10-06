@@ -44,11 +44,12 @@ const caps = (size, weight, colour = 'ink') => sans(size, weight, { color: col(c
   textTransform: 'uppercase', letterSpacing: pt(size * 0.16) });
 const rule = (id, weight, placement) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...placement, size: { width: 'fill' } } });
-// An empty box a whole number of grid lines deep sets each opener's depth.
-const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
-  ...at('container', 'top-left'), size: { width: 'fill', height: pt(lines * LEAD) } } });
-const patch = (fill) => ({ backgroundColor: col(fill),
-  padding: { top: mm(1.6), right: mm(3), bottom: mm(1.4), left: mm(3) } });
+const box = (id, style, placement, size) => ({ kind: 'box', id, style, placement: { ...placement,
+  size } }); // an empty box a whole number of grid lines deep sets an opener's depth:
+const depth = (lines) => box('depth', {}, at('container', 'top-left'), { width: 'fill',
+  height: pt(lines * LEAD) });
+const pad = (y, x) => ({ top: mm(y), right: mm(x), bottom: mm(y), left: mm(x) });
+const patch = (fill, padding = pad(1.5, 3)) => ({ backgroundColor: col(fill), padding });
 
 // #region nameplate: page 1's H1 is the paper's name, between the ears and the date line
 const nameplate = { enabled: true, slot: { elements: [
@@ -73,9 +74,8 @@ const nameplate = { enabled: true, slot: { elements: [
 const flagParts = [
   depth(3),
   rule('bar', 3, at('#depth', 'align-bottom', 0, -1.4)),
-  text('flag', '{titleText}', { ...caps(12, 700, 'paper'), box: { ...patch('accent'),
-    padding: { top: mm(1.4), right: mm(3.5), bottom: mm(1.2), left: mm(3.5) } } },
-  at('#bar', 'above')),
+  text('flag', '{titleText}', { ...caps(12, 700, 'paper'), box: patch('accent', pad(1.3, 3.5)) },
+    at('#bar', 'above')),
 ];
 const FOLIO = 9; // mm from the top edge
 const folioLine = (parity, side, s) => [ // s: +1 on a verso (folio on the left), −1 on a recto
@@ -97,8 +97,8 @@ const header = { elements: [...folioLine('even', 'left', 1), ...folioLine('odd',
 // it. A box the size of the page, laid first in the opener (openers paint under the text),
 // takes 'paper', and the section's palette turns 'paper' salmon. reserve: false keeps the box
 // out of the depth the opener reserves.
-const stock = { kind: 'box', id: 'stock', reserve: false, style: { backgroundColor: col('paper') },
-  placement: { ...at('page', 'top-left'), size: { width: mm(PAGE.width), height: mm(PAGE.height) } } };
+const stock = { ...box('stock', { backgroundColor: col('paper') }, at('page', 'top-left'),
+  { width: mm(PAGE.width), height: mm(PAGE.height) }), reserve: false };
 const business = {
   id: 'business',
   advancedDesign: { enabled: true, slot: { elements: [stock, ...flagParts] } },
@@ -114,9 +114,10 @@ const front = () => ({ ...business, id: 'business-front', advancedDesign: { enab
   elements: [stock, depth(10),
     text('title', 'Business', { fontFamily: 'Playfair Display', fontSize: pt(58), fontWeight: 900,
       lineHeight: 1, color: col('accent') }, at('container', 'top-left', 0, -1)),
-    text('tag', 'Companies · Markets · Money', caps(9, 700, 'accent'), at('#title', 'right-of', 5, 9)),
+    text('tag', 'Companies · Markets · Money', caps(9, 700, 'accent'),
+      at('#title', 'right-of', 5, 9)),
     rule('top', 3, at('#title', 'below', 0, 2)),
-    ...STRIP.flatMap(([name, value, change], i) => [ // the day's close, from the market data
+    ...STRIP().flatMap(([name, value, change], i) => [ // the day's close, from the market data
       text(`s${i}`, name, caps(7, 700, 'muted'), at('#top', 'below', (i * WIDE) / 6, 1.8)),
       text(`v${i}`, value, sans(13, 700), at(`#s${i}`, 'below', 0, 0.6)),
       text(`c${i}`, change, sans(9.5, 600, { color: col(change[0] === '+' ? 'accent' : 'muted') }),
@@ -128,7 +129,7 @@ const front = () => ({ ...business, id: 'business-front', advancedDesign: { enab
 // #endregion
 
 // #region boxes: headlines across the page, story breaks, briefs, panels and adverts
-const none = { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) };
+const none = pad(0, 0);
 const banner = { id: 'banner', backgroundEnabled: false, padding: none,
   titleStyle: { ...caps(8.5, 700, 'accent'), gap: mm(1.2) }, // the kicker
   marginTop: pt(0), marginBottom: pt(LEAD / 2),
@@ -138,22 +139,22 @@ const story = { ...banner, id: 'story', marginTop: pt(LEAD), padding: { ...none,
   stripe: { enabled: true, side: 'top', width: pt(1), color: col('ink') } };
 const boxBody = { fontFamily: 'Archivo Narrow', fontSize: pt(9.5), lineHeight: pt(LEAD),
   textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, boldColor: col('accent') };
-const inset = { top: mm(2.5), right: mm(3), bottom: mm(3), left: mm(3) };
-const briefs = { id: 'briefs', background: col('tint'), padding: inset,
+const briefs = { id: 'briefs', background: col('tint'), padding: pad(2.8, 3),
   titleStyle: { ...caps(9, 700, 'accent'), gap: mm(1.5) }, body: boxBody };
 const teaser = { ...briefs, id: 'teaser', background: col('salmon'), columnGap: mm(4.5),
   body: { ...boxBody, fontSize: pt(10.5), lineHeight: pt(13.5) } };
 const panel = { ...story, id: 'panel', marginTop: pt(0), titleStyle: briefs.titleStyle,
   stripe: { ...story.stripe, width: pt(2.5), color: col('accent') },
   body: { ...boxBody, fontFamily: 'Source Serif 4' } };
-const dataBox = { ...briefs, id: 'data', backgroundEnabled: false, columnGap: mm(4.5),
-  padding: { ...none, top: mm(2) }, stripe: { enabled: true, side: 'top', width: pt(1),
-    color: col('ink') } };
+const dataBox = { ...story, id: 'data', marginTop: pt(0), columnGap: mm(4.5) };
 const ad = { id: 'ad', backgroundEnabled: false, marginTop: pt(LEAD),
   border: { enabled: true, color: col('ink'), width: pt(0.75) },
-  padding: { top: mm(3), right: mm(6), bottom: mm(6), left: mm(6) },
+  padding: { ...pad(6, 6), top: mm(3) },
   titleStyle: { ...caps(6.5, 600, 'muted'), gap: mm(4) },
   body: { ...boxBody, fontSize: pt(14), lineHeight: pt(18), boldColor: col('ink') } };
+const pullQuote = { ...story, id: 'quote', columns: 2, marginTop: pt(0),
+  body: { ...banner.body, fontFamily: 'Playfair Display', fontSize: pt(19), lineHeight: pt(23),
+    italic: true } }; // a pull quote, floated across two columns
 const headline = (id, size, look = {}) => ({ id, fontSize: pt(size), lineHeight: pt(size * 1.04),
   marginBottom: pt(size * 0.2), ...look });
 // #endregion
@@ -167,7 +168,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { fontFamily: 'Source Serif 4', fontSize: pt(9.4), lineHeight: pt(LEAD),
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('muted'),
     textAlign: 'justify', firstLineIndent: mm(3.5), indentAfterHeading: false,
-    hyphenation: { enabled: true }, optimalLineBreaking: true, maxJustifyTracking: 12,
+    hyphenation: { enabled: true }, optimalLineBreaking: true, maxJustifyTracking: 20,
     avoidWidows: true, avoidOrphans: true },
   headings: { fontFamily: 'Playfair Display', fontWeight: 700, color: col('ink'),
     marginBottom: pt(0), levels: [
@@ -180,9 +181,10 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     { id: 'front', advancedDesign: nameplate, header: { elements: [] } }, // no folio line
     business, front(),
     headline('lead', 50, { fontWeight: 900 }), headline('wide', 34), headline('second', 22),
-    headline('ad', 60, { fontWeight: 900, color: col('accent'), marginBottom: pt(4) }),
+    ...[['ad', 60], ['ad-big', 80]].map(([id, size]) => headline(id, size, { fontWeight: 900,
+      color: col('accent'), marginBottom: pt(4) })),
   ],
-  calloutStyles: [banner, story, briefs, teaser, panel, dataBox, ad],
+  calloutStyles: [banner, story, briefs, teaser, panel, dataBox, ad, pullQuote],
   paragraphStyles: [
     { id: 'byline', fontFamily: 'Archivo Narrow', fontSize: pt(8.5), textAlign: 'left',
       firstLineIndent: pt(0), color: col('muted') },
@@ -199,19 +201,16 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     headerBackground: col('ink'), headerColor: col('paper'), headerFontFamily: 'Archivo Narrow',
     headerFontSize: pt(8), bodyFontFamily: 'Archivo Narrow', bodyFontSize: pt(8.5),
     bodyColor: col('ink'), cellPadding: mm(1) },
-  tableStyles: [{ id: 'prices', headerBackground: col('accent'), headerFontSize: pt(7.4),
-    bodyFontSize: pt(7.4), cellPadding: mm(0.45) }],
+  tableStyles: [{ id: 'prices', headerBackground: col('accent'), headerFontSize: pt(7),
+    bodyFontSize: pt(7), cellPadding: mm(0.45) }],
   header, footer: { elements: [] },
   folio: { paper: { type: 'newsprint', grammage: 45, shade: { hex: '#fbfaf8', model: 'hex' } },
-    binding: { type: 'folded', cover: 'pages' } }, // the shade rule: README §4
+    binding: { type: 'folded', cover: 'pages' }, surface: { type: 'oak' },
+    lighting: { environment: 'overcast' } },
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 // #region art: the market data and the drawings, every figure from one source
-// [name, value, change]: the strip on page 5 and the tables on page 6 read the same rows.
-const STRIP = [['MX 40', '8,412.6', '+0.80%'], ['MX All-Share', '4,516.2', '+0.60%'],
-  ['£ / $', '1.3218', '−0.20%'], ['£ / €', '1.1634', '+0.10%'],
-  ['Crude oil $', '71.40', '+1.10%'], ['Gold $', '2,688', '−0.40%']];
 function mulberry32(seed) { // a seeded PRNG: the same prices on every run
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -221,36 +220,57 @@ function mulberry32(seed) { // a seeded PRNG: the same prices on every run
   };
 }
 const sign = (n, d = 1) => `${n < 0 ? '−' : '+'}${Math.abs(n).toFixed(d)}`;
-const head = (content, i) => ({ content, isHeader: true, align: i ? 'right' : 'left' });
-const table = (widths, heads, rows) => ({ headerRowCount: 1, columnWidths: widths, rows: [
-  heads.map(head), ...rows.map((row) => row.map((c, i) => ({ content: String(c),
-    align: i ? 'right' : 'left' })))] });
-const INDICES = [['MX 40', '8,412.6', 66.8, 0.80, 14.1], ['MX All-Share', '4,516.2', 27.0, 0.60, 11.8],
+// A table whose first `words` columns are text (flush left) and the rest figures (flush right).
+const table = (widths, heads, rows, words = 1) => ({ headerRowCount: 1, columnWidths: widths,
+  rows: [heads, ...rows].map((row, r) => row.map((c, i) => ({ content: String(c),
+    align: i < words ? 'left' : 'right', ...(r ? {} : { isHeader: true }) }))) });
+const INDICES = [['MX 40', '8,412.6', 66.8, 0.80, 14.1],
+  ['MX All-Share', '4,516.2', 27.0, 0.60, 11.8],
   ['MX Small Cap', '6,904.3', -12.4, -0.18, 7.2], ['Europe 350', '2,118.7', 5.9, 0.28, 6.0],
-  ['North America 500', '6,702.4', -8.1, -0.12, 9.4], ['Asia-Pacific 200', '3,281.9', 14.6, 0.45, 4.8]];
+  ['North America 500', '6,702.4', -8.1, -0.12, 9.4],
+  ['Asia-Pacific 200', '3,281.9', 14.6, 0.45, 4.8],
+  ['Nordic 120', '1,604.2', 7.3, 0.46, 8.1], ['Emerging 100', '1,148.2', 3.1, 0.27, 3.9],
+  ['World 1000', '3,902.6', 4.4, 0.11, 7.7], ['Latin America 80', '2,416.0', -9.6, -0.40, 2.2],
+  ['Gulf 60', '1,873.5', 6.2, 0.33, 5.1], ['MX Mid 100', '9,127.4', 22.9, 0.25, 9.8],
+  ['MX Dividend 30', '3,640.1', 12.6, 0.35, 10.4]];
 const CURRENCIES = [['US dollar', '1.3218', -0.20], ['Euro', '1.1634', 0.10],
   ['Japanese yen', '197.42', 0.31], ['Swiss franc', '1.1281', -0.05],
   ['Norwegian krone', '14.212', 0.22], ['Swedish krona', '14.508', 0.12],
-  ['Canadian dollar', '1.8215', -0.14], ['Australian dollar', '2.0127', 0.08]];
-const COMMODITIES = [['Crude oil, $/barrel', '71.40', 1.10], ['Natural gas, p/therm', '84.60', 2.30],
-  ['Gold, $/oz', '2,688', -0.40], ['Silver, $/oz', '31.42', -0.70], ['Copper, $/tonne', '9,812', 0.60],
-  ['Aluminium, $/tonne', '2,604', 0.20], ['Wheat, £/tonne', '182.50', -0.30]];
+  ['Canadian dollar', '1.8215', -0.14], ['Australian dollar', '2.0127', 0.08],
+  ['Danish krone', '8.6812', 0.09], ['Polish zloty', '4.9873', 0.18],
+  ['Indian rupee', '111.06', -0.25],
+  ['Chinese yuan', '9.4127', -0.11], ['Hong Kong dollar', '10.281', -0.19]];
+const COMMODITIES = [['Crude oil, $/barrel', '71.40', 1.10],
+  ['Natural gas, p/therm', '84.60', 2.30], ['Gold, $/oz', '2,688', -0.40],
+  ['Silver, $/oz', '31.42', -0.70], ['Copper, $/tonne', '9,812', 0.60],
+  ['Aluminium, $/tonne', '2,604', 0.20], ['Wheat, £/tonne', '182.50', -0.30],
+  ['Cocoa, $/tonne', '6,212', 1.80], ['Coffee, $/tonne', '4,890', -0.90],
+  ['Sugar, $/tonne', '512.4', 0.40],
+  ['Salmon, NOK/kg', '78.20', -1.20], ['Cotton, c/lb', '71.85', 0.15],
+  ['Zinc, $/tonne', '2,884', 0.70]];
+// The strip on page 5 reads the rows the tables on page 6 print: one source for both.
+const quote = (name, [, value, ...rest], pct = rest.at(-1)) => [name, value, `${sign(pct, 2)}%`];
+const STRIP = () => [quote('MX 40', INDICES[0], INDICES[0][3]),
+  quote('MX All-Share', INDICES[1], INDICES[1][3]), quote('£ / $', CURRENCIES[0]),
+  quote('£ / €', CURRENCIES[1]), quote('Crude oil $', COMMODITIES[0]),
+  quote('Gold $', COMMODITIES[2])];
 const FORECAST = [['Tue', 'Gales easing, showers', '13°', '8°', 'W 40'],
-  ['Wed', 'Bright and breezy', '14°', '7°', 'W 25'], ['Thu', 'Cloudy, rain later', '12°', '9°', 'SW 30'],
+  ['Wed', 'Bright and breezy', '14°', '7°', 'W 25'],
+  ['Thu', 'Cloudy, rain later', '12°', '9°', 'SW 30'],
   ['Fri', 'Rain clearing', '13°', '6°', 'NW 22'], ['Sat', 'Sunny spells', '14°', '5°', 'N 12']];
 const TIDES = [['Tue', '10.51', '5.9', '23.14', '6.1'], ['Wed', '11.32', '5.6', '23.55', '5.8'],
   ['Thu', '—', '—', '12.14', '5.4'], ['Fri', '0.37', '5.5', '12.58', '5.1'],
   ['Sat', '1.22', '5.1', '13.45', '4.8']];
-const PREFIX = ['Ardley', 'Brack', 'Calder', 'Carrow', 'Castle Wynd', 'Corran', 'Dunmere', 'Fairlie',
-  'Fenner', 'Haddow', 'Holm', 'Holmside', 'Kelby', 'Kingsquay', 'Lusk', 'Marrow', 'Orvane',
-  'Outer Quay', 'Pellow', 'Saltmarsh', 'Skerra', 'Strand', 'Tessary', 'Wendholm'];
-const SECTORS = [['Banks', ['Bank', 'Capital', 'Savings', 'Trust', 'Finance']],
-  ['Insurance', ['Insurance', 'Life', 'Re', 'Assurance']], ['Shipping', ['Lines', 'Freight',
-    'Shipping', 'Towage', 'Ports']], ['Food & drink', ['Foods', 'Bakeries', 'Breweries', 'Dairies',
-    'Fish']], ['Retail', ['Stores', 'Home', 'Outfitters', 'Retail']], ['Engineering', ['Engineering',
-    'Pumps', 'Cables', 'Castings', 'Marine']], ['Energy', ['Energy', 'Power', 'Wind', 'Water']],
-  ['Property', ['Estates', 'Homes', 'Land', 'Properties']], ['Technology', ['Software', 'Data',
-    'Systems', 'Digital']], ['Health', ['Pharma', 'Care', 'Diagnostics', 'Medical']]];
+const PREFIX = ['Ardley', 'Brack', 'Calder', 'Carrow', 'Wynd', 'Corran', 'Dunmere', 'Fairlie',
+  'Fenner', 'Haddow', 'Holm', 'Holmside', 'Kelby', 'Quay', 'Lusk', 'Marrow', 'Orvane', 'Pellow',
+  'Rennie', 'Skerra', 'Strand', 'Tessary', 'Wendholm'];
+const SECTORS = [['Banks', ['Bank', 'Cap', 'Svgs', 'Trust', 'Fin']],
+  ['Insurance', ['Ins', 'Life', 'Re', 'Assur']], ['Shipping', ['Lines', 'Freight', 'Shpg', 'Tugs',
+    'Ports']], ['Food & drink', ['Foods', 'Bakers', 'Brew', 'Dairies', 'Fish']],
+  ['Retail', ['Stores', 'Home', 'Outfit', 'Retail']], ['Engineering', ['Eng', 'Pumps', 'Cables',
+    'Castings', 'Marine']], ['Energy', ['Energy', 'Power', 'Wind', 'Water']],
+  ['Property', ['Ests', 'Homes', 'Land', 'Props']], ['Technology', ['Soft', 'Data', 'Sys',
+    'Digital']], ['Health', ['Pharma', 'Care', 'Diag', 'Med']]]; // listing abbreviations
 function pricesTable(i, rows) { // one sector of the share prices, seeded
   const rand = mulberry32(2026 + i);
   const names = new Set();
@@ -259,13 +279,89 @@ function pricesTable(i, rows) { // one sector of the share prices, seeded
     names.add(`${a} ${b}`);
   }
   const fmt = (v) => Math.round(v).toLocaleString('en-GB');
-  return table([3.4, 1.4, 1.1, 1.4, 1.4, 0.9], [SECTORS[i][0], 'Price', '+/−', 'High', 'Low', 'Yld'],
+  return table([3.6, 1.2, 1, 1.2, 1.2], [SECTORS[i][0], 'Price', '+/−', 'High', 'Low'],
     [...names].sort().map((name) => {
       const price = 40 + rand() ** 2 * 2400;
       return [name, fmt(price), sign(price * (rand() - 0.47) * 0.05, price < 200 ? 1 : 0),
-        fmt(price * (1.05 + rand() * 0.3)), fmt(price * (0.7 + rand() * 0.25)), (rand() * 6).toFixed(1)];
+        fmt(price * (1.05 + rand() * 0.3)), fmt(price * (0.7 + rand() * 0.25))];
     }));
 }
+// Every table on pages 3, 6, 7 and 8: [model, caption, credit note].
+const TABLES = {
+  budget: [table([3, 1.2, 1.2, 1], ['Service, £m', '2026/27', '2027/28', 'Change'],
+    [['Adult social care', '412.3', '426.9', '+14.6'], ['Children’s services', '236.8', '241.0',
+      '+4.2'], ['Housing', '39.5', '41.2', '+1.7'], ['Waste and recycling', '47.2', '47.9', '+0.7'],
+    ['Libraries and culture', '21.6', '21.6', '0.0'],
+    ['Roads and transport', '88.4', '84.9', '−3.5'],
+    ['Public health', '38.2', '38.9', '+0.7'], ['Planning', '24.1', '22.0', '−2.1'],
+    ['Everything else', '134.3', '115.6', '−18.7'], ['**Total**', '**1,042.4**', '**1,040.0**',
+      '**−2.4**']]), '**Where the money goes**', 'Source: Marrowick City Council.'],
+  forecast: [table([0.8, 3, 0.8, 0.8, 1], ['Day', 'Outlook', 'High', 'Low', 'Wind mph'], FORECAST,
+    2),
+    '**Weather**', 'Forecast: Marrowick Met Station.'],
+  tides: [table([1, 1, 0.8, 1, 0.8], ['Day', 'High', 'm', 'High', 'm'], TIDES),
+    '**Tides at Kingsquay**', 'Times BST; heights above chart datum.'],
+  indices: [table([2.6, 1.3, 1, 1, 1], ['Index', 'Close', 'Chg', '%', 'Year %'],
+    INDICES.map(([n, v, c, p, y]) => [n, v, sign(c), sign(p, 2), sign(y)])), '**Indices**'],
+  currencies: [table([2.4, 1.2, 1], ['Per pound', 'Rate', '%'],
+    CURRENCIES.map(([n, v, p]) => [n, v, sign(p, 2)])), '**Currencies**'],
+  commodities: [table([2.6, 1.2, 1], ['Commodity', 'Price', '%'],
+    COMMODITIES.map(([n, v, p]) => [n, v, sign(p, 2)])), '**Commodities**'],
+  active: [table([2.6, 1.2, 1.2, 1], ['Most traded', 'Shares m', 'Close p', '%'], [
+    ['Corvane Group', '31.0', '1,184', '+6.2'], ['Tessary Insurance', '18.4', '642', '+1.9'],
+    ['Skerra Lines', '12.9', '318', '+3.1'], ['Ashby Stores', '11.2', '97.4', '−3.4'],
+    ['Dunmore Bank', '9.7', '455', '+0.6'], ['Fenner Holdings', '8.3', '736', '+2.7'],
+    ['Halden Bakeries', '6.1', '1,092', '+1.2'], ['Kelby Software', '5.8', '214', '+0.4'],
+    ['Wendholm Water', '5.2', '871', '−0.2'], ['Calder Life', '4.9', '388', '+0.9'],
+    ['Orvane Marine', '4.4', '152', '+1.5'], ['Brack Cables', '3.9', '611', '−0.8'],
+    ['Saltmarsh Fish', '3.6', '86.5', '+2.4']]), '**Most traded**'],
+  results: [table([2.6, 1.1, 1.1, 0.9], ['£m', 'Sales', 'Profit', 'Div p'],
+    [['Halden (year)', '214.0', '19.6', '14.4'], ['Skerra Lines (half)', '58.3', '3.1', '4.2'],
+      ['Kelby Software (half)', '31.7', '4.9', '2.0'], ['Fenner (year)', '96.2', '11.4', '9.8'],
+      ['Ashby Stores (half)', '142.5', '−2.3', '1.0'],
+      ['Calder Life (year)', '388.0', '41.6', '12.2'],
+      ['Orvane Marine (half)', '44.9', '3.8', '1.6']]),
+  '**Results**'],
+  diary: [table([1, 2.6, 2], ['Day', 'Company', 'Event'], [['Wed', 'Ashby Stores',
+    'Half-year results'], ['Wed', 'Wendholm Water', 'Trading update'], ['Thu', 'Kelby Software',
+    'Annual meeting'], ['Fri', 'Dunmore Bank', 'Third-quarter update'], ['Fri', 'Calder Life',
+    'Dividend paid, 6.1p'], ['Mon', 'Halden Bakeries', 'Annual meeting'],
+    ['Tue', 'Tessary Insurance', 'Storm claims update']], 3), '**Company diary**'],
+  savings: [table([2.6, 1], ['Account', 'Rate'], [['1-year fixed, Dunmore Bank', '4.15%'],
+    ['2-year fixed, Holm BS', '4.02%'], ['Easy access, Marrow Mutual', '3.85%'],
+    ['90-day notice, Kelby Savings', '3.90%'], ['Cash ISA, Fairlie Bank', '3.70%']]),
+  '**Best buys**', 'Gross annual rates on £10,000.'],
+};
+// The pictures' captions, descriptions and credits.
+const GENERATED = 'Picture: Generated With Diffusion Models';
+const LEDGER = 'Source: Ledger Data';
+const CAPTIONS = Object.fromEntries(Object.entries({
+  barrier: ['**The Marrow Barrier at 9.30pm on Monday,** its gates closed against the surge. The '
+    + 'river behind them rose by 30 centimetres.', 'A row of curved steel flood gates closed '
+    + 'across a river in a storm, waves breaking against them, two engineers on a walkway.'],
+  welders: ['**First week:** apprentices welding a hull section in the fabrication hall at '
+    + 'Brackwater.', 'Two young welders in masks at a steel hull, sparks flying, an instructor '
+    + 'watching.'],
+  gate: ['**How a gate turns.** Each segment turns on a pin in the pier, from its sill on the '
+    + 'riverbed to stand against the sea.', 'Diagram of two barrier gates in section, one lying '
+    + 'in its sill, one turned up.', 'Drawing: The Ledger'],
+  ferry: ['**The Holm Maid** leaves Skerra pier on her first crossing since May.', 'A blue and '
+    + 'white car ferry leaving a stone harbour on a grey day, gulls overhead.'],
+  cartoon: ['**Holding the line,** by Kit Carrow.', 'Cartoon: a steel flood gate drawn as a '
+    + 'castle wall holds back a huge wave while townspeople drink tea behind it; on top, an '
+    + 'official with an empty piggy bank.'],
+  cranes: ['**The Outer Quay at dawn.** The new berth would take ships three times the size of '
+    + 'those the port handles now.', 'Container cranes unloading a ship at dawn, a tug in front.'],
+  throughput: ['**Containers through Marrowick,** thousands of twenty-foot units a year.',
+    'Bar chart of container traffic, 2016 to 2026, rising from 982,000 to 1,185,000 units, close '
+    + 'to capacity.', 'Source: Marrowick Harbour Board'],
+  mx40: ['**The MX 40 over the past year,** daily closes.', 'Line chart of the MX 40 index, '
+    + 'rising from 7,370 to 8,412.6 over twelve months.', LEDGER],
+  sectors: ['**Sectors on the Marrowick Exchange,** change on the day.', 'Bar chart of ten '
+    + 'sectors, from shipping, up 3.4%, to retail, down 2.1%.', LEDGER],
+  loaves: ['**Halden’s Quayside plant** bakes 1.1 million loaves a week.', 'Bakery workers in '
+    + 'white coats checking loaves on a conveyor leaving an oven.'],
+}).map(([id, [caption, altText, note = GENERATED]]) => [id, { caption, altText, note }]));
 const svg = (W, H, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" `
   + `height="${H * 10}" viewBox="0 0 ${W} ${H}">${body}</svg>`;
 const label = (x, y, s, content, look = '', fill = palette.ink) => `<text x="${x.toFixed(2)}" `
@@ -275,18 +371,20 @@ function mx40Svg(face) { // the MX 40 over a year: a seeded walk, scaled to end 
   const walk = [0];
   for (let i = 1; i < 253; i++) walk.push(walk[i - 1] + rand() - 0.46);
   const level = walk.map((v) => 7370 + (v * 1042.6) / walk[252]);
-  const [W, H, L, R, B] = [230, 120, 14, 18, 8]; // mm: size, left and right gutters, axis
+  const [W, H, L, R, B] = [291, 100, 14, 18, 8]; // mm: size, left and right gutters, axis
   const x = (i) => L + (i * (W - L - R)) / 252;
   const y = (v) => H - B - ((v - 7200) * (H - B - 4)) / 1400;
   let out = face;
   for (const v of [7400, 7800, 8200, 8600]) {
-    out += `<path d="M${L} ${y(v).toFixed(2)}H${W - R}" stroke="${palette.rule}" stroke-width="0.2"/>`
+    out += `<path d="M${L} ${y(v).toFixed(2)}H${W - R}" stroke="${palette.rule}" `
+      + 'stroke-width="0.2"/>'
       + label(L - 1.5, y(v) + 1, 3, v.toLocaleString('en-GB'), 'text-anchor="end"');
   }
-  ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'].forEach((m, k) => {
+  'Oct Nov Dec Jan Feb Mar Apr May Jun Jul Aug Sep'.split(' ').forEach((m, k) => {
     out += label(x(k * 21 + 10), H - 2, 3, m, 'text-anchor="middle"');
   });
-  const line = level.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(2)} ${y(v).toFixed(2)}`).join('');
+  const line = level.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(2)} ${y(v).toFixed(2)}`)
+    .join('');
   return svg(W, H, `${out}<path d="${line}L${x(252)} ${H - B}L${L} ${H - B}Z" `
     + `fill="${palette.petrol}" fill-opacity="0.14"/><path d="${line}" fill="none" `
     + `stroke="${palette.petrol}" stroke-width="0.6"/><path d="M${L} ${H - B}H${W - R}" `
@@ -324,9 +422,29 @@ function gateSvg(face) { // a gate in section, lying in its sill and turned up a
     + `<rect x="0" y="${bed}" width="54" height="12" fill="${palette.muted}"/>`
     + `<rect x="59" y="${bed}" width="54" height="12" fill="${palette.muted}"/>`
     + gate(27, 225) + gate(80, -45)
-    + label(1, 5, 3.2, 'Open', 'font-weight="700"') + label(1, 9.5, 2.8, 'The gate lies in its sill')
-    + label(60, 5, 3.2, 'Closed', 'font-weight="700"') + label(60, 9.5, 2.8, 'Turned up through 90°')
+    + label(1, 5, 3.2, 'Open', 'font-weight="700"')
+    + label(1, 9.5, 2.8, 'The gate lies in its sill')
+    + label(60, 5, 3.2, 'Closed', 'font-weight="700"')
+    + label(60, 9.5, 2.8, 'Turned up through 90°')
     + label(61, 34, 2.8, 'River') + label(111, 23, 2.8, 'Sea', 'text-anchor="end"'));
+}
+const SECTOR_MOVES = [['Shipping', 3.4], ['Insurance', 1.6], ['Engineering', 1.1], ['Banks', 0.7],
+  ['Energy', 0.5], ['Food and drink', 0.3], ['Property', -0.1], ['Technology', -0.2],
+  ['Health', -0.4], ['Retail', -2.1]];
+function sectorsSvg(face) { // the day's move of each sector, in per cent
+  const [W, H, Z, k] = [291, 82, 150, 30]; // mm; the zero line; mm per point
+  let out = face;
+  SECTOR_MOVES.forEach(([name, move], i) => {
+    const y = 2 + i * 8;
+    const [x, w] = move >= 0 ? [Z, move * k] : [Z + move * k, -move * k];
+    out += `<rect x="${x.toFixed(2)}" y="${y}" width="${w.toFixed(2)}" height="5.6" `
+      + `fill="${move >= 0 ? palette.petrol : palette.rule}"/>`
+      + label(move >= 0 ? Z - 2 : Z + 2, y + 4, 3.6, name,
+        `text-anchor="${move >= 0 ? 'end' : 'start'}"`)
+      + label(move >= 0 ? x + w + 1.5 : x - 1.5, y + 4, 3.6, `${sign(move)}%`,
+        `font-weight="700" text-anchor="${move >= 0 ? 'start' : 'end'}"`);
+  });
+  return svg(W, H, `${out}<path d="M${Z} 0V${H}" stroke="${palette.ink}" stroke-width="0.35"/>`);
 }
 // An SVG drawn as an image cannot see the page's fonts (gotcha: svg-no-webfonts): each
 // drawing carries Archivo Narrow inline, as data URLs of the Fontsource files.
@@ -351,83 +469,28 @@ const resourceTypes = [unnumbered('picture', 'Picture'),
   unnumbered('panel', 'Panel', { position: 'above', fontSize: pt(9.5) })];
 const res = (id, typeId, kind, body, extra) => ({ id, typeId, kind, [kind]: body,
   createdAt: 0, updatedAt: 0, ...extra });
-const GENERATED = 'Picture: Generated With Diffusion Models';
-const photo = (id, file, [w, h], placement, caption, altText) => res(id, 'picture', 'bitmap',
-  { fileId: file, format: 'jpeg', width: w, height: h }, { placement, caption, altText,
-    note: GENERATED });
-const drawing = (id, [w, h], columns, caption, altText, note) => res(id, 'picture', 'svg',
-  { fileId: `${id}.svg`, width: w, height: h }, { placement: { position: 'top', columns },
-  caption, altText, note });
-const data = (id, model, placement, caption, note) => res(id, 'panel', 'table', { model },
-  { placement, caption, note });
-const top = (columns) => ({ position: 'top', columns });
-const here = { position: 'here' };
+const photo = (id, file, [w, h], placement) => res(id, 'picture', 'bitmap',
+  { fileId: file, format: 'jpeg', width: w, height: h }, { placement, ...CAPTIONS[id] });
+const drawing = (id, [w, h], placement) => res(id, 'picture', 'svg',
+  { fileId: `${id}.svg`, width: w, height: h }, { placement, ...CAPTIONS[id] });
+const data = (id, model, caption, note) => res(id, 'panel', 'table', { model },
+  { placement: here, caption, note });
+const top = (columns) => ({ position: 'top', columns }); // a float across k columns
+const here = { position: 'here' }; // in the flow: in a column, or across a box
 const resources = [
-  photo('barrier', 'barrier-1800.jpg', [1800, 947], { position: 'here' },
-    '**The Marrow Barrier at 9.30pm on Monday,** its gates closed against the surge. The river '
-    + 'behind them rose by 30 centimetres.', 'A row of curved steel flood gates closed across a '
-    + 'river in a storm, waves breaking against them, two engineers on a walkway.'),
-  photo('welders', 'apprentices-1536.jpg', [1536, 1024], top(3),
-    '**First week:** apprentices welding a hull section in the fabrication hall at Brackwater.',
-    'Two young welders in masks at a steel hull, sparks flying, an instructor watching.'),
-  drawing('gate', [1130, 500], 3, '**How a gate turns.** Each segment turns on a pin in the '
-    + 'pier, from its sill on the riverbed to stand against the sea.',
-  'Diagram of two barrier gates in section, one lying in its sill, one turned up.', 'Drawing: '
-    + 'The Ledger'),
-  data('budget', table([3, 1.2, 1.2, 1], ['Service, £m', '2026/27', '2027/28', 'Change'],
-    [['Adult social care', '412.3', '426.9', '+14.6'], ['Children’s services', '236.8', '241.0',
-      '+4.2'], ['Housing', '39.5', '41.2', '+1.7'], ['Waste and recycling', '47.2', '47.9', '+0.7'],
-    ['Libraries and culture', '21.6', '21.6', '0.0'], ['Roads and transport', '88.4', '84.9', '−3.5'],
-    ['Everything else', '196.6', '176.5', '−20.1'], ['**Total**', '**1,042.4**', '**1,040.0**',
-      '**−2.4**']]), here, '**Where the money goes**', 'Source: Marrowick City Council.'),
-  photo('ferry', 'ferry-1536.jpg', [1536, 1024], top(3),
-    '**The Holm Maid** leaves Skerra pier on her first crossing since May.',
-    'A blue and white car ferry leaving a stone harbour on a grey day, gulls overhead.'),
-  data('forecast', table([0.8, 3, 0.8, 0.8, 1], ['Day', 'Outlook', 'High', 'Low', 'Wind mph'],
-    FORECAST), here, '**Weather**', 'Forecast: Marrowick Met Station.'),
-  data('tides', table([1, 1, 0.8, 1, 0.8], ['Day', 'High', 'm', 'High', 'm'], TIDES), here,
-    '**Tides at Kingsquay**', 'Times BST; heights above chart datum.'),
-  photo('cartoon', 'cartoon-1280.jpg', [1280, 853], top(3),
-    '**Holding the line,** by Kit Carrow.', 'Cartoon: a steel flood gate drawn as a castle wall '
-    + 'holds back a huge wave while townspeople drink tea behind it; on top, an official with '
-    + 'an empty piggy bank.'),
-  photo('cranes', 'cranes-1800.jpg', [1800, 750], here,
-    '**The Outer Quay at dawn.** The new berth would take ships three times the size of those '
-    + 'the port handles now.', 'Container cranes unloading a ship at dawn, a tug in front.'),
-  drawing('throughput', [1130, 700], 2, '**Containers through Marrowick,** thousands of '
-    + 'twenty-foot units a year.', 'Bar chart of container traffic, 2016 to 2026, rising from '
-    + '982,000 to 1,185,000 units, close to capacity.', 'Source: Marrowick Harbour Board'),
-  drawing('mx40', [2300, 1200], 4, '**The MX 40 over the past year,** daily closes.',
-    'Line chart of the MX 40 index, rising from 7,370 to 8,412.6 over twelve months.',
-    'Source: Ledger Data'),
-  data('indices', table([2.6, 1.3, 1, 1, 1], ['Index', 'Close', 'Change', '%', 'Year %'],
-    INDICES.map(([n, v, c, p, y]) => [n, v, sign(c), sign(p, 2), sign(y)])), here, '**Indices**'),
-  data('currencies', table([2.4, 1.2, 1], ['Per pound', 'Rate', '%'],
-    CURRENCIES.map(([n, v, p]) => [n, v, sign(p, 2)])), here, '**Currencies**'),
-  data('commodities', table([2.6, 1.2, 1], ['Commodity', 'Price', '%'],
-    COMMODITIES.map(([n, v, p]) => [n, v, sign(p, 2)])), here, '**Commodities**'),
-  data('active', table([2.6, 1.2, 1.2, 1], ['Most traded', 'Shares m', 'Close p', '%'], [
-    ['Corvane Group', '31.0', '1,184', '+6.2'], ['Tessary Insurance', '18.4', '642', '+1.9'],
-    ['Skerra Lines', '12.9', '318', '+3.1'], ['Ashby Stores', '11.2', '97.4', '−3.4'],
-    ['Dunmore Bank', '9.7', '455', '+0.6'], ['Fenner Holdings', '8.3', '736', '+2.7'],
-    ['Halden Bakeries', '6.1', '1,092', '+1.2']]), here, '**Most traded**'),
-  photo('loaves', 'bakery-1536.jpg', [1536, 1024], top(3),
-    '**Halden’s Quayside plant** bakes 1.1 million loaves a week.',
-    'Bakery workers in white coats checking loaves on a conveyor leaving an oven.'),
-  data('results', table([2.6, 1.1, 1.1, 0.9], ['£m', 'Sales', 'Profit', 'Div p'],
-    [['Halden (year)', '214.0', '19.6', '14.4'], ['Skerra Lines (half)', '58.3', '3.1', '4.2'],
-      ['Kelby Software (half)', '31.7', '4.9', '2.0'], ['Fenner (year)', '96.2', '11.4', '9.8']]),
-  here, '**Results**'),
-  data('diary', table([1, 2.6, 2], ['Day', 'Company', 'Event'], [['Wed', 'Ashby Stores',
-    'Half-year results'], ['Wed', 'Wendholm Water', 'Trading update'], ['Thu', 'Kelby Software',
-    'Annual meeting'], ['Fri', 'Dunmore Bank', 'Third-quarter update'], ['Fri', 'Calder Life',
-    'Dividend paid, 6.1p']]), here, '**Company diary**'),
-  data('savings', table([2.6, 1], ['Account', 'Rate'], [['1-year fixed, Dunmore Bank', '4.15%'],
-    ['2-year fixed, Holm BS', '4.02%'], ['Easy access, Marrow Mutual', '3.85%'],
-    ['90-day notice, Kelby Savings', '3.90%'], ['Cash ISA, Fairlie Bank', '3.70%']]),
-  here, '**Best buys**', 'Gross annual rates on £10,000.'),
+  photo('barrier', 'barrier-1800.jpg', [1800, 1106], here), // in the banner box: page-wide
+  photo('welders', 'apprentices-1536.jpg', [1536, 1024], top(3)),
+  drawing('gate', [1130, 500], top(3)),
+  photo('ferry', 'ferry-1536.jpg', [1536, 1024], top(4)),
+  photo('cartoon', 'cartoon-1280.jpg', [1280, 853], top(4)),
+  photo('cranes', 'cranes-1800.jpg', [1800, 750], here),
+  drawing('throughput', [1130, 700], top(2)),
+  drawing('mx40', [2910, 1000], here), drawing('sectors', [2910, 820], here),
+  photo('loaves', 'bakery-1536.jpg', [1536, 1024], top(3)),
+  // The tables sit where the text names them, in a column or a data box: no float.
+  ...Object.entries(TABLES).map(([id, [model, caption, note]]) => data(id, model, caption, note)),
   ...SECTORS.map((_, i) => res(`prices-${i + 1}`, 'panel', 'table',
-    { styleId: 'prices', model: pricesTable(i, 18) }, { placement: { position: 'here' } })),
+    { styleId: 'prices', model: pricesTable(i, 21) }, { placement: here })),
 ];
 // #endregion
 const markdown = /* @content */ ''; // content.en.md: pages 1–4
@@ -435,7 +498,7 @@ const businessPages = /* @content:business */ ''; // content.business.en.md: pag
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
-  'Source Serif 4': ['400', '400i', '700'], 'Playfair Display': ['700', '900'],
+  'Source Serif 4': ['400', '400i', '700'], 'Playfair Display': ['400i', '700', '900'],
   'Archivo Narrow': ['400', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
@@ -445,7 +508,7 @@ const face = await inlineFace();
 await Promise.all([...resources.filter((r) => r.bitmap)
   .map((r) => loadImage(r.bitmap.fileId, asset(r.bitmap.fileId))),
 loadSvg('gate.svg', gateSvg(face)), loadSvg('throughput.svg', throughputSvg(face)),
-loadSvg('mx40.svg', mx40Svg(face))]);
+loadSvg('mx40.svg', mx40Svg(face)), loadSvg('sectors.svg', sectorsSvg(face))]);
 const doc = await buildWithFonts(() => buildDocument({ markdown: all, resources }, config()), all);
 showPages(doc, { title: 'The Marrowick Ledger · Business on salmon' });
 

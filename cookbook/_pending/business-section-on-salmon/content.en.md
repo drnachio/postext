@@ -101,6 +101,8 @@ To open, the gates turn on past the vertical and back down into the sills, washi
 
 **Bridge works.** One lane of Kingsquay Bridge closes overnight from 12 to 16 October while joints are replaced.
 
+**Night market.** The Saturday market on Fish Quay stays open until 9pm from 7 November until Christmas, with 40 extra stalls.
+
 **Fun run.** The Harbour 10K on Sunday raised £212,000 for the children’s ward at Marrowick Infirmary.
 :::
 
@@ -108,6 +110,8 @@ To open, the gates turn on past the vertical and back down into the sills, washi
 ## Pellow & Rae {style="ad"}
 
 **The autumn sale starts on Saturday**
+
+:::space{lines=5}
 
 Coats, knitwear and boots, up to 30% off · Castle Wynd, open 9 till 7, late on Thursdays
 :::
@@ -178,6 +182,10 @@ That money is not in anybody’s budget. The city cannot ask the Lower Town to w
 ## Sixty-four reasons to be cheerful {style="second"}
 :::
 
+:::callout{type="quote" placement="top"}
+“A city that gives its young people a choice about staying will still be here when the next storm comes”
+:::
+
 :::paragraphs{style="flush"}
 I spent Monday morning in the fabrication hall at Brackwater, among sixty-four teenagers in new overalls, and it was the most hopeful room I have stood in for years.
 :::
@@ -199,11 +207,17 @@ The apprentices I met were careful to say they had other offers. That is the poi
 **Libraries.** The petition worked. Next time the council should ask before it plans a closure, not after. *Elspeth Rae, Kelby Rise*
 
 :::callout{type="ad" span="page" placement="bottom" title="Advertisement"}
-## Marrowick Philharmonic {style="ad"}
+## Marrowick Philharmonic {style="ad-big"}
 
 **The winter season opens on Saturday 17 October with Sibelius and Elgar**
+
+:::space{lines=4}
 
 Twelve concerts at the Corn Hall, from £9 · Under-26s £5 · Box office open daily from 10
 :::
 
 **Trams.** Two in the morning is welcome, but my shift at the Infirmary ends at three. *Daniel Okoro, Holmside*
+
+**The terminal.** Before the harbour board digs up the mudflats at the Outer Quay, someone should count the birds that winter there. I counted 2,400 knot on a single tide last January. *Neil Rennie, Fenner’s Green*
+
+**Bus 44.** The Sunday buses to Holm stop at six. Anyone who works a late shift in town still needs a car, trams or no trams. *Grace Fairlie, Holm*

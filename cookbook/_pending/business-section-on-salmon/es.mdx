@@ -1,72 +1,68 @@
 ---
-# Todos los valores van entre comillas. Límites: title ≤ 60 caracteres (un resultado, no una lista
-# de funciones); summary 60–160 (la respuesta en una frase, con el mecanismo); description 120–160.
-title: "Una página de libro con cabeceras"
-summary: "Márgenes simétricos, una apertura de capítulo hundida y cabeceras que saben en qué lado del pliego están, en la página de un libro en rústica."
-description: "Una página de libro en Postext: márgenes simétricos, apertura hundida 52 mm, cabeceras según la paridad y folio al pie en las aperturas, con todo el código."
-# plain: "…"           40–240 caracteres: el resumen en palabras corrientes, sin jerga (se muestra como «En pocas palabras»)
-# question: "…"        opcional, ≤ 110 caracteres: reformula answers[0] para esta página
-# pageNotes: { "3": "…" }  opcional: texto alternativo extra para una página capturada
-aliases: ["página de libro", "cabeceras", "apertura de capítulo"]
+title: "Una sección de economía en papel salmón"
+summary: "Un diario berlinés de ocho páginas cuyas páginas de economía toman un estilo de título: papel salmón, seis columnas, acento petróleo y un bloque :::paper."
+plain: "Ocho páginas de un diario inventado. Las cuatro primeras son de noticias, en papel blanco grisáceo; las de economía que siguen van en papel salmón, con columnas más estrechas y colores propios."
+description: "Un diario berlinés en Postext con el código: noticias a cinco columnas y una sección de economía en salmón a seis, con mercados, gráficos y el papel de Folio."
+question: "¿Cómo imprimo las páginas de economía de un periódico en papel salmón, con su propia retícula, también en 3D?"
+aliases: ["páginas salmón", "papel rosa", "sección de economía", "páginas de mercados", "sección de periódico", "formato berlinés", "cotizaciones", "datos de mercado", "periódico plegado", "color de sección", "salmon pages"]
+pageNotes: { "1": "La portada de The Marrowick Ledger: la cabecera entre una oreja gris con el tiempo y otra salmón que remite a las páginas de economía, el titular Barrier holds back the Marrow’s highest tide in forty years, una foto de compuertas de acero en plena tormenta a cinco columnas, la noticia en cinco columnas con filetes, una segunda noticia sobre los tranvías nocturnos y una franja salmón de llamadas al pie.", "5": "La portada de economía en papel salmón: el título Business en petróleo, una franja con seis cierres de mercado, el titular Harbour board backs £640 million deep-water terminal, un puerto de contenedores al amanecer a todo el ancho, un recuadro flotante de cifras a dos columnas, un gráfico de barras a otras dos, seis columnas de texto y un anuncio de un banco al pie.", "8": "Cotizaciones: una columna Your money con una tabla de los mejores depósitos y diez sectores de cotizaciones en cinco columnas estrechas, sobre el anuncio de una mutua." }
 ---
 
 ## Lo que vas a componer
 
-{/*
-  60–150 palabras, con voz de director de arte: la publicación, la idea de diseño y por qué
-  cuesta conseguirla en otra parte. Nombra la publicación («una edición en rústica de…»,
-  «el número de junio de…»). Sin listas de funciones: Ingredientes se genera desde recipe.json.
-  La página añade sola, bajo esta sección, la lista «Esta receta responde» (de answers).
-*/}
-
-Las primeras páginas de una novela en rústica: un capítulo que empieza en página impar, a un tercio de la altura, bajo un antetítulo pequeño en versales espaciadas y un filete corto en el único color de acento del libro; después, página tras página de texto justificado, con el título del libro a la izquierda y el del capítulo a la derecha. Nada en la página levanta la voz. El oficio está en la geometría: márgenes que se reflejan en el pliego, cabeceras que saben en qué lado están y un folio que baja al pie en la apertura, donde una cabecera estorbaría al título.
+Ocho páginas de *The Marrowick Ledger*, un diario inventado, en el pliego berlinés de 315 × 470 mm. Las páginas 1 a 4 llevan las noticias en papel prensa blanco grisáceo, a cinco columnas con filetes y con una pestaña roja de sección en cada página. En la 5 cambia el papel. La sección de economía se imprime en papel salmón, como las páginas financieras desde hace más de un siglo: la página pasa a #f2d3c0, la retícula se estrecha a seis columnas, el acento pasa del rojo al petróleo y bajo el título de sección va una franja con los cierres del día. Dentro hay una página de mercados con un año del índice de la ciudad, un gráfico por sectores y cuatro tablas, noticias de empresas y una página de cotizaciones. En la vista 3D de Folio los pliegos se doblan uno dentro de otro y las cuatro últimas páginas salen en papel salmón.
 
 ## Elaboración
 
-{/*
-  De 3 a 7 pasos, cada uno un H3 numerado «1 · …». Cada paso abre con un Excerpt de una #region
-  de script.js (el archivo compuesto, con sus números de línea reales) y sigue con 1–3 frases
-  sobre el PORQUÉ, no sobre el qué: el qué ya se ve. La respuesta corta ya muestra la
-  #region answer: un paso que trate de ella remite allí en vez de repetirla. en.mdx, es.mdx y zh.mdx
-  muestran las mismas regiones en el mismo orden. Componentes opcionales: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
-
-### 1 · La apertura es un diseño, no un título
-
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. El título de primer nivel conserva su sitio en el texto y en el índice, pero se dibuja desde una ranura de elementos: el antetítulo sale de un atributo del título, el título se parte con una medida fija y el filete se ancla debajo de la altura que ocupe el título. `minHeight` hunde el texto hasta la misma línea en todas las aperturas, sea cual sea la longitud del título.
-
-### 2 · Las cabeceras saben en qué página están
-
-<Excerpt region="running-heads" />
-
-Cada elemento se ancla a la página física y se filtra por paridad, así que el folio queda siempre en el borde exterior y el título del libro en el verso. `pages: 'body'` los mantiene fuera de la apertura, que recibe en su lugar un folio centrado al pie desde el pie de página.
-
-### 3 · Un solo acento, enlazado en todas partes
+### 1 · Dos papeles en una paleta
 
 <Excerpt region="palette" />
 
-Cada color de la configuración nombra su entrada de la paleta, así que quien cambie una muestra cambia el tono de todo el libro, y una parte o un estilo de título pueden recolorear una sección por su id. Apuntar `main-color` al acento atrapa todos los valores por defecto que la configuración no redefine.
+Todos los colores de la configuración van enlazados a una de las ocho entradas de la paleta. Las páginas de noticias usan `paper` (#f6f4ef) para la página y `accent` (#b3261e) para pestañas, antetítulos y marcas de los gráficos. Las de economía conservan esos enlaces y cambian los valores: la paleta de la sección pone `paper` en salmón, `accent` en petróleo (#0f4c5c) y `tint` en un salmón más oscuro. `salmon` tiene además su propia entrada, para la oreja y la franja de llamadas de la portada, que siguen en salmón sobre las páginas blancas.
+
+### 2 · Un estilo de título convierte la página en página de economía
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `# Markets {style="business"}` abre una sección, y sus páginas toman la `palette`, el `layout` y el `bodyStyle` del estilo: seis columnas con 4 mm de medianil (45,2 mm cada una, frente a 54,6 mm en noticias) y el texto a 8,8 pt sobre el mismo interlineado de 11,4 pt. La página plana necesita su propio color porque `page.backgroundColor` se pinta una sola vez para todo el documento y la paleta de una sección no llega a él. Por eso la apertura pone debajo de todo una caja del tamaño de la página, rellena de `paper`, y la paleta la vuelve salmón. Las aperturas se pintan bajo el texto, y `reserve: false` deja la caja fuera de la altura que reserva la apertura. La caja tapa también el filete de columna, así que la retícula de economía no lo lleva, y solo se pinta en una página que abre con el título del estilo: cada página de economía tiene su pestaña, y el texto está ajustado para que ninguna noticia pase a una página sin ella.
+
+### 3 · Cada página abre con una pestaña
+
+<Excerpt region="flags" />
+
+El H1 es una apertura a todo el ancho con `breakBefore` de paridad `'any'`, de modo que cada título abre la página siguiente, caiga del lado que caiga. Su diseño es una pestaña sobre una barra de 3 pt, de tres líneas de rejilla. La línea de folio es una cabecera anclada a 9 mm del borde superior: número de página, cabecera del diario y fecha por fuera, y `{chapterTitle}` por dentro en el color de acento, que la paleta vuelve petróleo en las páginas salmón.
+
+### 4 · Fotos y gráficos a varias columnas
+
+<Excerpt region="floats" />
+
+`top(3)` es `placement: { position: 'top', columns: 3 }`: la foto del astillero ocupa tres de las cinco columnas de noticias, el ferri cuatro, la panadería tres de las seis de economía y el gráfico del puerto dos. Un flotante citado desde un párrafo de la columna 1 toma la cabeza de las columnas siguientes que siguen vacías, así que estas fotos empiezan en la columna 2 y la noticia baja a su lado. Las fotos que cruzan toda la página van en línea (`here`) dentro del recuadro del titular. Las tablas también van en el flujo, dentro de recuadros a todo el ancho al pie.
+
+### 5 · Titulares, recuadros, datos y anuncios son recuadros
+
+<Excerpt region="boxes" />
+
+Un titular a todo el ancho es un recuadro sin marco que contiene un H2 en uno de tres cuerpos, y un filete de 1 pt encima señala la noticia siguiente. En la página 5 el recuadro *The terminal in numbers* flota sobre dos de las seis columnas (`columns="2"` en su bloque), y la cita destacada de la página 4 hace lo mismo con `columns: 2` en su estilo. Los recuadros de datos ponen de dos a cuatro tablas en paralelo con un grupo `:::columns`, y los anuncios son recuadros a todo el ancho que flotan al pie, con un filete de 0,75 pt.
+
+### 6 · El papel que imprime Folio
+
+Las páginas de noticias no necesitan nada: `folio.paper` es papel prensa de 45 g/m², y `binding: { type: 'folded', cover: 'pages' }` mete un pliego doblado dentro del otro, con la página 1 por fuera y la 8 como contraportada. Las de economía van en un solo bloque:
+
+```markdown
+:::paper{type="newsprint" shade="#faede6"}
+# Business {style="business-front"}
+…
+# Share prices {style="business"}
+…
+:::
+```
+
+Cada página del bloque lleva `page.paper` con ese tono, y Folio la imprime en ese papel. El tono es el color de la página llevado un 60 % hacia el blanco (README §4): la página plana ya pinta #f2d3c0, y un papel salmón entero debajo la teñiría dos veces. El canvas, el HTML y el PDF no leen `:::paper`, y por eso la apertura pinta también el color.
 
 ## Variantes
 
-{/*
-  Opcional, de 1 a 4 entradas: un H3 en imperativo, una frase y un diff contra script.js,
-  o un enlace a una receta hermana.
-*/}
+### Conserva el filete de columna en las páginas salmón
 
-### Compón el texto a dos columnas
+Dibuja tú los filetes como elementos de filete verticales en la apertura, después de la caja de papel, en los cinco medianiles. Van de arriba abajo de la caja de texto, así que cruzan cualquier recuadro o tabla que ocupe varias columnas.
 
-Un formato más ancho admite dos columnas; la apertura ocupa las dos y las cabeceras se quedan donde están.
+### Haz de la sección de economía un cuadernillo
 
-```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
-```
-
-## Errores frecuentes
-
-{/*
-  Opcional. Los errores frecuentes y los avisos que lista recipe.json aparecen aquí solos;
-  añade una línea solo para un problema propio de esta receta.
-*/}
+Las ocho páginas se doblan en dos pliegos, uno dentro del otro: las páginas 1–2 y 7–8 en el exterior, las 3–6 en el interior. Folio da a cada hoja el papel de su página impar, así que la 7 y la 8 salen en salmón, aunque una rotativa las imprimiría en el mismo pliego que la portada. Pasa las páginas de economía a la 3–6 y formarán el pliego interior, que la rotativa puede tirar en papel salmón y el lector sacar entero.
