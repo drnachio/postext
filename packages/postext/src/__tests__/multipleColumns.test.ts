@@ -143,3 +143,24 @@ describe('column rules on a page of several columns (#505)', () => {
     expect(columnRuleSegments(cols).map((s) => s.x)).toEqual([105]);
   });
 });
+
+describe('a closing page cut level keeps its floats (#505)', () => {
+  it('never drains a float across several columns onto a page of its own', () => {
+    const mmd = (value: number) => ({ value, unit: 'mm' as const });
+    const para = (n: number) => 'Body text that runs on for a while and keeps going with words. '.repeat(n);
+    const md = `# Front\n\n:::callout{span="page"}\n## Headline\n\nStandfirst line here.\n:::\n\n${para(9)}`
+      + `\n\n::resource{id="m"}\n\n${para(9)}\n\n${para(9)}\n\n::resource{id="v"}\n\n## Second\n\n${para(9)}`
+      + `\n\n${para(9)}\n\n:::callout{span="page" placement="bottom"}\nBriefs here, a few words.\n\nMore briefs.\n:::`
+      + `\n\n# Next\n\n${para(4)}`;
+    const wide = (id: string, columns: number): Resource => ({ ...picture(id, { position: 'top', span: 'column', columns }),
+      bitmap: { fileId: id, format: 'png', width: 640, height: 480 } });
+    const doc = buildDocument({ markdown: md, resources: [wide('m', 3), wide('v', 2)] }, {
+      page: { dpi: 72, width: mmd(280), height: mmd(430), margins: { top: mmd(12), bottom: mmd(12), left: mmd(12), right: mmd(12) } },
+      layout: { layoutType: 'multiple', columnCount: 4, gutterWidth: mmd(4.5) },
+      bodyText: { fontSize: pt(8.8), lineHeight: pt(11.6) },
+      headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } }] },
+    }, createMeasurementCache());
+    expect(doc.pages).toHaveLength(2);
+    expect(floatOf(doc, 'v')!.page.index).toBe(0);
+  });
+});

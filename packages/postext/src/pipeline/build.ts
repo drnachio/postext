@@ -280,6 +280,21 @@ export interface PassHints {
   /** `footnotes.numbering: 'page'` / `'column'`: the number each note got
    *  where the previous build set it (see `numberFootnotesByPlacement`). */
   footnoteNumbers?: ReadonlyMap<string, string>;
+  /** Trailing-cap passes: the page each floated resource took in the layout
+   *  the caps level (see `proposeTrailingCap`). */
+  floatPages?: ReadonlyMap<string, number>;
+}
+
+/** The page each floated resource of `doc` lies on (its first slice's). */
+function floatPagesOf(doc: VDTDocument): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const page of doc.pages) {
+    for (const f of page.floats ?? []) {
+      const id = f.resourceBlock?.resource.id;
+      if (id && !out.has(id)) out.set(id, page.index);
+    }
+  }
+  return out;
 }
 
 export interface PassResult extends BandPassReport {
@@ -449,7 +464,7 @@ function placeDocumentPass(
   options: BuildDocumentOptions | undefined,
   hints: PassHints,
 ): PassResult {
-  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder, floatPages } = hints;
   const captionUnderProposals = new Set<string>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
   const asideCutBy = new WeakMap<VDTColumn, string>();
@@ -2699,7 +2714,13 @@ function placeDocumentPass(
     if (cols.length < 2 || cols.some((c) => c.forcedBreak)) return;
     if (activeCap && activeCap.spanIndex === boundaryIndex
       && activeCap.pageIndex === page.index && activeCap.band === band) {
-      spanPlacedInBand.add(boundaryIndex);
+      // The cut must not cost a float its page: one the uncut layout set on
+      // this page and the cut band left no room for (a picture across
+      // several columns that fitted beside the uneven columns) would go to
+      // a page of its own at the chapter's end. Not delivered: the cap is
+      // tried a line lower, then dropped (#505).
+      const displaced = floatPages && pendingFloats.some((f) => floatPages.get(f.resourceId) === page.index);
+      if (!displaced) spanPlacedInBand.add(boundaryIndex);
       return;
     }
     // A cap in force for this boundary that did not open the band the
@@ -6561,7 +6582,7 @@ function* buildDocumentBalanced(
     const trailing = yield* resolveTrailingCapsGen(
       best,
       bandCaps,
-      (caps) => runPass({ ...frozen, bandCaps: caps }),
+      (caps) => runPass({ ...frozen, bandCaps: caps, floatPages: floatPagesOf(best.doc) }),
     );
     passCount += trailing.passCount;
     if (trailing.result !== best) {
