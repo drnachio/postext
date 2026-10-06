@@ -94,7 +94,9 @@ function renderMathRender(
   });
 }
 
-function renderMathSegment(
+/** Paint an inline formula segment on its line's baseline (body lines,
+ *  and caption, note and cell lines, #541). */
+export function renderMathSegment(
   ctx: CanvasRenderingContext2D,
   seg: VDTLineSegment,
   x: number,

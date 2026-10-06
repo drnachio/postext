@@ -70,7 +70,9 @@ function paintMathPaths(ctx: PageCtx, render: MathRender, x: number, y: number, 
   }
 }
 
-function renderMathSegment(
+/** Paint an inline formula segment on its line's baseline (body lines,
+ *  and caption, note and cell lines, #541). */
+export function renderMathSegment(
   ctx: PageCtx,
   seg: VDTLineSegment,
   xPx: number,

@@ -402,7 +402,7 @@ export { findAnnotations } from './parse/annotations';
 export type { FoundAnnotation, AnnotationName } from './parse/annotations';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, VerseInfo, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline, InlineKunten } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';
-export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt } from './parse';
+export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt, contentHasMath, resourceHasMath } from './parse';
 export type { OrientationMark } from './parse';
 export type { InlineSnippetMapping } from './parse';
 export { buildPageLabels, collectPageLabelRuns, formatNumeral, documentNumeralStyle, parseNumberFormat, chineseInformalStyle, hanInformalStyle, EAST_ASIAN_NUMERAL_STYLES, ARABIC_NUMERAL_STYLES } from './numbering';

@@ -189,6 +189,8 @@ function spansReadText(spans: readonly InlineSpan[]): string {
   for (const s of spans) {
     if (s.chip) out += spansReadText(s.chip.spans);
     else if (s.ref) out += s.ref.text ?? '';
+    // A formula reads as its TeX, between its dollars (#541).
+    else if (s.math) out += `$${s.math.tex}$`;
     else if (s.swatch || s.footnote) continue;
     else out += s.text;
   }
@@ -198,8 +200,8 @@ function spansReadText(spans: readonly InlineSpan[]): string {
 /** The alternative text of a resource drawn by a design (#213): its
  *  `altText`, else its caption as plain text (inline formatting read,
  *  a chip by its label, forced line breaks as spaces, placeholders left
- *  out). Captions are not parsed for maths, so a `$` in one is read as
- *  it is printed. Undefined when it has neither. */
+ *  out, a formula as its TeX between dollars). Undefined when it has
+ *  neither. */
 export function designImageAltText(resource: Resource | undefined): string | undefined {
   const alt = resource?.altText?.trim();
   if (alt) return alt;

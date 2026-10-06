@@ -401,6 +401,8 @@ describe("package exports", () => {
       "parseInlineSnippetSpans",
       "mapInlineSnippet",
       "orientationMarkAt",
+      "contentHasMath",
+      "resourceHasMath",
       "buildPageLabels",
       "collectPageLabelRuns",
       "formatNumeral",
