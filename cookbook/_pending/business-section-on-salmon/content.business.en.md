@@ -127,7 +127,7 @@ By **Callum Reid**
 
 **Apprenticeships 2027: welding, plating, pipework, electrical and design**
 
-:::space{lines=15}
+:::space{lines=20}
 
 Four years, paid from the first day, with a job at the end. Applications close on 30 November.
 :::

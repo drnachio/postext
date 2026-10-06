@@ -93,25 +93,20 @@ const header = { elements: [...folioLine('even', 'left', 1), ...folioLine('odd',
 // #endregion
 
 // #region answer: one heading style turns a page into a Business page
-// page.backgroundColor is painted once for the whole document, so a section cannot recolour
-// it. A box the size of the page, laid first in the opener (openers paint under the text),
-// takes 'paper', and the section's palette turns 'paper' salmon. reserve: false keeps the box
-// out of the depth the opener reserves.
-const stock = { ...box('stock', { backgroundColor: col('paper') }, at('page', 'top-left'),
-  { width: mm(PAGE.width), height: mm(PAGE.height) }), reserve: false };
+// page.backgroundColor links to 'paper', so the section's palette, which turns 'paper' salmon,
+// repaints every page of the section: the opener and the pages its copy runs on to.
 const business = {
   id: 'business',
-  advancedDesign: { enabled: true, slot: { elements: [stock, ...flagParts] } },
-  // The swap: the stock box, flags, kickers, the folio line, chart marks and table heads follow.
+  advancedDesign: { enabled: true, slot: { elements: flagParts } },
+  // The swap: the page, flags, kickers, the folio line, chart marks and table heads follow.
   palette: { paper: palette.salmon, accent: palette.petrol, tint: '#e6bfa8' },
-  // Six narrower columns. No rule: the stock box would paint over it.
-  layout: { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(4),
-    columnRule: { enabled: false } },
+  // Six narrower columns, ruled as the news pages are.
+  layout: { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(4) },
   bodyStyle: { fontSize: pt(8.8), lineHeight: pt(LEAD) },
 };
 // The section front: the same style, with a bigger flag over the market close strip.
 const front = () => ({ ...business, id: 'business-front', advancedDesign: { enabled: true, slot: {
-  elements: [stock, depth(10),
+  elements: [depth(10),
     text('title', 'Business', { fontFamily: 'Playfair Display', fontSize: pt(58), fontWeight: 900,
       lineHeight: 1, color: col('accent') }, at('container', 'top-left', 0, -1)),
     text('tag', 'Companies · Markets · Money', caps(9, 700, 'accent'),

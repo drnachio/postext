@@ -22,7 +22,7 @@ Todos los colores de la configuración van enlazados a una de las ocho entradas 
 
 ### 2 · Un estilo de título convierte la página en página de economía
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `# Markets {style="business"}` abre una sección, y sus páginas toman la `palette`, el `layout` y el `bodyStyle` del estilo: seis columnas con 4 mm de medianil (45,2 mm cada una, frente a 54,6 mm en noticias) y el texto a 8,8 pt sobre el mismo interlineado de 11,4 pt. La página plana necesita su propio color porque `page.backgroundColor` se pinta una sola vez para todo el documento y la paleta de una sección no llega a él. Por eso la apertura pone debajo de todo una caja del tamaño de la página, rellena de `paper`, y la paleta la vuelve salmón. Las aperturas se pintan bajo el texto, y `reserve: false` deja la caja fuera de la altura que reserva la apertura. La caja tapa también el filete de columna, así que la retícula de economía no lo lleva, y solo se pinta en una página que abre con el título del estilo: cada página de economía tiene su pestaña, y el texto está ajustado para que ninguna noticia pase a una página sin ella.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `# Markets {style="business"}` abre una sección, y sus páginas toman la `palette`, el `layout` y el `bodyStyle` del estilo: seis columnas con 4 mm de medianil (45,2 mm cada una, frente a 54,6 mm en noticias) y el texto a 8,8 pt sobre el mismo interlineado de 11,4 pt. El color de la página también sigue a la paleta. `page.backgroundColor` va enlazado a `paper`, y cuando la paleta de una sección da a `paper` otro valor, todas las páginas de la sección se pintan con él: la que abre su título y cualquier página a la que pase su texto. Así las páginas de economía quedan en salmón de borde a borde, y el filete de columna, que el `layout` del estilo deja como lo fija el documento, corre entre las seis columnas igual que entre las cinco.
 
 ### 3 · Cada página abre con una pestaña
 
@@ -55,13 +55,13 @@ Las páginas de noticias no necesitan nada: `folio.paper` es papel prensa de 45 
 :::
 ```
 
-Cada página del bloque lleva `page.paper` con ese tono, y Folio la imprime en ese papel. El tono es el color de la página llevado un 60 % hacia el blanco (README §4): la página plana ya pinta #f2d3c0, y un papel salmón entero debajo la teñiría dos veces. El canvas, el HTML y el PDF no leen `:::paper`, y por eso la apertura pinta también el color.
+Cada página del bloque lleva `page.paper` con ese tono, y Folio la imprime en ese papel. El tono es el color de la página llevado un 60 % hacia el blanco (README §4): la página plana ya pinta #f2d3c0, y un papel salmón entero debajo la teñiría dos veces. El canvas, el HTML y el PDF no leen `:::paper` y pintan el color de la página, y por eso la paleta de la sección cambia también `paper`.
 
 ## Variantes
 
-### Conserva el filete de columna en las páginas salmón
+### Cambia el papel sin cambiar la retícula
 
-Dibuja tú los filetes como elementos de filete verticales en la apertura, después de la caja de papel, en los cinco medianiles. Van de arriba abajo de la caja de texto, así que cruzan cualquier recuadro o tabla que ocupe varias columnas.
+Un estilo de título con `palette` y sin `layout` conserva las cinco columnas con filetes del documento y pinta igualmente todas las páginas de su sección: `{ id: 'weekend', palette: { paper: '#efe6cf' } }` pone un suplemento de fin de semana en papel prensa crema. Mete también sus páginas en un bloque `:::paper`, con el tono llevado un 60 % hacia el blanco, para que Folio las imprima en un papel a juego.
 
 ### Haz de la sección de economía un cuadernillo
 

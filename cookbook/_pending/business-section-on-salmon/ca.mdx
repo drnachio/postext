@@ -22,7 +22,7 @@ Tots els colors de la configuració van enllaçats a una de les vuit entrades de
 
 ### 2 · Un estil de títol converteix la pàgina en pàgina d'economia
 
-El codi és [la resposta curta](#la-resposta-curta) de dalt. `# Markets {style="business"}` obre una secció, i les seves pàgines prenen la `palette`, el `layout` i el `bodyStyle` de l'estil: sis columnes amb 4 mm d'espai entre columnes (45,2 mm cadascuna, davant de 54,6 mm a notícies) i el text a 8,8 pt sobre el mateix interlineat d'11,4 pt. La pàgina plana necessita el seu propi color perquè `page.backgroundColor` es pinta una sola vegada per a tot el document i la paleta d'una secció no hi arriba. Per això l'obertura posa a sota de tot una caixa de la mida de la pàgina, plena de `paper`, i la paleta la torna salmó. Les obertures es pinten sota el text, i `reserve: false` deixa la caixa fora de l'alçada que reserva l'obertura. La caixa tapa també el filet de columna, de manera que la retícula d'economia no en porta, i només es pinta en una pàgina que obre amb el títol de l'estil: cada pàgina d'economia té la seva pestanya, i el text està ajustat perquè cap notícia no passi a una pàgina sense.
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `# Markets {style="business"}` obre una secció, i les seves pàgines prenen la `palette`, el `layout` i el `bodyStyle` de l'estil: sis columnes amb 4 mm d'espai entre columnes (45,2 mm cadascuna, davant de 54,6 mm a notícies) i el text a 8,8 pt sobre el mateix interlineat d'11,4 pt. El color de la pàgina també segueix la paleta. `page.backgroundColor` va enllaçat a `paper`, i quan la paleta d'una secció dona a `paper` un altre valor, totes les pàgines de la secció es pinten amb aquest valor: la que obre el seu títol i qualsevol pàgina a la qual passi el seu text. Així les pàgines d'economia queden en salmó de vora a vora, i el filet de columna, que el `layout` de l'estil deixa tal com el fixa el document, corre entre les sis columnes igual que entre les cinc.
 
 ### 3 · Cada pàgina obre amb una pestanya
 
@@ -55,13 +55,13 @@ Les pàgines de notícies no necessiten res: `folio.paper` és paper premsa de 4
 :::
 ```
 
-Cada pàgina del bloc porta `page.paper` amb aquest to, i Folio la imprimeix en aquest paper. El to és el color de la pàgina portat un 60 % cap al blanc (README §4): la pàgina plana ja pinta #f2d3c0, i un paper salmó sencer a sota la tenyiria dues vegades. El canvas, l'HTML i el PDF no llegeixen `:::paper`, i per això l'obertura pinta també el color.
+Cada pàgina del bloc porta `page.paper` amb aquest to, i Folio la imprimeix en aquest paper. El to és el color de la pàgina portat un 60 % cap al blanc (README §4): la pàgina plana ja pinta #f2d3c0, i un paper salmó sencer a sota la tenyiria dues vegades. El canvas, l'HTML i el PDF no llegeixen `:::paper` i pinten el color de la pàgina, i per això la paleta de la secció canvia també `paper`.
 
 ## Variants
 
-### Conserva el filet de columna a les pàgines salmó
+### Canvia el paper sense canviar la retícula
 
-Dibuixa tu els filets com a elements de filet verticals a l'obertura, després de la caixa de paper, als cinc espais entre columnes. Van de dalt a baix de la caixa de text, així que travessen qualsevol requadre o taula que ocupi diverses columnes.
+Un estil de títol amb `palette` i sense `layout` conserva les cinc columnes amb filets del document i pinta igualment totes les pàgines de la seva secció: `{ id: 'weekend', palette: { paper: '#efe6cf' } }` posa un suplement de cap de setmana en paper premsa crema. Posa també les seves pàgines en un bloc `:::paper`, amb el to portat un 60 % cap al blanc, perquè Folio les imprimeixi en un paper a joc.
 
 ### Fes de la secció d'economia un quadernet
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "../recipe.schema.json",
+  "$schema": "../../recipe.schema.json",
   "schemaVersion": 1,
   "number": 134,
   "status": "draft",
@@ -59,12 +59,7 @@
     "folio-settings-bench",
     "annual-report-flush-columns"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "page.backgroundColor is painted once for the whole document and a section palette does not reach it, so each Business opener lays a page-sized box filled with the palette-linked 'paper' (reserve: false), which the section palette turns salmon. The opener paints after the column rule, so the Business grid runs without one, and the box paints only on pages that open with the style's heading: every Business page carries its own H1 and the copy is fitted so no story runs on to a page without one"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.18.0"
   },

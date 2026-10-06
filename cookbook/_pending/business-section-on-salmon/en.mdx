@@ -22,7 +22,7 @@ Every colour in the configuration links to one of eight palette entries. The new
 
 ### 2 · One heading style makes a page a Business page
 
-The code is [the short answer](#the-short-answer) above. `# Markets {style="business"}` opens a section, and its pages take the style's `palette`, `layout` and `bodyStyle`: six columns with a 4 mm gutter (45.2 mm each, against 54.6 mm in the news), body at 8.8 pt on the same 11.4 pt leading. The flat page needs its own colour because `page.backgroundColor` is painted once for the whole document and a section palette does not reach it. So the opener lays a box the size of the page under everything else, filled with `paper`, and the palette turns it salmon. Openers paint under the text, and `reserve: false` keeps the box out of the opener's depth. The box also covers the column rule, so the Business grid has none, and it paints only on a page that opens with the style's heading: every Business page has its own flag, and the copy is fitted so no story runs on to a page without one.
+The code is [the short answer](#the-short-answer) above. `# Markets {style="business"}` opens a section, and its pages take the style's `palette`, `layout` and `bodyStyle`: six columns with a 4 mm gutter (45.2 mm each, against 54.6 mm in the news), body at 8.8 pt on the same 11.4 pt leading. The page colour follows the palette as well. `page.backgroundColor` links to `paper`, and when a section's palette gives `paper` another value, every page of the section is painted in it: the page its heading opens and any page its copy runs on to. So the Business pages turn salmon edge to edge, and the column rule, which the style's `layout` leaves as the document sets it, runs between the six columns as it does between the five.
 
 ### 3 · Every page opens on a flag
 
@@ -55,13 +55,13 @@ The news pages need nothing: `folio.paper` is newsprint at 45 g/m², and `bindin
 :::
 ```
 
-Each page in the run carries `page.paper` with that shade, and Folio prints it on that stock. The shade is the page colour taken 60 % of the way to white (README §4): the flat page already paints #f2d3c0, and a full salmon stock under it would tint it twice. The canvas, the HTML and the PDF ignore `:::paper`, which is why the opener paints the colour as well.
+Each page in the run carries `page.paper` with that shade, and Folio prints it on that stock. The shade is the page colour taken 60 % of the way to white (README §4): the flat page already paints #f2d3c0, and a full salmon stock under it would tint it twice. The canvas, the HTML and the PDF ignore `:::paper` and paint the page colour, which is why the section palette sets `paper` too.
 
 ## Variations
 
-### Keep the column rule on the salmon pages
+### Change the paper and keep the grid
 
-Draw the rules yourself as vertical rule elements in the opener, after the stock box, at the five gutters. They run the full height of the text block, so they cross any box or table that spans several columns.
+A heading style with a `palette` and no `layout` keeps the document's five ruled columns and still paints every page of its section: `{ id: 'weekend', palette: { paper: '#efe6cf' } }` puts a weekend supplement on cream newsprint. Wrap its pages in a `:::paper` run too, with the shade taken 60 % of the way to white, so Folio prints them on a matching stock.
 
 ### Make the Business section a pull-out
 
