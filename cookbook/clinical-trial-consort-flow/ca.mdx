@@ -1,0 +1,68 @@
+---
+title: "Un informe d'assaig clínic amb diagrama CONSORT"
+summary: "Un assaig real, abreujat: resum estructurat a tota l'amplada, diagrama CONSORT dibuixat en codi amb les seves xifres, taules alineades i cites APA."
+plain: "Un estudi publicat sobre un xatbot que proposa exercicis de teràpia, abreujat i recompost. El diagrama de qui va entrar i sortir de l'assaig es dibuixa amb les seves xifres, les taules alineen els decimals i les referències segueixen APA."
+description: "Un informe d'assaig aleatoritzat amb Postext: resum estructurat en requadre, diagrama CONSORT en SVG amb les xifres, taules alineades i referències APA."
+question: "Com dibuixo un diagrama de flux CONSORT i componc el resum estructurat d'un assaig?"
+aliases: ["CONSORT", "diagrama de flux", "flux de participants", "assaig controlat aleatoritzat", "ACA", "assaig clínic", "resum estructurat", "PHQ-9", "GAD-7", "APA", "conflicte d'interessos", "salut mental digital", "JMIR", "PubMed Central"]
+pageNotes: { "1": "Pàgina 1: un filet índigo a dalt, l'avanttítol RANDOMIZED CONTROLLED TRIAL · DIGITAL MENTAL HEALTH, el títol de quatre línies en Lora negreta, tres autors amb números de filiació volats, les filiacions, la línia de dates i la línia de procedència en índigo. A sota, un requadre lila pàl·lid a tota l'amplada: ABSTRACT, amb Background, Objective i Methods a la columna esquerra i Results i Conclusions a la dreta, i les paraules clau i la línia de registre de l'assaig a l'amplada del requadre. La Introducció comença a sota, a dues columnes, amb cites APA com (Kessler et al., 2007).", "3": "Pàgina 3: la descripció del bot i la seva llista de trets de procés; a la columna dreta, un requadre sota una franja índigo reuneix cinc bombolles liles arrodonides, cadascuna amb un missatge del bot tal com el cita l'article; després, la condició de control i les escales PHQ-9 i GAD-7 sota títols en cursiva.", "5": "Pàgina 5: la Figura 1, el diagrama CONSORT a tota l'amplada: píndoles de fase ENROLLMENT, ALLOCATION, FOLLOW-UP i ANALYSIS a l'esquerra; 204 inscripcions, 115 confirmades, 45 excloses per generades per bots, 70 aleatoritzats en un requadre índigo; 34 assignats a Woebot i 36 al control només informatiu; 3 i 11 perduts en el seguiment; 31 i 25 amb dades a T2; 34 i 36 analitzats per intenció de tractar en requadres índigo. A sota, la Taula 1 amb les característiques basals, mitjanes i DE en columnes separades, i l'anàlisi dels qui van completar l'estudi.", "6": "Pàgina 6: la Taula 2 a tota l'amplada, els resultats per intenció de tractar a T2 amb capçalera índigo de dues files, mitjanes i errors estàndard en columnes alineades, intervals de confiança, F, P i d; els resultats qualitatius; al peu, les Figures 2 i 3, gràfics de barres amb el millor i el pitjor que van assenyalar els participants.", "7": "Pàgina 7: limitacions i conclusions, la declaració de conflicte d'interessos, les abreviatures amb els termes en negreta índigo i les primeres referències APA amb els seus DOI." }
+---
+
+## Què compondràs
+
+Un assaig controlat aleatoritzat de salut mental digital, compost de nou a partir del seu text en accés obert: l'assaig de Woebot publicat a JMIR Mental Health el 2017, un agent conversacional que aplica teràpia cognitivoconductual, abreujat a vuit pàgines. L'estil de la casa és el d'un informe de recerca sobri en 210 × 280 mm, amb Lora per al text, Nunito Sans per a rètols i xifres i un sol color d'accent, l'índigo. Les pàgines porten el que demana un informe d'assaig: el resum estructurat a l'amplada de les dues columnes, paraules clau i línia de registre, el flux de participants CONSORT redibuixat en codi amb les xifres del mateix article, dues taules de resultats amb els decimals alineats, el conflicte d'interessos dels autors paraula per paraula i cites autor-data APA 7 generades des de BibTeX. El text es manté en anglès, com es va publicar.
+
+## Elaboració
+
+### 1 · El requadre del resum i el diagrama com a recurs
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un estil de requadre amb `span: 'page'` tanca les dues columnes per sobre i les torna a obrir per sota, així que el resum pot anar a tota l'amplada a qualsevol alçada de la pàgina. A dins, `:::columns{count=2}` reparteix de Background a Conclusions en dues columnes, i les paraules clau i la línia de registre segueixen a tota l'amplada del requadre. El diagrama CONSORT és un recurs SVG com qualsevol altre: el número, el peu i la nota de procedència surten del recurs, i el seu primer `:ref` el col·loca al capdamunt de la pàgina següent.
+
+### 2 · La capçalera de l'article, des dels atributs del títol
+
+<Excerpt region="title" />
+
+El títol és l'únic títol de nivell 1 del document, amb un estil que ocupa tota la pàgina i es dibuixa amb elements. La resta surt d'atributs del títol: el tipus d'article, els autors amb marques de filiació `^1^` que `inlineMarks` posa volades, les filiacions separades per `\n`, les dates de recepció i acceptació i la línia de procedència. Per al teu article canvies els atributs i conserves el disseny. `numbered: false` a l'estil deixa les figures com a Figura 1, 2, 3 en lloc d'1.1.
+
+### 3 · El flux CONSORT, dibuixat amb les xifres
+
+<Excerpt region="art" />
+
+Cada caixa és una crida a `node()` amb les seves línies; les fases són píndoles al marge esquerre i les fletxes són una línia i un triangle ple, perquè un `<marker>` acaba com a imatge al PDF. Les xifres són les de l'assaig: 204 inscripcions, 115 confirmacions, 45 altes generades per bots excloses, 34 i 36 assignats, 3 i 11 perduts, 31 i 25 amb dades a T2. Per al teu assaig canvies els textos i els recomptes; la composició segueix l'alçada de les caixes. El text d'un SVG dibuixat com a imatge no veu les fonts de la pàgina, així que el dibuix porta Nunito Sans incrustada com a URL de dades.
+
+### 4 · Xifres alineades a les taules
+
+<Excerpt region="tables" />
+
+Nunito Sans compon les seves xifres amb una sola amplada, de manera que una columna de mitjanes alineades a la dreta quadra a la coma decimal. Cada mitjana i la seva DE o EE van en dues columnes, la mitjana a la dreta i el parèntesi a l'esquerra, enganxat a ella, i `mergeCells` construeix les capçaleres de grup («Information-only control» sobre tres columnes) i les files que travessen la taula. La Taula 2 és un flotant a tota l'amplada; la Taula 1 es queda en una columna.
+
+### 5 · Les paraules del bot en requadres niats
+
+<Excerpt region="boxes" />
+
+L'article cita cinc missatges que va enviar el bot. La recepta els reuneix en un requadre amb una franja índigo a dalt; cada missatge és un requadre niat amb les cantonades arrodonides i un rètol petit que anomena el tret que il·lustra. Només hi apareixen les cites de l'article, sense afegir-hi res.
+
+## Variants
+
+### Cita amb números a la manera de Vancouver
+
+Les revistes mèdiques solen numerar les cites; el BibTeX i el text no canvien.
+
+```diff
+-  citations: { style: 'apa', link: true,
++  citations: { style: 'elsevier-vancouver', marker: 'superscript', link: true,
+```
+
+### Afegeix un número de ClinicalTrials.gov
+
+Aquest assaig es va considerar exempt de registre i ho diu. Un assaig registrat dona el seu registre i el seu número a la mateixa línia del requadre, per exemple `**Trial registration** ClinicalTrials.gov NCT01234567`, amb el número del teu propi registre.
+
+### Un diagrama sense la fila d'anàlisi
+
+Si l'informe no diu a qui es va analitzar, acaba cada branca a les caixes de seguiment: treu el node `an` i la seva fletxa, i abaixa `CONSORT_H`.
+
+## Errors freqüents
+
+- L'article no té número NCT: els autors escriuen que l'assaig va quedar exempt de registre. La línia de registre ho diu, amb el motiu que dona l'article, en lloc d'inventar un número.
+- Una taula que comparteix columna amb una figura a tota l'amplada s'atura tres línies abans del peu i continua a la pàgina següent. La Taula 1 hi cap sencera perquè les seves files van a 7,5 pt amb 0,45 mm de farciment i el dibuix CONSORT fa 107 mm d'alt.
+- L'article escriu χ² a les proves de khi quadrat. Aquí les fonts del PDF vénen dels fitxers latin de Fontsource, que no tenen grec, així que aquesta edició ho escriu amb lletres i ho indica al colofó.

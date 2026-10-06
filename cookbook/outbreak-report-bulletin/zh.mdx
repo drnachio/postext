@@ -1,0 +1,67 @@
+---
+title: "周报中的报告：最早的两篇艾滋病报告"
+summary: "把1981年美国疾控中心的两篇报告重排成一份美国信纸开本的周报：报头、带行内标签的病例、Reported by与编者按的段落样式、编号参考文献。"
+plain: "一份1981年的公共卫生周报，用信纸开本重新排版。报告里每一种段落（病例、报告医生名单、编者的评论）都有自己的样子，参考文献自动编号。"
+description: "用Postext排流行病学周报：报头，病例，Reported by与编者按的段落样式，括号中的AMA引用序号，以及由制表符分隔文本生成的表格。"
+question: "怎样排周报中的报告，包括病例、编者按和编号参考文献？"
+aliases: ["MMWR", "流行病学周报", "病例系列", "病例报告", "监测报告", "公共卫生", "Reported by", "编者按", "法定报告传染病", "AMA样式", "艾滋病", "1981"]
+pageNotes: { "1": "第1页：深蓝色色带上是白色的刊名Surveillance Notes，下面是期号说明和三条目录、一条双线，然后是第一篇报告Pneumocystis Pneumonia — Los Angeles（1981年6月5日）。两栏正文开始病例，Patient 1、Patient 2、Patient 3为蓝色粗体标签；左栏底部是一条关于配对标本的脚注。页面底部横排图1：五名患者从1980年9月到1981年5月的时间线，灰条表示肺炎之前的病程，蓝点表示确诊月份，空心菱形表示有日期的CMV检查结果，叉号表示两例死亡。", "2": "第2页：通栏的表1，五个病例一览（年龄、确诊月份、CMV证据、其他发现、转归）；下面是最后几个病例、总结段、灰色小号斜体的Reported by一行，以及编者按的开头，标签为蓝色粗体。", "3": "第3页：左栏是编者按的结尾和五条编号参考文献；一条双线之下，第二篇报告Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California从栏底开始；它的表1（20名患者的首发症状）位于右栏底部。", "4": "第4页：7月报告继续，包括小号斜体的长篇Reported by名单和编者按。", "5": "第5页：7月报告的参考文献，编号为4和6至23，两栏平衡。", "6": "第6页：单栏的封底Notifiable Diseases — United States，两行表头下是29种疾病的每周汇总表，最后是版权说明。" }
+---
+
+## 成品一览
+
+六页美国信纸开本的流行病学周报，重印美国疾病控制中心（CDC）首次描述后来被称为艾滋病的两篇报告：洛杉矶的五例*Pneumocystis*肺炎（1981年6月5日），以及随后的卡波西肉瘤病例（1981年7月3日）。报头是原创设计，借鉴那个年代政府公报的风格：一条蓝色色带，压缩无衬线体的刊名，下面是两栏Plex Serif正文。报告里的每一种声音都有自己的样式：病例在粗体编号标签之下，*Reported by*一行用小号斜体，还有*Editorial Note*（编者按）、括号中的引用序号和编号的文献表。正文、参考文献和表格都按CDC当年的印本；时间线和第2页的病例表由编者添加。
+
+## 做法
+
+### 1 · 每种声音一个段落样式
+
+代码就是上面的[简短回答](#简短回答)。周报中的报告有几种语域：病例、报告人名单和编者的评论。用`:::paragraphs{style="…"}`把每一段包起来，就能在不改动文字的情况下给它一种外观：*Reported by*一行缩到7.8 pt的压缩斜体，脱离基线网格；病例则保持正文的质感，`**Patient 1:**`标签用强调色。引用写作`[@walzer1974]`；`american-medical-association`加上`marker: 'parentheses'`把它们印成(1)，并按引用顺序排列文献表，与周报当年一致；`scope: 'chapter'`在每篇报告下各放一份文献表。
+
+### 2 · 开启第一篇报告的报头
+
+<Excerpt region="masthead" />
+
+报头是第一篇报告标题样式的设计，所以只在第1页出现一次，书眉跳过这一页（`pages: 'body'`）。眉题、标题和日期行都来自每篇报告H1的属性。`display`带着属名斜体的标题，因为`{titleText}`是纯文本。第二篇报告以一栏的宽度使用同样的三个元素：`span: 'page'`的标题总是另起一页，而周报的报告是接排的。
+
+### 3 · 由制表符分隔文本生成的三张表
+
+<Excerpt region="resources" />
+
+每张表都是一个内容槽，里面是制表符分隔的文本，也就是电子表格复制出来的格式，`parseTSV`把它变成表格模型。数字列右对齐，列标题居中；四次`mergeCells`调用构成法定报告传染病汇总表的两行表头。表格类型在每个H1处重新计数（`resetOn: 'h1'`），所以每篇报告都有自己的表1，和1981年一样。
+
+### 4 · 一种蓝色，处处关联
+
+<Excerpt region="palette" />
+
+色带、标签、页码、表头和图表都引用同一个调色板条目：把`accent`换成自己周报的颜色，六页一次全部改色。
+
+## 变化
+
+### 上标的参考文献序号
+
+多数医学期刊把序号排成上标，而不是放在括号里。
+
+```diff
+-const citations = { style: 'american-medical-association', marker: 'parentheses',
++const citations = { style: 'american-medical-association', marker: 'superscript',
+```
+
+### 每篇报告另起一页
+
+分篇归档的重印系列让每篇报告从新的一页开始。
+
+```diff
+-    { level: 1, breakBefore: { enabled: false } },
++    { level: 1, breakBefore: { enabled: true, parity: 'any' } },
+```
+
+### 温哥华格式的文献表
+
+<RecipeLink slug="medical-article-vancouver">温哥华格式的医学论文</RecipeLink>修改了自带的`elsevier-vancouver`样式，使之符合NLM的参考文献格式。
+
+## 常见问题
+
+- 参考文献序号贯穿整个文档：citeproc把一个文档（或`buildBundle`的整本书）中的所有引用排成一个序列，`scope: 'chapter'`只是把文献表分开。这里7月的报告引用第4和第6至23号文献，而周报当年印的是1至19号，版权说明里写明了这一点。要让每篇报告从1开始编号，就用各自的`buildDocument`排每篇报告，再用`continuation`串起来。
+- 脚注标记是数字：Postext没有星号、剑号的序列，所以1981年*Paired specimens not run in parallel*上的星号印成1。
+- 1981年的文字按原样保留，包括当时的术语，版权说明里写明了这一点。重印不修改所复制的正文；编者添加的内容（时间线、病例表、第一段下面的蓝色斜体说明）用自己的样式并加以标注。

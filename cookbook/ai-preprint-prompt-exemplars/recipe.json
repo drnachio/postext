@@ -1,0 +1,154 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 137,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 150,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "callout-columns",
+      "nested-callouts",
+      "callout-label-tabs"
+    ],
+    "also": [
+      "callout-icons",
+      "callout-styles",
+      "citation-styles",
+      "generated-bibliography",
+      "cross-references",
+      "heading-numbering",
+      "heading-styles",
+      "opener-design",
+      "resource-types",
+      "captions",
+      "table-model",
+      "table-style",
+      "footnotes",
+      "running-heads",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q155",
+    "Q154",
+    "Q106"
+  ],
+  "gotchas": [
+    "callout-columns",
+    "nested-callout-limits",
+    "merged-cells-hiddenby",
+    "svg-no-webfonts",
+    "headings-drop-h1-break",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 80,
+      "texture": "smooth"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#1f5fa6"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#e3e7ec"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“Chain-of-Thought Prompting Elicits Reasoning in Large Language Models”, NeurIPS 2022, arXiv:2201.11903v6, abridged (sections 3.3, 3.4, 7 and the appendices cut, pointers to omitted figures and appendices removed); Figures 2 and 4 redrawn in code from the paper’s numbers, Figure 1 set as boxes, Table 2 reset",
+          "es": "«Chain-of-Thought Prompting Elicits Reasoning in Large Language Models», NeurIPS 2022, arXiv:2201.11903v6, abreviado (sin las secciones 3.3, 3.4 y 7 ni los apéndices, y sin las remisiones a figuras y apéndices omitidos); figuras 2 y 4 redibujadas en código con los datos del artículo, figura 1 compuesta con recuadros, tabla 2 recompuesta"
+        },
+        "who": "Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Brian Ichter, Fei Xia, Ed H. Chi, Quoc V. Le, Denny Zhou",
+        "source": "https://arxiv.org/abs/2201.11903v6",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Mono",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "related": [
+    "ieee-conference-paper",
+    "medical-article-vancouver",
+    "code-listings-and-keycaps"
+  ],
+  "created": "2026-10-06",
+  "updated": "2026-10-06",
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "a citation suffix with no locator, [@key, inter alia], loses its comma and space ((Brown et al., 2020inter alia)) and its inline marks print as asterisks; the text writes [@key, , inter alia]"
+    },
+    {
+      "package": "postext",
+      "note": "citations inside a resource caption print literally ([@cobbe2021training]); the captions name the works in plain text and the works cited only there are listed in nocite"
+    }
+  ]
+}

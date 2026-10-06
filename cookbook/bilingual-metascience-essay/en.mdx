@@ -1,0 +1,75 @@
+---
+title: "A metascience essay in English and Spanish"
+summary: "Ioannidis's 2005 essay re-set from one script in two editions, with formulas in the text and in the table cells, and Figure 1 drawn from its equation."
+plain: "A famous open-access essay about why many research results do not hold up, set as a seven-page reprint. One script makes an English edition and a Spanish translation, each with its own hyphenation, decimal comma and labels."
+description: "One Postext script sets an open-access paper in English and Spanish: formulas in table cells, numbered equations, a computed figure, Vancouver references."
+question: "How do I publish one paper in two languages from one script, with each language's typography?"
+aliases: ["bilingual paper", "translation", "two editions", "Spanish edition", "Ioannidis", "PLoS Medicine", "metascience", "positive predictive value", "PPV", "2×2 table", "formula in a table cell", "Greek letters in tables", "Vancouver", "elsevier-vancouver", "open access", "re-set a paper"]
+pageNotes: { "1": "Page 1: a navy band with faint curves of the positive predictive value fanning across it, the kicker ESSAY · RESEARCH METHODS, the title Why Most Published Research Findings Are False in white heavy sans, the author and his two affiliations; under the band the source and licence line, the Summary on a pale blue-grey tint across the page, and the opening of the essay in two columns with bracketed citations.", "2": "Page 2: the model of the essay in two columns, with Eqs. (1) to (3) as centred fractions numbered on the right, and Table 1 across the foot of the page: a navy header in two rows, Research finding over both and True relationship over Yes, No and Total, and a formula in every body cell.", "3": "Page 3: Table 2, then Figure 1 in three panels for power 0.80, 0.50 and 0.20, four curves each from navy to vermilion for u = 0.05 to 0.80 and a dashed curve for no bias, then Table 3 and the start of the Corollaries, each opened by a small vermilion label.", "5": "Page 5: Corollaries 5 and 6, the section on research designs and Table 4 at the foot of the second column: nine practical examples with power, R, u and a PPV column computed from Eq. (2).", "6": "Page 6: the last sections of the essay in two columns.", "7": "Page 7: the end of the text, the article information in small sans and 33 references in Vancouver style, numbered in brackets in two columns." }
+---
+
+## What you'll build
+
+A seven-page reprint of John Ioannidis's essay *Why Most Published Research Findings Are False* (PLoS Medicine, 2005), abridged and set on a 210 × 280 mm page in two columns. A navy band opens the first page, with the curves of the essay's own formula drawn faintly behind the title. The three formulas are numbered displays; the 2×2 tables carry a formula in every cell, with real α and β; Figure 1 is computed from Eq. (2), and Table 4's last column from the same equation. The same script builds a Spanish translation with Spanish hyphenation, decimal commas in the tables and figures, « » quotation marks and labels in Spanish. Thirty-three references follow in Vancouver style, rebuilt as BibTeX from the paper's list.
+
+## Method
+
+### 1 · One script, two editions
+
+The code is [the short answer](#the-short-answer) above. The Cookbook composes the pen once for each language and puts `content.en.md` or `content.es.md` where the `@content` marker stands; each named slot (`content.corollaries.es.md`, `content.resources.es.md`) follows the same rule, and a slot with no Spanish file falls back to English, which is how both editions share one BibTeX file. Everything else that changes with the language goes through `LANG`: `locale` picks the hyphenation patterns (`'es'` is the code that hyphenates Spanish), `defaultResourceTypes(LANG)` writes *Tabla* and *Figura*, the CSL locale writes the words of the reference list, and `toLocaleString` gives the numbers the script computes their decimal comma. The translation is written in Spanish typography: « » quotes, *0,05* in the text and `0{,}05` inside a formula, so TeX does not set the comma as punctuation with a space after it. To publish your own paper in two languages, keep one file per language for the text and the captions, and put every other difference in one object like `edition`.
+
+### 2 · Formulas inside table cells
+
+<Excerpt region="tables" />
+
+Table cells are not parsed for maths, and Fontsource's latin files have no Greek letters, so a cell that reads `$c(1-\beta)R/(R+1)$` in the TSV is set as a picture: `renderMath` draws the formula as MathJax paths at the cells' 8 pt, and `setCellImage` puts it in the cell with a width given as a share of the cell. Each picture is one cell line tall with its baseline where the text cells have theirs, so *Yes*, *No* and the formulas stand on one line, and the PDF keeps them as vector outlines. `mergeCells` joins *Research finding* over both header rows and *True relationship* over three columns; it also writes the hidden placeholder cells a merged cell needs.
+
+### 3 · Captions and tables from the slot, numbers from the formula
+
+<Excerpt region="resources" />
+
+The tables, captions, notes and alt texts live in `content.resources.<lang>.md`, one block each, so a translator edits text files only and each edition carries only its own language. Table 4's PPV column is not typed: `ppv()` computes it from the power, *R* and *u* of each row, and the nine values match the ones printed in 2005 to two significant figures. The tables float with `position: 'auto'`, so Table 1 can take the foot of the page that cites it instead of piling up with the other floats on the next one.
+
+### 4 · Figure 1 drawn from Eq. (2)
+
+<Excerpt region="art" />
+
+Each panel is a loop over *R* from 0 to 1 through the same `ppv()` that fills Table 4. Drawing the curves from the formula shows something the 2005 figure hides: its curves match *u* = 0, 0.05, 0.20 and 0.80, while its legend says 0.05, 0.20, 0.50 and 0.80. This version draws the legend's values and adds no bias as a dashed curve, and the caption note says so. The labels are text in the label face: the SVG carries the face as an inline `@font-face` for the canvas, and the PDF sets them in the face the provider supplies.
+
+### 5 · A first page and a box for an essay
+
+<Excerpt region="title" />
+
+The title is the only level-1 heading; its style `essay` spans the page and draws the band, the kicker, the author, the affiliations and the source line from heading attributes, so the Spanish edition changes words only. The summary is a page-wide box on a tint. Box 1, the worked example, floats to the foot of a page across both columns and sets its text in two columns inside the box. The corollaries keep the paper's run-in form: `:chip[Corollary 1]{style="corollary"}` gives each a small vermilion label before its bold statement.
+
+<Excerpt region="boxes" />
+
+## Variations
+
+### Raise the citation numbers
+
+Medical journals often set Vancouver numbers as superscripts.
+
+```diff
+-    marker: 'brackets', collapseRanges: true,
++    marker: 'superscript', collapseRanges: true,
+```
+
+### Print the DOIs
+
+The BibTeX in this recipe keeps no DOIs, to stay within the pen's size. Keep them in your own file and print them as links.
+
+```diff
+-      labelWidth: mm(6.4), doi: 'hide' } },
++      labelWidth: mm(6.4), doi: 'link' } },
+```
+
+### Set the tables in one column
+
+A 2×2 table with shorter formulas fits a column: drop the page span and measure the cells against `COLUMN`, as Table 4 does. See <RecipeLink slug="journal-article-with-maths">Two-column paper with numbered equations</RecipeLink> for a one-column table.
+
+## Pitfalls
+
+- A BibTeX author list that ends in `and others` prints a co-author named *others*. This recipe lists the first seven authors of the long lists, and `elsevier-vancouver` writes six of them and *et al.*
+- Captions and notes take no maths and no Greek from a Fontsource latin file, so Table 4's caption names power in words and its note writes *a Type I error rate of 0.05*, not α = 0.05.
+- Pages differ between the editions: the Spanish text is longer, so Table 4 lands one page later. The capture publishes pages 1, 2, 3, 5, 6 and 7 of both, to keep the page images under the size limit and still show Table 4 in each.

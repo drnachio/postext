@@ -1,0 +1,68 @@
+---
+title: "A clinical trial report with a CONSORT diagram"
+summary: "A real trial report, abridged: structured abstract across the page, a CONSORT flow drawn in code from its numbers, aligned tables, APA citations."
+plain: "A published study of a chatbot that offers therapy exercises, shortened and laid out again. The flow chart of who joined and left the trial is drawn from its numbers, the tables keep their decimals in line and the references follow APA."
+description: "A randomized trial report in Postext: structured abstract box, CONSORT diagram drawn as SVG from the numbers, aligned outcome tables, APA references."
+question: "How do I draw a CONSORT flow diagram and set a structured abstract for a trial report?"
+aliases: ["CONSORT", "flow diagram", "participant flow", "randomized controlled trial", "RCT", "clinical trial", "structured abstract", "PHQ-9", "GAD-7", "APA", "conflicts of interest", "digital mental health", "JMIR", "PubMed Central"]
+pageNotes: { "1": "Page 1: an indigo rule across the top, the kicker RANDOMIZED CONTROLLED TRIAL · DIGITAL MENTAL HEALTH, the four-line title in bold Lora, three authors with raised affiliation numbers, the affiliations, the history line and the source line in indigo. Under them a pale lilac box runs across both columns: ABSTRACT, then Background, Objective and Methods in the left column and Results and Conclusions in the right, with the keywords and the trial registration line across the box. The Introduction starts below in two columns with APA citations such as (Kessler et al., 2007).", "3": "Page 3: the description of the bot and its list of process features; in the right column a box under an indigo stripe gathers five rounded lilac bubbles, each a message the bot sent as quoted in the paper, then the control condition and the PHQ-9 and GAD-7 measures under italic headings.", "5": "Page 5: Figure 1, the CONSORT diagram across the page: stage pills ENROLLMENT, ALLOCATION, FOLLOW-UP and ANALYSIS on the left; 204 registrations, 115 confirmed, 45 excluded as bot-generated, 70 randomized in an indigo box; 34 allocated to Woebot and 36 to the information-only control; 3 and 11 lost to follow-up; 31 and 25 with data at T2; 34 and 36 analysed by intention to treat in indigo boxes. Under it, Table 1 of baseline characteristics with means and SDs in separate columns, and the completer analysis.", "6": "Page 6: Table 2 across the page, the intention-to-treat results at T2 with a two-row indigo header, means and standard errors in aligned columns, confidence intervals, F, P and d; the qualitative results; Figures 2 and 3 at the foot, bar charts of the best and worst features named by participants.", "7": "Page 7: Limitations and Conclusions, the conflicts of interest statement, the abbreviations with bold indigo terms and the first APA references with their DOIs." }
+---
+
+## What you'll build
+
+A randomized controlled trial from digital mental health, re-set from its open-access text: the 2017 JMIR Mental Health trial of Woebot, a conversational agent that delivers cognitive behavior therapy, abridged to eight pages. The house style is a calm research report on 210 × 280 mm, Lora for the text and Nunito Sans for every label and number, with one indigo accent. The pages carry what a trial report needs: the structured abstract across both columns, keywords and a registration line, the CONSORT participant flow redrawn in code from the paper's own numbers, two outcome tables whose decimals line up, the authors' conflict of interest kept word for word, and APA 7 author–date citations built from BibTeX.
+
+## Method
+
+### 1 · The abstract box and the diagram as a resource
+
+The code is [the short answer](#the-short-answer) above. A box style with `span: 'page'` closes the two columns above it and opens them again under it, so the abstract can sit across the page at any height. Inside it, `:::columns{count=2}` sets Background to Conclusions in two columns, and the keywords and the registration line follow across the full width of the box. The CONSORT diagram is an SVG resource like any other: it gets its number, caption and credit note from the resource, and its first `:ref` places it at the head of the next page.
+
+### 2 · The article head from heading attributes
+
+<Excerpt region="title" />
+
+The title is the document's only level-1 heading, with a style that spans the page and draws it from elements. Everything else in the head comes from heading attributes: the article type, the authors with `^1^` affiliation marks that `inlineMarks` raises, the affiliations split by `\n`, the received and accepted dates and the source line. For your own paper you change the attributes and keep the design. `numbered: false` on the style keeps the figures at Figure 1, 2, 3 instead of 1.1.
+
+### 3 · The CONSORT flow, drawn from the numbers
+
+<Excerpt region="art" />
+
+Each box is a `node()` call with its lines; the stages are pills at the left edge, and the arrows are a line and a filled triangle, because `<marker>` falls back to a picture in the PDF. The numbers are the trial's: 204 registrations, 115 confirmations, 45 bot-generated sign-ups excluded, 34 and 36 allocated, 3 and 11 lost, 31 and 25 with data at T2. For your own trial, replace the strings and counts; the layout follows the box heights. Text in an SVG drawn as an image cannot see the page's fonts, so the drawing carries Nunito Sans inline as a data URL.
+
+### 4 · Numbers that line up in the tables
+
+<Excerpt region="tables" />
+
+Nunito Sans sets its figures at one width, so a column of right-aligned means lines up on the decimal point. Each mean and its SD or SE go into two columns, the mean flush right and the bracket flush left beside it, and `mergeCells` builds the group headers ("Information-only control" over three columns) and the rows that span the table. Table 2 is a page-wide float; Table 1 stays in a column.
+
+### 5 · The bot's own words in nested boxes
+
+<Excerpt region="boxes" />
+
+The paper quotes five messages the bot sent. The recipe gathers them in a box with an indigo top stripe, each one a nested box with rounded corners and a small label naming the feature it illustrates. Only the paper's quotations appear there; nothing is added to them.
+
+## Variations
+
+### Cite in numbered Vancouver style
+
+Medical journals often number their citations; the BibTeX and the text stay as they are.
+
+```diff
+-  citations: { style: 'apa', link: true,
++  citations: { style: 'elsevier-vancouver', marker: 'superscript', link: true,
+```
+
+### Add a ClinicalTrials.gov number
+
+This trial was considered exempt from registration and says so. A registered trial gives its registry and number on the same line of the abstract box, for example `**Trial registration** ClinicalTrials.gov NCT01234567`, with the number of your own registration.
+
+### A diagram without the Analysis row
+
+When a report does not state who was analysed, end each arm at the follow-up boxes: remove the `an` node and its arrow, and lower `CONSORT_H`.
+
+## Pitfalls
+
+- The paper has no NCT number: the authors write that the trial was exempt from registration. The registration line says that, quoting the paper's reason, instead of inventing a number.
+- A table that shares a column with a page-wide figure stops three lines short of the foot and continues on the next page. Table 1 fits whole because its rows are set at 7.5 pt with 0.45 mm padding and the CONSORT drawing is 107 mm tall.
+- The paper writes χ² for its chi-square tests. The PDF fonts here come from Fontsource's latin files, which have no Greek, so this edition spells it out and says so in the colophon.

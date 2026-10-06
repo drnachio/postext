@@ -190,6 +190,9 @@ export function formatKb(bytes: number, locale: Locale): string {
 /** Licences by id: name and deed. */
 export const LICENSES: Partial<Record<LicenseId, { name: string; url: string }>> = {
   MIT: { name: "MIT", url: "https://opensource.org/licenses/MIT" },
+  // An older work licensed as "the Creative Commons Attribution License", with no version.
+  "CC-BY": { name: "CC BY", url: "https://creativecommons.org/licenses/" },
+  "CC-BY-3.0": { name: "CC BY 3.0", url: "https://creativecommons.org/licenses/by/3.0/" },
   "CC-BY-4.0": { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
   "CC-BY-SA-4.0": { name: "CC BY-SA 4.0", url: "https://creativecommons.org/licenses/by-sa/4.0/" },
   "CC0-1.0": { name: "CC0 1.0", url: "https://creativecommons.org/publicdomain/zero/1.0/" },

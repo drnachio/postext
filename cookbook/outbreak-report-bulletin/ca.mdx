@@ -1,0 +1,67 @@
+---
+title: "Un butlletí setmanal: els primers informes de la sida"
+summary: "Dos informes dels CDC de 1981 en un butlletí de mida carta: capçalera, casos amb etiquetes en línia, estils per a Reported by i la nota editorial, cites."
+plain: "Un butlletí de salut pública de 1981, compost de nou en paper carta. Cada tipus de paràgraf (els casos, la llista de metges que els van comunicar, el comentari de la redacció) té el seu aspecte, i les referències es numeren soles."
+description: "Un butlletí epidemiològic setmanal amb Postext: capçalera, casos clínics, estils de paràgraf per a Reported by i la nota editorial, cites AMA entre parèntesis."
+question: "Com componc un informe de butlletí setmanal, amb casos clínics, nota editorial i referències numerades?"
+aliases: ["MMWR", "butlletí epidemiològic", "sèrie de casos", "cas clínic", "informe de vigilància", "salut pública", "Reported by", "nota editorial", "malalties de declaració obligatòria", "estil AMA", "sida", "1981"]
+pageNotes: { "1": "Pàgina 1: una banda blau fosc amb la marca Surveillance Notes en blanc, a sota una línia de número i un sumari de tres entrades, un filet doble i el primer informe, Pneumocystis Pneumonia — Los Angeles, del 5 de juny de 1981. Dues columnes obren els casos amb les etiquetes Patient 1, Patient 2 i Patient 3 en negreta blava; al peu de la columna esquerra, una nota sobre mostres aparellades. Al peu de la pàgina, la Figura 1: una cronologia dels cinc pacients de setembre de 1980 a maig de 1981, amb barres grises per a la malaltia prèvia a la pneumònia, punts blaus per al mes del diagnòstic, rombes buits per a les troballes de CMV amb data i creus per a les dues morts.", "2": "Pàgina 2: la Taula 1, els cinc casos d'un cop d'ull (edat, mes del diagnòstic, proves de CMV, altres troballes, evolució), a tota l'amplada; a sota, els últims casos, el paràgraf de síntesi, la línia Reported by en cursiva petita grisa i el començament de l'Editorial Note, amb l'etiqueta en negreta blava.", "3": "Pàgina 3: el final de la nota editorial i cinc referències numerades a la columna esquerra; sota un filet doble, el segon informe, Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California, comença al peu de la columna, i la seva Taula 1, els símptomes de presentació de 20 pacients, queda al peu de la columna dreta.", "4": "Pàgina 4: continua l'informe de juliol, amb una llarga llista Reported by en cursiva petita i la seva nota editorial.", "5": "Pàgina 5: les referències de l'informe de juliol, numerades 4 i de 6 a 23, equilibrades en dues columnes.", "6": "Pàgina 6: una contraportada a una columna, Notifiable Diseases — United States, amb la taula setmanal de 29 malalties sota una capçalera de dues files, i el colofó." }
+---
+
+## Què compondràs
+
+Sis pàgines d'un butlletí epidemiològic setmanal en mida carta US, que reprodueixen els dos informes en què els Centres per al Control de Malalties (CDC) van descriure per primera vegada el que després es va dir sida: cinc casos de pneumònia per *Pneumocystis* a Los Angeles (5 de juny de 1981) i els casos de sarcoma de Kaposi que van venir després (3 de juliol de 1981). La capçalera és un disseny propi a l'estil d'un butlletí oficial de l'època: una banda blava amb la marca en una sans condensada sobre dues columnes de Plex Serif. Cada veu de l'informe té el seu estil: els casos sota etiquetes numerades en negreta, la línia *Reported by* en cursiva petita, l'*Editorial Note*, les cites entre parèntesis i una llista numerada. El text, les referències i les taules són els que van imprimir els CDC; la cronologia i la taula de casos de la pàgina 2 són de l'edició.
+
+## Elaboració
+
+### 1 · Un estil de paràgraf per a cada veu
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un informe de butlletí s'escriu en diversos registres: els casos, la llista de qui els va comunicar i el comentari de la redacció. Embolcallar cada tram en `:::paragraphs{style="…"}` li dona el seu aspecte sense tocar les paraules: la línia *Reported by* baixa a 7,8 pt en cursiva condensada, fora de la reixeta base, mentre els casos conserven la textura del cos amb les etiquetes `**Patient 1:**` en el color d'accent. Les cites s'escriuen `[@walzer1974]`; `american-medical-association` amb `marker: 'parentheses'` les imprimeix com (1) i ordena la llista per ordre de cita, com feia el butlletí, i `scope: 'chapter'` posa una llista sota cada informe.
+
+### 2 · Una capçalera que obre el primer informe
+
+<Excerpt region="masthead" />
+
+La capçalera és el disseny de l'estil de títol del primer informe, així que s'imprimeix una sola vegada, a la pàgina 1, i les capçaleres de pàgina se la salten (`pages: 'body'`). L'avanttítol, el títol i la data surten d'atributs de l'H1 de cada informe. `display` porta el títol amb el gènere en cursiva, perquè `{titleText}` és text sense format. El segon informe fa servir aquests tres elements a l'amplada d'una columna: un títol amb `span: 'page'` sempre comença pàgina, i un butlletí encadena els seus informes.
+
+### 3 · Tres taules a partir de text amb tabuladors
+
+<Excerpt region="resources" />
+
+Cada taula és una ranura de contingut amb text separat per tabuladors, el format que copia un full de càlcul, i `parseTSV` la converteix en un model. Una columna de xifres s'alinea a la dreta amb la capçalera centrada; quatre crides a `mergeCells` formen la capçalera de dues files del resum de malalties de declaració obligatòria. El tipus taula reinicia el comptador a cada H1 (`resetOn: 'h1'`), de manera que cada informe té la seva Taula 1, com el 1981.
+
+### 4 · Un sol blau, enllaçat a tot arreu
+
+<Excerpt region="palette" />
+
+La banda, les etiquetes, els folis, les capçaleres de taula i el gràfic anomenen la mateixa entrada de la paleta: qui canviï `accent` pel color del seu butlletí recoloreja les sis pàgines alhora.
+
+## Variants
+
+### Números de referència volats
+
+Gairebé totes les revistes mèdiques pugen els números en lloc de posar-los entre parèntesis.
+
+```diff
+-const citations = { style: 'american-medical-association', marker: 'parentheses',
++const citations = { style: 'american-medical-association', marker: 'superscript',
+```
+
+### Cada informe en pàgina nova
+
+Una sèrie de reimpressions que arxiva els informes per separat obre cadascun en pàgina nova.
+
+```diff
+-    { level: 1, breakBefore: { enabled: false } },
++    { level: 1, breakBefore: { enabled: true, parity: 'any' } },
+```
+
+### La llista a la manera de Vancouver
+
+<RecipeLink slug="medical-article-vancouver">Un article mèdic en estil Vancouver</RecipeLink> retoca l'estil `elsevier-vancouver` inclòs per seguir la forma de referència de la NLM.
+
+## Errors freqüents
+
+- Els números de referència continuen per tot el document: citeproc numera totes les cites del document (o d'un llibre de `buildBundle`) en una sola seqüència, i `scope: 'chapter'` només separa les llistes. Aquí l'informe de juliol cita les obres 4 i de 6 a 23, on el butlletí va imprimir de l'1 al 19, i el colofó ho adverteix. Per numerar cada informe des de l'1, compon cadascun amb el seu propi `buildDocument` i encadena'ls amb `continuation`.
+- La crida d'una nota al peu és un número: Postext no té la sèrie d'asterisc i creu, així que l'asterisc de 1981 a *Paired specimens not run in parallel* surt com a 1.
+- El text de 1981 queda com es va imprimir, amb la terminologia de l'època, i el colofó ho diu. Una reimpressió no corregeix el text que reprodueix; el que afegeix l'edició (la cronologia, la taula de casos, la línia en cursiva blava sota el primer paràgraf) va en el seu propi estil i retolat.

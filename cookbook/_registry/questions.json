@@ -3065,5 +3065,165 @@
       "ja": "新聞、折った形で3Dビューアーに"
     },
     "theme": "output"
+  },
+  "Q154": {
+    "kind": "how",
+    "text": {
+      "en": "How do I re-set an open-access paper from arXiv or PubMed Central with Postext, keeping its citations, figures and licence line?",
+      "es": "¿Cómo vuelvo a componer con Postext un artículo de acceso abierto de arXiv o PubMed Central, con sus citas, sus figuras y su línea de licencia?",
+      "ca": "Com torno a compondre amb Postext un article d'accés obert d'arXiv o PubMed Central, amb les seves cites, les seves figures i la seva línia de llicència?",
+      "zh": "怎样用Postext重新排版arXiv或PubMed Central上的开放获取论文，并保留引用、图和许可声明？",
+      "ar": "كيف أعيد تنضيد ورقة بحثية مفتوحة الوصول من arXiv أو PubMed Central بـPostext، مع استشهاداتها وأشكالها وسطر ترخيصها؟",
+      "ja": "arXivやPubMed Centralのオープンアクセス論文を、引用・図・ライセンス表記を保ったままPostextで組み直すには？"
+    },
+    "index": {
+      "en": "Papers, open-access, re-setting",
+      "es": "Artículos de acceso abierto, recomposición",
+      "ca": "Articles d'accés obert, recomposició",
+      "zh": "开放获取论文，重新排版",
+      "ar": "الأوراق المفتوحة الوصول، إعادة تنضيدها",
+      "ja": "オープンアクセス論文、組み直し"
+    },
+    "theme": "structure"
+  },
+  "Q155": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set an AI paper's prompt and model-output examples in boxes side by side?",
+      "es": "¿Cómo compongo en recuadros, uno al lado del otro, los ejemplos de prompt y de respuesta del modelo de un artículo de IA?",
+      "ca": "Com componc en requadres, l'un al costat de l'altre, els exemples de prompt i de resposta del model d'un article d'IA?",
+      "zh": "怎样把AI论文中的提示词和模型输出示例并排排在框里？",
+      "ar": "كيف أنضّد أمثلة الموجّهات ومخرجات النموذج في ورقة ذكاء اصطناعي داخل إطارات متجاورة؟",
+      "ja": "AI論文のプロンプトとモデル出力の例を、囲みで左右に並べて組むには？"
+    },
+    "index": {
+      "en": "Prompts and model outputs in boxes",
+      "es": "Prompts y respuestas del modelo en recuadros",
+      "ca": "Prompts i respostes del model en requadres",
+      "zh": "提示词与模型输出，排在框中",
+      "ar": "الموجّهات ومخرجات النموذج في إطارات",
+      "ja": "プロンプトとモデル出力、囲みで"
+    },
+    "theme": "boxes"
+  },
+  "Q156": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number equations, state theorems and set proofs in a mathematical paper, and refer to them?",
+      "es": "¿Cómo numero ecuaciones, enuncio teoremas y compongo demostraciones en un artículo matemático, y cómo me refiero a ellos?",
+      "ca": "Com numero equacions, enuncio teoremes i componc demostracions en un article matemàtic, i com m'hi refereixo?",
+      "zh": "怎样在数学论文中给公式编号、陈述定理、排证明，并引用它们？",
+      "ar": "كيف أرقّم المعادلات وأصوغ المبرهنات وأنضّد البراهين في ورقة رياضية، وكيف أحيل إليها؟",
+      "ja": "数学的な論文で数式に番号を付け、定理と証明を組み、それらを参照するには？"
+    },
+    "index": {
+      "en": "Theorems, proofs and equation numbers",
+      "es": "Teoremas, demostraciones y números de ecuación",
+      "ca": "Teoremes, demostracions i números d'equació",
+      "zh": "定理、证明与公式编号",
+      "ar": "المبرهنات والبراهين وأرقام المعادلات",
+      "ja": "定理・証明・数式番号"
+    },
+    "theme": "type"
+  },
+  "Q157": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a journal article's Methods section in smaller type after the main text, with its citations continuing the numbering?",
+      "es": "¿Cómo compongo la sección de Métodos de un artículo en un cuerpo menor después del texto principal, con sus citas continuando la numeración?",
+      "ca": "Com componc la secció de Mètodes d'un article en un cos menor després del text principal, amb les cites continuant la numeració?",
+      "zh": "怎样把期刊论文的方法部分排在正文之后、用较小字号，并让其中的引用接续编号？",
+      "ar": "كيف أنضّد قسم الطرائق في مقالة علمية بحرف أصغر بعد النص الرئيس، مع استمرار ترقيم استشهاداته؟",
+      "ja": "論文のMethodsを本文の後に小さい文字で組み、その引用番号を本文から続けるには？"
+    },
+    "index": {
+      "en": "Methods section in smaller type",
+      "es": "Sección de Métodos en cuerpo menor",
+      "ca": "Secció de Mètodes en cos menor",
+      "zh": "方法部分，小字号",
+      "ar": "قسم الطرائق بحرف أصغر",
+      "ja": "Methods、小さい文字で"
+    },
+    "theme": "structure"
+  },
+  "Q158": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a physics letter: a collaboration byline, the abstract across both columns and a data figure across the top?",
+      "es": "¿Cómo compongo una carta de física: la firma de una colaboración, el resumen a dos columnas y una figura de datos arriba a todo el ancho?",
+      "ca": "Com componc una carta de física: la signatura d'una col·laboració, el resum a dues columnes i una figura de dades a dalt a tota l'amplada?",
+      "zh": "怎样排物理快报：合作组署名、横跨两栏的摘要，以及顶部通栏的数据图？",
+      "ar": "كيف أنضّد رسالة فيزيائية: توقيع تعاون بحثي، والملخص على عرض العمودين، وشكل بيانات ممتد في أعلى الصفحة؟",
+      "ja": "物理学のレターを組むには（共同研究チームの著者表記、2段にまたがる要旨、上部に段抜きのデータ図）？"
+    },
+    "index": {
+      "en": "Physics letters, byline and figure across",
+      "es": "Cartas de física, firma y figura a todo el ancho",
+      "ca": "Cartes de física, signatura i figura a tota l'amplada",
+      "zh": "物理快报，署名与通栏图",
+      "ar": "الرسائل الفيزيائية، التوقيع والشكل الممتد",
+      "ja": "物理学のレター、著者表記と段抜きの図"
+    },
+    "theme": "figures"
+  },
+  "Q159": {
+    "kind": "how",
+    "text": {
+      "en": "How do I publish one paper in two languages from one script, with each language's typography?",
+      "es": "¿Cómo publico un mismo artículo en dos idiomas desde un solo script, con la tipografía de cada idioma?",
+      "ca": "Com publico un mateix article en dues llengües des d'un sol script, amb la tipografia de cada llengua?",
+      "zh": "怎样用同一个脚本以两种语言发布同一篇论文，并遵循各自语言的排版规范？",
+      "ar": "كيف أنشر ورقة واحدة بلغتين من نص برمجي واحد، مع طباعة كل لغة؟",
+      "ja": "1つのスクリプトから、同じ論文を2つの言語で、それぞれの言語の組版規則に従って出すには？"
+    },
+    "index": {
+      "en": "Papers in two languages",
+      "es": "Artículos en dos idiomas",
+      "ca": "Articles en dues llengües",
+      "zh": "论文，双语版",
+      "ar": "الأوراق بلغتين",
+      "ja": "論文、2言語で"
+    },
+    "theme": "output"
+  },
+  "Q160": {
+    "kind": "how",
+    "text": {
+      "en": "How do I draw a CONSORT flow diagram and set a structured abstract for a clinical trial report?",
+      "es": "¿Cómo dibujo un diagrama de flujo CONSORT y compongo un resumen estructurado para el informe de un ensayo clínico?",
+      "ca": "Com dibuixo un diagrama de flux CONSORT i componc un resum estructurat per a l'informe d'un assaig clínic?",
+      "zh": "怎样为临床试验报告绘制CONSORT流程图并排结构式摘要？",
+      "ar": "كيف أرسم مخطط CONSORT الانسيابي وأنضّد ملخصًا مهيكلًا لتقرير تجربة سريرية؟",
+      "ja": "臨床試験の報告で、CONSORTフロー図を描き、構造化抄録を組むには？"
+    },
+    "index": {
+      "en": "CONSORT diagrams and structured abstracts",
+      "es": "Diagramas CONSORT y resúmenes estructurados",
+      "ca": "Diagrames CONSORT i resums estructurats",
+      "zh": "CONSORT流程图与结构式摘要",
+      "ar": "مخططات CONSORT والملخصات المهيكلة",
+      "ja": "CONSORTフロー図と構造化抄録"
+    },
+    "theme": "figures"
+  },
+  "Q161": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a weekly bulletin report: a masthead, case histories, an editorial note and numbered references?",
+      "es": "¿Cómo compongo el informe de un boletín semanal: la cabecera, los casos clínicos, una nota editorial y las referencias numeradas?",
+      "ca": "Com componc l'informe d'un butlletí setmanal: la capçalera, els casos clínics, una nota editorial i les referències numerades?",
+      "zh": "怎样排周报中的报告：报头、病例、编者按和编号参考文献？",
+      "ar": "كيف أنضّد تقريرًا في نشرة أسبوعية: الترويسة، والحالات، وملاحظة التحرير، والمراجع المرقّمة؟",
+      "ja": "週報の報告を組むには（題字、症例、編集部注、番号付きの参考文献）？"
+    },
+    "index": {
+      "en": "Bulletins, weekly reports in",
+      "es": "Boletines, informes semanales en",
+      "ca": "Butlletins, informes setmanals en",
+      "zh": "周报，报告",
+      "ar": "النشرات، التقارير الأسبوعية فيها",
+      "ja": "週報、その報告"
+    },
+    "theme": "publications"
   }
 }

@@ -1,0 +1,75 @@
+---
+title: "Un ensayo de metaciencia en inglés y en español"
+summary: "El ensayo de Ioannidis de 2005 recompuesto con un solo script en dos ediciones, con fórmulas en el texto y en las celdas y la figura 1 calculada."
+plain: "Un ensayo famoso sobre por qué muchos resultados de investigación no se sostienen, compuesto en siete páginas. Un solo script hace la edición inglesa y una traducción al español, cada una con su separación silábica y su coma decimal."
+description: "Un script de Postext compone un artículo en inglés y en español: fórmulas en las celdas, ecuaciones numeradas, una figura calculada y referencias Vancouver."
+question: "¿Cómo publico un mismo artículo en dos idiomas desde un solo script, con la tipografía de cada idioma?"
+aliases: ["artículo bilingüe", "traducción", "dos ediciones", "edición en español", "Ioannidis", "PLoS Medicine", "metaciencia", "valor predictivo positivo", "VPP", "tabla de 2×2", "fórmula en una celda", "letras griegas en tablas", "Vancouver", "elsevier-vancouver", "acceso abierto", "recomponer un artículo"]
+pageNotes: { "1": "Página 1: una banda azul marino con unas curvas tenues del valor predictivo positivo abiertas en abanico, el antetítulo ENSAYO · MÉTODOS DE INVESTIGACIÓN, el título Por qué la mayoría de los resultados de investigación publicados son falsos en una palo seco blanca muy negra, el autor y sus dos filiaciones; bajo la banda, la línea que dice que es una traducción y da la fuente y la licencia, el Resumen sobre un tinte gris azulado a toda la página y el comienzo del ensayo a dos columnas con las citas entre corchetes.", "2": "Página 2: el modelo del ensayo a dos columnas, con las ecuaciones (1) a (3) como fracciones centradas y numeradas a la derecha, y la Tabla 1 al pie de la página: cabecera azul marino en dos filas, Resultado de la investigación sobre las dos y Relación verdadera sobre Sí, No y Total, y una fórmula en cada celda.", "3": "Página 3: la Tabla 2, la Figura 1 en tres paneles para potencias de 0,80, 0,50 y 0,20, con cuatro curvas cada uno, del azul marino al bermellón para u = 0,05 a 0,80, y una discontinua sin sesgo, luego la Tabla 3 y el comienzo de los Corolarios, cada uno abierto por un rótulo bermellón.", "5": "Página 5: los corolarios 4 a 6 y las secciones sobre los diseños de investigación y sobre el sesgo dominante.", "6": "Página 6: la Tabla 4 a la cabeza de la primera columna, nueve ejemplos prácticos con potencia, R, u y un VPP calculado con la ecuación (2), con la coma decimal española, y el final del ensayo.", "7": "Página 7: el final del texto, la información del artículo en una palo seco pequeña y 33 referencias al estilo Vancouver, numeradas entre corchetes a dos columnas." }
+---
+
+## Lo que vas a componer
+
+Una separata de siete páginas del ensayo de John Ioannidis *Why Most Published Research Findings Are False* (PLoS Medicine, 2005), abreviado y compuesto en una página de 210 × 280 mm a dos columnas. Una banda azul marino abre la primera página, con las curvas de la propia fórmula del ensayo dibujadas tenues detrás del título. Las tres fórmulas van destacadas y numeradas; las tablas de 2×2 llevan una fórmula en cada celda, con α y β de verdad; la figura 1 se calcula con la ecuación (2), y la última columna de la tabla 4, con la misma ecuación. El mismo script compone una traducción al español con separación silábica española, coma decimal en tablas y figuras, comillas « » y rótulos en español. Cierran treinta y tres referencias al estilo Vancouver, rehechas en BibTeX a partir de la lista del artículo.
+
+## Elaboración
+
+### 1 · Un script, dos ediciones
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El Recetario compone el script una vez por idioma y pone `content.en.md` o `content.es.md` donde está la marca `@content`; cada ranura con nombre (`content.corollaries.es.md`, `content.resources.es.md`) sigue la misma regla, y una ranura sin archivo en español toma el inglés, que es como las dos ediciones comparten un único archivo BibTeX. Todo lo demás que cambia con el idioma pasa por `LANG`: `locale` elige los patrones de separación silábica (`'es'` es el código que separa el español), `defaultResourceTypes(LANG)` escribe *Tabla* y *Figura*, la configuración regional de CSL escribe las palabras de la bibliografía y `toLocaleString` da a los números que calcula el script su coma decimal. La traducción sigue la ortotipografía española: comillas « », *0,05* en el texto y `0{,}05` dentro de una fórmula, para que TeX no trate la coma como signo de puntuación y deje un espacio detrás. Para publicar tu propio artículo en dos idiomas, guarda un archivo por idioma para el texto y los pies, y reúne cualquier otra diferencia en un objeto como `edition`.
+
+### 2 · Fórmulas dentro de las celdas
+
+<Excerpt region="tables" />
+
+Las celdas de una tabla no se analizan en busca de matemáticas, y los archivos latin de Fontsource no traen letras griegas, así que una celda que en el TSV dice `$c(1-\beta)R/(R+1)$` se compone como imagen: `renderMath` dibuja la fórmula con los trazados de MathJax al cuerpo de 8 pt de las celdas, y `setCellImage` la coloca en la celda con un ancho expresado como fracción de la celda. Cada imagen mide una línea de celda de alto y tiene la línea de base donde la tienen las celdas de texto, de modo que *Sí*, *No* y las fórmulas quedan en una misma línea, y el PDF las conserva como contornos vectoriales. `mergeCells` une *Resultado de la investigación* sobre las dos filas de cabecera y *Relación verdadera* sobre tres columnas, y escribe las celdas ocultas que necesita una celda combinada.
+
+### 3 · Pies y tablas desde la ranura, números desde la fórmula
+
+<Excerpt region="resources" />
+
+Las tablas, los pies, las notas y los textos alternativos están en `content.resources.<lang>.md`, un bloque por recurso, así que quien traduce solo toca archivos de texto y cada edición lleva solo su idioma. La columna de VPP de la tabla 4 no se teclea: `ppv()` la calcula con la potencia, *R* y *u* de cada fila, y los nueve valores coinciden con los impresos en 2005 en dos cifras significativas. Las tablas flotan con `position: 'auto'`, así que la tabla 1 puede ocupar el pie de la página que la cita en lugar de amontonarse con los demás flotantes en la siguiente.
+
+### 4 · La figura 1, dibujada con la ecuación (2)
+
+<Excerpt region="art" />
+
+Cada panel recorre *R* de 0 a 1 con la misma `ppv()` que rellena la tabla 4. Dibujar las curvas con la fórmula revela algo que la figura de 2005 esconde: sus curvas corresponden a *u* = 0; 0,05; 0,20 y 0,80, mientras que su leyenda dice 0,05; 0,20; 0,50 y 0,80. Esta versión dibuja los valores de la leyenda, añade en trazo discontinuo la curva sin sesgo y lo explica en la nota del pie. Los rótulos son texto en la letra de los rótulos: el SVG lleva la fuente como `@font-face` en línea para el lienzo, y el PDF los compone con la fuente que entrega el proveedor.
+
+### 5 · Una primera página y un recuadro para un ensayo
+
+<Excerpt region="title" />
+
+El título es el único de nivel 1; su estilo `essay` ocupa toda la página y dibuja la banda, el antetítulo, el autor, las filiaciones y la línea de la fuente a partir de los atributos del título, así que la edición española solo cambia palabras. El resumen es un recuadro a toda la página sobre un tinte. El recuadro 1, el ejemplo resuelto, flota al pie de una página a lo ancho de las dos columnas y compone su texto a dos columnas dentro del recuadro. Los corolarios conservan la forma del artículo, con el enunciado en negrita al comienzo del párrafo: `:chip[Corolario 1]{style="corollary"}` pone delante un rótulo pequeño en bermellón.
+
+<Excerpt region="boxes" />
+
+## Variantes
+
+### Vuela los números de cita
+
+Las revistas médicas suelen poner los números de Vancouver volados.
+
+```diff
+-    marker: 'brackets', collapseRanges: true,
++    marker: 'superscript', collapseRanges: true,
+```
+
+### Imprime los DOI
+
+El BibTeX de esta receta no guarda los DOI, para no pasar del tamaño del script. Consérvalos en tu archivo e imprímelos como enlaces.
+
+```diff
+-      labelWidth: mm(6.4), doi: 'hide' } },
++      labelWidth: mm(6.4), doi: 'link' } },
+```
+
+### Compón las tablas en una columna
+
+Una tabla de 2×2 con fórmulas más cortas cabe en una columna: quita el `span: 'page'` y mide las celdas con `COLUMN`, como la tabla 4. En <RecipeLink slug="journal-article-with-maths">Artículo a dos columnas con ecuaciones numeradas</RecipeLink> hay una tabla a una columna.
+
+## Errores frecuentes
+
+- Una lista de autores de BibTeX que termina en `and others` imprime un coautor llamado *others*. Esta receta da los siete primeros autores de las listas largas, y `elsevier-vancouver` escribe seis y *et al.*
+- Los pies y las notas no admiten matemáticas ni letras griegas de un archivo latin de Fontsource, así que el pie de la tabla 4 nombra la potencia con palabras y su nota dice *una tasa de error de tipo I de 0,05*, no α = 0,05.
+- Las páginas no coinciden entre ediciones: el texto español es más largo y la tabla 4 cae una página después. La captura publica las páginas 1, 2, 3, 5, 6 y 7 de las dos, para que las imágenes no pasen del límite de peso y la tabla 4 se vea en ambas.

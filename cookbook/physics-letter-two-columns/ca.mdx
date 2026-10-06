@@ -1,0 +1,73 @@
+---
+title: "Una carta de física amb la figura de dades a dalt"
+summary: "La carta del descobriment de GW150914 a dues columnes: el senyal redibuixat amb dades obertes a la pàgina 1, citacions [1] numerades, fórmules i la Taula I."
+plain: "La carta del 2016 que va anunciar les primeres ones gravitacionals, abreujada i composta de nou en format carta. El senyal dels dos detectors, dibuixat amb les dades públiques, travessa la pàgina 1; les referències van entre claudàtors."
+description: "Una carta de física amb Postext: figura amb dades obertes de GWOSC a la pàgina 1, citacions [1] a l'estil APS des de BibTeX, equacions i cel·les amb MathJax."
+question: "Com componc una carta de física amb signatura col·lectiva, resum a tota pàgina i una figura de dades a dalt?"
+aliases: ["carta de física", "Physical Review Letters", "PRL", "estil APS", "LIGO", "GW150914", "ones gravitacionals", "signatura col·lectiva", "et al.", "dades obertes", "GWOSC", "gràfic de deformació", "errors asimètrics", "recompondre un article", "arXiv", "dues columnes", "Taula I"]
+pageNotes: { "1": "Pàgina 1: l'avanttítol blau Letter · Gravitational-wave astronomy i el títol Observation of Gravitational Waves from a Binary Black Hole Merger; a sota, la Figura 1 d'amplada a amplada de les dues columnes: tres files de deformació en funció del temps, Hanford en taronja a l'esquerra i Livingston en blau a la dreta, amb les dades observades, la forma d'ona de relativitat numèrica i el residu, i el mateix xiulet creixent cap a 0,42 s. Sota el peu, un requadre blau pàl·lid amb la signatura B. P. Abbott et al., la col·laboració, les dates i el resum a tota pàgina; la secció I comença a dues columnes amb una nota amb lletra al peu de la primera.", "2": "Pàgina 2: la resta de la introducció i la secció II, Observation, amb la massa de xiulet com a equació destacada (1), numerada al marge dret; la secció III, Detectors, comença a la segona columna. Les citacions són números entre claudàtors com [1,2] i [16,17], i una segona nota amb lletra explica què s'ha abreujat.", "3": "Pàgina 3: la Figura 2 al capdamunt de la primera columna, la deformació de banda completa sobre la separació dels forats negres, que baixa, i la seva velocitat, que puja; la Figura 3, un esquema de l'interferòmetre amb els braços de 4 km, al capdamunt de la segona. Segueix la secció IV, Searches, amb l'estadístic de detecció com a fórmula destacada sense número.", "4": "Pàgina 4: la Figura 4 a dalt, dos histogrames en escala logarítmica en què el fons cau cap a l'esquerra i GW150914 queda sol a la dreta de cadascun; a sota, la cerca de coalescències binàries i el començament de la secció V.", "5": "Pàgina 5: la Taula I, els paràmetres de la font amb els errors damunt i sota de cada valor, al capdamunt de la primera columna; el final de la secció V, la conclusió i els agraïments, i després 43 referències numerades a dues columnes i un colofó." }
+---
+
+## Què compondràs
+
+Cinc pàgines de la carta que va anunciar les primeres ones gravitacionals, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), abreujada i composta de nou en format carta a dues columnes. La pàgina 1 obre amb la prova: la deformació registrada a Hanford i a Livingston, redibuixada amb els fitxers de dades obertes del Gravitational Wave Open Science Center, travessa les dues columnes sota el títol. A sota hi ha la signatura de la col·laboració amb la seva nota, el resum a tota pàgina i el text, amb les citacions numerades [1,2] i [25–27] com les imprimeixen les revistes de l'APS. La massa de xiulet és l'equació (1). La Taula I posa els errors asimètrics com a superíndex i subíndex apilats, dibuixats per MathJax dins de les cel·les. Porta el teu BibTeX i els teus fitxers de dades, i el mateix guió compon la teva carta.
+
+## Elaboració
+
+### 1 · Citacions numerades de física a partir de l'estil IEEE
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. postext-citeproc no porta cap estil APS, i el més proper dels inclosos és `ieee`: ordre de citació, números entre claudàtors, inicials abans del cognom. Quatre substitucions de text sobre `STYLES.ieee` tanquen la distància. `collapse="citation-number"` uneix les sèries (*[25–27]*), un sol parell de claudàtors al `layout` imprimeix *[1,2]*, `et-al-min` puja a onze perquè una llista de deu autors surti sencera, i un bloc `<bibliography>` nou imprimeix la referència com Physical Review, amb la revista, el volum en negreta, la pàgina i l'any: *Phys. Rev. Lett.* **74**, 3515 (1995). Les 43 obres van en un bloc `:::references{format=bibtex}` propi; un nom entre claus dobles com `{{J. Aasi et al.}}` s'imprimeix tal qual, que és com la carta cita les llistes d'autors llarguíssimes de la seva pròpia col·laboració. Consulta [Citacions i bibliografia](/ca/docs/document-format#citacions-i-bibliografia).
+
+### 2 · La Figura 1 sota el títol, d'amplada a amplada de les dues columnes
+
+<Excerpt region="title" />
+
+Un flotant mai no queda per damunt de la línia que el cita, i un títol amb `span: 'page'` obre sempre una pàgina nova, de manera que la Figura 1 no pot flotar al capdamunt de la pàgina 1. La carta l'hi posa directament: `::resource{id="fig1"}`, amb `placement.position: 'here'`, va dins del requadre `plate`, que ocupa tota la pàgina, just després del títol. La signatura i el resum segueixen en un segon requadre a tota pàgina, `front`, els blocs `:::paragraphs` del qual centren la signatura i componen les dates en cos petit. La crida de nota després d'*et al.* envia el text al peu de la primera columna, on les revistes de l'APS imprimeixen la nota d'autoria, i `footnotes.numberFormat: 'lower-alpha'` marca les notes amb lletres perquè no es llegeixin mai com a referències. Consulta [Inserció en bloc](/ca/docs/document-format#inserció-en-bloc-opcional-collocació-en-línia-explícita) i [Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina).
+
+### 3 · La Taula I, amb fórmules a les cel·les
+
+<Excerpt region="table" />
+
+Les cel·les d'una taula no es llegeixen com a matemàtiques, i `^+5^~−4~` imprimiria els dos errors l'un darrere l'altre. Cada valor el compon `renderMath`, s'escriu com a traçats en un SVG i es dibuixa a la seva cel·la amb `TableCell.image`; el `width` de la cel·la és l'amplada de la fórmula com a fracció de la cel·la, així que tots els valors surten a 9 pt sigui quina sigui la columna. Els tipus de recurs imprimeixen *FIG. 1* i *TABLE I* als peus i *Fig. 1* i *Table I* al text: un `captionPrefix`, i `counterFormat: 'upper-roman'` per a les taules. Els peus tampoc no admeten matemàtiques i cap de les dues fonts no porta grec, així que els peus es queden en lletres amb `^sup^` i `~sub~`.
+
+### 4 · Figures dibuixades amb les dades obertes
+
+<Excerpt region="palette" />
+
+Les quatre figures es dibuixen en codi amb els fitxers de dades que GWOSC publica amb la carta, amb llicència CC BY 4.0. Cada traça conserva una de cada vuit mostres, 430 punts per als 0,21 s de la Figura 1, i es desa amb un caràcter en base 64 per punt per al seu canvi respecte a l'anterior, de manera que les cinc traces caben en menys de 3 KB dins del guió. La fila del residu és la dada menys la forma d'ona, com a l'original. Hanford va en taronja i Livingston en blau a totes les figures, i el text es queda amb la tinta de la pàgina i un sol blau. Els rètols són traçats de MathJax en la seva lletra de pal sec (`\textsf`), perquè un SVG dibuixat com a imatge no pot fer servir les fonts de la pàgina, i el PDF conserva cada línia i cada rètol com a vectors.
+
+## Variants
+
+### Fes servir l'estil IEEE tal com ve
+
+Sense les substitucions, el text diu *[2], [3], [4]* i la llista *A. Einstein, “títol”, revista…*.
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Volats, com Nature
+
+L'estil de Nature posa números volats i llista els títols; ve inclòs.
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'nature', link: true,
+```
+
+### Compon-la en A4
+
+Canvia el format; la mesura, les columnes i totes les figures se'n deriven.
+
+```diff
+-const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 21, 21, 16, 7];
++const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [210, 297, 22, 22, 15, 7];
+```
+
+## Errors freqüents
+
+- Un recurs `'here'` amb `span: 'page'` en un flux a dues columnes surt de l'amplada d'una columna. Posa'l dins d'un requadre l'estil del qual tingui `span: 'page'`, com el requadre `plate` d'aquesta recepta.
+- Una lletra grega, ⊙ o ≃ en un peu o en una cel·la cau en una font del sistema a la pantalla i falta al PDF, que incrusta els fitxers llatins de cada font. Escriu aquests símbols com a matemàtiques al text, i dibuixa'ls a les figures i a les cel·les.
+- Una llista de centenars d'autors no cap en un fitxer BibTeX. Escriu el nom com l'imprimeix la revista, entre claus dobles: `author={{B. Abbott et al.}}`.
+- Conserva la línia de llicència de l'article i la de les dades. Aquí una nota a peu de pàgina i el colofó diuen què s'ha tallat, i la nota de cada peu anomena les dades i el que la figura redibuixada deixa fora.

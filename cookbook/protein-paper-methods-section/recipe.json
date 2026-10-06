@@ -1,0 +1,178 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 139,
+  "status": "published",
+  "chapter": "publications",
+  "order": 70,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "heading-styles",
+      "citation-styles",
+      "generated-bibliography"
+    ],
+    "also": [
+      "super-subscripts",
+      "opener-design",
+      "heading-attributes",
+      "callout-styles",
+      "span-boxes",
+      "floated-callouts",
+      "running-heads",
+      "page-role-filters",
+      "inline-embeds",
+      "captions",
+      "credit-notes",
+      "table-style",
+      "figure-numbering",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q157",
+    "Q154",
+    "Q112",
+    "Q63"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "latin-subset",
+    "svg-no-webfonts",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": {
+      "page": 1,
+      "x": 0.435,
+      "y": 0.637,
+      "w": 0.475,
+      "h": 0.203
+    },
+    "pages": "all"
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 80
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#0b4ea2"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#dfe5ec"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“Highly accurate protein structure prediction with AlphaFold”, Nature 596, 583–589 (2021), doi:10.1038/s41586-021-03819-2, PMC8371605, abridged (the sections ‘Interpreting the neural network’ and ‘Related work’, the description of Fig. 2, parts of other sections and of the Methods, the Supplementary information and the peer review note cut; pointers to omitted figures removed; references renumbered by first citation); Fig. 1 redrawn in code (panels c–e omitted), Figs. 2–5 omitted; Table 1 compiled from the Methods text",
+          "es": "«Highly accurate protein structure prediction with AlphaFold», Nature 596, 583–589 (2021), doi:10.1038/s41586-021-03819-2, PMC8371605, abreviado (sin las secciones «Interpreting the neural network» y «Related work», el comentario de la figura 2, partes de otras secciones y de los Métodos, la información suplementaria ni la nota de revisión por pares; sin las remisiones a figuras omitidas; referencias renumeradas por orden de primera cita); figura 1 redibujada en código (sin los paneles c–e), figuras 2–5 omitidas; tabla 1 compilada a partir del texto de los Métodos"
+        },
+        "who": "John Jumper, Richard Evans, Alexander Pritzel, Tim Green, Michael Figurnov, Olaf Ronneberger, Kathryn Tunyasuvunakool, Russ Bates, Augustin Žídek, Anna Potapenko, Alex Bridgland, Clemens Meyer, Simon A. A. Kohl, Andrew J. Ballard, Andrew Cowie, Bernardino Romera-Paredes, Stanislav Nikolov, Rishub Jain, Jonas Adler, Trevor Back, Stig Petersen, David Reiman, Ellen Clancy, Michal Zielinski, Martin Steinegger, Michalina Pacholska, Tamas Berghammer, Sebastian Bodenstein, David Silver, Oriol Vinyals, Andrew W. Senior, Koray Kavukcuoglu, Pushmeet Kohli, Demis Hassabis",
+        "source": "https://doi.org/10.1038/s41586-021-03819-2",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Fig. 1b, experimental Cα coordinates of PDB 6Y4F (Jiang et al. 2020), drawn in code",
+          "es": "Figura 1b, coordenadas Cα experimentales de PDB 6Y4F (Jiang et al. 2020), dibujadas en código"
+        },
+        "who": "Worldwide Protein Data Bank",
+        "source": "https://www.rcsb.org/structure/6Y4F",
+        "license": "CC0-1.0"
+      },
+      {
+        "what": {
+          "en": "Fig. 1b, AlphaFold DB model AF-B4EUK6-F1 (AlphaFold Monomer v2.0) and its pLDDT, superposed and drawn in code",
+          "es": "Figura 1b, modelo AF-B4EUK6-F1 de AlphaFold DB (AlphaFold Monomer v2.0) y su pLDDT, superpuesto y dibujado en código"
+        },
+        "who": "DeepMind Technologies Limited and EMBL-EBI, AlphaFold Protein Structure Database",
+        "source": "https://alphafold.ebi.ac.uk/entry/B4EUK6",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Noto Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06",
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "BibTeX `and others` is read as an author named 'others' (parseNames in src/citations/bibtex.ts), so the Nature style prints '& others' instead of et al.; the works with more authors list their first six from Crossref, which the style's et-al-min of 6 turns into 'First, A. et al.'"
+    },
+    {
+      "package": "postext",
+      "note": "an inline `::resource` with placement { position: 'here', span: 'page' } is set at the width of its column; Fig. 1 sits in a frameless page-span callout floated to the page foot (placement: 'bottom')"
+    },
+    {
+      "package": "postext",
+      "note": "postext-citeproc: the bundled nature.csl prints the DOI twice for an article-journal with no volume yet (issuance prints https://doi.org/…, access prints doi:…); one string edit adds article-journal to the access macro's exclusion"
+    },
+    {
+      "package": "postext",
+      "note": "a reference list cannot hold only the works first cited since the previous list (Nature's Methods references): :::bibliography{scope=chapter} lists every work the chapter cites; the article ends on one list"
+    }
+  ]
+}

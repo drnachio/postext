@@ -406,7 +406,7 @@ export interface CheckInput {
 }
 
 const MB = 1024 * 1024;
-const ATTRIBUTION = new Set(["CC-BY-4.0", "CC-BY-SA-4.0"]);
+const ATTRIBUTION = new Set(["CC-BY", "CC-BY-3.0", "CC-BY-4.0", "CC-BY-SA-4.0"]);
 const IMAGE_ASSET = /\.(svg|png|jpe?g|webp|gif|avif|pdf)$/i;
 
 const firstLines = (text: string, n = 3) => text.split("\n").slice(0, n).join(" ⏎ ").slice(0, 400);

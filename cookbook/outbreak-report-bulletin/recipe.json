@@ -1,0 +1,162 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 143,
+  "status": "published",
+  "chapter": "publications",
+  "order": 80,
+  "level": 2,
+  "genres": [
+    "paper",
+    "report"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "paragraph-styles",
+      "opener-design",
+      "generated-bibliography"
+    ],
+    "also": [
+      "citation-styles",
+      "footnotes",
+      "table-style",
+      "resource-types",
+      "captions",
+      "float-placement",
+      "running-heads",
+      "page-role-filters",
+      "heading-styles",
+      "heading-attributes",
+      "column-layouts",
+      "page-size",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q161",
+    "Q106",
+    "Q65",
+    "Q154"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "svg-no-webfonts",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 75,
+      "texture": "smooth"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#dfe3ea"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "\"Pneumocystis Pneumonia — Los Angeles\", MMWR 1981;30(21):250–252, and \"Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California\", MMWR 1981;30(25):305–308, re-set in full from the printed issues; Table 1 of the first report and Figure 1 added by the editors from the case reports. \"All material in the MMWR Series is in the public domain and may be used and reprinted without special permission; citation as to source, however, is appreciated.\"",
+          "es": "«Pneumocystis Pneumonia — Los Angeles», MMWR 1981;30(21):250-252, y «Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California», MMWR 1981;30(25):305-308, recompuestos completos a partir de los números impresos; la Tabla 1 del primer informe y la Figura 1 las añade la edición a partir de los casos. Todo el material de la serie MMWR es de dominio público y puede reproducirse sin permiso; se agradece la cita de la fuente."
+        },
+        "who": "Centers for Disease Control (CDC)",
+        "source": "https://stacks.cdc.gov/view/cdc/50022",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Figure 1, timeline of the five cases, drawn in code from the dates in the case reports",
+          "es": "Figura 1, cronología de los cinco casos, dibujada en código con las fechas de los informes"
+        },
+        "who": "Ignacio Ferro",
+        "license": "original"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "IBM Plex Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Franklin",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "related": [
+    "medical-article-vancouver",
+    "edited-volume-chapter-bibliographies",
+    "one-text-four-citation-styles"
+  ],
+  "created": "2026-10-06",
+  "updated": "2026-10-06",
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "citations are numbered once per document (and per buildBundle book); bibliography.scope 'chapter' splits the lists but not the numbers, so the second report cites 4 and 6–23 where the weekly printed 1–19 (said in the colophon). Two buildDocument calls chained with continuation would restart the numbers, but the capture's C14 then fails the one PDF of both documents and the Sandbox bundle keeps only the first build"
+    },
+    {
+      "package": "postext",
+      "note": "footnotes.numberFormat has no symbol sequence (*, †, ‡), so the 1981 asterisk footnote prints as 1"
+    },
+    {
+      "package": "postext",
+      "note": "{titleText} is plain text in a heading design, so the italic genus in each report title comes from a display attribute set with inlineMarks"
+    }
+  ]
+}

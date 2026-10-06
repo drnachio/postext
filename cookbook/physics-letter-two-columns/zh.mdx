@@ -1,0 +1,73 @@
+---
+title: "数据图横跨页顶的物理快报"
+summary: "以双栏重排GW150914的发现快报：第1页横跨用开放数据重绘的信号，[1]式编号引用，带编号的公式和表I。"
+plain: "2016年宣布首次探测到引力波的那篇快报，经过删节后用美国信纸开本重新排版。两台探测器的信号用公开数据重新绘制，横跨第1页；参考文献按方括号编号。"
+description: "用Postext排物理快报：第1页横跨一幅用GWOSC开放数据绘制的图，BibTeX生成APS式[1]引用，正文公式和表格单元格中的公式由MathJax排出。"
+question: "怎样排一篇物理快报：合作组署名、横跨两栏的摘要，以及页顶的一幅数据图？"
+aliases: ["物理快报", "Physical Review Letters", "PRL", "APS格式", "LIGO", "GW150914", "引力波", "合作组署名", "et al.", "开放数据", "GWOSC", "应变曲线", "非对称误差", "重排论文", "arXiv", "双栏", "表I"]
+pageNotes: { "1": "第1页：蓝色眉题Letter · Gravitational-wave astronomy和标题Observation of Gravitational Waves from a Binary Black Hole Merger；其下是横跨两栏的图1：三行应变随时间变化的曲线，左边橙色是Hanford，右边蓝色是Livingston，依次为观测数据、数值相对论波形和残差，两边在0.42秒附近都有同一个频率上升的啁啾。图注下方是浅蓝色框，里面有署名B. P. Abbott et al.、合作组、日期和通栏摘要；第I节以双栏开始，第一栏底部有一条字母编号的脚注。", "2": "第2页：引言的其余部分和第II节Observation，啁啾质量是带编号(1)的行间公式，编号在右侧；第III节Detectors从第二栏开始。引用是方括号中的数字，如[1,2]和[16,17]，第二条字母脚注说明删节情况。", "3": "第3页：第一栏顶部是图2，全频带应变下方是两个黑洞的间距下降、速度上升；第二栏顶部是图3，一幅臂长4 km的干涉仪示意图。随后是第IV节Searches，探测统计量是不带编号的行间公式。", "4": "第4页：顶部是图4，两幅对数坐标的直方图，背景向左边落下，GW150914单独位于每幅图的右侧；下方是双星并合搜索和第V节的开头。", "5": "第5页：第一栏顶部是表I，源参数的误差上下叠排在每个数值旁边；然后是第V节的结尾、结论和致谢，接着是两栏排的43条编号参考文献和版权页说明。" }
+---
+
+## 成品一览
+
+宣布首次探测到引力波的那篇快报《Observation of Gravitational Waves from a Binary Black Hole Merger》（Abbott et al., 2016）的五页删节重排本，美国信纸开本，双栏。第1页以证据开篇：Hanford和Livingston记录到的应变，用引力波开放科学中心（GWOSC）的开放数据文件重新绘制，在标题下横跨两栏。下面是合作组署名及其脚注、通栏摘要和正文，引用按APS期刊的习惯编号为[1,2]和[25–27]。啁啾质量是公式(1)。表I把非对称误差排成上下叠放的上标和下标，由MathJax在单元格里画出。换上你自己的BibTeX和数据文件，同一个脚本就能排出你的快报。
+
+## 做法
+
+### 1 · 从IEEE样式改出物理学的编号引用
+
+代码就是上面的[简短回答](#简短回答)。postext-citeproc没有附带APS样式，附带样式中最接近的是`ieee`：按引用顺序编号，数字放在方括号里，名字缩写在姓之前。对`STYLES.ieee`做四处字符串替换就能补上差别。`collapse="citation-number"`合并连续的编号（*[25–27]*），在`layout`上只放一对方括号，印出*[1,2]*；`et-al-min`提高到十一，十位作者的名单可以完整列出；新的`<bibliography>`块按Physical Review的写法印出参考文献：刊名、粗体卷号、页码和年份，如*Phys. Rev. Lett.* **74**, 3515 (1995)。43条文献放在单独的`:::references{format=bibtex}`块中；用双层花括号写的名字，如`{{J. Aasi et al.}}`，会照原样印出，快报引用本合作组那些极长的作者名单时就是这样写的。参见[引用与参考文献](/zh/docs/document-format#引用与参考文献)。
+
+### 2 · 标题下横跨两栏的图1
+
+<Excerpt region="title" />
+
+浮动体不会出现在引用它的那一行之上，而带`span: 'page'`的标题总是另起一页，所以图1无法浮动到第1页的顶部。这篇快报直接把它放在那里：`::resource{id="fig1"}`配合`placement.position: 'here'`，放在紧接标题的`plate`框里，这个框占满整个页宽。署名和摘要放在第二个通栏框`front`中，框里的`:::paragraphs`块把署名居中，并用小字号排日期。*et al.*后面的脚注标记把注文送到第一栏底部，APS期刊的作者说明就印在那里；`footnotes.numberFormat: 'lower-alpha'`用字母给脚注编号，读者不会把它们误认为参考文献。参见[块级嵌入](/zh/docs/document-format#块级嵌入可选显式的行内放置)和[脚注](/zh/docs/configuration#脚注)。
+
+### 3 · 单元格里有公式的表I
+
+<Excerpt region="table" />
+
+表格单元格不按数学公式解析，`^+5^~−4~`会把两个误差一前一后地印出来。所以每个数值都由`renderMath`排出，写成SVG中的路径，再通过`TableCell.image`画进单元格；单元格的`width`是公式宽度占单元格宽度的比例，因此无论栏宽如何，每个数值都以9 pt印出。资源类型在图注中印出*FIG. 1*和*TABLE I*，在正文中印出*Fig. 1*和*Table I*：靠的是`captionPrefix`，表格再加上`counterFormat: 'upper-roman'`。图注同样不支持公式，两款字体也都没有希腊字母，所以图注只用拉丁字母加`^sup^`和`~sub~`。
+
+### 4 · 用开放数据绘制的图
+
+<Excerpt region="palette" />
+
+四幅图都用代码绘制，数据来自GWOSC随这篇快报发布的数据文件，许可证为CC BY 4.0。每条曲线每八个采样点保留一个，图1的0.21秒共430个点；每个点以一个base-64字符记录它相对前一个点的变化，五条曲线在脚本里不到3 KB。残差一行是数据减去波形，与原文相同。所有图中Hanford用橙色、Livingston用蓝色，正文只用页面的墨色和一种蓝色。标注是MathJax无衬线字体（`\textsf`）的路径，因为作为图像绘制的SVG无法使用页面字体；PDF中每条线和每个标注都保持为矢量。
+
+## 变化
+
+### 直接用附带的IEEE样式
+
+去掉这些替换，正文会印成*[2], [3], [4]*，参考文献表印成*A. Einstein, “title”, journal…*。
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### 像Nature那样用上标
+
+Nature样式用上标数字，并列出文献标题；它是附带样式之一。
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'nature', link: true,
+```
+
+### 改排A4开本
+
+改动成品尺寸；版心、栏和所有图都随之变化。
+
+```diff
+-const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 21, 21, 16, 7];
++const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [210, 297, 22, 22, 15, 7];
+```
+
+## 常见问题
+
+- 在双栏排版中，带`span: 'page'`的`'here'`资源只有一栏宽。把它放进样式带有`span: 'page'`的框里，就像这里的`plate`框。
+- 图注或单元格里的希腊字母、⊙或≃在屏幕上会落到系统字体，在PDF中则会缺字，因为PDF只嵌入每款字体的拉丁字符文件。在正文中把这些符号写成公式，在图和单元格中把它们画出来。
+- 数百位作者的名单不适合写进BibTeX文件。按期刊印出的样子写名字，并用双层花括号括起：`author={{B. Abbott et al.}}`。
+- 保留论文和数据的许可证说明。这里由一条脚注和版权页说明删去了哪些内容，每个图注的说明行写明数据来源以及重绘图省略的部分。

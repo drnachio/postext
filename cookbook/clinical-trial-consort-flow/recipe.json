@@ -1,0 +1,157 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 142,
+  "status": "published",
+  "chapter": "figures",
+  "order": 100,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "resources",
+      "span-boxes",
+      "table-model"
+    ],
+    "also": [
+      "figure-citations",
+      "float-placement",
+      "captions",
+      "credit-notes",
+      "callout-columns",
+      "nested-callouts",
+      "table-style",
+      "citation-styles",
+      "generated-bibliography",
+      "heading-styles",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "super-subscripts",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q160",
+    "Q65",
+    "Q106",
+    "Q154"
+  ],
+  "gotchas": [
+    "svg-no-webfonts",
+    "svg-no-marker-filters",
+    "latin-subset",
+    "merged-cells-hiddenby",
+    "dollar-math",
+    "headings-drop-h1-break",
+    "top-float-next-page",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 5,
+    "card": "crop",
+    "focus": {
+      "page": 5,
+      "x": 0.05,
+      "y": 0.06,
+      "w": 0.9,
+      "h": 0.46
+    },
+    "pages": [
+      1,
+      3,
+      5,
+      6,
+      7
+    ]
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 90,
+      "texture": "smooth"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#4a3f8c"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#e6e4ee"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Text and data: Fitzpatrick KK, Darcy A, Vierhile M. Delivering Cognitive Behavior Therapy to Young Adults With Symptoms of Depression and Anxiety Using a Fully Automated Conversational Agent (Woebot): A Randomized Controlled Trial. JMIR Mental Health 2017;4(2):e19, doi:10.2196/mental.7785. Originally published in JMIR Mental Health (http://mental.jmir.org), 06.06.2017. Abridged; figures redrawn in code from the article's numbers; citations converted to APA author–date",
+          "es": "Texto y datos: Fitzpatrick KK, Darcy A, Vierhile M. Delivering Cognitive Behavior Therapy to Young Adults With Symptoms of Depression and Anxiety Using a Fully Automated Conversational Agent (Woebot): A Randomized Controlled Trial. JMIR Mental Health 2017;4(2):e19, doi:10.2196/mental.7785. Publicado originalmente en JMIR Mental Health (http://mental.jmir.org), 06.06.2017. Versión abreviada; figuras redibujadas en código con los datos del artículo; citas convertidas a autor-fecha APA"
+        },
+        "who": "© Kathleen Kara Fitzpatrick, Alison Darcy, Molly Vierhile",
+        "source": "https://doi.org/10.2196/mental.7785",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Lora",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Nunito Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06",
+  "related": [
+    "medical-article-vancouver",
+    "apa-thesis-with-bibtex",
+    "figures-float-where-cited"
+  ]
+}

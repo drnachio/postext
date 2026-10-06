@@ -1,0 +1,69 @@
+---
+title: "Machine-learning paper with theorems and proofs"
+summary: "The DPO paper re-set from arXiv: labelled equations numbered and linked, definition, lemma and theorem boxes, proofs that end in a square, Harvard citations."
+plain: "A famous machine-learning paper set again from its open-access source, with numbered equations you can refer to, boxed theorems and lemmas, proofs, and author–year references."
+description: "The DPO paper (NeurIPS 2023, CC BY 4.0) abridged and re-set: \\label and \\eqref for equations, amsthm-style statements and proofs, Harvard references."
+question: "How do I number equations, state theorems and write proofs in a paper, and refer to them by number?"
+aliases: ["theorem", "lemma", "definition", "proof", "QED", "end of proof", "amsthm", "equation numbers", "eqref", "label", "cross-reference", "machine learning paper", "NeurIPS", "arXiv", "preprint", "DPO", "natbib", "author-year", "Harvard"]
+pageNotes: { "1": "A plum band across the top of the page holds a fan of pale logistic curves, the kicker Preprint · Machine learning · Re-set and abridged, the title Direct Preference Optimization: Your Language Model is Secretly a Reward Model in white, and the venue line; the six authors and their affiliations follow on white, then the abstract under a plum rule, and the source and licence line at the foot.", "3": "Figure 1 across the top: on the left the RLHF pipeline in ochre, preference data fitted to a reward model and a loop of sampling and reinforcement learning with the LM policy; on the right the DPO pipeline in plum, preference data straight to the final LM by maximum likelihood. Section 3 continues below with equation 1.", "6": "Section 5 with Definition 1 and Lemmas 1 and 2 beside plum and grey side stripes, Theorem 1 on a pale plum tint, and the proof sketch with equation 8.", "9": "Appendix A.1 goes on: a four-row aligned display numbered 10 on its last row, equations 11 to 13, then appendix A.5 with the restated Lemma 1 and the start of its proof." }
+---
+
+## What you'll build
+
+*Direct Preference Optimization* by Rafailov, Sharma, Mitchell, Ermon, Manning and Finn (NeurIPS 2023), abridged from its arXiv source and set as a ten-page preprint on a 7 × 10 in page. A plum band carries the title over a fan of logistic curves, the shape of the weight that the DPO gradient puts on each example. Below it, one generous column of Spectral holds thirteen numbered equations, the definition, lemmas and theorem of section 5 as boxes with run-in labels, a proof sketch and a full proof that end in a square, a pipeline figure redrawn in code and twenty works cited author–year. Every equation, statement and section reference in the text is a link, and every number comes from a label, as in LaTeX.
+
+## Method
+
+### 1 · Label equations and statements, refer to them by key
+
+The code is [the short answer](#the-short-answer) above. Postext numbers a display formula that carries `\tag{7}` and links a `:ref` to any [anchor](/en/docs/document-format#cross-references-and-anchors), but it keeps no counter of equations or theorems. `latex()` adds that counter before the build: a `\label{eq:dpo}` inside a display becomes the next `\tag`, a `:::callout{type="lemma" #lem:same-policy}` gets the next lemma number and its run-in label, and `\eqref{eq:dpo}` or `\ref{lem:same-policy}` in the text becomes a `:ref` that prints the number and links to it. Write each labelled display directly under the line that leads into it, with no blank line, since that line carries the anchor the link jumps to. Sections need no help: their numbers come from the heading templates, `{startAt=3}` keeps the paper's own numbering after the cut section 2, and `crossRefs.section` prints “Section 5” with a capital, as the paper does.
+
+### 2 · Give each environment its own box
+
+<Excerpt region="theorems" />
+
+Each environment is a [callout style](/en/docs/configuration#callout-styles) with one device: a grey stripe for the definition, a plum stripe for the lemmas, a pale plum tint for the theorem. `body.italic` sets the statement in italics as amsthm's plain style does, and the label written `***Theorem 1.***` turns back upright inside it. The proof has no box at all, only its italic run-in label and the square that `latex()` adds at its end, and `keepTogether: false` lets a long proof run on to the next page. `snapToGrid: false` keeps the same space around every statement; in one column with no neighbour to line up with, an exact gap reads better than one rounded to the grid.
+
+### 3 · Cite author–year from the paper's own reference list
+
+<Excerpt region="citations" />
+
+The references are BibTeX in a `:::references{format=bibtex}` block, rebuilt from the paper's `.bbl` with only the twenty works the abridged text still cites. Cite Them Right Harvard sets them as “(Bong and Rinaldo, 2022)” in the text and “Ouyang, L. *et al.* (2022)” in the list, cutting author lists of four or more to the first name. `@ziegler2020finetuning` in the text prints the narrative form, Ziegler *et al.* (2020). The list stands where `:::bibliography` is, after section 7 and before the appendix, as in the paper.
+
+### 4 · Put the title on a band, the source at the foot
+
+<Excerpt region="title" />
+
+The title is the only level-1 heading, and its `paper` style draws a slot of design elements instead: the band bleeds off the top of the page, the title wraps at the measure, and the authors and affiliations come from heading attributes, with ¹ ² and * written as characters. The footer element with `pages: 'opener'` prints the source, the licence and the changes made on page 1 only, so the first page says where the text comes from even when it travels alone.
+
+### 5 · Redraw the figure in code
+
+<Excerpt region="art" />
+
+Figure 1 is drawn as SVG from the boxes and words of the original. An SVG drawn as an image cannot use the page's web fonts, so `inlineFace()` embeds the two Work Sans files the labels use, and `tex()` writes the `y_w ≻ y_l` labels as MathJax paths, the same glyphs the equations use. Arrowheads are drawn paths rather than SVG markers, so the figure stays vector in the PDF.
+
+## Variations
+
+### Cite with numbers, as the NeurIPS template does
+
+The original paper uses natbib's numbered citations; IEEE prints [1] in the text and numbers the list in order of citation.
+
+```diff
+-const citations = { style: 'harvard-cite-them-right', link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Count lemmas and theorems together
+
+Some journals number every statement in one sequence (Lemma 1, Lemma 2, Theorem 3). Point every kind at one counter.
+
+```diff
+-    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
++    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+```
+
+## Pitfalls
+
+- A `:ref` inside a bold label takes the reference style, not the bold around it: in “Lemma 1 Restated.” the number would come out regular. Write the number of a restated label as text.
+- A box that ends a short page is pushed down to its foot by column balancing, which opened a gap under the title block here. `balancing: { enabled: false }` keeps the abstract under the byline and the section heads at their own spacing, at the cost of a page that may end a line short.
+- A display with an `\underbrace` label wider than the brace, such as the gradient in section 4, needs an `aligned` break; set wider than the measure, it overflows to the right.

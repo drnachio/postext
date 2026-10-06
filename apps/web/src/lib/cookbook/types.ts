@@ -100,7 +100,7 @@ export interface PenJson {
 // ─── Licensing and credits ──────────────────────────────────────────────────
 
 export type LicenseId =
-  | "original" | "PD" | "CC0-1.0" | "CC-BY-4.0" | "CC-BY-SA-4.0"
+  | "original" | "PD" | "CC0-1.0" | "CC-BY" | "CC-BY-3.0" | "CC-BY-4.0" | "CC-BY-SA-4.0"
   | "OFL-1.1" | "Apache-2.0" | "MIT" | "reproduction-authorised";
 // NC and ND licences are deliberately not in the union: the validator rejects them.
 

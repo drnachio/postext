@@ -1,0 +1,73 @@
+---
+title: "A physics letter with a data figure across the top"
+summary: "The GW150914 discovery letter re-set in two columns: strain data redrawn from open data across page 1, [1]-style citations, numbered maths and Table I."
+plain: "The 2016 letter that announced the first gravitational waves, shortened and set again on US Letter pages. The signal of both detectors, drawn from the public data, runs across page 1; references are numbered in brackets."
+description: "Re-set a physics letter with Postext: a figure drawn from GWOSC open data across page 1, APS-style [1] citations from BibTeX, MathJax equations and table cells."
+question: "How do I set a physics letter with a collaboration byline, a page-wide abstract and a data figure on top?"
+aliases: ["physics letter", "Physical Review Letters", "PRL", "APS style", "LIGO", "GW150914", "gravitational waves", "collaboration byline", "et al.", "open data", "GWOSC", "strain plot", "asymmetric errors", "error bars", "re-set a paper", "arXiv", "two columns", "Table I"]
+pageNotes: { "1": "Page 1: a blue kicker, Letter · Gravitational-wave astronomy, and the title Observation of Gravitational Waves from a Binary Black Hole Merger, then Figure 1 across both columns: three rows of strain against time, Hanford in orange on the left and Livingston in blue on the right, observed data, numerical-relativity waveform and residual, with the same rising chirp near 0.42 s. Under its caption a pale blue box holds the byline B. P. Abbott et al., the collaboration, the dates and the abstract across the page; Section I starts in two columns with a lettered footnote at the foot of the first.", "2": "Page 2: the rest of the introduction and Section II, Observation, with the chirp mass as display equation (1) numbered at the right edge; Section III, Detectors, starts in the second column. Citations are numbers in brackets such as [1,2] and [16,17], and a second lettered footnote explains the abridgement.", "3": "Page 3: Figure 2 at the head of the first column, the full-band strain over the black holes' separation falling and their speed rising, and Figure 3, a diagram of the interferometer with its 4 km arms, at the head of the second. Section IV, Searches, follows with the detection statistic as an unnumbered display formula.", "4": "Page 4: Figure 4 across the top, two histograms on a logarithmic scale where the background falls away to the left and GW150914 stands alone at the right of each; below it the binary coalescence search and the start of Section V.", "5": "Page 5: Table I, the source parameters with errors set above and below each value, at the head of the first column; the end of Section V, the conclusion and the acknowledgments, then 43 numbered references in two columns and a colophon." }
+---
+
+## What you'll build
+
+Five pages of the letter that announced the first gravitational waves, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), abridged and re-set on US Letter in two columns. Page 1 opens with the evidence: the strain recorded at Hanford and Livingston, redrawn from the open data files of the Gravitational Wave Open Science Center, runs across both columns under the title. Below it come the collaboration byline with its footnote, the abstract across the page and the text, with citations numbered [1,2] and [25–27] as the APS journals print them. The chirp mass is equation (1). Table I sets its asymmetric errors as stacked super- and subscripts, drawn by MathJax inside the cells. Bring your own BibTeX and data files, and the same script sets your letter.
+
+## Method
+
+### 1 · Numbered physics citations from the IEEE file
+
+The code is [the short answer](#the-short-answer) above. postext-citeproc bundles no APS style, and the bundled `ieee` style is the nearest: citation order, numbers in brackets, initials before the family name. Four string replacements on `STYLES.ieee` close the gap. `collapse="citation-number"` joins runs (*[25–27]*), one pair of brackets on the layout prints *[1,2]*, `et-al-min` rises to eleven so a list of ten authors stays whole, and a new `<bibliography>` block prints the reference the way Physical Review does, with the journal, the volume in bold, the page and the year: *Phys. Rev. Lett.* **74**, 3515 (1995). The 43 works come in a `:::references{format=bibtex}` block of their own; a name in double braces such as `{{J. Aasi et al.}}` is printed as written, which is how the letter cites its own collaboration's long author lists. See [Citations and bibliography](/en/docs/document-format#citations-and-bibliography).
+
+### 2 · Figure 1 under the title, across both columns
+
+<Excerpt region="title" />
+
+A float can never stand above the line that cites it, and a heading with `span: 'page'` always opens a fresh page, so Figure 1 cannot float to the head of page 1. The letter puts it there directly: `::resource{id="fig1"}`, with `placement.position: 'here'`, sits inside the `plate` box, which spans the page, right after the title. The byline and the abstract follow in a second page-wide box, `front`, whose `:::paragraphs` blocks centre the byline and set the dates small. The footnote marker after *et al.* sends its note to the foot of the first column, as the APS journals print the author note, and `footnotes.numberFormat: 'lower-alpha'` letters the notes so they never read as references. See [Block embed](/en/docs/document-format#block-embed-optional-explicit-inline-placement) and [Footnotes](/en/docs/configuration#footnotes).
+
+### 3 · Table I, with maths in its cells
+
+<Excerpt region="table" />
+
+Table cells are not parsed for maths, and `^+5^~−4~` would print the two errors one after the other. Each value is set by `renderMath` instead, written into an SVG as paths and drawn in its cell through `TableCell.image`; the cell's `width` is the formula's width as a fraction of the cell, so every value prints at 9 pt whatever the column. The resource types print *FIG. 1* and *TABLE I* in the captions and *Fig. 1* and *Table I* in the text: a `captionPrefix`, and `counterFormat: 'upper-roman'` for tables. Captions take no maths either, and neither face carries Greek, so the captions keep to letters with `^sup^` and `~sub~`.
+
+### 4 · Figures drawn from the open data
+
+<Excerpt region="palette" />
+
+The four figures are drawn in code from the data files GWOSC publishes with the letter, under CC BY 4.0. Each trace keeps every eighth sample, 430 points for the 0.21 s of Figure 1, and stored as one base-64 character per point for its change from the previous one, which keeps the five traces under 3 KB inside the script. The residual row is the data less the waveform, as published. Hanford is orange and Livingston blue in every figure, and the text keeps the page's ink and one blue. The labels are MathJax paths in its sans-serif face (`\textsf`), since an SVG drawn as an image cannot use the page's fonts, and the PDF keeps every line and label as vectors.
+
+## Variations
+
+### Use the bundled IEEE style as it ships
+
+Drop the edits and the references read *[2], [3], [4]* in the text and *A. Einstein, “title”, journal…* in the list.
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Raise the numbers as Nature does
+
+Nature's style sets superscript numbers and lists titles; it is bundled.
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'nature', link: true,
+```
+
+### Set it on A4
+
+Change the trim; the measure, the columns and every figure follow from it.
+
+```diff
+-const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 21, 21, 16, 7];
++const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [210, 297, 22, 22, 15, 7];
+```
+
+## Pitfalls
+
+- A `'here'` resource with `span: 'page'` in a two-column flow is set one column wide. Put it in a box whose style has `span: 'page'`, as the `plate` box does here.
+- A Greek letter, ⊙ or ≃ in a caption or a table cell falls back to a system face on screen and is missing from the PDF, which embeds the Latin files of each face. Write those symbols as maths in the text, and draw them in figures and cells.
+- A list of hundreds of authors does not belong in a BibTeX file. Write the name as the journal prints it, in double braces: `author={{B. Abbott et al.}}`.
+- Keep the licence line of the paper and of the data. Here a footnote and the colophon say what was cut, and each caption's note names the data and what the redrawn figure leaves out.

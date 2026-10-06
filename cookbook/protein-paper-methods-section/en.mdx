@@ -1,0 +1,73 @@
+---
+title: "A protein paper with a Methods section"
+summary: "The AlphaFold paper re-set on A4: a bold summary across the page, Nature superscripts, and Methods in smaller type whose citations number on from the text."
+plain: "A famous biology paper, shortened and laid out again as a journal article. The Methods follow the main text in smaller type, and their references keep counting from where the main text stopped."
+description: "The AlphaFold paper re-set in Postext: Nature superscript citations, a smaller Methods section numbered on, 34 authors and a figure drawn from PDB data."
+question: "How do I set the Methods in smaller type after the main text, with citations that continue the numbering?"
+aliases: ["Methods section", "Nature style", "superscript citations", "life sciences", "structural biology", "computational biology", "AlphaFold", "protein structure", "PDB", "pLDDT", "long author list", "summary paragraph", "data availability", "code availability", "Jumper et al. 2021"]
+pageNotes: { "1": "Page 1: a deep blue band with ARTICLE · STRUCTURAL BIOLOGY in white capitals, the two-line title Highly accurate protein structure prediction with AlphaFold in bold sans, all 34 authors in small type with raised affiliation numbers, a source line with the DOI and the licence, then the summary in bold across the page with raised citations 1–4 to 15. Four lines of two-column text follow, and Fig. 1 across the foot of the page: a, a bar chart of median r.m.s.d.95, AlphaFold 0.96 and 1.5 Å against 2.8 and 3.5 Å for the next best method, with a dashed line at 1.4 Å; b, a grey experimental backbone of target T1049 with the model's trace inside it in blues and yellow by pLDDT.", "2": "Page 2: the introduction ends and the sections The AlphaFold network and Evoformer run in two justified serif columns, with sans headings and raised citation numbers.", "3": "Page 3: End-to-end structure prediction and the Discussion in the left column; the Discussion ends in the right column and the Methods begin under a larger heading, in smaller type, with the subsections IPA and Inputs and data sources in blue.", "4": "Page 4: the rest of the Methods, Table 1 of inference times with a blue header row, Metrics, Data availability, Code availability, and the first 24 numbered references in the right column.", "5": "Page 5: references 25 to 55, then the acknowledgements, the affiliations and a note on this edition in small sans type." }
+---
+
+## What you'll build
+
+Five pages of a life-science journal article on A4: Jumper et al.'s *Highly accurate protein structure prediction with AlphaFold*, abridged from Nature under CC BY 4.0. A blue band opens the first page over the title, all 34 authors in 7.4 pt with raised affiliation numbers, and the summary set bold across the page. Fig. 1 sits at the foot: a bar chart of the CASP14 accuracies the text quotes, and the backbone of target T1049 traced from the PDB with the AlphaFold model drawn inside it, coloured by confidence. The text cites with Nature's raised numbers. The Methods follow the Discussion in 8.2 pt, and a work they cite for the first time takes the next number after the main text's last, so one reference list closes the article.
+
+## Method
+
+### 1 · One numbering for the text and the Methods
+
+The code is [the short answer](#the-short-answer) above. Citations take their numbers in order of first citation, so you do nothing to continue the count: the Methods come after the main text, and jackhmmer, first cited there, gets 36 while the Amber force field, cited earlier in the main text, keeps its 30. The Methods heading is a level-1 heading with a style of its own; a heading style opens a section that runs to the next level-1 heading, and its `bodyStyle` sets the text of that section in 8.2 pt on 10.8 pt. `breakBefore: { enabled: false }` keeps it in the column, and `runningChapter: false` keeps the running heads on the article's title. The bundled `nature` style needs one edit: an article with a DOI but no volume yet printed its DOI twice. For your own paper, paste your `.bib` export into a `:::references{format=bibtex}` block (this one keeps the main text's works and the Methods' works in two blocks), cite with `[@key]` straight after the word, and change `nature` to your journal's style.
+
+### 2 · A title block for 34 authors
+
+<Excerpt region="title" />
+
+The author list is one heading attribute, `authors="John Jumper^1,4^, Richard Evans^1,4^, …"`, set in Noto Sans at 7.4 pt across the full measure, where 34 names take five lines. `inlineMarks` raises the affiliation numbers. The affiliations and the equal-contribution note go to the end, under *Author information*, as Nature prints them, so the opening page keeps room for the summary and the figure. No author is dropped: the running head on the versos shortens the list to *Jumper et al.*
+
+### 3 · The summary across the page, Fig. 1 at its foot
+
+<Excerpt region="resources" />
+
+The summary is a box with `span: 'page'` and no frame, its text in Noto Sans semibold. Right after it, a second frameless box with `placement: 'bottom'` holds `::resource{id="fig1"}`: the box floats to the foot of the first page and the two columns of text start under the summary, above it. The figure's caption begins with a bold sentence, as Nature's legends do; the type's `captionPrefix` and the caption style's `labelSeparator` make the label read *Fig. 1 |*. Table 1 is embedded where it stands in the Methods with `position: 'here'`.
+
+### 4 · A protein backbone drawn from open coordinates
+
+<Excerpt region="art" />
+
+The coordinates were read once, when the recipe was written, from PDB entry 6Y4F (CC0) and from the AlphaFold Database model of the same protein (CC BY 4.0), superposed on their Cα atoms and turned onto the principal axes of the experiment. The pen keeps them as three short arrays. Each trace is a chain of Bézier segments through the Cα positions, painted from the farthest to the nearest with a paper halo, which gives depth without shading. The model's colours are the pLDDT bands the AlphaFold Database uses, read from the B-factor column of its file.
+
+### 5 · Greek letters and accents in the PDF
+
+<Excerpt region="subsets" />
+
+Fontsource splits each face by script. The kit loads the latin files, and latin-ext when the text needs it, but not greek, so Cα and χ would come from a fallback face on screen and be missing from the PDF. The region loads each face's greek file for the canvas and gives `renderToPdf` a font provider that adds the latin-ext and greek files of a face when the text it sets needs them.
+
+## Variations
+
+### Keep the Methods at the text size
+
+Some journals set the Methods in the same type as the text; drop the section's body style and keep the heading.
+
+```diff
+-  bodyStyle: { fontSize: pt(8.2), lineHeight: pt(SMALL) } };
++};
+```
+
+### Number in brackets
+
+Some journals in the same field print [1] on the line.
+
+```diff
+-  style: 'custom', customStyle: nature, // raised 1–4, "Nature 577, 706–710 (2020)." entries
++  style: 'custom', customStyle: nature, marker: 'brackets',
+```
+
+### Use the Vancouver list
+
+For a medical journal, start from the bundled NLM style, as the <RecipeLink slug="medical-article-vancouver">medical article in Vancouver style</RecipeLink> does.
+
+## Pitfalls
+
+- BibTeX's `and others` is read as an author called *others*. The Nature style writes *et al.* after the first author once a work has six or more, so these references list their first six authors from Crossref.
+- Nature prints the main text's references before the Methods and the new ones after them. Postext sets one list: `:::bibliography{scope=chapter}` lists every work a chapter cites, so a list after the Methods would repeat the works they cite again.
+- A heading style's `bodyStyle` changes the text's size and leading, not the baseline grid: the Methods headings use `snapToGrid: false`, or the line under each one would jump to the next line of the main text's grid.
