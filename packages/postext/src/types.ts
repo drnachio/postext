@@ -290,7 +290,8 @@ export interface TableCell {
   /** Cell content (plain text / inline markdown). A newline, or `\\` as in
    *  captions and notes, starts a new paragraph. A paragraph of ordinary
    *  spaces sets nothing; one holding a no-break space (U+00A0) sets a line.
-   *  `\$` prints a dollar sign (cells are not parsed for maths). */
+   *  `$…$` is an inline formula, read by Pandoc's rule (#541), and `\$`
+   *  prints a dollar sign. */
   content: string;
   /** Optional image drawn inside the cell, above the content. */
   image?: TableCellImage;
@@ -2723,6 +2724,18 @@ export interface HeadingLevelConfig {
    *  line that opener paints, even where the heading's own measure fits the
    *  title on fewer (a justified title, a forced break). */
   span?: HeadingSpan;
+  /** Whether a `span: 'page'` heading starts a new page. Default `true`:
+   *  it opens the next page (and `breakBefore` picks its side). `false`,
+   *  with `breakBefore.enabled: false`, opens it where the text reaches
+   *  (#539), as a page-span box does: the columns above end level (the
+   *  band is balanced, `headings.balancing.trailing`), the heading's band
+   *  (its design, or the default opener) is set across the content area
+   *  under them, and the text goes on in every column below it — a second
+   *  article of a bulletin under the end of the first. When the room left
+   *  would not hold the heading and the widow minimum of lines under it,
+   *  it opens the next page as before. No effect on a `span: 'column'`
+   *  heading. */
+  spanBreak?: boolean;
   /** When enabled, the heading renders as a design slot. */
   advancedDesign?: HeadingAdvancedDesignConfig;
   /** Letter-case transform applied to the heading title (after any
@@ -2796,6 +2809,9 @@ export interface ResolvedHeadingLevelConfig {
   letterSpacing: Dimension;
   breakBefore: ResolvedHeadingBreakBeforeConfig;
   span: HeadingSpan;
+  /** `false` when set so (see {@link HeadingLevelConfig.spanBreak});
+   *  absent, the default, is `true`. */
+  spanBreak?: boolean;
   advancedDesign: ResolvedHeadingAdvancedDesignConfig;
   textTransform: HeadingTextTransform;
   hidden: boolean;
@@ -2868,7 +2884,8 @@ export interface HeadingsConfig {
    *  `span: 'page'` heading without a design sets the bold, italic and
    *  script runs too; a heading design (a designed opener band, an
    *  in-column `advancedDesign`) prints `{titleText}` as plain text either
-   *  way. Default `true`; configurations stored earlier whose
+   *  way, unless its text element reads inline marks (`inlineMarks: true`):
+   *  there `{titleText}` keeps the heading's runs (#539). Default `true`; configurations stored earlier whose
    *  headings carry marks are read with `false` (see `migrateConfig` in
    *  `postext/bundle`). */
   inlineMarks?: boolean;
@@ -4576,7 +4593,9 @@ export interface DesignTextElement {
    *  the marker character itself (`\*`). Bold runs take weight 700 (the
    *  element's own weight when it is heavier); italic runs flip the
    *  element's slant; scripts are set smaller and raised or lowered, as in
-   *  the body text. Default `false`: the text is set exactly as written. */
+   *  the body text. In a heading design, `{titleText}` then keeps the
+   *  heading's own bold, italic and script runs (#539). Default `false`:
+   *  the text is set exactly as written. */
   inlineMarks?: boolean;
   /** Outline drawn around the glyphs (see `DesignTextStroke`). */
   stroke?: DesignTextStroke;

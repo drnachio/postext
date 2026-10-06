@@ -21,6 +21,12 @@ export type DesignContextKind = 'header' | 'footer' | 'heading' | 'part';
 /** Heading-specific fields for placeholder resolution. */
 export interface HeadingPlaceholderInfo {
   titleText: string;
+  /** The title as inline Markdown, when the heading sets bold, italic,
+   *  superscript or subscript runs (`DefaultOpenerTitle.marked`): what
+   *  `{titleText}` prints in a design text element that reads inline marks
+   *  (`inlineMarks: true`), so the element sets the heading's runs (#539).
+   *  Elements that do not read marks print {@link titleText}. */
+  titleMarked?: string;
   /** Formatted number per the level's `numberingTemplate`, or empty string. */
   formattedNumber: string;
   /** Raw numeric counter for the heading level, if available. */
@@ -296,6 +302,14 @@ export function resolveDesignResourceId(template: string, ctx: DesignPlaceholder
  *  mirrors from the document (a title, a frontmatter value) is printed as
  *  written, so a code span holding `\n` stays on its line; its real
  *  newlines (a `\\` title break) still start new lines. */
-export function resolveDesignText(template: string, ctx: DesignPlaceholderContext): string {
-  return resolveDesignPlaceholders(unescapeLineBreaks(template), ctx, { attrValue: unescapeLineBreaks }).text;
+export function resolveDesignText(
+  template: string,
+  ctx: DesignPlaceholderContext,
+  /** The element reads inline marks: `{titleText}` is the marked title of
+   *  a heading that has one (see {@link HeadingPlaceholderInfo.titleMarked}). */
+  inlineMarks = false,
+): string {
+  const h = ctx.heading;
+  const at = inlineMarks && h?.titleMarked !== undefined ? { ...ctx, heading: { ...h, titleText: h.titleMarked } } : ctx;
+  return resolveDesignPlaceholders(unescapeLineBreaks(template), at, { attrValue: unescapeLineBreaks }).text;
 }

@@ -97,6 +97,7 @@ import {
   isBandLevel,
   bandUsedBottom,
   closeBandAndInsertSpan,
+  closeBandAt,
   pageLayoutOf,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
@@ -2555,6 +2556,8 @@ function placeDocumentPass(
     const page = doc.pages[cursor.pageIndex]!;
     for (const otherCol of page.columns) {
       if (otherCol === headingCol) continue;
+      // An opener set mid-page (#539) heads its own band only.
+      if ((otherCol.band ?? 0) !== (headingCol.band ?? 0)) continue;
       if (otherCol.blocks.length === 0 && otherCol.availableHeight >= otherCol.bbox.height - 0.01) {
         const foot = otherCol.bbox.y + h;
         const text = otherCol.kind !== 'side' && otherCol.kind !== 'span';
@@ -2657,6 +2660,67 @@ function placeDocumentPass(
     else sideObstacles.set(side, marks);
     sideObstacleColumn.set(blk, side);
   };
+  /**
+   * A `span: 'page'` heading with `spanBreak: false` (#539) opens where the
+   * text reaches: the band the flow is in closes level under its text (a
+   * trailing cap levels an uneven band in the next pass, as at a chapter's
+   * end) and a fresh band opens under it, the heading at the head of its
+   * first column, so the opener machinery sets it across the page as at a
+   * page top (`reserveOpenerBand` keeps to the band). False — the caller
+   * then opens the next page as before — when the room left under the cut
+   * would not hold the heading's band, its margins and the widow minimum of
+   * body lines. A band nothing was placed in yet (a page top, the band under
+   * a span block) takes the heading as it stands.
+   */
+  const openSpanHeadingHere = (blockIdx: number, rawBlock: ContentBlock, level: ResolvedHeadingLevelConfig): boolean => {
+    const page = doc.pages[cursor.pageIndex]!;
+    if (page.partInfo || currentColumn(doc, cursor).kind === 'span') return false;
+    const band = currentBand(page, cursor);
+    const cols = bandColumns(page, band);
+    if (cols.length === 0) return false;
+    if (!cols.some((c) => c.blocks.length > 0)) {
+      // Floats at the head of the band are its content too: the heading
+      // goes under them in the band's first column.
+      cursor.columnIndex = cols[0]!.index;
+      return true;
+    }
+    // What the heading takes: its lines (at the page width when the default
+    // opener paints it) or its design's band, with its margins.
+    const width = page.contentArea.width;
+    const measureCtx = partPlan.byBlock[blockIdx] ? partMeasureCtx : sectionMeasureCtx(sectionPlan.byBlock[blockIdx]);
+    const measured = measureContentBlock(rawBlock, blockIdx, opensDefaultOpener(rawBlock) ? width : cols[0]!.bbox.width, measureCtx);
+    if (!measured) return false;
+    const style = measured.kind.style;
+    let height = measured.measured.totalHeight;
+    if (level.advancedDesign.enabled) {
+      const pref = measured.kind.numberPrefix ?? '';
+      const title = defaultOpenerTitle(measured.measured.lines, pref, rawBlock.titleBreaks, rawBlock.text.length, level.numberSeparator);
+      const design = measureHeadingDesign(
+        level,
+        { titleText: title.titleText, ...(title.marked !== undefined ? { titleMarked: title.marked } : {}), formattedNumber: pref, attrs: rawBlock.attrs },
+        width, resolved.page.dpi, doc.metadata, cursor.pageIndex, designFramesOn(page), undefined, resourceById,
+      );
+      height = Math.max(height, design.height, design.textFloor);
+    }
+    // Level the band first: in this pass the cap is proposed (the heading
+    // moves on as before); in the capped pass the heading arrives in the
+    // band cut level for it and the cap counts as delivered.
+    const capHere = activeCap !== null && activeCap.spanIndex === blockIdx
+      && activeCap.pageIndex === page.index && activeCap.band === band;
+    proposeTrailingCap(blockIdx);
+    const used = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+    if (!capHere && Math.max(...used) - Math.min(...used) > baselineGrid + 0.5 && bandCapProposals.has(blockIdx)) return false;
+    const cutY = gridUpOnPage(page, bandUsedBottomWithSide(page, cols));
+    const top = gridUpOnPage(page, cutY + Math.max(pendingSpacing, style.marginTopPx));
+    const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
+    const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
+    if (top + height + style.marginBottomPx + minLines * bodyStyle.lineHeightPx > bandBottom + 0.01) return false;
+    if (capHere) uncapBand(cols, uncappedBottoms);
+    if (!closeBandAt(page, cols, cutY, top, cursor)) return false;
+    pendingSpacing = 0;
+    return true;
+  };
+
   /** `rollbackTrailingBlocks` that also drops a rolled-back heading's
    *  side-column obstacles: the heading is set again further on. */
   const rollbackHeadings = (col: VDTColumn): VDTBlock[] => {
@@ -3771,7 +3835,9 @@ function placeDocumentPass(
       }
       if (b.type === 'heading' && b.level) {
         const level = headingLevels.forBlock(b);
-        return level?.breakBefore?.enabled === true || level?.span === 'page';
+        // A page-span heading that opens mid-page (`spanBreak: false`,
+        // #539) ends no page.
+        return level?.breakBefore?.enabled === true || (level?.span === 'page' && level.spanBreak !== false);
       }
       return false;
     }
@@ -4600,8 +4666,10 @@ function placeDocumentPass(
       // `span: 'page'` headings open a chapter band across the full content
       // width. Always start on a fresh page boundary so the band sits at the
       // page top, and reset the cursor to column 0 so all other columns will
-      // have their availableHeight reduced symmetrically after placement.
-      if (level?.span === 'page') {
+      // have their availableHeight reduced symmetrically after placement —
+      // unless the level opens it where the text reaches (`spanBreak:
+      // false`, #539) and the page holds it there.
+      if (level?.span === 'page' && !(level.spanBreak === false && !bb?.enabled && openSpanHeadingHere(blockIdx, rawBlock, level))) {
         pendingSpacing = 0;
         closeFlowSegment(blockIdx);
         advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
@@ -5169,12 +5237,12 @@ function placeDocumentPass(
           const pref = numberPrefix ?? '';
           // The lines joined back into the title (EF-162), as the design is
           // painted (`buildHeadersAndFooters`).
-          const title = headingTitleText(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length, lvl.numberSeparator);
+          const { titleText: title, marked: titleMarked } = defaultOpenerTitle(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length, lvl.numberSeparator);
           // Span-page openers lay out across the full content area (both
           // columns); in-column headings use just the column width.
           const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
           const measureWidth = lvl.span === 'page' ? pageArea.width : curCol.bbox.width;
-          const info: HeadingPlaceholderInfo = { titleText: title, formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), ...(resolved.numerals ? { numerals: resolved.numerals } : {}), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
+          const info: HeadingPlaceholderInfo = { titleText: title, ...(titleMarked !== undefined ? { titleMarked } : {}), formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), ...(resolved.numerals ? { numerals: resolved.numerals } : {}), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
           const design = measureHeadingDesign(
             lvl,
             info,

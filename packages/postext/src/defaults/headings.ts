@@ -158,6 +158,9 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       letterSpacing: override?.letterSpacing ?? def.letterSpacing,
       breakBefore: resolveBreakBefore(override?.breakBefore, def.breakBefore),
       span: override?.span ?? def.span,
+      // Absent unless turned off (#539): every other configuration
+      // resolves as before.
+      ...(override?.spanBreak === false ? { spanBreak: false } : {}),
       advancedDesign: resolveAdvancedDesign(override?.advancedDesign),
       textTransform: override?.textTransform ?? def.textTransform,
       hidden: override?.hidden ?? def.hidden,
@@ -211,6 +214,7 @@ export function resolveHeadingLevelOverrides(
   if (partial.letterSpacing !== undefined) out.letterSpacing = partial.letterSpacing;
   if (partial.breakBefore !== undefined) out.breakBefore = resolveBreakBefore(partial.breakBefore);
   if (partial.span !== undefined) out.span = partial.span;
+  if (partial.spanBreak !== undefined) out.spanBreak = partial.spanBreak !== false;
   if (partial.advancedDesign !== undefined) out.advancedDesign = resolveAdvancedDesign(partial.advancedDesign);
   if (partial.textTransform !== undefined) out.textTransform = partial.textTransform;
   if (partial.hidden !== undefined) out.hidden = partial.hidden;
@@ -433,6 +437,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       }
       if (level.span !== undefined && level.span !== 'column') {
         entry.span = level.span;
+        levelHasOverride = true;
+      }
+      if (level.spanBreak === false) {
+        entry.spanBreak = false;
         levelHasOverride = true;
       }
       if (level.textTransform !== undefined && level.textTransform !== 'none') {

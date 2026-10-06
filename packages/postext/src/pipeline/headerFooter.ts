@@ -488,7 +488,7 @@ export function layoutSlotToVdt(
       // written (no markers or escapes of its own); otherwise only the range
       // maps back.
       const keepMap = !el.inlineMarks || src.text === undefined
-        || plainDesignText(resolveDesignText(el.content, placeholders)).includes(src.text);
+        || plainDesignText(resolveDesignText(el.content, placeholders, el.inlineMarks === true)).includes(src.text);
       sourceByElement.set(el.id, keepMap ? src : { start: src.start, end: src.end });
     }
   }
@@ -583,6 +583,9 @@ function findOpenerHeading(
   levels: HeadingLevelResolver,
 ): { block: VDTBlock; level: number; title: DefaultOpenerTitle; numberPrefix: string } | undefined {
   for (const col of page.columns) {
+    // An opener set mid-page (`spanBreak: false`, #539) heads a later band:
+    // it paints its own overlay (see `buildHeadersAndFooters`).
+    if ((col.band ?? 0) > 0) continue;
     for (const block of col.blocks) {
       if (block.type !== 'heading' || !block.headingLevel) continue;
       const lvl = levels.forLevel(block.headingLevel, block.headingStyleId);
@@ -803,7 +806,7 @@ export function measureDefaultOpenerHeight(
 ): number {
   const slot = synthesiseDefaultOpenerSlot(level, numberPrefix.length > 0, textAlign, title.marked !== undefined);
   const placeholders = headingPlaceholders(
-    { titleText: title.marked ?? title.titleText, formattedNumber: numberPrefix },
+    { titleText: title.titleText, ...(title.marked !== undefined ? { titleMarked: title.marked } : {}), formattedNumber: numberPrefix },
     metadata,
     pageIndex,
   );
@@ -1226,9 +1229,10 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
       const level = headingLevels.forLevel(opener.level, opener.block.headingStyleId);
       if (level) {
         const designed = level.advancedDesign.enabled && level.advancedDesign.slot.elements.length > 0;
-        // The default opener prints the heading's runs (`marked`); a design's
-        // `{titleText}` is the plain title.
-        const marked = designed ? undefined : opener.title.marked;
+        // The default opener prints the heading's runs (`marked`); a
+        // design's `{titleText}` is the plain title, or the marked one in
+        // an element that reads inline marks (#539).
+        const marked = opener.title.marked;
         const slot = designed
           ? level.advancedDesign.slot
           : synthesiseDefaultOpenerSlot(level, opener.numberPrefix.length > 0, resolved.headings.textAlign, marked !== undefined);
@@ -1247,7 +1251,8 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           partNumberByPageIndex,
           partPaletteByPageIndex,
           heading: {
-            titleText: marked ?? opener.title.titleText,
+            titleText: opener.title.titleText,
+            ...(marked !== undefined ? { titleMarked: marked } : {}),
             formattedNumber: opener.numberPrefix,
             numericValue: opener.block.headingNumber,
             locale,
@@ -1327,14 +1332,18 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         if (block.type !== 'heading' || !block.headingLevel) continue;
         const lvl = headingLevels.forLevel(block.headingLevel, block.headingStyleId);
         if (!lvl) continue;
-        if (lvl.span === 'page') continue;
-        if (!lvl.advancedDesign.enabled) continue;
-        if (lvl.advancedDesign.slot.elements.length === 0) continue;
+        // A page-span heading opened mid-page (`spanBreak: false`, #539)
+        // heads a band under the page's first: its design, or the default
+        // opener, is laid out across the content area at the heading.
+        const midPage = lvl.span === 'page' && (col.band ?? 0) > 0 && !headingIsHidden(block, lvl);
+        const designed = lvl.advancedDesign.enabled && lvl.advancedDesign.slot.elements.length > 0;
+        if (lvl.span === 'page' && !midPage) continue;
+        if (!midPage && !designed) continue;
         const pref = block.numberPrefix ?? '';
         // The lines joined back into the title (EF-162), with a forced break
         // (`\\`) as a newline, as the block's height was measured
         // (`build.ts`) and as an opener prints it (EF-152).
-        const title = headingTitleText(block.lines, pref, block.titleBreaks, block.titleLength ?? -1, block.numberSeparator);
+        const { titleText: title, marked } = defaultOpenerTitle(block.lines, pref, block.titleBreaks, block.titleLength ?? -1, block.numberSeparator);
         const placeholders: DesignPlaceholderContext = {
           kind: 'heading',
           page,
@@ -1351,6 +1360,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           partPaletteByPageIndex,
           heading: {
             titleText: title,
+            ...(marked !== undefined ? { titleMarked: marked } : {}),
             formattedNumber: pref,
             numericValue: block.headingNumber,
             locale,
@@ -1359,8 +1369,12 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           },
         };
         const overlay = layoutSlotToVdt(
-          lvl.advancedDesign.slot,
-          { x: block.bbox.x, y: block.bbox.y, width: block.bbox.width, height: block.bbox.height },
+          designed
+            ? lvl.advancedDesign.slot
+            : synthesiseDefaultOpenerSlot(lvl, pref.length > 0, resolved.headings.textAlign, marked !== undefined),
+          midPage
+            ? openerContainerBbox(block, contentArea)
+            : { x: block.bbox.x, y: block.bbox.y, width: block.bbox.width, height: block.bbox.height },
           page.index + pageIndexOffset,
           placeholders,
           dpi,

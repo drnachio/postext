@@ -735,7 +735,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>解決後のテキストを、プレースホルダーの値も含めてインラインのMarkdownとして読みます。<code>**bold**</code>、<code>*italic*</code>、<code>^superscript^</code>、<code>~subscript~</code>が使えます。オフのときは記号が書かれたとおりに出力されます。<a href="#インラインの書式記号と輪郭線">インラインの書式記号と輪郭線</a>を参照してください。</td>
+      <td>解決後のテキストを、プレースホルダーの値も含めてインラインのMarkdownとして読みます。<code>**bold**</code>、<code>*italic*</code>、<code>^superscript^</code>、<code>~subscript~</code>が使えます。オフのときは記号が書かれたとおりに出力されます。見出しのデザインでは、このとき<code>{'{titleText}'}</code>が見出し自身の太字・イタリック・上付き・下付きの範囲（<code>*Pneumocystis*</code>、<code>CO~2~</code>）を保ち、そのほかの文字はエスケープされて書かれたとおりに出力されます（postext 1.19から）。<a href="#インラインの書式記号と輪郭線">インラインの書式記号と輪郭線</a>を参照してください。</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
@@ -1954,7 +1954,7 @@ Postextは、左から右に書くアルファベット系の文字体系と、�
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>見出しが段落と同じように文字書式の記号を読むかどうか。対象は<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>、リンクです。イタリックの範囲は見出しの傾きを反転させるため、イタリックの見出しの中では立体（ローマン）になります。太字の範囲は<code>bodyText.boldFontWeight</code>を使い、見出し自身のウェイトのほうが重ければそちらを使います。目次にも太字とイタリックの範囲が反映されます。柱とPDFのしおりには文字だけが出ます。<code>false</code>では記号を取り除き、postext 1.4までと同様に、語を見出し自身のスタイルで組みます。デザインのない<code>span: 'page'</code>見出しの既定の章扉も、太字・イタリック・上付き・下付きの範囲を組みます。見出しのデザイン（デザインした章扉の帯、または段内の<code>advancedDesign</code>）は、どちらの場合も<code>{'{titleText}'}</code>をプレーンテキストとして出力します。それ以前に保存された設定のうち見出しに記号を含むものは、<code>false</code>として読み込みます（<a href="#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。</td>
+      <td>見出しが段落と同じように文字書式の記号を読むかどうか。対象は<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>、リンクです。イタリックの範囲は見出しの傾きを反転させるため、イタリックの見出しの中では立体（ローマン）になります。太字の範囲は<code>bodyText.boldFontWeight</code>を使い、見出し自身のウェイトのほうが重ければそちらを使います。目次にも太字とイタリックの範囲が反映されます。柱とPDFのしおりには文字だけが出ます。<code>false</code>では記号を取り除き、postext 1.4までと同様に、語を見出し自身のスタイルで組みます。デザインのない<code>span: 'page'</code>見出しの既定の章扉も、太字・イタリック・上付き・下付きの範囲を組みます。見出しのデザイン（デザインした章扉の帯、または段内の<code>advancedDesign</code>）は、どちらの場合も<code>{'{titleText}'}</code>をプレーンテキストとして出力します。ただし、そのテキスト要素がインラインの書式記号を読む場合（<code>inlineMarks: true</code>）は、<code>{'{titleText}'}</code>が見出しの太字・イタリック・上付き・下付きの範囲を保ちます（postext 1.19から）。それ以前に保存された設定のうち見出しに記号を含むものは、<code>false</code>として読み込みます（<a href="#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2377,6 +2377,12 @@ headings: {
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
       <td><code>'page'</code>のとき、見出しは章扉として扱われ、その詳細デザイン（有効な場合）は本文の上の章扉の帯としてページに付きます。章扉が確実に新しいページから始まるよう、<code>breakBefore.enabled: true</code>と組み合わせてください。独自のデザインがない場合、タイトルは既定の章扉が版面の全幅にわたって描きます。レベルの文字組みと行送りを使い、太字・イタリック・上付き下付きの範囲（<code>headings.inlineMarks</code>）も反映し、帯はその幅で測ります。帯は章扉が描くすべての行を収めます。章扉が見出し自身の行長より多くの行を使う場合（語間を詰めれば1行に収まってしまう両端そろえのタイトル、強制改行<code>{'\\\\'}</code>）も、帯はその行数を取ります。postext 1.4までは帯を段の幅で折り返したタイトルで測っていたため、版面の幅なら1行に収まるタイトルが2行分の高さの帯を取り、その中央に1行が置かれていました。ほかの段も、見出し自身の段と同じく帯の下から始まります。それらの段の冒頭の本文は、章扉自身の段で何が続くかにかかわらず、章扉の直下の本文が始まる位置から始まります。つまり、タイトルまたはデザインの下に章扉の<code>marginBottom</code>を取り、レベルが吸着するときは次のグリッド行まで進めた位置です。それらの段を見出し、別行立て数式、目次の行で始める場合は、章扉の下にある最初の見出しや別行立て数式と同じ高さに、そこでの空きも含めて置きます。章扉の段がそれ以外の内容で続く場合は、その本文が始まる位置から始まります。章扉の下の非表示の見出しは数に入らず、<a href="#段末そろえ">段末そろえ</a>が章扉の下の見出しの上に足した空きは、ほかの段では繰り返しません。これらの段がグリッドに吸着させるものは、ページのグリッドに乗ります。postext 1.4までは、それらの段の最初のブロックは帯の下端に置かれていました。帯が2行の間で終わればグリッドから外れ、章扉の後に見出しが続くと空きなしで帯に接していました（帯がグリッド上で終わる場合は現在より1行上）。また、そこにある見出しは、最初の段の見出しが保っていた上の空きも失っていました。</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>span: 'page'</code>の見出しが新しいページから始まるかどうかです。<code>true</code>は次のページを開きます（左右は<code>breakBefore</code>で決まります）。<code>false</code>で<code>breakBefore.enabled: false</code>のときは、ページ幅の囲みと同じく、本文が届いた位置で見出しを開きます。上の段は高さをそろえて終わり（<code>headings.balancing.trailing</code>が有効なら帯を均等化します）、見出しのデザインまたは既定の章扉がその下に版面の幅いっぱいに組まれ、本文はその下のすべての段で続きます。会報で2本目の記事を1本目の終わりの下から始める場合などです。残りの余白に見出しとその下の最小行数（ウィドウ）が収まらないときは、<code>true</code>と同じく次のページを開きます。ページの役割は最初のブロックで決まるままです。<code>span: 'column'</code>の見出しには効きません。見出しスタイルでも指定できます。postext 1.19から。</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>

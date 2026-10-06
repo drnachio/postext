@@ -921,7 +921,7 @@ export function layoutDesignSlot(
   const textContent = new Map<string, string>();
   for (const el of ordered) {
     if (el.kind === 'text') {
-      const text = resolveDesignText(el.content, context.placeholders);
+      const text = resolveDesignText(el.content, context.placeholders, el.inlineMarks === true);
       textContent.set(el.id, el.textTransform === 'uppercase' ? text.toLocaleUpperCase() : text);
     }
   }

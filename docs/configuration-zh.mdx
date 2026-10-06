@@ -733,7 +733,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>把解析后的文本（包括占位符的值）当作行内Markdown读取：<code>**bold**</code>、<code>*italic*</code>、<code>^superscript^</code>、<code>~subscript~</code>。关闭时，这些标记按原样输出。见<a href="#inline-marks-and-outlines">行内标记与描边</a>。</td>
+      <td>把解析后的文本（包括占位符的值）当作行内Markdown读取：<code>**bold**</code>、<code>*italic*</code>、<code>^superscript^</code>、<code>~subscript~</code>。关闭时，这些标记按原样输出。在标题设计中，<code>{'{titleText}'}</code>此时保留标题自身的粗体、斜体、上标和下标片段（<code>*Pneumocystis*</code>、<code>CO~2~</code>），其余字符经过转义，按原样输出（postext 1.19 起）。见<a href="#inline-marks-and-outlines">行内标记与描边</a>。</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
@@ -1951,7 +1951,7 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>标题是否像段落一样识别行内标记：<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>和链接。斜体片段会翻转标题的倾斜，所以在斜体标题中它显示为正体；粗体片段采用<code>bodyText.boldFontWeight</code>，若标题自身的字重更重则采用标题字重。目录也会列出粗体和斜体片段；书眉和PDF书签只输出文字。为<code>false</code>时去掉标记，文字按标题自身的样式输出，与postext 1.4及以前一样。没有设计的<code>span: 'page'</code>标题，其默认章首区段也会排出粗体、斜体、上标和下标片段；标题设计（带设计的章首区段或栏内<code>advancedDesign</code>）无论如何都把<code>{'{titleText}'}</code>作为纯文本输出。更早保存、且标题中带有标记的配置按<code>false</code>读取（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。</td>
+      <td>标题是否像段落一样识别行内标记：<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>和链接。斜体片段会翻转标题的倾斜，所以在斜体标题中它显示为正体；粗体片段采用<code>bodyText.boldFontWeight</code>，若标题自身的字重更重则采用标题字重。目录也会列出粗体和斜体片段；书眉和PDF书签只输出文字。为<code>false</code>时去掉标记，文字按标题自身的样式输出，与postext 1.4及以前一样。没有设计的<code>span: 'page'</code>标题，其默认章首区段也会排出粗体、斜体、上标和下标片段；标题设计（带设计的章首区段或栏内<code>advancedDesign</code>）都把<code>{'{titleText}'}</code>作为纯文本输出，除非其文本元素读取行内标记（<code>inlineMarks: true</code>）：此时<code>{'{titleText}'}</code>保留标题的粗体、斜体与上下标片段（postext 1.19 起）。更早保存、且标题中带有标记的配置按<code>false</code>读取（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2374,6 +2374,12 @@ headings: {
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
       <td>为<code>'page'</code>时，标题被视为章首，其高级设计（如果启用）作为正文上方的章首区段附加到页面上。请与<code>breakBefore.enabled: true</code>搭配使用，确保章首总是开新页。没有自己的设计时，标题由默认章首绘制，横跨整个内容区，使用该级别的字体和行距，并带有粗体、斜体和上下标片段（<code>headings.inlineMarks</code>），区段也按这个宽度测量。区段容纳章首绘制的每一行：章首占用的行数多于标题本身按栏宽测得的行数时（两端对齐的标题本可压缩空格排成一行，或有强制换行<code>{'\\\\'}</code>），区段也把这些行包括在内。postext 1.4及以前，区段按栏宽折行的标题来测量，所以在内容区一行就放得下的标题会占两行高的区段，那一行居中其中。其他各栏与标题所在栏一样从区段下方开始。在这些栏开头的正文，与紧接在章首下方的正文起点相同，不论章首所在栏接下来是什么内容：即章首标题或设计下方的<code>marginBottom</code>，该级别对齐网格时取到下一个网格行。在这些栏开头的标题、行间公式或目录行，与章首下方第一个标题或行间公式平齐，外边距也按那里的计算；章首所在栏接下来是其他内容时，它们与那段文字的起点平齐。章首下方的隐藏标题不计入，<a href="#column-balancing">各栏齐底</a>在章首下方标题上方加的空间也不会在其他栏中重复。这些栏中对齐网格的内容落在页面的网格上。postext 1.4及以前，它们的第一个块紧贴区段底部：区段在两行之间结束时偏离网格；章首后面跟着标题时，则紧挨区段、没有外边距（区段结束在网格上时比现在高一行），那里的标题还丢掉了第一栏的标题所保留的上外边距。</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>span: 'page'</code>标题是否另起一页。<code>true</code>另起下一页（左右页由<code>breakBefore</code>决定）。<code>false</code>且<code>breakBefore.enabled: false</code>时，标题在正文排到之处展开，如同跨页框：上方各栏齐平收束（启用<code>headings.balancing.trailing</code>时对该区段做平衡），标题的设计或默认章首区段在其下方按版心全宽排出，正文在下方各栏继续：例如简报中的第二篇文章紧接在第一篇结尾之下。若剩余空间放不下标题及其下方的寡行最少行数，则与<code>true</code>一样另起下一页。页面角色仍由其第一个块决定。对<code>span: 'column'</code>标题无效。标题样式中也可设置。postext 1.19 起。</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>
