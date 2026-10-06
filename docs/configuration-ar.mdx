@@ -735,7 +735,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>يقرأ النص المحسوم، بما فيه قيم العناصر النائبة، على أنه Markdown مضمّن: <code>**bold**</code> و<code>*italic*</code> و<code>^superscript^</code> و<code>~subscript~</code>. وحين يكون معطّلًا تُطبع العلامات كما كُتبت. انظر <a href="#العلامات-المضمّنة-والخطوط-المحيطية">العلامات المضمّنة والخطوط المحيطية</a>.</td>
+      <td>يقرأ النص المحسوم، بما فيه قيم العناصر النائبة، على أنه Markdown مضمّن: <code>**bold**</code> و<code>*italic*</code> و<code>^superscript^</code> و<code>~subscript~</code>. وحين يكون معطّلًا تُطبع العلامات كما كُتبت. وفي تصميم العنوان يحتفظ <code>{'{titleText}'}</code> عندئذ بمقاطع العنوان نفسه العريضة والمائلة والعلوية والسفلية (<code>*Pneumocystis*</code>، <code>CO~2~</code>)، وتُهرَّب بقية محارفه لتُطبع كما كُتبت (منذ postext 1.19). انظر <a href="#العلامات-المضمّنة-والخطوط-المحيطية">العلامات المضمّنة والخطوط المحيطية</a>.</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
@@ -1319,13 +1319,13 @@ interface ElementPlacement {
       <td><code>referenceBold</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>ارسم تسميات <code>:ref</code> المضمَّنة بالخط العريض.</td>
+      <td>ارسم تسميات <code>:ref</code> المضمَّنة بالخط العريض. تحتفظ الإحالة بتوكيد النص المحيط بها (داخل <code>***…***</code> تبقى عريضة مائلة أيًّا كانت القيمة)؛ ولا يضيف هذا الخيار إلا العرض فوقه.</td>
     </tr>
     <tr>
       <td><code>referenceItalic</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>ارسم تسميات <code>:ref</code> المضمَّنة بالخط المائل.</td>
+      <td>ارسم تسميات <code>:ref</code> المضمَّنة بالخط المائل. تبقى الإحالة الواقعة داخل نص مائل مائلةً أيًّا كانت القيمة.</td>
     </tr>
     <tr>
       <td><code>emphasis</code></td>
@@ -1954,7 +1954,7 @@ const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // forced
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>هل يقرأ العنوان علاماته المضمّنة كما تقرؤها الفقرة: <code>*italic*</code> و<code>**bold**</code> و<code>^superscript^</code> و<code>~subscript~</code> و<code>:smallcaps[…]</code> والروابط. المقطع المائل يعكس ميل العنوان، فيظهر قائمًا في عنوان مائل؛ والمقطع العريض يأخذ <code>bodyText.boldFontWeight</code>، أو وزن العنوان نفسه إن كان أثقل. يعرض جدول المحتويات المقاطع العريضة والمائلة أيضًا؛ أما الترويسات وإشارات PDF المرجعية فتطبع النص وحده. مع <code>false</code> تُحذف العلامات وتُطبع الكلمات بنمط العنوان نفسه، كما كان الحال حتى postext 1.4. الافتتاحية الافتراضية لعنوان <code>span: 'page'</code> ليس له تصميم تضبط أيضًا المقاطع العريضة والمائلة والعلوية والسفلية؛ أما تصميم العنوان (شريط افتتاح مصمَّم أو <code>advancedDesign</code> داخل العمود) فيطبع <code>{'{titleText}'}</code> نصًا عاديًا في الحالتين. الإعدادات المخزّنة سابقًا التي تحمل عناوينها علامات تُقرأ بقيمة <code>false</code> (انظر <a href="#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم المكتوبة بالإصدار postext 1.4 أو أقدم</a>).</td>
+      <td>هل يقرأ العنوان علاماته المضمّنة كما تقرؤها الفقرة: <code>*italic*</code> و<code>**bold**</code> و<code>^superscript^</code> و<code>~subscript~</code> و<code>:smallcaps[…]</code> والروابط. المقطع المائل يعكس ميل العنوان، فيظهر قائمًا في عنوان مائل؛ والمقطع العريض يأخذ <code>bodyText.boldFontWeight</code>، أو وزن العنوان نفسه إن كان أثقل. يعرض جدول المحتويات المقاطع العريضة والمائلة أيضًا؛ أما الترويسات وإشارات PDF المرجعية فتطبع النص وحده. مع <code>false</code> تُحذف العلامات وتُطبع الكلمات بنمط العنوان نفسه، كما كان الحال حتى postext 1.4. الافتتاحية الافتراضية لعنوان <code>span: 'page'</code> ليس له تصميم تضبط أيضًا المقاطع العريضة والمائلة والعلوية والسفلية؛ أما تصميم العنوان (شريط افتتاح مصمَّم أو <code>advancedDesign</code> داخل العمود) فيطبع <code>{'{titleText}'}</code> نصًا عاديًا في الحالتين، ما لم يقرأ عنصره النصي العلامات المضمّنة (<code>inlineMarks: true</code>): فعندئذ يحتفظ <code>{'{titleText}'}</code> بمقاطع العنوان العريضة والمائلة والعلوية والسفلية (منذ postext 1.19). الإعدادات المخزّنة سابقًا التي تحمل عناوينها علامات تُقرأ بقيمة <code>false</code> (انظر <a href="#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم المكتوبة بالإصدار postext 1.4 أو أقدم</a>).</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2074,7 +2074,7 @@ headings: {
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>متى يأخذ الإطار الذي يختم عمودًا قصيرًا المتسعَ الذي تحت قاعدته (الأداة 1، وتُسجَّل باسم <code>trailingCallout</code>). <code>'first'</code>: قبل أي أداة أخرى، كما كان الحال حتى postext 1.4 — يأخذ الإطار الفجوة كلها، ولو كانت عدة أسطر، ولا تنال العناوين التي فوقه شيئًا. <code>'last'</code>: بعد أدوات العناوين ونهايات القوائم والمعادلات المنفصلة والعناصر العائمة، التي تأخذ الأسطر الكاملة أولًا؛ ينزل الإطار مع النص الذي فوقه ثم لا يأخذ إلا ما تركته، وهو عادة جزء من سطر، فتلتقي قاعدته بآخر خانة في الشبكة ويبقى قريبًا من النص الذي يعلّق عليه. <code>'off'</code>: أبدًا؛ يحتفظ الإطار بالمتسع الذي تحت قاعدته، وإن كانت الأدوات الأخرى تستطيع إنزاله بأسطر كاملة حين تضيف مسافة فوقه، ويبقى جزء السطر المتروك تحته. في الصفحة الختامية، حيث الإطار هو الأداة الوحيدة التي تساوي قاعدته بالعمود المجاور، تتركه <code>'off'</code> حيث وضعه التدفق. أي قيمة أخرى تُقرأ <code>'first'</code>.</td>
+      <td>متى يأخذ الإطار الذي يختم عمودًا قصيرًا المتسعَ الذي تحت قاعدته (الأداة 1، وتُسجَّل باسم <code>trailingCallout</code>). <code>'first'</code>: قبل أي أداة أخرى، كما كان الحال حتى postext 1.4 — يأخذ الإطار الفجوة كلها، ولو كانت عدة أسطر، ولا تنال العناوين التي فوقه شيئًا. <code>'last'</code>: بعد أدوات العناوين ونهايات القوائم والمعادلات المنفصلة والعناصر العائمة، التي تأخذ الأسطر الكاملة أولًا؛ ينزل الإطار مع النص الذي فوقه ثم لا يأخذ إلا ما تركته، وهو عادة جزء من سطر، فتلتقي قاعدته بآخر خانة في الشبكة ويبقى قريبًا من النص الذي يعلّق عليه. <code>'off'</code>: أبدًا؛ يحتفظ الإطار بالمتسع الذي تحت قاعدته، وإن كانت الأدوات الأخرى تستطيع إنزاله بأسطر كاملة حين تضيف مسافة فوقه، ويبقى جزء السطر المتروك تحته. في الصفحة الختامية، حيث الإطار هو الأداة الوحيدة التي تساوي قاعدته بالعمود المجاور، تتركه <code>'off'</code> حيث وضعه التدفق. أي قيمة أخرى تُقرأ <code>'first'</code>. أما الإطار الذي يُغلق عمود النص الوحيد في شريطه (صفحة ذات عمود واحد تنتهي مبكرًا وتبدأ كتلتها التالية الصفحة التالية) فلا يُحرَّك أبدًا: لا عمود بجانبه يُحاذى معه (منذ postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2377,6 +2377,12 @@ headings: {
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
       <td>عند <code>'page'</code> يُعامل العنوان صفحةَ افتتاح فصل (opener)، ويُلحق تصميمه المتقدم (إن كان مفعّلًا) بالصفحة شريطَ افتتاح فوق المتن. اقرنه بالقيمة <code>breakBefore.enabled: true</code> كي تبدأ الافتتاحية صفحة جديدة دائمًا. إن لم يكن له تصميم خاص، ترسم العنوانَ افتتاحيةٌ افتراضية عبر منطقة المحتوى كلها، بطباعة المستوى وتباعد أسطره، مع مقاطعه العريضة والمائلة والعلوية والسفلية (<code>headings.inlineMarks</code>)، ويُقاس الشريط بذلك العرض. يتسع الشريط لكل سطر ترسمه الافتتاحية: حيث تأخذ الافتتاحية أسطرًا أكثر مما يأخذه العنوان في قياسه الخاص (عنوان مضبوط كانت مسافاته ستنكمش ليسعه سطر واحد، أو فاصل قسري <code>{'\\\\'}</code>)، يأخذها الشريط أيضًا. حتى postext 1.4 كان الشريط يُقاس والعنوان ملتف بعرض العمود، فكان العنوان الذي يسعه سطر واحد في منطقة المحتوى يأخذ شريطًا بارتفاع سطرين، والسطر موسَّط فيه. تبدأ الأعمدة الأخرى تحت الشريط كما يبدأ عمود العنوان نفسه. النص الذي يفتتح أحدها يبدأ حيث كان سيبدأ النص الواقع مباشرة تحت الافتتاحية، أيًّا كان ما يلي الافتتاحية في عمودها: <code>marginBottom</code> الخاص بالافتتاحية تحت عنوانها أو تصميمها، مأخوذًا إلى سطر الشبكة التالي حين يلتقط المستوى الشبكة. العنوان أو المعادلة المنفصلة أو صف جدول المحتويات الذي يفتتح أحدها يوضع على مستوى أول عنوان أو معادلة منفصلة تحت الافتتاحية، مع حساب الهوامش كما هناك؛ وحين يستمر عمود الافتتاحية بأي شيء آخر، يبدأ حيث يبدأ ذلك النص. العنوان المخفي تحت الافتتاحية لا يُحتسب، والمسافة التي تضيفها <a href="#موازنة-الأعمدة">موازنة الأعمدة</a> فوق العنوان الواقع تحت الافتتاحية لا تتكرر في الأعمدة الأخرى. ما تلتقطه هذه الأعمدة إلى الشبكة يقع على شبكة الصفحة. حتى postext 1.4 كانت كتلتها الأولى تستقر عند قاعدة الشريط: خارج الشبكة حين ينتهي الشريط بين سطرين، وملاصقة للشريط تمامًا بلا هامش حين يلي الافتتاحيةَ عنوان (أعلى بسطر مما هي الآن حين ينتهي الشريط على الشبكة)؛ وكان العنوان هناك يُسقط أيضًا الهامش العلوي الذي احتفظ به عنوان العمود الأول.</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل يبدأ العنوان ذو <code>span: 'page'</code> صفحة جديدة. <code>true</code> يفتح الصفحة التالية (ويختار <code>breakBefore</code> جهتها). و<code>false</code> مع <code>breakBefore.enabled: false</code> يفتحه حيث يصل النص، كما يفعل الإطار الممتد على الصفحة: تنتهي الأعمدة التي فوقه على ارتفاع واحد (يُوازَن الشريط حين يكون <code>headings.balancing.trailing</code> مفعّلًا)، ويُصفّ تصميم العنوان أو الافتتاح الافتراضي بعرض منطقة المحتوى تحتها، ويستمر النص في كل الأعمدة تحته: كالمقال الثاني في نشرة تحت نهاية الأول. وإن لم يتسع ما بقي من مساحة للعنوان وللحد الأدنى من الأسطر الأرملة تحته، فتح الصفحة التالية كما مع <code>true</code>. ويبقى دور الصفحة ما تحدده كتلتها الأولى. لا أثر له في عنوان <code>span: 'column'</code>. ويُضبط في نمط العنوان أيضًا. منذ postext 1.19.</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>
@@ -2951,6 +2957,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Minimum space below; baseline grid snap may enlarge it.
   indentAfterDisplay?: boolean; // Indent a paragraph that follows a display formula.
   keepWithLeadIn?: boolean; // Keep a display formula with the line that leads into it.
+  equationNumbering?: {      // Number the display formulas that carry a \label.
+    enabled?: boolean;           // default true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numbers by chapter
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': what the formula and \eqref print
+  };
 }
 ```
 
@@ -3006,6 +3019,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>يُبقي الصيغة المنفصلة في عمود السطر الذي يمهّد لها، وهو ما يسميه TeX جزاء ما قبل الصيغة (predisplay penalty). حين لا تتسع الصيغة تحت السطر الأخير من الفقرة التي قبلها، ينتقل ذلك السطر مع الصيغة إلى العمود أو الصفحة التالية؛ وحين يكون عدد الأسطر المتروكة خلفه أقل من <code>bodyText.widowMinLines</code> (أقل من سطر واحد حين يكون <code>bodyText.avoidWidows</code> معطّلًا)، تنتقل الفقرة التي تبدأ في ذلك العمود كاملةً (مع العناوين التي تختم العمود فوقها، بحسب <code>headings.keepWithNext</code>). يقف السطر المنقول وحده في رأس العمود التالي، أيًّا كان ما تطلبه قاعدة الأسطر اليتيمة (orphans). ومع <code>false</code> تنتقل الصيغة وحدها، وقد يختم السطرُ الذي يقدّمها العمودَ السابق، أو يقع فوق شكل يتصدر العمود التالي.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>، <code>'&#123;n&#125;'</code>، <code>'never'</code>، <code>'decimal'</code>، <code>'(&#123;n&#125;)'</code></td>
+      <td>طريقة ترقيم الصيغ المنفصلة التي تحمل <code>\label</code> (انظر <em>المعادلات المرقّمة</em> أدناه). تعمل <code>numberingTemplate</code> و<code>resetOn</code> و<code>counterFormat</code> كما تعمل في نوع المورد: <code>'&#123;h1&#125;.&#123;n&#125;'</code> مع <code>resetOn: 'h1'</code> يرقّم (2.1)، (2.2)… بحسب الفصل، و<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> مع <code>'h2'</code> بحسب القسم. و<code>format</code> هو الرقم كما تطبعه الصيغة و<code>\eqref</code>، ويقوم فيه <code>&#123;n&#125;</code> مقام الرقم: <code>'[&#123;n&#125;]'</code> يطبع [3]. ومع <code>enabled: false</code> لا يُرقَّم شيء: يُسقَط <code>\label</code>، وتطبع الإحالة إليه صفحته.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3053,7 +3072,15 @@ math: {
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // today's size and margins
 ```
 
-**المعادلات المرقّمة.** الصيغة المنفصلة التي فيها `\tag{…}` تمتد على عرض قياسها (العمود، أو العرض الداخلي للإطار الذي تقع فيه): تُوسَّط المعادلة ويُصفّ رقمها محاذىً إلى اليمين على سطر المعادلة، في كل صف موسوم من بيئة `align`. أما `\tag*{…}` فيطبع التسمية كما كُتبت، بلا أقواس. لا يُطبع رقم إلا للوسوم الصريحة؛ فالبيئات مثل `equation` لا تُرقَّم من تلقاء نفسها. والمعادلة المرقّمة الأعرض من قياسها تفيض إلى اليمين، كأي صيغة منفصلة. (حتى postext 1.4 لم تكن الصيغة التي فيها `\tag` تُرسم أصلًا.)
+**المعادلات المرقّمة.** الصيغة المنفصلة ذات الرقم تمتد على عرض قياسها (العمود، أو العرض الداخلي للإطار الذي تقع فيه): تُوسَّط المعادلة ويُصفّ رقمها محاذىً إلى اليمين على سطر المعادلة، في كل صف مرقّم من بيئة `align`. ويأتي الرقم من `\label{eq:x}` (منذ postext 1.19): تُرقَّم الصيغ التي تحمل `\label`، والصفوف التي تحمله في `align` أو `gather` أو `alignat` أو `flalign` أو `eqnarray`، بترتيب القراءة وفق `equationNumbering`، ما لم يحمل الصف `\nonumber` أو `\notag`. والبيئات مثل `equation` لا تُرقَّم من تلقاء نفسها: فالصيغة التي لا تسمية لها لا رقم لها. ويطبع `\tag{…}` التسمية التي تعطيها له بين قوسين، و`\tag*{…}` كما كُتبت؛ ولا يدخل أيٌّ منهما في العدّ، و`\label` المجاور لأحدهما يسمّيه. والمعادلة المرقّمة الأعرض من قياسها تفيض إلى اليمين، كأي صيغة منفصلة. (حتى postext 1.4 لم تكن الصيغة التي فيها `\tag` تُرسم أصلًا؛ وحتى 1.18 لم يكن يرقّمها إلا `\tag`.)
+
+يطبع `\eqref{eq:x}` في النص الرقمَ بصيغة `format`، أي (3)، ويطبع `\ref{eq:x}` الرقم مجرّدًا؛ وكذلك يفعل `:ref{id="eq:x"}` و`@eq:x` (انظر [الإحالات](/ar/docs/document-format#الإحالات-والمراسي))، وداخل الصيغة يطبع `\eqref` الرقم نصًا. وفي كتاب يُخرَج فصلًا فصلًا يستمر العدّاد من الفصل السابق: تحمله `continuationAfter` في `LayoutContinuation.statementCounters` (`equation`)، ويعطي مخطّط الكتاب كل تسمية رقمها (`OutlineEntry.numberLabel`)، فتطبعه الإحالة إلى معادلة في فصل آخر.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 دالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى:
 
@@ -3099,6 +3126,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // رموز الإحالة التي يكتبها numberFormat: 'symbols'.
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
   markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
   numberGap?: 'en' | 'em';    // Space after the note's own number.
@@ -3139,14 +3167,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code> (الكتب اليابانية الأفقية: <code>'page'</code>؛ ومع <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> (الكتب اليابانية الأفقية: <code>'page'</code>؛ ومع <code>placement: 'spread'</code>: <code>'spread'</code>؛ ومع <code>numberFormat: 'symbols'</code> في ذيل العمود: <code>'page'</code>)</td>
       <td><code>'chapter'</code> تبدأ من 1 من جديد تحت كل عنوان من المستوى 1 وفي بداية كل مستند. و<code>'document'</code> تستمر عبر المستند، وفي الكتاب الذي يُخرَج فصلًا فصلًا تستمر من فصل إلى الذي يليه (تحمل <code>continuationAfter</code> الرقم الأخير في <code>continuation.footnoteNumber</code>). و<code>'page'</code> تبدأ من 1 من جديد في كل صفحة، و<code>'column'</code> في كل عمود، فتعدّ الحواشي حيث يضعها الإخراج (أعمدة الصفحة بترتيب القراءة): وهي الحواشي المعتادة أسفل الصفحة في الكتاب الصيني، 页下注. يُخرَج المستند، ثم يُرقَّم بحسب المواضع التي وقعت فيها حواشيه، ثم يُعاد إخراجه حتى تثبت الأرقام (ثلاث عمليات بناء إضافية على الأكثر). كلتاهما تنطبقان على الحواشي في أسفل العمود: مع <code>placement: 'chapterEnd'</code> تُرقَّم الحواشي بحسب الفصل. و<code>'spread'</code> تبدأ من جديد في كل صفحتين متقابلتين (الصفحتان 2–3، و4–5…)، بترتيب الاستشهاد، مع <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>.</td>
+      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>. وتُعلِّم <code>'symbols'</code> (أو <code>'&#42;'</code>) الحواشي برموز الإحالة، رموز <code>symbols</code> بالترتيب: &#42; † ‡ § ‖ ¶، ثم مضاعفةً (&#42;&#42; †† ‡‡…) ثم مثلَّثة؛ وعندئذ يُعاد عدّ الحواشي في كل صفحة ما لم يُضبط <code>numbering</code>. منذ postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>التسلسل الذي يكتبه <code>numberFormat: 'symbols'</code>، يُضاعَف ثم يُثلَّث متى نفد. تحمل الملفات اللاتينية في Google Fonts وFontsource الرموز &#42; † § ¶ (الخنجر في <code>latin-ext</code>) دون ‡ و‖، فيرسمهما ملف PDF بمحرف <code>.notdef</code> في الخط مع تحذير <code>missingGlyph</code>: مع خط كهذا احذفهما (<code>['&#42;', '†', '§', '¶']</code>) أو صُفَّ الحواشي بخط يحتويهما. تُهمَل السلاسل الفارغة، وتُبقي القائمة الفارغة التسلسل الافتراضي. منذ postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
@@ -3354,6 +3388,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3422,6 +3457,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>أين يضع نمطُ الحواشي استشهاداته: في حواشٍ سفلية (توضع وتُرقَّم كما تحدد <code>footnotes</code>)، أو في تعليقات من صفين داخل السطر (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>الاستشهادات عبر الكتاب كله، أو كل فصل وحده (كل مستند، وكل عنوان من المستوى 1 بعد استشهاد): يرقّم النمط الرقمي كل فصل من 1، ويأخذ العمل المستشهد به في فصلين رقم كل فصل؛ ويكتب نمط الحواشي العمل كاملًا عند أول استشهاد به في كل فصل. يُستعمل مع <code>bibliography.scope: 'chapter'</code>، فتأخذ قوائم الفصول أرقام فصولها.</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>
@@ -5393,6 +5434,18 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code></td>
       <td>يجعل العلامة مائلة.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>غير مُعيَّن</td>
+      <td>يعدّ إطارات هذا النمط عبارات مرقّمة: مبرهنات وتوطئات وتعريفات. انظر <a href="#المبرهنات-المرقّمة-والبراهين">المبرهنات المرقّمة والبراهين</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>علامة تُصفّ محاذاةً إلى اليمين في آخر السطر الأخير من الإطار، كما يُختم البرهان بـ<code>'∎'</code> أو <code>'□'</code>: على السطر الأخير إن اتسعت له بعد مسافة، وإلا ففي سطر مستقل. والإطار الذي ينتهي بصيغة منفصلة لا رقم لها يجعل العلامة وسمًا للصيغة.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5422,6 +5475,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined for the built-in `note` default; static defaults dropped
 ```
+
+### المبرهنات المرقّمة والبراهين
+
+النمط الذي فيه `numbering` يعدّ إطاراته، كما تعدّ الحزمة `amsthm` في LaTeX بيئات المبرهنات (منذ postext 1.19). يطبع كل إطار تسميته ورقمه، «**Theorem 2.**» في أول فقرته الأولى، ويلي `title` السياج الرقمَ بين قوسين: يبدأ `:::callout{type="theorem" title="Bradley–Terry"}` بـ«**Theorem 2** (Bradley–Terry)**.**». والإطار الذي يُفتح بمعرّف (`{#thm:main}`) هدفٌ للإحالات، فتطبع «Theorem 2» (`:ref{id="thm:main"}`)، ويطبع `\ref{thm:main}` أو `style=number` الرقم 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>الكلمة التي تسبق الرقم: <code>'Theorem'</code>، <code>'Lemma'</code>، <code>'Definición'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td><code>id</code> النمط</td>
+      <td>العدّاد الذي تزيده الإطارات. والأنماط التي تسمّي عدّادًا واحدًا تتقاسمه، كما يفعل <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Theorem 1، Lemma 2، Theorem 3. والقيمة <code>'equation'</code> تعدّ مع المعادلات التي تحمل تسمية. أما <code>false</code> فتطبع التسمية بلا رقم («<em>Proof.</em>» في البرهان).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>كما في نوع المورد: <code>'&#123;h1&#125;.&#123;n&#125;'</code> مع <code>resetOn: 'h1'</code> يرقّم Theorem 2.1، 2.2… بحسب الفصل، و<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> مع <code>'h2'</code> بحسب القسم. والعدّاد الذي تتقاسمه عدة أنماط يواصل العدّ على ما تطبعه قوالبها، أيًّا كان.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> يفتتح الفقرة الأولى من الإطار بالتسمية (والإطار الذي يبدأ بقائمة أو صيغة أو إطار آخر يُعطى فقرة لها)؛ و<code>'title'</code> يجعل التسمية عنوان الإطار، بتنسيق <code>titleStyle</code> الخاص به: «Theorem 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>هيئة التسمية المدمجة في الفقرة ولاحقتها، أيًّا كان متن الإطار: فالمتن المائل (<code>body.italic</code>) يُبقي التسمية القائمة قائمةً. ويُنضَّد العنوان الذي بين القوسين قائمًا بالوزن العادي.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>يُنضَّد بعد التسمية المدمجة في الفقرة وعنوانها.</td>
+    </tr>
+  </tbody>
+</table>
+
+البرهان نمطٌ تسميته بلا رقم وله علامة ختام:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Theorem' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definition' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Proof', counter: false, bold: false, italic: true } },
+]
+```
+
+وفي كتاب يُخرَج فصلًا فصلًا تستمر العدّادات من الفصل السابق (`LayoutContinuation.statementCounters`، التي تملؤها `continuationAfter`)، ويعطي مخطّط الكتاب مرساة كل إطار مرقّم تسميتها (`OutlineEntry.numberLabel`)، فتطبعها الإحالة من فصل آخر.
 
 ### التنسيق الطباعي داخل الإطار
 
@@ -8113,6 +8233,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **المستند يحدّد المظهر.** الورق والتجليد والمكتب والإضاءة هي [إعدادات `folio`](#عارض-folio-الإعدادات) في المستند (`doc.config.folio`). والصفحة المنضَّدة داخل مقطع `:::paper` تحمل نوع ورقها الخاص (`VDTPage.paper`)، وتُرسم ورقتها بلون ذلك الورق وسطحه وسماكته وصلابته. ومع `binding.cover: 'pages'` تكون الصفحة الأولى لوح الغلاف الأمامي، والأخيرة، حين تكون صفحة زوجية، لوح الغلاف الخلفي (`covers`). ومقاس الصحيفة (`'broadsheet'` و`'berliner'` و`'tabloid'` و`'compact'`) الذي لا تحدّد إعداداته نوع الورق ولا التجليد يظهر ورقَ صحف مطويًّا، وكذلك حين يمرّر المضيف `folio` خاصًّا به.
 - **الحاوية تحدّد الحجم.** يملأ الكتاب الحاوية، مع الأزرار وعدد الصفحات في الهوامش، فأعطِ الحاوية ارتفاعًا؛ وتغيير الحجم يعيد رسم الصفحات بالحجم الجديد. وتحت عرض 560 px يعرض صفحة واحدة في كل مرة (`mode: 'auto'`؛ و`'single'` و`'double'` يفرضان أحد الوضعين): يمتد الكعب على طول الحافة الداخلية للصفحة وتنقلب الورقة فوقه، والسحب نحو الكعب يقلب إلى الأمام، والسحب السريع بعيدًا عنه يعود إلى الخلف، والنقرة تقلب.
 - **ما يفعله المؤشر.** يحدّد `interaction` (و`setInteraction` لاحقًا) ما يفعله الزر الأيسر أو الإصبع الواحدة أو القلم على الكتاب: `'hand'` (الافتراضي) يمسك الصفحات ويقلبها، و`'orbit'` يدير المنظر كما يفعل السحب بالزر الأيمن (للوحات اللمس والأجهزة اللوحية)، و`'select'` يترك المؤشر للمضيف، لتحديد النص مثلًا. وتعطي `pageAt(event)` الصفحة الواقعة تحت المؤشر والموضع عليها (`{ page, x, y }`، كسورًا من الصفحة بدءًا من زاويتها العلوية اليسرى)، على الكتاب كما يُرى، مائلًا أو مُدارًا؛ وتسلك `pointOnScreen(point)` الاتجاه المعاكس، لرسم مؤشر الكتابة (caret) أو التحديد فوق الصفحة. وتعرض `refreshPage(src)` من جديد لوحة صفحة أعاد المضيف رسمها في مكانها. ويستخدمها Sandbox كلها لتحديد النص وتتبّع مؤشر الكتابة في المحرر على الصفحات ثلاثية الأبعاد.
+- **عدسة مكبّرة للحروف الصغيرة.** يضع `interaction: 'magnify'` عدسة مستديرة بإطار أسود فوق الكتاب حيث المؤشر (ويرفعها الإصبع فوقه ما دام يلمس الشاشة). تُظهر الكتاب كما تراه عين القارئ، بإضاءته وانحنائه، وتكبّر الوسط أكثر ثم تنحني نحو الإطار. تغيّر العجلة و`+` و`−` درجة التكبير (`setMagnification(zoom)`، من 1.5 إلى 10؛ والافتراضي يُظهر الصفحة بنحو 5.5 بكسل CSS للمليمتر)، ويُبعدها مفتاح Esc؛ ويضبط `magnifier: { zoom, diameter }` الاثنين من البداية. يعيد `createFolioFromDocument` رسم الصفحات تحت العدسة بدقة تكفي وسطها، فيُقرأ متن الجريدة؛ ويأخذ `createFolio` هذه الرسوم من `detail: { paint(index, deviceWidth), release() }`. يضعها الـSandbox على زر **العدسة المكبّرة** (M). وتحدّد العدسة النصّ أيضًا: فوق الصفحات يصير المؤشّر مؤشّر نصّ، وتُعيد `pageAt` النقطة التي تحت وسط العدسة (فوق الإصبع على الشاشة اللمسية)، وفي الـSandbox تضع النقرة هناك مؤشّر الكتابة ويحدّد السحب النصّ.
 - **يستطيع القارئ أن يدور حوله.** السحب بالزر الأيمن يدير المنظر حول الكتاب (حتى 70° بعيدًا عن المنظر العمودي من الأعلى)، حتى أثناء تقلّب الأوراق؛ وتعيده `resetView()` تدريجيًا إلى قيمتَي `tilt` و`yaw` في الإعدادات، وتعطي `getView()` المنظر كما يُرى الآن (`{ tilt, yaw }`، بالدرجات) لحفظه في تلك الإعدادات. ويضعها Sandbox على زرّين، **إعادة ضبط العرض** و**حفظ بوصفه العرض الافتراضي**.
 - **مقاطع الفيديو تُشغَّل على الصفحات.** يشغّل النقر على غلاف فيديو المقطعَ على الصفحة نفسها، في كل أوضاع `interaction`، ويستمر تشغيله والورقة تنقلب؛ ونقرة أخرى توقفه مؤقتًا، ويتوقف حين يستقر الكتاب على صفحتين متقابلتين لا تعرضانه. والفيديو الذي يحمل `player.autoplay` يبدأ وحده أول مرة تُعرض فيها صفحتاه؛ وإن كان يعمل أيضًا إلى جانب غيره (`player.exclusive: false`) بدأ صامتًا في كل مرة وتوقف حين تُقلب الصفحتان، وتعمل عدة مقاطع معًا. والخيارات هي `videos` و`videoUrl` و`onVideo`، ومعها `stopVideo()` في أداة العرض؛ انظر [صيغة المستند › مقاطع الفيديو على صفحات Folio](/ar/docs/document-format#مقاطع-الفيديو-على-صفحات-folio).
 - **الخطوط والصور أولًا.** كما في `renderPage`، يجب أن تكون الوجوه التي يستخدمها المستند محمّلة في `document.fonts`، وصور موارده مسجّلة بـ `registerResourceImage` قبل رسم الصفحات.

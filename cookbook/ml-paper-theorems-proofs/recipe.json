@@ -1,0 +1,171 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 138,
+  "status": "published",
+  "chapter": "type",
+  "order": 360,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "math",
+      "callout-styles",
+      "cross-references"
+    ],
+    "also": [
+      "citation-styles",
+      "generated-bibliography",
+      "heading-numbering",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "running-heads",
+      "page-role-filters",
+      "resources",
+      "figure-numbering",
+      "captions",
+      "table-style",
+      "color-palette",
+      "credit-notes",
+      "float-placement",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q156",
+    "Q48",
+    "Q154"
+  ],
+  "gotchas": [
+    "math-bundle",
+    "dollar-math",
+    "svg-no-webfonts",
+    "headings-drop-h1-break",
+    "quote-frontmatter",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0",
+    "math": true
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.56
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        10,
+        10
+      ],
+      "console": [
+        "module \"buffer\" not found",
+        "module \"esprima\" not found"
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Abridged from Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D. and Finn, C. (2023) “Direct Preference Optimization: Your Language Model is Secretly a Reward Model”, Advances in Neural Information Processing Systems 36 (NeurIPS 2023), arXiv:2305.18290v3. Sections 2 and 5.2, most of 6 and appendices A.2–A.4, A.6 and B–E cut, other paragraphs and sentences shortened; section numbers kept, equations renumbered in the abridged order; citations re-set author–year; Figure 1 redrawn",
+          "es": "Abreviado de Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D. y Finn, C. (2023) «Direct Preference Optimization: Your Language Model is Secretly a Reward Model», Advances in Neural Information Processing Systems 36 (NeurIPS 2023), arXiv:2305.18290v3. Sin las secciones 2 y 5.2, la mayor parte de la 6 ni los apéndices A.2–A.4, A.6 y B–E; otros párrafos y frases recortados; se conservan los números de sección y las ecuaciones se renumeran en el orden del resumen; citas en autor–año; figura 1 redibujada"
+        },
+        "who": "Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher D. Manning, Chelsea Finn",
+        "source": "https://arxiv.org/abs/2305.18290",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Spectral",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Work Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "JetBrains Mono",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06",
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 80,
+      "texture": "smooth"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#6b2a5f"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#e4dde2"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  },
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "no counter of equations or theorem-like statements: latex() turns \\label into \\tag{n}, numbers callouts per kind, puts an :anchor on the lead-in line and rewrites \\eqref / \\ref as :ref with text=\"n\""
+    },
+    {
+      "package": "postext",
+      "note": "a :ref inside ***…*** prints with the reference style (referenceBold false, upright), not the bold of its emphasis: the restated Lemma 1 label writes its number as text"
+    },
+    {
+      "package": "postext",
+      "note": "balancing's closing-box lever pushed the abstract box (the last block of page 1) down by the room under its foot, opening a 25 mm gap under the title block; balancing is disabled"
+    }
+  ]
+}

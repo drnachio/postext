@@ -735,7 +735,7 @@ Los valores por defecto de la tabla siguiente son los de un elemento de texto qu
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Lee el texto resuelto —con los valores de los marcadores— como Markdown en línea: <code>**negrita**</code>, <code>*cursiva*</code>, <code>^superíndice^</code>, <code>~subíndice~</code>. Desactivado, los signos de marca se imprimen tal cual. Ver <a href="#marcas-en-línea-y-contornos">Marcas en línea y contornos</a>.</td>
+      <td>Lee el texto resuelto —con los valores de los marcadores— como Markdown en línea: <code>**negrita**</code>, <code>*cursiva*</code>, <code>^superíndice^</code>, <code>~subíndice~</code>. Desactivado, los signos de marca se imprimen tal cual. En el diseño de un encabezado, <code>{'{titleText}'}</code> conserva entonces los tramos del propio encabezado en negrita, en cursiva, en superíndice y en subíndice (<code>*Pneumocystis*</code>, <code>CO~2~</code>), con el resto de sus caracteres escapados para que se impriman tal cual (desde postext 1.19). Ver <a href="#marcas-en-línea-y-contornos">Marcas en línea y contornos</a>.</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
@@ -1319,13 +1319,13 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>referenceBold</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Renderizar las etiquetas de <code>:ref</code> en línea con la fuente en negrita.</td>
+      <td>Renderizar las etiquetas de <code>:ref</code> en línea con la fuente en negrita. Una referencia conserva el énfasis del texto que la rodea (dentro de <code>***…***</code> sigue en negrita cursiva con cualquier valor); esta opción solo añade la negrita.</td>
     </tr>
     <tr>
       <td><code>referenceItalic</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Renderizar las etiquetas de <code>:ref</code> en línea en cursiva.</td>
+      <td>Renderizar las etiquetas de <code>:ref</code> en línea en cursiva. Una referencia dentro de texto en cursiva sigue en cursiva con cualquier valor.</td>
     </tr>
     <tr>
       <td><code>emphasis</code></td>
@@ -1954,7 +1954,7 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si un encabezado lee sus marcas en línea como lo hace un párrafo: <code>*cursiva*</code>, <code>**negrita**</code>, <code>^superíndice^</code>, <code>~subíndice~</code>, <code>:smallcaps[…]</code> y enlaces. Un tramo en cursiva invierte la inclinación del encabezado, así que en un encabezado en cursiva sale en redonda; un tramo en negrita toma <code>bodyText.boldFontWeight</code>, o el peso del propio encabezado si es mayor. El índice también recoge los tramos en negrita y en cursiva; los titulillos y los marcadores del PDF imprimen solo el texto. Con <code>false</code> se quitan los marcadores y las palabras se imprimen con el estilo del encabezado, como hasta postext 1.4. La apertura por defecto de un encabezado <code>span: 'page'</code> sin diseño compone también los tramos en negrita, en cursiva, en superíndice y en subíndice; el diseño de un encabezado (una banda de apertura con diseño o un <code>advancedDesign</code> de columna) imprime <code>{'{titleText}'}</code> como texto sin marcas en ambos casos. Las configuraciones guardadas antes cuyos encabezados llevan marcas se leen con <code>false</code> (ver <a href="#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>).</td>
+      <td>Si un encabezado lee sus marcas en línea como lo hace un párrafo: <code>*cursiva*</code>, <code>**negrita**</code>, <code>^superíndice^</code>, <code>~subíndice~</code>, <code>:smallcaps[…]</code> y enlaces. Un tramo en cursiva invierte la inclinación del encabezado, así que en un encabezado en cursiva sale en redonda; un tramo en negrita toma <code>bodyText.boldFontWeight</code>, o el peso del propio encabezado si es mayor. El índice también recoge los tramos en negrita y en cursiva; los titulillos y los marcadores del PDF imprimen solo el texto. Con <code>false</code> se quitan los marcadores y las palabras se imprimen con el estilo del encabezado, como hasta postext 1.4. La apertura por defecto de un encabezado <code>span: 'page'</code> sin diseño compone también los tramos en negrita, en cursiva, en superíndice y en subíndice; el diseño de un encabezado (una banda de apertura con diseño o un <code>advancedDesign</code> de columna) imprime <code>{'{titleText}'}</code> como texto sin marcas en ambos casos, salvo que su elemento de texto lea las marcas en línea (<code>inlineMarks: true</code>): entonces <code>{'{titleText}'}</code> conserva los tramos en negrita, en cursiva y en índice del encabezado (desde postext 1.19). Las configuraciones guardadas antes cuyos encabezados llevan marcas se leen con <code>false</code> (ver <a href="#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>).</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2074,7 +2074,7 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>Cuándo toma un recuadro que cierra una columna corta el espacio bajo su pie (la palanca 1, registrada como <code>trailingCallout</code>). <code>'first'</code>: antes que cualquier otra palanca, como hasta postext 1.4 — el recuadro se queda con todo el hueco, aunque sean varias líneas, y los encabezados de encima no reciben nada. <code>'last'</code>: después de las palancas de encabezados, finales de lista, fórmulas y flotantes, que toman antes las líneas enteras; el recuadro baja con el texto de encima y luego toma solo lo que dejaron, normalmente una fracción de línea, de modo que su pie sigue cayendo en la última casilla de la rejilla y queda cerca del texto que comenta. <code>'off'</code>: nunca; el recuadro conserva el espacio bajo su pie, aunque las demás palancas aún pueden bajarlo líneas enteras cuando añaden espacio por encima, y la fracción de línea que sobra se queda. En una página de cierre, donde el recuadro es la única palanca que alinea su pie con la columna contigua, <code>'off'</code> lo deja donde lo puso el flujo. Cualquier otro valor se lee como <code>'first'</code>.</td>
+      <td>Cuándo toma un recuadro que cierra una columna corta el espacio bajo su pie (la palanca 1, registrada como <code>trailingCallout</code>). <code>'first'</code>: antes que cualquier otra palanca, como hasta postext 1.4 — el recuadro se queda con todo el hueco, aunque sean varias líneas, y los encabezados de encima no reciben nada. <code>'last'</code>: después de las palancas de encabezados, finales de lista, fórmulas y flotantes, que toman antes las líneas enteras; el recuadro baja con el texto de encima y luego toma solo lo que dejaron, normalmente una fracción de línea, de modo que su pie sigue cayendo en la última casilla de la rejilla y queda cerca del texto que comenta. <code>'off'</code>: nunca; el recuadro conserva el espacio bajo su pie, aunque las demás palancas aún pueden bajarlo líneas enteras cuando añaden espacio por encima, y la fracción de línea que sobra se queda. En una página de cierre, donde el recuadro es la única palanca que alinea su pie con la columna contigua, <code>'off'</code> lo deja donde lo puso el flujo. Cualquier otro valor se lee como <code>'first'</code>. Un recuadro que cierra la única columna de texto de su banda (una página de una sola columna que acaba antes de tiempo y cuyo bloque siguiente abre la página siguiente) nunca se mueve: no hay columna al lado con la que alinearlo (desde postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2377,6 +2377,12 @@ Cada nivel de encabezado admite dos campos adicionales que controlan cómo se re
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
       <td>Cuando es <code>'page'</code>, el encabezado se trata como apertura de capítulo y su diseño avanzado (si está habilitado) se adjunta a la página como una banda de apertura por encima del cuerpo. Combínalo con <code>breakBefore.enabled: true</code> para que la apertura comience fiablemente en una nueva página. Sin un diseño propio, el título lo pinta una apertura por defecto a lo ancho de toda la caja de texto, con la tipografía y el interlineado del nivel y con sus tramos en negrita, en cursiva, en superíndice y en subíndice (<code>headings.inlineMarks</code>), y la banda se mide a ese ancho. La banda reserva todas las líneas que pinta la apertura: si esta ocupa más líneas que la medida del propio encabezado (un título justificado cuyos espacios cabrían apretados en una línea, un salto forzado <code>{'\\\\'}</code>), la banda también las toma. Hasta postext 1.4 la banda se medía con el título ajustado al ancho de la columna, así que un título que cabe en una línea a lo ancho de la caja ocupaba una banda de dos líneas, con la línea centrada en ella. Las demás columnas empiezan bajo la banda como la columna del propio encabezado. El texto que abre una de ellas empieza donde empezaría el texto justo debajo de la apertura, venga lo que venga después de la apertura en su columna: el <code>marginBottom</code> de la apertura por debajo de su título o de su diseño, llevado a la línea siguiente de la retícula cuando el nivel se ajusta a ella. Un encabezado, una fórmula en bloque o una entrada del índice que abre una de ellas queda a la altura del primer encabezado o fórmula en bloque que hay bajo la apertura, con los márgenes que tiene allí; si la columna de la apertura sigue con otra cosa, empieza donde empieza ese texto. Un encabezado oculto bajo la apertura no cuenta, y el espacio que el <a href="#equilibrado-de-columnas">equilibrado de columnas</a> añade encima del encabezado que hay bajo la apertura no se repite en las demás columnas. Lo que esas columnas ajustan a la retícula cae en la retícula de la página. Hasta postext 1.4 su primer bloque quedaba en el pie de la banda: fuera de la retícula cuando la banda acababa entre dos líneas, y pegado a la banda, sin margen, cuando a la apertura la seguía un encabezado (una línea más arriba que ahora si la banda acababa en la retícula); además, un encabezado ahí perdía el margen superior que conservaba el de la primera columna.</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un encabezado <code>span: 'page'</code> empieza una página nueva. <code>true</code> abre la página siguiente (con el lado que elija <code>breakBefore</code>). <code>false</code>, con <code>breakBefore.enabled: false</code>, lo abre donde llega el texto, como un recuadro de página: las columnas de encima terminan a la misma altura (la banda se equilibra cuando <code>headings.balancing.trailing</code> está activo), el diseño del encabezado o la apertura por defecto se compone a todo el ancho de la caja bajo ellas y el texto sigue en todas las columnas por debajo: el segundo artículo de un boletín bajo el final del primero. Si el espacio que queda no da para el encabezado y el mínimo de líneas viudas bajo él, abre la página siguiente como con <code>true</code>. El papel de la página sigue siendo el que le da su primer bloque. No afecta a un encabezado <code>span: 'column'</code>. También en un estilo de encabezado. Desde postext 1.19.</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>
@@ -2951,6 +2957,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Espacio mínimo debajo; el snap a rejilla puede aumentarlo.
   indentAfterDisplay?: boolean; // Sangrar el párrafo que sigue a una fórmula en bloque.
   keepWithLeadIn?: boolean; // Mantener una fórmula en bloque con la línea que la introduce.
+  equationNumbering?: {      // Numerar las fórmulas en bloque que llevan un \label.
+    enabled?: boolean;           // por defecto true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numera por capítulo
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': lo que imprimen la fórmula y \eqref
+  };
 }
 ```
 
@@ -3006,6 +3019,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>Mantiene una fórmula en bloque en la columna de la línea que la introduce, como la penalización <code>\predisplaypenalty</code> de TeX. Cuando la fórmula no cabe bajo la última línea del párrafo anterior, esa línea pasa con la fórmula a la columna o página siguiente; cuando las líneas que quedarían atrás son menos de <code>bodyText.widowMinLines</code> (menos de una si <code>bodyText.avoidWidows</code> está desactivado), un párrafo que empieza en esa columna pasa entero (con los encabezados que cierran la columna por encima, según <code>headings.keepWithNext</code>). La línea que pasa queda sola en lo alto de la columna siguiente, diga lo que diga la regla de las huérfanas. Con <code>false</code>, la fórmula pasa sola, y la línea que la introduce puede cerrar la columna de arriba o quedar sobre una figura que encabeza la siguiente.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>, <code>'&#123;n&#125;'</code>, <code>'never'</code>, <code>'decimal'</code>, <code>'(&#123;n&#125;)'</code></td>
+      <td>Cómo se numeran las fórmulas en bloque que llevan un <code>\label</code> (ver <em>Ecuaciones numeradas</em> más abajo). <code>numberingTemplate</code>, <code>resetOn</code> y <code>counterFormat</code> funcionan como los de un tipo de recurso: <code>'&#123;h1&#125;.&#123;n&#125;'</code> con <code>resetOn: 'h1'</code> numera (2.1), (2.2)… por capítulo, y <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> con <code>'h2'</code>, por sección. <code>format</code> es el número tal como lo imprimen la fórmula y <code>\eqref</code>, con <code>&#123;n&#125;</code> en el lugar del número: <code>'[&#123;n&#125;]'</code> compone [3]. <code>enabled: false</code> no numera nada: un <code>\label</code> se descarta y una referencia a él imprime su página.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3053,7 +3072,15 @@ Donde la configuración estaba guardada, el motor puede saberlo y lo hace por ti
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // tamaño y márgenes actuales
 ```
 
-**Ecuaciones numeradas.** Una fórmula en bloque con `\tag{…}` ocupa toda su medida (la columna, o el ancho interior del recuadro que la contiene): la ecuación va centrada y su número alineado a la derecha, en la línea de la ecuación, en cada fila etiquetada de un `align`. `\tag*{…}` imprime la etiqueta tal cual, sin paréntesis. Solo las etiquetas explícitas imprimen número; entornos como `equation` no se numeran por sí solos. Una ecuación numerada más ancha que su medida desborda por la derecha, como cualquier fórmula en bloque. (Hasta postext 1.4, una fórmula con `\tag` no llegaba a dibujarse.)
+**Ecuaciones numeradas.** Una fórmula en bloque con número ocupa toda su medida (la columna, o el ancho interior del recuadro que la contiene): la ecuación va centrada y su número alineado a la derecha, en la línea de la ecuación, en cada fila numerada de un `align`. El número sale de un `\label{eq:x}` (desde postext 1.19): las fórmulas con etiqueta, y las filas con etiqueta de un `align`, `gather`, `alignat`, `flalign` o `eqnarray`, se numeran en orden de lectura según `equationNumbering`, salvo que una fila diga `\nonumber` o `\notag`. Entornos como `equation` no se numeran por sí solos: una fórmula sin etiqueta no lleva número. `\tag{…}` imprime el texto que le des, entre paréntesis, y `\tag*{…}`, tal cual; ninguno de los dos cuenta, y un `\label` a su lado le da nombre. Una ecuación numerada más ancha que su medida desborda por la derecha, como cualquier fórmula en bloque. (Hasta postext 1.4, una fórmula con `\tag` no llegaba a dibujarse; hasta la 1.18, solo `\tag` numeraba una fórmula.)
+
+`\eqref{eq:x}` en el texto imprime el número en su `format`, (3), y `\ref{eq:x}`, el número solo; lo mismo hacen `:ref{id="eq:x"}` y `@eq:x` (ver [Referencias cruzadas](/es/docs/document-format#referencias-cruzadas-y-anclas)), y dentro de una fórmula `\eqref` lo imprime como texto. En un libro compuesto capítulo a capítulo, el contador sigue desde el capítulo anterior: `continuationAfter` lo lleva en `LayoutContinuation.statementCounters` (`equation`), y el esquema del libro da a cada etiqueta su número (`OutlineEntry.numberLabel`), de modo que una referencia a una ecuación de otro capítulo lo imprime.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 El resolver y el stripper siguen el mismo patrón que las otras secciones:
 
@@ -3099,6 +3126,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Pie de la columna que cita, tras el capítulo, o junto al texto de un pliego.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Reiniciar en cada capítulo, seguir, o reiniciar en cada página / columna / pliego.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // Los símbolos de llamada de numberFormat: 'symbols'.
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Volada, sobre la línea de base, junto a la palabra, o a la derecha de una línea vertical.
   markerSize?: Dimension;     // Tamaño de la llamada en línea, lateral o a la derecha; em es el texto que la rodea.
   numberGap?: 'en' | 'em';    // Espacio tras el número de la propia nota.
@@ -3139,14 +3167,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code> (libros japoneses horizontales: <code>'page'</code>; con <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> (libros japoneses horizontales: <code>'page'</code>; con <code>placement: 'spread'</code>: <code>'spread'</code>; con <code>numberFormat: 'symbols'</code> al pie de la columna: <code>'page'</code>)</td>
       <td><code>'chapter'</code> vuelve a empezar en 1 bajo cada título de nivel 1 y al principio de cada documento. <code>'document'</code> sigue por todo el documento y, en un libro maquetado capítulo a capítulo, de un capítulo al siguiente (<code>continuationAfter</code> lleva el último número en <code>continuation.footnoteNumber</code>). <code>'page'</code> vuelve a empezar en 1 en cada página y <code>'column'</code> en cada columna, contando las notas donde las coloca la maquetación (las columnas de una página en orden de lectura): el 页下注 habitual de un libro chino. El documento se maqueta, se numera según dónde cayeron sus notas y se vuelve a maquetar hasta que los números se mantienen (como mucho tres veces más). Ambos valen para las notas al pie de la columna: con <code>placement: 'chapterEnd'</code> las notas se numeran por capítulo. <code>'spread'</code> vuelve a empezar en cada pliego (páginas 2–3, 4–5…), en el orden de cita, para <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>Cómo se escriben los números, con cualquiera de las grafías que aceptan los ajustes de numeración: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… Lo usan la llamada y el número que abre la nota. <code>circled-decimal</code> escribe en decimal los números mayores que 50. Un nombre desconocido numera en decimal, con un aviso <code>unknownNumberFormat</code>.</td>
+      <td>Cómo se escriben los números, con cualquiera de las grafías que aceptan los ajustes de numeración: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… Lo usan la llamada y el número que abre la nota. <code>circled-decimal</code> escribe en decimal los números mayores que 50. Un nombre desconocido numera en decimal, con un aviso <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'&#42;'</code>) marca las notas con símbolos de llamada, los de <code>symbols</code> por orden: &#42; † ‡ § ‖ ¶, luego dobles (&#42;&#42; †† ‡‡…) y triples; las notas se cuentan entonces de nuevo en cada página salvo que se fije <code>numbering</code>. Desde postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>La secuencia que escribe <code>numberFormat: 'symbols'</code>, doblada y luego triplicada cuando se agota. Los archivos latinos de Google Fonts y Fontsource traen &#42; † § ¶ (la cruz, en <code>latin-ext</code>) pero ni ‡ ni ‖, que el PDF dibuja entonces con el glifo <code>.notdef</code> de la fuente y un aviso <code>missingGlyph</code>: con una fuente así, quítalos (<code>['&#42;', '†', '§', '¶']</code>) o compón las notas en una fuente que los tenga. Las cadenas vacías se descartan y una lista vacía conserva la secuencia por defecto. Desde postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
@@ -3354,6 +3388,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3422,6 +3457,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>Dónde pone sus citas un estilo de notas: notas al pie (como dice <code>footnotes</code>) o notas de dos líneas dentro del renglón (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Las citas a lo largo del libro, o cada capítulo por su cuenta (cada documento, y cada encabezado de nivel 1 tras una cita): un estilo numérico numera cada capítulo desde 1 y una obra citada en dos capítulos toma el número de cada uno; un estilo de notas escribe completa la obra en su primera cita de cada capítulo. Pensado para <code>bibliography.scope: 'chapter'</code>, cuyas listas toman entonces los números del capítulo.</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>
@@ -5393,6 +5434,18 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>true</code></td>
       <td>Compone el indicador en cursiva.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>sin definir</td>
+      <td>Cuenta las cajas de este estilo como enunciados numerados: teoremas, lemas, definiciones. Ver <a href="#enunciados-numerados-y-demostraciones">Enunciados numerados y demostraciones</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Una marca alineada a la derecha al final de la última línea de la caja, como el <code>'∎'</code> o el <code>'□'</code> con que termina una demostración: en esa línea si cabe tras un espacio y, si no, en una línea propia. Una caja que termina en una fórmula en bloque sin número la pone como etiqueta de la fórmula.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5422,6 +5475,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined para el `note` por defecto; se eliminan los valores estáticos por defecto
 ```
+
+### Enunciados numerados y demostraciones
+
+Un estilo con `numbering` cuenta sus cajas, como el paquete `amsthm` de LaTeX cuenta los entornos de teorema (desde postext 1.19). Cada caja imprime su rótulo y su número —«**Teorema 2.**» al principio de su primer párrafo—, y el `title` de la valla sigue al número entre paréntesis: `:::callout{type="theorem" title="Bradley–Terry"}` empieza con «**Teorema 2** (Bradley–Terry)**.**». Una caja abierta con un identificador (`{#thm:main}`) es destino de referencias cruzadas, que imprimen «Teorema 2» (`:ref{id="thm:main"}`), y `\ref{thm:main}` o `style=number` imprimen 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>La palabra que precede al número: <code>'Teorema'</code>, <code>'Lema'</code>, <code>'Definition'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>el <code>id</code> del estilo</td>
+      <td>El contador que hacen avanzar las cajas. Los estilos que nombran un mismo contador lo comparten, como hace <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Teorema 1, Lema 2, Teorema 3. <code>'equation'</code> cuenta junto con las ecuaciones etiquetadas. <code>false</code> imprime el rótulo sin número (el «<em>Demostración.</em>» de una demostración).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>Como los de un tipo de recurso: <code>'&#123;h1&#125;.&#123;n&#125;'</code> con <code>resetOn: 'h1'</code> numera Teorema 2.1, 2.2… por capítulo, y <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> con <code>'h2'</code>, por sección. Un contador que comparten varios estilos sigue la cuenta impriman lo que impriman sus plantillas.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> abre el primer párrafo de la caja con el rótulo (una caja que empieza con una lista, una fórmula u otra caja recibe un párrafo para él); <code>'title'</code> hace del rótulo el título de la caja, con su <code>titleStyle</code>: «Teorema 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>La letra del rótulo en línea y de su sufijo, sea cual sea la del cuerpo de la caja: con un cuerpo en cursiva (<code>body.italic</code>), un rótulo en redonda sigue en redonda. El título entre paréntesis se compone en redonda y con el peso normal.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Se compone tras el rótulo en línea y su título.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una demostración es un estilo con un rótulo sin número y una marca final:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Teorema' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lema', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definición' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Demostración', counter: false, bold: false, italic: true } },
+]
+```
+
+En un libro compuesto capítulo a capítulo, los contadores siguen desde el capítulo anterior (`LayoutContinuation.statementCounters`, que rellena `continuationAfter`), y el esquema del libro da al ancla de cada caja numerada su rótulo (`OutlineEntry.numberLabel`), de modo que una referencia desde otro capítulo lo imprime.
 
 ### Tipografía dentro de un recuadro
 
@@ -8115,6 +8235,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **El documento define el aspecto.** El papel, la encuadernación, la mesa y la luz son los [ajustes `folio`](#visor-folio-configuración) del documento (`doc.config.folio`). Una página compuesta dentro de una tanda `:::paper` lleva su propio papel (`VDTPage.paper`), y su hoja se dibuja con el color, la superficie, el grosor y la rigidez de ese papel. Con `binding.cover: 'pages'`, la primera página es la tapa delantera y la última, si es un verso, la trasera (`covers`). Un formato de periódico (`'broadsheet'`, `'berliner'`, `'tabloid'`, `'compact'`) cuyos ajustes no nombran papel ni encuadernación aparece como papel prensa doblado, también cuando el anfitrión pasa su propio `folio`.
 - **El contenedor define el tamaño.** El libro lo ocupa entero, con los botones y el contador de páginas en los márgenes, así que dale una altura; al cambiar de tamaño, las páginas se vuelven a pintar al nuevo. Por debajo de 560 px de ancho muestra una página cada vez (`mode: 'auto'`; `'single'` y `'double'` fuerzan una u otra): el lomo va por el borde interior de la página y la hoja gira sobre él; arrastrar hacia el lomo avanza, deslizar en sentido contrario retrocede, y un toque pasa la página.
 - **Qué hace el puntero.** `interaction` (y después `setInteraction`) fija qué hace el botón izquierdo, un dedo o un lápiz sobre el libro: `'hand'` (por defecto) toma las páginas y las pasa, `'orbit'` gira la vista como al arrastrar con el botón derecho (para trackpads y tabletas), `'select'` deja el puntero al anfitrión, por ejemplo para seleccionar texto. `pageAt(event)` da la página bajo un puntero y el punto de ella (`{ page, x, y }`, fracciones de la página desde su esquina superior izquierda), sobre el libro tal como se ve, inclinado o girado; `pointOnScreen(point)` hace el camino inverso, para dibujar un cursor o una selección sobre la página. `refreshPage(src)` vuelve a mostrar el lienzo de una página que el anfitrión ha repintado en su sitio. El Sandbox los usa todos para seleccionar texto y seguir el cursor del editor sobre las páginas en 3D.
+- **Una lupa para la letra pequeña.** `interaction: 'magnify'` sostiene sobre el libro, donde está el puntero, un cristal redondo con aro negro (un dedo la sostiene por encima de sí mientras toca la pantalla). Muestra el libro como lo ve el ojo del lector, iluminado y curvado como está, con más aumento en el centro y curvándose hacia el aro. La rueda, `+` y `−` cambian el aumento (`setMagnification(zoom)`, de 1,5 a 10; por defecto, la página a unos 5,5 px CSS por milímetro) y Esc la retira; `magnifier: { zoom, diameter }` fija ambos desde el principio. `createFolioFromDocument` vuelve a pintar las páginas bajo el cristal con nitidez suficiente para su centro, de modo que el cuerpo de texto de un periódico se lee; `createFolio` toma esas pinturas de `detail: { paint(index, deviceWidth), release() }`. El Sandbox la pone en el botón **Lupa** (M). La lupa también selecciona texto: sobre las páginas el cursor es el de texto, `pageAt` devuelve el punto bajo el centro de la lupa (encima del dedo en una pantalla táctil) y en el Sandbox un clic coloca ahí el cursor de edición y un arrastre selecciona.
 - **El lector puede rodear el libro.** Arrastrar con el botón derecho gira la vista alrededor del libro (hasta 70° desde la vertical), también mientras pasan hojas; `resetView()` la devuelve con suavidad a la `tilt` y el `yaw` de los ajustes, y `getView()` da la vista tal como se ve ahora (`{ tilt, yaw }`, en grados) para guardarla en esos ajustes. El Sandbox los ofrece en dos botones, **Restablecer la vista** y **Guardar como vista por defecto**.
 - **Los vídeos se reproducen en las páginas.** Un clic en la portada de un vídeo lo reproduce en la página, en cualquiera de los modos de `interaction`, y el vídeo sigue en marcha mientras pasa su hoja; otro clic lo pausa, y se detiene cuando el libro se queda quieto en un pliego que no lo muestra. Un vídeo con `player.autoplay` arranca solo la primera vez que se muestra su pliego; si además se reproduce junto a otros (`player.exclusive: false`), arranca sin sonido cada vez y se detiene cuando se pasa el pliego, varios a la vez. Las opciones son `videos`, `videoUrl` y `onVideo`, y el visor tiene `stopVideo()`; consulta [Formato del documento › Vídeos en las páginas de Folio](/es/docs/document-format#vídeos-en-las-páginas-de-folio).
 - **Antes, fuentes e imágenes.** Como con `renderPage`, las fuentes del documento deben estar cargadas en `document.fonts` y sus imágenes registradas con `registerResourceImage` antes de pintar las páginas.

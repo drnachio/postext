@@ -45,6 +45,6 @@ export {
 export { computeSourceMap } from './sourceMapping';
 export { orientationMarkAt } from './orientationMarks';
 export type { OrientationMark } from './orientationMarks';
-export { parseInlineSnippetSpans, mapInlineSnippet } from './inlineSnippet';
+export { parseInlineSnippetSpans, mapInlineSnippet, contentHasMath, resourceHasMath } from './inlineSnippet';
 export type { InlineSnippetMapping } from './inlineSnippet';
 export { extractIndexMarks } from './indexMarks';

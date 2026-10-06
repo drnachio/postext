@@ -6,6 +6,7 @@
  */
 
 import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
+import { attachEquationAnchors } from './equationLabels';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
@@ -135,11 +136,11 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
  */
 export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
   const marks = extractIndexMarks(markdown);
-  if (!marks) return attachDirections(attachContainerAnchors(parseBlocks(markdown)));
+  if (!marks) return attachDirections(attachContainerAnchors(attachEquationAnchors(parseBlocks(markdown), markdown)));
   const result = parseBlocks(marks.text);
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
-  return attachDirections(attachContainerAnchors(result));
+  return attachDirections(attachContainerAnchors(attachEquationAnchors(result, markdown)));
 }
 
 /** The direction a `dir` attribute names (`{dir=rtl}`, any case), or

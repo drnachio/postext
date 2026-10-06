@@ -8,8 +8,8 @@
  */
 
 import type { ContentBlock, InlineSpan } from '../parse';
-import type { Dimension, FootnoteNumbering as FootnoteNumberingMode, ResolvedParagraphStyleConfig } from '../types';
-import { formatNumeral, type NumberFormatStyle } from '../numbering';
+import type { DigitSystem, Dimension, FootnoteNumberFormat, FootnoteNumbering as FootnoteNumberingMode, ResolvedParagraphStyleConfig } from '../types';
+import { documentNumeralStyle, formatNumeral } from '../numbering';
 import type { ResolvedConfig, VDTLine } from '../vdt';
 import { hasCJK } from '../measure/cjk';
 
@@ -57,12 +57,42 @@ export interface FootnoteNumbering {
   chapters: { ids: string[]; lastBlock: number }[];
 }
 
+/** The reference symbols of `numberFormat: 'symbols'` (#538), in the
+ *  order the notes of a page take them. */
+export const DEFAULT_FOOTNOTE_SYMBOLS: readonly string[] = Object.freeze(['*', '†', '‡', '§', '‖', '¶']);
+
+/** What a note's count is written in: a numeral style, or reference
+ *  symbols (`numberFormat: 'symbols'`): the default sequence, or the one
+ *  given. */
+export type FootnoteFormat = FootnoteNumberFormat | { symbols: readonly string[] };
+
+/** The `n`th reference symbol of `symbols`: the sequence, then each symbol
+ *  doubled (`**`, `††`…), tripled… */
+export function footnoteSymbol(n: number, symbols: readonly string[] = DEFAULT_FOOTNOTE_SYMBOLS): string {
+  const seq = symbols.length > 0 ? symbols : DEFAULT_FOOTNOTE_SYMBOLS;
+  if (!Number.isInteger(n) || n < 1) return '';
+  return seq[(n - 1) % seq.length]!.repeat(Math.floor((n - 1) / seq.length) + 1);
+}
+
+/** The format the notes of a document are written in: a decimal number
+ *  in the document's digits (`numerals`), the named numeral style, or the
+ *  symbol sequence. */
+export function footnoteFormatOf(
+  f: { numberFormat: FootnoteNumberFormat; symbols?: readonly string[] },
+  digits?: DigitSystem,
+): FootnoteFormat {
+  if (f.numberFormat === 'symbols') return { symbols: f.symbols ?? DEFAULT_FOOTNOTE_SYMBOLS };
+  return documentNumeralStyle(f.numberFormat, digits);
+}
+
 /** A note's count as printed in `format`, inside `template`
  *  (`footnotes.markerTemplate`, `{n}` standing for the number). Formats
  *  with no symbol for a count (`circled-decimal` past 50 does write
  *  decimal) fall back to it. */
-export function formatFootnoteNumber(n: number, format: NumberFormatStyle = 'decimal', template?: string): string {
-  const number = formatNumeral(n, format) || String(n);
+export function formatFootnoteNumber(n: number, format: FootnoteFormat = 'decimal', template?: string): string {
+  const number = (format === 'symbols' ? footnoteSymbol(n)
+    : typeof format === 'string' ? formatNumeral(n, format)
+      : footnoteSymbol(n, format.symbols)) || String(n);
   return template ? template.split('{n}').join(number) : number;
 }
 
@@ -90,7 +120,7 @@ export function numberFootnotes(
   blocks: readonly ContentBlock[],
   numbering: FootnoteNumberingMode,
   startAt = 0,
-  format: NumberFormatStyle = 'decimal',
+  format: FootnoteFormat = 'decimal',
   template?: string,
 ): FootnoteNumbering {
   const numbers = new Map<string, string>();
@@ -134,7 +164,7 @@ export function numberFootnotes(
 export function numberFootnotesByPlacement(
   pages: readonly { index?: number; footnoteAreas?: readonly { columnIndex: number; noteIds: readonly string[] }[] }[],
   numbering: 'page' | 'column' | 'spread',
-  format: NumberFormatStyle = 'decimal',
+  format: FootnoteFormat = 'decimal',
   template?: string,
   pageIndexOffset = 0,
   order?: ReadonlyMap<string, number>,

@@ -290,7 +290,8 @@ export interface TableCell {
   /** Cell content (plain text / inline markdown). A newline, or `\\` as in
    *  captions and notes, starts a new paragraph. A paragraph of ordinary
    *  spaces sets nothing; one holding a no-break space (U+00A0) sets a line.
-   *  `\$` prints a dollar sign (cells are not parsed for maths). */
+   *  `$…$` is an inline formula, read by Pandoc's rule (#541), and `\$`
+   *  prints a dollar sign. */
   content: string;
   /** Optional image drawn inside the cell, above the content. */
   image?: TableCellImage;
@@ -551,6 +552,11 @@ export interface OutlineEntry {
   /** The page-number format of the entry's page, once laid out (an index
    *  merges consecutive pages of one format into a range). */
   pageFormat?: string;
+  /** What a reference to a counted anchor prints by default (#530): a
+   *  labelled equation's number in its `format` ("(3)", what `\eqref`
+   *  prints), a numbered statement's label and number ("Theorem 2").
+   *  `number` holds the bare number. Absent on every other entry. */
+  numberLabel?: string;
 }
 
 /** Heading counters (1-indexed by level) in effect at a point in a document. */
@@ -624,6 +630,12 @@ export interface LayoutContinuation {
    *  last chapter. It only feeds running heads and design text, never the
    *  page breaks, so a host can take it from a layout of the same book. */
   bookPageCount?: number;
+  /** The counters of labelled equations and numbered statements at the
+   *  end of the preceding content (#530), by counter name — `'equation'`
+   *  for the equations (`math.equationNumbering`), a callout style's
+   *  `numbering.counter` for its statements — each with the heading
+   *  counters of its last count, which decide `resetOn`. */
+  statementCounters?: Record<string, { counter: number; heading: HeadingCounters }>;
 }
 
 /** A part (section) as the running heads see it: number and title as
@@ -2319,6 +2331,64 @@ export interface CalloutStyleConfig {
   continuesMarkerAlign?: CalloutMarkerTextAlign;
   /** Set the marker in italics. Default `true`. */
   continuesMarkerItalic?: boolean;
+  /** Count the boxes of this style as numbered statements — theorems,
+   *  lemmas, definitions (#530): each prints its label and number
+   *  ("Theorem 2."), and a reference to the fence's `{#id}` prints them
+   *  too. Unset: the boxes are not counted. */
+  numbering?: CalloutNumberingConfig;
+  /** A mark set flush right at the end of the box's last line, as
+   *  amsthm's `\qed` ends a proof: `'∎'` or `'□'`. It goes on the last
+   *  line when there is room for it after a space, else on a line of its
+   *  own. Default `''` (none). */
+  endMark?: string;
+}
+
+/** How the boxes of a callout style are counted (#530): the counter they
+ *  advance, how its number is written and where the label goes. */
+export interface CalloutNumberingConfig {
+  /** The word before the number: `'Theorem'`, `'Lemma'`, `'Definition'`. */
+  label: string;
+  /** The counter the boxes advance. Styles that name one counter share
+   *  it, as amsthm's `\newtheorem{lemma}[theorem]` does: Lemma 1, then
+   *  Theorem 2. `'equation'` counts with the labelled equations. `false`
+   *  prints the label with no number ("Proof."). Default: the style's id. */
+  counter?: string | false;
+  /** Template of the number: `{n}` (the counter) and `{h1}`..`{h6}`
+   *  (heading numbers), as a resource type's. Default `'{n}'`;
+   *  `'{h1}.{n}'` numbers by chapter (with `resetOn: 'h1'`). */
+  numberingTemplate?: string;
+  /** When the counter starts again at 1. Default `'never'`. */
+  resetOn?: ResourceCounterReset;
+  /** How `{n}` is written. Default `'decimal'`. */
+  counterFormat?: ResourceCounterFormat;
+  /** Where the label goes: `'runIn'` (default) opens the box's first
+   *  paragraph ("**Theorem 2** (Bradley–Terry)**.** Let…"); `'title'`
+   *  makes it the box's title, in the title style ("Theorem 2
+   *  (Bradley–Terry)"). The fence's `title` follows the number, in
+   *  parentheses. */
+  placement?: 'runIn' | 'title';
+  /** Set the run-in label (and its suffix) in bold. Default `true`. The
+   *  `title` in parentheses is set in the regular weight. */
+  bold?: boolean;
+  /** Set the run-in label in italics, whatever the box's body (an italic
+   *  body leaves an upright label upright). Default `false`. */
+  italic?: boolean;
+  /** Set after the run-in label (and its title). Default `'.'`. */
+  suffix?: string;
+}
+
+/** {@link CalloutNumberingConfig} with every value resolved; `counter` is
+ *  `''` for a label without a number. */
+export interface ResolvedCalloutNumberingConfig {
+  label: string;
+  counter: string;
+  numberingTemplate: string;
+  resetOn: ResourceCounterReset;
+  counterFormat: ResourceCounterFormat;
+  placement: 'runIn' | 'title';
+  bold: boolean;
+  italic: boolean;
+  suffix: string;
 }
 
 /** Alignment of a split callout's continuation marker. */
@@ -2436,6 +2506,9 @@ export interface ResolvedCalloutStyleConfig {
   continuesMarker: string;
   continuesMarkerAlign: CalloutMarkerTextAlign;
   continuesMarkerItalic: boolean;
+  /** Absent when the style counts nothing. */
+  numbering?: ResolvedCalloutNumberingConfig;
+  endMark: string;
 }
 
 /**
@@ -2651,6 +2724,18 @@ export interface HeadingLevelConfig {
    *  line that opener paints, even where the heading's own measure fits the
    *  title on fewer (a justified title, a forced break). */
   span?: HeadingSpan;
+  /** Whether a `span: 'page'` heading starts a new page. Default `true`:
+   *  it opens the next page (and `breakBefore` picks its side). `false`,
+   *  with `breakBefore.enabled: false`, opens it where the text reaches
+   *  (#539), as a page-span box does: the columns above end level (the
+   *  band is balanced, `headings.balancing.trailing`), the heading's band
+   *  (its design, or the default opener) is set across the content area
+   *  under them, and the text goes on in every column below it — a second
+   *  article of a bulletin under the end of the first. When the room left
+   *  would not hold the heading and the widow minimum of lines under it,
+   *  it opens the next page as before. No effect on a `span: 'column'`
+   *  heading. */
+  spanBreak?: boolean;
   /** When enabled, the heading renders as a design slot. */
   advancedDesign?: HeadingAdvancedDesignConfig;
   /** Letter-case transform applied to the heading title (after any
@@ -2724,6 +2809,9 @@ export interface ResolvedHeadingLevelConfig {
   letterSpacing: Dimension;
   breakBefore: ResolvedHeadingBreakBeforeConfig;
   span: HeadingSpan;
+  /** `false` when set so (see {@link HeadingLevelConfig.spanBreak});
+   *  absent, the default, is `true`. */
+  spanBreak?: boolean;
   advancedDesign: ResolvedHeadingAdvancedDesignConfig;
   textTransform: HeadingTextTransform;
   hidden: boolean;
@@ -2796,7 +2884,8 @@ export interface HeadingsConfig {
    *  `span: 'page'` heading without a design sets the bold, italic and
    *  script runs too; a heading design (a designed opener band, an
    *  in-column `advancedDesign`) prints `{titleText}` as plain text either
-   *  way. Default `true`; configurations stored earlier whose
+   *  way, unless its text element reads inline marks (`inlineMarks: true`):
+   *  there `{titleText}` keeps the heading's runs (#539). Default `true`; configurations stored earlier whose
    *  headings carry marks are read with `false` (see `migrateConfig` in
    *  `postext/bundle`). */
   inlineMarks?: boolean;
@@ -3410,6 +3499,39 @@ export interface MathConfig {
    *  when `avoidWidows` is on). The carried line stands alone at the head
    *  of the next column. Default `false`: the formula alone moves on. */
   keepWithLeadIn?: boolean;
+  /** Number the display formulas that carry a `\label` (#530). */
+  equationNumbering?: EquationNumberingConfig;
+}
+
+/** How labelled display formulas are numbered (#530): a `\label{eq:x}`
+ *  in a display formula (on a row of an `align` or `gather`) numbers it in
+ *  reading order, unless the row says `\nonumber` or `\notag`. An
+ *  explicit `\tag{…}` prints as written and is not counted. */
+export interface EquationNumberingConfig {
+  /** Default `true`. `false` prints no number (a `\label` is dropped)
+   *  and a reference prints the equation's page. */
+  enabled?: boolean;
+  /** Template of the number: `{n}` (the counter) and `{h1}`..`{h6}`
+   *  (heading numbers), as a resource type's. Default `'{n}'`;
+   *  `'{h1}.{n}'` numbers by chapter (with `resetOn: 'h1'`). */
+  numberingTemplate?: string;
+  /** When the counter starts again at 1. Default `'never'`. */
+  resetOn?: ResourceCounterReset;
+  /** How `{n}` is written. Default `'decimal'`. */
+  counterFormat?: ResourceCounterFormat;
+  /** The number as the formula and `\eqref` print it, `{n}` standing for
+   *  the number: `'({n})'` (default), `'[{n}]'`, `'{n}'`. `\ref` prints
+   *  the bare number. */
+  format?: string;
+}
+
+/** {@link EquationNumberingConfig} with every value resolved. */
+export interface ResolvedEquationNumberingConfig {
+  enabled: boolean;
+  numberingTemplate: string;
+  resetOn: ResourceCounterReset;
+  counterFormat: ResourceCounterFormat;
+  format: string;
 }
 
 export interface ResolvedMathConfig {
@@ -3420,6 +3542,7 @@ export interface ResolvedMathConfig {
   marginBottom: Dimension;
   indentAfterDisplay: boolean;
   keepWithLeadIn: boolean;
+  equationNumbering: ResolvedEquationNumberingConfig;
 }
 
 /** Where footnotes (`[^id]` markers) are set:
@@ -3447,6 +3570,10 @@ export type FootnotePlacement = 'column' | 'chapterEnd' | 'spread';
  *  the column foot or on the spread only: with `placement: 'chapterEnd'`
  *  they number by chapter. */
 export type FootnoteNumbering = 'chapter' | 'document' | 'page' | 'column' | 'spread';
+
+/** How footnote numbers are written: a numeral style, or `'symbols'`
+ *  (* † ‡ § ‖ ¶, then doubled; see {@link FootnotesConfig.symbols}). */
+export type FootnoteNumberFormat = NumberFormatStyle | 'symbols';
 
 /** How the marker in the text is set:
  *  - `'superscript'`: raised and reduced, as a superscript (`text¹`);
@@ -3520,6 +3647,15 @@ export interface CitationsConfig {
    *  says) or, in Chinese text, as an inline two-row note (`'warichu'`,
    *  夹注). */
   notes?: 'footnote' | 'warichu';
+  /** How far the citations run together (#537): through the book
+   *  (`'book'`, default), or each chapter on its own (`'chapter'`, a new
+   *  one at each document and each level-1 heading): a numbered style
+   *  numbers each chapter's citations from 1 and a work cited in two
+   *  chapters takes each chapter's number; a note style writes a work in
+   *  full at its first citation in each chapter. Meant for chapter lists
+   *  (`bibliography.scope: 'chapter'`): the proceedings, the bulletin, the
+   *  edited volume. */
+  numbering?: 'book' | 'chapter';
   /** The list of works cited. */
   bibliography?: {
     /** Title printed above the list (a bold paragraph). Unset: the
@@ -3570,6 +3706,7 @@ export interface ResolvedCitationsConfig {
   marker: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges: boolean;
   notes: 'footnote' | 'warichu';
+  numbering: 'book' | 'chapter';
   bibliography: {
     title?: string;
     scope: 'book' | 'chapter';
@@ -3630,8 +3767,18 @@ export interface FootnotesConfig {
   /** How the numbers are written, in any spelling of a number format
    *  (`decimal`, `lower-roman`, `circled-decimal` / `①`, `cjk-decimal`…, see
    *  `parseNumberFormat`). Default `'decimal'`. `circled-decimal` writes
-   *  numbers past 50 in decimal. */
+   *  numbers past 50 in decimal. `'symbols'` (or `'*'`) marks the notes
+   *  with reference symbols, {@link symbols} in turn: * † ‡ § ‖ ¶, then
+   *  doubled (** †† …), tripled… (#538); its notes are counted again on
+   *  every page unless `numbering` says otherwise. */
   numberFormat?: string;
+  /** The sequence `numberFormat: 'symbols'` writes, doubled and then
+   *  tripled once it runs out. Default `['*', '†', '‡', '§', '‖', '¶']`.
+   *  The Latin files of Google Fonts / Fontsource carry * † § ¶ but not
+   *  ‡ or ‖: with such a face, leave those two out or set the notes in a
+   *  face that has them. Empty strings are dropped; an empty list keeps
+   *  the default. */
+  symbols?: string[];
   /** Default `'auto'` (see {@link FootnoteMarkerPosition}). The number
    *  that opens the note itself follows it too: raised, or set at the size
    *  of the note text. */
@@ -3690,7 +3837,10 @@ export interface FootnotesConfig {
 export interface ResolvedFootnotesConfig {
   placement: FootnotePlacement;
   numbering: FootnoteNumbering;
-  numberFormat: NumberFormatStyle;
+  numberFormat: FootnoteNumberFormat;
+  /** Set when it is not the default sequence (see
+   *  {@link FootnotesConfig.symbols}). */
+  symbols?: string[];
   /** `'auto'` resolved against the number format. */
   markerPosition: 'superscript' | 'inline' | 'side' | 'right';
   markerSize: Dimension;
@@ -4443,7 +4593,9 @@ export interface DesignTextElement {
    *  the marker character itself (`\*`). Bold runs take weight 700 (the
    *  element's own weight when it is heavier); italic runs flip the
    *  element's slant; scripts are set smaller and raised or lowered, as in
-   *  the body text. Default `false`: the text is set exactly as written. */
+   *  the body text. In a heading design, `{titleText}` then keeps the
+   *  heading's own bold, italic and script runs (#539). Default `false`:
+   *  the text is set exactly as written. */
   inlineMarks?: boolean;
   /** Outline drawn around the glyphs (see `DesignTextStroke`). */
   stroke?: DesignTextStroke;

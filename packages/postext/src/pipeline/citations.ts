@@ -12,11 +12,13 @@ import { FOOTNOTE_PLACEHOLDER } from '../parse/inlineFormatting';
 import type { Dimension } from '../types';
 import type { ResolvedConfig } from '../vdt';
 import type { ResolvedParagraphStyleConfig } from '../types';
-import type { CitationContext } from '../citations/context';
+import { blockResourceIds, type CitationContext } from '../citations/context';
 import { citationEngine } from '../citations/registry';
-import type { BibliographyEntryOutput, CitationClusterInput, CitationProcessor, CslItem } from '../citations/types';
+import type { BibliographyEntryOutput, CitationClusterInput, CitationProcessor, CslItem, CslName } from '../citations/types';
+import { isEtAlName } from '../citations/bibtex';
 import { htmlToSpans, decodeEntities } from '../citations/html';
 import { languageOf, stringsFor } from '../locale';
+import { affixRichText, affixSpans } from '../parse/citations';
 
 /** Id of the paragraph style the bibliography is set in. */
 export const BIBLIOGRAPHY_STYLE_ID = '__postext-bibliography';
@@ -70,6 +72,10 @@ export interface ProcessedCitations {
   target: (string | undefined)[];
   /** Every work the bibliography lists for the whole book, in order. */
   entries: BibliographyEntryOutput[];
+  /** With `citations.numbering: 'chapter'` (#537): each chapter's list
+   *  (the works it cites, labelled with its own numbers), by the chapter
+   *  index of `CitationContext.chapters`. */
+  chapterEntries?: ReadonlyMap<number, BibliographyEntryOutput[]>;
   numbered: boolean;
   hangingIndent: boolean;
   labelColumn: boolean;
@@ -137,6 +143,13 @@ function markerSpans(
   const span = (text: string, extra: Partial<InlineSpan> = {}): InlineSpan => ({ text, bold: base.bold, italic: base.italic, ...extra });
   const out: InlineSpan[] = [];
   if (narrative) out.push(span(cfg.marker === 'superscript' || cfg.marker === 'corner' ? narrative : `${narrative} `));
+  // The first work's prefix before the marker and the last one's suffix
+  // after it, their emphasis read (#528): "see [1], *inter alia*", as
+  // citeproc-js sets a bracketed number.
+  const prefix = known[0]?.prefix;
+  const suffix = known[known.length - 1]?.suffix;
+  const affix = (text: string): InlineSpan[] => affixSpans(text).map((s) => ({ ...s, bold: s.bold || base.bold, italic: s.italic !== base.italic }));
+  if (prefix && !narrative) out.push(...affix(/[\s([{]$/u.test(prefix) ? prefix : `${prefix} `));
   switch (cfg.marker) {
     case 'parentheses':
       out.push(span(`(${list}${loc ? `${comma} ${loc}` : ''})`));
@@ -150,6 +163,7 @@ function markerSpans(
     default:
       out.push(span(`[${list}${loc ? `${comma} ${loc}` : ''}]`));
   }
+  if (suffix) out.push(...affix(/^[\s\p{P}]/u.test(suffix) ? suffix : ` ${suffix}`));
   return out;
 }
 
@@ -157,13 +171,16 @@ function markerSpans(
  *  Japanese locale a CJK name takes the locale's words for "and" and "et
  *  al.", set solid (夏目と森, 夏目ほか, #426); Chinese keeps 、 and 等. */
 function narrativeName(item: CslItem | undefined, locale: string, terms: CitationProcessor['terms']): string {
-  const names = (item?.author ?? item?.editor ?? []) as { family?: string; literal?: string }[];
+  const listed = (item?.author ?? item?.editor ?? []) as CslName[];
+  // `and others` (#533): the names left out make it "et al.".
+  const names = listed.filter((n) => !isEtAlName(n));
   if (names.length === 0) return '';
   const first = names[0]!.literal ?? names[0]!.family ?? '';
   const cjk = CJK.test(first);
   // An Arabic name takes the Arabic conjunction, joined to the word it
   // precedes: «الجاحظ والمبرد», «الجاحظ وآخرون».
   const arabic = ARABIC.test(first);
+  if (names.length < listed.length) return cjk && terms && languageOf(locale) === 'ja' ? `${first}${terms.etAl}` : cjk ? `${first}等` : arabic ? `${first} وآخرون` : `${first} et al.`;
   if (names.length === 1) return first;
   const second = names[1]!.literal ?? names[1]!.family ?? '';
   if (cjk && terms && languageOf(locale) === 'ja') return names.length === 2 ? `${first}${terms.and}${second}` : `${first}${terms.etAl}`;
@@ -183,7 +200,10 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
   if (!engine || ctx.items.length === 0) return null;
   const cfg = resolved.citations;
   const style = cfg.style === 'custom' && cfg.customStyle ? cfg.customStyle : cfg.style;
-  const key = JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, style, locale, cfg.marker, cfg.collapseRanges, cfg.notes, cfg.bibliography.doi, cfg.bibliography.includeUncited, cfg.bibliography.groupByLanguage]);
+  // Each chapter on its own (#537): its citations processed apart, so a
+  // numbered style numbers them from 1.
+  const byChapter = cfg.numbering === 'chapter' && ctx.chapters !== undefined && ctx.chapters.length === ctx.clusters.length;
+  const key = JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, byChapter ? ctx.chapters : null, style, locale, cfg.marker, cfg.collapseRanges, cfg.notes, cfg.bibliography.doi, cfg.bibliography.includeUncited, cfg.bibliography.groupByLanguage]);
   const hit = memo.find((m) => m.key === key);
   if (hit) return hit.value;
   let value: ProcessedCitations | null = null;
@@ -195,37 +215,82 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
     const byId = new Map(items.map((i) => [i.id, i]));
     const processor = engine.createProcessor({ style, locale, items, collapseRanges: cfg.collapseRanges, unnumberedNotes: cfg.notes === 'warichu' });
     const clusters = ctx.clusters.map((c) => ({ ...c, noteIndex: processor.kind === 'note' ? c.noteIndex ?? 0 : 0 }));
-    const html = processor.cite(clusters);
-    const numbers = processor.citationNumbers();
+    // Affixes reach the processor as CSL rich text: their Markdown
+    // emphasis as `<i>`/`<b>` (#528).
+    const rich = clusters.map((c) => (c.items.some((it) => it.prefix || it.suffix)
+      ? { ...c, items: c.items.map((it) => ({ ...it, ...(it.prefix ? { prefix: affixRichText(it.prefix) } : {}), ...(it.suffix ? { suffix: affixRichText(it.suffix) } : {}) })) }
+      : c));
+    /** A list as the settings print it. */
+    const shaped = (list: BibliographyEntryOutput[]): BibliographyEntryOutput[] => {
+      let out = list;
+      // A numbered list is in the order of its numbers: grouping by
+      // language would set [3] before [1].
+      if (cfg.bibliography.groupByLanguage && !processor.numeric) {
+        out = [...out.filter((e) => isCjkItem(byId.get(e.id))), ...out.filter((e) => !isCjkItem(byId.get(e.id)))];
+      }
+      if (cfg.bibliography.doi === 'text') out = out.map((e) => ({ ...e, html: e.html.replace(/<\/?a\b[^>]*>/g, '') }));
+      return out;
+    };
+    const override = processor.numeric && cfg.marker !== 'style' && processor.kind === 'in-text';
+    const formatted: (InlineSpan[] | undefined)[] = new Array(clusters.length).fill(undefined);
+    // The clusters of each chapter (one group of them all, numbered through
+    // the book, unless `numbering: 'chapter'`).
+    const groups = new Map<number, number[]>();
+    clusters.forEach((_, i) => {
+      const g = byChapter ? ctx.chapters![i]! : 0;
+      const list = groups.get(g);
+      if (list) list.push(i);
+      else groups.set(g, [i]);
+    });
+    const chapterEntries = new Map<number, BibliographyEntryOutput[]>();
+    let bib: ReturnType<CitationProcessor['bibliography']> | undefined;
+    for (const [chapter, indexes] of groups) {
+      const html = processor.cite(indexes.map((i) => rich[i]!));
+      const numbers = processor.citationNumbers();
+      indexes.forEach((i, j) => {
+        const c = clusters[i]!;
+        const known = c.items.filter((it) => byId.has(it.id));
+        if (known.length === 0) return;
+        if (override) {
+          const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id), locale, processor.terms)).filter(Boolean).join('; ') : undefined;
+          formatted[i] = markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false }, locale);
+        } else {
+          formatted[i] = htmlToSpans(html[j] ?? '');
+        }
+      });
+      if (byChapter) {
+        bib = processor.bibliography([...new Set(indexes.flatMap((i) => clusters[i]!.items.map((it) => it.id)))].filter((id) => byId.has(id)));
+        chapterEntries.set(chapter, shaped(bib.entries));
+      }
+    }
     const listedIds = cfg.bibliography.includeUncited || ctx.nocite.includes('*')
       ? items.map((i) => i.id)
       : [...new Set([...clusters.flatMap((c) => c.items.map((it) => it.id)), ...ctx.nocite])].filter((id) => byId.has(id));
-    const bib = processor.bibliography(listedIds);
-    let entries = bib.entries;
-    // A numbered list is in the order of its numbers: grouping by language
-    // would set [3] before [1].
-    if (cfg.bibliography.groupByLanguage && !processor.numeric) {
-      entries = [...entries.filter((e) => isCjkItem(byId.get(e.id))), ...entries.filter((e) => !isCjkItem(byId.get(e.id)))];
+    let entries: BibliographyEntryOutput[];
+    if (byChapter) {
+      // The book's list: every chapter's entries, a work at its first
+      // chapter, then the works no chapter cites (`nocite`).
+      const seen = new Set<string>();
+      entries = [...chapterEntries.values()].flat().filter((e) => !seen.has(e.id) && seen.add(e.id));
+      const rest = listedIds.filter((id) => !seen.has(id));
+      if (rest.length > 0 || !bib) {
+        bib = processor.bibliography(rest);
+        entries = [...entries, ...shaped(bib.entries).filter((e) => !seen.has(e.id))];
+      }
+    } else {
+      bib = processor.bibliography(listedIds);
+      entries = shaped(bib.entries);
     }
-    if (cfg.bibliography.doi === 'text') entries = entries.map((e) => ({ ...e, html: e.html.replace(/<\/?a\b[^>]*>/g, '') }));
-    const override = processor.numeric && cfg.marker !== 'style' && processor.kind === 'in-text';
     value = {
       processor,
-      formatted: clusters.map((c, i) => {
-        const known = c.items.filter((it) => byId.has(it.id));
-        if (known.length === 0) return undefined;
-        if (override) {
-          const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id), locale, processor.terms)).filter(Boolean).join('; ') : undefined;
-          return markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false }, locale);
-        }
-        return htmlToSpans(html[i] ?? '');
-      }),
+      formatted,
       unknown: clusters.map((c) => c.items.filter((it) => !byId.has(it.id)).map((it) => it.id)),
       target: clusters.map((c) => c.items.find((it) => byId.has(it.id))?.id),
       entries,
+      ...(byChapter ? { chapterEntries } : {}),
       numbered: processor.numeric,
-      hangingIndent: bib.hangingIndent || !bib.labelColumn,
-      labelColumn: bib.labelColumn,
+      hangingIndent: bib!.hangingIndent || !bib!.labelColumn,
+      labelColumn: bib!.labelColumn,
     };
   } catch {
     value = null;
@@ -292,6 +357,11 @@ export interface CitationIssue {
   sourceEnd: number;
 }
 
+/** Which works a list prints: all the book's (`'book'`), the chapter's
+ *  (`'chapter'`), or those cited so far in the document that no list
+ *  before it printed (`'new'`, `:::bibliography{scope=new}`, #534). */
+type BibliographyScope = 'book' | 'chapter' | 'new';
+
 /** What {@link applyCitations} gives the build. */
 export interface AppliedCitations {
   blocks: ContentBlock[];
@@ -300,6 +370,32 @@ export interface AppliedCitations {
   labelChars: number;
   /** A bibliography was set in this document. */
   bibliography: boolean;
+  /** The formatted citations of the captions and notes of the resources
+   *  this document places (#529), by resource id: one entry per citation
+   *  in the caption's (the note's) text, undefined for one that prints as
+   *  written. Set plain: the caption's emphasis goes on when it is laid
+   *  out (see `resolveCitationSpans`). */
+  captions: Map<string, CaptionCitations>;
+}
+
+/** The formatted citations of a resource's caption and note. */
+export interface CaptionCitations {
+  caption: (InlineSpan[] | undefined)[];
+  note: (InlineSpan[] | undefined)[];
+}
+
+/** `spans` with each citation span replaced by its formatted text from
+ *  `formatted`, in order, with the emphasis of the text around it; a
+ *  citation with none prints as written. */
+export function resolveCitationSpans(spans: InlineSpan[], formatted: readonly (InlineSpan[] | undefined)[] | undefined): InlineSpan[] {
+  if (!spans.some((s) => s.citation)) return spans;
+  let k = 0;
+  return spans.flatMap((span) => {
+    if (!span.citation) return [span];
+    const text = formatted?.[k++];
+    if (!text) return [plain(span.citation.raw, span)];
+    return text.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
+  });
 }
 
 /** A Chinese mark that ends a clause or a sentence, at the start of a text. */
@@ -397,16 +493,74 @@ export function applyCitations(
   const notes: ContentBlock[] = [];
   let k = 0;
   const citedHere = new Set<string>();
+  /** Every work this document has cited so far, and those a list has
+   *  printed (`scope=new`, #534). */
+  const citedSoFar = new Set<string>();
+  const printed = new Set<string>();
+  /** The chapter (`CitationContext.chapters`) of the last citation read. */
+  let chapterAt: number | undefined;
+  /** Cluster `g`, formatted, read here: its works counted. */
+  const counted = (g: number): void => {
+    for (const it of ctx.clusters[g]?.items ?? []) {
+      citedHere.add(it.id);
+      citedSoFar.add(it.id);
+    }
+    chapterAt = ctx.chapters?.[g] ?? chapterAt;
+  };
   let bibliographySet = false;
   let labelChars = 0;
   let containerSeq = 0;
   const listedIds = new Set(processed?.entries.map((e) => e.id) ?? []);
   const itemsById = new Map(ctx.items.map((i) => [i.id, i]));
   const willList = (id: string | undefined): boolean => id !== undefined && listedIds.has(id) && (cfg.bibliography.auto || ctx.placed);
+  /** The printed text of cluster `g` with the emphasis of `span` (the
+   *  citation's span), linked to its entry; undefined when it prints as
+   *  written. */
+  const formattedText = (g: number | undefined, span: InlineSpan): InlineSpan[] | undefined => {
+    const spans = g !== undefined ? processed?.formatted[g] : undefined;
+    if (g === undefined || !spans) return undefined;
+    const target = processed!.target[g];
+    const href = cfg.link && willList(target) ? `#${BIBLIOGRAPHY_ANCHOR_PREFIX}${target}` : undefined;
+    // The citation takes the emphasis of the text around it.
+    const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
+    const linkedText = href ? linked(styled, href) : styled;
+    // A key no reference defines, in a citation of several works: set in
+    // bold after it, as written, so the missing work shows on the page
+    // and not only among the warnings.
+    const missing = processed!.unknown[g] ?? [];
+    return missing.length > 0
+      ? [...linkedText, plain(' ', span), { ...plain(missing.map((id) => `@${id}`).join('; '), span), bold: true }]
+      : linkedText;
+  };
+  // Captions and notes (#529): formatted in the text's way (a note style
+  // sets them in the caption too: a caption takes no note), their works
+  // counted where the block that places the resource is read.
+  const captions = new Map<string, CaptionCitations>();
+  const captionIds = new Set(Object.keys(ctx.captions ?? {}));
+  const captionAnchors = (block: ContentBlock): void => {
+    if (captionIds.size === 0) return;
+    for (const id of blockResourceIds(block, (rid) => captionIds.has(rid))) {
+      const at = ctx.captions?.[id];
+      if (!at || captions.has(id)) continue;
+      const base: InlineSpan = { text: '', bold: false, italic: false };
+      for (const g of [...at.caption, ...at.note]) {
+        if (processed?.formatted[g]) counted(g);
+      }
+      captions.set(id, { caption: at.caption.map((g) => formattedText(g, base)), note: at.note.map((g) => formattedText(g, base)) });
+    }
+  };
 
-  const bibliographyBlocks = (at: number, scope: 'book' | 'chapter', title: string | undefined): ContentBlock[] => {
+  const bibliographyBlocks = (at: number, scope: BibliographyScope, title: string | undefined): ContentBlock[] => {
     if (!processed) return [];
-    const entries = scope === 'chapter' ? processed.entries.filter((e) => citedHere.has(e.id)) : processed.entries;
+    // Numbered by chapter (#537), a chapter's list takes its own labels.
+    const pool = scope !== 'book' && processed.chapterEntries && chapterAt !== undefined
+      ? processed.chapterEntries.get(chapterAt) ?? processed.entries
+      : processed.entries;
+    const entries = scope === 'chapter'
+      ? pool.filter((e) => citedHere.has(e.id))
+      // The works cited so far that no list before printed (#534).
+      : scope === 'new' ? pool.filter((e) => citedSoFar.has(e.id) && !printed.has(e.id)) : pool;
+    for (const e of entries) printed.add(e.id);
     if (entries.length === 0) return [];
     bibliographySet = true;
     const alignRight = cfg.bibliography.labelAlign === 'right';
@@ -451,7 +605,7 @@ export function applyCitations(
     if (block.type === 'directive' && block.directiveName === 'references') continue;
     if (block.type === 'directive' && block.directiveName === 'bibliography') {
       const scopeAttr = block.directiveAttrs?.scope;
-      const scope = scopeAttr === 'chapter' || scopeAttr === 'book' ? scopeAttr : cfg.bibliography.scope;
+      const scope = scopeAttr === 'chapter' || scopeAttr === 'book' || scopeAttr === 'new' ? scopeAttr : cfg.bibliography.scope;
       out.push(...bibliographyBlocks(block.sourceStart, scope, block.directiveAttrs?.title ?? cfg.bibliography.title));
       chapterListed = true;
       continue;
@@ -466,6 +620,7 @@ export function applyCitations(
     }
     if (!block.spans.some((s) => s.citation)) {
       out.push(block);
+      captionAnchors(block);
       continue;
     }
     const replace = new Map<number, InlineSpan[]>();
@@ -473,25 +628,13 @@ export function applyCitations(
     block.spans.forEach((span, i) => {
       if (!span.citation) return;
       const g = ctx.local[k++];
-      const spans = g !== undefined ? processed?.formatted[g] : undefined;
-      if (g === undefined || !spans) {
+      const text = formattedText(g, span);
+      if (g === undefined || !text) {
         // No reference: the citation prints as it was written.
         replace.set(i, [plain(span.citation.raw, span)]);
         return;
       }
-      for (const it of span.citation.cluster.items) citedHere.add(it.id);
-      const target = processed!.target[g];
-      const href = cfg.link && willList(target) ? `#${BIBLIOGRAPHY_ANCHOR_PREFIX}${target}` : undefined;
-      // The citation takes the emphasis of the text around it.
-      const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
-      const linkedText = href ? linked(styled, href) : styled;
-      // A key no reference defines, in a citation of several works: set in
-      // bold after it, as written, so the missing work shows on the page
-      // and not only among the warnings.
-      const missing = processed!.unknown[g] ?? [];
-      const text = missing.length > 0
-        ? [...linkedText, plain(' ', span), { ...plain(missing.map((id) => `@${id}`).join('; '), span), bold: true }]
-        : linkedText;
+      counted(g);
       if (note && block.footnoteDef === undefined) {
         // "As @howse1980 says": the sentence keeps the author's name, the
         // reference goes to the note.
@@ -524,6 +667,7 @@ export function applyCitations(
       if (next && !next.citation && next.text.startsWith('.') && !next.text.startsWith('..') && /\.$/.test(text.map((t) => t.text).join(''))) dropLead.add(i + 1);
     });
     out.push(withSpans(block, replace, dropLead));
+    captionAnchors(block);
   }
   // Nothing places the list: it goes after the text (the book's last
   // document for a book-wide list).
@@ -533,7 +677,7 @@ export function applyCitations(
     const at = blocks[blocks.length - 1]?.sourceEnd ?? 0;
     out.push(...bibliographyBlocks(at, cfg.bibliography.scope, cfg.bibliography.title));
   }
-  return { blocks: [...out, ...notes], labelChars, bibliography: bibliographySet };
+  return { blocks: [...out, ...notes], labelChars, bibliography: bibliographySet, captions };
 }
 
 /** The issues of a document's citations, for the content warnings. */

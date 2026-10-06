@@ -1,0 +1,75 @@
+---
+title: "Un assaig de metaciència en anglès i en castellà"
+summary: "L'assaig d'Ioannidis del 2005 recompost amb un sol script en dues edicions, amb fórmules al text i a les cel·les i la figura 1 calculada."
+plain: "Un assaig famós sobre per què molts resultats de recerca no s'aguanten, compost en set pàgines. Un sol script fa l'edició anglesa i una traducció al castellà, cadascuna amb la seva partició de mots i la seva coma decimal."
+description: "Un script de Postext compon un article en anglès i en castellà: fórmules a les cel·les, equacions numerades, una figura calculada i referències Vancouver."
+question: "Com publico un mateix article en dues llengües des d'un sol script, amb la tipografia de cada llengua?"
+aliases: ["article bilingüe", "traducció", "dues edicions", "edició en castellà", "Ioannidis", "PLoS Medicine", "metaciència", "valor predictiu positiu", "VPP", "taula de 2×2", "fórmula en una cel·la", "lletres gregues en taules", "Vancouver", "elsevier-vancouver", "accés obert", "recompondre un article"]
+pageNotes: { "1": "Pàgina 1: una banda blau marí amb unes corbes tènues del valor predictiu positiu obertes en ventall, l'avantítol, el títol en una pal sec blanca molt negra, l'autor i les seves dues filiacions; sota la banda, la línia que diu que és una traducció i en dona la font i la llicència, el Resum sobre un tint gris blavós a tota la pàgina i el començament de l'assaig a dues columnes amb les cites entre claudàtors.", "2": "Pàgina 2: el model de l'assaig a dues columnes, amb les equacions (1) a (3) com a fraccions centrades i numerades a la dreta, i la Taula 1 al peu de la pàgina: capçalera blau marí en dues files i una fórmula a cada cel·la.", "3": "Pàgina 3: la Taula 2, la Figura 1 en tres panells per a potències de 0,80, 0,50 i 0,20, amb quatre corbes cadascun, del blau marí al vermelló, i una de discontínua sense biaix, després la Taula 3 i el començament dels Corol·laris.", "5": "Pàgina 5: els corol·laris 4 a 6 i les seccions sobre els dissenys de recerca i sobre el biaix dominant.", "6": "Pàgina 6: la Taula 4 al capdamunt de la primera columna, nou exemples pràctics amb potència, R, u i un VPP calculat amb l'equació (2), amb la coma decimal, i el final de l'assaig.", "7": "Pàgina 7: el final del text, la informació de l'article i 33 referències a l'estil Vancouver, numerades entre claudàtors a dues columnes." }
+---
+
+## Què compondràs
+
+Una separata de set pàgines de l'assaig de John Ioannidis *Why Most Published Research Findings Are False* (PLoS Medicine, 2005), abreujat i compost en una pàgina de 210 × 280 mm a dues columnes. Una banda blau marí obre la primera pàgina, amb les corbes de la mateixa fórmula de l'assaig dibuixades tènues darrere el títol. Les tres fórmules van destacades i numerades; les taules de 2×2 porten una fórmula a cada cel·la, amb α i β de debò; la figura 1 es calcula amb l'equació (2), i l'última columna de la taula 4, amb la mateixa equació. El mateix script compon una traducció al castellà amb partició de mots castellana, coma decimal a taules i figures, cometes « » i rètols en castellà. Tanquen trenta-tres referències a l'estil Vancouver, refetes en BibTeX a partir de la llista de l'article.
+
+## Elaboració
+
+### 1 · Un script, dues edicions
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. El Receptari compon l'script una vegada per llengua i posa `content.en.md` o `content.es.md` on hi ha la marca `@content`; cada ranura amb nom (`content.corollaries.es.md`, `content.resources.es.md`) segueix la mateixa regla, i una ranura sense fitxer en castellà pren l'anglès, que és com les dues edicions comparteixen un únic fitxer BibTeX. Tota la resta que canvia amb la llengua passa per `LANG`: `locale` tria els patrons de partició de mots (`'es'` és el codi que parteix el castellà), `defaultResourceTypes(LANG)` escriu *Tabla* i *Figura*, la configuració regional de CSL escriu les paraules de la bibliografia i `toLocaleString` dona als nombres que calcula l'script la seva coma decimal. La traducció segueix l'ortotipografia castellana: cometes « », *0,05* al text i `0{,}05` dins una fórmula, perquè TeX no tracti la coma com un signe de puntuació i hi deixi un espai al darrere. Per publicar el teu article en dues llengües, guarda un fitxer per llengua per al text i els peus, i reuneix qualsevol altra diferència en un objecte com `edition`.
+
+### 2 · Fórmules dins les cel·les
+
+<Excerpt region="tables" />
+
+Les cel·les d'una taula no s'analitzen a la recerca de matemàtiques, i els fitxers latin de Fontsource no porten lletres gregues, així que una cel·la que al TSV diu `$c(1-\beta)R/(R+1)$` es compon com a imatge: `renderMath` dibuixa la fórmula amb els traçats de MathJax al cos de 8 pt de les cel·les, i `setCellImage` la col·loca a la cel·la amb una amplada expressada com a fracció de la cel·la. Cada imatge fa una línia de cel·la d'alt i té la línia de base on la tenen les cel·les de text, de manera que *Sí*, *No* i les fórmules queden en una mateixa línia, i el PDF les conserva com a contorns vectorials. `mergeCells` uneix el rètol de la primera columna sobre les dues files de capçalera i el de la relació veritable sobre tres columnes, i escriu les cel·les ocultes que necessita una cel·la combinada.
+
+### 3 · Peus i taules des de la ranura, nombres des de la fórmula
+
+<Excerpt region="resources" />
+
+Les taules, els peus, les notes i els textos alternatius són a `content.resources.<lang>.md`, un bloc per recurs, així que qui tradueix només toca fitxers de text i cada edició porta només la seva llengua. La columna de VPP de la taula 4 no es tecleja: `ppv()` la calcula amb la potència, *R* i *u* de cada fila, i els nou valors coincideixen amb els impresos el 2005 en dues xifres significatives. Les taules suren amb `position: 'auto'`, així que la taula 1 pot ocupar el peu de la pàgina que la cita en lloc d'amuntegar-se amb els altres flotants a la següent.
+
+### 4 · La figura 1, dibuixada amb l'equació (2)
+
+<Excerpt region="art" />
+
+Cada panell recorre *R* de 0 a 1 amb la mateixa `ppv()` que omple la taula 4. Dibuixar les corbes amb la fórmula fa veure una cosa que la figura del 2005 amaga: les seves corbes corresponen a *u* = 0; 0,05; 0,20 i 0,80, mentre que la llegenda diu 0,05; 0,20; 0,50 i 0,80. Aquesta versió dibuixa els valors de la llegenda, hi afegeix en traç discontinu la corba sense biaix i ho explica a la nota del peu. Els rètols són text en la lletra dels rètols: l'SVG porta la font com a `@font-face` en línia per al llenç, i el PDF els compon amb la font que lliura el proveïdor.
+
+### 5 · Una primera pàgina i un requadre per a un assaig
+
+<Excerpt region="title" />
+
+El títol és l'únic de nivell 1; el seu estil `essay` ocupa tota la pàgina i dibuixa la banda, l'avantítol, l'autor, les filiacions i la línia de la font a partir dels atributs del títol, així que l'edició castellana només canvia paraules. El resum és un requadre a tota la pàgina sobre un tint. El requadre 1, l'exemple resolt, sura al peu d'una pàgina a l'amplada de les dues columnes i compon el text a dues columnes dins el requadre. Els corol·laris conserven la forma de l'article, amb l'enunciat en negreta al començament del paràgraf: `:chip[Corolario 1]{style="corollary"}` hi posa al davant un rètol petit en vermelló.
+
+<Excerpt region="boxes" />
+
+## Variants
+
+### Enlaira els números de cita
+
+Les revistes mèdiques solen posar els números de Vancouver volats.
+
+```diff
+-    marker: 'brackets', collapseRanges: true,
++    marker: 'superscript', collapseRanges: true,
+```
+
+### Imprimeix els DOI
+
+El BibTeX d'aquesta recepta no guarda els DOI, per no passar de la mida de l'script. Conserva'ls al teu fitxer i imprimeix-los com a enllaços.
+
+```diff
+-      labelWidth: mm(6.4), doi: 'hide' } },
++      labelWidth: mm(6.4), doi: 'link' } },
+```
+
+### Compon les taules en una columna
+
+Una taula de 2×2 amb fórmules més curtes cap en una columna: treu el `span: 'page'` i mesura les cel·les amb `COLUMN`, com la taula 4. A <RecipeLink slug="journal-article-with-maths">Article a dues columnes amb equacions numerades</RecipeLink> hi ha una taula a una columna.
+
+## Errors freqüents
+
+- Una llista d'autors de BibTeX que acaba en `and others` imprimeix un coautor anomenat *others*. Aquesta recepta dona els set primers autors de les llistes llargues, i `elsevier-vancouver` n'escriu sis i *et al.*
+- Els peus i les notes no admeten matemàtiques ni lletres gregues d'un fitxer latin de Fontsource, així que el peu de la taula 4 anomena la potència amb paraules i la nota diu *una taxa d'error de tipus I de 0,05*, no α = 0,05.
+- Les pàgines no coincideixen entre edicions: el text castellà és més llarg i la taula 4 cau una pàgina després. La captura publica les pàgines 1, 2, 3, 5, 6 i 7 de les dues, perquè les imatges no passin del límit de pes i la taula 4 es vegi en totes dues.

@@ -151,5 +151,24 @@
       "japanese-technical-manual", "jukugo-furigana-textbook", "sist02-research-paper", "gojuon-index",
       "hiragana-picture-book", "katakana-majiri-proclamation", "kanji-numerals-and-dates", "romaji-nikki"
     ]
+  },
+  "scientific-papers": {
+    "title": { "en": "Scientific papers", "es": "Artículos científicos", "ca": "Articles científics", "zh": "科学论文", "ar": "الأوراق العلمية", "ja": "学術論文" },
+    "summary": {
+      "en": "Papers as journals and preprint servers print them, most of them real open-access papers re-set from their source: an AI preprint with its prompt examples, a theory paper with theorems and proofs, a biology article with its Methods, a physics letter, a meta-research essay in English and Spanish, a mental-health trial, a 1981 outbreak report, and the citation styles they use.",
+      "es": "Artículos como los imprimen las revistas y los servidores de preprints, la mayoría artículos reales de acceso abierto recompuestos desde su fuente: un preprint de IA con sus ejemplos de prompts, un artículo teórico con teoremas y demostraciones, un artículo de biología con sus Métodos, una carta de física, un ensayo de metaciencia en inglés y en español, un ensayo clínico de salud mental, un informe de brote de 1981 y los estilos de cita que usan.",
+      "ca": "Articles com els imprimeixen les revistes i els servidors de preprints, la majoria articles reals d'accés obert recompostos des de la font: un preprint d'IA amb els seus exemples de prompts, un article teòric amb teoremes i demostracions, un article de biologia amb els seus Mètodes, una carta de física, un assaig de metaciència en anglès i en castellà, un assaig clínic de salut mental, un informe de brot de 1981 i els estils de citació que fan servir.",
+      "zh": "按期刊和预印本平台的样式排出的论文，其中多数是依据原始来源重新排版的真实开放获取论文：附提示词示例的AI预印本、含定理与证明的理论论文、带方法部分的生物学论文、物理快报、英西双语的元科学论文、心理健康临床试验、1981年的疫情报告，以及它们所用的引用格式。",
+      "ar": "أوراق كما تطبعها المجلات وخوادم المسودات، وأغلبها أوراق حقيقية مفتوحة الوصول أُعيد تنضيدها من مصدرها: مسودة في الذكاء الاصطناعي بأمثلة موجّهاتها، وورقة نظرية بمبرهناتها وبراهينها، ومقالة في الأحياء بقسم طرائقها، ورسالة فيزيائية، ومقالة في علم البحث بالإنجليزية والإسبانية، وتجربة سريرية في الصحة النفسية، وتقرير عن تفشٍّ وبائي من عام 1981، وأساليب الاستشهاد التي تتبعها.",
+      "ja": "学術誌やプレプリントサーバーが刷る形の論文。多くは実在のオープンアクセス論文を原典から組み直したもの：プロンプト例を載せたAIのプレプリント、定理と証明のある理論論文、Methodsを備えた生物学の論文、物理学のレター、英語とスペイン語のメタサイエンス論文、メンタルヘルスの臨床試験、1981年の集団発生報告、そしてそれぞれの引用スタイル。"
+    },
+    "recipes": [
+      "ai-preprint-prompt-exemplars", "ml-paper-theorems-proofs", "protein-paper-methods-section",
+      "physics-letter-two-columns", "bilingual-metascience-essay", "clinical-trial-consort-flow",
+      "outbreak-report-bulletin", "journal-article-with-maths", "ieee-conference-paper",
+      "medical-article-vancouver", "one-text-four-citation-styles", "zotero-bibtex-nocite",
+      "apa-thesis-with-bibtex", "arabic-research-article", "sist02-research-paper", "gbt7714-chinese-paper",
+      "research-poster"
+    ]
   }
 }

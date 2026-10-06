@@ -22,6 +22,7 @@ import { hasCJK } from '../measure/cjk';
 import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
+import { renderMathSegment } from './blockRender';
 import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk';
 import { fillSegmentWord, type WordRun } from './wordRuns';
 import { uncroppedPictureBox } from '../pipeline/safeArea';
@@ -372,6 +373,13 @@ function paintLineRuns(
     for (let k = 0; k < line.segments.length; k++) {
       const seg = line.segments[order ? order[k]! : k]!;
       if (seg.kind === 'space') {
+        x += seg.width;
+        continue;
+      }
+      if (seg.kind === 'math') {
+        // An inline formula (#541), in the text's colour; it leaves the
+        // canvas font and fill to be set again.
+        renderMathSegment(ctx, seg, x, line.baseline, color);
         x += seg.width;
         continue;
       }

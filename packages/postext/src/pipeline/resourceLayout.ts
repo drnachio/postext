@@ -42,6 +42,7 @@ import type {
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
   ResolvedCjkConfig,
+  ResolvedMathConfig,
   Resource,
   ResourceSafeArea,
   ResourceRotation,
@@ -86,6 +87,8 @@ import { resolveBodyStyle } from './styles';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
+import { resolveCitationSpans, type CaptionCitations } from './citations';
+import { renderMath } from '../math';
 
 /**
  * A caption's, a note's or a cell's spans with their Chinese and Japanese
@@ -135,6 +138,9 @@ export interface ResourceLayoutInput {
   resourceNumbering: ResourceNumberingMap;
   resourceTypes: ResourceType[];
   resources: Resource[];
+  /** The formatted citations of resource captions and notes, by resource
+   *  id (#529); a citation without one prints as written. */
+  captionCitations?: ReadonlyMap<string, CaptionCitations>;
   /** Lay out only these rows of a table (a slice of a table split across
    *  pages). Ignored for figures. */
   slice?: TableSliceSpec;
@@ -325,11 +331,12 @@ export function resolveRefSpans(
       ...span,
       ref,
       text: text ?? resolveRefLabel(ref, resourceNumbering, resourceTypes, resources, refStyle?.labelNumberGap),
-      // Reference labels carry their own emphasis (bold/italic) so the measurer
-      // selects the matching font; colour is applied by renderers via
-      // `refResourceId`.
-      bold: refStyle?.bold ?? span.bold,
-      italic: refStyle?.italic ?? span.italic,
+      // Reference labels keep the emphasis of the run they sit in, and the
+      // reference style adds its own on top where it sets it (#531), so the
+      // measurer selects the matching font; colour is applied by renderers
+      // via `refResourceId`.
+      bold: span.bold || (refStyle?.bold ?? false),
+      italic: span.italic || (refStyle?.italic ?? false),
     };
   });
 }
@@ -403,6 +410,22 @@ interface TableLayoutStyle {
   /** The document's CJK settings, for the annotations of cells
    *  ({@link annotatedSpans}). */
   annotations: AnnotationScope;
+  /** The document's maths settings, for the formulas of cells (#541). */
+  math?: ResolvedMathConfig;
+}
+
+/** The inline formulas of a caption, a note or a cell (#541), rendered at
+ *  the snippet's size as the body's are at the body's: one em of the
+ *  formula is `fontPx` × `math.fontSizeScale`, and a formula taller than
+ *  the line is scaled down to it. With maths off the TeX prints as
+ *  written, between its dollars. */
+export function snippetMathSpans(spans: InlineSpan[], fontPx: number, lineHeightPx: number, math: ResolvedMathConfig | undefined): InlineSpan[] {
+  if (!math || !spans.some((s) => s.math)) return spans;
+  return spans.map((s) => {
+    if (!s.math) return s;
+    if (!math.enabled) return { text: `$${s.math.tex}$`, bold: s.bold, italic: s.italic };
+    return { ...s, mathRender: renderMath(s.math.tex, false, fontPx * math.fontSizeScale, { lineBoxPx: lineHeightPx, ...(math.color ? { color: math.color.hex } : {}) }) };
+  });
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -895,7 +918,7 @@ function layoutTableIn(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const parsed = parseInlineSnippetSpans(cell.content);
+      const parsed = snippetMathSpans(parseInlineSnippetSpans(cell.content), fontSizePxOf(set.fontString), set.lineHeightPx, style.math);
       const spans = annotatedSpans(resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
@@ -1225,6 +1248,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       palette,
       chips: chipContextOf(resolved),
       annotations: { cjk: resolved.cjk, dpi },
+      math: resolved.math,
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -1283,7 +1307,12 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     // style slants the description: a caption set in italics is no
     // emphasis.
     const resolvedSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseInlineSnippetSpans(captionText),
+      snippetMathSpans(
+        resolveCitationSpans(parseInlineSnippetSpans(captionText, { citations: true }), input.captionCitations?.get(resource.id)?.caption),
+        captionFontPx,
+        captionLineHeightPx,
+        resolved.math,
+      ),
       resourceNumbering,
       resourceTypes,
       resources,
@@ -1332,7 +1361,12 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
     const noteSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseInlineSnippetSpans(noteText),
+      snippetMathSpans(
+        resolveCitationSpans(parseInlineSnippetSpans(noteText, { citations: true }), input.captionCitations?.get(resource.id)?.note),
+        noteFontPx,
+        noteLineHeightPx,
+        resolved.math,
+      ),
       resourceNumbering,
       resourceTypes,
       resources,

@@ -1,0 +1,69 @@
+---
+title: "Artículo de IA con teoremas y demostraciones"
+summary: "El artículo de DPO recompuesto desde arXiv: ecuaciones etiquetadas y enlazadas, recuadros de lema y teorema, demostraciones con cuadrado y citas Harvard."
+plain: "Un artículo famoso de aprendizaje automático compuesto de nuevo desde su fuente abierta, con ecuaciones numeradas a las que remitir, teoremas y lemas en recuadros, demostraciones y referencias autor–año."
+description: "El artículo de DPO (NeurIPS 2023, CC BY 4.0) abreviado: \\label y \\eqref para las ecuaciones, enunciados y demostraciones como en amsthm y citas Harvard."
+question: "¿Cómo numero ecuaciones, enuncio teoremas y compongo demostraciones, y cómo remito a ellos por su número?"
+aliases: ["teorema", "lema", "definición", "demostración", "QED", "fin de demostración", "amsthm", "numeración de ecuaciones", "eqref", "label", "referencia cruzada", "artículo de aprendizaje automático", "NeurIPS", "arXiv", "preprint", "DPO", "natbib", "autor-año", "Harvard"]
+pageNotes: { "1": "Una banda ciruela en la cabeza de la página con un abanico de curvas logísticas claras, el antetítulo Preprint · Machine learning · Re-set and abridged, el título Direct Preference Optimization: Your Language Model is Secretly a Reward Model en blanco y la línea de la conferencia; debajo, sobre blanco, los seis autores y sus afiliaciones, el resumen bajo un filete ciruela y, al pie, la línea de procedencia y licencia.", "3": "La figura 1 en la cabeza de la página: a la izquierda, en ocre, el proceso de RLHF, con los datos de preferencias ajustados a un modelo de recompensa y un bucle de muestreo y aprendizaje por refuerzo con la política del modelo; a la derecha, en ciruela, el de DPO, de los datos de preferencias al modelo final por máxima verosimilitud. Debajo sigue la sección 3 con la ecuación 1.", "6": "La sección 5 con la definición 1 y los lemas 1 y 2 junto a filetes laterales gris y ciruela, el teorema 1 sobre un fondo ciruela pálido y el esbozo de demostración con la ecuación 8.", "9": "Sigue el apéndice A.1: un bloque alineado de cuatro filas con el número 10 en la última, las ecuaciones 11 a 13 y, ya en el apéndice A.5, el lema 1 enunciado de nuevo y el principio de su demostración." }
+---
+
+## Lo que vas a componer
+
+*Direct Preference Optimization*, de Rafailov, Sharma, Mitchell, Ermon, Manning y Finn (NeurIPS 2023), abreviado desde su fuente en arXiv y compuesto como un preprint de diez páginas en formato de 7 × 10 pulgadas. Una banda ciruela lleva el título sobre un abanico de curvas logísticas, la forma del peso que el gradiente de DPO da a cada ejemplo. Debajo, una sola columna holgada de Spectral reúne trece ecuaciones numeradas, la definición, los lemas y el teorema de la sección 5 en recuadros con la etiqueta en línea, un esbozo de demostración y una demostración completa que acaban en un cuadrado, la figura del proceso redibujada con código y veinte obras citadas en autor–año. Cada remisión a una ecuación, un enunciado o una sección es un enlace, y cada número sale de una etiqueta, como en LaTeX.
+
+## Elaboración
+
+### 1 · Etiqueta ecuaciones y enunciados, y remite a ellos por su clave
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Postext numera una fórmula destacada que lleva `\tag{7}` y enlaza un `:ref` con cualquier [ancla](/es/docs/document-format#referencias-cruzadas-y-anclas), pero no lleva la cuenta de ecuaciones ni de teoremas. `latex()` añade ese contador antes de componer: un `\label{eq:dpo}` dentro de una fórmula destacada se convierte en el siguiente `\tag`, un `:::callout{type="lemma" #lem:same-policy}` recibe el siguiente número de lema y su etiqueta en línea, y `\eqref{eq:dpo}` o `\ref{lem:same-policy}` en el texto pasan a ser un `:ref` que imprime el número y enlaza con él. Escribe cada fórmula con etiqueta justo debajo de la línea que la introduce, sin línea en blanco, porque esa línea lleva el ancla a la que salta el enlace. Las secciones no necesitan ayuda: sus números salen de las plantillas de los títulos, `{startAt=3}` conserva la numeración del artículo tras la sección 2 suprimida, y `crossRefs.section` escribe «Section 5» con mayúscula, como el original.
+
+### 2 · Da a cada entorno su propio recuadro
+
+<Excerpt region="theorems" />
+
+Cada entorno es un [estilo de recuadro](/es/docs/configuration#estilos-de-aviso) con un solo recurso: un filete gris para la definición, uno ciruela para los lemas y un fondo ciruela pálido para el teorema. `body.italic` pone el enunciado en cursiva, como el estilo *plain* de amsthm, y la etiqueta escrita `***Theorem 1.***` vuelve a redonda dentro de él. La demostración no lleva recuadro: solo su etiqueta en cursiva y el cuadrado que `latex()` añade al final, y `keepTogether: false` deja que una demostración larga pase a la página siguiente. `snapToGrid: false` mantiene el mismo espacio alrededor de cada enunciado; en una sola columna, sin vecina con la que alinearse, un blanco exacto se lee mejor que uno redondeado a la rejilla base.
+
+### 3 · Cita en autor–año desde la bibliografía del propio artículo
+
+<Excerpt region="citations" />
+
+Las referencias son BibTeX dentro de un bloque `:::references{format=bibtex}`, reconstruido a partir del `.bbl` del artículo con solo las veinte obras que el texto abreviado sigue citando. Cite Them Right Harvard las escribe «(Bong and Rinaldo, 2022)» en el texto y «Ouyang, L. *et al.* (2022)» en la lista, y corta a un solo nombre las autorías de cuatro o más. `@ziegler2020finetuning` en el texto da la forma narrativa, Ziegler *et al.* (2020). La lista queda donde está `:::bibliography`, tras la sección 7 y antes del apéndice, como en el artículo.
+
+### 4 · El título en una banda, la procedencia al pie
+
+<Excerpt region="title" />
+
+El título es el único título de nivel 1, y su estilo `paper` dibuja en su lugar una ranura de elementos: la banda sangra por la cabeza de la página, el título se ajusta a la medida y los autores y las afiliaciones salen de los atributos del título, con ¹ ² y * escritos como caracteres. El elemento del pie con `pages: 'opener'` imprime la fuente, la licencia y los cambios solo en la página 1, para que la primera página diga de dónde viene el texto aunque circule sola.
+
+### 5 · Redibuja la figura con código
+
+<Excerpt region="art" />
+
+La figura 1 se dibuja en SVG a partir de las cajas y las palabras del original. Un SVG que se pinta como imagen no ve las fuentes web de la página, así que `inlineFace()` incrusta los dos archivos de Work Sans que usan los rótulos, y `tex()` escribe `y_w ≻ y_l` como trazos de MathJax, los mismos glifos de las ecuaciones. Las puntas de flecha son trazados y no marcadores SVG, y por eso la figura sigue siendo vectorial en el PDF.
+
+## Variantes
+
+### Cita con números, como la plantilla de NeurIPS
+
+El artículo original usa las citas numeradas de natbib; IEEE pone [1] en el texto y numera la lista por orden de cita.
+
+```diff
+-const citations = { style: 'harvard-cite-them-right', link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Cuenta lemas y teoremas juntos
+
+Algunas revistas numeran todos los enunciados en una sola serie (lema 1, lema 2, teorema 3). Haz que todos los tipos compartan un contador.
+
+```diff
+-    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
++    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+```
+
+## Errores frecuentes
+
+- Un `:ref` dentro de una etiqueta en negrita toma el estilo de las referencias, no la negrita que lo rodea: en «Lemma 1 Restated.» el número saldría en redonda normal. Escribe como texto el número de una etiqueta repetida.
+- El equilibrado de columnas baja un recuadro que cierra una página corta hasta el pie, y aquí abría un hueco bajo el bloque del título. `balancing: { enabled: false }` deja el resumen bajo los autores y los títulos de sección con su espacio de siempre, a cambio de que una página pueda acabar una línea más arriba.
+- Una fórmula con un rótulo de `\underbrace` más ancho que la llave, como el gradiente de la sección 4, necesita un corte con `aligned`; si queda más ancha que la medida, se sale por la derecha.

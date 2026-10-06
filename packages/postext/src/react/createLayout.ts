@@ -3,6 +3,7 @@ import type { PostextContent, PostextConfig } from '../types';
 import { buildDocument } from '../pipeline';
 import { renderToCanvas } from '../canvas-backend';
 import { initMathEngine, isMathReady } from '../math';
+import { contentHasMath } from '../parse/inlineSnippet';
 
 export interface PostextLayoutProps {
   /** Class of the container `<div>` the page canvases go into. */
@@ -31,7 +32,7 @@ export function createLayout(content: PostextContent, config?: PostextConfig): F
       let cancelled = false;
 
       void (async () => {
-        if (!isMathReady() && content.markdown.includes('$')) {
+        if (!isMathReady() && contentHasMath(content)) {
           // A failed start leaves placeholders (and the engine's warning).
           await initMathEngine().catch((err: unknown) => console.error(err));
         }

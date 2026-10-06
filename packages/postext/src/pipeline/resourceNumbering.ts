@@ -310,3 +310,23 @@ export function computeResourceNumberingState(
 
   return { map, counters };
 }
+
+/** A number written with a resource-style template (`{n}`, `{h1}`..`{h6}`)
+ *  — what labelled equations and numbered statements print (#530). */
+export function renderTemplateNumber(
+  template: string,
+  counter: number,
+  format: ResourceCounterFormat,
+  heading: HeadingContext,
+  digits?: DigitSystem,
+  locale?: string,
+): string {
+  return renderResourceNumber(parseResourceTemplate(template), counter, counterFormatToStyle(format, locale), heading, digits);
+}
+
+/** Whether a counter reset at `resetOn` starts again between its last
+ *  count (`prev`, none yet: `null`) and `cur` (#530). */
+export function counterResets(prev: HeadingContext | null, cur: HeadingContext, resetOn: ResourceType['resetOn']): boolean {
+  if (resetOn === 'never') return false;
+  return shouldResetCounter(prev, cur, Number(resetOn.slice(1)) as ResetLevel);
+}

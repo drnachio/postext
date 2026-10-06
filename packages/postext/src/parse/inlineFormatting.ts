@@ -237,6 +237,33 @@ const CROSSREF_RE = new RegExp(
   'gu',
 );
 
+/** LaTeX's references in the text (#530): `\eqref{eq:x}` prints the
+ *  equation's number as its formula does ("(3)"), `\ref{x}` the bare
+ *  number of whatever it names. A `~` before one (`Eq.~\eqref{x}`) is
+ *  LaTeX's tie: a no-break space. Inside `$…$` they are left to the
+ *  formula. */
+const LATEX_REF_RE = /(~?)\\(eq)?ref\{([^{}\s]+)\}/g;
+
+/** The `[start, end)` ranges of a line's inline `$…$` formulas (a `\$` is
+ *  no delimiter, a `$$` no formula), as `extractInlineMath` reads them. */
+function inlineMathRanges(text: string): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  let open = -1;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]!;
+    if (c === '\\') { i++; continue; }
+    if (c === '\n') { open = -1; continue; }
+    if (c !== '$') continue;
+    if (text[i + 1] === '$' && open < 0) { i++; continue; }
+    if (open < 0) open = i;
+    else {
+      out.push([open, i + 1]);
+      open = -1;
+    }
+  }
+  return out;
+}
+
 const REF_STYLES: ReadonlySet<string> = new Set(['default', 'number', 'full', 'title', 'page', 'pageNumber']);
 const REF_CASES: ReadonlySet<string> = new Set(['lower', 'upper', 'capitalize']);
 
@@ -255,8 +282,8 @@ export function extractInlineRefs(
   text: string,
   fallbackStart: number,
 ): { cleaned: string; refs: RefMeta[] } {
-  if (!text.includes(':ref{') && !text.includes('@')) return { cleaned: text, refs: [] };
-  const found: { index: number; length: number; meta: Omit<RefMeta, 'sourceStart' | 'sourceEnd'> }[] = [];
+  if (!text.includes(':ref{') && !text.includes('@') && !text.includes('ref{')) return { cleaned: text, refs: [] };
+  const found: { index: number; length: number; meta: Omit<RefMeta, 'sourceStart' | 'sourceEnd'>; tie?: boolean }[] = [];
   INLINE_REF_RE.lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = INLINE_REF_RE.exec(text)) !== null) {
@@ -290,16 +317,29 @@ export function extractInlineRefs(
       if (prefix[0] !== prefix[0]!.toLowerCase()) meta.case = 'capitalize';
       found.push({ index: m.index, length: m[0].length, meta });
     }
-    found.sort((a, b) => a.index - b.index);
   }
+  if (text.includes('\\ref{') || text.includes('\\eqref{')) {
+    const maths = text.includes('$') ? inlineMathRanges(text) : [];
+    LATEX_REF_RE.lastIndex = 0;
+    while ((m = LATEX_REF_RE.exec(text)) !== null) {
+      const at = m.index;
+      if (maths.some(([a, b]) => at >= a && at < b)) continue;
+      // `\ref` prints the bare number; `\eqref` the equation's printed
+      // form, a reference's default.
+      const meta: Omit<RefMeta, 'sourceStart' | 'sourceEnd'> = { resourceId: m[3]! };
+      if (m[2] === undefined) meta.style = 'number';
+      found.push({ index: at, length: m[0].length, meta, ...(m[1] ? { tie: true } : {}) });
+    }
+  }
+  found.sort((a, b) => a.index - b.index);
   const refs: RefMeta[] = [];
   let out = '';
   let last = 0;
   for (const f of found) {
     if (f.index < last) continue; // inside a `:ref{…}` already taken
     out += text.slice(last, f.index);
-    refs.push({ ...f.meta, sourceStart: fallbackStart + f.index, sourceEnd: fallbackStart + f.index + f.length });
-    out += REF_PLACEHOLDER;
+    refs.push({ ...f.meta, sourceStart: fallbackStart + f.index + (f.tie ? 1 : 0), sourceEnd: fallbackStart + f.index + f.length });
+    out += f.tie ? `\u00a0${REF_PLACEHOLDER}` : REF_PLACEHOLDER;
     last = f.index + f.length;
   }
   out += text.slice(last);
@@ -877,10 +917,10 @@ function dataRanges(text: string): Array<readonly [number, number]> {
 }
 
 /**
- * `\$` sets a dollar sign. In the body the maths pass unescapes it; a
- * snippet (a table cell, a caption, a note) and a chip's label are not
- * parsed for maths, so their `\$` is protected like the other escapes and
- * restored in the spans (EF-151). Inside inline code the pair is already
+ * `\$` sets a dollar sign. In the body the maths pass unescapes it; in a
+ * snippet (a table cell, a caption, a note), whose maths is read after
+ * this pass (#541), and in a chip's label, which takes no maths, it is
+ * protected like the other escapes and restored in the spans (EF-151). Inside inline code the pair is already
  * protected and prints as written. A link destination and a directive's
  * attributes are left alone: `linkHref` reads the destination's escapes
  * itself, and a ref's `text="…"` prints as written, as in the body.

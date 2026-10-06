@@ -100,7 +100,7 @@ export interface PenJson {
 // ─── Licensing and credits ──────────────────────────────────────────────────
 
 export type LicenseId =
-  | "original" | "PD" | "CC0-1.0" | "CC-BY-4.0" | "CC-BY-SA-4.0"
+  | "original" | "PD" | "CC0-1.0" | "CC-BY" | "CC-BY-3.0" | "CC-BY-4.0" | "CC-BY-SA-4.0"
   | "OFL-1.1" | "Apache-2.0" | "MIT" | "reproduction-authorised";
 // NC and ND licences are deliberately not in the union: the validator rejects them.
 
@@ -229,7 +229,9 @@ export interface RecipeMeta {
      *  build to the next (`hero`, `pages`, `focus` and `expect.pages` count
      *  them so), each build's first page opens a spread of its own, and the
      *  checks, the detected features and the Sandbox bundle read the first
-     *  build's source. */
+     *  build's source. Builds chained with `continuation` (articles of one
+     *  publication) make one: the PDF may hold all their pages (C14), and
+     *  the Sandbox bundle is a book with a chapter per build (#540). */
     doc?: CaptureBuild | CaptureBuild[];
     /** "screenshot" mode: element to clip (default "#pages"). */
     selector?: string;

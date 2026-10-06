@@ -18,6 +18,7 @@ import { resolveAllConfig } from './config';
 import { headingIsNumbered } from './headingStyles';
 import { computeOutline, hasIndexDirective, hasTocDirective } from './outline';
 import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes';
+import { numberStatements } from './statementNumbering';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
 
@@ -65,10 +66,16 @@ export function continuationAfter(
     const numbering = numberFootnotes(splitFootnoteDefinitions(blocks).blocks, 'document', footnoteNumber);
     footnoteNumber = Math.max(footnoteNumber, lastFootnoteNumber(numbering));
   }
+  // Labelled equations and counted boxes number on through the book (#530).
+  const statementCounters = numberStatements(blocks, resolved, {
+    ...(before?.headings ? { headings: before.headings } : {}),
+    ...(before?.statementCounters ? { counters: before.statementCounters } : {}),
+  }).counters;
   return {
     headings,
     resourceCounters: counters,
     resourceNumbers: map,
+    ...(Object.keys(statementCounters).length > 0 ? { statementCounters } : {}),
     ...(footnoteNumber > 0 ? { footnoteNumber } : {}),
     ...(part ? { part } : {}),
     ...(afterPartPage ? { afterPartPage } : {}),
@@ -106,7 +113,7 @@ export function contentOutline(
   const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
   return {
-    outline: computeOutline(blocks, resolved, before?.headings),
+    outline: computeOutline(blocks, resolved, before?.headings, before?.statementCounters),
     hasToc: hasTocDirective(blocks),
     hasIndex: hasIndexDirective(blocks),
     // A reference naming no resource may name an anchor of the book (#262).

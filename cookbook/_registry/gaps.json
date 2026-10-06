@@ -791,12 +791,12 @@
       ]
     },
     "explanation": {
-      "en": "Formulas are set only in body text. In captions, table cells and heading attributes use ^superscripts^, ~subscripts~ and Unicode symbols.",
-      "es": "Las fórmulas solo se componen en el texto. En los pies, las celdas y los atributos de título usa ^superíndices^, ~subíndices~ y símbolos Unicode.",
-      "ca": "Les fórmules només es componen al text. Als peus, les cel·les i els atributs de títol fes servir ^superíndexs^, ~subíndexs~ i símbols Unicode.",
-      "zh": "公式只能排在正文中。在题注、表格单元格和标题属性中，使用^上标^、~下标~和Unicode符号。",
-      "ar": "لا تُنضَّد الصيغ إلا في نص المتن. وفي التعليقات وخلايا الجداول وسمات العناوين استعمل ^superscripts^ و~subscripts~ ورموز Unicode.",
-      "ja": "数式が組まれるのは本文の中だけです。キャプション、表のセル、見出しの属性では、^上付き^、~下付き~とUnicodeの記号を使ってください。"
+      "en": "Fixed in postext 1.19: inline maths $…$ is set in captions, notes and table cells, in the line with the text and with the cell's alignment; by Pandoc's rule, so the prices of \"$5 to $10\" stay text. Heading attributes still print a formula as written. Up to 1.18 formulas were set only in body text, and captions and cells used ^superscripts^, ~subscripts~ and Unicode symbols.",
+      "es": "Resuelto en postext 1.19: las matemáticas en línea $…$ se componen en los pies, las notas y las celdas de tabla, en la línea con el texto y con la alineación de la celda; con la regla de Pandoc, así que los precios de \"$5 a $10\" siguen siendo texto. Los atributos de título siguen imprimiendo la fórmula tal como se escribe. Hasta la 1.18 las fórmulas solo se componían en el texto, y los pies y las celdas usaban ^superíndices^, ~subíndices~ y símbolos Unicode.",
+      "ca": "Resolt a postext 1.19: les matemàtiques en línia $…$ es componen als peus, les notes i les cel·les de taula, a la línia amb el text i amb l'alineació de la cel·la; amb la regla de Pandoc, així que els preus de \"$5 a $10\" continuen sent text. Els atributs de títol continuen imprimint la fórmula tal com s'escriu. Fins a la 1.18 les fórmules només es componien al text, i els peus i les cel·les feien servir ^superíndexs^, ~subíndexs~ i símbols Unicode.",
+      "zh": "已在postext 1.19中解决：行内公式$…$可以排在题注、注释和表格单元格中，与文字同行排，并遵循单元格的对齐方式；按Pandoc的规则识别，所以“$5 to $10”这样的价格仍是文字。标题属性中的公式仍按原样输出。1.18及以前，公式只能排在正文中，题注和单元格只能用^上标^、~下标~和Unicode符号。",
+      "ar": "حُلّت في postext 1.19: تُنضَّد الرياضيات السطرية $…$ في التعليقات والملاحظات وخلايا الجداول، في السطر مع النص وبمحاذاة الخلية؛ وفق قاعدة Pandoc، فتبقى أسعار مثل \"$5 to $10\" نصًّا. أما سمات العناوين فما زالت تطبع الصيغة كما كُتبت. وحتى 1.18 لم تكن الصيغ تُنضَّد إلا في نص المتن، وكانت التعليقات والخلايا تستعمل ^superscripts^ و~subscripts~ ورموز Unicode.",
+      "ja": "postext 1.19で解決しました。インライン数式$…$は、キャプション、注記、表のセルの中でも、文字と同じ行に、セルの揃えに従って組まれます。Pandocの規則で読むので、「$5 to $10」のような価格は文字のままです。見出しの属性の中の数式は、書いたとおりに出力されます。1.18までは数式は本文の中だけで組まれ、キャプションやセルでは^上付き^、~下付き~とUnicodeの記号を使っていました。"
     },
     "docs": {
       "slug": "document-format",
@@ -808,7 +808,8 @@
         "ar": "الصيغ الرياضية",
         "ja": "数式"
       }
-    }
+    },
+    "fixedIn": "1.19.0"
   },
   "rotated-text": {
     "label": {

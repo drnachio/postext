@@ -439,7 +439,12 @@ export function collectColumnGaps(
             target = beforeFoot !== undefined && beforeFoot <= trueBottom + EPS ? beforeFoot : trueBottom;
           }
           const gapPx = target - (frame.bbox.y + frame.bbox.height);
-          if (gapPx > doc.baselineGrid * 0.1) {
+          // A box ends level with the column beside it: in a band of one
+          // text column (a one-column page that ends early, its next block
+          // on the next page) there is none, and the box stays under the
+          // block above it rather than drop to the foot (#532).
+          const alone = !page.columns.some((k) => k !== col && isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0));
+          if (gapPx > doc.baselineGrid * 0.1 && !alone) {
             if (boxLever) {
               candidates.push({ contentIndex: frame.contentIndex, part: frame.callout?.part ?? 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
             }

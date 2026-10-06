@@ -1,0 +1,173 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 141,
+  "status": "published",
+  "chapter": "tables",
+  "order": 70,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "cell-images",
+      "table-model",
+      "hyphenation-languages"
+    ],
+    "also": [
+      "math",
+      "table-style",
+      "localised-labels",
+      "citation-styles",
+      "generated-bibliography",
+      "resources",
+      "figure-citations",
+      "figure-numbering",
+      "float-placement",
+      "captions",
+      "opener-design",
+      "heading-attributes",
+      "span-boxes",
+      "callout-styles",
+      "chips",
+      "running-heads",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q159",
+    "Q65",
+    "Q48",
+    "Q154"
+  ],
+  "gaps": [
+    "math-in-captions"
+  ],
+  "gotchas": [
+    "math-bundle",
+    "latin-subset",
+    "merged-cells-hiddenby",
+    "hyphenation-locales",
+    "resource-types-locale",
+    "svg-no-webfonts",
+    "dollar-math",
+    "headings-drop-h1-break",
+    "fonts-first",
+    "quote-frontmatter"
+  ],
+  "related": [
+    "journal-article-with-maths",
+    "medical-article-vancouver",
+    "lab-report-formulas"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0",
+    "math": true
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 3,
+    "card": "crop",
+    "focus": {
+      "page": 3,
+      "x": 0.065,
+      "y": 0.05,
+      "w": 0.87,
+      "h": 0.489
+    },
+    "pages": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "expect": {
+      "console": [
+        "module \"buffer\" not found",
+        "module \"esprima\" not found"
+      ],
+      "pages": [
+        7,
+        7
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 90
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#22305a"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#e3e6ec"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“Why Most Published Research Findings Are False”, PLoS Medicine 2(8): e124 (2005), doi:10.1371/journal.pmed.0020124, open access under the Creative Commons Attribution License; abridged, tables and figures redrawn; Spanish translation made for the Cookbook",
+          "es": "«Why Most Published Research Findings Are False», PLoS Medicine 2(8): e124 (2005), doi:10.1371/journal.pmed.0020124, en acceso abierto con la licencia Creative Commons Attribution; abreviado, con las tablas y las figuras redibujadas; traducción al español hecha para el Recetario"
+        },
+        "who": "John P. A. Ioannidis",
+        "source": "https://doi.org/10.1371/journal.pmed.0020124",
+        "license": "CC-BY"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Gelasio",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Sofia Sans Semi Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-06",
+  "updated": "2026-10-06"
+}

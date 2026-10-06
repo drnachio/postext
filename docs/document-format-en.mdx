@@ -802,7 +802,7 @@ so he learned to count the steps in the dark.
 
 - **Marker.** `[^id]` prints the note's number as a superscript, glued to the word before it (write it after the punctuation, as above). The id takes letters, digits, `-`, `_`, `.` and `:`. The marker works in paragraphs, list items, blockquotes and callouts; in headings, captions and table cells it prints as written.
 - **Definition.** A paragraph that starts with `[^id]:`; its text runs to the next blank line and takes the usual inline marks (bold, italics, links, `:ref`, formulas, chips). Definitions leave the flow wherever they are written, so they can sit under the paragraph that cites them or all together at the end of the chapter. The first definition of an id wins.
-- **Numbers.** Notes are numbered in the order they are first cited, starting again at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs the numbers on through the book, and `'page'` starts them again on every page, as Chinese books do; `footnotes.numberFormat: 'circled-decimal'` writes ① ② ③ on the baseline.
+- **Numbers.** Notes are numbered in the order they are first cited, starting again at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs the numbers on through the book, and `'page'` starts them again on every page, as Chinese books do; `footnotes.numberFormat: 'circled-decimal'` writes ① ② ③ on the baseline. `footnotes.numberFormat: 'symbols'` marks them `*`, `†`, `‡`, `§`, `‖`, `¶`, then doubled, starting again on every page, as journals do.
 - **Japanese text.** Write the marker before a sentence-final 。 (`先生[^1]。`): it stays with the character before it, and 。 never opens a line. A Japanese vertical book sets its markers （1） right of the line and its notes after the chapter by default; `footnotes.markerPosition: 'side'` sets a small marker beside the word, taking no room in the line, and `footnotes.placement: 'spread'` sets the notes beside the text of each spread (see [Configuration › Footnotes](/en/docs/configuration#footnotes)).
 - **Where the note goes.** By default at the foot of the column that holds the line citing it, under a short rule: the line and its note always share a column, and a line whose note does not fit moves on with it. In a one-column layout that is the foot of the page. `footnotes.placement: 'chapterEnd'` sets all the notes of a chapter after its last block instead, by default at the foot of the column they close. See [Footnotes](/en/docs/configuration#footnotes) in the configuration reference for the sizes, the rule and the spacing.
 - **Checks.** A marker with no definition (`undefinedFootnote`) prints its number over an empty note; a definition no marker cites (`unusedFootnote`) is not set. The Sandbox lists both in the Checks panel.
@@ -815,7 +815,8 @@ A cross-reference names a place in the book and prints its number, its title or 
 **Anchors.** A reference needs something to point at:
 
 - **A heading** with an identifier: `## Method {#sec-method}` (Pandoc's form; `id="sec-method"` works too).
-- **A box or other container** opened with one: `:::callout{#box-safety title="Safety"}`.
+- **A box or other container** opened with one: `:::callout{#box-safety title="Safety"}`. A box of a numbered style (a theorem) is referred to by its label and number: *Theorem 2*.
+- **A display formula** with a `\label{eq:x}` (see [Mathematical formulas](#mathematical-formulas)): a reference prints its number as the formula does, *(3)*.
 - **A point in the text**: `:anchor{#key-idea}` sets an invisible anchor; `[the key idea]{#key-idea}` keeps its words and names them.
 
 An identifier takes letters, digits, `-`, `_`, `.` and `:`. It must be unique in the book: the Checks panel lists one set twice (`duplicateAnchor`), and references reach its first setting.
@@ -831,13 +832,15 @@ The results of :ref{id="sec-method"} hold on :ref{id="sec-method" style=page}.
 <table>
 <thead><tr><th><code>style</code></th><th>prints</th></tr></thead>
 <tbody>
-<tr><td><em>(none)</em></td><td>a numbered heading by its word and number (<em>section 3.2</em>, <em>chapter 4</em>), an unnumbered heading by its title, an anchor by its text</td></tr>
-<tr><td><code>number</code></td><td>the number alone (<em>3.2</em>)</td></tr>
+<tr><td><em>(none)</em></td><td>a numbered heading by its word and number (<em>section 3.2</em>, <em>chapter 4</em>), an unnumbered heading by its title, an anchor by its text, an equation by its number as printed (<em>(3)</em>), a numbered box by its label and number (<em>Theorem 2</em>)</td></tr>
+<tr><td><code>number</code></td><td>the number alone (<em>3.2</em>, <em>3</em>, <em>2</em>)</td></tr>
 <tr><td><code>title</code></td><td>the heading's title, the anchor's text or the box's <code>title</code></td></tr>
 <tr><td><code>page</code></td><td>the page it landed on (<em>p. 112</em>)</td></tr>
 <tr><td><code>pageNumber</code></td><td>the page number alone (<em>112</em>)</td></tr>
 </tbody>
 </table>
+
+LaTeX's `\eqref{x}` and `\ref{x}` work in the text too: `\eqref` as a reference with no style, `\ref` as `style=number`, so `\ref{thm:main}` prints *2* and `\ref{fig:map}` a figure's number. A `~` right before one is a no-break space (`Theorem~\ref{thm:main}`). Inside `$…$` they belong to the formula.
 
 `text="…"` prints your own words and still links; `case=capitalize` starts the label with a capital (*Section 3.2* at the start of a sentence). The words follow the document language (*sección 3.2*, *第3.2节*, *S. 112*) and can be changed in [Cross-references](/en/docs/configuration#cross-references) in the configuration; a heading number its template already spells out (*Chapter 4*, *第四章*) prints as it is.
 
@@ -860,9 +863,10 @@ As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap.
 
 - **`[@key]`** cites in parentheses; several works go in one pair of brackets, separated by `;`.
 - **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too.
-- **Prefix and suffix:** text before the `@` (`see`) and after the locator (`, emphasis added`).
+- **Prefix and suffix:** text before the `@` (`see`) and after the key or the locator (`, emphasis added`). The suffix keeps the comma written before it, with a locator or without one: `[@brown2020, inter alia]` prints *(Brown et al., 2020, inter alia)*, as Pandoc does; written without a comma (`[@brown2020 inter alia]`) it has none. Emphasis in a prefix or a suffix is set as emphasis in every style: `[*e.g.*, @brown2020, *inter alia*]`.
 - **`[-@key]`** leaves the author out, for a sentence that names the author already.
 - **`@key`** cites in the sentence (*García (2020)*); `@key [p. 4]` adds a locator.
+- **In captions:** the caption of a figure or a table, and its note, cite as the text does (`Prior best from [@cobbe2021].`). Their works go into the bibliography with no `nocite`, and a numbered style numbers them where the resource is placed: after the citations of the paragraph that first refers to it (its `::resource` block or first `:ref`). A citation in a table cell stays text.
 - An `@` glued to a letter or a digit (an e-mail address), an `@` in inline code and `\@` are text. A citation the book has no reference for prints as written, so a document without references reads as before. In a citation of several works, a key no reference defines is printed in bold after the others (`(Glen, 1955) **@nye1953**`), so the missing work shows on the page as well as among the warnings. A colon after a citation is text: `[@french2018]: the land…`.
 - In Chinese, Japanese and Korean text a citation follows the last character with no space (`周明远@zhou2019认为`), and an author-date citation takes the full-width marks of the text around it: `（施雅风等，1988；刘时银等，2015）`.
 
@@ -894,9 +898,13 @@ or in a `:::references` block, in BibTeX (a Zotero, JabRef or Google Scholar exp
 
 The block prints nothing. `nocite` lists works without citing them (`@*`: all of them). In a book, references written in any chapter count for the whole book.
 
+In a BibTeX name list, `and others` stands for the names left out (`author = {Tan, Wei and others}`): every style prints *et al.* in its place. In YAML, write `others` as the last name of the list.
+
 ### The bibliography
 
 `:::bibliography` sets the list of works cited where it stands; without one, the list follows the last chapter, titled in the document language (*References*, *Referencias*, *参考文献*). `:::bibliography{title="Works cited"}` changes the title and `title=""` leaves it out; `scope=chapter` lists the works the chapter cites (an edited volume). Each entry is an anchor (`ref-<key>`), so a Markdown link to `#ref-garcia2020` reaches it, and the PDF tags it as a `BibEntry`.
+
+`scope=new` lists the works cited so far in the document that no list before it printed, in the style's order and with its numbers: a `:::bibliography{scope=new}` after the main text and another after the Methods give the two lists of a Nature paper, the second numbered on from the first. A numbered style counts its citations through the book; with `citations.numbering: 'chapter'` each chapter (each document, and each level-1 heading after a citation) numbers its own from 1, and its chapter list takes those numbers, as the reports of a bulletin or the papers of proceedings do.
 
 ### Styles
 
@@ -1039,8 +1047,10 @@ Math support is a first-class part of the document format. Postext parses `$…$
 - **Inline:** `$…$`. Recognised inside any text block (paragraph, heading, blockquote, list item). Contributes a single atomic, non-breaking box to the line; Knuth-Plass treats it like a word that must not be split. If the formula's natural height would break the line box, it is scaled down uniformly so the baseline grid is preserved — very tall expressions belong in display mode.
 - **Display:** `$$…$$`. Either on its own line (`$$\int_0^1 x^2\,dx$$`) or fenced across multiple lines with `$$` markers on their own lines. Rendered centred on the column and snapped to the baseline grid with configurable top and bottom margins (`math.marginTop`, `math.marginBottom`) — exactly the same correction mechanism headings use, so the paragraph after the formula lands back on the grid.
 - **Text around a display:** a display formula on its own line interrupts a paragraph even with no blank line above it. The text before it is a paragraph that leads into it; text written right under the closing `$$`, with no blank line, continues the interrupted paragraph and is set with no first-line indent, as TeX sets the "where …" after a display. A formula set off from the text above it by a blank line (or following a list, a quotation or a heading) interrupts nothing: the text after it is a new paragraph, indented as usual, blank line or not (`math.indentAfterDisplay: false` sets it flush too). Only a whole display interrupts a paragraph — one formula on the line, or a `$$` fence closed before the next blank line; a line such as `$$a$$ and $$b$$` stays text. `math.keepWithLeadIn` keeps a formula in the column of the line that introduces it. (Up to postext 1.4 a `$$…$$` line with no blank line above it was read as part of the paragraph and printed as it was written.)
-- **Equation numbers:** `\tag{…}` numbers a display formula: it spans the column (or the callout's inner width), the equation centred and its number flush right on its line — on each tagged row of an `align`. `\tag*{…}` prints the label without parentheses. Only explicit tags are numbered.
-- **Escaping:** `\$` is a literal dollar sign. Captions, table cells, notes and chips are not parsed for maths, so a `$` there prints as it is; `\$` prints a dollar sign there too, and one escaped string reads the same in the text and in a table. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
+- **Equation numbers:** `\label{eq:x}` in a display formula numbers it, in reading order: (1), (2)… A formula with a number spans the column (or the callout's inner width), the equation centred and its number flush right on its line. In an `align`, `gather`, `alignat`, `flalign` or `eqnarray` each row that carries a `\label` gets its own number, unless the row says `\nonumber` or `\notag`. A formula without a `\label` is not numbered, as `$$…$$` never was. `\tag{…}` still numbers a formula with the text you give it (`\tag*{…}` without the parentheses) and is not counted; a `\label` beside it names that text. The format, chapter or section numbers (2.3) and restarts are set in [`math.equationNumbering`](/en/docs/configuration#math). Put the `\label` at the top level of the formula or of its row: not inside `aligned`, `split` or `cases`.
+- **References to equations:** `\eqref{eq:x}` in the text prints the number as the formula does, (3), and `\ref{eq:x}` the bare number, 3; both are links, like every [cross-reference](#cross-references-and-anchors). `Eq.~\eqref{eq:x}` keeps the `~` as LaTeX does: a no-break space. `:ref{id="eq:x"}` and `@eq:x` print (3) too. Inside a formula, `\eqref` and `\ref` print the number (not a link). A label nothing sets prints *?* and is listed in the Checks panel.
+- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
+- **Captions, notes and table cells** set inline maths too (since postext 1.19), in the line with the text and with the cell's alignment, in the snippet's size. There a `$` opens a formula only by Pandoc's rule: no space after the opening `$`, no space before the closing one and no digit right after it, so the prices of *$5 to $10* stay text; `\$` prints a dollar sign, so one escaped string reads the same in the text and in a table. A chip's label takes no maths. Up to postext 1.18 a `$` there always printed as it was.
 - **Errors:** TeX source that MathJax rejects (undefined macros, syntax errors) surfaces as an `invalidMath` warning. The formula is replaced by a small red placeholder so the layout geometry stays valid.
 - **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the size of the surrounding text: at 1.0 one em of the formula is that size — the body size for display formulas and for inline maths in body text; since postext 1.5, which sets formulas about 13% smaller than 1.4 did, while bundles and Sandbox books saved by 1.4 keep their size — see [Formula size](/en/docs/configuration#math)), `color` (inherits the body colour when unset), and the display margins.
 - **The engine:** MathJax loads on demand. The Sandbox and the layout worker start it themselves; in your own code, `await initMathEngine()` before `buildDocument`, or every formula is laid out as a grey placeholder box (see [Starting the math engine](/en/docs/configuration#starting-the-math-engine)).
@@ -1059,6 +1069,33 @@ A formula in the middle of a sentence, and the sentence going on after it with n
 For a pendulum of length $L$ the period is
 $$T_0 = 2\pi\sqrt{L/g}$$
 where $g$ is the acceleration of free fall.
+```
+
+Numbered equations and the references to them:
+
+```md
+The energy is conserved,
+$$
+\begin{align}
+E &= T + V \label{eq:energy} \\
+  &= \tfrac12 m v^2 + m g h \nonumber
+\end{align}
+$$
+and Eq.~\eqref{eq:energy} holds at every instant.
+```
+
+**Theorems, lemmas and proofs.** A callout style with `numbering` counts its boxes, as LaTeX's `amsthm` counts theorem environments: each box opens with its label and number in bold, "**Theorem 2.**", the fence's `title` after the number in parentheses, "**Theorem 2** (Bradley–Terry)**.**", and a reference to its `{#id}` prints "Theorem 2" (`\ref{thm:x}` or `style=number` the bare 2). Styles that name one counter share it, so a lemma after a theorem is Lemma 3. A proof style's `endMark` ends its boxes with ∎ or □, flush right on the last line. See [Numbered statements and proofs](/en/docs/configuration#numbered-statements-and-proofs) for the styles.
+
+```md
+:::callout{type="theorem" #thm:main title="Bradley–Terry"}
+Every reward class holds one reparameterised reward.
+:::
+
+:::callout{type="proof"}
+Apply the projection of \eqref{eq:projection} to any member of the class.
+:::
+
+By :ref{id="thm:main"}, the objective is unchanged.
 ```
 
 
@@ -1093,6 +1130,8 @@ The keeper's quarters occupy the eastern wing.
 ```
 
 For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more. In the running text it keeps the same space below it; then the text after it goes back onto the baseline grid, which can add up to a line more. A heading, a list, a box or another inline resource right after it shares that space with its own space above: the larger of the two applies, not both. (Up to postext 1.4 the space below was only what the grid snap left, anywhere from nothing to a line; `layout.inlineResourceGap: 'above'` keeps that rule, and books saved before 1.5 are read with it.) Inside a box (`:::callout`) the resource keeps the same space, a line of the box's own text above it and, with `'around'`, below it; at the top or the foot of the box the padding sets it off instead. (Up to postext 1.4 it sat right against the text of the box; `layout.inlineResourceGapInBoxes: false` keeps that, and books saved before 1.5 whose boxes embed a resource are read with it.)
+
+An inline resource whose placement also says `span: 'page'` (`placement: { position: 'here', span: 'page' }`) spans the page at the point of its directive in a layout of several columns, as a page-span box does: the columns above it close level (balanced, or the resource moves to the head of the next page when they cannot be), it is set across the content width with the same space above and below, and the text goes on in every column under it. On a one-column page it is set as before, at the full measure. A `span: 'column'` resource with `columns` set keeps to its column when it is embedded inline: the columns count only for floats. Since postext 1.19.
 
 The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 

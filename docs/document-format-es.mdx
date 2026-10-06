@@ -802,7 +802,7 @@ así que aprendió a contar los escalones a oscuras.
 
 - **Llamada.** `[^id]` imprime el número de la nota en volado, pegado a la palabra anterior (escríbela tras la puntuación, como arriba). El id admite letras, cifras, `-`, `_`, `.` y `:`. La llamada funciona en párrafos, elementos de lista, citas y recuadros; en títulos, pies de figura y celdas de tabla se imprime tal cual.
 - **Definición.** Un párrafo que empieza por `[^id]:`; su texto llega hasta la siguiente línea en blanco y admite las marcas en línea habituales (negrita, cursiva, enlaces, `:ref`, fórmulas, chips). Las definiciones salen del flujo estén donde estén, así que pueden ir bajo el párrafo que las cita o todas juntas al final del capítulo. Si un id se define dos veces, vale la primera.
-- **Números.** Las notas se numeran en el orden en que se citan por primera vez, y la numeración vuelve a empezar en cada capítulo (un título de nivel 1, y cada documento de un libro); una nota citada dos veces conserva su primer número y se compone una sola vez. `footnotes.numbering: 'document'` sigue la numeración por todo el libro, y `'page'` la reinicia en cada página, como hacen los libros chinos; `footnotes.numberFormat: 'circled-decimal'` escribe ① ② ③ sobre la línea de base.
+- **Números.** Las notas se numeran en el orden en que se citan por primera vez, y la numeración vuelve a empezar en cada capítulo (un título de nivel 1, y cada documento de un libro); una nota citada dos veces conserva su primer número y se compone una sola vez. `footnotes.numbering: 'document'` sigue la numeración por todo el libro, y `'page'` la reinicia en cada página, como hacen los libros chinos; `footnotes.numberFormat: 'circled-decimal'` escribe ① ② ③ sobre la línea de base. `footnotes.numberFormat: 'symbols'` las marca con `*`, `†`, `‡`, `§`, `‖`, `¶`, luego dobles, y vuelve a empezar en cada página, como hacen las revistas.
 - **Texto japonés.** La llamada se escribe delante de un 。 que cierra la oración (`先生[^1]。`): se queda con el carácter anterior, y 。 nunca abre una línea. Un libro japonés vertical compone por defecto sus llamadas （1） a la derecha de la línea y sus notas tras el capítulo; `footnotes.markerPosition: 'side'` pone una llamada pequeña junto a la palabra, sin ocupar sitio en la línea, y `footnotes.placement: 'spread'` compone las notas junto al texto de cada pliego (ver [Configuración › Notas al pie](/es/docs/configuration#notas-al-pie)).
 - **Dónde va la nota.** Por defecto, al pie de la columna que contiene la línea que la cita, bajo un filete corto: la línea y su nota comparten siempre columna, y una línea cuya nota no cabe pasa con ella a la siguiente. En una maqueta de una columna es el pie de la página. `footnotes.placement: 'chapterEnd'` compone en cambio todas las notas de un capítulo tras su último bloque, por defecto al pie de la columna que cierran. Los cuerpos, el filete y los espacios están en [Notas al pie](/es/docs/configuration#notas-al-pie), en la referencia de configuración.
 - **Comprobaciones.** Una llamada sin definición (`undefinedFootnote`) imprime su número sobre una nota vacía; una definición que ninguna llamada cita (`unusedFootnote`) no se compone. El Sandbox muestra ambas en el panel Revisión.
@@ -815,7 +815,8 @@ Una referencia cruzada nombra un lugar del libro e imprime su número, su títul
 **Anclas.** Una referencia necesita algo a lo que apuntar:
 
 - **Un título** con identificador: `## Método {#sec-metodo}` (la forma de Pandoc; `id="sec-metodo"` también vale).
-- **Una caja u otro contenedor** abierto con uno: `:::callout{#caja-seguridad title="Seguridad"}`.
+- **Una caja u otro contenedor** abierto con uno: `:::callout{#caja-seguridad title="Seguridad"}`. A una caja de un estilo numerado (un teorema) se la nombra con su rótulo y su número: *Teorema 2*.
+- **Una fórmula en bloque** con un `\label{eq:x}` (ver [Fórmulas matemáticas](#fórmulas-matemáticas)): la referencia imprime su número como lo imprime la fórmula, *(3)*.
 - **Un punto del texto**: `:anchor{#idea-clave}` pone un ancla invisible; `[la idea clave]{#idea-clave}` conserva sus palabras y les da nombre.
 
 Un identificador admite letras, cifras, `-`, `_`, `.` y `:`. Debe ser único en el libro: el panel de Comprobaciones avisa del que se repite (`duplicateAnchor`), y las referencias llevan al primero.
@@ -831,13 +832,15 @@ Los resultados de :ref{id="sec-metodo"} se cumplen en :ref{id="sec-metodo" style
 <table>
 <thead><tr><th><code>style</code></th><th>imprime</th></tr></thead>
 <tbody>
-<tr><td><em>(ninguno)</em></td><td>un título numerado con su palabra y su número (<em>sección 3.2</em>, <em>capítulo 4</em>), uno sin número con su título, un ancla con su texto</td></tr>
-<tr><td><code>number</code></td><td>solo el número (<em>3.2</em>)</td></tr>
+<tr><td><em>(ninguno)</em></td><td>un título numerado con su palabra y su número (<em>sección 3.2</em>, <em>capítulo 4</em>), uno sin número con su título, un ancla con su texto, una ecuación con su número tal como se imprime (<em>(3)</em>), una caja numerada con su rótulo y su número (<em>Teorema 2</em>)</td></tr>
+<tr><td><code>number</code></td><td>solo el número (<em>3.2</em>, <em>3</em>, <em>2</em>)</td></tr>
 <tr><td><code>title</code></td><td>el título, el texto del ancla o el <code>title</code> de la caja</td></tr>
 <tr><td><code>page</code></td><td>la página en la que quedó (<em>pág. 112</em>)</td></tr>
 <tr><td><code>pageNumber</code></td><td>solo el número de página (<em>112</em>)</td></tr>
 </tbody>
 </table>
+
+`\eqref{x}` y `\ref{x}` de LaTeX también funcionan en el texto: `\eqref` como una referencia sin estilo y `\ref` como `style=number`, así que `\ref{thm:main}` imprime *2* y `\ref{fig:mapa}`, el número de una figura. Una `~` justo delante es un espacio de no separación (`Teorema~\ref{thm:main}`). Dentro de `$…$` pertenecen a la fórmula.
 
 `text="…"` imprime tus propias palabras y sigue enlazando; `case=capitalize` empieza el rótulo con mayúscula (*Sección 3.2* a principio de frase). Las palabras siguen al idioma del documento (*section 3.2*, *第3.2节*, *S. 112*) y se cambian en [Referencias cruzadas](/es/docs/configuration#referencias-cruzadas) de la configuración; un número que su plantilla ya escribe con palabras (*Capítulo 4*, *第四章*) se imprime tal cual.
 
@@ -860,9 +863,10 @@ Como muestra [@garcia2020, pág. 33], se lee más rápido en papel [véase @lope
 
 - **`[@clave]`** cita entre paréntesis; varias obras van en un mismo par de corchetes, separadas por `;`.
 - **Localizador:** tras una coma, `p. 33`, `pp. 4–6`, `pág. 33`, `cap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `§ 4.2`; un número solo es una página. También valen las palabras inglesas y chinas (`页`, `章`).
-- **Prefijo y sufijo:** texto antes de la `@` (`véase`) y tras el localizador (`, la cursiva es nuestra`).
+- **Prefijo y sufijo:** texto antes de la `@` (`véase`) y tras la clave o el localizador (`, la cursiva es nuestra`). El sufijo conserva la coma escrita delante, haya localizador o no: `[@brown2020, entre otros]` imprime *(Brown et al., 2020, entre otros)*, como Pandoc; escrito sin coma (`[@brown2020 entre otros]`) no la lleva. El énfasis de un prefijo o un sufijo sale como énfasis en todos los estilos: `[*p. ej.*, @brown2020, *inter alia*]`.
 - **`[-@clave]`** omite el autor, para una frase que ya lo nombra.
 - **`@clave`** cita dentro de la frase (*García (2020)*); `@clave [pág. 4]` añade un localizador.
+- **En los pies:** el pie de una figura o de una tabla, y su nota, citan como el texto (`El mejor resultado previo [@cobbe2021].`). Sus obras entran en la bibliografía sin `nocite`, y un estilo numérico las numera donde se coloca el recurso: tras las citas del párrafo que lo menciona por primera vez (su bloque `::resource` o su primera `:ref`). Una cita en una celda de tabla queda como texto.
 - Una `@` pegada a una letra o a una cifra (una dirección de correo), una `@` en código y `\@` son texto. Una cita sin referencia en el libro se imprime tal como se escribió, así que un documento sin referencias se lee como antes. En una cita de varias obras, una clave que ninguna referencia define se imprime en negrita tras las demás (`(Glen, 1955) **@nye1953**`), de modo que la obra que falta se ve en la página además de en los avisos. Unos dos puntos tras una cita son texto: `[@french2018]: el terreno…`.
 - En texto chino, japonés y coreano la cita sigue al último carácter sin espacio (`周明远@zhou2019认为`), y una cita autor-fecha toma los signos de ancho completo del texto que la rodea: `（施雅风等，1988；刘时银等，2015）`.
 
@@ -894,9 +898,13 @@ o en un bloque `:::references`, en BibTeX (lo que exportan Zotero, JabRef o Goog
 
 El bloque no imprime nada. `nocite` lista obras sin citarlas (`@*`: todas). En un libro, las referencias escritas en cualquier capítulo valen para todo el libro.
 
+En una lista de nombres BibTeX, `and others` representa los nombres omitidos (`author = {Tan, Wei and others}`): todos los estilos imprimen *et al.* en su lugar. En YAML, escribe `others` como último nombre de la lista.
+
 ### La bibliografía
 
 `:::bibliography` pone la lista de obras citadas donde está; sin él, la lista va tras el último capítulo, con el título en el idioma del documento (*Referencias*, *References*, *参考文献*). `:::bibliography{title="Obras citadas"}` cambia el título y `title=""` lo quita; `scope=chapter` lista las obras que cita el capítulo (una obra colectiva). Cada entrada es un ancla (`ref-<clave>`), así que un enlace Markdown a `#ref-garcia2020` lleva a ella, y el PDF la etiqueta como `BibEntry`.
+
+`scope=new` lista las obras citadas hasta ese punto del documento que ninguna lista anterior imprimió, en el orden del estilo y con sus números: un `:::bibliography{scope=new}` tras el texto principal y otro tras los métodos dan las dos listas de un artículo de Nature, la segunda numerada a continuación de la primera. Un estilo numérico cuenta sus citas a lo largo del libro; con `citations.numbering: 'chapter'` cada capítulo (cada documento, y cada encabezado de nivel 1 tras una cita) numera las suyas desde 1, y su lista de capítulo toma esos números, como los informes de un boletín o las ponencias de unas actas.
 
 ### Estilos
 
@@ -1039,8 +1047,10 @@ El soporte matemático forma parte del formato de documento de primer nivel. Pos
 - **En línea:** `$…$`. Se reconoce dentro de cualquier bloque de texto (párrafo, encabezado, cita, elemento de lista). Aporta una única caja atómica no partible a la línea; Knuth-Plass la trata como una palabra que no puede separarse. Si la altura natural de la fórmula rompería la caja de línea, se escala uniformemente para conservar la rejilla de línea base — las expresiones muy altas deben ir en una fórmula en bloque.
 - **En bloque:** `$$…$$`. Bien en una línea propia (`$$\int_0^1 x^2\,dx$$`) o vallada en varias líneas con marcadores `$$` en sus propias líneas. Se renderiza centrada en la columna y ajustada a la rejilla de línea base con márgenes superior e inferior configurables (`math.marginTop`, `math.marginBottom`) — exactamente la misma corrección que usan los encabezados, de modo que el párrafo que sigue vuelve a caer sobre la rejilla.
 - **El texto alrededor de una fórmula en bloque:** una fórmula en bloque escrita en su propia línea interrumpe un párrafo aunque no haya línea en blanco encima. El texto anterior es un párrafo que la introduce; el texto escrito justo bajo el `$$` de cierre, sin línea en blanco, continúa el párrafo interrumpido y se compone sin sangría de primera línea, como TeX compone el «donde …» tras una fórmula en bloque. Una fórmula separada del texto de encima por una línea en blanco (o que sigue a una lista, una cita o un encabezado) no interrumpe nada: el texto que la sigue es un párrafo nuevo, sangrado como siempre, haya línea en blanco o no (`math.indentAfterDisplay: false` también lo compone sin sangría). Solo una fórmula en bloque completa interrumpe un párrafo —una sola fórmula en la línea, o una valla `$$` que se cierra antes de la siguiente línea en blanco—; una línea como `$$a$$ y $$b$$` sigue siendo texto. `math.keepWithLeadIn` mantiene una fórmula en la columna de la línea que la introduce. (Hasta postext 1.4, una línea `$$…$$` sin línea en blanco encima se leía como parte del párrafo y se imprimía tal como estaba escrita).
-- **Números de ecuación:** `\tag{…}` numera una fórmula en bloque: ocupa la columna (o el ancho interior del recuadro), con la ecuación centrada y su número alineado a la derecha en su línea — en cada fila etiquetada de un `align`. `\tag*{…}` imprime la etiqueta sin paréntesis. Solo se numeran las etiquetas explícitas.
-- **Escapado:** `\$` es un signo de dólar literal. Los pies, las celdas de tabla, las notas y los chips no se analizan como fórmulas, así que un `$` se imprime allí tal cual; `\$` también imprime allí un signo de dólar, y una misma cadena escapada se lee igual en el texto y en una tabla. Un delimitador `$` o `$$` sin cerrar produce una entrada `unclosedMath` en el panel Revisión del Sandbox con un ancla de fuente al que puedes saltar con un clic.
+- **Números de ecuación:** un `\label{eq:x}` en una fórmula en bloque la numera, en orden de lectura: (1), (2)… Una fórmula con número ocupa la columna (o el ancho interior del recuadro), con la ecuación centrada y su número alineado a la derecha en su línea. En un `align`, `gather`, `alignat`, `flalign` o `eqnarray`, cada fila que lleva un `\label` recibe su propio número, salvo que la fila diga `\nonumber` o `\notag`. Una fórmula sin `\label` no se numera, como nunca se numeró `$$…$$`. `\tag{…}` sigue numerando una fórmula con el texto que le des (`\tag*{…}`, sin los paréntesis) y no cuenta; un `\label` a su lado da nombre a ese texto. El formato, los números por capítulo o por sección (2.3) y los reinicios se fijan en [`math.equationNumbering`](/es/docs/configuration#matemáticas). Pon el `\label` en el nivel superior de la fórmula o de su fila, no dentro de `aligned`, `split` ni `cases`.
+- **Referencias a ecuaciones:** `\eqref{eq:x}` en el texto imprime el número como lo imprime la fórmula, (3), y `\ref{eq:x}`, el número solo, 3; las dos son enlaces, como toda [referencia cruzada](#referencias-cruzadas-y-anclas). `Ec.~\eqref{eq:x}` conserva la `~` como en LaTeX: un espacio de no separación. `:ref{id="eq:x"}` y `@eq:x` también imprimen (3). Dentro de una fórmula, `\eqref` y `\ref` imprimen el número (sin enlace). Una etiqueta que nada define se imprime como *?* y aparece en el panel Revisión.
+- **Escapado:** `\$` es un signo de dólar literal. Un delimitador `$` o `$$` sin cerrar produce una entrada `unclosedMath` en el panel Revisión del Sandbox con un ancla de fuente al que puedes saltar con un clic.
+- **Pies, notas y celdas de tabla** también componen fórmulas en línea (desde postext 1.19), en la línea junto al texto, con la alineación de la celda y al tamaño de ese texto. Allí un `$` solo abre una fórmula según la regla de Pandoc: sin espacio tras el `$` que abre, sin espacio delante del que cierra y sin una cifra justo detrás de este, de modo que los precios de *$5 a $10* se quedan en texto; `\$` imprime un signo de dólar, así que una misma cadena escapada se lee igual en el texto y en una tabla. La etiqueta de un chip no admite fórmulas. Hasta postext 1.18, un `$` se imprimía allí siempre tal cual.
 - **Errores:** el código TeX que MathJax rechaza (macros no definidos, errores de sintaxis) se refleja como un aviso `invalidMath`. La fórmula se sustituye por una pequeña caja roja para que la geometría del layout siga siendo válida.
 - **Configuración:** la sección `math` de la configuración expone `enabled`, `fontSizeScale` (relativo al tamaño del texto que la rodea: con 1.0, un em de la fórmula mide ese tamaño — el del cuerpo para las fórmulas en bloque y para las fórmulas en línea del texto de cuerpo; desde postext 1.5, que compone las fórmulas en torno a un 13 % más pequeñas que la 1.4, aunque los paquetes y los libros del Sandbox guardados con la 1.4 conservan su tamaño — ver [Tamaño de las fórmulas](/es/docs/configuration#matemáticas)), `color` (hereda del cuerpo si se omite) y los márgenes de las fórmulas en bloque.
 - **El motor:** MathJax se carga bajo demanda. El Sandbox y el worker de composición lo arrancan por su cuenta; en tu propio código, llama a `await initMathEngine()` antes de `buildDocument`, o cada fórmula se compondrá como una caja gris provisional (consulta [Arrancar el motor de fórmulas](/es/docs/configuration#arrancar-el-motor-de-fórmulas)).
@@ -1059,6 +1069,33 @@ Una fórmula en mitad de una frase, y la frase que sigue tras ella sin sangría:
 Para un péndulo de longitud $L$, el periodo es
 $$T_0 = 2\pi\sqrt{L/g}$$
 donde $g$ es la aceleración de la caída libre.
+```
+
+Ecuaciones numeradas y las referencias a ellas:
+
+```md
+La energía se conserva,
+$$
+\begin{align}
+E &= T + V \label{eq:energia} \\
+  &= \tfrac12 m v^2 + m g h \nonumber
+\end{align}
+$$
+y la ec.~\eqref{eq:energia} se cumple en todo instante.
+```
+
+**Teoremas, lemas y demostraciones.** Un estilo de recuadro con `numbering` cuenta sus cajas, como el paquete `amsthm` de LaTeX cuenta los entornos de teorema: cada caja empieza con su rótulo y su número en negrita, «**Teorema 2.**», con el `title` de la valla tras el número y entre paréntesis, «**Teorema 2** (Bradley–Terry)**.**», y una referencia a su `{#id}` imprime «Teorema 2» (`\ref{thm:x}` o `style=number`, el 2 solo). Los estilos que nombran un mismo contador lo comparten, así que un lema que sigue a un teorema es el Lema 3. El `endMark` de un estilo de demostración cierra sus cajas con ∎ o □, alineado a la derecha en la última línea. Los estilos se describen en [Enunciados numerados y demostraciones](/es/docs/configuration#enunciados-numerados-y-demostraciones).
+
+```md
+:::callout{type="theorem" #thm:main title="Bradley–Terry"}
+Cada clase de recompensas contiene una recompensa reparametrizada.
+:::
+
+:::callout{type="proof"}
+Aplica la proyección de \eqref{eq:proyeccion} a cualquier miembro de la clase.
+:::
+
+Por :ref{id="thm:main"}, el objetivo no cambia.
 ```
 
 
@@ -1093,6 +1130,8 @@ Las dependencias del farero ocupan el ala este.
 ```
 
 Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref` ya lo colocó, y un `::resource` redundante para el mismo id se trata como otra referencia, no como una segunda copia. Un `::resource` solo renderiza el recurso en línea cuando su colocación resuelta es `"here"`. Un recurso en línea conserva una línea de espacio sobre él (el hueco de los flotantes), como lo haría un flotante, salvo que el bloque anterior pida más. En el texto corrido conserva el mismo espacio bajo él; después, el texto que sigue vuelve a la rejilla base, lo que puede añadir hasta una línea más. Un encabezado, una lista, un recuadro u otro recurso en línea justo después comparte ese espacio con su propio espacio superior: se aplica el mayor de los dos, no la suma. (Hasta postext 1.4, el espacio de debajo era solo lo que dejaba el ajuste a la rejilla, entre nada y una línea; `layout.inlineResourceGap: 'above'` mantiene esa regla, y los libros guardados antes de la 1.5 se leen con ella). Dentro de un recuadro (`:::callout`) el recurso conserva el mismo espacio, una línea del texto del propio recuadro encima y, con `'around'`, debajo; al principio o al final del recuadro ya lo separa el relleno. (Hasta postext 1.4 quedaba pegado al texto del recuadro; `layout.inlineResourceGapInBoxes: false` lo mantiene, y los libros guardados antes de la 1.5 cuyos recuadros insertan un recurso se leen así).
+
+Un recurso en línea cuya colocación dice además `span: 'page'` (`placement: { position: 'here', span: 'page' }`) ocupa el ancho de la página en el punto de su directiva cuando la maqueta tiene varias columnas, como un recuadro de página: las columnas de encima se cierran a la misma altura (equilibradas, o el recurso pasa a la cabeza de la página siguiente si no se puede), se compone a todo el ancho de la caja con el mismo espacio encima y debajo, y el texto sigue en todas las columnas por debajo. En una página de una sola columna se compone como antes, a toda la medida. Un recurso `span: 'column'` con `columns` se queda en su columna cuando se inserta en línea: las columnas solo cuentan para los flotantes. Desde postext 1.19.
 
 El `id` debe coincidir con un recurso definido en el panel Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies de recurso](/es/docs/configuration#estilo-de-pies-de-recurso): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda. El pie puede situarse en cambio encima del recurso (`captionStyle.position: 'above'`, de forma global o por tipo de recurso), opcionalmente sobre una barra de color. Un recurso puede llevar además una `note` — una línea breve de fuente o créditos, con el mismo formato en línea y las mismas marcas `:ref` que el pie — compuesta en un tamaño menor bajo el recurso (bajo el pie cuando este va debajo, bajo el cuerpo cuando va encima) y estilizada mediante `captionStyle.note`.
 

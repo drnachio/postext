@@ -732,7 +732,7 @@ Els valors per defecte de la taula següent són els d'un element de text que af
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Llegeix el text resolt —amb els valors dels marcadors— com a Markdown en línia: <code>**negrita**</code>, <code>*cursiva*</code>, <code>^superíndice^</code>, <code>~subíndice~</code>. Desactivat, els signes de marca s'imprimeixen tal qual. Vegeu <a href="#marques-en-línia-i-contorns">Marques en línia i contorns</a>.</td>
+      <td>Llegeix el text resolt —amb els valors dels marcadors— com a Markdown en línia: <code>**negrita**</code>, <code>*cursiva*</code>, <code>^superíndice^</code>, <code>~subíndice~</code>. Desactivat, els signes de marca s'imprimeixen tal qual. En el disseny d'un encapçalament, <code>{'{titleText}'}</code> conserva llavors els trams del mateix encapçalament en negreta, en cursiva, en superíndex i en subíndex (<code>*Pneumocystis*</code>, <code>CO~2~</code>), amb la resta de caràcters escapats perquè s'imprimeixin tal qual (des de postext 1.19). Vegeu <a href="#marques-en-línia-i-contorns">Marques en línia i contorns</a>.</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
@@ -1315,13 +1315,13 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td><code>referenceBold</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Renderitzar les etiquetes de <code>:ref</code> en línia amb la font en negreta.</td>
+      <td>Renderitzar les etiquetes de <code>:ref</code> en línia amb la font en negreta. Una referència conserva l'èmfasi del text que l'envolta (dins de <code>***…***</code> continua en negreta cursiva amb qualsevol valor); aquesta opció només hi afegeix la negreta.</td>
     </tr>
     <tr>
       <td><code>referenceItalic</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Renderitzar les etiquetes de <code>:ref</code> en línia en cursiva.</td>
+      <td>Renderitzar les etiquetes de <code>:ref</code> en línia en cursiva. Una referència dins de text en cursiva continua en cursiva amb qualsevol valor.</td>
     </tr>
     <tr>
       <td><code>emphasis</code></td>
@@ -1948,7 +1948,7 @@ La propietat `headings` controla la tipografia de tots els nivells d'encapçalam
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si un encapçalament llegeix les seves marques en línia com ho fa un paràgraf: <code>*cursiva*</code>, <code>**negrita**</code>, <code>^superíndice^</code>, <code>~subíndice~</code>, <code>:smallcaps[…]</code> i enllaços. Un tram en cursiva inverteix la inclinació de l'encapçalament, així que en un encapçalament en cursiva surt en rodona; un tram en negreta pren <code>bodyText.boldFontWeight</code>, o el pes del mateix encapçalament si és més gran. L'índex també recull els trams en negreta i en cursiva; els titolets i els marcadors del PDF imprimeixen només el text. Amb <code>false</code> es treuen els marcadors i les paraules s'imprimeixen amb l'estil de l'encapçalament, com fins a postext 1.4. L'obertura per defecte d'un encapçalament <code>span: 'page'</code> sense disseny també compon els trams en negreta, en cursiva, en superíndex i en subíndex; el disseny d'un encapçalament (una banda d'obertura amb disseny o un <code>advancedDesign</code> de columna) imprimeix <code>{'{titleText}'}</code> com a text sense marques en tots dos casos. Les configuracions desades abans amb encapçalaments que porten marques es llegeixen amb <code>false</code> (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>).</td>
+      <td>Si un encapçalament llegeix les seves marques en línia com ho fa un paràgraf: <code>*cursiva*</code>, <code>**negrita**</code>, <code>^superíndice^</code>, <code>~subíndice~</code>, <code>:smallcaps[…]</code> i enllaços. Un tram en cursiva inverteix la inclinació de l'encapçalament, així que en un encapçalament en cursiva surt en rodona; un tram en negreta pren <code>bodyText.boldFontWeight</code>, o el pes del mateix encapçalament si és més gran. L'índex també recull els trams en negreta i en cursiva; els titolets i els marcadors del PDF imprimeixen només el text. Amb <code>false</code> es treuen els marcadors i les paraules s'imprimeixen amb l'estil de l'encapçalament, com fins a postext 1.4. L'obertura per defecte d'un encapçalament <code>span: 'page'</code> sense disseny també compon els trams en negreta, en cursiva, en superíndex i en subíndex; el disseny d'un encapçalament (una banda d'obertura amb disseny o un <code>advancedDesign</code> de columna) imprimeix <code>{'{titleText}'}</code> com a text sense marques en tots dos casos, tret que el seu element de text llegeixi les marques en línia (<code>inlineMarks: true</code>): llavors <code>{'{titleText}'}</code> conserva els trams en negreta, en cursiva i en índex de l'encapçalament (des de postext 1.19). Les configuracions desades abans amb encapçalaments que porten marques es llegeixen amb <code>false</code> (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>).</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2067,7 +2067,7 @@ L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de man
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>Quan pren un requadre que tanca una columna curta l'espai sota el seu peu (la palanca 1, registrada com a <code>trailingCallout</code>). <code>'first'</code>: abans que qualsevol altra palanca, com fins a postext 1.4 — el requadre es queda tot el buit, encara que siguin diverses línies, i els encapçalaments de damunt no reben res. <code>'last'</code>: després de les palanques d'encapçalaments, finals de llista, fórmules i flotants, que prenen abans les línies senceres; el requadre baixa amb el text de damunt i després pren només el que han deixat, normalment una fracció de línia, de manera que el seu peu continua caient a l'última casella de la retícula i queda a prop del text que comenta. <code>'off'</code>: mai; el requadre conserva l'espai sota el seu peu, tot i que les altres palanques encara el poden baixar línies senceres quan afegeixen espai per damunt, i la fracció de línia que sobra s'hi queda. En una pàgina de tancament, on el requadre és l'única palanca que alinea el seu peu amb la columna contigua, <code>'off'</code> el deixa on l'ha posat el flux. Qualsevol altre valor es llegeix com a <code>'first'</code>.</td>
+      <td>Quan pren un requadre que tanca una columna curta l'espai sota el seu peu (la palanca 1, registrada com a <code>trailingCallout</code>). <code>'first'</code>: abans que qualsevol altra palanca, com fins a postext 1.4 — el requadre es queda tot el buit, encara que siguin diverses línies, i els encapçalaments de damunt no reben res. <code>'last'</code>: després de les palanques d'encapçalaments, finals de llista, fórmules i flotants, que prenen abans les línies senceres; el requadre baixa amb el text de damunt i després pren només el que han deixat, normalment una fracció de línia, de manera que el seu peu continua caient a l'última casella de la retícula i queda a prop del text que comenta. <code>'off'</code>: mai; el requadre conserva l'espai sota el seu peu, tot i que les altres palanques encara el poden baixar línies senceres quan afegeixen espai per damunt, i la fracció de línia que sobra s'hi queda. En una pàgina de tancament, on el requadre és l'única palanca que alinea el seu peu amb la columna contigua, <code>'off'</code> el deixa on l'ha posat el flux. Qualsevol altre valor es llegeix com a <code>'first'</code>. Un requadre que tanca l'única columna de text de la seva banda (una pàgina d'una sola columna que acaba abans d'hora i el bloc següent de la qual obre la pàgina següent) no es mou mai: no hi ha cap columna al costat amb què alinear-lo (des de postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2369,6 +2369,12 @@ Cada nivell d'encapçalament admet dos camps addicionals que controlen com es re
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
       <td>Quan és <code>'page'</code>, l'encapçalament es tracta com a obertura de capítol i el seu disseny avançat (si està habilitat) s'adjunta a la pàgina com una banda d'obertura per damunt del cos. Combina-ho amb <code>breakBefore.enabled: true</code> perquè l'obertura comenci de manera fiable en una pàgina nova. Sense un disseny propi, el títol el pinta una obertura per defecte a tota l'amplada de la caixa de text, amb la tipografia i l'interlineat del nivell i amb els seus trams en negreta, en cursiva, en superíndex i en subíndex (<code>headings.inlineMarks</code>), i la banda es mesura a aquesta amplada. La banda reserva totes les línies que pinta l'obertura: si aquesta ocupa més línies que la mesura del mateix encapçalament (un títol justificat els espais del qual cabrien estrets en una línia, un salt forçat <code>{'\\\\'}</code>), la banda també les pren. Fins a postext 1.4 la banda es mesurava amb el títol ajustat a l'amplada de la columna, de manera que un títol que cap en una línia a l'amplada de la caixa ocupava una banda de dues línies, amb la línia centrada. Les altres columnes comencen sota la banda com la columna del mateix encapçalament. El text que n'obre una comença on començaria el text just a sota de l'obertura, vingui el que vingui després de l'obertura en la seva columna: el <code>marginBottom</code> de l'obertura per sota del seu títol o del seu disseny, portat a la línia següent de la retícula quan el nivell s'hi ajusta. Un encapçalament, una fórmula en bloc o una entrada de l'índex que n'obre una queda a l'altura del primer encapçalament o fórmula en bloc que hi ha sota l'obertura, amb els marges que hi té; si la columna de l'obertura continua amb una altra cosa, comença on comença aquest text. Un encapçalament ocult sota l'obertura no compta, i l'espai que l'<a href="#equilibratge-de-columnes">equilibri de columnes</a> afegeix damunt de l'encapçalament que hi ha sota l'obertura no es repeteix a les altres columnes. El que aquestes columnes ajusten a la retícula cau a la retícula de la pàgina. Fins a postext 1.4 el seu primer bloc quedava al peu de la banda: fora de la retícula quan la banda acabava entre dues línies, i enganxat a la banda, sense marge, quan l'obertura anava seguida d'un encapçalament (una línia més amunt que ara si la banda acabava a la retícula); a més, un encapçalament en aquest lloc perdia el marge superior que conservava el de la primera columna.</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un encapçalament <code>span: 'page'</code> comença una pàgina nova. <code>true</code> obre la pàgina següent (amb el costat que triï <code>breakBefore</code>). <code>false</code>, amb <code>breakBefore.enabled: false</code>, l'obre on arriba el text, com un requadre de pàgina: les columnes de sobre acaben a la mateixa alçada (la banda s'equilibra quan <code>headings.balancing.trailing</code> és actiu), el disseny de l'encapçalament o l'obertura per defecte es compon a tota l'amplada de la caixa sota elles i el text continua a totes les columnes per sota: el segon article d'un butlletí sota el final del primer. Si l'espai que queda no basta per a l'encapçalament i el mínim de línies vídues sota seu, obre la pàgina següent com amb <code>true</code>. El paper de la pàgina continua sent el que li dona el primer bloc. No afecta un encapçalament <code>span: 'column'</code>. També en un estil d'encapçalament. Des de postext 1.19.</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>
@@ -2942,6 +2948,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Espai mínim a sota; l'ajust a la retícula el pot augmentar.
   indentAfterDisplay?: boolean; // Sagnar el paràgraf que segueix una fórmula en bloc.
   keepWithLeadIn?: boolean; // Mantenir una fórmula en bloc amb la línia que la introdueix.
+  equationNumbering?: {      // Numerar les fórmules en bloc que porten un \label.
+    enabled?: boolean;           // per defecte true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numera per capítol
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': el que imprimeixen la fórmula i \eqref
+  };
 }
 ```
 
@@ -2997,6 +3010,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>Manté una fórmula en bloc a la columna de la línia que la introdueix, com la penalització <code>\predisplaypenalty</code> de TeX. Quan la fórmula no cap sota l'última línia del paràgraf anterior, aquesta línia passa amb la fórmula a la columna o pàgina següent; quan les línies que quedarien enrere són menys de <code>bodyText.widowMinLines</code> (menys d'una si <code>bodyText.avoidWidows</code> està desactivat), un paràgraf que comença en aquella columna passa sencer (amb els encapçalaments que tanquen la columna per damunt, segons <code>headings.keepWithNext</code>). La línia que passa queda sola a dalt de tot de la columna següent, digui el que digui la regla de les òrfenes. Amb <code>false</code>, la fórmula passa sola, i la línia que la introdueix pot tancar la columna de dalt o quedar sobre una figura que encapçala la següent.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>, <code>'&#123;n&#125;'</code>, <code>'never'</code>, <code>'decimal'</code>, <code>'(&#123;n&#125;)'</code></td>
+      <td>Com es numeren les fórmules en bloc que porten un <code>\label</code> (vegeu <em>Equacions numerades</em> més avall). <code>numberingTemplate</code>, <code>resetOn</code> i <code>counterFormat</code> funcionen com els d'un tipus de recurs: <code>'&#123;h1&#125;.&#123;n&#125;'</code> amb <code>resetOn: 'h1'</code> numera (2.1), (2.2)… per capítol, i <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> amb <code>'h2'</code>, per secció. <code>format</code> és el número tal com l'imprimeixen la fórmula i <code>\eqref</code>, amb <code>&#123;n&#125;</code> al lloc del número: <code>'[&#123;n&#125;]'</code> compon [3]. <code>enabled: false</code> no numera res: un <code>\label</code> es descarta i una referència que hi apunta n'imprimeix la pàgina.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3044,7 +3063,15 @@ On la configuració estava desada, el motor ho pot saber i ho fa per tu: `openBu
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // mida i marges actuals
 ```
 
-**Equacions numerades.** Una fórmula en bloc amb `\tag{…}` ocupa tota la seva mesura (la columna, o l'amplada interior del requadre que la conté): l'equació va centrada i el seu número alineat a la dreta, a la línia de l'equació, a cada fila etiquetada d'un `align`. `\tag*{…}` imprimeix l'etiqueta tal qual, sense parèntesis. Només les etiquetes explícites imprimeixen número; entorns com `equation` no es numeren per si sols. Una equació numerada més ampla que la seva mesura desborda per la dreta, com qualsevol fórmula en bloc. (Fins a postext 1.4, una fórmula amb `\tag` no s'arribava a dibuixar.)
+**Equacions numerades.** Una fórmula en bloc amb número ocupa tota la seva mesura (la columna, o l'amplada interior del requadre que la conté): l'equació va centrada i el seu número alineat a la dreta, a la línia de l'equació, a cada fila numerada d'un `align`. El número surt d'un `\label{eq:x}` (des de postext 1.19): les fórmules amb etiqueta, i les files amb etiqueta d'un `align`, `gather`, `alignat`, `flalign` o `eqnarray`, es numeren en ordre de lectura segons `equationNumbering`, tret que una fila digui `\nonumber` o `\notag`. Entorns com `equation` no es numeren per si sols: una fórmula sense etiqueta no porta número. `\tag{…}` imprimeix el text que li donis, entre parèntesis, i `\tag*{…}`, tal qual; cap dels dos no compta, i un `\label` al seu costat li dona nom. Una equació numerada més ampla que la seva mesura desborda per la dreta, com qualsevol fórmula en bloc. (Fins a postext 1.4, una fórmula amb `\tag` no s'arribava a dibuixar; fins a la 1.18, només `\tag` numerava una fórmula.)
+
+`\eqref{eq:x}` al text imprimeix el número en el seu `format`, (3), i `\ref{eq:x}`, el número sol; el mateix fan `:ref{id="eq:x"}` i `@eq:x` (vegeu [Referències creuades](/ca/docs/document-format#referències-creuades-i-àncores)), i dins d'una fórmula `\eqref` l'imprimeix com a text. En un llibre compost capítol a capítol, el comptador continua des del capítol anterior: `continuationAfter` el porta a `LayoutContinuation.statementCounters` (`equation`), i l'esquema del llibre dona a cada etiqueta el seu número (`OutlineEntry.numberLabel`), de manera que una referència a una equació d'un altre capítol l'imprimeix.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 El resolver i l'stripper segueixen el mateix patró que les altres seccions:
 
@@ -3088,6 +3115,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // Peu de la columna que cita, després del capítol, o al costat del text d'un plec.
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Reiniciar a cada capítol, continuar, o reiniciar a cada pàgina / columna / plec.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // Els símbols de crida de numberFormat: 'symbols'.
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Volada, sobre la línia de base, al costat de la paraula, o a la dreta d'una línia vertical.
   markerSize?: Dimension;     // Mida de la crida en línia, lateral o a la dreta; em és el text que l'envolta.
   numberGap?: 'en' | 'em';    // Espai després del número de la nota mateixa.
@@ -3128,14 +3156,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code> (llibres japonesos horitzontals: <code>'page'</code>; amb <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> (llibres japonesos horitzontals: <code>'page'</code>; amb <code>placement: 'spread'</code>: <code>'spread'</code>; amb <code>numberFormat: 'symbols'</code> al peu de la columna: <code>'page'</code>)</td>
       <td><code>'chapter'</code> torna a començar per 1 sota cada títol de nivell 1 i al principi de cada document. <code>'document'</code> continua per tot el document i, en un llibre maquetat capítol a capítol, d'un capítol al següent (<code>continuationAfter</code> porta l'últim número a <code>continuation.footnoteNumber</code>). <code>'page'</code> torna a començar per 1 a cada pàgina i <code>'column'</code> a cada columna, comptant les notes on les col·loca la maquetació (les columnes d'una pàgina en ordre de lectura): el 页下注 habitual d'un llibre xinès. El document es maqueta, es numera segons on han caigut les seves notes i es torna a maquetar fins que els números es mantenen (com a màxim tres vegades més). Tots dos valen per a les notes al peu de la columna: amb <code>placement: 'chapterEnd'</code> les notes es numeren per capítol. <code>'spread'</code> torna a començar a cada plec (pàgines 2–3, 4–5…), en l'ordre de cita, per a <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>.</td>
+      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'&#42;'</code>) marca les notes amb símbols de crida, els de <code>symbols</code> per ordre: &#42; † ‡ § ‖ ¶, després dobles (&#42;&#42; †† ‡‡…) i triples; aleshores les notes es tornen a comptar a cada pàgina tret que es fixi <code>numbering</code>. Des de postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>La seqüència que escriu <code>numberFormat: 'symbols'</code>, doblada i després triplicada quan s'esgota. Els fitxers llatins de Google Fonts i Fontsource porten &#42; † § ¶ (la creu, a <code>latin-ext</code>) però ni ‡ ni ‖, que el PDF dibuixa llavors amb el glif <code>.notdef</code> de la font i un avís <code>missingGlyph</code>: amb una font així, traieu-los (<code>['&#42;', '†', '§', '¶']</code>) o componeu les notes en una font que els tingui. Les cadenes buides es descarten i una llista buida conserva la seqüència per defecte. Des de postext 1.19.</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
@@ -3343,6 +3377,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3411,6 +3446,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>On posa les seves cites un estil de notes: notes a peu de pàgina (com diu <code>footnotes</code>) o notes de dues línies dins del rengle (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Les citacions al llarg del llibre, o cada capítol pel seu compte (cada document, i cada encapçalament de nivell 1 després d'una citació): un estil numèric numera cada capítol des d'1 i una obra citada en dos capítols pren el número de cadascun; un estil de notes escriu l'obra completa a la seva primera citació de cada capítol. Pensat per a <code>bibliography.scope: 'chapter'</code>, les llistes del qual prenen llavors els números del capítol.</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>
@@ -5378,6 +5419,18 @@ El vidre continua calent una hora després d'apagar la flama.
       <td><code>true</code></td>
       <td>Compon l'indicador en cursiva.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>sense definir</td>
+      <td>Compta les caixes d'aquest estil com a enunciats numerats: teoremes, lemes, definicions. Vegeu <a href="#enunciats-numerats-i-demostracions">Enunciats numerats i demostracions</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Una marca alineada a la dreta al final de l'última línia de la caixa, com el <code>'∎'</code> o el <code>'□'</code> amb què acaba una demostració: en aquesta línia si hi cap després d'un espai i, si no, en una línia pròpia. Una caixa que acaba en una fórmula en bloc sense número la hi posa com a etiqueta de la fórmula.</td>
+    </tr>
   </tbody>
 </table>
 ### El contenidor `:::callout`
@@ -5406,6 +5459,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined per al `note` per defecte; s'eliminen els valors estàtics per defecte
 ```
+
+### Enunciats numerats i demostracions
+
+Un estil amb `numbering` compta les seves caixes, com el paquet `amsthm` de LaTeX compta els entorns de teorema (des de postext 1.19). Cada caixa imprimeix el seu rètol i el seu número —«**Teorema 2.**» al començament del primer paràgraf—, i el `title` de la tanca segueix el número entre parèntesis: `:::callout{type="theorem" title="Bradley–Terry"}` comença amb «**Teorema 2** (Bradley–Terry)**.**». Una caixa oberta amb un identificador (`{#thm:main}`) és destí de referències creuades, que imprimeixen «Teorema 2» (`:ref{id="thm:main"}`), i `\ref{thm:main}` o `style=number` imprimeixen 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>La paraula que precedeix el número: <code>'Teorema'</code>, <code>'Lema'</code>, <code>'Definition'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>l'<code>id</code> de l'estil</td>
+      <td>El comptador que fan avançar les caixes. Els estils que anomenen un mateix comptador el comparteixen, com fa <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Teorema 1, Lema 2, Teorema 3. <code>'equation'</code> compta juntament amb les equacions etiquetades. <code>false</code> imprimeix el rètol sense número (el «<em>Demostració.</em>» d'una demostració).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>Com els d'un tipus de recurs: <code>'&#123;h1&#125;.&#123;n&#125;'</code> amb <code>resetOn: 'h1'</code> numera Teorema 2.1, 2.2… per capítol, i <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> amb <code>'h2'</code>, per secció. Un comptador que comparteixen diversos estils continua el compte imprimeixin el que imprimeixin les seves plantilles.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> obre el primer paràgraf de la caixa amb el rètol (una caixa que comença amb una llista, una fórmula o una altra caixa rep un paràgraf per a ell); <code>'title'</code> fa del rètol el títol de la caixa, amb el seu <code>titleStyle</code>: «Teorema 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>La lletra del rètol en línia i del seu sufix, sigui quina sigui la del cos de la caixa: amb un cos en cursiva (<code>body.italic</code>), un rètol en rodona continua en rodona. El títol entre parèntesis es compon en rodona i amb el pes normal.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Es compon després del rètol en línia i el seu títol.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una demostració és un estil amb un rètol sense número i una marca final:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Teorema' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lema', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definició' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Demostració', counter: false, bold: false, italic: true } },
+]
+```
+
+En un llibre compost capítol a capítol, els comptadors continuen des del capítol anterior (`LayoutContinuation.statementCounters`, que omple `continuationAfter`), i l'esquema del llibre dona a l'àncora de cada caixa numerada el seu rètol (`OutlineEntry.numberLabel`), de manera que una referència des d'un altre capítol l'imprimeix.
 
 ### Tipografia dins d'un requadre
 
@@ -8092,6 +8212,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **El document defineix l'aspecte.** El paper, l'enquadernació, la taula i la llum són la [configuració `folio`](#visor-folio-configuració) del document (`doc.config.folio`). Una pàgina composta dins d'una tanda `:::paper` porta el seu propi paper (`VDTPage.paper`), i el seu full es dibuixa amb el color, la superfície, el gruix i la rigidesa d'aquell paper. Amb `binding.cover: 'pages'`, la primera pàgina és la tapa davantera i l'última, si és un verso, la del darrere (`covers`). Un format de diari (`'broadsheet'`, `'berliner'`, `'tabloid'`, `'compact'`) els ajustos del qual no anomenen paper ni enquadernació apareix com a paper de diari doblegat, també quan l'amfitrió passa el seu propi `folio`.
 - **El contenidor defineix la mida.** El llibre l'ocupa sencer, amb els botons i el comptador de pàgines als marges, així que dona-li una alçada; quan canvia de mida, les pàgines es tornen a pintar a la nova. Per sota de 560 px d'amplada mostra una pàgina cada vegada (`mode: 'auto'`; `'single'` i `'double'` forcen una o l'altra): el llom va per la vora interior de la pàgina i el full gira sobre ell; arrossegar cap al llom avança, lliscar en sentit contrari retrocedeix, i un toc passa la pàgina.
 - **Què fa el punter.** `interaction` (i després `setInteraction`) fixa què fa el botó esquerre, un dit o un llapis sobre el llibre: `'hand'` (per defecte) agafa les pàgines i les passa, `'orbit'` gira la vista com en arrossegar amb el botó dret (per a trackpads i tauletes), `'select'` deixa el punter a l'amfitrió, per exemple per seleccionar text. `pageAt(event)` dona la pàgina sota un punter i el punt d'aquesta (`{ page, x, y }`, fraccions de la pàgina des de la cantonada superior esquerra), sobre el llibre tal com es veu, inclinat o girat; `pointOnScreen(point)` fa el camí invers, per dibuixar un cursor o una selecció sobre la pàgina. `refreshPage(src)` torna a mostrar el llenç d'una pàgina que l'amfitrió ha repintat al seu lloc. El Sandbox els fa servir tots per seleccionar text i seguir el cursor de l'editor sobre les pàgines en 3D.
+- **Una lupa per a la lletra petita.** `interaction: 'magnify'` sosté damunt el llibre, on és el punter, un vidre rodó amb anell negre (un dit la sosté per sobre seu mentre toca la pantalla). Mostra el llibre com el veu l'ull del lector, il·luminat i corbat com és, amb més augment al centre i corbant-se cap a l'anell. La roda, `+` i `−` canvien l'augment (`setMagnification(zoom)`, d'1,5 a 10; per defecte, la pàgina a uns 5,5 px CSS per mil·límetre) i Esc la retira; `magnifier: { zoom, diameter }` fixa tots dos des del principi. `createFolioFromDocument` torna a pintar les pàgines sota el vidre amb prou nitidesa per al seu centre, de manera que el cos de text d'un diari es llegeix; `createFolio` pren aquestes pintures de `detail: { paint(index, deviceWidth), release() }`. El Sandbox la posa al botó **Lupa** (M). La lupa també selecciona text: sobre les pàgines el cursor és el de text, `pageAt` retorna el punt sota el centre de la lupa (damunt del dit en una pantalla tàctil) i al Sandbox un clic hi col·loca el cursor d'edició i un arrossegament selecciona.
 - **El lector pot fer la volta al llibre.** Arrossegar amb el botó dret gira la vista al voltant del llibre (fins a 70° des de la vertical), també mentre passen fulls; `resetView()` la retorna suaument a la `tilt` i el `yaw` de la configuració, i `getView()` dona la vista tal com es veu ara (`{ tilt, yaw }`, en graus) per desar-la en aquesta configuració. El Sandbox els ofereix en dos botons, **Restableix la vista** i **Desa com a vista per defecte**.
 - **Els vídeos es reprodueixen a les pàgines.** Un clic a la portada d'un vídeo el reprodueix a la mateixa pàgina, en qualsevol mode d'`interaction`, i el vídeo continua mentre el seu full passa; un altre clic el posa en pausa, i s'atura quan el llibre queda quiet en un plec on ja no apareix. Un vídeo amb `player.autoplay` s'engega sol la primera vegada que es mostra el seu plec; si a més es reprodueix amb d'altres (`player.exclusive: false`), s'engega sense so cada vegada i s'atura quan es passa el plec, diversos alhora. Opcions `videos`, `videoUrl` i `onVideo`, i `stopVideo()` al visor; vegeu [Format del document › Vídeos a les pàgines de Folio](/ca/docs/document-format#vídeos-a-les-pàgines-de-folio).
 - **Abans, fonts i imatges.** Com amb `renderPage`, les fonts del document han d'estar carregades a `document.fonts` i les seves imatges registrades amb `registerResourceImage` abans de pintar les pàgines.

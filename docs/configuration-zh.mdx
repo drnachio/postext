@@ -733,7 +733,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>把解析后的文本（包括占位符的值）当作行内Markdown读取：<code>**bold**</code>、<code>*italic*</code>、<code>^superscript^</code>、<code>~subscript~</code>。关闭时，这些标记按原样输出。见<a href="#inline-marks-and-outlines">行内标记与描边</a>。</td>
+      <td>把解析后的文本（包括占位符的值）当作行内Markdown读取：<code>**bold**</code>、<code>*italic*</code>、<code>^superscript^</code>、<code>~subscript~</code>。关闭时，这些标记按原样输出。在标题设计中，<code>{'{titleText}'}</code>此时保留标题自身的粗体、斜体、上标和下标片段（<code>*Pneumocystis*</code>、<code>CO~2~</code>），其余字符经过转义，按原样输出（postext 1.19 起）。见<a href="#inline-marks-and-outlines">行内标记与描边</a>。</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
@@ -1316,13 +1316,13 @@ interface ElementPlacement {
       <td><code>referenceBold</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>用粗体字体渲染行内<code>:ref</code>标签。</td>
+      <td>用粗体字体渲染行内<code>:ref</code>标签。引用会保留周围文字的强调（在<code>***…***</code>中无论取何值都保持粗斜体）；此选项只在其上加粗。</td>
     </tr>
     <tr>
       <td><code>referenceItalic</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>用斜体渲染行内<code>:ref</code>标签。</td>
+      <td>用斜体渲染行内<code>:ref</code>标签。位于斜体文字中的引用无论取何值都保持斜体。</td>
     </tr>
     <tr>
       <td><code>emphasis</code></td>
@@ -1951,7 +1951,7 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>标题是否像段落一样识别行内标记：<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>和链接。斜体片段会翻转标题的倾斜，所以在斜体标题中它显示为正体；粗体片段采用<code>bodyText.boldFontWeight</code>，若标题自身的字重更重则采用标题字重。目录也会列出粗体和斜体片段；书眉和PDF书签只输出文字。为<code>false</code>时去掉标记，文字按标题自身的样式输出，与postext 1.4及以前一样。没有设计的<code>span: 'page'</code>标题，其默认章首区段也会排出粗体、斜体、上标和下标片段；标题设计（带设计的章首区段或栏内<code>advancedDesign</code>）无论如何都把<code>{'{titleText}'}</code>作为纯文本输出。更早保存、且标题中带有标记的配置按<code>false</code>读取（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。</td>
+      <td>标题是否像段落一样识别行内标记：<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>和链接。斜体片段会翻转标题的倾斜，所以在斜体标题中它显示为正体；粗体片段采用<code>bodyText.boldFontWeight</code>，若标题自身的字重更重则采用标题字重。目录也会列出粗体和斜体片段；书眉和PDF书签只输出文字。为<code>false</code>时去掉标记，文字按标题自身的样式输出，与postext 1.4及以前一样。没有设计的<code>span: 'page'</code>标题，其默认章首区段也会排出粗体、斜体、上标和下标片段；标题设计（带设计的章首区段或栏内<code>advancedDesign</code>）都把<code>{'{titleText}'}</code>作为纯文本输出，除非其文本元素读取行内标记（<code>inlineMarks: true</code>）：此时<code>{'{titleText}'}</code>保留标题的粗体、斜体与上下标片段（postext 1.19 起）。更早保存、且标题中带有标记的配置按<code>false</code>读取（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2071,7 +2071,7 @@ headings: {
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>结束短栏的框何时占用其底部下方的空余（手段1，记录为<code>trailingCallout</code>）。<code>'first'</code>：先于其他所有手段，与postext 1.4及以前相同。框占用整段空余，即使有好几行，其上方的标题一行也分不到。<code>'last'</code>：在标题、列表结尾、行间公式和浮动体手段之后执行，它们先占用整行；框随上方的文字一起下移，然后只占用它们剩下的部分，通常不足一行，这样框底仍对齐最后一个网格位置，框也仍靠近它所注释的文字。<code>'off'</code>：从不执行；框保留其底部下方的空余，但其他手段在框上方加空时，仍可以把它整行下移，框下剩余的不足一行的空间保持不变。在末页上，框是唯一能让其底部与相邻栏对齐的手段，<code>'off'</code>让它留在文字流放置的位置。其他任何值都按<code>'first'</code>处理。</td>
+      <td>结束短栏的框何时占用其底部下方的空余（手段1，记录为<code>trailingCallout</code>）。<code>'first'</code>：先于其他所有手段，与postext 1.4及以前相同。框占用整段空余，即使有好几行，其上方的标题一行也分不到。<code>'last'</code>：在标题、列表结尾、行间公式和浮动体手段之后执行，它们先占用整行；框随上方的文字一起下移，然后只占用它们剩下的部分，通常不足一行，这样框底仍对齐最后一个网格位置，框也仍靠近它所注释的文字。<code>'off'</code>：从不执行；框保留其底部下方的空余，但其他手段在框上方加空时，仍可以把它整行下移，框下剩余的不足一行的空间保持不变。在末页上，框是唯一能让其底部与相邻栏对齐的手段，<code>'off'</code>让它留在文字流放置的位置。其他任何值都按<code>'first'</code>处理。区段中唯一一栏文字以框结尾时（单栏页面提前结束、下一个块另起下一页），该框不会移动：旁边没有可对齐的栏（postext 1.19 起）。</td>
     </tr>
   </tbody>
 </table>
@@ -2374,6 +2374,12 @@ headings: {
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
       <td>为<code>'page'</code>时，标题被视为章首，其高级设计（如果启用）作为正文上方的章首区段附加到页面上。请与<code>breakBefore.enabled: true</code>搭配使用，确保章首总是开新页。没有自己的设计时，标题由默认章首绘制，横跨整个内容区，使用该级别的字体和行距，并带有粗体、斜体和上下标片段（<code>headings.inlineMarks</code>），区段也按这个宽度测量。区段容纳章首绘制的每一行：章首占用的行数多于标题本身按栏宽测得的行数时（两端对齐的标题本可压缩空格排成一行，或有强制换行<code>{'\\\\'}</code>），区段也把这些行包括在内。postext 1.4及以前，区段按栏宽折行的标题来测量，所以在内容区一行就放得下的标题会占两行高的区段，那一行居中其中。其他各栏与标题所在栏一样从区段下方开始。在这些栏开头的正文，与紧接在章首下方的正文起点相同，不论章首所在栏接下来是什么内容：即章首标题或设计下方的<code>marginBottom</code>，该级别对齐网格时取到下一个网格行。在这些栏开头的标题、行间公式或目录行，与章首下方第一个标题或行间公式平齐，外边距也按那里的计算；章首所在栏接下来是其他内容时，它们与那段文字的起点平齐。章首下方的隐藏标题不计入，<a href="#column-balancing">各栏齐底</a>在章首下方标题上方加的空间也不会在其他栏中重复。这些栏中对齐网格的内容落在页面的网格上。postext 1.4及以前，它们的第一个块紧贴区段底部：区段在两行之间结束时偏离网格；章首后面跟着标题时，则紧挨区段、没有外边距（区段结束在网格上时比现在高一行），那里的标题还丢掉了第一栏的标题所保留的上外边距。</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>span: 'page'</code>标题是否另起一页。<code>true</code>另起下一页（左右页由<code>breakBefore</code>决定）。<code>false</code>且<code>breakBefore.enabled: false</code>时，标题在正文排到之处展开，如同跨页框：上方各栏齐平收束（启用<code>headings.balancing.trailing</code>时对该区段做平衡），标题的设计或默认章首区段在其下方按版心全宽排出，正文在下方各栏继续：例如简报中的第二篇文章紧接在第一篇结尾之下。若剩余空间放不下标题及其下方的寡行最少行数，则与<code>true</code>一样另起下一页。页面角色仍由其第一个块决定。对<code>span: 'column'</code>标题无效。标题样式中也可设置。postext 1.19 起。</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>
@@ -2948,6 +2954,13 @@ interface MathConfig {
   marginBottom?: Dimension; // 下方的最小间距；对齐基线网格时可能变大。
   indentAfterDisplay?: boolean; // 独立公式之后的段落首行缩进。
   keepWithLeadIn?: boolean; // 让独立公式与引出它的那一行在一起。
+  equationNumbering?: {      // 为带\label的独立公式编号。
+    enabled?: boolean;           // 默认true
+    numberingTemplate?: string;  // '{n}'；'{h1}.{n}'按章编号
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})'：公式和\eqref印出的形式
+  };
 }
 ```
 
@@ -3003,6 +3016,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>让独立公式与引出它的那一行留在同一栏，相当于TeX的predisplay penalty。公式在前一段最后一行下面排不下时，这一行和公式一起移到下一栏或下一页；如果留下的行少于<code>bodyText.widowMinLines</code>（<code>bodyText.avoidWidows</code>关闭时为少于一行），就把在该栏开始的段落整段移走（按<code>headings.keepWithNext</code>，连同该段上方收尾这一栏的标题）。带过去的那一行单独位于下一栏的栏顶，不论段末孤行（orphan）规则如何要求。设为<code>false</code>时只移走公式，引出它的那一行可能收尾上一栏，或者位于下一栏栏首的图的上方。</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>、<code>'&#123;n&#125;'</code>、<code>'never'</code>、<code>'decimal'</code>、<code>'(&#123;n&#125;)'</code></td>
+      <td>带<code>\label</code>的独立公式如何编号（见下文的<em>带编号的公式</em>）。<code>numberingTemplate</code>、<code>resetOn</code>和<code>counterFormat</code>与资源类型中的同名字段作用相同：<code>'&#123;h1&#125;.&#123;n&#125;'</code>配合<code>resetOn: 'h1'</code>按章编号为(2.1)、(2.2)……，<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>配合<code>'h2'</code>按节编号。<code>format</code>是公式和<code>\eqref</code>印出编号的形式，其中<code>&#123;n&#125;</code>代表编号：<code>'[&#123;n&#125;]'</code>排出[3]。<code>enabled: false</code>时不为任何公式编号：<code>\label</code>被舍弃，对它的引用印出它所在的页码。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3050,7 +3069,15 @@ math: {
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // 现在的大小和外边距
 ```
 
-**带编号的公式。**带`\tag{…}`的独立公式占满它的行长（所在的栏，或所在标注框的内宽）：公式居中，编号右对齐排在公式所在的行上，`align`中每个带标签的行都是如此。`\tag*{…}`按原样打印标签，不加括号。只有显式标签才打印编号；`equation`之类的环境本身不编号。比行长更宽的带编号公式向右溢出，与其他独立公式一样。（postext 1.4及以前，带`\tag`的公式根本不会绘制。）
+**带编号的公式**。带编号的独立公式占满它的行长（所在的栏，或所在标注框的内宽）：公式居中，编号右对齐排在公式所在的行上，`align`中每个带编号的行都是如此。编号来自`\label{eq:x}`（postext 1.19起）：带标签的公式，以及`align`、`gather`、`alignat`、`flalign`或`eqnarray`中带标签的行，按阅读顺序依`equationNumbering`编号，除非该行写了`\nonumber`或`\notag`。`equation`之类的环境本身不编号：没有标签的公式就没有编号。`\tag{…}`把你给的标签加上括号打印出来，`\tag*{…}`按原样打印；两者都不参与计数，与它并列的`\label`为它命名。比行长更宽的带编号公式向右溢出，与其他独立公式一样。（postext 1.4及以前，带`\tag`的公式根本不会绘制；1.18及以前，只有`\tag`能为公式编号。）
+
+正文中的`\eqref{eq:x}`按`format`印出编号(3)，`\ref{eq:x}`印出不带括号的编号；`:ref{id="eq:x"}`和`@eq:x`也是如此（见[交叉引用](/zh/docs/document-format#交叉引用与锚点)）。在公式内部，`\eqref`把编号作为文字印出。逐章排版的书中，计数器接着上一章继续：`continuationAfter`通过`LayoutContinuation.statementCounters`（`equation`）把它带过去，全书大纲为每个标签给出编号（`OutlineEntry.numberLabel`），所以对另一章中公式的引用也能印出编号。
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1)、(1.2)……(2.1)
+}
+```
 
 解析函数和精简函数与其他部分一致：
 
@@ -3096,6 +3123,7 @@ interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd' | 'spread'; // 引用所在栏的栏底、章末，或跨页正文旁。
   numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // 每章重新开始、连续编号，或每页／每栏／每个跨页重新开始。
   numberFormat?: string;      // decimal、lower-roman、circled-decimal（①）……
+  symbols?: string[];         // numberFormat: 'symbols' 所用的注释符号。
   markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // 上标、排在基线上、排在词旁，或排在竖排行的右侧。
   markerSize?: Dimension;     // 行内、词旁或右侧注码的字号；em指所在正文。
   numberGap?: 'en' | 'em';    // 注文编号之后的空白。
@@ -3136,14 +3164,20 @@ interface FootnotesConfig {
     <tr>
       <td><code>numbering</code></td>
       <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
-      <td><code>'chapter'</code>（日文横排书：<code>'page'</code>；使用<code>placement: 'spread'</code>时：<code>'spread'</code>）</td>
+      <td><code>'chapter'</code>（日文横排书：<code>'page'</code>；使用<code>placement: 'spread'</code>时：<code>'spread'</code>；栏脚注使用<code>numberFormat: 'symbols'</code>时：<code>'page'</code>）</td>
       <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。<code>'page'</code>每页从1重新编号，<code>'column'</code>每栏重新编号，按版面中注文实际所在的位置计数（同一页的各栏按阅读顺序）：这就是中文书常见的页下注。文档先排版，再按注文落在的位置编号，然后重新排版，直到编号不再变化（最多再排三次）。二者只适用于栏脚注：<code>placement: 'chapterEnd'</code>时按章编号。<code>'spread'</code>在每个跨页（第2–3页、4–5页……）按引用顺序重新编号，用于<code>placement: 'spread'</code>。</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
       <td><code>string</code></td>
       <td><code>'decimal'</code></td>
-      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。</td>
+      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。<code>'symbols'</code>（或<code>'&#42;'</code>）用参见符号标注，依次取<code>symbols</code>中的符号：&#42; † ‡ § ‖ ¶，用完后成对（&#42;&#42; †† ‡‡……）、再三个重复；此时除非设置了<code>numbering</code>，注释每页重新计数。postext 1.19 起。</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td><code>numberFormat: 'symbols'</code>所用的符号序列，用完后成对、再三个重复。Google Fonts 与 Fontsource 的拉丁文件含有 &#42; † § ¶（剑号在<code>latin-ext</code>中），但没有 ‡ 和 ‖，PDF 会以该字体的<code>.notdef</code>字形绘制，并给出<code>missingGlyph</code>警告：使用这类字体时，请去掉这两个符号（<code>['&#42;', '†', '§', '¶']</code>），或用含有它们的字体排注文。空字符串会被忽略，空列表保留默认序列。postext 1.19 起。</td>
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
@@ -3351,6 +3385,7 @@ interface CitationsConfig {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
   collapseRanges?: boolean;
   notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
   bibliography?: {
     title?: string;        // unset: the document language's word; '' or ' ': none
     scope?: 'book' | 'chapter';
@@ -3419,6 +3454,12 @@ interface CitationsConfig {
       <td><code>'footnote' | 'warichu'</code></td>
       <td><code>'footnote'</code></td>
       <td>注释体样式放置引用的方式：脚注（按<code>footnotes</code>设置）或行内双行夹注。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>引用在全书连续处理，或每章单独处理（每个文档，以及引用之后的每个一级标题）：顺序编码制每章从 1 编号，两章都引用的文献在各章取各自的编号；注释样式在每章第一次引用时写出完整著录。与<code>bibliography.scope: 'chapter'</code>配合使用，章内列表随之采用本章的编号。</td>
     </tr>
     <tr>
       <td><code>bibliography.title</code></td>
@@ -5388,6 +5429,18 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code></td>
       <td>把标记排成斜体。</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>未设置</td>
+      <td>把这种样式的框作为编号的命题计数，如定理、引理、定义。见<a href="#编号的命题与证明">编号的命题与证明</a>。</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>在框最后一行末尾右对齐排出的记号，就像证明以<code>'∎'</code>或<code>'□'</code>结束：空一格后放得下时排在最后一行上，否则单独占一行。以不带编号的独立公式结束的框，把它作为该公式的标签排出。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5417,6 +5470,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => 对内置的`note`默认值返回undefined；去掉静态默认值
 ```
+
+### 编号的命题与证明
+
+带`numbering`的样式为它的框计数，就像LaTeX的`amsthm`为定理环境计数（postext 1.19起）。每个框印出它的标签和编号，即第一段开头的“**定理2.**”，围栏的`title`以括号跟在编号之后：`:::callout{type="theorem" title="Bradley–Terry"}`以“**定理2**（Bradley–Terry）**.**”开头。以标识符打开的框（`{#thm:main}`）可以作为交叉引用的目标，引用印出“定理2”（`:ref{id="thm:main"}`），`\ref{thm:main}`或`style=number`印出2。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>编号前面的词：<code>'定理'</code>、<code>'Lemma'</code>、<code>'Definición'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>样式的<code>id</code></td>
+      <td>框所推进的计数器。指定同一个计数器的样式共用它，如同<code>\newtheorem&#123;lemma&#125;[theorem]</code>：定理1、引理2、定理3。<code>'equation'</code>与带标签的公式一起计数。<code>false</code>只印标签，不印编号（证明的“<em>证明.</em>”）。</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>与资源类型中的相同：<code>'&#123;h1&#125;.&#123;n&#125;'</code>配合<code>resetOn: 'h1'</code>按章编号为定理2.1、2.2……；<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>配合<code>'h2'</code>按节编号。几种样式共用的计数器照常递增，不论各样式的模板印出什么。</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code>把标签排在框第一段的开头（以列表、公式或另一个框开始的框，会为标签另起一段）；<code>'title'</code>把标签作为框的标题，按其<code>titleStyle</code>排出：“定理2（Bradley–Terry）”。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>段首标签及其后缀的字形，不受框正文的影响：正文为斜体（<code>body.italic</code>）时，直立的标签仍保持直立。括号中的标题以常规字重直立排出。</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>排在段首标签及其标题之后。</td>
+    </tr>
+  </tbody>
+</table>
+
+证明就是一个标签不编号、带结束记号的样式：
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: '定理' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: '引理', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: '定义' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: '证明', counter: false, bold: false, italic: true } },
+]
+```
+
+逐章排版的书中，计数器接着上一章继续（`LayoutContinuation.statementCounters`，由`continuationAfter`填入），全书大纲为每个编号框的锚点给出它的标签（`OutlineEntry.numberLabel`），所以从另一章引用时也能印出它。
 
 ### 框内的排版
 
@@ -8108,6 +8228,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **外观由文档决定。** 纸张、装订、桌面和光照来自文档的[`folio`设置](#书页视图配置)（`doc.config.folio`）。排在`:::paper`段落中的页面带有自己的纸张（`VDTPage.paper`），这一叶按该纸张的颜色、表面、厚度和挺度绘制。设置`binding.cover: 'pages'`时，第一页是封面纸板，最后一页（落在左页时）是封底纸板（`covers`）。报纸开本（`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）的设置若没有指定纸种和装订方式，就显示为对折的新闻纸，宿主传入自己的`folio`时也是如此。
 - **尺寸由容器决定。** 书本占满容器，按钮和页码位于边距中，所以要给容器设定高度；尺寸改变时会按新尺寸重新绘制页面。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）：书脊沿页面内侧边缘，书页绕着它翻动；朝书脊方向拖动向前翻，背离书脊滑动向后翻，轻点则翻页。
 - **指针做什么。** `interaction`（以及之后的`setInteraction`）决定鼠标左键、一根手指或一支笔在书上做什么：`'hand'`（默认）拿起书页翻动，`'orbit'`像右键拖动那样转动视角（适合触控板和平板），`'select'`把指针交给宿主程序，例如用来选择文字。`pageAt(event)`给出指针下的页面以及页面上的位置（`{ page, x, y }`，从页面左上角算起的宽高比例），按书本被看到的样子计算，倾斜或转动后也一样；`pointOnScreen(point)`反过来换算，用来在页面上画出光标或选区。`refreshPage(src)`重新显示宿主在原处重绘的页面画布。Sandbox用这些接口在3D书页上选择文字并跟随编辑器的光标。
+- **看小字的放大镜。** `interaction: 'magnify'` 在指针所在处的书上放一块带黑色边框的圆形镜片（手指触屏时，镜片停在手指上方）。它显示读者眼中的书：光照和弯曲照旧，中心放大最多，向边框处弯曲收拢。滚轮、`+` 和 `−` 调整放大倍数（`setMagnification(zoom)`，1.5 到 10；默认让页面约为每毫米 5.5 个 CSS 像素），Esc 收起；`magnifier: { zoom, diameter }` 从一开始设定两者。`createFolioFromDocument` 会把镜片下的页面按中心所需的清晰度重新绘制，报纸正文也能读清；`createFolio` 从 `detail: { paint(index, deviceWidth), release() }` 取得这些绘制。Sandbox 把它放在**放大镜**按钮上（M）。放大镜也能选取文字：指针在页面上时显示为文本光标，`pageAt` 返回镜片中心下方的点（触摸屏上在手指上方）；在 Sandbox 中，在那里单击放置插入点，拖动则选取文字。
 - **读者可以绕着书看。** 按住右键拖动可让视角绕书旋转（最低到偏离正上方70°），翻页过程中也可以；`resetView()`把视角平缓地恢复到设置中的`tilt`和`yaw`；`getView()`返回当前看到的视角（`{ tilt, yaw }`，单位为度），可以存为这两项设置。沙盒把它们做成了**重置视角**和**保存为默认视角**两个按钮。
 - **视频在页面上播放。** 无论处于哪种`interaction`模式，点击视频的封面，它就在页面上播放，翻动这一叶时也不停；再点击一次暂停，书停在不显示它的跨页上时停止。设置了`player.autoplay`的视频在它的跨页第一次出现时自动开始播放；如果它还与其他视频同时播放（`player.exclusive: false`），则每次都静音开始，翻走时停止，几段可以同时播放。相关的选项是`videos`、`videoUrl`和`onVideo`，查看器上还有`stopVideo()`；见[文档格式 › Folio视图中的视频](/zh/docs/document-format#folio视图中的视频)。
 - **先加载字体和图片。** 与`renderPage`一样，绘制页面之前，文档用到的字体必须已在`document.fonts`中加载，资源图片必须已通过`registerResourceImage`注册。

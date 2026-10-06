@@ -46,6 +46,7 @@ export interface SandboxLabels {
   folioModeHand: string;
   folioModeOrbit: string;
   folioModeSelect: string;
+  folioModeMagnify: string;
 
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;
@@ -390,6 +391,7 @@ export interface SandboxLabels {
   footnotesNumberingColumn: string;
   footnotesNumberFormat: string;
   footnotesNumberFormatTooltip: string;
+  footnotesNumberFormatSymbols: string;
   footnotesMarkerPosition: string;
   footnotesMarkerPositionTooltip: string;
   footnotesMarkerTemplate: string;
@@ -2401,6 +2403,10 @@ export interface SandboxLabels {
   citationsBibliographyScopeBook: string;
   citationsBibliographyScopeChapter: string;
   citationsBibliographyScopeTooltip: string;
+  citationsNumbering: string;
+  citationsNumberingBook: string;
+  citationsNumberingChapter: string;
+  citationsNumberingTooltip: string;
   citationsBibliographyAuto: string;
   citationsBibliographyAutoTooltip: string;
   citationsBibliographyFontSize: string;

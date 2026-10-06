@@ -1,0 +1,73 @@
+---
+title: "Un artículo de proteínas con sección de Métodos"
+summary: "El artículo de AlphaFold recompuesto en A4: resumen en negrita a todo el ancho, citas voladas de Nature y Métodos en cuerpo menor que siguen la numeración."
+plain: "Un artículo de biología muy citado, abreviado y compuesto de nuevo como en una revista. Los Métodos van después del texto, en letra más pequeña, y sus referencias siguen contando desde donde lo dejó el texto principal."
+description: "El artículo de AlphaFold con Postext: citas voladas al estilo Nature, Métodos en cuerpo menor con la numeración seguida, 34 autores y una figura del PDB."
+question: "¿Cómo compongo los Métodos en cuerpo menor tras el texto principal, con las citas siguiendo la numeración?"
+aliases: ["sección de Métodos", "estilo Nature", "citas en superíndice", "ciencias de la vida", "biología estructural", "biología computacional", "AlphaFold", "estructura de proteínas", "PDB", "pLDDT", "lista larga de autores", "resumen", "disponibilidad de datos", "disponibilidad del código", "Jumper et al. 2021"]
+pageNotes: { "1": "Página 1: una banda azul oscuro con ARTICLE · STRUCTURAL BIOLOGY en versales blancas, el título en dos líneas, Highly accurate protein structure prediction with AlphaFold, en una sans negrita, los 34 autores en cuerpo pequeño con los números de filiación volados, una línea de procedencia con el DOI y la licencia, y el resumen en negrita a todo el ancho con las citas voladas de la 1–4 a la 15. Siguen cuatro líneas de texto a dos columnas y, al pie de la página, la figura 1: a, un gráfico de barras de la r.m.s.d.95 mediana, 0,96 y 1,5 Å de AlphaFold frente a 2,8 y 3,5 Å del siguiente método, con una línea discontinua en 1,4 Å; b, el esqueleto experimental de la diana T1049 en gris con el trazo del modelo dentro, en azules y amarillo según el pLDDT.", "2": "Página 2: termina la introducción y siguen las secciones The AlphaFold network y Evoformer en dos columnas justificadas con serifa, títulos en sans y números de cita volados.", "3": "Página 3: End-to-end structure prediction y la Discussion en la columna izquierda; la Discussion termina en la derecha y empiezan los Methods bajo un título mayor, en cuerpo menor, con los apartados IPA e Inputs and data sources en azul.", "4": "Página 4: el resto de los Methods, la tabla 1 de tiempos de inferencia con la fila de cabecera azul, Metrics, Data availability, Code availability y las primeras 24 referencias numeradas en la columna derecha.", "5": "Página 5: las referencias de la 25 a la 55, los agradecimientos, las filiaciones y una nota sobre esta edición en sans pequeña." }
+---
+
+## Lo que vas a componer
+
+Cinco páginas de un artículo de revista de ciencias de la vida en A4: *Highly accurate protein structure prediction with AlphaFold*, de Jumper y colaboradores, abreviado a partir de Nature con licencia CC BY 4.0. Una banda azul abre la primera página sobre el título, los 34 autores en 7,4 pt con los números de filiación volados y el resumen en negrita a todo el ancho. Al pie va la figura 1: un gráfico de barras con las precisiones de CASP14 que cita el texto y el esqueleto de la diana T1049 trazado desde el PDB, con el modelo de AlphaFold dibujado dentro y coloreado según su confianza. El texto cita con los números volados de Nature. Los Métodos siguen a la Discusión en 8,2 pt, y una obra que citan por primera vez toma el número siguiente al último del texto principal, así que una sola lista de referencias cierra el artículo.
+
+## Elaboración
+
+### 1 · Una sola numeración para el texto y los Métodos
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las citas se numeran por orden de primera aparición, así que no hay que hacer nada para seguir la cuenta: los Métodos van después del texto principal, y jackhmmer, que se cita allí por primera vez, recibe el 36, mientras que el campo de fuerzas Amber, citado antes en el texto, conserva su 30. El título de los Métodos es un título de primer nivel con estilo propio; un estilo de título abre una sección que llega hasta el siguiente título de primer nivel, y su `bodyStyle` compone el texto de esa sección en 8,2 pt sobre 10,8 pt. `breakBefore: { enabled: false }` lo deja en la columna y `runningChapter: false` mantiene en las cabeceras el título del artículo. El estilo `nature` incluido necesita un retoque: un artículo con DOI y todavía sin volumen imprimía el DOI dos veces. Para tu propio artículo, pega la exportación de tu `.bib` en un bloque `:::references{format=bibtex}` (aquí hay dos bloques, uno con las obras del texto principal y otro con las de los Métodos), cita con `[@clave]` pegado a la palabra y cambia `nature` por el estilo de tu revista.
+
+### 2 · Un bloque de título para 34 autores
+
+<Excerpt region="title" />
+
+La lista de autores es un solo atributo del título, `authors="John Jumper^1,4^, Richard Evans^1,4^, …"`, compuesto en Noto Sans de 7,4 pt a toda la medida, donde los 34 nombres ocupan cinco líneas. `inlineMarks` sube los números de filiación. Las filiaciones y la nota de contribución igual van al final, en *Author information*, como las imprime Nature, y así la primera página conserva sitio para el resumen y la figura. No se omite ningún autor: la cabecera de las páginas pares abrevia la lista a *Jumper et al.*
+
+### 3 · El resumen a todo el ancho y la figura 1 al pie
+
+<Excerpt region="resources" />
+
+El resumen es un recuadro con `span: 'page'` y sin marco, con el texto en Noto Sans seminegrita. Justo después, un segundo recuadro sin marco con `placement: 'bottom'` contiene `::resource{id="fig1"}`: el recuadro flota al pie de la primera página y las dos columnas de texto empiezan bajo el resumen, encima de él. El pie de la figura empieza con una frase en negrita, como los de Nature; el `captionPrefix` del tipo y el `labelSeparator` del estilo de pie hacen que la etiqueta diga *Fig. 1 |*. La tabla 1 va incrustada donde está, en los Métodos, con `position: 'here'`.
+
+### 4 · El esqueleto de una proteína a partir de coordenadas abiertas
+
+<Excerpt region="art" />
+
+Las coordenadas se leyeron una sola vez, al escribir la receta, de la entrada 6Y4F del PDB (CC0) y del modelo de la misma proteína en la AlphaFold Database (CC BY 4.0); se superpusieron sobre sus átomos Cα y se giraron sobre los ejes principales del experimento. El script las guarda en tres matrices cortas. Cada trazo es una cadena de segmentos de Bézier por las posiciones de los Cα, pintados del más lejano al más cercano con un halo del color del papel, que da profundidad sin sombreado. Los colores del modelo son las bandas de pLDDT que usa la AlphaFold Database, leídas de la columna de factores B de su archivo.
+
+### 5 · Letras griegas y acentos en el PDF
+
+<Excerpt region="subsets" />
+
+Fontsource parte cada fuente por sistemas de escritura. El kit carga los archivos latin, y latin-ext cuando el texto los necesita, pero no los griegos, de modo que Cα y χ saldrían en pantalla de una fuente de reserva y faltarían en el PDF. La región carga el archivo griego de cada fuente para el lienzo y da a `renderToPdf` un proveedor de fuentes que añade los archivos latin-ext y griego de una fuente cuando el texto que compone los necesita.
+
+## Variantes
+
+### Deja los Métodos en el cuerpo del texto
+
+Algunas revistas componen los Métodos con la misma letra que el texto; quita el estilo de cuerpo de la sección y conserva el título.
+
+```diff
+-  bodyStyle: { fontSize: pt(8.2), lineHeight: pt(SMALL) } };
++};
+```
+
+### Numera entre corchetes
+
+Algunas revistas del mismo campo imprimen [1] en la línea.
+
+```diff
+-  style: 'custom', customStyle: nature, // raised 1–4, "Nature 577, 706–710 (2020)." entries
++  style: 'custom', customStyle: nature, marker: 'brackets',
+```
+
+### Usa la lista Vancouver
+
+Para una revista médica, parte del estilo NLM incluido, como hace el <RecipeLink slug="medical-article-vancouver">artículo médico en estilo Vancouver</RecipeLink>.
+
+## Errores frecuentes
+
+- BibTeX lee `and others` como un autor llamado *others*. El estilo Nature escribe *et al.* tras el primer autor cuando una obra tiene seis o más, así que estas referencias listan sus seis primeros autores tomados de Crossref.
+- Nature imprime las referencias del texto principal antes de los Métodos y las nuevas después. Postext compone una sola lista: `:::bibliography{scope=chapter}` recoge todas las obras que cita un capítulo, así que una lista tras los Métodos repetiría las que vuelven a citar.
+- El `bodyStyle` de un estilo de título cambia el cuerpo y el interlineado del texto, no la rejilla base: los títulos de los Métodos usan `snapToGrid: false`, o la línea bajo cada uno saltaría a la siguiente línea de la rejilla del texto principal.

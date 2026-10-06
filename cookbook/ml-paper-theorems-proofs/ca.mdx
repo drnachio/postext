@@ -1,0 +1,69 @@
+---
+title: "Article d'IA amb teoremes i demostracions"
+summary: "L'article de DPO recompost des d'arXiv: equacions etiquetades i enllaçades, requadres de lema i teorema, demostracions amb quadrat final i cites Harvard."
+plain: "Un article famós d'aprenentatge automàtic compost de nou des de la seva font oberta, amb equacions numerades a què remetre, teoremes i lemes en requadres, demostracions i referències autor–any."
+description: "L'article de DPO (NeurIPS 2023, CC BY 4.0) abreujat: \\label i \\eqref per a les equacions, enunciats i demostracions com a amsthm i cites Harvard."
+question: "Com numero equacions, enuncio teoremes i componc demostracions, i com m'hi remeto pel número?"
+aliases: ["teorema", "lema", "definició", "demostració", "QED", "final de demostració", "amsthm", "numeració d'equacions", "eqref", "label", "referència creuada", "article d'aprenentatge automàtic", "NeurIPS", "arXiv", "preprint", "DPO", "natbib", "autor-any", "Harvard"]
+pageNotes: { "1": "Una banda pruna al capdamunt de la pàgina amb un ventall de corbes logístiques clares, l'avantítol Preprint · Machine learning · Re-set and abridged, el títol Direct Preference Optimization: Your Language Model is Secretly a Reward Model en blanc i la línia del congrés; a sota, sobre blanc, els sis autors i les seves afiliacions, el resum sota un filet pruna i, al peu, la línia de procedència i llicència.", "3": "La figura 1 al capdamunt de la pàgina: a l'esquerra, en ocre, el procés de RLHF, amb les dades de preferències ajustades a un model de recompensa i un bucle de mostreig i aprenentatge per reforç amb la política del model; a la dreta, en pruna, el de DPO, de les dades de preferències al model final per màxima versemblança. A sota continua la secció 3 amb l'equació 1.", "6": "La secció 5 amb la definició 1 i els lemes 1 i 2 al costat de filets laterals gris i pruna, el teorema 1 sobre un fons pruna pàl·lid i l'esbós de demostració amb l'equació 8.", "9": "Continua l'apèndix A.1: un bloc alineat de quatre files amb el número 10 a l'última, les equacions 11 a 13 i, ja a l'apèndix A.5, el lema 1 enunciat de nou i el començament de la seva demostració." }
+---
+
+## Què compondràs
+
+*Direct Preference Optimization*, de Rafailov, Sharma, Mitchell, Ermon, Manning i Finn (NeurIPS 2023), abreujat des de la seva font a arXiv i compost com un preprint de deu pàgines en format de 7 × 10 polzades. Una banda pruna porta el títol sobre un ventall de corbes logístiques, la forma del pes que el gradient de DPO dona a cada exemple. A sota, una sola columna àmplia de Spectral reuneix tretze equacions numerades, la definició, els lemes i el teorema de la secció 5 en requadres amb l'etiqueta en línia, un esbós de demostració i una demostració completa que acaben en un quadrat, la figura del procés redibuixada amb codi i vint obres citades en autor–any. Cada remissió a una equació, un enunciat o una secció és un enllaç, i cada número surt d'una etiqueta, com a LaTeX.
+
+## Elaboració
+
+### 1 · Etiqueta equacions i enunciats, i remet-hi per la clau
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Postext numera una fórmula destacada que porta `\tag{7}` i enllaça un `:ref` amb qualsevol [àncora](/ca/docs/document-format#referències-creuades-i-àncores), però no porta el compte d'equacions ni de teoremes. `latex()` afegeix aquest comptador abans de compondre: un `\label{eq:dpo}` dins d'una fórmula destacada es converteix en el `\tag` següent, un `:::callout{type="lemma" #lem:same-policy}` rep el número de lema següent i la seva etiqueta en línia, i `\eqref{eq:dpo}` o `\ref{lem:same-policy}` al text passen a ser un `:ref` que imprimeix el número i hi enllaça. Escriu cada fórmula amb etiqueta just sota la línia que la introdueix, sense línia en blanc, perquè aquesta línia porta l'àncora on salta l'enllaç. Les seccions no necessiten ajuda: els seus números surten de les plantilles dels títols, `{startAt=3}` conserva la numeració de l'article després de la secció 2 suprimida, i `crossRefs.section` escriu «Section 5» amb majúscula, com l'original.
+
+### 2 · Dona a cada entorn el seu requadre
+
+<Excerpt region="theorems" />
+
+Cada entorn és un [estil de requadre](/ca/docs/configuration#estils-davís) amb un sol recurs: un filet gris per a la definició, un de pruna per als lemes i un fons pruna pàl·lid per al teorema. `body.italic` posa l'enunciat en cursiva, com l'estil *plain* d'amsthm, i l'etiqueta escrita `***Theorem 1.***` torna a rodona a dins. La demostració no porta requadre: només la seva etiqueta en cursiva i el quadrat que `latex()` afegeix al final, i `keepTogether: false` deixa que una demostració llarga passi a la pàgina següent. `snapToGrid: false` manté el mateix espai al voltant de cada enunciat; en una sola columna, sense veïna amb què alinear-se, un blanc exacte es llegeix millor que un d'arrodonit a la reixeta base.
+
+### 3 · Cita en autor–any des de la bibliografia del mateix article
+
+<Excerpt region="citations" />
+
+Les referències són BibTeX dins d'un bloc `:::references{format=bibtex}`, reconstruït a partir del `.bbl` de l'article amb només les vint obres que el text abreujat encara cita. Cite Them Right Harvard les escriu «(Bong and Rinaldo, 2022)» al text i «Ouyang, L. *et al.* (2022)» a la llista, i redueix a un sol nom les autories de quatre o més. `@ziegler2020finetuning` al text dona la forma narrativa, Ziegler *et al.* (2020). La llista queda on és `:::bibliography`, després de la secció 7 i abans de l'apèndix, com a l'article.
+
+### 4 · El títol en una banda, la procedència al peu
+
+<Excerpt region="title" />
+
+El títol és l'únic títol de nivell 1, i el seu estil `paper` dibuixa al seu lloc una ranura d'elements: la banda sagna pel capdamunt de la pàgina, el títol s'ajusta a la mesura i els autors i les afiliacions surten dels atributs del títol, amb ¹ ² i * escrits com a caràcters. L'element del peu amb `pages: 'opener'` imprimeix la font, la llicència i els canvis només a la pàgina 1, perquè la primera pàgina digui d'on ve el text encara que circuli sola.
+
+### 5 · Redibuixa la figura amb codi
+
+<Excerpt region="art" />
+
+La figura 1 es dibuixa en SVG a partir de les caixes i les paraules de l'original. Un SVG que es pinta com a imatge no veu les fonts web de la pàgina, així que `inlineFace()` incrusta els dos fitxers de Work Sans que fan servir els rètols, i `tex()` escriu `y_w ≻ y_l` com a traços de MathJax, els mateixos glifs de les equacions. Les puntes de fletxa són traçats i no marcadors SVG, i per això la figura continua sent vectorial al PDF.
+
+## Variants
+
+### Cita amb números, com la plantilla de NeurIPS
+
+L'article original fa servir les cites numerades de natbib; IEEE posa [1] al text i numera la llista per ordre de cita.
+
+```diff
+-const citations = { style: 'harvard-cite-them-right', link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Compta lemes i teoremes junts
+
+Algunes revistes numeren tots els enunciats en una sola sèrie (lema 1, lema 2, teorema 3). Fes que tots els tipus comparteixin un comptador.
+
+```diff
+-    labels.set(key, String((count[kind] = (count[kind] ?? 0) + 1)));
++    labels.set(key, String((count.statement = (count.statement ?? 0) + 1)));
+```
+
+## Errors freqüents
+
+- Un `:ref` dins d'una etiqueta en negreta pren l'estil de les referències, no la negreta que l'envolta: a «Lemma 1 Restated.» el número sortiria en rodona normal. Escriu com a text el número d'una etiqueta repetida.
+- L'equilibrat de columnes baixa un requadre que tanca una pàgina curta fins al peu, i aquí obria un buit sota el bloc del títol. `balancing: { enabled: false }` deixa el resum sota els autors i els títols de secció amb el seu espai de sempre, a canvi que una pàgina pugui acabar una línia més amunt.
+- Una fórmula amb un rètol de `\underbrace` més ample que la clau, com el gradient de la secció 4, necessita un tall amb `aligned`; si queda més ampla que la mesura, surt per la dreta.

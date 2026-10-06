@@ -566,6 +566,10 @@ export interface ContentBlock {
   /** Set on the paragraphs the layout builds to set a note (`chapterEnd`
    *  placement): the id of the note. */
   footnoteNote?: string;
+  /** The block ends with its callout style's end mark (a proof's ∎,
+   *  #530), the last character of its text: the layout sets it flush
+   *  right on the last line. */
+  endMark?: string;
   /** Set on a bibliography entry (#269): the key of the work it lists. The
    *  entry is the anchor `ref-<key>` citations link to. */
   bibEntry?: string;

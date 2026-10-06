@@ -177,7 +177,7 @@ export function schemaErrors(value: unknown, schema: JsonSchema, root: JsonSchem
 // ─── recipe.json schema ─────────────────────────────────────────────────────
 
 const LICENSES = [
-  "original", "PD", "CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0", "OFL-1.1", "Apache-2.0", "MIT",
+  "original", "PD", "CC0-1.0", "CC-BY", "CC-BY-3.0", "CC-BY-4.0", "CC-BY-SA-4.0", "OFL-1.1", "Apache-2.0", "MIT",
   "reproduction-authorised",
 ] as const;
 

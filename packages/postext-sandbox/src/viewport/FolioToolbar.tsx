@@ -1,7 +1,7 @@
 'use client';
 
 import type { FocusEventHandler } from 'react';
-import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, Save, TextCursor } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, Save, Search, TextCursor } from 'lucide-react';
 import type { FolioInteraction } from 'postext-folio';
 import { useSandboxLabels } from '../context/SandboxContext';
 import {
@@ -124,6 +124,12 @@ export function FolioToolbar({
           label={labels.folioModeSelect}
           onClick={() => onSetInteraction('select')}
           active={interaction === 'select'}
+        />
+        <ToolbarButton
+          icon={<Search size={16} aria-hidden="true" />}
+          label={labels.folioModeMagnify}
+          onClick={() => onSetInteraction('magnify')}
+          active={interaction === 'magnify'}
         />
       </div>
       <ToolbarSeparator />

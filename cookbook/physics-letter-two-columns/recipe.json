@@ -1,0 +1,178 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 140,
+  "status": "published",
+  "chapter": "figures",
+  "order": 90,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "inline-embeds",
+      "float-placement",
+      "citation-styles"
+    ],
+    "also": [
+      "math",
+      "cell-images",
+      "figure-numbering",
+      "resource-types",
+      "captions",
+      "credit-notes",
+      "footnotes",
+      "span-boxes",
+      "callout-styles",
+      "heading-styles",
+      "heading-numbering",
+      "heading-attributes",
+      "opener-design",
+      "running-heads",
+      "generated-bibliography",
+      "paragraph-styles",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q158",
+    "Q64",
+    "Q48",
+    "Q154"
+  ],
+  "gaps": [
+    "math-in-captions"
+  ],
+  "gotchas": [
+    "math-bundle",
+    "svg-no-webfonts",
+    "headings-drop-h1-break",
+    "fonts-first",
+    "quote-frontmatter",
+    "config-cache-identity"
+  ],
+  "related": [
+    "journal-article-with-maths",
+    "ieee-conference-paper",
+    "medical-article-vancouver",
+    "figures-float-where-cited"
+  ],
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0",
+    "math": true
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0.01,
+      "y": 0,
+      "w": 0.98,
+      "h": 0.5
+    },
+    "pages": "all",
+    "expect": {
+      "console": [
+        "module \"buffer\" not found",
+        "module \"esprima\" not found"
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 80,
+      "texture": "smooth"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#25578a"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#dde3ea"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Text: B. P. Abbott et al. (LIGO Scientific Collaboration and Virgo Collaboration), “Observation of Gravitational Waves from a Binary Black Hole Merger”, Phys. Rev. Lett. 116, 061102 (2016), doi:10.1103/PhysRevLett.116.061102. Abridged from the published letter (Sections IV and VII, parts of Sections I, III, V and VI and most of the acknowledgments cut; sections and references renumbered); figures redrawn; figure captions shortened. Licence: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/",
+          "es": "Texto: B. P. Abbott et al. (LIGO Scientific Collaboration y Virgo Collaboration), «Observation of Gravitational Waves from a Binary Black Hole Merger», Phys. Rev. Lett. 116, 061102 (2016), doi:10.1103/PhysRevLett.116.061102. Versión abreviada de la carta publicada (se suprimen las secciones IV y VII, partes de las secciones I, III, V y VI y casi todos los agradecimientos; secciones y referencias renumeradas); figuras redibujadas; pies acortados. Licencia: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/"
+        },
+        "who": "LIGO Scientific Collaboration and Virgo Collaboration",
+        "source": "https://doi.org/10.1103/PhysRevLett.116.061102",
+        "license": "CC-BY-3.0"
+      },
+      {
+        "what": {
+          "en": "Data for Figures 1, 2 and 4: the GW150914 data files released by the Gravitational Wave Open Science Center (gwosc.org), a service of the LIGO Scientific Collaboration, the Virgo Collaboration and KAGRA; redrawn in code",
+          "es": "Datos de las figuras 1, 2 y 4: los ficheros de GW150914 publicados por el Gravitational Wave Open Science Center (gwosc.org), un servicio de LIGO Scientific Collaboration, Virgo Collaboration y KAGRA; redibujados en código"
+        },
+        "who": "LIGO Scientific Collaboration and Virgo Collaboration, GWOSC",
+        "source": "https://gwosc.org/events/GW150914/",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Gelasio",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Albert Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "a ::resource with placement { position: 'here', span: 'page' } in a 'double' layout is set one column wide: Figure 1 sits inside a callout whose style has span: 'page' (the plate box), which gives it the full measure"
+    },
+    {
+      "package": "postext",
+      "note": "table cells and captions take no maths: each Table I value is a MathJax SVG drawn in its cell with TableCell.image, its width a fraction of the cell's inner width; captions keep to ^sup^ and ~sub~ and no Greek"
+    }
+  ],
+  "created": "2026-10-06",
+  "updated": "2026-10-06"
+}

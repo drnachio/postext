@@ -18,6 +18,7 @@ import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf, nu
 import { tashkilFor } from './tashkil';
 import { partMarkPages, planParts } from './parts';
 import { withBookTitleBrackets } from './annotations';
+import { numberStatements, type StatementCounterState } from './statementNumbering';
 
 /** Whether the parsed content holds a `:::toc` directive. */
 export function hasTocDirective(blocks: readonly ContentBlock[]): boolean {
@@ -132,6 +133,25 @@ export function computeOutline(
   blocks: readonly ContentBlock[],
   resolved: ResolvedConfig,
   before?: HeadingCounters,
+  /** The equation and statement counters the preceding content left
+   *  (`LayoutContinuation.statementCounters`, #530). */
+  counters?: StatementCounterState,
+): OutlineEntry[] {
+  // Labelled equations and counted boxes (#530): their anchors carry the
+  // number a reference prints.
+  const counted = numberStatements(blocks, resolved, { ...(before ? { headings: before } : {}), ...(counters ? { counters } : {}) }).targets;
+  const entries = computeOutlineEntries(blocks, resolved, before);
+  if (counted.size === 0) return entries;
+  return entries.map((e) => {
+    const t = e.kind === 'anchor' && e.anchorId !== undefined ? counted.get(e.anchorId) : undefined;
+    return t ? { ...e, number: t.number, numbered: true, numberLabel: t.label } : e;
+  });
+}
+
+function computeOutlineEntries(
+  blocks: readonly ContentBlock[],
+  resolved: ResolvedConfig,
+  before?: HeadingCounters,
 ): OutlineEntry[] {
   // Headings whose marks the configuration leaves off list plain (EF-122).
   // Arabic vowel marks out under `bodyText.tashkil` (#376), as in the
@@ -221,8 +241,9 @@ export function computeOutlineFor(
   blocks: readonly ContentBlock[],
   config: PostextConfig | undefined,
   before?: HeadingCounters,
+  counters?: StatementCounterState,
 ): OutlineEntry[] {
-  return computeOutline(blocks, resolveAllConfig(config), before);
+  return computeOutline(blocks, resolveAllConfig(config), before, counters);
 }
 
 /**
@@ -303,6 +324,7 @@ export function outlineKey(entries: readonly OutlineEntry[] | undefined): string
     e.indexMark ? indexMarkKey(e.indexMark) : '',
     e.anchorId ?? '',
     e.anchorSource ?? '',
+    e.numberLabel ?? '',
   ].join('|')).join('\n');
 }
 

@@ -1,0 +1,457 @@
+{
+  "schemaVersion": 1,
+  "slug": "physics-letter-two-columns",
+  "sourceHash": "d24ccc3cd6b3f2abde39950318044b77094816ff11982f9aadc72428182b051e",
+  "engine": {
+    "postext": "1.18.0",
+    "postextPdf": "1.18.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-06T13:41:30.603Z",
+  "variants": {
+    "en": {
+      "hash8": "9dc550de",
+      "vdtHash": "cd6e76a673264054142ae798d5b3f2042082ddca",
+      "timings": {
+        "importMs": 253,
+        "fontsMs": 141,
+        "buildMs": 57,
+        "totalMs": 1258,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          215.9,
+          279.40000000000003
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Gelasio",
+          "sizePt": 9.3,
+          "leadingPt": 12.4
+        },
+        "families": [
+          "Albert Sans",
+          "Gelasio"
+        ],
+        "pages": 5,
+        "ownLines": 210
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1294,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 154622,
+          "alt": "Opening page 1: Observation of Gravitational Waves from a Binary Black Hole Merger. FIG. 1. The gravitational-wave event GW150914 observed by the LIGO Hanford (H1, left column panels) and Livingston (L1, right column panels) detectors. Times are shown relative to September 14,…"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1294,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 243094,
+          "alt": "Page 2: II. Observation."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1294,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 177494,
+          "alt": "Page 3: IV. Searches. FIG. 2. Top: Estimated gravitational-wave strain amplitude from GW150914 projected onto H1. This shows the full bandwidth of the waveforms, without the filtering used for Fig. 1. Bottom: The Keplerian effective black hole separation in units of Schwarzsch…"
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1294,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 185160,
+          "alt": "Page 4: V. Source discussion. FIG. 4. Search results from the generic transient search (left) and the binary coalescence search (right). These histograms show the number of candidate events (orange markers) and the mean number of background events (black lines) in the search c…"
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1294,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 218472,
+          "alt": "Page 5: VI. Conclusion. TABLE I. Source parameters for GW150914. We report median values with 90% credible intervals that include statistical errors, and systematic errors from averaging the results of different waveform models. Masses are given in the source frame; to convert…"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "physics-letter-two-columns.pdf",
+        "bytes": 571366,
+        "pages": 5
+      },
+      "sandbox": {
+        "file": "physics-letter-two-columns.postext",
+        "bytes": 173714,
+        "folio": "72637274"
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "initMathEngine",
+          "registerCitationEngine",
+          "registerResourceImage",
+          "renderMath",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].border",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].span",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.lineHeight",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.customStyle",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.numberFormat",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "math",
+          "math.marginBottom",
+          "math.marginTop",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackgroundEnabled",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "citations",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "math",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 317,
+        "designElements": 8,
+        "directives": [
+          ":::callout",
+          "::resource",
+          ":::paragraphs",
+          "$$",
+          ":::bibliography",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          "$…$",
+          "^…^",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 10,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Albert Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Albert Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Albert Sans",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Albert Sans",
+            "weight": 600,
+            "style": "italic"
+          },
+          {
+            "family": "Albert Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Albert Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Gelasio",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Gelasio",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Gelasio",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "citation-styles",
+          "figure-citations",
+          "footnotes",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "localised-labels",
+          "math",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "super-subscripts",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 2,
+          "share": 0.0085,
+          "worst": 2.11
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.12 MB (warning at 0.9 MB for 5 pages)"
+          }
+        ]
+      }
+    }
+  }
+}

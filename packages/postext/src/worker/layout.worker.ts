@@ -3,6 +3,7 @@
 import { buildDocumentAsync, BuildCancelledError } from '../pipeline';
 import type { BuildPassInfo } from '../pipeline/build';
 import { initMathEngine, isMathReady } from '../math';
+import { contentHasMath } from '../parse/inlineSnippet';
 import { citationEngine, ensureCitationEngine, mayNeedCitations } from '../citations/registry';
 import { createMeasurementCache, clearMeasurementCache } from '../measure';
 import type { MeasurementCache } from '../measure';
@@ -188,13 +189,15 @@ async function runBuild(msg: BuildRequest): Promise<void> {
     }
     // Bring MathJax up before the build path calls renderMath — otherwise
     // the VDT receives placeholder MathRenders and inline formulas paint as
-    // grey boxes instead of glyphs. Skipped for docs that contain no `$…$`.
+    // grey boxes instead of glyphs. Skipped for docs that contain no `$…$`,
+    // in the text or in a caption, a note or a table cell (#541).
     // The citation engine (when the host set a loader) before a document
     // that cites works.
-    if (!citationEngine() && mayNeedCitations(content.markdown)) {
+    // A chapter placing a figure whose caption cites (#529) needs it too.
+    if (!citationEngine() && (mayNeedCitations(content.markdown) || content.citations?.captions !== undefined)) {
       await ensureCitationEngine();
     }
-    if (!isMathReady() && /\$/.test(content.markdown)) {
+    if (!isMathReady() && contentHasMath(content)) {
       await initMathEngine();
       if (cancelRequestedFor === msg.id) {
         post({ kind: 'cancelled', id: msg.id });

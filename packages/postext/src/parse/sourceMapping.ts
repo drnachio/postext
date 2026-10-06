@@ -18,6 +18,15 @@ function isSmallCapsOpenerAt(markdown: string, r: number, end: number): boolean 
   return false;
 }
 
+/** Whether a reference opens at `r`: `:ref{`, or LaTeX's `\ref{` or
+ *  `\eqref{` (#530). */
+function refOpenerAt(markdown: string, r: number): boolean {
+  const c = markdown[r];
+  if (c === ':') return markdown.startsWith(':ref{', r);
+  if (c === '\\') return markdown.startsWith('\\ref{', r) || markdown.startsWith('\\eqref{', r);
+  return false;
+}
+
 /**
  * Build a per-character map from plain text to absolute source offsets.
  * Greedy matches each plain char against the raw source (delimited by
@@ -67,17 +76,9 @@ export function computeSourceMap(
     // Ref placeholder: the plain char represents `:ref{…}` in the markdown.
     // Advance to the leading `:`, map to it, then skip past the closing `}`
     // so subsequent plain chars keep aligning with the source.
+    // LaTeX's `\ref{…}` / `\eqref{…}` (#530) stand for one too.
     if (ch === REF_PLACEHOLDER) {
-      while (
-        r < blockSrcEnd
-        && !(
-          markdown[r] === ':'
-          && markdown[r + 1] === 'r'
-          && markdown[r + 2] === 'e'
-          && markdown[r + 3] === 'f'
-          && markdown[r + 4] === '{'
-        )
-      ) r++;
+      while (r < blockSrcEnd && !refOpenerAt(markdown, r)) r++;
       if (r >= blockSrcEnd) {
         map[p] = blockSrcEnd;
         continue;
@@ -165,6 +166,17 @@ export function computeSourceMap(
       map[p] = r;
       r += breakAt(r);
       continue;
+    }
+    // The tie of `Eq.~\eqref{…}` (#530) is the no-break space before the
+    // reference.
+    if (ch === '\u00a0' && plainText[p + 1] === REF_PLACEHOLDER) {
+      let j = r;
+      while (j < blockSrcEnd && markdown[j] !== '\u00a0' && !(markdown[j] === '~' && refOpenerAt(markdown, j + 1))) j++;
+      if (j < blockSrcEnd) {
+        map[p] = j;
+        r = j + 1;
+        continue;
+      }
     }
     const isSpace = ch === ' ';
     while (r < blockSrcEnd) {

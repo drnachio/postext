@@ -1,0 +1,67 @@
+---
+title: "Un boletín semanal: los primeros informes del sida"
+summary: "Dos informes de los CDC de 1981 en un boletín tamaño carta: cabecera, casos con etiquetas en línea, estilos para Reported by y la nota editorial, citas."
+plain: "Un boletín de salud pública de 1981, compuesto de nuevo en papel carta. Cada tipo de párrafo (los casos, la lista de médicos que los comunicaron, el comentario de la redacción) tiene su aspecto, y las referencias se numeran solas."
+description: "Un boletín epidemiológico semanal con Postext: cabecera, casos clínicos, estilos de párrafo para Reported by y la nota editorial, citas AMA entre paréntesis."
+question: "¿Cómo compongo un informe de boletín semanal, con casos clínicos, nota editorial y referencias numeradas?"
+aliases: ["MMWR", "boletín epidemiológico", "serie de casos", "caso clínico", "informe de vigilancia", "salud pública", "Reported by", "nota editorial", "enfermedades de declaración obligatoria", "estilo AMA", "sida", "1981"]
+pageNotes: { "1": "Página 1: una banda azul oscuro con la marca Surveillance Notes en blanco, debajo una línea de número y un sumario de tres entradas, un filete doble y el primer informe, Pneumocystis Pneumonia — Los Angeles, del 5 de junio de 1981. Dos columnas abren los casos con las etiquetas Patient 1, Patient 2 y Patient 3 en negrita azul; al pie de la columna izquierda, una nota sobre muestras pareadas. Al pie de la página, la Figura 1: una cronología de los cinco pacientes de septiembre de 1980 a mayo de 1981, con barras grises para la enfermedad previa a la neumonía, puntos azules para el mes del diagnóstico, rombos huecos para los hallazgos de CMV con fecha y aspas para las dos muertes.", "2": "Página 2: la Tabla 1, los cinco casos de un vistazo (edad, mes del diagnóstico, pruebas de CMV, otros hallazgos, evolución), a todo el ancho; debajo, los últimos casos, el párrafo de síntesis, la línea Reported by en cursiva pequeña gris y el comienzo de la Editorial Note, con la etiqueta en negrita azul.", "3": "Página 3: el final de la nota editorial y cinco referencias numeradas en la columna izquierda; bajo un filete doble, el segundo informe, Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California, empieza al pie de la columna, y su Tabla 1, los síntomas de presentación de 20 pacientes, queda al pie de la columna derecha.", "4": "Página 4: sigue el informe de julio, con una larga lista Reported by en cursiva pequeña y su nota editorial.", "5": "Página 5: las referencias del informe de julio, numeradas 4 y de 6 a 23, equilibradas en dos columnas.", "6": "Página 6: una contraportada a una columna, Notifiable Diseases — United States, con la tabla semanal de 29 enfermedades bajo una cabecera de dos filas, y el colofón." }
+---
+
+## Lo que vas a componer
+
+Seis páginas de un boletín epidemiológico semanal en tamaño carta US, que reproducen los dos informes en los que los Centros para el Control de Enfermedades (CDC) describieron por primera vez lo que después se llamó sida: cinco casos de neumonía por *Pneumocystis* en Los Ángeles (5 de junio de 1981) y los casos de sarcoma de Kaposi que vinieron después (3 de julio de 1981). La cabecera es un diseño propio al estilo de un boletín oficial de la época: una banda azul con la marca en una sans condensada sobre dos columnas de Plex Serif. Cada voz del informe tiene su estilo: los casos bajo etiquetas numeradas en negrita, la línea *Reported by* en cursiva pequeña, la *Editorial Note*, las citas entre paréntesis y una lista numerada. El texto, las referencias y las tablas son los que imprimieron los CDC; la cronología y la tabla de casos de la página 2 son de la edición.
+
+## Elaboración
+
+### 1 · Un estilo de párrafo para cada voz
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un informe de boletín se escribe en varios registros: los casos, la lista de quienes los comunicaron y el comentario de la redacción. Envolver cada tramo en `:::paragraphs{style="…"}` le da su aspecto sin tocar las palabras: la línea *Reported by* baja a 7,8 pt en cursiva condensada, fuera de la rejilla base, mientras los casos conservan la textura del cuerpo con sus etiquetas `**Patient 1:**` en el color de acento. Las citas se escriben `[@walzer1974]`; `american-medical-association` con `marker: 'parentheses'` las imprime como (1) y ordena la lista por orden de cita, como hacía el boletín, y `scope: 'chapter'` pone una lista bajo cada informe.
+
+### 2 · Una cabecera que abre el primer informe
+
+<Excerpt region="masthead" />
+
+La cabecera es el diseño del estilo de título del primer informe, así que se imprime una sola vez, en la página 1, y las cabeceras de página se la saltan (`pages: 'body'`). El antetítulo, el título y la fecha salen de atributos del H1 de cada informe. `display` lleva el título con el género en cursiva, porque `{titleText}` es texto sin formato. El segundo informe usa esos tres elementos al ancho de una columna: un título con `span: 'page'` empieza siempre página, y un boletín encadena sus informes.
+
+### 3 · Tres tablas a partir de texto con tabuladores
+
+<Excerpt region="resources" />
+
+Cada tabla es una ranura de contenido con texto separado por tabuladores, el formato que copia una hoja de cálculo, y `parseTSV` la convierte en un modelo. Una columna de cifras se alinea a la derecha con su cabecera centrada; cuatro llamadas a `mergeCells` forman la cabecera de dos filas del resumen de enfermedades de declaración obligatoria. El tipo tabla reinicia su contador en cada H1 (`resetOn: 'h1'`), de modo que cada informe tiene su Tabla 1, como en 1981.
+
+### 4 · Un solo azul, enlazado en todas partes
+
+<Excerpt region="palette" />
+
+La banda, las etiquetas, los folios, las cabeceras de tabla y el gráfico nombran la misma entrada de la paleta: quien cambie `accent` por el color de su boletín recolorea las seis páginas de una vez.
+
+## Variantes
+
+### Números de referencia volados
+
+Casi todas las revistas médicas suben los números en vez de ponerlos entre paréntesis.
+
+```diff
+-const citations = { style: 'american-medical-association', marker: 'parentheses',
++const citations = { style: 'american-medical-association', marker: 'superscript',
+```
+
+### Cada informe en página nueva
+
+Una serie de reimpresiones que archiva los informes por separado abre cada uno en página nueva.
+
+```diff
+-    { level: 1, breakBefore: { enabled: false } },
++    { level: 1, breakBefore: { enabled: true, parity: 'any' } },
+```
+
+### La lista al modo Vancouver
+
+<RecipeLink slug="medical-article-vancouver">Un artículo médico en estilo Vancouver</RecipeLink> retoca el estilo `elsevier-vancouver` incluido para seguir la forma de referencia de la NLM.
+
+## Errores frecuentes
+
+- Los números de referencia siguen en todo el documento: citeproc numera todas las citas del documento (o de un libro de `buildBundle`) en una sola secuencia, y `scope: 'chapter'` solo separa las listas. Aquí el informe de julio cita las obras 4 y de 6 a 23, donde el boletín imprimió de 1 a 19, y el colofón lo advierte. Para numerar cada informe desde 1, compón cada uno con su propio `buildDocument` y encadénalos con `continuation`.
+- La llamada de una nota al pie es un número: Postext no tiene la serie de asterisco y cruz, así que el asterisco de 1981 en *Paired specimens not run in parallel* sale como 1.
+- El texto de 1981 queda como se imprimió, con la terminología de la época, y el colofón lo dice. Una reimpresión no corrige el texto que reproduce; lo que añade la edición (la cronología, la tabla de casos, la línea en cursiva azul bajo el primer párrafo) va en su propio estilo y rotulado.

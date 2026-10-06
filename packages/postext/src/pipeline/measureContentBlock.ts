@@ -31,8 +31,10 @@ import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRe
 import { chipContextOf, resolveChipSpans } from './chips';
 import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
+import type { CaptionCitations } from './citations';
 import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
+import { flushEndMark } from './statementNumbering';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 import { dimensionToPx } from '../units';
 import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
@@ -56,6 +58,8 @@ export interface BlockMeasureContext
   resources: Resource[];
   resourceTypes: ResourceType[];
   resourceNumbering: ResourceNumberingMap;
+  /** The formatted citations of resource captions and notes (#529). */
+  captionCitations?: ReadonlyMap<string, CaptionCitations>;
   /** Ids of resources that float to page bands (never placed inline). */
   floatedIds: ReadonlySet<string>;
   /** Content indices of the `containerStart` markers of the boxes that left
@@ -190,6 +194,7 @@ export function measureContentBlock(
       resources: ctx.resources,
       resourceTypes: ctx.resourceTypes,
       resourceNumbering: ctx.resourceNumbering,
+      ...(ctx.captionCitations ? { captionCitations: ctx.captionCitations } : {}),
       resource: kind.resource,
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
@@ -461,7 +466,8 @@ export function measureContentBlock(
   // segments of their own, so the link covers them and nothing else (the
   // lines are the same on both paths).
   const cjkLinks = contentBlock.spans.some((s) => s.links !== undefined && s.links.length > 0) && composesAsCjk(contentBlock.text);
-  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned || cjkLinks);
+  // A box's end mark (#530) is moved on its line segment by segment.
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned || cjkLinks || contentBlock.endMark !== undefined);
 
   const first = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
@@ -541,6 +547,10 @@ export function measureContentBlock(
   }
 
   if (measured.lines.length === 0) return null;
+
+  // A callout style's end mark (a proof's ∎, #530): flush right on the
+  // last line.
+  if (contentBlock.endMark !== undefined) measured = flushEndMark(measured, contentBlock.endMark, measureMaxWidth);
 
   // A paragraph whose direction opposes its frame's (the document's: a
   // right-to-left document's pages are mirrored, #370), such as an Arabic

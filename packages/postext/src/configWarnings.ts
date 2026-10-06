@@ -27,6 +27,7 @@ import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
 import { isDigitSystem } from './locale';
 import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText';
+import { parseFootnoteNumberFormat } from './defaults/footnotes';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -137,14 +138,14 @@ const BALANCING_KEYS = {
 const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
   marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
-  breakBefore: true, span: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
+  breakBefore: true, span: true, spanBreak: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
   lineSpan: true, indent: true, jidori: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
   margins: true, layout: true, bodyStyle: true, palette: true,
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
-  marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
+  marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true, spanBreak: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, lineSpan: true, indent: true, jidori: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {
@@ -245,7 +246,9 @@ function collectValueWarnings(config: PostextConfig): ConfigWarning[] {
       const at = path ? `${path}.${key}` : key;
       if (typeof value === 'string') {
         const fallback = numberFormatFallback(key, parentKey);
-        if (fallback !== undefined && parseNumberFormat(value) === undefined) {
+        // Footnotes take reference symbols too (`'symbols'`, #538).
+        const known = key === 'numberFormat' && parentKey === 'footnotes' ? parseFootnoteNumberFormat(value) : parseNumberFormat(value);
+        if (fallback !== undefined && known === undefined) {
           out.push({ kind: 'unknownNumberFormat', path: at, value, used: fallback });
         } else if (isFontFamilyKey(key) && isFontStack(value)) {
           out.push({ kind: 'fontFamilyStack', path: at, value, used: primaryFontFamily(value) });

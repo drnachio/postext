@@ -1,0 +1,73 @@
+---
+title: "Methodsのあるタンパク質構造の論文"
+summary: "AlphaFoldの論文をA4で組み直す：全幅の太字要約、Nature式の上付き引用、本文の後に小さな文字で組むMethods、その引用番号は本文から続く。"
+plain: "よく引用される生物学の論文を抄録し、学術誌の体裁で組み直したもの。Methodsは本文の後に小さな文字で置かれ、その参考文献の番号は本文が終わったところから続きます。"
+description: "AlphaFold論文をPostextで組む：Nature式の上付き引用、番号が続く小さな文字のMethods、34名の著者、PDBのデータから描いた図。"
+question: "本文の後にMethodsを小さな文字で組み、引用番号を本文から続けるにはどうすればよいですか？"
+aliases: ["Methods", "方法", "Nature形式", "上付き引用", "生命科学", "構造生物学", "計算生物学", "AlphaFold", "タンパク質構造", "PDB", "pLDDT", "長い著者リスト", "要約", "データの入手方法", "コードの入手方法", "Jumper et al. 2021"]
+pageNotes: { "1": "1ページ：濃い青の帯に白の大文字でARTICLE · STRUCTURAL BIOLOGY。サンセリフ太字の2行の表題Highly accurate protein structure prediction with AlphaFold、上付きの所属番号を付けた34名の著者を小さな文字で、DOIとライセンスを記した出典行、続いて全幅に太字の要約があり、上付きの引用1–4から15を含む。その下に2段組の本文が4行、ページの下部に図1。aはCASP14の中央値r.m.s.d.95の棒グラフで、AlphaFoldが0.96と1.5 Å、次点の手法が2.8と3.5 Å、1.4 Åに破線。bは標的T1049の実験構造の主鎖を灰色で描き、その中にpLDDTに応じて青と黄で塗ったモデルの線を重ねたもの。", "2": "2ページ：序論が終わり、The AlphaFold networkとEvoformerの節が、両端揃えのセリフ体2段組、サンセリフの見出し、上付きの引用番号で続く。", "3": "3ページ：左段にEnd-to-end structure predictionとDiscussion。Discussionは右段で終わり、大きな見出しの下でMethodsが小さな文字で始まり、青い小見出しIPAとInputs and data sourcesがある。", "4": "4ページ：Methodsの残り、見出し行が青い推論時間の表1、Metrics、Data availability、Code availability、右段に番号付き参考文献の最初の24件。", "5": "5ページ：参考文献25から55、続いて謝辞、所属、この版についての注記を小さなサンセリフで。" }
+---
+
+## できあがり
+
+A4に組んだ生命科学の学術誌論文5ページ。Jumperらの*Highly accurate protein structure prediction with AlphaFold*を、CC BY 4.0のもとでNatureから抄録したものです。1ページ目は青い帯で始まり、その下に表題、7.4 ptで組んだ34名全員の著者（所属番号は上付き）、全幅の太字の要約が続きます。ページの下部には図1。本文が引用するCASP14の精度の棒グラフと、PDBからたどった標的T1049の主鎖の中にAlphaFoldのモデルを信頼度で色分けして描いた図です。本文はNatureの上付き番号で引用します。MethodsはDiscussionの後に8.2 ptで続き、そこで初めて引用される文献は本文の最後の番号の次を取るので、論文の最後に参考文献リストが一つだけ置かれます。
+
+## 作り方
+
+### 1 · 本文とMethodsで一つの番号
+
+コードは上の[手短な答え](#手短な答え)です。引用は初出順に番号が振られるので、番号を続けるための設定は要りません。Methodsは本文の後にあり、そこで初めて引用されるjackhmmerは36、本文ですでに引用されたAmber力場は30のままです。Methodsの見出しは独自のスタイルを持つ第1レベルの見出しです。見出しスタイルは次の第1レベルの見出しまで続くセクションを開き、その`bodyStyle`がセクションの本文を8.2 pt、行送り10.8 ptで組みます。`breakBefore: { enabled: false }`で段の中にとどめ、`runningChapter: false`で柱を論文の表題のままにします。同梱の`nature`スタイルには一か所だけ手を入れます。DOIはあるがまだ巻号のない論文では、DOIが二度印字されていたためです。自分の論文では、`.bib`の書き出しを`:::references{format=bibtex}`ブロックに貼り付け（ここでは本文の文献とMethodsの文献で二つのブロックに分けています）、語の直後に`[@key]`で引用し、`nature`を投稿先のスタイルに替えます。
+
+### 2 · 34名の著者を収める表題ブロック
+
+<Excerpt region="title" />
+
+著者リストは見出しの属性一つ、`authors="John Jumper^1,4^, Richard Evans^1,4^, …"`で、7.4 ptのNoto Sansで版面の全幅に組み、34名が5行に収まります。`inlineMarks`が所属番号を上付きにします。所属と同等貢献の注記はNatureと同じく末尾の*Author information*に置き、1ページ目に要約と図の場所を残します。著者は一人も省いていません。偶数ページの柱だけがリストを*Jumper et al.*と略します。
+
+### 3 · 全幅の要約と、ページ下部の図1
+
+<Excerpt region="resources" />
+
+要約は`span: 'page'`で枠のない囲みで、文字はNoto Sansのセミボールドです。その直後に、`placement: 'bottom'`を指定した枠のない二つ目の囲みが`::resource{id="fig1"}`を持ちます。この囲みは1ページ目の下部へ移動し、2段の本文は要約の下、図の上から始まります。図の説明文はNatureの説明文と同じく太字の一文で始まります。リソース型の`captionPrefix`と説明文スタイルの`labelSeparator`で、ラベルは*Fig. 1 |*になります。表1は`position: 'here'`でMethodsのその位置に埋め込みます。
+
+### 4 · 公開座標から描いたタンパク質の主鎖
+
+<Excerpt region="art" />
+
+座標はレシピを書いたときに一度だけ読み込みました。PDBエントリー6Y4F（CC0）と、AlphaFold Databaseにある同じタンパク質のモデル（CC BY 4.0）をCα原子で重ね合わせ、実験構造の主軸に合わせて回したものです。スクリプトはそれを三つの短い配列として持ちます。各線はCαの位置を通るベジェ曲線の連なりで、遠いものから近いものへ紙の色の縁取りを付けて描くので、陰影なしで奥行きが出ます。モデルの色はAlphaFold Databaseが使うpLDDTの区分で、ファイルのB因子の列から読んでいます。
+
+### 5 · PDFのギリシャ文字とアクセント付きの文字
+
+<Excerpt region="subsets" />
+
+Fontsourceは各書体を文字体系ごとのファイルに分けています。キットはlatinのファイルと、本文が必要とするときはlatin-extも読み込みますが、ギリシャ文字のファイルは読み込みません。そのためCαやχは画面では代替フォントで表示され、PDFでは欠けてしまいます。このリージョンはキャンバス用に各書体のギリシャ文字ファイルを読み込み、`renderToPdf`には、ある書体が組む文字に必要なときにその書体のlatin-extとギリシャ文字のファイルを加えるフォント提供関数を渡します。
+
+## アレンジ
+
+### Methodsを本文と同じ大きさにする
+
+Methodsを本文と同じ文字で組む学術誌もあります。セクションの本文スタイルを外し、見出しはそのまま残します。
+
+```diff
+-  bodyStyle: { fontSize: pt(8.2), lineHeight: pt(SMALL) } };
++};
+```
+
+### 番号を角括弧で示す
+
+同じ分野でも[1]を行内に組む学術誌があります。
+
+```diff
+-  style: 'custom', customStyle: nature, // raised 1–4, "Nature 577, 706–710 (2020)." entries
++  style: 'custom', customStyle: nature, marker: 'brackets',
+```
+
+### バンクーバー方式のリストにする
+
+医学誌なら、同梱のNLMスタイルから始めます。<RecipeLink slug="medical-article-vancouver">バンクーバー方式の医学論文</RecipeLink>がその例です。
+
+## よくあるつまずき
+
+- BibTeXの`and others`は、*others*という名前の著者として読まれます。Natureスタイルは著者が6名以上のときに第一著者の後へ*et al.*と書くので、ここの参考文献にはCrossrefから取った最初の6名を載せています。
+- Natureは本文の参考文献をMethodsの前に、新しく加わる文献をその後に印刷します。Postextが組むリストは一つです。`:::bibliography{scope=chapter}`は一つの章が引用するすべての文献を並べるので、Methodsの後に置いたリストは、そこで再び引用される文献を繰り返してしまいます。
+- 見出しスタイルの`bodyStyle`は本文の文字の大きさと行送りを変えますが、ベースライングリッドは変えません。Methodsの小見出しは`snapToGrid: false`にしてあります。そうしないと、各小見出しの下の行が本文のグリッドの次の行へ飛んでしまいます。

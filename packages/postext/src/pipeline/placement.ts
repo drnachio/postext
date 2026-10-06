@@ -303,6 +303,61 @@ export function closeBandAndInsertSpan(
   return spanCol;
 }
 
+/**
+ * Close the band formed by `cols` at `cutY` and open a fresh band of text
+ * columns (`band + 1`) starting at `newTop` (at or under the cut), as
+ * {@link closeBandAndInsertSpan} does, with no span column between them:
+ * what opens the new band (a page-span heading opened mid-page, #539)
+ * spans the page from its first column. The closed columns keep the slack
+ * between their used bottom and the cut; the new ones copy each closed
+ * column's x / width and keep its bottom. The cursor moves to the first new
+ * column. Returns false, changing nothing, when no column would have room
+ * under `newTop`.
+ */
+export function closeBandAt(
+  page: VDTPage,
+  cols: readonly VDTColumn[],
+  cutY: number,
+  newTop: number,
+  cursor: PlacementCursor,
+): boolean {
+  const bottoms = cols.map((c) => c.bbox.y + c.bbox.height);
+  if (!bottoms.some((b) => b - newTop >= 0.5)) return false;
+  const band = cols[0]?.band ?? 0;
+  for (const c of cols) {
+    const used = c.bbox.height - c.availableHeight;
+    c.band = band;
+    c.bbox.height = Math.max(0, cutY - c.bbox.y);
+    c.availableHeight = Math.max(0, c.bbox.height - used);
+  }
+  let firstNew: VDTColumn | undefined;
+  cols.forEach((c, i) => {
+    const height = bottoms[i]! - newTop;
+    if (height < 0.5) return;
+    const next = createVDTColumn(page.columns.length, createBoundingBox(c.bbox.x, newTop, c.bbox.width, height));
+    next.band = band + 1;
+    page.columns.push(next);
+    if (!firstNew) firstNew = next;
+  });
+  cursor.pageIndex = page.index;
+  cursor.columnIndex = firstNew!.index;
+  const side = sideColumnOf(page, band);
+  if (side) {
+    const sideBottom = side.bbox.y + side.bbox.height;
+    const used = side.bbox.height - side.availableHeight;
+    side.bbox.height = Math.max(0, cutY - side.bbox.y);
+    side.availableHeight = Math.max(0, side.bbox.height - used);
+    const height = sideBottom - newTop;
+    if (height >= 0.5) {
+      const next = createVDTColumn(page.columns.length, createBoundingBox(side.bbox.x, newTop, side.bbox.width, height));
+      next.kind = 'side';
+      next.band = band + 1;
+      page.columns.push(next);
+    }
+  }
+  return true;
+}
+
 export function advanceToNextColumn(
   doc: VDTDocument,
   cursor: PlacementCursor,

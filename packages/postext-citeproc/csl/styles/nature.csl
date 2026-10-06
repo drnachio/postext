@@ -39,8 +39,16 @@
     </names>
   </macro>
   <macro name="access">
+    <!-- postext: an article-journal without volume or page has its DOI in "issuance" already. -->
     <choose>
       <if variable="volume" type="article dataset software" match="any"/>
+      <else-if type="article-journal">
+        <choose>
+          <if variable="page">
+            <text variable="DOI" prefix="doi:"/>
+          </if>
+        </choose>
+      </else-if>
       <else-if variable="DOI">
         <text variable="DOI" prefix="doi:"/>
       </else-if>

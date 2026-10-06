@@ -52,6 +52,7 @@ import { pagePaper, paperSpec, type PaperSpec } from "./paper";
 import { loadDeskMaps, type DeskMaps } from "./deskTextures";
 import { ATLAS_MAX, MAX_PAGE_VIDEOS, VideoAtlas } from "./videoAtlas";
 import { cachedDesk, cachedRelief, type DeskKind } from "./procedural";
+import { Loupe, type LoupeView } from "./loupe";
 
 /** A page: an image URL, or a canvas or a decoded image to draw; "" is a
  *  blank page (drawn as paper), null no page at all. */
@@ -1258,6 +1259,12 @@ export class PageFlipper {
    *  tilted by `pitch` (radians from straight above); null: the
    *  settings' `yaw` and `tilt`. */
   private orbit: { yaw: number | null; pitch: number | null } = { yaw: null, pitch: null };
+  /** The magnifying glass over the book (#527), in CSS px (client
+   *  coordinates for its centre), and the sharper paintings it shows the
+   *  pages in: page source → its painting and texture. */
+  private lens: { x: number; y: number; radius: number; rim: number; zoom: number } | null = null;
+  private loupe: Loupe | null = null;
+  private details = new Map<PageSource, { src: PageSource; tex: Texture | null }>();
   private paper: [number, number, number] = [1, 1, 1];
 
   constructor(
@@ -2861,6 +2868,101 @@ export class PageFlipper {
     this.mirror(air.length > 0 || this.block !== null);
     this.behind(air.map((a) => a.mesh));
     this.composer.render();
+    this.drawLoupe();
+  }
+
+  // ── The magnifying glass (#527) ──
+
+  /** Holds a magnifying glass over the book: its centre (client px), the
+   *  radius of its glass and the width of its rim (CSS px), and how much
+   *  it magnifies at its centre; null puts it away. */
+  setLens(lens: { x: number; y: number; radius: number; rim: number; zoom: number } | null) {
+    if (!lens && !this.lens) return;
+    this.lens = lens;
+    if (!this.raf) this.redraw();
+  }
+
+  /** The largest texture the book can show (a painting for the glass is
+   *  kept within it). */
+  get maxTextureSize(): number {
+    return (this.renderer.capabilities as { maxTextureSize?: number }).maxTextureSize ?? 4096;
+  }
+
+  /** The sharper paintings the glass shows the pages in: page source (as
+   *  given in the book) → its painting; pages left out are shown as
+   *  painted, and their sharper textures are freed. */
+  setDetail(details: ReadonlyMap<PageSource, PageSource>) {
+    for (const [page, d] of this.details) {
+      if (details.get(page) === d.src) continue;
+      d.tex?.dispose();
+      this.details.delete(page);
+    }
+    for (const [page, src] of details) {
+      if (!page || !src || this.details.has(page)) continue;
+      const entry: { src: PageSource; tex: Texture | null } = { src, tex: null };
+      this.details.set(page, entry);
+      const prepare = (tex: Texture) => {
+        tex.colorSpace = SRGBColorSpace;
+        tex.minFilter = LinearMipmapLinearFilter;
+        tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        if (this.details.get(page) !== entry) return tex.dispose();
+        entry.tex = tex;
+        this.redraw();
+      };
+      if (typeof src === "string") void this.loader.loadAsync(src).then(prepare, () => undefined);
+      else {
+        const decoded = src instanceof HTMLCanvasElement ? Promise.resolve() : src.decode();
+        void decoded.then(
+          () => {
+            const tex = new Texture(src);
+            tex.needsUpdate = true;
+            prepare(tex);
+          },
+          () => undefined,
+        );
+      }
+    }
+  }
+
+  /** Draws the glass over the frame just drawn: the book once more
+   *  through its field, the pages in their sharper paintings, then the
+   *  glass and its rim. What reads the main view's screen (the light
+   *  through a thin leaf, a gloss page's mirror) is left out of its
+   *  picture. */
+  private drawLoupe() {
+    const lens = this.lens;
+    if (!lens) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const k = this.dpr;
+    const view: LoupeView = { x: (lens.x - rect.left) * k, y: (lens.y - rect.top) * k, radius: lens.radius * k, rim: lens.rim * k, zoom: lens.zoom };
+    this.loupe ??= new Loupe();
+    const undo: (() => void)[] = [];
+    const swap = <T>(slot: { value: T }, value: T) => {
+      const was = slot.value;
+      slot.value = value;
+      undo.push(() => (slot.value = was));
+    };
+    this.loupe.capture(
+      this.renderer,
+      this.scene,
+      this.camera,
+      view,
+      () => {
+        swap(behindUniforms.uBehindOn, 0);
+        for (const mesh of this.pageMeshes()) {
+          const u = mesh.material.userData.uniforms;
+          swap(u.uReflectionOn, 0);
+          for (const face of ["Front", "Back"] as const) {
+            const tex = this.details.get(mesh.userData[face] as PageSource)?.tex;
+            if (tex && u[`uHas${face}`].value === 1) swap(u[`u${face}`], tex);
+          }
+        }
+      },
+      () => {
+        for (const f of undo.reverse()) f();
+      },
+    );
+    this.loupe.draw(this.renderer, this.buffer.x, this.buffer.y, view);
   }
 
   /**
@@ -3051,6 +3153,9 @@ export class PageFlipper {
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
     this.composer.dispose();
+    this.loupe?.dispose();
+    for (const d of this.details.values()) d.tex?.dispose();
+    this.details.clear();
     this.mirrors.left?.dispose();
     this.mirrors.right?.dispose();
     this.behindTarget?.depthTexture?.dispose();

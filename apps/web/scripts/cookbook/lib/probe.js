@@ -1310,12 +1310,55 @@ function headingTitle(markdown) {
 }
 
 /**
+ * Builds chained into one publication (#540): `capture.doc` lists several
+ * document builds and every one after the first continues the one before
+ * it (`content.continuation`), as a pen that sets articles with numbering
+ * of their own and renders one PDF from all of them. The bundle then holds
+ * a book with one chapter per build — its markdown, titled after its first
+ * heading — every build's resources (the first of an id wins) and files;
+ * the configuration is the first build's (a build whose own differs is
+ * reported in `notes`, as is what a later continuation sets: the Sandbox
+ * chains the chapters itself). Null when the builds do not chain.
+ */
+export function chainedBundleParts(picked, name = '') {
+  if (!Array.isArray(picked) || picked.length < 2) return null;
+  if (picked.some((b) => b?.kind !== 'document' && b?.kind !== 'worker')) return null;
+  if (!picked.slice(1).every((b) => b.content?.continuation && typeof b.content.continuation === 'object')) return null;
+  const notes = [];
+  const chapters = [];
+  const resources = [];
+  const seen = new Set();
+  const files = [];
+  const firstConfig = JSON.stringify(plain(picked[0].config ?? {}) ?? {});
+  picked.forEach((b, i) => {
+    const markdown = String(b.content?.markdown ?? '');
+    chapters.push({ title: headingTitle(markdown) || `${name || 'Chapter'} ${i + 1}`, markdown });
+    for (const r of b.content?.resources ?? []) {
+      if (!r || seen.has(r.id)) continue;
+      seen.add(r.id);
+      resources.push(r);
+    }
+    if (b.content?.files instanceof Map) files.push(b.content.files);
+    if (i === 0) return;
+    if (JSON.stringify(plain(b.config ?? {}) ?? {}) !== firstConfig) {
+      notes.push(`build ${i + 1}: its configuration differs from the first's, which the book keeps`);
+    }
+    for (const key of Object.keys(b.content.continuation)) {
+      if (key !== 'pageIndexOffset') notes.push(`build ${i + 1}: continuation.${key} not carried (the Sandbox chains the chapters itself)`);
+    }
+  });
+  return { chapters, resources, files, notes };
+}
+
+/**
  * The document `select` picks, as a `.postext` file for the Sandbox,
  * written by the pen's own engine (`createBundle`): its markdown (or its
  * chapters, for a buildBundle book), its configuration as JSON, its
  * resources and every file they name, plus `thumbnail` (base64 WebP, the
  * card). A continuation cannot travel in a bundle: its page numbering goes
- * into `page.pageNumbering`, the rest is reported in `notes`. Returns the
+ * into `page.pageNumbering`, the rest is reported in `notes`. Several
+ * builds chained with `continuation` make a book, a chapter each (see
+ * {@link chainedBundleParts}). Returns the
  * bundle as base64, or `error` when a resource's file cannot be found.
  */
 export async function sandboxBundle({ select = 'last', id, name, description, locale, thumbnail = null, folio = null } = {}) {
@@ -1328,7 +1371,9 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
   }
   const source = sourceOf(build);
   if (!source.known) return { error: `a ${build.kind} build records no source` };
-  const notes = [];
+  // Several builds chained with `continuation`: a book, one chapter each.
+  const chain = build.kind === 'bundle' ? null : chainedBundleParts(build.picked, name);
+  const notes = [...(chain?.notes ?? [])];
   const content = build.content ?? {};
   const config = plain(source.config ?? {}) ?? {};
   // recipe.json `folio`: how the Sandbox's Folio view shows the publication.
@@ -1356,14 +1401,14 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
     }
   }
 
-  const resources = source.resources.map((r) => plain(r));
+  const resources = (chain?.resources ?? source.resources).map((r) => plain(r));
   // `styleId: null` means the house style; postext 1.5 reads only a missing one so.
   for (const r of resources) if (r.table && r.table.styleId === null) delete r.table.styleId;
-  const own = content.files instanceof Map ? content.files : null;
+  const owns = chain ? chain.files : content.files instanceof Map ? [content.files] : [];
   const files = new Map();
   const missing = [];
   const find = async (fileId, format) => {
-    if (own?.has(fileId)) return own.get(fileId);
+    for (const own of owns) if (own.has(fileId)) return own.get(fileId);
     if (cb.bundleFiles?.has(fileId)) return cb.bundleFiles.get(fileId);
     if (cb.imageSources?.has(fileId)) return imageFile(cb.imageSources.get(fileId), format);
     return null;
@@ -1421,6 +1466,9 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
       ...(typeof c?.title === 'string' && c.title ? { title: c.title } : {}),
       markdown: String(c?.markdown ?? ''),
     }));
+    input.canvasScope = 'book';
+  } else if (chain) {
+    input.chapters = chain.chapters;
     input.canvasScope = 'book';
   } else {
     // One chapter named after its first heading: the pinned engine keeps a

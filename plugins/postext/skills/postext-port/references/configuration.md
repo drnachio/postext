@@ -800,7 +800,13 @@ All em values = the callout body font size.
   continuesMarkerEnabled = false     marker under the last line of each part that goes on
   continuesMarker = 'Continued' | 'Continúa' (by locale)   e.g. '(MORE)'
   continuesMarkerAlign = 'right'     'left' | 'center' | 'right'
-  continuesMarkerItalic = true }
+  continuesMarkerItalic = true
+  numbering?                         (postext ≥ 1.19) { label: 'Theorem', counter = style id | shared name | 'equation' | false (label only),
+                                     numberingTemplate = '{n}', resetOn = 'never', counterFormat = 'decimal',
+                                     placement = 'runIn' ("Theorem 2 (title)." opens the first paragraph) | 'title',
+                                     bold = true, italic = false (absolute, whatever body.italic), suffix = '.' }
+                                     a fence {#id} becomes a target printing "Theorem 2" (\ref → "2")
+  endMark = ''                       (postext ≥ 1.19) e.g. '□' / '∎' set flush right at the end of the box's last line (a proof) }
 ```
 Gotchas: `body.textAlign` only `'left'|'justify'`. Callout body inherits body text colours,
 so boxes with coloured bold need `body.boldColor`. `span:'page'` in a multi-column layout cuts
@@ -959,7 +965,11 @@ video; a self-hosted file is packed under `media/` and plays in `<video>`.
 ## 19. `math`
 
 `{ enabled = true, fontSizeScale = 1.0, color? (= body), marginTop = 0.8em, marginBottom = 0.8em,
-indentAfterDisplay = true, keepWithLeadIn = false }` (MathJax SVG).
+indentAfterDisplay = true, keepWithLeadIn = false, equationNumbering }` (MathJax SVG).
+- `equationNumbering` (postext ≥ 1.19) `{ enabled = true, numberingTemplate = '{n}', resetOn = 'never',
+  counterFormat = 'decimal', format = '({n})' }` numbers the formulas (rows) that carry `\label`;
+  `'{h1}.{n}'` + `resetOn: 'h1'` gives (2.1). Counters carry across chapters in
+  `LayoutContinuation.statementCounters` (`continuationAfter`).
 - `indentAfterDisplay: false` sets every paragraph right after a display formula flush (the "where …"
   continuation). A display written inside a paragraph (no blank line above) always gets a flush
   continuation: see document-format.md §11.

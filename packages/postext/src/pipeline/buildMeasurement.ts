@@ -12,6 +12,7 @@ import { measureBlock, measureRichBlock, cachedMeasureBlock, cachedMeasureRichBl
 import { renderMath } from '../math';
 import { layoutResourceBlock } from './resourceLayout';
 import type { ResourceNumberingMap } from './resourceNumbering';
+import type { CaptionCitations } from './citations';
 
 export interface MeasurementInput {
   vdtType: VDTBlock['type'];
@@ -31,6 +32,8 @@ export interface MeasurementInput {
   resourceTypes?: ResourceType[];
   /** Computed resource numbering map. */
   resourceNumbering?: ResourceNumberingMap;
+  /** The formatted citations of resource captions and notes (#529). */
+  captionCitations?: ReadonlyMap<string, CaptionCitations>;
   /** For `resource` blocks: the resolved resource, its type, and number. */
   resource?: Resource;
   resourceType?: ResourceType;
@@ -71,6 +74,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       resourceNumbering: input.resourceNumbering ?? {},
       resourceTypes: input.resourceTypes ?? [],
       resources: input.resources ?? [],
+      ...(input.captionCitations ? { captionCitations: input.captionCitations } : {}),
       ...(input.maxBodyWidth !== undefined ? { maxBodyWidth: input.maxBodyWidth } : {}),
       ...(input.bodyHeightDelta ? { bodyHeightDelta: input.bodyHeightDelta } : {}),
       ...(input.upright ? { upright: input.upright } : {}),

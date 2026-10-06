@@ -111,7 +111,7 @@ export function buildBundle(
     }
   });
   const citations = citationSources.some((s) => needsCitationContext(s.blocks, s.metadata))
-    ? bookCitationContexts(citationSources)
+    ? bookCitationContexts(citationSources, resources)
     : undefined;
   // `{bookTotalPages}` needs the page count of the whole book, known once
   // every chapter is laid out: the book goes round once more with it. It

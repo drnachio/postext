@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../../parse';
-import { extractInlineCitations, parseLocator } from '../../parse/citations';
+import { affixRichText, affixSpans, extractInlineCitations, parseLocator } from '../../parse/citations';
 import { htmlToSpans } from '../../citations/html';
 import { documentReferences, nociteKeys, normalizeCslItem } from '../../citations/data';
 import { bookCitationContexts } from '../../citations/context';
@@ -43,7 +43,33 @@ describe('citation syntax (#268)', () => {
     expect(parseLocator(', 页 12')).toEqual({ locator: '12', label: 'page' });
     expect(parseLocator(', 12-14, my words')).toEqual({ locator: '12-14', label: 'page', suffix: ', my words' });
     expect(parseLocator(', § 4.2')).toEqual({ locator: '4.2', label: 'section' });
-    expect(parseLocator(', see also')).toEqual({ suffix: 'see also' });
+    expect(parseLocator(', see also')).toEqual({ suffix: ', see also' });
+  });
+
+  it('keeps the comma before a suffix with no locator, as Pandoc does (#528)', () => {
+    const [c] = cites('As shown [@brown2020language, inter alia].');
+    expect(c!.cluster.items).toEqual([{ id: 'brown2020language', suffix: ', inter alia' }]);
+    // With a locator the suffix keeps its comma, as before.
+    expect(cites('[@k, p. 33, emphasis added]')[0]!.cluster.items).toEqual([{ id: 'k', locator: '33', label: 'page', suffix: ', emphasis added' }]);
+    // Written without a comma, the suffix has none.
+    expect(cites('[@k inter alia]')[0]!.cluster.items).toEqual([{ id: 'k', suffix: 'inter alia' }]);
+    // A narrative citation's bracket reads the same way.
+    expect(cites('@k [see also] says')[0]!.cluster.items).toEqual([{ id: 'k', suffix: ', see also' }]);
+  });
+
+  it('reads emphasis in prefixes and suffixes (#528)', () => {
+    const [c] = cites('Methods [*e.g.*, @a; @b, **sic**, *inter alia*].');
+    expect(c!.cluster.items).toEqual([
+      { id: 'a', prefix: '*e.g.*,' },
+      { id: 'b', suffix: ', **sic**, *inter alia*' },
+    ]);
+    expect(affixRichText('*e.g.*,')).toBe('<i>e.g.</i>,');
+    expect(affixRichText(', **sic**, *inter alia*')).toBe(', <b>sic</b>, <i>inter alia</i>');
+    expect(affixRichText(', A & B')).toBe(', A & B');
+    expect(affixSpans(', *inter alia*')).toEqual([
+      { text: ', ', bold: false, italic: false },
+      { text: 'inter alia', bold: false, italic: true },
+    ]);
   });
 
   it('parses :::references blocks raw and :::bibliography as a directive', () => {
@@ -79,6 +105,14 @@ describe('reference data (#268)', () => {
     const data = documentReferences({ references: [{ id: 'bib1', title: 'Front' }] }, blocks);
     expect(data.items.map((i) => [i.id, i.title])).toEqual([['bib1', 'Front'], ['json1', 'Dos'], ['yaml1', 'Tres']]);
     expect(data.issues).toHaveLength(1);
+  });
+
+  it('reads BibTeX `and others` and a YAML `others` as the names left out (#533)', () => {
+    const [item] = parseBibtex('@article{k, author={Smith, J. and Doe, Jane and others}, title={T}}');
+    expect(item!.author).toEqual([{ family: 'Smith', given: 'J.' }, { family: 'Doe', given: 'Jane' }, { literal: 'others' }]);
+    // A lone "others" is a name.
+    expect(parseBibtex('@misc{o, author={Others}}')[0]!.author).toEqual([{ family: 'Others' }]);
+    expect(normalizeCslItem({ id: 'y', author: ['Smith, J.', 'others'] })!.author).toEqual([{ family: 'Smith', given: 'J.' }, { literal: 'others' }]);
   });
 
   it('keeps the short titles Zotero and BibLaTeX write', () => {

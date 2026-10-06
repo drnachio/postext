@@ -8,7 +8,7 @@
 import matter from 'gray-matter';
 import type { ContentBlock } from '../parse';
 import type { CslDate, CslItem, CslName } from './types';
-import { parseBibtex, type BibtexIssue } from './bibtex';
+import { ET_AL_NAME, parseBibtex, type BibtexIssue } from './bibtex';
 
 /** Something wrong with the reference data, where it is written. */
 export interface ReferenceIssue {
@@ -57,6 +57,7 @@ function normalizeDate(value: unknown): CslDate | undefined {
 
 const CJK = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}]/u;
 
+
 /** A name as YAML wrote it: `{family, given}`, or a string — `"García,
  *  Ana"`, `"Ana García"`, a Chinese name written whole, a Chinese, Japanese
  *  or Korean one with a space between family and given name (`"夏目 漱石"`,
@@ -67,6 +68,7 @@ function normalizeName(value: unknown): CslName | undefined {
   const text = value.trim();
   const comma = text.indexOf(',');
   if (comma > 0) return { family: text.slice(0, comma).trim(), given: text.slice(comma + 1).trim() };
+  if (text.toLowerCase() === 'others') return { ...ET_AL_NAME };
   if (!/\s/.test(text)) return { family: text };
   const words = text.split(/\s+/);
   if (words.every((w) => CJK.test(w) && !/\p{sc=Latin}/u.test(w))) return { family: words[0]!, given: words.slice(1).join(' ') };

@@ -171,6 +171,25 @@ describe('inline :ref rendering in body text', () => {
     expect(refSeg2?.bold).toBeFalsy();
   });
 
+  it('inherits the emphasis of the run it sits in (#531)', () => {
+    const md = '***Lemma :ref{id="fig-a" style="number"} restated.*** And *see :ref{id="fig-a" style="number"}*.';
+    const refSegs = (config?: Parameters<typeof buildDocument>[1]) => {
+      const doc = buildDocument({ markdown: md, resources: [figure('fig-a')] }, config);
+      const para = doc.blocks.find((b) => b.type === 'paragraph')!;
+      return para.lines.flatMap((l) => l.segments ?? []).filter((s) => s.refResourceId === 'fig-a');
+    };
+    // referenceBold: false leaves the run's bold in place; italic is kept.
+    const [inBoldItalic, inItalic] = refSegs({ bodyText: { referenceBold: false } });
+    expect(inBoldItalic?.bold).toBe(true);
+    expect(inBoldItalic?.italic).toBe(true);
+    expect(inItalic?.bold).toBeFalsy();
+    expect(inItalic?.italic).toBe(true);
+    // The default reference style (bold) applies on top of the run's italic.
+    const [, inItalicDefault] = refSegs();
+    expect(inItalicDefault?.bold).toBe(true);
+    expect(inItalicDefault?.italic).toBe(true);
+  });
+
   it('keeps source mapping aligned for text after a ref', () => {
     const md = 'A :ref{id="fig-a"} B';
     const doc = buildDocument({ markdown: md, resources: [figure('fig-a')] });

@@ -1,0 +1,74 @@
+---
+title: "把提示词示例排进框里的AI预印本"
+summary: "重排思维链论文：提示词和模型输出放在带标签的框里左右并排，作者–年份引用来自BibTeX，图表按论文表格中的数字重绘。"
+plain: "一篇著名的人工智能论文，删节后重新排版。示例提示词和模型的回答放在带标签的框里，左右并排，每个回答旁有对勾或叉号；图表按论文自己的数字绘制。"
+description: "用Postext重排Wei等人的思维链论文：图1由两栏嵌套框组成，natbib式作者–年份引用，表2和规模曲线图按原文数据重绘。"
+question: "怎样把AI论文中的提示词和模型输出示例并排排在框里？"
+aliases: ["提示词图", "模型输入", "模型输出", "思维链", "chain of thought", "少样本示例", "机器学习论文", "NeurIPS", "arXiv", "natbib", "作者–年份", "预印本", "Wei et al. 2022"]
+pageNotes: { "1": "第1页：一行蓝色等宽字体的会议信息，两行粗体衬线标题Chain-of-Thought Prompting Elicits Reasoning in Large Language Models，分两行排列的九位作者和Google Research, Brain Team；一段删节说明；浅蓝底纹上的摘要；然后是通栏的图1：左边Standard Prompting，右边Chain-of-Thought Prompting，各有一个蓝色标签的Model Input框和一个绿色标签的Model Output框，示例用等宽字体。思维链在输入中是蓝色粗体，在输出中是绿色粗体；左边的答案27角上有红色叉号，右边的答案9有绿色对勾。", "2": "第2页：第1节Introduction和第2节Chain-of-Thought Prompting，两栏两端对齐，引用形如(Kaplan et al., 2020; Brown et al., 2020, inter alia)。", "3": "第3页：图2，GSM8K解题率的横向条形图（微调的GPT-3 33，此前最佳55，PaLM 540B标准提示18，思维链提示57），方法四个特性的编号列表，以及第3节Arithmetic Reasoning的实验设置。", "4": "第4页：通栏的图4，九幅小折线图，展示LaMDA、GPT和PaLM在GSM8K、SVAMP和MAWPS上的解题率随模型规模的变化；在最大的模型上，蓝色的思维链曲线升到灰色的标准提示曲线之上。下方是结果和第4节。", "5": "第5页：通栏的表2，蓝色两行表头，列出每个模型和规模在五个基准上的解题率，思维链胜出的数字用粗体；然后是常识推理的结果和第5节Symbolic Reasoning，带一条脚注。", "6": "第6页：第5节的结尾、第6节Discussion、第7节Conclusions和致谢。", "7": "第7页：两栏的参考文献，按作者排序，年份紧跟姓名，最后是一行带许可证的版权说明。" }
+---
+
+## 成品一览
+
+一篇机器学习预印本，共七页，美国信纸开本：Wei等人的*Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*，依据其arXiv版本删节，许可证为CC BY 4.0。第一页是这篇论文最有名的图，用框排出来，而不是贴一张图片：左边是标准提示，右边是思维链提示；每段提示放在标签为*Model Input*的框里，每个回答放在标签为*Model Output*的框里，示例用IBM Plex Mono，思维链用彩色粗体，错误的回答带叉号，正确的带对勾。正文按NeurIPS论文的方式引用，*(Brown et al., 2020)*，文献数据取自论文自己的参考文献表，重建为BibTeX。表2和两幅图表按论文公布的数字重绘。
+
+## 做法
+
+### 1 · 图1由三种框样式组成
+
+代码就是上面的[简短回答](#简短回答)。整幅图是一个通栏的框，自身没有边框；框内的`:::columns{count=2 breaks="4"}`让右栏从第四个块开始，每个嵌套框算作一个块。提示框和回答框出自同一个样式函数，区别只在底色、标签颜色和角上的徽标：`icon`设为`position: 'corner'`时可以用SVG资源，文档字体里没有的对勾和叉号就是这样上了页面。排你自己的论文时，把每个示例写成框内的普通段落，用`**…**`标出推理部分，框样式的`boldColor`就把它变成高亮。
+
+### 2 · natbib式的作者–年份引用
+
+<Excerpt region="citations" />
+
+机器学习会议采用natbib的作者–年份样式：姓名和年份之间加逗号，三位作者以上写*et al.*。引擎自带的样式中最接近的是Chicago author-date，所以本例把其CSL中连接作者和年份的那一组，从空格改成逗号。你的`.bib`文件可以原样带来：粘贴进`:::references{format=bibtex}`块，用`[@key]`得到*(Brown et al., 2020)*，用`@key`得到*Brown et al. (2020)*。只在图注里提到的文献要列进`nocite`，因为图注中的引用不会被识别。
+
+### 3 · 标题区
+
+<Excerpt region="title" />
+
+标题是文档中唯一的一级标题，所用样式横跨两栏，绘制一个设计好的标题区：会议信息、标题、分两行的作者、单位和删节说明。作者和说明都是标题属性，属性里的`\n`另起一行，相当于LaTeX `\author`中的`\\`。排你自己的论文时，改属性即可，设计不用动。
+
+### 4 · 与原文一致的图号
+
+<Excerpt region="figures" />
+
+引擎按首次引用的顺序给图编号，但这里的图1是框，计数器看不到它。所以每幅重绘的图表都有自己的资源类型，编号直接写在标签里，`numberingTemplate`留空，从而保留arXiv版本的编号：图2、图4和表2。在你自己的论文中，所有图都是资源，一个`numberingTemplate: '{n}'`的`figure`类型就能完成编号。
+
+### 5 · 用论文数据排表2
+
+<Excerpt region="table" />
+
+结果只录入一次，与LaTeX源文件中的一致，同时供表2和图4使用，图表因此不会与表格不符。每个基准名称跨两列；合并单元格在其延伸的位置需要标有`hiddenBy`的占位单元格。粗体标出思维链胜过标准提示的单元格，相当于原文中的绿色单元格。
+
+## 变化
+
+### 改用APA引用
+
+APA写作*(Roy & Roth, 2015)*，并列出多达二十位作者，大模型论文的参考文献很少需要这样。
+
+```diff
+-const citations = { style: 'custom', customStyle: natbib, link: true,
++const citations = { style: 'apa', link: true,
+```
+
+### 单栏排版
+
+NeurIPS式的单栏需要更宽的左右页边距，才能保持易读的行长；通栏的框随之占满这一栏。
+
+```diff
+-const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 22, 22, 19, 7];
++const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 24, 24, 38, 7];
+-  layout: { layoutType: 'double', gutterWidth: mm(GUTTER) },
++  layout: { layoutType: 'single' },
+```
+
+### 框中的代码清单
+
+如果提示词里有代码，<RecipeLink slug="code-listings-and-keycaps">代码清单与按键</RecipeLink>中的清单框用粗体和斜体片段给语法着色。
+
+## 常见问题
+
+- 只有后缀、没有定位符的引用，如`[@brown2020language, inter alia]`，在postext 1.18.0中会丢掉逗号，印成*2020inter alia*；后缀中的行内标记会印成星号。本例写作`[@brown2020language, , inter alia]`，印出正体的*2020, inter alia*。
+- 双栏版式中，通栏框只有在放得下、且下方至少还能排两行正文时，才留在当前页。图1之所以在第1页，是因为摘要用9.3 pt、内边距较紧；摘要再长一些，图就会移到第2页。

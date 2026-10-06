@@ -25,7 +25,6 @@ import { parseMarkdownMemo, spaceDirectiveLines } from '../parse';
 import {
   buildPageLabels,
   computeHeadingNumbering,
-  documentNumeralStyle,
   parseNumberFormat,
   type NumeralStyle,
   type PageNumberSegment,
@@ -60,6 +59,8 @@ import { applyCitations, citationLocale, processCitations, withBibliographyStyle
 import { bookCitationContexts, needsCitationContext } from '../citations/context';
 import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
+import { applyStatementNumbering, numberStatements, outlineLookup } from './statementNumbering';
+import { spanEmbedStyle, wrapPageSpanEmbeds } from './spanEmbeds';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
@@ -95,6 +96,7 @@ import {
   isBandLevel,
   bandUsedBottom,
   closeBandAndInsertSpan,
+  closeBandAt,
   pageLayoutOf,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
@@ -118,6 +120,7 @@ import {
   noteContentBlock,
   noteNumberPositionOf,
   numberFootnotes,
+  footnoteFormatOf,
   numberFootnotesByPlacement,
   sameFootnoteNumbers,
   splitFootnoteDefinitions,
@@ -164,8 +167,9 @@ import {
   type ResourceNumberingMap,
 } from './resourceNumbering';
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
+import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
 import { pickTableStyle } from '../defaults/tableStyle';
-import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, headingTitleText, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
+import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
 import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey, candidateKey, flexFigureKey, flexFloatKey } from './columnBalancing';
@@ -584,7 +588,7 @@ function placeDocumentPass(
   // (#376), for the outline and the layout alike.
   const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
-    ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }])[0] : undefined);
+    ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }], content.resources)[0] : undefined);
   const citationsApplied = citationContext
     ? applyCitations(
       parsedBody,
@@ -594,6 +598,9 @@ function placeDocumentPass(
       resolvedLocale(resolved),
     )
     : undefined;
+  // The citations of resource captions and notes (#529), formatted with
+  // the text's.
+  const captionCitations = citationsApplied && citationsApplied.captions.size > 0 ? citationsApplied.captions : undefined;
   const footnoteSplit = splitFootnoteDefinitions(citationsApplied?.blocks ?? parsedBody);
   const footnoteDefs = footnoteSplit.defs;
   // Numbered by page or column (`numbering: 'page'`), a note takes the
@@ -604,7 +611,7 @@ function placeDocumentPass(
     footnoteSplit.blocks,
     resolved.footnotes.numbering,
     resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
-    documentNumeralStyle(resolved.footnotes.numberFormat, resolved.numerals),
+    footnoteFormatOf(resolved.footnotes, resolved.numerals),
     resolved.footnotes.markerTemplate,
   );
   if (hints.footnoteNumbers) {
@@ -627,12 +634,25 @@ function placeDocumentPass(
   const resourceIds = new Set((content.resources ?? []).map((r) => r.id));
   const anchorRefs = hasAnchorRefs(parsedBlocks, resourceIds);
   const outline = content.outline
-    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) || anchorRefs ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
+    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) || anchorRefs ? computeOutline(parsedBlocks, resolved, headingStart, continuation?.statementCounters) : undefined);
   const anchorRefContext: AnchorRefContext | undefined = anchorRefs
     ? { targets: anchorTargetsOf(outline), strings: resolved.crossRefs }
     : undefined;
   const indexExpanded = expandIndexDirectives(expandTocDirectives(parsedBlocks, outline, resolved), outline, resolved);
-  const contentBlocks = indexExpanded.blocks;
+  // Labelled equations and counted boxes (#530): the numbers go into the
+  // formulas (as tags) and the boxes (a run-in label or a title), a
+  // reference inside a formula prints the number it names, and a style's
+  // end mark closes its boxes.
+  const statementNumbering = numberStatements(parsedBlocks, resolved, {
+    ...(headingStart ? { headings: headingStart } : {}),
+    ...(continuation?.statementCounters ? { counters: continuation.statementCounters } : {}),
+  });
+  const numberedBlocks = applyStatementNumbering(indexExpanded.blocks, statementNumbering, resolved, outlineLookup(content.outline ? anchorTargetsOf(content.outline) : undefined));
+  // An inline `::resource` placed `here` with `span: 'page'` spans the
+  // page where it stands (#535): each goes in a frameless page-span box,
+  // set by the span-block path like any other.
+  const spanEmbeds = wrapPageSpanEmbeds(numberedBlocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []));
+  const contentBlocks = spanEmbeds.blocks;
   if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
@@ -678,6 +698,12 @@ function placeDocumentPass(
 
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);
+  // The callout styles, with the frameless box of the page-span embeds
+  // when there are any: the float gap (a line) above and below it, as an
+  // inline resource keeps in a column.
+  const calloutStyles = spanEmbeds.wrapped
+    ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig([spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')], resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
+    : resolved.calloutStyles;
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
   const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
   const orderedMetrics = computeOrderedListRunMetrics(contentBlocks, resolved, bodyStyle.fontSizePx);
@@ -1004,6 +1030,7 @@ function placeDocumentPass(
       resourceNumbering,
       resourceTypes,
       resources,
+      ...(captionCitations ? { captionCitations } : {}),
       ...(slice ? { slice } : {}),
       ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
@@ -1817,7 +1844,7 @@ function placeDocumentPass(
     const b = contentBlocks[idx];
     if (!b || b.type !== 'containerStart' || b.containerName !== 'callout') return null;
     const plan = calloutPlan.get(idx);
-    const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+    const style = plan ? pickCalloutStyle(calloutStyles, plan.attrs.type) : undefined;
     if (!plan || !style || !style.keepTogether) return null;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     if (placement !== 'here') return null;
@@ -1944,7 +1971,7 @@ function placeDocumentPass(
     const b = contentBlocks[idx];
     if (!b || b.type !== 'containerStart' || b.containerName !== 'callout') return false;
     const plan = calloutPlan.get(idx);
-    const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+    const style = plan ? pickCalloutStyle(calloutStyles, plan.attrs.type) : undefined;
     if (!style) return false;
     const { span, placement } = resolveCalloutAttrs(style, plan!.attrs);
     if (span !== 'page' || placement !== 'here') return false;
@@ -2000,6 +2027,7 @@ function placeDocumentPass(
     resources,
     resourceTypes,
     resourceNumbering,
+    ...(captionCitations ? { captionCitations } : {}),
     floatedIds,
     leftFlow: calloutsOutOfFlow,
     joiningLetterSpacing,
@@ -2527,6 +2555,8 @@ function placeDocumentPass(
     const page = doc.pages[cursor.pageIndex]!;
     for (const otherCol of page.columns) {
       if (otherCol === headingCol) continue;
+      // An opener set mid-page (#539) heads its own band only.
+      if ((otherCol.band ?? 0) !== (headingCol.band ?? 0)) continue;
       if (otherCol.blocks.length === 0 && otherCol.availableHeight >= otherCol.bbox.height - 0.01) {
         const foot = otherCol.bbox.y + h;
         const text = otherCol.kind !== 'side' && otherCol.kind !== 'span';
@@ -2629,6 +2659,67 @@ function placeDocumentPass(
     else sideObstacles.set(side, marks);
     sideObstacleColumn.set(blk, side);
   };
+  /**
+   * A `span: 'page'` heading with `spanBreak: false` (#539) opens where the
+   * text reaches: the band the flow is in closes level under its text (a
+   * trailing cap levels an uneven band in the next pass, as at a chapter's
+   * end) and a fresh band opens under it, the heading at the head of its
+   * first column, so the opener machinery sets it across the page as at a
+   * page top (`reserveOpenerBand` keeps to the band). False — the caller
+   * then opens the next page as before — when the room left under the cut
+   * would not hold the heading's band, its margins and the widow minimum of
+   * body lines. A band nothing was placed in yet (a page top, the band under
+   * a span block) takes the heading as it stands.
+   */
+  const openSpanHeadingHere = (blockIdx: number, rawBlock: ContentBlock, level: ResolvedHeadingLevelConfig): boolean => {
+    const page = doc.pages[cursor.pageIndex]!;
+    if (page.partInfo || currentColumn(doc, cursor).kind === 'span') return false;
+    const band = currentBand(page, cursor);
+    const cols = bandColumns(page, band);
+    if (cols.length === 0) return false;
+    if (!cols.some((c) => c.blocks.length > 0)) {
+      // Floats at the head of the band are its content too: the heading
+      // goes under them in the band's first column.
+      cursor.columnIndex = cols[0]!.index;
+      return true;
+    }
+    // What the heading takes: its lines (at the page width when the default
+    // opener paints it) or its design's band, with its margins.
+    const width = page.contentArea.width;
+    const measureCtx = partPlan.byBlock[blockIdx] ? partMeasureCtx : sectionMeasureCtx(sectionPlan.byBlock[blockIdx]);
+    const measured = measureContentBlock(rawBlock, blockIdx, opensDefaultOpener(rawBlock) ? width : cols[0]!.bbox.width, measureCtx);
+    if (!measured) return false;
+    const style = measured.kind.style;
+    let height = measured.measured.totalHeight;
+    if (level.advancedDesign.enabled) {
+      const pref = measured.kind.numberPrefix ?? '';
+      const title = defaultOpenerTitle(measured.measured.lines, pref, rawBlock.titleBreaks, rawBlock.text.length, level.numberSeparator);
+      const design = measureHeadingDesign(
+        level,
+        { titleText: title.titleText, ...(title.marked !== undefined ? { titleMarked: title.marked } : {}), formattedNumber: pref, attrs: rawBlock.attrs },
+        width, resolved.page.dpi, doc.metadata, cursor.pageIndex, designFramesOn(page), undefined, resourceById,
+      );
+      height = Math.max(height, design.height, design.textFloor);
+    }
+    // Level the band first: in this pass the cap is proposed (the heading
+    // moves on as before); in the capped pass the heading arrives in the
+    // band cut level for it and the cap counts as delivered.
+    const capHere = activeCap !== null && activeCap.spanIndex === blockIdx
+      && activeCap.pageIndex === page.index && activeCap.band === band;
+    proposeTrailingCap(blockIdx);
+    const used = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+    if (!capHere && Math.max(...used) - Math.min(...used) > baselineGrid + 0.5 && bandCapProposals.has(blockIdx)) return false;
+    const cutY = gridUpOnPage(page, bandUsedBottomWithSide(page, cols));
+    const top = gridUpOnPage(page, cutY + Math.max(pendingSpacing, style.marginTopPx));
+    const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
+    const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
+    if (top + height + style.marginBottomPx + minLines * bodyStyle.lineHeightPx > bandBottom + 0.01) return false;
+    if (capHere) uncapBand(cols, uncappedBottoms);
+    if (!closeBandAt(page, cols, cutY, top, cursor)) return false;
+    pendingSpacing = 0;
+    return true;
+  };
+
   /** `rollbackTrailingBlocks` that also drops a rolled-back heading's
    *  side-column obstacles: the heading is set again further on. */
   const rollbackHeadings = (col: VDTColumn): VDTBlock[] => {
@@ -3736,14 +3827,16 @@ function placeDocumentPass(
         if (b.containerName === 'part') return true;
         if (b.containerName === 'callout') {
           const plan = calloutPlan.get(i);
-          const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+          const style = plan ? pickCalloutStyle(calloutStyles, plan.attrs.type) : undefined;
           return style?.floatBarrier === true;
         }
         continue;
       }
       if (b.type === 'heading' && b.level) {
         const level = headingLevels.forBlock(b);
-        return level?.breakBefore?.enabled === true || level?.span === 'page';
+        // A page-span heading that opens mid-page (`spanBreak: false`,
+        // #539) ends no page.
+        return level?.breakBefore?.enabled === true || (level?.span === 'page' && level.spanBreak !== false);
       }
       return false;
     }
@@ -4093,7 +4186,7 @@ function placeDocumentPass(
    * `callout.placement` records the request.
    */
   const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
-    const style = pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!;
+    const style = pickCalloutStyle(calloutStyles, plan.attrs.type)!;
     const firstFrameId = `block-${blockIdCounter++}`;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     const L = makeCalloutLayouter(startIdx, plan, style);
@@ -4504,14 +4597,14 @@ function placeDocumentPass(
     }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
-      if (plan && pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)) {
+      if (plan && pickCalloutStyle(calloutStyles, plan.attrs.type)) {
         // A float barrier box (e.g. a chapter's closing "key points")
         // takes every pending float first — in the current page's free
         // slots, else on pages opened ahead of it — so no float escapes
         // past it. The page stays balanceable (no forced break).
         // A page-span barrier box drains inside `placeCalloutSpan`, once
         // the page-span figures before it have taken the band cut.
-        if (pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!.floatBarrier && !spanBoxAt(blockIdx)) {
+        if (pickCalloutStyle(calloutStyles, plan.attrs.type)!.floatBarrier && !spanBoxAt(blockIdx)) {
           tryPlacePendingFloatsOnCurrentPage();
           drainPendingFloats();
         }
@@ -4572,8 +4665,10 @@ function placeDocumentPass(
       // `span: 'page'` headings open a chapter band across the full content
       // width. Always start on a fresh page boundary so the band sits at the
       // page top, and reset the cursor to column 0 so all other columns will
-      // have their availableHeight reduced symmetrically after placement.
-      if (level?.span === 'page') {
+      // have their availableHeight reduced symmetrically after placement —
+      // unless the level opens it where the text reaches (`spanBreak:
+      // false`, #539) and the page holds it there.
+      if (level?.span === 'page' && !(level.spanBreak === false && !bb?.enabled && openSpanHeadingHere(blockIdx, rawBlock, level))) {
         pendingSpacing = 0;
         closeFlowSegment(blockIdx);
         advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
@@ -5141,12 +5236,12 @@ function placeDocumentPass(
           const pref = numberPrefix ?? '';
           // The lines joined back into the title (EF-162), as the design is
           // painted (`buildHeadersAndFooters`).
-          const title = headingTitleText(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length, lvl.numberSeparator);
+          const { titleText: title, marked: titleMarked } = defaultOpenerTitle(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length, lvl.numberSeparator);
           // Span-page openers lay out across the full content area (both
           // columns); in-column headings use just the column width.
           const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
           const measureWidth = lvl.span === 'page' ? pageArea.width : curCol.bbox.width;
-          const info: HeadingPlaceholderInfo = { titleText: title, formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), ...(resolved.numerals ? { numerals: resolved.numerals } : {}), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
+          const info: HeadingPlaceholderInfo = { titleText: title, ...(titleMarked !== undefined ? { titleMarked } : {}), formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), ...(resolved.numerals ? { numerals: resolved.numerals } : {}), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
           const design = measureHeadingDesign(
             lvl,
             info,
@@ -6117,10 +6212,10 @@ function* buildDocumentRounds(
     const pageRefs = (): boolean => {
       if (!hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id)))) return false;
       const resolved = resolveAllConfig(config);
-      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolved, content.continuation?.headings)), resolved.crossRefs.defaultStyle);
+      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolved, content.continuation?.headings, content.continuation?.statementCounters)), resolved.crossRefs.defaultStyle);
     };
     if (hasTocDirective(parsed) || hasIndexDirective(parsed) || pageRefs()) {
-      let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
+      let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings, content.continuation?.statementCounters);
       let doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, 0), content);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);
@@ -6178,7 +6273,7 @@ function* buildDocumentNumbered(
     // A spread counts its notes in citation order: the order of the first
     // markers, which `used` holds.
     const order = f.numbering === 'spread' ? new Map([...used.keys()].map((id, i) => [id, i])) : undefined;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate, doc.pageIndexOffset ?? 0, order).numbers;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, footnoteFormatOf(f, doc.config.numerals), f.markerTemplate, doc.pageIndexOffset ?? 0, order).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);

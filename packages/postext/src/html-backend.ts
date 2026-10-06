@@ -469,12 +469,17 @@ function pickSegmentColor(
 }
 
 function renderMathSegmentSvg(seg: VDTLineSegment, xPx: number, line: VDTLine, block: VDTBlock): string {
+  return mathSegmentSvg(seg, xPx, line, block.color);
+}
+
+/** An inline formula of a line, in `color` (a body line's block colour, a
+ *  caption's, a note's or a cell's text colour, #541). */
+function mathSegmentSvg(seg: VDTLineSegment, xPx: number, line: VDTLine, color: string): string {
   const render = seg.mathRender;
   if (!render) return '';
   // Position the SVG with top = (line.baseline - block.bbox.y - ascent).
   // line.bbox.y is absolute; we need top relative to the line's wrapper top.
   const topOffset = line.baseline - line.bbox.y - render.ascentPx;
-  const color = block.color;
   // Use the pre-serialised self-contained SVG. Replace any currentColor fills
   // with the block colour so the SVG is independent of CSS inheritance.
   const svg = render.svg
@@ -1575,6 +1580,11 @@ function renderResourceLine(
         continue;
       }
       parts.push(links.at(segmentHref(seg)));
+      if (seg.kind === 'math') {
+        parts.push(mathSegmentSvg(seg, x, line, color));
+        x += seg.width;
+        continue;
+      }
       if (seg.kind === 'swatch') {
         parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, color));
         x += seg.width;

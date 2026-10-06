@@ -69,6 +69,7 @@ import {
 } from './primitives';
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { paintChip } from './chip';
+import { renderMathSegment } from './blockRender';
 import { paintKunten, paintLineMarks, paintRuby, paintWarichu } from './annotations';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
@@ -650,6 +651,14 @@ function paintLineRuns(
         continue;
       }
       if (seg.kind !== 'text' || seg.chip) uris.other();
+      if (seg.kind === 'math') {
+        // An inline formula (#541): vector paths, as in the text, tagged
+        // as a `Formula` with its TeX for alternate text.
+        if (elem) tagContent(ctx, elem.type === 'Formula' ? elem : elem.child('Formula', { alt: seg.mathRender?.tex ?? '' }));
+        renderMathSegment(ctx, seg, x, line.baseline, color);
+        x += seg.width;
+        continue;
+      }
       if (seg.kind === 'swatch') {
         tagContent(ctx, elem);
         drawSwatchPx(ctx, x, line.baseline, seg.width, seg.swatch?.color, color);

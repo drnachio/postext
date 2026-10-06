@@ -21,6 +21,11 @@ export function extractInlineMath(
   absOffsets: number[] | null,
   fallbackStart: number,
   fallbackEnd: number,
+  /** Pandoc's rule (`tex_math_dollars`), for snippets (#541): an opening
+   *  `$` has no space after it, a closing one no space before it and no
+   *  digit after it, so the prices of "$5 to $10" stay text. A `$` that
+   *  opens nothing is text, and raises no `unclosedMath`. */
+  strict = false,
 ): { cleaned: string; maths: MathMeta[]; issues: ParseIssue[] } {
   // Fast path: no `$` anywhere means no math and no escapes to unescape.
   if (text.indexOf('$') < 0) {
@@ -41,6 +46,12 @@ export function extractInlineMath(
   };
   while (i < text.length) {
     const ch = text[i]!;
+    if (ch === '\\' && text[i + 1] === '$' && strict) {
+      // A snippet's escapes were read before (`protectDollarEscapes`): one
+      // left is in a link destination, which reads its own.
+      i += 2;
+      continue;
+    }
     if (ch === '\\' && text[i + 1] === '$') {
       // Escaped dollar sign — keep as literal `$` in output.
       parts.push(text.slice(segStart, i), '$');
@@ -59,12 +70,20 @@ export function extractInlineMath(
       i += 2;
       continue;
     }
+    if (strict && (i + 1 >= text.length || /\s/.test(text[i + 1]!))) {
+      i++;
+      continue;
+    }
     // Scan for the matching closing `$`, honouring `\$` escapes.
     let j = i + 1;
     let foundClose = -1;
     while (j < text.length) {
       if (text[j] === '\\' && text[j + 1] === '$') {
         j += 2;
+        continue;
+      }
+      if (text[j] === '$' && strict && (/\s/.test(text[j - 1]!) || /\d/.test(text[j + 1] ?? ''))) {
+        j++;
         continue;
       }
       if (text[j] === '$') {
@@ -74,6 +93,10 @@ export function extractInlineMath(
       // Bail on newline — inline math must be on a single line.
       if (text[j] === '\n') break;
       j++;
+    }
+    if (foundClose < 0 && strict) {
+      i++;
+      continue;
     }
     if (foundClose < 0) {
       issues.push({

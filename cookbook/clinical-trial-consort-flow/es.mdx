@@ -1,0 +1,68 @@
+---
+title: "Un informe de ensayo clínico con diagrama CONSORT"
+summary: "Un ensayo real, abreviado: resumen estructurado a todo el ancho, diagrama CONSORT dibujado en código con sus cifras, tablas alineadas y citas APA."
+plain: "Un estudio publicado sobre un chatbot que propone ejercicios de terapia, abreviado y compuesto de nuevo. El diagrama de quién entró y salió del ensayo se dibuja con sus cifras, las tablas alinean los decimales y las referencias siguen APA."
+description: "Un informe de ensayo aleatorizado con Postext: resumen estructurado en recuadro, diagrama CONSORT en SVG con las cifras, tablas alineadas y referencias APA."
+question: "¿Cómo dibujo un diagrama de flujo CONSORT y compongo el resumen estructurado de un ensayo?"
+aliases: ["CONSORT", "diagrama de flujo", "flujo de participantes", "ensayo controlado aleatorizado", "ECA", "ensayo clínico", "resumen estructurado", "PHQ-9", "GAD-7", "APA", "conflicto de intereses", "salud mental digital", "JMIR", "PubMed Central"]
+pageNotes: { "1": "Página 1: un filete índigo arriba, el antetítulo RANDOMIZED CONTROLLED TRIAL · DIGITAL MENTAL HEALTH, el título de cuatro líneas en Lora negrita, tres autores con números de filiación volados, las filiaciones, la línea de fechas y la línea de procedencia en índigo. Debajo, un recuadro lila pálido a todo el ancho: ABSTRACT, con Background, Objective y Methods en la columna izquierda y Results y Conclusions en la derecha, y las palabras clave y la línea de registro del ensayo a lo ancho del recuadro. La Introducción empieza debajo, a dos columnas, con citas APA como (Kessler et al., 2007).", "3": "Página 3: la descripción del bot y su lista de rasgos de proceso; en la columna derecha, un recuadro bajo una franja índigo reúne cinco burbujas lilas redondeadas, cada una con un mensaje del bot tal como lo cita el artículo; después, la condición de control y las escalas PHQ-9 y GAD-7 bajo títulos en cursiva.", "5": "Página 5: la Figura 1, el diagrama CONSORT a todo el ancho: píldoras de fase ENROLLMENT, ALLOCATION, FOLLOW-UP y ANALYSIS a la izquierda; 204 inscripciones, 115 confirmadas, 45 excluidas por generadas por bots, 70 aleatorizados en un recuadro índigo; 34 asignados a Woebot y 36 al control solo informativo; 3 y 11 perdidos en el seguimiento; 31 y 25 con datos en T2; 34 y 36 analizados por intención de tratar en recuadros índigo. Debajo, la Tabla 1 con las características basales, medias y DE en columnas separadas, y el análisis de quienes completaron el estudio.", "6": "Página 6: la Tabla 2 a todo el ancho, los resultados por intención de tratar en T2 con cabecera índigo de dos filas, medias y errores estándar en columnas alineadas, intervalos de confianza, F, P y d; los resultados cualitativos; al pie, las Figuras 2 y 3, gráficos de barras con lo mejor y lo peor que señalaron los participantes.", "7": "Página 7: limitaciones y conclusiones, la declaración de conflicto de intereses, las abreviaturas con los términos en negrita índigo y las primeras referencias APA con sus DOI." }
+---
+
+## Lo que vas a componer
+
+Un ensayo controlado aleatorizado de salud mental digital, compuesto de nuevo a partir de su texto en acceso abierto: el ensayo de Woebot publicado en JMIR Mental Health en 2017, un agente conversacional que aplica terapia cognitivo-conductual, abreviado a ocho páginas. El estilo de la casa es el de un informe de investigación sobrio en 210 × 280 mm, con Lora para el texto, Nunito Sans para rótulos y cifras y un único color de acento, el índigo. Las páginas llevan lo que pide un informe de ensayo: el resumen estructurado a lo ancho de las dos columnas, palabras clave y línea de registro, el flujo de participantes CONSORT redibujado en código con las cifras del propio artículo, dos tablas de resultados con los decimales alineados, el conflicto de intereses de los autores palabra por palabra y citas autor-fecha APA 7 generadas desde BibTeX. El texto se mantiene en inglés, como se publicó.
+
+## Elaboración
+
+### 1 · El recuadro del resumen y el diagrama como recurso
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un estilo de recuadro con `span: 'page'` cierra las dos columnas por encima y las vuelve a abrir por debajo, así que el resumen puede ir a todo el ancho a cualquier altura de la página. Dentro, `:::columns{count=2}` reparte de Background a Conclusions en dos columnas, y las palabras clave y la línea de registro siguen a todo el ancho del recuadro. El diagrama CONSORT es un recurso SVG como cualquier otro: el número, el pie y la nota de procedencia salen del recurso, y su primer `:ref` lo coloca en la cabeza de la página siguiente.
+
+### 2 · La cabecera del artículo, desde los atributos del título
+
+<Excerpt region="title" />
+
+El título es el único título de nivel 1 del documento, con un estilo que ocupa toda la página y se dibuja con elementos. Lo demás sale de atributos del título: el tipo de artículo, los autores con marcas de filiación `^1^` que `inlineMarks` pone voladas, las filiaciones separadas por `\n`, las fechas de recepción y aceptación y la línea de procedencia. Para tu artículo cambias los atributos y conservas el diseño. `numbered: false` en el estilo deja las figuras como Figura 1, 2, 3 en lugar de 1.1.
+
+### 3 · El flujo CONSORT, dibujado con las cifras
+
+<Excerpt region="art" />
+
+Cada caja es una llamada a `node()` con sus líneas; las fases son píldoras en el margen izquierdo y las flechas son una línea y un triángulo relleno, porque un `<marker>` acaba como imagen en el PDF. Las cifras son las del ensayo: 204 inscripciones, 115 confirmaciones, 45 altas generadas por bots excluidas, 34 y 36 asignados, 3 y 11 perdidos, 31 y 25 con datos en T2. Para tu ensayo cambias los textos y los recuentos; la composición sigue la altura de las cajas. El texto de un SVG dibujado como imagen no ve las fuentes de la página, así que el dibujo lleva Nunito Sans incrustada como URL de datos.
+
+### 4 · Cifras alineadas en las tablas
+
+<Excerpt region="tables" />
+
+Nunito Sans compone sus cifras con un solo ancho, de modo que una columna de medias alineadas a la derecha cuadra en la coma decimal. Cada media y su DE o EE van en dos columnas, la media a la derecha y el paréntesis a la izquierda, pegado a ella, y `mergeCells` construye las cabeceras de grupo («Information-only control» sobre tres columnas) y las filas que cruzan la tabla. La Tabla 2 es un flotante a todo el ancho; la Tabla 1 se queda en una columna.
+
+### 5 · Las palabras del bot en recuadros anidados
+
+<Excerpt region="boxes" />
+
+El artículo cita cinco mensajes que envió el bot. La receta los reúne en un recuadro con una franja índigo arriba; cada mensaje es un recuadro anidado con las esquinas redondeadas y un rótulo pequeño que nombra el rasgo que ilustra. Allí solo aparecen las citas del artículo, sin añadir nada.
+
+## Variantes
+
+### Cita con números al modo Vancouver
+
+Las revistas médicas suelen numerar las citas; el BibTeX y el texto no cambian.
+
+```diff
+-  citations: { style: 'apa', link: true,
++  citations: { style: 'elsevier-vancouver', marker: 'superscript', link: true,
+```
+
+### Añade un número de ClinicalTrials.gov
+
+Este ensayo se consideró exento de registro y lo dice. Un ensayo registrado da su registro y su número en la misma línea del recuadro, por ejemplo `**Trial registration** ClinicalTrials.gov NCT01234567`, con el número de tu propio registro.
+
+### Un diagrama sin la fila de análisis
+
+Si el informe no dice a quién se analizó, termina cada rama en las cajas de seguimiento: quita el nodo `an` y su flecha, y baja `CONSORT_H`.
+
+## Errores frecuentes
+
+- El artículo no tiene número NCT: los autores escriben que el ensayo quedó exento de registro. La línea de registro lo dice, con el motivo que da el artículo, en lugar de inventar un número.
+- Una tabla que comparte columna con una figura a todo el ancho se detiene tres líneas antes del pie y continúa en la página siguiente. La Tabla 1 cabe entera porque sus filas van a 7,5 pt con 0,45 mm de relleno y el dibujo CONSORT mide 107 mm de alto.
+- El artículo escribe χ² en sus pruebas de ji cuadrado. Aquí las fuentes del PDF vienen de los archivos latin de Fontsource, que no tienen griego, así que esta edición lo escribe con letras y lo indica en el colofón.

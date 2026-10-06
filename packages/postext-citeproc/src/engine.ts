@@ -45,15 +45,59 @@ function escapeHtml(s: string): string {
  *  locale's own words, set solid: "夏目と森", "夏目ほか" (ja-JP terms `and`,
  *  `et-al`); Chinese keeps 、 and 等. */
 function narrativeAuthors(item: CslItem | undefined, and: string, etAl: string, japanese = false): string {
-  const names: CslName[] = (item?.author ?? item?.editor ?? []) as CslName[];
+  const listed: CslName[] = (item?.author ?? item?.editor ?? []) as CslName[];
+  const names = listed.filter((n) => n.literal !== ET_AL_MARK && !isEtAl(n));
   if (names.length === 0) return '';
   const nameOf = (n: CslName): string => n.literal ?? [n['non-dropping-particle'], n.family].filter(Boolean).join(' ');
   const first = nameOf(names[0]!);
   const cjk = CJK.test(first);
+  // A list cut short (`and others`, #533) is "et al." whatever its length.
+  if (names.length < listed.length) return cjk ? (japanese ? `${first}${etAl}` : `${first}等`) : `${first} ${etAl}`;
   if (names.length === 1) return first;
   if (cjk && japanese) return names.length === 2 ? `${first}${and}${nameOf(names[1]!)}` : `${first}${etAl}`;
   if (names.length === 2) return cjk ? `${first}、${nameOf(names[1]!)}` : `${first} ${and} ${nameOf(names[1]!)}`;
   return cjk ? `${first}等` : `${first} ${etAl}`;
+}
+
+/** What stands for BibTeX's `and others` while citeproc-js formats a name
+ *  list (it knows no such name): the style writes it as a name, and the
+ *  name with the separator before it becomes the locale's "et al." (#533). */
+const ET_AL_MARK = 'POSTEXTETALMARK';
+
+/** Whether a name is the `others` that ends a list cut short (`{literal:
+ *  'others'}`, or a family name `others` alone). */
+function isEtAl(name: CslName | undefined): boolean {
+  const text = name?.literal ?? (name?.given ? undefined : name?.family);
+  return typeof text === 'string' && text.trim().toLowerCase() === 'others';
+}
+
+/** An item whose name lists end in `others` with the mark in its place
+ *  (one with no name before it is dropped). */
+function markEtAl(item: CslItem): CslItem {
+  let out: CslItem | undefined;
+  for (const [key, value] of Object.entries(item)) {
+    if (!Array.isArray(value) || !value.some((n) => isEtAl(n as CslName))) continue;
+    const names = (value as CslName[]).filter((n) => !isEtAl(n));
+    out ??= { ...item };
+    out[key] = names.length > 0 ? [...names, { literal: ET_AL_MARK }] : names;
+  }
+  return out ?? item;
+}
+
+/** The mark and the separator before it as "et al." (`etAl`, in italics
+ *  when the style sets its `<et-al>` so). A comma before the last name
+ *  stays before "et al." ("Tan, Wei, et al.", "张三, 李四, 等"); an "and"
+ *  goes ("Tan, W. et al."). */
+function writeEtAl(html: string, and: string, etAl: string, italic: boolean): string {
+  if (!html.includes(ET_AL_MARK)) return html;
+  const andWord = and.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`[ \u00a0]*([,，、])?[ \u00a0]*(?:&#38;|&amp;|&|${andWord})?[ \u00a0]*((?:<[^>/]+>)*)${ET_AL_MARK}((?:</[^>]+>)*)(\\.?)`, 'g');
+  const term = italic ? `<i>${escapeHtml(etAl)}</i>` : escapeHtml(etAl);
+  return html.replace(re, (_m, comma: string | undefined, open: string, close: string, stop: string, at: number) => {
+    const before = html.slice(Math.max(0, at - 1), at);
+    const lead = comma ? `${comma}${CJK.test(comma) ? '' : ' '}` : CJK.test(etAl[0] ?? '') && CJK.test(before) ? '' : ' ';
+    return `${lead}${open}${term}${close}${etAl.endsWith('.') ? '' : stop}`;
+  });
 }
 
 function numericStyle(xml: string): boolean {
@@ -138,7 +182,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
       // A numbered style whose citation prints no locator (Vancouver,
       // Nature, GB/T 7714): the wrapper adds it.
       const dropsLocator = !/variable="locator"|macro="[^"]*locator[^"]*"/.test(citationElement(xml));
-      const items = new Map(options.items.map((i) => [i.id, i]));
+      const items = new Map(options.items.map((i) => [i.id, markEtAl(i)]));
       const locale = pickLocale(sources.locales, options.locale);
       const sys = {
         retrieveLocale: (lang: string) => sources.locales[pickLocale(sources.locales, lang)] ?? sources.locales['en-US'],
@@ -153,6 +197,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
       const japanese = locale.startsWith('ja');
       const and = engine.getTerm('and') || 'and';
       const etAl = engine.getTerm('et-al') || 'et al.';
+      const etAlItalic = /<et-al\b[^>]*font-style="italic"/.test(xml);
       let cited: string[] = [];
       return {
         kind,
@@ -160,20 +205,25 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
         terms: { and, etAl },
         cite(clusters: readonly CitationClusterInput[]): string[] {
           const known = clusters.map((c) => ({ ...c, items: c.items.filter((it) => items.has(it.id)) }));
+          // An author-date or author-page style writes "García (2020)"
+          // itself; a numbered or a note style does not.
+          const composite = (c: CitationClusterInput): boolean => c.mode === 'narrative' && kind === 'in-text' && !numeric;
           const citations = known.map((c, index) => ({
             citationID: `c${index}`,
             citationItems: c.items.map((it) => ({
               id: it.id,
               ...(it.locator ? { locator: it.locator, label: it.label ?? 'page' } : {}),
-              ...(it.prefix ? { prefix: escapeHtml(it.prefix) } : {}),
-              ...(it.suffix ? { suffix: escapeHtml(it.suffix) } : {}),
+              // Affixes are CSL rich text (`<i>`, `<b>`…, #528), which
+              // citeproc-js reads and escapes itself.
+              ...(it.prefix ? { prefix: it.prefix } : {}),
+              // citeproc-js repeats a composite citation's suffix after the
+              // name ("García, see (2020, see)"): it goes in below.
+              ...(it.suffix && !composite(c) ? { suffix: it.suffix } : {}),
               ...(it.suppressAuthor ? { 'suppress-author': true } : {}),
             })),
             properties: {
               noteIndex: c.noteIndex ?? 0,
-              // An author-date or author-page style writes "García (2020)"
-              // itself; a numbered or a note style does not.
-              ...(c.mode === 'narrative' && kind === 'in-text' && !numeric ? { mode: 'composite' } : {}),
+              ...(composite(c) ? { mode: 'composite' } : {}),
             },
           }));
           const withItems = citations.filter((c) => c.citationItems.length > 0);
@@ -193,7 +243,15 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
               const glue = /^<sup>/.test(html) || CJK.test(who) ? '' : ' ';
               return who ? `${escapeHtml(who)}${glue}${html}` : html;
             }
-            html = html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, '');
+            html = writeEtAl(html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, ''), and, etAl, etAlItalic);
+            // A narrative citation's suffix inside its parentheses: "García
+            // (2020, p. 3, see also)".
+            const suffix = composite(c) ? c.items[c.items.length - 1]?.suffix : undefined;
+            if (suffix && html) {
+              const rich = suffix.replace(/&(?!#?\w+;)/g, '&#38;');
+              const glue = /^[\s\p{P}]/u.test(suffix) ? '' : ' ';
+              html = /\)\s*$/.test(html) ? html.replace(/\)(\s*)$/, `${glue}${rich})$1`) : `${html.trimEnd()}${glue}${rich}`;
+            }
             if (chineseText && kind === 'in-text' && !numeric) html = fullWidthCitation(html);
             // An author-page style with nothing for the parentheses (MLA,
             // "as Stillinger records") leaves the space before them.
@@ -216,7 +274,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
             const body = /<div class="csl-right-inline">([\s\S]*?)<\/div>\s*<\/div>\s*$/.exec(raw)?.[1]
               ?? /<div class="csl-entry">([\s\S]*?)<\/div>\s*$/.exec(raw)?.[1]
               ?? raw;
-            entries.push({ id, html: body.replace(/\s+/g, ' ').trim(), ...(label ? { label } : {}) });
+            entries.push({ id, html: writeEtAl(body.replace(/\s+/g, ' ').trim(), and, etAl, etAlItalic), ...(label ? { label } : {}) });
           });
           return {
             entries,

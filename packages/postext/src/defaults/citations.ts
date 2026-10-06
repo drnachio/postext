@@ -7,6 +7,7 @@ export const DEFAULT_CITATIONS_CONFIG: ResolvedCitationsConfig = {
   marker: 'style',
   collapseRanges: true,
   notes: 'footnote',
+  numbering: 'book',
   bibliography: {
     scope: 'book',
     auto: true,
@@ -36,6 +37,7 @@ export function resolveCitationsConfig(partial?: CitationsConfig): ResolvedCitat
     marker: typeof partial?.marker === 'string' && MARKERS.has(partial.marker) ? partial.marker : d.marker,
     collapseRanges: partial?.collapseRanges ?? d.collapseRanges,
     notes: partial?.notes === 'warichu' ? 'warichu' : 'footnote',
+    numbering: partial?.numbering === 'chapter' ? 'chapter' : 'book',
     bibliography: {
       ...(typeof b?.title === 'string' ? { title: b.title } : {}),
       scope: b?.scope === 'chapter' ? 'chapter' : 'book',
@@ -64,6 +66,7 @@ export function stripCitationsDefaults(c?: CitationsConfig): CitationsConfig | u
   if (c.marker !== undefined && c.marker !== d.marker) out.marker = c.marker;
   if (c.collapseRanges !== undefined && c.collapseRanges !== d.collapseRanges) out.collapseRanges = c.collapseRanges;
   if (c.notes !== undefined && c.notes !== d.notes) out.notes = c.notes;
+  if (c.numbering !== undefined && c.numbering !== d.numbering) out.numbering = c.numbering;
   const b = c.bibliography;
   if (b) {
     const db = d.bibliography;

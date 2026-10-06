@@ -15,7 +15,7 @@
 import type { CitationClusterInput, CitationItemInput } from '../citations/types';
 import type { InlineSpan } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
-import { restoreEscapes } from './inlineFormatting';
+import { parseInlineFormatting, restoreEscapes } from './inlineFormatting';
 
 /** Stands for a citation in the plain text until it is formatted. */
 export const CITATION_PLACEHOLDER = '';
@@ -87,7 +87,12 @@ function locatorLength(text: string): number {
 }
 
 /** The locator and suffix of the text after an item's key (`, p. 33,
- *  emphasis added`): a known label, else a bare number meaning a page. */
+ *  emphasis added`): a known label, else a bare number meaning a page. A
+ *  suffix keeps the comma it was written with, a locator or not before it
+ *  (`[@k, inter alia]` → `, inter alia`: "(Brown et al., 2020, inter
+ *  alia)", as Pandoc prints it); one written with no comma (`[@k inter
+ *  alia]`) has none. Emphasis in it stays Markdown (`*inter alia*`): the
+ *  formatter reads it (see `affixSpans`). */
 export function parseLocator(rest: string): Pick<CitationItemInput, 'locator' | 'label' | 'suffix'> {
   let text = rest.trim();
   if (!text.startsWith(',')) return text ? { suffix: text } : {};
@@ -104,13 +109,41 @@ export function parseLocator(rest: string): Pick<CitationItemInput, 'locator' | 
   }
   const length = locatorLength(text);
   if (length === 0 || (!label && !/^\p{N}/u.test(text))) {
-    return text ? { suffix: (label ? word![0] : '') + text } : {};
+    return text ? { suffix: `, ${(label ? word![0] : '') + text}` } : {};
   }
   const locator = text.slice(0, length).trim();
   let after = text.slice(length).trim();
   if (after.startsWith(',')) after = after.slice(1).trim();
   // A suffix after the locator keeps the comma it was written with.
   return { locator, label: label ?? 'page', ...(after ? { suffix: `, ${after}` } : {}) };
+}
+
+/** A citation's prefix or suffix as spans: its Markdown emphasis read
+ *  (`*e.g.*`, `**sic**`, `^a^`, `:smallcaps[…]`, #528), the spaces at its
+ *  ends kept. */
+export function affixSpans(text: string): InlineSpan[] {
+  const lead = /^\s*/.exec(text)![0];
+  const trail = /\s*$/.exec(text.slice(lead.length))![0];
+  const spans = parseInlineFormatting(text.slice(lead.length, text.length - trail.length)).filter((s) => s.text.length > 0);
+  const plain = (t: string): InlineSpan => ({ text: t, bold: false, italic: false });
+  return [...(lead ? [plain(lead)] : []), ...spans, ...(trail ? [plain(trail)] : [])];
+}
+
+/** A citation's prefix or suffix in the rich text a CSL processor reads in
+ *  an affix (citeproc-js and Pandoc's citeproc alike): `<i>`, `<b>`,
+ *  `<sup>`, `<sub>` and small capitals as `<span
+ *  style="font-variant:small-caps;">`; the text as written, which the
+ *  processor escapes itself. */
+export function affixRichText(text: string): string {
+  if (!/[*_^~:]/.test(text)) return text;
+  return affixSpans(text).map((s) => {
+    let out = s.text;
+    if (s.smallCaps) out = `<span style="font-variant:small-caps;">${out}</span>`;
+    if (s.script) out = `<${s.script}>${out}</${s.script}>`;
+    if (s.italic) out = `<i>${out}</i>`;
+    if (s.bold) out = `<b>${out}</b>`;
+    return out;
+  }).join('');
 }
 
 /** The items of a bracketed citation, or undefined when one part names no

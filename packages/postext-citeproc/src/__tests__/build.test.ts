@@ -280,3 +280,30 @@ describe('citations in prose and in Chinese (#309)', () => {
     }
   });
 });
+
+describe('numbering and lists with citeproc-js (#537, #534)', () => {
+  const refs = `---
+references:
+  - {id: a, type: book, author: [{family: Alpha, given: A}], title: Uno, issued: 2001, publisher: P}
+  - {id: b, type: book, author: [{family: Beta, given: B}], title: Dos, issued: 2002, publisher: P}
+  - {id: c, type: book, author: [{family: Gamma, given: C}], title: Tres, issued: 2003, publisher: P}
+  - {id: d, type: book, author: [{family: Delta, given: D}], title: Cuatro, issued: 2004, publisher: P}
+---
+`;
+  const text = (doc: VDTDocument) => lines(doc).map((t) => t.replace(/ /g, ' '));
+
+  it("restarts IEEE numbers in each chapter with numbering: 'chapter'", () => {
+    const md = `${refs}# One\n\nSee [@a], [@b] and [@c].\n\n# Two\n\nAgain [@c], then [@d].\n`;
+    const doc = buildDocument({ markdown: md }, { ...config, citations: { style: 'ieee', numbering: 'chapter', bibliography: { scope: 'chapter' } } });
+    expect(text(doc).find((t) => t.startsWith('Again'))).toBe('Again [1], then [2].');
+    const labels = doc.blocks.filter((b) => b.bibEntry).map((b) => `${b.bibEntry}:${text({ ...doc, blocks: [b] })[0]!.slice(0, 3)}`);
+    expect(labels).toEqual(['a:[1]', 'b:[2]', 'c:[3]', 'c:[1]', 'd:[2]']);
+  });
+
+  it('splits a Nature list after the Methods with scope=new, numbered on', () => {
+    const md = `${refs}Main [@a] and [@b].\n\n:::bibliography{scope=new}\n\n## Methods\n\nWe used [@b] and [@c].\n\n:::bibliography{scope=new title=""}\n`;
+    const doc = buildDocument({ markdown: md }, { ...config, citations: { style: 'nature', marker: 'brackets' } });
+    expect(entries(doc)).toEqual(['a', 'b', 'c']);
+    expect(text(doc).find((t) => t.startsWith('We used'))).toBe('We used [2] and [3].');
+  });
+});

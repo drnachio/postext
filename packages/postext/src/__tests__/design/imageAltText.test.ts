@@ -122,8 +122,7 @@ describe('design images carry alternative text (#213)', () => {
     expect(captioned('Key :swatch{color="#ff0000"} red')).toBe('Key red');
     expect(captioned('See :ref{id="p" text="the plate"} again')).toBe('See the plate again');
     expect(captioned('See :ref{id="p"}, again')).toBe('See , again');
-    // Captions are not parsed for maths: the dollar signs are printed, and
-    // read.
+    // A formula reads as its TeX, between its dollars (#541).
     expect(captioned('Energy $E=mc^2$')).toBe('Energy $E=mc^2$');
     // An ideographic space stays; runs of other spaces become one.
     expect(captioned('第二回　賈夫人仙逝揚州城')).toBe('第二回　賈夫人仙逝揚州城');

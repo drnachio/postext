@@ -27,6 +27,9 @@ export interface AnchorTarget {
   pageLabel?: string;
   /** 0-based book page index of that page, once laid out. */
   pageIndex?: number;
+  /** A labelled equation's or a numbered statement's default label (#530):
+   *  "(3)", "Theorem 2". */
+  numberLabel?: string;
 }
 
 /** Anchor targets by identifier. */
@@ -47,6 +50,7 @@ export function anchorTargetsOf(outline: readonly OutlineEntry[] | undefined): A
       title: e.title,
       ...(e.pageLabel !== undefined ? { pageLabel: e.pageLabel } : {}),
       ...(e.pageIndex !== undefined ? { pageIndex: e.pageIndex } : {}),
+      ...(e.numberLabel !== undefined ? { numberLabel: e.numberLabel } : {}),
     });
   }
   return out;
@@ -181,8 +185,24 @@ export function resolveAnchorRefLabel(
 ): string {
   if (ref.text !== undefined && ref.text.length > 0) return ref.text;
   const page = target.pageLabel !== undefined && target.pageLabel.length > 0 ? target.pageLabel : UNKNOWN_PAGE;
-  const number = bareNumber(target.number);
   const title = target.title;
+  // A labelled equation or a numbered statement (#530) prints its label —
+  // "(3)", "Theorem 2" — and `number` its number as written.
+  if (target.numberLabel !== undefined) {
+    switch (ref.style ?? strings.defaultStyle) {
+      case 'page':
+        return fill(strings.page, page, ref.case);
+      case 'pageNumber':
+        return page;
+      case 'number':
+        return target.number;
+      case 'title':
+        return title.length > 0 ? title : applyCase(target.numberLabel, ref.case);
+      default:
+        return applyCase(target.numberLabel, ref.case);
+    }
+  }
+  const number = bareNumber(target.number);
   switch (ref.style ?? strings.defaultStyle) {
     case 'page':
       return fill(strings.page, page, ref.case);
@@ -215,6 +235,8 @@ export function refPrintsPage(
   if (ref.style === undefined && defaultStyle !== undefined && defaultStyle !== 'default') ref = { ...ref, style: defaultStyle };
   if (ref.style === 'page' || ref.style === 'pageNumber') return true;
   if (!target) return false;
+  // A counted target prints its number, known before layout (#530).
+  if (target.numberLabel !== undefined) return false;
   const titled = target.title.length > 0;
   if (ref.style === 'title') return !titled;
   if (ref.style === 'number') return bareNumber(target.number).length === 0 && !titled;

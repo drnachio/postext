@@ -1,6 +1,6 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
 import { folioForTrim, resolveFolioConfig, type FolioPaperConfig } from "postext";
-import { BLOCK_PAGES } from "./pageFlip";
+import { BLOCK_PAGES, type PageSource } from "./pageFlip";
 import { createFolio, type FolioAppearance, type FolioOptions, type FolioPagePoint, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 import { attachVideoSource, autoKey, autoplayPlan, isHlsVideo, makeWay, pageVideoSpots, spotContains, type PageVideoSpot } from "./videos";
 
@@ -228,6 +228,9 @@ const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(pre
 /** How long the book must stay as it is before a video set to play on its
  *  own starts (a host's layouts settling, a run of turns). */
 const AUTOPLAY_SETTLE_MS = 700;
+
+/** The most pixels a page is painted in for the magnifying glass. */
+const SHARP_MAX_PIXELS = 24e6;
 
 /** How long a resize settles before the pages are painted at the new size. */
 const RESIZE_SETTLE_MS = 120;
@@ -668,9 +671,62 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     if (moved) showVideos();
   }
 
+  // ── Sharper paintings for the magnifying glass (#527) ──
+  /** Page → its painting for the glass, the width it was painted at and
+   *  the layout it was painted from. */
+  const sharp = new Map<number, { canvas: HTMLCanvasElement; width: number; doc: VDTDocument }>();
+  let sharpChain: Promise<unknown> = Promise.resolve();
+  /** Page `i` painted `width` px wide for the glass, within 1.5 times the
+   *  page's own resolution and 24 megapixels; one page at a time, each in
+   *  a task of its own (a newspaper page takes a while to paint). */
+  function paintSharp(i: number, width: number): Promise<PageSource> {
+    const done = sharpChain.then(
+      () =>
+        new Promise<PageSource>((resolve) => {
+          setTimeout(() => {
+            const page = current.pages[i];
+            if (!page) return resolve(null);
+            const size = trimmedSize(page, current);
+            const w = Math.max(1, Math.min(width, Math.round(size.width * 1.5), Math.floor(Math.sqrt((SHARP_MAX_PIXELS * size.width) / size.height))));
+            const had = sharp.get(i);
+            if (had && had.doc === current && had.width >= w) return resolve(had.canvas);
+            const canvas = document.createElement("canvas");
+            const scale = w / size.width;
+            renderPageToCanvas(page, current, canvas, { trim: true, scale, singleInk: options.singleInk, pageNegative: options.pageNegative });
+            // The decorations too (a selection), over the page as painted.
+            const ctx = options.decorate ? canvas.getContext("2d") : null;
+            if (ctx) {
+              const inset = Math.max(0, current.trimOffset);
+              ctx.setTransform(scale, 0, 0, scale, -inset * scale, -inset * scale);
+              ctx.save();
+              options.decorate!(i, ctx);
+              ctx.restore();
+            }
+            if (had) free(had.canvas);
+            sharp.delete(i);
+            sharp.set(i, { canvas, width: w, doc: current });
+            // A few pages kept: the spread on show and the one before.
+            for (const [k, v] of sharp) {
+              if (sharp.size <= 4) break;
+              free(v.canvas);
+              sharp.delete(k);
+            }
+            resolve(canvas);
+          }, 0);
+        }),
+    );
+    sharpChain = done.catch(() => undefined);
+    return done;
+  }
+  function releaseSharp() {
+    for (const v of sharp.values()) free(v.canvas);
+    sharp.clear();
+  }
+
   const first = doc.pages[0];
   const viewer = createFolio(container, {
     ...options,
+    detail: options.detail ?? { paint: paintSharp, release: releaseSharp },
     pages: doc.pages.map((p) => {
       const paper = pagePaperOf(p);
       return paper ? { src: "", paper } : "";
@@ -762,6 +818,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     resetView: viewer.resetView,
     getView: viewer.getView,
     setInteraction: viewer.setInteraction,
+    setMagnification: viewer.setMagnification,
     pageAt: viewer.pageAt,
     pointOnScreen: viewer.pointOnScreen,
     setAppearance(next: FolioAppearance) {
@@ -846,6 +903,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       cancelAnimationFrame(sweepFrame);
       clearTimeout(resizeTimer);
       viewer.dispose();
+      releaseSharp();
       for (const canvas of canvases) if (canvas) canvas.width = canvas.height = 0;
       for (const canvas of decorated) free(canvas);
       canvases = [];

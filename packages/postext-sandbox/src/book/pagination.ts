@@ -261,18 +261,20 @@ function usesBookTotalPages(config: PostextConfig): boolean {
 export function createBookPlanner(): BookPlanner {
   const cache = new Map<string, CountersEntry>();
   /** Each chapter's parsed form for the citations, by its text. */
-  const citationCache = new Map<string, { markdown: string; source: CitationSource }>();
-  const citationSource = (chapter: Chapter): CitationSource => {
+  const citationCache = new Map<string, { markdown: string; captions: boolean; source: CitationSource }>();
+  /** `captions`: some resource's caption or note cites (#529), so every
+   *  chapter is read for the figures it places. */
+  const citationSource = (chapter: Chapter, captions: boolean): CitationSource => {
     const hit = citationCache.get(chapter.id);
-    if (hit && hit.markdown === chapter.markdown) return hit.source;
+    if (hit && hit.markdown === chapter.markdown && hit.captions === captions) return hit.source;
     let source: CitationSource;
     try {
       // A chapter that cannot cite (no `@`, no references) counts as empty.
-      source = mayNeedCitations(chapter.markdown) ? citationSourceOf(chapter.markdown) : { blocks: [] };
+      source = captions || mayNeedCitations(chapter.markdown) ? citationSourceOf(chapter.markdown) : { blocks: [] };
     } catch {
       source = { blocks: [] };
     }
-    citationCache.set(chapter.id, { markdown: chapter.markdown, source });
+    citationCache.set(chapter.id, { markdown: chapter.markdown, captions, source });
     return source;
   };
 
@@ -444,13 +446,14 @@ export function createBookPlanner(): BookPlanner {
       let counters: LayoutContinuation | undefined;
       // The book's citations (#272): numbered, disambiguated and listed
       // across the chapters, each chapter formatted against its share.
-      const citationSources = chapters.map(citationSource);
+      const captionsCite = resources.some((r) => r.caption?.includes('@') || r.note?.includes('@'));
+      const citationSources = chapters.map((chapter) => citationSource(chapter, captionsCite));
       const citationContexts = citationSources.some((src) => needsCitationContext(src.blocks, src.metadata))
-        ? bookCitationContexts(citationSources)
+        ? bookCitationContexts(citationSources, resources)
         : undefined;
       // The book-wide part of every chapter's key, written once.
       const sharedCitationKey = citationContexts?.[0]
-        ? citationContextKey({ ...citationContexts[0], local: [], last: false })
+        ? citationContextKey({ ...citationContexts[0], local: [], last: false, captions: {} })
         : '';
       chapters.forEach((chapter, index) => {
         const first = index === 0;
@@ -474,7 +477,7 @@ export function createBookPlanner(): BookPlanner {
           };
         const { outline: printedOutline, key: printedKey } = chapterOutline(entries[index]!);
         const citations = citationContexts?.[index];
-        const chapterOutlineKey = citations ? `${printedKey}\n\ncite:${sharedCitationKey}|${citations.local.join(',')}|${citations.last ? 1 : 0}` : printedKey;
+        const chapterOutlineKey = citations ? `${printedKey}\n\ncite:${sharedCitationKey}|${citations.local.join(',')}|${citations.last ? 1 : 0}${citations.captions ? `|${JSON.stringify(citations.captions)}` : ''}` : printedKey;
         const layout = records[index]!;
         const outlineStale = layout !== null && layout.outlineKey !== chapterOutlineKey;
         if (outlineStale && stalePendingId === null) stalePendingId = chapter.id;
