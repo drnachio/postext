@@ -301,10 +301,10 @@ describe('affixes (#528)', () => {
       { mode: 'parenthetical', items: [{ id: 'brown2020', prefix: '<i>e.g.</i>,', suffix: ', <i>inter alia</i>' }] },
       { mode: 'parenthetical', items: [{ id: 'brown2020', prefix: 'A & B:' }] },
     ]);
-    expect(plain).toBe('(Brown et al., 2020, inter alia)');
-    expect(rich).toBe('(<i>e.g.</i>, Brown et al., 2020, <i>inter alia</i>)');
+    expect(plain).toBe('(Brown et\u00a0al., 2020, inter alia)');
+    expect(rich).toBe('(<i>e.g.</i>, Brown et\u00a0al., 2020, <i>inter alia</i>)');
     // Escaped once, by citeproc-js.
-    expect(amp).toBe('(A &#38; B: Brown et al., 2020)');
+    expect(amp).toBe('(A &#38; B: Brown et\u00a0al., 2020)');
   });
 
   it('set a narrative citation\'s suffix once, inside its parentheses', () => {
@@ -312,7 +312,7 @@ describe('affixes (#528)', () => {
     expect(apa.cite([
       { mode: 'narrative', items: [{ id: 'brown2020', suffix: ', see also' }] },
       { mode: 'narrative', items: [{ id: 'brown2020', locator: '3', label: 'page', suffix: ', <i>passim</i>' }] },
-    ])).toEqual(['Brown et al. (2020, see also)', 'Brown et al. (2020, p. 3, <i>passim</i>)']);
+    ])).toEqual(['Brown et\u00a0al. (2020, see also)', 'Brown et\u00a0al. (2020, p. 3, <i>passim</i>)']);
   });
 });
 
@@ -328,17 +328,25 @@ describe('BibTeX `and others` and Nature (#533)', () => {
     const nature = engine.createProcessor({ style: 'nature', locale: 'en-US', items: bib });
     nature.cite([{ mode: 'parenthetical', items: [{ id: 'tan' }, { id: 'smith' }] }]);
     const [tan, smith] = nature.bibliography().entries.map((e) => e.html);
-    expect(tan).toBe('Tan, W. <i>et al.</i> Two. <i>Nature</i> <b>5</b>, 1–2 (2020).');
-    expect(smith).toContain('Smith, J., Doe, J., <i>et al.</i> Folding.');
+    expect(tan).toBe('Tan, W. <i>et\u00a0al.</i> Two. <i>Nature</i> <b>5</b>, 1–2 (2020).');
+    expect(smith).toContain('Smith, J., Doe, J., <i>et\u00a0al.</i> Folding.');
     for (const html of [tan, smith]) expect(html).not.toMatch(/others|POSTEXT/);
     const apa = engine.createProcessor({ style: 'apa', locale: 'en-US', items: bib });
     expect(apa.cite([
       { mode: 'parenthetical', items: [{ id: 'tan' }] },
       { mode: 'narrative', items: [{ id: 'tan' }] },
-    ])).toEqual(['(Tan et al., 2020)', 'Tan et al. (2020)']);
+    ])).toEqual(['(Tan et\u00a0al., 2020)', 'Tan et\u00a0al. (2020)']);
     const ieee = engine.createProcessor({ style: 'ieee', locale: 'en-US', items: bib });
-    expect(ieee.cite([{ mode: 'narrative', items: [{ id: 'tan' }] }])[0]).toBe('Tan et al. [1]');
-    expect(ieee.bibliography().entries[0]!.html).toMatch(/^W\. Tan <i>et al\.<\/i>, “Two,”/);
+    expect(ieee.cite([{ mode: 'narrative', items: [{ id: 'tan' }] }])[0]).toBe('Tan et\u00a0al. [1]');
+    expect(ieee.bibliography().entries[0]!.html).toMatch(/^W\. Tan <i>et\u00a0al\.<\/i>, “Two,”/);
+  });
+
+  it('keeps "et al." on one line with a no-break space', () => {
+    const vancouver = engine.createProcessor({ style: 'elsevier-vancouver', locale: 'en-US', items: bib });
+    vancouver.cite([{ mode: 'parenthetical', items: [{ id: 'smith' }] }]);
+    const [entry] = vancouver.bibliography().entries.map((e) => e.html);
+    expect(entry).toContain('et\u00a0al.');
+    expect(entry).not.toMatch(/et al\./);
   });
 
   it('prints the DOI of an article with no volume once in Nature', () => {
