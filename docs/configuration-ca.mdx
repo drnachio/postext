@@ -2067,7 +2067,7 @@ L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de man
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>Quan pren un requadre que tanca una columna curta l'espai sota el seu peu (la palanca 1, registrada com a <code>trailingCallout</code>). <code>'first'</code>: abans que qualsevol altra palanca, com fins a postext 1.4 — el requadre es queda tot el buit, encara que siguin diverses línies, i els encapçalaments de damunt no reben res. <code>'last'</code>: després de les palanques d'encapçalaments, finals de llista, fórmules i flotants, que prenen abans les línies senceres; el requadre baixa amb el text de damunt i després pren només el que han deixat, normalment una fracció de línia, de manera que el seu peu continua caient a l'última casella de la retícula i queda a prop del text que comenta. <code>'off'</code>: mai; el requadre conserva l'espai sota el seu peu, tot i que les altres palanques encara el poden baixar línies senceres quan afegeixen espai per damunt, i la fracció de línia que sobra s'hi queda. En una pàgina de tancament, on el requadre és l'única palanca que alinea el seu peu amb la columna contigua, <code>'off'</code> el deixa on l'ha posat el flux. Qualsevol altre valor es llegeix com a <code>'first'</code>.</td>
+      <td>Quan pren un requadre que tanca una columna curta l'espai sota el seu peu (la palanca 1, registrada com a <code>trailingCallout</code>). <code>'first'</code>: abans que qualsevol altra palanca, com fins a postext 1.4 — el requadre es queda tot el buit, encara que siguin diverses línies, i els encapçalaments de damunt no reben res. <code>'last'</code>: després de les palanques d'encapçalaments, finals de llista, fórmules i flotants, que prenen abans les línies senceres; el requadre baixa amb el text de damunt i després pren només el que han deixat, normalment una fracció de línia, de manera que el seu peu continua caient a l'última casella de la retícula i queda a prop del text que comenta. <code>'off'</code>: mai; el requadre conserva l'espai sota el seu peu, tot i que les altres palanques encara el poden baixar línies senceres quan afegeixen espai per damunt, i la fracció de línia que sobra s'hi queda. En una pàgina de tancament, on el requadre és l'única palanca que alinea el seu peu amb la columna contigua, <code>'off'</code> el deixa on l'ha posat el flux. Qualsevol altre valor es llegeix com a <code>'first'</code>. Un requadre que tanca l'única columna de text de la seva banda (una pàgina d'una sola columna que acaba abans d'hora i el bloc següent de la qual obre la pàgina següent) no es mou mai: no hi ha cap columna al costat amb què alinear-lo (des de postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2948,6 +2948,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Espai mínim a sota; l'ajust a la retícula el pot augmentar.
   indentAfterDisplay?: boolean; // Sagnar el paràgraf que segueix una fórmula en bloc.
   keepWithLeadIn?: boolean; // Mantenir una fórmula en bloc amb la línia que la introdueix.
+  equationNumbering?: {      // Numerar les fórmules en bloc que porten un \label.
+    enabled?: boolean;           // per defecte true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numera per capítol
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': el que imprimeixen la fórmula i \eqref
+  };
 }
 ```
 
@@ -3003,6 +3010,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>Manté una fórmula en bloc a la columna de la línia que la introdueix, com la penalització <code>\predisplaypenalty</code> de TeX. Quan la fórmula no cap sota l'última línia del paràgraf anterior, aquesta línia passa amb la fórmula a la columna o pàgina següent; quan les línies que quedarien enrere són menys de <code>bodyText.widowMinLines</code> (menys d'una si <code>bodyText.avoidWidows</code> està desactivat), un paràgraf que comença en aquella columna passa sencer (amb els encapçalaments que tanquen la columna per damunt, segons <code>headings.keepWithNext</code>). La línia que passa queda sola a dalt de tot de la columna següent, digui el que digui la regla de les òrfenes. Amb <code>false</code>, la fórmula passa sola, i la línia que la introdueix pot tancar la columna de dalt o quedar sobre una figura que encapçala la següent.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>, <code>'&#123;n&#125;'</code>, <code>'never'</code>, <code>'decimal'</code>, <code>'(&#123;n&#125;)'</code></td>
+      <td>Com es numeren les fórmules en bloc que porten un <code>\label</code> (vegeu <em>Equacions numerades</em> més avall). <code>numberingTemplate</code>, <code>resetOn</code> i <code>counterFormat</code> funcionen com els d'un tipus de recurs: <code>'&#123;h1&#125;.&#123;n&#125;'</code> amb <code>resetOn: 'h1'</code> numera (2.1), (2.2)… per capítol, i <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> amb <code>'h2'</code>, per secció. <code>format</code> és el número tal com l'imprimeixen la fórmula i <code>\eqref</code>, amb <code>&#123;n&#125;</code> al lloc del número: <code>'[&#123;n&#125;]'</code> compon [3]. <code>enabled: false</code> no numera res: un <code>\label</code> es descarta i una referència que hi apunta n'imprimeix la pàgina.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3050,7 +3063,15 @@ On la configuració estava desada, el motor ho pot saber i ho fa per tu: `openBu
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // mida i marges actuals
 ```
 
-**Equacions numerades.** Una fórmula en bloc amb `\tag{…}` ocupa tota la seva mesura (la columna, o l'amplada interior del requadre que la conté): l'equació va centrada i el seu número alineat a la dreta, a la línia de l'equació, a cada fila etiquetada d'un `align`. `\tag*{…}` imprimeix l'etiqueta tal qual, sense parèntesis. Només les etiquetes explícites imprimeixen número; entorns com `equation` no es numeren per si sols. Una equació numerada més ampla que la seva mesura desborda per la dreta, com qualsevol fórmula en bloc. (Fins a postext 1.4, una fórmula amb `\tag` no s'arribava a dibuixar.)
+**Equacions numerades.** Una fórmula en bloc amb número ocupa tota la seva mesura (la columna, o l'amplada interior del requadre que la conté): l'equació va centrada i el seu número alineat a la dreta, a la línia de l'equació, a cada fila numerada d'un `align`. El número surt d'un `\label{eq:x}` (des de postext 1.19): les fórmules amb etiqueta, i les files amb etiqueta d'un `align`, `gather`, `alignat`, `flalign` o `eqnarray`, es numeren en ordre de lectura segons `equationNumbering`, tret que una fila digui `\nonumber` o `\notag`. Entorns com `equation` no es numeren per si sols: una fórmula sense etiqueta no porta número. `\tag{…}` imprimeix el text que li donis, entre parèntesis, i `\tag*{…}`, tal qual; cap dels dos no compta, i un `\label` al seu costat li dona nom. Una equació numerada més ampla que la seva mesura desborda per la dreta, com qualsevol fórmula en bloc. (Fins a postext 1.4, una fórmula amb `\tag` no s'arribava a dibuixar; fins a la 1.18, només `\tag` numerava una fórmula.)
+
+`\eqref{eq:x}` al text imprimeix el número en el seu `format`, (3), i `\ref{eq:x}`, el número sol; el mateix fan `:ref{id="eq:x"}` i `@eq:x` (vegeu [Referències creuades](/ca/docs/document-format#referències-creuades-i-àncores)), i dins d'una fórmula `\eqref` l'imprimeix com a text. En un llibre compost capítol a capítol, el comptador continua des del capítol anterior: `continuationAfter` el porta a `LayoutContinuation.statementCounters` (`equation`), i l'esquema del llibre dona a cada etiqueta el seu número (`OutlineEntry.numberLabel`), de manera que una referència a una equació d'un altre capítol l'imprimeix.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 El resolver i l'stripper segueixen el mateix patró que les altres seccions:
 
@@ -5398,6 +5419,18 @@ El vidre continua calent una hora després d'apagar la flama.
       <td><code>true</code></td>
       <td>Compon l'indicador en cursiva.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>sense definir</td>
+      <td>Compta les caixes d'aquest estil com a enunciats numerats: teoremes, lemes, definicions. Vegeu <a href="#enunciats-numerats-i-demostracions">Enunciats numerats i demostracions</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Una marca alineada a la dreta al final de l'última línia de la caixa, com el <code>'∎'</code> o el <code>'□'</code> amb què acaba una demostració: en aquesta línia si hi cap després d'un espai i, si no, en una línia pròpia. Una caixa que acaba en una fórmula en bloc sense número la hi posa com a etiqueta de la fórmula.</td>
+    </tr>
   </tbody>
 </table>
 ### El contenidor `:::callout`
@@ -5426,6 +5459,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined per al `note` per defecte; s'eliminen els valors estàtics per defecte
 ```
+
+### Enunciats numerats i demostracions
+
+Un estil amb `numbering` compta les seves caixes, com el paquet `amsthm` de LaTeX compta els entorns de teorema (des de postext 1.19). Cada caixa imprimeix el seu rètol i el seu número —«**Teorema 2.**» al començament del primer paràgraf—, i el `title` de la tanca segueix el número entre parèntesis: `:::callout{type="theorem" title="Bradley–Terry"}` comença amb «**Teorema 2** (Bradley–Terry)**.**». Una caixa oberta amb un identificador (`{#thm:main}`) és destí de referències creuades, que imprimeixen «Teorema 2» (`:ref{id="thm:main"}`), i `\ref{thm:main}` o `style=number` imprimeixen 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>La paraula que precedeix el número: <code>'Teorema'</code>, <code>'Lema'</code>, <code>'Definition'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>l'<code>id</code> de l'estil</td>
+      <td>El comptador que fan avançar les caixes. Els estils que anomenen un mateix comptador el comparteixen, com fa <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Teorema 1, Lema 2, Teorema 3. <code>'equation'</code> compta juntament amb les equacions etiquetades. <code>false</code> imprimeix el rètol sense número (el «<em>Demostració.</em>» d'una demostració).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>Com els d'un tipus de recurs: <code>'&#123;h1&#125;.&#123;n&#125;'</code> amb <code>resetOn: 'h1'</code> numera Teorema 2.1, 2.2… per capítol, i <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> amb <code>'h2'</code>, per secció. Un comptador que comparteixen diversos estils continua el compte imprimeixin el que imprimeixin les seves plantilles.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> obre el primer paràgraf de la caixa amb el rètol (una caixa que comença amb una llista, una fórmula o una altra caixa rep un paràgraf per a ell); <code>'title'</code> fa del rètol el títol de la caixa, amb el seu <code>titleStyle</code>: «Teorema 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>La lletra del rètol en línia i del seu sufix, sigui quina sigui la del cos de la caixa: amb un cos en cursiva (<code>body.italic</code>), un rètol en rodona continua en rodona. El títol entre parèntesis es compon en rodona i amb el pes normal.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Es compon després del rètol en línia i el seu títol.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una demostració és un estil amb un rètol sense número i una marca final:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Teorema' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lema', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definició' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Demostració', counter: false, bold: false, italic: true } },
+]
+```
+
+En un llibre compost capítol a capítol, els comptadors continuen des del capítol anterior (`LayoutContinuation.statementCounters`, que omple `continuationAfter`), i l'esquema del llibre dona a l'àncora de cada caixa numerada el seu rètol (`OutlineEntry.numberLabel`), de manera que una referència des d'un altre capítol l'imprimeix.
 
 ### Tipografia dins d'un requadre
 

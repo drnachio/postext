@@ -2071,7 +2071,7 @@ headings: {
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>结束短栏的框何时占用其底部下方的空余（手段1，记录为<code>trailingCallout</code>）。<code>'first'</code>：先于其他所有手段，与postext 1.4及以前相同。框占用整段空余，即使有好几行，其上方的标题一行也分不到。<code>'last'</code>：在标题、列表结尾、行间公式和浮动体手段之后执行，它们先占用整行；框随上方的文字一起下移，然后只占用它们剩下的部分，通常不足一行，这样框底仍对齐最后一个网格位置，框也仍靠近它所注释的文字。<code>'off'</code>：从不执行；框保留其底部下方的空余，但其他手段在框上方加空时，仍可以把它整行下移，框下剩余的不足一行的空间保持不变。在末页上，框是唯一能让其底部与相邻栏对齐的手段，<code>'off'</code>让它留在文字流放置的位置。其他任何值都按<code>'first'</code>处理。</td>
+      <td>结束短栏的框何时占用其底部下方的空余（手段1，记录为<code>trailingCallout</code>）。<code>'first'</code>：先于其他所有手段，与postext 1.4及以前相同。框占用整段空余，即使有好几行，其上方的标题一行也分不到。<code>'last'</code>：在标题、列表结尾、行间公式和浮动体手段之后执行，它们先占用整行；框随上方的文字一起下移，然后只占用它们剩下的部分，通常不足一行，这样框底仍对齐最后一个网格位置，框也仍靠近它所注释的文字。<code>'off'</code>：从不执行；框保留其底部下方的空余，但其他手段在框上方加空时，仍可以把它整行下移，框下剩余的不足一行的空间保持不变。在末页上，框是唯一能让其底部与相邻栏对齐的手段，<code>'off'</code>让它留在文字流放置的位置。其他任何值都按<code>'first'</code>处理。区段中唯一一栏文字以框结尾时（单栏页面提前结束、下一个块另起下一页），该框不会移动：旁边没有可对齐的栏（postext 1.19 起）。</td>
     </tr>
   </tbody>
 </table>
@@ -2954,6 +2954,13 @@ interface MathConfig {
   marginBottom?: Dimension; // 下方的最小间距；对齐基线网格时可能变大。
   indentAfterDisplay?: boolean; // 独立公式之后的段落首行缩进。
   keepWithLeadIn?: boolean; // 让独立公式与引出它的那一行在一起。
+  equationNumbering?: {      // 为带\label的独立公式编号。
+    enabled?: boolean;           // 默认true
+    numberingTemplate?: string;  // '{n}'；'{h1}.{n}'按章编号
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})'：公式和\eqref印出的形式
+  };
 }
 ```
 
@@ -3009,6 +3016,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>让独立公式与引出它的那一行留在同一栏，相当于TeX的predisplay penalty。公式在前一段最后一行下面排不下时，这一行和公式一起移到下一栏或下一页；如果留下的行少于<code>bodyText.widowMinLines</code>（<code>bodyText.avoidWidows</code>关闭时为少于一行），就把在该栏开始的段落整段移走（按<code>headings.keepWithNext</code>，连同该段上方收尾这一栏的标题）。带过去的那一行单独位于下一栏的栏顶，不论段末孤行（orphan）规则如何要求。设为<code>false</code>时只移走公式，引出它的那一行可能收尾上一栏，或者位于下一栏栏首的图的上方。</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>、<code>'&#123;n&#125;'</code>、<code>'never'</code>、<code>'decimal'</code>、<code>'(&#123;n&#125;)'</code></td>
+      <td>带<code>\label</code>的独立公式如何编号（见下文的<em>带编号的公式</em>）。<code>numberingTemplate</code>、<code>resetOn</code>和<code>counterFormat</code>与资源类型中的同名字段作用相同：<code>'&#123;h1&#125;.&#123;n&#125;'</code>配合<code>resetOn: 'h1'</code>按章编号为(2.1)、(2.2)……，<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>配合<code>'h2'</code>按节编号。<code>format</code>是公式和<code>\eqref</code>印出编号的形式，其中<code>&#123;n&#125;</code>代表编号：<code>'[&#123;n&#125;]'</code>排出[3]。<code>enabled: false</code>时不为任何公式编号：<code>\label</code>被舍弃，对它的引用印出它所在的页码。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3056,7 +3069,15 @@ math: {
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // 现在的大小和外边距
 ```
 
-**带编号的公式。**带`\tag{…}`的独立公式占满它的行长（所在的栏，或所在标注框的内宽）：公式居中，编号右对齐排在公式所在的行上，`align`中每个带标签的行都是如此。`\tag*{…}`按原样打印标签，不加括号。只有显式标签才打印编号；`equation`之类的环境本身不编号。比行长更宽的带编号公式向右溢出，与其他独立公式一样。（postext 1.4及以前，带`\tag`的公式根本不会绘制。）
+**带编号的公式**。带编号的独立公式占满它的行长（所在的栏，或所在标注框的内宽）：公式居中，编号右对齐排在公式所在的行上，`align`中每个带编号的行都是如此。编号来自`\label{eq:x}`（postext 1.19起）：带标签的公式，以及`align`、`gather`、`alignat`、`flalign`或`eqnarray`中带标签的行，按阅读顺序依`equationNumbering`编号，除非该行写了`\nonumber`或`\notag`。`equation`之类的环境本身不编号：没有标签的公式就没有编号。`\tag{…}`把你给的标签加上括号打印出来，`\tag*{…}`按原样打印；两者都不参与计数，与它并列的`\label`为它命名。比行长更宽的带编号公式向右溢出，与其他独立公式一样。（postext 1.4及以前，带`\tag`的公式根本不会绘制；1.18及以前，只有`\tag`能为公式编号。）
+
+正文中的`\eqref{eq:x}`按`format`印出编号(3)，`\ref{eq:x}`印出不带括号的编号；`:ref{id="eq:x"}`和`@eq:x`也是如此（见[交叉引用](/zh/docs/document-format#交叉引用与锚点)）。在公式内部，`\eqref`把编号作为文字印出。逐章排版的书中，计数器接着上一章继续：`continuationAfter`通过`LayoutContinuation.statementCounters`（`equation`）把它带过去，全书大纲为每个标签给出编号（`OutlineEntry.numberLabel`），所以对另一章中公式的引用也能印出编号。
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1)、(1.2)……(2.1)
+}
+```
 
 解析函数和精简函数与其他部分一致：
 
@@ -5408,6 +5429,18 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code></td>
       <td>把标记排成斜体。</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>未设置</td>
+      <td>把这种样式的框作为编号的命题计数，如定理、引理、定义。见<a href="#编号的命题与证明">编号的命题与证明</a>。</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>在框最后一行末尾右对齐排出的记号，就像证明以<code>'∎'</code>或<code>'□'</code>结束：空一格后放得下时排在最后一行上，否则单独占一行。以不带编号的独立公式结束的框，把它作为该公式的标签排出。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5437,6 +5470,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => 对内置的`note`默认值返回undefined；去掉静态默认值
 ```
+
+### 编号的命题与证明
+
+带`numbering`的样式为它的框计数，就像LaTeX的`amsthm`为定理环境计数（postext 1.19起）。每个框印出它的标签和编号，即第一段开头的“**定理2.**”，围栏的`title`以括号跟在编号之后：`:::callout{type="theorem" title="Bradley–Terry"}`以“**定理2**（Bradley–Terry）**.**”开头。以标识符打开的框（`{#thm:main}`）可以作为交叉引用的目标，引用印出“定理2”（`:ref{id="thm:main"}`），`\ref{thm:main}`或`style=number`印出2。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>编号前面的词：<code>'定理'</code>、<code>'Lemma'</code>、<code>'Definición'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>样式的<code>id</code></td>
+      <td>框所推进的计数器。指定同一个计数器的样式共用它，如同<code>\newtheorem&#123;lemma&#125;[theorem]</code>：定理1、引理2、定理3。<code>'equation'</code>与带标签的公式一起计数。<code>false</code>只印标签，不印编号（证明的“<em>证明.</em>”）。</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>与资源类型中的相同：<code>'&#123;h1&#125;.&#123;n&#125;'</code>配合<code>resetOn: 'h1'</code>按章编号为定理2.1、2.2……；<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>配合<code>'h2'</code>按节编号。几种样式共用的计数器照常递增，不论各样式的模板印出什么。</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code>把标签排在框第一段的开头（以列表、公式或另一个框开始的框，会为标签另起一段）；<code>'title'</code>把标签作为框的标题，按其<code>titleStyle</code>排出：“定理2（Bradley–Terry）”。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>段首标签及其后缀的字形，不受框正文的影响：正文为斜体（<code>body.italic</code>）时，直立的标签仍保持直立。括号中的标题以常规字重直立排出。</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>排在段首标签及其标题之后。</td>
+    </tr>
+  </tbody>
+</table>
+
+证明就是一个标签不编号、带结束记号的样式：
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: '定理' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: '引理', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: '定义' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: '证明', counter: false, bold: false, italic: true } },
+]
+```
+
+逐章排版的书中，计数器接着上一章继续（`LayoutContinuation.statementCounters`，由`continuationAfter`填入），全书大纲为每个编号框的锚点给出它的标签（`OutlineEntry.numberLabel`），所以从另一章引用时也能印出它。
 
 ### 框内的排版
 

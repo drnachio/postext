@@ -2074,7 +2074,7 @@ headings: {
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>短い段を閉じる囲みが、いつその下の空きを取るか（調整手段1、<code>trailingCallout</code>として記録）。<code>'first'</code>：postext 1.4までと同様、ほかのどの調整手段よりも先に取ります。囲みは数行あっても空きをすべて取り、その上の見出しには何も残りません。<code>'last'</code>：見出し、リストの終わり、別行立て、フロートの各調整手段が先に行単位で空きを取った後に取ります。囲みはその上の本文とともに下がり、残った分（たいていは1行未満）だけを取るので、下端は最後のグリッド位置にそろったまま、注釈を付ける本文の近くにとどまります。<code>'off'</code>：取りません。囲みはその下の空きを残します。ただし、ほかの調整手段が囲みの上に空きを足せば行単位で下がることはあり、その下に残る1行未満の空きはそのままです。最後のページでは、隣の段と下端をそろえる調整手段が囲みしかないため、<code>'off'</code>では流れが置いた位置のままです。それ以外の値は<code>'first'</code>として扱います。</td>
+      <td>短い段を閉じる囲みが、いつその下の空きを取るか（調整手段1、<code>trailingCallout</code>として記録）。<code>'first'</code>：postext 1.4までと同様、ほかのどの調整手段よりも先に取ります。囲みは数行あっても空きをすべて取り、その上の見出しには何も残りません。<code>'last'</code>：見出し、リストの終わり、別行立て、フロートの各調整手段が先に行単位で空きを取った後に取ります。囲みはその上の本文とともに下がり、残った分（たいていは1行未満）だけを取るので、下端は最後のグリッド位置にそろったまま、注釈を付ける本文の近くにとどまります。<code>'off'</code>：取りません。囲みはその下の空きを残します。ただし、ほかの調整手段が囲みの上に空きを足せば行単位で下がることはあり、その下に残る1行未満の空きはそのままです。最後のページでは、隣の段と下端をそろえる調整手段が囲みしかないため、<code>'off'</code>では流れが置いた位置のままです。それ以外の値は<code>'first'</code>として扱います。帯の中で唯一の本文段を閉じる囲み（途中で終わる1段のページで、次のブロックが次ページから始まる場合）は動かしません。そろえる隣の段がないためです（postext 1.19から）。</td>
     </tr>
   </tbody>
 </table>
@@ -2957,6 +2957,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Minimum space below; baseline grid snap may enlarge it.
   indentAfterDisplay?: boolean; // Indent a paragraph that follows a display formula.
   keepWithLeadIn?: boolean; // Keep a display formula with the line that leads into it.
+  equationNumbering?: {      // Number the display formulas that carry a \label.
+    enabled?: boolean;           // default true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numbers by chapter
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': what the formula and \eqref print
+  };
 }
 ```
 
@@ -3012,6 +3019,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>別行立て数式を、それを導入する行と同じ段に置きます。TeXのpredisplay penaltyに相当します。数式がその前の段落の最終行の下に収まらない場合、その行は数式と一緒に次の段またはページへ移ります。後に残る行が<code>bodyText.widowMinLines</code>未満になる場合（<code>bodyText.avoidWidows</code>がオフなら1行未満）は、その段で始まる段落が丸ごと次へ移ります（<code>headings.keepWithNext</code>により、その上で段を閉じている見出しも一緒に移ります）。持ち越された行は、オーファンの規則が何を求めていても、次の段の先頭に単独で置かれます。<code>false</code>の場合は数式だけが次へ移り、それを導入する行が上の段を閉じたり、次の段の先頭にある図の上に置かれたりすることがあります。</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>、<code>'&#123;n&#125;'</code>、<code>'never'</code>、<code>'decimal'</code>、<code>'(&#123;n&#125;)'</code></td>
+      <td><code>\label</code>を持つ別行立て数式の番号の付け方です（後述の<em>番号付きの数式</em>を参照）。<code>numberingTemplate</code>、<code>resetOn</code>、<code>counterFormat</code>はリソースの種類のものと同じ働きをします。<code>'&#123;h1&#125;.&#123;n&#125;'</code>と<code>resetOn: 'h1'</code>で章ごとに(2.1)、(2.2)…と、<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>と<code>'h2'</code>で節ごとに番号を付けます。<code>format</code>は数式と<code>\eqref</code>が印字する番号の形で、<code>&#123;n&#125;</code>が番号を表します。<code>'[&#123;n&#125;]'</code>なら[3]と組まれます。<code>enabled: false</code>ではどの数式にも番号を付けません。<code>\label</code>は捨てられ、それへの参照はページを印字します。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3059,7 +3072,15 @@ math: {
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // today's size and margins
 ```
 
-**番号付きの数式**。`\tag{…}`を含む別行立て数式は、その組幅（段、または囲みの内側の幅）いっぱいに広がります。数式は中央に置かれ、その番号は数式の行の右端にそろえて組まれます。`align`では、タグの付いたすべての行でそうなります。`\tag*{…}`はラベルを括弧なしで、書かれたとおりに印字します。番号が付くのは明示的なタグだけで、`equation`などの環境はそれだけでは番号が付きません。組幅より広い番号付きの数式は、ほかの別行立て数式と同じく右へはみ出します。（postext 1.4までは、`\tag`を含む数式はまったく描画されませんでした。）
+**番号付きの数式**。番号の付いた別行立て数式は、その組幅（段、または囲みの内側の幅）いっぱいに広がります。数式は中央に置かれ、その番号は数式の行の右端にそろえて組まれます。`align`では、番号の付いたすべての行でそうなります。番号は`\label{eq:x}`から付きます（postext 1.19以降）。ラベルを付けた数式と、`align`、`gather`、`alignat`、`flalign`、`eqnarray`のラベルを付けた行には、`\nonumber`や`\notag`を書いた行を除き、`equationNumbering`に従って読む順に番号が振られます。`equation`などの環境はそれだけでは番号が付かず、ラベルのない数式には番号がありません。`\tag{…}`は指定したラベルを括弧に入れて、`\tag*{…}`は書かれたとおりに印字します。どちらも数えられず、その横の`\label`はそれに名前を付けます。組幅より広い番号付きの数式は、ほかの別行立て数式と同じく右へはみ出します。（postext 1.4までは、`\tag`を含む数式はまったく描画されず、1.18までは`\tag`だけが番号を付けていました。）
+
+本文の`\eqref{eq:x}`は番号をその`format`で（(3)）、`\ref{eq:x}`は番号だけを印字します。`:ref{id="eq:x"}`と`@eq:x`も同じです（[相互参照](/ja/docs/document-format#相互参照とアンカー)を参照）。数式の中では、`\eqref`は番号をテキストとして印字します。章ごとに組む本では、カウンターは前の章から続きます。`continuationAfter`がそれを`LayoutContinuation.statementCounters`（`equation`）で引き継ぎ、本のアウトラインがすべてのラベルに番号を与える（`OutlineEntry.numberLabel`）ので、別の章の数式への参照もその番号を印字します。
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 解決関数（resolver）と既定値の除去関数（stripper）は、ほかのセクションと同じ形です。
 
@@ -5413,6 +5434,18 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code></td>
       <td>マーカーをイタリックで組みます。</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>未設定</td>
+      <td>このスタイルの囲みを、定理、補題、定義のような番号付きの命題として数えます。<a href="#番号付きの定理と証明">番号付きの定理と証明</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>囲みの最終行の末尾に右端そろえで置く記号です。証明を<code>'∎'</code>や<code>'□'</code>で終えるときに使います。スペースを空けて収まれば最終行に、収まらなければ独立した行に置きます。番号のない別行立て数式で終わる囲みでは、その数式のタグとして置きます。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5442,6 +5475,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined for the built-in `note` default; static defaults dropped
 ```
+
+### 番号付きの定理と証明
+
+`numbering`を持つスタイルは、LaTeXの`amsthm`が定理環境を数えるように、その囲みを数えます（postext 1.19以降）。各囲みはラベルと番号を印字し（最初の段落の先頭に「**定理2.**」）、フェンスの`title`は番号の後に括弧に入れて続きます。`:::callout{type="theorem" title="Bradley–Terry"}`は「**定理2**（Bradley–Terry）**.**」で始まります。識別子を付けて開いた囲み（`{#thm:main}`）は相互参照の対象になり、参照は「定理2」と印字し（`:ref{id="thm:main"}`）、`\ref{thm:main}`や`style=number`は2を印字します。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>番号の前に置く語です。<code>'定理'</code>、<code>'Lemma'</code>、<code>'Definición'</code>など。</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>スタイルの<code>id</code></td>
+      <td>囲みが進めるカウンターです。同じカウンターを指定したスタイルは、<code>\newtheorem&#123;lemma&#125;[theorem]</code>と同じようにそれを共有します（定理1、補題2、定理3）。<code>'equation'</code>は、ラベルを付けた数式と一緒に数えます。<code>false</code>は番号なしでラベルを印字します（証明の「<em>証明.</em>」）。</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>リソースの種類のものと同じです。<code>'&#123;h1&#125;.&#123;n&#125;'</code>と<code>resetOn: 'h1'</code>で章ごとに定理2.1、2.2…と、<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>と<code>'h2'</code>で節ごとに番号を付けます。複数のスタイルが共有するカウンターは、それぞれのテンプレートが何を印字するかにかかわらず数え続けます。</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code>は囲みの最初の段落をラベルで始めます（リスト、数式、別の囲みで始まる囲みには、そのための段落を加えます）。<code>'title'</code>はラベルを囲みのタイトルにして、その<code>titleStyle</code>で組みます。「定理2（Bradley–Terry）」のようになります。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>段落頭のラベルとその後に付く文字の書体で、囲みの本文にかかわりません。本文がイタリック（<code>body.italic</code>）でも、立体のラベルは立体のままです。括弧内のタイトルは、通常のウェイトの立体で組みます。</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>段落頭のラベルとそのタイトルの後に置く文字です。</td>
+    </tr>
+  </tbody>
+</table>
+
+証明は、番号のないラベルと終わりの記号を持つスタイルです。
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: '定理' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: '補題', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: '定義' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: '証明', counter: false, bold: false, italic: true } },
+]
+```
+
+章ごとに組む本では、カウンターは前の章から続きます（`LayoutContinuation.statementCounters`。`continuationAfter`が埋めます）。本のアウトラインは番号付きの囲みのアンカーごとにそのラベルを与える（`OutlineEntry.numberLabel`）ので、別の章からの参照もそれを印字します。
 
 ### 囲みの中の文字組み
 

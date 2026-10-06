@@ -2074,7 +2074,7 @@ The last column of a page is only balanced when the page flows naturally into th
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>When a box closing a short column takes the room under its foot (lever 1, recorded as <code>trailingCallout</code>). <code>'first'</code>: before any other lever, as up to postext 1.4 — the box takes the whole gap, even several lines, and the headings above it get none. <code>'last'</code>: after the heading, list-end, display and float levers, which take whole lines first; the box moves down with the text above it and then takes only what they left, usually a fraction of a line, so its foot still meets the last grid slot and it stays close to the text it annotates. <code>'off'</code>: never; the box keeps the room under its foot, though the other levers can still move it down by whole lines when they add space above it, and the fraction of a line left under it stays. On a closing page, where the box is the only lever that lines its foot up with the column beside it, <code>'off'</code> leaves it where the flow put it. Any other value reads as <code>'first'</code>.</td>
+      <td>When a box closing a short column takes the room under its foot (lever 1, recorded as <code>trailingCallout</code>). <code>'first'</code>: before any other lever, as up to postext 1.4 — the box takes the whole gap, even several lines, and the headings above it get none. <code>'last'</code>: after the heading, list-end, display and float levers, which take whole lines first; the box moves down with the text above it and then takes only what they left, usually a fraction of a line, so its foot still meets the last grid slot and it stays close to the text it annotates. <code>'off'</code>: never; the box keeps the room under its foot, though the other levers can still move it down by whole lines when they add space above it, and the fraction of a line left under it stays. On a closing page, where the box is the only lever that lines its foot up with the column beside it, <code>'off'</code> leaves it where the flow put it. Any other value reads as <code>'first'</code>. A box closing the only text column of its band (a one-column page that ends early, its next block opening the next page) is never moved: there is no column beside it to line up with (since postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2957,6 +2957,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Minimum space below; baseline grid snap may enlarge it.
   indentAfterDisplay?: boolean; // Indent a paragraph that follows a display formula.
   keepWithLeadIn?: boolean; // Keep a display formula with the line that leads into it.
+  equationNumbering?: {      // Number the display formulas that carry a \label.
+    enabled?: boolean;           // default true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numbers by chapter
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': what the formula and \eqref print
+  };
 }
 ```
 
@@ -3012,6 +3019,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>Keep a display formula in the column of the line that leads into it — TeX's predisplay penalty. When the formula does not fit under the last line of the paragraph before it, that line goes to the next column or page with the formula; when the lines left behind would be fewer than <code>bodyText.widowMinLines</code> (fewer than one when <code>bodyText.avoidWidows</code> is off), a paragraph that opens in that column moves on whole (with the headings closing the column above it, under <code>headings.keepWithNext</code>). The line carried over stands alone at the head of the next column, whatever the orphan rule asks. With <code>false</code> the formula alone moves on, and the line that introduces it can close the column above, or sit over a figure heading the next one.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>, <code>'&#123;n&#125;'</code>, <code>'never'</code>, <code>'decimal'</code>, <code>'(&#123;n&#125;)'</code></td>
+      <td>How the display formulas that carry a <code>\label</code> are numbered (see <em>Numbered equations</em> below). <code>numberingTemplate</code>, <code>resetOn</code> and <code>counterFormat</code> work as a resource type's: <code>'&#123;h1&#125;.&#123;n&#125;'</code> with <code>resetOn: 'h1'</code> numbers (2.1), (2.2)… by chapter, <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> with <code>'h2'</code> by section. <code>format</code> is the number as the formula and <code>\eqref</code> print it, <code>&#123;n&#125;</code> standing for the number: <code>'[&#123;n&#125;]'</code> sets [3]. <code>enabled: false</code> numbers nothing: a <code>\label</code> is dropped and a reference to it prints its page.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3059,7 +3072,15 @@ Where the configuration was stored, the engine can tell and does it for you: `op
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // today's size and margins
 ```
 
-**Numbered equations.** A display formula with `\tag{…}` spans its measure (the column, or the inner width of the callout it sits in): the equation is centred and its number set flush right on the equation's line, on every tagged row of an `align`. `\tag*{…}` prints the label as written, without the parentheses. Only explicit tags print a number; environments such as `equation` are not numbered by themselves. A numbered equation wider than its measure overflows to the right, like any display formula. (Up to postext 1.4 a formula with `\tag` was not drawn at all.)
+**Numbered equations.** A display formula with a number spans its measure (the column, or the inner width of the callout it sits in): the equation is centred and its number set flush right on the equation's line, on every numbered row of an `align`. A number comes from a `\label{eq:x}` (since postext 1.19): the labelled formulas, and the labelled rows of an `align`, `gather`, `alignat`, `flalign` or `eqnarray`, are numbered in reading order with `equationNumbering`, unless a row says `\nonumber` or `\notag`. Environments such as `equation` are not numbered by themselves: a formula without a label has no number. `\tag{…}` prints the label you give it, in parentheses, and `\tag*{…}` as written; neither is counted, and a `\label` beside one names it. A numbered equation wider than its measure overflows to the right, like any display formula. (Up to postext 1.4 a formula with `\tag` was not drawn at all; up to 1.18 only `\tag` numbered one.)
+
+`\eqref{eq:x}` in the text prints the number in its `format`, (3), and `\ref{eq:x}` the bare number; so do `:ref{id="eq:x"}` and `@eq:x` (see [Cross-references](/en/docs/document-format#cross-references-and-anchors)), and inside a formula `\eqref` prints it as text. In a book laid out chapter by chapter the counter goes on from the previous chapter: `continuationAfter` carries it in `LayoutContinuation.statementCounters` (`equation`), and the book outline gives every label its number (`OutlineEntry.numberLabel`), so a reference to an equation of another chapter prints it.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 Resolver and stripper match the other sections:
 
@@ -5413,6 +5434,18 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code></td>
       <td>Set the marker in italics.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>unset</td>
+      <td>Count the boxes of this style as numbered statements: theorems, lemmas, definitions. See <a href="#numbered-statements-and-proofs">Numbered statements and proofs</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>A mark set flush right at the end of the box's last line, as a proof ends with <code>'∎'</code> or <code>'□'</code>: on the last line when it fits after a space, else on a line of its own. A box that ends in a display formula with no number takes it as the formula's tag.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5442,6 +5475,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined for the built-in `note` default; static defaults dropped
 ```
+
+### Numbered statements and proofs
+
+A style with `numbering` counts its boxes, as LaTeX's `amsthm` counts theorem environments (since postext 1.19). Each box prints its label and number — "**Theorem 2.**" opening its first paragraph — and the fence's `title` follows the number in parentheses: `:::callout{type="theorem" title="Bradley–Terry"}` opens with "**Theorem 2** (Bradley–Terry)**.**". A box opened with an identifier (`{#thm:main}`) is a target of cross-references, which print "Theorem 2" (`:ref{id="thm:main"}`), and `\ref{thm:main}` or `style=number` prints 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Field</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>The word before the number: <code>'Theorem'</code>, <code>'Lemma'</code>, <code>'Definición'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>the style's <code>id</code></td>
+      <td>The counter the boxes advance. Styles that name one counter share it, as <code>\newtheorem&#123;lemma&#125;[theorem]</code> does: Theorem 1, Lemma 2, Theorem 3. <code>'equation'</code> counts with the labelled equations. <code>false</code> prints the label with no number (a proof's "<em>Proof.</em>").</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>As a resource type's: <code>'&#123;h1&#125;.&#123;n&#125;'</code> with <code>resetOn: 'h1'</code> numbers Theorem 2.1, 2.2… by chapter; <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> with <code>'h2'</code> by section. A counter shared by several styles counts on whatever their templates print.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> opens the box's first paragraph with the label (a box that opens with a list, a formula or another box gets a paragraph for it); <code>'title'</code> makes the label the box's title, in its <code>titleStyle</code>: "Theorem 2 (Bradley–Terry)".</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>The face of the run-in label and its suffix, whatever the box's body: an italic body (<code>body.italic</code>) keeps an upright label upright. The title in parentheses is set upright in the regular weight.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Set after the run-in label and its title.</td>
+    </tr>
+  </tbody>
+</table>
+
+A proof is a style with an unnumbered label and an end mark:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Theorem' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definition' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Proof', counter: false, bold: false, italic: true } },
+]
+```
+
+In a book laid out chapter by chapter the counters go on from the previous chapter (`LayoutContinuation.statementCounters`, which `continuationAfter` fills), and the book outline gives each numbered box's anchor its label (`OutlineEntry.numberLabel`), so a reference from another chapter prints it.
 
 ### Typography inside a box
 

@@ -917,10 +917,10 @@ function dataRanges(text: string): Array<readonly [number, number]> {
 }
 
 /**
- * `\$` sets a dollar sign. In the body the maths pass unescapes it; a
- * snippet (a table cell, a caption, a note) and a chip's label are not
- * parsed for maths, so their `\$` is protected like the other escapes and
- * restored in the spans (EF-151). Inside inline code the pair is already
+ * `\$` sets a dollar sign. In the body the maths pass unescapes it; in a
+ * snippet (a table cell, a caption, a note), whose maths is read after
+ * this pass (#541), and in a chip's label, which takes no maths, it is
+ * protected like the other escapes and restored in the spans (EF-151). Inside inline code the pair is already
  * protected and prints as written. A link destination and a directive's
  * attributes are left alone: `linkHref` reads the destination's escapes
  * itself, and a ref's `text="…"` prints as written, as in the body.

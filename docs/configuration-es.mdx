@@ -2074,7 +2074,7 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>Cuándo toma un recuadro que cierra una columna corta el espacio bajo su pie (la palanca 1, registrada como <code>trailingCallout</code>). <code>'first'</code>: antes que cualquier otra palanca, como hasta postext 1.4 — el recuadro se queda con todo el hueco, aunque sean varias líneas, y los encabezados de encima no reciben nada. <code>'last'</code>: después de las palancas de encabezados, finales de lista, fórmulas y flotantes, que toman antes las líneas enteras; el recuadro baja con el texto de encima y luego toma solo lo que dejaron, normalmente una fracción de línea, de modo que su pie sigue cayendo en la última casilla de la rejilla y queda cerca del texto que comenta. <code>'off'</code>: nunca; el recuadro conserva el espacio bajo su pie, aunque las demás palancas aún pueden bajarlo líneas enteras cuando añaden espacio por encima, y la fracción de línea que sobra se queda. En una página de cierre, donde el recuadro es la única palanca que alinea su pie con la columna contigua, <code>'off'</code> lo deja donde lo puso el flujo. Cualquier otro valor se lee como <code>'first'</code>.</td>
+      <td>Cuándo toma un recuadro que cierra una columna corta el espacio bajo su pie (la palanca 1, registrada como <code>trailingCallout</code>). <code>'first'</code>: antes que cualquier otra palanca, como hasta postext 1.4 — el recuadro se queda con todo el hueco, aunque sean varias líneas, y los encabezados de encima no reciben nada. <code>'last'</code>: después de las palancas de encabezados, finales de lista, fórmulas y flotantes, que toman antes las líneas enteras; el recuadro baja con el texto de encima y luego toma solo lo que dejaron, normalmente una fracción de línea, de modo que su pie sigue cayendo en la última casilla de la rejilla y queda cerca del texto que comenta. <code>'off'</code>: nunca; el recuadro conserva el espacio bajo su pie, aunque las demás palancas aún pueden bajarlo líneas enteras cuando añaden espacio por encima, y la fracción de línea que sobra se queda. En una página de cierre, donde el recuadro es la única palanca que alinea su pie con la columna contigua, <code>'off'</code> lo deja donde lo puso el flujo. Cualquier otro valor se lee como <code>'first'</code>. Un recuadro que cierra la única columna de texto de su banda (una página de una sola columna que acaba antes de tiempo y cuyo bloque siguiente abre la página siguiente) nunca se mueve: no hay columna al lado con la que alinearlo (desde postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2957,6 +2957,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Espacio mínimo debajo; el snap a rejilla puede aumentarlo.
   indentAfterDisplay?: boolean; // Sangrar el párrafo que sigue a una fórmula en bloque.
   keepWithLeadIn?: boolean; // Mantener una fórmula en bloque con la línea que la introduce.
+  equationNumbering?: {      // Numerar las fórmulas en bloque que llevan un \label.
+    enabled?: boolean;           // por defecto true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numera por capítulo
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': lo que imprimen la fórmula y \eqref
+  };
 }
 ```
 
@@ -3012,6 +3019,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>Mantiene una fórmula en bloque en la columna de la línea que la introduce, como la penalización <code>\predisplaypenalty</code> de TeX. Cuando la fórmula no cabe bajo la última línea del párrafo anterior, esa línea pasa con la fórmula a la columna o página siguiente; cuando las líneas que quedarían atrás son menos de <code>bodyText.widowMinLines</code> (menos de una si <code>bodyText.avoidWidows</code> está desactivado), un párrafo que empieza en esa columna pasa entero (con los encabezados que cierran la columna por encima, según <code>headings.keepWithNext</code>). La línea que pasa queda sola en lo alto de la columna siguiente, diga lo que diga la regla de las huérfanas. Con <code>false</code>, la fórmula pasa sola, y la línea que la introduce puede cerrar la columna de arriba o quedar sobre una figura que encabeza la siguiente.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>, <code>'&#123;n&#125;'</code>, <code>'never'</code>, <code>'decimal'</code>, <code>'(&#123;n&#125;)'</code></td>
+      <td>Cómo se numeran las fórmulas en bloque que llevan un <code>\label</code> (ver <em>Ecuaciones numeradas</em> más abajo). <code>numberingTemplate</code>, <code>resetOn</code> y <code>counterFormat</code> funcionan como los de un tipo de recurso: <code>'&#123;h1&#125;.&#123;n&#125;'</code> con <code>resetOn: 'h1'</code> numera (2.1), (2.2)… por capítulo, y <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> con <code>'h2'</code>, por sección. <code>format</code> es el número tal como lo imprimen la fórmula y <code>\eqref</code>, con <code>&#123;n&#125;</code> en el lugar del número: <code>'[&#123;n&#125;]'</code> compone [3]. <code>enabled: false</code> no numera nada: un <code>\label</code> se descarta y una referencia a él imprime su página.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3059,7 +3072,15 @@ Donde la configuración estaba guardada, el motor puede saberlo y lo hace por ti
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // tamaño y márgenes actuales
 ```
 
-**Ecuaciones numeradas.** Una fórmula en bloque con `\tag{…}` ocupa toda su medida (la columna, o el ancho interior del recuadro que la contiene): la ecuación va centrada y su número alineado a la derecha, en la línea de la ecuación, en cada fila etiquetada de un `align`. `\tag*{…}` imprime la etiqueta tal cual, sin paréntesis. Solo las etiquetas explícitas imprimen número; entornos como `equation` no se numeran por sí solos. Una ecuación numerada más ancha que su medida desborda por la derecha, como cualquier fórmula en bloque. (Hasta postext 1.4, una fórmula con `\tag` no llegaba a dibujarse.)
+**Ecuaciones numeradas.** Una fórmula en bloque con número ocupa toda su medida (la columna, o el ancho interior del recuadro que la contiene): la ecuación va centrada y su número alineado a la derecha, en la línea de la ecuación, en cada fila numerada de un `align`. El número sale de un `\label{eq:x}` (desde postext 1.19): las fórmulas con etiqueta, y las filas con etiqueta de un `align`, `gather`, `alignat`, `flalign` o `eqnarray`, se numeran en orden de lectura según `equationNumbering`, salvo que una fila diga `\nonumber` o `\notag`. Entornos como `equation` no se numeran por sí solos: una fórmula sin etiqueta no lleva número. `\tag{…}` imprime el texto que le des, entre paréntesis, y `\tag*{…}`, tal cual; ninguno de los dos cuenta, y un `\label` a su lado le da nombre. Una ecuación numerada más ancha que su medida desborda por la derecha, como cualquier fórmula en bloque. (Hasta postext 1.4, una fórmula con `\tag` no llegaba a dibujarse; hasta la 1.18, solo `\tag` numeraba una fórmula.)
+
+`\eqref{eq:x}` en el texto imprime el número en su `format`, (3), y `\ref{eq:x}`, el número solo; lo mismo hacen `:ref{id="eq:x"}` y `@eq:x` (ver [Referencias cruzadas](/es/docs/document-format#referencias-cruzadas-y-anclas)), y dentro de una fórmula `\eqref` lo imprime como texto. En un libro compuesto capítulo a capítulo, el contador sigue desde el capítulo anterior: `continuationAfter` lo lleva en `LayoutContinuation.statementCounters` (`equation`), y el esquema del libro da a cada etiqueta su número (`OutlineEntry.numberLabel`), de modo que una referencia a una ecuación de otro capítulo lo imprime.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 El resolver y el stripper siguen el mismo patrón que las otras secciones:
 
@@ -5413,6 +5434,18 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>true</code></td>
       <td>Compone el indicador en cursiva.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>sin definir</td>
+      <td>Cuenta las cajas de este estilo como enunciados numerados: teoremas, lemas, definiciones. Ver <a href="#enunciados-numerados-y-demostraciones">Enunciados numerados y demostraciones</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Una marca alineada a la derecha al final de la última línea de la caja, como el <code>'∎'</code> o el <code>'□'</code> con que termina una demostración: en esa línea si cabe tras un espacio y, si no, en una línea propia. Una caja que termina en una fórmula en bloque sin número la pone como etiqueta de la fórmula.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5442,6 +5475,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined para el `note` por defecto; se eliminan los valores estáticos por defecto
 ```
+
+### Enunciados numerados y demostraciones
+
+Un estilo con `numbering` cuenta sus cajas, como el paquete `amsthm` de LaTeX cuenta los entornos de teorema (desde postext 1.19). Cada caja imprime su rótulo y su número —«**Teorema 2.**» al principio de su primer párrafo—, y el `title` de la valla sigue al número entre paréntesis: `:::callout{type="theorem" title="Bradley–Terry"}` empieza con «**Teorema 2** (Bradley–Terry)**.**». Una caja abierta con un identificador (`{#thm:main}`) es destino de referencias cruzadas, que imprimen «Teorema 2» (`:ref{id="thm:main"}`), y `\ref{thm:main}` o `style=number` imprimen 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>La palabra que precede al número: <code>'Teorema'</code>, <code>'Lema'</code>, <code>'Definition'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>el <code>id</code> del estilo</td>
+      <td>El contador que hacen avanzar las cajas. Los estilos que nombran un mismo contador lo comparten, como hace <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Teorema 1, Lema 2, Teorema 3. <code>'equation'</code> cuenta junto con las ecuaciones etiquetadas. <code>false</code> imprime el rótulo sin número (el «<em>Demostración.</em>» de una demostración).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>Como los de un tipo de recurso: <code>'&#123;h1&#125;.&#123;n&#125;'</code> con <code>resetOn: 'h1'</code> numera Teorema 2.1, 2.2… por capítulo, y <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> con <code>'h2'</code>, por sección. Un contador que comparten varios estilos sigue la cuenta impriman lo que impriman sus plantillas.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> abre el primer párrafo de la caja con el rótulo (una caja que empieza con una lista, una fórmula u otra caja recibe un párrafo para él); <code>'title'</code> hace del rótulo el título de la caja, con su <code>titleStyle</code>: «Teorema 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>La letra del rótulo en línea y de su sufijo, sea cual sea la del cuerpo de la caja: con un cuerpo en cursiva (<code>body.italic</code>), un rótulo en redonda sigue en redonda. El título entre paréntesis se compone en redonda y con el peso normal.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Se compone tras el rótulo en línea y su título.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una demostración es un estilo con un rótulo sin número y una marca final:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Teorema' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lema', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definición' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Demostración', counter: false, bold: false, italic: true } },
+]
+```
+
+En un libro compuesto capítulo a capítulo, los contadores siguen desde el capítulo anterior (`LayoutContinuation.statementCounters`, que rellena `continuationAfter`), y el esquema del libro da al ancla de cada caja numerada su rótulo (`OutlineEntry.numberLabel`), de modo que una referencia desde otro capítulo lo imprime.
 
 ### Tipografía dentro de un recuadro
 

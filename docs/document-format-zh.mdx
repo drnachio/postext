@@ -815,7 +815,8 @@ so he learned to count the steps in the dark.
 **锚点。** 引用需要一个指向的目标：
 
 - **带标识符的标题**：`## 方法 {#sec-method}`（Pandoc的写法；也可写`id="sec-method"`）。
-- **带标识符的框或其他容器**：`:::callout{#box-safety title="安全"}`。
+- **带标识符的框或其他容器**：`:::callout{#box-safety title="安全"}`。编号样式的框（定理）按标签和编号引用：*定理2*。
+- **带`\label{eq:x}`的独立公式**（见[数学公式](#数学公式)）：引用印出与公式相同的编号，*(3)*。
 - **正文中的一点**：`:anchor{#key-idea}`设一个不可见的锚点；`[关键思想]{#key-idea}`保留文字并为其命名。
 
 标识符可用字母、数字、`-`、`_`、`.`和`:`，在全书中必须唯一：检查面板会列出重复的标识符（`duplicateAnchor`），引用指向第一个。
@@ -831,13 +832,15 @@ so he learned to count the steps in the dark.
 <table>
 <thead><tr><th><code>style</code></th><th>印出</th></tr></thead>
 <tbody>
-<tr><td><em>（不设）</em></td><td>有编号的标题印名称和编号（<em>第3.2节</em>、<em>第4章</em>），无编号的印标题，锚点印其文字</td></tr>
-<tr><td><code>number</code></td><td>仅编号（<em>3.2</em>）</td></tr>
+<tr><td><em>（不设）</em></td><td>有编号的标题印名称和编号（<em>第3.2节</em>、<em>第4章</em>），无编号的印标题，锚点印其文字，公式印出它所带的编号（<em>(3)</em>），编号的框印标签和编号（<em>定理2</em>）</td></tr>
+<tr><td><code>number</code></td><td>仅编号（<em>3.2</em>、<em>3</em>、<em>2</em>）</td></tr>
 <tr><td><code>title</code></td><td>标题、锚点文字或框的<code>title</code></td></tr>
 <tr><td><code>page</code></td><td>所在页（<em>第112页</em>）</td></tr>
 <tr><td><code>pageNumber</code></td><td>仅页码（<em>112</em>）</td></tr>
 </tbody>
 </table>
+
+正文中也可以写LaTeX的`\eqref{x}`和`\ref{x}`：`\eqref`相当于不设`style`的引用，`\ref`相当于`style=number`，所以`\ref{thm:main}`印出*2*，`\ref{fig:map}`印出图的编号。紧挨在它们前面的`~`是不断行空格（`Theorem~\ref{thm:main}`）。写在`$…$`之内时，它们属于公式。
 
 `text="…"`印出自定的文字，仍然是链接；`case=capitalize`使西文名称首字母大写。文字随文档语言变化（*section 3.2*、*sección 3.2*、*第3.2节*），可在配置的[交叉引用](/zh/docs/configuration#交叉引用)中修改；编号模板已含文字的标题（*第四章*、*Chapter 4*）照原样印出。在竖排中，引用里的数字按`cjk.uprightDigits`的规则排列。
 
@@ -1046,8 +1049,10 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
 - **行内：**`$…$`。在任何文本块（段落、标题、引用块、列表项）中都能识别。它在行中占一个不可分割、不可断开的框；Knuth-Plass把它当作不能拆分的词。若公式的自然高度会撑破行框，就等比缩小，以保持基线网格；很高的表达式应使用独立公式。
 - **独立公式：**`$$…$$`。可以单独占一行（`$$\int_0^1 x^2\,dx$$`），也可以用各自独占一行的`$$`标记围住多行。公式在栏内居中渲染，并对齐到基线网格，上下外边距可配置（`math.marginTop`、`math.marginBottom`），这与标题使用的校正机制完全相同，因此公式后的段落会回到网格上。
 - **独立公式周围的文本：**单独占一行的独立公式即使上方没有空行，也会打断段落。公式前的文本是引出它的段落；紧接在结束的`$$`下方、中间没有空行的文本，是被打断段落的延续，排版时首行不缩进，就像TeX排独立公式之后的“where …”那样。与上方文本以空行隔开（或位于列表、引文或标题之后）的公式不打断任何段落：其后的文本是新段落，无论有无空行都照常缩进（`math.indentAfterDisplay: false`让它也顶格）。只有完整的独立公式才会打断段落，即一行只有一个公式，或在下一个空行之前闭合的`$$`围栏；像`$$a$$ and $$b$$`这样的行仍是文本。`math.keepWithLeadIn`让公式与引出它的那一行留在同一栏。（postext 1.4及以前，上方没有空行的`$$…$$`行被当作段落的一部分，照写法印出。）
-- **公式编号：**`\tag{…}`为独立公式编号：公式占满栏宽（或标注框的内宽），公式居中，编号在所在行右对齐；在`align`中，每个带标签的行都如此。`\tag*{…}`印出不带括号的标签。只有显式的标签才会编号。
-- **转义：**`\$`是字面的美元符号。题注、表格单元格、注释和行内标签不解析公式，因此其中的`$`照原样印出；`\$`在这些地方也印出美元符号，同一个转义字符串在正文和表格中读法相同。未配对的`$`或`$$`定界符会在沙盒的检查面板中产生一条`unclosedMath`记录，并带有可点击定位的源文本锚点。
+- **公式编号**：独立公式中的`\label{eq:x}`为它编号，按阅读顺序排为(1)、(2)……带编号的公式占满栏宽（或标注框的内宽），公式居中，编号在所在行右对齐。在`align`、`gather`、`alignat`、`flalign`或`eqnarray`中，每个带`\label`的行各有自己的编号，除非该行写了`\nonumber`或`\notag`。没有`\label`的公式不编号，`$$…$$`向来如此。`\tag{…}`仍用你给出的文字为公式编号（`\tag*{…}`不加括号），且不参与计数；与它并列的`\label`为这段文字命名。格式、按章或按节的编号（2.3）以及重新计数在[`math.equationNumbering`](/zh/docs/configuration#数学公式)中设置。`\label`要写在公式或其所在行的顶层，不能写在`aligned`、`split`或`cases`内部。
+- **公式的引用**：正文中的`\eqref{eq:x}`印出与公式相同的编号(3)，`\ref{eq:x}`印出不带括号的编号3；两者都是链接，与所有[交叉引用](#交叉引用与锚点)一样。`Eq.~\eqref{eq:x}`中的`~`与LaTeX中一样，是不断行空格。`:ref{id="eq:x"}`和`@eq:x`同样印出(3)。在公式内部，`\eqref`和`\ref`印出编号（不是链接）。没有任何公式设置的标签印为“?”，并在检查面板中列出。
+- **转义：**`\$`是字面的美元符号。未配对的`$`或`$$`定界符会在沙盒的检查面板中产生一条`unclosedMath`记录，并带有可点击定位的源文本锚点。
+- **题注、注释和表格单元格**也排行内公式（postext 1.19起），公式与文字同在一行，遵循单元格的对齐方式，字号与所在片段相同。在这些地方，`$`只按Pandoc的规则打开公式：开头的`$`之后没有空格，结尾的`$`之前没有空格，且其后不紧跟数字，所以“$5 to $10”这样的价格仍是文本；`\$`印出美元符号，因此同一个转义字符串在正文和表格中读法相同。行内标签（chip）的文字不排公式。postext 1.18及以前，这些地方的`$`总是照原样印出。
 - **错误：**MathJax拒绝的TeX源码（未定义的宏、语法错误）会以`invalidMath`警告的形式报出。该公式被替换为一个红色小占位框，版面几何仍然有效。
 - **配置：**配置中的`math`部分提供`enabled`、`fontSizeScale`（相对于周围文本的字号：为1.0时，公式的一个em等于该字号，对独立公式和正文中的行内公式而言就是正文字号；自postext 1.5起，公式比1.4时约小13%，而1.4保存的文件包和沙盒图书保持原有大小，见[公式字号](/zh/docs/configuration#数学公式)）、`color`（未设置时沿用正文颜色）以及独立公式的外边距。
 - **引擎：**MathJax按需加载。沙盒和排版工作线程会自行启动它；在你自己的代码中，要在`buildDocument`之前`await initMathEngine()`，否则每个公式都会排成一个灰色占位框（见[启动数学引擎](/zh/docs/configuration#启动公式引擎)）。
@@ -1066,6 +1071,33 @@ $$
 For a pendulum of length $L$ the period is
 $$T_0 = 2\pi\sqrt{L/g}$$
 where $g$ is the acceleration of free fall.
+```
+
+带编号的公式及对它们的引用：
+
+```md
+The energy is conserved,
+$$
+\begin{align}
+E &= T + V \label{eq:energy} \\
+  &= \tfrac12 m v^2 + m g h \nonumber
+\end{align}
+$$
+and Eq.~\eqref{eq:energy} holds at every instant.
+```
+
+**定理、引理与证明**。带`numbering`的标注框样式会为它的框计数，就像LaTeX的`amsthm`为定理环境计数：每个框以粗体的标签和编号开头，即“**定理2.**”，围栏的`title`以括号跟在编号之后，即“**定理2**（Bradley–Terry）**.**”；对它的`{#id}`的引用印出“定理2”（`\ref{thm:x}`或`style=number`只印2）。指定同一个计数器的样式共用这个计数器，所以定理之后的引理是引理3。证明样式的`endMark`在框的最后一行右对齐排出∎或□，结束这个框。样式的设置见[编号的命题与证明](/zh/docs/configuration#编号的命题与证明)。
+
+```md
+:::callout{type="theorem" #thm:main title="Bradley–Terry"}
+Every reward class holds one reparameterised reward.
+:::
+
+:::callout{type="proof"}
+Apply the projection of \eqref{eq:projection} to any member of the class.
+:::
+
+By :ref{id="thm:main"}, the objective is unchanged.
 ```
 
 

@@ -2074,7 +2074,7 @@ headings: {
       <td><code>closingBox</code></td>
       <td><code>'first' | 'last' | 'off'</code></td>
       <td><code>'first'</code></td>
-      <td>متى يأخذ الإطار الذي يختم عمودًا قصيرًا المتسعَ الذي تحت قاعدته (الأداة 1، وتُسجَّل باسم <code>trailingCallout</code>). <code>'first'</code>: قبل أي أداة أخرى، كما كان الحال حتى postext 1.4 — يأخذ الإطار الفجوة كلها، ولو كانت عدة أسطر، ولا تنال العناوين التي فوقه شيئًا. <code>'last'</code>: بعد أدوات العناوين ونهايات القوائم والمعادلات المنفصلة والعناصر العائمة، التي تأخذ الأسطر الكاملة أولًا؛ ينزل الإطار مع النص الذي فوقه ثم لا يأخذ إلا ما تركته، وهو عادة جزء من سطر، فتلتقي قاعدته بآخر خانة في الشبكة ويبقى قريبًا من النص الذي يعلّق عليه. <code>'off'</code>: أبدًا؛ يحتفظ الإطار بالمتسع الذي تحت قاعدته، وإن كانت الأدوات الأخرى تستطيع إنزاله بأسطر كاملة حين تضيف مسافة فوقه، ويبقى جزء السطر المتروك تحته. في الصفحة الختامية، حيث الإطار هو الأداة الوحيدة التي تساوي قاعدته بالعمود المجاور، تتركه <code>'off'</code> حيث وضعه التدفق. أي قيمة أخرى تُقرأ <code>'first'</code>.</td>
+      <td>متى يأخذ الإطار الذي يختم عمودًا قصيرًا المتسعَ الذي تحت قاعدته (الأداة 1، وتُسجَّل باسم <code>trailingCallout</code>). <code>'first'</code>: قبل أي أداة أخرى، كما كان الحال حتى postext 1.4 — يأخذ الإطار الفجوة كلها، ولو كانت عدة أسطر، ولا تنال العناوين التي فوقه شيئًا. <code>'last'</code>: بعد أدوات العناوين ونهايات القوائم والمعادلات المنفصلة والعناصر العائمة، التي تأخذ الأسطر الكاملة أولًا؛ ينزل الإطار مع النص الذي فوقه ثم لا يأخذ إلا ما تركته، وهو عادة جزء من سطر، فتلتقي قاعدته بآخر خانة في الشبكة ويبقى قريبًا من النص الذي يعلّق عليه. <code>'off'</code>: أبدًا؛ يحتفظ الإطار بالمتسع الذي تحت قاعدته، وإن كانت الأدوات الأخرى تستطيع إنزاله بأسطر كاملة حين تضيف مسافة فوقه، ويبقى جزء السطر المتروك تحته. في الصفحة الختامية، حيث الإطار هو الأداة الوحيدة التي تساوي قاعدته بالعمود المجاور، تتركه <code>'off'</code> حيث وضعه التدفق. أي قيمة أخرى تُقرأ <code>'first'</code>. أما الإطار الذي يُغلق عمود النص الوحيد في شريطه (صفحة ذات عمود واحد تنتهي مبكرًا وتبدأ كتلتها التالية الصفحة التالية) فلا يُحرَّك أبدًا: لا عمود بجانبه يُحاذى معه (منذ postext 1.19).</td>
     </tr>
   </tbody>
 </table>
@@ -2957,6 +2957,13 @@ interface MathConfig {
   marginBottom?: Dimension; // Minimum space below; baseline grid snap may enlarge it.
   indentAfterDisplay?: boolean; // Indent a paragraph that follows a display formula.
   keepWithLeadIn?: boolean; // Keep a display formula with the line that leads into it.
+  equationNumbering?: {      // Number the display formulas that carry a \label.
+    enabled?: boolean;           // default true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numbers by chapter
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': what the formula and \eqref print
+  };
 }
 ```
 
@@ -3012,6 +3019,12 @@ interface MathConfig {
       <td><code>false</code></td>
       <td>يُبقي الصيغة المنفصلة في عمود السطر الذي يمهّد لها، وهو ما يسميه TeX جزاء ما قبل الصيغة (predisplay penalty). حين لا تتسع الصيغة تحت السطر الأخير من الفقرة التي قبلها، ينتقل ذلك السطر مع الصيغة إلى العمود أو الصفحة التالية؛ وحين يكون عدد الأسطر المتروكة خلفه أقل من <code>bodyText.widowMinLines</code> (أقل من سطر واحد حين يكون <code>bodyText.avoidWidows</code> معطّلًا)، تنتقل الفقرة التي تبدأ في ذلك العمود كاملةً (مع العناوين التي تختم العمود فوقها، بحسب <code>headings.keepWithNext</code>). يقف السطر المنقول وحده في رأس العمود التالي، أيًّا كان ما تطلبه قاعدة الأسطر اليتيمة (orphans). ومع <code>false</code> تنتقل الصيغة وحدها، وقد يختم السطرُ الذي يقدّمها العمودَ السابق، أو يقع فوق شكل يتصدر العمود التالي.</td>
     </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>، <code>'&#123;n&#125;'</code>، <code>'never'</code>، <code>'decimal'</code>، <code>'(&#123;n&#125;)'</code></td>
+      <td>طريقة ترقيم الصيغ المنفصلة التي تحمل <code>\label</code> (انظر <em>المعادلات المرقّمة</em> أدناه). تعمل <code>numberingTemplate</code> و<code>resetOn</code> و<code>counterFormat</code> كما تعمل في نوع المورد: <code>'&#123;h1&#125;.&#123;n&#125;'</code> مع <code>resetOn: 'h1'</code> يرقّم (2.1)، (2.2)… بحسب الفصل، و<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> مع <code>'h2'</code> بحسب القسم. و<code>format</code> هو الرقم كما تطبعه الصيغة و<code>\eqref</code>، ويقوم فيه <code>&#123;n&#125;</code> مقام الرقم: <code>'[&#123;n&#125;]'</code> يطبع [3]. ومع <code>enabled: false</code> لا يُرقَّم شيء: يُسقَط <code>\label</code>، وتطبع الإحالة إليه صفحته.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -3059,7 +3072,15 @@ math: {
 math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // today's size and margins
 ```
 
-**المعادلات المرقّمة.** الصيغة المنفصلة التي فيها `\tag{…}` تمتد على عرض قياسها (العمود، أو العرض الداخلي للإطار الذي تقع فيه): تُوسَّط المعادلة ويُصفّ رقمها محاذىً إلى اليمين على سطر المعادلة، في كل صف موسوم من بيئة `align`. أما `\tag*{…}` فيطبع التسمية كما كُتبت، بلا أقواس. لا يُطبع رقم إلا للوسوم الصريحة؛ فالبيئات مثل `equation` لا تُرقَّم من تلقاء نفسها. والمعادلة المرقّمة الأعرض من قياسها تفيض إلى اليمين، كأي صيغة منفصلة. (حتى postext 1.4 لم تكن الصيغة التي فيها `\tag` تُرسم أصلًا.)
+**المعادلات المرقّمة.** الصيغة المنفصلة ذات الرقم تمتد على عرض قياسها (العمود، أو العرض الداخلي للإطار الذي تقع فيه): تُوسَّط المعادلة ويُصفّ رقمها محاذىً إلى اليمين على سطر المعادلة، في كل صف مرقّم من بيئة `align`. ويأتي الرقم من `\label{eq:x}` (منذ postext 1.19): تُرقَّم الصيغ التي تحمل `\label`، والصفوف التي تحمله في `align` أو `gather` أو `alignat` أو `flalign` أو `eqnarray`، بترتيب القراءة وفق `equationNumbering`، ما لم يحمل الصف `\nonumber` أو `\notag`. والبيئات مثل `equation` لا تُرقَّم من تلقاء نفسها: فالصيغة التي لا تسمية لها لا رقم لها. ويطبع `\tag{…}` التسمية التي تعطيها له بين قوسين، و`\tag*{…}` كما كُتبت؛ ولا يدخل أيٌّ منهما في العدّ، و`\label` المجاور لأحدهما يسمّيه. والمعادلة المرقّمة الأعرض من قياسها تفيض إلى اليمين، كأي صيغة منفصلة. (حتى postext 1.4 لم تكن الصيغة التي فيها `\tag` تُرسم أصلًا؛ وحتى 1.18 لم يكن يرقّمها إلا `\tag`.)
+
+يطبع `\eqref{eq:x}` في النص الرقمَ بصيغة `format`، أي (3)، ويطبع `\ref{eq:x}` الرقم مجرّدًا؛ وكذلك يفعل `:ref{id="eq:x"}` و`@eq:x` (انظر [الإحالات](/ar/docs/document-format#الإحالات-والمراسي))، وداخل الصيغة يطبع `\eqref` الرقم نصًا. وفي كتاب يُخرَج فصلًا فصلًا يستمر العدّاد من الفصل السابق: تحمله `continuationAfter` في `LayoutContinuation.statementCounters` (`equation`)، ويعطي مخطّط الكتاب كل تسمية رقمها (`OutlineEntry.numberLabel`)، فتطبعه الإحالة إلى معادلة في فصل آخر.
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
 
 دالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى:
 
@@ -5413,6 +5434,18 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code></td>
       <td>يجعل العلامة مائلة.</td>
     </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>غير مُعيَّن</td>
+      <td>يعدّ إطارات هذا النمط عبارات مرقّمة: مبرهنات وتوطئات وتعريفات. انظر <a href="#المبرهنات-المرقّمة-والبراهين">المبرهنات المرقّمة والبراهين</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>علامة تُصفّ محاذاةً إلى اليمين في آخر السطر الأخير من الإطار، كما يُختم البرهان بـ<code>'∎'</code> أو <code>'□'</code>: على السطر الأخير إن اتسعت له بعد مسافة، وإلا ففي سطر مستقل. والإطار الذي ينتهي بصيغة منفصلة لا رقم لها يجعل العلامة وسمًا للصيغة.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5442,6 +5475,73 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined for the built-in `note` default; static defaults dropped
 ```
+
+### المبرهنات المرقّمة والبراهين
+
+النمط الذي فيه `numbering` يعدّ إطاراته، كما تعدّ الحزمة `amsthm` في LaTeX بيئات المبرهنات (منذ postext 1.19). يطبع كل إطار تسميته ورقمه، «**Theorem 2.**» في أول فقرته الأولى، ويلي `title` السياج الرقمَ بين قوسين: يبدأ `:::callout{type="theorem" title="Bradley–Terry"}` بـ«**Theorem 2** (Bradley–Terry)**.**». والإطار الذي يُفتح بمعرّف (`{#thm:main}`) هدفٌ للإحالات، فتطبع «Theorem 2» (`:ref{id="thm:main"}`)، ويطبع `\ref{thm:main}` أو `style=number` الرقم 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>الكلمة التي تسبق الرقم: <code>'Theorem'</code>، <code>'Lemma'</code>، <code>'Definición'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td><code>id</code> النمط</td>
+      <td>العدّاد الذي تزيده الإطارات. والأنماط التي تسمّي عدّادًا واحدًا تتقاسمه، كما يفعل <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Theorem 1، Lemma 2، Theorem 3. والقيمة <code>'equation'</code> تعدّ مع المعادلات التي تحمل تسمية. أما <code>false</code> فتطبع التسمية بلا رقم («<em>Proof.</em>» في البرهان).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>كما في نوع المورد: <code>'&#123;h1&#125;.&#123;n&#125;'</code> مع <code>resetOn: 'h1'</code> يرقّم Theorem 2.1، 2.2… بحسب الفصل، و<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> مع <code>'h2'</code> بحسب القسم. والعدّاد الذي تتقاسمه عدة أنماط يواصل العدّ على ما تطبعه قوالبها، أيًّا كان.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> يفتتح الفقرة الأولى من الإطار بالتسمية (والإطار الذي يبدأ بقائمة أو صيغة أو إطار آخر يُعطى فقرة لها)؛ و<code>'title'</code> يجعل التسمية عنوان الإطار، بتنسيق <code>titleStyle</code> الخاص به: «Theorem 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>هيئة التسمية المدمجة في الفقرة ولاحقتها، أيًّا كان متن الإطار: فالمتن المائل (<code>body.italic</code>) يُبقي التسمية القائمة قائمةً. ويُنضَّد العنوان الذي بين القوسين قائمًا بالوزن العادي.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>يُنضَّد بعد التسمية المدمجة في الفقرة وعنوانها.</td>
+    </tr>
+  </tbody>
+</table>
+
+البرهان نمطٌ تسميته بلا رقم وله علامة ختام:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Theorem' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definition' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Proof', counter: false, bold: false, italic: true } },
+]
+```
+
+وفي كتاب يُخرَج فصلًا فصلًا تستمر العدّادات من الفصل السابق (`LayoutContinuation.statementCounters`، التي تملؤها `continuationAfter`)، ويعطي مخطّط الكتاب مرساة كل إطار مرقّم تسميتها (`OutlineEntry.numberLabel`)، فتطبعها الإحالة من فصل آخر.
 
 ### التنسيق الطباعي داخل الإطار
 

@@ -815,7 +815,8 @@ A cross-reference names a place in the book and prints its number, its title or 
 **Anchors.** A reference needs something to point at:
 
 - **A heading** with an identifier: `## Method {#sec-method}` (Pandoc's form; `id="sec-method"` works too).
-- **A box or other container** opened with one: `:::callout{#box-safety title="Safety"}`.
+- **A box or other container** opened with one: `:::callout{#box-safety title="Safety"}`. A box of a numbered style (a theorem) is referred to by its label and number: *Theorem 2*.
+- **A display formula** with a `\label{eq:x}` (see [Mathematical formulas](#mathematical-formulas)): a reference prints its number as the formula does, *(3)*.
 - **A point in the text**: `:anchor{#key-idea}` sets an invisible anchor; `[the key idea]{#key-idea}` keeps its words and names them.
 
 An identifier takes letters, digits, `-`, `_`, `.` and `:`. It must be unique in the book: the Checks panel lists one set twice (`duplicateAnchor`), and references reach its first setting.
@@ -831,13 +832,15 @@ The results of :ref{id="sec-method"} hold on :ref{id="sec-method" style=page}.
 <table>
 <thead><tr><th><code>style</code></th><th>prints</th></tr></thead>
 <tbody>
-<tr><td><em>(none)</em></td><td>a numbered heading by its word and number (<em>section 3.2</em>, <em>chapter 4</em>), an unnumbered heading by its title, an anchor by its text</td></tr>
-<tr><td><code>number</code></td><td>the number alone (<em>3.2</em>)</td></tr>
+<tr><td><em>(none)</em></td><td>a numbered heading by its word and number (<em>section 3.2</em>, <em>chapter 4</em>), an unnumbered heading by its title, an anchor by its text, an equation by its number as printed (<em>(3)</em>), a numbered box by its label and number (<em>Theorem 2</em>)</td></tr>
+<tr><td><code>number</code></td><td>the number alone (<em>3.2</em>, <em>3</em>, <em>2</em>)</td></tr>
 <tr><td><code>title</code></td><td>the heading's title, the anchor's text or the box's <code>title</code></td></tr>
 <tr><td><code>page</code></td><td>the page it landed on (<em>p. 112</em>)</td></tr>
 <tr><td><code>pageNumber</code></td><td>the page number alone (<em>112</em>)</td></tr>
 </tbody>
 </table>
+
+LaTeX's `\eqref{x}` and `\ref{x}` work in the text too: `\eqref` as a reference with no style, `\ref` as `style=number`, so `\ref{thm:main}` prints *2* and `\ref{fig:map}` a figure's number. A `~` right before one is a no-break space (`Theorem~\ref{thm:main}`). Inside `$…$` they belong to the formula.
 
 `text="…"` prints your own words and still links; `case=capitalize` starts the label with a capital (*Section 3.2* at the start of a sentence). The words follow the document language (*sección 3.2*, *第3.2节*, *S. 112*) and can be changed in [Cross-references](/en/docs/configuration#cross-references) in the configuration; a heading number its template already spells out (*Chapter 4*, *第四章*) prints as it is.
 
@@ -1044,8 +1047,10 @@ Math support is a first-class part of the document format. Postext parses `$…$
 - **Inline:** `$…$`. Recognised inside any text block (paragraph, heading, blockquote, list item). Contributes a single atomic, non-breaking box to the line; Knuth-Plass treats it like a word that must not be split. If the formula's natural height would break the line box, it is scaled down uniformly so the baseline grid is preserved — very tall expressions belong in display mode.
 - **Display:** `$$…$$`. Either on its own line (`$$\int_0^1 x^2\,dx$$`) or fenced across multiple lines with `$$` markers on their own lines. Rendered centred on the column and snapped to the baseline grid with configurable top and bottom margins (`math.marginTop`, `math.marginBottom`) — exactly the same correction mechanism headings use, so the paragraph after the formula lands back on the grid.
 - **Text around a display:** a display formula on its own line interrupts a paragraph even with no blank line above it. The text before it is a paragraph that leads into it; text written right under the closing `$$`, with no blank line, continues the interrupted paragraph and is set with no first-line indent, as TeX sets the "where …" after a display. A formula set off from the text above it by a blank line (or following a list, a quotation or a heading) interrupts nothing: the text after it is a new paragraph, indented as usual, blank line or not (`math.indentAfterDisplay: false` sets it flush too). Only a whole display interrupts a paragraph — one formula on the line, or a `$$` fence closed before the next blank line; a line such as `$$a$$ and $$b$$` stays text. `math.keepWithLeadIn` keeps a formula in the column of the line that introduces it. (Up to postext 1.4 a `$$…$$` line with no blank line above it was read as part of the paragraph and printed as it was written.)
-- **Equation numbers:** `\tag{…}` numbers a display formula: it spans the column (or the callout's inner width), the equation centred and its number flush right on its line — on each tagged row of an `align`. `\tag*{…}` prints the label without parentheses. Only explicit tags are numbered.
-- **Escaping:** `\$` is a literal dollar sign. Captions, table cells, notes and chips are not parsed for maths, so a `$` there prints as it is; `\$` prints a dollar sign there too, and one escaped string reads the same in the text and in a table. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
+- **Equation numbers:** `\label{eq:x}` in a display formula numbers it, in reading order: (1), (2)… A formula with a number spans the column (or the callout's inner width), the equation centred and its number flush right on its line. In an `align`, `gather`, `alignat`, `flalign` or `eqnarray` each row that carries a `\label` gets its own number, unless the row says `\nonumber` or `\notag`. A formula without a `\label` is not numbered, as `$$…$$` never was. `\tag{…}` still numbers a formula with the text you give it (`\tag*{…}` without the parentheses) and is not counted; a `\label` beside it names that text. The format, chapter or section numbers (2.3) and restarts are set in [`math.equationNumbering`](/en/docs/configuration#math). Put the `\label` at the top level of the formula or of its row: not inside `aligned`, `split` or `cases`.
+- **References to equations:** `\eqref{eq:x}` in the text prints the number as the formula does, (3), and `\ref{eq:x}` the bare number, 3; both are links, like every [cross-reference](#cross-references-and-anchors). `Eq.~\eqref{eq:x}` keeps the `~` as LaTeX does: a no-break space. `:ref{id="eq:x"}` and `@eq:x` print (3) too. Inside a formula, `\eqref` and `\ref` print the number (not a link). A label nothing sets prints *?* and is listed in the Checks panel.
+- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
+- **Captions, notes and table cells** set inline maths too (since postext 1.19), in the line with the text and with the cell's alignment, in the snippet's size. There a `$` opens a formula only by Pandoc's rule: no space after the opening `$`, no space before the closing one and no digit right after it, so the prices of *$5 to $10* stay text; `\$` prints a dollar sign, so one escaped string reads the same in the text and in a table. A chip's label takes no maths. Up to postext 1.18 a `$` there always printed as it was.
 - **Errors:** TeX source that MathJax rejects (undefined macros, syntax errors) surfaces as an `invalidMath` warning. The formula is replaced by a small red placeholder so the layout geometry stays valid.
 - **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the size of the surrounding text: at 1.0 one em of the formula is that size — the body size for display formulas and for inline maths in body text; since postext 1.5, which sets formulas about 13% smaller than 1.4 did, while bundles and Sandbox books saved by 1.4 keep their size — see [Formula size](/en/docs/configuration#math)), `color` (inherits the body colour when unset), and the display margins.
 - **The engine:** MathJax loads on demand. The Sandbox and the layout worker start it themselves; in your own code, `await initMathEngine()` before `buildDocument`, or every formula is laid out as a grey placeholder box (see [Starting the math engine](/en/docs/configuration#starting-the-math-engine)).
@@ -1064,6 +1069,33 @@ A formula in the middle of a sentence, and the sentence going on after it with n
 For a pendulum of length $L$ the period is
 $$T_0 = 2\pi\sqrt{L/g}$$
 where $g$ is the acceleration of free fall.
+```
+
+Numbered equations and the references to them:
+
+```md
+The energy is conserved,
+$$
+\begin{align}
+E &= T + V \label{eq:energy} \\
+  &= \tfrac12 m v^2 + m g h \nonumber
+\end{align}
+$$
+and Eq.~\eqref{eq:energy} holds at every instant.
+```
+
+**Theorems, lemmas and proofs.** A callout style with `numbering` counts its boxes, as LaTeX's `amsthm` counts theorem environments: each box opens with its label and number in bold, "**Theorem 2.**", the fence's `title` after the number in parentheses, "**Theorem 2** (Bradley–Terry)**.**", and a reference to its `{#id}` prints "Theorem 2" (`\ref{thm:x}` or `style=number` the bare 2). Styles that name one counter share it, so a lemma after a theorem is Lemma 3. A proof style's `endMark` ends its boxes with ∎ or □, flush right on the last line. See [Numbered statements and proofs](/en/docs/configuration#numbered-statements-and-proofs) for the styles.
+
+```md
+:::callout{type="theorem" #thm:main title="Bradley–Terry"}
+Every reward class holds one reparameterised reward.
+:::
+
+:::callout{type="proof"}
+Apply the projection of \eqref{eq:projection} to any member of the class.
+:::
+
+By :ref{id="thm:main"}, the objective is unchanged.
 ```
 
 
