@@ -472,7 +472,8 @@ running heads, margins, layout, body typography, palette.
   layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!),
                                                  except columnRule: its unset fields take the document's, and the section's pages draw it
   bodyStyle?: PartsBodyStyleConfig               (§8) typography of paragraphs/lists in the section
-  palette?: Record<paletteId, '#hex'>            recolours palette-linked design colours + flow colours on the section's pages
+  palette?: Record<paletteId, '#hex'>            recolours palette-linked design colours + flow colours on the section's pages,
+                                                 and the page itself when page.backgroundColor links to an overridden id (1.18+)
 }
 ```
 Gotcha: `layout` in a heading style goes through `resolveLayoutConfig` alone, so
@@ -597,6 +598,9 @@ left on even + 1pt rule (Open Sans 8pt/600, main colour); footer = centred `{pag
 ### 7.5 Palette overrides in designs
 Elements whose colours carry `paletteId` are recoloured on pages ruled by a part
 (`:::part{palette="band=#f6c297"}`) or a styled section (`headingStyles[].palette`).
+Since 1.18 the page colour follows too: link `page.backgroundColor` to e.g. `paper` and a
+section with `palette: { paper: '#f2d3c0' }` prints its pages on salmon (a newspaper's business
+pages); pair it with `:::paper{shade=…}` so Folio shows the same stock.
 Unlinked hex colours never change.
 
 ---------------------------------------------------------------------------------
