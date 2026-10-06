@@ -25,7 +25,6 @@ import { parseMarkdownMemo, spaceDirectiveLines } from '../parse';
 import {
   buildPageLabels,
   computeHeadingNumbering,
-  documentNumeralStyle,
   parseNumberFormat,
   type NumeralStyle,
   type PageNumberSegment,
@@ -170,7 +169,7 @@ import {
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
 import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
 import { pickTableStyle } from '../defaults/tableStyle';
-import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, headingTitleText, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
+import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
 import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey, candidateKey, flexFigureKey, flexFloatKey } from './columnBalancing';

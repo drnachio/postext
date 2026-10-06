@@ -27,7 +27,6 @@ import {
   defaultNumeralsFor,
   defaultResourceTypes,
   dimensionsEqual,
-  documentNumeralStyle,
   formatNumeral,
   formatFootnoteNumber,
   footnoteFormatOf,

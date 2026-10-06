@@ -331,7 +331,8 @@ export function applyStatementNumbering(
         b = { ...b, containerAttrs: { ...(b.containerAttrs ?? {}), title } };
       } else if (counted) {
         // The fence's title goes into the run-in label, not over the box.
-        const { title: _title, ...attrs } = b.containerAttrs ?? {};
+        const attrs = { ...(b.containerAttrs ?? {}) };
+        delete attrs.title;
         b = { ...b, containerAttrs: attrs };
       }
       out.push(b);
