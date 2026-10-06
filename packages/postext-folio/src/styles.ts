@@ -48,8 +48,15 @@ export const FOLIO_CSS = `
 /* Orbit and select modes: one finger drags the view or the selection,
    never the page; the cursor says which. */
 .postext-folio.is-orbit,
-.postext-folio.is-select {
+.postext-folio.is-select,
+.postext-folio.is-magnify {
   touch-action: none;
+}
+/* Magnify mode: the glass is the pointer (#527). */
+.postext-folio.is-magnifying,
+.postext-folio.is-magnifying .postext-folio-spread > .postext-folio-page,
+.postext-folio.is-magnifying .postext-folio-flip {
+  cursor: none;
 }
 .postext-folio.is-orbit .postext-folio-spread > .postext-folio-page:not(.is-empty),
 .postext-folio.is-orbit {

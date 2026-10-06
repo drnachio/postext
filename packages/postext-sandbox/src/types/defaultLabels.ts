@@ -43,6 +43,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   folioModeHand: 'Turn pages by hand (H)',
   folioModeOrbit: 'Orbit the view (O)',
   folioModeSelect: 'Select text (S)',
+  folioModeMagnify: 'Magnifying glass (M)',
   toolbarPin: 'Pin toolbar',
   toolbarUnpin: 'Unpin toolbar',
   pdfDirty: 'Changes pending — click to recalculate',

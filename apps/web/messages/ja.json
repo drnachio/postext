@@ -663,6 +663,7 @@
     "folioModeHand": "手でページをめくる(H)",
     "folioModeOrbit": "視点を回転(O)",
     "folioModeSelect": "テキストを選択(S)",
+    "folioModeMagnify": "ルーペ(M)",
     "toolbarPin": "ツールバーを固定",
     "toolbarUnpin": "ツールバーの固定を解除",
     "pdfDirty": "未反映の変更あり — クリックで再計算",

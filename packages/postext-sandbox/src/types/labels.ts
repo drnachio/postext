@@ -46,6 +46,7 @@ export interface SandboxLabels {
   folioModeHand: string;
   folioModeOrbit: string;
   folioModeSelect: string;
+  folioModeMagnify: string;
 
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;

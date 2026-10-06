@@ -47,6 +47,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     folioModeHand: t("folioModeHand"),
     folioModeOrbit: t("folioModeOrbit"),
     folioModeSelect: t("folioModeSelect"),
+    folioModeMagnify: t("folioModeMagnify"),
     toolbarPin: t("toolbarPin"),
     toolbarUnpin: t("toolbarUnpin"),
     pdfDirty: t("pdfDirty"),

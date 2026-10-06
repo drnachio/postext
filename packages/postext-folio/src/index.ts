@@ -5,7 +5,7 @@ export { MAX_PAGE_VIDEOS } from "./videoAtlas";
 export { spreadsOf, spreadOfPage } from "./spreads";
 export type { Spread } from "./spreads";
 export { createFolio } from "./viewer";
-export type { FolioAppearance, FolioInteraction, FolioLabels, FolioOptions, FolioPage, FolioPagePoint, FolioPageVideo, FolioState, FolioViewer } from "./viewer";
+export type { FolioAppearance, FolioInteraction, FolioLabels, FolioMagnifier, FolioOptions, FolioPageDetail, FolioPage, FolioPagePoint, FolioPageVideo, FolioState, FolioViewer } from "./viewer";
 export type { FlipAppearance } from "./pageFlip";
 export { paperSpec, type PaperSpec } from "./paper";
 export { loadDeskMaps, type DeskMaps } from "./deskTextures";

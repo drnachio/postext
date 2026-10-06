@@ -663,6 +663,7 @@
     "folioModeHand": "用手翻页 (H)",
     "folioModeOrbit": "环绕视角 (O)",
     "folioModeSelect": "选择文本 (S)",
+    "folioModeMagnify": "放大镜 (M)",
     "toolbarPin": "固定工具栏",
     "toolbarUnpin": "取消固定工具栏",
     "pdfDirty": "有待应用的更改——点击重新计算",

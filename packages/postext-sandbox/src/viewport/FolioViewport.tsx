@@ -12,8 +12,8 @@ import { useCompactLayout } from '../hooks/useCompactLayout';
 import { useLargeTargets } from '../ui/largeTargets';
 import { loadFolioInteraction, saveFolioInteraction } from '../storage/persistence';
 
-const INTERACTIONS: readonly FolioInteraction[] = ['hand', 'orbit', 'select'];
-const INTERACTION_KEYS: Record<string, FolioInteraction> = { h: 'hand', o: 'orbit', s: 'select' };
+const INTERACTIONS: readonly FolioInteraction[] = ['hand', 'orbit', 'select', 'magnify'];
+const INTERACTION_KEYS: Record<string, FolioInteraction> = { h: 'hand', o: 'orbit', s: 'select', m: 'magnify' };
 
 /** The Folio tab: the book in 3D, kept in step with `#chapter=C&page=P`
  *  like the canvas (the page is the one on the right of the open spread),
@@ -35,7 +35,7 @@ export function FolioViewport() {
     setInteraction(mode);
     saveFolioInteraction(mode);
   }, []);
-  // H, O and S switch the mode while the book (or its bar) has the focus.
+  // H, O, S and M switch the mode while the book (or its bar) has the focus.
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const target = e.target as HTMLElement;
