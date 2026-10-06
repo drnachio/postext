@@ -152,7 +152,7 @@ export interface RecipeFolio {
     showThrough?: boolean;
   };
   binding?: {
-    type?: "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch";
+    type?: "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch" | "folded";
     cover?: "case" | "pages";
     coverMaterial?: "cloth" | "paper" | "leather";
     coverColor?: string;

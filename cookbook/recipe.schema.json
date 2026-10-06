@@ -571,7 +571,8 @@
                 "paperback",
                 "sewn",
                 "layflat",
-                "saddleStitch"
+                "saddleStitch",
+                "folded"
               ]
             },
             "cover": {

@@ -360,7 +360,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
           type: "object",
           additionalProperties: false,
           properties: {
-            type: { enum: ["hardcover", "paperback", "sewn", "layflat", "saddleStitch"] },
+            type: { enum: ["hardcover", "paperback", "sewn", "layflat", "saddleStitch", "folded"] },
             cover: { enum: ["case", "pages"] },
             coverMaterial: { enum: ["cloth", "paper", "leather"] },
             coverColor: ref("hex"),
