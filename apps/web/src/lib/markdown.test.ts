@@ -131,11 +131,6 @@ describe("mdxToMarkdown", () => {
   });
 });
 
-// Rendering every page and recipe in both locales reads the docs, the
-// recipes, their captures and composed scripts: well under a second when
-// warm, several seconds on a loaded machine (vitest's default is 5 s).
-const RENDITIONS_TIMEOUT_MS = 30_000;
-
 describe("page renditions", () => {
   it("renders every advertised path", () => {
     for (const locale of ["en", "es"]) {
@@ -147,7 +142,7 @@ describe("page renditions", () => {
         );
       }
     }
-  }, RENDITIONS_TIMEOUT_MS);
+  });
 
   it("rejects unknown pages and locales", () => {
     expect(pageMarkdown("en", "/sandbox")).toBeNull();
@@ -172,7 +167,7 @@ describe("page renditions", () => {
         expect(index).toContain(`/${locale}/cookbook/${recipe.slug}.md`);
       }
     }
-  }, RENDITIONS_TIMEOUT_MS);
+  });
 
   it("renders the Chinese layout guide as plain Markdown", () => {
     for (const locale of ["en", "es"]) {
