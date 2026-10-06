@@ -190,8 +190,11 @@ export interface VideoPlayerOptions {
    *  silent looping clips of a "living" page, several running at once
    *  (#507). Folio (which also starts an autoplaying, non-exclusive video
    *  each time its page comes into view and stops it when the page is
-   *  turned away) and the HTML5 player of the HTML viewer; EPUB readers and
-   *  the YouTube and Vimeo embeds play each video on its own terms. */
+   *  turned away), the HTML5 player of the HTML viewer, and EPUB where the
+   *  reading system runs scripts (a page or chapter with videos to
+   *  coordinate links a small playback script; the videos of one content
+   *  document are kept to the rule, not those of a facing page). The
+   *  YouTube and Vimeo embeds play each video on its own terms. */
   exclusive?: boolean;
   /** How much of a self-hosted file the browser loads before play:
    *  `'none'`, `'metadata'` (the default) or `'auto'`. HTML5 only. */

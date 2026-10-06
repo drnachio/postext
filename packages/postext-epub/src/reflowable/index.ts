@@ -19,6 +19,7 @@ import type {
   RenderToEpubOptions,
 } from '../types';
 import { fontAssets, imageAssets, pageProgressionOf, remoteVideoItems, videoAssets } from '../shared/assets';
+import { videoScriptItem, VIDEO_SCRIPT_HREF, withVideoScript } from '../shared/videoScript';
 import { bookStylesheet, stylesheetOverrides, withPalette } from './css';
 import { xmlAttr, xmlText } from './inline';
 import type { FileModel, HeadingEntry } from './model';
@@ -222,14 +223,18 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
     backLabel,
   };
   let maths = book.maths;
+  let scripted = false;
   book.files.forEach((file, i) => {
     signal?.throwIfAborted();
-    const xhtml = writeContentDocument(file, ctx);
+    // A chapter with videos to coordinate links the playback script (#507).
+    const xhtml = withVideoScript(writeContentDocument(file, ctx), relativeHref(file.href, VIDEO_SCRIPT_HREF));
     if (xhtml.includes('role="math"')) maths = true;
+    if (xhtml.includes('<script')) scripted = true;
     items.push({ id: file.itemId, href: file.href, mediaType: 'application/xhtml+xml', data: xhtml });
     spine.push({ idref: file.itemId });
     onProgress?.({ phase: 'documents', done: i + 1, total: book.files.length });
   });
+  if (scripted) items.push(videoScriptItem());
 
   // Navigation.
   const toc = navTree(book.headings);

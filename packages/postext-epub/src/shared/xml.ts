@@ -172,7 +172,8 @@ export function htmlToXhtml(html: string, options: XhtmlOptions = {}): string {
       continue;
     }
     if (lower === 'script') {
-      // Never in an EPUB the package declares unscripted.
+      // The page's own scripts are dropped: the only script an EPUB links
+      // is the video playback one (#507), which the package declares.
       const close = html.toLowerCase().indexOf('</script', last);
       re.lastIndex = last = close < 0 ? html.length : html.indexOf('>', close) + 1 || html.length;
       continue;

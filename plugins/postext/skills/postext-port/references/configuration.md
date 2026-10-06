@@ -946,8 +946,10 @@ self-hosted file's production `url`); a file without `url` prints no QR code and
 `exclusive: false` (≥ 1.18) lets a video play alongside the others (HTML marks it `data-pt-alongside`; the
 host calls `coordinateVideoPlayback(root)` to pause what a started video does not play with). In Folio an
 `autoplay` + `exclusive: false` video starts muted each time its page comes into view and stops when it is
-turned away, several at once: the silent loops (`loop: true`) of a "living" page. EPUB readers and
-YouTube/Vimeo embeds play on their own terms.
+turned away, several at once: the silent loops (`loop: true`) of a "living" page. In an EPUB, a page or
+chapter with two or more players, one of them exclusive, links the same rule as `scripts/videos.js`
+(`VIDEO_PLAYBACK_SCRIPT`, the document declared `scripted`): readers that run scripts keep to it within
+that document. YouTube/Vimeo embeds play on their own terms.
 `download: false` hides the HTML5 download button (`controlslist="nodownload"`); it does not
 protect the file. `privacy` embeds YouTube from youtube-nocookie.com and Vimeo with `dnt=1`. An
 EPUB never embeds a YouTube/Vimeo player (EPUBCheck RSC-006): those are the poster linked to the

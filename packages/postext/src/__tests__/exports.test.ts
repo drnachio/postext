@@ -163,6 +163,7 @@ describe("package exports", () => {
       "coordinateVideoPlayback",
       "playsAlongside",
       "videosToPause",
+      "VIDEO_PLAYBACK_SCRIPT",
       "parseVideoUrl",
       "videoWatchUrl",
       "resourceVideoLink",

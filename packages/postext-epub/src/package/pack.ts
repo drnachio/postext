@@ -46,18 +46,20 @@ export function w3cDate(value: string | undefined): string | undefined {
   return Number.isNaN(t) ? undefined : new Date(t).toISOString().slice(0, 10);
 }
 
-/** Manifest properties of a content document read from its markup: `svg`
- *  and `mathml` must be declared exactly when present (EPUBCheck errors
- *  either way), and `remote-resources` when a `<video>` plays from the web
- *  (a self-hosted video's production address, #454). Other items keep the
+/** Manifest properties of a content document read from its markup: `svg`,
+ *  `mathml` and `scripted` must be declared exactly when present (EPUBCheck
+ *  errors either way; a document links a script to coordinate its videos,
+ *  #507), and `remote-resources` when a `<video>` plays from the web (a
+ *  self-hosted video's production address, #454). Other items keep the
  *  properties they were given. */
 function itemProperties(item: EpubItem): string[] {
   const given = item.properties ?? [];
   if (item.mediaType !== 'application/xhtml+xml') return given;
   const text = typeof item.data === 'string' ? item.data : new TextDecoder().decode(item.data);
-  const out = given.filter((p) => p !== 'svg' && p !== 'mathml' && p !== 'remote-resources');
+  const out = given.filter((p) => p !== 'svg' && p !== 'mathml' && p !== 'scripted' && p !== 'remote-resources');
   if (/<(?:[a-z]+:)?svg[\s>/]/.test(text)) out.push('svg');
   if (/<(?:[a-z]+:)?math[\s>/]/.test(text)) out.push('mathml');
+  if (/<script[\s>/]/.test(text)) out.push('scripted');
   if (/<(?:video|audio|source)\b[^>]*\ssrc="https?:/.test(text)) out.push('remote-resources');
   return out;
 }

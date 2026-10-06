@@ -381,6 +381,8 @@ class Writer {
           (p.autoplay || p.muted) && ' muted="muted"',
           p.loop && ' loop="loop"',
           ' playsinline="playsinline"',
+          // Plays alongside the others (#507, see `withVideoScript`).
+          !p.exclusive && ' data-pt-alongside="data-pt-alongside"',
           ` preload="${p.preload}"`,
           posterSrc && ` poster="${xmlAttr(posterSrc)}"`,
         ].filter(Boolean).join('');

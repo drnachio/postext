@@ -4733,15 +4733,15 @@ const config: PostextConfig = {
     <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>自動で再生を始めます。ブラウザーの要件どおり、常にミュートされます。</td></tr>
     <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>音を消した状態で始めます。</td></tr>
     <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>最後まで再生したら、最初から再び再生します。</td></tr>
-    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、ファイル</td><td>この動画を再生すると、表示中のほかの動画は一時停止し、一度に1本だけが再生されます。<code>false</code>にすると、ほかの動画と同時に再生されます。ページ上の無音のループ動画を何本も同時に流す場合です。postext 1.18以降。</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、HTMLビューアー、EPUB（スクリプト実行時）／ファイル</td><td>この動画を再生すると、表示中のほかの動画は一時停止し、一度に1本だけが再生されます。<code>false</code>にすると、ほかの動画と同時に再生されます。ページ上の無音のループ動画を何本も同時に流す場合です。postext 1.18以降。</td></tr>
     <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>ファイル</td><td>再生前にブラウザーが読み込む量です。<code>'none'</code>、<code>'metadata'</code>、<code>'auto'</code>のいずれかです。</td></tr>
     <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>プライバシー強化モードの埋め込みです。YouTubeは<code>youtube-nocookie.com</code>から、Vimeoは<code>dnt=1</code>付きで埋め込みます。</td></tr>
   </tbody>
 </table>
 
-EPUBはスキーマが認める属性だけを残します。ファイルは<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>、<code>preload</code>付きで再生され、それ以外はリーディングシステムが決めます。
+EPUBはスキーマが認める属性だけを残します。ファイルは<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>、<code>preload</code>付きで再生され、<code>data-pt-alongside</code>の印も残ります。それ以外はリーディングシステムが決めます。
 
-排他的でない動画には、HTML出力で`data-pt-alongside`が付きます。`coordinateVideoPlayback(root)`は、`root`（`renderToHtml`の出力を収める要素）の下のプレーヤーにこの規則を守らせます。排他的な動画を再生すると再生中のほかの動画がすべて一時停止し、同時に再生する動画を再生すると排他的な動画だけが一時停止します。戻り値は監視をやめる関数です。`playsAlongside(el)`と`videosToPause(started, videos, alongside)`は、独自のプレーヤーを持つホストに同じ規則を提供します。[Folio](/ja/docs/document-format#folioのページで再生する動画)では、自動再生でほかの動画と同時に再生する動画（`autoplay`と`exclusive: false`）は、そのページが表示されるたびに無音で始まり、ページがめくられると止まります。何本でも同時に再生され、`loop`を付けると最後まで行ったあと最初から繰り返します。EPUBのリーディングシステムとYouTube、Vimeoのプレーヤーは、それぞれの決まりで動画を再生します。
+排他的でない動画には、HTML出力で`data-pt-alongside`が付きます。`coordinateVideoPlayback(root)`は、`root`（`renderToHtml`の出力を収める要素）の下のプレーヤーにこの規則を守らせます。排他的な動画を再生すると再生中のほかの動画がすべて一時停止し、同時に再生する動画を再生すると排他的な動画だけが一時停止します。戻り値は監視をやめる関数です。`playsAlongside(el)`と`videosToPause(started, videos, alongside)`は、独自のプレーヤーを持つホストに同じ規則を提供します。[Folio](/ja/docs/document-format#folioのページで再生する動画)では、自動再生でほかの動画と同時に再生する動画（`autoplay`と`exclusive: false`）は、そのページが表示されるたびに無音で始まり、ページがめくられると止まります。何本でも同時に再生され、`loop`を付けると最後まで行ったあと最初から繰り返します。EPUBでは、調整が必要な動画（2本以上で、そのうち少なくとも1本が排他的）を含むページや章が、同じ規則を小さなスクリプト`scripts/videos.js`（エクスポートされている`VIDEO_PLAYBACK_SCRIPT`）として読み込み、パッケージはその文書を`scripted`と宣言します。スクリプトを実行するリーディングシステムでは、その文書の動画がこの規則に従います。ただし、向かいのページは別の文書なので対象外です。スクリプトを実行しないリーディングシステムは、YouTubeやVimeoのプレーヤーと同じく、それぞれの決まりで動画を再生します。
 
 解決関数と既定値の除去関数は、ほかのセクションと同じ形で、型`VideoStyleConfig` / `ResolvedVideoStyleConfig`とともに提供されます。
 

@@ -4730,15 +4730,15 @@ const config: PostextConfig = {
     <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>自动开始播放，按浏览器的要求始终静音。</td></tr>
     <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>开始时关闭声音。</td></tr>
     <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>播完后从头再播。</td></tr>
-    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、文件</td><td>开始播放这段视频会暂停正在显示的其他视频，一次只播放一段。<code>false</code>让它与其他视频同时播放：一页上无声循环的短片，几段一起播放。postext 1.18起。</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、HTML查看器、EPUB（运行脚本时）；文件</td><td>开始播放这段视频会暂停正在显示的其他视频，一次只播放一段。<code>false</code>让它与其他视频同时播放：一页上无声循环的短片，几段一起播放。postext 1.18起。</td></tr>
     <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>文件</td><td>播放前浏览器预先加载多少：<code>'none'</code>、<code>'metadata'</code>或<code>'auto'</code>。</td></tr>
     <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>增强隐私的嵌入：YouTube从<code>youtube-nocookie.com</code>加载，Vimeo带<code>dnt=1</code>。</td></tr>
   </tbody>
 </table>
 
-EPUB只保留其规范认识的属性：文件播放时带<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>和<code>preload</code>，其余由阅读系统决定。
+EPUB只保留其规范认识的属性：文件播放时带<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>和<code>preload</code>，另加<code>data-pt-alongside</code>标记，其余由阅读系统决定。
 
-不独占的视频在HTML输出中带有`data-pt-alongside`。`coordinateVideoPlayback(root)`让`root`（容纳`renderToHtml`输出的元素）下的播放器遵守这一规则：开始播放独占的视频会暂停其他所有正在播放的视频，开始播放同时播放的视频只暂停独占的视频。它返回一个停止监听的函数。`playsAlongside(el)`和`videosToPause(started, videos, alongside)`为自带播放器的宿主提供同样的规则。在[Folio](/zh/docs/document-format#folio视图中的视频)中，自动播放且与其他视频同时播放的视频（`autoplay`加`exclusive: false`）每次翻到它所在的页面时都静音开始，翻走时停止，几段可以同时播放；`loop`让它播完后从头再播。EPUB阅读系统以及YouTube和Vimeo播放器按各自的规则播放每段视频。
+不独占的视频在HTML输出中带有`data-pt-alongside`。`coordinateVideoPlayback(root)`让`root`（容纳`renderToHtml`输出的元素）下的播放器遵守这一规则：开始播放独占的视频会暂停其他所有正在播放的视频，开始播放同时播放的视频只暂停独占的视频。它返回一个停止监听的函数。`playsAlongside(el)`和`videosToPause(started, videos, alongside)`为自带播放器的宿主提供同样的规则。在[Folio](/zh/docs/document-format#folio视图中的视频)中，自动播放且与其他视频同时播放的视频（`autoplay`加`exclusive: false`）每次翻到它所在的页面时都静音开始，翻走时停止，几段可以同时播放；`loop`让它播完后从头再播。EPUB中，有视频需要协调的页面或章节（两段或以上，其中至少一段独占）以一个小脚本`scripts/videos.js`（即导出的`VIDEO_PLAYBACK_SCRIPT`）引入同一规则，包文件把该文档声明为`scripted`。运行脚本的阅读系统让该文档中的视频遵守这一规则，但对面的页面是另一个文档，不受影响；不运行脚本的阅读系统按自己的规则播放每段视频，YouTube和Vimeo播放器也始终如此。
 
 解析函数和精简函数与其他各节一致，另有`VideoStyleConfig` / `ResolvedVideoStyleConfig`类型：
 

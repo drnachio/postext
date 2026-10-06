@@ -37,10 +37,37 @@ export function videosToPause<T extends { paused: boolean }>(
 export function coordinateVideoPlayback(root: Pick<HTMLElement, 'addEventListener' | 'removeEventListener' | 'querySelectorAll'>): () => void {
   const onPlay = (e: Event): void => {
     const started = e.target;
-    if (!(started instanceof HTMLMediaElement) || started.tagName !== 'VIDEO') return;
+    // `VIDEO` in an HTML document, `video` in an XHTML one.
+    if (!(started instanceof HTMLMediaElement) || started.tagName.toLowerCase() !== 'video') return;
     const videos = root.querySelectorAll<HTMLVideoElement>('video');
     for (const v of videosToPause(started as HTMLVideoElement, videos, playsAlongside)) v.pause();
   };
   root.addEventListener('play', onPlay, true);
   return () => root.removeEventListener('play', onPlay, true);
 }
+
+/** The rule above as a self-contained script (#507), for an output with no
+ *  host page to call `coordinateVideoPlayback`: an EPUB content document
+ *  links it, and a reading system that runs scripts keeps the document's
+ *  videos to the rule (one that does not run them ignores it, and each
+ *  video plays on its own terms). Plain ES5, no dependencies, rooted at
+ *  the document; it mirrors `videosToPause` with `playsAlongside`. */
+export const VIDEO_PLAYBACK_SCRIPT = `(function () {
+  'use strict';
+  function alongside(v) { return v.hasAttribute('data-pt-alongside'); }
+  document.addEventListener('play', function (e) {
+    var started = e.target;
+    if (!started || typeof started.tagName !== 'string' || started.tagName.toLowerCase() !== 'video') return;
+    var together = alongside(started);
+    var videos = document.getElementsByTagName('video');
+    var pause = [];
+    for (var i = 0; i < videos.length; i++) {
+      var v = videos[i];
+      if (v === started || v.paused) continue;
+      if (together && alongside(v)) continue;
+      pause.push(v);
+    }
+    for (var j = 0; j < pause.length; j++) pause[j].pause();
+  }, true);
+})();
+`;

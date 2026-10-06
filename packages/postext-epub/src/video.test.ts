@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { renderToEpub, readEpub } from './index';
 import type { ReadEpubResult, RenderToEpubOptions } from './types';
-import { MP4, PNG, videoSampleBook } from './__tests__/sampleBook';
+import { MP4, PNG, sampleBook, videoSampleBook } from './__tests__/sampleBook';
+import { needsVideoScript, VIDEO_SCRIPT_HREF } from './shared/videoScript';
+import { VIDEO_PLAYBACK_SCRIPT } from 'postext';
 
 // Videos in both renditions (#456): the book carries a self-hosted file
 // (stored, not deflated) and plays it in <video>; a file that only has a
@@ -82,5 +84,58 @@ describe.each(['fixed', 'reflowable'] as const)('videos in a %s EPUB', (layout) 
     const pages = book.spine.map((s) => text(book, s.path)).join('\n');
     expect(pages).toMatch(/<img\b[^>]*f1\.png/);
     expect(pages).not.toMatch(/href="https:\/\/(www\.)?youtu/);
+  });
+});
+
+// One video at a time (#507): the documents with videos to coordinate link
+// the engine's playback script and are declared `scripted`; a video that
+// plays alongside the others carries `data-pt-alongside`.
+describe.each(['fixed', 'reflowable'] as const)('video playback in a %s EPUB (#507)', (layout) => {
+  const scriptItem = (book: ReadEpubResult) => [...book.manifest.values()].find((i) => i.path === `${book.root}${VIDEO_SCRIPT_HREF}`);
+  const scripted = (book: ReadEpubResult) => [...book.manifest.values()].filter((i) => i.properties.includes('scripted')).map((i) => i.path);
+
+  it('links the playback script from the document whose videos it coordinates', async () => {
+    const book = readEpub(await renderToEpub(videoSampleBook(), options(layout)));
+    const item = scriptItem(book);
+    expect(item?.mediaType).toBe('application/javascript');
+    expect(text(book, item!.path)).toBe(VIDEO_PLAYBACK_SCRIPT);
+
+    // The two players share a document, which links the script and is the
+    // only one declared scripted.
+    const withVideos = pagesWith(book, '<video');
+    expect(withVideos).toHaveLength(1);
+    expect(text(book, withVideos[0]!)).toMatch(/<head>[\s\S]*<script src="\.\.\/scripts\/videos\.js"><\/script>\s*<\/head>/);
+    expect(text(book, withVideos[0]!)).not.toMatch(/data-pt-alongside/);
+    expect(scripted(book)).toEqual(withVideos);
+    expect(pagesWith(book, '<script')).toEqual(withVideos);
+  });
+
+  it('marks the videos that play alongside, and needs no script when all do', async () => {
+    const book = readEpub(await renderToEpub(videoSampleBook({ videoStyle: { player: { exclusive: false } } }), options(layout)));
+    const [page] = pagesWith(book, '<video');
+    const players = text(book, page!).match(/<video\b[^>]*>/g) ?? [];
+    expect(players).toHaveLength(2);
+    for (const tag of players) expect(tag).toMatch(/\sdata-pt-alongside="[^"]*"/);
+    expect(scriptItem(book)).toBeUndefined();
+    expect(scripted(book)).toEqual([]);
+  });
+
+  it('keeps a book without videos unscripted', async () => {
+    const book = readEpub(await renderToEpub(sampleBook(), options(layout)));
+    expect(scriptItem(book)).toBeUndefined();
+    expect(scripted(book)).toEqual([]);
+    expect(pagesWith(book, '<script')).toEqual([]);
+  });
+});
+
+describe('needsVideoScript (#507)', () => {
+  const exclusive = '<video src="a.mp4"></video>';
+  const alongside = '<video src="b.mp4" data-pt-alongside="data-pt-alongside"></video>';
+  it('wants two videos, one of them exclusive', () => {
+    expect(needsVideoScript('<p>No video</p>')).toBe(false);
+    expect(needsVideoScript(exclusive)).toBe(false);
+    expect(needsVideoScript(alongside + alongside)).toBe(false);
+    expect(needsVideoScript(exclusive + alongside)).toBe(true);
+    expect(needsVideoScript(exclusive + exclusive)).toBe(true);
   });
 });
