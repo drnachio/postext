@@ -6328,6 +6328,20 @@ function* buildDocumentBalanced(
     }
     return owner;
   };
+  /** Whether two block lists set the same content: every content index
+   *  that one places, the other places too (in however many pieces). */
+  const sameContent = (a: readonly VDTBlock[], b: readonly VDTBlock[]): boolean => {
+    const set = (list: readonly VDTBlock[]): Set<number> => {
+      const out = new Set<number>();
+      for (const blk of list) if (blk.contentIndex !== undefined) out.add(blk.contentIndex);
+      return out;
+    };
+    const sa = set(a);
+    const sb = set(b);
+    if (sa.size !== sb.size) return false;
+    for (const k of sa) if (!sb.has(k)) return false;
+    return true;
+  };
   /** First page each content index was placed on. */
   const pageOfContent = (doc: VDTDocument): Map<number, number> => {
     const m = new Map<number, number>();
@@ -6371,6 +6385,11 @@ function* buildDocumentBalanced(
       ...(best.doc.warnings ?? []).filter((w) => !taken(w.pageIndex)),
       ...(next.doc.warnings ?? []).filter((w) => taken(w.pageIndex)),
     ].sort((a, b) => (a.pageIndex ?? -1) - (b.pageIndex ?? -1));
+    // Everything the layout sets must survive the splice: a float or box
+    // that moved to a page outside the ranges in `next` (one drained before
+    // a chapter's end) would otherwise drop out of both halves (#515).
+    // Such a splice is not taken.
+    if (!sameContent(blocks, next.doc.blocks)) return best;
     const doc: VDTDocument = { ...best.doc, pages, blocks, ...(warnings.length > 0 ? { warnings } : { warnings: undefined }) };
     const pageBest = pageOfContent(best.doc);
     const pageNext = pageOfContent(next.doc);
