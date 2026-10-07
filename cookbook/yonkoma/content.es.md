@@ -26,6 +26,6 @@ kyaku{tail=top}: …Están todos dormidos.
 ::panel{art=laptop}
 kyaku: Bueno, pues me pongo a trabajar…
 ::panel{art=keyboard}
-sfx{at="86% 82%" rotate=-10}: ¡PLOF!
+sfx{at="70% 80%" rotate=-10}: ¡PLOF!
 kyaku{shout}: ¡¡No puedo trabajar y soy feliz!!
 :::

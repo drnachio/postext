@@ -1,21 +1,21 @@
 ---
 title: "Una página rotulada en seis idiomas"
-summary: "Una página de cómic, división y dibujos fijos, rotulada con un guion por idioma: el locale elige la letra, el japonés va en vertical, el árabe se lee al revés."
+summary: "Una página de cómic con división y dibujos fijos, rotulada por idioma: el locale elige la letra; el japonés va en vertical y, como el árabe, se lee al revés."
 plain: "La misma página de cómic en inglés, español, francés, japonés, chino y árabe: solo cambian las palabras, y Postext redibuja cada bocadillo alrededor de ellas."
-description: "Una página de cómic rotulada de nuevo en Postext: una división, cinco dibujos, un guion por idioma, japonés en vertical y una página árabe que se lee al revés."
+description: "Una página de cómic rotulada de nuevo en Postext: una división, cinco dibujos, un guion por idioma, japonés en vertical, y japonés y árabe que se leen al revés."
 question: "¿Cómo rotulo un cómic en otro idioma?"
 aliases: ["rotulación", "rerrotulación", "traducción de cómic", "localización", "traducción de manga", "rotulación vertical", "cómic de derecha a izquierda", "re-lettering", "写植", "嵌字", "defaultComicFont"]
 ---
 
 ## Lo que vas a componer
 
-Una página de cómic, *La radio del faro*: Maya llega al faro de su abuelo cuando entra una tormenta, la radio no funciona y el culpable es Biscuit, dormido encima del cable. La división y los cinco dibujos a la acuarela son fijos; de una edición a otra solo cambia un guion de nueve líneas. Cada edición de esta receta compone su propio idioma y, al lado, la página en francés: inglés y francés, español y francés, y así con el japonés, el chino y el árabe. El motor redibuja cada bocadillo alrededor de las palabras que lleva. El japonés se rotula en columnas verticales con Zen Antique. La página árabe se lee desde la derecha, así que las tres viñetas de la tira central cambian de sitio.
+Una página de cómic, *La radio del faro*: Maya llega al faro de su abuelo cuando entra una tormenta, la radio no funciona y el culpable es Biscuit, dormido encima del cable. La división y los cinco dibujos a la acuarela son fijos; de una edición a otra solo cambia un guion de nueve líneas. Cada edición de esta receta compone su propio idioma y, al lado, la página en francés: inglés y francés, español y francés, y así con el japonés, el chino y el árabe. El motor redibuja cada bocadillo alrededor de las palabras que lleva. El japonés se rotula en columnas verticales con Zen Antique. Las páginas japonesa y árabe se leen desde la derecha, así que las tres viñetas de la tira central cambian de sitio.
 
 ## Elaboración
 
 ### 1 · Una config para todos los idiomas
 
-El código está en [la respuesta corta](#la-respuesta-corta). En la config nada nombra un idioma salvo `locale`. Sin `fontFamily`, la rotulación toma la letra de cómic del idioma del documento (`defaultComicFont`): Comic Neue, Zen Antique, Noto Sans SC o Playpen Sans Arabic, y la onomatopeya la letra de rótulo que le corresponde. `writingMode: 'auto'` pone los bocadillos japoneses en columnas verticales; `readingDirection: 'auto'` hace que la página árabe se lea desde la derecha, de modo que el mismo `split="30 / 35 [* | * | *] / *"` coloca la viñeta de la radio a la derecha y la del gato a la izquierda. Los ids de los personajes (`maya`, `tomas`) son los mismos en todos los guiones, y a ellos responden los anclajes de los dibujos.
+El código está en [la respuesta corta](#la-respuesta-corta). En la config nada nombra un idioma salvo `locale`. Sin `fontFamily`, la rotulación toma la letra de cómic del idioma del documento (`defaultComicFont`): Comic Neue, Zen Antique, Noto Sans SC o Playpen Sans Arabic, y la onomatopeya la letra de rótulo que le corresponde. `writingMode: 'auto'` pone los bocadillos japoneses en columnas verticales; `readingDirection: 'auto'` hace que las páginas japonesa y árabe se lean desde la derecha, como sus idiomas, de modo que el mismo `split="30 / 35 [* | * | *] / *"` coloca la viñeta de la radio a la derecha y la del gato a la izquierda. Los ids de los personajes (`maya`, `tomas`) son los mismos en todos los guiones, y a ellos responden los anclajes de los dibujos.
 
 El cuerpo es uno para todo el libro. El guion inglés tiene 216 letras, el español 220, el francés 224 y el chino 74 caracteres; los guiones más largos tienen bocadillos más grandes, nunca letra más pequeña.
 
@@ -29,11 +29,11 @@ El sitio no tiene páginas en francés, así que cada edición construye dos doc
 
 <Excerpt region="art" />
 
-Las zonas seguras están recortadas para las celdas de esta división: la tira central tiene tres viñetas de unos 46 mm de ancho por 80 mm de alto, así que cada dibujo cuadrado conserva una columna del 56–58 % de su anchura, con la cara del personaje dentro. Los dibujos no se reflejan para el árabe (`mirrorArt` sigue en false): Maya sigue subiendo el camino desde la izquierda, y solo el orden de las viñetas sigue a la lectura.
+Las zonas seguras son más estrechas que las celdas de esta división: la tira central tiene tres viñetas de unos 46 mm de ancho por 80 mm de alto, así que cada dibujo cuadrado muestra una columna de cerca del 58 % de su anchura, y su zona segura, la cara del personaje y aquello de lo que habla, ocupa del 36 al 42 %. Los dibujos no se reflejan para el japonés ni para el árabe (`mirrorArt` sigue en false): Maya sigue subiendo el camino desde la izquierda, y solo el orden de las viñetas sigue a la lectura.
 
 ## Variantes
 
-### Refleja los dibujos en la edición árabe
+### Refleja los dibujos en las ediciones de derecha a izquierda
 
 `mirrorArt: true` da la vuelta a cada dibujo cuando la página se lee en sentido contrario al del dibujo. Deja sin reflejar una viñeta con letras o un reloj con `::panel{mirror=false}`.
 

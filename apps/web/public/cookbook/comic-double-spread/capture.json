@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-double-spread",
-  "sourceHash": "91902c0956f05e75ae281ae05b47e18c8a8955c064633a52be8fb8fd4a8bb487",
+  "sourceHash": "d01bef578127b2a65bb9f9f8b6faf2efdc90c70daf16145ee35052abc0c77867",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:28:57.228Z",
+  "capturedAt": "2026-10-07T14:45:51.512Z",
   "variants": {
     "en": {
-      "hash8": "4aa60499",
+      "hash8": "dd8ef9f6",
       "vdtHash": "6d1ab509a3fcd3d3cd62c9cb4ec3083deec81511",
       "timings": {
-        "importMs": 6452,
-        "fontsMs": 6648,
-        "buildMs": 344,
-        "totalMs": 14110,
+        "importMs": 293,
+        "fontsMs": 123,
+        "buildMs": 358,
+        "totalMs": 1341,
         "builds": 1
       },
       "specimen": {
@@ -48,7 +48,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228684,
+          "bytes": 228930,
           "alt": "Page 2."
         },
         {
@@ -59,7 +59,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 214366,
+          "bytes": 213316,
           "alt": "Page 3."
         }
       ],
@@ -83,12 +83,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 872976,
+        "bytes": 873009,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893456
+        "bytes": 893340
       },
       "detected": {
         "apis": [
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "f7eb4909",
+      "hash8": "b89d229c",
       "vdtHash": "28c0aa1dddebc1a19af91ea4e5df75e8b5dd8a8e",
       "timings": {
-        "importMs": 13361,
-        "fontsMs": 1347,
-        "buildMs": 338,
-        "totalMs": 15647,
+        "importMs": 276,
+        "fontsMs": 171,
+        "buildMs": 330,
+        "totalMs": 5276,
         "builds": 1
       },
       "specimen": {
@@ -292,7 +292,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228848,
+          "bytes": 228650,
           "alt": "Página 2."
         },
         {
@@ -303,7 +303,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 213932,
+          "bytes": 213078,
           "alt": "Página 3."
         }
       ],
@@ -327,12 +327,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 873830,
+        "bytes": 873805,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893498
+        "bytes": 893510
       },
       "detected": {
         "apis": [
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "3af2deb6",
+      "hash8": "ea72c3e6",
       "vdtHash": "e051cb0bfac9ed7bda549de1dc7a909fb242d473",
       "timings": {
-        "importMs": 537,
-        "fontsMs": 195,
-        "buildMs": 351,
-        "totalMs": 1720,
+        "importMs": 255,
+        "fontsMs": 152,
+        "buildMs": 335,
+        "totalMs": 1315,
         "builds": 1
       },
       "specimen": {
@@ -536,7 +536,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228532,
+          "bytes": 228510,
           "alt": "Pàgina 2."
         },
         {
@@ -547,7 +547,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 214280,
+          "bytes": 213748,
           "alt": "Pàgina 3."
         }
       ],
@@ -571,12 +571,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 873530,
+        "bytes": 873473,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893499
+        "bytes": 893419
       },
       "detected": {
         "apis": [
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "9981141b",
+      "hash8": "c6729b46",
       "vdtHash": "3d5f55ee3df3e73798dbe8e4588f5be32f72419e",
       "timings": {
-        "importMs": 543,
-        "fontsMs": 487,
-        "buildMs": 462,
-        "totalMs": 2140,
+        "importMs": 264,
+        "fontsMs": 333,
+        "buildMs": 463,
+        "totalMs": 1597,
         "builds": 1
       },
       "specimen": {
@@ -780,7 +780,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228310,
+          "bytes": 228858,
           "alt": "第 2 页。"
         },
         {
@@ -791,7 +791,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 215926,
+          "bytes": 213726,
           "alt": "第 3 页。"
         }
       ],
@@ -815,12 +815,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895404,
+        "bytes": 895601,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893684
+        "bytes": 893615
       },
       "detected": {
         "apis": [
@@ -972,7 +972,7 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "card.webp weighs 134 KB (aim for ≤ 90 KB)"
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
           },
           {
             "check": "C20",
@@ -988,13 +988,13 @@
       }
     },
     "ar": {
-      "hash8": "2091eadc",
+      "hash8": "270007b9",
       "vdtHash": "62186dc3c174a7a0486ed05494d986ce8953dc58",
       "timings": {
-        "importMs": 723,
-        "fontsMs": 275,
-        "buildMs": 358,
-        "totalMs": 1943,
+        "importMs": 264,
+        "fontsMs": 133,
+        "buildMs": 364,
+        "totalMs": 1325,
         "builds": 1
       },
       "specimen": {
@@ -1025,7 +1025,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 210856,
+          "bytes": 210252,
           "alt": "الصفحة ٢."
         },
         {
@@ -1036,7 +1036,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 232304,
+          "bytes": 231038,
           "alt": "الصفحة ٣."
         }
       ],
@@ -1061,12 +1061,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 885216,
+        "bytes": 885243,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893819
+        "bytes": 893796
       },
       "detected": {
         "apis": [
@@ -1236,13 +1236,13 @@
       }
     },
     "ja": {
-      "hash8": "9decd783",
+      "hash8": "a6e488af",
       "vdtHash": "cfc96c450c21c65571b4a98629a0c75ebebaecee",
       "timings": {
-        "importMs": 798,
-        "fontsMs": 353,
-        "buildMs": 479,
-        "totalMs": 2218,
+        "importMs": 390,
+        "fontsMs": 365,
+        "buildMs": 517,
+        "totalMs": 1840,
         "builds": 1
       },
       "specimen": {
@@ -1273,7 +1273,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 227838,
+          "bytes": 207814,
           "alt": "2ページ。"
         },
         {
@@ -1284,7 +1284,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 215022,
+          "bytes": 231932,
           "alt": "3ページ。"
         }
       ],
@@ -1294,6 +1294,7 @@
           1
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -1308,12 +1309,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895424,
+        "bytes": 895437,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893739
+        "bytes": 893695
       },
       "detected": {
         "apis": [
@@ -1449,6 +1450,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "sound-effects"
         ],
         "suggestedLevel": 2
@@ -1481,13 +1483,13 @@
       }
     },
     "pt": {
-      "hash8": "7550a1b6",
+      "hash8": "d65e72dc",
       "vdtHash": "c4dea0ea56e8899c4f01360bf573ad13b84489c7",
       "timings": {
-        "importMs": 360,
-        "fontsMs": 135,
-        "buildMs": 365,
-        "totalMs": 1442,
+        "importMs": 533,
+        "fontsMs": 215,
+        "buildMs": 435,
+        "totalMs": 1779,
         "builds": 1
       },
       "specimen": {
@@ -1518,7 +1520,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228850,
+          "bytes": 228334,
           "alt": "Página 2."
         },
         {
@@ -1529,7 +1531,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 214548,
+          "bytes": 213894,
           "alt": "Página 3."
         }
       ],
@@ -1553,12 +1555,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 873596,
+        "bytes": 873618,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893493
+        "bytes": 893469
       },
       "detected": {
         "apis": [

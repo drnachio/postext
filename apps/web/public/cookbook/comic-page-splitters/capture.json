@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-page-splitters",
-  "sourceHash": "3e934885e2e1b4f41beb53e05f48a70cebce9416bb74e88e308327e2010bf3b3",
+  "sourceHash": "a63a40d3638d607da98b4e26f0b1751f2876c13e8c97013edc37592b932fbd7c",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:29:52.749Z",
+  "capturedAt": "2026-10-07T15:02:19.611Z",
   "variants": {
     "en": {
-      "hash8": "3f3b0c20",
+      "hash8": "6681d87a",
       "vdtHash": "f727ec43ba9b71a50f56e00a9d9b89f53d4870b9",
       "timings": {
-        "importMs": 362,
-        "fontsMs": 155,
-        "buildMs": 481,
-        "totalMs": 1571,
+        "importMs": 1734,
+        "fontsMs": 1291,
+        "buildMs": 3450,
+        "totalMs": 9149,
         "builds": 1
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 216628,
+          "bytes": 211388,
           "alt": "Page 2."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 246008,
+          "bytes": 245678,
           "alt": "Page 3."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 211426,
+          "bytes": 212790,
           "alt": "Page 4."
         }
       ],
@@ -114,12 +114,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 849253,
+        "bytes": 849256,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 809110
+        "bytes": 808777
       },
       "detected": {
         "apis": [
@@ -291,18 +291,23 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 0.92 MB (warning at 0.9 MB for 4 pages)"
+          },
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the build took 3450 ms (warning at 1.5 s)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "ce50cfd5",
+      "hash8": "78213863",
       "vdtHash": "c75d0046fad73ee2c97d9da83f36f3c826b29f60",
       "timings": {
-        "importMs": 375,
-        "fontsMs": 126,
-        "buildMs": 517,
-        "totalMs": 1602,
+        "importMs": 549,
+        "fontsMs": 196,
+        "buildMs": 542,
+        "totalMs": 1961,
         "builds": 1
       },
       "specimen": {
@@ -345,7 +350,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 217092,
+          "bytes": 212030,
           "alt": "Página 2."
         },
         {
@@ -356,7 +361,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 247742,
+          "bytes": 248172,
           "alt": "Página 3."
         },
         {
@@ -367,7 +372,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 207650,
+          "bytes": 207210,
           "alt": "Página 4."
         }
       ],
@@ -399,12 +404,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 850581,
+        "bytes": 850550,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 808991
+        "bytes": 808945
       },
       "detected": {
         "apis": [
@@ -581,13 +586,13 @@
       }
     },
     "ca": {
-      "hash8": "b9609def",
+      "hash8": "70f72b0e",
       "vdtHash": "cc02701ee828ad1613e20a5959288ae02326c3f9",
       "timings": {
-        "importMs": 445,
-        "fontsMs": 157,
-        "buildMs": 486,
-        "totalMs": 1656,
+        "importMs": 323,
+        "fontsMs": 147,
+        "buildMs": 506,
+        "totalMs": 1567,
         "builds": 1
       },
       "specimen": {
@@ -630,7 +635,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 215708,
+          "bytes": 210618,
           "alt": "Pàgina 2."
         },
         {
@@ -641,7 +646,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 246846,
+          "bytes": 246436,
           "alt": "Pàgina 3."
         },
         {
@@ -652,7 +657,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 208218,
+          "bytes": 210266,
           "alt": "Pàgina 4."
         }
       ],
@@ -684,12 +689,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 849718,
+        "bytes": 849660,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 809006
+        "bytes": 808777
       },
       "detected": {
         "apis": [
@@ -866,13 +871,13 @@
       }
     },
     "zh": {
-      "hash8": "43fd2624",
+      "hash8": "a12e073b",
       "vdtHash": "04e0014d2f4dc72332cf0855440b5697c333b72c",
       "timings": {
-        "importMs": 299,
-        "fontsMs": 433,
-        "buildMs": 536,
-        "totalMs": 1850,
+        "importMs": 399,
+        "fontsMs": 442,
+        "buildMs": 577,
+        "totalMs": 2070,
         "builds": 1
       },
       "specimen": {
@@ -915,7 +920,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 217102,
+          "bytes": 209894,
           "alt": "第 2 页。"
         },
         {
@@ -926,7 +931,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 247480,
+          "bytes": 245900,
           "alt": "第 3 页。"
         },
         {
@@ -937,7 +942,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 211138,
+          "bytes": 212904,
           "alt": "第 4 页。"
         }
       ],
@@ -969,12 +974,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 875591,
+        "bytes": 875527,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 809528
+        "bytes": 809266
       },
       "detected": {
         "apis": [
@@ -1146,19 +1151,19 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 0.92 MB (warning at 0.9 MB for 4 pages)"
+            "detail": "the edition's images weigh 0.91 MB (warning at 0.9 MB for 4 pages)"
           }
         ]
       }
     },
     "ar": {
-      "hash8": "38003d58",
+      "hash8": "51057ad6",
       "vdtHash": "4d4e64ed4850dbd8ecf021e7bb436db55b3e4450",
       "timings": {
-        "importMs": 489,
-        "fontsMs": 176,
-        "buildMs": 485,
-        "totalMs": 1695,
+        "importMs": 307,
+        "fontsMs": 152,
+        "buildMs": 498,
+        "totalMs": 1533,
         "builds": 1
       },
       "specimen": {
@@ -1201,7 +1206,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 217420,
+          "bytes": 211310,
           "alt": "الصفحة ٢."
         },
         {
@@ -1212,7 +1217,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 245130,
+          "bytes": 246996,
           "alt": "الصفحة ٣."
         },
         {
@@ -1223,7 +1228,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 211614,
+          "bytes": 214014,
           "alt": "الصفحة ٤."
         }
       ],
@@ -1256,12 +1261,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 864097,
+        "bytes": 864078,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 809772
+        "bytes": 809482
       },
       "detected": {
         "apis": [
@@ -1435,19 +1440,19 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 0.93 MB (warning at 0.9 MB for 4 pages)"
+            "detail": "the edition's images weigh 0.92 MB (warning at 0.9 MB for 4 pages)"
           }
         ]
       }
     },
     "ja": {
-      "hash8": "c7bdb8c4",
-      "vdtHash": "997997fc684d80959d371e429151a4629b62d95a",
+      "hash8": "d00e1bbd",
+      "vdtHash": "79aba5b632486c865d1351beba981e97a98636a0",
       "timings": {
-        "importMs": 313,
-        "fontsMs": 544,
-        "buildMs": 840,
-        "totalMs": 2229,
+        "importMs": 379,
+        "fontsMs": 624,
+        "buildMs": 815,
+        "totalMs": 2362,
         "builds": 1
       },
       "specimen": {
@@ -1479,7 +1484,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 53242,
+          "bytes": 53176,
           "alt": "章扉、1ページ：一ページ、三つのコマ割り。"
         },
         {
@@ -1490,7 +1495,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 214646,
+          "bytes": 209838,
           "alt": "2ページ。"
         },
         {
@@ -1501,7 +1506,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 246774,
+          "bytes": 245114,
           "alt": "3ページ。"
         },
         {
@@ -1512,7 +1517,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 207690,
+          "bytes": 202148,
           "alt": "4ページ。"
         }
       ],
@@ -1530,6 +1535,7 @@
           null
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -1544,12 +1550,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 888393,
+        "bytes": 888489,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 809685
+        "bytes": 809571
       },
       "detected": {
         "apis": [
@@ -1705,6 +1711,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "sound-effects"
         ],
         "suggestedLevel": 2
@@ -1721,19 +1728,24 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 0.92 MB (warning at 0.9 MB for 4 pages)"
+            "detail": "the edition's images weigh 0.91 MB (warning at 0.9 MB for 4 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "da26dc58",
+      "hash8": "e3198500",
       "vdtHash": "7a7072cfd5e293567615cce8aac85d5b262ce8b5",
       "timings": {
-        "importMs": 727,
-        "fontsMs": 292,
-        "buildMs": 617,
-        "totalMs": 2295,
+        "importMs": 239,
+        "fontsMs": 109,
+        "buildMs": 942,
+        "totalMs": 2717,
         "builds": 1
       },
       "specimen": {
@@ -1776,7 +1788,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 216696,
+          "bytes": 211650,
           "alt": "Página 2."
         },
         {
@@ -1787,7 +1799,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 245638,
+          "bytes": 244042,
           "alt": "Página 3."
         },
         {
@@ -1798,7 +1810,7 @@
           "h": 1542,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 209820,
+          "bytes": 212180,
           "alt": "Página 4."
         }
       ],
@@ -1830,12 +1842,12 @@
       },
       "pdf": {
         "file": "comic-page-splitters.pdf",
-        "bytes": 850805,
+        "bytes": 850695,
         "pages": 4
       },
       "sandbox": {
         "file": "comic-page-splitters.postext",
-        "bytes": 809207
+        "bytes": 808923
       },
       "detected": {
         "apis": [

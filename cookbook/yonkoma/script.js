@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 151 · Two yonkoma strips on a page ═════════════════════════
 // https://postext.dev/en/cookbook/yonkoma
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.20.1
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.21.0
 // A page of a cat-café yonkoma: two four-panel strips side by side, the right one first.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -122,7 +122,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'موغي تفتح باب المقهى الزجاجي، والقطط الثلاث تنتظر في الداخل.',
       ja: '猫カフェのガラス戸を開けるむぎ。中で3匹の猫が待っている。',
       pt: 'Mugi abre a porta de vidro do café; lá dentro, os três gatos esperam.' }),
-  safeArea: { x: 0.03, y: 0.08, width: 0.9, height: 0.8 },
+  safeArea: { x: 0.09, y: 0.19, width: 0.81, height: 0.52 },
   anchors: [{ id: 'mugi', x: 0.205, y: 0.385, head: { x: 0.17, y: 0.25 },
     face: { x: 0.1, y: 0.2, width: 0.2, height: 0.23 } },
   cat('shiro', 0.5, 0.66, 0.44, 0.55, 0.13), cat('kuro', 0.66, 0.62, 0.61, 0.52, 0.12, 0.14),
@@ -135,7 +135,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'موغي تضع صحون طعام ممتلئة أمام القطط الثلاث.',
       ja: '3匹の猫の前に、ご飯を盛った器を並べるむぎ。',
       pt: 'Mugi põe tigelas cheias de comida na frente dos três gatos.' }),
-  safeArea: { x: 0.03, y: 0.1, width: 0.94, height: 0.82 },
+  safeArea: { x: 0.16, y: 0.26, width: 0.74, height: 0.65 },
   anchors: [{ id: 'mugi', x: 0.27, y: 0.465, head: { x: 0.25, y: 0.3 },
     face: { x: 0.17, y: 0.26, width: 0.16, height: 0.24 } },
   cat('shiro', 0.37, 0.63, 0.31, 0.52, 0.13, 0.16), cat('kuro', 0.6, 0.64, 0.55, 0.52, 0.11, 0.16),
@@ -148,7 +148,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'القطط الثلاث تدسّ رؤوسها في الصحن نفسه، والصحنان الآخران ممتلئان.',
       ja: '3匹そろって同じ器に頭を突っこみ、ほかの器は手つかず。',
       pt: 'Os três gatos enfiam a cabeça na mesma tigela; as outras continuam cheias.' }),
-  safeArea: { x: 0.05, y: 0.15, width: 0.93, height: 0.77 },
+  safeArea: { x: 0.05, y: 0.27, width: 0.88, height: 0.66 },
   anchors: [nose('shiro', 0.33, 0.66), nose('kuro', 0.5, 0.6), nose('mike', 0.66, 0.68),
     { id: 'sfx', x: 0.5, y: 0.3 }] },
   toast: {
@@ -159,7 +159,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'موغي تقضم خبزها المحمّص والقطط الثلاث تحدّق فيه بعيون لامعة.',
       ja: 'トーストをかじるむぎを、3匹がきらきらした目で見つめる。',
       pt: 'Mugi morde a torrada enquanto os três gatos olham para ela com olhos brilhando.' }),
-  safeArea: { x: 0.05, y: 0.15, width: 0.9, height: 0.8 },
+  safeArea: { x: 0.09, y: 0.22, width: 0.85, height: 0.56 },
   avoid: [{ x: 0.6, y: 0.52, width: 0.15, height: 0.1 }],
   anchors: [{ id: 'mugi', x: 0.8, y: 0.5, head: { x: 0.85, y: 0.32 },
     face: { x: 0.75, y: 0.25, width: 0.2, height: 0.33 } },
@@ -174,7 +174,7 @@ const ART = { // fractions of the picture: the same in every language
       ja: '両手を広げて入ってくる疲れた会社員と、カウンターから迎えるむぎ。',
       pt: 'Um funcionário de escritório cansado entra de braços abertos; Mugi o recebe do '
         + 'balcão.' }),
-  safeArea: { x: 0.1, y: 0.1, width: 0.85, height: 0.85 },
+  safeArea: { x: 0.13, y: 0.14, width: 0.74, height: 0.51 },
   anchors: [{ id: 'kyaku', x: 0.31, y: 0.42, head: { x: 0.28, y: 0.3 },
     face: { x: 0.19, y: 0.22, width: 0.21, height: 0.26 } },
   { id: 'mugi', x: 0.76, y: 0.39, head: { x: 0.76, y: 0.28 },
@@ -187,7 +187,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'القطط الثلاث نائمة كومةً واحدة على وسادة مستديرة.',
       ja: '丸いクッションの上で、ひとかたまりになって眠る3匹。',
       pt: 'Os três gatos dormem amontoados numa almofada redonda.' }),
-  safeArea: { x: 0.02, y: 0.15, width: 0.93, height: 0.77 },
+  safeArea: { x: 0.27, y: 0.21, width: 0.52, height: 0.55 },
   anchors: [nose('shiro', 0.4, 0.42), nose('kuro', 0.41, 0.7), nose('mike', 0.72, 0.58),
     { id: 'sfx', x: 0.3, y: 0.25 }] },
   laptop: {
@@ -198,7 +198,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'الموظف يتنهّد إلى طاولة في المقهى ويفتح حاسوبه.',
       ja: 'カフェのテーブルでため息をつき、ノートパソコンを開く会社員。',
       pt: 'O funcionário suspira numa mesa do café e abre o notebook.' }),
-  safeArea: { x: 0.1, y: 0.15, width: 0.7, height: 0.75 },
+  safeArea: { x: 0.22, y: 0.25, width: 0.56, height: 0.55 },
   anchors: [{ id: 'kyaku', x: 0.45, y: 0.62, head: { x: 0.39, y: 0.4 },
     face: { x: 0.3, y: 0.3, width: 0.22, height: 0.38 } }] },
   keyboard: {
@@ -209,7 +209,7 @@ const ART = { // fractions of the picture: the same in every language
       ar: 'القطط الثلاث تجلس على لوحة المفاتيح، والموظف يبكي من الفرح.',
       ja: 'キーボードの上に座る3匹と、うれし泣きする会社員。',
       pt: 'Os três gatos sentam no teclado; o funcionário chora de alegria.' }),
-  safeArea: { x: 0.05, y: 0.05, width: 0.93, height: 0.9 },
+  safeArea: { x: 0.07, y: 0.1, width: 0.81, height: 0.78 },
   anchors: [{ id: 'kyaku', x: 0.29, y: 0.42, head: { x: 0.25, y: 0.2 },
     face: { x: 0.15, y: 0.1, width: 0.27, height: 0.4 } },
   cat('shiro', 0.42, 0.57, 0.36, 0.48, 0.13, 0.14), cat('kuro', 0.59, 0.6, 0.53, 0.5, 0.12, 0.14),

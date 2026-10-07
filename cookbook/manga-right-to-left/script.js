@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 149 · Manga read right to left, lettered vertically ══════
 // https://postext.dev/en/cookbook/manga-right-to-left
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.20.1
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.21.0
 // Two pages of a kendo manga: the Japanese original, then the same pages lettered again.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -118,7 +118,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '黄昏时分的老木造剑道场，门敞开着，里面亮着灯。',
       ar: 'قاعة الكندو الخشبية القديمة عند الغسق، أبوابها مفتوحة ومضاءة.',
       ja: '夕暮れの古い木造の剣道場。戸が開いて、中に明かりがともっている。' }),
-  safeArea: { x: 0.3, y: 0.25, width: 0.7, height: 0.6 },
+  safeArea: { x: 0.45, y: 0.32, width: 0.5, height: 0.51 },
   anchors: [{ id: 'dojo', x: 0.66, y: 0.63 }] },
   swing: {
     alt: t({ en: 'Hana, alone in the dojo, swings her bamboo sword overhead.',
@@ -128,7 +128,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '花独自在道场里，把竹剑高举过头。',
       ar: 'هانا وحدها في القاعة ترفع سيف الخيزران فوق رأسها.',
       ja: 'ひとり道場で、竹刀を頭上に振りかぶる花。' }),
-  safeArea: { x: 0.3, y: 0, width: 0.6, height: 0.95 },
+  safeArea: { x: 0.36, y: 0, width: 0.31, height: 0.5 },
   avoid: [{ x: 0.43, y: 0, width: 0.17, height: 0.12 }],
   anchors: [{ id: 'hana', x: 0.535, y: 0.28, head: { x: 0.53, y: 0.22 },
     face: { x: 0.49, y: 0.14, width: 0.11, height: 0.17 } }] },
@@ -140,7 +140,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '空从拉门后探出头，手里攥着护身符。',
       ar: 'سورا يطلّ من وراء الباب المنزلق وفي يده تميمة.',
       ja: 'お守りを手に、引き戸の陰からのぞく空。' }),
-  safeArea: { x: 0.4, y: 0.07, width: 0.35, height: 0.53 },
+  safeArea: { x: 0.37, y: 0.09, width: 0.34, height: 0.5 },
   avoid: [{ x: 0.49, y: 0.41, width: 0.08, height: 0.1 }],
   anchors: [{ id: 'sora', x: 0.545, y: 0.31, head: { x: 0.55, y: 0.22 },
     face: { x: 0.47, y: 0.16, width: 0.2, height: 0.18 } }] },
@@ -152,7 +152,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '花满脸是汗、吃了一惊的特写。',
       ar: 'لقطة قريبة لوجه هانا المتعرّق المذعور.',
       ja: '汗をかき、はっとした花の顔のアップ。' }),
-  safeArea: { x: 0.22, y: 0.14, width: 0.52, height: 0.7 },
+  safeArea: { x: 0.27, y: 0.28, width: 0.43, height: 0.51 },
   anchors: [{ id: 'hana', x: 0.475, y: 0.665, head: { x: 0.45, y: 0.35 },
     face: { x: 0.3, y: 0.3, width: 0.4, height: 0.45 } }] },
   charm: {
@@ -163,7 +163,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '空递出护身符，花扛着竹剑看着它。',
       ar: 'سورا يمدّ التميمة، وهانا تنظر إليها والسيف على كتفها.',
       ja: '空がお守りを差し出し、竹刀を肩にかついだ花がそれを見る。' }),
-  safeArea: { x: 0.17, y: 0.08, width: 0.66, height: 0.82 },
+  safeArea: { x: 0.21, y: 0.09, width: 0.56, height: 0.53 },
   avoid: [{ x: 0.43, y: 0.47, width: 0.06, height: 0.09 }],
   anchors: [{ id: 'sora', x: 0.325, y: 0.335, head: { x: 0.29, y: 0.22 },
     face: { x: 0.26, y: 0.17, width: 0.11, height: 0.2 } },
@@ -177,7 +177,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '森老师站在门口，背着光，双臂抱在胸前。',
       ar: 'المدرّب موري عند الباب، والضوء خلفه، عاقدًا ذراعيه.',
       ja: '逆光の戸口で腕を組んで立つ森先生。' }),
-  safeArea: { x: 0.2, y: 0.12, width: 0.55, height: 0.78 },
+  safeArea: { x: 0.33, y: 0.13, width: 0.3, height: 0.32 },
   anchors: [{ id: 'mori', x: 0.425, y: 0.215, head: { x: 0.42, y: 0.17 },
     face: { x: 0.37, y: 0.13, width: 0.1, height: 0.11 } }] },
   smile: {
@@ -188,7 +188,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '森老师严肃的脸上露出一丝笑意的特写。',
       ar: 'لقطة قريبة لوجه موري الصارم وقد ارتسمت عليه ابتسامة.',
       ja: '厳しい顔がふっとゆるむ森先生のアップ。' }),
-  safeArea: { x: 0.35, y: 0.05, width: 0.65, height: 0.7 },
+  safeArea: { x: 0.43, y: 0.21, width: 0.51, height: 0.53 },
   anchors: [{ id: 'mori', x: 0.69, y: 0.52, head: { x: 0.6, y: 0.25 },
     face: { x: 0.45, y: 0.28, width: 0.45, height: 0.32 } }] },
   kneel: {
@@ -199,7 +199,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '花跪坐着把护身符系在护具上，空挠着头。',
       ar: 'هانا جاثية تربط التميمة بدرعها، وسورا يحكّ رأسه.',
       ja: '正座してお守りを防具に結ぶ花と、頭をかく空。' }),
-  safeArea: { x: 0.1, y: 0.05, width: 0.8, height: 0.66 },
+  safeArea: { x: 0.21, y: 0.08, width: 0.61, height: 0.48 },
   avoid: [{ x: 0.27, y: 0.43, width: 0.06, height: 0.12 }],
   anchors: [{ id: 'hana', x: 0.305, y: 0.245, head: { x: 0.3, y: 0.17 },
     face: { x: 0.25, y: 0.1, width: 0.11, height: 0.17 } },
@@ -213,7 +213,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '夕阳下，花和空坐在学校楼顶的背影。',
       ar: 'هانا وسورا جالسان على سطح المدرسة عند الغروب، من الخلف.',
       ja: '夕焼けの屋上に並んで座る花と空の後ろ姿。' }),
-  safeArea: { x: 0.15, y: 0.35, width: 0.65, height: 0.57 },
+  safeArea: { x: 0.24, y: 0.41, width: 0.47, height: 0.31 },
   anchors: [{ id: 'hana', x: 0.36, y: 0.52, head: { x: 0.36, y: 0.48 },
     face: { x: 0.31, y: 0.43, width: 0.11, height: 0.14 } },
   { id: 'sora', x: 0.63, y: 0.52, head: { x: 0.625, y: 0.47 },

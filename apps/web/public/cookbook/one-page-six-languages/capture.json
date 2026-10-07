@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "one-page-six-languages",
-  "sourceHash": "211c3239eac89e3d04b545b8cdfbb3e0c0141231602354a648edeb3370bf7a09",
+  "sourceHash": "021746e89db6d86a23127798e6521b6458050be8e17667959a31103f468f1908",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.910Z",
+  "capturedAt": "2026-10-07T15:02:19.679Z",
   "variants": {
     "en": {
-      "hash8": "84ca204f",
+      "hash8": "2c80d1c8",
       "vdtHash": "f449370ee3262648d8ec670b3847b33451c2fdda",
       "timings": {
-        "importMs": 153,
-        "fontsMs": 93,
-        "buildMs": 178,
-        "totalMs": 1096,
+        "importMs": 192,
+        "fontsMs": 172,
+        "buildMs": 181,
+        "totalMs": 1256,
         "builds": 2
       },
       "specimen": {
@@ -48,7 +48,7 @@
           "h": 1529,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 226344,
+          "bytes": 209426,
           "alt": "Page 1."
         },
         {
@@ -59,7 +59,7 @@
           "h": 1529,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 228500,
+          "bytes": 211388,
           "alt": "Page 1."
         }
       ],
@@ -87,12 +87,12 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 801623,
+        "bytes": 801588,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 794967
+        "bytes": 794297
       },
       "detected": {
         "apis": [
@@ -234,13 +234,13 @@
       }
     },
     "es": {
-      "hash8": "b01410cc",
+      "hash8": "a7b1906c",
       "vdtHash": "a17aabb0ecf88ff14b0fcb36da2997ab31273c85",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 89,
-        "buildMs": 197,
-        "totalMs": 1114,
+        "importMs": 339,
+        "fontsMs": 97,
+        "buildMs": 188,
+        "totalMs": 1376,
         "builds": 2
       },
       "specimen": {
@@ -271,7 +271,7 @@
           "h": 1529,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 227740,
+          "bytes": 210108,
           "alt": "Página 1."
         },
         {
@@ -282,7 +282,7 @@
           "h": 1529,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 228500,
+          "bytes": 211388,
           "alt": "Página 1."
         }
       ],
@@ -310,12 +310,12 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 801403,
+        "bytes": 801388,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 795216
+        "bytes": 794466
       },
       "detected": {
         "apis": [
@@ -457,13 +457,13 @@
       }
     },
     "zh": {
-      "hash8": "0c1e7714",
+      "hash8": "d9e23317",
       "vdtHash": "965e9d9f675437e307a4f6b60577836d19cc3680",
       "timings": {
-        "importMs": 182,
-        "fontsMs": 227,
-        "buildMs": 215,
-        "totalMs": 1314,
+        "importMs": 185,
+        "fontsMs": 2245,
+        "buildMs": 860,
+        "totalMs": 13970,
         "builds": 2
       },
       "specimen": {
@@ -495,7 +495,7 @@
           "h": 1529,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 227796,
+          "bytes": 210924,
           "alt": "第 1 页。"
         },
         {
@@ -506,7 +506,7 @@
           "h": 1529,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 228500,
+          "bytes": 211388,
           "alt": "第 1 页。"
         }
       ],
@@ -534,12 +534,12 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 809792,
+        "bytes": 809855,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 795338
+        "bytes": 794631
       },
       "detected": {
         "apis": [
@@ -687,13 +687,13 @@
       }
     },
     "ar": {
-      "hash8": "6acff807",
+      "hash8": "f713950b",
       "vdtHash": "1d414c377facb28050190ad6c02af58bbc3e0a09",
       "timings": {
-        "importMs": 153,
-        "fontsMs": 116,
-        "buildMs": 153,
-        "totalMs": 1079,
+        "importMs": 292,
+        "fontsMs": 165,
+        "buildMs": 229,
+        "totalMs": 1361,
         "builds": 2
       },
       "specimen": {
@@ -725,7 +725,7 @@
           "h": 1529,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 229416,
+          "bytes": 211694,
           "alt": "الصفحة ١."
         },
         {
@@ -736,7 +736,7 @@
           "h": 1529,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 228500,
+          "bytes": 211388,
           "alt": "الصفحة 1."
         }
       ],
@@ -765,12 +765,12 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 806275,
+        "bytes": 806250,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 795621
+        "bytes": 794923
       },
       "detected": {
         "apis": [
@@ -920,13 +920,13 @@
       }
     },
     "ja": {
-      "hash8": "fba2627a",
+      "hash8": "c32e80ae",
       "vdtHash": "6b576972cb22932447af736fc3e9eeeb34cf423d",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 212,
-        "buildMs": 273,
-        "totalMs": 1382,
+        "importMs": 190,
+        "fontsMs": 383,
+        "buildMs": 280,
+        "totalMs": 1608,
         "builds": 2
       },
       "specimen": {
@@ -958,7 +958,7 @@
           "h": 1529,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 223044,
+          "bytes": 210104,
           "alt": "1ページ。"
         },
         {
@@ -969,7 +969,7 @@
           "h": 1529,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 228500,
+          "bytes": 211388,
           "alt": "1ページ。"
         }
       ],
@@ -983,6 +983,7 @@
           1
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -997,12 +998,12 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 820259,
+        "bytes": 820248,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 795346
+        "bytes": 794914
       },
       "detected": {
         "apis": [
@@ -1134,6 +1135,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "sound-effects"
         ],
         "suggestedLevel": 2

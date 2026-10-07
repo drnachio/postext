@@ -26,6 +26,6 @@ kyaku{tail=top}: …كلهم نائمون.
 ::panel{art=laptop}
 kyaku: لا بأس، سأعمل قليلًا…
 ::panel{art=keyboard}
-sfx{at="86% 82%" rotate=-10}: بوم!
+sfx{at="70% 80%" rotate=-10}: بوم!
 kyaku{shout}: لا أستطيع العمل… لكنني سعيد!!
 :::

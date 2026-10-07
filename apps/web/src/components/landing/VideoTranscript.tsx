@@ -18,9 +18,8 @@ export async function VideoTranscript({
   locale: string;
 }) {
   const t = await getTranslations("Transcript");
-  // Each site locale reads its own transcript (Catalan, Arabic and Japanese
-  // ones timed against the Spanish or English cut they play), English when
-  // a video has none in that language.
+  // Each site locale reads its own transcript, timed against its own cut;
+  // English when a video has none in that language.
   const site = siteLocale(locale);
   const lang: TranscriptLocale = TRANSCRIPTS[video][site]?.length ? site : "en";
   const blocks = TRANSCRIPTS[video][lang];

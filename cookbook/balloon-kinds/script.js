@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 145 · Every kind of balloon on a lighthouse page ═════════
 // https://postext.dev/en/cookbook/balloon-kinds
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
 //
 // One comic page that uses every kind of balloon the engine draws, with a letterer's style
 // sheet in front of it. Each line of the script names its speaker and, when it is not plain
@@ -114,7 +114,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // From the art manifest; fractions of each picture, the same in every language. `skipper` in
 // the storm picture is the radio set, the voice's source; in the sea picture, his boat.
 const ART = {
-  'bk-storm': { width: 1100, height: 733, safeArea: { x: 0, y: 0.25, width: 0.64, height: 0.73 },
+  'bk-storm': { width: 1100, height: 733, safeArea: { x: 0.05, y: 0.26, width: 0.52, height: 0.36 },
     anchors: [{ id: 'tomas', x: 0.3, y: 0.44, head: { x: 0.32, y: 0.33 },
       face: { x: 0.26, y: 0.29, width: 0.13, height: 0.21 } },
     { id: 'maya', x: 0.475, y: 0.47, head: { x: 0.48, y: 0.38 },
@@ -134,7 +134,7 @@ const ART = {
       pt: 'Noite de tempestade na sala da lanterna: o faroleiro fala ao microfone do rádio e '
         + 'Maya, enrolada num cobertor, escuta.' }) },
   'bk-whisper': { width: 1152, height: 1152,
-    safeArea: { x: 0.3, y: 0.18, width: 0.54, height: 0.64 },
+    safeArea: { x: 0.36, y: 0.26, width: 0.44, height: 0.48 },
     anchors: [{ id: 'maya', x: 0.53, y: 0.47, head: { x: 0.52, y: 0.33 },
       face: { x: 0.41, y: 0.3, width: 0.19, height: 0.22 } },
     { id: 'biscuit', x: 0.625, y: 0.635, head: { x: 0.66, y: 0.57 },
@@ -148,7 +148,7 @@ const ART = {
       ja: '机の下で、マヤが手で口をかくして、おびえたオレンジ色の猫にささやく。',
       pt: 'Debaixo da mesa, Maya cobre a boca com a mão e sussurra para o gato laranja '
         + 'assustado.' }) },
-  'bk-shout': { width: 880, height: 1100, safeArea: { x: 0.2, y: 0.17, width: 0.55, height: 0.58 },
+  'bk-shout': { width: 880, height: 1100, safeArea: { x: 0.22, y: 0.26, width: 0.46, height: 0.42 },
     anchors: [{ id: 'tomas', x: 0.48, y: 0.47, head: { x: 0.42, y: 0.33 },
       face: { x: 0.25, y: 0.28, width: 0.37, height: 0.32 } }],
     avoid: [{ x: 0.53, y: 0.43, width: 0.17, height: 0.27 }],
@@ -163,7 +163,7 @@ const ART = {
       ja: 'マイクに向かって叫ぶ灯台守のアップ。無線機の目盛りの光が下から顔を照らす。',
       pt: 'Close do faroleiro gritando ao microfone, iluminado de baixo pelos mostradores do '
         + 'rádio.' }) },
-  'bk-sea': { width: 1200, height: 800, safeArea: { x: 0.08, y: 0.14, width: 0.46, height: 0.62 },
+  'bk-sea': { width: 1200, height: 800, safeArea: { x: 0.1, y: 0.19, width: 0.37, height: 0.57 },
     anchors: [{ id: 'skipper', x: 0.28, y: 0.63 }, { id: 'sfx', x: 0.16, y: 0.36 }],
     avoid: [{ x: 0.13, y: 0.52, width: 0.24, height: 0.23 },
       { x: 0.85, y: 0.19, width: 0.08, height: 0.26 }],
@@ -179,7 +179,7 @@ const ART = {
       pt: 'Um pequeno barco pesqueiro azul jogado pelas ondas da tempestade à noite; um raio à '
         + 'esquerda, o facho do farol à direita.' }) },
   'bk-window': { width: 1000, height: 1000,
-    safeArea: { x: 0.25, y: 0.18, width: 0.58, height: 0.77 },
+    safeArea: { x: 0.36, y: 0.27, width: 0.28, height: 0.33 },
     anchors: [{ id: 'maya', x: 0.49, y: 0.41, head: { x: 0.42, y: 0.3 },
       face: { x: 0.41, y: 0.33, width: 0.1, height: 0.13 } }],
     avoid: [{ x: 0.5, y: 0.33, width: 0.1, height: 0.17 },
@@ -192,7 +192,7 @@ const ART = {
       ja: 'マヤが雨の窓に両手と鼻を押しつけ、嵐を見つめる。',
       pt: 'Maya cola as mãos e o nariz no vidro molhado e olha a tempestade.' }) },
   'bk-morning': { width: 1000, height: 667,
-    safeArea: { x: 0.14, y: 0.03, width: 0.64, height: 0.8 },
+    safeArea: { x: 0.33, y: 0.06, width: 0.42, height: 0.59 },
     anchors: [{ id: 'tomas', x: 0.565, y: 0.25, head: { x: 0.56, y: 0.15 },
       face: { x: 0.51, y: 0.13, width: 0.1, height: 0.17 } },
     { id: 'maya', x: 0.465, y: 0.29, head: { x: 0.45, y: 0.24 },

@@ -45,4 +45,4 @@ Each language of the site letters the strips in its own file, facing the Japanes
 ## Pitfalls
 
 - In a small panel a vertical balloon runs out of height before it runs out of width: the engine sets it in more, shorter columns, breaking between words. The office worker's last shout is still too tall for the bottom panel in Japanese, so it is marked `break` (`kyaku{shout break}`): it bursts up through the frame into the panel above instead of covering the cats, and stays out of the page margin.
-- A large sound effect is kept off faces like a balloon: ずしっ pinned at `86% 82%` covered the calico's face in the Japanese strip and the build warned `comicBalloonOverflow`, so there it sits at `90% 88%`.
+- A large sound effect is kept off faces like a balloon, and its pinned point lies inside the panel's safe area, so every crop keeps it: THUMP sits at `70% 80%`, on the cats' paws. The Japanese ずしっ is set vertically and is taller; at that point it covered the calico's face and the build warned `comicBalloonOverflow`, so there it sits at `86% 84%`, beside her.

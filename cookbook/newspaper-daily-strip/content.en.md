@@ -55,7 +55,7 @@ She sent the first six strips to the Despatch in the summer of 2016, with a cove
 
 The work starts on Monday with five pencil roughs on sheets of A4, four boxes to a sheet. By Wednesday they are inked and coloured. The pictures go to the paper with no words in them; the words go separately, as a short script: who speaks, in which panel, and what they say. A sound effect gets a line of its own.
 
-That habit started with the French edition in 2019. “Lettering a strip twice by hand was a week’s work,” she says. “Now each paper sets the words in its own language, and the balloons are drawn around them.” The Spanish papers get *¡Recién salido del horno!*; the Japanese edition sets its balloons in vertical columns; the Arabic one reads the panels from right to left. The pictures never change.
+That habit started with the French edition in 2019. “Lettering a strip twice by hand was a week’s work,” she says. “Now each paper sets the words in its own language, and the balloons are drawn around them.” The Spanish papers get *¡Recién salido del horno!*; the Japanese edition sets its balloons in vertical columns and, like the Arabic one, reads the panels from right to left. The pictures never change.
 
 The Sunday strip is the exception to the four-panel rule. It takes half a page, in colour, and Barlow treats it as a short story: three panels, a slower joke, and usually a fish. This week’s is on the cover.
 

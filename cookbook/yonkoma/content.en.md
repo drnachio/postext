@@ -26,6 +26,6 @@ kyaku{tail=top}: …They're all asleep.
 ::panel{art=laptop}
 kyaku: Fine. I'll get some work done…
 ::panel{art=keyboard}
-sfx{at="86% 82%" rotate=-10}: THUMP
+sfx{at="70% 80%" rotate=-10}: THUMP
 kyaku{shout}: Can't work. So happy!!
 :::

@@ -42,8 +42,8 @@
     "fonts-first"
   ],
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1"
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0"
   },
   "kit": [
     "core",
@@ -256,6 +256,10 @@
       },
       {
         "family": "Noto Serif SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
         "license": "OFL-1.1"
       },
       {

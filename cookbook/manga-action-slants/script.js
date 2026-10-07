@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 150 · An action page with slanted gutters ═════════════════
 // https://postext.dev/en/cookbook/manga-action-slants
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.20.1
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.21.0
 // The last page of a kendo final: slanted panels, a borderless strike, ドン kept in every edition.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -120,7 +120,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '座无虚席的体育馆里的决赛：两名选手在三名裁判之间交剑。',
       ar: 'النهائي في صالة ممتلئة: متباريان يتقاطع سيفاهما بين ثلاثة حكّام.',
       ja: '満員の体育館での決勝。3人の審判の間で2人が剣先を交える。' }),
-  safeArea: { x: 0.2, y: 0.42, width: 0.6, height: 0.48 },
+  safeArea: { x: 0.22, y: 0.44, width: 0.56, height: 0.46 },
   anchors: [{ id: 'hana', x: 0.31, y: 0.51, head: { x: 0.31, y: 0.49 },
     face: { x: 0.28, y: 0.45, width: 0.07, height: 0.1 } },
   { id: 'rival', x: 0.68, y: 0.51, head: { x: 0.68, y: 0.49 },
@@ -135,7 +135,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '面罩铁栏后花的眼睛。',
       ar: 'عينا هانا خلف قضبان شبكة الخوذة.',
       ja: '面金の向こうの花の目。' }),
-  safeArea: { x: 0.12, y: 0.28, width: 0.76, height: 0.36 },
+  safeArea: { x: 0.22, y: 0.26, width: 0.57, height: 0.38 },
   anchors: [{ id: 'hana', x: 0.5, y: 0.62, head: { x: 0.5, y: 0.4 },
     face: { x: 0.2, y: 0.3, width: 0.6, height: 0.3 } }] },
   lunge: {
@@ -146,7 +146,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '对手在速度线中朝读者猛刺过来。',
       ar: 'الخصم يندفع نحو القارئ وسط خطوط السرعة.',
       ja: '集中線の中、こちらへ突いてくる相手。' }),
-  safeArea: { x: 0.05, y: 0, width: 0.9, height: 0.65 },
+  safeArea: { x: 0.03, y: 0.01, width: 0.8, height: 0.61 },
   avoid: [{ x: 0.02, y: 0.42, width: 0.23, height: 0.18 }],
   anchors: [{ id: 'rival', x: 0.7, y: 0.2, head: { x: 0.7, y: 0.14 },
     face: { x: 0.63, y: 0.02, width: 0.15, height: 0.24 } }] },
@@ -158,7 +158,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '花跃起击中对手面罩顶部，竹剑弯了起来。',
       ar: 'هانا تقفز وتضرب أعلى خوذة الخصم؛ ينثني السيف.',
       ja: '跳び込んで相手の面を打つ花。竹刀がしなる。' }),
-  safeArea: { x: 0.1, y: 0.05, width: 0.8, height: 0.85 },
+  safeArea: { x: 0.36, y: 0.06, width: 0.42, height: 0.77 },
   avoid: [{ x: 0.52, y: 0.48, width: 0.13, height: 0.16 }],
   anchors: [{ id: 'hana', x: 0.43, y: 0.25, head: { x: 0.43, y: 0.18 },
     face: { x: 0.38, y: 0.07, width: 0.1, height: 0.25 } }, { id: 'sfx', x: 0.75, y: 0.25 }] },
@@ -170,7 +170,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '空在看台上跳起来，举着拳头大喊。',
       ar: 'سورا يقفز في المدرّجات رافعًا قبضتيه وهو يصيح.',
       ja: '観客席で拳を突き上げて叫ぶ空。' }),
-  safeArea: { x: 0.15, y: 0.08, width: 0.75, height: 0.42 },
+  safeArea: { x: 0.08, y: 0.07, width: 0.69, height: 0.44 },
   avoid: [{ x: 0.08, y: 0.06, width: 0.12, height: 0.1 },
     { x: 0.64, y: 0.35, width: 0.1, height: 0.12 }],
   anchors: [{ id: 'sora', x: 0.51, y: 0.44, head: { x: 0.5, y: 0.37 },
@@ -183,7 +183,7 @@ const ART = { // fractions of the picture: the same in every language
       zh: '森老师抱着双臂、闭着眼；身后的裁判举起了旗子。',
       ar: 'موري عاقد الذراعين مغمض العينين، وخلفه يرفع الحكّام راياتهم.',
       ja: '腕を組み目を閉じる森先生。後ろで審判が旗を上げる。' }),
-  safeArea: { x: 0.02, y: 0.1, width: 0.88, height: 0.6 },
+  safeArea: { x: 0.16, y: 0.1, width: 0.76, height: 0.53 },
   avoid: [{ x: 0.55, y: 0.18, width: 0.4, height: 0.17 }],
   anchors: [{ id: 'mori', x: 0.29, y: 0.31, head: { x: 0.29, y: 0.2 },
     face: { x: 0.22, y: 0.1, width: 0.14, height: 0.24 } }] },

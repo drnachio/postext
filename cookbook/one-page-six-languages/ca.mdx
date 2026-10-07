@@ -1,21 +1,21 @@
 ---
 title: "Una pàgina retolada en sis llengües"
-summary: "Una pàgina de còmic, divisió i dibuixos fixos, retolada amb un guió per llengua: el locale tria la lletra, el japonès va vertical, l'àrab es llegeix al revés."
+summary: "Una pàgina de còmic amb divisió i dibuixos fixos, retolada amb un guió per llengua: el locale tria la lletra; el japonès va vertical i, com l'àrab, al revés."
 plain: "La mateixa pàgina de còmic en anglès, castellà, francès, japonès, xinès i àrab: només canvien les paraules, i Postext redibuixa cada bafarada al seu voltant."
-description: "Una pàgina de còmic retolada de nou a Postext: una divisió, cinc dibuixos, un guió per llengua, japonès en vertical i una pàgina àrab de dreta a esquerra."
+description: "Una pàgina de còmic retolada de nou a Postext: una divisió, cinc dibuixos, un guió per llengua, japonès en vertical, i japonès i àrab de dreta a esquerra."
 question: "Com retolo un còmic en una altra llengua?"
 aliases: ["retolació", "traducció de còmic", "localització", "traducció de manga", "retolació vertical", "còmic de dreta a esquerra", "re-lettering", "写植", "嵌字", "defaultComicFont"]
 ---
 
 ## Què compondràs
 
-Una pàgina de còmic, *La ràdio del far*: la Maya arriba al far del seu avi quan entra una tempesta, la ràdio no funciona i el culpable és en Biscuit, adormit damunt del cable. La divisió i els cinc dibuixos a l'aquarel·la són fixos; d'una edició a l'altra només canvia un guió de nou línies. Cada edició d'aquesta recepta compon la seva llengua i, al costat, la pàgina en francès: anglès i francès, castellà i francès, i així amb el japonès, el xinès i l'àrab. El motor redibuixa cada bafarada al voltant de les paraules que porta. El japonès es retola en columnes verticals amb Zen Antique. La pàgina àrab es llegeix des de la dreta, i les tres vinyetes de la tira central canvien de lloc. Aquesta pàgina en català mostra l'edició castellana.
+Una pàgina de còmic, *La ràdio del far*: la Maya arriba al far del seu avi quan entra una tempesta, la ràdio no funciona i el culpable és en Biscuit, adormit damunt del cable. La divisió i els cinc dibuixos a l'aquarel·la són fixos; d'una edició a l'altra només canvia un guió de nou línies. Cada edició d'aquesta recepta compon la seva llengua i, al costat, la pàgina en francès: anglès i francès, castellà i francès, i així amb el japonès, el xinès i l'àrab. El motor redibuixa cada bafarada al voltant de les paraules que porta. El japonès es retola en columnes verticals amb Zen Antique. Les pàgines japonesa i àrab es llegeixen des de la dreta, i les tres vinyetes de la tira central canvien de lloc. Aquesta pàgina en català mostra l'edició castellana.
 
 ## Elaboració
 
 ### 1 · Una config per a totes les llengües
 
-El codi és a [la resposta curta](#la-resposta-curta). A la config res no anomena una llengua llevat de `locale`. Sense `fontFamily`, la retolació pren la lletra de còmic de la llengua del document (`defaultComicFont`): Comic Neue, Zen Antique, Noto Sans SC o Playpen Sans Arabic, i l'onomatopeia la lletra de rètol que li correspon. `writingMode: 'auto'` posa les bafarades japoneses en columnes verticals; `readingDirection: 'auto'` fa que la pàgina àrab es llegeixi des de la dreta, de manera que el mateix `split="30 / 35 [* | * | *] / *"` col·loca la vinyeta de la ràdio a la dreta i la del gat a l'esquerra. Els ids dels personatges (`maya`, `tomas`) són els mateixos a tots els guions, i les àncores dels dibuixos hi responen.
+El codi és a [la resposta curta](#la-resposta-curta). A la config res no anomena una llengua llevat de `locale`. Sense `fontFamily`, la retolació pren la lletra de còmic de la llengua del document (`defaultComicFont`): Comic Neue, Zen Antique, Noto Sans SC o Playpen Sans Arabic, i l'onomatopeia la lletra de rètol que li correspon. `writingMode: 'auto'` posa les bafarades japoneses en columnes verticals; `readingDirection: 'auto'` fa que les pàgines japonesa i àrab es llegeixin des de la dreta, com les seves llengües, de manera que el mateix `split="30 / 35 [* | * | *] / *"` col·loca la vinyeta de la ràdio a la dreta i la del gat a l'esquerra. Els ids dels personatges (`maya`, `tomas`) són els mateixos a tots els guions, i les àncores dels dibuixos hi responen.
 
 El cos és un per a tot el llibre. El guió anglès té 216 lletres, el castellà 220, el francès 224 i el xinès 74 caràcters; els guions més llargs tenen bafarades més grans, mai lletra més petita.
 
@@ -29,11 +29,11 @@ El lloc no té pàgines en francès, així que cada edició construeix dos docum
 
 <Excerpt region="art" />
 
-Les zones segures estan retallades per a les cel·les d'aquesta divisió: la tira central té tres vinyetes d'uns 46 mm d'ample per 80 mm d'alt, així que cada dibuix quadrat conserva una columna del 56–58 % de la seva amplada, amb la cara del personatge a dins. Els dibuixos no es reflecteixen per a l'àrab (`mirrorArt` continua en false): la Maya continua pujant el camí des de l'esquerra, i només l'ordre de les vinyetes segueix la lectura.
+Les zones segures són més estretes que les cel·les d'aquesta divisió: la tira central té tres vinyetes d'uns 46 mm d'ample per 80 mm d'alt, així que cada dibuix quadrat mostra una columna de prop del 58 % de la seva amplada, i la seva zona segura, la cara del personatge i allò de què parla, n'ocupa del 36 al 42 %. Els dibuixos no es reflecteixen per al japonès ni per a l'àrab (`mirrorArt` continua en false): la Maya continua pujant el camí des de l'esquerra, i només l'ordre de les vinyetes segueix la lectura.
 
 ## Variants
 
-### Reflecteix els dibuixos a l'edició àrab
+### Reflecteix els dibuixos a les edicions de dreta a esquerra
 
 `mirrorArt: true` gira cada dibuix quan la pàgina es llegeix en sentit contrari al del dibuix. Deixa sense reflectir una vinyeta amb lletres o un rellotge amb `::panel{mirror=false}`.
 

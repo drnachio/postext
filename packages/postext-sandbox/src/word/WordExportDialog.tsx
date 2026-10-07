@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
@@ -8,6 +8,7 @@ import { downloadBytes } from '../storage/persistence';
 import { Button, IconButton, Select, announce, usePortalContainer, type SelectOption } from '../ui';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/surface';
 import { loadLastTemplateId, useWordTemplates } from './sandboxImport';
+import { isolate } from './WordImportDialog';
 import { emptyTemplate } from './template';
 import { postextToDocx } from './toDocx';
 
@@ -41,6 +42,7 @@ function WordExportPopup({ onClose, chapterFileBase, bookFileBase, bookTitle }: 
   const activeMarkdown = useSandboxSelector((s) => s.markdown);
   const container = usePortalContainer();
   const titleId = useId();
+  const downloadRef = useRef<HTMLButtonElement>(null);
   const { templates } = useWordTemplates();
   const [scope, setScope] = useState<Scope>(chapters.length > 1 ? 'chapter' : 'book');
   const [templateId, setTemplateId] = useState<string>(() => {
@@ -62,7 +64,7 @@ function WordExportPopup({ onClose, chapterFileBase, bookFileBase, bookTitle }: 
     });
     const name = `${scope === 'book' ? bookFileBase : chapterFileBase}.docx`;
     downloadBytes(bytes, name, DOCX_MIME);
-    announce(labels.wordExportDone.replace('__file__', name));
+    announce(labels.wordExportDone.replace('__file__', isolate(name)));
     onClose();
   };
 
@@ -82,6 +84,7 @@ function WordExportPopup({ onClose, chapterFileBase, bookFileBase, bookTitle }: 
         data-postext-popup=""
         data-testid="word-export-dialog"
         aria-labelledby={titleId}
+        initialFocus={downloadRef}
         className="fixed left-1/2 top-1/2 flex max-h-[calc(100dvh-16px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto"
         style={{ ...POPUP_SURFACE, zIndex: POPUP_Z_INDEX, width: 'min(480px, calc(100vw - 16px))', padding: 16, fontSize: 13, lineHeight: '19px' }}
       >
@@ -106,7 +109,7 @@ function WordExportPopup({ onClose, chapterFileBase, bookFileBase, bookTitle }: 
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>{labels.wordCancel}</Button>
-          <Button variant="primary" size="sm" onClick={exportDocx}>{labels.wordExportAction}</Button>
+          <Button ref={downloadRef} variant="primary" size="sm" onClick={exportDocx}>{labels.wordExportAction}</Button>
         </div>
       </Dialog.Popup>
     </Dialog.Portal>

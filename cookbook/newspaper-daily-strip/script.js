@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 146 · A daily strip and a Sunday half page in the newspaper ═══
 // https://postext.dev/en/cookbook/newspaper-daily-strip
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Newsreader, Archivo Narrow, Comic Neue, Bangers and 12 more (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Newsreader, Archivo Narrow, Comic Neue, Bangers and 12 more (OFL) · Needs postext ≥ 1.21.0
 //
 // Two pages of a newspaper's pull-out comics section: a four-panel daily strip across the head
 // of a four-column page, and a Sunday half page with its own panel grid. Both are :::strip blocks
@@ -147,27 +147,27 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // From the art manifest; fractions of each picture, the same in every language.
 const face = (x, y, width, height) => ({ x, y, width, height });
 const ART = {
-  po1: { width: 1024, height: 1024, safeArea: face(0.02, 0.1, 0.93, 0.85),
+  po1: { width: 1024, height: 1024, safeArea: face(0.11, 0.22, 0.71, 0.45),
     anchors: [{ id: 'pip', x: 0.27, y: 0.58, face: face(0.11, 0.44, 0.22, 0.2) },
       { id: 'otto', x: 0.67, y: 0.37, face: face(0.56, 0.23, 0.24, 0.22) }] },
-  po2: { width: 1024, height: 1024, safeArea: face(0.05, 0, 0.9, 0.95),
+  po2: { width: 1024, height: 1024, safeArea: face(0.07, 0.14, 0.79, 0.56),
     anchors: [{ id: 'pip', x: 0.23, y: 0.62, face: face(0.07, 0.5, 0.22, 0.18) },
       { id: 'otto', x: 0.75, y: 0.31, face: face(0.52, 0.14, 0.33, 0.22) }],
     avoid: [face(0.28, 0.17, 0.38, 0.39)] },
-  po3: { width: 1024, height: 1024, safeArea: face(0.02, 0.17, 0.68, 0.68),
+  po3: { width: 1024, height: 1024, safeArea: face(0.03, 0.18, 0.72, 0.56),
     anchors: [{ id: 'pip', x: 0.275, y: 0.36, face: face(0.1, 0.19, 0.25, 0.21) }],
     avoid: [face(0.34, 0.41, 0.64, 0.41)] },
-  po4: { width: 1024, height: 1024, safeArea: face(0.02, 0.02, 0.96, 0.93),
+  po4: { width: 1024, height: 1024, safeArea: face(0.07, 0.19, 0.84, 0.53),
     anchors: [{ id: 'pip', x: 0.23, y: 0.61, face: face(0.07, 0.48, 0.22, 0.18) },
       { id: 'otto', x: 0.69, y: 0.36, face: face(0.53, 0.19, 0.39, 0.23) }],
     avoid: [face(0.31, 0.63, 0.05, 0.08), face(0.39, 0.32, 0.29, 0.18)] },
-  po5: { width: 1400, height: 600, safeArea: face(0.2, 0.2, 0.54, 0.66),
+  po5: { width: 1400, height: 600, safeArea: face(0.16, 0.17, 0.6, 0.66),
     anchors: [{ id: 'pip', x: 0.345, y: 0.53, face: face(0.29, 0.4, 0.09, 0.18) },
       { id: 'otto', x: 0.625, y: 0.33, face: face(0.58, 0.17, 0.12, 0.23) }] },
-  po6: { width: 1152, height: 1152, safeArea: face(0.12, 0.15, 0.71, 0.77),
+  po6: { width: 1152, height: 1152, safeArea: face(0.3, 0.21, 0.43, 0.35),
     anchors: [{ id: 'pip', x: 0.46, y: 0.39, face: face(0.35, 0.25, 0.2, 0.18) },
       { id: 'fish', x: 0.66, y: 0.46, face: face(0.64, 0.41, 0.07, 0.12) }] },
-  po7: { width: 1400, height: 933, safeArea: face(0.07, 0.08, 0.8, 0.87),
+  po7: { width: 1400, height: 933, safeArea: face(0.07, 0.15, 0.81, 0.65),
     anchors: [{ id: 'pip', x: 0.195, y: 0.64, face: face(0.1, 0.56, 0.15, 0.14) },
       { id: 'otto', x: 0.795, y: 0.35, face: face(0.7, 0.18, 0.18, 0.22) },
       { id: 'sfx', x: 0.62, y: 0.7 }],

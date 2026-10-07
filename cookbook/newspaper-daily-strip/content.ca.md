@@ -55,7 +55,7 @@ Va enviar les sis primeres tires al Despatx l’estiu del 2016, amb una carta de
 
 La feina comença el dilluns amb cinc esbossos a llapis en fulls DIN A4, quatre requadres per full. El dimecres ja estan entintats i acolorits. Els dibuixos arriben al diari sense cap paraula; el text va a part, en un guió breu: qui parla, a quina vinyeta i què diu. Cada onomatopeia té la seva pròpia línia.
 
-El costum va començar amb l’edició francesa, el 2019. «Retolar una tira dues vegades a mà era una setmana de feina», explica. «Ara cada diari compon el text en el seu idioma i les bafarades es dibuixen al voltant». Els diaris catalans reben «Acabat de sortir del forn!»; l’edició japonesa compon les bafarades en columnes verticals, i l’àrab llegeix les vinyetes de dreta a esquerra. Els dibuixos no canvien mai.
+El costum va començar amb l’edició francesa, el 2019. «Retolar una tira dues vegades a mà era una setmana de feina», explica. «Ara cada diari compon el text en el seu idioma i les bafarades es dibuixen al voltant». Els diaris catalans reben «Acabat de sortir del forn!»; l’edició japonesa compon les bafarades en columnes verticals i, com l’àrab, llegeix les vinyetes de dreta a esquerra. Els dibuixos no canvien mai.
 
 La tira del diumenge és l’excepció a la regla de les quatre vinyetes. Ocupa mitja pàgina, en color, i Barlow la tracta com un conte curt: tres vinyetes, un acudit més lent i gairebé sempre un peix. La d’aquesta setmana és a la portada.
 

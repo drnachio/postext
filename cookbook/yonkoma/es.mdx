@@ -45,4 +45,4 @@ Cada idioma del sitio rotula las tiras en su propio archivo, frente al original 
 ## Errores frecuentes
 
 - En una viñeta pequeña, un bocadillo vertical se queda sin altura antes que sin anchura: el motor lo compone en más columnas, más cortas, cortando entre palabras. El último grito del oficinista sigue siendo demasiado alto para la viñeta de abajo en japonés, así que se marca con `break` (`kyaku{shout break}`): rompe el marco hacia la viñeta de arriba en lugar de tapar a los gatos, sin salirse al margen de la página.
-- Una onomatopeya grande se aparta de las caras como un bocadillo: ずしっ fijada en `86% 82%` tapaba la cara de la gata tricolor en la tira japonesa y la construcción avisaba `comicBalloonOverflow`, así que allí va en `90% 88%`.
+- Una onomatopeya grande se aparta de las caras como un bocadillo, y su punto fijo cae dentro de la zona segura de la viñeta, así que todo recorte lo conserva: ¡PLOF! va en `70% 80%`, sobre las patas de los gatos. La ずしっ japonesa va en vertical y es más alta; en ese punto tapaba la cara de la gata tricolor y la construcción avisaba `comicBalloonOverflow`, así que allí va en `86% 84%`, a su lado.

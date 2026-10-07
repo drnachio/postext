@@ -21,7 +21,10 @@ www.peppercarrot.com
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1}
 pepper{shout break}: こんな仕打ちをするなんてこの私に!!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: ケイオサーの悪魔のための魔導書第一巻
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8 horizontal}: ケイオサーの\
+  悪魔のための\
+  魔導書\
+  第一巻
 ::panel{art=e08p05-2}
 pepper{shout}: ... みんなが頼りにならないなら ...
 ::panel{art=e08p05-3}

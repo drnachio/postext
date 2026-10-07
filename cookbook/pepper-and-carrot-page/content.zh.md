@@ -21,7 +21,9 @@ www.peppercarrot.com
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1}
 pepper{shout break}: 她们怎么可以这样对待**我！！！**
-sfx{writing at="77.2% 14.2%" rotate=-16}: 浑沌恶魔召唤术卷一
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: 浑沌恶魔\
+  召唤术\
+  卷一
 ::panel{art=e08p05-2}
 pepper{shout}: …既然她们如此不可靠！
 ::panel{art=e08p05-3}

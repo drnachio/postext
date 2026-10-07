@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 155 · A Pepper&Carrot page re-lettered from its transcript ═══
 // https://postext.dev/en/cookbook/pepper-and-carrot-page
 // Code: MIT · Text and art: David Revoy and translators, Pepper&Carrot ep. 8 (CC BY 4.0)
-// Fonts: Comic Neue, Bangers, Grenze Gotisch and 10 more (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers, Grenze Gotisch and 11 more (OFL) · Needs postext ≥ 1.21.0
 //
 // Two pages of an open-licensed webcomic, Pepper&Carrot episode 8 by David Revoy, set again
 // from his text-free artwork: the panels are cut from his pages, the speakers' anchors come
@@ -22,7 +22,8 @@ const palette = {
   ink: '#241a14', // lettering and the title page
   accent: '#a8241c', // Pepper's red: the title and the sound effect
   demon: '#0f0f0f', // the demons' balloons, as Revoy letters them
-  gilt: '#f0cf7a', // the title tooled on the spell book's cover
+  gilt: '#e4cf96', // the title tooled on the spell book's cover
+  plate: '#151a20', // the dark halo that lifts the gilt off the cover
   muted: '#6a5c52', // credits and folios
   paper: '#fffdf8',
 };
@@ -33,15 +34,16 @@ const colorPalette = [
 ];
 // #endregion
 
-// #region editions: the lettering, sound-effect, demon and title-page faces of each edition
-const [LETTERING, SFX, DEMON, TEXT] = t({
-  en: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4'],
-  es: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4'],
-  ca: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4'],
-  ja: ['Zen Antique', 'Dela Gothic One', 'Dela Gothic One', 'Noto Serif JP'],
-  zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou', 'ZCOOL QingKe HuangYou', 'Noto Serif SC'],
-  ar: ['Playpen Sans Arabic', 'Lalezar', 'Lalezar', 'Noto Naskh Arabic'],
-  pt: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4'],
+// #region editions: the lettering, sound-effect, demon, title-page and book-title faces
+const [LETTERING, SFX, DEMON, TEXT, PLATE] = t({
+  en: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4', 'Zen Antique'],
+  es: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4', 'Zen Antique'],
+  ca: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4', 'Zen Antique'],
+  ja: ['Zen Antique', 'Dela Gothic One', 'Dela Gothic One', 'Noto Serif JP', 'Zen Antique'],
+  zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou', 'ZCOOL QingKe HuangYou', 'Noto Serif SC',
+    'Noto Sans SC'],
+  ar: ['Playpen Sans Arabic', 'Lalezar', 'Lalezar', 'Noto Naskh Arabic', 'Lalezar'],
+  pt: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4', 'Zen Antique'],
 });
 // #endregion
 
@@ -51,8 +53,12 @@ const [LETTERING, SFX, DEMON, TEXT] = t({
 //   ::panel{art=e08p05-1}
 //   pepper{shout break}: How could they do this to me ?!! To **me** !!!
 //   monster: Monšters of Chaosāh àt your šeŗvice!
+//   sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
+//     for Demons of\
+//     CHAOSAH\
+//     Vol .1                                 the book's title, a line per line of the cover
 // The cast gives the demons Revoy's black balloons and a blackletter voice (its diacritics are
-// his: the demons speak with an accent); 'writing' sets the title on the book's cover.
+// his: the demons speak with an accent); 'plate' gilds the title on the book's cover.
 const comics = {
   gutter: { horizontal: mm(5.4), vertical: mm(2.4) }, // his white gutters, measured
   panel: { borderWidth: pt(0), background: col('paper') }, // no frames: the art meets the white
@@ -62,8 +68,9 @@ const comics = {
     { id: 'shout', stroke: col('ink'), strokeWidth: pt(1) },
     { id: 'caption', fill: col('paper'), stroke: col('ink') },
     { id: 'sfx', fontFamily: SFX, color: col('accent'), haloColor: col('paper') },
-    { id: 'writing', shape: 'none', tail: 'none', fontFamily: DEMON, fontScale: 0.8,
-      color: col('gilt'), halo: pt(0) }, // text tooled on an object, here a book's cover
+    { id: 'plate', shape: 'none', tail: 'none', fontFamily: PLATE, fontScale: 0.88,
+      align: 'center', aspect: 3, color: col('gilt'), halo: pt(0.5), haloColor: col('plate'),
+      letterSpacing: pt(0.2) }, // text tooled on an object, here a book's cover
   ],
   cast: [{ id: 'pepper', name: 'Pepper' }, { id: 'carrot', name: 'Carrot' },
     { id: 'monster', name: t({ en: 'Monsters of Chaosah', es: 'Demonios de Caosah',
@@ -110,16 +117,16 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // the English balloons end. Fractions of each picture, the same in every language.
 const area = (x, y, width, height) => ({ x, y, width, height });
 const ART = {
-  'e08p05-1': { width: 1200, height: 500, safeArea: area(0, 0.04, 0.92, 0.92),
+  'e08p05-1': { width: 1200, height: 500, safeArea: area(0.02, 0.03, 0.85, 0.93),
     anchors: [{ id: 'pepper', x: 0.4249, y: 0.6863 }] },
-  'e08p05-2': { width: 1200, height: 823, safeArea: area(0, 0.05, 0.9, 0.95),
+  'e08p05-2': { width: 1200, height: 823, safeArea: area(0.1, 0.09, 0.77, 0.81),
     anchors: [{ id: 'pepper', x: 0.7858, y: 0.6274 }] },
-  'e08p05-3': { width: 1200, height: 342, safeArea: area(0.1, 0, 0.88, 1),
+  'e08p05-3': { width: 1200, height: 342, safeArea: area(0.09, 0.12, 0.81, 0.88),
     anchors: [{ id: 'sfx', x: 0.1861, y: 0.66 }] },
-  'e08p06-1': { width: 1200, height: 646, safeArea: area(0.03, 0.08, 0.94, 0.9),
+  'e08p06-1': { width: 1200, height: 646, safeArea: area(0.15, 0.06, 0.73, 0.9),
     anchors: [{ id: 'monster', x: 0.4808, y: 0.293 }] },
-  'e08p06-2': { width: 1200, height: 290, safeArea: area(0.5, 0, 0.48, 1) },
-  'e08p06-3': { width: 1200, height: 730, safeArea: area(0.03, 0.05, 0.94, 0.95) },
+  'e08p06-2': { width: 1200, height: 290, safeArea: area(0.59, 0.15, 0.3, 0.77) },
+  'e08p06-3': { width: 1200, height: 730, safeArea: area(0.09, 0.1, 0.77, 0.7) },
 };
 const ALT = {
   'e08p05-1': t({ en: 'Lightning. Pepper, furious, pulls a book with a demon’s face on its cover '
@@ -196,6 +203,7 @@ const FONTS = {
   'ZCOOL KuaiLe': ['400'],
   'ZCOOL QingKe HuangYou': ['400'],
   'Noto Serif SC': ['400', '700'],
+  'Noto Sans SC': ['400'],
   'Playpen Sans Arabic': ['400', '700'],
   Lalezar: ['400'],
   'Noto Naskh Arabic': ['400', '700'],
@@ -225,7 +233,7 @@ async function pdfFonts(family, weight, style, request) {
 // #endregion
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-const faces = Object.fromEntries([LETTERING, SFX, DEMON, TEXT].map((f) => [f, FONTS[f]]));
+const faces = Object.fromEntries([LETTERING, SFX, DEMON, TEXT, PLATE].map((f) => [f, FONTS[f]]));
 await loadFonts(FONTS, markdown);
 await loadCjkFonts(faces, markdown, { vertical: LANG === 'ja' }); // ja balloons are vertical
 await loadArabicFonts(faces, markdown);
