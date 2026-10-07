@@ -238,6 +238,7 @@ ana{thought}: First line,\
 | `join` / `join=false` | flag | force or forbid joining with the speaker's previous balloon |
 | `break` | flag | the balloon may cross the panel border into the gutter or the next panel (no `comicBalloonOverflow` for the crossing itself; what it covers there, a face or another panel's balloon, is still reported; its centre stays in its panel; never off the trim) |
 | `rotate` | degrees, clockwise | sound effects |
+| `skew` | degrees, lean of the letters (positive forward, like italic), applied before `rotate` | sound effects, text on the art in perspective (postext > 1.20.3) |
 | `size` | factor (`1.6`) | scales the text of this line (sound effects) |
 | `color` | `#hex` or palette id | text colour of this line |
 | `font` | family | face of this line (bundle it) |
@@ -421,7 +422,7 @@ Built-in balloon styles (keys of a `balloonStyles` entry: `shape`, `fill`,
 `burstPoints`, `burstDepth`, `padding`, `aspect`, `tail`, `tailWidth`,
 `tailReach`, `target` `mouth|head`, `position`, `butt`, `fontFamily`,
 `fontScale`, `bold`, `italic`, `color`, `textTransform`, `letterSpacing`,
-`align` `center|start`, `halo`, `haloColor`, `rotate`):
+`align` `center|start`, `halo`, `haloColor`, `rotate`, `skew`):
 
 | id | Look |
 |---|---|
@@ -448,6 +449,17 @@ A style for text drawn on the art (a letter, a sign) that translates:
   "color": { "hex": "#3b2a1e", "model": "hex" } }
 ```
 used as `sfx{writing at="34% 87%" rotate=13}: Invitation`.
+
+Text written on an object seen in perspective (a book's title plate): set it in
+the plate with forced breaks, `rotate` for the plate's top edge and `skew` for
+its sides, a colour taken from the art and a halo in the plate's colour (not
+paper white), so it reads as painted on rather than pasted over:
+
+```markdown
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
+  for Demons of\
+  CHAOSAH
+```
 
 ## 11. Reading direction
 

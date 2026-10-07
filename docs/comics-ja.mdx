@@ -217,6 +217,7 @@ note: 真空管ラジオは、声が出るまで1分ほど温めなければな�
     <tr><td><code>join</code>、<code>join=false</code></td><td><code>comics.lettering.joinSameSpeaker</code>の設定にかかわらず、同じ話者の直前の吹き出しにつなげるか、離します。</td></tr>
     <tr><td><code>break</code></td><td>吹き出しが枠線を越えて間白や隣のコマに出ることを許します。求めた越境なので、はみ出しとしては報告されません。ただし向こう側で覆うもの（顔、ほかのコマの吹き出し）は報告され、吹き出しの中心は自分のコマの中にとどまります。</td></tr>
     <tr><td><code>rotate=-8</code></td><td>吹き出しか描き文字を、時計回りに度単位で回転します。</td></tr>
+    <tr><td><code>skew=-8</code></td><td>文字をその角度だけ傾けます（正の値で斜体のように前へ、負の値で後ろへ）。回転の前に適用されます。遠近法で見た物の上の文字（本の表紙の題名、看板など）に使います。<code>rotate</code>と組み合わせると、文字が物の上辺と左右の辺の両方に沿います。吹き出しスタイルでは<code>skew</code>で全行に設定できます。</td></tr>
     <tr><td><code>size=1.5</code></td><td>描き文字の大きさを倍率で変えます。</td></tr>
     <tr><td><code>color=#c0392b</code></td><td>文字の色。16進数の色かパレットのID。</td></tr>
     <tr><td><code>font="…"</code></td><td>この行の書体。</td></tr>

@@ -217,6 +217,7 @@ The attributes of a script line:
     <tr><td><code>join</code>, <code>join=false</code></td><td>Join this balloon to the previous one of the same speaker, or keep it apart, whatever <code>comics.lettering.joinSameSpeaker</code> says.</td></tr>
     <tr><td><code>break</code></td><td>Let the balloon cross the panel border into the gutter or the next panel. The crossing is not reported as an overflow, since it was asked for; what the balloon covers on the other side (a face, another panel's balloon) still is, and its middle stays inside its own panel.</td></tr>
     <tr><td><code>rotate=-8</code></td><td>Turn the balloon or sound effect, in degrees, clockwise.</td></tr>
+    <tr><td><code>skew=-8</code></td><td>Lean the letters by that many degrees (positive forward, like italic, negative back), before any turn: text written on an object seen in perspective, the title on a book cover, a sign. With <code>rotate</code> the lettering follows both the object's top edge and its sides. A balloon style sets it for every line with <code>skew</code>.</td></tr>
     <tr><td><code>size=1.5</code></td><td>Scale a sound effect's lettering.</td></tr>
     <tr><td><code>color=#c0392b</code></td><td>The colour of the lettering: a hex colour or a palette id.</td></tr>
     <tr><td><code>font="…"</code></td><td>The face of this line.</td></tr>
