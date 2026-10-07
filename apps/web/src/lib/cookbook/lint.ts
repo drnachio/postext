@@ -682,7 +682,10 @@ function lintCjk(
     warns.push("script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant', 'ja'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)");
   }
   if (japaneseText) {
-    const chinese = fontFamilies(penFonts(ownCode, scan)).filter((family) => /\s(?:SC|TC|HK)$/.test(family));
+    // A face named in the Chinese entry of a per-edition table
+    // (`t({ … zh: ['Noto Serif SC', …] })`) sets only the Chinese edition.
+    const zhOnly = (family: string) => new RegExp(`\\bzh\\s*:\\s*\\[?[^\\]\\n]*['"]${family}['"]`).test(ownCode);
+    const chinese = fontFamilies(penFonts(ownCode, scan)).filter((family) => /\s(?:SC|TC|HK)$/.test(family) && !zhOnly(family));
     if (chinese.length) {
       warns.push(`script.js: Japanese text with ${chinese.join(", ")} in FONTS: a Chinese face draws the kanji in Chinese forms (直, 骨, 角) and the kana in its own design; ` +
         "set the Japanese in a Japanese face (Noto Serif JP, Noto Sans JP, Shippori Mincho) and keep the Chinese one for Chinese quotations (gotcha ja-fonts-kana)");
