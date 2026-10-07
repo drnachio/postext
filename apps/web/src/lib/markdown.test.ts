@@ -258,6 +258,19 @@ describe("page renditions", () => {
     }
   });
 
+  it("renders the Comics guide as plain Markdown", () => {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"]) {
+      const md = pageMarkdown(locale, "/docs/comics")!;
+      expect(md).toMatch(/^# /);
+      // The split illustration described in words, HTML tables as GFM, no JSX left over.
+      expect(md).toMatch(/^> \*\*[^*]+: /m);
+      expect(md).toMatch(/^\| .*`comicBalloonOverflow`/m);
+      expect(md).not.toMatch(/<\/?(table|thead|tbody|tr|td|th|code)\b|style=\{\{|\{\/\*/);
+      expect(md).toContain('split="30 [30 | 20 | *] / *"');
+      expect(llmsTxt(locale)).toContain(`https://postext.dev/${locale}/docs/comics.md`);
+    }
+  });
+
   it("llms.txt follows the llmstxt.org shape", () => {
     const txt = llmsTxt("en");
     expect(txt).toMatch(/^# Postext\n\n> /);

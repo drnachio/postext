@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '文書形式',
   description: 'Postextが解析するMarkdownのサブセットと、原稿となる文書を書くときの規則',
   lang: 'ja',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-07',
   readingTime: '10分',
   order: 5,
   plainSummary: "このページでは、Postextが組める文章の書き方を説明します。文章はMarkdownで書きます。Markdownは、いくつかの記号で見出し、リスト、太字、リンクを表す簡単な書き方です。Postextは、囲み、脚注、画像、表、数式のための追加の記号も理解します。このページには、受け付ける記号と無視する記号をすべて載せています。最後に、読みやすい文章を書くための助言があります。",
@@ -191,6 +191,14 @@ Postextが認識する本文のブロックは7種類で、ほかにこのペー
       <td>ここに索引を出力します。本の中で<code>:index</code>で印を付けたすべての語を、並べ替えて頭文字ごとにまとめ、出現するページとともに<code>index</code>の設定に従って組みます。<code>:::index&#123;index="names"&#125;</code>は名前付きの索引を出力します。<a href="#索引">索引</a>を参照してください。</td>
     </tr>
     <tr>
+      <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
+      <td>漫画のページです。<code>::panel</code>の行とその台本の行を、独立したページの上にコマと写植した吹き出しとして組みます。<a href="#漫画">漫画</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>:::strip&#123;…&#125;</code> … <code>:::</code></td>
+      <td>本文の流れの中に置く、段幅かページ幅の帯漫画です。<a href="#strip"><code>:::strip</code></a>を参照してください。</td>
+    </tr>
+    <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
       <td>古典アラビア語の配置による詩です。1行に1ベイト（bayt）を書き、2つの半句を<code>||</code>で区切り、共通の幅で横に並べて組みます。<a href="#verse">後述</a>を参照してください。</td>
     </tr>
@@ -199,7 +207,7 @@ Postextが認識する本文のブロックは7種類で、ほかにこのペー
 
 属性の値は、二重引用符（<code>"…"</code>）や一重引用符（<code>'…'</code>）で囲むか、囲まずに（<code>startAt=17</code>）書きます。`=`のないキーだけを書くと、値が空のフラグとして扱います。
 
-現在、1行のディレクティブとして認識するのは`pagebreak`、`numbering`、`columnbreak`、`space`、`toc`、`index`だけです（フェンスで囲むブロックとしては`references`と`verse`）。それ以外の`:::name`行で、コンテナー（後述）でもないものは段落として解析され、Sandboxに**不明なディレクティブ**の警告が表示されます。エンジンもそれを、文書の`contentWarnings`の`unknownDirective`項目として記録します（[設定 › 文書の中の警告](/ja/docs/configuration#文書の中の警告)を参照）。
+現在、1行のディレクティブとして認識するのは`pagebreak`、`numbering`、`columnbreak`、`space`、`toc`、`index`だけです（フェンスで囲むブロックとしては`references`、`verse`、`page`、`strip`）。それ以外の`:::name`行で、コンテナー（後述）でもないものは段落として解析され、Sandboxに**不明なディレクティブ**の警告が表示されます。エンジンもそれを、文書の`contentWarnings`の`unknownDirective`項目として記録します（[設定 › 文書の中の警告](/ja/docs/configuration#文書の中の警告)を参照）。
 
 ### 属性の値
 
@@ -1332,6 +1340,26 @@ VDTはトリミングをリソースのブロックに記録します。`bodySou
 レシピ集のNo. 116「[短い段を埋めるように伸びる写真](/ja/cookbook/photos-fill-short-columns)」は、2段組みの雑誌特集をセーフエリアなしとセーフエリアありの2回組むので、ページを並べて比べられます。
 
 
+### 話者のアンカーと回避エリア
+
+漫画のコマの絵になる画像は、写植のために、人物がどこにいるかも示せます（[漫画](#漫画)を参照）。`anchors`は話し手ごとに1つの点を、`avoid`はどの吹き出しも覆わない範囲を並べ、どちらもセーフエリアと同じく画像に対する割合で表します。
+
+```ts
+const radio: Resource = {
+  id: 'lh-radio', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-radio.jpg', format: 'jpeg', width: 1000, height: 1000 },
+  safeArea: { x: 0, y: 0.36, width: 0.62, height: 0.56 },
+  anchors: [
+    // 灯台守：口、頭（思考の吹き出し用）、顔
+    { id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 }, face: { x: 0.29, y: 0.4, width: 0.16, height: 0.18 } },
+  ],
+  avoid: [{ x: 0, y: 0.44, width: 0.22, height: 0.26 }], // 無線機
+};
+```
+
+アンカーの`id`は台本の話し手のキー（`tomas: …`）か、コマの描き文字を集める点を表す`sfx`です。`x`と`y`はセリフの吹き出しのしっぽが指す口、`head`は思考の吹き出しの泡が指す点（未設定なら口）、`face`はどの吹き出しも覆わない長方形です。エンジンはすべての点をコマのトリミングと反転を通して写すので、コマがどんな形になってもしっぽは話し手から外れません。セーフエリアの外にあるアンカーは、トリミングで切られるおそれがあるので`comicAnchorOutsideSafeArea`を出します。アンカーは画像に属し、その漫画のどの翻訳にも使えます。アンカーを読むのは漫画のコマだけで、図は無視します。Sandboxでは、[**リソース**パネル](/ja/docs/sandbox#リソースパネル)の**セーフエリアと写植**のダイアログで指定します。
+
+
 ### 動画
 
 **動画**リソース（`kind: 'video'`）は、YouTubeまたはVimeoの動画、あるいは自前の動画です。自前の動画は、本の中に持つファイル（MP4、WebM）でも、Webのアドレスにあるもの、つまりサーバー上のファイルや**HLSストリーム**（`.m3u8`のプレイリスト）でもかまいません。画像と同じように配置、キャプション付け、フロート、参照ができ、独自の系列で番号が付きます。組み込みの`video`の種類は、*Figure 1.1*や*Table 1.1*と並んで*Video 1.1*、*Video 1.2*…と表示します（[設定 › リソースの種類](/ja/docs/configuration#リソースの種類)を参照）。各出力は、それぞれ可能な形で動画を表示します。
@@ -1466,6 +1494,92 @@ book.stopVideo();
 `videos: false`でこの機能をオフにします。`toggleVideoAt({ page, x, y })`はその位置をクリックしたときと同じ動作をし、`pageVideoSpots(page, doc)`はページ上の各動画の位置を一覧にします。独自のコントロールを描くホストのためのものです。
 
 レシピ集の2つのレシピが動画を組んでいます。No. 131「[ポスター画像にQRコードを刷った映画クラブのプログラム](/ja/cookbook/film-club-video-qr)」は、映画ごとに再生マークとQRコードの付いたタイトルカードを刷ります。No. 132「[画面とEPUBで動画が再生される実験シート](/ja/cookbook/pendulum-lab-video-players)」は、HTML版のプレーヤーオプションを設定し、自前の動画を固定レイアウトのEPUBに同梱します。
+
+## 漫画
+
+漫画のページ、帯漫画、見開きは、エンジンが中身を自分で1行ずつ読む2つのフェンス付きブロック、`:::page`と`:::strip`で書きます。その中では`::panel`の行がコマを始め、台本の行がそのコマを写植します。割り付けの規則、写植、出力を含むガイドは[漫画](/ja/docs/comics)に、設定は[設定 › 漫画](/ja/docs/configuration#漫画)にあります。
+
+### `:::page`
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: 毎年夏になると、マヤは灯台で一週間を過ごした。
+maya: おじいちゃん、来たよ！
+::panel{art=lh-radio focus="40% 50%"}
+tomas: ちょうどいいところに来た。
+::panel{art=lh-maya}
+maya{thought}: あのバルブ、ゆるんでるみたい……
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: バキッ
+:::
+```
+
+`:::page`ブロック1つが漫画の1ページです。新しいページを始めてその全体を占め、閉じの`:::`の後のテキストは次のページから始まります。属性は`split`（ページを区画に割る方法。段は`/`、横に並ぶコマは`|`で区切ったパーセントのサイズ、区画をさらに割るには角かっこの並び、残りは`*`、斜めの線は`a~b`）、`gutter`（長さ1つ、または段の間とコマの間の2つ。単位のない数値はミリメートル）、`style`（名前付きのコマのスタイル）、`bleed`、`direction`（`ltr`か`rtl`。`dir`とも書けます）、`spread`（[見開き](#見開き)を参照）です。`split`がなければ、コマは同じ高さの段に積み重なります。ブロックの中では、Markdownのブロック、コンテナー、ディレクティブは読まれませんが、`<!-- comments -->`はコメントとして認識されます。
+
+### コマ
+
+`::panel{…}`の行がコマを始めます。コマは読む順で次の区画を埋め、次の`::panel`の行か閉じのフェンスまで続きます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>属性</th>
+      <th>効果</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>絵です。ビットマップかSVGのリソースを指します。ないとコマは空になります。</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td>区画を埋めるように絵をトリミングする（セーフエリアには食い込みません）か、絵全体を表示します。</td></tr>
+    <tr><td><code>focus="x% y%"</code></td><td>セーフエリアが余地を残すところで、中央に保つ点です。</td></tr>
+    <tr><td><code>style=…</code>, <code>border=none</code>, <code>border=0.5mm</code>, <code>bg=#hex</code></td><td>名前付きのコマのスタイル、枠線、背景（色、パレットのID、または<code>none</code>）です。</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>枠に接する辺を、仕上がり線を越えて裁ち落としまで伸ばします（断ち切り）。</td></tr>
+    <tr><td><code>pad="…"</code></td><td>コマを区画より小さくします。1〜4個の長さかパーセントです（上、終わり側、下、始まり側）。</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>区画を与えず、前のコマの上に、そのコマに対するパーセントで表した箱の位置に重ねます。</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>コマの絵と同じトリミングで枠線の上に描く、透明な地の切り抜きです（枠線破り）。</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>絵を左右反転するか、反転するページで描いたままにします。</td></tr>
+    <tr><td><code>alt="…"</code>, <code>id=…</code></td><td>代替テキスト（なければリソースの<code>altText</code>）と、アンカーのIDです。</td></tr>
+  </tbody>
+</table>
+
+### 台本の行
+
+コマの各行は、吹き出し、ナレーション、描き文字のどれか1つで、`key{attributes}: text`と書きます。
+
+```md
+maya: おじいちゃん、来たよ！
+tomas{whisper}: しっ。聞いてごらん。
+caption{at=bottom-end}: 通りを三本隔てたところ。
+sfx{at="62% 40%" rotate=-8 size=1.4}: バキッ
+ben{tail=start}: （コマの外から）こっちだ！
+maya：この行は
+  次の行に続いて、\
+  ここで改行される。
+```
+
+- **キー**は話し手のID（英字、数字、`_`、`.`、`-`）で、どの言語の版でも同じです。`caption`、`sfx`、`note`は予約されています。コロンは全角の`：`でもかまいません。
+- 波かっこの中に語だけを書くと**吹き出しのスタイル**になります（`thought`、`whisper`、`shout`、`radio`、`inner`、または`comics.balloonStyles`のどれか）。`style=`でも同じことを指定できます。
+- `at`は吹き出しの位置を固定します。コマの絵に対するパーセントで表した点（`at="62% 40%"`）か、角か辺（`top-start`、`top-end`、`bottom-start`、`bottom-end`、`top`、`bottom`）です。`to`はしっぽを絵の点に向け、`tail=none`はしっぽをなくし、`tail=top|bottom|start|end`はしっぽをコマの外へ向けます。`join`と`join=false`は、吹き出しを同じ話し手の直前の吹き出しにつなげるか、離しておきます。`break`は枠線を越えることを許します。`rotate`（度）、`size`（倍率。描き文字用）、`color`、`font`は文字を変えます。
+- スペース2つかタブで字下げした行は、上の吹き出しの続きになります。行末のバックスラッシュは、テキストをそこで改行します。空行は無視されます。
+- テキストはインラインのMarkdownです。強調（ボールドイタリックで写植します）、`:tcy`、`:ruby`、`:ltr`、`:rtl`が使えます（後の3つは吹き出しの中ではプレーンテキストとして印字されます）。脚注と`:ref`の印は読まれません。
+
+### `:::strip`
+
+```md
+:::strip{split="* | * | *" aspect=3 span=page placement=top}
+::panel{art=pip-1}
+pip: おはよう、オットー！
+::panel{art=pip-2}
+::panel{art=pip-3}
+otto: いい朝かね？
+:::
+```
+
+`:::strip`はページと同じ中身を持ちますが、本文の中に、コマに割った分割できない1つの箱として置かれます。属性は`span`（`column`が既定、または`page`）、`placement`（書いた位置に置く既定の`here`、または図と同じくフロートにする`top`、`bottom`、`auto`）、そしてサイズで、`height`（長さ。単位のない数値はミリメートル）か`aspect`（幅と高さの比。`3`、`4/1`、`4:1`。既定はコマが正方形になる比）のどちらかです。`split`がなければ、コマは横に並びます。帯漫画は章の最上位でだけ読まれます。
+
+### 見開き
+
+`:::page{spread}`は、1ページを向かい合う2ページにわたって組みます。割りは、内側の余白を除いてのどでつないだ2つの版面を覆い、コマはのどをまたいでもかまいません。見開きは偶数ページから始まり、必要なら前に白ページが入ります。[漫画 › 見開き](/ja/docs/comics#見開き)を参照してください。
 
 ## 対応していない記法
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Formato del documento',
   description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
   lang: 'es',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-07',
   readingTime: '10 min',
   order: 5,
   plainSummary: "Esta página explica cómo escribir un texto que Postext pueda componer. Se escribe en Markdown, una forma sencilla de escribir en la que unos pocos signos marcan los títulos, las listas, las negritas y los enlaces. Postext entiende además algunas marcas propias para recuadros, notas al pie, imágenes, tablas y fórmulas. La página enumera todas las marcas que acepta y las que no tiene en cuenta. Termina con consejos para escribir un texto fácil de leer.",
@@ -191,6 +191,14 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td>Imprime aquí el índice analítico: todos los términos marcados con <code>:index</code> en el libro, ordenados y agrupados por inicial, con las páginas en que caen, compuestos según la configuración <code>index</code>. <code>:::index&#123;index="nombres"&#125;</code> imprime un índice con nombre. Ver <a href="#índice-analítico">Índice analítico</a>.</td>
     </tr>
     <tr>
+      <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Una página de cómic: sus líneas <code>::panel</code> y sus líneas de guion, compuestas como viñetas y bocadillos rotulados en una página propia. Véase <a href="#cómics">Cómics</a>.</td>
+    </tr>
+    <tr>
+      <td><code>:::strip&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Una tira de cómic dentro del texto, del ancho de una columna o de la página. Véase <a href="#strip"><code>:::strip</code></a>.</td>
+    </tr>
+    <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
       <td>Un poema a la manera árabe clásica: un bayt por línea, sus dos hemistiquios separados por <code>||</code>, compuestos uno junto a otro con una anchura común. Véase <a href="#verse">más abajo</a>.</td>
     </tr>
@@ -199,7 +207,7 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` e `index` como directivas de una sola línea (y `references` y `verse` como bloques con valla) — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
+Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` e `index` como directivas de una sola línea (y `references`, `verse`, `page` y `strip` como bloques con valla) — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
 
 ### Valores de los atributos
 
@@ -1332,6 +1340,26 @@ El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la
 La receta nº 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/cookbook/photos-fill-short-columns), compone dos veces un reportaje de revista a dos columnas, sin zonas seguras y con ellas, para comparar las páginas una junto a otra.
 
 
+### Anclas de personaje y zonas libres
+
+Un dibujo que hace de arte de una viñeta de cómic puede decir además dónde están sus personas, para la rotulación (véase [Cómics](#cómics)). `anchors` enumera un punto por personaje y `avoid` las regiones que ningún bocadillo tapa, unos y otras en fracciones del dibujo, como la zona segura:
+
+```ts
+const radio: Resource = {
+  id: 'lh-radio', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-radio.jpg', format: 'jpeg', width: 1000, height: 1000 },
+  safeArea: { x: 0, y: 0.36, width: 0.62, height: 0.56 },
+  anchors: [
+    // el farero: boca, cabeza (para los bocadillos de pensamiento) y cara
+    { id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 }, face: { x: 0.29, y: 0.4, width: 0.16, height: 0.18 } },
+  ],
+  avoid: [{ x: 0, y: 0.44, width: 0.22, height: 0.26 }], // la radio
+};
+```
+
+El `id` de un ancla es la clave de personaje del guion (`tomas: …`), o `sfx` para el punto en el que se reúnen las onomatopeyas de la viñeta; `x` e `y` son la boca a la que apunta el rabillo de un bocadillo de diálogo, `head` el punto al que apuntan las burbujas de un bocadillo de pensamiento (la boca si no se fija) y `face` un rectángulo que ningún bocadillo tapa. El motor lleva cada punto a través del recorte y el reflejo de la viñeta, de modo que un rabillo sigue en su personaje sea cual sea la forma que tome la viñeta; un ancla fuera de la zona segura genera `comicAnchorOutsideSafeArea`, porque un recorte puede dejarla fuera. Las anclas pertenecen al dibujo y sirven a todas las traducciones del cómic. Solo las leen las viñetas de cómic; una figura las ignora. En el Sandbox se marcan en el diálogo **Zona segura y rotulación** del [panel de Recursos](/es/docs/sandbox#panel-de-recursos).
+
+
 ### Vídeos
 
 Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o Vimeo, o un vídeo propio: un archivo guardado en el libro (MP4, WebM) o uno que está en una dirección web, sea un archivo en un servidor o un **flujo HLS** (una lista de reproducción `.m3u8`). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Cada salida lo muestra como puede:
@@ -1466,6 +1494,93 @@ book.stopVideo();
 `videos: false` lo desactiva. `toggleVideoAt({ page, x, y })` hace lo mismo que un clic en ese punto, y `pageVideoSpots(page, doc)` indica dónde está cada vídeo de una página, para el anfitrión que dibuja sus propios controles.
 
 Dos recetas del Recetario ponen vídeos: la nº 131, [Programa de cineclub con códigos QR en las portadas](/es/cookbook/film-club-video-qr), imprime cada película como una cartela con la marca de reproducción y un código QR, y la nº 132, [Hoja de prácticas con vídeos que se ven en pantalla y EPUB](/es/cookbook/pendulum-lab-video-players), fija las opciones del reproductor de la edición HTML y empaqueta sus propios vídeos en un EPUB de maquetación fija.
+
+## Cómics
+
+Las páginas de cómic, las tiras y las dobles páginas se escriben en dos bloques con valla cuyo cuerpo lee el propio motor, línea a línea: `:::page` y `:::strip`. Dentro de ellos, las líneas `::panel` empiezan las viñetas y las líneas de guion las rotulan. La guía, con las reglas de composición, la rotulación y las salidas, es [Cómics](/es/docs/comics); los ajustes están en [Configuración › Cómics](/es/docs/configuration#cómics).
+
+### `:::page`
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: Todos los veranos, Maya pasaba una semana en el faro.
+maya: ¡Abuelo! ¡Ya estoy aquí!
+::panel{art=lh-radio focus="40% 50%"}
+tomas: Llegas justo a tiempo.
+::panel{art=lh-maya}
+maya{thought}: Esa válvula parece suelta…
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: CRAC
+:::
+```
+
+Un bloque `:::page` es una página de cómic: abre una página nueva, la ocupa entera, y el texto que sigue a su `:::` de cierre empieza en la página siguiente. Sus atributos son `split` (cómo se corta la página en celdas: tamaños en porcentaje separados por `/` para las tiras y por `|` para las viñetas contiguas, una lista entre corchetes para volver a cortar una celda, `*` para el resto, `a~b` para una línea inclinada), `gutter` (una longitud, o dos: entre tiras y entre viñetas; un número sin unidad está en milímetros), `style` (un estilo de viñeta con nombre), `bleed`, `direction` (`ltr` o `rtl`, también escrito `dir`) y `spread` (véase [Dobles páginas](#dobles-páginas)). Sin `split`, las viñetas se apilan en tiras iguales. Dentro del bloque no se leen bloques de Markdown, contenedores ni directivas; los `<!-- comentarios -->`, sí.
+
+### Viñetas
+
+Una línea `::panel{…}` empieza una viñeta, que llena la siguiente celda en orden de lectura y llega hasta la siguiente línea `::panel` o hasta la valla de cierre:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>El dibujo: un recurso de mapa de bits o SVG. Sin él, la viñeta queda vacía.</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td>Recorta el dibujo para llenar la celda (nunca dentro de su zona segura), o lo muestra entero.</td></tr>
+    <tr><td><code>focus="x% y%"</code></td><td>El punto que se mantiene centrado donde la zona segura deja margen.</td></tr>
+    <tr><td><code>style=…</code>, <code>border=none</code>, <code>border=0.5mm</code>, <code>bg=#hex</code></td><td>Un estilo de viñeta con nombre, el borde y el fondo (un color, un id de la paleta o <code>none</code>).</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Lleva los lados que tocan el marco hasta el corte y el sangrado.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>Hace la viñeta más pequeña que su celda: de una a cuatro longitudes o porcentajes (arriba, final, abajo, inicio).</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>Superpone la viñeta a la anterior, en esa caja en porcentajes de ella, en lugar de darle una celda.</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>Un recorte transparente que se dibuja por encima del borde con el encuadre del dibujo (un borde roto).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Voltea el dibujo, o lo conserva tal como se hizo en una página reflejada.</td></tr>
+    <tr><td><code>alt="…"</code>, <code>id=…</code></td><td>El texto alternativo (si no, el <code>altText</code> del recurso) y un id de ancla.</td></tr>
+  </tbody>
+</table>
+
+### Líneas de guion
+
+Cada línea de una viñeta es un bocadillo, una cartela o una onomatopeya, y se escribe `clave{atributos}: texto`:
+
+```md
+maya: ¡Abuelo! ¡Ya estoy aquí!
+tomas{whisper}: Chis. Escucha.
+caption{at=bottom-end}: A tres calles de allí.
+sfx{at="62% 40%" rotate=-8 size=1.4}: CRAC
+ben{tail=start}: (desde fuera de la viñeta) ¡Aquí!
+maya: Esta línea sigue
+  en la línea siguiente,\
+  y se corta aquí.
+```
+
+- La **clave** es un id de personaje (letras, cifras, `_`, `.`, `-`), el mismo en todas las traducciones; `caption`, `sfx` y `note` están reservadas. Los dos puntos pueden ser los de ancho completo, `：`.
+- Una palabra suelta entre llaves es un **estilo de bocadillo** (`thought`, `whisper`, `shout`, `radio`, `inner` o uno de `comics.balloonStyles`); `style=` dice lo mismo.
+- `at` fija el bocadillo: un punto en porcentajes del dibujo de la viñeta (`at="62% 40%"`), o una esquina o un borde (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` apunta el rabillo a un punto del dibujo; `tail=none` lo quita y `tail=top|bottom|start|end` lo apunta fuera de la viñeta. `join` y `join=false` unen el bocadillo al anterior del mismo personaje o lo mantienen aparte; `break` le deja cruzar el borde. `rotate` (grados), `size` (una escala, para las onomatopeyas), `color` y `font` cambian su rotulación.
+- Una línea sangrada con dos espacios o un tabulador continúa el bocadillo anterior; una barra inversa al final de una línea corta ahí el texto. Las líneas en blanco se ignoran.
+- El texto es Markdown en línea: énfasis (rotulado en negrita cursiva), `:tcy`, `:ruby`, `:ltr` y `:rtl` (los tres últimos se imprimen como texto llano en los bocadillos). Las notas al pie y las marcas `:ref` no se leen.
+
+### `:::strip`
+
+```md
+:::strip{split="* | * | *" aspect=3 span=page placement=top}
+::panel{art=pip-1}
+pip: ¡Buenos días, Otto!
+::panel{art=pip-2}
+::panel{art=pip-3}
+otto: ¿Tú crees?
+:::
+```
+
+Un `:::strip` tiene el cuerpo de una página pero va en el texto como una sola caja que no se parte, cortada en viñetas: `span` (`column`, el valor por defecto, o `page`), `placement` (`here`, el valor por defecto, donde está escrita; o `top`, `bottom`, `auto`, flotada como una figura) y su tamaño, ya sea `height` (una longitud; un número sin unidad está en milímetros) o `aspect` (la anchura dividida por la altura: `3`, `4/1`, `4:1`; por defecto, las proporciones que hacen cuadradas sus viñetas). Sin `split`, las viñetas van una junto a otra. Las tiras solo se leen en el nivel superior de un capítulo.
+
+### Dobles páginas
+
+`:::page{spread}` extiende una página sobre dos páginas enfrentadas: la división cubre las dos cajas de texto unidas en el lomo, sin sus márgenes interiores, y una viñeta puede cruzar el lomo. La doble página se abre en una página par, tras una página en blanco si hace falta. Véase [Cómics › Dobles páginas](/es/docs/comics#dobles-páginas).
+
 
 ## Qué NO se soporta
 

@@ -1,0 +1,513 @@
+{/* docs/comics-zh.mdx */}
+
+export const metadata = {
+  title: '漫画',
+  sidebarTitle: '漫画',
+  description: 'Postext如何用Markdown排漫画和日本漫画：按切分树分格的漫画页，围绕安全区裁切的分格画面，由脚本生成的嵌字（对白、心声、耳语、喊叫、广播、旁白框、拟声词），对白框样式，画面上的说话人锚点，正文中的漫画条，双页跨页，从右到左阅读与竖排嵌字，翻译，以及Canvas、PDF、HTML和EPUB输出',
+  lang: 'zh',
+  lastUpdated: '2026-10-07',
+  readingTime: '25分钟',
+  order: 9,
+  plainSummary: "本页说明怎样用Postext做漫画。画就是分格，人物说的、想的和听到的一切都作为文字写在Markdown文件里。Postext把分格排到页面上，并自动围着文字画出对白框、旁白框和拟声词。翻译漫画时只需改写文字，Postext会用新的语言重新嵌字：日文竖排成列，阿拉伯文从右往左。本页还介绍书中的漫画条、横跨两个对页的跨页、各种输出以及尚存的限制。",
+};
+
+# 漫画
+
+**画就是分格；说出的、想到的、旁白的和听到的一切，都是Markdown里的文字。**
+
+在Postext中，一部漫画由一组画和一份脚本组成。画是普通的位图或SVG资源，画面上不带任何文字。脚本写在章的Markdown里：一个`:::page`块把一页切成若干分格，给每一格指定画面，并逐行列出这一格里的对白框、旁白框和拟声词。Postext排出分格，把每幅画裁进它的格子而不切掉要紧的部分，用全书统一的嵌字字体和字号排出文字，围着文字画出对白框，让尾巴指向说话人，再按阅读顺序把对白框放在不挡脸的地方。译本是另一个Markdown文件，分格相同，文字不同；Postext从头为它重新嵌字，日文竖排成列，阿拉伯文从右往左。
+
+漫画是可选功能：没有`:::page`或`:::strip`的文档，排版结果与以前完全相同。相关设置在[配置中的`comics`一节](/zh/docs/configuration#漫画)，标记的摘要见[文档格式 › 漫画](/zh/docs/document-format#漫画)。
+
+## 漫画页
+
+一个`:::page`块就是一页漫画。它以`:::page{…}`一行开头，每个分格一行`::panel`，后面各跟这一格的脚本，最后以单独的`:::`结束：
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: 每年夏天，玛雅都要到灯塔住上一个星期。
+maya: 爷爷！我来啦！
+::panel{art=lh-radio}
+tomas: 来得正好。收音机哑了，
+tomas: 暴风雨又要来了。
+::panel{art=lh-maya}
+maya{thought}: 那个阀门好像松了……
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: 咔啦
+tomas{shout}: 抓紧栏杆！
+:::
+```
+
+这个块总是从新的一页开始，并独占这一页。结束围栏之后的文字从下一页开始，所以连续两个`:::page`块就是两页漫画，两者之间的`:::pagebreak`不会多出一页。引擎像读`:::verse`一样自己逐行读取块的内容：块内不识别Markdown块、容器和其他指令，`<!-- 注释 -->`会被忽略，跨多行的注释也一样。
+
+页面的角色是`'comic'`（`VDTPage.role`）。漫画页全是分格，所以不印书眉和页码，但它计入页码编号；`comics.runningHeads: true`会把它们印出来。分格从**画框**中切出：画框就是页面边距以内的版心，除非`comics.frame.margins`为漫画页另设边距。
+
+起始行的属性：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>split="…"</code></td><td>画框怎样切成格子（见<a href="#分割页面">分割页面</a>）。未设置时，各分格按等高的行（一排分格为一行）自上而下堆叠。</td></tr>
+    <tr><td><code>gutter=4mm</code>、<code>gutter="4mm 2mm"</code></td><td>行与行之间的距离；给出第二个值时，它是同一行内左右相邻分格之间的距离。不带单位的数字以毫米计。未设置时用<code>comics.gutter</code>（4 mm和2 mm）。</td></tr>
+    <tr><td><code>style=…</code></td><td>本页所有分格使用的命名分格样式（<code>comics.panelStyles</code>）。</td></tr>
+    <tr><td><code>bleed</code></td><td>贴着画框的每个分格都延伸到裁切线，并伸进出血区。</td></tr>
+    <tr><td><code>direction=rtl</code>、<code>dir=ltr</code></td><td>本页的阅读方向，不管配置怎样设置（见<a href="#阅读方向">阅读方向</a>）。</td></tr>
+    <tr><td><code>spread</code></td><td>把这一页铺在两个对页上（见<a href="#跨页">跨页</a>）。</td></tr>
+  </tbody>
+</table>
+
+## 分割页面
+
+`split`属性把页面描述成一棵切分树。用`/`分隔的一列尺寸把格子自上而下堆叠成行；用`|`分隔的一列让格子左右并排，从页面开始阅读的那一侧排起。尺寸后面跟一个方括号列表，表示沿另一个方向把这个格子再切一次。上例的页面`30 [30 | 20 | *] / *`是这样的：第一行占画框高度的30%，切成宽度为30%和20%的两格，以及占去其余宽度的第三格；下面的第二行占去页面的其余部分：
+
+<Illustration name="ComicSplit" data='{"title": "切分30 [30 | 20 | *] / *", "desc": "按切分30 [30 | 20 | *] / *切开的页面画框。第一行占高度的30%，切成三个分格：宽度的30%、20%和其余部分。下面的第二行把页面其余部分作为一个分格。格间距跨在切分线两侧。页面旁边把这个切分画成一棵树：一个有两项的行列表，第一项含有一个三列的方括号列表。树叶就是按阅读顺序编号的分格1到4。", "caption": "尺寸是父格子的百分比；*占去剩下的部分。分格按阅读顺序编号，也就是树的顺序。", "split": "30 [30 | 20 | *] / *", "rows": "/ 行，自上而下", "columns": "| 列，从起始侧排起", "rest": "* 其余部分", "order": "按阅读顺序的分格", "gutter": "格间距"}' />
+
+完整的语法：
+
+```
+split := list
+list  := item ( "/" item )*  |  item ( "|" item )*
+item  := size [ "[" list "]" ]
+size  := number ["%"] [ "~" number ["%"] ]  |  "*"  |  (nothing)
+```
+
+- **尺寸**是父格子沿该列表方向的百分比；`30`和`30%`相同。`*`或空着的尺寸平分写明的尺寸剩下的部分。列表的最后一项总是延伸到尽头，不管它写的尺寸是多少。
+- **每个列表只用一种分隔符。** 在同一个列表里混用`/`和`|`、方括号没有闭合，或者方括号列表与父列表同向，都是语法错误（`comicSplitSyntax`）：只采用能读懂的部分。
+- **尺寸过大。** 尺寸合计超过100%时按比例缩小，让每个`*`保留5%，页面报告`comicSplitOverflow`。
+- **阅读顺序**就是树的顺序：各行自上而下，行内的分格从起始侧排起。`::panel`行按这个顺序填入格子。分格比格子多时，多出的分格不排；比格子少时，最后几个格子留空（`comicPanelCount`，只在写了`split`时报告）。
+
+几种切分：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>切分</th>
+      <th>页面</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#42;</code></td><td>整页一格的大画面。</td></tr>
+    <tr><td><code>33 / 33 / &#42;</code></td><td>三行。</td></tr>
+    <tr><td><code>&#42; / &#42; / &#42; / &#42;</code></td><td>四个等高的行，即四格漫画。</td></tr>
+    <tr><td><code>50 [&#42; | &#42;] / 50 [&#42; | &#42; | &#42;]</code></td><td>上面两格，下面三格。</td></tr>
+    <tr><td><code>30 / 35 [&#42; | &#42; | &#42;] / &#42;</code></td><td>一个宽格，一行三格，再一个宽格。</td></tr>
+    <tr><td><code>60 | &#42; [50 / &#42;]</code></td><td>起始侧一个高格，旁边上下叠着两格。</td></tr>
+    <tr><td><code>&#42; [40&#126;55 | &#42;] / 35</code></td><td>被一条斜线切开的动作行，下面是高35%的一行。</td></tr>
+  </tbody>
+</table>
+
+### 斜切
+
+写成`a~b`的尺寸给出一条斜线：格子的远边从交叉轴起点处的`a`%延伸到另一端的`b`%。对于左右并排的分格，起点是顶端，所以`40~55 | *`画出一条在顶端位于宽度40%、在底端位于55%的线；对于行，起点是页面开始阅读的那一侧。尺寸在两端分别累加，格子始终是凸多边形。圆角只用于矩形分格；斜切出的分格保持尖角。
+
+### 格间距
+
+格间距跨在每条切分线上，两侧各占一半，所以写在30%的线正好位于格子的30%处。斜线保持它所在方向的格间距，沿垂直于线的方向量取。默认值与常见的漫画页一致：行与行之间4 mm，同一行的分格之间2 mm（`comics.gutter.horizontal`和`vertical`，或页面的`gutter`属性）。
+
+### 出血
+
+出血的分格越过画框：它贴着画框的每条边都向外移到裁切线，页面设有出血时（`page.cutLines.bleed`）再移到裁切线以外的出血位。页面的`bleed`属性让所有分格出血；分格自己的`bleed`只让这一格出血，`bleed="top start"`只让这几条边出血（`top`、`bottom`、`start`、`end`、`left`、`right`），`bleed=false`取消出血。设了`bleed: true`的分格样式让使用它的分格出血。
+
+### 内缩与嵌入格
+
+`pad`让分格比它的格子小：一到四个值，顺序与CSS外边距相同，但用逻辑方向（上、末尾、下、起始），每个值是长度或格子的百分比。`::panel{art=x pad="0 15%"}`得到一个比所在行窄、在行中居中的分格。
+
+写了`inset="x y w h"`的分格不占格子：它叠在前一个分格上，位置和大小以那个分格框的百分比表示，比如角上的一个小头像，或者广角画面上的一个特写。它的脚本嵌在它自己里面。
+
+```md
+:::page{split="*"}
+::panel{art=storm-wide}
+caption{at=bottom-start}: 暴风雨在午夜来临。
+::panel{art=maya-window inset="62% 6% 32% 30%"}
+maya{whisper}: 爷爷？
+:::
+```
+
+## 分格与画面
+
+`::panel{…}`一行开始一个分格；它的脚本一直延续到下一个`::panel`行或结束围栏。没有`art`的分格用底色画成空格，纯文字的分格就是这样做的。第一个`::panel`之前的文字作为第一格的旁白框嵌字，并报告`comicStrayText`。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>分格的画面：一个位图或SVG资源的id。未知的id让分格留空，并报告<code>comicUnknownArt</code>。</td></tr>
+    <tr><td><code>fit=cover</code>、<code>fit=contain</code></td><td><code>cover</code>裁切画面以填满格子，但绝不切进安全区；<code>contain</code>完整显示画面，空出的部分是分格底色的色带。未设置时用分格样式的值（<code>cover</code>）。</td></tr>
+    <tr><td><code>focus="70% 40%"</code></td><td>安全区留有选择余地时，要保持居中的画面上的点。</td></tr>
+    <tr><td><code>style=…</code></td><td>这一格使用的命名分格样式。</td></tr>
+    <tr><td><code>border=none</code>、<code>border=0.5mm</code></td><td>不画边框，或者画这个粗细的边框。</td></tr>
+    <tr><td><code>bg=#1b1b2f</code></td><td>分格底色：一个颜色、一个调色板id或<code>none</code>。</td></tr>
+    <tr><td><code>bleed</code>、<code>bleed="top start"</code>、<code>bleed=false</code></td><td>见<a href="#出血">出血</a>。</td></tr>
+    <tr><td><code>pad="…"</code></td><td>见<a href="#内缩与嵌入格">内缩与嵌入格</a>。</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>把这一格叠在前一格上，而不给它格子。</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>画在边框之上的抠图（见<a href="#出格画面">出格画面</a>）。</td></tr>
+    <tr><td><code>mirror</code>、<code>mirror=false</code></td><td>左右翻转这一格的画面，或者在页面翻转画面时保持原画（见<a href="#阅读方向">阅读方向</a>）。</td></tr>
+    <tr><td><code>alt="…"</code></td><td>分格的替代文字，用于带标签的PDF、HTML和EPUB。未设置时用资源的<code>altText</code>。</td></tr>
+    <tr><td><code>id=…</code></td><td>分格的id，HTML和EPUB输出用它作锚点。</td></tr>
+  </tbody>
+</table>
+
+### 把画面裁进格子
+
+画分格画面时，并不知道它最后会落进什么形状的格子：页面可能被重新切分，分格线可能被拖动，译本可能需要更高的一行。画面的**安全区**（`Resource.safeArea`，见[文档格式 › 安全区](/zh/docs/document-format#安全区)）说明哪些部分必须留在画面中，裁切按每个格子分别计算：
+
+1. 用`fit=cover`时，可见窗口取格子的比例，并在画面允许的范围内尽量大。
+2. 窗口的位置要让安全区落在其中。还有余地时，分格设了`focus`就以它为中心；否则安全区以外的余量按各自的大小成比例裁去，所以偏在中心左边的主体仍然偏在左边。
+3. 如果没有一个格子比例的窗口能装下安全区（很宽的格子配一个瘦高的主体），画面就完整显示安全区，格子的其余部分用分格底色填满，页面报告`comicPanelLetterbox`。对于W × H的画面，只要格子的宽高比在`sw·W/H`和`W/(sh·H)`之间，安全区就能完整保留；`sw`和`sh`是安全区的宽度和高度所占的比例。
+
+没有安全区的画面围绕中心裁切，或者围绕`focus`裁切。没有固有尺寸的SVG按原样填满格子。渲染器把绘制限定在格子的多边形内，按未裁切的尺寸画出整幅画面，所以裁切从不对图像重新采样。
+
+### 分格样式
+
+分格的外观来自`comics.panel`（1 pt黑色边框、白色底、`cover`），来自页面或分格用`style=`选取的`comics.panelStyles`中的命名样式，以及分格自己的`border`和`bg`。边框可以是`solid`、`none`或`rough`：`rough`是略带抖动的手绘线，每次排版都一样，因为抖动以分格为种子生成。每个字段见[配置 › 漫画](/zh/docs/configuration#漫画)。
+
+### 出格画面
+
+破格，即人物或物体冲出分格的画法，需要两幅画：一幅是分格的画面，照常限定在格子内；另一幅是冲出去那部分的透明抠图，用`pop`指定。抠图的裁切和位置与画面完全相同（它应与画面图片尺寸相同），在边框之后绘制，不加限定，所以它盖住边框和格间距。
+
+```md
+::panel{art=gull-sky pop=gull-cutout bleed="top"}
+sfx{at="70% 20%"}: 嘎——
+```
+
+## 嵌字
+
+每个`::panel`行下面是这一格的脚本，每行一个对白框：
+
+```md
+键{属性}: 文字
+```
+
+**键**是说话人的id（字母、数字、`_`、`.`和`-`），在每个译本中都相同；它与画面上的锚点和[角色表](#角色表)对应。有三个键是保留的：`caption`（旁白框）、`sfx`（拟声词，没有框）和`note`（编者注）。冒号也可以是中文或日文输入法打出的全角`：`。文字是行内Markdown：`*强调*`和`**加粗**`都印成粗斜体，这是嵌字的惯例（没有斜体的文字只加粗），`:tcy[12]`在竖排的列中把数字横着排。缩进两个空格或一个制表符的行接续上面的对白框（用一个空格连接，两个中文或日文字符之间不加空格）；行末的反斜杠让对白框的文字在那里换行。空行被忽略；不是台词行的行作为旁白框嵌字，并报告`comicStrayText`。
+
+```md
+::panel{art=lh-radio}
+tomas: 来得正好。
+  收音机哑了，\
+  暴风雨又要来了。
+biscuit{to="40% 70%"}：喵？
+note: 电子管收音机要预热一分钟才出声。
+```
+
+台词行的属性：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#123;whisper&#125;</code>、<code>style=whisper</code></td><td>对白框样式。花括号里的单个词就是样式名：<code>thought</code>、<code>whisper</code>、<code>shout</code>、<code>radio</code>、<code>inner</code>，或者书中自定义的样式。未知的名称报告<code>comicUnknownBalloonStyle</code>，这一行采用其键的样式。</td></tr>
+    <tr><td><code>at="62% 40%"</code></td><td>把对白框的中心固定在分格画面的这个点上（分格没有画面时是格子上的点）。这个点以画面的比例表示，所以无论怎样裁切、怎样拖动分格线，它都留在画上的同一个位置。</td></tr>
+    <tr><td><code>at=top-start</code></td><td>把对白框放在分格的一个角或一条边上：<code>top-start</code>、<code>top-end</code>、<code>bottom-start</code>、<code>bottom-end</code>、<code>top</code>、<code>bottom</code>。旁白框和注释紧贴边框。</td></tr>
+    <tr><td><code>to="40% 70%"</code></td><td>让尾巴指向画面上的这个点，而不是说话人的锚点。</td></tr>
+    <tr><td><code>tail=none</code>、<code>tail=start</code></td><td>不要尾巴，或者让尾巴指向这一侧格外的说话人（<code>top</code>、<code>bottom</code>、<code>start</code>、<code>end</code>）。默认值是<code>tail=auto</code>。</td></tr>
+    <tr><td><code>join</code>、<code>join=false</code></td><td>把这个对白框与同一说话人的前一个连起来，或者分开，不管<code>comics.lettering.joinSameSpeaker</code>怎样设置。</td></tr>
+    <tr><td><code>break</code></td><td>允许对白框越过分格边框，伸进格间距。</td></tr>
+    <tr><td><code>rotate=-8</code></td><td>把对白框或拟声词按顺时针旋转若干度。</td></tr>
+    <tr><td><code>size=1.5</code></td><td>按比例放大或缩小拟声词的字。</td></tr>
+    <tr><td><code>color=#c0392b</code></td><td>嵌字的颜色：十六进制颜色或调色板id。</td></tr>
+    <tr><td><code>font="…"</code></td><td>这一行的字体。</td></tr>
+  </tbody>
+</table>
+
+### 对白框怎样生成
+
+嵌字遵循漫画嵌字的习惯，而不是文本框的习惯：
+
+- **全书一个字号。** 每个对白框都用`comics.lettering.fontFamily`、以`comics.lettering.fontSize`（默认7.5 pt）排字，只按样式的`fontScale`缩放（耳语0.9，喊叫1.15）。文字从不为了塞进对白框而缩小：放不下的对白框会改变形状、移动位置、越过边框，或者被报告出来。
+- **先排字，后画框。** 先把文字断成行，目标是菱形：上下两端的行短，中间的行最长，最后一行不比其他行短太多；有同样好的断点时，不让行停在冠词或介词上。然后围着这些行画出轮廓，四周留出一样的空白。
+- **排印规则。** 三个点变成省略号；`textTransform: 'uppercase'`把文字排成大写（没有大小写的文字保持原样，德文的ß变成SS）；日文和中文去掉对白框末尾的句号（`dropFinalStop`），竖排的列中ASCII的`!`和`?`变成全角形式，两个连用时排在一个字格里（`!?`排成⁉）；`doubleDash`像美国漫画那样把破折号写成`--`。
+- **位置。** 一格中的对白框按阅读顺序放在分格内，与边框保持`comics.lettering.inset`的距离（1.5 mm）。第一个放在起始一侧靠上的位置，之后的每一个不应比前一个高，除非它在阅读方向上更靠后。对白框避开画面标出的脸和避让区，避开说话人的嘴，也互相避开；它们放在说话人的上方或旁边而不是下方，尾巴尽量不交叉。先放指定了角的旁白框和注释，再放固定了位置的对白框，最后放其余的。放置是确定的：同一页总是得到同样的对白框。
+- **放不下时。** 一个对白框无法干净地放下时，先越过边框（仅在有`break`时），再盖住避让区（从不盖脸），然后换成更宽或更窄的形状。仍然与什么重叠时，就放在损害最小的地方，页面报告`comicBalloonOverflow`，指明是哪一格、盖住了什么。缩短台词、放大分格或者用`at=`固定位置都能解决。
+
+### 尾巴
+
+对白的尾巴指向说话人的嘴，心声的气泡指向头部（见[说话人与锚点](#说话人与锚点)）。尾巴从轮廓上朝向说话人的地方伸出，略带弯曲，在嘴前停住。说话人的锚点被裁到分格之外，或者画面没有为这个说话人标锚点时，尾巴指向格外，朝向锚点或最近的边框，并止于边框。旁白框、注释和拟声词没有尾巴。
+
+### 相连的对白框
+
+同一说话人连续的两行会连在一起，这是嵌字表现说话停顿的方式：`joinSameSpeaker: 'butt'`（默认）让两个框体重叠，共用一条轮廓；`'connector'`用一段细颈把它们连起来；`'none'`让它们保持为两个对白框、两条尾巴。一组中只有第一个对白框有尾巴。单独一行可以用`join`或`join=false`另行指定。
+
+### 拟声词
+
+`sfx`行没有框：文字排得很大（嵌字字号的2.4倍）、加粗，用文档语言的拟声词字体，字的四周有一圈白色描边，压在画面上也能看清。画面标了分格的`sfx`锚点（id为`sfx`的锚点）时，拟声词放在锚点附近，否则放在不挡脸的地方。`rotate`、`size`、`color`和`font`可以改变它，`at`可以固定它的位置。竖排嵌字时，它排成一列，最多五个字。拟声词在页面上所有对白框之后绘制。
+
+### 嵌字设置
+
+`comics.lettering`包含全书的字体、字号、行距、颜色和排印规则。默认字体随文档语言而定，拟声词字体也一样：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>语言</th>
+      <th>嵌字</th>
+      <th>拟声词</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>拉丁、希腊、西里尔等其他文字</td><td>Comic Neue</td><td>Bangers</td></tr>
+    <tr><td>日文</td><td>Zen Antique</td><td>Dela Gothic One</td></tr>
+    <tr><td>简体中文</td><td>Noto Sans SC</td><td>ZCOOL KuaiLe</td></tr>
+    <tr><td>繁体中文</td><td>LXGW WenKai TC</td><td>LXGW WenKai TC</td></tr>
+    <tr><td>阿拉伯文、波斯文、乌尔都文</td><td>Playpen Sans Arabic</td><td>Lalezar</td></tr>
+  </tbody>
+</table>
+
+这些字体都在Google Fonts上，和其他字体一样按名称加载。行高保持默认值时，竖排以及中文或日文的对白框行距为1.5，阿拉伯文为1.45。日文、中文和阿拉伯文的嵌字从不倾斜，不管样式怎样设置；阿拉伯文从不加字距。
+
+### 角色表
+
+`comics.cast`列出角色：id（说话人的键）、`name`，以及可选的说话所用的对白框样式（`balloonStyle`，比如总是用`radio`说话的机器人）、用来区分角色的文字颜色`color`和对白框填充色`fill`，还有`fontFamily`。名称就是输出中报出的名字：HTML查看器和流式EPUB在每行台词前印出“名字：台词”。在角色表中的说话人从不被报告为未知。
+
+```ts
+comics: {
+  cast: [
+    { id: 'maya', name: '玛雅' },
+    { id: 'tomas', name: '托马斯爷爷' },
+    { id: 'beacon', name: '灯塔', balloonStyle: 'radio', fill: { hex: '#e8f4ff', model: 'hex' } },
+  ],
+}
+```
+
+## 对话框样式
+
+对白框样式是一类对白框：它的轮廓、尾巴和文字。内置九种，台词行在花括号里写一个词来指定（`ben{whisper}: …`）。保留键按名称取各自的样式（`caption:`、`sfx:`、`note:`），其他每一行都用`speech`，或者用角色表中说话人的`balloonStyle`。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>样式</th>
+      <th style={{ width: '170px' }}>轮廓</th>
+      <th style={{ width: '120px' }}>尾巴</th>
+      <th>其他</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>speech</code></td><td>椭圆</td><td>弯尾</td><td>所有样式的基础：白色填充，0.6 pt黑色轮廓，0.55 em留白。</td></tr>
+    <tr><td><code>thought</code></td><td>云朵</td><td>气泡</td><td>气泡指向头部，而不是嘴。</td></tr>
+    <tr><td><code>whisper</code></td><td>椭圆，虚线</td><td>弯尾</td><td>文字0.9倍。</td></tr>
+    <tr><td><code>shout</code></td><td>爆炸形</td><td>直尾</td><td>文字1.15倍，加粗；轮廓0.8 pt。</td></tr>
+    <tr><td><code>radio</code></td><td>锯齿形（electric）</td><td>闪电</td><td>来自收音机、电话或机器的声音。</td></tr>
+    <tr><td><code>caption</code></td><td>方框</td><td>无</td><td>淡黄色，紧贴顶部起始侧的角，文字向起始侧对齐。</td></tr>
+    <tr><td><code>inner</code></td><td>圆角框</td><td>无</td><td>灰色填充，斜体：角色的内心独白。</td></tr>
+    <tr><td><code>note</code></td><td>方框</td><td>无</td><td>紧贴底部末尾侧的角，文字0.8倍。</td></tr>
+    <tr><td><code>sfx</code></td><td>无</td><td>无</td><td>文字2.4倍，加粗，用拟声词字体，带1.5 pt白色描边。</td></tr>
+  </tbody>
+</table>
+
+`comics.balloonStyles`修改这些样式，也可以添加新样式。id与内置样式相同的条目叠加在该样式之上；新id的条目从`speech`开始：
+
+```ts
+comics: {
+  balloonStyles: [
+    { id: 'caption', fill: { hex: '#ffffff', model: 'hex' }, textTransform: 'uppercase' },
+    { id: 'shout', burstPoints: 18, burstDepth: 0.3 },
+    { id: 'eerie', shape: 'wavy', stroke: { hex: '#5b4a8a', model: 'hex' }, italic: true },
+    { id: 'writing', shape: 'none', tail: 'none', fontFamily: 'Caveat', color: { hex: '#3b2a1a', model: 'hex' } },
+  ],
+}
+```
+
+```md
+ghost{eerie}: 离开这座房子……
+caption{at=bottom-end}: 三条街以外。
+```
+
+轮廓有`oval`（贴合文字行的超椭圆，`roundness`为2.2）、`rounded`、`rectangle`、`cloud`（扇贝边的个数按周长计算）、`burst`（`burstPoints`个尖刺，深度为`burstDepth`）、`wavy`、`electric`和`none`。`dash`画虚线轮廓，`double`画双线轮廓，`wobble`（0–1）让轮廓像手绘一样抖动，同一个对白框每次都抖得一样。尾巴有`curved`、`wedge`、`bubbles`、`zigzag`和`none`。每个字段及其默认值见[配置 › 漫画](/zh/docs/configuration#漫画)。
+
+渲染器按嵌字师上墨的方式画对白框：一组中的所有轮廓先以两倍粗细描边，再填充，最后排字。因此两个相连的框体和它们的尾巴画出来是一个整体，中间没有线。
+
+## 说话人与锚点
+
+尾巴能指向人物、对白框能避开脸，是因为画面标明了人物在哪里。位图或SVG资源可以带有**锚点**：每个说话人一个点，只写一次，与安全区一样以画面的比例表示（从左上角起算的0–1）。
+
+```ts
+const arrive: Resource = {
+  id: 'lh-arrive', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-arrive.jpg', format: 'jpeg', width: 1100, height: 733 },
+  altText: '一个穿黄色雨衣的女孩沿着海边小路走向灯塔。',
+  safeArea: { x: 0.2, y: 0.08, width: 0.42, height: 0.82 },
+  anchors: [
+    { id: 'maya', x: 0.29, y: 0.52, head: { x: 0.27, y: 0.47 }, face: { x: 0.22, y: 0.42, width: 0.12, height: 0.16 } },
+    { id: 'biscuit', x: 0.4, y: 0.68 },
+  ],
+  avoid: [{ x: 0.51, y: 0.09, width: 0.1, height: 0.43 }], // 灯塔
+};
+```
+
+- `id`是脚本中使用的说话人键（`maya: …`）。id为`sfx`的锚点决定这一格拟声词的位置。
+- `x`、`y`是嘴，对白的尾巴指向这里。
+- `head`是心声的气泡所指的位置。未设置时为嘴。
+- `face`是一个不让对白框遮挡的矩形。没有它的锚点会在嘴的上方和四周得到一个几个em大小的保护框，所以没有框出的脸也能被避开。
+- `avoid`（写在资源上）列出其他不让对白框遮挡的矩形：一只手、一件关键的物品、一块招牌。迫不得已时，对白框可以盖住避让区，但从不盖脸。
+
+锚点是画面的比例，所以随裁切移动：引擎把每个锚点经过分格的裁切和翻转映射到页面上，因此拖动分格线、换一种切分或换一种译文，都不会让尾巴离开说话人。被裁到分格以外的锚点让尾巴朝它指向格外。安全区可以防止这种情况：安全区以外的锚点报告`comicAnchorOutsideSafeArea`，这是给作者的提示，因为裁切可能把它切掉。一页中没有画面标出、角色表中也没有的说话人键报告`comicUnknownSpeaker`，通常能抓出拼错的id；画面完全没有标锚点的页面什么也不报告，所以不标锚点也能给漫画嵌字。
+
+锚点和避让区属于画面，在每种语言中都相同。在沙盒中，它们在[资源面板](/zh/docs/sandbox#资源面板)的图片编辑器里标出：**安全区与嵌字**字段打开一个对话框，有安全区、角色和避让区三种模式。在画面上单击，就在那里添加一个说话人；把它的嘴、头和脸拖到位，在旁边输入它的id；在画面的空白处拖动，画出一个避让区。每个标记都可以用方向键移动（按住Shift步长更大），按Delete删除，对话框有自己的撤销。
+
+## 漫画条
+
+`:::strip`块的内容与漫画页相同，但它排在正文中，是一个一栏宽或一页宽的框，切成若干分格：报纸每天刊登的连环漫画、杂志上的四格笑话、散文书中的一小段漫画。
+
+```md
+:::strip{split="* | * | * | *" aspect=4 span=page placement=top}
+::panel{art=pip-1}
+pip: 奥托，冰在化。
+::panel{art=pip-2}
+otto{thought}: 可别是面包店……
+::panel{art=pip-3}
+::panel{art=pip-4}
+sfx: 扑通
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>span=column</code>、<code>span=page</code></td><td>与所在的栏同宽（默认），或者与版心同宽。</td></tr>
+    <tr><td><code>placement=here</code></td><td>默认值：排在正文中写它的地方。漫画条从不拆开；放不下时整体移到下一栏或下一页，并带走紧挨在它上面的标题。</td></tr>
+    <tr><td><code>placement=top</code>、<code>bottom</code>、<code>auto</code></td><td>像图一样浮动到从这里起第一个有空间的页面的顶部或底部。在多栏的页面上写成<code>here</code>的通栏漫画条也会浮动。</td></tr>
+    <tr><td><code>height=4cm</code></td><td>漫画条的高度（不带单位的数字以毫米计）。</td></tr>
+    <tr><td><code>aspect=4</code>、<code>aspect=4/1</code></td><td>宽高比。未设置时，漫画条取让各分格成为正方形的比例（一行四格：4）。</td></tr>
+  </tbody>
+</table>
+
+没有`split`的漫画条让分格左右并排。漫画条的框就是它的画框：格间距、分格样式和嵌字都用配置中的设置，不出血。比一栏还高的漫画条缩到栏高。它之后的正文在基线网格的下一行继续，留出`layout.inlineResourceGap`要求的间距，与行内图之后一样。在竖排页面上，漫画条在转过来的框中排版，所以`aspect=0.25`的四格漫画`* / * / * / *`顺着竖排的一栏向下排。
+
+在VDT中，漫画条是一个`type: 'resource'`的块，带有`comic`字段而没有`resourceBlock`；它的坐标相对于块在纸页上的框。`pageComics(page)`给出一页的漫画，以及该页各栏和浮动体中的漫画条，全部换算到纸页上。
+
+## 跨页
+
+`:::page{spread}`把一棵切分树铺在两个对页上，用于需要占满整个打开的书的全景或战斗场面。画框是两个版心隔着书脊连在一起，去掉它们的内侧边距；切分、格间距和裁切与单页相同，分格或画面可以跨过书脊。
+
+```md
+:::page{spread split="25 [* | * | *] / *" bleed}
+::panel{art=market-1}
+::panel{art=market-2}
+::panel{art=market-3}
+::panel{art=market-panorama}
+caption: 从钟楼上望去的星期六集市。
+:::
+```
+
+跨页从偶数页（verso）开始，让两半彼此相对：漫画本会从奇数页（recto）开始时，在它前面加一个空白页；在书的最开头也是如此，因为第1页单独成页。左侧装订的书中，偶数页是左页；右侧装订的书（阿拉伯文、竖排的日文和中文）中，偶数页是右页。每一页印它那一半：伸到它这一侧的分格在书脊处切开，跨过书脊的分格，其画面在两页上都画出。出血的分格在天头、地脚和外侧切口出血，从不在书脊处出血。对白框避开书脊两侧8 mm的带状区域，那里会被装订吞掉；每个对白框落在其中心所在的那一页上。
+
+## 阅读方向
+
+西方漫画从左往右读：一行的第一格在左边。日本漫画和阿拉伯漫画从右往左读。Postext从`comics.readingDirection`读取方向：
+
+- `'auto'`（默认）：在从右到左的文档中从右往左读，所以阿拉伯文版会把页面左右翻排；否则按画稿绘制时设想的方向，即`comics.artDirection`（默认`'ltr'`）。西方漫画的日文版仍然从左往右；设了`artDirection: 'rtl'`的日本漫画在任何语言中都从右往左。
+- `'ltr'`或`'rtl'`为全书强制一个方向，页面的`direction`属性为该页强制方向。
+
+同一份源文件给出两种页面版式。从右到左的页面把每一行的分格从右边排起，所以第1格在右上角；斜线随之镜像，`bleed`和`pad`的逻辑方向以及角位置关键词也一样（`top-start`的旁白框在右上角）。各行仍然自上而下，脚本的阅读顺序不变。嵌字规则也随之镜像：一格中的第一个对白框靠右，下一个只有在更靠左时才可以更高。
+
+画面除非要求，否则不翻转：`comics.mirrorArt: true`把阅读方向与`artDirection`相反的页面上的每幅画左右翻转，日本漫画的西方版本长期以来就是这样做的；`::panel{mirror=false}`让一幅画保持原样（画里有文字，或者剑客是用右手持剑的）。锚点和安全区随翻转而变。通常最好不要翻转：分格顺序已经跟随读者，翻转的画面改变了画家画的东西。
+
+对白框的书写方向跟随语言，而不是分格顺序。`comics.lettering.writingMode: 'auto'`时，日文和繁体中文竖排成从右往左读的列，每列最多`maxColumnChars`个字（8），遵循日文的禁则，数字用`:tcy`在列中横排，标点用竖排形式；以竖排排版的文档在任何语言中都竖排嵌字。简体中文、韩文和其他所有语言都横排嵌字，`'horizontal'`或`'vertical'`可以强制其中一种。阿拉伯文从右往左嵌字，其中的拉丁词和数字按自己的方向排，从不倾斜，也从不加字距。
+
+## 翻译漫画
+
+译本是一个Markdown文件，`:::page`和`::panel`行相同，说话人键相同，文字不同。画面及其安全区、锚点和避让区，切分，以及固定的位置（`at=`的点以画面的比例表示）由所有版本共用。每个版本各自嵌字：文字按自己的语言和字体测量，断成自己的行，每个对白框都围绕它重新成形、重新放置。本页的例子是中文版，下面是开头那一页的英文版：
+
+```md
+:::page{split="30 [30 | 20 | *] / *"}
+::panel{art=lh-arrive}
+caption: Every summer, Maya spent a week at the lighthouse.
+maya: Grandpa! I'm here!
+::panel{art=lh-radio}
+tomas: Just in time. The radio's gone deaf,
+tomas: and there's a storm on the way.
+:::
+```
+
+版本之间的差别由文档的`locale`决定：默认的嵌字字体和拟声词字体，日文和繁体中文的竖排嵌字，中文和日文去掉的句号，行距，以及阿拉伯文版的页面方向。西班牙文或法文的文字比英文长约五分之一，中文或日文则短得多；对白框随之变大变小，`comicBalloonOverflow`会指出译文需要更短的台词或固定位置的分格。拟声词也是词：可以翻译，也可以保留原文，在下面加一个小号的译文作为字幕。
+
+## 漫画的输出
+
+每种输出画出的都是同一部漫画：分格底色、限定在分格内的画面、边框、出格画面，然后是每个连接组的对白框（先描轮廓，再填充，再排字），最后是拟声词。
+
+- **Canvas。** 沙盒的Canvas、Folio的3D页面和缩略图都通过`renderPageToCanvas`绘制。
+- **PDF。** `postext-pdf`用矢量轮廓绘制漫画页，并嵌入嵌字字体；带PDF印刷母版（`svg.pdfFileId`）的SVG画面以该母版嵌入。带标签的PDF给每个漫画页一个`Div`，给每个分格一个带替代文字的`Figure`（分格的`alt`，否则用资源的`altText`），给每个对白框一个`P`，按阅读顺序排在所属分格的figure之后；拟声词是一个`Span`，其`/ActualText`就是它的文字。底色、边框和轮廓都是artifact。输出通过veraPDF的PDF/UA-1检查。
+- **HTML。** 每个分格是一个`<figure>`，内含一个内联SVG（裁切路径、画面、边框、抠图）和分格的替代文字，后面按阅读顺序跟着它的对白框，每个是一个`<p>`元素。对白以一个视觉上隐藏的span开头，内含说话人的名字，所以屏幕阅读器读出“玛雅：爷爷！我来啦！”；拟声词作为一张以其文字为标签的图片读出。沙盒的HTML查看器的页面是一屏宽、可以一直往下滚动的长页，它把漫画页排成缩放到视口大小的印刷页（`comics.viewerLeaf`），从不重排。
+- **固定版式EPUB。** 页面就是印刷书的页面。书中还带有**基于区域的导航**（`regions.xhtml`，EPUB Region-Based Navigation 1.0）：按阅读顺序每个分格一个`panel`区域，其中嵌套它的对白框、旁白框和拟声词，阅读系统可以据此一格一格地浏览全书。翻页方向跟随漫画的阅读方向。`renderToEpub`的`kindlePanelView: true`选项加入Kindle Panel View：每个分格一个点击区域，以及一个放大到满屏的副本，并带上Kindle要求的元数据。
+- **流式EPUB。** 漫画页在这里没有要保持的页面，所以每个分格变成它的画面（裁切与页面上完全相同），后面跟着它的台词文字：“**玛雅**：爷爷！我来啦！”，旁白框作为段落，拟声词用斜体。
+
+## 在沙盒中编辑漫画
+
+在Canvas、HTML页面和Folio的**选择文本**模式中，可以用指针编辑漫画页，每次编辑都会写回章的Markdown（详见[沙盒指南](/zh/docs/sandbox#编辑漫画)）：
+
+- **分格线。** 指针移到格间距上会变成调整大小的光标。拖动它就移动切分线；松开时，新的百分比写入页面的`split`值（页面没有这个属性时会加上），页面重新排版。按住Shift以5%为步长吸附，按住Alt只移动较近的一端，使线变斜，任何格子都不会窄于5%。拖动时，画面将被完整显示、两侧留出色带的分格会被标出。每条分格线也是一个可获得焦点的分隔条：方向键每次移动1%（按住Shift为5%），Enter写入位置，Escape恢复原位。
+- **分格。** 分格上方的小工具栏可以用一条水平线或垂直线把它分开，为新格子在它后面加一个空的`::panel`；也可以把它与下一格合并：切分线去掉，合并后的分格保留第一格的画面和两格的脚本。
+- **画面。** 画面的安全区、说话人和避让区在资源面板中标出（见[说话人与锚点](#说话人与锚点)）。
+- **设置。** 版面设计面板有一个**漫画**组：阅读方向、画框与格间距、默认分格与分格样式、嵌字，以及对白框样式，每一项都有预览。
+- **编辑器。** 文本编辑器为`:::page`、`::panel`和台词行着色，检查面板在对应的行列出漫画警告。
+
+## 漫画警告
+
+每条警告都指明它涉及的行或属性，沙盒的检查面板在那里列出它，标题即下表第一栏的文字。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>警告</th>
+      <th>原因</th>
+      <th>解决办法</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>分格切分无法读取<br /><code>comicSplitSyntax</code></td><td><code>split</code>的值不能完整读出：有多余的字符、<code>[</code>没有闭合、同一个列表里混用<code>/</code>和<code>|</code>，或者方括号列表与父列表同向。只采用能读懂的部分；完全读不懂的值得到一个分格。</td><td>对照<a href="#分割页面">语法</a>改正这个值：每个列表只用一种分隔符，用方括号换方向。</td></tr>
+    <tr><td>分格尺寸超过100%<br /><code>comicSplitOverflow</code></td><td>一个列表中的尺寸合计超过100%。它们按比例缩小，每个<code>&#42;</code>保留5%。</td><td>调小尺寸，或者把其中一个换成<code>&#42;</code>。</td></tr>
+    <tr><td>分格数与格子数不符<br /><code>comicPanelCount</code></td><td>页面的<code>::panel</code>行比切分出的格子多（多出的分格不排），或者少（最后几个格子留空）。</td><td>在切分中增减格子，或者在脚本中增减分格。空的<code>::panel</code>行可以有意留出一个空格子。</td></tr>
+    <tr><td>不在台词行里的文字<br /><code>comicStrayText</code></td><td>第一个<code>::panel</code>行之前的文字，或者一行没有<code>键:</code>、又不是接续上一行的文字。它作为旁白框嵌字。</td><td>在行首加上键（<code>caption:</code>、<code>maya:</code>），或者缩进两个空格，接续上面的对白框。</td></tr>
+    <tr><td>未知的对白框样式<br /><code>comicUnknownBalloonStyle</code></td><td>一行在花括号里指定的样式既不是内置样式，也没有在<code>comics.balloonStyles</code>中定义，常常是拼写错误（<code>&#123;wisper&#125;</code>）。这一行采用其键的样式。</td><td>改正名称，或者把这个样式加到<code>comics.balloonStyles</code>中。</td></tr>
+    <tr><td>找不到分格画面<br /><code>comicUnknownArt</code></td><td>分格的<code>art</code>或<code>pop</code>指定的资源不存在，或者不是位图或SVG。分格画成空的。</td><td>改正id，或者把画面加入书的资源。</td></tr>
+    <tr><td>画面在分格内完整显示<br /><code>comicPanelLetterbox</code></td><td>格子的比例与画面相差太远：这种形状的任何裁切都装不下整个安全区，所以画面完整显示安全区，四周留出分格底色的色带。</td><td>移动分格线，换一种格子比例（沙盒在拖动时会标出这样的位置），画一个更小的安全区，或者换一幅画。</td></tr>
+    <tr><td>说话点在安全区外<br /><code>comicAnchorOutsideSafeArea</code></td><td>画面的锚点在安全区以外，裁切可能把说话人切掉，这时尾巴会指向格外。</td><td>扩大安全区，把嘴包进去，或者移动锚点。如果说话人本来就会不时出现在分格之外，则不必修改。</td></tr>
+    <tr><td>对白框放不下<br /><code>comicBalloonOverflow</code></td><td>用尽所有退路之后，对白框仍然盖住脸、另一个对白框、避让区或嘴，或者伸出了分格。警告指明是哪一格、盖住了什么。</td><td>缩短台词或拆成两行，给分格更多空间，用<code>at=</code>固定对白框，或者用<code>break</code>让它越过边框。文字从不缩小。</td></tr>
+    <tr><td>没有说话点的角色<br /><code>comicUnknownSpeaker</code></td><td>一个说话人键，本页没有画面用锚点标出它，角色表中也没有它，多半是拼错的键。它的尾巴指向格外。只在画面标了锚点的页面上报告；仅作提示。</td><td>改正键，在画面上标出这个说话人，或者为从不露面的说话人加一个<code>comics.cast</code>条目。</td></tr>
+  </tbody>
+</table>
+
+这些警告返回在文档的`contentWarnings`中，带有所涉及的行或属性的源码范围（见[配置 › 文档中的警告](/zh/docs/configuration#文档中的警告)）。
+
+## 在代码中使用
+
+漫画只需要`buildDocument`：资源带着画面及其安全区、锚点和避让区，配置可以带`comics`。嵌字用已加载的字体测量文字，所以嵌字字体必须和其他字体一样在排版之前加载：`comicFontFamilies(config, markdown)`列出一个文档的漫画所需的字体（嵌字字体、每种对白框样式的字体以及角色表中的字体），`markdownHasComics(markdown)`说明一段文字中有没有漫画页或漫画条。生成PDF时，字体提供函数会像被请求其他字体一样被请求这些字体。
+
+排好的漫画在VDT中：`page.comic`（`VDTComicPage`）包含画框、阅读方向、按阅读顺序排列的分格（多边形、边框、底色，以及画面的裁切`art.source`和`art.box`）、分格线（带有它们写入的`split`值的源码范围）和对白框（轮廓路径、文字块、尾巴尖端、种类、说话人）。切分语法为编辑器导出：`parseComicSplit`、`serializeComicSplit`、`moveComicSplitLine`、`splitComicCell`和`mergeComicCells`读取并改写`split`值，尽可能保留其中的`*`。`comicArtCrop`和`comicCropFeasibleRange`计算裁切，`comicArtPointToPage`把画面上的一个点映射到页面上。
+
+## 已知限制
+
+- **只有切分树。** 切分用一条横贯格子的线把每个格子一分为二，所以没有任何一条线贯穿整页的版式写不出来，比如四个分格绕着第五格的风车式布局。嵌入格和出格画面能满足这类版式的大部分用途。
+- **分格形状。** 分格是凸多边形；圆形、毛边或无边框的晕边分格，旋转或放大的画面，以及速度线，都要画在画面里，不由Postext绘制。
+- **嵌字。** 注音、`:ltr`和`:rtl`在对白框中按普通文字印出。放置以分格为单位：尾巴靠代价避免交叉，而不是绕开彼此走线，从一格到下一格的视线流动也不做平衡。没有标出的脸的保护框以em计，大小固定，所以在特写中它保护的更多是嘴而不是整张脸；请标出脸部。
+- **漫画条**还没有`width`、`align`、`columns`和题注，只在章的顶层读取（标注框、表格或脚注内不读取）；在多栏页面上写成`here`的通栏漫画条会浮动，而不是在写它的地方切断各栏。
+- **跨页。** 在书脊处被切开的圆角分格会失去所有圆角。左侧装订的书中，从右到左的漫画仍然从左页开始，所以它的第一格落在跨页的第二页上。
+- **出格画面**使用分格画面的裁切，所以抠图必须与画面图片尺寸相同。
+- **输出。** 既没有`alt`也没有`altText`的分格，后备替代文字是英文的“Panel N”。基于区域的导航用外接矩形描述斜切的分格。Kindle Panel View为每个分格复制一次该页的漫画，文件因此变大，而且尚未在Kindle Previewer中检查过。
+
+## 参考资料
+
+- Nate Piekos，[*Comic Book Grammar & Tradition*](https://blambot.com/pages/comic-book-grammar-tradition)（Blambot）：对白框的种类、旁白框、强调、双连字符。
+- John Roshell与Comicraft，[*Balloon Tales*](https://balloontales.com/creating-tails-and-joins/)：尾巴与连接，以及先描边后填充的[分层法](https://balloontales.com/the-layer-method/)。
+- Todd Klein，[*Digital lettering for comics*](https://kleinletters.com/Blog/digital-lettering-for-comics/)。
+- David Kurlander、Tim Skelly和David Salesin，[*Comic Chat*](https://kurlander.net/DJ/Pubs/SIGGRAPH96.pdf)，SIGGRAPH 96：按阅读顺序放置对白框。
+- IDPF，[*EPUB Region-Based Navigation 1.0*](https://idpf.org/epub/renditions/region-nav/epub-region-nav.html)；Amazon KDP，[Kindle Panel View](https://kdp.amazon.com/en_US/help/topic/G9GSTY4LTRT39D4Z)。

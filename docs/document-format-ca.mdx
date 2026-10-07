@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Format del document',
   description: 'El subconjunt de markdown que analitza Postext i les normes per escriure els documents font',
   lang: 'ca',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-07',
   readingTime: '10 min',
   order: 5,
   plainSummary: "Aquesta pàgina explica com s'escriu un text que Postext pugui compondre. S'escriu en Markdown, una manera senzilla d'escriure en què uns pocs signes marquen els títols, les llistes, les negretes i els enllaços. A més, Postext entén algunes marques pròpies per a requadres, notes a peu de pàgina, imatges, taules i fórmules. La pàgina enumera totes les marques que accepta i les que no té en compte. Acaba amb consells per escriure un text fàcil de llegir.",
@@ -191,6 +191,14 @@ Les directives són etiquetes de control d'una sola línia escrites com a `:::no
       <td>Imprimeix aquí l'índex analític: tots els termes marcats amb <code>:index</code> al llibre, ordenats i agrupats per inicial, amb les pàgines on cauen, compostos segons la configuració <code>index</code>. <code>:::index&#123;index="nombres"&#125;</code> imprimeix un índex amb nom. Vegeu <a href="#índex-analític">Índex analític</a>.</td>
     </tr>
     <tr>
+      <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Una pàgina de còmic: les seves línies <code>::panel</code> i les seves línies de guió, compostes com a vinyetes i bafarades retolades en una pàgina pròpia. Vegeu <a href="#còmics">Còmics</a>.</td>
+    </tr>
+    <tr>
+      <td><code>:::strip&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Una tira còmica dins del flux del text, de l'amplada d'una columna o de la pàgina. Vegeu <a href="#strip"><code>:::strip</code></a>.</td>
+    </tr>
+    <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
       <td>Un poema a la manera àrab clàssica: un bayt per línia, amb els dos hemistiquis separats per <code>||</code>, compostos l'un al costat de l'altre amb una amplada comuna. Vegeu <a href="#verse">més avall</a>.</td>
     </tr>
@@ -199,7 +207,7 @@ Les directives són etiquetes de control d'una sola línia escrites com a `:::no
 
 Els valors dels atributs poden anar entre cometes dobles (<code>"…"</code>), cometes simples (<code>'…'</code>) o sense cometes (<code>startAt=17</code>). Una clau sense `=` es tracta com una bandera present amb valor buit.
 
-Avui només es reconeixen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` i `index` com a directives d'una sola línia (i `references` i `verse` com a blocs amb tanca) — qualsevol altra línia `:::nombre` que no sigui un contenidor (més avall) s'analitza com a paràgraf i genera un avís **Directiva desconeguda** al sandbox. El motor també ho registra, com una entrada `unknownDirective` als `contentWarnings` del document (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
+Avui només es reconeixen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` i `index` com a directives d'una sola línia (i `references`, `verse`, `page` i `strip` com a blocs amb tanca) — qualsevol altra línia `:::nombre` que no sigui un contenidor (més avall) s'analitza com a paràgraf i genera un avís **Directiva desconeguda** al sandbox. El motor també ho registra, com una entrada `unknownDirective` als `contentWarnings` del document (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
 
 ### Valors dels atributs
 
@@ -1331,6 +1339,26 @@ El VDT anota el retall al bloc del recurs: `bodySource` és la part de la imatge
 La recepta núm. 116 del Receptari, [Fotos que creixen fins a omplir la columna](/ca/cookbook/photos-fill-short-columns), compon dues vegades un reportatge de revista a dues columnes, sense zones segures i amb elles, per comparar les pàgines l'una al costat de l'altra.
 
 
+### Àncores dels personatges i zones lliures
+
+Un dibuix que fa de vinyeta en un còmic també pot dir on són les seves persones, per a la retolació (vegeu [Còmics](#còmics)). `anchors` enumera un punt per personatge i `avoid` les zones que cap bafarada no tapa, totes dues en fraccions del dibuix, com la zona segura:
+
+```ts
+const radio: Resource = {
+  id: 'lh-radio', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-radio.jpg', format: 'jpeg', width: 1000, height: 1000 },
+  safeArea: { x: 0, y: 0.36, width: 0.62, height: 0.56 },
+  anchors: [
+    // el faroner: boca, cap (per a les bafarades de pensament) i cara
+    { id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 }, face: { x: 0.29, y: 0.4, width: 0.16, height: 0.18 } },
+  ],
+  avoid: [{ x: 0, y: 0.44, width: 0.22, height: 0.26 }], // la ràdio
+};
+```
+
+L'`id` d'una àncora és la clau del personatge al guió (`tomas: …`), o `sfx` per al punt on s'agrupen les onomatopeies de la vinyeta; `x` i `y` són la boca on apunta la cua d'una bafarada de diàleg, `head` el punt on apunten les bombolles d'una bafarada de pensament (la boca si no es defineix) i `face` un rectangle que cap bafarada no tapa. El motor passa cada punt a través del retall i del reflex de la vinyeta, de manera que una cua es manté sobre el seu personatge sigui quina sigui la forma de la vinyeta; una àncora fora de la zona segura genera `comicAnchorOutsideSafeArea`, perquè un retall la pot tallar. Les àncores pertanyen al dibuix i serveixen per a totes les traduccions del còmic. Només les llegeixen les vinyetes de còmic; una figura les ignora. Al Sandbox es marquen al diàleg **Zona segura i retolació** del [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos).
+
+
 ### Vídeos
 
 Un recurs de **vídeo** (`kind: 'video'`) és un vídeo de YouTube o de Vimeo, o un vídeo propi: un fitxer desat dins del llibre (MP4, WebM) o un vídeo en una adreça web, sigui un fitxer en un servidor o un **flux HLS** (una llista de reproducció `.m3u8`). Es col·loca, porta peu, flota i es cita com una imatge, i es numera en una seqüència pròpia: el tipus integrat `video` imprimeix *Vídeo 1.1*, *Vídeo 1.2*… al costat de *Figura 1.1* i *Taula 1.1* (vegeu [Configuració › Tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Cada sortida el mostra com pot:
@@ -1465,6 +1493,93 @@ book.stopVideo();
 `videos: false` ho desactiva. `toggleVideoAt({ page, x, y })` fa el mateix que un clic en aquell punt, i `pageVideoSpots(page, doc)` llista on és cada vídeo d'una pàgina, per a un amfitrió que dibuixi els seus propis controls.
 
 Dues receptes del Receptari posen vídeos: la núm. 131, [Programa de cineclub amb codis QR a les portades](/ca/cookbook/film-club-video-qr), imprimeix cada pel·lícula com una cartel·la amb la marca de reproducció i un codi QR, i la núm. 132, [Full de pràctiques amb vídeos per a la pantalla i l'EPUB](/ca/cookbook/pendulum-lab-video-players), fixa les opcions de reproductor de l'edició HTML i empaqueta els seus propis vídeos en un EPUB de maquetació fixa.
+
+## Còmics
+
+Les pàgines de còmic, les tires i les dobles pàgines s'escriuen en dos blocs amb tanca el cos dels quals llegeix el mateix motor, línia per línia: `:::page` i `:::strip`. A dins, les línies `::panel` comencen les vinyetes i les línies de guió les retolen. La guia, amb les regles de compaginació, la retolació i les sortides, és [Còmics](/ca/docs/comics); els paràmetres són a [Configuració › Còmics](/ca/docs/configuration#còmics).
+
+### `:::page`
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: Cada estiu, la Maya passava una setmana al far.
+maya: Avi! Ja soc aquí!
+::panel{art=lh-radio focus="40% 50%"}
+tomas: Just a temps.
+::panel{art=lh-maya}
+maya{thought}: Aquesta vàlvula sembla fluixa…
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: CRAC
+:::
+```
+
+Un bloc `:::page` és una pàgina de còmic: obre una pàgina nova, l'ocupa sencera, i el text que ve després del seu `:::` de tancament comença a la pàgina següent. Els seus atributs són `split` (com es talla la pàgina en cel·les: mides en percentatge separades per `/` per a les fileres i per `|` per a les vinyetes de costat, una llista entre claudàtors per tornar a tallar una cel·la, `*` per a la resta, `a~b` per a una línia inclinada), `gutter` (una longitud, o dues: entre fileres i entre vinyetes; un nombre sol és en mil·límetres), `style` (un estil de vinyeta amb nom), `bleed`, `direction` (`ltr` o `rtl`, també escrit `dir`) i `spread` (vegeu [Dobles pàgines](#dobles-pàgines)). Sense `split` les vinyetes s'apilen en fileres iguals. Dins del bloc no es llegeixen blocs Markdown, contenidors ni directives; els `<!-- comentaris -->` sí.
+
+### Vinyetes
+
+Una línia `::panel{…}` comença una vinyeta, que omple la cel·la següent en ordre de lectura i arriba fins a la línia `::panel` següent o fins a la tanca de tancament:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>El dibuix: un recurs bitmap o SVG. Sense ell la vinyeta queda buida.</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td>Retalla el dibuix per omplir la cel·la (mai dins de la seva zona segura), o el mostra sencer.</td></tr>
+    <tr><td><code>focus="x% y%"</code></td><td>El punt que s'ha de mantenir centrat allà on la zona segura deixa marge.</td></tr>
+    <tr><td><code>style=…</code>, <code>border=none</code>, <code>border=0.5mm</code>, <code>bg=#hex</code></td><td>Un estil de vinyeta amb nom, la vora, el fons (un color, un id de la paleta o <code>none</code>).</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Estén els costats que toquen el marc fins al tall i la sang.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>Fa la vinyeta més petita que la seva cel·la: d'una a quatre longituds o percentatges (dalt, final, baix, inici).</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>Posa la vinyeta sobre l'anterior, en aquesta caixa en percentatges d'aquella, en lloc de donar-li una cel·la.</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>Un retall transparent dibuixat per sobre de la vora amb el retall del dibuix (una vora trencada).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Reflecteix el dibuix, o el conserva tal com és en una pàgina en mirall.</td></tr>
+    <tr><td><code>alt="…"</code>, <code>id=…</code></td><td>L'alternativa textual (si no, l'<code>altText</code> del recurs) i un id d'àncora.</td></tr>
+  </tbody>
+</table>
+
+### Línies de guió
+
+Cada línia d'una vinyeta és una bafarada, una cartel·la o una onomatopeia, i s'escriu `clau{atributs}: text`:
+
+```md
+maya: Avi! Ja soc aquí!
+tomas{whisper}: Xxt. Escolta.
+caption{at=bottom-end}: A tres carrers d'aquí.
+sfx{at="62% 40%" rotate=-8 size=1.4}: CRAC
+ben{tail=start}: (des de fora de la vinyeta) Soc aquí!
+maya: Aquesta línia continua
+  a la línia següent,\
+  i es parteix aquí.
+```
+
+- La **clau** és un id de personatge (lletres, xifres, `_`, `.`, `-`), el mateix en totes les traduccions; `caption`, `sfx` i `note` són reservades. Els dos punts poden ser els `：` d'amplada completa.
+- Una paraula sola entre claus és un **estil de bafarada** (`thought`, `whisper`, `shout`, `radio`, `inner` o un de `comics.balloonStyles`); `style=` diu el mateix.
+- `at` fixa la bafarada: un punt en percentatges del dibuix de la vinyeta (`at="62% 40%"`), o una cantonada o una vora (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` apunta la cua a un punt del dibuix; `tail=none` la treu i `tail=top|bottom|start|end` l'apunta fora de la vinyeta. `join` i `join=false` uneixen la bafarada a l'anterior del mateix personatge o la mantenen separada; `break` li permet travessar la vora. `rotate` (graus), `size` (una escala, per a les onomatopeies), `color` i `font` en modifiquen la retolació.
+- Una línia sagnada amb dos espais o un tabulador continua la bafarada de sobre; una barra inversa al final d'una línia hi parteix el text. Les línies en blanc s'ignoren.
+- El text és Markdown en línia: èmfasi (retolat en negreta cursiva), `:tcy`, `:ruby`, `:ltr` i `:rtl` (els tres últims s'imprimeixen com a text pla a les bafarades). Les notes a peu de pàgina i les marques `:ref` no es llegeixen.
+
+### `:::strip`
+
+```md
+:::strip{split="* | * | *" aspect=3 span=page placement=top}
+::panel{art=pip-1}
+pip: Bon dia, Otto!
+::panel{art=pip-2}
+::panel{art=pip-3}
+otto: Tu creus?
+:::
+```
+
+Un `:::strip` té el cos d'una pàgina però va dins del text com una sola caixa que no es parteix, tallada en vinyetes: `span` (`column`, el valor per defecte, o `page`), `placement` (`here`, el valor per defecte, allà on està escrita; o `top`, `bottom`, `auto`, flotant com una figura) i la seva mida, sigui `height` (una longitud; un nombre sol és en mil·límetres) o `aspect` (l'amplada dividida per l'alçada: `3`, `4/1`, `4:1`; per defecte, les proporcions que fan quadrades les seves vinyetes). Sense `split` les vinyetes van l'una al costat de l'altra. Les tires només es llegeixen al nivell superior d'un capítol.
+
+### Dobles pàgines
+
+`:::page{spread}` estén una pàgina per dues pàgines encarades: la divisió cobreix les dues caixes de text unides al llom, sense els seus marges interiors, i una vinyeta pot travessar el llom. La doble pàgina s'obre en una pàgina parella, després d'una pàgina en blanc si cal. Vegeu [Còmics › Dobles pàgines](/ca/docs/comics#dobles-pàgines).
+
 
 ## Què NO s'admet
 
