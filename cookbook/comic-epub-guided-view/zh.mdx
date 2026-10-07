@@ -1,0 +1,61 @@
+---
+title: "可以逐格阅读的漫画 EPUB"
+summary: "把一篇短漫画导出为 PDF、带区域导航可逐格阅读的固定版式 EPUB、带 Kindle Panel View 的 EPUB，以及流式 EPUB。"
+plain: "一篇两页的漫画，存成印刷用的 PDF 和几种电子书：一种保留原页面，读者可以一格一格放大；一种给 Kindle；还有一种把对白变成文字。"
+description: "把 Postext 漫画导出为 PDF 和 EPUB 3：带区域导航（逐格阅读）的固定版式、Kindle Panel View，以及对白为文字的流式版本。"
+question: "怎样把漫画导出成读者可以逐格阅读的 EPUB？"
+aliases: ["逐格阅读", "导读模式", "区域导航", "regions.xhtml", "Kindle Panel View", "漫画 EPUB", "固定版式漫画", "guided view", "panel by panel", "コマ送り"]
+pageNotes: { "1": "扉页：红色大字《珀斯科夫灯塔》，第一章和版权说明。", "2": "第2页：玛雅来到灯塔，配一段长旁白；守塔人在收音机旁；玛雅指着地板。", "3": "第3页：猫睡在收音机电线上，旁边是“呼噜噜”，玛雅小声说“找到了”；接着是夜里亮起的灯塔，一个旁白框和两个对话框。" }
+---
+
+## 成品一览
+
+《珀斯科夫灯塔》第一章：一页扉页和两页漫画，只排一次版，导出四种文件。PDF 用于印刷。固定版式 EPUB 保留印刷页面，并带有区域导航，阅读器可以一格一格地显示，从来到灯塔的那一格，放大到收音机，再到玛雅。第二个固定版式 EPUB 加上了 Kindle Panel View；流式版本把每一格排成裁好的画面，后面接着这一格的对白。页面上列出每个文件在阅读器里打开的样子，并附下载链接，共六种语言。
+
+## 做法
+
+### 1 · 把同一个文档导出为 EPUB
+
+代码就是上面的[简短回答](#简短回答)。`renderToEpub` 接收的就是 `renderToPdf` 打印的文档，所以 EPUB 的页面就是 PDF 的页面（[漫画的输出](/zh/docs/comics#漫画的输出)）。用 `layout: 'fixed'` 且书中有漫画页时，它还会写出 `regions.xhtml`：按阅读顺序每格一个 `panel` 区域，每个区域是一个按页面百分比表示的矩形，格内的对话框、旁白框和拟声词作为子区域嵌套其中。翻页方向跟随漫画的阅读方向，所以阿拉伯文版从右往左翻。`kindlePanelView: true` 为每一格加一个点击区域和一份放大的副本，并写入 Kindle 需要的元数据。流式版本没有页面可保留：每一格是它的画面（按页面上的方式裁切），后面是它的对白，“**玛雅**：饼干！外公呢？”，人名取自 `comics.cast`。
+
+<PageShot page={2} crop="0,0,1,0.55" caption="第2页第1格：逐格阅读时的第一个区域，旁白框和玛雅的对话框嵌套在里面。" />
+
+### 2 · 嵌入页面用到的字体
+
+<Excerpt region="embed" />
+
+固定版式 EPUB 用自己携带的字体画出文字，缺了的字体会换成阅读器自带的。嵌字要用到常规、粗体和斜体；漫画字体提供的字重更少，所以每一种需求都拿到 `loadComicFonts` 为它选的文件，同一个文件服务两个字重时只嵌入一次，字重写成范围 `'400 700'`。日文和中文字体只嵌入包含本版本所用字符的分片，日文版因此只有 1.4 MB。
+
+### 3 · 把每个文件读回来
+
+<Excerpt region="shelf" />
+
+`readEpub` 像阅读器一样打开这些字节：版式、翻页方向、书脊。每张卡片下的列表就是逐格阅读本身，读自 `regions.xhtml`：五格以及格内的文字区域，按读者经过的顺序排列。三个文件在英文、日文和阿拉伯文版本中都通过了 EPUBCheck 5.4，没有错误和警告。
+
+### 4 · 一次排版，六个版本
+
+<Excerpt region="editions" />
+
+每个 `content.<lang>.md` 存放一个版本的文字，人物标识相同。各语言的格子区域完全一样；对话框的区域跟着对话框移动，因为对话框会围绕每种语言的文字重新嵌字。
+
+## 变化
+
+### 不要 Kindle 版
+
+每个固定版式 EPUB 都会写入区域导航；Kindle Panel View 只是在此之上增加内容。
+
+```diff
+-  kindle: await renderToEpub(doc, { ...book, layout: 'fixed', kindlePanelView: true }),
+```
+
+### 给流式版本加封面
+
+```diff
+-  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable' }),
++  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable',
++    cover: { bytes: imageBytes('lh-beam.jpg'), mediaType: 'image/jpeg' } }),
+```
+
+## 常见问题
+
+- 如果每个字重都嵌入一次同一个字体文件，就会复制四份；在使用字重范围之前，中文版有 5.3 MB。

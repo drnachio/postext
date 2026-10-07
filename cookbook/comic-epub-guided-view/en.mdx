@@ -1,0 +1,61 @@
+---
+title: "A comic EPUB read panel by panel"
+summary: "One short comic exported as a PDF, a fixed-layout EPUB with region-based navigation for panel-by-panel reading, a Kindle Panel View EPUB and a reflowable EPUB."
+plain: "A two-page comic saved as a print PDF and as e-books: one that keeps the pages and lets a reader zoom from panel to panel, one for Kindle, and one where the dialogue is plain text."
+description: "Export a Postext comic as PDF and EPUB 3: a fixed layout with region-based navigation (guided view), Kindle Panel View, and dialogue as text."
+question: "How do I export a comic as an EPUB that a reader can follow panel by panel?"
+aliases: ["guided view", "panel by panel", "region-based navigation", "regions.xhtml", "Kindle Panel View", "comic EPUB", "fixed layout comic", "lectura viñeta a viñeta", "EPUB de cómic", "コマ送り"]
+pageNotes: { "1": "The title page: The Porthcove Light in red display capitals, chapter one, the imprint.", "2": "Page 2: Maya arriving at the lighthouse with a long caption, the keeper at his radio and Maya pointing at the floor.", "3": "Page 3: the cat asleep on the radio cable with PURRRR and Maya's whispered Found it, then the lighthouse lit at night with a caption and two balloons." }
+---
+
+## What you'll build
+
+The first chapter of *The Porthcove Light*: a title page and two comic pages, laid out once and exported four ways. The PDF is for print. The fixed-layout EPUB keeps the printed pages and carries region-based navigation, so a reading system can show the book one panel at a time, zooming from the arrival panel to the radio, then to Maya. A second fixed EPUB adds Kindle Panel View; the reflowable one sets each panel as its cropped picture followed by its lines. The page lists each file as a reader will open it, with a download link, in six languages.
+
+## Method
+
+### 1 · Export the same document as EPUB
+
+The code is [the short answer](#the-short-answer) above. `renderToEpub` takes the documents `renderToPdf` prints, so the EPUB's pages are the PDF's ([comics output](/en/docs/comics#comics-output)). With `layout: 'fixed'` and comic pages in the book, it also writes `regions.xhtml`: one `panel` region per panel in reading order, each a rectangle in percent of its page, with its balloons, captions and sound effects as regions inside it. The page progression follows the comics' reading direction, so the Arabic edition turns right to left. `kindlePanelView: true` adds a tap target per panel and a magnified copy, with the metadata Kindle expects. The reflowable rendition has no pages to keep: each panel is its picture, cropped as on the page, then its lines, "**Maya**: Biscuit! Where's Grandpa?", with the names from `comics.cast`.
+
+<PageShot page={2} crop="0,0,1,0.55" caption="Panel 1 of page 2: in the guided view, the first region, with the caption and Maya's balloon nested in it." />
+
+### 2 · Embed the faces the pages set
+
+<Excerpt region="embed" />
+
+A fixed-layout EPUB draws its text in the faces it carries, and a face left out is set in the reader's own. The lettering asks for regular, bold and italic; the comic faces ship fewer, so each request gets the file `loadComicFonts` chose for it, and a file that serves both weights goes in once with the range `'400 700'`. Japanese and Chinese faces take only the slices that hold the edition's characters, which keeps the Japanese book at 1.4 MB.
+
+### 3 · Read each file back
+
+<Excerpt region="shelf" />
+
+`readEpub` opens the bytes as a reading system would: layout, page progression, spine. The list under each card is the guided view itself, read from `regions.xhtml`: five panels and their text regions, in the order a reader steps through them. The three files pass EPUBCheck 5.4 with no errors or warnings in English, Japanese and Arabic.
+
+### 4 · One layout, six editions
+
+<Excerpt region="editions" />
+
+Each `content.<lang>.md` holds the words of one edition under the same speaker ids. The panel regions are the same in every language; the balloon regions move with the balloons, which are lettered again around each language's text.
+
+## Variations
+
+### Leave out the Kindle edition
+
+Region-based navigation is written in every fixed EPUB; Kindle Panel View only adds to it.
+
+```diff
+-  kindle: await renderToEpub(doc, { ...book, layout: 'fixed', kindlePanelView: true }),
+```
+
+### Give the reflowable book a cover
+
+```diff
+-  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable' }),
++  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable',
++    cover: { bytes: imageBytes('lh-beam.jpg'), mediaType: 'image/jpeg' } }),
+```
+
+## Pitfalls
+
+- A face embedded once per weight it serves would be copied four times; the Chinese edition weighed 5.3 MB before the weight ranges.

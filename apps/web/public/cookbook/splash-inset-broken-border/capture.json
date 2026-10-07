@@ -1,0 +1,1346 @@
+{
+  "schemaVersion": 1,
+  "slug": "splash-inset-broken-border",
+  "sourceHash": "cf1b763278b531419edc9c7a684d654b52a60a9f709bdd1bbed7f081bbbbd3ac",
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-07T10:13:06.698Z",
+  "variants": {
+    "en": {
+      "hash8": "3a49c4f2",
+      "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
+      "timings": {
+        "importMs": 159,
+        "fontsMs": 87,
+        "buildMs": 118,
+        "totalMs": 915,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Comic Neue",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Comic Neue"
+        ],
+        "pages": 2,
+        "ownLines": 110
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 266486,
+          "alt": "Page 1."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 219234,
+          "alt": "Page 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 770608,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766507
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "acdec327",
+      "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
+      "timings": {
+        "importMs": 152,
+        "fontsMs": 73,
+        "buildMs": 117,
+        "totalMs": 916,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Comic Neue",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Comic Neue"
+        ],
+        "pages": 2,
+        "ownLines": 110
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 266630,
+          "alt": "Página 1."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 222266,
+          "alt": "Página 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 770831,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766638
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "ca": {
+      "hash8": "ea7c86fc",
+      "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
+      "timings": {
+        "importMs": 151,
+        "fontsMs": 84,
+        "buildMs": 132,
+        "totalMs": 2822,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Comic Neue",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Comic Neue"
+        ],
+        "pages": 2,
+        "ownLines": 110
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 265968,
+          "alt": "Pàgina 1."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 219450,
+          "alt": "Pàgina 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 770181,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766645
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "zh": {
+      "hash8": "ad7c1b23",
+      "vdtHash": "69a714d811223c07ee4617800fe1b6c4129a8924",
+      "timings": {
+        "importMs": 184,
+        "fontsMs": 272,
+        "buildMs": 194,
+        "totalMs": 1212,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "ZCOOL KuaiLe",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "ZCOOL KuaiLe"
+        ],
+        "pages": 2,
+        "ownLines": 110
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 266368,
+          "alt": "第 1 页。"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 220660,
+          "alt": "第 2 页。"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 791630,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766700
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "ZCOOL KuaiLe",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "ar": {
+      "hash8": "69d56d60",
+      "vdtHash": "7a907b581ba76903673d89d9523d7dd4926f3c7c",
+      "timings": {
+        "importMs": 152,
+        "fontsMs": 99,
+        "buildMs": 113,
+        "totalMs": 940,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Playpen Sans Arabic",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Playpen Sans Arabic"
+        ],
+        "pages": 2,
+        "ownLines": 110
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 263926,
+          "alt": "الصفحة ١."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 219358,
+          "alt": "الصفحة ٢."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 769393,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766808
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Playpen Sans Arabic",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "document-digits",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "sound-effects",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "ja": {
+      "hash8": "1210da8a",
+      "vdtHash": "a6e280cef897624f349f209d33e1f87e3bbbca57",
+      "timings": {
+        "importMs": 160,
+        "fontsMs": 239,
+        "buildMs": 227,
+        "totalMs": 1185,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Zen Antique",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Zen Antique"
+        ],
+        "pages": 2,
+        "ownLines": 110
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 265068,
+          "alt": "1ページ。"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 222708,
+          "alt": "2ページ。"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 783508,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766933
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Zen Antique",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

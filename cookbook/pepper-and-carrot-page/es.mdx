@@ -1,0 +1,62 @@
+---
+title: "Una página de Pepper&Carrot rotulada desde su transcripción"
+summary: "Dos páginas de Pepper&Carrot (CC BY 4.0) compuestas con los dibujos sin texto de David Revoy y las traducciones oficiales, rotuladas en seis idiomas."
+plain: "Dos páginas de un cómic web de licencia libre, rehechas a partir de los dibujos del autor sin palabras y de las traducciones que hizo la comunidad, con los bocadillos dibujados de nuevo en cada idioma."
+description: "Pepper&Carrot, episodio 8 (CC BY 4.0), rotulado por Postext: viñetas del dibujo sin texto, rabillos del original y seis traducciones oficiales."
+question: "¿Puedo rotular de nuevo un cómic libre desde su transcripción en vez de retocar sus páginas rotuladas?"
+aliases: ["Pepper&Carrot", "David Revoy", "rotular de nuevo", "traducción de cómics", "transcripción", "cómic libre", "cómic CC BY", "scanlation", "re-lettering", "写植し直し", "重新嵌字"]
+pageNotes: { "1": "La portada: Episodio 8: El cumpleaños de Pimienta en rojo, una nota sobre lo que son estas páginas y los créditos del dibujo, el guion y la traducción, con la licencia CC BY 4.0.", "2": "Página 5: entre relámpagos, Pimienta, furiosa, saca un libro de hechizos de la estantería (un bocadillo de grito quebrado y el título del libro en dorado sobre la tapa); desde arriba, Pimienta traza tres círculos mágicos rojos bajo la lluvia; DZZZUUUMM en rojo sobre un primer plano bañado en luz roja.", "3": "Página 6: tres demonios de ojos rojos se alzan en la tormenta y hablan en bocadillos negros con letra gótica blanca; Pimienta sonríe con malicia; los demonios, Pimienta y Zanahoria toman té a la luz de las velas, con la cartela Episodio 8 FIN." }
+---
+
+## Lo que vas a componer
+
+Las páginas 5 y 6 del episodio 8 de *Pepper&Carrot*, «El cumpleaños de Pimienta», de David Revoy, el cómic web de licencia libre (CC BY 4.0) sobre una joven bruja y su gato. Revoy publica sus páginas sin texto y la comunidad traduce la transcripción a decenas de idiomas. Aquí Postext vuelve a juntar esas piezas: las viñetas salen de sus páginas sin texto, la rejilla es la suya, y cada bocadillo, cada grito, la onomatopeya y el título del libro de hechizos los rotula el motor a partir de las traducciones oficiales al inglés, español, catalán, chino, japonés y árabe. Una portada lleva los créditos que pide la licencia.
+
+## Elaboración
+
+### 1 · Convierte la transcripción en guion
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un script de conversión lee los archivos fuente del episodio: corta cada página en viñetas siguiendo sus calles blancas y escribe la división que ha medido (`29.9 / 49.3 / *` en la página 5), toma las palabras de cada bocadillo del SVG de la traducción y nombra a quien habla a partir de la transcripción ([traducir un cómic](/es/docs/comics#traducir-un-cómic)). El resultado es una línea por bocadillo, `pepper{shout break}: …`, con la forma que tenía el bocadillo original: un contorno quebrado pasa a ser `shout`, un bocadillo que cruzaba el borde, `break`. El acento de los demonios, con sus *š* y *ā*, es de los traductores y se queda.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="Página 5, viñeta 1: el grito de Pimienta, rotulado a partir de la traducción, y el título del libro en dorado sobre la tapa." />
+
+### 2 · Ancla a cada personaje donde apuntaban los rabillos de Revoy
+
+<Excerpt region="art" />
+
+Los bocadillos de Revoy están en sus archivos fuente como formas vectoriales, rabillos incluidos. La conversión sigue cada rabillo hasta su punta y la guarda como ancla de quien habla, en fracciones de la viñeta, así que los bocadillos nuevos apuntan adonde apuntaban los suyos: a la boca abierta de Pimienta, al demonio del centro ([personajes y anclas](/es/docs/comics#personajes-y-anclas)). Las zonas seguras conservan el motivo de cada viñeta aunque las celdas difieran unos milímetros de las suyas.
+
+### 3 · Dale a cada voz sus letras
+
+<Excerpt region="editions" />
+
+El reparto de la respuesta corta da a los demonios bocadillos negros con letra blanca, como los dibuja Revoy, y una voz propia: Grenze Gotisch, una gótica, en las ediciones latinas. El estilo `writing` pone texto sobre un objeto, el título dorado del libro. Cada edición usa letras para su escritura; los bocadillos japoneses van en vertical y la página árabe se lee de derecha a izquierda ([rotulación](/es/docs/comics#rotulación)).
+
+### 4 · Acredita a cada traductor, con todas sus letras
+
+<Excerpt region="vietnamese" />
+
+La licencia pide el autor, la fuente, la licencia y una nota de los cambios; la portada los imprime en las palabras de cada edición, tomadas de los créditos del propio episodio. Una de las personas que colaboró en las traducciones española y japonesa es Hồ Nhựt Châu, y las letras vietnamitas están en un archivo de Fontsource aparte: la receta lo carga para la letra de los créditos y se lo pasa al PDF.
+
+## Variantes
+
+### Adapta las seis páginas
+
+El proceso del episodio escribe las seis páginas; sus 21 viñetas pesan 1,8 MB. Añade los demás bloques `:::page` y sus viñetas.
+
+```diff
+ const resources = await Promise.all([
++  panel('e08p01-1', asset('e08p01-1.jpg')), // … y las otras catorce viñetas de las páginas 1 a 4
+   panel('e08p05-1', asset('e08p05-1.jpg')), panel('e08p05-2', asset('e08p05-2.jpg')),
+```
+
+### Redondea las viñetas como Revoy en la página 2
+
+```diff
+   panel: { borderWidth: pt(0), background: col('paper') },
++  panelStyles: [{ id: 'rounded', borderRadius: mm(5.8) }], // ::panel{style=rounded}
+```
+
+## Errores frecuentes
+
+- Deja los créditos en el documento: las imágenes viajan con el PDF, y la CC BY 4.0 pide que la atribución viaje con ellas.

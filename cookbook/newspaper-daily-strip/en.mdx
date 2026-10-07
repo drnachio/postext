@@ -1,0 +1,60 @@
+---
+title: "A daily strip and a Sunday half page in the newspaper"
+summary: "A newspaper's comics pull-out: a Sunday half page set in the text of the cover and a four-panel daily strip floated to the foot of a four-column page."
+plain: "Two pages of a newspaper's comics section: a large colour comic on the cover, then an article about the cartoonist in four columns with the daily four-panel strip along the bottom."
+description: "Comic strips in a Postext newspaper: :::strip blocks set in the text or floated across four columns, a Sunday half page and a daily strip in six languages."
+question: "How do I put a comic strip on a newspaper page, across the columns of the text?"
+aliases: ["comic strip", "daily strip", "Sunday comics", "funnies", "newspaper comic", "strip", "4-panel strip", "tira cómica", "tira de prensa", "新聞漫画", "报纸漫画"]
+pageNotes: { "1": "The cover of the comics pull-out: the red Funnies flag, the Sunday half page (Pip and Otto fishing on an ice floe, Pip's tiny fish, Otto landing a boot) and three lines of contents.", "2": "The inside page: the headline Ten winters on the floe across four columns of text with an interview, a numbers box, readers' letters and an advert, and the four-panel daily strip about a croissant along the foot." }
+---
+
+## What you'll build
+
+The comics pull-out of a weekend newspaper, *The Corrington Despatch*, folded to 230 × 310 mm. The cover holds the Sunday half page of *Pip & Otto*, a penguin and a walrus who run a bakery on an ice floe, with the contents under it. Inside, an interview with the strip's cartoonist runs in four columns, with readers' letters and an advert, and the week's daily strip, four square panels, runs along the foot of the page. Both comics are `:::strip` blocks in the newspaper's text, and the pull-out comes in six languages.
+
+## Method
+
+### 1 · Write the strip where the paper wants it
+
+The code is [the short answer](#the-short-answer) above. A `:::strip` has the body of a comic page (its `split`, its `::panel` lines and their script), but it is a block in the text ([strips](/en/docs/comics#strips)). On the one-column cover the Sunday strip is set where it is written, 210 mm deep, and the contents follow it. Its split, `55 / * [40 | *]`, gives the wide fishing scene a tier of its own and the two gags a row below. A strip never splits: one that does not fit moves whole to the next page.
+
+<PageShot page={1} crop="0,0,1,0.8" caption="The cover: the Sunday half page set in the text, the contents under it." />
+
+### 2 · Float the daily across the columns
+
+The inside page opens with an H1 whose heading style switches the section to four columns. The daily strip is written right after it with `span=page placement=bottom`: it floats to the foot of the page as wide as the four columns, and the columns of the article end level above it. Without `height` or `aspect`, a strip takes the shape that makes its panels square, four to one here. Written with `placement=top` it would open the next page instead, because a float never goes above the point it is written at.
+
+### 3 · Fit each picture to its cell
+
+<Excerpt region="art" />
+
+The pictures were drawn square or wide, and the cells of the Sunday split are not: the boot gag sits in a cell 112 × 88 mm. Each safe area is cut to what the joke needs, Pip and Otto and the boot, so the crop never letterboxes the picture ([panels and art](/en/docs/comics#panels-and-art)).
+
+### 4 · Print the same page in six papers
+
+<Excerpt region="editions" />
+
+Each edition sets the newspaper in faces for its script and letters the strips in its own comic faces. The Japanese balloons run vertically, and the Arabic edition, read right to left, mirrors the panels of every row and the columns of the page. The pictures and the split stay the same; only `content.<lang>.md` changes ([reading direction](/en/docs/comics#reading-direction)).
+
+## Variations
+
+### Give the daily strip a fixed height
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* | * | * | *" span=page placement=bottom height=45mm}
+```
+
+### Run a one-column strip in the text
+
+Without `span=page` a strip is as wide as its column and is set where it is written, like an inline figure.
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* / * / * / *" aspect=0.25}
+```
+
+## Pitfalls
+
+- The section flag is drawn by the header, not by an H1 opener, so nothing but the folio line sits above the cover's strip.
+- A safe area wider than its cell's shape letterboxes the picture with the panel's background, and the build warns `comicPanelLetterbox`.

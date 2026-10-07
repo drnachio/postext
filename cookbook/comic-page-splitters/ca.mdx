@@ -1,0 +1,63 @@
+---
+title: "Les mateixes vinyetes en tres divisions de pàgina"
+summary: "Cinc vinyetes en tres arbres de divisió: split a :::page talla la pàgina i la zona segura de cada imatge en manté a la vista el que importa."
+plain: "Una pàgina de còmic dibuixada una vegada i maquetada de tres maneres. Les mateixes cinc imatges i els mateixos diàlegs omplen tres reixes de vinyetes diferents, i cada imatge es retalla de nou per a la seva vinyeta."
+description: "Una prova de maqueta de còmic amb Postext: les mateixes cinc vinyetes en tres arbres de divisió, reenquadrades per la zona segura i retolades en sis idiomes."
+question: "Com divideixo una pàgina de còmic en vinyetes sense perdre la cara del personatge quan la vinyeta canvia?"
+aliases: ["reixa de vinyetes", "maqueta de còmic", "divisió de pàgina", "arbre de divisió", "tires", "vinyeta inserida", "zona segura", "enquadrament", "retall", "panel grid", "コマ割り", "分格"]
+pageNotes: { "1": "La portada de la prova: el títol en majúscules vermelles i els tres plans, cadascun amb el seu atribut split en vermell.", "2": "Pla A: una tira ampla amb la Maya pujant al far, tres vinyetes en fila (el faroner amb la ràdio, la Maya assenyalant el terra, el gat adormit amb PRRRR en vermell) i una escena ampla del far encès de nit.", "3": "Pla B: dues columnes; a l’esquerra l’arribada de la Maya i el faroner amb la ràdio, en vertical; a la dreta la Maya assenyalant, el gat i el far de nit.", "4": "Pla C: una tira superior amb tres vinyetes estretes i el gat en una vinyeta inserida sobre la de la Maya, i una vinyeta alta del far de nit amb dues bafarades al costat de la galeria." }
+---
+
+## Què compondràs
+
+Una prova de maqueta per a una pàgina de còmic, *La llum de Porthcove*: una portada i la mateixa pàgina en tres plans, perquè l’autor triï. Les cinc imatges (la Maya pujant al far, el seu avi davant una ràdio muda, la Maya assenyalant el terra, el gat adormit sobre el cable, el far encès de nit) i els sis textos retolats no canvien; només canvia el `split` de cada `:::page`. Cada imatge es retalla un altre cop per a la seva vinyeta i cada bafarada es col·loca un altre cop al costat de qui parla. El format és el d’un còmic americà, 168 × 259 mm, i la prova surt en sis edicions, cadascuna retolada en el seu idioma.
+
+## Elaboració
+
+### 1 · Talla la pàgina amb un arbre de divisió
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un `:::page` ocupa la caixa de la pàgina, aquí 144 × 227 mm, i el seu atribut `split` la talla. `/` separa files, `|` separa columnes, cada mesura és un percentatge de la cel·la que talla, `*` reparteix el que queda i un claudàtor torna a tallar aquella cel·la en l’altre eix ([dividir la pàgina](/ca/docs/comics#dividir-la-pàgina)). El pla C, `30 [30 | 20 | *] / *`, fa una tira del 30 % d’alt, la parteix en cel·les del 30 % i del 20 % d’ample més la resta, i deixa a sota una sola cel·la alta. Els carrers queden a cavall de cada línia: 4 mm entre tires, 3 mm entre vinyetes d’una mateixa tira. Les línies `::panel` omplen les cel·les en ordre de lectura: les files de dalt a baix i les columnes des del costat d’inici.
+
+<PageShot page={4} crop="0,0,1,0.34" caption="Pla C: la tira 30 | 20 | resta, amb el gat en una vinyeta inserida sobre la tercera." />
+
+### 2 · Dona a cada imatge una zona segura
+
+<Excerpt region="art" />
+
+Cada imatge es dibuixa una vegada i es retalla per omplir la cel·la que li toqui. La zona segura és el que tot retall conserva sencer ([vinyetes i imatges](/ca/docs/comics#vinyetes-i-imatges)). La de la ràdio és només el faroner, el 24 % de l’amplada, de manera que la cel·la de 26 mm del pla C el mostra de la gorra a les botes i deixa fora la ràdio; les cel·les amples dels plans A i B ensenyen totes dues coses. Si una cel·la no pot contenir la zona segura, la imatge queda amb bandes i la composició avisa (`comicPanelLetterbox`). Les àncores marquen la boca i la cara de cada personatge en les mateixes fraccions, i així els rabets el troben en qualsevol retall.
+
+### 3 · Posa una vinyeta sobre una altra
+
+La divisió del pla C dona quatre cel·les per a cinc vinyetes. El gat hi entra amb `inset="50 50 46 46"`: una vinyeta del 46 % d’ample i d’alt, col·locada al 50 %, 50 % de la vinyeta anterior, la de la Maya. Una vinyeta inserida no ocupa cel·la, de manera que les següents conserven el seu lloc, i es llegeix just després de la que tapa.
+
+### 4 · Retola sis edicions amb la mateixa maqueta
+
+<Excerpt region="editions" />
+
+La divisió, les imatges, els retalls i les àncores són iguals en tots els idiomes; `content.<lang>.md` només porta les paraules, amb els mateixos identificadors de personatge (`maya`, `tomas`). L’edició japonesa compon les bafarades en vertical, amb vuit caràcters per columna, i treu el 。 final; l’àrab es llegeix de dreta a esquerra, així que les vinyetes de cada fila s’inverteixen, però les imatges no. El cos de la retolació és 8 pt en totes: un text més llarg dona una bafarada més gran, mai una lletra més petita ([retolació](/ca/docs/comics#retolació)).
+
+## Variants
+
+### Inclina la tira central
+
+Una mesura escrita `30~40` porta el carrer final d’aquella cel·la del 30 % en un extrem al 40 % en l’altre. Les cel·les inclinades perden les cantonades arrodonides.
+
+```diff
+-:::page{split="30 / 35 [* | * | *] / *"}
++:::page{split="30 / 35 [30~40 | * | *] / *"}
+```
+
+### Inverteix les imatges en l’edició àrab
+
+Per defecte, les imatges conserven l’orientació. Un còmic dibuixat sense rètols ni rellotges pot seguir el sentit de lectura.
+
+```diff
+ const comics = {
++  mirrorArt: true, // les imatges s’inverteixen en una edició de dreta a esquerra
+   gutter: { horizontal: mm(4), vertical: mm(3) },
+```
+
+## Errors freqüents
+
+- Una cel·la d’un cinquè de l’amplada de la pàgina admet unes quatre paraules per línia a 8 pt, i al pla C el faroner té la cara al mig de la seva: les seves dues bafarades sobre la tempesta no caben ni a sobre ni a sota. Allà la primera de les dues frases porta `break` (`tomas{break}:`), així que la parella pot travessar el carrer cap a la vinyeta de la Maya; el motor deixa la segona bafarada darrere de la primera i mai no la treu al marge de la pàgina. Sense `break`, la construcció avisa `comicBalloonOverflow`.
+- Una zona segura més ajustada dona un retall net en més cel·les, però el que queda fora es pot perdre: les botes a la primera tira del pla A, la ràdio al pla C.

@@ -1,0 +1,62 @@
+---
+title: "Una pàgina de Pepper&Carrot retolada des de la transcripció"
+summary: "Dues pàgines de Pepper&Carrot (CC BY 4.0) compostes amb els dibuixos sense text de David Revoy i les traduccions oficials, retolades en sis idiomes."
+plain: "Dues pàgines d’un còmic web de llicència lliure, refetes a partir dels dibuixos de l’autor sense paraules i de les traduccions que en va fer la comunitat, amb les bafarades dibuixades de nou en cada idioma."
+description: "Pepper&Carrot, episodi 8 (CC BY 4.0), retolat per Postext: vinyetes del dibuix sense text, rabets de l’original i sis traduccions oficials."
+question: "Puc retolar de nou un còmic lliure des de la transcripció en lloc de retocar-ne les pàgines retolades?"
+aliases: ["Pepper&Carrot", "David Revoy", "retolar de nou", "traducció de còmics", "transcripció", "còmic lliure", "còmic CC BY", "scanlation", "re-lettering", "写植し直し", "重新嵌字"]
+pageNotes: { "1": "La portada: Episodi 8: La festa d'aniversari de la Pepper en vermell, una nota sobre què són aquestes pàgines i els crèdits del dibuix, el guió i la traducció, amb la llicència CC BY 4.0.", "2": "Pàgina 5: entre llamps, la Pepper, furiosa, treu un llibre d’encanteris del prestatge (una bafarada de crit trencada i el títol del llibre en daurat a la coberta); des de dalt, la Pepper traça tres cercles màgics vermells sota la pluja; DZZZOOO en vermell sobre un primer pla banyat de llum vermella.", "3": "Pàgina 6: tres dimonis d’ulls vermells s’alcen en la tempesta i parlen en bafarades negres amb lletra gòtica blanca; la Pepper somriu amb malícia; els dimonis, la Pepper i en Carrot prenen te a la llum de les espelmes, amb la cartel·la Episodi 8 FI." }
+---
+
+## Què compondràs
+
+Les pàgines 5 i 6 de l’episodi 8 de *Pepper&Carrot*, «La festa d'aniversari de la Pepper», de David Revoy, el còmic web de llicència lliure (CC BY 4.0) sobre una bruixa jove i el seu gat. Revoy publica les seves pàgines sense text i la comunitat en tradueix la transcripció a desenes d’idiomes. Aquí Postext torna a ajuntar aquestes peces: les vinyetes surten de les seves pàgines sense text, la reixa és la seva, i cada bafarada, cada crit, l’onomatopeia i el títol del llibre d’encanteris els retola el motor a partir de les traduccions oficials a l’anglès, l’espanyol, el català, el xinès, el japonès i l’àrab. Una portada porta els crèdits que demana la llicència.
+
+## Elaboració
+
+### 1 · Converteix la transcripció en guió
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un script de conversió llegeix els fitxers font de l’episodi: talla cada pàgina en vinyetes seguint els carrers blancs i escriu la divisió que ha mesurat (`29.9 / 49.3 / *` a la pàgina 5), pren les paraules de cada bafarada de l’SVG de la traducció i anomena qui parla a partir de la transcripció ([traduir un còmic](/ca/docs/comics#traduir-un-còmic)). El resultat és una línia per bafarada, `pepper{shout break}: …`, amb la forma que tenia la bafarada original: un contorn trencat passa a ser `shout`, una bafarada que creuava la vora, `break`. L’accent dels dimonis, amb les seves *š* i *ā*, és dels traductors i s’hi queda.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="Pàgina 5, vinyeta 1: el crit de la Pepper, retolat a partir de la traducció, i el títol del llibre en daurat a la coberta." />
+
+### 2 · Ancora cada personatge on apuntaven els rabets de Revoy
+
+<Excerpt region="art" />
+
+Les bafarades de Revoy són als seus fitxers font com a formes vectorials, rabets inclosos. La conversió segueix cada rabet fins a la punta i la desa com a àncora de qui parla, en fraccions de la vinyeta, de manera que les bafarades noves apunten on apuntaven les seves: a la boca oberta de la Pepper, al dimoni del mig ([personatges i àncores](/ca/docs/comics#personatges-i-àncores)). Les zones segures conserven el motiu de cada vinyeta encara que les cel·les difereixin uns mil·límetres de les seves.
+
+### 3 · Dona a cada veu les seves lletres
+
+<Excerpt region="editions" />
+
+El repartiment de la resposta curta dona als dimonis bafarades negres amb lletra blanca, com les dibuixa Revoy, i una veu pròpia: Grenze Gotisch, una gòtica, a les edicions llatines. L’estil `writing` posa text sobre un objecte, el títol daurat del llibre. Cada edició fa servir lletres per a la seva escriptura; les bafarades japoneses van en vertical i la pàgina àrab es llegeix de dreta a esquerra ([retolació](/ca/docs/comics#retolació)).
+
+### 4 · Acredita cada traductor, amb totes les lletres
+
+<Excerpt region="vietnamese" />
+
+La llicència demana l’autor, la font, la llicència i una nota dels canvis; la portada els imprimeix en les paraules de cada edició, preses dels crèdits del mateix episodi. Una de les persones que van col·laborar en les traduccions espanyola i japonesa és Hồ Nhựt Châu, i les lletres vietnamites són en un fitxer de Fontsource a part: la recepta el carrega per a la lletra dels crèdits i el passa al PDF.
+
+## Variants
+
+### Adapta les sis pàgines
+
+El procés de l’episodi escriu les sis pàgines; les seves 21 vinyetes pesen 1,8 MB. Afegeix els altres blocs `:::page` i les seves vinyetes.
+
+```diff
+ const resources = await Promise.all([
++  panel('e08p01-1', asset('e08p01-1.jpg')), // … i les altres catorze vinyetes de les pàgines 1 a 4
+   panel('e08p05-1', asset('e08p05-1.jpg')), panel('e08p05-2', asset('e08p05-2.jpg')),
+```
+
+### Arrodoneix les vinyetes com Revoy a la pàgina 2
+
+```diff
+   panel: { borderWidth: pt(0), background: col('paper') },
++  panelStyles: [{ id: 'rounded', borderRadius: mm(5.8) }], // ::panel{style=rounded}
+```
+
+## Errors freqüents
+
+- Deixa els crèdits al document: les imatges viatgen amb el PDF, i la CC BY 4.0 demana que l’atribució hi viatgi.

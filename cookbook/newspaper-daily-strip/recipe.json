@@ -1,0 +1,242 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 146,
+  "status": "draft",
+  "chapter": "comics",
+  "order": 30,
+  "level": 3,
+  "genres": [
+    "comic",
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-strips"
+    ],
+    "also": [
+      "multiple-columns",
+      "column-rule",
+      "comic-panel-styles",
+      "comic-speakers",
+      "comic-pages",
+      "comic-lettering",
+      "comic-relettering",
+      "balloon-styles",
+      "opener-design",
+      "running-heads",
+      "callout-styles",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export",
+      "section-geometry",
+      "float-placement"
+    ]
+  },
+  "answers": [
+    "Q166"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first",
+    "top-float-next-page"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar",
+      "ja"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Strip panel: Pip walks into the bakery",
+          "es": "Viñeta de la tira: Pip entra en la panadería"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po1.jpg"
+      },
+      {
+        "what": {
+          "en": "Strip panel: Otto and the big croissant",
+          "es": "Viñeta de la tira: Otto y el cruasán grande"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po2.jpg"
+      },
+      {
+        "what": {
+          "en": "Strip panel: Pip and the croissant on the counter",
+          "es": "Viñeta de la tira: Pip y el cruasán en el mostrador"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po3.jpg"
+      },
+      {
+        "what": {
+          "en": "Strip panel: Otto eats the croissant",
+          "es": "Viñeta de la tira: Otto se come el cruasán"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po4.jpg"
+      },
+      {
+        "what": {
+          "en": "Strip panel: fishing on the floe",
+          "es": "Viñeta de la tira: pescando en el témpano"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po5.jpg"
+      },
+      {
+        "what": {
+          "en": "Strip panel: Pip and his fish",
+          "es": "Viñeta de la tira: Pip y su pez"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po6.jpg"
+      },
+      {
+        "what": {
+          "en": "Strip panel: Otto lands a boot",
+          "es": "Viñeta de la tira: Otto pesca una bota"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "po7.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Archivo Narrow",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Serif SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL QingKe HuangYou",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Serif JP",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans JP",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Naskh Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "newsprint",
+      "grammage": 45,
+      "shade": "#fbf9f5"
+    },
+    "binding": {
+      "type": "folded",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  }
+}

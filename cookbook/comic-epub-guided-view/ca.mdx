@@ -1,0 +1,61 @@
+---
+title: "Un EPUB de còmic que es llegeix vinyeta a vinyeta"
+summary: "Un còmic breu exportat com a PDF, com a EPUB fix amb navegació per regions per llegir-lo vinyeta a vinyeta, com a EPUB per a Kindle i com a EPUB adaptable."
+plain: "Un còmic de dues pàgines desat com a PDF d’impremta i com a llibres electrònics: un que conserva les pàgines i deixa anar de vinyeta en vinyeta, un altre per a Kindle i un altre amb els diàlegs com a text."
+description: "Exporta un còmic de Postext com a PDF i EPUB 3: maqueta fixa amb navegació per regions (lectura guiada), Kindle Panel View i diàlegs en text."
+question: "Com exporto un còmic com a EPUB que el lector pugui seguir vinyeta a vinyeta?"
+aliases: ["lectura guiada", "vinyeta a vinyeta", "navegació per regions", "regions.xhtml", "Kindle Panel View", "EPUB de còmic", "còmic en maqueta fixa", "guided view", "panel by panel", "コマ送り"]
+pageNotes: { "1": "La portada: La llum de Porthcove en majúscules vermelles, el capítol u i el peu d’impremta.", "2": "Pàgina 2: la Maya arriba al far amb una cartel·la llarga, el faroner al costat de la ràdio i la Maya assenyalant el terra.", "3": "Pàgina 3: el gat adormit sobre el cable de la ràdio amb RRRRRR i el «Trobat» xiuxiuejat per la Maya; després el far encès de nit, amb una cartel·la i dues bafarades." }
+---
+
+## Què compondràs
+
+El primer capítol de *La llum de Porthcove*: una portada i dues pàgines de còmic, maquetades una vegada i exportades de quatre maneres. El PDF és per a impremta. L’EPUB de maqueta fixa conserva les pàgines impreses i porta navegació per regions, així que un lector electrònic pot mostrar el llibre vinyeta a vinyeta, saltant de l’arribada al far a la ràdio i després a la Maya. Un segon EPUB fix hi afegeix Kindle Panel View; l’adaptable compon cada vinyeta com la seva imatge retallada seguida dels seus diàlegs. La pàgina llista cada fitxer tal com l’obrirà un lector, amb l’enllaç de baixada, en sis idiomes.
+
+## Elaboració
+
+### 1 · Exporta el mateix document com a EPUB
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `renderToEpub` rep els documents que imprimeix `renderToPdf`, de manera que les pàgines de l’EPUB són les del PDF ([sortida dels còmics](/ca/docs/comics#sortida-dels-còmics)). Amb `layout: 'fixed'` i pàgines de còmic al llibre, escriu també `regions.xhtml`: una regió `panel` per vinyeta en ordre de lectura, cadascuna un rectangle en percentatge de la seva pàgina, amb les bafarades, cartel·les i onomatopeies com a regions a dins. El sentit de pas de pàgina segueix el sentit de lectura del còmic, així que l’edició àrab passa de dreta a esquerra. `kindlePanelView: true` hi afegeix una zona tàctil per vinyeta i una còpia ampliada, amb les metadades que espera Kindle. La versió adaptable no té pàgines per conservar: cada vinyeta és la seva imatge, retallada com a la pàgina, i després els seus diàlegs, «**Maya**: Biscuit! I l’avi?», amb els noms de `comics.cast`.
+
+<PageShot page={2} crop="0,0,1,0.55" caption="Vinyeta 1 de la pàgina 2: a la lectura guiada, la primera regió, amb la cartel·la i la bafarada de la Maya a dins." />
+
+### 2 · Incrusta les lletres que fan servir les pàgines
+
+<Excerpt region="embed" />
+
+Un EPUB de maqueta fixa dibuixa el text amb les lletres que porta a dins, i una lletra que falta se substitueix per la del lector. La retolació demana rodona, negreta i cursiva; les lletres de còmic en porten menys, així que cada petició rep el fitxer que va triar `loadComicFonts`, i un fitxer que serveix als dos pesos hi entra una sola vegada amb el rang `'400 700'`. Les lletres japoneses i xineses només porten els trossos amb els caràcters de la seva edició, cosa que deixa el llibre japonès en 1,4 MB.
+
+### 3 · Torna a llegir cada fitxer
+
+<Excerpt region="shelf" />
+
+`readEpub` obre els bytes com ho faria un lector: maqueta, sentit de pas, espina. La llista de cada targeta és la mateixa lectura guiada, llegida de `regions.xhtml`: cinc vinyetes i les seves regions de text, en l’ordre en què el lector les recorre. Els tres fitxers passen EPUBCheck 5.4 sense errors ni avisos en anglès, japonès i àrab.
+
+### 4 · Una maqueta, sis edicions
+
+<Excerpt region="editions" />
+
+Cada `content.<lang>.md` porta les paraules d’una edició amb els mateixos identificadors de personatge. Les regions de les vinyetes són iguals en tots els idiomes; les de les bafarades es mouen amb elles, que es retolen de nou al voltant del text de cada idioma.
+
+## Variants
+
+### Treu l’edició per a Kindle
+
+La navegació per regions va a tot EPUB fix; Kindle Panel View només s’hi afegeix.
+
+```diff
+-  kindle: await renderToEpub(doc, { ...book, layout: 'fixed', kindlePanelView: true }),
+```
+
+### Posa coberta al llibre adaptable
+
+```diff
+-  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable' }),
++  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable',
++    cover: { bytes: imageBytes('lh-beam.jpg'), mediaType: 'image/jpeg' } }),
+```
+
+## Errors freqüents
+
+- Una lletra incrustada una vegada per cada pes al qual serveix es copiaria quatre vegades; l’edició xinesa pesava 5,3 MB abans dels rangs de pes.

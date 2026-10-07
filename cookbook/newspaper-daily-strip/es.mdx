@@ -1,0 +1,60 @@
+---
+title: "Una tira diaria y media página dominical en el periódico"
+summary: "El suplemento de tebeos de un periódico: media página dominical en el texto de la portada y una tira diaria flotada al pie de una página a cuatro columnas."
+plain: "Dos páginas de la sección de cómics de un periódico: un cómic grande en color en la portada y, dentro, una entrevista con la dibujante a cuatro columnas y la tira diaria de cuatro viñetas abajo."
+description: "Tiras cómicas en un periódico con Postext: bloques :::strip en el texto o flotados sobre cuatro columnas, media página dominical y tira diaria en seis idiomas."
+question: "¿Cómo pongo una tira cómica en una página de periódico, a lo ancho de las columnas del texto?"
+aliases: ["tira cómica", "tira diaria", "tira de prensa", "cómic dominical", "suplemento de tebeos", "historieta", "comic strip", "daily strip", "新聞漫画", "报纸漫画"]
+pageNotes: { "1": "La portada del suplemento: la cabecera Tebeos en rojo, la media página dominical (Pip y Otto pescando en un témpano, el pez diminuto de Pip, Otto sacando una bota) y tres líneas de sumario.", "2": "La página interior: el titular Diez inviernos en el témpano sobre cuatro columnas con una entrevista, un recuadro de cifras, cartas de lectores y un anuncio, y la tira diaria del cruasán al pie." }
+---
+
+## Lo que vas a componer
+
+El suplemento de tebeos de un periódico de fin de semana, *El Despacho de Corrington*, plegado a 230 × 310 mm. La portada lleva la media página dominical de *Pip y Otto*, un pingüino y una morsa que tienen una panadería sobre un témpano, con el sumario debajo. Dentro, una entrevista con la dibujante ocupa cuatro columnas, con cartas de lectores y un anuncio, y la tira diaria de la semana, cuatro viñetas cuadradas, corre al pie de la página. Las dos historietas son bloques `:::strip` del texto del periódico, y el suplemento sale en seis idiomas.
+
+## Elaboración
+
+### 1 · Escribe la tira donde la quiere el periódico
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un `:::strip` tiene el cuerpo de una página de cómic (su `split`, sus líneas `::panel` y su guion), pero es un bloque del texto ([tiras](/es/docs/comics#tiras)). En la portada, a una columna, la tira dominical se compone donde está escrita, con 210 mm de alto, y el sumario va detrás. Su división, `55 / * [40 | *]`, da a la escena ancha de la pesca una tira propia y deja abajo una fila para los dos chistes. Una tira nunca se parte: si no cabe, pasa entera a la página siguiente.
+
+<PageShot page={1} crop="0,0,1,0.8" caption="La portada: la media página dominical compuesta en el texto y el sumario debajo." />
+
+### 2 · Flota la tira diaria sobre las columnas
+
+La página interior abre con un H1 cuyo estilo de título pasa la sección a cuatro columnas. La tira diaria va justo después, con `span=page placement=bottom`: flota al pie de la página con el ancho de las cuatro columnas, y las columnas del artículo terminan igualadas encima. Sin `height` ni `aspect`, una tira toma la forma que hace cuadradas sus viñetas, aquí cuatro a uno. Con `placement=top` abriría la página siguiente, porque un flotante nunca sube por encima del punto donde se escribe.
+
+### 3 · Ajusta cada imagen a su viñeta
+
+<Excerpt region="art" />
+
+Las imágenes se dibujaron cuadradas o apaisadas, y las celdas de la división dominical no lo son: el chiste de la bota cae en una celda de 112 × 88 mm. Cada zona segura se recorta a lo que necesita el chiste, Pip, Otto y la bota, para que el encuadre nunca deje bandas ([viñetas e imágenes](/es/docs/comics#viñetas-e-imágenes)).
+
+### 4 · Imprime la misma página en seis periódicos
+
+<Excerpt region="editions" />
+
+Cada edición compone el periódico con letras para su escritura y rotula las tiras con sus propias letras de cómic. Los bocadillos japoneses van en vertical, y la edición árabe, que se lee de derecha a izquierda, invierte las viñetas de cada fila y las columnas de la página. Las imágenes y la división no cambian; solo cambia `content.<lang>.md` ([sentido de lectura](/es/docs/comics#sentido-de-lectura)).
+
+## Variantes
+
+### Fija el alto de la tira diaria
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* | * | * | *" span=page placement=bottom height=45mm}
+```
+
+### Pon una tira de una columna en el texto
+
+Sin `span=page`, una tira tiene el ancho de su columna y se compone donde está escrita, como una figura en línea.
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* / * / * / *" aspect=0.25}
+```
+
+## Errores frecuentes
+
+- La cabecera de la sección la dibuja la cabecera de página, no un H1 con apertura, así que encima de la tira de la portada solo queda la línea del folio.
+- Una zona segura más ancha que la forma de su celda deja la imagen con bandas del fondo de la viñeta, y la composición avisa con `comicPanelLetterbox`.

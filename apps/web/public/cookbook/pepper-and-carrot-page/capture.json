@@ -1,0 +1,1616 @@
+{
+  "schemaVersion": 1,
+  "slug": "pepper-and-carrot-page",
+  "sourceHash": "7cddc367f9af070f09cf55e8a43054244105500b1d96f7298767938493add732",
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-07T10:13:06.993Z",
+  "variants": {
+    "en": {
+      "hash8": "a9f84fc4",
+      "vdtHash": "5b1c728f7fbbd533a4750aa355861202d1b3b50a",
+      "timings": {
+        "importMs": 159,
+        "fontsMs": 391,
+        "buildMs": 101,
+        "totalMs": 1398,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 15
+        },
+        "families": [
+          "Comic Neue",
+          "Source Serif 4"
+        ],
+        "pages": 3,
+        "ownLines": 156
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 37772,
+          "alt": "Opening page 1: Episode 8: Pepper's Birthday Party."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 164242,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 104654,
+          "alt": "Page 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "pepper-and-carrot-page.pdf",
+        "bytes": 685727,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "pepper-and-carrot-page.postext",
+        "bytes": 675758
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].shape",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.balloonStyles[].tail",
+          "comics.cast",
+          "comics.cast[].color",
+          "comics.cast[].fill",
+          "comics.cast[].fontFamily",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 118,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 6,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "df5edb72",
+      "vdtHash": "a90c36d43fad75d592c989d7768284ce2a715a43",
+      "timings": {
+        "importMs": 143,
+        "fontsMs": 115,
+        "buildMs": 107,
+        "totalMs": 1113,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 15
+        },
+        "families": [
+          "Comic Neue",
+          "Source Serif 4"
+        ],
+        "pages": 3,
+        "ownLines": 156
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 39804,
+          "alt": "Página de apertura 1: Episodio 8: El cumpleaños de Pimienta."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 167042,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 104834,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "pepper-and-carrot-page.pdf",
+        "bytes": 687698,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "pepper-and-carrot-page.postext",
+        "bytes": 675969
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].shape",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.balloonStyles[].tail",
+          "comics.cast",
+          "comics.cast[].color",
+          "comics.cast[].fill",
+          "comics.cast[].fontFamily",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 118,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 6,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "ca": {
+      "hash8": "37346125",
+      "vdtHash": "c1acac32fe32e65510d5ce5e71eafdab2db766f6",
+      "timings": {
+        "importMs": 176,
+        "fontsMs": 117,
+        "buildMs": 111,
+        "totalMs": 1167,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 15
+        },
+        "families": [
+          "Comic Neue",
+          "Source Serif 4"
+        ],
+        "pages": 3,
+        "ownLines": 156
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 43700,
+          "alt": "Pàgina d'obertura 1: Episodi 8: La festa d'aniversari de la Pepper."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 163912,
+          "alt": "Pàgina 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 104996,
+          "alt": "Pàgina 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "pepper-and-carrot-page.pdf",
+        "bytes": 685648,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "pepper-and-carrot-page.postext",
+        "bytes": 675812
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].shape",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.balloonStyles[].tail",
+          "comics.cast",
+          "comics.cast[].color",
+          "comics.cast[].fill",
+          "comics.cast[].fontFamily",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 118,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 6,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "zh": {
+      "hash8": "d9535784",
+      "vdtHash": "8b40fa0916623ac081d84978d36feb6c069d0414",
+      "timings": {
+        "importMs": 162,
+        "fontsMs": 401,
+        "buildMs": 200,
+        "totalMs": 1335,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Noto Serif SC",
+          "sizePt": 10,
+          "leadingPt": 15
+        },
+        "families": [
+          "Noto Serif SC",
+          "ZCOOL KuaiLe"
+        ],
+        "pages": 3,
+        "ownLines": 156
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 29142,
+          "alt": "章首页，第 1 页：第8集：小辣椒的生日。"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 167366,
+          "alt": "第 2 页。"
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 103542,
+          "alt": "第 3 页。"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "pepper-and-carrot-page.pdf",
+        "bytes": 741918,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "pepper-and-carrot-page.postext",
+        "bytes": 676361
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].shape",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.balloonStyles[].tail",
+          "comics.cast",
+          "comics.cast[].color",
+          "comics.cast[].fill",
+          "comics.cast[].fontFamily",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 118,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 6,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Serif SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "ZCOOL KuaiLe",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "ar": {
+      "hash8": "29b84364",
+      "vdtHash": "a4ca6da349dc5fbfdffab04252ec4b91e132b04c",
+      "timings": {
+        "importMs": 248,
+        "fontsMs": 2753,
+        "buildMs": 171,
+        "totalMs": 3707,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Noto Naskh Arabic",
+          "sizePt": 10,
+          "leadingPt": 15
+        },
+        "families": [
+          "Noto Naskh Arabic",
+          "Playpen Sans Arabic"
+        ],
+        "pages": 3,
+        "ownLines": 156
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 29088,
+          "alt": "صفحة الافتتاح ١: حلقة ٨ : حفلةُ عيدِ ميلادِ فُلفُل."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 165100,
+          "alt": "الصفحة ٢."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 102364,
+          "alt": "الصفحة ٣."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "pepper-and-carrot-page.pdf",
+        "bytes": 692767,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "pepper-and-carrot-page.postext",
+        "bytes": 676728
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].shape",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.balloonStyles[].tail",
+          "comics.cast",
+          "comics.cast[].color",
+          "comics.cast[].fill",
+          "comics.cast[].fontFamily",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 118,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 6,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Playpen Sans Arabic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "document-digits",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "sound-effects",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "ja": {
+      "hash8": "74d98093",
+      "vdtHash": "d96a7805773f5919b05691d4d1559da70cc6a370",
+      "timings": {
+        "importMs": 217,
+        "fontsMs": 506,
+        "buildMs": 276,
+        "totalMs": 1580,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Noto Serif JP",
+          "sizePt": 10,
+          "leadingPt": 15
+        },
+        "families": [
+          "Noto Serif JP",
+          "Zen Antique"
+        ],
+        "pages": 3,
+        "ownLines": 156
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 35116,
+          "alt": "章扉、1ページ：エピソード 8: ペッパーの誕生パーティー。"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 164996,
+          "alt": "2ページ。"
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 104010,
+          "alt": "3ページ。"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "pepper-and-carrot-page.pdf",
+        "bytes": 721675,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "pepper-and-carrot-page.postext",
+        "bytes": 677079
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].shape",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.balloonStyles[].tail",
+          "comics.cast",
+          "comics.cast[].color",
+          "comics.cast[].fill",
+          "comics.cast[].fontFamily",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 118,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 6,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Serif JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Antique",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

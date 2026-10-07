@@ -1,0 +1,63 @@
+---
+title: "One set of panels, three page splits"
+summary: "Five comic panels laid out under three split trees: the split attribute of :::page cuts the page, and each picture's safe area keeps its subject in any cell."
+plain: "A comic page drawn once and laid out three ways. The same five pictures and the same dialogue fill three different panel grids, and every picture is cropped again to fit its new panel."
+description: "A Postext comic layout proof: the same five panels under three split trees, re-cropped by their safe areas and re-lettered in six languages."
+question: "How do I divide a comic page into panels, and keep a face in view when the panel changes shape?"
+aliases: ["panel grid", "page layout comic", "comic grid", "split tree", "splitter", "tiers", "inset panel", "safe area", "crop", "reframe", "viñetas", "コマ割り", "分格"]
+pageNotes: { "1": "The proof's cover sheet: the title in red display capitals, then the three plans, each with its split attribute in red.", "2": "Plan A: a wide tier with Maya walking up to the lighthouse, three panels side by side (the keeper at his radio, Maya pointing down, the cat asleep with PURRRR in red), and a wide night scene of the lit lighthouse.", "3": "Plan B: two columns; on the left Maya's arrival and the keeper at his radio, tall; on the right Maya pointing, the cat and the lighthouse at night.", "4": "Plan C: a top tier of three narrow panels with the cat as an inset over Maya's, and one tall panel of the lighthouse at night with two balloons near the gallery." }
+---
+
+## What you'll build
+
+A layout proof for one page of a comic, *The Porthcove Light*: a cover sheet and the same page in three plans, for the author to choose from. The five pictures (Maya climbing to the lighthouse, her grandfather at a dead radio, Maya pointing at the floor, the cat asleep on the cable, the lamp lit at night) and the six lines of lettering never change; only the `split` of each `:::page` does. Every picture is cropped again for its cell and every balloon placed again around its speaker. The trim is an American comic book, 168 × 259 mm, and the proof comes in six editions, each lettered in its own language.
+
+## Method
+
+### 1 · Cut the page with a split tree
+
+The code is [the short answer](#the-short-answer) above. A `:::page` fills the type area, 144 × 227 mm here, and its `split` attribute cuts it. `/` separates rows, `|` separates columns, each size is a percentage of the cell it cuts, `*` shares what is left, and a bracket cuts that cell again on the other axis ([splitting the page](/en/docs/comics#splitting-the-page)). Plan C, `30 [30 | 20 | *] / *`, makes a tier 30% deep, cuts it into cells 30% and 20% wide plus the rest, and leaves one tall cell under it. The gutters straddle each line: 4 mm between tiers, 3 mm between panels in a tier. The `::panel` lines fill the cells in reading order, rows from the top and columns from the start side.
+
+<PageShot page={4} crop="0,0,1,0.34" caption="Plan C: the 30 | 20 | rest tier, with the cat as an inset over the third panel." />
+
+### 2 · Give each picture a safe area
+
+<Excerpt region="art" />
+
+Each picture is drawn once and cropped to fill whatever cell it lands in. The safe area is the part every crop keeps whole ([panels and art](/en/docs/comics#panels-and-art)). The radio picture's safe area is the keeper alone, 24% of its width, so the 26 mm cell of plan C shows him from cap to boots and drops the radio; the wide cells of plans A and B show both. A cell whose shape cannot hold a safe area letterboxes the picture and the build warns (`comicPanelLetterbox`). The anchors mark each speaker's mouth and face in the same fractions, so the tails find the speakers in every crop.
+
+### 3 · Lay one panel over another
+
+Plan C's split makes four cells for five panels. The cat goes in with `inset="50 50 46 46"`: a panel 46% wide and 46% deep, placed at 50%, 50% of the panel before it, Maya's. An inset takes no cell, so the panels after it keep their places, and it is read right after the panel it covers.
+
+### 4 · Letter six editions from one layout
+
+<Excerpt region="editions" />
+
+The split, the pictures, the crops and the anchors are the same in every language; `content.<lang>.md` holds only the words, under the same speaker ids (`maya`, `tomas`). The Japanese edition sets its balloons vertically, eight characters to the column, and drops the final 。; the Arabic one is read right to left, so each row's panels are mirrored while the pictures are not. The lettering size stays 8 pt in every edition: a longer line makes a bigger balloon, never smaller type ([lettering](/en/docs/comics#lettering)).
+
+## Variations
+
+### Slant the middle tier
+
+A size written `30~40` runs that cell's far gutter from 30% at one end to 40% at the other. Slanted cells lose their rounded corners.
+
+```diff
+-:::page{split="30 / 35 [* | * | *] / *"}
++:::page{split="30 / 35 [30~40 | * | *] / *"}
+```
+
+### Mirror the art in the Arabic edition
+
+Pictures keep their handedness by default. A comic drawn without lettering or clocks can follow the reading direction.
+
+```diff
+ const comics = {
++  mirrorArt: true, // pictures flip in a right-to-left edition
+   gutter: { horizontal: mm(4), vertical: mm(3) },
+```
+
+## Pitfalls
+
+- A cell a fifth of the page wide holds about four words a line at 8 pt, and in plan C the keeper's face is in the middle of his: his two balloons about the storm are deeper than the room above or below it. There the first of the two lines carries `break` (`tomas{break}:`), so the pair may cross the gutter into Maya's panel; the engine keeps the second balloon after the first and never lets it run into the page margin. Without `break` the build warns `comicBalloonOverflow`.
+- A tighter safe area gives more cells a clean crop, but whatever lies outside it may be cut: the boots in plan A's first tier, the radio in plan C.

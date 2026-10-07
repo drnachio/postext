@@ -1,0 +1,61 @@
+---
+title: "Una página splash, una viñeta insertada y un borde roto"
+summary: "Una tormenta en dos páginas: una splash a sangre con una viñeta insertada, una tira sangrada por tres lados, una gaviota que cruza el borde y cartelas solas."
+plain: "Dos páginas de un cómic sobre una tormenta: una imagen enorme que llena toda la primera página con una pequeña viñeta de una niña encima, y una página en la que una gaviota sale volando de su marco."
+description: "Páginas de cómic con Postext: una splash a sangre, una viñeta insertada, sangrado en los lados que elijas, arte que rompe el borde y una viñeta solo de texto."
+question: "¿Cómo saco una viñeta a sangre o dejo que el dibujo rompa el borde de la viñeta?"
+aliases: ["página splash", "viñeta a sangre", "sangrado", "viñeta insertada", "borde roto", "dibujo que sale de la viñeta", "splash page", "broken border", "裁ち切り", "出血"]
+pageNotes: { "1": "La splash: el faro en una noche de tormenta, a sangre por los cuatro lados, ¡BRRROOM! en letras blancas junto al rayo, una cartela arriba a la izquierda y una pequeña viñeta enmarcada con la cara de Maya tras una ventana con lluvia, abajo a la derecha.", "2": "Página 2: una ola que revienta en las rocas, a sangre por arriba y por los lados; debajo, el farero con un farol mientras una gaviota sale volando por el borde izquierdo de su viñeta, y una viñeta estrecha azul noche con dos cartelas." }
+---
+
+## Lo que vas a componer
+
+Dos páginas de la tormenta de *La luz de Porthcove*. La primera es una splash: una sola imagen del faro en plena tormenta sale por todos los bordes de la página, con una pequeña viñeta enmarcada de Maya en su ventana sobre la esquina inferior. La segunda abre con una ola sangrada por tres lados; debajo, una gaviota sale de la viñeta del farero cruzando el borde, y una viñeta estrecha sin imagen lleva dos cartelas sobre un fondo azul noche. El formato es el de un cómic americano, 168 × 259 mm con 3 mm de sangrado, y las páginas salen en seis idiomas.
+
+## Elaboración
+
+### 1 · Saca la splash a sangre por todos los lados
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `split="*"` hace una sola celda con todo el marco, y `bleed` en la página lleva cada viñeta que toca el marco hasta la caja de sangrado, 3 mm más allá del corte, sin filete en esos lados ([dividir la página](/es/docs/comics#dividir-la-página)). En la página 2, `bleed="top start end"` en la ola sangra solo esos tres lados; su pie conserva la calle con las viñetas de abajo. `start` y `end` siguen el sentido de lectura, así que la edición árabe sangra los mismos lados.
+
+### 2 · Pon una viñeta insertada sobre la splash
+
+`inset="56 64 38 30"` coloca la viñeta de Maya en el 56 %, 64 % de la viñeta anterior, con un 38 % de ancho y un 30 % de alto. Una viñeta insertada no ocupa celda: se superpone a la splash, conserva su propio filete y se lee justo después de ella. Su imagen se recorta a su propia caja según su zona segura, aquí la cara de Maya.
+
+<PageShot page={1} crop="0.35,0.55,0.65,0.45" caption="La viñeta insertada: la cara de Maya en su marco sobre la esquina inferior de la splash, con su voz interior." />
+
+### 3 · Deja que una gaviota rompa el borde
+
+<Excerpt region="art" />
+
+`pop=sp-tomas-pop` da a la viñeta del farero una segunda imagen: un PNG transparente del tamaño de su dibujo en el que solo está la gaviota. Postext la recorta y la coloca exactamente como el dibujo de la viñeta, y la pinta después del filete y fuera del recorte de la viñeta, así que la parte de la gaviota que queda fuera de la celda vuela sobre el borde y el margen ([viñetas e imágenes](/es/docs/comics#viñetas-e-imágenes)). `focus="45% 50%"` desplaza el encuadre a la izquierda dentro de lo que permite la zona segura, para que la gaviota cruce el borde izquierdo en vez de quedarse en el margen.
+
+### 4 · Deja una viñeta sin imagen
+
+<Excerpt region="palette" />
+
+Un `::panel` sin `art` es una celda vacía con el filete del estilo de viñeta; `bg=night` la rellena con un color de la paleta. Sus cartelas, `at=top` y `at=bottom`, se encajan en los bordes superior e inferior: una pausa después de la tormenta.
+
+## Variantes
+
+### Sangra también la tira de abajo
+
+```diff
+-::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%"}
++::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%" bleed="bottom start"}
+```
+
+### Da a la viñeta insertada un marco blanco
+
+Un estilo de viñeta con nombre cambia una sola viñeta; `style=` en la viñeta lo elige.
+
+```diff
+   panel: { borderWidth: pt(1.2), borderColor: col('ink'), background: col('paper') },
++  panelStyles: [{ id: 'framed', borderWidth: pt(3), borderColor: col('paper') }],
+```
+
+## Errores frecuentes
+
+- La capa emergente debe tener exactamente el tamaño en píxeles de la imagen de la viñeta: Postext la recorta con la misma ventana, así que un recorte más pequeño caería en otro sitio.
+- El sangrado necesita `page.bleed`; sin él, una viñeta a sangre se detiene en el corte.
+- Una onomatopeya junto a un borde sangrado puede entrar en el sangrado, más allá del corte, donde la guillotina la recorta. La ザッバーン japonesa es una columna de cinco caracteres, así que va fijada más abajo que las onomatopeyas latinas, en `60% 44%`.
