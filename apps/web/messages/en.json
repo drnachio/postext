@@ -3784,7 +3784,6 @@
     "limitations": [
       "The two narrated videos have no sign-language interpretation (WCAG 1.2.6) and no extended audio description (1.2.7). Each video has a full transcript under the player that describes what happens on screen as well as the narration.",
       "The video caption tracks hold speech only and are labelled as subtitles; sound and music cues are not yet captioned.",
-      "There is no Chinese, Japanese, Arabic or Portuguese cut of the videos: Chinese, Japanese, Arabic and Brazilian Portuguese pages play the English video with a transcript in their language.",
       "The page preview in the Sandbox's Canvas tab is a picture of each page. Its text is in the HTML tab and in the Text panel, where screen readers can read it.",
       "Books you export as PDF from the Sandbox are tagged for accessibility, but how readable they are depends on the content and design you give them."
     ],

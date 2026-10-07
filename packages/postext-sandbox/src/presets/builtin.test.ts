@@ -39,10 +39,11 @@ describe('the built-in guide in seven languages', () => {
       expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-pt-br'))).toBe(true);
       const table = loaded.resources.find((r) => r.id === 'preset-sizes')!;
       expect(table.caption).toBe('Formatos de página predefinidos e o seu uso habitual.');
-      // No Portuguese cut yet: the English one, captioned in Portuguese.
+      // The Portuguese cut, captioned in Portuguese (#611).
       const showreel = loaded.resources.find((r) => r.kind === 'video')!;
-      expect(showreel.video?.url).toContain('/en/');
-      expect(showreel.caption).toContain('em inglês');
+      expect(showreel.video?.url).toContain('/showreel/v1/pt/');
+      expect(showreel.video?.duration).toBe(136.57);
+      expect(showreel.caption).not.toContain('em inglês');
     }
   });
 

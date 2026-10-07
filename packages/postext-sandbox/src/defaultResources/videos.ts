@@ -2,9 +2,7 @@
 // tutorial, narrated cuts streamed as HLS from the media CDN (the
 // `postext-media` Worker in front of Cloudflare R2, the player the home
 // page and the docs use). Every edition plays its own language's cut
-// (Catalan, Arabic and Japanese since #510), except the Brazilian
-// Portuguese one: there is no Portuguese cut yet, so it plays the English
-// cut (poster and lengths too) with Portuguese captions and alt texts.
+// (Catalan, Arabic and Japanese since #510, Brazilian Portuguese since #611).
 
 import type { Resource, ResourcePlacement } from 'postext';
 import type { GuideLang } from './lang';
@@ -22,7 +20,7 @@ export const GUIDE_VIDEO_IDS = {
 type VideoLang = GuideLang;
 
 /** The cut each edition plays. */
-const CUT: Record<VideoLang, 'en' | 'es' | 'zh' | 'ca' | 'ar' | 'ja'> = { en: 'en', es: 'es', 'zh-Hans': 'zh', ca: 'ca', ar: 'ar', ja: 'ja', 'pt-BR': 'en' };
+const CUT: Record<VideoLang, 'en' | 'es' | 'zh' | 'ca' | 'ar' | 'ja' | 'pt'> = { en: 'en', es: 'es', 'zh-Hans': 'zh', ca: 'ca', ar: 'ar', ja: 'ja', 'pt-BR': 'pt' };
 
 /** Whether an edition of the guide carries the videos. */
 export function guideHasVideos(lang: GuideLang): lang is VideoLang {
@@ -44,7 +42,7 @@ const SPECS: VideoSpec[] = [
     id: GUIDE_VIDEO_IDS.showreel,
     path: 'showreel',
     placement: { position: 'auto', span: 'page' },
-    duration: { en: 130.65, es: 137.12, 'zh-Hans': 142.73, ca: 129.35, ar: 147.83, ja: 169.72, 'pt-BR': 130.65 },
+    duration: { en: 130.65, es: 137.12, 'zh-Hans': 142.73, ca: 129.35, ar: 147.83, ja: 169.72, 'pt-BR': 136.57 },
     caption: {
       en: 'Postext in two minutes: how it sets a page, the Sandbox and what comes out of it. In the Folio view a click plays it on the page; in print, the QR code opens it.',
       es: 'Postext en dos minutos: cómo compone una página, el Sandbox y lo que sale de él. En la vista Folio, un clic lo reproduce sobre la página; impreso, lo abre el código QR.',
@@ -52,7 +50,7 @@ const SPECS: VideoSpec[] = [
       ca: 'Postext en dos minuts: com compon una pàgina, el Sandbox i el que en surt. A la vista Folio, un clic el reprodueix sobre la pàgina; imprès, l\'obre el codi QR.',
       ar: 'Postext في دقيقتين ونصف: كيف ينضّد الصفحة، وبيئة Sandbox، وما يخرج منها. في عرض Folio تشغّله نقرة فوق الصفحة؛ وفي النسخة المطبوعة يفتحه رمز QR.',
       ja: '三分で見るPostext。ページの組み方、Sandbox、そこから出てくるもの。Folioビューではクリックするとページの上で再生され、印刷物ではQRコードから開ける。',
-      'pt-BR': 'O Postext em dois minutos (vídeo em inglês): como ele compõe uma página, o Sandbox e o que sai dele. Na visualização Folio, um clique o reproduz sobre a página; no impresso, o código QR o abre.',
+      'pt-BR': 'O Postext em dois minutos: como ele compõe uma página, o Sandbox e o que sai dele. Na visualização Folio, um clique o reproduz sobre a página; no impresso, o código QR o abre.',
     },
     altText: {
       en: 'The closing card of the video: the Postext logo, the line "The programmable typesetter for the web", postext.dev and the command pnpm add postext.',
@@ -61,14 +59,14 @@ const SPECS: VideoSpec[] = [
       ca: 'La targeta final del vídeo: el logotip de Postext, el lema «El tipògraf programable per al web», postext.dev i l\'ordre pnpm add postext.',
       ar: 'البطاقة الختامية للفيديو: شعار Postext، وعبارة «المنضِّد القابل للبرمجة للويب»، وعنوان postext.dev، والأمر pnpm add postext.',
       ja: '動画の最後の画面。Postextのロゴ、「ウェブで動く、プログラムできる組版システム」という一文、postext.dev、インストールのコマンドpnpm add postext。',
-      'pt-BR': 'O quadro final do vídeo: o logotipo do Postext, o lema em inglês “The programmable typesetter for the web” (o compositor programável para a web), postext.dev e o comando pnpm add postext.',
+      'pt-BR': 'O quadro final do vídeo: o logotipo do Postext, o lema “O tipógrafo programável para a web”, postext.dev e o comando pnpm add postext.',
     },
   },
   {
     id: GUIDE_VIDEO_IDS.tutorial,
     path: 'tutorial',
     placement: { position: 'auto', span: 'page' },
-    duration: { en: 312.48, es: 308.1, 'zh-Hans': 318.68, ca: 300.6, ar: 332.55, ja: 391.1, 'pt-BR': 312.48 },
+    duration: { en: 312.48, es: 308.1, 'zh-Hans': 318.68, ca: 300.6, ar: 332.55, ja: 391.1, 'pt-BR': 308.4 },
     caption: {
       en: 'The postext-port skill at work: an agent brings a book that was already typeset into Postext, a chapter at a time, and checks every page it sets.',
       es: 'El skill postext-port trabajando: un agente pasa a Postext un libro que ya estaba maquetado, capítulo a capítulo, y revisa cada página que compone.',
@@ -76,7 +74,7 @@ const SPECS: VideoSpec[] = [
       ca: 'L\'skill postext-port treballant: un agent porta a Postext un llibre que ja estava maquetat, capítol a capítol, i revisa cada pàgina que compon.',
       ar: 'مهارة postext-port أثناء العمل: وكيل ينقل إلى Postext كتابًا كان منضَّدًا من قبل، فصلًا بعد فصل، ويفحص كل صفحة ينضّدها.',
       ja: '作業中のpostext-portスキル。エージェントが、すでに組まれた本を一章ずつPostextに移し、組んだページをすべて確かめる。',
-      'pt-BR': 'A skill postext-port em ação (vídeo em inglês): um agente traz para o Postext um livro que já estava diagramado, um capítulo de cada vez, e confere cada página que compõe.',
+      'pt-BR': 'A skill postext-port em ação: um agente traz para o Postext um livro que já estava diagramado, um capítulo de cada vez, e confere cada página que compõe.',
     },
     altText: {
       en: 'A frame of the tutorial: a request to the agent to convert a book with the postext-port skill, beside a folder holding the reference PDF, the fonts and the illustrations.',
@@ -85,7 +83,7 @@ const SPECS: VideoSpec[] = [
       ca: 'Un fotograma del tutorial: la petició a l\'agent per convertir un llibre amb l\'skill postext-port, al costat d\'una carpeta amb el PDF de referència, les fonts i les il·lustracions.',
       ar: 'إطار من الدرس: طلب إلى الوكيل أن يحوّل كتابًا بمهارة postext-port، بجانب مجلد فيه ملف PDF المرجعي والخطوط والرسوم.',
       ja: 'チュートリアルの一コマ。postext-portスキルで本を変換するようエージェントに頼む文面と、その横に見本のPDF、フォント、イラストを収めたフォルダー。',
-      'pt-BR': 'Um quadro do tutorial: o pedido ao agente, em inglês, para converter um livro com a skill postext-port, ao lado de uma pasta com o PDF de referência, as fontes e as ilustrações.',
+      'pt-BR': 'Um quadro do tutorial: o pedido ao agente para converter um livro com a skill postext-port, ao lado de uma pasta com o PDF de referência, as fontes e as ilustrações.',
     },
   },
 ];
@@ -98,6 +96,7 @@ const POSTERS: Record<(typeof CUT)[VideoLang], () => Promise<{ SHOWREEL_POSTER: 
   ca: () => import('./videoPosters/ca'),
   ar: () => import('./videoPosters/ar'),
   ja: () => import('./videoPosters/ja'),
+  pt: () => import('./videoPosters/pt'),
 };
 
 /** The blob id of a video's poster in one edition. */

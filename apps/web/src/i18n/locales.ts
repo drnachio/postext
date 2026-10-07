@@ -25,19 +25,18 @@ const YOUTUBE_PLAYLIST: Record<SiteLocale, { video: string; list: string }> = {
   ar: { video: "CuI63kdIlK0", list: "PLft7wmxPkdGo" },
   // No Japanese playlist yet: the English one, with Japanese transcripts on the site.
   ja: { video: "pTVl1TWvu-A", list: "PLXV_YSL9ROv0" },
-  // No Brazilian Portuguese playlist yet: the English one, with Portuguese transcripts on the site.
+  // No Brazilian Portuguese playlist yet (the pt cuts are not on YouTube):
+  // the English one. The site itself plays the Portuguese cuts.
   pt: { video: "pTVl1TWvu-A", list: "PLXV_YSL9ROv0" },
 };
 
 /** The cuts of the narrated videos on the media CDN: one per site locale
- *  (#510), Brazilian Portuguese still to come. */
-export type MediaLang = Exclude<SiteLocale, "pt">;
+ *  (#510; Brazilian Portuguese since #611). */
+export type MediaLang = SiteLocale;
 
-/** The cut a route locale plays: Portuguese pages play the English one,
- *  with their own transcript underneath, until the pt cut is on the CDN. */
+/** The cut a route locale plays. */
 export function mediaLang(locale: string): MediaLang {
-  const site = siteLocale(locale);
-  return site === "pt" ? "en" : site;
+  return siteLocale(locale);
 }
 
 /** The header's YouTube link for a route locale. */

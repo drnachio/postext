@@ -323,7 +323,7 @@
   "Showreel": {
     "title": "O Postext em dois minutos",
     "play": "Reproduzir o vídeo em tela cheia",
-    "watch": "Assistir · 2:10",
+    "watch": "Assistir · 2:17",
     "subtitles": "Legendas",
     "fullscreen": "Tela cheia",
     "exitFullscreen": "Sair da tela cheia"
@@ -331,7 +331,7 @@
   "Tutorial": {
     "title": "Converta a sua publicação para o Postext com um agente de IA",
     "play": "Reproduzir o vídeo em tela cheia",
-    "watch": "Assistir ao tutorial · 5:12",
+    "watch": "Assistir ao tutorial · 5:08",
     "subtitles": "Legendas",
     "fullscreen": "Tela cheia",
     "exitFullscreen": "Sair da tela cheia"
@@ -3784,7 +3784,6 @@
     "limitations": [
       "Os dois vídeos narrados não têm interpretação em língua de sinais (WCAG 1.2.6) nem audiodescrição estendida (1.2.7). Cada vídeo tem, abaixo do player, uma transcrição completa que descreve o que aparece na tela, além da narração.",
       "As faixas de texto dos vídeos trazem apenas a fala e estão marcadas como legendas; os sons e a música ainda não são legendados.",
-      "Não há versão dos vídeos em chinês, japonês, árabe ou português: as páginas em chinês, japonês, árabe e português do Brasil reproduzem o vídeo em inglês com uma transcrição no seu idioma.",
       "A visualização das páginas na aba Canvas do Sandbox é uma imagem de cada página. O texto está na aba HTML e no painel Texto, onde os leitores de tela conseguem lê-lo.",
       "Os livros que você exporta em PDF pelo Sandbox saem marcados para acessibilidade, mas o quanto eles serão legíveis depende do conteúdo e do projeto gráfico que você der a eles."
     ],

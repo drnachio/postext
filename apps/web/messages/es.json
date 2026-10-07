@@ -3784,7 +3784,6 @@
     "limitations": [
       "Los dos vídeos narrados no tienen interpretación en lengua de signos (WCAG 1.2.6) ni audiodescripción ampliada (1.2.7). Cada vídeo tiene debajo una transcripción completa que describe lo que aparece en pantalla además de la narración.",
       "Las pistas de texto de los vídeos solo recogen la voz y están marcadas como subtítulos; todavía no incluyen los sonidos ni la música.",
-      "No hay versión china, japonesa, árabe ni portuguesa de los vídeos: las páginas en chino, en japonés, en árabe y en portugués de Brasil reproducen el vídeo en inglés con una transcripción en su idioma.",
       "La vista previa del Sandbox en la pestaña Canvas es una imagen de cada página. Su texto está en la pestaña HTML y en el panel Texto, donde los lectores de pantalla pueden leerlo.",
       "Los PDF que exportas desde el Sandbox salen etiquetados para accesibilidad, pero lo legibles que resulten depende del contenido y del diseño que les des."
     ],
