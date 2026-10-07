@@ -20,11 +20,18 @@ const LATIN = [
 const MAIN_COLOR = '#295AA3';
 /** Content warnings on how the text is set that C5 reports. */
 const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing']);
+/** What a comic warning names: the picture, the panel, the speaker, the style. */
+function comicDetail(w) {
+  return [w.resourceId, w.anchorId, w.panel === undefined ? undefined : `panel ${w.panel + 1}`,
+    w.style, w.speaker, w.reasons?.join('+'), w.message].filter((x) => x !== undefined && x !== '').join(' ');
+}
 const FALLBACK_DIRECTIVES = ['pagebreak', 'numbering', 'columnbreak', 'space', 'toc'];
 const FALLBACK_CONTAINERS = ['callout', 'paragraphs', 'part', 'columns', 'paper'];
 /** The parser's own fence patterns (packages/postext/src/parse/blockParser.ts). */
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CLOSE_RE = /^:::\s*$/;
+/** Raw-body fences whose lines belong to the comic parser. */
+const COMIC_FENCES = new Set(['page', 'strip']);
 const RESOURCE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
 // ─── The record ─────────────────────────────────────────────────────────────
@@ -465,12 +472,23 @@ export function facts({ select = 'last', hero = [] } = {}) {
         excerpt: body.slice(issue.sourceStart, issue.sourceStart + 60).split('\n')[0],
       });
     }
+    // A comic's body (:::page, :::strip) is read by the comic parser: its
+    // ::panel lines and its script are not Markdown fences.
+    let comicBody = false;
     body.split('\n').forEach((raw, i) => {
       const line = raw.trim();
+      if (comicBody) {
+        if (CLOSE_RE.test(line)) comicBody = false;
+        return;
+      }
       if (line.startsWith(':::')) {
         if (CLOSE_RE.test(line)) return;
         const m = DIRECTIVE_RE.exec(line);
-        if (m && fenceNames.has(m[1])) { directives.add(m[1]); return; }
+        if (m && fenceNames.has(m[1])) {
+          directives.add(m[1]);
+          if (COMIC_FENCES.has(m[1])) comicBody = true;
+          return;
+        }
         badFences.push({ chapter, line: i + 1, text: line.slice(0, 80), name: /^:::\s*([\w-]*)/.exec(line)?.[1] ?? '' });
       } else if (/^::[a-z]/i.test(line)) {
         if (RESOURCE_RE.test(line)) { directives.add('resource'); return; }
@@ -706,13 +724,16 @@ export function facts({ select = 'last', hero = [] } = {}) {
     })));
   // Content warnings about how the text is set, which no source check sees
   // either: Arabic vowel marks that reach the next line (#376), a word wider
-  // than its measure, letter-spacing a joining script ignores (#368).
+  // than its measure, letter-spacing a joining script ignores (#368), and a
+  // comic's (a picture letterboxed in its cell, a balloon that found no
+  // room, more panels than cells…), except a speaker with no anchor, which
+  // is how an off-panel voice is written.
   out.textWarnings = docs.flatMap((doc) => (doc.contentWarnings ?? [])
-    .filter((w) => TEXT_WARNING_KINDS.has(w.kind))
+    .filter((w) => TEXT_WARNING_KINDS.has(w.kind) || (/^comic[A-Z]/.test(w.kind) && w.kind !== 'comicUnknownSpeaker'))
     .map((w) => ({
       kind: w.kind,
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
-      detail: w.text ?? '',
+      detail: w.text ?? comicDetail(w),
     })));
   // C31: config values the engine replaced (a character grid cut to the
   // page, an unknown numbering format, a key no setting has). Every

@@ -528,8 +528,19 @@ export function lintPen(
   let japaneseText = false;
   let arabicText = false;
   let arabicBook = false;
+  // The files this edition sets, whose script decides its fonts and locale:
+  // its own language's, else the first sample language's for a slot it
+  // lacks. Every file still gets the length, syntax and voice checks.
+  const slotOf = (key: string) => key.split(".").slice(0, -1).join(".");
+  const inEdition = (key: string): boolean => {
+    const lang = key.split(".").pop();
+    if (lang === composed.variant) return true;
+    const slot = slotOf(key);
+    return lang === meta.sample.locales[0] && sources.content[slot ? `${slot}.${composed.variant}` : composed.variant] === undefined;
+  };
   for (const [key, text] of Object.entries(sources.content)) {
     const file = `content.${key}.md`;
+    const edition = inEdition(key);
     // Chinese and Japanese have no spaces: their characters count, 1.7 (Chinese)
     // or 2.2 (Japanese, whose kana spell out what Chinese leaves to one
     // character) to the word.
@@ -547,7 +558,7 @@ export function lintPen(
     }
     // Japanese when its kana sentences outweigh the rest: a Chinese page
     // that quotes a Japanese title stays Chinese.
-    if (length.japanese * 2 > length.cjk) japaneseText = true;
+    if (edition && length.japanese * 2 > length.cjk) japaneseText = true;
     for (const line of malformedResourceEmbeds(text)) fails.push(`${file}: "${line}" is not \`::resource{id="…"}\` (double quotes, id only)`);
     for (const name of markdownConstructs(text).unknown) fails.push(`${file}: ":::${name}" is not a Postext directive (it prints as text)`);
     fails.push(...unquotedFrontmatter(text, file));
@@ -560,7 +571,7 @@ export function lintPen(
       warns.push(...style.warns);
     }
     const odd = nonLatin(text);
-    if (odd.cjk.length) cjkText = true;
+    if (edition && odd.cjk.length) cjkText = true;
     // CJK text is set in faces the cjk block loads by slices, on screen and
     // in the PDF; without it, the kit loads the latin file of every face.
     if (odd.cjk.length && !cjkKit) {
@@ -575,8 +586,8 @@ export function lintPen(
     // loadFonts never fetches: the arabic block does, unless the recipe
     // builds its own FontFace (a face from its assets).
     if (odd.arabic.length) {
-      arabicText = true;
-      if (mostlyArabic(text)) arabicBook = true;
+      if (edition) arabicText = true;
+      if (edition && mostlyArabic(text)) arabicBook = true;
       if (!arabicKit && !/\bnew\s+FontFace\s*\(/.test(ownBare)) {
         fails.push(`${file}: Arabic text needs an Arabic face: list the arabic kit block and load the faces with ` +
           "loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)");
