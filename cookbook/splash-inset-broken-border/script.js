@@ -93,13 +93,13 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // layer is a transparent PNG the size of the keeper's picture, so it shares its crop.
 const face = (x, y, width, height) => ({ x, y, width, height });
 const ART = {
-  'sp-splash': { width: 708, height: 1000, safeArea: face(0.1, 0.12, 0.8, 0.63),
+  'sp-splash': { width: 708, height: 1000, safeArea: face(0.26, 0.14, 0.6, 0.48),
     anchors: [{ id: 'sfx', x: 0.82, y: 0.4 }], avoid: [face(0.28, 0.15, 0.17, 0.35)] },
-  'sp-maya-face': { width: 1000, height: 1000, safeArea: face(0.25, 0.2, 0.5, 0.45),
+  'sp-maya-face': { width: 1000, height: 1000, safeArea: face(0.33, 0.26, 0.35, 0.34),
     anchors: [{ id: 'maya', x: 0.52, y: 0.48, face: face(0.37, 0.27, 0.29, 0.31) }] },
-  'sp-wave': { width: 1400, height: 600, safeArea: face(0.35, 0, 0.6, 0.9),
+  'sp-wave': { width: 1400, height: 600, safeArea: face(0.4, 0.12, 0.53, 0.6),
     anchors: [{ id: 'sfx', x: 0.6, y: 0.35 }], avoid: [face(0.82, 0.02, 0.06, 0.3)] },
-  'sp-tomas': { width: 1000, height: 1000, safeArea: face(0.3, 0.1, 0.5, 0.8),
+  'sp-tomas': { width: 1000, height: 1000, safeArea: face(0.22, 0.13, 0.6, 0.49),
     anchors: [{ id: 'tomas', x: 0.63, y: 0.345, head: { x: 0.67, y: 0.24 },
       face: face(0.56, 0.17, 0.24, 0.25) }], avoid: [face(0.32, 0.13, 0.15, 0.33)] },
   'sp-tomas-pop': { width: 1000, height: 1000 },
