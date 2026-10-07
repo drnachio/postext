@@ -65,6 +65,9 @@ export interface ComicScriptItem {
   size?: number;
   color?: string;
   font?: string;
+  /** `vertical` / `horizontal` (or `mode=…`): the line's own writing mode,
+   *  over the book's (`lettering.writingMode`). */
+  writingMode?: 'vertical' | 'horizontal';
   /** The attributes as written. */
   attrs: DirectiveAttrs;
   /** Where each attribute's value sits (absolute), for a write-back. */

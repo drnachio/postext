@@ -7,6 +7,7 @@
 
 import { pointInConvex, pathData, rectOf, boundsOf, add, insetConvex, type PathCmd } from './geom';
 import { hasCJK } from '../../measure/cjk';
+import { isCjkLanguage } from '../../locale';
 import { buildBody, buildNeck, buildTail, dashOf, translateBody, type Body } from './shapes';
 import { shapeTextCandidates, styleIsVertical, translateBlock, type ShapedText, type ShapeOptions } from './shape-text';
 import { isIsolateControl, prepareText, readLetteringText, type PreparedText } from './text';
@@ -84,7 +85,15 @@ export function letterPanelDetailed(panel: LetteringPanel, items: readonly Lette
 /** Prepare and shape one item; undefined when it sets no text. */
 function pieceOf(panel: LetteringPanel, item: LetteringItem, env: LetteringEnv): Piece | undefined {
   const scale = item.sizeScale && item.sizeScale > 0 ? item.sizeScale : 1;
-  const base = item.style;
+  const own = item.style;
+  const panelVertical = panel.writingMode === 'vertical';
+  // A line's own writing mode wins over its style's; a column forced in a
+  // horizontal book takes the leading columns need.
+  const base: LetteringStyle = !item.writingMode ? own : {
+    ...own,
+    writingMode: item.writingMode,
+    ...(item.writingMode === 'vertical' && !panelVertical && item.kind !== 'sfx' && own.lineHeight < 1.4 ? { lineHeight: 1.5 } : {}),
+  };
   const style: LetteringStyle = scale === 1 ? base : {
     ...base,
     fontSizePx: base.fontSizePx * scale,
@@ -95,11 +104,14 @@ function pieceOf(panel: LetteringPanel, item: LetteringItem, env: LetteringEnv):
   // Columns are for Japanese and Chinese: a text with none of their
   // characters (an English subtitle of a sound effect, a Latin word) is
   // set horizontally in a vertical book, as manga sets foreign speech.
-  const vertical = styleIsVertical(style, panel.writingMode === 'vertical') && (style.writingMode === 'vertical' || hasCJK(read.text));
-  const prepared = prepareText(read, style, { locale: panel.locale, vertical });
+  const vertical = styleIsVertical(style, panelVertical) && (style.writingMode === 'vertical' || hasCJK(read.text));
+  // A column in a book whose language is set in lines (a Japanese sound
+  // effect kept in an English edition) follows its own text's rules.
+  const locale = vertical && !isCjkLanguage(panel.locale) && hasCJK(read.text) ? (/[\u3040-\u30ff]/.test(read.text) ? 'ja' : 'zh') : panel.locale;
+  const prepared = prepareText(read, style, { locale, vertical });
   if (prepared.text.replace(/\s/g, '').length === 0) return undefined;
   const opts: ShapeOptions = {
-    locale: panel.locale,
+    locale,
     vertical,
     dpi: panel.dpi,
     ...(env.cjkLineBreak ? { cjkLineBreak: env.cjkLineBreak } : {}),

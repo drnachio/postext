@@ -166,6 +166,12 @@ export interface LetteringItem {
   rotate?: number;
   /** Scale of the lettering size (sound effects, `size=`). */
   sizeScale?: number;
+  /** The line's own writing mode (`vertical` / `horizontal`), over the
+   *  style's and the panel's: an untranslated ドン kept in a column in a
+   *  horizontal edition. A column of Japanese or Chinese in a book of
+   *  another language is set by the rules of the language its text is in
+   *  (kana: Japanese). */
+  writingMode?: 'vertical' | 'horizontal';
 }
 
 /** A point of the art a balloon can aim at or must keep clear of. */

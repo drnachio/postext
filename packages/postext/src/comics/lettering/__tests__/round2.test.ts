@@ -9,6 +9,8 @@ import { letterPanel, letterPanelDetailed } from '../letter';
 import { presetLetteringStyles } from '../presets';
 import { dist } from '../geom';
 import type { LetteringItem, LetteringPanel, Point, Rect } from '../types';
+import { buildDocument } from '../../../pipeline';
+import { parseComicScript } from '../../script';
 
 beforeAll(() => installStubMeasure());
 
@@ -126,5 +128,39 @@ describe('off-panel voices', () => {
     expect(s.tailTip!.y).toBeCloseTo(520, 0);
     const reach = s.tailTip!.y - (s.bbox.y + s.bbox.height);
     expect(reach).toBeLessThan(Math.max(3 * EM, 0.6 * s.bbox.height));
+  });
+});
+
+describe('a line\'s own writing mode', () => {
+  const page = (sfx: string) => `:::page{split="*"}
+::panel
+${sfx}
+hana: …
+:::
+`;
+  const balloonsOf = (md: string, locale: string) =>
+    buildDocument({ markdown: md }, { page: { sizePreset: '17x24' }, locale }).pages.find((p) => p.comic)!.comic!.balloons;
+
+  it('reads `vertical`, `horizontal` and `mode=` on a script line', () => {
+    const md = 'a{vertical}: x\nb{horizontal}: y\nc{mode=vertical}: z\nd{mode=horizontal sfx}: w\ne: v\n';
+    const lines = md.split('\n').reduce<{ text: string; start: number }[]>((acc, text) => {
+      const start = acc.length ? acc[acc.length - 1]!.start + acc[acc.length - 1]!.text.length + 1 : 0;
+      return [...acc, { text, start }];
+    }, []);
+    expect(parseComicScript(md, lines).map((i) => i.writingMode)).toEqual(['vertical', 'horizontal', 'vertical', 'horizontal', undefined]);
+  });
+
+  it('keeps an untranslated ドン in a column in an English edition, set by Japanese rules', () => {
+    const [sfx] = balloonsOf(page('sfx{vertical size=2}: ドン！'), 'en');
+    expect(sfx!.text[0]!.vertical?.region).toBe('japan');
+    const [plain] = balloonsOf(page('sfx{size=2}: ドン！'), 'en');
+    expect(plain!.text[0]!.vertical).toBeUndefined();
+  });
+
+  it('sets a line in a row in a vertical Japanese edition when it says `horizontal`', () => {
+    const [sfx] = balloonsOf(page('sfx{horizontal}: ドン'), 'ja');
+    expect(sfx!.text[0]!.vertical).toBeUndefined();
+    const [col] = balloonsOf(page('sfx: ドン'), 'ja');
+    expect(col!.text[0]!.vertical).toBeDefined();
   });
 });

@@ -234,11 +234,12 @@ ana{thought}: First line,\
 | `to` | `"x% y%"` | where the tail points (picture fractions) |
 | `tail` | `none` \| `auto` \| `top` \| `bottom` \| `start` \| `end` | no tail, or a speaker off the panel on that side |
 | `join` / `join=false` | flag | force or forbid joining with the speaker's previous balloon |
-| `break` | flag | the balloon may cross the panel border |
+| `break` | flag | the balloon may cross the panel border (no `comicBalloonOverflow` for the crossing; never off the trim) |
 | `rotate` | degrees, clockwise | sound effects |
 | `size` | factor (`1.6`) | scales the text of this line (sound effects) |
 | `color` | `#hex` or palette id | text colour of this line |
 | `font` | family | face of this line (bundle it) |
+| `vertical` / `horizontal` (or `mode=`) | flag | this line's writing mode, over the book's: an untranslated `ドン` kept in a column in a horizontal edition, a Latin word kept in a row in a vertical one |
 
 Without `at` the lettering places each balloon: high in the panel, near
 its speaker's mouth, in reading order (a later balloon does not sit above

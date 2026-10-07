@@ -32,7 +32,7 @@ export interface ComicScriptLine {
 }
 
 /** Attribute keys a script line reads; any other bare flag names a style. */
-const SCRIPT_KEYS = new Set(['at', 'to', 'tail', 'join', 'break', 'rotate', 'size', 'color', 'font', 'style', 'id']);
+const SCRIPT_KEYS = new Set(['at', 'to', 'tail', 'join', 'break', 'rotate', 'size', 'color', 'font', 'style', 'id', 'vertical', 'horizontal', 'mode']);
 
 const POSITION_KEYWORDS: ReadonlySet<string> = new Set(['top-start', 'top-end', 'bottom-start', 'bottom-end', 'top', 'bottom']);
 const TAIL_VALUES: ReadonlySet<string> = new Set(['none', 'auto', 'top', 'bottom', 'start', 'end']);
@@ -210,7 +210,21 @@ function scriptHead(line: ComicScriptLine): Omit<ComicScriptItem, 'text' | 'span
   if (size !== undefined && size > 0) item.size = size;
   if (attrs.color?.trim()) item.color = attrs.color.trim();
   if (attrs.font?.trim()) item.font = attrs.font.trim();
+  const mode = writingModeOf(attrs);
+  if (mode) item.writingMode = mode;
   return item;
+}
+
+/** A line's own writing mode: `mode=vertical|horizontal`, or the bare
+ *  flag `vertical` / `horizontal` (an untranslated ドン kept in columns in a
+ *  horizontal edition, a Latin subtitle kept in a line in a vertical
+ *  one). */
+function writingModeOf(attrs: DirectiveAttrs): 'vertical' | 'horizontal' | undefined {
+  const mode = attrs.mode?.trim().toLowerCase();
+  if (mode === 'vertical' || mode === 'horizontal') return mode;
+  if (flagValue(attrs, 'vertical')) return 'vertical';
+  if (flagValue(attrs, 'horizontal')) return 'horizontal';
+  return undefined;
 }
 
 /**

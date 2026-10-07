@@ -538,6 +538,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
         ...(it.break ? { breakBorder: true } : {}),
         ...(it.rotate !== undefined ? { rotate: it.rotate } : {}),
         ...(it.size !== undefined && it.size > 0 ? { sizeScale: it.size } : {}),
+        ...(it.writingMode ? { writingMode: it.writingMode } : {}),
       };
     });
     const r = letterPanelDetailed(lp, items, { joinSameSpeaker: L.joinSameSpeaker, groupBase: pi * 1000 });

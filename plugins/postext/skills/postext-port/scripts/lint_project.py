@@ -808,7 +808,8 @@ COMIC_STRIP_ATTRS = {"split", "gutter", "style", "bleed", "direction", "dir", "s
 COMIC_PANEL_ATTRS = {"art", "fit", "focus", "style", "border", "bg", "bleed", "mirror", "pop", "inset", "pad", "alt", "id"}
 # Keys a script line reads (comics/script.ts SCRIPT_KEYS); any other bare
 # flag names a balloon style.
-COMIC_SCRIPT_KEYS = {"at", "to", "tail", "join", "break", "rotate", "size", "color", "font", "style", "id"}
+COMIC_SCRIPT_KEYS = {"at", "to", "tail", "join", "break", "rotate", "size", "color", "font", "style", "id",
+                     "vertical", "horizontal", "mode"}
 COMIC_RESERVED_KEYS = {"caption", "sfx", "note"}
 COMIC_BALLOON_STYLES = {"speech", "thought", "whisper", "shout", "radio", "caption", "inner", "note", "sfx"}
 COMIC_POSITIONS = {"top-start", "top-end", "bottom-start", "bottom-end", "top", "bottom"}
