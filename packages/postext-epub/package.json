@@ -1,6 +1,6 @@
 {
   "name": "postext-epub",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Browser-native EPUB 3 writer for Postext documents: fixed-layout (pre-paginated) books that reproduce every printed page with real text, and reflowable books in semantic XHTML styled from the same configuration.",
   "type": "module",
   "license": "MIT",
