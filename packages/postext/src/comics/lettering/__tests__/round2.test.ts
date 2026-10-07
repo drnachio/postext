@@ -131,6 +131,23 @@ describe('off-panel voices', () => {
     const reach = s.tailTip!.y - (s.bbox.y + s.bbox.height);
     expect(reach).toBeLessThan(Math.max(3 * EM, 0.6 * s.bbox.height));
   });
+
+  it('keeps the faces clear when another speaker\'s balloon is pinned (R1, Nº 145 morning panel)', () => {
+    const CELL = rect(0, 0, 640, 520);
+    const faces = [rect(326, 68, 64, 88), rect(262, 99, 58, 73)];
+    const anchors = [
+      { id: 'tomas', mouth: { x: 360, y: 130 }, face: faces[0]!, visible: true },
+      { id: 'maya', mouth: { x: 298, y: 151 }, face: faces[1]!, visible: true },
+    ];
+    const { balloons, diagnostics } = letterPanelDetailed(panel(CELL, { anchors }), [
+      item('s', 0, 'skipper', 'Thank you, keeper! I owe you a crate of mackerel!', en.speech!, { tailTarget: 'bottom' }),
+      item('t1', 1, 'tomas', 'Make it two.'),
+      item('t2', 2, 'tomas', 'One\'s for the cat.'),
+      item('m', 3, 'maya', 'Biscuit says three.', en.speech!, { pin: { x: 500, y: 200 } }),
+    ]);
+    expect(diagnostics).toEqual([]);
+    for (const b of balloons) for (const f of faces) expect(overlap(b.bbox, f)).toBe(false);
+  });
 });
 
 describe('a line\'s own writing mode', () => {

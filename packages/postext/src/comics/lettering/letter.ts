@@ -139,7 +139,9 @@ function pieceOf(panel: LetteringPanel, item: LetteringItem, env: LetteringEnv):
   const room = vertical ? vis.height : vis.width;
   const along = (b: Body) => (vertical ? b.bbox.height : b.bbox.width);
   if (shapes.length > 0 && along(shapes[0]!.body) > 0.45 * room) {
-    for (const f of [0.6, 0.45, 0.33]) {
+    // The whole room first (a narrow cell: as wide as it is, a few words a
+    // line, rather than a word a line), then less.
+    for (const f of [0.82, 0.7, 0.6, 0.45, 0.33]) {
       const maxLength = f * room - 2 * style.padding;
       if (maxLength > style.fontSizePx) add1(shapeTextCandidates(prepared, style, { ...opts, maxLength }, 1)[0]!, true);
     }

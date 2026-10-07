@@ -313,8 +313,15 @@ function evaluate(
     }
   }
   const mayIntrude = intended && (unit.kind === 'sfx' || unit.breakBorder === true);
-  if (offPage > 0 || (intrude > 0 && !mayIntrude)) {
-    H('neighbour', (12 * W.outside * (offPage + (mayIntrude ? 0 : intrude))) / rim.length + 200);
+  // Off the sheet is the worst; into another panel (its art, its
+  // lettering) a fault weighed against the others — a balloon poking into
+  // the next panel reads better than one over its speaker's face.
+  if (offPage > 0) {
+    H('offPage', (12 * W.outside * offPage) / rim.length + 200);
+    reasons.add('outside');
+  }
+  if (intrude > 0 && !mayIntrude) {
+    H('neighbour', (4 * W.outside * intrude) / rim.length + 40);
     reasons.add('outside');
   } else if (intrude > 0) S('neighbour', 4 + (8 * intrude) / rim.length);
   if (intended) {
@@ -436,7 +443,8 @@ function evaluate(
     // An off-panel speaker's balloon sits by the border its voice comes
     // from, with a short tail to it (the letterer's practice): a tail
     // across the panel reads as an arrow, so the balloon moves instead.
-    S('side', (W.side * Math.max(0, dist(edgePoint(v, at, target), target) - 1.2 * em)) / em);
+    const reach = dist(edgePoint(v, at, target), target);
+    S('side', (W.side * Math.max(0, reach - 1.2 * em) + 3 * W.side * Math.max(0, reach - 3 * em)) / em);
   }
   if (unit.kind === 'sfx' && unit.near) S('sfxNear', (0.5 * dist(centre, unit.near)) / em);
   // High in the panel; the first one in the top start corner.
@@ -526,6 +534,13 @@ function candidates(scene: Scene, unit: PlaceUnit, vi: number): Point[] {
         const p = at(target.x + side * (w / 2 + 1.5 * em), target.y - k * h);
         push(p);
         push(clamp(p));
+      }
+    }
+    // Under the speaker (a last resort the cost weighs: in a cell with no
+    // room above the head, below it beats over the face).
+    if (unit.kind !== 'sfx') {
+      for (const k of [1.2, 2.4]) {
+        for (const fx of [0, -0.45, 0.45]) push(at(target.x + fx * w, target.y + h / 2 + k * em));
       }
     }
     if (unit.kind === 'sfx') push(at(target.x, target.y));
