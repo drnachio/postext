@@ -40,6 +40,7 @@ import {
 } from './pageDecorations';
 import { renderBlock, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
+import { renderComicPage } from './comic';
 import { addOutlines, numberedHeadingText } from './outlines';
 import { addPageLabels } from './pageLabels';
 import {
@@ -553,6 +554,10 @@ function paintPage(
     delete ctx.vertical;
     delete ctx.mirror;
   }
+
+  // A comic page's panels and lettering, on the sheet (never through the
+  // flow frame), under the running heads.
+  if (vdtPage.comic) renderComicPage(ctx, vdtPage.comic, fontCache, resourceCtx.images, structure);
 
   // Running headers and footers are pagination artifacts.
   const pagination = (subtype: 'Header' | 'Footer') =>

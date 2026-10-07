@@ -46,7 +46,7 @@ export type {
   ComicCell, ComicSplitLine, ComicGeometry, ComicGeometryInput, ComicFrameSide, ComicCropInput, ComicCrop, ComicPageContext,
   ComicPageSource, ComicPanelSource, ComicScriptItem, ComicScriptRole, ComicSourceRange, ComicTailSide,
 } from './comics';
-export { renderComicPanels, renderComicPanel, comicPanelPath } from './canvas-backend/comic';
+export { renderComicPanels, renderComicPanel, comicPanelPath, comicRoughBorder } from './canvas-backend/comic';
 export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './defaults/comics';
 export { layoutVideo, playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 export { encodeQr } from './video/qr';

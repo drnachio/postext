@@ -35,6 +35,8 @@ import type {
   ResolvedResourceBlock,
   VDTResourceTableCell,
   VDTResourceVideo,
+  VDTComicArt,
+  VDTPage,
 } from 'postext';
 import { applySingleInkToSvg, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
 import { roundedRectSvgPath } from './headerFooter';
@@ -340,6 +342,20 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
       if (!slot) continue;
       for (const b of slot.blocks) if (b.kind === 'image') note(b.fileId, b.bbox.width, b.bbox.height);
     }
+    // Comic panels: the whole picture is drawn at its box, which a crop
+    // makes larger than the panel.
+    for (const art of comicArts(page)) note(art.fileId, art.box.width, art.box.height);
+  }
+  return out;
+}
+
+/** The pictures of a comic page (`page.comic`): each panel's art and
+ *  pop-out cut-out. */
+function comicArts(page: VDTPage): VDTComicArt[] {
+  const out: VDTComicArt[] = [];
+  for (const panel of page.comic?.panels ?? []) {
+    if (panel.art) out.push(panel.art);
+    if (panel.pop) out.push(panel.pop);
   }
   return out;
 }
@@ -397,6 +413,7 @@ export async function preloadResourceImages(
       for (const slot of [page.header, page.footer, page.openerBand]) {
         for (const b of slot?.blocks ?? []) if (b.kind === 'image') noteMaster(b.fileId, b.pdfFileId);
       }
+      for (const art of comicArts(page)) noteMaster(art.fileId, art.pdfFileId);
     }
   }
 
@@ -511,6 +528,8 @@ export async function preloadResourceImages(
       if (!slot) continue;
       for (const b of slot.blocks) if (b.kind === 'image') await embed(b.fileId, undefined);
     }
+    // The pictures of a comic page's panels.
+    for (const art of comicArts(page)) await embed(art.fileId, art.format);
   }
   return out;
 }

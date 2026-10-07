@@ -78,6 +78,14 @@ export function roughOutline(points: readonly VDTPoint[], seed: number, amplitud
   return out;
 }
 
+/** The hand-drawn outline a `rough` border strokes: the panel's polygon
+ *  wobbled by a seed from its id, index and source offset, so every
+ *  renderer draws the same line. */
+export function comicRoughBorder(panel: Pick<VDTComicPanel, 'id' | 'index' | 'sourceStart' | 'polygon' | 'border'>): VDTPoint[] {
+  const w = panel.border.width;
+  return roughOutline(panel.polygon, hashString(`${panel.id ?? ''}#${panel.index}#${panel.sourceStart}`), w * 0.6, Math.max(4, w * 6));
+}
+
 function drawArt(ctx: CanvasRenderingContext2D, art: VDTComicArt, inkHex: string | null): boolean {
   const { box } = art;
   if (!art.mirrored) return drawResourceImage(ctx, art.fileId, box.x, box.y, box.width, box.height, { inkHex, svg: art.kind === 'svg' }, art.resourceId);
@@ -111,7 +119,7 @@ export function renderComicPanel(ctx: CanvasRenderingContext2D, panel: VDTComicP
     ctx.lineWidth = border.width;
     ctx.lineJoin = 'round';
     if (border.style === 'rough') {
-      const pts = roughOutline(panel.polygon, hashString(`${panel.id ?? ''}#${panel.index}#${panel.sourceStart}`), border.width * 0.6, Math.max(4, border.width * 6));
+      const pts = comicRoughBorder(panel);
       ctx.beginPath();
       ctx.moveTo(pts[0]!.x, pts[0]!.y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i]!.x, pts[i]!.y);

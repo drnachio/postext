@@ -54,6 +54,8 @@ export function collectFontText(doc: VDTDocument, into: FontText = new Map()): F
     // Floated resources live on their page's float band, not in a column.
     for (const block of page.floats ?? []) addBlockFonts(block, out);
     for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
+    // A comic page's lettering: design text in its balloons.
+    for (const balloon of page.comic?.balloons ?? []) addSlotFonts({ blocks: balloon.text }, out);
   }
   return out;
 }
@@ -150,7 +152,7 @@ function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, ou
   }
 }
 
-function addSlotFonts(slot: VDTDesignSlot | undefined, out: FontText): void {
+function addSlotFonts(slot: Pick<VDTDesignSlot, 'blocks'> | undefined, out: FontText): void {
   for (const b of slot?.blocks ?? []) {
     if (b.kind !== 'text' || !b.lines.some((l) => l.text.length > 0)) continue;
     add(out, b.fontString);

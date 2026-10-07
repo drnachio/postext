@@ -195,6 +195,7 @@ describe("package exports", () => {
       "renderComicPanels",
       "renderComicPanel",
       "comicPanelPath",
+      "comicRoughBorder",
       "DEFAULT_PANEL_STYLE",
       "DEFAULT_COMIC_GUTTER",
       "DEFAULT_LETTERING_STATIC",

@@ -343,6 +343,7 @@ function artOf(
     kind: art.kind,
     fileId: art.fileId,
     ...(art.format ? { format: art.format } : {}),
+    ...(art.resource.kind === 'svg' && art.resource.svg?.pdfFileId ? { pdfFileId: art.resource.svg.pdfFileId } : {}),
     box: crop.box,
     source: crop.source,
     mirrored,
