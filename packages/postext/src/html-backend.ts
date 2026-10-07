@@ -2014,7 +2014,10 @@ function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): 
       ? line.runs.map((run, i) => {
           const runFont = quoteFontString(run.fontString);
           const cjkDecl = hasCJK(run.text) ? CJK_TEXT_DECL : '';
-          const fontDecl = runFont !== font ? `font:${runFont};` : '';
+          // The `font` shorthand resets `line-height` to `normal`: a run in
+          // another face would grow the line box and push the line's
+          // baseline down. It keeps the line's own.
+          const fontDecl = runFont !== font ? `font:${runFont};line-height:1;` : '';
           const stackDecl = run.stacked
             ? 'display:inline-block;width:0;'
             : line.runs![i - 1]?.stacked ? `display:inline-block;min-width:${run.width.toFixed(3)}px;` : '';
