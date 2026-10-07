@@ -1552,6 +1552,7 @@ tomas{whisper}: Chis. Escucha.
 caption{at=bottom-end}: A tres calles de allí.
 sfx{at="62% 40%" rotate=-8 size=1.4}: CRAC
 ben{tail=start}: (desde fuera de la viñeta) ¡Aquí!
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
 maya: Esta línea sigue
   en la línea siguiente,\
   y se corta aquí.
@@ -1559,9 +1560,10 @@ maya: Esta línea sigue
 
 - La **clave** es un id de personaje (letras, cifras, `_`, `.`, `-`), el mismo en todas las traducciones; `caption`, `sfx` y `note` están reservadas. Los dos puntos pueden ser los de ancho completo, `：`.
 - Una palabra suelta entre llaves es un **estilo de bocadillo** (`thought`, `whisper`, `shout`, `radio`, `inner` o uno de `comics.balloonStyles`); `style=` dice lo mismo.
-- `at` fija el bocadillo: un punto en porcentajes del dibujo de la viñeta (`at="62% 40%"`), o una esquina o un borde (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` apunta el rabillo a un punto del dibujo; `tail=none` lo quita y `tail=top|bottom|start|end` lo apunta fuera de la viñeta. `join` y `join=false` unen el bocadillo al anterior del mismo personaje o lo mantienen aparte; `break` le deja cruzar el borde. `rotate` (grados), `size` (una escala, para las onomatopeyas), `color` y `font` cambian su rotulación.
+- `at` fija el bocadillo: un punto en porcentajes del dibujo de la viñeta (`at="62% 40%"`), o una esquina o un borde (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` apunta el rabillo a un punto del dibujo; `tail=none` lo quita y `tail=top|bottom|start|end` lo apunta fuera de la viñeta. `join` y `join=false` unen el bocadillo al anterior del mismo personaje o lo mantienen aparte; `break` le deja cruzar el borde, y el cruce no se avisa como desbordamiento. `rotate` (grados), `size` (una escala, para las onomatopeyas), `color` y `font` cambian su rotulación.
+- `vertical` y `horizontal` (o `mode=vertical`, `mode=horizontal`) fijan la dirección de escritura de la línea por encima de la del libro: un `ドン` sin traducir, compuesto en columna en una edición horizontal; un cartel escrito de través, en renglón en una vertical. Una columna en un libro de otro idioma sigue las reglas de su propio texto (con kana, las del japonés). En un libro vertical, una línea sin caracteres chinos ni japoneses se compone en renglón de todos modos.
 - Una línea sangrada con dos espacios o un tabulador continúa el bocadillo anterior; una barra inversa al final de una línea corta ahí el texto. Las líneas en blanco se ignoran.
-- El texto es Markdown en línea: énfasis (rotulado en negrita cursiva), `:tcy`, `:ruby`, `:ltr` y `:rtl` (los tres últimos se imprimen como texto llano en los bocadillos). Las notas al pie y las marcas `:ref` no se leen.
+- El texto es Markdown en línea: énfasis (rotulado en negrita cursiva), `:tcy`, `:ruby` (su lectura sobre la base, salvo sobre una base de derecha a izquierda), `:ltr` y `:rtl` (un tramo que conserva su propio sentido). Las notas al pie y las marcas `:ref` no se leen.
 
 ### `:::strip`
 

@@ -1263,6 +1263,8 @@ def _check_script_line(head: re.Match, text: str, where: str, ctx: dict, rep: Re
             rep.warn(where, f'to={attrs["to"]!r} is not a point ("x% y%"): ignored')
         if "tail" in attrs and attrs["tail"].strip() not in COMIC_TAILS:
             rep.warn(where, f"tail={attrs['tail']!r} is ignored ({sorted(COMIC_TAILS)})")
+        if "mode" in attrs and attrs["mode"].strip().lower() not in ("vertical", "horizontal"):
+            rep.warn(where, f"mode={attrs['mode']!r} is ignored (vertical, horizontal)")
         for k in ("rotate", "size"):
             if k in attrs:
                 try:

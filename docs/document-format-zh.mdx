@@ -1554,6 +1554,7 @@ tomas{whisper}: 嘘，你听。
 caption{at=bottom-end}: 三条街以外。
 sfx{at="62% 40%" rotate=-8 size=1.4}: 咔啦
 ben{tail=start}: （从格外）在这儿！
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
 maya: 这句话
   接着写在下一行，\
   在这里换行。
@@ -1561,9 +1562,10 @@ maya: 这句话
 
 - **键**是说话人的id（字母、数字、`_`、`.`、`-`），在每个译本中都相同；`caption`、`sfx`和`note`是保留键。冒号也可以是全角的`：`。
 - 花括号里单独的一个词是**对白框样式**（`thought`、`whisper`、`shout`、`radio`、`inner`，或者`comics.balloonStyles`中的样式）；`style=`的作用相同。
-- `at`固定对白框的位置：以分格画面的百分比表示的一个点（`at="62% 40%"`），或者一个角或一条边（`top-start`、`top-end`、`bottom-start`、`bottom-end`、`top`、`bottom`）。`to`让尾巴指向画面上的一个点；`tail=none`去掉尾巴，`tail=top|bottom|start|end`让尾巴指向格外。`join`和`join=false`把对白框与同一说话人的前一个连起来或分开；`break`允许它越过边框。`rotate`（度）、`size`（缩放比例，用于拟声词）、`color`和`font`改变它的嵌字。
+- `at`固定对白框的位置：以分格画面的百分比表示的一个点（`at="62% 40%"`），或者一个角或一条边（`top-start`、`top-end`、`bottom-start`、`bottom-end`、`top`、`bottom`）。`to`让尾巴指向画面上的一个点；`tail=none`去掉尾巴，`tail=top|bottom|start|end`让尾巴指向格外。`join`和`join=false`把对白框与同一说话人的前一个连起来或分开；`break`允许它越过边框，这种越界不作为溢出报告。`rotate`（度）、`size`（缩放比例，用于拟声词）、`color`和`font`改变它的嵌字。
+- `vertical`和`horizontal`（或`mode=vertical`、`mode=horizontal`）设定这一行的书写方向，优先于全书的设置：不翻译的`ドン`在横排版本中排成一列，横写的招牌在竖排版本中排成一行。在另一种语言的书中排成的列，遵循它自身文字的规则（含假名时按日文规则）。在竖排的书中，不含中文或日文字符的行本来就横排。
 - 缩进两个空格或一个制表符的行接续上面的对白框；行末的反斜杠让文字在那里换行。空行被忽略。
-- 文字是行内Markdown：强调（嵌成粗斜体）、`:tcy`、`:ruby`、`:ltr`和`:rtl`（后三者在对白框中按普通文字印出）。脚注和`:ref`标记不被读取。
+- 文字是行内Markdown：强调（嵌成粗斜体）、`:tcy`、`:ruby`（注音排在基字上，基字从右到左时除外）、`:ltr`和`:rtl`（一段文字保持自己的方向）。脚注和`:ref`标记不被读取。
 
 ### `:::strip`
 

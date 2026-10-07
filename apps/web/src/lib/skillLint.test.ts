@@ -454,7 +454,8 @@ describe.skipIf(!python)("postext-port lint on comics", () => {
       "stray words before any panel",
       "::panel{art=nope zoom=2}",
       "ana{yell}: Hey!",
-      'ben{at="left"}: Here.',
+      'ben{at="left" mode=sideways}: Here.',
+      "sfx{vertical size=2}: ドン",
       "::panel{art=p1 inset=\"10 10\" bg=pink}",
       "no key here",
       ":::",
@@ -469,6 +470,8 @@ describe.skipIf(!python)("postext-port lint on comics", () => {
     expect(out).toContain("::panel attribute 'zoom' is ignored");
     expect(out).toContain("{yell} names no balloon style (comicUnknownBalloonStyle)");
     expect(out).toContain("at='left' is neither");
+    expect(out).toContain("mode='sideways' is ignored (vertical, horizontal)");
+    expect(out).not.toContain("{vertical} names no balloon style");
     expect(out).toContain("inset='10 10' is not");
     expect(out).toContain("bg='pink' is neither #hex");
     expect(out).toContain("not a script line (key: text)");

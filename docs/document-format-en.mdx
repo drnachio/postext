@@ -1552,6 +1552,7 @@ tomas{whisper}: Shh. Listen.
 caption{at=bottom-end}: Three streets away.
 sfx{at="62% 40%" rotate=-8 size=1.4}: KRAK
 ben{tail=start}: (from off the panel) Over here!
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
 maya: This line goes on
   on the next line,\
   and breaks here.
@@ -1559,9 +1560,10 @@ maya: This line goes on
 
 - The **key** is a speaker id (letters, digits, `_`, `.`, `-`), the same in every translation; `caption`, `sfx` and `note` are reserved. The colon may be the full-width `：`.
 - A bare word in the braces is a **balloon style** (`thought`, `whisper`, `shout`, `radio`, `inner` or one of `comics.balloonStyles`); `style=` says the same.
-- `at` pins the balloon: a point in percentages of the panel's picture (`at="62% 40%"`), or a corner or edge (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` points the tail at a point of the picture; `tail=none` drops it and `tail=top|bottom|start|end` points it off the panel. `join` and `join=false` join the balloon to the previous one of the same speaker or keep it apart; `break` lets it cross the border. `rotate` (degrees), `size` (a scale, for sound effects), `color` and `font` change its lettering.
+- `at` pins the balloon: a point in percentages of the panel's picture (`at="62% 40%"`), or a corner or edge (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` points the tail at a point of the picture; `tail=none` drops it and `tail=top|bottom|start|end` points it off the panel. `join` and `join=false` join the balloon to the previous one of the same speaker or keep it apart; `break` lets it cross the border, and the crossing is not reported as an overflow. `rotate` (degrees), `size` (a scale, for sound effects), `color` and `font` change its lettering.
+- `vertical` and `horizontal` (or `mode=vertical`, `mode=horizontal`) set the line's writing mode over the book's: an untranslated `ドン` set in a column in a horizontal edition, a sign written across set in a row in a vertical one. A column in a book of another language follows the rules of its own text (with kana, those of Japanese). In a vertical book a line with no Chinese or Japanese characters is set in a row anyway.
 - A line indented by two spaces or a tab continues the balloon above; a backslash at the end of a line breaks the text there. Blank lines are ignored.
-- The text is inline Markdown: emphasis (lettered bold italic), `:tcy`, `:ruby`, `:ltr` and `:rtl` (the last three print as plain text in balloons). Footnotes and `:ref` marks are not read.
+- The text is inline Markdown: emphasis (lettered bold italic), `:tcy`, `:ruby` (its reading set over the base, except over a right-to-left base), `:ltr` and `:rtl` (a run kept in its own direction). Footnotes and `:ref` marks are not read.
 
 ### `:::strip`
 

@@ -218,9 +218,11 @@ ana{thought}: First line,\
 - A line that is neither a script line nor a continuation is lettered as a
   caption and raises `comicStrayText`.
 - The text is inline Markdown: `*italic*`, `**bold**` (emphasis prints
-  bold italic, bold only in Arabic and CJK), `:tcy[12]`. `:ruby[…]`,
-  `:ltr[…]`/`:rtl[…]` print as plain text inside balloons; footnotes,
-  `:ref` and maths are not read there.
+  bold italic, bold only in Arabic and CJK), `:tcy[12]`, `:ruby[…]`
+  (the reading at half size over its base, beside it in a column; left out
+  over a right-to-left base), `:ltr[…]`/`:rtl[…]` (a run kept in its own
+  direction, e.g. a Latin name in an Arabic balloon); footnotes, `:ref`
+  and maths are not read there.
 - Consecutive lines of one speaker in one panel with the same style are
   joined into one outline (`comics.lettering.joinSameSpeaker`, `butt` by
   default; the tail only on the first). Two separate balloons of the same
@@ -234,22 +236,36 @@ ana{thought}: First line,\
 | `to` | `"x% y%"` | where the tail points (picture fractions) |
 | `tail` | `none` \| `auto` \| `top` \| `bottom` \| `start` \| `end` | no tail, or a speaker off the panel on that side |
 | `join` / `join=false` | flag | force or forbid joining with the speaker's previous balloon |
-| `break` | flag | the balloon may cross the panel border (no `comicBalloonOverflow` for the crossing; never off the trim) |
+| `break` | flag | the balloon may cross the panel border into the gutter or the next panel (no `comicBalloonOverflow` for the crossing itself; what it covers there, a face or another panel's balloon, is still reported; its centre stays in its panel; never off the trim) |
 | `rotate` | degrees, clockwise | sound effects |
 | `size` | factor (`1.6`) | scales the text of this line (sound effects) |
 | `color` | `#hex` or palette id | text colour of this line |
 | `font` | family | face of this line (bundle it) |
-| `vertical` / `horizontal` (or `mode=`) | flag | this line's writing mode, over the book's: an untranslated `ドン` kept in a column in a horizontal edition, a Latin word kept in a row in a vertical one |
+| `vertical` / `horizontal` (or `mode=vertical` / `mode=horizontal`) | flag | this line's writing mode, over the book's: an untranslated `ドン` kept in a column in a horizontal edition (`sfx{vertical size=2.6 font="Dela Gothic One"}: ドン`), a CJK line set in a row in a vertical one. A column in a book of another language follows its own text's rules (kana → Japanese, else Chinese) and takes 1.5 leading. A line with no CJK characters is set in a row in a vertical book anyway (unless `vertical`) |
 
 Without `at` the lettering places each balloon: high in the panel, near
 its speaker's mouth, in reading order (a later balloon does not sit above
 an earlier one unless it is further along the reading direction), off the
 faces and avoid zones, tails not crossing. A speaker with no anchor in
-the panel gets a tail toward the nearest border (an off-panel voice).
-Use `at` only where the placement is wrong or the source's position
-matters (§16 P2). In the Sandbox, dragging a balloon writes the same pin
-into its script line (`at="x% y%"`, fractions of the panel's picture);
-double-clicking a pinned balloon removes the pin.
+the panel (or one the crop leaves out) is an off-panel voice: its balloon
+sits by the border the tail runs to, with a short tail, rather than
+across the panel. Lettering never runs off the trim; in a bleeding panel
+it keeps inside the frame (a pinned or `break` sound effect may run into
+the bleed). A long line in a narrow cell is set about as wide as the cell
+and pokes into the gutter (`comicBalloonOverflow` with `outside`) rather
+than standing as a thin column over a face. Use `at` only where the
+placement is wrong or the source's position matters (§16 P2).
+
+In the Sandbox (canvas, HTML, Folio select mode; pages and `:::strip`
+blocks alike) the pointer edits write back into the script: dragging a
+balloon writes `at="x% y%"` (fractions of the panel's picture),
+double-clicking a pinned balloon removes it; dragging a tail's tip writes
+`to="x% y%"`, double-clicking the tip removes it. While a balloon moves it
+turns orange where it would cover a face or an avoid zone or run out of
+its panel. From the keyboard: arrows nudge a focused balloon, T moves to
+its tail; a focused panel splits with H / V and merges with the next with
+M. Pins and `to=` written this way are ordinary attributes: keep them
+when a script is regenerated.
 
 ## 7. `:::strip`: panels in the text flow
 
@@ -296,8 +312,9 @@ cross the spine (its picture spans both pages).
   right-bound one (`page.binding`; right by default for Arabic and vertical
   books). Bind a manga edition on the right (`page.binding: 'right'`), or
   its panel 1 lands on the second page.
-- Balloons stay clear of an 8 mm band about the spine. Draw spread art with
-  no face or key object in its middle.
+- Nothing is lettered in an 8 mm band about the spine, pins included (a
+  pin there slides off to the nearer side). Draw spread art with no face
+  or key object in its middle.
 
 ## 9. Pictures: anchors, avoid zones, safe areas
 
@@ -489,7 +506,7 @@ used as `sfx{writing at="34% 87%" rotate=13}: Invitation`.
 | `comicUnknownBalloonStyle` | `{flag}` names no balloon style | fix the flag, or declare the style in `comics.balloonStyles` |
 | `comicUnknownArt` | `art=`/`pop=` names no bitmap or SVG resource | add the resource; check the id |
 | `comicPanelLetterbox` | the cell's shape cannot hold the safe area under a crop: the picture shows whole with bands | widen/heighten the cell in the split, shrink the safe area, or set `fit=contain` and a `bg` on purpose |
-| `comicBalloonOverflow` | a balloon does not fit cleanly (`face`, `balloon`, `outside`, `avoid`, `anchor`; with the fallbacks tried) | shorten or break the line, give the panel more room, mark the face/avoid zones tighter, allow `break`, or pin it with `at=` |
+| `comicBalloonOverflow` | a balloon does not fit cleanly (`face`, `balloon`, `outside`, `avoid`, `anchor`; with the fallbacks tried). A crossing asked for with `break` or an `at=` pin is not counted as `outside` | shorten or break the line, give the panel more room, mark the face/avoid zones tighter, allow `break`, or pin it with `at=` |
 | `comicUnknownSpeaker` (info) | a speaker no picture of the page marks and no cast entry names: its tail points off the panel | add the anchor to the picture, add a `cast` entry, or fix a renamed key |
 | `comicAnchorOutsideSafeArea` | an anchor lies outside its picture's safe area: a crop may cut the speaker | grow the safe area over the mouth |
 
@@ -656,6 +673,10 @@ working queue client (`FAL_KEY` from the environment).
   balloon-final `。`.
 - Sound effects drawn in the art stay in the art; translated editions add
   a small `sfx{size=0.5 at=…}` subtitle beside them.
+- A sound effect lettered in Japanese (an `sfx` line, not drawn) and kept
+  untranslated in a horizontal edition keeps its column with
+  `sfx{vertical}: ドン`. In a vertical edition, Latin text is set in a row
+  without help; `{horizontal}` sets a line with kana or hanzi in a row.
 - An English or Spanish edition of a manga keeps `artDirection: 'rtl'`
   (it still reads right to left) with horizontal lettering, unless the
   publisher flips the art (`mirrorArt: true`, `mirror=false` on panels
@@ -674,8 +695,8 @@ working queue client (`FAL_KEY` from the environment).
   second. List the lines in Arabic reading order (right balloon first in a
   tier) and pin where the order reads badly, or mirror the art
   (`mirrorArt: true`, `mirror=false` where the art holds text).
-- Latin words inside Arabic balloons print as plain text (no `:ltr`
-  isolate inside balloons yet): keep them short.
+- Latin words inside Arabic balloons: wrap a name or a phrase of several
+  words in `:ltr[…]` so it keeps its order; keep them short.
 
 ### P6. Newspaper strips
 
@@ -696,8 +717,11 @@ working queue client (`FAL_KEY` from the environment).
   `pop` cover insets and broken borders.
 - Balloons do not cross panels unless `break`; no balloon spans two
   panels.
-- Ruby, `:ltr`/`:rtl` isolates and emphasis dots print as plain text in
-  balloons; footnotes and `:ref` are not read there.
+- Ruby over a right-to-left base is dropped (the base prints alone), and
+  emphasis dots print as plain text in balloons; footnotes and `:ref` are
+  not read there.
+- Long lines in very small cells are reported (`outside`), not solved:
+  shorten the line or give the cell room.
 - Webtoons (one long vertical strip) have no scroll layout: set each
   screen as a `:::page` of a tall custom page size, or as a run of
   `:::strip{span=page}` blocks in a single-column book.

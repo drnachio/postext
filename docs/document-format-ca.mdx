@@ -1551,6 +1551,7 @@ tomas{whisper}: Xxt. Escolta.
 caption{at=bottom-end}: A tres carrers d'aquí.
 sfx{at="62% 40%" rotate=-8 size=1.4}: CRAC
 ben{tail=start}: (des de fora de la vinyeta) Soc aquí!
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
 maya: Aquesta línia continua
   a la línia següent,\
   i es parteix aquí.
@@ -1558,9 +1559,10 @@ maya: Aquesta línia continua
 
 - La **clau** és un id de personatge (lletres, xifres, `_`, `.`, `-`), el mateix en totes les traduccions; `caption`, `sfx` i `note` són reservades. Els dos punts poden ser els `：` d'amplada completa.
 - Una paraula sola entre claus és un **estil de bafarada** (`thought`, `whisper`, `shout`, `radio`, `inner` o un de `comics.balloonStyles`); `style=` diu el mateix.
-- `at` fixa la bafarada: un punt en percentatges del dibuix de la vinyeta (`at="62% 40%"`), o una cantonada o una vora (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` apunta la cua a un punt del dibuix; `tail=none` la treu i `tail=top|bottom|start|end` l'apunta fora de la vinyeta. `join` i `join=false` uneixen la bafarada a l'anterior del mateix personatge o la mantenen separada; `break` li permet travessar la vora. `rotate` (graus), `size` (una escala, per a les onomatopeies), `color` i `font` en modifiquen la retolació.
+- `at` fixa la bafarada: un punt en percentatges del dibuix de la vinyeta (`at="62% 40%"`), o una cantonada o una vora (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` apunta la cua a un punt del dibuix; `tail=none` la treu i `tail=top|bottom|start|end` l'apunta fora de la vinyeta. `join` i `join=false` uneixen la bafarada a l'anterior del mateix personatge o la mantenen separada; `break` li permet travessar la vora, i l'encreuament no s'avisa com a desbordament. `rotate` (graus), `size` (una escala, per a les onomatopeies), `color` i `font` en modifiquen la retolació.
+- `vertical` i `horizontal` (o `mode=vertical`, `mode=horizontal`) fixen la direcció d'escriptura de la línia per damunt de la del llibre: un `ドン` sense traduir, compost en columna en una edició horitzontal; un rètol escrit de través, en filera en una de vertical. Una columna en un llibre d'una altra llengua segueix les regles del seu propi text (amb kana, les del japonès). En un llibre vertical, una línia sense caràcters xinesos ni japonesos es compon en filera igualment.
 - Una línia sagnada amb dos espais o un tabulador continua la bafarada de sobre; una barra inversa al final d'una línia hi parteix el text. Les línies en blanc s'ignoren.
-- El text és Markdown en línia: èmfasi (retolat en negreta cursiva), `:tcy`, `:ruby`, `:ltr` i `:rtl` (els tres últims s'imprimeixen com a text pla a les bafarades). Les notes a peu de pàgina i les marques `:ref` no es llegeixen.
+- El text és Markdown en línia: èmfasi (retolat en negreta cursiva), `:tcy`, `:ruby` (la lectura sobre la base, tret que la base vagi de dreta a esquerra), `:ltr` i `:rtl` (un fragment que conserva el seu propi sentit). Les notes a peu de pàgina i les marques `:ref` no es llegeixen.
 
 ### `:::strip`
 
