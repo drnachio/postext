@@ -13652,6 +13652,7 @@
         "ja": "漫画のページ"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^:::page\\b"
@@ -13727,6 +13728,7 @@
         "ja": "ページの分割"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^:::page\\{[^}]*\\bsplit="
@@ -13801,6 +13803,7 @@
         "ja": "コマと絵"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^::panel\\{[^}]*\\bart="
@@ -13877,6 +13880,7 @@
         "ja": "コマと絵"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^::panel\\{[^}]*\\b(inset|pop|bleed)\\b"
@@ -13949,6 +13953,7 @@
         "ja": "コマと絵"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "config": [
         "comics.panel",
@@ -14028,6 +14033,7 @@
         "ja": "写植"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "config": [
         "comics.lettering"
@@ -14098,7 +14104,8 @@
         "ar": "كتابة الحوار",
         "ja": "写植"
       }
-    }
+    },
+    "since": "1.20.0"
   },
   "balloon-styles": {
     "label": {
@@ -14170,6 +14177,7 @@
         "ja": "吹き出しのスタイル"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "config": [
         "comics.balloonStyles"
@@ -14243,6 +14251,7 @@
         "ja": "吹き出しのスタイル"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^\\s*sfx(\\{[^}]*\\})?\\s*[:：]"
@@ -14319,6 +14328,7 @@
         "ja": "話者とアンカー"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "config": [
         "comics.cast"
@@ -14394,6 +14404,7 @@
         "ja": "帯漫画"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^:::strip\\b"
@@ -14460,6 +14471,7 @@
         "ja": "見開き"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "markdown": [
         "^:::page\\{[^}]*\\bspread\\b"
@@ -14529,6 +14541,7 @@
         "ja": "読む方向"
       }
     },
+    "since": "1.20.0",
     "detect": {
       "config": [
         "comics.readingDirection",
@@ -14602,6 +14615,7 @@
         "ar": "إخراج القصص المصورة",
         "ja": "漫画の出力"
       }
-    }
+    },
+    "since": "1.20.0"
   }
 }
