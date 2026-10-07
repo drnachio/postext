@@ -9,7 +9,7 @@ import type { ReadEpubResult, RenderToEpubOptions } from './types';
 import { buildOpf } from './package/pack';
 import { buildFixedPublication } from './fixed/index';
 import { percentRect } from './fixed/regions';
-import { PNG, comicSampleBook, sampleBook } from './__tests__/sampleBook';
+import { PNG, comicSampleBook, sampleBook, stripSpreadSampleBook } from './__tests__/sampleBook';
 
 const options = (layout: RenderToEpubOptions['layout'], extra: Partial<RenderToEpubOptions> = {}): RenderToEpubOptions => ({
   layout,
@@ -147,5 +147,68 @@ describe('reflowable comic pages', () => {
 
   it('links a panel anchor', () => {
     expect(chapter).toContain('<figure class="pt-comic-panel" id="a-first">');
+  });
+});
+
+describe('strips and spreads in both renditions', () => {
+  let docs: VDTDocument[];
+  let fixed: ReadEpubResult;
+  let flow: ReadEpubResult;
+  beforeAll(async () => {
+    docs = stripSpreadSampleBook();
+    fixed = readEpub(await renderToEpub(docs, options('fixed')));
+    flow = readEpub(await renderToEpub(docs, options('reflowable')));
+  });
+
+  it('sets the strip on its page and lists its panels as regions', () => {
+    const page = docs[0]!.pages.find((p) => p.columns.some((c) => c.blocks.some((b) => b.comic)))!;
+    const xhtml = text(fixed, fixed.spine[page.index]!.path);
+    expect(xhtml).toContain('<div class="pt-comic"');
+    expect(xhtml).toContain('aria-label="The second panel of the strip"');
+    const nav = text(fixed, 'OEBPS/regions.xhtml');
+    const file = fixed.spine[page.index]!.path.replace('OEBPS/', '');
+    expect(nav.split(`<li epub:type="panel"><a href="${file}#`).length - 1).toBe(2);
+  });
+
+  it('gives a panel across a spread\'s spine one region of two rectangles, its balloons on their pages, in reading order', () => {
+    const [l, r] = docs[0]!.pages.filter((p) => p.comic);
+    const lf = fixed.spine[l!.index]!.path.replace('OEBPS/', '');
+    const rf = fixed.spine[r!.index]!.path.replace('OEBPS/', '');
+    const nav = text(fixed, 'OEBPS/regions.xhtml');
+    const spread = nav.slice(nav.lastIndexOf("<li epub:type=\"panel\">", nav.indexOf(lf)));
+    // Panels 0 and 2 cross the spine.
+    const heads = [...spread.matchAll(/<li epub:type="panel">(<span>(?:<a [^>]*><\/a>)+<\/span>|<a [^>]*><\/a>)/g)].map((m) => m[1]!);
+    expect(heads).toHaveLength(4);
+    expect(heads[0]).toMatch(new RegExp(`^<span><a href="${lf}#[^"]+"></a><a href="${rf}#[^"]+"></a></span>$`));
+    expect(heads[1]).toContain(lf);
+    expect(heads[2]).toMatch(/^<span>/);
+    expect(heads[3]).toContain(rf);
+    const third = spread.slice(spread.indexOf(heads[2]!));
+    const kids = third.slice(0, third.indexOf('</ol>'));
+    expect([...kids.matchAll(/<li epub:type="text-area"><a href="([^#]+)#/g)].map((m) => m[1])).toEqual([lf, rf]);
+    // The right page's half of panel 2 is no figure of its own.
+    expect(text(fixed, fixed.spine[r!.index]!.path)).not.toContain('aria-label="Across the spine"');
+    expect(text(fixed, fixed.spine[l!.index]!.path)).toContain('aria-label="Across the spine"');
+  });
+
+  it('reads the strip in the text and the spread as one comic in the reflowable book', () => {
+    const chapter = text(flow, flow.spine.find((s) => s.path.includes('chapter'))!.path);
+    const sections = [...chapter.matchAll(/<section class="pt-comic">[\s\S]*?<\/section>/g)].map((m) => m[0]);
+    expect(sections).toHaveLength(2);
+    const [strip, spread] = sections as [string, string];
+    expect(chapter.indexOf('Before the strip.')).toBeLessThan(chapter.indexOf(strip));
+    expect(chapter.indexOf('After the strip.')).toBeGreaterThan(chapter.indexOf(strip));
+    expect(strip.match(/<figure/g)).toHaveLength(2);
+    // The spread: panels 0 and 2 whole (art), the captions of both pages
+    // after panel 2, once each.
+    expect(spread.match(/<figure/g)).toHaveLength(2);
+    expect(spread.match(/aria-label="Across the spine"/g)).toHaveLength(1);
+    const order = [...spread.matchAll(/<figure|<p class="pt-comic-caption">([^<]*)/g)].map((m) => m[1] ?? 'figure');
+    expect(order).toEqual(['figure', 'figure', 'Meanwhile,', 'far away.']);
+    // A whole panel: its view box runs across the spine.
+    const [l] = docs[0]!.pages.filter((p) => p.comic);
+    const half = l!.comic!.panels.find((p) => p.index === 2)!;
+    const box = /aria-label="Across the spine"/.test(spread) ? /viewBox="([0-9. -]+)" role="img" aria-label="Across the spine"/.exec(spread)![1]!.split(' ').map(Number) : [];
+    expect(box[2]).toBeGreaterThan(half.bbox.width + 10);
   });
 });

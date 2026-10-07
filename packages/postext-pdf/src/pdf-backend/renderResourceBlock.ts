@@ -38,7 +38,7 @@ import type {
   VDTComicArt,
   VDTPage,
 } from 'postext';
-import { applySingleInkToSvg, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
+import { applySingleInkToSvg, pageComics, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
 import { roundedRectSvgPath } from './headerFooter';
 import { pdfUri } from './links';
 import { parseFontString } from '../fontString';
@@ -349,13 +349,15 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
   return out;
 }
 
-/** The pictures of a comic page (`page.comic`): each panel's art and
- *  pop-out cut-out. */
+/** The pictures of the page's comics (its comic page or half of a spread,
+ *  its strips): each panel's art and pop-out cut-out. */
 function comicArts(page: VDTPage): VDTComicArt[] {
   const out: VDTComicArt[] = [];
-  for (const panel of page.comic?.panels ?? []) {
-    if (panel.art) out.push(panel.art);
-    if (panel.pop) out.push(panel.pop);
+  for (const comic of pageComics(page)) {
+    for (const panel of comic.panels) {
+      if (panel.art) out.push(panel.art);
+      if (panel.pop) out.push(panel.pop);
+    }
   }
   return out;
 }

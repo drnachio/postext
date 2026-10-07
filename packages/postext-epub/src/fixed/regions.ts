@@ -8,7 +8,7 @@
 // A region is a rectangle in percent of the page's viewport
 // (`#xywh=percent:x,y,w,h`): a slanted panel is given by its bounding box.
 
-import { comicBalloonGroups, comicBalloonKind, comicBalloonText } from 'postext';
+import { comicBalloonGroups, comicBalloonKind, comicBalloonText, comicPanelContinues, isComicSpreadPartner } from 'postext';
 import type { BoundingBox, VDTComicBalloon, VDTComicPage, VDTDocument, VDTPage } from 'postext';
 import type { EpubItem } from '../types';
 import { escapeAttr, xhtmlDocument } from '../shared/xml';
@@ -25,11 +25,13 @@ export interface ViewportMap {
   offset: number;
 }
 
-/** A comic page of the book, as the region navigation reads it. */
+/** A page of the book with comics, as the region navigation reads it. */
 export interface ComicPagePlan {
   /** Href of the page's content document, relative to the package. */
   href: string;
-  comic: VDTComicPage;
+  /** The page's comics on its sheet (`pageComics`): its comic page or
+   *  half of a spread, then its strips. */
+  comics: VDTComicPage[];
   geo: ViewportMap;
 }
 
@@ -60,27 +62,43 @@ function balloonType(b: VDTComicBalloon): string {
   return kind === 'sfx' ? 'sound-area' : kind === 'caption' ? 'text-area' : 'balloon';
 }
 
-/** The regions of one comic page, in reading order. A region is a link
- *  with no text (EPUBCheck: a region-based nav's links carry no label);
- *  what it shows is read on the page itself. */
-function pageRegions(plan: ComicPagePlan): string[] {
-  const { comic, geo, href } = plan;
-  const groups = comicBalloonGroups(comic.balloons);
+/** One page's part of a comic: the page's document and viewport, and
+ *  the comic (a page's, a spread's half, a strip) on its sheet. */
+interface Sheet {
+  href: string;
+  geo: ViewportMap;
+  comic: VDTComicPage;
+}
+
+/** The regions of one comic, in reading order: a comic page or a strip
+ *  (one sheet), or a spread (its two pages, `sheets` in page order). A
+ *  panel across a spread's spine is one region of two rectangles, one on
+ *  each page (a synthetic spread region); balloons are nested in their
+ *  panel, each on the page that holds it. A region is a link with no text
+ *  (EPUBCheck: a region-based nav's links carry no label); what it shows is
+ *  read on the page itself. */
+function comicRegions(sheets: readonly Sheet[]): string[] {
+  const indexes = [...new Set(sheets.flatMap((s) => s.comic.panels.map((p) => p.index)))].sort((a, b) => a - b);
   const out: string[] = [];
-  for (const panel of comic.panels) {
-    const frag = xywh(panel.bbox, geo);
-    if (!frag) continue;
+  for (const index of indexes) {
+    const links: string[] = [];
+    for (const s of sheets) {
+      const panel = s.comic.panels.find((p) => p.index === index);
+      const frag = panel ? xywh(panel.bbox, s.geo) : undefined;
+      if (frag) links.push(`<a href="${escapeAttr(s.href + frag)}"></a>`);
+    }
+    if (links.length === 0) continue;
+    const lettering = sheets
+      .flatMap((s) => comicBalloonGroups(s.comic.balloons).flat().filter((b) => b.panelIndex === index).map((b) => ({ b, s })))
+      .sort((x, y) => x.b.order - y.b.order);
     const kids: string[] = [];
-    for (const g of groups) {
-      if (g[0]!.panelIndex !== panel.index) continue;
-      for (const b of g) {
-        const bf = xywh(b.bbox, geo);
-        if (!bf || !comicBalloonText(b).trim()) continue;
-        kids.push(`<li epub:type="${balloonType(b)}"><a href="${escapeAttr(href + bf)}"></a></li>`);
-      }
+    for (const { b, s } of lettering) {
+      const bf = xywh(b.bbox, s.geo);
+      if (!bf || !comicBalloonText(b).trim()) continue;
+      kids.push(`<li epub:type="${balloonType(b)}"><a href="${escapeAttr(s.href + bf)}"></a></li>`);
     }
     out.push(
-      `<li epub:type="panel"><a href="${escapeAttr(href + frag)}"></a>` +
+      `<li epub:type="panel">${links.length === 1 ? links[0] : `<span>${links.join('')}</span>`}` +
       (kids.length ? `\n<ol>\n${kids.join('\n')}\n</ol>\n` : '') +
       `</li>`,
     );
@@ -88,10 +106,33 @@ function pageRegions(plan: ComicPagePlan): string[] {
   return out;
 }
 
-/** The data navigation document of a book with comic pages, or undefined
+/** The comics of the book's pages, each with the pages it lies on: a
+ *  spread's two halves joined, in page order. */
+function comicViews(plans: readonly ComicPagePlan[]): Sheet[][] {
+  const views: Sheet[][] = [];
+  const used = new Set<VDTComicPage>();
+  plans.forEach((plan, i) => {
+    for (const comic of plan.comics) {
+      if (used.has(comic)) continue;
+      used.add(comic);
+      const sheet: Sheet = { href: plan.href, geo: plan.geo, comic };
+      const next = plans[i + 1];
+      const partner = comic.spread && next ? next.comics.find((c) => isComicSpreadPartner(comic, c)) : undefined;
+      if (partner) {
+        used.add(partner);
+        views.push([sheet, { href: next!.href, geo: next!.geo, comic: partner }]);
+      } else {
+        views.push([sheet]);
+      }
+    }
+  });
+  return views;
+}
+
+/** The data navigation document of a book with comics, or undefined
  *  without any (or with no region to list). */
 export function regionNavItem(plans: readonly ComicPagePlan[], language: string, title: string): EpubItem | undefined {
-  const items = plans.flatMap(pageRegions);
+  const items = comicViews(plans).flatMap(comicRegions);
   if (items.length === 0) return undefined;
   const data = xhtmlDocument({
     lang: language,
@@ -131,12 +172,14 @@ export function kindlePanelMarkup(
   page: VDTPage,
   geo: ViewportMap,
   markup: (idSuffix: string) => string,
-  firstOrdinal: number,
 ): string {
   const comic = page.comic!;
   const out: string[] = [];
-  let ordinal = firstOrdinal;
+  // The order of the page's panels, from 1 (a spread's half of a panel
+  // the other page magnifies is no tap target here).
+  let ordinal = 1;
   for (const panel of comic.panels) {
+    if (comicPanelContinues(comic, panel)) continue;
     const r = percentRect(panel.bbox, geo);
     if (!r) continue;
     const id = `mag-${page.index}-${panel.index}`;

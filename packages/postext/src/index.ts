@@ -47,7 +47,7 @@ export {
   translateComicPage, translateComicPanel, translateComicSplitter, translateComicBalloon, translateSvgPath, comicBlockOnSheet, pageComics,
   comicLetteringStyle, comicLetteringLocale, comicLetteringVertical, comicFontFamilies, markdownHasComics,
   letterPanel, letterPanelDetailed, presetLetteringStyles,
-  comicBalloonKind, comicBalloonText, comicSpeakerName, comicBalloonGroups, comicPanelPathData, comicBorderPathData, polygonPathData,
+  comicBalloonKind, comicBalloonText, comicSpeakerName, comicBalloonGroups, comicPanelPathData, comicBorderPathData, polygonPathData, comicPanelContinues, isComicSpreadPartner, joinComicSpread,
 } from './comics';
 export type {
   ComicSplitAxis, ComicSplitSize, ComicSplitItem, ComicSplitList, ComicSplitToken, ComicSplitIssue, ComicSplitParse, ComicScriptLine,

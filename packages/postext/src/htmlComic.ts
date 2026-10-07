@@ -14,7 +14,7 @@
 
 import type { ComicCastMember } from './types';
 import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock } from './vdt';
-import { comicBalloonGroups, comicBalloonKind, comicBalloonText, comicBorderPathData, comicPanelPathData, comicSpeakerName } from './comics/paint';
+import { comicBalloonGroups, comicBalloonKind, comicBalloonText, comicBorderPathData, comicPanelContinues, comicPanelPathData, comicSpeakerName } from './comics/paint';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c] ?? c);
@@ -200,23 +200,26 @@ export function renderComicHtml(comic: VDTComicPage, width: number, height: numb
   for (const panel of comic.panels) {
     known.add(panel.index);
     const { x, y, width: w, height: h } = panel.bbox;
-    const id = panel.id ? ` id="${esc(`pt-a-${panel.id}`)}"` : '';
+    // The second half of a panel across a spread's spine: painted, read
+    // with its first half on the other page.
+    const continued = comicPanelContinues(comic, panel);
+    const id = panel.id && !continued ? ` id="${esc(`pt-a-${panel.id}`)}"` : '';
     const svg = comicPanelSvg(panel, {
       href: paint.artUrl,
       ...(paint.artStyle ? { artStyle: paint.artStyle } : {}),
       clipId: `${paint.idBase}-${panel.index}`,
-      ...(panel.art && panel.altText ? { label: panel.altText } : {}),
+      ...(panel.art && panel.altText && !continued ? { label: panel.altText } : {}),
       className: 'pt-comic-art',
     });
     parts.push(
-      `<figure class="pt-comic-panel"${id} data-panel="${panel.index}" style="position:absolute;left:${n3(x)}px;top:${n3(y)}px;width:${n3(w)}px;height:${n3(h)}px;margin:0;">${svg}</figure>`,
+      `<figure class="pt-comic-panel"${id} data-panel="${panel.index}"${continued ? ' data-continued="" aria-hidden="true"' : ''} style="position:absolute;left:${n3(x)}px;top:${n3(y)}px;width:${n3(w)}px;height:${n3(h)}px;margin:0;">${svg}</figure>`,
     );
     parts.push(lettering(byPanel.get(panel.index)));
   }
   // Lettering of no panel laid out (none expected): after the panels.
   for (const [k, list] of byPanel) if (!known.has(k)) parts.push(lettering(list));
   return (
-    `<div class="pt-comic" data-direction="${comic.direction}" style="position:absolute;left:0;top:0;width:${n3(width)}px;height:${n3(height)}px;isolation:isolate;">` +
+    `<div class="pt-comic" data-direction="${comic.direction}"${comic.spread ? ` data-spread="${comic.spread}"` : ''} style="position:absolute;left:0;top:0;width:${n3(width)}px;height:${n3(height)}px;isolation:isolate;overflow:hidden;">` +
     parts.join('') +
     `</div>`
   );

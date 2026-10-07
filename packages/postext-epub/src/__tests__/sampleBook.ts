@@ -233,3 +233,43 @@ function sampleBalloons(comic: VDTComicPage): VDTComicBalloon[] {
       text: [sampleText('KRAK', b.x + 20, b.y + 40)], bbox: { x: b.x + 20, y: b.y + 40, width: 40, height: 16 } },
   ];
 }
+
+/** A strip in the text and a two-page spread (#566, #567): the strip
+ *  between two paragraphs, the spread's middle panel across the spine. */
+export function stripSpreadSampleBook(): VDTDocument[] {
+  const chapter = [
+    '# Strips and spreads',
+    '',
+    `Before the strip. ${para}`,
+    '',
+    ':::strip{split="* | *" aspect=3}',
+    '::panel{art=f1}',
+    '::panel{art=f1 alt="The second panel of the strip"}',
+    ':::',
+    '',
+    `After the strip. ${para}`,
+    '',
+    ':::page{spread split="40 / * [* | * | *]"}',
+    '::panel{art=f1}',
+    '::panel',
+    '::panel{art=f1 alt="Across the spine"}',
+    '::panel',
+    ':::',
+    '',
+    'After the spread.',
+  ].join('\n');
+  const docs = buildBundle({ chapters: [{ markdown: chapter }], config: { ...config, comics: {} }, resources });
+  for (const doc of docs) {
+    for (const page of doc.pages) {
+      const c = page.comic;
+      if (!c?.spread) continue;
+      // A balloon in panel 2 on each page: read in panel order.
+      const p = c.panels.find((q) => q.index === 2);
+      if (!p) continue;
+      const x = c.spread === 'left' ? p.bbox.x + 4 : p.bbox.x + p.bbox.width - 64;
+      c.balloons = [{ id: `s-${c.spread}`, panelIndex: 2, order: c.spread === 'left' ? 0 : 1, style: 'caption', sourceStart: 0, sourceEnd: 1, group: c.spread === 'left' ? 0 : 1,
+        text: [sampleText(c.spread === 'left' ? 'Meanwhile,' : 'far away.', x, p.bbox.y + 4)], bbox: { x, y: p.bbox.y + 4, width: 60, height: 14 } }];
+    }
+  }
+  return docs;
+}

@@ -12,6 +12,7 @@ import {
   canonicalLocaleTag,
   directionOf,
   HTML_TEXT_RESET,
+  pageComics,
   renderToHtmlIndexed,
 } from 'postext';
 import type { VDTDocument, VDTPage } from 'postext';
@@ -204,7 +205,6 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
   // Kindle Panel View (opt-in): tap targets over the panels of comic pages.
   const kindle = options.kindlePanelView === true && plans.some((p) => p.page.comic);
   const comicPlans: ComicPagePlan[] = [];
-  let ordinal = 1;
 
   // Pass 2: the content documents.
   const css =
@@ -246,14 +246,12 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
       `width:${num(page.width)}px;height:${num(page.height)}px;${bg}` +
       `transform:scale(${num(geo.scale)})${geo.offset ? ` translate(-${num(geo.offset)}px,-${num(geo.offset)}px)` : ''};`;
     let magnify = '';
-    if (page.comic) {
-      comicPlans.push({ href: `${PAGES_DIR}${file}`, comic: page.comic, geo });
-      if (kindle && plan.comicHtml) {
-        const comicHtml = plan.comicHtml;
-        const raw = kindlePanelMarkup(page, geo, (suffix) => withIdSuffix(comicHtml, suffix), ordinal);
-        ordinal += page.comic.panels.length;
-        magnify = htmlToXhtml(raw, { ids, hoistStyle: (s) => styles.push(s) });
-      }
+    const comics = pageComics(page);
+    if (comics.length > 0) comicPlans.push({ href: `${PAGES_DIR}${file}`, comics, geo });
+    if (page.comic && kindle && plan.comicHtml) {
+      const comicHtml = plan.comicHtml;
+      const raw = kindlePanelMarkup(page, geo, (suffix) => withIdSuffix(comicHtml, suffix));
+      magnify = htmlToXhtml(raw, { ids, hoistStyle: (s) => styles.push(s) });
     }
     const label = page.pageLabel || String(plan.bookIndex + 1);
     // A page with videos to coordinate links the playback script (#507).

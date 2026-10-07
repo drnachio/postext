@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderToHtml, renderToHtmlIndexed, comicPanelSvg, comicBalloonText, comicBalloonKind, comicViewerLeaf, resolvedComics } from '../../index';
-import type { Resource, VDTComicBalloon, VDTDesignTextBlock, VDTDocument } from '../../index';
+import type { Resource, VDTComicBalloon, VDTDesignTextBlock, VDTDocument, VDTPage } from '../../index';
 
 class StubCtx {
   font = '';
@@ -180,11 +180,91 @@ describe('comic pages on a screen (comics.viewerLeaf)', () => {
     });
   });
 
+  it('sets each half of a spread on a leaf of its own', () => {
+    const px = (value: number) => ({ value, unit: 'px' as const });
+    const page = { width: px(1000), height: px(200000), margins: { top: px(0), bottom: px(0), left: px(0), right: px(0) } };
+    const md = ':::page{spread split="* | * | *"}\n::panel{art=pic}\n::panel{art=pic}\n::panel{art=pic}\n:::';
+    const doc = buildDocument({ markdown: md, resources }, { page, comics: { viewerLeaf: { width: { value: 170, unit: 'mm' }, height: { value: 240, unit: 'mm' }, margins: { top: { value: 15, unit: 'mm' }, bottom: { value: 15, unit: 'mm' }, left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } }, fitWidth: 600 } } });
+    const [l, r] = doc.pages.filter((p) => p.comic).map((p) => p.comic!);
+    expect(l!.leaf!.width).toBeCloseTo(600, 3);
+    expect(r!.leaf!.width).toBeCloseTo(600, 3);
+    // Every panel within its leaf (the spine: the left leaf's right edge).
+    for (const c of [l!, r!]) for (const p of c.panels) expect(p.bbox.y + p.bbox.height).toBeLessThanOrEqual(c.leaf!.y + c.leaf!.height);
+    expect(l!.frame.x + l!.frame.width).toBeCloseTo(l!.leaf!.x + 600, 3);
+  });
+
   it('keeps to a height when given one', () => {
     const doc = buildDocument({ markdown: MD, resources }, { page: { sizePreset: '17x24' }, comics: { viewerLeaf: { width: { value: 100, unit: 'mm' }, height: { value: 200, unit: 'mm' }, fitWidth: 600, fitHeight: 400 } } });
     const leaf = comicViewerLeaf(resolvedComics(doc.config), doc.config, { x: 0, y: 0, width: 800, height: 900 })!;
     expect(leaf.box.height).toBeCloseTo(400, 3);
     expect(leaf.box.width).toBeCloseTo(200, 3);
     expect(leaf.box.x).toBeCloseTo(300, 3);
+  });
+});
+
+describe('HTML of strips and spreads', () => {
+  const pics: Resource[] = [
+    { id: 'd1', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, altText: 'A kitchen', bitmap: { fileId: 'd1-file', format: 'png', width: 1000, height: 1000 } },
+    { id: 'vista', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, altText: 'The valley', bitmap: { fileId: 'vista-file', format: 'png', width: 4000, height: 1500 } },
+  ];
+  const STRIP = 'Before the strip.\n\n:::strip{split="* | * | *"}\n::panel{art=d1}\n::panel{art=d1}\n::panel\n:::\n\nAfter the strip.';
+  const SPREAD = ':::page{spread split="40 / * [* | * | *]"}\n::panel{art=vista}\n::panel\n::panel{art=d1}\n::panel\n:::\n\nAfter the spread.';
+
+  it('sets a strip in its block, between the paragraphs around it, on the sheet', () => {
+    const doc = buildDocument({ markdown: STRIP, resources: pics }, { page: { sizePreset: '17x24' } });
+    const page = doc.pages.find((p) => p.columns.some((c) => c.blocks.some((b) => b.comic)))!;
+    const block = page.columns.flatMap((c) => c.blocks).find((b) => b.comic)!;
+    const html = renderToHtmlIndexed(doc, { resourceImageUrl: url }).pages[page.index]!.innerHtml;
+    const at = html.indexOf(`data-block-id="${block.id}"`);
+    const comic = html.indexOf('class="pt-comic"');
+    expect(comic).toBeGreaterThan(at);
+    const blocks = page.columns.flatMap((c) => c.blocks);
+    const next = blocks[blocks.indexOf(block) + 1]!;
+    const prev = blocks[blocks.indexOf(block) - 1]!;
+    expect(html.indexOf(`data-block-id="${next.id}"`)).toBeGreaterThan(comic);
+    expect(html.indexOf(`data-block-id="${prev.id}"`)).toBeLessThan(at);
+    // The panels on the sheet: the strip's box moved to the block's place.
+    const first = /<figure class="pt-comic-panel"[^>]*style="position:absolute;left:([0-9.]+)px;top:([0-9.]+)px/.exec(html)!;
+    expect(Number(first[1])).toBeCloseTo(block.bbox.x + block.comic!.panels[0]!.bbox.x, 2);
+    expect(Number(first[2])).toBeCloseTo(block.bbox.y + block.comic!.panels[0]!.bbox.y, 2);
+    expect(html).toContain('aria-label="A kitchen"');
+    // Its clip ids do not clash with a comic page's.
+    expect(html).toContain(`clipPath id="pt-p-${page.index}-panel-0"`);
+  });
+
+  it('lays a strip of a vertical page over the sheet, outside the turned flow', () => {
+    const doc = buildDocument({ markdown: STRIP, resources: pics }, { page: { sizePreset: '17x24' }, layout: { writingMode: 'vertical-rl' } });
+    const page = doc.pages.find((p) => p.columns.some((c) => c.blocks.some((b) => b.comic)))!;
+    const html = renderToHtmlIndexed(doc, { resourceImageUrl: url }).pages[page.index]!.innerHtml;
+    const flowEnd = html.lastIndexOf('</div>', html.indexOf('class="pt-comic"'));
+    expect(html.indexOf('class="pt-flow"')).toBeLessThan(flowEnd);
+    expect(html.indexOf('class="pt-comic"')).toBeGreaterThan(html.indexOf('class="pt-flow"'));
+    // Not inside the flow box: its markup comes after the flow box closes.
+    const flowBox = html.slice(html.indexOf('class="pt-flow"'));
+    let depth = 0;
+    let end = 0;
+    for (const m of flowBox.matchAll(/<(\/?)div\b/g)) {
+      depth += m[1] ? -1 : 1;
+      if (depth === 0) { end = m.index!; break; }
+    }
+    expect(flowBox.indexOf('class="pt-comic"')).toBeGreaterThan(end);
+  });
+
+  it('paints each half of a spread on its page, a panel across the spine read once', () => {
+    const doc = buildDocument({ markdown: SPREAD, resources: pics }, { page: { sizePreset: '17x24' } });
+    const [left, right] = doc.pages.filter((p) => p.comic) as [VDTPage, VDTPage];
+    const out = renderToHtmlIndexed(doc, { resourceImageUrl: url });
+    const l = out.pages[left.index]!.innerHtml;
+    const r = out.pages[right.index]!.innerHtml;
+    expect(l).toContain('data-spread="left"');
+    expect(r).toContain('data-spread="right"');
+    const figs = (h: string) => [...h.matchAll(/<figure class="pt-comic-panel"[^>]*data-panel="(\d)"([^>]*)>/g)].map((m) => `${m[1]}${m[2].includes('data-continued') ? '*' : ''}`);
+    expect(figs(l)).toEqual(['0', '1', '2']);
+    // The right page's halves of panels 0 and 2 continue the left page's.
+    expect(figs(r)).toEqual(['0*', '2*', '3']);
+    expect(l).toContain('aria-label="The valley"');
+    expect(r).not.toContain('aria-label="The valley"');
+    // Its picture is drawn on both pages all the same.
+    expect(r).toContain('vista-file');
   });
 });
