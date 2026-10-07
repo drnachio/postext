@@ -194,7 +194,8 @@ const ART = {
       who('paco', .31, .3, [.28, .17], [.17, .1, .2, .26]),
       who('lola', .635, .485, [.61, .38], [.48, .28, .27, .27]),
     ],
-    avoid: [box([.7, .78, .15, .1]), box([.1, .36, .15, .19])],
+    // Lola's reaching arm and her hand on the orange: the thought balloon keeps off them.
+    avoid: [box([.62, .58, .17, .22]), box([.7, .78, .15, .1]), box([.1, .36, .15, .19])],
   },
   t5: { width: 1100, height: 733, safeArea: box([.06, .16, .9, .41]),
     alt: t({ en: "The orange pyramid collapses: oranges roll everywhere, Paco's beret flies off, "
