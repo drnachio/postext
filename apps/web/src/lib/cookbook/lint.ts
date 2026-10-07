@@ -587,7 +587,9 @@ export function lintPen(
     // builds its own FontFace (a face from its assets).
     if (odd.arabic.length) {
       if (edition) arabicText = true;
-      if (edition && mostlyArabic(text)) arabicBook = true;
+      // The main sample sets the book's language; a named slot in Arabic is another
+      // lettering or a quotation (a manga's Arabic edition behind a button), which keeps it.
+      if (edition && mostlyArabic(text) && !slotOf(key)) arabicBook = true;
       if (!arabicKit && !/\bnew\s+FontFace\s*\(/.test(ownBare)) {
         fails.push(`${file}: Arabic text needs an Arabic face: list the arabic kit block and load the faces with ` +
           "loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)");
