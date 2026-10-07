@@ -11,7 +11,8 @@
     "directory": "packages/postext"
   },
   "files": [
-    "dist"
+    "dist",
+    "icc"
   ],
   "exports": {
     ".": {
@@ -34,6 +35,7 @@
       "types": "./dist/worker/layout.worker.d.ts",
       "default": "./dist/worker/layout.worker.js"
     },
+    "./icc/*": "./icc/*",
     "./package.json": "./package.json"
   },
   "scripts": {

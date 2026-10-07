@@ -14,6 +14,7 @@ export { computePageTextExtent } from './vdt';
 export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './columnRule';
 export type { FootnoteRuleSegment } from './columnRule';
 export { cropMarkSegments } from './cropMarks';
+export * from './color';
 export type { CropMarkSegment } from './cropMarks';
 export { columnClipRect, designOverlayOverhang, headingDesignOverhangAbove, hangingPunctuationOverhang } from './columnClip';
 export { lineInkExtent } from './lineInk';
