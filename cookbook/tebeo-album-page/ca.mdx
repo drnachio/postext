@@ -1,0 +1,60 @@
+---
+title: "Una pàgina d'àlbum en línia clara amb cartel·les de narració"
+summary: "Una pàgina d'àlbum francobelga en quatre tires: vinyetes de marc fi, cartel·les grogues als racons i bafarades en minúscules, des de la config comics."
+plain: "Una pàgina d'un àlbum de còmic europeu, amb la veu del narrador en requadres grocs i els diàlegs en bafarades, escrita en text pla i retolada per Postext en sis llengües."
+description: "Una pàgina de còmic a Postext: quatre tires de vinyetes, cartel·les grogues, un crit, un pensament i una onomatopeia, retolada de nou en sis llengües."
+question: "Com componc una pàgina d'àlbum europeu amb cartel·les de narració?"
+aliases: ["còmic", "historieta", "bande dessinée", "BD", "línia clara", "ligne claire", "pàgina d'àlbum", "cartel·la", "francobelga", "bafarades", "balloonStyles", "panelStyles"]
+---
+
+## Què compondràs
+
+La primera història d'un àlbum de còmic, *Les taronges de la Carmen*: una portadella a la pàgina parella i, al davant, una pàgina de set vinyetes en quatre tires, com es dibuixen els àlbums francobelgues. La Lola, de nou anys, va al mercat amb el seu avi Paco un diumenge i treu la taronja de sota de la piràmide de la Carmen. Els dibuixos són de línia clara amb colors plans; els marcs són fins i de cantó viu, la narració va en cartel·les grogues encaixades als racons de la vinyeta i els diàlegs es retolen en majúscules i minúscules, com retolen els europeus. El text és en Markdown, un fitxer per llengua: l'original en castellà i després anglès, català, xinès, àrab i japonès, que el motor retola sobre la mateixa divisió i els mateixos dibuixos.
+
+## Elaboració
+
+### 1 · L'aspecte de l'àlbum és una config comics
+
+El codi és a [la resposta curta](#la-resposta-curta). `comics.panel` defineix tots els marcs (un filet de tinta de 0,75 pt, cantons vius) i `panelStyles` n'afegeix un amb nom i sense vora, que l'última vinyeta pren amb `style=open`: un epíleg en un banc del parc, fora del mercat. Els estils de bafarada de sèrie es redefineixen pel seu id: `caption` passa a ser una cartel·la groc pàl·lid amb un contorn fi, `shout` un esclat de setze puntes i `sfx` pren el taronja de les taronges amb un contorn de tinta. La retolació deixa `textTransform: 'none'`; una pàgina americana hi posaria `'uppercase'`.
+
+La pàgina és una sola directiva al contingut, un arbre de divisions i set vinyetes, cadascuna amb el seu guió:
+
+```md
+:::page{split="25 [60 | *] / 25 [55 | *] / 24 / * [50 | *]"}
+::panel{art=t1}
+caption: Els diumenges, l'avi Paco i jo anàvem al mercat.
+caption{at=bottom-end}: Sempre a la mateixa hora. Sempre per la mateixa porta.
+::panel{art=t4}
+lola{thought}: La de sota és la més grossa.
+paco{shout}: Lola, aquesta no!
+```
+
+`caption` és una cartel·la de narració (la primera va al racó superior del costat on comença la lectura), `{at=bottom-end}` envia la segona al racó oposat, i un personatge com `lola` o `paco` dibuixa una bafarada amb la cua cap a la boca que declara el dibuix.
+
+### 2 · Els dibuixos saben on parla cadascú
+
+<Excerpt region="art" />
+
+Cada dibuix declara el que tot retall ha de conservar (`safeArea`), on són la boca, el cap i la cara de cada personatge (`anchors`) i el que cap bafarada no pot tapar (`avoid`), sempre en fraccions del dibuix. La vinyeta de l'esfondrament ocupa la tercera tira, 200 mm per 63 mm, així que la seva zona segura és la franja de les cares i les taronges enlaire; les vinyetes quadrades perden el terra. Res d'això depèn de la llengua, i les sis edicions ho comparteixen.
+
+### 3 · Una portadella davant de la història
+
+<Excerpt region="title-page" />
+
+La portadella és un estil de títol: la sèrie en la lletra de la retolació, el títol en la de les onomatopeies (Bangers, o Dela Gothic One, ZCOOL KuaiLe i Lalezar en les altres escriptures) i una vinyeta de la parada de la Carmen amb la seva forma de 3 : 2. La construcció passa `continuation: { pageIndexOffset: 1 }`, de manera que la portadella cau en pàgina parella i la història comença al davant, a la pàgina 3.
+
+## Variants
+
+### Retola en majúscules, com un còmic americà
+
+Posa la retolació en majúscules; narració i diàlegs la segueixen, i les escriptures sense caixa (xinès, japonès, àrab) es queden com són.
+
+```diff
+-    color: col('ink'), textTransform: 'none' }, // European letterers write in mixed case
++    color: col('ink'), textTransform: 'uppercase' },
+```
+
+## Errors freqüents
+
+- El cos de la retolació és un per a tot el llibre: una traducció més llarga fa créixer les bafarades i les mou, mai no encongeix la lletra. Revisa les pàgines en català i en àrab després de tocar la divisió.
+- El text alternatiu de cada vinyeta és al manifest dels dibuixos en sis llengües i es tria amb `t({ … })`; una llengua que falti a la llista llegeix la primera. `::panel{alt="…"}` en un fitxer de contingut el substitueix per a una vinyeta.

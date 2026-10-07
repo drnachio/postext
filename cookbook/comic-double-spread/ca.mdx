@@ -1,0 +1,56 @@
+---
+title: "Una pàgina de còmic a doble pàgina"
+summary: "Un :::page amb la marca spread estén una sola divisió sobre dues pàgines encarades: una panoràmica creua el llom i la tira de sota es parteix al plec."
+plain: "Un còmic muntat sobre dues pàgines encarades com si fossin una: un dibuix ample d'un mercat ple de gent travessa el centre del llibre i a sota hi ha tres vinyetes."
+description: "Una doble pàgina de còmic a Postext: una divisió sobre les dues pàgines, una panoràmica de 1.900 px que creua el llom i la tira de sota tallada al plec."
+question: "Com estenc una pàgina de còmic a doble pàgina?"
+aliases: ["doble pàgina", "panoràmica", "splash a doble pàgina", "double spread", "見開き", "跨页", "spread", "plec", "pageIndexOffset"]
+---
+
+## Què compondràs
+
+La segona història de l'àlbum del <RecipeLink slug="tebeo-album-page">Nº 152</RecipeLink>, *Avi!*, explicada en dues pàgines encarades. Un dissabte de desembre el mercat és ple de gom a gom i la Lola perd el seu avi entre la gent. La meitat de dalt de la doble pàgina és una sola panoràmica de 432 mm: la Lola, petitona, a l'esquerra de tot; en Paco buscant-la a la dreta de tot, i entre tots dos el passadís del mercat, que va a parar al plec. A sota, tres vinyetes: la Lola sola entre cames, en Paco xiulant dalt d'una caixa de fruita i el retrobament, amb la boina pels aires. La divisió s'escriu una vegada per a les dues pàgines, així que la panoràmica creua el llom i el carrer de la tira de sota cau al plec. L'original és en castellà; les edicions en anglès, català, xinès, àrab i japonès retolen la mateixa doble pàgina.
+
+## Elaboració
+
+### 1 · Una divisió per a les dues pàgines
+
+El codi és a [la resposta curta](#la-resposta-curta). Tot el còmic és una directiva amb la marca `spread`:
+
+```md
+:::page{spread split="55 / * [25 | 25 | *]"}
+::panel{art=ds1}
+caption: Un dissabte de desembre, el mercat era ple de gom a gom.
+lola: Avi?
+paco{shout}: Lola? Lolaaa!
+```
+
+El marc va del marge exterior de la pàgina parella al de la senar; els marges interiors desapareixen. La primera tira, el 55 % de l'alçada, és una sola vinyeta que creua el llom. A la segona, `25 | 25 | *` posa la primera línia al 25 % i la segona al 50 %, que és el llom: dues vinyetes quadrades a la pàgina parella i el retrobament a la senar. Una doble pàgina comença en pàgina parella, i la pàgina 1 d'un document és senar, així que la construcció passa `continuation: { pageIndexOffset: 1 }`: aquest episodi continua l'àlbum a la pàgina 2 i no cal una pàgina en blanc al davant.
+
+### 2 · Una panoràmica que dona per a dues pàgines
+
+<Excerpt region="art" />
+
+La panoràmica és l'únic dibuix que s'imprimeix a través del plec, 432 × 144 mm, per això va a 1.900 px (380 KB); els altres tres tenen entre 1.000 i 1.200 px. La zona segura la conserva gairebé sencera, i els dos personatges són als extrems, al 6 % i al 92 % de l'amplada, lluny del llom, on l'enquadernació s'empassaria una bafarada. El dibuix es va fer amb el centre lliure de cares: el passadís del mercat va a parar al plec.
+
+### 3 · Les bafarades de l'àlbum
+
+<Excerpt region="balloons" />
+
+Els estils de bafarada són els del Nº 152: bafarades blanques, cartel·les groc pàl·lid, un esclat per al crit d'en Paco, un contorn discontinu per al xiuxiueig de la Lola i el xiulet en la lletra de les onomatopeies de l'àlbum, Bangers a les edicions llatines. `cast` dona al PDF i a l'EPUB els noms que llegeixen abans de cada intervenció.
+
+## Variants
+
+### Obre el llibre amb la doble pàgina
+
+Treu la continuació i el motor deixa la pàgina 1 en blanc (rol `blank`), de manera que la doble pàgina continua caient a les pàgines 2 i 3.
+
+```diff
+-const continuation = { pageIndexOffset: 1, pageNumbering: { startAt: 2 } };
++const continuation = {};
+```
+
+## Errors freqüents
+
+- Les bafarades no entren en una franja de 8 mm al voltant del llom, tampoc les fixades amb `at`: un personatge dret al plec té la bafarada apartada a un costat. Deixa els personatges lluny del centre d'una vinyeta que creui el llom.
+- Una bafarada no tapa dos personatges les cares dels quals es toquen, en una abraçada o en una baralla, encara que un d'ells sigui qui parla. A l'edició àrab la doble pàgina es llegeix des de la dreta, el retrobament passa a la pàgina esquerra i la boina enlaire ocupa el seu racó de dalt a la dreta; les dues bafarades d'en Paco van sobre el mercat, al costat del seu cap, i no damunt de l'abraçada. Marca les dues cares al dibuix (`face`) perquè el motor vegi que es toquen.

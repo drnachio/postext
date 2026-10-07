@@ -1,0 +1,196 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 153,
+  "status": "draft",
+  "chapter": "comics",
+  "order": 100,
+  "level": 3,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-relettering",
+      "comic-reading-direction"
+    ],
+    "also": [
+      "comic-lettering",
+      "comic-speakers",
+      "comic-panel-split",
+      "comic-panel-art",
+      "comic-pages",
+      "balloon-styles",
+      "sound-effects",
+      "cjk-fonts",
+      "arabic-fonts",
+      "text-direction",
+      "vertical-writing",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q164",
+    "Q176"
+  ],
+  "gotchas": [
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es",
+      "ja",
+      "zh",
+      "ar"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "pages": "all",
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The lighthouse radio, a one-page comic written for this recipe in English, Spanish, French, Japanese, Chinese and Arabic",
+          "es": "La radio del faro, una historieta de una página escrita para esta receta en inglés, español, francés, japonés, chino y árabe"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "A girl in a yellow raincoat walks up a coastal path towards a red-and-white lighthouse, a fat orange cat trotting ahead; storm clouds gather over the sea.",
+          "es": "Una niña con chubasquero amarillo sube por un camino de la costa hacia un faro rojo y blanco, con un gato naranja gordo delante; se acercan nubes de tormenta sobre el mar."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-arrive.jpg"
+      },
+      {
+        "what": {
+          "en": "The old keeper, white-bearded in a navy sweater and cap, taps a valve radio in the lamp room, microphone in hand; the great lens glows beside him.",
+          "es": "El viejo farero, de barba blanca, jersey azul marino y gorra, golpea una radio de válvulas en la sala de la linterna, micrófono en mano; la gran lente brilla a su lado."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-radio.jpg"
+      },
+      {
+        "what": {
+          "en": "Close-up of Maya frowning at the floor and pointing down.",
+          "es": "Primer plano de Maya, ceñuda, señalando el suelo."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-maya.jpg"
+      },
+      {
+        "what": {
+          "en": "Under the desk, the fat orange cat sleeps on his back on top of the black radio cable, squashing it flat.",
+          "es": "Bajo la mesa, el gato naranja duerme panza arriba sobre el cable negro de la radio y lo aplasta."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-biscuit.jpg"
+      },
+      {
+        "what": {
+          "en": "Night: the lighthouse beam sweeps over a dark sea; Maya and her grandfather stand on the lantern gallery, and far out a fishing boat shows its lights.",
+          "es": "De noche, el haz del faro barre un mar oscuro; Maya y su abuelo están en la galería de la linterna y, a lo lejos, un pesquero enciende sus luces."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-beam.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "related": [
+    "tebeo-album-page",
+    "comic-double-spread"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}

@@ -1,0 +1,1489 @@
+{
+  "schemaVersion": 1,
+  "slug": "comic-double-spread",
+  "sourceHash": "a5cc4ac0230647bda429f3532cb929534774d66ebb7c589f9437f86bd1e2c537",
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-07T10:13:06.954Z",
+  "variants": {
+    "en": {
+      "hash8": "b2444c2a",
+      "vdtHash": "6d1ab509a3fcd3d3cd62c9cb4ec3083deec81511",
+      "timings": {
+        "importMs": 160,
+        "fontsMs": 99,
+        "buildMs": 303,
+        "totalMs": 1120,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Patrick Hand",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Patrick Hand"
+        ],
+        "pages": 2,
+        "ownLines": 121
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 228684,
+          "alt": "Page 2."
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 214366,
+          "alt": "Page 3."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 872976,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893456
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Patrick Hand",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "eaffc435",
+      "vdtHash": "28c0aa1dddebc1a19af91ea4e5df75e8b5dd8a8e",
+      "timings": {
+        "importMs": 171,
+        "fontsMs": 1864,
+        "buildMs": 1035,
+        "totalMs": 3931,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Patrick Hand",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Patrick Hand"
+        ],
+        "pages": 2,
+        "ownLines": 121
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 228848,
+          "alt": "Página 2."
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 213932,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 873830,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893498
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Patrick Hand",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "ca": {
+      "hash8": "9396fa56",
+      "vdtHash": "e051cb0bfac9ed7bda549de1dc7a909fb242d473",
+      "timings": {
+        "importMs": 200,
+        "fontsMs": 104,
+        "buildMs": 320,
+        "totalMs": 1182,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Patrick Hand",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Patrick Hand"
+        ],
+        "pages": 2,
+        "ownLines": 121
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 228532,
+          "alt": "Pàgina 2."
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 214280,
+          "alt": "Pàgina 3."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 873530,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893499
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Patrick Hand",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "zh": {
+      "hash8": "82e5cdb6",
+      "vdtHash": "3d5f55ee3df3e73798dbe8e4588f5be32f72419e",
+      "timings": {
+        "importMs": 233,
+        "fontsMs": 248,
+        "buildMs": 437,
+        "totalMs": 1484,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Sans SC",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Noto Sans SC"
+        ],
+        "pages": 2,
+        "ownLines": 121
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 228310,
+          "alt": "第 2 页。"
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 215926,
+          "alt": "第 3 页。"
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 895404,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893684
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans SC",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 134 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "ar": {
+      "hash8": "8d0a0677",
+      "vdtHash": "62186dc3c174a7a0486ed05494d986ce8953dc58",
+      "timings": {
+        "importMs": 183,
+        "fontsMs": 123,
+        "buildMs": 323,
+        "totalMs": 1209,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Playpen Sans Arabic",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Playpen Sans Arabic"
+        ],
+        "pages": 2,
+        "ownLines": 121
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "٢",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 210856,
+          "alt": "الصفحة ٢."
+        },
+        {
+          "n": 2,
+          "label": "٣",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 232304,
+          "alt": "الصفحة ٣."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 885216,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893819
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Playpen Sans Arabic",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "document-digits",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "sound-effects",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "ja": {
+      "hash8": "5889e7eb",
+      "vdtHash": "cfc96c450c21c65571b4a98629a0c75ebebaecee",
+      "timings": {
+        "importMs": 166,
+        "fontsMs": 200,
+        "buildMs": 1755,
+        "totalMs": 4563,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Zen Antique",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Zen Antique"
+        ],
+        "pages": 2,
+        "ownLines": 121
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 227838,
+          "alt": "2ページ。"
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 215022,
+          "alt": "3ページ。"
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 895424,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893739
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Zen Antique",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the build took 1755 ms (warning at 1.5 s)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}

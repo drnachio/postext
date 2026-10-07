@@ -1,0 +1,208 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 152,
+  "status": "draft",
+  "chapter": "comics",
+  "order": 90,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-panel-styles",
+      "balloon-styles"
+    ],
+    "also": [
+      "comic-panel-split",
+      "comic-panel-art",
+      "comic-speakers",
+      "comic-pages",
+      "comic-lettering",
+      "comic-relettering",
+      "heading-styles",
+      "opener-design",
+      "design-images",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q178",
+    "Q163"
+  ],
+  "gotchas": [
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "es",
+      "en",
+      "ca",
+      "zh",
+      "ar",
+      "ja"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "pages": "all",
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Las naranjas de Carmen (Carmen's Oranges), a one-page comic written for this recipe, in six languages",
+          "es": "Las naranjas de Carmen, una historieta de una página escrita para esta receta, en seis idiomas"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "A sunny Sunday in Madrid: an iron-and-glass market hall on a plaza with shoppers and pigeons.",
+          "es": "Un domingo soleado en Madrid: un mercado de hierro y cristal en una plaza, con gente y palomas."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t1.jpg"
+      },
+      {
+        "what": {
+          "en": "Inside the market, Lola pulls her grandfather Paco by the hand, pointing ahead between the stalls.",
+          "es": "Dentro del mercado, Lola tira de la mano de su abuelo Paco y señala hacia los puestos."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t2.jpg"
+      },
+      {
+        "what": {
+          "en": "Lola gazes up at a towering pyramid of oranges while Carmen, the fruit seller, polishes an orange.",
+          "es": "Lola mira una pirámide enorme de naranjas mientras Carmen, la frutera, saca brillo a una naranja."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t3.jpg"
+      },
+      {
+        "what": {
+          "en": "Lola reaches for an orange at the bottom of the pile; Paco, alarmed, raises a hand to stop her.",
+          "es": "Lola alarga la mano hacia una naranja de abajo; Paco, alarmado, levanta la mano para detenerla."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t4.jpg"
+      },
+      {
+        "what": {
+          "en": "The orange pyramid collapses: oranges roll everywhere, Paco's beret flies off, Carmen throws up her hands, pigeons scatter.",
+          "es": "La pirámide se derrumba: ruedan naranjas por todas partes, la boina de Paco sale volando, Carmen levanta los brazos y las palomas huyen."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t5.jpg"
+      },
+      {
+        "what": {
+          "en": "Lola, Paco and Carmen kneel to gather the oranges into the beret and the apron, laughing; a pigeon pecks one.",
+          "es": "Lola, Paco y Carmen, de rodillas, recogen las naranjas en la boina y en el delantal, riéndose; una paloma picotea una."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t6.jpg"
+      },
+      {
+        "what": {
+          "en": "On a park bench, Lola and Paco peel oranges and laugh; a pigeon sits on Paco's beret.",
+          "es": "En un banco del parque, Lola y Paco pelan naranjas y se ríen; una paloma se ha posado en la boina de Paco."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "t7.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Patrick Hand",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "downloads": {
+    "pdf": true
+  }
+}
