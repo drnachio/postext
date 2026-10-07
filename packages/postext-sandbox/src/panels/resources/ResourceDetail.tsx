@@ -20,6 +20,7 @@ import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
 import { PdfMasterUploader } from './PdfMasterUploader';
 import { SafeAreaField } from './SafeAreaEditor';
+import { applyMarks } from './pictureMarks';
 import { VideoEditor } from './VideoEditor';
 import { SvgSourceEditor, type SvgSourceCommit } from './SvgSourceEditor';
 import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
@@ -515,12 +516,7 @@ export function ResourceDetail({
         {((resource.kind === 'bitmap' && resource.bitmap?.fileId) || (resource.kind === 'svg' && resource.svg?.fileId) || (resource.kind === 'video' && resource.video?.poster?.fileId)) && (
           <SafeAreaField
             resource={resource}
-            onChange={(safeArea) => {
-              const next = touch({});
-              if (safeArea) next.safeArea = safeArea;
-              else delete next.safeArea;
-              onChange(next);
-            }}
+            onChange={(marks) => onChange(applyMarks(touch({}), marks))}
           />
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
