@@ -161,7 +161,8 @@ describe("links and inline HTML", () => {
         }
       }
     }
-  });
+    // Seven locales of renditions: past the CI default of 120 s.
+  }, 300_000);
 });
 
 describe("llms.txt", () => {
