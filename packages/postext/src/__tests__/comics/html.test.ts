@@ -38,15 +38,15 @@ function letter(doc: VDTDocument): VDTDocument {
   const c = page.comic!;
   const [a, b] = [c.panels[0]!, c.panels[1]!];
   const balloons: VDTComicBalloon[] = [
-    { id: 'b1', panelIndex: 0, order: 0, style: 'speech', speaker: 'ana', sourceStart: 1, sourceEnd: 2, group: 0,
+    { id: 'b1', panelIndex: 0, order: 0, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 1, sourceEnd: 2, group: 0,
       shape: { d: `M${a.bbox.x + 10} ${a.bbox.y + 10}h80v30h-80Z M${a.bbox.x + 90} ${a.bbox.y + 10}h80v30h-80Z`, fill: '#ffffff', stroke: '#111111', strokeWidth: 1.5 },
       text: [text('Did you hear', a.bbox.x + 10, a.bbox.y + 10)], bbox: { x: a.bbox.x + 10, y: a.bbox.y + 10, width: 80, height: 30 } },
-    { id: 'b2', panelIndex: 0, order: 1, style: 'speech', speaker: 'ana', sourceStart: 3, sourceEnd: 4, group: 0,
+    { id: 'b2', panelIndex: 0, order: 1, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 3, sourceEnd: 4, group: 0,
       text: [text('that?', a.bbox.x + 90, a.bbox.y + 10)], bbox: { x: a.bbox.x + 90, y: a.bbox.y + 10, width: 80, height: 30 } },
-    { id: 'c1', panelIndex: 1, order: 0, style: 'caption', sourceStart: 5, sourceEnd: 6, group: 1,
+    { id: 'c1', panelIndex: 1, order: 0, kind: 'caption', style: 'caption', sourceStart: 5, sourceEnd: 6, group: 1,
       shape: { d: `M${b.bbox.x} ${b.bbox.y}h100v20h-100Z`, fill: '#fff3c4', stroke: '#111111', strokeWidth: 1, dash: [3, 2] },
       text: [text('Lyon, 1943.', b.bbox.x, b.bbox.y)], bbox: { x: b.bbox.x, y: b.bbox.y, width: 100, height: 20 } },
-    { id: 's1', panelIndex: 1, order: 1, style: 'sfx', sourceStart: 7, sourceEnd: 8, group: 2, rotate: -8, halo: { width: 2, color: '#ffffff' },
+    { id: 's1', panelIndex: 1, order: 1, kind: 'sfx', style: 'sfx', sourceStart: 7, sourceEnd: 8, group: 2, rotate: -8, halo: { width: 2, color: '#ffffff' },
       text: [text('KRAK', b.bbox.x + 40, b.bbox.y + 50)], bbox: { x: b.bbox.x + 40, y: b.bbox.y + 50, width: 60, height: 30 } },
   ];
   c.balloons = balloons;
