@@ -45,4 +45,4 @@ Cada idioma do site letreira as tiras num arquivo próprio, de frente para o ori
 ## Erros comuns
 
 - Num quadro pequeno, um balão vertical fica sem altura antes de ficar sem largura: o motor o compõe em mais colunas, mais curtas, quebrando entre palavras. O último grito do funcionário continua alto demais para o quadro de baixo em japonês, então ele é marcado com `break` (`kyaku{shout break}`): estoura a moldura para o quadro de cima em vez de cobrir os gatos, sem sair para a margem da página.
-- Uma onomatopeia grande fica longe dos rostos, como um balão: ずしっ fixada em `86% 82%` cobria a cara da gata tricolor na tira japonesa, e a composição avisava `comicBalloonOverflow`, então ali ela fica em `90% 88%`.
+- Uma onomatopeia grande fica longe dos rostos, como um balão, e o seu ponto fixo fica dentro da área segura do quadro, para que todo recorte o mantenha: POF! fica em `70% 80%`, sobre as patas dos gatos. O japonês ずしっ é composto na vertical e é mais alto; nesse ponto cobria a cara da gata tricolor e a composição avisava `comicBalloonOverflow`, então ali ele fica em `86% 84%`, ao lado dela.
