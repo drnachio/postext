@@ -1,0 +1,123 @@
+{
+ "cast": "pipotto",
+ "quality": "high",
+ "style": "Newspaper comic-strip cartoon: simple bold rounded black outlines, flat cheerful colours, minimal background, lots of plain white space, clean and readable like a classic daily gag strip.",
+ "suffix": "Clean artwork only: no text, no letters, no words, no numbers, no speech balloons, no captions, no sound-effect lettering, no signature, no logo, no panel border, no frame; the picture runs to the edges of the image.",
+ "crops": {
+  "_refs/pipotto/sheet-cast.png": {
+   "_refs/pipotto/pip.png": [
+    220,
+    410,
+    600,
+    980
+   ],
+   "_refs/pipotto/otto.png": [
+    600,
+    0,
+    1320,
+    1000
+   ]
+  }
+ },
+ "items": [
+  {
+   "id": "sheet-cast",
+   "endpoint": "t2i",
+   "out": "_refs/pipotto/sheet-cast.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Character reference sheet on a plain pure white background, full-body figures standing side by side in a neutral pose, front three-quarter view, evenly spaced with wide white gaps between them so each can be cut out separately, no shadows on the ground, no background scenery. Left: Pip, a small round penguin with a red-and-white striped knitted scarf, little orange beak and feet, big bright eyes. Right: Otto, a big gentle walrus, brown and round, long white tusks, bushy whisker moustache, a small blue bow tie, a tall white baker's hat, kind sleepy eyes. Pip only reaches up to Otto's belly."
+  },
+  {
+   "id": "po1",
+   "out": "newspaper-daily-strip/raw/po1.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/pipotto/pip.png",
+    "_refs/pipotto/otto.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Pip, the small penguin with a red-and-white striped scarf; reference image 2 shows Otto, the big walrus with a blue bow tie and a baker's hat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Inside a tiny bakery with a little wooden counter and shelves of bread loaves: Pip the penguin walks in through the door, waving cheerfully; Otto the walrus stands behind the counter, smiling. Keep the top third quiet and uncluttered (plain pale wall) so speech balloons can be lettered there later. The only characters in the picture are Pip and Otto; no other people or animals."
+  },
+  {
+   "id": "po2",
+   "out": "newspaper-daily-strip/raw/po2.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/pipotto/otto.png",
+    "_refs/pipotto/pip.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Otto, the big walrus with a blue bow tie and a baker's hat; reference image 2 shows Pip, the small penguin with a red-and-white striped scarf. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Behind the bakery counter Otto proudly holds up an enormous croissant, as big as Pip, with both flippers; Pip in front of the counter looks up at it, beak open. Keep the top third quiet and uncluttered (plain pale wall) so speech balloons can be lettered there later. The only characters in the picture are Pip and Otto; no other people or animals."
+  },
+  {
+   "id": "po3",
+   "out": "newspaper-daily-strip/raw/po3.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/pipotto/pip.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Pip, the small penguin with a red-and-white striped scarf. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Pip stands on the bakery counter next to the huge croissant lying beside him, which is bigger than he is; Pip scratches his head with a flipper, embarrassed. Keep the top third quiet and uncluttered (plain pale wall) so speech balloons can be lettered there later. The only characters in the picture are Pip; no other people or animals."
+  },
+  {
+   "id": "po4",
+   "out": "newspaper-daily-strip/raw/po4.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/pipotto/otto.png",
+    "_refs/pipotto/pip.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Otto, the big walrus with a blue bow tie and a baker's hat; reference image 2 shows Pip, the small penguin with a red-and-white striped scarf. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Otto happily munches the big half of the giant croissant, crumbs flying; Pip, in front of the counter, holds the tiny end piece Otto gave him, with a flat deadpan look. Keep the top third quiet and uncluttered (plain pale wall) so speech balloons can be lettered there later. The only characters in the picture are Pip and Otto; no other people or animals."
+  },
+  {
+   "id": "po5",
+   "out": "newspaper-daily-strip/raw/po5.png",
+   "size": [
+    1792,
+    768
+   ],
+   "refs": [
+    "_refs/pipotto/pip.png",
+    "_refs/pipotto/otto.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Pip, the small penguin with a red-and-white striped scarf; reference image 2 shows Otto, the big walrus with a blue bow tie and a baker's hat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Wide panorama: a small ice floe on a calm blue polar sea, with a tiny bakery hut with a striped awning on it; Pip and Otto sit at a round hole in the ice, fishing with rods; snowy mountains far away. Keep the upper half quiet and uncluttered (open pale sky) so speech balloons can be lettered there later. The only characters in the picture are Pip and Otto; no other people or animals."
+  },
+  {
+   "id": "po6",
+   "out": "newspaper-daily-strip/raw/po6.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/pipotto/pip.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Pip, the small penguin with a red-and-white striped scarf. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Pip on the ice proudly holds up the tiny fish he caught on his line, no bigger than his flipper; the little fish looks unimpressed. Keep the top third quiet and uncluttered (plain pale sky) so speech balloons can be lettered there later. The only characters in the picture are Pip and a tiny fish; no other people or animals."
+  },
+  {
+   "id": "po7",
+   "out": "newspaper-daily-strip/raw/po7.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/pipotto/otto.png",
+    "_refs/pipotto/pip.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Otto, the big walrus with a blue bow tie and a baker's hat; reference image 2 shows Pip, the small penguin with a red-and-white striped scarf. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Otto pulls an old soggy boot out of the fishing hole on his line, astonished; next to him Pip laughs so hard he has fallen on his back on the ice, flippers waving. Keep the top third quiet and uncluttered (plain pale sky) so speech balloons can be lettered there later. The only characters in the picture are Pip and Otto; no other people or animals."
+  }
+ ]
+}

@@ -1,0 +1,280 @@
+{
+ "cast": "lighthouse",
+ "quality": "high",
+ "style": "European bande dessinee illustration: confident black ink line with soft transparent watercolour washes, muted coastal palette (slate blue, sea green, sand, faded brick red, warm lamp yellow), gentle classic children's graphic-novel look.",
+ "suffix": "Clean artwork only: no text, no letters, no words, no numbers, no speech balloons, no captions, no sound-effect lettering, no signature, no logo, no panel border, no frame; the picture runs to the edges of the image.",
+ "crops": {
+  "_refs/lighthouse/sheet-cast.png": {
+   "_refs/lighthouse/maya.png": [
+    30,
+    90,
+    440,
+    1000
+   ],
+   "_refs/lighthouse/tomas.png": [
+    500,
+    0,
+    920,
+    1000
+   ],
+   "_refs/lighthouse/biscuit.png": [
+    1000,
+    420,
+    1530,
+    980
+   ]
+  },
+  "_refs/lighthouse/sheet-setting.png": {
+   "_refs/lighthouse/exterior.png": [
+    0,
+    0,
+    750,
+    1024
+   ],
+   "_refs/lighthouse/lamproom.png": [
+    785,
+    0,
+    1536,
+    1024
+   ]
+  }
+ },
+ "items": [
+  {
+   "id": "sheet-cast",
+   "endpoint": "t2i",
+   "out": "_refs/lighthouse/sheet-cast.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Character reference sheet on a plain pure white background, full-body figures standing side by side in a neutral pose, front three-quarter view, evenly spaced with wide white gaps between them so each can be cut out separately, no shadows on the ground, no background scenery. Left: Maya, an 11-year-old girl with warm brown skin and a big cloud of curly black hair, bright yellow hooded raincoat, blue jeans, red rubber boots, lively curious face. Middle: Grandpa Tomas, a lighthouse keeper in his seventies, tall and slightly stooped, full white beard, bushy white eyebrows, kind crinkled eyes, navy blue cable-knit sweater, dark navy keeper's peaked cap, grey trousers, black boots. Right: Biscuit, a very fat round orange tabby cat with white chest and paws, sitting, smug half-closed eyes."
+  },
+  {
+   "id": "sheet-setting",
+   "endpoint": "t2i",
+   "out": "_refs/lighthouse/sheet-setting.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Two location studies side by side on white, separated by a wide white gap. Left: a red-and-white horizontally striped lighthouse with a black lantern gallery standing on a rocky Atlantic headland, a small white keeper's cottage with a slate roof beside it, a winding path, grey-green sea and low clouds. Right: the cosy round lamp room interior at the top of the lighthouse: the big glass Fresnel lens in the centre, curved windows looking at the sea, a wooden desk with an old valve radio set and a microphone, a stool, a teapot, a knitted blanket. No people, no animals."
+  },
+  {
+   "id": "lh-arrive",
+   "out": "comic-page-splitters/raw/lh-arrive.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png",
+    "_refs/lighthouse/biscuit.png",
+    "_refs/lighthouse/exterior.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots; reference image 2 shows Biscuit, a fat orange tabby cat; reference image 3 shows the lighthouse and cottage location (setting reference). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Late afternoon establishing wide shot, seen from low down the winding coastal path: the red-and-white striped lighthouse and the white cottage on the rocky headland. In the lower middle, Maya walks up the path with a small backpack, waving towards the lighthouse, and Biscuit the fat orange cat trots ahead of her. Far out over the sea, dark storm clouds are gathering on the horizon. Keep the top third quiet and uncluttered (wide pale grey-blue sky) so speech balloons can be lettered there later. The only characters in the picture are Maya and Biscuit; no other people or animals."
+  },
+  {
+   "id": "lh-radio",
+   "out": "comic-page-splitters/raw/lh-radio.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/lighthouse/tomas.png",
+    "_refs/lighthouse/lamproom.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Grandpa Tomas, the white-bearded lighthouse keeper in a navy sweater and peaked cap; reference image 2 shows the lamp room interior (setting reference: the lens, the desk with the old radio). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Inside the round lamp room at dusk: Grandpa Tomas sits at the wooden desk bent over the old valve radio set, frowning, tapping the side of the radio with one finger, the microphone in his other hand. Medium shot from the side, the big glass lens glowing softly at the edge of the picture, windows showing a darkening sea. Keep the top third quiet and uncluttered (curved ceiling and window glass) so speech balloons can be lettered there later. The only characters in the picture are Grandpa Tomas; no other people or animals."
+  },
+  {
+   "id": "lh-maya",
+   "out": "comic-page-splitters/raw/lh-maya.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close-up, head and shoulders: Maya in the warm lamp-lit room, looking down at the floor with a puzzled frown and one eyebrow raised, pointing down with one finger. Behind her, a plain softly lit wooden wall. Keep the top third quiet and uncluttered (plain wooden wall) so speech balloons can be lettered there later. The only characters in the picture are Maya; no other people or animals."
+  },
+  {
+   "id": "lh-biscuit",
+   "out": "comic-page-splitters/raw/lh-biscuit.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/lighthouse/biscuit.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Biscuit, a fat orange tabby cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Low angle on the wooden floor under a desk: Biscuit, the fat orange cat, lies sprawled on his back fast asleep right on top of a black radio cable, squashing it flat under his round belly, paws in the air, perfectly content. The cable runs across the floorboards to the wall. Keep the top third quiet and uncluttered (dark underside of the desk) so speech balloons can be lettered there later. The only characters in the picture are Biscuit; no other people or animals."
+  },
+  {
+   "id": "lh-beam",
+   "out": "comic-page-splitters/raw/lh-beam.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png",
+    "_refs/lighthouse/tomas.png",
+    "_refs/lighthouse/biscuit.png",
+    "_refs/lighthouse/exterior.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots; reference image 2 shows Grandpa Tomas, the white-bearded lighthouse keeper in a navy sweater and peaked cap; reference image 3 shows Biscuit, a fat orange tabby cat; reference image 4 shows the lighthouse and cottage location (setting reference). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Night, wide shot from outside: the lighthouse stands in the left third of the picture and its bright beam sweeps out to the right over a choppy dark sea under storm clouds. On the lantern gallery at the top, small figures of Maya and Grandpa Tomas lean on the railing with Biscuit between them, lit warm yellow by the lamp. Far out at sea, the tiny lights of a fishing boat. Keep the upper right quiet and uncluttered (dark night sky) so speech balloons can be lettered there later. The only characters in the picture are Maya, Grandpa Tomas and Biscuit; no other people or animals."
+  },
+  {
+   "id": "bk-storm",
+   "out": "balloon-kinds/raw/bk-storm.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png",
+    "_refs/lighthouse/tomas.png",
+    "_refs/lighthouse/lamproom.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots; reference image 2 shows Grandpa Tomas, the white-bearded lighthouse keeper in a navy sweater and peaked cap; reference image 3 shows the lamp room interior (setting reference: the lens, the desk with the old radio). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Night in the lamp room during a storm: rain streams down the dark windows and lightning glows outside. Grandpa Tomas sits at the desk holding the radio microphone close to his mouth, listening hard to the old radio set; Maya sits on the stool beside him with the knitted blanket round her shoulders over her raincoat, eyes wide. Medium-wide shot. Keep the top third quiet and uncluttered (dark rainy window glass) so speech balloons can be lettered there later. The only characters in the picture are Maya and Grandpa Tomas; no other people or animals."
+  },
+  {
+   "id": "bk-whisper",
+   "out": "balloon-kinds/raw/bk-whisper.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png",
+    "_refs/lighthouse/biscuit.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots; reference image 2 shows Biscuit, a fat orange tabby cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close shot under the desk in the dim lamp room: Maya crouches low and whispers to Biscuit, the fat orange cat, who hides there with flattened ears and huge round eyes; her hand rests gently on his back. Warm dim light. Keep the top third quiet and uncluttered (shadowy underside of the desk) so speech balloons can be lettered there later. The only characters in the picture are Maya and Biscuit; no other people or animals."
+  },
+  {
+   "id": "bk-shout",
+   "out": "balloon-kinds/raw/bk-shout.png",
+   "size": [
+    1024,
+    1280
+   ],
+   "refs": [
+    "_refs/lighthouse/tomas.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Grandpa Tomas, the white-bearded lighthouse keeper in a navy sweater and peaked cap. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Dramatic close-up of Grandpa Tomas shouting into the old radio microphone, mouth wide open, eyebrows pulled down, beard bristling, his face lit from below by the glowing radio dials, a rain-streaked black window behind him. Keep the top third quiet and uncluttered (dark window) so speech balloons can be lettered there later. The only characters in the picture are Grandpa Tomas; no other people or animals."
+  },
+  {
+   "id": "bk-sea",
+   "out": "balloon-kinds/raw/bk-sea.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/lighthouse/exterior.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows the lighthouse and cottage location (setting reference). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Wide shot of the open sea at night in a storm: huge dark waves, a small blue fishing trawler heaving on a wave crest in the lower left, a fork of lightning far off, and the lighthouse beam crossing the scene from the right edge. Keep the top third quiet and uncluttered (dark stormy sky) so speech balloons can be lettered there later. No people and no animals in the picture."
+  },
+  {
+   "id": "bk-window",
+   "out": "balloon-kinds/raw/bk-window.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Maya alone at the curved lamp-room window, seen from slightly behind and to the side, both hands and her nose pressed to the rain-streaked glass, staring out into the dark storm, her face faintly reflected in the glass. Quiet, tense mood, warm light behind her. Keep the top third quiet and uncluttered (dark window glass) so speech balloons can be lettered there later. The only characters in the picture are Maya; no other people or animals."
+  },
+  {
+   "id": "bk-morning",
+   "out": "balloon-kinds/raw/bk-morning.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png",
+    "_refs/lighthouse/tomas.png",
+    "_refs/lighthouse/biscuit.png",
+    "_refs/lighthouse/exterior.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots; reference image 2 shows Grandpa Tomas, the white-bearded lighthouse keeper in a navy sweater and peaked cap; reference image 3 shows Biscuit, a fat orange tabby cat; reference image 4 shows the lighthouse and cottage location (setting reference). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. The next morning, calm and bright after the storm: Maya, Grandpa Tomas and Biscuit stand on the rocks at the foot of the lighthouse near the right edge, waving happily down towards someone below, out of the picture at the bottom right. The sea is calm and sparkling; wet rocks, puddles, seaweed. Keep the top third quiet and uncluttered (clear pale morning sky) so speech balloons can be lettered there later. The only characters in the picture are Maya, Grandpa Tomas and Biscuit; no other people or animals."
+  },
+  {
+   "id": "sp-splash",
+   "out": "splash-inset-broken-border/raw/sp-splash.png",
+   "size": [
+    1088,
+    1536
+   ],
+   "refs": [
+    "_refs/lighthouse/exterior.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows the lighthouse and cottage location (setting reference). Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Full-page splash illustration: the red-and-white lighthouse on its rocky headland in a violent night storm, enormous waves exploding against the rocks below it, the lamp beam slicing through the driving rain, a fork of lightning behind. Dramatic low angle, epic scale. Keep the upper quarter quiet and uncluttered (dark churning clouds) so speech balloons can be lettered there later. No people and no animals in the picture."
+  },
+  {
+   "id": "sp-maya-face",
+   "out": "splash-inset-broken-border/raw/sp-maya-face.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/lighthouse/maya.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Maya, an 11-year-old girl with curly black hair, yellow raincoat and red boots. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close-up of Maya's face behind a rain-streaked window at night, hood of her yellow raincoat up, lit warm yellow by the lamp behind her, eyes wide and determined, rain drops running down the glass in front of her face. The only characters in the picture are Maya; no other people or animals."
+  },
+  {
+   "id": "sp-wave",
+   "out": "splash-inset-broken-border/raw/sp-wave.png",
+   "size": [
+    1792,
+    768
+   ],
+   "refs": [],
+   "prompt": "Panoramic view: a giant wave curling and crashing over black rocks at night, white spray and foam filling the right half of the picture, the lighthouse beam catching the spray in a pale glowing band. Keep the upper left quiet and uncluttered (dark sky) so speech balloons can be lettered there later. No people and no animals in the picture.",
+   "endpoint": "t2i"
+  },
+  {
+   "id": "sp-tomas",
+   "out": "splash-inset-broken-border/raw/sp-tomas.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/lighthouse/tomas.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Grandpa Tomas, the white-bearded lighthouse keeper in a navy sweater and peaked cap. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Grandpa Tomas outside on the iron lantern gallery of the lighthouse at night in the storm, a dark oilskin coat over his navy sweater, cap pulled down, holding up a storm lantern, wind whipping his white beard, gripping the railing and peering out to sea. Keep the upper left quiet and uncluttered (open stormy sky) so speech balloons can be lettered there later. The only characters in the picture are Grandpa Tomas; no other people or animals."
+  },
+  {
+   "id": "sp-gull",
+   "out": "splash-inset-broken-border/raw/sp-gull.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [],
+   "prompt": "A single herring gull in flight, wings fully spread, seen from below in three-quarter view, beating against a strong wind, white and pale grey with black wing tips, yellow beak. The bird is isolated on a fully transparent background: no sky, no background, no shadow, no ground.",
+   "endpoint": "t2i",
+   "background": "transparent",
+   "suffix": "No text, no letters, no signature, no frame, no border."
+  }
+ ],
+ "pops": [
+  {
+   "slug": "splash-inset-broken-border",
+   "panel": "sp-tomas",
+   "cutout": "sp-gull",
+   "box": [
+    0.0,
+    0.44,
+    0.34
+   ]
+  }
+ ]
+}

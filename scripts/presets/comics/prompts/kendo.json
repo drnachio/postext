@@ -1,0 +1,226 @@
+{
+ "cast": "kendo",
+ "quality": "high",
+ "style": "Japanese shonen/shojo manga artwork in black and white only: crisp black ink line, grey screentone dots for shading, solid black hair, no colour at all, monochrome, clean professional manga page art.",
+ "suffix": "Clean artwork only: no text, no letters, no words, no numbers, no speech balloons, no captions, no sound-effect lettering, no signature, no logo, no panel border, no frame; the picture runs to the edges of the image.",
+ "crops": {
+  "_refs/kendo/sheet-cast.png": {
+   "_refs/kendo/hana-gi.png": [
+    0,
+    0,
+    420,
+    1024
+   ],
+   "_refs/kendo/hana-school.png": [
+    450,
+    0,
+    760,
+    1024
+   ],
+   "_refs/kendo/sora.png": [
+    790,
+    40,
+    1090,
+    1024
+   ],
+   "_refs/kendo/mori.png": [
+    1110,
+    0,
+    1536,
+    1024
+   ]
+  }
+ },
+ "items": [
+  {
+   "id": "sheet-cast",
+   "endpoint": "t2i",
+   "out": "_refs/kendo/sheet-cast.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Character reference sheet on a plain pure white background, full-body figures standing side by side in a neutral pose, front three-quarter view, evenly spaced with wide white gaps between them so each can be cut out separately, no shadows on the ground, no background scenery. Four figures, left to right: (1) Hana, a 16-year-old girl with a long straight black high ponytail and determined sharp eyes, wearing a dark indigo kendo keikogi jacket and pleated hakama, holding a bamboo shinai sword lowered; (2) the same Hana in a Japanese school sailor uniform with a dark skirt and a neckerchief, ponytail; (3) Sora, a slim 16-year-old boy with short messy hair and large round glasses, worried eyebrows, in a black high-collared gakuran school uniform, holding a small cloth shrine charm; (4) Coach Mori, a stern broad-shouldered man in his fifties, short cropped greying hair, deep frown lines, thick eyebrows, wearing a kendo keikogi and hakama, arms crossed."
+  },
+  {
+   "id": "k1",
+   "out": "manga-right-to-left/raw/k1.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [],
+   "prompt": "Establishing shot of a Japanese high school's old wooden kendo dojo building at dusk: tiled roof, sliding doors open with warm light inside, a bare cherry tree, an empty schoolyard, crows on an electric wire. Keep the top third quiet and uncluttered (quiet evening sky) so speech balloons can be lettered there later. No people and no animals in the picture.",
+   "endpoint": "t2i"
+  },
+  {
+   "id": "k2",
+   "out": "manga-right-to-left/raw/k2.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/kendo/hana-gi.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana, a 16-year-old girl with a long black high ponytail, in kendo uniform and hakama. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Inside the empty wooden dojo at dusk: Hana alone, in kendo uniform and hakama without helmet or armour, her ponytail swinging, performs a big overhead strike with her bamboo shinai, speed lines, drops of sweat flying. Polished wooden floor, a plain wooden wall. Keep the top third quiet and uncluttered (plain wooden wall) so speech balloons can be lettered there later. The only characters in the picture are Hana; no other people or animals."
+  },
+  {
+   "id": "k3",
+   "out": "manga-right-to-left/raw/k3.png",
+   "size": [
+    1024,
+    1280
+   ],
+   "refs": [
+    "_refs/kendo/sora.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Sora, a boy with short messy hair and round glasses in a black school uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Sora peeks around the edge of an open sliding wooden door, half hidden, worried face, round glasses glinting, clutching a small cloth shrine charm to his chest. A darkening school corridor behind him. Keep the top third quiet and uncluttered (plain wall and door frame) so speech balloons can be lettered there later. The only characters in the picture are Sora; no other people or animals."
+  },
+  {
+   "id": "k4",
+   "out": "manga-right-to-left/raw/k4.png",
+   "size": [
+    1280,
+    896
+   ],
+   "refs": [
+    "_refs/kendo/hana-gi.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana, a 16-year-old girl with a long black high ponytail, in kendo uniform and hakama. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Extreme close-up of Hana's face: sweat on her brow, strands of hair stuck to her forehead, fierce focused eyes, breathing hard through slightly open lips; dark screentone background with radial focus lines. The only characters in the picture are Hana; no other people or animals."
+  },
+  {
+   "id": "k5",
+   "out": "manga-right-to-left/raw/k5.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/kendo/hana-gi.png",
+    "_refs/kendo/sora.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana, a 16-year-old girl with a long black high ponytail, in kendo uniform and hakama; reference image 2 shows Sora, a boy with short messy hair and round glasses in a black school uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Medium shot in the dojo: Sora, a little nervous and blushing, holds out the small cloth shrine charm with both hands towards Hana; Hana, her bamboo shinai resting on her shoulder, looks down at it in surprise. Wooden floor and sliding doors. Keep the top third quiet and uncluttered (plain wooden wall) so speech balloons can be lettered there later. The only characters in the picture are Hana and Sora; no other people or animals."
+  },
+  {
+   "id": "k6",
+   "out": "manga-right-to-left/raw/k6.png",
+   "size": [
+    1024,
+    1280
+   ],
+   "refs": [
+    "_refs/kendo/mori.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Coach Mori, a stern man in his fifties with cropped grey hair in kendo uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Coach Mori stands in the dojo doorway, backlit by the corridor light, arms crossed, stern scowl, his long shadow stretching across the wooden floor towards the viewer. Low angle. Keep the top third quiet and uncluttered (dark ceiling and door frame) so speech balloons can be lettered there later. The only characters in the picture are Coach Mori; no other people or animals."
+  },
+  {
+   "id": "k7",
+   "out": "manga-right-to-left/raw/k7.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/kendo/mori.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Coach Mori, a stern man in his fifties with cropped grey hair in kendo uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close-up of Coach Mori's stern face softening into a small, rare smile at one corner of his mouth, eyes half closed. Keep the upper left quiet and uncluttered (flat screentone) so speech balloons can be lettered there later. The only characters in the picture are Coach Mori; no other people or animals."
+  },
+  {
+   "id": "k8",
+   "out": "manga-right-to-left/raw/k8.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/kendo/hana-gi.png",
+    "_refs/kendo/sora.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana, a 16-year-old girl with a long black high ponytail, in kendo uniform and hakama; reference image 2 shows Sora, a boy with short messy hair and round glasses in a black school uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Hana kneels in seiza on the dojo floor in her kendo uniform, tying the small cloth shrine charm to the cords of her uniform; Sora kneels beside her, smiling with relief and scratching the back of his head. Gentle mood, soft sparkle screentone. Keep the top third quiet and uncluttered (plain wooden wall) so speech balloons can be lettered there later. The only characters in the picture are Hana and Sora; no other people or animals."
+  },
+  {
+   "id": "k9",
+   "out": "manga-right-to-left/raw/k9.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/kendo/hana-school.png",
+    "_refs/kendo/sora.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana in her sailor school uniform; reference image 2 shows Sora, a boy with short messy hair and round glasses in a black school uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. On the school rooftop at sunset, seen from behind: Hana in her sailor school uniform and Sora in his black school uniform sit side by side against the wire fence, looking out over the town and distant mountains; Hana's ponytail stirs in the wind; a long bamboo sword bag leans beside her. Keep the upper half quiet and uncluttered (wide evening sky) so speech balloons can be lettered there later. The only characters in the picture are Hana and Sora; no other people or animals."
+  },
+  {
+   "id": "a1",
+   "out": "manga-action-slants/raw/a1.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [],
+   "prompt": "Wide shot of a kendo tournament in a large school gymnasium: two kendo fighters in full armour and helmets face each other in the centre of the court, bamboo sword tips crossed; the fighter on the left has a long black ponytail hanging from the back of her helmet; three referees holding red and white flags stand around them; spectators sit in the stands. No banners with writing. Keep the top third quiet and uncluttered (high gymnasium ceiling with lights) so speech balloons can be lettered there later.",
+   "endpoint": "t2i"
+  },
+  {
+   "id": "a2",
+   "out": "manga-action-slants/raw/a2.png",
+   "size": [
+    1536,
+    768
+   ],
+   "refs": [
+    "_refs/kendo/hana-gi.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana, a 16-year-old girl with a long black high ponytail, in kendo uniform and hakama. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Extreme close-up of Hana's eyes seen through the metal bars of her kendo helmet grille, intense stare, a single drop of sweat, solid black and screentone background. The only characters in the picture are Hana; no other people or animals."
+  },
+  {
+   "id": "a3",
+   "out": "manga-action-slants/raw/a3.png",
+   "size": [
+    1024,
+    1280
+   ],
+   "refs": [],
+   "prompt": "The opponent kendo fighter, in full dark armour and helmet, lunges straight at the viewer with a fast thrust of the bamboo sword, strong diagonal speed lines, one foot stamping on the wooden floor, dynamic foreshortening. Keep the upper left quiet and uncluttered (speed lines only) so speech balloons can be lettered there later. The only characters in the picture are one kendo fighter; no other people or animals.",
+   "endpoint": "t2i"
+  },
+  {
+   "id": "a4",
+   "out": "manga-action-slants/raw/a4.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/kendo/hana-gi.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Hana, a 16-year-old girl with a long black high ponytail, in kendo uniform and hakama. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Climax: Hana in full kendo armour and helmet, her long black ponytail flying out from the back of the helmet, leaps forward and lands a clean overhead strike on the top of the opponent's helmet, the bamboo sword bending on impact, explosive radial speed lines and an impact flash, frozen moment. The opponent is a faceless fighter in dark armour. Keep the upper right quiet and uncluttered (speed lines) so speech balloons can be lettered there later. The only characters in the picture are Hana and her opponent; no other people or animals."
+  },
+  {
+   "id": "a5",
+   "out": "manga-action-slants/raw/a5.png",
+   "size": [
+    1024,
+    1280
+   ],
+   "refs": [
+    "_refs/kendo/sora.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Sora, a boy with short messy hair and round glasses in a black school uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Sora jumps up in the spectator stands, glasses askew, mouth wide open in a shout of joy, both fists raised; the other spectators around him are a faceless blur of screentone. Keep the top third quiet and uncluttered (blurred gymnasium background) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "a6",
+   "out": "manga-action-slants/raw/a6.png",
+   "size": [
+    1280,
+    1024
+   ],
+   "refs": [
+    "_refs/kendo/mori.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Coach Mori, a stern man in his fifties with cropped grey hair in kendo uniform. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Coach Mori sits on a bench at the edge of the court in his kendo uniform, arms crossed, eyes closed, giving a small satisfied nod; in the blurred background three referees raise flags. Keep the top third quiet and uncluttered (blurred gymnasium wall) so speech balloons can be lettered there later."
+  }
+ ]
+}
