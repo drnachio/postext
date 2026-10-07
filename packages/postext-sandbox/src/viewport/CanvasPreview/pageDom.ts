@@ -2,6 +2,7 @@ import type { Dispatch, MutableRefObject } from 'react';
 import type { Resource, VDTDocument } from 'postext';
 import type { SandboxAction } from '../../context/SandboxContext';
 import type { PanelId } from '../../types';
+import type { SandboxLabels } from '../../types/labels';
 import type { ComposedBook } from '../../book/types';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { attachSlotClickHandler, type PageNavigator } from './interaction';
@@ -36,6 +37,8 @@ export function buildPagesDom(
   /** Accessible name of a page's canvas (WCAG 1.1.1): a bitmap holds no
    *  text, so the name says which page it is and where its text is. */
   pageLabel?: (pageIndex: number, pageCount: number) => string,
+  /** The interface strings (the comic page tools, #568). */
+  labelsRef?: MutableRefObject<SandboxLabels>,
 ): BuildPagesDomResult {
   const isSpread = viewMode === 'spread';
   const pagesPerRow = isSpread ? 2 : 1;
@@ -67,7 +70,7 @@ export function buildPagesDom(
     overlay.setAttribute('aria-hidden', 'true');
     slot.appendChild(overlay);
     overlayMap.set(pageIndex, overlay);
-    attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef, resourcesRef, pageSourceRef);
+    attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef, resourcesRef, pageSourceRef, labelsRef);
     allSlots.push(slot);
     return slot;
   };

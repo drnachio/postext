@@ -28,6 +28,7 @@ import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
 import { attachSlotClickHandler } from '../CanvasPreview/interaction';
+import { syncComicEditors } from '../comics/comicEditing';
 import { usePageNavigator } from '../usePageNavigator';
 import type { BookPageMap } from '../usePageHashSync';
 import { composedBookPageMap } from '../../book/stitch';
@@ -40,7 +41,7 @@ import {
   buildColumnWidthSample,
   composePageBackground,
 } from './constants';
-import { buildHtmlConfigOverride, measureColumnWidthPx, partTitlesOf } from './configOverride';
+import { buildHtmlConfigOverride, hasComicPages, measureColumnWidthPx, partTitlesOf } from './configOverride';
 import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx, viewerLayoutType } from './pageGeometry';
 import { cssEscape, measureBodyBaselineOffset } from './baseline';
 
@@ -153,6 +154,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const localeRef = useRef(state.locale);
   const resourcesRef = useRef(state.resources);
   fontScaleRef.current = fontScale;
+  const labelsRef = useRef(state.labels);
+  labelsRef.current = state.labels;
   columnModeRef.current = columnMode;
   sourceRef.current = deferredSource;
   wholeBookRef.current = deferredWholeBook;
@@ -320,9 +323,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     // Wait for required fonts, so measurement isn't poisoned by fallbacks.
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = missingConfigFontSpecs(currentConfig);
+      const missing = missingConfigFontSpecs(currentConfig, currentSource.markdown);
       if (missing.length > 0) {
-        await ensureConfigFontsLoaded(currentConfig);
+        await ensureConfigFontsLoaded(currentConfig, currentSource.markdown);
         if (seq !== renderSeqRef.current) return;
       }
     }
@@ -410,6 +413,11 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       locale: currentLocale,
       optimalLineBreaking: htmlViewer.optimalLineBreaking,
       partTitles: partTitlesOf(currentSource.markdown),
+      // Comic pages: the print page scaled to the viewport's width in the
+      // vertical scroll, to a page (width and height) in the paged view.
+      ...(hasComicPages(currentSource.markdown)
+        ? { comicWidthPx: currentColumnMode === 'single' ? innerViewportW : pageWidthPx }
+        : {}),
     });
 
     try {
@@ -506,6 +514,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           builtSourceRef,
           navigateRef,
           resourcesRef,
+          undefined,
+          labelsRef,
         );
       };
 
@@ -647,6 +657,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
+    // The comic splitter handles follow the new layout (#568).
+    syncComicEditors();
     const debug = resolveDebugConfig(state.config.debug);
     const source = builtSourceRef.current;
     const mapped = source ? toBookSelection(source, activeChapterId, state.selection) : state.selection;

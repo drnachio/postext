@@ -376,3 +376,220 @@ describe.skipIf(!python)("postext-port lint on Japanese text", () => {
     expect(r.stdout.trim() || r.stderr).toBe("True");
   });
 });
+
+/** A comic project: one chapter per language, picture resources with
+ *  anchors (no files: the lint only reports them missing when `file` is set). */
+function comicProject(config: object, chapters: Record<string, string>, resources?: object[], fonts: object[] = []): string {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-comic-"));
+  const specs: Record<string, object[]> = {};
+  for (const [lang, text] of Object.entries(chapters)) {
+    mkdirSync(path.join(dir, "chapters", lang), { recursive: true });
+    writeFileSync(path.join(dir, "chapters", lang, "01.md"), text);
+    specs[lang] = [{ title: "One", file: `chapters/${lang}/01.md` }];
+  }
+  const pictures = resources ?? ["p1", "p2", "p3"].map((id) => ({
+    id, typeId: "figure", kind: "bitmap", altText: id,
+    safeArea: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 },
+    anchors: [{ id: "ana", x: 0.3, y: 0.5, face: { x: 0.2, y: 0.3, width: 0.2, height: 0.2 } }, { id: "ben", x: 0.7, y: 0.5 }],
+  }));
+  const manifest = {
+    version: 2, configVersion: 8, id: "t", name: "T", locale: Object.keys(chapters)[0],
+    chapters: specs,
+    config: { header: { elements: [] }, layout: { layoutType: "single" }, locale: "en", ...config },
+    resources: pictures, fonts,
+  };
+  writeFileSync(path.join(dir, "preset.json"), JSON.stringify(manifest));
+  return dir;
+}
+
+const COMIC = [
+  ':::page{split="30 [55 | *] / *"}',
+  "::panel{art=p1}",
+  "caption: Porthcove, the night of the storm.",
+  "ana: Did you hear that?",
+  "ben{whisper}: It's nothing.",
+  "  Go back to sleep.",
+  "::panel{art=p2 focus=\"30% 40%\"}",
+  'sfx{at="62% 40%" rotate=-8}: KRAK',
+  "::panel{art=p3 bleed=\"bottom end\"}",
+  "ana{thought at=top-start}: Nothing, he says…\\",
+  "  Nothing.",
+  ":::",
+  "",
+].join("\n");
+
+function lintAll(dir: string): { out: string; status: number | null } {
+  const r = spawnSync("python3", [LINT, dir], { encoding: "utf8" });
+  return { out: r.stdout + r.stderr, status: r.status };
+}
+
+describe.skipIf(!python)("postext-port lint on comics", () => {
+  const letters = { comics: { lettering: { fontSize: { value: 9, unit: "pt" } } } };
+
+  it("reads a well-formed comic page without errors", () => {
+    const { out, status } = lint(comicProject(letters, { en: COMIC }));
+    expect(out).not.toMatch(/is not a Postext container|comicSplit|comicPanelCount|comicStray|comicUnknown|panel attribute/);
+    expect(out).toContain("'Comic Neue', the lettering face (comics.lettering.fontFamily), is not bundled");
+    expect(out).toContain("'Bangers', the sound-effect face");
+    expect(status).toBe(0);
+  });
+
+  it("checks the split grammar and the panel count", () => {
+    const mixed = lint(comicProject(letters, { en: COMIC.replace('split="30 [55 | *] / *"', 'split="30 / 20 | *"') }));
+    expect(mixed.out).toMatch(/ERROR chapters\/en\/01\.md:1: split="30 \/ 20 \| \*" cannot be read as written: a list mixes "\/" and "\|"/);
+    expect(mixed.status).toBe(1);
+    const sameAxis = lint(comicProject(letters, { en: COMIC.replace('split="30 [55 | *] / *"', 'split="30 [10 / 20] / *"') })).out;
+    expect(sameAxis).toContain("a bracketed list splits its cell on the other axis");
+    const over = lint(comicProject(letters, { en: COMIC.replace('split="30 [55 | *] / *"', 'split="70 [55 | 60] / *"') })).out;
+    expect(over).toContain("the sizes add up to 115 %, scaled down to fit (comicSplitOverflow)");
+    const count = lint(comicProject(letters, { en: COMIC.replace('split="30 [55 | *] / *"', 'split="30 / 30 / 20 / *"') })).out;
+    expect(count).toContain("3 panels for 4 cells of the split: the last 1 cells stay empty (comicPanelCount)");
+    const slant = lint(comicProject(letters, { en: COMIC.replace('split="30 [55 | *] / *"', 'split="* [40~55 | *] / 35"') })).out;
+    expect(slant).not.toMatch(/split=.*cannot be read/);
+  });
+
+  it("checks panels, script lines and styles", () => {
+    const text = [
+      ':::page{split="* / *" style=clean spread=yes}',
+      "stray words before any panel",
+      "::panel{art=nope zoom=2}",
+      "ana{yell}: Hey!",
+      'ben{at="left" mode=sideways}: Here.',
+      "sfx{vertical size=2}: ドン",
+      "::panel{art=p1 inset=\"10 10\" bg=pink}",
+      "no key here",
+      ":::",
+      "",
+      "::panel{art=p2}",
+      "",
+    ].join("\n");
+    const { out, status } = lint(comicProject(letters, { en: text }));
+    expect(out).toContain("panel style 'clean' is not in comics.panelStyles");
+    expect(out).toContain("text before the first ::panel is lettered as a caption of panel 1 (comicStrayText)");
+    expect(out).toContain("art='nope' is not a resource: the panel is set empty (comicUnknownArt)");
+    expect(out).toContain("::panel attribute 'zoom' is ignored");
+    expect(out).toContain("{yell} names no balloon style (comicUnknownBalloonStyle)");
+    expect(out).toContain("at='left' is neither");
+    expect(out).toContain("mode='sideways' is ignored (vertical, horizontal)");
+    expect(out).not.toContain("{vertical} names no balloon style");
+    expect(out).toContain("inset='10 10' is not");
+    expect(out).toContain("bg='pink' is neither #hex");
+    expect(out).toContain("not a script line (key: text)");
+    expect(out).toContain("::panel outside a :::page or :::strip block prints as text");
+    expect(status).toBe(1);
+  });
+
+  it("knows strips and their attributes, and flags an unclosed block", () => {
+    const strip = [':::strip{span=page placement=top aspect=4/1 height=40mm}', "::panel{art=p1}", "ana: Morning!", "::panel{art=p2}", ":::", ""].join("\n");
+    expect(lint(comicProject(letters, { en: strip })).out).not.toMatch(/strip attribute|not a Postext/);
+    const bad = lint(comicProject(letters, { en: strip.replace("span=page", "span=wide spread") })).out;
+    expect(bad).toContain("span='wide' is read as column");
+    expect(bad).toContain(":::strip attribute 'spread' is ignored (spreads are pages: :::page{spread})");
+    const open = lint(comicProject(letters, { en: COMIC.replace(/:::\n$/, "") }));
+    expect(open.out).toContain(":::page is never closed");
+  });
+
+  it("checks the comics config", () => {
+    const { out, status } = lint(comicProject({
+      comics: {
+        readingDirection: "backwards", zoom: 1,
+        lettering: { fontSize: { value: 1, unit: "em" }, writingMode: "vertical", leading: 1 },
+        gutter: { horizontal: { value: 1, unit: "em" } },
+        balloonStyles: [{ id: "writing", shape: "star" }, { shape: "oval" }],
+        cast: [{ id: "ana", balloonStyle: "growl" }],
+      },
+    }, { en: COMIC }));
+    expect(out).toContain("config.comics.readingDirection: 'backwards' is not one of");
+    expect(out).toContain("config.comics.zoom: unknown key (ignored)");
+    expect(out).toContain("config.comics.lettering.fontSize: in em throws");
+    expect(out).toContain("config.comics.gutter.horizontal: in em throws");
+    expect(out).toContain("config.comics.lettering.leading: unknown key (ignored)");
+    expect(out).toContain("config.comics.balloonStyles[0].shape: 'star' is not one of");
+    expect(out).toContain("config.comics.balloonStyles[1]: a balloon style without an id is dropped");
+    expect(out).toContain("config.comics.cast[0].balloonStyle: 'growl' is not a balloon style");
+    expect(status).toBe(1);
+  });
+
+  it("checks anchors, faces and safe areas, and speakers no picture marks", () => {
+    const pictures = [
+      { id: "p1", typeId: "figure", kind: "bitmap", safeArea: { x: 0.5, y: 0, width: 0.5, height: 1 },
+        anchors: [{ id: "ana", x: 0.2, y: 0.5 }, { id: "ana", x: 0.6, y: 0.5, face: { x: 0.9, y: 0.1, width: 0.3, height: 0.2 } }] },
+      { id: "p2", typeId: "figure", kind: "bitmap", avoid: [{ x: 0.1, y: 0.1, width: 0, height: 0.2 }] },
+      { id: "p3", typeId: "figure", kind: "bitmap", anchors: [{ id: "caption", x: 0.5, y: 0.5 }] },
+    ];
+    const { out } = lintAll(comicProject({ ...letters, comics: { ...letters.comics, cast: [{ id: "ben" }] } },
+      { en: COMIC + "\n" + COMIC.replace("ben{whisper}", "carl") }, pictures));
+    expect(out).toContain("the mouth of 'ana' lies outside the safe area");
+    expect(out).toContain("anchor 'ana' is marked twice in this picture");
+    expect(out).toContain("anchors[1]: face runs outside the picture");
+    expect(out).toContain("avoid[0]: has no area");
+    expect(out).toContain("id 'caption' is a reserved script key");
+    expect(out).toMatch(/INFO  chapters\/en\/01\.md:\d+: speaker 'carl' has no anchor in any picture and no cast entry/);
+    expect(out).not.toContain("speaker 'ben'");
+    expect(out).not.toMatch(/resource p\d: never cited/);
+  });
+
+  it("compares the editions' geometry and counts comic text in the lettering face", () => {
+    const es = COMIC.replace("ana: Did you hear that?", "ana: ¿Has oído eso?").replace('split="30 [55 | *] / *"', 'split="35 [55 | *] / *"');
+    const { out } = lint(comicProject(letters, { en: COMIC, es }));
+    expect(out).toMatch(/chapters\/es\/01\.md:1: :::page\{split="35 \[55 \| \*\] \/ \*"\} differs from en/);
+    const ja = [
+      ':::page{split="* / *"}', "::panel{art=p1}", "ana: これは日本語の吹き出しです。ひらがなとカタカナ。", "::panel{art=p2}", "ben: そうですね。", ":::", "",
+    ].join("\n");
+    const jaOut = lint(comicProject({
+      locale: "ja", bodyText: { fontFamily: "Noto Serif JP" }, headings: { fontFamily: "Noto Sans JP", levels: [{ level: 1, breakBefore: { enabled: true } }] },
+      comics: { lettering: { fontFamily: "Comic Neue", fontSize: { value: 9, unit: "pt" } } },
+    }, { ja })).out;
+    expect(jaOut).toMatch(/CJK characters .* are set in Comic Neue, which has none: set comics\.lettering\.fontFamily/);
+    expect(jaOut).toContain("'Dela Gothic One', the sound-effect face");
+  });
+});
+
+const PANELS = path.join(REPO, "plugins/postext/skills/postext-port/scripts/comic_panels.py");
+const imaging = python && spawnSync("python3", ["-c", "import numpy, PIL"]).status === 0;
+
+describe.skipIf(!imaging)("postext-port comic_panels.py", () => {
+  it("measures a page into a split expression, left to right and right to left", () => {
+    const dir = mkdtempSync(path.join(os.tmpdir(), "postext-panels-"));
+    // A 1200x1700 page: a 30 % tier, a tier cut by a gutter slanting from
+    // 40 % to 55 %, and a tier of three panels (30 % | 20 % | rest).
+    const draw = [
+      "import sys",
+      "from PIL import Image, ImageDraw",
+      "W, H, m, g = 1200, 1700, 60, 24",
+      "im = Image.new('RGB', (W, H), 'white'); d = ImageDraw.Draw(im)",
+      "fx0, fy0, fx1, fy1 = m, m, W - m, H - m; fw, fh = fx1 - fx0, fy1 - fy0",
+      "ys = [fy0, fy0 + 0.3 * fh, fy0 + 0.65 * fh, fy1]",
+      "d.rectangle((fx0, ys[0], fx1, ys[1] - g / 2), fill=(70, 110, 150))",
+      "a, b = ys[1] + g / 2, ys[2] - g / 2; xt, xb = fx0 + 0.40 * fw, fx0 + 0.55 * fw",
+      "d.polygon([(fx0, a), (xt - g / 2, a), (xb - g / 2, b), (fx0, b)], fill=(150, 90, 60))",
+      "d.polygon([(xt + g / 2, a), (fx1, a), (fx1, b), (xb + g / 2, b)], fill=(90, 150, 60))",
+      "xs = [fx0, fx0 + 0.3 * fw, fx0 + 0.5 * fw, fx1]",
+      "for i in range(3): d.rectangle((xs[i] + (g / 2 if i else 0), ys[2] + g / 2, xs[i + 1] - (g / 2 if i < 2 else 0), fy1), fill=(60 + 40 * i, 60, 120))",
+      "im.save(sys.argv[1])",
+    ].join("\n");
+    const page = path.join(dir, "page.png");
+    expect(spawnSync("python3", ["-c", draw, page]).status).toBe(0);
+    const run = (...extra: string[]) => spawnSync("python3", [PANELS, "detect", page, "--out", path.join(dir, "out"), "--dpi", "150", ...extra], { encoding: "utf8" });
+    const ltr = run();
+    expect(ltr.status, ltr.stderr).toBe(0);
+    // Numbers within half a percent (antialiased edges), the shape exactly.
+    const near = (out: string, want: string) => {
+      const got = /split="([^"]+)"/.exec(out)?.[1] ?? "";
+      expect(got.replace(/[\d.]+/g, "N")).toBe(want.replace(/[\d.]+/g, "N"));
+      const a = got.match(/[\d.]+/g)!.map(Number);
+      want.match(/[\d.]+/g)!.map(Number).forEach((v, i) => expect(Math.abs(a[i] - v), got).toBeLessThan(0.6));
+    };
+    near(ltr.stdout, "30 / 35 [40~55 | *] / * [30 | 20 | *]");
+    expect(ltr.stdout).toMatch(/gutter="(3\.[5-9]|4(\.[0-3])?)mm (3\.[5-9]|4(\.[0-3])?)mm"/);
+    expect(ltr.stdout).toContain("::panel{art=page-6}");
+    expect(existsSync(path.join(dir, "out", "page-3.jpg"))).toBe(true);
+    expect(existsSync(path.join(dir, "out", "page-sheet.jpg"))).toBe(true);
+    const json = JSON.parse(readFileSync(path.join(dir, "out", "panels.json"), "utf8"));
+    expect(json.pages[0].panels).toHaveLength(6);
+    expect(Math.abs(json.frameMm.top - 10.16)).toBeLessThan(0.6);
+    const rtl = run("--direction", "rtl", "--no-cuts");
+    near(rtl.stdout, "30 / 35 [60~45 | *] / * [50 | 20 | *]");
+    expect(rtl.stdout).toContain("direction=rtl");
+  });
+});

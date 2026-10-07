@@ -16,6 +16,7 @@ import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexM
 import { joinEastAsianLines } from './softBreaks';
 import { asciiDigits } from '../arabicNumerals';
 import { indentColumn, listDepth, nestListItem } from './listNesting';
+import { parseComicFence } from '../comics/page';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
@@ -27,7 +28,7 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page', 'strip']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line, after a space — or right
@@ -487,6 +488,29 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       });
       i++;
       continue;
+    }
+
+    // A comic page (#555) or strip (#566): `:::page{split=…}` … `:::`, its
+    // panels and script read whole (`parseComicFence`).
+    const comicMatch = trimmed.match(DIRECTIVE_RE);
+    if (comicMatch && (comicMatch[1] === 'page' || comicMatch[1] === 'strip')) {
+      const comic = parseComicFence(markdown, lineOffsets[i]!);
+      if (comic) {
+        blocks.push({
+          type: 'directive',
+          text: '',
+          spans: [],
+          directiveName: comic.source.kind,
+          directiveAttrs: comic.source.attrs,
+          comic: comic.source,
+          sourceStart: comic.source.sourceStart,
+          sourceEnd: comic.source.sourceEnd,
+          sourceMap: [],
+        });
+        // Past the closing fence line.
+        while (i < rawLines.length && lineOffsets[i]! <= comic.end) i++;
+        continue;
+      }
     }
 
     // Reference data (#268): `:::references{format=bibtex}` … `:::`. The

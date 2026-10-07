@@ -20,7 +20,7 @@ export const DEV_USAGE = `pnpm cookbook dev <slug> [--lang es] [--port 4400] [--
   Serves the page the capture runs, with live reload: saving a file under
   cookbook/<slug>/ or cookbook/_kit/ recomposes the pen and reloads it.
 
-  --lang <en|es>     Sample edition (default: the recipe's first sample language)
+  --lang <locale>    Sample edition (en, es, ca, zh, ar, ja) (default: the recipe's first sample language)
   --port <n>         Port of the local server (default 4400)
   --engine <spec>    npm (default: the released version), npm@x.y.z, or local (the
                      workspace packages' dist: run tsc in packages/postext and postext-pdf)`;
@@ -41,7 +41,7 @@ export async function runDev(argv: readonly string[]): Promise<number> {
   const args = parseArgs(
     argv,
     {
-      lang: { type: "string", value: "en|es", choices: SAMPLE_LOCALES },
+      lang: { type: "string", value: "en|es|ca|zh|ar|ja", choices: SAMPLE_LOCALES },
       port: { type: "int", value: "n", min: 1, max: 65535 },
       engine: { type: "string", value: "spec" },
     },

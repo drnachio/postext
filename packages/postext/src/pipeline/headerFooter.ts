@@ -1,3 +1,4 @@
+import { resolvedComics } from '../defaults/comics';
 import { fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, setMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
 import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
@@ -98,7 +99,10 @@ function textAlignOffsetX(
   return Math.max(0, (contentWidth - lineWidth) / 2);
 }
 
-function primitiveToBlock(prim: ResolvedPrimitive): VDTDesignBlock {
+/** A laid-out design primitive as the VDT block the renderers paint (also
+ *  used by the comics lettering, which lays out balloon text as design
+ *  text). */
+export function primitiveToBlock(prim: ResolvedPrimitive): VDTDesignBlock {
   if (prim.kind === 'text') return textPrimitiveToBlock(prim);
   if (prim.kind === 'rule') return rulePrimitiveToBlock(prim);
   if (prim.kind === 'image') return imagePrimitiveToBlock(prim);
@@ -1147,7 +1151,10 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     const section = sectionByPage[page.index];
     const headerSlot = section?.header ?? resolved.header;
     const footerSlot = section?.footer ?? resolved.footer;
-    if (headerSlot.elements.length > 0) {
+    // A comic page is all panels: no running heads or folio unless
+    // `comics.runningHeads` asks for them (its folio still counts).
+    const furniture = !page.comic || resolvedComics(resolved).runningHeads;
+    if (furniture && headerSlot.elements.length > 0) {
       const placeholders: DesignPlaceholderContext = {
         kind: 'header',
         page,
@@ -1182,6 +1189,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
       : doc.afterPartPage ? doc.partStart : undefined;
     if (
       !page.partInfo
+      && !page.comic
       && prevPart
       && resolved.parts.versoDesign.elements.length > 0
       && page.columns.every((c) => c.blocks.length === 0)
@@ -1428,7 +1436,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         if (overlay) block.designOverlay = overlay;
       }
     }
-    if (footerSlot.elements.length > 0) {
+    if (furniture && footerSlot.elements.length > 0) {
       const placeholders: DesignPlaceholderContext = {
         kind: 'footer',
         page,

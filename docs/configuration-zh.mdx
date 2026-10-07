@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '配置',
   description: 'Postext所有版面配置选项的完整参考',
   lang: 'zh',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-07',
   readingTime: '30分钟',
   order: 3,
   plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页、PDF文件和EPUB电子书。",
@@ -53,6 +53,7 @@ const document = buildDocument(content, {
 - [标题样式](#标题样式)：供`{style="…"}`标题使用的命名样式，如不编号的章、带独立书眉的前置部分、页面几何与调色板。
 - [目录](#目录)：`:::toc`排出的内容，包括条目排印、前导符、页码、作者行、篇条目。
 - [索引](#索引)：`:::index`排出的内容，包括条目排印、缩进、页码分隔符与页码范围、字母分组、排序语言。
+- [漫画](#漫画)：`comics`，包括漫画页的画框和格间距、分格样式、嵌字、对白框样式和角色表。指南见[漫画](/zh/docs/comics)。
 - [单位与颜色](#单位与颜色) + [调色板](#调色板)：`Dimension`、`ColorValue`、命名颜色。
 - [自定义字体](#自定义字体)：在Google Fonts之外声明用户上传的字体族。
 - [HTML查看器](#html查看器)：HTML后端的目标栏宽与断行。
@@ -6151,6 +6152,532 @@ const config: PostextConfig = {
 </table>
 
 页码与目录一样来自全书大纲：`computeOutline()`和`contentOutline()`把一段文字中的索引标记列为`'indexMark'`类型的条目（带有`indexMark.path`、`sort`、`see`、`seeAlso`、`main`、`range`和`index`），`outlineFromDoc()`给每个条目加上它落在的页，这些页由排版过程记录在`doc.indexMarks`中（每个标记一个`{ sourceStart, pageIndex }`）。`buildDocument()`会重新排版印出自身索引的文档，直到页码稳定；逐章排版整本书的宿主程序把全书大纲作为`PostextContent.outline`交给包含`:::index`的章。`tocOutline()`和`indexOutline()`把大纲拆成目录和索引各自读取的部分，宿主程序可以据此给每一章设定与其印出内容相应的键：沙盒只在某个标记移动时重新排版索引章，只在某个标题移动时重新排版目录章。`contentOutline()`还会说明一段文字是否印出索引（`hasIndex`）。
+
+## 漫画
+
+`comics`属性配置漫画页（`:::page`）、漫画条（`:::strip`）和跨页：分格从中切出的画框和格间距、分格样式、嵌字、对白框样式以及角色表。只有含漫画的文档才读取它；没有漫画的文档，排版结果与以前完全相同；含漫画却没有`comics`一节的文档，采用其语言的默认值。标记和嵌字的方式见[漫画](/zh/docs/comics)。
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: '玛雅' }, { id: 'tomas', name: '托马斯爷爷' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>一行中各分格的顺序。<code>'auto'</code>在从右到左的文档中从右往左读，否则按<code>artDirection</code>的方向读。页面的<code>direction</code>属性可以覆盖它。</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>画稿绘制时设想的阅读方向：日本漫画为<code>'rtl'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把阅读方向与<code>artDirection</code>相反的页面上的画面左右翻转。分格写<code>mirror=false</code>时保持原画。</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>页面边距</td>
+      <td>漫画页自己的边距（<code>top</code>、<code>bottom</code>、<code>left</code>、<code>right</code>、<code>mirror</code>）。分格从这些边距以内的区域切出；未设置时，从页面的版心切出。</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>行与行之间的距离。页面的<code>gutter</code>属性可以覆盖它。</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>同一行中左右相邻的分格之间的距离。</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>见下文</td>
+      <td>默认的分格样式。</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>命名分格样式，用<code>:::page&#123;style=…&#125;</code>或<code>::panel&#123;style=…&#125;</code>选取。每个样式有一个<code>id</code>、一个可选的<code>name</code>（只用于编辑器界面）和分格样式的各个字段；未设置的字段沿用<code>panel</code>。</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>见下文</td>
+      <td>全书每个对白框的字体、字号和排印规则。</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>九种内置样式</td>
+      <td>按种类划分的对白框样式。内置样式始终存在；id与内置样式相同的条目修改该样式，新id的条目添加一个以<code>speech</code>为基础的样式。</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>角色（见<a href="#角色表">角色表</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在漫画页上印书眉和页码。关闭时，漫画页只有分格，但它的页码照样计数。</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>未设置</td>
+      <td>用于页面不是纸页的宿主：把漫画页排在一张印刷纸页上（<code>width</code>、<code>height</code>、<code>margins</code>），缩放到<code>fitWidth</code> px宽（高度最多<code>fitHeight</code> px），放在页面顶部。沙盒的HTML查看器设置它；它从不随文档保存。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 分格样式
+
+`comics.panel`以及`comics.panelStyles`的每个条目：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>边框粗细；<code>0</code>表示不画边框。边框沿分格的轮廓描画。</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>黑色</td>
+      <td>边框颜色（可链接调色板）。</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>矩形分格的圆角半径，最大为较短边的一半。被斜线切出的分格保持尖角。</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>干净的直线、略带抖动的手绘线（以分格为种子生成，所以每次排版都一样），或者不画。</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>白色</td>
+      <td>画面下面的底色：空分格的颜色，以及完整显示画面时四周色带的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code>裁切画面以填满分格，但绝不切进安全区；<code>contain</code>完整显示画面。</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>使用这个样式的分格，在每条贴着画框的边上越过画框，延伸到裁切线和出血位。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 嵌字
+
+`comics.lettering`设定全书的每个对白框。字号只有一个：对白框样式可以按比例缩放它（`fontScale`），文字从不为了塞进对白框而缩小。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>按语言</td>
+      <td>嵌字字体。未设置时为<code>Comic Neue</code>；日文为<code>Zen Antique</code>，简体中文为<code>Noto Sans SC</code>，繁体中文为<code>LXGW WenKai TC</code>，阿拉伯文、波斯文和乌尔都文为<code>Playpen Sans Arabic</code>（<code>defaultComicFont(locale)</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>对白框文字的字号。印刷页面上的漫画嵌字通常在7到9 pt之间。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>行与行之间的距离，以字号的倍数表示。保持默认值时，竖排以及中文和日文的对白框取1.5，阿拉伯文取1.45。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>黑色</td>
+      <td>文字颜色。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>、<code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把全部嵌字排成粗体或斜体。中文、日文和阿拉伯文的嵌字从不倾斜。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>字与字之间额外增加的距离；<code>em</code>相对于文字字号。阿拉伯文从不加字距。</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>让日文和繁体中文以及任何竖排的文档竖排成列嵌字，其他一律横排。台词行的<code>vertical</code>或<code>horizontal</code>标记可以让那一行另行排列（见<a href="/zh/docs/comics#嵌字">漫画 › 嵌字</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>全部大写，这是美式和欧式嵌字的传统样式。没有大小写之分的文字保持原样。</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>省略对白框末尾的句号（日本漫画中的<code>。</code>）。<code>'auto'</code>：只用于日文和中文。</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把破折号写成<code>--</code>，这是美式嵌字的习惯。</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>对白框与所在分格边框之间保留的距离。紧贴边框的旁白框不受它限制。</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>同一说话人连续的两个对白框：框体合成一条轮廓，用一段细颈相连，或者保持分开。台词行可以用<code>join</code>或<code>join=false</code>单独指定。</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>竖排嵌字时，对白框中一列最多的字数。拟声词五个字后换列。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 对白框样式
+
+`comics.balloonStyles`的每个条目叠加在id相同的内置样式（`speech`、`thought`、`whisper`、`shout`、`radio`、`caption`、`inner`、`note`、`sfx`）之上；id是新的时，叠加在`speech`之上。下表的默认值是`speech`的；每种内置样式改变了哪些值，见[漫画一页](/zh/docs/comics#对话框样式)。以`em`为单位的长度相对于对白框文字的字号。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>必填</td>
+      <td>台词行用来指定这个样式的词：<code>ben&#123;whisper&#125;: …</code>或<code>style=whisper</code>。</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>便于阅读的名称，只用于编辑器界面。</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>围绕文字的轮廓。<code>'none'</code>把文字直接排在画面上。</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>白色</td>
+      <td>对白框的填充色。</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>黑色</td>
+      <td>轮廓颜色。</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>轮廓粗细。</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>虚线轮廓（耳语）。</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>双线轮廓。</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>轮廓像手绘线一样抖动的程度，0到1，以对白框为种子生成，所以每次排版都不变。</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>椭圆所用超椭圆的指数：2是椭圆，数值越大越方。</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>爆炸形的尖刺数；<code>0</code>表示按周长计算。</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>爆炸形尖刺的深度，以框体半径的比例表示。</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>文字与轮廓之间的空白。</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>断行时为文字块追求的宽高比（横排嵌字）。</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>尾巴。</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>尾巴从轮廓伸出处的宽度。</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>尾巴伸向说话人的长度，以从轮廓到嘴的距离的比例表示。</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>尾巴指向什么：锚点的嘴，或者它的头（心声）。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>台词行没有固定位置时对白框放在哪里：由嵌字安排，或者放在分格的某个角或某条边上。</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把放在角上或边上的对白框紧贴分格边框（旁白框）。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>嵌字字体</td>
+      <td>这个样式的字体。<code>sfx</code>默认使用该语言的拟声词字体：<code>Bangers</code>，日文为<code>Dela Gothic One</code>，简体中文为<code>ZCOOL KuaiLe</code>，繁体中文为<code>LXGW WenKai TC</code>，阿拉伯文为<code>Lalezar</code>（<code>defaultComicSfxFont(locale)</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>文字字号，以嵌字字号的倍数表示。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>、<code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>同嵌字设置</td>
+      <td>粗体或斜体文字。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>同嵌字设置</td>
+      <td>文字颜色。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>同嵌字设置</td>
+      <td>这个样式全部大写。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>同嵌字设置</td>
+      <td>字与字之间额外增加的距离。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>对白框内文字行的对齐方式。</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>无</td>
+      <td>围绕字形画出的描边及其宽度，让文字压在画面上也能看清（拟声词）。</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>白色</td>
+      <td>描边的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>按顺时针旋转的角度。台词行的<code>rotate</code>属性优先。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 角色表
+
+`comics.cast`的每个条目描述一个角色：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>必填</td>
+      <td>脚本和画面锚点所用的说话人键。</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>HTML输出和流式EPUB在该角色的台词前印出的名字，编辑器也显示它。</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>该角色未指定样式的台词所用的样式。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>同样式设置</td>
+      <td>该角色对白框的文字颜色。</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>同样式设置</td>
+      <td>该角色对白框的填充色。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>同样式设置</td>
+      <td>该角色对白框的字体。</td>
+    </tr>
+  </tbody>
+</table>
+
+台词行自己的`color`和`font`优先于角色表，角色表又优先于对白框样式。每个漫画颜色都可以是调色板条目，像其他链接的颜色一样跟随调色板变化。
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => 每个字段都已填好；字体为Zen Antique和Dela Gothic One
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => 全部是默认值时为undefined
+
+const shout = pickBalloonStyle(resolved, 'shout'); // 内置的shout，加上本书的修改
+const night = pickPanelStyle(resolved, 'night');   // 命名分格样式，没有时为默认分格
+```
 
 ## 单位与颜色
 

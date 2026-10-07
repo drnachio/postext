@@ -4,7 +4,7 @@
 
 import fs from 'node:fs';
 import { buildBundle } from 'postext';
-import type { PostextConfig, Resource, VDTDocument } from 'postext';
+import type { PostextConfig, Resource, VDTComicBalloon, VDTComicPage, VDTDesignTextBlock, VDTDocument } from 'postext';
 
 // Text measured with a fixed advance (half an em per character): stable
 // line breaks without a font file or a DOM.
@@ -180,4 +180,96 @@ export function japaneseSampleBook(): VDTDocument[] {
       page: { ...config.page, binding: 'right' },
     },
   });
+}
+
+/** A comic page (#565) between two paragraphs: three panels of the sample
+ *  picture (one slanted, one mirrored), lettered as the lettering engine
+ *  letters them — a join group of two balloons, a caption and a sound
+ *  effect — and the cast's names. `direction: 'rtl'` reads the page right
+ *  to left (a manga). */
+export function comicSampleBook(direction: 'ltr' | 'rtl' = 'ltr'): VDTDocument[] {
+  const chapter = [
+    '# A comic',
+    '',
+    `Before the page. ${para}`,
+    '',
+    ':::page{split="40 [55~45 | *] / *" #street}',
+    '::panel{art=f1 #first}',
+    '::panel{art=f1 mirror alt="Ana at the door"}',
+    '::panel{art=f1 border=none}',
+    ':::',
+    '',
+    `After the page. ${para}`,
+  ].join('\n');
+  const docs = buildBundle({
+    chapters: [{ markdown: chapter }],
+    config: { ...config, comics: { readingDirection: direction, cast: [{ id: 'ana', name: 'Ana' }] } },
+    resources,
+  });
+  for (const doc of docs) {
+    for (const page of doc.pages) {
+      if (page.comic) page.comic.balloons = sampleBalloons(page.comic);
+    }
+  }
+  return docs;
+}
+
+function sampleText(t: string, x: number, y: number): VDTDesignTextBlock {
+  return { kind: 'text', bbox: { x, y, width: 60, height: 14 }, fontString: '400 10px "Lora"', color: '#111111', clip: false, lines: [{ text: t, xOffset: 0, baselineY: y + 10, width: 50 }] };
+}
+
+function sampleBalloons(comic: VDTComicPage): VDTComicBalloon[] {
+  const [a, b] = [comic.panels[0]!.bbox, comic.panels[1]!.bbox];
+  return [
+    { id: 'b1', panelIndex: 0, order: 0, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 1, group: 0,
+      shape: { d: `M${a.x + 8} ${a.y + 8}h60v20h-60Z M${a.x + 70} ${a.y + 8}h60v20h-60Z`, fill: '#ffffff', stroke: '#111111', strokeWidth: 1 },
+      text: [sampleText('Did you hear', a.x + 8, a.y + 10)], bbox: { x: a.x + 8, y: a.y + 8, width: 60, height: 20 } },
+    { id: 'b2', panelIndex: 0, order: 1, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 2, sourceEnd: 3, group: 0,
+      text: [sampleText('that?', a.x + 70, a.y + 10)], bbox: { x: a.x + 70, y: a.y + 8, width: 60, height: 20 } },
+    { id: 'c1', panelIndex: 1, order: 0, kind: 'caption', style: 'caption', sourceStart: 4, sourceEnd: 5, group: 1,
+      shape: { d: `M${b.x} ${b.y}h70v16h-70Z`, fill: '#fff3c4', stroke: '#111111', strokeWidth: 1 },
+      text: [sampleText('Lyon, 1943.', b.x + 2, b.y + 2)], bbox: { x: b.x, y: b.y, width: 70, height: 16 } },
+    { id: 's1', panelIndex: 1, order: 1, kind: 'sfx', style: 'sfx', sourceStart: 6, sourceEnd: 7, group: 2, rotate: -8, halo: { width: 1.5, color: '#ffffff' },
+      text: [sampleText('KRAK', b.x + 20, b.y + 40)], bbox: { x: b.x + 20, y: b.y + 40, width: 40, height: 16 } },
+  ];
+}
+
+/** A strip in the text and a two-page spread (#566, #567): the strip
+ *  between two paragraphs, the spread's middle panel across the spine. */
+export function stripSpreadSampleBook(): VDTDocument[] {
+  const chapter = [
+    '# Strips and spreads',
+    '',
+    `Before the strip. ${para}`,
+    '',
+    ':::strip{split="* | *" aspect=3}',
+    '::panel{art=f1}',
+    '::panel{art=f1 alt="The second panel of the strip"}',
+    ':::',
+    '',
+    `After the strip. ${para}`,
+    '',
+    ':::page{spread split="40 / * [* | * | *]"}',
+    '::panel{art=f1}',
+    '::panel',
+    '::panel{art=f1 alt="Across the spine"}',
+    '::panel',
+    ':::',
+    '',
+    'After the spread.',
+  ].join('\n');
+  const docs = buildBundle({ chapters: [{ markdown: chapter }], config: { ...config, comics: {} }, resources });
+  for (const doc of docs) {
+    for (const page of doc.pages) {
+      const c = page.comic;
+      if (!c?.spread) continue;
+      // A balloon in panel 2 on each page: read in panel order.
+      const p = c.panels.find((q) => q.index === 2);
+      if (!p) continue;
+      const x = c.spread === 'left' ? p.bbox.x + 4 : p.bbox.x + p.bbox.width - 64;
+      c.balloons = [{ id: `s-${c.spread}`, panelIndex: 2, order: c.spread === 'left' ? 0 : 1, kind: 'caption', style: 'caption', sourceStart: 0, sourceEnd: 1, group: c.spread === 'left' ? 0 : 1,
+        text: [sampleText(c.spread === 'left' ? 'Meanwhile,' : 'far away.', x, p.bbox.y + 4)], bbox: { x, y: p.bbox.y + 4, width: 60, height: 14 } }];
+    }
+  }
+  return docs;
 }

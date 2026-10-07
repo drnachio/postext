@@ -35,3 +35,4 @@ export { BaytLayout } from "./arabic-layout/BaytLayout";
 export { YakumonoSpacing } from "./japanese-layout/YakumonoSpacing";
 export { BracketPatterns } from "./japanese-layout/BracketPatterns";
 export { RubyPlacement } from "./japanese-layout/RubyPlacement";
+export { ComicSplit } from "./comics/ComicSplit";

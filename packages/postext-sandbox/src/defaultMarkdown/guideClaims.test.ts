@@ -118,7 +118,7 @@ describe('what the guide says about itself and the Sandbox', () => {
     // Chinese labels to read them from.
     const zh: Record<SettingsGroupId, string> = {
       page: '页面与分栏', writing: '书写系统', colors: '颜色', text: '文字排版', headings: '标题与目录', lists: '列表',
-      figures: '图与表', callouts: '标注框', running: '页眉页脚', parts: '篇', output: '导出', folio: 'folio', advanced: '高级',
+      figures: '图与表', callouts: '标注框', comics: '漫画', running: '页眉页脚', parts: '篇', output: '导出', folio: 'folio', advanced: '高级',
     };
     expect(Object.keys(zh)).toEqual(SETTINGS_GROUPS.map((g) => g.id));
     const names: Record<Edition, string[]> = {

@@ -274,6 +274,15 @@ their boxes in `translations/artwork.json` and replaced outright; run
 subset, as WOFF2, and marked `redistributable: false`, so a `.postext` export
 leaves them out.
 
+`pepper-carrot` is a comic: episode 8 of David Revoy's *Pepper&Carrot* (CC BY
+4.0) in seven editions (en, es, ca, fr, ja, zh-Hans, ar). Its pipeline cuts the
+text-free art into one picture per panel and reads each translation's
+Inkscape SVG into `:::page` scripts (`fetch.py`, `panels.py`, `anchors.py`,
+`manifest.py`, `text.py`, writing into `$PC_OUT`); `fonts.py` fetches and
+subsets the lettering faces; `build.py` adds the speakers' faces and the
+regions balloons avoid, a title page, the credits page with the attribution
+the series' licence guide asks for, and writes the bundle.
+
 ```sh
 python3 scripts/presets/showcase/deep-sky/fetch.py
 python3 scripts/presets/showcase/deep-sky/build.py

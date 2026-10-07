@@ -233,15 +233,29 @@ def _placement(position: str | None, span: str | None, **more) -> dict | None:
     return p or None
 
 
+def _picture_marks(r: dict, safe_area: dict | None, anchors: list | None, avoid: list | None) -> None:
+    """Safe area, comic speaker anchors and avoid zones (fractions of the picture)."""
+    if safe_area:
+        r["safeArea"] = safe_area
+    if anchors:
+        r["anchors"] = anchors
+    if avoid:
+        r["avoid"] = avoid
+
+
 def bitmap(project: Path | str, id_: str, file: str, caption: str = "", *, type_id: str = "figure",
            alt: str | None = None, note: str | None = None, position: str | None = None,
-           span: str | None = None, **placement) -> dict:
-    """A bitmap resource with its pixel size (Node renderers cannot decode it)."""
+           span: str | None = None, safe_area: dict | None = None, anchors: list | None = None,
+           avoid: list | None = None, **placement) -> dict:
+    """A bitmap resource with its pixel size (Node renderers cannot decode it).
+    A comic panel picture takes `safe_area`, `anchors` and `avoid`
+    (references/comics.md §9)."""
     size = image_size(Path(project) / file)
     r = {"id": id_, "typeId": type_id, "kind": "bitmap", "file": file, "caption": caption,
          "altText": alt if alt is not None else re.sub(r"[*_^~]", "", caption)}
     if size:
         r["width"], r["height"] = size
+    _picture_marks(r, safe_area, anchors, avoid)
     if note:
         r["note"] = note
     pl = _placement(position, span, **placement)
@@ -252,12 +266,14 @@ def bitmap(project: Path | str, id_: str, file: str, caption: str = "", *, type_
 
 def svg(project: Path | str, id_: str, file: str, caption: str = "", *, type_id: str = "figure",
         pdf_file: str | None = None, alt: str | None = None, note: str | None = None,
-        position: str | None = None, span: str | None = None, **placement) -> dict:
+        position: str | None = None, span: str | None = None, safe_area: dict | None = None,
+        anchors: list | None = None, avoid: list | None = None, **placement) -> dict:
     size = svg_size(Path(project) / file)
     r = {"id": id_, "typeId": type_id, "kind": "svg", "file": file, "caption": caption,
          "altText": alt if alt is not None else re.sub(r"[*_^~]", "", caption)}
     if size:
         r["width"], r["height"] = round(size[0], 2), round(size[1], 2)
+    _picture_marks(r, safe_area, anchors, avoid)
     if pdf_file:
         r["pdfFile"] = pdf_file
     if note:

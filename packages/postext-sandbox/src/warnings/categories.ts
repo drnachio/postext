@@ -28,6 +28,9 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':
     case 'missingImage':
+    case 'comicUnknownArt':
+    case 'comicPanelLetterbox':
+    case 'comicAnchorOutsideSafeArea':
       return 'figures';
     case 'headerFooterUnknownPlaceholder':
     case 'headerFooterMetadataMissing':
@@ -58,6 +61,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'chipOverlap':
     case 'parityCascade':
     case 'unsupportedHyphenationLocale':
+    case 'comicBalloonOverflow':
       return 'typesetting';
     case 'storageUnavailable':
       return 'system';

@@ -25,7 +25,8 @@ interface PresetEntry {
   binding?: "left" | "right";
   /** Where the book stands on the shelf: the books without one keep the
    *  index order (by id) and come first, the others follow by this number
-   *  (ألف ليلة وليلة, 紅樓夢 and こころ, the right-bound books, stand last). */
+   *  (ألف ليلة وليلة, 紅樓夢 and こころ, the right-bound books, then the
+   *  Pepper&Carrot comic, stand last). */
   shelfOrder?: number;
   /** How the cover meets the shelf's 3:4 frame: cropped to it (`cover`, the
    *  default) or flattened into it (`fill`), for a cover a little taller than

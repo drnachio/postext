@@ -15,15 +15,21 @@ export const LOCALES: readonly Locale[] = ["en", "es", "ca", "zh", "ar", "ja"];
 export type Localized<T = string> = Record<Locale, T>;
 
 /** Languages a recipe's sample document (the pen, its content.<locale>.md,
- *  captures and bundles) can be written in: narrower than the site's. A
- *  page in a locale the sample lacks shows its first edition, as a Spanish
- *  page does for an English-only sample. */
-export type SampleLocale = "en" | "es";
-export const SAMPLE_LOCALES: readonly SampleLocale[] = ["en", "es"];
+ *  captures and bundles) can be written in: any site locale. Most recipes
+ *  write English and Spanish samples; a comic re-lettered per language
+ *  writes one per site locale. A page in a locale the sample lacks shows
+ *  the Spanish edition for Catalan when there is one, else the first
+ *  edition, as a Spanish page does for an English-only sample. */
+export type SampleLocale = Locale;
+export const SAMPLE_LOCALES: readonly SampleLocale[] = LOCALES;
+
+/** The languages every recipe.json text is written in. */
+export type RequiredLocale = "en" | "es";
+export const REQUIRED_LOCALES: readonly RequiredLocale[] = ["en", "es"];
 
 /** Text authored in recipe.json next to the sample: English and Spanish
  *  always, other site locales when someone adds them. */
-export type RecipeLocalized<T = string> = Record<SampleLocale, T> & Partial<Record<Locale, T>>;
+export type RecipeLocalized<T = string> = Record<RequiredLocale, T> & Partial<Record<Locale, T>>;
 
 /** A `RecipeLocalized` value in `locale`, else in English. */
 export function localizedText<T>(value: RecipeLocalized<T>, locale: Locale): T {
@@ -49,17 +55,17 @@ export type PartColor = "blue" | "gilt" | "vermilion";
 export type ChapterId =
   | "page" | "type" | "headings"
   | "running-heads" | "structure" | "boxes" | "figures" | "tables"
-  | "publications" | "output";
+  | "publications" | "output" | "comics";
 export const CHAPTER_IDS: readonly ChapterId[] = [
   "page", "type", "headings", "running-heads", "structure", "boxes", "figures", "tables",
-  "publications", "output",
+  "publications", "output", "comics",
 ];
 export type GenreId =
   | "novel" | "poetry" | "textbook" | "workbook" | "manual" | "paper" | "report"
-  | "magazine" | "newsletter" | "catalogue" | "photobook" | "ephemera" | "any";
+  | "magazine" | "newsletter" | "catalogue" | "photobook" | "comic" | "ephemera" | "any";
 export const GENRE_IDS: readonly GenreId[] = [
   "novel", "poetry", "textbook", "workbook", "manual", "paper", "report", "magazine",
-  "newsletter", "catalogue", "photobook", "ephemera", "any",
+  "newsletter", "catalogue", "photobook", "comic", "ephemera", "any",
 ];
 export type OutputId = "canvas" | "html" | "pdf" | "epub" | "bundle" | "live";
 export const OUTPUT_IDS: readonly OutputId[] = ["canvas", "html", "pdf", "epub", "bundle", "live"];
@@ -82,9 +88,14 @@ export const REQUIRED_AUTHORED_SECTIONS: readonly SectionId[] = ["build", "metho
  *  arabic files of Arabic-script faces) are listed only by the recipes that
  *  set such text; `book` (`showBook`, spreads of a book bound on either
  *  edge) by the right-bound books. The cjk block carries its own copy of
- *  `showBook`, so a recipe lists `book` or `cjk`, never both. */
-export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk" | "arabic" | "book";
-export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic", "book"];
+ *  `showBook`, so a recipe lists `book` or `cjk`, never both. `comics`
+ *  (the comic lettering faces in every weight a balloon style asks for,
+ *  panel pictures from an art manifest, a PDF provider for every script)
+ *  by the comic recipes, after the blocks it calls (`images` for
+ *  `comicPanel`, `pdf` for `comicPdfProvider`, and `cjk` or `arabic` for
+ *  the faces of those scripts). */
+export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk" | "arabic" | "book" | "comics";
+export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic", "book", "comics"];
 export const REQUIRED_KIT: readonly KitBlock[] = ["core", "fonts", "viewer"];
 
 export type CardMode = "spread" | "page" | "loupe" | "crop" | "screenshot";
@@ -329,7 +340,7 @@ export interface Taxonomy {
 
 export type FeatureGroup =
   | "page" | "text" | "fonts" | "languages" | "headings" | "furniture" | "boxes" | "figures"
-  | "tables" | "math" | "structure" | "colour" | "pdf" | "html" | "integration";
+  | "tables" | "math" | "structure" | "colour" | "pdf" | "html" | "integration" | "comics";
 
 export interface Feature {
   label: Localized;

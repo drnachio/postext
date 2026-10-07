@@ -252,11 +252,13 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   useEffect(() => {
     let cancelled = false;
     const { onGeneratingChange: generating, onPageCountChange: counted } = callbacksRef.current;
+    // The text decides some faces too (a comic page letters in its own).
+    const fontText = deferredBookSource ? deferredBookSource.chapters.map((c) => c.markdown) : deferredSource.book.markdown;
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = missingConfigFontSpecs(deferredConfig);
+      const missing = missingConfigFontSpecs(deferredConfig, fontText);
       if (missing.length > 0) {
         generating?.(true);
-        ensureConfigFontsLoaded(deferredConfig).then(() => {
+        ensureConfigFontsLoaded(deferredConfig, fontText).then(() => {
           if (!cancelled) setRebuildKey((k) => k + 1);
         });
         return () => {
@@ -264,8 +266,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         };
       }
     }
-    if (!verticalTwinsSettled(deferredConfig)) {
-      loadVerticalTwins(deferredConfig).then((added) => {
+    if (!verticalTwinsSettled(deferredConfig, fontText)) {
+      loadVerticalTwins(deferredConfig, fontText).then((added) => {
         if (added && !cancelled) setRebuildKey((k) => k + 1);
       });
     }

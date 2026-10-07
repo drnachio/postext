@@ -12,6 +12,8 @@ import { renderLangOf } from '../locale';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
 import { setVerticalPaint } from './verticalText';
 import { beginMirroredFlow } from './mirrorFrame';
+import { renderComicPage } from './comic';
+import { pageComics } from '../comics/transform';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -221,7 +223,7 @@ function paintContext(
   }
 
   // The character grid (稿纸), a screen aid (`cjk.grid.show`).
-  const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, page.contentArea ?? computeContentArea(page, doc), doc.baselineGrid, page.columns, page.flow) : undefined;
+  const gridCells = doc.config.cjk?.grid?.show && !page.comic ? cjkGridCells(doc.config, page.contentArea ?? computeContentArea(page, doc), doc.baselineGrid, page.columns, page.flow) : undefined;
   if (gridCells) renderCharacterGrid(ctx, gridCells);
 
   // The page's own rule on a styled section's pages, else the document's.
@@ -272,6 +274,10 @@ function paintContext(
     ctx.restore();
   }
   endMirror?.();
+
+  // A comic page's panels and lettering (or its half of a spread), and the
+  // strips set in its flow, on the sheet (never through the flow frame).
+  for (const comic of pageComics(page)) renderComicPage(ctx, comic, inkHex);
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);

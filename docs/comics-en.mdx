@@ -1,0 +1,525 @@
+{/* docs/comics-en.mdx */}
+
+export const metadata = {
+  title: 'Comics',
+  sidebarTitle: 'Comics',
+  description: 'How Postext sets comics and manga from Markdown: comic pages cut by a split tree, panel pictures cropped around their safe area, lettering generated from a script (speech, thought, whisper, shout, radio, captions, sound effects), balloon styles, speaker anchors on the pictures, strips in the text, two-page spreads, right-to-left reading and vertical lettering, translations, and the canvas, PDF, HTML and EPUB outputs',
+  lang: 'en',
+  lastUpdated: '2026-10-07',
+  readingTime: '25 min',
+  order: 9,
+  plainSummary: "This page explains how to make a comic with Postext. The pictures are the panels, and everything the characters say, think or hear is written as text in the Markdown file. Postext places the panels on the page and draws the speech balloons, captions and sound effects around the words by itself. To translate the comic you rewrite only the words, and Postext letters the new language again: Japanese in columns, Arabic from right to left. The page also covers comic strips inside a book, pages across two facing pages, the outputs and the limits that remain.",
+};
+
+# Comics
+
+**The pictures are the panels; everything said, thought, narrated or heard is text in the Markdown.**
+
+A comic in Postext is a set of pictures and a script. The pictures are ordinary bitmap or SVG resources, drawn with no lettering on them. The script lives in the chapter's Markdown: a `:::page` block cuts a page into panels, gives each panel its picture and lists, line by line, the balloons, captions and sound effects of that panel. Postext lays out the panels, crops each picture to its cell without cutting into what matters, sets the text in the book's lettering face at one size, draws a balloon around it, points the tail at the speaker and places the balloons in reading order where they cover no face. A translation is another Markdown file with the same panels and other words; Postext letters it again from scratch, in columns for Japanese and from right to left for Arabic.
+
+Comics are opt-in: a document without `:::page` or `:::strip` lays out exactly as before. The settings live in the [`comics` section of the configuration](/en/docs/configuration#comics), and the markup is summed up in [Document format › Comics](/en/docs/document-format#comics).
+
+## Comic pages
+
+A `:::page` block is one comic page. It opens with a line `:::page{…}`, holds one `::panel` line per panel, each followed by that panel's script, and closes with a bare `:::`:
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: Every summer, Maya spent a week at the lighthouse.
+maya: Grandpa! I'm here!
+::panel{art=lh-radio}
+tomas: Just in time. The radio's gone deaf,
+tomas: and there's a storm on the way.
+::panel{art=lh-maya}
+maya{thought}: That valve looks loose…
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: KRAK
+tomas{shout}: Hold on to the rail!
+:::
+```
+
+The block always starts on a fresh page and owns all of it. The text after the closing fence starts on the next page, so two `:::page` blocks in a row make two comic pages, and a `:::pagebreak` between them adds no page. The engine reads the body itself, line by line, as it reads `:::verse`: Markdown blocks, containers and other directives are not recognised inside it, and `<!-- comments -->` are ignored, over several lines too.
+
+The page's role is `'comic'` (`VDTPage.role`). It carries no running heads or folio, since a comic page is all panels, but it counts in the page numbering; `comics.runningHeads: true` prints them. The panels are cut from the **frame**, which is the page's text area inside its margins unless `comics.frame.margins` gives comic pages margins of their own.
+
+The attributes of the opening line:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>split="…"</code></td><td>How the frame is cut into cells (see <a href="#splitting-the-page">Splitting the page</a>). Unset, the panels are stacked in tiers of equal height.</td></tr>
+    <tr><td><code>gutter=4mm</code>, <code>gutter="4mm 2mm"</code></td><td>The room between tiers, and between panels side by side when a second value is given. A bare number is in millimetres. Unset: <code>comics.gutter</code> (4 mm and 2 mm).</td></tr>
+    <tr><td><code>style=…</code></td><td>A named panel style for every panel of the page (<code>comics.panelStyles</code>).</td></tr>
+    <tr><td><code>bleed</code></td><td>Every panel that touches the frame runs out to the trim and into the bleed.</td></tr>
+    <tr><td><code>direction=rtl</code>, <code>dir=ltr</code></td><td>The reading direction of this page, whatever the configuration says (see <a href="#reading-direction">Reading direction</a>).</td></tr>
+    <tr><td><code>spread</code></td><td>Lay the page across two facing pages (see <a href="#spreads">Spreads</a>).</td></tr>
+  </tbody>
+</table>
+
+## Splitting the page
+
+The `split` attribute describes the page as a tree of cuts. A list of sizes separated by `/` stacks cells from top to bottom (tiers); a list separated by `|` sets them side by side, from the side the page is read from. A size followed by a bracketed list cuts that cell again on the other axis. The page of the example above, `30 [30 | 20 | *] / *`, is a tier 30 % of the frame's height, cut into panels 30 % and 20 % of its width and a third that takes the rest, over a second tier that takes the rest of the page:
+
+<Illustration name="ComicSplit" data='{"title": "The split 30 [30 | 20 | *] / *", "desc": "A page frame cut by the split 30 [30 | 20 | *] / *. A first tier takes 30 % of the height and is cut into three panels: 30 % of the width, 20 %, and the rest. A second tier below takes the rest of the page as one panel. Gutters straddle the split lines. Beside the page, the split is drawn as a tree: a list of rows with two items; the first holds a bracketed list of three columns. The leaves are the panels 1 to 4 in reading order.", "caption": "Sizes are percentages of the parent cell; * takes what is left. Panels are numbered in reading order, the order of the tree.", "split": "30 [30 | 20 | *] / *", "rows": "/ rows, top to bottom", "columns": "| columns, from the start side", "rest": "* the rest", "order": "panels in reading order", "gutter": "gutter"}' />
+
+The grammar in full:
+
+```
+split := list
+list  := item ( "/" item )*  |  item ( "|" item )*
+item  := size [ "[" list "]" ]
+size  := number ["%"] [ "~" number ["%"] ]  |  "*"  |  (nothing)
+```
+
+- **Sizes** are percentages of the parent cell along the list's axis; `30` and `30%` are the same. A `*`, or an empty size, takes an equal share of what the written sizes leave. The last item of a list always runs to the end, whatever its size says.
+- **One separator per list.** Mixing `/` and `|` in the same list, an unclosed `[`, or a bracketed list on its parent's own axis is a syntax error (`comicSplitSyntax`): the readable part is used.
+- **Too much.** Sizes that add up to more than 100 % are scaled down so that each `*` keeps 5 %, and the page reports `comicSplitOverflow`.
+- **Reading order** is the order of the tree: tiers from top to bottom, and within a tier the panels from the start side. The `::panel` lines fill the cells in that order. A page with more panels than cells leaves the extra panels out; one with fewer leaves the last cells empty (`comicPanelCount`, reported only when a `split` is written).
+
+Some splits:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Split</th>
+      <th>Page</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#42;</code></td><td>A splash page: one panel.</td></tr>
+    <tr><td><code>33 / 33 / &#42;</code></td><td>Three tiers.</td></tr>
+    <tr><td><code>&#42; / &#42; / &#42; / &#42;</code></td><td>Four equal tiers, the yonkoma of a four-panel gag strip.</td></tr>
+    <tr><td><code>50 [&#42; | &#42;] / 50 [&#42; | &#42; | &#42;]</code></td><td>Two panels over three.</td></tr>
+    <tr><td><code>30 / 35 [&#42; | &#42; | &#42;] / &#42;</code></td><td>A wide panel, three in a row, a wide panel.</td></tr>
+    <tr><td><code>60 | &#42; [50 / &#42;]</code></td><td>A tall panel at the start side and two stacked beside it.</td></tr>
+    <tr><td><code>&#42; [40&#126;55 | &#42;] / 35</code></td><td>An action tier cut by a slanted line, over a tier 35 % high.</td></tr>
+  </tbody>
+</table>
+
+### Slanted cuts
+
+A size written `a~b` gives a slanted line: the far edge of the cell runs from `a` % at the start of the cross axis to `b` % at its other end. For panels side by side the start is the top, so `40~55 | *` draws a line from 40 % of the width at the top to 55 % at the bottom; for tiers the start is the side the page is read from. Sizes add up at each end separately, and the cells stay convex polygons. Rounded corners apply to rectangular panels only; a slanted panel keeps sharp corners.
+
+### Gutters
+
+The gutter straddles each split line, half on each side, so a line written at 30 % sits exactly at 30 % of its cell. Slanted lines keep the gutter of their axis, measured across the line. The defaults follow the usual page: 4 mm between tiers and 2 mm between panels of a tier (`comics.gutter.horizontal` and `vertical`, or the page's `gutter` attribute).
+
+### Bleed
+
+A bleeding panel runs past the frame: each of its sides that touches the frame is moved out to the trim, and to the bleed past it when the page has one (`page.cutLines.bleed`). The page's `bleed` attribute bleeds every panel; a panel's own `bleed` bleeds it alone, `bleed="top start"` only those sides (`top`, `bottom`, `start`, `end`, `left`, `right`), and `bleed=false` stops it. A panel style with `bleed: true` bleeds its panels.
+
+### Padding and insets
+
+`pad` makes a panel smaller than its cell: one to four values in the order of CSS margins with logical sides (top, end, bottom, start), each a length or a percentage of the cell. `::panel{art=x pad="0 15%"}` gives a panel narrower than its tier, centred in it.
+
+A panel with `inset="x y w h"` does not take a cell: it is laid over the panel before it, at that position and size in percentages of that panel's box, as a small portrait in a corner or a close-up over a wide shot. Its script is lettered inside it.
+
+```md
+:::page{split="*"}
+::panel{art=storm-wide}
+caption{at=bottom-start}: The storm broke at midnight.
+::panel{art=maya-window inset="62% 6% 32% 30%"}
+maya{whisper}: Grandpa?
+:::
+```
+
+## Panels and art
+
+A `::panel{…}` line starts a panel; its script runs to the next `::panel` line or the closing fence. A panel with no `art` is drawn empty in its background colour, which is how a text-only panel is made. Text before the first `::panel` is lettered as a caption of the first panel and reported as `comicStrayText`.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>The panel's picture: the id of a bitmap or SVG resource. An unknown id leaves the panel empty and reports <code>comicUnknownArt</code>.</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td><code>cover</code> crops the picture to fill the cell, never into its safe area; <code>contain</code> shows it whole, with bands of the panel background. Unset: the panel style's (<code>cover</code>).</td></tr>
+    <tr><td><code>focus="70% 40%"</code></td><td>The point of the picture to keep centred where the safe area leaves room to choose.</td></tr>
+    <tr><td><code>style=…</code></td><td>A named panel style for this panel.</td></tr>
+    <tr><td><code>border=none</code>, <code>border=0.5mm</code></td><td>No border, or a border of that width.</td></tr>
+    <tr><td><code>bg=#1b1b2f</code></td><td>The panel background: a colour, a palette id, or <code>none</code>.</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>See <a href="#bleed">Bleed</a>.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>See <a href="#padding-and-insets">Padding and insets</a>.</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>Lay this panel over the previous one instead of giving it a cell.</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>A cut-out drawn over the border (see <a href="#pop-out-art">Pop-out art</a>).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Flip this panel's picture, or keep it as drawn when the page mirrors its pictures (see <a href="#reading-direction">Reading direction</a>).</td></tr>
+    <tr><td><code>alt="…"</code></td><td>The panel's text alternative, for the tagged PDF, HTML and EPUB. Unset: the resource's <code>altText</code>.</td></tr>
+    <tr><td><code>id=…</code></td><td>An id for the panel, which the HTML and EPUB outputs use as an anchor.</td></tr>
+  </tbody>
+</table>
+
+### Cropping the picture to its cell
+
+Panel art is drawn with no regard to the shape of the cell it ends up in: a page can be split again, a splitter dragged, a translation can need a taller tier. The picture's **safe area** (`Resource.safeArea`, see [Document format › Safe area](/en/docs/document-format#safe-area)) says what must stay in view, and the crop is computed for each cell:
+
+1. With `fit=cover` the visible window has the cell's proportions and is as large as the picture allows.
+2. It is placed so that the safe area is inside it. Where that leaves room, the window is centred on `focus` when the panel sets one; otherwise the margins outside the safe area are cut in proportion to their sizes, so a subject left of centre stays left of centre.
+3. If no window of the cell's proportions can hold the safe area (a very wide cell for a tall subject), the picture is shown with its safe area whole and the rest of the cell is filled with the panel background. The page reports `comicPanelLetterbox`. A cell keeps the safe area of a picture W × H whole while its width over height lies between `sw·W/H` and `W/(sh·H)`, where `sw` and `sh` are the safe area's width and height in fractions.
+
+A picture without a safe area is cropped around its centre, or around `focus`. An SVG with no intrinsic size fills the cell as it is. The renderers clip to the cell's polygon and draw the whole picture at its uncropped size, so the crop never resamples the image.
+
+### Panel styles
+
+The look of a panel comes from `comics.panel` (a 1 pt black border, a white ground, `cover`), from a named style in `comics.panelStyles` that a page or panel picks with `style=`, and from the panel's own `border` and `bg`. A border can be `solid`, `none`, or `rough`: a hand-drawn line that wobbles a little, the same on every build, since its wobble is seeded from the panel. See [Configuration › Comics](/en/docs/configuration#comics) for every field.
+
+### Pop-out art
+
+A broken border, where a character or an object comes out of its panel, takes two pictures: the panel's art, clipped to the cell as usual, and a transparent cut-out of the part that breaks out, named with `pop`. The cut-out is cropped and placed exactly as the art (it should be the same size as the art picture) and drawn after the border, unclipped, so it covers the border and the gutter.
+
+```md
+::panel{art=gull-sky pop=gull-cutout bleed="top"}
+sfx{at="70% 20%"}: SKRAAW
+```
+
+## Lettering
+
+Under each `::panel` line comes the panel's script, one balloon per line:
+
+```md
+key{attributes}: text
+```
+
+The **key** is a speaker id (letters, digits, `_`, `.` and `-`), the same in every translation; it matches the anchors of the pictures and the [cast](#the-cast). Three keys are reserved: `caption` (a narration box), `sfx` (a sound effect, with no balloon) and `note` (an editor's note). The colon may be the full-width `：` a Chinese or Japanese input method types. The text is inline Markdown: `*emphasis*` and `**strong**` print in bold italic, the convention of lettering (bold alone in scripts without italics), `:tcy[12]` sets digits across a vertical column, `:ruby` sets its reading at half size over its base (beside it in a column), and `:ltr` / `:rtl` keep a run in its own direction inside a balloon of the other. A line indented by two spaces or a tab continues the balloon above (joined by a space, with none between two Chinese or Japanese characters); a backslash at the end of a line breaks the balloon's text there. Blank lines are ignored, and a line that is not a script line is lettered as a caption and reported as `comicStrayText`.
+
+```md
+::panel{art=lh-radio}
+tomas: Just in time.
+  The radio's gone deaf,\
+  and there's a storm on the way.
+biscuit{to="40% 70%"}: Mrrp?
+note: Valve radios warm up for a minute before they speak.
+```
+
+The attributes of a script line:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#123;whisper&#125;</code>, <code>style=whisper</code></td><td>The balloon style. A bare word in the braces names a style: <code>thought</code>, <code>whisper</code>, <code>shout</code>, <code>radio</code>, <code>inner</code>, or one of the book's own. An unknown name reports <code>comicUnknownBalloonStyle</code>, and the line takes its key's style.</td></tr>
+    <tr><td><code>at="62% 40%"</code></td><td>Pin the balloon's centre at that point of the panel's picture (of the cell when the panel has none). The point is in fractions of the picture, so it stays on the same spot of the drawing through crops and splitter drags.</td></tr>
+    <tr><td><code>at=top-start</code></td><td>Put the balloon at a corner or edge of the panel: <code>top-start</code>, <code>top-end</code>, <code>bottom-start</code>, <code>bottom-end</code>, <code>top</code>, <code>bottom</code>. Captions and notes are butted against the border.</td></tr>
+    <tr><td><code>to="40% 70%"</code></td><td>Point the tail at that point of the picture instead of the speaker's anchor. The tail turns toward it and stops short of it, as it does before a mouth.</td></tr>
+    <tr><td><code>tail=none</code>, <code>tail=start</code></td><td>No tail, or a tail toward an off-panel speaker on that side (<code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>). <code>tail=auto</code> is the default.</td></tr>
+    <tr><td><code>join</code>, <code>join=false</code></td><td>Join this balloon to the previous one of the same speaker, or keep it apart, whatever <code>comics.lettering.joinSameSpeaker</code> says.</td></tr>
+    <tr><td><code>break</code></td><td>Let the balloon cross the panel border into the gutter or the next panel. The crossing is not reported as an overflow, since it was asked for; what the balloon covers on the other side (a face, another panel's balloon) still is, and its middle stays inside its own panel.</td></tr>
+    <tr><td><code>rotate=-8</code></td><td>Turn the balloon or sound effect, in degrees, clockwise.</td></tr>
+    <tr><td><code>size=1.5</code></td><td>Scale a sound effect's lettering.</td></tr>
+    <tr><td><code>color=#c0392b</code></td><td>The colour of the lettering: a hex colour or a palette id.</td></tr>
+    <tr><td><code>font="…"</code></td><td>The face of this line.</td></tr>
+    <tr><td><code>vertical</code>, <code>horizontal</code>, <code>mode=vertical</code></td><td>This line's writing mode, over the book's: <code>vertical</code> sets it in a column in a horizontal edition (an untranslated <code>ドン</code>), <code>horizontal</code> in a row in a vertical one (a sign written across). A column in a book of another language follows the rules of its own text (with kana, those of Japanese) and takes the leading of vertical lettering. In a vertical book a line with no Chinese or Japanese characters is set in a row anyway, unless it says <code>vertical</code>.</td></tr>
+  </tbody>
+</table>
+
+### How a balloon is made
+
+The lettering follows the habits of comic lettering rather than those of a text frame:
+
+- **One size per book.** Every balloon is set in `comics.lettering.fontFamily` at `comics.lettering.fontSize` (7.5 pt by default), scaled only by its style's `fontScale` (a whisper at 0.9, a shout at 1.15). Text is never shrunk to fit: a balloon that does not fit changes shape, moves, crosses the border, or is reported.
+- **Text first, balloon after.** The words are broken into lines first, aiming at a lozenge: short lines at the top and bottom, the longest in the middle, no last line much shorter than the others, no line ending on an article or a preposition when another break is as good. Then the outline is drawn around the lines, with the same air on every side.
+- **House rules.** Three dots become an ellipsis; `textTransform: 'uppercase'` sets the text in capitals (scripts without case are left alone, and German ß becomes SS); in Japanese and Chinese the full stop that ends a balloon is dropped (`dropFinalStop`) and ASCII `!` and `?` become their full-width forms in columns, two of them in one cell (`!?` as ⁉); `doubleDash` letters an em dash as `--`, as American comics do.
+- **Placement.** The balloons of a panel are placed in reading order inside the panel, kept `comics.lettering.inset` from its border (1.5 mm). The first sits toward the top on the start side, and each next one should not sit higher than the one before unless it is further along the reading direction. Balloons keep off the faces and avoid zones the pictures mark, off the speakers' mouths and off each other, sit above or beside their speaker rather than below, and their tails should not cross. Captions and notes with a corner go first, then pinned balloons, then the rest. The placement is deterministic: the same page always gives the same balloons.
+- **On the sheet.** Lettering never runs off the trim. In a bleeding panel the balloons keep to the part of the panel inside the frame, where the trim cannot cut them; only a sound effect pinned with `at=` or marked `break` may run into the bleed beside its panel.
+- **When it does not fit.** A balloon that cannot be placed cleanly may first cross the border (only with `break`), then cover an avoid zone (never a face), then take a wider or narrower shape. A long line in a narrow cell is set about as wide as the cell and pokes into the gutter rather than standing as a thin column over its speaker's face. If the balloon still overlaps something it is placed where it does least harm and the page reports `comicBalloonOverflow`, naming the panel and what it covers. A crossing asked for, with `break` or with an `at=` pin, is not one of those faults: the warning then names only what the balloon covers. A shorter line, a bigger panel or an `at=` pin fixes it.
+
+### Tails
+
+A speech balloon's tail points at its speaker's mouth, a thought balloon's bubbles at the head (see [Speakers and anchors](#speakers-and-anchors)). It leaves the outline facing the speaker, bends a little and stops short of the mouth. When the speaker's anchor is cropped out of the panel, or the picture marks no anchor for that speaker, the tail points off the panel, toward the anchor or toward the nearest border, and ends on the border. Such a balloon sits by the border its voice comes from, with a short tail: a tail drawn across the whole panel reads as an arrow, so the balloon moves rather than the tail growing. `to="x% y%"` aims a tail at another point of the picture, and `tail=start` (or `top`, `bottom`, `end`) at a speaker off that side. Captions, notes and sound effects have no tail.
+
+### Joined balloons
+
+Two lines in a row from the same speaker are joined, as a speaker's pause is lettered: with `joinSameSpeaker: 'butt'` (the default) the two bodies overlap and share one outline; with `'connector'` a narrow neck links them; with `'none'` they stay two balloons with two tails. Only the first balloon of a group has a tail. A line can ask for its own with `join` or `join=false`.
+
+### Sound effects
+
+An `sfx` line has no balloon: its text is set large (2.4 times the lettering size), bold, in the sound-effect face of the document language, with a white halo around the letters so it reads over the picture. It is placed near the panel's `sfx` anchor when the picture marks one (an anchor whose id is `sfx`), else wherever it covers no face. `rotate`, `size`, `color` and `font` change it, and `at` pins it. In vertical lettering it is set in a column, at most five characters long. Sound effects are painted after all the balloons of the page.
+
+A line can set its own writing mode. A horizontal edition of a manga that keeps a sound effect in Japanese sets it in a column:
+
+```md
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
+```
+
+### Lettering settings
+
+`comics.lettering` holds the face, size, leading, colour and house rules of the whole book. By default the face follows the document language, and so does the sound-effect face:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Language</th>
+      <th>Lettering</th>
+      <th>Sound effects</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Latin, Greek, Cyrillic and the rest</td><td>Comic Neue</td><td>Bangers</td></tr>
+    <tr><td>Japanese</td><td>Zen Antique</td><td>Dela Gothic One</td></tr>
+    <tr><td>Simplified Chinese</td><td>Noto Sans SC</td><td>ZCOOL KuaiLe</td></tr>
+    <tr><td>Traditional Chinese</td><td>LXGW WenKai TC</td><td>LXGW WenKai TC</td></tr>
+    <tr><td>Arabic, Persian, Urdu</td><td>Playpen Sans Arabic</td><td>Lalezar</td></tr>
+  </tbody>
+</table>
+
+All of them are on Google Fonts and load by name like any other face. With the default line height, vertical and Chinese or Japanese balloons are set at a leading of 1.5 and Arabic ones at 1.45. Japanese, Chinese and Arabic lettering is never slanted, whatever the style says, and Arabic is never letter-spaced.
+
+### The cast
+
+`comics.cast` lists the characters: an id (the speaker key), a `name`, and optionally the balloon style they speak in (`balloonStyle`, a robot that always talks in `radio`), the text `color` and balloon `fill` that set them apart, and a `fontFamily`. The name is what the outputs announce: the HTML viewer and the reflowable EPUB print "Name: words" for each line. A speaker that is in the cast is never reported as unknown.
+
+```ts
+comics: {
+  cast: [
+    { id: 'maya', name: 'Maya' },
+    { id: 'tomas', name: 'Grandpa Tomás' },
+    { id: 'beacon', name: 'The beacon', balloonStyle: 'radio', fill: { hex: '#e8f4ff', model: 'hex' } },
+  ],
+}
+```
+
+## Balloon styles
+
+A balloon style is a kind of balloon: its outline, its tail and its lettering. Nine are built in, and a script line names one with a bare word in braces (`ben{whisper}: …`). The reserved keys take theirs from their name (`caption:`, `sfx:`, `note:`), and every other line takes `speech`, or its speaker's `balloonStyle` from the cast.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Style</th>
+      <th style={{ width: '170px' }}>Outline</th>
+      <th style={{ width: '120px' }}>Tail</th>
+      <th>Otherwise</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>speech</code></td><td>oval</td><td>curved</td><td>The base of every style: white fill, 0.6 pt black outline, 0.55 em of air.</td></tr>
+    <tr><td><code>thought</code></td><td>cloud</td><td>bubbles</td><td>The bubbles point at the head, not the mouth.</td></tr>
+    <tr><td><code>whisper</code></td><td>oval, dashed</td><td>curved</td><td>Text at 0.9.</td></tr>
+    <tr><td><code>shout</code></td><td>burst</td><td>wedge</td><td>Text at 1.15, bold; outline 0.8 pt.</td></tr>
+    <tr><td><code>radio</code></td><td>electric (zigzag)</td><td>zigzag</td><td>A voice from a radio, a phone or a machine.</td></tr>
+    <tr><td><code>caption</code></td><td>rectangle</td><td>none</td><td>Pale yellow, butted to the top-start corner, text aligned to the start.</td></tr>
+    <tr><td><code>inner</code></td><td>rounded box</td><td>none</td><td>Grey fill, italic: a character's inner voice.</td></tr>
+    <tr><td><code>note</code></td><td>rectangle</td><td>none</td><td>Butted to the bottom-end corner, text at 0.8.</td></tr>
+    <tr><td><code>sfx</code></td><td>none</td><td>none</td><td>Text at 2.4, bold, in the sound-effect face, with a 1.5 pt white halo.</td></tr>
+  </tbody>
+</table>
+
+`comics.balloonStyles` changes them and adds others. An entry with a built-in id is laid over that style; an entry with a new id starts from `speech`:
+
+```ts
+comics: {
+  balloonStyles: [
+    { id: 'caption', fill: { hex: '#ffffff', model: 'hex' }, textTransform: 'uppercase' },
+    { id: 'shout', burstPoints: 18, burstDepth: 0.3 },
+    { id: 'eerie', shape: 'wavy', stroke: { hex: '#5b4a8a', model: 'hex' }, italic: true },
+    { id: 'writing', shape: 'none', tail: 'none', fontFamily: 'Caveat', color: { hex: '#3b2a1a', model: 'hex' } },
+  ],
+}
+```
+
+```md
+ghost{eerie}: Leave this house…
+caption{at=bottom-end}: Three streets away.
+```
+
+The outlines are `oval` (a superellipse fitted to the lines, `roundness` 2.2), `rounded`, `rectangle`, `cloud` (scallops counted from the perimeter), `burst` (`burstPoints` spikes, `burstDepth` deep), `wavy`, `electric` and `none`. `dash` draws a dashed outline, `double` a double one, and `wobble` (0–1) shakes it by hand, always the same way for the same balloon. The tails are `curved`, `wedge`, `bubbles`, `zigzag` and `none`. Every field, with its default, is in [Configuration › Comics](/en/docs/configuration#comics).
+
+The renderers draw a balloon the way letterers ink one: all the outlines of a group are stroked first at twice their width, then filled, then the text is set. Two joined bodies and their tail therefore come out as one shape with no line between them.
+
+## Speakers and anchors
+
+Tails point at people, and balloons keep off faces, because the pictures say where the people are. A bitmap or SVG resource can carry **anchors**: one point per speaker, written once, in fractions of the picture (0–1 from its top-left corner), like the safe area.
+
+```ts
+const arrive: Resource = {
+  id: 'lh-arrive', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-arrive.jpg', format: 'jpeg', width: 1100, height: 733 },
+  altText: 'A girl in a yellow raincoat walks up a coastal path towards a lighthouse.',
+  safeArea: { x: 0.2, y: 0.08, width: 0.42, height: 0.82 },
+  anchors: [
+    { id: 'maya', x: 0.29, y: 0.52, head: { x: 0.27, y: 0.47 }, face: { x: 0.22, y: 0.42, width: 0.12, height: 0.16 } },
+    { id: 'biscuit', x: 0.4, y: 0.68 },
+  ],
+  avoid: [{ x: 0.51, y: 0.09, width: 0.1, height: 0.43 }], // the lighthouse
+};
+```
+
+- `id` is the speaker key the script uses (`maya: …`). An anchor whose id is `sfx` places the panel's sound effects.
+- `x`, `y` is the mouth, where a speech balloon's tail points.
+- `head` is where a thought balloon's bubbles point. Unset: the mouth.
+- `face` is a rectangle no balloon covers. An anchor without one gets a guard box of a few ems above and around its mouth, so balloons still keep off a face that was not outlined.
+- `avoid` (on the resource) lists other rectangles no balloon covers: a hand, a key object, a sign. Under pressure a balloon may cover an avoid zone, never a face.
+
+Because anchors are fractions of the picture, they move with the crop: the engine maps each one through the panel's crop and mirror onto the page, so a splitter drag, another split or a translation never takes a tail off its speaker. An anchor that the crop leaves outside the panel makes the tail point off the panel toward it. The safe area protects anchors from that: an anchor outside it is reported as `comicAnchorOutsideSafeArea`, an authoring hint, since a crop may cut it off. A speaker key that no picture of the page marks and no cast entry names is reported as `comicUnknownSpeaker`, which usually catches a misspelt id; pages whose pictures mark no anchors at all report nothing, so a comic can be lettered without anchors.
+
+Anchors and avoid zones belong to the picture and are the same in every language. In the Sandbox they are marked in the picture editor of the [Resources panel](/en/docs/sandbox#resources-panel): the **Safe area & lettering** field opens a dialog with three modes, Safe area, Speakers and Avoid zones. A click on the picture adds a speaker there; its mouth, head and face are dragged into place and its id typed beside it; a drag on an empty part of the picture draws an avoid zone. Every mark can be moved with the arrow keys (Shift for bigger steps) and removed with Delete, and the dialog keeps its own undo.
+
+## Strips
+
+A `:::strip` block has the body of a comic page but sits in the text, as a box the width of a column or of the page, cut into panels: a newspaper's daily strip, a four-panel gag in a magazine, a short comic inside a prose book.
+
+```md
+:::strip{split="* | * | * | *" aspect=4 span=page placement=top}
+::panel{art=pip-1}
+pip: Otto, the ice is melting.
+::panel{art=pip-2}
+otto{thought}: Not the bakery…
+::panel{art=pip-3}
+::panel{art=pip-4}
+sfx: SPLOSH
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>span=column</code>, <code>span=page</code></td><td>As wide as the column it falls in (the default) or as the text area.</td></tr>
+    <tr><td><code>placement=here</code></td><td>The default: set in the text where it is written. A strip never splits; one that does not fit moves whole to the next column or page, taking a heading just above it along.</td></tr>
+    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Floated like a figure to the head or foot of the first page with room from this point on. A page-wide strip written <code>here</code> on a page of several columns floats too.</td></tr>
+    <tr><td><code>height=4cm</code></td><td>The strip's height (a bare number is in millimetres).</td></tr>
+    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>Width over height. Unset, the strip takes the proportions that make its panels square (four panels in a row: 4).</td></tr>
+  </tbody>
+</table>
+
+A strip without `split` sets its panels side by side. The strip's box is its frame: the gutters, panel styles and lettering are those of the configuration, and nothing bleeds. A strip taller than a column is reduced to the column. After it the text goes on at the next line of the baseline grid, with the gap `layout.inlineResourceGap` asks for, as after an inline figure. On a vertical page the strip is laid out in its turned box, so a yonkoma `* / * / * / *` with `aspect=0.25` runs down a vertical column.
+
+In the VDT a strip is a block of `type: 'resource'` with a `comic` field and no `resourceBlock`; its coordinates are relative to the block's box on the sheet. `pageComics(page)` gives a page's comic and the strips of its columns and floats, all moved onto the sheet.
+
+## Spreads
+
+`:::page{spread}` lays one split tree across two facing pages, for a panorama or a battle that needs the whole open book. The frame is the two text areas joined across the spine, without their inner margins; the split, the gutters and the crop work as on a single page, and a panel or a picture may run across the spine.
+
+```md
+:::page{spread split="25 [* | * | *] / *" bleed}
+::panel{art=market-1}
+::panel{art=market-2}
+::panel{art=market-3}
+::panel{art=market-panorama}
+caption: The Saturday market, from the clock tower.
+:::
+```
+
+A spread opens on a verso, the even page, so that both halves face each other: a blank page is added before it when the comic would start on a recto, also at the very start of a book, where page 1 stands alone. In a left-bound book the verso is the left page; in a right-bound book (Arabic, vertical Japanese and Chinese) it is the right one. Each page carries its half: the panels that reach its side, cut at the spine, with the picture of a panel that crosses the spine drawn on both pages. Bleeding panels bleed through the head, the foot and the outer edges, never at the spine. Nothing is lettered in an 8 mm band about the spine, where the binding would swallow it: a balloon pinned there slides off to the nearer side. Each balloon sits on the page that holds its centre.
+
+## Reading direction
+
+A Western comic is read from left to right: the first panel of a tier is at the left. Manga and Arabic comics are read from right to left. Postext reads the direction from `comics.readingDirection`:
+
+- `'auto'` (the default): right to left in a right-to-left document, so an Arabic edition mirrors its pages; otherwise the direction the art was drawn for, `comics.artDirection` (`'ltr'` by default). A Japanese edition of a Western comic stays left to right; a manga, with `artDirection: 'rtl'`, stays right to left in any language.
+- `'ltr'` or `'rtl'` forces one direction for the whole book, and a page's `direction` attribute forces it for that page.
+
+The same source gives both page layouts. A right-to-left page lays out the panels of each tier from the right, so panel 1 sits at the top right; slants mirror with them, and so do the logical sides of `bleed`, `pad` and the corner keywords (a caption at `top-start` sits at the top right). Tiers stay in their order from top to bottom, and the reading order of the script does not change. The lettering mirrors its rules too: the first balloon of a panel leans to the right, and the next one may sit higher only further to the left.
+
+Pictures are not mirrored unless asked: `comics.mirrorArt: true` flips each picture of a page read in the other direction than `artDirection`, which is what Western editions of manga long did, and `::panel{mirror=false}` keeps a picture as drawn (text drawn into the art, a right-handed swordsman). Anchors and safe areas follow the flip. Mirroring is usually better left off: the panel order already follows the reader, and a flipped picture changes what the artist drew.
+
+The writing of the balloons follows the language, not the panel order. With `comics.lettering.writingMode: 'auto'`, Japanese and Traditional Chinese are lettered in vertical columns read from right to left, at most `maxColumnChars` characters long (8), with the kinsoku rules of Japanese, digits set across the column with `:tcy`, and the punctuation in its vertical forms; a document set in vertical writing letters vertically in any language. Simplified Chinese, Korean and every other language are lettered horizontally, and `'horizontal'` or `'vertical'` forces either. Arabic is lettered from right to left, with Latin words and digits in their own direction, never slanted and never letter-spaced.
+
+## Translating a comic
+
+A translation is a Markdown file with the same `:::page` and `::panel` lines and the same speaker keys, and other words. The pictures, their safe areas, anchors and avoid zones, the splits and the pins (`at=` points are in fractions of the pictures) are shared by every edition. Each edition letters itself: the text is measured in its own language and face, broken into its own lines, and every balloon is shaped and placed again around it.
+
+```md
+:::page{split="30 [30 | 20 | *] / *"}
+::panel{art=lh-arrive}
+caption: Todos los veranos, Maya pasaba una semana en el faro.
+maya: ¡Abuelo! ¡Ya estoy aquí!
+::panel{art=lh-radio}
+tomas: Llegas justo a tiempo. La radio se ha quedado sorda,
+tomas: y viene tormenta.
+:::
+```
+
+What changes from one edition to another follows from the document's `locale`: the default lettering and sound-effect faces, vertical lettering for Japanese and Traditional Chinese, the dropped full stops of Chinese and Japanese, the leading, and the page direction of an Arabic edition. Text runs about a fifth longer in Spanish or French than in English, and much shorter in Chinese or Japanese; the balloons grow and shrink with it, and `comicBalloonOverflow` names the panels where a translation needs a shorter line or a pin. Sound effects are words like any other: translate them, or keep the original and add a small one under it as a subtitle.
+
+## Comics output
+
+Every output paints the same comic: panel backgrounds, pictures clipped to the panels, borders, pop-out art, then the balloons of each join group (outlines stroked, then filled, then the text), and the sound effects last.
+
+- **Canvas.** The Sandbox's canvas, the Folio's 3D pages and the thumbnails all paint through `renderPageToCanvas`.
+- **PDF.** `postext-pdf` paints comic pages with vector outlines and the lettering faces embedded, and SVG pictures with a PDF print master (`svg.pdfFileId`) are embedded as that master. A tagged PDF gives each comic page a `Div`, each panel a `Figure` with its alternative text (the panel's `alt`, else the resource's `altText`), and each balloon a `P` after the figure of its panel, in reading order; a sound effect is a `Span` whose `/ActualText` is its words. Backgrounds, borders and outlines are artifacts. The output passes veraPDF's PDF/UA-1 checks.
+- **HTML.** Each panel is a `<figure>` holding an inline SVG (the clip, the picture, the border, the cut-out) with the panel's alternative text, followed by its balloons as `<p>` elements in reading order. A speech balloon starts with the speaker's name in a visually hidden span, so a screen reader hears "Maya: Grandpa! I'm here!"; a sound effect is announced as an image whose label is its words. The Sandbox's HTML viewer, whose pages are a screen wide and a scroll tall, sets a comic page as the print page scaled to the viewport (`comics.viewerLeaf`), never reflowed.
+- **Fixed-layout EPUB.** The pages are those of the print book. The book also carries **region-based navigation** (`regions.xhtml`, EPUB Region-Based Navigation 1.0): one `panel` region per panel in reading order, its balloons, captions and sound effects nested in it, so a reading system can move through the book panel by panel. The page progression follows the comics' reading direction. The option `kindlePanelView: true` of `renderToEpub` adds Kindle Panel View: a tap target per panel and a magnified copy that fills the screen, with the metadata Kindle asks for.
+- **Reflowable EPUB.** A comic page has no page to keep there, so each panel becomes its picture, cropped exactly as on the page, followed by its lines as text: "**Maya**: Grandpa! I'm here!", the captions as paragraphs, the sound effects in italics.
+
+## Editing comics in the Sandbox
+
+In the canvas, the HTML pages and the Folio's select mode, a comic page can be edited with the pointer, and every edit is written back into the chapter's Markdown (the [Sandbox guide](/en/docs/sandbox#editing-comics) has the details):
+
+- **Splitters.** Over a gutter the pointer turns into a resize cursor. Dragging it moves the split line; on release the new percentage is written into the page's `split` value (the attribute is added when the page has none), and the page is laid out again. Shift snaps to steps of 5 %, Alt moves only the nearer end, slanting the line, and no cell gets narrower than 5 %. While dragging, a panel whose picture would be letterboxed is marked. Each splitter is also a focusable separator: the arrow keys move it by 1 % (5 % with Shift), Enter writes the position, Escape puts it back.
+- **Panels.** A small toolbar over a panel splits it with a horizontal or a vertical line, adding an empty `::panel` for the new cell after it, or merges it with the next panel: the split line goes, and the merged panel keeps the first panel's picture and both scripts.
+- **Balloons.** Dragging a balloon pins it: its script line gets `at="x% y%"` in percentages of the panel's picture, a joined group moving as one. While it moves, the balloon turns orange where it would cover a face or an avoid zone or run out of its panel, and the tooltip says which. The arrow keys nudge a focused balloon by 1 %, and a double click on a pinned balloon removes the pin.
+- **Tails.** Dragging a tail's tip writes `to="x% y%"`, the point the tail aims at, into the line; a double click on the tip removes it, and the tail points at its speaker again. From a focused balloon, T moves to its tail, whose target the arrow keys move.
+- **Keyboard.** A focused panel splits with H (a horizontal line) or V (a vertical line) and merges with the next panel with M.
+- **Strips.** Every tool works on `:::strip` blocks too, in a column or floated, and writes into the strip's own fence.
+- **Pictures.** The safe area, the speakers and the avoid zones of a picture are marked in the Resources panel (see [Speakers and anchors](#speakers-and-anchors)).
+- **Settings.** The Design panel has a **Comics** group: reading direction, frame and gutters, the default panel and the panel styles, the lettering, and the balloon styles, each with a preview.
+- **Editor.** The text editor colours `:::page`, `::panel` and script lines, and the Checks panel lists the comic warnings at their lines.
+
+## Comic warnings
+
+Every warning names the line or attribute it concerns, and the Sandbox's Checks panel lists it there under the title in the first column.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Warning</th>
+      <th>Cause</th>
+      <th>Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Unreadable panel split<br /><code>comicSplitSyntax</code></td><td>A <code>split</code> value cannot be read whole: a stray character, an unclosed <code>[</code>, <code>/</code> and <code>|</code> mixed in one list, or a bracketed list on its parent's axis. The readable part is used; a value with nothing readable gives one panel.</td><td>Correct the value against the <a href="#splitting-the-page">grammar</a>: one kind of separator per list, and brackets to change axis.</td></tr>
+    <tr><td>Panel sizes past 100 %<br /><code>comicSplitOverflow</code></td><td>The sizes of one list add up to more than 100 %. They are scaled down, each <code>&#42;</code> keeping 5 %.</td><td>Lower the sizes, or replace one of them with <code>&#42;</code>.</td></tr>
+    <tr><td>Panels and cells do not match<br /><code>comicPanelCount</code></td><td>The page has more <code>::panel</code> lines than its split has cells (the extra panels are left out), or fewer (the last cells stay empty).</td><td>Add or remove cells in the split, or panels in the script. An empty <code>::panel</code> line gives an empty cell on purpose.</td></tr>
+    <tr><td>Text outside a script line<br /><code>comicStrayText</code></td><td>Text before the first <code>::panel</code> line, or a line with no <code>key:</code> that does not continue the line above. It is lettered as a caption.</td><td>Start the line with a key (<code>caption:</code>, <code>maya:</code>), or indent it by two spaces to continue the balloon above.</td></tr>
+    <tr><td>Unknown balloon style<br /><code>comicUnknownBalloonStyle</code></td><td>A line names a style in its braces that neither the built-in styles nor <code>comics.balloonStyles</code> define, often a misspelling (<code>&#123;wisper&#125;</code>). The line takes its key's style.</td><td>Correct the name, or add the style to <code>comics.balloonStyles</code>.</td></tr>
+    <tr><td>Panel picture not found<br /><code>comicUnknownArt</code></td><td>A panel's <code>art</code> or <code>pop</code> names no resource, or a resource that is not a bitmap or an SVG. The panel is drawn empty.</td><td>Correct the id, or add the picture to the book's resources.</td></tr>
+    <tr><td>Picture shown whole in its panel<br /><code>comicPanelLetterbox</code></td><td>The cell's proportions are too far from the picture's: no crop of that shape holds the whole safe area, so the picture is shown with its safe area whole, within bands of the panel background.</td><td>Move the splitter to give the cell other proportions (the Sandbox marks such positions while dragging), draw a smaller safe area, or use another picture.</td></tr>
+    <tr><td>Speaker point outside the safe area<br /><code>comicAnchorOutsideSafeArea</code></td><td>A picture's anchor lies outside its safe area, so a crop may cut the speaker off and the tail would then point off the panel.</td><td>Grow the safe area to take in the mouth, or move the anchor. Nothing needs fixing if the speaker is meant to be off the panel at times.</td></tr>
+    <tr><td>Balloon does not fit<br /><code>comicBalloonOverflow</code></td><td>After every fallback a balloon still covers a face, another balloon, an avoid zone or a mouth, or runs out of its panel (a crossing asked for with <code>break</code> or an <code>at=</code> pin does not count). The warning names the panel and what is covered. While a balloon is dragged in the Sandbox, a face or avoid zone it would cover, or a border it would run past, shows before the drop.</td><td>Shorten the line or split it in two, give the panel more room, pin the balloon with <code>at=</code>, or let it cross the border with <code>break</code>. The text is never made smaller.</td></tr>
+    <tr><td>Speaker with no point<br /><code>comicUnknownSpeaker</code></td><td>A speaker key that no picture of the page marks with an anchor and no cast entry names, most often a misspelt key. Its tails point off the panel. Raised only on pages whose pictures mark anchors; information only.</td><td>Correct the key, mark the speaker on the picture, or add a <code>comics.cast</code> entry for a speaker who is never shown.</td></tr>
+  </tbody>
+</table>
+
+The warnings come back in the document's `contentWarnings` with the source range of the line or attribute they concern (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+
+## From code
+
+A comic needs nothing beyond `buildDocument`: the resources carry the pictures with their safe areas, anchors and avoid zones, and the config may carry `comics`. The lettering measures its text with the loaded fonts, so the lettering faces must be loaded before the layout, as any face is: `comicFontFamilies(config, markdown)` lists the faces a document's comics need (the lettering face, the faces of every balloon style and of the cast), and `markdownHasComics(markdown)` says whether a text has comic pages or strips. In the PDF, the font provider is asked for those faces like any other.
+
+The laid-out comic is in the VDT: `page.comic` (`VDTComicPage`) holds the frame, the reading direction, the panels in reading order (polygon, border, background, the crop of the picture as `art.source` and `art.box`), the splitters (with the source range of the `split` value they write to) and the balloons (outline path, text blocks, tail tip, kind, speaker). The split grammar is exported for editors: `parseComicSplit`, `serializeComicSplit`, `moveComicSplitLine`, `splitComicCell` and `mergeComicCells` read and rewrite a `split` value, keeping its `*` where they can. `comicArtCrop` and `comicCropFeasibleRange` compute a crop, and `comicArtPointToPage` maps a point of a picture onto the page.
+
+## Known limits
+
+- **Split trees only.** A split cuts each cell in two with a line that runs across it, so layouts where no line crosses the whole page, such as a pinwheel of four panels around a fifth, cannot be written. Insets and pop-out art cover most of what those layouts are for.
+- **Panel shapes.** Panels are convex polygons; round, ragged or borderless vignette panels, rotated or zoomed art, and speed lines are drawn in the pictures, not by Postext.
+- **Lettering.** Ruby over a right-to-left base is left out, and other annotations print as plain text inside balloons. Placement is per panel: tails are kept from crossing by cost, not routed around each other, and the flow from one panel to the next is not balanced. Long lines in very small cells are reported, not solved. The guard over an unmarked face is sized from the mouth and the head point (a few ems when the anchor has no head), so in a close-up it may protect the mouth more than the face; mark the face.
+- **Strips** have no `width`, `align`, `columns` or caption yet, are read only at the top level of a chapter (not inside a callout, a table or a footnote), and a page-wide strip written `here` on a page of several columns floats instead of cutting the columns where it is written.
+- **Spreads.** A rounded panel cut at the spine loses all its round corners. A right-to-left comic in a left-bound book still opens on the left page, so its first panel lands on the second page of the spread.
+- **Pop-out art** takes the crop of the panel's art, so the cut-out must be the same size as the art picture.
+- **Outputs.** The fallback alternative text of a panel with no `alt` and no `altText` is "Panel N", in English. Region-based navigation describes slanted panels by their bounding boxes. Kindle Panel View copies the comic of a page once per panel, which makes the file larger, and has not been checked in Kindle Previewer.
+
+## Sources
+
+- Nate Piekos, [*Comic Book Grammar & Tradition*](https://blambot.com/pages/comic-book-grammar-tradition) (Blambot): balloon kinds, captions, emphasis, the double dash.
+- John Roshell and Comicraft, [*Balloon Tales*](https://balloontales.com/creating-tails-and-joins/): tails and joins, and [the layer method](https://balloontales.com/the-layer-method/) of stroking then filling.
+- Todd Klein, [*Digital lettering for comics*](https://kleinletters.com/Blog/digital-lettering-for-comics/).
+- David Kurlander, Tim Skelly and David Salesin, [*Comic Chat*](https://kurlander.net/DJ/Pubs/SIGGRAPH96.pdf), SIGGRAPH 96: balloon placement in reading order.
+- IDPF, [*EPUB Region-Based Navigation 1.0*](https://idpf.org/epub/renditions/region-nav/epub-region-nav.html), and Amazon KDP, [Kindle Panel View](https://kdp.amazon.com/en_US/help/topic/G9GSTY4LTRT39D4Z).

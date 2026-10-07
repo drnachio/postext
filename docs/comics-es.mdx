@@ -1,0 +1,525 @@
+{/* docs/comics-es.mdx */}
+
+export const metadata = {
+  title: 'Cómics',
+  sidebarTitle: 'Cómics',
+  description: 'Cómo compone Postext cómics y manga desde Markdown: páginas de cómic cortadas por un árbol de divisiones, imágenes de viñeta recortadas alrededor de su zona segura, rotulación generada a partir de un guion (diálogo, pensamiento, susurro, grito, radio, cartelas, onomatopeyas), estilos de bocadillo, anclas de los personajes en las imágenes, tiras dentro del texto, dobles páginas, lectura de derecha a izquierda y rotulación vertical, traducciones, y las salidas en canvas, PDF, HTML y EPUB',
+  lang: 'es',
+  lastUpdated: '2026-10-07',
+  readingTime: '25 min',
+  order: 9,
+  plainSummary: "Esta página explica cómo hacer un cómic con Postext. Los dibujos son las viñetas, y todo lo que los personajes dicen, piensan u oyen se escribe como texto en el archivo Markdown. Postext coloca las viñetas en la página y dibuja por su cuenta los bocadillos, las cartelas y las onomatopeyas alrededor de las palabras. Para traducir el cómic solo se reescriben las palabras, y Postext rotula de nuevo el otro idioma: el japonés en columnas, el árabe de derecha a izquierda. La página trata también las tiras cómicas dentro de un libro, las páginas que ocupan dos caras enfrentadas, las salidas y los límites que quedan.",
+};
+
+# Cómics
+
+**Los dibujos son las viñetas; todo lo que se dice, se piensa, se narra o se oye es texto en el Markdown.**
+
+Un cómic en Postext es un conjunto de imágenes y un guion. Las imágenes son recursos bitmap o SVG corrientes, dibujados sin ningún rótulo encima. El guion está en el Markdown del capítulo: un bloque `:::page` corta una página en viñetas, da a cada viñeta su imagen y enumera, línea a línea, los bocadillos, las cartelas y las onomatopeyas de esa viñeta. Postext dispone las viñetas, recorta cada imagen a su celda sin cortar lo que importa, compone el texto en la letra de rotulación del libro a un solo cuerpo, dibuja un bocadillo a su alrededor, dirige el rabillo hacia quien habla y coloca los bocadillos en orden de lectura donde no tapan ninguna cara. Una traducción es otro archivo Markdown con las mismas viñetas y otras palabras; Postext la rotula de nuevo desde cero, en columnas para el japonés y de derecha a izquierda para el árabe.
+
+Los cómics solo actúan cuando se usan: un documento sin `:::page` ni `:::strip` se compone exactamente igual que antes. Los ajustes están en la [sección `comics` de la configuración](/es/docs/configuration#cómics), y el marcado se resume en [Formato del documento › Cómics](/es/docs/document-format#cómics).
+
+## Páginas de cómic
+
+Un bloque `:::page` es una página de cómic. Se abre con una línea `:::page{…}`, contiene una línea `::panel` por viñeta, cada una seguida del guion de esa viñeta, y se cierra con un `:::` solo:
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: Todos los veranos, Maya pasaba una semana en el faro.
+maya: ¡Abuelo! ¡Ya estoy aquí!
+::panel{art=lh-radio}
+tomas: Llegas justo a tiempo. La radio se ha quedado sorda,
+tomas: y viene tormenta.
+::panel{art=lh-maya}
+maya{thought}: Esa válvula parece floja…
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: CRAC
+tomas{shout}: ¡Agárrate a la barandilla!
+:::
+```
+
+El bloque empieza siempre en una página nueva y la ocupa entera. El texto que sigue a la valla de cierre empieza en la página siguiente, así que dos bloques `:::page` seguidos dan dos páginas de cómic, y un `:::pagebreak` entre ellos no añade ninguna página. El motor lee el cuerpo por su cuenta, línea a línea, como lee `:::verse`: dentro no se reconocen bloques de Markdown, contenedores ni otras directivas, y los `<!-- comentarios -->` se ignoran, también cuando ocupan varias líneas.
+
+El papel de la página es `'comic'` (`VDTPage.role`). No lleva titulillos ni folio, porque una página de cómic es toda viñetas, pero cuenta en la numeración de las páginas; `comics.runningHeads: true` los imprime. Las viñetas se cortan del **marco**, que es la caja de texto de la página dentro de sus márgenes, salvo que `comics.frame.margins` dé a las páginas de cómic márgenes propios.
+
+Los atributos de la línea de apertura:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>split="…"</code></td><td>Cómo se corta el marco en celdas (véase <a href="#dividir-la-página">Dividir la página</a>). Sin él, las viñetas se apilan en tiras de la misma altura.</td></tr>
+    <tr><td><code>gutter=4mm</code>, <code>gutter="4mm 2mm"</code></td><td>La calle entre tiras y, si se da un segundo valor, entre viñetas contiguas. Un número solo está en milímetros. Sin él: <code>comics.gutter</code> (4 mm y 2 mm).</td></tr>
+    <tr><td><code>style=…</code></td><td>Un estilo de viñeta con nombre para todas las viñetas de la página (<code>comics.panelStyles</code>).</td></tr>
+    <tr><td><code>bleed</code></td><td>Toda viñeta que toca el marco sale hasta el corte y entra en el sangrado.</td></tr>
+    <tr><td><code>direction=rtl</code>, <code>dir=ltr</code></td><td>El sentido de lectura de esta página, diga lo que diga la configuración (véase <a href="#sentido-de-lectura">Sentido de lectura</a>).</td></tr>
+    <tr><td><code>spread</code></td><td>Extiende la página sobre dos páginas enfrentadas (véase <a href="#dobles-páginas">Dobles páginas</a>).</td></tr>
+  </tbody>
+</table>
+
+## Dividir la página
+
+El atributo `split` describe la página como un árbol de cortes. Una lista de tamaños separados por `/` apila celdas de arriba abajo (las tiras); una lista separada por `|` las pone una junto a otra, desde el lado por el que se lee la página. Un tamaño seguido de una lista entre corchetes vuelve a cortar esa celda en el otro eje. La página del ejemplo anterior, `30 [30 | 20 | *] / *`, es una tira del 30 % de la altura del marco, cortada en viñetas del 30 % y del 20 % de su anchura y una tercera que toma el resto, sobre una segunda tira que toma el resto de la página:
+
+<Illustration name="ComicSplit" data='{"title": "La división 30 [30 | 20 | *] / *", "desc": "El marco de una página cortado por la división 30 [30 | 20 | *] / *. Una primera tira ocupa el 30 % de la altura y se corta en tres viñetas: el 30 % de la anchura, el 20 % y el resto. Una segunda tira debajo ocupa el resto de la página como una sola viñeta. Las calles quedan a caballo de las líneas de división. Junto a la página, la división dibujada como árbol: una lista de tiras con dos elementos; el primero contiene una lista entre corchetes de tres columnas. Las hojas son las viñetas 1 a 4 en orden de lectura.", "caption": "Los tamaños son porcentajes de la celda madre; * toma lo que queda. Las viñetas se numeran en orden de lectura, el orden del árbol.", "split": "30 [30 | 20 | *] / *", "rows": "/ tiras, de arriba abajo", "columns": "| columnas, desde el inicio", "rest": "* el resto", "order": "viñetas en orden de lectura", "gutter": "calle"}' />
+
+La gramática completa:
+
+```
+split := list
+list  := item ( "/" item )*  |  item ( "|" item )*
+item  := size [ "[" list "]" ]
+size  := number ["%"] [ "~" number ["%"] ]  |  "*"  |  (nada)
+```
+
+- **Los tamaños** son porcentajes de la celda madre a lo largo del eje de la lista; `30` y `30%` son lo mismo. Un `*`, o un tamaño vacío, toma una parte igual de lo que dejan los tamaños escritos. El último elemento de una lista llega siempre hasta el final, diga lo que diga su tamaño.
+- **Un separador por lista.** Mezclar `/` y `|` en la misma lista, dejar un `[` sin cerrar o poner una lista entre corchetes en el mismo eje que su madre es un error de sintaxis (`comicSplitSyntax`): se usa la parte legible.
+- **Demasiado.** Los tamaños que suman más del 100 % se reducen de modo que cada `*` conserve un 5 %, y la página avisa con `comicSplitOverflow`.
+- **El orden de lectura** es el orden del árbol: las tiras de arriba abajo y, dentro de una tira, las viñetas desde el lado de inicio. Las líneas `::panel` llenan las celdas en ese orden. Una página con más viñetas que celdas deja fuera las sobrantes; una con menos deja vacías las últimas celdas (`comicPanelCount`, que solo se avisa cuando hay un `split` escrito).
+
+Algunas divisiones:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>División</th>
+      <th>Página</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#42;</code></td><td>Una splash: una sola viñeta para toda la página.</td></tr>
+    <tr><td><code>33 / 33 / &#42;</code></td><td>Tres tiras.</td></tr>
+    <tr><td><code>&#42; / &#42; / &#42; / &#42;</code></td><td>Cuatro tiras iguales, el yonkoma de los chistes de cuatro viñetas.</td></tr>
+    <tr><td><code>50 [&#42; | &#42;] / 50 [&#42; | &#42; | &#42;]</code></td><td>Dos viñetas sobre tres.</td></tr>
+    <tr><td><code>30 / 35 [&#42; | &#42; | &#42;] / &#42;</code></td><td>Una viñeta ancha, tres en fila y otra viñeta ancha.</td></tr>
+    <tr><td><code>60 | &#42; [50 / &#42;]</code></td><td>Una viñeta alta en el lado de inicio y dos apiladas a su lado.</td></tr>
+    <tr><td><code>&#42; [40&#126;55 | &#42;] / 35</code></td><td>Una tira de acción cortada por una línea inclinada, sobre una tira del 35 % de altura.</td></tr>
+  </tbody>
+</table>
+
+### Cortes inclinados
+
+Un tamaño escrito `a~b` da una línea inclinada: el borde lejano de la celda va del `a` % al principio del eje transversal al `b` % en su otro extremo. Para viñetas contiguas el principio es arriba, así que `40~55 | *` traza una línea que va del 40 % de la anchura arriba al 55 % abajo; para tiras, el principio es el lado por el que se lee la página. Los tamaños se suman en cada extremo por separado, y las celdas siguen siendo polígonos convexos. Las esquinas redondeadas solo se aplican a viñetas rectangulares; una viñeta inclinada conserva las esquinas vivas.
+
+### Calles
+
+La calle queda a caballo de cada línea de división, la mitad a cada lado, así que una línea escrita al 30 % cae exactamente en el 30 % de su celda. Las líneas inclinadas conservan la calle de su eje, medida de través. Los valores por defecto son los de la página habitual: 4 mm entre tiras y 2 mm entre las viñetas de una tira (`comics.gutter.horizontal` y `vertical`, o el atributo `gutter` de la página).
+
+### Sangrado
+
+Una viñeta a sangre se sale del marco: cada uno de sus lados que toca el marco se lleva hasta el corte, y hasta el sangrado más allá del corte cuando la página lo tiene (`page.cutLines.bleed`). El atributo `bleed` de la página pone a sangre todas las viñetas; el `bleed` de una viñeta solo la pone a ella, `bleed="top start"` solo esos lados (`top`, `bottom`, `start`, `end`, `left`, `right`), y `bleed=false` lo impide. Un estilo de viñeta con `bleed: true` pone a sangre sus viñetas.
+
+### Márgenes interiores y viñetas superpuestas
+
+`pad` hace una viñeta más pequeña que su celda: de uno a cuatro valores en el orden de los márgenes de CSS con lados lógicos (arriba, final, abajo, inicio), cada uno una longitud o un porcentaje de la celda. `::panel{art=x pad="0 15%"}` da una viñeta más estrecha que su tira, centrada en ella.
+
+Una viñeta con `inset="x y w h"` no ocupa ninguna celda: se coloca sobre la viñeta anterior, en esa posición y con ese tamaño en porcentajes de la caja de esa viñeta, como un pequeño retrato en una esquina o un primer plano sobre un plano general. Su guion se rotula dentro de ella.
+
+```md
+:::page{split="*"}
+::panel{art=storm-wide}
+caption{at=bottom-start}: La tormenta estalló a medianoche.
+::panel{art=maya-window inset="62% 6% 32% 30%"}
+maya{whisper}: ¿Abuelo?
+:::
+```
+
+## Viñetas e imágenes
+
+Una línea `::panel{…}` empieza una viñeta; su guion llega hasta la siguiente línea `::panel` o hasta la valla de cierre. Una viñeta sin `art` se dibuja vacía, con su color de fondo, y así se hace una viñeta solo de texto. El texto anterior al primer `::panel` se rotula como cartela de la primera viñeta y se avisa como `comicStrayText`.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>La imagen de la viñeta: el id de un recurso bitmap o SVG. Un id desconocido deja la viñeta vacía y avisa con <code>comicUnknownArt</code>.</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td><code>cover</code> recorta la imagen para llenar la celda, nunca dentro de su zona segura; <code>contain</code> la muestra entera, con bandas del fondo de la viñeta. Sin él: el del estilo de viñeta (<code>cover</code>).</td></tr>
+    <tr><td><code>focus="70% 40%"</code></td><td>El punto de la imagen que se mantiene centrado donde la zona segura deja margen para elegir.</td></tr>
+    <tr><td><code>style=…</code></td><td>Un estilo de viñeta con nombre para esta viñeta.</td></tr>
+    <tr><td><code>border=none</code>, <code>border=0.5mm</code></td><td>Sin borde, o un borde de ese grosor.</td></tr>
+    <tr><td><code>bg=#1b1b2f</code></td><td>El fondo de la viñeta: un color, un id de la paleta o <code>none</code>.</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Véase <a href="#sangrado">Sangrado</a>.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>Véase <a href="#márgenes-interiores-y-viñetas-superpuestas">Márgenes interiores y viñetas superpuestas</a>.</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>Coloca esta viñeta sobre la anterior en lugar de darle una celda.</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>Un recorte que se dibuja por encima del borde (véase <a href="#imágenes-que-rompen-la-viñeta">Imágenes que rompen la viñeta</a>).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Refleja la imagen de esta viñeta, o la deja como se dibujó cuando la página refleja sus imágenes (véase <a href="#sentido-de-lectura">Sentido de lectura</a>).</td></tr>
+    <tr><td><code>alt="…"</code></td><td>El texto alternativo de la viñeta, para el PDF etiquetado, el HTML y el EPUB. Sin él: el <code>altText</code> del recurso.</td></tr>
+    <tr><td><code>id=…</code></td><td>Un id para la viñeta, que las salidas HTML y EPUB usan como ancla.</td></tr>
+  </tbody>
+</table>
+
+### Recortar la imagen a su celda
+
+Las imágenes de las viñetas se dibujan sin saber qué forma tendrá la celda en la que acabarán: una página puede volver a dividirse, un separador puede arrastrarse, una traducción puede necesitar una tira más alta. La **zona segura** de la imagen (`Resource.safeArea`, véase [Formato del documento › Zona segura](/es/docs/document-format#zona-segura)) dice qué tiene que seguir a la vista, y el recorte se calcula para cada celda:
+
+1. Con `fit=cover`, la ventana visible tiene las proporciones de la celda y es tan grande como la imagen permite.
+2. Se coloca de modo que la zona segura quede dentro. Donde eso deja margen, la ventana se centra en `focus` si la viñeta lo indica; si no, lo que queda fuera de la zona segura se recorta en proporción a su tamaño, así que un motivo a la izquierda del centro sigue a la izquierda del centro.
+3. Si ninguna ventana con las proporciones de la celda puede contener la zona segura (una celda muy ancha para un motivo alto), la imagen se muestra con su zona segura entera y el resto de la celda se llena con el fondo de la viñeta. La página avisa con `comicPanelLetterbox`. Una celda conserva entera la zona segura de una imagen de W × H mientras su anchura dividida por su altura quede entre `sw·W/H` y `W/(sh·H)`, donde `sw` y `sh` son la anchura y la altura de la zona segura en fracciones.
+
+Una imagen sin zona segura se recorta alrededor de su centro, o de `focus`. Un SVG sin tamaño intrínseco llena la celda tal cual. Los renderizadores recortan al polígono de la celda y dibujan la imagen entera a su tamaño sin recortar, así que el recorte nunca remuestrea la imagen.
+
+### Estilos de viñeta
+
+El aspecto de una viñeta sale de `comics.panel` (un borde negro de 1 pt, fondo blanco, `cover`), de un estilo con nombre de `comics.panelStyles` que una página o una viñeta elige con `style=`, y del `border` y el `bg` de la propia viñeta. Un borde puede ser `solid`, `none` o `rough`: una línea a mano que tiembla un poco, igual en cada composición, porque su temblor se siembra a partir de la viñeta. Todos los campos están en [Configuración › Cómics](/es/docs/configuration#cómics).
+
+### Imágenes que rompen la viñeta
+
+Un borde roto, por el que un personaje o un objeto se sale de su viñeta, necesita dos imágenes: la de la viñeta, recortada a la celda como siempre, y un recorte transparente de la parte que se sale, nombrado con `pop`. El recorte se encuadra y se coloca exactamente como la imagen de la viñeta (debe tener su mismo tamaño) y se dibuja después del borde, sin recortar, de modo que tapa el borde y la calle.
+
+```md
+::panel{art=gull-sky pop=gull-cutout bleed="top"}
+sfx{at="70% 20%"}: CRUAAAC
+```
+
+## Rotulación
+
+Bajo cada línea `::panel` va el guion de la viñeta, un bocadillo por línea:
+
+```md
+clave{atributos}: texto
+```
+
+La **clave** es un id de personaje (letras, cifras, `_`, `.` y `-`), el mismo en todas las traducciones; coincide con las anclas de las imágenes y con el [reparto](#el-reparto). Hay tres claves reservadas: `caption` (una cartela de narración), `sfx` (una onomatopeya, sin bocadillo) y `note` (una nota del editor). Los dos puntos pueden ser los de ancho completo, `：`, que teclea un método de entrada chino o japonés. El texto es Markdown en línea: `*cursiva*` y `**negrita**` se imprimen en negrita cursiva, la convención de la rotulación (solo negrita en las escrituras sin cursiva), `:tcy[12]` pone las cifras de través en una columna vertical, `:ruby` compone su lectura a medio cuerpo sobre la base (al lado, en una columna) y `:ltr` / `:rtl` mantienen un tramo en su propio sentido dentro de un bocadillo del sentido contrario. Una línea sangrada con dos espacios o un tabulador continúa el bocadillo de arriba (unida con un espacio, sin ninguno entre dos caracteres chinos o japoneses); una barra invertida al final de una línea corta ahí el texto del bocadillo. Las líneas en blanco se ignoran, y una línea que no es una línea de guion se rotula como cartela y se avisa como `comicStrayText`.
+
+```md
+::panel{art=lh-radio}
+tomas: Llegas justo a tiempo.
+  La radio se ha quedado sorda,\
+  y viene tormenta.
+biscuit{to="40% 70%"}: ¿Mrrr?
+note: Las radios de válvulas tardan un minuto en calentarse antes de hablar.
+```
+
+Los atributos de una línea de guion:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#123;whisper&#125;</code>, <code>style=whisper</code></td><td>El estilo del bocadillo. Una palabra sola entre las llaves nombra un estilo: <code>thought</code>, <code>whisper</code>, <code>shout</code>, <code>radio</code>, <code>inner</code> o uno propio del libro. Un nombre desconocido avisa con <code>comicUnknownBalloonStyle</code>, y la línea toma el estilo de su clave.</td></tr>
+    <tr><td><code>at="62% 40%"</code></td><td>Fija el centro del bocadillo en ese punto de la imagen de la viñeta (de la celda cuando la viñeta no tiene imagen). El punto está en fracciones de la imagen, así que sigue en el mismo lugar del dibujo a través de los recortes y de los arrastres de los separadores.</td></tr>
+    <tr><td><code>at=top-start</code></td><td>Pone el bocadillo en una esquina o un borde de la viñeta: <code>top-start</code>, <code>top-end</code>, <code>bottom-start</code>, <code>bottom-end</code>, <code>top</code>, <code>bottom</code>. Las cartelas y las notas se pegan al borde.</td></tr>
+    <tr><td><code>to="40% 70%"</code></td><td>Dirige el rabillo a ese punto de la imagen en lugar del ancla del personaje. El rabillo se vuelve hacia él y se detiene antes de llegar, como hace ante una boca.</td></tr>
+    <tr><td><code>tail=none</code>, <code>tail=start</code></td><td>Sin rabillo, o un rabillo hacia un personaje que está fuera de la viñeta por ese lado (<code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>). <code>tail=auto</code> es el valor por defecto.</td></tr>
+    <tr><td><code>join</code>, <code>join=false</code></td><td>Une este bocadillo al anterior del mismo personaje, o lo mantiene aparte, diga lo que diga <code>comics.lettering.joinSameSpeaker</code>.</td></tr>
+    <tr><td><code>break</code></td><td>Deja que el bocadillo cruce el borde de la viñeta y entre en la calle o en la viñeta de al lado. El cruce no se avisa como desbordamiento, porque se ha pedido; lo que el bocadillo tape al otro lado (una cara, un bocadillo de otra viñeta) sí se avisa, y su centro sigue dentro de su viñeta.</td></tr>
+    <tr><td><code>rotate=-8</code></td><td>Gira el bocadillo o la onomatopeya, en grados, en el sentido de las agujas del reloj.</td></tr>
+    <tr><td><code>size=1.5</code></td><td>Escala la rotulación de una onomatopeya.</td></tr>
+    <tr><td><code>color=#c0392b</code></td><td>El color de la rotulación: un color hexadecimal o un id de la paleta.</td></tr>
+    <tr><td><code>font="…"</code></td><td>La letra de esta línea.</td></tr>
+    <tr><td><code>vertical</code>, <code>horizontal</code>, <code>mode=vertical</code></td><td>La dirección de escritura de esta línea, por encima de la del libro: <code>vertical</code> la compone en columna en una edición horizontal (un <code>ドン</code> sin traducir), <code>horizontal</code>, en renglón en una vertical (un cartel escrito de través). Una columna en un libro de otro idioma sigue las reglas de su propio texto (con kana, las del japonés) y toma el interlineado de la rotulación vertical. En un libro vertical, una línea sin caracteres chinos ni japoneses se compone en renglón de todos modos, salvo que diga <code>vertical</code>.</td></tr>
+  </tbody>
+</table>
+
+### Cómo se hace un bocadillo
+
+La rotulación sigue las costumbres de los rotulistas de cómic, no las de una caja de texto. Al bocadillo se le llama también globo, que es la palabra que usa el Sandbox.
+
+- **Un solo cuerpo por libro.** Todos los bocadillos se componen en `comics.lettering.fontFamily` a `comics.lettering.fontSize` (7,5 pt por defecto), escalados solo por el `fontScale` de su estilo (un susurro a 0,9, un grito a 1,15). El texto nunca se reduce para que quepa: un bocadillo que no cabe cambia de forma, se mueve, cruza el borde o se avisa.
+- **Primero el texto, después el bocadillo.** Las palabras se cortan primero en líneas buscando un rombo: líneas cortas arriba y abajo, la más larga en el centro, ninguna última línea mucho más corta que las demás, ninguna línea que acabe en un artículo o una preposición cuando hay otro corte igual de bueno. Después se traza el contorno alrededor de las líneas, con el mismo aire por todos los lados.
+- **Normas de la casa.** Tres puntos se convierten en puntos suspensivos; `textTransform: 'uppercase'` pone el texto en mayúsculas (las escrituras sin mayúsculas no se tocan, y la ß alemana pasa a SS); en japonés y en chino se quita el punto que cierra un bocadillo (`dropFinalStop`), y en las columnas los `!` y `?` ASCII pasan a sus formas de ancho completo, dos de ellos en una sola casilla (`!?` como ⁉); `doubleDash` rotula la raya como `--`, como hacen los cómics estadounidenses.
+- **Colocación.** Los bocadillos de una viñeta se colocan dentro de ella en orden de lectura, a `comics.lettering.inset` de su borde (1,5 mm). El primero va hacia arriba, en el lado de inicio, y cada uno de los siguientes no debería quedar más arriba que el anterior salvo que esté más adelante en el sentido de lectura. Los bocadillos se apartan de las caras y de las zonas libres que marcan las imágenes, de las bocas de los personajes y unos de otros, se ponen encima o al lado de quien habla y no debajo, y sus rabillos no deberían cruzarse. Primero van las cartelas y las notas con esquina, después los bocadillos fijados y después el resto. La colocación es determinista: la misma página da siempre los mismos bocadillos.
+- **Dentro del pliego.** La rotulación nunca se sale del corte. En una viñeta a sangre los bocadillos se quedan en la parte de la viñeta que cae dentro del marco, donde la guillotina no los alcanza; solo una onomatopeya fijada con `at=` o marcada con `break` puede entrar en el sangrado junto a su viñeta.
+- **Cuando no cabe.** Un bocadillo que no se puede colocar limpiamente puede primero cruzar el borde (solo con `break`), después tapar una zona libre (nunca una cara) y después tomar una forma más ancha o más estrecha. Una línea larga en una celda estrecha se compone casi tan ancha como la celda y asoma a la calle, en vez de quedar como una columna delgada sobre la cara de quien habla. Si aun así se solapa con algo, se coloca donde menos estorba y la página avisa con `comicBalloonOverflow`, que nombra la viñeta y lo que tapa. Un cruce pedido, con `break` o con un `at=` que lo fija, no cuenta entre esos fallos: el aviso nombra entonces solo lo que el bocadillo tapa. Lo resuelve una línea más corta, una viñeta más grande o un `at=` que lo fije.
+
+### Rabillos
+
+El rabillo de un bocadillo de diálogo apunta a la boca de quien habla, y las burbujas de uno de pensamiento, a su cabeza (véase [Personajes y anclas](#personajes-y-anclas)). Sale del contorno por el lado que mira al personaje, se curva un poco y se detiene antes de la boca. Cuando el recorte deja el ancla del personaje fuera de la viñeta, o la imagen no marca ningún ancla para ese personaje, el rabillo apunta fuera de la viñeta, hacia el ancla o hacia el borde más cercano, y termina en el borde. Ese bocadillo se pone junto al borde por el que llega la voz, con un rabillo corto: un rabillo que cruza toda la viñeta se lee como una flecha, así que se mueve el bocadillo en lugar de alargar el rabillo. `to="x% y%"` dirige un rabillo a otro punto de la imagen, y `tail=start` (o `top`, `bottom`, `end`), a un personaje que está fuera por ese lado. Las cartelas, las notas y las onomatopeyas no tienen rabillo.
+
+### Bocadillos unidos
+
+Dos líneas seguidas del mismo personaje se unen, como se rotula una pausa en lo que dice: con `joinSameSpeaker: 'butt'` (el valor por defecto) los dos cuerpos se solapan y comparten un contorno; con `'connector'` los une un cuello estrecho; con `'none'` quedan como dos bocadillos con dos rabillos. Solo el primer bocadillo de un grupo lleva rabillo. Una línea puede pedir lo suyo con `join` o `join=false`.
+
+### Onomatopeyas
+
+Una línea `sfx` no tiene bocadillo: su texto se compone grande (2,4 veces el cuerpo de rotulación), en negrita, en la letra de onomatopeyas del idioma del documento, con un halo blanco alrededor de las letras para que se lea sobre el dibujo. Se coloca cerca del ancla `sfx` de la viñeta cuando la imagen marca una (un ancla cuyo id es `sfx`) y, si no, donde no tape ninguna cara. `rotate`, `size`, `color` y `font` la modifican, y `at` la fija. En la rotulación vertical se compone en una columna de cinco caracteres como mucho. Las onomatopeyas se pintan después de todos los bocadillos de la página.
+
+Una línea puede fijar su propia dirección de escritura. Una edición horizontal de un manga que deja una onomatopeya en japonés la compone en columna:
+
+```md
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
+```
+
+### Ajustes de rotulación
+
+`comics.lettering` reúne la letra, el cuerpo, el interlineado, el color y las normas de la casa de todo el libro. Por defecto la letra sigue al idioma del documento, y la de las onomatopeyas también:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Idioma</th>
+      <th>Rotulación</th>
+      <th>Onomatopeyas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Latín, griego, cirílico y el resto</td><td>Comic Neue</td><td>Bangers</td></tr>
+    <tr><td>Japonés</td><td>Zen Antique</td><td>Dela Gothic One</td></tr>
+    <tr><td>Chino simplificado</td><td>Noto Sans SC</td><td>ZCOOL KuaiLe</td></tr>
+    <tr><td>Chino tradicional</td><td>LXGW WenKai TC</td><td>LXGW WenKai TC</td></tr>
+    <tr><td>Árabe, persa, urdu</td><td>Playpen Sans Arabic</td><td>Lalezar</td></tr>
+  </tbody>
+</table>
+
+Todas están en Google Fonts y se cargan por su nombre como cualquier otra letra. Con el interlineado por defecto, los bocadillos verticales, chinos o japoneses se componen con un interlineado de 1,5 y los árabes con 1,45. La rotulación japonesa, china y árabe nunca se inclina, diga lo que diga el estilo, y el árabe nunca se espacia.
+
+### El reparto
+
+`comics.cast` enumera los personajes: un id (la clave del personaje), un `name` y, si se quiere, el estilo de bocadillo en el que habla (`balloonStyle`: un robot que siempre habla en `radio`), el `color` del texto y el `fill` del bocadillo que lo distinguen, y una `fontFamily`. El nombre es lo que anuncian las salidas: el visor HTML y el EPUB fluido imprimen «Nombre: palabras» en cada línea. Un personaje que está en el reparto nunca se avisa como desconocido.
+
+```ts
+comics: {
+  cast: [
+    { id: 'maya', name: 'Maya' },
+    { id: 'tomas', name: 'Abuelo Tomás' },
+    { id: 'beacon', name: 'La baliza', balloonStyle: 'radio', fill: { hex: '#e8f4ff', model: 'hex' } },
+  ],
+}
+```
+
+## Estilos de bocadillo
+
+Un estilo de bocadillo es una clase de bocadillo: su contorno, su rabillo y su rotulación. Hay nueve integrados, y una línea de guion nombra uno con una palabra sola entre llaves (`ben{whisper}: …`). Las claves reservadas toman el suyo de su nombre (`caption:`, `sfx:`, `note:`), y todas las demás líneas toman `speech`, o el `balloonStyle` de su personaje en el reparto.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Estilo</th>
+      <th style={{ width: '170px' }}>Contorno</th>
+      <th style={{ width: '120px' }}>Rabillo</th>
+      <th>Además</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>speech</code></td><td>óvalo</td><td>curvo</td><td>La base de todos los estilos: relleno blanco, contorno negro de 0,6 pt, 0,55 em de aire.</td></tr>
+    <tr><td><code>thought</code></td><td>nube</td><td>burbujas</td><td>Las burbujas apuntan a la cabeza, no a la boca.</td></tr>
+    <tr><td><code>whisper</code></td><td>óvalo, discontinuo</td><td>curvo</td><td>Texto a 0,9.</td></tr>
+    <tr><td><code>shout</code></td><td>explosión</td><td>cuña</td><td>Texto a 1,15, en negrita; contorno de 0,8 pt.</td></tr>
+    <tr><td><code>radio</code></td><td>eléctrico (zigzag)</td><td>zigzag</td><td>Una voz que sale de una radio, un teléfono o una máquina.</td></tr>
+    <tr><td><code>caption</code></td><td>rectángulo</td><td>ninguno</td><td>Amarillo pálido, pegado a la esquina superior del lado de inicio, texto alineado al inicio.</td></tr>
+    <tr><td><code>inner</code></td><td>caja redondeada</td><td>ninguno</td><td>Relleno gris, cursiva: la voz interior de un personaje.</td></tr>
+    <tr><td><code>note</code></td><td>rectángulo</td><td>ninguno</td><td>Pegado a la esquina inferior del lado final, texto a 0,8.</td></tr>
+    <tr><td><code>sfx</code></td><td>ninguno</td><td>ninguno</td><td>Texto a 2,4, en negrita, en la letra de onomatopeyas, con un halo blanco de 1,5 pt.</td></tr>
+  </tbody>
+</table>
+
+`comics.balloonStyles` los modifica y añade otros. Una entrada con el id de un estilo integrado se aplica sobre ese estilo; una entrada con un id nuevo parte de `speech`:
+
+```ts
+comics: {
+  balloonStyles: [
+    { id: 'caption', fill: { hex: '#ffffff', model: 'hex' }, textTransform: 'uppercase' },
+    { id: 'shout', burstPoints: 18, burstDepth: 0.3 },
+    { id: 'eerie', shape: 'wavy', stroke: { hex: '#5b4a8a', model: 'hex' }, italic: true },
+    { id: 'writing', shape: 'none', tail: 'none', fontFamily: 'Caveat', color: { hex: '#3b2a1a', model: 'hex' } },
+  ],
+}
+```
+
+```md
+ghost{eerie}: Marchaos de esta casa…
+caption{at=bottom-end}: A tres calles de allí.
+```
+
+Los contornos son `oval` (una superelipse ajustada a las líneas, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (festones contados a partir del perímetro), `burst` (`burstPoints` picos de profundidad `burstDepth`), `wavy`, `electric` y `none`. `dash` dibuja un contorno discontinuo, `double` uno doble, y `wobble` (0–1) lo hace temblar como a mano, siempre igual para el mismo bocadillo. Los rabillos son `curved`, `wedge`, `bubbles`, `zigzag` y `none`. Todos los campos, con su valor por defecto, están en [Configuración › Cómics](/es/docs/configuration#cómics).
+
+Los renderizadores dibujan un bocadillo como lo entinta un rotulista: primero se trazan todos los contornos de un grupo al doble de su grosor, después se rellenan y después se compone el texto. Por eso dos cuerpos unidos y su rabillo salen como una sola forma, sin ninguna línea entre ellos.
+
+## Personajes y anclas
+
+Los rabillos apuntan a las personas, y los bocadillos se apartan de las caras, porque las imágenes dicen dónde están las personas. Un recurso bitmap o SVG puede llevar **anclas**: un punto por personaje, escrito una sola vez, en fracciones de la imagen (de 0 a 1 desde su esquina superior izquierda), como la zona segura.
+
+```ts
+const arrive: Resource = {
+  id: 'lh-arrive', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-arrive.jpg', format: 'jpeg', width: 1100, height: 733 },
+  altText: 'Una niña con un chubasquero amarillo sube por un camino de la costa hacia un faro.',
+  safeArea: { x: 0.2, y: 0.08, width: 0.42, height: 0.82 },
+  anchors: [
+    { id: 'maya', x: 0.29, y: 0.52, head: { x: 0.27, y: 0.47 }, face: { x: 0.22, y: 0.42, width: 0.12, height: 0.16 } },
+    { id: 'biscuit', x: 0.4, y: 0.68 },
+  ],
+  avoid: [{ x: 0.51, y: 0.09, width: 0.1, height: 0.43 }], // el faro
+};
+```
+
+- `id` es la clave del personaje que usa el guion (`maya: …`). Un ancla cuyo id es `sfx` coloca las onomatopeyas de la viñeta.
+- `x`, `y` es la boca, adonde apunta el rabillo de un bocadillo de diálogo.
+- `head` es adonde apuntan las burbujas de un bocadillo de pensamiento. Sin él: la boca.
+- `face` es un rectángulo que ningún bocadillo tapa. Un ancla sin él recibe una caja de protección de unos cuantos em encima y alrededor de la boca, para que los bocadillos se aparten también de una cara que nadie ha contorneado.
+- `avoid` (en el recurso) enumera otros rectángulos que ningún bocadillo tapa: una mano, un objeto clave, un letrero. En caso de apuro un bocadillo puede tapar una zona libre, nunca una cara.
+
+Como las anclas son fracciones de la imagen, se mueven con el recorte: el motor lleva cada una a la página a través del recorte y el reflejo de la viñeta, así que ni un arrastre de separador, ni otra división, ni una traducción apartan nunca un rabillo de su personaje. Un ancla que el recorte deja fuera de la viñeta hace que el rabillo apunte hacia ella fuera de la viñeta. La zona segura protege las anclas de eso: un ancla fuera de ella se avisa como `comicAnchorOutsideSafeArea`, un consejo de autoría, porque un recorte puede dejarla fuera. Una clave de personaje que no marca ninguna imagen de la página y que no nombra ninguna entrada del reparto se avisa como `comicUnknownSpeaker`, que suele atrapar un id mal escrito; las páginas cuyas imágenes no marcan ningún ancla no avisan de nada, así que un cómic se puede rotular sin anclas.
+
+Las anclas y las zonas libres pertenecen a la imagen y son las mismas en todos los idiomas. En el Sandbox se marcan en el editor de imágenes del [panel de Recursos](/es/docs/sandbox#panel-de-recursos): el campo **Zona segura y rotulación** abre un diálogo con tres modos, Zona segura, Personajes y Zonas libres. Un clic en la imagen añade ahí un personaje; su boca, su cabeza y su cara se arrastran a su sitio y su id se escribe al lado; un arrastre sobre una parte vacía de la imagen dibuja una zona libre. Cada marca se puede mover con las flechas (con Mayús, a pasos más grandes) y quitar con Suprimir, y el diálogo tiene su propio deshacer.
+
+## Tiras
+
+Un bloque `:::strip` tiene el cuerpo de una página de cómic pero va dentro del texto, como una caja del ancho de una columna o de la página cortada en viñetas: la tira diaria de un periódico, un chiste de cuatro viñetas en una revista, un cómic breve dentro de un libro de prosa. Para distinguirla de las tiras de una página, aquí se la llama tira cómica.
+
+```md
+:::strip{split="* | * | * | *" aspect=4 span=page placement=top}
+::panel{art=pip-1}
+pip: Otto, el hielo se está derritiendo.
+::panel{art=pip-2}
+otto{thought}: La pastelería no…
+::panel{art=pip-3}
+::panel{art=pip-4}
+sfx: CHOF
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Tan ancha como la columna en la que cae (el valor por defecto) o como la caja de texto.</td></tr>
+    <tr><td><code>placement=here</code></td><td>El valor por defecto: se compone en el texto donde está escrita. Una tira cómica nunca se parte; la que no cabe pasa entera a la columna o la página siguiente, y se lleva consigo un título que tenga justo encima.</td></tr>
+    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Flota como una figura a la cabeza o al pie de la primera página con sitio a partir de ese punto. Una tira a ancho de página escrita <code>here</code> en una página de varias columnas también flota.</td></tr>
+    <tr><td><code>height=4cm</code></td><td>La altura de la tira (un número solo está en milímetros).</td></tr>
+    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>La anchura dividida por la altura. Sin él, la tira toma las proporciones que hacen cuadradas sus viñetas (cuatro viñetas en fila: 4).</td></tr>
+  </tbody>
+</table>
+
+Una tira cómica sin `split` pone sus viñetas una junto a otra. Su caja es su marco: las calles, los estilos de viñeta y la rotulación son los de la configuración, y nada va a sangre. Una tira más alta que una columna se reduce a la columna. Después de ella el texto sigue en la línea siguiente de la rejilla base, con el espacio que pide `layout.inlineResourceGap`, como tras una figura en línea. En una página vertical la tira se dispone en su caja girada, de modo que un yonkoma `* / * / * / *` con `aspect=0.25` corre a lo largo de una columna vertical.
+
+En el VDT una tira es un bloque de `type: 'resource'` con un campo `comic` y sin `resourceBlock`; sus coordenadas son relativas a la caja del bloque en el pliego. `pageComics(page)` da el cómic de una página y las tiras de sus columnas y sus flotantes, todos llevados al pliego.
+
+## Dobles páginas
+
+`:::page{spread}` extiende un mismo árbol de divisiones sobre dos páginas enfrentadas, para un panorama o una batalla que necesita el libro abierto entero. El marco son las dos cajas de texto unidas por encima del lomo, sin sus márgenes interiores; la división, las calles y el recorte funcionan como en una sola página, y una viñeta o una imagen puede pasar por encima del lomo.
+
+```md
+:::page{spread split="25 [* | * | *] / *" bleed}
+::panel{art=market-1}
+::panel{art=market-2}
+::panel{art=market-3}
+::panel{art=market-panorama}
+caption: El mercado del sábado, desde la torre del reloj.
+:::
+```
+
+Una doble página se abre en un verso, la página par, para que sus dos mitades queden enfrentadas: si el cómic fuera a empezar en un recto se añade antes una página en blanco, también al principio del libro, donde la página 1 queda sola. En un libro encuadernado por la izquierda el verso es la página izquierda; en uno encuadernado por la derecha (árabe, japonés y chino verticales), la derecha. Cada página lleva su mitad: las viñetas que llegan a su lado, cortadas en el lomo, y la imagen de una viñeta que cruza el lomo dibujada en las dos páginas. Las viñetas a sangre sangran por la cabeza, el pie y los cortes exteriores, nunca en el lomo. No se rotula nada en una banda de 8 mm alrededor del lomo, donde la encuadernación se lo tragaría: un bocadillo fijado ahí se desliza hacia el lado más cercano. Cada bocadillo va en la página que contiene su centro.
+
+## Sentido de lectura
+
+Un cómic occidental se lee de izquierda a derecha: la primera viñeta de una tira está a la izquierda. El manga y los cómics árabes se leen de derecha a izquierda. Postext toma el sentido de `comics.readingDirection`:
+
+- `'auto'` (el valor por defecto): de derecha a izquierda en un documento de derecha a izquierda, así que una edición árabe refleja sus páginas; en otro caso, el sentido para el que se dibujaron las imágenes, `comics.artDirection` (`'ltr'` por defecto). Una edición japonesa de un cómic occidental sigue de izquierda a derecha; un manga, con `artDirection: 'rtl'`, sigue de derecha a izquierda en cualquier idioma.
+- `'ltr'` o `'rtl'` impone un sentido a todo el libro, y el atributo `direction` de una página lo impone a esa página.
+
+Las dos disposiciones de página salen de la misma fuente. Una página de derecha a izquierda dispone las viñetas de cada tira desde la derecha, de modo que la viñeta 1 queda arriba a la derecha; los cortes inclinados se reflejan con ellas, y también los lados lógicos de `bleed`, `pad` y las palabras de esquina (una cartela en `top-start` va arriba a la derecha). Las tiras conservan su orden de arriba abajo, y el orden de lectura del guion no cambia. La rotulación también refleja sus reglas: el primer bocadillo de una viñeta se inclina hacia la derecha, y el siguiente solo puede quedar más arriba si está más a la izquierda.
+
+Las imágenes no se reflejan salvo que se pida: `comics.mirrorArt: true` da la vuelta a cada imagen de una página que se lee en el sentido contrario a `artDirection`, que es lo que hicieron durante mucho tiempo las ediciones occidentales de manga, y `::panel{mirror=false}` deja una imagen como se dibujó (un texto dibujado en la imagen, un espadachín diestro). Las anclas y las zonas seguras siguen al reflejo. Normalmente es mejor no reflejar: el orden de las viñetas ya sigue al lector, y una imagen reflejada cambia lo que dibujó el artista.
+
+La escritura de los bocadillos sigue al idioma, no al orden de las viñetas. Con `comics.lettering.writingMode: 'auto'`, el japonés y el chino tradicional se rotulan en columnas verticales que se leen de derecha a izquierda, de `maxColumnChars` caracteres como mucho (8), con las reglas de kinsoku del japonés, las cifras de través en la columna con `:tcy` y la puntuación en sus formas verticales; un documento compuesto en escritura vertical se rotula en vertical en cualquier idioma. El chino simplificado, el coreano y los demás idiomas se rotulan en horizontal, y `'horizontal'` o `'vertical'` imponen una u otra. El árabe se rotula de derecha a izquierda, con las palabras latinas y las cifras en su propio sentido, sin inclinarse nunca y sin espaciarse nunca.
+
+## Traducir un cómic
+
+Una traducción es un archivo Markdown con las mismas líneas `:::page` y `::panel`, las mismas claves de personaje y otras palabras. Las imágenes, sus zonas seguras, sus anclas y sus zonas libres, las divisiones y los puntos fijados (los puntos de `at=` están en fracciones de las imágenes) son comunes a todas las ediciones. Cada edición se rotula sola: el texto se mide en su propio idioma y su propia letra, se corta en sus propias líneas, y cada bocadillo se vuelve a formar y a colocar a su alrededor. La misma página, en inglés:
+
+```md
+:::page{split="30 [30 | 20 | *] / *"}
+::panel{art=lh-arrive}
+caption: Every summer, Maya spent a week at the lighthouse.
+maya: Grandpa! I'm here!
+::panel{art=lh-radio}
+tomas: Just in time. The radio's gone deaf,
+tomas: and there's a storm on the way.
+:::
+```
+
+Lo que cambia de una edición a otra se deriva del `locale` del documento: las letras de rotulación y de onomatopeyas por defecto, la rotulación vertical del japonés y el chino tradicional, los puntos finales que se quitan en chino y en japonés, el interlineado y el sentido de página de una edición árabe. El texto ocupa en español o en francés alrededor de una quinta parte más que en inglés, y mucho menos en chino o en japonés; los bocadillos crecen y menguan con él, y `comicBalloonOverflow` nombra las viñetas en las que una traducción necesita una línea más corta o un punto fijado. Las onomatopeyas son palabras como las demás: se traducen, o se conserva la original y se añade debajo una pequeña a modo de subtítulo.
+
+## Salida de los cómics
+
+Todas las salidas pintan el mismo cómic: los fondos de las viñetas, las imágenes recortadas a las viñetas, los bordes, las imágenes que rompen la viñeta, después los bocadillos de cada grupo unido (primero se trazan los contornos, luego se rellenan y luego va el texto) y al final las onomatopeyas.
+
+- **Canvas.** El canvas del Sandbox, las páginas en 3D del Folio y las miniaturas pintan todos con `renderPageToCanvas`.
+- **PDF.** `postext-pdf` pinta las páginas de cómic con contornos vectoriales y las letras de rotulación incrustadas, y las imágenes SVG que tienen un máster de impresión PDF (`svg.pdfFileId`) se incrustan como ese máster. Un PDF etiquetado da a cada página de cómic un `Div`, a cada viñeta una `Figure` con su texto alternativo (el `alt` de la viñeta o, si no, el `altText` del recurso) y a cada bocadillo un `P` tras la figura de su viñeta, en orden de lectura; una onomatopeya es un `Span` cuyo `/ActualText` son sus palabras. Los fondos, los bordes y los contornos son artefactos. La salida pasa las comprobaciones PDF/UA-1 de veraPDF.
+- **HTML.** Cada viñeta es un `<figure>` que contiene un SVG en línea (el recorte, la imagen, el borde, la imagen que rompe la viñeta) con el texto alternativo de la viñeta, seguido de sus bocadillos como elementos `<p>` en orden de lectura. Un bocadillo de diálogo empieza con el nombre del personaje en un span oculto a la vista, de modo que un lector de pantalla oye «Maya: ¡Abuelo! ¡Ya estoy aquí!»; una onomatopeya se anuncia como una imagen cuya etiqueta son sus palabras. El visor HTML del Sandbox, cuyas páginas tienen el ancho de la pantalla y la altura de un desplazamiento, compone una página de cómic como la página impresa escalada a la ventana (`comics.viewerLeaf`), nunca refluida.
+- **EPUB de maquetación fija.** Las páginas son las del libro impreso. El libro lleva además **navegación por regiones** (`regions.xhtml`, EPUB Region-Based Navigation 1.0): una región `panel` por viñeta en orden de lectura, con sus bocadillos, cartelas y onomatopeyas anidados en ella, para que un sistema de lectura pueda recorrer el libro viñeta a viñeta. El avance de las páginas sigue el sentido de lectura de los cómics. La opción `kindlePanelView: true` de `renderToEpub` añade Kindle Panel View: una zona táctil por viñeta y una copia ampliada que llena la pantalla, con los metadatos que pide Kindle.
+- **EPUB fluido.** Ahí una página de cómic no tiene página que conservar, así que cada viñeta se convierte en su imagen, recortada exactamente como en la página, seguida de sus líneas como texto: «**Maya**: ¡Abuelo! ¡Ya estoy aquí!», las cartelas como párrafos y las onomatopeyas en cursiva.
+
+## Editar cómics en el Sandbox
+
+En el canvas, en las páginas HTML y en el modo de selección del Folio, una página de cómic se puede editar con el puntero, y cada cambio se escribe de vuelta en el Markdown del capítulo (la [guía del Sandbox](/es/docs/sandbox#editar-cómics) da los detalles):
+
+- **Separadores.** Sobre una calle el puntero se convierte en un cursor de cambio de tamaño. Al arrastrarlo se mueve la línea de división; al soltar, el nuevo porcentaje se escribe en el valor `split` de la página (el atributo se añade si la página no lo tiene), y la página se vuelve a componer. Mayús ajusta a pasos del 5 %, Alt mueve solo el extremo más cercano e inclina la línea, y ninguna celda queda más estrecha que el 5 %. Durante el arrastre se marca la viñeta cuya imagen quedaría con bandas. Cada separador puede recibir además el foco: las flechas lo mueven un 1 % (un 5 % con Mayús), Intro escribe la posición y Escape la devuelve a donde estaba.
+- **Viñetas.** Una pequeña barra de herramientas sobre una viñeta la divide con una línea horizontal o vertical, y añade tras ella un `::panel` vacío para la nueva celda, o la une con la viñeta siguiente: la línea de división desaparece, y la viñeta resultante conserva la imagen de la primera y los guiones de las dos.
+- **Bocadillos.** Arrastrar un bocadillo lo fija: su línea de guion recibe `at="x% y%"` en porcentajes de la imagen de la viñeta, y un grupo unido se mueve entero. Mientras se mueve, el bocadillo se vuelve naranja donde taparía una cara o una zona libre o se saldría de su viñeta, y la etiqueta dice cuál de las tres. Las flechas desplazan un 1 % el bocadillo que tiene el foco, y un doble clic en un bocadillo fijado quita la fijación.
+- **Rabillos.** Arrastrar la punta de un rabillo escribe en la línea `to="x% y%"`, el punto al que apunta; un doble clic en la punta lo quita, y el rabillo vuelve a apuntar a su personaje. Desde un bocadillo con el foco, T pasa a su rabillo, cuyo destino mueven las flechas.
+- **Teclado.** Una viñeta con el foco se divide con H (una línea horizontal) o V (una línea vertical) y se une con la siguiente con M.
+- **Tiras.** Todas las herramientas sirven también en los bloques `:::strip`, en una columna o flotantes, y escriben en la valla de la propia tira.
+- **Imágenes.** La zona segura, los personajes y las zonas libres de una imagen se marcan en el panel de Recursos (véase [Personajes y anclas](#personajes-y-anclas)).
+- **Ajustes.** El panel Diseño tiene un grupo **Cómic**: sentido de lectura, marco y calles, la viñeta por defecto y los estilos de viñeta, la rotulación y los estilos de globo, cada uno con su vista previa.
+- **Editor.** El editor de texto colorea `:::page`, `::panel` y las líneas de guion, y el panel de revisión enumera los avisos de cómic en sus líneas.
+
+## Avisos de cómic
+
+Cada aviso nombra la línea o el atributo al que se refiere, y el panel de revisión del Sandbox lo enumera ahí con el título de la primera columna.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Aviso</th>
+      <th>Causa</th>
+      <th>Solución</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Reparto de viñetas ilegible<br /><code>comicSplitSyntax</code></td><td>Un valor <code>split</code> no se puede leer entero: un carácter suelto, un <code>[</code> sin cerrar, <code>/</code> y <code>|</code> mezclados en una lista, o una lista entre corchetes en el eje de su madre. Se usa la parte legible; un valor sin nada legible da una sola viñeta.</td><td>Corrige el valor según la <a href="#dividir-la-página">gramática</a>: una sola clase de separador por lista, y corchetes para cambiar de eje.</td></tr>
+    <tr><td>Tamaños de viñeta por encima del 100 %<br /><code>comicSplitOverflow</code></td><td>Los tamaños de una lista suman más del 100 %. Se reducen, y cada <code>&#42;</code> conserva un 5 %.</td><td>Baja los tamaños, o cambia uno de ellos por <code>&#42;</code>.</td></tr>
+    <tr><td>Viñetas y celdas no coinciden<br /><code>comicPanelCount</code></td><td>La página tiene más líneas <code>::panel</code> que celdas su división (las viñetas sobrantes quedan fuera), o menos (las últimas celdas quedan vacías).</td><td>Añade o quita celdas en la división, o viñetas en el guion. Una línea <code>::panel</code> vacía da a propósito una celda vacía.</td></tr>
+    <tr><td>Texto fuera de una línea de guion<br /><code>comicStrayText</code></td><td>Texto anterior a la primera línea <code>::panel</code>, o una línea sin <code>clave:</code> que no continúa la de arriba. Se rotula como cartela.</td><td>Empieza la línea con una clave (<code>caption:</code>, <code>maya:</code>), o sángrala con dos espacios para que continúe el bocadillo de arriba.</td></tr>
+    <tr><td>Estilo de globo desconocido<br /><code>comicUnknownBalloonStyle</code></td><td>Una línea nombra entre llaves un estilo que no definen ni los estilos integrados ni <code>comics.balloonStyles</code>, a menudo por una errata (<code>&#123;wisper&#125;</code>). La línea toma el estilo de su clave.</td><td>Corrige el nombre, o añade el estilo a <code>comics.balloonStyles</code>.</td></tr>
+    <tr><td>Dibujo de viñeta no encontrado<br /><code>comicUnknownArt</code></td><td>El <code>art</code> o el <code>pop</code> de una viñeta no nombra ningún recurso, o nombra uno que no es un bitmap ni un SVG. La viñeta se dibuja vacía.</td><td>Corrige el id, o añade la imagen a los recursos del libro.</td></tr>
+    <tr><td>Dibujo mostrado entero en su viñeta<br /><code>comicPanelLetterbox</code></td><td>Las proporciones de la celda se alejan demasiado de las de la imagen: ningún recorte de esa forma contiene la zona segura entera, así que la imagen se muestra con su zona segura entera, entre bandas del fondo de la viñeta.</td><td>Mueve el separador para dar otras proporciones a la celda (el Sandbox marca esas posiciones durante el arrastre), dibuja una zona segura más pequeña o usa otra imagen.</td></tr>
+    <tr><td>Punto de personaje fuera de la zona segura<br /><code>comicAnchorOutsideSafeArea</code></td><td>Un ancla de una imagen queda fuera de su zona segura, así que un recorte puede dejar fuera al personaje y el rabillo apuntaría entonces fuera de la viñeta.</td><td>Agranda la zona segura para que incluya la boca, o mueve el ancla. No hay nada que corregir si el personaje debe quedar a veces fuera de la viñeta.</td></tr>
+    <tr><td>El globo no cabe<br /><code>comicBalloonOverflow</code></td><td>Después de todos los recursos, un bocadillo sigue tapando una cara, otro bocadillo, una zona libre o una boca, o se sale de su viñeta (un cruce pedido con <code>break</code> o con un <code>at=</code> que lo fija no cuenta). El aviso nombra la viñeta y lo que queda tapado. Mientras se arrastra un bocadillo en el Sandbox, la cara o la zona libre que taparía, o el borde que cruzaría, se ve antes de soltarlo.</td><td>Acorta la línea o pártela en dos, da más sitio a la viñeta, fija el bocadillo con <code>at=</code> o deja que cruce el borde con <code>break</code>. El texto nunca se reduce.</td></tr>
+    <tr><td>Personaje sin punto<br /><code>comicUnknownSpeaker</code></td><td>Una clave de personaje que ninguna imagen de la página marca con un ancla y que ninguna entrada del reparto nombra, casi siempre una clave mal escrita. Sus rabillos apuntan fuera de la viñeta. Solo se avisa en las páginas cuyas imágenes marcan anclas; es solo informativo.</td><td>Corrige la clave, marca el personaje en la imagen o añade una entrada a <code>comics.cast</code> para un personaje que nunca se ve.</td></tr>
+  </tbody>
+</table>
+
+Los avisos vuelven en los `contentWarnings` del documento con el intervalo de la fuente de la línea o del atributo al que se refieren (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
+
+## Desde el código
+
+Un cómic no necesita nada más que `buildDocument`: los recursos llevan las imágenes con sus zonas seguras, sus anclas y sus zonas libres, y la configuración puede llevar `comics`. La rotulación mide su texto con las fuentes cargadas, así que las letras de rotulación tienen que estar cargadas antes de componer, como cualquier otra letra: `comicFontFamilies(config, markdown)` enumera las letras que necesitan los cómics de un documento (la de rotulación, las de todos los estilos de bocadillo y las del reparto), y `markdownHasComics(markdown)` dice si un texto tiene páginas de cómic o tiras. En el PDF, al proveedor de fuentes se le piden esas letras como cualquier otra.
+
+El cómic compuesto está en el VDT: `page.comic` (`VDTComicPage`) guarda el marco, el sentido de lectura, las viñetas en orden de lectura (polígono, borde, fondo, el recorte de la imagen como `art.source` y `art.box`), los separadores (con el intervalo de la fuente del valor `split` en el que escriben) y los bocadillos (trazado del contorno, bloques de texto, punta del rabillo, clase, personaje). La gramática de las divisiones se exporta para los editores: `parseComicSplit`, `serializeComicSplit`, `moveComicSplitLine`, `splitComicCell` y `mergeComicCells` leen y reescriben un valor `split`, conservando sus `*` siempre que pueden. `comicArtCrop` y `comicCropFeasibleRange` calculan un recorte, y `comicArtPointToPage` lleva un punto de una imagen a la página.
+
+## Límites conocidos
+
+- **Solo árboles de divisiones.** Una división corta cada celda en dos con una línea que la atraviesa de lado a lado, así que no se pueden escribir las disposiciones en las que ninguna línea cruza la página entera, como un molinete de cuatro viñetas alrededor de una quinta. Las viñetas superpuestas y las imágenes que rompen la viñeta cubren casi todo aquello para lo que sirven esas disposiciones.
+- **Formas de viñeta.** Las viñetas son polígonos convexos; las viñetas redondas, irregulares o sin borde, las imágenes giradas o ampliadas y las líneas cinéticas se dibujan en las imágenes, no las hace Postext.
+- **Rotulación.** El ruby sobre una base de derecha a izquierda se omite, y las demás anotaciones se imprimen como texto llano dentro de los bocadillos. La colocación se hace viñeta a viñeta: se evita que los rabillos se crucen por coste, no se trazan unos alrededor de otros, y el paso de una viñeta a la siguiente no se equilibra. Las líneas largas en celdas muy pequeñas se avisan, no se resuelven. La protección de una cara sin marcar se mide a partir de la boca y del punto de la cabeza (unos pocos em si el ancla no tiene cabeza), así que en un primer plano puede proteger la boca más que la cara; marca la cara.
+- **Las tiras cómicas** aún no tienen `width`, `align`, `columns` ni pie, solo se leen en el nivel superior de un capítulo (no dentro de un recuadro, una tabla o una nota al pie), y una tira a ancho de página escrita `here` en una página de varias columnas flota en lugar de cortar las columnas donde está escrita.
+- **Dobles páginas.** Una viñeta redondeada cortada en el lomo pierde todas sus esquinas redondeadas. Un cómic de derecha a izquierda en un libro encuadernado por la izquierda sigue abriéndose en la página izquierda, así que su primera viñeta cae en la segunda página de la doble página.
+- **Las imágenes que rompen la viñeta** toman el recorte de la imagen de la viñeta, así que el recorte transparente debe tener el mismo tamaño que esa imagen.
+- **Salidas.** El texto alternativo de reserva de una viñeta sin `alt` ni `altText` es «Panel N», en inglés. La navegación por regiones describe las viñetas inclinadas por sus cajas envolventes. Kindle Panel View copia el cómic de una página una vez por viñeta, lo que agranda el archivo, y no se ha comprobado en Kindle Previewer.
+
+## Referencias
+
+- Nate Piekos, [*Comic Book Grammar & Tradition*](https://blambot.com/pages/comic-book-grammar-tradition) (Blambot): las clases de bocadillo, las cartelas, el énfasis, la doble raya.
+- John Roshell y Comicraft, [*Balloon Tales*](https://balloontales.com/creating-tails-and-joins/): rabillos y uniones, y [el método por capas](https://balloontales.com/the-layer-method/) de trazar primero y rellenar después.
+- Todd Klein, [*Digital lettering for comics*](https://kleinletters.com/Blog/digital-lettering-for-comics/).
+- David Kurlander, Tim Skelly y David Salesin, [*Comic Chat*](https://kurlander.net/DJ/Pubs/SIGGRAPH96.pdf), SIGGRAPH 96: la colocación de los bocadillos en orden de lectura.
+- IDPF, [*EPUB Region-Based Navigation 1.0*](https://idpf.org/epub/renditions/region-nav/epub-region-nav.html), y Amazon KDP, [Kindle Panel View](https://kdp.amazon.com/en_US/help/topic/G9GSTY4LTRT39D4Z).

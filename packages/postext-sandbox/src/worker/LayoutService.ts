@@ -94,8 +94,9 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
     );
   });
 
-  const ensureFonts = async (config: PostextConfig): Promise<void> => {
-    const families = getConfigFontFamilies(config);
+  const ensureFonts = async (config: PostextConfig, markdown?: string): Promise<void> => {
+    // The text decides some faces too (a comic page letters in its own).
+    const families = getConfigFontFamilies(config, markdown);
     const missing = families.filter((f) => !registeredFamilies.has(f));
     if (missing.length === 0) {
       await fontQueue;
@@ -139,7 +140,7 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
     });
     let stats: BuildStats | null = null;
     try {
-      await ensureFonts(request.config);
+      await ensureFonts(request.config, request.content.markdown);
       if (controller.signal.aborted) throw abortError();
       const buildOptions = {
         signal: controller.signal,

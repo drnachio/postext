@@ -12,6 +12,7 @@ import {
   canonicalLocaleTag,
   directionOf,
   HTML_TEXT_RESET,
+  pageComics,
   renderToHtmlIndexed,
 } from 'postext';
 import type { VDTDocument, VDTPage } from 'postext';
@@ -31,6 +32,7 @@ import { videoScriptItem, VIDEO_SCRIPT_HREF, withVideoScript } from '../shared/v
 import { navStrings } from '../package/strings';
 import { fontUses, missingFaces, type FontUse } from './fontUse';
 import { contentsRows, headingTitle, nestOutline, pageHeadings, partTitle, type OutlineEntry } from './outline';
+import { comicDirectionOf, kindlePanelMarkup, regionNavItem, type ComicPagePlan } from './regions';
 
 /** Directory of the page documents, relative to the package document. */
 const PAGES_DIR = 'pages/';
@@ -58,6 +60,8 @@ interface PagePlan {
   /** Outline entries that start on this page. */
   outline: OutlineEntry[];
   lang: string;
+  /** The page's comic markup (`page.comic`), as the renderer gave it. */
+  comicHtml?: string;
 }
 
 /** The book language of a document: its configured locale, else the
@@ -105,6 +109,14 @@ const rowLink = (href: string, label: string, b: { x: number; y: number; width: 
 const anchorAt = (id: string, x: number, y: number): string =>
   `<span id="${escapeAttr(id)}" style="position:absolute;left:${num(x)}px;top:${num(y)}px;width:0;height:0;"></span>`;
 
+/** Markup with every id it sets (and every `url(#…)` reference to one)
+ *  suffixed: a copy of a page's comic that lives on the same page. */
+function withIdSuffix(html: string, suffix: string): string {
+  return html
+    .replace(/\sid="([^"]*)"/g, (_, id: string) => ` id="${id}${suffix}"`)
+    .replace(/url\(#([^)]+)\)/g, (_, id: string) => `url(#${id}${suffix})`);
+}
+
 /** The HTML player attributes no EPUB schema knows (`controlslist`, the
  *  Remote Playback and Picture-in-Picture switches) dropped: EPUBCheck
  *  rejects them, and reading systems offer their own controls. */
@@ -116,7 +128,9 @@ export function epubVideoMarkup(html: string): string {
 export async function buildFixedPublication(docs: EpubSource, options: RenderToEpubOptions): Promise<EpubPublication> {
   const { metadata, onWarning, onProgress, signal } = options;
   const strings = navStrings(metadata.language);
-  const progression = pageProgressionOf(docs);
+  // A book of comic pages turns its pages the way they read (a manga
+  // right to left in any language); other books follow their binding.
+  const progression = comicDirectionOf(docs) ?? pageProgressionOf(docs);
 
   // Fonts and pictures first: the pages link to their files.
   const fonts = fontAssets(options.fonts ?? []);
@@ -181,11 +195,16 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
       const pageId = `pt-p-${(doc.pageIndexOffset ?? 0) + page.index}`;
       const ids = [pageId, ...[...html.matchAll(/\sid="([^"]*)"/g)].map((m) => xmlId(decodeEntities(m[1]!)))];
       for (const id of ids) if (!fileOfId.has(id)) fileOfId.set(id, file);
-      plans.push({ doc, page, bookIndex, file, html, ids, outline, lang });
+      const comicHtml = rendered.pages[i]?.comicHtml;
+      plans.push({ doc, page, bookIndex, file, html, ids, outline, lang, ...(comicHtml ? { comicHtml } : {}) });
       bookIndex++;
     }
     signal?.throwIfAborted();
   }
+
+  // Kindle Panel View (opt-in): tap targets over the panels of comic pages.
+  const kindle = options.kindlePanelView === true && plans.some((p) => p.page.comic);
+  const comicPlans: ComicPagePlan[] = [];
 
   // Pass 2: the content documents.
   const css =
@@ -194,7 +213,8 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     `html, body { margin: 0; padding: 0; }\n` +
     `body { position: relative; overflow: hidden; }\n` +
     `.pt-page { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; ${TEXT_RESET} }\n` +
-    `.pt-cover { display: block; width: 100%; height: 100%; object-fit: contain; }\n`;
+    `.pt-cover { display: block; width: 100%; height: 100%; object-fit: contain; }\n` +
+    (kindle ? `.target-mag-parent { display: none; }\n` : '');
   const pageItems: EpubItem[] = [];
   const spine: EpubSpineEntry[] = [];
   const pageList: EpubPageTarget[] = [];
@@ -225,6 +245,14 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     const pageStyle =
       `width:${num(page.width)}px;height:${num(page.height)}px;${bg}` +
       `transform:scale(${num(geo.scale)})${geo.offset ? ` translate(-${num(geo.offset)}px,-${num(geo.offset)}px)` : ''};`;
+    let magnify = '';
+    const comics = pageComics(page);
+    if (comics.length > 0) comicPlans.push({ href: `${PAGES_DIR}${file}`, comics, geo });
+    if (page.comic && kindle && plan.comicHtml) {
+      const comicHtml = plan.comicHtml;
+      const raw = kindlePanelMarkup(page, geo, (suffix) => withIdSuffix(comicHtml, suffix));
+      magnify = htmlToXhtml(raw, { ids, hoistStyle: (s) => styles.push(s) });
+    }
     const label = page.pageLabel || String(plan.bookIndex + 1);
     // A page with videos to coordinate links the playback script (#507).
     const xhtml = withVideoScript(xhtmlDocument({
@@ -236,7 +264,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
         `<link rel="stylesheet" type="text/css" href="../${STYLESHEET_HREF}"/>\n` +
         (styles.length ? `<style>${escapeXml(styles.join('\n'))}</style>\n` : ''),
       bodyAttrs: ` style="width:${geo.width}px;height:${geo.height}px;${bg}"`,
-      body: `<div class="pt-page" id="${escapeAttr(plan.ids[0]!)}" dir="${pageDir(doc)}" style="${pageStyle}">${body}</div>`,
+      body: `<div class="pt-page" id="${escapeAttr(plan.ids[0]!)}" dir="${pageDir(doc)}" style="${pageStyle}">${body}</div>${magnify}`,
     }), `../${VIDEO_SCRIPT_HREF}`);
     if (xhtml.includes('<script')) scripted = true;
     const id = file.replace(/\.xhtml$/, '');
@@ -295,6 +323,11 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     landmarks.push({ type: 'bodymatter', label: strings.bodymatter, href: target });
   }
 
+  // Region-based navigation of the comic pages: panels in reading order,
+  // their balloons in them.
+  const regions = regionNavItem(comicPlans, metadata.language, metadata.title);
+  if (regions) items.push(regions);
+
   items.push({ id: 'style', href: STYLESHEET_HREF, mediaType: 'text/css', data: css });
   items.push(...fonts.items, ...imageItems, ...pageItems);
   if (scripted) items.push(videoScriptItem());
@@ -309,6 +342,9 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     pageList,
     landmarks,
     pageProgression: progression,
+    // Manga: Kindle reads the page progression from the writing mode.
+    ...(comicPlans.length > 0 && progression === 'rtl' && !docs.some((d) => d.config.layout.writingMode === 'vertical-rl') ? { writingMode: 'horizontal-rl' as const } : {}),
+    ...(kindle ? { kindle: { comic: true as const, originalResolution: { width: firstGeo.width, height: firstGeo.height }, regionMagnification: true } } : {}),
     fixed: { spread: 'landscape', orientation: 'auto', viewport: { width: firstGeo.width, height: firstGeo.height } },
     accessibility: defaultAccessibility({
       layout: 'fixed',

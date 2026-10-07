@@ -4,6 +4,7 @@ import { DEFAULT_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_TEXT_ELEMENT, parseMa
 import {
   customFontsSignature,
   getConfigFontFamilies,
+  configIsVertical,
   setCustomFonts,
   collectFontUsage,
   hasLatinEmphasis,
@@ -69,6 +70,18 @@ describe('isRemovedCustomFontFamily', () => {
 });
 
 describe('getConfigFontFamilies', () => {
+  it('adds the comic lettering faces when the text has a comic page, by the document language', () => {
+    const page = ':::page\n::panel\nana: Hello\n:::';
+    expect(getConfigFontFamilies({})).not.toContain('Comic Neue');
+    const latin = getConfigFontFamilies({}, ['# One', page]);
+    expect(latin).toEqual(expect.arrayContaining(['Comic Neue', 'Bangers']));
+    const ja = getConfigFontFamilies({ locale: 'ja' }, page);
+    expect(ja).toEqual(expect.arrayContaining(['Zen Antique', 'Dela Gothic One']));
+    // A config with a comics section names them without the text.
+    expect(getConfigFontFamilies({ comics: { lettering: { fontFamily: 'Bubblegum Sans' } } })).toContain('Bubblegum Sans');
+    expect(configIsVertical({ locale: 'ja' }, page)).toBe(true);
+    expect(configIsVertical({ locale: 'ja' })).toBe(false);
+  });
   it('collects the callout style fonts the layout worker must register', () => {
     const families = getConfigFontFamilies({
       bodyText: { fontFamily: 'Literata' },

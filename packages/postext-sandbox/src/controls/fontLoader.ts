@@ -2,6 +2,10 @@ import type { ContentBlock, CustomFontFamily, CustomFontVariant, PostextConfig, 
 import type { FontPayload } from 'postext/worker';
 import {
   DEFAULT_TEXT_ELEMENT,
+  comicFontFamilies,
+  markdownHasComics,
+  isJapaneseLanguage,
+  chineseScriptOf,
   defaultCjkEmphasis,
   loadVerticalAlternates,
   localeScript,
@@ -16,6 +20,12 @@ import {
 import { getFontFile } from '../storage/fontStorage';
 
 const FONT_LOAD_TIMEOUT_MS = 3000;
+
+/** The text of the document (one string, or the chapters of a book): the
+ *  families a config names are not all the families a build uses — comic
+ *  pages (`:::page`) letter in faces of their own (`Comic Neue`, `Bangers`,
+ *  `Zen Antique`…) even when the config has no `comics` section. */
+export type FontContentText = string | readonly string[] | undefined;
 
 const loadedFonts = new Set<string>();
 const loadingPromises = new Map<string, Promise<void>>();
@@ -188,7 +198,7 @@ function collectNamedFamilies(node: unknown, families: Set<string>): void {
   }
 }
 
-export function getConfigFontFamilies(config: PostextConfig): string[] {
+export function getConfigFontFamilies(config: PostextConfig, markdown?: FontContentText): string[] {
   const body = resolveBodyTextConfig(config.bodyText);
   const headings = resolveHeadingsConfig(config.headings);
   const lists = resolveUnorderedListsConfig(config.unorderedLists, body);
@@ -249,13 +259,16 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
   // (openers, section running heads, part and contents designs), heading
   // styles, captions, paragraph styles, contents entries…
   collectNamedFamilies(config, families);
+  // Comic pages: the lettering, balloon-style and sound-effect faces, by
+  // default those of the document language.
+  for (const family of comicFontFamilies(config, markdown)) families.add(family);
   // A CSS font stack sets its text in the first family (the engine's
   // `primaryFontFamily`): load that one.
   return [...new Set(Array.from(families, primaryFontFamily))];
 }
 
-export function preloadConfigFonts(config: PostextConfig): Promise<void> {
-  const promises = getConfigFontFamilies(config).map((family) => loadFont(family));
+export function preloadConfigFonts(config: PostextConfig, markdown?: FontContentText): Promise<void> {
+  const promises = getConfigFontFamilies(config, markdown).map((family) => loadFont(family));
   return Promise.all(promises).then(() => {});
 }
 
@@ -265,7 +278,7 @@ export function preloadConfigFonts(config: PostextConfig): Promise<void> {
  * 16px because the check is per-face — the actual render size doesn't
  * affect whether a matching face is loaded.
  */
-export function getConfigFontSpecs(config: PostextConfig): string[] {
+export function getConfigFontSpecs(config: PostextConfig, markdown?: FontContentText): string[] {
   const specs = new Set<string>();
   const push = (family: string) => {
     const q = `"${family}"`;
@@ -274,7 +287,7 @@ export function getConfigFontSpecs(config: PostextConfig): string[] {
     specs.add(`italic 400 16px ${q}`);
     specs.add(`italic 700 16px ${q}`);
   };
-  for (const f of getConfigFontFamilies(config)) push(f);
+  for (const f of getConfigFontFamilies(config, markdown)) push(f);
   return [...specs];
 }
 
@@ -297,10 +310,10 @@ export function configFontSampleText(config: PostextConfig): string {
 
 /** The specs of `getConfigFontSpecs` not loaded yet for the document's
  *  text (`configFontSampleText`). */
-export function missingConfigFontSpecs(config: PostextConfig): string[] {
+export function missingConfigFontSpecs(config: PostextConfig, markdown?: FontContentText): string[] {
   if (typeof document === 'undefined' || !document.fonts) return [];
   const text = configFontSampleText(config);
-  return getConfigFontSpecs(config).filter((s) => !document.fonts.check(s, text));
+  return getConfigFontSpecs(config, markdown).filter((s) => !document.fonts.check(s, text));
 }
 
 /**
@@ -308,9 +321,9 @@ export function missingConfigFontSpecs(config: PostextConfig): string[] {
  * `CanvasRenderingContext2D.measureText`. Resolves once all faces pass
  * `document.fonts.check`, or after the timeout. Safe to call repeatedly.
  */
-export function ensureConfigFontsLoaded(config: PostextConfig): Promise<void> {
+export function ensureConfigFontsLoaded(config: PostextConfig, markdown?: FontContentText): Promise<void> {
   if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
-  const missing = missingConfigFontSpecs(config);
+  const missing = missingConfigFontSpecs(config, markdown);
   if (missing.length === 0) return Promise.resolve();
   const text = configFontSampleText(config);
   return Promise.race([
@@ -408,8 +421,9 @@ async function fetchFamilyPayloads(family: string): Promise<FontPayload[]> {
  */
 export async function collectFontPayloadsForConfig(
   config: PostextConfig,
+  markdown?: FontContentText,
 ): Promise<FontPayload[]> {
-  return collectFontPayloadsForFamilies(getConfigFontFamilies(config));
+  return collectFontPayloadsForFamilies(getConfigFontFamilies(config, markdown));
 }
 
 /**
@@ -765,9 +779,17 @@ export function missingUsedVariants(family: CustomFontFamily, config: PostextCon
 
 /** Whether a config sets any text vertically (`layout.writingMode`, or a
  *  heading style's own layout). */
-export function configIsVertical(config: PostextConfig): boolean {
+export function configIsVertical(config: PostextConfig, markdown?: FontContentText): boolean {
   if (config.layout?.writingMode === 'vertical-rl') return true;
-  return (config.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl');
+  if ((config.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl')) return true;
+  // Comic balloons of Japanese and Traditional Chinese are lettered in
+  // columns (`comics.lettering.writingMode: 'auto'`).
+  if (!config.comics && !markdownHasComics(markdown)) return false;
+  const mode = config.comics?.lettering?.writingMode;
+  if (mode === 'vertical') return true;
+  if (mode === 'horizontal') return false;
+  const tag = config.locale ?? config.bodyText?.hyphenation?.locale;
+  return isJapaneseLanguage(tag) || chineseScriptOf(tag) === 'Hant';
 }
 
 /** The twin load of each family, keyed by where its faces come from
@@ -811,9 +833,9 @@ async function verticalFacesOf(family: string): Promise<VerticalAlternatesFace[]
  * postext). Once per family; resolves when every family is settled, to
  * whether any family has its twin (the preview repaints then).
  */
-export async function loadVerticalTwins(config: PostextConfig): Promise<boolean> {
-  if (typeof document === 'undefined' || !configIsVertical(config)) return false;
-  const results = await Promise.all(getConfigFontFamilies(config).map((family) => {
+export async function loadVerticalTwins(config: PostextConfig, markdown?: FontContentText): Promise<boolean> {
+  if (typeof document === 'undefined' || !configIsVertical(config, markdown)) return false;
+  const results = await Promise.all(getConfigFontFamilies(config, markdown).map((family) => {
     const key = twinSourceKey(family);
     const entry = verticalTwins.get(family);
     if (entry && entry.key === key) return entry.promise;
@@ -839,7 +861,7 @@ export async function loadVerticalTwins(config: PostextConfig): Promise<boolean>
 
 /** Whether every family of a vertical config has had its twin tried, from
  *  the family's current sources. */
-export function verticalTwinsSettled(config: PostextConfig): boolean {
-  if (!configIsVertical(config)) return true;
-  return getConfigFontFamilies(config).every((f) => verticalTwinsDone.get(f) === twinSourceKey(f));
+export function verticalTwinsSettled(config: PostextConfig, markdown?: FontContentText): boolean {
+  if (!configIsVertical(config, markdown)) return true;
+  return getConfigFontFamilies(config, markdown).every((f) => verticalTwinsDone.get(f) === twinSourceKey(f));
 }

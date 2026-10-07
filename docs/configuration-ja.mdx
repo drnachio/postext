@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '設定',
   description: 'Postextのレイアウト設定オプションをすべて網羅したリファレンス',
   lang: 'ja',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-07',
   readingTime: '30分',
   order: 3,
   plainSummary: "このページには、ページの見た目を決める設定がすべて載っています。ページの大きさ、段の数、フォント、文字の大きさ、見出し、囲み、色など、すべての選択は1つの設定のまとまりに入っています。どの設定にも最初から無理のない値が入っているので、書くのは変えたいものだけです。このページは調べるための資料なので、必要なところへ直接進んでください。最後のいくつかの節では、プログラムを書く人向けに、Webページ、PDFファイル、EPUBの電子書籍をコードから作る方法を説明します。",
@@ -53,6 +53,7 @@ const document = buildDocument(content, {
 - [見出しスタイル](#見出しスタイル)：`{style="…"}`を付けた見出し用の名前付きスタイル。番号のない章や、独自の柱、ジオメトリー、パレットを持つ前付けに使います。
 - [目次](#目次)：`:::toc`が出力する内容。項目の文字組み、リーダー、ページ番号、著者の行、部の行。
 - [索引](#索引)：`:::index`が出力する内容。項目の文字組み、字下げ、ページ番号の区切りと範囲、頭文字ごとのグループ、並べ替えの言語。
+- [漫画](#漫画)：`comics`。漫画のページの枠と間白、コマのスタイル、写植、吹き出しのスタイル、登場人物。ガイドは[漫画](/ja/docs/comics)です。
 - [単位と色](#単位と色)、[カラーパレット](#カラーパレット)：`Dimension`、`ColorValue`、名前付きの色。
 - [カスタムフォント](#カスタムフォント)：ユーザーがアップロードしたフォントファミリーを、Google Fontsと並べて宣言します。
 - [HTMLビューアー](#htmlビューアー)：HTMLバックエンドの目標段幅と行分割。
@@ -6155,6 +6156,532 @@ const config: PostextConfig = {
 </table>
 
 ページ番号は、目次と同じく本のアウトラインから得ます。`computeOutline()`と`contentOutline()`は、テキストの索引の印を種類`'indexMark'`の項目として一覧にし（`indexMark.path`、`sort`、`see`、`seeAlso`、`main`、`range`、`index`を持ちます）、`outlineFromDoc()`がそれぞれに配置されたページを与えます。このページは、ビルドが`doc.indexMarks`（印ごとに`{ sourceStart, pageIndex }`）に記録します。`buildDocument()`は、自身の索引を印刷する文書を、番号が確定するまで組み直します。本を章ごとにレイアウトするホストは、`:::index`を含む章に、本全体のアウトラインを`PostextContent.outline`として渡します。`tocOutline()`と`indexOutline()`はアウトラインを目次が読む部分と索引が読む部分に分けるため、ホストは各章を、その章が印刷する部分だけに結び付けられます。Sandboxは、索引の章を印が動いたときだけ、目次の章を見出しが動いたときだけ組み直します。`contentOutline()`は、テキストが索引を印刷するかどうか（`hasIndex`）も示します。
+
+## 漫画
+
+`comics`プロパティは、漫画のページ（`:::page`）、帯漫画（`:::strip`）、見開きを設定します。コマを割り出す枠と間白、コマのスタイル、写植、吹き出しのスタイル、登場人物です。読むのは漫画のある文書だけです。漫画のない文書はこれまでとまったく同じに組まれ、漫画があって`comics`の節がない文書は、その言語の既定値を使います。マークアップとページの写植のしかたは[漫画](/ja/docs/comics)で説明しています。
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: 'マヤ' }, { id: 'tomas', name: 'トマスじいさん' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>段の中のコマの順序です。<code>'auto'</code>は、右から左に書く文書では右から左へ、それ以外では<code>artDirection</code>の方向へ読みます。ページの<code>direction</code>属性が優先されます。</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>絵が前提とする読む方向です。マンガなら<code>'rtl'</code>です。</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>artDirection</code>と逆の方向に読むページの絵を左右反転します。<code>mirror=false</code>を付けたコマは、絵を描いたままにします。</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>ページの余白</td>
+      <td>漫画のページ独自の余白です（<code>top</code>、<code>bottom</code>、<code>left</code>、<code>right</code>、<code>mirror</code>）。コマはその内側の箱から割り出します。未設定なら、ページの版面から割り出します。</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>段と段の間隔です。ページの<code>gutter</code>属性が優先されます。</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>段の中で横に並ぶコマの間隔です。</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>後述</td>
+      <td>既定のコマのスタイルです。</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>名前付きのコマのスタイルで、<code>:::page&#123;style=…&#125;</code>か<code>::panel&#123;style=…&#125;</code>で選びます。それぞれ<code>id</code>、任意の<code>name</code>（エディターの画面でだけ使います）、コマのスタイルの項目を持ち、設定していない項目は<code>panel</code>に従います。</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>後述</td>
+      <td>本のすべての吹き出しの書体、サイズ、表記の決まりです。</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>組み込みの9つのスタイル</td>
+      <td>種類ごとの吹き出しのスタイルです。組み込みのスタイルは常にあり、そのIDを持つ項目はそのスタイルを変更し、新しいIDの項目は<code>speech</code>に重ねたスタイルを加えます。</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>登場人物です（<a href="#登場人物">登場人物</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>漫画のページに柱とノンブルを入れます。オフのとき、漫画のページはコマだけになり、ページ番号は数えられます。</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>未設定</td>
+      <td>ページが紙面の形をしていないホストのためのものです。漫画のページを印刷用の紙面（<code>width</code>、<code>height</code>、<code>margins</code>）に組み、それを<code>fitWidth</code> pxの幅（高さは最大<code>fitHeight</code> px）に縮小してページの上端に置きます。SandboxのHTMLビューアーが設定し、文書とともに保存されることはありません。</td>
+    </tr>
+  </tbody>
+</table>
+
+### コマのスタイル
+
+`comics.panel`と、`comics.panelStyles`の各項目は次の項目を持ちます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>枠線の太さです。<code>0</code>で枠線を描きません。枠線はコマの輪郭の上に描きます。</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>黒</td>
+      <td>枠線の色です（パレットにリンクできます）。</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>長方形のコマの角の半径で、短い辺の半分までに抑えます。斜めの線で切ったコマの角はとがったままです。</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>きれいな線、少し揺れる手描きの線（揺れはコマから決まる値をシードにするので、何度組んでも同じ線になります）、または枠線なし。</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>白</td>
+      <td>絵の下の塗りです。空のコマの色と、全体表示した絵の周りに残る帯の色になります。</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code>はコマを埋めるように絵をトリミングしますが、セーフエリアには食い込みません。<code>contain</code>は絵全体を表示します。</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>このスタイルのコマを断ち切りにします。枠に接するすべての辺を、枠の外の仕上がり線と裁ち落としまで伸ばします。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 写植
+
+`comics.lettering`は、本のすべての吹き出しを決めます。サイズは1つだけです。吹き出しのスタイルはそれを倍率で変えられますが（`fontScale`）、吹き出しに収めるために文字を縮めることはありません。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>言語による</td>
+      <td>写植の書体です。未設定のときは<code>Comic Neue</code>、日本語では<code>Zen Antique</code>、簡体字中国語では<code>Noto Sans SC</code>、繁体字中国語では<code>LXGW WenKai TC</code>、アラビア語、ペルシア語、ウルドゥー語では<code>Playpen Sans Arabic</code>です（<code>defaultComicFont(locale)</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>吹き出しの文字のサイズです。印刷されたページでは、漫画の写植は7〜9 ptにするのが普通です。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>行と行の間隔で、サイズの倍数です。既定のままにすると、縦書きの吹き出しと中国語・日本語の吹き出しは1.5、アラビア語の吹き出しは1.45になります。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>黒</td>
+      <td>文字の色です。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>すべての写植をボールドかイタリックにします。中国語、日本語、アラビア語の写植は斜体にしません。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>文字と文字の間に加える間隔です。<code>em</code>は文字サイズに対する値です。アラビア語には適用しません。</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>は、日本語と繁体字中国語、そして縦組みの文書を縦書きで写植し、それ以外は横書きで写植します。台本の行に<code>vertical</code>か<code>horizontal</code>を付けると、その行だけ組み方向を変えられます（<a href="/ja/docs/comics#写植">漫画 › 写植</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>すべて大文字にします。アメリカやヨーロッパの写植の伝統的な見た目です。大文字と小文字の区別のない文字体系はそのままです。</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>吹き出しを終える句点を省きます（マンガの<code>。</code>）。<code>'auto'</code>：日本語と中国語でだけ省きます。</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>全角ダッシュを<code>--</code>で写植します。アメリカの写植の習慣です。</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>吹き出しとコマの枠線の間に空ける間隔です。枠線に付けたナレーションには適用しません。</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>同じ話し手の吹き出しが2つ続くとき、本体を1つの輪郭にまとめるか、細い首でつなぐか、離しておくかです。台本の行ごとに<code>join</code>か<code>join=false</code>で指定することもできます。</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>縦書きの写植で、吹き出しの1行に入れる最大の字数です。描き文字は5字で改行します。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 吹き出しのスタイル
+
+`comics.balloonStyles`の各項目は、同じIDの組み込みのスタイル（`speech`、`thought`、`whisper`、`shout`、`radio`、`caption`、`inner`、`note`、`sfx`）に、新しいIDなら`speech`に重ねられます。下の既定値は`speech`のものです。組み込みの各スタイルが変える点は[漫画 › 吹き出しのスタイル](/ja/docs/comics#吹き出しのスタイル)に挙げています。`em`で表す長さは、吹き出しの文字サイズに対する値です。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>必須</td>
+      <td>台本の行がスタイルを指定するときの語です。<code>ben&#123;whisper&#125;: …</code>または<code>style=whisper</code>。</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>人が読むための名前で、エディターの画面でだけ使います。</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>文字の周りの輪郭です。<code>'none'</code>は文字を絵の上に直接置きます。</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>白</td>
+      <td>吹き出しの塗りです。</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>黒</td>
+      <td>輪郭の色です。</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>輪郭の太さです。</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>破線の輪郭です（ささやき）。</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>二重線の輪郭です。</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>輪郭の手描きの揺れで、0〜1です。吹き出しから決まる値をシードにするので、ビルドごとに変わることはありません。</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>楕円の超楕円の指数です。2で楕円になり、値を大きくするほど四角に近づきます。</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>ギザギザのとげの数です。<code>0</code>なら周の長さから数を決めます。</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>ギザギザのとげの深さで、本体の半径に対する割合です。</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>文字と輪郭の間の余白です。</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>改行で文字の塊に目指させる幅と高さの比です（横書きの写植）。</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>しっぽです。</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>輪郭から出るところのしっぽの幅です。</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>しっぽが話し手に向かってどこまで伸びるかで、輪郭から口までの隔たりに対する割合です。</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>しっぽが指すもので、アンカーの口か頭（思考の吹き出し）です。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>行が位置を固定していないときの吹き出しの位置です。写植が配置するか、コマの角か辺に置きます。</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>角や辺に置いた吹き出しを、コマの枠線にぴったり付けます（ナレーション）。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>写植の書体</td>
+      <td>このスタイルの書体です。<code>sfx</code>の既定値は言語に合った描き文字の書体で、<code>Bangers</code>、日本語では<code>Dela Gothic One</code>、簡体字中国語では<code>ZCOOL KuaiLe</code>、繁体字中国語では<code>LXGW WenKai TC</code>、アラビア語では<code>Lalezar</code>です（<code>defaultComicSfxFont(locale)</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>文字のサイズで、写植のサイズの倍数です。</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>写植の値</td>
+      <td>ボールドまたはイタリックの文字です。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>写植の値</td>
+      <td>文字の色です。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>写植の値</td>
+      <td>このスタイルをすべて大文字にします。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>写植の値</td>
+      <td>文字と文字の間に加える間隔です。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>吹き出しの中の行のそろえ方です。</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>なし</td>
+      <td>文字の周りに描く縁（袋文字）の太さで、絵の上でも文字が読めるようにします（描き文字）。</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>白</td>
+      <td>縁の色です。</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>時計回りの回転角（度）です。行の<code>rotate</code>属性が優先されます。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 登場人物
+
+`comics.cast`の各項目は、1人の登場人物を表します。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>必須</td>
+      <td>台本と絵のアンカーで使う話し手のキーです。</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>HTMLの出力とリフロー型のEPUBが人物のセリフの前に印字し、エディターが表示する名前です。</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>スタイルを指定していない、その人物の行のスタイルです。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>スタイルの値</td>
+      <td>その人物の吹き出しの文字の色です。</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>スタイルの値</td>
+      <td>その人物の吹き出しの塗りです。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>スタイルの値</td>
+      <td>その人物の吹き出しの書体です。</td>
+    </tr>
+  </tbody>
+</table>
+
+行自身の`color`と`font`は登場人物の設定に優先し、登場人物の設定は吹き出しのスタイルに優先します。漫画の色はどれもパレットの項目にでき、ほかのリンクした色と同じくパレットに従います。
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => すべての項目が埋まり、書体はZen AntiqueとDela Gothic One
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => すべてが既定値ならundefined
+
+const shout = pickBalloonStyle(resolved, 'shout'); // 本の変更を加えた組み込みのshout
+const night = pickPanelStyle(resolved, 'night');   // 名前付きのコマのスタイル、なければ既定のコマ
+```
 
 ## 単位と色
 

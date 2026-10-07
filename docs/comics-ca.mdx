@@ -1,0 +1,525 @@
+{/* docs/comics-ca.mdx */}
+
+export const metadata = {
+  title: 'Còmics',
+  sidebarTitle: 'Còmics',
+  description: 'Com compon Postext còmics i manga a partir de Markdown: pàgines de còmic tallades per un arbre de divisió, dibuixos de vinyeta retallats al voltant de la zona segura, retolació generada a partir d’un guió (diàleg, pensament, xiuxiueig, crit, ràdio, cartel·les, onomatopeies), estils de bafarada, àncores dels personatges sobre els dibuixos, tires dins del text, dobles pàgines, lectura de dreta a esquerra i retolació vertical, traduccions, i les sortides en canvas, PDF, HTML i EPUB',
+  lang: 'ca',
+  lastUpdated: '2026-10-07',
+  readingTime: '25 min',
+  order: 9,
+  plainSummary: "Aquesta pàgina explica com es fa un còmic amb Postext. Els dibuixos són les vinyetes, i tot el que els personatges diuen, pensen o senten s'escriu com a text al fitxer Markdown. Postext col·loca les vinyetes a la pàgina i dibuixa tot sol les bafarades, les cartel·les i les onomatopeies al voltant de les paraules. Per traduir el còmic només cal reescriure les paraules, i Postext torna a retolar la llengua nova: el japonès en columnes, l'àrab de dreta a esquerra. La pàgina també tracta les tires dins d'un llibre, les pàgines que ocupen dues cares enfrontades, les sortides i els límits que queden.",
+};
+
+# Còmics
+
+**Els dibuixos són les vinyetes; tot el que es diu, es pensa, es narra o se sent és text al Markdown.**
+
+Un còmic a Postext és un conjunt de dibuixos i un guió. Els dibuixos són recursos corrents, de mapa de bits o SVG, dibuixats sense cap retolació. El guió viu al Markdown del capítol: un bloc `:::page` talla una pàgina en vinyetes, dona a cada vinyeta el seu dibuix i hi enumera, línia per línia, les bafarades, les cartel·les i les onomatopeies. Postext disposa les vinyetes, retalla cada dibuix a la seva cel·la sense tocar el que importa, compon el text amb la lletra de retolació del llibre en un sol cos, hi dibuixa una bafarada al voltant, n'adreça la cua al personatge que parla i col·loca les bafarades en ordre de lectura allà on no tapen cap cara. Una traducció és un altre fitxer Markdown amb les mateixes vinyetes i altres paraules; Postext la torna a retolar de cap i de nou, en columnes per al japonès i de dreta a esquerra per a l'àrab.
+
+Els còmics són opcionals: un document sense `:::page` ni `:::strip` es compon exactament igual que abans. Els ajustos són a la [secció `comics` de la configuració](/ca/docs/configuration#còmics), i el marcatge es resumeix a [Format del document › Còmics](/ca/docs/document-format#còmics).
+
+## Pàgines de còmic
+
+Un bloc `:::page` és una pàgina de còmic. S'obre amb una línia `:::page{…}`, conté una línia `::panel` per vinyeta, cadascuna seguida del guió d'aquella vinyeta, i es tanca amb un `:::` sol:
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: Cada estiu, la Maya passava una setmana al far.
+maya: Avi! Ja soc aquí!
+::panel{art=lh-radio}
+tomas: Arribes just a temps. La ràdio s'ha quedat sorda,
+tomas: i ve tempesta.
+::panel{art=lh-maya}
+maya{thought}: Aquesta vàlvula sembla fluixa…
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: CRAC
+tomas{shout}: Agafa't a la barana!
+:::
+```
+
+El bloc comença sempre en una pàgina nova i l'ocupa sencera. El text que segueix la tanca de tancament comença a la pàgina següent, de manera que dos blocs `:::page` seguits fan dues pàgines de còmic, i un `:::pagebreak` entre ells no hi afegeix cap pàgina. El motor llegeix el cos ell mateix, línia per línia, com llegeix `:::verse`: a dins no es reconeixen blocs de Markdown, contenidors ni altres directives, i els `<!-- comentaris -->` s'ignoren, també quan ocupen diverses línies.
+
+El rol de la pàgina és `'comic'` (`VDTPage.role`). No porta capçaleres ni foli, perquè una pàgina de còmic és tota vinyetes, però compta en la numeració de pàgines; `comics.runningHeads: true` els imprimeix. Les vinyetes es tallen del **marc**, que és la caixa de text de la pàgina dins dels marges, tret que `comics.frame.margins` doni a les pàgines de còmic uns marges propis.
+
+Els atributs de la línia d'obertura:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>split="…"</code></td><td>Com es talla el marc en cel·les (vegeu <a href="#dividir-la-pàgina">Dividir la pàgina</a>). Sense aquest atribut, les vinyetes s'apilen en fileres d'alçada igual.</td></tr>
+    <tr><td><code>gutter=4mm</code>, <code>gutter="4mm 2mm"</code></td><td>L'espai entre fileres i, quan s'hi dona un segon valor, entre vinyetes del costat. Un nombre sol és en mil·límetres. Per defecte: <code>comics.gutter</code> (4 mm i 2 mm).</td></tr>
+    <tr><td><code>style=…</code></td><td>Un estil de vinyeta amb nom per a totes les vinyetes de la pàgina (<code>comics.panelStyles</code>).</td></tr>
+    <tr><td><code>bleed</code></td><td>Totes les vinyetes que toquen el marc arriben fins al tall i entren a la sang.</td></tr>
+    <tr><td><code>direction=rtl</code>, <code>dir=ltr</code></td><td>El sentit de lectura d'aquesta pàgina, digui el que digui la configuració (vegeu <a href="#sentit-de-lectura">Sentit de lectura</a>).</td></tr>
+    <tr><td><code>spread</code></td><td>Estén la pàgina sobre dues pàgines enfrontades (vegeu <a href="#dobles-pàgines">Dobles pàgines</a>).</td></tr>
+  </tbody>
+</table>
+
+## Dividir la pàgina
+
+L'atribut `split` descriu la pàgina com un arbre de talls. Una llista de mides separades per `/` apila cel·les de dalt a baix (fileres); una llista separada per `|` les posa l'una al costat de l'altra, des del costat per on es llegeix la pàgina. Una mida seguida d'una llista entre claudàtors torna a tallar aquella cel·la en l'altre eix. La pàgina de l'exemple anterior, `30 [30 | 20 | *] / *`, és una filera del 30 % de l'alçada del marc, tallada en vinyetes del 30 % i el 20 % de la seva amplada i una tercera que n'ocupa la resta, damunt d'una segona filera que ocupa la resta de la pàgina:
+
+<Illustration name="ComicSplit" data='{"title": "La divisió 30 [30 | 20 | *] / *", "desc": "El marc d’una pàgina tallat per la divisió 30 [30 | 20 | *] / *. Una primera filera ocupa el 30 % de l’alçada i es talla en tres vinyetes: el 30 % de l’amplada, el 20 % i la resta. Una segona filera, a sota, ocupa la resta de la pàgina com una sola vinyeta. Els carrers queden a cavall de les línies de divisió. Al costat de la pàgina, la divisió es dibuixa com un arbre: una llista de fileres amb dos elements, el primer dels quals conté una llista de tres columnes entre claudàtors. Les fulles són les vinyetes 1 a 4 en ordre de lectura.", "caption": "Les mides són percentatges de la cel·la mare; * ocupa el que queda. Les vinyetes es numeren en ordre de lectura, que és l’ordre de l’arbre.", "split": "30 [30 | 20 | *] / *", "rows": "/ fileres, de dalt a baix", "columns": "| columnes, des de l’inici", "rest": "* la resta", "order": "vinyetes en ordre de lectura", "gutter": "carrer"}' />
+
+La gramàtica completa:
+
+```
+split := list
+list  := item ( "/" item )*  |  item ( "|" item )*
+item  := size [ "[" list "]" ]
+size  := number ["%"] [ "~" number ["%"] ]  |  "*"  |  (nothing)
+```
+
+- Les **mides** són percentatges de la cel·la mare en l'eix de la llista; `30` i `30%` són el mateix. Un `*`, o una mida buida, pren una part igual del que deixen les mides escrites. L'últim element d'una llista arriba sempre fins al final, digui el que digui la seva mida.
+- **Un separador per llista.** Barrejar `/` i `|` en una mateixa llista, deixar un `[` sense tancar o posar una llista entre claudàtors en el mateix eix que la seva mare és un error de sintaxi (`comicSplitSyntax`): es fa servir la part llegible.
+- **Massa.** Unes mides que sumen més del 100 % es redueixen de manera que cada `*` conservi un 5 %, i la pàgina avisa amb `comicSplitOverflow`.
+- L'**ordre de lectura** és l'ordre de l'arbre: les fileres de dalt a baix i, dins de cada filera, les vinyetes des del costat inicial. Les línies `::panel` omplen les cel·les en aquest ordre. Una pàgina amb més vinyetes que cel·les en deixa fora les que sobren; una amb menys deixa buides les últimes cel·les (`comicPanelCount`, que només s'avisa quan s'ha escrit un `split`).
+
+Algunes divisions:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Divisió</th>
+      <th>Pàgina</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#42;</code></td><td>Una pàgina d'una sola vinyeta (<i>splash</i>).</td></tr>
+    <tr><td><code>33 / 33 / &#42;</code></td><td>Tres fileres.</td></tr>
+    <tr><td><code>&#42; / &#42; / &#42; / &#42;</code></td><td>Quatre fileres iguals, el <i>yonkoma</i> de la tira humorística de quatre vinyetes.</td></tr>
+    <tr><td><code>50 [&#42; | &#42;] / 50 [&#42; | &#42; | &#42;]</code></td><td>Dues vinyetes damunt de tres.</td></tr>
+    <tr><td><code>30 / 35 [&#42; | &#42; | &#42;] / &#42;</code></td><td>Una vinyeta ampla, tres en fila i una altra d'ampla.</td></tr>
+    <tr><td><code>60 | &#42; [50 / &#42;]</code></td><td>Una vinyeta alta al costat inicial i dues d'apilades al costat.</td></tr>
+    <tr><td><code>&#42; [40&#126;55 | &#42;] / 35</code></td><td>Una filera d'acció tallada per una línia inclinada, damunt d'una filera del 35 % d'alçada.</td></tr>
+  </tbody>
+</table>
+
+### Talls inclinats
+
+Una mida escrita `a~b` dona una línia inclinada: la vora llunyana de la cel·la va de l'`a` % a l'inici de l'eix transversal fins al `b` % a l'altre extrem. Per a vinyetes l'una al costat de l'altra l'inici és dalt, de manera que `40~55 | *` traça una línia que va del 40 % de l'amplada a dalt fins al 55 % a baix; per a fileres, l'inici és el costat per on es llegeix la pàgina. Les mides se sumen a cada extrem per separat, i les cel·les continuen sent polígons convexos. Les cantonades arrodonides només s'apliquen a les vinyetes rectangulars; una vinyeta inclinada manté les cantonades vives.
+
+### Carrers
+
+El carrer queda a cavall de cada línia de divisió, meitat a cada costat, de manera que una línia escrita al 30 % cau exactament al 30 % de la seva cel·la. Les línies inclinades conserven el carrer del seu eix, mesurat de través. Els valors per defecte segueixen la pàgina habitual: 4 mm entre fileres i 2 mm entre les vinyetes d'una filera (`comics.gutter.horizontal` i `vertical`, o l'atribut `gutter` de la pàgina).
+
+### A sang
+
+Una vinyeta a sang passa del marc: cadascun dels seus costats que toca el marc es porta fins al tall i, més enllà, fins a la sang quan la pàgina en té (`page.cutLines.bleed`). L'atribut `bleed` de la pàgina porta a sang totes les vinyetes; el `bleed` d'una vinyeta només hi porta aquella, `bleed="top start"` només aquells costats (`top`, `bottom`, `start`, `end`, `left`, `right`) i `bleed=false` ho impedeix. Un estil de vinyeta amb `bleed: true` porta a sang les seves vinyetes.
+
+### Marge interior i vinyetes incrustades
+
+`pad` fa una vinyeta més petita que la seva cel·la: d'un a quatre valors en l'ordre dels marges de CSS amb costats lògics (dalt, final, baix, inici), cadascun una longitud o un percentatge de la cel·la. `::panel{art=x pad="0 15%"}` dona una vinyeta més estreta que la seva filera, centrada dins seu.
+
+Una vinyeta amb `inset="x y w h"` no ocupa cap cel·la: es posa damunt de la vinyeta anterior, en aquella posició i amb aquella mida en percentatges de la caixa d'aquesta vinyeta, com un petit retrat en una cantonada o un primer pla sobre un pla general. El seu guió es retola a dins.
+
+```md
+:::page{split="*"}
+::panel{art=storm-wide}
+caption{at=bottom-start}: La tempesta va esclatar a mitjanit.
+::panel{art=maya-window inset="62% 6% 32% 30%"}
+maya{whisper}: Avi?
+:::
+```
+
+## Vinyetes i imatges
+
+Una línia `::panel{…}` comença una vinyeta; el seu guió arriba fins a la línia `::panel` següent o fins a la tanca de tancament. Una vinyeta sense `art` es dibuixa buida, amb el seu color de fons, i és així com es fa una vinyeta només de text. El text anterior al primer `::panel` es retola com a cartel·la de la primera vinyeta i s'avisa com a `comicStrayText`.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>El dibuix de la vinyeta: l'id d'un recurs de mapa de bits o SVG. Un id desconegut deixa la vinyeta buida i avisa amb <code>comicUnknownArt</code>.</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td><code>cover</code> retalla el dibuix perquè ompli la cel·la, mai dins de la seva zona segura; <code>contain</code> el mostra sencer, amb bandes del fons de la vinyeta. Per defecte: el de l'estil de vinyeta (<code>cover</code>).</td></tr>
+    <tr><td><code>focus="70% 40%"</code></td><td>El punt del dibuix que es manté centrat allà on la zona segura deixa marge per triar.</td></tr>
+    <tr><td><code>style=…</code></td><td>Un estil de vinyeta amb nom per a aquesta vinyeta.</td></tr>
+    <tr><td><code>border=none</code>, <code>border=0.5mm</code></td><td>Sense vora, o una vora d'aquest gruix.</td></tr>
+    <tr><td><code>bg=#1b1b2f</code></td><td>El fons de la vinyeta: un color, un id de la paleta o <code>none</code>.</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Vegeu <a href="#a-sang">A sang</a>.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>Vegeu <a href="#marge-interior-i-vinyetes-incrustades">Marge interior i vinyetes incrustades</a>.</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>Posa aquesta vinyeta damunt de l'anterior en lloc de donar-li una cel·la.</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>Un retall dibuixat per sobre de la vora (vegeu <a href="#dibuix-que-trenca-la-vora">Dibuix que trenca la vora</a>).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Gira el dibuix d'aquesta vinyeta en mirall, o el manté tal com està dibuixat quan la pàgina reflecteix els seus dibuixos (vegeu <a href="#sentit-de-lectura">Sentit de lectura</a>).</td></tr>
+    <tr><td><code>alt="…"</code></td><td>L'alternativa textual de la vinyeta, per al PDF etiquetat, l'HTML i l'EPUB. Per defecte: l'<code>altText</code> del recurs.</td></tr>
+    <tr><td><code>id=…</code></td><td>Un id per a la vinyeta, que les sortides HTML i EPUB fan servir com a àncora.</td></tr>
+  </tbody>
+</table>
+
+### Retallar el dibuix a la seva cel·la
+
+El dibuix d'una vinyeta es fa sense saber quina forma tindrà la cel·la on acabarà: una pàgina es pot tornar a dividir, un separador es pot arrossegar, una traducció pot necessitar una filera més alta. La **zona segura** del dibuix (`Resource.safeArea`, vegeu [Format del document › Zona segura](/ca/docs/document-format#zona-segura)) diu què ha de quedar a la vista, i el retall es calcula per a cada cel·la:
+
+1. Amb `fit=cover`, la finestra visible té les proporcions de la cel·la i és tan gran com permet el dibuix.
+2. Es col·loca de manera que la zona segura hi quedi dins. Allà on això deixa marge, la finestra es centra en `focus` si la vinyeta n'indica un; si no, els marges de fora de la zona segura es retallen en proporció a la seva mida, de manera que un motiu a l'esquerra del centre continua a l'esquerra del centre.
+3. Si cap finestra amb les proporcions de la cel·la no pot contenir la zona segura (una cel·la molt ampla per a un motiu alt), el dibuix es mostra amb la zona segura sencera i la resta de la cel·la s'omple amb el fons de la vinyeta. La pàgina avisa amb `comicPanelLetterbox`. Una cel·la conserva sencera la zona segura d'un dibuix de W × H mentre la seva amplada dividida per l'alçada estigui entre `sw·W/H` i `W/(sh·H)`, on `sw` i `sh` són l'amplada i l'alçada de la zona segura en fraccions.
+
+Un dibuix sense zona segura es retalla al voltant del seu centre, o al voltant de `focus`. Un SVG sense mida intrínseca omple la cel·la tal com és. Els renderitzadors retallen al polígon de la cel·la i dibuixen el dibuix sencer a la seva mida sense retallar, així que el retall no torna a mostrejar mai la imatge.
+
+### Estils de vinyeta
+
+L'aspecte d'una vinyeta surt de `comics.panel` (una vora negra d'1 pt, fons blanc, `cover`), d'un estil amb nom de `comics.panelStyles` que una pàgina o una vinyeta tria amb `style=`, i dels `border` i `bg` de la mateixa vinyeta. Una vora pot ser `solid`, `none` o `rough`: una línia feta a mà que tremola una mica, igual a cada composició, perquè el tremolor surt d'una llavor presa de la vinyeta. Tots els camps són a [Configuració › Còmics](/ca/docs/configuration#còmics).
+
+### Dibuix que trenca la vora
+
+Una vora trencada, on un personatge o un objecte surt de la seva vinyeta, necessita dos dibuixos: el de la vinyeta, retallat a la cel·la com sempre, i un retall transparent de la part que en surt, indicat amb `pop`. El retall es talla i es col·loca exactament com el dibuix (ha de tenir la mateixa mida que el dibuix de la vinyeta) i es pinta després de la vora, sense retallar, de manera que tapa la vora i el carrer.
+
+```md
+::panel{art=gull-sky pop=gull-cutout bleed="top"}
+sfx{at="70% 20%"}: CRUAAAC
+```
+
+## Retolació
+
+Sota cada línia `::panel` hi ha el guió de la vinyeta, una bafarada per línia:
+
+```md
+clau{atributs}: text
+```
+
+La **clau** és un id de personatge (lletres, dígits, `_`, `.` i `-`), el mateix en totes les traduccions; coincideix amb les àncores dels dibuixos i amb el [repartiment](#el-repartiment). Hi ha tres claus reservades: `caption` (una cartel·la de narració), `sfx` (una onomatopeia, sense bafarada) i `note` (una nota de l'editor). Els dos punts poden ser els `：` d'amplada completa que escriu un mètode d'entrada xinès o japonès. El text és Markdown en línia: `*èmfasi*` i `**negreta**` s'imprimeixen en negreta cursiva, la convenció de la retolació (negreta sola en les escriptures sense cursiva), `:tcy[12]` posa dígits de través en una columna vertical, `:ruby` compon la lectura a mig cos sobre la base (al costat, en una columna) i `:ltr` / `:rtl` mantenen un fragment en el seu propi sentit dins d'una bafarada del sentit contrari. Una línia sagnada amb dos espais o una tabulació continua la bafarada anterior (s'hi uneix amb un espai, sense cap espai entre dos caràcters xinesos o japonesos); una barra inversa al final d'una línia hi parteix el text de la bafarada. Les línies en blanc s'ignoren, i una línia que no és una línia de guió es retola com a cartel·la i s'avisa com a `comicStrayText`.
+
+```md
+::panel{art=lh-radio}
+tomas: Arribes just a temps.
+  La ràdio s'ha quedat sorda,\
+  i ve tempesta.
+biscuit{to="40% 70%"}: Mrrr?
+note: Les ràdios de vàlvules s'escalfen un minut abans de parlar.
+```
+
+Els atributs d'una línia de guió:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&#123;whisper&#125;</code>, <code>style=whisper</code></td><td>L'estil de bafarada. Una paraula sola entre les claus anomena un estil: <code>thought</code>, <code>whisper</code>, <code>shout</code>, <code>radio</code>, <code>inner</code> o un dels del llibre. Un nom desconegut avisa amb <code>comicUnknownBalloonStyle</code>, i la línia pren l'estil de la seva clau.</td></tr>
+    <tr><td><code>at="62% 40%"</code></td><td>Fixa el centre de la bafarada en aquest punt del dibuix de la vinyeta (de la cel·la quan la vinyeta no en té). El punt és en fraccions del dibuix, així que es queda al mateix lloc del dibuix encara que canviïn el retall o els separadors.</td></tr>
+    <tr><td><code>at=top-start</code></td><td>Posa la bafarada en una cantonada o una vora de la vinyeta: <code>top-start</code>, <code>top-end</code>, <code>bottom-start</code>, <code>bottom-end</code>, <code>top</code>, <code>bottom</code>. Les cartel·les i les notes s'enganxen a la vora.</td></tr>
+    <tr><td><code>to="40% 70%"</code></td><td>Adreça la cua a aquest punt del dibuix en lloc de l'àncora del personatge. La cua s'hi gira i s'atura abans d'arribar-hi, com fa davant d'una boca.</td></tr>
+    <tr><td><code>tail=none</code>, <code>tail=start</code></td><td>Sense cua, o una cua cap a un personatge de fora de la vinyeta per aquell costat (<code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>). <code>tail=auto</code> és el valor per defecte.</td></tr>
+    <tr><td><code>join</code>, <code>join=false</code></td><td>Uneix aquesta bafarada a l'anterior del mateix personatge, o la manté separada, digui el que digui <code>comics.lettering.joinSameSpeaker</code>.</td></tr>
+    <tr><td><code>break</code></td><td>Deixa que la bafarada travessi la vora de la vinyeta i entri al carrer o a la vinyeta del costat. L'encreuament no s'avisa com a desbordament, perquè s'ha demanat; el que la bafarada tapi a l'altra banda (una cara, una bafarada d'una altra vinyeta) sí que s'avisa, i el seu centre es queda dins de la seva vinyeta.</td></tr>
+    <tr><td><code>rotate=-8</code></td><td>Gira la bafarada o l'onomatopeia, en graus, en el sentit de les agulles del rellotge.</td></tr>
+    <tr><td><code>size=1.5</code></td><td>Escala la retolació d'una onomatopeia.</td></tr>
+    <tr><td><code>color=#c0392b</code></td><td>El color de la retolació: un color hexadecimal o un id de la paleta.</td></tr>
+    <tr><td><code>font="…"</code></td><td>La lletra d'aquesta línia.</td></tr>
+    <tr><td><code>vertical</code>, <code>horizontal</code>, <code>mode=vertical</code></td><td>La direcció d'escriptura d'aquesta línia, per damunt de la del llibre: <code>vertical</code> la compon en columna en una edició horitzontal (un <code>ドン</code> sense traduir), <code>horizontal</code>, en filera en una de vertical (un rètol escrit de través). Una columna en un llibre d'una altra llengua segueix les regles del seu propi text (amb kana, les del japonès) i pren l'interlineat de la retolació vertical. En un llibre vertical, una línia sense caràcters xinesos ni japonesos es compon en filera igualment, tret que digui <code>vertical</code>.</td></tr>
+  </tbody>
+</table>
+
+### Com es fa una bafarada
+
+La retolació segueix els costums de la retolació de còmic més que els d'un marc de text:
+
+- **Un sol cos per llibre.** Totes les bafarades es componen en `comics.lettering.fontFamily` al cos `comics.lettering.fontSize` (7,5 pt per defecte), escalat només pel `fontScale` del seu estil (un xiuxiueig a 0,9, un crit a 1,15). El text no s'encongeix mai perquè hi càpiga: una bafarada que no hi cap canvia de forma, es mou, travessa la vora o s'avisa.
+- **Primer el text, després la bafarada.** Primer es parteixen les paraules en línies, buscant un rombe: línies curtes a dalt i a baix, la més llarga al mig, cap última línia gaire més curta que les altres i cap línia acabada en un article o una preposició quan hi ha un altre tall igual de bo. Després es dibuixa el contorn al voltant de les línies, amb el mateix aire per tots els costats.
+- **Normes de la casa.** Tres punts es converteixen en punts suspensius; `textTransform: 'uppercase'` compon el text en majúscules (les escriptures sense majúscules es deixen igual, i la ß alemanya es converteix en SS); en japonès i en xinès es treu el punt que acaba una bafarada (`dropFinalStop`) i els `!` i `?` ASCII passen a les formes d'amplada completa en les columnes, dos en una sola cel·la (`!?` com a ⁉); `doubleDash` retola el guió llarg com a `--`, com fan els còmics nord-americans.
+- **Col·locació.** Les bafarades d'una vinyeta es col·loquen en ordre de lectura dins de la vinyeta, a `comics.lettering.inset` de la vora (1,5 mm). La primera va cap a dalt, al costat inicial, i cada una de les següents no hauria de quedar més amunt que l'anterior tret que estigui més avançada en el sentit de lectura. Les bafarades no tapen les cares ni les zones lliures que marquen els dibuixos, ni les boques dels personatges, ni es tapen entre elles; van damunt del personatge o al costat, més que no pas a sota, i les seves cues no s'haurien de creuar. Primer van les cartel·les i les notes amb cantonada, després les bafarades fixades i al final la resta. La col·locació és determinista: la mateixa pàgina dona sempre les mateixes bafarades.
+- **Dins del full.** La retolació no surt mai del tall. En una vinyeta a sang, les bafarades es queden a la part de la vinyeta que cau dins del marc, on la guillotina no les pot tallar; només una onomatopeia fixada amb `at=` o marcada amb `break` pot entrar a la sang al costat de la seva vinyeta.
+- **Quan no hi cap.** Una bafarada que no es pot col·locar netament pot, primer, travessar la vora (només amb `break`), després tapar una zona lliure (mai una cara) i després adoptar una forma més ampla o més estreta. Una línia llarga en una cel·la estreta es compon gairebé tan ampla com la cel·la i treu el cap al carrer, en lloc de quedar com una columna prima damunt de la cara de qui parla. Si encara se superposa a alguna cosa, es posa on fa menys mal i la pàgina avisa amb `comicBalloonOverflow`, indicant la vinyeta i el que tapa. Un encreuament demanat, amb `break` o amb un punt fixat amb `at=`, no compta entre aquestes faltes: aleshores l'avís només indica el que la bafarada tapa. Una línia més curta, una vinyeta més gran o un punt fixat amb `at=` ho arreglen.
+
+### Cues
+
+La cua d'una bafarada de diàleg apunta a la boca del personatge, i les bombolles d'una bafarada de pensament, al cap (vegeu [Personatges i àncores](#personatges-i-àncores)). Surt del contorn pel costat que mira al personatge, es corba una mica i s'atura abans d'arribar a la boca. Quan el retall deixa fora de la vinyeta l'àncora del personatge, o el dibuix no marca cap àncora per a aquell personatge, la cua apunta fora de la vinyeta, cap a l'àncora o cap a la vora més propera, i acaba a la vora. Aquesta bafarada es posa al costat de la vora per on arriba la veu, amb una cua curta: una cua que travessa tota la vinyeta es llegeix com una fletxa, així que es mou la bafarada en lloc d'allargar la cua. `to="x% y%"` adreça una cua a un altre punt del dibuix, i `tail=start` (o `top`, `bottom`, `end`), a un personatge que és fora per aquell costat. Les cartel·les, les notes i les onomatopeies no tenen cua.
+
+### Bafarades unides
+
+Dues línies seguides del mateix personatge s'uneixen, que és com es retola una pausa en la seva intervenció: amb `joinSameSpeaker: 'butt'` (el valor per defecte), els dos cossos se superposen i comparteixen un sol contorn; amb `'connector'`, un coll estret els uneix; amb `'none'`, queden dues bafarades amb dues cues. Només la primera bafarada d'un grup té cua. Una línia pot demanar el contrari amb `join` o `join=false`.
+
+### Onomatopeies
+
+Una línia `sfx` no té bafarada: el text es compon gran (2,4 vegades el cos de la retolació), en negreta, amb la lletra d'onomatopeies de la llengua del document i amb un halo blanc al voltant de les lletres perquè es llegeixi sobre el dibuix. Es col·loca prop de l'àncora `sfx` de la vinyeta quan el dibuix en marca una (una àncora l'id de la qual és `sfx`) i, si no, allà on no tapi cap cara. `rotate`, `size`, `color` i `font` la modifiquen, i `at` la fixa. En la retolació vertical es compon en una columna, de cinc caràcters com a màxim. Les onomatopeies es pinten després de totes les bafarades de la pàgina.
+
+Una línia pot fixar la seva pròpia direcció d'escriptura. Una edició horitzontal d'un manga que deixa una onomatopeia en japonès la compon en columna:
+
+```md
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
+```
+
+### Ajustos de retolació
+
+`comics.lettering` conté la lletra, el cos, l'interlineat, el color i les normes de la casa de tot el llibre. Per defecte, la lletra segueix la llengua del document, i la de les onomatopeies també:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Llengua</th>
+      <th>Retolació</th>
+      <th>Onomatopeies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Llatí, grec, ciríl·lic i la resta</td><td>Comic Neue</td><td>Bangers</td></tr>
+    <tr><td>Japonès</td><td>Zen Antique</td><td>Dela Gothic One</td></tr>
+    <tr><td>Xinès simplificat</td><td>Noto Sans SC</td><td>ZCOOL KuaiLe</td></tr>
+    <tr><td>Xinès tradicional</td><td>LXGW WenKai TC</td><td>LXGW WenKai TC</td></tr>
+    <tr><td>Àrab, persa, urdú</td><td>Playpen Sans Arabic</td><td>Lalezar</td></tr>
+  </tbody>
+</table>
+
+Totes són a Google Fonts i es carreguen pel nom com qualsevol altra lletra. Amb l'interlineat per defecte, les bafarades verticals i les xineses o japoneses es componen amb un interlineat d'1,5, i les àrabs amb 1,45. La retolació japonesa, xinesa i àrab no s'inclina mai, digui el que digui l'estil, i l'àrab no s'espaia mai entre lletres.
+
+### El repartiment
+
+`comics.cast` enumera els personatges: un id (la clau del personatge), un `name` i, si cal, l'estil de bafarada amb què parlen (`balloonStyle`, un robot que sempre parla en `radio`), el `color` del text i el farciment (`fill`) de la bafarada que els distingeixen, i una `fontFamily`. El nom és el que anuncien les sortides: el visor HTML i l'EPUB adaptable imprimeixen «Nom: paraules» per a cada línia. Un personatge que és al repartiment no s'avisa mai com a desconegut.
+
+```ts
+comics: {
+  cast: [
+    { id: 'maya', name: 'Maya' },
+    { id: 'tomas', name: 'Avi Tomàs' },
+    { id: 'beacon', name: 'El far', balloonStyle: 'radio', fill: { hex: '#e8f4ff', model: 'hex' } },
+  ],
+}
+```
+
+## Estils de bafarada
+
+Un estil de bafarada és un tipus de bafarada: el seu contorn, la seva cua i la seva retolació. N'hi ha nou d'integrats, i una línia de guió n'anomena un amb una paraula sola entre claus (`ben{whisper}: …`). Les claus reservades prenen el seu del seu nom (`caption:`, `sfx:`, `note:`), i totes les altres línies prenen `speech`, o el `balloonStyle` que el repartiment dona al seu personatge.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Estil</th>
+      <th style={{ width: '170px' }}>Contorn</th>
+      <th style={{ width: '120px' }}>Cua</th>
+      <th>A més</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>speech</code></td><td>oval</td><td>corbada</td><td>La base de tots els estils: farciment blanc, contorn negre de 0,6 pt, 0,55 em d'aire.</td></tr>
+    <tr><td><code>thought</code></td><td>núvol</td><td>bombolles</td><td>Les bombolles apunten al cap, no a la boca.</td></tr>
+    <tr><td><code>whisper</code></td><td>oval, discontinu</td><td>corbada</td><td>Text a 0,9.</td></tr>
+    <tr><td><code>shout</code></td><td>explosió</td><td>recta</td><td>Text a 1,15, en negreta; contorn de 0,8 pt.</td></tr>
+    <tr><td><code>radio</code></td><td>elèctric (ziga-zaga)</td><td>ziga-zaga</td><td>Una veu que surt d'una ràdio, un telèfon o una màquina.</td></tr>
+    <tr><td><code>caption</code></td><td>rectangle</td><td>cap</td><td>Groc pàl·lid, enganxat a la cantonada superior inicial, text alineat a l'inici.</td></tr>
+    <tr><td><code>inner</code></td><td>caixa arrodonida</td><td>cap</td><td>Farciment gris, cursiva: la veu interior d'un personatge.</td></tr>
+    <tr><td><code>note</code></td><td>rectangle</td><td>cap</td><td>Enganxat a la cantonada inferior final, text a 0,8.</td></tr>
+    <tr><td><code>sfx</code></td><td>cap</td><td>cap</td><td>Text a 2,4, en negreta, amb la lletra d'onomatopeies i un halo blanc d'1,5 pt.</td></tr>
+  </tbody>
+</table>
+
+`comics.balloonStyles` els modifica i n'afegeix d'altres. Una entrada amb l'id d'un estil integrat es posa damunt d'aquell estil; una entrada amb un id nou parteix de `speech`:
+
+```ts
+comics: {
+  balloonStyles: [
+    { id: 'caption', fill: { hex: '#ffffff', model: 'hex' }, textTransform: 'uppercase' },
+    { id: 'shout', burstPoints: 18, burstDepth: 0.3 },
+    { id: 'eerie', shape: 'wavy', stroke: { hex: '#5b4a8a', model: 'hex' }, italic: true },
+    { id: 'writing', shape: 'none', tail: 'none', fontFamily: 'Caveat', color: { hex: '#3b2a1a', model: 'hex' } },
+  ],
+}
+```
+
+```md
+ghost{eerie}: Ves-te'n d'aquesta casa…
+caption{at=bottom-end}: A tres carrers d'aquí.
+```
+
+Els contorns són `oval` (una superel·lipse ajustada a les línies, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (festons comptats a partir del perímetre), `burst` (`burstPoints` punxes, de profunditat `burstDepth`), `wavy`, `electric` i `none`. `dash` dibuixa un contorn discontinu, `double` un de doble, i `wobble` (0–1) el fa tremolar com si fos fet a mà, sempre de la mateixa manera per a la mateixa bafarada. Les cues són `curved`, `wedge`, `bubbles`, `zigzag` i `none`. Tots els camps, amb els seus valors per defecte, són a [Configuració › Còmics](/ca/docs/configuration#còmics).
+
+Els renderitzadors dibuixen una bafarada com la tinta un retolista: primer es tracen tots els contorns d'un grup al doble del seu gruix, després s'omplen i al final es compon el text. Per això dos cossos units i la seva cua surten com una sola forma, sense cap línia entre ells.
+
+## Personatges i àncores
+
+Les cues apunten a les persones, i les bafarades no tapen les cares, perquè els dibuixos diuen on són les persones. Un recurs de mapa de bits o SVG pot portar **àncores**: un punt per personatge, escrit una sola vegada, en fraccions del dibuix (0–1 des de la cantonada superior esquerra), com la zona segura.
+
+```ts
+const arrive: Resource = {
+  id: 'lh-arrive', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-arrive.jpg', format: 'jpeg', width: 1100, height: 733 },
+  altText: 'Una noia amb un impermeable groc puja per un camí de la costa cap a un far.',
+  safeArea: { x: 0.2, y: 0.08, width: 0.42, height: 0.82 },
+  anchors: [
+    { id: 'maya', x: 0.29, y: 0.52, head: { x: 0.27, y: 0.47 }, face: { x: 0.22, y: 0.42, width: 0.12, height: 0.16 } },
+    { id: 'biscuit', x: 0.4, y: 0.68 },
+  ],
+  avoid: [{ x: 0.51, y: 0.09, width: 0.1, height: 0.43 }], // el far
+};
+```
+
+- `id` és la clau de personatge que fa servir el guió (`maya: …`). Una àncora amb l'id `sfx` col·loca les onomatopeies de la vinyeta.
+- `x`, `y` és la boca, on apunta la cua d'una bafarada de diàleg.
+- `head` és on apunten les bombolles d'una bafarada de pensament. Per defecte: la boca.
+- `face` és un rectangle que cap bafarada no tapa. Una àncora sense cara rep una caixa de protecció d'uns quants em per sobre i al voltant de la boca, perquè les bafarades no tapin tampoc una cara que no s'ha marcat.
+- `avoid` (al recurs) enumera altres rectangles que cap bafarada no tapa, les zones lliures: una mà, un objecte clau, un rètol. Si no hi ha més remei, una bafarada pot tapar una zona lliure, però mai una cara.
+
+Com que les àncores són fraccions del dibuix, es mouen amb el retall: el motor porta cadascuna a la pàgina a través del retall i el mirall de la vinyeta, de manera que ni arrossegar un separador, ni canviar la divisió, ni traduir el còmic no separen mai una cua del seu personatge. Una àncora que el retall deixa fora de la vinyeta fa que la cua apunti fora de la vinyeta, cap a ella. La zona segura protegeix les àncores d'aquest cas: una àncora que en queda fora s'avisa amb `comicAnchorOutsideSafeArea`, una indicació per a l'autor, ja que un retall la pot tallar. Una clau de personatge que cap dibuix de la pàgina no marca i que cap entrada del repartiment no anomena s'avisa com a `comicUnknownSpeaker`, cosa que sol detectar un id mal escrit; les pàgines amb dibuixos que no marquen cap àncora no avisen de res, de manera que un còmic es pot retolar sense àncores.
+
+Les àncores i les zones lliures pertanyen al dibuix i són les mateixes en totes les llengües. Al Sandbox es marquen a l'editor d'imatges del [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos): el camp **Zona segura i retolació** obre un diàleg amb tres modes, Zona segura, Personatges i Zones lliures. Un clic sobre el dibuix hi afegeix un personatge; la seva boca, el seu cap i la seva cara s'arrosseguen fins al lloc i el seu id s'escriu al costat; arrossegar sobre una part buida del dibuix traça una zona lliure. Totes les marques es poden moure amb les fletxes (Maj per a passos més grans) i suprimir amb Supr, i el diàleg té el seu propi desfer.
+
+## Tires
+
+Un bloc `:::strip` té el cos d'una pàgina de còmic però va dins del text, com una caixa de l'amplada d'una columna o de la pàgina, tallada en vinyetes: la tira diària d'un diari, un acudit de quatre vinyetes en una revista, un còmic breu dins d'un llibre en prosa.
+
+```md
+:::strip{split="* | * | * | *" aspect=4 span=page placement=top}
+::panel{art=pip-1}
+pip: Otto, el gel es fon.
+::panel{art=pip-2}
+otto{thought}: La pastisseria no…
+::panel{art=pip-3}
+::panel{art=pip-4}
+sfx: PLAF
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Tan ampla com la columna on cau (el valor per defecte) o com la caixa de text.</td></tr>
+    <tr><td><code>placement=here</code></td><td>El valor per defecte: es compon al text allà on està escrita. Una tira no es parteix mai; la que no hi cap passa sencera a la columna o la pàgina següent, i s'emporta un encapçalament que tingui just a sobre.</td></tr>
+    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Flota com una figura fins al cap o el peu de la primera pàgina amb espai a partir d'aquest punt. Una tira a amplada de pàgina escrita <code>here</code> en una pàgina de diverses columnes també flota.</td></tr>
+    <tr><td><code>height=4cm</code></td><td>L'alçada de la tira (un nombre sol és en mil·límetres).</td></tr>
+    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>Amplada dividida per l'alçada. Sense aquest atribut, la tira pren les proporcions que fan quadrades les seves vinyetes (quatre vinyetes en fila: 4).</td></tr>
+  </tbody>
+</table>
+
+Una tira sense `split` posa les seves vinyetes l'una al costat de l'altra. La caixa de la tira és el seu marc: els carrers, els estils de vinyeta i la retolació són els de la configuració, i res no va a sang. Una tira més alta que una columna es redueix a la columna. Després, el text continua a la línia següent de la retícula de base, amb el marge que demana `layout.inlineResourceGap`, com després d'una figura en línia. En una pàgina vertical la tira es disposa a la seva caixa girada, de manera que un *yonkoma* `* / * / * / *` amb `aspect=0.25` baixa per una columna vertical.
+
+Al VDT, una tira és un bloc de `type: 'resource'` amb un camp `comic` i sense `resourceBlock`; les seves coordenades són relatives a la caixa del bloc dins del full. `pageComics(page)` dona el còmic d'una pàgina i les tires de les seves columnes i els seus flotants, tots portats al full.
+
+## Dobles pàgines
+
+`:::page{spread}` estén un sol arbre de divisió sobre dues pàgines enfrontades, per a un panorama o una batalla que necessita el llibre obert sencer. El marc són les dues caixes de text unides a través del llom, sense els seus marges interiors; la divisió, els carrers i el retall funcionen com en una sola pàgina, i una vinyeta o un dibuix poden travessar el llom.
+
+```md
+:::page{spread split="25 [* | * | *] / *" bleed}
+::panel{art=market-1}
+::panel{art=market-2}
+::panel{art=market-3}
+::panel{art=market-panorama}
+caption: El mercat del dissabte, des de la torre del rellotge.
+:::
+```
+
+Una doble pàgina s'obre en un verso, la pàgina parella, perquè les dues meitats quedin enfrontades: s'hi afegeix una pàgina en blanc al davant quan el còmic començaria en un recto, també al començament mateix d'un llibre, on la pàgina 1 va sola. En un llibre enquadernat per l'esquerra el verso és la pàgina esquerra; en un enquadernat per la dreta (àrab, japonès i xinès verticals) és la dreta. Cada pàgina porta la seva meitat: les vinyetes que arriben al seu costat, tallades al llom, i el dibuix d'una vinyeta que travessa el llom es pinta a les dues pàgines. Les vinyetes a sang ho són pel cap, pel peu i per les vores exteriors, mai al llom. No es retola res en una franja de 8 mm al voltant del llom, on l'enquadernació s'ho empassaria: una bafarada fixada allà llisca cap al costat més proper. Cada bafarada va a la pàgina on cau el seu centre.
+
+## Sentit de lectura
+
+Un còmic occidental es llegeix d'esquerra a dreta: la primera vinyeta d'una filera és a l'esquerra. El manga i els còmics àrabs es llegeixen de dreta a esquerra. Postext pren el sentit de `comics.readingDirection`:
+
+- `'auto'` (el valor per defecte): de dreta a esquerra en un document de dreta a esquerra, de manera que una edició àrab posa les pàgines en mirall; si no, el sentit per al qual es va dibuixar l'art, `comics.artDirection` (`'ltr'` per defecte). Una edició japonesa d'un còmic occidental continua d'esquerra a dreta; un manga, amb `artDirection: 'rtl'`, continua de dreta a esquerra en qualsevol llengua.
+- `'ltr'` o `'rtl'` imposa un sentit a tot el llibre, i l'atribut `direction` d'una pàgina l'imposa a aquella pàgina.
+
+La mateixa font dona les dues composicions de pàgina. Una pàgina de dreta a esquerra disposa les vinyetes de cada filera des de la dreta, de manera que la vinyeta 1 queda a dalt a la dreta; les inclinacions s'hi reflecteixen, i també els costats lògics de `bleed`, `pad` i les paraules clau de cantonada (una cartel·la a `top-start` va a dalt a la dreta). Les fileres mantenen el seu ordre de dalt a baix, i l'ordre de lectura del guió no canvia. La retolació també reflecteix les seves regles: la primera bafarada d'una vinyeta tira cap a la dreta, i la següent només pot anar més amunt si és més a l'esquerra.
+
+Els dibuixos no es reflecteixen si no es demana: `comics.mirrorArt: true` gira en mirall cada dibuix d'una pàgina que es llegeix en el sentit contrari a `artDirection`, que és el que van fer durant molt de temps les edicions occidentals del manga, i `::panel{mirror=false}` manté un dibuix tal com està fet (un text dibuixat a l'art, un espadatxí dretà). Les àncores i les zones segures segueixen el gir. En general és millor no reflectir res: l'ordre de les vinyetes ja segueix el lector, i un dibuix girat canvia el que va dibuixar l'artista.
+
+L'escriptura de les bafarades segueix la llengua, no l'ordre de les vinyetes. Amb `comics.lettering.writingMode: 'auto'`, el japonès i el xinès tradicional es retolen en columnes verticals que es llegeixen de dreta a esquerra, de `maxColumnChars` caràcters com a màxim (8), amb les regles kinsoku del japonès, els dígits de través amb `:tcy` i la puntuació en les seves formes verticals; un document compost en escriptura vertical retola en vertical en qualsevol llengua. El xinès simplificat, el coreà i totes les altres llengües es retolen en horitzontal, i `'horizontal'` o `'vertical'` imposen una de les dues. L'àrab es retola de dreta a esquerra, amb les paraules llatines i els dígits en la seva pròpia direcció, sense inclinar-se mai i sense espaiat entre lletres.
+
+## Traduir un còmic
+
+Una traducció és un fitxer Markdown amb les mateixes línies `:::page` i `::panel` i les mateixes claus de personatge, i altres paraules. Els dibuixos, les seves zones segures, àncores i zones lliures, les divisions i els punts fixats (els punts `at=` són en fraccions dels dibuixos) són comuns a totes les edicions. Cada edició es retola a si mateixa: el text es mesura en la seva llengua i la seva lletra, es parteix en les seves pròpies línies, i cada bafarada es torna a formar i a col·locar al seu voltant. Aquesta és l'edició castellana de la pàgina anterior:
+
+```md
+:::page{split="30 [30 | 20 | *] / *"}
+::panel{art=lh-arrive}
+caption: Todos los veranos, Maya pasaba una semana en el faro.
+maya: ¡Abuelo! ¡Ya estoy aquí!
+::panel{art=lh-radio}
+tomas: Llegas justo a tiempo. La radio se ha quedado sorda,
+tomas: y viene tormenta.
+:::
+```
+
+El que canvia d'una edició a una altra es dedueix del `locale` del document: les lletres per defecte de la retolació i de les onomatopeies, la retolació vertical del japonès i del xinès tradicional, els punts finals que treuen el xinès i el japonès, l'interlineat i el sentit de les pàgines d'una edició àrab. En castellà o en francès el text ocupa al voltant d'una cinquena part més que en anglès, i molt menys en xinès o en japonès; les bafarades creixen i s'encongeixen amb ell, i `comicBalloonOverflow` indica les vinyetes on una traducció necessita una línia més curta o un punt fixat. Les onomatopeies són paraules com qualsevol altra: tradueix-les, o conserva l'original i afegeix-hi a sota una de petita, com un subtítol.
+
+## Sortida dels còmics
+
+Totes les sortides pinten el mateix còmic: els fons de les vinyetes, els dibuixos retallats a les vinyetes, les vores, els dibuixos que trenquen la vora, després les bafarades de cada grup d'unió (contorns traçats, després farcits, després el text) i, al final, les onomatopeies.
+
+- **Canvas.** El canvas del Sandbox, les pàgines en 3D de Folio i les miniatures pinten totes a través de `renderPageToCanvas`.
+- **PDF.** `postext-pdf` pinta les pàgines de còmic amb contorns vectorials i les lletres de retolació incrustades, i els dibuixos SVG amb un màster d'impressió en PDF (`svg.pdfFileId`) s'hi incrusten com aquest màster. Un PDF etiquetat dona a cada pàgina de còmic un `Div`, a cada vinyeta una `Figure` amb la seva alternativa textual (l'`alt` de la vinyeta o, si no, l'`altText` del recurs) i a cada bafarada un `P` després de la figura de la seva vinyeta, en ordre de lectura; una onomatopeia és un `Span` amb les seves paraules com a `/ActualText`. Els fons, les vores i els contorns són artefactes. La sortida supera les comprovacions PDF/UA-1 de veraPDF.
+- **HTML.** Cada vinyeta és un `<figure>` que conté un SVG en línia (el retall, el dibuix, la vora, el retall que trenca la vora) amb l'alternativa textual de la vinyeta, seguit de les seves bafarades com a elements `<p>` en ordre de lectura. Una bafarada de diàleg comença amb el nom del personatge en un `span` ocult visualment, de manera que un lector de pantalla diu «Maya: Avi! Ja soc aquí!»; una onomatopeia s'anuncia com una imatge amb les seves paraules com a etiqueta. El visor HTML del Sandbox, les pàgines del qual fan l'amplada d'una pantalla i l'alçada d'un desplaçament, compon una pàgina de còmic com la pàgina impresa escalada al viewport (`comics.viewerLeaf`), sense refluir-la mai.
+- **EPUB de maquetació fixa.** Les pàgines són les del llibre imprès. El llibre porta, a més, **navegació per regions** (`regions.xhtml`, EPUB Region-Based Navigation 1.0): una regió `panel` per vinyeta en ordre de lectura, amb les seves bafarades, cartel·les i onomatopeies imbricades a dins, perquè un sistema de lectura pugui recórrer el llibre vinyeta a vinyeta. L'avanç de les pàgines segueix el sentit de lectura dels còmics. L'opció `kindlePanelView: true` de `renderToEpub` hi afegeix Kindle Panel View: una zona de toc per vinyeta i una còpia ampliada que omple la pantalla, amb les metadades que demana Kindle.
+- **EPUB adaptable.** Allà una pàgina de còmic no té cap pàgina a conservar, així que cada vinyeta es converteix en el seu dibuix, retallat exactament com a la pàgina, seguit de les seves línies com a text: «**Maya**: Avi! Ja soc aquí!», les cartel·les com a paràgrafs i les onomatopeies en cursiva.
+
+## Editar còmics al Sandbox
+
+Al canvas, a les pàgines HTML i al mode *Seleccionar text* de Folio, una pàgina de còmic es pot editar amb el punter, i cada canvi s'escriu al Markdown del capítol (la [guia del Sandbox](/ca/docs/sandbox#editar-còmics) en dona els detalls):
+
+- **Separadors.** Damunt d'un carrer, el punter es converteix en un cursor de canvi de mida. Arrossegar-lo mou la línia de divisió; en deixar-lo anar, el percentatge nou s'escriu al valor `split` de la pàgina (l'atribut s'afegeix si la pàgina no en té), i la pàgina es torna a compondre. Maj ajusta a passos del 5 %, Alt només mou l'extrem més proper i inclina la línia, i cap cel·la no queda més estreta del 5 %. Mentre s'arrossega, es marca la vinyeta el dibuix de la qual quedaria amb bandes. Cada separador és també un element separador enfocable: les fletxes el mouen un 1 % (un 5 % amb Maj), Retorn n'escriu la posició i Esc el torna on era.
+- **Vinyetes.** Una petita barra d'eines damunt d'una vinyeta la divideix amb una línia horitzontal o vertical, i afegeix un `::panel` buit per a la cel·la nova just després, o l'uneix amb la vinyeta següent: la línia de divisió desapareix, i la vinyeta unida conserva el dibuix de la primera i els guions de totes dues.
+- **Bafarades.** Arrossegar una bafarada la fixa: la seva línia de guió rep `at="x% y%"` en percentatges del dibuix de la vinyeta, i un grup unit es mou com un tot. Mentre es mou, la bafarada es torna taronja on taparia una cara o una zona lliure o sortiria de la seva vinyeta, i l'etiqueta diu quin és el cas. Les fletxes desplacen un 1 % la bafarada enfocada, i un doble clic sobre una bafarada fixada li treu el punt fixat.
+- **Cues.** Arrossegar la punta d'una cua escriu a la línia `to="x% y%"`, el punt on apunta; un doble clic a la punta el treu, i la cua torna a apuntar al seu personatge. Des d'una bafarada enfocada, T passa a la seva cua, i les fletxes en mouen el destí.
+- **Teclat.** Una vinyeta enfocada es divideix amb H (una línia horitzontal) o V (una línia vertical) i s'uneix amb la següent amb M.
+- **Tires.** Totes les eines funcionen també en els blocs `:::strip`, en una columna o flotants, i escriuen a la tanca de la mateixa tira.
+- **Dibuixos.** La zona segura, els personatges i les zones lliures d'un dibuix es marquen al tauler Recursos (vegeu [Personatges i àncores](#personatges-i-àncores)).
+- **Ajustos.** El tauler Disseny té un grup **Còmic**: sentit de lectura, marc i carrers, la vinyeta per defecte i els estils de vinyeta, la retolació i els estils de bafarada, cadascun amb una previsualització.
+- **Editor.** L'editor de text acoloreix les línies `:::page`, `::panel` i les de guió, i el tauler Revisió enumera els avisos de còmic a les seves línies.
+
+## Avisos de còmic
+
+Cada avís indica la línia o l'atribut a què es refereix, i el tauler Revisió del Sandbox l'hi enumera amb el títol de la primera columna.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Avís</th>
+      <th>Causa</th>
+      <th>Solució</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Repartiment de vinyetes il·legible<br /><code>comicSplitSyntax</code></td><td>Un valor <code>split</code> no es pot llegir sencer: un caràcter que no hi va, un <code>[</code> sense tancar, <code>/</code> i <code>|</code> barrejats en una llista, o una llista entre claudàtors en l'eix de la seva mare. Es fa servir la part llegible; un valor sense res de llegible dona una sola vinyeta.</td><td>Corregeix el valor segons la <a href="#dividir-la-pàgina">gramàtica</a>: un sol tipus de separador per llista, i claudàtors per canviar d'eix.</td></tr>
+    <tr><td>Mides de vinyeta per sobre del 100 %<br /><code>comicSplitOverflow</code></td><td>Les mides d'una llista sumen més del 100 %. Es redueixen, i cada <code>&#42;</code> conserva un 5 %.</td><td>Rebaixa les mides, o substitueix-ne una per <code>&#42;</code>.</td></tr>
+    <tr><td>Vinyetes i cel·les no coincideixen<br /><code>comicPanelCount</code></td><td>La pàgina té més línies <code>::panel</code> que cel·les la seva divisió (les vinyetes que sobren queden fora), o menys (les últimes cel·les queden buides).</td><td>Afegeix o treu cel·les a la divisió, o vinyetes al guió. Una línia <code>::panel</code> buida dona expressament una cel·la buida.</td></tr>
+    <tr><td>Text fora d'una línia de guió<br /><code>comicStrayText</code></td><td>Text anterior a la primera línia <code>::panel</code>, o una línia sense <code>clau:</code> que no continua la línia anterior. Es retola com a cartel·la.</td><td>Comença la línia amb una clau (<code>caption:</code>, <code>maya:</code>), o sagna-la amb dos espais perquè continuï la bafarada anterior.</td></tr>
+    <tr><td>Estil de bafarada desconegut<br /><code>comicUnknownBalloonStyle</code></td><td>Una línia anomena entre claus un estil que no defineixen ni els estils integrats ni <code>comics.balloonStyles</code>, sovint per un error d'escriptura (<code>&#123;wisper&#125;</code>). La línia pren l'estil de la seva clau.</td><td>Corregeix el nom, o afegeix l'estil a <code>comics.balloonStyles</code>.</td></tr>
+    <tr><td>Dibuix de vinyeta no trobat<br /><code>comicUnknownArt</code></td><td>L'<code>art</code> o el <code>pop</code> d'una vinyeta no anomena cap recurs, o anomena un recurs que no és un mapa de bits ni un SVG. La vinyeta es dibuixa buida.</td><td>Corregeix l'id, o afegeix el dibuix als recursos del llibre.</td></tr>
+    <tr><td>Dibuix mostrat sencer a la vinyeta<br /><code>comicPanelLetterbox</code></td><td>Les proporcions de la cel·la són massa lluny de les del dibuix: cap retall d'aquesta forma no conté sencera la zona segura, així que el dibuix es mostra amb la zona segura sencera, entre bandes del fons de la vinyeta.</td><td>Mou el separador per donar a la cel·la unes altres proporcions (el Sandbox marca aquestes posicions mentre s'arrossega), dibuixa una zona segura més petita o fes servir un altre dibuix.</td></tr>
+    <tr><td>Punt de personatge fora de la zona segura<br /><code>comicAnchorOutsideSafeArea</code></td><td>Una àncora d'un dibuix és fora de la seva zona segura, així que un retall pot deixar fora el personatge, i aleshores la cua apuntaria fora de la vinyeta.</td><td>Amplia la zona segura perquè hi entri la boca, o mou l'àncora. No cal arreglar res si el personatge ha de quedar de vegades fora de la vinyeta.</td></tr>
+    <tr><td>La bafarada no hi cap<br /><code>comicBalloonOverflow</code></td><td>Després de tots els recursos alternatius, una bafarada encara tapa una cara, una altra bafarada, una zona lliure o una boca, o surt de la seva vinyeta (un encreuament demanat amb <code>break</code> o amb un punt fixat amb <code>at=</code> no hi compta). L'avís indica la vinyeta i el que queda tapat. Mentre s'arrossega una bafarada al Sandbox, la cara o la zona lliure que taparia, o la vora que travessaria, es veu abans de deixar-la anar.</td><td>Escurça la línia o parteix-la en dues, dona més espai a la vinyeta, fixa la bafarada amb <code>at=</code> o deixa que travessi la vora amb <code>break</code>. El text no es fa mai més petit.</td></tr>
+    <tr><td>Personatge sense punt<br /><code>comicUnknownSpeaker</code></td><td>Una clau de personatge que cap dibuix de la pàgina no marca amb una àncora i que cap entrada del repartiment no anomena, molt sovint una clau mal escrita. Les seves cues apunten fora de la vinyeta. Només es genera en pàgines amb dibuixos que marquen àncores; és només informatiu.</td><td>Corregeix la clau, marca el personatge al dibuix, o afegeix una entrada a <code>comics.cast</code> per a un personatge que no surt mai.</td></tr>
+  </tbody>
+</table>
+
+Els avisos tornen als `contentWarnings` del document amb l'interval de la font de la línia o l'atribut a què es refereixen (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
+
+## Des del codi
+
+Un còmic no necessita res més que `buildDocument`: els recursos porten els dibuixos amb les seves zones segures, àncores i zones lliures, i la configuració pot portar `comics`. La retolació mesura el text amb les fonts carregades, així que les lletres de retolació s'han de carregar abans de la composició, com qualsevol altra lletra: `comicFontFamilies(config, markdown)` enumera les lletres que necessiten els còmics d'un document (la lletra de retolació, les de tots els estils de bafarada i les del repartiment), i `markdownHasComics(markdown)` diu si un text té pàgines de còmic o tires. Al PDF, el proveïdor de fonts rep la petició d'aquestes lletres com la de qualsevol altra.
+
+El còmic compost és al VDT: `page.comic` (`VDTComicPage`) conté el marc, el sentit de lectura, les vinyetes en ordre de lectura (polígon, vora, fons, el retall del dibuix com a `art.source` i `art.box`), els separadors (amb l'interval de la font del valor `split` on escriuen) i les bafarades (traçat del contorn, blocs de text, punta de la cua, tipus, personatge). La gramàtica de les divisions s'exporta per als editors: `parseComicSplit`, `serializeComicSplit`, `moveComicSplitLine`, `splitComicCell` i `mergeComicCells` llegeixen i reescriuen un valor `split`, i hi conserven els `*` sempre que poden. `comicArtCrop` i `comicCropFeasibleRange` calculen un retall, i `comicArtPointToPage` porta un punt d'un dibuix a la pàgina.
+
+## Límits coneguts
+
+- **Només arbres de divisió.** Una divisió talla cada cel·la en dues amb una línia que la travessa sencera, així que no es poden escriure les composicions on cap línia no travessa tota la pàgina, com un molinet de quatre vinyetes al voltant d'una cinquena. Les vinyetes incrustades i els dibuixos que trenquen la vora cobreixen la major part del que es busca amb aquestes composicions.
+- **Formes de vinyeta.** Les vinyetes són polígons convexos; les vinyetes rodones, irregulars o sense vora, l'art girat o ampliat i les línies cinètiques es dibuixen als dibuixos, no les fa Postext.
+- **Retolació.** El ruby sobre una base de dreta a esquerra s'omet, i les altres anotacions s'imprimeixen com a text pla dins de les bafarades. La col·locació es fa vinyeta per vinyeta: s'evita que les cues es creuin per cost, no s'encaminen l'una al voltant de l'altra, i el recorregut d'una vinyeta a la següent no s'equilibra. Les línies llargues en cel·les molt petites s'avisen, no es resolen. La protecció d'una cara sense marcar es mesura a partir de la boca i del punt del cap (uns quants em si l'àncora no té cap), així que en un primer pla pot protegir més la boca que la cara; marca la cara.
+- Les **tires** encara no tenen `width`, `align`, `columns` ni peu, només es llegeixen al nivell superior d'un capítol (no dins d'un requadre, una taula o una nota a peu de pàgina), i una tira a amplada de pàgina escrita `here` en una pàgina de diverses columnes flota en lloc de tallar les columnes allà on està escrita.
+- **Dobles pàgines.** Una vinyeta arrodonida tallada al llom perd totes les cantonades arrodonides. Un còmic de dreta a esquerra en un llibre enquadernat per l'esquerra continua obrint-se a la pàgina esquerra, de manera que la seva primera vinyeta cau a la segona pàgina de la doble pàgina.
+- Els **dibuixos que trenquen la vora** prenen el retall del dibuix de la vinyeta, així que el retall transparent ha de tenir la mateixa mida que el dibuix.
+- **Sortides.** L'alternativa textual de reserva d'una vinyeta sense `alt` ni `altText` és «Panel N», en anglès. La navegació per regions descriu les vinyetes inclinades amb les seves caixes contenidores. Kindle Panel View copia el còmic d'una pàgina una vegada per vinyeta, cosa que fa el fitxer més gran, i no s'ha comprovat a Kindle Previewer.
+
+## Referències
+
+- Nate Piekos, [*Comic Book Grammar & Tradition*](https://blambot.com/pages/comic-book-grammar-tradition) (Blambot): tipus de bafarada, cartel·les, èmfasi, el guió doble.
+- John Roshell i Comicraft, [*Balloon Tales*](https://balloontales.com/creating-tails-and-joins/): cues i unions, i [el mètode de capes](https://balloontales.com/the-layer-method/), primer traçar i després omplir.
+- Todd Klein, [*Digital lettering for comics*](https://kleinletters.com/Blog/digital-lettering-for-comics/).
+- David Kurlander, Tim Skelly i David Salesin, [*Comic Chat*](https://kurlander.net/DJ/Pubs/SIGGRAPH96.pdf), SIGGRAPH 96: col·locació de les bafarades en ordre de lectura.
+- IDPF, [*EPUB Region-Based Navigation 1.0*](https://idpf.org/epub/renditions/region-nav/epub-region-nav.html), i Amazon KDP, [Kindle Panel View](https://kdp.amazon.com/en_US/help/topic/G9GSTY4LTRT39D4Z).

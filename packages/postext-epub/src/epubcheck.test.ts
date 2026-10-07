@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { renderToEpub } from './index';
 import type { RenderToEpubOptions } from './types';
-import { AMIRI, LORA, MP4, PNG, arabicSampleBook, sampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
+import { AMIRI, LORA, MP4, PNG, arabicSampleBook, comicSampleBook, sampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
 
 const available = process.env.EPUBCHECK === '1' && spawnSync('epubcheck', ['--version'], { encoding: 'utf8' }).status === 0;
 
@@ -79,6 +79,14 @@ const samples: { name: string; options: RenderToEpubOptions; book?: () => Return
   { name: 'video-alongside-fixed', options: video('fixed'), book: () => videoSampleBook({ videoStyle: { player: { exclusive: false } } }) },
   { name: 'japanese-fixed', options: japanese('fixed'), book: japaneseSampleBook },
   { name: 'japanese-reflowable', options: japanese('reflowable'), book: japaneseSampleBook },
+  // Comic pages (#565): region-based navigation, a right-to-left comic
+  // with Kindle panel view, the reflowable panels and dialogue.
+  { name: 'comic-fixed', options: base('fixed'), book: comicSampleBook },
+  { name: 'comic-rtl-kindle-fixed', options: { ...base('fixed'), kindlePanelView: true }, book: () => comicSampleBook('rtl') },
+  { name: 'comic-reflowable', options: base('reflowable'), book: comicSampleBook },
+  // A strip in the text and a two-page spread (#566, #567).
+  { name: 'strip-spread-fixed', options: { ...base('fixed'), kindlePanelView: true }, book: stripSpreadSampleBook },
+  { name: 'strip-spread-reflowable', options: base('reflowable'), book: stripSpreadSampleBook },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {

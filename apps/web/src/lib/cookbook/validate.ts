@@ -19,6 +19,7 @@ import {
   REQUIRED_KIT,
   RESERVED_SLUGS,
   SAMPLE_LOCALES,
+  REQUIRED_LOCALES,
   SECTION_ORDER,
   SLUG_PATTERN,
 } from "./types.ts";
@@ -441,12 +442,12 @@ export const RECIPE_SCHEMA: JsonSchema = {
     hex: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
     page: { type: "integer", minimum: 1 },
     fraction: { type: "number", minimum: 0, maximum: 1 },
-    // recipe.json text (credits): the sample languages are required, other
+    // recipe.json text (credits): English and Spanish are required, other
     // site locales optional (a page falls back to English; `localizedText`).
     localized: {
       type: "object",
       additionalProperties: false,
-      required: [...SAMPLE_LOCALES],
+      required: [...REQUIRED_LOCALES],
       properties: Object.fromEntries(LOCALES.map((locale) => [locale, { type: "string", minLength: 1 } as JsonSchema])),
     },
     credit: {
@@ -857,7 +858,7 @@ export interface RegistryValidationOptions {
 
 const FEATURE_GROUPS = [
   "page", "text", "fonts", "languages", "headings", "furniture", "boxes", "figures", "tables", "math",
-  "structure", "colour", "pdf", "html", "integration",
+  "structure", "colour", "pdf", "html", "integration", "comics",
 ];
 const SEMVER = /^\d+\.\d+\.\d+$/;
 

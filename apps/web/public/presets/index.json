@@ -185,6 +185,34 @@
       ]
     },
     {
+      "id": "pepper-carrot",
+      "dir": "pepper-carrot",
+      "name": "Pepper&Carrot · Pepper's Birthday Party",
+      "description": "El episodio 8 del cómic de David Revoy en siete idiomas: las viñetas originales sin texto, con los bocadillos y la rotulación que el motor compone a partir de las traducciones oficiales; los bocadillos japoneses van en vertical y las páginas árabes se leen de derecha a izquierda · Episode 8 of David Revoy's webcomic in seven languages: the original text-free panels, with balloons and lettering the engine sets from the official translations; the Japanese balloons are set vertically and the Arabic pages read right to left",
+      "locale": "en",
+      "locales": [
+        "en",
+        "es",
+        "ca",
+        "fr",
+        "ja",
+        "zh-Hans",
+        "ar"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0 · OFL fonts",
+      "credits": "David Revoy · Pepper&Carrot translators · peppercarrot.com",
+      "tags": [
+        "comic",
+        "panels",
+        "balloons",
+        "multilingual",
+        "vertical",
+        "right-to-left"
+      ],
+      "shelfOrder": 4
+    },
+    {
       "id": "pintura-espanola",
       "dir": "pintura-espanola",
       "name": "Pintura española · Spanish Painting",

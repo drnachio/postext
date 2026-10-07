@@ -10,6 +10,7 @@ import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook';
 import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { clearOverlay, drawOverlay } from './overlay';
+import { syncComicEditors } from '../comics/comicEditing';
 import { findResourceLocation } from './geometry';
 import type { BookPageMap } from '../usePageHashSync';
 import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
@@ -104,6 +105,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   activePanelRef.current = activePanel;
   const resourcesRef = useRef(resources);
   resourcesRef.current = resources;
+  const labels = useSandboxSelector((s) => s.labels);
+  const labelsRef = useRef(labels);
+  labelsRef.current = labels;
   // Whole-book mode: the chapter of every page of the stitched document,
   // and the book a page's offsets belong to (its chapter's).
   const chapterOfPageRef = useRef<((pageIndex: number) => number) | null>(null);
@@ -385,11 +389,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // uses `fillText` against the document's FontFaceSet, so we must hold off
     // the first build until faces are loaded. The worker loads its own copy
     // of the same fonts separately (see `useLayoutWorker`).
+    // The text decides some faces too (a comic page letters in its own).
+    const fontText = deferredBookSource ? deferredBookSource.chapters.map((c) => c.markdown) : deferredSource.book.markdown;
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = missingConfigFontSpecs(deferredConfig);
+      const missing = missingConfigFontSpecs(deferredConfig, fontText);
       if (missing.length > 0) {
         onGeneratingChangeRef.current?.(true);
-        ensureConfigFontsLoaded(deferredConfig).then(() => {
+        ensureConfigFontsLoaded(deferredConfig, fontText).then(() => {
           if (!cancelled) setRebuildKey((k) => k + 1);
         });
         return () => {
@@ -401,8 +407,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // Vertical text: the canvas paints brackets and punctuation with the
     // fonts' vertical forms, through twin faces loaded once per family; the
     // pages are painted again when they land (with the fallbacks meanwhile).
-    if (!verticalTwinsSettled(deferredConfig)) {
-      loadVerticalTwins(deferredConfig).then((added) => {
+    if (!verticalTwinsSettled(deferredConfig, fontText)) {
+      loadVerticalTwins(deferredConfig, fontText).then((added) => {
         if (added && !cancelled) setRebuildKey((k) => k + 1);
       });
     }
@@ -718,6 +724,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       (pageIndex, count) => pageLabelRef.current
         .replace('__n__', String(pageIndex + 1))
         .replace('__total__', String(count)),
+      labelsRef,
     );
     drawnOverlaysRef.current = new Set();
 
@@ -811,6 +818,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
+    // The comic splitter handles follow the new layout (#568).
+    syncComicEditors();
     const debug = resolveDebugConfig(config.debug);
     // The editor selection is chapter-local; the document is the composed
     // book — or, stitched from every chapter, a document whose offsets are

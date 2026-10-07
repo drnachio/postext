@@ -228,6 +228,29 @@ export class StructureFlow {
     return title;
   }
 
+  /** The `Div` of a comic page (`page.comic`): its panels' figures and
+   *  lettering go inside it, in reading order. Closes the open lists, box
+   *  and contents. */
+  comicPage(): StructElem {
+    this.lists = [];
+    this.callout = null;
+    this.toc = null;
+    return this.tree.root.child('Div');
+  }
+
+  /** The `Div` of a strip (`block.comic`, `:::strip`): read where the
+   *  strip stands in the text (in its box, if any, and after the text
+   *  before it), its panels and lettering inside it. Its picture and
+   *  lettering are painted later, on the sheet. */
+  comicStrip(block: VDTBlock): StructElem {
+    const parent = this.enter(block);
+    this.lists = [];
+    this.toc = null;
+    const div = parent.child('Div');
+    this.record(block, div);
+    return div;
+  }
+
   /** Heading element for a part-divider page (`page.partInfo`). */
   partHeading(): StructElem {
     this.lists = [];

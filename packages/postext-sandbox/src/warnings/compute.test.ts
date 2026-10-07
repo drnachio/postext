@@ -672,3 +672,40 @@ describe('PDF font warnings (#196)', () => {
     expect(pdf.every((w) => w.sourceStart === undefined)).toBe(true);
   });
 });
+
+describe('comic page warnings (#570)', () => {
+  it('lists what the engine reads off a comic page, each pointing at its source', () => {
+    const md = 'Intro.\n\n:::page{split="60 / 60"}\nstray words\n::panel{art=nowhere}\nana{wisper}: Hi.\n::panel\n::panel\n:::';
+    const all = computeWarnings({ markdown: md, config: {}, doc: null });
+    const comic = all.filter((w) => w.payload.kind.startsWith('comic'));
+    expect(comic.map((w) => w.payload.kind).sort()).toEqual(
+      ['comicPanelCount', 'comicSplitOverflow', 'comicStrayText', 'comicUnknownArt', 'comicUnknownBalloonStyle'].sort(),
+    );
+    // Every one of them carries a place in the source: a click jumps there.
+    for (const w of comic) {
+      expect(w.sourceStart, w.payload.kind).toBeTypeOf('number');
+      expect(w.line, w.payload.kind).toBeGreaterThanOrEqual(3);
+    }
+    const style = comic.find((w) => w.payload.kind === 'comicUnknownBalloonStyle')!;
+    expect(style.payload).toEqual({ kind: 'comicUnknownBalloonStyle', style: 'wisper' });
+    expect(style.line).toBe(6);
+  });
+
+  it('reads the layout-only comic warnings off the laid-out document', () => {
+    const doc = {
+      config: { page: { dpi: 96 } },
+      warnings: [],
+      contentWarnings: [
+        { kind: 'comicPanelLetterbox', resourceId: 'p1', panel: 1, sourceStart: 10, sourceEnd: 20 },
+        { kind: 'comicBalloonOverflow', panelIndex: 0, sourceStart: 30, sourceEnd: 40 },
+        // Source-level kinds come from the source, not twice.
+        { kind: 'comicUnknownArt', resourceId: 'x', sourceStart: 0, sourceEnd: 5 },
+      ],
+      pages: [],
+      blocks: [],
+    } as unknown as VDTDocument;
+    const md = 'a'.repeat(50);
+    const kindsFound = computeWarnings({ markdown: md, config: {}, doc }).map((w) => w.payload.kind).filter((k) => k.startsWith('comic'));
+    expect(kindsFound).toEqual(['comicPanelLetterbox', 'comicBalloonOverflow']);
+  });
+});

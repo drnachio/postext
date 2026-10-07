@@ -13,6 +13,7 @@
 import { LOCALE_TAGS, STYLE_CATALOG } from 'postext-citeproc/catalog';
 import type { PostextConfig, Resource } from 'postext';
 import {
+  DEFAULT_BALLOON_STYLES,
   DEFAULT_BODY_TEXT_CONFIG,
   DEFAULT_CALLOUT_STYLES,
   DEFAULT_CHIP_STYLES,
@@ -22,6 +23,8 @@ import {
   DEFAULT_PARAGRAPH_STYLES,
   DEFAULT_PARTS_CONFIG,
   DEFAULT_TOC_CONFIG,
+  defaultComicFont,
+  defaultComicSfxFont,
 } from 'postext';
 import type { SandboxLabels } from '../../types/labels';
 import {
@@ -62,7 +65,13 @@ const DEFAULT_SLICES: Partial<Record<keyof PostextConfig, unknown>> = {
   parts: DEFAULT_PARTS_CONFIG,
   header: DEFAULT_HEADER_SLOT,
   footer: DEFAULT_FOOTER_SLOT,
+  // The built-in balloon styles are always listed (ids and names).
+  comics: { balloonStyles: DEFAULT_BALLOON_STYLES },
 };
+
+/** The faces the comics sections show while unset: they follow the
+ *  document language. */
+const COMIC_DEFAULT_FONTS = ['en', 'ja', 'zh-Hans', 'zh-Hant', 'ar'].flatMap((l) => [defaultComicFont(l), defaultComicSfxFont(l)]);
 
 /** A query word with a digit (a level number, a size, a colour's
  *  components) is not indexed: it never rules a section out. */
@@ -148,7 +157,7 @@ export function buildSectionSearchIndex(
   let fontCache: string[] | null = null;
   const fonts = () => {
     if (!fontCache) {
-      const set = new Set<string>([DEFAULT_BODY_TEXT_CONFIG.fontFamily]);
+      const set = new Set<string>([DEFAULT_BODY_TEXT_CONFIG.fontFamily, ...COMIC_DEFAULT_FONTS]);
       collectFontFamilies(DEFAULT_HEADER_SLOT, set);
       collectFontFamilies(config, set);
       fontCache = [...set];

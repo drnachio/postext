@@ -23,9 +23,10 @@ function contentFiles(view: RecipeView): string[] {
   const { recipe, pen } = view;
   const sources = readRecipeSources(recipe.slug);
   const fallback = recipe.meta.sample.locales[0];
-  return [...sources.script.matchAll(/\/\* @content(?::([a-z0-9-]+))? \*\/ ''/g)].map((m) => {
+  return [...sources.script.matchAll(/\/\* @content(?::([a-z0-9-]+))?(?:@([a-z]{2}))? \*\/ ''/g)].map((m) => {
     const prefix = m[1] ? `${m[1]}.` : "";
-    const variant = sources.content[`${prefix}${pen.variant}`] !== undefined ? pen.variant : fallback;
+    const own = m[2] ?? pen.variant; // `@ja`: that edition's file in every edition
+    const variant = sources.content[`${prefix}${own}`] !== undefined ? own : fallback;
     return `content.${prefix}${variant}.md`;
   });
 }

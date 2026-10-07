@@ -7,7 +7,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule, verticalFlowOf } from 'postext';
+import { canonicalLocaleTag, cjkGridCells, comicBlockOnSheet, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule, verticalFlowOf } from 'postext';
 import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
   type PageCtx,
@@ -40,6 +40,7 @@ import {
 } from './pageDecorations';
 import { renderBlock, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
+import { renderComicPage } from './comic';
 import { addOutlines, numberedHeadingText } from './outlines';
 import { addPageLabels } from './pageLabels';
 import {
@@ -506,6 +507,9 @@ function paintPage(
   // backend clips to (see `columnClipRect`). Only a document that hangs
   // marks (`cjk.hangingPunctuation`) has lines whose marks reach past it.
   const hanging = doc.config.cjk?.hangingPunctuation !== 'none';
+  // Strips (`:::strip`) met in the columns and floats: tagged in place,
+  // painted on the sheet after the flow frame closes.
+  const strips: Array<{ block: VDTBlock; div?: StructElem }> = [];
   for (const col of vdtPage.columns) {
     const clip = columnClipRect(col, doc.config.page.dpi, hanging);
     pushClipRect(ctx, clip.x, clip.y, clip.width, clip.height);
@@ -518,6 +522,8 @@ function paintPage(
         continue;
       }
       renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
+      // A strip is painted on the sheet below, but read here.
+      if (block.comic && !block.hidden) strips.push({ block, ...(structure ? { div: structure.comicStrip(block) } : {}) });
     }
     popClip(ctx);
     // A part row of the contents carries a design of its own, which may
@@ -536,6 +542,15 @@ function paintPage(
   // A tagged render reads each one after the text that cites it (EF-146).
   if (vdtPage.floats) {
     for (const fb of vdtPage.floats) {
+      if (fb.comic) {
+        // A floated strip: read after the text that comes before it,
+        // painted on the sheet below.
+        if (fb.hidden) continue;
+        const strip: (typeof strips)[number] = { block: fb };
+        if (structure) structure.readFloat(fb, () => { strip.div = structure.comicStrip(fb); });
+        strips.push(strip);
+        continue;
+      }
       const paint = () => renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, fontCache, resourceCtx);
       if (structure) structure.readFloat(fb, paint);
       else paint();
@@ -552,6 +567,14 @@ function paintPage(
     popFrame(ctx);
     delete ctx.vertical;
     delete ctx.mirror;
+  }
+
+  // A comic page's panels and lettering (or its half of a spread), then
+  // the strips the page holds, on the sheet (never through the flow
+  // frame), under the running heads.
+  if (vdtPage.comic) renderComicPage(ctx, vdtPage.comic, fontCache, resourceCtx.images, structure);
+  for (const strip of strips) {
+    renderComicPage(ctx, comicBlockOnSheet(vdtPage, strip.block)!, fontCache, resourceCtx.images, structure, strip.div);
   }
 
   // Running headers and footers are pagination artifacts.

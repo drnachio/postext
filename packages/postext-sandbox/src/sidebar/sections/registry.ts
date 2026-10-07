@@ -15,6 +15,7 @@ export type SettingsGroupId =
   | 'lists'
   | 'figures'
   | 'callouts'
+  | 'comics'
   | 'running'
   | 'parts'
   | 'output'
@@ -49,6 +50,11 @@ export type SettingsSectionId =
   | 'diagramStyle'
   | 'videoStyle'
   | 'calloutStyles'
+  | 'comicsPanels'
+  | 'comicsPanelStyles'
+  | 'comicsLettering'
+  | 'comicsBalloonStyles'
+  | 'comicsCast'
   | 'htmlViewer'
   | 'folio'
   | 'pdfGeneration'
@@ -72,8 +78,8 @@ export interface SettingsSectionEntry {
 
 /** Browsing order: the page first, then the writing system (the direction
  *  of the lines decides page progression, margins and column order), then
- *  the text on the page from the body out, then what repeats on every page,
- *  then output. */
+ *  the text on the page from the body out (comic pages after the boxes),
+ *  then what repeats on every page, then output. */
 export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'page', labelKey: 'settingsGroupPage', descriptionKey: 'settingsGroupPageDescription' },
   { id: 'writing', labelKey: 'settingsGroupWriting', descriptionKey: 'settingsGroupWritingDescription' },
@@ -83,6 +89,7 @@ export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'lists', labelKey: 'settingsGroupLists', descriptionKey: 'settingsGroupListsDescription' },
   { id: 'figures', labelKey: 'settingsGroupFigures', descriptionKey: 'settingsGroupFiguresDescription' },
   { id: 'callouts', labelKey: 'settingsGroupCallouts', descriptionKey: 'settingsGroupCalloutsDescription' },
+  { id: 'comics', labelKey: 'settingsGroupComics', descriptionKey: 'settingsGroupComicsDescription' },
   { id: 'running', labelKey: 'settingsGroupRunning', descriptionKey: 'settingsGroupRunningDescription' },
   { id: 'parts', labelKey: 'settingsGroupParts', descriptionKey: 'settingsGroupPartsDescription' },
   { id: 'output', labelKey: 'settingsGroupOutput', descriptionKey: 'settingsGroupOutputDescription' },
@@ -118,6 +125,13 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'diagramStyle', group: 'figures', labelKey: 'diagramStyleSection', configKeys: ['diagramStyle'] },
   { id: 'videoStyle', group: 'figures', labelKey: 'videoStyleSection', configKeys: ['videoStyle'] },
   { id: 'calloutStyles', group: 'callouts', labelKey: 'calloutStylesSection', configKeys: ['calloutStyles'] },
+  // Comic pages (`:::page`): every section edits a part of `comics` (see
+  // `sectionHasOverrides`).
+  { id: 'comicsPanels', group: 'comics', labelKey: 'comicsPanelsSection', configKeys: ['comics'] },
+  { id: 'comicsPanelStyles', group: 'comics', labelKey: 'comicsPanelStylesSection', configKeys: ['comics'] },
+  { id: 'comicsLettering', group: 'comics', labelKey: 'comicsLetteringSection', configKeys: ['comics'] },
+  { id: 'comicsBalloonStyles', group: 'comics', labelKey: 'comicsBalloonStylesSection', configKeys: ['comics'] },
+  { id: 'comicsCast', group: 'comics', labelKey: 'comicsCastSection', configKeys: ['comics'] },
   { id: 'headerFooter', group: 'running', labelKey: 'headerFooter', configKeys: ['header', 'footer'] },
   { id: 'parts', group: 'parts', labelKey: 'parts', configKeys: ['parts'] },
   { id: 'pdfGeneration', group: 'output', labelKey: 'pdfGenerationSection', configKeys: ['pdfGeneration'] },

@@ -33,6 +33,7 @@ import { BaytLayout } from "./arabic-layout/BaytLayout";
 import { YakumonoSpacing } from "./japanese-layout/YakumonoSpacing";
 import { BracketPatterns } from "./japanese-layout/BracketPatterns";
 import { RubyPlacement } from "./japanese-layout/RubyPlacement";
+import { ComicSplit } from "./comics/ComicSplit";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const registry: Record<string, React.ComponentType<{ labels: any }>> = {
@@ -71,6 +72,7 @@ const registry: Record<string, React.ComponentType<{ labels: any }>> = {
   YakumonoSpacing,
   BracketPatterns,
   RubyPlacement,
+  ComicSplit,
 };
 
 interface IllustrationProps {

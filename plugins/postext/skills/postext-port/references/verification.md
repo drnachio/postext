@@ -22,6 +22,8 @@ Fix every ERROR. Common ones:
   default EB Garamond or Open Sans (checked with fontTools; they would print as empty boxes);
 - kana under a `zh-*` locale (a Japanese book set with Chinese rules) and `locale: 'jp'`;
 - Aozora Bunko notation left in a chapter (`X《よみ》`, `｜`, `［＃…］`).
+- comics: a `split` that does not parse, `art=` naming no picture, `em` in the lettering size, gutters or
+  panel borders, malformed anchors, faces, avoid zones or safe areas.
 
 Read every WARN:
 
@@ -35,7 +37,10 @@ Read every WARN:
   page, or a Chinese (SC/TC) face setting its kana; kanji index entries without `yomi` (`indexReadingMissing`);
 - Aozora's ／＼ くの字点 left as typed;
 - markup typed with an input method (`：：：`, `＃`, `［＾…］`, `＊＊`);
-- a CFF font over 2 MB, a variable font, a vertical book whose Chinese face lacks `vert`.
+- a CFF font over 2 MB, a variable font, a vertical book whose Chinese face lacks `vert`;
+- comics: panels ≠ cells, stray text, unknown balloon or panel styles, script attributes that do not read,
+  an anchor outside its safe area, unbundled lettering or sound-effect faces, and editions whose splits or
+  panel pictures differ (the geometry is the same in every language). INFO lists speakers no picture marks.
 
 ## 2. Headless layout
 
@@ -115,6 +120,9 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
 - `PDF-WARN missingGlyph` (with `--out`): characters no file of a face has a glyph for; they print as
   empty boxes. `variableFontDefaultInstance`: a variable font printed at its default weight.
   `cffEmbeddedWhole`: a CFF font over 2 MB embedded whole. Fix the font files (playbooks E6).
+- `WARN comicPanelLetterbox|comicBalloonOverflow|comicSplit…|comicUnknown…` (comics): a cell that cannot
+  hold its picture's safe area, a balloon that does not fit, a split or name the engine could not read.
+  Each is listed with its fix in comics.md §14.
 - `NOTE preset.json has no "configVersion"` (or an older one): the config is
   laid out, as in the Sandbox, with the postext 1.4 rules the line names
   (heading breaks, formula size, space around inline resources, plain
@@ -165,6 +173,45 @@ Japanese books, page by page (the Chinese checks, plus):
 - bōten as sesame ﹅ right of the column; no 1-character last line; headings on their lines (行取り) and
   indented as in the source; notes where the source sets them;
 - small kana sit up and right in their cells, ー is a vertical stroke, “” print as 〝〟.
+
+### Comic pages
+
+Comic pages have no source text lines to compare: compare pictures and
+lettering, every page, every language.
+
+1. **Geometry, once.** `comic_panels.py detect` sheets of the source pages
+   (panels numbered in reading order) next to the rendered pages:
+   `python3 scripts/comic_panels.py contact src-sheets/*.jpg /tmp/pages/*.jpg --out /tmp/cmp.jpg`.
+   Same panels, same order, gutters and frame within a millimetre, no
+   `comicPanelLetterbox` unless chosen.
+2. **Marks.** `python3 scripts/comic_panels.py check preset.json --out /tmp/check`:
+   each mouth on its speaker's mouth, faces covering the faces, the safe area
+   around everything a crop must keep.
+3. **Lettering, per language.** Render each edition
+   (`render.mjs --lang ja --jpeg /tmp/ja`) and look at every page at
+   `--dpi 150`:
+   - every line of the script is lettered (count balloons per panel against
+     the script lines; joined lines share one outline);
+   - balloons read in order (top to bottom, from the start side), none
+     covers a face or a key object, none crosses a border it should not;
+   - each tail points at its speaker's mouth; off-panel voices point to the
+     right border;
+   - no balloon is cramped: `comicBalloonOverflow` names the panel; break the
+     line with `\`, shorten it, give the panel more room, or pin it with `at=`
+     (in the Sandbox, drag the balloon: the pin is written into its line;
+     double-click to unpin);
+   - Japanese and Traditional Chinese balloons are vertical with upright
+     `！？`, no balloon ending in `。`; Arabic pages read right to left and
+     their balloons too;
+   - sound effects sit where the source puts them, at its angle.
+4. **Text against the source.** Read the lettered pages against the
+   source's balloons (or transcript) for missing or swapped lines; the
+   lettering never drops text, so a missing balloon is a missing script
+   line.
+5. **Print.** The PDF (`--out`) once at the end, like any book: spreads
+   open on a verso (a blank page before one when the parity needs it) and
+   a panel across the spine shows on both pages; PDF/UA tags put each
+   panel's balloons after its figure.
 
 ## 4. The real viewer
 
@@ -217,6 +264,12 @@ the page images instead of claiming the port is visually verified.
 | Bold Chinese headings print regular | a variable font: cut a static 700 instance (`variableFontDefaultInstance`) |
 | Vertical brackets turned instead of vertical forms | the face lost `vert` in subsetting: use `fonts.py subset`, which keeps it |
 | A vertical book's spreads read left to right in the PDF viewer | Chrome's viewer ignores `/Direction /R2L`; Acrobat and Foxit follow it |
+| Comic picture shown whole with bands (`comicPanelLetterbox`) | the cell's shape leaves the safe area: change the split, shrink the safe area, or `fit=contain` + `bg` on purpose |
+| Balloon on a face, or below its speaker | mark the face (`anchors[].face`) or an `avoid` zone; give the panel's top more room; pin with `at=` |
+| Balloons of one speaker merged into one outline when the source has two | `join=false` on the second line |
+| Manga panels read left to right | `comics.artDirection: 'rtl'` (or the page's `direction=rtl`); never reverse the split by hand |
+| Spread's panel 1 on the second page | the book's binding: a right-to-left comic in a left-bound book; set `page.binding: 'right'` |
+| Lettering too small on an A4 album | `comics.lettering.fontSize` (default 7.5 pt): 9–10 pt |
 
 Accept remaining deviations explicitly and list them as known gaps, for
 example a paragraph the source wraps around a box, or a caption set 1–5 %

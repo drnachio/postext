@@ -16,6 +16,7 @@ const KIT: Record<KitBlock, string> = {
   cjk: "// ─── Kit · cjk\nfunction loadCjkFonts() {}",
   arabic: "// ─── Kit · arabic\nfunction loadArabicFonts() {}",
   book: "// ─── Kit · book\nfunction showBook() {}",
+  comics: "// ─── Kit · comics\nfunction loadComicFonts() {}",
 };
 
 const SCRIPT = [
@@ -118,11 +119,31 @@ describe("composePen", () => {
     expect(variantFor({ sample: { locales: ["es"] } }, "en")).toBe("es");
   });
 
+  it("inlines a pinned edition's sample in every edition (@content@ja)", () => {
+    const script = SCRIPT.replace("const intro = /* @content:intro */ '';", "const original = /* @content@ja */ '';");
+    const content = { ja: "# 原版\n", en: "# One\n", es: "# Uno\n" };
+    const meta = { ...META, sample: { locales: ["ja", "en", "es"] as const } } as typeof META;
+    for (const variant of ["en", "es", "ja"] as const) {
+      const pen = composePen(sources({ script, content }), meta, variant, { kit: KIT });
+      expect(pen.js).toContain("const original = String.raw`# 原版\n`;");
+      expect(pen.ranges.content).toHaveLength(2);
+    }
+    expect(() => composePen(sources({ script, content: { en: "x" } }), META, "en", { kit: KIT }))
+      .toThrow("missing content.ja.md");
+  });
+
   it("shows a Chinese page the sample's first edition", () => {
     expect(variantFor({ sample: { locales: ["en", "es"] } }, "zh")).toBe("en");
     expect(variantFor({ sample: { locales: ["es", "en"] } }, "zh")).toBe("es");
     expect(variantFor({ sample: { locales: ["en", "es"] } }, "ja")).toBe("en");
     expect(variantFor({ sample: { locales: ["en", "es"] } }, "es")).toBe("es");
+  });
+
+  it("shows each site locale its own edition when the sample has one", () => {
+    const six = { sample: { locales: ["en", "es", "ca", "zh", "ar", "ja"] as const } };
+    for (const locale of six.sample.locales) expect(variantFor({ sample: { locales: [...six.sample.locales] } }, locale)).toBe(locale);
+    expect(variantFor({ sample: { locales: ["en", "es", "ja"] } }, "ca")).toBe("es");
+    expect(variantFor({ sample: { locales: ["en", "ja"] } }, "ca")).toBe("en");
   });
 
   it("ignores marker lines inside the sample text", () => {
@@ -136,7 +157,7 @@ describe("composePen", () => {
 
   it("composes against the real kit", () => {
     const kit = readKit();
-    expect(Object.keys(kit).sort()).toEqual(["arabic", "book", "cjk", "core", "fonts", "images", "pdf", "viewer"]);
+    expect(Object.keys(kit).sort()).toEqual(["arabic", "book", "cjk", "comics", "core", "fonts", "images", "pdf", "viewer"]);
     const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: ["core", "fonts", "viewer", "pdf", "images", "cjk"] }, "en", { kit });
     expect(pen.js).toContain("function buildWithFonts(");
     expect(pen.js).toContain("function offerPdf(");

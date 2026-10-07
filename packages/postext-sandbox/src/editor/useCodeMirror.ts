@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import { EditorView, lineNumbers, highlightActiveLine, keymap } from '@codemirror/view';
-import { EditorState, Compartment } from '@codemirror/state';
+import { EditorState, Compartment, Transaction } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
-import { defaultKeymap, history, historyField, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyField, historyKeymap, isolateHistory } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
 import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
@@ -13,10 +13,13 @@ import { chipHighlight, chipTheme } from './chipSyntax';
 import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { verseHighlight, verseTheme } from './verseSyntax';
+import { comicHighlight, comicTheme } from './comicSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
 import { bidiLines, rtlEditor } from './bidiLines';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
+import { minimalChange } from '../book/textChanges';
+import { takeViewerChanges } from './viewerEdits';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
@@ -98,6 +101,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       orientationHighlight,
       verseTheme,
       verseHighlight,
+      comicTheme,
+      comicHighlight,
       annotationTheme,
       annotationHighlight,
       indexTheme,
@@ -156,16 +161,21 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
     viewRef.current.dispatch({ effects: langCompartment.current.reconfigure(langAttributes(lang)) });
   }, [lang]);
 
-  // Sync external value (e.g. after hydration or reset)
+  // Sync external value (after hydration or reset, or an edit made on the
+  // previews: a comic splitter dragged, #568). Only the part that differs
+  // is replaced, as its own undo step, so the caret stays where it was and
+  // Cmd/Ctrl+Z takes back just that edit.
   useEffect(() => {
     const view = viewRef.current;
     if (!view || externalValue === undefined) return;
     const current = view.state.doc.toString();
-    if (current !== externalValue) {
-      view.dispatch({
-        changes: { from: 0, to: current.length, insert: externalValue },
-      });
-    }
+    if (current === externalValue) return;
+    const exact = takeViewerChanges(current, externalValue);
+    const changes = (exact ?? [minimalChange(current, externalValue)!]).map(({ from, to, insert }) => ({ from, to, insert }));
+    view.dispatch({
+      changes,
+      annotations: [isolateHistory.of('full'), Transaction.userEvent.of('input.external')],
+    });
   }, [externalValue]);
 
   return { containerRef, viewRef };

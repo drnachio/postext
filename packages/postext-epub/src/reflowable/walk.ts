@@ -17,10 +17,11 @@
 //   - a part (a divider page, or `partMarks` without one) opens a
 //     document of its own and the chapter goes on in a new one.
 
-import type { ResolvedConfig, VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
-import { canonicalLocaleTag, dimensionToPx, primaryFontFamily } from 'postext';
+import type { ResolvedConfig, VDTBlock, VDTComicPage, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
+import { canonicalLocaleTag, comicBalloonKind, comicBalloonText, comicSpeakerName, dimensionToPx, isComicSpreadPartner, joinComicSpread, primaryFontFamily } from 'postext';
 import type {
   CalloutNode,
+  ComicNode,
   FileModel,
   FigureNode,
   HeadingEntry,
@@ -190,6 +191,8 @@ class DocWalker {
   /** The palette overrides of the part in force. */
   private palette?: Record<string, string>;
   private fileCount = 0;
+  /** The first half of a spread, waiting for the other (#567). */
+  private spreadHalf?: VDTComicPage;
 
   constructor(
     private readonly book: BookModel,
@@ -239,6 +242,7 @@ class DocWalker {
       for (const col of page.columns) {
         for (const block of col.blocks) this.place(block, this.root);
       }
+      if (page.comic) this.comicPage(page.comic);
       // Floats: footnotes are collected now; the rest is read later, in
       // groups (a floated box with its content).
       let group: VDTBlock[] = [];
@@ -257,6 +261,9 @@ class DocWalker {
       }
       flush();
     }
+    // A spread's half with no partner (the document ends with it).
+    if (this.spreadHalf) this.comic(this.spreadHalf, this.root);
+    this.spreadHalf = undefined;
     for (const g of floats) this.readFloat(g);
     // Page starts with no text after them: at the end of the last file.
     this.flushPages();
@@ -334,6 +341,66 @@ class DocWalker {
   private flushPages(): void {
     const items = this.takePages();
     if (items.length > 0) this.file!.nodes.push({ k: 'marker', inl: items });
+  }
+
+  // --- comic pages -----------------------------------------------------------
+
+  /** A comic page (#565), or a half of a spread (#567): the first half
+   *  waits for the other, and the two are read as one comic, each panel
+   *  once (a panel across the spine whole). */
+  private comicPage(comic: VDTComicPage): void {
+    const pending = this.spreadHalf;
+    this.spreadHalf = undefined;
+    if (pending && isComicSpreadPartner(pending, comic)) {
+      const [left, right] = pending.spread === 'left' ? [pending, comic] : [comic, pending];
+      this.comic(joinComicSpread(left, right), this.root);
+      return;
+    }
+    if (pending) this.comic(pending, this.root);
+    if (comic.spread) this.spreadHalf = comic;
+    else this.comic(comic, this.root);
+  }
+
+  /** A comic (#565): each panel's picture, cropped as printed, then its
+   *  lettering as text, in reading order — a character's words after
+   *  their name, captions as narration, sound effects set apart. A strip
+   *  (`block`) goes where it stands in the text. */
+  private comic(comic: VDTComicPage, root: Container, block?: VDTBlock): void {
+    const cast = this.config.comics?.cast;
+    const pageDir = comic.direction === (this.dir ?? 'ltr') ? undefined : comic.direction;
+    const node: ComicNode = { k: 'comic', pre: this.takePages(), ...(pageDir ? { dir: pageDir } : {}), panels: [] };
+    for (const panel of comic.panels) {
+      for (const art of [panel.art, panel.pop]) if (art) this.book.images.add(art.fileId);
+      if (panel.art) {
+        if (panel.altText) this.book.altText = true;
+        else this.book.missingAlt = true;
+      }
+      let id: string | undefined;
+      if (panel.id && !this.book.anchors.has(panel.id)) {
+        id = idOf('a-', panel.id);
+        this.book.anchors.set(panel.id, { file: this.file!, id });
+      }
+      const lines = comic.balloons
+        .filter((b) => b.panelIndex === panel.index)
+        .map((b) => {
+          const kind = comicBalloonKind(b);
+          return {
+            kind,
+            ...(kind === 'speech' && b.speaker ? { speaker: comicSpeakerName(b.speaker, cast) } : {}),
+            text: comicBalloonText(b),
+          };
+        })
+        .filter((l) => l.text.length > 0);
+      node.panels.push({ panel, ...(id ? { id } : {}), lines });
+    }
+    if (block) {
+      const state = this.enter(block, root);
+      state.nodes.push(node);
+      this.record(block, this.topOf(state, node));
+      return;
+    }
+    this.lastContainer = undefined;
+    root.nodes.push(node);
   }
 
   // --- containers ----------------------------------------------------------
@@ -471,7 +538,9 @@ class DocWalker {
       return;
     }
     if (block.type === 'resource') {
-      this.resource(block, root);
+      // A strip (`:::strip`): a comic in the text.
+      if (block.comic) this.comic(block.comic, root, block);
+      else this.resource(block, root);
       return;
     }
     if (block.type === 'mathDisplay') {

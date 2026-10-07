@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '文档格式',
   description: 'Postext解析的Markdown子集，以及编写源文档的规则',
   lang: 'zh',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-07',
   readingTime: '10分钟',
   order: 5,
   plainSummary: "本页说明怎样写出Postext能排版的文字。文字用Markdown写成，这是一种简单的写法，用几个符号标出标题、列表、粗体和链接。Postext还能识别一些额外的标记，用于框、脚注、图片、表格和公式。本页列出它接受的所有标记，以及它会忽略的写法。最后给出一些让文字更好读的建议。",
@@ -191,6 +191,14 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
       <td>在此输出索引：书中用<code>:index</code>标记的每个词条，排序并按字母分组，附上所在页码，按<code>index</code>配置排版。<code>:::index&#123;index="names"&#125;</code>输出一个命名索引。见<a href="#back-of-book-index">索引</a>。</td>
     </tr>
     <tr>
+      <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
+      <td>一页漫画：其中的<code>::panel</code>行和各自的台词行，排成单独一页上的分格和嵌好字的对白框。见<a href="#漫画">漫画</a>。</td>
+    </tr>
+    <tr>
+      <td><code>:::strip&#123;…&#125;</code> … <code>:::</code></td>
+      <td>正文流中的漫画条，一栏宽或一页宽。见<a href="#strip"><code>:::strip</code></a>。</td>
+    </tr>
+    <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
       <td>按古典阿拉伯排法排的诗：每行一联（bayt），两个半行用<code>||</code>分开，以同一宽度并排。见<a href="#verse">下文</a>。</td>
     </tr>
@@ -199,7 +207,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
 
 属性值可以用双引号（<code>"…"</code>）、单引号（<code>'…'</code>）或不加引号（<code>startAt=17</code>）。没有`=`的单独键被视为存在但为空的标志。
 
-目前只有`pagebreak`、`numbering`、`columnbreak`、`space`、`toc`和`index`被识别为单行指令（`references`和`verse`则是带围栏的块）；其他任何不是容器（见下文）的`:::name`行都按段落解析，并在沙盒中显示**未知指令**警告。引擎也会记录它，作为文档`contentWarnings`中的一条`unknownDirective`（见[配置 › 文档中的警告](/zh/docs/configuration#文档中的警告)）。
+目前只有`pagebreak`、`numbering`、`columnbreak`、`space`、`toc`和`index`被识别为单行指令（`references`、`verse`、`page`和`strip`则是带围栏的块）；其他任何不是容器（见下文）的`:::name`行都按段落解析，并在沙盒中显示**未知指令**警告。引擎也会记录它，作为文档`contentWarnings`中的一条`unknownDirective`（见[配置 › 文档中的警告](/zh/docs/configuration#文档中的警告)）。
 
 ### 属性值
 
@@ -1334,6 +1342,26 @@ VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示�
 排版食谱第116号[长高以填满短栏的照片](/zh/cookbook/photos-fill-short-columns)把一篇双栏杂志报道排了两遍，一遍没有安全区，一遍有，可以把页面并排对照。
 
 
+### 说话人锚点与避让区
+
+作为漫画分格画面的图片，还可以为嵌字标明画中人物的位置（见[漫画](#漫画)）。`anchors`为每个说话人列出一个点，`avoid`列出不让对白框遮挡的区域，两者都和安全区一样以图片的比例表示：
+
+```ts
+const radio: Resource = {
+  id: 'lh-radio', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-radio.jpg', format: 'jpeg', width: 1000, height: 1000 },
+  safeArea: { x: 0, y: 0.36, width: 0.62, height: 0.56 },
+  anchors: [
+    // 灯塔看守人：嘴、头（供心声使用）和脸
+    { id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 }, face: { x: 0.29, y: 0.4, width: 0.16, height: 0.18 } },
+  ],
+  avoid: [{ x: 0, y: 0.44, width: 0.22, height: 0.26 }], // 收音机
+};
+```
+
+锚点的`id`是脚本中的说话人键（`tomas: …`），或者是`sfx`，表示这一格的拟声词聚集的点；`x`和`y`是嘴，对白的尾巴指向这里；`head`是心声的气泡所指的点（未设置时为嘴）；`face`是一个不让对白框遮挡的矩形。引擎把每个点经过分格的裁切和翻转映射到页面上，所以不管分格是什么形状，尾巴都指向它的说话人；安全区以外的锚点会引发`comicAnchorOutsideSafeArea`，因为裁切可能把它切掉。锚点属于图片，供这部漫画的每个译本使用。只有漫画分格读取锚点；图会忽略它们。在沙盒中，它们在[资源面板](/zh/docs/sandbox#资源面板)的**安全区与嵌字**对话框里标出。
+
+
 ### 视频
 
 **视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频：保存在书中的文件（MP4、WebM），或者位于某个网址的视频，即服务器上的文件或**HLS流**（`.m3u8`播放列表）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration#资源类型)）。各种输出按各自的能力显示它：
@@ -1468,6 +1496,94 @@ book.stopVideo();
 `videos: false`关闭这项功能。`toggleVideoAt({ page, x, y })`的作用与在该处点击相同；`pageVideoSpots(page, doc)`列出一页上每个视频的位置，供自己绘制控件的宿主使用。
 
 排版食谱中有两篇用到视频：第131号[封面印有二维码的电影俱乐部节目单](/zh/cookbook/film-club-video-qr)把每部影片印成带播放标记和二维码的片名卡；第132号[视频在屏幕和EPUB里都能播放的实验报告单](/zh/cookbook/pendulum-lab-video-players)为HTML版设定播放器选项，并把自己的视频片段打包进固定版式EPUB。
+
+## 漫画
+
+漫画页、漫画条和跨页写在两种带围栏的块中，块的内容由引擎自己逐行读取：`:::page`和`:::strip`。块内由`::panel`行开始各个分格，由台词行为分格嵌字。包括版面规则、嵌字和输出在内的完整指南见[漫画](/zh/docs/comics)；设置见[配置 › 漫画](/zh/docs/configuration#漫画)。
+
+### `:::page`
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: 每年夏天，玛雅都要到灯塔住上一个星期。
+maya: 爷爷！我来啦！
+::panel{art=lh-radio focus="40% 50%"}
+tomas: 来得正好。
+::panel{art=lh-maya}
+maya{thought}: 那个阀门好像松了……
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: 咔啦
+:::
+```
+
+一个`:::page`块就是一页漫画：它另起新页，占满整页，结束的`:::`之后的文字从下一页开始。它的属性有`split`（页面怎样切成格子：以百分比表示的尺寸，行与行之间用`/`分隔，左右并排的分格之间用`|`分隔；方括号列表把一个格子再切一次；`*`表示其余部分；`a~b`表示斜线）、`gutter`（一个长度，或者两个：行与行之间的和分格之间的；不带单位的数字以毫米计）、`style`（命名分格样式）、`bleed`、`direction`（`ltr`或`rtl`，也可以写成`dir`）和`spread`（见[跨页](#跨页)）。没有`split`时，各分格按等高的行堆叠。块内不读取Markdown块、容器和指令；`<!-- 注释 -->`仍被识别为注释。
+
+### 分格
+
+`::panel{…}`一行开始一个分格，它按阅读顺序填入下一个格子，一直延续到下一个`::panel`行或结束围栏：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>画面：一个位图或SVG资源。没有它时分格是空的。</td></tr>
+    <tr><td><code>fit=cover</code>、<code>fit=contain</code></td><td>裁切画面以填满格子（绝不切进安全区），或者完整显示画面。</td></tr>
+    <tr><td><code>focus="x% y%"</code></td><td>安全区留有余地时要保持居中的点。</td></tr>
+    <tr><td><code>style=…</code>、<code>border=none</code>、<code>border=0.5mm</code>、<code>bg=#hex</code></td><td>命名分格样式、边框、底色（一个颜色、一个调色板id或<code>none</code>）。</td></tr>
+    <tr><td><code>bleed</code>、<code>bleed="top start"</code>、<code>bleed=false</code></td><td>让贴着画框的边延伸到裁切线和出血位。</td></tr>
+    <tr><td><code>pad="…"</code></td><td>让分格比它的格子小：一到四个长度或百分比（上、末尾、下、起始）。</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>把分格叠在前一个分格上，放在以它的百分比表示的框中，而不给它格子。</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>一张透明抠图，按画面的裁切画在边框之上（破格）。</td></tr>
+    <tr><td><code>mirror</code>、<code>mirror=false</code></td><td>左右翻转画面，或者在翻转的页面上保持原画。</td></tr>
+    <tr><td><code>alt="…"</code>、<code>id=…</code></td><td>替代文字（否则用资源的<code>altText</code>）和锚点id。</td></tr>
+  </tbody>
+</table>
+
+### 台词行
+
+分格中的每一行是一个对白框、旁白框或拟声词，写作`键{属性}: 文字`：
+
+```md
+maya: 爷爷！我来啦！
+tomas{whisper}: 嘘，你听。
+caption{at=bottom-end}: 三条街以外。
+sfx{at="62% 40%" rotate=-8 size=1.4}: 咔啦
+ben{tail=start}: （从格外）在这儿！
+sfx{vertical size=2.6 font="Dela Gothic One"}: ドン
+maya: 这句话
+  接着写在下一行，\
+  在这里换行。
+```
+
+- **键**是说话人的id（字母、数字、`_`、`.`、`-`），在每个译本中都相同；`caption`、`sfx`和`note`是保留键。冒号也可以是全角的`：`。
+- 花括号里单独的一个词是**对白框样式**（`thought`、`whisper`、`shout`、`radio`、`inner`，或者`comics.balloonStyles`中的样式）；`style=`的作用相同。
+- `at`固定对白框的位置：以分格画面的百分比表示的一个点（`at="62% 40%"`），或者一个角或一条边（`top-start`、`top-end`、`bottom-start`、`bottom-end`、`top`、`bottom`）。`to`让尾巴指向画面上的一个点；`tail=none`去掉尾巴，`tail=top|bottom|start|end`让尾巴指向格外。`join`和`join=false`把对白框与同一说话人的前一个连起来或分开；`break`允许它越过边框，这种越界不作为溢出报告。`rotate`（度）、`size`（缩放比例，用于拟声词）、`color`和`font`改变它的嵌字。
+- `vertical`和`horizontal`（或`mode=vertical`、`mode=horizontal`）设定这一行的书写方向，优先于全书的设置：不翻译的`ドン`在横排版本中排成一列，横写的招牌在竖排版本中排成一行。在另一种语言的书中排成的列，遵循它自身文字的规则（含假名时按日文规则）。在竖排的书中，不含中文或日文字符的行本来就横排。
+- 缩进两个空格或一个制表符的行接续上面的对白框；行末的反斜杠让文字在那里换行。空行被忽略。
+- 文字是行内Markdown：强调（嵌成粗斜体）、`:tcy`、`:ruby`（注音排在基字上，基字从右到左时除外）、`:ltr`和`:rtl`（一段文字保持自己的方向）。脚注和`:ref`标记不被读取。
+
+### `:::strip`
+
+```md
+:::strip{split="* | * | *" aspect=3 span=page placement=top}
+::panel{art=pip-1}
+pip: 早上好，奥托！
+::panel{art=pip-2}
+::panel{art=pip-3}
+otto: 好吗？
+:::
+```
+
+`:::strip`的内容与漫画页相同，但它作为一个不可拆分的框排在正文中，切成若干分格：`span`（`column`为默认值，或者`page`）、`placement`（`here`为默认值，排在写它的地方；或者`top`、`bottom`、`auto`，像图一样浮动），以及它的尺寸，用`height`（一个长度，不带单位的数字以毫米计）或`aspect`（宽高比：`3`、`4/1`、`4:1`；默认取让分格成为正方形的比例）表示。没有`split`时，各分格左右并排。漫画条只在章的顶层读取。
+
+### 跨页
+
+`:::page{spread}`把一页铺在两个对页上：切分覆盖隔着书脊连在一起的两个版心，去掉它们的内侧边距，分格可以跨过书脊。跨页从偶数页开始，需要时先加一个空白页。见[漫画 › 跨页](/zh/docs/comics#跨页)。
 
 ## 不支持的内容
 

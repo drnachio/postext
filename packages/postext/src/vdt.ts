@@ -42,6 +42,7 @@ import type {
   PartState,
   PostextConfig,
   FolioPaperConfig,
+  ResolvedComicsConfig,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -123,6 +124,11 @@ export interface ResolvedConfig {
   /** The Folio 3D viewer settings (`PostextConfig.folio`), resolved, when
    *  the config sets any. Layout ignores them; `postext-folio` reads them. */
   folio?: ResolvedFolioConfig;
+  /** Comic pages (`PostextConfig.comics`), resolved, when the config sets
+   *  any; absent otherwise, so a document without comics resolves (and
+   *  hashes) as before. Read it with `resolvedComics()`, which falls back
+   *  to the defaults of the document language. */
+  comics?: ResolvedComicsConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -1520,6 +1526,13 @@ export interface VDTBlock {
    *  right-to-left book, an Arabic quotation in a left-to-right one.
    *  Absent when the block runs as its frame does. */
   direction?: 'ltr' | 'rtl';
+  /** A comic strip (`:::strip`, #566) on a `type: 'resource'` block with no
+   *  `resourceBlock`: its panels, split lines and lettering. Coordinates
+   *  are relative to the top-left corner of the block's box ON THE SHEET
+   *  (`flowRectToPage(page, block.bbox)`), physical whatever the page's
+   *  writing mode or direction; renderers and the Sandbox read it through
+   *  `comicBlockOnSheet` / `pageComics`, which move it onto the sheet. */
+  comic?: VDTComicPage;
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
@@ -1842,6 +1855,181 @@ export type VDTHeaderFooterTextBlock = VDTDesignTextBlock;
 /** @deprecated Use `VDTDesignRuleBlock`. */
 export type VDTRuleBlock = VDTDesignRuleBlock;
 
+// ---------------------------------------------------------------------------
+// Comic pages (`:::page`, #555–#563)
+// ---------------------------------------------------------------------------
+
+/** A point on the sheet (px). */
+export interface VDTPoint {
+  x: number;
+  y: number;
+}
+
+/** The picture of a comic panel (or its pop-out cut-out): the whole picture
+ *  is drawn at `box` (page px, uncropped, as `uncroppedPictureBox` gives)
+ *  and clipped to the panel's polygon, so only `source` shows. */
+export interface VDTComicArt {
+  resourceId: string;
+  kind: 'bitmap' | 'svg';
+  /** The file the renderers draw (`registerResourceImage`). */
+  fileId: string;
+  /** The bitmap's format, for a bitmap. */
+  format?: string;
+  /** An SVG's vector print master (`Resource.svg.pdfFileId`): the PDF
+   *  embeds its first page in place of the SVG. */
+  pdfFileId?: string;
+  /** Where the whole picture lands on the sheet (px). Larger than the cell
+   *  on the axis a crop cuts; inside it on the axis a letterbox leaves. */
+  box: BoundingBox;
+  /** The part of the picture that shows, in fractions of the picture as
+   *  stored (not flipped, even when `mirrored`). */
+  source: BoundingBox;
+  /** The picture is drawn flipped left to right inside `box` (a book read
+   *  in the other direction than its art, `comics.mirrorArt`). */
+  mirrored: boolean;
+  /** The picture does not fill the cell: the bands it leaves show the
+   *  panel background (`fit: 'contain'`, or a cell whose shape cannot hold
+   *  the safe area under a cover crop). */
+  letterbox: boolean;
+}
+
+/** One panel of a comic page, in reading order. Sheet coordinates (never a
+ *  flow frame): a comic page is laid out on the sheet whatever the
+ *  document's writing mode or direction. */
+export interface VDTComicPanel {
+  /** Position in reading order (0-based). */
+  index: number;
+  /** The panel's `#id`, when it has one. */
+  id?: string;
+  /** The panel's source: from its `::panel` line to the end of its last
+   *  script line. */
+  sourceStart: number;
+  sourceEnd: number;
+  /** The panel's outline (a convex polygon, clockwise on the sheet), the
+   *  gutters already taken off; a bleeding side runs to the bleed box. */
+  polygon: VDTPoint[];
+  bbox: BoundingBox;
+  /** Corner radius (px); 0 for a panel cut by a slanted line. */
+  radius: number;
+  border: { width: number; color: string; style: 'solid' | 'none' | 'rough' };
+  /** Fill under the picture (hex), absent when transparent. */
+  background?: string;
+  art?: VDTComicArt;
+  /** A transparent cut-out drawn over the border (broken-border art), with
+   *  the same crop as `art`. */
+  pop?: VDTComicArt;
+  /** Text alternative of the picture: the panel's `alt`, else the
+   *  resource's `altText`. */
+  altText?: string;
+}
+
+/** A split line of a comic page (a gutter between two cells), as the
+ *  Sandbox drags it: dragging moves the line and writes the new
+ *  percentage into the `split` attribute (`moveComicSplitLine`). */
+export interface VDTComicSplitter {
+  /** Tree path of the list the line splits (indices of the items walked
+   *  down from the top list; `[]` is the top list). */
+  path: number[];
+  /** The line between children `boundary` and `boundary + 1`. */
+  boundary: number;
+  /** `'rows'`: a line across the page (between tiers); `'columns'`: a line
+   *  down it. */
+  axis: 'rows' | 'columns';
+  /** The line's centre, from its start end to its far end (page px). */
+  a: VDTPoint;
+  b: VDTPoint;
+  /** The gutter the line sits in (px). */
+  gutter: number;
+  /** Bounding box of the cell the list splits: a drag of `d` px along the
+   *  axis is `d / parent.height` (rows) or `d / parent.width` (columns) of
+   *  it. */
+  parent: BoundingBox;
+  /** The line's position (cumulative percent of the parent) at its start
+   *  end and at its far end; equal for a straight line. */
+  startPercent: number;
+  endPercent: number;
+  /** The range `startPercent` may be moved in (the slant kept) so every
+   *  cell keeps at least 5 %. */
+  min: number;
+  max: number;
+  /** The range of the `split` attribute's value in the source. */
+  sourceStart: number;
+  sourceEnd: number;
+}
+
+/** A balloon, caption or sound effect of a comic page, in reading order and
+ *  paint order. */
+export interface VDTComicBalloon {
+  id: string;
+  panelIndex: number;
+  order: number;
+  /** What the script line is: a speaker's balloon, a caption, a sound
+   *  effect or an editor's note (from its key: `caption`, `sfx`, `note`,
+   *  else a speaker). Renderers and tagging go by it, not by the style id
+   *  (a book may name a sound-effect style anything). */
+  kind: 'balloon' | 'caption' | 'sfx' | 'note';
+  /** The balloon style id (`speech`, `thought`…). */
+  style: string;
+  speaker?: string;
+  /** The script line(s) it was set from. */
+  sourceStart: number;
+  sourceEnd: number;
+  /** Balloons of one join group share one outline. */
+  group: number;
+  /** Body and tail(s) as one SVG path (page px), absent for a sound effect
+   *  or a style with no outline. */
+  shape?: {
+    d: string;
+    fill?: string;
+    stroke?: string;
+    strokeWidth: number;
+    /** Dash pattern of the outline (a whisper), px. Painted over a solid
+     *  stroke in the fill colour 3 × `strokeWidth` wide, so that the gaps
+     *  between the dashes read as the balloon's ground, not the art. */
+    dash?: number[];
+    double?: { gap: number };
+  };
+  /** The lettering's lines (vertical or bidi text as design text); a ruby
+   *  reading is a block of its own after its base's (marked `artifact`). */
+  text: VDTDesignTextBlock[];
+  bbox: BoundingBox;
+  tailTip?: VDTPoint;
+  /** Rotation in degrees about the bbox centre (sound effects). */
+  rotate?: number;
+  halo?: { width: number; color: string };
+}
+
+/** A comic page (`:::page`): its panels, the split lines between them and
+ *  the lettering, on the sheet. Also the comic of a strip
+ *  (`VDTBlock.comic`, relative to the block's box on the sheet) and each
+ *  page of a two-page spread (`spread`: that page's panels clipped to its
+ *  side of the spine, its split lines, its balloons, on its own sheet). */
+export interface VDTComicPage {
+  /** The `:::page` block in the source. */
+  sourceStart: number;
+  sourceEnd: number;
+  /** The box the panels are cut from (the content area, or
+   *  `comics.frame.margins`), page px. On a page of a spread, the part of
+   *  the spread's frame on this page (from its outer edge to the spine); on
+   *  a strip, the block's box (`x = y = 0`). */
+  frame: BoundingBox;
+  /** The reading direction the page was laid out in. */
+  direction: 'ltr' | 'rtl';
+  /** The side of a two-page spread (`:::page{spread}`, #567) this page
+   *  holds, physical: the left page or the right one of the open book. */
+  spread?: 'left' | 'right';
+  /** Where the leaf the page was laid out on lies on the page, when it is
+   *  not the page itself (`comics.viewerLeaf`: a host whose page is a
+   *  screen, such as the Sandbox's HTML viewer, lays comic pages out on a
+   *  print leaf scaled to fit it). Absent on paper. */
+  leaf?: BoundingBox;
+  /** Panels in reading order. */
+  panels: VDTComicPanel[];
+  splitters: VDTComicSplitter[];
+  /** Reading order, paint order. */
+  balloons: VDTComicBalloon[];
+}
+
 /** A column rule resolved to px and hex (see `VDTPage.columnRule`). */
 export interface VDTColumnRule {
   enabled: boolean;
@@ -1946,6 +2134,10 @@ export interface VDTPage {
    *  viewer reads it; canvas, PDF and HTML ignore it. Absent on every other
    *  page. */
   paper?: FolioPaperConfig;
+  /** Present on a comic page (`:::page`, `role: 'comic'`): its panels,
+   *  split lines and lettering, in sheet coordinates. The page's columns
+   *  are empty: nothing flows on it. */
+  comic?: VDTComicPage;
 }
 
 /** Something the layout could not set as asked and placed anyway — a box
@@ -1987,7 +2179,9 @@ export interface ConfigWarning {
    *  `unknownConfigKey`: a key the heading settings or a paragraph style do
    *  not have (`headings`, `headings.balancing`, a heading level, a heading
    *  style, a paragraph style — and the same under
-   *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
+   *  `htmlViewer.overrides`; the `comics` section and its frame, gutters,
+   *  panel styles, lettering, balloon styles and cast), such as a misspelt
+   *  `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
    *  `suggestion` names the key it is closest to, when one is close.
    *  `unknownConfigValue`: a setting that takes one of a few words holding
@@ -2184,6 +2378,48 @@ export type ContentWarning = ContentWarningBase & (
    *  not applied, and the resource floats in its own `span` (#188). Points
    *  at its first use. */
   | { kind: 'rotateIgnoredVertical'; resourceId: string }
+  /** A comic page's `split` attribute the grammar cannot read whole (a
+   *  stray character, an unclosed `[`, `/` and `|` mixed in one list, a
+   *  bracketed list on its parent's axis): the readable part is used, an
+   *  unreadable value is one panel. `message` says what is wrong. */
+  | { kind: 'comicSplitSyntax'; message: string }
+  /** The sizes of a list of a comic page's `split` add up past 100 %: they
+   *  are scaled down (a `*` keeps 5 %). */
+  | { kind: 'comicSplitOverflow'; total: number }
+  /** A comic page has more panels than its split has cells (`panels` >
+   *  `cells`: the extra panels are not set) or fewer (the extra cells are
+   *  empty panels). */
+  | { kind: 'comicPanelCount'; panels: number; cells: number }
+  /** Text in a comic page before its first `::panel` line, or a line of a
+   *  panel that is not a script line (`key: text`): it is lettered as a
+   *  caption of the panel (the first one, for text before it). */
+  | { kind: 'comicStrayText'; text: string }
+  /** A script line names a balloon style no style defines
+   *  (`ben{wisper}: …`): it takes the default style of its key. */
+  | { kind: 'comicUnknownBalloonStyle'; style: string }
+  /** A panel's `art` or `pop` names no picture resource (an unknown id, or
+   *  a resource that is not a bitmap or an SVG): the panel is set empty. */
+  | { kind: 'comicUnknownArt'; resourceId: string }
+  /** A panel's cell cannot hold the picture's safe area under a cover
+   *  crop: the picture is shown with its safe area whole and the bands
+   *  left in the panel background. Found by the layout. */
+  | { kind: 'comicPanelLetterbox'; resourceId: string; panel: number }
+  /** A picture's anchor (a speaker's mouth) lies outside its safe area: a
+   *  crop may cut it off, and the tail then points off the panel. An
+   *  authoring hint. Points at the panel's `art`. */
+  | { kind: 'comicAnchorOutsideSafeArea'; resourceId: string; anchorId: string }
+  /** A balloon of a comic panel could not be placed cleanly (#561): it
+   *  still covers a speaker's face, another balloon, an avoid zone or a
+   *  mouth, or runs outside its panel, after every fallback (`fallbacks`:
+   *  crossing the border, covering avoid zones, reshaping the text). The
+   *  lettering never shrinks; a shorter line, a bigger panel or an `at=`
+   *  pin fixes it. Found by the layout; points at the script line. */
+  | { kind: 'comicBalloonOverflow'; panel: number; reasons: ('face' | 'balloon' | 'outside' | 'avoid' | 'anchor')[]; fallbacks: ('breakBorder' | 'coverAvoid' | 'reshape')[] }
+  /** A speaker id that no picture of its comic page marks with an anchor
+   *  and no `comics.cast` entry names (a slip in the id, most often): its
+   *  tails point off the panel. Only raised on pages whose pictures mark
+   *  anchors. Informational. Points at the first line of that speaker. */
+  | { kind: 'comicUnknownSpeaker'; speaker: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

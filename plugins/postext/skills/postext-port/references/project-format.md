@@ -193,6 +193,11 @@ embeds them with `::resource{id="…"}` (placement `here`).
   back to the resource type's `defaultPlacement`, then `auto`/`column`.
 - A `here` resource that is only `:ref`'d and never `::resource`'d is numbered
   but never placed.
+- **Comic panel pictures** are bitmap or SVG resources placed by
+  `::panel{art=id}` (never cited). Besides `safeArea` they carry `anchors`
+  (speaker mouths, heads, faces) and `avoid` zones, all in fractions of the
+  picture and shared by every language; `preset_kit.bitmap(…, safe_area=,
+  anchors=, avoid=)` writes them. See comics.md §9.
 - **Videos**: numbered in their own sequence by the built-in `video` type
   (Video 1.1), added on its own to a `resourceTypes` list that lacks it. Without
   a poster they print a dark 16:9 box; an own file without `video.url` gets no

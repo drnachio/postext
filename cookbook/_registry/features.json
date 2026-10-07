@@ -13579,5 +13579,1029 @@
         "videoStyle.player.exclusive"
       ]
     }
+  },
+  "comic-pages": {
+    "label": {
+      "en": "Comic pages",
+      "es": "Páginas de cómic",
+      "ca": "Pàgines de còmic",
+      "zh": "漫画页",
+      "ar": "صفحات القصص المصورة",
+      "ja": "漫画のページ"
+    },
+    "definition": {
+      "en": "A :::page block takes a whole page and sets it as a comic: panels cut from the page, a picture in each, and balloons lettered from the script lines written under each panel.",
+      "es": "Un bloque :::page ocupa una página entera y la compone como cómic: viñetas recortadas de la página, una imagen en cada una y bocadillos rotulados a partir de las líneas de guion escritas bajo cada viñeta.",
+      "ca": "Un bloc :::page ocupa una pàgina sencera i la compon com a còmic: vinyetes retallades de la pàgina, una imatge a cadascuna i bafarades retolades a partir de les línies de guió escrites sota cada vinyeta.",
+      "zh": "一个:::page块占据整页，把它排成漫画：从页面切出各格，每格放一幅画，再根据每格下面写的脚本行为对话框嵌字。",
+      "ar": "تشغل كتلة :::page صفحة كاملة وتنضّدها قصةً مصورة: إطارات تُقتطع من الصفحة، وصورة في كل إطار، وفقاعات حوار تُكتب من أسطر النص المكتوبة تحت كل إطار.",
+      "ja": ":::pageブロックは1ページ全体を使い、漫画として組みます。ページをコマに割り、各コマに絵を置き、コマごとに書いた台本の行から吹き出しを写植します。"
+    },
+    "aliases": {
+      "en": [
+        ":::page",
+        "comic",
+        "comics",
+        "comic book",
+        "graphic novel",
+        "panel layout"
+      ],
+      "es": [
+        ":::page",
+        "cómic",
+        "historieta",
+        "tebeo",
+        "novela gráfica",
+        "página de viñetas"
+      ],
+      "ca": [
+        ":::page",
+        "còmic",
+        "historieta",
+        "tebeo",
+        "novel·la gràfica"
+      ],
+      "zh": [
+        ":::page",
+        "漫画",
+        "连环画",
+        "图像小说"
+      ],
+      "ar": [
+        ":::page",
+        "قصة مصورة",
+        "كوميكس",
+        "رواية مصورة"
+      ],
+      "ja": [
+        ":::page",
+        "漫画",
+        "マンガ",
+        "コミック"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Comic pages",
+        "es": "Páginas de cómic",
+        "ca": "Pàgines de còmic",
+        "zh": "漫画页",
+        "ar": "صفحات القصص المصورة",
+        "ja": "漫画のページ"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::page\\b"
+      ]
+    }
+  },
+  "comic-panel-split": {
+    "label": {
+      "en": "Panel splits",
+      "es": "División en viñetas",
+      "ca": "Divisió en vinyetes",
+      "zh": "分格",
+      "ar": "تقسيم الإطارات",
+      "ja": "コマ割り"
+    },
+    "definition": {
+      "en": "split= cuts the page into panels with a short expression: tiers stacked with /, panels side by side with |, sizes in percent, slanted gutters with 30~40, and brackets to split a cell again.",
+      "es": "split= corta la página en viñetas con una expresión corta: tiras apiladas con /, viñetas una junto a otra con |, tamaños en porcentaje, calles inclinadas con 30~40 y corchetes para volver a dividir una celda.",
+      "ca": "split= talla la pàgina en vinyetes amb una expressió curta: tires apilades amb /, vinyetes una al costat de l'altra amb |, mides en percentatge, separacions inclinades amb 30~40 i claudàtors per tornar a dividir una cel·la.",
+      "zh": "split=用一个简短的表达式把页面切成格：用/上下叠放各层，用|左右并排，尺寸用百分比，30~40表示倾斜的格间距，方括号把一格再切开。",
+      "ar": "يقطع split= الصفحة إلى إطارات بتعبير قصير: صفوف مكدّسة بالرمز /، وإطارات متجاورة بالرمز |، ومقاسات بالنسبة المئوية، وفواصل مائلة بالصيغة 30~40، وأقواس مربعة لتقسيم خانة من جديد.",
+      "ja": "split=は短い式でページをコマに割ります。/で段を縦に重ね、|でコマを横に並べ、大きさはパーセントで、30~40で斜めの間白を指定し、角かっこでコマをさらに割ります。"
+    },
+    "aliases": {
+      "en": [
+        "split",
+        "panel grid",
+        "tiers",
+        "gutters",
+        "slanted panels"
+      ],
+      "es": [
+        "split",
+        "rejilla de viñetas",
+        "tiras",
+        "calles",
+        "viñetas inclinadas"
+      ],
+      "ca": [
+        "split",
+        "graella de vinyetes",
+        "tires",
+        "separacions"
+      ],
+      "zh": [
+        "split",
+        "格间距",
+        "斜格",
+        "漫画分格"
+      ],
+      "ar": [
+        "split",
+        "شبكة الإطارات",
+        "الصفوف",
+        "الفواصل"
+      ],
+      "ja": [
+        "split",
+        "段",
+        "間白",
+        "斜めのコマ"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Splitting the page",
+        "es": "Dividir la página",
+        "ca": "Dividir la pàgina",
+        "zh": "分割页面",
+        "ar": "تقسيم الصفحة",
+        "ja": "ページの分割"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::page\\{[^}]*\\bsplit="
+      ]
+    }
+  },
+  "comic-panel-art": {
+    "label": {
+      "en": "Panel art and crops",
+      "es": "Imagen y recorte de la viñeta",
+      "ca": "Imatge i retall de la vinyeta",
+      "zh": "格内画面与裁切",
+      "ar": "رسم الإطار وقصّه",
+      "ja": "コマの絵とトリミング"
+    },
+    "definition": {
+      "en": "art= puts a picture in a panel and crops it to the cell around its safe area, so the same art fits any split; focus= picks the point to keep, fit=contain shows the picture whole.",
+      "es": "art= pone una imagen en la viñeta y la recorta a la celda alrededor de su zona segura, de modo que la misma imagen sirve para cualquier división; focus= elige el punto que se conserva y fit=contain muestra la imagen entera.",
+      "ca": "art= posa una imatge a la vinyeta i la retalla a la cel·la al voltant de la seva zona segura, de manera que la mateixa imatge serveix per a qualsevol divisió; focus= tria el punt que es conserva i fit=contain mostra la imatge sencera.",
+      "zh": "art=在格里放一幅画，并围绕其安全区裁到格的大小，所以同一幅画适用于任何分格；focus=指定保留的点，fit=contain显示整幅画。",
+      "ar": "يضع art= صورة في الإطار ويقصّها على قدر الخانة حول منطقتها الآمنة، فتصلح الصورة نفسها لأي تقسيم؛ ويختار focus= النقطة التي تبقى ظاهرة، ويعرض fit=contain الصورة كاملة.",
+      "ja": "art=はコマに絵を置き、セーフエリアを中心にコマの形へトリミングします。同じ絵がどのコマ割りにも収まります。focus=は残す位置を決め、fit=containは絵全体を見せます。"
+    },
+    "aliases": {
+      "en": [
+        "art",
+        "panel picture",
+        "crop",
+        "reframe",
+        "focus"
+      ],
+      "es": [
+        "art",
+        "imagen de viñeta",
+        "recorte",
+        "reencuadre"
+      ],
+      "ca": [
+        "art",
+        "imatge de vinyeta",
+        "retall",
+        "reenquadrament"
+      ],
+      "zh": [
+        "art",
+        "格内图",
+        "裁切",
+        "重新取景"
+      ],
+      "ar": [
+        "art",
+        "صورة الإطار",
+        "قص",
+        "إعادة التأطير"
+      ],
+      "ja": [
+        "art",
+        "コマの絵",
+        "トリミング",
+        "セーフエリア"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Panels and art",
+        "es": "Viñetas e imágenes",
+        "ca": "Vinyetes i imatges",
+        "zh": "分格与画面",
+        "ar": "الإطارات والرسوم",
+        "ja": "コマと絵"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^::panel\\{[^}]*\\bart="
+      ]
+    }
+  },
+  "comic-broken-borders": {
+    "label": {
+      "en": "Insets, bleeds and broken borders",
+      "es": "Viñetas insertadas, a sangre y con el borde roto",
+      "ca": "Vinyetes inserides, a sang i amb la vora trencada",
+      "zh": "嵌入格、出血格与破格",
+      "ar": "الإطارات المضمّنة والممتدة والمكسورة الحدود",
+      "ja": "入れ子のコマ、裁ち切り、枠線越え"
+    },
+    "definition": {
+      "en": "inset= lays a small panel over the previous one, bleed runs a panel off the trim, and pop= draws a cut-out layer of the art over the border, so a figure breaks out of its panel.",
+      "es": "inset= superpone una viñeta pequeña a la anterior, bleed lleva la viñeta hasta el corte de la página y pop= dibuja una capa recortada de la imagen sobre el borde, para que una figura se salga de su viñeta.",
+      "ca": "inset= superposa una vinyeta petita a l'anterior, bleed porta la vinyeta fins al tall de la pàgina i pop= dibuixa una capa retallada de la imatge sobre la vora, perquè una figura surti de la seva vinyeta.",
+      "zh": "inset=把一个小格叠在前一格上，bleed让格延伸到裁切线外，pop=把画面中抠出的图层画在格框之上，让人物冲出格子。",
+      "ar": "يضع inset= إطارًا صغيرًا فوق الإطار السابق، ويمدّ bleed الإطار إلى ما بعد حدّ القص، ويرسم pop= طبقة مقتطعة من الرسم فوق الحدود، فيخرج الشكل من إطاره.",
+      "ja": "inset=は小さなコマを前のコマに重ね、bleedはコマを仕上がり線の外まで裁ち切りにし、pop=は切り抜いた絵のレイヤーを枠線の上に描いて、人物をコマからはみ出させます。"
+    },
+    "aliases": {
+      "en": [
+        "inset",
+        "bleed",
+        "pop",
+        "broken border",
+        "splash page",
+        "panel overlap"
+      ],
+      "es": [
+        "inset",
+        "a sangre",
+        "viñeta rota",
+        "página splash",
+        "viñeta superpuesta"
+      ],
+      "ca": [
+        "inset",
+        "a sang",
+        "vinyeta trencada",
+        "pàgina splash"
+      ],
+      "zh": [
+        "inset",
+        "出血",
+        "破格",
+        "整页大图"
+      ],
+      "ar": [
+        "inset",
+        "bleed",
+        "pop",
+        "كسر الإطار"
+      ],
+      "ja": [
+        "inset",
+        "裁ち切り",
+        "枠線越え",
+        "見せゴマ"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Panels and art",
+        "es": "Viñetas e imágenes",
+        "ca": "Vinyetes i imatges",
+        "zh": "分格与画面",
+        "ar": "الإطارات والرسوم",
+        "ja": "コマと絵"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^::panel\\{[^}]*\\b(inset|pop|bleed)\\b"
+      ]
+    }
+  },
+  "comic-panel-styles": {
+    "label": {
+      "en": "Panel borders and gutters",
+      "es": "Bordes y calles de las viñetas",
+      "ca": "Vores i separacions de les vinyetes",
+      "zh": "格框与格间距",
+      "ar": "حدود الإطارات والفواصل",
+      "ja": "コマの枠線と間白"
+    },
+    "definition": {
+      "en": "comics.panel and named panelStyles set the border width, colour and radius and the ground of the panels; comics.gutter sets the room between tiers and between panels side by side.",
+      "es": "comics.panel y los panelStyles con nombre fijan el grosor, el color y el redondeo del borde y el fondo de las viñetas; comics.gutter fija el espacio entre tiras y entre viñetas contiguas.",
+      "ca": "comics.panel i els panelStyles amb nom fixen el gruix, el color i l'arrodoniment de la vora i el fons de les vinyetes; comics.gutter fixa l'espai entre tires i entre vinyetes contigües.",
+      "zh": "comics.panel和命名的panelStyles设定格框的粗细、颜色、圆角和格的底色；comics.gutter设定上下两层之间和左右相邻两格之间的间距。",
+      "ar": "يحدّد comics.panel وأنماط panelStyles المسمّاة سُمك حدود الإطارات ولونها وتدوير زواياها وخلفيتها؛ ويحدّد comics.gutter المسافة بين الصفوف وبين الإطارات المتجاورة.",
+      "ja": "comics.panelと名前付きのpanelStylesは、コマの枠線の太さ、色、角の丸み、地の色を決めます。comics.gutterは段と段の間、横に並ぶコマの間の間白を決めます。"
+    },
+    "aliases": {
+      "en": [
+        "panel border",
+        "gutter",
+        "rounded panels",
+        "panelStyles",
+        "borderless panel"
+      ],
+      "es": [
+        "borde de viñeta",
+        "calle",
+        "viñetas redondeadas",
+        "panelStyles"
+      ],
+      "ca": [
+        "vora de vinyeta",
+        "separació",
+        "panelStyles"
+      ],
+      "zh": [
+        "格框",
+        "格间距",
+        "圆角格",
+        "panelStyles"
+      ],
+      "ar": [
+        "حدود الإطار",
+        "الفاصل",
+        "panelStyles"
+      ],
+      "ja": [
+        "枠線",
+        "間白",
+        "角丸のコマ",
+        "panelStyles"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Panels and art",
+        "es": "Viñetas e imágenes",
+        "ca": "Vinyetes i imatges",
+        "zh": "分格与画面",
+        "ar": "الإطارات والرسوم",
+        "ja": "コマと絵"
+      }
+    },
+    "detect": {
+      "config": [
+        "comics.panel",
+        "comics.panelStyles",
+        "comics.gutter"
+      ]
+    }
+  },
+  "comic-lettering": {
+    "label": {
+      "en": "Comic lettering",
+      "es": "Rotulación de cómic",
+      "ca": "Retolació de còmic",
+      "zh": "漫画嵌字",
+      "ar": "كتابة نصوص القصص المصورة",
+      "ja": "漫画の写植"
+    },
+    "definition": {
+      "en": "Each line under a panel is one balloon, speaker: text. The text is set first, in one lettering size for the whole book, and the balloon is drawn around it. The face follows the language: Comic Neue, Zen Antique for Japanese.",
+      "es": "Cada línea bajo una viñeta es un bocadillo, personaje: texto. Primero se compone el texto, con un solo cuerpo de rotulación para todo el libro, y después se dibuja el bocadillo a su alrededor. La letra depende del idioma: Comic Neue, Zen Antique para el japonés.",
+      "ca": "Cada línia sota una vinyeta és una bafarada, personatge: text. Primer es compon el text, amb un sol cos de retolació per a tot el llibre, i després es dibuixa la bafarada al voltant. La lletra depèn de la llengua: Comic Neue, Zen Antique per al japonès.",
+      "zh": "格下面的每一行就是一个对话框，写作“说话人: 文字”。先排文字，全书只用一个嵌字字号，再围绕文字画出对话框。字体随语言而定：Comic Neue，日语用Zen Antique。",
+      "ar": "كل سطر تحت الإطار فقاعة حوار بصيغة «المتحدث: النص». يُنضَّد النص أولًا بمقاس واحد للكتاب كله، ثم تُرسم الفقاعة حوله. ويتبع الخط اللغة: Comic Neue، وZen Antique لليابانية، وPlaypen Sans Arabic للعربية.",
+      "ja": "コマの下の1行が1つの吹き出しで、「話者: せりふ」と書きます。先に文字を組み、写植の文字サイズは本全体で1つだけ、そのまわりに吹き出しを描きます。書体は言語で決まり、日本語はZen Antique、英語などはComic Neueです。"
+    },
+    "aliases": {
+      "en": [
+        "lettering",
+        "balloon text",
+        "dialogue",
+        "comic script",
+        "comic font",
+        "Comic Neue"
+      ],
+      "es": [
+        "rotulación",
+        "rotular",
+        "diálogos",
+        "guion",
+        "letra de cómic"
+      ],
+      "ca": [
+        "retolació",
+        "retolar",
+        "diàlegs",
+        "guió"
+      ],
+      "zh": [
+        "嵌字",
+        "对白",
+        "脚本",
+        "漫画字体"
+      ],
+      "ar": [
+        "كتابة الحوار",
+        "الحوار",
+        "السيناريو",
+        "خط القصص المصورة"
+      ],
+      "ja": [
+        "写植",
+        "せりふ",
+        "台本",
+        "ネーム",
+        "漫画フォント"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Lettering",
+        "es": "Rotulación",
+        "ca": "Retolació",
+        "zh": "嵌字",
+        "ar": "كتابة الحوار",
+        "ja": "写植"
+      }
+    },
+    "detect": {
+      "config": [
+        "comics.lettering"
+      ]
+    }
+  },
+  "comic-relettering": {
+    "label": {
+      "en": "Re-lettering in other languages",
+      "es": "Rotular en otros idiomas",
+      "ca": "Retolar en altres llengües",
+      "zh": "多语言重新嵌字",
+      "ar": "إعادة كتابة النصوص بلغات أخرى",
+      "ja": "他言語への写植し直し"
+    },
+    "definition": {
+      "en": "The split, the art, the crops and the speaker anchors belong to the page; each language's Markdown carries only the words, and the balloons are rebuilt around each translation's text.",
+      "es": "La división, las imágenes, los recortes y las anclas de los personajes pertenecen a la página; el Markdown de cada idioma solo lleva las palabras, y los bocadillos se rehacen alrededor del texto de cada traducción.",
+      "ca": "La divisió, les imatges, els retalls i les àncores dels personatges pertanyen a la pàgina; el Markdown de cada llengua només porta les paraules, i les bafarades es refan al voltant del text de cada traducció.",
+      "zh": "分格、画面、裁切和说话人锚点属于页面本身；每种语言的Markdown只写文字，对话框围绕每个译本的文字重新生成。",
+      "ar": "التقسيم والرسوم والقصّ ونقاط ارتكاز المتحدثين جزء من الصفحة؛ ولا يحمل Markdown كل لغة إلا الكلمات، ويُعاد بناء الفقاعات حول نص كل ترجمة.",
+      "ja": "コマ割り、絵、トリミング、話者のアンカーはページに属します。各言語のMarkdownには文字だけを書き、吹き出しは訳文ごとに文字に合わせて作り直されます。"
+    },
+    "aliases": {
+      "en": [
+        "translation",
+        "localization",
+        "re-letter",
+        "multilingual comic"
+      ],
+      "es": [
+        "traducción",
+        "localización",
+        "rerotular",
+        "cómic multilingüe"
+      ],
+      "ca": [
+        "traducció",
+        "localització",
+        "retolar de nou"
+      ],
+      "zh": [
+        "翻译",
+        "本地化",
+        "汉化",
+        "重新嵌字"
+      ],
+      "ar": [
+        "الترجمة",
+        "التعريب",
+        "إعادة الخط"
+      ],
+      "ja": [
+        "翻訳",
+        "ローカライズ",
+        "写植し直し",
+        "多言語"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Lettering",
+        "es": "Rotulación",
+        "ca": "Retolació",
+        "zh": "嵌字",
+        "ar": "كتابة الحوار",
+        "ja": "写植"
+      }
+    }
+  },
+  "balloon-styles": {
+    "label": {
+      "en": "Balloon styles",
+      "es": "Estilos de bocadillo",
+      "ca": "Estils de bafarada",
+      "zh": "对话框样式",
+      "ar": "أنماط الفقاعات",
+      "ja": "吹き出しのスタイル"
+    },
+    "definition": {
+      "en": "A flag after the speaker picks the balloon: thought, whisper, shout, radio, inner, caption or note; comics.balloonStyles changes their shape, outline, tail, fill and face, or adds new ones.",
+      "es": "Una marca tras el personaje elige el bocadillo: pensamiento (thought), susurro (whisper), grito (shout), radio, voz interior (inner), cartela (caption) o nota (note); comics.balloonStyles cambia su forma, contorno, rabillo, relleno y letra, o añade otros.",
+      "ca": "Una marca després del personatge tria la bafarada: pensament (thought), xiuxiueig (whisper), crit (shout), ràdio (radio), veu interior (inner), cartutx (caption) o nota (note); comics.balloonStyles en canvia la forma, el contorn, la cua, el farciment i la lletra, o n'afegeix d'altres.",
+      "zh": "说话人后面的标记选择对话框：thought（想法）、whisper（耳语）、shout（喊叫）、radio（无线电）、inner（内心独白）、caption（旁白框）或note（注释）；comics.balloonStyles可改变它们的形状、轮廓、尾巴、填充和字体，或新增样式。",
+      "ar": "تختار علامة بعد اسم المتحدث نوع الفقاعة: thought (تفكير) أو whisper (همس) أو shout (صراخ) أو radio (لاسلكي) أو inner (صوت داخلي) أو caption (تعليق سردي) أو note (ملاحظة)؛ ويغيّر comics.balloonStyles شكلها وحدودها وذيلها وتعبئتها وخطها، أو يضيف أنماطًا جديدة.",
+      "ja": "話者の後ろの指定で吹き出しを選びます。thought（思考）、whisper（ささやき）、shout（叫び）、radio（無線）、inner（心の声）、caption（ナレーション）、note（注記）。comics.balloonStylesで形、輪郭、しっぽ、塗り、書体を変えたり、新しいスタイルを加えたりできます。"
+    },
+    "aliases": {
+      "en": [
+        "speech balloon",
+        "speech bubble",
+        "thought bubble",
+        "caption box",
+        "burst balloon",
+        "balloon tail"
+      ],
+      "es": [
+        "bocadillo",
+        "globo",
+        "cartela",
+        "rabillo",
+        "bocadillo de pensamiento"
+      ],
+      "ca": [
+        "bafarada",
+        "globus",
+        "cartutx",
+        "cua"
+      ],
+      "zh": [
+        "对话框",
+        "气泡",
+        "旁白框",
+        "想法泡泡"
+      ],
+      "ar": [
+        "فقاعة الحوار",
+        "فقاعة التفكير",
+        "ذيل الفقاعة"
+      ],
+      "ja": [
+        "吹き出し",
+        "フキダシ",
+        "ナレーション",
+        "しっぽ",
+        "モノローグ"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Balloon styles",
+        "es": "Estilos de bocadillo",
+        "ca": "Estils de bafarada",
+        "zh": "对话框样式",
+        "ar": "أنماط الفقاعات",
+        "ja": "吹き出しのスタイル"
+      }
+    },
+    "detect": {
+      "config": [
+        "comics.balloonStyles"
+      ],
+      "markdown": [
+        "^\\s*[^\\s:{]+\\{[^}]*\\b(thought|whisper|shout|radio|inner)\\b[^}]*\\}\\s*[:：]"
+      ]
+    }
+  },
+  "sound-effects": {
+    "label": {
+      "en": "Sound effects",
+      "es": "Onomatopeyas",
+      "ca": "Onomatopeies",
+      "zh": "拟声字",
+      "ar": "المؤثرات الصوتية",
+      "ja": "描き文字の擬音"
+    },
+    "definition": {
+      "en": "An sfx line letters a sound over the art with no balloon: a display face per language (Bangers, Dela Gothic One for Japanese), a white halo, and at=, rotate= and size= to place, tilt and scale it.",
+      "es": "Una línea sfx rotula un sonido sobre la imagen sin bocadillo: una letra de rótulo por idioma (Bangers, Dela Gothic One para el japonés), un halo blanco, y at=, rotate= y size= para situarlo, inclinarlo y escalarlo.",
+      "ca": "Una línia sfx retola un so sobre la imatge sense bafarada: una lletra de rètol per llengua (Bangers, Dela Gothic One per al japonès), un halo blanc, i at=, rotate= i size= per situar-lo, inclinar-lo i escalar-lo.",
+      "zh": "sfx行把声音直接写在画面上，不带对话框：每种语言一款展示字体（Bangers，日语用Dela Gothic One），加白色描边，用at=、rotate=和size=定位、旋转和缩放。",
+      "ar": "يكتب سطر sfx صوتًا فوق الرسم بلا فقاعة: خط عرض لكل لغة (Bangers، وDela Gothic One لليابانية، وLalezar للعربية)، وهالة بيضاء، وat= وrotate= وsize= لوضعه وإمالته وتكبيره.",
+      "ja": "sfxの行は吹き出しなしで絵の上に音を描きます。言語ごとの見出し書体（日本語はDela Gothic One、英語などはBangers）、白い縁取り、at=、rotate=、size=で位置、傾き、大きさを決めます。"
+    },
+    "aliases": {
+      "en": [
+        "sfx",
+        "sound effect",
+        "onomatopoeia",
+        "Bangers"
+      ],
+      "es": [
+        "sfx",
+        "onomatopeya",
+        "efecto de sonido"
+      ],
+      "ca": [
+        "sfx",
+        "onomatopeia",
+        "efecte de so"
+      ],
+      "zh": [
+        "sfx",
+        "拟声词",
+        "音效字"
+      ],
+      "ar": [
+        "sfx",
+        "محاكاة الصوت",
+        "مؤثر صوتي"
+      ],
+      "ja": [
+        "sfx",
+        "擬音",
+        "効果音",
+        "描き文字",
+        "オノマトペ"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Balloon styles",
+        "es": "Estilos de bocadillo",
+        "ca": "Estils de bafarada",
+        "zh": "对话框样式",
+        "ar": "أنماط الفقاعات",
+        "ja": "吹き出しのスタイル"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^\\s*sfx(\\{[^}]*\\})?\\s*[:：]"
+      ]
+    }
+  },
+  "comic-speakers": {
+    "label": {
+      "en": "Speakers and anchors",
+      "es": "Personajes y anclas",
+      "ca": "Personatges i àncores",
+      "zh": "说话人与锚点",
+      "ar": "المتحدثون ونقاط الارتكاز",
+      "ja": "話者とアンカー"
+    },
+    "definition": {
+      "en": "A picture's anchors mark each character's mouth, head and face, and its avoid zones the hands and objects to keep clear; a balloon's tail points at its speaker's mouth, or out of the panel when the speaker is not in it.",
+      "es": "Las anclas de una imagen marcan la boca, la cabeza y la cara de cada personaje, y sus zonas a evitar las manos y los objetos que deben quedar a la vista; el rabillo del bocadillo apunta a la boca de quien habla, o fuera de la viñeta cuando no aparece en ella.",
+      "ca": "Les àncores d'una imatge marquen la boca, el cap i la cara de cada personatge, i les zones a evitar les mans i els objectes que han de quedar a la vista; la cua de la bafarada apunta a la boca de qui parla, o fora de la vinyeta quan no hi surt.",
+      "zh": "图片的锚点标出每个人物的嘴、头和脸，避让区标出要留空的手和物件；对话框的尾巴指向说话人的嘴，说话人不在格内时则指向格外。",
+      "ar": "تحدّد نقاط ارتكاز الصورة فم كل شخصية ورأسها ووجهها، وتحدّد مناطق التجنّب الأيدي والأشياء التي يجب أن تبقى ظاهرة؛ ويشير ذيل الفقاعة إلى فم المتحدث، أو إلى خارج الإطار حين لا يكون المتحدث فيه.",
+      "ja": "画像のアンカーは人物ごとの口、頭、顔を示し、回避領域は隠してはいけない手や物を示します。吹き出しのしっぽは話者の口を指し、話者がコマにいないときはコマの外を指します。"
+    },
+    "aliases": {
+      "en": [
+        "anchors",
+        "speaker",
+        "tail target",
+        "avoid",
+        "off-panel speaker",
+        "cast"
+      ],
+      "es": [
+        "anclas",
+        "personaje",
+        "rabillo",
+        "voz en off",
+        "reparto"
+      ],
+      "ca": [
+        "àncores",
+        "personatge",
+        "veu en off",
+        "repartiment"
+      ],
+      "zh": [
+        "锚点",
+        "说话人",
+        "画外音",
+        "角色表"
+      ],
+      "ar": [
+        "نقاط الارتكاز",
+        "المتحدث",
+        "صوت من خارج الإطار"
+      ],
+      "ja": [
+        "アンカー",
+        "話者",
+        "しっぽの向き",
+        "コマ外の声",
+        "キャスト"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Speakers and anchors",
+        "es": "Personajes y anclas",
+        "ca": "Personatges i àncores",
+        "zh": "说话人与锚点",
+        "ar": "المتحدثون ونقاط الارتكاز",
+        "ja": "話者とアンカー"
+      }
+    },
+    "detect": {
+      "config": [
+        "comics.cast"
+      ]
+    }
+  },
+  "comic-strips": {
+    "label": {
+      "en": "Comic strips in the text",
+      "es": "Tiras cómicas en el texto",
+      "ca": "Tires còmiques en el text",
+      "zh": "文中的漫画条",
+      "ar": "الشرائط المصورة داخل النص",
+      "ja": "本文中の帯漫画"
+    },
+    "definition": {
+      "en": "A :::strip block sets panels as a block in the text flow, a column or the page wide, with a height or an aspect ratio: the daily strip of a newspaper or a comic inside a book.",
+      "es": "Un bloque :::strip compone viñetas como un bloque del texto, del ancho de una columna o de la página, con una altura o una proporción: la tira diaria de un periódico o un cómic dentro de un libro.",
+      "ca": "Un bloc :::strip compon vinyetes com un bloc del text, de l'amplada d'una columna o de la pàgina, amb una alçada o una proporció: la tira diària d'un diari o un còmic dins d'un llibre.",
+      "zh": ":::strip块把几格漫画作为正文中的一个块，宽度为一栏或整页，指定高度或宽高比：报纸上的每日漫画条，或书中的一段漫画。",
+      "ar": "تنضّد كتلة :::strip الإطارات كتلةً داخل سياق النص، بعرض عمود أو صفحة، بارتفاع أو نسبة أبعاد: الشريط اليومي في جريدة، أو قصة مصورة داخل كتاب.",
+      "ja": ":::stripブロックはコマを本文の流れの中の1ブロックとして、段幅またはページ幅で、高さか縦横比を指定して組みます。新聞の連載漫画や、本の中の漫画です。"
+    },
+    "aliases": {
+      "en": [
+        ":::strip",
+        "daily strip",
+        "Sunday strip",
+        "gag strip",
+        "yonkoma",
+        "four-panel strip"
+      ],
+      "es": [
+        ":::strip",
+        "tira cómica",
+        "tira diaria",
+        "tira dominical",
+        "yonkoma"
+      ],
+      "ca": [
+        ":::strip",
+        "tira còmica",
+        "tira diària",
+        "yonkoma"
+      ],
+      "zh": [
+        ":::strip",
+        "四格漫画",
+        "报纸漫画"
+      ],
+      "ar": [
+        ":::strip",
+        "شريط مصور",
+        "شريط يومي",
+        "يونكوما"
+      ],
+      "ja": [
+        ":::strip",
+        "4コマ",
+        "四コマ",
+        "新聞漫画"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Strips",
+        "es": "Tiras",
+        "ca": "Tires",
+        "zh": "漫画条",
+        "ar": "الشرائط المصورة",
+        "ja": "帯漫画"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::strip\\b"
+      ]
+    }
+  },
+  "comic-spreads": {
+    "label": {
+      "en": "Double-page comic spreads",
+      "es": "Dobles páginas de cómic",
+      "ca": "Dobles pàgines de còmic",
+      "zh": "漫画跨页",
+      "ar": "الصفحات المزدوجة في القصص المصورة",
+      "ja": "漫画の見開き"
+    },
+    "definition": {
+      "en": ":::page{spread} lays one split across two facing pages from a left-hand page; the spine runs through the middle, and a panel may cross it with its art.",
+      "es": ":::page{spread} extiende una misma división por dos páginas enfrentadas a partir de una página par; el lomo pasa por el centro y una viñeta puede cruzarlo con su imagen.",
+      "ca": ":::page{spread} estén una mateixa divisió per dues pàgines encarades a partir d'una pàgina parella; el llom passa pel centre i una vinyeta pot creuar-lo amb la seva imatge.",
+      "zh": ":::page{spread}从左页开始，把一种分格铺在相对的两页上；书脊从中间穿过，一格连同画面可以跨过书脊。",
+      "ar": "يمدّ :::page{spread} تقسيمًا واحدًا على صفحتين متقابلتين ابتداءً من صفحة يسرى؛ ويمرّ الكعب في الوسط، ويمكن لإطار أن يعبره برسمه.",
+      "ja": ":::page{spread}は1つのコマ割りを左ページから向かい合う2ページに広げます。のどが中央を通り、コマは絵ごとのどをまたげます。"
+    },
+    "aliases": {
+      "en": [
+        "spread",
+        "double page",
+        "two-page spread",
+        "spine"
+      ],
+      "es": [
+        "doble página",
+        "página doble",
+        "lomo"
+      ],
+      "ca": [
+        "doble pàgina",
+        "llom"
+      ],
+      "zh": [
+        "跨页",
+        "对页",
+        "书脊"
+      ],
+      "ar": [
+        "صفحة مزدوجة",
+        "الكعب"
+      ],
+      "ja": [
+        "見開き",
+        "のど",
+        "ノド"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Spreads",
+        "es": "Dobles páginas",
+        "ca": "Dobles pàgines",
+        "zh": "跨页",
+        "ar": "الصفحات المزدوجة",
+        "ja": "見開き"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::page\\{[^}]*\\bspread\\b"
+      ]
+    }
+  },
+  "comic-reading-direction": {
+    "label": {
+      "en": "Reading direction and manga order",
+      "es": "Sentido de lectura y orden del manga",
+      "ca": "Sentit de lectura i ordre del manga",
+      "zh": "阅读方向与日本漫画的顺序",
+      "ar": "اتجاه القراءة وترتيب المانغا",
+      "ja": "読む方向と漫画の順序"
+    },
+    "definition": {
+      "en": "Panels fill the cells in reading order: left to right, or right to left for manga and for right-to-left languages; comics.artDirection and mirrorArt decide when the art is flipped to match.",
+      "es": "Las viñetas llenan las celdas en orden de lectura: de izquierda a derecha, o de derecha a izquierda en el manga y en los idiomas que se escriben de derecha a izquierda; comics.artDirection y mirrorArt deciden cuándo se invierte la imagen para que coincida.",
+      "ca": "Les vinyetes omplen les cel·les en ordre de lectura: d'esquerra a dreta, o de dreta a esquerra en el manga i en les llengües que s'escriuen de dreta a esquerra; comics.artDirection i mirrorArt decideixen quan s'inverteix la imatge perquè coincideixi.",
+      "zh": "各格按阅读顺序填入格子：从左到右；日本漫画和从右往左书写的语言则从右到左；comics.artDirection和mirrorArt决定何时把画面左右翻转以与之相配。",
+      "ar": "تملأ الإطارات الخانات بترتيب القراءة: من اليسار إلى اليمين، أو من اليمين إلى اليسار في المانغا وفي اللغات التي تُكتب من اليمين إلى اليسار؛ ويحدّد comics.artDirection وmirrorArt متى يُقلب الرسم ليتوافق معها.",
+      "ja": "コマは読む順にセルを埋めます。ふつうは左から右へ、漫画と右から左へ書く言語では右から左へ読みます。comics.artDirectionとmirrorArtで、絵を左右反転して合わせるかどうかを決めます。"
+    },
+    "aliases": {
+      "en": [
+        "right to left",
+        "manga order",
+        "RTL comic",
+        "mirror art",
+        "flipped art"
+      ],
+      "es": [
+        "derecha a izquierda",
+        "orden manga",
+        "invertir imagen"
+      ],
+      "ca": [
+        "dreta a esquerra",
+        "ordre manga",
+        "invertir imatge"
+      ],
+      "zh": [
+        "从右到左",
+        "日漫顺序",
+        "左右翻转"
+      ],
+      "ar": [
+        "من اليمين إلى اليسار",
+        "ترتيب المانغا",
+        "قلب الرسم"
+      ],
+      "ja": [
+        "右から左",
+        "右綴じ",
+        "左右反転"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Reading direction",
+        "es": "Sentido de lectura",
+        "ca": "Sentit de lectura",
+        "zh": "阅读方向",
+        "ar": "اتجاه القراءة",
+        "ja": "読む方向"
+      }
+    },
+    "detect": {
+      "config": [
+        "comics.readingDirection",
+        "comics.artDirection",
+        "comics.mirrorArt"
+      ],
+      "markdown": [
+        "^:::page\\{[^}]*\\b(direction|dir)="
+      ]
+    }
+  },
+  "comic-output": {
+    "label": {
+      "en": "Comics in PDF and EPUB",
+      "es": "Cómics en PDF y EPUB",
+      "ca": "Còmics en PDF i EPUB",
+      "zh": "PDF与EPUB中的漫画",
+      "ar": "القصص المصورة في PDF وEPUB",
+      "ja": "PDFとEPUBの漫画"
+    },
+    "definition": {
+      "en": "Comic pages export like any page: vector balloons and lettering in the PDF, and a fixed-layout EPUB whose region navigation steps through the panels one by one.",
+      "es": "Las páginas de cómic se exportan como cualquier otra: bocadillos y rotulación vectoriales en el PDF, y un EPUB de maquetación fija cuya navegación por regiones recorre las viñetas una a una.",
+      "ca": "Les pàgines de còmic s'exporten com qualsevol altra: bafarades i retolació vectorials al PDF, i un EPUB de maquetació fixa amb navegació per regions que recorre les vinyetes una a una.",
+      "zh": "漫画页和普通页面一样导出：PDF中的对话框和嵌字是矢量的；固定版式EPUB带区域导航，可逐格浏览。",
+      "ar": "تُصدَّر صفحات القصص المصورة كأي صفحة: فقاعات ونصوص متجهية في PDF، وEPUB ثابت التخطيط تنتقل ملاحته بالمناطق بين الإطارات واحدًا تلو الآخر.",
+      "ja": "漫画のページは他のページと同じように書き出せます。PDFでは吹き出しと写植がベクターになり、固定レイアウトのEPUBでは領域ナビゲーションでコマを1つずつ追えます。"
+    },
+    "aliases": {
+      "en": [
+        "guided view",
+        "panel by panel",
+        "comic EPUB",
+        "region navigation",
+        "comic PDF"
+      ],
+      "es": [
+        "lectura guiada",
+        "viñeta a viñeta",
+        "EPUB de cómic"
+      ],
+      "ca": [
+        "lectura guiada",
+        "vinyeta a vinyeta",
+        "EPUB de còmic"
+      ],
+      "zh": [
+        "逐格阅读",
+        "漫画EPUB",
+        "区域导航"
+      ],
+      "ar": [
+        "القراءة الموجّهة",
+        "إطارًا إطارًا",
+        "EPUB للقصص المصورة"
+      ],
+      "ja": [
+        "コマ送り",
+        "ガイドビュー",
+        "漫画のEPUB"
+      ]
+    },
+    "group": "comics",
+    "docs": {
+      "slug": "comics",
+      "heading": {
+        "en": "Comics output",
+        "es": "Salida de los cómics",
+        "ca": "Sortida dels còmics",
+        "zh": "漫画的输出",
+        "ar": "إخراج القصص المصورة",
+        "ja": "漫画の出力"
+      }
+    }
   }
 }

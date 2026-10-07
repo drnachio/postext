@@ -16,12 +16,12 @@ export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
   "diagramStyle", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
-  "htmlViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes",
+  "htmlViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes", "comics",
 ];
 
 /** The parser's single-line directives and fenced containers
  *  (KNOWN_DIRECTIVES / KNOWN_CONTAINERS in packages/postext/src/parse). */
-export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse"];
+export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse", "page", "strip"];
 export const KNOWN_CONTAINERS: readonly string[] = ["callout", "paragraphs", "part", "columns", "paper"];
 
 /** The engine's fence line: `:::name` with an optional `{attrs}` block. */
@@ -402,11 +402,39 @@ export function configString(scan: JsScan, dotted: string): string | undefined {
   for (const [i, key] of keys.entries()) {
     const at = objectValueAt(scan, open, key);
     if (at === -1) return undefined;
-    if (i === keys.length - 1) return /^(['"`])([^'"`\n]*)\1/.exec(scan.code.slice(at, at + 200))?.[2];
+    if (i === keys.length - 1) {
+      return stringAt(scan.code, at, 1);
+    }
     if (scan.bare[at] !== "{") return undefined;
     open = at;
   }
   return undefined;
+}
+
+/** The string at `at`: a literal, a `t({ … })` per edition, or a top-level
+ *  `const` holding one (`locale: LOCALE` with `const LOCALE = t({ … })`),
+ *  followed `depth` times. */
+function stringAt(code: string, at: number, depth: number): string | undefined {
+  const head = code.slice(at, at + 400);
+  const literal = /^(['"`])([^'"`\n]*)\1/.exec(head)?.[2];
+  if (literal !== undefined) return literal;
+  const edition = editionString(code, head);
+  if (edition !== undefined || depth <= 0) return edition;
+  const name = /^([A-Za-z_$][\w$]*)\s*[,}\n]/.exec(head)?.[1];
+  const decl = name ? new RegExp(`^const ${name.replace(/\$/g, "\\$")}\\s*=\\s*`, "m").exec(code) : null;
+  return decl ? stringAt(code, decl.index + decl[0].length, depth - 1) : undefined;
+}
+
+/** A value written per edition, `t({ en: 'en', ja: 'ja', zh: 'zh-Hans' })`,
+ *  read for the edition the composed pen sets (`const LANG = 'ja';`), else
+ *  its first entry, as the kit's `t` does. */
+function editionString(code: string, head: string): string | undefined {
+  const call = /^t\(\s*\{([^}]*)\}\s*\)/.exec(head)?.[1];
+  if (call === undefined) return undefined;
+  const entries = [...call.matchAll(/([A-Za-z-]+|'[^']*'|"[^"]*")\s*:\s*(['"`])([^'"`\n]*)\2/g)]
+    .map((m) => [m[1]!.replace(/^['"]|['"]$/g, ""), m[3]!] as const);
+  const lang = /^const LANG = (['"])([a-z]+)\1/m.exec(code)?.[2];
+  return entries.find(([key]) => key === lang)?.[1] ?? entries[0]?.[1];
 }
 
 /** Top-level keys of `const config = () => ({ … })`, unique, in source order. */

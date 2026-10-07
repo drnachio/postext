@@ -80,7 +80,17 @@ export type WarningKind =
   | 'unsupportedHyphenationLocale'
   | 'missingGlyph'
   | 'variableFontDefaultInstance'
-  | 'cffEmbeddedWhole';
+  | 'cffEmbeddedWhole'
+  | 'comicSplitSyntax'
+  | 'comicSplitOverflow'
+  | 'comicPanelCount'
+  | 'comicStrayText'
+  | 'comicUnknownBalloonStyle'
+  | 'comicUnknownArt'
+  | 'comicPanelLetterbox'
+  | 'comicAnchorOutsideSafeArea'
+  | 'comicBalloonOverflow'
+  | 'comicUnknownSpeaker';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -319,7 +329,33 @@ export type WarningPayload =
    *  other than its default instance, which is the one embedded. */
   | { kind: 'variableFontDefaultInstance'; family: string; weight: number; style: 'normal' | 'italic'; defaultWeight: number; stale?: true }
   /** The last PDF generated embedded a CFF (.otf) face over 2 MB whole. */
-  | { kind: 'cffEmbeddedWhole'; family: string; weight: number; style: 'normal' | 'italic'; bytes: number; stale?: true };
+  | { kind: 'cffEmbeddedWhole'; family: string; weight: number; style: 'normal' | 'italic'; bytes: number; stale?: true }
+  /** A comic page's `split` the grammar cannot read whole; `message` (from
+   *  the engine, in English) says what is wrong. */
+  | { kind: 'comicSplitSyntax'; message: string }
+  /** The sizes of one list of a comic page's `split` add up past 100 %. */
+  | { kind: 'comicSplitOverflow'; total: number }
+  /** A comic page with more panels than its split has cells, or fewer. */
+  | { kind: 'comicPanelCount'; panels: number; cells: number }
+  /** Text in a comic page that is no script line (`key: text`), or sits
+   *  before the first `::panel`: lettered as a caption. */
+  | { kind: 'comicStrayText'; text: string }
+  /** A script line names a balloon style no style defines. */
+  | { kind: 'comicUnknownBalloonStyle'; style: string }
+  /** A panel's `art` or `pop` names no picture resource. */
+  | { kind: 'comicUnknownArt'; resourceId: string }
+  /** A panel too narrow or flat to crop its picture without cutting into
+   *  the safe area: the picture is letterboxed (found by the layout).
+   *  `panel` is 0-based. */
+  | { kind: 'comicPanelLetterbox'; resourceId: string; panel: number }
+  /** A picture's speaker point lies outside its safe area. */
+  | { kind: 'comicAnchorOutsideSafeArea'; resourceId: string; anchorId: string }
+  /** A balloon the lettering could not place cleanly (found by the
+   *  layout). `panel` / `panelIndex` are 0-based; the engine may send
+   *  either. */
+  | { kind: 'comicBalloonOverflow'; panel?: number; panelIndex?: number; reasons?: string[] }
+  /** A speaker no picture marks and the cast does not list. */
+  | { kind: 'comicUnknownSpeaker'; speaker: string };
 
 export interface Warning {
   id: string;

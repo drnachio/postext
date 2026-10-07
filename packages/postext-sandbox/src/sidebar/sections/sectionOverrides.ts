@@ -30,6 +30,21 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
       return config.calloutStyles !== undefined;
     case 'chipStyles':
       return config.chipStyles !== undefined;
+    case 'comicsPanels': {
+      const c = config.comics;
+      return c !== undefined && (
+        c.readingDirection !== undefined || c.artDirection !== undefined || c.mirrorArt !== undefined ||
+        c.frame !== undefined || hasKeys(c.gutter) || hasKeys(c.panel) || c.runningHeads !== undefined
+      );
+    }
+    case 'comicsPanelStyles':
+      return (config.comics?.panelStyles ?? []).length > 0;
+    case 'comicsLettering':
+      return hasKeys(config.comics?.lettering);
+    case 'comicsBalloonStyles':
+      return (config.comics?.balloonStyles ?? []).length > 0;
+    case 'comicsCast':
+      return (config.comics?.cast ?? []).length > 0;
     case 'resource-types':
       return config.resourceTypes !== undefined;
     case 'debug':

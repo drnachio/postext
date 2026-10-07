@@ -49,7 +49,7 @@ export function enumerateCurrentPageSlots(
   capKindOf: (col: VDTColumn) => ColumnCapKind,
 ): FloatSlot[] {
   const cursorCol = page.columns[cursorColumnIndex];
-  if (!cursorCol || cursorCol.kind === 'span' || page.partInfo) return [];
+  if (!cursorCol || cursorCol.kind === 'span' || page.partInfo || page.comic) return [];
   const band = currentBand(page, { pageIndex: page.index, columnIndex: cursorColumnIndex });
   const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
   if (cols.length === 0) return [];

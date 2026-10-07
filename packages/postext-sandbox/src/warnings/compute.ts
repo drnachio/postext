@@ -99,6 +99,15 @@ function collectLooseLineWarnings(
   return out;
 }
 
+/** The kinds of `doc.contentWarnings` only the layout finds (the others
+ *  are read from the source by {@link collectEngineContentWarnings}). */
+const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
+  'indexSeeUnknown', 'indexRangeUnclosed', 'indexReadingMissing', 'cjkLooseLine',
+  'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
+  'unbreakableWordOverflow', 'joiningScriptLetterSpacing',
+  'comicPanelLetterbox', 'comicBalloonOverflow',
+]);
+
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine
  *  had to place overflowing its column because no column could hold it.
  *  The content warnings the build lists in `doc.contentWarnings` (unknown
@@ -113,10 +122,9 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
     // paragraphs whose leading is too tight for their Chinese marks, ruby
     // readings, kanbun marks or Arabic vowel marks, the Arabic-script words
     // wider than their line and the styles whose letter-spacing such words
-    // do not take.
-    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'indexReadingMissing' && w.kind !== 'cjkLooseLine'
-      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'kuntenExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
-      && w.kind !== 'unbreakableWordOverflow' && w.kind !== 'joiningScriptLetterSpacing') return;
+    // do not take, and the comic panels and balloons the layout had to
+    // force (a letterboxed picture, a balloon that does not fit).
+    if (!LAYOUT_CONTENT_KINDS.has(w.kind)) return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
     delete payload.sourceEnd;

@@ -585,7 +585,7 @@ A més, l'editor vigila el llibre sencer. El seu menú de capítols llista cada 
 
 ## Configuració
 
-El tauler **Disseny** edita la configuració completa —més de cinc-cents camps— per grups: pàgina i columnes, escriptura, colors, tipografia, títols i índex, llistes, figures i taules, requadres, capçaleres i peus, parts, exportació, Folio (el llibre en 3D) i el grup Avançat. Un cercador troba qualsevol opció pel nom, i el filtre **Canviats** mostra el que difereix dels valors per defecte. Cada camp i cada secció es poden restablir per separat, i la configuració es pot exportar i importar com a fitxer.
+El tauler **Disseny** edita la configuració completa —més de cinc-cents camps— per grups: pàgina i columnes, escriptura, colors, tipografia, títols i índex, llistes, figures i taules, requadres, còmic, capçaleres i peus, parts, exportació, Folio (el llibre en 3D) i el grup Avançat. Un cercador troba qualsevol opció pel nom, i el filtre **Canviats** mostra el que difereix dels valors per defecte. Cada camp i cada secció es poden restablir per separat, i la configuració es pot exportar i importar com a fitxer.
 
 ## Les cinc vistes
 

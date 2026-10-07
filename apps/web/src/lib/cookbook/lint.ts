@@ -100,6 +100,16 @@ export const KIT_IMPORTS: Record<KitBlock, { module: "postext" | "postext-pdf"; 
   arabic: null,
   // showBook calls the viewer block's showPages.
   book: null,
+  // loadComicFonts, comicPdfProvider and comicPanel call the fonts, pdf,
+  // cjk, arabic and images blocks (KIT_CALLS).
+  comics: null,
+};
+
+/** Kit functions that call another block's: the recipe that calls one
+ *  lists that block too, or the pen throws a ReferenceError at run time. */
+export const KIT_CALLS: Readonly<Record<string, readonly KitBlock[]>> = {
+  comicPanel: ["images"],
+  comicPdfProvider: ["pdf"],
 };
 
 /** Namespace URIs in inline SVG, never fetched. */
@@ -494,6 +504,13 @@ export function lintPen(
         fails.push(`script.js: calls ${name}() from the "${blocks[blocks.length - 1]}" kit block, which recipe.json "kit" does not list`);
       }
     }
+    for (const [name, needs] of Object.entries(KIT_CALLS)) {
+      if (!referencesIdentifier(ownBare, name)) continue;
+      for (const block of needs) {
+        usedBlocks.add(block);
+        if (!meta.kit?.includes(block)) fails.push(`script.js: ${name}() needs the "${block}" kit block, which recipe.json "kit" does not list`);
+      }
+    }
     for (const block of meta.kit ?? []) {
       if (!usedBlocks.has(block)) warns.push(`recipe.json: the "${block}" kit block is inlined but never called`);
     }
@@ -511,8 +528,19 @@ export function lintPen(
   let japaneseText = false;
   let arabicText = false;
   let arabicBook = false;
+  // The files this edition sets, whose script decides its fonts and locale:
+  // its own language's, else the first sample language's for a slot it
+  // lacks. Every file still gets the length, syntax and voice checks.
+  const slotOf = (key: string) => key.split(".").slice(0, -1).join(".");
+  const inEdition = (key: string): boolean => {
+    const lang = key.split(".").pop();
+    if (lang === composed.variant) return true;
+    const slot = slotOf(key);
+    return lang === meta.sample.locales[0] && sources.content[slot ? `${slot}.${composed.variant}` : composed.variant] === undefined;
+  };
   for (const [key, text] of Object.entries(sources.content)) {
     const file = `content.${key}.md`;
+    const edition = inEdition(key);
     // Chinese and Japanese have no spaces: their characters count, 1.7 (Chinese)
     // or 2.2 (Japanese, whose kana spell out what Chinese leaves to one
     // character) to the word.
@@ -530,7 +558,9 @@ export function lintPen(
     }
     // Japanese when its kana sentences outweigh the rest: a Chinese page
     // that quotes a Japanese title stays Chinese.
-    if (length.japanese * 2 > length.cjk) japaneseText = true;
+    // A Latin edition that keeps one Japanese sound effect (ドン) stays Latin: the
+    // kana must also outweigh its Latin words.
+    if (edition && length.japanese * 2 > length.cjk && length.japanese > length.words) japaneseText = true;
     for (const line of malformedResourceEmbeds(text)) fails.push(`${file}: "${line}" is not \`::resource{id="…"}\` (double quotes, id only)`);
     for (const name of markdownConstructs(text).unknown) fails.push(`${file}: ":::${name}" is not a Postext directive (it prints as text)`);
     fails.push(...unquotedFrontmatter(text, file));
@@ -543,7 +573,7 @@ export function lintPen(
       warns.push(...style.warns);
     }
     const odd = nonLatin(text);
-    if (odd.cjk.length) cjkText = true;
+    if (edition && odd.cjk.length) cjkText = true;
     // CJK text is set in faces the cjk block loads by slices, on screen and
     // in the PDF; without it, the kit loads the latin file of every face.
     if (odd.cjk.length && !cjkKit) {
@@ -558,8 +588,10 @@ export function lintPen(
     // loadFonts never fetches: the arabic block does, unless the recipe
     // builds its own FontFace (a face from its assets).
     if (odd.arabic.length) {
-      arabicText = true;
-      if (mostlyArabic(text)) arabicBook = true;
+      if (edition) arabicText = true;
+      // The main sample sets the book's language; a named slot in Arabic is another
+      // lettering or a quotation (a manga's Arabic edition behind a button), which keeps it.
+      if (edition && mostlyArabic(text) && !slotOf(key)) arabicBook = true;
       if (!arabicKit && !/\bnew\s+FontFace\s*\(/.test(ownBare)) {
         fails.push(`${file}: Arabic text needs an Arabic face: list the arabic kit block and load the faces with ` +
           "loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)");
@@ -620,6 +652,10 @@ export function lintPen(
   return { fails: [...new Set(fails)], warns: [...new Set(warns)] };
 }
 
+/** Japanese families on Fontsource (Noto Serif JP, Zen Antique, Shippori
+ *  Mincho, Klee One, Dela Gothic One…). */
+const JAPANESE_FACE = /\sJP$|^(?:Zen|Shippori|Klee|Dela Gothic|Kaisei|BIZ UD|M PLUS|Kiwi Maru|Yuji|Sawarabi|Hina Mincho|Murecho|Yusei Magic|Mochiy|Kosugi)\b/;
+
 /** What a recipe listing the `cjk` kit block must do: when its text is
  *  Chinese, Japanese or Korean, hand the PDF the faces' files and tag the
  *  document with its language (a Latin book may list the block for
@@ -638,11 +674,14 @@ function lintCjk(
   fails: string[],
   warns: string[],
 ): void {
-  if (cjkPdf && !/\bcjkPdfProvider\b/.test(ownBare)) {
-    fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
+  if (cjkPdf && !/\b(?:cjkPdfProvider|comicPdfProvider)\b/.test(ownBare)) {
+    fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
   }
-  const tagged = /\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode);
   const tag = configString(scan, "locale");
+  // A literal tag anywhere in the code, or the config's own (also when it
+  // is written per edition, t({ … ja: 'ja' })).
+  const tagged = /\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode)
+    || /^(?:zh|ja|ko)(?:[-_]|$)/i.test(tag ?? "");
   if (japaneseText && tagged && tag !== undefined && !/^ja(?:[-_]|$)/i.test(tag)) {
     fails.push(`script.js: the text is Japanese (it is written with kana) but config.locale is '${tag}': write 'ja', which sets the Japanese line breaking, punctuation and labels (gotcha ja-locale-tag)`);
   } else if (japaneseText && !tagged) {
@@ -651,8 +690,14 @@ function lintCjk(
     warns.push("script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant', 'ja'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)");
   }
   if (japaneseText) {
-    const chinese = fontFamilies(penFonts(ownCode, scan)).filter((family) => /\s(?:SC|TC|HK)$/.test(family));
-    if (chinese.length) {
+    // A face named in the Chinese entry of a per-edition table
+    // (`t({ … zh: ['Noto Serif SC', …] })`) sets only the Chinese edition.
+    const zhOnly = (family: string) => new RegExp(`\\bzh\\s*:\\s*\\[?[^\\]\\n]*['"]${family}['"]`).test(ownCode);
+    const families = fontFamilies(penFonts(ownCode, scan));
+    const chinese = families.filter((family) => /\s(?:SC|TC|HK)$/.test(family) && !zhOnly(family));
+    // A pen with an edition per language lists the Chinese edition's face
+    // beside the Japanese one; only a pen with no Japanese face sets kana in it.
+    if (chinese.length && !families.some((family) => JAPANESE_FACE.test(family))) {
       warns.push(`script.js: Japanese text with ${chinese.join(", ")} in FONTS: a Chinese face draws the kanji in Chinese forms (直, 骨, 角) and the kana in its own design; ` +
         "set the Japanese in a Japanese face (Noto Serif JP, Noto Sans JP, Shippori Mincho) and keep the Chinese one for Chinese quotations (gotcha ja-fonts-kana)");
     }
@@ -675,8 +720,8 @@ function lintArabic(
   arabicBook: boolean,
   fails: string[],
 ): void {
-  if (arabicPdf && !/\barabicPdfProvider\b/.test(ownBare)) {
-    fails.push("script.js: renderToPdf takes fontProvider: arabicPdfProvider (fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)");
+  if (arabicPdf && !/\b(?:arabicPdfProvider|comicPdfProvider)\b/.test(ownBare)) {
+    fails.push("script.js: renderToPdf takes fontProvider: arabicPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)");
   }
   const script = tagScript(configString(scan, "locale"));
   if (arabicBook && script !== "Arab" && script !== "Aran") {
