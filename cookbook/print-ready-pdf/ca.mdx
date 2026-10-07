@@ -1,16 +1,16 @@
 ---
-title: "PDF a punt per a impremta: sang, marques de tall i CMYK"
-summary: "Un fullet d'exposició amb 3 mm de sang i marques de tall, exportat a PDF CMYK amb els mapes i el plànol presos de màsters d'impressió."
+title: "PDF a punt per a impremta: sang, marques de tall i PDF/X"
+summary: "Un fullet d'exposició amb 3 mm de sang i marques de tall, exportat a PDF/X-4 sobre FOGRA51 amb màsters d'impressió i un preflight net."
 plain: "Un full de sala per a una exposició de mapes, a punt per a la impremta. Mostra com afegir un marge extra més enllà de la vora i marques de tall, i com desar un PDF en els colors que fan servir les impremtes."
-description: "Un fullet d'exposició de quatre pàgines, compost a Postext amb 3 mm de sang i marques de tall, en un PDF CMYK amb fonts, marcadors i màsters."
-question: "Com exporto un PDF per a impremta amb sang, marques de tall, CMYK, marcadors i etiquetes de pàgina?"
-aliases: ["PDF a punt per a impremta", "sang", "a sang", "marques de tall", "CMYK", "quadricromia", "màster d'impressió", "preimpressió", "fullet d'exposició", "full de sala", "prova en escala de grisos", "pestanya"]
+description: "Un fullet de quatre pàgines compost a Postext amb 3 mm de sang i marques de tall, en PDF/X-4 sobre FOGRA51 amb fonts, marcadors i màsters."
+question: "Com exporto un PDF/X per a impremta amb sang, marques de tall, perfil ICC, marcadors i etiquetes de pàgina?"
+aliases: ["PDF a punt per a impremta", "sang", "a sang", "marques de tall", "CMYK", "quadricromia", "màster d'impressió", "preimpressió", "fullet d'exposició", "full de sala", "prova en escala de grisos", "pestanya", "PDF/X-4", "FOGRA51", "PSO Coated v3", "condició de sortida", "preflight", "negre enriquit", "sobreimpressió"]
 pageNotes: { "1": "La coberta, amb els seus 3 mm de sang i les marques de tall a les cantonades: un mar verd fosc amb illes en verds esglaonats, una ruta taronja discontínua amb quatre parades que surt del tall cap a la sang, el títol en Space Grotesk de 50 punts i, al peu, les dates i el lloc.", "2": "La primera pàgina interior: l'entradeta, les sales 1 i 2 amb el seu avanttítol al costat d'una parada de la ruta i la seva fitxa, i una pestanya taronja amb el foli 2 que surt per la vora esquerra.", "3": "Les sales 3 i 4, que acaben a la mateixa alçada que la pàgina 2, i la pestanya amb el foli 3 a la vora dreta.", "4": "La contracoberta: la informació pràctica, el plànol de l'exposició (figura 1) amb l'itinerari taronja que surt del vestíbul i recorre les sales 1 a 4, i una banda de relleu verda a sang per tres costats amb el lloc, les dates i el colofó." }
 ---
 
 ## Què compondràs
 
-El full de sala de *Cartografías imaginarias*, una exposició inventada de mapes de llocs imaginaris, tal com s'envia a la impremta. Cada pàgina, de 170 × 227 mm, va en un full 22 mm més gran amb la sang i les marques de tall. A la coberta, una ruta taronja travessa un arxipèlag en verds esglaonats i surt del tall cap a la sang. A dins, quatre sales en Karla en bandera s'obren sota avanttítols amb una parada de la ruta, i una pestanya taronja porta el foli al tall exterior; la contracoberta posa el plànol sobre una banda de relleu. El codi exporta el PDF d'impremta, en CMYK amb fonts, marcadors i etiquetes de pàgina, i una prova en grisos. En aquest PDF, mapes i plànol surten de màsters amb tintes triades a mà; el text, la pestanya i les parades passen per la conversió simple.
+El full de sala de *Cartografías imaginarias*, una exposició inventada de mapes de llocs imaginaris, tal com s'envia a la impremta. Cada pàgina, de 170 × 227 mm, va en un full 22 mm més gran amb la sang i les marques de tall. A la coberta, una ruta taronja travessa un arxipèlag en verds esglaonats i surt del tall cap a la sang. A dins, quatre sales en Karla en bandera s'obren sota avanttítols amb una parada de la ruta, i una pestanya taronja porta el foli al tall exterior; la contracoberta posa el plànol sobre una banda de relleu. El codi exporta el fitxer d'impremta, un PDF/X-4 separat per a FOGRA51 (la condició PSO Coated v3 del cuixé de 150 g) amb fonts, marcadors i etiquetes de pàgina, i una prova en grisos, i passa el preflight sobre la maquetació abans d'oferir-los. Al fitxer d'impremta, mapes i plànol surten de màsters amb tintes triades a mà, i el text, la pestanya i les parades fan servir aquestes mateixes tintes gràcies a una paleta definida en CMYK.
 
 ## Elaboració
 
@@ -18,7 +18,7 @@ El full de sala de *Cartografías imaginarias*, una exposició inventada de mape
 
 <Excerpt region="palette" />
 
-Amb `colorSpace: 'cmyk'`, postext-pdf converteix cada color hexadecimal amb una fórmula simple, sense perfil ICC: el negre és 1 menys el canal RGB de valor més alt, i el cian, el magenta i el groc surten cadascun del seu propi canal i d'aquest negre. Per això un gris neutre s'imprimeix només amb la planxa del negre (`#161616` queda en K91) i un color amb un canal al màxim s'imprimeix sense negre: el taronja `#ff6626` queda en C0 M60 Y85 K0, igual a la pestanya que a les parades i la ruta. Quan el verd és el canal més alt, el magenta surt a 0, i el verd del mar queda en C82 M0 Y25 K76, que en una prova es veu blau petroli. D'aquí que els mapes i el plànol surtin de màsters d'impressió (pas 5) i que aquesta barreja de tres tintes quedi només al text petit en verd i negreta dels avanttítols, la referència a la figura i les etiquetes dels peus.
+Amb `print: { standard: 'pdfx4', outputProfile: 'fogra51' }` a la configuració, cada color se separa amb el perfil FOGRA51 que porta postext. Els grisos neutres s'imprimeixen només amb la planxa del negre, amb la K triada perquè el to no canviï: `#161616` queda en K95 i el `#666666` de les capçaleres en K66, i el text al 100 % de K sobreimprimeix. El perfil imprimiria el verd com a C90 M43 Y71 K62 i el taronja com a C0 M70 Y90 K0, un matís diferent del de la ruta dels màsters (pas 5), així que aquests dos, el verd sàlvia i el color del paper es defineixen en CMYK: `ColorValue.cmyk` guarda la barreja, l'hexadecimal es queda per a la pantalla i qualsevol ús vinculat a la paleta imprimeix la barreja tal com està escrita. El color del paper és C0 M0 Y0 K0: el text calat sobre el verd no porta tinta, i cap planxa no el pot desplaçar.
 
 ### 2 · Una pestanya que sobreviu a la guillotina
 
@@ -42,7 +42,7 @@ La caixa de la pestanya penja del marc de la sang i mesura `BLEED` més que la p
 
 <Excerpt region="master" />
 
-Cada dibuix es defineix una sola vegada, com a traçats. La regió de l'art els converteix en l'SVG que pinta el llenç, i aquesta regió escriu els mateixos traçats en un PDF CMYK d'una pàgina, amb barreges triades perquè la prova s'assembli a la pantalla; així el mar va en C100 M45 Y80 K55 i no en el C82 M0 Y25 K76 de la conversió simple. Cada recurs anomena el seu màster a `svg.pdfFileId`, `pressPdf()` (a la resposta curta) lliura els bytes del màster a `renderToPdf` amb l'identificador de l'SVG, i postext-pdf incrusta aquesta pàgina tal com és, en vectors i amb les tintes del màster. Ho fa amb el plànol, que és una figura, i amb el mapa de la coberta i la banda de la contracoberta, que són imatges de disseny. La prova en escala de grisos rep els SVG, perquè un màster incrustat no es converteix mai i continuaria en color.
+Cada dibuix es defineix una sola vegada, com a traçats. La regió de l'art els converteix en l'SVG que pinta el llenç, i aquesta regió escriu els mateixos traçats en un PDF CMYK d'una pàgina, amb barreges triades perquè la prova s'assembli a la pantalla; així el mar va en C100 M45 Y80 K55, el verd de la paleta. Cada recurs anomena el seu màster a `svg.pdfFileId`, `pressPdf()` (a la resposta curta) lliura els bytes del màster a `renderToPdf` amb l'identificador de l'SVG, i postext-pdf incrusta aquesta pàgina tal com és, en vectors i amb les tintes del màster. Ho fa amb el plànol, que és una figura, i amb el mapa de la coberta i la banda de la contracoberta, que són imatges de disseny. La prova en escala de grisos rep els SVG, perquè un màster incrustat no es converteix mai i continuaria en color.
 
 ## Variants
 
@@ -57,7 +57,7 @@ L'art, la pestanya i l'escala gràfica es mesuren des de `BLEED`, i les marques 
 
 ### Imprimeix l'art des dels seus SVG
 
-Sense `pdfFileId`, el PDF d'impremta dibuixa cada imatge des del seu SVG, també en vectors però amb la conversió simple, i el mar surt en C82 M0 Y25 K76, un blau petroli.
+Sense `pdfFileId`, el fitxer d'impremta dibuixa cada imatge des del seu SVG, també en vectors i a través del perfil: el verd, definit en CMYK, conserva C100 M45 Y80 K55, però els altres verds de les illes prenen les separacions del perfil i no les triades a mà.
 
 ```diff
 -  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
@@ -66,7 +66,9 @@ Sense `pdfFileId`, el PDF d'impremta dibuixa cada imatge des del seu SVG, també
 
 ## Errors freqüents
 
-- postext-pdf 1.4.1 escriu cada pàgina amb una sola MediaBox, el full sencer de 192 × 249 mm, sense TrimBox ni BleedBox, i imprimeix les marques de tall només a la planxa del negre. Indica a la impremta el format tallat, 170 × 227 mm, o afegeix les caixes amb una eina de preimpressió si et demana PDF/X.
-- A la 1.4.1, una marca de tall comença a `markOffset` del tall, no de la sang, així que amb una sang més gran que la separació per defecte de 3 mm les marques s'imprimeixen damunt de la il·lustració. Mantén la separació igual a la sang, com fa aquí `cutLines`.
-- `renderToPdf` 1.4.1 no llegeix `config.pdfGeneration`. `pressPdf()` li passa l'espai de color com a opció, i els marcadors i l'etiquetatge vénen activats per defecte.
+- Una norma PDF/X escriu sempre CMYK, digui el que digui `colorSpace`, així que la prova en grisos substitueix `print` per `{ standard: 'none' }` al costat de `colorSpace: 'grayscale'`.
+- Un PDF/X no es genera sense el seu perfil de sortida. `renderToPdf` baixa `fogra51.icc` de `profileBaseUrl` (aquí, la carpeta `/icc/` de postext.dev); per servir-lo tu, passa els bytes del fitxer com a `outputProfile`.
+- El preflight assenyala el text de menys de 9 pt que porta més d'una tinta. Les etiquetes de 7,5 pt en negreta i en verd aguanten bé quatre tintes sobre paper cuixé, així que `print.preflight.smallTextSize` és 7 pt; el colofó de 6,3 pt, que en verd sàlvia serien tres tintes sobre una banda de quatre, va calat en el color del paper.
+- Un fitxer PDF/X no porta anotacions d'enllaç, perquè un fitxer per a impremta no les pot tenir dins de la seva BleedBox; els marcadors es mantenen.
+- Una marca de tall comença a `markOffset` del tall, no de la sang, així que amb una sang més gran que la separació per defecte de 3 mm les marques s'imprimeixen damunt de la il·lustració. Mantén la separació igual a la sang, com fa aquí `cutLines`.
 - Un cop generat, cada botó es converteix en un enllaç «Open the PDF ↗» i un altre de baixada, i només els de baixada porten el nom del seu fitxer.

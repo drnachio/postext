@@ -1,12 +1,13 @@
 // ═══ Postext Cookbook · Nº 024 · Print-ready PDF: bleed, crop marks and CMYK ═══════════
 // https://postext.dev/en/cookbook/print-ready-pdf
 // Code: MIT · Text: original (CC BY 4.0) · Maps: generated in code (CC BY 4.0)
-// Fonts: Karla, Space Grotesk, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-// An exhibition leaflet set up for the press: bleed and crop marks on every page, and a CMYK
-// PDF that embeds its fonts and takes the maps and the floor plan from print masters.
+// Fonts: Karla, Space Grotesk, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.22.0
+// An exhibition leaflet set up for the press: bleed and crop marks on every page, and a
+// PDF/X-4 file separated for FOGRA51 that embeds its fonts and takes the maps and the floor
+// plan from print masters, checked by the preflight before it is offered.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  defaultResourceTypes, preflightDocument, loadOutputProfile, outputTransform,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -14,20 +15,29 @@ const LANG = 'es'; // @lang: the language of the sample document (this recipe is
 const RECIPE = 'print-ready-pdf';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
-// #region palette: screen colours picked for the plates the CMYK file prints them on
+// #region palette: screen colours, and for four of them the inks the press prints them in
 const palette = {
-  ink: '#161616', // text: a neutral grey prints on the black plate alone (K91)
-  muted: '#666666', // the running heads, on black alone for the same reason (K60)
-  forest: '#0b3d2e', // the sea, the kickers, the back band: its plain build is a petrol teal
-  signal: '#ff6626', // route, waypoints, tab: red at full strength, so no black (C0 M60 Y85)
+  ink: '#161616', // text: a neutral grey prints on the black plate alone (K95 on FOGRA51)
+  muted: '#666666', // the running heads, on black alone for the same reason (K66)
+  forest: '#0b3d2e', // the sea, the kickers, the back band
+  signal: '#ff6626', // route, waypoints, tab
   sage: '#9fb8a8', // high ground; small type on forest
-  paper: '#f4f1ea', // type on forest
+  paper: '#f4f1ea', // type on forest: reversed out, it prints no ink at all
 };
-// col(id): a palette-linked colour. It carries the hex too, because 1.4.1 paints design
+// The colours authored in CMYK (%), the same builds as the print masters (section 2), so the
+// type, the tab and the drawings share their inks. Without them the profile would separate
+// the forest as C90 M43 Y71 K62 and the orange as C0 M70 Y90 K0, a shade off the route.
+const AUTHORED = { forest: [100, 45, 80, 55], signal: [0, 60, 85, 0], sage: [40, 20, 35, 0],
+  paper: [0, 0, 0, 0] };
+const cmyk = ([c, m, y, k]) => ({ c, m, y, k });
+const value = (id) => (AUTHORED[id]
+  ? { hex: palette[id], model: 'cmyk', cmyk: cmyk(AUTHORED[id]) }
+  : { hex: palette[id], model: 'hex' });
+// col(id): a palette-linked colour. It carries the hex too, because postext paints design
 // elements from the hex (gotcha: palette-skips-designs).
-const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
+const col = (id) => ({ ...value(id), paletteId: id });
 const colorPalette = [
-  ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
+  ...Object.keys(palette).map((id) => ({ id, name: id, value: value(id) })),
   // The engine's defaults link to 'main-color': point it at the forest, so nothing prints blue.
   { id: 'main-color', name: 'forest (defaults)', value: { hex: palette.forest, model: 'hex' } },
 ];
@@ -40,9 +50,20 @@ const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back
 // is. Each page grows by doc.trimOffset a side, bleed + offset + mark: 11 mm here.
 const cutLines = { enabled: true, bleed: mm(BLEED), markOffset: mm(BLEED) };
 
-// renderToPdf ignores config.pdfGeneration, so every PDF setting goes in its options.
-// `masters` holds print-master bytes by fileId (section 2 writes them).
-function pressPdf(doc, colorSpace, { resources, masters }) {
+// Hook-up: config().print. PDF/X-4 for the press on FOGRA51 (PSO Coated v3, the leaflet's
+// 150 g coated matte): every colour separated through the profile (the authored ones as
+// written), 100 % K text overprinting, the output intent, TrimBox and BleedBox on each page.
+// The 7.5 pt bold labels in forest hold in four inks on coated stock: the small-text check
+// starts at 7 pt instead of 9.
+const PRINT = { standard: 'pdfx4', outputProfile: 'fogra51', preflight: { smallTextSize: pt(7) } };
+// Where the profiles are fetched from: postext.dev serves postext's icc/ folder at /icc/ (any
+// copy of it works, and so does the npm CDN's postext/icc/).
+const PROFILES = 'https://postext.dev/icc/';
+
+// `masters` holds print-master bytes by fileId (section 2 writes them). The proof is an
+// ordinary greyscale PDF: no PDF/X, which would force CMYK.
+function pressPdf(doc, kind, { resources, masters }) {
+  const press = kind === 'press';
   // A resource names its master in svg.pdfFileId, but outside bundles renderToPdf only asks
   // for svg.fileId: answer that id with the master (gotcha: pdf-master-resourcebytes).
   const masterOf = new Map(resources.filter((r) => r.svg?.pdfFileId)
@@ -51,10 +72,12 @@ function pressPdf(doc, colorSpace, { resources, masters }) {
     // The kit's provider snaps weights and falls back to upright, since the PDF asks for every
     // style of every family (gotcha: pdf-provider-all-styles); TrueType faces are subset.
     fontProvider: fontsourceProvider,
-    colorSpace, // 'cmyk' for the press, 'grayscale' for a proof: a naive conversion, no ICC
+    // The press file takes config().print, its profile fetched from PROFILES
+    // (outputProfile: the .icc bytes, to hand it over yourself).
+    profileBaseUrl: PROFILES,
+    ...(press ? {} : { print: { standard: 'none' }, colorSpace: 'grayscale' }),
     // The proof keeps the SVGs, which its grey conversion can reach; masters stay in CMYK.
-    resourceBytes: (fileId) => (colorSpace === 'cmyk' && masters.get(masterOf.get(fileId)))
-      || imageBytes(fileId),
+    resourceBytes: (fileId) => (press && masters.get(masterOf.get(fileId))) || imageBytes(fileId),
   }); // bookmarks (from the headings) and /PageLabels (from the folios) come by default
 }
 // #endregion
@@ -145,8 +168,10 @@ const back = { id: 'back', numbered: false, breakBefore: { enabled: true, parity
     { kind: 'text', id: 'when', content: '{attr.fechas}', ...label, color: col('sage'),
       placement: { anchor: { to: '#address', edge: 'below' }, offset: { y: mm(4) } } },
     { kind: 'text', id: 'colophon', content: '{attr.colofon}', ...label, fontWeight: 400,
+      // 6.3 pt in sage would be three inks on a four-ink band: reversed to paper, it prints
+      // no ink and no plate can shift it (the preflight's small-text check).
       fontSize: pt(6.3), letterSpacing: pt(0), textTransform: 'none', lineHeight: 1.4,
-      color: col('sage'), overflow: 'wrap',
+      color: col('paper'), overflow: 'wrap',
       placement: { anchor: { to: 'page', edge: 'bottom-left' }, offset: { x: mm(OUTER),
         y: mm(-6) }, size: { width: mm(78) } } }, // 57 monospaced characters a line
   ] } };
@@ -158,6 +183,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     resetOn: 'never' })),
   colorPalette,
+  print: PRINT,
   headingStyles: [cover, back],
   page: { width: mm(TRIM[0]), height: mm(TRIM[1]), cutLines,
     margins: { top: mm(TOP), bottom: mm(FOOT), left: mm(INNER), right: mm(OUTER), mirror: true } },
@@ -318,8 +344,8 @@ const DRAWINGS = { cubierta: [COVER, coverShapes], banda: [BANDART, bandShapes],
 
 // #region master: print masters, one-page PDFs written in the inks the designer chose
 // C, M, Y, K in %, one build per colour of the drawings, matched to the screen colours on a
-// proof. The plain conversion would print the sea C82 M0 Y25 K76, a petrol teal; here it is
-// a four-ink green. The orange keeps its plain build, so the route matches the tab.
+// proof. The palette authors forest, signal, sage and paper with these same builds, so the
+// route matches the tab and the kickers match the sea.
 const INKS = { forest: [100, 45, 80, 55], shallows: [100, 50, 85, 40], coast: [90, 50, 85, 20],
   lowland: [80, 40, 75, 5], upland: [50, 15, 45, 20], sage: [40, 20, 35, 0],
   summit: [10, 5, 10, 0], tint: [5, 0, 5, 5], signal: [0, 60, 85, 0], paper: [0, 0, 0, 0] };
@@ -379,11 +405,20 @@ await Promise.all(Object.entries(DRAWINGS)
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: 'Cartografías imaginarias · PDF listo para imprenta' });
 const inputs = { resources, masters };
-offerPdf(() => pressPdf(doc, 'cmyk', inputs), `${RECIPE}.pdf`); // the file for the press
-offerPdf(() => pressPdf(doc, 'grayscale', inputs), `${RECIPE}-proof.pdf`); // a proof to read
+offerPdf(() => pressPdf(doc, 'press', inputs), `${RECIPE}.pdf`); // the file for the press
+offerPdf(() => pressPdf(doc, 'proof', inputs), `${RECIPE}-proof.pdf`); // a proof to read
 // The kit names both buttons alike; once built, each download link carries its file name.
 const button = (file) => document.querySelector(`[data-postext-pdf="${file}"]`);
-button(`${RECIPE}.pdf`).textContent = 'Press PDF (CMYK)';
+button(`${RECIPE}.pdf`).textContent = 'Press PDF (PDF/X-4)';
 button(`${RECIPE}-proof.pdf`).textContent = 'Greyscale proof';
+
+// The preflight: what a printer would reject, checked with the same profile.
+const transform = outputTransform(await loadOutputProfile(PRINT.outputProfile, PROFILES));
+const findings = preflightDocument(doc, { resources, transform });
+const report = document.createElement('p');
+report.textContent = findings.length === 0
+  ? `Preflight (${PRINT.standard}, ${PRINT.outputProfile}): no findings`
+  : `Preflight: ${findings.map((f) => `${f.kind} on page ${f.pageIndex + 1}`).join('; ')}`;
+button(`${RECIPE}.pdf`).after(report);
 
 // @kit
