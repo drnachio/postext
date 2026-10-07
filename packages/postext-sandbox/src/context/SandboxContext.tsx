@@ -79,6 +79,7 @@ import { hasIndexedDB } from '../storage/blobStore';
 import { folioSupported } from '../viewport/folioSupport';
 import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
 import { onPdfFontChecksChange, pdfFontChecks, pdfFontChecksFor } from '../controls/pdfFontWarnings';
+import { onPreflightInputsChange, preflightInputs, preflightInputsVersion } from '../print/preflightInputs';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
@@ -2088,7 +2089,7 @@ export function SandboxProvider({
    *  its font warnings: part of the warnings key. */
   const imageStatusRef = useRef(0);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current, pdfFontChecks(), s.bookVersion, s.pdfScope];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current, pdfFontChecks(), s.bookVersion, s.pdfScope, preflightInputsVersion()];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
     const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
@@ -2119,6 +2120,7 @@ export function SandboxProvider({
       // Another book's are dropped; after an edit they are marked stale.
       pdfFontChecks: fontChecks.checks,
       pdfFontChecksStale: fontChecks.stale,
+      preflight: preflightInputs(s.config.print, s.resources),
     });
     const value = whole ? all.filter((w) => w.chapterId === undefined || w.chapterId === s.activeChapterId) : all;
     warningsCacheRef.current = { key, value };
@@ -2180,9 +2182,11 @@ export function SandboxProvider({
     };
     const offImages = onUnavailableResourceImagesChange(refresh);
     const offPdf = onPdfFontChecksChange(refresh);
+    const offPreflight = onPreflightInputsChange(refresh);
     return () => {
       offImages();
       offPdf();
+      offPreflight();
       clearTimeout(timer);
     };
   }, []);

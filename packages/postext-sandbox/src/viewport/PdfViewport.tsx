@@ -5,11 +5,13 @@ import {
   metadataText,
   resolveDebugConfig,
   resolvePdfGenerationConfig,
+  resolvePrintConfig,
   type LayoutContinuation,
   type PostextConfig,
   type Resource,
   type VDTDocument,
 } from 'postext';
+import { loadPrintProfile, outputProfileBaseUrl } from '../print/printSetup';
 import { createPdfWorker, type PdfWorkerHandle, type RenderProgress } from 'postext-pdf/worker';
 import { useBookPages, useBookPlan, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
@@ -203,6 +205,13 @@ export function PdfViewport() {
       setPhase('render');
       const debug = resolveDebugConfig(snapshotConfig.debug);
       const pdfGen = resolvePdfGenerationConfig(snapshotConfig.pdfGeneration);
+      // Print production (#603): a PDF/X standard or a CMYK PDF separates
+      // through the output profile, loaded here (catalogue or uploaded).
+      const print = resolvePrintConfig(snapshotConfig.print);
+      const colorSpace = pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb';
+      const outputProfile = print.standard !== 'none' || colorSpace === 'cmyk'
+        ? await loadPrintProfile(print).then((p) => p.bytes, () => undefined)
+        : undefined;
       const bytesSpan = perfSpan('pdf.resourceBytes');
       const resourceBytes = await buildPdfResourceBytes(snapshotResources, snapshotConfig);
       bytesSpan.end({ resources: resourceBytes.size });
@@ -214,12 +223,15 @@ export function PdfViewport() {
         fontProvider: providerRef.current,
         pageNegative: debug.pageNegative.enabled,
         outlines: pdfGen.outlines,
-        colorSpace: pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb',
+        colorSpace,
         accessible: pdfGen.accessible,
         resourceBytes,
+        ...(snapshotConfig.print ? { print: snapshotConfig.print } : {}),
+        ...(outputProfile ? { outputProfile } : {}),
+        profileBaseUrl: outputProfileBaseUrl(),
         onWarning: (w) => {
           if (isPdfFontCheck(w)) fontChecks.push(w);
-          else if (w.kind === 'fontFallback') console.warn(w.message);
+          else if (w.kind === 'fontFallback' || w.kind === 'outputProfileUnavailable' || w.kind === 'pageNegativeIgnored') console.warn(w.message);
         },
         onProgress: (p) => {
           setRenderProgress(p);

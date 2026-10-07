@@ -7,7 +7,10 @@ import { chapterLayoutFromDoc, leadingBlankPageCount } from '../../book/paginati
 import { stitchDocuments, type StitchedBook } from '../../book/stitch';
 import type { ComposedBook } from '../../book/types';
 import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook';
-import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
+import { dimensionToPx, preflightDocument, renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
+import type { BoundingBox, PrintPreview } from 'postext';
+import { previewFor, usePrintSetup } from '../../print/printSetup';
+import { usePrintPreview } from '../../print/printPreviewToggle';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { clearOverlay, drawOverlay } from './overlay';
 import { syncComicEditors } from '../comics/comicEditing';
@@ -217,6 +220,47 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // painted with placeholders. The LAYOUT effect then repaints the pages
   // in view and marks the rest stale, exactly as for a new docVersion.
   const [paintKey, setPaintKey] = useState(0);
+  // The print preview (#606): the soft proof of the output profile on the
+  // paper's white, the trim / bleed / safe-zone guides and the preflight
+  // marks of each page. Repaints, never relays.
+  const [printPreviewOn] = usePrintPreview();
+  const printSetup = usePrintSetup(config.print, printPreviewOn);
+  const printPreviewRef = useRef<PrintPreview | undefined>(undefined);
+  const printPreviewKey = printPreviewOn ? `${printSetup.transform ? 'ready' : 'loading'}|${JSON.stringify(printSetup.print)}` : 'off';
+  useEffect(() => {
+    if (!printPreviewOn || !printSetup.transform) {
+      printPreviewRef.current = undefined;
+    } else {
+      const dpi = (config.page?.dpi as number | undefined) ?? 300;
+      const base = previewFor(printSetup, dpi, true);
+      const marks = new WeakMap<VDTDocument, Map<number, BoundingBox[]>>();
+      const marksOf = (doc: VDTDocument): Map<number, BoundingBox[]> => {
+        let byPage = marks.get(doc);
+        if (!byPage) {
+          byPage = new Map();
+          const issues = preflightDocument(doc, { print: printSetup.print, transform: printSetup.transform, resources: resourcesRef.current, cmyk: true });
+          const offset = doc.pageIndexOffset ?? 0;
+          for (const issue of issues) {
+            if (!issue.rect) continue;
+            const list = byPage.get(issue.pageIndex - offset) ?? [];
+            list.push(issue.rect);
+            byPage.set(issue.pageIndex - offset, list);
+          }
+          marks.set(doc, byPage);
+        }
+        return byPage;
+      };
+      printPreviewRef.current = base && {
+        ...base,
+        guides: { safeZonePx: dimensionToPx(printSetup.print.preflight.safeZone, dpi) },
+        marksFor: (pageIndex) => (docRef.current ? marksOf(docRef.current).get(pageIndex) ?? [] : []),
+      };
+    }
+    setPaintKey((k) => k + 1);
+    // The key says when the preview changes; the setup object is new on
+    // every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [printPreviewKey]);
   const lastPaintedPaintKeyRef = useRef(0);
   // The book's first chapter as last laid out here, for its cover (a book
   // without one gets a picture of its first page once it is painted).
@@ -635,7 +679,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     const { displayWidth, displayHeight } = computeDisplaySizeRef.current(containerW, containerH);
 
     const debugConfig = resolveDebugConfig(deferredConfig.debug);
-    renderOptsRef.current = { pageNegative: debugConfig.pageNegative.enabled };
+    renderOptsRef.current = {
+      pageNegative: debugConfig.pageNegative.enabled,
+      ...(printPreviewRef.current ? { printPreview: printPreviewRef.current } : {}),
+    };
     const pageWidthPx = firstPage.width;
     const pageHeightPx = firstPage.height;
     const wantedScale = wantedBitmapScale(displayWidth, pageWidthPx);

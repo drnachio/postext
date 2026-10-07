@@ -6,7 +6,7 @@ describe('settings registry', () => {
   it('lists every section exactly once', () => {
     const ids = SETTINGS_SECTIONS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toHaveLength(37);
+    expect(ids).toHaveLength(38);
     expect(SETTINGS_GROUPS).toHaveLength(14);
   });
   it('puts the writing system right after the page, with its two sections', () => {
@@ -32,7 +32,7 @@ describe('settings registry', () => {
     expect(groupOfSection('toc')).toBe('headings');
   });
   it('gives the Folio viewer a group of its own, right after Export', () => {
-    expect(sectionsInGroup('output').map((s) => s.id)).toEqual(['pdfGeneration', 'htmlViewer']);
+    expect(sectionsInGroup('output').map((s) => s.id)).toEqual(['print', 'pdfGeneration', 'htmlViewer']);
     expect(sectionsInGroup('folio').map((s) => s.id)).toEqual(['folio']);
     const ids = SETTINGS_GROUPS.map((g) => g.id);
     expect(ids.indexOf('folio')).toBe(ids.indexOf('output') + 1);

@@ -158,6 +158,8 @@ export function referencedFileIds(content: { resources: Resource[]; config: Post
   }
   // The cover picture is a blob of the project, referenced by no resource.
   if (content.thumbnail) blobIds.add(content.thumbnail.fileId);
+  // An uploaded output profile (`print.customProfile`).
+  if (content.config.print?.customProfile) blobIds.add(content.config.print.customProfile.fileId);
   for (const family of content.config.customFonts ?? []) {
     for (const v of family.variants) fontIds.add(v.fileId);
   }

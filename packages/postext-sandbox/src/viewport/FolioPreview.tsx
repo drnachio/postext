@@ -13,6 +13,8 @@ import { stitchDocuments, type StitchedBook } from '../book/stitch';
 import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
 import { ensureResourceImages, ensureResourceVideoUrls, getResourceVideoUrl } from '../controls/resourceImages';
 import { getBlob } from '../storage/blobStore';
+import { previewFor, usePrintSetup } from '../print/printSetup';
+import { usePrintPreview } from '../print/printPreviewToggle';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { defaultDocumentLocale } from './CanvasPreview/layoutUtils';
@@ -378,6 +380,17 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [deferredResources, diagramInkHex]);
 
   const pageNegative = useMemo(() => resolveDebugConfig(deferredConfig.debug).pageNegative.enabled, [deferredConfig]);
+  // The print preview (#606): the pages proofed through the output profile,
+  // relative to the paper (the book's paper shade tints them in 3D).
+  const [printPreviewOn] = usePrintPreview();
+  const printSetup = usePrintSetup(deferredConfig.print, printPreviewOn);
+  const printPreviewKey = printPreviewOn && printSetup.transform ? JSON.stringify(printSetup.print) : 'off';
+  const printPreview = useMemo(
+    () => (printPreviewOn ? previewFor(printSetup, (deferredConfig.page?.dpi as number | undefined) ?? 300, false) : undefined),
+    // The key names the setup; the object is new on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [printPreviewKey, deferredConfig.page?.dpi],
+  );
   const folioLabels = useMemo((): FolioLabels => ({
     region: labels.folioRegion,
     prev: labels.folioPrev,
@@ -434,6 +447,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         at,
         mode,
         pageNegative,
+        ...(printPreview ? { printPreview } : {}),
         // The page is in the URL; the count is only announced.
         showCount: false,
         // The tab's own bar turns the pages (and takes a page number).
@@ -488,10 +502,11 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     callbacksRef.current.onSpreadChange?.(viewer.state.pages);
     const shown = viewer.state.pages[viewer.state.pages.length - 1];
     if (shown !== undefined) callbacksRef.current.onCurrentPageChange?.(shown);
-  }, [shownDoc, paintKey, mode, pageNegative, spineReady, imagesReady]);
+  }, [shownDoc, paintKey, mode, pageNegative, printPreview, spineReady, imagesReady]);
 
-  // A new reading mode or page negative: a new viewer, on the same page.
-  const modeKey = `${mode}|${pageNegative}`;
+  // A new reading mode, page negative or print preview: a new viewer, on
+  // the same page.
+  const modeKey = `${mode}|${pageNegative}|${printPreviewKey}`;
   const modeKeyRef = useRef(modeKey);
   useEffect(() => {
     if (modeKeyRef.current === modeKey) return;

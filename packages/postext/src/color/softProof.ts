@@ -22,8 +22,9 @@ export interface PrintPreview {
   /** Screen guides drawn over the proof (Canvas): the trim and bleed boxes
    *  and the safe zone inside the trim, page px. */
   guides?: { safeZonePx: number };
-  /** Areas preflight flagged on this page (page px), outlined. */
-  marks?: readonly BoundingBox[];
+  /** Areas preflight flagged on a page (page px, by `VDTPage.index`),
+   *  outlined. */
+  marksFor?: (pageIndex: number) => readonly BoundingBox[];
 }
 
 export interface PrintPreviewOptions {

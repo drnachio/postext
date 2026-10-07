@@ -36,6 +36,7 @@ const SOURCES = {
   font: /<FontPicker\b/,
   resources: /\buseSandboxResources\(|\bs\.resources\b/,
   citationStyles: /\bSTYLE_CATALOG\b/,
+  outputProfiles: /\bOUTPUT_PROFILES\b/,
 };
 
 function labelKeys() {
@@ -122,7 +123,7 @@ export function buildIndexSource() {
     "import type { SandboxLabels } from '../../types/labels';",
     "import type { SettingsSectionId } from '../sections/registry';",
     '',
-    "export type SearchWordSource = 'color' | 'dimension' | 'font' | 'resources' | 'citationStyles';",
+    "export type SearchWordSource = 'color' | 'dimension' | 'font' | 'resources' | 'citationStyles' | 'outputProfiles';",
     '',
     'export interface SectionSearchKeys {',
     '  keys: readonly (keyof SandboxLabels)[];',

@@ -10,16 +10,23 @@ import { HueSlider } from '../HueSlider';
 import { AlphaSlider } from '../AlphaSlider';
 import {
   hexToHsv, hsvToHex, hsvToRgb, rgbToHsv,
-  rgbToHsl, hslToRgb, rgbToCmyk, cmykToRgb,
+  rgbToHsl, hslToRgb,
   clamp, hexAlpha, hexWithoutAlpha, hexWithAlpha,
   type HSV, type RGB, type HSL, type CMYK, type ColorMode,
 } from '../color-utils';
 import { PaletteChips } from './PaletteChips';
 import { TabInputs } from './TabInputs';
+import { useSeparation } from '../../print/useSeparation';
 
 interface ColorPopoverBodyProps {
   hex: string;
   onChange: (hex: string) => void;
+  /** The exact values of a colour authored in CMYK (`ColorValue.cmyk`). */
+  cmyk?: CMYK;
+  /** Told when the colour is set in the CMYK tab: its values and the screen
+   *  hex the output profile shows them as. Without it, CMYK edits go
+   *  through `onChange` as hex. */
+  onCmykChange?: (cmyk: CMYK, hex: string) => void;
   initialMode?: ColorMode;
   onModeChange?: (mode: ColorMode) => void;
   palette?: ColorPaletteEntry[];
@@ -65,7 +72,7 @@ export function ColorPopover({ open, onOpenChange, anchor, ariaLabel, ...body }:
   );
 }
 
-function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverBodyProps) {
+function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverBodyProps) {
   const { large } = useLargeTargets();
   const labels = useSandboxLabels();
   const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
@@ -74,6 +81,9 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
   const [hexText, setHexText] = useState(() => hexWithoutAlpha(hex));
   const [hexError, setHexError] = useState(false);
   const [previousHex] = useState(hex);
+  // The CMYK the colour was typed in, kept while no other notation edits it.
+  const [authored, setAuthored] = useState<CMYK | undefined>(authoredCmyk);
+  const separation = useSeparation();
 
   // Sync from external hex changes (e.g., reset)
   useEffect(() => {
@@ -97,6 +107,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
 
   const updateHsv = useCallback((next: HSV) => {
     setHsv(next);
+    setAuthored(undefined);
     emitColor(next, alpha);
   }, [alpha, emitColor]);
 
@@ -115,7 +126,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
 
   const rgb = hsvToRgb(hsv);
   const hsl = rgbToHsl(rgb);
-  const cmyk = rgbToCmyk(rgb);
+  const cmyk = authored ?? separation.toCmyk(rgb);
   const currentHex = hsvToHex(hsv);
 
   const handleRgbChange = (channel: keyof RGB, v: number) => {
@@ -130,7 +141,12 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
 
   const handleCmykChange = (channel: keyof CMYK, v: number) => {
     const next = { ...cmyk, [channel]: v };
-    updateHsv(rgbToHsv(cmykToRgb(next)));
+    const nextHex = separation.toHex(next);
+    const nextHsv = hexToHsv(nextHex);
+    setHsv(nextHsv);
+    setAuthored(next);
+    if (onCmykChange) onCmykChange(next, hexWithAlpha(nextHex, alpha));
+    else emitColor(nextHsv, alpha);
   };
 
   const handleHexSubmit = () => {

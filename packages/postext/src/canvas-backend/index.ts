@@ -322,7 +322,7 @@ function paintPrintPreview(
   ctx.putImageData(image, 0, 0);
 
   const guides = preview.guides;
-  const marks = preview.marks ?? [];
+  const marks = preview.marksFor?.(page.index) ?? [];
   if (!guides && marks.length === 0) return;
   ctx.save();
   const line = 1 / pxPerPagePx;

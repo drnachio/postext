@@ -57,7 +57,13 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   };
 
   const handleModeChange = (newMode: ColorMode) => {
-    onChange({ hex: value.hex, model: newMode });
+    // The authored CMYK stays with a colour shown in CMYK.
+    onChange({ hex: value.hex, model: newMode, ...(newMode === 'cmyk' && value.cmyk ? { cmyk: value.cmyk } : {}) });
+  };
+
+  // A colour set in the CMYK tab keeps its exact values (#604).
+  const handleCmykChange = (cmyk: { c: number; m: number; y: number; k: number }, hex: string) => {
+    onChange({ hex, model: 'cmyk', cmyk });
   };
 
   const linkToEntry = (paletteId: string) => {
@@ -69,12 +75,15 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   // Unlinking keeps the colour the page shows: the entry's, not the value
   // stored beside the link (which may predate a change of the entry).
   const unlink = () => {
-    onChange(linkedEntry
-      ? { hex: linkedEntry.value.hex, model: linkedEntry.value.model }
-      : { hex: value.hex, model: value.model });
+    const source = linkedEntry ? linkedEntry.value : value;
+    onChange({ hex: source.hex, model: source.model, ...(source.cmyk ? { cmyk: source.cmyk } : {}) });
   };
 
-  const displayText = isLinked ? linkedEntry!.name : formatColor(value.hex, mode);
+  const displayText = isLinked
+    ? linkedEntry!.name
+    : mode === 'cmyk' && value.cmyk
+      ? `${value.cmyk.c} ${value.cmyk.m} ${value.cmyk.y} ${value.cmyk.k}`
+      : formatColor(value.hex, mode);
   const modeLabel = isLinked ? '' : mode.toUpperCase();
   const swatchHex = isLinked ? linkedEntry!.value.hex : value.hex;
   const alpha = hexAlpha(swatchHex);
@@ -101,6 +110,8 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
         ariaLabel={label || state.labels.colorPickerOpen}
         hex={value.hex}
         onChange={handleHexChange}
+        {...(value.model === 'cmyk' && value.cmyk ? { cmyk: value.cmyk } : {})}
+        onCmykChange={handleCmykChange}
         initialMode={mode}
         onModeChange={handleModeChange}
         palette={disablePalette ? undefined : palette}

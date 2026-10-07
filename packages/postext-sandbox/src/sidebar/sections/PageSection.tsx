@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
-import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, dimensionsEqual, colorsEqual } from 'postext';
+import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, dimensionsEqual, colorsEqual } from 'postext';
 import type { PageConfig, PageNumberingConfig, PageSizePreset, PageNumberFormat, Dimension } from 'postext';
 import {
   CollapsibleSection,
@@ -105,19 +105,6 @@ export const PageSection = memo(function PageSection() {
     }
   };
 
-  const resetCutLinesField = (field: 'enabled' | 'bleed' | 'markLength' | 'markOffset' | 'markWidth' | 'color') => {
-    if (!raw?.cutLines || typeof raw.cutLines === 'boolean') return;
-    const next = { ...raw.cutLines };
-    delete next[field];
-    const hasKeys = Object.keys(next).length > 0;
-    if (hasKeys) {
-      updatePage({ cutLines: next });
-    } else {
-      const r = { ...raw };
-      delete r.cutLines;
-      dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(r).length > 0 ? r : undefined } });
-    }
-  };
 
   const handlePresetChange = (preset: string) => {
     if (preset === 'custom') {
@@ -152,12 +139,6 @@ export const PageSection = memo(function PageSection() {
   const marginsMirror = page.margins.mirror ?? false;
   const isMarginsMirrorDefault = marginsMirror === (D.margins.mirror ?? false);
   const isDpiDefault = page.dpi === D.dpi;
-  const isCutLinesEnabledDefault = page.cutLines.enabled === D.cutLines.enabled;
-  const isCutLinesBleedDefault = dimensionsEqual(page.cutLines.bleed, DEFAULT_CUT_LINES.bleed);
-  const isCutLinesMarkLengthDefault = dimensionsEqual(page.cutLines.markLength, DEFAULT_CUT_LINES.markLength);
-  const isCutLinesMarkOffsetDefault = dimensionsEqual(page.cutLines.markOffset, DEFAULT_CUT_LINES.markOffset);
-  const isCutLinesMarkWidthDefault = dimensionsEqual(page.cutLines.markWidth, DEFAULT_CUT_LINES.markWidth);
-  const isCutLinesColorDefault = colorsEqual(page.cutLines.color, DEFAULT_CUT_LINES.color);
   const isNumberingFormatDefault = page.pageNumbering.format === DEFAULT_PAGE_NUMBERING.format;
   const isNumberingStartAtDefault = page.pageNumbering.startAt === DEFAULT_PAGE_NUMBERING.startAt;
 
@@ -244,6 +225,19 @@ export const PageSection = memo(function PageSection() {
             />
           </NestedGroup>
         )}
+        {/* The layout's px per inch: not the resolution of pictures (the
+            print section's preflight checks that). */}
+        <NumberInput
+          label={labels.dpi}
+          value={page.dpi}
+          onChange={(v) => updatePage({ dpi: v })}
+          min={72}
+          max={1200}
+          step={1}
+          tooltip={labels.dpiTooltip}
+          isDefault={isDpiDefault}
+          onReset={() => resetField('dpi')}
+        />
       </FieldGroup>
 
       <FieldGroup title={labels.pageGroupMargins} description={labels.pageGroupMarginsDescription}>
@@ -345,98 +339,6 @@ export const PageSection = memo(function PageSection() {
         />
       </CollapsibleSection>
 
-      <CollapsibleSection
-        title={labels.pageGroupPrint}
-        sectionId="page-print"
-        variant="subsection"
-      >
-        <NumberInput
-          label={labels.dpi}
-          value={page.dpi}
-          onChange={(v) => updatePage({ dpi: v })}
-          min={72}
-          max={1200}
-          step={1}
-          tooltip={labels.dpiTooltip}
-          isDefault={isDpiDefault}
-          onReset={() => resetField('dpi')}
-        />
-
-        <ToggleSwitch
-          label={labels.cutLines}
-          checked={page.cutLines.enabled}
-          onChange={(v) =>
-            updatePage({ cutLines: { ...page.cutLines, enabled: v } })
-          }
-          tooltip={labels.cutLinesTooltip}
-          isDefault={isCutLinesEnabledDefault}
-          onReset={() => resetCutLinesField('enabled')}
-        />
-
-        {page.cutLines.enabled && (
-          <NestedGroup>
-            <DimensionInput
-              label={labels.cutLinesBleed}
-              value={page.cutLines.bleed}
-              onChange={(dim) =>
-                updatePage({ cutLines: { ...page.cutLines, bleed: dim } })
-              }
-              min={0}
-              step={0.5}
-              tooltip={labels.cutLinesBleedTooltip}
-              isDefault={isCutLinesBleedDefault}
-              onReset={() => resetCutLinesField('bleed')}
-            />
-            <DimensionInput
-              label={labels.cutLinesMarkLength}
-              value={page.cutLines.markLength}
-              onChange={(dim) =>
-                updatePage({ cutLines: { ...page.cutLines, markLength: dim } })
-              }
-              min={0}
-              step={0.5}
-              tooltip={labels.cutLinesMarkLengthTooltip}
-              isDefault={isCutLinesMarkLengthDefault}
-              onReset={() => resetCutLinesField('markLength')}
-            />
-            <DimensionInput
-              label={labels.cutLinesMarkOffset}
-              value={page.cutLines.markOffset}
-              onChange={(dim) =>
-                updatePage({ cutLines: { ...page.cutLines, markOffset: dim } })
-              }
-              min={0}
-              step={0.5}
-              tooltip={labels.cutLinesMarkOffsetTooltip}
-              isDefault={isCutLinesMarkOffsetDefault}
-              onReset={() => resetCutLinesField('markOffset')}
-            />
-            <DimensionInput
-              label={labels.cutLinesMarkWidth}
-              value={page.cutLines.markWidth}
-              onChange={(dim) =>
-                updatePage({ cutLines: { ...page.cutLines, markWidth: dim } })
-              }
-              min={0.1}
-              step={0.05}
-              tooltip={labels.cutLinesMarkWidthTooltip}
-              isDefault={isCutLinesMarkWidthDefault}
-              onReset={() => resetCutLinesField('markWidth')}
-            />
-            <ColorPicker
-              label={labels.cutLinesColor}
-              value={page.cutLines.color}
-              onChange={(color) =>
-                updatePage({ cutLines: { ...page.cutLines, color } })
-              }
-              tooltip={labels.cutLinesColorTooltip}
-              isDefault={isCutLinesColorDefault}
-              onReset={() => resetCutLinesField('color')}
-              fieldId="page-cutLinesColor"
-            />
-          </NestedGroup>
-        )}
-      </CollapsibleSection>
     </CollapsibleSection>
   );
 });

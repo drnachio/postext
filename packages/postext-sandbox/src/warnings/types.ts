@@ -1,8 +1,10 @@
+import type { PreflightIssue, PreflightSeverity } from 'postext';
 /** Which design slot a warning points at. `level` tags heading slots;
  *  the part opener is a single slot. */
 export type WarningSlotKind = 'header' | 'footer' | 'heading' | 'part';
 
 export type WarningKind =
+  | 'preflight'
   | 'missingFont'
   | 'missingFontFamily'
   | 'missingFontVariant'
@@ -357,7 +359,20 @@ export type WarningPayload =
    *  either. */
   | { kind: 'comicBalloonOverflow'; panel?: number; panelIndex?: number; reasons?: string[] }
   /** A speaker no picture marks and the cast does not list. */
-  | { kind: 'comicUnknownSpeaker'; speaker: string };
+  | { kind: 'comicUnknownSpeaker'; speaker: string }
+  /** A print preflight finding (#605): the engine's check, or what a
+   *  placed PDF brings in. `page` is the book page number to jump to. */
+  | { kind: 'preflight'; check: PreflightCheck; page?: number };
+
+/** `Omit` over each member of a union. */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/** One preflight finding as the Checks panel lists it. */
+export type PreflightCheck =
+  | DistributiveOmit<PreflightIssue, 'rect' | 'sourceStart' | 'sourceEnd' | 'pageIndex'>
+  | { kind: 'masterFonts'; severity: PreflightSeverity; name: string; fonts: string[] }
+  | { kind: 'masterRgb'; severity: PreflightSeverity; name: string }
+  | { kind: 'masterTransparency'; severity: PreflightSeverity; name: string; x1a: boolean };
 
 export interface Warning {
   id: string;

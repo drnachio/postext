@@ -30,6 +30,9 @@ import {
   isUnhyphenatedLanguage,
   matchHyphenationLocale,
   findLooseLines,
+  preflightDocument,
+  resolvePdfGenerationConfig,
+  resolvePrintConfig,
 } from 'postext';
 import {
   getConfigFontSpecs,
@@ -40,8 +43,9 @@ import {
   isKnownUnavailableGoogleFont,
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
-import type { Warning, WarningPayload } from './types';
+import type { PreflightCheck, Warning, WarningPayload } from './types';
 import type { PdfFontCheck } from '../controls/pdfFontWarnings';
+import type { PreflightInputs } from '../print/preflightInputs';
 import type { ComposedBook } from '../book/types';
 import { fromBookLine, fromBookOffset } from '../book/compose';
 import { frontmatterRange } from '../book/frontmatter';
@@ -903,12 +907,80 @@ export function computeWarnings(params: {
   pdfFontChecks?: readonly PdfFontCheck[];
   /** The book has changed since that PDF: its warnings are marked so. */
   pdfFontChecksStale?: boolean;
+  /** What the print preflight needs beyond the document (the profile's
+   *  separation, placed PDF reports, picture colours); absent, no
+   *  preflight runs. */
+  preflight?: PreflightInputs;
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false } = params;
+  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false, preflight } = params;
   const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata: book?.metadata });
   warnings.push(...pdfFontWarnings(pdfFontChecks, pdfFontChecksStale));
+  if (preflight && doc) warnings.push(...collectPreflightWarnings(doc, config, resources, preflight));
   if (!book) return warnings;
   return attributeToChapters(warnings, book, chapterTitles);
+}
+
+const SEVERITY_ORDER = { critical: 0, warning: 1, info: 2 } as const;
+
+/** The print preflight (#605) of the laid-out document, when the book is
+ *  set up for print: the engine's checks
+ *  (`preflightDocument`) and the placed PDFs' reports, critical first, each
+ *  with the book page number to jump to. */
+export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig, resources: readonly Resource[], inputs: PreflightInputs): Warning[] {
+  const print = resolvePrintConfig(config.print);
+  if (!print.preflight.enabled) return [];
+  const pdfGen = resolvePdfGenerationConfig(config.pdfGeneration);
+  const cmyk = print.standard !== 'none' || (pdfGen.forceColorSpace && pdfGen.colorSpace === 'cmyk');
+  // Only a book set up for print is checked as one: a PDF/X standard, a
+  // CMYK PDF, or crop marks.
+  if (!cmyk && !doc.config.page.cutLines.enabled) return [];
+  const issues = preflightDocument(doc, {
+    print,
+    resources,
+    cmyk,
+    imageColor: inputs.imageColor,
+    ...(inputs.transform ? { transform: inputs.transform } : {}),
+  });
+  const offset = doc.pageIndexOffset ?? 0;
+  const pageNumber = (pageIndex: number) => doc.pages[pageIndex - offset]?.pageNumberValue ?? pageIndex + 1;
+  // One RGB note per picture, not per page it is on.
+  const rgbSeen = new Set<string>();
+  const sorted = [...issues].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || a.pageIndex - b.pageIndex);
+  const out: Warning[] = [];
+  sorted.forEach((issue, i) => {
+    if (issue.kind === 'rgbImage') {
+      if (rgbSeen.has(issue.fileId)) return;
+      rgbSeen.add(issue.fileId);
+    }
+    const { sourceStart, sourceEnd, pageIndex } = issue;
+    const check = { ...issue } as Partial<typeof issue>;
+    delete check.rect;
+    delete check.sourceStart;
+    delete check.sourceEnd;
+    delete check.pageIndex;
+    out.push({
+      id: `preflight-${issue.kind}-${pageIndex}-${i}`,
+      payload: { kind: 'preflight', check: check as PreflightCheck, page: pageNumber(pageIndex) },
+      ...(sourceStart !== undefined ? { sourceStart, ...(sourceEnd !== undefined ? { sourceEnd } : {}) } : {}),
+    });
+  });
+  // Placed PDF masters.
+  for (const r of resources) {
+    const id = r.svg?.pdfFileId;
+    const report = id ? inputs.masters.get(id) : undefined;
+    if (!report) continue;
+    const name = r.caption?.trim() || r.id;
+    if (print.preflight.checkFonts && report.nonEmbeddedFonts.length > 0) {
+      out.push({ id: `preflight-masterFonts-${r.id}`, payload: { kind: 'preflight', check: { kind: 'masterFonts', severity: 'warning', name, fonts: report.nonEmbeddedFonts } } });
+    }
+    if (cmyk && report.rgb) {
+      out.push({ id: `preflight-masterRgb-${r.id}`, payload: { kind: 'preflight', check: { kind: 'masterRgb', severity: print.standard === 'pdfx1a' ? 'critical' : 'warning', name } } });
+    }
+    if (print.standard === 'pdfx1a' && report.transparency) {
+      out.push({ id: `preflight-masterTransparency-${r.id}`, payload: { kind: 'preflight', check: { kind: 'masterTransparency', severity: 'critical', name, x1a: true } } });
+    }
+  }
+  return out;
 }
 
 /** The Checks-panel entries of the last PDF's font warnings, one per face

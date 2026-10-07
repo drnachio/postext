@@ -117,6 +117,22 @@ describe('createBundle', () => {
     expect(bytes[0]).toBe(0x50); // PK
   });
 
+  it('carries an uploaded output profile as a file and reads it back (#607)', async () => {
+    const icc = new Uint8Array([0, 1, 2, 3, 4]);
+    const { bytes, manifest, files } = await createBundle({
+      name: 'Proof',
+      markdown: '# Proof',
+      config: { print: { standard: 'pdfx4', outputProfile: 'custom', customProfile: { name: 'PSO Coated v3', fileId: 'icc-1' } } },
+      files: { 'icc-1': icc },
+    });
+    expect(manifest.config?.print?.customProfile?.fileId).toBe('profiles/pso-coated-v3.icc');
+    expect(files['profiles/pso-coated-v3.icc']).toEqual(icc);
+    const opened = await openBundle(bytes);
+    const profile = opened.config.print?.customProfile;
+    expect(profile?.name).toBe('PSO Coated v3');
+    expect(opened.files.get(profile!.fileId)).toEqual(icc);
+  });
+
   it('drops a resource whose payload is missing, with a warning', async () => {
     const { manifest, warnings } = await createBundle({ name: 'x', markdown: '# X', resources: [svgResource] });
     expect(manifest.resources).toBeUndefined();
