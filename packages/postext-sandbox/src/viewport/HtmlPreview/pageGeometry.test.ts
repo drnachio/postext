@@ -154,4 +154,26 @@ describe('fitPagesToContent', () => {
     fitPagesToContent(doc, 0);
     expect(doc.pages[0]!.height).toBe(110);
   });
+
+  it('holds a comic page open to its leaf, widened when the leaf is wider than the text', () => {
+    const doc = {
+      pages: [{
+        width: 600,
+        height: 200_000,
+        columns: [{ blocks: [] }],
+        comic: { frame: box(40, 900), leaf: { x: 0, y: 0, width: 900, height: 1270 }, panels: [], splitters: [], balloons: [] },
+      }, {
+        width: 600,
+        height: 200_000,
+        columns: [{ blocks: [] }],
+        comic: { frame: box(30, 500), panels: [], splitters: [], balloons: [] },
+      }],
+    } as unknown as VDTDocument;
+    fitPagesToContent(doc, 24);
+    expect(doc.pages[0]!.height).toBe(1294);
+    expect(doc.pages[0]!.width).toBe(900);
+    // A comic laid out on the page itself: up to its frame.
+    expect(doc.pages[1]!.height).toBe(554);
+    expect(doc.pages[1]!.width).toBe(600);
+  });
 });

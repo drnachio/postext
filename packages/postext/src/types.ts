@@ -5623,6 +5623,26 @@ export interface ComicsConfig {
   /** Print the running heads and folios on comic pages. Default `false`:
    *  a comic page is all panels (its folio still counts). */
   runningHeads?: boolean;
+  /** For hosts whose page is not a leaf (the Sandbox's HTML viewer lays
+   *  the book out on pages a screen wide and a scroll tall): comic pages
+   *  are laid out on this leaf instead — the print page's size and
+   *  margins — scaled to {@link ComicViewerLeafConfig.fitWidth} px wide
+   *  (and at most `fitHeight` px tall) and set at the top of the page,
+   *  centred across it. Every length of the comic page (margins, gutters,
+   *  borders, lettering) is resolved at that scale, so the page shows its
+   *  print geometry, never reflowed. Not saved with a document. */
+  viewerLeaf?: ComicViewerLeafConfig;
+}
+
+/** See {@link ComicsConfig.viewerLeaf}. */
+export interface ComicViewerLeafConfig {
+  width: Dimension;
+  height: Dimension;
+  margins?: PageMargins;
+  /** Width of the leaf on the page, px. */
+  fitWidth: number;
+  /** Height the leaf may take at most, px (the leaf is then narrower). */
+  fitHeight?: number;
 }
 
 export interface ResolvedComicsConfig {
@@ -5640,6 +5660,8 @@ export interface ResolvedComicsConfig {
   balloonStyles: ResolvedBalloonStyleConfig[];
   cast: ComicCastMember[];
   runningHeads: boolean;
+  /** As the config gives it (hosts only). */
+  viewerLeaf?: ComicViewerLeafConfig;
 }
 
 export interface PostextConfig {

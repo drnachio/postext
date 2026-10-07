@@ -135,6 +135,15 @@ export function fitPagesToContent(doc: VDTDocument, padPx: number): void {
     }
     for (const float of page.floats ?? []) take(float.bbox);
     for (const ob of page.openerBand?.blocks ?? []) take(ob.bbox);
+    // A comic page is its leaf (`comics.viewerLeaf`), as wide as it is:
+    // wider than the text's page when the viewport is.
+    const leaf = page.comic?.leaf;
+    if (leaf) {
+      take(leaf);
+      page.width = Math.max(page.width, Math.ceil(leaf.x + leaf.width));
+    } else if (page.comic) {
+      take(page.comic.frame);
+    }
     page.height = Math.max(Math.ceil(bottom + padPx), 1);
   }
 }

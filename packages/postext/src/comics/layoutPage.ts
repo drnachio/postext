@@ -38,6 +38,40 @@ export interface ComicPageContext {
   /** Whether this page swaps mirrored margins (a verso of a left-bound
    *  book), for `comics.frame.margins` with `mirror`. */
   mirrorMargins?: boolean;
+  /** The content area on the sheet, when it is not the page's (a leaf of
+   *  its own, `comics.viewerLeaf`). */
+  contentBox?: BoundingBox;
+}
+
+/** The leaf a comic page is laid out on when the page is not one
+ *  (`comics.viewerLeaf`): its box on the page — the print leaf scaled to
+ *  `fitWidth` px wide (no taller than `fitHeight`), at the top of the
+ *  trim, centred across it —, its content area, and the dpi that scale
+ *  resolves every length of the comic page at. Undefined without one. */
+export function comicViewerLeaf(
+  comics: ResolvedComicsConfig,
+  resolved: ResolvedConfig,
+  trim: BoundingBox,
+): { box: BoundingBox; content: BoundingBox; dpi: number } | undefined {
+  const leaf = comics.viewerLeaf;
+  if (!leaf || !(leaf.fitWidth > 0)) return undefined;
+  const dpi0 = resolved.page.dpi;
+  const w0 = dimensionToPx(leaf.width, dpi0);
+  const h0 = dimensionToPx(leaf.height, dpi0);
+  if (!(w0 > 0) || !(h0 > 0)) return undefined;
+  const k = Math.min(leaf.fitWidth / w0, leaf.fitHeight && leaf.fitHeight > 0 ? leaf.fitHeight / h0 : Infinity);
+  const dpi = dpi0 * k;
+  const width = w0 * k;
+  const height = h0 * k;
+  const box = { x: trim.x + Math.max(0, (trim.width - width) / 2), y: trim.y, width, height };
+  const m = leaf.margins ?? {};
+  const at = (d: Dimension | undefined): number => (d ? dimensionToPx(d, dpi) : 0);
+  const left = at(m.left);
+  const right = at(m.right);
+  const top = at(m.top);
+  const bottom = at(m.bottom);
+  const content = { x: box.x + left, y: box.y + top, width: Math.max(0, width - left - right), height: Math.max(0, height - top - bottom) };
+  return { box, content, dpi };
 }
 
 /** A Dimension written in an attribute (`4mm`, `0.5cm`, `6pt`, `12px`, a
@@ -147,9 +181,9 @@ function insetBox(value: string | undefined, of: BoundingBox): BoundingBox | und
 
 /** The frame of a page: the content area on the sheet, or the trim inset
  *  by `comics.frame.margins`. */
-export function comicPageFrame(ctx: Pick<ComicPageContext, 'resolved' | 'page' | 'trimBox' | 'mirrorMargins'>, comics: ResolvedComicsConfig = resolvedComics(ctx.resolved)): BoundingBox {
+export function comicPageFrame(ctx: Pick<ComicPageContext, 'resolved' | 'page' | 'trimBox' | 'mirrorMargins' | 'contentBox'>, comics: ResolvedComicsConfig = resolvedComics(ctx.resolved)): BoundingBox {
   const m = comics.frame.margins;
-  if (!m) return flowRectToPage(ctx.page, ctx.page.contentArea);
+  if (!m) return ctx.contentBox ?? flowRectToPage(ctx.page, ctx.page.contentArea);
   const dpi = ctx.resolved.page.dpi;
   const t = ctx.trimBox;
   let left = dimensionToPx(m.left, dpi);
@@ -456,8 +490,21 @@ export interface ComicFrameContext {
 }
 
 /** Lay out a comic page. */
-export function layoutComicPage(source: ComicPageSource, ctx: ComicPageContext): VDTComicPage {
-  return layoutComicFrame(source, {
+export function layoutComicPage(source: ComicPageSource, given: ComicPageContext): VDTComicPage {
+  // A host's screen page: the comic is laid out on the print leaf, scaled
+  // (its own trim, no bleed, its content area, its lengths at its scale).
+  const leaf = comicViewerLeaf(resolvedComics(given.resolved), given.resolved, given.trimBox);
+  const ctx: ComicPageContext = leaf
+    ? {
+        ...given,
+        resolved: { ...given.resolved, page: { ...given.resolved.page, dpi: leaf.dpi } },
+        trimBox: leaf.box,
+        bleedBox: leaf.box,
+        contentBox: leaf.content,
+        mirrorMargins: false,
+      }
+    : given;
+  const comic = layoutComicFrame(source, {
     resolved: ctx.resolved,
     frame: comicPageFrame(ctx),
     bleedBox: ctx.bleedBox,
@@ -465,15 +512,17 @@ export function layoutComicPage(source: ComicPageSource, ctx: ComicPageContext):
     ...(ctx.sourceOffset !== undefined ? { sourceOffset: ctx.sourceOffset } : {}),
     pageIndex: ctx.page.index,
   });
+  if (leaf) comic.leaf = leaf.box;
+  return comic;
 }
 
 /** Lay out a comic (a page, a strip, a spread) in a given frame: its
  *  cells, panels, split lines and lettering, in the frame's coordinates. */
 export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext): VDTComicPage {
   const { resolved, resources, frame } = ctx;
+  const comics = resolvedComics(resolved);
   const dpi = resolved.page.dpi;
   const off = ctx.sourceOffset ?? 0;
-  const comics = resolvedComics(resolved);
   const direction = comicPageDirection(source, comics, resolved);
   const pageStyle = pickPanelStyle(comics, source.attrs.style?.trim());
   const flowPanels = source.panels.filter((p) => !p.attrs.inset);

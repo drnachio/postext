@@ -384,6 +384,11 @@ export function buildHtmlConfigOverride(
      *  title, `\n` for a forced break). The band is as tall as the longest
      *  wraps to at `pageWidthPx`; without them it reserves two lines. */
     partTitles?: readonly string[];
+    /** Comic pages (`:::page`) are set on a print leaf of their own this
+     *  wide (px): the viewport's width in the vertical scroll, a page's in
+     *  the paged view (see `comicsViewerLeaf`). Absent: the document has
+     *  none, and its `comics` settings are left as they are. */
+    comicWidthPx?: number;
   },
 ): PostextConfig {
   const {
@@ -574,6 +579,7 @@ export function buildHtmlConfigOverride(
       levels: headingLevels,
     },
     parts,
+    ...(opts.comicWidthPx ? { comics: comicsViewerLeaf(base, leafPage, opts.comicWidthPx, columnMode === 'single' ? undefined : pageHeightPx) } : {}),
     // The HTML viewer is a continuous reading surface, not a page: running
     // headers and footers (folios, running titles, page-edge tabs anchored
     // to the bleed) have no place on it — neither the document's nor the
@@ -605,6 +611,30 @@ export function buildHtmlConfigOverride(
   };
 }
 
+/** The comics settings of a viewer pass: the document's, with the leaf
+ *  comic pages are laid out on (`comics.viewerLeaf`). A comic page is
+ *  fixed geometry — art cropped to panels, balloons set around the art — so
+ *  the viewer shows the print page whole, scaled to `widthPx` (and no
+ *  taller than `maxHeightPx`, a page of the paged view), instead of
+ *  cutting panels out of a screen-sized page. */
+export function comicsViewerLeaf(
+  base: PostextConfig,
+  leaf: { width: Dimension; height: Dimension; margins: PageMargins },
+  widthPx: number,
+  maxHeightPx?: number,
+): NonNullable<PostextConfig['comics']> {
+  return {
+    ...base.comics,
+    viewerLeaf: {
+      width: leaf.width,
+      height: leaf.height,
+      margins: leaf.margins,
+      fitWidth: Math.max(1, Math.floor(widthPx)),
+      ...(maxHeightPx ? { fitHeight: Math.max(1, Math.floor(maxHeightPx)) } : {}),
+    },
+  };
+}
+
 export function measureColumnWidthPx(
   sample: string,
   fontFamily: string,
@@ -613,6 +643,11 @@ export function measureColumnWidthPx(
 ): number {
   const font = buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal');
   return measureGlyphWidth(sample, font);
+}
+
+/** Whether `markdown` may hold a comic page (a `:::page` fence). */
+export function hasComicPages(markdown: string): boolean {
+  return /^[ \t]*:::page\b/m.test(markdown);
 }
 
 /** A title's `\\` forced break, as the engine reads it (`TITLE_BREAK_RE`). */

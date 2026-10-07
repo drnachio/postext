@@ -41,7 +41,7 @@ import {
   buildColumnWidthSample,
   composePageBackground,
 } from './constants';
-import { buildHtmlConfigOverride, measureColumnWidthPx, partTitlesOf } from './configOverride';
+import { buildHtmlConfigOverride, hasComicPages, measureColumnWidthPx, partTitlesOf } from './configOverride';
 import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx, viewerLayoutType } from './pageGeometry';
 import { cssEscape, measureBodyBaselineOffset } from './baseline';
 
@@ -413,6 +413,11 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       locale: currentLocale,
       optimalLineBreaking: htmlViewer.optimalLineBreaking,
       partTitles: partTitlesOf(currentSource.markdown),
+      // Comic pages: the print page scaled to the viewport's width in the
+      // vertical scroll, to a page (width and height) in the paged view.
+      ...(hasComicPages(currentSource.markdown)
+        ? { comicWidthPx: currentColumnMode === 'single' ? innerViewportW : pageWidthPx }
+        : {}),
     });
 
     try {
