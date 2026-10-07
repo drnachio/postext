@@ -16,6 +16,12 @@ import type {
   ParagraphStyleConfig,
   PostextConfig,
   ResolvedLayoutConfig,
+  ComicsConfig,
+  PanelStyleConfig,
+  NamedPanelStyleConfig,
+  LetteringConfig,
+  BalloonStyleConfig,
+  ComicCastMember,
 } from './types';
 import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
@@ -155,6 +161,32 @@ const PARAGRAPH_STYLE_KEYS = {
   marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
 
+// The comics tables (#562).
+const COMICS_KEYS = {
+  readingDirection: true, artDirection: true, mirrorArt: true, frame: true, gutter: true, panel: true,
+  panelStyles: true, lettering: true, balloonStyles: true, cast: true, runningHeads: true,
+} satisfies Record<keyof ComicsConfig, true>;
+const COMICS_FRAME_KEYS = { margins: true } satisfies Record<keyof NonNullable<ComicsConfig['frame']>, true>;
+const COMICS_GUTTER_KEYS = { horizontal: true, vertical: true } satisfies Record<keyof NonNullable<ComicsConfig['gutter']>, true>;
+const PANEL_STYLE_KEYS = {
+  borderWidth: true, borderColor: true, borderRadius: true, borderStyle: true, background: true, fit: true, bleed: true,
+} satisfies Record<keyof PanelStyleConfig, true>;
+const NAMED_PANEL_STYLE_KEYS = { ...PANEL_STYLE_KEYS, id: true, name: true } satisfies Record<keyof NamedPanelStyleConfig, true>;
+const LETTERING_KEYS = {
+  fontFamily: true, fontSize: true, lineHeight: true, color: true, bold: true, italic: true, letterSpacing: true,
+  writingMode: true, textTransform: true, dropFinalStop: true, doubleDash: true, inset: true, joinSameSpeaker: true,
+  maxColumnChars: true,
+} satisfies Record<keyof LetteringConfig, true>;
+const BALLOON_STYLE_KEYS = {
+  id: true, name: true, shape: true, fill: true, stroke: true, strokeWidth: true, dash: true, double: true, wobble: true,
+  roundness: true, burstPoints: true, burstDepth: true, padding: true, aspect: true, tail: true, tailWidth: true,
+  tailReach: true, target: true, position: true, butt: true, fontFamily: true, fontScale: true, bold: true, italic: true,
+  color: true, textTransform: true, letterSpacing: true, align: true, halo: true, haloColor: true, rotate: true,
+} satisfies Record<keyof BalloonStyleConfig, true>;
+const CAST_KEYS = {
+  id: true, name: true, balloonStyle: true, color: true, fill: true, fontFamily: true,
+} satisfies Record<keyof ComicCastMember, true>;
+
 /** Edit distance with transpositions (optimal string alignment), capped:
  *  anything above `max` returns `max + 1`. */
 function editDistance(a: string, b: string, max: number): number {
@@ -223,6 +255,20 @@ function collectUnknownKeyWarnings(config: PostextConfig): ConfigWarning[] {
   };
   checkConfig(config, '');
   checkConfig(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
+  // Comics: the section, its frame, gutters, panel styles, lettering,
+  // balloon styles and cast.
+  const comics = config.comics as unknown;
+  if (comics && typeof comics === 'object' && !Array.isArray(comics)) {
+    const c = comics as ComicsConfig;
+    check(c, COMICS_KEYS, 'comics');
+    check(c.frame, COMICS_FRAME_KEYS, 'comics.frame');
+    check(c.gutter, COMICS_GUTTER_KEYS, 'comics.gutter');
+    check(c.panel, PANEL_STYLE_KEYS, 'comics.panel');
+    if (Array.isArray(c.panelStyles)) c.panelStyles.forEach((s, i) => check(s, NAMED_PANEL_STYLE_KEYS, `comics.panelStyles[${i}]`));
+    check(c.lettering, LETTERING_KEYS, 'comics.lettering');
+    if (Array.isArray(c.balloonStyles)) c.balloonStyles.forEach((s, i) => check(s, BALLOON_STYLE_KEYS, `comics.balloonStyles[${i}]`));
+    if (Array.isArray(c.cast)) c.cast.forEach((s, i) => check(s, CAST_KEYS, `comics.cast[${i}]`));
+  }
   return out;
 }
 

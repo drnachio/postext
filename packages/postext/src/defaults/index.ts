@@ -26,6 +26,7 @@ import { stripCrossRefsDefaults } from './crossRefs';
 import { stripCitationsDefaults } from './citations';
 import { stripIndexDefaults } from './indexConfig';
 import { stripCjkDefaults } from './cjk';
+import { stripComicsDefaults } from './comics';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -57,6 +58,7 @@ export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './crossRefs';
 export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './citations';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
+export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './comics';
 export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark, defaultCjkBookTitleBrackets, defaultCjkEmphasisMark, defaultCjkWarichuBrackets, defaultCjkHangingPunctuation, defaultCjkSpaceAfterQuestion, defaultCjkParagraphStartBracket, defaultCjkRubyOverhang, defaultCjkRubyAlign } from './cjk';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
@@ -234,6 +236,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.index = strippedIndex;
   } else {
     delete result.index;
+  }
+  const strippedComics = stripComicsDefaults(config.comics, config.locale ?? config.bodyText?.hyphenation?.locale);
+  if (strippedComics) {
+    result.comics = strippedComics;
+  } else {
+    delete result.comics;
   }
   // `'auto'` is the default direction.
   if (result.direction === 'auto') delete result.direction;

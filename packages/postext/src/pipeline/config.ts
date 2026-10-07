@@ -29,6 +29,7 @@ import {
   resolveCjkConfig,
   resolvePdfGenerationConfig,
   resolveFolioConfig,
+  resolveComicsConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
   DEFAULT_LAYOUT_CONFIG,
@@ -119,6 +120,9 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     ...(config?.pdfGeneration ? { pdfGeneration: resolvePdfGenerationConfig(config.pdfGeneration) } : {}),
     // Not used by layout either: the Folio 3D viewer reads it.
     ...(config?.folio ? { folio: resolveFolioConfig(config.folio, page.sizePreset) } : {}),
+    // Comic pages: only a config that sets the section carries it (a
+    // `:::page` without one reads the defaults, `resolvedComics`).
+    ...(config?.comics ? { comics: resolveComicsConfig(config.comics, documentLocale) } : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }
