@@ -121,7 +121,7 @@ const box = ([x, y, width, height]) => ({ x, y, width, height });
 const who = (id, x, y, head, face) => ({ id, x, y,
   ...(head && { head: { x: head[0], y: head[1] } }), ...(face && { face: box(face) }) });
 const ART = {
-  ds1: { width: 1900, height: 633, safeArea: box([.02, .05, .96, .9]),
+  ds1: { width: 1900, height: 633, safeArea: box([.03, .27, .93, .53]),
     alt: t({ en: 'Panorama of the crowded market hall: tiny Lola stands lost on the far left; '
         + 'far right, her grandfather searches the crowd.',
       es: 'Panorámica del mercado lleno de gente: a la izquierda del todo, Lola, '
@@ -139,7 +139,7 @@ const ART = {
       who('paco', .925, .38, [.925, .34], [.9, .3, .05, .12]),
     ],
   },
-  ds2: { width: 1152, height: 1152, safeArea: box([.25, .05, .5, .92]),
+  ds2: { width: 1152, height: 1152, safeArea: box([.31, .08, .35, .62]),
     alt: t({ en: "Lola, tearful, stands among grown-ups' legs and shopping bags.",
       es: 'Lola, con lágrimas en los ojos, está de pie entre piernas de mayores y bolsas '
         + 'de la compra.',
@@ -153,7 +153,7 @@ const ART = {
       who('lola', .505, .24, [.48, .17], [.4, .1, .18, .19]),
     ],
   },
-  ds3: { width: 1000, height: 1000, safeArea: box([.15, .05, .7, .92]),
+  ds3: { width: 1000, height: 1000, safeArea: box([.34, .07, .47, .23]),
     alt: t({ en: 'Paco stands on a fruit crate and whistles through his fingers; shoppers '
         + 'turn to look.',
       es: 'Paco, subido a una caja de fruta, silba con los dedos; la gente se vuelve a mirar.',
@@ -168,7 +168,7 @@ const ART = {
       who('sfx', .62, .17),
     ],
   },
-  ds4: { width: 1200, height: 800, safeArea: box([.2, .05, .62, .75]),
+  ds4: { width: 1200, height: 800, safeArea: box([.33, .05, .48, .57]),
     alt: t({ en: "Lola leaps into her grandfather's arms; his beret flies off and the "
         + "stallholders smile.",
       es: 'Lola salta a los brazos de su abuelo; la boina sale volando y los tenderos sonríen.',
