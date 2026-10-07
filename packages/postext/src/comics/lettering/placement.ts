@@ -120,6 +120,8 @@ interface Scene {
   edgeSfx?: Rect;
   /** Other panels' balloons. */
   foreign: Rect[];
+  /** Never covered (the fold of a spread). */
+  keepOut: Rect[];
   /** The panel's polygon inside the live area (see {@link livePolygon}). */
   live: Point[];
   /** What a butted caption sits flush against: the panel's polygon, inset
@@ -163,6 +165,7 @@ function sceneOf(panel: LetteringPanel): Scene {
     ...(panel.limit ? { limit: panel.limit } : {}),
     ...(trim ? { edge: insetRect(trim, panel.insetPx), edgeSfx: panel.sheet ?? trim } : {}),
     foreign: [...(panel.foreign ?? [])],
+    keepOut: [...(panel.keepOut ?? [])],
     live,
   };
 }
@@ -330,6 +333,13 @@ function evaluate(
   } else if (out > 0) {
     H('outside', (W.outside * out) / rim.length + 10);
     reasons.add('outside');
+  }
+  // The fold of a spread: never, at any level, pinned or not.
+  for (const r of scene.keepOut) {
+    if (!rectsOverlap(box, r)) continue;
+    const ox = Math.min(box.x + box.width, r.x + r.width) - Math.max(box.x, r.x);
+    H('avoid', (W.avoid * 4 * ox) / em + 4 * W.avoid);
+    reasons.add('avoid');
   }
   // Balloons of the other panels (a balloon breaking into this one).
   for (const r of scene.foreign) {
@@ -641,7 +651,19 @@ function pinAnchors(scene: Scene, unit: PlaceUnit, vi: number): Point[] {
     size > max - min ? (min + max) / 2 - (lo + size / 2) : lo < min ? min - lo : lo + size > max ? max - (lo + size) : 0;
   const dx = shift(box.x, box.width, vb.x, vb.x + vb.width);
   const dy = shift(box.y, box.height, vb.y, vb.y + vb.height);
-  return dx === 0 && dy === 0 ? [p] : [p, { x: p.x + dx, y: p.y + dy }];
+  const out = dx === 0 && dy === 0 ? [p] : [p, { x: p.x + dx, y: p.y + dy }];
+  // Off the fold of a spread, to the nearer side (then the other).
+  for (const q of [...out]) {
+    const b = movedRect(v.bbox, q);
+    for (const r of scene.keepOut) {
+      if (!rectsOverlap(b, r)) continue;
+      const left = r.x - (b.x + b.width) - 1;
+      const right = r.x + r.width - b.x + 1;
+      const sides = Math.abs(left) <= Math.abs(right) ? [left, right] : [right, left];
+      for (const d of sides) out.push({ x: q.x + d, y: q.y });
+    }
+  }
+  return out;
 }
 
 /** The anchor that puts a pinned unit's box centre on its pin; for a

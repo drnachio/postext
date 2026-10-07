@@ -456,7 +456,8 @@ export interface LetterPanelsInput {
   direction: 'ltr' | 'rtl';
   sourceOffset: number;
   pageIndex?: number;
-  /** Regions of the frame no balloon should cover (the spine of a spread). */
+  /** Regions of the frame no lettering may cover (the spine of a spread):
+   *  kept out at every fallback, pins included. */
   avoid?: readonly BoundingBox[];
   /** The comic's frame (the page's live area): lettering keeps inside it
    *  unless it breaks a border on purpose. */
@@ -466,6 +467,11 @@ export interface LetterPanelsInput {
    *  run into the bleed beside a panel that bleeds. */
   trim?: BoundingBox;
   bleedBox?: BoundingBox;
+}
+
+/** A box grown (negative `d`) or shrunk by `d` on every side. */
+function insetBox2(b: BoundingBox, d: number): BoundingBox {
+  return { x: b.x + d, y: b.y + d, width: b.width - 2 * d, height: b.height - 2 * d };
 }
 
 /** The intersection of two boxes (empty boxes have no size). */
@@ -515,8 +521,8 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
       avoid: [
         ...(panel.art ? (resource?.avoid ?? []).map((r) => comicArtRectToPage(panel.art!, r)) : []),
         ...headGuards(panel, resource, dimensionToPx(L.fontSize, dpi)),
-        ...(input.avoid ?? []).filter((r) => overlaps(r, panel.bbox)),
       ],
+      keepOut: (input.avoid ?? []).filter((r) => overlaps(r, insetBox2(panel.bbox, -2 * insetPx))),
       softAvoid: [...softSafeArea(panel, resource), ...headZones(panel, resource), ...bodyZones(panel, resource)],
       ...(panel.border.style !== 'none' && panel.border.width > 0 ? { borderPx: panel.border.width } : {}),
       neighbours: panels.filter((q) => q !== panel).map((q) => q.bbox),

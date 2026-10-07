@@ -208,6 +208,10 @@ export interface LetteringPanel {
   anchors: readonly LetteringAnchor[];
   /** Regions balloons must not cover (hands, key objects), page px. */
   avoid?: readonly Rect[];
+  /** Regions no lettering ever covers, page px, whatever its fallbacks
+   *  or its pin: the fold of a spread (a balloon there is cut in two, or
+   *  lost in the binding). A pinned balloon slides off them. */
+  keepOut?: readonly Rect[];
   /** Regions better left uncovered, page px: a balloon over them costs a
    *  little per area, but is never a fault (the picture's safe area, when
    *  the art marks no face and no avoid zone); `weight` scales the cost

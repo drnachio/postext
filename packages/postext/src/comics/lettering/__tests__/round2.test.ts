@@ -255,3 +255,35 @@ paco: وها هي قبعتي تطير!
     for (const b of paco) for (const body of bodies) expect(area(b.bbox, body)).toBeLessThan(0.05 * b.bbox.width * b.bbox.height);
   });
 });
+
+describe('the fold of a spread', () => {
+  const vista = {
+    id: 'vista', typeId: 'figure', kind: 'bitmap' as const, createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'vista-file', format: 'png', width: 4000, height: 1500 },
+    anchors: [{ id: 'ana', x: 0.5, y: 0.62 }, { id: 'ben', x: 0.53, y: 0.7 }],
+  };
+  const md = `:::page{spread split="60 / *"}
+::panel{art=vista}
+ana: Hello there, both of you! Over here!
+ben{at="50% 20%"}: Pinned right on the fold.
+sfx{at="49% 40%"}: BOOM
+::panel
+:::
+`;
+  it('keeps every balloon off the spine, pinned ones too', () => {
+    const doc = buildDocument({ markdown: md, resources: [vista] }, { page: { sizePreset: '17x24' } });
+    const pages = doc.pages.filter((p) => p.comic);
+    expect(pages).toHaveLength(2);
+    const band = (4 / 25.4) * doc.config.page.dpi;
+    let n = 0;
+    for (const page of pages) {
+      const trimRight = page.width - doc.trimOffset;
+      for (const b of page.comic!.balloons) {
+        n++;
+        if (page.comic!.spread === 'left') expect(b.bbox.x + b.bbox.width).toBeLessThanOrEqual(trimRight - band + 1);
+        else expect(b.bbox.x).toBeGreaterThanOrEqual(doc.trimOffset + band - 1);
+      }
+    }
+    expect(n).toBe(3);
+  });
+});
