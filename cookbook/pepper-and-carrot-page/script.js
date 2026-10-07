@@ -110,16 +110,16 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // the English balloons end. Fractions of each picture, the same in every language.
 const area = (x, y, width, height) => ({ x, y, width, height });
 const ART = {
-  'e08p05-1': { width: 1200, height: 500, safeArea: area(0, 0.04, 0.92, 0.92),
+  'e08p05-1': { width: 1200, height: 500, safeArea: area(0.02, 0.03, 0.85, 0.93),
     anchors: [{ id: 'pepper', x: 0.4249, y: 0.6863 }] },
-  'e08p05-2': { width: 1200, height: 823, safeArea: area(0, 0.05, 0.9, 0.95),
+  'e08p05-2': { width: 1200, height: 823, safeArea: area(0.1, 0.09, 0.77, 0.81),
     anchors: [{ id: 'pepper', x: 0.7858, y: 0.6274 }] },
-  'e08p05-3': { width: 1200, height: 342, safeArea: area(0.1, 0, 0.88, 1),
+  'e08p05-3': { width: 1200, height: 342, safeArea: area(0.09, 0.12, 0.81, 0.88),
     anchors: [{ id: 'sfx', x: 0.1861, y: 0.66 }] },
-  'e08p06-1': { width: 1200, height: 646, safeArea: area(0.03, 0.08, 0.94, 0.9),
+  'e08p06-1': { width: 1200, height: 646, safeArea: area(0.15, 0.06, 0.73, 0.9),
     anchors: [{ id: 'monster', x: 0.4808, y: 0.293 }] },
-  'e08p06-2': { width: 1200, height: 290, safeArea: area(0.5, 0, 0.48, 1) },
-  'e08p06-3': { width: 1200, height: 730, safeArea: area(0.03, 0.05, 0.94, 0.95) },
+  'e08p06-2': { width: 1200, height: 290, safeArea: area(0.59, 0.15, 0.3, 0.77) },
+  'e08p06-3': { width: 1200, height: 730, safeArea: area(0.09, 0.1, 0.77, 0.7) },
 };
 const ALT = {
   'e08p05-1': t({ en: 'Lightning. Pepper, furious, pulls a book with a demon’s face on its cover '
