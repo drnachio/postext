@@ -1,3 +1,5 @@
+import type { ComicPageSource } from '../comics/types';
+
 export type ContentBlockType =
   | 'heading'
   | 'paragraph'
@@ -25,7 +27,7 @@ export interface VerseInfo {
 
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references' | 'verse';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references' | 'verse' | 'page';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -583,6 +585,10 @@ export interface ContentBlock {
    *  line feed (`\n`) between bayts, so the plain text and the source map
    *  read the poem as written (see `pipeline/verse.ts`). */
   verse?: VerseInfo;
+  /** For a `:::page` block (a comic page, #555): its split, panels and
+   *  script, read whole by `parseComicFence`. The block's `type` is
+   *  `'directive'` and its `directiveName` `'page'`. */
+  comic?: ComicPageSource;
   /** For a `:::references` block (#268): its body as written — BibTeX,
    *  CSL-JSON or CSL-YAML — up to the closing `:::`, not parsed as
    *  Markdown. */
