@@ -283,6 +283,12 @@ export function comicLetteringStyle(input: {
   return out;
 }
 
+/** A sound effect set in columns breaks after five characters at most
+ *  (its letters are big: a long column would run out of the panel). */
+function sfxColumns(role: ComicScriptItem['role'], style: LetteringStyle): LetteringStyle {
+  return role === 'sfx' ? { ...style, maxColumnChars: Math.min(5, style.maxColumnChars ?? 5) } : style;
+}
+
 /** A point given in fractions of a panel's picture (of its cell, for a
  *  panel without one) on the page. */
 function panelPoint(panel: VDTComicPanel, at: { x: number; y: number }): VDTPoint {
@@ -309,6 +315,25 @@ function panelAnchors(panel: VDTComicPanel, resource: Resource | undefined): Let
 
 function overlaps(a: BoundingBox, b: BoundingBox): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+}
+
+/** A guard over the face of each speaker whose anchor marks no `face`:
+ *  a box a few ems about the mouth (and the head, when marked), mostly
+ *  above it. Kept clear as an avoid zone (a balloon may still cover it as
+ *  a last resort, and tails run to the mouth as usual), so balloons do
+ *  not land on a face the picture did not outline. */
+function unmarkedFaces(panel: VDTComicPanel, resource: Resource | undefined, em: number): BoundingBox[] {
+  const art = panel.art;
+  if (!art || !resource?.anchors) return [];
+  return resource.anchors.filter((a) => !a.face && a.id !== 'sfx').map((a) => {
+    const mouth = comicArtPointToPage(art, a.x, a.y);
+    const head = a.head ? comicArtPointToPage(art, a.head.x, a.head.y) : mouth;
+    const x0 = Math.min(mouth.x, head.x) - 1.6 * em;
+    const x1 = Math.max(mouth.x, head.x) + 1.6 * em;
+    const y0 = Math.min(mouth.y, head.y) - 2.6 * em;
+    const y1 = Math.max(mouth.y, head.y) + 0.7 * em;
+    return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  });
 }
 
 /** What {@link letterPanels} needs. */
@@ -362,6 +387,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
       anchors: panelAnchors(panel, resource),
       avoid: [
         ...(panel.art ? (resource?.avoid ?? []).map((r) => comicArtRectToPage(panel.art!, r)) : []),
+        ...unmarkedFaces(panel, resource, dimensionToPx(L.fontSize, dpi)),
         ...(input.avoid ?? []).filter((r) => overlaps(r, panel.bbox)),
       ],
       dpi,
@@ -382,7 +408,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
         sourceMap: it.sourceMap.map((o) => o + off),
         sourceStart: it.sourceStart + off,
         sourceEnd: it.sourceEnd + off,
-        style: comicLetteringStyle({ style: st, comics, ...(cast ? { cast } : {}), item: it, locale, vertical, dpi, ...(resolved.colorPalette ? { palette: resolved.colorPalette } : {}) }),
+        style: sfxColumns(it.role, comicLetteringStyle({ style: st, comics, ...(cast ? { cast } : {}), item: it, locale, vertical, dpi, ...(resolved.colorPalette ? { palette: resolved.colorPalette } : {}) })),
         ...(it.at ? { pin: panelPoint(panel, it.at) } : {}),
         ...(it.atKeyword ? { position: it.atKeyword } : {}),
         ...(it.to ? { tailTarget: panelPoint(panel, it.to) } : tail && tail !== 'none' && tail !== 'auto' ? { tailTarget: tail } : {}),

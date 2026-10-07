@@ -279,10 +279,12 @@ function evaluate(
     if (target && segmentHitsRect(edgePoint(v, at, target), target, shrink(obox, 0.15))) soft += W.tailThrough;
     if (otarget && segmentHitsRect(edgePoint(ov, o.at, otarget), otarget, shrink(box, 0.15))) soft += W.tailThrough;
   }
-  // The tail leaves the first body clear of the group's other bodies.
+  // The tail leaves the first body clear of the group's other bodies, by
+  // more than its own half width: a tail grazing another body of its group
+  // leaves a notch between them that the doubled outline fills with ink.
   if (target && v.bodies.length > 1) {
     const edge = edgePoint(v, at, target);
-    for (const b of v.bodies.slice(1)) if (segmentHitsRect(edge, target, movedRect(b.bbox, at))) soft += W.ownTail;
+    for (const b of v.bodies.slice(1)) if (segmentHitsRect(edge, target, grow(movedRect(b.bbox, at), 0.8 * em))) soft += W.ownTail;
   }
   // Near the speaker, a little above; tails not over faces.
   if (target && unit.target.kind === 'point') {
@@ -314,6 +316,11 @@ function evaluate(
     }
   }
   return { hard, soft, reasons };
+}
+
+/** A rectangle grown by `d` px on every side. */
+function grow(r: Rect, d: number): Rect {
+  return { x: r.x - d, y: r.y - d, width: r.width + 2 * d, height: r.height + 2 * d };
 }
 
 function shrink(r: Rect, f: number): Rect {

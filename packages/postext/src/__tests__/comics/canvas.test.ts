@@ -17,7 +17,7 @@ class StubCtx {
 /** A 2D context that logs the calls the panel painter makes. */
 function recordingCanvas(): { canvas: HTMLCanvasElement; calls: string[] } {
   const calls: string[] = [];
-  const logged = new Set(['clip', 'stroke', 'drawImage', 'fillRect', 'scale', 'translate', 'arcTo']);
+  const logged = new Set(['clip', 'stroke', 'fill', 'fillText', 'strokeText', 'bezierCurveTo', 'rotate', 'drawImage', 'fillRect', 'scale', 'translate', 'arcTo']);
   const ctx: Record<string | symbol, unknown> = new Proxy({}, {
     get(target: Record<string | symbol, unknown>, key) {
       if (typeof key === 'string' && logged.has(key)) {
@@ -30,6 +30,7 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; calls: string[] } {
       return () => undefined;
     },
     set(target, key, value) {
+      if (key === 'lineWidth') calls.push(`lineWidth=${Math.round(Number(value) * 100) / 100}`);
       if (key === 'strokeStyle' || key === 'fillStyle') calls.push(`${String(key)}=${String(value)}`);
       target[key] = value;
       return true;
@@ -117,5 +118,35 @@ describe('canvas painting of comic panels', () => {
     renderPageToCanvas(page, doc, canvas);
     expect(calls.some((c) => c.startsWith('arcTo'))).toBe(true);
     expect(calls.filter((c) => c === 'stroke()')).toHaveLength(1);
+  });
+
+  it('paints the lettering after the panels: each outline stroked at twice its width, then filled, then its text; sound effects last, turned', () => {
+    const md = ':::page\n::panel{art=pic}\nsfx{rotate=-10}: BAM\nana: Hello there.\nana: And again.\n:::';
+    const doc = buildDocument({ markdown: md, resources }, { comics: { balloonStyles: [{ id: 'speech', stroke: { hex: '#123456', model: 'hex' }, fill: { hex: '#fefefe', model: 'hex' } }] } });
+    const page = doc.pages.find((p) => p.comic)!;
+    const balloons = page.comic!.balloons;
+    expect(balloons.map((b) => b.kind)).toEqual(['sfx', 'balloon', 'balloon']);
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(page, doc, canvas);
+    const width = balloons[1]!.shape!.strokeWidth;
+    const outline = calls.indexOf('strokeStyle=#123456');
+    // After the panel (clipped to its outline).
+    expect(outline).toBeGreaterThan(calls.findIndex((c) => c.startsWith('clip')));
+    const doubled = calls.indexOf(`lineWidth=${Math.round(2 * width * 100) / 100}`, outline);
+    const stroke = calls.indexOf('stroke()', outline);
+    const fill = calls.indexOf('fillStyle=#fefefe', stroke);
+    const fillCall = calls.indexOf('fill()', fill);
+    const text = calls.findIndex((c, i) => i > fillCall && c.startsWith('fillText'));
+    expect(doubled).toBeGreaterThan(outline);
+    expect(stroke).toBeGreaterThan(doubled);
+    expect(fillCall).toBeGreaterThan(fill);
+    expect(text).toBeGreaterThan(fillCall);
+    // One outline for the joined pair: a single doubled stroke in that colour.
+    expect(calls.filter((c) => c === 'strokeStyle=#123456')).toHaveLength(1);
+    // The sound effect after the balloons, turned about its centre, its
+    // halo stroked under its letters.
+    const turn = calls.findIndex((c) => c.startsWith('rotate'));
+    expect(turn).toBeGreaterThan(text);
+    expect(calls.findIndex((c, i) => i > turn && c.startsWith('strokeText'))).toBeGreaterThan(turn);
   });
 });

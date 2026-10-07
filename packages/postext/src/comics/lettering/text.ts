@@ -153,6 +153,13 @@ export function prepareText(read: PreparedText, style: LetteringStyle, opts: Pre
   p = replaceAll(p, /\.(?: ?\.){2,}/g, '…');
   if (lang === 'zh') p = replaceAll(p, /…+/g, (m) => (m.length % 2 === 1 ? `${m}…` : m));
   if (style.doubleDash) p = replaceAll(p, /—/g, '--');
+  // Columns of Japanese or Chinese: ASCII `!` and `?` stand upright as
+  // their full-width forms (a pair in one cell, `!?` → `⁉`), as a
+  // vertical setter writes them; turned sideways they read as dashes.
+  if (opts.vertical && (lang === 'ja' || lang === 'zh')) {
+    const pairs: Record<string, string> = { '!!': '‼', '??': '⁇', '?!': '⁈', '!?': '⁉' };
+    p = replaceAll(p, /[!?]{1,2}/g, (m) => pairs[m] ?? (m === '!' ? '！' : '？'));
+  }
   const dropStop = style.dropFinalStop ?? dropsFinalStopByDefault(opts.locale);
   if (dropStop) {
     let end = p.text.length;
