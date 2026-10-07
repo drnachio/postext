@@ -60,6 +60,9 @@ export interface PlaceUnit {
   sourceEnd: number;
   /** A point of the art a sound effect goes to (the `sfx` anchor). */
   near?: Point;
+  /** The speaker (an anchor id): whose figure the unit may cover at the
+   *  lesser cost. */
+  speaker?: string;
   em: number;
 }
 
@@ -104,10 +107,13 @@ interface Scene {
   visible: Point[];
   visBox: Rect;
   faces: Rect[];
-  avoid: Rect[];
+  avoid: (Rect & { guard?: boolean })[];
   /** Regions better left uncovered (the picture's safe area when the art
-   *  marks nothing else): a cost per area covered, never a fault. */
-  soft: (Rect & { weight?: number })[];
+   *  marks nothing else): a cost per area covered, never a fault. A
+   *  figure's zone (`owner`) costs {@link OTHER_FIGURE} times as much under
+   *  a balloon of another speaker, and under every balloon when it touches
+   *  another figure's (`contact`: arms around the other one). */
+  soft: (Rect & { weight?: number; owner?: string; contact?: boolean })[];
   mouths: Point[];
   fwd: 1 | -1;
   /** The other panels' boxes. */
@@ -118,6 +124,9 @@ interface Scene {
    *  may run (the trim less the inset; the trim and the panel's bleed). */
   edge?: Rect;
   edgeSfx?: Rect;
+  /** Whether the panel runs past the live area (it bleeds): a `break`
+   *  balloon of a panel that does not keeps inside the live area. */
+  bleeds: boolean;
   /** Other panels' balloons. */
   foreign: Rect[];
   /** Never covered (the fold of a spread). */
@@ -157,17 +166,41 @@ function sceneOf(panel: LetteringPanel): Scene {
     visBox: boundsOf(visible),
     faces: panel.anchors.filter((a) => a.face).map((a) => a.face!),
     avoid: [...(panel.avoid ?? [])],
-    soft: [...(panel.softAvoid ?? [])],
+    soft: figureContacts(panel.softAvoid ?? [], panel.anchors),
     mouths: panel.anchors.filter((a) => a.visible && a.id !== 'sfx').map((a) => a.mouth),
     fwd: panel.direction === 'rtl' ? -1 : 1,
     buttPoly: buttPolygon(panel),
     neighbours: [...(panel.neighbours ?? [])],
     ...(panel.limit ? { limit: panel.limit } : {}),
     ...(trim ? { edge: insetRect(trim, panel.insetPx), edgeSfx: panel.sheet ?? trim } : {}),
+    bleeds: panel.limit !== undefined && panel.polygon.some((p) => !pointInRect(p, panel.limit!, 0.5)),
     foreign: [...(panel.foreign ?? [])],
     keepOut: [...(panel.keepOut ?? [])],
     live,
   };
+}
+
+/** How many times a balloon costs more over another character's figure
+ *  than over its own speaker's (a letterer covers the speaker's shoulder
+ *  before the one being spoken to). */
+const OTHER_FIGURE = 4;
+
+/** Soft zones with `contact` marked on the figures of characters whose
+ *  faces all but touch (a hug, cheek to cheek): there the arms of one lie
+ *  over the other, and no speaker's own figure is free to cover. Two
+ *  figures merely standing side by side are not in contact. */
+function figureContacts(zones: readonly (Rect & { weight?: number; owner?: string })[], anchors: LetteringPanel['anchors']): Scene['soft'] {
+  const faceOf = (id: string) => anchors.find((a) => a.id === id)?.face;
+  const touching = (a: Rect, b: Rect) => {
+    const gx = Math.max(a.x, b.x) - Math.min(a.x + a.width, b.x + b.width);
+    const gy = Math.max(a.y, b.y) - Math.min(a.y + a.height, b.y + b.height);
+    return gx <= 0.25 * Math.min(a.width, b.width) && gy <= 0.25 * Math.min(a.height, b.height);
+  };
+  return zones.map((z) => {
+    const f = z.owner !== undefined ? faceOf(z.owner) : undefined;
+    const contact = f !== undefined && anchors.some((a) => a.id !== z.owner && a.face !== undefined && touching(f, a.face));
+    return contact ? { ...z, contact: true } : { ...z };
+  });
 }
 
 function buttPolygon(panel: LetteringPanel): Point[] {
@@ -185,6 +218,29 @@ const movedRect = (r: Rect, at: Point): Rect => ({ x: r.x + at.x, y: r.y + at.y,
 function coveredArea(samples: readonly Point[], rect: Rect, area: number): number {
   let n = 0;
   for (const s of samples) if (pointInRect(s, rect)) n++;
+  return (n / Math.max(1, samples.length)) * area;
+}
+
+/** Whether a face fills a good part of its panel (a close shot): its box
+ *  then has corners of hair a balloon may cover (in a long shot they are a
+ *  few pixels beside the face). */
+function closeShot(face: Rect, vis: Rect): boolean {
+  return face.width >= 0.35 * vis.width || face.height >= 0.35 * vis.height;
+}
+
+/** Area of a face's box the samples fall in, less its top corners: above
+ *  its middle a face is the oval its box holds (the corners are hair or
+ *  background); below it, the whole box (cheeks, jaw and chin). */
+function coveredOval(samples: readonly Point[], rect: Rect, area: number): number {
+  const cx = rect.x + rect.width / 2;
+  const cy = rect.y + rect.height / 2;
+  const rx = rect.width / 2;
+  const ry = rect.height / 2;
+  let n = 0;
+  for (const s of samples) {
+    if (!pointInRect(s, rect)) continue;
+    if (s.y >= cy || ((s.x - cx) / rx) ** 2 + ((s.y - cy) / ry) ** 2 <= 1) n++;
+  }
   return (n / Math.max(1, samples.length)) * area;
 }
 
@@ -228,6 +284,13 @@ interface Eval {
   hard: number;
   soft: number;
   reasons: Set<LetteringDiagnostic['reasons'][number]>;
+  /** What of `soft` is reading order (a balloon read before the one it
+   *  follows) and covering avoid zones (at the level that allows it). */
+  order: number;
+  cover: number;
+  /** What of `cover` is over the avoid zones the art marks (not the
+   *  guards the layout derives over heads). */
+  coverArt: number;
 }
 
 /** Cost of `unit` (variant `vi`) at `at`, given the other placed units. */
@@ -250,8 +313,14 @@ function evaluate(
   const reasons = new Set<LetteringDiagnostic['reasons'][number]>();
   let hard = 0;
   let soft = 0;
+  let order = 0;
+  let cover = 0;
+  let coverArt = 0;
   const S = (k: string, x: number) => {
     soft += x;
+    if (k === 'order') order += x;
+    else if (k === 'coverAvoid' || k === 'coverArt') cover += x;
+    if (k === 'coverArt') coverArt += x;
     if (terms) terms[k] = (terms[k] ?? 0) + x;
   };
   if (v.cost) S('arrangement', v.cost);
@@ -259,10 +328,11 @@ function evaluate(
     hard += x;
     if (terms) terms[`!${k}`] = (terms[`!${k}`] ?? 0) + x;
   };
-  // Faces, avoid zones, mouths.
+  // Faces (in a close shot less the top corners of their boxes, hair or
+  // background), avoid zones, mouths.
   for (const f of scene.faces) {
     if (!rectsOverlap(box, f)) continue;
-    const a = coveredArea(samples, f, area);
+    const a = closeShot(f, scene.visBox) ? coveredOval(samples, f, area) : coveredArea(samples, f, area);
     if (a > 0) {
       H('face', (W.face * a) / em2 + W.face);
       reasons.add('face');
@@ -272,7 +342,10 @@ function evaluate(
     if (!rectsOverlap(box, r)) continue;
     const a = coveredArea(samples, r, area);
     if (a > 0) {
-      if (level.coverAvoid) S('coverAvoid', (2 * a) / em2);
+      // (What the art marks costs three times what a guard over a head
+      // does: a balloon touches the top of the hair before it covers a
+      // hand the artist asked to keep clear.)
+      if (level.coverAvoid) S(r.guard ? 'coverAvoid' : 'coverArt', ((r.guard ? 2 : 6) * a) / em2);
       else {
         H('avoid', (W.avoid * a) / em2 + W.avoid);
         reasons.add('avoid');
@@ -281,7 +354,8 @@ function evaluate(
   }
   for (const r of scene.soft) {
     if (!rectsOverlap(box, r)) continue;
-    S('softAvoid', ((r.weight ?? 1) * W.soft * coveredArea(samples, r, area)) / em2);
+    const other = r.owner !== undefined && (r.contact === true || r.owner !== unit.speaker);
+    S(other ? 'otherFigure' : 'softAvoid', ((r.weight ?? 1) * (other ? OTHER_FIGURE : 1) * W.soft * coveredArea(samples, r, area)) / em2);
   }
   const bodiesHere = v.bodies.map((b) => moved(b.core, at));
   for (const m of scene.mouths) {
@@ -293,13 +367,19 @@ function evaluate(
   }
   // Outside the panel. A unit that breaks its border on purpose (`break`,
   // at the level that allows it; a pin, where its author put it) may run
-  // past the border, the gutter and the live area: a little cost, never a
-  // fault — but never off the sheet, and never into another panel's art
-  // unless it is a sound effect or a `break` (drawn sound and a balloon
-  // breaking into the next panel are both the letterer's call).
+  // past the border and the gutter: a little cost, never a fault — but
+  // never off the sheet, and never into another panel's art unless it is
+  // a sound effect or a `break` (drawn sound and a balloon breaking into
+  // the next panel are both the letterer's call). Only a pin, drawn sound
+  // or the `break` of a panel that bleeds leaves the live area: a balloon
+  // left to the engine breaks into the gutter and the next panel, never
+  // into the margin.
   const rim = moved(v.rim, at);
   const intended = unit.pin !== undefined || (level.breakBorder && unit.breakBorder === true);
-  const edge = intended ? (unit.kind === 'sfx' ? scene.edgeSfx : scene.edge) ?? scene.limit : scene.limit;
+  const edge = !intended ? scene.limit
+    : unit.kind === 'sfx' ? scene.edgeSfx ?? scene.limit
+    : unit.pin !== undefined || scene.bleeds ? scene.edge ?? scene.limit
+    : scene.limit ?? scene.edge;
   let out = 0;
   let intrude = 0;
   let offPage = 0;
@@ -447,8 +527,10 @@ function evaluate(
     S('side', (W.side * Math.max(0, reach - 1.2 * em) + 3 * W.side * Math.max(0, reach - 3 * em)) / em);
   }
   if (unit.kind === 'sfx' && unit.near) S('sfxNear', (0.5 * dist(centre, unit.near)) / em);
-  // High in the panel; the first one in the top start corner.
-  if (unit.kind !== 'sfx') {
+  // High in the panel; the first one in the top start corner. (A unit set
+  // at a corner or an edge has its place: a caption at the foot of a panel
+  // is not drawn to the top of it.)
+  if (unit.kind !== 'sfx' && !unit.position) {
     const top = box.y - scene.visBox.y;
     S('height', ((scene.heightBias ?? 1) * (unit.kind === 'note' ? W.height * Math.max(0, scene.visBox.y + scene.visBox.height - (box.y + box.height)) : W.height * top)) / em);
     if (unit.order === firstOrder && unit.kind !== 'note') {
@@ -456,7 +538,7 @@ function evaluate(
       S('start', (W.start * fromStart) / em);
     }
   }
-  return { hard, soft, reasons };
+  return { hard, soft, reasons, order, cover, coverArt };
 }
 
 /** A rectangle grown by `d` px on every side. */
@@ -560,11 +642,12 @@ function candidates(scene: Scene, unit: PlaceUnit, vi: number): Point[] {
 
 /** The anchor a corner or edge keyword puts a unit at: its box flush
  *  with the panel (`butt`) or with the inset area, at that corner. */
-export function positionAnchor(scene: Pick<Scene, 'visible' | 'panel' | 'fwd' | 'buttPoly'>, v: UnitVariant, position: LetteringPosition, butt: boolean): Point {
+export function positionAnchor(scene: Pick<Scene, 'visible' | 'panel' | 'fwd' | 'buttPoly'>, v: UnitVariant, position: LetteringPosition, butt: boolean, along?: number): Point {
   const poly = butt ? scene.buttPoly : scene.visible;
   const box = boundsOf(poly);
   const startLeft = scene.fwd === 1;
-  const hx = position === 'top' || position === 'bottom' ? 0.5
+  // `along`: where on its edge (0 left, 1 right) instead of the keyword's.
+  const hx = along !== undefined ? along : position === 'top' || position === 'bottom' ? 0.5
     : position.endsWith('start') ? (startLeft ? 0 : 1) : (startLeft ? 1 : 0);
   const vy = position.startsWith('top') ? 0 : 1;
   const bx = box.x + hx * (box.width - v.bbox.width);
@@ -583,8 +666,10 @@ export function positionAnchor(scene: Pick<Scene, 'visible' | 'panel' | 'fwd' | 
 
 /** A corner or edge unit's anchors: its own corner first, then — a cost
  *  each, so taken only when its own covers a face, an avoid zone or a
- *  balloon — the other corner of that edge, the middle of it, and the
- *  corners of the opposite edge. */
+ *  balloon — the other corner of that edge, the middle of it, the spots
+ *  along it just clear of what it would cover (between two heads), and
+ *  only then the corners of the opposite edge: a caption at the head of a
+ *  panel (a strip's title) stays at its head when there is room there. */
 function positionAnchors(scene: Scene, v: UnitVariant, position: LetteringPosition, butt: boolean): { at: Point; extra: number }[] {
   const top = position.startsWith('top');
   const across: LetteringPosition = position.endsWith('start') ? (top ? 'top-end' : 'bottom-end') : position.endsWith('end') ? (top ? 'top-start' : 'bottom-start') : (top ? 'top-start' : 'bottom-start');
@@ -592,7 +677,25 @@ function positionAnchors(scene: Scene, v: UnitVariant, position: LetteringPositi
   const flip = (q: LetteringPosition): LetteringPosition => (q.startsWith('top') ? q.replace('top', 'bottom') : q.replace('bottom', 'top')) as LetteringPosition;
   const list: [LetteringPosition, number][] = [[position, 0], [across, 2], [middle, 3], [flip(position), 5], [flip(across), 6]];
   const seen = new Set<LetteringPosition>();
-  return list.filter(([q]) => (seen.has(q) ? false : (seen.add(q), true))).map(([q, extra]) => ({ at: positionAnchor(scene, v, q, butt), extra }));
+  const out = list.filter(([q]) => (seen.has(q) ? false : (seen.add(q), true))).map(([q, extra]) => ({ at: positionAnchor(scene, v, q, butt), extra }));
+  // Along the edge: the box butted against each side of every face or
+  // avoid zone in the edge's band, nearer its own corner first.
+  const own = positionAnchor(scene, v, position, butt);
+  const band = movedRect(v.bbox, own);
+  const span = boundsOf(butt ? scene.buttPoly : scene.visible);
+  const free = span.width - v.bbox.width;
+  if (free > 0) {
+    const ownX = band.x;
+    for (const r of [...scene.faces, ...scene.avoid]) {
+      if (r.y > band.y + band.height || r.y + r.height < band.y) continue;
+      for (const x of [r.x + r.width + 1, r.x - v.bbox.width - 1]) {
+        const f = (x - span.x) / free;
+        if (f <= 0 || f >= 1) continue;
+        out.push({ at: positionAnchor(scene, v, position, butt, f), extra: 3.5 + Math.abs(x - ownX) / span.width });
+      }
+    }
+  }
+  return out;
 }
 
 const LEVELS: Level[] = [
@@ -642,10 +745,54 @@ function bestFor(scene: Scene, unit: PlaceUnit, others: readonly Placed[], first
     }
     if (!best) continue;
     const choice: Choice = { variant: best.variant, level: best.level, at: best.at, ev: best.ev };
-    if (choice.ev.hard === 0) return choice;
+    if (choice.ev.hard === 0) return fixed || li !== 0 ? choice : orderBeforeAvoid(scene, unit, others, firstOrder, best, penalty);
     if (!fallback || better(choice.ev, fallback.ev)) fallback = choice;
   }
   return fallback!;
+}
+
+/** What taking the last fallback (covering an avoid zone a little) to keep
+ *  the reading order costs on top of the cover itself. */
+const ORDER_OVER_AVOID = 4;
+/** The most a balloon may cover of avoid zones (as their cost: 2 per em²
+ *  of a guard over a head, 6 of a zone the art marks) to keep the reading
+ *  order: the top of the hair over a face, the edge of a hat; of what the
+ *  art marks, hardly a corner. */
+const ORDER_COVER_MAX = 16;
+const ORDER_COVER_ART_MAX = 6;
+
+/** Whether a spot (its evaluation and cost terms) may stand in for one
+ *  that reads out of order: clean, in order, covering no more of avoid
+ *  zones than the caps, and its tail off the other faces (a tail across
+ *  another character's face reads as theirs, worse than a line read
+ *  late). */
+function keepsOrder(ev: Eval, terms: Record<string, number>): boolean {
+  return ev.hard === 0 && ev.order < W.orderBase && ev.cover <= ORDER_COVER_MAX && ev.coverArt <= ORDER_COVER_ART_MAX
+    && (terms.otherFace ?? 0) < W.otherFace;
+}
+
+/** A clean choice that reads out of order (the balloon above the one it
+ *  answers, or beside it on the wrong side) against the same unit covering
+ *  a little of an avoid zone in reading order: a letterer lets a balloon
+ *  touch the top of a head before setting a reply ahead of its line. */
+function orderBeforeAvoid(
+  scene: Scene, unit: PlaceUnit, others: readonly Placed[], firstOrder: number,
+  best: Choice & { score: number }, penalty: (vi: number) => number,
+): Choice {
+  const plain: Choice = { variant: best.variant, level: best.level, at: best.at, ev: best.ev };
+  if (best.ev.order < W.orderBase || unit.pin || unit.position) return plain;
+  const level = LEVELS[2]!;
+  let alt: (Choice & { score: number }) | undefined;
+  for (let vi = 0; vi < unit.variants.length; vi++) {
+    for (const at of candidates(scene, unit, vi)) {
+      const terms: Record<string, number> = {};
+      const ev = evaluate(scene, unit, vi, at, others, level, firstOrder, terms);
+      if (!keepsOrder(ev, terms)) continue;
+      const score = ev.soft + penalty(vi) + ORDER_OVER_AVOID;
+      if (!alt || score < alt.score - 1e-9) alt = { variant: vi, level: 2, at, ev, score };
+    }
+  }
+  return alt && alt.score < best.score - 1e-9 ? { variant: alt.variant, level: alt.level, at: alt.at, ev: alt.ev } : plain;
 }
 
 /** What choosing a reshaped text block costs (its poorer shape). */
@@ -820,6 +967,57 @@ function swapCrossing(scene: Scene, placed: Layout, firstOrder: number): Layout 
   return undefined;
 }
 
+/** The cheapest spot for `unit` that reads in order with the others, over
+ *  all its shapes and fallback levels (see {@link keepsOrder}; covering an
+ *  avoid zone pays as much more as in {@link orderBeforeAvoid}); undefined
+ *  when there is none. */
+function inOrder(scene: Scene, unit: PlaceUnit, others: readonly Placed[], firstOrder: number): Choice | undefined {
+  const levels = LEVELS.map((_, i) => i).filter((i) => i === 0 || unit.breakBorder || i === 2);
+  let best: (Choice & { score: number }) | undefined;
+  for (const li of levels) {
+    for (let vi = 0; vi < unit.variants.length; vi++) {
+      const penalty = unit.variants[vi]!.reshaped ? RESHAPE_COST : 0;
+      for (const at of candidates(scene, unit, vi)) {
+        const terms: Record<string, number> = {};
+        const ev = evaluate(scene, unit, vi, at, others, LEVELS[li]!, firstOrder, terms);
+        if (!keepsOrder(ev, terms)) continue;
+        const score = ev.soft + penalty + (ev.cover > 0 ? ORDER_OVER_AVOID : 0);
+        if (!best || score < best.score - 1e-9) best = { variant: vi, level: li, at, ev, score };
+      }
+    }
+  }
+  return best && { variant: best.variant, level: best.level, at: best.at, ev: best.ev };
+}
+
+/** The layout with one balloon that reads out of order placed again over
+ *  all its shapes and fallbacks, the others where they stand, when that
+ *  lowers the whole layout's cost; else undefined. The improvement passes
+ *  keep a balloon's shape and level, and a pair placed again has the later
+ *  balloon alone first, in the room the earlier one needs: neither moves
+ *  the first line of a pair above the hair of its speaker, in a shape a
+ *  line deeper, ahead of the reply that already stands below it. */
+function reorder(scene: Scene, placed: Layout, firstOrder: number): Layout | undefined {
+  const base = totalCost(scene, placed, firstOrder);
+  let best: Layout | undefined;
+  let cost = base;
+  for (let i = 0; i < placed.length; i++) {
+    const p = placed[i]!;
+    if (p.unit.pin || p.unit.position || p.unit.kind === 'sfx' || p.ev.order < W.orderBase) continue;
+    const others = placed.filter((_, j) => j !== i);
+    const c = inOrder(scene, p.unit, others, firstOrder);
+    if (!c) continue;
+    const out: Layout = placed.map((q, j) => (j === i ? { ...q, variant: c.variant, level: c.level, at: c.at, ev: c.ev } : q));
+    // (Covering an avoid zone to read in order pays what `bestFor` asks;
+    // the whole layout's cost counts the order on both balloons of a pair.)
+    const t = totalCost(scene, out, firstOrder) + (c.ev.cover > 0 ? ORDER_OVER_AVOID : 0);
+    if (t < cost - 1e-6) {
+      cost = t;
+      best = out;
+    }
+  }
+  return best;
+}
+
 /** The layout with one pair of free units taken out and placed again
  * (each order in turn, the second seeing the first) when that lowers the
  * whole layout's cost; else undefined. A single move cannot undo a pair
@@ -905,17 +1103,9 @@ function totalCost(scene: Scene, placed: Layout, firstOrder: number): number {
   return hard * 1000 + soft;
 }
 
-/** Height biases the solver is run with: a greedy pass that lifts every
- *  balloon higher first can leave room below for the later ones (the
- *  Kurlander order often wants the earlier balloons high); the layout with
- *  the lowest plain cost wins. */
-const HEIGHT_BIASES = [1, 3, 7];
-
-/** Place every unit of a panel (see the module comment). */
-export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], passes = 3): PlacementResult {
-  const scene = sceneOf(panel);
-  const ordered = [...units].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  const firstOrder = ordered.find((u) => u.kind !== 'sfx' && u.kind !== 'note')?.order ?? Number.NaN;
+/** The search of {@link placeUnits}: greedy runs in a few orders and
+ *  height biases, then pairs placed again; the cheapest layout. */
+function search(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, passes: number): { placed: Layout; cost: number } {
   let placed: Layout | undefined;
   let bestCost = Number.POSITIVE_INFINITY;
   const tries = (mode: Sequence) => {
@@ -945,7 +1135,36 @@ export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], p
     if (!next) break;
     placed = solveFrom(scene, next, firstOrder, passes);
   }
-  const final: Layout = placed!;
+  // Balloons still read out of order placed again with every shape and
+  // fallback open, the others where they stand.
+  for (let round = 0; round < 2 && ordered.length > 1; round++) {
+    const next = reorder(scene, placed!, firstOrder);
+    if (!next) break;
+    placed = solveFrom(scene, next, firstOrder, passes);
+  }
+  return { placed: placed!, cost: totalCost(scene, placed!, firstOrder) };
+}
+
+/** Height biases the solver is run with: a greedy pass that lifts every
+ *  balloon higher first can leave room below for the later ones (the
+ *  Kurlander order often wants the earlier balloons high); the layout with
+ *  the lowest plain cost wins. */
+const HEIGHT_BIASES = [1, 3, 7];
+
+/** Place every unit of a panel (see the module comment). `extend`, when
+ * given, adds spare variants to the units (see `letterPanelDetailed`):
+ * a panel the first search leaves with a fault is searched again with
+ * them, and the cheaper layout is kept. */
+export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], passes = 3, extend?: () => boolean): PlacementResult {
+  const scene = sceneOf(panel);
+  const ordered = [...units].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const firstOrder = ordered.find((u) => u.kind !== 'sfx' && u.kind !== 'note')?.order ?? Number.NaN;
+  let { placed, cost } = search(scene, ordered, firstOrder, passes);
+  if (cost >= 1000 && extend?.()) {
+    const again = search(scene, ordered, firstOrder, passes);
+    if (again.cost < cost - 1e-9) ({ placed, cost } = again);
+  }
+  const final: Layout = placed;
   const diagnostics: LetteringDiagnostic[] = [];
   for (let i = 0; i < final.length; i++) {
     const p = final[i]!;

@@ -90,7 +90,7 @@
       "cover": "pages"
     },
     "surface": {
-      "type": "oak"
+      "type": "none"
     },
     "lighting": {
       "environment": "daylight"
