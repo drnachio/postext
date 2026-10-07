@@ -13,7 +13,7 @@ import {
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
-const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const LANG = 'en'; // @lang: the sample's language: 'en' | 'es' | 'ca' | 'zh' | 'ar' | 'ja' | 'pt'
 const RECIPE = 'comic-page-splitters';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ const colorPalette = [
 const [LETTERING, SFX] = t({
   en: ['Comic Neue', 'Bangers'], es: ['Comic Neue', 'Bangers'], ca: ['Comic Neue', 'Bangers'],
   ja: ['Zen Antique', 'Dela Gothic One'], zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou'],
-  ar: ['Playpen Sans Arabic', 'Lalezar'],
+  ar: ['Playpen Sans Arabic', 'Lalezar'], pt: ['Comic Neue', 'Bangers'],
 });
 // #endregion
 
@@ -71,7 +71,8 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
     offset: { x: mm(0), y: mm(-8) } } }] };
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar' }),
+  locale: t({ en: 'en-us', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
+    pt: 'pt-BR' }),
   colorPalette, comics,
   // The trim of an American comic book, 6⅝ × 10³⁄₁₆ in; the type area is the panel frame.
   page: { sizePreset: 'custom', width: mm(168), height: mm(259), dpi: 150,
@@ -120,7 +121,9 @@ const ART = {
         + 'amb un gat taronja gras al davant.',
       zh: '一个穿黄色雨衣的女孩沿着海边小路走向红白相间的灯塔，一只胖胖的橘猫走在前面。',
       ar: 'فتاة بمعطف مطر أصفر تصعد دربًا ساحليًا نحو منارة حمراء وبيضاء، وأمامها قط برتقالي سمين.',
-      ja: '黄色いレインコートの女の子が、赤と白の灯台へ続く海辺の小道をのぼっていく。前を太ったオレンジ色の猫が歩く。' }) },
+      ja: '黄色いレインコートの女の子が、赤と白の灯台へ続く海辺の小道をのぼっていく。前を太ったオレンジ色の猫が歩く。',
+      pt: 'Uma menina de capa de chuva amarela sobe um caminho à beira-mar rumo a um farol '
+        + 'vermelho e branco, com um gato laranja gordo à frente.' }) },
   'lh-radio': { width: 1000, height: 1000,
     safeArea: { x: 0.28, y: 0.36, width: 0.24, height: 0.56 },
     anchors: [{ id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 },
@@ -135,7 +138,9 @@ const ART = {
       zh: '白胡子的老守塔人穿着藏青色毛衣、戴着帽子，手握话筒，敲着一台电子管收音机。',
       ar: 'حارس المنارة العجوز بلحيته البيضاء وكنزته الكحلية وقبعته ينقر على مذياع قديم '
         + 'والميكروفون في يده.',
-      ja: '白いひげの老灯台守が、紺のセーターに帽子姿でマイクを握り、真空管ラジオをたたいている。' }) },
+      ja: '白いひげの老灯台守が、紺のセーターに帽子姿でマイクを握り、真空管ラジオをたたいている。',
+      pt: 'O velho faroleiro, de barba branca, suéter azul-marinho e boné, dá batidinhas num '
+        + 'rádio valvulado com o microfone na mão.' }) },
   'lh-maya': { width: 1100, height: 1100, safeArea: { x: 0.32, y: 0.22, width: 0.42, height: 0.73 },
     anchors: [{ id: 'maya', x: 0.54, y: 0.565, head: { x: 0.5, y: 0.3 },
       face: { x: 0.4, y: 0.33, width: 0.24, height: 0.29 } }],
@@ -145,7 +150,8 @@ const ART = {
       ca: 'Primer pla de la Maya, que arrufa les celles mirant a terra i assenyala avall.',
       zh: '玛雅的特写：她皱着眉头看着地板，手指向下指。',
       ar: 'لقطة قريبة لمايا وهي تعقد حاجبيها ناظرةً إلى الأرض وتشير إلى أسفل.',
-      ja: 'マヤのアップ。眉をひそめて床を見つめ、下を指さしている。' }) },
+      ja: 'マヤのアップ。眉をひそめて床を見つめ、下を指さしている。',
+      pt: 'Close de Maya, de testa franzida, olhando para o chão e apontando para baixo.' }) },
   'lh-biscuit': { width: 1000, height: 1000,
     safeArea: { x: 0.5, y: 0.22, width: 0.34, height: 0.6 },
     anchors: [{ id: 'biscuit', x: 0.72, y: 0.355, head: { x: 0.73, y: 0.32 },
@@ -160,7 +166,9 @@ const ART = {
         + 'la ràdio.',
       zh: '桌子底下，胖橘猫四脚朝天地睡着，正好压在收音机的黑色电线上。',
       ar: 'تحت المكتب ينام القط البرتقالي السمين على ظهره فوق سلك المذياع الأسود تمامًا.',
-      ja: '机の下で、太ったオレンジ色の猫がラジオの黒いコードの真上にあおむけで眠っている。' }) },
+      ja: '机の下で、太ったオレンジ色の猫がラジオの黒いコードの真上にあおむけで眠っている。',
+      pt: 'Debaixo da mesa, o gato laranja gordo dorme de barriga para cima bem em cima do cabo '
+        + 'preto do rádio.' }) },
   'lh-beam': { width: 1200, height: 800, safeArea: { x: 0.14, y: 0.02, width: 0.36, height: 0.64 },
     anchors: [{ id: 'maya', x: 0.235, y: 0.15,
       face: { x: 0.21, y: 0.11, width: 0.05, height: 0.07 } },
@@ -175,7 +183,9 @@ const ART = {
       zh: '夜里，灯塔的光束扫过漆黑的海面；玛雅和外公站在灯室外的回廊上，远处一艘渔船亮着灯。',
       ar: 'ليلًا يمسح الشعاع بحرًا مظلمًا، ومايا وجدّها واقفان على شرفة الفانوس، وفي البعيد قارب '
         + 'صيد بأضوائه.',
-      ja: '夜。光の帯が暗い海をなでる。マヤと祖父は灯室の回廊に立ち、沖には漁船の明かりが見える。' }) },
+      ja: '夜。光の帯が暗い海をなでる。マヤと祖父は灯室の回廊に立ち、沖には漁船の明かりが見える。',
+      pt: 'À noite, o facho varre um mar escuro; Maya e o avô estão na galeria da lanterna e, ao '
+        + 'longe, aparecem as luzes de um barco de pesca.' }) },
 };
 // #endregion
 
@@ -208,7 +218,8 @@ const resources = await Promise.all([
 ]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showBook(doc, { title: t({ en: 'One set of panels, three page splits',
-  es: 'Las mismas viñetas en tres divisiones de página' }) });
+  es: 'Las mismas viñetas en tres divisiones de página',
+  pt: 'Os mesmos quadros em três divisões de página' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 

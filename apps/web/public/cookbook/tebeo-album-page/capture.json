@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tebeo-album-page",
-  "sourceHash": "712511d427ab79fbf49d02666e022b90ffa3ff1c2bc61b1e762b4a5ccc38a1ed",
+  "sourceHash": "e2c04b1d89b31918f3b66a0446181e63e6a0793e58be3c9f83f2f55061a1b555",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.20.3",
+    "postextPdf": "1.20.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.873Z",
+  "capturedAt": "2026-10-07T12:29:53.026Z",
   "variants": {
     "en": {
-      "hash8": "8888b514",
+      "hash8": "2cdf5e60",
       "vdtHash": "3d4f16a94ffba3a564a4a4e255512896aba9d4dc",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 102,
-        "buildMs": 531,
-        "totalMs": 1346,
+        "importMs": 470,
+        "fontsMs": 133,
+        "buildMs": 562,
+        "totalMs": 1721,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 135
+        "ownLines": 137
       },
       "pages": [
         {
@@ -291,13 +291,13 @@
       }
     },
     "es": {
-      "hash8": "f8d190b5",
+      "hash8": "7d3e0118",
       "vdtHash": "816559f29b2f089a5478fb77ff9f71633bd18276",
       "timings": {
-        "importMs": 153,
-        "fontsMs": 134,
-        "buildMs": 417,
-        "totalMs": 1264,
+        "importMs": 220,
+        "fontsMs": 91,
+        "buildMs": 456,
+        "totalMs": 1326,
         "builds": 1
       },
       "specimen": {
@@ -318,7 +318,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 135
+        "ownLines": 137
       },
       "pages": [
         {
@@ -576,13 +576,13 @@
       }
     },
     "ca": {
-      "hash8": "6ddb74dd",
+      "hash8": "57ba8dcf",
       "vdtHash": "e61eea129a4c07d9e4cf2b7611a7cba4124222aa",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 86,
-        "buildMs": 428,
-        "totalMs": 1228,
+        "importMs": 291,
+        "fontsMs": 104,
+        "buildMs": 461,
+        "totalMs": 1424,
         "builds": 1
       },
       "specimen": {
@@ -603,7 +603,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 135
+        "ownLines": 137
       },
       "pages": [
         {
@@ -861,13 +861,13 @@
       }
     },
     "zh": {
-      "hash8": "bfda5580",
+      "hash8": "d99901d0",
       "vdtHash": "50f3d980fc2b9de7346d2b56fbf3f9cffc139eba",
       "timings": {
-        "importMs": 155,
-        "fontsMs": 312,
-        "buildMs": 801,
-        "totalMs": 1837,
+        "importMs": 252,
+        "fontsMs": 354,
+        "buildMs": 875,
+        "totalMs": 2052,
         "builds": 1
       },
       "specimen": {
@@ -888,7 +888,7 @@
           "ZCOOL KuaiLe"
         ],
         "pages": 2,
-        "ownLines": 135
+        "ownLines": 137
       },
       "pages": [
         {
@@ -1142,13 +1142,13 @@
       }
     },
     "ar": {
-      "hash8": "8ffd44e3",
+      "hash8": "b5163f94",
       "vdtHash": "96eb0cd503d6ae90a7b895eec4ff8cb1bbc9eb81",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 2913,
-        "buildMs": 1293,
-        "totalMs": 8757,
+        "importMs": 290,
+        "fontsMs": 146,
+        "buildMs": 387,
+        "totalMs": 1373,
         "builds": 1
       },
       "specimen": {
@@ -1169,7 +1169,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 2,
-        "ownLines": 135
+        "ownLines": 137
       },
       "pages": [
         {
@@ -1426,13 +1426,13 @@
       }
     },
     "ja": {
-      "hash8": "dd9d0bd5",
+      "hash8": "a8fd7109",
       "vdtHash": "cbaf3ab9f754ee9ecdf16e8c872e133a9d427590",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 251,
-        "buildMs": 1132,
-        "totalMs": 2107,
+        "importMs": 251,
+        "fontsMs": 324,
+        "buildMs": 1184,
+        "totalMs": 2336,
         "builds": 1
       },
       "specimen": {
@@ -1453,7 +1453,7 @@
           "Zen Antique"
         ],
         "pages": 2,
-        "ownLines": 135
+        "ownLines": 137
       },
       "pages": [
         {
@@ -1697,6 +1697,291 @@
             "check": "C20",
             "severity": "warn",
             "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 35 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "pt": {
+      "hash8": "c7cf32e2",
+      "vdtHash": "f140d5646d4b07bf163f4cf2c9873b6db7e64670",
+      "timings": {
+        "importMs": 1012,
+        "fontsMs": 373,
+        "buildMs": 566,
+        "totalMs": 2653,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Patrick Hand",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Bangers",
+          "Patrick Hand"
+        ],
+        "pages": 2,
+        "ownLines": 137
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 101344,
+          "alt": "Página de abertura 2: As laranjas da Carmen."
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 248996,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "tebeo-album-page.pdf",
+        "bytes": 1117114,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "tebeo-album-page.postext",
+        "bytes": 1116274
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.lettering.textTransform",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.panelStyles",
+          "comics.panelStyles[].borderStyle",
+          "comics.panelStyles[].id",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 154,
+        "designElements": 4,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 7,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bangers",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Patrick Hand",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 101 KB (aim for ≤ 90 KB)"
           },
           {
             "check": "C20",

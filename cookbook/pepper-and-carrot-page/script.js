@@ -13,7 +13,7 @@ import {
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
-const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const LANG = 'en'; // @lang: the sample's language: 'en' | 'es' | 'ca' | 'zh' | 'ar' | 'ja' | 'pt'
 const RECIPE = 'pepper-and-carrot-page';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -41,6 +41,7 @@ const [LETTERING, SFX, DEMON, TEXT] = t({
   ja: ['Zen Antique', 'Dela Gothic One', 'Dela Gothic One', 'Noto Serif JP'],
   zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou', 'ZCOOL QingKe HuangYou', 'Noto Serif SC'],
   ar: ['Playpen Sans Arabic', 'Lalezar', 'Lalezar', 'Noto Naskh Arabic'],
+  pt: ['Comic Neue', 'Bangers', 'Grenze Gotisch', 'Source Serif 4'],
 });
 // #endregion
 
@@ -66,7 +67,8 @@ const comics = {
   ],
   cast: [{ id: 'pepper', name: 'Pepper' }, { id: 'carrot', name: 'Carrot' },
     { id: 'monster', name: t({ en: 'Monsters of Chaosah', es: 'Demonios de Caosah',
-      ca: 'Monstres del Chaosah', zh: '浑沌魔兽', ar: 'وحوش الفوضى', ja: 'ケイオサーの怪物' }),
+      ca: 'Monstres del Chaosah', zh: '浑沌魔兽', ar: 'وحوش الفوضى', ja: 'ケイオサーの怪物',
+      pt: 'Monstros do Caosah' }),
     fill: col('demon'), color: col('paper'), fontFamily: DEMON }],
   runningHeads: true, // the folio on comic pages
 };
@@ -77,7 +79,7 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { x: mm(0), y: mm(-3) } } }] };
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar' }),
+  locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar', pt: 'pt-BR' }),
   colorPalette, comics,
   // Revoy's pages are A4 with 8.5 mm of white around the art.
   page: { sizePreset: 'custom', width: mm(210), height: mm(297), dpi: 150,
@@ -129,7 +131,9 @@ const ALT = {
       + 'coberta. En Carrot està aterrit.',
     zh: '电闪雷鸣。小辣椒怒气冲冲地从书架上抽出一本封面有恶魔脸的书。胡萝卜吓坏了。',
     ar: 'برق. فُلفُل غاضبة تسحب من الرف كتابًا على غلافه وجه شيطان، وجزرة مذعور.',
-    ja: '稲妻。怒ったペッパーが、表紙に悪魔の顔のある本を棚から引き抜く。キャロットはおびえている。' }),
+    ja: '稲妻。怒ったペッパーが、表紙に悪魔の顔のある本を棚から引き抜く。キャロットはおびえている。',
+    pt: 'Relâmpagos. Pepper, furiosa, tira da estante um livro com a cara de um demônio na capa. '
+      + 'Carrot está apavorado.' }),
   'e08p05-2': t({ en: 'From above, in the rain, Pepper draws three glowing red magic circles on '
       + 'the ground with her wand. Carrot watches.',
     es: 'Desde arriba, bajo la lluvia, Pimienta traza con su varita tres círculos mágicos rojos en '
@@ -139,13 +143,16 @@ const ALT = {
     zh: '俯视：雨中，小辣椒用魔杖在地上画出三个发光的红色魔法阵，胡萝卜在一旁看着。',
     ar: 'من الأعلى، تحت المطر، ترسم فُلفُل بعصاها ثلاث دوائر سحرية حمراء متوهجة على الأرض، وجزرة '
       + 'يراقب.',
-    ja: '上から見たところ。雨の中、ペッパーが杖で地面に赤く光る魔法陣を三つ描く。キャロットが見ている。' }),
+    ja: '上から見たところ。雨の中、ペッパーが杖で地面に赤く光る魔法陣を三つ描く。キャロットが見ている。',
+    pt: 'Vista de cima, na chuva, Pepper traça com a varinha três círculos mágicos vermelhos e '
+      + 'brilhantes no chão. Carrot observa.' }),
   'e08p05-3': t({ en: 'Red light floods the scene. Pepper, grim, holds the open book.',
     es: 'Una luz roja lo inunda todo. Pimienta, seria, sostiene el libro abierto.',
     ca: 'Una llum vermella ho inunda tot. La Pepper, seriosa, aguanta el llibre obert.',
     zh: '红光笼罩一切。小辣椒神情严峻，捧着打开的书。',
     ar: 'ضوء أحمر يغمر المشهد، وفُلفُل متجهّمة تمسك الكتاب مفتوحًا.',
-    ja: '赤い光があたりを満たす。ペッパーが険しい顔で、開いた本を持っている。' }),
+    ja: '赤い光があたりを満たす。ペッパーが険しい顔で、開いた本を持っている。',
+    pt: 'Uma luz vermelha inunda a cena. Pepper, séria, segura o livro aberto.' }),
   'e08p06-1': t({ en: 'Pepper and Carrot stand before three huge red-eyed demons that rise in the '
       + 'storm, lightning around them.',
     es: 'Pimienta y Zanahoria ante tres enormes demonios de ojos rojos que se alzan en la '
@@ -154,10 +161,12 @@ const ALT = {
       + 'tempesta, entre llamps.',
     zh: '小辣椒和胡萝卜站在三个红眼巨魔面前，巨魔在暴风雨中升起，四周电光闪闪。',
     ar: 'فُلفُل وجزرة أمام ثلاثة شياطين ضخمة بعيون حمراء تنهض في العاصفة والبرق حولها.',
-    ja: '嵐の中に現れた赤い目の巨大な悪魔三体の前に、ペッパーとキャロットが立つ。まわりに稲妻。' }),
+    ja: '嵐の中に現れた赤い目の巨大な悪魔三体の前に、ペッパーとキャロットが立つ。まわりに稲妻。',
+    pt: 'Pepper e Carrot diante de três demônios enormes de olhos vermelhos que surgem na '
+      + 'tempestade, entre relâmpagos.' }),
   'e08p06-2': t({ en: 'Pepper smiles a sly smile.', es: 'Pimienta sonríe con malicia.',
     ca: 'La Pepper somriu amb malícia.', zh: '小辣椒狡黠地一笑。', ar: 'فُلفُل تبتسم ابتسامة ماكرة.',
-    ja: 'ペッパーがにやりと笑う。' }),
+    ja: 'ペッパーがにやりと笑う。', pt: 'Pepper dá um sorriso malicioso.' }),
   'e08p06-3': t({ en: 'The party: Pepper, Carrot and the three demons drink tea around the table '
       + 'by candlelight, all smiling.',
     es: 'La fiesta: Pimienta, Zanahoria y los tres demonios toman té alrededor de la mesa a la luz '
@@ -167,7 +176,9 @@ const ALT = {
     zh: '派对：小辣椒、胡萝卜和三个恶魔围着桌子，在烛光下喝茶，个个笑容满面。',
     ar: 'الحفلة: فُلفُل وجزرة والشياطين الثلاثة يشربون الشاي حول المائدة على ضوء الشموع، مبتسمين.',
     ja: 'パーティー。ペッパーとキャロットと三体の悪魔が、ろうそくの明かりのテーブルを囲んでお茶を飲み、'
-      + 'みんな笑っている。' }),
+      + 'みんな笑っている。',
+    pt: 'A festa: Pepper, Carrot e os três demônios tomam chá em volta da mesa à luz de velas, '
+      + 'todos sorrindo.' }),
 };
 // #endregion
 
@@ -230,7 +241,8 @@ const resources = await Promise.all([
 ]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showBook(doc, { title: t({ en: 'A Pepper&Carrot page re-lettered from its transcript',
-  es: 'Una página de Pepper&Carrot rotulada de nuevo a partir de su transcripción' }) });
+  es: 'Una página de Pepper&Carrot rotulada de nuevo a partir de su transcripción',
+  pt: 'Uma página de Pepper&Carrot reletreirada pela transcrição' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: pdfFonts, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 

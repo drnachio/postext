@@ -8,7 +8,7 @@ import {
   registerResourceImage,
 } from 'https://esm.sh/postext';
 
-const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es' | 'pt')
 const RECIPE = 'baseline-grid-book-page';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -92,8 +92,8 @@ const balancing = { stretchAfterFloats: false };
 // #endregion
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
-  resourceTypes: defaultResourceTypes(LANG), // Spanish captions (gotcha: resource-types-locale)
+  locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
+  resourceTypes: defaultResourceTypes(LANG), // localized captions (gotcha: resource-types-locale)
   colorPalette,
   page,
   layout,
@@ -191,7 +191,7 @@ function pagesSvg(w, h) {
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
-// Captions and alt text in both sample languages: [caption, altText].
+// Captions and alt text in every sample language: [caption, altText].
 const CAPTIONS = {
   canon: {
     en: ['The canon on an open spread of 2:3 pages. The diagonals fix the corners of both text '
@@ -202,6 +202,10 @@ const CAPTIONS = {
       + 'las dos cajas; el círculo, tan ancho como la página, es tan alto como su caja.',
     'Dos páginas enfrentadas cruzadas por líneas rojas de construcción, una caja pautada donde '
       + 'se cortan en cada página y un círculo tan ancho como la página izquierda.'],
+    pt: ['O cânone sobre uma página dupla aberta de páginas 2:3. As diagonais fixam os cantos '
+      + 'das duas manchas; o círculo, da largura da página, tem exatamente a altura da mancha.',
+    'Duas páginas lado a lado cruzadas por linhas vermelhas de construção, uma mancha pautada '
+      + 'onde elas se cruzam em cada página e um círculo da largura da página esquerda.'],
   },
   pages: {
     en: ['This book’s 210 × 280 mm page twice. Left, divided by the canon into ninths, with a '
@@ -214,6 +218,11 @@ const CAPTIONS = {
       + 'el libro: márgenes de 16, 24, 32 y 48 mm y dos columnas de 44 líneas.',
     'Dos páginas iguales: la izquierda, dividida en una cuadrícula de nueve por nueve alrededor '
       + 'de su caja; la derecha, con dos columnas pautadas.'],
+    pt: ['A página de 210 × 280 mm deste livro, duas vezes. À esquerda, dividida em nonos pelo '
+      + 'cânone, com uma mancha de 140 × 187 mm. À direita, como o livro a compõe: margens de '
+      + '16, 24, 32 e 48 mm e duas colunas de 44 linhas.',
+    'Duas páginas iguais: a da esquerda dividida numa grade de nove por nove em volta da '
+      + 'mancha, a da direita com duas colunas pautadas.'],
   },
 };
 
@@ -248,6 +257,7 @@ await loadSvg('pages.svg', pagesSvg(...PAGES));
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources, continuation }, config()), markdown);
 showPages(doc, { title: t({ en: 'A book page on a baseline grid',
-  es: 'Una página de libro sobre una rejilla base' }) });
+  es: 'Una página de libro sobre una rejilla base',
+  pt: 'Uma página de livro sobre a grade de linhas de base' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

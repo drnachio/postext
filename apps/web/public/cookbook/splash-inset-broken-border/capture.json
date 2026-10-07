@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "splash-inset-broken-border",
-  "sourceHash": "cf1b763278b531419edc9c7a684d654b52a60a9f709bdd1bbed7f081bbbbd3ac",
+  "sourceHash": "4babf5386dbd921eccc4ceee9fddbe6a1a85468c0ccc069363e15e1f5ab29925",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.20.3",
+    "postextPdf": "1.20.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.698Z",
+  "capturedAt": "2026-10-07T12:29:52.914Z",
   "variants": {
     "en": {
-      "hash8": "3a49c4f2",
+      "hash8": "b112311e",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 87,
-        "buildMs": 118,
-        "totalMs": 915,
+        "importMs": 331,
+        "fontsMs": 131,
+        "buildMs": 125,
+        "totalMs": 1153,
         "builds": 1
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Comic Neue"
         ],
         "pages": 2,
-        "ownLines": 110
+        "ownLines": 112
       },
       "pages": [
         {
@@ -232,13 +232,13 @@
       }
     },
     "es": {
-      "hash8": "acdec327",
+      "hash8": "1d3de3f5",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 152,
-        "fontsMs": 73,
-        "buildMs": 117,
-        "totalMs": 916,
+        "importMs": 304,
+        "fontsMs": 124,
+        "buildMs": 124,
+        "totalMs": 1110,
         "builds": 1
       },
       "specimen": {
@@ -258,7 +258,7 @@
           "Comic Neue"
         ],
         "pages": 2,
-        "ownLines": 110
+        "ownLines": 112
       },
       "pages": [
         {
@@ -453,13 +453,13 @@
       }
     },
     "ca": {
-      "hash8": "ea7c86fc",
+      "hash8": "a7e03041",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 84,
-        "buildMs": 132,
-        "totalMs": 2822,
+        "importMs": 395,
+        "fontsMs": 111,
+        "buildMs": 136,
+        "totalMs": 1207,
         "builds": 1
       },
       "specimen": {
@@ -479,7 +479,7 @@
           "Comic Neue"
         ],
         "pages": 2,
-        "ownLines": 110
+        "ownLines": 112
       },
       "pages": [
         {
@@ -674,13 +674,13 @@
       }
     },
     "zh": {
-      "hash8": "ad7c1b23",
+      "hash8": "9787bfca",
       "vdtHash": "69a714d811223c07ee4617800fe1b6c4129a8924",
       "timings": {
-        "importMs": 184,
-        "fontsMs": 272,
-        "buildMs": 194,
-        "totalMs": 1212,
+        "importMs": 449,
+        "fontsMs": 533,
+        "buildMs": 207,
+        "totalMs": 1754,
         "builds": 1
       },
       "specimen": {
@@ -700,7 +700,7 @@
           "ZCOOL KuaiLe"
         ],
         "pages": 2,
-        "ownLines": 110
+        "ownLines": 112
       },
       "pages": [
         {
@@ -750,7 +750,7 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 791630,
+        "bytes": 791634,
         "pages": 2
       },
       "sandbox": {
@@ -896,13 +896,13 @@
       }
     },
     "ar": {
-      "hash8": "69d56d60",
+      "hash8": "a811ced0",
       "vdtHash": "7a907b581ba76903673d89d9523d7dd4926f3c7c",
       "timings": {
-        "importMs": 152,
-        "fontsMs": 99,
-        "buildMs": 113,
-        "totalMs": 940,
+        "importMs": 417,
+        "fontsMs": 169,
+        "buildMs": 123,
+        "totalMs": 1255,
         "builds": 1
       },
       "specimen": {
@@ -922,7 +922,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 2,
-        "ownLines": 110
+        "ownLines": 112
       },
       "pages": [
         {
@@ -1121,13 +1121,13 @@
       }
     },
     "ja": {
-      "hash8": "1210da8a",
+      "hash8": "a001a705",
       "vdtHash": "a6e280cef897624f349f209d33e1f87e3bbbca57",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 239,
-        "buildMs": 227,
-        "totalMs": 1185,
+        "importMs": 304,
+        "fontsMs": 366,
+        "buildMs": 242,
+        "totalMs": 1483,
         "builds": 1
       },
       "specimen": {
@@ -1147,7 +1147,7 @@
           "Zen Antique"
         ],
         "pages": 2,
-        "ownLines": 110
+        "ownLines": 112
       },
       "pages": [
         {
@@ -1197,7 +1197,7 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 783508,
+        "bytes": 783507,
         "pages": 2
       },
       "sandbox": {
@@ -1317,6 +1317,227 @@
         "features": [
           "balloon-styles",
           "cjk-line-breaking",
+          "comic-broken-borders",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "pt": {
+      "hash8": "af033b0e",
+      "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
+      "timings": {
+        "importMs": 654,
+        "fontsMs": 160,
+        "buildMs": 173,
+        "totalMs": 1586,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Comic Neue",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Comic Neue"
+        ],
+        "pages": 2,
+        "ownLines": 112
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 266104,
+          "alt": "Página 1."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 219548,
+          "alt": "Página 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "splash-inset-broken-border.pdf",
+        "bytes": 770795,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "splash-inset-broken-border.postext",
+        "bytes": 766611
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.bleed",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 82,
+        "designElements": 1,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Comic Neue",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
           "comic-broken-borders",
           "comic-lettering",
           "comic-pages",

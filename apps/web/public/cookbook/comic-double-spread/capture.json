@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-double-spread",
-  "sourceHash": "a5cc4ac0230647bda429f3532cb929534774d66ebb7c589f9437f86bd1e2c537",
+  "sourceHash": "91902c0956f05e75ae281ae05b47e18c8a8955c064633a52be8fb8fd4a8bb487",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.20.3",
+    "postextPdf": "1.20.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.954Z",
+  "capturedAt": "2026-10-07T12:28:57.228Z",
   "variants": {
     "en": {
-      "hash8": "b2444c2a",
+      "hash8": "4aa60499",
       "vdtHash": "6d1ab509a3fcd3d3cd62c9cb4ec3083deec81511",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 99,
-        "buildMs": 303,
-        "totalMs": 1120,
+        "importMs": 6452,
+        "fontsMs": 6648,
+        "buildMs": 344,
+        "totalMs": 14110,
         "builds": 1
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 124
       },
       "pages": [
         {
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "eaffc435",
+      "hash8": "f7eb4909",
       "vdtHash": "28c0aa1dddebc1a19af91ea4e5df75e8b5dd8a8e",
       "timings": {
-        "importMs": 171,
-        "fontsMs": 1864,
-        "buildMs": 1035,
-        "totalMs": 3931,
+        "importMs": 13361,
+        "fontsMs": 1347,
+        "buildMs": 338,
+        "totalMs": 15647,
         "builds": 1
       },
       "specimen": {
@@ -281,7 +281,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 124
       },
       "pages": [
         {
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "9396fa56",
+      "hash8": "3af2deb6",
       "vdtHash": "e051cb0bfac9ed7bda549de1dc7a909fb242d473",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 104,
-        "buildMs": 320,
-        "totalMs": 1182,
+        "importMs": 537,
+        "fontsMs": 195,
+        "buildMs": 351,
+        "totalMs": 1720,
         "builds": 1
       },
       "specimen": {
@@ -525,7 +525,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 124
       },
       "pages": [
         {
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "82e5cdb6",
+      "hash8": "9981141b",
       "vdtHash": "3d5f55ee3df3e73798dbe8e4588f5be32f72419e",
       "timings": {
-        "importMs": 233,
-        "fontsMs": 248,
-        "buildMs": 437,
-        "totalMs": 1484,
+        "importMs": 543,
+        "fontsMs": 487,
+        "buildMs": 462,
+        "totalMs": 2140,
         "builds": 1
       },
       "specimen": {
@@ -769,7 +769,7 @@
           "Noto Sans SC"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 124
       },
       "pages": [
         {
@@ -988,13 +988,13 @@
       }
     },
     "ar": {
-      "hash8": "8d0a0677",
+      "hash8": "2091eadc",
       "vdtHash": "62186dc3c174a7a0486ed05494d986ce8953dc58",
       "timings": {
-        "importMs": 183,
-        "fontsMs": 123,
-        "buildMs": 323,
-        "totalMs": 1209,
+        "importMs": 723,
+        "fontsMs": 275,
+        "buildMs": 358,
+        "totalMs": 1943,
         "builds": 1
       },
       "specimen": {
@@ -1014,7 +1014,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 124
       },
       "pages": [
         {
@@ -1236,13 +1236,13 @@
       }
     },
     "ja": {
-      "hash8": "5889e7eb",
+      "hash8": "9decd783",
       "vdtHash": "cfc96c450c21c65571b4a98629a0c75ebebaecee",
       "timings": {
-        "importMs": 166,
-        "fontsMs": 200,
-        "buildMs": 1755,
-        "totalMs": 4563,
+        "importMs": 798,
+        "fontsMs": 353,
+        "buildMs": 479,
+        "totalMs": 2218,
         "builds": 1
       },
       "specimen": {
@@ -1262,7 +1262,7 @@
           "Zen Antique"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 124
       },
       "pages": [
         {
@@ -1473,9 +1473,248 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
           },
           {
-            "check": "C21",
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "pt": {
+      "hash8": "7550a1b6",
+      "vdtHash": "c4dea0ea56e8899c4f01360bf573ad13b84489c7",
+      "timings": {
+        "importMs": 360,
+        "fontsMs": 135,
+        "buildMs": 365,
+        "totalMs": 1442,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Patrick Hand",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Patrick Hand"
+        ],
+        "pages": 2,
+        "ownLines": 124
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 228850,
+          "alt": "Página 2."
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 214548,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-double-spread.pdf",
+        "bytes": 873596,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "comic-double-spread.postext",
+        "bytes": 893493
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 107,
+        "designElements": 2,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 4,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Patrick Hand",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "comic-spreads",
+          "page-background",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
             "severity": "warn",
-            "detail": "the build took 1755 ms (warning at 1.5 s)"
+            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
           },
           {
             "check": "sandbox",
