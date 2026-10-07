@@ -1,0 +1,167 @@
+{
+ "cast": "neko",
+ "quality": "high",
+ "style": "Cute chibi four-panel manga (yonkoma) artwork in black and white only: round simple ink line, soft grey screentone, big heads and small bodies, expressive simple faces, no colour, monochrome.",
+ "suffix": "Clean artwork only: no text, no letters, no words, no numbers, no speech balloons, no captions, no sound-effect lettering, no signature, no logo, no panel border, no frame; the picture runs to the edges of the image.",
+ "crops": {
+  "_refs/neko/sheet-cast.png": {
+   "_refs/neko/mugi.png": [
+    0,
+    0,
+    400,
+    1024
+   ],
+   "_refs/neko/cat-white.png": [
+    420,
+    440,
+    830,
+    990
+   ],
+   "_refs/neko/cat-black.png": [
+    800,
+    420,
+    1170,
+    980
+   ],
+   "_refs/neko/cat-calico.png": [
+    1185,
+    460,
+    1536,
+    980
+   ]
+  },
+  "yonkoma/raw/n5.png": {
+   "_refs/neko/customer.png": [
+    180,
+    100,
+    700,
+    960
+   ]
+  }
+ },
+ "items": [
+  {
+   "id": "sheet-cast",
+   "endpoint": "t2i",
+   "out": "_refs/neko/sheet-cast.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Character reference sheet on a plain pure white background, full-body figures standing side by side in a neutral pose, front three-quarter view, evenly spaced with wide white gaps between them so each can be cut out separately, no shadows on the ground, no background scenery. Left: Mugi, a young woman who runs a cat cafe, chibi proportions, short bob hair with a small hair clip, cheerful face, long cafe apron over a striped shirt. Then three chibi cats sitting in a row with wide gaps: a fluffy white cat with a haughty look, a sleek black cat with big round eyes, and a calico cat with patches of black and grey screentone and a sleepy face.",
+   "refs": []
+  },
+  {
+   "id": "n1",
+   "out": "yonkoma/raw/n1.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/mugi.png",
+    "_refs/neko/cat-white.png",
+    "_refs/neko/cat-black.png",
+    "_refs/neko/cat-calico.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Mugi, the cat-cafe owner with a bob haircut and an apron; reference image 2 shows the fluffy white cat; reference image 3 shows the black cat; reference image 4 shows the calico cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Morning, at the glass front door of a small cat cafe: Mugi unlocks the door with a key, smiling; inside behind the glass the three cats (white, black, calico) sit in a neat row staring at her. Keep the top third quiet and uncluttered (plain wall above the door) so speech balloons can be lettered there later. The only characters in the picture are Mugi and the three cats; no other people or animals."
+  },
+  {
+   "id": "n2",
+   "out": "yonkoma/raw/n2.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/mugi.png",
+    "_refs/neko/cat-white.png",
+    "_refs/neko/cat-black.png",
+    "_refs/neko/cat-calico.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Mugi, the cat-cafe owner with a bob haircut and an apron; reference image 2 shows the fluffy white cat; reference image 3 shows the black cat; reference image 4 shows the calico cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Inside the cozy cat cafe: Mugi happily places three full food bowls in a row on the floor, one for each cat; the three cats watch the bowls. Keep the top third quiet and uncluttered (plain cafe wall) so speech balloons can be lettered there later. The only characters in the picture are Mugi and the three cats; no other people or animals."
+  },
+  {
+   "id": "n3",
+   "out": "yonkoma/raw/n3.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/cat-white.png",
+    "_refs/neko/cat-black.png",
+    "_refs/neko/cat-calico.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows the fluffy white cat; reference image 2 shows the black cat; reference image 3 shows the calico cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. The three cats all push their heads into the SAME single food bowl at once, squashed together, while the other two full bowls sit ignored beside them. Funny. Keep the top third quiet and uncluttered (plain cafe wall) so speech balloons can be lettered there later. The only characters in the picture are the three cats; no other people or animals."
+  },
+  {
+   "id": "n4",
+   "out": "yonkoma/raw/n4.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/mugi.png",
+    "_refs/neko/cat-white.png",
+    "_refs/neko/cat-black.png",
+    "_refs/neko/cat-calico.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Mugi, the cat-cafe owner with a bob haircut and an apron; reference image 2 shows the fluffy white cat; reference image 3 shows the black cat; reference image 4 shows the calico cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Mugi sits at a small cafe table about to bite a slice of toast; the three cats sit on the table right in front of her, staring at the toast with huge sparkling eyes; Mugi has a sweat drop. Keep the top third quiet and uncluttered (plain cafe wall) so speech balloons can be lettered there later. The only characters in the picture are Mugi and the three cats; no other people or animals."
+  },
+  {
+   "id": "n5",
+   "out": "yonkoma/raw/n5.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/mugi.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Mugi, the cat-cafe owner with a bob haircut and an apron. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. A tired young office worker in a suit and tie with a briefcase steps into the cozy cat cafe, smiling hopefully with sparkling eyes, both hands reaching out to pet cats; Mugi greets him with a little bow behind the counter. Keep the top third quiet and uncluttered (plain cafe wall) so speech balloons can be lettered there later. The only characters in the picture are Mugi and the office worker; no other people or animals."
+  },
+  {
+   "id": "n6",
+   "out": "yonkoma/raw/n6.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/cat-white.png",
+    "_refs/neko/cat-black.png",
+    "_refs/neko/cat-calico.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows the fluffy white cat; reference image 2 shows the black cat; reference image 3 shows the calico cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. The three cats asleep in one big fluffy pile on a round cushion in a patch of sunlight, completely ignoring everything, peaceful. Keep the top third quiet and uncluttered (plain wall and window light) so speech balloons can be lettered there later. The only characters in the picture are the three cats; no other people or animals."
+  },
+  {
+   "id": "n7",
+   "out": "yonkoma/raw/n7.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/customer.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows the office-worker customer, a young man in a suit. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. The same office worker sits alone at a cafe table with a cup of coffee, shoulders slumped, sighing, opening his laptop computer. Keep the top third quiet and uncluttered (plain cafe wall) so speech balloons can be lettered there later. The only characters in the picture are the office worker; no other people or animals."
+  },
+  {
+   "id": "n8",
+   "out": "yonkoma/raw/n8.png",
+   "size": [
+    1280,
+    960
+   ],
+   "refs": [
+    "_refs/neko/customer.png",
+    "_refs/neko/cat-white.png",
+    "_refs/neko/cat-black.png",
+    "_refs/neko/cat-calico.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows the office-worker customer, a young man in a suit; reference image 2 shows the fluffy white cat; reference image 3 shows the black cat; reference image 4 shows the calico cat. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. The three cats sit squarely on the office worker's laptop keyboard, all looking very pleased; the office worker sits frozen with his hands in the air, tears of joy streaming down his face. Keep the top third quiet and uncluttered (plain cafe wall) so speech balloons can be lettered there later. The only characters in the picture are the office worker and the three cats; no other people or animals."
+  }
+ ]
+}

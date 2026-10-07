@@ -1,0 +1,181 @@
+{
+ "cast": "mercado",
+ "quality": "high",
+ "style": "Franco-Belgian ligne claire comic artwork: uniform clean black outlines of even weight, flat bright colours with no gradients and no hatching, clear readable shapes, like a classic European album page.",
+ "suffix": "Clean artwork only: no text, no letters, no words, no numbers, no speech balloons, no captions, no sound-effect lettering, no signature, no logo, no panel border, no frame; the picture runs to the edges of the image.",
+ "crops": {
+  "_refs/mercado/sheet-cast.png": {
+   "_refs/mercado/lola.png": [
+    20,
+    170,
+    370,
+    1000
+   ],
+   "_refs/mercado/paco.png": [
+    460,
+    0,
+    920,
+    1000
+   ],
+   "_refs/mercado/carmen.png": [
+    1000,
+    0,
+    1510,
+    1000
+   ]
+  }
+ },
+ "items": [
+  {
+   "id": "sheet-cast",
+   "endpoint": "t2i",
+   "out": "_refs/mercado/sheet-cast.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Character reference sheet on a plain pure white background, full-body figures standing side by side in a neutral pose, front three-quarter view, evenly spaced with wide white gaps between them so each can be cut out separately, no shadows on the ground, no background scenery. Left: Lola, a 9-year-old Spanish girl with freckles, light brown hair in two pigtails tied with red ribbons, a green dress with white collar, white socks and red shoes, cheeky grin. Middle: abuelo Paco, her grandfather, a retired baker in his seventies, round belly, big white moustache, rosy cheeks, round glasses, a black Basque beret, a mustard-brown buttoned cardigan over a white shirt, brown trousers. Right: Carmen, a market fruit seller in her forties, plump, dark curly hair tied back, red-and-white striped apron over a blue blouse, friendly broad smile."
+  },
+  {
+   "id": "t1",
+   "out": "tebeo-album-page/raw/t1.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [],
+   "prompt": "Sunday morning in Madrid: wide establishing shot of a historic iron-and-glass covered market hall on a sunny little plaza, shoppers with baskets and bags, pigeons on the cobblestones, old buildings with balconies around. No shop signs, no writing anywhere. Keep the top third quiet and uncluttered (clear blue sky) so speech balloons can be lettered there later.",
+   "endpoint": "t2i"
+  },
+  {
+   "id": "t2",
+   "out": "tebeo-album-page/raw/t2.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Inside the busy market hall: abuelo Paco walks between stalls holding Lola's hand; Lola pulls him forward, pointing ahead excitedly. Hanging hams, a cheese stall, iron columns, a few shoppers in the background. Keep the top third quiet and uncluttered (iron roof beams and glass) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "t3",
+   "out": "tebeo-album-page/raw/t3.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/mercado/carmen.png",
+    "_refs/mercado/lola.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Carmen, the fruit seller in a red-and-white striped apron; reference image 2 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. A fruit stall piled with a perfect tall pyramid of oranges, with crates of lemons, apples and melons around it; Carmen the fruit seller proudly polishes an orange behind the stall; Lola in the foreground, seen in profile, stares up at the orange pyramid with huge round eyes. Keep the top third quiet and uncluttered (market hall wall and roof) so speech balloons can be lettered there later. The only characters in the picture are Carmen and Lola; no other people or animals."
+  },
+  {
+   "id": "t4",
+   "out": "tebeo-album-page/raw/t4.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close shot: Lola reaches out to pull one orange from the very bottom of the tall orange pyramid; just behind her abuelo Paco, alarmed, eyes wide behind his glasses, raises a hand to stop her. Keep the top third quiet and uncluttered (plain market wall) so speech balloons can be lettered there later. The only characters in the picture are Lola and abuelo Paco; no other people or animals."
+  },
+  {
+   "id": "t5",
+   "out": "tebeo-album-page/raw/t5.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png",
+    "_refs/mercado/carmen.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan; reference image 3 shows Carmen, the fruit seller in a red-and-white striped apron. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Chaos: the orange pyramid collapses, dozens of oranges bouncing and rolling across the market floor; Carmen throws up her hands, abuelo Paco's beret flies off his head, Lola stands frozen holding one orange, pigeons flap away in panic. Motion lines. Keep the top third quiet and uncluttered (roof beams) so speech balloons can be lettered there later. The only characters in the picture are Lola, abuelo Paco, Carmen and a few pigeons; no other people or animals."
+  },
+  {
+   "id": "t6",
+   "out": "tebeo-album-page/raw/t6.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png",
+    "_refs/mercado/carmen.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan; reference image 3 shows Carmen, the fruit seller in a red-and-white striped apron. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Lola, abuelo Paco and Carmen kneel on the market floor gathering the oranges into Paco's upturned beret and Carmen's apron, all three laughing; a pigeon pecks at a stray orange. Keep the top third quiet and uncluttered (plain stall backdrop) so speech balloons can be lettered there later. The only characters in the picture are Lola, abuelo Paco, Carmen and one pigeon; no other people or animals."
+  },
+  {
+   "id": "t7",
+   "out": "tebeo-album-page/raw/t7.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Outside the market on a park bench in the sun, Lola and abuelo Paco sit peeling oranges from a paper bag, both laughing; a pigeon sits proudly on top of Paco's beret. Keep the top third quiet and uncluttered (blue sky and tree tops) so speech balloons can be lettered there later. The only characters in the picture are Lola, abuelo Paco and one pigeon; no other people or animals."
+  },
+  {
+   "id": "ds1",
+   "out": "comic-double-spread/raw/ds1.png",
+   "size": [
+    2400,
+    800
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Very wide panoramic bird's-eye view across the whole crowded market hall interior: rows of stalls (fish, hams, fruit, flowers, bread), dozens of shoppers. At the far left, tiny Lola in her green dress stands alone looking around, lost. At the far right, tiny abuelo Paco in his black beret searches the crowd, worried. Keep the exact middle of the picture free of important figures (it will fall on the book's spine). Rich detail, no writing anywhere. Keep the top strip quiet and uncluttered (iron roof beams and glass skylights) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "ds2",
+   "out": "comic-double-spread/raw/ds2.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/mercado/lola.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close-up of Lola standing among a forest of grown-ups' legs and shopping bags, lip trembling, eyes watery, clutching the skirt of her green dress. Keep the top third quiet and uncluttered (blurred legs and stalls) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "ds3",
+   "out": "comic-double-spread/raw/ds3.png",
+   "size": [
+    1152,
+    1152
+   ],
+   "refs": [
+    "_refs/mercado/paco.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Abuelo Paco stands on an upturned fruit crate, two fingers in his mouth, whistling loudly, cheeks puffed, beret askew; shoppers around him turn to look. Keep the top third quiet and uncluttered (roof beams) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "ds4",
+   "out": "comic-double-spread/raw/ds4.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "refs": [
+    "_refs/mercado/lola.png",
+    "_refs/mercado/paco.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Lola, a 9-year-old girl with freckles, pigtails and a green dress; reference image 2 shows abuelo Paco, the grandfather with a white moustache, round glasses, black beret and mustard cardigan. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Lola runs and leaps into abuelo Paco's arms; he catches her in a big hug, his beret falling off, both overjoyed; smiling shoppers around them. Keep the top third quiet and uncluttered (market roof) so speech balloons can be lettered there later."
+  }
+ ]
+}
