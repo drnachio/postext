@@ -7,7 +7,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { installStubMeasure } from './stubMeasure';
 import { letterPanel, letterPanelDetailed } from '../letter';
 import { presetLetteringStyles } from '../presets';
-import { dist } from '../geom';
+import { prepareText, readLetteringText, breakPoints } from '../text';
+import { shapeText } from '../shape-text';
 import type { LetteringItem, LetteringPanel, Point, Rect } from '../types';
 import { buildDocument } from '../../../pipeline';
 import { parseComicScript } from '../../script';
@@ -162,5 +163,32 @@ hana: …
     expect(sfx!.text[0]!.vertical).toBeUndefined();
     const [col] = balloonsOf(page('sfx: ドン'), 'ja');
     expect(col!.text[0]!.vertical).toBeDefined();
+  });
+});
+
+describe('CJK lines break between words', () => {
+  const ja = presetLetteringStyles({ fontSizePx: EM, locale: 'ja', fontFamily: 'Test' });
+  const zh = presetLetteringStyles({ fontSizePx: EM, locale: 'zh', fontFamily: 'Test' });
+  const prep = (text: string, locale: string, vertical: boolean) => prepareText(readLetteringText(text, undefined), ja.speech!, { locale, vertical });
+  const penaltyAt = (text: string, locale: string, at: number): number =>
+    breakPoints(prep(text, locale, false), locale === 'ja' ? 'ja-very-strict' : 'gb', locale === 'ja').find((b) => b.end === at)!.penalty;
+
+  it('keeps okurigana with its kanji (癒さ|れ is no phrase end; に|来 is)', () => {
+    const t = '猫ちゃんに癒されに来ました……';
+    expect(penaltyAt(t, 'ja', t.indexOf('れ'))).toBeGreaterThan(penaltyAt(t, 'ja', t.indexOf('来')) + 2);
+    expect(penaltyAt(t, 'ja', t.indexOf('癒'))).toBeLessThan(1);
+    const lines = (vertical: boolean) => {
+      const p = prep(t, 'ja', vertical);
+      return shapeText(p, ja.speech!, { locale: 'ja', vertical, dpi: 96 }).lines.map((l) => p.text.slice(l.start, l.end));
+    };
+    for (const v of [true, false]) for (const l of lines(v)) expect(l.endsWith('癒さ') || l.endsWith('癒')).toBe(false);
+  });
+
+  it('keeps a word the dictionary does not know whole (魔药 in 邀请魔药大赛)', () => {
+    const t = '你们收到邀请魔药大赛的信了吗？';
+    expect(penaltyAt(t, 'zh', t.indexOf('药'))).toBeGreaterThan(penaltyAt(t, 'zh', t.indexOf('魔')) + 2);
+    const p = prep(t, 'zh', false);
+    const lines = shapeText(p, zh.speech!, { locale: 'zh', vertical: false, dpi: 96 }).lines.map((l) => p.text.slice(l.start, l.end));
+    for (const l of lines) expect(l.endsWith('魔') || l.endsWith('大')).toBe(false);
   });
 });

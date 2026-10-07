@@ -32,8 +32,9 @@ export interface UnitVariant {
   rim: Point[];
   /** Rotation of a sound effect, degrees (its box is the rotated one). */
   rotate?: number;
-  /** What the arrangement costs as it reads (a joined balloon set back,
-   *  against the reading direction, reads out of order). */
+  /** What the variant costs as it reads: a joined balloon set back,
+   *  against the reading direction, reads out of order; a reshaped text
+   *  that parts its words or phrases worse than the preferred shape. */
   cost?: number;
 }
 

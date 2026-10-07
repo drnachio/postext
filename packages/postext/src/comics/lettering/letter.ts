@@ -281,7 +281,11 @@ function unitVariants(group: readonly Piece[], panel: LetteringPanel): { variant
       // of order: beside it, a fault the order alone would not see; below
       // it, a slight one.
       const back = group.length > 1 && !vertical && arr.lean < 0 ? (arr.side ? 6 : 0.8) : 0;
-      variants.push({ bodies, reshaped: k > 0, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(back ? { cost: back } : {}) });
+      // A reshaped text block that parts its text worse than the preferred
+      // one (a phrase or a word cut: 猫ちゃ|んに) pays for it.
+      const worse = group.reduce((sum, p, i) => sum + Math.max(0, p.shapes[shapeIndex[i]!]!.shaped.breakCost - p.shapes[0]!.shaped.breakCost), 0);
+      const cost = back + 0.8 * worse;
+      variants.push({ bodies, reshaped: k > 0, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(cost ? { cost } : {}) });
       meta.push({ pieces: [...group], shapeIndex, shifts });
     }
   }

@@ -61,6 +61,9 @@ export interface ShapedText {
   /** Aspect of the text block as scored. */
   aspect: number;
   score: number;
+  /** What its breaks cost (their penalties and orphan lines, weighted as
+   *  in the score): how well it parts the text, whatever its shape. */
+  breakCost: number;
 }
 
 /** Default target aspects of a text block. */
@@ -168,6 +171,7 @@ interface Candidate {
   lines: { start: number; end: number; width: number }[];
   score: number;
   aspect: number;
+  breakCost: number;
 }
 
 /**
@@ -342,7 +346,9 @@ function candidatesFor(
         return { start, end, width: m.width(start, end) };
       });
       const { score, aspect } = scoreLines(lines, all, br, em, pitch, vertical, target, maxLen, penaltyWeight, lone, cjk);
-      out.push({ breaks: br, lines, score, aspect });
+      const breakCost = penaltyWeight * br.slice(0, -1).reduce((sum, k) => sum + all[k]!.penalty, 0)
+        + lines.reduce((sum, l) => sum + lone(l.start, l.end), 0);
+      out.push({ breaks: br, lines, score, aspect, breakCost });
     }
   }
   out.sort((a, b) => a.score - b.score || a.lines.length - b.lines.length);
@@ -455,6 +461,7 @@ function setLines(
     lineHeightPx: ctx.pitch,
     aspect: c.aspect,
     score: c.score,
+    breakCost: c.breakCost,
   };
 }
 

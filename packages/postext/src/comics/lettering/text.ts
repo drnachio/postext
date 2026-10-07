@@ -284,6 +284,20 @@ const CJK_PUNCT = /[\u3000-\u3004\u3008-\u303F\uFF01-\uFF0F\uFF1A-\uFF20\uFF3B-\
  *  sentence-final ones. A break after one of them, before more kana, is
  *  better than one inside a word. */
 const PARTICLES = new Set([...'はがをにでともへやのねよかぞぜさわ']);
+/** Of those, the ones that also end a verb's or an adjective's stem
+ *  (okurigana: 癒さ|れる, 言わ|ない, 強か|った): right after a kanji they
+ *  are part of the word, not a particle. */
+const OKURIGANA_PRONE = new Set([...'さわよねかぞぜや']);
+
+/** Whether the hiragana `a` (after `before`) closes a phrase. */
+function closesPhrase(a: string, before: string | undefined): boolean {
+  return PARTICLES.has(a) && !(OKURIGANA_PRONE.has(a) && before !== undefined && kindOf(before) === 'C');
+}
+
+/** Chinese characters that stand as words of their own (particles,
+ *  pronouns, common verbs and adverbs): a break beside one does not part
+ *  a word. */
+const ZH_FUNCTION_CHARS = new Set([...'的了吗呢吧啊呀哦么嘛是在和与也都就不很还又才把被给让对向从到着过地得这那我你他她它们']);
 
 function kindOf(ch: string): Kind {
   if (HIRAGANA.test(ch)) return 'H';
@@ -299,7 +313,7 @@ function kindOf(ch: string): Kind {
  *  cheap, inside a run of kanji or katakana or before okurigana is dear.
  *  Chinese breaks anywhere at a small even cost, cheaper after
  *  punctuation. */
-function cjkBreakPenalty(a: string, b: string, japanese: boolean): number {
+function cjkBreakPenalty(a: string, b: string, japanese: boolean, before?: string): number {
   const ka = kindOf(a);
   const kb = kindOf(b);
   // A two-character leader (…… ‥‥) stays whole; after the end of a
@@ -312,9 +326,10 @@ function cjkBreakPenalty(a: string, b: string, japanese: boolean): number {
   // A particle sticks to the word before it: never break just before one.
   if (kb === 'H' && PARTICLES.has(b) && ka !== 'H') return 6;
   if (ka === 'H') {
-    if (kb === 'C' || kb === 'K' || kb === 'L') return PARTICLES.has(a) ? 0.2 : 0.8;
+    const particle = closesPhrase(a, before);
+    if (kb === 'C' || kb === 'K' || kb === 'L') return particle ? 0.2 : 0.8;
     if (PARTICLES.has(b)) return 5;
-    return PARTICLES.has(a) ? 1.5 : 3.5;
+    return particle ? 1.5 : 3.5;
   }
   if ((ka === 'C' || ka === 'K') && kb === 'H') return 5;
   if (ka === 'C' && kb === 'C') return 4;
@@ -347,26 +362,33 @@ function spacePenalty(t: string, k: number): number {
   return 0.3;
 }
 
-/** Offsets inside a word of the CJK text `t` (between two of its
- *  characters), by the runtime's word segmenter (`Intl.Segmenter`, a
- *  dictionary one in ICU builds); empty without one or without CJK. */
-function cjkWordInteriors(t: string, japanese: boolean): Set<number> {
-  const out = new Set<number>();
+/** Word hints of a CJK text from the runtime's segmenter: the offsets
+ *  inside a word (`interiors`), and — Chinese — those between two Han
+ *  characters the segmenter left as words of one character each, neither
+ *  of them a word that stands alone (`unknown`): the dictionary does not
+ *  know the word they make (魔|药, 大|赛 in 魔药大赛), which is still one. */
+function cjkWordHints(t: string, japanese: boolean): { interiors: Set<number>; unknown: Set<number> } {
+  const interiors = new Set<number>();
+  const unknown = new Set<number>();
   const Seg = (Intl as unknown as { Segmenter?: new (l: string, o: { granularity: 'word' }) => { segment(s: string): Iterable<{ segment: string; index: number; isWordLike?: boolean }> } }).Segmenter;
-  if (!Seg || !CJK_CHAR.test(t)) return out;
+  if (!Seg || !CJK_CHAR.test(t)) return { interiors, unknown };
   try {
+    let prevSingle: { index: number; segment: string } | undefined;
     for (const s of new Seg(japanese ? 'ja' : 'zh', { granularity: 'word' }).segment(t)) {
+      const single = !japanese && [...s.segment].length === 1 && HAN.test(s.segment) && !ZH_FUNCTION_CHARS.has(s.segment);
+      if (single && prevSingle && prevSingle.index + prevSingle.segment.length === s.index) unknown.add(s.index);
+      prevSingle = single ? s : undefined;
       if (!s.isWordLike || !CJK_CHAR.test(s.segment)) continue;
       for (let k = 1; k < s.segment.length; k++) {
         const c = s.segment.charCodeAt(k);
         if (c >= 0xdc00 && c <= 0xdfff) continue;
-        out.add(s.index + k);
+        interiors.add(s.index + k);
       }
     }
   } catch {
     // No segmenter data for the language: no word hints.
   }
-  return out;
+  return { interiors, unknown };
 }
 
 /** The legal breaks of a prepared text (the text's end included, as a
@@ -382,7 +404,8 @@ export function breakPoints(p: PreparedText, level: CjkLineBreakLevel, japanese:
   };
   // Inside a word of a CJK text (a dictionary segmenter, where the runtime
   // has one): a break there parts a word (如|此, くれ|る).
-  const inWord = cjkWordInteriors(t, japanese);
+  const hints = cjkWordHints(t, japanese);
+  const inWord = hints.interiors;
   let k = 0;
   while (k < t.length) {
     const ch = t[k]!;
@@ -407,7 +430,8 @@ export function breakPoints(p: PreparedText, level: CjkLineBreakLevel, japanese:
       const prev = ch;
       let penalty: number | undefined;
       if (cjkJoinBreaks(t.slice(Math.max(0, at - 4), at), t.slice(at, at + 4), level)) {
-        penalty = cjkBreakPenalty(prev, next, japanese) + (inWord.has(at) ? (japanese ? 3 : 4) : 0);
+        const before = k > 0 ? String.fromCodePoint(t.codePointAt(k - 1 - (k > 1 && /[\uDC00-\uDFFF]/.test(t[k - 1]!) ? 1 : 0))!) : undefined;
+        penalty = cjkBreakPenalty(prev, next, japanese, before) + (inWord.has(at) ? (japanese ? 3 : 6) : hints.unknown.has(at) ? 4 : 0);
       } else if (/\p{L}/u.test(next)) {
         // A hard hyphen or a dash between words; an ellipsis run into the
         // next word ("…AND").
