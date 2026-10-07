@@ -6,7 +6,7 @@ per-language Markdown.
   page and the box it came from (page px of the 2481x3503 art), the safe
   area (fractions of the picture: the characters and the action, what a
   crop must keep), the speaker anchors (`ResourceAnchor`, SPEC D1.4), the
-  corner radius, English alt text;
+  corner radius, English alt text (alts.py);
 - `pages`: the `split=` expression of every story page and its panels;
 - `credits`: per language the translators from `lang/<xx>/info.json`, the
   attribution line, the credit line as the translator lettered it on the
@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 
+from alts import ALT as ALTS, COVER_ID as ALT_COVER_ID
 from common import EPISODE_URL, LANGS, PAGE_H, PAGE_W, STORY_PAGES, cache, load_json, out, save_json
 from slots import language_texts, page_slots
 
@@ -51,29 +52,8 @@ SAFE: dict[str, tuple[float, float, float, float]] = {
 }
 ANCHOR_PAD = 0.04  # a safe area always holds its anchors with this margin
 
-ALT: dict[str, str] = {
-    "e08p01-1": "Pepper sits on the edge of her bed in a sunlit attic, her hands on her knees. Carrot watches her from the floor.",
-    "e08p01-2": "Close-up: Pepper looks to the right, sad. Carrot looks up at her.",
-    "e08p01-3": "Pepper hides her face in her arm. Carrot leans against her, worried.",
-    "e08p01-4": "Carrot points at a framed drawing of the witches of the Potion Contest, next to a winner's coin.",
-    "e08p02-1": "Pepper sits up on her bed, delighted. Carrot sits facing her.",
-    "e08p02-2": "Pepper writes with a quill while Carrot holds up an envelope. A small white bird sits on the windowsill.",
-    "e08p02-3": "Coriander, at her window, gives a thumbs-up as Pepper and Carrot fly past on a broom. A black hen sits beside her.",
-    "e08p02-4": "Seen from above, Shichimi holds up her invitation by a cauldron in a green clearing, her fox at her feet. Pepper, on her broom, waves back.",
-    "e08p02-5": "Saffron reads her invitation on a balcony over the rooftops, her white cat beside her. Pepper and Carrot fly off into the sunset.",
-    "e08p03-1": "Pepper's house at the edge of a wood on a fine day.",
-    "e08p03-2": "Inside, bunting hangs from the beams and cakes and a teapot wait on the low table. Pepper throws up her arms; Carrot grins.",
-    "e08p03-3": "Later: Pepper waits, chin in hand, a cupcake in the other. Carrot dozes on the table.",
-    "e08p04-1": "Rain pours through the awning. Pepper looks out, anxious; Carrot sits soaked by the table.",
-    "e08p04-2": "Night and rain: Pepper sits alone by a lantern at the party table, scowling. Carrot sleeps.",
-    "e08p04-3": "Close-up of Pepper's face under her hat in the rain, her eyes red, her jaw set.",
-    "e08p05-1": "Lightning. Pepper, furious, pulls a book with a demon's face on its cover from the shelf. Carrot is terrified.",
-    "e08p05-2": "From above, in the rain, Pepper draws three glowing red magic circles on the ground with her wand. Carrot watches.",
-    "e08p05-3": "Red light floods the scene. Pepper, grim, holds the open book.",
-    "e08p06-1": "Pepper and Carrot stand before three huge red-eyed demons that rise in the storm, lightning crackling around them.",
-    "e08p06-2": "Pepper smiles a sly smile.",
-    "e08p06-3": "The party: Pepper, Carrot and the three demons drink tea around the table by candlelight, all smiling.",
-}
+# English alt texts (alts.py holds every language).
+ALT: dict[str, str] = {pid: texts["en"] for pid, texts in ALTS.items() if pid != ALT_COVER_ID}
 
 LANG_NAMES = {"en": "English", "ja": "Japanese", "es": "Spanish", "fr": "French", "cn": "Simplified Chinese", "ca": "Catalan", "ar": "Arabic"}
 

@@ -4,7 +4,7 @@
    styles and balloon styles the bundle has, and whose faces carry every
    variant the editions ask of them. */
 import { describe, expect, it } from 'vitest';
-import { parseMarkdown, type PostextConfig, type Resource } from 'postext';
+import { parseComicFence, parseMarkdown, type PostextConfig, type Resource } from 'postext';
 import { pickBundleView, type BundleManifest } from 'postext/bundle';
 import { computeWarnings } from '../warnings/compute';
 import { hasLatinEmphasis, missingUsedVariants } from '../controls/fontLoader';
@@ -19,7 +19,7 @@ const manifest = ((await import(/* @vite-ignore */ new URL(`${BUNDLE}preset.json
     locales: string[];
     openLocale?: string;
     config: PostextConfig;
-    localized: Record<string, { config?: Partial<PostextConfig> }>;
+    localized: Record<string, { config?: Partial<PostextConfig>; resources?: { id: string; altText?: string }[] }>;
     fonts: PresetFontFamilySpec[];
     resources: (Resource & { file: string; width: number; height: number })[];
     chapters: Record<string, { title: string; file: string }[]>;
@@ -81,6 +81,25 @@ describe('pepper-carrot in the Sandbox', () => {
     for (const p of panels) expect(p.safeArea, p.id).toBeDefined();
     const faces = panels.flatMap((p) => (p.anchors ?? []).filter((a) => a.face).map(() => p.id));
     expect(faces).toEqual(expect.arrayContaining(['e08p03-2', 'e08p04-1', 'e08p06-1']));
+  });
+
+  it('describes every panel and the cover in the edition’s language', async () => {
+    const english = new Map(manifest.resources.map((r) => [r.id, r.altText]));
+    for (const locale of EDITIONS) {
+      const comic = (await chapters(locale)).find(({ file }) => file.endsWith('01-episode-8.md'))!.md;
+      const panels = [...comic.matchAll(/^:::page\{/gm)].flatMap((m) => parseComicFence(comic, m.index)!.source.panels);
+      expect(panels, locale).toHaveLength(21);
+      for (const { attrs } of panels) {
+        const alt = attrs.alt ?? '';
+        expect(alt.length, `${locale} ${attrs.art}`).toBeGreaterThan(8);
+        // The English edition repeats the pictures' own alt text; the others translate it.
+        if (locale === 'en') expect(alt).toBe(english.get(attrs.art!));
+        else expect(alt, `${locale} ${attrs.art}`).not.toBe(english.get(attrs.art!));
+      }
+      const cover = manifest.localized[locale]?.resources?.find((r) => r.id === 'e08-cover')?.altText;
+      if (locale === 'en') expect(cover).toBeUndefined();
+      else expect(cover && cover !== english.get('e08-cover'), locale).toBe(true);
+    }
   });
 
   it('has nothing to say about any edition', async () => {

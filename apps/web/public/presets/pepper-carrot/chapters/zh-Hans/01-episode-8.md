@@ -1,54 +1,54 @@
 :::page{split="43.6 / 14.4 / 13.6 / *"}
-::panel{art=e08p01-1}
-::panel{art=e08p01-2}
+::panel{art=e08p01-1 alt="阳光从天窗照进阁楼，小辣椒坐在床边，双手放在膝上。萝卜头在地板上望着她。"}
+::panel{art=e08p01-2 alt="特写：小辣椒神情低落，望向远方。萝卜头靠在她肩边，抬头看着她。"}
 pepper: 我的生日就要到了，但我却没有朋友一起庆祝……
-::panel{art=e08p01-3}
-::panel{art=e08p01-4}
+::panel{art=e08p01-3 alt="小辣椒用手捂住脸，落下几滴眼泪。萝卜头担心地抱住她的胳膊。"}
+::panel{art=e08p01-4 alt="萝卜头瞪大眼睛，指着一幅装在相框里的画，画的是魔药大赛上的魔女们，旁边立着冠军的金币。"}
 :::
 
 :::page{split="26.9 / 20.5 / * [33.5 | 32.7 | *]"}
-::panel{art=e08p02-1}
+::panel{art=e08p02-1 alt="小辣椒坐在床上，举起双手，为这个主意高兴不已。萝卜头坐在她对面，笑眯眯的。"}
 pepper: 哦，邀请魔药大赛上认识的魔女们？
 pepper{join=false}: 好主意，萝卜头！
-::panel{art=e08p02-2 style=rounded pad="0 20.3mm 0 20.3mm"}
+::panel{art=e08p02-2 style=rounded pad="0 20.3mm 0 20.3mm" alt="小辣椒微笑着用羽毛笔写邀请函，萝卜头举着一个信封。窗台上停着一只白色的小鸟。"}
 sfx{writing at="34.2% 86.7%" rotate=13}: 邀请函Invitation
-::panel{art=e08p02-3 style=rounded}
-::panel{art=e08p02-4 style=rounded}
-::panel{art=e08p02-5 style=rounded}
+::panel{art=e08p02-3 style=rounded alt="一位卷发魔女拿着邀请函站在窗前，竖起大拇指，小辣椒和萝卜头骑着扫帚从窗外飞过。她身旁蹲着一只板着脸的黑母鸡。"}
+::panel{art=e08p02-4 style=rounded alt="俯视：一位浅色头发的年轻魔女站在绿色林间空地上冒着热气的大锅旁挥手，另一只手拿着邀请函，脚边跑着她的狐狸。骑在扫帚上的小辣椒也向她挥手。"}
+::panel{art=e08p02-5 style=rounded alt="一位红发魔女站在俯瞰屋顶的阳台上，微笑着读邀请函，身旁坐着她的白猫。小辣椒和萝卜头朝着落日飞去。"}
 :::
 
 :::page{split="28.8 / 35.3 / *"}
-::panel{art=e08p03-1}
+::panel{art=e08p03-1 alt="晴朗的一天。小辣椒的小屋坐落在树林边、池塘旁，屋顶长满了绿植，门廊下挂着彩旗。"}
 pepper: 好喽……
-::panel{art=e08p03-2}
+::panel{art=e08p03-2 alt="屋里，房梁上挂满彩旗，矮桌上摆着纸杯蛋糕、蛋糕和茶壶。小辣椒高举双臂，萝卜头笑得合不拢嘴。"}
 pepper: 万事俱备，坐等来宾
-::panel{art=e08p03-3}
+::panel{art=e08p03-3 alt="过了一会儿：小辣椒一手托着下巴，一手拿着纸杯蛋糕，坐在桌边等着。萝卜头把头搁在桌上打起了瞌睡。"}
 :::
 
 :::page{split="35 / 35.2 / *"}
-::panel{art=e08p04-1}
+::panel{art=e08p04-1 alt="大雨倾盆，打在派对桌上方的遮雨棚四周。小辣椒不安地伸手接雨，浑身湿透的萝卜头坐在桌边。"}
 pepper: 肯定的，我肯定…
 pepper{join}: …她们会来的。
-::panel{art=e08p04-2}
-::panel{art=e08p04-3}
+::panel{art=e08p04-2 alt="夜晚，下着雨：小辣椒独自坐在派对桌旁的提灯边，眉头紧锁。萝卜头蜷在桌上睡着了。"}
+::panel{art=e08p04-3 alt="雨中，帽檐下小辣椒的面部特写：双眼燃着红光，嘴唇紧抿，满脸怒意。"}
 :::
 
 :::page{split="29.9 / 49.3 / *"}
-::panel{art=e08p05-1}
+::panel{art=e08p05-1 alt="电闪雷鸣。小辣椒怒气冲冲地从书架上抽出一本封面有恶魔脸的书。萝卜头吓坏了。"}
 pepper{shout break}: 她们怎么可以这样对待**我！！！**
 sfx{writing at="77.2% 14.2%" rotate=-16}: 浑沌恶魔召唤术卷一
-::panel{art=e08p05-2}
+::panel{art=e08p05-2 alt="俯视：雨中，小辣椒一手捧着打开的书，一手用魔杖在地上画出三个发光的红色魔法阵。萝卜头在一旁看着。"}
 pepper{shout}: …既然她们如此不可靠！
-::panel{art=e08p05-3}
+::panel{art=e08p05-3 alt="魔法阵的红光笼罩一切。小辣椒神情严峻，在雨中捧着打开的书。"}
 sfx{at="18.6% 66%" rotate=-28}: 呜呜呜呜呜呜呜……
 :::
 
 :::page{split="38.2 / 18.7 / *"}
-::panel{art=e08p06-1}
+::panel{art=e08p06-1 alt="小辣椒背对着我们，手拿那本书，面对暴风雨中升起的三个红眼巨魔，其中一个握着三叉戟。她脚边的萝卜头吓得魂飞魄散。"}
 monster: 浑沌魔兽为您效劳
 monster{join=false}: 向谁发起攻击？…
-::panel{art=e08p06-2}
-::panel{art=e08p06-3}
+::panel{art=e08p06-2 alt="被红光映照的小辣椒狡黠地一笑。"}
+::panel{art=e08p06-3 alt="派对终究开成了：烛光下，小辣椒和最大的恶魔碰杯喝茶，萝卜头哈哈大笑，另外两个恶魔也围坐在桌边，笑眯眯的。"}
 caption{at=bottom-end}: 第8集：小辣椒的生日\
   完
 :::

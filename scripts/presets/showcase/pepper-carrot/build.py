@@ -22,6 +22,10 @@ in the face of each language (fonts.py); the Japanese balloons are set in
 columns, the Arabic pages read right to left (the panels of a tier swap
 sides, the art does not flip).
 
+The alt texts of the panels and the cover are written in every edition's
+language (alts.py): the panels' as `::panel{… alt="…"}`, the cover's as
+the edition's `localized[…].resources` wording.
+
     cd scripts/presets/showcase/pepper-carrot
     export PC_CACHE=… PC_OUT=…        # as for the content pipeline
     python3 fetch.py && python3 fonts.py && python3 panels.py && python3 anchors.py \\
@@ -41,6 +45,7 @@ import sys
 
 from PIL import Image
 
+import alts
 from common import CACHE, OUT as PC_OUT, gfx_page, load_json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -330,16 +335,32 @@ def panel_pads(manifest: dict) -> dict[str, str]:
     return pads
 
 
+def add_panel_attr(md: str, pid: str, attr: str) -> str:
+    """`attr` appended to the attributes of panel `pid`'s `::panel{…}` line."""
+    out, n = re.subn(r"(::panel\{art=" + re.escape(pid) + r"\b[^}]*)\}", lambda m: f"{m.group(1)} {attr}}}", md)
+    if n != 1:
+        raise SystemExit(f"{pid}: {n} ::panel lines")
+    return out
+
+
 def episode_markdown(lang: str, pads: dict[str, str]) -> str:
     """The six `:::page` blocks of text.py's Markdown, without its title and
     credits (the book has its own pages for them), with `pad` on the panels
-    narrower than their tier."""
+    narrower than their tier and every panel's alt text in the edition's
+    language (`alt` overrides the picture's English `altText`)."""
     md = open(os.path.join(PC_OUT, f"{lang}.md"), encoding="utf-8").read()
     md = re.sub(r"\A# [^\n]*\n+", "", md)
     md = re.split(r"\n## [^\n]*\n", md, maxsplit=1)[0]
     for pid, pad in pads.items():
-        md = re.sub(r"(::panel\{art=" + re.escape(pid) + r"\b[^}]*)\}", lambda m: m.group(1) + f' pad="{pad}"}}', md)
+        md = add_panel_attr(md, pid, f'pad="{pad}"')
+    for pid in re.findall(r"^::panel\{art=([\w-]+)", md, re.M):
+        md = add_panel_attr(md, pid, f'alt="{alts.attr(alts.ALT[pid][lang])}"')
     return md.strip() + "\n"
+
+
+# `alt="…"` on a panel line: words no face sets (the font subsets and the
+# coverage check leave them out).
+ALT_ATTR = re.compile(r' alt="[^"]*"')
 
 
 def url_paragraphs(text: str) -> list[str]:
@@ -399,7 +420,7 @@ def write_chapters(out: str, manifest: dict) -> dict[str, list[dict]]:
 
 # --- resources ---------------------------------------------------------------------------------------
 
-COVER_ID = "e08-cover"
+COVER_ID = alts.COVER_ID
 
 
 def resources(out: str, manifest: dict) -> list[dict]:
@@ -412,7 +433,7 @@ def resources(out: str, manifest: dict) -> list[dict]:
     specs.append({
         "id": COVER_ID, "typeId": "art", "kind": "bitmap", "file": f"resources/{COVER_ID}.jpg",
         "width": cover.width, "height": cover.height,
-        "altText": "Pepper, arms raised, and Carrot at a low table set for a party: a teapot, cupcakes and a birthday cake under strings of bunting.",
+        "altText": alts.ALT[COVER_ID]["en"],
     })
     for p in manifest["panels"]:
         src = os.path.join(PC_OUT, p["file"])
@@ -599,15 +620,20 @@ def config(loc: str) -> dict:
 def localized_configs() -> tuple[dict, dict[str, dict]]:
     """The English config, and per other edition the top-level keys that
     differ from it (a bundle's `localized[…].config` replaces keys
-    wholesale)."""
+    wholesale) and the cover's alt text in its language (`localized[…]
+    .resources` wording is merged by id)."""
     base = config(DEFAULT)
     out: dict[str, dict] = {}
-    for loc in EDITIONS:
+    for loc, lang in EDITIONS.items():
         if loc == DEFAULT:
             out[loc] = {}
             continue
         cfg = config(loc)
-        out[loc] = {"config": {k: v for k, v in cfg.items() if v != base.get(k)}}
+        out[loc] = {
+            "config": {k: v for k, v in cfg.items() if v != base.get(k)},
+            # The cover's alt text (the panels carry theirs in the Markdown).
+            "resources": [{"id": COVER_ID, "altText": alts.ALT[COVER_ID][lang]}],
+        }
     return base, out
 
 
@@ -618,7 +644,7 @@ def bundle_text(out: str, cfgs: list[dict]) -> str:
     s = "".join(json.dumps(c, ensure_ascii=False) for c in cfgs)
     for dp, _, fs in os.walk(os.path.join(out, "chapters")):
         for f in fs:
-            s += open(os.path.join(dp, f), encoding="utf-8").read()
+            s += ALT_ATTR.sub("", open(os.path.join(dp, f), encoding="utf-8").read())
     return s
 
 
@@ -650,7 +676,7 @@ def check_coverage(out: str, cmaps: dict[str, set[int]]) -> None:
     for loc in EDITIONS:
         text = ""
         for name in os.listdir(os.path.join(out, "chapters", loc)):
-            text += open(os.path.join(out, "chapters", loc, name), encoding="utf-8").read()
+            text += ALT_ATTR.sub("", open(os.path.join(out, "chapters", loc, name), encoding="utf-8").read())
         body = {c for c in text if not c.isspace() and c not in "#{}\\*<>:=\"[]_" }
         for face in {lettering_face(loc), text_face(loc)}:
             missing = sorted(c for c in body if ord(c) not in cmaps[face])

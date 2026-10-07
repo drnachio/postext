@@ -785,7 +785,13 @@
       }
      }
     ]
-   }
+   },
+   "resources": [
+    {
+     "id": "e08-cover",
+     "altText": "Pimienta, con los brazos en alto de alegría, y Zanahoria ante una mesa baja preparada para una fiesta: una tetera, magdalenas y una tarta de cumpleaños con velas, bajo guirnaldas de banderines."
+    }
+   ]
   },
   "ca": {
    "config": {
@@ -808,7 +814,13 @@
       }
      }
     ]
-   }
+   },
+   "resources": [
+    {
+     "id": "e08-cover",
+     "altText": "La Pepper, amb els braços enlaire d’alegria, i en Carrot davant d’una taula baixa parada per a una festa: una tetera, magdalenes i un pastís d’aniversari amb espelmes, sota garlandes de banderetes."
+    }
+   ]
   },
   "fr": {
    "config": {
@@ -831,7 +843,13 @@
       }
      }
     ]
-   }
+   },
+   "resources": [
+    {
+     "id": "e08-cover",
+     "altText": "Pepper, les bras levés de joie, et Carrot devant une table basse dressée pour une fête : une théière, des petits gâteaux et un gâteau d’anniversaire avec ses bougies, sous des guirlandes de fanions."
+    }
+   ]
   },
   "ja": {
    "config": {
@@ -1349,7 +1367,13 @@
       }
      }
     ]
-   }
+   },
+   "resources": [
+    {
+     "id": "e08-cover",
+     "altText": "パーティーの支度ができた低いテーブルの前で、ペッパーが喜んで両手を上げ、キャロットも笑っている。テーブルにはティーポットとカップケーキ、ろうそくを立てたバースデーケーキ。頭上には三角の旗飾り。"
+    }
+   ]
   },
   "zh-Hans": {
    "config": {
@@ -1862,7 +1886,13 @@
       }
      }
     ]
-   }
+   },
+   "resources": [
+    {
+     "id": "e08-cover",
+     "altText": "小辣椒高兴地举起双手，萝卜头坐在一张布置好派对的矮桌旁。桌上有茶壶、纸杯蛋糕和插着蜡烛的生日蛋糕，头顶挂着一串串彩旗。"
+    }
+   ]
   },
   "ar": {
    "config": {
@@ -2261,7 +2291,13 @@
       }
      }
     ]
-   }
+   },
+   "resources": [
+    {
+     "id": "e08-cover",
+     "altText": "فُلفُل ترفع ذراعيها فرحًا، وجزر أمام طاولة منخفضة أُعدّت لحفلة: إبريق شاي وكعكات صغيرة وكعكة عيد ميلاد بشموعها، تحت أشرطة من الرايات الملوّنة."
+    }
+   ]
   }
  },
  "resources": [
@@ -2272,7 +2308,7 @@
    "file": "resources/e08-cover.jpg",
    "width": 1100,
    "height": 765,
-   "altText": "Pepper, arms raised, and Carrot at a low table set for a party: a teapot, cupcakes and a birthday cake under strings of bunting."
+   "altText": "Pepper, arms raised in joy, and Carrot at a low table set for a party: a teapot, cupcakes and a birthday cake with candles under strings of bunting."
   },
   {
    "id": "e08p01-1",
@@ -2281,7 +2317,7 @@
    "file": "resources/e08p01-1.jpg",
    "width": 1200,
    "height": 739,
-   "altText": "Pepper sits on the edge of her bed in a sunlit attic, her hands on her knees. Carrot watches her from the floor.",
+   "altText": "Pepper sits on the edge of her bed in an attic lit by a skylight, her hands on her knees. Carrot watches her from the floor.",
    "safeArea": {
     "x": 0.1,
     "y": 0.12,
@@ -2296,7 +2332,7 @@
    "file": "resources/e08p01-2.jpg",
    "width": 1200,
    "height": 214,
-   "altText": "Close-up: Pepper looks to the right, sad. Carrot looks up at her.",
+   "altText": "Close-up: Pepper gazes into the distance, downcast. Carrot, at her shoulder, looks up at her.",
    "safeArea": {
     "x": 0.23,
     "y": 0.0,
@@ -2332,7 +2368,7 @@
    "file": "resources/e08p01-3.jpg",
    "width": 1200,
    "height": 199,
-   "altText": "Pepper hides her face in her arm. Carrot leans against her, worried.",
+   "altText": "Pepper buries her face in her hand, a few tears falling. Carrot clings to her arm, worried.",
    "safeArea": {
     "x": 0.18,
     "y": 0.0,
@@ -2347,7 +2383,7 @@
    "file": "resources/e08p01-4.jpg",
    "width": 1200,
    "height": 473,
-   "altText": "Carrot points at a framed drawing of the witches of the Potion Contest, next to a winner's coin.",
+   "altText": "Carrot, wide-eyed, points at a framed drawing of the witches of the Potion Contest, propped beside the winner’s gold coin.",
    "safeArea": {
     "x": 0.02,
     "y": 0.05,
@@ -2362,7 +2398,7 @@
    "file": "resources/e08p02-1.jpg",
    "width": 1200,
    "height": 448,
-   "altText": "Pepper sits up on her bed, delighted. Carrot sits facing her.",
+   "altText": "Pepper sits up on her bed and lifts her hands, delighted by the idea. Carrot sits facing her, smiling.",
    "safeArea": {
     "x": 0.15,
     "y": 0.08,
@@ -2404,7 +2440,7 @@
    "file": "resources/e08p02-2.jpg",
    "width": 1200,
    "height": 407,
-   "altText": "Pepper writes with a quill while Carrot holds up an envelope. A small white bird sits on the windowsill.",
+   "altText": "Pepper, smiling, writes invitations with a quill while Carrot holds up an envelope. A small white bird waits on the windowsill.",
    "safeArea": {
     "x": 0.08,
     "y": 0.05,
@@ -2419,7 +2455,7 @@
    "file": "resources/e08p02-3.jpg",
    "width": 527,
    "height": 1200,
-   "altText": "Coriander, at her window, gives a thumbs-up as Pepper and Carrot fly past on a broom. A black hen sits beside her.",
+   "altText": "Coriander, at her window with her invitation, gives a thumbs-up as Pepper and Carrot fly past on a broom. A grumpy black hen sits beside her.",
    "safeArea": {
     "x": 0.0,
     "y": 0.08,
@@ -2434,7 +2470,7 @@
    "file": "resources/e08p02-4.jpg",
    "width": 505,
    "height": 1200,
-   "altText": "Seen from above, Shichimi holds up her invitation by a cauldron in a green clearing, her fox at her feet. Pepper, on her broom, waves back.",
+   "altText": "Seen from above, Shichimi waves from a green clearing by a steaming cauldron, her invitation in her other hand and her fox at her feet. Pepper waves back from her broom.",
    "safeArea": {
     "x": 0.0,
     "y": 0.1,
@@ -2449,7 +2485,7 @@
    "file": "resources/e08p02-5.jpg",
    "width": 530,
    "height": 1200,
-   "altText": "Saffron reads her invitation on a balcony over the rooftops, her white cat beside her. Pepper and Carrot fly off into the sunset.",
+   "altText": "Saffron reads her invitation with a smile on a balcony above the rooftops, her white cat beside her. Pepper and Carrot fly off towards the setting sun.",
    "safeArea": {
     "x": 0.0,
     "y": 0.18,
@@ -2464,7 +2500,7 @@
    "file": "resources/e08p03-1.jpg",
    "width": 1200,
    "height": 481,
-   "altText": "Pepper's house at the edge of a wood on a fine day.",
+   "altText": "Pepper’s cottage, its roof overgrown with greenery, stands at the edge of a wood beside a pond on a fine day. Bunting hangs across the porch.",
    "safeArea": {
     "x": 0.45,
     "y": 0.05,
@@ -2486,7 +2522,7 @@
    "file": "resources/e08p03-2.jpg",
    "width": 1200,
    "height": 576,
-   "altText": "Inside, bunting hangs from the beams and cakes and a teapot wait on the low table. Pepper throws up her arms; Carrot grins.",
+   "altText": "Inside, bunting hangs from the beams and cupcakes, a cake and a teapot wait on the low table. Pepper throws up her arms; Carrot grins.",
    "safeArea": {
     "x": 0.22,
     "y": 0.1,
@@ -2522,7 +2558,7 @@
    "file": "resources/e08p03-3.jpg",
    "width": 1200,
    "height": 604,
-   "altText": "Later: Pepper waits, chin in hand, a cupcake in the other. Carrot dozes on the table.",
+   "altText": "Later: Pepper waits at the table, chin in one hand, a cupcake in the other. Carrot dozes with his head on the table.",
    "safeArea": {
     "x": 0.22,
     "y": 0.12,
@@ -2537,7 +2573,7 @@
    "file": "resources/e08p04-1.jpg",
    "width": 1200,
    "height": 589,
-   "altText": "Rain pours through the awning. Pepper looks out, anxious; Carrot sits soaked by the table.",
+   "altText": "Rain pours down around the awning over the party table. Pepper, anxious, holds out a hand to the rain; Carrot sits soaked beside the table.",
    "safeArea": {
     "x": 0.2,
     "y": 0.15,
@@ -2573,7 +2609,7 @@
    "file": "resources/e08p04-2.jpg",
    "width": 1200,
    "height": 574,
-   "altText": "Night and rain: Pepper sits alone by a lantern at the party table, scowling. Carrot sleeps.",
+   "altText": "Night and rain: Pepper sits alone by a lantern at the party table, scowling. Carrot sleeps curled up on the table.",
    "safeArea": {
     "x": 0.3,
     "y": 0.15,
@@ -2588,7 +2624,7 @@
    "file": "resources/e08p04-3.jpg",
    "width": 1200,
    "height": 498,
-   "altText": "Close-up of Pepper's face under her hat in the rain, her eyes red, her jaw set.",
+   "altText": "Close-up of Pepper’s face under her hat in the rain, her eyes burning red, her mouth set in anger.",
    "safeArea": {
     "x": 0.1,
     "y": 0.05,
@@ -2603,7 +2639,7 @@
    "file": "resources/e08p05-1.jpg",
    "width": 1200,
    "height": 500,
-   "altText": "Lightning. Pepper, furious, pulls a book with a demon's face on its cover from the shelf. Carrot is terrified.",
+   "altText": "Lightning. Pepper, furious, pulls a book with a demon’s face on its cover from the shelf. Carrot is terrified.",
    "safeArea": {
     "x": 0.0,
     "y": 0.0,
@@ -2645,7 +2681,7 @@
    "file": "resources/e08p05-2.jpg",
    "width": 1200,
    "height": 823,
-   "altText": "From above, in the rain, Pepper draws three glowing red magic circles on the ground with her wand. Carrot watches.",
+   "altText": "From above, in the rain, Pepper draws three glowing red magic circles on the ground with her wand, the open book in her other hand. Carrot watches.",
    "safeArea": {
     "x": 0.0,
     "y": 0.05,
@@ -2681,7 +2717,7 @@
    "file": "resources/e08p05-3.jpg",
    "width": 1200,
    "height": 342,
-   "altText": "Red light floods the scene. Pepper, grim, holds the open book.",
+   "altText": "Red light from the circles floods the scene. Pepper, grim, holds the open book in the rain.",
    "safeArea": {
     "x": 0.1,
     "y": 0.0,
@@ -2703,7 +2739,7 @@
    "file": "resources/e08p06-1.jpg",
    "width": 1200,
    "height": 646,
-   "altText": "Pepper and Carrot stand before three huge red-eyed demons that rise in the storm, lightning crackling around them.",
+   "altText": "Seen from behind, Pepper, the book in her hand, faces three huge demons with glowing red eyes rising in the storm, one holding a trident. Carrot, at her feet, is terrified.",
    "safeArea": {
     "x": 0.0,
     "y": 0.05,
@@ -2751,7 +2787,7 @@
    "file": "resources/e08p06-2.jpg",
    "width": 1200,
    "height": 290,
-   "altText": "Pepper smiles a sly smile.",
+   "altText": "Pepper, lit red, smiles a sly smile.",
    "safeArea": {
     "x": 0.5,
     "y": 0.0,
@@ -2766,7 +2802,7 @@
    "file": "resources/e08p06-3.jpg",
    "width": 1200,
    "height": 730,
-   "altText": "The party: Pepper, Carrot and the three demons drink tea around the table by candlelight, all smiling.",
+   "altText": "The party after all: by candlelight, Pepper clinks teacups with the biggest demon while Carrot laughs, and the other two demons smile around the table.",
    "safeArea": {
     "x": 0.03,
     "y": 0.05,
