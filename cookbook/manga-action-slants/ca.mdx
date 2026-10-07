@@ -1,0 +1,47 @@
+---
+title: "Una pàgina d'acció amb carrers inclinats"
+summary: "La pàgina que decideix una final de kendo: carrers inclinats (40~55) a la divisió, una vinyeta sense vora per al cop i ドン en japonès amb la traducció."
+plain: "Una pàgina de baralla d'un còmic japonès, amb els espais entre vinyetes inclinats perquè l'acció sembli llançar-se, i el gran so japonès del cop al seu lloc amb una traducció petita al costat."
+description: "Una pàgina d'acció de manga en Postext: carrers inclinats escrits 40~55 a la divisió, una vinyeta sense vora per al cop i ドン en japonès amb el seu subtítol."
+question: "Com inclino els carrers entre vinyetes en una escena d'acció d'un còmic?"
+aliases: ["vinyetes inclinades", "carrers diagonals", "斜めのコマ割り", "pàgina d'acció", "escena de baralla", "línies cinètiques", "効果線", "onomatopeies", "SFX", "描き文字", "vinyeta sense vora", "枠なし", "subtitular onomatopeies", "ドン"]
+---
+
+## Què compondràs
+
+La pàgina en què es decideix la final de kendo, del mateix manga que <RecipeLink slug="manga-right-to-left">la recepta de dreta a esquerra</RecipeLink>, en dues edicions l'una al costat de l'altra: l'original japonès i la seva retolació en la llengua d'aquesta pàgina (en anglès a la pàgina japonesa). Quatre franges: el pavelló, els ulls de la Hana darrere la reixa del casc, l'intercanvi de cops i les reaccions. La tercera franja la talla un carrer inclinat, de manera que l'atac del rival i el contraatac de la Hana semblen llançar-se l'un contra l'altre; la quarta s'inclina al revés i frena la pàgina. El cop de la Hana no té vora, i la seva onomatopeia, ドン, va en una gòtica japonesa molt negra que totes les edicions conserven, amb una traducció petita a sota a les pàgines traduïdes.
+
+## Elaboració
+
+### 1 · Inclina el carrer a la divisió
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Una mida escrita `40~55` dona a la vora llunyana d'una cel·la dues posicions: el 40 % de la franja a dalt i el 55 % a baix. Les cel·les continuen sent polígons convexos, el carrer conserva l'amplada mesurada en perpendicular a la inclinació i, amb la lectura de dreta a esquerra, la inclinació es reflecteix juntament amb l'ordre, de manera que la primera cel·la continua sent la de la dreta. La divisió de la pàgina és `24 / 18 / * [40~55 | *] / 24 [58~64 | *]`: dues franges rectes que preparen el moment, una d'inclinada per al cop i una última inclinada al revés (<Feature id="comic-panel-split">divisió de la pàgina</Feature>).
+
+### 2 · Crida amb esclats i deixa que les onomatopeies se surtin
+
+<Excerpt region="balloons" />
+
+Els kiai dels dos contendents són crits: un esclat de 18 puntes, més fondes que les de sèrie. Les onomatopeies no porten bafarada; es retolen sobre el dibuix amb un fil blanc de 2,2 pt perquè es llegeixin damunt de les línies cinètiques. La vinyeta del cop s'escriu `::panel{art=strike border=none}`, i el seu ドン porta `break`, de manera que pot creuar el carrer inclinat cap a la vinyeta del costat, com deixa un retolador que un so desbordi el marc (<Feature id="sound-effects">onomatopeies</Feature>).
+
+### 3 · Conserva ドン en japonès i subtitula'l
+
+<Excerpt region="fonts" />
+
+Al manga, les onomatopeies formen part del dibuix, i les edicions amb llicència solen deixar-les al seu lloc i afegir-hi al costat una traducció petita. El guió fa el mateix: totes les edicions tenen la línia `sfx{… font="Dela Gothic One" break}: ドン`; les edicions retolades en línies hi afegeixen `vertical`, perquè ドン conservi la columna que té a l'original, i hi posen a sota una segona onomatopeia, més petita, ZAS! o WHAM. Com que la font va anomenada a la línia, cada edició carrega Dela Gothic One només amb els caràcters de ドン, sigui quina sigui la seva lletra de retolació.
+
+### 4 · Ajusta les zones segures a les cel·les inclinades
+
+<Excerpt region="art" />
+
+Una cel·la inclinada és més ampla per un extrem que per l'altre, i la imatge l'ha de cobrir sencera. Cada zona segura es retalla al que la vinyeta necessita, els ulls al primer pla de la reixa i el bust d'en Sora a la celebració, perquè càpiga al retall més ample de la cel·la i el motor no hagi de deixar mai franges buides al voltant de la imatge.
+
+### 5 · Posa l'original al costat de cada edició
+
+<Excerpt region="editions" />
+
+Cada llengua del lloc retola la pàgina al seu propi arxiu, i l'original japonès queda al davant, a l'altre costat del plec (la pàgina japonesa s'aparella amb l'edició anglesa). ドン es queda a totes les edicions, cadascuna porta el seu subtítol (ZAS!, WHAM, 咚, بوم!) i les inclinacions no es mouen.
+
+## Errors freqüents
+
+- Una onomatopeia que es deixa en japonès en una edició retolada en línies es compon en línia, com la resta de l'edició, tret que la seva línia digui `vertical`.
+- El crit d'en Sora és més llarg que la seva vinyeta petita en japonès, castellà i català: deixat al motor, creuava la vora i la construcció avisava `comicBalloonOverflow`. Aquestes edicions el marquen amb `break` (`sora{shout break}`): trenca el marc cap amunt, cap al carrer i la vinyeta de sobre, a propòsit, i no s'avisa de res. Una bafarada amb `break` mai no surt al marge de la pàgina tret que la seva vinyeta sagni; per dur-la a un altre lloc hi ha el punt fixat (`at=`).

@@ -1,0 +1,47 @@
+---
+title: "Manga de dreta a esquerra amb retolació vertical"
+summary: "Dues pàgines de manga dibuixades per llegir-se de dreta a esquerra: artDirection rtl conserva l'ordre de les vinyetes a cada edició; el japonès va en columnes."
+plain: "Dues pàgines d'un còmic japonès. Les japoneses porten el text de dalt a baix en columnes estretes; les altres edicions mantenen l'ordre japonès de les vinyetes, començant a dalt a la dreta."
+description: "Un manga de kendo de dues pàgines en Postext: l'original japonès en columnes verticals i edicions en altres llengües que es llegeixen de dreta a esquerra."
+question: "Com maqueto un manga que es llegeix de dreta a esquerra, amb el japonès en vertical dins de les bafarades?"
+aliases: ["manga", "漫画", "右綴じ", "dreta a esquerra", "manga sense invertir", "sentit oriental", "tategaki", "縦書き", "bafarades verticals", "artDirection", "readingDirection", "Zen Antique", "furigana", "tate-chu-yoko"]
+---
+
+## Què compondràs
+
+Les dues primeres pàgines d'un manga de kendo, 前の晩 (*La nit abans*), escrit per a aquesta recepta i dibuixat en blanc i negre: la Hana entrena sola la vigília del torneig de la prefectura, en Sora li porta un amulet del santuari i l'entrenador els envia a casa. Primer va l'original japonès, retolat com en una revista setmanal: lletra antiga (kana de tall Mincho, kanji de tall Gothic), bafarades altes en lloc d'amples i sense punt al final. Al davant, les mateixes dues pàgines en la llengua d'aquesta pàgina (en anglès a la pàgina japonesa), començant també per la vinyeta de dalt a la dreta, com es publica el manga amb llicència des de principis dels 2000. El format és B6, 128 × 182 mm, el del tankōbon.
+
+## Elaboració
+
+### 1 · Llegeix en el sentit en què es va dibuixar
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un mangaka compon cada pàgina des de dalt a la dreta: la primera vinyeta, el primer personatge que parla i el recorregut de la mirada per cada franja comencen allà. `artDirection: 'rtl'` li ho diu al motor, i amb el sentit de lectura en `'auto'` totes les edicions segueixen el dibuix; una edició àrab es llegiria de dreta a esquerra igualment. El dibuix no es reflecteix mai. Les editorials occidentals invertien el manga fins al 2002, aproximadament, i els lectors veien tots els espadatxins tornar-se esquerrans i els quimonos creuar-se al revés: deixar les pàgines com es van dibuixar costa al lector un costum, i invertir-les costa el dibuix. Cada `:::page` porta la seva divisió, `30 / 34 [46 | *] / * [44 | *]`, i la primera cel·la de cada franja es col·loca a la dreta (<Feature id="comic-reading-direction">sentit de lectura</Feature>).
+
+### 2 · Marca cada personatge un sol cop, sobre el dibuix
+
+<Excerpt region="art" />
+
+Les paraules canvien amb la llengua; el dibuix, no. Cada imatge porta una zona segura que tot retall respecta i, per a cada personatge, una boca (on apunta el rabet), un cap (per a les bafarades de pensament) i una cara que cap bafarada no pot tapar, tot en fraccions de la imatge. Cada línia del guió anomena qui parla, `sora: …`, i el motor col·loca la bafarada al costat d'aquest personatge en qualsevol llengua. Si qui parla no surt a la vinyeta, com en Sora quan l'entrenador apareix a la porta, el rabet va cap a la vora: `sora{tail=bottom}`.
+
+### 3 · Deixa que cada llengua posi les seves bafarades
+
+<Excerpt region="balloons" />
+
+Els estils diuen quina mena de veu porta cada bafarada: un oval per parlar, un contorn discontinu per xiuxiuejar, un núvol per pensar i un requadre gris per a la veu interior de la Hana. Com es col·loquen les paraules a dins és cosa de cada edició. En japonès, el motor compon columnes de vuit caràcters com a màxim, treu el 。 que tanca una bafarada i conserva el 、, posa dretes en un sol quadratí les dues xifres de 第42回 (`:tcy[42]`) i ajunta `!?` en una sola cel·la. El guió dona la lectura de cada nom la primera vegada que surt, `{一ノ瀬|いちのせ}`, com fa el manga amb el furigana sobre els noms. En català, les mateixes bafarades esdevenen ovals amb línies horitzontals, i el seu ordre continua començant per la dreta.
+
+### 4 · Carrega les fonts de cada edició amb les seves paraules
+
+<Excerpt region="fonts" />
+
+Zen Antique i Dela Gothic One es publiquen en un centenar d'arxius cadascuna, un per bloc de caràcters: cada font es carrega amb les paraules que compon, les bafarades la primera i les onomatopeies la segona, i la pàgina només baixa els arxius que necessita. `loadComicFonts` declara la negreta d'un crit i la cursiva d'una veu interior a partir dels arxius que aquestes fonts sí que tenen, de manera que la pantalla i el PDF dibuixen les mateixes lletres.
+
+### 5 · Posa l'original al costat de cada edició
+
+<Excerpt region="editions" />
+
+Cada llengua d'aquest lloc té la seva edició de les dues pàgines, escrita al seu `content.<lang>.md`, i cada edició queda davant de l'original japonès: `/* @content@ja */` inclou `content.ja.md` a totes les edicions, i la pàgina japonesa aparella l'original amb la retolació anglesa. L'edició xinesa també va en columnes, perquè un llibre que s'obre per la dreta no barreja bafarades verticals i horitzontals; l'àrab es llegeix de dreta a esquerra pel seu propi sentit.
+
+## Errors freqüents
+
+- Posa a la dreta el primer personatge que parla a cada vinyeta. Les bafarades segueixen l'ordre de lectura, així que a la vinyeta en què en Sora dona l'amulet el guió dona la primera frase a la Hana, que és a la dreta. Si parlés abans en Sora, les seves bafarades quedarien al seu costat de la vinyeta, però les columnes japoneses no deixen lloc a sota per a la resposta de la Hana: quedaria al costat, a la dreta, i es llegiria primer.
+- Una bafarada que no cap a la seva vinyeta pot sortir-se de la vora, i el motor ho avisa (`comicBalloonOverflow`). Abans de retallar el diàleg, dona més espai a aquella vinyeta a la divisió.

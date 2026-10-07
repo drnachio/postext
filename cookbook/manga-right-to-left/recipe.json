@@ -1,0 +1,266 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 149,
+  "status": "draft",
+  "chapter": "comics",
+  "order": 60,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-reading-direction",
+      "comic-lettering"
+    ],
+    "also": [
+      "comic-relettering",
+      "vertical-writing",
+      "cjk-fonts",
+      "right-binding",
+      "comic-panel-split",
+      "comic-panel-art",
+      "comic-speakers",
+      "comic-pages",
+      "balloon-styles",
+      "sound-effects",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q165",
+    "Q176"
+  ],
+  "gaps": [],
+  "gotchas": [
+    "ja-locale-tag",
+    "cjk-fonts-slices",
+    "config-cache-identity",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "manga-action-slants",
+    "yonkoma",
+    "vertical-novel-right-bound"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "ja",
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 70,
+      "texture": "smooth",
+      "textureStrength": 0.4,
+      "shade": "#f6f2e8"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#a8322b"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "前の晩 (The Night Before), a two-page kendo manga written for this recipe, with its English, Spanish, Catalan, Chinese and Arabic letterings",
+          "es": "前の晩 (La noche antes), un manga de kendo de dos páginas escrito para esta receta, con sus rotulaciones en inglés, español, catalán, chino y árabe"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The school's old wooden kendo dojo at dusk, its doors open and lit",
+          "es": "El viejo dojo de madera del instituto al anochecer, con las puertas abiertas e iluminadas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-dojo.jpg"
+      },
+      {
+        "what": {
+          "en": "Hana alone in the dojo, swinging her bamboo sword overhead",
+          "es": "Hana, sola en el dojo, alza la espada de bambú sobre la cabeza"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-swing.jpg"
+      },
+      {
+        "what": {
+          "en": "Sora peeking round the sliding door with a shrine charm",
+          "es": "Sora se asoma por la puerta corredera con un amuleto"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-doorway.jpg"
+      },
+      {
+        "what": {
+          "en": "Close-up of Hana's sweating face",
+          "es": "Primer plano del rostro sudoroso de Hana"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-closeup.jpg"
+      },
+      {
+        "what": {
+          "en": "Sora holding out the charm to Hana",
+          "es": "Sora le tiende el amuleto a Hana"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-charm.jpg"
+      },
+      {
+        "what": {
+          "en": "Coach Mori in the doorway, backlit, arms crossed",
+          "es": "El entrenador Mori en la puerta, a contraluz, de brazos cruzados"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-coach.jpg"
+      },
+      {
+        "what": {
+          "en": "Close-up of Coach Mori's small smile",
+          "es": "Primer plano de la media sonrisa del entrenador Mori"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-smile.jpg"
+      },
+      {
+        "what": {
+          "en": "Hana tying the charm to her armour while Sora scratches his head",
+          "es": "Hana se ata el amuleto a la armadura mientras Sora se rasca la cabeza"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-kneel.jpg"
+      },
+      {
+        "what": {
+          "en": "Hana and Sora on the school roof at sunset, seen from behind",
+          "es": "Hana y Sora en la azotea del instituto al atardecer, de espaldas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kendo-roof.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07"
+}

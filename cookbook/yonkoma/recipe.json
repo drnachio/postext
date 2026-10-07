@@ -1,0 +1,255 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 151,
+  "status": "draft",
+  "chapter": "comics",
+  "order": 80,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-panel-split",
+      "comic-reading-direction"
+    ],
+    "also": [
+      "vertical-writing",
+      "cjk-fonts",
+      "comic-panel-styles",
+      "comic-panel-art",
+      "comic-relettering",
+      "comic-speakers",
+      "comic-pages",
+      "comic-lettering",
+      "balloon-styles",
+      "sound-effects",
+      "right-binding",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q173"
+  ],
+  "gaps": [],
+  "gotchas": [
+    "ja-locale-tag",
+    "cjk-fonts-slices",
+    "config-cache-identity",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "manga-right-to-left",
+    "manga-action-slants",
+    "hiragana-picture-book"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "ja",
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "pages": [
+      1,
+      2
+    ],
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 70,
+      "texture": "smooth",
+      "textureStrength": 0.4,
+      "shade": "#f6f2e8"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#a8322b"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "ねこ喫茶まどろみ (Café Doze), two yonkoma strips written for this recipe, with their English, Spanish, Catalan, Chinese and Arabic letterings",
+          "es": "ねこ喫茶まどろみ (Café Modorra), dos tiras yonkoma escritas para esta receta, con sus rotulaciones en inglés, español, catalán, chino y árabe"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Mugi unlocking the cat café's door, three cats waiting inside",
+          "es": "Mugi abre la puerta del café de gatos; tres gatos esperan dentro"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-door.jpg"
+      },
+      {
+        "what": {
+          "en": "Mugi setting out food bowls for the cats",
+          "es": "Mugi pone los cuencos de comida a los gatos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-bowls.jpg"
+      },
+      {
+        "what": {
+          "en": "Three cats eating from one bowl",
+          "es": "Tres gatos comiendo del mismo cuenco"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-onebowl.jpg"
+      },
+      {
+        "what": {
+          "en": "The cats staring at Mugi's toast",
+          "es": "Los gatos miran la tostada de Mugi"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-toast.jpg"
+      },
+      {
+        "what": {
+          "en": "A tired office worker arriving at the café",
+          "es": "Un oficinista cansado llega al café"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-guest.jpg"
+      },
+      {
+        "what": {
+          "en": "The three cats asleep on one cushion",
+          "es": "Los tres gatos dormidos en un cojín"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-nap.jpg"
+      },
+      {
+        "what": {
+          "en": "The office worker opening his laptop",
+          "es": "El oficinista abre el portátil"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-laptop.jpg"
+      },
+      {
+        "what": {
+          "en": "The cats sitting on the keyboard, the worker in happy tears",
+          "es": "Los gatos sentados en el teclado, el oficinista llorando de alegría"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "neko-keyboard.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07"
+}

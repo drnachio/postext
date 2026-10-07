@@ -1,0 +1,238 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 150,
+  "status": "draft",
+  "chapter": "comics",
+  "order": 70,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-panel-split",
+      "sound-effects"
+    ],
+    "also": [
+      "comic-reading-direction",
+      "cjk-fonts",
+      "comic-panel-art",
+      "comic-panel-styles",
+      "comic-relettering",
+      "comic-speakers",
+      "comic-pages",
+      "comic-lettering",
+      "balloon-styles",
+      "vertical-writing",
+      "right-binding",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q175",
+    "Q169"
+  ],
+  "gaps": [],
+  "gotchas": [
+    "ja-locale-tag",
+    "cjk-fonts-slices",
+    "config-cache-identity",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "manga-right-to-left",
+    "yonkoma",
+    "two-tier-tankobon"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "ja",
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "pages": [
+      1,
+      2
+    ],
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 70,
+      "texture": "smooth",
+      "textureStrength": 0.4,
+      "shade": "#f6f2e8"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#a8322b"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "決勝 (The Final), a one-page kendo manga written for this recipe, with its English, Spanish, Catalan, Chinese and Arabic letterings",
+          "es": "決勝 (La final), un manga de kendo de una página escrito para esta receta, con sus rotulaciones en inglés, español, catalán, chino y árabe"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The kendo final in a packed gym, two fighters between three referees",
+          "es": "La final de kendo en un pabellón lleno, dos contendientes entre tres árbitros"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "match-final.jpg"
+      },
+      {
+        "what": {
+          "en": "Hana's eyes through her helmet grille",
+          "es": "Los ojos de Hana tras la rejilla del casco"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "match-eyes.jpg"
+      },
+      {
+        "what": {
+          "en": "The opponent lunging with speed lines",
+          "es": "El rival lanzándose entre líneas cinéticas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "match-lunge.jpg"
+      },
+      {
+        "what": {
+          "en": "Hana's leaping strike to the helmet",
+          "es": "El golpe en salto de Hana al casco"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "match-strike.jpg"
+      },
+      {
+        "what": {
+          "en": "Sora cheering in the stands",
+          "es": "Sora celebrándolo en la grada"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "match-stands.jpg"
+      },
+      {
+        "what": {
+          "en": "Coach Mori nodding while the referees raise their flags",
+          "es": "El entrenador Mori asiente mientras los árbitros alzan las banderas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "match-coach.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07"
+}

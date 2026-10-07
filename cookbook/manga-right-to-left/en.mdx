@@ -1,0 +1,48 @@
+---
+title: "Manga read right to left, lettered vertically"
+summary: "Two manga pages drawn for right-to-left reading: artDirection rtl keeps the panel order in every edition, and the Japanese balloons are set in columns."
+plain: "Two pages of a Japanese comic. The Japanese pages are lettered top to bottom in narrow columns; the other editions keep the Japanese order of the panels, starting at the top right."
+description: "A two-page kendo manga in Postext: the Japanese original lettered in vertical columns, and five other editions that still read right to left."
+question: "How do I lay out a manga that reads right to left, with vertical Japanese in the balloons?"
+aliases: ["manga", "漫画", "右綴じ", "right to left", "unflipped manga", "tategaki", "縦書き", "vertical balloons", "flopping", "artDirection", "readingDirection", "Zen Antique", "furigana", "tate-chu-yoko"]
+pageNotes: { "1": "The Japanese original, page 1: a dojo at dusk across the top tier with a caption in the top right corner, then Hana swinging her sword on the right and Sora at the door on the left, all balloons in vertical columns.", "3": "The English edition, page 1: the same panels in the same places, the balloons rebuilt around horizontal English lines." }
+---
+
+## What you'll build
+
+The two opening pages of a kendo manga, 前の晩 (*The Night Before*), written for the recipe and drawn in black and white: Hana practises alone the evening before the prefectural tournament, Sora brings her a shrine charm, their coach sends them home. The Japanese original comes first, lettered the way a weekly magazine letters it: antique type (kana in a Mincho cut, kanji in a Gothic one), balloons tall rather than wide, no full stop at the end of a balloon. Facing it, the same two pages in this page's language (English on the Japanese page), still read from the top right panel, as licensed manga have been since the early 2000s. The trim is B6, 128 × 182 mm, the tankōbon size.
+
+## Method
+
+### 1 · Read in the direction the art was drawn
+
+The code is [the short answer](#the-short-answer) above. A manga artist composes every page from the top right: the first panel, the first speaker and the eye's path across a tier all start there. `artDirection: 'rtl'` tells the engine so, and with the reading direction left to `'auto'` every edition follows the art; an Arabic edition would read right to left anyway. The art is never mirrored. Western publishers flipped manga until about 2002, and readers saw every swordsman turn left-handed and every kimono fold the wrong way; leaving the pages as drawn costs the reader one habit, while flipping them costs the drawing. Each `:::page` carries its split, `30 / 34 [46 | *] / * [44 | *]`, and the first cell of each tier is laid out on the right (<Feature id="comic-reading-direction">reading direction</Feature>).
+
+### 2 · Mark each speaker once, on the picture
+
+<Excerpt region="art" />
+
+The words change with the language; the drawing does not. Each panel picture carries a safe area that every crop keeps, and for each character a mouth (where a speech tail points), a head (for thought bubbles) and a face no balloon may cover, all in fractions of the picture. A script line names its speaker, `sora: …`, and the engine places the balloon near that character in any language. A speaker who is not in the picture, like Sora when the coach appears in the doorway, gets a tail to the edge of the panel: `sora{tail=bottom}`.
+
+### 3 · Give each language its balloons
+
+<Excerpt region="balloons" />
+
+The styles say what kind of voice a balloon carries: plain oval speech, a dashed whisper, a cloud for a thought, a grey box for Hana's inner voice. How the words sit inside is the edition's business. In Japanese the engine sets columns of at most eight characters, drops the 。 that ends a balloon and keeps the 、, turns the two digits of 第42回 upright in one em (`:tcy[42]`), and sets `!?` side by side in a single cell. The script gives each name its reading where it first appears, `{一ノ瀬|いちのせ}`, as manga print furigana over names. In English the same balloons become ovals around horizontal lines, and their order still runs from the right.
+
+### 4 · Load each edition's faces with its words
+
+<Excerpt region="fonts" />
+
+Zen Antique and Dela Gothic One ship as about a hundred files each, one per range of characters: each face is loaded with the words it sets, the balloons for one and the sound effects for the other, so the page fetches only the files it needs. `loadComicFonts` declares the bold of a shout and the italic of an inner voice from the files these faces do ship, so the screen and the PDF draw the same letters.
+
+### 5 · Set the original beside each edition
+
+<Excerpt region="editions" />
+
+Every language of this site has its own edition of the two pages, written in its own `content.<lang>.md`, and each edition faces the Japanese original: `/* @content@ja */` inlines `content.ja.md` in every edition, and the Japanese page pairs the original with the English lettering. The Chinese edition is set in columns too, because a book that opens from the right does not mix vertical and horizontal balloons; the Arabic one reads right to left by its own direction.
+
+## Pitfalls
+
+- Put the first speaker of a panel on the right. Balloons follow the reading order, so in the panel where Sora hands over the charm the script gives the first line to Hana, who stands on the right. With Sora first, his balloons keep to his side of the panel, but the Japanese columns leave no room below them for Hana's reply: it stands beside them on the right and is read first.
+- A balloon that finds no room in its panel may cross the border, and the engine reports it (`comicBalloonOverflow`). Give a crowded panel a larger cell in the split before you shorten the dialogue.

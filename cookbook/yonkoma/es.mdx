@@ -1,0 +1,48 @@
+---
+title: "Dos tiras yonkoma en una página"
+summary: "Una página de tiras cómicas de cuatro viñetas: dos columnas de cuatro, la tira de la derecha primero y el título de cada tira en un recuadro negro."
+plain: "Una página de tiras cómicas japonesas de cuatro viñetas, una junto a otra como en una revista de manga: se lee la tira de la derecha de arriba abajo y después la de la izquierda."
+description: "Dos tiras yonkoma (4-koma) en una página A5 con Postext: una división para dos columnas, lectura de derecha a izquierda, un título por tira y seis rotulaciones."
+question: "¿Cómo pongo dos tiras yonkoma de cuatro viñetas una junto a otra, leyendo primero la de la derecha?"
+aliases: ["yonkoma", "4-koma", "四コマ", "4コマ漫画", "tira de cuatro viñetas", "tira cómica", "tira de manga", "café de gatos", "chibi", "derecha a izquierda", "título de la tira", "maxColumnChars"]
+pageNotes: { "1": "El original japonés: dos columnas de cuatro viñetas; la de la derecha, titulada 朝ごはん en un recuadro negro, muestra a la dueña de un café dando de comer a tres gatos, y la de la izquierda, titulada いやし, a un oficinista que viene a que los gatos lo consuelen.", "2": "La edición española: las mismas ocho viñetas, tituladas El desayuno y Terapia, con los bocadillos en líneas horizontales." }
+---
+
+## Lo que vas a componer
+
+Una página de una antología de yonkoma, ねこ喫茶まどろみ (*Café Modorra*), escrita para esta receta y dibujada en un estilo chibi suave: Mugi lleva un café de gatos con una gata blanca, un gato negro y una gata tricolor. El yonkoma, la tira de cuatro viñetas, es la tira cómica de periódico puesta de pie: cuatro viñetas iguales apiladas de arriba abajo, planteamiento, desarrollo, giro y remate. Una página de revista lleva dos, una al lado de otra, y como la página se abre por la derecha, la tira de la derecha va primero. La página es A5, 148 × 210 mm, con el original japonés en un lado del pliego y la edición en la lengua de esta página en el otro (la inglesa en la página japonesa).
+
+## Elaboración
+
+### 1 · Divide la página en dos columnas de cuatro
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Toda la página es un `:::page` con `split="* [* / * / * / *] | * [* / * / * / *]"`: dos columnas iguales, cada una cortada en cuatro franjas iguales. Las ocho líneas `::panel` llenan las celdas en orden de lectura, así que las cuatro primeras son de la primera tira, y con la lectura de derecha a izquierda la primera columna se coloca a la derecha (<Feature id="comic-panel-split">división de la página</Feature>). La calle entre las tiras mide 9 mm y la calle entre viñetas, 3 mm, así que la mirada baja por una tira antes de pasar a la siguiente.
+
+### 2 · Pon el título de cada tira en su primera viñeta
+
+<Excerpt region="balloons" />
+
+Un yonkoma tiene título, y las antologías lo imprimen en un recuadro a la cabeza de la tira. Aquí el título es una línea del guion, `caption{title}: 朝ごはん`, y `title` es un estilo de bocadillo propio: blanco sobre negro, pegado al borde de la viñeta en la esquina superior del lado de inicio, que en este libro es la derecha. Se rotula en cada edición como cualquier otra línea, y en la página española los mismos recuadros dicen *El desayuno* y *Terapia*.
+
+### 3 · Marca también a los gatos como personajes
+
+<Excerpt region="art" />
+
+Los gatos hablan, `kuro: にゃ`, así que cada imagen marca su boca y su cara igual que las de Mugi. Dos funciones pequeñas acortan la lista: `cat()` para un gato que mira al lector y `nose()` para uno con la cara metida en el cuenco o en el cojín. En la tercera viñeta Mugi no sale en el dibujo, y su línea `mugi{tail=top}` lleva el rabillo al borde superior.
+
+### 4 · Carga las fuentes de cada edición con sus palabras
+
+<Excerpt region="fonts" />
+
+Cada fuente recibe las palabras que compone: Zen Antique los bocadillos y Dela Gothic One las onomatopeyas (ガツガツ, じーっ, すやぁ, ずしっ). Una viñeta de yonkoma es más ancha que alta, así que las columnas japonesas se cortan a los seis caracteres (`maxColumnChars: 6`) y la rotulación es medio punto más pequeña que en una página de historia.
+
+### 5 · Pon el original junto a cada edición
+
+<Excerpt region="editions" />
+
+Cada idioma del sitio rotula las tiras en su propio archivo, frente al original japonés al otro lado del pliego; la página japonesa se empareja con la edición inglesa. En todos los idiomas se sigue leyendo primero la tira de la derecha.
+
+## Errores frecuentes
+
+- En una viñeta pequeña, un bocadillo vertical se queda sin altura antes que sin anchura: el motor lo compone en más columnas, más cortas, cortando entre palabras. El último grito del oficinista sigue siendo demasiado alto para la viñeta de abajo en japonés, así que se marca con `break` (`kyaku{shout break}`): rompe el marco hacia la viñeta de arriba en lugar de tapar a los gatos, sin salirse al margen de la página.
+- Una onomatopeya grande se aparta de las caras como un bocadillo: ずしっ fijada en `86% 82%` tapaba la cara de la gata tricolor en la tira japonesa y la construcción avisaba `comicBalloonOverflow`, así que allí va en `90% 88%`.
