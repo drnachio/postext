@@ -19,6 +19,7 @@ import {
   REQUIRED_KIT,
   RESERVED_SLUGS,
   SAMPLE_LOCALES,
+  TEXT_LOCALES,
   SECTION_ORDER,
   SLUG_PATTERN,
 } from "./types.ts";
@@ -446,7 +447,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
     localized: {
       type: "object",
       additionalProperties: false,
-      required: [...SAMPLE_LOCALES],
+      required: [...TEXT_LOCALES],
       properties: Object.fromEntries(LOCALES.map((locale) => [locale, { type: "string", minLength: 1 } as JsonSchema])),
     },
     credit: {

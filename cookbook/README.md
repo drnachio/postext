@@ -34,7 +34,9 @@ guide needs a fix.
   write-ups are required. The site is also in Catalan, Simplified Chinese, Japanese and Arabic:
   `ca.mdx`, `zh.mdx`, `ja.mdx` and `ar.mdx` translate the Spanish and English write-ups, and their
   pages show the Spanish (Catalan) or the first (Chinese, Japanese, Arabic) sample. A Chinese,
-  Japanese or Arabic book is written in its own language in both samples (§6).
+  Japanese or Arabic book is written in its own language in both samples (§6). A sample may
+  also come in any other site locale (`content.ja.md`, listed in `sample.locales`), and that
+  locale's page then shows it: a comic re-lettered per language has an edition in each.
 
 A recipe is **not** a feature demo on placeholder text, a page in the engine's default look,
 or a copy of a third-party publication.
@@ -157,7 +159,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `workarounds` | Engine bugs the recipe routes around: `{ followup?, issue?, package, note }`, revisited when fixed. |
 | `engine` | `postext` minimum version (≤ the released one, or the next release in a preview draft, §3); `postextPdf` for PDF recipes; `math`, `worker` flags. |
 | `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images`, `cjk`, `arabic`, `book` and `comics` when used (`book` or `cjk`, never both: each declares `showBook`). |
-| `sample.locales` | Languages with a `content.<lang>.md`; `[0]` is the fallback edition. |
+| `sample.locales` | Languages with a `content.<lang>.md` (any site locale: `en es ca zh ar ja`); `[0]` is the fallback edition. A locale's page shows its own edition, else the Spanish one for Catalan, else `[0]`. |
 | `capture` | `hero` (a page, or a spread `[verso, recto]`; page 1 is a recto on its own), `card` (`spread`, `page`, `loupe`, `crop`, `screenshot`), `focus` for loupe and crop, `pages`, `expect`, and `doc`, the recorded build whose pages are published: `last` by default, `first` or an index from 0, or a list of them for a pen that builds several documents, such as two editions (Nº 079). The pages of a list are numbered on from one build to the next, each build's page 1 stands alone, and the checks, the detected features and the Sandbox bundle read the first build. Page numbers count from 1 at the document's first page, whatever its printed folio (`continuation.pageNumbering.startAt`) or its place in the book (`continuation.pageIndexOffset`). Versos and rectos follow the physical book page (`pageIndexOffset` + index + 1), not the folio: the capture checks that a spread's verso is an even book page. A spread is named in reading order, `[verso, recto]`, also in a book bound on the right, which the light table and the card lay out mirrored (`[3 \| 2]`). |
 | `downloads.pdf` | Keep and serve the PDF the pen builds. |
 | `folio` | How the Sandbox's Folio view shows the publication in 3D: `paper` (stock `type`, `grammage`, `texture`, `shade`, `showThrough`…), `binding` (`type`, `cover`, `coverMaterial`, `coverColor`), `surface` and `lighting`, as `PostextConfig.folio` with colours written `#rrggbb`. Only the `.postext` bundle carries it (over the pen's own `config.folio`); it never changes the pages, so editing it needs `pnpm cookbook capture <slug> --sandbox-only`, not a recapture. Pick the object the recipe sets: a novel on book wove in a cloth case, a magazine saddle-stitched on gloss, a menu on card. Use `cover: "pages"` only when the document has an even page count, so the last page closes the book as its back; otherwise a `case` in a palette colour. When the page paints its own paper colour, give a light `shade` (about the page colour 60 % of the way to white) so the stock does not tint it twice. |
