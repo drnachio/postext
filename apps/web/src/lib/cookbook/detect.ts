@@ -21,7 +21,7 @@ export const CONFIG_KEYS: readonly string[] = [
 
 /** The parser's single-line directives and fenced containers
  *  (KNOWN_DIRECTIVES / KNOWN_CONTAINERS in packages/postext/src/parse). */
-export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse", "page"];
+export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse", "page", "strip"];
 export const KNOWN_CONTAINERS: readonly string[] = ["callout", "paragraphs", "part", "columns", "paper"];
 
 /** The engine's fence line: `:::name` with an optional `{attrs}` block. */
