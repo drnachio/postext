@@ -288,6 +288,9 @@ interface Eval {
    *  follows) and covering avoid zones (at the level that allows it). */
   order: number;
   cover: number;
+  /** What of `cover` is over the avoid zones the art marks (not the
+   *  guards the layout derives over heads). */
+  coverArt: number;
 }
 
 /** Cost of `unit` (variant `vi`) at `at`, given the other placed units. */
@@ -312,10 +315,12 @@ function evaluate(
   let soft = 0;
   let order = 0;
   let cover = 0;
+  let coverArt = 0;
   const S = (k: string, x: number) => {
     soft += x;
     if (k === 'order') order += x;
-    else if (k === 'coverAvoid') cover += x;
+    else if (k === 'coverAvoid' || k === 'coverArt') cover += x;
+    if (k === 'coverArt') coverArt += x;
     if (terms) terms[k] = (terms[k] ?? 0) + x;
   };
   if (v.cost) S('arrangement', v.cost);
@@ -340,7 +345,7 @@ function evaluate(
       // (What the art marks costs three times what a guard over a head
       // does: a balloon touches the top of the hair before it covers a
       // hand the artist asked to keep clear.)
-      if (level.coverAvoid) S('coverAvoid', ((r.guard ? 2 : 6) * a) / em2);
+      if (level.coverAvoid) S(r.guard ? 'coverAvoid' : 'coverArt', ((r.guard ? 2 : 6) * a) / em2);
       else {
         H('avoid', (W.avoid * a) / em2 + W.avoid);
         reasons.add('avoid');
@@ -533,7 +538,7 @@ function evaluate(
       S('start', (W.start * fromStart) / em);
     }
   }
-  return { hard, soft, reasons, order, cover };
+  return { hard, soft, reasons, order, cover, coverArt };
 }
 
 /** A rectangle grown by `d` px on every side. */
@@ -749,10 +754,22 @@ function bestFor(scene: Scene, unit: PlaceUnit, others: readonly Placed[], first
 /** What taking the last fallback (covering an avoid zone a little) to keep
  *  the reading order costs on top of the cover itself. */
 const ORDER_OVER_AVOID = 4;
-/** The most a balloon may cover of an avoid zone (as its `coverAvoid`
- *  cost, 2 per em²) to keep the reading order: the hair over a face, the
- *  edge of a hat; never the object an avoid zone marks. */
-const ORDER_COVER_MAX = 6;
+/** The most a balloon may cover of avoid zones (as their cost: 2 per em²
+ *  of a guard over a head, 6 of a zone the art marks) to keep the reading
+ *  order: the top of the hair over a face, the edge of a hat; of what the
+ *  art marks, hardly a corner. */
+const ORDER_COVER_MAX = 16;
+const ORDER_COVER_ART_MAX = 6;
+
+/** Whether a spot (its evaluation and cost terms) may stand in for one
+ *  that reads out of order: clean, in order, covering no more of avoid
+ *  zones than the caps, and its tail off the other faces (a tail across
+ *  another character's face reads as theirs, worse than a line read
+ *  late). */
+function keepsOrder(ev: Eval, terms: Record<string, number>): boolean {
+  return ev.hard === 0 && ev.order < W.orderBase && ev.cover <= ORDER_COVER_MAX && ev.coverArt <= ORDER_COVER_ART_MAX
+    && (terms.otherFace ?? 0) < W.otherFace;
+}
 
 /** A clean choice that reads out of order (the balloon above the one it
  *  answers, or beside it on the wrong side) against the same unit covering
@@ -768,8 +785,9 @@ function orderBeforeAvoid(
   let alt: (Choice & { score: number }) | undefined;
   for (let vi = 0; vi < unit.variants.length; vi++) {
     for (const at of candidates(scene, unit, vi)) {
-      const ev = evaluate(scene, unit, vi, at, others, level, firstOrder);
-      if (ev.hard > 0 || ev.cover > ORDER_COVER_MAX || ev.order >= W.orderBase) continue;
+      const terms: Record<string, number> = {};
+      const ev = evaluate(scene, unit, vi, at, others, level, firstOrder, terms);
+      if (!keepsOrder(ev, terms)) continue;
       const score = ev.soft + penalty(vi) + ORDER_OVER_AVOID;
       if (!alt || score < alt.score - 1e-9) alt = { variant: vi, level: 2, at, ev, score };
     }
@@ -949,6 +967,57 @@ function swapCrossing(scene: Scene, placed: Layout, firstOrder: number): Layout 
   return undefined;
 }
 
+/** The cheapest spot for `unit` that reads in order with the others, over
+ *  all its shapes and fallback levels (see {@link keepsOrder}; covering an
+ *  avoid zone pays as much more as in {@link orderBeforeAvoid}); undefined
+ *  when there is none. */
+function inOrder(scene: Scene, unit: PlaceUnit, others: readonly Placed[], firstOrder: number): Choice | undefined {
+  const levels = LEVELS.map((_, i) => i).filter((i) => i === 0 || unit.breakBorder || i === 2);
+  let best: (Choice & { score: number }) | undefined;
+  for (const li of levels) {
+    for (let vi = 0; vi < unit.variants.length; vi++) {
+      const penalty = unit.variants[vi]!.reshaped ? RESHAPE_COST : 0;
+      for (const at of candidates(scene, unit, vi)) {
+        const terms: Record<string, number> = {};
+        const ev = evaluate(scene, unit, vi, at, others, LEVELS[li]!, firstOrder, terms);
+        if (!keepsOrder(ev, terms)) continue;
+        const score = ev.soft + penalty + (ev.cover > 0 ? ORDER_OVER_AVOID : 0);
+        if (!best || score < best.score - 1e-9) best = { variant: vi, level: li, at, ev, score };
+      }
+    }
+  }
+  return best && { variant: best.variant, level: best.level, at: best.at, ev: best.ev };
+}
+
+/** The layout with one balloon that reads out of order placed again over
+ *  all its shapes and fallbacks, the others where they stand, when that
+ *  lowers the whole layout's cost; else undefined. The improvement passes
+ *  keep a balloon's shape and level, and a pair placed again has the later
+ *  balloon alone first, in the room the earlier one needs: neither moves
+ *  the first line of a pair above the hair of its speaker, in a shape a
+ *  line deeper, ahead of the reply that already stands below it. */
+function reorder(scene: Scene, placed: Layout, firstOrder: number): Layout | undefined {
+  const base = totalCost(scene, placed, firstOrder);
+  let best: Layout | undefined;
+  let cost = base;
+  for (let i = 0; i < placed.length; i++) {
+    const p = placed[i]!;
+    if (p.unit.pin || p.unit.position || p.unit.kind === 'sfx' || p.ev.order < W.orderBase) continue;
+    const others = placed.filter((_, j) => j !== i);
+    const c = inOrder(scene, p.unit, others, firstOrder);
+    if (!c) continue;
+    const out: Layout = placed.map((q, j) => (j === i ? { ...q, variant: c.variant, level: c.level, at: c.at, ev: c.ev } : q));
+    // (Covering an avoid zone to read in order pays what `bestFor` asks;
+    // the whole layout's cost counts the order on both balloons of a pair.)
+    const t = totalCost(scene, out, firstOrder) + (c.ev.cover > 0 ? ORDER_OVER_AVOID : 0);
+    if (t < cost - 1e-6) {
+      cost = t;
+      best = out;
+    }
+  }
+  return best;
+}
+
 /** The layout with one pair of free units taken out and placed again
  * (each order in turn, the second seeing the first) when that lowers the
  * whole layout's cost; else undefined. A single move cannot undo a pair
@@ -1063,6 +1132,13 @@ function search(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number,
   // Pairs placed again together, while that helps (a few rounds).
   for (let round = 0; round < 3 && ordered.length > 1; round++) {
     const next = replacePair(scene, placed!, firstOrder);
+    if (!next) break;
+    placed = solveFrom(scene, next, firstOrder, passes);
+  }
+  // Balloons still read out of order placed again with every shape and
+  // fallback open, the others where they stand.
+  for (let round = 0; round < 2 && ordered.length > 1; round++) {
+    const next = reorder(scene, placed!, firstOrder);
     if (!next) break;
     placed = solveFrom(scene, next, firstOrder, passes);
   }

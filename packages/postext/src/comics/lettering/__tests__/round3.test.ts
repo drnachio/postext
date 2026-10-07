@@ -127,6 +127,30 @@ describe('a reply after the line it answers', () => {
   });
 });
 
+describe('a reply in a strip cell', () => {
+  // Nº146's first strip panel: the penguin (left, low) asks, the walrus
+  // (right, high) answers. The only room for the line in reading order is
+  // above the penguin's head, touching the top of his hair, and the reply
+  // placed alone takes that room first: the line has to move there once
+  // the reply stands by the walrus.
+  const CELL = rect(0, 0, 295, 304);
+  const pip = figure('pip', rect(31, 134, 67, 61), { x: 80, y: 176 });
+  const otto = figure('otto', rect(168, 70, 73, 67), { x: 201, y: 113 });
+  for (const direction of ['ltr', 'rtl'] as const) {
+    it(`sets the line above the penguin and the reply after it (${direction})`, () => {
+      const { balloons } = letterPanelDetailed(panel(CELL, { direction, anchors: [pip.anchor, otto.anchor], avoid: [pip.guard, otto.guard], softAvoid: [pip.body, otto.body] }), [
+        item('p', 0, 'pip', 'Good morning, dear Otto! One big warm croissant and two rolls, please.'),
+        item('o', 1, 'otto', 'Coming up!'),
+      ]);
+      const [a, b] = [balloons[0]!.bbox, balloons[1]!.bbox];
+      // The reply below the line, or ahead of it in the reading direction
+      // and no higher than its top.
+      const ahead = (centre(b).x - centre(a).x) * (direction === 'rtl' ? -1 : 1) > 0;
+      expect(b.y).toBeGreaterThanOrEqual((ahead ? a.y : a.y + a.height) - 0.25 * EM - 0.5);
+    });
+  }
+});
+
 describe('balloons and the other character', () => {
   it('sets a speaker\'s balloons over his own side, not over the one he speaks to (right to left)', () => {
     // Nº149's charm panel with Sora (left) speaking first on a page read
