@@ -524,7 +524,7 @@ Attribute values can be quoted with double or single quotes, or left bare when t
 
 References deserve a closer look, because they are how most of a book's apparatus is written. \`:ref{id="…"}\` prints the short label and the number by default — _Fig. 5.1_ in this book's English edition — and incorporates the resource the first time it appears. A \`style\` attribute prints the number alone or the full label, _Figure 5.1_; \`case\` changes the label to lower case, upper case or capitalised, so a reference at the start of a sentence reads correctly; and \`text\` prints any wording at all while still incorporating and linking the resource. A reference to an id that does not exist prints a question mark and a warning, so broken references are found before the book goes to press.
 
-\`::resource{id="…"}\` on a line of its own embeds a resource at that exact point, when its placement says _here_; otherwise it simply counts as a mention. This book uses it nowhere, and lets every figure float — which is usually the better choice.
+\`::resource{id="…"}\` on a line of its own embeds a resource at that exact point, when its placement says _here_; otherwise it simply counts as a mention. This book uses it nowhere, and lets every figure float — which is usually the better choice, since the engine then finds each one a place near its mention.
 
 ## Cross-references and citations
 
