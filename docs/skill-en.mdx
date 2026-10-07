@@ -86,6 +86,12 @@ Also on YouTube: [watch it there](https://www.youtube.com/watch?v=Hh-mWtZGWHw&li
     mirrored page, how to read Arabic from PDFs, Word and Wikisource, poems
     as `:::verse`, notes «(١)» per page, and Arabic fonts cut with their
     joining tables (see [Arabic layout](/en/docs/arabic-layout));
+  - comics, manga and newspaper strips: the split that cuts a page into
+    panels, the panel pictures with their speaker anchors and safe areas, one
+    script per language that the engine letters (balloons, captions, sound
+    effects), right-to-left manga and Arabic editions, and how to port from
+    text-free art plus translations, from lettered scans or from a script
+    with generated art;
   - the printed object: how to read the paper, binding, covers and spine of
     the source and set them as the `folio` settings that the [Folio viewer](/en/docs/sandbox#folio-tab)
     shows, checked by the linter.
@@ -110,9 +116,10 @@ Also on YouTube: [watch it there](https://www.youtube.com/watch?v=Hh-mWtZGWHw&li
     <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → draft chapters by paragraph style, tables and anchored images; ruby, tate-chu-yoko, emphasis marks and warichu become <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> and <code>:warichu</code>, and vertical stories and a right-to-left binding are reported</td></tr>
     <tr><td><code>aozora.py</code></td><td>Aozora Bunko text (a CP932 zip or <code>.txt</code>) → Postext Markdown: furigana, bōten and side lines, headings with their indents, 字下げ and 地付き blocks as paragraph styles, page breaks, 外字 resolved through JIS X 0213, kanbun marks; it returns the credits block and a report of what it could not express</td></tr>
     <tr><td><code>index_marks.py</code></td><td>Rebuilds a printed back-of-book index as <code>:index</code> marks: reads the index pages of the PDF, finds each term on its page and marks the same words in the chapters</td></tr>
+    <tr><td><code>comic_panels.py</code></td><td>Measures comic pages: finds the panels by the paper between them, writes the <code>split</code> expression (left to right or right to left, slanted gutters included), the gutters and the frame, cuts one picture per panel and prints the <code>:::page</code> skeletons; lays a grid over the pictures to read speaker anchors and safe areas, and draws them back to check them</td></tr>
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts (a Chinese or Japanese face cut to the book's characters keeps its vertical forms and metrics, an Arabic one its joining forms and tatweel); convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
-    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong, and, for Chinese, Japanese and Korean text, the characters the bundled fonts cannot set; for Japanese text, kana under a Chinese locale, Chinese faces or settings, Aozora notation left in the chapters and kanji index entries without a reading; for Arabic text, a missing Arabic locale, Latin-only or unjoined faces, letter-spacing, forced hyphenation and italic emphasis</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong, and, for Chinese, Japanese and Korean text, the characters the bundled fonts cannot set; for Japanese text, kana under a Chinese locale, Chinese faces or settings, Aozora notation left in the chapters and kanji index entries without a reading; for Arabic text, a missing Arabic locale, Latin-only or unjoined faces, letter-spacing, forced hyphenation and italic emphasis; in comics, split expressions that do not parse, panels that do not match the cells, unknown pictures and balloon or panel styles, malformed speaker anchors, lettering faces the project does not bundle, and editions whose pages differ</td></tr>
     <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, reading its configuration as the Sandbox does, and prints warnings. With <code>--jpeg</code> it paints the pages you ask for (<code>--pages 12-15</code>) as JPEG files with the engine's own canvas renderer, in a second or two, so the agent looks at its pages without building a PDF; <code>--out</code> writes the PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side, from the render's PDF or its folder of JPEGs</td></tr>
   </tbody>

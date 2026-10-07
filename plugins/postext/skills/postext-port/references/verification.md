@@ -197,7 +197,9 @@ lettering, every page, every language.
    - each tail points at its speaker's mouth; off-panel voices point to the
      right border;
    - no balloon is cramped: `comicBalloonOverflow` names the panel; break the
-     line with `\`, shorten it, give the panel more room, or pin it with `at=`;
+     line with `\`, shorten it, give the panel more room, or pin it with `at=`
+     (in the Sandbox, drag the balloon: the pin is written into its line;
+     double-click to unpin);
    - Japanese and Traditional Chinese balloons are vertical with upright
      `！？`, no balloon ending in `。`; Arabic pages read right to left and
      their balloons too;
@@ -206,10 +208,10 @@ lettering, every page, every language.
    source's balloons (or transcript) for missing or swapped lines; the
    lettering never drops text, so a missing balloon is a missing script
    line.
-5. **Print.** The PDF (`--out`) for a final look at spreads (the panel
-   across the spine on both pages, a blank page before a spread when the
-   parity needs one) and strips; PDF/UA tags put each panel's balloons
-   after its figure.
+5. **Print.** The PDF (`--out`) once at the end, like any book: spreads
+   open on a verso (a blank page before one when the parity needs it) and
+   a panel across the spine shows on both pages; PDF/UA tags put each
+   panel's balloons after its figure.
 
 ## 4. The real viewer
 

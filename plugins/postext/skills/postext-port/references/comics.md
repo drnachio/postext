@@ -246,7 +246,9 @@ an earlier one unless it is further along the reading direction), off the
 faces and avoid zones, tails not crossing. A speaker with no anchor in
 the panel gets a tail toward the nearest border (an off-panel voice).
 Use `at` only where the placement is wrong or the source's position
-matters (§16 P2).
+matters (§16 P2). In the Sandbox, dragging a balloon writes the same pin
+into its script line (`at="x% y%"`, fractions of the panel's picture);
+double-clicking a pinned balloon removes the pin.
 
 ## 7. `:::strip`: panels in the text flow
 
@@ -461,6 +463,9 @@ used as `sfx{writing at="34% 87%" rotate=13}: Invitation`.
   fixed layout with region-based panel navigation (and Kindle Panel View
   on request); reflowable editions print each panel picture followed by
   its dialogue (`Speaker: words`, names from `cast`).
+- Every output paints strips (`:::strip`, in columns and floated) and
+  both halves of a spread: the canvas, the PDF, the HTML viewer and both
+  EPUB layouts.
 - **Fonts**: the lettering face, the SFX face and every face a style, cast
   entry or `font=` names must be in the manifest's `fonts` for headless
   renders and the PDF (the browser alone can fetch Google Fonts).
