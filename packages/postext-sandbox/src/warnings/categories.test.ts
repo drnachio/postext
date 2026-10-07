@@ -24,6 +24,13 @@ describe('warningCategory', () => {
     expect(warningCategory('variableFontDefaultInstance')).toBe('fonts');
     expect(warningCategory('cffEmbeddedWhole')).toBe('fonts');
   });
+  it('files the comic warnings by what they point at', () => {
+    expect(warningCategory('comicSplitSyntax')).toBe('markup');
+    expect(warningCategory('comicUnknownBalloonStyle')).toBe('markup');
+    expect(warningCategory('comicUnknownArt')).toBe('figures');
+    expect(warningCategory('comicPanelLetterbox')).toBe('figures');
+    expect(warningCategory('comicBalloonOverflow')).toBe('typesetting');
+  });
   it('lists every category once', () => {
     expect(new Set(WARNING_CATEGORY_ORDER).size).toBe(WARNING_CATEGORY_ORDER.length);
   });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { AlertTriangle, ChevronRight, CircleCheck, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
+import { AlertTriangle, ChevronRight, CircleCheck, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database, MessageCircle, LayoutGrid } from 'lucide-react';
 import { HYPHENATION_LOCALES, KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
 import { useSandbox, useSandboxWarnings } from '../context/SandboxContext';
 import { Collapsible, EmptyState, ListRow, PanelBody, PanelHeader, cn } from '../ui';
@@ -117,6 +117,19 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'variableFontDefaultInstance':
     case 'cffEmbeddedWhole':
       return Type;
+    case 'comicSplitSyntax':
+    case 'comicSplitOverflow':
+    case 'comicPanelCount':
+      return LayoutGrid;
+    case 'comicUnknownArt':
+    case 'comicPanelLetterbox':
+    case 'comicAnchorOutsideSafeArea':
+      return Image;
+    case 'comicStrayText':
+    case 'comicUnknownBalloonStyle':
+    case 'comicBalloonOverflow':
+    case 'comicUnknownSpeaker':
+      return MessageCircle;
     default:
       return AlertTriangle;
   }
@@ -279,6 +292,26 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsVariableFontTitle;
     case 'cffEmbeddedWhole':
       return labels.warningsCffEmbeddedWholeTitle;
+    case 'comicSplitSyntax':
+      return labels.warningsComicSplitSyntaxTitle;
+    case 'comicSplitOverflow':
+      return labels.warningsComicSplitOverflowTitle;
+    case 'comicPanelCount':
+      return labels.warningsComicPanelCountTitle;
+    case 'comicStrayText':
+      return labels.warningsComicStrayTextTitle;
+    case 'comicUnknownBalloonStyle':
+      return labels.warningsComicUnknownBalloonStyleTitle;
+    case 'comicUnknownArt':
+      return labels.warningsComicUnknownArtTitle;
+    case 'comicPanelLetterbox':
+      return labels.warningsComicPanelLetterboxTitle;
+    case 'comicAnchorOutsideSafeArea':
+      return labels.warningsComicAnchorOutsideSafeAreaTitle;
+    case 'comicBalloonOverflow':
+      return labels.warningsComicBalloonOverflowTitle;
+    case 'comicUnknownSpeaker':
+      return labels.warningsComicUnknownSpeakerTitle;
   }
 }
 
@@ -517,7 +550,44 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return pdfFontDetail(payload, labels, labels.warningsVariableFontDetail.replace('__default__', String(payload.defaultWeight)).replace('__weight__', String(payload.weight)));
     case 'cffEmbeddedWhole':
       return pdfFontDetail(payload, labels, labels.warningsCffEmbeddedWholeDetail.replace('__size__', (payload.bytes / (1024 * 1024)).toFixed(1)));
+    case 'comicSplitSyntax':
+      return `split · ${payload.message} — ${labels.warningsComicSplitSyntaxDetail}`;
+    case 'comicSplitOverflow':
+      return labels.warningsComicSplitOverflowDetail.replace('__total__', formatPercent(payload.total));
+    case 'comicPanelCount': {
+      const more = payload.panels > payload.cells;
+      return (more ? labels.warningsComicPanelCountMoreDetail : labels.warningsComicPanelCountFewerDetail)
+        .replace('__panels__', String(payload.panels))
+        .replace('__cells__', String(payload.cells))
+        .replace('__extra__', String(Math.abs(payload.panels - payload.cells)));
+    }
+    case 'comicStrayText':
+      return `"${clip(payload.text, 60)}" — ${labels.warningsComicStrayTextDetail}`;
+    case 'comicUnknownBalloonStyle':
+      return `{${payload.style}} — ${labels.warningsComicUnknownBalloonStyleDetail}`;
+    case 'comicUnknownArt':
+      return `#${payload.resourceId} — ${labels.warningsComicUnknownArtDetail}`;
+    case 'comicPanelLetterbox':
+      return `#${payload.resourceId} · ${labels.warningsComicPanelLetterboxDetail.replace('__panel__', String(payload.panel + 1))}`;
+    case 'comicAnchorOutsideSafeArea':
+      return `#${payload.resourceId} · ${payload.anchorId} — ${labels.warningsComicAnchorOutsideSafeAreaDetail}`;
+    case 'comicBalloonOverflow': {
+      const panel = payload.panel ?? payload.panelIndex;
+      return labels.warningsComicBalloonOverflowDetail.replace('__panel__', panel !== undefined ? String(panel + 1) : '?');
+    }
+    case 'comicUnknownSpeaker':
+      return `${payload.speaker}: — ${labels.warningsComicUnknownSpeakerDetail}`;
   }
+}
+
+/** A percentage with at most one decimal (`112.5`). */
+function formatPercent(n: number): string {
+  return String(Math.round(n * 10) / 10);
+}
+
+/** The start of a long text, with an ellipsis. */
+function clip(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
 function isFontWarning(kind: WarningPayload['kind']): boolean {
