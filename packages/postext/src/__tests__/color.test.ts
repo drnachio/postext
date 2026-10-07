@@ -131,3 +131,31 @@ describe('built-in sRGB profile', () => {
     expect(p.matrixTrc!.matrix[4]).toBeCloseTo(0.7169, 3);
   });
 });
+
+describe('soft proof', () => {
+  it('shows paper white, K-only black and rich black for large black areas', async () => {
+    const { createPrintPreview, proofPixels } = await import('../color');
+    const { resolvePrintConfig } = await import('../defaults/print');
+    const t = outputTransform(load('fogra39'));
+    // 72 dpi page px: the 6 mm rich-black side is 17 px.
+    const preview = createPrintPreview(t, resolvePrintConfig(), { paper: true, dpi: 72 });
+    const w = 40;
+    const h = 40;
+    const data = new Uint8ClampedArray(w * h * 4).fill(255);
+    const paint = (x0: number, y0: number, x1: number, y1: number) => {
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) data.set([0, 0, 0, 255], (y * w + x) * 4);
+    };
+    paint(0, 0, 20, 20); // a large black square
+    paint(30, 0, 32, 40); // a thin black rule
+    proofPixels(data, w, h, preview);
+    const at = (x: number, y: number) => Array.from(data.subarray((y * w + x) * 4, (y * w + x) * 4 + 3));
+    const paper = at(25, 30);
+    expect(Math.max(...paper)).toBeLessThan(255);
+    expect(Math.min(...paper)).toBeGreaterThan(220);
+    const rich = at(10, 10);
+    const kOnly = at(31, 30);
+    // Rich black is darker than K alone.
+    expect(rich[0]! + rich[1]! + rich[2]!).toBeLessThan(kOnly[0]! + kOnly[1]! + kOnly[2]!);
+    expect(rich).toEqual(preview.richBlack!.rgb);
+  });
+});
