@@ -3,7 +3,7 @@
 // before the first build, from Fontsource, the files the PDF embeds too.
 
 /** faces = { 'Family Name': ['400', '400i', '700'] }. `text` is the sample:
- *  č ł † α χ ồ also load latin-ext, greek, vietnamese files. With
+ *  č ł † α χ also load latin-ext and greek files (kitSubsetsFor). With
  *  `optional`, a face Fontsource does not ship is skipped instead of failing.
  *  Resolves to the number of faces added. */
 async function loadFonts(faces, text = '', { optional = false } = {}) {
@@ -14,7 +14,6 @@ async function loadFonts(faces, text = '', { optional = false } = {}) {
     'latin-ext': 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,'
       + 'U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF',
     greek: 'U+0370-03FF',
-    vietnamese: 'U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB',
   };
   const jobs = [];
   let added = 0;
@@ -83,8 +82,8 @@ function fontStringsOf(doc) {
   return [...found].map(([font, base]) => ({ font, base }));
 }
 
-/** '700 37.5px Open Sans' → { family, weight, style }; no weight (a design
- *  text's '95.8px Young Serif') is 400. */
+/** '700 37.5px Open Sans' / 'italic 400 13px "Source Serif 4"' → { family, weight, style }.
+ *  A string with no weight ('95.8px Young Serif', from a design text) is 400. */
 function parseFont(font) {
   const m = /^(?:(italic|oblique)\s+)?(?:small-caps\s+)?(?:(\d+|bold|normal)\s+)?[\d.]+px\s+(.+)$/.exec(font.trim());
   if (!m) throw new Error(`Unexpected font string: ${font}`);
@@ -92,8 +91,8 @@ function parseFont(font) {
   return { family: m[3].replace(/^["']|["']$/g, ''), weight, style: m[1] ? 'italic' : 'normal' };
 }
 
-/** A loaded FontFace covers this family, weight and style (fonts.check()
- *  says yes for undeclared families too). */
+/** A loaded FontFace covers this family, weight and style (fonts.check() would
+ *  also say yes for families nobody declared). */
 function hasFace(family, weight, style) {
   for (const face of document.fonts) {
     if (face.status !== 'loaded' || face.style !== style) continue;
@@ -106,7 +105,7 @@ function hasFace(family, weight, style) {
 
 /** The files beyond latin `text` needs that `meta`'s family ships. */
 function kitSubsetsFor(text, meta) {
-  return [[/[Ā-˿ᴀ-ᶿḀ-ỿ†ℓⱠ-Ɀ꜠-ꟿ]/u, 'latin-ext'], [/[Ͱ-Ͽ]/u, 'greek'], [/[ĂăĐđƠ-ưẠ-ỹ]/u, 'vietnamese']]
+  return [[/[Ā-˿ᴀ-ᶿḀ-ỿ†ℓⱠ-Ɀ꜠-ꟿ]/u, 'latin-ext'], [/[Ͱ-Ͽ]/u, 'greek']]
     .filter(([re, x]) => re.test(text) && meta?.subsets?.includes(x)).map(([, x]) => x);
 }
 

@@ -93,15 +93,6 @@ describe("kit block comics: loadComicFonts", () => {
     ]);
   });
 
-  it("adds the vietnamese file for a Vietnamese name, with its range (Hồ Nhựt Châu)", async () => {
-    const loaded: Face[] = [{ family: "Bangers", source: "", weight: "700", style: "normal", range: "", status: "loaded" }];
-    const { loadComicFonts, added } = kitWith(serve({ bangers: BANGERS }), { loaded });
-    await loadComicFonts({ Bangers: ["400"] }, "Hồ Nhựt Châu");
-    const vi = added().filter((f) => f.source.includes("-vietnamese-"));
-    expect(vi.map((f) => [f.weight, f.style])).toEqual([["400", "italic"], ["700", "italic"]]);
-    expect(vi[0]!.range).toContain("U+1EA0-1EF9");
-  });
-
   it("takes the upright file of a face with several weights and no italic", async () => {
     const { loadComicFonts, added } = kitWith(serve({ "playpen-sans-arabic": PLAYPEN_ARABIC }), {
       stubs: { arabicRange: () => "U+0600-06FF" },
