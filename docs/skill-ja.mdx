@@ -81,7 +81,7 @@ YouTubeでは英語版を見られます。[YouTubeで見る](https://www.youtub
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>inventory.py</code></td><td>どんな原稿でもまず目を通す：幾何、フォント、使われているスタイル、メディア、OCRが必要なページ</td></tr>
+    <tr><td><code>inventory.py</code></td><td>どんな原稿でもまず目を通す：幾何、フォント、使われているスタイル、メディア、OCRが必要なページ。PDF/Xで刷られたPDFでは、出力条件と塗り足しを、それを再現する<code>print</code>の設定とともに示します。</td></tr>
     <tr><td><code>measure_layout.py</code></td><td>PDFの余白、段、段間、行送り（ベースライングリッド）</td></tr>
     <tr><td><code>pdf_extract.py</code></td><td>PDF → <em>書体の役割</em>（フォント、サイズ、色）ごとの章の下書き：読む順序、段落、ハイフネーションの解除、太字とイタリック、上付きと下付き、リスト、キャプション</td></tr>
     <tr><td><code>pdf_figures.py</code></td><td>PDFから図を切り出す：写真は元の解像度で、SVGのプレビュー、印刷用のベクターPDF原稿</td></tr>
@@ -94,7 +94,7 @@ YouTubeでは英語版を見られます。[YouTubeで見る](https://www.youtub
     <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>フォントのインスタンス化、サブセット化、拡大縮小、分割（本の文字だけに絞った中国語や日本語の書体は縦組み用字形とメトリクスを、アラビア語の書体は連結形とタトウィールを保ちます）。画像をsRGBに変換し、余白を切り詰め、つなぎ合わせます。<code>.ai</code>/<code>.pdf</code>のアートワークをSVGにします</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>プロジェクトとその生成スクリプトのひな形を作り、<code>preset.json</code>を組み立て、<code>.postext</code>ファイルにまとめます</td></tr>
     <tr><td><code>lint_project.py</code></td><td>パーサーとローダーが黙って誤って処理するものをすべて検出します。中国語、日本語、韓国語のテキストでは、同梱フォントで組めない文字。日本語のテキストでは、中国語ロケールの下のかな、中国語の書体や設定、章に残った青空文庫の注記、読みのない漢字の索引項目。アラビア語のテキストでは、アラビア語ロケールの欠落、ラテン文字専用または連結しない書体、字間、強制的なハイフネーション、イタリックによる強調。漫画では、読めない<code>split</code>の式、分割のセル数と合わないコマ、不明な絵や吹き出し・コマのスタイル、不正な話者のアンカー、同梱されていない写植用フォント、版ごとに異なるページ</td></tr>
-    <tr><td><code>render.mjs</code></td><td>プロジェクト（フォルダーまたは<code>.postext</code>ファイル）を、本物のエンジンでヘッドレスにレイアウトします。設定はSandboxと同じように読み込み、警告を出力します。<code>--jpeg</code>を付けると、指定したページ（<code>--pages 12-15</code>）をエンジン自身のcanvasレンダラーでJPEGファイルに描画します。1、2秒で済むので、エージェントはPDFを作らずに自分のページを見られます。<code>--out</code>はPDFを書き出します</td></tr>
+    <tr><td><code>render.mjs</code></td><td>プロジェクト（フォルダーまたは<code>.postext</code>ファイル）を、本物のエンジンでヘッドレスにレイアウトします。設定はSandboxと同じように読み込み、警告を出力します。<code>--jpeg</code>を付けると、指定したページ（<code>--pages 12-15</code>）をエンジン自身のcanvasレンダラーでJPEGファイルに描画します。1、2秒で済むので、エージェントはPDFを作らずに自分のページを見られます。<code>--out</code>はPDFを書き出します。印刷用に設定した本ではPREFLIGHT行（解像度不足の画像、細すぎる罫、複数インキの小さな文字、上限を超えるインキ量、仕上がり線に近い文字）を出力し、PDFはICC出力プロファイルで分版します。</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>原本のページとPostextのページを並べて表示します。描画結果のPDFからでも、JPEGのフォルダーからでも使えます</td></tr>
   </tbody>
 </table>

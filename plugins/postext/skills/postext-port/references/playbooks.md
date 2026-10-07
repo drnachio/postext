@@ -503,7 +503,12 @@ a crop is tuned).
   `resources/en/<id>.svg`.
 
 ### D7. Photographs
-- CMYK and Adobe-CMYK JPEGs: convert to sRGB (`images.py prep`).
+- CMYK and Adobe-CMYK JPEGs: convert to sRGB (`images.py prep`): browsers draw CMYK wrongly. A
+  print render (`print`, PDF/X) separates them back through the output profile.
+- A source printed as PDF/X, or with a bleed: set `print` and `page.cutLines` from
+  `inventory.py`'s `suggested_config`. IDML CMYK swatches come out of `idml_extract.py markdown`
+  as `palette.json` with their `cmyk` values: merge it into `colorPalette` so brand colours print
+  exact.
 - Scans or plates: greyscale, autocontrast and a white-border trim; crop off
   a printed caption by fraction box.
 - Downscale to about 300 dpi at the printed size, JPEG q80–85.

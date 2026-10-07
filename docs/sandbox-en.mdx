@@ -246,12 +246,11 @@ A form-based editor for `PostextConfig`, with more than five hundred fields.
 The groups, in browsing order:
 
 - **Page & columns**
-  - *Page*: fields are grouped as **Size**, **Margins**, **Paper**, **Numbering** and **Print preparation**.
-    - **Size**: the size presets say what they are for: *Pocket book* 11 × 17, *Novel, narrative* 12 × 19, *Essay, handbook* 17 × 24 and *Textbook, magazine* 21 × 28; the newspaper trims *Broadsheet* 37.5 × 59.7, *Berliner* 31.5 × 47, *Tabloid* 28 × 43 and *Compact* 29.7 × 42 (since postext 1.18); or *Custom*.
+  - *Page*: fields are grouped as **Size**, **Margins**, **Paper** and **Numbering**.
+    - **Size**: the size presets say what they are for: *Pocket book* 11 × 17, *Novel, narrative* 12 × 19, *Essay, handbook* 17 × 24 and *Textbook, magazine* 21 × 28; the newspaper trims *Broadsheet* 37.5 × 59.7, *Berliner* 31.5 × 47, *Tabloid* 28 × 43 and *Compact* 29.7 × 42 (since postext 1.18); or *Custom*. **Layout resolution (px per inch)** (`page.dpi`) is here too: the pixels the layout works in, not the resolution of pictures, though a bitmap set at its own size prints at that many ppi.
     - **Margins**: each margin is tied to the page drawing. Pointing at a margin field or focusing it tints that margin on the drawing. A **mirrored** switch turns left/right into inner/outer margins for facing pages.
     - **Paper**: the page background colour.
     - **Numbering**: the page-number format and the number the pages start at.
-    - **Print preparation**: DPI and cut lines.
   - *Columns*: the layout is chosen from picture cards: *One column* (novels, essays), *Two columns* (textbooks, magazines, reference works), *Column and a half* (a main column plus a narrow side column for notes and small figures) or *Multiple columns* (three to eight equal columns for newspapers and magazines, with a **Columns** count; since postext 1.18). The section also has the gutter, the side column, **Shrink figures that don't fit** (`layout.fitFiguresToPage`), **Space around inline figures** (`layout.inlineResourceGap`), **Space around figures in boxes** (`layout.inlineResourceGapInBoxes`), **Lines of a paragraph at a box cut** (`layout.boxChildSplitMinLines`) and **Closing floats hug the text** (`layout.hugClosingFloats`).
 - **Writing system**. The page opens with the drawing of Page & columns. Its spread carries folios: 2 | 3 in a book bound on the left, 3 | 2 in one bound on the right, whose odd page is the left one; the caption says when the book is bound on the right and when its lines are vertical.
   - *Language and direction*:
@@ -347,7 +346,14 @@ The groups, in browsing order:
     - an **opener design** slot laid out against the page trim box. Its placeholder picker adds the heading set: the current title, and its number in decimal, roman or alphabetic form.
     - a **body style** for the blocks inside the part. It inherits the body text and the list colours, and it includes the list overrides (numbering format and offsets, margins, hanging indent, and the task-list fields).
 - **Export**
-  - *PDF*.
+  - *Print preparation* (`print`, and `page.cutLines`), in four groups:
+    - **Crop marks and bleed**: the cut lines, the bleed, the marks' length, offset and width, and their screen colour.
+    - **PDF/X and colour**: **PDF standard** (*None*, *PDF/X-1a:2003*, *PDF/X-4*); **Output profile**, from the fifteen free profiles (FOGRA39 by default, FOGRA51 and FOGRA52 for the PSO v3 conditions, GRACoL, SWOP, newsprint); **Upload an ICC profile** for the one your printer gives you, with its **Printing condition** (the registry name the PDF/X output intent names) and a button that removes it; **Rendering intent**, **Black point compensation**, **Convert pictures to CMYK** (hidden for PDF/X-1a, which always converts) and **Ink limit**.
+    - **Black**: **Greys and black in K only**, **Overprint 100 % black**, **Rich black for large areas** with its C/M/Y/K recipe and the size from which an area turns rich.
+    - **Preflight**: **Preflight in Checks**, the minimum and critical image resolution, the minimum rule width, the size under which text in several inks is flagged, the safe zone, the distance under which a box should bleed, and **Check fonts of placed PDFs**.
+
+    See [Configuration › Print production](/en/docs/configuration#print-production-config).
+  - *PDF*: bookmarks, the accessible (tagged) PDF and the forced colour space. CMYK is separated with the profile of *Print preparation*.
   - *Web reader (HTML)*: the `htmlViewer` settings.
 - **Folio**
   - *Folio viewer (3D)* (`folio`), in five groups: **View** (the tilt and the turn), **Paper** (stock, grammage, bulk with the resulting caliper, finish, texture and its strength, shade, show-through), **Binding** (type, covers, cover material and colour, spine image; the *Folded (newspaper)* type lays sheets folded once one inside the other with nothing holding them, as a newspaper, and since it has no spine to print on, like *Saddle-stitched (stapled)*, the spine image is hidden), **Surface** (the desk material and its tint) and **Lighting** (environment, exposure, shadows). Picking another paper stock fills the fields you have not changed with that stock's values; the ones you changed keep yours. On a newspaper trim the stock and the binding you have not chosen show as *Newsprint* and *Folded (newspaper)*. The spine image is chosen from the bitmaps and SVGs of the Resources panel. See [Folio tab](#folio-tab).
@@ -418,6 +424,14 @@ Live diagnostics, recomputed from the text, the design, the figures and the last
   - *Chips touch the next line*: a chip whose box runs into a chip on the line above or below (the overlap is given in points); a tall chip with no chip above or below it is not flagged;
   - parity cascades;
   - *No hyphenation patterns for this language*: the document language (its hyphenation locale, else `locale`) has no bundled patterns, so its text is hyphenated with the US English ones. It goes away when hyphenation is switched off.
+- **Preflight**, for a book set up for print (a PDF/X standard, a CMYK PDF or crop marks), critical findings first:
+  - *Low image resolution*: a picture under the minimum resolution at its printed size (critical under the critical one);
+  - *RGB picture*: separated into CMYK on export, or kept RGB by a PDF/X-4 that does not convert pictures;
+  - *Rule too thin*, *Small text in several inks*, *Ink coverage over the limit* (an authored CMYK colour, the rich-black recipe);
+  - *Text in the safe zone* and *Stops just short of the trim* (a box or picture that should bleed);
+  - *Fonts not embedded in a placed PDF*, *RGB in a placed PDF* and *Transparency in a placed PDF* (critical in PDF/X-1a), from each figure's print master.
+
+  Each entry names its page; clicking it opens that page in the viewer.
 - **Browser**: storage unavailable (IndexedDB missing)
 
 Each entry shows an icon, a title, a one-line detail and, where it applies, the chapter and source line (*Ch. 2 · Line 12* in a multi-chapter book). Clicking an entry with a source location switches to that chapter and focuses the editor at that spot. When nothing is wrong, the panel shows **All clear**. Which checks run is set in **Design → Advanced → Warnings**.
@@ -439,6 +453,7 @@ A toolbar at the top of the canvas viewport provides:
 - **Zoom controls** — Zoom in and out (1.25x per step, range 0.25x–4x). Manual zooming disables fit mode.
 - **Fit modes** — Fit to page width or fit to page height. Toggles on/off; fitting recalculates automatically on window resize.
 - **View modes** — Single page (one page per row) or double-page spread (book-like layout where the first page appears on the right as a recto, and subsequent pages are paired as spreads). A book bound on the right (`page.binding`, vertical Chinese) shows its spreads the other way round: page 1 alone on the left, then `[3 | 2]`, `[5 | 4]`. On a vertical page a click lands on the character under the pointer, and the caret is a bar across the column.
+- **Print preview** (`Printer` icon) — Shows the pages as they will print, off by default and remembered by the browser: every colour separated through the output profile of *Print preparation* and shown on the paper's own white, large black areas in rich black, the trim (blue), bleed (magenta) and safe zone (green, dashed), and the preflight's findings outlined in red. The Folio tab shares the switch. It repaints the pages and never lays them out again.
 
 Pages render lazily via `IntersectionObserver` — only visible pages (plus a 200px margin) are drawn to canvas, keeping GPU memory usage low for long documents.
 
@@ -466,7 +481,7 @@ Shows the book as a printed object: the pages laid out by the engine, bound and 
 - **What the pointer does.** Three buttons in the toolbar choose what the left button (one finger, a pen) does on the book: **Turn pages by hand**, the default, as above; **Orbit the view**, the same as a right-drag, for a trackpad or a tablet; **Select text**, which works as on the Canvas tab on the book as it is seen, tilted or orbited: a click puts the caret in the Text panel, a drag selects, a double click takes a word, a click on a link follows it. The choice is remembered; H, O and S switch it while the book has focus.
 - **Following the editor.** The caret and the selection of the Text panel are drawn on the pages, and stay there as you type: the page shows the edit as soon as it is laid out again. Moving the caret in the editor to a page not on show turns the book to it.
 - **Covers.** With *Covers: A case round the pages* the book is bound in a case of cloth, card or leather in the cover colour. With *The document's own pages* the first page is the front cover and the last page (when it falls on a left-hand page) the back cover: the book lies closed until the cover is turned, and turning the last leaf closes it again. A thick book opens with its spine standing between the two blocks.
-- **The toolbar.** A floating bar like the canvas's: **Recalculate**, **Reset view**, **Save as default view**, the three pointer modes, the pin, ‹ › and the page field, which takes a book page number and turns to its spread. The page on the right of the open spread is the one the permalink names (`view=folio&page=N`).
+- **The toolbar.** A floating bar like the canvas's: **Recalculate**, **Reset view**, **Save as default view**, the three pointer modes, **Print preview** (the pages proofed through the output profile, on the book's own paper; the same switch as the canvas's), the pin, ‹ › and the page field, which takes a book page number and turns to its spread. The page on the right of the open spread is the one the permalink names (`view=folio&page=N`).
 - **Settings apply at once.** The Folio settings are not part of the layout: changing the paper, the binding or the light redraws the book without laying a page out again.
 - **Where it is offered.** The tab needs WebGL2 and a screen whose short side is at least 600 px: on a phone the 3D book takes more memory than the browser gives a tab, so the tab is not shown there (nor in a browser without WebGL2). In a pane narrower than 560 px the book shows one page at a time; the leaf still turns over the spine. With reduced motion asked for by the system, the spreads change without turning.
 - **Videos on the page.** A click on a video's poster plays it on the page, in any of the three pointer modes, and the picture keeps moving while the leaf turns and curls. Another click pauses it; starting another stops the first, unless *Play alongside other videos* is on; the video stops when the book comes to rest on a spread that no longer shows it. Space plays or pauses the video on the open spread. A video with *Autoplay* on starts by itself the first time its spread is shown, with its sound once you have clicked on the page (muted before, and a click unmutes it); the guide's two videos do. Uploaded files and videos at an address (MP4, HLS) play this way when their server allows cross-origin reads; YouTube and Vimeo videos turn the page as before (see [Document format › Videos on Folio's pages](/en/docs/document-format#videos-on-folios-pages)).

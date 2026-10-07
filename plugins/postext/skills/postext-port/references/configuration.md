@@ -56,10 +56,13 @@ Conversion at `page.dpi` (default 300):
 
 ### ColorValue
 ```ts
-{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl', paletteId?: string }
+{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl', cmyk?: { c, m, y, k }, paletteId?: string }
 ```
 - `hex`: `#rrggbb`, `#rrggbbaa` (alpha ok, e.g. debug overlays), or `'transparent'`.
-- `model` is intent only (PDF may keep CMYK intent); rendering uses `hex`.
+- `model` says how the colour was specified; screens draw `hex`.
+- `cmyk` (percent, postext ≥ 1.22): the exact process values of a colour authored in CMYK (an
+  InDesign CMYK swatch, a brand colour). A CMYK print render (`print`, §21) sets them as they
+  are; `hex` is their screen rendering. Put them on the palette entry: every linked use follows.
 - `paletteId`: link to `colorPalette[].id`. When the id exists, the palette entry's hex/model win;
   otherwise the inline hex is the fallback. Palette links are what `:::part{palette=…}` and
   `headingStyles[].palette` recolour (§14, §16). **Always write a sensible `hex` too.**
@@ -111,6 +114,7 @@ Conversion at `page.dpi` (default 300):
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
+| `print` | PrintConfig | §21 | PDF/X standard, ICC output profile, black (K-only, overprint, rich black), preflight (≥ 1.22) |
 | `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, yaw, paper stock, binding (type, covers, spine image), surface, lighting |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
 
@@ -141,7 +145,8 @@ page
 │   ├─ right    default 1.5 cm   (= OUTER margin when mirror:true)
 │   └─ mirror   boolean, default false. Odd pages keep left/right as written, even pages swap.
 ├─ backgroundColor  ColorValue, default {hex:'transparent'}
-├─ dpi          number, default 300 (raster resolution + px unit)
+├─ dpi          number, default 300: the layout's px per inch (the px unit). Not image resolution, but a
+│               bitmap set at its own size prints at this many ppi: keep 300 for print
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
@@ -1319,6 +1324,37 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 `pdfGeneration`: `{ outlines = true, forceColorSpace = false, colorSpace = 'cmyk'|'rgb'|'grayscale' ('cmyk'), accessible = true (tagged PDF/UA-1, lang = config.locale) }`.
 `renderToPdf` takes each setting from its own options, else from the first document's `pdfGeneration`
 (`colorSpace` only while `forceColorSpace` is on), else the defaults (bookmarks, tagged, RGB).
+
+`print` (postext ≥ 1.22; layout ignores it, postext-pdf / the preflight / the print preview read it):
+
+```jsonc
+"print": {
+  "standard": "none",              // none | pdfx1a (PDF/X-1a:2003, CMYK only, no transparency) | pdfx4 (PDF/X-4)
+  "outputProfile": "fogra39",      // fogra39 | fogra51 (PSO Coated v3) | fogra52 (PSO Uncoated v3) | fogra47 | fogra29 | fogra30
+                                   // | fogra27 | fogra28 | fogra45 | fogra40 | gracol2006 | swop3 | swop5 | ifra26 | snap2007 | custom
+  "customProfile": { "name": "PSO Coated v3", "fileId": "profiles/pso-coated-v3.icc", "registryName": "FOGRA51" },
+                                   // with "custom": the printer's .icc, a file of the bundle (path)
+  "renderingIntent": "relative",   // relative | perceptual
+  "blackPointCompensation": true,
+  "convertImages": true,           // RGB pictures → CMYK (pdfx1a always)
+  "inkLimit": 300,                 // % TAC; default = the profile's (ifra26 230, fogra30/40 340, snap2007 320)
+  "black": { "kOnlyNeutrals": true, "overprint": true, "richBlack": true,
+             "richBlackColor": { "c": 60, "m": 40, "y": 40, "k": 100 }, "richBlackMinSize": { "value": 6, "unit": "mm" } },
+  "preflight": { "enabled": true, "minImageResolution": 300, "criticalImageResolution": 150,
+                 "minRuleWidth": { "value": 0.25, "unit": "pt" }, "smallTextSize": { "value": 9, "unit": "pt" },
+                 "safeZone": { "value": 5, "unit": "mm" }, "bleedSnap": { "value": 3, "unit": "mm" }, "checkFonts": true }
+}
+```
+- A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
+  intent and the bleed and prints a `suggested_config` (`print` + `page.cutLines`). Map the
+  condition to the catalogue id; a condition the catalogue lacks needs the printer's `.icc` as
+  `customProfile` (ECI's own profiles may be embedded but not redistributed, so postext ships CC0
+  equivalents).
+- A PDF/X file carries no link annotations (bookmarks stay) and every page gets a TrimBox/BleedBox.
+- `pdfGeneration.colorSpace: 'cmyk'` separates through the same profile without the PDF/X marks.
+- `render.mjs` prints `PREFLIGHT <severity> <kind> page N` lines for a book set up for print (or
+  with `--preflight`): low-resolution pictures, thin rules, small text in several inks, ink over the
+  limit, text in the safe zone, boxes stopping short of the trim. Fix the critical ones.
 
 `htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = false, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
 `overrides` merge: objects recursive; `levels` arrays merged by `level`; every other array

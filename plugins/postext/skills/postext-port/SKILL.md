@@ -451,6 +451,9 @@ list deliberate deviations.
   (keeps the joining tables and the tatweel); cut static weights of variable
   faces such as Noto Naskh Arabic (playbooks E7).
 - Images: `scripts/images.py prep|join|size`.
+- Print set-up: `inventory.py` reports a source PDF's PDF/X version, output condition and bleed
+  with a `suggested_config` (`print`, `page.cutLines`); `render.mjs` prints PREFLIGHT lines for a
+  book set up for print (`--preflight` forces them). See configuration.md §21.
 - Comic pictures: `scripts/comic_panels.py grid|check|contact` (read and check
   anchors and safe areas, compare pages); give every panel picture its
   `width`/`height` and `altText`.

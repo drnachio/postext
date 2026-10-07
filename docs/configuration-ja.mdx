@@ -58,6 +58,7 @@ const document = buildDocument(content, {
 - [カスタムフォント](#カスタムフォント)：ユーザーがアップロードしたフォントファミリーを、Google Fontsと並べて宣言します。
 - [HTMLビューアー](#htmlビューアー)：HTMLバックエンドの目標段幅と行分割。
 - [PDF生成（設定）](#pdf生成設定)：PDFバックエンドのしおり、アクセシブルな（タグ付きの）出力、色空間の強制。
+- [印刷出力（設定）](#印刷出力設定)：`print`の設定。PDF/X-1aとPDF/X-4、ICC出力プロファイル、黒の扱い（K版のみのグレー、オーバープリント、リッチブラック）、CMYKで指定した色、プリフライト、印刷プレビュー。
 - [Folioビューアー（設定）](#folioビューアー設定)：3Dの本のビューアーの用紙、綴じ、表面、光。
 - [デバッグ](#デバッグ)：エディター用の視覚的なオーバーレイと、執筆中の警告。
 - [プログラムからの利用](#プログラムからの利用)：`buildDocument`とそれが報告する警告、リゾルバー、キャッシュ。
@@ -114,7 +115,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>1インチあたりのドット数。物理単位（cm、mm、in）をピクセルに換算するときに使われます。</td>
+      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。画像の解像度ではありませんが、原寸で配置したビットマップは画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにしてください。各画像の実効解像度は[プリフライト](#プリフライト)で確認します。</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -242,7 +243,7 @@ page: {
 
 ### トンボ
 
-有効にすると、キャンバスが裁ち落とし領域を含む大きさに広がり、エンジンは印刷工程用のトンボを四隅に描きます。
+有効にすると、キャンバスが裁ち落とし領域を含む大きさに広がり、エンジンは印刷工程用のトンボを四隅に描きます。PDFでは各ページにTrimBoxとBleedBoxが設定されます。[PDF/X](#pdfx-1aとpdfx-4)のファイルは、トンボがなくてもこの2つを持ちます。Sandboxでは**書き出し › 印刷の準備**で設定します。
 
 <table>
   <thead>
@@ -6708,12 +6709,13 @@ interface Dimension {
 
 ```ts
 interface ColorValue {
-  hex: string;        // '#ff0000', 'transparent', etc.
-  model: ColorModel;  // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
 }
 ```
 
-`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`にすると、PDFへの書き出し時にCMYKで指定するという意図が保たれます。
+`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`はその色がCMYKで指定されたことを示し、`cmyk`がその値を保持します。CMYKの印刷用の描画ではこの値がそのまま使われ、`hex`は画面での表示に使われます（[CMYKで指定した色](#cmykで指定した色)を参照）。
 
 Postextは出版品質の出力を目指しているため、本文の色の既定値は`model: 'cmyk'`（`#000000`）です。見出し、太字、イタリック、リストの色の既定値は、パレットに連動した**メインカラー**（`#295AA3`、`model: 'hex'`）です。ページの背景とUIのオーバーレイ（ベースライングリッド、トンボ、デバッグ表示）の既定値は`model: 'hex'`です。別の書き出しの扱いが必要なら、任意のフィールドで`color.model`を上書きしてください。
 
@@ -7026,7 +7028,7 @@ interface PdfGenerationConfig {
       <td><code>colorSpace</code></td>
       <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
       <td><code>'cmyk'</code></td>
-      <td>`forceColorSpace`がオンのときに使う変換先の色空間です。オフセット印刷には`'cmyk'`、画面専用のPDFには`'rgb'`、モノクロの印刷校正には`'grayscale'`を使います。`forceColorSpace`がfalseのときは効果がありません。</td>
+      <td>`forceColorSpace`がオンのときに使う変換先の色空間です。オフセット印刷には`'cmyk'`、画面専用のPDFには`'rgb'`、モノクロの印刷校正には`'grayscale'`を使います。`forceColorSpace`がfalseのときは効果がありません。CMYKへは[`print`](#印刷出力設定)の出力プロファイル（既定はFOGRA39）とその黒の扱いで分版され、RGBの画像も変換されます。`print`でPDF/X規格を指定すると、この値にかかわらずCMYKで書き出します。</td>
     </tr>
     <tr>
       <td><code>accessible</code></td>
@@ -7063,6 +7065,315 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 書き出しの一連の手順は、後述の[PDFの生成](#pdfの生成)を参照してください。
+
+
+## 印刷出力（設定）
+
+`print`プロパティは、本を印刷所に入稿する方法を決めます。ファイルのPDF/X規格、CMYKの分版に使う出力プロファイル、黒の刷り方、プリフライトのしきい値です。レイアウトはこれを無視するので、変更しても行が動くことはありません。これを読むのは次の3つです。ファイルを書き出すときの`postext-pdf`、組み上がった文書を検査するときの`preflightDocument`、canvasとFolioのビューアーの印刷プレビューです。
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': an ordinary PDF.
+  outputProfile?: string;                  // A catalogue id ('fogra39', 'fogra51'…) or 'custom'.
+  customProfile?: CustomOutputProfile;     // An uploaded .icc file.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separate RGB pictures (PDF/X-1a always does).
+  inkLimit?: number;                       // Total area coverage, percent.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // Its description, or the file name.
+  fileId: string;         // The stored .icc file.
+  registryName?: string;  // The condition's ICC registry name (FOGRA51…), else 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>プロパティ</th>
+      <th style={{ width: '170px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>ファイルのPDF/Xの種類です。`'pdfx1a'`はPDF/X-1a:2003を書き出します。CMYKとグレーだけで透明を持たず、どの印刷所でも受け付けます。`'pdfx4'`はPDF/X-4を書き出します。透明とカラーマネジメントを保持する、現行のワークフロー向けの規格です。どちらを選んでも、`pdfGeneration.colorSpace`の値にかかわらず、すべての色を出力プロファイルで分版します。</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>CMYKの分版先となる印刷条件です。[プロファイルの一覧](#出力プロファイル)にあるID、または`customProfile`を使う`'custom'`を指定します。一覧にないIDや、ファイルのない`'custom'`は既定値に戻り、設定の警告が出ます。</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>なし</td>
+      <td>自分で用意するCMYKの出力プロファイルです。印刷所から渡されるもの（ECIの`PSOcoated_v3.icc`など）を使います。バイト列はフォントと同じく設定の外に保存され、`renderToPdf`には`outputProfile`オプションで渡します。`registryName`は、出力インテントの印刷条件の識別子として書き込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>相対的な色域を維持（relative colorimetric）は、印刷機で刷れる色を正確に保ち、それ以外を最も近い刷れる色に切り詰めます。知覚的（perceptual）は色域全体を圧縮し、色域外の色どうしの関係を保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>相対的な色域を維持のとき、画面の黒を印刷機で刷れるいちばん濃い黒に合わせます。最も暗い階調がつぶれず、細部が残ります。</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>RGBの画像をプロファイルでCMYKに分版します。PDF/X-1aは常に変換します。PDF/X-4で`false`にすると、画像はRGBのまま残り、ページの`/DefaultRGB`でsRGBとしてタグ付けされ、印刷所のRIPが変換します。CMYKとグレーのJPEGは常にそのまま埋め込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>プロファイルの値</td>
+      <td>プリフライトが許すC+M+Y+Kの合計の上限（%）です。既定値は、プロファイルが分版するときの上限です（たいていのオフセット条件で300%、新聞用紙のIFRA26で230%）。</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td><a href="#黒">黒</a>を参照</td>
+      <td>K版のみのグレー、オーバープリント、リッチブラック。</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td><a href="#プリフライト">プリフライト</a>を参照</td>
+      <td>プリフライトが検査する項目と、そのしきい値。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### 出力プロファイル
+
+`postext`は、次のCMYK出力プロファイルを`icc/`フォルダーに同梱しています（どのnpm CDNでも`postext/icc/<id>.icc`、postext.devでは`/icc/<id>.icc`）。どれも既知の著作権の制約がありません（CC0）。colordのFOGRA、GRACoL、SWOP、新聞用のプロファイルは、各条件の特性データから生成されたものです。FOGRA51とFOGRA52は、postextがFogra自身のデータからArgyllCMSで作成しました。ECIのプロファイル（ISO Coated v2、PSO Coated v3、PSO Uncoated v3）は同じ条件を表しますが、再配布できません。印刷所に求められたら、カスタムプロファイルとしてアップロードしてください。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>ID</th>
+      <th>印刷条件</th>
+      <th style={{ width: '150px' }}>レジストリ名</th>
+      <th style={{ width: '90px' }}>総インキ量</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>オフセット、コート紙（ISO Coated v2の条件）</td><td>FOGRA39</td><td>300%</td></tr>
+    <tr><td><code>fogra51</code></td><td>オフセット、プレミアムコート紙（PSO Coated v3の条件）</td><td>FOGRA51</td><td>300%</td></tr>
+    <tr><td><code>fogra52</code></td><td>オフセット、上質紙（PSO Uncoated v3の条件）</td><td>FOGRA52</td><td>300%</td></tr>
+    <tr><td><code>fogra47</code></td><td>オフセット、白色の非塗工紙（PSO Uncoated ISO 12647）</td><td>FOGRA47</td><td>300%</td></tr>
+    <tr><td><code>fogra29</code></td><td>オフセット、白色の非塗工紙</td><td>FOGRA29</td><td>300%</td></tr>
+    <tr><td><code>fogra30</code></td><td>オフセット、黄みの非塗工紙</td><td>FOGRA30</td><td>340%</td></tr>
+    <tr><td><code>fogra27</code></td><td>オフセット、コート紙（ISO 12647-2:1996）</td><td>FOGRA27</td><td>300%</td></tr>
+    <tr><td><code>fogra28</code></td><td>ヒートセット輪転オフセット、光沢LWC紙</td><td>FOGRA28</td><td>300%</td></tr>
+    <tr><td><code>fogra45</code></td><td>ヒートセット輪転オフセット、改良LWC紙</td><td>FOGRA45</td><td>300%</td></tr>
+    <tr><td><code>fogra40</code></td><td>ヒートセット輪転オフセット、SC紙</td><td>FOGRA40</td><td>340%</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006、グレード1のコート紙</td><td>CGATS TR 006</td><td>300%</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006、グレード3のコート紙</td><td>CGATS TR 003</td><td>300%</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006、グレード5のコート紙</td><td>CGATS TR 005</td><td>300%</td></tr>
+    <tr><td><code>ifra26</code></td><td>コールドセットの新聞用紙（ISO 12647-3）</td><td>IFRA26</td><td>230%</td></tr>
+    <tr><td><code>snap2007</code></td><td>SNAP 2007の新聞用紙</td><td>CGATS TR 002</td><td>320%</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf`は、プロファイルのバイト列を`outputProfile`オプションから読みます。渡されなければ、一覧のファイルを`profileBaseUrl`（既定は`https://cdn.jsdelivr.net/npm/postext/icc/`）から取得します。プロファイルを読み込めないとき、PDF/Xの描画は失敗します。通常のCMYKの描画は、`outputProfileUnavailable`の警告を出して教科書的な換算式に戻ります。
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1aとPDF/X-4
+
+どちらの規格も、次のものを書き出します。
+
+- 印刷条件を示し、出力先のプロファイルを埋め込んだ出力インテント（`GTS_PDFX`）。
+- Info辞書（`GTS_PDFXVersion`、`/Trapped /False`、タイトルと日付）とXMPメタデータ（`pdfxid:GTSPDFXVersion`、文書とバージョンのID）の識別情報。タグ付きのファイルでは、PDF/UAの識別情報と統合します。
+- 各ページのTrimBoxとBleedBox（トンボがないときはページ全体）。
+- トレーラーの`/ID`。
+- プロファイルを通したDeviceCMYK（またはグレー）のすべての色と、レジストレーションカラーのトンボ。
+- リンク注釈は含めません。印刷用のファイルは裁ち落とし枠の内側に注釈を持たないので、画面用のPDFにあるリンクは省きます（しおりは残ります）。
+
+PDF/X-1a:2003は、オブジェクトストリームを使わないPDF 1.4で、透明を持ちません。半透明の色は紙の上に刷ったときの色で置き、画像のアルファは白の上で統合し、デバッグ用のページネガは省きます（`pageNegativeIgnored`の警告が出ます）。PDF/X-4はPDF 1.6です。透明は残り、各ページはCMYKで合成する透明グループを持ちます。`convertImages: false`で残したRGBの画像は、`/DefaultRGB`でsRGBとしてタグ付けされます。
+
+PDFの印刷用マスター（`svg.pdfFileId`）はそのまま埋め込まれるので、その色、フォント、透明はマスター自身のものです。マスターが持ち込むものは、プリフライトが報告します。
+
+### 黒
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Greys and black in black ink only.
+  overprint?: boolean;          // 100 % K overprints.
+  richBlack?: boolean;          // Large black areas in rich black.
+  richBlackColor?: CmykPercent; // { c, m, y, k } in percent.
+  richBlackMinSize?: Dimension; // The smaller side an area needs.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '170px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>無彩色（`#000000`、`#808080`…）は墨インキだけで刷ります。Kの値は明度が合うように選ばれ、見当ずれで色が揺れる4色グレーにはなりません。画像はプロファイル自身の墨版生成に従います。</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>K 100%だけで描くもの（黒の文字、罫線、線、小さな黒い図形）はオーバープリントします（`OPM 1`で`op`/`OP`）。印刷機で版がずれても、周りに白い縁が出ません。それ以外はノックアウトし、画像とシェーディングはオーバープリントしません。</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>短辺が`richBlackMinSize`に達する黒い塗り（背景、帯、ボックス）は`richBlackColor`で刷り、ノックアウトします。濃いグレーではなく、深い黒に見えます。文字はリッチブラックになりません。</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>リッチブラックの配合（%）です。合計は総インキ量の上限より下に保ってください。プリフライトが確認します。</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>黒い面をリッチブラックで刷るのに必要な短辺の大きさです。</td>
+    </tr>
+  </tbody>
+</table>
+
+### CMYKで指定した色
+
+CMYKで書いた色は、その値をそのまま保ちます。印刷用の描画では`ColorValue.cmyk`（%）がそのまま使われ、`hex`は画面での表示になります。CMYKで指定したパレットの項目は、それに連動するすべての色に適用されます。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### プリフライト
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>プロパティ</th>
+      <th style={{ width: '110px' }}>型</th>
+      <th style={{ width: '100px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>検査を実行します。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。原寸で配置したビットマップは`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>これを下回ると、警告は重大になります。`minImageResolution`より大きくはなりません。</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>これより細い罫線、枠、段間罫、表の罫、漫画のコマの枠。</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>これより小さく、複数のインキ（プロセスカラー、リッチブラック）で刷る文字。版がずれるとにじみます。K版だけの黒い文字は対象になりません。</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>仕上がり線からこの距離より近い文字。断裁で切られるおそれがあります。</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>仕上がり線からこの距離の手前で止まり、塗り足しまで届いていないボックスや画像。塗り足しまで伸ばすか、内側に寄せてください。</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>配置したPDFが埋め込んでいないフォントを報告します（Sandboxは各印刷用マスターを`inspectPrintMaster`で調べます）。Postextは組んだフォントをすべて埋め込みます。</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題は、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素が持っていればそのソースの範囲を持ちます。`kind`は`lowImageResolution`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。
+
+```ts
+import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### 印刷プレビュー
+
+canvasのページは、印刷される見た目で描けます。`createPrintPreview(transform, print, { paper, dpi })`は、設定からソフトプルーフを作ります。各ピクセルをプロファイルで分版し（PDFと同じく、無彩色はK版のみ）、画面の色に戻して表示します。`paper`がtrueなら、紙そのものの白の上に表示します。リッチブラックにする大きさの黒い面は、リッチブラックで表示されます。これを`renderPageToCanvas`に`printPreview`として渡します。`guides`は仕上がり線、塗り足し、セーフゾーンの線を加え、`marksFor`はページ上の領域（プリフライトの`rect`）を枠で囲みます。`postext-folio`も同じオブジェクトを`printPreview`として受け取ります（本の紙の色合いがページに付くので、`paper: false`にします）。
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### カラーエンジン
+
+postextが使うカラーマネジメントは、独自のツールのためにエクスポートされています。ICC v2とv4のプロファイル（マトリクス/TRCと、`mft1`、`mft2`、`mAB`、`mBA`のルックアップテーブル）を、WebAssemblyを使わずに素のTypeScriptで読みます。
+
+- `parseIccProfile(bytes)`はプロファイルを読み、`deviceChannels(profile)`はそのチャンネル数を返します。
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })`は、`fromRgb(r, g, b)`（sRGB 0..1 → CMYK 0..1）、`toLab(cmyk, paper?)`、`proof(cmyk, paper?)`（CMYK → 画面のsRGB）を返します。
+- `cmykToLab`、`labToCmyk`、`srgbToLab`、`labToSrgb`、`deltaE`、`totalAreaCoverage`は単独の変換です。`buildRgbLut` / `sampleRgbLut`は、ピクセル処理用の密なルックアップテーブルを作って読みます。
+- `OUTPUT_PROFILES`、`outputProfileInfo(id)`、`loadOutputProfile(id, baseUrl?)`はプロファイルの一覧を返します。`srgbProfileBytes()`は、PDF/X-4がRGBのタグ付けに使うsRGBプロファイルを書き出します。`authoredCmykColors(config)`は、設定がCMYKで指定した色を一覧にします。
+
+リゾルバーとストリッパーはほかのセクションと同じです。`resolvePrintConfig`、`stripPrintDefaults`、`profileInkLimit(config)`（`inkLimit`で上書きする前の、設定が指定したプロファイルの上限）と、`DEFAULT_PRINT_CONFIG`、`DEFAULT_PRINT_BLACK_CONFIG`、`DEFAULT_PRINT_PREFLIGHT_CONFIG`、`DEFAULT_RICH_BLACK`があります。
 
 
 ## Folioビューアー（設定）
@@ -8726,9 +9037,10 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 本番の印刷ワークフローでは、描画の前に次の設定を調整してください。
 
 - **`page.cutLines.enabled: true`** — 仕上がり線の周りに裁ち落とし領域とトンボを加え、各ページにTrimBoxとBleedBoxを設定します。[トンボ](#トンボ)を参照してください。
-- **`colorSpace: 'cmyk'`**（または`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`） — postextが描く色（テキスト、罫線、塗り、ベクターの図）をDeviceCMYKで書き出します（トンボは常にレジストレーションカラーです）。ビットマップとPDFの印刷用マスターはそのまま埋め込まれるため、RGBの写真はRGBのままです。追加する前に変換してください。
-- **`page.dpi: 300`**（またはそれ以上） — PDFのポイントは1インチあたり72に固定されていますが、Postextのレイアウト計算はピクセルで行われます。DPIを高くすると、`mm`や`cm`で指定した要素をより細かく分割できます。
-- **`colors.model: 'cmyk'`** — 色がCMYK色空間で指定されたという意図を保持します。現在、PDFへの実際の描画には`hex`のフォールバックが使われます。ここで`model`を説明するのは、下流のツールのためにVDTにも引き継がれるからです。
+- **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（または`'pdfx1a'`） — 印刷所が確認する出力インテント、識別情報、ボックスを備えたPDF/Xファイルを書き出します。すべての色とRGBの画像はICCプロファイルで分版され、K 100%はオーバープリントになり、大きな黒い面はリッチブラックで刷られます。[印刷出力（設定）](#印刷出力設定)を参照してください。
+- **`colorSpace: 'cmyk'`**（または`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`） — PDF/Xの識別情報なしで、同じ分版を行います（トンボは常にレジストレーションカラーです）。PDFの印刷用マスターはそのまま埋め込まれます。
+- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。原寸で配置したビットマップは、この解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](#プリフライト)が報告します。
+- **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
 - **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
 
 ### リファレンス実装

@@ -58,6 +58,7 @@ const document = buildDocument(content, {
 - [الخطوط المخصّصة](#الخطوط-المخصّصة) — عرّف عائلات خطوط يرفعها المستخدم إلى جانب Google Fonts.
 - [عارض HTML](#عارض-html) — عرض العمود المستهدف وكسر الأسطر في مُخرِج HTML.
 - [إنتاج PDF (الإعدادات)](#إنتاج-pdf-الإعدادات) — المخطط التفصيلي (outlines)، والمخرجات الميسّرة (الموسومة)، وفرض فضاء ألوان على مُخرِج PDF.
+- [الإنتاج الطباعي (الإعدادات)](#الإنتاج-الطباعي-الإعدادات) — `print`: معيارا PDF/X-1a وPDF/X-4، وملفات تعريف الإخراج ICC، والأسود (الرماديات بالأسود K وحده، والطباعة فوق الألوان، والأسود الغني)، والألوان المعرّفة بقيم CMYK، والفحص قبل الطباعة، ومعاينة الطباعة.
 - [عارض Folio (الإعدادات)](#عارض-folio-الإعدادات) — نوع الورق والتجليد والسطح والإضاءة في عارض الكتاب ثلاثي الأبعاد.
 - [التصحيح](#التصحيح) — طبقات بصرية وتحذيرات تأليف للمحرر.
 - [الاستخدام البرمجي](#الاستخدام-البرمجي) — `buildDocument` والتحذيرات التي يبلّغ عنها والمحلِّلات (resolvers) وذاكرات التخزين المؤقت.
@@ -114,7 +115,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>عدد النقاط في البوصة. يؤثر في طريقة تحويل الوحدات المادية (cm وmm وin) إلى بكسلات.</td>
+      <td>عدد البكسلات في البوصة الذي يعمل به الإخراج: به تُحوَّل الوحدات المادية (cm وmm وin وpt) إلى بكسلاته. ليس دقة الصور، لكن الصورة النقطية المرسومة بحجمها الأصلي تأخذ بكسلًا واحدًا من الإخراج لكل بكسل فيها، فتُطبع بهذا العدد من البكسلات في البوصة (ppi): أبقِه 300 للطباعة. ويفحص [الفحص قبل الطباعة](#الفحص-قبل-الطباعة) الدقة الفعلية لكل صورة.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -242,7 +243,7 @@ page: {
 
 ### خطوط القص
 
-عند التفعيل تتّسع اللوحة لتشمل مساحة نزف، ويرسم المحرّك علامات القص عند كل زاوية لأغراض الإنتاج الطباعي.
+عند التفعيل تتّسع اللوحة لتشمل مساحة نزف، ويرسم المحرّك علامات القص عند كل زاوية لأغراض الإنتاج الطباعي. ويعطي ملف PDF كل صفحة TrimBox وBleedBox؛ وملف [PDF/X](#pdfx-1a-وpdfx-4) يحملهما حتى من غير علامات القص. وتُضبط في Sandbox من **التصدير › التجهيز للطباعة**.
 
 <table>
   <thead>
@@ -6709,12 +6710,13 @@ interface Dimension {
 
 ```ts
 interface ColorValue {
-  hex: string;        // '#ff0000', 'transparent', etc.
-  model: ColorModel;  // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
 }
 ```
 
-يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تحفظ `'cmyk'` القصد بأن يُحدَّد اللون بنموذج CMYK عند التصدير إلى PDF.
+يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تقول `'cmyk'` إن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](#الألوان-المعرّفة-بقيم-cmyk)).
 
 لأن Postext يستهدف مخرجات بجودة النشر، يأتي لون نص المتن الافتراضي بـ `model: 'cmyk'` (`#000000`). أما ألوان العناوين والنص العريض والمائل والقوائم فقيمتها الافتراضية مرتبطة بلوحة الألوان: **اللون الرئيسي** (Main Color) (`#295AA3`، `model: 'hex'`). وخلفية الصفحة وطبقات الواجهة (شبكة خطوط الأساس، علامات القص، مؤشرات التصحيح) قيمتها الافتراضية `model: 'hex'`. غيّر `color.model` في أي حقل إن احتجت دلالة تصدير مختلفة.
 
@@ -7027,7 +7029,7 @@ interface PdfGenerationConfig {
       <td><code>colorSpace</code></td>
       <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
       <td><code>'cmyk'</code></td>
-      <td>الفضاء اللوني المستهدف حين يكون `forceColorSpace` مفعّلًا. استعمل `'cmyk'` للطباعة الأوفست، و`'rgb'` لملفات PDF المخصّصة للشاشة وحدها، و`'grayscale'` لبروفات الطباعة بالأبيض والأسود. لا أثر له حين تكون قيمة `forceColorSpace` هي false.</td>
+      <td>الفضاء اللوني المستهدف حين يكون `forceColorSpace` مفعّلًا. استعمل `'cmyk'` للطباعة الأوفست، و`'rgb'` لملفات PDF المخصّصة للشاشة وحدها، و`'grayscale'` لبروفات الطباعة بالأبيض والأسود. لا أثر له حين تكون قيمة `forceColorSpace` هي false. يُفصَل CMYK بملف تعريف الإخراج المضبوط في [`print`](#الإنتاج-الطباعي-الإعدادات) (FOGRA39 افتراضيًا) مع معالجته للأسود، وتُحوَّل صور RGB كذلك؛ والمعيار PDF/X المضبوط هناك يكتب CMYK أيًّا كانت هذه القيمة.</td>
     </tr>
     <tr>
       <td><code>accessible</code></td>
@@ -7064,6 +7066,315 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 انظر [إنتاج ملفات PDF](#توليد-ملفات-pdf) أدناه لوصفة التصدير الكاملة.
+
+
+## الإنتاج الطباعي (الإعدادات)
+
+تحدّد الخاصية `print` طريقة ذهاب الكتاب إلى المطبعة: معيار PDF/X الذي يُكتب به الملف، وملف تعريف الإخراج الذي يُفصَل به CMYK، وطريقة طباعة الأسود، وعتبات الفحص قبل الطباعة. يتجاهلها الإخراج، فلا يحرّك تغييرها أي سطر. ويقرؤها ثلاثة: `postext-pdf` حين يكتب الملف، و`preflightDocument` حين يفحص مستندًا مُخرَجًا، ومعاينة الطباعة في عارضي Canvas وFolio.
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': an ordinary PDF.
+  outputProfile?: string;                  // A catalogue id ('fogra39', 'fogra51'…) or 'custom'.
+  customProfile?: CustomOutputProfile;     // An uploaded .icc file.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separate RGB pictures (PDF/X-1a always does).
+  inkLimit?: number;                       // Total area coverage, percent.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // Its description, or the file name.
+  fileId: string;         // The stored .icc file.
+  registryName?: string;  // The condition's ICC registry name (FOGRA51…), else 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>الخاصية</th>
+      <th style={{ width: '170px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>صيغة PDF/X التي يُكتب بها الملف. القيمة `'pdfx1a'` تكتب PDF/X-1a:2003: ألوان CMYK والرمادي وحدها، بلا شفافية، وتقبله كل المطابع. والقيمة `'pdfx4'` تكتب PDF/X-4: يحتفظ بالشفافية وإدارة الألوان، لسير العمل الحديث. وأيٌّ منهما يفصل كل لون بملف تعريف الإخراج، أيًّا كانت قيمة `pdfGeneration.colorSpace`.</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>ظروف الطباعة التي يُفصَل لها CMYK: معرّف من [فهرس ملفات التعريف](#ملفات-تعريف-الإخراج)، أو `'custom'` لاستعمال `customProfile`. والمعرّف الذي ليس في الفهرس، أو `'custom'` من غير ملف، يرجع إلى القيمة الافتراضية ويُصدر تحذير إعدادات.</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>لا شيء</td>
+      <td>ملف تعريف إخراج CMYK تقدّمه أنت، وهو الذي تعطيك إياه مطبعتك (مثل `PSOcoated_v3.icc` من ECI). تُخزَّن بايتاته خارج الإعدادات كما يُخزَّن الخط؛ ويأخذها `renderToPdf` في خياره `outputProfile`. ويُكتب `registryName` معرّفًا لظروف الطباعة في نية الإخراج.</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>اللوني النسبي يحفظ الألوان التي تطبعها الآلة كما هي، ويقصّ الباقي إلى أقرب لون قابل للطباعة؛ والإدراكي يضغط النطاق كله، فتحتفظ الألوان الخارجة عن النطاق بعلاقاتها فيما بينها.</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>مع النية النسبية، يحوّل أسود الشاشة إلى أغمق أسود تطبعه الآلة، فتحتفظ أغمق الدرجات بتفاصيلها بدل أن تنطمس.</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يفصل صور RGB إلى CMYK بملف التعريف. يفعل PDF/X-1a ذلك دائمًا. وفي PDF/X-4 تُبقي القيمة `false` الصور بنظام RGB، موسومة بـ sRGB عبر `/DefaultRGB` في الصفحات، ليحوّلها معالج RIP في المطبعة. أما صور JPEG بنظامي CMYK والرمادي فتُضمَّن دائمًا كما هي.</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>قيمة ملف التعريف</td>
+      <td>أعلى مجموع لـ C+M+Y+K، بالنسبة المئوية، يقبله الفحص قبل الطباعة. قيمته الافتراضية الحد الذي يفصل له ملف التعريف (300% في معظم ظروف الأوفست، و230% لورق الصحف IFRA26).</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>انظر <a href="#الأسود">الأسود</a></td>
+      <td>الرماديات بالأسود K وحده، والطباعة فوق الألوان، والأسود الغني.</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>انظر <a href="#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
+      <td>ما يتحقق منه الفحص قبل الطباعة، وعتباته.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### ملفات تعريف الإخراج
+
+تأتي `postext` بملفات تعريف إخراج CMYK هذه في مجلدها `icc/` (`postext/icc/<id>.icc` على أي شبكة CDN لحزم npm، و`/icc/<id>.icc` على postext.dev). وكلها خالية من قيود حقوق النشر المعروفة (CC0): ملفات تعريف FOGRA وGRACoL وSWOP وورق الصحف من colord، المولَّدة من بيانات توصيف كل ظرف طباعة، وFOGRA51 وFOGRA52 اللذان بناهما postext بأداة ArgyllCMS من بيانات Fogra نفسها. أما ملفات تعريف ECI، أي ISO Coated v2 وPSO Coated v3 وPSO Uncoated v3، فتصف الظروف نفسها لكن لا يجوز إعادة توزيعها؛ ارفعها ملفَّ تعريف مخصّصًا إن طلبتها مطبعتك.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>المعرّف</th>
+      <th>ظروف الطباعة</th>
+      <th style={{ width: '150px' }}>الاسم في السجل</th>
+      <th style={{ width: '90px' }}>حد الحبر</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>أوفست، ورق مطلي (ظروف ISO Coated v2)</td><td>FOGRA39</td><td>300%</td></tr>
+    <tr><td><code>fogra51</code></td><td>أوفست، ورق مطلي ممتاز (ظروف PSO Coated v3)</td><td>FOGRA51</td><td>300%</td></tr>
+    <tr><td><code>fogra52</code></td><td>أوفست، ورق غير مطلي خالٍ من لبّ الخشب (ظروف PSO Uncoated v3)</td><td>FOGRA52</td><td>300%</td></tr>
+    <tr><td><code>fogra47</code></td><td>أوفست، ورق أبيض غير مطلي (ظروف PSO Uncoated ISO 12647)</td><td>FOGRA47</td><td>300%</td></tr>
+    <tr><td><code>fogra29</code></td><td>أوفست، ورق أبيض غير مطلي</td><td>FOGRA29</td><td>300%</td></tr>
+    <tr><td><code>fogra30</code></td><td>أوفست، ورق مصفرّ غير مطلي</td><td>FOGRA30</td><td>340%</td></tr>
+    <tr><td><code>fogra27</code></td><td>أوفست، ورق مطلي (معيار ISO 12647-2:1996)</td><td>FOGRA27</td><td>300%</td></tr>
+    <tr><td><code>fogra28</code></td><td>أوفست بالبكرات مع تجفيف حراري، ورق LWC لامع</td><td>FOGRA28</td><td>300%</td></tr>
+    <tr><td><code>fogra45</code></td><td>أوفست بالبكرات مع تجفيف حراري، ورق LWC محسّن</td><td>FOGRA45</td><td>300%</td></tr>
+    <tr><td><code>fogra40</code></td><td>أوفست بالبكرات مع تجفيف حراري، ورق SC</td><td>FOGRA40</td><td>340%</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006، ورق مطلي من الدرجة 1</td><td>CGATS TR 006</td><td>300%</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006، ورق مطلي من الدرجة 3</td><td>CGATS TR 003</td><td>300%</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006، ورق مطلي من الدرجة 5</td><td>CGATS TR 005</td><td>300%</td></tr>
+    <tr><td><code>ifra26</code></td><td>ورق صحف، أوفست بلا تجفيف حراري (معيار ISO 12647-3)</td><td>IFRA26</td><td>230%</td></tr>
+    <tr><td><code>snap2007</code></td><td>ورق صحف وفق SNAP 2007</td><td>CGATS TR 002</td><td>320%</td></tr>
+  </tbody>
+</table>
+
+يقرأ `renderToPdf` بايتات ملف التعريف من خياره `outputProfile`؛ ومن دونها يجلب ملف الفهرس من `profileBaseUrl` (افتراضيًا `https://cdn.jsdelivr.net/npm/postext/icc/`). ويفشل إخراج PDF/X إن تعذّر تحميل ملف تعريفه؛ أما إخراج CMYK العادي فيرجع إلى المعادلة المدرسية مع تحذير `outputProfileUnavailable`.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a وPDF/X-4
+
+يكتب المعياران كلاهما:
+
+- نية الإخراج (`GTS_PDFX`) التي تسمّي ظروف الطباعة وتضمّن ملف التعريف الهدف؛
+- التعريف في قاموس Info (`GTS_PDFXVersion`، و`/Trapped /False`، والعنوان والتواريخ) وفي بيانات XMP الوصفية (`pdfxid:GTSPDFXVersion`، ومعرّفا المستند والإصدار)، مدموجًا مع تعريف PDF/UA حين يكون الملف موسومًا؛
+- مربعَي TrimBox وBleedBox في كل صفحة (الصفحة كلها حين لا تكون هناك علامات قص)؛
+- المعرّف `/ID` في المقطع الختامي (trailer)؛
+- كل لون في DeviceCMYK (أو الرمادي) عبر ملف التعريف، وعلامات القص بلون التسجيل؛
+- لا تعليقات روابط: ملف المطبعة لا يحمل أيًّا منها داخل مربع النزف، فتُحذف روابط ملف PDF الموجّه إلى الشاشة (وتبقى الإشارات المرجعية).
+
+PDF/X-1a:2003 هو PDF 1.4 بلا تدفقات كائنات (object streams) وبلا شفافية: يُكتب اللون نصف الشفاف كما سيُطبع فوق الورق، وتُسطَّح قناة ألفا في الصورة فوق الأبيض، ويُحذف عكس الصفحة (`pageNegative`) المخصّص للتصحيح (مع تحذير `pageNegativeIgnored`). أما PDF/X-4 فهو PDF 1.6: تبقى الشفافية، وتأخذ كل صفحة مجموعة شفافية تمزج بنظام CMYK، وتُوسم صور RGB التي يبقيها `convertImages: false` بـ sRGB عبر `/DefaultRGB`.
+
+تُضمَّن نسخة PDF الأصلية للطباعة (`svg.pdfFileId`) كما هي، فألوانها وخطوطها وشفافيتها ملكها؛ ويبلّغ الفحص قبل الطباعة عمّا تُدخله.
+
+### الأسود
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Greys and black in black ink only.
+  overprint?: boolean;          // 100 % K overprints.
+  richBlack?: boolean;          // Large black areas in rich black.
+  richBlackColor?: CmykPercent; // { c, m, y, k } in percent.
+  richBlackMinSize?: Dimension; // The smaller side an area needs.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '140px' }}>النوع</th>
+      <th style={{ width: '170px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يُطبع اللون المحايد (`#000000`، `#808080`…) بالحبر الأسود وحده، وتُختار قيمة K فيه لتطابق درجة إضاءته، ولا يُطبع أبدًا رماديًا رباعي الألوان يتغيّر مع التسجيل. وتحتفظ الصور بتوليد الأسود الخاص بملف التعريف.</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>كل ما يُرسم بـ 100% K وحده (النص الأسود، والخطوط الفاصلة، والحدود، والأشكال السوداء الصغيرة) يُطبع فوق ما تحته (`op`/`OP` مع `OPM 1`)، فلا يكشف انزياح لوح في الآلة حافة بيضاء حوله. وكل ما عدا ذلك يُفرِّغ ما تحته؛ ولا تُطبع الصور والتدرجات فوق غيرها أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>التعبئة السوداء التي يبلغ ضلعها الأصغر `richBlackMinSize` (خلفية، أو شريط، أو صندوق) تُطبع بـ `richBlackColor` وتُفرِّغ ما تحتها، فتبدو عميقة لا رمادية داكنة. ولا يتحوّل النص إلى أسود غني أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>وصفة الأسود الغني، بالنسبة المئوية. أبقِ مجموعها دون حد الحبر؛ ويتحقق منه الفحص قبل الطباعة.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>الضلع الأصغر الذي تحتاجه المساحة السوداء لتُطبع بالأسود الغني.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الألوان المعرّفة بقيم CMYK
+
+اللون المكتوب بقيم CMYK يحتفظ بقيمه الدقيقة: يُكتب `ColorValue.cmyk` (بالنسبة المئوية) كما هو في الإخراج الطباعي، ويكون `hex` صورته على الشاشة. ومدخل لوحة الألوان المعرّف بقيم CMYK يشمل كل لون مرتبط به.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### الفحص قبل الطباعة
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>الخاصية</th>
+      <th style={{ width: '110px' }}>النوع</th>
+      <th style={{ width: '100px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يشغّل الفحوص.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية المرسومة بحجمها الأصلي تُطبع بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>دونها يصبح التحذير حرجًا. ولا تتجاوز `minImageResolution` أبدًا.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>الخطوط الفاصلة، والحدود، وفواصل الأعمدة، وخطوط الجداول، وحدود إطارات القصص المصورة الأرفع من هذا.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>النص الأصغر من هذا الحجم المكتوب بأكثر من حبر (لون رباعي، أسود غني): يصبح ضبابيًا إذا انزاحت الألواح. ولا يُحسب النص الأسود بالأسود K وحده أبدًا.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>النص الأقرب من هذا إلى خط القص، حيث قد تقطعه المقصلة.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>الصندوق أو الصورة الذي يتوقف على هذا القرب من خط القص من غير أن يبلغ النزف: مدّه إلى النزف أو اسحبه للداخل.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>ينبّه إلى الخطوط التي لا يضمّنها ملف PDF مدرج (يفحص Sandbox كل نسخة أصلية للطباعة بـ `inspectPrintMaster`). ويضمّن Postext كل خط يصفّ به.</td></tr>
+  </tbody>
+</table>
+
+تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة.
+
+```ts
+import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### معاينة الطباعة
+
+يمكن رسم صفحة Canvas كما ستُطبع. تبني `createPrintPreview(transform, print, { paper, dpi })` البروفة الشاشية (soft proof) لإعداد ما: يُفصَل كل بكسل عبر ملف التعريف (والمحايدات بالأسود K وحده، كما في PDF) ثم يُعرض على الشاشة، على بياض الورق نفسه حين تكون قيمة `paper` هي true؛ وتظهر بالأسود الغني المساحاتُ السوداء الكبيرة بما يكفي له. مرّرها إلى `renderPageToCanvas` باسم `printPreview`؛ ويضيف `guides` خطوط القص والنزف والمنطقة الآمنة، ويحدّد `marksFor` مناطق من الصفحة (مستطيلات `rect` التي يعيدها الفحص قبل الطباعة). ويأخذ `postext-folio` الكائن نفسه في `printPreview` (مع `paper: false`، لأن لون ورق الكتاب يصبغ صفحاته).
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### محرّك الألوان
+
+إدارة الألوان التي يستعملها postext مُصدَّرة لأدواتك الخاصة. تقرأ ملفات تعريف ICC من الإصدارين v2 وv4 (المصفوفة/TRC وجداول البحث `mft1` و`mft2` و`mAB` و`mBA`) بلغة TypeScript خالصة، بلا WebAssembly.
+
+- تقرأ `parseIccProfile(bytes)` ملف تعريف؛ وتعطي `deviceChannels(profile)` عدد قنواته.
+- تعيد `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })` الدوال `fromRgb(r, g, b)` (sRGB 0..1 → CMYK 0..1)، و`toLab(cmyk, paper?)`، و`proof(cmyk, paper?)` (من CMYK إلى sRGB الشاشة).
+- `cmykToLab` و`labToCmyk` و`srgbToLab` و`labToSrgb` و`deltaE` و`totalAreaCoverage` هي التحويلات المفردة؛ و`buildRgbLut` / `sampleRgbLut` تبنيان جداول بحث كثيفة للعمل على البكسلات وتقرآنها.
+- تعطي `OUTPUT_PROFILES` و`outputProfileInfo(id)` و`loadOutputProfile(id, baseUrl?)` الفهرس؛ وتكتب `srgbProfileBytes()` ملف تعريف sRGB الذي يسم به PDF/X-4 ألوان RGB؛ وتسرد `authoredCmykColors(config)` الألوان التي عرّفتها الإعدادات بقيم CMYK.
+
+يطابق المُحلِّل والمُجرِّد ما في الأقسام الأخرى: `resolvePrintConfig` و`stripPrintDefaults` و`profileInkLimit(config)` (حد ملف التعريف الذي تسمّيه الإعدادات، قبل أي تجاوز بـ `inkLimit`)، مع `DEFAULT_PRINT_CONFIG` و`DEFAULT_PRINT_BLACK_CONFIG` و`DEFAULT_PRINT_PREFLIGHT_CONFIG` و`DEFAULT_RICH_BLACK`.
 
 
 ## عارض Folio (الإعدادات)
@@ -8727,9 +9038,10 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 لسير عمل الطباعة الإنتاجية، اضبط خيارات الإعدادات هذه قبل الإنتاج:
 
 - **`page.cutLines.enabled: true`** — يضيف منطقة النزف وعلامات القص حول حدّ القص، ويعطي كل صفحة TrimBox وBleedBox. انظر [خطوط القص](#خطوط-القص).
-- **`colorSpace: 'cmyk'`** (أو `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — يكتب الألوان التي يرسمها postext (النص، والخطوط الفاصلة، والتعبئات، والأشكال المتجهية) في DeviceCMYK (وعلامات القص بلون التسجيل دائمًا). أما الصور النقطية ونسخ PDF الأصلية للطباعة فتُضمَّن كما هي، فتبقى الصورة الفوتوغرافية بنظام RGB على RGB: حوّلها قبل أن تضيفها.
-- **`page.dpi: 300`** (أو أعلى) — نقاط PDF ثابتة عند 72 لكل بوصة، لكن حسابات الإخراج في Postext تجري بالبكسل؛ والدقة الأعلى تعطي تقسيمًا أدق للعناصر المقيسة بـ `mm` أو `cm`.
-- **`colors.model: 'cmyk'`** — يحفظ القصد بأن الألوان أُعدّت في فضاء CMYK. ولا تزال قيمة `hex` الاحتياطية هي المستخدمة فعلًا في الرسم إلى ملف PDF حاليًا؛ ويُوثَّق `model` هنا لأنه ينتقل إلى شجرة VDT لصالح الأدوات اللاحقة.
+- **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (أو `'pdfx1a'`) — ملف PDF/X فيه نية الإخراج والتعريف والمربعات التي تتحقق منها المطبعة؛ ويُفصَل كل لون وكل صورة RGB عبر ملف تعريف ICC، ويُطبع الأسود 100% K فوق الألوان، وتُطبع المساحات السوداء الكبيرة بالأسود الغني. انظر [الإنتاج الطباعي (الإعدادات)](#الإنتاج-الطباعي-الإعدادات).
+- **`colorSpace: 'cmyk'`** (أو `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — الفصل نفسه من غير تعريف PDF/X (وعلامات القص بلون التسجيل دائمًا). وتُضمَّن نسخ PDF الأصلية للطباعة كما هي.
+- **`page.dpi: 300`** — عدد بكسلات الإخراج في البوصة: الصورة النقطية المرسومة بحجمها الأصلي تُطبع بهذه الدقة. ويبلّغ [الفحص قبل الطباعة](#الفحص-قبل-الطباعة) عن الصور التي تقل دقتها عن 300 ppi بحجمها المطبوع.
+- **`ColorValue.cmyk`** — يُطبع اللون المعرّف بقيم CMYK بقيمه الدقيقة.
 - **`{ pageNegative: true }`** في `RenderToPdfOptions` — يعكس منطقة حدّ القص باستخدام نمط الدمج Difference (وتبقى علامات القص غير معكوسة). مفيد لفحوص ما قبل الطباعة (preflight) على الطباعة الداكنة فوق الفاتح.
 
 ### التنفيذ المرجعي

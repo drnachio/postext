@@ -58,6 +58,7 @@ const document = buildDocument(content, {
 - [自定义字体](#自定义字体)：在Google Fonts之外声明用户上传的字体族。
 - [HTML查看器](#html查看器)：HTML后端的目标栏宽与断行。
 - [PDF生成（配置）](#pdf生成配置)：PDF后端的书签大纲、无障碍（带标签的）输出、强制色彩空间。
+- [印刷输出（配置）](#印刷输出配置)：`print`，包括PDF/X-1a和PDF/X-4、ICC输出特性文件、黑色（只用K的灰色、叠印、复合黑）、以CMYK定义的颜色、印前检查和印刷预览。
 - [书页视图（配置）](#书页视图配置)：3D书本视图的纸种、装订、台面和光照。
 - [调试](#调试)：编辑器中的可视化叠加层与编写警告。
 - [以编程方式使用](#以编程方式使用)：`buildDocument`、它报告的警告、解析器、缓存。
@@ -114,7 +115,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>每英寸点数。影响物理单位（cm、mm、in）换算为像素的方式。</td>
+      <td>排版所用的每英寸像素数，即物理单位（cm、mm、in、pt）换算成排版像素的比例。它不是图片的分辨率；但按原始尺寸放置的位图，每个图像像素占一个排版像素，所以印出来就是这么多ppi。用于印刷时请保持300。[印前检查](#印前检查)会检查每张图片的有效分辨率。</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -242,7 +243,7 @@ page: {
 
 ### 裁切线
 
-启用后，画布会扩大以包含出血区域，引擎还会在每个角画出裁切标记，供印刷生产使用。
+启用后，画布会扩大以包含出血区域，引擎还会在每个角画出裁切标记，供印刷生产使用。PDF的每一页都带有TrimBox和BleedBox；[PDF/X](#pdfx-1a与pdfx-4)文件即使没有裁切线也有这两个框。在沙盒中，它们在**导出 › 印前准备**中设置。
 
 <table>
   <thead>
@@ -6704,12 +6705,13 @@ interface Dimension {
 
 ```ts
 interface ColorValue {
-  hex: string;        // '#ff0000'、'transparent' 等
-  model: ColorModel;  // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  hex: string;         // '#ff0000'、'transparent' 等
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // 以CMYK定义的颜色的准确印刷色数值。
 }
 ```
 
-`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色在导出PDF时应当以CMYK指定。
+`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](#以cmyk定义的颜色)）。
 
 Postext面向出版级输出，所以正文的默认颜色带有`model: 'cmyk'`（`#000000`）。标题、粗体、斜体和列表的颜色默认链接到调色板中的**主色**（`#295AA3`，`model: 'hex'`）。页面背景和界面叠加层（基线网格、裁切标记、调试标记）默认为`model: 'hex'`。如果需要不同的导出语义，可以在任意字段上覆盖`color.model`。
 
@@ -7022,7 +7024,7 @@ interface PdfGenerationConfig {
       <td><code>colorSpace</code></td>
       <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
       <td><code>'cmyk'</code></td>
-      <td>`forceColorSpace`开启时使用的目标色彩空间。胶印用`'cmyk'`，仅供屏幕阅读的PDF用`'rgb'`，黑白打样用`'grayscale'`。`forceColorSpace`为false时不起作用。</td>
+      <td>`forceColorSpace`开启时使用的目标色彩空间。胶印用`'cmyk'`，仅供屏幕阅读的PDF用`'rgb'`，黑白打样用`'grayscale'`。`forceColorSpace`为false时不起作用。CMYK经[`print`](#印刷输出配置)的输出特性文件（默认FOGRA39）分色，并按其黑色设置处理，RGB图片也会转换；`print`中设了PDF/X标准时，无论这里怎么设，都写出CMYK。</td>
     </tr>
     <tr>
       <td><code>accessible</code></td>
@@ -7059,6 +7061,315 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 完整的导出流程见下文的[生成PDF](#生成pdf)。
+
+
+## 印刷输出（配置）
+
+`print`属性规定一本书怎样付印：文件的PDF/X标准、CMYK分色所用的输出特性文件、黑色怎样印刷，以及印前检查的阈值。排版不读取它，所以改动它不会让任何一行移动。读取它的有三处：写出文件时的`postext-pdf`，检查排好的文档时的`preflightDocument`，以及Canvas和书页视图的印刷预览。
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none'：普通PDF。
+  outputProfile?: string;                  // 特性文件目录中的id（'fogra39'、'fogra51'…）或'custom'。
+  customProfile?: CustomOutputProfile;     // 上传的.icc文件。
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // 对RGB图片分色（PDF/X-1a总是分色）。
+  inkLimit?: number;                       // 总墨量，百分比。
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // 特性文件的描述，或文件名。
+  fileId: string;         // 存储的.icc文件。
+  registryName?: string;  // 印刷条件的ICC注册名称（FOGRA51…），否则为'Custom'。
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>属性</th>
+      <th style={{ width: '170px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>文件采用的PDF/X标准。`'pdfx1a'`写出PDF/X-1a:2003：只有CMYK和灰度，没有透明，所有印厂都接受。`'pdfx4'`写出PDF/X-4：保留透明和色彩管理，适合现行流程。两者都把所有颜色经输出特性文件分色，无论`pdfGeneration.colorSpace`怎么设。</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>CMYK分色所针对的印刷条件：[特性文件目录](#输出特性文件)中的一个id，或者`'custom'`，表示采用`customProfile`。目录中没有的id，或者没有文件的`'custom'`，会退回默认值，并给出一条配置警告。</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>无</td>
+      <td>你自己提供的CMYK输出特性文件，也就是印厂给你的那个（例如ECI的`PSOcoated_v3.icc`）。它的字节像字体一样另行存储；`renderToPdf`通过`outputProfile`选项接收这些字节。`registryName`写作输出意图的条件标识符。</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>相对比色让印刷机能印出的颜色保持准确，其余颜色裁切到最接近的可印刷颜色；可感知压缩整个色域，让色域外的颜色保持彼此之间的关系。</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>采用相对比色意图时，把屏幕上的黑映射到印刷机能印出的最深的黑，使最暗的色调保留细节，不会糊成一片。</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>用特性文件把RGB图片分色为CMYK。PDF/X-1a总是这样做。在PDF/X-4中，`false`保留RGB图片，通过页面的`/DefaultRGB`标为sRGB，交给印厂的RIP转换。CMYK和灰度JPEG总是原样嵌入。</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>取特性文件的值</td>
+      <td>印前检查接受的C+M+Y+K最大总量，以百分比计。默认取特性文件分色时的上限（大多数胶印条件为300%，IFRA26新闻纸为230%）。</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>见<a href="#黑色">黑色</a></td>
+      <td>只用K的灰色、叠印和复合黑。</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>见<a href="#印前检查">印前检查</a></td>
+      <td>印前检查查哪些内容，以及它的阈值。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### 输出特性文件
+
+`postext`在它的`icc/`文件夹中附带以下CMYK输出特性文件（在任何npm CDN上是`postext/icc/<id>.icc`，在postext.dev上是`/icc/<id>.icc`）。它们都没有已知的版权限制（CC0）：FOGRA、GRACoL、SWOP和新闻纸特性文件来自colord，由各印刷条件的特性化数据生成；FOGRA51和FOGRA52由postext用ArgyllCMS根据Fogra自己的数据制作。ECI的特性文件（ISO Coated v2、PSO Coated v3、PSO Uncoated v3）描述的是相同的印刷条件，但不允许再分发；如果印厂要求用它们，请作为自定义特性文件上传。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Id</th>
+      <th>印刷条件</th>
+      <th style={{ width: '150px' }}>注册名称</th>
+      <th style={{ width: '90px' }}>墨量上限</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>胶印，涂布纸（ISO Coated v2条件）</td><td>FOGRA39</td><td>300%</td></tr>
+    <tr><td><code>fogra51</code></td><td>胶印，高级涂布纸（PSO Coated v3条件）</td><td>FOGRA51</td><td>300%</td></tr>
+    <tr><td><code>fogra52</code></td><td>胶印，无木浆非涂布纸（PSO Uncoated v3条件）</td><td>FOGRA52</td><td>300%</td></tr>
+    <tr><td><code>fogra47</code></td><td>胶印，白色非涂布纸（PSO Uncoated ISO 12647）</td><td>FOGRA47</td><td>300%</td></tr>
+    <tr><td><code>fogra29</code></td><td>胶印，白色非涂布纸</td><td>FOGRA29</td><td>300%</td></tr>
+    <tr><td><code>fogra30</code></td><td>胶印，偏黄非涂布纸</td><td>FOGRA30</td><td>340%</td></tr>
+    <tr><td><code>fogra27</code></td><td>胶印，涂布纸（ISO 12647-2:1996）</td><td>FOGRA27</td><td>300%</td></tr>
+    <tr><td><code>fogra28</code></td><td>热固轮转胶印，光面LWC纸</td><td>FOGRA28</td><td>300%</td></tr>
+    <tr><td><code>fogra45</code></td><td>热固轮转胶印，改良LWC纸</td><td>FOGRA45</td><td>300%</td></tr>
+    <tr><td><code>fogra40</code></td><td>热固轮转胶印，SC纸</td><td>FOGRA40</td><td>340%</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006，1级涂布纸</td><td>CGATS TR 006</td><td>300%</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006，3级涂布纸</td><td>CGATS TR 003</td><td>300%</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006，5级涂布纸</td><td>CGATS TR 005</td><td>300%</td></tr>
+    <tr><td><code>ifra26</code></td><td>冷固新闻纸（ISO 12647-3）</td><td>IFRA26</td><td>230%</td></tr>
+    <tr><td><code>snap2007</code></td><td>SNAP 2007新闻纸</td><td>CGATS TR 002</td><td>320%</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf`从它的`outputProfile`选项读取特性文件的字节；没有给出时，从`profileBaseUrl`（默认`https://cdn.jsdelivr.net/npm/postext/icc/`）下载目录中的文件。PDF/X渲染无法加载特性文件时会失败；普通的CMYK渲染则退回教科书公式，并给出`outputProfileUnavailable`警告。
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a与PDF/X-4
+
+两种标准都会写出：
+
+- 输出意图（`GTS_PDFX`），写明印刷条件并嵌入目标特性文件；
+- Info字典中的标识（`GTS_PDFXVersion`、`/Trapped /False`、标题和日期）和XMP元数据中的标识（`pdfxid:GTSPDFXVersion`、文档id和版本id）；文件带标签时，与PDF/UA标识合并；
+- 每一页的TrimBox和BleedBox（没有裁切线时就是整个页面）；
+- 文件尾的`/ID`；
+- 经特性文件转换为DeviceCMYK（或灰度）的所有颜色，以及用套准色绘制的裁切标记；
+- 不含链接注释：交付印刷的文件在出血框内不带任何注释，所以屏幕PDF中的链接被略去（书签保留）。
+
+PDF/X-1a:2003是不带对象流的PDF 1.4，不允许透明：半透明的颜色换算成它印在纸上的颜色，图片的alpha拼合到白色上，调试用的页面负片被略去（并给出`pageNegativeIgnored`警告）。PDF/X-4是PDF 1.6：保留透明，每页带一个在CMYK中混合的透明组，因`convertImages: false`而保留的RGB图片通过`/DefaultRGB`标为sRGB。
+
+PDF印刷母版（`svg.pdfFileId`）原样嵌入，所以它的颜色、字体和透明都是它自己的；印前检查会报告它带进来的内容。
+
+### 黑色
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // 灰色和黑色只用黑墨。
+  overprint?: boolean;          // 100% K叠印。
+  richBlack?: boolean;          // 大面积黑色用复合黑。
+  richBlackColor?: CmykPercent; // { c, m, y, k }，百分比。
+  richBlackMinSize?: Dimension; // 区域短边需达到的尺寸。
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '140px' }}>类型</th>
+      <th style={{ width: '170px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>中性色（`#000000`、`#808080`…）只用黑墨印刷，K值按明度匹配选取，绝不印成随套准偏移的四色灰。图片保留特性文件自己的黑版生成方式。</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>只用100% K绘制的内容（黑色文字、线条、描边、小的黑色图形）叠印（`op`/`OP`加`OPM 1`），印版在印刷机上偏移时，周围不会露出白边。其他内容都镂空；图片和渐变从不叠印。</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>短边达到`richBlackMinSize`的黑色填充（背景、色带、方框）用`richBlackColor`印刷并镂空，看起来是深黑而不是深灰。文字从不变成复合黑。</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>复合黑配方，以百分比计。总量要低于墨量上限；印前检查会检查这一点。</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>黑色区域的短边达到这个尺寸，才用复合黑印刷。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 以CMYK定义的颜色
+
+用CMYK写的颜色保留准确的数值：印刷渲染原样使用`ColorValue.cmyk`（百分比），`hex`是它在屏幕上的呈现。以CMYK定义的调色板条目，作用于所有链接到它的颜色。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### 印前检查
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // 印刷尺寸下的ppi。
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>属性</th>
+      <th style={{ width: '110px' }}>类型</th>
+      <th style={{ width: '100px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>运行检查。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>放置的位图在印刷尺寸下（含裁剪）每英寸像素数低于此值时给出警告，包括图、表格单元格中的图片、版面设计图像和漫画分格。按原始尺寸放置的位图以`page.dpi`印刷，所以以150 dpi排版的页面上，每张这样的图片都以150 ppi印刷。</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>低于此值时，警告为严重。不会高于`minImageResolution`。</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>比此值更细的线条、边框、栏线、表格线和漫画分格边框。</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>小于此字号、用多于一种墨印刷的文字（印刷色、复合黑）：印版偏移时会发虚。只用K的黑色文字从不计入。</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>离裁切线比此值更近的文字，裁切时可能被切掉。</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>停在离裁切线这么近处、却没有延伸到出血的方框或图片：要么延伸到出血，要么内移。</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>报告置入的PDF中未嵌入的字体（沙盒用`inspectPrintMaster`检查每个印刷母版）。Postext自己排的字体都会嵌入。</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)`对排好的文档运行这些检查，返回一个问题列表。每个问题带有`kind`、`severity`（`'critical'`、`'warning'`或`'info'`）、全书范围的页序`pageIndex`、出问题的`rect`（页面px），以及元素有源码范围时的源码范围。`kind`有`lowImageResolution`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`和`nearTrim`。没有`transform`时，中性色算一种墨，其他颜色算三种，也不检查总墨量；给出`transform`时，墨数和总墨量都是准确的。
+
+```ts
+import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // 位图的像素尺寸
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray'，取自文件
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### 印刷预览
+
+Canvas页面可以按印出来的样子绘制。`createPrintPreview(transform, print, { paper, dpi })`为一套设置构建软打样：每个像素都经特性文件分色（中性色只用K，与PDF相同），再显示回屏幕上；`paper`为true时，显示在纸张自身的白色上；大到足以用复合黑的黑色区域显示为复合黑。把它作为`printPreview`交给`renderPageToCanvas`；`guides`加上成品线、出血线和安全区线，`marksFor`勾出页面上的区域（印前检查给出的`rect`）。`postext-folio`接受同一个对象作为`printPreview`（`paper: false`，因为书本身的纸色会给书页着色）。
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### 色彩引擎
+
+postext使用的色彩管理也已导出，可供你自己的工具使用。它用纯TypeScript读取ICC v2和v4特性文件（矩阵/TRC，以及`mft1`、`mft2`、`mAB`、`mBA`查找表），不用WebAssembly。
+
+- `parseIccProfile(bytes)`读取特性文件；`deviceChannels(profile)`给出它的通道数。
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })`返回`fromRgb(r, g, b)`（sRGB 0..1 → CMYK 0..1）、`toLab(cmyk, paper?)`和`proof(cmyk, paper?)`（CMYK → 屏幕sRGB）。
+- `cmykToLab`、`labToCmyk`、`srgbToLab`、`labToSrgb`、`deltaE`和`totalAreaCoverage`是单项转换；`buildRgbLut` / `sampleRgbLut`生成和读取用于像素处理的密集查找表。
+- `OUTPUT_PROFILES`、`outputProfileInfo(id)`和`loadOutputProfile(id, baseUrl?)`提供特性文件目录；`srgbProfileBytes()`写出PDF/X-4标记RGB时所用的sRGB特性文件；`authoredCmykColors(config)`列出配置中以CMYK定义的颜色。
+
+解析函数和精简函数与其他部分一致：`resolvePrintConfig`、`stripPrintDefaults`和`profileInkLimit(config)`（配置所指特性文件的上限，不计`inkLimit`覆盖），以及`DEFAULT_PRINT_CONFIG`、`DEFAULT_PRINT_BLACK_CONFIG`、`DEFAULT_PRINT_PREFLIGHT_CONFIG`和`DEFAULT_RICH_BLACK`。
 
 
 ## 书页视图（配置）
@@ -8722,9 +9033,10 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 用于正式印刷流程时，在渲染前调整以下配置选项：
 
 - **`page.cutLines.enabled: true`**：在成品尺寸周围加上出血区域和裁切标记，并给每一页设置TrimBox和BleedBox。见[裁切线](#裁切线)。
-- **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：把postext绘制的颜色（文字、线条、填充、矢量图）写成DeviceCMYK（裁切标记始终用套准色）。位图和PDF印刷母版原样嵌入，所以RGB照片仍是RGB：请在添加之前先转换。
-- **`page.dpi: 300`**（或更高）：PDF的点固定为每英寸72点，但Postext的排版计算以像素为单位；较高的DPI能为以`mm`或`cm`度量的元素提供更细的划分。
-- **`colors.model: 'cmyk'`**：保留颜色是在CMYK空间中定义的这一意图。目前实际绘制到PDF时仍使用`hex`后备值；这里记录`model`，是因为它会随VDT一起传给下游工具。
+- **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（或`'pdfx1a'`）：写出PDF/X文件，带有印厂会检查的输出意图、标识和页面框；所有颜色和RGB图片都经ICC特性文件分色，100% K叠印，大面积黑色用复合黑。见[印刷输出（配置）](#印刷输出配置)。
+- **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：同样的分色，但没有PDF/X标识（裁切标记始终用套准色）。PDF印刷母版原样嵌入。
+- **`page.dpi: 300`**：排版的每英寸像素数；按原始尺寸放置的位图以这个分辨率印刷。[印前检查](#印前检查)会报告印刷尺寸下不足300 ppi的图片。
+- **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切标记不反转）。适合对浅底深字的排版做印前检查。
 
 ### 参考实现
