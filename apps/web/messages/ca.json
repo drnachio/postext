@@ -402,7 +402,7 @@
   "Showcase": {
     "eyebrow": "Aparador",
     "title": "Llibres de debò, compostos al teu navegador",
-    "lead": "Un llibre de text, una revista, un poema èpic anotat, un catàleg d'exposició, un clàssic xinès en 120 capítols, Les mil i una nits en àrab, una novel·la japonesa composta en vertical. Obre'ls al Sandbox, canvia una regla i mira com es recompon cada pàgina.",
+    "lead": "Un llibre de text, una revista, un poema èpic anotat, un catàleg d'exposició, un clàssic xinès en 120 capítols, Les mil i una nits en àrab, una novel·la japonesa composta en vertical, un còmic en set llengües. Obre'ls al Sandbox, canvia una regla i mira com es recompon cada pàgina.",
     "open": "Obrir al Sandbox",
     "guideName": "Guia de Postext",
     "guideDescription": "La guia inclosa: 13 capítols, tres parts i coberta",
@@ -416,6 +416,7 @@
       "kokoro": "Kokoro · こころ",
       "openstax-fisica": "Física universitària (OpenStax)",
       "paradise-lost": "El paradís perdut · Gustave Doré",
+      "pepper-carrot": "Pepper&Carrot · La festa d'aniversari de la Pepper",
       "pintura-espanola": "Pintura espanyola",
       "senales": "Senyals 2020"
     },
@@ -428,6 +429,7 @@
       "kokoro": "La novel·la de Natsume Sōseki (1914) en japonès, composta en vertical i enquadernada per la dreta com la primera edició d’Iwanami, amb la coberta, les guardes i la portada que va dissenyar Sōseki, tres de les seves pintures i furigana sobre els mots difícils. Només en japonès",
       "openstax-fisica": "Llibre de text a columna i mitja amb exemples resolts, comprovacions, taules i fórmules",
       "paradise-lost": "Edició anotada del poema de Milton en dotze llibres: les notes de Verity a peu de pàgina i les cinquanta làmines de Doré. Només en anglès",
+      "pepper-carrot": "L'episodi 8 del còmic de David Revoy en set llengües: les vinyetes originals sense text, amb els globus i la retolació que el motor compon a partir de cada traducció oficial. Els globus japonesos van en columnes i les pàgines àrabs es llegeixen de dreta a esquerra",
       "pintura-espanola": "Catàleg d'exposició a una columna: fitxa i comentari davant de la làmina a pàgina",
       "senales": "Revista de l'Agència Europea de Medi Ambient a dues columnes amb obertures fotogràfiques, requadres, cites i panells de dades"
     }

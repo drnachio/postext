@@ -15,9 +15,9 @@ describe("the showcase shelf", () => {
     expect(shelfOrder(books).map((b) => b.id)).toEqual(["a", "b", "c", "z"]);
   });
 
-  it("stands the three right-bound books last, ألف ليلة وليلة, 紅樓夢 then こころ, each opening in its own language", () => {
+  it("stands the three right-bound books, ألف ليلة وليلة, 紅樓夢 and こころ, each opening in its own language, then Pepper&Carrot last", () => {
     const presets = shelfOrder((presetIndex as { presets: { id: string; shelfOrder?: number; binding?: string; openLocale?: string }[] }).presets);
-    const [nights, dream, kokoro] = presets.slice(-3);
+    const [nights, dream, kokoro, comic] = presets.slice(-4);
     expect(nights!.id).toBe("alf-layla");
     expect(nights!.binding).toBe("right");
     expect(nights!.openLocale).toBe("ar");
@@ -27,8 +27,19 @@ describe("the showcase shelf", () => {
     expect(kokoro!.id).toBe("kokoro");
     expect(kokoro!.binding).toBe("right");
     expect(kokoro!.openLocale).toBe("ja");
+    // The comic opens in the reader's language: it names no openLocale.
+    expect(comic!.id).toBe("pepper-carrot");
+    expect(comic!.binding).toBeUndefined();
+    expect(comic!.openLocale).toBeUndefined();
     // Every other book is left-bound and stands before them.
-    expect(presets.slice(0, -3).every((p) => p.binding !== "right" && p.shelfOrder === undefined)).toBe(true);
+    expect(presets.slice(0, -4).every((p) => p.binding !== "right" && p.shelfOrder === undefined)).toBe(true);
+  });
+
+  it("carries Pepper&Carrot in every site language, French as well", () => {
+    const entry = (presetIndex as { presets: { id: string; locales: string[]; tags: string[]; license: string }[] }).presets.find((p) => p.id === "pepper-carrot")!;
+    expect(entry.locales).toEqual(["en", "es", "ca", "fr", "ja", "zh-Hans", "ar"]);
+    expect(entry.tags).toContain("comic");
+    expect(entry.license).toContain("CC BY 4.0");
   });
 
   it("describes 紅樓夢 by its vertical, right-bound edition", () => {
