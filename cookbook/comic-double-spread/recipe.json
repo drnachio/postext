@@ -2,7 +2,7 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 154,
-  "status": "draft",
+  "status": "published",
   "chapter": "comics",
   "order": 110,
   "level": 2,
