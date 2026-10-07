@@ -106,7 +106,8 @@ const CROSS_REF_STRINGS: Readonly<Record<string, CrossRefStrings>> = {
   fr: { chapter: `chapitre${NBSP}{n}`, section: `section${NBSP}{n}`, page: `p.${NBSP}{n}` },
   de: { chapter: `Kapitel${NBSP}{n}`, section: `Abschnitt${NBSP}{n}`, page: `S.${NBSP}{n}` },
   it: { chapter: `capitolo${NBSP}{n}`, section: `sezione${NBSP}{n}`, page: `p.${NBSP}{n}` },
-  pt: { chapter: `capítulo${NBSP}{n}`, section: `secção${NBSP}{n}`, page: `p.${NBSP}{n}` },
+  // "seção": the Brazilian spelling, which Portugal accepts as well (AO90).
+  pt: { chapter: `capítulo${NBSP}{n}`, section: `seção${NBSP}{n}`, page: `p.${NBSP}{n}` },
   ca: { chapter: `capítol${NBSP}{n}`, section: `secció${NBSP}{n}`, page: `p.${NBSP}{n}` },
   nl: { chapter: `hoofdstuk${NBSP}{n}`, section: `paragraaf${NBSP}{n}`, page: `p.${NBSP}{n}` },
   'zh-hans': { chapter: '第{n}章', section: '第{n}节', page: '第{n}页' },
