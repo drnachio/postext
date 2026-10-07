@@ -251,7 +251,11 @@ function kindOf(ch: string): Kind {
 function cjkBreakPenalty(a: string, b: string, japanese: boolean): number {
   const ka = kindOf(a);
   const kb = kindOf(b);
-  if (ka === 'P') return 0;
+  // A two-character leader (…… ‥‥) stays whole; after the end of a
+  // sentence or a clause are the best places.
+  if (a === b && (a === '\u2026' || a === '\u2025')) return 50;
+  if (/[\u3002\uFF01\uFF1F!?\u2026\uFF0E]/.test(a)) return -1;
+  if (ka === 'P') return /[\u3001\uFF0C]/.test(a) ? -0.3 : 0;
   if (kb === 'P') return 2;
   if (!japanese) return ka === 'L' || kb === 'L' ? 1.5 : 1;
   // A particle sticks to the word before it: never break just before one.

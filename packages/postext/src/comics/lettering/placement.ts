@@ -76,7 +76,7 @@ const W = {
   orderBase: 2,
   distance: 0.7,
   far: 0.18,
-  below: 0.12,
+  below: 0.3,
   height: 0.1,
   start: 0.03,
   cross: 15,
