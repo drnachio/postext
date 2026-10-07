@@ -495,7 +495,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
 - 文字流所说的“顶部”是纸张的**右**边缘，阅读从这里开始：顶部浮动体位于页面右侧，底部浮动体位于左侧，通栏章首横带是沿右边缘向下的一条带，脚注落在每一栏的左端。锚定到页面顶部的设计元素（标题版面设计、固定框）锚定在右边缘。`sideColumnSide`为`'left'`时是上栏，`'right'`是下栏；`'outer'`和`'inner'`分别按`'right'`和`'left'`理解。
 - 文字流的页边距是纸张页边距旋转后的结果：右页边距是文字流的顶部，上页边距是它的左侧。`page.margins`在纸面上保持原来的名称。
 - 书眉、页码、裁切标记和页面背景留在纸面上，横排，与clreq对竖排书籍的描述一致。
-- **图和表保持直立。**图在题注允许的范围内占满所在栏的高度，宽度最多与页面相同；它所占的宽度就是它在文字流中占用的空间。题注横排在图下方，表格的单元格也横排：两者都按横排文字度量。表格直立横贯页面，比栏高时按栏切分行。`placement.align`把图放在所在栏的顶端（`'left'`）、中间或底端。图在竖排文字中首次被引用的位置不会应用`placement.rotate`：构建时报告`rotateIgnoredVertical`内容警告。书中横排的部分（`layout`设为`'horizontal-tb'`的标题样式）会按要求旋转其中的图。
+- **图和表保持直立**。图在题注允许的范围内占满所在栏的高度，宽度最多与页面相同；它所占的宽度就是它在文字流中占用的空间。题注横排在图下方，表格的单元格也横排：两者都按横排文字度量。表格直立横贯页面，比栏高时按栏切分行。`placement.align`把图放在所在栏的顶端（`'left'`）、中间或底端。图在竖排文字中首次被引用的位置不会应用`placement.rotate`：构建时报告`rotateIgnoredVertical`内容警告。书中横排的部分（`layout`设为`'horizontal-tb'`的标题样式）会按要求旋转其中的图。
 - 版面设计中的图片（章首页的插图、篇章页的插图）同样直立。它在文字流中的框按宽高互换来确定尺寸，所以`size.width`是图片沿栏向下延伸的长度，它在纸面上的宽度则按比例得出。
 - 字符：汉字、假名和全角字符直立，各占一个全角；拉丁单词和数字侧转，保持其横排宽度；标点使用字体的竖排字形。点号从不旋转：中国大陆字体把、。，．放在字格右上角，！？：；放在字格右半部；台湾或香港字体则居中（`cjk.region`）。括号使用竖排字形，中国大陆文本中的“ ”‘ ’显示为『』「」。破折号、省略号和波浪线在字体有竖排字形时使用它（Noto CJK把—的竖排字形与`fwid`一起放在`vert`下：字格中央一条竖线），否则旋转，使墨迹位于栏的中轴上。中文文本中的破折号（——）在栏中是一条连续的线：它的竖排字形会在每个字格两端留空，所以每个破折号随行旋转，并像横排时一样拉伸（见[标点宽度](#标点宽度)）。不超过两位的数字直立占一个字格，除非它位于拉丁语句中，这时跟随该句的单词（见[竖排中的数字](#竖排中的数字)）。间隔号（·）在中国大陆文本中占半个字格，在台湾和香港文本中占一整个字格。Unicode规定直立的符号（× © ± § ℃ ①之类）单独占一个字格，在数字中间也是如此：`3×4`是侧转的3和4，中间夹一个直立的×。拉丁单词中两个字母之间的撇号或间隔号（`don’t`、`l·l`）留在单词里，一起侧转。竖排文字流中的拉丁段落遵循同样的规则。行内公式、行内标签和色块随行侧转。
 - 每个字符都按绘制的方式度量：直立字符沿行向下前进一个字格，侧转的文字前进其横排宽度。在纸面上保持横排的文字（书眉、页码、题注、表格单元格）按横排度量。
@@ -791,7 +791,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
 `{bookTotalPages}`输出整本书的页数，也就是读者在“第12页，共348页”里看到的那个数。它和`{totalPages}`一样统计实际页数，包括空白页，但覆盖所有章：
 
 - **单独排版的文档**（不带`continuation`的`buildDocument`）就是整本书：`{bookTotalPages}`等于`{totalPages}`。
-- **`buildBundle`**先排整本书，把所有章的页数加起来，再用这个总数重新排一遍，所以每一章输出的数字都相同。这个数从不改变分页位置，所以多排一轮就能定下来；不输出`{bookTotalPages}`的配置不会多花任何代价。
+- <strong>`buildBundle`</strong>先排整本书，把所有章的页数加起来，再用这个总数重新排一遍，所以每一章输出的数字都相同。这个数从不改变分页位置，所以多排一轮就能定下来；不输出`{bookTotalPages}`的配置不会多花任何代价。
 - **沙盒**在所有章的页数都已知之后，把总数交给每一章。在此之前，一章输出的是到它自己结尾为止的页数。PDF标签页的整书导出统计它排出的页数：如果某一章因为当时页数尚未确定而输出了别的数字，它会用各章最终合计的页数把书再排一遍。
 - **自行逐章排版的宿主程序**把总数作为`continuation.bookPageCount`传入（第一章也要传）。不传时，`{bookTotalPages}`统计到文档结尾为止的页数（`continuation.pageIndexOffset`加上自身的页数），这只对最后一章是正确的。
 
@@ -1861,9 +1861,9 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
   </tbody>
 </table>
 
-**关于孤字。**孤字是指段落的末行太短，不像一行正常的文字，通常是一两个短词孤零零地落在段落末尾。由于判断依据是这一行的像素长度与正常空格宽度之比，`runtMinCharacters`会自动适应当前字号。视觉宽度超过`runtMinCharacters × spaceWidth`的短词没有问题；比这窄（或真正单独一个）的词会招来孤字惩罚。阈值以词间空格计数，而词间空格约为字母宽度的一半：默认值20相当于大约8到12个字母的末行。每个孤字都承担完整的惩罚值，所以在两个都低于阈值的结尾之间，断行器会保留上面较紧的行；`gradedRuntPenalty`则按短缺程度给每个结尾定价，较长的结尾胜出。给对数学感兴趣的读者：在默认的`runtPenalty`为1000时，避免孤字的优先级高于任何需要大约r≈2.15以内词间距拉伸的其他断点组合。
+**关于孤字**。孤字是指段落的末行太短，不像一行正常的文字，通常是一两个短词孤零零地落在段落末尾。由于判断依据是这一行的像素长度与正常空格宽度之比，`runtMinCharacters`会自动适应当前字号。视觉宽度超过`runtMinCharacters × spaceWidth`的短词没有问题；比这窄（或真正单独一个）的词会招来孤字惩罚。阈值以词间空格计数，而词间空格约为字母宽度的一半：默认值20相当于大约8到12个字母的末行。每个孤字都承担完整的惩罚值，所以在两个都低于阈值的结尾之间，断行器会保留上面较紧的行；`gradedRuntPenalty`则按短缺程度给每个结尾定价，较长的结尾胜出。给对数学感兴趣的读者：在默认的`runtPenalty`为1000时，避免孤字的优先级高于任何需要大约r≈2.15以内词间距拉伸的其他断点组合。
 
-**软规则，不是硬规则。**这些规则都不能*阻止*某个断点，引擎总会给出一个版面。它们是缺陷值：算法在一次全局优化中权衡劣度、断词代价、适配等级的平滑度和这些结构性惩罚，选出总代价最低的断点组合。如果需要更硬的保证，就提高惩罚值；如果某篇文档放宽惩罚后读起来更好，就降低它。
+<strong>软规则，不是硬规则。</strong>这些规则都不能*阻止*某个断点，引擎总会给出一个版面。它们是缺陷值：算法在一次全局优化中权衡劣度、断词代价、适配等级的平滑度和这些结构性惩罚，选出总代价最低的断点组合。如果需要更硬的保证，就提高惩罚值；如果某篇文档放宽惩罚后读起来更好，就降低它。
 
 
 ## 标题
@@ -1982,7 +1982,7 @@ headings: {
 2. **有安全区的图片**：设了安全区（`Resource.safeArea`，见[文档格式 › 安全区](/zh/docs/document-format#安全区)）的图片，如果以行内方式排在短栏里，或者作为只占这一栏的浮动体排在栏顶或栏底，就按整数个网格行增高，在安全区以内裁切，直到这一栏排满，或者裁切到了安全区为止。图片变高不会在页面上留下空洞，所以这一手段在增加任何空白之前执行；在栏首要保持平齐的页面或区段上（见下文），位于栏顶的浮动体不会增高。记录为`flexFigure`。这一手段没有单独的设置：只有资源标出了安全区的图片才会增高。
 3. **标题**：在短栏内各标题的上外边距中增加整数个网格行。需要多行且栏内有多个标题时，这些行分配给各个标题，最重要的标题总是分得最多（`h2`比`h3`多）。位于栏顶的标题从不加空，因此各栏始终从页面顶部开始。唯一的例外是：在文字流继续到下一页的页面上，紧接在栏首图或表下方的标题，空间会加在这个标题上方、图的下方。
 4. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
-5. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在**`bodyText.maxWordSpacing`以下**时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
+5. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在<strong>`bodyText.maxWordSpacing`以下</strong>时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
 
 只有当页面自然延续到下一页时，才会对该页最后一栏做齐底；一章的末页本来就可以短一截。这样的页面，以及由`trailing`截平的收尾区段，还会让各栏的栏首保持平齐：栏首为图或表时，不会在其下方加行（浮动体后手段）；在这样的图下方开栏的标题或框，无论`stretchAfterFloats`如何设置，都留在栏首。这样就不会为了让栏底对齐而让某一栏比旁边一栏起得更低。
 
@@ -2734,7 +2734,7 @@ GFM任务项（`- [ ] …`、`- [x] …`）按无序列表项渲染，用复选�
   </tbody>
 </table>
 
-**缩进级联。**第1层总是从通用的`indent`值开始（默认`0 em`，项目符号贴住栏的边缘）。对第2–5层，如果不设`indent`，引擎把项目符号放在*上一层*文字的起点（上一层缩进 + 项目符号宽度 + `gap`）。在某一层显式设置`indent`，就会打断级联，把这一层固定在你想要的任何位置。
+**缩进级联**。第1层总是从通用的`indent`值开始（默认`0 em`，项目符号贴住栏的边缘）。对第2–5层，如果不设`indent`，引擎把项目符号放在*上一层*文字的起点（上一层缩进 + 项目符号宽度 + `gap`）。在某一层显式设置`indent`，就会打断级联，把这一层固定在你想要的任何位置。
 
 ```ts
 unorderedLists: {
@@ -2904,7 +2904,7 @@ unorderedLists: {
 
 `levels`中的每一项可以覆盖`numberFormat`、`prefix`、`separator`、`fontFamily`、`fontSize`、`color`、`fontWeight`、`italic`、`indent`、`verticalOffset`以及分隔符样式（`separatorFontFamily`、`separatorFontWeight`、`separatorItalic`、`separatorColor`、`separatorGap`），缩进级联规则与无序列表相同。某一层的分隔符样式沿用该层自己的编号样式，除非给出了整个列表的分隔符设置。
 
-**右对齐。**排版流程会测量一个连续段中格式化后最宽的编号，并据此缩进该段的所有列表项，使编号的右边缘对齐。十项的列表渲染为`1.`–`10.`时，一位数编号的右侧会补齐，使分隔符保持在同一列。
+**右对齐**。排版流程会测量一个连续段中格式化后最宽的编号，并据此缩进该段的所有列表项，使编号的右边缘对齐。十项的列表渲染为`1.`–`10.`时，一位数编号的右侧会补齐，使分隔符保持在同一列。
 
 ```ts
 orderedLists: {
@@ -2985,7 +2985,7 @@ interface MathConfig {
       <td><code>fontSizeScale</code></td>
       <td><code>number</code></td>
       <td><code>1.0</code></td>
-      <td>渲染前作用于周围文字字号的倍数：公式TeX字体的1 em等于该字号 × `fontSizeScale`。对独立公式和正文中的行内公式，该字号是`bodyText.fontSize`；对标题、段落样式、题注或标注框正文中的行内公式，是所在块的字号。1.0与周围文字一致；数学字体看上去比正文字体略大或略小时，常用0.9–1.1之间的值。**postext 1.5起有变化：**1.4及以前，公式比这个大小约大13%（见下文）。</td>
+      <td>渲染前作用于周围文字字号的倍数：公式TeX字体的1 em等于该字号 × `fontSizeScale`。对独立公式和正文中的行内公式，该字号是`bodyText.fontSize`；对标题、段落样式、题注或标注框正文中的行内公式，是所在块的字号。1.0与周围文字一致；数学字体看上去比正文字体略大或略小时，常用0.9–1.1之间的值。**postext 1.5起有变化**：1.4及以前，公式比这个大小约大13%（见下文）。</td>
     </tr>
     <tr>
       <td><code>color</code></td>
@@ -3036,7 +3036,7 @@ math: {
 }
 ```
 
-**公式大小，postext 1.5起有变化。**MathJax以`ex`给出公式的框，而它的TeX字体的1 `ex`等于0.442 em。postext 1.4及以前，引擎把它当作半个em，所以每个公式都比`bodyText.fontSize × fontSizeScale`大约13%。现在公式按文档说明的大小排出，含公式的行和页面会重新排版。为1.4用代码写的配置，可以把它原样传给`postext/bundle`中的`pinLegacyMathSize`一次，保留1.4的公式大小：
+<strong>公式大小，postext 1.5起有变化。</strong>MathJax以`ex`给出公式的框，而它的TeX字体的1 `ex`等于0.442 em。postext 1.4及以前，引擎把它当作半个em，所以每个公式都比`bodyText.fontSize × fontSizeScale`大约13%。现在公式按文档说明的大小排出，含公式的行和页面会重新排版。为1.4用代码写的配置，可以把它原样传给`postext/bundle`中的`pinLegacyMathSize`一次，保留1.4的公式大小：
 
 ```ts
 import { pinLegacyMathSize } from 'postext/bundle';
@@ -3105,12 +3105,12 @@ const doc = buildDocument({ markdown: 'Euler: $e^{i\\pi}+1=0$.' }, config);
 document.body.append(renderPage(doc.pages[0], doc));
 ```
 
-- **引擎运行之前，公式是占位符。**每个公式排成一个估计大小的灰色框。如果在从未调用`initMathEngine()`的情况下排版含公式的文档，控制台会显示一条警告说明这一点。
+- <strong>引擎运行之前，公式是占位符。</strong>每个公式排成一个估计大小的灰色框。如果在从未调用`initMathEngine()`的情况下排版含公式的文档，控制台会显示一条警告说明这一点。
 - **排版工作线程会替你启动它。**`postext/worker`中的构建在markdown包含`$`时会自行调用`initMathEngine()`。
 - **先排版，就绪后再排一次。**`isMathReady()`告诉你引擎是否在运行。`onMathReady(fn)`在引擎就绪后调用`fn`一次（已经就绪则立即调用），并返回一个取消这次调用的函数。编辑器可以先显示占位符，等MathJax加载完再重新排版；`initMathEngine()`加载期间不会打印警告。
-- **失败。**MathJax无法加载时，`initMathEngine()`返回的Promise会被拒绝，之后再次调用会重试。
-- **任何打包工具、Node或CDN。**MathJax作为一个预先打包的模块随包发布（压缩前约1.8 MB，只由`initMathEngine`获取）。直接写`import { initMathEngine } from 'https://esm.sh/postext'`就能用，不需要`?bundle`。`mathjax-full`包只在构建postext时需要，所以安装postext不会安装它。MathJax及其打包的mhchem解析器采用Apache-2.0许可证：它们的声明和许可证文本随模块一起发布，位于`dist/math/THIRD_PARTY_LICENSES.txt`。
-- **一个页面一个引擎。**同一JavaScript realm中所有导入`postext`的代码共享引擎及其已渲染公式的缓存（见[同一页面共享的全局状态](#同一页面中共享的全局状态)）。
+- **失败**。MathJax无法加载时，`initMathEngine()`返回的Promise会被拒绝，之后再次调用会重试。
+- <strong>任何打包工具、Node或CDN。</strong>MathJax作为一个预先打包的模块随包发布（压缩前约1.8 MB，只由`initMathEngine`获取）。直接写`import { initMathEngine } from 'https://esm.sh/postext'`就能用，不需要`?bundle`。`mathjax-full`包只在构建postext时需要，所以安装postext不会安装它。MathJax及其打包的mhchem解析器采用Apache-2.0许可证：它们的声明和许可证文本随模块一起发布，位于`dist/math/THIRD_PARTY_LICENSES.txt`。
+- **一个页面一个引擎**。同一JavaScript realm中所有导入`postext`的代码共享引擎及其已渲染公式的缓存（见[同一页面共享的全局状态](#同一页面中共享的全局状态)）。
 
 文档一侧的语法（`$...$`、`$$...$$`、转义美元符号本身）见[文档格式](/zh/docs/document-format#数学公式)。
 
@@ -3304,12 +3304,12 @@ footnotes: {
 
 栏底注释的排版方式：
 
-- **注释与引用同栏。**放置一行之前，版面会加上这一行首次引用的注释的高度（如果是该栏的第一条注释，还要加上分隔线）。一行的注释在它下面排不下时，这一行连同段落的其余部分移到下一栏，并遵守段首孤行和段末孤行规则。栏的文字区域缩小注释所占的高度，所以各栏齐底和章末收尾区域只计算正文。
+- **注释与引用同栏**。放置一行之前，版面会加上这一行首次引用的注释的高度（如果是该栏的第一条注释，还要加上分隔线）。一行的注释在它下面排不下时，这一行连同段落的其余部分移到下一栏，并遵守段首孤行和段末孤行规则。栏的文字区域缩小注释所占的高度，所以各栏齐底和章末收尾区域只计算正文。
 - **多条注释**在同一栏中按引用顺序堆叠在一条分隔线下。后面再次引用的注释保持原编号，不再重复排出。
-- **底部浮动体。**注释排好之后才占据栏底的图，放在注释上方；图之后排的注释放在图的上方。
-- **框。**在标注框（行内、浮动或固定）中引用的注释，放在框后正文继续的那一栏的栏底，通常就是同一栏。收尾整个文档的框，把它的注释留在正文结束那一栏的栏底。
-- **限制。**注释从不拆分：比一栏还高的注释会溢出。题注、表格单元格和标题中的标记不会被识别（按原样打印）。
-- **输出。**Canvas、HTML和PDF都会绘制注释、标记（上标数字）和分隔线。在PDF中，每个标记链接到对应的注释；带标签的PDF把每条注释设为`Note`元素，带有唯一的`/ID`，列在结构树的`/IDTree`中（PDF/UA-1）。注释是设置了`footnoteNote`的`VDTBlock`，位于`page.floats`中；分隔线位于`page.footnoteAreas`中。
+- **底部浮动体**。注释排好之后才占据栏底的图，放在注释上方；图之后排的注释放在图的上方。
+- **框**。在标注框（行内、浮动或固定）中引用的注释，放在框后正文继续的那一栏的栏底，通常就是同一栏。收尾整个文档的框，把它的注释留在正文结束那一栏的栏底。
+- **限制**。注释从不拆分：比一栏还高的注释会溢出。题注、表格单元格和标题中的标记不会被识别（按原样打印）。
+- **输出**。Canvas、HTML和PDF都会绘制注释、标记（上标数字）和分隔线。在PDF中，每个标记链接到对应的注释；带标签的PDF把每条注释设为`Note`元素，带有唯一的`/ID`，列在结构树的`/IDTree`中（PDF/UA-1）。注释是设置了`footnoteNote`的`VDTBlock`，位于`page.floats`中；分隔线位于`page.footnoteAreas`中。
 - **警告。**`undefinedFootnote`（标记没有定义：编号印在一条空注释上）和`unusedFootnote`（没有标记引用的定义：不会排出）。
 
 解析函数和精简函数与其他部分一致：
@@ -4053,7 +4053,7 @@ const refTargets = new Set(docs.flatMap((d) => [...anchoredResourceIds(d)]));
 const html = docs.map((d) => renderToHtml(d, { refTargets })).join('');
 ```
 
-**postext 1.5的变化：**1.4及以前，每个引用了某张图的章节都会再浮动一次这张图，而且每个`:ref`在HTML中都是链接，不管它的图是否在该页面上。
+**postext 1.5的变化**：1.4及以前，每个引用了某张图的章节都会再浮动一次这张图，而且每个`:ref`在HTML中都是链接，不管它的图是否在该页面上。
 
 `{h1}`是一级标题的连续计数：每个H1都会使它递增，除非该标题的样式设了`numbered: false`；空的`numberingTemplate`只是隐藏标题的编号，并不停止计数。因此一篇只有标题是H1的文章，用内置的`{h1}.{n}`类型时，图的编号是`1.1`、`1.2`……要输出图1、2……有两种办法：
 
@@ -4308,7 +4308,7 @@ const resource: Resource = {
 
 浮动表如果放不进为它提供的新页面，既不会被压缩，也不会溢出：在`overflow: 'split'`（默认）下，引擎在放得下的最后一条行边界处把它按行切开，在后续页面上接续，需要几页就接几页。每个续表部分都重复表头行（`TableModel.headerRowCount`，未设置时为由表头单元格组成的开头几行），并再次带上题注，在描述之后加上`continuedSuffix`，如“Table 6-4. Title *(cont.)*”。每个还要接续的部分下方都有右对齐、用注释字体排的`continuesMarker`；表的注释留到最后一部分。切分点从不穿过合并单元格（跨行单元格整体移到下一部分）；统领下面各行的一行（横跨整张表的单个单元格）会被带到下一部分，而不是孤零零地留在页面底部。
 
-**第一部分在哪里结束。**如果在引用之后为表提供的是某个空栏的顶部，表就取那里放得下的行，余下的接到下一个空位。当它独占该栏时，会一直排到栏底：若某部分下方只剩不到三行正文的空间，它就把这些空间也占上，而不留下一小截文字。当该栏已有另一条浮动版带时（比如页顶横跨整页的通栏图），这一部分会在栏底之前至少留出三行正文的位置就停下，这是浮动体与其他浮动体共用一栏时都要留给文字的空间，于是该栏在表下仍有一些文字，而不是只有浮动体。要让长表一直排到栏底，应在起始页没有其他浮动体的地方引用它（例如在通栏图那一页之后），或者调整它的行使其适合栏高。
+**第一部分在哪里结束**。如果在引用之后为表提供的是某个空栏的顶部，表就取那里放得下的行，余下的接到下一个空位。当它独占该栏时，会一直排到栏底：若某部分下方只剩不到三行正文的空间，它就把这些空间也占上，而不留下一小截文字。当该栏已有另一条浮动版带时（比如页顶横跨整页的通栏图），这一部分会在栏底之前至少留出三行正文的位置就停下，这是浮动体与其他浮动体共用一栏时都要留给文字的空间，于是该栏在表下仍有一些文字，而不是只有浮动体。要让长表一直排到栏底，应在起始页没有其他浮动体的地方引用它（例如在通栏图那一页之后），或者调整它的行使其适合栏高。
 
 `'clip'`保留放得下的开头几行，不声不响地丢掉其余部分（注释仍在该部分末尾）；`'hide'`则整张表都不排。二者只在表比一页还高时起作用：放得下的表在任何模式下都整体放置。行内（`placement.position: 'here'`）的表不拆分。
 
@@ -4612,11 +4612,11 @@ Canvas和HTML后端拿到的图片是已解码的（`registerResourceImage`）�
 - **Canvas**（`renderPage`、`renderPageToCanvas`、`renderToCanvas`）。凡是适用着色的SVG图片（图、表格单元格中的图片、设计图像、框的图标或标记），都按其放置尺寸栅格化，再把像素着色为油墨色，无论它是以`<img>`还是`ImageBitmap`注册的。着色后的位图和其他矢量栅格一样会被缓存。位图图片从不着色。
 - **HTML**（`renderToHtml`、`renderToHtmlIndexed`）。每个SVG `<img>`都会加上`filter: url(#pt-ink-…)`，它指向所在页面携带的`feColorMatrix`：一个零尺寸的`<svg>`，内含`<filter>`，放在页面最前面，在索引输出中属于页面的`decorationHtml`。单色模式生效时，每一页都带有它，不管该页有没有图片，这样逐块修补的宿主就不会引入缺少滤镜的图片。
 
-**绝不着色两次。**在postext 1.4及以前，Canvas和HTML后端按原样绘制图片，所以宿主先用`applySingleInkToSvg`自行重新着色标记，再交给后端。文件包适配器和沙盒现在仍然这样做，因为标记层面的处理能得到与PDF完全相同的颜色（见下文最后一段）。因此每张图片只着色一次，由以下三条规则保证，三个后端都遵循：
+**绝不着色两次**。在postext 1.4及以前，Canvas和HTML后端按原样绘制图片，所以宿主先用`applySingleInkToSvg`自行重新着色标记，再交给后端。文件包适配器和沙盒现在仍然这样做，因为标记层面的处理能得到与PDF完全相同的颜色（见下文最后一段）。因此每张图片只着色一次，由以下三条规则保证，三个后端都遵循：
 
-- **已带标记的标记文本保持原样。**PDF后端用`applySingleInkToSvg`重新着色`resourceBytes`，所以已经重新着色过的SVG字节按原样绘制。在Canvas和HTML中，从SVG data URI加载、且标记文本带有该标记的图片也从不着色。
-- **在postext 1.x中，不要求就不着色。**对于注册时没有自带标志的SVG图片，Canvas只在渲染时传入`singleInk: true`（`RenderPageOptions`）才着色；以`registerResourceImage(id, img, { singleInk: true })`注册的图片则在任何渲染中都着色。HTML后端在`renderToHtml`收到`singleInk: true`，或其`resourceImageUrl`解析函数带有`singleInk: true`时着色。为1.4编写的宿主会重新着色标记文本，并在注册解码后的图片时不带标志，它的输出保持不变。下一个主版本将默认着色。
-- **`singleInk: false`从不着色。**通过blob或网络URL无法读回标记文本，所以你自己重新着色、又以这种方式解码的图片要以`singleInk: false`注册，`registerBundleImages`和沙盒就是这样做的。`bundleImageUrl(bundle)`返回一个带有`singleInk: false`的解析函数，而`bundleResourceBytes`把文件包自己的字节交给PDF，由PDF后端重新着色一次。
+- **已带标记的标记文本保持原样**。PDF后端用`applySingleInkToSvg`重新着色`resourceBytes`，所以已经重新着色过的SVG字节按原样绘制。在Canvas和HTML中，从SVG data URI加载、且标记文本带有该标记的图片也从不着色。
+- <strong>在postext 1.x中，不要求就不着色。</strong>对于注册时没有自带标志的SVG图片，Canvas只在渲染时传入`singleInk: true`（`RenderPageOptions`）才着色；以`registerResourceImage(id, img, { singleInk: true })`注册的图片则在任何渲染中都着色。HTML后端在`renderToHtml`收到`singleInk: true`，或其`resourceImageUrl`解析函数带有`singleInk: true`时着色。为1.4编写的宿主会重新着色标记文本，并在注册解码后的图片时不带标志，它的输出保持不变。下一个主版本将默认着色。
+- **`singleInk: false`从不着色**。通过blob或网络URL无法读回标记文本，所以你自己重新着色、又以这种方式解码的图片要以`singleInk: false`注册，`registerBundleImages`和沙盒就是这样做的。`bundleImageUrl(bundle)`返回一个带有`singleInk: false`的解析函数，而`bundleResourceBytes`把文件包自己的字节交给PDF，由PDF后端重新着色一次。
 
 两个后端都从VDT得知每张图片的类型：图和单元格图片带有其资源的类型，设计图像块带有`imageKind`（`'svg'`或`'bitmap'`），在排版时从其资源取得。对于`imageKind`出现之前构建的VDT，Canvas把以矢量源注册的设计图像视为SVG，HTML后端则把URL为SVG data URI或以`.svg`结尾的设计图像视为SVG。
 
@@ -5546,20 +5546,20 @@ calloutStyles: [
 - **段落**采用框的`body`：字体、字号、行距、颜色、强调颜色、字重、`italic`、`smallCaps`、对齐、断词、缩进和段间距。未设置的字段继承`bodyText`。继承来的强调颜色保留与调色板的关联，所以框内的粗体、斜体和`:ref`标签与框外一样随`colorPalette`变化。（postext 1.4及以前，无论主色是什么，框内的粗体都保持`#295AA3`。）
 - **项目符号列表**以框的`lists`（项目符号字符、颜色、字形大小和字重、缩进、间隔、条目间距）覆盖`unorderedLists`，文字是框的正文。`lists.bulletChar`或`lists.color`与文档的设置（`unorderedLists`）不同时，替换每一层的项目符号或颜色；与之相同或未设置时，每一层保留各自的设置（`unorderedLists.levels`），所以嵌套的破折号在框内依然保留。
 - **编号列表**采用`lists.indent`、`gap`和`itemSpacing`；只要样式设置了`lists.color`，也采用它，即使它就是文档的项目符号颜色；未设置时，编号保持`orderedLists.color`。（postext 1.4及以前，只有当颜色与`unorderedLists.color`不同时才会作用到编号上，所以设成同一种颜色不起作用。）编号本身的字体、字号和分隔符来自全局的`orderedLists`，因为`lists`只有项目符号字段：框内编号的样式请在那里设置。
-- **框内的`:::paragraphs`**使用它们的段落样式，嵌套框中也是如此。段落样式未设置的字段继承文档的`bodyText`，而不是框的`body`（也不继承框的斜体或小型大写字母）。
+- <strong>框内的`:::paragraphs`</strong>使用它们的段落样式，嵌套框中也是如此。段落样式未设置的字段继承文档的`bodyText`，而不是框的`body`（也不继承框的斜体或小型大写字母）。
 - **`:::columns`组**没有自己的样式：每一栏都共用框的正文和列表排版，`columnGap`设置栏间距。
 - **引文块**采用框的正文字体、字号和字重（与正文中一样为灰色斜体），以及框的小型大写字母。**标题**保留标题样式；**独立公式**保留数学设置。
 - **图和表**保留文档的题注和表格样式，宽度为框的内宽；它们的常规字重和粗体字重跟随框的`body`字重。
 - **行内标签**保留自己的标签样式；`em`字号按框的正文字号计算。
-- **`:::space`**以框的正文行为单位计量（它在哪些位置被丢弃，见[`:::space`](/zh/docs/document-format#space)）。
+- <strong>`:::space`</strong>以框的正文行为单位计量（它在哪些位置被丢弃，见[`:::space`](/zh/docs/document-format#space)）。
 - **嵌套框**完整采用自己的样式；它的`span`、`placement`、`floatBarrier`和`snapToGrid`被忽略。
 
 ### 拆分框的标记
 
 框跨栏或跨页拆分时（`keepTogether: false`，或框比一栏还高），第一部分之后的每一部分都不带标题和图标开始，默认也没有任何提示告诉读者框还在继续。图书或剧本常用的标记可以通过两个选项加上：
 
-- **`repeatTitle: true`**在每个接续部分的开头重复标题，后接`continuedSuffix`，默认为“Key points (cont.)”。重复的标题采用标题样式，所以配合`textTransform: 'uppercase'`就得到剧本里的“HAMLET (CONT'D)”。图标和标签只留在第一部分。
-- **`continuesMarkerEnabled: true`**在每个还要接续的部分的最后一行下方、框内，排出`continuesMarker`：“Continued”，西班牙语文档中为“Continúa”。它使用框的正文字体和字号：除非`continuesMarkerItalic`为`false`，否则为斜体；除非`continuesMarkerAlign`设为`'left'`或`'center'`，否则右对齐。标记占用它所结束的那一部分的空间，选择切口时会保证它放得下。
+- <strong>`repeatTitle: true`</strong>在每个接续部分的开头重复标题，后接`continuedSuffix`，默认为“Key points (cont.)”。重复的标题采用标题样式，所以配合`textTransform: 'uppercase'`就得到剧本里的“HAMLET (CONT'D)”。图标和标签只留在第一部分。
+- <strong>`continuesMarkerEnabled: true`</strong>在每个还要接续的部分的最后一行下方、框内，排出`continuesMarker`：“Continued”，西班牙语文档中为“Continúa”。它使用框的正文字体和字号：除非`continuesMarkerItalic`为`false`，否则为斜体；除非`continuesMarkerAlign`设为`'left'`或`'center'`，否则右对齐。标记占用它所结束的那一部分的空间，选择切口时会保证它放得下。
 
 ```ts
 calloutStyles: [{
@@ -5716,8 +5716,8 @@ const config: PostextConfig = {
 
 `versoDesign`装饰篇隔页之后的那一页，条件是那一页没有内容，也就是隔页纸的背面。篇本身从不让这一页空着。`breakAfter.parity`默认为`'any'`，所以除非有别的东西提出奇偶要求，结束标记之后的内容就从紧接着的下一页开始：
 
-- **下一章的标题。**一级标题默认的`breakBefore`是`'always-odd'`；在右页的篇隔页之后，`'odd'`的效果相同：章移到下一个右页，左页留空，左页设计会绘制出来。
-- **`parts.breakAfter: { enabled: true, parity: 'odd' }`。**不管下一个标题怎么设置，篇自己要求下一个右页。章可能从任意一侧开始时（`breakBefore.parity: 'any'`或`breakBefore.enabled: false`）用这种写法。
+- **下一章的标题**。一级标题默认的`breakBefore`是`'always-odd'`；在右页的篇隔页之后，`'odd'`的效果相同：章移到下一个右页，左页留空，左页设计会绘制出来。
+- <strong>`parts.breakAfter: { enabled: true, parity: 'odd' }`。</strong>不管下一个标题怎么设置，篇自己要求下一个右页。章可能从任意一侧开始时（`breakBefore.parity: 'any'`或`breakBefore.enabled: false`）用这种写法。
 
 两者都没有时，章从左页开始，不绘制左页设计。`breakAfter.enabled: false`时，内容就接着排在篇隔页上。左页采用篇的调色板，所以容器上的`palette="band=#…"`也会给它换色。
 
@@ -5735,7 +5735,7 @@ parts: {
 }
 ```
 
-**结束一章的篇。**在逐章排版的书中（沙盒、`buildBundle`），一个`:::part`容器可以单独成为一章，也可以是某一章的结尾。这时篇隔页就是该章的最后一页，篇还欠着的事由下一章接手：它在第一个块之前执行`breakAfter`，并在自己的第一页空着时在上面绘制`versoDesign`。排出的页面与整本书放在一个文档里时完全一样。结束标记之后只能跟不放置任何东西的指令（`:::numbering`、`:::space`）；其他任何东西都算这一章的内容，于是由这一章自己断页。紧跟在篇后面的空章自成一页，那一页就是左页。自行逐章排版的宿主程序可以从`continuationAfter()`得到这一信息：以篇结尾的章会报告`afterPartPage: true`，把它传进下一章的`continuation`即可。
+**结束一章的篇**。在逐章排版的书中（沙盒、`buildBundle`），一个`:::part`容器可以单独成为一章，也可以是某一章的结尾。这时篇隔页就是该章的最后一页，篇还欠着的事由下一章接手：它在第一个块之前执行`breakAfter`，并在自己的第一页空着时在上面绘制`versoDesign`。排出的页面与整本书放在一个文档里时完全一样。结束标记之后只能跟不放置任何东西的指令（`:::numbering`、`:::space`）；其他任何东西都算这一章的内容，于是由这一章自己断页。紧跟在篇后面的空章自成一页，那一页就是左页。自行逐章排版的宿主程序可以从`continuationAfter()`得到这一信息：以篇结尾的章会报告`afterPartPage: true`，把它传进下一章的`continuation`即可。
 
 ### `:::part`容器
 
@@ -5876,7 +5876,7 @@ const config: PostextConfig = {
 
 区段在下一个同级或更高级标题处结束：带样式的标题之后出现不带样式的`#`，就回到文档的书眉和页面几何；带样式的标题则开启它自己的区段。区段为凑奇偶留下的空白页属于该区段，这一点与章标题相同。
 
-**分页符不能代替标题自身的断页。**样式继承所在级别的`breakBefore`（一级的默认值是`{ enabled: true, parity: 'always-odd' }`），标题无论出现在哪里都会执行它，紧跟在`:::pagebreak`之后也一样。分页符开启新页，标题随后仍然要求落在跨页中它那一侧。使用`parity: 'odd'`时，如果分页落在左页，后面会跟一张空白页，标题从下一个右页开始。使用`'always-odd'`时还会多出分隔空白页，而分页符不起任何作用，因为标题本来就会开启那一页。如果一个样式要从手动分页开启的那一页开始，比如扉页之后的目录页，就关掉它自己的断页：
+**分页符不能代替标题自身的断页**。样式继承所在级别的`breakBefore`（一级的默认值是`{ enabled: true, parity: 'always-odd' }`），标题无论出现在哪里都会执行它，紧跟在`:::pagebreak`之后也一样。分页符开启新页，标题随后仍然要求落在跨页中它那一侧。使用`parity: 'odd'`时，如果分页落在左页，后面会跟一张空白页，标题从下一个右页开始。使用`'always-odd'`时还会多出分隔空白页，而分页符不起任何作用，因为标题本来就会开启那一页。如果一个样式要从手动分页开启的那一页开始，比如扉页之后的目录页，就关掉它自己的断页：
 
 ```ts
 headingStyles: [
@@ -5887,7 +5887,7 @@ headingStyles: [
 
 如果想独占一页又不指定左右，改用`breakBefore: { parity: 'any' }`，并去掉`:::pagebreak`。
 
-**页面属于哪个区段。**书眉和调色板按页选择，而不是按标题选择。一页采用该页上最后一次区段切换之后生效的区段：一个区段结束、另一个区段在同一页开始时（比如词典中两个很短的字母部分），这一页使用第二个区段的书眉和调色板；带样式的区段在页中遇到不带样式的标题而结束时，这一页回到文档的设置。`{chapterTitle}`遵循同样的规则：两章交汇的页面显示后一章的标题。空白页遵循[章标题](#空白页的归属)的规则：为凑奇偶留的空白页（`blankForParity`）属于其后开启的区段，`'always-odd'` / `'always-even'`断页添加的分隔页（`blankForForce`）属于其前的区段。篇隔页会结束当前打开的区段。
+**页面属于哪个区段**。书眉和调色板按页选择，而不是按标题选择。一页采用该页上最后一次区段切换之后生效的区段：一个区段结束、另一个区段在同一页开始时（比如词典中两个很短的字母部分），这一页使用第二个区段的书眉和调色板；带样式的区段在页中遇到不带样式的标题而结束时，这一页回到文档的设置。`{chapterTitle}`遵循同样的规则：两章交汇的页面显示后一章的标题。空白页遵循[章标题](#空白页的归属)的规则：为凑奇偶留的空白页（`blankForParity`）属于其后开启的区段，`'always-odd'` / `'always-even'`断页添加的分隔页（`blankForForce`）属于其前的区段。篇隔页会结束当前打开的区段。
 
 ```md
 # A {style="letter"}
@@ -6778,7 +6778,7 @@ interface PostextConfig {
 
 1. **添加字体家族**：新建一个空的字体家族，可直接在原处重命名。
 2. **上传变体**：选择字重（100–900）和样式（normal / italic），然后选择一个*或多个*`.woff2`、`.woff`、`.ttf`或`.otf`文件。每个文件成为一个独立变体，绑定到当前选中的（字重，样式）；上传的文件名会被记住并显示在该行，便于区分各个变体。之后随时可以用下拉菜单重新调整变体的字重或样式。
-3. **允许变体重复。**如果两个文件落在同一个（字重，样式）位置，两者都会保留，并出现**字体变体重复**警告，提醒你为多出来的文件调整设置加以区分。
+3. **允许变体重复**。如果两个文件落在同一个（字重，样式）位置，两者都会保留，并出现**字体变体重复**警告，提醒你为多出来的文件调整设置加以区分。
 4. **删除变体**或**删除家族**：从配置中移除该条目，*同时*删除IndexedDB中保存的字节数据。
 
 字体家族一经声明，所有字体选择器都会把它归入**自定义**组，排在Google Fonts列表上方。选中它，就会把这个字体家族写入你应用它的每个字体家族字段。
@@ -6855,7 +6855,7 @@ const config: PostextConfig = {
 
 配置中的任何`ColorValue`都可以带一个可选的`paletteId`字段，指向`colorPalette`中的某个条目：页面背景、正文颜色（包括`:ref`颜色）、标题颜色、栏间线、列表颜色，表、题注、行内标签和标注框的颜色（框、色条、图标、标记、标签、标题、正文），裁切标记和基线网格的颜色，调试标记，以及版面设计中的所有颜色：书眉、标题章首页和栏内设计、标题样式的版面设计和书眉、篇名页以及目录中的篇条目（文字、线条、框的填充和边框、轮廓、首字下沉）。存在`paletteId`时，调色板条目的`hex` / `model`优先于一起保存的备用`hex` / `model`。只有在调色板缺失、为空或不含该id时才会使用内联的备用值；如果配置要交给不理解调色板的工具读取，这一点很有用。
 
-**postext 1.5中的变更。**在postext 1.4及以前，调色板只作用于一份固定的设置清单：版面设计的颜色（书眉、章首页、标题样式、篇、目录条目）、`bodyText.referenceColor`、标注框标签的颜色以及标注框正文的粗体/斜体颜色，都保留与其`paletteId`一起保存的`hex`。如果文档中保存的值与调色板条目不同（凡是在条目改动后又在沙盒中编辑过的文档，以及主色不是`#295AA3`时的所有`:ref`），现在会按链接的含义印出调色板中的颜色。要让某个颜色保持原样，删除它的`paletteId`。
+**postext 1.5中的变更**。在postext 1.4及以前，调色板只作用于一份固定的设置清单：版面设计的颜色（书眉、章首页、标题样式、篇、目录条目）、`bodyText.referenceColor`、标注框标签的颜色以及标注框正文的粗体/斜体颜色，都保留与其`paletteId`一起保存的`hex`。如果文档中保存的值与调色板条目不同（凡是在条目改动后又在沙盒中编辑过的文档，以及主色不是`#295AA3`时的所有`:ref`），现在会按链接的含义印出调色板中的颜色。要让某个颜色保持原样，删除它的`paletteId`。
 
 ### 调色板如何生效
 
@@ -7428,9 +7428,9 @@ for (const { ratio, line, block } of findLooseLines(doc, { threshold: 2.5 })) {
 }
 ```
 
-- **`findLooseLines(doc, { threshold?, pageIndex? })`**按阅读顺序返回每一个`justifiedSpaceRatio`超过`threshold`的两端对齐行：`{ block, line, ratio, x, y, width, height }`。这个矩形以页面像素计，就是高亮覆盖的横条：在该行的高度上横跨整个块宽。沙盒高亮的、并在检查面板中报告为`looseLine`的正是这些行。
-- **`drawLooseLines(ctx, page, doc, { threshold?, color? })`**在一页上填充这些横条，并返回它绘制的行。它在上下文当前的变换下以页面像素绘制，所以要在同一个canvas上紧接着`renderPage`或`renderPageToCanvas`调用它：这两个函数都会让上下文保持按页面缩放。`color`可以是任何canvas填充样式。
-- **默认值。**两个辅助函数都使用默认阈值（3）和默认颜色（`#ff000040`），而不是文档的`debug.looseLineHighlight`：那项设置属于沙盒。要遵循某个配置，传入`resolveDebugConfig(config.debug).looseLineHighlight.threshold`和`.color.hex`。
+- <strong>`findLooseLines(doc, { threshold?, pageIndex? })`</strong>按阅读顺序返回每一个`justifiedSpaceRatio`超过`threshold`的两端对齐行：`{ block, line, ratio, x, y, width, height }`。这个矩形以页面像素计，就是高亮覆盖的横条：在该行的高度上横跨整个块宽。沙盒高亮的、并在检查面板中报告为`looseLine`的正是这些行。
+- <strong>`drawLooseLines(ctx, page, doc, { threshold?, color? })`</strong>在一页上填充这些横条，并返回它绘制的行。它在上下文当前的变换下以页面像素绘制，所以要在同一个canvas上紧接着`renderPage`或`renderPageToCanvas`调用它：这两个函数都会让上下文保持按页面缩放。`color`可以是任何canvas填充样式。
+- **默认值**。两个辅助函数都使用默认阈值（3）和默认颜色（`#ff000040`），而不是文档的`debug.looseLineHighlight`：那项设置属于沙盒。要遵循某个配置，传入`resolveDebugConfig(config.debug).looseLineHighlight.threshold`和`.color.hex`。
 
 ### 警告
 
@@ -7546,7 +7546,7 @@ collectConfigWarnings(config); // 同一个列表
 
 ## 以编程方式使用
 
-> **推荐做法：使用Web Worker。**在浏览器中，绝大多数集成都应通过`postext/worker`导出的`createLayoutWorker()`驱动排版流水线，**而不是**在主线程上直接调用`buildDocument`。工作线程在构建期间让界面保持响应，在增量重建之间缓存文本测量结果，并实现“后到者胜出”的取消机制：新的一次按键会中止仍在进行的过时构建。标准用法请直接看[在Web Worker中运行排版](#在web-worker中运行排版)。本节其余内容（直接调用`buildDocument`、解析函数、剥离函数、缓存）依然有用，因为工作线程的输入和输出与之完全相同；但对界面代码来说，正确的起点是工作线程封装。只有在一次性导出、服务端渲染（Node）或测试中，才退回到在主线程上调用`buildDocument`。
+> <strong>推荐做法：使用Web Worker。</strong>在浏览器中，绝大多数集成都应通过`postext/worker`导出的`createLayoutWorker()`驱动排版流水线，**而不是**在主线程上直接调用`buildDocument`。工作线程在构建期间让界面保持响应，在增量重建之间缓存文本测量结果，并实现“后到者胜出”的取消机制：新的一次按键会中止仍在进行的过时构建。标准用法请直接看[在Web Worker中运行排版](#在web-worker中运行排版)。本节其余内容（直接调用`buildDocument`、解析函数、剥离函数、缓存）依然有用，因为工作线程的输入和输出与之完全相同；但对界面代码来说，正确的起点是工作线程封装。只有在一次性导出、服务端渲染（Node）或测试中，才退回到在主线程上调用`buildDocument`。
 
 ### 构建文档
 
@@ -7768,10 +7768,10 @@ export function ArticlePage() {
 }
 ```
 
-- **在主线程上，只排一次。**页面按文档的分辨率绘制，再缩放到容器宽度。`content`和`config`在调用`createLayout`时就已固定；要显示别的内容，就再创建一个组件。实时预览应在[Web Worker](#在web-worker中运行排版)中构建，再用`renderPageToCanvas`绘制，做法见那里的React示例。
-- **先准备字体和图片。**在组件挂载之前加载文档用到的网络字体，并用`registerResourceImage`注册其中的图片。markdown中含有`$`时，组件会自行启动[数学引擎](#启动公式引擎)。
+- <strong>在主线程上，只排一次。</strong>页面按文档的分辨率绘制，再缩放到容器宽度。`content`和`config`在调用`createLayout`时就已固定；要显示别的内容，就再创建一个组件。实时预览应在[Web Worker](#在web-worker中运行排版)中构建，再用`renderPageToCanvas`绘制，做法见那里的React示例。
+- **先准备字体和图片**。在组件挂载之前加载文档用到的网络字体，并用`registerResourceImage`注册其中的图片。markdown中含有`$`时，组件会自行启动[数学引擎](#启动公式引擎)。
 - **主入口不引入React。**`postext`从不导入React，只有`postext/react`会。`createLayout`仍从`postext`导出，以便已有代码继续工作，但它已被弃用：调用它时才加载`postext/react`，组件在加载完成前处于挂起状态（之后React会自行再次渲染它）。请从`postext/react`导入它。
-- **弃用的组件会挂起。**在`postext/react`加载完成之前，从`postext`导入的`createLayout`需要并发根（`createRoot`），或在其上方有一个`<Suspense>`边界。在旧式的`ReactDOM.render`根中，或在`renderToString`中，如果没有边界，React会报错。`react`仍是必需的对等依赖，这样打包工具才能解析这个延迟导入。
+- **弃用的组件会挂起**。在`postext/react`加载完成之前，从`postext`导入的`createLayout`需要并发根（`createRoot`），或在其上方有一个`<Suspense>`边界。在旧式的`ReactDOM.render`根中，或在`renderToString`中，如果没有边界，React会报错。`react`仍是必需的对等依赖，这样打包工具才能解析这个延迟导入。
 
 ### 解析默认值
 
@@ -7839,7 +7839,7 @@ Postext能识别的markdown结构完整列表见[文档格式](/zh/docs/document
 文本测量是排版中开销最大的步骤。有两类缓存让它保持低开销，两者的清除方式不同：
 
 - **由你持有的块缓存。**`createMeasurementCache()`返回一个`MeasurementCache`，它记住每个测量过的段落，键由段落的文本、字体、宽度、断行选项和当前的断词词典组成。把它作为`buildDocument`（或`buildDocumentAsync`）的第三个参数传入，就能在各轮收敛之间和多次构建之间复用测量结果：每次按键都重新排版的编辑器，只需测量改动过的段落。不传缓存时，每一轮都会重新测量所有块。从缓存读出的段落与重新测量的段落完全相同，因此带缓存的构建与不带缓存的构建排出的每一行都一样；在postext 1.4.1中，缓存的段落会丢失“末行是孤字”的标记，孤字收紧和各栏齐底随后可能以不同方式断行。布局工作线程在多次构建之间保留一个缓存，字体变化时换成新的。
-- **全局宽度缓存。**单词宽度按字体字符串缓存在模块状态中，页面中的所有构建共享；pretext也有自己的一份缓存。如果文本先用回退字体测量，之后网络字体才到达，这些缓存就会过时。
+- **全局宽度缓存**。单词宽度按字体字符串缓存在模块状态中，页面中的所有构建共享；pretext也有自己的一份缓存。如果文本先用回退字体测量，之后网络字体才到达，这些缓存就会过时。
 
 ```ts
 import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
@@ -7864,17 +7864,17 @@ doc = buildDocument(content, config, cache);
 Postext的部分状态存放在模块级变量中。同一个JavaScript realm中导入`postext`的所有代码共享这些状态：一个页面和它的脚本共享一份，而每个iframe、每个工作线程各有自己的一份。一个页面只有一个文档时不会察觉到这一点；一个页面中有多个文档（两个实时预览、一组示例）时就会：
 
 - **资源图片。**`registerResourceImage(fileId, image)`填充一个以`fileId`为键的注册表，`renderPage`和`renderPageToCanvas`从中读取。两个文档都注册`figure.svg`时会共用这一项：最后一次注册生效，对两个文档都是如此。请给文件id加上各文档自己的前缀，并在文档移除时调用`unregisterResourceImage(fileId)`或`clearResourceImages()`。Canvas后端缓存的栅格图也按同样的键存放，随图片一起丢弃。
-- **文本测量。**测得的宽度按字体字符串和文本缓存，整个realm共享。在网络字体加载完成之前测量的文本，会一直沿用回退字体的宽度，所有文档都是如此，直到`clearMeasurementCache()`（不带参数）清空这些缓存为止：字体加载完成后调用一次，然后重新构建。
-- **已解析的配置。**每个配置对象只解析一次，结果按该对象缓存。原地修改配置后再次构建，排版仍使用旧设置：每次修改都应传入一个新对象（`{ ...config, … }`或`structuredClone(config)`）。
-- **断词语言。**每次构建都会把进程级的断词语言设为该文档的`bodyText.hyphenation.locale`。导出的`hyphenateText(text)`和`layoutDesignSlot`使用最近一次构建的语言，除非你显式传入：调用`hyphenateText(text, 'es')`。
-- **数学引擎。**整个realm只有一个MathJax引擎和一份已渲染公式的缓存；`initMathEngine()`为所有文档启动它。
+- **文本测量**。测得的宽度按字体字符串和文本缓存，整个realm共享。在网络字体加载完成之前测量的文本，会一直沿用回退字体的宽度，所有文档都是如此，直到`clearMeasurementCache()`（不带参数）清空这些缓存为止：字体加载完成后调用一次，然后重新构建。
+- **已解析的配置**。每个配置对象只解析一次，结果按该对象缓存。原地修改配置后再次构建，排版仍使用旧设置：每次修改都应传入一个新对象（`{ ...config, … }`或`structuredClone(config)`）。
+- **断词语言**。每次构建都会把进程级的断词语言设为该文档的`bodyText.hyphenation.locale`。导出的`hyphenateText(text)`和`layoutDesignSlot`使用最近一次构建的语言，除非你显式传入：调用`hyphenateText(text, 'es')`。
+- **数学引擎**。整个realm只有一个MathJax引擎和一份已渲染公式的缓存；`initMathEngine()`为所有文档启动它。
 
 最简单的隔离方式是每个文档一个realm：每个实时示例一个iframe（CodePen嵌入就是一个iframe），或者每个文档一个[布局工作线程](#在web-worker中运行排版)，用于隔离测量和断词（图片仍在页面上注册）。
 
 
 ## 在Web Worker中运行排版
 
-**这是在浏览器中使用Postext的推荐方式。**只要你构建的是交互式的东西，比如实时预览、编辑器、随尺寸变化的查看器或沙盒式的练习场，就应通过`postext/worker`导出的`createLayoutWorker()`驱动流水线。界面代码不要在主线程上直接调用`buildDocument`。
+**这是在浏览器中使用Postext的推荐方式**。只要你构建的是交互式的东西，比如实时预览、编辑器、随尺寸变化的查看器或沙盒式的练习场，就应通过`postext/worker`导出的`createLayoutWorker()`驱动流水线。界面代码不要在主线程上直接调用`buildDocument`。
 
 在主线程上调用`buildDocument`，会在调用它的线程上运行完整的流水线：解析、测量、七轮处理、最多五次收敛迭代。一次性导出这样做没有问题。对交互式界面来说，这是错误的线程：一次150 ms的排版会阻塞输入事件，按键排队，滚动卡顿。工作线程把这些时间全部移到后台线程。
 
@@ -7892,11 +7892,11 @@ Postext提供一个专用的Web Worker入口`postext/worker`，把流水线移�
 
 ### 工作线程带来什么
 
-- **主线程保持空闲。**解析、测量和七轮收敛循环都在工作线程中运行。只有在完成的`VDTDocument`发回时才会用到主线程。
+- **主线程保持空闲**。解析、测量和七轮收敛循环都在工作线程中运行。只有在完成的`VDTDocument`发回时才会用到主线程。
 - **“后到者胜出”的取消。**`build(content, config, { signal })`把`AbortSignal`传进工作线程。在完成前中止，主线程一侧会抛出`AbortError`；工作线程内部，流水线会在下一个逐块取消检查点抛出`BuildCancelledError`并立即停止。
-- **每个工作线程一份测量缓存。**工作线程在整个生命周期内保留一个`MeasurementCache`。之后字体、文本和宽度相同的构建会复用缓存的行测量结果：在长文档中输入一个字符，只重新测量输入真正改变的块。
-- **与主线程完全相同的度量。**字体以可转移的`ArrayBuffer`送入工作线程，并通过`new FontFace(...)`注册到工作线程自己的`FontFaceSet`上。工作线程使用与主线程相同的canvas字体度量进行测量，因此断行和栏高逐字节一致。
-- **数学公式栅格缓存在工作线程构建之间保留。**数学渲染器除了按对象标识索引的缓存外，还提供一份按内容索引的栅格缓存。否则，`MathRender`经结构化克隆跨越工作线程边界后，每次重建都会错过标识缓存。
+- **每个工作线程一份测量缓存**。工作线程在整个生命周期内保留一个`MeasurementCache`。之后字体、文本和宽度相同的构建会复用缓存的行测量结果：在长文档中输入一个字符，只重新测量输入真正改变的块。
+- **与主线程完全相同的度量**。字体以可转移的`ArrayBuffer`送入工作线程，并通过`new FontFace(...)`注册到工作线程自己的`FontFaceSet`上。工作线程使用与主线程相同的canvas字体度量进行测量，因此断行和栏高逐字节一致。
+- **数学公式栅格缓存在工作线程构建之间保留**。数学渲染器除了按对象标识索引的缓存外，还提供一份按内容索引的栅格缓存。否则，`MathRender`经结构化克隆跨越工作线程边界后，每次重建都会错过标识缓存。
 
 ### 公共API
 
@@ -8017,9 +8017,9 @@ export function CanvasPreview({
 
 工作线程脚本必须来自页面自己的源，所以由CDN提供的`postext/worker`无法启动它旁边的`layout.worker.js`文件。`createLayoutWorker()`会处理这个问题：
 
-- **esm.sh，无需任何选项。**如果`postext/worker`本身是从esm.sh加载的（其模块URL形如`https://esm.sh/postext@1.5.0/es2022/worker.mjs`），客户端会通过一个同源的单行blob模块导入并启动对应的`https://esm.sh/postext@1.5.0/worker/entry`。带有`?deps=`、`?external=`或`?alias=`的导入，以及`https://esm.sh/*postext@1.5.0/worker`形式，也同样适用。工作线程总是获取该版本的普通构建，因为工作线程没有import map来解析外部依赖。
-- **其他服务器，使用`url`。**其他CDN，例如jsDelivr（`/+esm`）或unpkg，不会被自动识别。`createLayoutWorker({ url })`从`url`启动工作线程入口模块：同源URL直接启动，其他源的URL通过同样的blob包装启动。该服务器必须允许跨源请求（CORS）。
-- **使用打包工具时无需改动。**使用Vite、webpack或Next.js时，继续不带选项调用`createLayoutWorker()`即可：它们会把工作线程作为应用的一个chunk输出。
+- <strong>esm.sh，无需任何选项。</strong>如果`postext/worker`本身是从esm.sh加载的（其模块URL形如`https://esm.sh/postext@1.5.0/es2022/worker.mjs`），客户端会通过一个同源的单行blob模块导入并启动对应的`https://esm.sh/postext@1.5.0/worker/entry`。带有`?deps=`、`?external=`或`?alias=`的导入，以及`https://esm.sh/*postext@1.5.0/worker`形式，也同样适用。工作线程总是获取该版本的普通构建，因为工作线程没有import map来解析外部依赖。
+- <strong>其他服务器，使用`url`。</strong>其他CDN，例如jsDelivr（`/+esm`）或unpkg，不会被自动识别。`createLayoutWorker({ url })`从`url`启动工作线程入口模块：同源URL直接启动，其他源的URL通过同样的blob包装启动。该服务器必须允许跨源请求（CORS）。
+- **使用打包工具时无需改动**。使用Vite、webpack或Next.js时，继续不带选项调用`createLayoutWorker()`即可：它们会把工作线程作为应用的一个chunk输出。
 
 ```js
 import { createLayoutWorker } from 'https://esm.sh/postext/worker';
@@ -8035,7 +8035,7 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**工作线程看不到页面的字体。**它有自己的字体集，只包含通过`registerFonts`发送的字体和系统中安装的字体。构建时如果某段文字使用的字族在工作线程中找不到，这段文字就用回退字体测量，断行会与页面对不上。此时客户端会为每个字族在控制台打印一条警告（`"EB Garamond" is not available inside the layout worker…`），并把这些字族列在`BuildStats.missingFonts`中，`build`的`onStats`回调会收到它。
+**工作线程看不到页面的字体**。它有自己的字体集，只包含通过`registerFonts`发送的字体和系统中安装的字体。构建时如果某段文字使用的字族在工作线程中找不到，这段文字就用回退字体测量，断行会与页面对不上。此时客户端会为每个字族在控制台打印一条警告（`"EB Garamond" is not available inside the layout worker…`），并把这些字族列在`BuildStats.missingFonts`中，`build`的`onStats`回调会收到它。
 
 ### 收集字体载荷（Fontsource / Google Fonts）
 
@@ -8107,7 +8107,7 @@ export async function exportPdf(
 
 以下情况使用工作线程：
 
-- **实时预览、编辑器和练习场。**凡是文档随用户输入而重建的场景。
+- <strong>实时预览、编辑器和练习场。</strong>凡是文档随用户输入而重建的场景。
 - **随尺寸变化的HTML查看器**，每次`ResizeObserver`触发都重新排版。
 - **浏览器内的PDF导出**，从已有实时预览的界面触发：复用现有的工作线程句柄，让导出借用测量缓存。
 - **多个输出标签页**，都需要同一个VDT（沙盒的Canvas / HTML / PDF视口在每次挂载视口时共享一个工作线程句柄）。
@@ -8273,9 +8273,9 @@ export function PostextHtmlViewer({
 关于这个示例做了什么，有几点说明：
 
 - **测量栏宽，而不是估算。**`maxCharsPerLine`是以字符数表示的*目标*，实际的像素宽度取决于正文字体。`measureGlyphWidth`针对所选字体给出真实的测量值，换字体后行长也保持一致。
-- **改写页面。**HTML查看器把每个VDT“页面”当作屏幕上的一栏。示例用测得的栏宽覆盖`page.width`，把页边距设为0（内边距放在页面外，由外层的`.pt-doc` div提供），并使用`HTML_DPI = 144`，使`8pt`的正文换算为`16px`。
-- **感知字体加载。**新请求的Web字体到达时会触发`document.fonts.loadingdone`。如果不重新排版，首次渲染用的是后备字体的度量，真正的字体到达后版面会跳动。
-- **复用测量缓存。**每个组件只创建一次缓存，调整尺寸或改变字体缩放时就能复用上一次渲染的测量结果，不必重新测量每个段落。
+- **改写页面**。HTML查看器把每个VDT“页面”当作屏幕上的一栏。示例用测得的栏宽覆盖`page.width`，把页边距设为0（内边距放在页面外，由外层的`.pt-doc` div提供），并使用`HTML_DPI = 144`，使`8pt`的正文换算为`16px`。
+- **感知字体加载**。新请求的Web字体到达时会触发`document.fonts.loadingdone`。如果不重新排版，首次渲染用的是后备字体的度量，真正的字体到达后版面会跳动。
+- **复用测量缓存**。每个组件只创建一次缓存，调整尺寸或改变字体缩放时就能复用上一次渲染的测量结果，不必重新测量每个段落。
 
 ### 进一步
 
@@ -8368,14 +8368,14 @@ export function PostextHtmlViewer({
 
 在深色网站上，透明页面会带来问题：不传`background`的预览会在网站的深色背景上显示黑色文字。可以传入`renderToHtml(doc, { background: '#ffffff' })`，或给文档设置`page.backgroundColor`。
 
-**宿主页面的文字样式不会进入输出。**每一行都按引擎测得的宽度排版，如果输出从周围页面继承了`letter-spacing`、`word-spacing`、`text-transform`或`font-variant`，字形串就会变宽，行与行相互叠印。因此`.pt-doc`根元素在自己的排版声明之前，先重置所有可继承的文字属性：字距和词间距、大小写、缩进、空白处理、字体样式、变体、字重、宽度、特性与字偶间距、行高、对齐、文字阴影与着重号、断词、方向、书写模式、文字描边与填充，以及移动端的文字放大。这样无论放在shadow root里还是带样式的元素下，输出看起来都一样。这份列表以`HTML_TEXT_RESET`导出，是一串CSS声明：如果宿主把各页的`innerHtml`（来自`renderToHtmlIndexed`）挂载到自己的容器中，就在这些容器的根元素上设置它。postext 1.4及以前，根元素不做任何重置，变通办法是加一个`all: initial`的包装元素。
+**宿主页面的文字样式不会进入输出**。每一行都按引擎测得的宽度排版，如果输出从周围页面继承了`letter-spacing`、`word-spacing`、`text-transform`或`font-variant`，字形串就会变宽，行与行相互叠印。因此`.pt-doc`根元素在自己的排版声明之前，先重置所有可继承的文字属性：字距和词间距、大小写、缩进、空白处理、字体样式、变体、字重、宽度、特性与字偶间距、行高、对齐、文字阴影与着重号、断词、方向、书写模式、文字描边与填充，以及移动端的文字放大。这样无论放在shadow root里还是带样式的元素下，输出看起来都一样。这份列表以`HTML_TEXT_RESET`导出，是一串CSS声明：如果宿主把各页的`innerHtml`（来自`renderToHtmlIndexed`）挂载到自己的容器中，就在这些容器的根元素上设置它。postext 1.4及以前，根元素不做任何重置，变通办法是加一个`all: initial`的包装元素。
 
 
 ## 生成PDF
 
-PDF输出位于单独的包**`postext-pdf`**中，只面向Web的集成因此不必承担`pdf-lib`和`@pdf-lib/fontkit`的开销。PDF后端不会重新测量文字：它读取的正是你交给`renderToCanvas`或`renderToHtml`的同一个`VDTDocument`，并把其中的像素坐标换算成PDF的点。因此三种输出在断行、栏高和资源位置上必定一致。
+PDF输出位于单独的包<strong>`postext-pdf`</strong>中，只面向Web的集成因此不必承担`pdf-lib`和`@pdf-lib/fontkit`的开销。PDF后端不会重新测量文字：它读取的正是你交给`renderToCanvas`或`renderToHtml`的同一个`VDTDocument`，并把其中的像素坐标换算成PDF的点。因此三种输出在断行、栏高和资源位置上必定一致。
 
-> **在浏览器中，请通过[Web Worker](#在web-worker中运行排版)构建VDT。**VDT一旦存在，`renderToPdf`本身很快，耗时的是生成VDT的排版流水线。在工作线程上运行这条流水线，界面能保持响应，PDF导出也能复用实时预览已经预热好的测量缓存。推荐的流程见[从工作线程驱动PDF导出](#从工作线程驱动pdf导出)。下面在主线程上的示例用来说明*各参数的含义*；在界面代码中，先在工作线程里构建VDT，再直接调用`renderToPdf`。
+> <strong>在浏览器中，请通过[Web Worker](#在web-worker中运行排版)构建VDT。</strong>VDT一旦存在，`renderToPdf`本身很快，耗时的是生成VDT的排版流水线。在工作线程上运行这条流水线，界面能保持响应，PDF导出也能复用实时预览已经预热好的测量缓存。推荐的流程见[从工作线程驱动PDF导出](#从工作线程驱动pdf导出)。下面在主线程上的示例用来说明*各参数的含义*；在界面代码中，先在工作线程里构建VDT，再直接调用`renderToPdf`。
 
 ### 安装
 
@@ -8430,9 +8430,9 @@ window.open(url);
 
 `pdf-lib`把真实的字体文件嵌入PDF：渲染时无法使用浏览器已安装的字体，而仅为屏幕测量加载的字体，本身也不足以生成自包含的PDF。`renderToPdf`扫描页面中绘制用到的每一种字体（每个`family|weight|style`组合一种，见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)），每个不同的组合调用一次你的提供函数。提供函数返回一个包含**TTF或OTF**字节的`Uint8Array`；如果字体由多个文件提供，则返回它们组成的列表（见[中文、日文和韩文字体](#中文日文和韩文字体)）。`pdf-lib`对TrueType轮廓做子集化，CFF（`.otf`）文件则整体嵌入。提供函数用同一个文件回应的多种字体（例如某个家族缺少粗体，用常规体代替）共享一份嵌入字体。最终没有任何页面用来绘制的字体不会写进文件，例如SVG图作为图片绘制时，其中文字所用的字体。
 
-**使用按字重分开的静态字体，而不是单个可变字体。**Google Fonts通常为每个家族提供一个覆盖整个字重轴的可变WOFF2文件。`pdf-lib`只能嵌入可变文件的默认实例，于是粗体段落会以常规字重渲染。Fontsource发布按字重分开的静态WOFF2文件，可以干净地解决这个问题，沙盒用的就是这种方式。以默认实例之外的字重请求可变文件时，会报告`variableFontDefaultInstance`警告。
+<strong>使用按字重分开的静态字体，而不是单个可变字体。</strong>Google Fonts通常为每个家族提供一个覆盖整个字重轴的可变WOFF2文件。`pdf-lib`只能嵌入可变文件的默认实例，于是粗体段落会以常规字重渲染。Fontsource发布按字重分开的静态WOFF2文件，可以干净地解决这个问题，沙盒用的就是这种方式。以默认实例之外的字重请求可变文件时，会报告`variableFontDefaultInstance`警告。
 
-**文字中的每个词都落在排版确定的位置上。**在段落、列表项、引文、框和其他流动文字中，每个词都从VDT测得的位置开始，所以浏览器宽度与嵌入字体宽度之间的差异不会沿着一行累积。没有行内格式的行作为一个文本对象绘制，在词之间移动画笔；两端对齐的行、居中的行和带格式的行逐词绘制。字体中没有字形的字符，浏览器用另一种字体测量，PDF则画成该字体的缺字框，它不会移动后面的任何词，并且每种字体报告一次`missingGlyph`警告。字体缺少的空格，例如窄不换行空格或数字空格，取浏览器给出的宽度；词连接符、零宽空格等不可见字符不绘制。字体缺少的不换行连字符（U+2011）用该字体的连字符（U+2010）绘制，连字符也没有时用连字符减号，与浏览器的显示一致；Open Sans和Outfit等字体两者都缺。这两种情况都不算缺字。有两个例外。含有从右向左字母的行仍作为一整串绘制（见[语言与文字](#语言与文字)）。由版面设计放置的文字（书眉和页脚、章首页、框标题及其他设计元素）用嵌入字体自身的宽度排版，所以在那里字体缺少的字形仍会移动该行其余的文字。
+**文字中的每个词都落在排版确定的位置上**。在段落、列表项、引文、框和其他流动文字中，每个词都从VDT测得的位置开始，所以浏览器宽度与嵌入字体宽度之间的差异不会沿着一行累积。没有行内格式的行作为一个文本对象绘制，在词之间移动画笔；两端对齐的行、居中的行和带格式的行逐词绘制。字体中没有字形的字符，浏览器用另一种字体测量，PDF则画成该字体的缺字框，它不会移动后面的任何词，并且每种字体报告一次`missingGlyph`警告。字体缺少的空格，例如窄不换行空格或数字空格，取浏览器给出的宽度；词连接符、零宽空格等不可见字符不绘制。字体缺少的不换行连字符（U+2011）用该字体的连字符（U+2010）绘制，连字符也没有时用连字符减号，与浏览器的显示一致；Open Sans和Outfit等字体两者都缺。这两种情况都不算缺字。有两个例外。含有从右向左字母的行仍作为一整串绘制（见[语言与文字](#语言与文字)）。由版面设计放置的文字（书眉和页脚、章首页、框标题及其他设计元素）用嵌入字体自身的宽度排版，所以在那里字体缺少的字形仍会移动该行其余的文字。
 
 ### 向字体提供函数请求哪些字体
 
@@ -8564,9 +8564,9 @@ export const sliceFontProvider: PdfFontProvider = async (family, weight, style, 
 
 沙盒每生成一个PDF，就在检查面板中列出这些字符以及下面两种警告。书、书的设置或资源发生变化后，这些条目会标为来自之前的PDF，直到下一个PDF取代它们；打开另一本书会清除它们。
 
-- **粗体需要每个字重一个静态文件。**Fontsource把Noto Serif SC和TC的每个字重作为单独的静态文件提供，所以在沙盒中粗体可以正常使用。Google Fonts的文件（`NotoSerifSC[wght].ttf`，25 MB）是可变字体：pdf-lib嵌入其默认实例，700的字体会按400印出，`renderToPdf`将其报告为`variableFontDefaultInstance`。制作文件包时，用fontTools为每个字重切出一个静态实例（`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`），再用`pyftsubset`把它子集化到书中用到的字符。
-- **使用TrueType版本。**思源宋体（Source Han Serif）和Noto Serif CJK的`.otf`文件是CFF轮廓，postext-pdf会整体嵌入，每个字重8到25 MB；超过2 MB的CFF字体会报告为`cffEmbeddedWhole`。TrueType版本（Google Fonts、Fontsource）会子集化到实际用到的字形。日文方面，Noto Serif JP和Noto Sans JP（Google Fonts，或Fontsource的编号分片）、Shippori Mincho、Zen Old Mincho和BIZ UDMincho都是TrueType；思源宋体日文版（Source Han Serif JP）和Noto Serif CJK的`JP` `.otf`文件是CFF。
-- **泛CJK字体中的日文字形。**同一个码位的汉字、标点或引号，在日本和中国可能写法不同，泛CJK字体（思源、Noto CJK）两种字形都有。PDF对日文文档（`locale: 'ja'`），以及任何文档中标为日文的隔离段（`:ltr[…]{lang=ja}`），按OpenType语言系统`JAN `成形，字体的`locl`特性因此印出日文字形，与画布和HTML通过`lang`印出的一致。日文书中标为其他语言的隔离段按该语言的字形成形（中文即字体的默认字形），并标记为带`/Lang`的`Span`。中文及其他文档仍按字体的默认字形成形，与以前相同。专为日文设计的字体（如Noto Serif JP）默认字形就是日文的；不过日文文字中的“ ”仍会换成`JAN `字形。
+- **粗体需要每个字重一个静态文件**。Fontsource把Noto Serif SC和TC的每个字重作为单独的静态文件提供，所以在沙盒中粗体可以正常使用。Google Fonts的文件（`NotoSerifSC[wght].ttf`，25 MB）是可变字体：pdf-lib嵌入其默认实例，700的字体会按400印出，`renderToPdf`将其报告为`variableFontDefaultInstance`。制作文件包时，用fontTools为每个字重切出一个静态实例（`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`），再用`pyftsubset`把它子集化到书中用到的字符。
+- **使用TrueType版本**。思源宋体（Source Han Serif）和Noto Serif CJK的`.otf`文件是CFF轮廓，postext-pdf会整体嵌入，每个字重8到25 MB；超过2 MB的CFF字体会报告为`cffEmbeddedWhole`。TrueType版本（Google Fonts、Fontsource）会子集化到实际用到的字形。日文方面，Noto Serif JP和Noto Sans JP（Google Fonts，或Fontsource的编号分片）、Shippori Mincho、Zen Old Mincho和BIZ UDMincho都是TrueType；思源宋体日文版（Source Han Serif JP）和Noto Serif CJK的`JP` `.otf`文件是CFF。
+- **泛CJK字体中的日文字形**。同一个码位的汉字、标点或引号，在日本和中国可能写法不同，泛CJK字体（思源、Noto CJK）两种字形都有。PDF对日文文档（`locale: 'ja'`），以及任何文档中标为日文的隔离段（`:ltr[…]{lang=ja}`），按OpenType语言系统`JAN `成形，字体的`locl`特性因此印出日文字形，与画布和HTML通过`lang`印出的一致。日文书中标为其他语言的隔离段按该语言的字形成形（中文即字体的默认字形），并标记为带`/Lang`的`Span`。中文及其他文档仍按字体的默认字形成形，与以前相同。专为日文设计的字体（如Noto Serif JP）默认字形就是日文的；不过日文文字中的“ ”仍会换成`JAN `字形。
 
 一个家族缺少的字符不会从另一个家族借用：Noto Serif TC不会借用Noto Serif SC的字形。字符覆盖要在制作字体文件时解决；《红楼梦》示例就把TC子集缺少的字形从SC字体复制了过去。
 
@@ -8635,7 +8635,7 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 - **每一个竖排行**都用`/ActualText`标出其文字，所以复制和文字提取按书写顺序读取。`pdftotext`和pdf.js从上到下、从右到左读取各栏；遇到占一个字格的数字时，pdf.js会另起一行。
 - **链接、书签和目标位置**映射到页面上：竖排行上的链接是一个又高又窄的矩形，书签打开页面时定位到其标题所在栏的顶端。
 - **带标签的PDF**在其`Document`元素上声明书写模式（Layout属性`WritingMode /TbRl`，所有元素都继承它）；竖排章节可以通过PDF/UA-1验证（veraPDF）。
-- **阅读器：**Acrobat、Preview、Chrome（PDFium）、pdf.js和Poppler都能渲染竖排字体。右侧装订的书（`page.binding`）还会请求阅读器从右向左排列跨页（`/Direction /R2L`、`/PageLayout /TwoPageRight`）；Acrobat和Foxit照办，Chrome不会。
+- **阅读器**：Acrobat、Preview、Chrome（PDFium）、pdf.js和Poppler都能渲染竖排字体。右侧装订的书（`page.binding`）还会请求阅读器从右向左排列跨页（`/Direction /R2L`、`/PageLayout /TwoPageRight`）；Acrobat和Foxit照办，Chrome不会。
 
 一个用Noto Serif TC（书中用到的字符，TrueType）排的43页章节约为820 KB，其中大部分是两个字体子集。
 
@@ -8672,7 +8672,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**重要：**如果配置引用了Web字体，要在`buildDocument`*之前*调用`ensureConfigFontsLoaded(config)`（或等效的做法）。排版按浏览器当时拥有的该家族字体度量来测量；如果真正的字体还没到达，VDT就会按后备字体测量，PDF将与Canvas或HTML输出不一致。沙盒在每次渲染前都显式做了这一步（见`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）。
+**重要**：如果配置引用了Web字体，要在`buildDocument`*之前*调用`ensureConfigFontsLoaded(config)`（或等效的做法）。排版按浏览器当时拥有的该家族字体度量来测量；如果真正的字体还没到达，VDT就会按后备字体测量，PDF将与Canvas或HTML输出不一致。沙盒在每次渲染前都显式做了这一步（见`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）。
 
 ### 在线示例：在浏览器中生成PDF
 
@@ -8701,7 +8701,7 @@ pdfWorker.dispose();
 - 一个句柄一次渲染一个文档。`dispose()`终止工作线程，并拒绝所有仍在进行的渲染。
 - `createPdfWorker({ worker })`接收你自己创建的`Worker`，适用于控制worker URL的构建工具。这个worker必须运行`postext-pdf/worker/entry`。
 
-**从CDN加载。**默认情况下，worker脚本从包自身的URL加载（`new URL('./pdf.worker.js', import.meta.url)`）。其他源上的页面可能无法启动它：从`esm.sh`导入时，`createPdfWorker()`会抛出`Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`。这时改为启动一个同源的模块worker，由它导入入口（如果固定了版本，两个URL要固定到同一个版本）：
+**从CDN加载**。默认情况下，worker脚本从包自身的URL加载（`new URL('./pdf.worker.js', import.meta.url)`）。其他源上的页面可能无法启动它：从`esm.sh`导入时，`createPdfWorker()`会抛出`Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`。这时改为启动一个同源的模块worker，由它导入入口（如果固定了版本，两个URL要固定到同一个版本）：
 
 ```js
 import { createPdfWorker } from 'https://esm.sh/postext-pdf/worker';
@@ -8723,7 +8723,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：把postext绘制的颜色（文字、线条、填充、矢量图）写成DeviceCMYK（裁切标记始终用套准色）。位图和PDF印刷母版原样嵌入，所以RGB照片仍是RGB：请在添加之前先转换。
 - **`page.dpi: 300`**（或更高）：PDF的点固定为每英寸72点，但Postext的排版计算以像素为单位；较高的DPI能为以`mm`或`cm`度量的元素提供更细的划分。
 - **`colors.model: 'cmyk'`**：保留颜色是在CMYK空间中定义的这一意图。目前实际绘制到PDF时仍使用`hex`后备值；这里记录`model`，是因为它会随VDT一起传给下游工具。
-- `RenderToPdfOptions`中的**`{ pageNegative: true }`**：用Difference混合模式反转成品区域（裁切标记不反转）。适合对浅底深字的排版做印前检查。
+- `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切标记不反转）。适合对浅底深字的排版做印前检查。
 
 ### 参考实现
 
@@ -8878,13 +8878,13 @@ const bytes = await renderToEpub(docs, {
 
 单个文档就是只有一章的书：`renderToEpub([doc], options)`。
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`**写出文件。`options`为`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`。
+- <strong>`renderToEpub(docs, options): Promise<Uint8Array>`</strong>写出文件。`options`为`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`。
 - **`metadata`**：`title`和`language`（BCP 47语言标签）必填；`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`和`modified`可选。不带前缀的ISBN会写成`urn:isbn:…`。没有`identifier`时，书会得到一个由书名、作者和语言派生的`urn:uuid:`，这样同一本书的新版本在读者书库中保持原位。再传入`modified`即可得到逐字节相同的输出。
 - **`fonts`**：要嵌入的字形，`{ family, weight, style, bytes, format, unicodeRange? }`，`format`为`woff2`、`woff`、`ttf`、`otf`之一。每个字形成为一个文件和一条`@font-face`规则；带各自`unicodeRange`的多个文件合成一个字形（Google Fonts的分片）。页面用到却没有嵌入字形的字体族、字重或字形会以`missingFont`提醒，阅读器会改用自己的字体。只嵌入许可证允许嵌入的字体。
 - **`resourceBytes(fileId)`**：页面放置的图片，同步或异步返回`{ bytes, mediaType }`；`mediaType`为空时从字节判断类型。位图按存储时的样子给出，SVG给出源代码，而不是PDF印刷母版（`svg.pdfFileId`）。每张图片只存一次。单色书（`diagramStyle.singleInk`）的SVG会在文件中重新着色。没有字节的图片以`missingImage`提醒，原处留下空框。
 - **`cover`**：`{ bytes, mediaType, alt? }`，JPEG、PNG、WebP或SVG图片。书会以包含它的封面文档开头，它也是包文件的`cover-image`（书库中的缩略图）。没有封面时，固定版式把第一页标为封面，流式版式的书没有封面图片。
-- **`onProgress({ phase, done, total })`**：依次为`resources`（字体和图片）、`documents`（固定版式为页，流式版式为章）、`package`。**`signal`**可在步骤之间中止。
-- **`readEpub(bytes)`**为查看器读回文件，不需要`DOMParser`：版式、元数据、阅读方向、按路径列出的所有文件、清单、spine、目录、页码列表、固定版式的视口和封面。沙盒的阅读器就建立在它之上。
+- **`onProgress({ phase, done, total })`**：依次为`resources`（字体和图片）、`documents`（固定版式为页，流式版式为章）、`package`。<strong>`signal`</strong>可在步骤之间中止。
+- <strong>`readEpub(bytes)`</strong>为查看器读回文件，不需要`DOMParser`：版式、元数据、阅读方向、按路径列出的所有文件、清单、spine、目录、页码列表、固定版式的视口和封面。沙盒的阅读器就建立在它之上。
 
 两种版式都带有EPUB Accessibility 1.1元数据（访问模式、目录和印刷页码等功能、危险性和摘要），默认不声明符合WCAG。完整的选项列表和局限见[软件包的README](https://www.npmjs.com/package/postext-epub)。
 
@@ -8942,7 +8942,7 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
   </tbody>
 </table>
 
-数据文件的**`fileId`就是它在文件包内的路径**。`resource.svg.fileId`、`resource.bitmap.fileId`以及每个`customFonts`变体的`fileId`都可以直接在`bundle.files`中查到。以下情况`openBundle`会抛出异常：字节不是zip；找不到有效的`preset.json`（在根目录或某个顶层文件夹下）；清单中列出的某个文件缺失。
+数据文件的<strong>`fileId`就是它在文件包内的路径</strong>。`resource.svg.fileId`、`resource.bitmap.fileId`以及每个`customFonts`变体的`fileId`都可以直接在`bundle.files`中查到。以下情况`openBundle`会抛出异常：字节不是zip；找不到有效的`preset.json`（在根目录或某个顶层文件夹下）；清单中列出的某个文件缺失。
 
 #### postext 1.4及更早版本写出的文件包
 
@@ -8992,10 +8992,10 @@ migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 
 有四个辅助函数把打开的文件包接到引擎和各个后端上：
 
-- **`loadBundleFonts(bundle)`**把文件包的字面注册到`document.fonts`。排版前要等它完成，因为排版时是用浏览器已有的字体测量文字的。文件包中提到但没有携带的字体家族（Google Fonts）仍需你自己加载，和其他文档一样。
-- **`registerBundleImages(bundle)`**为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。**`bundleImageUrl(bundle)`**是`renderToHtml`的`resourceImageUrl`解析器，**`bundleVideoUrl(bundle)`**则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
-- **`buildBundle(bundle)`**按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`，以及`metadata`（见下文）。
-- **`bundleResourceBytes(bundle)`**和**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体家族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。
+- <strong>`loadBundleFonts(bundle)`</strong>把文件包的字面注册到`document.fonts`。排版前要等它完成，因为排版时是用浏览器已有的字体测量文字的。文件包中提到但没有携带的字体家族（Google Fonts）仍需你自己加载，和其他文档一样。
+- <strong>`registerBundleImages(bundle)`</strong>为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。<strong>`bundleImageUrl(bundle)`</strong>是`renderToHtml`的`resourceImageUrl`解析器，<strong>`bundleVideoUrl(bundle)`</strong>则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
+- <strong>`buildBundle(bundle)`</strong>按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`，以及`metadata`（见下文）。
+- <strong>`bundleResourceBytes(bundle)`</strong>和<strong>`bundleFontProvider(bundle, { decodeWoff2, fallback })`</strong>分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体家族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
@@ -9017,7 +9017,7 @@ const pdf = await renderToPdf(docs, {                    // 整本书
 
 如果要自己排某一章，把`bundle.chapters[i].markdown`、`bundle.resources`和`bundle.config`传给`buildDocument`，和其他文档一样。
 
-**书的元数据。**和沙盒一样，第一章的前置元数据就是整本书的元数据：`buildBundle`把其中的`title`、`author`等传给每一章，所以`{title}`和`{author}`书眉在每一页都有效，每章的`doc.metadata`也都带有这些值。后面各章开头的前置元数据块会被忽略：它按`---`行识别，不经解析直接清空，所以解析器无法接受的YAML也不会造成问题。`options.metadata`提供前置元数据没有设置的值（以前置元数据为准）。整本书的页数也会传到每一章：`{bookTotalPages}`印出它，而`{totalPages}`只计本章（见[全书页数](#全书页数)）。
+**书的元数据**。和沙盒一样，第一章的前置元数据就是整本书的元数据：`buildBundle`把其中的`title`、`author`等传给每一章，所以`{title}`和`{author}`书眉在每一页都有效，每章的`doc.metadata`也都带有这些值。后面各章开头的前置元数据块会被忽略：它按`---`行识别，不经解析直接清空，所以解析器无法接受的YAML也不会造成问题。`options.metadata`提供前置元数据没有设置的值（以前置元数据为准）。整本书的页数也会传到每一章：`{bookTotalPages}`印出它，而`{totalPages}`只计本章（见[全书页数](#全书页数)）。
 
 ```ts
 const docs = buildBundle(bundle, { metadata: { author: 'A. Author' } });
@@ -9123,15 +9123,15 @@ const es = await openBundle(bytes, { locale: 'es' });   // 西班牙语的章节
 
 沙盒、智能体技能和`postext`包读写的是同一种文件，所以`.postext`文件很适合在工具之间传递一本书：
 
-- **从文件包开始。**用[智能体技能](/zh/docs/skill)移植一本现有出版物，或者在[沙盒](/zh/sandbox)中设计一本书并导出（在书籍面板中该书那一行的⋯菜单里选**下载（.postext）**）。在你的程序中用`openBundle`加载文件，渲染到Canvas、HTML或PDF。把这个文件当作书的源文件：在代码中编辑章节、配置或资源，再用`createBundle`写回；或者在文件变动时重新加载即可。
-- **在沙盒中调试和微调。**当程序的输出有地方需要调整时（某幅图落错了页、某个标题样式、各栏齐底），用`createBundle`把程序排版的内容导出。在沙盒中导入该文件（*书库 → 新建 → 打开.postext文件…*），借助实时预览、检查面板和PDF视图修改文字、设计或图，然后再次导出。你的程序随后用`openBundle`加载修正后的文件。也可以把改动抄回代码：清单的`config`只包含与默认值不同的值，读起来就像一份简短的diff。
+- **从文件包开始**。用[智能体技能](/zh/docs/skill)移植一本现有出版物，或者在[沙盒](/zh/sandbox)中设计一本书并导出（在书籍面板中该书那一行的⋯菜单里选**下载（.postext）**）。在你的程序中用`openBundle`加载文件，渲染到Canvas、HTML或PDF。把这个文件当作书的源文件：在代码中编辑章节、配置或资源，再用`createBundle`写回；或者在文件变动时重新加载即可。
+- **在沙盒中调试和微调**。当程序的输出有地方需要调整时（某幅图落错了页、某个标题样式、各栏齐底），用`createBundle`把程序排版的内容导出。在沙盒中导入该文件（*书库 → 新建 → 打开.postext文件…*），借助实时预览、检查面板和PDF视图修改文字、设计或图，然后再次导出。你的程序随后用`openBundle`加载修正后的文件。也可以把改动抄回代码：清单的`config`只包含与默认值不同的值，读起来就像一份简短的diff。
 
 ### 底层API
 
 `postext/bundle`还导出了`openBundle`和`createBundle`背后的构建模块，供以自己的方式存储或提供文件包的宿主使用（例如通过HTTP提供的解压目录、数据库中的记录）：
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**：压缩包层。打开时允许有一个顶层文件夹，并忽略`__MACOSX`条目和点文件。会拒绝逃出文件包范围的路径。`mtime`给文件标注日期的方式与`createBundle`的同名输入相同。
-- **`readBundle(manifest, readFile, options)`**根据清单和一个`readFile(path)`回调读出章节、配置、资源、图片和字体。`options`设置语言、文件id的命名方式（`ids`）、基础配置（`baseConfig`，位于清单配置之下；默认是文件包语言下`bundleBaseConfig`的调色板和资源类型，该语言由`resolveBundleConfigLocale(manifest, locale)`返回，传入自己的`baseConfig`的宿主应把它本地化为该语言；清单早于`configVersion: 4`时，其`math`与文件包的一起固定；早于5时，固定其`layout`的行内间距；早于6时，固定其`layout`的框内间距、`bodyText`的冒号行下方空间、`headings`的行内标记和首字下沉大小；早于7时，固定其`bodyText`的破折号断行和齐左断行；早于8时，固定其`headings`的标题下方切分，以及`bodyText`的复合词断行和`:::paragraphs`容器下方的间距，见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)），以及固有尺寸的测量方式。
+- <strong>`readBundle(manifest, readFile, options)`</strong>根据清单和一个`readFile(path)`回调读出章节、配置、资源、图片和字体。`options`设置语言、文件id的命名方式（`ids`）、基础配置（`baseConfig`，位于清单配置之下；默认是文件包语言下`bundleBaseConfig`的调色板和资源类型，该语言由`resolveBundleConfigLocale(manifest, locale)`返回，传入自己的`baseConfig`的宿主应把它本地化为该语言；清单早于`configVersion: 4`时，其`math`与文件包的一起固定；早于5时，固定其`layout`的行内间距；早于6时，固定其`layout`的框内间距、`bodyText`的冒号行下方空间、`headings`的行内标记和首字下沉大小；早于7时，固定其`bodyText`的破折号断行和齐左断行；早于8时，固定其`headings`的标题下方切分，以及`bodyText`的复合词断行和`:::paragraphs`容器下方的间距，见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)），以及固有尺寸的测量方式。
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**：写出的一侧，分为一个纯粹的计划（文件名和清单）和通过`readBlob` / `readFont`回调解析字节两步。
 - **`isBundleManifest(value)`**、语言选择函数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize`，以及格式类型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`……）。
 - **`CONFIG_VERSION`、`migrateConfig(config, configVersion, { content })`、`pinLegacyHeadingBreaks(config)`、`pinLegacyMathSize(config)`、`pinLegacyInlineGap(config)`、`pinLegacyBoxResourceGap(config)`、`pinLegacyHeadingMarks(config)`、`pinLegacyDropCapSize(config)`、`pinLegacyColonListRoom(config)`、`pinLegacyBoxChildCut(config)`、`pinLegacyDashBreaks(config)`、`pinLegacyRaggedBreaking(config)`、`pinLegacyHeadingSplit(config)`、`pinLegacyParagraphContainerSpacing(config)`、`pinLegacyHyphenBreaks(config)`和`LEGACY_MATH_SIZE`**（0.5 ÷ 0.442）：把存储的配置转换为现行规则的表述（见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)）。`readBundle`会应用它们；以自己的方式存储配置的宿主也可以使用，每份存储的副本用一次。
