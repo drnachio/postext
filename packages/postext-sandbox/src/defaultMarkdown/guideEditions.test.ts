@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_ZH_HANS } from '.';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { sampleChapterTexts } from '../book/chapterOps';
 import { DEFAULT_RESOURCE_IDS, GUIDE_VIDEO_IDS } from '../defaultResources';
 
-const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR, ja: DEFAULT_MARKDOWN_JA } as const;
+const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR, ja: DEFAULT_MARKDOWN_JA, 'pt-BR': DEFAULT_MARKDOWN_PT_BR } as const;
 
 // `:ref{id="…"}` in the prose is the syntax, not a reference.
 const refsOf = (md: string): string[] => [...md.matchAll(/:ref\{id="([^"…]+)"/g)].map((m) => m[1]!);
@@ -12,7 +12,7 @@ const h1s = (md: string): string[] => [...md.matchAll(/^# (.+?)(?:\s*\{.*\})?$/g
 /** Han, kana and the CJK marks and full-width forms. */
 const HAN = /[㐀-鿿　-〿぀-ヿ＀-￯]/;
 
-describe('the six editions of the guide', () => {
+describe('the seven editions of the guide', () => {
   it('have the same chapters, headings levels and figure references', () => {
     const shape = (md: string) => ({
       chapters: sampleChapterTexts(md).length,
@@ -28,6 +28,7 @@ describe('the six editions of the guide', () => {
     expect(shape(DEFAULT_MARKDOWN_ZH_HANS)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_AR)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_JA)).toEqual(en);
+    expect(shape(DEFAULT_MARKDOWN_PT_BR)).toEqual(en);
   });
 
   it('mention only resources the guide ships, the Chinese composition figure among them', () => {
@@ -66,6 +67,7 @@ describe('the six editions of the guide', () => {
     expect(DEFAULT_MARKDOWN_EN).not.toMatch(HAN);
     expect(DEFAULT_MARKDOWN_ES).not.toMatch(HAN);
     expect(DEFAULT_MARKDOWN_CA).not.toMatch(HAN);
+    expect(DEFAULT_MARKDOWN_PT_BR).not.toMatch(HAN);
     expect(DEFAULT_MARKDOWN_AR).not.toMatch(HAN);
   });
 

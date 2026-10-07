@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveBodyTextConfig, type PostextConfig } from 'postext';
+import { matchHyphenationLocale, resolveBodyTextConfig, type PostextConfig } from 'postext';
 import { defaultDocumentLocale, withHyphenationLocale } from './hyphenation';
 
 describe('withHyphenationLocale', () => {
@@ -40,5 +40,17 @@ describe('defaultDocumentLocale', () => {
     expect(defaultDocumentLocale('ja')).toBe('ja');
     expect(defaultDocumentLocale('ja-JP')).toBe('ja');
     expect(defaultDocumentLocale('xx')).toBe('en-us');
+  });
+
+  it('reads an unnamed document as Brazilian Portuguese in the Portuguese interface', () => {
+    // The web app passes the page's `lang`, `pt-BR`.
+    expect(defaultDocumentLocale('pt-BR')).toBe('pt-BR');
+    expect(defaultDocumentLocale('pt')).toBe('pt-BR');
+    expect(defaultDocumentLocale('es-ES')).toBe('es');
+    const out = withHyphenationLocale({}, 'pt-BR');
+    expect(out.bodyText?.hyphenation?.locale).toBe('pt-BR');
+    const resolved = resolveBodyTextConfig(out.bodyText).hyphenation;
+    expect(resolved.enabled).toBe(true);
+    expect(matchHyphenationLocale(resolved.locale)).toBe('pt');
   });
 });

@@ -2,15 +2,17 @@
 // its figures, tables, captions and design read their wording through.
 
 /** An edition of the guide. */
-export type GuideLang = 'en' | 'es' | 'zh-Hans' | 'ca' | 'ar' | 'ja';
+export type GuideLang = 'en' | 'es' | 'zh-Hans' | 'ca' | 'ar' | 'ja' | 'pt-BR';
 
 /** Every edition, in the order the guide's fingerprint lists them. */
-export const GUIDE_LANGS: readonly GuideLang[] = ['en', 'es', 'zh-Hans', 'ca', 'ar', 'ja'];
+export const GUIDE_LANGS: readonly GuideLang[] = ['en', 'es', 'zh-Hans', 'ca', 'ar', 'ja', 'pt-BR'];
 
 /** The edition of the guide for a locale tag: Spanish for any `es` tag,
  *  Catalan for any `ca` tag, Simplified Chinese for any Chinese tag (the guide has no Traditional
  *  edition), Arabic for any `ar` tag (Modern Standard Arabic, whatever the
- *  region), Japanese for any `ja` tag, English for everything else. */
+ *  region), Japanese for any `ja` tag, Brazilian Portuguese for any `pt` tag
+ *  (`pt`, `pt-BR`, `pt-PT`: the guide has only the Brazilian edition),
+ *  English for everything else. */
 export function guideLang(locale: string): GuideLang {
   const tag = locale.toLowerCase().replace(/_/g, '-');
   if (tag.startsWith('es')) return 'es';
@@ -18,14 +20,15 @@ export function guideLang(locale: string): GuideLang {
   if (tag === 'zh' || tag.startsWith('zh-')) return 'zh-Hans';
   if (tag === 'ar' || tag.startsWith('ar-')) return 'ar';
   if (tag === 'ja' || tag.startsWith('ja-')) return 'ja';
+  if (tag === 'pt' || tag.startsWith('pt-')) return 'pt-BR';
   return 'en';
 }
 
 /** One value per edition. */
 export type ByLang<T = string> = Record<GuideLang, T>;
 
-/** A {@link ByLang} from its six values, in the order en, es, zh-Hans, ca,
- *  ar, ja. */
-export function byLang<T>(en: T, es: T, zh: T, ca: T, ar: T, ja: T): ByLang<T> {
-  return { en, es, 'zh-Hans': zh, ca, ar, ja };
+/** A {@link ByLang} from its seven values, in the order en, es, zh-Hans,
+ *  ca, ar, ja, pt-BR. */
+export function byLang<T>(en: T, es: T, zh: T, ca: T, ar: T, ja: T, pt: T): ByLang<T> {
+  return { en, es, 'zh-Hans': zh, ca, ar, ja, 'pt-BR': pt };
 }

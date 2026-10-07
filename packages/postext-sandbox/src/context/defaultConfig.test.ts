@@ -8,6 +8,15 @@ describe('createBlankBookConfig', () => {
     expect(createBlankBookConfig('en').locale).toBeUndefined();
   });
 
+  it('names figures and tables in Portuguese in the Brazilian Portuguese interface', () => {
+    // Like Spanish and Catalan, the document language is the interface's
+    // (`defaultDocumentLocale`: pt-BR) until the book names one.
+    const config = createBlankBookConfig('pt-BR');
+    expect(config).toEqual(createDefaultConfig('pt-BR'));
+    expect(config.resourceTypes?.find((t) => t.id === 'figure')?.name).toBe('Figura');
+    expect(config.resourceTypes?.find((t) => t.id === 'table')?.name).toBe('Tabela');
+  });
+
   it('sets a new book up for Chinese in the Chinese interface', () => {
     const config = createBlankBookConfig('zh-Hans');
     expect(config.locale).toBe('zh-Hans');

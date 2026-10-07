@@ -34,7 +34,7 @@ export function resolvePresetLocale(summary: Pick<PresetSummary, 'locale' | 'loc
 }
 
 /** The interface languages the showcase books are written for: a viewer in
- *  any other language (Catalan, Chinese, Arabic, Japanese) reads a book it
+ *  any other language (Catalan, Chinese, Arabic, Japanese, Portuguese) reads a book it
  *  has no edition for in another one, where the book has it. */
 const EDITION_LANGUAGES = ['en', 'es'];
 

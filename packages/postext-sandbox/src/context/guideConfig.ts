@@ -50,6 +50,7 @@ const WORDING: Record<LatinLang, { book: string; kicker: string; partLabel: stri
   en: { book: 'The Postext Guide', kicker: 'Chapter {chapterNumber} · {partTitle}', partLabel: 'Part', tocPart: 'Part {number} · {titleText}' },
   es: { book: 'Guía de Postext', kicker: 'Capítulo {chapterNumber} · {partTitle}', partLabel: 'Parte', tocPart: 'Parte {number} · {titleText}' },
   ca: { book: 'Guia de Postext', kicker: 'Capítol {chapterNumber} · {partTitle}', partLabel: 'Part', tocPart: 'Part {number} · {titleText}' },
+  'pt-BR': { book: 'Guia do Postext', kicker: 'Capítulo {chapterNumber} · {partTitle}', partLabel: 'Parte', tocPart: 'Parte {number} · {titleText}' },
 };
 
 /** How a small label is set: in capitals, spaced out (`tracking` in points). */
@@ -264,6 +265,7 @@ const CALLOUT_WORDS: Record<LatinLang, { try: [string, string]; note: [string, s
   en: { try: ['Try it', 'Try it in the Sandbox'], note: ['Technical note', 'Technical note'], quote: 'Pull quote', figures: ['Key figures', 'In figures'] },
   es: { try: ['Pruébalo', 'Pruébalo en el Sandbox'], note: ['Nota técnica', 'Nota técnica'], quote: 'Cita destacada', figures: ['Cifras', 'En cifras'] },
   ca: { try: ['Prova-ho', 'Prova-ho al Sandbox'], note: ['Nota tècnica', 'Nota tècnica'], quote: 'Cita destacada', figures: ['Xifres', 'En xifres'] },
+  'pt-BR': { try: ['Experimente', 'Experimente no Sandbox'], note: ['Nota técnica', 'Nota técnica'], quote: 'Citação em destaque', figures: ['Números', 'Em números'] },
 };
 
 function calloutStyles(lang: LatinLang): CalloutStyleConfig[] {
@@ -358,7 +360,7 @@ function toc(lang: LatinLang) {
 }
 
 /** The Postext guide's configuration for `locale`: the English, Spanish,
- *  Catalan, Chinese, Arabic or Japanese edition (any Chinese tag reads the
+ *  Catalan, Brazilian Portuguese, Chinese, Arabic or Japanese edition (any Chinese tag reads the
  *  Chinese one and any Japanese tag the Japanese one, both set vertically;
  *  any Arabic tag the Arabic one, set right to left). */
 export function createPostextGuideConfig(locale = 'en'): PostextConfig {
@@ -379,7 +381,8 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       firstLineIndent: mm(4), indentAfterHeading: false, paragraphSpacing: false,
       color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
       referenceColor: col('band'), referenceBold: true, referenceItalic: false,
-      hyphenation: { enabled: true, locale: lang === 'en' ? 'en-us' : lang },
+      // Brazilian Portuguese hyphenates with the engine's Portuguese patterns.
+      hyphenation: { enabled: true, locale: lang === 'en' ? 'en-us' : lang === 'pt-BR' ? 'pt' : lang },
       avoidWidows: true, avoidOrphans: true, avoidRunts: true, optimalLineBreaking: true,
     },
     headings: {
