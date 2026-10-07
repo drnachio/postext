@@ -16,6 +16,7 @@ import { stripMathDefaults } from './math';
 import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 import { stripPdfGenerationDefaults } from './pdfGeneration';
+import { stripPrintDefaults } from './print';
 import { stripFolioDefaults } from './folio';
 import { stripHeaderFooterDefaults } from './headerFooter';
 import { stripPartsDefaults } from './parts';
@@ -46,6 +47,7 @@ export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './mat
 export { DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './debug';
 export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, mergeConfigOverrides, applyHtmlViewerOverrides } from './htmlViewer';
 export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from './pdfGeneration';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, stripPrintDefaults, profileInkLimit } from './print';
 export { FOLIO_PAPER_STOCKS, FOLIO_MAX_TILT, DEFAULT_FOLIO_CONFIG, isNewspaperSizePreset, folioDefaultsFor, folioForTrim, resolveFolioConfig, stripFolioDefaults, wrapFolioYaw } from './folio';
 export type { FolioPaperStock } from './folio';
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
@@ -170,6 +172,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.pdfGeneration = strippedPdfGeneration;
   } else {
     delete result.pdfGeneration;
+  }
+  const strippedPrint = stripPrintDefaults(config.print);
+  if (strippedPrint) {
+    result.print = strippedPrint;
+  } else {
+    delete result.print;
   }
   const strippedFolio = stripFolioDefaults(config.folio, config.page?.sizePreset);
   if (strippedFolio) {

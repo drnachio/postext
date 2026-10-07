@@ -27,6 +27,7 @@ import type {
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
   ResolvedPdfGenerationConfig,
+  ResolvedPrintConfig,
   ResolvedFolioConfig,
   ResolvedDesignSlot,
   ResolvedPartsConfig,
@@ -121,6 +122,9 @@ export interface ResolvedConfig {
    *  config sets any. Layout ignores them; `renderToPdf` in postext-pdf
    *  reads them for each setting its own options leave out. */
   pdfGeneration?: ResolvedPdfGenerationConfig;
+  /** Print production (`PostextConfig.print`), resolved, when the config
+   *  sets any. Layout ignores it; postext-pdf and the preflight read it. */
+  print?: ResolvedPrintConfig;
   /** The Folio 3D viewer settings (`PostextConfig.folio`), resolved, when
    *  the config sets any. Layout ignores them; `postext-folio` reads them. */
   folio?: ResolvedFolioConfig;

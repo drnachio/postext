@@ -35,6 +35,8 @@ import { isDigitSystem } from './locale';
 import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText';
 import { parseFootnoteNumberFormat } from './defaults/footnotes';
 import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics';
+import { resolvePrintConfig } from './defaults/print';
+import { outputProfileInfo } from './color/catalogue';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -118,6 +120,30 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
     out.push({ kind: 'unknownConfigValue', path: 'footnotes.placement', value: 'spread', used: 'column' });
   }
   out.push(...collectComicChoiceWarnings(config));
+  out.push(...collectPrintChoiceWarnings(config));
+  return out;
+}
+
+/** The print settings that take one of a few words (#602): the PDF/X
+ *  standard, the output profile (a catalogue id, or `custom` with an
+ *  uploaded profile) and the rendering intent. */
+function collectPrintChoiceWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  const p = config.print;
+  if (!p) return out;
+  const standard = p.standard as unknown;
+  if (standard !== undefined && standard !== 'none' && standard !== 'pdfx1a' && standard !== 'pdfx4') {
+    out.push({ kind: 'unknownConfigValue', path: 'print.standard', value: String(standard), used: 'none' });
+  }
+  const profile = p.outputProfile as unknown;
+  if (profile !== undefined) {
+    const known = profile === 'custom' ? !!p.customProfile : typeof profile === 'string' && !!outputProfileInfo(profile);
+    if (!known) out.push({ kind: 'unknownConfigValue', path: 'print.outputProfile', value: String(profile), used: resolvePrintConfig(p).outputProfile });
+  }
+  const intent = p.renderingIntent as unknown;
+  if (intent !== undefined && intent !== 'relative' && intent !== 'perceptual') {
+    out.push({ kind: 'unknownConfigValue', path: 'print.renderingIntent', value: String(intent), used: 'relative' });
+  }
   return out;
 }
 
