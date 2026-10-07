@@ -3654,7 +3654,7 @@
     "wordCharacterStyles": "文字スタイル",
     "wordNoCharacterStyles": "この文書は文字スタイルを使っていません。",
     "wordStyleUses": "__count__回使用",
-    "wordStyleUsesOne": "__count__回使用",
+    "wordStyleUsesOne": "1回使用",
     "wordStyleSample": "例：__text__",
     "wordMapTo": "変換先",
     "wordTargetBody": "本文",

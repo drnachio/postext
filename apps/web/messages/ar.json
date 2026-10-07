@@ -3654,7 +3654,7 @@
     "wordCharacterStyles": "أنماط الأحرف",
     "wordNoCharacterStyles": "لا يستخدم هذا المستند أنماط أحرف.",
     "wordStyleUses": "مرات الاستخدام: __count__",
-    "wordStyleUsesOne": "مرات الاستخدام: __count__",
+    "wordStyleUsesOne": "استُخدم مرة واحدة",
     "wordStyleSample": "عيّنة: __text__",
     "wordMapTo": "يصبح",
     "wordTargetBody": "نص المتن",

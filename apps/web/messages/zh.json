@@ -3654,7 +3654,7 @@
     "wordCharacterStyles": "字符样式",
     "wordNoCharacterStyles": "本文档没有使用字符样式。",
     "wordStyleUses": "使用__count__次",
-    "wordStyleUsesOne": "使用__count__次",
+    "wordStyleUsesOne": "使用1次",
     "wordStyleSample": "示例：__text__",
     "wordMapTo": "转为",
     "wordTargetBody": "正文",
