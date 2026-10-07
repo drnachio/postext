@@ -21,7 +21,10 @@ www.peppercarrot.com
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1}
 pepper{shout break}: كيف يجرؤون على فعل هذا بي؟!! بي **أنا**!!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: أناشيد لإستدعاء الأرواح الشريرة للفوضى مجلد ١
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: أناشيد لإستدعاء\
+  الأرواح الشريرة\
+  للفوضى\
+  مجلد ١
 ::panel{art=e08p05-2}
 pepper{shout}: ... بما أنني لا أستطيعُ الإعتمادَ عليهن ...
 ::panel{art=e08p05-3}

@@ -21,7 +21,10 @@ www.peppercarrot.com
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1}
 pepper{shout break}: How could they do this to me ?!! To **me** !!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: Incantations for Demons of CHAOSAH Vol .1
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
+  for Demons of\
+  CHAOSAH\
+  Vol .1
 ::panel{art=e08p05-2}
 pepper{shout}: ... since I can't count on them ...
 ::panel{art=e08p05-3}
