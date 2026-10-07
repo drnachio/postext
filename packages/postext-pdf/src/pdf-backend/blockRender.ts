@@ -4,7 +4,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, readText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, readText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, fillRectPx, setTrackingPx, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -636,6 +636,37 @@ function rectOfBlock(ctx: PageCtx, block: VDTBlock): [number, number, number, nu
   const { scale, pageHeightPt } = ctx;
   const { x, y, width, height } = block.bbox;
   return sheetRect(ctx, [x * scale, pageHeightPt - (y + height) * scale, (x + width) * scale, pageHeightPt - y * scale]);
+}
+
+/**
+ * A strip's caption (`VDTBlock.stripCaption`, #590), in the flow: the bar
+ * behind it (layout), the target of a `:ref` naming the strip, then its
+ * lines, painted as a paragraph's (turned on a vertical page) and tagged
+ * into `elem` — the `Caption` of the strip's `Div`. The strip's picture is
+ * painted on the sheet later (`renderComicPage`).
+ */
+export function renderStripCaption(
+  ctx: PageCtx,
+  block: VDTBlock,
+  fontCache: FontCache,
+  linkRegistry: LinkRegistry | undefined,
+  elem: StructElem | undefined,
+): void {
+  const caption = block.stripCaption;
+  if (!caption || block.hidden) return;
+  if (caption.id && linkRegistry) {
+    const [left, , , top] = rectOfBlock(ctx, block);
+    linkRegistry.addDestination(caption.id, ctx.page, left, top);
+  }
+  if (caption.bar) {
+    tagArtifact(ctx, { type: 'Layout' });
+    const { rect, background } = caption.bar;
+    fillRectPx(ctx, block.bbox.x + rect.x, block.bbox.y + rect.y, rect.width, rect.height, colorFromHex(background, ctx.colorSpace));
+  }
+  for (const line of block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount)) {
+    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
+    if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
+  }
 }
 
 export function renderBlock(

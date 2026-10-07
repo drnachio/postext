@@ -26,8 +26,8 @@ export type { LetteringItem, LetteringPanel, LetteringStyle, LetteringAnchor, Le
 export { comicSourceWarnings } from './warnings';
 export { layoutComicFrame, comicPageFrame } from './layoutPage';
 export type { ComicFrameContext } from './layoutPage';
-export { layoutComicStrip, comicStripPlacement, comicStripExtent, comicStripAspect, comicSplitGrid, parseComicAspect } from './strip';
-export type { ComicStripPlacement, ComicStripContext } from './strip';
+export { layoutComicStrip, comicStripPlacement, comicStripExtent, comicStripAspect, comicSplitGrid, parseComicAspect, parseComicStripWidth, parseComicStripAlign, comicStripWidth, comicStripOffset } from './strip';
+export type { ComicStripPlacement, ComicStripContext, ComicStripAlign } from './strip';
 export { layoutComicSpread, isComicSpread } from './spread';
 export type { ComicSpreadContext, ComicSpreadPage } from './spread';
 export { translateComicPage, translateComicPanel, translateComicSplitter, translateComicBalloon, translateSvgPath, comicBlockOnSheet, pageComics } from './transform';

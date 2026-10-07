@@ -42,7 +42,7 @@ export {
   comicArtCrop, comicCropFeasibleRange, comicArtPointToPage, comicArtRectToPage, anchorsOutsideSafeArea,
   layoutComicPage, comicViewerLeaf, letterPanels, comicPageDirection, comicPanelPadding, parseComicDimension, comicPageLayoutWarnings,
   comicSourceWarnings, COMIC_RESERVED_KEYS,
-  layoutComicFrame, comicPageFrame, layoutComicStrip, comicStripPlacement, comicStripExtent, comicStripAspect, comicSplitGrid, parseComicAspect,
+  layoutComicFrame, comicPageFrame, layoutComicStrip, comicStripPlacement, comicStripExtent, comicStripAspect, comicSplitGrid, parseComicAspect, parseComicStripWidth, parseComicStripAlign, comicStripWidth, comicStripOffset,
   layoutComicSpread, isComicSpread,
   translateComicPage, translateComicPanel, translateComicSplitter, translateComicBalloon, translateSvgPath, comicBlockOnSheet, pageComics,
   comicLetteringStyle, comicLetteringLocale, comicLetteringVertical, comicFontFamilies, markdownHasComics,
@@ -54,7 +54,7 @@ export type {
   ComicCell, ComicSplitLine, ComicGeometry, ComicGeometryInput, ComicFrameSide, ComicCropInput, ComicCrop, ComicPageContext, LetterPanelsInput,
   LetteringItem, LetteringPanel, LetteringStyle, LetteringAnchor, LetteringDiagnostic, LetteringResult, LetteringEnv,
   ComicPageSource, ComicPanelSource, ComicScriptItem, ComicScriptRole, ComicSourceRange, ComicTailSide,
-  ComicFrameContext, ComicStripPlacement, ComicStripContext, ComicSpreadContext, ComicSpreadPage, ComicBalloonKind,
+  ComicFrameContext, ComicStripPlacement, ComicStripContext, ComicStripAlign, ComicSpreadContext, ComicSpreadPage, ComicBalloonKind,
 } from './comics';
 export { renderComicPanels, renderComicPanel, comicPanelPath, comicRoughBorder, renderComicBalloons, renderComicBalloon, renderComicPage } from './canvas-backend/comic';
 export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './defaults/comics';
@@ -436,6 +436,7 @@ export type {
   VDTComicSplitter,
   VDTComicBalloon,
   VDTComicPage,
+  VDTStripCaption,
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
 export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, pageIsMirrored, verticalFlowOf, lineTextAlign, DEFAULT_CENTRAL_BASELINE } from './vdt';

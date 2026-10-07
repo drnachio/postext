@@ -320,6 +320,7 @@ describe("C31: config values the engine replaced (#468)", () => {
       { kind: "unknownNumberFormat", path: "orderedLists.levels[1].numberFormat", value: "kanji", used: "arabic" },
       { kind: "unknownNumerals", path: "numerals", value: "hindi", used: "arab" },
       { kind: "unknownConfigValue", path: "footnotes.placement", value: "spread", used: "column" },
+      { kind: "unknownConfigValue", path: "comics.balloonStyles[0].shape", value: "ovl", used: "oval", suggestion: "oval" },
       { kind: "unknownConfigKey", path: "headingStyles[3].minHeight", value: "minHeight", used: "", suggestion: "lineHeight" },
       { kind: "fontFamilyStack", path: "bodyText.fontFamily", value: "Zen Old Mincho, serif", used: "Zen Old Mincho" },
     ];
@@ -330,6 +331,7 @@ describe("C31: config values the engine replaced (#468)", () => {
       ["fail", 'unknownNumberFormat: orderedLists.levels[1].numberFormat "kanji" is no format the engine knows; it numbers in arabic'],
       ["fail", 'unknownNumerals: numerals "hindi" names no digit system; the digits are arab'],
       ["fail", 'unknownConfigValue: footnotes.placement "spread" is not one of its choices; the engine used column'],
+      ["fail", 'unknownConfigValue: comics.balloonStyles[0].shape "ovl" is not one of its choices (oval?); the engine used oval'],
       ["fail", "unknownConfigKey: headingStyles[3].minHeight is no key of that setting (lineHeight?); the engine ignores it"],
       ["warn", 'fontFamilyStack: bodyText.fontFamily "Zen Old Mincho, serif" is a font stack; the text is set in Zen Old Mincho alone'],
     ]);

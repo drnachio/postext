@@ -38,7 +38,7 @@ import {
   renderFootnoteRules,
   renderCutLines,
 } from './pageDecorations';
-import { renderBlock, type ResourceRenderContext } from './blockRender';
+import { renderBlock, renderStripCaption, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { renderComicPage } from './comic';
 import { addOutlines, numberedHeadingText } from './outlines';
@@ -509,7 +509,16 @@ function paintPage(
   const hanging = doc.config.cjk?.hangingPunctuation !== 'none';
   // Strips (`:::strip`) met in the columns and floats: tagged in place,
   // painted on the sheet after the flow frame closes.
-  const strips: Array<{ block: VDTBlock; div?: StructElem }> = [];
+  const strips: Array<{ block: VDTBlock; div?: StructElem; caption?: StructElem }> = [];
+  /** A strip's `Div` and its caption (#590), read where the strip stands:
+   *  the caption is painted in the flow now, tagged as the `Div`'s
+   *  `Caption`; the picture joins the `Div` when painted on the sheet. */
+  const readStrip = (block: VDTBlock): (typeof strips)[number] => {
+    const div = structure ? structure.comicStrip(block) : undefined;
+    const caption = div && block.stripCaption ? div.child('Caption') : undefined;
+    renderStripCaption(ctx, block, fontCache, resourceCtx.linkRegistry, caption);
+    return { block, ...(div ? { div } : {}), ...(caption ? { caption } : {}) };
+  };
   for (const col of vdtPage.columns) {
     const clip = columnClipRect(col, doc.config.page.dpi, hanging);
     pushClipRect(ctx, clip.x, clip.y, clip.width, clip.height);
@@ -521,9 +530,12 @@ function paintPage(
         }
         continue;
       }
-      renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
       // A strip is painted on the sheet below, but read here.
-      if (block.comic && !block.hidden) strips.push({ block, ...(structure ? { div: structure.comicStrip(block) } : {}) });
+      if (block.comic) {
+        if (!block.hidden) strips.push(readStrip(block));
+        continue;
+      }
+      renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
     }
     popClip(ctx);
     // A part row of the contents carries a design of its own, which may
@@ -546,9 +558,8 @@ function paintPage(
         // A floated strip: read after the text that comes before it,
         // painted on the sheet below.
         if (fb.hidden) continue;
-        const strip: (typeof strips)[number] = { block: fb };
-        if (structure) structure.readFloat(fb, () => { strip.div = structure.comicStrip(fb); });
-        strips.push(strip);
+        if (structure) structure.readFloat(fb, () => { strips.push(readStrip(fb)); });
+        else strips.push(readStrip(fb));
         continue;
       }
       const paint = () => renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, fontCache, resourceCtx);
@@ -575,6 +586,12 @@ function paintPage(
   if (vdtPage.comic) renderComicPage(ctx, vdtPage.comic, fontCache, resourceCtx.images, structure);
   for (const strip of strips) {
     renderComicPage(ctx, comicBlockOnSheet(vdtPage, strip.block)!, fontCache, resourceCtx.images, structure, strip.div);
+    // A caption set under the strip is read after its panels.
+    if (strip.div && strip.caption && strip.block.stripCaption?.position !== 'above') {
+      const kids = strip.div.kids;
+      const at = kids.findIndex((k) => k.kind === 'elem' && k.elem === strip.caption);
+      if (at >= 0) kids.push(...kids.splice(at, 1));
+    }
   }
 
   // Running headers and footers are pagination artifacts.

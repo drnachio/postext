@@ -365,7 +365,15 @@ class Writer {
       }
       return parts.join('\n');
     });
-    return `<section class="pt-comic"${this.dirAttr(node.dir)}>${pre}\n${panels.join('\n')}\n</section>`;
+    const section = `<section class="pt-comic"${this.dirAttr(node.dir)}>${node.caption ? '' : pre}\n${panels.join('\n')}\n</section>`;
+    if (!node.caption) return section;
+    // A strip with a caption (#590): the strip and its caption are one
+    // figure; the caption is its first or last child.
+    const figcaption = `<figcaption>${this.caption(node.caption.inl)}</figcaption>`;
+    const id = node.caption.id ? ` id="${node.caption.id}"` : '';
+    return node.caption.above
+      ? `<figure class="pt-comic-strip"${id}><figcaption>${pre}${this.caption(node.caption.inl)}</figcaption>\n${section}</figure>`
+      : `<figure class="pt-comic-strip"${id}>${pre}${section}\n${figcaption}</figure>`;
   }
 
   /**

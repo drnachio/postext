@@ -1323,6 +1323,25 @@ export interface ResolvedResourceBlock {
   continuesLines: VDTLine[];
 }
 
+/** See {@link VDTBlock.stripCaption}. */
+export interface VDTStripCaption {
+  /** Index of the first caption line in the block's `lines`, and how many
+   *  there are (an inline strip's placeholder line is the other one). */
+  firstLine: number;
+  lineCount: number;
+  /** Under the strip or over it (`captionStyle.position`). */
+  position: 'above' | 'below';
+  /** The resource type the strip is counted in (`type=…`) and its number,
+   *  when it is numbered; then also its `id`, when it has one: a `:ref`
+   *  naming it links here (renderers set the target, as for a figure). */
+  typeId?: string;
+  number?: string;
+  id?: string;
+  /** The bar behind the caption (`captionStyle.backgroundEnabled`): its
+   *  rect RELATIVE TO THE BLOCK'S BOX (flow coordinates), and its fill. */
+  bar?: VDTCaptionBar;
+}
+
 export interface VDTBlock {
   id: string;
   type: VDTBlockType;
@@ -1531,8 +1550,17 @@ export interface VDTBlock {
    *  are relative to the top-left corner of the block's box ON THE SHEET
    *  (`flowRectToPage(page, block.bbox)`), physical whatever the page's
    *  writing mode or direction; renderers and the Sandbox read it through
-   *  `comicBlockOnSheet` / `pageComics`, which move it onto the sheet. */
+   *  `comicBlockOnSheet` / `pageComics`, which move it onto the sheet.
+   *  A strip narrower than its measure (`width`, #590) stands inside the
+   *  box (`comic.frame` then starts away from the corner). */
   comic?: VDTComicPage;
+  /** A strip's caption (`:::strip{caption=…}`, #590): its lines are the
+   *  block's own `lines` (`stripCaption.lines` of them, from
+   *  `firstLine`), set in the caption style — the block's fonts and colour
+   *  are the caption's, and each segment carries its own font and colour
+   *  (the label's) — and painted like the lines of any text block, in the
+   *  flow. Present only on a strip block whose fence has a caption. */
+  stripCaption?: VDTStripCaption;
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
@@ -2188,7 +2216,13 @@ export interface ConfigWarning {
    *  another (`direction: 'right'`); the engine reads its default, and
    *  `used` is what that came to (`direction`: `ltr` or `rtl`, from the
    *  document language; `bodyText.emphasis`: `italic` or `bold`, from it
-   *  too; `bodyText.tashkil`: `keep`).
+   *  too; `bodyText.tashkil`: `keep`; a comics setting — `readingDirection`,
+   *  `artDirection`, a panel style's `borderStyle` and `fit`, the
+   *  lettering's `writingMode`, `textTransform`, `dropFinalStop` and
+   *  `joinSameSpeaker`, a balloon style's `shape`, `tail`, `target`,
+   *  `position`, `align` and `textTransform` — the value it resolved to:
+   *  the default, or that of the style it is laid over), and `suggestion`
+   *  the word it is closest to, when one is close.
    *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
    *  language, and `used` is the digit system that gives. */
@@ -2203,8 +2237,9 @@ export interface ConfigWarning {
    *  family of the stack, the side column's percent); empty for an
    *  `unknownConfigKey`, which is ignored. */
   used: string;
-  /** `unknownConfigKey` only: the known key the unknown one is closest to
-   *  (another case, a letter or two apart), when there is one. */
+  /** `unknownConfigKey`: the known key the unknown one is closest to
+   *  (another case, a letter or two apart), when there is one. Also on an
+   *  `unknownConfigValue` of a comics setting: the closest of its words. */
   suggestion?: string;
 }
 

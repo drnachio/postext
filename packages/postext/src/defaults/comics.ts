@@ -64,6 +64,41 @@ export function defaultComicSfxFont(locale: string | undefined): string {
   }
 }
 
+/**
+ * The words each comics setting that takes one of a few chooses from
+ * (#590): a value written otherwise is read as the setting's default (the
+ * base style's value, for a panel or balloon style) and reported by
+ * `collectConfigWarnings` (`unknownConfigValue`, with the closest word).
+ */
+export const COMIC_CHOICES = {
+  readingDirection: ['auto', 'ltr', 'rtl'],
+  artDirection: ['ltr', 'rtl'],
+  borderStyle: ['solid', 'none', 'rough'],
+  fit: ['cover', 'contain'],
+  writingMode: ['auto', 'horizontal', 'vertical'],
+  textTransform: ['none', 'uppercase'],
+  dropFinalStop: ['auto', 'true', 'false'],
+  joinSameSpeaker: ['butt', 'connector', 'none'],
+  shape: ['oval', 'rounded', 'rectangle', 'cloud', 'burst', 'wavy', 'electric', 'none'],
+  tail: ['curved', 'wedge', 'bubbles', 'zigzag', 'none'],
+  target: ['mouth', 'head'],
+  position: ['auto', 'top-start', 'top-end', 'bottom-start', 'bottom-end', 'top', 'bottom'],
+  align: ['center', 'start'],
+} as const satisfies Record<string, readonly string[]>;
+
+/** Whether `value` is one of the words of `choices`; `dropFinalStop`
+ *  takes `'auto'` or a boolean (its `'true'` and `'false'` are the
+ *  booleans, never strings). */
+export function isComicChoice(choices: readonly string[], value: unknown): boolean {
+  if (choices === COMIC_CHOICES.dropFinalStop) return value === 'auto' || typeof value === 'boolean';
+  return typeof value === 'string' && choices.includes(value);
+}
+
+/** `value` when it is one of `choices`, else undefined (read as unset). */
+function choice<T>(choices: readonly string[], value: T | undefined): T | undefined {
+  return value !== undefined && isComicChoice(choices, value) ? value : undefined;
+}
+
 /** The panel style every panel starts from: a 1 pt black border, a white
  *  ground, the picture cropped to fill the cell. */
 export const DEFAULT_PANEL_STYLE: ResolvedPanelStyleConfig = {
@@ -145,9 +180,9 @@ function resolvePanelStyle(partial: PanelStyleConfig | undefined, base: Resolved
     borderWidth: partial?.borderWidth ?? base.borderWidth,
     borderColor: partial?.borderColor ?? base.borderColor,
     borderRadius: partial?.borderRadius ?? base.borderRadius,
-    borderStyle: partial?.borderStyle ?? base.borderStyle,
+    borderStyle: choice(COMIC_CHOICES.borderStyle, partial?.borderStyle) ?? base.borderStyle,
     background: partial?.background ?? base.background,
-    fit: partial?.fit ?? base.fit,
+    fit: choice(COMIC_CHOICES.fit, partial?.fit) ?? base.fit,
     bleed: partial?.bleed ?? base.bleed,
   };
 }
@@ -162,14 +197,26 @@ function resolveLettering(partial: LetteringConfig | undefined, locale: string |
     bold: partial?.bold ?? d.bold,
     italic: partial?.italic ?? d.italic,
     letterSpacing: partial?.letterSpacing ?? d.letterSpacing,
-    writingMode: partial?.writingMode ?? d.writingMode,
-    textTransform: partial?.textTransform ?? d.textTransform,
-    dropFinalStop: partial?.dropFinalStop ?? d.dropFinalStop,
+    writingMode: choice(COMIC_CHOICES.writingMode, partial?.writingMode) ?? d.writingMode,
+    textTransform: choice(COMIC_CHOICES.textTransform, partial?.textTransform) ?? d.textTransform,
+    dropFinalStop: choice(COMIC_CHOICES.dropFinalStop, partial?.dropFinalStop) ?? d.dropFinalStop,
     doubleDash: partial?.doubleDash ?? d.doubleDash,
     inset: partial?.inset ?? d.inset,
-    joinSameSpeaker: partial?.joinSameSpeaker ?? d.joinSameSpeaker,
+    joinSameSpeaker: choice(COMIC_CHOICES.joinSameSpeaker, partial?.joinSameSpeaker) ?? d.joinSameSpeaker,
     maxColumnChars: typeof partial?.maxColumnChars === 'number' && partial.maxColumnChars >= 1 ? Math.round(partial.maxColumnChars) : d.maxColumnChars,
   };
+}
+
+/** The choice fields of a balloon style, by the words they take. */
+const BALLOON_CHOICE_FIELDS = ['shape', 'tail', 'target', 'position', 'align', 'textTransform'] as const;
+
+/** A balloon style with the choice fields it writes outside their words
+ *  dropped (read as unset: the style it is laid over decides). */
+function cleanBalloon(s: BalloonStyleConfig): BalloonStyleConfig {
+  if (BALLOON_CHOICE_FIELDS.every((k) => s[k] === undefined || isComicChoice(COMIC_CHOICES[k], s[k]))) return s;
+  const out: BalloonStyleConfig = { ...s };
+  for (const k of BALLOON_CHOICE_FIELDS) if (out[k] !== undefined && !isComicChoice(COMIC_CHOICES[k], out[k])) delete out[k];
+  return out;
 }
 
 /** A balloon style laid over another (both partial). */
@@ -224,7 +271,7 @@ function resolveBalloonStyle(partial: BalloonStyleConfig, locale: string | undef
  *  same id laid over it, then the config's other styles (laid over the
  *  speech balloon) in their order. */
 function resolveBalloonStyles(partial: BalloonStyleConfig[] | undefined, locale: string | undefined): ResolvedBalloonStyleConfig[] {
-  const own = (partial ?? []).filter((s) => s && typeof s.id === 'string' && s.id.length > 0);
+  const own = (partial ?? []).filter((s) => s && typeof s.id === 'string' && s.id.length > 0).map(cleanBalloon);
   const byId = new Map<string, BalloonStyleConfig>();
   for (const s of own) if (!byId.has(s.id)) byId.set(s.id, s);
   const builtIn = DEFAULT_BALLOON_STYLES.map((d) => resolveBalloonStyle(layBalloon(byId.get(d.id) ?? { id: d.id }, d), locale));

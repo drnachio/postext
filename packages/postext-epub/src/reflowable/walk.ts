@@ -393,6 +393,18 @@ class DocWalker {
         .filter((l) => l.text.length > 0);
       node.panels.push({ panel, ...(id ? { id } : {}), lines });
     }
+    const caption = block?.stripCaption;
+    if (block && caption) {
+      const ctx = this.ctx({ fontString: block.fontString });
+      const sink: TextSink = { inl: [] };
+      for (const l of block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount)) appendLine(sink, l, ctx);
+      let id: string | undefined;
+      if (caption.id && !this.book.resources.has(caption.id)) {
+        id = idOf('res-', caption.id);
+        this.book.resources.set(caption.id, { file: this.file!, id });
+      }
+      node.caption = { inl: sink.inl, above: caption.position === 'above', ...(id ? { id } : {}) };
+    }
     if (block) {
       const state = this.enter(block, root);
       state.nodes.push(node);

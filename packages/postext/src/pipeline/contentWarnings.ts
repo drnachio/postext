@@ -30,6 +30,7 @@ import { resolveAllConfig } from './config';
 import { planHeadingSections, sectionWritingMode } from './headingStyles';
 import { comicSourceWarnings } from '../comics/warnings';
 import { resolvedComics } from '../defaults/comics';
+import { effectiveResourceTypes } from '../defaults/resourceTypes';
 
 /** A `:::name` line: the name starts it, whatever follows (a line the parser
  *  does not take as a fence — an unknown name, or text after the name — is
@@ -160,9 +161,15 @@ export function collectContentWarnings(
   const byId = new Map<string, Resource>();
   for (const r of resources) if (!byId.has(r.id)) byId.set(r.id, r);
   const anchors = new Set(bookAnchors);
+  // A comic strip counted in a resource type (`:::strip{id=… type=…
+  // caption=…}`, #590) is named by a `:ref` as a figure is.
+  const resourceTypeIds = new Set(effectiveResourceTypes(config, resources).map((t) => t.id));
   for (const b of blocks) {
     if (b.type === 'heading' && b.attrs?.id) anchors.add(b.attrs.id);
     for (const m of b.anchorMarks ?? []) anchors.add(m.anchorId);
+    const strip = b.type === 'directive' && b.directiveName === 'strip' ? b.comic?.attrs : undefined;
+    const stripId = strip?.id?.trim();
+    if (stripId && strip!.caption?.trim() && resourceTypeIds.has(strip!.type?.trim() ?? '')) anchors.add(stripId);
   }
   const isAnchor = (id: string): boolean => anchors.has(id) || (unprefixedId(id) !== undefined && anchors.has(unprefixedId(id)!));
   // An identifier set twice: a reference reaches the first one only.

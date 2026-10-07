@@ -206,6 +206,20 @@ export interface ResourceNumberingResult {
   map: ResourceNumberingMap;
   /** Counter state at the end of the document, to continue from. */
   counters: ResourceCounterState;
+  /** The numbers of the comic strips counted in a resource type's
+   *  sequence (`:::strip{type=figure caption=…}`, #590), by the content
+   *  index of their block. A strip with an `id` is in `map` under it too,
+   *  so a `:ref` names it. */
+  strips: Record<number, ResourceNumberEntry>;
+}
+
+/** The resource type a strip block is counted under: its `type` attribute,
+ *  when it names a type and the strip has a caption. */
+function stripTypeOf(b: ContentBlock, typeById: ReadonlyMap<string, ResourceType>): string | undefined {
+  if (b.type !== 'directive' || b.directiveName !== 'strip' || !b.comic) return undefined;
+  const type = b.comic.attrs.type?.trim();
+  if (!type || !typeById.has(type) || !b.comic.attrs.caption?.trim()) return undefined;
+  return type;
 }
 
 export function computeResourceNumbering(
@@ -245,9 +259,14 @@ export function computeResourceNumberingState(
   interface Occurrence {
     resourceId: string;
     heading: HeadingContext;
+    /** A strip: the content index of its block and the type it counts in. */
+    strip?: { blockIdx: number; typeId: string };
   }
   const firstOccurrences: Occurrence[] = [];
   const seen = new Set<string>(start?.numbered ? Object.keys(start.numbered) : []);
+  const inherited: ReadonlySet<string> = new Set(seen);
+  /** Ids of the strips counted so far: the first strip of an id wins. */
+  const stripIds = new Set<string>();
 
   const record = (resourceId: string, blockIdx: number) => {
     if (seen.has(resourceId)) return;
@@ -263,6 +282,16 @@ export function computeResourceNumberingState(
     if (b.type === 'resourceBlock' && b.resourceId) {
       record(b.resourceId, i);
     }
+    const stripType = stripTypeOf(b, typeById);
+    if (stripType !== undefined) {
+      const id = b.comic!.attrs.id?.trim();
+      // A strip is counted where it stands (a `:ref` to it earlier in the
+      // text does not number it: strips are read in place).
+      if (!(id && (inherited.has(id) || stripIds.has(id) || resourceById.has(id)))) {
+        if (id) stripIds.add(id);
+        firstOccurrences.push({ resourceId: id ?? '', heading: headingContext[i] ?? EMPTY_HEADING, strip: { blockIdx: i, typeId: stripType } });
+      }
+    }
     for (const span of b.spans) {
       if (span.ref?.resourceId) record(resourceRefId(span.ref.resourceId, (id) => resourceById.has(id)), i);
     }
@@ -272,9 +301,9 @@ export function computeResourceNumberingState(
   // order. Resources with an unknown id or unknown type are skipped.
   const byType = new Map<string, Occurrence[]>();
   for (const occ of firstOccurrences) {
-    const resource = resourceById.get(occ.resourceId);
-    if (!resource) continue;
-    const type = typeById.get(resource.typeId);
+    const typeId = occ.strip ? occ.strip.typeId : resourceById.get(occ.resourceId)?.typeId;
+    if (typeId === undefined) continue;
+    const type = typeById.get(typeId);
     if (!type) continue;
     const list = byType.get(type.id);
     if (list) list.push(occ);
@@ -283,6 +312,7 @@ export function computeResourceNumberingState(
 
   const map: ResourceNumberingMap = { ...(start?.numbered ?? {}) };
   const counters: ResourceCounterState = { ...(start?.counters ?? {}) };
+  const strips: Record<number, ResourceNumberEntry> = {};
   for (const [typeId, occurrences] of byType) {
     const type = typeById.get(typeId)!;
     const tokens = parseResourceTemplate(type.numberingTemplate);
@@ -299,16 +329,18 @@ export function computeResourceNumberingState(
       }
       counter += 1;
       prevHeading = occ.heading;
-      map[occ.resourceId] = {
+      const entry: ResourceNumberEntry = {
         number: renderResourceNumber(tokens, counter, style, occ.heading, digits),
         typeId,
         heading: occ.heading,
       };
+      if (occ.strip) strips[occ.strip.blockIdx] = entry;
+      if (occ.resourceId) map[occ.resourceId] = entry;
     }
     if (prevHeading) counters[typeId] = { counter, heading: prevHeading };
   }
 
-  return { map, counters };
+  return { map, counters, strips };
 }
 
 /** A number written with a resource-style template (`{n}`, `{h1}`..`{h6}`)
