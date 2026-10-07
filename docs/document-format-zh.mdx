@@ -77,7 +77,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
     <tr>
       <td>引用块</td>
       <td><code>&gt; quoted text</code></td>
-      <td>引文的每一行都必须以<code>&gt;</code>开头（后面可有一个空格）。连续的引文行合并为一个引用块，连接方式与段落行相同。它按<code>bodyText.blockquote</code>的设置排版：除非你修改，否则为灰色斜体，并带有正文的首行缩进（见<a href="/en/docs/configuration#blockquotes">配置 › 引用块</a>）。</td>
+      <td>引文的每一行都必须以<code>&gt;</code>开头（后面可有一个空格）。连续的引文行合并为一个引用块，连接方式与段落行相同。它按<code>bodyText.blockquote</code>的设置排版：除非你修改，否则为灰色斜体，并带有正文的首行缩进（见<a href="/zh/docs/configuration#引用块">配置 › 引用块</a>）。</td>
     </tr>
     <tr>
       <td>无序列表</td>
@@ -646,7 +646,7 @@ Two lines lower still.
     <tr>
       <td>不换行空格</td>
       <td>直接输入字符本身：U+00A0、U+202F、U+2007</td>
-      <td>把两侧的词粘在一起，使行不会在它们之间断开：数字与单位（37 °C）、页码引用（p. 12）、千位分组（225 000）。不换行空格（U+00A0）、窄不换行空格（U+202F）和数字空格（U+2007）都有粘连作用，在正文、题注、单元格、框和书眉中均如此，并各自保持原有宽度：两端对齐只拉伸词间空格。许多字体没有窄不换行空格或数字空格的字形，这时Canvas、HTML和PDF都按浏览器的方式排：分别为半个词间空格和一个数字的宽度。几乎所有字体都有U+00A0，因此它最稳妥。这样粘连起来、比整行还宽的一组，会在最后一个不换行空格处断开，而不在词内断开。词连接符（U+2060）起粘连作用但不占宽度。请直接输入字符本身：<code>{'&nbsp;'}</code>之类的HTML实体会照写法印出。见<a href="/en/docs/justification#where-a-line-never-breaks">行不会断开的地方</a>。</td>
+      <td>把两侧的词粘在一起，使行不会在它们之间断开：数字与单位（37 °C）、页码引用（p. 12）、千位分组（225 000）。不换行空格（U+00A0）、窄不换行空格（U+202F）和数字空格（U+2007）都有粘连作用，在正文、题注、单元格、框和书眉中均如此，并各自保持原有宽度：两端对齐只拉伸词间空格。许多字体没有窄不换行空格或数字空格的字形，这时Canvas、HTML和PDF都按浏览器的方式排：分别为半个词间空格和一个数字的宽度。几乎所有字体都有U+00A0，因此它最稳妥。这样粘连起来、比整行还宽的一组，会在最后一个不换行空格处断开，而不在词内断开。词连接符（U+2060）起粘连作用但不占宽度。请直接输入字符本身：<code>{'&nbsp;'}</code>之类的HTML实体会照写法印出。见<a href="/zh/docs/justification#行从不断开的地方">行不会断开的地方</a>。</td>
     </tr>
     <tr>
       <td>链接</td>
@@ -988,7 +988,7 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
     </tr>
     <tr>
       <td><code>sort</code></td>
-      <td>最后一级的排序键，用于该级应按其他字母排序的情况：<code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>、<code>term="20th century" sort="twentieth century"</code>。中文索引按排序器给出的汉字读音排序和分组。多音字若要按另一读音排序，就用只有所需读音的汉字写排序键：<code>:index[重阳]&#123;sort="崇阳"&#125;</code>把重阳归在C下，位于程与崔之间，而不是归在Z下。拼音排序键（<code>sort="chong yang"</code>）也能归到C，但会排在C下所有中文条目之后，因为排序器把拉丁字母排在汉字之后（见<a href="/en/docs/configuration#back-of-book-index">配置 › 索引</a>中的<code>groupBy</code>）。</td>
+      <td>最后一级的排序键，用于该级应按其他字母排序的情况：<code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>、<code>term="20th century" sort="twentieth century"</code>。中文索引按排序器给出的汉字读音排序和分组。多音字若要按另一读音排序，就用只有所需读音的汉字写排序键：<code>:index[重阳]&#123;sort="崇阳"&#125;</code>把重阳归在C下，位于程与崔之间，而不是归在Z下。拼音排序键（<code>sort="chong yang"</code>）也能归到C，但会排在C下所有中文条目之后，因为排序器把拉丁字母排在汉字之后（见<a href="/zh/docs/configuration#索引">配置 › 索引</a>中的<code>groupBy</code>）。</td>
     </tr>
     <tr>
       <td><code>yomi</code>、<code>reading</code></td>

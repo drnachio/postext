@@ -1,9 +1,9 @@
 {
   "Metadata": {
     "title": "Postext — ウェブで動く、プログラムできる組版システム",
-    "description": "何世紀も受け継がれてきた印刷組版の技術と、現代のウェブ技術をつなぐ組版エンジン。意味構造のあるMarkdownを渡すと、出版品質のページが得られます。出力はHTML、Canvas、入稿できるPDFです。",
+    "description": "何世紀も受け継がれてきた印刷組版の技術と、現代のウェブ技術をつなぐ組版エンジン。意味構造のあるMarkdownを渡すと、出版品質のページが得られます。出力はHTML、Canvas、入稿できるPDF、EPUBです。",
     "ogTitle": "Postext — ウェブで動く、プログラムできる組版システム",
-    "ogDescription": "意味構造のあるMarkdownから、出版品質のページを。出力はHTML、Canvas、入稿できるPDFです。",
+    "ogDescription": "意味構造のあるMarkdownから、出版品質のページを。出力はHTML、Canvas、入稿できるPDF、EPUBです。",
     "ogImageAlt": "Postext — ウェブで動く、プログラムできる組版システム",
     "keywords": "組版システム, タイポグラフィー, 組版エンジン, react, markdown, pretext, 書籍組版, 段末そろえ, ウィドウ・オーファン防止, ハイフネーション, pdf, ウェブタイポグラフィー, 両端そろえ, knuth-plass"
   },

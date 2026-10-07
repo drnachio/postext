@@ -28,7 +28,6 @@ export async function generateMetadata({
     title: t("metaTitle"),
     description: t("metaDescription"),
     noindex: true,
-    markdown: false,
   });
 }
 

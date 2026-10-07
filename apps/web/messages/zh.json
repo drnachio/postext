@@ -1,9 +1,9 @@
 {
   "Metadata": {
     "title": "Postext — 面向Web的可编程排版引擎",
-    "description": "一个排版引擎，把延续数百年的印刷排版工艺带到现代Web技术中。输入语义化的Markdown，输出出版级的页面，渲染为HTML、Canvas或可直接付印的PDF。",
+    "description": "一个排版引擎，把延续数百年的印刷排版工艺带到现代Web技术中。输入语义化的Markdown，输出出版级的页面，渲染为HTML、Canvas、可直接付印的PDF或EPUB。",
     "ogTitle": "Postext — 面向Web的可编程排版引擎",
-    "ogDescription": "输入语义化的Markdown，输出出版级的页面，渲染为HTML、Canvas或可直接付印的PDF。",
+    "ogDescription": "输入语义化的Markdown，输出出版级的页面，渲染为HTML、Canvas、可直接付印的PDF或EPUB。",
     "ogImageAlt": "Postext — 面向Web的可编程排版引擎",
     "keywords": "排版引擎,排版,字体排印,react,markdown,pretext,书刊排版,各栏齐底,段首孤行,段末孤行,断词,pdf,Web排版,两端对齐,knuth-plass"
   },

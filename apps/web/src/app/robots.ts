@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/*/sandbox"],
+        // The Sandbox stays crawlable: its noindex is only read on a
+        // fetched page, and a blocked URL can still be indexed from links.
+        disallow: ["/api/"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

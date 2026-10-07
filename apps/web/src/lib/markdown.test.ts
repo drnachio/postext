@@ -44,7 +44,7 @@ describe("mdxToMarkdown", () => {
       [
         "| Field | Meaning |",
         "| --- | --- |",
-        `| \`a \\| b\` | See [more](${PAGE}#more), **bold** {attr.<key>} x\\|y |`,
+        `| \`a \\| b\` | See [more](${PAGE}.md#more), **bold** {attr.<key>} x\\|y |`,
         "| Spanning note |  |",
       ].join("\n")
     );
@@ -104,7 +104,7 @@ describe("mdxToMarkdown", () => {
       [
         "[excerpt fonts 2-3]",
         "",
-        "Load [every face](/docs/font-loading.md) first; see [x](/cookbook/x.md) and [the opener](p02.webp).",
+        "Load [every face](https://postext.dev/docs/font-loading.md) first; see [x](https://postext.dev/cookbook/x.md) and [the opener](p02.webp).",
         "",
         "[shot 1: The band.]",
         "",
@@ -131,6 +131,54 @@ describe("mdxToMarkdown", () => {
   });
 });
 
+describe("links and inline HTML", () => {
+  it("makes site links absolute, leading to their renditions, and turns inline HTML into Markdown", () => {
+    const src = [
+      'See [Configuration](/en/docs/configuration#body-text), [this](#below), [a chapter](/en/cookbook?cat=x) and [the app](/en/sandbox).',
+      'The <a href="/zh/docs/configuration#正文">正文</a> page, <code>{pageNumber}</code>, <em>one</em> and <strong>two</strong>.',
+      "Literal in code: `<a download>` and `[x](/en/docs)`.",
+    ].join("\n");
+    expect(mdxToMarkdown(src, "en", PAGE)).toBe(
+      [
+        "See [Configuration](https://postext.dev/en/docs/configuration.md#body-text), [this](https://postext.dev/en/docs/x.md#below), [a chapter](https://postext.dev/en/cookbook?cat=x) and [the app](https://postext.dev/en/sandbox.md).",
+        "The [正文](https://postext.dev/zh/docs/configuration.md#正文) page, `{pageNumber}`, *one* and **two**.",
+        "Literal in code: `<a download>` and `[x](/en/docs)`.",
+      ].join("\n")
+    );
+  });
+
+  it("leaves no site-relative link or stray inline HTML in any rendition (nor so in llms-full.txt)", () => {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"]) {
+      for (const path of markdownPaths(locale)) {
+        // Prose only: fenced blocks and code spans hold samples.
+        let fence = false;
+        for (const line of pageMarkdown(locale, path)!.split("\n")) {
+          if (/^\s*(```|~~~)/.test(line)) fence = !fence;
+          if (fence) continue;
+          const prose = line.replace(/(`+)[\s\S]*?\1/g, "");
+          expect(prose, `${locale}${path}`).not.toMatch(/\]\(\/(?!\/)/);
+          expect(prose, `${locale}${path}`).not.toMatch(/<\/?(?:a|em|strong|code)\b[^>]*>/);
+        }
+      }
+    }
+  });
+});
+
+describe("llms.txt", () => {
+  it("is written in the locale's language, with features, packages and links", () => {
+    for (const locale of ["es", "ca", "zh", "ja", "ar"]) {
+      const txt = llmsTxt(locale);
+      expect(txt, locale).not.toMatch(/source code, issues|video walkthroughs|PDF backend|EPUB writer/);
+      for (const pkg of ["postext", "postext-pdf", "postext-epub", "postext-folio", "postext-citeproc"]) {
+        expect(txt).toContain(`(https://www.npmjs.com/package/${pkg})`);
+      }
+      expect(txt).toContain(`https://postext.dev/${locale}/docs/justification.md#`);
+      expect(txt).toContain("https://postext.dev/.well-known/agent-skills/index.json");
+      expect(txt).toContain(`https://postext.dev/${locale}/sandbox.md`);
+    }
+  });
+});
+
 describe("page renditions", () => {
   it("renders every advertised path", () => {
     for (const locale of ["en", "es"]) {
@@ -145,7 +193,7 @@ describe("page renditions", () => {
   });
 
   it("rejects unknown pages and locales", () => {
-    expect(pageMarkdown("en", "/sandbox")).toBeNull();
+    expect(pageMarkdown("en", "/nope")).toBeNull();
     expect(pageMarkdown("fr", "")).toBeNull();
     expect(pageMarkdown("en", "/docs/nope")).toBeNull();
     expect(pageMarkdown("en", "/cookbook/nope")).toBeNull();

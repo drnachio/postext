@@ -31,6 +31,7 @@ import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
 import { READING_PREPAINT_SCRIPT } from "@/components/reading/readingPrefs";
 import "../globals.css";
 import { htmlDir, htmlLang } from "@/i18n/locales";
+import { version } from "postext/package.json";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
@@ -188,6 +189,7 @@ export default async function LocaleLayout({
       name: SITE_NAME,
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Web",
+      softwareVersion: version,
       url: SITE_URL,
       inLanguage: htmlLang(locale),
       description: t("description"),
@@ -204,6 +206,7 @@ export default async function LocaleLayout({
       "@type": "Organization",
       name: SITE_NAME,
       url: SITE_URL,
+      logo: `${SITE_URL}/apple-icon`,
       sameAs: ["https://github.com/drnachio/postext", "https://www.youtube.com/@Postext"],
     },
   ];

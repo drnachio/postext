@@ -59,6 +59,19 @@ const LABELS = {
     fullDocs: "Full documentation",
     links: "Links",
     localeDocs: "English documentation",
+    features: "Features",
+    packages: "Packages",
+    pkgPostext: "the layout engine: Markdown in, pages out, with the HTML and canvas renderers",
+    pkgPdf: "print-ready PDF, tagged for accessibility (PDF/UA), with crop marks and CMYK",
+    pkgEpub: "EPUB 3 e-books, fixed layout or reflowable",
+    pkgFolio: "a 3D book viewer whose pages turn by hand",
+    pkgCiteproc: "citations and bibliographies in CSL styles (APA, Chicago, IEEE, Vancouver, GB/T 7714…) and a BibTeX reader",
+    linkGithub: "source code, issues and examples",
+    linkNpm: "the `postext` package",
+    linkYoutube: "video walkthroughs",
+    agentSkills: "Agent skills",
+    agentSkillsDesc: "index of the agent skills (postext-port turns a PDF, Word, EPUB, InDesign or HTML publication into a Postext project)",
+    guideBundleDesc: "the Postext guide as one .postext file (manifest, Markdown chapters, fonts and pictures)",
     cookbook: "Cookbook",
     cookbookTitle: "Postext Cookbook",
     cookbookDesc: "Postext examples to copy, from a chapter opener to a whole book, each with the pages it sets and its full code.",
@@ -128,6 +141,19 @@ const LABELS = {
     fullDocs: "Documentación completa",
     links: "Enlaces",
     localeDocs: "Documentación en español",
+    features: "Funciones",
+    packages: "Paquetes",
+    pkgPostext: "el motor de maquetación: entra Markdown y salen páginas, con los renderizadores HTML y canvas",
+    pkgPdf: "PDF para imprenta, etiquetado para la accesibilidad (PDF/UA), con marcas de corte y CMYK",
+    pkgEpub: "libros electrónicos EPUB 3, de maquetación fija o fluida",
+    pkgFolio: "un visor de libros en 3D cuyas páginas se pasan a mano",
+    pkgCiteproc: "citas y bibliografías en estilos CSL (APA, Chicago, IEEE, Vancouver, GB/T 7714…) y un lector de BibTeX",
+    linkGithub: "código fuente, incidencias y ejemplos",
+    linkNpm: "el paquete `postext`",
+    linkYoutube: "vídeos explicativos",
+    agentSkills: "Skills para agentes",
+    agentSkillsDesc: "índice de las skills para agentes (postext-port convierte una publicación en PDF, Word, EPUB, InDesign o HTML en un proyecto de Postext)",
+    guideBundleDesc: "la guía de Postext en un solo fichero .postext (manifiesto, capítulos en Markdown, fuentes e imágenes)",
     cookbook: "Recetario",
     cookbookTitle: "Recetario de Postext",
     cookbookDesc: "Ejemplos de Postext para copiar, desde una apertura de capítulo hasta un libro entero, cada uno con las páginas que compone y su código completo.",
@@ -197,6 +223,19 @@ const LABELS = {
     fullDocs: "Documentació completa",
     links: "Enllaços",
     localeDocs: "Documentació en català",
+    features: "Funcions",
+    packages: "Paquets",
+    pkgPostext: "el motor de maquetació: hi entra Markdown i en surten pàgines, amb els renderitzadors HTML i canvas",
+    pkgPdf: "PDF per a impremta, etiquetat per a l’accessibilitat (PDF/UA), amb marques de tall i CMYK",
+    pkgEpub: "llibres electrònics EPUB 3, de maquetació fixa o fluida",
+    pkgFolio: "un visor de llibres en 3D amb pàgines que es passen a mà",
+    pkgCiteproc: "cites i bibliografies en estils CSL (APA, Chicago, IEEE, Vancouver, GB/T 7714…) i un lector de BibTeX",
+    linkGithub: "codi font, incidències i exemples",
+    linkNpm: "el paquet `postext`",
+    linkYoutube: "vídeos explicatius",
+    agentSkills: "Skills per a agents",
+    agentSkillsDesc: "índex de les skills per a agents (postext-port converteix una publicació en PDF, Word, EPUB, InDesign o HTML en un projecte de Postext)",
+    guideBundleDesc: "la guia de Postext en un sol fitxer .postext (manifest, capítols en Markdown, fonts i imatges)",
     cookbook: "Receptari",
     cookbookTitle: "Receptari de Postext",
     cookbookDesc: "Exemples de Postext per copiar, des d'una obertura de capítol fins a un llibre sencer, cadascun amb les pàgines que compon i el codi complet.",
@@ -266,6 +305,19 @@ const LABELS = {
     fullDocs: "完整文档",
     links: "链接",
     localeDocs: "简体中文文档",
+    features: "功能",
+    packages: "软件包",
+    pkgPostext: "排版引擎：输入Markdown，输出页面，附带HTML和Canvas渲染器",
+    pkgPdf: "可付印的PDF，可加无障碍标签（PDF/UA），带裁切标记和CMYK",
+    pkgEpub: "EPUB 3电子书，固定版式或流式版式",
+    pkgFolio: "三维图书阅读器，书页可以用手翻动",
+    pkgCiteproc: "按CSL样式（APA、Chicago、IEEE、Vancouver、GB/T 7714等）排出引文和参考文献，并能读取BibTeX",
+    linkGithub: "源代码、问题和示例",
+    linkNpm: "`postext`软件包",
+    linkYoutube: "视频讲解",
+    agentSkills: "智能体技能",
+    agentSkillsDesc: "智能体技能索引（postext-port把PDF、Word、EPUB、InDesign或HTML出版物转换成Postext项目）",
+    guideBundleDesc: "整本Postext指南，打包成一个.postext文件（清单、Markdown章节、字体和图片）",
     cookbook: "排版食谱",
     cookbookTitle: "Postext排版食谱",
     cookbookDesc: "可直接复制的Postext示例，从一张章首页到一整本书，每个都附有排出的页面和完整代码。",
@@ -335,6 +387,19 @@ const LABELS = {
     fullDocs: "ドキュメント全文",
     links: "リンク",
     localeDocs: "日本語のドキュメント",
+    features: "機能",
+    packages: "パッケージ",
+    pkgPostext: "組版エンジン。Markdownを渡すとページが得られます。HTMLとCanvasのレンダラー付き",
+    pkgPdf: "入稿用のPDF。アクセシビリティのタグ付け（PDF/UA）、トンボ、CMYKに対応",
+    pkgEpub: "EPUB 3の電子書籍。固定レイアウトかリフロー型",
+    pkgFolio: "ページを手でめくれる3Dの本のビューアー",
+    pkgCiteproc: "CSLスタイル（APA、Chicago、IEEE、Vancouver、SIST 02…）による引用と参考文献、BibTeXの読み込み",
+    linkGithub: "ソースコード、Issue、サンプル",
+    linkNpm: "`postext`パッケージ",
+    linkYoutube: "解説動画",
+    agentSkills: "エージェントスキル",
+    agentSkillsDesc: "エージェントスキルの一覧（postext-portは、PDF、Word、EPUB、InDesign、HTMLの出版物をPostextのプロジェクトに変換します）",
+    guideBundleDesc: "Postextのガイド一冊を一つの.postextファイルにしたもの（マニフェスト、Markdownの章、フォント、画像）",
     cookbook: "レシピ集",
     cookbookTitle: "Postextレシピ集",
     cookbookDesc: "そのままコピーして使えるPostextの例。章扉から1冊の本まで、それぞれが組むページと全コードを添えています。",
@@ -404,6 +469,19 @@ const LABELS = {
     fullDocs: "التوثيق الكامل",
     links: "روابط",
     localeDocs: "التوثيق بالعربية",
+    features: "الميزات",
+    packages: "الحزم",
+    pkgPostext: "محرّك الإخراج: تُدخل Markdown وتحصل على صفحات، ومعه عارضا HTML وCanvas",
+    pkgPdf: "ملف PDF جاهز للطباعة، موسوم لإتاحة الوصول (PDF/UA)، مع علامات القص وألوان CMYK",
+    pkgEpub: "كتب إلكترونية بصيغة EPUB 3، بتخطيط ثابت أو قابل لإعادة التدفق",
+    pkgFolio: "عارض كتب ثلاثي الأبعاد تُقلَّب صفحاته باليد",
+    pkgCiteproc: "الاستشهادات وقوائم المراجع بأنماط CSL (APA وChicago وIEEE وVancouver وGB/T 7714…) وقارئ لملفات BibTeX",
+    linkGithub: "الشيفرة المصدرية والمشكلات والأمثلة",
+    linkNpm: "حزمة `postext`",
+    linkYoutube: "شروح بالفيديو",
+    agentSkills: "مهارات الوكلاء",
+    agentSkillsDesc: "فهرس مهارات الوكلاء (postext-port تحوّل منشورًا بصيغة PDF أو Word أو EPUB أو InDesign أو HTML إلى مشروع Postext)",
+    guideBundleDesc: "دليل Postext في ملف ‎.postext واحد (البيان وفصول Markdown والخطوط والصور)",
     cookbook: "دليل الوصفات",
     cookbookTitle: "دليل وصفات Postext",
     cookbookDesc: "أمثلة Postext جاهزة للنسخ، من صفحة افتتاح فصل إلى كتاب كامل، ومع كل منها الصفحات التي ينضّدها والشيفرة كاملة.",
@@ -487,32 +565,69 @@ function unwrapJsxStrings(text: string): string {
   );
 }
 
+/** Site paths with a Markdown rendition (proxy.ts negotiates the same ones). */
+const RENDITION_PATH =
+  /^\/(en|es|ca|zh|ja|ar)(\/(docs(\/[a-z0-9-]+)?|cookbook(\/[a-z0-9-]+)?|license|privacy-policy|cookie-policy|accessibility|glossary|sandbox))?$/;
+
+/**
+ * A link of a rendition as an agent can follow it out of the page (in
+ * llms-full.txt, or pasted into a prompt): a site path becomes absolute and
+ * leads to its Markdown rendition, an `#anchor` to the rendition's heading.
+ * A query (`?cat=`) keeps the HTML page, the one that reads it.
+ */
+function absoluteHref(href: string, pageUrl: string): string {
+  if (href.startsWith("#")) return `${pageUrl}.md${href}`;
+  if (!href.startsWith("/") || href.startsWith("//")) return href;
+  const [, path, rest] = href.match(/^([^?#]*)(.*)$/)!;
+  const clean = path!.replace(/(.)\/$/, "$1");
+  if (!rest!.startsWith("?") && RENDITION_PATH.test(clean)) return `${SITE_URL}${clean}.md${rest}`;
+  return `${SITE_URL}${href}`;
+}
+
+/**
+ * Inline HTML in a line of prose → inline Markdown (`<code>`, `<em>`,
+ * `<strong>`, `<a href>`), and every site link made absolute. Backtick code
+ * spans are left as they are: `<a download>` there is the text of a sample.
+ */
+function inlineMarkdown(
+  line: string,
+  pageUrl: string,
+  finish: { text?: (s: string) => string; code?: (s: string) => string } = {}
+): string {
+  const text = finish.text ?? ((s: string) => s);
+  const code = finish.code ?? ((s: string) => s);
+  const spans: string[] = [];
+  const hold = (s: string) => `\u0000${spans.push(s) - 1}\u0000`;
+  const out = line
+    .replace(/(`+)[\s\S]*?\1/g, (s) => hold(text(s)))
+    .replace(/<code>([\s\S]*?)<\/code>/g, (_, c: string) => {
+      const s = code(c);
+      const tick = s.includes("`") ? "``" : "`";
+      return hold(`${tick}${s}${tick}`);
+    })
+    .replace(/<strong>([\s\S]*?)<\/strong>/g, "**$1**")
+    .replace(/<em>([\s\S]*?)<\/em>/g, "*$1*")
+    .replace(/<a\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g, (_, href: string, label: string) => `[${label}](${href})`)
+    .replace(/\]\(([/#][^)\s]*)\)/g, (_, href: string) => `](${absoluteHref(href, pageUrl)})`);
+  return out
+    .split(/(\u0000\d+\u0000)/)
+    .map((part, i) => (i % 2 ? spans[Number(part.slice(1, -1))]! : text(part)))
+    .join("");
+}
+
 /** Inline HTML inside a table cell → inline Markdown on one line. */
 function inlineHtmlToMarkdown(html: string, pageUrl: string): string {
   const flat = unwrapJsxStrings(html.replace(/\s*\n\s*/g, " ").trim());
-  // Code spans and prose alternate; only prose gets tags rewritten, and each
-  // side escapes its own pipes so the GFM row stays intact.
-  return flat
-    .split(/(<code>[\s\S]*?<\/code>)/g)
-    .map((part) => {
-      const code = part.match(/^<code>([\s\S]*?)<\/code>$/);
-      if (code) {
-        const text = decodeEntities(code[1]!).replace(/\|/g, "\\|");
-        const tick = text.includes("`") ? "``" : "`";
-        return `${tick}${text}${tick}`;
-      }
-      let out = part
-        .replace(/<strong>([\s\S]*?)<\/strong>/g, "**$1**")
-        .replace(/<em>([\s\S]*?)<\/em>/g, "*$1*")
-        .replace(/<a\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g, (_, href: string, label: string) =>
-          `[${label}](${href.startsWith("#") ? pageUrl + href : href})`
-        )
-        .replace(/<br\s*\/?>/g, " ")
-        .replace(/<\/?(?:span|bdi|p|div|small|sup|sub)\b[^>]*>/g, "");
-      out = decodeEntities(out).replace(/\|/g, "\\|");
-      return out;
-    })
-    .join("");
+  // Code and prose each decode and escape their own pipes, so the GFM row
+  // stays intact.
+  return inlineMarkdown(flat, pageUrl, {
+    code: (s) => decodeEntities(s).replace(/\|/g, "\\|"),
+    text: (s) =>
+      decodeEntities(s.replace(/<br\s*\/?>/g, " ").replace(/<\/?(?:span|bdi|p|div|small|sup|sub)\b[^>]*>/g, "")).replace(
+        /\|/g,
+        "\\|"
+      ),
+  });
 }
 
 function htmlTableToMarkdown(table: string, pageUrl: string): string {
@@ -642,11 +757,14 @@ export function mdxToMarkdown(
   // className="font-body">縦書き</span>`, `<bdi dir="ltr">`).
   const prose = (line: string) =>
     decodeEntities(
-      unwrapJsxStrings(
-        inlineComponents(line, renderers)
-          .replace(/<abbr\b[^>]*>(.*?)<\/abbr>/g, "$1")
-          .replace(/<\/?(?:span|bdi)\b[^>]*>/g, "")
-          .replace(/\\([{}])/g, "$1")
+      inlineMarkdown(
+        unwrapJsxStrings(
+          inlineComponents(line, renderers)
+            .replace(/<abbr\b[^>]*>(.*?)<\/abbr>/g, "$1")
+            .replace(/<\/?(?:span|bdi)\b[^>]*>/g, "")
+            .replace(/\\([{}])/g, "$1")
+        ),
+        pageUrl
       )
     );
 
@@ -797,11 +915,13 @@ function transcriptMarkdown(video: TranscriptVideo, locale: string): string {
   const t = messagesFor(locale).Transcript;
   const lang = siteLocale(locale);
   const blocks = TRANSCRIPTS[video][lang] ?? TRANSCRIPTS[video].en;
+  // The scenes name the tags they show (<h1>, <p>): as code, not markup.
+  const literal = (s: string) => s.replace(/<\/?[a-z][a-z0-9]*>/g, "`$&`");
   return [
     `**${t.summary}.** ${t.note}`,
     "",
     ...blocks.map((b) =>
-      [`- ${b.time}`, b.scene && `*${t.onScreen}:* ${b.scene}`, b.narration && `*${t.narration}:* ${b.narration}`]
+      [`- ${b.time}`, b.scene && `*${t.onScreen}:* ${literal(b.scene)}`, b.narration && `*${t.narration}:* ${literal(b.narration)}`]
         .filter(Boolean)
         .join(" · ")
     ),
@@ -886,7 +1006,7 @@ export function homeMarkdown(locale: string): string {
   return [
     header({ title: m.Metadata.title, description: m.Metadata.description, locale, path: "" }),
     plainSummary(locale, m.PlainLanguage.home),
-    `## ${m.Hero.title}`,
+    `## ${stripTags(m.Hero.title)}`,
     "",
     m.Hero.subtitle,
     "",
@@ -1053,6 +1173,21 @@ export function accessibilityMarkdown(locale: string): string {
     ...list(t.limitations),
     "",
     `## ${t.reportTitle}`, "", linkify(t.reportText, "issuesLink", `${REPO_URL}/issues`), "",
+  ].join("\n");
+}
+
+/** The Sandbox is an app: its rendition says what it does and leads to its guide. */
+export function sandboxMarkdown(locale: string): string {
+  const t = messagesFor(locale).Sandbox;
+  const labels = labelsFor(locale);
+  const guide = getAllDocs().find((d) => d.slug === "sandbox")?.locales[locale];
+  return [
+    header({ title: t.metaTitle, description: t.metaDescription, locale, path: "/sandbox" }),
+    labels.sandboxDesc,
+    "",
+    ...(guide ? [`- [${guide.title}](${markdownUrl(locale, "/docs/sandbox")})${guide.description ? `: ${guide.description}` : ""}`] : []),
+    `- [${GUIDE_BUNDLE_FILE}](${SITE_URL}${GUIDE_BUNDLE_PATH}): ${labels.guideBundleDesc}`,
+    "",
   ].join("\n");
 }
 
@@ -1472,6 +1607,7 @@ export function pageMarkdown(locale: string, path: string): string | null {
   if (recipe) return recipeMarkdown(recipe[1]!, locale);
   if ((LEGAL_PAGES as readonly string[]).includes(clean)) return legalMarkdown(clean as LegalPage, locale);
   if (clean === "accessibility") return accessibilityMarkdown(locale);
+  if (clean === "sandbox") return sandboxMarkdown(locale);
   if (`/${clean}` === GLOSSARY_PATH) return glossaryMarkdown(locale);
   return null;
 }
@@ -1482,7 +1618,7 @@ export function markdownPaths(locale: string): string[] {
     .filter((d) => d.locales[locale])
     .map((d) => `/docs/${d.slug}`);
   const recipes = getVisibleRecipes().map((r) => recipeHref(r.slug));
-  return ["", "/docs", ...docs, COOKBOOK_PATH, ...recipes, ...LEGAL_PAGES.map((p) => `/${p}`), "/accessibility", GLOSSARY_PATH];
+  return ["", "/docs", ...docs, COOKBOOK_PATH, ...recipes, ...LEGAL_PAGES.map((p) => `/${p}`), "/accessibility", GLOSSARY_PATH, "/sandbox"];
 }
 
 // ---------------------------------------------------------------------------
@@ -1509,10 +1645,20 @@ function cookbookList(locale: string): string[] {
   ];
 }
 
+/** The published packages, each with its label key. */
+const PACKAGES = [
+  ["postext", "pkgPostext"],
+  ["postext-pdf", "pkgPdf"],
+  ["postext-epub", "pkgEpub"],
+  ["postext-folio", "pkgFolio"],
+  ["postext-citeproc", "pkgCiteproc"],
+] as const;
+
 /** The `llms.txt` index (https://llmstxt.org) for one locale. */
 export function llmsTxt(locale: string): string {
   const m = messagesFor(locale);
   const labels = labelsFor(locale);
+  const f = m.Features as Record<string, string>;
   const lines = [
     `# ${SITE_NAME}`,
     "",
@@ -1520,9 +1666,21 @@ export function llmsTxt(locale: string): string {
     "",
     m.Hero.subtitle,
     "",
-    `- ${labels.install}: \`pnpm add postext\` (PDF backend: \`pnpm add postext-pdf\`; EPUB writer: \`pnpm add postext-epub\`)`,
+    `- ${labels.install}: \`pnpm add postext\``,
     `- ${labels.home}: [${markdownUrl(locale)}](${markdownUrl(locale)})`,
     `- ${labels.fullDocs}: [${labels.fullText}](${SITE_URL}${locale === routing.defaultLocale ? "" : `/${locale}`}/llms-full.txt)`,
+    "",
+    `## ${labels.features}`,
+    "",
+    ...FEATURE_KEYS.map((k) => {
+      const [page, hash] = featureDocPath(k, locale).split("#");
+      const url = `${markdownUrl(locale, page)}${hash ? `#${hash}` : ""}`;
+      return `- [${stripTags(f[`${k}Title`]!)}](${url}): ${stripTags(f[`${k}Description`]!)}`;
+    }),
+    "",
+    `## ${labels.packages}`,
+    "",
+    ...PACKAGES.map(([name, key]) => `- [${name}](https://www.npmjs.com/package/${name}): ${labels[key]}`),
     "",
     `## ${labels.docs}`,
     "",
@@ -1531,10 +1689,11 @@ export function llmsTxt(locale: string): string {
     ...cookbookList(locale),
     `## ${labels.links}`,
     "",
-    `- [GitHub](${REPO_URL}): source code, issues and examples`,
-    `- [npm](${NPM_URL}): the \`postext\` package`,
-    `- [YouTube](${YOUTUBE_URL}): video walkthroughs`,
-    `- [${labels.sandbox}](${localizedUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
+    `- [GitHub](${REPO_URL}): ${labels.linkGithub}`,
+    `- [YouTube](${YOUTUBE_URL}): ${labels.linkYoutube}`,
+    `- [${labels.sandbox}](${markdownUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
+    `- [${labels.agentSkills}](${SITE_URL}/.well-known/agent-skills/index.json): ${labels.agentSkillsDesc}`,
+    `- [${GUIDE_BUNDLE_FILE}](${SITE_URL}${GUIDE_BUNDLE_PATH}): ${labels.guideBundleDesc}`,
     "",
     `## ${labels.optional}`,
     "",
