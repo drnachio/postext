@@ -47,7 +47,7 @@ export function readRecipeSources(slug: string): RecipeSources {
   const dir = recipeDir(slug);
   const content: Record<string, string> = {};
   for (const name of fs.readdirSync(dir)) {
-    const match = /^content\.(?:([a-z0-9-]+)\.)?(en|es)\.md$/.exec(name);
+    const match = /^content\.(?:([a-z0-9-]+)\.)?(en|es|ca|zh|ar|ja)\.md$/.exec(name);
     if (!match) continue;
     content[match[1] ? `${match[1]}.${match[2]}` : match[2]] = fs.readFileSync(path.join(dir, name), "utf-8");
   }

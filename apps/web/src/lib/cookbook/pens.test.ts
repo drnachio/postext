@@ -7,6 +7,7 @@ import {
   KNOWN_CONTAINERS,
   KNOWN_DIRECTIVES,
   configKeys,
+  configString,
   detectPen,
   markdownConstructs,
   parseImports,
@@ -150,6 +151,17 @@ function lint(
   const pen = composePen(src, meta, variant, { kit });
   return lintPen(pen, meta, src, { kit, repoFileExists: (p) => fs.existsSync(path.join(REPO_DIR, p)) });
 }
+
+describe("configString", () => {
+  it("reads a value written per edition for the edition the pen sets", () => {
+    const pen = (lang: string) => `const LANG = '${lang}'; // @lang\nconst config = () => ({ page: { binding: 'left' }, ` +
+      "locale: t({ en: 'en', zh: 'zh-Hans', ar: 'ar', ja: 'ja' }) });\n";
+    expect(configString(scanJs(pen("ja")), "locale")).toBe("ja");
+    expect(configString(scanJs(pen("zh")), "locale")).toBe("zh-Hans");
+    expect(configString(scanJs(pen("es")), "locale")).toBe("en");
+    expect(configString(scanJs(pen("ar")), "page.binding")).toBe("left");
+  });
+});
 
 describe("lintPen (fixture)", () => {
   it("passes a pen that follows the conventions, in both editions", () => {

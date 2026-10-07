@@ -658,8 +658,11 @@ function lintCjk(
   if (cjkPdf && !/\b(?:cjkPdfProvider|comicPdfProvider)\b/.test(ownBare)) {
     fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
   }
-  const tagged = /\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode);
   const tag = configString(scan, "locale");
+  // A literal tag anywhere in the code, or the config's own (also when it
+  // is written per edition, t({ … ja: 'ja' })).
+  const tagged = /\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode)
+    || /^(?:zh|ja|ko)(?:[-_]|$)/i.test(tag ?? "");
   if (japaneseText && tagged && tag !== undefined && !/^ja(?:[-_]|$)/i.test(tag)) {
     fails.push(`script.js: the text is Japanese (it is written with kana) but config.locale is '${tag}': write 'ja', which sets the Japanese line breaking, punctuation and labels (gotcha ja-locale-tag)`);
   } else if (japaneseText && !tagged) {

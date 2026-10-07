@@ -15,15 +15,21 @@ export const LOCALES: readonly Locale[] = ["en", "es", "ca", "zh", "ar", "ja"];
 export type Localized<T = string> = Record<Locale, T>;
 
 /** Languages a recipe's sample document (the pen, its content.<locale>.md,
- *  captures and bundles) can be written in: narrower than the site's. A
- *  page in a locale the sample lacks shows its first edition, as a Spanish
- *  page does for an English-only sample. */
-export type SampleLocale = "en" | "es";
-export const SAMPLE_LOCALES: readonly SampleLocale[] = ["en", "es"];
+ *  captures and bundles) can be written in: any site locale. Most recipes
+ *  write English and Spanish samples; a comic re-lettered per language
+ *  writes one per site locale. A page in a locale the sample lacks shows
+ *  the Spanish edition for Catalan when there is one, else the first
+ *  edition, as a Spanish page does for an English-only sample. */
+export type SampleLocale = Locale;
+export const SAMPLE_LOCALES: readonly SampleLocale[] = LOCALES;
+
+/** The languages every recipe.json text is written in. */
+export type RequiredLocale = "en" | "es";
+export const REQUIRED_LOCALES: readonly RequiredLocale[] = ["en", "es"];
 
 /** Text authored in recipe.json next to the sample: English and Spanish
  *  always, other site locales when someone adds them. */
-export type RecipeLocalized<T = string> = Record<SampleLocale, T> & Partial<Record<Locale, T>>;
+export type RecipeLocalized<T = string> = Record<RequiredLocale, T> & Partial<Record<Locale, T>>;
 
 /** A `RecipeLocalized` value in `locale`, else in English. */
 export function localizedText<T>(value: RecipeLocalized<T>, locale: Locale): T {

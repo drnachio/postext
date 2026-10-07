@@ -402,11 +402,27 @@ export function configString(scan: JsScan, dotted: string): string | undefined {
   for (const [i, key] of keys.entries()) {
     const at = objectValueAt(scan, open, key);
     if (at === -1) return undefined;
-    if (i === keys.length - 1) return /^(['"`])([^'"`\n]*)\1/.exec(scan.code.slice(at, at + 200))?.[2];
+    if (i === keys.length - 1) {
+      const head = scan.code.slice(at, at + 400);
+      const literal = /^(['"`])([^'"`\n]*)\1/.exec(head)?.[2];
+      return literal ?? editionString(scan.code, head);
+    }
     if (scan.bare[at] !== "{") return undefined;
     open = at;
   }
   return undefined;
+}
+
+/** A value written per edition, `t({ en: 'en', ja: 'ja', zh: 'zh-Hans' })`,
+ *  read for the edition the composed pen sets (`const LANG = 'ja';`), else
+ *  its first entry, as the kit's `t` does. */
+function editionString(code: string, head: string): string | undefined {
+  const call = /^t\(\s*\{([^}]*)\}\s*\)/.exec(head)?.[1];
+  if (call === undefined) return undefined;
+  const entries = [...call.matchAll(/([A-Za-z-]+|'[^']*'|"[^"]*")\s*:\s*(['"`])([^'"`\n]*)\2/g)]
+    .map((m) => [m[1]!.replace(/^['"]|['"]$/g, ""), m[3]!] as const);
+  const lang = /^const LANG = (['"])([a-z]+)\1/m.exec(code)?.[2];
+  return entries.find(([key]) => key === lang)?.[1] ?? entries[0]?.[1];
 }
 
 /** Top-level keys of `const config = () => ({ … })`, unique, in source order. */

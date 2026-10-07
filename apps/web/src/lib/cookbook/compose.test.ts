@@ -126,6 +126,13 @@ describe("composePen", () => {
     expect(variantFor({ sample: { locales: ["en", "es"] } }, "es")).toBe("es");
   });
 
+  it("shows each site locale its own edition when the sample has one", () => {
+    const six = { sample: { locales: ["en", "es", "ca", "zh", "ar", "ja"] as const } };
+    for (const locale of six.sample.locales) expect(variantFor({ sample: { locales: [...six.sample.locales] } }, locale)).toBe(locale);
+    expect(variantFor({ sample: { locales: ["en", "es", "ja"] } }, "ca")).toBe("es");
+    expect(variantFor({ sample: { locales: ["en", "ja"] } }, "ca")).toBe("en");
+  });
+
   it("ignores marker lines inside the sample text", () => {
     const listing = "A listing:\n\n// #region demo: Demo\nconst x = 1;\n// #endregion\n// @kit core\n";
     const pen = composePen(sources({ content: { en: listing, es: "# Uno\n", "intro.en": "Intro" } }), META, "en", { kit: KIT });
