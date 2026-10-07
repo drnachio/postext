@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 147 · A splash page, an inset and a broken border ═══════
 // https://postext.dev/en/cookbook/splash-inset-broken-border
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
 //
 // Two pages of a storm: a splash page that bleeds off all four edges with a small inset panel
 // laid over it, then a page whose top tier bleeds off three edges, whose second panel lets a

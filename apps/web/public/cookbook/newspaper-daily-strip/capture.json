@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "newspaper-daily-strip",
-  "sourceHash": "66c5963a25069b06ac057f2c112b738b5311ea3c990c58829a0d3962f5964078",
+  "sourceHash": "035b218e5b695c41e941548ada9e46c463b40ab7c0c54bd5ea64a70cb5678e02",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:31:33.525Z",
+  "capturedAt": "2026-10-07T15:03:05.329Z",
   "variants": {
     "en": {
-      "hash8": "e115bfff",
-      "vdtHash": "815d9f6f55229d88ca592ce0b4572bf224a586d3",
+      "hash8": "cb2b42f9",
+      "vdtHash": "31cb2f637107d214f712397966266cb8bed62763",
       "timings": {
-        "importMs": 363,
-        "fontsMs": 172,
-        "buildMs": 1450,
-        "totalMs": 4186,
+        "importMs": 3886,
+        "fontsMs": 27233,
+        "buildMs": 1898,
+        "totalMs": 35820,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 110486,
+          "bytes": 110714,
           "alt": "Page 1."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 162118,
+          "bytes": 163838,
           "alt": "Opening page 2: Ten winters on the floe."
         }
       ],
@@ -88,12 +88,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 879993,
+        "bytes": 880021,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 811760,
+        "bytes": 811765,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -317,7 +317,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 5,
         "looseLines": {
           "count": 3,
           "share": 0.0484,
@@ -325,21 +325,36 @@
         },
         "findings": [
           {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the build took 1898 ms (warning at 1.5 s)"
+          },
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the pen took 35.8 s to finish (warning at 30 s)"
+          },
+          {
             "check": "C24",
             "severity": "warn",
-            "detail": "3 of 62 justified lines (4.8 %) stretch past 2× (worst 2.64×); loosest: p. 2 2.64× “explains the croissants. The pen-”, p. 2 2.18× “Barlow grew up above her par-”, p. 2 2.04× “edition in 2019. “Lettering a strip”"
+            "detail": "3 of 62 justified lines (4.8 %) stretch past 2× (worst 2.64×); loosest: p. 2 2.64× “explains the croissants. The pen-”, p. 2 2.18× “Barlow grew up above her par-”, p. 2 2.17× “balloons are drawn around them.””"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "0b5eac18",
-      "vdtHash": "ccc8ad3c2826fdb54a77b35fbdd964764f8da1f3",
+      "hash8": "d16568f4",
+      "vdtHash": "380f1b656bfea56cea141d1803b083ed747eeafa",
       "timings": {
-        "importMs": 299,
-        "fontsMs": 159,
-        "buildMs": 1912,
-        "totalMs": 5123,
+        "importMs": 3882,
+        "fontsMs": 2041,
+        "buildMs": 2240,
+        "totalMs": 30520,
         "builds": 2
       },
       "specimen": {
@@ -371,7 +386,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115058,
+          "bytes": 114410,
           "alt": "Página 1."
         },
         {
@@ -382,7 +397,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 178044,
+          "bytes": 178220,
           "alt": "Página de apertura 2: Diez inviernos en el témpano."
         }
       ],
@@ -410,12 +425,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 884610,
+        "bytes": 884646,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812318,
+        "bytes": 812404,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -642,26 +657,36 @@
         "iterationCount": 5,
         "looseLines": {
           "count": 1,
-          "share": 0.0141,
+          "share": 0.0139,
           "worst": 2.0100000000000002
         },
         "findings": [
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 1912 ms (warning at 1.5 s)"
+            "detail": "the build took 2240 ms (warning at 1.5 s)"
+          },
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the pen took 30.5 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "ca": {
-      "hash8": "c17eaaf2",
-      "vdtHash": "9f9c2f235d919dfc1fbe684dba7733783d2a91d8",
+      "hash8": "9ba84cb1",
+      "vdtHash": "25ff9a63866e2d66a07ae6710f834449062841f4",
       "timings": {
-        "importMs": 220,
-        "fontsMs": 153,
-        "buildMs": 1728,
-        "totalMs": 4590,
+        "importMs": 647,
+        "fontsMs": 353,
+        "buildMs": 1807,
+        "totalMs": 5554,
         "builds": 2
       },
       "specimen": {
@@ -693,7 +718,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 114788,
+          "bytes": 113974,
           "alt": "Pàgina 1."
         },
         {
@@ -704,7 +729,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 170460,
+          "bytes": 170340,
           "alt": "Pàgina d'obertura 2: Deu hiverns al glaç."
         }
       ],
@@ -732,12 +757,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 884042,
+        "bytes": 884097,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812298,
+        "bytes": 812391,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -971,19 +996,24 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 1728 ms (warning at 1.5 s)"
+            "detail": "the build took 1807 ms (warning at 1.5 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "zh": {
-      "hash8": "e0b81828",
-      "vdtHash": "11c763a171f5875d36fbff39122ed5895b593fa2",
+      "hash8": "0e99f103",
+      "vdtHash": "a03d146f7d3d5bb2631e05a37aa78a4a7aadca93",
       "timings": {
-        "importMs": 328,
-        "fontsMs": 1032,
-        "buildMs": 1394,
-        "totalMs": 3308,
+        "importMs": 454,
+        "fontsMs": 931,
+        "buildMs": 1423,
+        "totalMs": 3349,
         "builds": 1
       },
       "specimen": {
@@ -1015,7 +1045,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 110190,
+          "bytes": 110682,
           "alt": "第 1 页。"
         },
         {
@@ -1026,7 +1056,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 150314,
+          "bytes": 149164,
           "alt": "章首页，第 2 页：浮冰上的十个冬天。"
         }
       ],
@@ -1054,12 +1084,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1015464,
+        "bytes": 1015695,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812236,
+        "bytes": 812335,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -1290,17 +1320,23 @@
           "share": 0,
           "worst": 0.13
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "ar": {
-      "hash8": "864ebd83",
-      "vdtHash": "b6f6320bf51f7fe7952021c95fdd7fd44a0bafca",
+      "hash8": "85c6dab3",
+      "vdtHash": "16e5d19636e6ded15c13412a58aa4064ec9f9b54",
       "timings": {
-        "importMs": 231,
-        "fontsMs": 212,
-        "buildMs": 2201,
-        "totalMs": 3202,
+        "importMs": 359,
+        "fontsMs": 268,
+        "buildMs": 2134,
+        "totalMs": 3336,
         "builds": 1
       },
       "specimen": {
@@ -1332,7 +1368,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 114556,
+          "bytes": 113816,
           "alt": "الصفحة ١."
         },
         {
@@ -1343,7 +1379,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 143570,
+          "bytes": 142928,
           "alt": "صفحة الافتتاح ٢: عشرة شتاءات على الجليد."
         }
       ],
@@ -1372,12 +1408,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 896734,
+        "bytes": 896733,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 813628,
+        "bytes": 813649,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -1599,7 +1635,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 6,
+        "iterationCount": 5,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -1609,19 +1645,24 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 2201 ms (warning at 1.5 s)"
+            "detail": "the build took 2134 ms (warning at 1.5 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "ja": {
-      "hash8": "57e9479b",
-      "vdtHash": "debe22a1508d46f1dbb140937907cc2ab3c61730",
+      "hash8": "d5152ab6",
+      "vdtHash": "0d9bbf42ed71bcb33fb8b6b3ce17eb179920f94f",
       "timings": {
-        "importMs": 290,
-        "fontsMs": 911,
-        "buildMs": 2879,
-        "totalMs": 4645,
+        "importMs": 357,
+        "fontsMs": 1370,
+        "buildMs": 2933,
+        "totalMs": 5232,
         "builds": 1
       },
       "specimen": {
@@ -1653,7 +1694,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 116232,
+          "bytes": 115880,
           "alt": "1ページ。"
         },
         {
@@ -1664,7 +1705,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 170656,
+          "bytes": 171374,
           "alt": "章扉、2ページ：流氷の上の十の冬。"
         }
       ],
@@ -1678,6 +1719,7 @@
           null
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -1692,12 +1734,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1007174,
+        "bytes": 1007406,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 813761,
+        "bytes": 813817,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -1910,6 +1952,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "section-geometry",
           "sound-effects"
         ],
@@ -1932,19 +1975,24 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 2879 ms (warning at 1.5 s)"
+            "detail": "the build took 2933 ms (warning at 1.5 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "d06b7bf9",
-      "vdtHash": "8acce17e51368a9714696e7d4806e562776dcead",
+      "hash8": "4699c7a5",
+      "vdtHash": "7d2a564803f9bbb2e13ddd69fc9c364047b27278",
       "timings": {
-        "importMs": 545,
-        "fontsMs": 518,
-        "buildMs": 1037,
-        "totalMs": 3963,
+        "importMs": 461,
+        "fontsMs": 184,
+        "buildMs": 1158,
+        "totalMs": 3702,
         "builds": 2
       },
       "specimen": {
@@ -1976,7 +2024,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115750,
+          "bytes": 114696,
           "alt": "Página 1."
         },
         {
@@ -1987,7 +2035,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 174170,
+          "bytes": 174854,
           "alt": "Página de abertura 2: Dez invernos no gelo."
         }
       ],
@@ -2015,12 +2063,12 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 882768,
+        "bytes": 882732,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812421,
+        "bytes": 812362,
         "folio": "bebc74ee"
       },
       "detected": {
@@ -2255,6 +2303,11 @@
             "check": "C24",
             "severity": "warn",
             "detail": "5 of 70 justified lines (7.1 %) stretch past 2× (worst 2.32×); loosest: p. 2 2.32× “O trabalho começa na segunda,”, p. 2 2.23× “jornais brasileiros recebem Acabou”, p. 2 2.07× “da época, Martin Fry, publicou as”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

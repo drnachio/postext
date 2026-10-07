@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 152 · An album page in clear line, with narration captions ═══
 // https://postext.dev/en/cookbook/tebeo-album-page
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.21.0
 // A Spanish album page in the Franco-Belgian way: four tiers, yellow narration boxes, and
 // balloons lettered in upper and lower case. Every edition re-letters the same split and art.
 import {

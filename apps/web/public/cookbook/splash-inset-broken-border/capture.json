@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "splash-inset-broken-border",
-  "sourceHash": "4babf5386dbd921eccc4ceee9fddbe6a1a85468c0ccc069363e15e1f5ab29925",
+  "sourceHash": "1fd52d3601131588d7389f94621e9a34a3fd9b6b39c1bc9b446b06d745cb8e57",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:29:52.914Z",
+  "capturedAt": "2026-10-07T14:45:50.752Z",
   "variants": {
     "en": {
-      "hash8": "b112311e",
+      "hash8": "753fd6a5",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 331,
-        "fontsMs": 131,
-        "buildMs": 125,
-        "totalMs": 1153,
+        "importMs": 553,
+        "fontsMs": 132,
+        "buildMs": 144,
+        "totalMs": 1442,
         "builds": 1
       },
       "specimen": {
@@ -48,7 +48,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 266486,
+          "bytes": 264828,
           "alt": "Page 1."
         },
         {
@@ -59,7 +59,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 219234,
+          "bytes": 220066,
           "alt": "Page 2."
         }
       ],
@@ -87,12 +87,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770608,
+        "bytes": 770585,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766507
+        "bytes": 766535
       },
       "detected": {
         "apis": [
@@ -232,13 +232,13 @@
       }
     },
     "es": {
-      "hash8": "1d3de3f5",
+      "hash8": "c6cd11d4",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 304,
-        "fontsMs": 124,
-        "buildMs": 124,
-        "totalMs": 1110,
+        "importMs": 526,
+        "fontsMs": 96,
+        "buildMs": 161,
+        "totalMs": 1458,
         "builds": 1
       },
       "specimen": {
@@ -269,7 +269,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 266630,
+          "bytes": 266128,
           "alt": "Página 1."
         },
         {
@@ -280,7 +280,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 222266,
+          "bytes": 221906,
           "alt": "Página 2."
         }
       ],
@@ -308,12 +308,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770831,
+        "bytes": 770841,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766638
+        "bytes": 766680
       },
       "detected": {
         "apis": [
@@ -453,13 +453,13 @@
       }
     },
     "ca": {
-      "hash8": "a7e03041",
+      "hash8": "5ec41270",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 395,
-        "fontsMs": 111,
-        "buildMs": 136,
-        "totalMs": 1207,
+        "importMs": 843,
+        "fontsMs": 206,
+        "buildMs": 165,
+        "totalMs": 1914,
         "builds": 1
       },
       "specimen": {
@@ -490,7 +490,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 265968,
+          "bytes": 265242,
           "alt": "Pàgina 1."
         },
         {
@@ -501,7 +501,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 219450,
+          "bytes": 222094,
           "alt": "Pàgina 2."
         }
       ],
@@ -529,12 +529,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770181,
+        "bytes": 770167,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766645
+        "bytes": 766693
       },
       "detected": {
         "apis": [
@@ -674,13 +674,13 @@
       }
     },
     "zh": {
-      "hash8": "9787bfca",
+      "hash8": "f9dc5f73",
       "vdtHash": "69a714d811223c07ee4617800fe1b6c4129a8924",
       "timings": {
-        "importMs": 449,
-        "fontsMs": 533,
-        "buildMs": 207,
-        "totalMs": 1754,
+        "importMs": 629,
+        "fontsMs": 646,
+        "buildMs": 215,
+        "totalMs": 2159,
         "builds": 1
       },
       "specimen": {
@@ -711,7 +711,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 266368,
+          "bytes": 265120,
           "alt": "第 1 页。"
         },
         {
@@ -722,7 +722,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 220660,
+          "bytes": 220548,
           "alt": "第 2 页。"
         }
       ],
@@ -750,12 +750,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 791634,
+        "bytes": 791636,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766700
+        "bytes": 766627
       },
       "detected": {
         "apis": [
@@ -896,13 +896,13 @@
       }
     },
     "ar": {
-      "hash8": "a811ced0",
+      "hash8": "c9805406",
       "vdtHash": "7a907b581ba76903673d89d9523d7dd4926f3c7c",
       "timings": {
-        "importMs": 417,
-        "fontsMs": 169,
-        "buildMs": 123,
-        "totalMs": 1255,
+        "importMs": 563,
+        "fontsMs": 377,
+        "buildMs": 142,
+        "totalMs": 1686,
         "builds": 1
       },
       "specimen": {
@@ -933,7 +933,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 263926,
+          "bytes": 263640,
           "alt": "الصفحة ١."
         },
         {
@@ -944,7 +944,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 219358,
+          "bytes": 220302,
           "alt": "الصفحة ٢."
         }
       ],
@@ -973,12 +973,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 769393,
+        "bytes": 769404,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766808
+        "bytes": 766732
       },
       "detected": {
         "apis": [
@@ -1121,13 +1121,13 @@
       }
     },
     "ja": {
-      "hash8": "a001a705",
+      "hash8": "0f5943af",
       "vdtHash": "a6e280cef897624f349f209d33e1f87e3bbbca57",
       "timings": {
-        "importMs": 304,
-        "fontsMs": 366,
-        "buildMs": 242,
-        "totalMs": 1483,
+        "importMs": 716,
+        "fontsMs": 747,
+        "buildMs": 295,
+        "totalMs": 2361,
         "builds": 1
       },
       "specimen": {
@@ -1158,7 +1158,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 265068,
+          "bytes": 264352,
           "alt": "1ページ。"
         },
         {
@@ -1169,7 +1169,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 222708,
+          "bytes": 222668,
           "alt": "2ページ。"
         }
       ],
@@ -1183,6 +1183,7 @@
           null
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -1197,12 +1198,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 783507,
+        "bytes": 783664,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766933
+        "bytes": 766835
       },
       "detected": {
         "apis": [
@@ -1327,6 +1328,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "sound-effects"
         ],
         "suggestedLevel": 2
@@ -1343,13 +1345,13 @@
       }
     },
     "pt": {
-      "hash8": "af033b0e",
+      "hash8": "a5f7df16",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 654,
-        "fontsMs": 160,
-        "buildMs": 173,
-        "totalMs": 1586,
+        "importMs": 633,
+        "fontsMs": 126,
+        "buildMs": 141,
+        "totalMs": 1544,
         "builds": 1
       },
       "specimen": {
@@ -1380,7 +1382,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 266104,
+          "bytes": 265194,
           "alt": "Página 1."
         },
         {
@@ -1391,7 +1393,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 219548,
+          "bytes": 221490,
           "alt": "Página 2."
         }
       ],
@@ -1419,12 +1421,12 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770795,
+        "bytes": 770777,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766611
+        "bytes": 766620
       },
       "detected": {
         "apis": [

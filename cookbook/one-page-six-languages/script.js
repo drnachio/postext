@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 153 · One page lettered in six languages ═══════════════════
 // https://postext.dev/en/cookbook/one-page-six-languages
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.21.0
 // One comic page, its split and its five pictures fixed, lettered from a script per
 // language: each edition sets its own page, and the French one beside it.
 import {

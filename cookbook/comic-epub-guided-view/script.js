@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 148 · A comic EPUB read panel by panel ═══════════════════
 // https://postext.dev/en/cookbook/comic-epub-guided-view
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
 //
 // A short comic laid out once and exported four ways: a PDF for print, a fixed-layout EPUB
 // whose region-based navigation lets a reading system step through it panel by panel, the

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 145 · Every kind of balloon on a lighthouse page ═════════
 // https://postext.dev/en/cookbook/balloon-kinds
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
 //
 // One comic page that uses every kind of balloon the engine draws, with a letterer's style
 // sheet in front of it. Each line of the script names its speaker and, when it is not plain

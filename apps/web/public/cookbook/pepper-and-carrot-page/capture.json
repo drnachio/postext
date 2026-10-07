@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "pepper-and-carrot-page",
-  "sourceHash": "9957cc1807a3b088491466427ea71932c32d2b1700b5912289f510403957dcc7",
+  "sourceHash": "02bf4a04f2a9380cfbf69b239a352b530ec88f490423053c389fca299f82010c",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:30:16.089Z",
+  "capturedAt": "2026-10-07T14:45:50.987Z",
   "variants": {
     "en": {
-      "hash8": "ef854cb5",
+      "hash8": "dc668d17",
       "vdtHash": "5b1c728f7fbbd533a4750aa355861202d1b3b50a",
       "timings": {
-        "importMs": 10894,
-        "fontsMs": 2683,
-        "buildMs": 111,
-        "totalMs": 15220,
+        "importMs": 313,
+        "fontsMs": 301,
+        "buildMs": 103,
+        "totalMs": 1528,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -60,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 164242,
+          "bytes": 164720,
           "alt": "Page 2."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 104654,
+          "bytes": 104846,
           "alt": "Page 3."
         }
       ],
@@ -99,12 +99,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 685726,
+        "bytes": 687854,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675758
+        "bytes": 675750
       },
       "detected": {
         "apis": [
@@ -136,6 +136,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -143,6 +145,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -223,7 +226,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -277,13 +280,13 @@
       }
     },
     "es": {
-      "hash8": "b6730d47",
+      "hash8": "34f39743",
       "vdtHash": "a90c36d43fad75d592c989d7768284ce2a715a43",
       "timings": {
-        "importMs": 4003,
-        "fontsMs": 6731,
-        "buildMs": 120,
-        "totalMs": 13737,
+        "importMs": 324,
+        "fontsMs": 240,
+        "buildMs": 108,
+        "totalMs": 1471,
         "builds": 2
       },
       "specimen": {
@@ -304,7 +307,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -326,7 +329,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167042,
+          "bytes": 167816,
           "alt": "Página 2."
         },
         {
@@ -337,7 +340,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 104834,
+          "bytes": 104902,
           "alt": "Página 3."
         }
       ],
@@ -365,12 +368,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 687695,
+        "bytes": 689888,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675969
+        "bytes": 675995
       },
       "detected": {
         "apis": [
@@ -402,6 +405,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -409,6 +414,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -489,7 +495,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -543,13 +549,13 @@
       }
     },
     "ca": {
-      "hash8": "c1f704a9",
+      "hash8": "9806d52b",
       "vdtHash": "c1acac32fe32e65510d5ce5e71eafdab2db766f6",
       "timings": {
-        "importMs": 633,
-        "fontsMs": 271,
-        "buildMs": 119,
-        "totalMs": 1895,
+        "importMs": 149,
+        "fontsMs": 166,
+        "buildMs": 108,
+        "totalMs": 1215,
         "builds": 2
       },
       "specimen": {
@@ -570,7 +576,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -592,7 +598,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 163912,
+          "bytes": 164782,
           "alt": "Pàgina 2."
         },
         {
@@ -603,7 +609,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 104996,
+          "bytes": 105004,
           "alt": "Pàgina 3."
         }
       ],
@@ -631,12 +637,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 685648,
+        "bytes": 688153,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675812
+        "bytes": 675874
       },
       "detected": {
         "apis": [
@@ -668,6 +674,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -675,6 +683,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -755,7 +764,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -809,13 +818,13 @@
       }
     },
     "zh": {
-      "hash8": "083db8a7",
+      "hash8": "2fd9d62b",
       "vdtHash": "8b40fa0916623ac081d84978d36feb6c069d0414",
       "timings": {
-        "importMs": 447,
-        "fontsMs": 651,
-        "buildMs": 190,
-        "totalMs": 1918,
+        "importMs": 154,
+        "fontsMs": 434,
+        "buildMs": 168,
+        "totalMs": 1365,
         "builds": 1
       },
       "specimen": {
@@ -836,7 +845,7 @@
           "ZCOOL KuaiLe"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -858,7 +867,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167366,
+          "bytes": 167242,
           "alt": "第 2 页。"
         },
         {
@@ -869,7 +878,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 103542,
+          "bytes": 105102,
           "alt": "第 3 页。"
         }
       ],
@@ -897,12 +906,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 741916,
+        "bytes": 742999,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 676361
+        "bytes": 676461
       },
       "detected": {
         "apis": [
@@ -934,6 +943,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -941,6 +952,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -1021,7 +1033,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1076,13 +1088,13 @@
       }
     },
     "ar": {
-      "hash8": "3d8b9ca6",
+      "hash8": "9d4bb2fb",
       "vdtHash": "a4ca6da349dc5fbfdffab04252ec4b91e132b04c",
       "timings": {
-        "importMs": 421,
-        "fontsMs": 276,
-        "buildMs": 176,
-        "totalMs": 1424,
+        "importMs": 289,
+        "fontsMs": 184,
+        "buildMs": 181,
+        "totalMs": 1238,
         "builds": 1
       },
       "specimen": {
@@ -1103,7 +1115,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -1125,7 +1137,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 165100,
+          "bytes": 165276,
           "alt": "الصفحة ٢."
         },
         {
@@ -1136,7 +1148,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 102364,
+          "bytes": 103308,
           "alt": "الصفحة ٣."
         }
       ],
@@ -1165,12 +1177,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 692766,
+        "bytes": 692886,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 676728
+        "bytes": 676755
       },
       "detected": {
         "apis": [
@@ -1202,6 +1214,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -1209,6 +1223,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -1289,7 +1304,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1346,13 +1361,13 @@
       }
     },
     "ja": {
-      "hash8": "fc740add",
+      "hash8": "8887aa50",
       "vdtHash": "d96a7805773f5919b05691d4d1559da70cc6a370",
       "timings": {
-        "importMs": 458,
-        "fontsMs": 1100,
-        "buildMs": 298,
-        "totalMs": 2421,
+        "importMs": 152,
+        "fontsMs": 443,
+        "buildMs": 277,
+        "totalMs": 1483,
         "builds": 1
       },
       "specimen": {
@@ -1373,7 +1388,7 @@
           "Zen Antique"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -1395,7 +1410,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 164996,
+          "bytes": 165592,
           "alt": "2ページ。"
         },
         {
@@ -1406,7 +1421,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 104010,
+          "bytes": 103374,
           "alt": "3ページ。"
         }
       ],
@@ -1420,6 +1435,7 @@
           2
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -1434,12 +1450,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 721675,
+        "bytes": 725150,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 677079
+        "bytes": 676784
       },
       "detected": {
         "apis": [
@@ -1471,6 +1487,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -1478,6 +1496,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -1558,7 +1577,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1597,6 +1616,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "sound-effects"
         ],
         "suggestedLevel": 2
@@ -1613,13 +1633,13 @@
       }
     },
     "pt": {
-      "hash8": "8f01c88e",
+      "hash8": "b53e6bb2",
       "vdtHash": "760a4756a869fb1c7ad83e264894eebbb35ee21b",
       "timings": {
-        "importMs": 914,
-        "fontsMs": 350,
-        "buildMs": 117,
-        "totalMs": 2216,
+        "importMs": 238,
+        "fontsMs": 197,
+        "buildMs": 106,
+        "totalMs": 1349,
         "builds": 2
       },
       "specimen": {
@@ -1640,7 +1660,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 159
+        "ownLines": 167
       },
       "pages": [
         {
@@ -1662,7 +1682,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 165980,
+          "bytes": 166516,
           "alt": "Página 2."
         },
         {
@@ -1673,7 +1693,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 105046,
+          "bytes": 106508,
           "alt": "Página 3."
         }
       ],
@@ -1701,12 +1721,12 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 686856,
+        "bytes": 689244,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675943
+        "bytes": 675982
       },
       "detected": {
         "apis": [
@@ -1738,6 +1758,8 @@
           "colorPalette[].value",
           "comics",
           "comics.balloonStyles",
+          "comics.balloonStyles[].align",
+          "comics.balloonStyles[].aspect",
           "comics.balloonStyles[].color",
           "comics.balloonStyles[].fill",
           "comics.balloonStyles[].fontFamily",
@@ -1745,6 +1767,7 @@
           "comics.balloonStyles[].halo",
           "comics.balloonStyles[].haloColor",
           "comics.balloonStyles[].id",
+          "comics.balloonStyles[].letterSpacing",
           "comics.balloonStyles[].shape",
           "comics.balloonStyles[].stroke",
           "comics.balloonStyles[].strokeWidth",
@@ -1825,7 +1848,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 118,
+        "configLeaves": 125,
         "designElements": 1,
         "directives": [
           ":::paragraphs",

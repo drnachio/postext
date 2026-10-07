@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "manga-right-to-left",
-  "sourceHash": "4abcd4be9cefa8e70230ab2b8304f1fb61fd15bd836146297ec9002b791d43d9",
+  "sourceHash": "cf61e2c676d1f57c3033e7d04dd9508478d92578bfba186d6aa8ca361f50f2b5",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:31:33.460Z",
+  "capturedAt": "2026-10-07T14:45:51.079Z",
   "variants": {
     "en": {
-      "hash8": "405a142b",
+      "hash8": "8dcf6661",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 404,
-        "fontsMs": 714,
-        "buildMs": 1318,
-        "totalMs": 3516,
+        "importMs": 238,
+        "fontsMs": 366,
+        "buildMs": 1349,
+        "totalMs": 3163,
         "builds": 2
       },
       "specimen": {
@@ -47,7 +47,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "Page 1."
         },
         {
@@ -58,7 +58,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "Page 2."
         },
         {
@@ -69,7 +69,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 179878,
+          "bytes": 180824,
           "alt": "Page 1."
         },
         {
@@ -80,7 +80,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 176158,
+          "bytes": 171574,
           "alt": "Page 2."
         }
       ],
@@ -109,12 +109,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1521381,
+        "bytes": 1521419,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411389,
+        "bytes": 1411235,
         "folio": "80b0969c"
       },
       "detected": {
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "a3b8e4e2",
+      "hash8": "38aa5be2",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 490,
-        "fontsMs": 612,
-        "buildMs": 1324,
-        "totalMs": 3505,
+        "importMs": 332,
+        "fontsMs": 389,
+        "buildMs": 1380,
+        "totalMs": 3261,
         "builds": 2
       },
       "specimen": {
@@ -291,7 +291,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "Página 1."
         },
         {
@@ -302,7 +302,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "Página 2."
         },
         {
@@ -313,7 +313,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 176808,
+          "bytes": 179168,
           "alt": "Página 1."
         },
         {
@@ -324,7 +324,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 180476,
+          "bytes": 174958,
           "alt": "Página 2."
         }
       ],
@@ -353,12 +353,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1522778,
+        "bytes": 1522877,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411538,
+        "bytes": 1411384,
         "folio": "80b0969c"
       },
       "detected": {
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "f14f8f69",
+      "hash8": "6529983b",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 498,
-        "fontsMs": 619,
-        "buildMs": 1331,
-        "totalMs": 3585,
+        "importMs": 322,
+        "fontsMs": 421,
+        "buildMs": 1422,
+        "totalMs": 3457,
         "builds": 2
       },
       "specimen": {
@@ -535,7 +535,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "Pàgina 1."
         },
         {
@@ -546,7 +546,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "Pàgina 2."
         },
         {
@@ -557,7 +557,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 180914,
+          "bytes": 181174,
           "alt": "Pàgina 1."
         },
         {
@@ -568,7 +568,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 183454,
+          "bytes": 181644,
           "alt": "Pàgina 2."
         }
       ],
@@ -597,12 +597,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1522219,
+        "bytes": 1522190,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411523,
+        "bytes": 1411370,
         "folio": "80b0969c"
       },
       "detected": {
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "723533e1",
+      "hash8": "e7b562d1",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 477,
-        "fontsMs": 822,
-        "buildMs": 1373,
-        "totalMs": 4424,
+        "importMs": 388,
+        "fontsMs": 428,
+        "buildMs": 1430,
+        "totalMs": 4045,
         "builds": 2
       },
       "specimen": {
@@ -779,7 +779,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "第 1 页。"
         },
         {
@@ -790,7 +790,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "第 2 页。"
         },
         {
@@ -801,7 +801,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 181048,
+          "bytes": 181624,
           "alt": "第 1 页。"
         },
         {
@@ -812,7 +812,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 179724,
+          "bytes": 173172,
           "alt": "第 2 页。"
         }
       ],
@@ -841,12 +841,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1544431,
+        "bytes": 1544490,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411590,
+        "bytes": 1411433,
         "folio": "80b0969c"
       },
       "detected": {
@@ -987,13 +987,13 @@
       }
     },
     "ar": {
-      "hash8": "2ea85eb5",
+      "hash8": "5d89e5b4",
       "vdtHash": "c4f6386f59669ebec0168fbe2ea7e1b804875630",
       "timings": {
-        "importMs": 427,
-        "fontsMs": 576,
-        "buildMs": 1343,
-        "totalMs": 3512,
+        "importMs": 372,
+        "fontsMs": 463,
+        "buildMs": 1418,
+        "totalMs": 3524,
         "builds": 2
       },
       "specimen": {
@@ -1023,7 +1023,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "الصفحة 1."
         },
         {
@@ -1034,7 +1034,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "الصفحة 2."
         },
         {
@@ -1045,7 +1045,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 178986,
+          "bytes": 179676,
           "alt": "الصفحة ١."
         },
         {
@@ -1056,7 +1056,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 177224,
+          "bytes": 174270,
           "alt": "الصفحة ٢."
         }
       ],
@@ -1085,12 +1085,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1530174,
+        "bytes": 1530247,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411920,
+        "bytes": 1411767,
         "folio": "80b0969c"
       },
       "detected": {
@@ -1231,13 +1231,13 @@
       }
     },
     "ja": {
-      "hash8": "7020575f",
+      "hash8": "cd5de12e",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 255,
-        "fontsMs": 394,
-        "buildMs": 1314,
-        "totalMs": 3043,
+        "importMs": 190,
+        "fontsMs": 295,
+        "buildMs": 1346,
+        "totalMs": 2989,
         "builds": 2
       },
       "specimen": {
@@ -1267,7 +1267,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "1ページ。"
         },
         {
@@ -1278,7 +1278,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "2ページ。"
         },
         {
@@ -1289,7 +1289,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 179878,
+          "bytes": 180824,
           "alt": "1ページ。"
         },
         {
@@ -1300,7 +1300,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 176158,
+          "bytes": 171574,
           "alt": "2ページ。"
         }
       ],
@@ -1329,12 +1329,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1521064,
+        "bytes": 1521107,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411588,
+        "bytes": 1411434,
         "folio": "80b0969c"
       },
       "detected": {
@@ -1475,13 +1475,13 @@
       }
     },
     "pt": {
-      "hash8": "a4d7141b",
+      "hash8": "206bf889",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 320,
-        "fontsMs": 380,
-        "buildMs": 1348,
-        "totalMs": 3176,
+        "importMs": 431,
+        "fontsMs": 460,
+        "buildMs": 1484,
+        "totalMs": 3641,
         "builds": 2
       },
       "specimen": {
@@ -1511,7 +1511,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 178452,
+          "bytes": 175150,
           "alt": "Página 1."
         },
         {
@@ -1522,7 +1522,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 169780,
+          "bytes": 164548,
           "alt": "Página 2."
         },
         {
@@ -1533,7 +1533,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 179820,
+          "bytes": 180452,
           "alt": "Página 1."
         },
         {
@@ -1544,7 +1544,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 179120,
+          "bytes": 176228,
           "alt": "Página 2."
         }
       ],
@@ -1573,12 +1573,12 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1521930,
+        "bytes": 1521983,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411519,
+        "bytes": 1411366,
         "folio": "80b0969c"
       },
       "detected": {

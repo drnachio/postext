@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 146 · A daily strip and a Sunday half page in the newspaper ═══
 // https://postext.dev/en/cookbook/newspaper-daily-strip
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Newsreader, Archivo Narrow, Comic Neue, Bangers and 12 more (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Newsreader, Archivo Narrow, Comic Neue, Bangers and 12 more (OFL) · Needs postext ≥ 1.21.0
 //
 // Two pages of a newspaper's pull-out comics section: a four-panel daily strip across the head
 // of a four-column page, and a Sunday half page with its own panel grid. Both are :::strip blocks

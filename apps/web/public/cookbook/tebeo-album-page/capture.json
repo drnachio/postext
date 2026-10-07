@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tebeo-album-page",
-  "sourceHash": "e2c04b1d89b31918f3b66a0446181e63e6a0793e58be3c9f83f2f55061a1b555",
+  "sourceHash": "2e621d5d621692f552fe64ac24798d0215c1a8555d2f8b00b394b4dca19cea64",
   "engine": {
-    "postext": "1.20.3",
-    "postextPdf": "1.20.3",
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:29:53.026Z",
+  "capturedAt": "2026-10-07T14:45:51.352Z",
   "variants": {
     "en": {
-      "hash8": "2cdf5e60",
+      "hash8": "a0ee169c",
       "vdtHash": "3d4f16a94ffba3a564a4a4e255512896aba9d4dc",
       "timings": {
-        "importMs": 470,
-        "fontsMs": 133,
-        "buildMs": 562,
-        "totalMs": 1721,
+        "importMs": 326,
+        "fontsMs": 161,
+        "buildMs": 592,
+        "totalMs": 1632,
         "builds": 1
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 249206,
+          "bytes": 245048,
           "alt": "Page 3."
         }
       ],
@@ -84,12 +84,292 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117212,
+        "bytes": 1117119,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115869
+        "bytes": 1115569
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultComicFont",
+          "defaultComicSfxFont",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].aspect",
+          "comics.balloonStyles[].burstPoints",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].fontScale",
+          "comics.balloonStyles[].halo",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].padding",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.lineHeight",
+          "comics.lettering.textTransform",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.panelStyles",
+          "comics.panelStyles[].borderStyle",
+          "comics.panelStyles[].id",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 154,
+        "designElements": 4,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 7,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bangers",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Patrick Hand",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 99 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "231e5685",
+      "vdtHash": "816559f29b2f089a5478fb77ff9f71633bd18276",
+      "timings": {
+        "importMs": 287,
+        "fontsMs": 139,
+        "buildMs": 427,
+        "totalMs": 1425,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Patrick Hand",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Bangers",
+          "Patrick Hand"
+        ],
+        "pages": 2,
+        "ownLines": 137
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 101952,
+          "alt": "Página de apertura 2: Las naranjas de Carmen."
+        },
+        {
+          "n": 2,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 244588,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "tebeo-album-page.pdf",
+        "bytes": 1117720,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "tebeo-album-page.postext",
+        "bytes": 1116169
       },
       "detected": {
         "apis": [
@@ -283,6 +563,11 @@
             "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB)"
           },
           {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 35 KB (aim for ≤ 35 KB)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -290,14 +575,14 @@
         ]
       }
     },
-    "es": {
-      "hash8": "7d3e0118",
-      "vdtHash": "816559f29b2f089a5478fb77ff9f71633bd18276",
+    "ca": {
+      "hash8": "616bbc27",
+      "vdtHash": "e61eea129a4c07d9e4cf2b7611a7cba4124222aa",
       "timings": {
-        "importMs": 220,
-        "fontsMs": 91,
-        "buildMs": 456,
-        "totalMs": 1326,
+        "importMs": 343,
+        "fontsMs": 99,
+        "buildMs": 445,
+        "totalMs": 4181,
         "builds": 1
       },
       "specimen": {
@@ -329,8 +614,8 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 101952,
-          "alt": "Página de apertura 2: Las naranjas de Carmen."
+          "bytes": 102512,
+          "alt": "Pàgina d'obertura 2: Les taronges de la Carmen."
         },
         {
           "n": 2,
@@ -340,8 +625,8 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 248416,
-          "alt": "Página 3."
+          "bytes": 245222,
+          "alt": "Pàgina 3."
         }
       ],
       "spreads": [
@@ -364,12 +649,12 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117623,
+        "bytes": 1117586,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1116348
+        "bytes": 1116298
       },
       "detected": {
         "apis": [
@@ -575,299 +860,14 @@
         ]
       }
     },
-    "ca": {
-      "hash8": "57ba8dcf",
-      "vdtHash": "e61eea129a4c07d9e4cf2b7611a7cba4124222aa",
-      "timings": {
-        "importMs": 291,
-        "fontsMs": 104,
-        "buildMs": 461,
-        "totalMs": 1424,
-        "builds": 1
-      },
-      "specimen": {
-        "trimMm": [
-          230,
-          300
-        ],
-        "dpi": 150,
-        "layoutType": "single",
-        "mirror": true,
-        "body": {
-          "family": "Patrick Hand",
-          "sizePt": 11,
-          "leadingPt": 15
-        },
-        "families": [
-          "Bangers",
-          "Patrick Hand"
-        ],
-        "pages": 2,
-        "ownLines": 137
-      },
-      "pages": [
-        {
-          "n": 1,
-          "label": "2",
-          "role": "opener",
-          "w": 1000,
-          "h": 1304,
-          "file": "p01.webp",
-          "strip": "p01.s.webp",
-          "bytes": 102512,
-          "alt": "Pàgina d'obertura 2: Les taronges de la Carmen."
-        },
-        {
-          "n": 2,
-          "label": "3",
-          "role": "comic",
-          "w": 1000,
-          "h": 1304,
-          "file": "p02.webp",
-          "strip": "p02.s.webp",
-          "bytes": 249176,
-          "alt": "Pàgina 3."
-        }
-      ],
-      "spreads": [
-        [
-          0,
-          1
-        ]
-      ],
-      "card": {
-        "file": "card.webp",
-        "file480": "card.480.webp",
-        "w": 960,
-        "h": 720,
-        "mode": "spread"
-      },
-      "og": {
-        "file": "og.jpg",
-        "w": 580,
-        "h": 622
-      },
-      "pdf": {
-        "file": "tebeo-album-page.pdf",
-        "bytes": 1117623,
-        "pages": 2
-      },
-      "sandbox": {
-        "file": "tebeo-album-page.postext",
-        "bytes": 1116555
-      },
-      "detected": {
-        "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "decompressWoff2",
-          "defaultComicFont",
-          "defaultComicSfxFont",
-          "registerResourceImage",
-          "renderPageToCanvas",
-          "renderToPdf"
-        ],
-        "configKeys": [
-          "bodyText",
-          "bodyText.boldColor",
-          "bodyText.color",
-          "bodyText.firstLineIndent",
-          "bodyText.fontFamily",
-          "bodyText.fontSize",
-          "bodyText.hyphenation",
-          "bodyText.hyphenation.enabled",
-          "bodyText.italicColor",
-          "bodyText.lineHeight",
-          "bodyText.referenceColor",
-          "bodyText.textAlign",
-          "colorPalette",
-          "colorPalette[].id",
-          "colorPalette[].name",
-          "colorPalette[].value",
-          "comics",
-          "comics.balloonStyles",
-          "comics.balloonStyles[].aspect",
-          "comics.balloonStyles[].burstPoints",
-          "comics.balloonStyles[].color",
-          "comics.balloonStyles[].fill",
-          "comics.balloonStyles[].fontFamily",
-          "comics.balloonStyles[].fontScale",
-          "comics.balloonStyles[].halo",
-          "comics.balloonStyles[].haloColor",
-          "comics.balloonStyles[].id",
-          "comics.balloonStyles[].padding",
-          "comics.balloonStyles[].stroke",
-          "comics.balloonStyles[].strokeWidth",
-          "comics.cast",
-          "comics.cast[].id",
-          "comics.cast[].name",
-          "comics.gutter",
-          "comics.gutter.horizontal",
-          "comics.gutter.vertical",
-          "comics.lettering",
-          "comics.lettering.color",
-          "comics.lettering.fontFamily",
-          "comics.lettering.fontSize",
-          "comics.lettering.lineHeight",
-          "comics.lettering.textTransform",
-          "comics.panel",
-          "comics.panel.background",
-          "comics.panel.borderColor",
-          "comics.panel.borderWidth",
-          "comics.panelStyles",
-          "comics.panelStyles[].borderStyle",
-          "comics.panelStyles[].id",
-          "comics.runningHeads",
-          "footer",
-          "footer.elements",
-          "footer.elements[].align",
-          "footer.elements[].color",
-          "footer.elements[].content",
-          "footer.elements[].fontFamily",
-          "footer.elements[].fontSize",
-          "footer.elements[].id",
-          "footer.elements[].kind",
-          "footer.elements[].pages",
-          "footer.elements[].placement",
-          "header",
-          "header.elements",
-          "headingStyles",
-          "headingStyles[].advancedDesign",
-          "headingStyles[].advancedDesign.enabled",
-          "headingStyles[].advancedDesign.minHeight",
-          "headingStyles[].advancedDesign.slot",
-          "headingStyles[].breakBefore",
-          "headingStyles[].breakBefore.enabled",
-          "headingStyles[].breakBefore.parity",
-          "headingStyles[].id",
-          "headingStyles[].numbered",
-          "headingStyles[].toc",
-          "headings",
-          "headings.color",
-          "headings.fontFamily",
-          "headings.levels",
-          "headings.levels[].breakBefore",
-          "headings.levels[].level",
-          "layout",
-          "layout.layoutType",
-          "locale",
-          "page",
-          "page.backgroundColor",
-          "page.dpi",
-          "page.height",
-          "page.margins",
-          "page.margins.bottom",
-          "page.margins.left",
-          "page.margins.mirror",
-          "page.margins.right",
-          "page.margins.top",
-          "page.sizePreset",
-          "page.width",
-          "paragraphStyles",
-          "paragraphStyles[].color",
-          "paragraphStyles[].fontFamily",
-          "paragraphStyles[].fontSize",
-          "paragraphStyles[].id",
-          "paragraphStyles[].lineHeight",
-          "paragraphStyles[].marginTop",
-          "paragraphStyles[].textAlign"
-        ],
-        "configSections": [
-          "bodyText",
-          "colorPalette",
-          "comics",
-          "footer",
-          "header",
-          "headingStyles",
-          "headings",
-          "layout",
-          "locale",
-          "page",
-          "paragraphStyles"
-        ],
-        "configLeaves": 154,
-        "designElements": 4,
-        "directives": [
-          ":::paragraphs",
-          ":::page"
-        ],
-        "inline": [
-          "{attrs}"
-        ],
-        "resources": {
-          "svg": 0,
-          "bitmap": 7,
-          "table": 0
-        },
-        "fonts": [
-          {
-            "family": "Bangers",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Patrick Hand",
-            "weight": 400,
-            "style": "normal"
-          }
-        ],
-        "features": [
-          "balloon-styles",
-          "comic-lettering",
-          "comic-pages",
-          "comic-panel-art",
-          "comic-panel-split",
-          "comic-panel-styles",
-          "comic-speakers",
-          "heading-attributes",
-          "heading-styles",
-          "opener-design",
-          "page-background",
-          "page-role-filters",
-          "paragraph-styles",
-          "pdf-export",
-          "pdf-fonts",
-          "resources",
-          "sound-effects",
-          "unnumbered-headings"
-        ],
-        "suggestedLevel": 2
-      },
-      "diagnostics": {
-        "converged": true,
-        "iterationCount": 1,
-        "looseLines": {
-          "count": 0,
-          "share": 0,
-          "worst": 0
-        },
-        "findings": [
-          {
-            "check": "C20",
-            "severity": "warn",
-            "detail": "card.webp weighs 102 KB (aim for ≤ 90 KB)"
-          },
-          {
-            "check": "C20",
-            "severity": "warn",
-            "detail": "card.480.webp weighs 36 KB (aim for ≤ 35 KB)"
-          },
-          {
-            "check": "sandbox",
-            "severity": "info",
-            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
-          }
-        ]
-      }
-    },
     "zh": {
-      "hash8": "d99901d0",
+      "hash8": "6690d70c",
       "vdtHash": "50f3d980fc2b9de7346d2b56fbf3f9cffc139eba",
       "timings": {
-        "importMs": 252,
-        "fontsMs": 354,
-        "buildMs": 875,
-        "totalMs": 2052,
+        "importMs": 205,
+        "fontsMs": 370,
+        "buildMs": 925,
+        "totalMs": 2061,
         "builds": 1
       },
       "specimen": {
@@ -910,7 +910,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 248530,
+          "bytes": 245418,
           "alt": "第 3 页。"
         }
       ],
@@ -934,12 +934,12 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1157426,
+        "bytes": 1157490,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115553
+        "bytes": 1115388
       },
       "detected": {
         "apis": [
@@ -1142,13 +1142,13 @@
       }
     },
     "ar": {
-      "hash8": "b5163f94",
+      "hash8": "8788b270",
       "vdtHash": "96eb0cd503d6ae90a7b895eec4ff8cb1bbc9eb81",
       "timings": {
-        "importMs": 290,
-        "fontsMs": 146,
-        "buildMs": 387,
-        "totalMs": 1373,
+        "importMs": 276,
+        "fontsMs": 158,
+        "buildMs": 468,
+        "totalMs": 1483,
         "builds": 1
       },
       "specimen": {
@@ -1191,7 +1191,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 245598,
+          "bytes": 242880,
           "alt": "الصفحة ٣."
         }
       ],
@@ -1216,12 +1216,12 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1135176,
+        "bytes": 1135149,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115683
+        "bytes": 1115447
       },
       "detected": {
         "apis": [
@@ -1415,7 +1415,7 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "card.webp weighs 98 KB (aim for ≤ 90 KB)"
+            "detail": "card.webp weighs 97 KB (aim for ≤ 90 KB)"
           },
           {
             "check": "sandbox",
@@ -1426,13 +1426,13 @@
       }
     },
     "ja": {
-      "hash8": "a8fd7109",
-      "vdtHash": "cbaf3ab9f754ee9ecdf16e8c872e133a9d427590",
+      "hash8": "aabc33d7",
+      "vdtHash": "d99080b560120794a7fae42a57d1aa6aa08b5ec8",
       "timings": {
-        "importMs": 251,
-        "fontsMs": 324,
-        "buildMs": 1184,
-        "totalMs": 2336,
+        "importMs": 417,
+        "fontsMs": 364,
+        "buildMs": 1199,
+        "totalMs": 2537,
         "builds": 1
       },
       "specimen": {
@@ -1464,7 +1464,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 99388,
+          "bytes": 99192,
           "alt": "章扉、2ページ：カルメンのオレンジ。"
         },
         {
@@ -1475,7 +1475,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 243162,
+          "bytes": 237172,
           "alt": "3ページ。"
         }
       ],
@@ -1485,6 +1485,7 @@
           1
         ]
       ],
+      "binding": "right",
       "card": {
         "file": "card.webp",
         "file480": "card.480.webp",
@@ -1499,12 +1500,12 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1154918,
+        "bytes": 1154935,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1116617
+        "bytes": 1116228
       },
       "detected": {
         "apis": [
@@ -1679,6 +1680,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "right-binding",
           "sound-effects",
           "unnumbered-headings"
         ],
@@ -1696,12 +1698,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB)"
+            "detail": "card.webp weighs 98 KB (aim for ≤ 90 KB)"
           },
           {
-            "check": "C20",
-            "severity": "warn",
-            "detail": "card.480.webp weighs 35 KB (aim for ≤ 35 KB)"
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -1712,13 +1714,13 @@
       }
     },
     "pt": {
-      "hash8": "c7cf32e2",
+      "hash8": "3b9cdc27",
       "vdtHash": "f140d5646d4b07bf163f4cf2c9873b6db7e64670",
       "timings": {
-        "importMs": 1012,
-        "fontsMs": 373,
-        "buildMs": 566,
-        "totalMs": 2653,
+        "importMs": 285,
+        "fontsMs": 118,
+        "buildMs": 460,
+        "totalMs": 1449,
         "builds": 1
       },
       "specimen": {
@@ -1761,7 +1763,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 248996,
+          "bytes": 244272,
           "alt": "Página 3."
         }
       ],
@@ -1785,12 +1787,12 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117114,
+        "bytes": 1117154,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1116274
+        "bytes": 1115974
       },
       "detected": {
         "apis": [
@@ -1981,12 +1983,7 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "card.webp weighs 101 KB (aim for ≤ 90 KB)"
-          },
-          {
-            "check": "C20",
-            "severity": "warn",
-            "detail": "card.480.webp weighs 35 KB (aim for ≤ 35 KB)"
+            "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB)"
           },
           {
             "check": "sandbox",

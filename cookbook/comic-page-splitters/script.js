@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 144 · One set of panels, three page splits ═══════════════
 // https://postext.dev/en/cookbook/comic-page-splitters
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.20.1
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
 //
 // A layout proof for one page of a comic: the same five pictures and the same lines of
 // dialogue laid out under three `split` trees. Each picture carries a safe area, so its subject

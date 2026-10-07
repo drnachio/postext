@@ -46,8 +46,8 @@
     "top-float-next-page"
   ],
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1"
+    "postext": "1.21.0",
+    "postextPdf": "1.21.0"
   },
   "kit": [
     "core",

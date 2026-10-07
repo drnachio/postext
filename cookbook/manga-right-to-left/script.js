@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 149 · Manga read right to left, lettered vertically ══════
 // https://postext.dev/en/cookbook/manga-right-to-left
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.20.1
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.21.0
 // Two pages of a kendo manga: the Japanese original, then the same pages lettered again.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,

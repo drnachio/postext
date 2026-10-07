@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 151 · Two yonkoma strips on a page ═════════════════════════
 // https://postext.dev/en/cookbook/yonkoma
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.20.1
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.21.0
 // A page of a cat-café yonkoma: two four-panel strips side by side, the right one first.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
