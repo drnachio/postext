@@ -10,6 +10,7 @@ import {
   createVDTColumn,
   pageIsMirrored,
   pageIsVertical,
+  flowRectToPage,
   type VDTDocument,
   type VDTBlock,
   type VDTColumn,
@@ -42,7 +43,7 @@ import { verseMarginTopPx } from './buildBlockKind';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
 import { asciiDigits } from '../arabicNumerals';
-import { getMeasureDirection, setMeasureDirection } from '../measure/bidiLines';
+import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
 import {
   createHeadingLevelResolver,
   deriveSectionGeometryConfig,
@@ -61,7 +62,7 @@ import { bookCitationContexts, needsCitationContext } from '../citations/context
 import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
 import { applyStatementNumbering, numberStatements, outlineLookup } from './statementNumbering';
-import { spanEmbedStyle, wrapPageSpanEmbeds } from './spanEmbeds';
+import { SPAN_EMBED_STYLE_ID, isPageSpanStrip, spanEmbedStyle, wrapPageSpanEmbeds } from './spanEmbeds';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
@@ -102,7 +103,7 @@ import {
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 import { layoutComicPage, comicPageLayoutWarnings } from '../comics/layoutPage';
-import { comicStripExtent, comicStripPlacement, layoutComicStrip } from '../comics/strip';
+import { comicStripExtent, comicStripOffset, comicStripPlacement, comicStripWidth, layoutComicStrip } from '../comics/strip';
 import { isComicSpread, layoutComicSpread } from '../comics/spread';
 import type { ComicPageSource } from '../comics/types';
 import {
@@ -145,7 +146,7 @@ import {
   type PlannedCallout,
   type CalloutLineWidth,
 } from './calloutLayout';
-import { layoutResourceBlock, planTableSlice, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
+import { layoutCaptionText, layoutResourceBlock, planTableSlice, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
 import {
   computeFloatPlan,
   floatedResourceIds,
@@ -169,7 +170,7 @@ import {
 } from './floatSlots';
 import {
   computeHeadingContext,
-  computeResourceNumbering,
+  computeResourceNumberingState,
   type ResourceNumberingMap,
 } from './resourceNumbering';
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
@@ -682,7 +683,7 @@ function placeDocumentPass(
   const resources: Resource[] = content.resources ?? [];
   const resourceTypes: ResourceType[] = effectiveResourceTypes(config, resources);
   const headingContext = computeHeadingContext(contentBlocks, headingStart, isNumbered);
-  const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
+  const numberingState = computeResourceNumberingState(
     contentBlocks,
     resourceTypes,
     resources,
@@ -691,6 +692,9 @@ function placeDocumentPass(
     resolved.numerals,
     documentLocale(config),
   );
+  const resourceNumbering: ResourceNumberingMap = numberingState.map;
+  /** The numbers of the strips counted in a resource type (#590). */
+  const stripNumbers = numberingState.strips;
 
   // Lookups threaded into block-kind resolution + measurement.
   const resourceById = new Map<string, Resource>();
@@ -932,15 +936,96 @@ function placeDocumentPass(
     const source = contentBlocks[idx]?.comic;
     return source ? { idx, source } : undefined;
   };
-  /** A strip's extent across the flow at a measure of `width` px, at most
-   *  `max` px (a fresh column, less what a float band keeps). */
-  const comicStripExtentAt = (source: ComicPageSource, width: number, max: number): number =>
-    comicStripExtent(source, width, resolved.page.dpi, pageIsVertical(doc.pages[cursor.pageIndex]!), max);
-  /** The block of a strip `width` × `extent` px (flow), its comic laid out
-   *  in its box on the sheet (the flow box turned on a vertical page); `y`
-   *  is 0 until it is placed. */
-  const buildComicStripBlock = (blockIdx: number, source: ComicPageSource, x: number, width: number, extent: number, pageIndex: number): VDTBlock => {
+  /**
+   * A strip's geometry in a measure `measure` px wide, at most `max` px
+   * tall (flow, block-relative): its own width (`width`) and where it
+   * stands along the measure (`align`), its extent across the flow, and its
+   * caption (`caption`, laid out in the caption style at the strip's width,
+   * numbered when `type` names a resource type, #590). The caption takes
+   * its room first: the strip is clamped to what it leaves. Memoised.
+   */
+  interface StripGeometry {
+    stripWidth: number;
+    dx: number;
+    extent: number;
+    /** The caption's lines (y from 0, x from the strip's start), its band
+     *  and the gap between it and the strip; absent without a caption. */
+    caption?: ReturnType<typeof layoutCaptionText>;
+    captionAbove: boolean;
+    /** Band plus gap: the room the caption takes in the block. */
+    captionRoom: number;
+    /** The whole block: strip and caption. */
+    height: number;
+  }
+  const stripGeometryMemo = new Map<string, StripGeometry>();
+  const stripGeometry = (blockIdx: number, source: ComicPageSource, measure: number, max: number, vertical: boolean): StripGeometry => {
+    const key = `${blockIdx}:${measure.toFixed(2)}:${max.toFixed(2)}:${vertical ? 1 : 0}`;
+    const memo = stripGeometryMemo.get(key);
+    if (memo) return memo;
+    const dpi = resolved.page.dpi;
+    const place = comicStripPlacement(source.attrs);
+    const stripWidth = comicStripWidth(place, measure, dpi);
+    const dx = comicStripOffset(place.align, measure, stripWidth);
+    const typeId = place.type !== undefined && resourceTypeById.has(place.type) ? place.type : undefined;
+    const numbered = typeId !== undefined ? stripNumbers[blockIdx] : undefined;
+    const caption = place.caption
+      ? layoutCaptionText({
+          text: place.caption,
+          // A type the strip is not counted in (no caption, an unknown id)
+          // lends nothing: the caption is plain.
+          resourceType: numbered ? resourceTypeById.get(typeId!) : undefined,
+          number: numbered?.number ?? '',
+          resolved,
+          width: stripWidth,
+          resourceNumbering,
+          resourceTypes,
+          resources,
+        })
+      : undefined;
+    const captionRoom = caption && caption.bandHeight > 0 ? caption.bandHeight + caption.gapPx : 0;
+    const extent = comicStripExtent(source, stripWidth, dpi, vertical, Math.max(1, max - captionRoom));
+    const geometry: StripGeometry = {
+      stripWidth,
+      dx,
+      extent,
+      ...(caption && captionRoom > 0 ? { caption } : {}),
+      captionAbove: captionRoom > 0 && caption!.style.position === 'above',
+      captionRoom,
+      height: extent + captionRoom,
+    };
+    stripGeometryMemo.set(key, geometry);
+    return geometry;
+  };
+  /** Geometry `g` at another measure: the strip's width and offset
+   *  follow it, its extent and caption stay. */
+  const stripGeometryKept = (g: StripGeometry, source: ComicPageSource, measure: number): StripGeometry => {
+    const place = comicStripPlacement(source.attrs);
+    const stripWidth = comicStripWidth(place, measure, resolved.page.dpi);
+    return { ...g, stripWidth, dx: comicStripOffset(place.align, measure, stripWidth) };
+  };
+  /**
+   * The block of a strip a measure `width` px wide and at most `max` px
+   * tall (flow): its comic laid out in the strip's box on the sheet (the
+   * flow box turned on a vertical page, mirrored on a right-to-left one),
+   * placed in the block's box; its caption as the block's lines, in the
+   * caption style, block-relative (placing the block moves them). `x` is
+   * where the block stands; `y` is 0 until it is placed.
+   */
+  const buildComicStripBlock = (
+    blockIdx: number,
+    source: ComicPageSource,
+    x: number,
+    width: number,
+    max: number,
+    pageIndex: number,
+    /** The geometry the block was placed with, kept at another measure
+     *  (its extent and caption; only its width and offset follow). */
+    keep?: StripGeometry,
+  ): VDTBlock => {
     const raw = contentBlocks[blockIdx]!;
+    const page = doc.pages[pageIndex] ?? doc.pages[cursor.pageIndex]!;
+    const vertical = pageIsVertical(page);
+    const g: StripGeometry = keep ? stripGeometryKept(keep, source, width) : stripGeometry(blockIdx, source, width, max, vertical);
     const blk = createVDTBlock(`comic-strip-${blockIdx}`, 'resource', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
     blk.contentIndex = blockIdx;
     blk.sourceStart = raw.sourceStart + bodyOffset;
@@ -948,17 +1033,90 @@ function placeDocumentPass(
     blk.dirty = false;
     blk.snappedToGrid = false;
     blk.lines = [];
-    blk.bbox = createBoundingBox(x, 0, width, extent);
-    const vertical = pageIsVertical(doc.pages[pageIndex] ?? doc.pages[cursor.pageIndex]!);
+    blk.bbox = createBoundingBox(x, 0, width, g.height);
+    // The strip's box inside the block's, then both on the sheet: the
+    // offset between them is where the comic stands in the block's box
+    // there (a mirrored or turned frame moves it, wherever the block is).
+    const stripY = g.captionAbove ? g.captionRoom : 0;
+    const blockOnSheet = flowRectToPage(page, createBoundingBox(0, 0, width, g.height));
+    const stripOnSheet = flowRectToPage(page, createBoundingBox(g.dx, stripY, g.stripWidth, g.extent));
     blk.comic = layoutComicStrip(source, {
       resolved,
-      width: vertical ? extent : width,
-      height: vertical ? width : extent,
+      width: vertical ? g.extent : g.stripWidth,
+      height: vertical ? g.stripWidth : g.extent,
+      x: stripOnSheet.x - blockOnSheet.x,
+      y: stripOnSheet.y - blockOnSheet.y,
       resources: resourceById,
       sourceOffset: bodyOffset,
       pageIndex,
     });
+    if (g.caption) {
+      const c = g.caption;
+      const fonts = c.fonts;
+      const color = c.style.color.hex;
+      const labelColor = c.style.labelColor.hex;
+      // Under the strip after the gap, or over it with the gap below.
+      const bandY = g.captionAbove ? 0 : g.extent + c.gapPx;
+      blk.fontString = fonts.fontString;
+      blk.boldFontString = fonts.boldFontString;
+      blk.italicFontString = fonts.italicFontString;
+      blk.boldItalicFontString = fonts.boldItalicFontString;
+      blk.color = color;
+      blk.refColor = c.linkColor;
+      blk.textAlign = c.style.align;
+      // Every segment carries its font and colour: a renderer paints them
+      // as the lines of a paragraph, in the caption's face and colours.
+      const fontOf = (bold: boolean | undefined, italic: boolean | undefined): string =>
+        bold && italic ? fonts.boldItalicFontString : bold ? fonts.boldFontString : italic ? fonts.italicFontString : fonts.fontString;
+      blk.lines = c.lines.map((line) => ({
+        ...line,
+        bbox: createBoundingBox(line.bbox.x + g.dx + c.paddingPx, line.bbox.y + bandY + c.paddingPx, line.bbox.width, line.bbox.height),
+        baseline: line.baseline + bandY + c.paddingPx,
+        ...(line.segments
+          ? {
+              segments: line.segments.map((seg) => ({
+                ...seg,
+                ...(seg.fontString === undefined && (seg.kind === 'text' || seg.kind === 'space') ? { fontString: fontOf(seg.bold, seg.italic) } : {}),
+                ...(seg.color === undefined && seg.refResourceId === undefined ? { color: seg.captionLabel ? labelColor : color } : {}),
+              })),
+            }
+          : {}),
+      }));
+      const place = comicStripPlacement(source.attrs);
+      const numbered = place.type !== undefined ? stripNumbers[blockIdx] : undefined;
+      blk.stripCaption = {
+        firstLine: 0,
+        lineCount: blk.lines.length,
+        position: g.captionAbove ? 'above' : 'below',
+        ...(numbered ? { typeId: numbered.typeId, number: numbered.number, ...(place.id ? { id: place.id } : {}) } : {}),
+        ...(c.style.backgroundEnabled
+          ? { bar: { rect: createBoundingBox(g.dx, bandY, g.stripWidth, c.bandHeight), background: c.style.background.hex } }
+          : {}),
+      };
+    }
     return blk;
+  };
+  /** Give a strip set in the flow (`here`, or in a box) the placeholder
+   *  line that carries its height, as an inline figure's does: before its
+   *  caption, or after a caption set over it (block-relative). */
+  const withStripPlaceholder = (blk: VDTBlock, g: StripGeometry): void => {
+    const y = g.captionAbove ? g.captionRoom : 0;
+    const placeholder: VDTLine = { text: '', bbox: { x: g.dx, y, width: g.stripWidth, height: g.extent }, baseline: y, hyphenated: false, segments: [], isLastLine: true };
+    if (g.captionAbove) {
+      blk.lines = [...blk.lines, placeholder];
+    } else {
+      blk.lines = [placeholder, ...blk.lines];
+      if (blk.stripCaption) blk.stripCaption.firstLine = 1;
+    }
+  };
+  /** Shift a strip block's lines (its caption, its placeholder) by
+   *  `(dx, dy)`: a float set at its band. */
+  const shiftStripLines = (blk: VDTBlock, dx: number, dy: number): void => {
+    for (const line of blk.lines) {
+      shiftLineX(line, dx);
+      line.bbox.y += dy;
+      line.baseline += dy;
+    }
   };
   /** Boxes laid out for a band, waiting for the band's `y` (built in
    *  `buildFloatBlock`, committed in `commitFloatBlock`). */
@@ -1148,9 +1306,16 @@ function placeDocumentPass(
     if (memo !== undefined) return memo;
     const strip = comicStripOf(resourceId);
     if (strip) {
-      // A strip: its height at the band's width, never taller than a page
-      // keeps for a float band.
-      const ms: FloatMeasure = { height: comicStripExtentAt(strip.source, width, contentArea.height - 2 * floatGapPx) };
+      // A strip: its height at the band's width (its caption's included),
+      // never taller than a page keeps for a float band. A caption under
+      // it is the last text line a bottom band aligns to the grid.
+      const max = contentArea.height - 2 * floatGapPx;
+      const g = stripGeometry(strip.idx, strip.source, width, max, pageIsVertical(doc.pages[cursor.pageIndex]!));
+      const last = g.caption && !g.captionAbove ? g.caption.lines[g.caption.lines.length - 1] : undefined;
+      const ms: FloatMeasure = {
+        height: g.height,
+        ...(last ? { lastCaptionBaseline: g.extent + g.caption!.gapPx + g.caption!.paddingPx + last.baseline } : {}),
+      };
       floatMeasureMemo.set(key, ms);
       return ms;
     }
@@ -1217,8 +1382,8 @@ function placeDocumentPass(
   ): { block: VDTBlock; height: number } | null => {
     const strip = comicStripOf(resourceId);
     if (strip) {
-      const height = comicStripExtentAt(strip.source, width, contentArea.height - 2 * floatGapPx);
-      return { block: buildComicStripBlock(strip.idx, strip.source, x, width, height, cursor.pageIndex), height };
+      const block = buildComicStripBlock(strip.idx, strip.source, x, width, contentArea.height - 2 * floatGapPx, cursor.pageIndex);
+      return { block, height: block.bbox.height };
     }
     const cf = calloutFloatOf(resourceId);
     if (cf) {
@@ -1539,8 +1704,10 @@ function placeDocumentPass(
       calloutBandPages.add(page);
       return;
     }
-    // (A strip's comic is relative to its block: nothing to move.)
+    // (A strip's comic is relative to its block; its caption lines are
+    // relative to it until now.)
     if (built.block.resourceBlock) offsetResourceBlockToAbsolute(built.block.resourceBlock, 0, y);
+    else if (built.block.comic) shiftStripLines(built.block, x, y);
     built.block.bbox = createBoundingBox(x, y, width, built.height);
     built.block.pageIndex = page.index;
     built.block.columnIndex = col.index;
@@ -3181,6 +3348,15 @@ function placeDocumentPass(
     layoutRange: (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean, mirrored?: boolean) => CalloutLayoutResult;
   }
 
+  /** A strip in a box (the box of a page-wide strip set `here`, #590):
+   *  laid out at the box's inner width, as tall as a page allows, with its
+   *  placeholder line; the page it lays out for is the cursor's. */
+  const calloutStripBlock = (raw: ContentBlock, idx: number, width: number): VDTBlock | undefined => {
+    if (!raw.comic) return undefined;
+    const blk = buildComicStripBlock(idx, raw.comic, 0, width, contentArea.height - 2 * floatGapPx, cursor.pageIndex);
+    withStripPlaceholder(blk, stripGeometry(idx, raw.comic, width, contentArea.height - 2 * floatGapPx, pageIsVertical(doc.pages[cursor.pageIndex]!)));
+    return blk;
+  };
   const makeCalloutLayouter = (
     startIdx: number,
     plan: PlannedCallout,
@@ -3189,7 +3365,7 @@ function placeDocumentPass(
     const children = contentBlocks.slice(startIdx + 1, plan.endIdx);
     const realAt: number[] = [];
     children.forEach((c, k) => {
-      if (c.type !== 'directive' && !isMarkerBlock(c)) realAt.push(k);
+      if ((c.type !== 'directive' || (c.directiveName === 'strip' && c.comic)) && !isMarkerBlock(c)) realAt.push(k);
     });
     // `:::columns` groups among the children, as [start marker, end marker]
     // positions: a split never cuts inside one.
@@ -3241,6 +3417,7 @@ function placeDocumentPass(
         ...(to.line > 0 ? { lineTo: to.line } : {}),
         ...(open.length > 0 ? { openNested: open } : {}),
         mirrored,
+        stripBlock: calloutStripBlock,
       });
     };
     return { children, childBase: startIdx + 1, realAt, end: { child: children.length, line: 0 }, layoutRange, groups };
@@ -4534,10 +4711,15 @@ function placeDocumentPass(
    * several columns, it waits in the float queue for the first free band
    * from here on, as a figure does.
    */
+  /** Boxes of page-wide strips set in the flow (no band of several
+   *  columns where they stood): their markers are passed over. */
+  const looseStripBoxes = new Set<number>();
   const placeComicStrip = (blockIdx: number, source: ComicPageSource): number | undefined => {
     const place = comicStripPlacement(source.attrs);
     const page = doc.pages[cursor.pageIndex]!;
-    if (place.position !== 'here' || (place.span === 'page' && multiColumnBand(page))) {
+    // (A page-wide strip set `here` on a page of several columns is boxed
+    // by `wrapPageSpanEmbeds` and cuts the band as a page-span box does.)
+    if (place.position !== 'here') {
       const key = `${COMIC_STRIP_PREFIX}${blockIdx}`;
       // A keep-with-next replay passes the fence again: enqueue once.
       if (!enqueuedFloatIds.has(key)) {
@@ -4546,7 +4728,7 @@ function placeDocumentPass(
         pendingFloats.push({
           resourceId: key,
           firstBlockIdx: blockIdx,
-          position: place.position === 'here' ? 'auto' : place.position,
+          position: place.position,
           span: place.span,
           ...(col ? { refPageIndex: page.index, refY: col.bbox.y + (col.bbox.height - col.availableHeight) } : {}),
         });
@@ -4554,27 +4736,26 @@ function placeDocumentPass(
       return undefined;
     }
     const col = currentColumn(doc, cursor);
-    const extent = comicStripExtentAt(source, col.bbox.width, contentArea.height);
+    const g = stripGeometry(blockIdx, source, col.bbox.width, contentArea.height, pageIsVertical(page));
+    const height = g.height;
     const spacingBefore = Math.max(pendingSpacing, floatGapPx);
-    if (col.blocks.length > 0 && extent > col.availableHeight - spacingBefore + FIT_EPS) {
+    if (col.blocks.length > 0 && height > col.availableHeight - spacingBefore + FIT_EPS) {
       const run = trailingHeadingRun(col);
       if (run > 0 && run < col.blocks.length) {
         const rolled = rollbackHeadings(col);
         pendingSpacing = 0;
-        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(extent));
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(height));
         return (rolled[0]!.contentIndex ?? blockIdx - rolled.length) - 1;
       }
     }
-    const blk = buildComicStripBlock(blockIdx, source, 0, col.bbox.width, extent, cursor.pageIndex);
-    // One placeholder line carries the strip's height (as an inline
-    // figure's does).
-    blk.lines = [{ text: '', bbox: { x: 0, y: 0, width: col.bbox.width, height: extent }, baseline: 0, hyphenated: false, segments: [], isLastLine: true }];
+    const blk = buildComicStripBlock(blockIdx, source, 0, col.bbox.width, contentArea.height, cursor.pageIndex);
+    withStripPlaceholder(blk, g);
     enterBand(blockIdx, 0);
-    placeAtomicBlock(blk, extent, spacingBefore, cursor, doc, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(extent));
+    placeAtomicBlock(blk, height, spacingBefore, cursor, doc, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(height));
     enterBand(blockIdx, 0);
     // Laid out again where it landed: the page it reports on, and the
     // measure of that column (a side column, another section's).
-    const landed = buildComicStripBlock(blockIdx, source, 0, blk.bbox.width, extent, cursor.pageIndex);
+    const landed = buildComicStripBlock(blockIdx, source, 0, blk.bbox.width, contentArea.height, cursor.pageIndex, g);
     blk.comic = landed.comic;
     doc.blocks.push(blk);
     // The flow after the strip goes back to the baseline grid, and the
@@ -4821,6 +5002,23 @@ function placeDocumentPass(
         }
       }
       flushPendingNumberingAtBoundary();
+      continue;
+    }
+    // The box of a page-wide strip set `here` (`wrapPageSpanEmbeds`) cuts a
+    // band of several columns; elsewhere the strip is set in the flow as any
+    // strip, its box markers passed over.
+    if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout'
+      && rawBlock.containerAttrs?.type === SPAN_EMBED_STYLE_ID && isPageSpanStrip(contentBlocks[blockIdx + 1])
+      && !multiColumnBand(doc.pages[cursor.pageIndex]!)) {
+      looseStripBoxes.add(rawBlock.containerId!);
+      continue;
+    }
+    if (rawBlock.type === 'containerEnd' && rawBlock.containerId !== undefined && looseStripBoxes.has(rawBlock.containerId)) {
+      // What the strip owes below it passes through its box's closing marker.
+      // (Set by the strip's placement, in a callback the flow analysis
+      // does not follow.)
+      const owed = inlineGapOwed as { afterIdx: number; pending: number; exact: number; container?: boolean } | null;
+      if (owed && owed.afterIdx === blockIdx - 1) inlineGapOwed = { ...owed, afterIdx: blockIdx };
       continue;
     }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {

@@ -610,6 +610,20 @@ describe('unknown heading settings (EF-83)', () => {
   });
 });
 
+describe('comics setting values (#590)', () => {
+  it('lists a comics word outside its choices, with what the engine used and the closest word', () => {
+    const config = {
+      comics: { readingDirection: 'rlt', balloonStyles: [{ id: 'speech', shape: 'ovall' }], lettering: { joinSameSpeaker: 'merge' } },
+    } as unknown as PostextConfig;
+    const hits = find('Text.', 'unknownConfigValue', config);
+    expect(hits.map((w) => w.payload)).toEqual([
+      { kind: 'unknownConfigValue', path: 'comics.readingDirection', value: 'rlt', used: 'auto', suggestion: 'rtl' },
+      { kind: 'unknownConfigValue', path: 'comics.lettering.joinSameSpeaker', value: 'merge', used: 'butt' },
+      { kind: 'unknownConfigValue', path: 'comics.balloonStyles[0].shape', value: 'ovall', used: 'oval', suggestion: 'oval' },
+    ]);
+  });
+});
+
 describe('heading designs cut off (EF-91)', () => {
   const text = (baselines: number[]) => ({
     kind: 'text', bbox: { x: 0, y: 0, width: 100, height: 20 }, fontString: '10px Lora', color: '#000',

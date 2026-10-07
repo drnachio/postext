@@ -34,6 +34,7 @@ import { cjkGridGeometry } from './pipeline/cjkGrid';
 import { isDigitSystem } from './locale';
 import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText';
 import { parseFootnoteNumberFormat } from './defaults/footnotes';
+import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -65,7 +66,7 @@ function percentText(n: number): string {
  * settings or a paragraph style do not have (`unknownConfigKey`:
  * `headings`, its `balancing` and `levels`, `headingStyles`,
  * `paragraphStyles`). And a setting with a value outside its choices
- * (`unknownConfigValue`: `direction`), and a `numerals` value that names
+ * (`unknownConfigValue`: `direction`, the comics settings' words), and a `numerals` value that names
  * no digit system (`unknownNumerals`). Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined): ConfigWarning[] {
@@ -115,6 +116,66 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   // horizontal document sets them at the column foot.
   if (config.footnotes?.placement === 'spread' && resolveAllConfig(config).layout.writingMode !== 'vertical-rl') {
     out.push({ kind: 'unknownConfigValue', path: 'footnotes.placement', value: 'spread', used: 'column' });
+  }
+  out.push(...collectComicChoiceWarnings(config));
+  return out;
+}
+
+/** The comics settings that take one of a few words (#590): the reading
+ *  and art directions, a panel style's border style and fit, the
+ *  lettering's writing mode, case, final stop and joins, a balloon style's
+ *  shape, tail, target, position, alignment and case. `used` is what the
+ *  setting resolved to (the default, or the value of the style it is laid
+ *  over), `suggestion` the word it is closest to, when one is close. */
+function collectComicChoiceWarnings(config: PostextConfig): ConfigWarning[] {
+  const comics = config.comics as unknown;
+  if (!comics || typeof comics !== 'object' || Array.isArray(comics)) return [];
+  const c = comics as ComicsConfig;
+  const out: ConfigWarning[] = [];
+  let resolved: ReturnType<typeof resolveComicsConfig> | undefined;
+  const res = () => (resolved ??= resolveComicsConfig(c, resolvedLocale(resolveAllConfig(config))));
+  const check = (value: unknown, choices: readonly string[], path: string, used: () => unknown): void => {
+    if (value === undefined || isComicChoice(choices, value)) return;
+    const written = String(value);
+    const suggestion = closestKey(written, choices);
+    out.push({ kind: 'unknownConfigValue', path, value: written, used: String(used()), ...(suggestion ? { suggestion } : {}) });
+  };
+  const obj = (v: unknown): Record<string, unknown> | undefined =>
+    v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : undefined;
+  check(c.readingDirection, COMIC_CHOICES.readingDirection, 'comics.readingDirection', () => res().readingDirection);
+  check(c.artDirection, COMIC_CHOICES.artDirection, 'comics.artDirection', () => res().artDirection);
+  const panel = obj(c.panel);
+  if (panel) {
+    check(panel.borderStyle, COMIC_CHOICES.borderStyle, 'comics.panel.borderStyle', () => res().panel.borderStyle);
+    check(panel.fit, COMIC_CHOICES.fit, 'comics.panel.fit', () => res().panel.fit);
+  }
+  if (Array.isArray(c.panelStyles)) {
+    c.panelStyles.forEach((raw, i) => {
+      const s = obj(raw);
+      if (!s) return;
+      const style = () => res().panelStyles.find((p) => p.id === s.id) ?? res().panel;
+      check(s.borderStyle, COMIC_CHOICES.borderStyle, `comics.panelStyles[${i}].borderStyle`, () => style().borderStyle);
+      check(s.fit, COMIC_CHOICES.fit, `comics.panelStyles[${i}].fit`, () => style().fit);
+    });
+  }
+  const lettering = obj(c.lettering);
+  if (lettering) {
+    for (const key of ['writingMode', 'textTransform', 'dropFinalStop', 'joinSameSpeaker'] as const) {
+      check(lettering[key], COMIC_CHOICES[key], `comics.lettering.${key}`, () => res().lettering[key]);
+    }
+  }
+  if (Array.isArray(c.balloonStyles)) {
+    c.balloonStyles.forEach((raw, i) => {
+      const s = obj(raw);
+      if (!s) return;
+      const style = () => res().balloonStyles.find((b) => b.id === s.id);
+      for (const key of ['shape', 'tail', 'target', 'position', 'align'] as const) {
+        check(s[key], COMIC_CHOICES[key], `comics.balloonStyles[${i}].${key}`, () => style()?.[key] ?? '');
+      }
+      // Unset on a resolved style: the lettering's case.
+      check(s.textTransform, COMIC_CHOICES.textTransform, `comics.balloonStyles[${i}].textTransform`,
+        () => style()?.textTransform ?? res().lettering.textTransform);
+    });
   }
   return out;
 }
@@ -204,8 +265,8 @@ function editDistance(a: string, b: string, max: number): number {
   return d[a.length]![b.length]!;
 }
 
-/** The known key `key` is a slip of: the same letters in another case, or
- *  one or two letters apart (a longer key allows two). */
+/** The known key (or word) `key` is a slip of: the same letters in another
+ *  case, or one or two letters apart (a longer key allows two). */
 function closestKey(key: string, known: readonly string[]): string | undefined {
   const lower = key.toLowerCase();
   const sameCase = known.find((k) => k.toLowerCase() === lower);

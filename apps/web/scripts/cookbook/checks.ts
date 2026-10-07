@@ -440,7 +440,7 @@ export function configWarningText(w: ProbeConfigWarning): string {
     case "unknownNumerals":
       return `unknownNumerals: ${w.path} ${value} names no digit system; the digits are ${w.used}`;
     case "unknownConfigValue":
-      return `unknownConfigValue: ${w.path} ${value} is not one of its choices; the engine used ${w.used}`;
+      return `unknownConfigValue: ${w.path} ${value} is not one of its choices${w.suggestion ? ` (${w.suggestion}?)` : ""}; the engine used ${w.used}`;
     case "unknownConfigKey":
       return `unknownConfigKey: ${w.path} is no key of that setting${w.suggestion ? ` (${w.suggestion}?)` : ""}; the engine ignores it`;
     case "fontFamilyStack":

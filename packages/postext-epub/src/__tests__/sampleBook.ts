@@ -273,3 +273,30 @@ export function stripSpreadSampleBook(): VDTDocument[] {
   }
   return docs;
 }
+
+/** Captioned strips (#590): a numbered one, narrower than the measure and
+ *  named by a `:ref`, and a plain one. */
+export function stripCaptionSampleBook(): VDTDocument[] {
+  const chapter = [
+    '# Captioned strips',
+    '',
+    `As :ref{id="morning"} shows. ${para}`,
+    '',
+    ':::strip{split="* | *" aspect=3 width=80% caption="A *quiet* morning." type=figure id=morning}',
+    '::panel{art=f1 alt="The kitchen"}',
+    '::panel{art=f1 alt="The garden"}',
+    ':::',
+    '',
+    `Between the strips. ${para}`,
+    '',
+    ':::strip{split="* | * | *" caption="Three panels, no number."}',
+    '::panel{art=f1 alt="One"}',
+    '::panel',
+    '::panel',
+    ':::',
+    '',
+    'After the strips.',
+  ].join('\n');
+  return buildBundle({ chapters: [{ markdown: chapter }], config: { ...config, comics: {} }, resources });
+}
+

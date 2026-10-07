@@ -91,7 +91,7 @@ function addBlockFonts(block: VDTBlock, out: FontText, vertical?: VerticalSettin
     return;
   }
   const rb = block.resourceBlock;
-  if (block.type === 'resource') {
+  if (block.type === 'resource' && !(block.comic && block.stripCaption)) {
     if (!rb) return;
     const caption: FaceSet = {
       normal: rb.captionFontString,

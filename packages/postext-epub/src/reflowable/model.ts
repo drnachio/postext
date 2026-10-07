@@ -236,6 +236,11 @@ export interface ComicNode {
   /** The page's reading direction, when it differs from the document's. */
   dir?: 'ltr' | 'rtl';
   panels: ComicPanelNode[];
+  /** A strip's caption (`:::strip{caption=…}`, #590): the strip and its
+   *  caption are one `<figure>`, the caption its `<figcaption>`, under the
+   *  panels or over them. `id`: the anchor a `:ref` naming the strip
+   *  links to. */
+  caption?: { inl: InlineItem[]; above: boolean; id?: string };
 }
 
 /** Page starts and anchors with no text of their own to sit in (a blank

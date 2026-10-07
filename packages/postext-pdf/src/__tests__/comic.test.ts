@@ -447,6 +447,26 @@ describe('strips and spreads in the PDF', () => {
     expect(root.kids[at]!.kids[0]!.alt).toBe('A meadow under a red sun');
   }, 60_000);
 
+  it('tags a strip\'s caption as the Caption of its Div, after its panels or before them (#590)', async () => {
+    for (const position of ['below', 'above'] as const) {
+      const md = 'Before the strip.\n\n:::strip{split="* | *" aspect=3 width=80% caption="A *meadow*." type=figure id=meadow}\n::panel{art=land}\n::panel{art=tall}\n:::\n\nAs :ref{id="meadow"} shows.';
+      const d = buildDocument({ markdown: md, resources }, { ...config, captionStyle: { position } });
+      const pageIndex = d.pages.findIndex((p) => p.columns.some((c) => c.blocks.some((b) => b.comic)));
+      const out = await PDFDocument.load(await renderToPdf(d, { fontProvider, resourceBytes: (id) => files[id] }));
+      const root = structRoot(out);
+      const div = root.kids.find((k) => k.type === 'Div')!;
+      expect(div.kids.map((k) => k.type)).toEqual(position === 'below' ? ['Figure', 'Figure', 'Caption'] : ['Caption', 'Figure', 'Figure']);
+      expect(div.kids.find((k) => k.type === 'Caption')!.mcids).toBeGreaterThan(0);
+      // The caption's words are drawn on the strip's page.
+      const ops = contentOps(out, pageIndex);
+      expect(ops).toMatch(/\/Caption <<[^>]*MCID[^>]*>> BDC[\s\S]*?T[jJ]/);
+      // The reference after it links to the strip (a Link element survives
+      // only with a destination to go to).
+      const links = (e: Elem): number => (e.type === 'Link' ? 1 : 0) + e.kids.reduce((s, k) => s + links(k), 0);
+      expect(links(root)).toBe(1);
+    }
+  }, 60_000);
+
   it('paints both halves of a spread, a panel across the spine tagged once', async () => {
     const md = ':::page{spread split="50 / * [* | * | *]"}\n::panel{art=land}\n::panel{art=tall}\n::panel{art=land}\n::panel{art=tall}\n:::\n\nAfter the spread.';
     const d = buildDocument({ markdown: md, resources }, config);

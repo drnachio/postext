@@ -7,12 +7,15 @@
  * {@link SPAN_EMBED_STYLE_ID} style), so the span-block machinery — level
  * cuts, band caps, moves to the next page — places it. On a one-column
  * page the box falls back to the flow, at the full measure the embed took
- * already.
+ * already. A page-wide comic strip set `here` (`:::strip{span=page}`,
+ * #590) is boxed the same way; on a one-column page the build sets it in
+ * the flow as any strip, its box ignored.
  */
 
 import type { ContentBlock } from '../parse';
 import type { CalloutStyleConfig, Resource, ResourceType } from '../types';
 import { resolveResourcePlacement } from './floatPlacement';
+import { comicStripPlacement } from '../comics/strip';
 
 /** Style id of the frameless box that carries a page-span embed. Not a
  *  user style: no configuration can name it. */
@@ -46,13 +49,23 @@ export function spanEmbedStyle(gapPx: number, gapBelow: boolean): CalloutStyleCo
   };
 }
 
+/** Whether `block` is a comic strip set across the page where it is
+ *  written (`:::strip{span=page}`, placed `here`). */
+export function isPageSpanStrip(block: ContentBlock | undefined): boolean {
+  if (!block || block.type !== 'directive' || block.directiveName !== 'strip' || !block.comic) return false;
+  const place = comicStripPlacement(block.comic.attrs);
+  return place.span === 'page' && place.position === 'here';
+}
+
 /** Whether `block` is a `::resource` directive the build sets across the
- *  page (its resource placed `here`, `span: 'page'`). */
+ *  page (its resource placed `here`, `span: 'page'`), or a page-wide strip
+ *  set `here`. */
 function spansPage(
   block: ContentBlock,
   resourceById: ReadonlyMap<string, Resource>,
   typeById: ReadonlyMap<string, ResourceType>,
 ): boolean {
+  if (isPageSpanStrip(block)) return true;
   if (block.type !== 'resourceBlock' || !block.resourceId) return false;
   const resource = resourceById.get(block.resourceId);
   if (!resource) return false;
@@ -72,7 +85,9 @@ export function wrapPageSpanEmbeds(
   resources: readonly Resource[],
   resourceTypes: readonly ResourceType[],
 ): { blocks: ContentBlock[]; wrapped: boolean } {
-  if (resources.length === 0 || !blocks.some((b) => b.type === 'resourceBlock')) return { blocks: blocks as ContentBlock[], wrapped: false };
+  if (!blocks.some(isPageSpanStrip) && (resources.length === 0 || !blocks.some((b) => b.type === 'resourceBlock'))) {
+    return { blocks: blocks as ContentBlock[], wrapped: false };
+  }
   const resourceById = new Map(resources.map((r) => [r.id, r]));
   const typeById = new Map(resourceTypes.map((t) => [t.id, t]));
   const out: ContentBlock[] = [];

@@ -250,6 +250,39 @@ describe('HTML of strips and spreads', () => {
     expect(flowBox.indexOf('class="pt-comic"')).toBeGreaterThan(end);
   });
 
+  it('sets a strip and its caption as one figure, the caption its figcaption (#590)', () => {
+    const md = 'See :ref{id="day"}.\n\n:::strip{split="* | * | *" caption="A *day*." type=figure id=day}\n::panel{art=d1}\n::panel\n::panel\n:::\n\nAfter the strip.';
+    const doc = buildDocument({ markdown: md, resources: pics }, { page: { sizePreset: '17x24' }, layout: { layoutType: 'single' } });
+    const page = doc.pages[0]!;
+    const block = page.columns.flatMap((c) => c.blocks).find((b) => b.comic)!;
+    const html = renderToHtmlIndexed(doc, { resourceImageUrl: url }).pages[0]!.innerHtml;
+    const figure = html.indexOf('<figure class="pt-strip"');
+    const comic = html.indexOf('class="pt-comic"');
+    const caption = html.indexOf('<figcaption class="pt-strip-caption"');
+    expect(figure).toBeGreaterThan(html.indexOf(`data-block-id="${block.id}"`));
+    expect(comic).toBeGreaterThan(figure);
+    expect(caption).toBeGreaterThan(comic);
+    expect(html.slice(caption)).toMatch(/Figure/);
+    expect(html.slice(caption, html.indexOf('</figcaption>', caption))).toContain('day');
+    // The :ref before it links to it.
+    expect(html).toContain('id="pt-res-day"');
+    expect(html).toContain('href="#pt-res-day"');
+    // A strip without a caption is no figure.
+    const plain = renderToHtmlIndexed(buildDocument({ markdown: STRIP, resources: pics }, { page: { sizePreset: '17x24' } }), { resourceImageUrl: url });
+    expect(plain.pages.map((p) => p.innerHtml).join('')).not.toContain('pt-strip');
+  });
+
+  it('keeps a strip\'s caption in the flow of a vertical page, its picture over the sheet', () => {
+    const md = '本文。\n\n:::strip{split="* / *" caption="図の説明。"}\n::panel\n::panel\n:::\n\n本文。';
+    const doc = buildDocument({ markdown: md, resources: pics }, { page: { sizePreset: '17x24' }, locale: 'ja', layout: { writingMode: 'vertical-rl' } });
+    const page = doc.pages.find((p) => p.columns.some((c) => c.blocks.some((b) => b.comic)))!;
+    const html = renderToHtmlIndexed(doc, { resourceImageUrl: url }).pages[page.index]!.innerHtml;
+    expect(html).not.toContain('<figure class="pt-strip"');
+    const caption = html.indexOf('<div class="pt-strip-caption"');
+    expect(caption).toBeGreaterThan(html.indexOf('class="pt-flow"'));
+    expect(caption).toBeLessThan(html.indexOf('class="pt-comic"'));
+  });
+
   it('paints each half of a spread on its page, a panel across the spine read once', () => {
     const doc = buildDocument({ markdown: SPREAD, resources: pics }, { page: { sizePreset: '17x24' } });
     const [left, right] = doc.pages.filter((p) => p.comic) as [VDTPage, VDTPage];

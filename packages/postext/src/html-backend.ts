@@ -327,6 +327,8 @@ export function anchoredResourceIds(doc: VDTDocument): Set<string> {
     for (const block of [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])]) {
       const rb = block.resourceBlock;
       if (rb?.resource.id && !rb.slice?.continued) ids.add(rb.resource.id);
+      // A numbered strip with an id (#590).
+      if (block.stripCaption?.id) ids.add(block.stripCaption.id);
     }
   }
   return ids;
@@ -2189,6 +2191,9 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   // Resource embeds carry their own measured geometry (image/table + caption);
   // the block's single placeholder line renders nothing useful.
   if (block.resourceBlock) return renderResourceBlockHtml(block, options);
+  // A strip: its picture is the page's comic markup; the block holds its
+  // caption (#590).
+  if (block.comic) return renderStripCaptionHtml(block, options);
   const parts: string[] = [];
   const v = options.vertical;
   parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block, options.dir));
@@ -2197,6 +2202,44 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
     parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next));
   });
   return parts.join('');
+}
+
+/** A strip's caption (`VDTBlock.stripCaption`, #590): the bar behind it,
+ *  then its lines, set as the lines of a paragraph (in the flow: turned on
+ *  a vertical page, mirrored on a right-to-left one). Empty without one. */
+function renderStripCaptionHtml(block: VDTBlock, options: HtmlPaint): string {
+  const caption = block.stripCaption;
+  if (!caption) return '';
+  const parts: string[] = [];
+  if (caption.id) parts.push(zeroSizeAnchor(resourceAnchorId(caption.id), block.bbox.x, block.bbox.y));
+  if (caption.bar) {
+    const { rect, background } = caption.bar;
+    parts.push(
+      `<div aria-hidden="true" style="position:absolute;` +
+      `left:${block.bbox.x + rect.x}px;top:${block.bbox.y + rect.y}px;width:${rect.width}px;height:${rect.height}px;` +
+      `background:${background};"></div>`,
+    );
+  }
+  const v = options.vertical;
+  const lines = block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount);
+  lines.forEach((line, i) => {
+    const next = lines[i + 1];
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next));
+  });
+  return parts.join('');
+}
+
+/** A strip's block: its picture (`comic`, the strip's comic markup when it
+ *  is read in its block) and its caption, as one `<figure>` with the
+ *  caption its `<figcaption>`, in reading order (#590). On a page whose
+ *  comics lie over the sheet the caption stands alone. */
+function renderStripBlockHtml(block: VDTBlock, options: HtmlPaint, comic: string): string {
+  const caption = renderStripCaptionHtml(block, options);
+  if (!caption) return comic;
+  if (!comic) return `<div class="pt-strip-caption" style="display:contents;">${caption}</div>`;
+  const figcaption = `<figcaption class="pt-strip-caption" style="display:contents;">${caption}</figcaption>`;
+  const above = block.stripCaption?.position === 'above';
+  return `<figure class="pt-strip" style="display:contents;">${above ? figcaption + comic : comic + figcaption}</figure>`;
 }
 
 /**
@@ -2214,8 +2257,7 @@ function renderBlock(block: VDTBlock, options: HtmlPaint, extra = ''): string {
   return (
     `<div class="pt-block" data-block-id="${esc(block.id)}" style="display:contents;">` +
     note +
-    renderBlockInner(block, options) +
-    extra +
+    (block.comic && block.stripCaption && !block.hidden ? renderStripBlockHtml(block, options, extra) : renderBlockInner(block, options) + extra) +
     `</div>`
   );
 }

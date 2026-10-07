@@ -315,8 +315,10 @@ export type WarningPayload =
    *  key; `suggestion` names the setting it is closest to, when one is. */
   | { kind: 'unknownConfigKey'; path: string; value: string; used: string; suggestion?: string }
   /** A setting that takes one of a few words holding another
-   *  (`direction: 'right'`): the engine reads its default, `used`. */
-  | { kind: 'unknownConfigValue'; path: string; value: string; used: string }
+   *  (`direction: 'right'`): the engine reads its default, `used`;
+   *  `suggestion` names the word it is closest to, when one is (the
+   *  comics settings, #590). */
+  | { kind: 'unknownConfigValue'; path: string; value: string; used: string; suggestion?: string }
   /** The document's language (its hyphenation locale, else `locale`) has
    *  no bundled hyphenation patterns: the engine hyphenates it with en-us. */
   | { kind: 'unsupportedHyphenationLocale'; locale: string }

@@ -489,13 +489,28 @@ describe.skipIf(!python)("postext-port lint on comics", () => {
     expect(open.out).toContain(":::page is never closed");
   });
 
+  it("knows a strip's width, alignment and caption (#590)", () => {
+    const strip = (attrs: string) => [`:::strip{${attrs}}`, "::panel{art=p1}", "::panel{art=p2}", ":::", ""].join("\n");
+    const good = lint(comicProject(letters, { en: strip('width=60% align=end caption="A day." type=figure id=day') + 'See :ref{id="day"}.\n' })).out;
+    expect(good).not.toMatch(/strip attribute|width=|align=|type=|caption|:ref to unknown/);
+    expect(lint(comicProject(letters, { en: strip("width=12cm align=start") })).out).not.toMatch(/width=|align=/);
+    const bad = lint(comicProject(letters, { en: strip('width=wide align=middle type=plate caption=""') })).out;
+    expect(bad).toContain("width='wide' is not a share of the measure");
+    expect(bad).toContain("align='middle' is read as center");
+    expect(bad).toContain("caption is empty");
+    expect(bad).toContain("type='plate' is not in resourceTypes");
+    expect(lint(comicProject(letters, { en: strip("type=figure") })).out).toContain("type without caption: the strip is not counted");
+    expect(lintAll(comicProject(letters, { en: strip("align=end") })).out).toContain("align without width");
+    expect(lintAll(comicProject(letters, { en: strip('id=s1 caption="Plain."') })).out).toContain("a :ref names a strip only when it is numbered");
+  });
+
   it("checks the comics config", () => {
     const { out, status } = lint(comicProject({
       comics: {
         readingDirection: "backwards", zoom: 1,
         lettering: { fontSize: { value: 1, unit: "em" }, writingMode: "vertical", leading: 1 },
         gutter: { horizontal: { value: 1, unit: "em" } },
-        balloonStyles: [{ id: "writing", shape: "star" }, { shape: "oval" }],
+        balloonStyles: [{ id: "writing", shape: "star" }, { shape: "oval" }, { id: "dream", tail: "bubles" }],
         cast: [{ id: "ana", balloonStyle: "growl" }],
       },
     }, { en: COMIC }));
@@ -505,6 +520,8 @@ describe.skipIf(!python)("postext-port lint on comics", () => {
     expect(out).toContain("config.comics.gutter.horizontal: in em throws");
     expect(out).toContain("config.comics.lettering.leading: unknown key (ignored)");
     expect(out).toContain("config.comics.balloonStyles[0].shape: 'star' is not one of");
+    expect(out).toContain("config.comics.balloonStyles[2].tail: 'bubles' is not one of");
+    expect(out).toContain("(did you mean 'bubbles'?): the default is used (unknownConfigValue)");
     expect(out).toContain("config.comics.balloonStyles[1]: a balloon style without an id is dropped");
     expect(out).toContain("config.comics.cast[0].balloonStyle: 'growl' is not a balloon style");
     expect(status).toBe(1);

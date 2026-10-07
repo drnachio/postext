@@ -101,4 +101,70 @@ describe('comics config', () => {
       ['comics.cast[0].colour', 'color'],
     ]);
   });
+
+  describe('values outside their choices (#590)', () => {
+    const config = {
+      comics: {
+        readingDirection: 'rlt',
+        artDirection: 'left',
+        panel: { borderStyle: 'Rough', fit: 'fill' },
+        panelStyles: [{ id: 'clean', borderStyle: 'dashed', fit: 'contian' }],
+        lettering: { writingMode: 'vertcal', textTransform: 'upper', dropFinalStop: 'yes', joinSameSpeaker: 'conector' },
+        balloonStyles: [
+          { id: 'thought', shape: 'clod', tail: 'bubles', target: 'face', position: 'top-left', align: 'centre', textTransform: 'caps' },
+          { id: 'mine', shape: 'triangle' },
+        ],
+      },
+    } as unknown as PostextConfig;
+
+    it('reports each, with what the engine used and the closest word', () => {
+      const values = collectConfigWarnings(config).filter((w) => w.kind === 'unknownConfigValue');
+      expect(values.map((w) => [w.path, w.value, w.used, w.suggestion])).toEqual([
+        ['comics.readingDirection', 'rlt', 'auto', 'rtl'],
+        ['comics.artDirection', 'left', 'ltr', undefined],
+        ['comics.panel.borderStyle', 'Rough', 'solid', 'rough'],
+        ['comics.panel.fit', 'fill', 'cover', undefined],
+        // A named style falls back to the default panel style.
+        ['comics.panelStyles[0].borderStyle', 'dashed', 'solid', undefined],
+        ['comics.panelStyles[0].fit', 'contian', 'cover', 'contain'],
+        ['comics.lettering.writingMode', 'vertcal', 'auto', 'vertical'],
+        ['comics.lettering.textTransform', 'upper', 'none', undefined],
+        ['comics.lettering.dropFinalStop', 'yes', 'auto', undefined],
+        ['comics.lettering.joinSameSpeaker', 'conector', 'butt', 'connector'],
+        // A built-in style keeps its own value.
+        ['comics.balloonStyles[0].shape', 'clod', 'cloud', 'cloud'],
+        ['comics.balloonStyles[0].tail', 'bubles', 'bubbles', 'bubbles'],
+        ['comics.balloonStyles[0].target', 'face', 'head', undefined],
+        ['comics.balloonStyles[0].position', 'top-left', 'auto', undefined],
+        ['comics.balloonStyles[0].align', 'centre', 'center', 'center'],
+        ['comics.balloonStyles[0].textTransform', 'caps', 'none', undefined],
+        // A new style falls back to the speech balloon.
+        ['comics.balloonStyles[1].shape', 'triangle', 'oval', undefined],
+      ]);
+    });
+
+    it('resolves them to those values', () => {
+      const c = resolveComicsConfig(config.comics, 'en');
+      expect([c.readingDirection, c.artDirection, c.panel.borderStyle, c.panel.fit]).toEqual(['auto', 'ltr', 'solid', 'cover']);
+      expect([c.panelStyles[0]!.borderStyle, c.panelStyles[0]!.fit]).toEqual(['solid', 'cover']);
+      const l = c.lettering;
+      expect([l.writingMode, l.textTransform, l.dropFinalStop, l.joinSameSpeaker]).toEqual(['auto', 'none', 'auto', 'butt']);
+      const thought = pickBalloonStyle(c, 'thought')!;
+      expect([thought.shape, thought.tail, thought.target, thought.position, thought.align, thought.textTransform]).toEqual(['cloud', 'bubbles', 'head', 'auto', 'center', undefined]);
+      expect(pickBalloonStyle(c, 'mine')!.shape).toBe('oval');
+    });
+
+    it('takes every listed word and the booleans of dropFinalStop', () => {
+      const ok = {
+        comics: {
+          readingDirection: 'rtl', artDirection: 'rtl', panel: { borderStyle: 'rough', fit: 'contain' },
+          lettering: { writingMode: 'vertical', textTransform: 'uppercase', dropFinalStop: false, joinSameSpeaker: 'none' },
+          balloonStyles: [{ id: 'x', shape: 'electric', tail: 'zigzag', target: 'head', position: 'bottom-end', align: 'start', textTransform: 'none' }],
+        },
+      } as unknown as PostextConfig;
+      expect(collectConfigWarnings(ok).filter((w) => w.kind === 'unknownConfigValue')).toEqual([]);
+      expect(collectConfigWarnings({ comics: { lettering: { dropFinalStop: 'true' } } } as unknown as PostextConfig).map((w) => w.path))
+        .toEqual(['comics.lettering.dropFinalStop']);
+    });
+  });
 });

@@ -298,6 +298,11 @@ export interface CalloutLayoutInput {
   /** `calloutPath` of the box's frame and children: set when the box is
    *  itself nested (see `VDTBlock.calloutPath`). */
   nestPath?: readonly number[];
+  /** Lays out a comic strip among the children (`:::strip`, the one a
+   *  page-wide strip's box holds, #590): its block `width` wide, its lines
+   *  relative to its box, or undefined to leave it out. Without it strips
+   *  are left out, as other directives are. */
+  stripBlock?: (raw: ContentBlock, blockIdx: number, width: number) => VDTBlock | undefined;
 }
 
 /** The measures of `layoutCallout`'s first child across widths (see
@@ -734,9 +739,40 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
     return prev && prev.measured.lines.length > lineFrom ? prev : undefined;
   };
+  /** A comic strip the box lays out (see `stripBlock`). */
+  const isStripChild = (raw: ContentBlock): boolean =>
+    input.stripBlock !== undefined && raw.type === 'directive' && raw.directiveName === 'strip' && raw.comic !== undefined;
+  /** Lay out a comic strip child at `width` from `x`: an atomic block with
+   *  the gap of an inline resource around it, as in running text. */
+  const placeStripChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[], unitsInto: CalloutUnit[]): VDTBlock | undefined => {
+    const blk = input.stripBlock!(raw, childStartIdx + k, width);
+    if (!blk) return undefined;
+    const marginTopPx = resourceGapPx;
+    const marginBottomPx = resourceGapBelow ? resourceGapPx : 0;
+    st.cursorY += st.first ? st.prevMarginBottom : Math.max(st.prevMarginBottom, marginTopPx);
+    const height = blk.bbox.height;
+    blk.containerId = containerId;
+    if (nestPath) blk.calloutPath = [...nestPath];
+    blk.bbox = createBoundingBox(x, st.cursorY, width, height);
+    for (const line of blk.lines) {
+      shiftLineX(line, x);
+      line.bbox.y += st.cursorY;
+      line.baseline += st.cursorY;
+    }
+    into.push(blk);
+    unitsInto.push({ kind: 'block', block: blk });
+    st.cursorY += height;
+    st.prevMarginBottom = marginBottomPx;
+    st.pull = false;
+    st.prevWasListItem = false;
+    st.prevListItem = undefined;
+    st.first = false;
+    return blk;
+  };
   /** Lay out one child at `width` from `x`, appending it to `into` and
    *  advancing the stack. */
   const placeChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[], unitsInto: CalloutUnit[]): VDTBlock | undefined => {
+    if (isStripChild(raw)) return placeStripChild(raw, k, width, x, st, into, unitsInto);
     const blockIdx = childStartIdx + k;
     // Inside a `:::paragraphs` container: its style, and for the block that
     // closes it the tail style, which carries the container's bottom margin.
@@ -1055,7 +1091,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       }
       addSpace(raw, gst);
       containerMargin(raw, k, gst);
-      if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
+      if ((raw.type === 'directive' && !isStripChild(raw)) || isMarkerBlock(raw)) continue;
       if (placeChild(raw, k, colW, innerX, gst, into, unitsInto)) stack.push({ blocks: into, unit: unitsInto[0]! });
     }
     if (stack.length === 0) return;
@@ -1147,7 +1183,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     st.first = false;
   };
 
-  const holdsContent = children.some((c) => c.type !== 'directive' && !isMarkerBlock(c));
+  const holdsContent = children.some((c) => (c.type !== 'directive' || isStripChild(c)) && !isMarkerBlock(c));
   const st: Stack = {
     cursorY,
     prevMarginBottom: hasTitle ? gapPx : 0,
@@ -1186,7 +1222,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       }
       addSpace(raw, st);
       containerMargin(raw, k, st);
-      if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
+      if ((raw.type === 'directive' && !isStripChild(raw)) || isMarkerBlock(raw)) continue;
       placeChild(raw, k, innerWidth, innerX, st, childBlocks, units);
     }
   }

@@ -3,6 +3,7 @@ import { parseMarkdown } from '../../parse';
 import {
   computeHeadingContext,
   computeResourceNumbering,
+  computeResourceNumberingState,
 } from '../../pipeline/resourceNumbering';
 import type { Resource, ResourceType, ResourceCounterFormat } from '../../types';
 
@@ -243,5 +244,39 @@ describe('resource numbering — unknown resources/types', () => {
     const resources = [makeResource('a', 'figure')];
     const out = number('::resource{id="a"}\n', types, resources);
     expect(out).toEqual({});
+  });
+});
+
+describe('comic strips counted in a resource type (#590)', () => {
+  const strip = (attrs: string) => `:::strip{${attrs}}\n::panel\n:::`;
+  it('numbers a captioned strip with a type in reading order with the resources, an id naming it', () => {
+    const types = [makeType({ id: 'figure' }), makeType({ id: 'table' })];
+    const resources = [makeResource('a', 'figure'), makeResource('b', 'figure'), makeResource('t', 'table')];
+    const md = [
+      'See :ref{id="a"} and :ref{id="s2"}.',
+      strip('caption="One." type=figure id=s1'),
+      strip('caption="Two." type=figure id=s2'),
+      strip('caption="Plain."'),
+      strip('type=figure id=nocap'),
+      strip('caption="Odd." type=unknown id=odd'),
+      ':ref{id="b"} :ref{id="t"}',
+      strip('caption="Tabled." type=table'),
+    ].join('\n\n');
+    const blocks = parseMarkdown(md);
+    const state = computeResourceNumberingState(blocks, types, resources, computeHeadingContext(blocks));
+    expect(Object.fromEntries(Object.entries(state.map).map(([id, e]) => [id, e.number]))).toEqual({ a: '1', s1: '2', s2: '3', b: '4', t: '1' });
+    const byBlock = Object.entries(state.strips).map(([i, e]) => [blocks[Number(i)]!.comic!.attrs.caption, e.typeId, e.number]);
+    expect(byBlock).toEqual([['One.', 'figure', '2'], ['Two.', 'figure', '3'], ['Tabled.', 'table', '2']]);
+    expect(state.counters.figure!.counter).toBe(4);
+    expect(state.counters.table!.counter).toBe(2);
+  });
+
+  it('continues the counter of the chapters before', () => {
+    const types = [makeType({ id: 'figure' })];
+    const blocks = parseMarkdown(strip('caption="Next." type=figure'));
+    const state = computeResourceNumberingState(blocks, types, [], computeHeadingContext(blocks), {
+      counters: { figure: { counter: 6, heading: { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } } },
+    });
+    expect(Object.values(state.strips).map((e) => e.number)).toEqual(['7']);
   });
 });

@@ -534,6 +534,34 @@ function renderStrikethrough(ctx: CanvasRenderingContext2D, block: VDTBlock): vo
   ctx.restore();
 }
 
+/** A strip's caption (`VDTBlock.stripCaption`, #590): the bar behind it,
+ *  then its lines in the caption's fonts and colours. */
+function renderStripCaption(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
+  const caption = block.stripCaption;
+  if (!caption) return;
+  if (caption.bar) {
+    const { rect, background } = caption.bar;
+    ctx.save();
+    ctx.fillStyle = background;
+    ctx.fillRect(block.bbox.x + rect.x, block.bbox.y + rect.y, rect.width, rect.height);
+    ctx.restore();
+  }
+  const style: BlockTextStyle = {
+    font: block.fontString,
+    boldFont: block.boldFontString,
+    italicFont: block.italicFontString,
+    boldItalicFont: block.boldItalicFontString,
+    color: block.color,
+    boldColor: undefined,
+    italicColor: undefined,
+    refColor: block.refColor,
+  };
+  for (const line of block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount)) {
+    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, line.letterSpacing ?? 0), line.letterSpacing ?? 0, false);
+    if (line.marks) paintLineMarks(ctx, line, block.color);
+  }
+}
+
 export function renderBlock(
   ctx: CanvasRenderingContext2D,
   block: VDTBlock,
@@ -547,8 +575,14 @@ export function renderBlock(
     renderHeaderFooterSlot(ctx, block.designOverlay, inkHex);
     return;
   }
-  if (block.type === 'resource') {
+  if (block.type === 'resource' && !block.comic) {
     renderResourceBlock(ctx, block, inkHex);
+    return;
+  }
+  if (block.comic) {
+    // A strip (painted on the sheet with the page's comics): only its
+    // caption is the block's, its bar first.
+    renderStripCaption(ctx, block);
     return;
   }
   if (block.type === 'listItem') {

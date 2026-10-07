@@ -390,17 +390,34 @@ sfx: PLAF
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Tan ampla com la columna on cau (el valor per defecte) o com la caixa de text.</td></tr>
-    <tr><td><code>placement=here</code></td><td>El valor per defecte: es compon al text allà on està escrita. Una tira no es parteix mai; la que no hi cap passa sencera a la columna o la pàgina següent, i s'emporta un encapçalament que tingui just a sobre.</td></tr>
-    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Flota com una figura fins al cap o el peu de la primera pàgina amb espai a partir d'aquest punt. Una tira a amplada de pàgina escrita <code>here</code> en una pàgina de diverses columnes també flota.</td></tr>
+    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Abasta la columna on cau (el valor per defecte) o la caixa de text.</td></tr>
+    <tr><td><code>placement=here</code></td><td>El valor per defecte: es compon al text allà on està escrita. Una tira no es parteix mai; la que no hi cap passa sencera a la columna o la pàgina següent, i s'emporta un encapçalament que tingui just a sobre. Una tira a amplada de pàgina escrita <code>here</code> en una pàgina de diverses columnes talla les columnes allà on és, com fa una caixa d'amplada de pàgina: el text de sobre acaba anivellat a totes les columnes, la tira travessa la pàgina i el text continua a les columnes de sota. Quan la resta de la pàgina no la pot contenir, obre la pàgina següent.</td></tr>
+    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Flota com una figura fins al cap o el peu de la primera pàgina amb espai a partir d'aquest punt.</td></tr>
+    <tr><td><code>width=60%</code>, <code>width=12cm</code></td><td>L'amplada de la tira: una part de la mesura que abasta (la columna, o la caixa de text amb <code>span=page</code>) o una longitud (un nombre sol és en mil·límetres). Mai més ampla que aquesta mesura. Sense aquest atribut, la tira ocupa tota la mesura.</td></tr>
+    <tr><td><code>align=start</code>, <code>center</code>, <code>end</code></td><td>On se situa dins de la seva mesura una tira més estreta. El valor per defecte és <code>center</code>. <code>start</code> i <code>end</code> segueixen la direcció del text: l'inici és la vora dreta en una pàgina de dreta a esquerra i el cap de la columna en una pàgina vertical.</td></tr>
     <tr><td><code>height=4cm</code></td><td>L'alçada de la tira (un nombre sol és en mil·límetres).</td></tr>
-    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>Amplada dividida per l'alçada. Sense aquest atribut, la tira pren les proporcions que fan quadrades les seves vinyetes (quatre vinyetes en fila: 4).</td></tr>
+    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>Amplada dividida per l'alçada, on l'amplada és la de la mateixa tira. Sense aquest atribut, la tira pren les proporcions que fan quadrades les seves vinyetes (quatre vinyetes en fila: 4).</td></tr>
+    <tr><td><code>caption="…"</code></td><td>Un peu sota la tira (o a sobre, amb <code>captionStyle.position: 'above'</code>), compost a l'amplada de la tira amb l'estil de peus de les figures. El text és Markdown en línia, escrit en la llengua de cada edició.</td></tr>
+    <tr><td><code>type=figure</code></td><td>Numera una tira amb peu com un recurs d'aquest tipus: el peu comença amb l'etiqueta i el número del tipus («Figura 3.»), i la tira compta en la seqüència del tipus, en ordre de lectura amb els recursos del tipus. Sense <code>type</code>, o amb un tipus que no correspon a cap tipus de recurs, el peu és simple i la tira no es compta.</td></tr>
+    <tr><td><code>id=…</code></td><td>Dona nom a una tira numerada: <code>:ref&#123;id="…"&#125;</code> n'imprimeix l'etiqueta i el número, com fa amb una figura, i hi enllaça.</td></tr>
   </tbody>
 </table>
 
-Una tira sense `split` posa les seves vinyetes l'una al costat de l'altra. La caixa de la tira és el seu marc: els carrers, els estils de vinyeta i la retolació són els de la configuració, i res no va a sang. Una tira més alta que una columna es redueix a la columna. Després, el text continua a la línia següent de la retícula de base, amb el marge que demana `layout.inlineResourceGap`, com després d'una figura en línia. En una pàgina vertical la tira es disposa a la seva caixa girada, de manera que un *yonkoma* `* / * / * / *` amb `aspect=0.25` baixa per una columna vertical.
+Una tira sense `split` posa les seves vinyetes l'una al costat de l'altra. La caixa de la tira és el seu marc: els carrers, els estils de vinyeta i la retolació són els de la configuració, i res no va a sang. Una tira més alta que una columna es redueix a la columna, peu inclòs. Després, el text continua a la línia següent de la retícula de base, amb el marge que demana `layout.inlineResourceGap`, com després d'una figura en línia. En una pàgina vertical la tira es disposa a la seva caixa girada, de manera que un *yonkoma* `* / * / * / *` amb `aspect=0.25` baixa per una columna vertical, i el seu peu la segueix com una columna de text.
 
-Al VDT, una tira és un bloc de `type: 'resource'` amb un camp `comic` i sense `resourceBlock`; les seves coordenades són relatives a la caixa del bloc dins del full. `pageComics(page)` dona el còmic d'una pàgina i les tires de les seves columnes i els seus flotants, tots portats al full.
+```md
+:::strip{split="* | * | *" width=70% caption="La Pip i l'Otto damunt del gel." type=figure id=pip-ice}
+::panel{art=pip-1}
+::panel{art=pip-2}
+::panel{art=pip-3}
+:::
+
+Com mostra :ref{id="pip-ice"}, el gel era prim.
+```
+
+El peu pren tot el que fixa l'estil de peus: la lletra i la mida, els colors de l'etiqueta i del text, el gruix i la inclinació de l'etiqueta, la separació entre la tira i el peu, l'alineació i la barra del darrere. El `captionStyle` propi d'un tipus s'aplica a les tires que s'hi numeren.
+
+Al VDT, una tira és un bloc de `type: 'resource'` amb un camp `comic` i sense `resourceBlock`; les seves coordenades són relatives a la caixa del bloc dins del full, i una tira més estreta, o una que va sota el seu peu, se situa dins d'aquesta caixa (aleshores `comic.frame` no comença a la seva cantonada). Un peu són les `lines` del mateix bloc, compostes amb les lletres i els colors del peu, i `stripCaption` indica quines línies són, on se situen, el tipus i el número, i la barra. `pageComics(page)` dona el còmic d'una pàgina i les tires de les seves columnes i els seus flotants, tots portats al full.
 
 ## Dobles pàgines
 
@@ -458,6 +475,8 @@ Totes les sortides pinten el mateix còmic: els fons de les vinyetes, els dibuix
 - **EPUB de maquetació fixa.** Les pàgines són les del llibre imprès. El llibre porta, a més, **navegació per regions** (`regions.xhtml`, EPUB Region-Based Navigation 1.0): una regió `panel` per vinyeta en ordre de lectura, amb les seves bafarades, cartel·les i onomatopeies imbricades a dins, perquè un sistema de lectura pugui recórrer el llibre vinyeta a vinyeta. L'avanç de les pàgines segueix el sentit de lectura dels còmics. L'opció `kindlePanelView: true` de `renderToEpub` hi afegeix Kindle Panel View: una zona de toc per vinyeta i una còpia ampliada que omple la pantalla, amb les metadades que demana Kindle.
 - **EPUB adaptable.** Allà una pàgina de còmic no té cap pàgina a conservar, així que cada vinyeta es converteix en el seu dibuix, retallat exactament com a la pàgina, seguit de les seves línies com a text: «**Maya**: Avi! Ja soc aquí!», les cartel·les com a paràgrafs i les onomatopeies en cursiva.
 
+El peu d'una tira es pinta amb el text, com el d'una figura. En un PDF etiquetat és el `Caption` del `Div` de la tira, llegit després de les seves vinyetes (abans, quan es compon a sobre de la tira). A l'HTML, a l'EPUB de maquetació fixa i a l'EPUB adaptable, la tira i el seu peu són un sol `<figure>`, i el peu n'és el `<figcaption>`; en una pàgina vertical o de dreta a esquerra, on el dibuix de la tira queda damunt del full, l'HTML manté el peu al text, a part.
+
 ## Editar còmics al Sandbox
 
 Al canvas, a les pàgines HTML i al mode *Seleccionar text* de Folio, una pàgina de còmic es pot editar amb el punter, i cada canvi s'escriu al Markdown del capítol (la [guia del Sandbox](/ca/docs/sandbox#editar-còmics) en dona els detalls):
@@ -467,7 +486,7 @@ Al canvas, a les pàgines HTML i al mode *Seleccionar text* de Folio, una pàgin
 - **Bafarades.** Arrossegar una bafarada la fixa: la seva línia de guió rep `at="x% y%"` en percentatges del dibuix de la vinyeta, i un grup unit es mou com un tot. Mentre es mou, la bafarada es torna taronja on taparia una cara o una zona lliure o sortiria de la seva vinyeta, i l'etiqueta diu quin és el cas. Les fletxes desplacen un 1 % la bafarada enfocada, i un doble clic sobre una bafarada fixada li treu el punt fixat.
 - **Cues.** Arrossegar la punta d'una cua escriu a la línia `to="x% y%"`, el punt on apunta; un doble clic a la punta el treu, i la cua torna a apuntar al seu personatge. Des d'una bafarada enfocada, T passa a la seva cua, i les fletxes en mouen el destí.
 - **Teclat.** Una vinyeta enfocada es divideix amb H (una línia horitzontal) o V (una línia vertical) i s'uneix amb la següent amb M.
-- **Tires.** Totes les eines funcionen també en els blocs `:::strip`, en una columna o flotants, i escriuen a la tanca de la mateixa tira.
+- **Tires.** Totes les eines funcionen també en els blocs `:::strip`, en una columna, flotants o a través de la pàgina, més estrets que la seva mesura o sota un peu, i escriuen a la tanca de la mateixa tira.
 - **Dibuixos.** La zona segura, els personatges i les zones lliures d'un dibuix es marquen al tauler Recursos (vegeu [Personatges i àncores](#personatges-i-àncores)).
 - **Ajustos.** El tauler Disseny té un grup **Còmic**: sentit de lectura, marc i carrers, la vinyeta per defecte i els estils de vinyeta, la retolació i els estils de bafarada, cadascun amb una previsualització.
 - **Editor.** L'editor de text acoloreix les línies `:::page`, `::panel` i les de guió, i el tauler Revisió enumera els avisos de còmic a les seves línies.
@@ -500,6 +519,8 @@ Cada avís indica la línia o l'atribut a què es refereix, i el tauler Revisió
 
 Els avisos tornen als `contentWarnings` del document amb l'interval de la font de la línia o l'atribut a què es refereixen (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
 
+Un ajust de còmic que admet unes quantes paraules i en conté una altra, com ara `shape: 'ovl'` en un estil de bafarada o `readingDirection: 'rlt'`, es llegeix com el seu valor per defecte i el tauler Revisió l'enumera com a **Valor de configuració desconegut** (`unknownConfigValue`), amb el valor que ha fet servir el motor i la paraula a què més s'assembla. Els ajustos que es comproven són `readingDirection`, `artDirection`, `borderStyle` i `fit` d'un estil de vinyeta, `writingMode`, `textTransform`, `dropFinalStop` i `joinSameSpeaker` de la retolació, i `shape`, `tail`, `target`, `position`, `align` i `textTransform` d'un estil de bafarada.
+
 ## Des del codi
 
 Un còmic no necessita res més que `buildDocument`: els recursos porten els dibuixos amb les seves zones segures, àncores i zones lliures, i la configuració pot portar `comics`. La retolació mesura el text amb les fonts carregades, així que les lletres de retolació s'han de carregar abans de la composició, com qualsevol altra lletra: `comicFontFamilies(config, markdown)` enumera les lletres que necessiten els còmics d'un document (la lletra de retolació, les de tots els estils de bafarada i les del repartiment), i `markdownHasComics(markdown)` diu si un text té pàgines de còmic o tires. Al PDF, el proveïdor de fonts rep la petició d'aquestes lletres com la de qualsevol altra.
@@ -511,7 +532,7 @@ El còmic compost és al VDT: `page.comic` (`VDTComicPage`) conté el marc, el s
 - **Només arbres de divisió.** Una divisió talla cada cel·la en dues amb una línia que la travessa sencera, així que no es poden escriure les composicions on cap línia no travessa tota la pàgina, com un molinet de quatre vinyetes al voltant d'una cinquena. Les vinyetes incrustades i els dibuixos que trenquen la vora cobreixen la major part del que es busca amb aquestes composicions.
 - **Formes de vinyeta.** Les vinyetes són polígons convexos; les vinyetes rodones, irregulars o sense vora, l'art girat o ampliat i les línies cinètiques es dibuixen als dibuixos, no les fa Postext.
 - **Retolació.** El ruby sobre una base de dreta a esquerra s'omet, i les altres anotacions s'imprimeixen com a text pla dins de les bafarades. La col·locació es fa vinyeta per vinyeta: s'evita que les cues es creuin per cost, no s'encaminen l'una al voltant de l'altra, i el recorregut d'una vinyeta a la següent no s'equilibra. Les línies llargues en cel·les molt petites s'avisen, no es resolen. La protecció d'una cara sense marcar es mesura a partir de la boca i del punt del cap (uns quants em si l'àncora no té cap), així que en un primer pla pot protegir més la boca que la cara; marca la cara.
-- Les **tires** encara no tenen `width`, `align`, `columns` ni peu, només es llegeixen al nivell superior d'un capítol (no dins d'un requadre, una taula o una nota a peu de pàgina), i una tira a amplada de pàgina escrita `here` en una pàgina de diverses columnes flota en lloc de tallar les columnes allà on està escrita.
+- Les **tires** no poden abastar un nombre de columnes inferior al de la pàgina (`columns=2` en una pàgina de tres), i només es llegeixen al nivell superior d'un capítol (no dins d'un requadre, una taula o una nota a peu de pàgina). Una citació al peu d'una tira s'imprimeix tal com està escrita.
 - **Dobles pàgines.** Una vinyeta arrodonida tallada al llom perd totes les cantonades arrodonides. Un còmic de dreta a esquerra en un llibre enquadernat per l'esquerra continua obrint-se a la pàgina esquerra, de manera que la seva primera vinyeta cau a la segona pàgina de la doble pàgina.
 - Els **dibuixos que trenquen la vora** prenen el retall del dibuix de la vinyeta, així que el retall transparent ha de tenir la mateixa mida que el dibuix.
 - **Sortides.** L'alternativa textual de reserva d'una vinyeta sense `alt` ni `altText` és «Panel N», en anglès. La navegació per regions descriu les vinyetes inclinades amb les seves caixes contenidores. Kindle Panel View copia el còmic d'una pàgina una vegada per vinyeta, cosa que fa el fitxer més gran, i no s'ha comprovat a Kindle Previewer.

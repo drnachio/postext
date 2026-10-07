@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { renderToEpub } from './index';
 import type { RenderToEpubOptions } from './types';
-import { AMIRI, LORA, MP4, PNG, arabicSampleBook, comicSampleBook, sampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
+import { AMIRI, LORA, MP4, PNG, arabicSampleBook, comicSampleBook, sampleBook, stripCaptionSampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
 
 const available = process.env.EPUBCHECK === '1' && spawnSync('epubcheck', ['--version'], { encoding: 'utf8' }).status === 0;
 
@@ -87,6 +87,9 @@ const samples: { name: string; options: RenderToEpubOptions; book?: () => Return
   // A strip in the text and a two-page spread (#566, #567).
   { name: 'strip-spread-fixed', options: { ...base('fixed'), kindlePanelView: true }, book: stripSpreadSampleBook },
   { name: 'strip-spread-reflowable', options: base('reflowable'), book: stripSpreadSampleBook },
+  // Captioned strips, one numbered and named by a :ref (#590).
+  { name: 'strip-caption-fixed', options: base('fixed'), book: stripCaptionSampleBook },
+  { name: 'strip-caption-reflowable', options: base('reflowable'), book: stripCaptionSampleBook },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {

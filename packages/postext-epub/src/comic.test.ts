@@ -9,7 +9,7 @@ import type { ReadEpubResult, RenderToEpubOptions } from './types';
 import { buildOpf } from './package/pack';
 import { buildFixedPublication } from './fixed/index';
 import { percentRect } from './fixed/regions';
-import { PNG, comicSampleBook, sampleBook, stripSpreadSampleBook } from './__tests__/sampleBook';
+import { PNG, comicSampleBook, sampleBook, stripCaptionSampleBook, stripSpreadSampleBook } from './__tests__/sampleBook';
 
 const options = (layout: RenderToEpubOptions['layout'], extra: Partial<RenderToEpubOptions> = {}): RenderToEpubOptions => ({
   layout,
@@ -217,3 +217,37 @@ describe('strips and spreads in both renditions', () => {
     expect(box[2]).toBeGreaterThan(half.bbox.width + 10);
   });
 });
+
+describe('captioned strips (#590)', () => {
+  let fixed: ReadEpubResult;
+  let flow: ReadEpubResult;
+  let docs: VDTDocument[];
+  beforeAll(async () => {
+    docs = stripCaptionSampleBook();
+    fixed = readEpub(await renderToEpub(docs, options('fixed')));
+    flow = readEpub(await renderToEpub(docs, options('reflowable')));
+  });
+
+  it('sets a strip and its caption as one figure on the fixed page', () => {
+    const page = docs[0]!.pages.find((p) => p.columns.some((c) => c.blocks.some((b) => b.stripCaption)))!;
+    const xhtml = text(fixed, fixed.spine[page.index]!.path);
+    const figure = xhtml.indexOf('<figure class="pt-strip"');
+    expect(figure).toBeGreaterThan(-1);
+    expect(xhtml.indexOf('<figcaption class="pt-strip-caption"', figure)).toBeGreaterThan(xhtml.indexOf('<div class="pt-comic"', figure));
+    expect(xhtml).toContain('id="pt-res-morning"');
+  });
+
+  it('sets a strip and its caption as one figure in the reflowable book, the :ref linking to it', () => {
+    const chapter = text(flow, flow.spine.find((s) => s.path.includes('chapter'))!.path);
+    const figures = [...chapter.matchAll(/<figure class="pt-comic-strip"[^>]*>[\s\S]*?<\/section>\n<figcaption>([\s\S]*?)<\/figcaption><\/figure>/g)];
+    expect(figures).toHaveLength(2);
+    expect(figures[0]![1]).toContain('Figure');
+    expect(figures[0]![1]).toContain('<em>quiet</em>');
+    expect(figures[1]![1]).toBe('Three panels, no number.');
+    expect(chapter).toMatch(/<figure class="pt-comic-strip" id="([^"]+)">/);
+    const id = /<figure class="pt-comic-strip" id="([^"]+)">/.exec(chapter)![1]!;
+    expect(chapter).toContain(`href="#${id}"`);
+    expect(chapter.indexOf('Between the strips.')).toBeGreaterThan(chapter.indexOf(figures[0]![0]));
+  });
+});
+

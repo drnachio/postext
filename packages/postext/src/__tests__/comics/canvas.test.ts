@@ -89,6 +89,26 @@ describe('canvas painting of comic panels', () => {
     expect(calls.filter((c) => c === 'stroke()')).toHaveLength(2);
   });
 
+  it('paints a strip\'s caption in the flow, its bar first (#590)', () => {
+    const md = 'Some text.\n\n:::strip{split="* | *" width=50% caption="The caption."}\n::panel\n::panel\n:::\n\nMore text.';
+    const doc = buildDocument({ markdown: md, resources }, {
+      layout: { layoutType: 'single' },
+      captionStyle: { backgroundEnabled: true, background: { hex: '#eeeeee', model: 'hex' } },
+    });
+    const page = doc.pages[0]!;
+    const block = page.columns[0]!.blocks.find((b) => b.comic)!;
+    const bar = block.stripCaption!.bar!;
+    const line = block.lines[block.stripCaption!.firstLine]!;
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(page, doc, canvas);
+    const fill = calls.indexOf('fillStyle=#eeeeee');
+    expect(fill).toBeGreaterThan(-1);
+    expect(calls[fill + 1]).toBe(`fillRect(${[block.bbox.x + bar.rect.x, block.bbox.y + bar.rect.y, bar.rect.width, bar.rect.height].map(Math.round).join(',')})`);
+    // Its words on the caption's baseline, after the bar.
+    const words = calls.slice(fill).filter((c) => c.startsWith('fillText') && c.endsWith(`,${Math.round(line.baseline)})`));
+    expect(words.length).toBeGreaterThan(0);
+  });
+
   it('paints each page of a spread with its half, a panel across the spine on both', () => {
     registerResourceImage('pic-file', { width: 1000, height: 1000 } as unknown as HTMLImageElement);
     const md = ':::page{spread split="*"}\n::panel{art=pic}\n:::';

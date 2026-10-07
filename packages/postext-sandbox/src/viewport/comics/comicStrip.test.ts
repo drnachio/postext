@@ -49,6 +49,11 @@ const layouts: [string, PostextConfig, (s: string) => string][] = [
   ['a float at the head of the page', { ...config, layout: { layoutType: 'double' } }, (s) => `${para(2)}\n\n${s.replace('aspect=3', 'aspect=5 span=page placement=top')}\n\n${para(20, 'After')}`],
   ['a right-to-left page', { ...config, locale: 'ar' }, (s) => `نص.\n\n${s}\n\nنص.`],
   ['a vertical page', { ...config, locale: 'ja', layout: { writingMode: 'vertical-rl' } }, (s) => `本文。\n\n${s.replace('40 | * | *', '40 / * / *').replace('aspect=3', 'aspect=0.4')}\n\n本文。`],
+  // Narrower strips, a caption, a page-wide strip cutting the band (#590).
+  ['a narrower captioned strip at the end of its column', { ...config, layout: { layoutType: 'double' } }, (s) => `${para(4)}\n\n${s.replace('aspect=3', 'aspect=2 width=80% align=end caption="Night falls."')}\n\n${para(6, 'After')}`],
+  ['a page-wide strip cutting the band', { ...config, layout: { layoutType: 'double' } }, (s) => `${para(3)}\n\n${s.replace('aspect=3', 'aspect=4 span=page width=70% caption="Across."')}\n\n${para(20, 'After')}`],
+  ['a narrower strip at the start of a right-to-left page', { ...config, locale: 'ar' }, (s) => `نص.\n\n${s.replace('aspect=3', 'aspect=2 width=80% align=start')}\n\nنص.`],
+  ['a narrower strip of a vertical page', { ...config, locale: 'ja', layout: { writingMode: 'vertical-rl' } }, (s) => `本文。\n\n${s.replace('40 | * | *', '40 / * / *').replace('aspect=3', 'aspect=0.4 width=60% align=end caption="夜。"')}\n\n本文。`],
 ];
 
 describe('comic tools on strips (#580)', () => {
@@ -61,8 +66,16 @@ describe('comic tools on strips (#580)', () => {
       it('lies on the sheet where its block is, and is found by its fence', () => {
         const block = [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])].find((b) => b.comic)!;
         const box = flowRectToPage(page, block.bbox);
-        expect(comic.frame.x).toBeCloseTo(box.x, 3);
-        expect(comic.frame.y).toBeCloseTo(box.y, 3);
+        if (block.comic!.frame.x === 0 && block.comic!.frame.y === 0) {
+          expect(comic.frame.x).toBeCloseTo(box.x, 3);
+          expect(comic.frame.y).toBeCloseTo(box.y, 3);
+        } else {
+          // A narrower strip, or one under its caption, inside its block.
+          expect(comic.frame.x).toBeCloseTo(box.x + block.comic!.frame.x, 3);
+          expect(comic.frame.y).toBeCloseTo(box.y + block.comic!.frame.y, 3);
+          expect(comic.frame.x + comic.frame.width).toBeLessThanOrEqual(box.x + box.width + 0.01);
+          expect(comic.frame.y + comic.frame.height).toBeLessThanOrEqual(box.y + box.height + 0.01);
+        }
         expect(comic.sourceStart).toBe(md.indexOf(':::strip'));
         expect(comicBySource(pageComics(page), comic.sourceStart)).toBe(comic);
       });
