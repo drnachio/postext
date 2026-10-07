@@ -53,7 +53,7 @@ import {
   resolvePageConfig,
 } from 'postext';
 import { chineseFontsFor } from './chineseDefaults';
-import { documentDirection } from './documentDirection';
+import { documentComicDirection, documentDirection } from './documentDirection';
 import {
   builtInTypes,
   canonicalJson,
@@ -354,7 +354,9 @@ export function japaneseDefaults(config: PostextConfig, options: JapaneseDefault
   const toMode: WritingMode = book === 'vertical' ? 'vertical-rl' : 'horizontal-tb';
   const fromDirection = documentDirection(config.direction, fromLocale);
   const toDirection = documentDirection(config.direction, locale);
-  const fromBinding = resolvePageConfig(config.page, fromLocale, fromMode, fromDirection).binding;
+  // A comic book read right to left (a manga, a Japanese edition of a
+  // Western comic) is bound on the right in either mode (#593).
+  const fromBinding = resolvePageConfig(config.page, fromLocale, fromMode, fromDirection, documentComicDirection(config, fromLocale, fromMode, fromDirection)).binding;
   const modeTo: Extract<JapaneseDefaultValue, { kind: 'writingMode' }> = { kind: 'writingMode', value: toMode, binding: 'left' };
   if (toMode !== fromMode) {
     rows.push({
@@ -369,7 +371,7 @@ export function japaneseDefaults(config: PostextConfig, options: JapaneseDefault
     });
   }
   const rawBinding = config.page?.binding;
-  const autoBinding = toMode === 'vertical-rl' || toDirection === 'rtl' ? 'right' : 'left';
+  const autoBinding = resolvePageConfig(undefined, locale, toMode, toDirection, documentComicDirection(config, locale, toMode, toDirection)).binding;
   if ((rawBinding === 'left' || rawBinding === 'right') && rawBinding !== autoBinding) {
     rows.push({
       id: 'binding',
@@ -824,7 +826,7 @@ export function japaneseDefaults(config: PostextConfig, options: JapaneseDefault
   });
   // What the rows end with: the binding, and the grid the book's page,
   // margins, size and leading hold.
-  modeTo.binding = resolvePageConfig(next.page, locale, toMode, toDirection).binding;
+  modeTo.binding = resolvePageConfig(next.page, locale, toMode, toDirection, documentComicDirection(next, locale, toMode, toDirection)).binding;
   const grid = (next.cjk?.grid?.enabled ? next : withGrid(next)).cjk?.grid;
   gridTo.text = gridText(grid?.charsPerLine ?? 0, grid?.linesPerPage ?? 0);
   return { locale, changes, config: next };

@@ -215,9 +215,10 @@ describe('comic pages in the build', () => {
     expect(frame.x + frame.width).toBeLessThan(page.width);
     expect(frame.y + frame.height).toBeLessThan(page.height);
     expect(frame.height).toBeGreaterThan(frame.width);
-    // A Western comic in Japanese still reads left to right.
-    expect(page.comic!.direction).toBe('ltr');
-    expect(page.comic!.panels[0]!.bbox.x).toBeLessThan(page.comic!.panels[1]!.bbox.x);
+    // A Western comic in a Japanese edition reads right to left (#593):
+    // its first panel is the one on the right.
+    expect(page.comic!.direction).toBe('rtl');
+    expect(page.comic!.panels[0]!.bbox.x).toBeGreaterThan(page.comic!.panels[1]!.bbox.x);
   });
 
   it('lays out a document without comics as before', () => {

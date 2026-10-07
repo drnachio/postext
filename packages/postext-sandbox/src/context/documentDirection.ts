@@ -3,8 +3,8 @@
 // panels that show them before a layout exists: the "Auto (…)" options of
 // Writing system, the binding the page drawings use, the review lists.
 
-import type { DigitSystem, PostextConfig } from 'postext';
-import { defaultNumeralsFor, directionOf } from 'postext';
+import type { DigitSystem, PostextConfig, WritingMode } from 'postext';
+import { comicReadingDirection, defaultNumeralsFor, directionOf } from 'postext';
 
 /** The base direction of a document in `locale`: `direction` when it says
  *  `'ltr'` or `'rtl'`, else (`'auto'`, unset, a value the engine does not
@@ -12,6 +12,20 @@ import { defaultNumeralsFor, directionOf } from 'postext';
 export function documentDirection(direction: unknown, locale: string | undefined): 'ltr' | 'rtl' {
   if (direction === 'ltr' || direction === 'rtl') return direction;
   return directionOf(locale);
+}
+
+/** The direction a document's comics read in, as `page.binding: 'auto'`
+ *  reads it (`pipeline/config.ts`): `comicReadingDirection` of its
+ *  `comics` section, undefined in a document without one (its binding
+ *  does not depend on comics). */
+export function documentComicDirection(
+  config: Pick<PostextConfig, 'comics'>,
+  locale: string | undefined,
+  writingMode: WritingMode | undefined,
+  direction: 'ltr' | 'rtl',
+): 'ltr' | 'rtl' | undefined {
+  if (!config.comics) return undefined;
+  return comicReadingDirection(config.comics, { ...(locale !== undefined ? { locale } : {}), direction, ...(writingMode ? { writingMode } : {}) });
 }
 
 /** The digits of a document in `locale`: `numerals` when it names a

@@ -380,6 +380,16 @@ describe("lintPen (a Chinese recipe)", () => {
     const shown = lintCjk((s) => vertical(s).replace("showBook(doc,", "showPages(doc,")).warns;
     expect(shown).toContain(SHOW_BOOK);
     expect(lintCjk(vertical).warns.filter((w) => w.includes("showBook"))).toEqual([]);
+    // A comic book in Traditional Chinese reads right to left and is bound
+    // on the right (#593), unless its comics are set left to right.
+    const pages = (s: string) => s.replace("showBook(doc,", "showPages(doc,");
+    expect(lintCjk(pages).warns).not.toContain(SHOW_BOOK);
+    const comic = (s: string) => pages(s).replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  comics: {},");
+    expect(lintCjk(comic).warns).toContain(SHOW_BOOK);
+    const western = (s: string) => pages(s).replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  comics: { readingDirection: 'ltr' },");
+    expect(lintCjk(western).warns).not.toContain(SHOW_BOOK);
+    const hans = (s: string) => comic(s).replace("  locale: 'zh-Hant',", "  locale: 'zh-Hans',");
+    expect(lintCjk(hans).warns).not.toContain(SHOW_BOOK);
     const twin = lintCjk((s) => s.replace("await loadCjkFonts(FONTS, markdown);", "await loadCjkFonts(FONTS, markdown, { vertical: true });")).fails;
     expect(twin).toContain("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");
     const imported = lintCjk((s) =>

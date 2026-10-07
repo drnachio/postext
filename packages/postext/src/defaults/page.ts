@@ -54,12 +54,16 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
 };
 
 /** The edge a book is bound on: `'auto'` (or anything unknown) is the
- *  right edge in a vertical document (clreq §7.1.1.1) and in a document
+ *  right edge in a vertical document (clreq §7.1.1.1), in a document
  *  whose text runs right to left (`direction`, the resolved
- *  `PostextConfig.direction`), else the left. */
-export function resolvePageBinding(binding: PageConfig['binding'], writingMode?: WritingMode, direction?: 'ltr' | 'rtl'): 'left' | 'right' {
+ *  `PostextConfig.direction`) and in a comic book read right to left
+ *  (`comicDirection`, see `comicReadingDirection`: a manga, a
+ *  Japanese or Traditional Chinese edition), else the left.
+ *  `comicDirection` is undefined in a document without a `comics`
+ *  section. */
+export function resolvePageBinding(binding: PageConfig['binding'], writingMode?: WritingMode, direction?: 'ltr' | 'rtl', comicDirection?: 'ltr' | 'rtl'): 'left' | 'right' {
   if (binding === 'left' || binding === 'right') return binding;
-  return writingMode === 'vertical-rl' || direction === 'rtl' ? 'right' : 'left';
+  return writingMode === 'vertical-rl' || direction === 'rtl' || comicDirection === 'rtl' ? 'right' : 'left';
 }
 
 function resolvePageNumbering(raw?: PageNumberingConfig, locale?: string): ResolvedPageNumberingConfig {
@@ -89,10 +93,12 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
 
 /** A page config in full. `locale` (the document language) decides the
  *  script of a page-number format written `一` or `壹`, and `writingMode`
- *  (the document's `layout.writingMode`) and `direction` (its resolved
- *  `direction`) what `binding: 'auto'` is. */
-export function resolvePageConfig(partial?: PageConfig, locale?: string, writingMode?: WritingMode, direction?: 'ltr' | 'rtl'): ResolvedPageConfig {
-  if (!partial) return { ...DEFAULT_PAGE_CONFIG, binding: resolvePageBinding(undefined, writingMode, direction) };
+ *  (the document's `layout.writingMode`), `direction` (its resolved
+ *  `direction`) and `comicDirection` (the reading direction of its comics,
+ *  `comicReadingDirection`, when the config has a `comics` section)
+ *  what `binding: 'auto'` is. */
+export function resolvePageConfig(partial?: PageConfig, locale?: string, writingMode?: WritingMode, direction?: 'ltr' | 'rtl', comicDirection?: 'ltr' | 'rtl'): ResolvedPageConfig {
+  if (!partial) return { ...DEFAULT_PAGE_CONFIG, binding: resolvePageBinding(undefined, writingMode, direction, comicDirection) };
   const sizePreset = partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
   const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
 
@@ -123,7 +129,7 @@ export function resolvePageConfig(partial?: PageConfig, locale?: string, writing
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
     pageNumbering: resolvePageNumbering(partial.pageNumbering, locale),
-    binding: resolvePageBinding(partial.binding, writingMode, direction),
+    binding: resolvePageBinding(partial.binding, writingMode, direction, comicDirection),
   };
 }
 

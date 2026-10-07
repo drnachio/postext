@@ -12,10 +12,10 @@
 import type { ColorPaletteEntry, ComicCastMember, Dimension, Resource, ResolvedBalloonStyleConfig, ResolvedComicsConfig, ResolvedPanelStyleConfig } from '../types';
 import type { BoundingBox, ContentWarning, ResolvedConfig, VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTPage, VDTPoint } from '../vdt';
 import { flowRectToPage } from '../vdt';
-import { resolvedDirection } from '../pipeline/config';
+import { resolvedDirection, resolvedLocale } from '../pipeline/config';
 import { dimensionToPx } from '../units';
 import { chineseScriptOf, directionOf, isCjkLanguage, isJapaneseLanguage, presentTag } from '../locale';
-import { DEFAULT_LETTERING_STATIC, pickBalloonStyle, pickPanelStyle, resolvedComics } from '../defaults/comics';
+import { comicReadingDirection, DEFAULT_LETTERING_STATIC, pickBalloonStyle, pickPanelStyle, resolvedComics } from '../defaults/comics';
 import { comicArtCrop, comicArtPointToPage, comicArtRectToPage } from './art';
 import { clipPolygon, comicGeometry, physicalSide, pointInPolygon, polygonBBox, type ComicCell, type ComicFrameSide } from './geometry';
 import { parseComicPoint } from './script';
@@ -91,15 +91,22 @@ function flagOn(value: string | undefined): boolean | undefined {
 }
 
 /** The reading direction of a page: its `direction` attribute, else the
- *  config's; `'auto'` is `'rtl'` in a right-to-left document (an Arabic
- *  edition mirrors its pages) and the direction the art was drawn for
- *  otherwise (`comics.artDirection`: a Japanese edition of a Western comic
- *  stays left to right, a manga stays right to left in any language). */
+ *  document's ({@link comicReadingDirection}): `'auto'` is `'rtl'` in a
+ *  right-to-left document (an Arabic edition mirrors its pages), in a
+ *  vertical one and in a Japanese or Traditional Chinese one (a localized
+ *  edition of a Western comic reads in its language's direction), and the
+ *  direction the art was drawn for otherwise (`comics.artDirection`: a
+ *  manga stays right to left in any language). Every comic of the
+ *  document — pages, spreads, strips, their lettering order and the
+ *  guided views — reads in the direction this returns. */
 export function comicPageDirection(source: Pick<ComicPageSource, 'attrs'>, comics: ResolvedComicsConfig, resolved: ResolvedConfig): 'ltr' | 'rtl' {
   const own = source.attrs.direction?.trim().toLowerCase() ?? source.attrs.dir?.trim().toLowerCase();
   if (own === 'ltr' || own === 'rtl') return own;
-  if (comics.readingDirection === 'ltr' || comics.readingDirection === 'rtl') return comics.readingDirection;
-  return resolvedDirection(resolved) === 'rtl' ? 'rtl' : comics.artDirection;
+  return comicReadingDirection(comics, {
+    locale: resolvedLocale(resolved),
+    direction: resolvedDirection(resolved),
+    writingMode: resolved.layout.writingMode,
+  });
 }
 
 /** A panel's `pad` (CSS-like, one to four values: top, end, bottom,

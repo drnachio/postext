@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { toPt } from '../../controls/units';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
-import { documentDirection, documentLanguage } from '../../context/documentDirection';
+import { documentComicDirection, documentDirection, documentLanguage } from '../../context/documentDirection';
 import { pageDrawingConfig } from '../sections/cjkGridReadout';
 import { PagePreview } from './PagePreview';
 import { usePreviewHighlight } from './previewHighlight';
@@ -22,9 +22,11 @@ export function PageGroupPreview() {
   // The page as it is set: the character grid's margins when it is on.
   const drawn = useMemo(() => pageDrawingConfig(config), [config]);
   const layout = resolveLayoutConfig(drawn.layout);
-  // A right-to-left book is bound on the right when the binding is Auto.
+  // A right-to-left book, and a comic book read right to left, are bound
+  // on the right when the binding is Auto.
   const language = documentLanguage(config, defaultDocumentLocale(uiLocale));
-  const page = resolvePageConfig(drawn.page, language, layout.writingMode, documentDirection(config.direction, language));
+  const direction = documentDirection(config.direction, language);
+  const page = resolvePageConfig(drawn.page, language, layout.writingMode, direction, documentComicDirection(config, language, layout.writingMode, direction));
   const body = resolveBodyTextConfig(config.bodyText, config.locale);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
   const mirror = page.margins.mirror ?? false;

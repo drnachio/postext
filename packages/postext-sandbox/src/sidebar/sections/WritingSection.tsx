@@ -13,7 +13,7 @@ import { ChineseDefaultsField } from './ChineseDefaultsField';
 import { ArabicDefaultsField } from './ArabicDefaultsField';
 import { JapaneseDefaultsField } from './JapaneseDefaultsField';
 import { isArabicScriptLanguage } from '../../context/arabicDefaults';
-import { documentDigits, documentDirection, documentLanguage } from '../../context/documentDirection';
+import { documentComicDirection, documentDigits, documentDirection, documentLanguage } from '../../context/documentDirection';
 
 /**
  * Language and direction: the document language (`locale`), the direction
@@ -35,6 +35,7 @@ export const WritingSection = memo(function WritingSection() {
   const rawPage = useSandboxSelector((s) => s.config.page);
   const rawDirection = useSandboxSelector((s) => s.config.direction);
   const rawNumerals = useSandboxSelector((s) => s.config.numerals);
+  const rawComics = useSandboxSelector((s) => s.config.comics);
 
   const defaultLocale = defaultDocumentLocale(uiLocale);
   const effectiveDocumentLocale = documentLocale ?? defaultLocale;
@@ -42,12 +43,14 @@ export const WritingSection = memo(function WritingSection() {
   const binding = rawPage?.binding ?? 'auto';
   // What Auto means here: the direction and digits of the language (the
   // engine reads the hyphenation locale when the book names no language),
-  // and the binding of vertical or right-to-left text.
+  // and the binding of vertical or right-to-left text and of a comic book
+  // read right to left.
   const language = documentLanguage({ locale: documentLocale, bodyText: { hyphenation: { locale: hyphenationLocale } } }, defaultLocale);
   const direction = rawDirection === 'ltr' || rawDirection === 'rtl' ? rawDirection : 'auto';
   const autoDirection = documentDirection(undefined, language);
   const resolvedDirection = documentDirection(rawDirection, language);
-  const autoBinding = writingMode === 'vertical-rl' || resolvedDirection === 'rtl' ? 'right' : 'left';
+  const comicDirection = documentComicDirection({ comics: rawComics }, language, writingMode, resolvedDirection);
+  const autoBinding = writingMode === 'vertical-rl' || resolvedDirection === 'rtl' || comicDirection === 'rtl' ? 'right' : 'left';
   const numerals: NumeralsSetting = rawNumerals === 'latn' || rawNumerals === 'arab' || rawNumerals === 'arabext' ? rawNumerals : 'auto';
   const autoDigits = documentDigits(undefined, language);
   const auto = (name: string) => labels.cjkAuto.replace('__value__', name);

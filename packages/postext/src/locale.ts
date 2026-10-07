@@ -140,6 +140,18 @@ export function chineseScriptOf(tag: unknown): 'Hans' | 'Hant' | undefined {
   return localeScript(tag) === 'Hant' ? 'Hant' : 'Hans';
 }
 
+/** The direction comics are read in by readers of `tag`'s language, when
+ *  that language has a convention of its own: `'rtl'` for Japanese (`ja`,
+ *  `ja-JP`) and Traditional Chinese (`zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`),
+ *  whose readers turn the pages of a comic, and read its panels, from
+ *  right to left. `undefined` for every other language: Simplified Chinese
+ *  manhua and Korean manhwa are read left to right today, so the direction
+ *  the art was drawn for decides, and a language written right to left
+ *  (Arabic, Hebrew) reads its comics in the document's direction. */
+export function comicsLocaleDirection(tag: unknown): 'rtl' | undefined {
+  return isJapaneseLanguage(tag) || chineseScriptOf(tag) === 'Hant' ? 'rtl' : undefined;
+}
+
 /** The key of the built-in string tables for a tag: `'zh-hans'` or
  *  `'zh-hant'` for Chinese (Simplified and Traditional need different
  *  characters: 图/圖, 续/續, 见/見), else the bare language
