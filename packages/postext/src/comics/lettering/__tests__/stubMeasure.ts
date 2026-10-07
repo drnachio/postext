@@ -8,6 +8,8 @@ const SIZE_RE = /(\d*\.?\d+)px/;
 
 /** Advance of one character, in em. */
 export function stubAdvance(ch: string): number {
+  // Bidi controls are default ignorable: no advance (as a canvas gives).
+  if (/[\u2066-\u2069]/.test(ch)) return 0;
   if (/[　-ヿ㐀-鿿豈-﫿！-｠]/.test(ch)) return 1;
   if (/[؀-ۿ]/.test(ch)) return 0.42;
   if (/\s/.test(ch)) return 0.27;

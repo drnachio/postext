@@ -200,7 +200,21 @@ export interface LetteringPanel {
   anchors: readonly LetteringAnchor[];
   /** Regions balloons must not cover (hands, key objects), page px. */
   avoid?: readonly Rect[];
+  /** Regions better left uncovered, page px: a balloon over them costs a
+   *  little per area, but is never a fault (the picture's safe area, when
+   *  the art marks no face and no avoid zone); `weight` scales the cost
+   *  (default 1). */
+  softAvoid?: readonly (Rect & { weight?: number })[];
   dpi: number;
+  /** The other panels of the page (their boxes, px): a balloon that runs
+   *  out of its panel must never run into one of them. */
+  neighbours?: readonly Rect[];
+  /** The live area of the page (the comic's frame, px): lettering never
+   *  runs out of it, even when it breaks a panel's border. */
+  limit?: Rect;
+  /** Width of the panel's border, px (centred on the polygon): a butted
+   *  caption sits against its inner edge, its outline over the border. */
+  borderPx?: number;
   /** Room a balloon that breaks the border may take outside the panel
    *  (the gutter), px. Default: `insetPx`. */
   bleedPx?: number;

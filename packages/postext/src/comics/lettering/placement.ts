@@ -13,9 +13,9 @@
 
 import {
   boundsOf, dist, insetConvex, nearestOnPolygon, norm, pointInConvex, pointInRect, rayExit, rectsOverlap, segmentHitsRect,
-  segmentsCross, sub, add, scale,
+  segmentDistance, sub, add, scale,
 } from './geom';
-import type { Body } from './shapes';
+import { tailLength, type Body } from './shapes';
 import type { LetteringDiagnostic, LetteringPanel, LetteringPosition, PanelSide, Point, Rect } from './types';
 
 /** One way to lay out a unit (a balloon, or a group of joined balloons):
@@ -84,7 +84,9 @@ const W = {
   tangent: 0.6,
   ownTail: 25,
   otherFace: 15,
-  side: 0.25,
+  side: 0.9,
+  soft: 0.035,
+  longTail: 0.3,
 };
 
 interface Level {
@@ -100,8 +102,18 @@ interface Scene {
   outer: Rect;
   faces: Rect[];
   avoid: Rect[];
+  /** Regions better left uncovered (the picture's safe area when the art
+   *  marks nothing else): a cost per area covered, never a fault. */
+  soft: (Rect & { weight?: number })[];
   mouths: Point[];
   fwd: 1 | -1;
+  /** The other panels' boxes. */
+  neighbours: Rect[];
+  /** The page's live area. */
+  limit?: Rect;
+  /** What a butted caption sits flush against: the panel's polygon, inset
+   *  by half its border (the caption's outline then lies on the border). */
+  buttPoly: Point[];
   /** Multiplier of the height preference (see `HEIGHT_BIASES`). */
   heightBias?: number;
 }
@@ -118,9 +130,20 @@ function sceneOf(panel: LetteringPanel): Scene {
     outer: { x: b.x - bleed, y: b.y - bleed, width: b.width + 2 * bleed, height: b.height + 2 * bleed },
     faces: panel.anchors.filter((a) => a.face).map((a) => a.face!),
     avoid: [...(panel.avoid ?? [])],
+    soft: [...(panel.softAvoid ?? [])],
     mouths: panel.anchors.filter((a) => a.visible && a.id !== 'sfx').map((a) => a.mouth),
     fwd: panel.direction === 'rtl' ? -1 : 1,
+    buttPoly: buttPolygon(panel),
+    neighbours: [...(panel.neighbours ?? [])],
+    ...(panel.limit ? { limit: panel.limit } : {}),
   };
+}
+
+function buttPolygon(panel: LetteringPanel): Point[] {
+  const half = (panel.borderPx ?? 0) / 2;
+  if (half <= 0) return panel.polygon.map((p) => ({ ...p }));
+  const poly = insetConvex(panel.polygon, half);
+  return poly.length >= 3 ? poly : panel.polygon.map((p) => ({ ...p }));
 }
 
 const moved = (pts: readonly Point[], at: Point): Point[] => pts.map((p) => ({ x: p.x + at.x, y: p.y + at.y }));
@@ -184,6 +207,7 @@ function evaluate(
   others: readonly Placed[],
   level: Level,
   firstOrder: number,
+  terms?: Record<string, number>,
 ): Eval {
   const v = unit.variants[vi]!;
   const em = unit.em;
@@ -194,12 +218,20 @@ function evaluate(
   const reasons = new Set<LetteringDiagnostic['reasons'][number]>();
   let hard = 0;
   let soft = 0;
+  const S = (k: string, x: number) => {
+    soft += x;
+    if (terms) terms[k] = (terms[k] ?? 0) + x;
+  };
+  const H = (k: string, x: number) => {
+    hard += x;
+    if (terms) terms[`!${k}`] = (terms[`!${k}`] ?? 0) + x;
+  };
   // Faces, avoid zones, mouths.
   for (const f of scene.faces) {
     if (!rectsOverlap(box, f)) continue;
     const a = coveredArea(samples, f, area);
     if (a > 0) {
-      hard += (W.face * a) / em2 + W.face;
+      H('face', (W.face * a) / em2 + W.face);
       reasons.add('face');
     }
   }
@@ -207,18 +239,22 @@ function evaluate(
     if (!rectsOverlap(box, r)) continue;
     const a = coveredArea(samples, r, area);
     if (a > 0) {
-      if (level.coverAvoid) soft += (2 * a) / em2;
+      if (level.coverAvoid) S('coverAvoid', (2 * a) / em2);
       else {
-        hard += (W.avoid * a) / em2 + W.avoid;
+        H('avoid', (W.avoid * a) / em2 + W.avoid);
         reasons.add('avoid');
       }
     }
+  }
+  for (const r of scene.soft) {
+    if (!rectsOverlap(box, r)) continue;
+    S('softAvoid', ((r.weight ?? 1) * W.soft * coveredArea(samples, r, area)) / em2);
   }
   const bodiesHere = v.bodies.map((b) => moved(b.core, at));
   for (const m of scene.mouths) {
     if (!pointInRect(m, box, 0.4 * em)) continue;
     if (bodiesHere.some((poly) => pointInConvex(m, poly) || dist(nearestOnPolygon(m, poly), m) < 0.4 * em)) {
-      hard += W.anchor;
+      H('anchor', W.anchor);
       reasons.add('anchor');
     }
   }
@@ -226,22 +262,30 @@ function evaluate(
   const rim = moved(v.rim, at);
   let out = 0;
   let farOut = 0;
+  let intrude = 0;
   // A butted caption sits flush with the border itself.
-  const area0 = unit.butt && unit.position ? scene.panel.polygon : scene.visible;
+  const area0 = unit.butt && unit.position ? scene.buttPoly : scene.visible;
   for (const p of rim) {
     if (!pointInConvex(p, area0) && !(unit.butt && unit.position && dist(nearestOnPolygon(p, area0), p) < 1)) {
       out++;
       if (!pointInRect(p, scene.outer)) farOut++;
+      if (scene.neighbours.some((r) => pointInRect(p, r)) || (scene.limit && !pointInRect(p, scene.limit))) intrude++;
     }
+  }
+  // Into another panel (over its art and its own lettering) or off the
+  // live area of the page: the worst ways out.
+  if (intrude > 0) {
+    H('neighbour', (12 * W.outside * intrude) / rim.length + 200);
+    reasons.add('outside');
   }
   if (unit.kind !== 'sfx' || out > 0) {
     if (level.breakBorder && unit.breakBorder) {
       if (farOut > 0) {
-        hard += (W.outside * farOut) / rim.length + 10;
+        H('outside', (W.outside * farOut) / rim.length + 10);
         reasons.add('outside');
-      } else soft += (3 * out) / rim.length;
+      } else S('breakBorder', (3 * out) / rim.length);
     } else if (out > 0) {
-      hard += (W.outside * out) / rim.length + 10;
+      H('outside', (W.outside * out) / rim.length + 10);
       reasons.add('outside');
     }
   }
@@ -256,9 +300,9 @@ function evaluate(
       let inside = 0;
       for (const s of samples) if (opolys.some((poly) => pointInConvex(s, poly))) inside++;
       if (inside > 0) {
-        hard += (W.balloon * (inside / samples.length) * area) / em2 + W.balloon;
+        H('balloon', (W.balloon * (inside / samples.length) * area) / em2 + W.balloon);
         reasons.add('balloon');
-      } else soft += W.tangent;
+      } else S('tangent', W.tangent);
     }
     // Reading order (Kurlander), for the two in their script order.
     const [eBox, lBox] = o.unit.order < unit.order ? [obox, box] : [box, obox];
@@ -271,20 +315,29 @@ function evaluate(
       const overlapX = Math.min(lBox.x + lBox.width, eBox.x + eBox.width) - Math.max(lBox.x, eBox.x);
       // Side by side at one height reads in order when the earlier one
       // is behind; a later one above an earlier one never does.
-      soft += W.orderBase + (W.order * (limit - lBox.y)) / em + (overlapX > 0 ? 1 : 0);
+      S('order', W.orderBase + (W.order * (limit - lBox.y)) / em + (overlapX > 0 ? 1 : 0));
     }
-    // Tails that cross, tails through another balloon.
+    // Tails that cross (as drawn: from the wall to the tip), tails
+    // through another balloon.
     const otarget = tailTargetOf(o.unit, scene, o.at);
-    if (target && otarget && segmentsCross(centre, target, o.at, otarget)) soft += W.cross;
-    if (target && segmentHitsRect(edgePoint(v, at, target), target, shrink(obox, 0.15))) soft += W.tailThrough;
-    if (otarget && segmentHitsRect(edgePoint(ov, o.at, otarget), otarget, shrink(box, 0.15))) soft += W.tailThrough;
+    const mine = target ? tailSegment(unit, v, at, target) : undefined;
+    const theirs = otarget ? tailSegment(o.unit, ov, o.at, otarget) : undefined;
+    if (mine && theirs) {
+      // Crossing tails; tails that all but touch read as crossed too
+      // (unless they run to one speaker).
+      const gapTails = segmentDistance(mine[0], mine[1], theirs[0], theirs[1]);
+      if (gapTails === 0) S('cross', W.cross);
+      else if (gapTails < 0.6 * em && dist(target!, otarget!) > em) S('cross', 0.6 * W.cross);
+    }
+    if (mine && ov.bodies.some((b) => segmentHitsRect(mine[0], mine[1], shrink(movedRect(b.bbox, o.at), 0.12)))) S('tailThrough', W.tailThrough);
+    if (theirs && v.bodies.some((b) => segmentHitsRect(theirs[0], theirs[1], shrink(movedRect(b.bbox, at), 0.12)))) S('tailThrough', W.tailThrough);
   }
   // The tail leaves the first body clear of the group's other bodies, by
   // more than its own half width: a tail grazing another body of its group
   // leaves a notch between them that the doubled outline fills with ink.
   if (target && v.bodies.length > 1) {
     const edge = edgePoint(v, at, target);
-    for (const b of v.bodies.slice(1)) if (segmentHitsRect(edge, target, grow(movedRect(b.bbox, at), 0.8 * em))) soft += W.ownTail;
+    for (const b of v.bodies.slice(1)) if (segmentHitsRect(edge, target, grow(movedRect(b.bbox, at), 0.8 * em))) S('ownTail', W.ownTail);
   }
   // Near the speaker, a little above; tails not over faces.
   if (target && unit.target.kind === 'point') {
@@ -293,26 +346,31 @@ function evaluate(
     const h = v.bodies[0]!.bbox.height;
     // Room for a tail of a few ems: too close is worse than too far.
     const ideal = Math.max(2 * em, 0.7 * h);
-    soft += gap < ideal ? (W.distance * (ideal - gap)) / em : (W.far * (gap - ideal)) / em;
-    if (gap < 0.7 * em) soft += 3;
-    if (centre.y > target.y) soft += (W.below * (centre.y - target.y)) / em;
+    S('distance', gap < ideal ? (W.distance * (ideal - gap)) / em : (W.far * (gap - ideal)) / em);
+    if (gap < 0.7 * em) S('tooClose', 3);
+    // A tail longer than a few ems reads as an arrow: the cost of a far
+    // balloon grows faster past six ems.
+    if (gap > 6 * em) S('longTail', (W.longTail * (gap - 6 * em)) / em);
+    if (centre.y > target.y) S('below', (W.below * (centre.y - target.y)) / em);
     // A tail over another character's face reads as theirs.
     const tip = add(edge, scale(norm(sub(target, edge)), gap * 0.55));
     for (const f of scene.faces) {
       if (!segmentHitsRect(edge, tip, shrink(f, 0.1))) continue;
-      soft += pointInRect(target, f) ? 1 : W.otherFace;
+      S('otherFace', pointInRect(target, f) ? 1 : W.otherFace);
     }
   } else if (unit.target.kind === 'offPanel' && target) {
-    soft += (W.side * dist(edgePoint(v, at, target), target)) / em;
+    // An off-panel speaker's balloon sits by the border its tail runs to:
+    // a tail across the whole panel reads as an arrow.
+    S('side', (W.side * Math.max(0, dist(edgePoint(v, at, target), target) - 1.5 * em)) / em);
   }
-  if (unit.kind === 'sfx' && unit.near) soft += (0.5 * dist(centre, unit.near)) / em;
+  if (unit.kind === 'sfx' && unit.near) S('sfxNear', (0.5 * dist(centre, unit.near)) / em);
   // High in the panel; the first one in the top start corner.
   if (unit.kind !== 'sfx') {
     const top = box.y - scene.visBox.y;
-    soft += ((scene.heightBias ?? 1) * (unit.kind === 'note' ? W.height * Math.max(0, scene.visBox.y + scene.visBox.height - (box.y + box.height)) : W.height * top)) / em;
+    S('height', ((scene.heightBias ?? 1) * (unit.kind === 'note' ? W.height * Math.max(0, scene.visBox.y + scene.visBox.height - (box.y + box.height)) : W.height * top)) / em);
     if (unit.order === firstOrder && unit.kind !== 'note') {
       const fromStart = scene.fwd === 1 ? box.x - scene.visBox.x : scene.visBox.x + scene.visBox.width - (box.x + box.width);
-      soft += (W.start * fromStart) / em;
+      S('start', (W.start * fromStart) / em);
     }
   }
   return { hard, soft, reasons };
@@ -325,6 +383,15 @@ function grow(r: Rect, d: number): Rect {
 
 function shrink(r: Rect, f: number): Rect {
   return { x: r.x + r.width * f, y: r.y + r.height * f, width: r.width * (1 - 2 * f), height: r.height * (1 - 2 * f) };
+}
+
+/** A unit's tail as drawn, for the cost: from where it leaves the first
+ *  body to its tip ({@link tailLength} of the gap). */
+function tailSegment(unit: PlaceUnit, v: UnitVariant, at: Point, target: Point): [Point, Point] {
+  const edge = edgePoint(v, at, target);
+  const gap = dist(edge, target);
+  const len = Math.max(Math.min(gap, 0.8 * unit.em), tailLength(gap, unit.em, {}, unit.target.kind === 'offPanel'));
+  return [edge, add(edge, scale(norm(sub(target, edge)), len))];
 }
 
 /** Where the line from the first body's centre to `target` leaves it. */
@@ -403,8 +470,8 @@ function candidates(scene: Scene, unit: PlaceUnit, vi: number): Point[] {
 
 /** The anchor a corner or edge keyword puts a unit at: its box flush
  *  with the panel (`butt`) or with the inset area, at that corner. */
-export function positionAnchor(scene: Pick<Scene, 'visible' | 'panel' | 'fwd'>, v: UnitVariant, position: LetteringPosition, butt: boolean): Point {
-  const poly = butt ? scene.panel.polygon : scene.visible;
+export function positionAnchor(scene: Pick<Scene, 'visible' | 'panel' | 'fwd' | 'buttPoly'>, v: UnitVariant, position: LetteringPosition, butt: boolean): Point {
+  const poly = butt ? scene.buttPoly : scene.visible;
   const box = boundsOf(poly);
   const startLeft = scene.fwd === 1;
   const hx = position === 'top' || position === 'bottom' ? 0.5
@@ -453,7 +520,7 @@ function bestFor(scene: Scene, unit: PlaceUnit, others: readonly Placed[], first
       const level = LEVELS[li]!;
       let best: Choice | undefined;
       const cands = unit.pin
-        ? [pinAnchor(unit, vi)]
+        ? pinAnchors(scene, unit, vi)
         : unit.position
           ? [positionAnchor(scene, unit.variants[vi]!, unit.position, unit.butt === true)]
           : candidates(scene, unit, vi);
@@ -467,6 +534,21 @@ function bestFor(scene: Scene, unit: PlaceUnit, others: readonly Placed[], first
     }
   }
   return fallback!;
+}
+
+/** A pinned unit's anchors: on its pin, and moved the least that keeps
+ *  its box inside the panel (a pinned label too long for the room left
+ *  at its pin slides in rather than run out of the panel). */
+function pinAnchors(scene: Scene, unit: PlaceUnit, vi: number): Point[] {
+  const p = pinAnchor(unit, vi);
+  const v = unit.variants[vi]!;
+  const box = movedRect(v.bbox, p);
+  const vb = scene.visBox;
+  const shift = (lo: number, size: number, min: number, max: number) =>
+    size > max - min ? (min + max) / 2 - (lo + size / 2) : lo < min ? min - lo : lo + size > max ? max - (lo + size) : 0;
+  const dx = shift(box.x, box.width, vb.x, vb.x + vb.width);
+  const dy = shift(box.y, box.height, vb.y, vb.y + vb.height);
+  return dx === 0 && dy === 0 ? [p] : [p, { x: p.x + dx, y: p.y + dy }];
 }
 
 /** The anchor that puts a pinned unit's box centre on its pin; for a
@@ -488,12 +570,16 @@ export interface PlacementResult {
 type Layout = (Placed & { level: number; ev: Eval })[];
 
 /** Greedy placement in reading order, then local improvement passes. */
-function solve(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, passes: number): Layout {
+function solve(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, passes: number, bigFirst = false): Layout {
   const placed: Layout = [];
   // Corner and edge captions first, then pinned units, then the rest in
-  // reading order.
-  const rank = (u: PlaceUnit) => (u.position ? 0 : u.pin ? 1 : 2);
-  const sequence = [...ordered].sort((a, b) => rank(a) - rank(b) || a.order - b.order);
+  // reading order (or the biggest first: in a crowded panel the balloon
+  // that needs the most room takes it first); a sound effect with no place
+  // of its own (no pin, no `sfx` point in the art) last: the dialogue
+  // takes the room it needs first, the sound fills what is left.
+  const rank = (u: PlaceUnit) => (u.position ? 0 : u.pin ? 1 : u.kind === 'sfx' && !u.near ? 3 : 2);
+  const size = (u: PlaceUnit) => u.variants[0]!.bbox.width * u.variants[0]!.bbox.height;
+  const sequence = [...ordered].sort((a, b) => rank(a) - rank(b) || (bigFirst ? size(b) - size(a) : 0) || a.order - b.order);
   for (const unit of sequence) {
     const c = bestFor(scene, unit, placed, firstOrder);
     placed.push({ unit, variant: c.variant, at: c.at, level: c.level, ev: c.ev });
@@ -505,9 +591,16 @@ function solve(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, 
 
 /** Improvement passes from an existing layout. */
 function solveFrom(scene: Scene, start: Layout, firstOrder: number, passes: number): Layout {
-  const placed: Layout = [...start];
+  let placed: Layout = [...start];
   for (let pass = 0; pass < passes; pass++) {
     let changed = false;
+    // Two balloons whose tails cross trade places (no single move can
+    // undo a crossing: each balloon alone is best where it is).
+    const swapped = swapCrossing(scene, placed, firstOrder);
+    if (swapped) {
+      placed = swapped;
+      changed = true;
+    }
     for (let i = 0; i < placed.length; i++) {
       const p = placed[i]!;
       if (p.unit.pin || p.unit.position) continue;
@@ -522,6 +615,94 @@ function solveFrom(scene: Scene, start: Layout, firstOrder: number, passes: numb
     if (!changed) break;
   }
   return placed;
+}
+
+/** The layout with the first pair of free units whose tails cross
+ *  swapped (each box centred where the other's was, then settled at its
+ *  best spot), when that lowers the whole layout's cost; else undefined. */
+function swapCrossing(scene: Scene, placed: Layout, firstOrder: number): Layout | undefined {
+  const free = (p: Layout[number]) => !p.unit.pin && !p.unit.position && p.unit.kind === 'balloon';
+  const centreOf = (p: Layout[number]) => {
+    const b = p.unit.variants[p.variant]!.bbox;
+    return { x: p.at.x + b.x + b.width / 2, y: p.at.y + b.y + b.height / 2 };
+  };
+  const base = totalCost(scene, placed, firstOrder);
+  for (let i = 0; i < placed.length; i++) {
+    for (let j = i + 1; j < placed.length; j++) {
+      const a = placed[i]!;
+      const b = placed[j]!;
+      if (!free(a) || !free(b)) continue;
+      const ta = tailTargetOf(a.unit, scene, a.at);
+      const tb = tailTargetOf(b.unit, scene, b.at);
+      if (!ta || !tb) continue;
+      const sa = tailSegment(a.unit, a.unit.variants[a.variant]!, a.at, ta);
+      const sb = tailSegment(b.unit, b.unit.variants[b.variant]!, b.at, tb);
+      const em = Math.min(a.unit.em, b.unit.em);
+      if (segmentDistance(sa[0], sa[1], sb[0], sb[1]) >= 0.6 * em || dist(ta, tb) <= em) continue;
+      const ca = centreOf(a);
+      const cb = centreOf(b);
+      const moveTo = (p: Layout[number], c: Point): Layout[number] => {
+        const bb = p.unit.variants[p.variant]!.bbox;
+        return { ...p, at: { x: c.x - (bb.x + bb.width / 2), y: c.y - (bb.y + bb.height / 2) } };
+      };
+      const raw: Layout = placed.map((p, k) => (k === i ? moveTo(a, cb) : k === j ? moveTo(b, ca) : p));
+      // Then each settled at its best spot given the other.
+      const settled: Layout = [...raw];
+      for (const k of [i, j]) {
+        const p = settled[k]!;
+        const others = settled.filter((_, m) => m !== k);
+        const c = bestFor(scene, p.unit, others, firstOrder, { variant: p.variant, level: p.level });
+        const now = evaluate(scene, p.unit, p.variant, p.at, others, LEVELS[p.level]!, firstOrder);
+        if (better(c.ev, now)) settled[k] = { ...p, at: c.at, ev: c.ev };
+      }
+      // Or both taken out and placed again, each order in turn, the second
+      // seeing the first one's tail.
+      const replaced = (first: number, second: number): Layout => {
+        const out: Layout = [...placed];
+        const rest = () => out.filter((_, m) => m !== i && m !== j);
+        const p1 = out[first]!;
+        const c1 = bestFor(scene, p1.unit, rest(), firstOrder);
+        out[first] = { ...p1, variant: c1.variant, level: c1.level, at: c1.at, ev: c1.ev };
+        const p2 = out[second]!;
+        const c2 = bestFor(scene, p2.unit, out.filter((_, m) => m !== second), firstOrder);
+        out[second] = { ...p2, variant: c2.variant, level: c2.level, at: c2.at, ev: c2.ev };
+        return out;
+      };
+      let trial: Layout | undefined;
+      let cost = base;
+      for (const t of [raw, settled, replaced(j, i), replaced(i, j)]) {
+        const c = totalCost(scene, t, firstOrder);
+        if (c < cost - 1e-6) {
+          cost = c;
+          trial = t;
+        }
+      }
+      if (trial) return trial;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * A placed layout with its crossed tails undone: pairs of balloons whose
+ * tails cross (or all but touch) trade places or are placed again, each
+ * seeing the other's tail, as long as the whole layout gets cheaper. What
+ * {@link placeUnits} runs between its improvement passes, on its own.
+ */
+export function uncrossTails(panel: LetteringPanel, placed: readonly Placed[]): Placed[] {
+  const scene = sceneOf(panel);
+  const ordered = [...placed].sort((a, b) => a.unit.order - b.unit.order);
+  const firstOrder = ordered.find((p) => p.unit.kind !== 'sfx' && p.unit.kind !== 'note')?.unit.order ?? Number.NaN;
+  let layout: Layout = placed.map((p) => {
+    const others = placed.filter((o) => o !== p);
+    return { ...p, level: 0, ev: evaluate(scene, p.unit, p.variant, p.at, others, LEVELS[0]!, firstOrder) };
+  });
+  for (let k = 0; k < 4; k++) {
+    const next = swapCrossing(scene, layout, firstOrder);
+    if (!next) break;
+    layout = next;
+  }
+  return layout.map(({ ev: _ev, level: _level, ...rest }) => rest);
 }
 
 /** The whole layout's cost under the plain weights (hard faults first). */
@@ -550,21 +731,28 @@ export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], p
   const firstOrder = ordered.find((u) => u.kind !== 'sfx' && u.kind !== 'note')?.order ?? Number.NaN;
   let placed: Layout | undefined;
   let bestCost = Number.POSITIVE_INFINITY;
-  for (const bias of HEIGHT_BIASES) {
-    let run = solve({ ...scene, heightBias: bias }, ordered, firstOrder, passes);
-    // Settle under the plain weights.
-    if (bias !== 1) run = solveFrom(scene, run, firstOrder, passes);
-    const cost = totalCost(scene, run, firstOrder);
-    if (cost < bestCost - 1e-9) {
-      bestCost = cost;
-      placed = run;
+  const tries = (bigFirst: boolean) => {
+    for (const bias of HEIGHT_BIASES) {
+      let run = solve({ ...scene, heightBias: bias }, ordered, firstOrder, passes, bigFirst);
+      // Settle under the plain weights.
+      if (bias !== 1) run = solveFrom(scene, run, firstOrder, passes);
+      const cost = totalCost(scene, run, firstOrder);
+      if (cost < bestCost - 1e-9) {
+        bestCost = cost;
+        placed = run;
+      }
     }
-  }
-  placed = placed!;
+  };
+  tries(false);
+  // A layout with a fault left (a balloon out of the panel, over a face or
+  // another balloon): the greedy order may have boxed the last balloons
+  // in; try again placing the biggest first.
+  if (bestCost >= 1000 && ordered.length > 1) tries(true);
+  const final: Layout = placed!;
   const diagnostics: LetteringDiagnostic[] = [];
-  for (let i = 0; i < placed.length; i++) {
-    const p = placed[i]!;
-    const others = placed.filter((_, j) => j !== i);
+  for (let i = 0; i < final.length; i++) {
+    const p = final[i]!;
+    const others = final.filter((_, j) => j !== i);
     const ev = evaluate(scene, p.unit, p.variant, p.at, others, LEVELS[p.level]!, firstOrder);
     const fallbacks: LetteringDiagnostic['fallbacks'] = [];
     if (p.level >= 1 && p.unit.breakBorder) fallbacks.push('breakBorder');
@@ -581,6 +769,6 @@ export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], p
       });
     }
   }
-  placed.sort((a, b) => a.unit.order - b.unit.order);
-  return { placed: placed.map(({ ev: _ev, ...rest }) => rest), diagnostics };
+  final.sort((a, b) => a.unit.order - b.unit.order);
+  return { placed: final.map(({ ev: _ev, ...rest }) => rest), diagnostics };
 }

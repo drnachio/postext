@@ -5,10 +5,11 @@
 // speaker off the panel). The result is one `ComicBalloonOut` per item, in
 // reading order.
 
-import { pointInConvex, pathData, rectOf, boundsOf, add, type PathCmd } from './geom';
+import { pointInConvex, pathData, rectOf, boundsOf, add, insetConvex, type PathCmd } from './geom';
+import { hasCJK } from '../../measure/cjk';
 import { buildBody, buildNeck, buildTail, dashOf, translateBody, type Body } from './shapes';
 import { shapeTextCandidates, styleIsVertical, translateBlock, type ShapedText, type ShapeOptions } from './shape-text';
-import { prepareText, readLetteringText, type PreparedText } from './text';
+import { isIsolateControl, prepareText, readLetteringText, type PreparedText } from './text';
 import { offPanelPoint, placeUnits, type PlaceUnit, type TargetSpec, type UnitVariant } from './placement';
 import type {
   ComicBalloonOut, LetteringEnv, LetteringItem, LetteringPanel, LetteringResult, LetteringStyle, Point, Rect,
@@ -90,8 +91,12 @@ function pieceOf(panel: LetteringPanel, item: LetteringItem, env: LetteringEnv):
     padding: base.padding * scale,
     ...(base.halo ? { halo: base.halo * scale } : {}),
   };
-  const vertical = styleIsVertical(style, panel.writingMode === 'vertical');
-  const prepared = prepareText(readLetteringText(item.text, item.sourceMap), style, { locale: panel.locale, vertical });
+  const read = readLetteringText(item.text, item.sourceMap);
+  // Columns are for Japanese and Chinese: a text with none of their
+  // characters (an English subtitle of a sound effect, a Latin word) is
+  // set horizontally in a vertical book, as manga sets foreign speech.
+  const vertical = styleIsVertical(style, panel.writingMode === 'vertical') && (style.writingMode === 'vertical' || hasCJK(read.text));
+  const prepared = prepareText(read, style, { locale: panel.locale, vertical });
   if (prepared.text.replace(/\s/g, '').length === 0) return undefined;
   const opts: ShapeOptions = {
     locale: panel.locale,
@@ -115,6 +120,25 @@ function pieceOf(panel: LetteringPanel, item: LetteringItem, env: LetteringEnv):
     const target = style.aspect ?? (vertical ? 1.3 : 1.8);
     add1(shapeTextCandidates(prepared, style, { ...opts, aspect: target * 1.9 }, 1)[0]!, true);
     add1(shapeTextCandidates(prepared, style, { ...opts, aspect: target / 1.9 }, 1)[0]!, true);
+  }
+  // A balloon too long for its panel along its lines (columns in a short
+  // panel, lines in a narrow one) is reshaped to lines that fit it.
+  const vis = boundsOf(insetConvex(panel.polygon, panel.insetPx));
+  const room = vertical ? vis.height : vis.width;
+  const along = (b: Body) => (vertical ? b.bbox.height : b.bbox.width);
+  if (shapes.length > 0 && along(shapes[0]!.body) > 0.45 * room) {
+    for (const f of [0.6, 0.45, 0.33]) {
+      const maxLength = f * room - 2 * style.padding;
+      if (maxLength > style.fontSizePx) add1(shapeTextCandidates(prepared, style, { ...opts, maxLength }, 1)[0]!, true);
+    }
+  }
+  // Too deep across its lines (many short lines in a low panel, many
+  // columns in a narrow one): fewer, longer lines.
+  const across = (b: Body) => (vertical ? b.bbox.width : b.bbox.height);
+  const roomAcross = vertical ? vis.width : vis.height;
+  if (item.kind !== 'sfx' && shapes.length > 0 && across(shapes[0]!.body) > 0.45 * roomAcross) {
+    const target = style.aspect ?? (vertical ? 1.3 : 1.8);
+    for (const k of [3, 5]) add1(shapeTextCandidates(prepared, style, { ...opts, aspect: target * k }, 1)[0]!, true);
   }
   return { item, style, prepared, shapes, vertical };
 }
@@ -340,7 +364,7 @@ function outputUnit(
       sourceEnd: piece.item.sourceEnd,
       group,
       ...(i === 0 && shape ? { shape } : {}),
-      text: [block],
+      text: [block, ...(shaped.rubies ?? []).map((r) => translateBlock(r, shift.x, shift.y))],
       bbox: rectOf(body.bbox.x, body.bbox.y, body.bbox.width, body.bbox.height),
       ...(i === 0 && tailTip ? { tailTip } : {}),
       ...(variant.rotate ? { rotate: variant.rotate } : {}),
@@ -355,12 +379,14 @@ function outputUnit(
 function withSource(block: VDTDesignTextBlock, piece: Piece, shaped: ShapedText): VDTDesignTextBlock {
   const out: VDTDesignTextBlock = { ...block, sourceStart: piece.item.sourceStart, sourceEnd: piece.item.sourceEnd };
   const p = piece.prepared;
-  const lines = shaped.lines.map((l) => p.text.slice(l.start, l.end));
+  // The isolate controls print nothing (see `stripIsolates`).
+  const kept = (k: number) => !isIsolateControl(p.text[k]!);
+  const lines = shaped.lines.map((l) => [...Array(l.end - l.start).keys()].map((i) => l.start + i).filter(kept).map((k) => p.text[k]).join(''));
   const printed = block.lines.map((l) => l.text);
   if (lines.length !== printed.length || lines.some((t, i) => t !== printed[i])) return out;
   const map: number[] = [];
   shaped.lines.forEach((l, i) => {
-    for (let k = l.start; k < l.end; k++) map.push(p.source[k] ?? -1);
+    for (let k = l.start; k < l.end; k++) if (kept(k)) map.push(p.source[k] ?? -1);
     if (i + 1 < shaped.lines.length) map.push(p.source[shaped.lines[i + 1]!.start] ?? -1);
   });
   if (map.some((m) => m < 0)) return out;

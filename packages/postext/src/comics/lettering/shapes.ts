@@ -228,7 +228,10 @@ function burstBody(p: BodyParams): Body {
   const count = p.style.burstPoints && p.style.burstPoints >= 5
     ? Math.round(p.style.burstPoints)
     : Math.max(9, Math.min(26, Math.round(per / (2.1 * p.em))));
-  const depth = p.style.burstDepth ?? (p.style.burstDepthRatio ? p.style.burstDepthRatio * (a + b) / 2 : 1.1 * p.em);
+  // A ratio of the body's size, at most 1.3 em: the spikes of a long shout
+  // stay the size of a short one's (they mark the kind; the room they take
+  // is the panel's).
+  const depth = p.style.burstDepth ?? (p.style.burstDepthRatio ? Math.min(p.style.burstDepthRatio * (a + b) / 2, 1.3 * p.em) : 1.1 * p.em);
   const valleys = resampleClosed(core, count, rnd());
   const pts: Point[] = [];
   for (let i = 0; i < count; i++) {
@@ -347,10 +350,8 @@ export function buildTail(body: Body, target: Point, style: LetteringStyle, opts
   const em = body.em;
   const gap = dist(ex.p, target);
   if (dist(body.centre, target) <= dist(body.centre, ex.p) + 0.2 * em) return undefined;
-  const reach = opts.offPanel ? 1 : (style.tailReach ?? 0.55);
-  const minGap = opts.offPanel ? 0 : (style.tailGap ?? 0.5 * em);
   const aim = norm(sub(target, ex.p));
-  let len = Math.min(gap * reach, gap - minGap);
+  let len = tailLength(gap, em, style, opts.offPanel === true);
   if (opts.face && !opts.offPanel) {
     // Stop before the face (the target, a mouth, lies inside it).
     const entry = rayEnterRect(ex.p, aim, opts.face);
@@ -371,7 +372,7 @@ export function buildTail(body: Body, target: Point, style: LetteringStyle, opts
   // to the tip (straight for a wedge).
   const ctrl = kind === 'wedge'
     ? lerp(ex.p, tip, 0.5)
-    : add(add(ex.p, scale(ex.n, len * 0.5)), scale(perp(aim), (opts.bend ?? 0) * len * 0.12));
+    : add(add(ex.p, scale(ex.n, Math.min(len * 0.5, 1.6 * em))), scale(perp(aim), (opts.bend ?? 0) * Math.min(len * 0.12, 0.6 * em)));
   const at = (t: number): Point => add(add(scale(ex.p, (1 - t) ** 2), scale(ctrl, 2 * t * (1 - t))), scale(tip, t * t));
   const dAt = (t: number): Point => norm(add(scale(sub(ctrl, ex.p), 2 * (1 - t)), scale(sub(tip, ctrl), 2 * t)));
   const steps = 10;
@@ -470,6 +471,21 @@ function rayEnterRect(o: Point, u: Point, r: Rect): number | undefined {
     t1 = Math.min(t1, b);
   }
   return t0 <= t1 ? t0 : undefined;
+}
+
+/**
+ * How long a tail runs from the body's wall toward a target `gap` px away:
+ * `tailReach` of the way (Blambot's half to three fifths), never closer to
+ * the target than `tailGap`, and never stopping farther from it than 2.5
+ * em — a balloon set far from its speaker gets a longer tail, so that every
+ * tip ends about as near its mouth (Kurlander's tails end together). An
+ * off-panel tail runs to the border.
+ */
+export function tailLength(gap: number, em: number, style: Pick<LetteringStyle, 'tailReach' | 'tailGap'>, offPanel: boolean): number {
+  if (offPanel) return gap;
+  const minGap = style.tailGap ?? 0.5 * em;
+  const rest = Math.min(Math.max(gap * (1 - (style.tailReach ?? 0.55)), minGap), Math.max(minGap, 2.5 * em));
+  return Math.max(0, gap - rest);
 }
 
 /** A thought tail: three circles shrinking toward the head. */

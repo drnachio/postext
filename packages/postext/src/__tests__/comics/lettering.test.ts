@@ -135,7 +135,8 @@ describe('comic lettering in the build', () => {
     // (higher, or level and to its right).
     const cap = ar.balloons[0]!;
     const room = ar.panels[0]!;
-    expect(cap.bbox.x + cap.bbox.width).toBeGreaterThan(room.bbox.x + room.bbox.width - 2);
+    // (Butted against the inner edge of the panel's border.)
+    expect(cap.bbox.x + cap.bbox.width).toBeGreaterThan(room.bbox.x + room.bbox.width - room.border.width / 2 - 2);
     const [b1, b2] = ar.balloons.filter((b) => b.kind === 'balloon' && b.panelIndex === 0) as [VDTComicBalloon, VDTComicBalloon];
     expect(b1.bbox.y < b2.bbox.y + 1 || centre(b1).x > centre(b2).x).toBe(true);
   });
@@ -182,10 +183,11 @@ describe('comic lettering in the build', () => {
   });
 
   it('honours pins in picture fractions and per-line tail and join attributes', () => {
-    const md = ':::page\n::panel{art=room}\nana{at="20% 20%"}: Pinned here.\nben: One.\nben: Two.\nben{join=false}: Three.\n:::\n';
+    const md = ':::page\n::panel{art=room}\nana{at="45% 20%"}: Pinned here.\nben: One.\nben: Two.\nben{join=false}: Three.\n:::\n';
     const comic = comicOf(buildDocument({ markdown: md, resources }, config('en')));
     const room = comic.panels[0]!;
-    const pin = comicArtPointToPage(room.art!, 0.2, 0.2);
+    const pin = comicArtPointToPage(room.art!, 0.45, 0.2);
+    expect(pointInPolygon(room.polygon, pin)).toBe(true);
     const ana = comic.balloons[0]!;
     expect(dist(centre(ana), pin)).toBeLessThan(ana.bbox.height);
     const bens = comic.balloons.filter((b) => b.speaker === 'ben');
@@ -206,6 +208,48 @@ describe('comic lettering in the build', () => {
     expect(second!.shape).toBeUndefined();
     const pin = comicArtPointToPage(comic.panels[0]!.art!, 0.62, 0.22);
     expect(dist(centre(first!), pin)).toBeLessThan(1);
+  });
+
+  it('keeps balloons off a hat: the face grown upward, and a head guard from mouth and head', () => {
+    // A tall hat over a marked face; a second speaker marked by mouth and
+    // head only (no face): neither head is covered.
+    const hats: Resource[] = [picture('hats', 1600, 1000, {
+      anchors: [
+        { id: 'ana', x: 0.3, y: 0.7, face: { x: 0.24, y: 0.55, width: 0.12, height: 0.2 } },
+        { id: 'ben', x: 0.72, y: 0.72, head: { x: 0.72, y: 0.6 } },
+      ],
+    })];
+    const md = ':::page\n::panel{art=hats}\nana: The tallest hat in the whole valley, and it is mine.\nben: It suits you, I suppose.\n:::\n';
+    const comic = comicOf(buildDocument({ markdown: md, resources: hats }, config('en')));
+    const art = comic.panels[0]!.art!;
+    const a = comicArtPointToPage(art, 0.24, 0.55);
+    const a2 = comicArtPointToPage(art, 0.36, 0.75);
+    // The hat: 0.4 of the face's height above it.
+    const hat = { x: a.x, y: a.y - 0.4 * (a2.y - a.y), width: a2.x - a.x, height: 0.4 * (a2.y - a.y) };
+    const head = comicArtPointToPage(art, 0.72, 0.6);
+    const em = (7.5 / 72) * 300;
+    const benHead = { x: head.x - 1.2 * em, y: head.y - 2 * em, width: 2.4 * em, height: 2 * em };
+    const hits = (r: { x: number; y: number; width: number; height: number }, b: VDTComicBalloon) =>
+      Math.min(r.x + r.width, b.bbox.x + 0.9 * b.bbox.width) > Math.max(r.x, b.bbox.x + 0.1 * b.bbox.width)
+      && Math.min(r.y + r.height, b.bbox.y + 0.9 * b.bbox.height) > Math.max(r.y, b.bbox.y + 0.1 * b.bbox.height);
+    for (const b of comic.balloons) {
+      expect(hits(hat, b)).toBe(false);
+      expect(hits(benHead, b)).toBe(false);
+    }
+  });
+
+  it('gives text set on the art with no balloon a halo, and butted captions the border\'s weight', () => {
+    const md = ':::page\n::panel{art=room}\ncaption{at=top-start}: Lyon, 1943.\nsfx{writing at="50% 20%"}: Invitation\n:::\n';
+    const cfg: PostextConfig = { ...config('en'), comics: { balloonStyles: [{ id: 'writing', shape: 'none', tail: 'none', color: { hex: '#3b2a1e', model: 'hex' } }] } };
+    const comic = comicOf(buildDocument({ markdown: md, resources }, cfg));
+    const writing = comic.balloons.find((b) => b.style === 'writing')!;
+    expect(writing.halo?.color).toBe('#ffffff');
+    expect(writing.halo!.width).toBeGreaterThan(0);
+    const cap = comic.balloons.find((b) => b.kind === 'caption')!;
+    expect(cap.shape!.strokeWidth).toBeCloseTo(comic.panels[0]!.border.width, 6);
+    // A style with an explicit halo of 0 keeps none.
+    const none = comicOf(buildDocument({ markdown: md, resources }, { ...cfg, comics: { balloonStyles: [{ id: 'writing', shape: 'none', tail: 'none', halo: { value: 0, unit: 'pt' } }] } }));
+    expect(none.balloons.find((b) => b.style === 'writing')!.halo).toBeUndefined();
   });
 
   it('lays out documents without comics exactly as before (no balloons anywhere)', () => {

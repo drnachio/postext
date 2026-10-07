@@ -330,6 +330,9 @@ function strokeBalloon(ctx: PageCtx, shape: NonNullable<VDTComicBalloon['shape']
     strokeSegs(ctx, segs, ink, 2 * (2 * sw + gap));
     if (shape.fill) strokeSegs(ctx, segs, colorFromHex(shape.fill, ctx.colorSpace), 2 * (sw + gap));
   }
+  // A whisper's dashes over a band of the balloon's ground: the gaps read
+  // as the balloon, not as the art behind it.
+  if (shape.dash && shape.dash.length > 0 && shape.fill) strokeSegs(ctx, segs, colorFromHex(shape.fill, ctx.colorSpace), 3 * sw);
   strokeSegs(ctx, segs, ink, 2 * sw, shape.dash?.map((d) => d * 2));
 }
 

@@ -17,7 +17,7 @@ class StubCtx {
 /** A 2D context that logs the calls the panel painter makes. */
 function recordingCanvas(): { canvas: HTMLCanvasElement; calls: string[] } {
   const calls: string[] = [];
-  const logged = new Set(['clip', 'stroke', 'fill', 'fillText', 'strokeText', 'bezierCurveTo', 'rotate', 'drawImage', 'fillRect', 'scale', 'translate', 'arcTo']);
+  const logged = new Set(['clip', 'stroke', 'fill', 'fillText', 'strokeText', 'bezierCurveTo', 'rotate', 'drawImage', 'fillRect', 'scale', 'translate', 'arcTo', 'setLineDash']);
   const ctx: Record<string | symbol, unknown> = new Proxy({}, {
     get(target: Record<string | symbol, unknown>, key) {
       if (typeof key === 'string' && logged.has(key)) {
@@ -118,6 +118,21 @@ describe('canvas painting of comic panels', () => {
     renderPageToCanvas(page, doc, canvas);
     expect(calls.some((c) => c.startsWith('arcTo'))).toBe(true);
     expect(calls.filter((c) => c === 'stroke()')).toHaveLength(1);
+  });
+
+  it('draws a whisper\'s dashes over a band of the balloon\'s ground', () => {
+    const md = ':::page\n::panel{art=pic}\nana{whisper}: Psst.\n:::';
+    const doc = buildDocument({ markdown: md, resources }, { comics: { balloonStyles: [{ id: 'whisper', stroke: { hex: '#123456', model: 'hex' }, fill: { hex: '#fefefe', model: 'hex' } }] } });
+    const page = doc.pages.find((p) => p.comic)!;
+    const w = page.comic!.balloons[0]!.shape!.strokeWidth;
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(page, doc, canvas);
+    const band = calls.indexOf(`lineWidth=${Math.round(3 * w * 100) / 100}`);
+    // (The recorder logs number arguments only: the pattern shows as ().)
+    const dash = calls.indexOf('setLineDash()', band);
+    expect(band).toBeGreaterThan(-1);
+    expect(calls.lastIndexOf('strokeStyle=#fefefe', band)).toBeGreaterThan(-1);
+    expect(dash).toBeGreaterThan(band);
   });
 
   it('paints the lettering after the panels: each outline stroked at twice its width, then filled, then its text; sound effects last, turned', () => {

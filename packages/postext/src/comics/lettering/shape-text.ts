@@ -39,12 +39,17 @@ export interface ShapeOptions {
   cjkLineBreak?: CjkLineBreakLevel;
   cjkRegion?: CjkRegion;
   mirrored?: boolean;
+  /** Longest line (column) allowed, px, below the style's own cap: a
+   *  balloon reshaped to fit a short or narrow panel. */
+  maxLength?: number;
 }
 
 /** A shaped text: its design text block laid out with the top left corner
  *  of its box at (0, 0), the ink of every line, and how it was chosen. */
 export interface ShapedText {
   block: VDTDesignTextBlock;
+  /** Ruby readings over (beside) their bases, same frame as `block`. */
+  rubies?: VDTDesignTextBlock[];
   vertical: boolean;
   /** Ranges of the prepared text per line (column). */
   lines: { start: number; end: number; width: number }[];
@@ -150,7 +155,7 @@ function measurerFor(p: PreparedText, style: LetteringStyle): Measurer {
       const k = key(a, b);
       let w = memo.get(k);
       if (w === undefined) {
-        const s = p.text.slice(a, b);
+        const s = p.text.slice(a, b).replace(/[\u2066-\u2069]/g, '');
         memo.set(k, (w = a >= b ? 0 : Math.max(0, flowTextWidth(s, font) + tracking * graphemeCount(s))));
       }
       return w;
@@ -177,6 +182,7 @@ function bestBreaksFor(
   W: number,
   maxLen: number,
   penaltyWeight: number,
+  lone: (a: number, b: number) => number,
 ): number[] | undefined {
   const P = pts.length;
   // dp[i][k]: cost of i lines ending at point k (k = 0 is the start).
@@ -195,7 +201,7 @@ function bestBreaksFor(
         const w = m.width(start, pt.end);
         // The same weights as `scoreLines`, so that the programme looks
         // for what the score rewards.
-        let c = (12 / n) * ((w - target) / W) ** 2 + pt.penalty * penaltyWeight;
+        let c = (12 / n) * ((w - target) / W) ** 2 + pt.penalty * penaltyWeight + lone(start, pt.end);
         if (w > W * 1.15) c += 5 * (w / W - 1.15) + 1;
         if (w > maxLen) c += 20 * ((w - maxLen) / maxLen) + 20;
         const last = i === n - 1;
@@ -239,6 +245,8 @@ function scoreLines(
   target: number,
   maxLen: number,
   penaltyWeight: number,
+  lone: (a: number, b: number) => number,
+  cjk: boolean,
 ): { score: number; aspect: number } {
   const n = lines.length;
   const wMax = Math.max(1e-6, ...lines.map((l) => l.width));
@@ -248,7 +256,10 @@ function scoreLines(
   const aspect = wMax / across;
   // A text that fits one short line (column) keeps it: the aspect only
   // shapes texts long enough to need several.
-  const short = n === 1 && (vertical ? wMax <= Math.min(maxLen, 6.5 * em) : wMax <= 9 * em);
+  // (A Latin line of more than about fifteen letters, a Chinese or
+  // Japanese one of more than five characters, is a "sausage": two short
+  // lines read better.)
+  const short = n === 1 && (vertical ? wMax <= maxLen : wMax <= (cjk ? 5.5 : 7) * em);
   let s = (short ? 0.15 : 4) * Math.log(aspect / target) ** 2;
   // Diamond profile: each line against the oval chord at its place.
   let dev = 0;
@@ -269,8 +280,28 @@ function scoreLines(
   let pen = 0;
   for (const b of breaks.slice(0, -1)) pen += pts[b]!.penalty;
   s += penaltyWeight * pen;
-  for (const l of lines) if (l.width > maxLen + 0.5) s += 20 * ((l.width - maxLen) / em);
+  for (const l of lines) {
+    if (l.width > maxLen + 0.5) s += 20 * ((l.width - maxLen) / em);
+    s += lone(l.start, l.end);
+  }
   return { score: s, aspect };
+}
+
+/** A line (column) of a text of several that holds no letter or digit
+ *  (a leader "……" or a "!" left alone) is an orphan, and so is a
+ *  column of one character: a heavy penalty, unless a forced break made
+ *  it so. */
+function loneLinePenalty(p: PreparedText, all: readonly BreakPoint[]): (a: number, b: number) => number {
+  const forcedEnds = new Set(all.filter((x) => x.forced).map((x) => x.end));
+  const forcedStarts = new Set(all.filter((x) => x.forced).map((x) => x.next));
+  return (a, b) => {
+    if (a === 0 && b === p.text.length) return 0;
+    if (forcedEnds.has(b) && (a === 0 || forcedStarts.has(a))) return 0;
+    const t = p.text.slice(a, b).replace(/[\u2066-\u2069]/g, '');
+    if (!/[\p{L}\p{N}]/u.test(t)) return 9;
+    if (hasCJK(t) && [...t.replace(/[\s\p{P}\p{S}]/gu, '')].length <= 1) return 4;
+    return 0;
+  };
 }
 
 /** Line sets for every line count, each scored; the best first. */
@@ -286,6 +317,8 @@ function candidatesFor(
   penaltyWeight: number,
 ): Candidate[] {
   const all = [{ end: 0, next: 0, penalty: 0, forced: false }, ...pts];
+  const lone = loneLinePenalty(p, all);
+  const cjk = hasCJK(p.text);
   const total = m.width(0, p.text.length);
   const forcedCount = pts.filter((x) => x.forced).length;
   const nMax = Math.max(forcedCount, Math.min(16, pts.length, Math.ceil(total / (1.5 * em)) + forcedCount));
@@ -298,7 +331,7 @@ function candidatesFor(
     const base = total / n / mean;
     for (const f of [0.85, 0.95, 1.05, 1.15, 1.3]) {
       const W = Math.min(base * f, maxLen);
-      const br = bestBreaksFor(all, m, n, W, maxLen, penaltyWeight);
+      const br = bestBreaksFor(all, m, n, W, maxLen, penaltyWeight, lone);
       if (!br) continue;
       const sig = br.join(',');
       if (seen.has(sig)) continue;
@@ -308,7 +341,7 @@ function candidatesFor(
         const end = all[k]!.end;
         return { start, end, width: m.width(start, end) };
       });
-      const { score, aspect } = scoreLines(lines, all, br, em, pitch, vertical, target, maxLen, penaltyWeight);
+      const { score, aspect } = scoreLines(lines, all, br, em, pitch, vertical, target, maxLen, penaltyWeight, lone, cjk);
       out.push({ breaks: br, lines, score, aspect });
     }
   }
@@ -354,7 +387,8 @@ export function shapeTextCandidates(p: PreparedText, style: LetteringStyle, opts
   const level = opts.cjkLineBreak ?? defaultCjkLineBreak(opts.locale);
   const region: CjkRegion = opts.cjkRegion ?? cjkRegionOf(opts.locale) ?? (lang === 'ja' ? 'japan' : 'mainland');
   const target = opts.aspect ?? style.aspect ?? (vertical ? DEFAULT_ASPECT_VERTICAL : DEFAULT_ASPECT_HORIZONTAL);
-  const maxLen = vertical ? (style.maxColumnChars ?? 8) * em + 0.01 : Number.POSITIVE_INFINITY;
+  const ownMax = vertical ? (style.maxColumnChars ?? 8) * em + 0.01 : Number.POSITIVE_INFINITY;
+  const maxLen = opts.maxLength !== undefined && opts.maxLength > 0 ? Math.min(ownMax, Math.max(opts.maxLength, 1.01 * em)) : ownMax;
   const pts = breakPoints(p, level, lang === 'ja');
   const mode = vertical ? 'vertical-rl' : 'horizontal-tb';
   const { cands, rich } = withMeasureWritingMode(mode, () => {
@@ -403,13 +437,16 @@ function setLines(
     direction,
     ...(vertical ? { writingMode: 'vertical-rl' as const } : {}),
   };
-  const block = withMeasureWritingMode('horizontal-tb', () => {
+  const block = stripIsolates(withMeasureWritingMode('horizontal-tb', () => {
     const prim = layoutTextElementAt(el, content, 0, 0, opts.dpi, { direction, mirrored: opts.mirrored === true });
     return primitiveToBlock(prim) as VDTDesignTextBlock;
-  }, region);
+  }, region));
   const ink = inkOf(block, em, vertical);
+  const rubies = rubyBlocks(p, style, opts, c, block, ink, ctx);
+  for (const r of rubies) ink.push({ ...r.bbox });
   return {
     block,
+    ...(rubies.length ? { rubies } : {}),
     vertical,
     lines: c.lines,
     ink,
@@ -419,6 +456,92 @@ function setLines(
     aspect: c.aspect,
     score: c.score,
   };
+}
+
+/** A block with the isolate controls of its text taken out (they set the
+ *  bidi order of the lines and print nothing). */
+function stripIsolates(block: VDTDesignTextBlock): VDTDesignTextBlock {
+  const re = /[\u2066-\u2069]/g;
+  if (!block.lines.some((l) => /[\u2066-\u2069]/.test(l.text))) return block;
+  return {
+    ...block,
+    lines: block.lines.map((l) => ({
+      ...l,
+      text: l.text.replace(re, ''),
+      ...(l.runs ? { runs: l.runs.map((r) => ({ ...r, text: r.text.replace(re, '') })) } : {}),
+    })),
+  };
+}
+
+/**
+ * The ruby (furigana) of a shaped text as small design-text blocks: each
+ * reading at half the text's size, centred over its base in horizontal
+ * lines and beside it (to the right) in columns, in the gap the leading
+ * leaves. A group ruby is one reading over its whole run; a mono ruby one
+ * reading per character. Lines a bidi run reorders take none.
+ */
+function rubyBlocks(
+  p: PreparedText,
+  style: LetteringStyle,
+  opts: ShapeOptions,
+  c: Candidate,
+  block: VDTDesignTextBlock,
+  ink: readonly Rect[],
+  ctx: { vertical: boolean; em: number; region: CjkRegion; rich: boolean },
+): VDTDesignTextBlock[] {
+  if (!p.style.some((st) => st.ruby)) return [];
+  const { vertical, em, region } = ctx;
+  const size = em * 0.5;
+  const out: VDTDesignTextBlock[] = [];
+  const printed = block.lines.filter((l) => l.text.length > 0);
+  withMeasureWritingMode(vertical ? 'vertical-rl' : 'horizontal-tb', () => {
+    const m = measurerFor(p, style);
+    c.lines.forEach((line, li) => {
+      const pl = printed[li];
+      const box = ink[li];
+      if (!pl || !box || pl.order || pl.runs?.some((r) => r.rtl)) return;
+      let k = line.start;
+      while (k < line.end) {
+        const r = p.style[k]!.ruby;
+        if (!r) {
+          k++;
+          continue;
+        }
+        let e = k + 1;
+        if (r.group) while (e < line.end && p.style[e]!.ruby?.id === r.id) e++;
+        const from = m.width(line.start, k);
+        const to = m.width(line.start, e);
+        const reading = r.text;
+        const el: ResolvedDesignTextElement = {
+          kind: 'text', id: 'ruby', parity: 'all',
+          placement: { anchor: { to: 'container', edge: 'top-left' } },
+          content: reading,
+          fontFamily: style.fontFamily,
+          fontSize: { value: size, unit: 'px' },
+          fontWeight: style.fontWeight ?? 400,
+          italic: false,
+          color: { hex: style.color, model: 'hex' },
+          align: 'center', verticalAlign: 'top', lineHeight: 1,
+          overflow: 'wrap', hyphenate: false, direction: 'ltr',
+          ...(vertical ? { writingMode: 'vertical-rl' as const } : {}),
+        };
+        const rb = withMeasureWritingMode('horizontal-tb', () => primitiveToBlock(layoutTextElementAt(el, reading, 0, 0, opts.dpi, {})) as VDTDesignTextBlock, region);
+        let dx: number;
+        let dy: number;
+        if (vertical) {
+          // Beside the column, centred along its run.
+          dx = box.x + box.width + 0.04 * em - rb.bbox.x;
+          dy = box.y + (from + to) / 2 - (rb.bbox.y + rb.bbox.height / 2);
+        } else {
+          dx = block.bbox.x + pl.xOffset + (from + to) / 2 - (rb.bbox.x + rb.bbox.width / 2);
+          dy = box.y - 0.06 * em - (rb.bbox.y + rb.bbox.height) + 0.12 * size;
+        }
+        out.push({ ...translateBlock(rb, dx, dy), artifact: true });
+        k = e;
+      }
+    });
+  }, region);
+  return out;
 }
 
 /** The ink box of every line (column) of a laid-out block. */

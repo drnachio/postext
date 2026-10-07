@@ -346,6 +346,11 @@ describe('comic pages in the PDF', () => {
     expect(wide).toBeGreaterThan(-1);
     expect(inner).toBeGreaterThan(wide);
     expect(dashed).toBeGreaterThan(inner);
+    // Under the dashes, a solid 3 × 1 band in the fill colour: the gaps read
+    // as the balloon's ground.
+    const band = ops.indexOf('3 w', inner);
+    expect(band).toBeGreaterThan(inner);
+    expect(band).toBeLessThan(dashed);
   });
 
   it('turns a sound effect about its centre and puts a halo under its letters', () => {

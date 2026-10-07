@@ -351,23 +351,84 @@ function overlaps(a: BoundingBox, b: BoundingBox): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 }
 
-/** A guard over the face of each speaker whose anchor marks no `face`:
- *  a box a few ems about the mouth (and the head, when marked), mostly
- *  above it. Kept clear as an avoid zone (a balloon may still cover it as
- *  a last resort, and tails run to the mouth as usual), so balloons do
- *  not land on a face the picture did not outline. */
-function unmarkedFaces(panel: VDTComicPanel, resource: Resource | undefined, em: number): BoundingBox[] {
+/**
+ * Guards over the head of every speaker, so that balloons do not land on a
+ * hat or a head of hair. Each is an avoid zone (a balloon may still cover
+ * it as a last resort; tails run to the mouth as usual):
+ * - a marked `face` grown upward by 0.4 of its height and outward by a
+ *   fifth of its width (hair, a hat brim; the face itself stays a hard
+ *   no-go);
+ * - with no face, a box of a few ems about the mouth (and the head point),
+ *   mostly above it, sized from the mouth-to-head distance when the head
+ *   is marked.
+ * {@link headZones} adds the larger head a close shot may have, as a
+ * softer preference.
+ */
+function headGuards(panel: VDTComicPanel, resource: Resource | undefined, em: number): BoundingBox[] {
   const art = panel.art;
   if (!art || !resource?.anchors) return [];
-  return resource.anchors.filter((a) => !a.face && a.id !== 'sfx').map((a) => {
+  return resource.anchors.filter((a) => a.id !== 'sfx').map((a) => {
+    if (a.face) {
+      const f = comicArtRectToPage(art, a.face);
+      const up = 0.4 * f.height;
+      const side = 0.2 * f.width;
+      return { x: f.x - side, y: f.y - up, width: f.width + 2 * side, height: f.height + up };
+    }
     const mouth = comicArtPointToPage(art, a.x, a.y);
     const head = a.head ? comicArtPointToPage(art, a.head.x, a.head.y) : mouth;
-    const x0 = Math.min(mouth.x, head.x) - 1.6 * em;
-    const x1 = Math.max(mouth.x, head.x) + 1.6 * em;
-    const y0 = Math.min(mouth.y, head.y) - 2.6 * em;
+    const d = Math.hypot(head.x - mouth.x, head.y - mouth.y);
+    const size = d > 0.5 * em ? Math.max(2.4 * d, 3.3 * em) : 3.3 * em;
+    const cx = (mouth.x + head.x) / 2;
+    const half = Math.max(1.6 * em, 0.5 * size);
+    const y0 = Math.min(mouth.y, head.y) - Math.max(2.9 * em, 0.95 * size);
     const y1 = Math.max(mouth.y, head.y) + 0.7 * em;
-    return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+    return { x: cx - half, y: y0, width: 2 * half, height: y1 - y0 };
   });
+}
+
+/** The head a speaker with no marked face may have in a closer shot (a
+ *  quarter of the shorter side of the cell, above the mouth), as a region
+ *  better left uncovered: a cost per area, never a fault, so that in a
+ *  long shot (small figures) a balloon still comes close. */
+function headZones(panel: VDTComicPanel, resource: Resource | undefined): (BoundingBox & { weight: number })[] {
+  const art = panel.art;
+  if (!art || !resource?.anchors) return [];
+  const size = 0.22 * Math.min(panel.bbox.width, panel.bbox.height);
+  return resource.anchors.filter((a) => a.id !== 'sfx' && !a.face).map((a) => {
+    const mouth = comicArtPointToPage(art, a.x, a.y);
+    return { x: mouth.x - 0.45 * size, y: mouth.y - 1.05 * size, width: 0.9 * size, height: 1.25 * size, weight: 1.5 };
+  });
+}
+
+/** The picture's safe area as a region better left uncovered, when the art
+ *  marks no face and no avoid zone (nothing else tells the lettering what
+ *  matters in it). */
+function softSafeArea(panel: VDTComicPanel, resource: Resource | undefined): BoundingBox[] {
+  const art = panel.art;
+  if (!art || !resource?.safeArea) return [];
+  if ((resource.avoid?.length ?? 0) > 0 || (resource.anchors ?? []).some((a) => a.face)) return [];
+  return [comicArtRectToPage(art, resource.safeArea)];
+}
+
+/** Text on the art with no balloon (a `none` shape) and no halo of its
+ *  own gets one, light under dark letters and dark under light ones: the
+ *  white outline letterers give lettering laid on a picture (#559). */
+function withAutoHalo(style: LetteringStyle, st: ResolvedBalloonStyleConfig): LetteringStyle {
+  if (st.shape !== 'none' || st.halo !== undefined || style.halo) return style;
+  const hex = style.color.replace('#', '');
+  const v = hex.length >= 6 ? hex.slice(0, 6) : hex.split('').map((c) => c + c).join('');
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255);
+  const lum = 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+  return { ...style, halo: Math.max(0.12 * style.fontSizePx, 1), haloColor: lum < 0.5 ? '#ffffff' : '#000000' };
+}
+
+/** A box butted against the border of a framed panel (a caption at a
+ *  corner) is outlined at the border's weight, so that its edges and the
+ *  border read as one line. */
+function buttedCaption(style: LetteringStyle, panel: VDTComicPanel, at: string | undefined): LetteringStyle {
+  const butted = style.butt && style.shape !== 'none' && (at !== undefined || (style.position !== undefined && style.position !== 'auto'));
+  if (!butted || panel.border.style === 'none' || !(panel.border.width > 0) || style.strokeWidth <= 0) return style;
+  return { ...style, strokeWidth: panel.border.width };
 }
 
 /** What {@link letterPanels} needs. */
@@ -387,6 +448,8 @@ export interface LetterPanelsInput {
   pageIndex?: number;
   /** Regions of the frame no balloon should cover (the spine of a spread). */
   avoid?: readonly BoundingBox[];
+  /** The comic's frame (the page's live area): no lettering runs out of it. */
+  frame?: BoundingBox;
 }
 
 /**
@@ -421,9 +484,13 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
       anchors: panelAnchors(panel, resource),
       avoid: [
         ...(panel.art ? (resource?.avoid ?? []).map((r) => comicArtRectToPage(panel.art!, r)) : []),
-        ...unmarkedFaces(panel, resource, dimensionToPx(L.fontSize, dpi)),
+        ...headGuards(panel, resource, dimensionToPx(L.fontSize, dpi)),
         ...(input.avoid ?? []).filter((r) => overlaps(r, panel.bbox)),
       ],
+      softAvoid: [...softSafeArea(panel, resource), ...headZones(panel, resource)],
+      ...(panel.border.style !== 'none' && panel.border.width > 0 ? { borderPx: panel.border.width } : {}),
+      neighbours: panels.filter((q) => q !== panel).map((q) => q.bbox),
+      ...(input.frame ? { limit: input.frame } : {}),
       dpi,
       bleedPx,
     };
@@ -442,7 +509,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
         sourceMap: it.sourceMap.map((o) => o + off),
         sourceStart: it.sourceStart + off,
         sourceEnd: it.sourceEnd + off,
-        style: sfxColumns(it.role, comicLetteringStyle({ style: st, comics, ...(cast ? { cast } : {}), item: it, locale, vertical, dpi, ...(resolved.colorPalette ? { palette: resolved.colorPalette } : {}) })),
+        style: buttedCaption(withAutoHalo(sfxColumns(it.role, comicLetteringStyle({ style: st, comics, ...(cast ? { cast } : {}), item: it, locale, vertical, dpi, ...(resolved.colorPalette ? { palette: resolved.colorPalette } : {}) })), st), panel, it.atKeyword),
         ...(it.at ? { pin: panelPoint(panel, it.at) } : {}),
         ...(it.atKeyword ? { position: it.atKeyword } : {}),
         ...(it.to ? { tailTarget: panelPoint(panel, it.to) } : tail && tail !== 'none' && tail !== 'auto' ? { tailTarget: tail } : {}),
@@ -628,7 +695,7 @@ export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext
     splitters,
     balloons: [],
   };
-  const lettered = letterPanels({ source, panels, panelSources, comics, resolved, resources, direction, sourceOffset: off, gutter: gutters, pageIndex: ctx.pageIndex, ...(ctx.avoid ? { avoid: ctx.avoid } : {}) });
+  const lettered = letterPanels({ source, panels, panelSources, comics, resolved, resources, direction, sourceOffset: off, gutter: gutters, pageIndex: ctx.pageIndex, frame, ...(ctx.avoid ? { avoid: ctx.avoid } : {}) });
   comic.balloons = lettered.balloons;
   warnings.push(...lettered.warnings);
   if (warnings.length > 0) layoutWarnings.set(comic, warnings);

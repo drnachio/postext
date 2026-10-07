@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildBody, buildNeck, buildTail, fitSuperellipse, translateBody } from '../shapes';
+import { buildBody, buildNeck, buildTail, fitSuperellipse, tailLength, translateBody } from '../shapes';
 import { pathData, pointInConvex, pointInRect, dist } from '../geom';
 import { presetLetteringStyles } from '../presets';
 import type { LetteringStyle, Point, Rect } from '../types';
@@ -94,8 +94,10 @@ describe('tails (SPEC D3.2)', () => {
     expect(tail).toBeDefined();
     expect(isClosed(pathData(tail.cmds))).toBe(true);
     const gap = dist(tail.base, target);
-    expect(dist(tail.base, tail.tip)).toBeCloseTo(0.55 * gap, 0);
+    // 0.55 of the gap, the tip never farther than 2.5 em from the target.
+    expect(dist(tail.base, tail.tip)).toBeCloseTo(gap - Math.min(0.45 * gap, 2.5 * EM), 0);
     expect(dist(tail.tip, target)).toBeGreaterThanOrEqual(0.5 * EM);
+    expect(dist(tail.tip, target)).toBeLessThanOrEqual(2.5 * EM + 0.5);
     // The tip lies on the line from the exit to the target.
     const ux = (target.x - tail.base.x) / gap;
     const uy = (target.y - tail.base.y) / gap;
@@ -104,6 +106,15 @@ describe('tails (SPEC D3.2)', () => {
     // It starts inside the body (the layer method merges the outlines).
     const first = tail.cmds[0]!.pts[0]!;
     expect(pointInConvex(first, body.core)).toBe(true);
+  });
+
+  it('ends about as near its target whatever the gap (consistent reach)', () => {
+    expect(tailLength(4 * EM, EM, speech, false)).toBeCloseTo(2.2 * EM, 6);
+    // A far balloon: the tip still ends 2.5 em from the mouth.
+    expect(tailLength(20 * EM, EM, speech, false)).toBeCloseTo(17.5 * EM, 6);
+    // Close: never nearer than tailGap (0.5 em).
+    expect(tailLength(EM, EM, speech, false)).toBeCloseTo(0.5 * EM, 6);
+    expect(tailLength(7 * EM, EM, speech, true)).toBe(7 * EM);
   });
 
   it('stops short of the speaker\'s face', () => {

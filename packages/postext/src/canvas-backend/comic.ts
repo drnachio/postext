@@ -143,6 +143,14 @@ function paintBalloonShape(ctx: CanvasRenderingContext2D, shape: NonNullable<VDT
       }
     }
     if (shape.dash && shape.dash.length > 0) {
+      // A whisper's dashes over a band of the balloon's ground: the gaps
+      // read as the balloon, not as the art behind it.
+      if (shape.fill) {
+        ctx.strokeStyle = shape.fill;
+        ctx.lineWidth = 3 * w;
+        ctx.stroke();
+        ctx.strokeStyle = stroke;
+      }
       ctx.setLineDash(shape.dash.map((v) => v * 2));
       ctx.lineCap = 'butt';
     }

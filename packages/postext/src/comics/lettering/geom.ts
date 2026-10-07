@@ -176,6 +176,19 @@ export function segmentsCross(a: Point, b: Point, c: Point, d: Point): boolean {
   return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0)) && d1 !== 0 && d2 !== 0 && d3 !== 0 && d4 !== 0;
 }
 
+/** Distance between segments `ab` and `cd` (0 when they cross). */
+export function segmentDistance(a: Point, b: Point, c: Point, d: Point): number {
+  if (segmentsCross(a, b, c, d)) return 0;
+  const toSeg = (p: Point, s: Point, e: Point): number => {
+    const vx = e.x - s.x;
+    const vy = e.y - s.y;
+    const l2 = vx * vx + vy * vy;
+    const t = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - s.x) * vx + (p.y - s.y) * vy) / l2)) : 0;
+    return Math.hypot(p.x - (s.x + t * vx), p.y - (s.y + t * vy));
+  };
+  return Math.min(toSeg(a, c, d), toSeg(b, c, d), toSeg(c, a, b), toSeg(d, a, b));
+}
+
 /** Whether segment `ab` crosses rect `r` (or lies inside it). */
 export function segmentHitsRect(a: Point, b: Point, r: Rect): boolean {
   if (pointInRect(a, r) || pointInRect(b, r)) return true;

@@ -1983,10 +1983,14 @@ export interface VDTComicBalloon {
     fill?: string;
     stroke?: string;
     strokeWidth: number;
+    /** Dash pattern of the outline (a whisper), px. Painted over a solid
+     *  stroke in the fill colour 3 × `strokeWidth` wide, so that the gaps
+     *  between the dashes read as the balloon's ground, not the art. */
     dash?: number[];
     double?: { gap: number };
   };
-  /** The lettering's lines (vertical or bidi text as design text). */
+  /** The lettering's lines (vertical or bidi text as design text); a ruby
+   *  reading is a block of its own after its base's (marked `artifact`). */
   text: VDTDesignTextBlock[];
   bbox: BoundingBox;
   tailTip?: VDTPoint;

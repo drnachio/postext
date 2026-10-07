@@ -5,7 +5,7 @@
 // (spaces, hard hyphens, CJK under kinsoku), and any range of it written
 // back as design-text markup the layout reads (`inlineMarks`).
 
-import type { InlineSpan } from '../../parse/types';
+import type { InlineDirection, InlineSpan } from '../../parse/types';
 import { cjkJoinBreaks } from '../../measure/cjk';
 import type { CjkLineBreakLevel } from '../../measure/cjkClasses';
 import { hasJoiningScript } from '../../bidi';
@@ -22,7 +22,21 @@ export interface CharStyle {
    *  `orientId` tells two `:tcy` runs side by side apart. */
   orient?: 'tcy' | 'upright' | 'sideways';
   orientId?: number;
+  /** Ruby (furigana) over this character (`:ruby[漢字]{…}`): the reading
+   *  of its run; characters of one ruby share `id`. A group ruby is one
+   *  reading over the whole run, which never breaks. */
+  ruby?: { id: number; text: string; group: boolean };
 }
+
+/** Directional isolate controls (UAX #9): LRI, RLI, PDI. The text of a
+ *  `:ltr[…]` / `:rtl[…]` run is wrapped in them, so the design-text bidi
+ *  sets it as an isolate; they print nothing and are taken out of the
+ *  lines once laid out. */
+export const LRI = '\u2066';
+export const RLI = '\u2067';
+export const PDI = '\u2069';
+/** Whether a character is a bidi isolate control. */
+export const isIsolateControl = (ch: string): boolean => ch === LRI || ch === RLI || ch === PDI || ch === '\u2068';
 
 /** The text of a balloon ready to shape. `text` holds `\n` at forced
  *  breaks; `style` and `source` are per UTF-16 unit of `text`. */
@@ -60,8 +74,29 @@ export function readLetteringText(text: LetteringText, sourceMap: readonly numbe
   }
   let raw = 0;
   let orientId = 0;
+  // Open isolates (outermost first), by id.
+  let open: InlineDirection[] = [];
+  const chainOf = (d: InlineDirection | undefined): InlineDirection[] => {
+    const out: InlineDirection[] = [];
+    for (let x = d; x; x = x.outer) out.unshift(x);
+    return out;
+  };
+  const control = (ch: string, at: number) => {
+    out.text += ch;
+    out.style.push(PLAIN);
+    out.source.push(sourceMap?.[at] ?? -1);
+  };
+  const isolatesTo = (want: InlineDirection[], at: number) => {
+    let keep = 0;
+    while (keep < open.length && keep < want.length && open[keep]!.id === want[keep]!.id) keep++;
+    for (let k = open.length - 1; k >= keep; k--) control(PDI, Math.max(0, at - 1));
+    for (let k = keep; k < want.length; k++) control(want[k]!.dir === 'rtl' ? RLI : LRI, at);
+    open = want;
+  };
   for (const span of text as readonly InlineSpan[]) {
+    isolatesTo(chainOf(span.direction), raw);
     const st: CharStyle = { bold: span.bold, italic: span.italic };
+    if (span.ruby && span.ruby.text) st.ruby = { id: span.ruby.id, text: span.ruby.text, group: span.ruby.group === true };
     if (span.script) st.script = span.script;
     if (span.combineUpright) {
       st.orient = 'tcy';
@@ -84,6 +119,7 @@ export function readLetteringText(text: LetteringText, sourceMap: readonly numbe
     }
     raw += span.text.length;
   }
+  isolatesTo([], raw);
   return out;
 }
 
@@ -151,6 +187,12 @@ export function prepareText(read: PreparedText, style: LetteringStyle, opts: Pre
   p = trimPrepared(p);
   // Ellipsis.
   p = replaceAll(p, /\.(?: ?\.){2,}/g, '…');
+  // Japanese and Chinese set no space between their characters, their
+  // marks and a leader (a translator's "願う ？ …" is "願う？…").
+  if (lang === 'ja' || lang === 'zh') {
+    p = replaceAll(p, /(?<=[\u3000-\u30FF\u3400-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u2025\u2026]) (?=[\u3000-\u30FF\u3400-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u2025\u2026!?])/g, '');
+    p = replaceAll(p, /(?<=[\u2025\u2026]) (?=\S)/g, '');
+  }
   if (lang === 'zh') p = replaceAll(p, /…+/g, (m) => (m.length % 2 === 1 ? `${m}…` : m));
   if (style.doubleDash) p = replaceAll(p, /—/g, '--');
   // Columns of Japanese or Chinese: ASCII `!` and `?` stand upright as
@@ -303,6 +345,28 @@ function spacePenalty(t: string, k: number): number {
   return 0.3;
 }
 
+/** Offsets inside a word of the CJK text `t` (between two of its
+ *  characters), by the runtime's word segmenter (`Intl.Segmenter`, a
+ *  dictionary one in ICU builds); empty without one or without CJK. */
+function cjkWordInteriors(t: string, japanese: boolean): Set<number> {
+  const out = new Set<number>();
+  const Seg = (Intl as unknown as { Segmenter?: new (l: string, o: { granularity: 'word' }) => { segment(s: string): Iterable<{ segment: string; index: number; isWordLike?: boolean }> } }).Segmenter;
+  if (!Seg || !CJK_CHAR.test(t)) return out;
+  try {
+    for (const s of new Seg(japanese ? 'ja' : 'zh', { granularity: 'word' }).segment(t)) {
+      if (!s.isWordLike || !CJK_CHAR.test(s.segment)) continue;
+      for (let k = 1; k < s.segment.length; k++) {
+        const c = s.segment.charCodeAt(k);
+        if (c >= 0xdc00 && c <= 0xdfff) continue;
+        out.add(s.index + k);
+      }
+    }
+  } catch {
+    // No segmenter data for the language: no word hints.
+  }
+  return out;
+}
+
 /** The legal breaks of a prepared text (the text's end included, as a
  *  forced break). */
 export function breakPoints(p: PreparedText, level: CjkLineBreakLevel, japanese: boolean): BreakPoint[] {
@@ -311,8 +375,12 @@ export function breakPoints(p: PreparedText, level: CjkLineBreakLevel, japanese:
   const insideOriented = (k: number): boolean => {
     const a = p.style[k - 1];
     const b = p.style[k];
+    if (a?.ruby && b?.ruby && a.ruby.id === b.ruby.id && a.ruby.group) return true;
     return !!a && !!b && a.orient !== undefined && a.orient === b.orient && a.orientId === b.orientId;
   };
+  // Inside a word of a CJK text (a dictionary segmenter, where the runtime
+  // has one): a break there parts a word (如|此, くれ|る).
+  const inWord = cjkWordInteriors(t, japanese);
   let k = 0;
   while (k < t.length) {
     const ch = t[k]!;
@@ -324,7 +392,10 @@ export function breakPoints(p: PreparedText, level: CjkLineBreakLevel, japanese:
     if (isBreakingSpace(ch)) {
       let e = k;
       while (e < t.length && isBreakingSpace(t[e]) && t[e] !== '\n') e++;
-      if (k > 0 && t[e] !== '\n' && e < t.length && !insideOriented(k)) out.push({ end: k, next: e, penalty: spacePenalty(t, k), forced: false });
+      // A space before a closing mark (French "Papi !", "là ?"), or after
+      // an opening one, binds: "!" never opens a line.
+      const binds = /[!?;:\u00BB\u203A)\]}%\u2026\u061F]/.test(t[e] ?? '') || /[\u00AB\u2039(\[{\u00BF\u00A1]/.test(t[k - 1] ?? '');
+      if (k > 0 && t[e] !== '\n' && e < t.length && !insideOriented(k) && !binds) out.push({ end: k, next: e, penalty: spacePenalty(t, k), forced: false });
       k = e;
       continue;
     }
@@ -334,7 +405,7 @@ export function breakPoints(p: PreparedText, level: CjkLineBreakLevel, japanese:
       const prev = ch;
       let penalty: number | undefined;
       if (cjkJoinBreaks(t.slice(Math.max(0, at - 4), at), t.slice(at, at + 4), level)) {
-        penalty = cjkBreakPenalty(prev, next, japanese);
+        penalty = cjkBreakPenalty(prev, next, japanese) + (inWord.has(at) ? (japanese ? 3 : 4) : 0);
       } else if (/\p{L}/u.test(next)) {
         // A hard hyphen or a dash between words; an ellipsis run into the
         // next word ("…AND").
