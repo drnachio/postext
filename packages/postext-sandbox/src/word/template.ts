@@ -3,7 +3,7 @@
 // embedded in every `.docx` the Sandbox exports, so a manuscript that went
 // out to Word comes back with the same mapping.
 
-import type { PostextConfig } from 'postext';
+import { DEFAULT_CALLOUT_STYLES, DEFAULT_CHIP_STYLES, type PostextConfig } from 'postext';
 import type { WordDocument, WordStyle } from './model';
 
 export type ParagraphTarget =
@@ -84,6 +84,18 @@ export function emptyTemplate(name = ''): WordTemplate {
 
 const key = (name: string): string => name.trim().toLowerCase();
 
+/** The book's callout types, or the engine's built-in one (`note`) when
+ *  the configuration lists none. */
+export const calloutStylesOf = (config: PostextConfig) => config.calloutStyles ?? DEFAULT_CALLOUT_STYLES;
+/** The book's chip styles, or the engine's built-in one (`chip`). */
+export const chipStylesOf = (config: PostextConfig) => config.chipStyles ?? DEFAULT_CHIP_STYLES;
+
+/** A Word style name as Word shows it: built-in names are stored in lower
+ *  case (`heading 1`, `caption`) and shown capitalised. */
+export function displayStyleName(name: string): string {
+  return /^[a-z]/.test(name) ? name[0]!.toUpperCase() + name.slice(1) : name;
+}
+
 /** The entry of `map` for a style name, compared without case. */
 export function lookup<T>(map: Record<string, T>, name: string): T | undefined {
   if (name in map) return map[name];
@@ -143,9 +155,9 @@ export function guessParagraphTarget(name: string, config: PostextConfig, doc?: 
   if (k === key(MARKUP_STYLE)) return { kind: 'markup' };
   if (k === key(CHAPTER_STYLE)) return { kind: 'chapter' };
   // `Callout: Note` / `Callout: Note: title`, as the export names them.
-  const exported = /^(?:callout|recuadro|requadre|标注框|囲み|إطار)\s*[:·]\s*(.+?)(\s*[:·]\s*(?:title|título|títol|标题|見出し|عنوان))?$/i.exec(name.trim());
+  const exported = /^(?:callout|recuadro|requadre|boxe|标注框|囲み|إطار)\s*[:·]\s*(.+?)(\s*[:·]\s*(?:title|título|títol|标题|見出し|عنوان))?$/i.exec(name.trim());
   if (exported) {
-    const type = findNamed(config.calloutStyles, exported[1]!);
+    const type = findNamed(calloutStylesOf(config), exported[1]!);
     if (type) return exported[2] ? { kind: 'calloutTitle', type: type.id } : { kind: 'callout', type: type.id };
   }
   const styles = style ? chain(doc, style) : [];
@@ -159,7 +171,7 @@ export function guessParagraphTarget(name: string, config: PostextConfig, doc?: 
   };
   const para = findNamed(config.paragraphStyles, name);
   if (para) return { kind: 'paragraphs', style: para.id };
-  const callout = findNamed(config.calloutStyles, name);
+  const callout = findNamed(calloutStylesOf(config), name);
   if (callout) return { kind: 'callout', type: callout.id };
   const heading = findNamed(config.headingStyles, name);
   if (heading) return { kind: 'heading', level: levelFromChain(), style: heading.id };
@@ -179,7 +191,7 @@ export function guessCharacterTarget(name: string, config: PostextConfig, doc?: 
   const k = key(name);
   if (k === key(MARKUP_CHAR_STYLE)) return { kind: 'markup' };
   const exportChip = /^(?:chip|etiqueta|标签|チップ|شارة)\s*[:·]\s*(.+)$/i.exec(name.trim());
-  const chip = findNamed(config.chipStyles, exportChip ? exportChip[1]! : name);
+  const chip = findNamed(chipStylesOf(config), exportChip ? exportChip[1]! : name);
   if (chip) return { kind: 'chip', style: chip.id };
   if (k === 'strong' || k === 'intense emphasis' || k === 'book title') return { kind: 'bold' };
   if (k === 'emphasis' || k === 'subtle emphasis') return { kind: 'italic' };

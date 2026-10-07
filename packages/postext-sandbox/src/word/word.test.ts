@@ -4,7 +4,7 @@ import { parseMarkdown, type PostextConfig } from 'postext';
 import { analyzeDocx } from './analyze';
 import { readDocx } from './docxRead';
 import { parseInline, renderInline } from './inline';
-import { emptyTemplate, parseTemplate, type WordTemplate } from './template';
+import { displayStyleName, emptyTemplate, guessCharacterTarget, guessParagraphTarget, parseTemplate, type WordTemplate } from './template';
 import { postextToDocx } from './toDocx';
 import { wordToPostext } from './toMarkdown';
 
@@ -298,5 +298,27 @@ describe('Word → Postext', () => {
 
   it('rejects a file that is not a Word document', () => {
     expect(() => readDocx(strToU8('not a zip'))).toThrow();
+  });
+});
+
+describe('details found in the browser', () => {
+  it('falls back to the engine\'s callout and chip styles when the book lists none', () => {
+    const bare = {} as PostextConfig;
+    expect(guessParagraphTarget('Note', bare)).toEqual({ kind: 'callout', type: 'note' });
+    expect(guessParagraphTarget('Callout: Note', bare)).toEqual({ kind: 'callout', type: 'note' });
+    expect(guessParagraphTarget('Boxe: Note: título', bare)).toEqual({ kind: 'calloutTitle', type: 'note' });
+    expect(guessCharacterTarget('Chip: Chip', bare)).toEqual({ kind: 'chip', style: 'chip' });
+  });
+
+  it('numbers a new table after the ones the book has', () => {
+    const table = `<w:tbl><w:tr><w:tc>${p('', r('A'))}</w:tc></w:tr></w:tbl>`;
+    const doc = readDocx(docx(table + table));
+    const result = wordToPostext(doc, { template: emptyTemplate(), config, chapters: 'single', existingIds: new Set(['table-1']), untitledChapter: '' });
+    expect(result.tables.map((t) => t.id)).toEqual(['table-2', 'table-3']);
+  });
+
+  it('shows Word\'s built-in style names capitalised', () => {
+    expect(displayStyleName('heading 1')).toBe('Heading 1');
+    expect(displayStyleName('Box Text')).toBe('Box Text');
   });
 });

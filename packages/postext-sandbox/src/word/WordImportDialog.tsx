@@ -14,6 +14,9 @@ import { analyzeDocx, type FindingId, type QualityReport } from './analyze';
 import type { WordDocument } from './model';
 import { importedResources, loadLastTemplateId, saveLastTemplateId, useWordTemplates } from './sandboxImport';
 import {
+  calloutStylesOf,
+  chipStylesOf,
+  displayStyleName,
   emptyTemplate,
   lookup,
   newTemplateId,
@@ -39,6 +42,13 @@ type Destination = 'chapter' | 'append' | 'book';
 const AUTO = '__auto__';
 const EMBEDDED = '__embedded__';
 
+/** A count in words: the `…One` label for 1, the other one otherwise. */
+export function counted(labels: SandboxLabels, key: keyof SandboxLabels, count: number): string {
+  const one = `${String(key)}One` as keyof SandboxLabels;
+  const text = (count === 1 && typeof labels[one] === 'string' ? labels[one] : labels[key]) as string;
+  return text.replace('__count__', String(count));
+}
+
 const FINDING_LABEL: Record<FindingId, keyof SandboxLabels> = {
   allNormal: 'wordFindingAllNormal',
   directFormatting: 'wordFindingDirectFormatting',
@@ -57,6 +67,10 @@ const FINDING_LABEL: Record<FindingId, keyof SandboxLabels> = {
 };
 
 const fileBase = (name: string): string => name.replace(/\.[^.]+$/, '');
+
+/** A name or quoted text set apart for the bidi algorithm (FSI … PDI), so
+ *  `mañana.docx` stays whole in an Arabic sentence and the other way round. */
+export const isolate = (s: string): string => `\u2068${s}\u2069`;
 
 function Section({ title, children, defaultOpen = true }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -100,10 +114,10 @@ function Verdict({ report, labels }: { report: QualityReport; labels: SandboxLab
                 ? <AlertTriangle size={13} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--pt-warning, #d97706)' }} />
                 : <Info size={13} aria-hidden="true" className="mt-0.5 shrink-0 text-(--slate)" />}
               <span>
-                {(labels[FINDING_LABEL[f.id]] as string).replace('__count__', String(f.count))}
+                {counted(labels, FINDING_LABEL[f.id], f.count)}
                 {f.examples.length > 0 && (
                   <span className="block text-(--slate)">
-                    {labels.wordFindingExamples.replace('__list__', f.examples.map((e) => `“${e}”`).join(' · '))}
+                    {labels.wordFindingExamples.replace('__list__', f.examples.map((e) => isolate(`“${e}”`)).join(' · '))}
                   </span>
                 )}
               </span>
@@ -127,9 +141,9 @@ function StyleRow({ name, count, sample, children, labels }: StyleRowProps) {
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-(--pt-control-border) py-2 last:border-b-0">
       <div className="min-w-[180px] flex-[1_1_220px]">
-        <div className="font-semibold" style={{ overflowWrap: 'anywhere' }}>{name}</div>
+        <div className="font-semibold" style={{ overflowWrap: 'anywhere' }}>{displayStyleName(name)}</div>
         <div className="text-xs text-(--slate)">
-          {labels.wordStyleUses.replace('__count__', String(count))}
+          {counted(labels, 'wordStyleUses', count)}
           {sample && <span className="italic" style={{ overflowWrap: 'anywhere' }}> · {sample}</span>}
         </div>
       </div>
@@ -158,6 +172,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
   const container = usePortalContainer();
   const { templates, save, remove } = useWordTemplates();
   const uploadRef = useRef<HTMLInputElement>(null);
+  const importRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const doc = file.doc;
 
@@ -204,9 +219,9 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
   // -- mapping ----------------------------------------------------------------
 
   const paragraphStyles = config.paragraphStyles ?? [];
-  const calloutStyles = config.calloutStyles ?? [];
+  const calloutStyles = calloutStylesOf(config);
   const headingStyles = config.headingStyles ?? [];
-  const chipStyles = config.chipStyles ?? [];
+  const chipStyles = chipStylesOf(config);
 
   const setParagraph = (name: string, target: ParagraphTarget) => {
     setWorking((w) => ({ ...w, paragraphs: { ...w.paragraphs, [name]: target } }));
@@ -267,7 +282,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
 
   const paragraphControls = (name: string) => {
     const t = paragraphTarget(name);
-    const aria = (what: string) => `${name}: ${what}`;
+    const aria = (what: string) => `${displayStyleName(name)}: ${what}`;
     return (
       <>
         <Select<ParagraphTargetKind> size="sm" value={t.kind} onValueChange={(k) => changeKind(name, k, t)} options={paragraphKinds} ariaLabel={aria(labels.wordMapTo)} className="min-w-[180px] flex-1" />
@@ -310,7 +325,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
 
   const characterControls = (name: string) => {
     const t = characterTargetOf(doc, name, working, config);
-    const aria = (what: string) => `${name}: ${what}`;
+    const aria = (what: string) => `${displayStyleName(name)}: ${what}`;
     return (
       <>
         <Select<CharacterTargetKind>
@@ -347,8 +362,8 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
     const ok = save(t);
     setWorking(t);
     setDirty(false);
-    setNote(ok ? labels.wordTemplateSaved.replace('__name__', t.name) : labels.wordTemplateStorageFailed);
-    announce(ok ? labels.wordTemplateSaved.replace('__name__', t.name) : labels.wordTemplateStorageFailed);
+    setNote(ok ? labels.wordTemplateSaved.replace('__name__', isolate(t.name)) : labels.wordTemplateStorageFailed);
+    announce(ok ? labels.wordTemplateSaved.replace('__name__', isolate(t.name)) : labels.wordTemplateStorageFailed);
   };
   const saveAs = (name: string) => {
     const trimmed = name.trim();
@@ -360,7 +375,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
     setDirty(false);
     setSaveAsName(null);
     saveLastTemplateId(t.id);
-    const msg = ok ? labels.wordTemplateSaved.replace('__name__', trimmed) : labels.wordTemplateStorageFailed;
+    const msg = ok ? labels.wordTemplateSaved.replace('__name__', isolate(trimmed)) : labels.wordTemplateStorageFailed;
     setNote(msg);
     announce(msg);
   };
@@ -369,7 +384,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
     remove(saved.id);
     if (loadLastTemplateId() === saved.id) saveLastTemplateId(null);
     selectBase(embedded ? EMBEDDED : AUTO);
-    const msg = labels.wordTemplateDeleted.replace('__name__', saved.name);
+    const msg = labels.wordTemplateDeleted.replace('__name__', isolate(saved.name));
     setNote(msg);
     announce(msg);
   };
@@ -389,7 +404,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
       t = undefined;
     }
     if (!t) {
-      const msg = labels.wordTemplateUploadFailed.replace('__file__', f.name);
+      const msg = labels.wordTemplateUploadFailed.replace('__file__', isolate(f.name));
       setNote(msg);
       announce(msg);
       return;
@@ -400,7 +415,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
     setWorking(named);
     setDirty(false);
     saveLastTemplateId(named.id);
-    const msg = labels.wordTemplateUploaded.replace('__name__', named.name);
+    const msg = labels.wordTemplateUploaded.replace('__name__', isolate(named.name));
     setNote(msg);
     announce(msg);
   };
@@ -421,7 +436,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
       for (const r of created) dispatch({ type: 'UPSERT_RESOURCE', payload: r });
       if (destination === 'chapter') {
         dispatch({ type: 'SET_MARKDOWN', payload: result.chapters[0]?.markdown ?? '' });
-        announce(labels.wordImportDoneChapter.replace('__file__', file.name));
+        announce(labels.wordImportDoneChapter.replace('__file__', isolate(file.name)));
       } else {
         const made = result.chapters.map((c) => newChapter(generateId('chapter'), c.title, c.markdown));
         if (destination === 'book') {
@@ -430,9 +445,9 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
           const at = Math.max(0, chapters.findIndex((c) => c.id === activeChapterId)) + 1;
           made.forEach((chapter, k) => dispatch({ type: 'ADD_CHAPTER', payload: { chapter, index: at + k, activate: k === 0 } }));
         }
-        announce(labels.wordImportDoneChapters.replace('__file__', file.name).replace('__count__', String(made.length)));
+        announce(counted(labels, 'wordImportDoneChapters', made.length).replace('__file__', isolate(file.name)));
       }
-      if (created.length) announce(labels.wordImportResources.replace('__count__', String(created.length)));
+      if (created.length) announce(counted(labels, 'wordImportResources', created.length));
       if (baseId !== AUTO && baseId !== EMBEDDED) saveLastTemplateId(baseId);
       onClose();
     } finally {
@@ -461,12 +476,13 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
         data-postext-popup=""
         data-testid="word-import-dialog"
         aria-labelledby={titleId}
+        initialFocus={importRef}
         className="fixed left-1/2 top-1/2 flex max-h-[calc(100dvh-16px)] -translate-x-1/2 -translate-y-1/2 flex-col"
         style={{ ...POPUP_SURFACE, zIndex: POPUP_Z_INDEX, width: 'min(980px, calc(100vw - 16px))', fontSize: 13, lineHeight: '19px' }}
       >
         <div className="flex items-start justify-between gap-2 px-4 pt-3">
           <Dialog.Title id={titleId} style={{ fontSize: 15, lineHeight: '20px', fontWeight: 600, margin: '10px 0 0', overflowWrap: 'anywhere' }}>
-            {labels.wordImportTitle.replace('__file__', file.name)}
+            {labels.wordImportTitle.replace('__file__', isolate(file.name))}
           </Dialog.Title>
           <IconButton label={labels.wordCancel} icon={<X size={14} aria-hidden="true" />} onClick={onClose} />
         </div>
@@ -495,7 +511,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
               <IconButton label={labels.wordTemplateUpload} icon={<Upload size={14} aria-hidden="true" />} onClick={() => uploadRef.current?.click()} />
               <input ref={uploadRef} type="file" accept=".json,application/json" onChange={upload} className="hidden" aria-hidden="true" tabIndex={-1} />
               {saved && (
-                <ConfirmPopover message={labels.wordTemplateDeleteConfirm.replace('__name__', saved.name)} confirmLabel={labels.wordTemplateDelete} onConfirm={deleteSaved}>
+                <ConfirmPopover message={labels.wordTemplateDeleteConfirm.replace('__name__', isolate(saved.name))} confirmLabel={labels.wordTemplateDelete} onConfirm={deleteSaved}>
                   {({ open: openConfirm }) => <IconButton label={labels.wordTemplateDelete} icon={<Trash2 size={14} aria-hidden="true" />} onClick={openConfirm} />}
                 </ConfirmPopover>
               )}
@@ -591,7 +607,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
             <Select<Destination> size="sm" value={destination} onValueChange={setDestination} options={destinationOptions} ariaLabel={labels.wordDestinationHeading} className="flex-1" />
           </div>
           <Button variant="outline" size="sm" onClick={onClose}>{labels.wordCancel}</Button>
-          <Button variant="primary" size="sm" disabled={busy} onClick={() => void runImport()}>
+          <Button ref={importRef} variant="primary" size="sm" disabled={busy} onClick={() => void runImport()}>
             {busy ? labels.wordImportWorking : destination === 'book' ? labels.wordImportBookAction : labels.wordImportAction}
           </Button>
         </div>

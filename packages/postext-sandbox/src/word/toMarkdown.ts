@@ -153,8 +153,10 @@ class Converter {
   }
 
   private uniqueId(base: string): string {
+    // `table-1` taken: `table-2`, not `table-1-2`.
+    const numbered = /^(.*-)(\d+)$/.exec(base);
     let id = base;
-    for (let n = 2; this.usedIds.has(id); n++) id = `${base}-${n}`;
+    for (let n = 2; this.usedIds.has(id); n++) id = numbered ? `${numbered[1]}${Number(numbered[2]) + n - 1}` : `${base}-${n}`;
     this.usedIds.add(id);
     return id;
   }

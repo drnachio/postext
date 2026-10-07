@@ -9,6 +9,8 @@ import { strToU8, zipSync } from 'fflate';
 import type { PostextConfig, Dimension, ColorValue } from 'postext';
 import { parseInline, type InlineRun } from './inline';
 import {
+  calloutStylesOf,
+  chipStylesOf,
   CHAPTER_STYLE,
   MARKUP_CHAR_STYLE,
   MARKUP_STYLE,
@@ -447,7 +449,7 @@ class Styles {
   }
 
   callout(type: string, title = false): string {
-    const cs = this.config.calloutStyles?.find((s) => s.id === type);
+    const cs = calloutStylesOf(this.config).find((s) => s.id === type);
     const label = cs?.name ?? type;
     const fill = (cs?.backgroundEnabled !== false ? hex(cs?.background) : undefined) ?? 'EEF3F8';
     return this.paragraph(
@@ -476,7 +478,7 @@ class Styles {
   }
 
   chip(style: string): string {
-    const cs = this.config.chipStyles?.find((s) => s.id === style);
+    const cs = chipStylesOf(this.config).find((s) => s.id === style);
     const fill = hex(cs?.background) ?? 'E8EEF7';
     return this.character({ kind: 'chip', style }, () => this.names.chip.replace('__name__', cs?.name ?? style), () => ({
       rPr: `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`,

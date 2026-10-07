@@ -9,7 +9,7 @@ import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence';
 import { slugify } from '../panels/resources/slugify';
 import { ConfirmPopover, IconButton, PanelHeader, announce } from '../ui';
 import { DocxReadError, readDocx } from '../word/docxRead';
-import { WordImportDialog, type WordImportFile } from '../word/WordImportDialog';
+import { WordImportDialog, isolate, type WordImportFile } from '../word/WordImportDialog';
 import { WordExportDialog } from '../word/WordExportDialog';
 
 interface MarkdownPanelProps {
@@ -55,7 +55,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
       setWordFile({ name: file.name, doc: readDocx(await file.arrayBuffer()) });
     } catch (err) {
       if (!(err instanceof DocxReadError)) console.error(err);
-      announce(state.labels.wordImportFailed.replace('__file__', file.name));
+      announce(state.labels.wordImportFailed.replace('__file__', isolate(file.name)));
     }
   };
 
