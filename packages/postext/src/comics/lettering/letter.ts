@@ -287,12 +287,11 @@ function outputUnit(
   const first = meta.pieces[0]!;
   const style = first.style;
   const cmds: PathCmd[] = [];
-  for (const b of bodies) cmds.push(...b.cmds);
-  for (let i = 1; i < bodies.length; i++) {
-    if (meta.pieces[i]!.joinPrev === 'connector') cmds.push(...buildNeck(bodies[i - 1]!, bodies[i]!, style.strokeWidth));
-  }
-  // Tails last, from the final position.
+  // Tails from the final position; a burst's tail replaces the spike it
+  // grows from in the first body's outline.
   let tailTip: Point | undefined;
+  let tailCmds: PathCmd[] = [];
+  let firstBody: PathCmd[] | undefined;
   const target = unit.target;
   if (target.kind !== 'none') {
     const centre = bodies[0]!.centre;
@@ -304,10 +303,16 @@ function outputUnit(
       ...(speakerFace(panel, first) ? { face: speakerFace(panel, first)! } : {}),
     });
     if (tail) {
-      cmds.push(...tail.cmds);
+      tailCmds = tail.cmds;
       tailTip = tail.tip;
+      firstBody = tail.body;
     }
   }
+  bodies.forEach((b, i) => cmds.push(...(i === 0 && firstBody ? firstBody : b.cmds)));
+  for (let i = 1; i < bodies.length; i++) {
+    if (meta.pieces[i]!.joinPrev === 'connector') cmds.push(...buildNeck(bodies[i - 1]!, bodies[i]!, style.strokeWidth));
+  }
+  cmds.push(...tailCmds);
   const dash = dashOf(style);
   const shape = style.shape === 'none' || cmds.length === 0 ? undefined : {
     d: pathData(cmds),
@@ -326,6 +331,7 @@ function outputUnit(
       id: piece.item.id,
       panelIndex: panel.index,
       order: piece.item.order,
+      kind: piece.item.kind,
       style: piece.style.id,
       ...(piece.item.speaker ? { speaker: piece.item.speaker } : {}),
       sourceStart: piece.item.sourceStart,

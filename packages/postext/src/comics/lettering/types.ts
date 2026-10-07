@@ -7,15 +7,12 @@
 // `VDTComicBalloon` (SPEC D5), whose text is ordinary design text.
 
 import type { InlineSpan } from '../../parse/types';
-import type { BoundingBox, VDTDesignTextBlock } from '../../vdt';
+import type { BoundingBox, VDTComicBalloon, VDTPoint } from '../../vdt';
 import type { CjkLineBreakLevel } from '../../measure/cjkClasses';
 import type { CjkRegion } from '../../types';
 
 /** A point in page px. */
-export interface Point {
-  x: number;
-  y: number;
-}
+export type Point = VDTPoint;
 
 /** An axis-aligned rectangle in page px. */
 export type Rect = BoundingBox;
@@ -245,39 +242,12 @@ export interface LetteringDiagnostic {
   fallbacks: ('breakBorder' | 'coverAvoid' | 'reshape')[];
 }
 
-/** SPEC D5 `VDTComicBalloon`, field for field (the integrator swaps this
- *  for the `vdt.ts` type). */
-export interface ComicBalloonOut {
-  id: string;
-  panelIndex: number;
-  order: number;
-  style: string;
-  speaker?: string;
-  sourceStart: number;
-  sourceEnd: number;
-  /** Join group: balloons of one group share one outline, carried by the
-   *  first of them (`shape` is absent on the others). */
-  group: number;
-  /** Body and tail outline as one compound path (page px; M L C Z only).
-   *  Paint it Comicraft's way: stroke at twice `strokeWidth`, then fill,
-   *  so that overlapping subpaths (joined bodies, the tail) merge into one
-   *  outline (see `comics/lettering/README` in the impl notes). */
-  shape?: {
-    d: string;
-    fill?: string;
-    stroke?: string;
-    strokeWidth: number;
-    dash?: number[];
-    double?: { gap: number };
-  };
-  text: VDTDesignTextBlock[];
-  /** The body's box (without the tail). */
-  bbox: Rect;
-  tailTip?: Point;
-  /** Degrees clockwise about the centre of `bbox` (sound effects). */
-  rotate?: number;
-  halo?: { width: number; color: string };
-}
+/** A lettered balloon, caption or sound effect: the VDT's
+ *  `VDTComicBalloon` (SPEC D5). Its `shape` is one compound path (page px;
+ *  M L C Z only) painted Comicraft's way: stroked at twice `strokeWidth`,
+ *  then filled, so overlapping subpaths (joined bodies, the tail) merge
+ *  into one outline. */
+export type ComicBalloonOut = VDTComicBalloon;
 
 /** `letterPanel` with its diagnostics. */
 export interface LetteringResult {

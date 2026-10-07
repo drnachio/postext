@@ -91,7 +91,8 @@ describe('comic pages in the build', () => {
     const s0 = a.comic!.splitters[0]!;
     expect(markdown.slice(s0.sourceStart, s0.sourceEnd)).toBe('30 [30 | 20 | *] / *');
     expect(markdown.slice(a.comic!.sourceStart, a.comic!.sourceStart + 7)).toBe(':::page');
-    expect(a.comic!.balloons).toEqual([]);
+    // Lettered: one balloon per script line, in reading order.
+    expect(a.comic!.balloons.map((b) => b.style)).toEqual(['caption', 'speech', 'sfx', 'thought', 'caption']);
     // The last panel bleeds: past the frame to the trim (no cut lines).
     const last = a.comic!.panels[3]!;
     expect(last.bbox.y + last.bbox.height).toBeCloseTo(doc.pages[0]!.height, 3);

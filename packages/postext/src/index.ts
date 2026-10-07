@@ -43,14 +43,17 @@ export {
   layoutComicFrame, comicPageFrame, layoutComicStrip, comicStripPlacement, comicStripExtent, comicStripAspect, comicSplitGrid, parseComicAspect,
   layoutComicSpread, isComicSpread,
   translateComicPage, translateComicPanel, translateComicSplitter, translateComicBalloon, translateSvgPath, comicBlockOnSheet, pageComics,
+  comicLetteringStyle, comicLetteringLocale, comicLetteringVertical, comicFontFamilies, markdownHasComics,
+  letterPanel, letterPanelDetailed, presetLetteringStyles,
 } from './comics';
 export type {
   ComicSplitAxis, ComicSplitSize, ComicSplitItem, ComicSplitList, ComicSplitToken, ComicSplitIssue, ComicSplitParse, ComicScriptLine,
-  ComicCell, ComicSplitLine, ComicGeometry, ComicGeometryInput, ComicFrameSide, ComicCropInput, ComicCrop, ComicPageContext,
+  ComicCell, ComicSplitLine, ComicGeometry, ComicGeometryInput, ComicFrameSide, ComicCropInput, ComicCrop, ComicPageContext, LetterPanelsInput,
+  LetteringItem, LetteringPanel, LetteringStyle, LetteringAnchor, LetteringDiagnostic, LetteringResult, LetteringEnv,
   ComicPageSource, ComicPanelSource, ComicScriptItem, ComicScriptRole, ComicSourceRange, ComicTailSide,
   ComicFrameContext, ComicStripPlacement, ComicStripContext, ComicSpreadContext, ComicSpreadPage,
 } from './comics';
-export { renderComicPanels, renderComicPanel, comicPanelPath, comicRoughBorder } from './canvas-backend/comic';
+export { renderComicPanels, renderComicPanel, comicPanelPath, comicRoughBorder, renderComicBalloons, renderComicBalloon, renderComicPage } from './canvas-backend/comic';
 export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './defaults/comics';
 export { layoutVideo, playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 export { encodeQr } from './video/qr';

@@ -12,7 +12,7 @@ import { renderLangOf } from '../locale';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
 import { setVerticalPaint } from './verticalText';
 import { beginMirroredFlow } from './mirrorFrame';
-import { renderComicPanels } from './comic';
+import { renderComicPage } from './comic';
 import { pageComics } from '../comics/transform';
 export {
   registerResourceImage,
@@ -275,9 +275,9 @@ function paintContext(
   }
   endMirror?.();
 
-  // A comic page's panels (or its half of a spread) and the strips set in
-  // its flow, on the sheet (never through the flow frame).
-  for (const comic of pageComics(page)) renderComicPanels(ctx, comic, inkHex);
+  // A comic page's panels and lettering (or its half of a spread), and the
+  // strips set in its flow, on the sheet (never through the flow frame).
+  for (const comic of pageComics(page)) renderComicPage(ctx, comic, inkHex);
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);

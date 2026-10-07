@@ -227,8 +227,22 @@ describe(':::strip — in the flow', () => {
     expect(w!.pageIndex).toBe(page.index);
   });
 
-  it('gives a strip the lettering hook (no balloons yet)', () => {
+  it('letters a strip in its own box, and moves the balloons onto the sheet with it', () => {
     const doc = buildDocument({ markdown: daily, resources }, config);
-    expect(strips(doc)[0]!.block.comic!.balloons).toEqual([]);
+    const { page, block } = strips(doc)[0]!;
+    const comic = block.comic!;
+    expect(comic.balloons).toHaveLength(1);
+    const b = comic.balloons[0]!;
+    expect(b.kind).toBe('balloon');
+    expect(b.panelIndex).toBe(0);
+    // Block-relative: inside the strip's own frame.
+    const p0 = comic.panels[0]!.bbox;
+    expect(b.bbox.x).toBeGreaterThanOrEqual(p0.x - 1);
+    expect(b.bbox.x + b.bbox.width).toBeLessThanOrEqual(p0.x + p0.width + 1);
+    const onSheet = pageComics(page).find((c) => c.sourceStart === comic.sourceStart)!;
+    const dx = onSheet.frame.x - comic.frame.x;
+    const dy = onSheet.frame.y - comic.frame.y;
+    expect(onSheet.balloons[0]!.bbox.x).toBeCloseTo(b.bbox.x + dx, 6);
+    expect(onSheet.balloons[0]!.bbox.y).toBeCloseTo(b.bbox.y + dy, 6);
   });
 });

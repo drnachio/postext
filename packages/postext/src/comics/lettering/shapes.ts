@@ -32,6 +32,9 @@ export interface Body {
   em: number;
   /** Superellipse semi-axes of the core, when it is one. */
   axes?: { a: number; b: number };
+  /** A burst: `hull` alternates valley, spike tip, valley… (a tail then
+   *  grows out of a spike, see {@link buildTail}). */
+  star?: true;
 }
 
 /** A shape's parameters as the body builder reads them. */
@@ -237,7 +240,7 @@ function burstBody(p: BodyParams): Body {
     const dir = norm(add(radial, scale(norm(add(v0.n, v1.n)), 0.6)));
     pts.push(add(mid, scale(dir, depth * (0.55 + rnd() * 0.9))));
   }
-  return finish(polygonCmds(pts), pts, core, p.em, c, { a, b });
+  return { ...finish(polygonCmds(pts), pts, core, p.em, c, { a, b }), star: true };
 }
 
 /** A wavy (deflated, wobbly) outline: a slow wave on the core. */
@@ -323,6 +326,10 @@ export interface Tail {
   tip: Point;
   /** Where it leaves the body. */
   base: Point;
+  /** The body's outline to draw with this tail, when the tail replaces a
+   *  part of it (a burst's tail is the spike it grows from: the spike is
+   *  left out, so no notch is left between the tail and the spike). */
+  body?: PathCmd[];
 }
 
 /**
@@ -353,6 +360,10 @@ export function buildTail(body: Body, target: Point, style: LetteringStyle, opts
   if (len <= 0.2 * em) return undefined;
   const tip = add(ex.p, scale(aim, len));
   if (kind === 'bubbles') return bubbleTail(ex, tip, em);
+  if (body.star && (kind === 'wedge' || kind === 'curved')) {
+    const spiked = spikeTail(body, ex.p, tip, kind, opts.bend ?? 0);
+    if (spiked) return spiked;
+  }
   const inset = 2 * opts.strokeWidth + 0.15 * em;
   const halfBase = Math.max(0.5 * opts.strokeWidth + 1, style.tailWidth / 2);
   if (kind === 'zigzag') return zigzagTail(ex, tip, halfBase, inset, em);
@@ -392,6 +403,54 @@ export function buildTail(body: Body, target: Point, style: LetteringStyle, opts
     { op: 'Z', pts: [] },
   ];
   return { cmds, tip, base: ex.p };
+}
+
+/**
+ * A burst's tail: the spike the centre→exit ray runs through is drawn out
+ * to the tip from its two valleys, and left out of the body. A tail with a
+ * base of its own would leave narrow notches between its sides and the
+ * spikes beside it, which the doubled outline fills with ink.
+ */
+function spikeTail(body: Body, exit: Point, tip: Point, kind: 'wedge' | 'curved', bend: number): Tail | undefined {
+  const hull = body.hull;
+  const count = Math.floor(hull.length / 2);
+  if (count < 3) return undefined;
+  const u = norm(sub(exit, body.centre));
+  // The spike whose valleys straddle the ray (the angle from the ray to
+  // the first valley and to the second change sign), the nearest one.
+  const cross = (q: Point) => u.x * (q.y - body.centre.y) - u.y * (q.x - body.centre.x);
+  const along = (q: Point) => u.x * (q.x - body.centre.x) + u.y * (q.y - body.centre.y);
+  let k = -1;
+  for (let i = 0; i < count; i++) {
+    const v0 = hull[2 * i]!;
+    const v1 = hull[(2 * i + 2) % hull.length]!;
+    if (along(v0) <= 0 && along(v1) <= 0) continue;
+    if (cross(v0) * cross(v1) <= 0) {
+      k = i;
+      break;
+    }
+  }
+  if (k < 0) return undefined;
+  const v0 = hull[2 * k]!;
+  const v1 = hull[(2 * k + 2) % hull.length]!;
+  const len = dist(exit, tip);
+  // Curved: both sides bend the same way, as a curved tail does.
+  const side = (from: Point): PathCmd[] => {
+    if (kind === 'wedge') return [{ op: 'L', pts: [tip] }];
+    const mid = lerp(from, tip, 0.5);
+    const ctrl = add(mid, scale(perp(norm(sub(tip, from))), bend * len * 0.12));
+    return [{ op: 'C', pts: [lerp(from, ctrl, 2 / 3), lerp(tip, ctrl, 2 / 3), tip] }];
+  };
+  const back = (to: Point): PathCmd[] => {
+    if (kind === 'wedge') return [{ op: 'L', pts: [to] }];
+    const mid = lerp(to, tip, 0.5);
+    const ctrl = add(mid, scale(perp(norm(sub(tip, to))), bend * len * 0.12));
+    return [{ op: 'C', pts: [lerp(tip, ctrl, 2 / 3), lerp(to, ctrl, 2 / 3), to] }];
+  };
+  const cmds: PathCmd[] = [{ op: 'M', pts: [v0] }, ...side(v0), ...back(v1), { op: 'Z', pts: [] }];
+  // The body without that spike: valley to valley.
+  const outline = hull.filter((_, i) => i !== 2 * k + 1);
+  return { cmds, tip, base: lerp(v0, v1, 0.5), body: polygonCmds(outline) };
 }
 
 /** Distance along the unit ray from `o` to where it enters `r` (0 when
