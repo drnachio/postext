@@ -103,6 +103,7 @@ Conversion at `page.dpi` (default 300):
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
+| `comics` | ComicsConfig | §19e | comic pages and strips (`:::page`, `:::strip`, postext ≥ 1.20): reading direction, frame, gutters, panel styles, lettering, balloon styles, cast; full reference in comics.md |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off. Japanese (`'ja'`, `'ja-JP'`; never `'jp'`, ≥ 1.16): the `japan` region (§19c2), 図/表, （続き）, 第{n}章 references, 参考文献, `{1:一}` = 百一 (japanese-informal), note defaults by writing mode (§19a), gojūon index, ja-JP citations, JAN glyph forms in the PDF |
 | `direction` | `'auto'`\|`'ltr'`\|`'rtl'` | `'auto'` | base direction (postext ≥ 1.15): `auto` = `rtl` when the `locale` script is written right to left (ar, fa, ur, he…). An RTL document is laid out in a **mirrored frame**: first column on the right, indents/list markers/floats/notes on the right, `page.binding: 'auto'` → right. Body-flow `left`/`right` keywords are flow-relative (a preset converted LTR→RTL keeps working); header/footer slots stay physical. Blocks: `{dir=ltr\|rtl}` on headings and `:::` containers; inline `:ltr[…]`/`:rtl[…]` isolates. Never set `'rtl'` with a non-RTL locale |
@@ -1241,6 +1242,31 @@ Leading: unvocalised 1.55–1.7 em, partly vocalised 1.7–1.85 em, fully vocali
 "captionStyle": { "labelSeparator": ": " },
 "footnotes": { "markerTemplate": "({n})", "numbering": "page", "noteNumberPosition": "inline" }
 ```
+
+## 19e. `comics` — comic pages and strips (postext ≥ 1.20)
+
+Read only by documents with `:::page` or `:::strip` blocks; every key is
+optional and the defaults follow the document language. The full table
+(lettering faces per language, the nine built-in balloon styles, every
+balloon style key, cast, reading direction) is in
+[comics.md §10](comics.md#10-the-comics-config).
+
+```jsonc
+"comics": {
+  "artDirection": "ltr",                       // 'rtl' for manga; readingDirection 'auto' follows it (rtl in an RTL document)
+  "gutter": { "horizontal": {"value": 4, "unit": "mm"}, "vertical": {"value": 2, "unit": "mm"} },
+  "panel": { "borderWidth": {"value": 1, "unit": "pt"}, "borderStyle": "solid" },
+  "panelStyles": [ { "id": "rounded", "borderRadius": {"value": 5, "unit": "mm"} } ],
+  "lettering": { "fontFamily": "Comic Neue", "fontSize": {"value": 9, "unit": "pt"}, "textTransform": "uppercase" },
+  "balloonStyles": [ { "id": "shout", "burstPoints": 18 }, { "id": "writing", "shape": "none", "tail": "none", "fontScale": 0.8 } ],
+  "cast": [ { "id": "monster", "name": "The Monster", "fill": {"hex": "#0f0f0f", "model": "hex"}, "color": {"hex": "#ffffff", "model": "hex"} } ]
+}
+```
+
+`lettering.fontSize`, `lettering.inset`, `gutter.*`, `frame.margins.*` and
+panel `borderWidth`/`borderRadius` in em throw (use mm/pt); balloon
+`padding`, `tailWidth`, `strokeWidth`, `halo` and `letterSpacing` are in em
+of the balloon text. Bundle the lettering and sound-effect faces.
 
 ## 20. Fonts — `customFonts` and what goes in preset.json
 

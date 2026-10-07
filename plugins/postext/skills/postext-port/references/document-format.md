@@ -626,7 +626,7 @@ $$
 
 ## 12. Single-line directives `:::name{attrs}`
 
-Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`, `index`. Execution: . They must be alone on their line (same fence regex as §7).
+Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`, `index`; the raw-body blocks `:::references`, `:::verse`, `:::page` and `:::strip` (comics, below). Execution: . They must be alone on their line (same fence regex as §7).
 
 | Directive | Attributes | Effect |
 |---|---|---|
@@ -637,6 +637,32 @@ Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`, `inde
 | `:::toc` | none | Expands, before layout, into one entry per listed heading (levels in `toc.levels`, default level 1) and one row per part. Page labels converge over passes. In the sandbox the book outline is supplied, so chapter files work. Exclude the contents heading itself with `{toc="false"}`. |
 | `:::verse` … `:::` | `gap` (default `2em`; bare number = em), `width` (fixed hemistich width), `align` (`center` default \| `start`), `ornament` (mark printed mid-gap, not text), `style` (paragraph style id), `dir`. | Classical Arabic poem (#378): one bayt per line, hemistichs split at `||` (or a spaced `\\`); a line without one is a single centred hemistich. Every hemistich justified to one common width (widest, ≤ half the measure less the gap), kashida first (2× `kashidaMaxLength`) then spaces; ṣadr on the start side, ʿajuz on the end side; poem centred. Too wide even at `minWordSpacing` → staggered (ṣadr flush start, ʿajuz flush end on the next line). A bayt never splits between columns; paragraph orphan/widow rules apply; the paragraph before it (the introducer, «فأنشد يقول:») keeps its last line with the poem. Vocalised verse: give it a `style` with more leading. Map Wikisource `{{أبيات}}` blocks to it. |
 | `:::index` | `index`: name of a separate index (default: the main one) | Expands into the back-of-book index: every `:index` mark of the book (all chapters in the sandbox and `buildBundle`), sorted in the `locale`'s alphabetical order, grouped by first letter, with its page labels, which converge like `:::toc`. Put it under a heading style with a two-column `layout`. Styling: config `index`. |
+
+### 12.1 Comic pages and strips: `:::page`, `:::strip` (postext ≥ 1.20)
+
+A raw-body block read whole up to the first bare `:::` line: a `split`
+expression cuts the frame into panels, `::panel{art=…}` lines start the
+panels, and one script line per balloon (`speaker{style attrs}: text`,
+reserved keys `caption`, `sfx`, `note`) holds the lettering, which the
+engine typesets.
+
+```md
+:::page{split="30 [55 | *] / *" gutter=4mm}
+::panel{art=p1-wide}
+caption: Lyon, 1943.
+ana: Did you hear that?
+::panel{art=p1-door focus="70% 40%"}
+sfx{at="62% 40%" rotate=-8}: KRAK
+::panel{art=p1-ana}
+ana{thought}: Nothing, he says…
+:::
+```
+
+A `:::page` owns a whole page (the text after it starts a new page);
+`:::page{spread}` takes two facing pages; a `:::strip` is a block in the
+text flow (newspaper strips). Inside the block nothing is a paragraph,
+heading or list. Grammar, every attribute, the `comics` config, the
+pictures' speaker anchors and the warnings: [comics.md](comics.md).
 
 **Directives inside a `:::callout` are ignored** (except `:::space`). An unknown `:::word` is literal text (`unknownDirective`).
 

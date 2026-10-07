@@ -16,7 +16,9 @@ Every case below came up while porting real publications to Postext:
   English translation;
 - a Japanese novel from Aozora Bunko set vertically as a bunko, with
   furigana, part openers centred on the page and the Aozora credits in the
-  colophon.
+  colophon;
+- a webcomic re-lettered in seven languages from its text-free pages, and
+  manga, strip and album pages lettered from scripts (section I).
 
 Each entry: **case → technique**, with the Markdown/config to write. Syntax
 details are in document-format.md and configuration.md.
@@ -888,3 +890,24 @@ alone, with the same toolkit:
 - front matter in six files with a dynamic contents;
 - seven heading levels;
 - floated, split and nested boxes, and a pinned badge with a marker.
+
+## I. Comics, manga and strips
+
+Comic pages (`:::page`), strips (`:::strip`) and spreads are their own
+reference: [comics.md](comics.md). Its §16 holds the porting playbooks:
+
+- **P1** text-free art plus translations (Pepper&Carrot: panels from the
+  gutters, anchors from the original balloon tails, script lines from the
+  transcripts);
+- **P2** lettered art (blank or inpaint the balloons, OCR the text, keep the
+  original positions as `at=` pins);
+- **P3** a script only, art generated with reference images (clean art with
+  quiet room for the balloons);
+- **P4** manga: right to left, vertical lettering, yonkoma;
+- **P5** Arabic editions;
+- **P6** newspaper strips.
+
+Measure pages with `scripts/comic_panels.py` (comics.md §15). The
+Postext repository's `scripts/presets/showcase/pepper-carrot/` (a full port
+in seven languages) and `scripts/presets/comics/` (generated art for the
+Cookbook's comic recipes) are working pipelines.

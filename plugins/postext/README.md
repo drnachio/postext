@@ -10,6 +10,9 @@ produces a Postext project that follows the original's layout rules:
 - curated chapters in Postext Markdown;
 - resources and fonts.
 
+Comics, manga and newspaper strips are ported as panel pictures plus one
+script per language: the engine letters every edition.
+
 The project opens in the [Postext sandbox](https://postext.dev/en/sandbox) as
 a `.postext` file.
 
@@ -31,12 +34,15 @@ One skill, [`postext-port`](skills/postext-port/SKILL.md), in the open
   - a playbook per source format;
   - design analysis;
   - a catalogue of solved layout cases;
+  - comics: page splits, panels, lettering, speaker anchors, editions per
+    language;
   - verification.
 - **Local scripts** (Python and Node):
   - type-role PDF extraction and figure cutting;
   - pandoc and IDML converters;
   - font and image tools;
   - a project generator;
+  - comic page measurement (panels, split expression, gutters, cuts);
   - a linter;
   - a renderer that runs without a browser (built on the `postext` npm
     packages);

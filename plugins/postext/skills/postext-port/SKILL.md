@@ -1,6 +1,6 @@
 ---
 name: postext-port
-description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically, Japanese books (vertical bunko and tankōbon novels, horizontal technical books, Aozora Bunko texts with furigana) and Arabic books set right to left (Modern Standard or classical, vocalised verse included); when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
+description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically, Japanese books (vertical bunko and tankōbon novels, horizontal technical books, Aozora Bunko texts with furigana) and Arabic books set right to left (Modern Standard or classical, vocalised verse included), and comics, manga and newspaper strips re-lettered in each language; when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads, comic panels) in Postext.
 license: MIT
 metadata:
   homepage: https://postext.dev/en/docs/skill
@@ -76,7 +76,8 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`,
   `:::index`), the fenced `:::references` and `:::verse` (a classical Arabic
   poem, one bayt a line split at `||`), plus inline index marks
-  (`:index[…]`, `:index{term="…"}`). Anything else prints literally.
+  (`:index[…]`, `:index{term="…"}`), and the comic blocks `:::page` and
+  `:::strip` (comics.md). Anything else prints literally.
 - **Extra blank lines add no space.** Where the source has deliberate
   vertical space (a scene break, room above a signature), write
   `:::space` (one body line) or `:::space{lines=N}`.
@@ -210,6 +211,26 @@ Arabic and right-to-left traps (postext ≥ 1.15; playbooks F7–F8; configurati
 - **Contents at the end** (فهرس): `:::toc` in the last chapter, under a
   heading with `{toc="false"}`.
 
+Comics traps (postext ≥ 1.20; [references/comics.md](references/comics.md)):
+
+- **The engine letters the comic.** Pictures are text-free panel art
+  (resources placed with `::panel{art=id}`); each language's Markdown holds
+  only the words, one balloon per line (`maya{whisper}: …`). Never bake
+  lettering into the pictures of a translated edition.
+- **Geometry is written once.** `split`, panels, art, safe areas, speaker
+  anchors and avoid zones are the same in every edition; speaker ids too
+  (`maya`, not a translated name). The split is a tree of percentages of the
+  parent cell (`30 [55 | *] / *`), measured from gutter middles; never
+  mirror it by hand for a right-to-left edition.
+- **One lettering size per book** (`comics.lettering.fontSize`, default
+  7.5 pt): the engine reshapes or moves balloons, never shrinks text. Bundle
+  the lettering and sound-effect faces (Comic Neue and Bangers by default;
+  Zen Antique and Dela Gothic One for Japanese; Playpen Sans Arabic and
+  Lalezar for Arabic).
+- **Manga** keeps `comics.artDirection: 'rtl'` in every language and a
+  right binding; Japanese and Traditional Chinese balloons are vertical by
+  default. An Arabic edition reads right to left from `locale: 'ar'` alone.
+
 Full references (load the one you need):
 
 - [references/document-format.md](references/document-format.md): every
@@ -232,13 +253,19 @@ Full references (load the one you need):
   vertical bunko or tankōbon) and Japanese fonts, Arabic books (modern and
   classical vocalised editions) and Arabic fonts, the printed object for the
   Folio 3D viewer…) and which public preset shows each.
+- [references/comics.md](references/comics.md): comic pages, strips and
+  spreads: the split grammar, panels, script lines, the `comics` config,
+  speaker anchors and safe areas, reading direction, editions per language,
+  warnings, `comic_panels.py`, and porting playbooks (text-free art plus
+  translations, lettered scans, generated art, manga, Arabic, newspaper
+  strips).
 - [references/verification.md](references/verification.md): lint, headless
   render, page JPEGs, page-by-page comparison, and a symptom → lever table.
 
 ## Setup (once)
 
 ```bash
-python3 -m pip install pymupdf pillow fonttools brotli     # PDF, images, fonts
+python3 -m pip install pymupdf pillow fonttools brotli numpy   # PDF, images, fonts, comic panels
 brew install pandoc poppler                                  # or apt: pandoc poppler-utils (DOCX/PPTX/EPUB/HTML, page images)
 mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools \
   && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas   # headless render + page JPEGs (Node >= 22.15)
@@ -282,6 +309,11 @@ Ask only what you cannot infer:
   (٠–٩ or 0–9), how much of the text is vocalised (sets the leading),
   whether the poems are set as two-hemistich bayts, and where the contents
   go (front or back).
+- For comics: which editions (languages), whether text-free art exists
+  (ask the rights holder for the files without the lettering layer before
+  cleaning scans), the reading direction of the art (manga: right to left),
+  the lettering size and face of the source, and whether translated
+  editions keep the original's sound effects drawn in the art.
 - Rights, asked once: "Is this your own title (publisher, author or
   licensee)?" Yes → port everything as is. Then only ask about third-party
   pieces they do not control: licensed fonts get `redistributable: false`
@@ -368,6 +400,10 @@ Pick the path per [sources.md](references/sources.md):
 - **Arabic sources**: see sources.md, "Arabic sources" (visual-order PDF
   text, presentation forms, Word `w:bidi`/`w:cs` runs, Wikisource `{{أبيات}}`
   poems → `:::verse`).
+- **Comics**: `python3 scripts/comic_panels.py detect pages/*.jpg --out work/panels --page-mm 170x240 [--direction rtl]`
+  measures every page into a `split`, gutters, the frame and one picture per
+  panel, and prints the `:::page` skeletons; then anchors, safe areas and
+  script lines per comics.md §15–§16.
 - **Other XML or plain text**: a small script of your own, following
   sources.md; reuse `scripts/postext_md.py` to write safe Markdown
   (`render_runs`, `escape`, `heading`, `fence`, `attr_value`,
@@ -411,6 +447,9 @@ list deliberate deviations.
   (keeps the joining tables and the tatweel); cut static weights of variable
   faces such as Noto Naskh Arabic (playbooks E7).
 - Images: `scripts/images.py prep|join|size`.
+- Comic pictures: `scripts/comic_panels.py grid|check|contact` (read and check
+  anchors and safe areas, compare pages); give every panel picture its
+  `width`/`height` and `altText`.
 - Vector artwork: `scripts/convert_assets.py` (`.ai`/`.pdf` → SVG) and
   `scripts/pdf_figures.py crop … .pdf` (print masters).
 

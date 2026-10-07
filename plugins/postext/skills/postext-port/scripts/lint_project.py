@@ -16,7 +16,10 @@ a reading, and whether the bundled fonts have a glyph for every character the
 chapters set (with fontTools installed; without it that check is skipped);
 for Arabic text, the document language and direction, the fonts that set it
 (and their glyphs and shaping tables), letter-spacing on its styles, forced
-hyphenation and italic emphasis. Pure Python otherwise.
+hyphenation and italic emphasis; for comics (`:::page`, `:::strip`), the
+split expressions, panels, script lines, balloon and panel styles, the
+`comics` config, speaker anchors and safe areas, the lettering faces, and
+whether every edition sets the same pages. Pure Python otherwise.
 
 Exit code 1 when there are errors (or warnings with --strict).
 """
@@ -47,7 +50,9 @@ NUMBERING_TOKENS = {
     "1", "i", "I", "a", "A", "〇", "①", "甲", "子", "１", "一", "壹",
     "壱", "あ", "ア", "い", "イ", "١", "۱", "أبجد", "أبتث",
 }
-KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse"}
+# `page` and `strip` are the raw-body comic blocks (checked by check_comic_block).
+KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse",
+                    "page", "strip"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
@@ -68,6 +73,7 @@ ABS_ONLY = [
 class Report:
     def __init__(self) -> None:
         self.items: list[tuple[str, str, str]] = []
+        self.once: set[str] = set()  # messages reported once for the whole book
 
     def error(self, where: str, msg: str) -> None:
         self.items.append(("ERROR", where, msg))
@@ -350,7 +356,7 @@ ARABIC_RE = re.compile("[\u0600-\u06ff\u0750-\u077f\u0870-\u08ff\ufb50-\ufdff\uf
 ARABIC_LETTER_RE = re.compile("[\u0620-\u064a\u066e-\u06d3\u06d5\u06fa-\u06fc\u06ff\u0750-\u077f\u08a0-\u08c9]")
 RTL_LANGS = {"ar", "fa", "ur", "ps", "sd", "ckb", "ug", "he", "yi", "dv", "syr"}
 LATIN_ONLY_FAMILIES = {"EB Garamond", "Open Sans", "Lora", "Geist", "Fraunces", "Newsreader", "Source Serif 4",
-                       "Alegreya", "Playfair Display", "Merriweather", "Inter", "Roboto"}
+                       "Alegreya", "Playfair Display", "Merriweather", "Inter", "Roboto", "Comic Neue", "Bangers"}
 
 
 def check_cjk_lines(name: str, text: str, rep: Report, japanese: bool = False) -> None:
@@ -517,6 +523,7 @@ def script_chars_by_family(texts: list[tuple[str, str]], cfg: dict, rx: re.Patte
         if isinstance(cfg.get("calloutStyles"), list) else []
     out: dict[str, set[str]] = defaultdict(set)
     roles: dict[str, set[str]] = defaultdict(set)
+    lettering, sfx = comic_faces(cfg)
 
     def add(fam: str, role: str, text: str) -> None:
         chars = {c for c in rx.findall(text) if c not in ignore}
@@ -533,7 +540,21 @@ def script_chars_by_family(texts: list[tuple[str, str]], cfg: dict, rx: re.Patte
         # Innermost open container: (family, role) of the text it holds.
         stack: list[tuple[str, str]] = []
         in_math = False
+        in_comic = False  # a :::page / :::strip body is set in the lettering faces
         for line in (l.strip() for l in lines[start:]):
+            if in_comic:
+                if line == ":::":
+                    in_comic = False
+                elif line and not line.startswith("::panel"):
+                    hm = COMIC_SCRIPT_RE.match(line)
+                    if hm and hm.group(1) == "sfx":
+                        add(sfx, "the sfx balloon style's fontFamily (comics.balloonStyles)", line[hm.end():])
+                    else:
+                        add(lettering, "comics.lettering.fontFamily", line[hm.end():] if hm else line)
+                continue
+            if COMIC_FENCE_RE.match(line):
+                in_comic = True
+                continue
             if in_math or line == "$$":
                 in_math = (line != "$$") if in_math else True
                 continue
@@ -776,6 +797,635 @@ def check_arabic_font_files(root: Path, fonts: list[dict], families: set[str], r
                                                   "this face; keep the whole Arabic block when subsetting")
 
 
+# ---------------------------------------------------------------------------
+# Comics (`:::page`, `:::strip`, `::panel`, script lines; postext >= 1.20)
+# ---------------------------------------------------------------------------
+
+# Raw-body comic blocks (parse/blockParser.ts reads them whole up to `:::`).
+COMIC_BLOCKS = {"page", "strip"}
+COMIC_PAGE_ATTRS = {"split", "gutter", "style", "bleed", "direction", "dir", "spread", "id"}
+COMIC_STRIP_ATTRS = {"split", "gutter", "style", "bleed", "direction", "dir", "span", "placement", "height", "aspect", "id"}
+COMIC_PANEL_ATTRS = {"art", "fit", "focus", "style", "border", "bg", "bleed", "mirror", "pop", "inset", "pad", "alt", "id"}
+# Keys a script line reads (comics/script.ts SCRIPT_KEYS); any other bare
+# flag names a balloon style.
+COMIC_SCRIPT_KEYS = {"at", "to", "tail", "join", "break", "rotate", "size", "color", "font", "style", "id"}
+COMIC_RESERVED_KEYS = {"caption", "sfx", "note"}
+COMIC_BALLOON_STYLES = {"speech", "thought", "whisper", "shout", "radio", "caption", "inner", "note", "sfx"}
+COMIC_POSITIONS = {"top-start", "top-end", "bottom-start", "bottom-end", "top", "bottom"}
+COMIC_TAILS = {"none", "auto", "top", "bottom", "start", "end"}
+COMIC_SIDES = {"top", "bottom", "start", "end", "left", "right"}
+COMIC_FENCE_RE = re.compile(r"^:::\s*(page|strip)\s*(?:\{([^}]*)\})?\s*$")
+COMIC_PANEL_RE = re.compile(r"^::panel\s*(?:\{([^}]*)\})?\s*$")
+COMIC_SCRIPT_RE = re.compile(r"^([\w.-]+)[ \t]*(?:\{([^}\n]*)\})?[ \t]*[:：]")
+COMIC_POINT_RE = re.compile(r"^\s*(-?[0-9.]+)\s*(%?)\s*[ ,]\s*(-?[0-9.]+)\s*(%?)\s*$")
+COMIC_DIM_RE = re.compile(r"^\s*[0-9]*\.?[0-9]+\s*(mm|cm|in|pt|px)?\s*$")
+HEX_RE = re.compile(r"^#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?$")
+ARABIC_SCRIPT_LANGS = {"ar", "fa", "ur", "ps", "sd", "ckb", "ug"}
+
+# The `comics` config tables (packages/postext src/configWarnings.ts).
+COMICS_KEYS = {"readingDirection", "artDirection", "mirrorArt", "frame", "gutter", "panel", "panelStyles",
+               "lettering", "balloonStyles", "cast", "runningHeads"}
+COMICS_PANEL_KEYS = {"borderWidth", "borderColor", "borderRadius", "borderStyle", "background", "fit", "bleed"}
+COMICS_LETTERING_KEYS = {"fontFamily", "fontSize", "lineHeight", "color", "bold", "italic", "letterSpacing", "writingMode",
+                         "textTransform", "dropFinalStop", "doubleDash", "inset", "joinSameSpeaker", "maxColumnChars"}
+COMICS_BALLOON_KEYS = {"id", "name", "shape", "fill", "stroke", "strokeWidth", "dash", "double", "wobble", "roundness",
+                       "burstPoints", "burstDepth", "padding", "aspect", "tail", "tailWidth", "tailReach", "target",
+                       "position", "butt", "fontFamily", "fontScale", "bold", "italic", "color", "textTransform",
+                       "letterSpacing", "align", "halo", "haloColor", "rotate"}
+COMICS_CAST_KEYS = {"id", "name", "balloonStyle", "color", "fill", "fontFamily"}
+COMICS_ENUMS = {
+    "readingDirection": {"auto", "ltr", "rtl"}, "artDirection": {"ltr", "rtl"},
+    "borderStyle": {"solid", "none", "rough"}, "fit": {"cover", "contain"},
+    "writingMode": {"auto", "horizontal", "vertical"}, "textTransform": {"none", "uppercase"},
+    "joinSameSpeaker": {"butt", "connector", "none"},
+    "shape": {"oval", "rounded", "rectangle", "cloud", "burst", "wavy", "electric", "none"},
+    "tail": {"curved", "wedge", "bubbles", "zigzag", "none"}, "target": {"mouth", "head"},
+    "position": {"auto"} | COMIC_POSITIONS, "align": {"center", "start"},
+}
+
+
+def comic_script_of(locale: str | None) -> str:
+    """'ja', 'zh-Hans', 'zh-Hant', 'arab' or 'latin' (defaults/comics.ts comicScript)."""
+    tag = (locale or "").strip()
+    lang = re.split(r"[-_]", tag)[0].lower() if tag else ""
+    if lang == "ja":
+        return "ja"
+    if lang == "zh":
+        return "zh-Hant" if re.search(r"(?i)[-_](hant|tw|hk|mo)\b", tag) else "zh-Hans"
+    if lang in ARABIC_SCRIPT_LANGS:
+        return "arab"
+    return "latin"
+
+
+def comic_faces(cfg: dict) -> tuple[str, str]:
+    """The lettering face and the sound-effect face a book's comics use: the
+    config's, else the defaults of its language (defaultComicFont,
+    defaultComicSfxFont)."""
+    script = comic_script_of(document_locale(cfg))
+    comics = cfg.get("comics") if isinstance(cfg.get("comics"), dict) else {}
+    lettering = (comics.get("lettering") or {}).get("fontFamily") if isinstance(comics.get("lettering"), dict) else None
+    sfx = next((s.get("fontFamily") for s in comics.get("balloonStyles") or []
+                if isinstance(s, dict) and s.get("id") == "sfx" and s.get("fontFamily")), None)
+    default = {"ja": "Zen Antique", "zh-Hans": "Noto Sans SC", "zh-Hant": "LXGW WenKai TC",
+               "arab": "Playpen Sans Arabic"}.get(script, "Comic Neue")
+    default_sfx = {"ja": "Dela Gothic One", "zh-Hans": "ZCOOL KuaiLe", "zh-Hant": "LXGW WenKai TC",
+                   "arab": "Lalezar"}.get(script, "Bangers")
+    return (lettering or "").strip() or default, (sfx or "").strip() or default_sfx
+
+
+def comic_style_ids(cfg: dict) -> tuple[set[str], set[str]]:
+    """(balloon style ids, panel style ids) a book's comics know."""
+    comics = cfg.get("comics") if isinstance(cfg.get("comics"), dict) else {}
+    balloons = set(COMIC_BALLOON_STYLES) | {s.get("id") for s in comics.get("balloonStyles") or []
+                                           if isinstance(s, dict) and s.get("id")}
+    panels = {s.get("id") for s in comics.get("panelStyles") or [] if isinstance(s, dict) and s.get("id")}
+    return balloons, panels
+
+
+def parse_comic_split(src: str) -> tuple[dict, list[tuple[str, str]]]:
+    """The split grammar (comics/split.ts): the tree and its issues,
+    ('syntax' | 'overflow', message)."""
+    issues: list[tuple[str, str]] = []
+    n = len(src)
+    at = 0
+    num_re = re.compile(r"[0-9]+(?:\.[0-9]*)?|\.[0-9]+")
+
+    def skip() -> None:
+        nonlocal at
+        while at < n and src[at].isspace():
+            at += 1
+
+    def number() -> float | None:
+        nonlocal at
+        m = num_re.match(src, at)
+        if not m:
+            return None
+        at = m.end()
+        return float(m.group(0))
+
+    def size() -> dict:
+        nonlocal at
+        skip()
+        if at < n and src[at] == "*":
+            at += 1
+            return {"star": True}
+        a = number()
+        if a is None:
+            return {"star": True, "implicit": True}
+        out = {"star": False, "start": a}
+        if at < n and src[at] == "%":
+            at += 1
+        if at < n and src[at] == "~":
+            at += 1
+            b = number()
+            if b is None:
+                issues.append(("syntax", 'a slant needs a number after "~"'))
+            else:
+                out["end"] = b
+                if at < n and src[at] == "%":
+                    at += 1
+        return out
+
+    def parse_list(closer: str | None) -> dict:
+        nonlocal at
+        items: list[dict] = []
+        sep = None
+        while True:
+            skip()
+            item = {"size": size()}
+            skip()
+            if at < n and src[at] == "[":
+                at += 1
+                item["children"] = parse_list("]")
+                skip()
+                if at < n and src[at] == "]":
+                    at += 1
+                else:
+                    issues.append(("syntax", '"[" is never closed'))
+            items.append(item)
+            more = False
+            while True:
+                skip()
+                c = src[at] if at < n else None
+                if c in ("/", "|"):
+                    if sep is None:
+                        sep = c
+                    elif sep != c:
+                        issues.append(("syntax", 'a list mixes "/" and "|": put one of them inside brackets'))
+                    at += 1
+                    more = True
+                    break
+                if c is None or c == closer:
+                    break
+                bad = at
+                at += 1
+                while at < n and src[at] not in "/|" and src[at] != closer:
+                    at += 1
+                issues.append(("syntax", f'"{src[bad:at].strip()}" is not a size'))
+            if not more:
+                break
+        axis = ("rows" if sep == "/" else "columns") if sep and len(items) > 1 else None
+        return {"axis": axis, "items": items}
+
+    tree = parse_list(None)
+    skip()
+    if at < n:
+        issues.append(("syntax", f'"{src[at:]}" is left over'))
+
+    def axes(lst: dict, parent: str | None) -> None:
+        if parent and lst["axis"] == parent:
+            issues.append(("syntax", "a bracketed list splits its cell on the other axis: use "
+                                     f'"{"|" if parent == "rows" else "/"}" inside it'))
+        for it in lst["items"]:
+            if "children" in it:
+                axes(it["children"], lst["axis"] or parent)
+
+    def overflow(lst: dict) -> None:
+        if len(lst["items"]) > 1:
+            for end in ("start", "end"):
+                total = sum(max(0.0, (it["size"].get(end, it["size"].get("start")) or 0.0))
+                            for it in lst["items"] if not it["size"]["star"])
+                if total > 100 + 1e-6:
+                    issues.append(("overflow", f"the sizes add up to {round(total, 1):g} %"))
+                    break
+        for it in lst["items"]:
+            if "children" in it:
+                overflow(it["children"])
+
+    axes(tree, None)
+    overflow(tree)
+    return tree, issues
+
+
+def comic_split_leaves(lst: dict) -> int:
+    return sum(comic_split_leaves(it["children"]) if it.get("children") and it["children"]["items"] else 1
+               for it in lst["items"])
+
+
+def _flag_off(v: str) -> bool:
+    return v.strip().lower() in ("false", "no", "0", "none")
+
+
+def _rect_problem(r) -> str | None:
+    if not isinstance(r, dict) or not all(isinstance(r.get(k), (int, float)) and not isinstance(r.get(k), bool)
+                                          for k in ("x", "y", "width", "height")):
+        return "needs numeric x, y, width, height (fractions of the picture)"
+    if r["width"] <= 0 or r["height"] <= 0:
+        return "has no area"
+    if r["x"] < -0.001 or r["y"] < -0.001 or r["x"] + r["width"] > 1.001 or r["y"] + r["height"] > 1.001:
+        return "runs outside the picture (fractions 0-1)"
+    return None
+
+
+def check_picture_marks(r: dict, where: str, rep: Report) -> None:
+    """A picture's safe area, speaker anchors and avoid zones (comics.md §9)."""
+    sa = r.get("safeArea")
+    if sa is not None:
+        p = _rect_problem(sa)
+        if p:
+            rep.error(where, f"safeArea {p}")
+            sa = None
+    anchors, avoid = r.get("anchors"), r.get("avoid")
+    if (anchors or avoid) and r.get("kind") == "table":
+        rep.warn(where, "anchors/avoid are read only on bitmap and SVG pictures placed in comic panels")
+    if anchors is not None:
+        if not isinstance(anchors, list):
+            rep.error(where, "anchors must be a list of {id, x, y, head?, face?}")
+            anchors = []
+        seen: set[str] = set()
+        for k, a in enumerate(anchors):
+            w = f"{where} anchors[{k}]"
+            if not isinstance(a, dict):
+                rep.error(w, "must be an object {id, x, y}")
+                continue
+            aid = a.get("id")
+            if not isinstance(aid, str) or not re.fullmatch(r"[\w.-]+", aid):
+                rep.error(w, f"id {aid!r}: a speaker id is letters, digits, _ . - (the key script lines use)")
+            elif aid in ("caption", "note"):
+                rep.warn(w, f"id {aid!r} is a reserved script key, never a speaker (only 'sfx' places sound effects)")
+            elif aid in seen:
+                rep.warn(w, f"anchor {aid!r} is marked twice in this picture (one mouth per speaker)")
+            seen.add(aid if isinstance(aid, str) else "")
+            if not all(isinstance(a.get(c), (int, float)) and not isinstance(a.get(c), bool) for c in ("x", "y")):
+                rep.error(w, "needs numeric x and y (the mouth, fractions of the picture)")
+                continue
+            h = a.get("head")
+            if h is not None and not (isinstance(h, dict) and all(isinstance(h.get(c), (int, float)) for c in ("x", "y"))):
+                rep.error(w, "head must be {x, y}")
+            if a.get("face") is not None:
+                p = _rect_problem(a["face"])
+                if p:
+                    rep.error(w, f"face {p}")
+            if sa and not (sa["x"] <= a["x"] <= sa["x"] + sa["width"] and sa["y"] <= a["y"] <= sa["y"] + sa["height"]):
+                rep.warn(w, f"the mouth of {aid!r} lies outside the safe area: a crop may cut the speaker off "
+                            "(comicAnchorOutsideSafeArea); grow the safe area over it")
+    if avoid is not None:
+        if not isinstance(avoid, list):
+            rep.error(where, "avoid must be a list of {x, y, width, height}")
+        else:
+            for k, z in enumerate(avoid):
+                p = _rect_problem(z)
+                if p:
+                    rep.error(f"{where} avoid[{k}]", p)
+
+
+def check_comics_config(cfg: dict, where: str, rep: Report) -> None:
+    """`config.comics`: keys, values, units and the ids its parts name."""
+    comics = cfg.get("comics")
+    if comics is None:
+        return
+    w = f"{where}.comics"
+    if not isinstance(comics, dict):
+        rep.error(w, "must be an object")
+        return
+
+    def unknown(node, keys: set[str], path: str) -> None:
+        if isinstance(node, dict):
+            for k in node:
+                if k not in keys:
+                    rep.warn(f"{path}.{k}", f"unknown key (ignored); takes {sorted(keys)}")
+
+    def enum(node, key: str, path: str) -> None:
+        if isinstance(node, dict) and key in node and node[key] not in COMICS_ENUMS[key]:
+            rep.error(f"{path}.{key}", f"{node[key]!r} is not one of {sorted(COMICS_ENUMS[key])}")
+
+    def absolute(node, key: str, path: str) -> None:
+        v = node.get(key) if isinstance(node, dict) else None
+        if isinstance(v, dict) and v.get("unit") in ("em", "rem"):
+            rep.error(f"{path}.{key}", f"in {v['unit']} throws (no font size there): use mm or pt")
+
+    unknown(comics, COMICS_KEYS, w)
+    enum(comics, "readingDirection", w)
+    enum(comics, "artDirection", w)
+    gutter = comics.get("gutter")
+    unknown(gutter, {"horizontal", "vertical"}, f"{w}.gutter")
+    for k in ("horizontal", "vertical"):
+        absolute(gutter, k, f"{w}.gutter")
+    frame = comics.get("frame")
+    unknown(frame, {"margins"}, f"{w}.frame")
+    margins = frame.get("margins") if isinstance(frame, dict) else None
+    for k in ("top", "bottom", "left", "right"):
+        absolute(margins, k, f"{w}.frame.margins")
+    panel_styles = [("panel", comics.get("panel"))] + [
+        (f"panelStyles[{i}]", s) for i, s in enumerate(comics.get("panelStyles") or [])]
+    for path, st in panel_styles:
+        p = f"{w}.{path}"
+        if st is None:
+            continue
+        if not isinstance(st, dict):
+            rep.error(p, "must be an object")
+            continue
+        named = path != "panel"
+        unknown(st, COMICS_PANEL_KEYS | ({"id", "name"} if named else set()), p)
+        if named and not st.get("id"):
+            rep.error(p, "a panel style without an id is dropped")
+        enum(st, "borderStyle", p)
+        enum(st, "fit", p)
+        for k in ("borderWidth", "borderRadius"):
+            absolute(st, k, p)
+    lettering = comics.get("lettering")
+    if lettering is not None:
+        p = f"{w}.lettering"
+        unknown(lettering, COMICS_LETTERING_KEYS, p)
+        for k in ("writingMode", "textTransform", "joinSameSpeaker"):
+            enum(lettering, k, p)
+        for k in ("fontSize", "inset"):
+            absolute(lettering, k, p)
+        if isinstance(lettering, dict) and "dropFinalStop" in lettering and lettering["dropFinalStop"] not in ("auto", True, False):
+            rep.error(f"{p}.dropFinalStop", "is 'auto', true or false")
+    balloon_ids: list[str] = []
+    for i, st in enumerate(comics.get("balloonStyles") or []):
+        p = f"{w}.balloonStyles[{i}]"
+        if not isinstance(st, dict) or not st.get("id"):
+            rep.error(p, "a balloon style without an id is dropped")
+            continue
+        if st["id"] in balloon_ids:
+            rep.warn(p, f"balloon style {st['id']!r} is declared twice (the first one wins)")
+        balloon_ids.append(st["id"])
+        unknown(st, COMICS_BALLOON_KEYS, p)
+        for k in ("shape", "tail", "target", "position", "align", "textTransform"):
+            enum(st, k, p)
+    known_styles = COMIC_BALLOON_STYLES | set(balloon_ids)
+    cast_ids: set[str] = set()
+    for i, c in enumerate(comics.get("cast") or []):
+        p = f"{w}.cast[{i}]"
+        if not isinstance(c, dict) or not c.get("id"):
+            rep.error(p, "a cast entry without an id is dropped")
+            continue
+        if c["id"] in cast_ids:
+            rep.warn(p, f"cast id {c['id']!r} is listed twice")
+        cast_ids.add(c["id"])
+        unknown(c, COMICS_CAST_KEYS, p)
+        if c.get("balloonStyle") and c["balloonStyle"] not in known_styles:
+            rep.warn(f"{p}.balloonStyle", f"{c['balloonStyle']!r} is not a balloon style (the speech style is used)")
+
+
+def _comic_point_ok(v: str) -> bool:
+    return bool(COMIC_POINT_RE.match(v))
+
+
+def _check_comic_fence_attrs(kind: str, attrs: dict[str, str], where: str, panel_styles: set[str], rep: Report) -> None:
+    allowed = COMIC_PAGE_ATTRS if kind == "page" else COMIC_STRIP_ATTRS
+    for k, v in attrs.items():
+        if k not in allowed:
+            hint = " (spreads are pages: :::page{spread})" if k == "spread" else ""
+            rep.warn(where, f":::{kind} attribute {k!r} is ignored{hint}; it takes {sorted(allowed)}")
+    if "gutter" in attrs:
+        parts = attrs["gutter"].split()
+        if not 1 <= len(parts) <= 2 or not all(COMIC_DIM_RE.match(x) for x in parts):
+            rep.warn(where, f"gutter={attrs['gutter']!r} is not one or two lengths (4mm, \"5mm 2mm\"; bare numbers are mm): "
+                            "comics.gutter is used")
+    for k in ("direction", "dir"):
+        if k in attrs and attrs[k].strip().lower() not in ("ltr", "rtl", "auto"):
+            rep.warn(where, f"{k}={attrs[k]!r} is not ltr or rtl (ignored)")
+    if attrs.get("style") and attrs["style"] not in panel_styles:
+        rep.warn(where, f"panel style {attrs['style']!r} is not in comics.panelStyles {sorted(panel_styles)} (the default panel is used)")
+    if kind == "strip":
+        if "span" in attrs and attrs["span"] not in ("column", "page"):
+            rep.warn(where, f"span={attrs['span']!r} is read as column (column | page)")
+        if "placement" in attrs and attrs["placement"] not in ("here", "top", "bottom", "auto"):
+            rep.warn(where, f"placement={attrs['placement']!r} is read as here (here | top | bottom | auto)")
+        if "height" in attrs and not COMIC_DIM_RE.match(attrs["height"]):
+            rep.warn(where, f"height={attrs['height']!r} is not a length (bare numbers are mm): ignored")
+        if "aspect" in attrs and not re.fullmatch(r"\s*[0-9]*\.?[0-9]+\s*(?:[/:]\s*[0-9]*\.?[0-9]+)?\s*", attrs["aspect"]):
+            rep.warn(where, f"aspect={attrs['aspect']!r} is not a ratio (3, 4/1, 4:1): ignored")
+
+
+def _check_panel_attrs(attrs: dict[str, str], where: str, ctx: dict, rep: Report) -> None:
+    for k, v in attrs.items():
+        if k not in COMIC_PANEL_ATTRS:
+            rep.warn(where, f"::panel attribute {k!r} is ignored; it takes {sorted(COMIC_PANEL_ATTRS)}")
+    for key in ("art", "pop"):
+        rid = attrs.get(key, "").strip()
+        if not rid:
+            continue
+        ctx["arts"].add(rid)
+        kind = ctx["res_kinds"].get(rid, "missing")
+        if kind == "missing":
+            rep.error(where, f"{key}={rid!r} is not a resource: the panel is set empty (comicUnknownArt)")
+        elif kind not in ("bitmap", "svg"):
+            rep.error(where, f"{key}={rid!r} is a {kind}: panels show bitmap or SVG pictures (comicUnknownArt)")
+    if "fit" in attrs and attrs["fit"] not in ("cover", "contain"):
+        rep.warn(where, f"fit={attrs['fit']!r} is ignored (cover | contain)")
+    if "focus" in attrs and not _comic_point_ok(attrs["focus"]):
+        rep.warn(where, f'focus={attrs["focus"]!r} is not a point ("x% y%"): ignored')
+    if attrs.get("style") and attrs["style"] not in ctx["panel_styles"]:
+        rep.warn(where, f"panel style {attrs['style']!r} is not in comics.panelStyles {sorted(ctx['panel_styles'])} "
+                        "(the page's style is used)")
+    if "border" in attrs and attrs["border"].strip() != "none" and not COMIC_DIM_RE.match(attrs["border"]):
+        rep.warn(where, f"border={attrs['border']!r} is not none or a length (0.5mm, 1pt)")
+    if "bg" in attrs:
+        bg = attrs["bg"].strip()
+        if not (HEX_RE.match(bg) or bg in ("none", "transparent") or bg in ctx["palette"]):
+            rep.warn(where, f"bg={bg!r} is neither #hex, none nor a colorPalette id (the style's background is used)")
+    if "inset" in attrs:
+        parts = attrs["inset"].replace(",", " ").split()
+        try:
+            ok = len(parts) == 4 and all(float(x.rstrip("%")) >= 0 for x in parts) and float(parts[2].rstrip("%")) > 0 \
+                and float(parts[3].rstrip("%")) > 0
+        except ValueError:
+            ok = False
+        if not ok:
+            rep.warn(where, f'inset={attrs["inset"]!r} is not "x y w h" in percent of the previous panel: the panel is not set')
+    if "pad" in attrs:
+        parts = attrs["pad"].replace(",", " ").split()
+        if not 1 <= len(parts) <= 4 or not all(re.fullmatch(r"-?[0-9]*\.?[0-9]+\s*%", x) or COMIC_DIM_RE.match(x) for x in parts):
+            rep.warn(where, f'pad={attrs["pad"]!r} is not 1-4 lengths or percentages (top end bottom start): ignored')
+    if "bleed" in attrs:
+        v = attrs["bleed"].strip().lower()
+        if v not in ("", "true", "all", "false", "none", "no") and not set(re.split(r"[\s,]+", v)) <= COMIC_SIDES:
+            rep.warn(where, f'bleed={attrs["bleed"]!r}: sides are {sorted(COMIC_SIDES)}')
+
+
+def _check_script_line(head: re.Match, text: str, where: str, ctx: dict, rep: Report) -> None:
+    key, blob = head.group(1), head.group(2)
+    if blob is not None:
+        tokens = parse_attrs_strict(blob) if blob.strip() else []
+        if tokens is None:
+            rep.warn(where, f"{{{blob}}} does not read as attributes (key=value or flags, spaces between)")
+            tokens = []
+        attrs = {}
+        for k, v, flag, _ in tokens:
+            if flag and k not in COMIC_SCRIPT_KEYS:
+                if k not in ctx["balloon_styles"]:
+                    rep.warn(where, f"{{{k}}} names no balloon style (comicUnknownBalloonStyle): the default style of "
+                                    f"{key!r} is used; styles: {sorted(ctx['balloon_styles'])}")
+                continue
+            attrs[k] = v
+        st = attrs.get("style", "").strip()
+        if st and st not in ctx["balloon_styles"]:
+            rep.warn(where, f"style={st!r} names no balloon style (comicUnknownBalloonStyle)")
+        at = attrs.get("at", "").strip()
+        if "at" in attrs and at not in COMIC_POSITIONS and not _comic_point_ok(at):
+            rep.warn(where, f'at={at!r} is neither "x% y%" nor {sorted(COMIC_POSITIONS)}: ignored')
+        if "to" in attrs and not _comic_point_ok(attrs["to"]):
+            rep.warn(where, f'to={attrs["to"]!r} is not a point ("x% y%"): ignored')
+        if "tail" in attrs and attrs["tail"].strip() not in COMIC_TAILS:
+            rep.warn(where, f"tail={attrs['tail']!r} is ignored ({sorted(COMIC_TAILS)})")
+        for k in ("rotate", "size"):
+            if k in attrs:
+                try:
+                    float(re.sub(r"(?i)(deg|°|x|×)$", "", attrs[k].strip()))
+                except ValueError:
+                    rep.warn(where, f"{k}={attrs[k]!r} is not a number: ignored")
+        if "color" in attrs:
+            c = attrs["color"].strip()
+            if not (HEX_RE.match(c) or c in ctx["palette"]):
+                rep.warn(where, f"color={c!r} is neither #hex nor a colorPalette id: ignored")
+        if attrs.get("font"):
+            ctx["faces"].add(attrs["font"].strip())
+    if key not in COMIC_RESERVED_KEYS:
+        ctx["speakers"].setdefault(key, where)
+    if re.search(r"\[\^[\w.:-]+\]", text):
+        rep.warn(where, "footnote markers in a balloon print as written: balloons read no notes")
+    if ":ref{" in text:
+        rep.warn(where, ":ref in a balloon is not read (prints as written)")
+    if re.search(r"(?<!\\)\$[^$]+\$", text):
+        rep.warn(where, "$math$ in a balloon is not typeset")
+
+
+def check_comic_block(name: str, kind: str, attrs: dict[str, str], body: list[tuple[int, str]], fence_line: int,
+                      ctx: dict, rep: Report) -> None:
+    """One `:::page` / `:::strip` block: its attributes, split, panels and
+    script lines (comics.md §3-§7)."""
+    where = f"{name}:{fence_line}"
+    _check_comic_fence_attrs(kind, attrs, where, ctx["panel_styles"], rep)
+    split = attrs.get("split")
+    cells = None
+    if split is not None:
+        tree, issues = parse_comic_split(split)
+        for k, msg in issues:
+            if k == "overflow":
+                rep.warn(where, f'split="{split}": {msg}, scaled down to fit (comicSplitOverflow)')
+            else:
+                rep.error(where, f'split="{split}" cannot be read as written: {msg} (comicSplitSyntax)')
+        cells = comic_split_leaves(tree)
+    panels = 0
+    flow_panels = 0
+    seen_panel = False
+    arts: list[str] = []
+    open_item = False
+    for ln, raw in body:
+        line = raw.strip()
+        w = f"{name}:{ln}"
+        if not line or (line.startswith("<!--") and line.endswith("-->")):
+            continue
+        if line.startswith("::panel"):
+            m = COMIC_PANEL_RE.match(line)
+            if not m:
+                rep.error(w, "malformed ::panel line: ::panel{attrs} alone on its line")
+                continue
+            pattrs = parse_attrs(m.group(1))
+            _check_panel_attrs(pattrs, w, ctx, rep)
+            panels += 1
+            if not pattrs.get("inset"):
+                flow_panels += 1
+            elif panels == 1:
+                rep.warn(w, "an inset panel is laid over the previous panel: the first panel cannot be one")
+            arts.append(pattrs.get("art", ""))
+            seen_panel = True
+            open_item = False
+            continue
+        if line.startswith(":::"):
+            rep.error(w, f"{line} inside a :::{kind} block: comic blocks hold only ::panel lines and script lines "
+                         "(close the block first)")
+            continue
+        if open_item and re.match(r"^(?: {2,}|\t)", raw):
+            continue  # continuation of the balloon above
+        head = COMIC_SCRIPT_RE.match(line)
+        if not seen_panel:
+            rep.warn(w, "text before the first ::panel is lettered as a caption of panel 1 (comicStrayText)")
+        if not head:
+            rep.warn(w, "not a script line (key: text) and no continuation (indent it by two spaces): lettered as "
+                        "a caption (comicStrayText)")
+            open_item = True
+            continue
+        _check_script_line(head, line[head.end():], w, ctx, rep)
+        open_item = True
+    if panels == 0:
+        rep.warn(where, f":::{kind} has no ::panel line: its text is lettered as one caption")
+    elif cells is not None and flow_panels != cells:
+        more = "are not set" if flow_panels > cells else "stay empty"
+        rep.warn(where, f"{flow_panels} panels for {cells} cells of the split: the last "
+                        f"{abs(flow_panels - cells)} {'panels' if flow_panels > cells else 'cells'} {more} (comicPanelCount)")
+    ctx["blocks"].append((where, kind, split or "", tuple(arts)))
+
+
+def check_comic_edition(lang: str, cfg: dict, ctx: dict, resources: list[dict], fonts: list[dict], rep: Report) -> None:
+    """Book-level comic checks of one edition: faces, lettering size and
+    speakers without anchors."""
+    where = f"comics ({lang})"
+    if not ctx["blocks"]:
+        if "comics" in cfg:
+            rep.info(where, "config.comics is set but no chapter has a :::page or :::strip")
+        return
+    lettering, sfx = comic_faces(cfg)
+    variants = {f.get("name"): f.get("variants", []) for f in fonts}
+    for fam, role in ((lettering, "the lettering face (comics.lettering.fontFamily)"),
+                      (sfx, "the sound-effect face (the sfx balloon style)")):
+        if fam not in variants:
+            rep.warn(where, f"{fam!r}, {role}, is not bundled: the PDF and headless renders need its files in "
+                            "`fonts` (the browser alone fetches Google Fonts)")
+        elif not any((v.get("weight") or 400) >= 600 for v in variants[fam]) and f"bold {fam}" not in rep.once:
+            rep.once.add(f"bold {fam}")
+            rep.info(where, f"{fam!r} has no bold file: the shout and sfx styles ask for bold; list its file again "
+                            "with weight 700 so no renderer fakes one")
+    for fam in sorted(ctx["faces"] - set(variants)):
+        rep.warn(where, f"font={fam!r} in a script line is not bundled")
+    lt = (cfg.get("comics") or {}).get("lettering") if isinstance(cfg.get("comics"), dict) else None
+    if not (isinstance(lt, dict) and lt.get("fontSize")) and "comic size" not in rep.once:
+        rep.once.add("comic size")
+        rep.info(where, "comics.lettering.fontSize is the default 7.5 pt (a comic-book size): A4 albums usually letter "
+                        "at 9-10 pt; measure the source's lettering")
+    marked = {a.get("id") for r in resources for a in (r.get("anchors") or []) if isinstance(a, dict)}
+    cast = {c.get("id") for c in ((cfg.get("comics") or {}).get("cast") or []) if isinstance(c, dict)} \
+        if isinstance(cfg.get("comics"), dict) else set()
+    if not marked:
+        rep.info(where, "no picture marks speaker anchors: every tail points to the nearest panel border; mark the "
+                        "mouths (resource anchors, comics.md §9)")
+        return
+    for speaker, w in ctx["speakers"].items():
+        if speaker not in marked and speaker not in cast:
+            rep.info(w, f"speaker {speaker!r} has no anchor in any picture and no cast entry: its tails point off the "
+                        "panel (comicUnknownSpeaker); a renamed key? Speaker ids are the same in every language")
+
+
+def compare_comic_editions(editions: dict[str, list], rep: Report) -> None:
+    """Every edition sets the same comic geometry: the same blocks, splits
+    and panel pictures, in the same order (only the words change)."""
+    if len(editions) < 2:
+        return
+    base_lang, base = next(iter(editions.items()))
+    for lang, blocks in editions.items():
+        if lang == base_lang:
+            continue
+        if len(blocks) != len(base):
+            rep.warn(f"comics ({lang})", f"{len(blocks)} comic blocks, {base_lang} has {len(base)}: every edition sets "
+                                         "the same pages; only the words change")
+        for (w, kind, split, arts), (bw, bkind, bsplit, barts) in zip(blocks, base):
+            if kind != bkind or split.replace(" ", "") != bsplit.replace(" ", ""):
+                rep.warn(w, f":::{kind}{{split=\"{split}\"}} differs from {base_lang} ({bw}: :::{bkind}{{split=\"{bsplit}\"}}): "
+                            "the geometry is the same in every language")
+            elif arts != barts:
+                rep.warn(w, f"the panels' pictures differ from {base_lang} ({bw}): {list(arts)} vs {list(barts)}")
+
+
+def resource_kind(r: dict) -> str | None:
+    """A manifest resource's kind, as the loader infers it from its file."""
+    if r.get("kind"):
+        return r["kind"]
+    f = r.get("file") or ""
+    return "svg" if f.lower().endswith(".svg") else "bitmap" if f else None
+
+
+def new_comic_ctx(cfg: dict, resources: list[dict], ids: dict[str, set[str]]) -> dict:
+    """What the comic checks of one edition share and collect."""
+    balloons, panels = comic_style_ids(cfg)
+    return {"res_kinds": {r.get("id"): resource_kind(r) for r in resources}, "balloon_styles": balloons,
+            "panel_styles": panels, "palette": ids.get("palette", set()), "speakers": {}, "arts": set(),
+            "faces": set(), "blocks": []}
+
+
 def style_ids(cfg: dict) -> dict[str, set[str]]:
     def ids(key: str, default: set[str]) -> set[str]:
         v = cfg.get(key)
@@ -917,8 +1567,10 @@ def check_index(index: dict, rep: Report, lang: str, japanese: bool = False) -> 
 
 def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res_ids: set[str], rep: Report,
                    embedded: set[str], referenced: set[str], index: dict | None = None,
-                   anchors: set[str] | None = None) -> None:
+                   anchors: set[str] | None = None, comic_ctx: dict | None = None) -> None:
     anchors = anchors or set()
+    if comic_ctx is None:
+        comic_ctx = new_comic_ctx({}, [], ids)
     if index is None:
         index = {"marks": [], "printed": set()}
     lines = text.split("\n")
@@ -936,10 +1588,19 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     in_refs = False  # inside a :::references or :::verse block: its body is not paragraphs
     fn_cited: dict[str, str] = {}
     fn_defined: dict[str, str] = {}
+    comic: dict | None = None  # an open :::page / :::strip block, read raw to its closing :::
     for i in range(n, len(lines)):
         raw = lines[i]
         line = raw.strip()
         where = f"{name}:{i + 1}"
+        if comic is not None:
+            if line == ":::":
+                check_comic_block(name, comic["kind"], comic["attrs"], comic["body"], comic["line"], comic_ctx, rep)
+                comic = None
+                prev_nonblank, prev_kind = True, "fence"
+            else:
+                comic["body"].append((i + 1, raw))
+            continue
         if in_math:
             if line == "$$":
                 in_math = False
@@ -989,6 +1650,16 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     rep.error(where, "::resource glued to the text above is swallowed into it: add a blank line")
             prev_nonblank, prev_kind = True, "resource"
             continue
+        # comic blocks: raw bodies up to the closing :::
+        cm = COMIC_FENCE_RE.match(line)
+        if cm:
+            if stack:
+                rep.warn(where, f":::{cm.group(1)} inside :::{stack[-1][0]} is not read as a comic: comic pages and "
+                                "strips sit at the top level of a chapter")
+            comic = {"kind": cm.group(1), "attrs": parse_attrs(cm.group(2)), "body": [], "line": i + 1}
+            continue
+        if line.startswith("::panel"):
+            rep.warn(where, "::panel outside a :::page or :::strip block prints as text")
         # fences
         if line.startswith(":::"):
             if line == ":::":
@@ -1087,7 +1758,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
             else:
                 rep.error(where, f":::{fname} is not a Postext container or directive (prints literally). "
-                                 f"Containers: {sorted(KNOWN_CONTAINERS)}; directives: {sorted(KNOWN_DIRECTIVES)}")
+                                 f"Containers: {sorted(KNOWN_CONTAINERS)}; directives: {sorted(KNOWN_DIRECTIVES - COMIC_BLOCKS)}; "
+                                 f"comic blocks: {sorted(COMIC_BLOCKS)}")
             prev_nonblank, prev_kind = True, "fence"
             continue
         # headings
@@ -1165,6 +1837,9 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 rep.warn(where, f"swatch colour {col!r} is neither #hex nor a palette id (draws an empty outline)")
     for fname, ln in stack:
         rep.error(f"{name}:{ln}", f":::{fname} is never closed")
+    if comic is not None:
+        rep.error(f"{name}:{comic['line']}", f":::{comic['kind']} is never closed: the rest of the chapter is read as its body")
+        check_comic_block(name, comic["kind"], comic["attrs"], comic["body"], comic["line"], comic_ctx, rep)
     for fid, w in fn_cited.items():
         if fid not in fn_defined:
             rep.warn(w, f"footnote [^{fid}] has no [^{fid}]: definition in this chapter (prints over an empty note)")
@@ -1309,12 +1984,15 @@ def main() -> None:
                     rep.error(where, f"table styleId {sid!r} is not in tableStyles")
         elif kind not in ("bitmap", "svg", None):
             rep.error(where, f"kind {kind!r}: use bitmap, svg or table")
+        check_picture_marks(r, where, rep)
         check_snippet(where + " caption", r.get("caption", ""), res_ids | {x.get('id') for x in resources}, rep)
         check_snippet(where + " note", r.get("note", ""), res_ids | {x.get('id') for x in resources}, rep)
         if "source" in r:
             rep.info(where, "`source` is extraction metadata: drop it from the final manifest")
     check_folio(shared, "preset.json config", resources, rep)
+    check_comics_config(shared, "preset.json config", rep)
 
+    comic_editions: dict[str, list] = {}
     coverage = ...  # loaded on the first locale with CJK text
     font_files_checked = False
     arabic_files_checked = False
@@ -1325,6 +2003,7 @@ def main() -> None:
         if loc.get("config"):
             check_config(loc["config"], f"localized.{lang}.config", fonts, rep, partial=True)
             check_folio(loc["config"], f"localized.{lang}.config", resources, rep)
+            check_comics_config(loc["config"], f"localized.{lang}.config", rep)
             for k, v in loc["config"].items():
                 if isinstance(v, dict) and isinstance(shared.get(k), dict) and set(shared[k]) - set(v):
                     rep.warn(f"localized.{lang}.config.{k}", f"replaces the shared `{k}` wholesale; missing keys {sorted(set(shared[k]) - set(v))[:6]} fall back to defaults")
@@ -1344,6 +2023,7 @@ def main() -> None:
         # one set in another chapter.
         book_anchors = anchor_ids([(root / c.get("file", "")).read_text(encoding="utf-8")
                                    for c in specs if (root / c.get("file", "")).exists()])
+        comic_ctx = new_comic_ctx(cfg, resources, ids)
         for i, c in enumerate(specs):
             p = root / c.get("file", "")
             if not p.exists():
@@ -1351,11 +2031,15 @@ def main() -> None:
                 continue
             chapter = p.read_text(encoding="utf-8")
             texts.append((c["file"], chapter))
-            check_markdown(c["file"], chapter, i, ids, res_ids, rep, embedded, referenced, index, book_anchors)
+            check_markdown(c["file"], chapter, i, ids, res_ids, rep, embedded, referenced, index, book_anchors, comic_ctx)
             if CJK_RE.search(chapter):
                 check_cjk_lines(c["file"], chapter, rep, japanese_book or is_japanese_text(
                     len(KANA_RE.findall(chapter)), len(HAN_RE.findall(chapter))))
         check_index(index, rep, lang, japanese_book)
+        embedded |= comic_ctx["arts"]  # panel pictures are placed by art=, not cited
+        check_comic_edition(lang, cfg, comic_ctx, resources, m.get("fonts", []), rep)
+        if comic_ctx["blocks"]:
+            comic_editions[lang] = comic_ctx["blocks"]
         if any(CJK_RE.search(t) for _, t in texts):
             check_cjk_locale(f"config ({lang})", texts, cfg, rep)
             if is_japanese_locale(document_locale(cfg)):
@@ -1395,6 +2079,8 @@ def main() -> None:
                 cell_refs = json.dumps(resources)
                 if f'"resourceId": "{rid}"' not in cell_refs:
                     rep.info(f"resource {rid}", f"never cited in the {lang} chapters (unused)")
+
+    compare_comic_editions(comic_editions, rep)
 
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}
     items = sorted(rep.items, key=lambda x: order[x[0]])
