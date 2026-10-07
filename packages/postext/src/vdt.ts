@@ -2149,7 +2149,9 @@ export interface ConfigWarning {
    *  `unknownConfigKey`: a key the heading settings or a paragraph style do
    *  not have (`headings`, `headings.balancing`, a heading level, a heading
    *  style, a paragraph style — and the same under
-   *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
+   *  `htmlViewer.overrides`; the `comics` section and its frame, gutters,
+   *  panel styles, lettering, balloon styles and cast), such as a misspelt
+   *  `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
    *  `suggestion` names the key it is closest to, when one is close.
    *  `unknownConfigValue`: a setting that takes one of a few words holding

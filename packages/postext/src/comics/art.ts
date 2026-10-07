@@ -68,10 +68,11 @@ function proportional(a: number, s: number, size: number): number {
 }
 
 /** Start of a window `size` long on one axis, centred on `c` but kept over
- *  `[a, a + s]` (when it fits) and inside `[0, 1]`. */
-function centred(c: number, size: number, a: number, s: number): number {
+ *  the safe span `[a, a + s]` (when there is one and it fits) and inside
+ *  `[0, 1]`. */
+function centred(c: number, size: number, a: number | undefined, s: number | undefined): number {
   let start = c - size / 2;
-  if (s <= size) {
+  if (a !== undefined && s !== undefined && s <= size) {
     start = Math.min(start, a);
     start = Math.max(start, a + s - size);
   }
@@ -114,7 +115,7 @@ export function comicArtCrop(input: ComicCropInput): ComicCrop {
   }
   const place = (size: number, a: number | undefined, s: number | undefined, f: number | undefined): number => {
     if (size >= 1 - 1e-9) return (1 - size) / 2; // the picture centred in a letterbox
-    if (f !== undefined) return centred(f, size, a ?? 0, s ?? 0);
+    if (f !== undefined) return centred(f, size, a, s);
     if (a !== undefined && s !== undefined) return proportional(a, s, size);
     return (1 - size) / 2;
   };

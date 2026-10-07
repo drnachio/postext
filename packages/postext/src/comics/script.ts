@@ -70,11 +70,10 @@ function numberValue(v: string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+/** A reserved key names its role (`caption`, `sfx`, `note`); any other key
+ *  is a speaker. */
 function roleOf(key: string): ComicScriptRole {
-  if (key === 'caption') return 'caption';
-  if (key === 'sfx') return 'sfx';
-  if (key === 'note') return 'note';
-  return 'speech';
+  return COMIC_RESERVED_KEYS.has(key) ? (key as ComicScriptRole) : 'speech';
 }
 
 /** The text of a balloon read as inline Markdown, spaces collapsed, with
