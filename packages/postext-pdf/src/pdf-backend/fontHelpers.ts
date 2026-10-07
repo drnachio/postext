@@ -1,5 +1,5 @@
-import type { VDTDocument, VDTBlock, VDTDesignSlot, VDTLine } from 'postext';
-import { pageComics } from 'postext';
+import type { CjkRegion, VDTDocument, VDTBlock, VDTDesignSlot, VDTLine } from 'postext';
+import { graphemesOf, pageComics, verticalFlowOf, verticalRuns } from 'postext';
 
 /** The four faces a run of rich text picks from by its bold / italic flags. */
 interface FaceSet {
@@ -12,15 +12,30 @@ interface FaceSet {
 /** Font strings and the characters set in each (see {@link collectFontText}). */
 export type FontText = Map<string, Set<number>>;
 
+/** How text set down a vertical line is cut into cells (the region whose
+ *  rules it takes, the digits a number set in one cell may have). */
+interface VerticalSetting {
+  region: CjkRegion;
+  uprightDigits: number;
+}
+
 /** Record that `text` is set in `fontString`; an empty text still records
- *  the face. */
-function add(out: FontText, fontString: string, text = ''): void {
+ *  the face. Down a vertical line (`vertical`), a cell may be painted with
+ *  other characters than the text's (`VerticalGlyph.paintAs`: a full-width
+ *  ！！ in one cell as `!!`, a Japanese “ as 〝): those are recorded too, so
+ *  that a face served as several files hands over the file the painter
+ *  draws from. */
+function add(out: FontText, fontString: string, text = '', vertical?: VerticalSetting): void {
   let cps = out.get(fontString);
   if (!cps) {
     cps = new Set();
     out.set(fontString, cps);
   }
   for (const ch of text) cps.add(ch.codePointAt(0)!);
+  if (!vertical || text.length === 0) return;
+  for (const run of verticalRuns(graphemesOf(text), vertical.region, vertical.uprightDigits)) {
+    for (const ch of run.glyph.paintAs ?? '') cps.add(ch.codePointAt(0)!);
+  }
 }
 
 /**
@@ -49,11 +64,16 @@ export function collectFontStrings(doc: VDTDocument): string[] {
 export function collectFontText(doc: VDTDocument, into: FontText = new Map()): FontText {
   const out = into;
   for (const page of doc.pages) {
+    // A vertical page paints its flow's lines as vertical text (see
+    // `ctx.vertical` in the page renderer).
+    const vertical: VerticalSetting | undefined = verticalFlowOf(page)
+      ? { region: doc.config.cjk?.region ?? 'mainland', uprightDigits: doc.config.cjk?.uprightDigits ?? 2 }
+      : undefined;
     for (const col of page.columns) {
-      for (const block of col.blocks) addBlockFonts(block, out);
+      for (const block of col.blocks) addBlockFonts(block, out, vertical);
     }
     // Floated resources live on their page's float band, not in a column.
-    for (const block of page.floats ?? []) addBlockFonts(block, out);
+    for (const block of page.floats ?? []) addBlockFonts(block, out, vertical);
     for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
     // The lettering of the page's comics (its comic page or half of a
     // spread, its strips): design text in their balloons.
@@ -62,7 +82,7 @@ export function collectFontText(doc: VDTDocument, into: FontText = new Map()): F
   return out;
 }
 
-function addBlockFonts(block: VDTBlock, out: FontText): void {
+function addBlockFonts(block: VDTBlock, out: FontText, vertical?: VerticalSetting): void {
   if (block.hidden) return;
   // Design overlays (advanced heading designs, callout frames) replace the
   // block's own lines.
@@ -110,16 +130,16 @@ function addBlockFonts(block: VDTBlock, out: FontText): void {
     bold: block.boldFontString ?? block.fontString,
     italic: block.italicFontString ?? block.fontString,
     boldItalic: block.boldItalicFontString ?? block.boldFontString ?? block.italicFontString ?? block.fontString,
-  }, out);
+  }, out, vertical);
 }
 
 /** The faces a run of lines paints: the base face (spaces, plain lines)
  *  once any line sets something, then each text segment's pick. */
-function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, out: FontText): void {
+function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, out: FontText, vertical?: VerticalSetting): void {
   for (const line of lines ?? []) {
     const segments = line.segments ?? [];
     if (line.text.length === 0 && segments.length === 0) continue;
-    add(out, faces.normal, line.text);
+    add(out, faces.normal, line.text, vertical);
     for (const seg of segments) {
       if (seg.kind === 'space' || seg.kind === 'math' || seg.kind === 'swatch') {
         if (seg.kind === 'space') add(out, faces.normal, seg.text);
@@ -144,11 +164,11 @@ function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, ou
         continue;
       }
       if (!seg.text) continue;
-      add(out, seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces), seg.text);
+      add(out, seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces), seg.text, vertical);
       // A word set in several styles is shaped whole in each face one of
       // its runs takes (`drawStyledWordPx`).
       for (const run of seg.runs ?? []) {
-        if (!!run.bold !== !!seg.bold || !!run.italic !== !!seg.italic) add(out, pickFace(!!run.bold, !!run.italic, faces), seg.text);
+        if (!!run.bold !== !!seg.bold || !!run.italic !== !!seg.italic) add(out, pickFace(!!run.bold, !!run.italic, faces), seg.text, vertical);
       }
     }
   }
@@ -158,10 +178,12 @@ function addSlotFonts(slot: Pick<VDTDesignSlot, 'blocks'> | undefined, out: Font
   for (const b of slot?.blocks ?? []) {
     if (b.kind !== 'text' || !b.lines.some((l) => l.text.length > 0)) continue;
     add(out, b.fontString);
+    // A block set vertically (a design text, a balloon's columns).
+    const vertical = b.vertical ? { region: b.vertical.region, uprightDigits: b.vertical.uprightDigits } : undefined;
     for (const line of b.lines) {
-      add(out, b.fontString, line.text);
+      add(out, b.fontString, line.text, vertical);
       // Inline-mark runs: bold, italic, a script at the reduced size.
-      for (const run of line.runs ?? []) if (run.text) add(out, run.fontString, run.text);
+      for (const run of line.runs ?? []) if (run.text) add(out, run.fontString, run.text, vertical);
     }
   }
 }
