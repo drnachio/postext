@@ -1,0 +1,63 @@
+---
+title: "Os mesmos quadros em três divisões de página"
+summary: "Cinco quadros de HQ em três árvores de divisão: o split de :::page corta a página e a área segura de cada imagem mantém o assunto à vista em qualquer célula."
+plain: "Uma página de HQ desenhada uma vez e diagramada de três jeitos. As mesmas cinco imagens e os mesmos diálogos preenchem três grades de quadros diferentes, e cada imagem é recortada de novo para caber no quadro."
+description: "Uma prova de diagramação de HQ no Postext: os mesmos cinco quadros em três árvores de divisão, reenquadrados pela área segura e letreirados em sete idiomas."
+question: "Como faço para dividir uma página de HQ em quadros sem perder o rosto quando o quadro muda de formato?"
+aliases: ["grade de quadros", "diagramação de HQ", "divisão da página", "árvore de divisão", "fileiras", "quadro sobreposto", "área segura", "enquadramento", "recorte", "requadro", "panel grid", "split tree", "viñetas", "コマ割り", "分格"]
+pageNotes: { "1": "A folha de rosto da prova: o título “Uma página, três planos” em maiúsculas de destaque vermelhas e os três planos, cada um com seu atributo split em vermelho.", "2": "Plano A: uma fileira larga com Maya subindo ao farol (“Vovô! Cheguei!”), três quadros lado a lado (o faroleiro com o rádio, “Chegou na hora. O rádio ficou surdo,”; Maya apontando para o chão, “Vovô… acho que encontrei o problema.”; o gato dormindo com PURRRR em vermelho) e uma cena larga do farol aceso à noite.", "3": "Plano B: duas colunas; à esquerda a chegada de Maya e o faroleiro com o rádio, altos; à direita Maya apontando, o gato e o farol à noite com “Rádio funcionando, farol aceso.” e “E o Biscuit achou uma cama nova.”.", "4": "Plano C: uma fileira superior com três quadros estreitos, os dois balões do faroleiro empilhados abaixo do rosto dele e o gato sobreposto ao quadro de Maya, e um quadro alto do farol à noite com dois balões perto da galeria." }
+---
+
+## O que você vai compor
+
+Uma prova de diagramação para uma página de HQ, *O farol de Porthcove*: uma folha de rosto e a mesma página em três planos, para o autor escolher. As cinco imagens (Maya subindo ao farol, o avô diante de um rádio mudo, Maya apontando para o chão, o gato dormindo sobre o cabo, o farol aceso à noite) e as seis falas letreiradas nunca mudam; muda só o `split` de cada `:::page`. Cada imagem é recortada de novo para a sua célula e cada balão é posicionado de novo junto de quem fala. O formato é o do gibi americano, 168 × 259 mm, e a prova sai em sete edições, cada uma letreirada no seu idioma.
+
+## Preparo
+
+### 1 · Corte a página com uma árvore de divisão
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Um `:::page` ocupa a mancha, aqui 144 × 227 mm, e o atributo `split` a corta. `/` separa linhas, `|` separa colunas, cada medida é uma porcentagem da célula que ela corta, `*` reparte o que sobra e um colchete corta aquela célula de novo no outro eixo ([dividir a página](/pt/docs/comics#dividir-a-página)). O plano C, `30 [30 | 20 | *] / *`, faz uma fileira com 30% da altura, divide essa fileira em células de 30% e 20% de largura mais o resto e deixa embaixo uma única célula alta. As sarjetas ficam a cavalo de cada linha de corte: 4 mm entre fileiras, 3 mm entre quadros da mesma fileira. As linhas `::panel` preenchem as células na ordem de leitura, as linhas de cima para baixo e as colunas a partir do lado de início.
+
+<PageShot page={4} crop="0,0,1,0.34" caption="Plano C: a fileira 30 | 20 | resto, com o gato sobreposto ao terceiro quadro." />
+
+### 2 · Dê a cada imagem uma área segura
+
+<Excerpt region="art" />
+
+Cada imagem é desenhada uma vez e recortada para preencher a célula em que cair. A área segura é a parte que todo recorte conserva inteira ([quadros e arte](/pt/docs/comics#quadros-e-arte)). A área segura da imagem do rádio é só o faroleiro, 24% da largura, então a célula de 26 mm do plano C mostra o personagem do boné às botas e deixa o rádio de fora; as células largas dos planos A e B mostram os dois. Uma célula cujo formato não comporta a área segura recebe a imagem com faixas vazias, e a composição avisa (`comicPanelLetterbox`). As âncoras marcam a boca e o rosto de cada personagem nas mesmas frações, de modo que os rabichos encontram quem fala em qualquer recorte.
+
+### 3 · Ponha um quadro sobre outro
+
+A divisão do plano C cria quatro células para cinco quadros. O gato entra com `inset="50 50 46 46"`: um quadro de 46% da largura e 46% da altura, colocado em 50%, 50% do quadro anterior, o de Maya. Um quadro sobreposto não ocupa célula, então os quadros seguintes mantêm o lugar, e ele é lido logo depois do quadro que cobre.
+
+### 4 · Letreire sete edições a partir de um layout
+
+<Excerpt region="editions" />
+
+A divisão, as imagens, os recortes e as âncoras são iguais em todos os idiomas; `content.<lang>.md` guarda só as palavras, com os mesmos ids de personagem (`maya`, `tomas`). A edição japonesa compõe os balões na vertical, oito caracteres por coluna, e tira o 。 final; a árabe é lida da direita para a esquerda, por isso os quadros de cada fileira se espelham, mas as imagens não. O corpo do letreiramento fica em 8 pt em todas as edições: uma fala mais longa dá um balão maior, nunca uma letra menor ([letreiramento](/pt/docs/comics#letreiramento)).
+
+## Variações
+
+### Incline a fileira do meio
+
+Uma medida escrita `30~40` leva a sarjeta final daquela célula de 30% numa ponta a 40% na outra. Células inclinadas perdem os cantos arredondados.
+
+```diff
+-:::page{split="30 / 35 [* | * | *] / *"}
++:::page{split="30 / 35 [30~40 | * | *] / *"}
+```
+
+### Espelhe a arte na edição árabe
+
+Por padrão, as imagens mantêm a orientação. Uma HQ desenhada sem letreiros nem relógios pode seguir o sentido de leitura.
+
+```diff
+ const comics = {
++  mirrorArt: true, // as imagens se espelham numa edição da direita para a esquerda
+   gutter: { horizontal: mm(4), vertical: mm(3) },
+```
+
+## Erros comuns
+
+- Uma célula com um quinto da largura da página comporta umas quatro palavras por linha em 8 pt, e no plano C o rosto do faroleiro está no meio da célula dele: os dois balões sobre a tempestade são mais altos que o espaço acima ou abaixo do rosto. Ali a primeira das duas falas leva `break` (`tomas{break}:`), e assim o par pode atravessar a sarjeta até o quadro de Maya; o motor mantém o segundo balão depois do primeiro e nunca o deixa invadir a margem da página. Sem `break`, a composição avisa `comicBalloonOverflow`. Na edição em português as duas falas são curtas o bastante para ficar empilhadas abaixo do rosto, dentro da célula do faroleiro.
+- Uma área segura mais justa dá um recorte limpo em mais células, mas o que fica fora dela pode ser cortado: as botas na primeira fileira do plano A, o rádio no plano C.

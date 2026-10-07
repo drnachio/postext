@@ -1,0 +1,68 @@
+---
+title: "Pós-textuais de tese: apêndice, glossário e índice"
+summary: "As últimas páginas de uma tese em preto e branco: apêndice com letra, glossário em duas colunas, referências APA e índice montado a partir de marcas no texto."
+plain: "As últimas páginas de uma tese de doutorado, do capítulo final ao índice. O Postext monta o índice a partir de palavras marcadas no texto e preenche os números de página."
+description: "Estilos de título compõem o fim de uma tese no Postext: apêndice A, glossário em duas colunas, referências com recuo deslocado e índice feito de marcas :index."
+question: "Como faço para compor o glossário, as referências e o índice de uma tese, com recuo deslocado e corpo menor?"
+aliases: ["tese", "tese de doutorado", "dissertação", "dissertação de mestrado", "TCC", "elementos pós-textuais", "pós-textuais", "apêndice", "apêndices", "anexo", "apêndice com letra", "glossário", "bibliografia", "referências", "normas APA", "índice", "índice remissivo", "recuo deslocado", "preto e branco"]
+pageNotes: { "1": "A página 171 abre o capítulo 6, Conclusion, sob uma faixa preta de 62 mm de altura: o título e um numeral de 118 pt em branco, com o antetítulo CHAPTER acima deles. A Tabela 6.1 fica no pé, entre fios horizontais.", "3": "A página 173, Appendix A, Interview guide: a faixa traz a letra A onde o capítulo tinha o numeral. Abaixo, sete perguntas numeradas com duas perguntas de aprofundamento e depois a Tabela A.1.", "4": "A página 174, o glossário: o antetítulo BACK MATTER e uma nota em itálico na faixa, e depois duas colunas alinhadas à esquerda de termos em negrito cujas definições têm recuo deslocado de 1 em.", "5": "A página 175, as referências: uma coluna de dezessete entradas APA em 9,3 pt, cada uma com recuo deslocado de 1,5 em.", "6": "A página 176, o índice: letras na fonte de títulos sobre duas colunas de entradas e subentradas recuadas. Os números de página em negrito remetem às definições do glossário.", "7": "A página 177: o índice termina em duas colunas de altura quase igual sob o cabeço INDEX, seguido de um colofão." }
+---
+
+## O que você vai compor
+
+As sete últimas páginas de uma tese de doutorado sobre a leitura em tela e em papel, compostas numa página B5 em preto e branco. O capítulo 6, o apêndice A, o glossário, as referências e o índice abrem todos sob a mesma faixa preta de 62 mm de altura, com o título vazado em branco. O capítulo mostra o numeral na faixa, e o apêndice a sua letra; as seções pós-textuais trazem o antetítulo BACK MATTER e uma nota curta em itálico. O capítulo corre numa coluna justificada. O glossário e o índice passam para duas colunas alinhadas à esquerda, e as referências voltam para uma, com as linhas seguintes de cada entrada recuadas. O índice sai de marcas no texto: o motor ordena os termos sob as suas letras, acha a página de cada marca e junta as páginas seguidas em intervalos como 171–73. Os números em negrito remetem às definições do glossário.
+
+## Preparo
+
+### 1 · Dar a cada parte dos pós-textuais um estilo de título
+
+O código é a [resposta curta](#a-resposta-curta) acima. `# Glossary {style="glossary" note="…"}` abre uma seção que vai até o próximo título de nível 1, e as páginas dela assumem a diagramação, os cabeços e a abertura do estilo ([estilos de título](/pt/docs/configuration#estilos-de-título)); assim o glossário e o índice passam para duas colunas, enquanto as referências, cujo estilo não define diagramação, voltam à coluna única do documento. `numbered: false` deixa esses títulos fora da contagem de capítulos (sem ele, a faixa do glossário imprime 8), e cada estilo declara a sua quebra de página, porque um estilo que não declara nenhuma herda o `'odd'` do capítulo e deixa páginas pares em branco. As entradas do glossário e das referências são parágrafos de um bloco `:::paragraphs{style="…"}` em 9,3 pt sobre 12,4 pt, contra os 11 sobre 14,6 do texto, com as linhas seguintes recuadas 1 em no glossário e 1,5 em nas referências ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
+
+### 2 · Desenhar uma faixa para todas as aberturas
+
+<Excerpt region="opener" />
+
+A marca é `{number}`, vazio num título sem número, então um único design serve para o capítulo, para o apêndice, que passa `{attr.letter}` como marca, e para as seções pós-textuais, que imprimem o seu `{attr.note}` onde ficaria o numeral. `minHeight` reserva oito linhas de 14,6 pt, 41,2 mm a partir do topo da mancha, o que deixa 3,2 mm de folga sob a faixa e mantém o texto na grade. O texto de design põe a linha de base a 0,8 da linha, então uma caixa alinhada embaixo cujo pé fica `below()` de uma linha de base assenta a última linha nessa linha de base. O título, o numeral de 118 pt e a última linha da nota se apoiam todos na linha de base do título, 52,5 mm abaixo do refile. A linha do numeral tem 0,72 do corpo dele, porque na 1.4.1 uma linha mais alta que a sua caixa ignora `verticalAlign: 'bottom'`.
+
+### 3 · Pôr a letra do apêndice à mão
+
+<Excerpt region="appendix" />
+
+No postext 1.4.1, um estilo de título não consegue mudar a numeração do seu nível, então o apêndice fica sem número e `# Interview guide {style="appendix" letter="A"}` leva a letra. O atributo alimenta a faixa e o cabeço do apêndice, e um tipo de recurso próprio numera as tabelas dele como A.1, A.2 e assim por diante; com o tipo padrão, a tabela seria a Tabela 6.2, já que um título sem número deixa o contador de capítulos em 6. Os títulos do próprio capítulo contam a partir dos modelos de cada nível: `'{1}.{2}'` imprime 6.1, e `continuation.headings.h1: 5` faz deste o sexto capítulo.
+
+### 4 · Pôr os cabeços na borda externa
+
+<Excerpt region="running-heads" />
+
+Os quatro elementos de texto são ancorados na página e filtrados por `parity`, o que mantém o fólio na borda externa das duas páginas; cada um é posicionado pelo topo, `above()` de uma linha de base 17,5 mm abaixo do refile, de modo que o fólio de 9,5 pt e as maiúsculas de 7,5 pt ficam na mesma linha. A página par traz o título da tese (`{title}`, do frontmatter) e a ímpar o da seção (`{chapterTitle}`), como INDEX na <PageRef page={7}>página 177</PageRef>. `pages: 'body'` os deixa fora das aberturas, cujo único fólio é o do rodapé, centralizado sob a mancha. A página ímpar do capítulo diria *Chapter 6. Conclusion* e a do apêndice *Appendix A. Interview guide*, mas nesta amostra só o índice continua numa página ímpar.
+
+### 5 · Marcar os termos onde o texto trata deles
+
+<Excerpt region="index" />
+
+`:index[tablet]` imprime a palavra e a registra sob ela mesma; `Rayner:index{term="Rayner, Keith"}` não imprime nada e registra a página de *Rayner* sob o nome completo; `term="interviews!timing of"` cria uma subentrada. Os termos do glossário levam `main`, então a página deles sai em negrito, como avisa a nota na faixa do índice. `:::index` sob `# Index {style="index"}` imprime as entradas nas duas colunas do estilo, e `buildDocument` diagrama o documento de novo até os números de página pararem de mudar. As entradas vão em 9 sobre 11,6 pt, com as linhas seguintes recuadas 2 em e as subentradas recuadas 1 em; as letras vão em 13 pt na fonte de títulos. As marcas não funcionam em células de tabela, então as linhas da Tabela 6.1 não acrescentam páginas: *look-backs* remete ao parágrafo que as relata, não à tabela.
+
+### 6 · Manter todos os padrões em tinta
+
+<Excerpt region="palette" />
+
+Os padrões do motor para negrito, itálico e marcadores de lista seguem a entrada `main-color` da paleta, então apontá-la para a tinta os imprime em preto em vez de azul ([paleta de cores](/pt/docs/configuration#paleta-de-cores)). Na 1.4.1, a paleta não chega a `bodyText.referenceColor`, por isso a config repete o valor: sem essa linha, *Table 6.1* sai no texto no azul #295AA3. `referenceBold: false` compõe a referência em redondo, como as citações autor-data em volta dela.
+
+<Note>Três coisas continuam manuais: uma lista de tabelas, uma referência cruzada a uma página do texto (*ver p. 172*) e, na 1.4.1, um contador com letras para os apêndices. Numa tese inteira diagramada capítulo por capítulo com `buildBundle`, o capítulo que contém `:::index` recebe as marcas de todos os capítulos.</Note>
+
+## Variações
+
+### Começar cada seção numa página ímpar
+
+Teses encadernadas para biblioteca costumam abrir cada seção numa página da direita. O glossário, as referências e o índice passam então para as páginas 175, 177 e 179, cada um depois de uma página par em branco, e os números em negrito do índice apontam para a página 175.
+
+```diff
+-const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
+-  parity: 'any' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
++const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
++  parity: 'odd' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
+```
+
+### Compor também o começo da tese
+
+Os pré-textuais, contados em algarismos romanos antes da página 1, estão em <RecipeLink slug="front-matter-roman-to-arabic">Pré-textuais com fólios romanos e depois a página 1</RecipeLink>.

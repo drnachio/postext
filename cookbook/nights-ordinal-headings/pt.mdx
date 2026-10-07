@@ -1,0 +1,68 @@
+---
+title: "Títulos com ordinais árabes por extenso: a primeira noite…"
+summary: "Um modelo de nível escreve cada noite como الليلة e um ordinal feminino, الليلة الأولى, الثانية, الثالثة, sem que o Markdown traga número nenhum."
+plain: "O começo das Mil e uma noites, em que cada noite traz o seu número escrito por extenso em árabe, “a primeira noite”, “a segunda noite”, na forma feminina que concorda com a palavra árabe para noite."
+description: "As primeiras noites de Alf layla wa-layla no Postext: um modelo com {2:ordinal-feminine}, títulos de noite em ruqʿa, aberturas de conto e cabeços."
+question: "Como numero capítulos com ordinais árabes por extenso, como الليلة الأولى?"
+aliases: ["Mil e uma noites", "As mil e uma noites", "Alf layla wa-layla", "ألف ليلة وليلة", "Sherazade", "Xerazade", "ordinais por extenso", "ordinais árabes", "ordinal feminino", "números por extenso", "títulos de noite", "الليلة الأولى", "O mercador e o gênio", "Hindawi"]
+pageNotes: { "2": "A abertura de O mercador e o gênio: uma faixa clara entre fios dourados com o título do conto em ruqʿa verde, um pequeno chapéu cinza acima e uma linha em latim abaixo; depois as palavras فلما كانت em cúfico pequeno sobre الليلة الأولى em ruqʿa verde e um fio dourado curto, e o texto da primeira noite." }
+---
+
+## O que você vai compor
+
+Dez páginas do começo das *Mil e uma noites*: uma falsa folha de rosto e depois O mercador e o gênio, o primeiro conto que Sherazade narra, que se estende por três noites. Cada noite abre com a fórmula de Hindawi, فلما كانت, em cúfico pequeno sobre o seu número em ruqʿa verde, الليلة الأولى, الليلة الثانية, الليلة الثالثة, escrito por extenso como os livros o imprimem. Nenhum desses números está no Markdown: o nível de título conta as noites e escreve cada número como um ordinal feminino, que concorda com ليلة. O conto abre sob um cabeção entre fios dourados, as histórias dos três velhos têm os seus próprios títulos pequenos, e os cabeços trazem o livro e o conto. O texto é a edição de 2022 da Fundação Hindawi, sob CC BY 4.0.
+
+## Preparo
+
+### 1 · Noites contadas por extenso
+
+O código é [a resposta curta](#a-resposta-curta) acima. Uma noite é um título de nível 2, `## الليلة`, e o `numberingTemplate` do nível é `'الليلة {2:ordinal-feminine}'`: o modificador `-feminine` escreve الأولى, الثانية, الحادية عشرة, الحادية بعد الألف ([Ordinais e cardinais por extenso](/pt/docs/arabic-layout#ordinais-e-cardinais-por-extenso), [Números por extenso](/pt/docs/configuration#números-por-extenso)). Com `numberPosition: 'replace'`, o número é o título inteiro: o que o Markdown disser depois de `##` é descartado, e o título, os marcadores do PDF e o texto alternativo dizem الليلة الثانية. O design imprime esse título, `{titleText}`, em tamanho grande, e a fórmula de Hindawi, فلما كانت, um texto fixo, em tamanho pequeno acima dele. Os títulos dos contos usam um estilo com `numbered: false`: um nível 1 numerado reiniciaria a contagem das noites a cada conto, enquanto um sem número deixa os contadores mais profundos em paz, e as noites continuam correndo pelo livro inteiro.
+
+<PageShot page={5} crop="0,0.15,1,0.35" caption="Página 5: a segunda noite, com o número escrito pelo modelo e impresso como o título inteiro." />
+
+### 2 · Um cabeção para cada conto
+
+<Excerpt region="opener" />
+
+O título de nível 1 é uma faixa de cor entre dois fios dourados, com o título do conto em ruqʿa sobre ela e um chapéu e uma linha em latim tirados de atributos do título, `{kicker="…" latin="…"}`. A linha em latim é a única parte da abertura que muda com a edição.
+
+### 3 · Cabeços que chegam com o conto
+
+<Excerpt region="heads" />
+
+Os cabeços pertencem ao estilo de título `tale`, então cada conto traz os seus; a falsa folha de rosto não tem nenhum. A página par leva o título do livro e a ímpar `{chapterTitle}`, o conto. Num livro encadernado pela direita, a página par fica à direita, e por isso o fólio dela vai no alto à direita ([Ordem das páginas e encadernação pela direita](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita)).
+
+### 4 · Uma falsa folha de rosto em ruqʿa
+
+<Excerpt region="title" />
+
+A falsa folha de rosto é um estilo de título com `span: 'page'`, `numbered: false` e cabeçalho e rodapé vazios, de modo que não conta nem leva cabeço.
+
+## Variações
+
+### Começar na noite mil e um
+
+`{startAt=1001}` num título de noite define o contador dele, e o modelo escreve الليلة الحادية بعد الألف ([Atributos de título](/pt/docs/document-format#atributos-de-título)).
+
+```diff
+-## الليلة
++## الليلة {startAt=1001}
+```
+
+### Escrever as centenas à maneira de Bulaq
+
+`-classical` escreve مائة no lugar de مئة, e a ducentésima noite fica الليلة المائتان.
+
+```diff
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}', numberPosition: 'replace',
+```
+
+### Numerar capítulos no masculino
+
+Sem modificador, o ordinal é masculino, para um substantivo como الفصل: الفصل الأول، الفصل الثاني.
+
+```diff
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الفصل {2:ordinal}', numberPosition: 'replace',
+```

@@ -1,0 +1,63 @@
+---
+title: "Currículo de uma página com barra lateral"
+summary: "Um currículo A4 cuja barra cor de ameixa é um boxe numa coluna só de flutuantes, levado às margens por caixas do cabeçalho, com datas à direita."
+plain: "Um currículo de uma página para uma designer de livros, com uma faixa colorida à esquerda para contato e habilidades. As datas de cada emprego ficam alinhadas à direita."
+description: "Um currículo de uma página em coluna e meia, com um boxe cor de ameixa que enche a coluna lateral e caixas do cabeçalho que levam a cor até as bordas da folha."
+question: "Como faço para diagramar um currículo de uma página com uma coluna lateral colorida e as datas à direita?"
+aliases: ["currículo", "curriculum vitae", "CV", "currículo de uma página", "barra lateral", "currículo em duas colunas", "barra lateral colorida", "datas alinhadas à direita", "habilidades em etiquetas", "résumé", "resume", "currículum"]
+pageNotes: { "1": "Um currículo A4. Uma faixa cor de ameixa desce pela borda esquerda da folha de cima a baixo; no alto, uma pilha de cinco livros encadernados em tecido damasco, branco, framboesa e lilás fica na altura da linha de base do nome. Abaixo, maiúsculas cor de damasco abrem as seções, de texto branco: Contact; Skills e Tools, em pílulas arredondadas; Languages, Education, Teaching e Outside work. Na página branca à direita, Irene Salcedo numa serifada grande, BOOK DESIGNER AND ART DIRECTOR em pequenas maiúsculas framboesa, um perfil de cinco linhas, depois Experience, um título serifado framboesa com um fio fino que vai até a margem, três empregos com o cargo à esquerda e as datas alinhadas à direita na mesma linha e o empregador em itálico embaixo, uma lista de Selected books e um colofão de uma linha." }
+---
+
+## O que você vai compor
+
+O currículo de Irene Salcedo, uma designer de livros fictícia de Madri, numa única folha A4. Uma faixa cor de ameixa de 66 mm de largura desce pela borda esquerda, do alto da folha até o pé. No alto, uma pilha de livros encadernados em tecido, desenhada em código, fica na altura da linha de base do nome. Abaixo vêm os contatos, as habilidades e ferramentas em pílulas, os idiomas, a formação e a docência, e o que ela faz fora do trabalho. O nome, em Hedvig Letters Serif de 46 pt, abre uma coluna de texto de 118 mm com um perfil de cinco linhas, três empregos e uma lista dos livros que ela projetou. Cada emprego põe o cargo à esquerda e as datas alinhadas à direita na mesma linha de base, com o empregador em itálico embaixo. O primeiro título da barra lateral divide a linha de base com a profissão, sob o nome.
+
+## Preparo
+
+### 1 · Aninhe as seções num único boxe lateral
+
+<Excerpt region="sections" />
+
+Dentro da coluna, a faixa é o boxe da [resposta curta](#a-resposta-curta). Ele é aberto antes do nome, então `span="side"` o põe no alto da coluna só de flutuantes. As seções são boxes aninhados dentro dele, sem preenchimento próprio, e assim o ameixa corre sem interrupção de Contact a Outside work. Como boxes laterais separados, elas ficariam de 4,7 a 9,1 mm umas das outras, mesmo com `marginBottom` em 0. As pílulas têm uns 3,9 mm de altura. Skills e Tools usam um estilo de seção próprio, `chips`, cuja entrelinha de 16 pt deixa 1,8 mm entre as fileiras; os 12,4 pt das outras seções deixariam meio milímetro ([estilos de chip](/pt/docs/configuration#estilos-de-chip)).
+
+### 2 · Pinte as margens em volta da coluna
+
+<Excerpt region="margins" />
+
+A coluna lateral fica dentro das margens da página, então o boxe da barra para a 9 mm da borda esquerda e a 18 mm da borda superior. Três caixas do cabeçalho preenchem a margem superior acima da coluna, a margem esquerda de cima a baixo e a margem inferior abaixo da coluna. Os elementos do cabeçalho são pintados depois do texto e por cima dele, por isso a receita os mantém nas margens, onde não corre texto. Eles também se repetem em todas as páginas, e uma segunda página levaria a faixa também ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). As caixas de cima e da esquerda invadem o boxe da barra em 0,5 mm, e a caixa do pé sobe 1 mm acima do pé da coluna, por cima do fim do boxe, para que nenhum fio de papel apareça nas emendas. O `:::space` que fecha o boxe da barra o leva até 278,0 mm, 0,8 mm acima do pé da coluna, com 2,76 linhas em inglês e 1,76 em espanhol.
+
+### 3 · Componha o nome no alto da coluna de texto
+
+<Excerpt region="name" />
+
+O H1 mantém o `span: 'column'` padrão. Com `'page'` ele vira uma abertura sobre as duas colunas; como vem depois do boxe da barra, passa para a página 2, e lá a coluna lateral começa embaixo do nome, a 45,9 mm. `breakBefore` está desligado porque o boxe da barra já está na página: com a quebra, o nome e a coluna de texto inteira vão para a página 2. O `marginBottom` do nível, de uma linha da grade, começa o perfil a 45,9 mm em vez de 41,3 mm. O espaçamento superior do boxe da barra é `ROLE_Y`, a altura do nome mais o vão embaixo dele, de modo que o primeiro título da barra e a profissão dividem a linha de base, a 39,3 mm da borda superior.
+
+### 4 · Ponha as datas na linha do cargo
+
+<Excerpt region="jobs" />
+
+Cada emprego é um H3 cujos atributos trazem o empregador e as datas: `### Art director {org="Ediciones del Albardín, Madrid" dates="2021 – present"}` ([atributos de título](/pt/docs/document-format#atributos-de-título)). O cargo e as datas são ancorados ao alto do mesmo contêiner, um em cada canto, com o mesmo corpo e a mesma entrelinha, e por isso ficam numa só linha de base. O cargo tem no máximo 84 mm e pode quebrar: um cargo longo passa para uma segunda linha antes de chegar às datas, e o empregador desce junto. Com o espaço acima, cada título de seção ocupa exatamente três linhas da grade, o que põe todo emprego 9 pt abaixo de uma linha da grade, venha ele depois de um título de seção ou de uma lista.
+
+## Variações
+
+### Troque a cor da faixa
+
+Cada cor é escrita uma vez, em `palette`, e as caixas da faixa, o boxe da barra, os chips, a profissão, os títulos e o desenho a tomam dali. Estas três linhas deixam a faixa, o destaque e os chips em verde-azulado.
+
+```diff
+-  band: '#3a2235', // the sidebar
++  band: '#1d3b3a', // the sidebar
+-  accent: '#8f3b62', // on paper: the role and the section heads (7.1:1)
++  accent: '#2b5f5b', // on paper: the role and the section heads (7.3:1)
+-  chip: '#744d6c', // on the band: the skill chips
++  chip: '#456d69', // on the band: the skill chips
+```
+
+### Leve figuras para a mesma coluna
+
+O <RecipeLink slug="textbook-margin-column">livro didático com coluna na margem</RecipeLink> põe figuras, legendas laterais e glosas numa coluna só de flutuantes na borda externa de cada página.
+
+## Erros comuns
+
+- Ajuste o `:::space` à página. Na edição em inglês, 2,76 linhas terminam o boxe 0,8 mm acima do pé da coluna. Com 2,96 linhas ele passa 0,1 mm do pé e a barra inteira vai para a página 2; com 2,66 abre-se uma tira de papel entre o boxe e a caixa do pé.
+- Uma caixa no design do nome não serve para pintar a faixa. Uma que termina logo acima do pé da coluna faz o título reservar 265 mm, mais que os 260,8 mm da coluna, e o texto vai para a página 2; uma que segue até o pé da folha anula a altura reservada pelo título, e o perfil sobe para 30,3 mm, por cima da profissão.

@@ -1,0 +1,80 @@
+---
+title: "Uma página de jornal vertical, em andares"
+summary: "Duas folhas de um jornal chinês de 1912 em vertical: o texto em dois andares com um fio entre eles, os telegramas em três e a manchete na altura dos dois."
+plain: "Duas páginas de um jornal chinês de 1912, impresso em colunas lidas de cima para baixo. A página é dividida em faixas empilhadas, com uma linha entre elas, como faziam os jornais da época."
+description: "Um jornal chinês vertical no Postext: dois andares (欄) de 25 caracteres com fio entre eles, cabeçalho e manchete num só desenho, telegramas em três andares."
+question: "Como faço para compor uma página de jornal chinês na vertical, em andares separados por fios?"
+aliases: ["欄", "栏", "andares", "faixas", "jornal vertical", "jornal chinês", "Shenbao", "申報", "cabeçalho do jornal", "logotipo do jornal", "manchete", "linha fina", "telegramas", "1912"]
+pageNotes: { "1": "A primeira folha: um bloco vermelhão desce pela borda direita com o nome 民元舊聞 vazado numa letra Kai e, embaixo, a linha da edição, 中華民國元年　歲次壬子 e 今日出紙兩張; ao lado, a manchete 西湖公宴孫中山紀事 em Song muito pesada, centralizada na altura da página inteira, e a sua linha fina; depois, a reportagem em dois andares com um fio preto entre eles, e a matéria seguinte, 浙都督追祭攻寧陣亡將士, que abre no andar de baixo depois de um fio fino, com linha fina e procedência.", "2": "A segunda folha: um cabeço atravessa o alto com o nome do jornal e 第二張; a reportagem das exéquias termina no andar de cima e a do monumento ocupa o resto, com a inscrição em Kai dois caracteres mais abaixo; à esquerda, os telegramas num boxe de três andares sob um 電報 vermelhão; o colofão no pé." }
+---
+
+## O que você vai compor
+
+Duas folhas de um jornal chinês como era em 1912, o primeiro ano da República, quando os jornais ainda se liam de cima para baixo. Os textos vêm do *Shenbao* de Xangai: o banquete para Sun Yat-sen no Lago do Oeste, onde Chen Qimei se levantou para protestar contra um discurso e se levantou de novo para pedir desculpas; as exéquias pelos soldados de Zhejiang mortos na tomada de Nanquim; o monumento à vitória que Hangzhou ergueu para receber o exército de volta. Quatro telegramas do primeiro número do boletim do Governo Provisório enchem um boxe. O texto corre em dois andares (欄) de 25 caracteres com um fio entre eles, e os telegramas em três. Um cabeçalho vermelhão e a manchete, na altura inteira da página, abrem a primeira folha. A <RecipeLink slug="newspaper-front-page">primeira página de jornal</RecipeLink> compõe a mesma página na horizontal.
+
+## Preparo
+
+### 1 · Transformar duas colunas em dois andares
+
+O código é [a resposta curta](#a-resposta-curta) acima. Com `writingMode: 'vertical-rl'`, a página é uma página horizontal girada um quarto de volta, então `layoutType: 'double'` empilha dois andares, lendo-se primeiro o de cima, e o fio entre colunas vira um fio que atravessa a página entre eles ([escrita vertical](/pt/docs/configuration#escrita-vertical)). A grade de caracteres dá a cada andar 25 caracteres no corpo 五號 (10,5 pt), o máximo de uma coluna de jornal, e à página 29 linhas; arredonda a medianiz para dois quadratins e aumenta as margens para deixar os andares no meio delas ([grade de caracteres](/pt/docs/configuration#grade-de-caracteres)).
+
+O texto corrido aceita no máximo dois andares. Os telegramas ganham três dentro de um boxe: `span="page"` dá a ele a altura da mancha, `placement="bottom"` o leva ao pé do fluxo, que numa página vertical é a borda esquerda, e `:::columns{count=3}` o divide em andares. `columnGap` é o que três andares de 18 caracteres de 9 pt deixam dos 546 pt da mancha, de modo que cada andar contenha só caracteres inteiros.
+
+<PageShot page={2} crop="0.04,0.12,0.36,0.78" caption="Página 2: os telegramas em três andares; a faixa da borda superior do boxe é desenhada como um fio à direita dele." />
+
+### 2 · Pôr o cabeçalho e a manchete num só desenho
+
+<Excerpt region="front" />
+
+A manchete da matéria principal precisava atravessar os dois andares sob o cabeçalho. Um título com `span: 'page'` é composto como abertura na cabeça de uma página, então um segundo título desses, depois do cabeçalho, teria começado uma página nova. Por isso o H1 da página é a matéria principal, e o seu estilo de título desenha o cabeçalho acima da manchete: um bloco vermelhão de 6,5 linhas com o nome do jornal vazado e, sob ele, a linha da edição, com o ano da República e o do ciclo e 今日出紙兩張, “hoje, duas folhas”; depois, a manchete em Noto Serif TC 900 a 44 pt. No fluxo, a largura do desenho é a altura da mancha no papel, então `size: { width: 'fill' }` com `align: 'center'` centraliza a manchete na altura dos dois andares. O desenho mede 13 linhas, um número inteiro de linhas da grade, e o texto que vem depois começa numa linha da grade.
+
+<PageShot page={1} crop="0.54,0.1,0.44,0.82" caption="Página 1: o bloco do cabeçalho, a manchete centralizada na altura dos dois andares, a linha fina ao lado e a procedência na cabeça da sua linha." />
+
+### 3 · Abrir cada matéria com um desenho de título
+
+<Excerpt region="heads" />
+
+Um desenho de título na coluna fica dentro do seu andar. O fio dele é `direction: 'horizontal'` no fluxo, então no papel desce ao longo do andar, um fio fino entre duas matérias. O título começa na cabeça do andar, a linha fina dois caracteres mais abaixo, e a procedência informa o lugar, o jornal e o dia em que a reportagem saiu. `minHeight` mantém cada abertura com quatro linhas, e assim o texto sob cada uma começa na grade.
+
+### 4 · Dar um cabeço à segunda folha e assiná-la no pé
+
+<Excerpt region="pagehead" />
+
+Numa página vertical, os cabeços continuam horizontais, como descreve o clreq. O quadro do cabeço é a margem acima dos andares; a grade aumenta essa margem, e `HEAD` repete a conta da grade para que o fio fique 6 mm acima do primeiro caractere. `pages: 'body'` deixa a página 1 para o cabeçalho. O colofão é um atributo do H1, então a edição em inglês e a em espanhol imprimem cada uma a sua linha sob as mesmas páginas em chinês.
+
+### 5 · Carregar cada voz com o texto que ela compõe
+
+<Excerpt region="voices" />
+
+O Fontsource serve cada peso destas famílias em cerca de cem arquivos, e `loadCjkFonts` baixa os que um texto usa. A Noto Serif TC 400 recebe a amostra inteira; os pesos 700 e 900 recebem só as manchetes e os rótulos dos telegramas; a Noto Sans TC, as linhas do cabeçalho, as procedências e o colofão; a LXGW WenKai TC, as linhas finas, a inscrição e o nome do jornal. Uma família que recebe menos texto do que compõe faz a captura falhar (C12), e o erro nomeia os caracteres que ela teve de pegar de outra família.
+
+## Variações
+
+### Dar quatro andares aos telegramas
+
+Quatro andares de 14 caracteres cabem na mesma altura, e o boxe estreita até as linhas de que precisa.
+
+```diff
+-  columnGap: pt((HEIGHT - 3 * 18 * 9) / 2), // three tiers of 18 characters of 9 pt
++  columnGap: pt((HEIGHT - 4 * 14 * 9) / 3), // four tiers of 14 characters of 9 pt
+```
+
+No Markdown, `:::columns{count=4}`.
+
+### Compor as matérias num único andar
+
+Um andar de 52 caracteres ocupa toda a altura da mancha, 193 mm de papel em cada linha. Cada abertura de matéria passa a tomar quatro linhas da página inteira, e as duas folhas viram três.
+
+```diff
+-  layoutType: 'double', writingMode: 'vertical-rl', // binding 'auto' becomes 'right'
++  layoutType: 'single', writingMode: 'vertical-rl', // binding 'auto' becomes 'right'
+```
+
+Com `charsPerLine: 2 * CHARS + 2` na grade.
+
+## Erros comuns
+
+- A Noto Serif TC do Fontsource declara 爲, a forma que o *Shenbao* imprimia, na faixa de um dos seus arquivos, mas esse arquivo não tem o glifo: o canvas o desenhou com uma fonte do sistema e o PDF ficou sem ele (C25). As reportagens usam 為.
+- As transcrições do Wikisource trazem erros que a página corrige: 己紀 por 已紀 e, duas vezes, 倍侍 por 陪侍 na reportagem do banquete; na das exéquias, 勸勵一番現在將土, com 土 por 士 e o complemento depois de 一番, composto aqui como 勸勵現在將士一番, “exortou os oficiais e soldados presentes”. A página também usa a forma padrão de quatro variantes: 寧 por 寗, 總 por 縂 (três vezes) e 決 por 决 (duas) nos telegramas, e 刊 por 刋 na inscrição.
+- A LXGW WenKai TC, como o Fontsource a serve, desenha 為 como 爲, então a inscrição, em Kai, mostra a forma antiga que falta ao texto em Song.
+- Os três andares do boxe são terços da mancha e não se alinham com os dois andares do texto. Um jornal compõe essas seções na sua própria grade; o fio na borda direita do boxe separa as duas grades.

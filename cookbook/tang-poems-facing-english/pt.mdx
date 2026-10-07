@@ -1,0 +1,77 @@
+---
+title: "Poemas Tang diante da sua versão inglesa"
+summary: "Cada poema Tang abre uma página ímpar tingida, e o inglês de Giles fica na par em frente: um estilo de título quebra para página par, o outro para ímpar."
+plain: "Um livrinho de poemas chineses da dinastia Tang, com uma tradução inglesa antiga na página da frente. Cada linha de versos chineses fica na altura dos versos ingleses que a traduzem."
+description: "Um livro bilíngue de poesia Tang no Postext: estilos de título que quebram para a página par e a ímpar, o chinês centrado na grade de caracteres e notas no pé."
+question: "Como faço para compor um poema e a tradução em páginas frente a frente, com o original sempre na ímpar?"
+aliases: ["tradução em página espelhada", "texto paralelo", "edição bilíngue", "en face", "poesia bilíngue", "original à direita", "poemas Tang", "唐詩", "poesia chinesa em inglês", "Li Bai", "Du Fu", "Wang Wei", "Herbert Giles", "glosas", "notas de tradução", "注釋", "página par e ímpar"]
+pageNotes: { "1": "A folha de rosto: os caracteres 唐詩 em preto sobre uma lua dourada clara, TANG POEMS em maiúsculas vermelhas abaixo, os nomes dos três poetas, uma linha com o crédito dos versos ingleses de Giles e um pequeno selo vermelho com 明月 perto do pé.", "3": "A página ímpar diante de Night Thoughts, sobre um fundo dourado claro: o título 靜夜思 em negrito, 〔唐〕李白 em vermelho abaixo, o poema em duas linhas de caracteres com traço de pincel, cada uma terminada por uma pequena chamada de nota, e duas notas no pé da página sob um fio vermelho curto." }
+---
+
+## O que você vai compor
+
+Um pequeno livro bilíngue de poemas Tang, composto como as edições bilíngues compõem um clássico: o chinês na página da direita, numa folha tingida como papel antigo, e os versos rimados de Herbert A. Giles, de 1901, na página da esquerda, em frente. Quatro poemas de Li Bai, Du Fu e Wang Wei ocupam uma página dupla cada um, com título em cada língua e assinados com o nome do poeta. O chinês vai em LXGW WenKai, uma Kai desenhada a partir do pincel, com dois versos por linha, de modo que cada linha fica na altura dos dois versos ingleses que a traduzem. As notas, na língua do leitor, ficam no pé da página chinesa. <RecipeLink slug="bilingual-facing-verse">Tradução lado a lado, estrofe por estrofe</RecipeLink> põe um poema espanhol ao lado da versão inglesa numa só página; aqui cada língua tem a sua página.
+
+## Preparo
+
+### 1 · Um estilo de título para cada lado da página dupla
+
+O código é a [resposta curta](#a-resposta-curta) acima. Cada poema são dois títulos de nível 1: `# Night Thoughts {style="en" …}` com os versos de Giles e depois `# 靜夜思 {style="zh" …}` com o poema. O estilo `en` quebra para a próxima página par; o estilo `zh`, para a próxima ímpar, a que fica em frente. Enquanto cada poema couber na sua página, nenhuma página em branco entra; uma versão inglesa que passasse da página empurraria o original para a ímpar seguinte, atrás de uma par em branco ([Quebrar antes](/pt/docs/configuration#quebra-antes)). Os dois designs reservam seis linhas da grade, então o inglês e o chinês começam na mesma linha. O estilo chinês usa `span: 'page'` porque o primeiro elemento dele, uma caixa do tamanho da página, é a folha tingida, e um design preso à coluna para no pé da coluna ([Span e design avançado](/pt/docs/configuration#largura-e-design-avançado)).
+
+<PageShot page={2} crop="0,0.05,1,0.28" caption="Página 2: o inglês abre a página par seis linhas abaixo, na mesma linha da grade em que o chinês abre na página 3." />
+
+### 2 · Uma linha de chinês para dois versos de inglês
+
+<Excerpt region="verse" />
+
+As linhas chinesas têm o dobro da entrelinha dos versos ingleses, 32 pt contra 16, então uma linha de dois versos de cinco caracteres fica em frente ao dístico que Giles faz dela. No poema da lua, nas <PageRef page={4}>páginas 4 e 5</PageRef>, o mesmo `:::space{lines=1}` entra nos dois textos, e as três estrofes continuam niveladas na página dupla. A linha chinesa começa com um recuo de 51 pt, o que centraliza os seus doze emes nos 28 da grade, e cada chamada de nota fica depois do 。 da sua linha, fora dos doze: dentro da linha, ela empurraria para a direita seis décimos de eme todos os caracteres seguintes, que deixariam de cair sobre os da linha de baixo. Os recuos ingleses saem da medição do verso mais longo de cada poema. Giles recua um verso sim, outro não; o Markdown guarda os dois espaços dele, e `indentVerse` os troca por espaços eme depois de um word joiner, porque um parágrafo descarta os espaços com que começa.
+
+### 3 · Notas no pé da página chinesa
+
+<Excerpt region="notes" />
+
+As notas são notas de rodapé, uma por linha: `疑是地上霜。[^bed]` fecha a primeira linha do poema e `[^bed]: …` vem depois dela, com cada palavra explicada em negrito, já que o número não fica mais ao lado delas. São numeradas como um livro chinês numera as suas notas (页下注): números em círculo sobre a linha de base, contados de novo a partir de ① em cada página (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). No verso, a chamada é composta a seis décimos do corpo do poema, `markerSize: em(0.6)`, perto do corpo das notas; no pé da página, cada nota abre com o seu ① no corpo do texto da nota ([Notas de rodapé](/pt/docs/configuration#notas-de-rodapé)). As notas são compostas na fonte do texto corrido, e a deste livro é a Noto Serif TC porque uma nota mistura caracteres e pinyin; as letras latinas da Noto Serif TC vêm da Source Serif, e por isso as páginas em inglês são compostas em Source Serif 4. As notas são escritas na língua da edição: junto com o cabeço da página par e a nota sobre o texto, são o que muda na edição em espanhol.
+
+### 4 · Cabeços na língua de cada página
+
+<Excerpt region="heads" />
+
+Todas as páginas deste livro abrem com um título, então todas são aberturas, e os cabeços usam `pages: 'opener'`. Uma página em branco criada por uma quebra ficaria limpa, e a folha de rosto os tira com um cabeçalho vazio próprio. A página par pega o título do livro no `subtitle` do frontmatter, que cada edição escreve na sua língua; a ímpar pega o nome do poeta no atributo `name` do título chinês ([Cabeços e rodapés](/pt/docs/configuration#cabeços-e-rodapés)).
+
+### 5 · Uma folha de rosto sobre uma lua
+
+<Excerpt region="title" />
+
+A folha de rosto também é um estilo de título, com `runningChapter: false` para não nomear nenhum capítulo. A lua é uma caixa de design cujo raio de canto é metade do lado, e 唐詩 é centralizado sobre ela por aritmética: o meio da lua menos metade da altura do título. O selo compõe 明月 com `writingMode: 'vertical-rl'`, um caractere sobre o outro, como se gravam os selos.
+
+### 6 · Cada fonte chinesa carrega o que compõe
+
+<Excerpt region="voices" />
+
+O Fontsource corta cada fonte chinesa em cerca de cem arquivos por faixa de caracteres, e `loadCjkFonts` baixa só os arquivos de que o texto precisa ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas)). A Kai recebe os poemas e o selo; a Hei, as linhas dos poetas e os nomes; a Song em negrito, os quatro títulos e as palavras explicadas nas notas; e o peso black dela, os dois caracteres da folha de rosto.
+
+## Variações
+
+### Pôr o original na página par
+
+As edições Loeb e muitos livros bilíngues de chinês e inglês põem o original à esquerda: troque as paridades dos dois estilos de título e dos dois cabeços que nomeiam o livro e o poeta, e escreva no Markdown cada título e poema chineses antes da versão inglesa.
+
+```diff
+-const english = { id: 'en', breakBefore: { enabled: true, parity: 'even' }, // a verso
++const english = { id: 'en', breakBefore: { enabled: true, parity: 'odd' }, // a recto
+-const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 'even' },
+-  head('verso-book', '{subtitle}', 'even', 'top-left', EDGE + 8,
++  head('verso-book', '{subtitle}', 'odd', 'top-right', -(EDGE + 8),
+-  head('recto-poet', '{attr.name}', 'odd', 'top-right', -(EDGE + 8),
++  head('recto-poet', '{attr.name}', 'even', 'top-left', EDGE + 8,
+```
+
+### Pôr as notas logo abaixo do poema
+
+As antologias chinesas anotadas (注釋本) imprimem as notas depois de cada poema. Aqui as notas de fim de capítulo fazem isso, já que cada poema é um capítulo.
+
+```diff
+-const footnotes = { placement: 'column', numbering: 'page', // the page foot; ① again on each page
++const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
+```

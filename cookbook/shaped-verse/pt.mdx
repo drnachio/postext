@@ -1,0 +1,65 @@
+---
+title: "Poemas com forma: Easter Wings, de Herbert, verso a verso"
+summary: "Easter Wings e The Altar, de George Herbert, em texto centralizado, um parágrafo por verso, para que o comprimento dos versos desenhe as duas figuras."
+plain: "Dois poemas ingleses antigos impressos de modo que cada um pareça um desenho: um altar e um par de asas. Cada verso é apenas centralizado, e o seu comprimento desenha a forma."
+description: "Plaquete de quatro páginas composta no Postext: dois poemas visuais de Herbert, cada verso centralizado sob um título simples, os espaços feitos com :::space."
+question: "Como espaço a folha de rosto e as estrofes de um poema, se linhas em branco no Markdown não dão espaço?"
+aliases: ["poema visual", "poema figurado", "caligrama", "poesia concreta", "carmen figuratum", "verso centralizado", "texto centralizado", "George Herbert", "Easter Wings", "Asas de Páscoa", "The Altar", "O altar", "plaquete", "livreto", "folha de rosto", "epígrafe", "colofão", "fundo de lâmpada", "espaço vertical"]
+pageNotes: { "1": "A folha de rosto à maneira da de 1633: THE TEMPLE em maiúsculas violeta, o subtítulo em itálico, o autor, a epígrafe do Salmo 29 sob um rótulo em versaletes no meio da página e, ao pé, um rótulo e duas linhas sobre o que a plaquete contém.", "2": "The Altar: dois versos largos para a laje, dois um pouco mais estreitos, oito curtos para o fuste e quatro mais largos para a base, todos centralizados sob o título violeta.", "3": "Easter Wings: duas estrofes, cada uma se estreitando de um verso longo até With thee e se alargando de novo, de modo que a página mostra duas ampulhetas, uma sobre a outra.", "4": "A última página: o lema de Herbert em itálico sob um rótulo em versaletes, com uma frase dos seus impressores; uma nota sobre a impressão de 1633 sob um segundo rótulo, na altura do rótulo do Salmo da página 1; e um colofão de quatro linhas centralizadas, cada uma mais curta que a de cima." }
+---
+
+## O que você vai compor
+
+Uma plaquete de quatro páginas A5, uma folha A4 dobrada uma vez, com dois poemas visuais de *The Temple*, de George Herbert, na grafia da primeira edição, de 1633. A folha de rosto segue a de 1633, até na epígrafe do Salmo 29. Dentro, *The Altar* fica de frente para *Easter Wings*. Nenhum verso dos dois poemas é recuado ou preenchido com espaços; cada um é centralizado, de modo que o altar se apoia num fuste estreito e cada estrofe das asas se estreita até duas palavras e volta a se alargar. Na última página, sob o lema de Herbert, uma nota conta como os impressores de 1633 compuseram as asas de lado, e o colofão encurta linha a linha. Tudo é composto como texto corrido ou num de três níveis de título nos tipos IM Fell, sem estilos nomeados e sem designs de página. A edição espanhola compõe uma versão verso a verso que mantém as duas formas.
+
+## Preparo
+
+### 1 · Um verso é um parágrafo centralizado
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. O Postext junta as linhas de um parágrafo do Markdown numa só, então cada verso é um parágrafo, com uma linha em branco depois. `textAlign: 'center'` compõe cada verso na sua largura natural, sobre o eixo da medida, e como a versão 1.4.1 só hifeniza texto justificado, nenhuma palavra é dividida ([texto do corpo](/pt/docs/configuration#texto-do-corpo)). Cada verso é a primeira linha do seu parágrafo, então o recuo de primeira linha padrão, de 1,5 em, o empurraria 3,3 mm para a direita do eixo dos títulos; `firstLineIndent: pt(0)` mantém poemas e títulos no mesmo eixo.
+
+### 2 · A medida comporta o verso mais longo
+
+<Excerpt region="measure" />
+
+Um verso que não cabe passa para a linha seguinte, e as duas metades são centralizadas, então o contorno ganha um degrau que não existe na figura de Herbert. Com uma medida de 75 mm, três versos de *The Altar* e dois de *Easter Wings* quebram, e a plaquete passa a ter seis páginas. O verso mais largo aqui, o primeiro de *Easter Wings*, tem 80,7 mm em inglês e 80,0 mm em espanhol, então a medida de 110 mm da página A5 comporta todos os versos inteiros.
+
+### 3 · Títulos simples, centralizados
+
+<Excerpt region="titles" />
+
+Nenhum nível tem design, só ajustes tipográficos, e `headings.textAlign` centraliza os três ([títulos](/pt/docs/configuration#títulos)). A paridade `'any'` abre cada poema na página seguinte, par ou ímpar, de modo que o altar da página 2 fica de frente para as asas da página 3. Um `marginTop` não consegue baixar esses títulos, porque a versão 1.4.1 descarta o espaço acima de um título que abre página. Em vez disso, a caixa de linha do nível 2, com três linhas de altura, baixa cada título cerca de 5 mm, e os dois poemas começam na linha 5 da mancha. O nível 1 abre o documento e aqui não precisa de quebra; ela é declarada de novo para que um segundo título `#` ainda abra numa página ímpar. O nível 3 compõe os quatro rótulos das páginas 1 e 4 nos versaletes da IM Fell English SC, no corpo do texto.
+
+### 4 · O Markdown espaça e quebra as páginas
+
+<Excerpt region="pages" />
+
+Uma linha em branco entre parágrafos não acrescenta espaço, então todo espaço destas páginas vem de `:::space`: uma linha entre as estrofes de *Easter Wings* e, na folha de rosto, cinco linhas acima do rótulo do Salmo e dez sob a epígrafe ([`:::space`](/pt/docs/document-format#space)). Com essas contagens, o pé de imprensa da página 1 termina na última linha da mancha, e os rótulos acima do Salmo e acima da nota ficam os dois na linha 13, a 94 mm do alto da página. `:::pagebreak` abre a última página ([`:::pagebreak`](/pt/docs/document-format#pagebreak)). O colofão também é composto com um parágrafo por linha, quebrado onde termina uma frase, de modo que as suas quatro linhas se afinam num fundo de lâmpada.
+
+## Variações
+
+### Abra cada poema numa página ímpar
+
+Com a paridade `'odd'`, *The Altar* e *Easter Wings* abrem nas páginas 3 e 5, as duas ímpares, e a plaquete passa a ter seis páginas, com as páginas 2 e 4 em branco.
+
+```diff
+-      breakBefore: { enabled: true, parity: 'any' } },
++      breakBefore: { enabled: true, parity: 'odd' } },
+```
+
+### Componha os versos alinhados à esquerda
+
+Com `textAlign: 'left'`, cada verso começa na margem e os dois poemas mantêm só o contorno da direita; o resto do texto corrido, do subtítulo ao colofão, também passa a ser alinhado à esquerda, e só os títulos continuam centralizados.
+
+```diff
+-  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
++  textAlign: 'left', // ragged right; 1.4.1 hyphenates justified text only
+```
+
+## Erros comuns
+
+- Um verso longo demais para a medida quebra, e as duas metades são centralizadas cada uma por si. Meça o verso mais largo antes de escolher o corpo e as margens. Para versos alinhados à esquerda, com as quebras em recuo, veja <RecipeLink slug="poetry-collection">Poemas compostos verso a verso</RecipeLink>.
+- Os espaços no início de um parágrafo são descartados, então não dá para dar forma a um verso com espaços. A largura de cada verso vem só das suas palavras, e uma tradução precisa encontrar versos mais ou menos tão largos quanto os do original, como faz a edição espanhola.
+- A centralização mantém cada verso na sua largura natural, então a laje e a base de *The Altar* não saem retas: o terceiro e o quarto versos da laje são mais estreitos que os dois primeiros. Justificar também não os endireita, porque a versão 1.4.1 deixa a última linha de um parágrafo justificado na largura natural, e cada um destes versos é um parágrafo.
+- A folha de rosto e a última página estão preenchidas até a última linha da grade. Uma linha a mais na folha de rosto, vinda de uma epígrafe mais longa, de um verso que quebra ou de um `:::space` maior, leva o rótulo do pé e as duas linhas embaixo dele para uma página própria; uma linha a mais na última página leva sozinha a última linha do colofão para uma quinta página. Para acrescentar uma linha a qualquer uma das duas páginas, tire uma de um `:::space` acima dela.
+- O Postext não compõe texto de lado, como os impressores de 1633 compuseram *Easter Wings*: só figuras e tabelas inteiras giram. Aqui as estrofes ficam em pé, e a nota da página 4 diz isso.

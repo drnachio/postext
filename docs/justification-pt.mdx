@@ -1,0 +1,560 @@
+{/* docs/justification-pt.mdx */}
+
+export const metadata = {
+  title: 'Hifenização e justificação',
+  sidebarTitle: 'Hifenização e justificação',
+  description: 'Como o Postext quebra linhas, justifica o texto e controla o espaçamento entre palavras com o algoritmo de Knuth-Plass',
+  lang: 'pt',
+  lastUpdated: '2026-09-29',
+  readingTime: '14 min',
+  order: 4,
+  plainSummary: "Esta página explica como o Postext distribui as palavras ao longo de cada linha. Quando as duas bordas de um parágrafo ficam retas, os espaços entre as palavras podem abrir demais e ficar feios. O Postext olha o parágrafo inteiro antes de decidir onde cada linha termina, e assim os espaços ficam parecidos. Ele também sabe dividir palavras longas com um hífen no lugar certo. Você pode definir quanto os espaços podem abrir e destacar as linhas que ainda ficam frouxas. A página mostra também como o Postext faz as colunas terminarem na mesma altura.",
+};
+
+# Hifenização e justificação
+
+**A diferença entre uma composição amadora e uma profissional está nos espaços entre as palavras.**
+
+Abra qualquer romance de bolso. O texto é justificado: as duas bordas de cada parágrafo estão perfeitamente alinhadas. Mas olhe mais de perto. Os espaços entre as palavras são quase uniformes, linha após linha. Não há rios de branco descendo pela página, nem linhas em que duas palavras ficam isoladas com um vão enorme entre elas. Conseguir isso é bem mais difícil do que parece, e nenhum outro problema consumiu tanto esforço de engenharia tipográfica.
+
+O Postext o resolve com o mesmo algoritmo que o TeX usa desde 1981: a **quebra de linhas ótima de Knuth-Plass**. Junto com padrões de hifenização com a qualidade do TeX, limites configuráveis de espaçamento entre palavras e um sistema visual de depuração para encontrar as linhas problemáticas, o motor produz texto justificado no padrão de uma publicação profissional.
+
+
+## O problema
+
+Quando o texto é composto com `textAlign: 'justify'`, toda linha, exceto a última, precisa ser esticada ou comprimida até preencher exatamente a largura da coluna. O motor distribui a diferença entre a largura natural do conteúdo e a largura da coluna pelos espaços entre as palavras daquela linha. (A última linha fica em bandeira, com a sua largura natural, com uma exceção tratada em [A última linha](#a-última-linha).)
+
+Se a linha tem muitas palavras, cada espaço absorve um ajuste mínimo, invisível para o leitor. Mas se tem poucas (porque uma palavra longa forçou uma quebra antecipada), cada espaço precisa esticar muito. O resultado é uma **linha frouxa**: uma linha em que o espaçamento entre palavras é tão largo que atrapalha o ritmo da leitura e abre buracos feios.
+
+O problema oposto também existe. Se o motor coloca palavras demais numa linha, os espaços encolhem abaixo da largura natural e produzem uma **linha apertada**, em que as palavras parecem espremidas.
+
+Um algoritmo ingênuo de quebra de linhas, como o que o CSS usa, decide uma linha de cada vez. Ele enche a linha atual com o máximo de palavras possível, quebra e segue em frente. Essa abordagem **gulosa** (*greedy first-fit*) tem uma fraqueza de fundo: não enxerga o que vem depois. Uma decisão que parece ótima para a linha 5 pode obrigar a linha 6 a uma quebra péssima, e quando o algoritmo chega à linha 6 já é tarde, porque a linha 5 está fechada.
+
+
+## Knuth-Plass: o parágrafo inteiro de uma vez
+
+O algoritmo de Knuth-Plass, publicado por Donald Knuth e Michael Plass em 1981, segue um caminho bem diferente. Em vez de quebrar uma linha de cada vez, ele considera **todas as formas possíveis de quebrar o parágrafo inteiro** e escolhe a combinação que minimiza a “feiura” (*badness*) total de todas as linhas. É o algoritmo que move o TeX, e é por causa dele que os documentos compostos em TeX são a referência em texto justificado há mais de quatro décadas.
+
+### O modelo caixa-cola-penalidade
+
+O Knuth-Plass não pensa em palavras e espaços. Ele modela o texto como uma sequência de três primitivas:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '100px' }}>Primitiva</th>
+      <th style={{ width: '200px' }}>Representa</th>
+      <th>Comportamento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Caixa</strong> (box)</td>
+      <td>Uma palavra ou fragmento de texto</td>
+      <td>Tem largura fixa. Não pode ser esticada nem comprimida. Não pode ser quebrada.</td>
+    </tr>
+    <tr>
+      <td><strong>Cola</strong> (glue)</td>
+      <td>Espaço entre palavras</td>
+      <td>Tem uma largura <em>natural</em>, uma capacidade de <em>esticar</em> (stretch) e uma capacidade de <em>encolher</em> (shrink). O motor pode ajustar a cola dentro desses limites para preencher a linha.</td>
+    </tr>
+    <tr>
+      <td><strong>Penalidade</strong> (penalty)</td>
+      <td>Um possível ponto de quebra</td>
+      <td>Tem um custo. Penalidade baixa = quebra barata. Penalidade alta = quebra cara. Uma penalidade <em>marcada</em> (flagged) indica um ponto de hifenização (acrescenta um hífen visível se for usada).</td>
+    </tr>
+  </tbody>
+</table>
+
+Um parágrafo vira uma sequência assim:
+
+```
+[box "The"] [glue] [box "quick"] [glue] [box "brown"] [glue] [box "fox"]
+[penalty -∞]  ← forced break at paragraph end
+```
+
+Com a hifenização ativa, as palavras longas são divididas em fragmentos separados por penalidades:
+
+```
+[box "ty"] [penalty 50, flagged] [box "pog"] [penalty 50, flagged] [box "raphy"]
+```
+
+Cada penalidade marcada custa 50: não é de graça, mas sai mais barato do que produzir uma linha frouxa.
+
+<Illustration name="BoxGluePenalty" data='{"title": "Primitivas caixa-cola-penalidade", "desc": "Legenda visual das três primitivas: caixa para um fragmento de palavra, cola para o espaço entre palavras e penalidade para um possível ponto de quebra. O parágrafo de exemplo mostra como um ponto de hifenização vira uma penalidade marcada.", "caption": "Todo parágrafo vira uma sequência de caixas, colas e penalidades.", "box": "Caixa", "glue": "Cola", "penalty": "Penalidade", "boxDesc": "palavra fixa", "glueDesc": "espaço elástico", "penaltyDesc": "quebra possível", "exampleLabel": "Exemplo: “A arte da tipografia é antiga.”"}' />
+
+### Como ele encontra o ótimo
+
+O algoritmo usa programação dinâmica. Ele mantém um conjunto de **nós ativos**, pontos de quebra que podem iniciar novas linhas, e avalia cada quebra viável a partir de cada nó ativo. Para cada quebra candidata, calcula:
+
+1. **Razão de ajuste (r)**: quanto a cola desta linha precisa esticar ou encolher. `r = 0` significa que a linha cabe com perfeição. `r > 0` significa esticar (frouxa). `r < 0` significa encolher (apertada).
+
+2. **Feiura** (*badness*): uma medida de quão irregular é o espaçamento, calculada como `100 × |r|³`. O crescimento cúbico faz com que uma linha um pouco frouxa seja tolerável, mas uma linha muito frouxa seja punida com força. Uma linha com `r = 2` tem feiura 800; uma linha com `r = 0.5` tem feiura 12.
+
+3. **Classe de ajuste** (*fitness class*): cada linha é classificada como apertada (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), frouxa (`0.5 ≤ r < 1.0`) ou muito frouxa (`r ≥ 1.0`). Uma linha apertada ao lado de uma muito frouxa gera um contraste incômodo, por isso linhas vizinhas cujas classes estão a mais de um degrau de distância são penalizadas.
+
+4. **Deméritos**: o custo total de quebrar ali. Como no TeX, a feiura e a penalidade do ponto de quebra se combinam numa fórmula ao quadrado: `demerits = (1 + badness + penalty)²` quando a penalidade não é negativa; uma penalidade negativa (uma quebra *desejável*) subtrai o seu quadrado: `(1 + badness)² − penalty²`. Depois somam-se dois deméritos fixos:
+   - **Demérito por hífens consecutivos** (padrão 3000): penaliza duas linhas hifenizadas seguidas, porque hífens empilhados distraem a vista.
+   - **Demérito por classe de ajuste** (padrão 100): somado quando a classe desta linha está a mais de um degrau da classe da linha anterior.
+
+   A penalidade por linha curta descrita adiante também entra nesta fórmula, injetada como feiura extra; as penalidades por órfã e por viúva agem numa etapa posterior, quando um parágrafo é dividido entre colunas.
+
+O algoritmo escolhe a sequência de quebras com o menor total de deméritos no parágrafo inteiro, e toda a vantagem sobre o método guloso está aí.
+
+<Illustration name="BadnessCurve" data='{"title": "Feiura em função da razão de ajuste", "desc": "A feiura cresce como 100 vezes o valor absoluto de r ao cubo. Esticar ou comprimir um pouco sai barato, mas os esticamentos extremos ficam caríssimos, e por isso o algoritmo os evita.", "caption": "A feiura cresce de forma cúbica: um pouco irregular é tolerável, muito irregular é punido com força.", "xAxis": "r", "yAxis": "feiura", "zero": "0", "tight": "apertada (r < 0)", "loose": "frouxa (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
+
+<Illustration name="FitnessClasses" data='{"title": "Classes de ajuste", "desc": "Cada linha é classificada como apertada, normal, frouxa ou muito frouxa conforme a sua razão de ajuste. Linhas vizinhas cujas classes diferem em mais de um degrau são penalizadas.", "caption": "Linhas vizinhas a mais de uma classe de distância recebem o demérito de ajuste.", "classes": [{"name": "Apertada", "range": "r < -0.5", "example": "espremida"}, {"name": "Normal", "range": "-0.5 ≤ r < 0.5", "example": "na medida"}, {"name": "Frouxa", "range": "0.5 ≤ r < 1.0", "example": "um pouco aberta"}, {"name": "Muito frouxa", "range": "r ≥ 1.0", "example": "muito aberta"}], "adjacentNote": "O demérito de ajuste se aplica quando linhas vizinhas estão a mais de uma classe de distância."}' />
+
+O algoritmo percorre de volta os nós ativos para achar o caminho com o menor total de deméritos: o conjunto de pontos de quebra ótimo para o parágrafo inteiro.
+
+#### Penalidades por órfã, viúva e linha curta
+
+O Postext amplia o modelo de custos padrão com três penalidades editoriais que afastam o motor de diagramações com finais de parágrafo e de coluna visualmente ruins:
+
+- **Penalidade por órfã**: aplica-se quando uma divisão candidata deixaria menos de `orphanMinLines` linhas no alto da coluna seguinte. O `orphanPenalty` padrão é `1000`.
+- **Penalidade por viúva**: aplica-se quando a divisão deixaria menos de `widowMinLines` linhas no pé da coluna atual. O `widowPenalty` padrão é `1000`.
+- **Penalidade por linha curta** (*runt*): aplica-se quando a última linha do parágrafo ficaria mais curta do que cerca de `runtMinCharacters × normalSpaceWidth` pixels, uma contagem de espaços entre palavras e não de letras: o padrão de 20 corresponde a uma última linha de umas 8 a 12 letras. O `runtPenalty` padrão é `1000`, igual para toda linha curta; com `gradedRuntPenalty` ele é proporcional ao que falta à linha, `runtPenalty × (1 − width / threshold)`, de modo que um final de duas palavras custa menos que um de uma palavra só e ganha quando uma linha acima pode ceder uma palavra. Ao contrário da órfã e da viúva (que se somam linearmente ao demérito da divisão), a linha curta é injetada como *feiura* equivalente dentro da fórmula ao quadrado de Knuth–Plass, para competir na mesma escala que a feiura da linha (que satura em 10000) em vez de ficar ofuscada por ela.
+
+Quando a penalidade perde mesmo assim, porque todas as quebras alternativas são inviáveis, o motor recorre ao que um compositor faz à mão: compõe o parágrafo com uma linha a menos (`tightenRunts`). Os espaços entre palavras de todas as linhas se apertam, nunca abaixo de `minWordSpacing`, e quando isso sozinho não basta para recolher as palavras soltas entra um pouco de tracking negativo, o menor passo que resolve e nunca mais que `maxRuntTracking` milésimos de em. A composição mais curta também tem de respeitar `maxWordSpacing`. Encaixar as palavras numa linha a menos aperta a maioria das linhas, mas pode deslocar uma quebra de modo que outra linha precise esticar muito. Uma composição que esticaria uma linha além de `maxWordSpacing` ou, quando o parágrafo já tem uma linha mais frouxa, além dessa linha, não é solução, e a linha curta fica. Só contam as linhas que continuam justificadas: uma linha que o parágrafo compõe em bandeira porque esticaria além de 3× o espaço normal (veja [Linhas que o algoritmo não consegue preencher](#linhas-que-o-algoritmo-não-consegue-preencher)) não sobe a barra, e a composição mais curta não pode ter mais linhas em bandeira do que o parágrafo tinha. Nem troca uma linha em bandeira por linhas justificadas além dessa barra: o parágrafo mantém a linha em bandeira e a linha curta. O balanceamento de colunas segue a mesma regra no sentido inverso: um parágrafo que ele alongaria em uma linha para encher uma coluna curta fica como está quando essa linha a mais terminaria numa linha curta; encher uma coluna não justifica deixar uma sílaba sozinha.
+
+A penalidade por linha curta é somada aos deméritos do nó candidato dentro do algoritmo de quebra, de modo que ele pode trocar uma linha um pouco mais frouxa por uma última linha mais longa, mas só dentro de `maxWordSpacing`: uma linha esticada além desse limite leva uma feiura extra maior que qualquer penalidade por linha curta ou por hífen, e por isso o algoritmo prefere uma última linha curta, ou uma última palavra hifenizada, a um espaçamento entre palavras que passe do limite. As penalidades por órfã e por viúva entram numa otimização separada, que roda quando um parágrafo atravessa o limite de uma coluna: cada divisão candidata recebe uma nota (somando os deméritos de folga, de órfã e de viúva) e a divisão mais barata vence, de modo que o motor naturalmente prefere as divisões que evitam ambas sempre que possível. Ajuste o equilíbrio com `orphanPenalty`, `widowPenalty` ou `runtPenalty`; defina qualquer um deles como `0` para desativar a regra correspondente. Os itens de lista participam por meio de `avoidOrphansInLists`, `avoidWidowsInLists` e `avoidRuntsInLists` (todos `true` por padrão).
+
+### Por que isso importa
+
+<Illustration name="GreedyVsKnuthPlass" data='{"title": "Guloso (first-fit) vs. Knuth-Plass ótimo", "desc": "Comparação lado a lado: o algoritmo guloso pega a primeira linha que cabe e estraga as linhas seguintes, produzindo parágrafos com espaçamento irregular. O Knuth-Plass avalia o parágrafo inteiro de forma global e produz linhas regulares.", "caption": "Uma decisão gulosa e local perde onde um plano ótimo e global ganha.", "greedyTitle": "Guloso (first-fit)", "greedyLead": "Decide linha por linha, sem olhar adiante", "greedyCons": ["Uma quebra ruim estraga a linha seguinte", "Espaçamento irregular ao longo do parágrafo", "Rios de branco", "Nenhum modelo de custo para linhas vizinhas"], "greedyEquals": "= O que o CSS faz", "kpTitle": "Knuth-Plass ótimo", "kpLead": "Avalia todos os conjuntos de quebras possíveis", "kpPros": ["Deméritos mínimos no conjunto", "Espaçamento regular do início ao fim", "Penalidade por hífens consecutivos", "Transição suave entre classes de ajuste"], "kpEquals": "= O que o Postext faz"}' />
+
+A diferença prática se vê. Numa diagramação gulosa você encontra parágrafos em que uma linha é visivelmente mais frouxa que as vizinhas e, olhando com atenção, percebe que isso aconteceu porque a linha *anterior* pegou uma palavra a mais. O Knuth-Plass evita isso trocando uma linha atual um pouco pior por uma linha seguinte muito melhor, porque enxerga as consequências.
+
+### A implementação no Postext
+
+O Postext implementa o algoritmo de Knuth-Plass completo no módulo `knuthPlass/` do pacote principal: um núcleo de programação dinâmica (nós ativos, deméritos, retrocesso) e dois caminhos adaptadores que convertem o texto no modelo caixa-cola-penalidade:
+
+- **Caminho de texto simples**: usa `@chenglou/pretext` para medir o texto sem DOM. O Pretext fornece as larguras dos segmentos e dos hífens discricionários, e o Postext as converte em itens KP.
+- **Caminho de texto rico**: trata trechos em negrito e itálico com medição baseada em Canvas. Cada token com estilo vira uma ou mais caixas, com os pontos de hifenização inseridos como penalidades.
+
+Os dois caminhos calculam, linha por linha, o `justifiedSpaceRatio`, a largura real do espaço dividida pela largura natural do espaço, que alimenta o sistema de depuração de linhas frouxas descrito adiante. A razão só é calculada para as linhas que não são a última; como a última linha é composta está em [A última linha](#a-última-linha).
+
+Em volta do algoritmo de quebra, a medição do texto fica no módulo `measure/` (os caminhos de medição simples e rica, as métricas de glifos do Canvas e o tratamento das strings de fonte), atrás de um cache de medição explícito. `clearMeasurementCache` também limpa o cache de larguras de texto subjacente, para que as medidas continuem certas depois que as fontes web terminam de carregar. A análise (*parsing*), a etapa que transforma o texto-fonte em blocos e trechos em linha, fica no módulo `parse/`. Veja a página [Arquitetura](/pt/docs/architecture) para a organização desses módulos arquivo por arquivo.
+
+A quebra de linhas também interage com os tipos de conteúdo mais recentes. Os recursos flutuantes ocupam a faixa superior ou inferior de uma coluna ou página, encurtando as colunas às quais reagem as penalidades por órfã, por viúva e por folga. Legendas e células de tabela são medidas como trechos de texto rico com quebra, nas fontes de legenda e de tabela. As linhas de fórmula em destaque são centralizadas e atômicas: nunca são justificadas nem quebradas. Veja [Formato do documento › Recursos](/pt/docs/document-format#recursos) e [Configuração › Estilo de tabela](/pt/docs/configuration#estilo-de-tabela) / [Estilo de legenda](/pt/docs/configuration#estilo-de-legenda) para os detalhes.
+
+**Comportamento de reserva**: se o Knuth-Plass não produz nenhuma quebra válida (o que pode acontecer em colunas extremamente estreitas ou com palavras muito longas), o motor recorre ao `layoutNextLine()` guloso do Pretext. Assim a diagramação sempre chega ao fim.
+
+
+## Hifenização
+
+Hifenização e justificação são inseparáveis. Sem hifenização, a única forma de o motor evitar uma linha frouxa é passar uma palavra para a linha seguinte, o que muitas vezes só desloca o problema. A hifenização dá ao motor um conjunto muito maior de pontos de quebra para considerar, e a qualidade do texto justificado melhora muito.
+
+<Illustration name="HyphenationExample" data='{"title": "Texto justificado com e sem hifenização", "desc": "A coluna da esquerda está sem hifenização: as larguras das linhas variam muito, porque o motor só pode mover palavras inteiras. A coluna da direita tem hifenização: as linhas ficam quase uniformes e uma palavra é dividida com hífen.", "caption": "A hifenização reduz muito a variação do espaçamento no texto justificado.", "withoutTitle": "Sem hifenização", "withTitle": "Com hifenização", "withoutCaption": "Linhas irregulares, vãos longos, rios visíveis.", "withCaption": "Linhas regulares, um hífen absorve a diferença."}' />
+
+### Padrões com a qualidade do TeX
+
+O Postext usa o **Hypher** (`hypher` v0.2.5) para a hifenização, com base nos **padrões de hifenização TeX/Liang**. São os mesmos padrões que o TeX usa desde 1983: uma representação compacta das regras de divisão silábica, obtida pelo algoritmo de geração de padrões de Frank Liang a partir de grandes corpora de palavras.
+
+Os padrões codificam um conjunto de regras numeradas que, sobrepostas a uma palavra, indicam onde a quebra é permitida (números ímpares) e onde é proibida (números pares). Os parâmetros `leftmin` e `rightmin` do arquivo de padrões de cada idioma garantem um número mínimo de caracteres antes e depois de qualquer ponto de quebra. Para o inglês (`en-us`), costumam ser 2 e 3, respectivamente: a palavra precisa ter pelo menos 2 caracteres antes do hífen e 3 depois.
+
+### Idiomas compatíveis
+
+<table>
+  <thead>
+    <tr>
+      <th>Código do idioma</th>
+      <th>Idioma</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'en-us'</code></td><td>Inglês (EUA)</td></tr>
+    <tr><td><code>'es'</code></td><td>Espanhol</td></tr>
+    <tr><td><code>'fr'</code></td><td>Francês</td></tr>
+    <tr><td><code>'de'</code></td><td>Alemão</td></tr>
+    <tr><td><code>'it'</code></td><td>Italiano</td></tr>
+    <tr><td><code>'pt'</code></td><td>Português</td></tr>
+    <tr><td><code>'ca'</code></td><td>Catalão</td></tr>
+    <tr><td><code>'nl'</code></td><td>Neerlandês</td></tr>
+  </tbody>
+</table>
+
+Cada idioma carrega o seu próprio conjunto de padrões. As instâncias do Hypher são criadas sob demanda e guardadas em cache: a primeira chamada para um idioma paga o custo de inicialização, e as seguintes são imediatas. Um idioma com região usa os padrões da sua língua (`'es-ES'` é hifenizado com `'es'`, `'en-GB'` com `'en-us'`). Uma língua sem padrões aqui recorre a `en-us`, e o motor avisa uma vez no console (veja [Hifenização](/pt/docs/configuration#hifenização) na referência de configuração). Chinês, japonês e coreano são a exceção: são compostos sem hifenização e sem o aviso, e as suas linhas quebram entre caracteres (veja [Chinês, japonês e coreano](#chinês-japonês-e-coreano) adiante).
+
+O **catalão** segue as regras do Institut d'Estudis Catalans (*Llibre d'estil*, capítulo VI). Isso vale desde o postext 1.14:
+
+- Uma quebra deixa pelo menos duas letras de cada lado (`ter-ra`, `cai-xa`, `plu-ja`).
+- A *ela geminada* quebra entre os seus dois *l*, e o hífen toma o lugar do ponto médio: *il·lusió* vira `il-` | `lusió`. A linha é medida sem o ponto, para que a justificação e o Knuth–Plass vejam a sua largura real.
+- Duas vogais em hiato ficam juntas (`cièn-cia`, `ca-mions`). Um *i* ou um *u* entre vogais conta como consoante e abre a sua sílaba (`fe-ia`, `ve-ient`).
+- Não há quebra depois de um apóstrofo (`s'ha-via`, nunca `s'-havia`).
+- As palavras prefixadas mais comuns quebram no prefixo (`vos-altres`, `cel-obert`, `ben-estar`).
+- Para manter inteiras as palavras com pronomes enclíticos, exceto no seu próprio hífen (`portar-` | `lo`), como prefere o IEC, defina [`hyphenation.compounds`](/pt/docs/configuration#hifenização) como `false`.
+
+### Por que o Hypher (e não um algoritmo próprio)
+
+O sistema de hifenização original do Postext usava uma **heurística própria baseada em vogais**: detectava as fronteiras de sílaba procurando grupos de vogais, prefixos comuns (`over-`, `under-`, `inter-`) e sufixos comuns (`-tion`, `-ment`, `-sion`). Era simples e rápida, mas limitada de origem:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Aspecto</th>
+      <th>Heurística própria</th>
+      <th>Hypher (padrões TeX)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Precisão</strong></td>
+      <td>Boa para palavras comuns, pouco confiável para as incomuns. A detecção de vogais deixa passar muitos pontos de quebra válidos e cria outros inválidos.</td>
+      <td>Quase perfeita. Os padrões são gerados a partir de grandes corpora e vêm sendo refinados há mais de 40 anos.</td>
+    </tr>
+    <tr>
+      <td><strong>Cobertura de idiomas</strong></td>
+      <td>Era preciso definir à mão os conjuntos de vogais, prefixos e sufixos de cada idioma, um trabalho tedioso e sujeito a erros.</td>
+      <td>Há arquivos de padrões para mais de 50 idiomas, mantidos pela comunidade TeX. Acrescentar um idioma é acrescentar um import.</td>
+    </tr>
+    <tr>
+      <td><strong>Padrão do setor</strong></td>
+      <td>Não é um padrão reconhecido. Sem ferramentas nem comunidade.</td>
+      <td>Os mesmos padrões usados pelo TeX, LibreOffice, Firefox, Chrome e praticamente todo sistema profissional de composição.</td>
+    </tr>
+    <tr>
+      <td><strong>Manutenção</strong></td>
+      <td>Cada caso-limite é um bug a corrigir à mão.</td>
+      <td>Arquivos de padrões mantidos pela comunidade. As correções vêm da origem.</td>
+    </tr>
+    <tr>
+      <td><strong>Tamanho do bundle</strong></td>
+      <td>~170 linhas, sem dependências.</td>
+      <td>O núcleo do Hypher tem ~3 KB. Cada arquivo de padrões acrescenta 20–80 KB (com gzip: 5–20 KB). Os oito idiomas incluídos somam cerca de 300 KB (com gzip: ~80 KB).</td>
+    </tr>
+    <tr>
+      <td><strong>Desempenho</strong></td>
+      <td>Muito rápido (varredura simples da string).</td>
+      <td>Rápido (consulta numa trie por caractere). Desprezível na prática: a hifenização nunca é o gargalo.</td>
+    </tr>
+  </tbody>
+</table>
+
+A troca é clara: um bundle maior em troca de muito mais correção e nenhum trabalho de manutenção. Para um motor de layout que mira resultados de nível editorial, a correção vence. Uma única hifenização errada num livro impresso custa mais caro que alguns kilobytes a mais de padrões.
+
+### Como a hifenização se integra ao Knuth-Plass
+
+Antes de o texto entrar no algoritmo de Knuth-Plass, o motor o pré-processa com o Hypher e insere **hífens discricionários** (*soft hyphens*, Unicode `\u00AD`) em cada ponto de quebra permitido. Esses caracteres invisíveis são depois convertidos em **penalidades** KP de custo 50 com `flagged: true`.
+
+O algoritmo trata as quebras por hifenização como mais uma opção a avaliar, ao lado das fronteiras naturais entre palavras (onde a cola permite uma quebra). Se usar um hífen produz um total de deméritos menor do que deixar a linha frouxa, o algoritmo usa o hífen. Se não, deixa a palavra inteira.
+
+O demérito por hífens consecutivos (padrão 3000) faz o algoritmo evitar com força hífens em duas linhas vizinhas, uma convenção tipográfica que praticamente todos os manuais de estilo adotam.
+
+Um hífen na última linha de uma coluna ou de uma página manda o leitor para a coluna seguinte no meio de uma palavra. `bodyText.hyphenateAcrossColumns: false` tira o hífen dessas linhas: quando a linha que fecha uma coluna termina num hífen, o parágrafo é quebrado de novo com um hífen ali cobrado como uma linha curta, de modo que o algoritmo termina essa linha numa palavra inteira sempre que os espaços entre palavras das linhas de cima conseguem absorver a diferença dentro de `maxWordSpacing` e `minWordSpacing`. Quando não conseguem, o hífen fica. Isso cobre a primeira quebra de coluna de um parágrafo e as seguintes que caem onde uma coluna cheia termina. Uma quebra posterior que cai em outro lugar (uma coluna encurtada para não deixar uma viúva, uma faixa de fechamento nivelada) recebe uma segunda requebra a partir daquela coluna: as linhas já compostas nas colunas anteriores mantêm as suas quebras, e só o restante do parágrafo é quebrado de novo. Assim, um hífen só fica onde nenhuma composição dentro dos limites o evita, na prática na primeira quebra de coluna de um parágrafo. O algoritmo só distingue as maneiras de chegar a uma linha até a última linha que ele protege, de modo que uma nova tentativa custa mais ou menos o mesmo que a primeira medição: uma medição a mais para cada parágrafo que ele quebra de novo.
+
+Por padrão, a hifenização só se aplica quando `bodyText.hyphenation.enabled` é `true` **e** `bodyText.textAlign` é `'justify'`: uma borda em bandeira existe para variar. O texto em bandeira também pode ser hifenizado, com `bodyText.hyphenation.ragged: true`. Uma linha em bandeira não tem espaçamento entre palavras a equalizar, então quem decide é uma **zona de hifenização**: uma palavra que não cabe só é dividida quando mandá-la inteira para a linha seguinte deixaria um vão maior que `hyphenation.zone` (3 em por padrão). O Knuth-Plass também compõe o texto corrido em bandeira (`bodyText.optimalRagged`, ativado por padrão): os espaços entre palavras mantêm a sua largura, cada linha paga pelo quanto fica aquém da medida, e a zona decide quais sílabas ela pode pegar; duas linhas seguidas terminadas em sílaba custam o demérito por hífens consecutivos. Composto linha por linha (`optimalRagged: false`), no máximo duas linhas seguidas terminam numa sílaba. Veja [Texto em bandeira](/pt/docs/configuration#texto-em-bandeira).
+
+Duas oportunidades de quebra existem independentemente dessa configuração. Um **hífen fixo entre duas letras** (`enseñanza-aprendizaje`, `físico-química`) é um lugar onde a linha pode terminar: a palavra já tem o hífen, então nada é acrescentado. O Knuth-Plass o aproveita em todo parágrafo com `bodyText.breakAfterHyphens` (ativado por padrão), cobrado como uma sílaba; num parágrafo justificado sem formatação em linha, só com duas letras de cada lado do hífen, para que nenhuma linha termine no `e-` de `e-mail`. Desativado, como até o postext 1.4, um parágrafo justificado sem formatação em linha não quebra logo depois de um hífen assim, enquanto o mesmo parágrafo com uma palavra em itálico em qualquer lugar quebra; livros salvos antes do postext 1.5 são lidos com ele desativado. A linha termina no próprio hífen do texto, que a linha registra como `hardHyphen` ao lado de `hyphenated`, para que quem descarta um hífen acrescentado (os cabeços, o cursor do Sandbox) mantenha este. Um **travessão ou meia-risca colado entre palavras** (`say—that’s`, `riddles.—I`, `Hamburg–Berlin`) também é um lugar onde a linha pode terminar, nos dois algoritmos, com `bodyText.breakAfterDashes` (ativado por padrão): a linha termina no traço, nada é acrescentado e nada é cobrado. O mesmo vale para um traço que encerra um trecho num estilo antes de uma palavra em outro (`see—*and*`). A linha fica então `hyphenated`, sem `hardHyphen`. Nunca depois de um traço que abre um aparte ou uma fala de diálogo (`—dijo`, `said "—Hola`; uma aspa que fecha uma palavra pode ficar antes do traço, como em `"no"—and` ou no alemão `„nein“—und`), antes de pontuação, antes de aspas ou de um parêntese ou colchete (`thinking—" and`, `says—“no”`), dentro de uma sequência de traços nem dentro de um intervalo numérico (`1914–1918`). E uma **palavra mais larga que a medida inteira** (uma célula de tabela estreita, um composto longo numa coluna estreita) nunca passa da medida: o motor a divide na última sílaba que cabe, com hífen, ou no último caractere que cabe quando o dicionário não oferece sílaba ali; um corte junto de um hífen que a palavra já tem cai depois desse hífen e não acrescenta outro, de modo que a palavra nunca mostra dois. O resto da palavra mantém os seus próprios pontos de quebra: um composto continua quebrando nos hífens e um endereço web nas suas junções, enquanto até o postext 1.4 o resto era dividido nas sílabas do dicionário. Um parágrafo sem formatação em linha é cortado no último caractere que cabe, sem hífen, a menos que esteja hifenizado. Nenhum conjunto de quebras em volta de uma palavra assim é viável para o Knuth-Plass, por isso um parágrafo justificado que contém uma delas é composto linha por linha.
+
+
+### Palavras compostas
+
+Um composto unido por hífen (`after-dinner`, `teórico-práctico`) pode quebrar em dois tipos de lugar: depois do seu próprio hífen e nas sílabas do dicionário de qualquer uma das partes (`af-ter-dinner`). O TeX, assim como o Chicago Manual of Style, mantém as partes inteiras e só quebra um composto no hífen. `bodyText.hyphenation.compounds: false` faz o mesmo: o dicionário deixa em paz toda palavra com um hífen entre duas letras, que então só quebra depois desse hífen. Um hífen discricionário digitado na palavra continua quebrando, e um composto mais largo que a linha inteira continua sendo dividido onde for preciso. O padrão, `true`, continua dividindo as partes, o que dá a uma coluna justificada estreita mais maneiras de preencher as linhas.
+
+A ortografia portuguesa pede que o hífen de um composto quebrado no fim da linha seja repetido no começo da linha seguinte (`vencer-` · `-se`), e as normas da Real Academia Espanhola pedem o mesmo desde 2010 (`léxico-` · `-semántico`), para que o leitor saiba que o hífen pertence à palavra. `bodyText.repeatHyphen: true` faz isso. O hífen repetido é medido com a sua linha, para que o algoritmo reserve espaço para ele, e é pintado como o resto do texto; no PDF ele leva um texto de substituição que o omite, de modo que o texto copiado ou extraído do PDF traz a palavra uma única vez (`vencer-se`). A linha o registra como `repeatedHyphen`, e os seus `plainStart` e `sourceStart` apontam para depois dele, de modo que o mapeamento para o texto-fonte, os links e os cabeços leem a palavra como foi escrita. Um endereço web nunca recebe esse hífen. Vale para o texto corrido, títulos, listas, citações em bloco e boxes; um parágrafo sem formatação que contém um composto passa então a ser quebrado pelo algoritmo que compõe o texto formatado.
+
+### Onde uma linha nunca quebra
+
+Alguns lugares nunca são oportunidades de quebra, em nenhum dos dois algoritmos:
+
+- **Um espaço inseparável.** U+00A0, o espaço inseparável estreito U+202F e o espaço de algarismo U+2007 colam as palavras de cada lado: um número e a sua unidade, uma referência de página, um grupo de milhares. O mesmo vale em legendas, células de tabela, boxes e texto do design (cabeços, aberturas). Cada um mantém a sua própria largura, tal como é medida; a justificação estica apenas os espaços entre palavras. Uma fonte sem glifo para U+202F ou U+2007 recebe a largura que os navegadores lhes dão, meio espaço entre palavras e um algarismo, em todas as saídas, inclusive o PDF; praticamente toda fonte tem U+00A0. Um grupo colado assim que seja mais largo que a linha inteira é a exceção, com ou sem formatação em linha: ele quebra no seu último espaço inseparável, em vez de ser cortado dentro de uma palavra. O U+2060 (*word joiner*) cola sem ocupar espaço, também em texto chinês: um número de acepção `**①**` seguido de um deles fica na linha do caractere seguinte. O mesmo faz o U+FEFF, o espaço inseparável de largura zero, embora o *word joiner* seja o caractere feito para isso.
+- **Texto colado.** Uma palavra em negrito ou itálico e a pontuação que vem depois (`**osmosis**.`), os parênteses em volta de uma referência em linha (`(:ref{id="fig-3"})`), uma palavra composta em dois trechos: texto sem espaço no meio forma uma unidade, como se fosse uma única palavra. Quando essa unidade não cabe no que resta de uma linha, desce inteira. Quando abre uma linha e mesmo assim não cabe, a sua última palavra é hifenizada numa sílaba para que a pontuação desça com o final da palavra; só uma unidade sem sílaba onde quebrar deixa a pontuação abrir a linha seguinte.
+- **Dentro de uma palavra de escrita cursiva.** Uma palavra árabe (ou siríaca, n'ko ou mongol) nunca é hifenizada, nem mesmo num hífen discricionário digitado nela, e nunca é cortada entre as suas letras: as letras se ligam, e um pedaço composto sozinho assumiria outras formas de letra e outra largura. O árabe e as outras línguas da direita para a esquerda vêm com a hifenização desativada; ativada (para as palavras latinas de um livro árabe, ou num livro em inglês que cita árabe), o dicionário pula essas palavras. Uma palavra composta em dois estilos (`كتا**ب**`) continua sendo uma palavra, medida inteira. Uma mais larga que a linha inteira passa da medida, e a composição emite um aviso de conteúdo `unbreakableWordOverflow`.
+
+Até o postext 1.4, um parágrafo com formatação em linha ou com um `:ref` podia quebrar num espaço inseparável, e uma linha em bandeira podia terminar no `(` antes de uma referência ou começar com o ponto depois de uma palavra em negrito.
+
+## Limites do espaçamento entre palavras
+
+O modelo de cola dá ao motor limites explícitos para quanto os espaços entre palavras podem esticar ou encolher. Esses limites são controlados por duas propriedades de configuração de `bodyText`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propriedade</th>
+      <th style={{ width: '120px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>2</code></td>
+      <td>Limite superior do espaçamento entre palavras, como multiplicador da largura do espaço normal. No valor padrão, os espaços podem esticar até 200% da largura natural.</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>0.6</code></td>
+      <td>Limite inferior do espaçamento entre palavras, como multiplicador da largura do espaço normal. No valor padrão, os espaços podem encolher até 60% da largura natural.</td>
+    </tr>
+  </tbody>
+</table>
+
+Esses multiplicadores se traduzem diretamente nos valores `stretch` e `shrink` da cola no modelo de Knuth-Plass:
+
+```
+stretchPerSpace = normalSpaceWidth × (maxWordSpacing - 1)
+shrinkPerSpace  = normalSpaceWidth × (1 - minWordSpacing)
+```
+
+Com os padrões (2 / 0,6), se a largura do espaço normal for 4 px:
+- Cada espaço pode esticar 4 px (de 4 px para 8 px)
+- Cada espaço pode encolher 1,6 px (de 4 px para 2,4 px)
+
+**Limites mais estreitos** (por exemplo, `maxWordSpacing: 1.2`) produzem um espaçamento mais uniforme, mas dão ao algoritmo menos margem de manobra, o que pode levar a mais hifenização ou, em casos extremos, a transbordamento. **Limites mais folgados** (por exemplo, `maxWordSpacing: 2.5`) dão mais flexibilidade ao algoritmo, mas permitem um espaçamento visivelmente irregular em algumas linhas.
+
+Os padrões de 2 e 0,6 favorecem a flexibilidade do algoritmo: dão ao Knuth-Plass espaço suficiente para evitar transbordamentos, hifenização e linhas curtas em colunas estreitas, e ainda ficam bem dentro das faixas que a literatura tipográfica considera aceitáveis.
+
+### Linhas que o algoritmo não consegue preencher
+
+O Knuth-Plass não estica uma linha além de `maxWordSpacing` quando tem escolha, e o ajuste de linhas curtas também não (veja [Penalidades por órfã, viúva e linha curta](#penalidades-por-órfã-viúva-e-linha-curta)). Uma linha além do limite custa mais que qualquer outro defeito que ele pondera (um hífen, uma última linha curta, uma linha um pouco mais frouxa que as vizinhas) a partir do momento em que passa do limite, e o custo então cresce com o quadrado da sua razão de esticamento; por isso o algoritmo hifeniza uma palavra, distribui a folga pelas linhas em volta ou deixa duas linhas um pouco frouxas em vez de uma frouxa demais.
+
+Às vezes nenhum conjunto de quebras fica dentro dos limites. A linha que não consegue receber a palavra seguinte tem poucos espaços para dividir a folga: a primeira linha depois do recuo de um parágrafo, seguida de uma palavra longa demais para subir e curta demais para ser hifenizada; uma linha de termos longos que não se dividem; uma URL longa que só quebra nas suas próprias junções; um item de lista cuja última palavra não sobe enquanto toda hifenização deixaria uma linha curta. A frequência depende da medida, da fonte e do idioma. Numa coluna de 83 mm de texto em inglês a 9,3 pt, de 2 % a 8 % das linhas de um capítulo passaram de `maxWordSpacing`, conforme a fonte (a mais larga, mais); o mesmo capítulo em espanhol, cuja hifenização oferece muito mais quebras, não teve nenhuma. O Knuth-Plass aceita então a linha menos ruim, e os seus espaços esticam além do limite. Quando esticariam a mais de 3× a largura do espaço normal, o motor compõe a linha **em bandeira**: ela é desenhada com o espaçamento natural e a borda direita cede, como na última linha de um parágrafo. O limite é o mesmo que o aviso de linha frouxa do Sandbox usa, de modo que uma linha que passa dele é corrigida em vez de sinalizada. As linhas dentro do limite ficam como foram medidas. O mesmo vale dentro dos boxes, cujas medidas estreitas são onde isso mais acontece; até o postext 1.4, um boxe mantinha uma linha assim justificada por mais que os espaços esticassem.
+
+Para ter menos linhas assim, nesta ordem: verifique se a hifenização está ativada e no idioma do texto; aumente a medida ou reduza o tamanho do texto; deixe as linhas usarem um pouco de tracking (próxima seção); ou aumente `maxWordSpacing`, o que faz as mesmas linhas contarem como dentro do limite sem compô-las de outro jeito.
+
+### Tracking como último recurso
+
+`bodyText.maxJustifyTracking` deixa uma linha assim usar um pouco de tracking (espaçamento entre letras) em vez de mais espaço entre palavras, até esse número de milésimos de em por caractere (10 = 0,01 em, a unidade do InDesign). Funciona nos dois sentidos: uma linha cujos espaços esticariam além de `maxWordSpacing` abre as letras até os espaços voltarem ao limite, e uma linha que só caberia com os espaços abaixo de `minWordSpacing` aperta as letras em vez de mandar uma palavra para baixo. O Knuth-Plass leva isso em conta ao escolher as quebras: uma linha com tracking custa um pouco mais que uma dentro dos limites e bem menos que uma além deles, de modo que o tracking só é usado onde o espaçamento entre palavras sozinho falharia. As linhas dentro dos limites, a última linha de um parágrafo (a menos que transborde), uma linha de uma só palavra e uma linha com um chip nunca recebem tracking. A linha o registra como `VDTLine.letterSpacing`, somado ao tracking do próprio bloco, e o canvas, o HTML e o PDF o pintam. Palavras de uma escrita cursiva (árabe…) nunca recebem tracking, nem este nem nenhum outro (o `letterSpacing` de um estilo, o balanceamento de colunas, o ajuste de linhas curtas): afastar as letras rompe as ligações. A linha não conta nenhuma dessas letras, e os renderizadores as pintam sem tracking; um estilo que define `letterSpacing` para esse texto gera um aviso de conteúdo `joiningScriptLetterSpacing`.
+
+```ts
+bodyText: {
+  maxWordSpacing: 2,
+  maxJustifyTracking: 10, // no máximo 0,01 em por letra, nos dois sentidos
+}
+```
+
+Vem desativado por padrão, para que os documentos mantenham as suas linhas a menos que o peçam. No capítulo em inglês citado acima, 10‰ reduziram as linhas além de `maxWordSpacing` a uma ou nenhuma por fonte, e 20‰ a nenhuma em três fontes de quatro. Use valores pequenos: acima de uns 20‰ o tracking começa a aparecer como uma linha mais clara ou mais escura.
+
+### Kashida no texto árabe
+
+Uma linha justificada de árabe não recebe espaçamento entre letras: as suas letras se ligam, e afastá-las rompe as ligações. Ela é esticada em dois lugares: nos espaços entre palavras e nas kashidas, as ligações alongadas que um calígrafo traça entre duas letras unidas (كتاب → كتـاب). O Postext as insere como tatweels (U+0640, ـ) inteiros, que a fonte desenha como um único traço; a Amiri transforma uma sequência de um a sete numa kashida curva.
+
+`bodyText.kashida` é `'auto'` por padrão num documento cujo idioma se escreve em alfabeto árabe (`ar`, `fa`, `ur`…) e `'none'` em qualquer outro; defina `'auto'` para alongar as palavras árabes citadas num livro em outro idioma. Cada linha, exceto a última de um parágrafo, primeiro abre os espaços entre palavras até um quarto da sua largura e depois recebe kashidas para o resto da folga, um tatweel por vez, primeiro nos melhores lugares e rodada após rodada, com cada palavra medida de novo inteira com os seus tatweels; o que sobra, menos de um tatweel, volta para os espaços. O Knuth-Plass conta o alongamento possível de cada palavra como elasticidade, de modo que escolhe as quebras sabendo que uma linha de palavras árabes pode se alargar ali.
+
+Os lugares onde uma kashida pode entrar vêm das regras do [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT): só entre duas letras que se ligam, nunca depois de uma letra que não se liga à seguinte (ا د ذ ر ز و ة), nunca no fim de uma palavra, nunca dentro do lām-alif, e depois dos sinais da letra anterior. `kashidaPatterns: 'naskh'` segue as regras clássicas do naskh (a matriz de Benatia com as proibições de Afifi: nada depois de kāf ou lām, nada antes de ṣād, ʿayn ou wāw, e o hāʾ de um pronome final esticado logo antes dele); `'simple'`, as prioridades da Microsoft para fontes modernas simples; `'nastaliq'`, as regras do naskh adaptadas ao nastaʿlīq. O padrão `'auto'` lê a fonte do corpo: nenhuma kashida numa fonte ruqʿa ou dīwānī como a Aref Ruqaa, regras do nastaʿlīq numa fonte nastaʿlīq, naskh nos outros casos. Uma palavra recebe `kashidaPerWord` alongamentos (1 por padrão) de no máximo `kashidaMaxLength` em (0,6, três tatweels da Amiri). Uma palavra que contém um tatweel digitado pelo autor é alongada ali. Palavras latinas, algarismos, títulos, linhas em bandeira e a última linha de um parágrafo nunca recebem kashida.
+
+```ts
+bodyText: {
+  kashida: 'auto',          // o padrão num livro árabe
+  kashidaPatterns: 'naskh', // 'auto' escolhe pela fonte
+  kashidaMaxLength: 0.6,    // em
+}
+```
+
+Os tatweels fazem parte do texto pintado (cada segmento os lista em `VDTLineSegment.kashida`, e a linha os conta em `VDTLine.kashida`); o texto simples, o mapeamento para o texto-fonte, os links e o texto copiado do PDF os omitem.
+
+### A última linha
+
+No modelo caixa-cola-penalidade, todo parágrafo termina com uma cola de largura 0 e elasticidade infinita, seguida de uma quebra forçada. Essa cola final absorve todo o espaço que sobra na última linha a custo zero, de modo que as últimas linhas saem naturalmente em bandeira: são renderizadas com a largura natural, e `justifiedSpaceRatio` só é calculado para as linhas que não são a última.
+
+Há uma exceção. O Knuth-Plass pode aceitar uma última linha cujo conteúdo natural é *mais largo* que a medida, contando que a cola entre as palavras vá encolher; é a semântica padrão de ajuste da cola no TeX. Os três renderizadores detectam esse caso (a largura natural do conteúdo da linha excede a medida efetiva) e comprimem os espaços entre palavras dessa última linha para que ela caiba exatamente na medida em vez de transbordar. A verificação é aplicada da mesma forma nos renderizadores canvas, PDF e HTML.
+
+### Quebra ótima vs. gulosa
+
+A propriedade `bodyText.optimalLineBreaking` (padrão: `true`) controla qual algoritmo de quebra de linhas o motor usa:
+
+- **`true`**: algoritmo de programação dinâmica de Knuth-Plass. Avalia todos os conjuntos de quebras possíveis e escolhe o ótimo global. É a configuração recomendada para qualquer texto justificado. O texto corrido em bandeira também o usa com `bodyText.optimalRagged` (ativado por padrão): os espaços entre palavras mantêm a largura e o algoritmo pondera, em vez disso, o quanto cada linha fica aquém da medida, com uma linha 3 em mais curta custando o mesmo que uma linha justificada em `maxWordSpacing`, de modo que a borda em bandeira sai mais regular e as regras de linha curta se aplicam.
+- **`false`**: método guloso (*first-fit*), com o `layoutNextLine()` do Pretext. Mais rápido, mas com resultados de qualidade inferior. Use só quando o desempenho importa mais que a qualidade tipográfica (por exemplo, visualização em tempo real com um número muito alto de caracteres).
+
+Quando o Knuth-Plass está ativo e não produz nenhuma quebra válida (o que pode acontecer em colunas extremamente estreitas ou com palavras mais longas que a largura da coluna), o motor recorre automaticamente à quebra gulosa para aquele parágrafo.
+
+
+### Chinês, japonês e coreano
+
+Um parágrafo com mais caracteres CJK do que espaços entre palavras é composto pelo compositor CJK, não pelo Knuth-Plass. Todo intervalo entre dois caracteres é um lugar onde a linha pode quebrar (exceto onde as regras de quebra de linha de `cjk.lineBreak` o proíbem), então não há nada para uma busca ótima ponderar; as linhas são preenchidas uma depois da outra. Quando um caractere não cabe, a linha primeiro tenta acomodá-lo cedendo o branco da pontuação e os espaços (*push-in*: espaços entre palavras até um quarto de em, depois pontos médios, parênteses, sinais de pausa, espaços entre han e latim até um oitavo de em, e pontos finais, conforme `cjk.punctuationWidth` permite); só quando isso não basta um caractere que não pode abrir linha leva o anterior consigo para baixo. Veja [Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático) para as regras. [Composição chinesa](/pt/docs/chinese-layout) trata do resto da composição em chinês: larguras da pontuação por região, a grade de caracteres e o texto vertical. Um documento em japonês segue a JLReq (veja [Composição japonesa](/pt/docs/japanese-layout#justificação-e-a-última-linha)): os seus níveis de kinsoku, uma linha que devolve espaço na ordem da JLReq §3.8.3 (primeiro o meio em depois do sinal que termina a linha, tudo ou nada, e nunca o espaço depois de 。 dentro da linha), e nenhum espaço acrescentado depois de um parêntese de abertura, antes de um de fechamento ou junto de 、。・：；？！ quando uma linha é espaçada.
+
+Uma linha justificada de um parágrafo assim, exceto a última, é estendida até a medida na ordem que a clreq define (§6.2.2.4):
+
+1. Os espaços entre palavras ocidentais, por igual, até meio em cada um.
+2. Os espaços entre han e latim (`cjk.latinSpacing`), por igual, até meio em cada um.
+3. Todo intervalo entre caracteres, por igual, inclusive os espaços entre han e latim: entre caracteres han, entre han e pontuação, entre han e uma palavra latina. Nunca dentro de uma palavra latina, de um número ou de um travessão ou reticências de dois em, e nunca junto de um conector (～, –, um — simples) ou de uma barra. Um sinal pendurado além do fim da linha (`cjk.hangingPunctuation`) fica fora da medida.
+
+A última linha de um parágrafo é composta sem espaçamento extra. O espaçamento é registrado por segmento da linha (`VDTLineSegment.tracking`), de modo que o canvas, o HTML e o PDF pintam as mesmas posições, e o Sandbox coloca o cursor no caractere clicado.
+
+Uma linha que precisaria de mais de meio em entre os caracteres (ou de mais que `bodyText.maxJustifyTracking`, quando definido) é composta com esse máximo, aquém da medida, e gera um aviso de conteúdo `cjkLooseLine` (no Sandbox, **Linha CJK aquém da medida**). A causa habitual é uma palavra latina longa ou um endereço web que não conseguiu subir. Uma linha sem nenhum caractere CJK, como o começo de um endereço web longo, é composta em bandeira sem o aviso.
+
+Para o destaque de linhas frouxas, uma linha CJK conta como frouxa pelo seu espaçamento: a sua razão é 1 mais o espaçamento em oitavos de em, de modo que, com o limite padrão de 3, uma linha cujos caracteres estão afastados mais de um quarto de em é sinalizada (`lineLooseness(line, fontSizePx)` dá a razão). O balanceamento de colunas pode alongar um parágrafo CJK em uma linha: ele quebra as linhas um pouco antes da medida, um oitavo de em por vez até dois em, e as estende de volta até ela.
+
+## Depuração de linhas frouxas
+
+Mesmo com Knuth-Plass e hifenização, algumas linhas vão ficar mais frouxas do que o ideal, sobretudo em colunas estreitas com palavras longas ou em idiomas com poucas oportunidades de hifenização. O recurso de depuração **destaque de linhas frouxas** ajuda a achar essas linhas problemáticas na hora.
+
+### Como funciona
+
+Cada linha da Árvore de Documento Virtual (VDT) traz um `justifiedSpaceRatio`, a razão entre a largura real do espaço justificado e a largura natural do espaço da fonte. Um valor de 1.0 significa que os espaços estão na largura natural. Um valor de 2.5 significa que os espaços estão 2,5 vezes mais largos que o normal.
+
+Quando `debug.looseLineHighlight.enabled` é `true`, o Sandbox pinta uma camada semitransparente sobre a sua visualização em Canvas em cada linha cujo `justifiedSpaceRatio` passa do `threshold` configurado. O limite padrão é 3.0, ou seja, só são destacadas as linhas com espaços três vezes mais largos que o normal. É uma barra alta de propósito: linhas tão frouxas são problemas tipográficos de verdade. É também a largura a partir da qual o motor compõe uma linha justificada em bandeira em vez de esticá-la (veja [Linhas que o algoritmo não consegue preencher](#linhas-que-o-algoritmo-não-consegue-preencher)), de modo que, no padrão, o destaque e o aviso `looseLines` quase não encontram nada no texto corrido: uma linha assim é corrigida, não sinalizada. Baixe o limite para 1,5 ou 2 para achar as linhas frouxas que continuam justificadas.
+
+A camada não faz parte da página, por isso as páginas exportadas nunca a mostram. Para desenhá-la num canvas seu, chame `drawLooseLines(ctx, page, doc, { threshold })` logo depois de `renderPageToCanvas`; `findLooseLines(doc, { threshold })` devolve as mesmas linhas como dados (veja [Linhas frouxas no seu próprio canvas](/pt/docs/configuration#linhas-frouxas-no-seu-próprio-canvas)).
+
+### Configuração
+
+O destaque de linhas frouxas faz parte da seção `debug` de `PostextConfig`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '180px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Se as linhas frouxas devem ser destacadas.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Cor da camada de destaque. O padrão é um vermelho semitransparente.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplicador da largura do espaço normal acima do qual uma linha é considerada frouxa. Valores menores pegam mais linhas; valores maiores destacam só os piores casos. Em 3 ou mais, o texto corrido quase não mostra nada, porque as linhas além de 3× são compostas em bandeira.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  looseLineHighlight: {
+    enabled: true,
+    threshold: 2.5,
+    color: { hex: '#ff660040', model: 'hex' },
+  },
+}
+```
+
+### Como interpretar os resultados
+
+Quando você ativa o destaque de linhas frouxas e vê faixas vermelhas em certas linhas, isso significa que o motor não encontrou um jeito de compor essas linhas sem espaçamento excessivo entre as palavras. Comece pelo alto: as causas estão ordenadas da mais provável para a menos provável.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Causa</th>
+      <th>Solução</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A coluna é estreita demais para o tamanho da fonte</td>
+      <td>Aumente a largura da coluna, reduza o tamanho da fonte ou passe para uma diagramação de coluna única.</td>
+    </tr>
+    <tr>
+      <td>Palavras longas com poucos pontos de hifenização</td>
+      <td>Verifique se a hifenização está ativada e se o idioma correto está definido. Alguns termos técnicos ou nomes próprios não têm pontos de quebra válidos.</td>
+    </tr>
+    <tr>
+      <td>A hifenização está desativada</td>
+      <td>Ative <code>bodyText.hyphenation.enabled</code>. Justificação sem hifenização é quase sempre pior.</td>
+    </tr>
+    <tr>
+      <td>Algumas linhas continuam frouxas qualquer que seja a fonte</td>
+      <td>Deixe essas linhas usarem um pouco de tracking: <code>bodyText.maxJustifyTracking: 10</code>. Veja <a href="#tracking-as-a-last-resort">Tracking como último recurso</a>.</td>
+    </tr>
+    <tr>
+      <td>Os limites do espaçamento entre palavras estão estreitos demais</td>
+      <td>Aumente um pouco <code>maxWordSpacing</code> (por exemplo, de 2 para 2,4). Isso dá mais espaço ao algoritmo.</td>
+    </tr>
+    <tr>
+      <td>O idioma tem palavras compostas longas (por exemplo, o alemão)</td>
+      <td>Confira se o idioma correto está definido. Os padrões de hifenização do alemão lidam bem com palavras compostas, mas só se o motor souber que o texto está em alemão.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Justificação vertical: balanceamento de colunas
+
+O Knuth-Plass resolve o problema *horizontal*: onde cada linha quebra. O balanceamento de colunas resolve o seu equivalente *vertical*: onde cada coluna termina. Os editores esperam que toda coluna de uma página comece no alto e termine rente ao pé da página, linha por linha em toda a página dupla. As próprias regras que protegem a qualidade do texto trabalham contra isso: a proteção contra órfãs e viúvas, os títulos com `keepWithNext` e as figuras que não se dividem empurram conteúdo para a coluna seguinte antes que a atual esteja completamente cheia, deixando uma ou mais linhas vazias da grade de linhas de base no seu pé.
+
+Quando `headings.balancing` está ativado (o padrão), o motor fecha esses vãos como um compositor faria, aplicando as suas alavancas numa ordem de prioridade editorial estrita; cada alavanca só age sobre o que a anterior não conseguiu absorver:
+
+1. **Um boxe que fecha a coluna.** Um boxe que termina uma coluna curta desce exatamente o espaço que sobra sob o seu pé, de modo que a sua borda inferior cai na última linha da grade, nivelada com a coluna ao lado; esse espaço pode ser uma fração de linha. Ele age primeiro e fica com todo o vão, a menos que `closingBox` diga outra coisa: `'last'` deixa as alavancas abaixo pegarem antes as linhas inteiras e dá ao boxe só o que elas deixam, de modo que um boxe que comenta o parágrafo acima continua perto dele; `'off'` nunca move o boxe.
+2. **Imagens com zona segura.** Uma imagem cujo recurso marca uma zona segura (`Resource.safeArea`, a parte que sempre precisa aparecer; veja [Formato do documento › Zona segura](/pt/docs/document-format#área-segura)) cresce em linhas inteiras da grade quando está em linha na coluna curta, ou flutuante no alto ou no pé dela e só sobre essa coluna: o motor recorta o que fica fora da zona segura para deixá-la mais alta, na largura total. Uma imagem mais alta não deixa nenhum buraco na página, por isso vem antes de qualquer espaço acrescentado. Um flutuante que abre uma coluna numa página ou faixa de fechamento, cujos topos de coluna ficam nivelados, não cresce.
+3. **Espaço acima dos títulos.** Linhas inteiras da grade de linhas de base são acrescentadas à margem superior dos títulos da coluna curta. Quando são necessárias várias linhas e a coluna tem vários títulos, as linhas são distribuídas em rodízio por ordem de importância, de modo que o título mais importante sempre recebe a maior parte: 3 linhas sobre um `h2` e um `h3` viram +2 acima do `h2` e +1 acima do `h3`. Títulos no alto de uma coluna nunca recebem espaço extra (as colunas continuam começando no alto da página), e um título no fim da coluna nunca é empurrado para o pé.
+4. **Espaço depois do fim das listas.** Uma linha da grade é acrescentada onde termina uma lista ou enumeração; um respiro depois de uma lista se lê com naturalidade. Com um máximo por fim de lista (`maxLinesAfterList`, padrão 1). Depois, uma linha da grade sob uma fórmula em destaque ou um boxe depois do qual o texto continua, e uma sob uma figura ou tabela que abre a coluna (`stretchAfterFloats`, `maxLinesAfterFloat`). O texto sob a figura pode ser o resto de um parágrafo começado na página anterior; ele desce do mesmo jeito, a linha que as regras de quebra deixaram livre no pé da coluna (uma linha que a regra de viúvas deixou vazia, um espaço entre parágrafos sem lugar para texto depois dele).
+5. **Parágrafos frouxos.** Como último recurso, parágrafos da coluna são quebrados de novo com uma linha a mais (o `\looseness=+1` do TeX), até `maxLooseParagraphs` deles (dois por padrão), uma linha extra cada um. O algoritmo roda o Knuth-Plass de novo pedindo exatamente uma linha a mais e só aceita o resultado quando **todas as linhas da solução frouxa ficam abaixo de `maxWordSpacing`**: a cor tipográfica nunca passa do limite que você já configurou. O motor prefere os parágrafos mais longos da coluna, onde o espaço extra se dilui em mais cola entre palavras e fica invisível. Exige `optimalLineBreaking` (o padrão); parágrafos divididos entre colunas ficam de fora. Um parágrafo que o ajuste de linhas curtas compôs com uma linha a menos conta a sua linha a mais a partir dessa composição: pode recuperar a linha que o ajuste tirou, mas só numa composição sem linha curta e sem nenhuma linha além de `maxWordSpacing` (até o postext 1.4 ele podia voltar com uma linha muito além do limite).
+
+   Quando o espaçamento entre palavras sozinho não consegue ganhar a linha, o parágrafo também pode usar um pouco de **tracking** positivo, o recurso clássico do compositor. O motor tenta primeiro a menor quantidade (metade de `maxTracking`, depois `maxTracking`, em milésimos de em por caractere; 10 = 0,01 em por padrão) e fica com a primeira que ganha a linha, sempre sob o mesmo limite de espaçamento entre palavras. O tracking entra na medição das linhas do parágrafo e é pintado por todos os renderizadores (`letterSpacing` no canvas, `letter-spacing` no CSS, espaçamento entre caracteres no PDF). Desative-o com `trackParagraphs: false`.
+
+### Por que o ajuste é local
+
+As quebras de coluna são *presas ao elemento*: o elemento que abre a coluna seguinte está ali porque não coube no vão. Empurrar o final de uma coluna para baixo no máximo pelo seu próprio vão, portanto, nunca leva conteúdo para a coluna ou página seguinte; cada coluna é ajustada no lugar, sem refluxos em cascata. Mesmo assim o motor confere isso na prática: roda de novo a colocação com os ajustes propostos (até 8 passadas), mede o vão total que sobra e fica sempre com a melhor diagramação encontrada. Um parágrafo frouxo que não consegue ganhar a sua linha dentro do limite de espaçamento, com qualquer tracking, entra numa lista de exclusão e o candidato seguinte é testado.
+
+### Quando uma coluna curta fica como está
+
+Às vezes uma coluna curta é o resultado *correto*, e o balanceamento sabe sair do caminho:
+
+- A **última coluna de uma página** só é balanceada quando a página continua naturalmente na seguinte. Páginas encerradas por `:::pagebreak`, pelo `breakBefore` de um título ou por uma abertura de capítulo mantêm a sua última coluna curta: um capítulo pode muito bem terminar no meio da página.
+- A **última página do documento** nunca é balanceada.
+- Uma coluna **sem nenhum ponto elástico utilizável** (nenhum título elegível, fim de lista ou parágrafo que possa ficar mais frouxo) mantém o seu vão em vez de piorar a tipografia.
+
+```js
+const doc = buildDocument(content, {
+  headings: {
+    balancing: {
+      enabled: true,            // padrão
+      maxLinesPerHeading: 4,    // máximo por título
+      stretchAfterLists: true,  // alavanca 4
+      maxLinesAfterList: 1,     // máximo por fim de lista
+      looseParagraphs: true,    // alavanca 5, limitada por bodyText.maxWordSpacing
+      maxLooseParagraphs: 2,    // parágrafos frouxos por coluna curta
+      trackParagraphs: true,    // deixa um parágrafo frouxo usar um pouco de tracking
+      maxTracking: 10,          // ‰ de em por caractere (0,01 em)
+      closingBox: 'first',      // alavanca 1: 'first' | 'last' | 'off'
+    },
+  },
+});
+```
+
+No Sandbox, essas opções ficam na seção *Títulos* de **Design → Títulos e sumário** (“Equilibrar colunas”, com “Esticar após listas”, “Esticar sob figuras”, “Boxe que fecha uma coluna” e “Parágrafos frouxos” aninhados abaixo). Ative a grade de linhas de base (**Design → Avançado → Auxílios na tela**) e olhe a visualização Canvas para ver o efeito: com o balanceamento desativado, as colunas curtas terminam acima da última linha da grade; com ele ativado, todas as colunas balanceáveis fecham na mesma linha. Veja a página [Configuração](/pt/docs/configuration#equilíbrio-de-colunas) para a referência completa das opções.
+
+## Exemplo completo
+
+Uma configuração completa que mostra todas as opções de hifenização e justificação:
+
+```ts
+import { buildDocument } from 'postext';
+
+const vdt = buildDocument(content, {
+  bodyText: {
+    fontFamily: 'EB Garamond',
+    fontSize: { value: 9, unit: 'pt' },
+    textAlign: 'justify',
+
+    // Quebra de linhas ótima de Knuth-Plass (padrão: true)
+    optimalLineBreaking: true,
+
+    // Hifenização
+    hyphenation: {
+      enabled: true,
+      locale: 'es',
+    },
+
+    // Limites do espaçamento entre palavras (multiplicadores do espaço normal)
+    maxWordSpacing: 2,     // os espaços esticam até 200%
+    minWordSpacing: 0.6,   // os espaços encolhem até 60%
+  },
+
+  // Depuração: destacar linhas com espaçamento excessivo
+  debug: {
+    looseLineHighlight: {
+      enabled: true,
+      threshold: 2.5,
+      color: { hex: '#ff000040', model: 'hex' },
+    },
+  },
+});
+```
+
+Para a lista completa das opções de configuração do texto corrido, veja a página [Configuração](/pt/docs/configuration#texto-do-corpo). Para saber como o pipeline de diagramação usa essas configurações na medição do texto, veja a página [Arquitetura](/pt/docs/architecture).

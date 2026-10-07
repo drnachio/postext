@@ -1,0 +1,62 @@
+---
+title: "Títulos laterais, números pendurados e títulos em linha"
+summary: "Edital de concurso com títulos de seção num canal na margem, sobre as linhas de base do texto, números de subseção na medianiz e títulos em linha em vermelho."
+plain: "O edital de uma prefeitura para escolher o projeto que vai transformar um antigo mercado de peixe numa biblioteca. Os títulos das seções ficam numa margem esquerda larga, na altura da primeira linha do texto ao lado."
+description: "Edital de concurso espanhol de cinco páginas no Postext, com títulos de seção num canal de 50 mm à esquerda e números de subseção pendurados na medianiz."
+question: "Como ponho títulos de seção num canal na margem, penduro os números e componho em linha os menores?"
+aliases: ["títulos laterais", "títulos na margem", "títulos marginais", "números pendurados", "numeração pendurada", "números de seção pendurados", "títulos em linha", "títulos corridos", "relatório suíço", "edital de concurso", "concurso de arquitetura", "número e fio de seção", "canal na margem", "título na margem"]
+pageNotes: { "1": "A primeira página do edital: o nome da prefeitura em duas linhas no alto à esquerda, o chapéu EXPEDIENTE BML-2026/04 em vermelho, o título Bases del concurso numa serifada leve em duas linhas e uma linha fina em itálico. Uma planta de situação atravessa toda a mancha, com as vielas do bairro antigo, uma malha de quarteirões chanfrados, o calçadão, o porto e o terreno em vermelho. Embaixo, a seção 1 abre com um 1 vermelho e um fio preto; o seu título, Objeto del concurso, fica no canal da esquerda na primeira linha do texto, e as subseções 1.1 e 1.2 penduram os seus números vermelhos na medianiz.", "2": "A seção 2, El emplazamiento, com o título no canal e, embaixo dele, uma pequena planta do terreno: o mercado em cinza com os seus treze vãos, seis árvores ao longo do limite norte e setas vermelhas nas entradas. As subseções 2.1 a 2.3 penduram os números ao lado do texto; mais abaixo abre a seção 3, com um título de duas linhas no canal, seguida da subseção 3.1.", "3": "Uma elevação do mercado atravessa o alto da página: treze abóbadas, onze arcos e quatro pilastras vermelhas na ponta leste. Embaixo, a tabela do programa, com uma linha de cabeçalho em preto, ocupa a coluna de texto, e a sua legenda, Tabla 1, fica no canal na altura do topo da tabela. Seguem as subseções 3.2 e 3.3 e depois a seção 4, Criterios de proyecto, cujos parágrafos começam com termos em negrito vermelho.", "4": "Mais três critérios que começam com termos em negrito vermelho, depois as seções 5, Entrega de propuestas, e 6, Jurado y plazos, cada uma com o seu número e o seu fio e o título no canal, e as subseções 5.1 a 6.1 com números pendurados. A coluna de texto termina rente ao pé da página.", "5": "As subseções 6.2 e 6.3, o calendário do concurso numa tabela com cabeçalho preto e um pequeno colofão cinza." }
+---
+
+## O que você vai compor
+
+Cinco páginas A4 de um edital de concurso de arquitetura, em que a prefeitura de Puerto Lince, um porto espanhol fictício, convoca projetos para transformar o seu mercado de peixe de 1931 na biblioteca da cidade. A diagramação segue os relatórios municipais suíços. Um canal de 50 mm desce pela esquerda de cada página, e cada seção abre com um número vermelho e um fio preto que atravessa toda a mancha. O título da seção fica no canal, em Noto Serif Display, na altura da primeira linha do texto. Os números das subseções ficam pendurados na medianiz, em DM Mono vermelho, de modo que todo título de subseção mantém a borda esquerda do texto. Os critérios de julgamento da seção 4 começam com termos em negrito vermelho. A página 1 traz um título de 58 pt sobre uma planta de situação, uma planta do terreno fica no canal da página 2, e uma elevação da frente do cais abre a página 3.
+
+## Preparo
+
+### 1 · Imprima o título da seção a partir de um boxe no canal
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Um título reserva espaço até o elemento mais baixo do seu design, então um título desenhado no canal na altura da primeira linha da seção empurraria o texto uma linha para baixo, e duas no caso de um título de duas linhas. Por isso o design do título desenha só o número e o fio, e `sideHeads()` copia o texto de cada `## Title` para um `:::callout` aberto logo depois do título. Com `span="side"`, esse boxe sai do fluxo e fica no canal, na linha da grade onde o texto recomeça ([estilos de boxe](/pt/docs/configuration#estilos-de-boxe)). O número e o fio definem `reserve: false`: do contrário, um boxe no canal mantém um espaço de flutuante, uma linha, embaixo dos elementos do título que estão ali, e o título cairia para a segunda linha do texto. Os boxes e o texto corrido põem a linha de base a 0,8 da altura da linha, então um boxe com a entrelinha de 14 pt do texto põe cada linha de um título de duas linhas sobre uma linha de base do parágrafo ao lado. O Markdown continua sendo um simples `## Programa de necesidades`. Como o design do título não imprime `{titleText}`, o Sandbox mostra o aviso *Título não referenciado*, embora o boxe imprima o título.
+
+<PageShot page={2} crop="0,0.068,1,0.292" caption="Página 2: o número e o fio vêm do título, e o título vem do boxe no canal, na altura da primeira linha do texto. A planta do terreno se empilha embaixo dele." />
+
+### 2 · Reserve o canal para títulos e figuras
+
+<Excerpt region="channel" />
+
+`sideColumnRole: 'floats'` mantém o texto fora do canal ([tipos de diagramação](/pt/docs/configuration#tipos-de-layout)). Depois da abertura, o canal guarda só os seis títulos de seção e a planta do terreno, os dois mandados para lá com `span: 'side'`, e a legenda da tabela 1. A coluna lateral fica por padrão em `'right'`, e um edital impresso só num lado da folha a mantém do mesmo lado em todas as páginas. `sideColumnSide: 'left'` a põe à esquerda, onde cada título de seção é lido antes do seu texto.
+
+### 3 · Pendure os números e componha os títulos menores em linha
+
+<Excerpt region="lower" />
+
+O título da subseção começa na borda esquerda da coluna. O seu número é ancorado `'left-of'` do título, alinhado à direita numa caixa de 12 mm que termina 2 mm antes do texto, de modo que números como 2.1 e 3.3 ficam pendurados na medianiz e todo título se alinha com o texto embaixo dele ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)). A caixa precisa de largura fixa. Uma largura `'auto'` é limitada pela coluna. Lá fora, na medianiz, isso não deixa largura nenhuma, e o número não é desenhado. O nível 2 imprime `'{2}'` e o nível 3, `'{2}.{3}'`, porque com `{1}` todo número começaria com o 1 do único H1 do edital. Os critérios da seção 4 são um quarto nível composto sem título. Cada parágrafo começa com um termo em negrito, e `bodyText.boldColor` o imprime em vermelho ([texto do corpo](/pt/docs/configuration#texto-do-corpo)). Nenhum outro parágrafo tem negrito, e as células de tabela tiram a cor de `tableStyle`, então a linha Total em negrito da tabela 1 continua preta.
+
+### 4 · Dê a cada figura e tabela o seu próprio posicionamento
+
+<Excerpt region="resources" />
+
+A planta do terreno vai para o canal com `span: 'side'` e se empilha sob o título lateral da seção 2 ([posicionamento](/pt/docs/document-format#posicionamento)). `width: PLAN_W / SIDE` lhe dá 44 mm de largura, o que põe os seus 88 metros exatamente em 1:2000. A elevação da fachada é um flutuante `'top'` na largura da página. Ela é citada na página 2 e abre a página 3, já que um flutuante nunca é posicionado acima da sua referência. A tabela do programa, também citada na página 2, flutua para o alto da coluna de texto da página 3; composta inline, ela teria aberto a página 3 e mandado a elevação para a página 4. `captionSide: true` põe a legenda no canal, na altura do topo da tabela. O calendário fica onde `::resource` o coloca, no fim do edital.
+
+### 5 · Abra o edital sobre a planta de situação
+
+<Excerpt region="opener" />
+
+Com `span: 'page'`, o contêiner da abertura é a mancha inteira, canal incluído ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O chapéu e o título ficam a 57 mm da borda, na borda esquerda da coluna de texto, e a planta atravessa canal e coluna. Sem isso, o contêiner é a coluna de texto, todos os elementos andam 57 mm para a direita, e o título, a linha fina e a planta passam da borda direita da página. Um elemento de imagem não reserva altura, então `minHeight` estende a reserva até o pé da planta. Arredondada para uma linha inteira da grade, ela deixa o fio da seção 1 tão longe do seu texto quanto o fio de todas as seções seguintes. O chapéu, a linha fina e a legenda do mapa são atributos da linha `# Bases del concurso`.
+
+## Variações
+
+### Ponha o fio só na coluna de texto
+
+Ancore o fio na caixa do próprio título em vez do número, e ele vai da borda esquerda do texto até a borda direita da coluna, com só o número e o título no canal.
+
+```diff
+-        color: col('ink'), placement: { ...at('#number', 'right-of', mm(2), RULE_Y),
++        color: col('ink'), placement: { ...at('container', 'top-left', mm(0), RULE_Y),
+```
+
+## Erros comuns
+
+- Uma figura lateral ocupa o alto do canal na página que a cita, e um título lateral aberto depois dela se empilha embaixo da figura, abaixo do início da sua própria seção. Cite as figuras laterais depois do título de seção da página delas, como a seção 2 cita a planta do terreno.
+- No postext 1.4.1, um boxe lateral aberto entre um título e o seu primeiro parágrafo dá a esse parágrafo um recuo de primeira linha, mesmo com `indentAfterHeading: false`. Este edital não tem recuos, então nada aparece. Com uma mancha recuada, envolva o primeiro parágrafo de cada seção num contêiner `:::paragraphs` cujo estilo defina `firstLineIndent: 0`.
+- No postext 1.4.1, o `spaceBetween` de um estilo de parágrafo também é somado depois do último parágrafo do contêiner, onde não se funde com o `marginTop` do título seguinte como acontece com o espaçamento entre parágrafos do corpo. Com os critérios num contêiner assim e uma linha de `spaceBetween`, a seção 5 ficava com três linhas em branco acima e todas as outras com duas, por isso este edital colore os termos em linha com `bodyText.boldColor`.

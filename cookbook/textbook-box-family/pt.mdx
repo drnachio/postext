@@ -1,0 +1,85 @@
+---
+title: "Uma família de boxes de livro didático com código de cores"
+summary: "Seis tipos de boxe de livro didático em três cores, diferenciados por faixa com ícone, selo, aba numerada, pictogramas ou um indicador fora da moldura."
+plain: "Um capítulo de um livro de biologia com seis tipos de boxes, como avisos e notas de laboratório. Cada tipo tem cor e símbolo próprios, para o aluno distinguir um do outro num relance."
+description: "Capítulo 2 de um livro de biologia no Postext: objetivos numa faixa magenta, uma dica junto a um fio verde fino, um BOX 2.1 com aba e um aviso âmbar."
+question: "Como faço boxes de objetivos, dicas e avisos com ícone, faixa, cantos arredondados ou uma aba numerada?"
+aliases: ["boxes de livro didático", "boxe", "quadro", "objetivos de aprendizagem", "dica de estudo", "boxe de aviso", "boxe de atenção", "BOX 2.1", "BOX 2-1", "boxe numerado", "rótulo do boxe", "selo no canto", "faixa de ícones", "pictogramas de segurança", "autoavaliação", "termos-chave", "admonition", "sidebar"]
+pageNotes: { "1": "A abertura do capítulo 2, Cells and Membranes: uma célula magenta com uma borda de bicamada em contas, cortada pelo canto superior direito da página, com um 2 branco no núcleo. Abaixo do primeiro parágrafo, um boxe de objetivos de aprendizagem sobre uma faixa magenta com um ícone de alvo; na coluna da direita, uma dica de estudo ao lado de um fio verde fino encimado por um selo com uma lâmpada.", "2": "Um desenho do mosaico fluido na largura da página e, abaixo, o BOX 2.1 sobre as duas colunas: uma aba preta e um frasco no canto superior esquerdo, um fio que vai deles até o canto oposto, uma figura de duas células se fundindo à esquerda e o texto à direita. Mais abaixo, na coluna da esquerda, um boxe de aviso com moldura âmbar de cantos arredondados e um selo de alerta pendurado no canto externo.", "3": "Três painéis de glóbulos vermelhos em soluções salinas na cabeça da página, uma atividade de laboratório com um boxe de segurança de três pictogramas e passos numerados em verde, e um boxe rosa de autoavaliação flutuando no pé da página, marcado por um quadradinho magenta com um visto e um fio fino ao lado da moldura." }
+---
+
+## O que você vai compor
+
+O capítulo 2 de *Living Matter*, um livro didático de biologia do ensino médio numa página de 210 × 280 mm, abre sob o desenho de uma célula cortada pelo canto superior da página, com o número do capítulo no núcleo. Seguem seis tipos de boxe em três cores, cada um com um recurso gráfico próprio, para que o aluno distinga um objetivo de um aviso antes de lê-los. O magenta marca os objetivos de aprendizagem, sobre uma faixa com um alvo, e a autoavaliação, que tem um quadradinho com visto fora da moldura. O verde marca a dica de estudo, ao lado de um fio fino encimado por um selo com uma lâmpada, e o boxe de laboratório com os seus três pictogramas de segurança. O aviso é âmbar, com um selo de alerta no canto externo. O BOX 2.1 é lavanda, sob uma aba preta e um frasco. Os termos em negrito assumem a cor do seu boxe, magenta no BOX 2.1.
+
+## Preparo
+
+### 1 · Dar uma cor a cada tipo de boxe
+
+<Excerpt region="palette" />
+
+Seis tipos de boxe dividem três matizes: magenta para os objetivos e a autoavaliação, verde para a dica de estudo e o laboratório, âmbar para o aviso. O BOX 2.1 tem fundo lavanda e usa o magenta nos termos-chave. Cada matiz tem uma versão clara para os fundos, e toda configuração de cor está ligada a uma entrada da paleta, então mudar um matiz é editar um valor. Um texto de corpo tão pequeno precisa de contraste de 4,5:1. O magenta sobre o lavanda chega a 4,9:1, mas o âmbar sobre o fundo do aviso fica em 2,2:1, por isso o aviso guarda o âmbar para a moldura e o selo e compõe o título e os termos-chave em `warnInk`, um âmbar mais escuro, com 5,2:1.
+
+### 2 · Compartilhar todo o resto
+
+<Excerpt region="base" />
+
+`box()` reúne as configurações que todos os boxes compartilham: margens, preenchimento, letra do título e do texto, espaçamento das listas. O argumento `hue` colore o título, os marcadores e números e os trechos em negrito. `body.boldColor` deixa **fluid mosaic model** em magenta nos objetivos e **cell wall** em âmbar-acastanhado no aviso; o negrito no texto corrido continua em tinta ([tipografia dentro de um boxe](/pt/docs/configuration#tipografia-dentro-de-um-boxe)). Declarar `calloutStyles` substitui o único estilo que o motor traz de fábrica, um boxe cinza chamado `note`. Um bloco cujo `type` falta ou está escrito errado assume o primeiro estilo, por isso a lista começa pelos objetivos, que todo capítulo tem.
+
+### 3 · Faixa, aba e selo
+
+O código é a [resposta curta](#a-resposta-curta) acima. A faixa dos objetivos tem 7,5 mm de largura e o alvo 5 mm, então o ícone fica dentro da cor com folga dos dois lados. O `offset` da aba é igual à sua `height`, o que apoia a aba na borda superior do boxe, longe do título. `'top-left'` é o canto externo desta página par; o frasco vem depois da aba, e o fio corre pela borda superior do frasco até o canto oposto. `position: 'corner'` pendura o selo do aviso com metade da largura para fora da borda, e `cornerSide: 'outer'` o manda para o lado do corte, a esquerda nesta página par. Desse lado, o motor recua o título para desviar do selo, a menos que o preenchimento já cubra metade do selo mais o espaço do título; por isso o aviso tem preenchimento de `BADGE / 2 + GAP` nos dois lados, e o título se alinha com o texto. Só este boxe tem `borderRadius`. Num boxe com faixa, a faixa é pintada à parte, como uma barra de cantos retos, e os cantos desse lado ficariam retos ([estilos de boxe](/pt/docs/configuration#estilos-de-boxe)).
+
+### 4 · Mais três recursos gráficos
+
+<Excerpt region="more" />
+
+A faixa da dica de estudo tem 2,5 pt de largura contra os 6,4 mm do selo da lâmpada, então ela sai como um fio fino com o selo por cima da ponta de cima; um preenchimento à esquerda de meio selo mais 2 mm mantém o texto longe da lâmpada. `icon.width` encaixa uma imagem numa caixa larga em vez de num quadrado, então os três pictogramas de segurança, desenhados como uma só imagem de 24,5 mm, formam a coluna de ícone do boxe de laboratório, centralizada em relação ao texto. O indicador da autoavaliação fica fora da moldura, na ordem indicador, fio, espaço, boxe. O quadradinho sobre um fio de 0,75 pt a distingue da dica de estudo, cujo selo é redondo. O bloco acrescenta `span="page" placement="bottom"` para que a autoavaliação flutue até o pé da <PageRef page={3}>página 29</PageRef>.
+
+### 5 · Os ícones são recursos
+
+<Excerpt region="icons" />
+
+Todos os ícones, o frasco ao lado da aba e a célula da abertura são recursos SVG declarados com o conteúdo e registrados pelo id de arquivo. Um estilo os chama pelo id de recurso, e como o texto nunca os cita, nenhum deles vira uma figura numerada. Glifos como ✓ ou ☞ seriam mais curtos de escrever, mas os arquivos latin do Fontsource que as páginas carregam não os têm: o canvas os pegaria emprestados de uma fonte do sistema, e um PDF os descartaria. Os desenhos também não levam palavras, porque um SVG desenhado como imagem não pode usar as fontes da página; as legendas é que dão o nome das cores.
+
+### 6 · Abrir o capítulo com uma célula
+
+<Excerpt region="opener" />
+
+A célula é um elemento de imagem ancorado no canto superior direito da página e empurrado para além dele, de modo que aparece sobretudo o quarto inferior esquerdo, com o numeral no núcleo. Os dois ficam dentro dos 66 mm que `minHeight` reserva para a abertura. O antetítulo e a linha fina vêm da linha do título, `# Cells and \\ Membranes {unit="The cell" lead="…"}`, e o `\\` quebra o título só na abertura.
+
+## Variações
+
+### Pôr um boxe nas duas colunas
+
+`span="page"` num bloco estende qualquer tipo de boxe pelas duas colunas; o BOX 2.1 também aninha um grupo `:::columns` para pôr a figura ao lado do texto.
+
+```diff
+-:::callout{type="warning" title="Membrane or wall?"}
++:::callout{type="warning" title="Membrane or wall?" span="page"}
+```
+
+### Pendurar o selo do lado da lombada
+
+`'inner'` leva o selo para o lado da lombada, à esquerda numa página ímpar e à direita numa par; deixe espaço desse lado para a metade que fica fora do boxe.
+
+```diff
+-    icon: icon('caution', BADGE, { position: 'corner', cornerSide: 'outer' }) }),
++    icon: icon('caution', BADGE, { position: 'corner', cornerSide: 'inner' }) }),
+```
+
+### Pôr a aba no canto direito
+
+`'top-right'`, o padrão, espelha o rótulo inteiro: a aba vai para o canto direito, o frasco para a esquerda dela, e o fio vem da esquerda.
+
+```diff
+-      position: 'top-left', // this verso's outer corner, above the badge ('top-right' by default)
++      position: 'top-right',
+```
+
+## Erros comuns
+
+- A aba só é impressa quando o bloco tem `label="BOX 2.1"` e o estilo tem um objeto `label`. Um estilo sem ele ignora o atributo.
+- O Postext não numera os boxes. O rótulo é o texto literal do bloco, então você digita cada número, BOX 2.1, BOX 2.2, à mão.
+- Um selo de canto fica com metade da largura para fora da lateral do boxe, sobre a margem do lado externo da página. Na outra coluna da mesma página, ele invade a medianiz, então mantenha os boxes com selo na coluna externa ou deixe espaço para eles.
+- Um boxe só recolore os marcadores e números das listas quando o seu `lists.color` difere de `unorderedLists.color`. Se os dois forem o mesmo magenta, uma lista numerada dentro do boxe assume `orderedLists.color`, e é por isso que este documento põe os seus próprios marcadores em tinta.

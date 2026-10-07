@@ -1,0 +1,68 @@
+---
+title: "Um relatório de ensaio clínico com diagrama CONSORT"
+summary: "Um ensaio real, resumido: resumo estruturado na largura da página, fluxo CONSORT desenhado em código a partir dos números, tabelas alinhadas e citações APA."
+plain: "Um estudo publicado sobre um chatbot que propõe exercícios de terapia, encurtado e diagramado de novo. O fluxograma de quem entrou e saiu do ensaio sai dos próprios números, as tabelas alinham os decimais e as referências seguem a APA."
+description: "Relatório de ensaio randomizado no Postext: resumo estruturado num boxe, diagrama CONSORT em SVG a partir dos números, tabelas de resultados alinhadas e APA."
+question: "Como desenho um fluxograma CONSORT e componho o resumo estruturado de um relatório de ensaio?"
+aliases: ["CONSORT", "fluxograma", "diagrama de fluxo", "fluxo de participantes", "ensaio clínico randomizado", "ECR", "ensaio clínico", "resumo estruturado", "PHQ-9", "GAD-7", "APA", "conflito de interesses", "saúde mental digital", "JMIR", "PubMed Central"]
+pageNotes: { "1": "Página 1: um fio índigo no alto, o chapéu RANDOMIZED CONTROLLED TRIAL · DIGITAL MENTAL HEALTH, o título de quatro linhas em Lora negrito, três autores com números de afiliação sobrescritos, as afiliações, a linha de datas e a linha de procedência em índigo. Abaixo, um boxe lilás-claro na largura das duas colunas: ABSTRACT, com Background, Objective e Methods na coluna da esquerda e Results e Conclusions na da direita, e as palavras-chave e a linha de registro do ensaio na largura do boxe. A Introdução começa embaixo, em duas colunas, com citações APA como (Kessler et al., 2007).", "3": "Página 3: a descrição do bot e a sua lista de recursos de processo; na coluna da direita, um boxe sob uma faixa índigo reúne cinco balões lilás arredondados, cada um com uma mensagem que o bot enviou, tal como o artigo a cita; depois, a condição de controle e as escalas PHQ-9 e GAD-7 sob títulos em itálico.", "5": "Página 5: a Figura 1, o diagrama CONSORT na largura da página: pílulas de fase ENROLLMENT, ALLOCATION, FOLLOW-UP e ANALYSIS à esquerda; 204 inscrições, 115 confirmadas, 45 excluídas por terem sido geradas por bots, 70 randomizados numa caixa índigo; 34 alocados ao Woebot e 36 ao controle só informativo; 3 e 11 perdidos no seguimento; 31 e 25 com dados em T2; 34 e 36 analisados por intenção de tratar em caixas índigo. Embaixo, a Tabela 1 com as características basais, médias e DPs em colunas separadas, e a análise dos que completaram o estudo.", "6": "Página 6: a Tabela 2 na largura da página, os resultados por intenção de tratar em T2 com cabeçalho índigo de duas linhas, médias e erros-padrão em colunas alinhadas, intervalos de confiança, F, P e d; os resultados qualitativos; no pé, as Figuras 2 e 3, gráficos de barras com o melhor e o pior apontados pelos participantes.", "7": "Página 7: limitações e conclusões, a declaração de conflito de interesses, as abreviaturas com os termos em negrito índigo e as primeiras referências APA com os seus DOIs." }
+---
+
+## O que você vai compor
+
+Um ensaio clínico randomizado de saúde mental digital, composto de novo a partir do seu texto em acesso aberto: o ensaio do Woebot publicado na JMIR Mental Health em 2017, um agente conversacional que aplica terapia cognitivo-comportamental, resumido a oito páginas. O estilo da casa é o de um relatório de pesquisa sóbrio em 210 × 280 mm, com Lora para o texto, Nunito Sans para todos os rótulos e números e um único acento de cor, o índigo. As páginas trazem o que um relatório de ensaio precisa: o resumo estruturado na largura das duas colunas, palavras-chave e uma linha de registro, o fluxo de participantes CONSORT redesenhado em código com os números do próprio artigo, duas tabelas de resultados com os decimais alinhados, o conflito de interesses dos autores mantido palavra por palavra e citações autor-data APA 7 geradas a partir de BibTeX.
+
+## Preparo
+
+### 1 · O boxe do resumo e o diagrama como recurso
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Um estilo de boxe com `span: 'page'` fecha as duas colunas acima dele e as abre de novo embaixo, então o resumo pode ficar na largura da página em qualquer altura. Dentro dele, `:::columns{count=2}` compõe de Background a Conclusions em duas colunas, e as palavras-chave e a linha de registro vêm depois, na largura inteira do boxe. O diagrama CONSORT é um recurso SVG como outro qualquer: o número, a legenda e a nota de crédito vêm do recurso, e o seu primeiro `:ref` o põe no alto da página seguinte.
+
+### 2 · O cabeçalho do artigo a partir dos atributos do título
+
+<Excerpt region="title" />
+
+O título é o único título de nível 1 do documento, com um estilo que ocupa a página e o desenha com elementos. Todo o resto do cabeçalho vem de atributos do título: o tipo de artigo, os autores com marcas de afiliação `^1^` que `inlineMarks` sobe, as afiliações separadas por `\n`, as datas de recebimento e aceite e a linha de procedência. Para o seu artigo, você troca os atributos e mantém o design. `numbered: false` no estilo deixa as figuras como Figura 1, 2, 3 em vez de 1.1.
+
+### 3 · O fluxo CONSORT, desenhado a partir dos números
+
+<Excerpt region="art" />
+
+Cada caixa é uma chamada a `node()` com as suas linhas; as fases são pílulas na borda esquerda, e as setas são uma linha e um triângulo preenchido, porque `<marker>` vira imagem no PDF. Os números são os do ensaio: 204 inscrições, 115 confirmações, 45 cadastros gerados por bots excluídos, 34 e 36 alocados, 3 e 11 perdidos, 31 e 25 com dados em T2. Para o seu ensaio, troque os textos e as contagens; a diagramação acompanha a altura das caixas. O texto de um SVG desenhado como imagem não enxerga as fontes da página, então o desenho leva a Nunito Sans embutida como URL de dados.
+
+### 4 · Números alinhados nas tabelas
+
+<Excerpt region="tables" />
+
+A Nunito Sans compõe os seus algarismos com uma largura só, então uma coluna de médias alinhadas à direita fica alinhada no separador decimal. Cada média e o seu DP ou EP vão em duas colunas, a média alinhada à direita e o parêntese alinhado à esquerda, ao lado dela, e `mergeCells` monta os cabeçalhos de grupo (“Information-only control” sobre três colunas) e as linhas que atravessam a tabela. A Tabela 2 é um flutuante na largura da página; a Tabela 1 fica numa coluna.
+
+### 5 · As palavras do bot em boxes aninhados
+
+<Excerpt region="boxes" />
+
+O artigo cita cinco mensagens que o bot enviou. A receita as reúne num boxe com uma faixa índigo no alto, cada uma num boxe aninhado de cantos arredondados, com um rótulo pequeno que nomeia o recurso que ela ilustra. Ali só aparecem as citações do artigo; nada é acrescentado a elas.
+
+## Variações
+
+### Citar no estilo numérico Vancouver
+
+As revistas médicas costumam numerar as citações; o BibTeX e o texto continuam iguais.
+
+```diff
+-  citations: { style: 'apa', link: true,
++  citations: { style: 'elsevier-vancouver', marker: 'superscript', link: true,
+```
+
+### Acrescentar um número do ClinicalTrials.gov
+
+Este ensaio foi considerado isento de registro e diz isso. Um ensaio registrado dá o seu registro e o seu número na mesma linha do boxe do resumo, por exemplo `**Trial registration** ClinicalTrials.gov NCT01234567`, com o número do seu próprio registro.
+
+### Um diagrama sem a linha de análise
+
+Quando um relatório não diz quem foi analisado, termine cada braço nas caixas de seguimento: tire o nó `an` e a sua seta, e diminua `CONSORT_H`.
+
+## Erros comuns
+
+- O artigo não tem número NCT: os autores escrevem que o ensaio foi isento de registro. A linha de registro diz isso, citando o motivo dado no artigo, em vez de inventar um número.
+- Uma tabela que divide a coluna com uma figura na largura da página para três linhas antes do pé e continua na página seguinte. A Tabela 1 cabe inteira porque as suas linhas são compostas a 7,5 pt com 0,45 mm de preenchimento e o desenho CONSORT tem 107 mm de altura.
+- O artigo escreve χ² nos seus testes de qui-quadrado, e esta edição também, como matemática em linha: `$\chi^2_1$`. Nenhum dos arquivos da Lora na Fontsource tem o χ, nem mesmo o seu arquivo math, que só traz algumas letras gregas como π e Ω; quem desenha o χ é o MathJax, como traçados no PDF.

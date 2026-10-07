@@ -1,0 +1,69 @@
+---
+title: "Artigo de aprendizado de máquina com teoremas e provas"
+summary: "O artigo do DPO recomposto do arXiv: equações rotuladas, numeradas e com link, boxes de definição, lema e teorema, provas com quadrado e citações Harvard."
+plain: "Um artigo famoso de aprendizado de máquina composto de novo a partir da fonte aberta, com equações numeradas a que se pode remeter, teoremas e lemas em boxes, demonstrações e referências autor–data."
+description: "O artigo do DPO (NeurIPS 2023, CC BY 4.0) resumido e recomposto: \\label e \\eqref nas equações, enunciados e provas como no amsthm, referências Harvard."
+question: "Como numero equações, enuncio teoremas e escrevo demonstrações num artigo, e remeto a eles pelo número?"
+aliases: ["teorema", "lema", "definição", "demonstração", "prova", "QED", "c.q.d.", "fim da demonstração", "amsthm", "numeração de equações", "eqref", "label", "referência cruzada", "artigo de aprendizado de máquina", "NeurIPS", "arXiv", "preprint", "DPO", "natbib", "autor-data", "Harvard"]
+pageNotes: { "1": "Uma faixa ameixa no alto da página traz um leque de curvas logísticas claras, o chapéu Preprint · Machine learning · Re-set and abridged, o título Direct Preference Optimization: Your Language Model is Secretly a Reward Model em branco e a linha do evento; abaixo, sobre branco, os seis autores e as afiliações, depois o resumo sob um fio ameixa e, no pé, a linha de origem e licença.", "3": "A figura 1 no alto da página: à esquerda, em ocre, o fluxo do RLHF, com os dados de preferência ajustados a um modelo de recompensa e um ciclo de amostragem e aprendizado por reforço com a política do modelo; à direita, em ameixa, o do DPO, dos dados de preferência direto ao modelo final por máxima verossimilhança. A seção 3 continua abaixo com a equação 1.", "6": "A seção 5 com a definição 1 e os lemas 1 e 2 ao lado de filetes laterais cinza e ameixa, o teorema 1 sobre um fundo ameixa-claro e o esboço de demonstração com a equação 8.", "9": "Continua o apêndice A.1: um bloco alinhado de quatro linhas com o número 10 na última, as equações 11 a 13 e depois o apêndice A.5, com o lema 1 reenunciado e o começo da sua demonstração." }
+---
+
+## O que você vai compor
+
+*Direct Preference Optimization*, de Rafailov, Sharma, Mitchell, Ermon, Manning e Finn (NeurIPS 2023), resumido a partir da fonte no arXiv e composto como um preprint de dez páginas em formato de 7 × 10 polegadas. Uma faixa ameixa leva o título sobre um leque de curvas logísticas, a forma do peso que o gradiente do DPO dá a cada exemplo. Abaixo, uma única coluna folgada de Spectral reúne treze equações numeradas, a definição, os lemas e o teorema da seção 5 em boxes com o rótulo no começo da linha, um esboço de demonstração e uma demonstração completa que terminam num quadrado, uma figura do fluxo redesenhada em código e vinte obras citadas no sistema autor–data. Toda remissão a uma equação, um enunciado ou uma seção é um link, e todo número vem de um rótulo, como no LaTeX.
+
+## Preparo
+
+### 1 · Rotular equações e enunciados e remeter a eles pela chave
+
+O código é [a resposta curta](#a-resposta-curta) acima. Desde o postext 1.19, o motor mantém os contadores do LaTeX. Um `\label{eq:dpo}` numa fórmula em destaque a numera na ordem de leitura, com um número para cada linha rotulada de um `align` e nenhum para uma linha marcada com `\notag`; `resetOn: 'never'` leva a contagem de (1) até (13) atravessando o apêndice, como este artigo resumido é renumerado. Um boxe aberto como `:::callout{type="lemma" #lem:same-policy}` começa com “**Lemma 2.**”, porque o estilo dele tem `numbering: { label: 'Lemma' }` e um contador próprio. No texto, `\eqref{eq:dpo}` imprime (7), `\ref{lem:same-policy}` imprime 2 e `:ref{id="lem:same-policy"}` imprime Lemma 2, cada um com link para o destino; `Eq.~\eqref{…}` mantém o espaço inseparável do LaTeX. O lema reenunciado do apêndice abre com `***:ref{id="lem:same-preference"} Restated.***`, e a referência assume o negrito do rótulo em volta. As seções não precisam de ajuda: os números delas vêm dos modelos de título, `{startAt=3}` mantém a numeração do artigo depois da seção 2 cortada, e `crossRefs.section` imprime “Section 5” com maiúscula, como faz o artigo.
+
+### 2 · Dar a cada ambiente o seu próprio boxe
+
+<Excerpt region="theorems" />
+
+Cada ambiente é um [estilo de boxe](/pt/docs/configuration#estilos-de-boxe) com um único recurso visual: um filete cinza para a definição, um filete ameixa para os lemas, um fundo ameixa-claro para o teorema. `box()` aplica esse visual sobre a numeração da resposta curta. `body.italic` compõe o enunciado em itálico, como o estilo *plain* do amsthm, e o rótulo no começo da linha continua em negrito e redondo dentro dele. Uma demonstração não tem boxe nenhum: o rótulo dela é itálico e sem número (`counter: false`), `endMark: '□'` põe um quadrado alinhado à direita na última linha, desenhado a partir do `\square` do TeX porque o motor de matemática está ativo, e `keepTogether: false` deixa uma demonstração longa continuar na página seguinte. `snapToGrid: false` mantém o mesmo espaço em volta de cada enunciado; numa coluna só, sem vizinha com que se alinhar, um espaço exato se lê melhor que um arredondado para a grade.
+
+### 3 · Citar no sistema autor–data a partir da lista de referências do próprio artigo
+
+<Excerpt region="citations" />
+
+As referências são BibTeX num bloco `:::references{format=bibtex}`, reconstruído a partir do `.bbl` do artigo só com as vinte obras que o texto resumido ainda cita. O Cite Them Right Harvard as compõe como “(Bong and Rinaldo, 2022)” no texto e “Ouyang, L. *et al.* (2022)” na lista, cortando para o primeiro nome as autorias de quatro ou mais. `@ziegler2020finetuning` no texto imprime a forma narrativa, Ziegler *et al.* (2020). A lista fica onde está `:::bibliography`, depois da seção 7 e antes do apêndice, como no artigo.
+
+### 4 · Pôr o título numa faixa e a origem no pé
+
+<Excerpt region="title" />
+
+O título é o único título de nível 1, e o estilo `paper` dele desenha em seu lugar um espaço de elementos de design: a faixa sangra pelo alto da página, o título quebra na medida, e os autores e as afiliações vêm de atributos do título, com ¹ ² e * escritos como caracteres. O elemento de rodapé com `pages: 'opener'` imprime a fonte, a licença e as alterações feitas só na página 1, para que a primeira página diga de onde vem o texto mesmo quando circula sozinha.
+
+### 5 · Redesenhar a figura em código
+
+<Excerpt region="art" />
+
+A figura 1 é desenhada em SVG a partir das caixas e das palavras do original. Um SVG desenhado como imagem não pode usar as fontes web da página, então `inlineFace()` embute os dois arquivos de Work Sans que os rótulos usam, e `tex()` escreve os rótulos `y_w ≻ y_l` como traçados do MathJax, os mesmos glifos das equações. As pontas de seta são traçados desenhados, e não marcadores SVG, para que a figura continue vetorial no PDF.
+
+## Variações
+
+### Citar com números, como o modelo da NeurIPS
+
+O artigo original usa as citações numeradas do natbib; o IEEE imprime [1] no texto e numera a lista na ordem de citação.
+
+```diff
+-const citations = { style: 'harvard-cite-them-right', link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Contar lemas e teoremas juntos
+
+Algumas revistas numeram todos os enunciados numa única sequência (lema 1, lema 2, teorema 3), como faz `\newtheorem{lemma}[theorem]`. Aponte os lemas para o contador dos teoremas.
+
+```diff
+-  { id: 'lemma', numbering: { label: 'Lemma' } }, // counter: 'theorem' would share one sequence
++  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' } },
+```
+
+## Erros comuns
+
+- `endMark` desenha os quadrados (□ ∎ ■) com o TeX só quando o motor de matemática está ativo. Num documento sem `initMathEngine()`, a marca é composta na fonte do corpo do boxe, e a Spectral, como todo arquivo latin da Fontsource, não tem □: escolha uma marca que a fonte consiga compor.
+- O balanceamento de colunas preenche uma página que uma fórmula alta deixa curta acrescentando linhas da grade acima dos títulos. `balancing: { maxLinesPerHeading: 1 }` mantém os títulos de um artigo perto do próprio espaçamento; essa página pode então terminar algumas linhas acima.
+- Uma fórmula com um rótulo de `\underbrace` mais largo que a chave, como o gradiente da seção 4, precisa de uma quebra com `aligned`; mais larga que a medida, ela transborda para a direita.

@@ -1,0 +1,75 @@
+---
+title: "Ida e volta de um .postext em duas línguas"
+summary: "Um folheto DL de dois lados gravado num arquivo .postext pelo código e diagramado de novo a partir dos bytes, com as fontes, os desenhos e os rótulos da edição."
+plain: "Um folheto de dois lados sobre um velho moinho de maré, em inglês e espanhol. Mostra como salvar um documento com as fontes e imagens num só arquivo e depois tirar dele as mesmas páginas."
+description: "createBundle grava o folheto num arquivo .postext e openBundle o lê de volta com as fontes e os desenhos, numa edição em inglês e noutra em espanhol."
+question: "Como faço para diagramar um arquivo .postext com as fontes, as imagens e a configuração que ele traz?"
+aliases: ["arquivo postext", "pacote", "bundle", "createBundle", "openBundle", "loadBundleFonts", "ida e volta", "folheto bilíngue", "passar para o Sandbox", "folheto DL", "moinho de maré"]
+pageNotes: { "1": "A frente de um folheto DL: sobre um campo cor de areia, o chapéu Arenal estuary · Visitor leaflet 3 e o título The Tide Mill em itálico azul, sobre uma roda de moinho cuja metade inferior aparece clara sob o azul do estuário; uma aba azul na borda superior diz EN. Um olho em itálico e a linha Open all year · Free on Sundays ficam sobre a água.", "2": "O verso: o moinho em corte no alto, com o tanque à esquerda e o estuário à direita sob uma linha tracejada de preamar, com a legenda Figure 1; a seção Two tides a day em DM Sans justificada; o horário de funcionamento como Table 1 com cabeçalho azul; três linhas sobre acesso e ingressos, um colofão e uma faixa azul com o nome da editora." }
+---
+
+## O que você vai compor
+
+Os dois lados de um folheto de visita no formato DL, 99 × 210 mm, para um moinho de maré num estuário inventado. A frente é um só desenho: uma roda de moinho na linha d’água, com a metade de cima sobre a areia e a de baixo clara sob a água azul, o título em DM Serif Display itálico de 50 pt e uma aba azul que nomeia a edição, EN ou ES. O verso abre com o moinho em corte e segue com o texto em DM Sans justificada, o horário numa tabela de cabeçalho azul, legendas em Instrument Sans, um colofão e uma faixa azul com a editora. Cada edição é gravada num arquivo `.postext`, e cada página aqui é diagramada a partir dos bytes desse arquivo, com as fontes e os desenhos que ele leva.
+
+## Preparo
+
+### 1 · Gravar a edição e ler de volta só os bytes
+
+<Excerpt region="answer" highlight="14-17" />
+
+`createBundle` compacta num zip o capítulo, a configuração, os recursos e todos os arquivos que eles nomeiam; `openBundle` não recebe nada além desses bytes. As fontes vêm de `loadBundleFonts`, os desenhos de `registerBundleImages` e o design de `bundle.config`. Uma fonte deixada fora de `files` sai na fonte reserva do navegador, e um desenho que fica de fora é descartado com um aviso, e a referência a ele imprime (?). Dentro do zip, cada `fileId` vira um caminho (`mill.svg` passa a ser `resources/mill.svg`), e os recursos e o `customFonts` que `openBundle` devolve já usam os nomes novos ([abrir um pacote](/pt/docs/configuration#abrir-um-pacote)).
+
+### 2 · Pôr as fontes no arquivo
+
+<Excerpt region="faces" />
+
+Um pacote leva uma fonte quando `customFonts` a nomeia e `files` guarda os bytes dela sob o `fileId` da variante; `createBundle` grava a DM Sans 400 como `fonts/dm-sans-400-normal.woff2`. O pen baixa os sete arquivos woff2 da Fontsource, mas não registra nenhum: `loadBundleFonts` acrescenta as cópias do pacote a `document.fonts` antes de `buildBundle` medir uma linha, e o PDF pega as fontes desses mesmos sete arquivos.
+
+### 3 · Nomear cada arquivo pelo fileId
+
+<Excerpt region="resources" />
+
+Os dois desenhos são marcação SVG gerada pelo pen e entregue a `files` sob o `svg.fileId` dos recursos deles; a tabela são dados, então viaja em `preset.json` com a legenda. O corte e a tabela são postos com `position: 'here'`: o corte no alto do verso, o horário sob o parágrafo que o cita. Na 1.4.1, um recurso na linha não ganha espaço embaixo, então uma linha `:::space{lines=0.5}` depois da tabela deixa 3,7 mm sob a legenda; sem ela, o parágrafo seguinte começa 1,4 mm abaixo da legenda.
+
+### 4 · Gravar os rótulos no arquivo
+
+<Excerpt region="labels" />
+
+Quando um arquivo não tem `resourceTypes`, `openBundle` os monta na língua pedida por quem abre, não na do arquivo: o folheto em espanhol aberto com `{ locale: 'en' }`, ou importado no Sandbox em /en/sandbox, imprime Figure 1.1 sobre texto em espanhol. Os tipos gravados na configuração substituem esse padrão, e assim o arquivo em espanhol imprime Figura 1 e Tabla 1 onde quer que seja aberto. `'{n}'` tira o número do capítulo, de que um folheto de duas páginas não precisa ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O mesmo `config()` define `locale`, que escolhe os padrões de hifenização do espanhol (compuer-tas no verso) e a língua que o PDF declara.
+
+### 5 · Repassar os mesmos bytes
+
+<Excerpt region="handoff" />
+
+O link oferece os `bytes` a partir dos quais as páginas foram diagramadas, 132 KB com as fontes. Importado no Sandbox (*Livros → Novo → Abrir um arquivo .postext…*), o arquivo vira um livro em espanhol ou inglês com a roda como imagem, tirada de `thumbnail`. O PDF pega as fontes de `bundleFontProvider`, que devolve a fonte do pacote mais próxima em peso, no mesmo estilo quando houver, e os desenhos de `bundleResourceBytes`, então nenhuma fonte ou imagem é baixada duas vezes ([diagramar e renderizar um pacote](/pt/docs/configuration#diagramar-e-renderizar-um-pacote)).
+
+### 6 · Desenhar a frente com um só título
+
+<Excerpt region="cover" />
+
+A frente é o design do título de capa: o desenho ancorado à página em tamanho total, o texto do título por `{titleText}`, o chapéu, o olho e a linha de informações vindos dos atributos dele, e um elemento de texto com caixa para a aba da língua. O nível H1 tem `span: 'page'`, então o desenho começa na borda do papel. Um design de título mantido na coluna é cortado nas bordas superior e inferior da mancha: o desenho começaria 12 mm mais abaixo e pararia 13 mm acima da borda inferior, e a aba da língua encolheria até virar uma tira sem letras.
+
+## Variações
+
+### Ler um pacote bilíngue
+
+O guia do Postext leva num só arquivo os capítulos, a configuração e as legendas em inglês e espanhol; `{ locale }` escolhe a edição, que abre como doze capítulos em 48 páginas em qualquer das duas línguas, enquanto o link continua oferecendo o arquivo do folheto e o botão de PDF compõe o guia.
+
+```diff
+-const bundle = await openBundle(bytes);
++const guide = await fetch('https://postext.dev/bundles/postext-guide.postext');
++const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
+```
+
+### Deixar o leitor escolher os rótulos
+
+Sem os tipos, os rótulos seguem a língua em que o arquivo é aberto, e as figuras contam a partir do título de capa: a edição espanhola imprime aqui Figura 1.1, e Figure 1.1 quando o Sandbox em /en/sandbox a importa.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
+```
+
+## Erros comuns
+
+- No postext 1.4.1, `createBundle` grava uma língua por arquivo. A entrada `localized`, descrita em [Pacotes bilíngues](/pt/docs/configuration#pacotes-bilíngues), não existe nessa versão, embora o `openBundle` 1.4.1 leia esses arquivos.

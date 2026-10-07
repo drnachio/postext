@@ -1,0 +1,73 @@
+---
+title: "Uma carta de física com a figura de dados no alto"
+summary: "A carta da descoberta de GW150914 em duas colunas: o sinal redesenhado com dados abertos na página 1, citações [1] numeradas, fórmulas e a Tabela I."
+plain: "A carta de 2016 que anunciou as primeiras ondas gravitacionais, resumida e composta de novo em papel carta. O sinal dos dois detectores, desenhado com os dados públicos, cruza a página 1; as referências vão numeradas entre colchetes."
+description: "Uma carta de física no Postext: figura com dados abertos do GWOSC na página 1, citações [1] no estilo APS a partir do BibTeX, equações MathJax e tabela."
+question: "Como faço para compor uma carta de física com autoria coletiva, resumo em largura total e gráfico no alto?"
+aliases: ["carta de física", "letter", "Physical Review Letters", "PRL", "estilo APS", "LIGO", "GW150914", "ondas gravitacionais", "autoria coletiva", "colaboração", "et al.", "dados abertos", "GWOSC", "gráfico de strain", "deformação", "erros assimétricos", "barras de erro", "recompor um artigo", "arXiv", "duas colunas", "Tabela I"]
+pageNotes: { "1": "Página 1: um antetítulo azul, Letter · Gravitational-wave astronomy, e o título Observation of Gravitational Waves from a Binary Black Hole Merger; depois, a Figura 1 na largura das duas colunas: três linhas de deformação em função do tempo, Hanford em laranja à esquerda e Livingston em azul à direita, com os dados observados, a forma de onda da relatividade numérica e o resíduo, e o mesmo chirp crescente perto de 0,42 s. Sob a legenda, um boxe azul-claro traz a autoria B. P. Abbott et al., a colaboração, as datas e o resumo na largura da página; a seção I começa em duas colunas, com uma nota de rodapé marcada por letra no pé da primeira.", "2": "Página 2: o resto da introdução e a seção II, Observation, com a massa de chirp como equação destacada (1), numerada na margem direita; a seção III, Detectors, começa na segunda coluna. As citações são números entre colchetes, como [1,2] e [16,17], e uma segunda nota marcada por letra explica o que foi resumido.", "3": "Página 3: a Figura 2 no alto da primeira coluna, a deformação em banda completa sobre a separação dos buracos negros, que cai, e a velocidade deles, que sobe; e a Figura 3, um esquema do interferômetro com seus braços de 4 km, no alto da segunda. Em seguida vem a seção IV, Searches, com a estatística de detecção como fórmula destacada sem número.", "4": "Página 4: a Figura 4 no alto, na largura da página, dois histogramas em escala logarítmica em que o ruído de fundo cai para a esquerda e GW150914 fica sozinho à direita de cada um; abaixo, a busca de coalescências binárias e o começo da seção V.", "5": "Página 5: a Tabela I, os parâmetros da fonte com os erros acima e abaixo de cada valor, no alto da primeira coluna; o fim da seção V, a conclusão e os agradecimentos e, depois, 43 referências numeradas em duas colunas e um colofão." }
+---
+
+## O que você vai compor
+
+Cinco páginas da carta que anunciou as primeiras ondas gravitacionais, *Observation of Gravitational Waves from a Binary Black Hole Merger* (Abbott et al., 2016), resumida e recomposta em papel carta US, em duas colunas. A página 1 abre com a evidência: a deformação registrada em Hanford e Livingston, redesenhada a partir dos arquivos de dados abertos do Gravitational Wave Open Science Center, atravessa as duas colunas sob o título. Abaixo vêm a autoria da colaboração com a sua nota, o resumo na largura da página e o texto, com as citações numeradas [1,2] e [25–27] como as revistas da APS as imprimem. A massa de chirp é a equação (1). A Tabela I compõe os erros assimétricos como sobrescrito e subscrito empilhados, escritos como fórmulas nas células, e as legendas imprimem as fórmulas da própria carta. Traga o seu BibTeX e os seus arquivos de dados, e o mesmo script compõe a sua carta.
+
+## Preparo
+
+### 1 · Citações numeradas de física a partir do arquivo IEEE
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. O postext-citeproc não traz um estilo APS, e o estilo `ieee` que o acompanha é o mais próximo: ordem de citação, números entre colchetes, iniciais antes do sobrenome. Quatro substituições de texto em `STYLES.ieee` cobrem a diferença. `collapse="citation-number"` junta as sequências (*[25–27]*), um único par de colchetes no layout imprime *[1,2]*, `et-al-min` sobe para onze para que uma lista de dez autores saia inteira, e um bloco `<bibliography>` novo imprime a referência como a Physical Review faz, com a revista, o volume em negrito, a página e o ano: *Phys. Rev. Lett.* **74**, 3515 (1995). As 43 obras vêm num bloco `:::references{format=bibtex}` próprio; um nome entre chaves duplas como `{{J. Aasi et al.}}` sai impresso tal como foi escrito, e é assim que a carta cita as longas listas de autores da própria colaboração. Veja [Citações e bibliografia](/pt/docs/document-format#citações-e-bibliografia).
+
+### 2 · A Figura 1 sob o título, na largura das duas colunas
+
+<Excerpt region="title" />
+
+Um flutuante nunca fica acima da linha que o cita, e o texto cita a Figura 1 pela primeira vez na seção II, então, como flutuante, ela não chegaria à página 1. A carta a põe ali diretamente: `::resource{id="fig1"}` vem logo depois do título, e o posicionamento dele, `{ position: 'here', span: 'page' }`, a estende sobre as duas colunas nesse ponto, com as colunas continuando embaixo. A autoria e o resumo vêm em seguida num boxe na largura da página, `front`, cujos blocos `:::paragraphs` centralizam a autoria e compõem as datas em corpo pequeno. A chamada de nota depois de *et al.* manda o texto da nota para o pé da primeira coluna, onde as revistas da APS imprimem a nota sobre os autores, e `footnotes.numberFormat: 'lower-alpha'` marca as notas com letras, para que nunca sejam lidas como referências. Veja [Inserção em bloco](/pt/docs/document-format#inserção-em-bloco-opcional-posicionamento-explícito-em-linha) e [Notas de rodapé](/pt/docs/configuration#notas-de-rodapé).
+
+### 3 · A Tabela I, com fórmulas nas células
+
+<Excerpt region="table" />
+
+Uma célula de tabela compõe `$…$` como o texto (desde o postext 1.19), então cada valor é escrito em TeX, `$36^{+5}_{-4}\,M_\odot$`, e os dois erros se empilham acima e abaixo do número, ajustados à linha da célula; o `^+5^~−4~` do Markdown os imprimiria um depois do outro. Legendas e notas aceitam as mesmas fórmulas: a Figura 2 escreve `$R_S = 2GM/c^2$` e a Figura 4, `$5.1\sigma$`, compostas com os glifos do MathJax, que têm o grego que nenhuma das duas fontes do texto traz, e o PDF os mantém como traçados vetoriais. Os tipos de recurso imprimem *FIG. 1* e *TABLE I* nas legendas e *Fig. 1* e *Table I* no texto: um `captionPrefix`, e `counterFormat: 'upper-roman'` para as tabelas. Veja [Fórmulas matemáticas](/pt/docs/document-format#fórmulas-matemáticas).
+
+### 4 · Figuras desenhadas a partir dos dados abertos
+
+<Excerpt region="palette" />
+
+As quatro figuras são desenhadas em código a partir dos arquivos de dados que o GWOSC publica com a carta, sob CC BY 4.0. Cada traço mantém uma de cada oito amostras, 430 pontos para os 0,21 s da Figura 1, guardados com um caractere em base 64 por ponto para a variação em relação ao anterior, o que deixa os cinco traços com menos de 3 KB dentro do script. A linha do resíduo são os dados menos a forma de onda, como no original. Hanford é laranja e Livingston é azul em todas as figuras, e o texto fica com a tinta da página e um único azul. Os rótulos são traçados do MathJax na sua letra sem serifa (`\textsf`), já que um SVG desenhado como imagem não pode usar as fontes da página, e o PDF mantém cada linha e cada rótulo como vetores.
+
+## Variações
+
+### Use o estilo IEEE como ele vem
+
+Sem as substituições, as referências aparecem como *[2], [3], [4]* no texto e *A. Einstein, “title”, journal…* na lista.
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'ieee', link: true,
+```
+
+### Suba os números como faz a Nature
+
+O estilo da Nature usa números sobrescritos e lista os títulos; ele vem incluído.
+
+```diff
+-const citations = { style: 'custom', customStyle: aps, link: true,
++const citations = { style: 'nature', link: true,
+```
+
+### Componha em A4
+
+Mude o formato; a medida, as colunas e todas as figuras derivam dele.
+
+```diff
+-const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [215.9, 279.4, 21, 21, 16, 7];
++const [TRIM_W, TRIM_H, TOP, BOTTOM, SIDE, GUTTER] = [210, 297, 22, 22, 15, 7];
+```
+
+## Erros comuns
+
+- Até o postext 1.18, um recurso `'here'` com `span: 'page'` saía na largura de uma coluna num fluxo de duas colunas, e um `$` numa legenda ou numa célula era impresso como digitado. Fixe a versão 1.19 ou posterior.
+- Uma letra grega, ⊙ ou ≃ digitado como caractere numa legenda ou numa célula cai numa fonte do sistema na tela e some do PDF, que incorpora os arquivos latin de cada fonte. Escreva como fórmula, `$\sigma$` ou `$M_\odot$`, e desenhe nas figuras.
+- Uma lista de centenas de autores não cabe num arquivo BibTeX. Escreva o nome como a revista o imprime, entre chaves duplas: `author={{B. Abbott et al.}}`.
+- Mantenha a linha de licença do artigo e a dos dados. Aqui, uma nota de rodapé e o colofão dizem o que foi cortado, e a nota de cada legenda identifica os dados e o que a figura redesenhada deixa de fora.

@@ -28,16 +28,16 @@ import { parseWriteup, readWriteup, writeupRefs } from "./writeup.ts";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`, ja = `${en} (ja)`) => ({ en, es, ca, zh, ar, ja });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`, ja = `${en} (ja)`, pt = `${en} (pt)`) => ({ en, es, ca, zh, ar, ja, pt });
 const HEADINGS = {
-  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده", "できあがり"),
-  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر", "手短な答え"),
-  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات", "材料"),
-  method: L("Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير", "作り方"),
-  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة", "レシピの全体"),
-  variations: L("Variations", "Variantes", "变化", "Variants", "تنويعات", "アレンジ"),
-  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة", "よくあるつまずき"),
-  credits: L("Credits", "Créditos", "致谢", "Crèdits", "الحقوق", "クレジット"),
+  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده", "できあがり", "O que você vai compor"),
+  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر", "手短な答え", "A resposta curta"),
+  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات", "材料", "Ingredientes"),
+  method: L("Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير", "作り方", "Preparo"),
+  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة", "レシピの全体", "A receita completa"),
+  variations: L("Variations", "Variantes", "变化", "Variants", "تنويعات", "アレンジ", "Variações"),
+  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة", "よくあるつまずき", "Erros comuns"),
+  credits: L("Credits", "Créditos", "致谢", "Crèdits", "الحقوق", "クレジット", "Créditos"),
 } satisfies Record<SectionId, Record<Locale, string>>;
 
 /** Just the registry tables validateRecipeMeta reads. */

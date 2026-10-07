@@ -1,0 +1,60 @@
+---
+title: "Um jornal vivo com fotos que se mexem"
+summary: "Seis recursos de vídeo compostos como fotos de jornal num tabloide de quatro colunas; autoplay, loop e exclusive: false fazem os clipes tocar juntos no Folio."
+plain: "Um jornal local no estilo dos anos 1930 em que cada foto é um filme mudo e curto. No papel são imagens paradas; no visualizador 3D todas se mexem ao mesmo tempo, sem parar, como um jornal de conto de fadas."
+description: "Um tabloide de quatro páginas em quatro colunas cujas seis fotos são vídeos em loop em preto e branco, tocando juntos em papel-jornal dobrado no Folio."
+question: "Como faço para vários vídeos mudos em loop tocarem ao mesmo tempo numa página de jornal?"
+aliases: ["jornal vivo", "fotos que se mexem", "fotos animadas", "vídeo em loop", "reprodução automática", "autoplay", "loop", "vários vídeos ao mesmo tempo", "exclusive", "tocar junto", "tabloide", "jornal", "quatro colunas", "Folio", "papel-jornal", "jornal dobrado"]
+pageNotes: { "1": "A primeira página do The Wexcombe Lantern de 10 de junho de 1933: um logotipo preto em letra condensada, a manchete Trams run to the sea at last, uma foto da prefeita discursando num púlpito ocupando três colunas, uma foto de uma mulher acenando de um biplano ocupando duas e, no pé, uma faixa In brief sobre fundo colorido.", "2": "Town & Harbour: uma foto da torre do relógio e outra de um pescador rindo com um bacalhau enorme nas mãos, cada uma em duas colunas, o fim da matéria dos bondes, um boxe de tarifas, uma tábua de marés, notas da câmara municipal, notícias do porto e cinco notas curtas em quatro colunas separadas por fios.", "3": "Stage & Screen: uma atriz num cenário de jardim ocupando duas colunas, uma crítica, tabelas de cinema e de rádio, cartas do leitor e um boxe com fio de classificados.", "4": "Sport: um goleiro agachado sobre a linha do gol ocupando três colunas, a reportagem da copa, tabelas de jogos, de críquete e de ciclismo e o expediente." }
+---
+
+## O que você vai compor
+
+*The Wexcombe Lantern*, um semanário inventado de uma cidade litorânea, de junho de 1933, numa página tabloide de 280 × 430 mm em quatro colunas separadas por fios: um logotipo condensado, uma matéria principal com a foto em três colunas, outra em duas, tábuas de marés, classificados e uma página de esportes. Cada foto é um filme de cinco segundos em preto e branco. No impresso, e nas páginas planas sob o visualizador, cada uma é o seu primeiro quadro. Aberto no Folio como um jornal dobrado em papel-jornal claro, as fotos das páginas abertas se mexem ao mesmo tempo e não param: a prefeita discursa, a aviadora acena, o pescador ri, o goleiro se atira e se levanta de novo. A página não desenha nada; a diagramação é a de um jornal comum, e os clipes fazem o resto.
+
+## Preparo
+
+### 1 · Faça de cada foto um clipe que se repete junto com os outros
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Um recurso de vídeo imprime o seu pôster como imagem, então os clipes ocupam o lugar das fotografias e levam legenda como elas. Três opções do player dão vida à página: `autoplay` inicia um clipe quando a página dele está à vista (sempre sem som, como os navegadores exigem), `loop` o toca de novo desde o começo e `exclusive: false` deixa que ele rode junto com os outros clipes. Por padrão, um vídeo é exclusivo: iniciá-lo pausa o que estiver tocando, o que serve para uma aula, mas não para uma página de fotos em movimento. O sinal de play e o QR code estão desligados, então no papel os clipes são lidos como fotos de imprensa.
+
+### 2 · Dê a cada loop o seu lugar na grade
+
+<Excerpt region="clips" />
+
+A diagramação é `layoutType: 'multiple'` com `columnCount: 4`. O `columns` de um flutuante define quantas colunas ele ocupa: a prefeita e o goleiro, três; a aviadora, a torre do relógio, o pescador e a atriz, duas. Um flutuante em várias colunas pega o alto de uma sequência de colunas vazias que começam na mesma altura, ou o pé da coluna em que é citado e das vazias depois dela, então o lugar da linha `::resource` decide a vaga. A prefeita é citada depois do primeiro parágrafo, o que deixa a coluna 1 para o texto e põe a foto sobre as colunas 2 a 4.
+
+### 3 · Componha o logotipo e as páginas de seção
+
+<Excerpt region="nameplate" />
+
+O título de nível 1 da primeira página é o nome do jornal, desenhado a partir de um encaixe de design: duas orelhas acima dele, o nome em maiúsculas de Oswald e uma linha de data entre um fio fino e um grosso. As páginas internas abrem com uma etiqueta de seção vermelha sobre uma barra de 3 pt (a região `pages`), e todas as páginas menos a primeira levam uma linha de fólio no alto.
+
+### 4 · Abra o jornal no Folio
+
+<Excerpt region="folio" />
+
+`config.folio` põe o jornal sobre carvalho, com luz do dia: papel-jornal de 45 g/m², que deixa ver a página seguinte por transparência, e `binding.type: 'folded'`, folhas dobradas uma vez e encaixadas uma dentro da outra, sem grampos e sem lombada, do jeito que se monta um jornal. O Folio desenha todos os clipes da página dupla aberta numa só textura, até oito ao mesmo tempo, inicia os loops automáticos cada vez que uma virada de página para na página deles e os interrompe quando a página é virada. Um clique num vídeo exclusivo continua a tocá-lo sozinho, com som, e os loops esperam até que ele termine.
+
+## Variações
+
+### Deixe o leitor iniciar cada clipe
+
+Sem `autoplay`, as fotos ficam paradas até o leitor clicar numa delas; depois de iniciados, os loops continuam tocando juntos.
+
+```diff
+-  player: { autoplay: true, loop: true, muted: true, exclusive: false, controls: false },
++  player: { loop: true, muted: true, exclusive: false, controls: false },
+```
+
+### Um clipe exclusivo com som
+
+Um único vídeo pode manter o padrão e tocar do seu jeito: ponha `player: { exclusive: true, muted: false }` no `video` desse recurso, e iniciá-lo segura os loops até ele acabar.
+
+### Um jornal standard em seis colunas
+
+<RecipeLink slug="newspaper-front-page">A primeira página em duas colunas</RecipeLink> compõe um jornal menor com fotos paradas; a mesma grade comporta seis colunas num formato standard com `sizePreset: 'broadsheet'`.
+
+## Erros comuns
+
+Uma seção de jornal é um título de nível 1 que abre uma página, e um flutuante nunca passa por cima dela. Uma foto que não encontra vaga na última página da sua seção vai para uma página só dela antes da seção seguinte, então ajuste o texto à página: aqui a matéria dos bondes salta para a página 2 em vez de empurrar a aviadora para fora da primeira página.

@@ -1,0 +1,48 @@
+---
+title: "Uma página letreirada em seis idiomas"
+summary: "Página de quadrinhos, divisão e desenhos fixos, letreirada com um roteiro por idioma: o locale escolhe a fonte, o japonês é vertical, o árabe parte da direita."
+plain: "A mesma página de quadrinhos em inglês, espanhol, francês, japonês, chinês e árabe: só as palavras mudam, e o Postext redesenha cada balão em volta delas."
+description: "Página de quadrinhos reletreirada no Postext: uma divisão e cinco desenhos, um roteiro por idioma, balões japoneses na vertical e uma página árabe da direita."
+question: "Como faço para reletreirar uma história em quadrinhos em outro idioma?"
+aliases: ["reletreiramento", "letreiramento", "tradução de quadrinhos", "tradução de HQ", "localização", "tradução de mangá", "letreiramento vertical", "quadrinhos da direita para a esquerda", "re-lettering", "relettering", "rotulación", "写植", "嵌字", "defaultComicFont"]
+---
+
+## O que você vai compor
+
+Uma página de quadrinhos, *The Lighthouse Radio*: Maya chega ao farol do avô quando uma tempestade se aproxima, o rádio está mudo e o culpado é Biscuit, dormindo em cima do cabo. A divisão e os cinco desenhos em aquarela são fixos; o que muda de uma edição para outra é um roteiro de nove linhas. Cada edição desta receita compõe o próprio idioma, e toda edição compõe também a página em francês ao lado: inglês e francês, espanhol e francês, e assim por diante com o japonês, o chinês e o árabe. O motor redesenha cada balão em volta das palavras que ele contém. O japonês é letreirado em colunas verticais em Zen Antique. A página árabe se lê a partir da direita, e por isso os três quadros da fileira do meio trocam de lugar.
+
+## Preparo
+
+### 1 · Uma configuração para todos os idiomas
+
+O código é [a resposta curta](#a-resposta-curta) acima. Nada na configuração indica um idioma além de `locale`. Sem `fontFamily`, o letreiramento usa a fonte de quadrinhos do idioma do documento (`defaultComicFont`): Comic Neue, Zen Antique, Noto Sans SC ou Playpen Sans Arabic, e a onomatopeia a fonte de display correspondente. `writingMode: 'auto'` transforma os balões japoneses em colunas verticais; `readingDirection: 'auto'` faz a página árabe ser lida a partir da direita, de modo que o mesmo `split="30 / 35 [* | * | *] / *"` põe o quadro do rádio à direita e o do gato à esquerda. Os ids dos personagens (`maya`, `tomas`) são os mesmos em todos os roteiros, e as âncoras dos desenhos respondem a eles.
+
+O corpo é um só para o livro todo. O roteiro em inglês tem 216 letras, o espanhol 220, o francês 224 e o chinês 74 caracteres; os roteiros mais longos ganham balões maiores, nunca letra menor.
+
+### 2 · O francês vai junto em todas as edições
+
+<Excerpt region="editions" />
+
+O site não tem páginas em francês, então cada edição monta dois documentos: a sua própria página e depois a francesa, a partir de `content.fr.en.md`, com a mesma configuração e `locale` igual a `'fr'`. A configuração é copiada para um objeto novo, porque o motor guarda as configurações resolvidas pela identidade do objeto. O roteiro francês usa o espaço fino inseparável antes de `!` e `?`, como pede a tipografia francesa.
+
+### 3 · Os desenhos não mudam
+
+<Excerpt region="art" />
+
+As áreas seguras são cortadas para as células desta divisão: a fileira do meio tem três quadros de cerca de 46 mm de largura por 80 mm de altura, então cada desenho quadrado mantém uma coluna de 56–58 % da sua largura, com o rosto do personagem dentro. Os desenhos não são espelhados para o árabe (`mirrorArt` continua false): Maya continua subindo o caminho a partir da esquerda, e só a ordem dos quadros acompanha a leitura.
+
+## Variações
+
+### Espelhar os desenhos na edição árabe
+
+`mirrorArt: true` espelha cada desenho quando a página é lida no sentido contrário ao que o desenho foi feito. Deixe sem espelhar um quadro com letras ou um relógio usando `::panel{mirror=false}`.
+
+```diff
+   readingDirection: 'auto', // the default, written out: it is what an edition flips
++  mirrorArt: true,
+```
+
+## Erros comuns
+
+- Uma linha do roteiro indica o personagem pelo id, não pelo nome: escreva `maya:` em todos os idiomas. O nome que um leitor de tela anuncia é `cast[].name`.
+- A página francesa compartilha os desenhos da edição, então o texto alternativo dos quadros dela está no idioma da edição; escreva `::panel{alt="…"}` em `content.fr.en.md` para ter o texto alternativo em francês.

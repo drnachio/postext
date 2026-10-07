@@ -1,0 +1,77 @@
+---
+title: "Primeira página de jornal"
+summary: "Primeira página e página 2 de um semanário local em duas colunas com fio, manchetes na largura da página em boxes e uma faixa de notas em quatro colunas no pé."
+plain: "A primeira página e a página 2 de um jornal semanal local. Mostra como pôr títulos grandes na largura da página inteira e uma faixa de notícias curtas embaixo."
+description: "Primeira página de jornal no Postext, com o código: logotipo em letra gótica, manchetes em boxes na largura da página, colunas com fio, notas em quatro colunas."
+question: "Dá para compor uma página de jornal com mais de duas colunas, ou fazer o texto contornar a foto?"
+aliases: ["jornal", "primeira página", "capa de jornal", "standard", "tabloide", "logotipo do jornal", "cabeçalho do jornal", "manchete", "notas curtas", "três colunas", "quatro colunas", "fio entre colunas", "jornal local", "semanário"]
+pageNotes: { "1": "A primeira página de The Elverdale Courier: o logotipo em letra gótica entre uma orelha com o tempo e outra com o preço, um fio grosso e outro fino sobre a linha de data, a manchete em duas linhas Harrow Ridge turbines win the town’s vote, uma linha fina em itálico, uma foto de turbinas eólicas numa serra nevada sobre as duas colunas, a notícia em duas colunas justificadas separadas por um fio fino e, no pé, uma faixa In brief de quatro colunas com fundo de cor, cada nota aberta por um chip vermelho.", "2": "A página 2, sob o selo vermelho Town & Valley numa barra preta: a notícia da ponte Old Mill com um desenho da ponte de dois arcos entre as margens e a nova fundação em vermelho, uma tabela de previsão do tempo para cinco dias no alto da coluna da direita, uma segunda manchete na largura da página sobre a notícia dos resultados por bairro e uma coluna de cartas, e no pé uma tabela de como votaram os cinco bairros, com uma barra vermelha e cinza em cada linha." }
+---
+
+## O que você vai compor
+
+A primeira página e a página 2 de *The Elverdale Courier*, um semanário inventado de um vale, numa folha de 246 × 328 mm. Um logotipo em letra gótica fica entre uma orelha com o tempo e outra com o preço, sobre um fio grosso, um fio fino e a linha de data. A notícia principal abre com uma manchete em duas linhas de Libre Franklin Black em 56 pt sobre as duas colunas, uma linha fina em itálico e uma faixa de foto de 222 mm de largura, e depois corre em duas colunas justificadas separadas por um fio fino. No pé, quatro notas dividem uma faixa com fundo de cor, uma por coluna, cada uma aberta por um chip vermelho. A página 2 abre com um selo de seção vermelho e traz a notícia da ponte com um desenho feito em código, uma previsão do tempo para cinco dias no alto da coluna da direita, uma segunda manchete na largura da página, as cartas e uma tabela dos votos por bairro com uma barra em cada linha.
+
+## Preparo
+
+### 1 · Papel-jornal, tinta e um vermelho
+
+<Excerpt region="palette" />
+
+A página é papel-jornal (#f8f5ee) e o texto, uma tinta quase preta (#111315). O único vermelho, #a6192e, vai nos selos de seção, nos chapéus, nos chips e nas barras do sim. Cada cor leva o seu `paletteId` e o seu hex, porque a 1.4.1 pinta os elementos de design a partir do hex. `main-color` aponta para a tinta, então os itálicos e tudo o que a configuração deixa no padrão saem em preto. `bodyText.boldColor` também é a tinta. A cor das referências recorre a ela e cada boxe a copia para o seu negrito, e a paleta não muda nenhuma das duas. Sem ela, as duas referências da página 2 e as primeiras palavras em negrito das notas saem no azul padrão, #295AA3.
+
+### 2 · O logotipo é o H1 da primeira página
+
+<Excerpt region="nameplate" />
+
+`# The Elverdale Courier` usa o estilo de título `front`, que preenche o cabeçalho com o texto do título e sete dos seus atributos (`issue`, `area`, `outlook`, `temps`, `since`, `day` e `price`); a data vem de `publishDate`, no frontmatter. Uma caixa vazia com sete linhas da grade de altura (31,1 mm) define a altura da abertura. Os fios, a linha de data e o nome pendem do pé dela, e assim a abertura termina numa linha da grade. Com uma caixa de 6,6 linhas, a 1.4.1 desenha o fio entre colunas atravessando o nome e a linha de data.
+
+### 3 · Uma manchete sobre as duas colunas é um boxe
+
+<Excerpt region="banner" />
+
+Um título só ocupa as duas colunas como abertura, e uma abertura começa uma página nova. Ponha `span: 'page'` no H2 da notícia dos bairros em vez de no boxe dela, e essa notícia vai para uma terceira página. Um boxe sem moldura com `span="page"` pode começar no meio da página. Na <PageRef page={2}>página 2</PageRef>, as colunas são cortadas niveladas acima dele e continuam embaixo. O boxe contém o H2 num de três estilos de título (56, 30 ou 22 pt), a linha fina em itálico e, na primeira página, a foto. O `marginBottom` dele, de meia linha, faz as colunas começarem na linha seguinte da grade, 3,4 mm abaixo da linha fina na página 2. Com a margem padrão, o espaço é de 7,8 mm e as cartas passam para uma terceira página.
+
+### 4 · Mais de duas colunas cabem dentro de um boxe
+
+O código deste passo é [a resposta curta](#a-resposta-curta) acima. O corpo de uma página tem no máximo duas colunas ([Tipos de diagramação](/pt/docs/configuration#tipos-de-layout)), então as quatro ou cinco colunas de um jornal vão dentro de um boxe, aqui um na largura da página com um grupo [`:::columns`](/pt/docs/document-format#columns). `breaks` conta os blocos do grupo, um por nota, e assim as notas 2, 3 e 4 abrem as colunas 2, 3 e 4. Cada coluna tem 49 mm de largura, com a medianiz de 6 mm da página entre elas.
+
+```markdown
+:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
+:::columns{count=4 breaks="2,3,4"}
+:chip[TRANSPORT]{style="flag"} **Bus 44 back on Sundays.** The Elverdale to Kirkby bus …
+
+:chip[SCHOOLS]{style="flag"} **An orchard for Brook Lane.** Pupils at Brook Lane …
+…
+:::
+:::
+```
+
+`placement="bottom"` faz o boxe flutuar até o pé da <PageRef page={1}>página 1</PageRef>, onde ocupa 36,9 mm, e a notícia preenche os 83 mm de colunas acima dele. A 1.4.1 também não faz o texto contornar uma imagem. Um flutuante ocupa uma faixa inteira da coluna ou da página, então a foto principal é uma faixa sobre as duas colunas dentro do boxe da manchete, e o desenho da ponte ocupa a largura toda da coluna 1. Para pôr texto ao lado de uma imagem, use o mesmo tipo de boxe: em `:::columns{count=2 breaks="2"}`, a linha `::resource` abre a primeira coluna e o texto, a segunda.
+
+### 5 · Imagens no texto, tabelas como flutuantes
+
+<Excerpt region="floats" />
+
+A foto fica no texto, dentro do boxe da manchete, porque um flutuante `top` na largura da página nunca cai acima da linha que o cita; como flutuante, a foto abriria a página 2 (veja Erros comuns). O desenho da ponte também fica no texto, depois do parágrafo sobre o pilar. A previsão flutua até o alto de uma coluna e cai no da coluna da direita. A tabela dos bairros flutua sob as duas colunas, onde o fio entre colunas para. Na última página ela fica logo abaixo das colunas balanceadas, e por isso o texto acima foi ajustado para levá-la até o pé. Os dois tipos de recurso definem `captionPrefix: ''`, e a 1.4.1 só imprime o rótulo da legenda quando o prefixo tem texto, então nenhuma legenda começa com “Figure 1”.
+
+### 6 · Uma página interna abre com um selo de seção
+
+<Excerpt region="inside" />
+
+`# Town & Valley` é um H1 cujo `breakBefore` tem a paridade `'any'`, e assim a seção abre a página 2 sem uma página em branco antes. O design dele é um selo vermelho sobre uma barra de 3 pt, pendurado numa caixa vazia de duas linhas da grade. A linha do fólio é um cabeçalho ancorado 6 mm abaixo da borda superior da página, com uma versão para as páginas pares e outra para as ímpares. O estilo da primeira página esvazia o cabeçalho, então nenhuma linha de fólio é impressa acima do logotipo.
+
+## Variações
+
+### Manter as notas sob a foto
+
+Sem `placement="bottom"` em `content.en.md`, a faixa fica onde está a cerca dela, logo abaixo da foto, e a notícia principal corre por baixo até o pé da página.
+
+```diff
+-:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
++:::callout{type="briefs" span="page" title="In brief"}
+```
+
+## Erros comuns
+
+- Dê à foto `placement: { position: 'top', span: 'page' }` e ela sai da página 1 para ficar sozinha na página 2. A notícia da página 1 passa então a terminar 92 mm acima da faixa de notas, e a seção vai para a página 3.

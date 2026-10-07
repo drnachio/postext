@@ -112,6 +112,6 @@ export function writeupRefs(body: string): WriteupRefs {
     features: attrValues(text, "Feature", "id"),
     recipes: attrValues(text, "RecipeLink", "slug"),
     pages: [...attrValues(text, "PageRef", "page"), ...attrValues(text, "PageShot", "page")].map(Number),
-    links: [...text.matchAll(/\]\((\/(?:en|es|ca|zh|ja|ar)\/[^)\s]*)\)/g)].map((m) => m[1]),
+    links: [...text.matchAll(/\]\((\/(?:en|es|ca|zh|ja|ar|pt)\/[^)\s]*)\)/g)].map((m) => m[1]),
   };
 }

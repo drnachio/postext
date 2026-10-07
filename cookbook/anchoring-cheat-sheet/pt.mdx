@@ -1,0 +1,71 @@
+---
+title: "Guia de ancoragem: um cartaz de elementos encadeados"
+summary: "Um cartaz A3 cujos elementos se penduram na sangria, na página, no seu encaixe ou uns nos outros, e uma segunda folha que emoldura cada elemento e rotula treze."
+plain: "Um cartaz de palestras de astronomia antes de um eclipse do Sol. Mostra como posicionar cada item medindo a partir da borda da página ou de outro item."
+description: "Um cartaz A3 composto no Postext sem coordenadas: o céu preso à sangria, o Sol à página, o resto encadeado, e uma folha com as linhas de construção."
+question: "Como posiciono elementos de design em relação à página, à sangria ou uns aos outros, sem coordenadas?"
+aliases: ["ancoragem", "âncora", "posicionamento de elementos", "encaixe de design", "cartaz", "pôster", "linhas de construção", "sem coordenadas", "below", "above", "right-of", "align-bottom", "contêiner", "contêiner do rodapé", "faixa sangrada", "cartaz do eclipse"]
+pageNotes: { "1": "Um cartaz A3 para quatro palestras antes do eclipse total do Sol de 2 de agosto de 2027. Um céu azul-ultramar ocupa os dois terços superiores, com uma Lua preta cobrindo um Sol amarelo-limão cortado pela borda direita e uma coroa branca em volta; o título The Shadow Returns, em branco, assenta no pé do céu, entre um antetítulo amarelo e uma linha fina de três linhas. Abaixo, quatro datas em azul encabeçam quatro colunas de palestras e palestrantes, seguem duas colunas de letra miúda e uma faixa azul com o emblema do clube corre ao longo do pé da folha.", "2": "O mesmo cartaz com a caixa de cada elemento emoldurada em rosa e treze etiquetas rosa que mostram o id de um elemento, a borda, a âncora e o deslocamento, se houver, entre elas #deck · align-bottom #sky · x +18 y −14 e #day2 · right-of #day1 · x +7. Outras duas etiquetas identificam as molduras dos contêineres do cabeçalho e do rodapé, que correm pelas margens superior e inferior, e o texto abaixo das quatro noites explica como ler a folha." }
+---
+
+## O que você vai compor
+
+Um cartaz de um clube de astronomia fictício para quatro palestras às quintas-feiras antes do eclipse total do Sol de 2 de agosto de 2027. Um céu azul-ultramar ocupa os dois terços superiores de uma folha A3. À direita, uma Lua preta cobre um Sol amarelo-limão cortado pelo refile, e uma coroa desenhada em código se espalha atrás dos dois. O título, *The Shadow Returns* em Funnel Display de 120 pt, se apoia na linha fina, no pé do céu. Abaixo do horizonte, quatro datas em azul encabeçam as palestras, e a letra miúda corre em duas colunas sobre uma faixa azul. Cada elemento se pendura na sangria, na página, no seu encaixe ou em outro elemento, e os deslocamentos contam a partir dali. A segunda folha repete o cartaz com uma moldura rosa em volta da caixa de cada elemento e dos contêineres do cabeçalho e do rodapé, e uma etiqueta em treze elementos que imprime o posicionamento de cada um.
+
+## Preparo
+
+### 1 · Prenda dois elementos à folha e pendure o resto neles
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Nele, `anchor.to` diz de onde um elemento se pendura: `'bleed'` e `'page'` são molduras da folha (a mesma caixa enquanto `page.cutLines` estiver desligado), `'container'` é a caixa do próprio encaixe e `'#id'` é outro elemento ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)). Uma caixa sem largura vai até a borda oposta da sua moldura, então o céu ocupa a sangria de um lado ao outro. Um elemento posicionado em relação ao céu mede a partir da borda esquerda do céu, que é a da sangria; por isso a linha fina usa `INSET`, 18 mm, como `x`. O título é montado de baixo para cima a partir da borda inferior do céu. `'align-bottom'` coloca o pé da caixa da linha fina `AIR`, 14 mm, acima dessa borda, e `'above'` apoia o pé de cada elemento no topo do que está embaixo, de modo que um título com mais linhas levanta o antetítulo em vez de cobrir a linha fina. Abaixo do design, a letra miúda começa na primeira linha da grade de 16 pt que fique pelo menos 3,2 mm abaixo do elemento mais baixo, a linha dos palestrantes; esses 3,2 mm são a margem inferior padrão do título.
+
+### 2 · Pendure a Lua e a coroa no Sol
+
+<Excerpt region="eclipse" />
+
+O Sol é o único elemento preso à página, a caixa do refile. Medido a partir do canto `'top-right'`, um `x` positivo passa da borda direita, então 30 mm do disco ficam cortados. A Lua e a coroa se penduram no Sol com `'align-top'`, de modo que mover o Sol move os dois. Os deslocamentos contam a partir do canto superior esquerdo do Sol: a Lua fica 2 mm à direita e 2,5 mm abaixo, o que deixa uma lasca de Sol no alto à esquerda, e a coroa começa `HALO`, 75 mm, acima e à esquerda, o que centraliza o seu quadrado de 300 mm sobre o disco de 150 mm. A coroa é um elemento de imagem que assume o tamanho da sua caixa ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)) e vem antes dos discos na lista, por isso é pintada atrás deles.
+
+### 3 · Encadeie as noites em colunas
+
+<Excerpt region="programme" />
+
+Cada data, palestra e linha de palestrante tem um `size.width` fixo de `COL`, e `'right-of'` mais `GUT` coloca a data seguinte uma coluna adiante. Sem largura, uma data se ajusta aos seus algarismos (o “8” tem 17 mm de largura), então o “15” começaria 7 mm depois dele e cada palestra correria numa só linha até invadir a coluna seguinte. `COL` divide a largura do texto em quatro com a mesma medianiz de 7 mm das duas colunas de letra miúda abaixo, o que põe a segunda coluna de letra miúda sob o 22. Cada palestra se pendura `'below'` da sua data e cada linha de palestrante abaixo da sua palestra, então uma palestra que quebrasse numa terceira linha empurraria para baixo o seu próprio palestrante e nenhum outro.
+
+### 4 · Ponha a faixa no rodapé, em todas as páginas
+
+<Excerpt region="footer" />
+
+Tudo o que precisa sair em todas as páginas, como esta faixa, vai no encaixe do cabeçalho ou do rodapé, e um estilo de título com cabeçalho ou rodapé próprio substitui esse encaixe nas páginas da sua seção. O rodapé do estilo das guias repete estes quatro elementos com as suas molduras e etiquetas, e é por isso que a faixa e o emblema saem nas duas folhas. O contêiner do rodapé é a margem inferior, do texto até o refile: `'bottom-left'` conta para cima a partir do refile e `'top-right'` para baixo a partir do texto, e o −10 do emblema e o +10 da linha “Free entry” caem na mesma faixa de 10 mm no meio da faixa azul ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). O rodapé é pintado depois do texto e não tira espaço dele, então `FOOT` define ao mesmo tempo a margem inferior e a altura da faixa, e a faixa nunca encosta nas linhas de cima.
+
+### 5 · Desenhe as linhas de construção a partir da mesma configuração
+
+<Excerpt region="guides" />
+
+`guides()` percorre os elementos do cartaz. Um texto ganha uma borda na sua caixa, e uma caixa quadrada, uma borda no seu estilo; nenhuma das duas move nada, porque só o preenchimento aumenta uma caixa. Uma imagem ou um disco redondo ganha uma caixa quadrada do seu próprio tamanho pendurada no seu canto superior esquerdo, então o canto do Sol em que a Lua e a coroa se penduram também fica desenhado. Cada etiqueta é um texto pendurado no seu elemento, escrito por `describe()` a partir do `placement` desse mesmo elemento, então uma etiqueta não tem como discordar da configuração que ela descreve. `{style="guides"}` no segundo título traz este design, com cabeçalho e rodapé próprios ([estilos de título](/pt/docs/configuration#estilos-de-título)). Uma etiqueta sem largura só dispõe do espaço entre a sua âncora e a borda direita do contêiner, e é por isso que a etiqueta de `#free` começa 30 mm à esquerda do seu texto. `pageIndexOffset: 1`, na `continuation` do conteúdo, transforma o cartaz numa página par, e o visualizador põe as duas folhas lado a lado.
+
+## Variações
+
+### Acrescente 3 mm de sangria e marcas de corte
+
+Três milímetros de `BLEED` ligam as linhas de corte e empurram o céu e a faixa do rodapé 3 mm para dentro da sangria em que se penduram, enquanto `INSET` mantém o texto na margem; o Sol, a Lua e a coroa se penduram na página e, como a 1.4.1 não recorta os elementos de design na sangria, eles seguem pela margem branca até a borda da folha.
+
+```diff
+-const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
++const BLEED = 3; // mm; 3 for the printer, which switches on page.cutLines below
+```
+
+### Suba o horizonte
+
+Tirar 20 mm de `SKY` levanta a borda do céu e, com ela, a linha fina, o título, o antetítulo e os doze textos da programação, enquanto a letra miúda começa numa linha mais alta da grade; o Sol se pendura na página, então a segunda mudança o levanta os mesmos 20 mm, senão o “w” de *Shadow* encostaria na lasca de Sol.
+
+```diff
+-const SKY = 272; // mm from the trim's top edge to the horizon, the sky's lower edge
++const SKY = 252; // mm from the trim's top edge to the horizon, the sky's lower edge
+-  disc('sun', 'sun', at('page', 'top-right', 30, 25)), // 30 mm of it past the right edge
++  disc('sun', 'sun', at('page', 'top-right', 30, 5)), // 30 mm of it past the right edge
+```
+
+## Erros comuns
+
+- Num pen, a 1.4.1 não avisa de âncoras cíclicas nem de âncoras soltas. O painel Verificações do Sandbox as aponta no cabeçalho, no rodapé, nas páginas de parte e nos níveis de título, mas não em estilos de título como `guides`. Um elemento preso a um `#id` que não existe é posicionado em relação ao contêiner: uma borda de elemento como `'below'` volta ao canto superior esquerdo do contêiner, com o deslocamento, e uma borda de contêiner como `'top-right'`, a esse canto. Num laço, um elemento volta da mesma forma e os outros se encadeiam nele.
+- `'align-left'` e `'align-top'` levam ao mesmo ponto na 1.4.1: os dois põem o canto superior esquerdo do elemento sobre o canto superior esquerdo da sua âncora.
+- Uma borda é pintada centrada no contorno da caixa, então cada moldura rosa de 1 pt avança 0,5 pt para fora da caixa que contorna, embora a documentação de configuração diga que os traços são pintados por dentro.

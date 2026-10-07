@@ -1,0 +1,74 @@
+---
+title: "Uma página de dicionário chinês com palavras-guia"
+summary: "Quatro páginas de uma seleção do Dicionário Kangxi em ordem de pinyin: {firstMark.h2} e {lastMark.h2} põem no cabeço a primeira e a última entrada da página."
+plain: "Quatro páginas de um dicionário chinês clássico. O canto de cima de cada página mostra a primeira e a última palavra dela, para achar uma palavra folheando."
+description: "Dicionário chinês em duas colunas no Postext: entradas com o pinyin por cima, acepções corridas numeradas ① ② e palavras-guia no cabeço, com o código."
+question: "Como faço para imprimir no cabeço de um dicionário chinês a primeira e a última entrada de cada página?"
+aliases: ["dicionário", "dicionário chinês", "字典", "康熙字典", "Dicionário Kangxi", "palavras-guia", "reclamos", "书眉", "書眉", "entradas", "verbetes", "ordem de pinyin", "pinyin sobre as entradas", "反切", "fanqie", "números circulados", "números de acepção", "word joiner", "marcador lateral"]
+pageNotes: { "1": "Página 634, um verso. O cabeço diz 634 e 天—殄, sobre um fio fino. Duas colunas de verbetes de 天 tiān a 殄 tiǎn: cada entrada em vermelho, na Song extranegra, com o pinyin por cima, e depois as leituras dos dicionários de rimas e as acepções corridas, numeradas ① ② em vermelho. Os verbetes se sucedem sem espaço entre eles, e as duas colunas terminam na última linha da grade. Na borda esquerda, um marcador vermelho com um T.", "2": "Página 635, um recto: 腆—髫 e o fólio no alto à direita. A primeira coluna começa com o fim do verbete 殄 e segue com os verbetes de 腆 tiǎn a 髫 tiáo; o marcador T, na borda direita.", "3": "Página 636: a página começa com o fim do verbete 髫, e o cabeço diz 挑—鐵, a primeira e a última entrada que começam nela; 挑 aparece outra vez com a leitura tiǎo.", "4": "Página 637: 餮—庭, o fim de 鐵, os verbetes de 餮 tiè a 庭 tíng e, embaixo, um colofão: uma frase em chinês em letra Kai, em duas linhas, e seis linhas de créditos em inglês." }
+---
+
+## O que você vai compor
+
+Quatro páginas do miolo de uma edição de leitura do Dicionário Kangxi (康熙字典, 1716), reordenado pelo pinyin, de 天 tiān a 庭 tíng. Cada entrada vai em vermelho, na Song extranegra, com o pinyin por cima; as leituras dos dicionários de rimas (反切) e as acepções vêm em seguida num só parágrafo, com as acepções numeradas ① ② no mesmo vermelho. A página é um 大32开 de 140 × 203 mm, em duas colunas de 17 caracteres de 小五 (9 pt) sobre uma grade de 31 linhas, e cada coluna vai até a sua última linha. No canto externo de cada página, o cabeço nomeia a primeira e a última entrada que há nela, então quem procura 蜩 vai à página encabeçada por 腆—髫. Para comparar com um dicionário em alfabeto latino, veja <RecipeLink slug="dictionary-thumb-index">o vocabulário náutico de Smyth</RecipeLink>.
+
+## Preparo
+
+### 1 · Palavras-guia a partir das entradas
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Cada entrada é um título de nível 2, e `{firstMark.h2}` e `{lastMark.h2}` imprimem o texto do primeiro e do último título de nível 2 que começam na página ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). A marca são os caracteres do título: `## {天|tiān}` marca 天, e a leitura fica sobre a entrada. Um verbete que passa de uma página para a seguinte só conta onde está a sua entrada: a <PageRef page={2}>página 635</PageRef> começa com o fim de 殄 e é encabeçada por 腆—髫. O nível 1 fica para as letras: nenhuma começa nestas quatro páginas, mas o título de uma letra não contaria como palavra-guia.
+
+### 2 · O pinyin sobre as entradas
+
+<Excerpt region="headwords" />
+
+`{天|tiān}` é a forma curta de `:ruby[天]{rt="tiān"}`, uma leitura sobre um caractere ([marcas chinesas, rubi e warichu](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu)). Um título sem design próprio compõe a sua leitura; um design de título imprimiria 天 sozinho. A leitura usa a fonte do próprio título, a extranegra, a não ser que `cjk.ruby.fontFamily` indique outra, e por isso a Song regular é indicada. Metade de 15 pt são 7,5 pt, e a linha de 30 pt do título deixa espaço para a leitura sobre a entrada, então o título ocupa duas linhas da grade e o texto embaixo continua nas linhas de 15 pt das duas colunas. Uma leitura em pinyin sobe o tanto das descendentes da sua fonte mais 0,04 em, então o g de tīng termina 0,6 pt acima da caixa do eme de 汀.
+
+### 3 · Um parágrafo para cada verbete
+
+<Excerpt region="senses" />
+
+O Dicionário Kangxi compõe cada verbete corrido: as leituras dos dicionários de rimas e depois cada acepção, introduzida por 又. Aqui o 又 virou números circulados, digitados como `**②**`, e `boldColor` os imprime no vermelho-cinábrio das entradas; não há outro negrito no texto. Uma acepção que o Kangxi lê de outra forma mantém a sua leitura, como 跳 ② com 徒刀切. O compositor trata ① a ⑳ como letras latinas, então uma linha poderia terminar num número cuja acepção abre a linha seguinte: um word joiner (U+2060) digitado depois de cada número impede isso, e também elimina o espaço entre chinês e latim. O balanceamento de colunas está desligado (`headings.balancing.enabled: false`), então nenhuma coluna abre espaço sobre as suas entradas e cada verbete segue o anterior à mesma distância.
+
+### 4 · O marcador da letra T
+
+<Excerpt region="tab" />
+
+As sílabas do pinyin começam com 23 das 26 letras (nenhuma com I, U ou V), então a altura da mancha é dividida em 23 passos de 7,13 mm, e o T fica com o 19º. O marcador tem 9 mm de largura e começa 3 mm além do refile, de modo que a página o corta reto na borda externa e só os seus cantos internos mostram o arredondamento; um arquivo de impressão com `page.cutLines` levaria esses 3 mm para a sangria. A letra fica centrada nos 6 mm dentro da página. As quatro páginas são do T, então o marcador fica sempre na mesma altura; <RecipeLink slug="dictionary-thumb-index">o vocabulário de Smyth</RecipeLink> o desce pela borda de uma letra para a seguinte.
+
+### 5 · Cada fonte carrega os seus próprios caracteres
+
+<Excerpt region="voices" />
+
+A Fontsource corta cada fonte chinesa em cerca de cem arquivos por faixa de caracteres, e `loadCjkFonts` carrega os arquivos que contêm o texto que recebe. A Song regular recebe a amostra inteira, inclusive o texto em inglês do colofão. A extranegra recebe as trinta entradas, o negrito os números de acepção, a Hei as entradas e os algarismos dos cabeços, e a Kai a frase em chinês do colofão. `cjkPdfProvider` incorpora esses mesmos arquivos no PDF, cada um reduzido aos caracteres que as suas páginas usam.
+
+## Variações
+
+### A primeira entrada no verso, a última no recto
+
+Alguns dicionários imprimem uma palavra-guia por página, a primeira no alto do verso e a última no alto do recto, de modo que a página dupla diz 天 … 髫.
+
+```diff
+-  head('verso-guide', '{firstMark.h2}—{lastMark.h2}', 'even', SIDE + 8, GUIDE),
+-  head('recto-guide', '{firstMark.h2}—{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
++  head('verso-guide', '{firstMark.h2}', 'even', SIDE + 8, GUIDE),
++  head('recto-guide', '{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
+```
+
+### Pinyin com ɑ e ɡ de um só bojo
+
+Os dicionários chineses compõem o pinyin numa fonte com o a e o g de um só bojo. Indique a Andika para as leituras e acrescente-a a `FONTS` (`'Andika': ['400']`, com o seu crédito OFL).
+
+```diff
+-  ruby: { fontFamily: SONG, fontSize: em(0.5), color: col('cinnabar') },
++  ruby: { fontFamily: 'Andika', fontSize: em(0.5), color: col('cinnabar') },
+```
+
+### Entradas no tamanho do texto
+
+Um dicionário compacto põe a entrada em negrito no começo do seu parágrafo. Coloque os verbetes em `:::paragraphs{style="entry"}`, abra cada um com `**{天|tiān}**` e imprima `{firstMark.entry}`: um parágrafo que começa com um trecho em negrito marca a página com ele.
+
+## Erros comuns
+
+- O compositor pode quebrar o título de uma obra depois do primeiro caractere (《說|文》). Os trinta verbetes são recortes de artigos bem mais longos do Kangxi, e os cortes foram escolhidos para que nenhum título quebre ali. Um word joiner dentro do título (`《說⁠文》`) o mantém inteiro, ao custo de uma linha com um caractere a menos.
+- Com o balanceamento de colunas ligado, uma coluna que não comporta a próxima entrada com duas linhas do seu texto embaixo (`bodyText.widowMinLines`) termina antes, e as linhas que sobram vão para cima das entradas, no máximo uma para cada: um verbete fica a uma linha do anterior, o seguinte não. Desligado, essa coluna fica curta; os cortes acima também preenchem todas as colunas menos a última.

@@ -1,0 +1,93 @@
+---
+title: "Cabeços pela paridade num livro de ensaios"
+summary: "Cabeços filtrados por paridade e tipo de página: o título do livro nas pares, o do ensaio cortado nas ímpares, fólios em abas na margem e um fólio ao pé."
+plain: "Cinco páginas de um livrinho de ensaios. Mostra como imprimir o título do livro no alto das páginas da esquerda e o título do ensaio nas páginas da direita."
+description: "Um Montaigne de bolso composto no Postext: cabeços por paridade e tipo de página, fólios em abas na margem externa e reticências nos títulos longos de ensaio."
+question: "Como faço para pôr o título do livro nas páginas pares, o do capítulo nas ímpares e o fólio do lado de fora?"
+aliases: ["cabeço", "cabeço corrido", "título corrente", "cabeços de página par e ímpar", "páginas pares e ímpares", "número de página por fora", "fólio externo", "fólio em aba", "título de capítulo longo", "cortar título com reticências", "esconder cabeço na abertura", "cor da página em branco", "cabeço azul padrão"]
+pageNotes: { "3": "O cabeço da página ímpar corta com reticências o título do ensaio, de 81 caracteres, antes de um fio sépia de 0,5 pt e da aba do fólio na margem externa.", "4": "A página 32, par, traz o título do livro; o ensaio termina a um terço da altura da página." }
+---
+
+## O que você vai compor
+
+As páginas 29 a 33 de uma edição de bolso dos *Ensaios* de Montaigne na tradução inglesa de Charles Cotton: o capítulo IV inteiro e o começo do V. As pares levam o título do livro em maiúsculas espaçadas. As ímpares levam o título do ensaio em itálico, cortado com reticências, já que o do capítulo IV chega a 81 caracteres. Cada fólio fica numa aba sépia na margem externa, a 3 mm de um fio de 0,5 pt na borda da mancha. A abertura não tem cabeço, só um fólio ao pé. O texto vai em Baskervville sobre papel creme; os títulos, em Libre Caslon Display; os fólios e o título do livro, em Alegreya SC. Todos os cabeços são definidos na configuração, então o cabeço embutido do motor, em Open Sans azul de 8 pt, nunca é impresso.
+
+## Preparo
+
+### 1 · Substitua o cabeço azul embutido
+
+<Excerpt region="palette" />
+
+Cada cor da configuração aponta para uma destas entradas. Se você deixar `header` sem definir, o motor desenha o cabeço embutido: `{title}` nas ímpares e `{chapterTitle}` nas pares, sobre um fio de 1 pt, em Open Sans 600 de 8 pt e no azul `#295AA3` ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). Apontar `main-color` para o sépia muda as cores padrão do texto, mas deixa aquele cabeço em azul, porque os espaços de design nunca leem a paleta. Por isso cada cabeço aqui é escrito por inteiro, com as cores em hexadecimal. O negrito, o itálico e as referências também usam `main-color` por padrão, e `bodyText` os devolve à cor da tinta.
+
+### 2 · Todos os cabeços saem de uma aba
+
+<Excerpt region="tab" />
+
+A resposta curta ancora a aba de cada cabeço em `'page'`, de modo que os deslocamentos são medidos a partir do refile. A partir do canto `top-right`, um `x` positivo sai da página, e por isso a aba da ímpar recebe um valor negativo. O fio pende da aba, e o título, do fio ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)). As medidas da aba ficam em constantes com nome porque as outras peças são medidas a partir delas. O fio tem `TAB_H` de altura. O fólio e os dois títulos dividem uma caixa de linha de 9 pt, e a linha de base de um texto de design fica a 80% da altura dessa caixa, então os três ficam sobre a mesma linha de base em qualquer corpo.
+
+<PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Página 30, par: aba, fio e título do livro, da margem externa para dentro." />
+
+<PageShot page={3} crop="0.34,0.045,0.62,0.05" caption="Página 31, ímpar: o título do ensaio, cortado antes do fio e da aba na margem externa." />
+
+### 3 · Espelhe as margens e conte linhas inteiras
+
+<Excerpt region="page" />
+
+Com `mirror: true`, a margem `right` é a externa na página ímpar e passa para a esquerda na par, então `OUTER` é sempre a margem do corte da frente, onde ficam as abas. A margem inferior sai do refile, da margem superior e de `LINES`, o que mantém a mancha com exatamente `LINES` linhas de `LEAD` (aqui, 31 × 14 pt), qualquer que seja o refile ou a margem superior. Toda página cheia termina na 31ª linha, e por isso páginas que se defrontam, como a <PageRef page={2}>30 e a 31</PageRef>, terminam na mesma altura.
+
+### 4 · Deixe a abertura mostrar o título inteiro
+
+<Excerpt region="opener" />
+
+A abertura compõe o título completo com `overflow: 'wrap'` e o quebra em cada `\\` da linha do título. Só uma abertura de página inteira respeita essas quebras, e daí o `span: 'page'` do nível ([quebras de linha nos títulos](/pt/docs/document-format#quebras-de-linha-em-títulos)). No cabeço, `{chapterTitle}` sempre dá o título numa linha só, e as reticências cortam essa linha. O numeral vem do atributo `{num="IV"}` do título, e os versaletes ao lado da placa vêm do `subtitle` do frontmatter.
+
+### 5 · Abra cada ensaio numa página ímpar
+
+<Excerpt region="levels" />
+
+Qualquer objeto `headings` desliga a quebra de página do H1, por isso ela é declarada de novo. Com `'odd'`, um ensaio que termina numa ímpar é seguido por uma página par em branco. A edição espanhola tem uma, porque lá o capítulo IV termina na página 31; aqui o capítulo IV termina na página 32, uma par, e o capítulo V abre na 33. O `pages: 'body'` dos cabeços os mantém fora das páginas em branco e das aberturas (as páginas cujo primeiro bloco é este título). O `pages: 'opener'` do rodapé imprime o fólio ao pé só nas aberturas ([elementos de texto](/pt/docs/configuration#elementos-de-texto)).
+
+### 6 · Comece os fólios em 29
+
+<Excerpt region="build" />
+
+`parity` segue o lugar da página no livro e ignora o fólio. `pageIndexOffset: 28` soma 28 ao índice de cada página, de modo que ímpar e par, as margens espelhadas e os cabeços de cada lado acompanham a página do livro. Depois, `pageNumbering.startAt` numera estas páginas de 29 a 33. Sem o deslocamento, a primeira página do build é ímpar, seja qual for o fólio que imprime. Com a página 29 isso calha de dar certo, mas com `startAt: 30` o título do livro cairia na página 31 e o do ensaio na 32, cada um do lado errado da página dupla.
+
+## Variações
+
+### Dê aos títulos longos um título corrente curto
+
+Escreva o título corrente na linha do título, `{num="IV" short="Of false objects"}`, e imprima o atributo no lugar do título inteiro; um capítulo sem `short` não imprime nada ali.
+
+```diff
+-  { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
++  { kind: 'text', id: 'essay', content: '{attr.short}', parity: 'odd', pages: 'body',
+```
+
+### Deixe os ensaios abrirem em qualquer lado
+
+Com `'any'`, o ensaio começa na página seguinte, par ou ímpar, e nunca se acrescenta uma página em branco. A placa pende do canto superior esquerdo da mancha e o fólio ao pé fica centralizado embaixo dela, então os dois ficam do mesmo jeito numa par e numa ímpar.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Pinte a página par em branco com a cor de destaque
+
+Uma caixa com `pages: 'blank'` só é impressa nas páginas que a quebra para ímpar acrescenta: na edição espanhola ela enche a página 32 de sépia, e a edição inglesa, que não tem página em branco, não muda.
+
+```diff
+ const footer = { elements: [folio({ id: 'drop-folio', parity: 'all', pages: 'opener',
+-  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD })] };
++  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD }),
++  { kind: 'box', id: 'blank-leaf', pages: 'blank', style: { backgroundColor: col('sepia') },
++    placement: { anchor: page('top-left'),
++      size: { width: mm(TRIM.width), height: mm(TRIM.height) } } }] };
+```
+
+## Erros comuns
+
+- `CAP` é ajustado ao título do ensaio IV em cada edição, o único que um cabeço mostra aqui. O cabeço do ensaio V ainda seria cortado no meio de uma palavra (“Whether the governor of a place besieged ou…”), então um livro de títulos longos precisa do título corrente curto das Variações.
+- Na edição inglesa, subir `minWordSpacing` de 0,7 para 0,75 deixa a primeira linha do ensaio V (“Quintus Marcius, the Roman legate…”) sem nenhum ponto de quebra dentro da faixa, e os espaços entre palavras se abrem até 2,4 vezes a largura normal. A edição espanhola não tem essa linha. Depois de qualquer mudança, confira as linhas mais frouxas que a captura lista.

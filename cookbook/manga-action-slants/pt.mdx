@@ -1,0 +1,48 @@
+---
+title: "Uma página de ação com sarjetas inclinadas"
+summary: "A página que decide uma final de kendô: sarjetas inclinadas (40~55) na divisão, um quadro sem borda para o golpe e ドン mantido em japonês com tradução miúda."
+plain: "Uma página de luta de um quadrinho japonês, com os espaços entre os quadros inclinados para a ação parecer avançar, e o grande som japonês do golpe mantido no lugar com uma pequena tradução ao lado."
+description: "Uma página de ação de mangá no Postext: sarjetas inclinadas escritas 40~55 na divisão, quadro sem borda para o golpe e ドン em japonês legendado em cada edição."
+question: "Como faço para inclinar as sarjetas entre os quadros numa cena de ação de quadrinhos?"
+aliases: ["quadros inclinados", "sarjetas diagonais", "斜めのコマ割り", "página de ação", "cena de luta", "linhas de movimento", "linhas de velocidade", "効果線", "onomatopeias", "SFX", "描き文字", "quadro sem borda", "枠なし", "legendar onomatopeias", "mangá", "ドン"]
+pageNotes: { "1": "O original japonês: um plano geral da final, uma faixa com os olhos de Hana atrás da grade do capacete, uma fileira dividida por uma sarjeta que se inclina para a esquerda, o ataque do adversário à direita e o golpe de Hana à esquerda sob um enorme ドン vertical, e uma última fileira inclinada para o outro lado.", "2": "A edição brasileira da mesma página: ドン atravessa o golpe com “PÁ!” em letras pequenas embaixo; “TUM!” e o “MEEEN!” do adversário à direita, o “MEN!!” de Hana à esquerda, e na última fileira “Ela conseguiu!!” de Sora, “Men! Ponto!” do árbitro e “…Hum. Nada mal.” no pensamento de Mori." }
+---
+
+## O que você vai compor
+
+A página em que se decide a final de kendô, do mesmo mangá da <RecipeLink slug="manga-right-to-left">receita da direita para a esquerda</RecipeLink>, em duas edições lado a lado: o original japonês e o letreiramento no idioma desta página (em inglês na página japonesa). Quatro fileiras: o ginásio, os olhos de Hana pela grade do capacete, a troca de golpes e as reações. A terceira fileira é cortada por uma sarjeta inclinada, e assim o ataque do adversário e o contragolpe de Hana parecem se lançar um contra o outro; a quarta se inclina para o outro lado e desacelera a página. O golpe de Hana não tem moldura nenhuma, e a onomatopeia dele, ドン, é composta numa gótica japonesa bem pesada que todas as edições mantêm, com uma pequena tradução embaixo nas páginas traduzidas.
+
+## Preparo
+
+### 1 · Inclinar a sarjeta na divisão
+
+O código é [a resposta curta](#a-resposta-curta) acima. Um tamanho escrito `40~55` dá duas posições à borda distante de uma célula: 40 % da fileira em cima e 55 % embaixo. As células continuam sendo polígonos convexos, a sarjeta mantém a largura medida na perpendicular à inclinação e, com a leitura da direita para a esquerda, a inclinação se espelha junto com a ordem, de modo que a primeira célula continua sendo a da direita. A divisão da página é `24 / 18 / * [40~55 | *] / 24 [58~64 | *]`: duas fileiras retas para preparar o momento, uma inclinada para o golpe e uma última inclinada para o outro lado (<Feature id="comic-panel-split">divisão da página</Feature>).
+
+### 2 · Gritar com explosões e deixar as onomatopeias escaparem
+
+<Excerpt region="balloons" />
+
+Os kiai dos dois lutadores são gritos: uma explosão de 18 pontas, mais fundas que as do padrão. As onomatopeias não têm balão nenhum; são letreiradas sobre o desenho com um contorno branco de 2,2 pt, para serem lidas por cima das linhas de movimento. O quadro do golpe é escrito `::panel{art=strike border=none}`, e o seu ドン leva `break`, então pode atravessar a sarjeta inclinada até o quadro vizinho, como um letrista deixa um som transbordar da moldura (<Feature id="sound-effects">onomatopeias</Feature>).
+
+### 3 · Manter ドン em japonês e legendá-lo
+
+<Excerpt region="fonts" />
+
+No mangá, as onomatopeias fazem parte do desenho, e as edições licenciadas costumam deixá-las no lugar e acrescentar uma pequena tradução ao lado. O roteiro faz o mesmo: todas as edições têm a linha `sfx{… font="Dela Gothic One" break}: ドン`; as edições letreiradas em linhas horizontais acrescentam `vertical` a ela, para que ドン mantenha a coluna que tem no original, e põem embaixo uma segunda onomatopeia, menor, como PÁ! ou WHAM. Como a fonte é indicada na linha, cada edição carrega a Dela Gothic One só com os caracteres de ドン, seja qual for a fonte de letreiramento dela.
+
+### 4 · Ajustar as áreas seguras às células inclinadas
+
+<Excerpt region="art" />
+
+Uma célula inclinada é mais larga numa ponta que na outra, e a imagem tem de cobri-la inteira. Cada área segura é cortada no que o quadro precisa, os olhos no close da grade e o busto de Sora na comemoração, para que caiba no recorte mais largo da célula e o motor nunca precise deixar faixas vazias em volta da imagem.
+
+### 5 · Pôr o original ao lado de cada edição
+
+<Excerpt region="editions" />
+
+Cada idioma do site letreira a página no próprio arquivo, e o original japonês fica de frente para ela, do outro lado da página dupla (a página japonesa faz par com a edição inglesa). ドン fica em todas as edições, cada uma traz a sua legenda (PÁ!, WHAM, ZAS!, 咚, بوم!), e as inclinações nunca mudam.
+
+## Erros comuns
+
+- Uma onomatopeia mantida em japonês numa edição letreirada em linhas horizontais é composta na horizontal, como o resto da edição, a não ser que a linha dela diga `vertical`.
+- A comemoração de Sora é mais longa que o quadro pequeno dele em japonês, espanhol e catalão: deixada ao motor, ela atravessava a borda e a construção avisava `comicBalloonOverflow`. Essas edições a marcam com `break` (`sora{shout break}`): ela rompe a moldura para cima, até a sarjeta e o quadro de cima, de propósito, e nada é informado. Um balão com `break` nunca invade a margem da página, a não ser que o quadro dele tenha sangria; um ponto fixo (`at=`) o coloca em qualquer outro lugar.

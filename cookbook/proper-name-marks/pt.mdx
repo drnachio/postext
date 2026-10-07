@@ -1,0 +1,66 @@
+---
+title: "Marcas de nome e de título, na vertical e na horizontal"
+summary: "Os Anais básicos de Xiang Yu com marcas :name e :book, na vertical e na horizontal: as linhas ficam à esquerda dos nomes e depois embaixo deles."
+plain: "Páginas de amostra de um clássico da história chinesa. Mostra como marcar nomes com uma linha reta vermelha e títulos de livros com uma linha ondulada, em texto vertical e horizontal."
+description: "Linhas de nome próprio e linhas onduladas de título num texto chinês clássico, compostos na vertical e na horizontal a partir de um só Markdown no Postext."
+aliases: ["marca de nome próprio", "linha de nome próprio", "marca de título de livro", "sublinhado ondulado", "專名號", "私名號", "書名號", "全式標點", "chinês clássico", "Shiji", "Xiang Yu", "páginas de amostra", "樣張"]
+pageNotes: { "1": "Página 1, na vertical: uma faixa anil desce pela borda direita com 史記選讀 em caracteres brancos grandes; depois, a apresentação e cinco convenções numeradas em letra Kai, com linhas retas vermelhas à esquerda dos nomes, linhas onduladas vermelhas à esquerda dos títulos e três pontos vermelhos à direita de 萬人敵.", "2": "Página 2, na vertical: a faixa com 項羽本紀 e o autor; depois, o trecho em nove colunas lidas a partir da direita, com uma linha vermelha à esquerda de cada nome.", "3": "Página 3, na horizontal: a faixa atravessa o alto da página com 項羽本紀; depois, o mesmo trecho em linhas de 28 caracteres, cada nome sublinhado em vermelho, e o colofão em letra cinza pequena." }
+---
+
+## O que você vai compor
+
+Três páginas de amostra para uma antologia dos *Registros do Grande Historiador*, no formato de 140 × 203 mm de um livro chinês 大32開. O trecho é o começo dos Anais básicos de Xiang Yu com a pontuação completa de uma edição de clássicos: uma linha reta ao lado de cada pessoa, lugar, Estado e dinastia, e uma linha ondulada ao lado de cada título de livro ou de capítulo, as duas em vermelhão. A página 1 traz a apresentação e as convenções do editor em letra Kai. As páginas 2 e 3 compõem duas vezes o mesmo Markdown, na vertical e na horizontal, e a página dupla mostra onde vai cada marca: à esquerda do nome nas linhas verticais, embaixo dele nas horizontais. O livro é encadernado pela direita, e uma faixa anil leva cada título. <RecipeLink slug="critical-edition-line-numbers">A receita Nº 044, Lycidas no texto de 1645</RecipeLink>, destaca os nomes à maneira europeia, em itálico.
+
+## Preparo
+
+### 1 · A marcação põe as marcas; a direção da escrita escolhe o lado
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `:name[項梁]` e `:book[史記]` mantêm seus caracteres no texto, então a busca, o texto copiado e o PDF leem 項梁 e 史記, e acrescentam as marcas ao lado ([Marcas chinesas, rubi e warichu](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu)). Só a direção da escrita decide o lado: `layout.writingMode: 'vertical-rl'` põe as linhas à esquerda dos caracteres, e o estilo de título `across`, cuja disposição é `'horizontal-tb'`, as põe embaixo. `bookTitleMark: 'wavy'` é o que um documento `zh-Hant` recebe por padrão; fica escrito porque, numa troca para `zh-Hans`, os títulos sairiam entre 《》. Quando duas marcas do mesmo tipo se encostam, como em 東漢班固 ou 史記項羽本紀, cada uma cede um oitavo de eme na ponta em que se encontram, e as linhas se leem como dois nomes.
+
+### 2 · Uma entrelinha com espaço para as marcas
+
+<Excerpt region="type" />
+
+As marcas ficam no vão entre as linhas e nunca mudam o passo da linha ([Marcas, rubi e warichu](/pt/docs/configuration#marcas-rubi-e-warichu)). Com 10,5 pt sobre 18 pt, o vão é de 0,71 eme, e nele cabem as linhas de nome de uma coluna e os pontos da seguinte, como na quinta convenção da página 1. A grade conta a página em caracteres, 42 ao longo de cada linha e 17 linhas no sentido transversal, e desloca as margens para que a mancha meça exatamente isso: 25,7 mm de margem no alto e 21,7 mm no pé ([Grade de caracteres](/pt/docs/configuration#grade-de-caracteres)).
+
+### 3 · Uma abertura que gira com a página
+
+<Excerpt region="opener" />
+
+O design de um título é diagramado no fluxo da sua página, então um mesmo conjunto de elementos serve às duas direções ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). Ancorada ao canto superior esquerdo da sangria, a faixa atravessa o alto da página horizontal e desce pela borda direita das verticais, onde a leitura começa. O antetítulo, o título e o autor também se empilham no fluxo: um embaixo do outro na horizontal, um à esquerda do outro na vertical. O comprimento da faixa é medido ao longo do fluxo: 181,3 mm a fazem parar no pé do texto vertical, longe do fólio, e na página horizontal passam do refile.
+
+### 4 · Fólios para um livro encadernado pela direita
+
+<Excerpt region="folios" />
+
+O texto vertical encaderna o livro pela direita ([Encadernação](/pt/docs/configuration#encadernação)): a página 1 fica à esquerda da lombada, e a borda externa de uma página ímpar é a esquerda. O fólio ímpar vai embaixo à esquerda e o par embaixo à direita, ao contrário de um livro ocidental, e `pageNumbering.format: 'trad-chinese-informal'` os imprime como 一, 二, 三. A linha de identificação entre os dois vem de um atributo de cada título, `slug="…"`; junto com o colofão, é tudo o que muda entre a edição inglesa e a espanhola.
+
+### 5 · Uma segunda tinta
+
+<Excerpt region="palette" />
+
+Uma edição de clássicos imprime as marcas na tinta do texto. Uma antologia escolar pode imprimi-las numa segunda cor, para que se destaquem dos traços dos caracteres: `annotationColor` as liga à entrada `mark` da paleta, o vermelhão dos comentários em tinta vermelha, e uma única mudança nessa entrada muda o tom de todas as linhas e de todos os pontos do livro.
+
+## Variações
+
+### Imprima os títulos entre 《》
+
+Os livros da China continental que não são clássicos põem os títulos entre colchetes angulares: o Markdown fica como está, e os colchetes saem como pontuação do texto.
+
+```diff
+-  bookTitleMark: 'wavy', // zh-Hant's default; mainland editions of the classics use it too
++  bookTitleMark: 'brackets', // 《史記》《項羽本紀》
+```
+
+### Imprima as marcas na tinta do texto
+
+Sem `annotationColor`, cada marca assume a cor do bloco que marca.
+
+```diff
+-  annotationColor: col('mark'), // unset, the marks print in the colour of the text
+```
+
+## Erros comuns
+
+- Um título desenhado por um design imprime o seu texto através do design, e o texto de design perde as marcas: `# :book[項羽本紀]` não mostraria nenhuma linha ondulada na faixa. Cabeços, legendas e células de tabela também imprimem o texto sem marcas.
+- O Postext não para por causa de `cjkMarksExceedLeading`: a composição o registra em `doc.contentWarnings` e o painel Verificações do Sandbox o mostra, mas as páginas são impressas assim mesmo, com as marcas espremidas contra a linha vizinha. Quando mudar a entrelinha, leia essa lista; com 15 pt ela reúne todos os parágrafos marcados destas páginas.

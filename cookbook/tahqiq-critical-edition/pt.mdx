@@ -1,0 +1,59 @@
+---
+title: "Um taḥqīq: notas por página e pré-textuais em abjad"
+summary: "Pré-textuais com fólios أ ب ج د, o texto a partir de ١, notas do editor numeradas (١) de novo em cada página e um índice que ordena os nomes sem o artigo ال."
+plain: "O começo da Muqaddima de Ibn Khaldūn como edição crítica árabe moderna: a introdução numerada com letras, o texto com algarismos e notas de rodapé que voltam a contar do um em cada página."
+description: "Uma edição crítica árabe no Postext: fólios em abjad, :::numbering para o texto, notas de rodapé por página como (١) e um índice com ignoreArticle."
+question: "Como faço para numerar os pré-textuais de um livro árabe com letras abjad (أ، ب، ج)?"
+aliases: ["taḥqīq", "tahqiq", "edição crítica", "edição crítica árabe", "edição acadêmica árabe", "abjad", "numerais abjad", "أبجد", "numeração dos pré-textuais", "paginação dos pré-textuais", "notas por página", "(١)", "notas de rodapé em árabe", "Ibn Khaldūn", "Ibn Khaldun", "Muqaddima", "Prolegômenos", "مقدمة ابن خلدون", "índice onomástico", "índice de nomes", "فهرس الأعلام", "تحقيق"]
+pageNotes: { "4": "A última página da introdução do editor, com o fólio د no pé.", "5": "A página que abre o texto, fólio ١: o título da seção em Naskh negrito, o subtítulo longo sob um fio curto, o texto com chamadas de nota elevadas entre parênteses e três notas no pé sob um fio à direita, cada uma abrindo com o seu número (١), (٢), (٣)." }
+---
+
+## O que você vai compor
+
+Onze páginas de uma edição crítica árabe moderna, um taḥqīq, da primeira seção da *Muqaddima* de Ibn Khaldūn, sobre a excelência da história. Os pré-textuais recebem fólios em letras abjad, como fazem as edições do Cairo e de Beirute: uma folha de rosto أ, o verso com os créditos ب, depois a introdução do editor ج e د. O texto recomeça em ١ na página ímpar seguinte. As notas do editor ficam no pé de cada página, numeradas (١), (٢), (٣) e reiniciadas a cada página, sob um fio curto à direita; elas explicam palavras raras, identificam as pessoas e os lugares que Ibn Khaldūn cita e dão a sura e o versículo de cada citação do Corão. Um índice de nomes fecha o livro, ordenado como se ordenam os índices árabes, sem o artigo ال. As notas e a introdução foram escritas para esta receita.
+
+## Preparo
+
+### 1 · Duas séries de fólios e notas por página
+
+O código é a [resposta curta](#a-resposta-curta) acima. `page.pageNumbering` começa o livro em `'abjad'`, as letras na ordem abjad, com هـ para o cinco. Antes do texto, duas diretivas recomeçam a contagem na página ímpar seguinte, com os algarismos do documento ([`:::numbering`](/pt/docs/document-format#numbering), [Algarismos e estilos de numeração](/pt/docs/arabic-layout#algarismos-e-estilos-de-numeração)). As notas usam `numbering: 'page'`, um `markerTemplate` de `'({n})'` e `noteNumberPosition: 'inline'`, de modo que a chamada fica elevada no texto e a nota abre com o seu número na linha ([Notas de rodapé](/pt/docs/arabic-layout#notas-de-rodapé)).
+
+<PageShot page={5} crop="0,0.62,1,0.33" caption="Página ١: as notas recomeçam em (١), sob um fio no lado da página onde a linha começa." />
+
+### 2 · Um índice que ignora o artigo
+
+<Excerpt region="index" />
+
+Os nomes são marcados no texto, `:index[المسعودي]`, e `:::index` os imprime no fim. Com `ignoreArticle`, المسعودي fica sob م e الطبري sob ط, enquanto ابن إسحاق continua sob ا; uma remissiva manda de إسرائيل para يعقوب ([Sumário e índice](/pt/docs/arabic-layout#sumário-e-índice-remissivo)). Os números de página do índice são os rótulos das páginas, então um nome da introdução remete a ج.
+
+### 3 · Cabeços sobre um fio
+
+<Excerpt region="furniture" />
+
+A página par traz o título do livro e a ímpar a seção, sobre um fio fino com a largura da mancha, com o fólio na ponta externa. Num livro encadernado pela direita, a página par fica à direita, por isso o fólio dela vai no alto à direita ([Ordem das páginas e encadernação pela direita](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita)). As aberturas e os pré-textuais levam, em vez disso, um fólio centralizado no pé.
+
+### 4 · Uma folha de rosto e o seu verso de créditos
+
+<Excerpt region="title" />
+
+A folha de rosto e os créditos no verso dela são estilos de título sem nada no fluxo: as linhas vêm de atributos do título, então as linhas latinas dos créditos, que mudam a cada edição, são um atributo no Markdown.
+
+## Variações
+
+### Usar os numerais abjad
+
+`'arabic-abjad'` escreve os numerais abjad aditivos em vez da série simples de letras: a décima primeira página é يا, não ك.
+
+```diff
+-const pageNumbering = { format: 'abjad', startAt: 1 }; // أ ب ج د هـ و ز ح…
++const pageNumbering = { format: 'arabic-abjad', startAt: 1 }; // … ط ي يا يب
+```
+
+### Numerar as notas ao longo da seção
+
+`numbering: 'chapter'` continua a contagem das notas de uma página para a outra, como fazem algumas edições mais antigas.
+
+```diff
+-  numbering: 'page', markerTemplate: '({n})', noteNumberPosition: 'inline',
++  numbering: 'chapter', markerTemplate: '({n})', noteNumberPosition: 'inline',
+```

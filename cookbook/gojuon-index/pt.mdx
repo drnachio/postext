@@ -1,0 +1,61 @@
+---
+title: "Um índice japonês em ordem gojūon, pela leitura"
+summary: "Um capítulo sobre termos de composição japonesa e o seu índice: cada marca dá a leitura por furigana ou yomi, e as entradas ficam sob あ行, か行, さ行 em ordem JIS."
+plain: "Um capítulo curto que explica as palavras usadas pelos tipógrafos japoneses, com um índice no fim. Cada palavra indexada traz a sua pronúncia, e o Postext a usa para ordenar o índice na ordem dos kana, sob os grupos あ行, か行 e seguintes."
+description: "Um índice remissivo japonês no Postext: marcas :index com leituras yomi ou furigana, grupos com groupBy 'gojuon', ordem JIS X 4061 e remissões → e も見よ."
+question: "Como ordeno um índice japonês em ordem gojūon pelas leituras?"
+aliases: ["índice japonês", "índice remissivo japonês", "索引", "五十音順", "gojūon", "gojuon", "あ行 か行", "yomi", "読み", "leitura", "leitura em furigana", "JIS X 4061", "ordem dos kana", "見よ", "も見よ", "ver também", "indexReadingMissing", "組版用語", "glossário de composição"]
+pageNotes: { "1": "Página 9, a abertura do capítulo: 第1章 numa gótica vermelhão pequena, o título 紙面を呼ぶ言葉 em negrito, um fio curto vermelhão, um parágrafo de introdução e a seção 1.1 sob um título de três linhas. Os termos 版面, 天, 地, 小口 e 柱 trazem pequenas leituras em kana na primeira vez que aparecem.", "3": "Página 11, o índice: sobre uma faixa clara, 五十音順 em vermelhão e o título 索引; abaixo, duas colunas de entradas sob os cabeços vermelhão D, J, か行, さ行, た行, な行, は行, ま行, や行, ら行 e わ行, cada entrada com a sua página depois de um espaço ideográfico, a página principal em negrito, e remissões como 級　10　→歯も見よ e 振り仮名　→ルビ." }
+---
+
+## O que você vai compor
+
+Um capítulo de um manual inventado de composição japonesa, 組版の言葉 (As palavras da composição), e o seu índice. O capítulo explica os nomes das partes da página, dos tamanhos de tipo e das regras de pontuação, numa página A5 de 36 caracteres por 28 linhas; cada termo é marcado para o índice onde é explicado. O índice é o assunto: o japonês não tem ordem alfabética para os kanji, então um índice organiza cada entrada pela leitura em kana, na ordem da tabela gojūon (五十音), sob os cabeços de linha あ行, か行, さ行. Um termo com furigana dá a leitura por si só; qualquer outro termo com kanji a informa num atributo `yomi`. <RecipeLink slug="chinese-name-index">O índice de nomes chineses</RecipeLink> ordena nomes chineses por pinyin e por traços.
+
+## Preparo
+
+### 1 · Uma leitura para cada termo com kanji
+
+O código está na [resposta curta](#a-resposta-curta), mais acima. No texto, `:index[{版面|はん|めん}]{main}` imprime 版面 com はんめん em cima e arquiva a entrada como はんめん; `:index[明朝体]{yomi="みんちょうたい" main}` não imprime leitura e a arquiva como みんちょうたい. Termos em kana, ノンブル ou のど, e termos latinos, DTP ou JIS X 4051, não precisam de nada ([Marcas de índice](/pt/docs/document-format#marcas-de-índice)). A leitura decide só a ordem: a entrada sai impressa como foi escrita. Leituras de kanji não podem ser adivinhadas, já que 天 é てん aqui e あめ em outras palavras, então o motor nunca tenta.
+
+### 2 · Ordem JIS e cabeços de linha
+
+`groupBy: 'gojuon'` é o que `'auto'` escolhe para `locale: 'ja'`. As entradas são ordenadas pela JIS X 4061: katakana como hiragana, kana pequeno como grande, um kana sonoro logo depois do surdo, ー como a vogal que vem antes dele. Assim, 級 (きゅう) vem antes de 行取り (ぎょうどり), e ゴシック体 (ごしっくたい) depois de 小口 (こぐち). Os termos latinos vêm primeiro, sob as suas letras, como a JIS os ordena; símbolos e algarismos viriam antes deles ([Índice remissivo](/pt/docs/configuration#índice-remissivo)).
+
+<PageShot page={3} crop="0.08,0.29,0.84,0.6" caption="Página 11: termos latinos sob D e J, depois as linhas de kana de か行 a わ行, cada entrada pela sua leitura." />
+
+### 3 · → e も見よ
+
+Uma remissão é uma marca com `see`, `:index{term="振り仮名" yomi="ふりがな" see="ルビ"}`, e imprime 振り仮名　→ルビ. Uma remissão do tipo “ver também” usa `seealso` e imprime os destinos antes de も見よ, 級　10　→歯も見よ, como os índices japoneses escrevem. `see: { italic: false }` mantém os rótulos em redondo, já que uma fonte japonesa não tem itálico. O espaço ideográfico depois de cada termo e o 、 entre as páginas vêm de `separator` e `locatorSeparator`.
+
+### 4 · O índice em duas colunas
+
+<Excerpt region="opener" />
+
+O título do índice é um estilo de título com `span: 'page'` e um `layout` de duas colunas: o design dele, uma faixa clara com o título, ocupa a largura da página, e `:::index` corre em duas colunas embaixo. Os cabeços de linha são compostos na gótica vermelhão, e as entradas no mincho do texto a 8,5 pt numa linha de 14 pt.
+
+## Variações
+
+### Cabeços pelo primeiro kana
+
+`'kana'` encabeça cada grupo com o primeiro kana da entrada, como fazem os dicionários e os índices longos de nomes: か, き, く em vez de um único か行.
+
+```diff
+-  groupBy: 'gojuon', // what 'auto' picks in a 'ja' document: heads あ行 か行 さ行 …
++  groupBy: 'kana', // heads か き く け こ…
+```
+
+### Uma leitura sem furigana no texto
+
+Para deixar sem leitura a primeira menção de um termo e ainda assim dar a leitura dele, passe a leitura para `yomi`.
+
+```diff
+-ページのうち、本文が組まれる範囲を:index[{版面|はん|めん}]{main}という。
++ページのうち、本文が組まれる範囲を:index[版面]{yomi="はんめん" main}という。
+```
+
+## Erros comuns
+
+- Um termo com kanji e sem leitura gera `indexReadingMissing`. Sem o seu `yomi`, 明朝体 caiu para o fim do índice, depois de わ行, sem cabeço, e a composição avisou que a entrada “tem um kanji e nenhuma leitura”.
+- `:ruby[…]` dentro de `:index[…]` precisa ter os colchetes escapados, porque a marca termina no primeiro `]`; escreva a forma compacta, `{版面|はん|めん}`.
+- Uma leitura em rubi só conta quando cobre todos os kanji do termo: `:index[行{取|ど}り]` deixa 行 sem leitura e emite um aviso. `{行取|ぎょう|ど}り` dá ぎょうどり.

@@ -17,27 +17,27 @@ export type FeatureKey = (typeof FEATURE_KEYS)[number];
 const FEATURE_DOCS: Record<FeatureKey, DocAnchor> = {
   justification: {
     slug: "justification",
-    heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo", ca: "Knuth-Plass: veure el paràgraf sencer", zh: "Knuth-Plass：通观整个段落", ar: "Knuth-Plass: النظر إلى الفقرة كاملة", ja: "Knuth-Plass：段落全体を見渡す" },
+    heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo", ca: "Knuth-Plass: veure el paràgraf sencer", zh: "Knuth-Plass：通观整个段落", ar: "Knuth-Plass: النظر إلى الفقرة كاملة", ja: "Knuth-Plass：段落全体を見渡す", pt: "Knuth-Plass: o parágrafo inteiro de uma vez" },
   },
   resources: {
     slug: "document-format",
-    heading: { en: "Resources", es: "Recursos", ca: "Recursos", zh: "资源", ar: "الموارد", ja: "リソース" },
+    heading: { en: "Resources", es: "Recursos", ca: "Recursos", zh: "资源", ar: "الموارد", ja: "リソース", pt: "Recursos" },
   },
   tables: {
     slug: "configuration",
-    heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表スタイル" },
+    heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表スタイル", pt: "Estilo de tabela" },
   },
   singleInk: {
     slug: "configuration",
-    heading: { en: "Diagram style", es: "Estilo de diagramas", ca: "Estil dels diagrames", zh: "图示样式", ar: "نمط المخططات", ja: "ダイアグラムスタイル" },
+    heading: { en: "Diagram style", es: "Estilo de diagramas", ca: "Estil dels diagrames", zh: "图示样式", ar: "نمط المخططات", ja: "ダイアグラムスタイル", pt: "Estilo de diagramas" },
   },
   math: {
     slug: "document-format",
-    heading: { en: "Mathematical formulas", es: "Fórmulas matemáticas", ca: "Fórmules matemàtiques", zh: "数学公式", ar: "الصيغ الرياضية", ja: "数式" },
+    heading: { en: "Mathematical formulas", es: "Fórmulas matemáticas", ca: "Fórmules matemàtiques", zh: "数学公式", ar: "الصيغ الرياضية", ja: "数式", pt: "Fórmulas matemáticas" },
   },
   output: {
     slug: "architecture",
-    heading: { en: "Backend Interface", es: "Interfaz del backend", ca: "Interfície del backend", zh: "后端接口", ar: "واجهة المُخرِجات", ja: "バックエンドインターフェース" },
+    heading: { en: "Backend Interface", es: "Interfaz del backend", ca: "Interfície del backend", zh: "后端接口", ar: "واجهة المُخرِجات", ja: "バックエンドインターフェース", pt: "Interface dos renderizadores" },
   },
 };
 

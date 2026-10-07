@@ -1,0 +1,85 @@
+---
+title: "Romance em brochura: aberturas rebaixadas em página ímpar"
+summary: "Quincas Borba em brochura de 140 × 216 mm: capa pintada, colofão sem cabeços e cada capítulo rebaixado numa página ímpar sob um numeral romano em itálico."
+plain: "Os três primeiros capítulos de um romance brasileiro numa edição em brochura. Cada capítulo começa numa página da direita, mais abaixo, sob um número de capítulo grande."
+description: "Quincas Borba, de Machado de Assis, composto no Postext: capa pintada, colofão no verso, capítulos rebaixados na ímpar, pares em branco sem fólio e vinhetas."
+question: "Como faço para começar cada capítulo numa página ímpar, a um terço da altura, como num romance em brochura?"
+aliases: ["brochura", "livro em brochura", "romance", "abertura rebaixada", "capítulo rebaixado", "abertura de capítulo", "página ímpar", "página da direita", "recto", "página par em branco", "página em branco", "paridade", "versaletes", "primeira frase em versaletes", "vinheta de fecho", "florão", "ornamento", "colofão", "página de créditos", "ficha catalográfica", "capa", "cabeços por seção", "Kate Chopin", "The Awakening", "O despertar", "Machado de Assis", "Quincas Borba"]
+pageNotes: { "1": "A capa: o mar visto entre os troncos de duas árvores, um veleiro no horizonte e uma sombrinha branca subindo da praia por um caminho entre flores amarelas e brancas; abaixo, o título Quincas Borba em itálico grande e “Machado de Assis” em versaletes.", "2": "O colofão, em corpo pequeno no pé da página, sem cabeço nem fólio: “Publicado em livro por B. L. Garnier, Rio de Janeiro, em 1891.”", "3": "O capítulo I rebaixado numa página ímpar: um I em itálico, um fio curto vermelho-ferrugem, a primeira frase, “Rubião fitava a enseada, — eram oito horas da manhã.”, em duas linhas centralizadas de versaletes, e o texto a partir de 81 mm do topo; o capítulo termina na mesma página, com a vinheta de camomila.", "4": "Uma página par em branco, sem cabeço nem fólio, deixada para que o capítulo II abra numa página ímpar.", "5": "O capítulo II abre como o I, com a primeira frase, “Que abismo que há entre o espírito e o coração!”, quebrada depois de “há”, e cabe inteiro na página.", "7": "O capítulo III abre numa página ímpar depois de outra par em branco; a primeira frase, “Um criado trouxe o café.”, ocupa uma linha só, e o texto começa na mesma linha da grade das outras aberturas.", "8": "Uma página par com o fólio 8 e “Machado de Assis” em versaletes no cabeço; o capítulo III termina em “Vem comigo, leitor; vamos vê-lo, meses antes, à cabeceira do Quincas Borba.”, seguido da vinheta." }
+---
+
+## O que você vai compor
+
+Oito páginas de uma brochura de 140 × 216 mm trazem os três primeiros capítulos de *Quincas Borba* (1891), de Machado de Assis. A capa, uma pintura gerada com modelos de difusão e carregada como JPEG, mostra o mar entre os troncos de duas árvores: um veleiro no horizonte e uma sombrinha branca subindo da praia entre flores amarelas e brancas. O colofão fica no pé do verso da capa. Cada capítulo abre numa página ímpar com o texto a 81 mm do topo, sob um numeral em itálico de 48 pt, um fio vermelho-ferrugem de 18 mm e a primeira frase do capítulo em versaletes, centralizada e, quando ocupa duas linhas, quebrada pelo sentido. Os capítulos I e II, curtos, terminam nas próprias aberturas, nas páginas 3 e 5, com uma vinheta de camomila; as páginas 4 e 6 ficam em branco, sem cabeço nem fólio, e o capítulo III abre na página 7. Os cabeços trazem o autor nas páginas pares e o título em itálico nas ímpares; nestas oito páginas, só a página 8 leva cabeço.
+
+## Preparo
+
+### 1 · A abertura sai do título e do seu atributo
+
+O código é a [resposta curta](#a-resposta-curta) acima. Os capítulos de Machado não têm título, então cada título só traz o numeral (`# I`), que `{titleText}` imprime. `{attr.lead}` imprime o atributo `lead` do título, que guarda a primeira frase do capítulo; o parágrafo Markdown sob o título começa com a frase seguinte ([atributos de título](/pt/docs/document-format#atributos-de-título)). Texto de design não pode ser justificado, por isso a primeira frase fica centralizada, e o `\n` a quebra pelo sentido, depois de *enseada,* e depois de *há*; a primeira frase do capítulo III, *Um criado trouxe o café.*, cabe numa linha e não leva `\n`. Esse `\n` só quebra a linha quando `paragraphIndent` é maior que zero; com 0, a frase imprime os dois caracteres. A caixa da primeira frase começa nove linhas da grade abaixo do topo da mancha, e um `minHeight` de 12 linhas deixa uma linha em branco embaixo dela; sem `minHeight`, o texto começa logo abaixo da frase ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). `marginBottom: pt(0)` substitui a margem padrão de meio eme do nível, que empurraria o texto uma linha para baixo.
+
+`breakBefore` com paridade `'odd'` manda cada capítulo para uma página ímpar. A config repete isso porque qualquer objeto `headings` descarta a quebra padrão do nível ([quebrar antes](/pt/docs/configuration#quebra-antes)). Para forçar uma página ímpar onde não há título, escreva `:::pagebreak{parity="odd"}` no Markdown; numa diagramação de duas colunas ou mais, `:::columnbreak` passa o texto para a coluna seguinte ([`:::pagebreak`](/pt/docs/document-format#pagebreak)).
+
+### 2 · Uma página de brochura com linhas inteiras
+
+<Excerpt region="page" />
+
+A margem inferior é o que sobra dos 216 mm do refile depois da margem superior e de 35 linhas de 14 pt, então toda página cheia termina na mesma linha, a última da mancha, onde também termina o colofão da página 2. Com `mirror: true`, a margem interna de 20 mm cai do lado da lombada tanto nas ímpares quanto nas pares ([margens espelhadas](/pt/docs/configuration#margens-espelhadas)). A medida de 104,5 mm comporta uns 69 caracteres de Crimson Pro de 10,5 pt. O texto corrido mantém os espaços entre palavras entre 0,7 e 1,9 do normal; com o mínimo padrão de 0,6, uma linha destas páginas se fecha até 0,62. Ele também define `maxRuntTracking: 0`. Na edição em inglês, com o valor padrão, o parágrafo que termina em *nodding good-by to him.* é composto com uma linha a menos usando um tracking negativo que o canvas não pinta, e os espaços entre palavras saem esmagados.
+
+### 3 · Cabeços que pulam aberturas e páginas em branco
+
+<Excerpt region="heads" />
+
+`parity: 'even'` põe o autor em versaletes de Cormorant SC nas páginas pares, e `'odd'` põe o título em itálico nas ímpares; os fólios ficam na borda externa da mancha. `pages: 'body'` deixa os quatro elementos fora das aberturas e das páginas 4 e 6, as páginas pares em branco que a quebra com paridade acrescenta. Com `pages: 'all'`, a página 6 imprimiria *6* e *Machado de Assis*. As aberturas recebem no lugar um fólio no pé, um elemento de rodapé que `pages: 'opener'` restringe a elas ([elementos de texto](/pt/docs/configuration#elementos-de-texto)).
+
+### 4 · A capa é uma seção sem cabeços
+
+<Excerpt region="cover" />
+
+A capa é um título, `# Quincas Borba {style="cover"}`. O estilo dele põe a pintura nos 134 mm de cima, o título do frontmatter em 50 pt e o autor em versaletes. O estilo também vale para a seção que o título abre, as páginas 1 e 2, até o capítulo I. O `header` e o `footer` vazios tiram o fólio no pé da capa e os cabeços do colofão. A margem superior dele põe o colofão nas seis últimas linhas da grade da mancha, então a última linha do colofão fica na última linha da mancha, a 35ª da grade ([estilos de título](/pt/docs/configuration#estilos-de-título)). O estilo precisa de `span: 'page'` mesmo com uma só coluna. Um design preso à coluna é cortado no topo da coluna, aqui a 165 mm; sem `span: 'page'`, a pintura não seria impressa e o título perderia a parte de cima.
+
+<PageShot page={2} crop="0,0.7,1,0.24" caption="Página 2: o colofão no pé do verso da capa, sem cabeço nem fólio." />
+
+### 5 · Uma vinheta fecha cada capítulo
+
+<Excerpt region="tailpiece" />
+
+O tipo ornamento não tem prefixo de legenda, então a flor de camomila sai sem rótulo, com 17% da medida de largura, onde está `::resource{id="tailpiece-1"}` ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). Um elemento incorporado no texto mantém uma linha da grade acima dele, e o `:::space` que vem antes acrescenta uma segunda entre a última linha do capítulo e a flor ([`:::space`](/pt/docs/document-format#space)). As três vinhetas desenham o mesmo arquivo, `fleuron.svg`, sob três ids, porque um recurso só é posicionado uma vez.
+
+## Variações
+
+### Deixar o capítulo II seguir na página seguinte
+
+Com paridade `'any'`, o capítulo II abre na página 4, uma página par, o III na página 5, e o livro termina na página 6; o fólio no pé é centralizado na mancha, não na página, então nessa página par ele continua sob o meio do texto.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Marcar uma quebra de cena dentro de um capítulo
+
+Entre duas linhas `:::space`, a mesma flor marca uma quebra de cena, e o parágrafo seguinte começa sem recuo porque `indentAfterHeading` está desligado. Na edição em inglês, posta depois de *seemed long to him.*, a flor cai no pé da página 4; o segundo espaço já não cabe ali e é descartado. A quebra acrescenta quatro linhas, que empurram a vinheta do capítulo I sozinha para a página 6, sob um cabeço, então ajuste o texto do capítulo de novo depois de acrescentar uma.
+
+```diff
+ const resources = [
++  svg('break-1', 'fleuron.svg', 40, 12, 'A scene break.'),
+```
+
+```md
+That was why the morning seemed long to him.
+
+:::space
+
+::resource{id="break-1"}
+
+:::space
+
+“You are burnt beyond recognition,” he added, …
+```
+
+## Erros comuns
+
+- Com `'always-odd'`, uma página separadora em branco vem depois de cada seção, antes de qualquer preenchimento de paridade, então, na edição em inglês, o capítulo I passaria para a página 5, depois de duas páginas em branco, e o livro chegaria a dez páginas.
+- As páginas da edição em inglês foram ajustadas linha a linha. Com uma margem externa de 16 mm em vez de 15,5, a página 7 parte *after-din-ner* num segundo hífen e termina uma linha antes, a página 8 fecha um parágrafo com o fragmento *spondent.*, e a segunda vinheta cai numa nona página. Confira o pé de todas as páginas depois de mudar a medida, o corpo ou o rebaixamento.
+- Na edição em inglês, *Mr.* e *Mrs.* ficam presos ao nome por um espaço não separável (U+00A0). Na 1.4.1 ele se mantém em parágrafos simples, mas num parágrafo com itálico quebra como um espaço comum. O parágrafo que termina em *seemed long to him.* fica com um espaço comum, porque prender o nome ali abre a primeira linha dele até 2,2 vezes o espaço normal entre palavras.

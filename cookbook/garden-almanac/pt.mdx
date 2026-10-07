@@ -1,0 +1,65 @@
+---
+title: "Almanaque da horta: calendário e tabela deitada"
+summary: "Uma tabela de semeadura de 38 culturas deitada em duas páginas, um calendário calculado a partir de datas e uma matriz de consórcios pintada pela paleta."
+plain: "As páginas de março de um almanaque de horta, com um calendário do mês e tabelas coloridas. Mostra como montar tabelas a partir de dados e virar de lado uma tabela larga demais para a página."
+description: "Março num almanaque de horta italiano: um calendário montado com datas, uma matriz de consórcios em cores e uma tabela de semeadura deitada em duas páginas."
+question: "Como componho uma tabela larga deitada, em páginas próprias, com o cabeçalho repetido onde ela continua?"
+aliases: ["calendário", "almanaque", "calendário de plantio", "calendário de semeadura", "tabela deitada", "tabela em paisagem", "tabela girada", "gráfico de Gantt", "mapa de calor", "fases da lua", "italiano", "horta"]
+pageNotes: { "1": "A abertura de março: mudas em terra escura sob um céu claro, “Marzo” em corpo grande e um provérbio do campo, duas colunas de texto e depois o mês numa grade. Os domingos vêm em vermelho numa coluna creme, o domingo e a segunda-feira de Páscoa em rosa, e as quatro fases da lua aparecem desenhadas ao lado dos dias 8, 15, 22 e 30.", "2": "Um boxe azul-claro com as tarefas do mês em duas colunas, uma seção curta sobre consórcio de culturas com amostras de cor no texto e uma matriz de dez por dez com casas verdes marcadas +, casas rosa marcadas − e casas creme em branco, com o desenho de cada cultura na diagonal.", "3": "A tabela de semeadura, girada um quarto de volta para a esquerda: para lê-la, gire o livro no sentido horário. Como a página está, as culturas são colunas agrupadas por família, com os nomes no pé; as quinzenas do ano sobem pela página desde janeiro, logo acima dos nomes, até dezembro, no alto, e os cabeçalhos de estação e de mês formam uma faixa junto à borda esquerda. As datas de semeadura e de transplante formam barras de casas ocre, verdes e marrons, e o cabeçalho de março vem em vermelho.", "4": "A tabela continua a partir da família Liliacee com o cabeçalho repetido e “(segue)” depois da legenda, e termina com uma nota: no Sul se semeia antes e nas montanhas, depois." }
+---
+
+## O que você vai compor
+
+As páginas de março de um almanaque de horta escrito em italiano. A página 27 abre com uma aquarela de mudas em terra escura sob um céu claro, com o nome do mês a 84 pt e um provérbio do campo. Embaixo de duas colunas de texto vem o calendário do mês, que o pen calcula a partir de datas: domingos em vermelho numa coluna creme, o domingo e a segunda-feira de Páscoa em rosa e as quatro fases da lua desenhadas ao lado dos seus dias. A página 28 lista as tarefas do mês num boxe de duas colunas e pinta de verde, rosa ou creme uma matriz de consórcio de culturas de dez por dez, com o desenho de cada cultura na diagonal. As datas de semeadura do ano, 38 culturas por quinzena, são mais largas que a página, então a tabela gira um quarto de volta nas páginas 29 e 30 e repete o cabeçalho na segunda.
+
+## Preparo
+
+### 1 · Gire a tabela e deixe que ela continue
+
+O código está na [resposta curta](#a-resposta-curta), mais acima. `rotate: 'ccw'` faz da tabela uma flutuante com span de página, em páginas próprias ([Posição](/pt/docs/document-format#posicionamento)), com o cabeçalho voltado para a borda esquerda da página, e ela fica encostada na lombada tanto na página ímpar quanto na par. Ela é diagramada ao longo da altura da mancha, 227 dos seus 237 mm: as 47 linhas inteiras da grade de 14 pt que cabem, menos uma linha para o espaço da flutuante. As linhas da tabela se empilham na largura de 176 mm e, quando passam dela, a tabela é cortada entre duas linhas e continua na página seguinte sob as suas duas linhas de cabeçalho e a legenda, que termina em `(segue)` ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). Só uma flutuante pode girar ou se dividir: com `position: 'here'` a rotação é ignorada e a tabela nunca se divide. O cabeçalho tem três tipos de células mescladas: `Coltura` ocupa as duas linhas de cabeçalho, cada estação fica sobre os seus meses e cada mês sobre as suas duas quinzenas.
+
+### 2 · Um calendário calculado a partir de datas
+
+<Excerpt region="calendar" />
+
+Os números de dia de `Date.UTC` dão a cada data o seu dia da semana, e a grade começa na segunda-feira, 1º de março, e ocupa cinco semanas. A Páscoa vem do cômputo eclesiástico, e as fases da lua, do mês sinódico médio. Calculada assim, uma fase pode cair um dia antes ou depois, como a legenda avisa. O laço que desenha cada lua também escreve a data dela na legenda. A imagem de uma célula fica sempre acima do texto, por isso cada dia ocupa duas colunas, a da lua e a da data: uma lua na própria célula da data empurraria a data para baixo em apenas quatro dias. Domingos e feriados saem em vermelho por meio de um estilo de chip que muda só a cor, e as notas são chips na metade do tamanho. Um dia sem nota recebe um word joiner (U+2060) como segunda linha, o que mantém as cinco semanas com a mesma altura.
+
+### 3 · Pinte a matriz a partir de símbolos colados
+
+<Excerpt region="matrix" />
+
+Os pares são digitados como TSV, um símbolo por célula. No postext 1.4.1, `parseTSV` cria células simples e deixa `headerRowCount` sem valor, então `headerRowCount: 1` é acrescentado à mão para que a linha com os nomes das culturas seja o cabeçalho. Os pesos de `columnWidths` são milímetros da medida de 176 mm: 26 para os nomes, 15 para cada cultura. Cada símbolo nomeia uma entrada da paleta, que `setCellBackground` põe como preenchimento da célula; o `+` e o `−` também são impressos, num chip a 1,4 em, para que a matriz continue legível numa cópia em tons de cinza. A diagonal junta cada cultura com ela mesma, e ali `setCellImage` põe o desenho da cultura, a 62 % da largura interna da célula.
+
+### 4 · Faça a legenda das cores com amostras
+
+<Excerpt region="resources" />
+
+`:swatch{color="leaf"}` compõe um quadrado de três quartos do corpo, preenchido com uma entrada da paleta e contornado na cor do texto; estas páginas o usam no texto corrido, em duas legendas e numa nota. A chave de cores da tabela de semeadura vai na legenda, porque cada parte de uma tabela dividida repete a legenda, e a nota sai só embaixo da última parte. O calendário é um tipo de recurso próprio com prefixo de legenda vazio, e a legenda dele começa pela chave de cores em vez de um rótulo `Tabella`. `position: 'bottom'` com `span: 'page'` põe o calendário e a matriz na largura das duas colunas, no pé das suas páginas. A página 28 é a última página de texto. Numa página assim, a 1.4.1 sobe uma flutuante de largura total até uma linha abaixo do texto, por isso a matriz termina 10 mm acima da margem inferior.
+
+### 5 · Um estilo da casa e uma variante por tabela
+
+<Excerpt region="styles" />
+
+`tableStyle` define o estilo da casa: um cabeçalho cor de tinta com rótulos cor de papel em Commissioner, fios finos entre as linhas e os textos de continuação em italiano, que a 1.4.1 só traz em inglês e espanhol. Cada estilo nomeado declara só o que a sua tabela muda. O calendário compõe os dias em Gilda Display a 15 pt; a matriz tira o preenchimento do cabeçalho; a matriz e a tabela de semeadura desenham fios de grade na cor do papel, com 2 pt e 1 pt, que cortam os preenchimentos em casas.
+
+### 6 · O mês abre com uma pintura
+
+<Excerpt region="opener" />
+
+O título de nível 1 é desenhado a partir de um encaixe de elementos. A aquarela é um elemento de imagem no alto da página, e o chapéu, o provérbio e a fonte dele vêm dos atributos do título. Na 1.4.1 um elemento de imagem não reserva altura, e `minHeight` compensa isso: 92 mm de pintura mais 5 mm de respiro, menos os 22 mm da margem superior, dão 75 mm, que se arredondam para cima em 16 linhas de 14 pt (79 mm). A primeira linha de texto fica a 101 mm do alto da página, 9 mm abaixo da terra. O título se desloca 1,5 mm para a esquerda, o espaço lateral do M da Gilda Display a 84 pt, e a serifa do M se alinha com o chapéu; o provérbio volta a mesma medida.
+
+## Variações
+
+### Gire a tabela no sentido horário
+
+O cabeçalho passa a ficar voltado para a borda direita da página, e o leitor gira o livro para o outro lado.
+
+```diff
+-const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
++const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+```
+
+## Erros comuns
+
+- Uma imagem numa célula de tabela é sempre desenhada acima do texto da célula e com o mesmo alinhamento dele. Para pôr um ícone ao lado de um número, dê ao ícone uma coluna própria, como o calendário faz com a lua.
+- A nota embaixo de uma tabela dividida aparece só na última parte, então uma chave de cores de que todas as partes precisam deve ir na legenda.

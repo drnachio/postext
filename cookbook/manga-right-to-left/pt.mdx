@@ -1,0 +1,48 @@
+---
+title: "Mangá da direita para a esquerda, letreirado na vertical"
+summary: "Duas páginas de mangá desenhadas para leitura da direita para a esquerda: artDirection rtl mantém a ordem dos quadros em cada edição; o japonês vai em colunas."
+plain: "Duas páginas de um quadrinho japonês. As páginas em japonês trazem o texto de cima para baixo em colunas estreitas; as outras edições mantêm a ordem japonesa dos quadros, começando no alto à direita."
+description: "Um mangá de kendô de duas páginas no Postext: o original japonês letreirado em colunas verticais e outras seis edições lidas da direita para a esquerda."
+question: "Como diagramo um mangá que se lê da direita para a esquerda, com o japonês na vertical dentro dos balões?"
+aliases: ["mangá", "manga", "漫画", "右綴じ", "da direita para a esquerda", "leitura oriental", "sentido oriental", "mangá não espelhado", "tategaki", "縦書き", "balões verticais", "espelhamento", "flopping", "artDirection", "readingDirection", "Zen Antique", "furigana", "tate-chu-yoko"]
+pageNotes: { "1": "O original japonês, página 1: um dojô ao anoitecer na primeira fileira, com uma legenda no canto superior direito; abaixo, Hana brandindo a espada à direita e Sora na porta à esquerda, todos os balões em colunas verticais.", "3": "A edição brasileira, página 1: os mesmos quadros nos mesmos lugares, com os balões refeitos em volta de linhas horizontais em português: a legenda “Véspera do 42º Torneio Provincial.”, o “Mais cinquenta…!” de Hana, o “Nossa, a Ichinose não para…” de Sora na porta e, no último quadro, “D-desculpa! É um amuleto do santuário da minha vó.”" }
+---
+
+## O que você vai compor
+
+As duas páginas de abertura de um mangá de kendô, 前の晩 (*A noite anterior*), escrito para a receita e desenhado em preto e branco: Hana treina sozinha na véspera do torneio da província, Sora lhe leva um amuleto do santuário e o técnico manda os dois para casa. Primeiro vem o original japonês, letreirado como numa revista semanal: letra antiga (kana num corte Mincho, kanji num corte Gothic), balões mais altos que largos, nenhum ponto final no fim de um balão. Na frente, as mesmas duas páginas no idioma desta página (em inglês na página japonesa), ainda lidas a partir do quadro do alto à direita, como o mangá licenciado é publicado desde o começo dos anos 2000. O formato é B6, 128 × 182 mm, o tamanho do tankōbon.
+
+## Preparo
+
+### 1 · Ler no sentido em que o desenho foi feito
+
+O código é [a resposta curta](#a-resposta-curta) acima. Um mangaká compõe cada página a partir do alto à direita: o primeiro quadro, o primeiro personagem que fala e o percurso do olhar por uma fileira começam ali. `artDirection: 'rtl'` informa isso ao motor, e com o sentido de leitura em `'auto'` todas as edições seguem o desenho; uma edição árabe seria lida da direita para a esquerda de qualquer forma. O desenho nunca é espelhado. As editoras ocidentais espelhavam o mangá até mais ou menos 2002, e os leitores viam todo espadachim virar canhoto e todo quimono se cruzar ao contrário; deixar as páginas como foram desenhadas custa ao leitor um hábito, enquanto espelhá-las custa o desenho. Cada `:::page` traz a sua divisão, `30 / 34 [46 | *] / * [44 | *]`, e a primeira célula de cada fileira é posta à direita (<Feature id="comic-reading-direction">sentido de leitura</Feature>).
+
+### 2 · Marcar cada personagem uma vez, sobre o desenho
+
+<Excerpt region="art" />
+
+As palavras mudam com o idioma; o desenho, não. Cada imagem de quadro tem uma área segura que todo recorte preserva e, para cada personagem, uma boca (para onde aponta o rabicho da fala), uma cabeça (para os balões de pensamento) e um rosto que nenhum balão pode cobrir, tudo em frações da imagem. Uma linha do roteiro indica quem fala, `sora: …`, e o motor põe o balão perto desse personagem em qualquer idioma. Quem fala sem estar na imagem, como Sora quando o técnico aparece na porta, recebe um rabicho até a borda do quadro: `sora{tail=bottom}`.
+
+### 3 · Dar a cada idioma os seus balões
+
+<Excerpt region="balloons" />
+
+Os estilos dizem que tipo de voz um balão carrega: um oval simples para a fala, um contorno tracejado para o sussurro, uma nuvem para o pensamento, uma caixa cinza para a voz interior de Hana. Como as palavras se acomodam dentro é assunto de cada edição. Em japonês o motor compõe colunas de no máximo oito caracteres, tira o 。 que fecha um balão e mantém o 、, põe de pé num só quadratim os dois algarismos de 第42回 (`:tcy[42]`) e junta `!?` lado a lado numa única célula. O roteiro dá a leitura de cada nome na primeira vez que ele aparece, `{一ノ瀬|いちのせ}`, como o mangá imprime furigana sobre os nomes. Em português, os mesmos balões viram ovais em volta de linhas horizontais, e a ordem deles continua começando pela direita.
+
+### 4 · Carregar as fontes de cada edição com as suas palavras
+
+<Excerpt region="fonts" />
+
+A Zen Antique e a Dela Gothic One vêm em cerca de cem arquivos cada uma, um por faixa de caracteres: cada fonte é carregada com as palavras que compõe, os balões no caso da primeira e as onomatopeias no da segunda, e assim a página baixa só os arquivos de que precisa. `loadComicFonts` declara o negrito de um grito e o itálico de uma voz interior a partir dos arquivos que essas fontes de fato têm, então a tela e o PDF desenham as mesmas letras.
+
+### 5 · Pôr o original ao lado de cada edição
+
+<Excerpt region="editions" />
+
+Cada idioma deste site tem a sua edição das duas páginas, escrita no próprio `content.<lang>.md`, e cada edição fica de frente para o original japonês: `/* @content@ja */` insere `content.ja.md` em todas as edições, e a página japonesa faz par do original com o letreiramento em inglês. A edição chinesa também é composta em colunas, porque um livro que abre pela direita não mistura balões verticais e horizontais; a árabe é lida da direita para a esquerda pelo próprio sentido da escrita.
+
+## Erros comuns
+
+- Ponha à direita o primeiro personagem a falar num quadro. Os balões seguem a ordem de leitura, então, no quadro em que Sora entrega o amuleto, o roteiro dá a primeira fala a Hana, que está à direita. Com Sora falando primeiro, os balões dele ficam do lado dele no quadro, mas as colunas japonesas não deixam espaço embaixo para a resposta de Hana: ela fica ao lado deles, à direita, e é lida primeiro.
+- Um balão que não encontra espaço no quadro pode atravessar a borda, e o motor avisa (`comicBalloonOverflow`). Dê uma célula maior ao quadro cheio na divisão antes de encurtar o diálogo.

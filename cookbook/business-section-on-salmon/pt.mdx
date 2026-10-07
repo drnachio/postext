@@ -1,0 +1,68 @@
+---
+title: "Um caderno de economia em papel salmão"
+summary: "Diário berliner de oito páginas cujo caderno de economia usa um só estilo de título: papel salmão, seis colunas, destaque petróleo e um :::paper para o Folio."
+plain: "Oito páginas de um jornal diário inventado. As quatro primeiras são de notícias, em papel branco acinzentado; as páginas de economia que vêm depois saem em papel salmão, com colunas mais estreitas e cores próprias."
+description: "Um diário berliner no Postext, com o código: notícias em cinco colunas e um caderno de economia salmão em seis, com mercados, gráficos e o papel do Folio."
+question: "Como faço para imprimir o caderno de economia de um jornal em papel salmão, com grade própria, também em 3D?"
+aliases: ["páginas salmão", "papel salmão", "papel rosa", "caderno de economia", "páginas de finanças", "caderno de jornal", "seção de jornal", "berliner", "cotações", "ações", "dados de mercado", "jornal dobrado", "cor do caderno", "salmon pages"]
+pageNotes: { "1": "A primeira página do The Marrowick Ledger: o cabeçalho entre uma orelha cinza com a previsão do tempo e outra salmão que remete às páginas de economia, a manchete Barrier holds back the Marrow’s highest tide in forty years, uma foto de comportas de aço numa tempestade nas cinco colunas, a matéria em cinco colunas com fios, uma segunda matéria sobre os bondes noturnos e uma faixa salmão de chamadas no pé.", "5": "A capa do caderno de economia em papel salmão: o título Business em petróleo, uma faixa com seis fechamentos de mercado, a manchete Harbour board backs £640 million deep-water terminal, um porto de contêineres ao amanhecer na largura da página, um boxe flutuante de números em duas colunas, um gráfico de barras em outras duas, seis colunas de texto e um anúncio de banco no pé.", "8": "Cotações: uma coluna Your money com uma tabela das melhores aplicações e, depois, dez setores de cotações de ações em cinco colunas estreitas, sobre um anúncio de uma sociedade de crédito imobiliário." }
+---
+
+## O que você vai compor
+
+Oito páginas do *The Marrowick Ledger*, um diário inventado, na folha berliner de 315 × 470 mm. As páginas 1 a 4 trazem as notícias em papel-jornal branco acinzentado, em cinco colunas com fios, com uma etiqueta vermelha de seção em cada página. A partir da página 5, o papel muda. O caderno de economia sai em papel salmão, como as páginas de finanças saem há bem mais de um século: a página passa a #f2d3c0, a grade aperta para seis colunas, o destaque passa do vermelho ao petróleo, e uma faixa com os fechamentos do dia no mercado fica sob o título do caderno. Dentro dele há uma página de mercados com um ano do índice da cidade, um gráfico por setores e quatro tabelas, notícias de empresas e uma página de cotações. Na visualização 3D do Folio, as folhas se dobram uma dentro da outra e as últimas quatro páginas saem num papel salmão.
+
+## Preparo
+
+### 1 · Dois papéis numa só paleta
+
+<Excerpt region="palette" />
+
+Cada cor da configuração está vinculada a uma das oito entradas da paleta. As páginas de notícias usam `paper` (#f6f4ef) para a página e `accent` (#b3261e) para etiquetas, chapéus e marcas dos gráficos. As páginas de economia mantêm esses vínculos e mudam os valores: a paleta do caderno põe `paper` em salmão, `accent` em petróleo (#0f4c5c) e `tint` num salmão mais escuro. `salmon` também tem uma entrada própria, para a orelha e a faixa de chamadas da página 1, que continuam salmão sobre as páginas brancas.
+
+### 2 · Um estilo de título faz de uma página uma página de economia
+
+O código está [na resposta curta](#a-resposta-curta), mais acima. `# Markets {style="business"}` abre uma seção, e as páginas dela recebem a `palette`, o `layout` e o `bodyStyle` do estilo: seis colunas com medianiz de 4 mm (45,2 mm cada, contra 54,6 mm nas notícias) e o texto em 8,8 pt sobre a mesma entrelinha de 11,4 pt. A cor da página também segue a paleta. `page.backgroundColor` está vinculado a `paper`, e quando a paleta de uma seção dá outro valor a `paper`, todas as páginas da seção são pintadas com ele: a página que o título abre e qualquer página para onde o texto dela continue. Assim, as páginas de economia ficam salmão de borda a borda, e o fio de coluna, que o `layout` do estilo deixa como o documento define, corre entre as seis colunas como corre entre as cinco.
+
+### 3 · Toda página abre com uma etiqueta
+
+<Excerpt region="flags" />
+
+O H1 é uma abertura na largura da página com paridade `'any'` em `breakBefore`, então cada título abre a página seguinte, seja de que lado for. O design dele é uma etiqueta sobre uma barra de 3 pt, com três linhas da grade de altura. A linha do fólio é um cabeçalho ancorado a 9 mm da borda superior: número da página, nome do jornal e data do lado de fora, `{chapterTitle}` do lado de dentro na cor de destaque, que a paleta deixa petróleo nas páginas salmão.
+
+### 4 · Fotos e gráficos em k colunas
+
+<Excerpt region="floats" />
+
+`top(3)` é `placement: { position: 'top', columns: 3 }`: a foto do estaleiro ocupa três das cinco colunas de notícias, a balsa quatro, a padaria três das seis colunas de economia e o gráfico do porto duas. Um flutuante citado num parágrafo da coluna 1 ocupa o alto das colunas seguintes que ainda estão vazias, então essas fotos começam na coluna 2 e a matéria desce ao lado delas. Uma foto assim só fica com a sua matéria enquanto nenhuma outra matéria for composta embaixo dela naquela página: uma matéria na largura da página colocada depois pode levar a foto para a faixa dela ou para a página seguinte. Por isso as páginas 2 e 3 fecham com um anúncio flutuando no pé, e não com mais uma matéria. As fotos que ocupam a página toda ficam na linha (`here`), dentro do boxe da manchete, sob o título. As tabelas também ficam no fluxo, dentro de boxes na largura da página, no pé.
+
+### 5 · Manchetes, painéis, dados e anúncios são boxes
+
+<Excerpt region="boxes" />
+
+Uma manchete na largura da página é um boxe sem moldura com um H2 num de três tamanhos, e um fio de 1 pt acima dele marca a matéria seguinte. Na página 5, o painel *The terminal in numbers* flutua sobre duas das seis colunas (`columns="2"` na cerca), e o olho destacado da página 4 faz o mesmo com `columns: 2` no estilo. Os boxes de dados trazem de duas a quatro tabelas lado a lado num grupo `:::columns`, e os anúncios são boxes na largura da página flutuando no pé, com uma moldura de fio de 0,75 pt.
+
+### 6 · O papel em que o Folio imprime
+
+As páginas de notícias não precisam de nada: `folio.paper` é papel-jornal de 45 g/m², e `binding: { type: 'folded', cover: 'pages' }` encaixa as duas folhas dobradas uma na outra, com a página 1 por fora e a página 8 como contracapa. As páginas de economia ficam num só bloco:
+
+```markdown
+:::paper{type="newsprint" shade="#faede6"}
+# Business {style="business-front"}
+…
+# Share prices {style="business"}
+…
+:::
+```
+
+Cada página do bloco leva `page.paper` com esse tom, e o Folio a imprime nesse papel. O tom é a cor da página levada 60 % do caminho até o branco (README §4): a página plana já pinta #f2d3c0, e um papel salmão inteiro por baixo a tingiria duas vezes. O canvas, o HTML e o PDF ignoram `:::paper` e pintam a cor da página, e é por isso que a paleta do caderno também define `paper`.
+
+## Variações
+
+### Trocar o papel e manter a grade
+
+Um estilo de título com `palette` e sem `layout` mantém as cinco colunas com fios do documento e ainda assim pinta todas as páginas da sua seção: `{ id: 'weekend', palette: { paper: '#efe6cf' } }` põe um suplemento de fim de semana em papel-jornal creme. Ponha as páginas dele também num bloco `:::paper`, com o tom levado 60 % do caminho até o branco, para que o Folio as imprima num papel combinando.
+
+### Fazer do caderno de economia um encarte destacável
+
+As oito páginas se dobram em duas folhas, uma dentro da outra: as páginas 1–2 e 7–8 na folha externa, 3–6 na interna. O Folio dá a cada folha o papel da sua página ímpar, então as páginas 7–8 saem salmão, embora uma rotativa as imprimisse na mesma folha que a primeira página. Mova as páginas de economia para 3–6 e elas formam a folha interna, que a rotativa pode rodar em papel salmão e o leitor pode tirar inteira.

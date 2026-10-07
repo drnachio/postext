@@ -1,0 +1,51 @@
+---
+title: "Edição magrebina de um texto árabe, com algarismos europeus"
+summary: "Capítulo árabe impresso para o Marrocos: locale 'ar-MA' mantém o texto da direita para a esquerda, a lombada à direita, e grafa os números gerados 1, 2, 3."
+plain: "No Marrocos, na Argélia e na Tunísia, os livros em árabe imprimem os números com os algarismos usados na Europa, 1, 2, 3, e não com ١، ٢، ٣. Um só ajuste, o idioma e o país do documento, dá esses algarismos ao livro inteiro."
+description: "Um capítulo árabe para uma edição marroquina no Postext: ar-MA dá algarismos europeus a fólios, títulos, listas, notas e figuras, e mantém a lombada à direita."
+question: "Como imprimo algarismos europeus (1, 2, 3) num livro árabe para uma edição do Magrebe?"
+aliases: ["Magrebe", "Marrocos", "ar-MA", "algarismos europeus", "algarismos arábicos ocidentais", "algarismos indo-arábicos", "algarismos árabes", "numeração", "latn", "Fez", "zellige", "azulejos", "أرقام", "المغرب"]
+pageNotes: { "1": "A abertura do capítulo, página 41: الفصل 3: أبواب فاس em letras cúficas verdes, dois parágrafos de árabe justificado com os anos 789 e 809 em algarismos europeus e, abaixo, uma faixa de zellige, estrelas cobalto de oito pontas sobre verde com quadrados ocre, com a legenda شكل 3-1." }
+---
+
+## O que você vai compor
+
+Um capítulo de um guia das cidades antigas do Marrocos, sobre as portas de Fez, como uma editora marroquina o imprimiria: 13,5 × 21 cm, Noto Naskh Arabic em 12,5 pt e títulos em Noto Kufi Arabic no verde dos azulejos de Fez. O texto corre da direita para a esquerda e o livro é encadernado pela direita, como qualquer livro árabe, mas todo número da página é escrito 1, 2, 3: os fólios de 41 a 44, الفصل 3, as seções 3-1 e 3-2, a lista de portas de 1- a 5-, as chamadas de nota (1) e o número de figura شكل 3-1. É o uso do Magrebe, do Marrocos à Tunísia, e a página o mostra com um único ajuste. <RecipeLink slug="arabic-novel-right-bound">Um romance árabe encadernado pela direita</RecipeLink> mostra o mesmo livro com os algarismos ١٢ do Mashreq.
+
+## Preparo
+
+### 1 · O país escolhe os algarismos
+
+O código é [a resposta curta](#a-resposta-curta) acima. `numerals` fica em `'auto'`, e o motor tira os algarismos da etiqueta: `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` e `ar-EH` dão algarismos europeus; `ar` sozinho e as regiões do Mashreq dão ١٢٣ ([Algarismos e estilos de numeração](/pt/docs/arabic-layout#algarismos-e-estilos-de-numeração)). Só mudam os números que o motor escreve: o fólio, os contadores dos títulos, os números da lista, as chamadas de nota, os números de figura. Os anos do texto, 789 e 1913, são do autor, digitados com os algarismos da edição, e o motor nunca os reescreve. O `{startAt=3}` do título aceita tanto ٣ quanto 3, então o mesmo Markdown serve às duas edições.
+
+### 2 · Os sinais em volta dos números
+
+<Excerpt region="marks" />
+
+Os livros árabes escrevem o número de lista seguido de um hífen, 1-, e a chamada de nota entre parênteses, (1); os dois modelos usam os algarismos do documento, e assim a edição do Mashreq imprime ١- e (١) com as mesmas configurações ([Notas de rodapé](/pt/docs/arabic-layout#notas-de-rodapé)). O rótulo da legenda termina em dois-pontos, شكل 3-1:, porque um ponto depois de um número é lido como separador decimal. As notas recomeçam em (1) a cada página, como a maioria dos livros árabes as numera.
+
+### 3 · Uma faixa de azulejos desenhada em código
+
+<Excerpt region="art" />
+
+A figura é um SVG gerado no próprio script: estrelas de oito pontas feitas de dois quadrados girados 45° e quadrados pequenos entre elas, no verde, no cobalto e no ocre da paleta. A legenda é em árabe nas duas edições, numerada pelo capítulo, `{h1}-{n}`, como os tipos de recurso árabes numeram as suas figuras.
+
+## Variações
+
+### Imprimir os algarismos do Mashreq
+
+A edição egípcia ou levantina do mesmo capítulo: muda a etiqueta, não o Markdown.
+
+```diff
+-  locale: 'ar-MA',
++  locale: 'ar-EG',
+```
+
+### Manter a etiqueta marroquina e imprimir ١٢٣
+
+Um ajuste escrito explicitamente prevalece sobre o padrão da região.
+
+```diff
+   locale: 'ar-MA',
++  numerals: 'arab',
+```

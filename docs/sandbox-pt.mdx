@@ -1,0 +1,846 @@
+{/* docs/sandbox-pt.mdx */}
+
+export const metadata = {
+  title: 'Sandbox',
+  sidebarTitle: 'Sandbox',
+  description: 'Ambiente interativo para experimentar com o motor de layout do Postext',
+  lang: 'pt',
+  lastUpdated: '2026-10-07',
+  readingTime: '15 min',
+  order: 11,
+  plainSummary: "O Sandbox é uma ferramenta gratuita deste site para experimentar o Postext sem instalar nada. Você escreve o texto de um lado e vê as páginas prontas do outro, e elas mudam enquanto você digita. Dá para escolher fontes, tamanhos de página, colunas e cores, e incluir imagens. Você pode organizar o trabalho como um livro com capítulos e baixá-lo em PDF ou como livro digital EPUB. O trabalho é salvo no seu próprio navegador à medida que você avança.",
+};
+
+# Sandbox
+
+**Um ambiente interativo para o motor de layout do Postext.**
+
+O Sandbox oferece uma interface de editor em que você escreve o texto, gerencia os recursos e as fontes, ajusta o design e vê o resultado em tempo real em cinco visualizações sincronizadas: **canvas**, **PDF**, **Folio** (o livro impresso em 3D), **HTML** e **EPUB 3**. Ele foi feito para experimentar. Você pode mudar a tipografia ou o número de colunas, testar outras posições para as figuras e observar como o motor responde. Os painéis usam o vocabulário do ofício editorial (livros, figuras, boxes, cabeços) em vez de termos do motor, para que quem vem do mercado editorial se oriente sem conhecer o esquema de configuração. Todos os controles podem ser usados pelo teclado e por leitores de tela.
+
+## Disposição da interface
+
+O Sandbox tem três áreas principais: uma **barra de atividades** estreita para trocar de painel, uma **barra lateral** redimensionável com o painel ativo e uma **área de visualização** à direita com as abas de saída. Os cabeçalhos dos painéis, a barra de abas da área de visualização e a célula do logotipo, no alto da barra de atividades, têm a mesma altura, de modo que a faixa superior se lê como um único fio de um lado a outro da janela.
+
+<Illustration name="SandboxLayout" data='{"title": "Interface do Sandbox", "desc": "Barra de atividades à esquerda com seis painéis identificados, barra lateral redimensionável no centro e área de visualização à direita com as abas Canvas, PDF, Folio, HTML e EPUB 3.", "caption": "Três áreas: barra de atividades, barra lateral redimensionável e área de visualização com as abas de saída.", "activityBar": "Atividades", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Livros", "Texto", "Recursos", "Fontes", "Design", "Verificações"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "painel ativo", "viewportTitle": "Visualização", "tabs": ["Canvas", "PDF", "Folio", "HTML", "EPUB 3"], "resizeHint": "arraste para redimensionar"}' />
+
+### Barra de atividades
+
+Uma faixa estreita na borda esquerda tem um botão por painel. Cada botão mostra um ícone com um rótulo de uma palavra embaixo, e uma dica mais longa como tooltip (a mesma dica é a descrição acessível do botão). De cima para baixo:
+
+- **Livros** (ícone `Files`): os seus livros e os livros de exemplo
+- **Capítulos** (ícone `BookOpen`): o livro aberto e os seus capítulos
+- **Texto** (ícone `FileCode`): escrever e editar o texto do capítulo atual
+- **Recursos** (ícone `FolderOpen`): imagens, desenhos SVG e tabelas usados no livro
+- **Fontes** (ícone `Type`): as famílias tipográficas que o livro usa e os seus próprios arquivos de fonte
+- **Design** (ícone `Settings2`): configurações de página, tipografia, títulos, figuras, boxes e exportação
+- **Verificações** (ícone `AlertTriangle`): problemas de composição encontrados na diagramação. O ícone traz um selo com a contagem dos avisos atuais, limitada a `99+`.
+
+Clicar no botão do painel ativo recolhe a barra lateral, e clicar em outro botão troca para aquele painel. A barra é uma única parada de tabulação: as setas (↑ / ↓, voltando ao início), **Home** e **End** movem o foco entre os botões, e Enter ou Espaço abre o painel em foco.
+
+O aplicativo hospedeiro pode acrescentar itens próprios à barra: um **link opcional com o logotipo** na célula superior (pelas props `homeUrl` ou `homeLink`), e um **seletor de tema** e um **seletor de idioma** na parte de baixo. Livros inteiros são trocados como arquivos `.postext` pelo painel Livros, e os cabeçalhos dos painéis Texto e Design exportam a sua própria parte (veja [Exportar e importar](#exportar-e-importar)).
+
+### Painéis da barra lateral
+
+A barra lateral pode ser redimensionada. Arraste o separador entre a barra lateral e a área de visualização, ou dê foco a ele com Tab e use o teclado: ← / → mudam a largura em 2 % (10 % com Shift), e **Home** / **End** levam à largura mínima e à máxima. O separador anuncia o valor atual aos leitores de tela, e a área de visualização sempre mantém pelo menos 200 px. A barra lateral se recolhe por completo quando nenhum painel está ativo, e a largura dela é lembrada entre sessões.
+
+As linhas de configuração põem o rótulo ao lado do controle, ou acima dele quando a barra lateral está estreita. Isso usa container queries, então acompanha a largura da barra lateral, não a da janela.
+
+#### Painel Texto
+
+Um editor CodeMirror 6 para o Markdown do capítulo. Os leitores de tela o anunciam como *Texto do capítulo*. Ele tem:
+
+- **Realce de sintaxe**: títulos, ênfase, links, blocos de código e citações se distinguem visualmente, com realce próprio para o **front matter YAML**, as regiões de **fórmulas LaTeX**, os **chips no texto** (`:chip[…]`: os colchetes e os atributos ficam marcados e o texto do chip ganha uma cor), os **versaletes** (`:smallcaps[…]`: os colchetes ficam marcados e o texto aparece em versaletes), as **marcas de orientação** do texto vertical (`:tcy[…]`, `:upright[…]`, `:sideways[…]`: os colchetes marcados, o texto com um sublinhado pontilhado) e as **anotações chinesas** (`:dots[…]`, `:name[…]` e `:book[…]` com as marcas desenhadas sob o texto; `:ruby[…]{rt="…"}` e `{紅樓|hóng|lóu}`; `:warichu[…]` com a nota em corpo menor). Digitar `:do`, `:na`, `:bo`, `:ru` ou `:wa` oferece a diretiva
+- **Completar chips**: digitar `:c` no início de uma palavra oferece `:chip[…]` (o cursor fica entre os colchetes). Dentro de `{style="…"}` são oferecidos os ids dos estilos de chip configurados.
+- **Completar versaletes**: digitar `:sm` no início de uma palavra (ou logo depois de `*` / `_`) oferece `:smallcaps[…]`, com o cursor entre os colchetes.
+- **Números de linha** e realce da linha ativa
+- **Quebra automática de linha** para parágrafos longos
+- **Linhas da direita para a esquerda**: uma linha cujo texto começa com uma letra árabe ou hebraica corre da direita para a esquerda, e o cursor e as setas acompanham esse sentido. A marcação dentro dela (atributos `{…}`, rótulos `[^id]`, o nome de uma diretiva, um `:ref[fig-1]` inteiro, fórmulas, código, destinos de links) continua da esquerda para a direita, para ser lida como foi digitada. Cercas de código, front matter e linhas que começam com uma palavra latina continuam da esquerda para a direita, como antes.
+- **Barra de ferramentas**: começa com **Desfazer / Refazer**, seguidos de negrito, itálico, títulos de nível 1 a 3, link, código na linha, **chip** (envolve a seleção em `:chip[…]`), **versaletes** (envolve a seleção em `:smallcaps[…]`), citação, listas numeradas e com marcadores, e mais três botões que inserem diretivas:
+  - `:::pagebreak`
+  - `:::space`: uma linha de espaço vertical (`:::space{lines=N}` para mais)
+  - `:::numbering{format="decimal" startAt=1}`: inserido com atributos de exemplo que você pode ajustar
+
+Aplicações hospedeiras podem acrescentar botões próprios à barra de ferramentas por meio de `extraActions`. O editor também informa o cursor e a seleção às visualizações, o que permite sincronizar o cursor pelo clique: clicar no texto renderizado leva o cursor à posição correspondente no Markdown, e as visualizações podem destacar a seleção atual.
+
+O cabeçalho do painel é um **seletor de capítulos**: setas de anterior/próximo, a posição e o título do capítulo e um menu com todos os capítulos do livro, cada um com seu intervalo de páginas assim que a paginação dele é conhecida (veja [Livros e capítulos](#livros-e-capítulos)). Cada capítulo tem sua própria instância do editor, então o histórico de desfazer e a posição do cursor são guardados por capítulo. O cabeçalho oferece ainda três ações:
+
+- **Redefinir** (pede confirmação): recarrega a **parte do documento** do livro de exemplo aberto. Todos os capítulos e o conjunto inteiro de figuras são substituídos pelos do exemplo (no exemplo embutido, o documento de exemplo e os recursos de exemplo do idioma). O design não é alterado, exceto pelas fontes próprias do exemplo. Veja [Painel Livros](#painel-livros).
+- **Exportar**: baixa o capítulo ativo como um arquivo `.md` simples, chamado `<book>-<nn>-<chapter>.md` num livro de vários capítulos e, nos demais casos, com o nome do livro aberto ou `document.md`
+- **Importar**: substitui o capítulo ativo pelo conteúdo de um arquivo `.md`
+
+#### Painel Livros
+
+O primeiro painel da barra de atividades: a galeria dos seus livros e dos livros de exemplo, com o menu **Novo**, o estado da última operação e a faixa de aviso de um livro de exemplo que tem uma versão nova. No código e no armazenamento, um livro ainda se chama *project* (projeto), e um livro de exemplo, *preset* (predefinição).
+
+Clicar num livro (ou numa das etiquetas de idioma de um livro de exemplo) o abre e, quando ele aparece na tela, a barra lateral passa para o [painel Capítulos](#painel-capítulos). Clicar no livro que já está aberto leva direto para lá. Os menus das linhas (renomear, duplicar, baixar, ocultar, excluir) nunca mudam de painel. O livro aberto continua marcado na lista. O painel tem dois grupos:
+
+- **Meus livros**: livros locais e editáveis, guardados no navegador (IndexedDB). O aberto fica marcado; os capítulos dele estão no painel Capítulos.
+
+  Enquanto um livro seu está aberto, o documento de trabalho *é* esse livro. Toda edição no texto, no design, nas figuras e nas fontes é salva nele automaticamente (com o mesmo atraso de 1 segundo do `localStorage`), então você pode trocar de livro e voltar sem perder nada. Os livros são criados pelo menu **Novo** do cabeçalho:
+    - **Cópia do livro aberto** copia o livro aberto, suas figuras e suas fontes para um livro novo.
+    - **Livro em branco** começa um livro vazio.
+    - **Abrir um arquivo .postext…** importa um arquivo.
+
+  Você também pode duplicar qualquer linha. Enquanto você não tem livros próprios, o grupo mostra um estado vazio com o mesmo atalho. Cada linha tem um único menu **⋯** rotulado (*Mais ações de “…”*) com **Renomear…**, **Duplicar**, **Baixar (.postext)** e **Excluir…**. Excluir pede confirmação ali mesmo, ao lado do botão ⋯.
+
+  Renomear abre os campos de nome e de descrição na própria linha. Enter em qualquer um dos dois confirma ambos, e Escape cancela.
+
+  Um livro também tem uma **imagem de capa**, mostrada onde um livro de exemplo mostra a miniatura. Uma cópia de um livro de exemplo (ou de outro livro) adota a capa dele. Enquanto uma linha está sendo renomeada, a capa é o controle que a define: clique nela para escolher um PNG, JPEG, WebP, GIF ou SVG, ou use o X ao lado para remover a atual. A capa pertence ao livro, não às figuras dele, e o acompanha na exportação e na importação.
+
+  Um livro sem capa ganha uma a partir da **primeira página** (a primeira página do primeiro capítulo): na primeira vez que essa página é diagramada e pintada na aba Canvas, o Sandbox tira uma pequena foto dela (240 px de largura, JPEG) enquanto o navegador está ocioso, depois que as fontes e as imagens da página carregaram. Ela fica guardada como capa do livro, então um download a leva como `thumbnail` do pacote. Um livro de exemplo que não traz miniatura ganha uma do mesmo jeito, guardada no navegador (o armazenamento `presetCovers` do banco IndexedDB, uma por exemplo e idioma), mostrada na linha dele e adotada por uma cópia ou um download. Uma capa existente nunca é substituída, venha ela com o exemplo, com um arquivo importado, da sua escolha ou de uma captura anterior. Uma capa que você remove volta a ser tirada da primeira página numa visita posterior.
+
+  Abrir um livro nunca pede confirmação: o livro que você deixa é salvo antes, seja qual for. Enquanto o próximo carrega, a área de visualização mostra *Abrindo o livro…* em vez do livro que você deixou. Excluir o livro aberto volta ao exemplo embutido.
+
+- **Livros de exemplo**: pontos de partida, listados abaixo dos seus livros. O pacote em si nunca muda, mas suas edições num livro de exemplo são mantidas: a primeira alteração salva uma cópia dele (o *rascunho*) no navegador, uma por exemplo e idioma, e a linha mostra a etiqueta *Editado*. Abrir esse exemplo de novo, nesse idioma, traz de volta a sua versão; um exemplo que você nunca alterou abre como foi publicado. O menu ⋯ de cada linha oferece:
+    - **Fazer minha própria cópia** transforma o exemplo num livro seu, com cópias próprias dos arquivos do pacote, de modo que alterações posteriores no pacote em disco nunca o afetam.
+    - **Baixar (.postext)** salva o exemplo como um arquivo `.postext`.
+    - **Ocultar da lista** tira o exemplo da lista (o embutido não pode ser ocultado).
+    - **Restaurar o original…** descarta suas alterações no exemplo (em todos os idiomas) e, se ele estiver aberto, carrega a versão publicada no lugar. Pede confirmação antes e só aparece em exemplos editados.
+
+  Um exemplo em vários idiomas mostra uma etiqueta por idioma, na ordem em que o manifesto os lista: 繁 e 简 para o chinês tradicional e o simplificado, o código do idioma (EN, ES) para os demais; a dica nomeia o idioma na língua da interface (*Carregar a versão em chinês tradicional*). Um exemplo cujo original está num idioma diferente do da interface (um romance chinês com tradução inglesa) indica em qual idioma abre (`openLocale`, veja [Formato do pacote de predefinição](#formato-do-pacote-de-predefinição)), de modo que um clique na linha dele mostra o original.
+
+  Os exemplos ocultos ficam reunidos num item expansível *Livros de exemplo ocultos*, no fim do grupo, cada um com **Mostrar na lista**. A escolha é lembrada no `localStorage`.
+
+Um arquivo `.postext` aberto pelo menu **Novo** vira um livro novo e aberto. Um arquivo em vários idiomas pergunta primeiro qual importar, começando pelo idioma em que foi escrito (o `locale` do manifesto). Exportar é uma ação de cada linha: a linha do livro aberto exporta o que está na tela. Um arquivo `.postext` é o diretório de um pacote de predefinição compactado em zip (veja [Exportar e importar](#exportar-e-importar)).
+
+Os botões Redefinir dos painéis Texto e Design restauram o exemplo de onde o livro foi copiado. Um livro em branco ou importado não tem original, então os botões ficam ocultos enquanto ele está aberto.
+
+#### Painel Capítulos
+
+O segundo painel da barra de atividades mostra só o livro aberto. No topo, o nome dele, que tipo de livro é (*Seu livro*, ou *Livro de exemplo* com o idioma e a etiqueta *Editado* depois que você o altera) e um menu ⋯ com as ações sobre ele: **Renomear…** nos seus livros (um clique duplo no nome faz o mesmo), **Duplicar** ou **Fazer minha própria cópia**, **Baixar (.postext)** e **Restaurar o original…** num livro de exemplo editado.
+
+Abaixo, os **capítulos** ocupam o resto do painel, com rolagem própria (veja [Livros e capítulos](#livros-e-capítulos)). Cada linha de capítulo mostra o intervalo de páginas e o número de palavras, e o capítulo ativo fica marcado. Um livro em chinês, japonês ou coreano conta caracteres: cada caractere han, kana ou hangul conta um, e cada palavra latina no meio deles também. **Adicionar capítulo** fica no cabeçalho do painel, ao lado do número de capítulos; as linhas se reordenam arrastando a alça (ou com as setas sobre ela), e o menu ⋯ de cada capítulo oferece **Renomear**, **Mover para cima / para baixo**, **Dividir nos títulos de nível 1**, **Juntar ao capítulo anterior** e **Excluir** (o último capítulo nunca pode ser excluído).
+
+##### Livros de exemplo (predefinições)
+
+Um **pacote de predefinição** é um ponto de partida completo, carregado como uma unidade: o Markdown dos capítulos, uma `PostextConfig`, os recursos (com os dados de bitmap/SVG e os modelos de tabela) e os arquivos de fontes personalizadas a que a configuração se refere. O painel lista todas as predefinições que o Sandbox alcança e marca a que está aberta:
+
+- **Predefinição embutida**: o *Guia do Postext*, o livro de exemplo padrão que vem com o pacote. Está sempre disponível, sempre em primeiro lugar na lista, e é **pública**. Existe em inglês, espanhol, catalão, árabe, chinês simplificado, japonês e português do Brasil (os botões ES, CA, EN, ع, 简, 日 e PT da linha; `#preset=postext-guide&lang=zh-Hans` leva à edição chinesa, `lang=ar` à árabe, `lang=ja` à japonesa, `lang=pt-BR` à brasileira). A edição árabe é um livro árabe: da direita para a esquerda, encadernado à direita, com algarismos arábico-índicos, Amiri, Noto Kufi Arabic e IBM Plex Sans Arabic, justificação com kashida e figuras desenhadas espelhadas, com rótulos em árabe. A edição chinesa tem um design próprio (Noto Serif SC e Noto Sans SC, pontuação e quebra de linha da China continental) e figuras desenhadas com rótulos em chinês. A edição japonesa também é um livro vertical, composto pelas regras japonesas (JLReq): Noto Serif JP e Noto Sans JP, corpo de 9,25 pt em duas fileiras de 34 caracteres, títulos de seção com três linhas de altura (行取り), cabeços e fólios em algarismos arábicos na cabeça e no pé, figuras com rótulos em japonês. Cada interface abre o guia no próprio idioma. Um guia chinês, japonês ou árabe intocado, aberto a partir de outra interface (pelo botão dele ou por um link `lang=`), continua no seu idioma, qualquer que seja o idioma da interface; o que a própria interface chinesa, japonesa ou árabe abriu passa para o idioma em que o Sandbox for aberto da próxima vez, como as outras edições.
+- **Predefinições remotas**: pacotes servidos por HTTP a partir das URLs base passadas na prop `presetSources` (veja [Props](#props)). Cada origem é pública ou **privada**. As predefinições privadas aparecem com a etiqueta *Privado* na lista e servem para material que não pode sair de uma máquina. O site público só lista uma origem privada no desenvolvimento local, em que o app Next.js serve a pasta indicada por `POSTEXT_PRIVATE_PRESETS_DIR` por meio de `/api/private-presets`. Em produção ela nunca é listada. A origem pública do site, `/presets`, serve os livros de exemplo dele: *Bioquímica*, *Deep Sky*, *Don Quijote*, *Physics (OpenStax)*, *Spanish Painting* e *Signals 2020* em espanhol e inglês, *Dream of the Red Chamber* em três edições e *Paradise Lost* em inglês, com as notas de Verity como notas de rodapé e as pranchas de Doré. Cada um traz sua licença e seus créditos.
+- **`default: true`**: uma predefinição privada marcada como padrão é carregada automaticamente na primeira vez que um Sandbox *intocado* (documento embutido sem alterações) é aberto. Quando várias estão marcadas, vence aquela cujo `locale` coincide com o idioma da interface. Predefinições públicas nunca são carregadas automaticamente.
+
+Cada linha mostra o nome da predefinição, uma descrição opcional, a etiqueta do idioma e as etiquetas *Privado* / *Padrão*. Clicar numa linha carrega a predefinição **inteira**: texto, figuras, design e fontes. O Sandbox grava primeiro os arquivos de fontes e os dados das figuras no IndexedDB, então as áreas de visualização nunca veem um documento aplicado pela metade. Clicar numa linha abre o exemplo no idioma da interface, a não ser que você só o tenha editado em outro idioma: aí abre a sua versão mais recente. As etiquetas de idioma de um exemplo bilíngue o abrem naquele idioma (na sua versão nele, se você tiver uma).
+
+**Predefinições ao vivo.** As predefinições remotas são acompanhadas automaticamente. Sempre que uma predefinição é aplicada, o Sandbox registra a *impressão digital* do pacote, junto com hashes do Markdown, da configuração e do conjunto de recursos que aplicou. Enquanto a página está visível, ele consulta a impressão digital a cada 3 segundos, e na hora quando a aba volta a ficar visível ou a janela recupera o foco. Quando a impressão digital muda:
+
+- Se o livro está **intocado** (o Markdown, a configuração e os recursos ainda têm os hashes do que a predefinição aplicou), a predefinição é reaplicada inteira e um aviso breve aparece no painel.
+- Se há **alterações locais**, elas são mantidas. Uma faixa no topo do painel (*Este livro de exemplo tem uma versão nova. Suas alterações foram mantidas.*) oferece **Carregar a versão nova**, que pede confirmação antes de descartar suas alterações nesse idioma do exemplo, e enquanto isso o botão Livros da barra de atividades mostra um ponto. O rascunho lembra a versão de que partiu, então a faixa volta toda vez que você o abre, até você carregar a versão nova. As figuras do rascunho cujos arquivos mudaram na versão nova mantêm os bytes que tinham: o rascunho ganha uma cópia própria deles antes que os do pacote sejam gravados. Os pacotes só são acompanhados enquanto um livro de exemplo está aberto. Um livro copiado de um deles mantém sua própria cópia.
+
+A mesma verificação roda ao carregar, então, se você editar um pacote e depois abrir o Sandbox, ele pega a versão nova, desde que o livro estivesse intocado. A impressão digital vem de `<preset-dir>/fingerprint.json`. Na rota de desenvolvimento, esse é um arquivo virtual que devolve um hash do diretório feito só com metadados (veja o apêndice [Formato do pacote de predefinição](#formato-do-pacote-de-predefinição)). Origens que não o servem não são acompanhadas.
+
+O livro de exemplo aberto também define o que os botões **Redefinir** dos outros painéis restauram:
+
+<table>
+  <thead>
+    <tr>
+      <th>Painel</th>
+      <th>O que Redefinir restaura</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Texto</td>
+      <td>O texto do exemplo e o conjunto de figuras dele (a parte do documento)</td>
+    </tr>
+    <tr>
+      <td>Design</td>
+      <td>O design do exemplo, fontes incluídas</td>
+    </tr>
+    <tr>
+      <td>Livros (Restaurar o original…)</td>
+      <td>Tudo: texto, figuras, design e fontes</td>
+    </tr>
+  </tbody>
+</table>
+
+Uma predefinição que estava aberta numa sessão anterior mas que nenhuma origem lista mais (normalmente uma predefinição privada numa versão que não a serve) continua aparecendo, em cinza, como *Indisponível nesta versão*. O Sandbox mantém o conteúdo carregado em vez de trocá-lo em silêncio pelo exemplo embutido. O id da predefinição aberta fica guardado na chave `postext-sandbox-preset` (veja [Persistência](#persistência)). O formato do pacote está descrito no apêndice [Formato do pacote de predefinição](#formato-do-pacote-de-predefinição).
+
+#### Painel Recursos
+
+Gerencia os recursos do livro: imagens bitmap, figuras SVG, tabelas e vídeos. O texto se refere a eles com blocos `::resource{id="…"}` e referências na linha `:ref{id="…"}`. Para a sintaxe das referências e o modelo de flutuantes, veja [Formato do documento → Recursos](/pt/docs/document-format#recursos).
+
+**Vista de lista.** O cabeçalho mostra o número de recursos. Os recursos são agrupados pelo nome do tipo de recurso, e cada grupo é uma lista com contagem. Os recursos cujo `typeId` não corresponde mais a um tipo configurado caem num grupo *Sem tipo*, para que você ainda possa chegar a eles. Cada item mostra uma miniatura de 36 px ao lado da legenda e do id: uma visualização real para bitmaps e SVGs, a capa com um selo de reprodução para vídeos e um glifo para tabelas. Quando o livro tem mais de seis recursos, um campo de **busca** (*Buscar recursos…*) filtra a lista pela legenda e pelo id, ignorando acentos. Quando o livro ainda não tem recursos, um estado vazio explica como acrescentá-los e posicioná-los no texto com `:ref{#id}`. Um menu suspenso **Novo** oferece quatro maneiras de acrescentar um:
+
+- **Enviar imagem**: PNG, JPEG, WebP ou GIF
+- **Enviar SVG**
+- **Nova tabela**: começa como uma grade de 2×2 com uma linha de cabeçalho
+- **Adicionar vídeo**: um vídeo do YouTube ou do Vimeo, um arquivo de vídeo ou o endereço de um (um MP4 ou um stream HLS; veja *Vídeo* abaixo). Um livro cujos tipos de recurso são anteriores aos vídeos ganha o tipo embutido *Vídeo* quando acrescenta o primeiro.
+
+Você também pode arrastar e soltar arquivos do disco no painel, incluindo arquivos de vídeo (MP4, WebM, Ogg, QuickTime). Eles são enviados em lote, com ids gerados a partir dos nomes dos arquivos. Arquivos não suportados são ignorados, e uma nota curta informa quantos foram acrescentados e quantos foram ignorados.
+
+**Vista de detalhe.** Selecionar um recurso abre o editor dele:
+
+- **ID**: editável e validado como slug. Ids duplicados são sinalizados e nunca confirmados, e um id vazio recebe uma sugestão derivada da legenda. Renomear mantém o arquivo de imagem ou SVG guardado.
+- **Tipo**: um dos tipos de recurso configurados
+- **Legenda**: aceita Markdown na linha (negrito, itálico, código e `:ref`). `\\`, ou uma barra invertida no fim de uma linha, começa uma nova linha; uma quebra de linha simples conta como espaço
+- **Nota**: uma linha opcional de fonte, crédito ou observação, composta num corpo menor sob o recurso (com a mesma formatação na linha e as mesmas quebras da legenda). O estilo dela vem do grupo *Nota* das configurações de *Legendas*.
+- **Texto alternativo**: descrição de acessibilidade para a saída HTML
+- **Estilo de tabela**: nas tabelas, o estilo com nome em que a tabela é composta (`table.styleId`). É o *Estilo de tabela do documento* (o padrão) ou um dos *Estilos de tabela* declarados nas configurações. Um id que nenhum estilo declara aparece como inexistente e é renderizado com o estilo de tabela do documento.
+- **Posição**:
+  - **Posição**: `auto` (o primeiro espaço livre, o padrão), `top`, `bottom` ou `here`.
+  - **Largura**: `column`, `page` ou `side`. Fica desativado quando a posição é `here`. Os padrões são os do motor, `auto` + `column`.
+  - **Colunas**: quantas colunas vizinhas um flutuante de coluna ocupa numa página de várias colunas (`placement.columns`), como uma foto sobre duas das quatro colunas de um jornal. Tantas quantas a página tem o deixa na largura da página. Aparece quando o livro ou uma das seções dele tem mais de uma coluna e a largura é `column`, e não para um recurso `here` ou girado.
+  - **Orientação**: sem girar, ou girado um quarto de volta (topo à esquerda ou à direita). Um recurso girado ocupa uma página só para ele, encostado na lombada, então o seletor de largura fica desativado.
+  - **Largura**: uma fração da largura com um alinhamento, para flutuantes e inserções no texto mais estreitos que a coluna. O alinhamento também posiciona um bitmap ou SVG mais estreito que o espaço dele em largura total (um bitmap menor que a coluna, ou uma figura que `layout.fitFiguresToPage` reduziu), por isso continua ativo para imagens; numa tabela, exige uma largura abaixo de 100 %. Um recurso girado não tem nenhum dos dois.
+  - **Legenda ao lado da figura**: uma chave para a coluna lateral de uma diagramação em coluna e meia. Vale para flutuantes de coluna, por isso fica oculta quando a posição é `here`.
+- **Conteúdo**: campos de envio que substituem o arquivo bitmap ou SVG
+- **Vídeo**: num recurso de vídeo ([Formato do documento › Vídeos](/pt/docs/document-format#vídeos)):
+  - **Origem**: *YouTube*, *Vimeo* ou *Arquivo*.
+  - **Endereço do vídeo** (YouTube, Vimeo): qualquer link do vídeo. Quando ele indica um vídeo novo, a capa, o tamanho do quadro e o título são buscados na plataforma (o título vira o texto alternativo quando este está vazio); **Buscar a capa de novo** repete a busca. Um link que não indica nenhum vídeo da plataforma é sinalizado sob o campo.
+  - **Arquivo de vídeo** (Arquivo): o campo de envio de um arquivo MP4, WebM, Ogg ou QuickTime, com formato, tamanho e duração. Uma primeira capa é tirada a um décimo do vídeo. **Quadro da capa** reproduz o arquivo: pare ou arraste até o quadro que você quer impresso e pressione **Usar este quadro como capa**. **Endereço de produção**: onde o vídeo publicado vai estar (`https://…`), aberto pelo código QR e pelo link do PDF; sem ele, o impresso não ganha código QR nem link.
+  - **Endereço do vídeo** (Arquivo, sem arquivo enviado): o vídeo toca só a partir do endereço, um MP4 ou WebM num servidor ou um stream HLS (`.m3u8`, marcado como *Stream HLS* acima do campo). Informar um endereço lê o tamanho e a duração do vídeo, e **Quadro da capa** o reproduz a partir dali, HLS incluído. Escolher um quadro exige um servidor que permita leituras de outra origem (CORS); caso contrário, o painel avisa, e a capa é enviada no lugar. O código QR e o link do PDF abrem esse endereço.
+  - **Capa**: a imagem impressa, com o tamanho dela, e um campo de envio para substituí-la por uma imagem sua.
+  - **Início (s)** / **Fim (s)**: o trecho que toca; 0 deixa o início ou o fim como estão.
+  - **Player**: as chaves deste vídeo (controles, botão de download, tela cheia, menu de velocidade, picture-in-picture, reprodução automática, começar sem som, repetição, tocar junto com outros vídeos), cada uma com *Configuração do livro*, *Sim* ou *Não*. Só aparecem as chaves que o player do vídeo respeita.
+- **Área segura**: em bitmaps e SVGs, a parte da imagem que sempre aparece (`Resource.safeArea`; veja [Formato do documento › Área segura](/pt/docs/document-format#área-segura)). O campo mostra uma miniatura com a área marcada e o tamanho dela em porcentagem, ou *Nenhuma* quando a imagem não tem área segura, com os botões **Marcar área segura** / **Editar área segura** e **Remover área segura**. A caixa de diálogo mostra a imagem: arraste fora do retângulo para desenhar um novo, dentro dele para movê-lo, ou a partir das alças para redimensioná-lo; com o retângulo em foco, as setas o movem e Shift com as setas o redimensiona. Os campos *Esquerda*, *Superior*, *Largura* e *Altura* o definem em porcentagem, e duas visualizações mostram o recorte mais alto e o mais baixo que a área permite.
+- **Código-fonte do SVG**: nas figuras SVG, um editor de código sob o campo de envio. Só os nós de texto aceitam edições: o conteúdo dos elementos `<text>` / `<tspan>`, destacado em cor no editor. Digitar em qualquer outro lugar é recusado, e `<`, `>` e `&` digitados num nó de texto são escapados para que o arquivo continue bem formado. Cada alteração é salva após uma breve pausa como um arquivo **novo**, e a figura é renderizada de novo (recoloração em uma só tinta incluída). O editor avisa quando o SVG não tem nós de texto.
+- **Visualização**: uma maquete ao vivo de como o recurso vai ficar, com `#` no lugar do número (os números reais dependem de onde o recurso cai no documento). A legenda abre com o rótulo que o documento define: o prefixo de legenda do tipo e o número (`Figure #.`), só o prefixo num tipo numerado com um modelo vazio (`Do.`), e nada num tipo sem prefixo de legenda
+- **Excluir**: pede confirmação antes e avisa quantas referências `::resource` / `:ref` no texto ficariam apontando para nada
+
+**Editor de tabelas.** Os recursos de tabela abrem um editor interativo em grade:
+
+- **Barra de ferramentas**:
+  - Acrescentar ou remover linhas e colunas, e mesclar ou dividir células.
+  - Ativar ou desativar uma linha ou uma coluna de cabeçalho.
+  - Definir o alinhamento horizontal e vertical de cada célula (topo, meio ou base). O conteúdo da célula se move como uma unidade dentro de uma linha mais alta.
+  - Definir o preenchimento de cada célula: um seletor de cor, vinculável à paleta, com um botão para limpar. O preenchimento é gravado em `TableCell.background` e aparece na grade.
+- **Larguras das colunas**: um peso numérico por coluna sob a grade (`2, 1, 1` dá à primeira coluna metade da largura; vazio significa larguras iguais), gravado em `table.model.columnWidths`. Acrescentar ou remover uma coluna mantém os pesos alinhados, e um link *Larguras iguais* os apaga.
+- **Colar como tabela**: colar TSV (ou CSV simples com aspas) preenche a grade
+- **Desfazer/refazer**: Cmd/Ctrl+Z e Shift+Cmd/Ctrl+Z
+- **Navegação pelo teclado**: Tab / Shift-Tab (passando para a linha seguinte) e as setas movem entre as células
+- **Clicar na visualização para editar**: clique numa célula de tabela, numa legenda, numa nota ou num trecho de texto de uma figura SVG em qualquer uma das abas de visualização. O painel Recursos abre nesse recurso e dá foco ao campo correspondente, com o cursor no glifo clicado. Arrastar seleciona um trecho dentro da mesma célula ou do mesmo campo, e um clique duplo seleciona a palavra. Enquanto o campo tem foco, a seleção dele é espelhada na página como um destaque (um cursor fino quando a seleção está vazia), tanto na aba Canvas quanto na HTML.
+
+Todas as edições passam por funções puras do modelo exportadas pelo núcleo do postext (`addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment` e `parseTSV`), então o mesmo modelo de tabela se comporta do mesmo jeito dentro e fora do Sandbox.
+
+#### Painel Fontes
+
+Mostra os tipos que o livro usa e gerencia seus próprios arquivos de fonte ao lado do catálogo embutido do Google Fonts:
+
+- **Famílias tipográficas deste livro** lista todas as famílias que o design usa. O nome de cada família aparece no próprio tipo, com a função (*Texto do corpo*, *Títulos* ou *Outros elementos*) e a origem (*Google Fonts* ou *Seu arquivo*). Os tipos em si se trocam em **Design → Tipografia** e **Títulos e sumário**.
+- **Seus arquivos de fonte** é onde você acrescenta, renomeia e exclui famílias personalizadas.
+  - **Envie arquivos de variante** por peso (100–900) e estilo (normal / itálico). Os formatos aceitos são WOFF2, WOFF, TTF e OTF, detectados pela extensão do arquivo. Os arquivos ficam guardados no IndexedDB do navegador.
+  - As famílias personalizadas aparecem em todos os seletores de fonte num grupo **Personalizado**, junto com os resultados do Google Fonts. Uma família personalizada **tem prioridade** sobre uma fonte do Google com o mesmo nome.
+  - Num documento em chinês, todos os seletores de fonte listam primeiro, em *Chinês simplificado* ou *Chinês tradicional*, as famílias do Google que contêm os caracteres do documento (os subconjuntos `chinese-simplified`, `chinese-traditional` e `chinese-hongkong` da Fontsource), e depois o resto.
+  - Num documento em árabe (ou em outra língua escrita no alfabeto árabe), todos os seletores de fonte listam primeiro, em *Árabe*, as famílias do Google com o subconjunto `arabic` da Fontsource, começando pelos tipos de livro (Amiri, Noto Naskh Arabic, Scheherazade New, Markazi Text, Lateef, depois Noto Kufi Arabic, Reem Kufi, Aref Ruqaa, El Messiri). As visualizações carregam o arquivo árabe de cada tipo antes da primeira diagramação, e o PDF o incorpora junto com o latino quando o texto usa os dois.
+  - Os arquivos de fonte órfãos (enviados e não mais usados por nenhuma família) são removidos do IndexedDB automaticamente.
+
+#### Painel Design
+
+Um editor em formulário para a `PostextConfig`, com mais de quinhentos campos.
+
+**Visão geral.** Quando o painel Design abre, ele mostra uma visão geral:
+
+- Um cartão **Este livro** com um desenho ao vivo da página. O desenho usa as proporções reais e mostra as margens, as colunas e as cores do papel e da tinta, como página dupla quando as margens são espelhadas. As linhas de um livro vertical são desenhadas de cima para baixo a partir da direita, e as colunas dele, como fileiras. Ao lado ficam o formato de refile, a disposição das colunas, o sistema de escrita, o tipo e o corpo do texto e a paleta. A linha do sistema de escrita nomeia o idioma do documento e, quando são uma escolha, a direção e a encadernação (*Vertical · encadernado à direita · 中文（繁體）*, *Da direita para a esquerda · encadernado à direita · العربية*); ela abre **Sistema de escrita**.
+- A lista dos treze **grupos de configurações**. Cada grupo tem uma descrição de uma frase e o número de seções que você alterou nele.
+
+**Uma página por grupo.** Abrir um grupo mostra as seções desse grupo como uma página própria. Só esse grupo é montado, o que mantém o painel rápido mesmo em livros grandes.
+
+- Uma trilha de navegação (**Design › grupo**) leva de volta à visão geral.
+- Chips sob o título da página levam a cada seção da página.
+- Um link **Próxima** no fim abre o grupo seguinte.
+- O foco vai para o título da página quando você abre um grupo, e volta para a linha do grupo quando você retorna.
+- O grupo aberto é lembrado entre sessões.
+
+Os grupos, na ordem de navegação:
+
+- **Página e colunas**
+  - *Página*: os campos se agrupam em **Tamanho**, **Margens**, **Papel**, **Numeração** e **Preparação para impressão**.
+    - **Tamanho**: as predefinições de tamanho dizem para que servem: *Livro de bolso* 11 × 17, *Romance, narrativa* 12 × 19, *Ensaio, manual* 17 × 24 e *Livro didático, revista* 21 × 28; os formatos de jornal *Standard* 37,5 × 59,7, *Berliner* 31,5 × 47, *Tabloide* 28 × 43 e *Compacto* 29,7 × 42 (desde o postext 1.18); ou *Personalizado*.
+    - **Margens**: cada margem está ligada ao desenho da página. Apontar para um campo de margem ou dar foco a ele colore essa margem no desenho. Uma chave **Margens espelhadas** transforma esquerda/direita em margens interna/externa para páginas espelhadas.
+    - **Papel**: a cor de fundo da página.
+    - **Numeração**: o formato do número de página e o número em que as páginas começam.
+    - **Preparação para impressão**: DPI e marcas de corte.
+  - *Colunas*: a disposição é escolhida em cartões com desenhos: *Uma coluna* (romances, ensaios), *Duas colunas* (livros didáticos, revistas, obras de referência), *Coluna e meia* (uma coluna principal mais uma coluna lateral estreita para notas e figuras pequenas) ou *Várias colunas* (de três a oito colunas iguais para jornais e revistas, com uma contagem de **Colunas**; desde o postext 1.18). A seção também tem a medianiz, a coluna lateral, **Reduzir figuras que não cabem** (`layout.fitFiguresToPage`), **Espaço em torno das figuras na linha** (`layout.inlineResourceGap`), **Espaço em torno das figuras nos boxes** (`layout.inlineResourceGapInBoxes`), **Linhas de parágrafo no corte de um boxe** (`layout.boxChildSplitMinLines`) e **Flutuantes finais junto ao texto** (`layout.hugClosingFloats`).
+- **Sistema de escrita**. A página abre com o desenho de Página e colunas. A página dupla dele traz fólios: 2 | 3 num livro encadernado à esquerda, 3 | 2 num encadernado à direita, cuja página ímpar é a da esquerda; a legenda diz quando o livro é encadernado à direita e quando as linhas dele são verticais.
+  - *Idioma e direção*:
+    - **Idioma do documento**, com o chinês como 中文（简体）, 中文（繁體） e 中文（香港）, e o árabe como العربية, العربية (مصر) e العربية (المغرب) (a região define padrões regionais, como os algarismos). Uma etiqueta que a lista não tem (`es-ES`, `zh-TW`, `sv`) aparece como uma opção extra, com o nome do idioma que ela representa. Mudar o idioma renomeia os tipos embutidos de figura e tabela quando eles ainda são os do idioma anterior (um livro em espanhol passado para chinês imprime 图 e 表, não *Figura* e *Tabla*); os tipos que você renomeou mantêm os nomes.
+    - **Direção do texto**: *Automático*, que nomeia o que resulta (da direita para a esquerda no árabe), *Da esquerda para a direita* ou *Da direita para a esquerda* (`direction`).
+    - **Modo de escrita**, em cartões com desenhos: *Horizontal*, ou *Vertical*, com as linhas de cima para baixo e da direita para a esquerda (`layout.writingMode`).
+    - **Encadernação**: *Automático*, que nomeia o que resulta (a borda direita num livro vertical ou da direita para a esquerda), *Borda esquerda* ou *Borda direita* (`page.binding`).
+    - **Algarismos**: *Automático*, que nomeia os algarismos que o idioma dá (٠ ١ ٢ ٣ no árabe, 0 1 2 3 no árabe do Magrebe e em todos os outros idiomas), *Europeus*, *Arábico-índicos* ou *Persas* (`numerals`).
+    - **Padrões para chinês**: **Revisar…** lista o que muda ao preparar o livro para o chinês. Escolha *Simplificado 简体* ou *Tradicional 繁體* e a direção: um livro tradicional novo começa vertical, um simplificado novo, horizontal, e um livro que já está em chinês mantém a direção. Cada linha mostra a configuração como está e como fica: o idioma do documento (uma etiqueta chinesa da mesma escrita, como `zh-TW`, é mantida), o modo de escrita com a encadernação que ele dá, Noto Serif e Noto Sans em SC, TC ou HK para o texto e os títulos (a linha dos títulos também nomeia os tipos que os níveis e os estilos de título definem para si mesmos e, marcada, compõe esses também no tipo chinês), um recuo de primeira linha de 2 em, recuo após os títulos, nenhum espaço entre parágrafos, texto justificado, sem hifenização, 图 ou 圖 e 表 numerados por capítulo (`{h1}-{n}`), legendas compostas 图1-1　标题 (nada antes do número, um espaço ideográfico depois dele), capítulos numerados 第一章 (`第{1:一}章`, um espaço ideográfico antes do título) e listas numeradas 一、 （一） 1. （1） ①. Só aparece o que for diferente. Uma configuração que você mesmo alterou vem desmarcada, indicada como *configuração sua*, e fica como está a não ser que você a marque; o idioma e a direção sempre se aplicam, e a hifenização também, que um documento em chinês desativa sozinho (a não ser que você a tenha ativado para uma língua latina indicada no idioma de hifenização). **Aplicar** faz as alterações marcadas num só passo, e **Desfazer**, ao lado da confirmação, volta esse passo no mesmo livro: cada configuração alterada retorna ao que era, mesmo quando você mudou outras configurações do mesmo grupo depois; uma que você mudou de novo depois fica como você a deixou, e a confirmação avisa. Abrir outro livro descarta o Desfazer.
+    - **Padrões para árabe** (num documento em árabe): **Revisar…** lista o que muda ao preparar o livro para o árabe. Escolha os tipos: *Clássico*, Amiri para o texto e os títulos, ou *Moderno*, Noto Naskh Arabic com títulos em Noto Kufi Arabic. As linhas: a direção de volta para *Automático* quando o livro estava da esquerda para a direita (sempre aplicada), a encadernação de volta para *Automático* (a borda direita), os dois tipos, o tipo dos textos de design (cabeços, fólio, designs de abertura e de título) composto num tipo sem letras árabes, passado para o tipo dos títulos para que o PDF não imprima caixas vazias, uma entrelinha de 1,75 em, texto justificado, sem hifenização, os algarismos da região quando o livro indica outros, شكل e جدول numerados por capítulo, legendas compostas شكل ١-١: العنوان, capítulos numerados الفصل الأول (`الفصل {1:ordinal}`, dois-pontos antes do título), listas numeradas ١- أ- (١) e notas de rodapé numeradas de novo em cada página, tudo nos algarismos do documento. As marcações, *configuração sua*, **Aplicar** e **Desfazer** funcionam como na lista do chinês.
+    - **Ajustes para japonês** (num documento em japonês): **Revisar…** lista o que muda ao preparar o livro para o japonês. Escolha o tipo de livro: *Vertical 縦組*, um romance bunko ou tankōbon encadernado à direita numa grade de caracteres, ou *Horizontal 横組*, um livro técnico encadernado à esquerda. As linhas: o idioma do documento e o modo de escrita (sempre aplicados), a encadernação de volta para *Automático*, Noto Serif JP e Noto Sans JP para o texto e os títulos (e para os textos de design compostos num tipo sem kana), uma entrelinha de 1,75 em, a grade de caracteres que uma página vertical comporta nesse corpo (no máximo 52 caracteres), um recuo de um em sem espaço extra entre parágrafos, texto justificado sem hifenização, as configurações tipográficas chinesas de volta para *Automático* para que as japonesas se apliquem, 図 e 表 com legendas compostas 図1-1　…, capítulos numerados 第一章 (vertical) ou 第1章 (horizontal), títulos em três e duas linhas (行取り) com seus recuos, números de lista japoneses, as configurações de notas chinesas de volta para *Automático* e fólios em kanji quando um fólio vertical é posto ao longo da margem externa. **Aplicar** e **Desfazer** funcionam como no chinês. Num livro em japonês, a barra de ferramentas do editor ganha **Rubi** e **Na horizontal em texto vertical**. Veja [Composição japonesa](/pt/docs/japanese-layout#no-sandbox-e-nas-receitas).
+  - *Tipografia do Leste Asiático* (`cjk`): **Convenções regionais** (China continental, Taiwan, Hong Kong, Japão) no topo, depois os campos em nove grupos: **Pontas da linha** (**Quebra de linha**: nenhuma, básica, GB, estrita, japonês muito estrito, japonês estrito, japonês flexível; **Aparar parênteses nas pontas da linha**; **Parêntese que abre parágrafo**: ①, ③ ou sem recuo; **Pontuação pendente**), **Largura da pontuação** (**Largura da pontuação**: kaiming, largura total, meio no fim da linha, meia largura; **Comprimir sinais adjacentes**), **Espaçamento** (**Espaço entre han e latim**; **Espaço após ？ e ！**), **Texto vertical** (**Números em pé numa célula**: desativado, ou até 2, 3 ou 4 dígitos, `cjk.uprightDigits`), **Anotações** (**Ênfase em texto chinês e japonês**: o que `*…*` imprime, marcas ou itálico; **Marca de ênfase**, **Preenchimento da marca** e **Lado da marca**; **Títulos de obras (:book)**: colchetes, uma linha ondulada ou nada, e os **Colchetes** deles, 《》 〈〉 ou 『』 「」; **Cor das marcas**), **Rubi** (tipo, corpo, cor e posição das leituras, **Avanço das leituras**, **Alinhamento das leituras** e **Kana pequeno nas leituras**), **Notas warichu** (corpo, cor e parênteses de abertura e de fechamento das notas), **Marcas de kanbun** (corpo, cor e onde ficam as marcas de retorno) e **Grade de caracteres** (caracteres por linha, linhas por página, a grade desenhada na tela e a leitura 字 × 行 com as margens que a grade define). Cada *Automático* segue o idioma do documento e nomeia o que resulta. Num documento cujo idioma não é chinês, japonês nem coreano e que não define nenhuma dessas configurações, a seção mostra uma linha avisando isso e um botão **Mostrar as configurações**; uma busca mostra os campos em qualquer documento. [Composição chinesa](/pt/docs/chinese-layout) e [Composição japonesa](/pt/docs/japanese-layout) explicam o que essas configurações fazem; as chaves estão em [Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático), [Escrita vertical](/pt/docs/configuration#escrita-vertical), [Números em texto vertical](/pt/docs/configuration#números-em-texto-vertical) e [Encadernação](/pt/docs/configuration#encadernação).
+- **Cores**
+  - *Paleta*: cores com nome reutilizadas por todos os seletores de cor. Mudar uma entrada atualiza todas as referências a ela.
+- **Tipografia**
+  - *Texto do corpo*: abre com um **espécime tipográfico** em tamanho real, composto no tipo, no corpo, na entrelinha e na cor atuais, no idioma do documento: um livro em chinês mostra o início de 紅樓夢 na sua escrita, `*…*` com pontos de ênfase, e o compõe de cima para baixo quando as linhas são verticais. As quebras de linha dele são as do navegador; a página usa as do Postext. Os campos se agrupam em:
+    - **Tipo**: fonte, corpo, entrelinha e os pesos regular e negrito.
+    - **Parágrafos**: alinhamento (com a hifenização, os limites de justificação e **Espaço máx. entre letras ao justificar** (`bodyText.maxJustifyTracking`) quando o texto é justificado, e **Hifenizar texto em bandeira** com a zona, **Quebra de linha ótima** e **Quebra ideal do texto em bandeira** (`bodyText.optimalRagged`) quando não é; com o corpo justificado, **Quebra ideal do texto em bandeira** vem depois de **Quebra de linha ótima**, para os estilos de parágrafo e os boxes em bandeira; **Hifenizar entre colunas** (`bodyText.hyphenateAcrossColumns`) sob a hifenização quando o corpo é justificado, e sob **Quebra ideal do texto em bandeira**, enquanto ela está ativada, quando o corpo é em bandeira; **Hifenizar compostos** (`bodyText.hyphenation.compounds`) com o idioma de hifenização), **Quebrar após travessão** (`bodyText.breakAfterDashes`), **Quebrar após hífen** (`bodyText.breakAfterHyphens`), **Repetir o hífen na linha seguinte** (`bodyText.repeatHyphen`), recuos e espaço entre parágrafos.
+    - **Cor**: as cores do texto, do negrito e do itálico.
+    - **Idioma**: o idioma do documento, nomeado no próprio idioma. Ele é definido em **Sistema de escrita**; a linha abre esse grupo.
+    - **Viúvas, órfãs e linhas curtas** (recolhível): inclui **Penalidade gradual** (`bodyText.gradedRuntPenalty`), **Apertar para recolher a linha curta** (`bodyText.tightenRunts`), **Aperto máximo entre letras** (`bodyText.maxRuntTracking`) e **Manter dois-pontos com a lista** com **Espaço sob os dois-pontos** (`bodyText.colonListRoom`): quanto espaço a linha que termina em dois-pontos precisa abaixo dela para ficar com a lista, o que o primeiro item precisa ou uma linha, como até o postext 1.4.
+    - **Citações** (recolhível): a cor das citações `>`, **Citações em itálico**, **Recuo das citações** e **Recuo de primeira linha das citações** (`bodyText.blockquote`).
+    - **Referências cruzadas** (recolhível).
+  - *Estilos de parágrafo* (`paragraphStyles`): estilos com nome para contêineres `:::paragraphs{style="…"}`. Você pode acrescentar, remover e renomear ids, e depois definir a fonte, o corpo, a entrelinha, a cor, as cores dos trechos em negrito e em itálico, os pesos regular e negrito, as chaves de **itálico** e **versaletes**, o alinhamento, a hifenização, o recuo à esquerda de todas as linhas, os recuos de primeira linha e deslocado (medidos a partir do recuo à esquerda), o espaço entre parágrafos, as margens, **Ajustar à grade** (`paragraphStyles[].snapToGrid`) e **Caixa** (`textTransform`, maiúsculas). Os campos não definidos herdam do texto do corpo. Acima dos estilos, **Espaço sob um contêiner** (`bodyText.paragraphContainerSpacing`) diz como o espaço sob um contêiner se combina com o bloco seguinte: *Fundir* ou *Somar (1.4)*.
+  - *Rótulos no texto* (`chipStyles`): estilos com nome para o `:chip[text]{style="…"}` na linha. O estilo embutido `chip` aparece enquanto a configuração não tem nenhum. Você pode acrescentar, remover e renomear ids, e depois definir:
+    - **Texto**: fonte, corpo, cor, negrito e itálico. Cada um herda do texto em volta até você defini-lo.
+    - **Caixa**: preenchimento, espessura e cor do contorno, raio dos cantos, espaçamento interno horizontal e vertical (com **Espaçamento superior** e **Espaçamento inferior** para separá-los, o que centraliza uma maiúscula num chip redondo) e a distância mínima até as palavras vizinhas.
+  - *Fórmulas* (`math`), com **Recuo após fórmula em destaque** (`math.indentAfterDisplay`) e **Manter com a linha anterior** (`math.keepWithLeadIn`).
+  - *Notas de rodapé* (`footnotes`): **Posição** (pé da coluna ou fim do capítulo), **Posição na coluna** no fim de um capítulo, **Numeração** (por capítulo ou contínua), o corpo, a entrelinha, a cor, o alinhamento e o recuo deslocado das notas, os espaços acima e entre as notas e o **Fio separador** (comprimento, espessura, cor). Veja [Notas de rodapé](/pt/docs/configuration#notas-de-rodapé).
+- **Títulos e sumário**
+  - *Títulos*: padrões gerais mais configurações por nível, de H1 a H6. Incluem:
+    - caixa, **Espaçamento entre letras** (`levels[].letterSpacing`, negativo para apertar), alinhamento (em bandeira, justificado, centralizado ou alinhado à direita), quebra antes com paridade, e largura;
+    - uma chave **Voltar à grade após os títulos** (`headings.snapToGrid`, ativada por padrão: o texto volta à grade de linhas de base sob um título) e, por nível, **Voltar à grade após este título** (`levels[].snapToGrid`), que a substitui naquele nível;
+    - uma chave **Marcas no texto dos títulos** (`headings.inlineMarks`, ativada por padrão): um título compõe o itálico, o negrito, os índices, os versaletes e os links escritos nele, como faz um parágrafo; desativada, ele imprime as palavras marcadas no próprio estilo;
+    - por nível, **Oculto (estrutural)** (`levels[].hidden`): o título não imprime nada nem ocupa espaço, mas ainda quebra, numera e alimenta o sumário, os cabeços e os marcadores do PDF;
+    - um editor avançado de blocos de design por nível, com uma altura mínima de abertura; cada elemento do design de um título tem uma chave **Reserva espaço** (desativada: ele é pintado sem somar à altura que o título reserva);
+    - os recursos de equilíbrio de colunas, com seus limites por recurso, e **Boxe que fecha uma coluna** (`balancing.closingBox`): quando um boxe que termina uma coluna curta desce para o pé da coluna (primeiro, depois dos outros recursos ou nunca).
+  - *Estilos de título* (`headingStyles`): estilos com nome aplicados com `{style="…"}` numa linha de título. Você pode acrescentar, remover e renomear ids e, para cada estilo:
+    - escolher se o título é numerado e listado no sumário, e dar a ele um modelo de numeração próprio;
+    - desativar **Nomeado nos cabeços** (`runningChapter`) numa prancha ou num mapa composto como H1 dentro de um capítulo, para que os cabeços continuem nomeando o capítulo que ele interrompe;
+    - substituir a tipografia do título (espaçamento entre letras incluído), a quebra e a largura, **Voltar à grade após este título** e **Oculto (estrutural)**;
+    - dar à seção cabeços próprios, partindo opcionalmente dos do documento;
+    - definir as margens e a disposição das colunas dela (com a função e a borda da coluna lateral, como em *Colunas*, e o próprio *Reduzir figuras que não cabem*);
+    - definir o estilo do texto, as substituições das listas e as cores da paleta.
+  - *Sumário* (`toc`): os níveis de título que um `:::toc` lista, com a tipografia das entradas de cada um. Também cobre as entradas sem número, os números de página, os pontos condutores, a linha de subtítulo lida de um atributo do título e as linhas de parte, com o bloco de design próprio delas.
+- **Listas**
+  - *Listas com marcadores*, com **Ajustar o início à grade** (`unorderedLists.snapTopToGrid`), que arredonda para cima o espaço acima de uma lista para que o primeiro item fique na grade de linhas de base.
+  - *Listas numeradas*: para cada nível, a fonte, o peso, o itálico, a cor e a distância do separador junto à numeração; **Ajustar o início à grade** (`orderedLists.snapTopToGrid`), como nas listas com marcadores; e **Coluna dos números** (`orderedLists.numberWidth`): onde começa o texto de um item, depois do número mais largo do próprio trecho (*Por trecho*) ou do nível dele no capítulo (*Por nível*).
+- **Figuras e tabelas**
+  - *Numeração e posicionamento* (`resourceTypes`): para cada tipo de recurso:
+    - nomes e rótulos curtos;
+    - modelos de numeração com os marcadores `{n}` e `{h1}`…`{h6}`, o formato do contador e o nível em que ele reinicia, e o prefixo da legenda, com uma visualização ao vivo no estilo “Fig. 1.7”;
+    - um grupo **Posição**: a posição padrão do tipo, a extensão (coluna, página ou a coluna lateral), **Colunas** (quantas colunas vizinhas um flutuante de coluna do tipo ocupa numa página de várias colunas; tantas quantas a página tem o deixa na largura da página) e a rotação, uma fração da largura, um alinhamento para recursos mais estreitos que o espaço deles (flutuantes e inserções estreitados pela largura, e imagens mais estreitas que a coluna) e uma chave de legenda ao lado da figura;
+    - um **estilo de legenda próprio**, recolhível, que substitui só os campos de legenda que você define para aquele tipo (posição, barra, cores, tipo) e herda o resto.
+  - *Legendas* (`captionStyle`): tipo, corpo, alinhamento e **posição** acima ou abaixo do recurso. Há uma **barra de fundo** opcional, com cor e espaçamento interno, e o rótulo e a descrição têm estilos independentes. Um grupo **Nota** define o corpo, a cor, a inclinação, o alinhamento e a distância da nota do recurso.
+  - *Tabelas* (`tableStyle`):
+    - tipografia do corpo e do cabeçalho, com o **Espaçamento entre letras** (`headerLetterSpacing`) e a **Caixa** (`headerTextTransform`) do cabeçalho, e os preenchimentos;
+    - bordas, com um padrão de **fios**: grade completa, só horizontais, moldura externa ou nenhum;
+    - um **raio dos cantos** para a moldura externa;
+    - espaçamento interno das células;
+    - em *Células do corpo*, **Linhas zebradas** (`bodyAlternateBackgroundEnabled`), que preenche uma linha do corpo a cada duas com a **Cor das linhas alternadas** (`bodyAlternateBackground`), visível enquanto a chave está ativada.
+  - *Estilos de tabela* (`tableStyles`): estilos de tabela com nome. Você pode acrescentar, remover e renomear ids (renomear leva junto as tabelas que usam o id), e depois definir qualquer um dos campos de *Tabelas*. Cada controle mostra o valor herdado de *Tabelas* até você defini-lo.
+  - *Diagramas* (`diagramStyle`): uma chave de **diagramas em uma só tinta**, que recolore os diagramas SVG em tons de uma única tinta para impressão a uma cor, mais um seletor da cor da tinta, que por padrão é a cor principal da paleta.
+  - *Estilo de vídeo* (`videoStyle`): a **Marca de reprodução** (forma, posição, tamanho, distância da borda, cores e opacidade do fundo) e o **Código QR** (posição, tamanho, distância da borda, correção de erros, margem, cores e raio dos cantos) impressos na capa de um vídeo; **Saídas**: se a capa leva ao vídeo, e se o visualizador HTML mostra o player ou a capa; e as chaves do **Player** de que todo vídeo parte. Entre elas, **Tocar junto com outros vídeos**: ativada, iniciar um arquivo de vídeo deixa os outros tocando, de modo que os loops sem som de uma página rodam juntos; desativada, iniciar um pausa os outros. Vale no visualizador HTML e no Folio.
+- **Boxes**
+  - *Estilos de boxe* (`calloutStyles`): estilos com nome para `:::callout{type="…"}`. Você pode acrescentar, duplicar, remover e renomear ids, e depois definir:
+    - o título padrão, a extensão, a posição e a largura do boxe, e **Colunas**: quantas colunas vizinhas um boxe flutuante (posição *Automático*, *Superior* ou *Inferior*, extensão de coluna) ocupa numa página de várias colunas. O atributo `columns` de um `:::callout` o substitui;
+    - o fundo, a borda, o raio dos cantos e o espaçamento interno, e uma **faixa** numa borda;
+    - um **ícone**: um glifo de texto ou um SVG/bitmap escolhido no painel Recursos. Pode ficar na linha ou como selo no canto, com o lado do canto e uma largura para desenhos que não são quadrados.
+    - um grupo **Aba de rótulo** (`calloutStyles[].label`): fonte, corpo, peso, cor, preenchimento, canto, altura, espaçamento interno, elevação e recuo, um recurso de ícone ao lado da aba e um fio ao longo da borda superior;
+    - a tipografia do título, com espaçamento entre letras, recuo e **Entrelinha do título** (`titleStyle.lineHeight`);
+    - substituições do texto e das listas que herdam do texto do documento. Elas incluem as **cores** do negrito e do **itálico** do texto, os pesos regular e negrito, as chaves de **itálico** e **versaletes**, e o tamanho e o peso do marcador.
+    - um espaço entre colunas para grupos `:::columns` dentro do boxe;
+    - uma chave **Ajustar à grade** (`calloutStyles[].snapToGrid`, ativada por padrão; desativada, mantém a margem inferior exata em boxes empilhados);
+    - a coluna do marcador, uma âncora fixa, manter junto e o mínimo de linhas na divisão, e os controles de barreira de flutuantes;
+    - uma escolha **Boxe lateral no fim da coluna** (`sideAtColumnEnd`) para boxes laterais cujo texto não continua na mesma coluna: ao lado do texto antes da cerca ou ao lado do texto depois dela;
+    - um grupo **Boxes divididos**: repetir o título com um sufixo em cada continuação (`repeatTitle`, `continuedSuffix`), e um indicador de continuação sob cada parte que continua, com texto, alinhamento e itálico (`continuesMarkerEnabled`, `continuesMarker`, `continuesMarkerAlign`, `continuesMarkerItalic`). Os textos seguem por padrão o idioma do documento.
+- **Cabeços e rodapés**
+  - *Cabeços e rodapés*: elementos de texto, fio, caixa e imagem por bloco.
+    - **Elementos de texto**: alinhamento vertical, **alinhamento do texto** dentro da própria caixa (`align`: à esquerda, centralizado ou à direita, visível quando a caixa é mais larga que o texto, ou justificado, que estica os espaços de todas as linhas menos a última de cada parágrafo para preencher a caixa e, com **Hifenização** ativada, divide uma palavra numa sílaba para preencher uma linha), entrelinha, espaçamento entre letras (negativo para apertar um título de destaque), caixa, uma largura e uma altura ajustadas, preenchidas ou fixas, e uma largura máxima. **Marcas na linha** (`inlineMarks`) compõe `**bold**`, `*italic*` e as outras marcas na linha no texto do elemento, e um contorno desenha o perfil das letras: **Espessura do contorno**, **Cor do contorno** e **Letras vazadas** (`stroke`).
+    - **Fios**: horizontais ou verticais.
+    - **Marcadores**, escolhidos na lista permitida pelo motor: número da página, total de páginas, total de páginas do livro, título, subtítulo, autor, data de publicação, título e número do capítulo, título e número da parte, e `{attr.key}` para um atributo do capítulo. Cabeços e rodapés também aceitam o título e o número do capítulo no topo da página, `{chapterTitleAtTop}` / `{chapterNumberAtTop}` (veja [Capítulo no topo da página](/pt/docs/configuration#capítulo-no-topo-da-página)), e as palavras-guia `{firstMark.h2}` / `{lastMark.h2}` (um nível de título ou um id de estilo de parágrafo depois do ponto; veja [Palavras-guia](/pt/docs/configuration#palavras-guia-primeira-e-última-marca)).
+    - **Onde um bloco aparece**: paridade e um filtro de **páginas**: todas, texto, aberturas de capítulo, divisórias de parte ou páginas em branco.
+    - **Posição**: transbordamento e uma âncora no contêiner, num elemento irmão, ou no quadro da **página** / da **sangria** para faixas de ponta a ponta; os elementos de cabeçalho e rodapé também podem se ancorar na **Margem externa** (`'outer'`), a margem do lado oposto à lombada.
+    - **Modo de escrita** de um elemento de texto: *Horizontal*, ou *Vertical, linhas da direita para a esquerda* (`writingMode`), para cabeços compostos ao longo da margem externa de um livro vertical. O botão **Cabeços na margem externa (vertical)** do editor de cabeçalho acrescenta o título do capítulo quatro caracteres abaixo do topo da mancha e o fólio cinco acima do pé dela, ambos verticais, a 80 % do corpo do texto, ancorados na margem externa (veja [Elementos de texto vertical](/pt/docs/configuration#elementos-de-texto-verticais)).
+    - Um grupo **Capitular** (linhas, fonte, peso, tamanho, cor e distância) e um recuo de parágrafo. Um texto com capitular quebra linhas qualquer que seja o **Transbordamento** dele e, sem tamanho definido, o topo da letra fica nivelado com as maiúsculas da primeira linha.
+    - Todos os outros blocos de design oferecem os mesmos controles de texto.
+- **Partes**
+  - *Partes* (`parts`):
+    - **Página de abertura de parte** (`parts.page`): desativada, nenhuma página é aberta, e o número, o título e as cores da parte simplesmente passam a valer a partir do conteúdo seguinte. Também oculta as configurações abaixo.
+    - a paridade da página em que um `:::part` abre, e uma quebra opcional depois da parte, com paridade própria;
+    - as margens da página de parte. Elas herdam as margens da página, com os mesmos rótulos interna/externa quando espelhadas.
+    - um bloco de **design da abertura** diagramado em relação à caixa de refile da página. O seletor de marcadores dele acrescenta o conjunto do título: o título atual e o número dele em forma decimal, romana ou alfabética.
+    - um **estilo do texto** para os blocos dentro da parte. Ele herda o texto do corpo e as cores das listas, e inclui as substituições das listas (formato de numeração e deslocamentos, margens, recuo deslocado e os campos das listas de tarefas).
+- **Exportar**
+  - *PDF*.
+  - *Leitor web (HTML)*: as configurações de `htmlViewer`.
+- **Folio**
+  - *Visualizador Folio (3D)* (`folio`), em cinco grupos: **Vista** (a inclinação e o giro), **Papel** (tipo de papel, gramatura, volume específico com a espessura resultante, acabamento, textura e a intensidade dela, tom, transparência), **Encadernação** (tipo, capas, material e cor da capa, imagem da lombada; o tipo *Dobrado (jornal)* põe as folhas dobradas uma vez, uma dentro da outra, sem nada que as prenda, como num jornal e, como não tem lombada onde imprimir, igual a *Grampo canoa (grampeado)*, a imagem da lombada fica oculta), **Superfície** (o material da mesa e a tonalidade) e **Iluminação** (ambiente, exposição, sombras). Escolher outro tipo de papel preenche os campos que você não alterou com os valores desse papel; os que você alterou mantêm os seus. Num formato de jornal, o tipo de papel e a encadernação que você não escolheu aparecem como *Papel jornal* e *Dobrado (jornal)*. A imagem da lombada é escolhida entre os bitmaps e SVGs do painel Recursos. Veja [Aba Folio](#aba-folio).
+- **Avançado**
+  - *Auxílios na tela* (`debug`): a **grade de linhas de base** (`page.baselineGrid`), que fica aqui e não em *Página*, e as outras sobreposições para conferir a diagramação.
+  - *Avisos*: quais problemas o painel Verificações informa, e os limites deles.
+
+**Encontrar uma configuração.** A barra de ferramentas sob o cabeçalho funciona em todos os grupos:
+
+- **Buscar configurações…** filtra todos os campos de todas as seções pelo rótulo, pelo texto de ajuda e pelos nomes das opções. Ignora acentos e compara com o início das palavras: *marg* encontra *Margem superior* (*Top margin* em inglês, *Margen superior* em espanhol), e *h3* abre *Títulos › H3*. Os resultados se agrupam por grupo de configurações. As seções que correspondem se abrem automaticamente, as linhas e seções que não correspondem ficam ocultas, e os acertos aparecem destacados. Escape limpa a busca e, depois, sai do campo.
+- **Alteradas** mostra só os campos cujo valor é diferente do padrão.
+
+**Texto de ajuda.** Todo campo tem uma explicação curta. Os leitores de tela a ouvem como a descrição do campo, e ela fica oculta na tela até você abri-la com o botão **?** da linha (*O que é “…”?*). A chave **Mostrar todas as explicações** do cabeçalho abre todas as explicações de uma vez, e a escolha é lembrada.
+
+**Valores alterados.** O painel segue um **modelo de substituição** coerente:
+
+- Os cabeçalhos de seção levam um selo com o número de campos alterados dentro deles, contados através dos grupos aninhados.
+- O cabeçalho de uma seção mostra um botão de redefinir (que pede confirmação) só enquanto ela tem alterações.
+- Um campo alterado tem um ponto ao lado do rótulo (lido como *alterado*) e um pequeno botão de redefinir próprio.
+- Só a subárvore alterada é salva ou exportada. Os padrões são removidos, então um Sandbox intocado guarda uma configuração vazia.
+- Redefinir *Página* não mexe na grade de linhas de base, já que a grade é editada em *Avançado*.
+
+**Os controles:**
+
+- As escolhas são menus suspensos cujas opções podem trazer uma descrição de uma linha, ou botões segmentados quando há poucas opções.
+- As configurações de ativar/desativar são chaves.
+- Os números têm botões − / +. As setas mudam o valor um passo, dez vezes mais com Shift e um décimo com Alt.
+- Os comprimentos têm um seletor de unidade que converte o valor quando a unidade muda (cm, mm, in, pt, px, em, rem).
+- Uma cor é um único botão que mostra a amostra e o valor.
+- O seletor de fontes pode ser percorrido com as setas.
+
+Os controles dependem do contexto. A largura da medianiz só aparece em diagramações de várias colunas, as configurações de justificação só aparecem quando o texto é justificado (o texto em bandeira mostra **Hifenizar texto em bandeira** no lugar, e um estilo de parágrafo ou um boxe mostra a chave de hifenização quando é justificado ou quando a hifenização do texto em bandeira está ativada), e a porcentagem da coluna lateral só aparece na diagramação em coluna e meia. As alterações têm efeito imediato na visualização. Para uma referência completa de cada opção de configuração e do padrão dela, veja a página [Configuração](/pt/docs/configuration).
+
+O cabeçalho do painel também oferece **Redefinir** (pede confirmação; só aparece quando o design difere do livro de exemplo aberto, e restaura o design desse exemplo, fontes incluídas), **Exportar** e **Importar**. Veja [Exportar e importar](#exportar-e-importar).
+
+#### Painel Verificações
+
+Diagnósticos ao vivo, recalculados a partir do texto, do design, das figuras e da última composição. A contagem coincide com o selo no botão da barra de atividades. Os avisos se agrupam por tipo, em ordem de triagem: primeiro o que quebra a saída, depois a marcação e, por fim, a composição fina, que costuma vir em muitos itens pequenos. Cada grupo é recolhível e mostra a contagem:
+
+- **Fontes**: uma família de fontes ausente, ou variantes de peso/estilo ausentes ou duplicadas numa família personalizada, e *Lista de fontes numa família*: uma configuração `fontFamily` que contém uma lista de fontes CSS (o texto é composto na primeira família; a entrada nomeia o caminho da configuração)
+- **Figuras e tabelas**: um id de recurso desconhecido num `::resource` / `:ref` (também na legenda, na nota ou nas células de uma figura que o texto usa, ou como imagem de uma célula de tabela), ids de recurso duplicados, referências a um tipo de recurso que não existe, bitmaps renderizados bem maiores que o tamanho em pixels deles, uma tabela cujo id de estilo não nomeia nenhum estilo de tabela, uma grade de tabela que ficou irregular (uma célula mesclada cujas células cobertas estão faltando, ou uma linha com um buraco: mescle as células de novo no editor de tabelas), uma imagem cujo arquivo falta no armazenamento ou não decodifica (aparece como um espaço reservado), e um vídeo sem capa, um arquivo de vídeo sem endereço de produção (sem código QR nem link no impresso) ou um endereço do YouTube ou do Vimeo que não indica nenhum vídeo
+- **Texto e marcação**:
+  - saltos na hierarquia de títulos (por exemplo, H1 → H3) e títulos consecutivos sem texto entre eles;
+  - fórmulas `$…$` / `$$…$$` inválidas ou não fechadas;
+  - nomes de diretiva desconhecidos (todo nome que o analisador conhece é aceito: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` e `columns`), atributos de numeração ou de paridade inválidos, e um `:::space{lines=N}` fora do intervalo de 0 a 20 linhas;
+  - uma cerca de contêiner `:::` não fechada no fim do documento (clicar nela dá foco à linha de abertura);
+  - um `:::paragraphs{style="…"}`, `:::callout{type="…"}`, `:chip[…]{style="…"}` ou `{style="…"}` de título cujo estilo não está configurado;
+  - uma linha `::resource` que é impressa como texto, por estar malformada ou colada sob um parágrafo sem uma linha em branco;
+  - *Marcação de largura total*: marcação digitada com um método de entrada chinês ou japonês (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊…＊＊`), que é impressa como texto; a entrada mostra a forma ASCII que deve ser digitada;
+  - *Chave de atributo não lida*: uma chave de atributo escrita fora do ASCII (`作者=曹雪芹`), que o analisador ignora;
+  - *Front matter ignorado*: um capítulo que não é o primeiro e começa com um bloco de front matter (só o front matter do primeiro capítulo pertence ao livro).
+- **Design**:
+  - nomes de marcadores de cabeçalho e rodapé fora da lista permitida pelo motor (`{attr.…}` e os marcadores de parte são aceitos), e marcadores cujos metadados do documento estão faltando;
+  - âncoras cíclicas entre elementos de design, ou âncoras para um elemento que não existe. Esta verificação e a dos marcadores cobrem todos os blocos de design: os cabeços, a abertura de parte, o verso em branco depois de uma página de parte, as linhas de parte do sumário, o design de cada nível de título, e o design e os cabeços da seção de cada estilo de título. Uma entrada que vem de um estilo de título nomeia o estilo, como em `{style="index"} header · #rh → #missing`, e uma que vem do verso ou das linhas de parte do sumário nomeia a configuração, como em `toc.parts.design · #row → #missing`;
+  - elementos de texto cujo transbordamento com corte sempre trunca o texto;
+  - *Design do título cortado*: um design de título mais alto do que a página comporta (texto de uma abertura diagramado além do pé da página, ou de um design dentro da coluna além do pé da coluna, como um lead longo numa página de tela pequena). O título reivindica o resto da página ou da coluna, então o texto depois dele começa na seguinte, mas essa parte do design se perde; clicar na entrada dá foco ao título;
+  - *Coluna lateral fora do intervalo*: uma coluna lateral de coluna e meia que o motor teve de limitar para deixar espaço à coluna principal;
+  - *Número de colunas fora do intervalo*: o número de colunas de uma diagramação `multiple` que não é um inteiro de 3 a 8, e que o motor limitou;
+  - *Formato de numeração desconhecido*: um formato de número de lista, de página ou de tipo de recurso que o motor não conhece, e que numera em decimal;
+  - *Configuração desconhecida*: uma chave que os títulos, um nível de título ou um estilo de título não têm (um `letterSpacng` com erro de digitação), e que o motor ignora; a entrada sugere a configuração mais próxima, quando há uma.
+
+  Estas três últimas, como *Lista de fontes numa família*, vêm da configuração e não do texto: a entrada nomeia o caminho da configuração, e clicar nela não move o editor.
+- **Composição**:
+  - linhas frouxas (espaçamento entre palavras esticado além do limite configurado);
+  - *Linha CJK aquém da medida*: uma linha de texto chinês, japonês ou coreano que fica curta em relação à medida porque preenchê-la espalharia os caracteres além do limite;
+  - *Marcas invadem a linha seguinte* e *Leituras invadem a linha seguinte*: pontos de ênfase, linhas de nome e de título, ou leituras em rubi que precisam de mais espaço entre linhas do que o parágrafo tem; a entrada informa os dois valores, em em;
+  - boxes que ultrapassam a coluna;
+  - *Chips encostam na linha vizinha*: um chip cuja caixa invade um chip na linha de cima ou de baixo (a sobreposição é informada em pontos); um chip alto sem chip acima ou abaixo dele não é sinalizado;
+  - cascatas de paridade;
+  - *Sem padrões de hifenização para este idioma*: o idioma do documento (o idioma de hifenização dele ou, se não houver, o `locale`) não tem padrões incluídos, então o texto é hifenizado com os do inglês americano. O aviso some quando a hifenização é desativada.
+- **Navegador**: armazenamento indisponível (IndexedDB ausente)
+
+Cada entrada mostra um ícone, um título, um detalhe de uma linha e, quando cabe, o capítulo e a linha do código-fonte (*Cap. 2 · Linha 12* num livro de vários capítulos). Clicar numa entrada com localização no código-fonte passa para aquele capítulo e dá foco ao editor naquele ponto. Quando não há nada errado, o painel mostra **Tudo certo**. Quais verificações rodam é definido em **Design → Avançado → Avisos**.
+
+### Área de visualização principal
+
+O lado direito da interface mostra o resultado renderizado. Há cinco abas, uma por modo de renderização, nesta ordem: **Canvas**, **PDF**, **Folio**, **HTML** e **EPUB 3**. Trocar de aba não refaz a diagramação: o mesmo VDT alimenta todos os renderizadores, então o conteúdo que você vê é coerente entre os modos. A aba Folio só aparece quando o navegador tem WebGL2 e a tela não é de celular (veja [Aba Folio](#aba-folio)).
+
+Cada área de visualização executa o pipeline de layout dentro de um **Web Worker** próprio (`postext/worker`). Um hook `useLayoutWorker` por visualização detém o handle do worker, envia as fontes para ele como `ArrayBuffer`s transferíveis e conduz as builds com **cancelamento em que a última vence**: uma tecla digitada ou o arraste de um controle deslizante aborta o `AbortSignal` da build anterior antes que a seguinte comece, de modo que digitar rápido nunca acumula trabalho obsoleto na thread principal. Desmontar uma visualização descarta o seu worker e rejeita qualquer build pendente. Veja [Configuração → Executar o layout em um Web Worker](/pt/docs/configuration#executar-o-layout-em-um-web-worker) para o padrão de integração usado aqui.
+
+<Illustration name="SandboxSyncFlow" data='{"title": "Um VDT, cinco saídas", "desc": "O markdown e a configuração do Sandbox alimentam um único VDT em memória. Canvas, PDF, Folio, HTML e EPUB 3 renderizam a partir desse mesmo VDT, então todas as abas mostram a mesma diagramação.", "caption": "Um único VDT alimenta as cinco abas de saída.", "markdownLabel": "Markdown", "configLabel": "Configuração", "vdtTitle": "VDT", "vdtSubtitle": "layout compartilhado", "canvasLabel": "Canvas", "htmlLabel": "HTML", "folioLabel": "Folio", "pdfLabel": "PDF", "epubLabel": "EPUB 3", "singleSource": "fonte única da verdade"}' />
+
+#### Aba Canvas
+
+Renderiza uma visualização rasterizada do documento em um elemento HTML5 `<canvas>`. Ela mostra com precisão de pixel como o documento composto vai ficar, incluindo o posicionamento exato do texto, a disposição das colunas e a colocação dos recursos.
+
+Uma barra de ferramentas no alto da visualização do canvas oferece:
+
+- **Controles de zoom**: ampliar e reduzir (1,25x por passo, de 0,25x a 4x). Usar o zoom manual desativa o modo de ajuste.
+- **Modos de ajuste**: ajustar à largura da página ou à altura da página. Ligam e desligam; o ajuste é recalculado sozinho quando a janela muda de tamanho.
+- **Modos de exibição**: página simples (uma página por linha) ou página dupla (disposição de livro em que a primeira página aparece à direita, como recto, e as seguintes formam pares como páginas duplas). Um livro encadernado à direita (`page.binding`, chinês vertical) mostra as páginas duplas ao contrário: a página 1 sozinha à esquerda, depois `[3 | 2]`, `[5 | 4]`. Em uma página vertical, um clique cai no caractere sob o ponteiro, e o cursor é uma barra atravessada na coluna.
+
+As páginas são renderizadas sob demanda via `IntersectionObserver`: só as páginas visíveis (mais uma margem de 200 px) são desenhadas no canvas, o que mantém baixo o uso de memória da GPU em documentos longos.
+
+#### Aba PDF
+
+Gera um PDF real do documento atual com o pacote `postext-pdf` e o mostra em um visualizador de PDF embutido do navegador. O PDF é refeito automaticamente na primeira montagem e a cada nova geração, a partir do mesmo VDT que alimenta as abas canvas e HTML. Assim as quebras de linha, os limites de página e a colocação dos recursos coincidem pixel a pixel entre os três renderizadores, até na compressão das últimas linhas cheias demais que o Knuth–Plass às vezes aceita.
+
+Uma barra de ferramentas flutuante no canto inferior direito da visualização oferece:
+
+- **Regenerar** (ícone `RefreshCw`): refaz o PDF a partir do markdown e da configuração atuais. Útil depois de mudar uma configuração que não dispara uma nova build sozinha, ou quando as fontes terminam de carregar.
+- **Baixar** (ícone `Download`): salva o PDF atual no disco. O nome do arquivo vem do primeiro título H1 do documento (ou, na falta dele, `document.pdf`).
+- **Imprimir** (ícone `Printer`): abre a caixa de diálogo de impressão do navegador sobre o visualizador de PDF embutido, que na maioria dos navegadores permite imprimir ou salvar outra vez como PDF.
+- **Capítulo atual / Livro inteiro** (seletor à esquerda da barra de abas, em livros com mais de um capítulo): renderiza todos os capítulos como um único PDF contínuo em vez do capítulo ativo continuado depois dos anteriores (o padrão). Mudá-lo gera o PDF de novo. O canvas tem um seletor próprio (veja [Livros e capítulos](#livros-e-capítulos)).
+
+Por baixo, o Sandbox usa um helper `createPdfFontProvider()` que busca arquivos WOFF2 estáticos, um por peso, na CDN jsdelivr da Fontsource, descompacta-os para TTF no navegador e entrega os bytes ao `pdf-lib` via `renderToPdf`. Fontes estáticas por peso (em vez de uma única fonte variável) são necessárias para que o texto em negrito seja de fato incorporado com o peso negrito. Veja [Gerar PDFs](/pt/docs/configuration#geração-de-pdf) para o mesmo padrão usado fora do Sandbox.
+
+#### Aba Folio
+
+Mostra o livro como objeto impresso: as páginas diagramadas pelo motor, encadernadas e abertas sobre uma mesa, em 3D (`postext-folio`, three.js). As páginas são as próprias pinturas do canvas, mostradas texel por pixel, então o texto fica tão nítido quanto na aba Canvas; o que muda é tudo o que está em volta delas. O papel, a encadernação, a mesa e a luz vêm do grupo **Folio** do painel Design (a configuração `folio`), e um trecho `:::paper` no texto imprime as suas páginas em outro papel (veja [Formato do documento › `:::paper`](/pt/docs/document-format#paper)).
+
+- **O que ela diagrama.** A aba Folio segue o seletor **Capítulo atual / Livro inteiro** do canvas. Um capítulo é mostrado como parte do seu livro: as páginas antes e depois dele entram na espessura dos dois blocos de páginas, e o capítulo abre no seu lado verdadeiro da página dupla. Um livro encadernado à direita (`page.binding: 'right'`, ou um livro vertical) aparece espelhado e vira as folhas para a esquerda.
+- **Virar as páginas.** Pegue uma página pela borda e arraste-a por cima; solte depois da metade e ela vira, antes disso ela volta. Um clique em uma página também a vira (a da direita para a frente, a da esquerda para trás), assim como os botões ‹ › da barra de ferramentas e as setas, Page Up/Down, Home e End quando o livro tem o foco. Cada folha se curva conforme o seu papel: o papel bíblia enrola apertado, o cartão vira em um arco largo, o papelão e as capas viram como placas rígidas.
+- **Saltos longos.** Uma página a mais de dez páginas de distância (digitada no campo de página, indicada pelo permalink, alcançada por um link ou pelo cursor no painel Texto) é alcançada de uma vez: o bloco de páginas intermediárias se ergue inteiro, com a espessura dessas páginas, e é deitado do outro lado. Até dez páginas, as folhas viram uma a uma.
+- **Olhar em volta do livro.** Arrastar com o botão direito gira a vista em torno do livro, até 70° a partir de cima: para ver a lombada, o corte frontal ou a espessura do bloco. A vista fica onde você a deixa, mesmo enquanto as páginas viram, até que **Redefinir visualização** a leve de volta, suavemente, à vista dada pelas configurações (*Inclinação* e *Giro*). **Salvar como visualização padrão** guarda a vista atual nessas configurações, para que o livro abra ali e Redefinir visualização volte a ela.
+- **O que o ponteiro faz.** Três botões na barra de ferramentas escolhem o que o botão esquerdo (um dedo, uma caneta) faz sobre o livro: **Virar as páginas à mão**, o padrão, como acima; **Girar a vista**, o mesmo que arrastar com o botão direito, para trackpad ou tablet; **Selecionar texto**, que funciona como na aba Canvas sobre o livro tal como aparece, inclinado ou girado: um clique coloca o cursor no painel Texto, arrastar seleciona, um clique duplo pega uma palavra, um clique em um link o segue. A escolha fica guardada; H, O e S a trocam enquanto o livro tem o foco.
+- **Acompanhar o editor.** O cursor e a seleção do painel Texto são desenhados nas páginas e continuam ali enquanto você digita: a página mostra a edição assim que é diagramada de novo. Levar o cursor do editor a uma página que não está à vista vira o livro até ela.
+- **Capas.** Com *Capas: Uma capa dura em volta das páginas*, o livro é encadernado em capa dura de tecido, cartão ou couro na cor da capa. Com *As páginas do próprio documento*, a primeira página é a capa e a última página (quando cai em uma página da esquerda) é a quarta capa: o livro fica fechado até a capa ser virada, e virar a última folha o fecha de novo. Um livro grosso abre com a lombada em pé entre os dois blocos.
+- **A barra de ferramentas.** Uma barra flutuante como a do canvas: **Recalcular**, **Redefinir visualização**, **Salvar como visualização padrão**, os três modos do ponteiro, o alfinete, ‹ › e o campo de página, que recebe um número de página do livro e vira até a página dupla correspondente. A página à direita da página dupla aberta é a que o permalink indica (`view=folio&page=N`).
+- **As configurações valem na hora.** As configurações do Folio não fazem parte da diagramação: mudar o papel, a encadernação ou a luz redesenha o livro sem diagramar nenhuma página de novo.
+- **Onde ela aparece.** A aba precisa de WebGL2 e de uma tela cujo lado menor tenha pelo menos 600 px: em um celular, o livro em 3D ocupa mais memória do que o navegador dá a uma aba, então a aba não aparece ali (nem em um navegador sem WebGL2). Em um painel com menos de 560 px de largura, o livro mostra uma página por vez; a folha continua virando sobre a lombada. Quando o sistema pede movimento reduzido, as páginas duplas mudam sem virar.
+- **Vídeos na página.** Um clique na capa de um vídeo o reproduz na própria página, em qualquer um dos três modos do ponteiro, e a imagem continua em movimento enquanto a folha vira e se curva. Outro clique o pausa; iniciar outro vídeo para o primeiro, a menos que *Tocar junto com outros vídeos* esteja ligado; o vídeo para quando o livro se acomoda em uma página dupla que já não o mostra. A barra de espaço reproduz ou pausa o vídeo da página dupla aberta. Um vídeo com *Reprodução automática* ligada começa sozinho na primeira vez que a sua página dupla aparece, com som depois que você clica na página (antes, sem som, e um clique liga o som); os dois vídeos do guia fazem isso. Arquivos enviados e vídeos em um endereço (MP4, HLS) são reproduzidos assim quando o servidor permite leituras de outra origem; os vídeos do YouTube e do Vimeo viram a página como antes (veja [Formato do documento › Vídeos nas páginas do Folio](/pt/docs/document-format#vídeos-nas-páginas-do-folio)).
+- **Alternativas em texto.** Cada página é desenhada como uma imagem; o seu nome acessível remete à aba HTML e ao painel Texto para o texto dela.
+
+#### Aba HTML
+
+Renderiza a saída do postext dentro de um contêiner Shadow DOM, o que garante o isolamento completo dos estilos em relação à página hospedeira. O CSS editorial (tipografia, espaçamentos, fios entre colunas) é injetado dentro da shadow root, de modo que não pode ser afetado pelos estilos do aplicativo em volta nem vazar para eles.
+
+Os links do Markdown funcionam aqui e no PDF (veja [Formato do documento › Links](/pt/docs/document-format#links)). Nesta aba, clicar em um deles abre o destino em uma nova aba do navegador, e o Sandbox continua aberto; as citações `:ref` continuam saltando dentro do documento.
+
+Os vídeos são reproduzidos aqui: um vídeo do YouTube ou do Vimeo no player da plataforma, um arquivo ou um endereço no player do navegador (um fluxo HLS por meio do hls.js quando o navegador não tem HLS próprio), com as opções de player do *Estilo de vídeo* do painel Design e de cada vídeo. Os cliques em um player vão para o player, não para o editor. Com **No visualizador HTML** definido como *Capa*, a aba mostra a capa impressa, com link para o vídeo.
+
+Uma barra de ferramentas no alto da visualização oferece:
+
+- **Controles de escala da fonte**: diminuem ou aumentam o texto corrido preservando todas as medidas relativas da configuração.
+- **Modos de coluna**: única (uma coluna alta com rolagem) ou múltipla (o número de colunas cuja largura mais se aproxima da medida configurada, com rolagem horizontal que se encaixa entre as páginas). Um documento em duas colunas mantém as suas páginas de duas colunas, mas o visualizador pode mostrar um número ímpar de colunas (três, em vez de duas esticadas ou quatro espremidas) quando esse é o ajuste mais próximo; a última pertence então à página seguinte, meio à vista. Um documento ou uma seção em *Várias colunas* também é mostrado como páginas de duas colunas: de três a oito colunas impressas seriam tiras finas na largura da tela, então o visualizador compõe o texto em duas colunas por página e mostra lado a lado tantas quantas a medida permitir. Um livro encadernado à direita (`page.binding`) corre as páginas da direita para a esquerda no modo múltiplo: o visualizador abre na ponta direita e a seta ‹ vai para a página seguinte. Um livro composto na vertical só é lido no modo múltiplo: o botão **Única** fica desativado, com uma dica que explica o motivo, e a escolha que você salvou volta com o próximo livro horizontal.
+
+A geometria das colunas é controlada pela seção **Leitor web (HTML)** do painel Design (**Design → Exportar**): `maxCharsPerLine` define a medida-alvo em caracteres da fonte do corpo, `columnGap` o espaço horizontal entre as colunas no modo múltiplo, e `optimalLineBreaking` liga e desliga o Knuth–Plass dentro do visualizador. Veja a [referência de configuração do visualizador HTML](/pt/docs/configuration#visualizador-html) e o [exemplo de integração](/pt/docs/configuration#integração-do-visualizador-html) completo para o mesmo padrão que o Sandbox usa internamente.
+
+#### Aba EPUB 3
+
+Grava o livro inteiro como um arquivo EPUB 3 com o pacote `postext-epub`, mostra-o em um leitor dentro da aba e permite baixá-lo. O arquivo é gerado no navegador a partir da mesma diagramação capítulo a capítulo que a aba PDF usa em **Livro inteiro**, então os números de página, as notas, as referências cruzadas, o sumário e o índice remissivo são os que o PDF imprime. A aba não tem o seletor **Capítulo atual / Livro inteiro**, já que um EPUB sempre contém o livro inteiro. No lugar dele, à esquerda da barra de abas, ela oferece a diagramação do EPUB (como ícones no celular).
+
+O EPUB 3 tem duas diagramações, indicadas pela propriedade `rendition:layout` do pacote:
+
+- **Layout fixo** (`pre-paginated`, muitas vezes chamado de FXL): cada página tal como é impressa. Cada página é um documento próprio com o tamanho da página, e o texto fica onde o PDF o coloca, nas fontes do livro, mas continua sendo texto real, que pode ser selecionado, pesquisado e lido em voz alta. As páginas duplas formam pares como no impresso, e um livro encadernado à direita (árabe, chinês vertical) vira da direita para a esquerda. Ele mantém o design: colunas, flutuantes, cabeços, aberturas, as quebras de linha exatas. Escolha-o para livros cujas páginas são desenhadas como páginas, como livros ilustrados, livros didáticos, catálogos e revistas, e para sistemas de leitura com tela grande. Em uma tela pequena a página é reduzida, e o leitor amplia para ler.
+- **Refluível** (o padrão em celulares e computadores, e o padrão do EPUB): o texto, as figuras e as tabelas em ordem de leitura, compostos de novo pelo sistema de leitura para a sua tela e para a família tipográfica, o tamanho e as margens que o leitor escolhe. Os parágrafos são reconstruídos a partir das linhas diagramadas (os hífens acrescentados no fim das linhas são removidos), as figuras e as tabelas seguem o texto que as cita, os boxes viram asides, as notas de rodapé levam às notas no fim de cada capítulo e de volta, e os números de página impressos são mantidos como marcadores de página. Uma folha de estilos derivada do design dá aos títulos, boxes, tabelas e legendas a sua aparência, mas a geometria da página desaparece: sem colunas, sem cabeços, sem quebras de linha fixas. Escolha-o para texto corrido, como romances, ensaios e relatórios, e para celulares e leitores de tinta eletrônica.
+
+Enquanto nenhuma for escolhida, a aba abre no layout fixo em um tablet como o iPad, cuja tela tem espaço para a página impressa, e no refluível em todos os outros casos. A escolha fica guardada entre as visitas (`postext-sandbox-epub-layout`), e trocá-la grava o arquivo de novo na hora.
+
+- **Geração.** O EPUB é gravado na primeira vez que a aba abre e de novo quando você clica em **Recalcular**. Uma barra de progresso conta os capítulos sendo diagramados e depois as etapas do gravador (fontes, imagens e capa; as páginas ou os capítulos; o pacote), e os leitores de tela anunciam quando o arquivo está pronto ou quando falhou. Depois de uma edição, uma seta ao lado de **Recalcular** indica que o arquivo já não corresponde ao texto, como na aba PDF. Sair da aba ou trocar a diagramação interrompe uma geração em andamento. Um livro longo leva alguns segundos, durante os quais a página não responde.
+- **O que entra no arquivo.** Os metadados vêm do front matter do primeiro capítulo: `title`, `subtitle`, `author` (um nome ou uma lista), `publishDate` ou `date`, `isbn` ou `identifier`, `publisher`, `rights` e `description`; o idioma vem do `locale` da configuração. Um livro sem identificador recebe um derivado do projeto (ou do livro de exemplo e do seu idioma), para que todos os EPUBs do mesmo livro mantenham uma única identidade na biblioteca de um leitor. Toda família tipográfica que o design nomeia é incorporada: os recortes do Google Fonts só onde o livro imprime caracteres que eles contêm, as famílias personalizadas a menos que estejam marcadas como não redistribuíveis. As imagens entram como foram armazenadas, os SVGs como o seu código-fonte com as fontes embutidas, nunca como o original de impressão em PDF. Os arquivos de vídeo entram em `media/` e são reproduzidos no player do leitor; um arquivo sem os seus bytes é reproduzido a partir do seu endereço de produção, que o pacote declara como recurso remoto, e um vídeo do YouTube ou do Vimeo é a sua capa com link para o vídeo. A capa é a imagem do próprio livro quando é um bitmap com pelo menos 600 px de largura; caso contrário, é a primeira página renderizada com 1.600 px de largura, sem a margem das marcas de corte.
+- **O leitor.** A aba abre o arquivo que acabou de gravar, os mesmos bytes que você baixa, não uma visualização à parte. O layout fixo mostra uma página, ou uma página dupla quando o painel é largo o bastante, ajustada ao espaço; o livro refluível é paginado uma tela por vez (de cima para baixo no chinês vertical), e as suas páginas seguem de um capítulo para o outro. Os links do livro movem o leitor; os links da web e de e-mail abrem em uma nova aba do navegador. ← / →, Page Up / Page Down, Home e End viram as páginas, e em um livro da direita para a esquerda ← avança.
+- **A barra de ferramentas.** Uma barra flutuante como a da aba PDF: **Recalcular**, o alfinete, **Baixar EPUB** com o tamanho do arquivo (o arquivo recebe o nome do título do livro), um botão de avisos quando o gravador relatou algo, **Sumário** (uma lista de saltos a partir do sumário do livro), **Aumentar o tamanho da fonte** e **Diminuir o tamanho da fonte** (só no refluível, mantendo o ponto de leitura), ‹ › e, no layout fixo, o campo de página. O campo de página conta as páginas na ordem de leitura do arquivo, sendo a capa a 1; os quadros nomeiam cada página com o seu número impresso.
+- **Avisos.** O botão de avisos lista o que o arquivo não conseguiu levar tal como o livro tem: uma imagem sem arquivo armazenado (um quadro vazio fica no lugar dela), uma família, um peso ou um estilo sem face incorporada (os sistemas de leitura usam outra), uma família deixada de fora porque não pode ser redistribuída, e qualquer coisa que a diagramação não consiga expressar. As mesmas mensagens vão para o console do navegador.
+- **Verificar o arquivo.** As duas diagramações do guia e dos livros de exemplo passam no [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 sem erros nem avisos. Para verificar o seu próprio livro, baixe-o e execute `epubcheck book.epub`, ou leia-o no Apple Books, no Thorium Reader ou no Calibre.
+
+Veja [Livros EPUB](/pt/docs/configuration#livros-epub-postext-epub) para gravar os mesmos arquivos a partir do seu próprio código.
+
+### Celulares e telas pequenas
+
+Abaixo de 768 px de largura, o Sandbox passa para uma disposição própria:
+
+- **Painéis.** A barra de painéis vai para a parte de baixo da janela, com os mesmos botões na mesma ordem. Um painel aberto cobre a visualização em vez de ficar ao lado dela; a visualização continua onde estava por baixo, fora da ordem de tabulação, então ao fechar o painel ela está na mesma página.
+- **Barra superior.** As abas de saída, o seletor de abrangência (a escolha da diagramação na aba EPUB) e os controles do hospedeiro (alvos grandes, tema, idioma) dividem a barra acima da visualização. Abaixo de 640 px ela ocupa duas linhas: o logotipo, a abrangência e os controles em cima, as abas embaixo, dividindo toda a largura; cinco abas cabem em 320 px.
+- **Barras de ferramentas.** As barras de ferramentas flutuantes das visualizações ficam encaixadas na parte de baixo da visualização e passam para uma segunda linha quando não cabem.
+- **Folio.** A aba Folio não aparece em tela de celular (veja [Aba Folio](#aba-folio)).
+- **PDF.** Celulares e tablets só de toque não conseguem mostrar um PDF dentro da página (o Android não tem visualizador embutido, e o iOS desenha só a primeira página), então a aba PDF mostra no lugar um cartão com **Abrir PDF**, que abre o arquivo em uma nova aba; o **Baixar** da barra de ferramentas continua salvando o arquivo.
+
+## Livros e capítulos
+
+Tudo o que você abre no Sandbox é um **livro**, do mesmo jeito que um arquivo de livro do InDesign agrupa um documento por capítulo: a configuração, as fontes personalizadas e o conjunto de recursos são compartilhados pelo livro inteiro, e cada **capítulo** é um documento markdown próprio. Obras longas, como um livro didático de quinhentas páginas, são editadas um capítulo por vez, enquanto a numeração, as referências cruzadas e a exportação continuam vendo um único documento.
+
+- A **estrutura** fica no painel Capítulos e no seletor de capítulos do painel Texto: adicionar, renomear (clique duplo em uma linha), reordenar, dividir um capítulo em um por título de nível 1, juntar um capítulo ao anterior, excluir. Cada capítulo mantém o seu próprio histórico de desfazer e o seu cursor.
+- **Um capítulo por vez.** Por padrão, as visualizações diagramam o **capítulo ativo**, continuado depois dos capítulos anteriores: o número da sua primeira página segue a última página do capítulo anterior, os títulos de nível 1 continuam a contagem (o capítulo 4 recebe o número 4, as suas figuras 4.1, 4.2, …), os cabeços `{chapterNumber}` e `{chapterTitle}` acompanham, a paridade recto/verso é mantida (uma abertura de capítulo acrescenta uma página em branco exatamente como faria no meio do livro), e um `:ref` a uma figura mencionada pela primeira vez no capítulo 1 mantém esse número. As contagens de páginas dos capítulos anteriores vêm da diagramação que mostrou cada um deles por último; os capítulos nunca visitados (ou editados desde então) são diagramados em segundo plano, um depois do outro, e a lista de capítulos mostra *páginas pendentes* até que eles cheguem. Os intervalos de páginas são exatos para capítulos que abrem em página nova (o padrão); um capítulo cujo texto continuaria a partir da página anterior é colocado no alto da sua própria página.
+- **Livro inteiro.** O canvas, a visualização HTML e a aba PDF podem mostrar o livro inteiro como um único documento contínuo: escolha **Livro inteiro** no seletor à esquerda da barra de abas (em livros com mais de um capítulo). O canvas então diagrama todos os capítulos em ordem, cada um depois das páginas a que os anteriores chegaram, e mostra os documentos emendados. Uma edição diagrama de novo apenas o seu capítulo, e os capítulos seguintes só quando a primeira página deles mudou de lugar; a lista de capítulos, as partes `chapter=` e `page=` do permalink e a sincronização com o editor seguem o capítulo da página. A escolha fica guardada com o livro (um romance curto se lê como um único documento, um livro didático um capítulo por vez), e uma predefinição pode abrir assim por meio do `view.canvasScope` do manifesto. A visualização HTML compartilha a escolha do canvas e diagrama o livro inteiro como um único documento a partir da primeira página, com as linhas do sumário e o fragmento seguindo o capítulo de cada página; a aba PDF mantém o seu próprio seletor.
+- **Livros longos.** Um livro de 120 capítulos funciona como um curto. O menu de capítulos no cabeçalho do painel Texto rola dentro da janela e abre no capítulo ativo; as setas se movem a partir dele. Um livro dividido em partes (blocos `:::part` nos seus capítulos) lista os capítulos sob as suas partes, no menu e no painel Capítulos, e um clique em uma parte no menu abre o primeiro capítulo dela. Acima de 30 capítulos, o menu tem um campo de busca no alto que encontra números de capítulo (`27`) e palavras dos títulos e dos nomes das partes (`埋香`, `卷三`); Enter abre o primeiro resultado. Enquanto um método de entrada está compondo (Zhuyin, Cangjie, pinyin, kana), o Enter e as setas pertencem a ele: o Enter confirma a conversão e não abre nada. Os arquivos de capítulo de um livro de exemplo carregam de oito em oito, e enquanto os capítulos são paginados em segundo plano o painel Capítulos mostra o progresso (*Paginando 34/120*). O canvas e a visualização HTML mostram um livro de mais de 200 capítulos um capítulo por vez, seja o que for que o livro ou o seu manifesto peçam: diagramar todos os capítulos de uma vez mantém o livro inteiro na memória. Um livro abaixo disso pode abrir inteiro: 紅樓夢 (129 capítulos, umas 2.000 páginas) leva cerca de 25 segundos e 100 MB no canvas. A aba PDF continua podendo exportar qualquer livro inteiro.
+- **Front matter.** O front matter do primeiro capítulo é o front matter do livro (título, autor, …). Um bloco de front matter no alto de qualquer outro capítulo é ignorado, e o painel Verificações avisa. O `buildBundle` segue a mesma regra, então um livro é renderizado da mesma forma no Sandbox e no seu próprio programa.
+- **Contagens de páginas.** Cada capítulo é diagramado como um documento próprio, então `{totalPages}` conta as páginas do capítulo. `{bookTotalPages}` conta o livro inteiro: assim que as páginas de todos os capítulos são conhecidas, as visualizações diagramam cada capítulo com esse total (só quando um cabeçalho, um rodapé ou um design o imprime). Até lá, um capítulo imprime as páginas até o seu próprio fim. O **Livro inteiro** da aba PDF conta as páginas que diagrama, então o arquivo sempre imprime o total real do livro.
+- **Aberturas de capítulo.** Nenhuma quebra de página é forçada entre capítulos: um capítulo cujo primeiro bloco é um título de nível 1 abre em página nova pela própria configuração de *quebra antes* do título, exatamente como um capítulo que começa no meio do documento.
+- **Sincronização.** Clicar em um parágrafo de qualquer capítulo na visualização Canvas ou HTML leva o editor para aquele capítulo e posiciona o cursor; o cursor do editor fica destacado nas visualizações onde quer que o capítulo esteja no livro. Os avisos indicam o seu capítulo.
+- **Documentos existentes** abrem como um livro com um capítulo; nada muda até que um segundo capítulo seja adicionado.
+
+## Editar quadrinhos
+
+Um capítulo com páginas de quadrinhos (`:::page`) ou tiras (`:::strip`) pode ser editado nas próprias páginas, na aba Canvas, na aba HTML e no modo de seleção do Folio. As ferramentas funcionam do mesmo modo em uma tira composta em uma coluna, flutuando no alto de uma página ou atravessando-a, mais estreita que a sua medida ou sob uma legenda, e gravam no bloco da própria tira. Cada mudança é gravada no Markdown do capítulo, como seria uma edição digitada, então o desfazer do editor a reverte. A marcação e as regras de letreiramento estão explicadas em [Quadrinhos](/pt/docs/comics).
+
+- **Divisores.** Sobre a sarjeta entre dois quadros, o ponteiro vira um cursor de redimensionamento. Arraste-o para mover a linha de divisão; ao soltar, a nova porcentagem é gravada no atributo `split` da página (acrescentado ao bloco quando a página não tem um) e a página é diagramada de novo. Shift encaixa a linha em passos de 5 %, Alt move só a ponta mais próxima do ponteiro, inclinando a linha, e nenhum quadro fica mais estreito que 5 %. Enquanto você arrasta, um quadro cuja imagem deixaria de manter a sua área segura à vista é marcado, com uma dica. Cada divisor também é um separador que recebe foco: as setas o movem 1 % (5 % com Shift), Enter grava a posição e Escape a devolve ao lugar.
+- **Dividir e juntar.** Sobre um quadro, uma pequena barra de ferramentas oferece **Dividir com uma linha horizontal**, **Dividir com uma linha vertical** (uma linha `::panel` vazia é acrescentada para a nova célula, logo depois deste quadro) e **Juntar com o próximo quadro**: a linha entre eles some, e o quadro resultante mantém a imagem do primeiro quadro e recebe as linhas de roteiro dos dois. Os quadros também podem ser alcançados com Tab: um quadro em foco ganha contorno, H o divide com uma linha horizontal, V com uma vertical, e M o junta com o próximo quadro; o foco fica no quadro depois que a página é diagramada de novo. Enter abre a barra de ferramentas, e Escape volta dela para o quadro.
+- **Balões.** Arraste um balão para fixá-lo: ao soltar, a sua linha de roteiro recebe `at="x% y%"`, o ponto em porcentagens da imagem do quadro (da célula, para um quadro sem imagem), de modo que o balão fica no mesmo ponto do desenho apesar de recortes, arrastes de divisores e traduções. Um grupo unido se move inteiro, fixado pelo seu primeiro balão. As setas deslocam um balão em foco 1 % (5 % com Shift), e um clique duplo em um balão fixado remove o seu `at`, devolvendo-o à colocação automática. Um clique simples coloca o cursor do editor na linha do balão.
+- **Dica de transbordamento.** Enquanto um balão se move, pelo ponteiro ou pelas setas, a visualização verifica onde ele cairia. Se ele cobrir um rosto ou uma zona a evitar, ou sair do quadro mais do que já sai, o contorno em movimento fica laranja, os rostos e as zonas a evitar do quadro são desenhados tracejados, e a dica diz qual é o caso: *Aqui cobriria um rosto*, *Aqui cobriria uma parte da imagem mantida livre*, *Aqui sairia do quadro*. Uma linha com `break` não é sinalizada por sair do seu quadro. A dica não prevê como os outros balões do quadro vão se mover para abrir espaço.
+- **Rabichos.** Sobre a ponta de um rabicho, o ponteiro vira uma mira. Arraste a ponta para onde o rabicho deve apontar: ao soltar, a linha recebe `to="x% y%"`, o ponto em porcentagens da imagem do quadro, e o rabicho se vira para ele, parando um pouco antes, como faz diante de uma boca. Escape cancela o arraste, e um clique duplo na ponta remove `to`, de modo que o rabicho volta a apontar para o seu personagem. Pelo teclado, T em um balão em foco passa para o seu rabicho: as setas movem o ponto para onde ele aponta 1 % (5 % com Shift), Enter o grava, Escape o devolve ao lugar, Delete remove `to`, e T volta ao balão.
+- **Personagens e zonas a evitar.** Em uma imagem no [painel Recursos](#painel-recursos), o campo **Área segura e letreiramento** abre uma caixa de diálogo com três modos. **Área segura** marca a parte da imagem que precisa ficar à vista. **Personagens** coloca um ponto por personagem: um clique na imagem acrescenta ali um personagem e põe o foco no seu id, que deve ser a chave de personagem usada no roteiro (`maya: …`); a boca, a cabeça (para onde apontam os balões de pensamento) e o rosto (nunca coberto por um balão) são arrastados até o lugar. **Zonas a evitar** são retângulos que nenhum balão cobre, desenhados arrastando sobre a imagem. Toda marca pode ser movida com as setas (Shift para passos maiores) e removida com Delete; a caixa de diálogo tem o seu próprio desfazer, e um personagem fora da área segura é sinalizado.
+- **Configurações.** O grupo **Quadrinhos** do painel Design reúne a configuração dos quadrinhos: o sentido de leitura e as imagens espelhadas, a moldura e as sarjetas, o quadro padrão e os estilos de quadro com nome, o letreiramento e os estilos de balão, cada um com uma visualização do seu contorno.
+- **Editor e verificações.** O editor de texto colore `:::page`, `:::strip`, as linhas `::panel` e as chaves e os atributos das linhas de roteiro. O painel Verificações lista os avisos de quadrinhos (uma divisão ilegível, quadros e células que não coincidem, um balão que não cabe…) na linha a que se referem; veja [Quadrinhos › Avisos de quadrinhos](/pt/docs/comics#avisos-de-quadrinhos).
+
+## Persistência
+
+O Sandbox salva automaticamente o seu trabalho no navegador:
+
+- **Livro e configuração**: os capítulos, o capítulo ativo e a abrangência do canvas são salvos automaticamente no `localStorage` sob `postext-sandbox-book` (um documento único salvo por uma versão anterior é lido de `postext-sandbox-markdown` como um livro de um capítulo e migrado no primeiro salvamento); a configuração é salva depois de 1 segundo de inatividade, sem os valores padrão, de modo que só as suas alterações ficam guardadas, junto com a sua versão (`postext-sandbox-config-version`); uma configuração salva antes de existir a versão é lida como descrito em *Quebras de título salvas pelo postext 1.4 ou anterior*, mais abaixo
+- **Estado da interface**: o painel e a aba de visualização ativos, a largura da barra lateral, o grupo aberto do painel Design (`postext-sandbox-settings-group`), a sua chave *Mostrar todas as explicações* (`postext-sandbox-settings-help`) e o estado aberto ou fechado das seções, os livros de exemplo ocultos, os modos de zoom, ajuste e exibição do canvas, a escala da fonte e o modo de coluna do HTML, a diagramação da aba EPUB (`postext-sandbox-epub-layout`) e o estado fixado das barras de ferramentas ficam todos guardados no `localStorage`
+- **Livro aberto**: o id do livro seu que está aberto (um *projeto*) fica guardado no `localStorage` sob `postext-sandbox-project`; os projetos em si (capítulos, configuração e registros de recursos; registro `version: 8`, o `CONFIG_VERSION` do motor, que também carimba a configuração de trabalho e as exportações `postext-config.json`, para que cada um seja migrado uma vez quando as regras do motor mudam; os registros de documento único de versões anteriores são migrados ao serem lidos, e as quebras de título dos registros anteriores à versão 3, o tamanho das fórmulas dos registros anteriores à versão 4, o espaço sob as figuras na linha dos registros anteriores à versão 5, o espaço em torno das figuras na linha dentro de boxes, as marcas nos títulos, os tamanhos de capitular, o espaço sob uma linha com dois-pontos e os cortes de boxe dos registros anteriores à versão 6, as quebras em travessões e a quebra do texto em bandeira dos registros anteriores à versão 7, e as divisões sob um título, as quebras nos hífens de palavras compostas e o espaço sob os contêineres `:::paragraphs` dos registros anteriores à versão 8 são fixados como descrito abaixo) ficam no armazenamento `projects` do banco de dados IndexedDB do Sandbox, e os seus conteúdos binários compartilham os armazenamentos de blobs e de fontes com o documento de trabalho. Os conteúdos são removidos pela coleta de lixo quando nem o documento de trabalho nem nenhum projeto faz referência a eles
+- **Livros de exemplo editados**: a sua versão de um livro de exemplo (os capítulos, o capítulo ativo, a abrangência do canvas, a configuração e os registros de recursos, com o que o exemplo aplicou quando você o abriu) é salva no armazenamento `presetDrafts` do banco de dados IndexedDB do Sandbox, um registro por exemplo e idioma do conteúdo, e os seus arquivos são preservados pela coleta de lixo como os de um projeto. Restaurar o original o exclui
+- **Capas dos livros de exemplo**: a capa tirada da primeira página de um livro de exemplo que não traz miniatura fica no armazenamento `presetCovers` do banco de dados IndexedDB do Sandbox, um registro por exemplo e idioma do conteúdo (veja [Painel Livros](#painel-livros)). Um livro seu guarda a capa no seu registro de projeto.
+- **Salvar ao sair**: as edições pendentes são gravadas na hora quando a página é ocultada ou fechada, quando você sai do Sandbox por um link (o logotipo) e antes que outro livro abra, em vez de esperar a pausa de 1 segundo
+- **Livro de exemplo aberto**: o id da última predefinição carregada fica guardado no `localStorage` sob `postext-sandbox-preset`, para que os botões Redefinir dos painéis continuem restaurando essa predefinição entre sessões (uma predefinição que deixou de ser servida aparece como indisponível). O que essa predefinição aplicou (a impressão digital do seu pacote mais os hashes do markdown, da configuração e do conjunto de recursos) fica guardado sob `postext-sandbox-preset-applied`, e é assim que a visita seguinte distingue um documento intocado de um editado
+- **Recursos e fontes**: os registros de recursos, os seus blobs binários (bitmaps e SVGs) e os arquivos de fonte personalizados persistem no **IndexedDB**; quando o IndexedDB não está disponível (por exemplo, em alguns modos de navegação privada), um aviso de *armazenamento indisponível* aparece no painel Verificações (em *Navegador*)
+- **Permalink**: o fragmento da URL indica o que está na tela, então uma recarga, um favorito ou um link passado a outra pessoa chega à mesma página do mesmo livro no mesmo visualizador: `#preset=bioquimica-feduchi&lang=es&view=canvas&chapter=1&page=7` abre a predefinição Bioquímica em espanhol na aba Canvas, no capítulo 1, página 7 (o número impresso na página). `view` é `canvas`, `pdf`, `folio`, `html` ou `epub`; na aba Folio a página é a da direita da página dupla aberta. Um projeto local é indicado como `project=ID`, o seu id de armazenamento, então só o navegador que tem o projeto consegue seguir esse link. O Sandbox mantém o fragmento atualizado enquanto você troca de livro, de aba e de capítulo e enquanto rola a página. Uma parte omitida significa o que estiver ali (sem página: a primeira página do capítulo; sem livro: o último aberto), e um livro que o navegador não consegue abrir é ignorado. Colar um link na barra de endereços de um Sandbox aberto o abre ali mesmo. Quando a página é aberta por um link para um livro diferente do último aberto, o Sandbox mostra o estado de carregamento até o livro do link chegar, nunca o anterior. Um hospedeiro também pode criar links para livros próprios com a prop `hashBundles` (veja [Props](#props)): o site abre uma receita das Receitas com `#recipe=<slug>&lang=es`. A primeira visita importa o arquivo `.postext` da receita como um dos seus livros. Uma visita posterior pelo mesmo link pergunta antes (*Você já tem este livro*): **Abrir minha cópia** abre esse livro, com as suas edições, e **Substituir pela versão publicada** importa a receita de novo, que pode ter sido corrigida desde então, e exclui a sua cópia assim que a nova estiver aberta; Escape mantém a sua cópia. O fragmento passa então a indicar o projeto. O idioma da interface fica no caminho (`/en/sandbox`, `/es/sandbox`); `lang` é o idioma do conteúdo de um pacote bilíngue, qualquer tag BCP 47, mantida com a capitalização canônica (`lang=zh-hant` é lido como `zh-Hant`). Uma tag que o pacote não lista abre a edição que a atende: `zh-TW` e `zh-HK` abrem a edição em chinês tradicional (`zh-Hant`), `zh` e `zh-CN` a simplificada (`zh-Hans`), `en-GB` a inglesa. A outra escrita chinesa só é lida quando o pacote não tem edição na do leitor: um link `zh-TW` para um livro em `zh-Hans` e em inglês abre o texto simplificado, não o inglês. Um link sem `lang` abre o `openLocale` do pacote quando ele indica um; caso contrário, a edição no idioma da interface. O capítulo e a página de um link valem para a edição que ele abre, e o fragmento passa a indicar essa edição pela sua própria tag (`lang=zh-TW&chapter=28` vira `lang=zh-Hant&chapter=28`).
+
+**Quebras de título salvas pelo postext 1.4 ou anterior.** Até o postext 1.4, uma configuração com um objeto `headings` diagramava os títulos de nível 1 sem quebra de página, a menos que ligasse explicitamente a chave *Quebra antes* do H1 (e salvar descartava uma quebra de H1 desligada); uma quebra de H1 parcial tirava o campo que faltava do padrão sem quebra, e a quebra de um estilo de título fazia o mesmo em vez de se mesclar com a do seu nível. O motor agora mantém o padrão de cada nível (o H1 abre em um recto novo, `always-odd`) e mescla nele uma quebra parcial. Para que um livro salvo naquela época mantenha as páginas que tinha, o Sandbox grava essas quebras por extenso quando lê um registro de projeto anterior à versão 3 ou uma configuração de trabalho sem versão: `enabled: false` no H1 onde a quebra estava desligada, e `parity: 'any'` ao lado de um `enabled: true` que não indicava paridade, no H1 e nos estilos de título. O painel Design então mostra a quebra com que as páginas foram diagramadas. Desde o postext 1.5 os arquivos também registram a versão: um arquivo `.postext` cujo manifesto não tem `configVersion`, e um `postext-config.json` sem ela, foram gravados pelo postext 1.4 ou anterior, e são lidos do mesmo modo quando importados ou abertos (veja [Pacotes gravados pelo postext 1.4 ou anterior](/pt/docs/configuration#pacotes-gravados-pelo-postext-14-ou-anterior)).
+
+**Tamanho das fórmulas salvo antes do postext 1.5.** Até o postext 1.4, toda fórmula saía 1,131 vez maior do que diz a sua *Escala de tamanho* (veja [Tamanho das fórmulas](/pt/docs/configuration#matemática)). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox fixa esse tamanho quando lê um registro de projeto anterior à versão 4, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 4` ou um `postext-config.json` exportado antes disso: a *Escala de tamanho* passa a ser a escala salva × 1,1312, e uma margem de destaque em `em` é dividida por 1,1312, de modo que as fórmulas e o espaço em volta delas ficam como estavam. Um livro cujos capítulos não têm `$` fica como estava (um `postext-config.json` não traz capítulos, então o seu tamanho é fixado sempre que as fórmulas estão ligadas), e o mesmo vale para um com *Ativar LaTeX* desligado. A seção Fórmulas então mostra os valores com que o livro é diagramado; redefina *Escala de tamanho*, *Margem acima (destaque)* e *Margem abaixo (destaque)* para compô-lo no tamanho atual. A fixação é gravada uma única vez: o registro é salvo de novo com a versão atual e daí em diante é lido como está. Uma predefinição aplicada naquela época e nunca editada continua contando como intocada (o Sandbox a compara com os seus valores fixados, e isso vale também para a fixação das quebras de título): recarregá-la ou trocar de livro não pede para descartar edições que você nunca fez, e uma versão mais nova da predefinição, como a do guia embutido, continua substituindo-a.
+
+**Figuras na linha salvas antes do postext 1.5.** Até o postext 1.4, uma figura ou tabela composta na linha do texto (posição *No texto (aqui)*) mantinha uma linha de espaço só acima dela: o texto seguinte retomava na próxima linha da grade, por mais perto que ela estivesse. Agora ela mantém a mesma linha abaixo (**Colunas → Espaço em torno das figuras na linha**, *Acima e abaixo*). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox define *Espaço em torno das figuras na linha* como *Só acima* quando lê um registro de projeto anterior à versão 5, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 5` ou um `postext-config.json` exportado antes disso, quando uma linha do livro incorpora um recurso (`::resource{id="…"}` sozinho na sua linha, não uma menção no texto). Um `postext-config.json` não traz capítulos, então ali ele é definido sempre que o arquivo é mais antigo. Escolha *Acima e abaixo* para diagramar o livro com o espaçamento atual.
+
+**Figuras na linha dentro de boxes salvas antes do postext 1.5.** Até o postext 1.4, uma figura ou tabela composta na linha dentro de um boxe ficava encostada no texto do boxe em volta. Agora ela mantém uma linha do texto do boxe acima, e abaixo também com *Acima e abaixo* (**Colunas → Espaço em torno das figuras nos boxes**). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox desliga *Espaço em torno das figuras nos boxes* quando lê um registro de projeto anterior à versão 6, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 6` ou um `postext-config.json` exportado antes disso, quando um boxe do livro incorpora um recurso em uma linha própria. Um `postext-config.json` não traz capítulos, então ali ele é desligado sempre que o arquivo é mais antigo. Ligue-o para diagramar o livro com o espaçamento atual.
+
+**Marcas nos títulos e capitulares salvas antes do postext 1.5.** Até o postext 1.4, um título imprimia as palavras dos seus `*italic*`, `**bold**` e outras marcas no seu próprio estilo simples, e uma capitular sem tamanho era tão alta quanto todas as linhas que abrange, com o topo acima da primeira linha. Agora um título aplica as suas marcas (**Títulos → Marcas no texto dos títulos**), e o topo de uma capitular fica no nível das maiúsculas da primeira linha. Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox desliga *Marcas no texto dos títulos* quando lê um registro de projeto anterior à versão 6, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 6` ou um `postext-config.json` exportado antes disso, quando um título do livro traz uma marca (um `postext-config.json` não traz capítulos, então ali ela é desligada sempre que o arquivo é mais antigo); e grava o tamanho com que cada capitular era composta no seu **Tamanho da capitular**. Ligue a chave, ou apague o tamanho, para compor o livro com as regras atuais. Atenção: um título em itálico cujo texto inteiro esteja marcado `*…*` passa então a sair em redondo.
+
+**Listas depois de dois-pontos salvas antes do postext 1.5.** Até o postext 1.4, *Manter dois-pontos com a lista* considerava suficiente para a lista uma linha de espaço sob a linha terminada em dois-pontos, de modo que um primeiro item de duas linhas que as regras de órfãs e viúvas mantêm inteiro ia para a coluna seguinte e deixava a linha com dois-pontos sozinha no pé. Agora ele pede o espaço de que o primeiro item precisa (**Tipografia → Texto do corpo → Viúvas, órfãs e linhas curtas → Espaço sob os dois-pontos**, *O que o primeiro item precisa*). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox define *Espaço sob os dois-pontos* como *Uma linha (1.4)* quando lê um registro de projeto anterior à versão 6, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 6` ou um `postext-config.json` exportado antes disso, quando uma lista do livro vem depois de uma linha terminada em dois-pontos. Um `postext-config.json` não traz capítulos, então ali ele é definido sempre que o arquivo é mais antigo. Escolha *O que o primeiro item precisa* para diagramar o livro com a regra atual.
+
+**Cortes de boxe salvos antes do postext 1.5.** Até o postext 1.4, um boxe dividido no meio de um parágrafo ou de um item de lista podia deixar uma única linha dele de um lado, desde que cada lado do boxe mantivesse as suas *Linhas de cada lado da divisão*. Agora um corte deixa pelo menos duas linhas do parágrafo ou do item de cada lado (**Colunas → Linhas de parágrafo no corte de um boxe**). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox define *Linhas de parágrafo no corte de um boxe* como 1 quando lê um registro de projeto anterior à versão 6, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 6` ou um `postext-config.json` exportado antes disso, quando um capítulo do livro abre um `:::callout`. Um `postext-config.json` não traz capítulos, então ali ele é definido sempre que o arquivo é mais antigo. Volte a 2 para diagramar o livro com a regra atual.
+
+**Travessões e texto em bandeira salvos antes do postext 1.5.** Até o postext 1.4, a quebra de linha ideal nunca terminava uma linha depois de um travessão ou meia-risca colado entre palavras (`say—that’s`), e o texto em bandeira era sempre composto linha a linha, cada linha preenchida antes da seguinte. Agora uma linha pode terminar depois desse travessão (**Tipografia → Texto do corpo → Parágrafos → Quebrar após travessão**), e o texto corrido em bandeira também é quebrado com Knuth-Plass (**Quebra ideal do texto em bandeira**). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox desliga *Quebrar após travessão* quando lê um registro de projeto anterior à versão 7, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 7` ou um `postext-config.json` exportado antes disso, quando um capítulo do livro compõe um travessão desse tipo (um `postext-config.json` não traz capítulos, então ali ele é desligado sempre que o arquivo é mais antigo); e desliga *Quebra ideal do texto em bandeira* quando a configuração compõe algum texto corrido em bandeira: o texto do corpo, um estilo de parágrafo, o corpo de um boxe, o corpo de uma parte ou o corpo de um estilo de seção. Ligue-os para diagramar o livro com as regras atuais.
+
+**Divisões sob um título salvas antes do postext 1.5.** Até o postext 1.4, o parágrafo sob um título no pé de uma coluna mantinha ali tantas linhas quantas coubessem, por poucas que passassem para a coluna seguinte. Agora ele também respeita o mínimo de órfãs, ou o título segue junto com ele (**Títulos e sumário → Títulos → Divisão sob um título**). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox define *Divisão sob um título* como *Preencher a coluna* quando lê um registro de projeto anterior à versão 8, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 8` ou um `postext-config.json` exportado antes disso, quando um capítulo do livro tem um título (um `postext-config.json` não traz capítulos, então ali ele é definido sempre que o arquivo é mais antigo) e a configuração mantém ligados *Manter com o seguinte* e o controle de órfãs. Defina-o como *Pelas regras* para diagramar o livro com a regra atual.
+
+**Contêineres de parágrafos salvos antes do postext 1.5.** Até o postext 1.4, o espaço sob um contêiner `:::paragraphs` era o do próprio estilo (o maior entre o seu espaço entre parágrafos e a sua margem inferior), colocado sob a última linha antes de o texto voltar a se encaixar na grade; o espaço que um título mantém acima de si era somado a ele, e o espaçamento entre parágrafos do corpo não contava, de modo que um título ficava mais longe de uma bibliografia do que de um parágrafo, e o parágrafo depois de um grupo de entradas apertadas ficava mais perto dele do que de qualquer outro. Agora o espaço se funde com o do bloco seguinte e é pelo menos o espaçamento entre parágrafos do texto (**Tipografia → Estilos de parágrafo → Espaço sob um contêiner**, *Fundir*). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox define *Espaço sob um contêiner* como *Somar (1.4)* quando lê um registro de projeto anterior à versão 8, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 8` ou um `postext-config.json` exportado antes disso, quando a configuração declara um estilo de parágrafo e um capítulo do livro abre um contêiner `:::paragraphs`. Um `postext-config.json` não traz capítulos, então ali ele é definido sempre que o arquivo é mais antigo e declara um estilo de parágrafo. Escolha *Fundir* para diagramar o livro com a regra atual.
+
+**Palavras compostas salvas antes do postext 1.5.** Até o postext 1.4, a quebra de linha ideal nunca terminava uma linha justificada depois do hífen de uma palavra composta (`well-known`) em um parágrafo sem negrito, itálico ou outra formatação, embora o fizesse em um parágrafo com formatação. Agora uma linha pode terminar ali em todos os parágrafos (**Tipografia → Texto do corpo → Parágrafos → Quebrar após hífen**). Para que um livro salvo naquela época mantenha as suas páginas, o Sandbox desliga *Quebrar após hífen* quando lê um registro de projeto anterior à versão 8, uma configuração de trabalho salva com um carimbo mais antigo (ou sem carimbo), um arquivo `.postext` cujo manifesto é anterior a `configVersion: 8` ou um `postext-config.json` exportado antes disso, quando um capítulo do livro compõe um hífen entre duas letras (um `postext-config.json` não traz capítulos, então ali ele é desligado sempre que o arquivo é mais antigo). Ligue-o para diagramar o livro com a regra atual.
+
+Essas fixações seguram o que cada uma dessas mudanças de regra moveria. A versão 1.5 também corrige erros de diagramação, e uma correção não tem fixação, então um livro salvo ainda pode ver uma página mudar onde uma delas se aplica: a faixa de um título de capítulo na largura da página sem design, uma capitular em um design de título, um parágrafo em um boxe, um parágrafo frouxo que o balanceamento estica, um boxe flutuante com uma margem mais larga que uma linha, um cabeço centralizado ou alinhado à direita com tracking, a segunda coluna sob uma abertura na largura da página, um cabeço tirado de um título quebrado depois de um hífen, uma palavra mais larga que a sua linha cortada junto ao seu próprio hífen, o resto de uma palavra mais larga que a sua linha, que agora mantém os seus próprios pontos de quebra, o item depois de uma lista aninhada em outra (veja [Tamanho das fórmulas](/pt/docs/configuration#matemática) para a lista).
+
+O armazenamento é **compartilhado entre os idiomas da interface**. Um documento padrão intocado passa para o markdown padrão do idioma atual e recria os recursos de exemplo quando o idioma muda, então abrir o Sandbox em espanhol mostra exemplos em espanhol. Qualquer edição do usuário tira o documento desse comportamento. Todas as visualizações também derivam um idioma de hifenização do idioma da interface quando a configuração não indica nenhum idioma (nem um idioma de hifenização nem `locale`).
+
+### Exportar e importar
+
+Um livro inteiro viaja como um **arquivo `.postext`**: um arquivo zip com exatamente a estrutura de um diretório de pacote de predefinição, `preset.json`, `chapters/*.md`, `resources/*` e `fonts/*` (veja [Formato do pacote de predefinição](#formato-do-pacote-de-predefinição)). O arquivo também leva a **paginação** do livro como `layouts.json` (a contagem de páginas e a numeração de cada capítulo, carimbadas com a versão do motor, a configuração e os recursos com que foram calculadas), de modo que um livro importado abre já paginado e só o que esses carimbos deixaram de garantir é diagramado de novo. Um pacote em vários idiomas compõe cada um com a sua própria configuração, então pode levar uma paginação por idioma, `layouts.<locale>.json` (`layouts.zh-Hant.json`), lida antes de `layouts.json`. O documento ativo exporta a paginação que tem; um projeto ou uma predefinição exportados a partir da sua linha levam a que foi registrada na última vez em que foram o livro de trabalho. Uma imagem de capa é gravada como o `thumbnail` do manifesto, então ela sobrevive à ida e volta. O menu **Novo** do **painel Livros** (**Abrir um arquivo .postext…**) importa um arquivo como um livro novo; o menu ⋯ de cada linha tem o seu próprio **Baixar (.postext)**, e o do livro aberto exporta o documento de trabalho. Os arquivos gravados por versões anteriores (um manifesto da versão 1 com um único `document.md`) são importados como um livro de um capítulo. Um livro em um idioma mantém os rótulos de figura e tabela desse idioma, seja qual for o idioma da interface: um arquivo em espanhol aberto a partir de `/en/sandbox` imprime *Figura* e *Tabla*, a menos que a sua configuração nomeie outros tipos de recurso. O idioma é o que o arquivo indica ou, quando ele não indica nenhum, o que a sua configuração define (`locale`, depois o idioma de hifenização). A importação aceita os arquivos na raiz do zip ou dentro de uma única pasta de nível superior (como sai ao compactar a própria pasta; as entradas `__MACOSX` e os arquivos ocultos são ignorados). As fontes são gravadas como arquivos separados, nunca dentro de `config.customFonts`; as faces `.woff` são puladas com um aviso nos dois sentidos, assim como os recursos cujos bytes estão faltando. Descompacte um arquivo exportado em `<presets-root>/<dir>/` e acrescente uma entrada em `index.json` para servi-lo como predefinição.
+
+Os mesmos arquivos são lidos e gravados pelo pacote `postext` (`openBundle`, `createBundle`, `buildBundle`; veja [Pacotes](/pt/docs/configuration#pacotes-arquivos-postext)). Um livro exportado aqui abre no seu próprio programa, e um livro que o seu programa grava abre aqui. Isso faz do Sandbox um lugar para inspecionar e ajustar o que um programa diagrama: exporte-o do programa, importe-o aqui, corrija-o com a visualização ao vivo, exporte-o de novo e carregue-o outra vez no programa. A [skill para agentes](/pt/docs/skill) também entrega as suas conversões como arquivos `.postext`.
+
+O texto e o design também podem ser exportados separadamente a partir dos cabeçalhos dos painéis Texto e Design.
+
+O cabeçalho do **painel Design** baixa `postext-config.json` sem os valores padrão:
+
+```json
+{
+  "type": "postext-config",
+  "version": 1,
+  "config": { ... }
+}
+```
+
+O cabeçalho do **painel Texto** baixa o capítulo ativo como um arquivo `.md` simples, e o seu botão **Importar** substitui o capítulo ativo pelo conteúdo de um arquivo `.md`. O botão **Importar** do painel Design abre um seletor de arquivos `.json`, validados contra o `type` e a `version` esperados; arquivos inválidos são ignorados sem aviso. O invólucro `postext-markdown.json` e o formato combinado `postext-sandbox.json` de versões anteriores não existem mais.
+
+## Uso independente
+
+O Sandbox está disponível como um pacote React independente (`postext-sandbox`) que pode ser embutido em qualquer aplicativo React:
+
+```bash
+npm install postext-sandbox postext
+```
+
+```tsx
+import { PostextSandbox } from 'postext-sandbox';
+
+function App() {
+  return (
+    <PostextSandbox
+      initialMarkdown="# Hello World"
+      initialConfig={{ layout: { layoutType: 'double' } }}
+      onMarkdownChange={(md) => console.log(md)}
+      onConfigChange={(cfg) => console.log(cfg)}
+    />
+  );
+}
+```
+
+### Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Tipo</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>initialMarkdown</code></td>
+      <td><code>string</code></td>
+      <td>Conteúdo markdown inicial</td>
+    </tr>
+    <tr>
+      <td><code>initialConfig</code></td>
+      <td><code>PostextConfig</code></td>
+      <td>Configuração de layout inicial</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>Classe CSS do contêiner raiz</td>
+    </tr>
+    <tr>
+      <td><code>labels</code></td>
+      <td><code>Partial&lt;SandboxLabels&gt;</code></td>
+      <td>Substituições dos rótulos da interface, mescladas sobre os padrões embutidos em inglês; passe os rótulos traduzidos junto com <code>locale</code> ao embutir o Sandbox em outro idioma</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>Idioma da interface (padrão <code>'en'</code>). Escolhe os tipos de recurso padrão e os recursos de exemplo localizados (uma predefinição ou um arquivo em um idioma recebe os tipos de recurso do seu próprio idioma) e fornece o idioma de hifenização que as visualizações usam quando nenhum está configurado</td>
+    </tr>
+    <tr>
+      <td><code>presetSources</code></td>
+      <td><code>&#123; url: string; private?: boolean &#125;[]</code></td>
+      <td>Fontes remotas de predefinições, consultadas em ordem depois da predefinição embutida. Cada <code>url</code> é uma URL base que serve um <code>index.json</code> (veja <a href="#preset-bundle-format">Formato do pacote de predefinição</a>); <code>private: true</code> marca as predefinições da fonte como privadas e torna a sua flag <code>default</code> elegível para carregamento automático. Fontes que não respondem simplesmente não contribuem com nada</td>
+    </tr>
+    <tr>
+      <td><code>hashBundles</code></td>
+      <td><code>Record&lt;string, (id: string, lang: string | null) =&gt; string | string[] | null&gt;</code></td>
+      <td>Livros vinculados por uma chave de fragmento própria do hospedeiro: <code>&#123; recipe: (slug, lang) =&gt; `/cookbook/$&#123;slug&#125;/$&#123;lang&#125;/$&#123;slug&#125;.postext` &#125;</code> faz <code>#recipe=&lt;slug&gt;&amp;lang=es</code> abrir esse pacote. Retorne a URL de um arquivo <code>.postext</code> na mesma origem da página, várias para tentar em ordem (a primeira que responder vence), ou <code>null</code> para um id que o hospedeiro não serve. A primeira visita importa o arquivo como um projeto registrado com o link (<code>recipe:&lt;slug&gt;:&lt;lang&gt;</code>); uma visita posterior pergunta se deve abrir esse projeto, com as edições, ou substituí-lo pelo arquivo tal como é servido agora. O fragmento é então reescrito para <code>#project=&lt;id&gt;</code></td>
+    </tr>
+    <tr>
+      <td><code>onConfigChange</code></td>
+      <td><code>(config) =&gt; void</code></td>
+      <td>Callback chamado quando a configuração muda</td>
+    </tr>
+    <tr>
+      <td><code>onMarkdownChange</code></td>
+      <td><code>(markdown) =&gt; void</code></td>
+      <td>Callback chamado quando o markdown muda</td>
+    </tr>
+    <tr>
+      <td><code>themeToggle</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Componente personalizado de seletor de tema, encaixado na parte de baixo da barra de atividades</td>
+    </tr>
+    <tr>
+      <td><code>languageSwitcher</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Componente personalizado de seletor de idioma, encaixado na parte de baixo da barra de atividades</td>
+    </tr>
+    <tr>
+      <td><code>homeUrl</code></td>
+      <td><code>string</code></td>
+      <td>Quando definido, renderiza um link com o logotipo no alto da barra de atividades, apontando para esta URL</td>
+    </tr>
+    <tr>
+      <td><code>homeLink</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Nó personalizado para o espaço do logotipo, que substitui o link padrão (tem precedência sobre <code>homeUrl</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Requisitos de CSS
+
+O pacote usa classes utilitárias do Tailwind CSS que fazem referência a propriedades personalizadas de CSS. O aplicativo hospedeiro precisa fornecer estas variáveis:
+
+- `--background`, `--foreground`: cores de base
+- `--surface`: cor de superfície elevada; `--surface-2`: linhas sob o ponteiro e opções destacadas (na falta dela, `--background`)
+- `--slate`: cor do texto atenuado
+- `--rule`: cor de bordas e divisores; `--rule-strong`: fio mais forte para controles sob o ponteiro (na falta dela, `--slate`)
+- `--brand`: cor de destaque: o marcador do painel ativo, os anéis de foco, as chaves e as opções selecionadas
+- `--brand-hover`: cor de destaque ao passar o ponteiro
+- `--brand-soft`: preenchimento translúcido de destaque atrás das opções selecionadas (na falta dela, `--surface`)
+- `--brand-contrast`: botão de uma chave ligada (na falta dela, `--background`)
+- `--destructive`: cor das ações destrutivas e dos erros
+- `--accent-blue`: cor de links e de destaque
+- `--font-sans`: família tipográfica da interface
+- `--font-mono`: família tipográfica monoespaçada (para o editor de código)
+- `--font-display`, `--brand-blue`, `--brand-gilt`: face e cores opcionais da marca do logotipo padrão na barra de atividades (na falta delas, Georgia, `#2b4acb` e `#d8a21a`)
+
+O site define `--brand` como dourado no tema escuro e azul no claro. Versões anteriores liam `--gilt` e `--gilt-hover`; o Sandbox não as usa mais.
+
+Popovers, menus e tooltips são renderizados em um portal em `document.body`, então defina as variáveis em `:root` (ou `body`), não só no elemento que envolve o Sandbox. A build do Tailwind do hospedeiro precisa varrer o código-fonte do pacote (`@source "…/postext-sandbox/src/**/*.tsx"` no Tailwind 4) para que as classes utilitárias que ele usa sejam geradas.
+
+## Formato do pacote de predefinição
+
+Apêndice. Uma fonte de predefinições é um diretório (servido por HTTP) cuja raiz contém um `index.json` que lista diretórios de predefinição; cada diretório contém um manifesto `preset.json` mais os arquivos de markdown, recursos e fontes a que ele se refere. As ferramentas de `scripts/presets/` do repositório montam pacotes exatamente com essa forma, e um arquivo `.postext` exportado do Sandbox é um desses diretórios compactado (sem o `index.json`).
+
+```
+<presets-root>/
+  index.json
+  <preset-dir>/
+    preset.json
+    chapters/              one .md per chapter, in order (a version 1 manifest names a single document instead)
+    resources/             figures: .svg / .png / .jpg / .jpeg / .webp / .gif (+ optional .pdf print masters)
+    fonts/                 .otf / .ttf / .woff2 single faces
+```
+
+### `index.json`
+
+```jsonc
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "acme-journal",          // id estável, [a-z0-9-]
+      "dir": "acme-journal",         // nome do diretório relativo a index.json
+      "name": "Acme Journal",
+      "description": "Two-column journal article",   // opcional
+      "locale": "en",                 // opcional
+      "default": true,                // opcional, no máximo um
+      "locales": ["en", "es"],        // opcional: todos os idiomas que o pacote traz
+      "openLocale": "en",             // opcional: o idioma em que ele abre quando nenhum é pedido
+      "thumbnail": "thumbnail.jpg",   // opcional: miniatura mostrada no seletor
+      "license": "CC BY 4.0",         // opcional: mostrada como etiqueta
+      "credits": "Text and images: ESO",  // opcional: uma linha sob a descrição
+      "tags": ["magazine", "two-column"], // opcional
+      "binding": "left"               // opcional: a borda em que a estante do site desenha a lombada ("right" para um livro encadernado à direita)
+    }
+  ]
+}
+```
+
+### `preset.json`
+
+```jsonc
+{
+  "version": 2,
+  "id": "acme-journal",
+  "name": "Acme Journal",
+  "description": "Two-column journal article",       // opcional
+  "locale": "en",                                     // opcional
+  "default": true,                                    // opcional
+  "configVersion": 8,                                 // opcional: as regras de configuração para as quais `config` foi escrito
+  // Os mesmos campos opcionais de vitrine da entrada do índice:
+  // "locales", "openLocale", "thumbnail", "license", "credits", "tags"
+
+  // Os capítulos do livro, em ordem, ou uma lista por idioma
+  "chapters": [
+    { "title": "Introduction", "file": "chapters/01-introduction.md" },
+    { "title": "Methods", "file": "chapters/02-methods.md" }
+  ],
+  // "chapters": { "en": [ … ], "es": [ … ] },
+  // Manifestos da versão 1 usam um único documento e continuam aceitos:
+  // "version": 1, "markdown": "article.md"  (ou um mapa idioma → arquivo)
+
+  // JSON opcional de PostextConfig (página, margens, colunas, tipografia...).
+  // NÃO coloque customFonts aqui: as fontes vêm do array `fonts` abaixo.
+  "config": { },
+
+  "resources": [
+    {
+      "id": "fig-1-1",                 // referenciado no markdown (:ref)
+      "typeId": "figure",              // id do tipo de recurso (figure, table, ...)
+      "kind": "svg",                   // "svg" | "bitmap" | "table"
+      "file": "resources/fig-1-1.svg", // só svg/bitmap, relativo a preset.json
+      "width": 240.5,                  // opcional, pt (svg) / px (bitmap)
+      "pdfFile": "resources/fig-1-1.pdf", // opcional, só svg: original vetorial de impressão (veja as notas)
+      "height": 180,                   // opcional
+      "caption": "Caption text",
+      "altText": "Accessible description",            // opcional
+      "safeArea": { "x": 0.18, "y": 0.25, "width": 0.5, "height": 0.6 }, // opcional, só svg/bitmap: a parte sempre visível, em frações da imagem
+      "placement": { "position": "top", "span": "column" },  // opcional
+      "note": "Source: ...",                          // opcional
+      "table": { "model": { "rows": [[{ "content": "A", "isHeader": true }]], "headerRowCount": 1 } }
+                                                      // só kind "table"
+    }
+  ],
+
+  "fonts": [
+    {
+      "name": "Some Family",           // nome da família usado pela configuração
+      "variants": [
+        { "weight": 400, "style": "normal", "file": "fonts/SomeFamily-Regular.otf" },
+        { "weight": 400, "style": "italic", "file": "fonts/SomeFamily-Italic.otf" },
+        { "weight": 700, "style": "normal", "file": "fonts/SomeFamily-Bold.otf" }
+      ]
+    }
+  ]
+}
+```
+
+Notas:
+
+- O `id` em `preset.json` precisa coincidir com a entrada de `index.json`; `description`, `locale` e `default` no manifesto substituem os valores do índice assim que a predefinição é carregada, assim como os campos de vitrine `locales`, `openLocale`, `license`, `credits` e `tags`. `openLocale`, um dos `locales`, é o idioma em que o livro abre quando um link ou um clique não pede nenhum (a estante da página inicial também aponta para ele): defina-o quando o original não está no idioma do leitor, como faz a vitrine de 紅樓夢 com `zh-Hant`, para que a sua tradução inglesa não abra para todo leitor de língua inglesa. Sem ele, o idioma da interface decide. O seletor mostra como etiquetas todos os idiomas de `locales` (ou `locale`) e a licença, os créditos sob a descrição, e o `thumbnail` (uma pequena imagem de página, relativa ao diretório da predefinição) no lugar da coluna de marcação da linha; um livro copiado da predefinição (**Fazer minha própria cópia**) o mantém como capa. As predefinições públicas de vitrine em `apps/web/public/presets/` usam todos os campos e trazem um `CREDITS.md` com a licença e a fonte de cada texto e imagem.
+- `configVersion` (opcional) indica as regras de configuração para as quais `config` e as configurações `localized` foram escritos. Todo gravador desde o postext 1.5 o define como 8. Um manifesto sem ele foi gravado pelo postext 1.4 ou anterior, e as suas quebras de título, o tamanho das fórmulas, o espaço em torno das figuras na linha (no texto e nos boxes), as marcas nos títulos, as capitulares, o espaço sob uma linha com dois-pontos, os cortes de boxe, as quebras em travessões e nos hífens de palavras compostas, o texto em bandeira, as divisões sob um título e o espaço sob os contêineres de parágrafos são lidos como o 1.4 os diagramava (veja *Quebras de título salvas pelo postext 1.4 ou anterior*, *Tamanho das fórmulas salvo antes do postext 1.5*, *Figuras na linha salvas antes do postext 1.5*, *Figuras na linha dentro de boxes salvas antes do postext 1.5*, *Marcas nos títulos e capitulares salvas antes do postext 1.5*, *Listas depois de dois-pontos salvas antes do postext 1.5*, *Cortes de boxe salvos antes do postext 1.5*, *Travessões e texto em bandeira salvos antes do postext 1.5*, *Palavras compostas salvas antes do postext 1.5*, *Divisões sob um título salvas antes do postext 1.5* e *Contêineres de parágrafos salvos antes do postext 1.5* em [Persistência](#persistência)); um carimbado de 3 a 7 (uma pré-versão da 1.5) recebe só as fixações das regras posteriores. Com 3, são o tamanho das fórmulas, o espaço das figuras na linha, as cinco fixações das regras 6, as duas das regras 7 e as três das regras 8; com 4, o espaço das figuras na linha e as fixações das regras 6, 7 e 8; com 5, as fixações das regras 6, 7 e 8; com 6, as fixações das regras 7 e 8; com 7, só as fixações das regras 8. Defina-o como 8 quando escrever à mão um manifesto para as regras atuais.
+- `view` (opcional) diz como o Sandbox abre o pacote: `{ "canvasScope": "book" }` diagrama o livro inteiro no canvas (veja [Livros e capítulos](#livros-e-capítulos)); sem ele, o canvas mostra um capítulo por vez. Os livros exportados o levam quando está definido. Um livro de mais de 200 capítulos abre um capítulo por vez, seja o que for que ele peça.
+- `localized` (opcional) guarda as substituições por idioma de um pacote bilíngue: `{ "es": { "config": { … }, "resources": [ { "id": "fig-1", "caption": "…", "note": "…", "altText": "…" } ] } }`. As substituições do idioma de onde os capítulos foram escolhidos se aplicam sobre o `config` compartilhado (as chaves de nível superior são substituídas por inteiro; tipicamente `resourceTypes` com os prefixos de legenda traduzidos) e sobre `resources` (legenda, nota, texto alternativo e células de tabela mesclados por id); um idioma sem entrada mantém o texto compartilhado. Uma entrada também pode trazer um `view` próprio, que se aplica sobre o compartilhado naquela edição: 紅樓夢 abre as suas edições chinesas com o livro inteiro e a tradução inglesa de Joly, muito mais lenta para pintar inteira, um capítulo por vez (`"en": { "view": { "canvasScope": "chapter" } }`).
+- `chapters` (versão 2) é uma lista de `{ title, file }` na ordem do livro, ou um mapa idioma → lista; `markdown` (versão 1) é um nome de arquivo ou um mapa idioma → arquivo. Nos dois casos o Sandbox escolhe a entrada que corresponde ao idioma pedido (a tag exata, sem diferenciar maiúsculas; depois o mesmo idioma e a mesma escrita, de modo que `zh-TW` lê `zh-Hant` antes de `zh-Hans`; depois o mesmo idioma na outra escrita, de modo que um leitor `zh-TW` de um pacote com a chave `zh` pura recebe o chinês; depois o `locale` da própria predefinição, depois a primeira entrada), e só os arquivos de capítulo desse idioma são lidos. Um `title` de capítulo vazio é derivado do primeiro título de nível 1 do arquivo. O Sandbox sempre grava a versão 2.
+- `width` / `height` são opcionais para recursos `svg` e `bitmap`: quando faltam, são lidos do arquivo no carregamento.
+- `pdfFile` (só recursos svg) aponta para um PDF de uma página com a mesma figura em vetores, tipicamente a exportação original do Illustrator ou PDF de que o SVG foi derivado. A exportação em PDF incorpora essa página tal como está (fontes, degradês e espaços de cor intactos) em vez do SVG; as visualizações canvas e HTML continuam usando o SVG. Ele é ignorado no modo de uma só tinta, cuja etapa de recoloração só atua sobre a marcação SVG, e um arquivo ausente só descarta o original, nunca a figura. Editar o código-fonte do SVG no detalhe do recurso desvincula o original (ele foi feito para o código-fonte como era), então a exportação em PDF passa a seguir o SVG editado; restaure o original (**Restaurar o original…** no painel Livros) para recuperá-lo. Os SVGs sem original são emitidos como traçados vetoriais quando ficam dentro do subconjunto do renderizador de PDF (formas básicas, traçados, grupos, `use`, traçados de recorte, preenchimentos e contornos sólidos, opacidade, e trechos `text` / `tspan` compostos nas fontes que o documento consegue carregar, primeiro as fontes personalizadas, depois as famílias hospedadas no Google), e rasterizados a 600 dpi nos demais casos.
+- O `text` de um SVG é renderizado nas fontes personalizadas do Sandbox em todo lugar: as visualizações embutem os dados `@font-face` correspondentes no SVG antes de decodificá-lo (um `<img>` não enxerga as fontes da página), e a exportação em PDF compõe os trechos como texto real e selecionável nas mesmas faces incorporadas. Escreva o nome da família em `font-family` exatamente como aparece em Fontes.
+- O editor do código-fonte SVG só deixa você digitar dentro dos nós de texto (destacados com cor), para que uma figura não seja quebrada por acidente; o botão de cadeado no seu cabeçalho abre o código-fonte inteiro (coordenadas, cores, estrutura), e trancar de novo volta a mapear os nós de texto.
+- `table.model` é um `TableModel` do Postext: `rows` é um array de células por linha (`content` e, opcionalmente, `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` é o número de linhas de cabeçalho iniciais, e `columnWidths` é um array opcional de pesos relativos das colunas. `table.styleId` pode nomear um dos `tableStyles` da configuração.
+- Os arquivos de fonte são guardados no IndexedDB com ids derivados do id da predefinição e do caminho do arquivo, e as famílias são acrescentadas a `config.customFonts` quando a predefinição é aplicada; um `index.json` ausente ou malformado não produz nenhuma predefinição, em vez de um erro.
+- `<preset-dir>/fingerprint.json` é opcional e, na rota de desenvolvimento, **virtual**: quando esse arquivo não existe, `GET` responde `{ "fingerprint": "<sha1 hex>", "files": <n> }`, calculado a partir dos metadados dos arquivos do diretório (caminho relativo, data de modificação e tamanho de cada arquivo até quatro níveis de profundidade, pulando arquivos ocultos e `node_modules`), nunca do conteúdo dos arquivos, com `Cache-Control: no-store`. O Sandbox o consulta periodicamente para acompanhar as edições do pacote (veja [Painel Livros](#painel-livros)). Um host estático pode servir um `fingerprint.json` real com a mesma forma, ou nenhum, e nesse caso as suas predefinições não são acompanhadas.
+
+## Planos
+
+Os seguintes recursos estão previstos para versões futuras:
+
+- **Edição colaborativa**: editar um mesmo livro a partir de vários navegadores

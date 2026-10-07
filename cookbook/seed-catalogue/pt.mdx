@@ -1,0 +1,68 @@
+---
+title: "Catálogo de venda por correio com imagens nas células"
+summary: "Catálogo de sementes com a lista de preços numa tabela lida de TSV, um envelope pintado na célula de cada variedade e a lista dividida numa página dupla."
+plain: "Um catálogo de sementes de quatro páginas com lista de preços. Cada variedade tem uma pequena pintura do seu envelope dentro da tabela, e a lista continua de uma página para a da frente."
+description: "Catálogo de sementes de quatro páginas composto no Postext. A lista de preços, lida de TSV, tem um envelope pintado em cada linha e se divide nas páginas 2 e 3."
+question: "Como faço para pôr uma imagem em cada linha de uma tabela de produtos, com o nome embaixo?"
+aliases: ["catálogo de sementes", "catálogo de produtos", "lista de preços", "tabela de preços", "venda por correio", "reembolso postal", "tabela de produtos", "tabela com imagens", "imagens numa tabela", "miniaturas numa tabela", "formulário de pedido", "folha de pedido", "rowspan", "células mescladas"]
+pageNotes: { "1": "A capa em papel cor de camurça dentro de uma moldura verde: Brindlewood Seed Co. em maiúsculas verdes espaçadas, Spring Seeds numa egípcia vermelha, uma faixa amarela com Catalog No. 12 · Spring 2027 e a pintura de um girassol e de um pé de tomate tutorado brotando da terra arada. Embaixo, a carta To Our Growers em duas colunas, com um chip vermelho NEW e um chip verde ORGANIC no texto, assinada por Ada Brindle e Tom Okafor.", "2": "A lista de preços abre sob uma faixa vermelho-tomate com Vegetable Seeds e uma linha de cabeçalho escura. Cinco variedades, cada uma com um envelope de sementes pintado acima do nome; Heirloom tomatoes ocupa uma célula creme mesclada ao longo de quatro linhas, as descrições levam chips NEW e ORGANIC, e os preços por envelope e por onça ficam alinhados à direita. Continued on the facing page fecha a página.", "3": "A faixa volta como Vegetable Seeds (continued) sobre a linha de cabeçalho repetida: dois feijões e duas abóboras, cada tipo numa célula mesclada ao longo das suas linhas, e uma nota sobre quantas sementes traz um envelope. Embaixo, From Our Trial Garden em duas colunas niveladas.", "4": "A folha de pedido: o endereço para correspondência em maiúsculas verdes, Order Sheet na egípcia vermelha sobre um fio duplo, uma instrução em itálico, uma grade arredondada Ship to e uma grade arredondada de pedido com onze linhas vazias e linhas de total mescladas, a garantia em letra miúda e o colofão." }
+---
+
+## O que você vai compor
+
+A lista de preços de primavera da Brindlewood Seed Co., uma casa de sementes inventada, num livreto de quatro páginas em papel cor de camurça. A capa compõe Spring Seeds em Alfa Slab One sobre a pintura de um girassol e de um pé de tomate, com a carta aos produtores em duas colunas embaixo. As páginas 2 e 3 trazem a lista. Cada variedade tem a pintura do seu envelope de sementes no alto da célula e o nome embaixo, e os tipos de hortaliça descem por uma primeira coluna de células mescladas. Os preços ficam alinhados à direita numa letra condensada de rótulo, e chips vermelhos e verdes marcam as sementes novas e as orgânicas. A lista quebra depois do pimentão de fritar e continua na página da frente sob a mesma faixa vermelha, marcada com (continued). A última página é a folha de pedido, duas grades arredondadas com linhas vazias para preencher.
+
+## Preparo
+
+### 1 · Acrescente o que o TSV não traz
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. O TSV guarda só palavras e preços. `setCellImage` põe o envelope de cada variedade, um recurso com o nome da variedade, no alto da sua célula a 55% da largura interna, de modo que o nome fica sob uma imagem de 20,3 × 27,1 mm e cada linha cresce até 36 mm. `mergeCells` estende cada tipo pela primeira coluna e marca as células que ele cobre com `hiddenBy`. As células do corpo de uma tabela compartilham uma única fonte, aqui a Gelasio, por isso cada preço é um chip sem preenchimento, sem borda e sem preenchimento lateral, composto em Cabin Condensed negrito a 1,12 em por causa dos algarismos alinhados.
+
+### 2 · Cite a lista e divida-a pela página dupla
+
+<Excerpt region="split" />
+
+A carta da página 1 cita a lista com `:ref{id="vegetables" text="the price list"}`, e `text` imprime essas palavras no lugar de um número. Uma tabela citada flutua para o primeiro espaço livre depois da citação, aqui o alto da página 2. A lista não cabe ali, então o motor a corta entre linhas depois de Jimmy Nardello, nunca dentro de um tipo mesclado. A página 3 repete a linha de cabeçalho e a faixa da legenda com o sufixo; o aviso de continuação vai sob a primeira parte, e a nota, sob a última ([tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). `parseTSV` não marca nenhuma célula como cabeçalho, então `headerRowCount: 1` é definido à mão para pintar a primeira linha como cabeçalho e repeti-la na página 3. O sufixo e o aviso vão em itálico e usam a fonte da legenda, por isso a faixa fica em Gelasio; a Cabin Condensed não tem itálico.
+
+### 3 · Um recurso para cada envelope
+
+<Excerpt region="pictures" />
+
+A imagem de uma célula indica um recurso pelo id, então cada envelope é um recurso bitmap próprio, um JPEG de 360 × 480 px recortado na proporção 3 : 4 do envelope, e o `loadImage` do kit o registra sob o `fileId` com `registerResourceImage`. Nada cita os envelopes, então nenhum é numerado ou posicionado fora da sua célula. As pinturas não têm letreiro: o nome é composto como texto da célula, nas fontes da página.
+
+### 4 · Um segundo estilo de tabela para a folha de pedido
+
+<Excerpt region="forms" />
+
+As duas grades usam o estilo nomeado `form`, com fios em grade, raio de 2,5 mm na moldura externa e um preenchimento creme para escrever em cima. A lista de preços mantém o `tableStyle` do documento ([estilos de tabela nomeados](/pt/docs/configuration#estilos-de-tabela-nomeados)). Uma célula vazia não precisa de texto provisório, porque a sua linha ocupa uma linha mesmo assim, aqui de 7,3 mm. Cada total mescla quatro colunas num único rótulo alinhado à direita. O estilo de título da folha de pedido passa a página 4 para uma só coluna, de modo que as duas grades ocupam a medida inteira de 157 mm.
+
+### 5 · Mantenha a carta embaixo da pintura
+
+<Excerpt region="cover" />
+
+A pintura da capa é um elemento de imagem, e uma imagem não acrescenta nada à altura que uma abertura reserva. Sem `minHeight`, a carta começaria a 55 mm do alto da página, em cima do girassol. `SINK` acrescenta 10 mm de respiro sob a pintura e arredonda a profundidade abaixo da margem superior para cima, em linhas inteiras de 13 pt, 34 delas, de modo que as duas colunas da carta começam na grade, a 177,9 mm do alto da página.
+
+## Variações
+
+### Fique só com o que cabe
+
+Com `overflow: 'clip'`, a lista para depois das cinco variedades que cabem na página 2, com a nota embaixo delas, e a página 3 traz só as notas do campo de testes, na primeira coluna.
+
+```diff
+-  overflow: 'split', continuedSuffix: '(continued)',
++  overflow: 'clip', continuedSuffix: '(continued)',
+```
+
+### Diminua os envelopes
+
+A 40%, as linhas caem para 29 mm, mas os dois feijões dividem uma célula mesclada e precisam juntos de 57 mm, mais que os 44 mm que sobram na página 2. As notas do campo de testes sobem para esse espaço, e a página 3 traz só o resto da lista, com a página em branco abaixo de 157 mm.
+
+```diff
+-const PACKET = 0.55; // the packet picture's share of its cell's inner width
++const PACKET = 0.4; // the packet picture's share of its cell's inner width
+```
+
+## Erros comuns
+
+- Um recurso que ninguém cita nunca é posicionado. Tire o `:ref` da carta e o catálogo fica sem lista de preços.
+- Em colunas de 75 mm, o Knuth–Plass pode deixar uma linha justificada com espaços esticados além de `maxWordSpacing`. A carta e as notas do campo de testes foram reescritas até que a linha mais frouxa abrisse os espaços 1,33 vez a largura normal. As notas também estão ajustadas para 14 linhas: com 13, o equilíbrio de colunas da página final põe uma linha da grade em branco acima de From Our Trial Garden, e o título começa uma linha abaixo do texto da outra coluna.

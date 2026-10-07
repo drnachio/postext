@@ -1,0 +1,74 @@
+---
+title: "Formato de roteiro de cinema"
+summary: "Um roteiro de filmagem em Courier Prime 12 no papel Carta, cada fala num boxe sem moldura com o recuo do bloco de diálogo e cada cena numerada nas duas margens."
+plain: "O roteiro de um curta-metragem no formato que os estúdios de cinema esperam. Usa uma letra de máquina de escrever, e as falas e os números das cenas ficam a distâncias fixas da borda."
+description: "Um roteiro em Courier 12 no papel Carta, composto no Postext: cada cena numerada nas duas margens e cada fala num boxe sem moldura de linhas inteiras de 12 pt."
+question: "Como faço para compor um roteiro com cenas numeradas e cada fala num bloco de 3,5 polegadas sob o nome?"
+aliases: ["roteiro", "roteiro de cinema", "roteiro de filmagem", "screenplay", "script", "roteiro de TV", "cabeçalho de cena", "slugline", "número de cena", "nome do personagem", "bloco de diálogo", "rubrica", "transição", "CORTA PARA", "CUT TO", "Courier 12", "colchete bailarina", "furador de três furos"]
+pageNotes: { "1": "Uma capa de cartão amarelo-ouro com dois colchetes de latão nos furos de cima e de baixo de uma furação de três furos e o furo do meio vazio. Uma etiqueta branca diz LOST PROPERTY em maiúsculas de máquina de escrever e, logo abaixo, written by Maren Arrieta; embaixo dela, um carimbo vermelho-escuro de fio duplo diz SHOOTING DRAFT, OCT 14 2026, e Half-Light Pictures aparece em maiúsculas espaçadas ao pé.", "2": "O verso da capa, no mesmo amarelo-ouro, com os três furos na borda direita e as hastes de latão dos dois colchetes passando por eles. Um aviso datilografado diz que o roteiro pertence à Half-Light Pictures e pede a quem o encontrar que o devolva; um carimbo vermelho embaixo diz COPY 07, e o colofão fica ao pé.", "3": "A página 1 do roteiro, sem número, com três furos na borda esquerda: o título em maiúsculas sobre FADE IN:, depois as cenas 1 e 2 com os números nas duas margens ao lado de cabeçalhos em maiúsculas e negrito. A ação ocupa a medida inteira; oito falas de Toby e Dora ficam num bloco mais estreito, cada uma sob o nome do personagem, duas delas com rubrica.", "4": "A página 2, com o número 2. no alto à direita: Toby preenchendo o formulário de reclamação enquanto Dora o lê de cabeça para baixo, uma fala marcada DORA (CONT’D), Toby dizendo o que há no bolso da tampa com um (then) entre duas linhas, a cena 3 no depósito e a cena 4 até o “Play me something.” de Dora e o “Here?” de Toby.", "5": "A página 3: a história que Dora conta de um homem que reclamou uma harpa; depois Toby toca para ela com uma fila atrás dele, o escritório fica em silêncio e ela carimba o formulário com RETURNED; CUT TO: alinhado à direita, a cena 5 na caixa de correio do lado de fora da estação e FADE OUT. sob a última linha de ação." }
+---
+
+## O que você vai compor
+
+A versão de filmagem de *Lost Property*, um curta inventado de três páginas, encadernado como os roteiros dos estúdios: capa de cartão amarelo-ouro com dois colchetes de latão e uma etiqueta datilografada, o verso carimbado com COPY 07 e, em seguida, o roteiro, composto em Courier Prime 12 sobre 12 em papel Carta furado. As medidas são as dos programas de roteiro: ação de 1,5 a 7,5 polegadas; fala de 2,5 a 6, sob o nome do personagem a 3,7; rubrica a partir de 3,1; e CUT TO: e FADE OUT. terminando na margem direita. Cada cabeçalho de cena leva o seu número nas duas margens. A página 1 do roteiro não tem número; as outras imprimem o número no alto à direita, com ponto. Cada fala é um boxe sem moldura, ajustado por um preenchimento superior de −2,4 pt a um número inteiro de linhas de 12 pt, de modo que ação e diálogo mantêm seis linhas por polegada.
+
+## Preparo
+
+### 1 · Ajuste o preenchimento de um boxe sem moldura ao bloco de diálogo
+
+O código está [na resposta curta](#a-resposta-curta) lá em cima. O preenchimento de um boxe é medido a partir da mancha, então 1 polegada à esquerda e 1,5 à direita deixam o bloco de 3,5 polegadas que começa a 2,5 da borda da folha ([estilos de boxe](/pt/docs/configuration#estilos-de-boxe)). O nome do personagem é o título do boxe, escrito no bloco como `title="Dora (cont’d)"`. `textTransform` o imprime em maiúsculas, e `indent` o leva 1,2 polegada além do preenchimento, até 3,7 polegadas. `gap` vale 0 porque o padrão deixa meio eme, 6 pt, entre o nome e a fala. Na versão 1.4.1, o título de um boxe fica numa linha de 1,2 vez o seu corpo, aqui 14,4 pt, e `titleStyle` não tem entrelinha própria para mudar isso. Um preenchimento superior de −2,4 pt desconta esses 2,4 pt a mais, de modo que a fala ocupa um número inteiro de linhas de 12 pt e o nome fica 0,48 pt acima da sua linha da grade. Com preenchimento 0, cada nome desce 1,92 pt, cada fala empurra o texto seguinte mais 2,4 pt para fora da grade, e o cabeçalho da cena 3, ao voltar para a grade, fica 33,6 pt acima da sua primeira linha de ação em vez de 24. Com `snapToGrid` desligado, a margem inferior de uma fala e a superior da seguinte se fundem numa única linha em branco. Por padrão um boxe fica inteiro, então uma fala que não cabe mais passa para a página seguinte junto com o nome.
+
+### 2 · Monte a página em polegadas
+
+<Excerpt region="page" />
+
+Papel Carta com a margem esquerda de 1,5 polegada por onde passam os colchetes e uma polegada nos outros três lados. A Courier Prime é uma fonte monoespaçada: em 12 pt cada letra tem um décimo de polegada de largura, então uma linha de ação comporta 60 caracteres e uma fala, 35, e com entrelinha de 12 pt a página comporta 54 linhas. O texto é alinhado à esquerda, em bandeira, e `paragraphSpacing` põe uma linha em branco entre os parágrafos. O Postext 1.4.1 só hifeniza texto justificado, então nenhuma palavra do roteiro é dividida, como o formato exige.
+
+### 3 · Transforme rubricas e transições em estilos de parágrafo
+
+<Excerpt region="styles" />
+
+Um contêiner `:::paragraphs{style="paren"}` dentro de uma fala recua a primeira linha 0,6 polegada além da borda do diálogo, até 3,1 polegadas ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). Mantenha cada rubrica numa linha só: o estilo recua apenas a primeira. O `body.paragraphSpacing: false` do estilo de diálogo deixa fora do boxe a linha em branco dos parágrafos de ação, e assim `(then)` fica logo abaixo da linha anterior. `CUT TO:` e `FADE OUT.` vão em contêineres `transition`, cujo `textAlign: 'right'` os alinha com o fim das linhas de ação. Um contêiner devolve o texto à grade de linhas de base depois do último parágrafo; este roteiro nunca sai da grade, então o cabeçalho depois de `CUT TO:` mantém as suas duas linhas em branco.
+
+### 4 · Pendure os números de cena nas duas margens
+
+<Excerpt region="slugline" />
+
+`numberingTemplate: '{2}'` conta os títulos de nível 2, e `{number}` imprime essa contagem no design ([ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)). Um título com design avançado mantém o seu lugar na coluna e desenha os seus elementos no lugar do texto ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)), e por isso os dois números podem ficar nas margens ao lado do cabeçalho em negrito. Cada um é ancorado à caixa do próprio título e empurrado para fora dela, 0,6 polegada à esquerda e, à direita, um quarto de polegada além do fim do texto, numa caixa de meia polegada com o texto alinhado à esquerda, para que, num roteiro com mais de nove cenas, os números de um e de dois algarismos comecem no mesmo ponto. O texto do próprio título não é pintado, mas continua sendo medido, por isso o nível fica em 12 pt: com os 15 pt padrão, o cabeçalho da cena 1 quebraria e reservaria uma segunda linha. O equilíbrio de colunas está desligado: ele acrescenta linhas em branco para encher páginas curtas, e, com ele ligado, o “Here?” de Toby se separa da fala de Dora e cai para o pé da página 2 do roteiro.
+
+### 5 · Fure e numere só as páginas do roteiro
+
+<Excerpt region="furniture" />
+
+O estilo do título do roteiro traz o seu próprio `header`, que substitui o do documento nas páginas da sua seção, do título até o fim ([estilos de título](/pt/docs/configuration#estilos-de-título)). O cabeçalho do próprio documento é vazio, então os furos e o número de página só aparecem no roteiro. O número de página é ancorado a meia polegada do alto da folha, e `pages: 'body'` o mantém fora das páginas de abertura ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O título é de nível 1 e quebra a página, então a página 1 é uma página de abertura e não imprime número, como o formato pede. As capas também são títulos de nível 1; `:::numbering{startAt=1}`, entre o verso da capa e o título, dá à página do título o número 1, e a página seguinte imprime 2. O estilo do título fixa uma linha de 12 pt; com os 18 pt próprios do nível 1, o título ficaria numa linha de 21,6 pt e empurraria FADE IN: 9,6 pt para baixo.
+
+## Variações
+
+### Devolva as falas à grade
+
+Cada fala passa então a manter a sua margem inferior e a seguinte soma a margem superior, o que deixa duas linhas em branco entre as falas (três antes de um cabeçalho de cena) e empurra o roteiro para uma quarta página.
+
+```diff
+-  snapToGrid: false,
+ };
+```
+
+### Escreva os cabeçalhos de cena sem negrito
+
+Nos roteiros datilografados, os cabeçalhos de cena vinham só em maiúsculas; o negrito chegou com os programas de roteiro.
+
+```diff
+-  fontSize: pt(12), fontWeight: 700, lineHeight: 1, color: col('ink'), align: 'left',
++  fontSize: pt(12), fontWeight: 400, lineHeight: 1, color: col('ink'), align: 'left',
+```
+
+```diff
+-      fontWeight: 700, lineHeight: 1, color: col('ink'), align: 'left', overflow: 'wrap',
++      fontWeight: 400, lineHeight: 1, color: col('ink'), align: 'left', overflow: 'wrap',
+```
+
+## Erros comuns
+
+- O Postext não imprime `(MORE)` sob uma fala que se divide entre duas páginas nem repete o nome acima do resto dela. Deixe `keepTogether` no valor padrão para que cada fala passe inteira para a página seguinte.
+- Os programas de roteiro acrescentam `(CONT'D)` ao nome automaticamente. Aqui ele faz parte do `title` do bloco, então digite-o você mesmo onde a fala de um personagem continua depois de uma linha de ação.
+- O preenchimento de −2,4 pt funciona para um título no corpo do texto. Um título maior ou menor fica numa linha diferente, de 1,2 vez o seu próprio corpo: calcule de novo o preenchimento como a entrelinha menos essa linha.

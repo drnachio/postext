@@ -1,0 +1,80 @@
+---
+title: "Espécime com todas as fontes carregadas antes de compor"
+summary: "Um espécime tipográfico de quatro páginas cuja primeira composição nomeia cada fonte usada; o pen as carrega, limpa o cache de larguras e compõe de novo."
+plain: "Um livreto de quatro páginas que exibe três famílias tipográficas. Mostra por que todas as fontes precisam terminar de carregar antes de diagramar as páginas, senão as linhas quebram no lugar errado."
+description: "Declare um FontFace por arquivo de fonte, leia as fontes que a primeira composição do Postext pede, carregue-as e limpe o cache de medidas antes de recompor."
+question: "Por que minhas quebras de linha mudam ou as palavras do PDF se sobrepõem, e como carrego minhas fontes antes?"
+aliases: ["fontes web", "fontes hospedadas", "FontFace", "document.fonts", "fonte substituta", "fonte de fallback", "unicode-range", "latin-ext", "clearMeasurementCache", "espécime tipográfico", "catálogo de fontes", "auditoria de fontes"]
+pageNotes: { "1": "A capa de House Specimen Nº 3: um campo azul-ultramar na metade de cima da página traz um Ag branco em Noto Serif Display itálico de 240 pt e duas linhas em monoespaçada que nomeiam essa fonte e as de texto e de rótulos; abaixo, o título Three faces, proofed, uma linha fina em itálico e o primeiro parágrafo.", "2": "Uma cascata de Ysabeau Office de 7 a 14 pt, uma linha por tamanho, com o rótulo ao lado em monoespaçada azul-ultramar, e depois pangramas em espanhol, polonês e tcheco a 13 pt.", "3": "A auditoria: uma tabela em IBM Plex Mono com cabeçalho azul-ultramar que lista as dez fontes que a diagramação pediu, cada família nomeada uma vez, com os tamanhos de cada uma e uma linha de estado lida da composição 2, entre parágrafos que a explicam.", "4": "O primeiro parágrafo da página 1, duas vezes. Em cima, marcado first, como a primeira composição o deixou: as linhas quebram em outros pontos e algumas passam de um fio fino na borda da medida e entram numa aguada azul-ultramar clara. Embaixo, marcado last, como a última composição o deixou, com todas as linhas antes do fio. Uma legenda conta as linhas que a primeira composição quebrou em outro ponto; seguem o parágrafo final e o colofão." }
+---
+
+## O que você vai compor
+
+*House Specimen Nº 3*, da imaginária Pellow Lane Press, é um espécime tipográfico de quatro páginas para três fontes. Na capa, um campo azul-ultramar traz um *Ag* branco em Noto Serif Display itálico de 240 pt e duas linhas em monoespaçada com o nome das três fontes; o título fica abaixo do campo. A página 2 desce a Ysabeau Office numa cascata de 7 a 14 pt e depois compõe pangramas em espanhol, polonês e tcheco cujos ż, ř e ů precisam de um segundo arquivo de fonte. A página 3 é a auditoria: uma tabela em IBM Plex Mono, preenchida pelo pen, com as dez fontes que a diagramação pediu e seus tamanhos. A página 4 compõe duas vezes o primeiro parágrafo da página 1, conforme a primeira composição e conforme a última. A primeira rodou antes de as fontes chegarem, por isso suas linhas terminam em outros pontos e algumas passam da medida.
+
+## Preparo
+
+### 1 · Declare cada arquivo sem baixá-lo
+
+<Excerpt region="declare" />
+
+Um `FontFace` é um arquivo, como uma regra `@font-face`, então uma fonte com um arquivo latin e outro latin-ext é declarada com dois objetos `FontFace` que compartilham família, peso e estilo e diferem no `unicodeRange`, copiado do CSS da família. Adicioná-los a `document.fonts` não baixa nada: o navegador busca um arquivo quando uma chamada a `load()` ou uma linha de texto precisa dos caracteres dele. `buildDocument` não carrega fontes (só `loadBundleFonts` carrega, para os arquivos dentro de um pacote `.postext`), e `customFonts` numa configuração apenas descreve esses arquivos, então uma página composta a partir de Markdown precisa declarar os seus.
+
+### 2 · Componha, carregue, limpe, componha de novo
+
+<Excerpt region="build" />
+
+A primeira composição mede com o que o navegador tiver, uma fonte substituta, mas suas páginas já nomeiam todas as fontes de que precisam. `buildWithLoadedFonts`, a resposta curta lá em cima, recolhe esses nomes de cada composição, carrega as fontes que ainda faltam usando o texto do livreto como amostra e compõe de novo, até que uma composição não encontre mais nada para carregar. Essa amostra também baixa os arquivos latin-ext da fonte de títulos e da monoespaçada, que não compõem nenhuma dessas letras; se o tamanho do download importa, carregue cada fonte só com o próprio texto. `clearMeasurementCache()` não recebe argumento e esvazia as larguras que a primeira composição guardou em cache; sem essa chamada, a segunda composição mantém todas as quebras de linha da primeira (veja “Variações”).
+
+### 3 · Monte a auditoria a partir da diagramação
+
+<Excerpt region="audit" />
+
+A tabela é o mesmo percurso agrupado por fonte, com cada tamanho convertido dos pixels da diagramação de volta para pontos. A nota dela lê mais dois campos da composição que descreve: `converged`, verdadeiro quando as passadas da diagramação se estabilizaram, e `warnings`, que na 1.4.1 lista cada caixa que não cabe em nenhuma coluna. Confira os dois antes de mostrar ou exportar uma página. A tabela tem mais fontes do que as páginas mostram, porque cada bloco de texto, tabela e legenda nomeia um negrito, um itálico e um negrito itálico ao lado da própria fonte, e `renderToPdf` pede todos eles. A resposta curta exige um `FontFace` próprio para cada fonte em que algo é composto, porque `document.fonts.check()` devolve verdadeiro para uma família não declarada e para um negrito que o navegador consegue simular. Uma fonte que só é nomeada carrega quando está declarada: uma família sem arquivo de itálico passa, e a tabela marcaria seus itálicos com `no file`.
+
+### 4 · Guarde a primeira composição como prova
+
+<Excerpt region="art-proof" />
+
+`buildWithLoadedFonts` devolve todas as composições, então o pen pode pintar a primeira de novo quando as fontes reais já chegaram e compará-la linha a linha com a última; a contagem da legenda sai dessa comparação. Uma linha simples medida numa fonte substituta mais estreita passa da medida até que o recorte da coluna, 2 pt além da borda, corta as últimas letras, por isso o pen pinta a página 1 com a coluna alargada para mostrar todo o excesso. O canvas e o `postext-pdf` desenham cada trecho de uma linha justificada ou com estilos misturados onde a diagramação o mediu, então uma fonte real mais larga que a substituta sai impressa por cima da palavra seguinte, e as palavras de um PDF composto antes de as fontes chegarem se sobrepõem.
+
+### 5 · Uma cascata no ritmo do texto
+
+<Excerpt region="type" />
+
+A Ysabeau Office compõe o texto em 11 sobre 15,5 pt, com uma linha em branco entre parágrafos em vez de recuo. O texto é alinhado à esquerda, então cada espaço entre palavras mantém a largura natural. Negrito, itálico e referências saem na cor da tinta; sem ajuste, tomariam a cor principal. Cada tamanho da cascata e cada pangrama é um estilo de parágrafo com duas entrelinhas (31 pt) de altura, de modo que a página mantém o ritmo de 15,5 pt do texto. Os rótulos de tamanho são chips em monoespaçada, e os tamanhos de um algarismo ganham meia letra de espaçamento interno de cada lado, para que todas as amostras comecem na mesma borda.
+
+### 6 · Três fontes numa capa
+
+<Excerpt region="opener" />
+
+A capa é o design do nível H1: as letras do atributo `glyphs` do título na fonte de títulos a 240 pt e, embaixo, duas linhas em monoespaçada que nomeiam essa fonte e as de texto e de rótulos, como na folha de espécime de uma fundição de tipos. `span: 'page'` deixa o campo ancorado à sangria sair pela borda de cima; mantido na coluna, o design é recortado na margem superior, o que corta o alto do campo e o chapéu. `minHeight` conta a partir da margem superior e reserva o espaço até `Y.end`, 42 mm abaixo do campo; sem ele, o texto começa uma linha acima, colado na linha fina.
+
+## Variações
+
+### Não limpe o cache
+
+O pen continua carregando todas as fontes, mas a segunda composição mantém todas as quebras de linha da primeira: as duas faixas da página 4 passam do fio, a legenda conta 0 linhas quebradas em outro ponto e as palavras das legendas em monoespaçada saem umas por cima das outras, cada trecho desenhado onde a fonte substituta o mediu.
+
+```diff
+-    clearMeasurementCache(); // the widths measured with a fallback stay cached until cleared
++    // clearMeasurementCache();
+```
+
+### Esqueça uma fonte
+
+Deixe de fora o negrito da IBM Plex Mono, que compõe o chapéu e o cabeçalho da tabela, e o pen lança `No FontFace for IBM Plex Mono 700 normal` antes de mostrar qualquer página; só com `document.fonts.check()`, o navegador teria engrossado o redondo.
+
+```diff
+-  'IBM Plex Mono': ['400', '400i', '700', '700i'], // labels, chips, the table, captions
++  'IBM Plex Mono': ['400', '400i', '700i'], // labels, chips, the table, captions
+```
+
+### Incorpore as mesmas fontes num PDF
+
+`renderToPdf` incorpora os bytes que o seu `fontProvider` devolve para cada fonte, e o provedor de <RecipeLink slug="pdf-with-embedded-fonts">um PDF de verdade com as mesmas fontes incorporadas</RecipeLink> serve os arquivos latin do Fontsource, que param no Latin-1: para os ż, ł, ř e ů deste livreto, faça-o devolver o arquivo inteiro de cada fonte a partir da sua própria pasta.
+
+## Erros comuns
+
+- `document.fonts.load(font)` sem texto de amostra carrega só o arquivo que cobre o espaço, o latin; passe o texto, ou ż e ř caem numa fonte do sistema sem nenhum aviso.
+- `renderPageToCanvas` e `postext-pdf` recortam cada coluna 2 pt além da borda, então uma linha medida com uma fonte substituta mais estreita perde as últimas letras sem nenhum aviso.

@@ -1,0 +1,63 @@
+---
+title: "Um parecer jurídico citado em OSCOLA"
+summary: "Um comentário de decisão de quatro páginas cujas citações [@robinson2018, para 21] viram notas OSCOLA: casos em itálico, citação neutra, ibid e (n 1)."
+plain: "Um comentário curto sobre uma decisão de um tribunal inglês a respeito da polícia. Cada caso, lei e artigo em que ele se apoia é citado numa nota numerada no pé da página, no estilo das faculdades de direito britânicas."
+description: "Um comentário de decisão composto com o Postext: casos, leis e artigos citados em notas OSCOLA, com localizadores, ibid, remissões (n 1) e um CSL corrigido."
+question: "Como faço para citar casos e leis em notas de rodapé no estilo OSCOLA?"
+aliases: ["OSCOLA", "citação jurídica", "revista jurídica", "comentário de decisão", "comentário de jurisprudência", "jurisprudência", "tabela de casos", "citação neutra", "repertórios de jurisprudência", "law reports", "ibid", "Bluebook", "direito inglês", "common law", "localizador"]
+pageNotes: { "1": "Página 1: uma faixa bordô sobre a metade superior com a linha da série, o nome do caso Robinson em itálico grande, v Chief Constable of West Yorkshire Police e a citação [2018] UKSC 4, [2018] AC 736, depois o título Acts, Omissions and the Police; abaixo, os fatos do caso e as notas 1 e 2, a segunda com ibid [21].", "2": "Página 2: a seção There is no Caparo test e o começo de Acts and omissions, com as notas 3 a 10: Donoghue v Stevenson, Anns, Murphy e Caparo por extenso, um repertório australiano entre parênteses e Robinson (n 1) [26–27].", "3": "Página 3: Acts and omissions, com notas sobre Stovin v Wise, Hill, Michael, dois artigos do Cambridge Law Journal e da Law Quarterly Review, e o começo de The statutory route.", "4": "Página 4: o Human Rights Act 1998 citado por seção, ibid s 7, o Compensation Act 2006, o Comment final, um pequeno colofão e as notas 18 a 23." }
+---
+
+## O que você vai compor
+
+Uma separata da série de comentários de decisões de uma revista jurídica: quatro páginas sobre *Robinson v Chief Constable of West Yorkshire Police*, a decisão de 2018 da Suprema Corte do Reino Unido sobre quando a polícia tem dever de cuidado. A página tem 162 × 240 mm, com margens espelhadas, em Libre Baskerville 9,4/13,6 pt, e a primeira página abre com uma faixa bordô e o nome do caso em itálico de 60 pt. O autor escreve cada fonte como uma chave com o seu localizador, `[@caparo1990, 617–18]`, e o Postext compõe 23 notas de rodapé em OSCOLA, a norma de citação das faculdades de direito britânicas: nomes de casos em itálico, leis em redondo, sem ponto depois de AC, HL ou edn, *ibid* para a fonte da nota anterior e *Robinson (n 1) [55]* depois disso. As decisões são reais; o autor e a revista, não.
+
+## Preparo
+
+### 1 · Uma nota OSCOLA para cada fonte
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. OSCOLA é um estilo de notas, então `[@robinson2018, para 21]` deixa um número sobrescrito depois do ponto final, e o seu texto vai para o pé da página. A nota 1 traz o caso completo, *Robinson v Chief Constable of West Yorkshire Police [2018] UKSC 4, [2018] AC 736*; a nota 2, que o cita de novo logo em seguida, diz *ibid [21]*; a nota 8, depois de outros casos no meio, diz *Robinson (n 1) [26–27]*. Um artigo de revista jurídica cita só nas notas, então `bibliography.auto: false` deixa a lista de obras fora da última página.
+
+### 2 · Um caso é um dado, escrito como os repertórios o imprimem
+
+Um caso é um item CSL de `type: legal_case`: o nome em `title`, o tribunal em `authority`, a série do repertório em `container-title` e a primeira página em `page`. O OSCOLA põe o ano de um repertório entre colchetes quando o ano identifica o volume, como nos Appeal Cases, então a receita escreve esse ano em `volume`, seguido do número do volume: `volume: "[1990] 2"` dá *[1990] 2 AC 605 (HL)*. Um caso decidido depois de 2001 também tem citação neutra: `authority: UKSC`, `number: "4"` e `issued: 2018` dão *[2018] UKSC 4*, seguido do repertório. Uma lei é `type: legislation`, com o ano no título e sem `issued`, para que o ano não saia duas vezes, e `[@hra1998, § 6]` cita uma seção como *s 6*.
+
+### 3 · Duas correções no estilo que acompanha o motor
+
+<Excerpt region="oscola" />
+
+O `oscola.csl` que acompanha o motor só põe entre colchetes o parágrafo citado na primeira nota de um caso. As notas seguintes imprimiam *para 55* e *ibid 27*, e uma segunda nota para a mesma lei perdia o seu *s*. A correção troca uma macro e uma linha do XML do estilo antes da composição e passa o resultado como estilo próprio, sem mexer no texto nem nas referências.
+
+### 4 · O nome do caso na faixa
+
+<Excerpt region="opener" />
+
+A faixa desce 124 mm a partir do refile. O nome do caso, as partes e a citação são atributos do título, então outro comentário da série só muda o seu Markdown. *Robinson* é composto em Libre Baskerville Italic de 60 pt porque o OSCOLA põe em itálico os nomes dos casos, e a citação abaixo fica em redondo, como nas notas.
+
+<Excerpt region="palette" />
+
+## Variações
+
+### Use o estilo como ele vem
+
+Para comparar com a saída sem correção, use o id que acompanha o motor. Os parágrafos citados nas notas seguintes passam a sair como *para 55*.
+
+```diff
+-  style: 'custom', customStyle: OSCOLA, // the bundled 'oscola', patched above
++  style: 'oscola',
+```
+
+### Reúna as notas no fim
+
+Algumas revistas imprimem as notas depois do texto. As citações mantêm as formas completa e abreviada e os seus números.
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+## Erros comuns
+
+- Um repertório cujo volume é um número simples, `volume: "2"`, imprime o ano entre parênteses, *(1990) 2 AC*, forma que o OSCOLA reserva para séries numeradas ao longo dos anos, como os Commonwealth Law Reports (nota 7). Nos Appeal Cases e nos Weekly Law Reports, escreva o ano entre colchetes dentro de `volume`.
+- `s` antes de um localizador significa página (a *Seite* alemã), e não seção: escreva `§ 6`. Uma subseção como `6(1)` não é lida como localizador; nomeie-a na frase e cite a seção.
+- O OSCOLA não tem bibliografia num artigo, e o estilo não tem tabelas separadas de casos e de leis. Uma tese que precise dessas tabelas recebe de `:::bibliography` uma só lista ordenada, com as fontes doutrinárias primeiro e depois casos e leis misturados.

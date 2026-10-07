@@ -429,7 +429,7 @@
       "kokoro": "Natsume Sōseki’s 1914 novel in Japanese, set vertically and bound on the right after the Iwanami first edition, with the cover, endpapers and title page Sōseki designed, three of his paintings and furigana over the harder words. In Japanese only",
       "openstax-fisica": "A column-and-a-half textbook with worked examples, checks, tables and formulas",
       "paradise-lost": "An annotated edition of Milton’s poem in twelve books: Verity’s notes at the foot of the page and Doré’s fifty plates. In English only",
-      "pepper-carrot": "Episode 8 of David Revoy's webcomic in seven languages: the original text-free panels, with balloons and lettering the engine sets from each official translation. The Japanese edition is lettered in columns and, like the Arabic one, reads right to left and opens from the right",
+      "pepper-carrot": "Episode 8 of David Revoy's webcomic in eight languages: the original text-free panels, with balloons and lettering the engine sets from each official translation. The Japanese edition is lettered in columns and, like the Arabic one, reads right to left and opens from the right",
       "pintura-espanola": "A single-column exhibition catalogue, entry and commentary facing the full-page plate",
       "senales": "A two-column EEA magazine with photo openers, boxes, pull quotes and data panels"
     }
@@ -3762,7 +3762,7 @@
     "title": "Accessibility",
     "lastUpdated": "Last updated: October 2026",
     "targetTitle": "Conformance target",
-    "targetText": "We aim for this website and the Sandbox to conform to the Web Content Accessibility Guidelines (WCAG) 2.2 at level AAA, in English, Spanish, Catalan, Chinese, Japanese and Arabic (right to left), in the light and the dark theme. Every page is checked with automated tests (axe-core plus our own checks for the AAA criteria) and walked through with the keyboard.",
+    "targetText": "We aim for this website and the Sandbox to conform to the Web Content Accessibility Guidelines (WCAG) 2.2 at level AAA, in English, Spanish, Catalan, Chinese, Japanese, Arabic (right to left) and Brazilian Portuguese, in the light and the dark theme. Every page is checked with automated tests (axe-core plus our own checks for the AAA criteria) and walked through with the keyboard.",
     "prefsTitle": "Reading preferences",
     "prefsText": "The site sets its prose justified and hyphenated, like the books Postext makes. If you find that harder to read, the book icon in the menu bar opens the reading preferences. They apply to every page of the site and are kept in this browser.",
     "prefsTheme": "Theme: light or dark. It is the same setting as the switch in the menu bar; with no choice made, the site follows your system.",
@@ -3784,7 +3784,7 @@
     "limitations": [
       "The two narrated videos have no sign-language interpretation (WCAG 1.2.6) and no extended audio description (1.2.7). Each video has a full transcript under the player that describes what happens on screen as well as the narration.",
       "The video caption tracks hold speech only and are labelled as subtitles; sound and music cues are not yet captioned.",
-      "There is no Chinese, Japanese or Arabic cut of the videos: Chinese, Japanese and Arabic pages play the English video with a transcript in their language.",
+      "There is no Chinese, Japanese, Arabic or Portuguese cut of the videos: Chinese, Japanese, Arabic and Brazilian Portuguese pages play the English video with a transcript in their language.",
       "The page preview in the Sandbox's Canvas tab is a picture of each page. Its text is in the HTML tab and in the Text panel, where screen readers can read it.",
       "Books you export as PDF from the Sandbox are tagged for accessibility, but how readable they are depends on the content and design you give them."
     ],

@@ -7,7 +7,8 @@
       "ca": "Blocs de codi",
       "zh": "围栏代码块",
       "ar": "كتل الشيفرة المسيّجة",
-      "ja": "フェンス記法のコードブロック"
+      "ja": "フェンス記法のコードブロック",
+      "pt": "Blocos de código delimitados"
     },
     "aliases": {
       "en": [
@@ -54,6 +55,14 @@
         "コードリスト",
         "整形済みテキスト",
         "等幅ブロック"
+      ],
+      "pt": [
+        "bloco de código",
+        "```",
+        "listagem de código",
+        "código-fonte",
+        "texto pré-formatado",
+        "bloco monoespaçado"
       ]
     },
     "explanation": {
@@ -62,7 +71,8 @@
       "ca": "Les tanques de tres accents greus i el codi sagnat es componen línia a línia com a paràgrafs normals. Compon els llistats amb un estil de paràgraf monoespaiat, sense partició de mots i alineat a l'esquerra, dins de :::paragraphs o d'un requadre; el codi en línia sí que funciona.",
       "zh": "三个反引号的围栏和缩进代码都按普通段落逐行排版。排代码清单时，在:::paragraphs或标注框中使用等宽字体的段落样式，关闭断词并左对齐；行内代码可以正常使用。",
       "ar": "تُنضَّد الأسوار ذات العلامات الثلاث والشيفرة ذات المسافة البادئة سطرًا سطرًا كفقرات عادية. انضد قوائم الشيفرة بنمط فقرة بخط ثابت العرض، مع تعطيل تقسيم الكلمات والمحاذاة إلى اليسار، داخل :::paragraphs أو إطار؛ أما الشيفرة المضمّنة فتعمل.",
-      "ja": "3連バッククォートのフェンスやインデントしたコードは、通常の段落として1行ずつ組まれます。コードリストは、等幅の段落スタイル（ハイフネーションなし、左そろえ）を使って:::paragraphsか囲みの中に組んでください。インラインコードは使えます。"
+      "ja": "3連バッククォートのフェンスやインデントしたコードは、通常の段落として1行ずつ組まれます。コードリストは、等幅の段落スタイル（ハイフネーションなし、左そろえ）を使って:::paragraphsか囲みの中に組んでください。インラインコードは使えます。",
+      "pt": "Os blocos delimitados por três crases e o código recuado são compostos linha a linha como parágrafos comuns. Componha as listagens com um estilo de parágrafo monoespaçado, sem hifenização e alinhado à esquerda, dentro de :::paragraphs ou de um boxe; o código inline funciona."
     },
     "docs": {
       "slug": "document-format",
@@ -72,7 +82,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -83,7 +94,8 @@
       "ca": "Ressaltat de sintaxi",
       "zh": "语法高亮",
       "ar": "تلوين الصياغة",
-      "ja": "シンタックスハイライト"
+      "ja": "シンタックスハイライト",
+      "pt": "Realce de sintaxe"
     },
     "aliases": {
       "en": [
@@ -119,6 +131,13 @@
         "コードの色分け",
         "色付きのコード",
         "構文の強調表示"
+      ],
+      "pt": [
+        "cores no código",
+        "código realçado",
+        "código colorido",
+        "destaque de sintaxe",
+        "syntax highlighting"
       ]
     },
     "explanation": {
@@ -127,7 +146,8 @@
       "ca": "No hi ha coloració de codi. Un llistat pot fer servir fragments en negreta i cursiva amb els colors que fixa l'estil, però les paraules clau i les cadenes no es detecten.",
       "zh": "不支持代码着色。代码清单可以使用粗体和斜体片段，颜色由样式设定，但不会识别关键字和字符串。",
       "ar": "لا يوجد تلوين للشيفرة. يمكن أن تستعمل قائمة الشيفرة مقاطع عريضة ومائلة يحدد النمط ألوانها، لكن الكلمات المفتاحية والسلاسل النصية لا تُكتشف.",
-      "ja": "コードの色分けはありません。コードリストには太字やイタリックの範囲を使え、その色はスタイルで設定できますが、キーワードや文字列は検出されません。"
+      "ja": "コードの色分けはありません。コードリストには太字やイタリックの範囲を使え、その色はスタイルで設定できますが、キーワードや文字列は検出されません。",
+      "pt": "Não há coloração de código. Uma listagem pode usar trechos em negrito e itálico cujas cores o estilo define, mas palavras-chave e strings não são detectadas."
     },
     "docs": {
       "slug": "document-format",
@@ -137,7 +157,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -148,7 +169,8 @@
       "ca": "Taules amb barres",
       "zh": "竖线表格",
       "ar": "جداول الخطوط العمودية",
-      "ja": "パイプ記法の表"
+      "ja": "パイプ記法の表",
+      "pt": "Tabelas com barras verticais"
     },
     "aliases": {
       "en": [
@@ -185,6 +207,13 @@
         "| a | b |",
         "GFMの表",
         "パイプテーブル"
+      ],
+      "pt": [
+        "tabela markdown",
+        "tabela em markdown",
+        "| a | b |",
+        "tabela GFM",
+        "pipe table"
       ]
     },
     "explanation": {
@@ -193,7 +222,8 @@
       "ca": "| a | b | s'imprimeix tal qual. Les taules són recursos amb un model estructurat; parseTSV converteix en un d'aquests models les dades enganxades d'un full de càlcul i mergeCells combina cel·les.",
       "zh": "| a | b |会按原样打印出来。表是采用结构化模型的资源；parseTSV把粘贴来的电子表格数据转成表，mergeCells用来合并单元格。",
       "ar": "| a | b | يُطبع حرفيًّا. الجداول موارد ذات نموذج منظَّم؛ تحوّل parseTSV بيانات جدول بيانات ملصوقة إلى جدول، وتدمج mergeCells الخلايا.",
-      "ja": "| a | b |は文字のまま印字されます。表は構造化されたモデルを持つリソースです。parseTSVで、貼り付けたスプレッドシートのデータを表にし、mergeCellsでセルを結合します。"
+      "ja": "| a | b |は文字のまま印字されます。表は構造化されたモデルを持つリソースです。parseTSVで、貼り付けたスプレッドシートのデータを表にし、mergeCellsでセルを結合します。",
+      "pt": "| a | b | é impresso literalmente. As tabelas são recursos com um modelo estruturado; parseTSV transforma em tabela os dados colados de uma planilha, e mergeCells mescla células."
     },
     "docs": {
       "slug": "document-format",
@@ -203,7 +233,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -214,7 +245,8 @@
       "ca": "Imatges de Markdown ![]()",
       "zh": "Markdown图片![]()",
       "ar": "صور Markdown ![]()",
-      "ja": "Markdownの画像 ![]()"
+      "ja": "Markdownの画像 ![]()",
+      "pt": "Imagens do Markdown ![]()"
     },
     "aliases": {
       "en": [
@@ -254,6 +286,12 @@
         "インライン画像",
         "Markdownの画像",
         "imgタグ"
+      ],
+      "pt": [
+        "![alt](src)",
+        "imagem inline",
+        "imagem no markdown",
+        "tag img"
       ]
     },
     "explanation": {
@@ -262,7 +300,8 @@
       "ca": "![alt](src) s'elimina expressament, perquè les imatges les col·loca el motor de flotants, que treballa per columnes. Declara la imatge com a recurs i cita-la amb :ref o insereix-la amb ::resource.",
       "zh": "![alt](src)是有意去掉的，因为图片由浮动体引擎放置，它要配合分栏工作。把图片声明为资源，用:ref引用，或用::resource嵌入。",
       "ar": "تُحذف ![alt](src) عمدًا، لأن الصور يضعها محرّك العناصر العائمة، وهو يعمل مع الأعمدة. صرّح بالصورة موردًا وأحِل إليها بـ :ref أو ضمّنها بـ ::resource.",
-      "ja": "![alt](src)は意図して取り除かれます。画像は段と連動するフロートエンジンが配置するためです。画像をリソースとして宣言し、:refで参照するか、::resourceで埋め込んでください。"
+      "ja": "![alt](src)は意図して取り除かれます。画像は段と連動するフロートエンジンが配置するためです。画像をリソースとして宣言し、:refで参照するか、::resourceで埋め込んでください。",
+      "pt": "![alt](src) é removido de propósito, porque as imagens são posicionadas pelo motor de flutuantes, que trabalha com as colunas. Declare a imagem como recurso e cite-a com :ref ou insira-a com ::resource."
     },
     "docs": {
       "slug": "document-format",
@@ -272,7 +311,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -283,7 +323,8 @@
       "ca": "Tres o més columnes de text",
       "zh": "三栏及以上的正文",
       "ar": "ثلاثة أعمدة متن أو أكثر",
-      "ja": "本文の3段以上の段組み"
+      "ja": "本文の3段以上の段組み",
+      "pt": "Três ou mais colunas de texto"
     },
     "aliases": {
       "en": [
@@ -323,6 +364,13 @@
         "3段",
         "新聞の多段組み",
         "4段組み"
+      ],
+      "pt": [
+        "três colunas",
+        "3 colunas",
+        "quatro colunas",
+        "jornal em várias colunas",
+        "multicolunas"
       ]
     },
     "explanation": {
@@ -331,7 +379,8 @@
       "ca": "Resolt a postext 1.18: layoutType 'multiple' compon de 3 a 8 columnes de text iguals, i placement.columns col·loca una figura o un requadre flotant sobre diverses d'elles. Fins a la 1.17, tres o més columnes només existien dins d'un requadre: un grup :::columns en un requadre a tota l'amplada.",
       "zh": "已在postext 1.18中解决：layoutType 'multiple'排3到8个等宽的正文栏，placement.columns让图或浮动框横跨其中几栏。1.17及以前，三栏及以上只能出现在框内：放在通栏标注框中的:::columns组。",
       "ar": "حُلّت في postext 1.18: يضع layoutType 'multiple' من 3 إلى 8 أعمدة متن متساوية، ويضع placement.columns شكلًا أو إطارًا عائمًا عبر عدة منها. وحتى 1.17 لم تكن ثلاثة أعمدة أو أكثر توجد إلا داخل صندوق: مجموعة :::columns في إطار بعرض الصفحة.",
-      "ja": "postext 1.18で解決しました。layoutType 'multiple'で3〜8段の同じ幅の本文段を組み、placement.columnsで図やフロートする囲みを複数の段にまたがって置けます。1.17までは、3段以上を作れるのは囲みの中だけで、ページ幅の囲みに入れた:::columnsグループとして組んでいました。"
+      "ja": "postext 1.18で解決しました。layoutType 'multiple'で3〜8段の同じ幅の本文段を組み、placement.columnsで図やフロートする囲みを複数の段にまたがって置けます。1.17までは、3段以上を作れるのは囲みの中だけで、ページ幅の囲みに入れた:::columnsグループとして組んでいました。",
+      "pt": "Resolvido no postext 1.18: layoutType 'multiple' compõe de 3 a 8 colunas de texto iguais, e placement.columns posiciona uma figura ou um boxe flutuante sobre várias delas. Até a 1.17, três ou mais colunas só existiam dentro de um boxe: um grupo :::columns em um boxe da largura da página."
     },
     "docs": {
       "slug": "configuration",
@@ -341,7 +390,8 @@
         "ca": "Tipus de disposició",
         "zh": "版式类型",
         "ar": "أنواع التخطيط",
-        "ja": "レイアウトの種類"
+        "ja": "レイアウトの種類",
+        "pt": "Tipos de layout"
       }
     },
     "fixedIn": "1.18.0"
@@ -353,7 +403,8 @@
       "ca": "Text al voltant d'imatges",
       "zh": "文字绕图",
       "ar": "التفاف النص حول الصور",
-      "ja": "画像の回り込み"
+      "ja": "画像の回り込み",
+      "pt": "Texto contornando imagens"
     },
     "aliases": {
       "en": [
@@ -394,6 +445,14 @@
         "画像の周りに文字を流す",
         "ランアラウンド",
         "左そろえフロートと本文"
+      ],
+      "pt": [
+        "contorno de texto",
+        "texto em volta da imagem",
+        "contornar imagem",
+        "runaround",
+        "text wrap",
+        "imagem flutuante com texto ao lado"
       ]
     },
     "explanation": {
@@ -402,7 +461,8 @@
       "ca": "Els flotants ocupen bandes senceres d'una columna o de la pàgina; el text mai no envolta una imatge dins d'una mateixa columna. Fes servir una columna lateral, un flotant estret en una pàgina a dues columnes o una banda a tota l'amplada.",
       "zh": "浮动体占据一栏或整页的完整横条；在同一栏内，文字不会从图片旁边流过。可以改用边栏、两栏页面中的窄浮动体，或通栏横条。",
       "ar": "تأخذ العناصر العائمة أشرطة كاملة من العمود أو الصفحة؛ ولا يتدفق النص أبدًا بجانب صورة داخل عمود واحد. استعمل عمودًا جانبيًّا، أو عنصرًا عائمًا ضيقًا في صفحة من عمودين، أو شريطًا بعرض الصفحة.",
-      "ja": "フロートは段またはページの帯を丸ごと占めます。1つの段の中で、画像の横に文字が流れることはありません。サイド段、2段組みページの細いフロート、またはページ幅の帯を使ってください。"
+      "ja": "フロートは段またはページの帯を丸ごと占めます。1つの段の中で、画像の横に文字が流れることはありません。サイド段、2段組みページの細いフロート、またはページ幅の帯を使ってください。",
+      "pt": "Os flutuantes ocupam faixas inteiras de uma coluna ou da página; o texto nunca corre ao lado de uma imagem dentro de uma mesma coluna. Use uma coluna lateral, um flutuante estreito em uma página de duas colunas ou uma faixa da largura da página."
     },
     "docs": {
       "slug": "document-format",
@@ -412,7 +472,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -423,7 +484,8 @@
       "ca": "Caplletres en paràgrafs de text",
       "zh": "正文段落的首字下沉",
       "ar": "الحروف الاستهلالية في فقرات المتن",
-      "ja": "本文段落のドロップキャップ"
+      "ja": "本文段落のドロップキャップ",
+      "pt": "Capitulares em parágrafos do texto"
     },
     "aliases": {
       "en": [
@@ -457,6 +519,13 @@
         "ドロップキャップ",
         "イニシャル",
         "頭文字の装飾"
+      ],
+      "pt": [
+        "capitular",
+        "letra capitular",
+        "inicial",
+        "letra inicial",
+        "versal"
       ]
     },
     "explanation": {
@@ -465,7 +534,8 @@
       "ca": "Les caplletres només existeixen als elements de text de disseny. Posa l'entradeta en un atribut del títol i dibuixa-la amb dropCap al disseny de l'obertura.",
       "zh": "首字下沉只存在于版面设计的文本元素中。把开头一段放进标题属性，在章首页设计中用dropCap画出来。",
       "ar": "لا توجد الحروف الاستهلالية إلا في عناصر نص التصميم. ضع الفقرة الأولى في سمة عنوان وارسمها بـ dropCap في تصميم صفحة الافتتاح.",
-      "ja": "ドロップキャップはデザインのテキスト要素にしかありません。冒頭の段落を見出しの属性に入れ、章扉のデザインでdropCapを使って描いてください。"
+      "ja": "ドロップキャップはデザインのテキスト要素にしかありません。冒頭の段落を見出しの属性に入れ、章扉のデザインでdropCapを使って描いてください。",
+      "pt": "As capitulares só existem nos elementos de texto do design. Ponha o parágrafo de abertura em um atributo do título e desenhe-o com dropCap no design da abertura."
     },
     "docs": {
       "slug": "configuration",
@@ -475,7 +545,8 @@
         "ca": "Elements de text",
         "zh": "文本元素",
         "ar": "عناصر النص",
-        "ja": "テキスト要素"
+        "ja": "テキスト要素",
+        "pt": "Elementos de texto"
       }
     }
   },
@@ -486,7 +557,8 @@
       "ca": "Tabuladors",
       "zh": "制表位",
       "ar": "مواضع الجدولة",
-      "ja": "タブストップ"
+      "ja": "タブストップ",
+      "pt": "Paradas de tabulação"
     },
     "aliases": {
       "en": [
@@ -522,6 +594,13 @@
         "タブ",
         "タブリーダー",
         "テキストの桁そろえ"
+      ],
+      "pt": [
+        "tabulações",
+        "tabulação",
+        "tabulação com pontilhado",
+        "pontilhado",
+        "colunas de texto alinhadas"
       ]
     },
     "explanation": {
@@ -530,7 +609,8 @@
       "ca": "Els caràcters de tabulació no es componen. Alinea els valors amb una taula com a recurs; les línies de punts només existeixen a la taula de continguts.",
       "zh": "制表符不参与排版。用表资源来对齐数值；点状前导符只在目录中提供。",
       "ar": "لا تُنضَّد حروف الجدولة. حاذِ القيم بمورد جدول؛ ونقاط التوجيه لا توجد إلا في جدول المحتويات.",
-      "ja": "タブ文字は組版されません。値をそろえるには表リソースを使ってください。点線のリーダーは目次にしかありません。"
+      "ja": "タブ文字は組版されません。値をそろえるには表リソースを使ってください。点線のリーダーは目次にしかありません。",
+      "pt": "Os caracteres de tabulação não são compostos. Alinhe valores com um recurso de tabela; os pontilhados existem apenas no sumário."
     },
     "docs": {
       "slug": "document-format",
@@ -540,7 +620,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -551,7 +632,8 @@
       "ca": "Més de sis nivells de títol",
       "zh": "六级以上的标题",
       "ar": "أكثر من ستة مستويات للعناوين",
-      "ja": "6レベルを超える見出し"
+      "ja": "6レベルを超える見出し",
+      "pt": "Mais de seis níveis de título"
     },
     "aliases": {
       "en": [
@@ -585,6 +667,12 @@
         "H7",
         "7番目の見出しレベル",
         "深いアウトライン"
+      ],
+      "pt": [
+        "H7",
+        "sétimo nível de título",
+        "estrutura profunda",
+        "hierarquia de títulos profunda"
       ]
     },
     "explanation": {
@@ -593,7 +681,8 @@
       "ca": "Els títols arriben fins a H6. Un setè nivell pot ser un H6 amb el text en negreta o cursiva, diferenciat amb la tipografia del nivell 6.",
       "zh": "标题到H6为止。第七级可以用H6来做，把文字包在粗体或斜体里，再通过六级标题的字体设置单独设定样式。",
       "ar": "تتوقف العناوين عند H6. ويمكن أن يكون المستوى السابع عنوان H6 نصه ملفوف بالعريض أو المائل، يُنسَّق على حدة عبر طباعة المستوى السادس.",
-      "ja": "見出しはH6までです。7番目のレベルは、テキストを太字かイタリックで囲んだH6として作り、レベル6の文字組みで区別してスタイルを付けられます。"
+      "ja": "見出しはH6までです。7番目のレベルは、テキストを太字かイタリックで囲んだH6として作り、レベル6の文字組みで区別してスタイルを付けられます。",
+      "pt": "Os títulos vão até H6. Um sétimo nível pode ser um H6 com o texto em negrito ou itálico, diferenciado pela tipografia do nível 6."
     },
     "docs": {
       "slug": "document-format",
@@ -603,7 +692,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -614,7 +704,8 @@
       "ca": "Composició al servidor o a Node",
       "zh": "服务器端或Node排版",
       "ar": "الإخراج على الخادم أو في Node",
-      "ja": "サーバーサイドやNodeでのレイアウト"
+      "ja": "サーバーサイドやNodeでのレイアウト",
+      "pt": "Diagramação no servidor ou no Node"
     },
     "aliases": {
       "en": [
@@ -662,6 +753,16 @@
         "CLI",
         "ヘッドレス",
         "SSR"
+      ],
+      "pt": [
+        "Node",
+        "renderização no servidor",
+        "linha de comando",
+        "CLI",
+        "headless",
+        "navegador headless",
+        "SSR",
+        "processamento em lote"
       ]
     },
     "explanation": {
@@ -670,7 +771,8 @@
       "ca": "La composició mesura el text amb el canvas del navegador, així que s'executa en un navegador o en un Web Worker. Per a feines per lots, fes servir un navegador sense interfície; postext-pdf pot llegir les fonts del disc un cop feta la composició.",
       "zh": "排版借助浏览器的canvas测量文字，因此只能在浏览器或Web Worker中运行。批量任务可以驱动无头浏览器；版面生成之后，postext-pdf可以从磁盘读取字体。",
       "ar": "يقيس الإخراج النص بلوحة Canvas في المتصفح، فهو يعمل في متصفح أو في Web Worker. وللمهام الدفعية، شغّل متصفحًا بلا واجهة؛ ويستطيع postext-pdf قراءة الخطوط من القرص بعد وجود الإخراج.",
-      "ja": "レイアウトはブラウザーのcanvasで文字を計測するため、ブラウザーかWeb Workerの中で動きます。バッチ処理にはヘッドレスブラウザーを操作してください。レイアウトができていれば、postext-pdfはディスクからフォントを読み込めます。"
+      "ja": "レイアウトはブラウザーのcanvasで文字を計測するため、ブラウザーかWeb Workerの中で動きます。バッチ処理にはヘッドレスブラウザーを操作してください。レイアウトができていれば、postext-pdfはディスクからフォントを読み込めます。",
+      "pt": "O motor de layout mede o texto com o canvas do navegador, por isso roda em um navegador ou em um Web Worker. Para trabalhos em lote, use um navegador headless; o postext-pdf pode ler as fontes do disco depois que o layout estiver pronto."
     },
     "docs": {
       "slug": "architecture",
@@ -680,7 +782,8 @@
         "ca": "Fora d'abast",
         "zh": "不做的事",
         "ar": "خارج النطاق",
-        "ja": "対象外とするもの"
+        "ja": "対象外とするもの",
+        "pt": "Fora do escopo"
       }
     }
   },
@@ -691,7 +794,8 @@
       "ca": "Reduir flotants massa alts",
       "zh": "缩小过高的浮动体",
       "ar": "تصغير العناصر العائمة الطويلة جدًّا",
-      "ja": "高すぎるフロートの縮小"
+      "ja": "高すぎるフロートの縮小",
+      "pt": "Reduzir flutuantes altos demais"
     },
     "aliases": {
       "en": [
@@ -725,6 +829,13 @@
         "図が高すぎる",
         "図をページに合わせて縮小",
         "図版の縮小"
+      ],
+      "pt": [
+        "figura alta demais",
+        "escalar figura para caber",
+        "reduzir prancha",
+        "redimensionar figura",
+        "figura não cabe na página"
       ]
     },
     "explanation": {
@@ -733,7 +844,8 @@
       "ca": "Un flotant més alt que la seva banda no es redueix (fitFiguresToPage només actua sobre figures més altes que la pàgina). Calcula l'amplada a partir de la proporció perquè la làmina càpiga en l'alçada de la pàgina.",
       "zh": "比所在横条更高的浮动体不会被缩小（fitFiguresToPage只处理比页面还高的图）。按宽高比算出宽度，让插图适合页面高度。",
       "ar": "العنصر العائم الأطول من شريطه لا يُصغَّر (لا تعمل fitFiguresToPage إلا على الأشكال الأطول من الصفحة). احسب العرض من نسبة الأبعاد لتتسع اللوحة لارتفاع الصفحة.",
-      "ja": "帯より高いフロートは縮小されません（fitFiguresToPageが働くのは、ページより高い図だけです）。図版がページの高さに収まるよう、縦横比から幅を計算してください。"
+      "ja": "帯より高いフロートは縮小されません（fitFiguresToPageが働くのは、ページより高い図だけです）。図版がページの高さに収まるよう、縦横比から幅を計算してください。",
+      "pt": "Um flutuante mais alto que a sua faixa não é reduzido (fitFiguresToPage só atua em figuras mais altas que a página). Calcule a largura a partir da proporção para que a prancha caiba na altura da página."
     },
     "docs": {
       "slug": "document-format",
@@ -743,7 +855,8 @@
         "ca": "Col·locació",
         "zh": "位置",
         "ar": "الموضع",
-        "ja": "配置"
+        "ja": "配置",
+        "pt": "Posicionamento"
       }
     }
   },
@@ -754,7 +867,8 @@
       "ca": "Matemàtiques en peus, cel·les o atributs",
       "zh": "题注、单元格或属性中的数学公式",
       "ar": "الرياضيات في التعليقات أو الخلايا أو السمات",
-      "ja": "キャプション、セル、属性の中の数式"
+      "ja": "キャプション、セル、属性の中の数式",
+      "pt": "Matemática em legendas, células ou atributos"
     },
     "aliases": {
       "en": [
@@ -788,6 +902,13 @@
         "キャプションの数式",
         "表の中のLaTeX",
         "見出し属性の数式"
+      ],
+      "pt": [
+        "fórmula na legenda",
+        "LaTeX em tabela",
+        "matemática em atributo de título",
+        "equação na célula",
+        "fórmula em nota"
       ]
     },
     "explanation": {
@@ -796,7 +917,8 @@
       "ca": "Resolt a postext 1.19: les matemàtiques en línia $…$ es componen als peus, les notes i les cel·les de taula, a la línia amb el text i amb l'alineació de la cel·la; amb la regla de Pandoc, així que els preus de \"$5 a $10\" continuen sent text. Els atributs de títol continuen imprimint la fórmula tal com s'escriu. Fins a la 1.18 les fórmules només es componien al text, i els peus i les cel·les feien servir ^superíndexs^, ~subíndexs~ i símbols Unicode.",
       "zh": "已在postext 1.19中解决：行内公式$…$可以排在题注、注释和表格单元格中，与文字同行排，并遵循单元格的对齐方式；按Pandoc的规则识别，所以“$5 to $10”这样的价格仍是文字。标题属性中的公式仍按原样输出。1.18及以前，公式只能排在正文中，题注和单元格只能用^上标^、~下标~和Unicode符号。",
       "ar": "حُلّت في postext 1.19: تُنضَّد الرياضيات السطرية $…$ في التعليقات والملاحظات وخلايا الجداول، في السطر مع النص وبمحاذاة الخلية؛ وفق قاعدة Pandoc، فتبقى أسعار مثل \"$5 to $10\" نصًّا. أما سمات العناوين فما زالت تطبع الصيغة كما كُتبت. وحتى 1.18 لم تكن الصيغ تُنضَّد إلا في نص المتن، وكانت التعليقات والخلايا تستعمل ^superscripts^ و~subscripts~ ورموز Unicode.",
-      "ja": "postext 1.19で解決しました。インライン数式$…$は、キャプション、注記、表のセルの中でも、文字と同じ行に、セルの揃えに従って組まれます。Pandocの規則で読むので、「$5 to $10」のような価格は文字のままです。見出しの属性の中の数式は、書いたとおりに出力されます。1.18までは数式は本文の中だけで組まれ、キャプションやセルでは^上付き^、~下付き~とUnicodeの記号を使っていました。"
+      "ja": "postext 1.19で解決しました。インライン数式$…$は、キャプション、注記、表のセルの中でも、文字と同じ行に、セルの揃えに従って組まれます。Pandocの規則で読むので、「$5 to $10」のような価格は文字のままです。見出しの属性の中の数式は、書いたとおりに出力されます。1.18までは数式は本文の中だけで組まれ、キャプションやセルでは^上付き^、~下付き~とUnicodeの記号を使っていました。",
+      "pt": "Corrigido no postext 1.19: a matemática em linha $…$ é composta nas legendas, nas notas e nas células de tabela, na mesma linha do texto e com o alinhamento da célula; pela regra do Pandoc, os preços de “$5 a $10” continuam sendo texto. Os atributos de título ainda imprimem a fórmula como foi escrita. Até a 1.18, as fórmulas só eram compostas no texto corrido, e legendas e células usavam ^sobrescritos^, ~subscritos~ e símbolos Unicode."
     },
     "docs": {
       "slug": "document-format",
@@ -806,7 +928,8 @@
         "ca": "Fórmules matemàtiques",
         "zh": "数学公式",
         "ar": "الصيغ الرياضية",
-        "ja": "数式"
+        "ja": "数式",
+        "pt": "Fórmulas matemáticas"
       }
     },
     "fixedIn": "1.19.0"
@@ -818,7 +941,8 @@
       "ca": "Text girat en una pàgina horitzontal",
       "zh": "横排页面上的旋转文字",
       "ar": "نص مدوَّر في صفحة أفقية",
-      "ja": "横組みページでの回転した文字"
+      "ja": "横組みページでの回転した文字",
+      "pt": "Texto girado em página horizontal"
     },
     "aliases": {
       "en": [
@@ -863,6 +987,15 @@
         "横向きの見出し",
         "回転したキャプション",
         "90度回転した文字"
+      ],
+      "pt": [
+        "rótulo girado",
+        "texto da lombada",
+        "título de lado",
+        "legenda girada",
+        "texto a 90 graus",
+        "texto rotacionado",
+        "texto na vertical"
       ]
     },
     "explanation": {
@@ -871,7 +1004,8 @@
       "ca": "En una pàgina horitzontal, els elements de text i els paràgrafs són sempre horitzontals; només giren els flotants sencers. Un llibre sencer o una secció es poden compondre en vertical (layout.writingMode 'vertical-rl'), però això és l'escriptura vertical del xinès o del japonès, no una línia girada. Dibuixa l'etiqueta girada dins d'un recurs SVG, o gira la taula o la figura sencera en una pàgina pròpia.",
       "zh": "在横排页面上，文本元素和段落保持水平，只有整个浮动体可以旋转。整本书或某一节可以竖排（layout.writingMode 'vertical-rl'），但那是中文或日文的竖排，不是把一行文字转过去。把转向的标签画在SVG资源里，或者把整个表或图旋转后放到单独的一页。",
       "ar": "في الصفحة الأفقية، تبقى العناصر النصية والفقرات أفقية؛ ولا يدور إلا العنصر العائم كاملًا. ويمكن تنضيد كتاب كامل أو قسم عموديًّا (layout.writingMode 'vertical-rl')، لكن تلك هي الكتابة العمودية الصينية أو اليابانية، لا سطر مدوَّر. ارسم التسمية المدوَّرة داخل مورد SVG، أو دوّر الجدول أو الشكل كاملًا في صفحة مستقلة.",
-      "ja": "横組みのページでは、テキスト要素と段落は横向きのままで、回転できるのはフロート全体だけです。本全体や1つの節を縦組みにすることはできますが（layout.writingMode 'vertical-rl'）、それは中国語や日本語の縦組みであって、行を横倒しにすることではありません。横倒しのラベルはSVGリソースの中に描くか、表や図を丸ごと回転して専用のページに置いてください。"
+      "ja": "横組みのページでは、テキスト要素と段落は横向きのままで、回転できるのはフロート全体だけです。本全体や1つの節を縦組みにすることはできますが（layout.writingMode 'vertical-rl'）、それは中国語や日本語の縦組みであって、行を横倒しにすることではありません。横倒しのラベルはSVGリソースの中に描くか、表や図を丸ごと回転して専用のページに置いてください。",
+      "pt": "Em uma página horizontal, os elementos de texto e os parágrafos ficam sempre na horizontal; só os flutuantes inteiros giram. Um livro inteiro ou uma seção podem ser compostos na vertical (layout.writingMode 'vertical-rl'), mas isso é a escrita vertical do chinês ou do japonês, não uma linha girada. Desenhe o rótulo girado dentro de um recurso SVG, ou gire a tabela ou a figura inteira para uma página própria."
     },
     "docs": {
       "slug": "document-format",
@@ -881,7 +1015,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -892,7 +1027,8 @@
       "ca": "Escalat horitzontal de fonts",
       "zh": "字体水平缩放",
       "ar": "تحجيم الخط أفقيًّا",
-      "ja": "文字の水平方向の伸縮"
+      "ja": "文字の水平方向の伸縮",
+      "pt": "Escala horizontal de fontes"
     },
     "aliases": {
       "en": [
@@ -928,6 +1064,14 @@
         "平体",
         "水平比率",
         "文字を詰める"
+      ],
+      "pt": [
+        "tipo condensado",
+        "fonte condensada",
+        "escala horizontal",
+        "comprimir o texto",
+        "estreitar o texto",
+        "condensar texto"
       ]
     },
     "explanation": {
@@ -936,7 +1080,8 @@
       "ca": "Els glifs no es poden estirar ni estrènyer. Tria una família condensada o crea una còpia escalada de la font.",
       "zh": "字形不能拉宽或压窄。选用窄体字族，或者自己制作一份缩放过的字体。",
       "ar": "لا يمكن مطّ الأشكال أو ضغطها. اختر عائلة مضغوطة، أو ابنِ نسخة محجَّمة من الخط.",
-      "ja": "グリフを横に伸ばしたり縮めたりすることはできません。コンデンス体のファミリーを選ぶか、比率を変えたフォントの複製を作ってください。"
+      "ja": "グリフを横に伸ばしたり縮めたりすることはできません。コンデンス体のファミリーを選ぶか、比率を変えたフォントの複製を作ってください。",
+      "pt": "Os glifos não podem ser esticados nem comprimidos. Escolha uma família condensada ou crie uma cópia escalada da fonte."
     },
     "docs": {
       "slug": "document-format",
@@ -946,7 +1091,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -957,7 +1103,8 @@
       "ca": "Títols setext, filets, ratllat, enllaços automàtics",
       "zh": "Setext标题、分隔线、删除线、自动链接",
       "ar": "عناوين Setext والخطوط الأفقية والشطب والروابط التلقائية",
-      "ja": "Setext見出し、罫線、取り消し線、自動リンク"
+      "ja": "Setext見出し、罫線、取り消し線、自動リンク",
+      "pt": "Títulos setext, fios, tachado, links automáticos"
     },
     "aliases": {
       "en": [
@@ -1014,6 +1161,18 @@
         "~~text~~",
         "Setext見出し",
         "自動リンク"
+      ],
+      "pt": [
+        "fio horizontal",
+        "linha horizontal",
+        "---",
+        "tachado",
+        "riscado",
+        "~~texto~~",
+        "setext",
+        "link automático",
+        "autolink",
+        "links por referência"
       ]
     },
     "explanation": {
@@ -1022,7 +1181,8 @@
       "ca": "Aquestes formes de Markdown s'imprimeixen com a text. Escriu títols ATX (#), marca la separació entre seccions amb :::space o amb un filet de disseny, i escriu els URL com a text normal.",
       "zh": "这些Markdown写法会按文字原样打印。标题用ATX写法（#），节与节之间的分隔用:::space或设计中的线条，URL写成纯文本。",
       "ar": "تُطبع صيغ Markdown هذه نصًّا. اكتب عناوين ATX (#)، وعلّم فاصل القسم بـ :::space أو بخط من التصميم، واكتب عناوين URL نصًّا عاديًّا.",
-      "ja": "これらのMarkdownの書き方は文字のまま印字されます。見出しはATX形式（#）で書き、節の区切りは:::spaceかデザインの罫線で示し、URLはプレーンテキストで書いてください。"
+      "ja": "これらのMarkdownの書き方は文字のまま印字されます。見出しはATX形式（#）で書き、節の区切りは:::spaceかデザインの罫線で示し、URLはプレーンテキストで書いてください。",
+      "pt": "Essas formas de Markdown são impressas como texto. Escreva títulos ATX (#), marque a quebra de seção com :::space ou com um fio de design e escreva as URLs como texto simples."
     },
     "docs": {
       "slug": "document-format",
@@ -1032,7 +1192,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -1043,7 +1204,8 @@
       "ca": "HTML i MDX en brut",
       "zh": "原始HTML与MDX",
       "ar": "HTML وMDX الخام",
-      "ja": "生のHTMLとMDX"
+      "ja": "生のHTMLとMDX",
+      "pt": "HTML e MDX brutos"
     },
     "aliases": {
       "en": [
@@ -1083,6 +1245,14 @@
         "<br>",
         "<span>",
         "MDXコンポーネント"
+      ],
+      "pt": [
+        "tags HTML",
+        "etiquetas HTML",
+        "<br>",
+        "<span>",
+        "componentes MDX",
+        "HTML embutido"
       ]
     },
     "explanation": {
@@ -1091,7 +1261,8 @@
       "ca": "Les etiquetes no s'interpreten, perquè Postext només llegeix Markdown i les seves pròpies directives. Fes servir atributs de títol, xips, estils de paràgraf i requadres per al que faries amb HTML.",
       "zh": "标签不会被解析，因为Postext只读取Markdown和它自己的指令。HTML能做的事，用标题属性、行内标签、段落样式和标注框来实现。",
       "ar": "لا تُفسَّر الوسوم، لأن Postext لا يقرأ إلا Markdown وتوجيهاته الخاصة. استعمل سمات العناوين والشارات وأنماط الفقرات والإطارات لما كان HTML سيفعله.",
-      "ja": "タグは解釈されません。PostextはMarkdownと独自のディレクティブしか読まないためです。HTMLで行うことには、見出しの属性、チップ、段落スタイル、囲みを使ってください。"
+      "ja": "タグは解釈されません。PostextはMarkdownと独自のディレクティブしか読まないためです。HTMLで行うことには、見出しの属性、チップ、段落スタイル、囲みを使ってください。",
+      "pt": "As tags não são interpretadas, porque o Postext só lê Markdown e as próprias diretivas. Para o que você faria com HTML, use atributos de título, chips, estilos de parágrafo e boxes."
     },
     "docs": {
       "slug": "document-format",
@@ -1101,7 +1272,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -1112,7 +1284,8 @@
       "ca": "Partició de mots en text en bandera",
       "zh": "齐左文字的断词",
       "ar": "تقسيم الكلمات في النص غير المضبوط",
-      "ja": "行末不ぞろいのテキストのハイフネーション"
+      "ja": "行末不ぞろいのテキストのハイフネーション",
+      "pt": "Hifenização em texto alinhado à esquerda"
     },
     "aliases": {
       "en": [
@@ -1147,6 +1320,13 @@
         "ハイフネーションゾーン",
         "行末不ぞろい",
         "ragged right"
+      ],
+      "pt": [
+        "hifenizar texto em bandeira",
+        "zona de hifenização",
+        "hifenização alinhada à esquerda",
+        "partir palavras em texto em bandeira",
+        "divisão silábica"
       ]
     },
     "explanation": {
@@ -1155,7 +1335,8 @@
       "ca": "Només es parteixen els mots del text justificat; el text en bandera talla entre paraules. Justifica el passatge o retoca a mà les línies que queden massa curtes; com més estreta és la mesura, més profunda és la bandera.",
       "zh": "只有两端对齐的文字会断词；左对齐不齐行的文字在词间断行。把这段改为两端对齐，或者手动改写那些行尾空得很多的行；行长越窄，行尾越参差。",
       "ar": "لا تُقسَّم الكلمات بالواصلة إلا في النص المضبوط؛ والنص ذو الحافة اليمنى الحرة ينكسر بين الكلمات. اضبط المقطع، أو أعد صياغة الأسطر التي تنتهي قصيرة جدًّا بيدك؛ فكلما ضاق السطر ازداد تفاوت الحافة.",
-      "ja": "ハイフネーションされるのは両端そろえのテキストだけで、行末不ぞろいのテキストは語と語の間で改行されます。その箇所を両端そろえにするか、極端に短く終わる行を手で書き換えてください。行長が狭いほど、行末の凹凸は大きくなります。"
+      "ja": "ハイフネーションされるのは両端そろえのテキストだけで、行末不ぞろいのテキストは語と語の間で改行されます。その箇所を両端そろえにするか、極端に短く終わる行を手で書き換えてください。行長が狭いほど、行末の凹凸は大きくなります。",
+      "pt": "Só o texto justificado é hifenizado; o texto alinhado à esquerda quebra entre palavras. Justifique o trecho ou reescreva à mão as linhas que ficam muito curtas; quanto mais estreita a medida, mais irregular fica a bandeira."
     },
     "docs": {
       "slug": "configuration",
@@ -1165,7 +1346,8 @@
         "ca": "Partició de mots",
         "zh": "断词",
         "ar": "تقسيم الكلمات بالواصلة",
-        "ja": "ハイフネーション"
+        "ja": "ハイフネーション",
+        "pt": "Hifenização"
       }
     }
   },
@@ -1176,7 +1358,8 @@
       "ca": "Filets a l'estil booktabs",
       "zh": "三线表",
       "ar": "خطوط Booktabs",
-      "ja": "booktabs式の罫線"
+      "ja": "booktabs式の罫線",
+      "pt": "Fios no estilo booktabs"
     },
     "aliases": {
       "en": [
@@ -1216,6 +1399,13 @@
         "toprule midrule bottomrule",
         "見出し行の下だけの罫線",
         "3本罫の表"
+      ],
+      "pt": [
+        "booktabs",
+        "toprule midrule bottomrule",
+        "fio só abaixo do cabeçalho",
+        "tabela de três fios",
+        "fios superior, intermediário e inferior"
       ]
     },
     "explanation": {
@@ -1224,7 +1414,8 @@
       "ca": "Els filets de taula segueixen quatre patrons: retícula, horitzontal (un filet entre cada parell de files), exterior i cap. Cap d'aquests patrons no dibuixa només un filet a dalt, un altre sota la capçalera i un altre al peu. Fes servir 'horizontal' amb filets fins d'un color clar i distingeix la capçalera per la font, el pes i el color.",
       "zh": "表格线有四种样式：grid（网格）、horizontal（每两行之间一条线）、outer（外框）和none（无）。没有一种只画顶线、表头下的线和底线。用'horizontal'配上浅色的细线，再用字体、字重和颜色把表头区分出来。",
       "ar": "تأتي خطوط الجداول في أربعة أنماط: grid، وhorizontal (خط بين كل صفين)، وouter، وnone. لا يرسم أي منها خطًّا علويًّا وخطًّا تحت الرأس وخطًّا سفليًّا فقط. استعمل 'horizontal' بخطوط شعرية بلون خطوط فاتح، وميّز الرأس بوجهه ووزنه ولونه.",
-      "ja": "表の罫線には、grid、horizontal（すべての行の間に罫線）、outer、noneの4パターンがあります。上罫、見出し行の下の罫線、下罫だけを引くものはありません。'horizontal'を薄い罫線色のヘアラインで使い、見出し行は書体、ウェイト、色で区別してください。"
+      "ja": "表の罫線には、grid、horizontal（すべての行の間に罫線）、outer、noneの4パターンがあります。上罫、見出し行の下の罫線、下罫だけを引くものはありません。'horizontal'を薄い罫線色のヘアラインで使い、見出し行は書体、ウェイト、色で区別してください。",
+      "pt": "Os fios de tabela seguem quatro padrões: grade, horizontal (um fio entre cada par de linhas), externo e nenhum. Nenhum deles desenha só um fio no topo, outro abaixo do cabeçalho e outro no pé. Use 'horizontal' com fios finos em uma cor clara e destaque o cabeçalho pela fonte, pelo peso e pela cor."
     },
     "docs": {
       "slug": "configuration",
@@ -1234,7 +1425,8 @@
         "ca": "Estil de taules",
         "zh": "表格样式",
         "ar": "نمط الجداول",
-        "ja": "表スタイル"
+        "ja": "表スタイル",
+        "pt": "Estilo de tabela"
       }
     }
   },
@@ -1245,7 +1437,8 @@
       "ca": "PDF/X, caixes de tall i perfils ICC",
       "zh": "PDF/X、裁切框与ICC配置文件",
       "ar": "PDF/X وصناديق القص وملفات تعريف ICC",
-      "ja": "PDF/X、トリムボックス、ICCプロファイル"
+      "ja": "PDF/X、トリムボックス、ICCプロファイル",
+      "pt": "PDF/X, caixas de refile e perfis ICC"
     },
     "aliases": {
       "en": [
@@ -1299,6 +1492,18 @@
         "ICCプロファイル",
         "出力インテント",
         "カラーマネジメント"
+      ],
+      "pt": [
+        "PDF/X",
+        "TrimBox",
+        "BleedBox",
+        "caixa de refile",
+        "caixa de sangria",
+        "perfil ICC",
+        "output intent",
+        "gerenciamento de cores",
+        "cor de registro",
+        "pré-impressão"
       ]
     },
     "explanation": {
@@ -1307,7 +1512,8 @@
       "ca": "postext-pdf escriu cada pàgina com una sola MediaBox, el plec amb la sang i les marques de tall, sense TrimBox, BleedBox ni perfil de sortida, i passa els colors a CMYK amb una fórmula simple, sense perfil ICC. Les marques de tall indiquen on cal tallar; un màster d'impressió porta les tintes exactes d'una figura; una eina de preimpressió afegeix les caixes i el perfil quan la impremta demana PDF/X.",
       "zh": "postext-pdf把每一页写成一个MediaBox，即带出血和裁切标记的整张纸，不写TrimBox、BleedBox或输出意图；颜色用一个简单公式转成CMYK，不使用ICC配置文件。裁切标记指明裁切位置；印刷母版为图提供准确的油墨；印刷厂要求PDF/X时，由印前工具加上这些框和配置文件。",
       "ar": "يكتب postext-pdf كل صفحة MediaBox واحدًا، هو الورقة بنزفها وعلامات قصها، بلا TrimBox ولا BleedBox ولا نية إخراج، ويحوّل الألوان إلى CMYK بصيغة بسيطة، بلا ملف تعريف ICC. علامات القص تبيّن أين يكون القطع؛ والنسخة الطباعية الأصلية تحمل أحبارًا دقيقة لشكل؛ وأداة ما قبل الطباعة تضيف الصناديق وملف التعريف حين تطلب المطبعة PDF/X.",
-      "ja": "postext-pdfは各ページを1つのMediaBox（裁ち落としとトンボを含む用紙）として書き出し、TrimBox、BleedBox、出力インテントは付けません。色はICCプロファイルを使わず、単純な計算式でCMYKに変換します。断裁位置はトンボで示され、図の正確なインキは印刷用マスターが持ちます。印刷所からPDF/Xを求められたときは、プリプレスツールでボックスとプロファイルを追加します。"
+      "ja": "postext-pdfは各ページを1つのMediaBox（裁ち落としとトンボを含む用紙）として書き出し、TrimBox、BleedBox、出力インテントは付けません。色はICCプロファイルを使わず、単純な計算式でCMYKに変換します。断裁位置はトンボで示され、図の正確なインキは印刷用マスターが持ちます。印刷所からPDF/Xを求められたときは、プリプレスツールでボックスとプロファイルを追加します。",
+      "pt": "O postext-pdf grava cada página como uma única MediaBox (a folha com a sangria e as marcas de corte), sem TrimBox, BleedBox nem output intent, e converte as cores para CMYK com uma fórmula simples, sem perfil ICC. As marcas de corte mostram onde cortar; um arquivo-mestre de impressão traz as tintas exatas de uma figura; uma ferramenta de pré-impressão acrescenta as caixas e o perfil quando a gráfica pede PDF/X."
     },
     "docs": {
       "slug": "configuration",
@@ -1317,7 +1523,8 @@
         "ca": "PDF a punt per a impremta",
         "zh": "可付印的PDF",
         "ar": "ملفات PDF جاهزة للطباعة",
-        "ja": "印刷入稿用のPDF"
+        "ja": "印刷入稿用のPDF",
+        "pt": "PDFs prontos para impressão"
       }
     }
   },
@@ -1328,7 +1535,8 @@
       "ca": "Salts de línia i espais inicials en un paràgraf",
       "zh": "段落内的换行与行首空格",
       "ar": "كسر الأسطر والمسافات البادئة داخل الفقرة",
-      "ja": "段落内の改行と行頭の空白"
+      "ja": "段落内の改行と行頭の空白",
+      "pt": "Quebras de linha e espaços iniciais em um parágrafo"
     },
     "aliases": {
       "en": [
@@ -1382,6 +1590,16 @@
         "詩の改行",
         "行頭の空白",
         "詩の字下げ"
+      ],
+      "pt": [
+        "quebra de linha forçada",
+        "quebra de linha manual",
+        "retorno suave",
+        "quebras de linha em verso",
+        "espaços iniciais",
+        "verso recuado",
+        "recuo de poema",
+        "poesia"
       ]
     },
     "explanation": {
@@ -1390,7 +1608,8 @@
       "ca": "Les línies d'un paràgraf de Markdown s'uneixen amb un espai i se'n retallen els espais inicials, de manera que un paràgraf no conserva ni els salts de línia d'un poema ni els seus sagnats, i un estil de paràgraf no admet alhora sagnat de primera línia i sagnat francès. Dona a cada vers un paràgraf propi dins un contenidor :::paragraphs, i escriu un sagnat com a espais eme (U+2003) després d'un unidor de paraules (U+2060), que res no retalla.",
       "zh": "Markdown段落中的各行以空格连接，行首空格被去掉，所以段落既保留不了诗的分行，也保留不了缩进；段落样式也无法把首行缩进和悬挂缩进搭配使用。在:::paragraphs容器中让每一行自成一段，缩进写成放在连接符（U+2060）后面的em空格（U+2003），这样就不会被去掉。",
       "ar": "تُوصل أسطر فقرة Markdown بمسافة وتُقتطع مسافاتها البادئة، فلا تحتفظ الفقرة بكسر أسطر القصيدة ولا بإزاحاتها، ولا يستطيع نمط الفقرة الجمع بين مسافة بادئة للسطر الأول ومسافة بادئة معلّقة. أعطِ كل سطر فقرة مستقلة في حاوية :::paragraphs، واكتب الإزاحة مسافاتِ em (U+2003) بعد رابط كلمات (U+2060)، فلا شيء يقتطعها.",
-      "ja": "Markdownの段落の各行は空白でつながれ、行頭の空白は取り除かれます。そのため段落には詩の改行も字下げも残らず、段落スタイルで1行目の字下げとぶら下げインデントを組み合わせることもできません。:::paragraphsコンテナーの中で各行を独立した段落にし、字下げは単語結合子（U+2060）の後ろにem幅の空白（U+2003）を置いて書いてください。これはどこでも取り除かれません。"
+      "ja": "Markdownの段落の各行は空白でつながれ、行頭の空白は取り除かれます。そのため段落には詩の改行も字下げも残らず、段落スタイルで1行目の字下げとぶら下げインデントを組み合わせることもできません。:::paragraphsコンテナーの中で各行を独立した段落にし、字下げは単語結合子（U+2060）の後ろにem幅の空白（U+2003）を置いて書いてください。これはどこでも取り除かれません。",
+      "pt": "As linhas de um parágrafo de Markdown são unidas com um espaço e os espaços iniciais são removidos, então um parágrafo não preserva as quebras de linha de um poema nem os seus recuos, e um estilo de parágrafo não combina recuo de primeira linha com recuo deslocado. Dê a cada linha um parágrafo próprio em um contêiner :::paragraphs e escreva um recuo como espaços eme (U+2003) depois de um word joiner (U+2060), que nada remove."
     },
     "docs": {
       "slug": "document-format",
@@ -1400,7 +1619,8 @@
         "ca": "Construccions de bloc",
         "zh": "块结构",
         "ar": "البنى الكتلية",
-        "ja": "ブロック要素"
+        "ja": "ブロック要素",
+        "pt": "Construções de bloco"
       }
     }
   },
@@ -1411,7 +1631,8 @@
       "ca": "Numeració de línies",
       "zh": "行号",
       "ar": "أرقام الأسطر",
-      "ja": "行番号"
+      "ja": "行番号",
+      "pt": "Numeração de linhas"
     },
     "aliases": {
       "en": [
@@ -1462,6 +1683,14 @@
         "余白の行番号",
         "5行ごとの番号",
         "校訂版"
+      ],
+      "pt": [
+        "números de linha",
+        "linhas numeradas",
+        "numeração de versos",
+        "números na margem",
+        "a cada cinco linhas",
+        "edição crítica"
       ]
     },
     "explanation": {
@@ -1470,7 +1699,8 @@
       "ca": "Postext no compta ni numera línies. En vers, dona a cada línia un paràgraf propi i compta-les amb un preprocessador breu que, després de cada cinquè vers, afegeix un requadre lateral amb el número, compost en una columna lateral reservada als flotants.",
       "zh": "Postext不统计也不编排行号。排诗时，让每一行自成一段，用一个简短的预处理脚本来数行，每隔五行加一个装有行号的侧框，排在为浮动体预留的边栏中。",
       "ar": "لا يعدّ Postext الأسطر ولا يرقّمها. للشعر، أعطِ كل سطر فقرة مستقلة وعُدّها بمعالج مسبق قصير يضيف بعد كل سطر خامس صندوقًا جانبيًّا يحمل الرقم، يُنضَّد في عمود جانبي مخصص للعناصر العائمة.",
-      "ja": "Postextは行を数えず、番号も振りません。韻文では各行を独立した段落にし、短い前処理スクリプトで行を数えて、5行ごとに番号を入れたサイドボックスを追加します。そのボックスは、フロート用に確保したサイド段に組みます。"
+      "ja": "Postextは行を数えず、番号も振りません。韻文では各行を独立した段落にし、短い前処理スクリプトで行を数えて、5行ごとに番号を入れたサイドボックスを追加します。そのボックスは、フロート用に確保したサイド段に組みます。",
+      "pt": "O Postext não conta nem numera linhas. Em verso, dê a cada linha um parágrafo próprio e conte-as com um pré-processador curto que acrescenta, depois de cada quinta linha, um boxe lateral com o número, composto em uma coluna lateral reservada aos flutuantes."
     },
     "docs": {
       "slug": "document-format",
@@ -1480,7 +1710,8 @@
         "ca": "Què NO s'admet",
         "zh": "不支持的内容",
         "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法"
+        "ja": "対応していない記法",
+        "pt": "O que NÃO é suportado"
       }
     }
   },
@@ -1491,7 +1722,8 @@
       "ca": "Regles de composició del coreà",
       "zh": "韩文排版规则",
       "ar": "قواعد التنضيد الكورية",
-      "ja": "韓国語の組版規則"
+      "ja": "韓国語の組版規則",
+      "pt": "Regras de composição do coreano"
     },
     "aliases": {
       "en": [
@@ -1539,6 +1771,14 @@
         "한국어",
         "한글",
         "韓国語の改行"
+      ],
+      "pt": [
+        "coreano",
+        "KLREQ",
+        "hangul",
+        "한국어",
+        "한글",
+        "quebra de linha em coreano"
       ]
     },
     "explanation": {
@@ -1547,7 +1787,8 @@
       "ca": "El text coreà es talla entre síl·labes i es justifica com el xinès, amb els valors de la Xina continental: encara no hi ha regles coreanes (KLREQ), ni etiquetes o puntuació coreanes. Ajusta a mà cjk.lineBreak, punctuationWidth i latinSpacing per acostar-t'hi, i cjk.wordBreak 'keep-all' per tallar només als espais entre paraules (어절). El japonès té regles pròpies des de la 1.16.0: etiqueta el document 'ja'.",
       "zh": "韩文按音节断行，像中文一样两端对齐，采用中国大陆的默认规则：目前还没有韩文（KLREQ）规则，也没有韩文标签和标点。可以手动设定cjk.lineBreak、punctuationWidth和latinSpacing来接近，用cjk.wordBreak 'keep-all'让行只在词间空格（어절）处断开。日文从1.16.0起有自己的规则：把文档标记为'ja'。",
       "ar": "ينكسر النص الكوري بين المقاطع ويُضبط كالصيني، بالإعدادات الافتراضية للصينية في البر الرئيسي: لا توجد بعد قواعد كورية (KLREQ)، ولا تسميات ولا علامات ترقيم كورية. اضبط cjk.lineBreak وpunctuationWidth وlatinSpacing يدويًّا للاقتراب منها، وcjk.wordBreak 'keep-all' ليقتصر الكسر على الفراغات بين الكلمات (어절). أما اليابانية فلها قواعدها منذ الإصدار 1.16.0: اوسم المستند بـ 'ja'.",
-      "ja": "韓国語のテキストは中国語と同じように音節の間で改行され、中国本土の既定値で両端そろえされます。韓国語（KLREQ）の規則はまだなく、韓国語のラベルや約物もありません。近づけるにはcjk.lineBreak、punctuationWidth、latinSpacingを手で設定し、語と語の間の空白（어절）でだけ改行するにはcjk.wordBreak 'keep-all'を設定してください。日本語は1.16.0から独自の規則を持っています。文書に'ja'を指定してください。"
+      "ja": "韓国語のテキストは中国語と同じように音節の間で改行され、中国本土の既定値で両端そろえされます。韓国語（KLREQ）の規則はまだなく、韓国語のラベルや約物もありません。近づけるにはcjk.lineBreak、punctuationWidth、latinSpacingを手で設定し、語と語の間の空白（어절）でだけ改行するにはcjk.wordBreak 'keep-all'を設定してください。日本語は1.16.0から独自の規則を持っています。文書に'ja'を指定してください。",
+      "pt": "O texto coreano quebra entre sílabas e é justificado como o chinês, com os padrões da China continental: ainda não há regras coreanas (KLREQ), nem rótulos ou pontuação coreanos. Ajuste à mão cjk.lineBreak, punctuationWidth e latinSpacing para chegar perto, e use cjk.wordBreak 'keep-all' para quebrar só nos espaços entre palavras (어절). O japonês tem regras próprias desde a 1.16.0: marque o documento como 'ja'."
     },
     "docs": {
       "slug": "configuration",
@@ -1557,7 +1798,8 @@
         "ca": "Tipografia de l'Àsia oriental",
         "zh": "东亚排版",
         "ar": "تنضيد نصوص شرق آسيا",
-        "ja": "東アジアの組版"
+        "ja": "東アジアの組版",
+        "pt": "Tipografia do Leste Asiático"
       }
     }
   },
@@ -1568,7 +1810,8 @@
       "ca": "Text vertical i horitzontal a la mateixa pàgina",
       "zh": "同一页上的竖排与横排",
       "ar": "نص عمودي وأفقي في صفحة واحدة",
-      "ja": "1ページ内の縦組みと横組み"
+      "ja": "1ページ内の縦組みと横組み",
+      "pt": "Texto vertical e horizontal na mesma página"
     },
     "aliases": {
       "en": [
@@ -1613,6 +1856,14 @@
         "縦組みのボックス",
         "横排插图说明",
         "ボックス内のwriting-mode"
+      ],
+      "pt": [
+        "orientação mista",
+        "boxe horizontal em texto vertical",
+        "boxe vertical",
+        "横排插图说明",
+        "writing-mode em um boxe",
+        "direção de escrita mista"
       ]
     },
     "explanation": {
@@ -1621,7 +1872,8 @@
       "ca": "La direcció d'escriptura és del document o d'una secció (el layout d'un estil de títol): un requadre, un destacat o una cel·la no poden anar en vertical en una pàgina horitzontal, ni en horitzontal dins un text vertical. Les capçaleres, els folis i els peus es queden horitzontals en una pàgina vertical. Dona al passatge una secció pròpia o dibuixa'l com a recurs SVG.",
       "zh": "书写方向属于整个文档或某一节（标题样式的版式设置）：单个框、边栏或表格单元格不能在横排页面上竖排，也不能在竖排文字中横排。竖排页面上的书眉、页码和题注保持横排。让这段文字单独成为一节，或者画成SVG资源。",
       "ar": "اتجاه الكتابة يخص المستند أو قسمًا منه (تخطيط نمط عنوان): لا يمكن لصندوق أو شريط جانبي أو خلية جدول وحدها أن تجري عموديًّا في صفحة أفقية، أو أفقيًّا في نص عمودي. وتبقى الترويسات وأرقام الصفحات والتعليقات أفقية في الصفحة العمودية. أعطِ المقطع قسمًا مستقلًّا، أو ارسمه موردَ SVG.",
-      "ja": "組み方向は文書または節（見出しスタイルのlayout）に属します。1つのボックス、サイドバー、表のセルだけを、横組みのページで縦に、あるいは縦組みのテキストの中で横に組むことはできません。縦組みのページでも、柱、ノンブル、キャプションは横組みのままです。その箇所を独立した節にするか、SVGリソースとして描いてください。"
+      "ja": "組み方向は文書または節（見出しスタイルのlayout）に属します。1つのボックス、サイドバー、表のセルだけを、横組みのページで縦に、あるいは縦組みのテキストの中で横に組むことはできません。縦組みのページでも、柱、ノンブル、キャプションは横組みのままです。その箇所を独立した節にするか、SVGリソースとして描いてください。",
+      "pt": "A direção de escrita pertence ao documento ou a uma seção (o layout de um estilo de título): um boxe, um quadro lateral ou uma célula de tabela não podem correr na vertical em uma página horizontal, nem na horizontal dentro de um texto vertical. Cabeços, fólios e legendas continuam horizontais em uma página vertical. Dê ao trecho uma seção própria ou desenhe-o como recurso SVG."
     },
     "docs": {
       "slug": "configuration",
@@ -1631,7 +1883,8 @@
         "ca": "Escriptura vertical",
         "zh": "竖排",
         "ar": "الكتابة العمودية",
-        "ja": "縦組み"
+        "ja": "縦組み",
+        "pt": "Escrita vertical"
       }
     }
   },
@@ -1642,7 +1895,8 @@
       "ca": "Taules compostes en text vertical",
       "zh": "竖排的表",
       "ar": "الجداول في النص العمودي",
-      "ja": "縦組みの表"
+      "ja": "縦組みの表",
+      "pt": "Tabelas em texto vertical"
     },
     "aliases": {
       "en": [
@@ -1681,6 +1935,13 @@
         "右から読む表",
         "竖排表格",
         "図の横のキャプション"
+      ],
+      "pt": [
+        "tabela vertical",
+        "tabela lida da direita",
+        "竖排表格",
+        "legendas ao lado das figuras",
+        "legenda vertical"
       ]
     },
     "explanation": {
@@ -1689,7 +1950,8 @@
       "ca": "En un llibre vertical, les figures i les taules estan dretes i els seus peus i cel·les es componen en horitzontal, com les imprimeixen gairebé tots els llibres verticals d'avui. No hi ha taules amb cel·les que corrin de dalt a baix amb la capçalera a la dreta, ni peus compostos en vertical al costat de la figura: dibuixa una taula així com a recurs SVG.",
       "zh": "竖排书中，图和表保持直立，题注和单元格横排，大多数现代竖排书都是这样印的。单元格从上往下排、表头在右侧的表，或者竖排在图旁的题注，都不支持：这样的表可以画成SVG资源。",
       "ar": "في الكتاب العمودي، تقف الأشكال والجداول قائمة وتُنضَّد تعليقاتها وخلاياها أفقيًّا، كما تطبعها معظم الكتب العمودية الحديثة. أما الجدول الذي تجري خلاياه من أعلى إلى أسفل ورأسه على اليمين، أو التعليق المنضَّد عموديًّا بجانب شكله، فغير متاح: ارسم مثل هذا الجدول موردَ SVG.",
-      "ja": "縦組みの本では、図と表は正立し、キャプションとセルは横組みで組まれます。現代の縦組みの本の多くと同じ組み方です。セルが上から下へ流れ、見出しが右にある表や、図の横に縦組みで置くキャプションは使えません。そうした表はSVGリソースとして描いてください。"
+      "ja": "縦組みの本では、図と表は正立し、キャプションとセルは横組みで組まれます。現代の縦組みの本の多くと同じ組み方です。セルが上から下へ流れ、見出しが右にある表や、図の横に縦組みで置くキャプションは使えません。そうした表はSVGリソースとして描いてください。",
+      "pt": "Em um livro vertical, figuras e tabelas ficam em pé e suas legendas e células são compostas na horizontal, como a maioria dos livros verticais modernos as imprime. Não existe tabela com células que correm de cima para baixo e cabeçalho à direita, nem legenda composta na vertical ao lado da figura: desenhe uma tabela assim como recurso SVG."
     },
     "docs": {
       "slug": "configuration",
@@ -1699,7 +1961,8 @@
         "ca": "Escriptura vertical",
         "zh": "竖排",
         "ar": "الكتابة العمودية",
-        "ja": "縦組み"
+        "ja": "縦組み",
+        "pt": "Escrita vertical"
       }
     }
   },
@@ -1710,7 +1973,8 @@
       "ca": "Cossos xinesos (号) i unitats Q",
       "zh": "中文字号（号）与Q数",
       "ar": "أحجام الحروف الصينية (号) ووحدات Q",
-      "ja": "中国の号数とQ数"
+      "ja": "中国の号数とQ数",
+      "pt": "Corpos chineses (号) e unidades Q"
     },
     "aliases": {
       "en": [
@@ -1762,6 +2026,15 @@
         "Q数",
         "级数",
         "級数"
+      ],
+      "pt": [
+        "五号",
+        "小四",
+        "corpos hao",
+        "unidades Q",
+        "级数",
+        "tamanhos de fonte chineses",
+        "corpo em pontos chinês"
       ]
     },
     "explanation": {
@@ -1770,7 +2043,8 @@
       "ca": "Els cossos es donen en pt, mm, px o em: no hi ha 五号 ni 小四, ni la Q japonesa. Converteix-los com ho fan els processadors de text xinesos: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10,5 pt, 小五 9 pt; 1 Q són 0,25 mm.",
       "zh": "字号用pt、mm、px或em指定：没有五号、小四，也没有日本的Q。按中文文字处理软件的做法换算：初号42 pt，二号22 pt，三号16 pt，四号14 pt，小四12 pt，五号10.5 pt，小五9 pt；1 Q为0.25 mm。",
       "ar": "تُعطى الأحجام بـ pt أو mm أو px أو em: لا يوجد 五号 ولا 小四 ولا وحدة Q اليابانية. حوّلها كما تفعل برامج معالجة النصوص الصينية: 初号 42 pt، 二号 22 pt، 三号 16 pt، 四号 14 pt، 小四 12 pt، 五号 10.5 pt، 小五 9 pt؛ و1 Q يساوي 0.25 mm.",
-      "ja": "サイズはpt、mm、px、emで指定します。五号や小四はなく、日本のQ数もありません。中国のワープロと同じように換算してください。初号42 pt、二号22 pt、三号16 pt、四号14 pt、小四12 pt、五号10.5 pt、小五9 pt。1 Qは0.25 mmです。"
+      "ja": "サイズはpt、mm、px、emで指定します。五号や小四はなく、日本のQ数もありません。中国のワープロと同じように換算してください。初号42 pt、二号22 pt、三号16 pt、四号14 pt、小四12 pt、五号10.5 pt、小五9 pt。1 Qは0.25 mmです。",
+      "pt": "Os tamanhos são dados em pt, mm, px ou em: não há 五号 nem 小四, nem o Q japonês. Converta-os como fazem os processadores de texto chineses: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10,5 pt, 小五 9 pt; 1 Q equivale a 0,25 mm."
     },
     "docs": {
       "slug": "configuration",
@@ -1780,7 +2054,8 @@
         "ca": "Retícula de caràcters",
         "zh": "字格",
         "ar": "شبكة الحروف",
-        "ja": "文字グリッド"
+        "ja": "文字グリッド",
+        "pt": "Grade de caracteres"
       }
     }
   },
@@ -1791,7 +2066,8 @@
       "ca": "Notes entre les línies",
       "zh": "行间注",
       "ar": "ملاحظات بين الأسطر",
-      "ja": "行間の注"
+      "ja": "行間の注",
+      "pt": "Notas entre as linhas"
     },
     "aliases": {
       "en": [
@@ -1845,6 +2121,16 @@
         "書き込み注釈",
         "側批",
         "旁批"
+      ],
+      "pt": [
+        "notas interlineares",
+        "glosa interlinear",
+        "notas entre linhas",
+        "notas ao lado da coluna",
+        "comentários laterais",
+        "側批",
+        "旁批",
+        "glosa marginal"
       ]
     },
     "explanation": {
@@ -1853,7 +2139,8 @@
       "ca": "No es compon res entre dues línies o dues columnes de text: la glossa escrita sobre una paraula en un manuscrit medieval, o el comentari vermell (側批) que un manuscrit xinès escriu al costat d'una columna, no tenen un lloc propi. El ruby porta una lectura de pocs caràcters al costat de la seva base. Una nota més llarga entra a la línia com a warichu (:warichu[…], dues files a la meitat del cos) o va a una columna lateral com a requadre amb span=\"side\".",
       "zh": "两行或两栏文字之间不排任何内容：中世纪手抄本写在词上方的注解，或中文抄本写在一行旁边的朱批（側批），都没有专属的位置。注音可以在底字旁边放几个字的读音。较长的注，可以作为双行夹注排进行内（:warichu[…]，以一半字号分两行），或者作为用span=\"side\"标记的框放进边栏。",
       "ar": "لا يُنضَّد شيء بين سطرين أو عمودين من النص: فالشرح المكتوب فوق كلمة في مخطوط من العصور الوسطى، أو التعليق الأحمر (側批) الذي يكتبه المخطوط الصيني بجانب عمود، ليس له موضع خاص. يحمل الروبي قراءة من بضعة حروف بجانب أصلها. أما الملاحظة الأطول فتدخل السطر واريتشو (:warichu[…]، صفّان بنصف الحجم)، أو تذهب إلى عمود جانبي في صندوق مسيَّج بـ span=\"side\".",
-      "ja": "2行の間や2段の間には何も組めません。中世写本で語の上に書かれた注解や、中国の写本が段の横に書く朱の批評（側批）には、専用の場所がありません。ルビは親文字の横に数文字の読みを添えるものです。長い注は、割注として行の中に入れるか（:warichu[…]、半分のサイズで2行）、span=\"side\"で囲ったボックスとしてサイド段に入れてください。"
+      "ja": "2行の間や2段の間には何も組めません。中世写本で語の上に書かれた注解や、中国の写本が段の横に書く朱の批評（側批）には、専用の場所がありません。ルビは親文字の横に数文字の読みを添えるものです。長い注は、割注として行の中に入れるか（:warichu[…]、半分のサイズで2行）、span=\"side\"で囲ったボックスとしてサイド段に入れてください。",
+      "pt": "Nada é composto entre duas linhas ou duas colunas de texto: a glosa escrita sobre uma palavra de um manuscrito medieval, ou o comentário em vermelho (側批) que um manuscrito chinês escreve ao lado de uma coluna, não tem lugar próprio. O rubi leva uma leitura de poucos caracteres ao lado da base. Uma nota mais longa entra na linha como warichu (:warichu[…], duas linhas com metade do corpo) ou vai para uma coluna lateral como boxe com span=\"side\"."
     },
     "docs": {
       "slug": "document-format",
@@ -1863,7 +2150,8 @@
         "ca": "Marques xineses, ruby i warichu",
         "zh": "中文标记、注音和双行夹注",
         "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)",
-        "ja": "中国語の記号、ルビ、割注"
+        "ja": "中国語の記号、ルビ、割注",
+        "pt": "Marcas chinesas, rubi e warichu"
       }
     }
   },
@@ -1874,7 +2162,8 @@
       "ca": "Un número per full de dues pàgines",
       "zh": "一叶两页共用一个页码",
       "ar": "رقم واحد لورقة من صفحتين",
-      "ja": "2ページの丁に1つのノンブル"
+      "ja": "2ページの丁に1つのノンブル",
+      "pt": "Um fólio por folha de duas páginas"
     },
     "aliases": {
       "en": [
@@ -1926,6 +2215,16 @@
         "丁数",
         "1ページおきの番号",
         "葉碼"
+      ],
+      "pt": [
+        "número de folha",
+        "fólio por folha",
+        "fólio por página dupla",
+        "numeração de folhas",
+        "foliação",
+        "numerar a cada duas páginas",
+        "葉碼",
+        "頁碼"
       ]
     },
     "explanation": {
@@ -1934,7 +2233,8 @@
       "ca": "Els números de pàgina compten pàgines: cap comptador no avança un cop per plec o per full, com el número de full (葉碼) d'un llibre xilogràfic. Obre cada full amb un títol de nivell 1 ocult que salti a la pàgina on comença el full (paritat 'even' en un llibre enquadernat per la dreta) i imprimeix {chapterNumber} al disseny; el text s'ha de tallar al Markdown on acaba cada full.",
       "zh": "页码按页计数：没有哪个计数器像雕版书的叶码（葉碼）那样每个跨页或每一叶才加一。可以在每一叶开头放一个隐藏的一级标题，让它换页到该叶起始的那一页（右翻书中parity设为'even'），再在设计中打印{chapterNumber}；这样一来，正文必须在Markdown中每叶结束的地方断开。",
       "ar": "أرقام الصفحات تعدّ الصفحات: لا يوجد عدّاد يتقدم مرة واحدة لكل صفحتين متقابلتين أو لكل ورقة، كما تفعل أرقام الأوراق (葉碼) في كتاب الطباعة الخشبية. افتتح كل ورقة بعنوان مخفي من المستوى الأول ينكسر إلى الصفحة التي تبدأ فيها الورقة (parity 'even' في كتاب مجلَّد من اليمين) واطبع {chapterNumber} في التصميم؛ ثم يجب كسر النص في Markdown حيث تنتهي كل ورقة.",
-      "ja": "ノンブルはページを数えます。木版本の丁付け（葉碼）のように、見開きや丁ごとに1つ進むカウンターはありません。各丁の頭に非表示のレベル1見出しを置いて、その丁が始まるページへ改ページさせ（右綴じの本ではparity 'even'）、デザインで{chapterNumber}を印字してください。その場合、Markdownのテキストを丁の終わりごとに区切る必要があります。"
+      "ja": "ノンブルはページを数えます。木版本の丁付け（葉碼）のように、見開きや丁ごとに1つ進むカウンターはありません。各丁の頭に非表示のレベル1見出しを置いて、その丁が始まるページへ改ページさせ（右綴じの本ではparity 'even'）、デザインで{chapterNumber}を印字してください。その場合、Markdownのテキストを丁の終わりごとに区切る必要があります。",
+      "pt": "Os números de página contam páginas: nenhum contador avança uma vez por página dupla ou por folha, como os números de folha (葉碼) de um livro xilográfico. Abra cada folha com um título de nível 1 oculto que salte para a página onde a folha começa (paridade 'even' em um livro encadernado pela direita) e imprima {chapterNumber} no design; o texto então precisa ser quebrado no Markdown onde cada folha termina."
     },
     "docs": {
       "slug": "configuration",
@@ -1944,7 +2244,8 @@
         "ca": "Numeració",
         "zh": "页码编号",
         "ar": "ترقيم الصفحات",
-        "ja": "ノンブル"
+        "ja": "ノンブル",
+        "pt": "Numeração"
       }
     }
   },
@@ -1955,7 +2256,8 @@
       "ca": "Un filet entre cada dues línies de text",
       "zh": "每两行文字之间一条线",
       "ar": "خط بين كل سطرين من النص",
-      "ja": "行と行の間ごとの罫線"
+      "ja": "行と行の間ごとの罫線",
+      "pt": "Um fio entre cada duas linhas de texto"
     },
     "aliases": {
       "en": [
@@ -2010,6 +2312,16 @@
         "縦の行間の罫線",
         "界行",
         "朱絲欄"
+      ],
+      "pt": [
+        "fios entre linhas",
+        "colunas pautadas",
+        "papel pautado",
+        "linhas entre colunas verticais",
+        "界行",
+        "朱絲欄",
+        "烏絲欄",
+        "fio de coluna"
       ]
     },
     "explanation": {
@@ -2018,7 +2330,8 @@
       "ca": "El filet de columna va entre columnes, i la quadrícula de la retícula de caràcters (cjk.grid.show) és un quadrat gris clar per caràcter, una ajuda de pantalla que el PDF no imprimeix tret que renderToPdf rebi characterGrid: true. Els filets d'una pàgina xilogràfica o del paper pautat d'un manuscrit, un entre cada dues línies, es dibuixen com a elements de línia verticals a la capçalera, col·locats amb el pas de la retícula.",
       "zh": "栏间线画在栏与栏之间；字符网格的叠加层（cjk.grid.show）是每个字一个浅灰方格，只是屏幕上的辅助，PDF中不画，除非renderToPdf收到characterGrid: true。雕版页面或格纸上那种每两行之间一条的界行，要在页眉中用竖线元素画出来，按网格的间距定位。",
       "ar": "يجري الخط الفاصل بين الأعمدة، وطبقة شبكة الحروف (cjk.grid.show) مربع رمادي فاتح لكل حرف، وهي أداة مساعدة على الشاشة يحذفها ملف PDF ما لم يتلقَّ renderToPdf القيمة characterGrid: true. أما خطوط صفحة الطباعة الخشبية أو ورق المخطوطات المسطّر، خط بين كل سطرين، فتُرسم عناصرَ خطوط عمودية في الترويسة، توضع وفق خطوة الشبكة.",
-      "ja": "段間罫は段と段の間に引かれます。文字グリッドの重ね表示（cjk.grid.show）は1文字ごとの薄い灰色の正方形で、画面用の補助です。renderToPdfにcharacterGrid: trueを渡さない限りPDFには出ません。木版のページや罫紙のように行と行の間ごとに引く罫線は、ヘッダーに縦罫の要素として置き、グリッドのピッチから位置を決めて描きます。"
+      "ja": "段間罫は段と段の間に引かれます。文字グリッドの重ね表示（cjk.grid.show）は1文字ごとの薄い灰色の正方形で、画面用の補助です。renderToPdfにcharacterGrid: trueを渡さない限りPDFには出ません。木版のページや罫紙のように行と行の間ごとに引く罫線は、ヘッダーに縦罫の要素として置き、グリッドのピッチから位置を決めて描きます。",
+      "pt": "O fio de coluna corre entre colunas, e a sobreposição da grade de caracteres (cjk.grid.show) é um quadrado cinza-claro para cada caractere, uma ajuda de tela que o PDF omite, a menos que renderToPdf receba characterGrid: true. Os fios de uma página xilográfica ou de um papel pautado de manuscrito, um entre cada duas linhas, são desenhados como elementos de fio verticais no cabeçalho, posicionados pelo passo da grade."
     },
     "docs": {
       "slug": "configuration",
@@ -2028,7 +2341,8 @@
         "ca": "Filet de columna",
         "zh": "栏线",
         "ar": "الخط الفاصل بين الأعمدة",
-        "ja": "段間罫"
+        "ja": "段間罫",
+        "pt": "Fio entre colunas"
       }
     }
   },
@@ -2039,7 +2353,8 @@
       "ca": "Comentari al voltant del text",
       "zh": "环绕正文的注释",
       "ar": "شرح يحيط بالمتن",
-      "ja": "本文を囲む注釈"
+      "ja": "本文を囲む注釈",
+      "pt": "Comentário em volta do texto"
     },
     "aliases": {
       "en": [
@@ -2102,6 +2417,18 @@
         "本文を囲む注釈",
         "ブーラーク版",
         "タルムードのページ"
+      ],
+      "pt": [
+        "hashiya",
+        "ḥāshiya",
+        "hamish",
+        "comentário na margem",
+        "comentário em volta do texto",
+        "página de Bulaq",
+        "comentário em moldura",
+        "sharh na margem",
+        "página glosada",
+        "página do Talmude"
       ]
     },
     "explanation": {
@@ -2110,7 +2437,8 @@
       "ca": "Un segon text no pot envoltar el principal per tres o quatre costats, com la ḥāshiya d'un imprès de Bulaq o els comentaris d'una pàgina del Talmud: el text va a una columna, a dues o en columna i mitja. Posa el comentari a la columna lateral d'un disseny oneAndHalf, com a requadres amb span=\"side\" al costat dels passatges que expliquen, i dibuixa el marc i la banda amb elements de disseny de pàgina.",
       "zh": "第二种文本不能像布拉克印本的页边注（ḥāshiya）或《塔木德》页面上的注释那样，从三面或四面环绕正文：正文只能排成一栏、两栏或一栏半。可以把注释放进oneAndHalf版式的边栏，作为用span=\"side\"标记的框，排在所解释的段落旁边，再用页面设计元素画出边框和书眉带。",
       "ar": "لا يمكن أن يلتف نص ثانٍ حول المتن من ثلاث جهات أو أربع، كما تفعل الحاشية في مطبوعات بولاق أو الشروح في صفحة التلمود: يجري المتن في عمود واحد أو عمودين أو عمود ونصف. ضع الشرح في العمود الجانبي لتخطيط oneAndHalf، في إطارات معلَّمة بـ span=\"side\" بجانب المواضع التي تشرحها، وارسم الإطار والشريط بعناصر تصميم الصفحة.",
-      "ja": "ブーラーク版のハーシヤやタルムードのページの注釈のように、第2のテキストを本文の3辺や4辺に回して組むことはできません。本文は1段、2段、または1段半で流れます。注釈はoneAndHalfレイアウトのサイド段に、説明する箇所の横へspan=\"side\"で囲ったボックスとして組み、枠と帯はページのデザイン要素で描いてください。"
+      "ja": "ブーラーク版のハーシヤやタルムードのページの注釈のように、第2のテキストを本文の3辺や4辺に回して組むことはできません。本文は1段、2段、または1段半で流れます。注釈はoneAndHalfレイアウトのサイド段に、説明する箇所の横へspan=\"side\"で囲ったボックスとして組み、枠と帯はページのデザイン要素で描いてください。",
+      "pt": "Um segundo texto não pode contornar o principal por três ou quatro lados, como a ḥāshiya de um impresso de Bulaq ou os comentários de uma página do Talmude: o texto corrido flui em uma coluna, em duas ou em coluna e meia. Coloque o comentário na coluna lateral de um layout oneAndHalf, como boxes com span=\"side\" ao lado dos trechos que explicam, e desenhe a moldura e a faixa com elementos de design de página."
     },
     "docs": {
       "slug": "configuration",
@@ -2120,7 +2448,8 @@
         "ca": "Disposició",
         "zh": "版式",
         "ar": "التخطيط",
-        "ja": "レイアウト"
+        "ja": "レイアウト",
+        "pt": "Diagramação"
       }
     }
   }

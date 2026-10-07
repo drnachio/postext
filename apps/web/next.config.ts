@@ -18,7 +18,7 @@ function recipeRedirects(): Redirect[] {
     if (![from, to].every((s) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s))) return;
     for (const ext of ["", ".md"]) {
       out.push({
-        source: `/:locale(en|es|ca|zh|ja|ar)/cookbook/${from}${ext}`,
+        source: `/:locale(en|es|ca|zh|ja|ar|pt)/cookbook/${from}${ext}`,
         destination: `/:locale/cookbook/${to}${ext}`,
         permanent: true,
       });
@@ -70,7 +70,7 @@ const nextConfig: NextConfig = {
     return [
       // The words people guess for the Cookbook.
       {
-        source: "/:locale(en|es|ca|zh|ja|ar)/:alias(examples|recipes|recetas|recetario|receptes|receptari)",
+        source: "/:locale(en|es|ca|zh|ja|ar|pt)/:alias(examples|recipes|recetas|recetario|receptes|receptari|receitas)",
         destination: "/:locale/cookbook",
         permanent: true,
       },
@@ -82,10 +82,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        { source: "/:locale(en|es|ca|zh|ja|ar).md", destination: "/md/:locale" },
-        { source: "/:locale(en|es|ca|zh|ja|ar)/:page.md", destination: "/md/:locale/:page" },
-        { source: "/:locale(en|es|ca|zh|ja|ar)/docs/:slug.md", destination: "/md/:locale/docs/:slug" },
-        { source: "/:locale(en|es|ca|zh|ja|ar)/cookbook/:slug.md", destination: "/md/:locale/cookbook/:slug" },
+        { source: "/:locale(en|es|ca|zh|ja|ar|pt).md", destination: "/md/:locale" },
+        { source: "/:locale(en|es|ca|zh|ja|ar|pt)/:page.md", destination: "/md/:locale/:page" },
+        { source: "/:locale(en|es|ca|zh|ja|ar|pt)/docs/:slug.md", destination: "/md/:locale/docs/:slug" },
+        { source: "/:locale(en|es|ca|zh|ja|ar|pt)/cookbook/:slug.md", destination: "/md/:locale/cookbook/:slug" },
       ],
       afterFiles: [],
       fallback: [],

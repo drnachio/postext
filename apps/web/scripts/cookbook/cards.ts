@@ -119,6 +119,7 @@ const ROLE_WORDS: Record<Locale, Record<ProbePage["role"], string>> = {
   zh: { body: "第 {n} 页", opener: "章首页，第 {n} 页", part: "篇章扉页，第 {n} 页", blank: "空白页，第 {n} 页" },
   ar: { body: "الصفحة {n}", opener: "صفحة الافتتاح {n}", part: "صفحة عنوان الجزء {n}", blank: "صفحة بيضاء {n}" },
   ja: { body: "{n}ページ", opener: "章扉、{n}ページ", part: "部扉、{n}ページ", blank: "白ページ、{n}ページ" },
+  pt: { body: "Página {n}", opener: "Página de abertura {n}", part: "Folha de rosto da parte {n}", blank: "Página em branco {n}" },
 };
 
 /** Chinese and Japanese take full-width punctuation with no space after it. */
@@ -129,6 +130,7 @@ const PUNCT: Record<Locale, { colon: string; stop: string }> = {
   zh: { colon: "：", stop: "。" },
   ar: { colon: ": ", stop: ". " },
   ja: { colon: "：", stop: "。" },
+  pt: { colon: ": ", stop: ". " },
 };
 
 /** Role and folio, the page's first heading, then its figure captions, in

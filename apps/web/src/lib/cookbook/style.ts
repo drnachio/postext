@@ -34,6 +34,10 @@ const rule = (source: string, label = source): Rule => ({ re: new RegExp(source,
 /** An Arabic phrase as a whole word or words: `\\b` only sees ASCII letters. */
 const arRule = (source: string, label = source): Rule => rule(`(?<!\\p{L})(?:${source})(?!\\p{L})`, label);
 
+/** A Portuguese phrase as a whole word or words: `\\b` would cut "não" or
+ *  "ênfase" at the accented letter. */
+const ptRule = (source: string, label = source): Rule => rule(`(?<!\\p{L})(?:${source})(?!\\p{L})`, label);
+
 const HARD: Record<Locale, Rule[]> = {
   en: [
     rule("\\bdelv(e|es|ed|ing)\\b", "delve"),
@@ -97,6 +101,23 @@ const HARD: Record<Locale, Rule[]> = {
     rule("\\buna infinitat de\\b", "una infinitat de"),
     rule("\\btreure(-ne)? el màxim (profit|partit)\\b", "treure el màxim profit"),
   ],
+  pt: [
+    ptRule("mergulh(e|ar|emos|amos) (em|no|na|nos|nas|fundo)|vamos mergulhar", "mergulhe em / vamos mergulhar"),
+    ptRule("no (vertiginoso|mundo) (mundo )?(atual|digital|em constante (evolução|mudança))", "no mundo atual / em constante evolução"),
+    ptRule("na era digital|em constante evolução", "na era digital / em constante evolução"),
+    ptRule("(de forma|de maneira) (perfeita|impecável)mente integrad[ao]|perfeitamente integrad[ao]s?|sem esforço", "perfeitamente integrado / sem esforço"),
+    ptRule("desbloque(ie|ar|ia|iam)", "desbloquear"),
+    ptRule("(é )?um (verdadeiro |autêntico )?testemunho d[eoa]", "um testemunho de"),
+    ptRule("desempenh(a|am|ar) um papel (crucial|fundamental|chave|vital|essencial)", "desempenha um papel crucial"),
+    ptRule("vale (a pena )?(ressaltar|destacar|mencionar|notar)", "vale ressaltar"),
+    ptRule("é (importante|fundamental) (ressaltar|destacar|mencionar|notar)", "é importante ressaltar"),
+    ptRule("em (resumo|suma|conclusão)|para concluir", "em resumo / em conclusão"),
+    ptRule("uma verdadeira joia|uma experiência única", "uma verdadeira joia"),
+    ptRule("(ao|a outro|para o próximo) nível", "levar ao próximo nível"),
+    ptRule("uma (ampla )?gama de (possibilidades|opções|recursos|ferramentas|estilos)", "uma gama de possibilidades"),
+    ptRule("uma infinidade de", "uma infinidade de"),
+    ptRule("aproveit(e|ar) ao máximo", "aproveitar ao máximo"),
+  ],
   // HARD_ZH, below, checks Chinese prose in every locale.
   zh: [],
   ar: [
@@ -158,6 +179,20 @@ const SOFT: Record<Locale, Rule[]> = {
     rule("\\bdescobreix (com|tot)\\b", "descobreix com"),
     rule("\\bno és (només|simplement) un\\b", "no és només un"),
     rule("\\bpotencia(r)? (el teu|la teva|els teus|les teves|el seu|la seva)\\b", "potenciar"),
+  ],
+  pt: [
+    ptRule("fascinantes?|apaixonantes?|vibrantes?|impressionantes?|cativantes?|meticulos(o|a|os|as|amente)", "fascinante/vibrante"),
+    ptRule("crucia(l|is)|robust(o|a|os|as)|de ponta|de vanguarda", "crucial/robusto/de ponta"),
+    ptRule("sem sombra de dúvida(s)?", "sem sombra de dúvida"),
+    ptRule("não (só|apenas|somente)[^.!?]{1,80}mas (também|sim)", "não apenas … mas também"),
+    rule("(O|A) (resultado|chave|truque|segredo|resposta)\\?", "O resultado? (revelação)"),
+    rule("(^|[.!?]\\s+)Imagine\\b", "Imagine…"),
+    ptRule("no coração d[eoa]|a arte de|a magia d[eoa]", "no coração de / a arte de"),
+    ptRule("uma jornada", "uma jornada"),
+    ptRule("de (forma|maneira) (fluida|eficiente|eficaz)", "de forma fluida"),
+    ptRule("descubra (como|tudo)", "descubra como"),
+    ptRule("não é (só|apenas|simplesmente) um", "não é apenas um"),
+    ptRule("potencializ(e|ar) (seu|sua|seus|suas)", "potencializar"),
   ],
   // SOFT_ZH, below, checks Chinese prose in every locale.
   zh: [],

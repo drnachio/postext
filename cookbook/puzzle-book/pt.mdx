@@ -1,0 +1,73 @@
+---
+title: "Passatempos: palavras cruzadas, caça-palavras e labirinto"
+summary: "Palavras cruzadas e um caça-palavras montados como tabelas a partir de linhas de letras: as casas pretas são fundos de célula; os números, sobrescritos."
+plain: "Um caderno de passatempos de férias para crianças de 9 a 11 anos, com palavras cruzadas, caça-palavras e labirinto. Mostra como montar as grades dos jogos a partir de simples linhas de letras."
+description: "Um caderno infantil de passatempos no Postext: palavras cruzadas e caça-palavras em tabelas, um labirinto gerado por semente e respostas dos mesmos dados."
+question: "Como dou a cada tabela um visual próprio: fios de grade, fundos de célula, ladrilhos, moldura arredondada?"
+aliases: ["palavras cruzadas", "cruzadinha", "caça-palavras", "labirinto", "passatempos", "caderno de atividades", "caderno de férias", "livro infantil", "livro de passatempos", "gabarito", "respostas", "grade a partir de texto"]
+pageNotes: { "1": "A capa: um céu amarelo-claro com um grande sol laranja se pondo num mar azul listrado de ondas brancas, um veleiro no horizonte, duas gaivotas e uma tartaruga nadando. Summer Workbook em letras grandes azul-marinho, Puzzles from the sea, uma etiqueta coral Ages 9 to 11 e um campo branco para escrever o nome.", "2": "Puzzle 1 sob uma faixa azul-mar com o pé ondulado: palavras cruzadas de nove por nove com casas azul-marinho e números pequenos em negrito no canto das casas onde começam as palavras; abaixo, as dicas num box amarelo-claro, Across à esquerda e Down à direita.", "3": "Puzzle 2 sob uma faixa verde-menta: duas fileiras centralizadas de cinco chips com as palavras, a primeira, UMBRELLA, preenchida de coral, sobre uma grade de doze por doze maiúsculas em ladrilhos amarelo-claros com rejuntes brancos e cantos arredondados; as letras de UMBRELLA estão em ladrilhos coral.", "4": "Puzzle 3 sob uma faixa coral: um labirinto sobre areia clara, de um ninho no alto à esquerda, onde uma tartaruga acaba de sair do ovo ao lado de duas cascas vazias, até uma saída para o mar azul embaixo à direita.", "5": "As respostas lado a lado sob uma faixa amarela: as palavras cruzadas resolvidas, o caça-palavras com todas as palavras sobre verde-menta e o labirinto na areia com a saída desenhada em coral do ninho vazio até o mar, onde o filhote nada. Abaixo, um box Did you know? põe um desenho em corte dos ovos de tartaruga enterrados na areia ao lado de um parágrafo sobre como a tartaruga-cabeçuda faz o ninho. O colofão corre pelo pé, ao lado do fólio." }
+---
+
+## O que você vai compor
+
+Um caderno de férias para crianças de 9 a 11 anos: uma capa, três passatempos sobre o mar e uma página de respostas. As páginas 2 a 5 abrem sob um campo de cor com o pé ondulado (azul-mar, verde-menta, coral e, nas respostas, amarelo) e um título de 46 pt em Lilita One. O código monta as palavras cruzadas e o caça-palavras como tabelas a partir de linhas de letras e dá a cada um seu próprio estilo de tabela: casas com fios nas palavras cruzadas, ladrilhos claros com rejuntes brancos e cantos arredondados no caça-palavras. As casas pretas das palavras cruzadas e a palavra já encontrada no caça-palavras são fundos de célula, e os números das dicas são sobrescritos no canto. O labirinto é um SVG desenhado a partir de uma semente. A última página imprime as três respostas lado a lado a partir dos mesmos dados, acima de um box sobre como a tartaruga-cabeçuda faz o ninho.
+
+## Preparo
+
+### 1 · Um estilo de tabela, três visuais
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `tableStyle` põe todas as grades em Chivo Mono. Cada estilo nomeado em `tableStyles` define o próprio corpo, o enchimento e os fios, e a tabela escolhe o seu com `table.styleId`. A largura de uma coluna é a sua parte da largura da tabela, mas a altura de uma linha é a das suas linhas de texto mais o enchimento, então é o enchimento que define a altura de cada casa. O caça-palavras mantém a casa de 9,41 mm das palavras cruzadas em volta de uma linha de maiúsculas de 15 pt, e `pad()` calcula os 2,9 pt que essa linha deixa acima e abaixo. Os fios dele, de 2,4 pt e na cor do papel, cortam o fundo claro em ladrilhos, e `borderRadius` arredonda os cantos da moldura em 4 mm e recorta os fundos nessa forma. Na página de respostas, `key()` encaixa nove ou doze casas em 54 mm: casas de 6 mm com letras de 8 pt nas palavras cruzadas, de 4,5 mm com letras de 6 pt no caça-palavras. A resposta do labirinto é desenhada num quadrado de 54 mm, e assim as três respostas têm a mesma altura e as legendas dividem a mesma linha de base, a 106,4 mm da borda superior.
+
+### 2 · Nove casas, quinze linhas
+
+<Excerpt region="crossword" />
+
+Uma casa branca leva duas linhas de Chivo Mono de 8,9 pt (o número da dica e uma linha vazia) dentro de 1 pt de enchimento, 26,7 pt no total: 9,41 mm, um nono da largura da tabela. Nove casas medem 84,7 mm de altura, o mesmo que quinze linhas de 16 pt do texto corrido, e o box das dicas começa na grade de linhas de base uma linha abaixo. Uma casa recebe número, em ordem de leitura, quando nela começa uma palavra horizontal ou vertical. O número é um sobrescrito em negrito de 5,2 pt (58 % de 8,9 pt) erguido 3 pt (um terço de 8,9 pt), o que o põe no canto superior da casa. A linha vazia é um word joiner (U+2060). Com um espaço inseparável no lugar, a 1.4.1 descarta a linha e a grade sai com 45,5 mm de altura. Uma casa preta é uma célula vazia com `background` próprio, ligado a `ink`.
+
+### 3 · O código encontra as palavras na grade
+
+<Excerpt region="search" />
+
+A grade são doze linhas de maiúsculas num arquivo de conteúdo próprio, depois da lista de palavras a encontrar. `locate()` procura cada palavra nas oito direções e lança um erro se ela não aparecer exatamente uma vez, então um erro de digitação na grade ou na lista interrompe a composição antes que se imprima uma palavra que ninguém vai achar. `setCellBackground` devolve um novo modelo de tabela com mais uma casa preenchida. O fundo é ligado a uma entrada da paleta e cobre o ladrilho do estilo: coral para UMBRELLA na página 3, verde-menta para as dez palavras na página 5. Na 1.4.1, os estilos de tabela nomeados não têm ajuste para linhas alternadas, então a primeira variação chama `setCellBackground` em todas as células de uma linha sim, outra não. O banco de palavras acima da grade são duas fileiras centralizadas de chips: o de UMBRELLA é preenchido de coral como as suas casas, e os outros nove são brancos com borda azul-marinho.
+
+### 4 · Uma abertura, quatro cores
+
+<Excerpt region="openers" />
+
+As páginas 2 a 5 dividem um mesmo design. Um campo de cor desce 40 mm a partir da borda superior e termina num pé ondulado desenhado na cor do papel; o antetítulo, o título e o tema, na sua pílula branca, vêm da linha do título e dos seus atributos. O campo e o disco do fólio são ligados à entrada `band` da paleta, e o estilo de título de cada página dá a `band` um valor próprio, de modo que `# Word Search {style="sopa"}` deixa os dois em verde-menta na página 3. O nível 1 define `span: 'page'` embora o livro tenha uma só coluna: a 1.4.1 recorta na margem superior de 16 mm um design mantido na coluna, o que cortaria o alto do campo e o antetítulo. A caixa do campo conta na altura que a abertura reserva, e o texto começa na linha seguinte da grade, a 44,2 mm da borda superior e 4 mm abaixo das ondas.
+
+### 5 · As respostas vêm dos mesmos dados
+
+<Excerpt region="answers" />
+
+A página de respostas chama `crossword()` com `solved` e `wordSearch()` com as dez palavras, sobre os mesmos arquivos de conteúdo dos passatempos, e assim uma alteração numa grade muda também a sua resposta. Os passatempos e os desenhos usam o tipo Plain, cujo `captionPrefix` vazio não imprime legenda para um recurso sem texto de legenda. As respostas usam o tipo Solution, numeradas de 1 a 3 em ordem de leitura para bater com os antetítulos, de Puzzle 1 a Puzzle 3. Elas ficam num box sem fundo nem borda que contém `:::columns{count=3 breaks="2,3"}`, em que `breaks` abre uma nova coluna na segunda e na terceira resposta; cada resposta tem 54 mm de largura numa coluna de 55,3 mm. O box Did you know? faz o mesmo com `breaks="2"` para pôr o desenho do ninho ao lado do seu parágrafo.
+
+## Variações
+
+### Alterne o fundo das linhas do caça-palavras
+
+Um amarelo mais forte numa linha sim, outra não ajuda um leitor pequeno a seguir uma linha de letras, e como as palavras são preenchidas depois das listras, UMBRELLA continua coral e a grade de respostas mantém as palavras em verde-menta.
+
+```diff
+   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
+     align: 'center' }))) };
++  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
++  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
++    model = setCellBackground(model, { row: r, col: c }, stripe);
++  }));
+   for (const [word, fill] of fills) {
+```
+
+### Desenhe um labirinto mais difícil
+
+Vinte e uma por onze casas cabem na mesma largura com 8,4 mm cada, e a resposta da página 5 é desenhada a partir do novo labirinto.
+
+```diff
+-const theMaze = maze(17, 9, 2027);
++const theMaze = maze(21, 11, 2027);
+```
+
+## Erros comuns
+
+- Os números das dicas no box são digitados no arquivo de conteúdo, enquanto os da grade são calculados. Depois de editar uma grade, confira as dicas com ela, porque o código não as compara.
+- A paleta de um estilo de título recolore elementos de design, texto e fios de tabela, mas não o interior de um SVG; por isso as ondas no pé de cada campo são desenhadas na cor do papel, e um só desenho serve aos quatro campos. Na 1.4.1 ela também ignora os fundos de tabela: uma casa das palavras cruzadas ligada a `band` continuaria azul-mar na página amarela das respostas.

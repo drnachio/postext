@@ -1,0 +1,61 @@
+---
+title: "Um EPUB de quadrinhos lido quadro a quadro"
+summary: "Uma HQ curta exportada como PDF, como EPUB fixo com navegação por regiões para ler quadro a quadro, como EPUB com Kindle Panel View e como EPUB fluido."
+plain: "Uma HQ de duas páginas salva como PDF para gráfica e como e-books: um que mantém as páginas e deixa o leitor ir de quadro em quadro, um para Kindle e um com os diálogos em texto simples."
+description: "Exporte uma HQ do Postext como PDF e EPUB 3: layout fixo com navegação por regiões (leitura guiada), Kindle Panel View e diálogos como texto."
+question: "Como faço para exportar uma HQ como EPUB que o leitor acompanhe quadro a quadro?"
+aliases: ["leitura guiada", "quadro a quadro", "navegação por regiões", "regions.xhtml", "Kindle Panel View", "EPUB de quadrinhos", "HQ em layout fixo", "gibi digital", "guided view", "panel by panel", "lectura viñeta a viñeta", "コマ送り"]
+pageNotes: { "1": "A folha de rosto: O farol de Porthcove em maiúsculas de destaque vermelhas, “Capítulo um: O cabo” e o selo editorial.", "2": "Página 2: Maya chega ao farol com um recordatório longo (“A última semana de agosto. A balsa atrasou…”) e pergunta “Biscuit! Cadê o vovô?”; o faroleiro junto ao rádio (“Vai, lata-velha. Fala comigo.”) e Maya apontando para o chão (“Vovô? O cabo do seu rádio passa por baixo da mesa, né?”).", "3": "Página 3: o gato dormindo sobre o cabo do rádio com RRRRRR e o “Achei.” sussurrado por Maya; depois o farol aceso à noite, com o recordatório “Às nove o rádio voltou a falar: vendaval do oeste, barco pequeno não sai.” e dois balões, “Farol aceso. Ninguém entra no mar esta noite.” e “Só o gato. Ele está emburrado na escada.”" }
+---
+
+## O que você vai compor
+
+O primeiro capítulo de *O farol de Porthcove*: uma folha de rosto e duas páginas de quadrinhos, diagramadas uma vez e exportadas de quatro maneiras. O PDF vai para a gráfica. O EPUB de layout fixo mantém as páginas impressas e leva navegação por regiões, de modo que o aplicativo de leitura pode mostrar o livro um quadro por vez, aproximando o quadro da chegada, depois o rádio, depois Maya. Um segundo EPUB fixo acrescenta o Kindle Panel View; o fluido compõe cada quadro como sua imagem recortada seguida das falas. A página lista cada arquivo do jeito que o leitor vai abri-lo, com link para baixar, em sete idiomas.
+
+## Preparo
+
+### 1 · Exporte o mesmo documento como EPUB
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `renderToEpub` recebe os documentos que `renderToPdf` imprime, então as páginas do EPUB são as do PDF ([saída de quadrinhos](/pt/docs/comics#saída-dos-quadrinhos)). Com `layout: 'fixed'` e páginas de quadrinhos no livro, ele grava também `regions.xhtml`: uma região `panel` por quadro, na ordem de leitura, cada uma um retângulo em porcentagem da sua página, com balões, recordatórios e onomatopeias como regiões dentro dela. A progressão das páginas segue o sentido de leitura da HQ, por isso a edição árabe vira da direita para a esquerda. `kindlePanelView: true` acrescenta uma área de toque por quadro e uma cópia ampliada, com os metadados que o Kindle espera. A versão fluida não tem páginas a preservar: cada quadro é sua imagem, recortada como na página, e em seguida suas falas, “**Maya**: Biscuit! Cadê o vovô?”, com os nomes de `comics.cast`.
+
+<PageShot page={2} crop="0,0,1,0.55" caption="Quadro 1 da página 2: na leitura guiada, a primeira região, com o recordatório e o balão de Maya dentro dela." />
+
+### 2 · Incorpore as fontes que as páginas usam
+
+<Excerpt region="embed" />
+
+Um EPUB de layout fixo desenha o texto com as fontes que leva dentro, e uma fonte que fica de fora é trocada pela do próprio leitor. O letreiramento pede regular, negrito e itálico; as fontes de quadrinhos trazem menos arquivos, então cada pedido recebe o arquivo que `loadComicFonts` escolheu para ele, e um arquivo que atende aos dois pesos entra uma única vez com o intervalo `'400 700'`. As fontes japonesas e chinesas levam só as fatias que contêm os caracteres da edição, o que mantém o livro japonês em 1,4 MB.
+
+### 3 · Leia cada arquivo de volta
+
+<Excerpt region="shelf" />
+
+`readEpub` abre os bytes como faria um aplicativo de leitura: layout, progressão das páginas, spine. A lista sob cada cartão é a própria leitura guiada, lida de `regions.xhtml`: cinco quadros e suas regiões de texto, na ordem em que o leitor passa por eles. Os três arquivos passam no EPUBCheck 5.4 sem erros nem avisos em inglês, japonês e árabe.
+
+### 4 · Um layout, sete edições
+
+<Excerpt region="editions" />
+
+Cada `content.<lang>.md` guarda as palavras de uma edição com os mesmos ids de personagem. As regiões dos quadros são iguais em todos os idiomas; as dos balões acompanham os balões, que são letreirados de novo em volta do texto de cada idioma.
+
+## Variações
+
+### Deixe de fora a edição para Kindle
+
+A navegação por regiões é gravada em todo EPUB fixo; o Kindle Panel View só se soma a ela.
+
+```diff
+-  kindle: await renderToEpub(doc, { ...book, layout: 'fixed', kindlePanelView: true }),
+```
+
+### Dê uma capa ao livro fluido
+
+```diff
+-  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable' }),
++  reflowable: await renderToEpub(doc, { ...book, layout: 'reflowable',
++    cover: { bytes: imageBytes('lh-beam.jpg'), mediaType: 'image/jpeg' } }),
+```
+
+## Erros comuns
+
+- Uma fonte incorporada uma vez para cada peso que atende seria copiada quatro vezes; a edição chinesa pesava 5,3 MB antes dos intervalos de peso.

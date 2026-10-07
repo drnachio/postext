@@ -1,0 +1,68 @@
+---
+title: "Pôster científico numa única página grande"
+summary: "Pôster de congresso de 600 × 800 mm: faixa de título sobre um box na largura da página com três colunas de painéis, mapa de calor e −4,2 °C em 150 pt."
+plain: "Um pôster grande para um congresso científico, sobre as árvores da rua e o calor do verão. Mostra como organizar em colunas caixas de texto e gráficos numa única página muito grande."
+description: "Pôster científico no Postext: a faixa de título como design do H1, três colunas de boxes aninhados num box na largura da página, amostras de cor, chips e PNG."
+question: "Como ponho três colunas de painéis na largura de uma página de duas colunas, como num pôster de congresso?"
+aliases: ["pôster científico", "pôster acadêmico", "pôster de congresso", "banner de congresso", "e-pôster", "pôster digital", "pôster A1", "três colunas de painéis", "grade de pôster"]
+pageNotes: { "1": "Uma faixa verde no alto traz a linha do encontro, o título Street trees and sidewalk heat em letras brancas pesadas, os autores com suas afiliações, uma etiqueta P-47 e uma marca redonda com uma árvore e um sol laranja. Sob um resumo em duas colunas, seis painéis formam três colunas, cada um sob uma tarja colorida: Introduction e Methods, com uma planta da rua; Results, sob uma tarja laranja, com −4,2 °C em algarismos laranja muito grandes, uma legenda de quatro cores, um mapa de calor de 16 quarteirões por hora e um gráfico de barras; Conclusions, Planting plan e References. Uma faixa verde-clara ao longo do pé traz as palavras-chave em molduras arredondadas." }
+---
+
+## O que você vai compor
+
+Um pôster de congresso para um estudo inventado sobre árvores de rua e calor na calçada, composto numa única página de 600 × 800 mm. Uma faixa verde traz o encontro, o título em Bitter de 110 pt, os autores com as marcas de afiliação e a marca da School of Geography. Sob um resumo em duas colunas, um box sem moldura atravessa as duas colunas do corpo e contém uma grade de três colunas com seis painéis, cada um num box próprio sob uma tarja de 6 pt. A coluna do meio abre com −4,2 °C em laranja de 150 pt, seguido de um mapa de calor do ar por quarteirão e hora, com legenda em amostras de cor, e de um gráfico de barras da pavimentação. Uma faixa tingida com chips de palavras-chave fica apoiada na margem inferior. O mesmo arquivo compõe uma edição em espanhol, e o pen oferece a página como um PNG de 1.701 × 2.268 px.
+
+## Preparo
+
+### 1 · Diagrame a folha a 72 dpi
+
+<Excerpt region="sheet" />
+
+Nos 300 dpi padrão, o pôster quebra cada linha no mesmo lugar que a 72 dpi, mas a página mede 7.087 × 9.449 px, ou 268 MB de pixels depois de pintada ([tamanhos de página predefinidos](/pt/docs/configuration#predefinições-de-tamanho-de-página)). A 72 dpi, um ponto é um pixel. O visualizador pinta as miniaturas com `renderPageToCanvas` e uma `scale`, e `renderPage` gera o PNG de 1.701 × 2.268 px que a galeria on-line de um congresso pede ([renderizar uma página como bitmap](/pt/docs/configuration#renderizar-uma-página-como-bitmap)). A entrelinha divide os 750 mm entre as margens em 56 linhas, e assim a faixa de palavras-chave, flutuando no pé da página, termina na margem inferior. Com 38 pt redondos cabem só 55 linhas, e a última fica 12,7 mm acima da margem; a faixa de palavras-chave já não cabe sob os painéis e vai para uma segunda página.
+
+### 2 · Desenhe a faixa do título a partir do título
+
+<Excerpt region="band" />
+
+O H1 leva como atributos o encontro, o número do pôster, os autores e as afiliações, e o seu design os compõe sobre uma caixa verde ancorada à página, com 158 mm de altura ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). A caixa termina 133 mm abaixo da margem superior. Sem `minHeight`, o resumo começaria 0,9 mm abaixo do verde; um `minHeight` de onze linhas da grade deixa 14 mm. O texto de design imprime texto simples, então as marcas de afiliação são os caracteres ¹ ² ³, os únicos algarismos sobrescritos da faixa Latin-1.
+
+### 3 · Aninhe os painéis num box na largura da página
+
+<Excerpt region="answer" highlight="3-9,21" />
+
+O corpo tem no máximo duas colunas, então a grade é um grupo `:::columns{count=3}` dentro de um callout, e `span="page"` estende esse callout sobre as duas colunas do corpo, sob o resumo ([`:::columns`](/pt/docs/document-format#columns)). Cada painel é um callout aninhado no grupo: recebe o seu próprio estilo, os 175 mm de largura da coluna e 18 mm de `marginTop` sob o painel de cima ([o contêiner `:::callout`](/pt/docs/configuration#o-contêiner-callout)). `breaks="3,4"` manda o terceiro painel, Results, para o alto da coluna do meio e o quarto, Conclusions, para o alto da última. Sem ele, o grupo se equilibra e corta no painel mais próximo de cada terço da pilha. Com este texto, os cortes caem nos mesmos dois painéis; o atributo os mantém ali quando o texto mudar.
+
+### 4 · Mantenha cada figura no seu painel
+
+<Excerpt region="figures" />
+
+Uma figura com posicionamento `'here'` fica no painel em que `::resource` a põe; com o posicionamento padrão, os três desenhos saem dos seus painéis e o pôster passa para duas páginas. `numberingTemplate: '{n}'` os numera 1, 2, 3, enquanto o `{h1}.{n}` padrão imprimiria Figure 1.1 sob um título que é um H1 ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). A nota sob cada legenda avisa que os dados são sintéticos.
+
+### 5 · Compartilhe as cores do mapa de calor com a legenda
+
+<Excerpt region="palette" />
+
+As células do mapa de calor e os quatro trechos `:swatch{color="…"}` da legenda apontam para as mesmas entradas da paleta, então um novo valor para `cool` repinta o mapa e a legenda juntos ([formatação inline](/pt/docs/document-format#formatação-em-linha)). A legenda é um segundo grupo `:::columns`, com duas entradas por coluna, dentro do painel Results. Cada cor também leva o seu hexadecimal, que é o que a 1.4.1 pinta no design da faixa.
+
+### 6 · Componha o número de destaque com um estilo de parágrafo
+
+<Excerpt region="type" />
+
+Os estilos de parágrafo valem dentro dos boxes, inclusive dos aninhados, então −4,2 °C é um bloco `:::paragraphs{style="stat"}` em Bitter de 150 pt dentro do painel Results ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). Na 1.4.1 um estilo de parágrafo não define peso, então o número é escrito em negrito e sai em Bitter 700. Um segundo estilo dá às referências um recuo deslocado de 9 mm. A faixa de palavras-chave é um box tingido com `placement="bottom"`, flutuando no pé da página sob a grade.
+
+## Variações
+
+### Exporte o e-pôster a 150 dpi
+
+Um congresso que peça um arquivo maior recebe um PNG de 3.543 × 4.724 px com as mesmas quebras de linha.
+
+```diff
+-  dpi: 72, backgroundColor: col('paper'),
++  dpi: 150, backgroundColor: col('paper'),
+```
+
+## Erros comuns
+
+- No canvas, a Rethink Sans desenha um único algarismo entre parênteses, como o número do fascículo em 11(3), como um algarismo dentro de um círculo; por isso as referências trazem só o volume e as páginas.
+- Na 1.4.1, um box na largura da página que fecha o documento passa para uma nova página a menos que sobrem abaixo dele duas linhas do corpo. Por isso a faixa de palavras-chave flutua com `placement="bottom"`, que a põe na margem inferior, nos 50 mm que sobram sob a grade.
+- Na 1.4.1, um parágrafo que vem depois de um grupo `:::paragraphs` fica apenas o `spaceBetween` do estilo abaixo dele, aqui 2,8 mm sob a última referência. Um `:::space{lines=0.75}` antes do agradecimento abre 10,8 mm, perto dos 10,6 mm entre os outros parágrafos de um painel.

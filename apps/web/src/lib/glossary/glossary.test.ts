@@ -9,7 +9,7 @@ describe("glossary", () => {
     const ids = [...GLOSSARY_TERMS.map((t) => t.id), ...ABBREVIATIONS.map((a) => `abbr-${a.id}`)];
     expect(new Set(ids).size).toBe(ids.length);
     for (const t of GLOSSARY_TERMS) {
-      for (const l of ["en", "es", "ca", "zh", "ar", "ja"] as const) {
+      for (const l of ["en", "es", "ca", "zh", "ar", "ja", "pt"] as const) {
         expect(t.text[l][0], `${t.id} ${l}`).toBeTruthy();
         expect(t.text[l][1], `${t.id} ${l}`).toMatch(/[.。]$/);
       }
@@ -95,7 +95,7 @@ describe("glossary", () => {
   });
 
   it("has a Markdown rendition in every locale", () => {
-    for (const l of ["en", "es", "ca", "zh", "ar", "ja"]) {
+    for (const l of ["en", "es", "ca", "zh", "ar", "ja", "pt"]) {
       expect(markdownPaths(l)).toContain("/glossary");
       const md = pageMarkdown(l, "/glossary");
       expect(md).toMatch(/^# /);

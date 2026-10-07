@@ -1,0 +1,459 @@
+{/* docs/arabic-layout-pt.mdx */}
+
+export const metadata = {
+  title: 'Composição em árabe',
+  sidebarTitle: 'Composição em árabe',
+  description: 'Como o Postext compõe o árabe: direção do texto e algoritmo bidirecional, livros encadernados pela direita, palavras ligadas que nunca são cortadas nem espaçadas, justificação com kashida, sinais vocálicos, ênfase, algarismos e estilos de numeração, ordinais por extenso, notas de rodapé, verso clássico, sumário, índice remissivo, citações e fontes',
+  lang: 'pt',
+  lastUpdated: '2026-10-04',
+  readingTime: '24 min',
+  order: 7,
+  plainSummary: "Esta página explica como o Postext compõe texto em árabe. O árabe é lido da direita para a esquerda, então as linhas, as colunas e as páginas do livro seguem esse sentido, enquanto os números e as palavras em inglês dentro do texto continuam sendo lidos da esquerda para a direita. As letras de uma palavra árabe são ligadas umas às outras. Por isso o Postext nunca divide uma palavra nem afasta suas letras, e para alongar uma linha ele estica algumas das ligações. A página trata também dos sinais de vogal que ficam acima e abaixo das letras, dos algarismos usados em cada região, das notas e dos poemas. No fim há dois exemplos completos e os limites que ainda existem.",
+};
+
+# Composição em árabe
+
+**Um livro árabe corre da direita para a esquerda, das letras às páginas duplas, e suas palavras são traços ligados que não podem ser cortados.**
+
+O Postext compõe o árabe padrão moderno e o árabe clássico com o mesmo Markdown e a mesma configuração de qualquer outro idioma. Uma única configuração, o idioma do documento, vira o livro inteiro: as linhas começam pela direita, a primeira coluna é a da direita, o livro é encadernado pela borda direita e suas páginas duplas são lidas da direita para a esquerda, enquanto as palavras latinas e os números dentro de uma linha continuam sendo lidos da esquerda para a direita. As palavras são medidas e pintadas inteiras, com as formas que a fonte lhes dá, e uma linha justificada é esticada nos espaços e pelo alongamento das ligações entre letras (kashida), nunca pelo afastamento das letras. Esta página explica o que o motor faz e quais configurações o controlam. A [referência de configuração](/pt/docs/configuration#direção-do-texto) lista cada chave com seu valor padrão, e o [formato de documento](/pt/docs/document-format#direção-do-texto-na-marcação) descreve a marcação.
+
+As regras seguem os *Requisitos de composição do árabe e do persa* do W3C ([alreq](https://www.w3.org/TR/alreq/)) e o Algoritmo Bidirecional do Unicode ([UAX #9](https://www.unicode.org/reports/tr9/)) e, para as convenções do livro, os livros impressos no Cairo, em Beirute e na imprensa de Būlāq. As fontes estão listadas no final.
+
+## Como começar um livro em árabe
+
+Defina o idioma do documento e a família tipográfica; todo o resto desta página decorre deles ou tem um valor padrão para o árabe:
+
+```ts
+const config: PostextConfig = {
+  locale: 'ar',
+  bodyText: { fontFamily: 'Amiri', lineHeight: { value: 1.75, unit: 'em' } },
+  headings: { fontFamily: 'Amiri' },
+};
+```
+
+`locale` aceita `ar`, `ar-EG`, `ar-MA` ou qualquer outra etiqueta árabe. O idioma dá ao livro:
+
+- **a direção**, da direita para a esquerda (`direction: 'auto'` a deduz da escrita do idioma);
+- **a encadernação**, pela borda direita (`page.binding: 'auto'`);
+- **os algarismos** dos números gerados, ٠–٩ no Mashriq e 0–9 no Magrebe (`numerals: 'auto'`, mais adiante);
+- **sem hifenização**, sem espaçamento entre letras e sem tracking nas palavras árabes, e com justificação por kashida;
+- **ênfase em negrito** em vez de itálico, e citações em redondo;
+- **os textos embutidos**: شكل e جدول para figuras e tabelas, numeradas por capítulo (شكل ٢-٣), الفصل e ص nas referências cruzadas, المراجع sobre a bibliografia, انظر e انظر أيضًا no índice remissivo, (تابع) depois da legenda de uma tabela que continua;
+- **a ordem do índice remissivo**, alfabética (hijāʾī), ignorando o artigo ال;
+- **a etiqueta de idioma** no HTML (`lang="ar" dir="rtl"`), no canvas e no PDF (`/Lang`), para que as formas da fonte próprias do idioma sejam aplicadas.
+
+O Sandbox faz isso em um só passo: escolha العربية em **Design › Sistema de escrita** e clique em **Padrões para árabe › Revisar…** (veja [No Sandbox](#no-sandbox)).
+
+## Direção e algoritmo bidirecional
+
+Um parágrafo árabe corre da direita para a esquerda, mas os números, as palavras latinas e as citações que ele contém correm da esquerda para a direita. O Algoritmo Bidirecional do Unicode decide a ordem dessas partes em cada linha a partir dos próprios caracteres; o Postext o implementa por completo (UAX #9, Unicode 18, todos os casos dos testes de conformidade). O texto é armazenado e pesquisado na ordem lógica, a ordem em que é digitado; só a pintura é reordenada.
+
+### Direção do documento, do bloco e do trecho
+
+A direção é definida em três níveis:
+
+- **O documento**: `direction: 'auto' | 'ltr' | 'rtl'`. `'auto'`, o padrão, é da direita para a esquerda quando a escrita de `locale` é escrita da direita para a esquerda (árabe, persa, urdu, hebraico, siríaco, thaana, n'ko, adlam…) e da esquerda para a direita nos outros casos. Defina-o só para forçar uma delas: um livro em inglês não precisa disso, e um livro árabe composto da esquerda para a direita é quase sempre um erro.
+- **Um bloco**: `{dir=ltr}` ou `{dir=rtl}` depois de um título, ou em qualquer contêiner `:::`: `:::paragraphs{dir=ltr}`, `:::callout{dir=ltr}`, `:::columns`, `:::part`. Tudo o que está dentro do contêiner assume essa direção, até um bloco aninhado que defina outra. Parágrafos simples, itens de lista e citações não têm atributo próprio: envolva-os em `:::paragraphs{dir=…}`. Um recurso de tabela usa `table.direction`.
+- **Um trecho de texto**: `:ltr[…]` e `:rtl[…]` isolam seu texto, com um `{lang=…}` opcional que etiqueta o trecho no HTML e no PDF.
+
+```markdown
+# Introduction {dir=ltr}
+
+:::paragraphs{dir=ltr}
+An English paragraph quoted in an Arabic book, set left to right with its indent on the left.
+:::
+
+نشر الكتاب في :ltr[The Arabian Nights, vol. 2]{lang=en} سنة ١٨٣٥.
+```
+
+Um bloco composto na direção contrária à do documento mantém seu próprio lado de início: o recuo de primeira linha, os marcadores de lista e a ponta alinhada da última linha passam para o lado em que o texto começa, e as linhas se alinham na coluna como o texto espera. Em um livro árabe, uma citação em inglês deve ter `{dir=ltr}`: sem isso, o ponto final, um caractere neutro, pertence ao parágrafo da direita para a esquerda e é impresso na ponta esquerda da linha, como um navegador o mostraria. Um contêiner também pode indicar seu idioma, `:::paragraphs{dir=ltr lang=en}`: as listas numeradas dentro dele usam os algarismos desse idioma (1. 2. em um livro árabe, ١. ٢. com `lang=ar` em um livro em inglês). Os números de notas de rodapé, figuras, tabelas e títulos do bloco mantêm os algarismos do documento: pertencem às sequências do próprio livro.
+
+### Isolamentos
+
+`:ltr[…]` e `:rtl[…]` são isolamentos bidirecionais (os LRI…PDI e RLI…PDI do UAX #9): seu texto é ordenado dentro deles e o parágrafo vê cada um como um único caractere neutro. Use um quando um título latino terminar em um caractere neutro (um ponto final, um parêntese de fechamento, um ponto de interrogação) que de outra forma seria lido junto com o árabe ao redor, ou quando um trecho começar com um algarismo ou uma letra latina que mudaria a dedução de um algoritmo de primeiro caractere forte. Uma nota de rodapé, um `:ref` ou uma fórmula dentro de um isolamento faz parte dele. Os próprios caracteres de controle do Unicode (U+2066–2069, U+202A–202E, U+200E e U+200F, a marca de letra árabe U+061C) são respeitados quando a fonte os contém, mas as diretivas são mais fáceis de ler e de editar.
+
+### Números
+
+Um número é lido da esquerda para a direita em qualquer sistema de algarismos, com o algarismo mais significativo à esquerda: ١٤٤٥ e 1445 igualmente. Algarismos europeus depois de letras árabes são lidos como números árabes (regra W2), então `سنة 1835م` e `سنة ١٨٣٥م` são ordenados da mesma forma. Dois números unidos por uma barra, como volume e página ou surata e versículo (`١٣/٩٠`), continuam sendo um só trecho; um intervalo escrito com hífen (`١٢-١٥`) é lido da direita para a esquerda, com o 12 à direita, como os leitores árabes esperam. O sinal de porcentagem ٪ (U+066A) é digitado depois do número e aparece à esquerda dele. O texto digitado pelo autor nunca é reescrito: só os números gerados pelo motor usam os algarismos do documento ([Algarismos](#algarismos-e-estilos-de-numeração)).
+
+### Parênteses, colchetes e aspas
+
+Parênteses, colchetes, chaves e aspas angulares são espelhados nos trechos da direita para a esquerda: um `(` digitado antes de uma palavra árabe a abre pela direita. Digite-os na ordem lógica, primeiro o de abertura, como faria em inglês; o canvas, o HTML e o PDF desenham o glifo espelhado (o recurso `rtlm` da fonte, ou o ponto de código espelhado). « » abrem e fecham uma citação árabe da mesma forma.
+
+Os parênteses ornamentais das citações do Alcorão, ﴿ (U+FD3F) e ﴾ (U+FD3E), não são espelhados: desde o Unicode 14, ﴿ é o de abertura e ﴾ o de fechamento, e seus glifos são desenhados para texto da direita para a esquerda. Digite ﴿ primeiro: `﴿بسم الله الرحمن الرحيم﴾` é impresso com ﴿ à direita. Também não são parênteses emparelhados, então em um parágrafo da esquerda para a direita (um versículo árabe citado em um livro em inglês) os parênteses ao lado de uma palavra latina assumem a direção do parágrafo: ﴿ vai parar à esquerda do versículo e o par fica invertido, como acontece em um navegador. Componha a citação como um isolamento da direita para a esquerda, `:rtl[﴿بسم الله الرحمن الرحيم﴾]`, e os dois parênteses acompanham o versículo, com ﴿ à direita.
+
+## Ordem das páginas e encadernação à direita
+
+Um livro árabe é encadernado pela borda direita. Sua primeira página é uma página da esquerda, suas páginas duplas são lidas da página direita para a esquerda, e suas colunas são preenchidas da direita para a esquerda. O Postext diagrama essa página como uma página da esquerda para a direita vista em um espelho: tudo o que está no fluxo do texto (colunas, linhas, recuos, marcadores de lista, flutuantes, notas, boxes, tabelas) é posicionado pelo mesmo código de um livro em inglês, e depois a página é espelhada como um todo, com cada palavra, imagem e fórmula pintada do lado certo.
+
+<Illustration name="ArabicSpread" data='{"title": "Uma página dupla árabe, encadernada à direita", "desc": "Uma página dupla de duas páginas que se encontram na lombada. A página 2 fica à direita, a página 3 à esquerda. Em cada página a primeira coluna é a da direita e as linhas correm da direita para a esquerda; a margem interna fica junto à lombada e a margem externa no corte da frente. Uma seta mostra a ordem de leitura da página 2 para a página 3.", "caption": "Página 2 à direita, página 3 à esquerda; a coluna 1 fica à direita em cada página.", "spine": "lombada", "pageOrder": "página seguinte", "columnOrder": "coluna 1 à direita", "lineDirection": "as linhas correm da direita para a esquerda", "inner": "interna", "outer": "externa", "sample": "كان في قديم الزمان"}' />
+
+- **Encadernação.** `page.binding: 'auto'` é a borda direita em um documento da direita para a esquerda. A página 1 continua sendo ímpar e continua sendo o recto, então `breakBefore.parity`, `:::pagebreak{parity="odd"}` e as contagens de páginas mantêm seu sentido; o recto é a página da esquerda da página dupla, e um capítulo que abre em recto abre em uma página da esquerda. Com `margins.mirror`, a margem interna das páginas ímpares fica à direita delas. O PDF pede aos visualizadores páginas duplas da direita para a esquerda (`/Direction /R2L`, `/PageLayout /TwoPageRight`), o Sandbox mostra as páginas duplas como 3 | 2 e seu visualizador HTML percorre as páginas da direita para a esquerda. Veja [Encadernação](/pt/docs/configuration#encadernação).
+- **Colunas.** Em uma página de duas colunas, a primeira coluna é a da direita; um fio entre colunas, uma coluna lateral e a medianiz acompanham. Um flutuante superior se estende a partir da direita, e as notas de rodapé ficam ao pé de cada coluna, com o fio separador à direita.
+- **Cabeços e fólios** ficam na folha: os espaços de cabeçalho e rodapé são físicos, e seus `left` e `right` são os lados da folha, como em qualquer livro. Configure-os para a borda direita: o título do capítulo na página da esquerda (ímpar), o título do livro na página da direita (par), o fólio no canto externo (à esquerda nas páginas ímpares) ou centralizado, como faz a maioria dos livros árabes.
+
+### O que significam esquerda, direita, início e fim
+
+Uma configuração que nomeia um lado se refere a um lado do texto, não da folha, então um design feito para um livro em inglês funciona sem alterações quando o livro passa para o árabe. `start` e `end` são aceitos em todos os lugares como nomes explícitos para o início e o fim do texto.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Configuração</th>
+      <th><code>left</code> / <code>right</code></th>
+      <th><code>start</code> / <code>end</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Alinhamento do texto: <code>bodyText.textAlign</code>, títulos, estilos de parágrafo e de parte, notas de rodapé, <code>align</code> da legenda, corpo do boxe</td><td>Os lados do texto: <code>left</code> é o lado em que a linha começa, a direita de um parágrafo árabe. A última linha de um parágrafo justificado vai para lá.</td><td>Sinônimos de <code>left</code> e <code>right</code>.</td></tr>
+    <tr><td>Células de tabela (<code>TableCell.align</code>)</td><td>Os lados do texto da célula, lidos na direção da tabela (<code>table.direction</code>).</td><td>Sinônimos, lidos na direção da tabela.</td></tr>
+    <tr><td><code>placement.align</code> de um flutuante ou de uma figura estreita</td><td>Os lados do fluxo do corpo: em um livro árabe, <code>left</code> é a direita da folha.</td><td>Sinônimos de <code>left</code> e <code>right</code>.</td></tr>
+    <tr><td><code>stripe.side</code>, <code>icon.cornerSide</code> e <code>position</code> do rótulo de um boxe</td><td>Os lados do fluxo do corpo, os mesmos para todos os boxes da página.</td><td>A direção do próprio boxe: o início de um <code>:::callout&#123;dir=ltr&#125;</code> em um livro árabe é a esquerda da folha.</td></tr>
+    <tr><td>Espaços do cabeçalho e do rodapé, elementos de design na folha</td><td>Os lados da folha.</td><td>Só elementos de texto: o início e o fim na direção do próprio elemento.</td></tr>
+  </tbody>
+</table>
+
+Os elementos de design diagramados no fluxo, como a faixa de uma abertura de capítulo ou o design de um título, são espelhados junto com ele: seus `left` e `right` são os lados de início e de fim, como no texto corrido. Um elemento de texto aceita `direction: 'ltr' | 'rtl' | 'auto'` (a direção do documento por padrão; `'auto'` lê a primeira letra forte do texto), e seus `align: 'start'` e `'end'` a acompanham. `placement.rotate` mantém seu sentido físico: uma figura girada no sentido horário é girada no sentido horário na folha.
+
+## Formas contextuais e palavras inteiras
+
+As letras de uma palavra árabe se ligam, e cada uma assume a forma que suas vizinhas pedem: inicial, medial, final ou isolada, com ligaduras como lām-alif. O Postext mede e pinta uma palavra como uma só sequência com formas aplicadas, nunca letra por letra. O canvas e o HTML deixam a aplicação das formas para o navegador; o PDF aplica as formas com o HarfBuzz, carregado só quando um documento contém árabe ou outra escrita que precise dele, e associa cada glifo de volta aos seus caracteres, de modo que o texto copiado do PDF e lido por um leitor de tela é o texto que foi digitado. Quando o HarfBuzz não pode ser carregado, o PDF ainda é gerado, com os sinais mal posicionados, e `renderToPdf` emite um aviso `complexShapingUnavailable`; sua opção `harfbuzzWasm` aponta para o arquivo quando uma aplicação hospedeira o serve de um local próprio.
+
+Três regras decorrem das ligações e valem para toda palavra que contenha uma letra da escrita árabe, em um livro árabe ou citada em um livro em inglês:
+
+- **Sem hifenização.** O árabe não é dividido no fim das linhas, e a hifenização fica desligada em um documento em escrita árabe. Ligá-la com um idioma de padrões latino (`hyphenation: { enabled: true, locale: 'en-us' }`) hifeniza as palavras latinas do livro e deixa as árabes inteiras.
+- **Sem espaçamento entre letras.** Afastar letras ligadas quebra as ligações. O `letterSpacing` de um estilo e o tracking da justificação ignoram as palavras árabes; a composição avisa sobre um estilo de corpo ou de título que defina espaçamento entre letras em texto árabe (`joiningScriptLetterSpacing`).
+- **Sem cortes.** Uma palavra mais larga que a linha nunca é cortada entre suas letras. Ela ultrapassa a medida, a linha é marcada (`VDTLine.wordOverflow`) e a composição avisa (`unbreakableWordOverflow`). Isso acontece em células de tabela estreitas e em colunas laterais; alargue-as ou reescreva o texto.
+
+Uma mudança de estilo dentro de uma palavra, como uma letra colorida ou um sinal vocálico em negrito (`كتا**ب**`), não parte a palavra em duas: ela é medida e recebe as formas inteira, e a parte estilizada é pintada por cima. O PDF e o HTML colorem exatamente as letras; o canvas estima onde a letra cai dentro da palavra com formas aplicadas, e uma cor pode invadir a vizinha por um fio. Um texto de design nunca corta uma palavra árabe ao quebrar linhas ou truncar, e uma capitular não é desenhada quando a primeira letra se liga à seguinte.
+
+## Justificação e kashida
+
+Os livros árabes são justificados. Uma linha não é esticada pelo afastamento das letras; ela é esticada nos espaços entre palavras e por kashida, as ligações alongadas que um calígrafo traça entre duas letras unidas (كتاب → كتـاب). O Postext insere kashidas como tatweels inteiros (U+0640, ـ), que a fonte desenha como um único traço; a Amiri transforma uma sequência deles em uma ligação curva.
+
+`bodyText.kashida` é `'auto'` em um documento em escrita árabe e `'none'` em qualquer outro. Cada linha justificada, exceto a última de um parágrafo, primeiro abre seus espaços entre palavras até um quarto da largura deles e depois absorve o resto da folga em kashidas, um tatweel de cada vez, primeiro nas melhores ligações; o que sobra, menos que um tatweel, volta para os espaços. O Knuth–Plass conta o alongamento possível de cada palavra como elasticidade, então escolhe as quebras sabendo que uma linha de palavras árabes pode se alargar ali. Palavras latinas, algarismos, títulos, linhas em bandeira e a última linha de um parágrafo nunca recebem kashida.
+
+Onde uma kashida pode entrar segue as regras do [raqim-kashida](https://github.com/aliftype/raqim-kashida): só entre duas letras que se ligam, nunca depois de uma letra que não se liga à seguinte (ا د ذ ر ز و ة), nunca no fim de uma palavra, nunca dentro de lām-alif. `kashidaPatterns` escolhe o conjunto de regras: `'naskh'` para as regras clássicas do naskh, `'simple'` para as prioridades das fontes modernas simples, `'nastaliq'` para o nastaʿlīq, e `'auto'` lê a fonte do corpo (nenhuma kashida em uma fonte ruqʿa como a Aref Ruqaa, cujo estilo a proíbe). `kashidaPerWord` (1 por padrão) e `kashidaMaxLength` (0,6 em) limitam quanto uma palavra se estica; uma palavra que contém um tatweel digitado pelo autor é alongada ali. Os tatweels inseridos são pintados, mas ficam fora do texto simples, do mapa de origem e do texto copiado do PDF. [Kashida em texto árabe](/pt/docs/justification#kashida-no-texto-árabe) traz os detalhes dos conjuntos de regras.
+
+```ts
+bodyText: {
+  textAlign: 'justify',
+  kashida: 'auto',          // o padrão em um livro árabe
+  kashidaPatterns: 'naskh', // 'auto' o lê da fonte
+}
+```
+
+## Sinais vocálicos
+
+Os sinais vocálicos (ḥarakāt: fatḥa, ḍamma, kasra, sukūn, shadda, tanwīn, o alef sobrescrito) e os sinais corânicos se empilham acima e abaixo das letras, dentro da entrelinha. A prosa moderna marca uma shadda ou uma vogal aqui e ali; uma edição clássica vocaliza o verso por completo e a prosa de leve; o Alcorão é sempre vocalizado por completo. A entrelinha nunca cresce sozinha por causa dos sinais, então escolha-a para o texto mais vocalizado que o livro contém:
+
+<table>
+  <thead>
+    <tr>
+      <th>Texto</th>
+      <th style={{ width: '200px' }}><code>lineHeight</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Prosa moderna sem vocalização</td><td>1,55–1,7 em</td></tr>
+    <tr><td>Prosa parcialmente vocalizada</td><td>1,7–1,85 em</td></tr>
+    <tr><td>Verso totalmente vocalizado, o Alcorão</td><td>1,9–2,1 em</td></tr>
+  </tbody>
+</table>
+
+Cada linha com sinais registra até onde a tinta deles chega acima e abaixo da linha de base (`VDTLine.markInk`), e o recorte de coluna do canvas e do PDF inclui os sinais da primeira e da última linha de cada coluna. Quando um sinal sobre uma palavra encosta nas letras ou nos sinais pendurados sob a palavra de cima, a composição avisa sobre o parágrafo (`arabicMarksExceedLeading`, no painel Verificações do Sandbox) com a entrelinha de que ele precisaria. Só são comparadas palavras que ficam uma sobre a outra, então uma palavra vocalizada sob uma palavra curta passa. Dê às passagens vocalizadas, em especial ao verso, um estilo de parágrafo com mais entrelinha.
+
+`bodyText.tashkil` tira sinais do texto que a diagramação compõe, para uma edição sem vocalização feita a partir de uma fonte vocalizada: `'strip'` remove as vogais, o tanwīn, o sukūn, a shadda, o alef sobrescrito (هٰذا é composto هذا) e os sinais corânicos; `'strip-vowels'` mantém a shadda, como a maioria dos livros modernos a imprime. Hamza e madda ficam: أ إ آ são letras. O texto-fonte mantém seus sinais; parágrafos, títulos e o sumário são compostos sem eles.
+
+## Ênfase
+
+A tipografia árabe não tem itálico, e uma fonte árabe inclinada é uma distorção. Em um documento em escrita árabe, `*…*` é composto em negrito por padrão (`bodyText.emphasis: 'auto'`); `'color'` o compõe em redondo com `italicColor`, e `'overline'` traça um fio sobre as palavras, o sobrelinhado dos livros árabes mais antigos. Seja qual for a escolha, o motor nunca inclina letras árabes: em um trecho composto em itálico, as palavras árabes ficam em redondo e as latinas mantêm o itálico, então `*Kitāb al-ʿIbar كتاب العبر*` imprime a transliteração em itálico e o título árabe em redondo. As citações em bloco são em redondo por padrão em um livro árabe; um estilo cuja fonte é itálica (`blockquote.italic: true`, um nível de título composto em itálico) também compõe suas palavras árabes em redondo, na sua fonte sem a inclinação, e as palavras latinas em itálico. Legendas, células de tabela, o sumário e o índice remissivo mantêm suas próprias configurações de itálico.
+
+```ts
+bodyText: { emphasis: 'overline', italicColor: { hex: '#8a1c1c', model: 'hex' } }
+```
+
+## Algarismos e estilos de numeração
+
+O árabe é escrito com três conjuntos de algarismos, escolhidos conforme a região:
+
+<table>
+  <thead>
+    <tr>
+      <th>Região</th>
+      <th>Algarismos</th>
+      <th style={{ width: '170px' }}><code>numerals</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>O Mashriq: Egito, Sudão, Levante, Iraque, península Arábica (<code>ar</code>, <code>ar-EG</code>, <code>ar-SA</code>…)</td><td>٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩ (arábico-índicos)</td><td><code>'arab'</code></td></tr>
+    <tr><td>O Magrebe: Marrocos, Argélia, Tunísia, Líbia, Mauritânia (<code>ar-MA</code>, <code>ar-DZ</code>, <code>ar-TN</code>…)</td><td>0 1 2 3 4 5 6 7 8 9 (europeus)</td><td><code>'latn'</code></td></tr>
+    <tr><td>Persa, pashto, urdu da Índia (<code>fa</code>, <code>ps</code>, <code>ur-IN</code>)</td><td>۰ ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹ (formas persas)</td><td><code>'arabext'</code></td></tr>
+  </tbody>
+</table>
+
+O `numerals` de nível superior define os algarismos de todo número que o motor escreve: fólios e números de página do sumário e do índice remissivo, números de listas e de notas de rodapé, contadores de títulos e capítulos, números de figuras e as referências a elas, `{totalPages}`. `'auto'` tira os algarismos da região de `locale` (`ar` sem região, e `ar-AE`, são do Mashriq, como os livros de lá os imprimem); uma etiqueta pode indicar os seus (`ar-MA-u-nu-arab`). Os números digitados pelo autor nunca são alterados e são lidos em qualquer sistema: um item de lista `٣.` começa em 3, e `{startAt=٥}` é 5. Veja [Algarismos do documento](/pt/docs/configuration#algarismos-do-documento).
+
+Um formato indicado na configuração é impresso como indicado, então um livro pode misturar sistemas. Os estilos de numeração árabes:
+
+<table>
+  <thead>
+    <tr>
+      <th>Estilo</th>
+      <th>1, 2, 3 … 11, 1446</th>
+      <th style={{ width: '220px' }}>Nome</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Algarismos arábico-índicos</td><td>١، ٢، ٣ … ١١، ١٤٤٦</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Algarismos persas</td><td>۱، ۲، ۳ … ۱۱، ۱۴۴۶</td><td><code>persian</code>, <code>۱</code></td></tr>
+    <tr><td>Numerais abjad (aditivos, valores do Mashriq)</td><td>ا، ب، ج … يا، غتمو</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Numerais abjad, valores do Magrebe</td><td>ا، ب، ج … يا (ص 60، ش 1000)</td><td><code>arabic-abjad-maghrebi</code></td></tr>
+    <tr><td>Letras na ordem abjad</td><td>أ، ب، ج، د، هـ، و …</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Letras na ordem alfabética (hijāʾī)</td><td>أ، ب، ت، ث، ج …</td><td><code>hijai</code>, <code>أبتث</code></td></tr>
+  </tbody>
+</table>
+
+Os numerais abjad somam os valores de suas letras, a maior primeiro, como contam os manuscritos e os cronogramas: 11 é يا, 1446 é غتمو, 2000 é بغ e 1002 é غب. Os dois estilos de letras numeram itens de lista e páginas pré-textuais com uma letra por item; ambos escrevem a primeira letra com sua hamza (أ) e um heh isolado como هـ, para que nenhum seja lido como os algarismos ١ e ٥. Uma edição clássica pagina os elementos pré-textuais na ordem abjad e começa os algarismos no texto:
+
+```markdown
+:::numbering{format="abjad" startAt=1}
+
+# المقدمة {style="front-matter"}
+
+…
+
+:::pagebreak{parity="odd"}
+:::numbering{format="decimal" startAt=1}
+```
+
+As listas numeradas seguem os mesmos nomes. Uma hierarquia árabe comum é ١- , depois أ- , depois (١):
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'arabic', separator: '-' },
+    { level: 2, numberFormat: 'abjad', separator: '-' },
+    { level: 3, numberFormat: 'arabic', prefix: '(', separator: ')' },
+  ],
+},
+```
+
+`arabic` é o formato decimal, escrito nos algarismos do documento.
+
+### Ordinais e cardinais por extenso
+
+`{1:ordinal}` em um modelo de título escreve o ordinal definido em palavras árabes, e `{1:words}`, o cardinal. Os ordinais árabes concordam com o substantivo que numeram, então o modelo recebe o gênero depois de um hífen: `-feminine` (ou `-f`) para um substantivo feminino como الليلة, e o masculino por padrão para الفصل ou الباب. `-classical` escreve مائة em vez de مئة, como fazem as edições de Būlāq. Uma noite não tem título próprio: `numberPosition: 'replace'` imprime o número como o título inteiro, então `# Night` (ou qualquer título escrito na fonte) imprime الليلة الثانية, e o sumário, os cabeços e os marcadores do PDF mostram o mesmo.
+
+```ts
+headings: {
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
+},
+```
+
+Isso imprime الليلة الأولى, الليلة الحادية عشرة, الليلة الخامسة والأربعون بعد الثلاثمئة e, em 1001, الليلة الحادية بعد الألف; `'الفصل {1:ordinal}'` imprime الفصل الأول, الفصل الحادي عشر. Os ordinais são escritos até 9 999 e os cardinais até 99 999; acima disso o número é impresso em algarismos. Os marcadores de design `{numberWords}` e `{numberOrdinalWords}` dão as formas masculinas. Veja [Números por extenso](/pt/docs/configuration#números-por-extenso).
+
+## Notas de rodapé
+
+Um livro árabe marca suas notas com o número entre parênteses, «(١)», elevado no texto e na linha no início da nota, e a maioria das edições clássicas recomeça a numeração em cada página. O fio separador e os números das notas ficam sozinhos no lado de início, a direita.
+
+```ts
+footnotes: {
+  markerTemplate: '({n})',      // «(١)» no texto e na nota
+  numbering: 'page',            // ١ de novo em cada página
+  noteNumberPosition: 'inline', // o número da própria nota na linha
+}
+```
+
+`markerTemplate` escreve tanto a chamada no texto quanto o número que abre a nota, nos algarismos do documento. O número de uma nota depende da página em que ela cai, então um livro numerado por página é diagramado, numerado conforme onde as notas caíram e diagramado de novo. Coloque a chamada antes de um sinal de pontuação seguinte, como fazem os livros árabes: o `[^id]` vai logo depois da palavra, antes da vírgula ou do ponto final. Veja [Notas de rodapé](/pt/docs/configuration#notas-de-rodapé).
+
+## Verso clássico
+
+Um poema árabe clássico (qaṣīda, qiṭʿa) é composto com um verso, o *bayt*, por linha, em duas metades: o primeiro hemistíquio, o *ṣadr*, à direita, e o segundo, o *ʿajuz*, à esquerda, com um espaço entre eles. Todos os hemistíquios do poema são levados a uma mesma largura, de modo que cada ṣadr começa na mesma vertical e cada ʿajuz termina em outra, e as letras da rima se alinham ao longo do poema.
+
+<Illustration name="BaytLayout" data='{"title": "Um bayt em dois hemistíquios", "desc": "Três versos de um poema. Cada linha tem uma primeira metade à direita e uma segunda metade à esquerda, separadas por um espaço. Todas as metades têm a mesma largura w, então as metades da direita começam em uma vertical e as da esquerda terminam em outra, onde as letras da rima se alinham.", "caption": "Cada hemistíquio é composto na largura comum w; as letras da rima se alinham à esquerda.", "sadr": "ṣadr (primeiro)", "ajuz": "ʿajuz (segundo)", "gap": "espaço", "width": "w", "rhyme": "rima", "lines": [["يا حرقة الدهر كفي", "إن لم تكفي فعفي"], ["فلا بحظي أعطي", "ولا بصنعة كفي"], ["كم جاهل في الثريا", "وعالم متخفي"]]}' />
+
+Escreva o poema em um bloco `:::verse`, um bayt por linha, com os hemistíquios separados por `||` (um `\\` com um espaço de cada lado, como nas transcrições do Wikisource, também funciona). Uma linha sem separador é um único hemistíquio, centralizado no poema.
+
+```markdown
+فأنشد يقول:
+
+:::verse{style="verse"}
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **A largura comum** é a do hemistíquio mais largo, no máximo metade da medida menos o espaço; `width` a fixa. Cada hemistíquio a alcança primeiro com kashidas, que o verso aceita com mais liberdade que a prosa, e depois com os espaços entre palavras.
+- **O espaço** é de 2 em por padrão (`gap`); `ornament` imprime um sinal no meio dele, como ٭.
+- **Um hemistíquio longo demais** primeiro aperta seus espaços; se ainda não couber, o bayt é composto em escada: o ṣadr alinhado à direita em uma linha própria, o ʿajuz alinhado à esquerda na seguinte.
+- **Manter junto.** Um bayt nunca é dividido entre colunas ou páginas, um poema segue as regras de órfãs e viúvas dos parágrafos, e a linha que o introduz («فأنشد يقول:») fica com seus primeiros bayts.
+- **Tipo.** O poema usa a fonte e o corpo do texto corrido; `style` indica um estilo de parágrafo, e é assim que um poema vocalizado recebe a entrelinha de que seus sinais precisam. Um poema em transliteração latina em um livro em inglês é composto da mesma forma, com o ṣadr à esquerda.
+
+O texto simples mantém o poema como foi escrito, um bayt por linha, e deixa de fora as kashidas e o ornamento. Veja [`:::verse`](/pt/docs/document-format#verse) no formato de documento.
+
+## Sumário e índice remissivo
+
+**Sumário.** Muitos livros árabes, sobretudo as edições clássicas, imprimem o sumário (فهرس ou فهرس المحتويات) no final. `:::toc` imprime o sumário onde quer que esteja, então coloque-o no último capítulo, sob um título que fique fora dele:
+
+```markdown
+# فهرس المحتويات {toc="false"}
+
+:::toc
+```
+
+Uma linha do sumário é composta da direita para a esquerda: o número e o título à direita, a linha de pontos, o número da página à esquerda. Um título latino em um livro árabe mantém o número da página à esquerda, e suas próprias palavras são lidas da esquerda para a direita.
+
+**Índice remissivo.** O índice remissivo de um livro árabe ordena suas entradas em ordem alfabética (hijāʾī) e as agrupa pela primeira letra. Ele ignora o artigo definido: البصرة fica sob ب, entre بدر e بغداد, e é impresso como foi escrito (`index.ignoreArticle`, ligado por padrão quando o idioma do índice é o árabe; الله mantém seu artigo). Também ignora os sinais vocálicos e o tatweel, classifica أ إ آ ٱ sob ا, e ordena ة junto com ه e ى junto com ي. Os números de página são unidos pela vírgula árabe (، ) e uma referência cruzada diz انظر ou انظر أيضًا. Uma entrada com sua própria chave `sort` mantém o artigo dessa chave. Veja [Índice remissivo](/pt/docs/configuration#índice-remissivo).
+
+**Citações.** Uma bibliografia em um livro árabe usa os termos árabes da linguagem de estilos de citação (localidade `ar` da CSL: ص para página, مج para volume, و entre dois autores, وآخرون para et al.) e os algarismos do documento nas chamadas numeradas: `[٢، ص ١٢]`. O título da bibliografia é المراجع. Vírgulas e pontos e vírgulas escritos em um estilo CSL ficam como o estilo os tem. Veja [Citações](/pt/docs/configuration#citações-1).
+
+## Fontes
+
+O Postext compõe cada estilo em uma só família e não recorre a outra para um caractere que falte, então a fonte precisa conter todas as letras, sinais e algarismos árabes que o livro imprime. Fontes livres para livros (todas sob a SIL Open Font License):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Fonte</th>
+      <th>Estilo</th>
+      <th style={{ width: '240px' }}>Uso</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Amiri</td><td>Naskh inspirado nos tipos das imprensas de Būlāq e Amīriyya do início do século XX; kashida curva, vocalização completa, um latino correspondente.</td><td>Edições clássicas, texto vocalizado, verso. Regular e negrito.</td></tr>
+    <tr><td>Noto Naskh Arabic</td><td>Naskh moderno neutro.</td><td>Prosa moderna, notas, tabelas. Fonte variável: inclua no pacote um arquivo estático por peso.</td></tr>
+    <tr><td>Scheherazade New</td><td>Naskh tradicional simplificado, com sinais muito claros e entrelinha padrão alta.</td><td>Texto totalmente vocalizado, ensino de idiomas.</td></tr>
+    <tr><td>Reem Kufi</td><td>Cúfico inspirado em inscrições fatímidas.</td><td>Títulos de destaque, títulos de noites e de capítulos.</td></tr>
+    <tr><td>Aref Ruqaa</td><td>Ruqʿa.</td><td>Títulos de destaque curtos e folhas de rosto. Sem kashida: o ruqʿa não é alongado.</td></tr>
+  </tbody>
+</table>
+
+Markazi Text e Noto Kufi Arabic servem a livros modernos (texto e títulos), e El Messiri a títulos de destaque modernos. No mesmo corpo nominal, uma fonte naskh parece menor que uma latina: o texto de livros árabes costuma ter 13–15 pt onde o texto latino teria 10–11 pt.
+
+- **No navegador e no Sandbox**, o Google Fonts e o Fontsource servem cada família em um arquivo por subconjunto: `latin`, `latin-ext` e `arabic`. O navegador só carrega o arquivo `arabic` quando um caractere precisa dele, e uma diagramação medida antes de ele chegar é medida com uma fonte substituta. O Sandbox o carrega antes da primeira diagramação; uma aplicação hospedeira o verifica com uma amostra que contenha uma letra árabe (`document.fonts.load('16px Amiri', 'ب')`). O provedor de fontes do PDF precisa entregar a `renderToPdf` o arquivo `arabic` para o texto árabe; o provedor de [Provedor de fontes no navegador](/pt/docs/configuration#provedor-de-fontes-no-navegador-fontsource--woff2) escolhe a fatia pelo ponto de código.
+- **Em um pacote**, inclua as fontes inteiras ou em subconjunto com os caracteres do livro, mantendo as tabelas de layout OpenType (`GSUB`, `GPOS`): as formas de ligação, as ligaduras, as posições dos sinais e os parênteses espelhados ficam ali. Um subconjunto sem elas imprime letras isoladas.
+- **Glifos ausentes** são impressos como a caixa vazia da fonte; `renderToPdf` os informa por fonte (`missingGlyph`), e o Sandbox os lista no painel Verificações.
+- **Texto latino dentro de texto árabe** é composto na mesma família. A Amiri traz seu próprio latino; com uma fonte naskh de latino pobre, componha as passagens latinas longas em um estilo de parágrafo com uma fonte latina.
+
+## No Sandbox
+
+Em **Design › Sistema de escrita**, o seletor Idioma do documento oferece العربية, العربية (مصر) e العربية (المغرب), e **Direção do texto** e **Algarismos** mostram o que *Automático* resolve. **Padrões para árabe › Revisar…** lista o que a preparação do livro para o árabe altera antes de aplicá-la, com uma escolha de fontes (*Clássico*, Amiri; *Moderno*, Noto Naskh Arabic com títulos em Noto Kufi Arabic): a direção e a encadernação de volta a *Automático*, cabeços e fólios em uma fonte com letras árabes, entrelinha de 1,75 em, texto justificado, os algarismos da região, شكل e جدول numerados por capítulo, legendas compostas como شكل ١-١: العنوان, capítulos numerados الفصل الأول, listas numeradas ١- أ- (١) e notas numeradas de novo em cada página. Todos os seletores de fonte listam primeiro as famílias árabes.
+
+O editor dá a cada linha a direção de sua primeira letra: uma linha em árabe começa pela direita, e o cursor e as setas seguem a ordem visual, enquanto a marcação dentro dela (atributos `{…}`, `[^id]`, um `:ref[…]`, fórmulas, destinos de links) continua da esquerda para a direita. Veja [Sandbox](/pt/docs/sandbox#painel-design).
+
+## Duas configurações completas
+
+### Um livro moderno em árabe padrão moderno
+
+Um livro de 14 × 21 cm em Noto Naskh Arabic com 13 pt, títulos em Noto Kufi Arabic, capítulos numerados الفصل الأول, notas «(١)» numeradas de novo em cada página e o fólio centralizado no pé. A direção, a encadernação à direita, os algarismos ٠–٩, a kashida e a ênfase em negrito vêm de `locale: 'ar-EG'`:
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const pt = (value: number) => ({ value, unit: 'pt' as const });
+const mm = (value: number) => ({ value, unit: 'mm' as const });
+const em = (value: number) => ({ value, unit: 'em' as const });
+const ink = { hex: '#1a1a1a', model: 'hex' as const };
+
+const config: PostextConfig = {
+  locale: 'ar-EG',
+  page: {
+    sizePreset: 'custom', width: mm(140), height: mm(210),
+    margins: { top: mm(18), bottom: mm(22), left: mm(16), right: mm(20), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Noto Naskh Arabic', fontSize: pt(13), lineHeight: em(1.7),
+    textAlign: 'justify', firstLineIndent: em(1.5),
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Kufi Arabic', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(20), numberingTemplate: 'الفصل {1:ordinal}', numberSeparator: ': ',
+        breakBefore: { enabled: true, parity: 'odd' } },
+      { level: 2, fontSize: pt(15) },
+    ],
+  },
+  captionStyle: { labelSeparator: ': ' },
+  orderedLists: {
+    levels: [
+      { level: 1, numberFormat: 'arabic', separator: '-' },
+      { level: 2, numberFormat: 'abjad', separator: '-' },
+    ],
+  },
+  footnotes: { markerTemplate: '({n})', numbering: 'page', noteNumberPosition: 'inline' },
+  header: { elements: [] },
+  footer: { elements: [
+    { kind: 'text', id: 'folio', content: '{pageNumber}', fontFamily: 'Noto Naskh Arabic', fontSize: pt(11),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+};
+```
+
+`parity: 'odd'` abre cada capítulo em um recto, que neste livro é uma página da esquerda. Dois-pontos separam o rótulo da legenda do seu texto (شكل ١-٢: …), já que o ponto final padrão depois de algarismos arábico-índicos é lido como separador decimal.
+
+### Uma edição clássica vocalizada
+
+Uma edição de 17 × 24 cm de um texto clássico em Amiri com 14 pt, com as noites numeradas por extenso, o verso totalmente vocalizado, o fólio no alto da página entre travessões, os elementos pré-textuais paginados com letras abjad e o sumário no final:
+
+```ts
+const config: PostextConfig = {
+  locale: 'ar',
+  page: {
+    sizePreset: 'custom', width: mm(170), height: mm(240),
+    margins: { top: mm(24), bottom: mm(24), left: mm(18), right: mm(24), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Amiri', fontSize: pt(14), lineHeight: em(1.85),
+    textAlign: 'justify', firstLineIndent: em(1.5),
+    kashida: 'auto', kashidaPatterns: 'naskh',
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Amiri', color: ink, textAlign: 'center',
+    levels: [
+      { level: 1, fontSize: pt(18),
+        numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '',
+        breakBefore: { enabled: true, parity: 'any' } },
+    ],
+  },
+  paragraphStyles: [
+    { id: 'verse', lineHeight: em(2.1) },
+  ],
+  footnotes: { markerTemplate: '({n})', numbering: 'page', noteNumberPosition: 'inline' },
+  header: { elements: [
+    { kind: 'text', id: 'folio', content: '– {pageNumber} –', fontFamily: 'Amiri', fontSize: pt(12),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+  footer: { elements: [] },
+};
+```
+
+Os capítulos começam com `:::numbering{format="abjad" startAt=1}` antes da introdução e `:::numbering{format="decimal" startAt=1}` antes da primeira noite; os poemas são blocos `:::verse{style="verse"}`; o último capítulo é `# فهرس المحتويات {toc="false"}` seguido de `:::toc`. O índice remissivo não precisa de nenhuma configuração para ignorar o artigo ال: `index.ignoreArticle` vem ligado em um índice árabe. Para uma edição de leitura sem vocalização a partir da mesma fonte, acrescente `tashkil: 'strip'` a `bodyText`.
+
+## Limites conhecidos
+
+- **Persa, urdu e hebraico** recebem a direção, os algarismos, as regras de palavras inteiras e a encadernação à direita, mas não têm textos embutidos próprios (figuras, tabelas e o índice remissivo são impressos em inglês) nem composição nastaʿlīq: uma fonte nastaʿlīq é composta sobre uma linha de base plana.
+- **A direção de bloco** é definida em títulos e contêineres; um parágrafo simples precisa de um `:::paragraphs{dir=…}` ao redor, e não existe `{dir=auto}`.
+- **Ilhas de direção oposta.** Em um bloco composto na direção contrária à do livro, legendas, linhas do sumário e do índice remissivo seguem a direção do documento, e o ícone, a coluna de marcador e o título de um boxe ficam no lado de início do fluxo.
+- **Texto de design** (cabeços, aberturas, títulos de boxes) resolve a ordem bidirecional linha por linha, e um texto que contém uma letra árabe perde o espaçamento entre letras por inteiro, incluindo suas palavras latinas.
+- **Texto de design em itálico.** Um cabeço ou um texto de abertura composto em itálico ainda inclina as letras árabes.
+- **Sinais vocálicos** podem ultrapassar a borda de um boxe ou de uma célula de tabela, cujo recorte não cresce por causa deles; `tashkil` mantém os sinais de legendas, células de tabela e texto de design.
+- **Números.** Os números de citação são impressos em algarismos europeus; os ordinais por extenso são escritos na forma definida e no nominativo que os títulos usam.
+- **Índice remissivo**: ة fica sob ه, e os nomes não são ordenados ignorando ابن ou أبو; não há índices de rimas nem de raízes.
+- **Verso**: não há verso corrido dentro da prosa, nem bayts numerados, nem formas estróficas com refrão centralizado além de linhas centralizadas soltas; um hemistíquio mais largo que a medida quebra a partir do lado de início, sem recuo deslocado.
+- **Kashida**: o texto copiado da saída HTML ainda contém os tatweels inseridos, e nada impede que kashidas de linhas vizinhas se empilhem uma sobre a outra.
+
+## Fontes de consulta
+
+- W3C, [Arabic & Persian Layout Requirements (alreq)](https://www.w3.org/TR/alreq/), e a [análise de lacunas da escrita árabe](https://www.w3.org/International/alreq/gap-analysis/).
+- Unicode Standard Annex #9, [Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/); Unicode Technical Report #53, [Unicode Arabic Mark Rendering](https://www.unicode.org/reports/tr53/).
+- W3C, [Ready-made Counter Styles](https://www.w3.org/TR/predefined-counter-styles/), para `arabic-indic`, `persian` e a série abjad.
+- aliftype, [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT), e sua [apresentação](https://aliftype.com/blog/introducing-raqim-kashida/english); M. Benatia, M. Elyaakoubi e A. Lazrek, “Arabic text justification”, *TUGboat* 27(2), 2006.
+- Titus Nemeth, [On Arabic justification](https://research.reading.ac.uk/typoarabic/on-arabic-justification-part-1/), TypoArabic, Universidade de Reading; Khatt Foundation, [The Big Kashida Secret](https://www.khtt.net/en/page/1821/the-big-kashida-secret).
+- Aḥmad Zakī Pāshā, *al-Tarqīm wa-ʿalāmātuhu fī al-lugha al-ʿarabiyya*, 1912 ([Hindawi](https://www.hindawi.org/books/82047270/)), sobre a pontuação árabe.
+- Documentação da [Amiri](https://www.amirifont.org) e da [Scheherazade New](https://software.sil.org/scheherazade/), sobre kashida, empilhamento de sinais e conjuntos estilísticos.
+- Unicode CLDR, para os algarismos padrão de cada região.

@@ -1,0 +1,63 @@
+---
+title: "Romance árabe da direita para a esquerda, lombada à direita"
+summary: "A abertura de um romance árabe numa página de 14 × 21 cm: locale 'ar' compõe o texto da direita para a esquerda, encaderna à direita e imprime ١٢ nos fólios."
+plain: "As primeiras páginas de um romance em árabe, diagramadas como uma editora árabe as imprimiria: as linhas vão da direita para a esquerda, o livro abre pelo que um leitor ocidental chama de fim e as páginas usam algarismos árabes."
+description: "Um romance árabe no Postext: locale 'ar' dá texto da direita para a esquerda, encadernação à direita e fólios arábico-índicos; kashida e capítulos por extenso."
+question: "Como componho um livro árabe da direita para a esquerda e o encaderno à direita?"
+aliases: ["romance árabe", "da direita para a esquerda", "RTL", "livro encadernado à direita", "lombada à direita", "algarismos arábico-índicos", "kashida", "tatweel", "Markazi Text", "رواية", "الفصل الأول", "14 × 21 cm"]
+pageNotes: { "1": "Uma página direita em azul-escuro, sangrada, sob uma treliça de estrelas de oito pontas desenhada em linhas de um azul mais claro. Uma grande estrela contornada em latão contém o rótulo da parte, القسم الأول, a palavra الدرب em letras cúficas brancas e uma citação em branco.", "2": "A página esquerda, em frente: uma pequena estrela de latão, o número do capítulo por extenso, الفصل الأول, o título الباب الأزرق em letras cúficas e, abaixo, texto árabe justificado a partir da margem direita, com o fólio ١١ centralizado no pé." }
+---
+
+## O que você vai compor
+
+A abertura de *حروف من رصاص* (Letras de chumbo), um romance sobre um neto que reabre a gráfica do avô num beco do Cairo, composto como uma brochura árabe: 14 × 21 cm, Markazi Text de 13,5 pt com entrelinha de 22 pt, justificado, com o recuo de primeira linha à direita. O trecho começa na página 10 com uma página de parte no azul da porta da gráfica, uma treliça de estrelas de oito pontas desenhada em código e o nome da parte em Reem Kufi de 64 pt. A abertura do capítulo fica em frente, na página esquerda, numerada por extenso: الفصل الأول. Os fólios imprimem ١٠, ١١, ١٢; o título do livro corre sobre as páginas direitas e o do capítulo sobre as esquerdas. <RecipeLink slug="trade-paperback-novel">Um romance em brochura</RecipeLink> compõe o mesmo tipo de livro da esquerda para a direita.
+
+## Preparo
+
+### 1 · Um idioma, três decisões
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `locale: 'ar'` é tudo o que a configuração diz, e o motor tira três coisas daí: o texto corre da direita para a esquerda (`direction: 'auto'`), o livro é encadernado à direita (`page.binding: 'auto'`) e todo número que o motor escreve usa os algarismos arábico-índicos (`numerals: 'auto'`), inclusive os fólios ([Como começar um livro em árabe](/pt/docs/arabic-layout#como-começar-um-livro-em-árabe)). Margens e alinhamentos continuam com as palavras `left` e `right`, mas num livro da direita para a esquerda elas nomeiam os lados do fluxo: `margins.left` é o lado da lombada, e o recuo de primeira linha fica à direita. As linhas justificadas abrem primeiro os espaços e depois alongam as letras ligadas com o tatweel, a kashida dos livros árabes; o texto nunca é hifenizado ([Justificação e kashida](/pt/docs/arabic-layout#justificação-e-kashida)).
+
+<PageShot page={3} crop="0.1,0.12,0.8,0.3" caption="Página 12: linhas justificadas alargadas com kashida, o recuo à direita e o fólio ١٢ na borda externa." />
+
+### 2 · Um número de capítulo por extenso
+
+<Excerpt region="opener" />
+
+O `numberingTemplate` do nível escreve الفصل e o número como ordinal masculino, então o segundo capítulo é الفصل الثاني sem nenhuma mudança no Markdown; `{1:ordinal-feminine}` dá الأولى, الثانية para um substantivo feminino como الليلة ([Ordinais e cardinais por extenso](/pt/docs/arabic-layout#ordinais-e-cardinais-por-extenso)). A abertura o imprime com `{number}` acima do título. Aberturas árabes costumam ser centralizadas, então `align: 'center'` elimina qualquer dúvida sobre o lado em que o design começa.
+
+### 3 · Os cabeços ficam nas suas páginas
+
+<Excerpt region="heads" />
+
+O texto corrido segue o fluxo, mas cabeços e fólios mantêm os seus lados físicos. A página 12 é par e, neste livro, uma página direita, então o fólio vai no alto à direita com o título do livro ao lado; a página 13 fica à esquerda e leva o capítulo. Leia a página dupla a partir da direita, como faz um leitor árabe, e o título do livro vem primeiro. `showBook` dispõe as páginas espelhadas, a 11 à esquerda da 10, e a tela mostra as páginas duplas como o livro abre.
+
+### 4 · Uma página de parte desenhada em código
+
+<Excerpt region="plate" />
+
+A página de parte é um título de nível 1, `# الدرب {style="plate" …}`, cujo estilo pinta a folha inteira e tira dela o cabeço e o fólio. A treliça é um SVG gerado no próprio código a partir de dois quadrados girados 45°, a estrela *khātam* da ornamentação geométrica islâmica, no azul e no latão da paleta, e o PDF a mantém como traçados vetoriais. `numbered: false` deixa a página de parte fora da contagem de capítulos, e a abertura que vem depois é الفصل الأول.
+
+## Variações
+
+### Imprima algarismos europeus
+
+Uma edição do Magreb imprime 1, 2, 3; `locale: 'ar-MA'` faz isso sozinho, e <RecipeLink slug="maghreb-edition-european-digits">a edição do Magreb</RecipeLink> mostra o livro inteiro.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'ar', numerals: 'latn',
+```
+
+### Justifique só com os espaços
+
+Algumas editoras não usam tatweel no texto corrido: os espaços absorvem toda a diferença.
+
+```diff
+   textAlign: 'justify', optimalLineBreaking: true,
++  kashida: 'none',
+```
+
+## Erros comuns
+
+- Um colofão em inglês ou em espanhol no fim de um livro árabe precisa de `{dir=ltr}` no seu bloco: sem isso, a linha latina é alinhada e pontuada como um parágrafo da direita para a esquerda, com o ponto final à esquerda.

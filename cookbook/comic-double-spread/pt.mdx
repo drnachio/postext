@@ -1,0 +1,56 @@
+---
+title: "Uma página de quadrinhos numa página dupla"
+summary: "Um :::page com a marca spread estende uma única divisão sobre duas páginas em frente: um panorama cruza a lombada e a faixa de baixo se divide na dobra."
+plain: "Uma história em quadrinhos montada sobre duas páginas em frente como se fossem uma só: um desenho largo de uma feira lotada atravessa o meio do livro, e três quadros ficam embaixo."
+description: "Uma página dupla de quadrinhos no Postext: uma divisão sobre as duas páginas, um panorama de 1.900 px que cruza a lombada e a faixa de baixo cortada na dobra."
+question: "Como faço para estender uma página de quadrinhos sobre uma página dupla?"
+aliases: ["página dupla", "spread", "panorama", "splash em página dupla", "double spread", "doble página", "見開き", "跨页", "quadrinhos em página dupla", "HQ", "pageIndexOffset"]
+---
+
+## O que você vai compor
+
+A segunda história do álbum da <RecipeLink slug="tebeo-album-page">Nº 152</RecipeLink>, *¡Abuelo!*, contada em duas páginas em frente. Num sábado de dezembro a feira está lotada, e Lola perde o avô no meio da multidão. A metade de cima da página dupla é um único panorama de 432 mm de largura: Lola, minúscula, na ponta esquerda, Paco procurando por ela na ponta direita, e entre os dois o corredor da feira, que vai dar na dobra. Embaixo, três quadros: Lola sozinha entre as pernas das pessoas, Paco assobiando em cima de um caixote de frutas, o reencontro com a boina dele voando. A divisão é escrita uma vez só para as duas páginas, então o panorama cruza a lombada e a sarjeta da faixa de baixo cai na dobra. O original é em espanhol; as edições em inglês, catalão, chinês, árabe, japonês e português letreiram a mesma página dupla.
+
+## Preparo
+
+### 1 · Uma divisão para as duas páginas
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. A história inteira é uma diretiva com a marca `spread`:
+
+```md
+:::page{spread split="55 / * [25 | 25 | *]"}
+::panel{art=ds1}
+caption: Un sábado de diciembre, el mercado estaba hasta los topes.
+lola: ¿Abuelo?
+paco{shout}: ¿Lola? ¡Lolaaa!
+```
+
+O quadro geral vai da margem externa do verso até a do recto; as margens internas desaparecem. A primeira faixa, com 55 % da altura, é um único quadro que cruza a lombada. Na segunda, `25 | 25 | *` põe a sua primeira linha em 25 % e a segunda em 50 %, a própria lombada: dois quadros quadrados no verso, o reencontro no recto. Uma página dupla começa numa página par, e a página 1 de um documento é um recto, então a composição passa `continuation: { pageIndexOffset: 1 }`: este episódio continua o álbum na página 2, e nenhuma página em branco vem antes.
+
+### 2 · Um panorama grande o bastante para duas páginas
+
+<Excerpt region="art" />
+
+O panorama é o único desenho impresso por cima da dobra, com 432 × 144 mm, por isso vai com 1.900 px (380 KB); os outros três têm de 1.000 a 1.200 px. A sua área segura conserva quase tudo, e os seus dois personagens que falam ficam nas pontas, a 6 % e a 92 % da largura, longe da lombada, onde a encadernação engoliria um balão. O desenho foi feito com o meio livre de rostos: o corredor da feira vai dar na dobra.
+
+### 3 · Os balões do álbum
+
+<Excerpt region="balloons" />
+
+Os estilos de balão são os da Nº 152: balões de fala brancos, recordatórios amarelo-claros, uma explosão para o grito de Paco, um contorno tracejado para o sussurro de Lola e o assobio na fonte das onomatopeias do álbum, a Bangers nas edições em escrita latina. `cast` dá ao PDF e ao EPUB os nomes que eles leem antes de cada fala.
+
+## Variações
+
+### Começar o livro com a página dupla
+
+Tire a continuação e o motor deixa a página 1 em branco (papel `blank`), de modo que a página dupla continua caindo nas páginas 2 e 3.
+
+```diff
+-const continuation = { pageIndexOffset: 1, pageNumbering: { startAt: 2 } };
++const continuation = {};
+```
+
+## Erros comuns
+
+- Os balões ficam fora de uma faixa de 8 mm em volta da lombada, inclusive os fixados numa posição: um personagem em pé sobre a dobra tem o balão empurrado para um lado. Mantenha os personagens de um quadro que cruza a lombada longe do meio dele.
+- Um balão não cobre dois personagens cujos rostos se tocam, num abraço ou numa briga, mesmo que um deles seja quem fala. Na edição árabe a página dupla se lê a partir da direita, o quadro do reencontro passa para a página da esquerda e a boina voando ocupa o seu canto superior direito; os dois balões de Paco vão por cima da feira, ao lado da cabeça dele, e não sobre o abraço. Marque os dois rostos no desenho (`face`) para que o motor veja que eles se tocam.

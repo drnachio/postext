@@ -402,7 +402,7 @@ describe("Japanese", () => {
     }),
   ];
 
-  for (const locale of ["en", "es", "ca", "zh", "ar", "ja"] as const) {
+  for (const locale of ["en", "es", "ca", "zh", "ar", "ja", "pt"] as const) {
     it(`finds recipes by their Japanese words in the ${locale} index`, () => {
       const mini = new MiniSearch<SearchDocument>(MINISEARCH_OPTIONS[locale]);
       mini.addAll(RECIPES_JA.map((r) => searchDocument(r, FACETS)));

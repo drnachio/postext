@@ -8,7 +8,8 @@
       "ca": "Font no carregada",
       "zh": "缺少字体",
       "ar": "خط مفقود",
-      "ja": "フォントの欠落"
+      "ja": "フォントの欠落",
+      "pt": "Fonte não carregada"
     },
     "cause": {
       "en": "A family named in the config never loaded in the browser, so text was measured and drawn with a system fallback.",
@@ -16,7 +17,8 @@
       "ca": "Una família que anomena la configuració no s'ha arribat a carregar al navegador, de manera que el text s'ha mesurat i dibuixat amb una font de reserva del sistema.",
       "zh": "配置中指定的某个字体族没有在浏览器中加载，因此文字是用系统后备字体测量和绘制的。",
       "ar": "عائلة خط مذكورة في الإعدادات لم تُحمَّل قط في المتصفح، فقيس النص ورُسم بخط بديل من النظام.",
-      "ja": "設定で指定したフォントファミリーがブラウザーに読み込まれなかったため、テキストはシステムの代替フォントで計測・描画されました。"
+      "ja": "設定で指定したフォントファミリーがブラウザーに読み込まれなかったため、テキストはシステムの代替フォントで計測・描画されました。",
+      "pt": "Uma família citada na configuração não chegou a carregar no navegador, então o texto foi medido e desenhado com uma fonte substituta do sistema."
     },
     "fix": {
       "en": "Fix the family name (one family, no CSS stack) and load every face before the first build; in a pen, list it in FONTS.",
@@ -24,7 +26,8 @@
       "ca": "Corregeix el nom de la família (una sola família, sense pila CSS) i carrega totes les fonts abans de la primera composició; en un pen, afegeix-la a FONTS.",
       "zh": "改正字体族名称（只写一个字体族，不要写CSS字体栈），并在第一次构建前加载所有字面；在pen中，把它列入FONTS。",
       "ar": "صحّح اسم العائلة (عائلة واحدة، لا قائمة خطوط CSS) وحمّل كل أوجه الخط قبل أول بناء؛ وفي مثال CodePen أدرجها في FONTS.",
-      "ja": "ファミリー名を修正し（指定するファミリーは1つだけで、CSSのフォントスタックは使いません）、最初のレイアウトの前にすべてのフェイスを読み込んでください。CodePenのサンプルではFONTSに列挙します。"
+      "ja": "ファミリー名を修正し（指定するファミリーは1つだけで、CSSのフォントスタックは使いません）、最初のレイアウトの前にすべてのフェイスを読み込んでください。CodePenのサンプルではFONTSに列挙します。",
+      "pt": "Corrija o nome da família (uma só família, sem pilha CSS) e carregue todas as fontes antes da primeira composição; num pen, inclua a família em FONTS."
     },
     "docs": {
       "slug": "configuration",
@@ -34,7 +37,8 @@
         "ca": "Avisos de fonts que falten",
         "zh": "缺失字体警告",
         "ar": "تحذيرات الخطوط المفقودة",
-        "ja": "フォント欠落の警告"
+        "ja": "フォント欠落の警告",
+        "pt": "Avisos de fontes ausentes"
       }
     }
   },
@@ -46,7 +50,8 @@
       "ca": "Família de fonts desconeguda",
       "zh": "未知字体族",
       "ar": "عائلة خط غير معروفة",
-      "ja": "不明なフォントファミリー"
+      "ja": "不明なフォントファミリー",
+      "pt": "Família tipográfica desconhecida"
     },
     "cause": {
       "en": "A fontFamily names something that is neither a Google Font nor a family declared in customFonts.",
@@ -54,7 +59,8 @@
       "ca": "Un fontFamily anomena una cosa que no és una font de Google ni una família declarada a customFonts.",
       "zh": "fontFamily指定的名称既不是Google字体，也不是在customFonts中声明的字体族。",
       "ar": "قيمة fontFamily تسمّي شيئًا ليس خطًّا من Google Fonts ولا عائلةً معرَّفة في customFonts.",
-      "ja": "fontFamilyに、Google FontsにもcustomFontsで宣言したファミリーにも当たらない名前が指定されています。"
+      "ja": "fontFamilyに、Google FontsにもcustomFontsで宣言したファミリーにも当たらない名前が指定されています。",
+      "pt": "Um fontFamily cita algo que não é uma Google Font nem uma família declarada em customFonts."
     },
     "fix": {
       "en": "Correct the spelling, or declare the family in customFonts with its files.",
@@ -62,7 +68,8 @@
       "ca": "Corregeix el nom o declara la família a customFonts amb els seus fitxers.",
       "zh": "改正拼写，或在customFonts中声明该字体族及其文件。",
       "ar": "صحّح الإملاء، أو عرّف العائلة في customFonts مع ملفاتها.",
-      "ja": "綴りを修正するか、そのファミリーをファイルとともにcustomFontsで宣言してください。"
+      "ja": "綴りを修正するか、そのファミリーをファイルとともにcustomFontsで宣言してください。",
+      "pt": "Corrija a grafia ou declare a família em customFonts com os arquivos dela."
     },
     "docs": {
       "slug": "configuration",
@@ -72,7 +79,8 @@
         "ca": "Avisos de fonts que falten",
         "zh": "缺失字体警告",
         "ar": "تحذيرات الخطوط المفقودة",
-        "ja": "フォント欠落の警告"
+        "ja": "フォント欠落の警告",
+        "pt": "Avisos de fontes ausentes"
       }
     }
   },
@@ -84,7 +92,8 @@
       "ca": "Variant de font absent",
       "zh": "缺少字体变体",
       "ar": "وجه خط مفقود",
-      "ja": "フォントのバリアントがありません"
+      "ja": "フォントのバリアントがありません",
+      "pt": "Variante de fonte ausente"
     },
     "cause": {
       "en": "A custom family has no file for a weight and style the document uses, such as its italic or bold.",
@@ -92,7 +101,8 @@
       "ca": "A una família pròpia li falta el fitxer d'un pes i un estil que fa servir el document, com ara la cursiva o la negreta.",
       "zh": "某个自定义字体族缺少文档用到的字重和样式对应的文件，比如斜体或粗体。",
       "ar": "عائلة خط مخصصة ليس لها ملف لوزن أو نمط يستعمله المستند، كالمائل أو العريض.",
-      "ja": "カスタムファミリーに、文書が使うウェイトとスタイル（イタリックや太字など）のファイルがありません。"
+      "ja": "カスタムファミリーに、文書が使うウェイトとスタイル（イタリックや太字など）のファイルがありません。",
+      "pt": "Uma família personalizada não tem arquivo para um peso e estilo que o documento usa, como o itálico ou o negrito."
     },
     "fix": {
       "en": "Upload or declare the missing variant, or stop using that weight or style.",
@@ -100,7 +110,8 @@
       "ca": "Puja o declara la variant que falta, o deixa de fer servir aquest pes o estil.",
       "zh": "上传或声明缺少的变体，或者不再使用那个字重或样式。",
       "ar": "ارفع الوجه المفقود أو عرّفه، أو كفّ عن استعمال ذلك الوزن أو النمط.",
-      "ja": "不足しているバリアントをアップロードまたは宣言するか、そのウェイトやスタイルを使わないようにしてください。"
+      "ja": "不足しているバリアントをアップロードまたは宣言するか、そのウェイトやスタイルを使わないようにしてください。",
+      "pt": "Envie ou declare a variante que falta, ou deixe de usar esse peso ou estilo."
     },
     "docs": {
       "slug": "configuration",
@@ -110,7 +121,8 @@
         "ca": "Avisos de fonts que falten",
         "zh": "缺失字体警告",
         "ar": "تحذيرات الخطوط المفقودة",
-        "ja": "フォント欠落の警告"
+        "ja": "フォント欠落の警告",
+        "pt": "Avisos de fontes ausentes"
       }
     }
   },
@@ -122,7 +134,8 @@
       "ca": "Variant de font duplicada",
       "zh": "字体变体重复",
       "ar": "وجه خط مكرر",
-      "ja": "フォントのバリアントの重複"
+      "ja": "フォントのバリアントの重複",
+      "pt": "Variante de fonte duplicada"
     },
     "cause": {
       "en": "Two files of a custom family claim the same weight and style; only one of them is used.",
@@ -130,7 +143,8 @@
       "ca": "Dos fitxers d'una família pròpia ocupen el mateix pes i estil; només se'n fa servir un.",
       "zh": "自定义字体族中有两个文件声明了相同的字重和样式，只有其中一个会被使用。",
       "ar": "ملفان من عائلة خط مخصصة يدّعيان الوزن والنمط نفسيهما؛ ولا يُستعمل إلا أحدهما.",
-      "ja": "カスタムファミリーの2つのファイルが同じウェイトとスタイルを名乗っています。使われるのはそのうち1つだけです。"
+      "ja": "カスタムファミリーの2つのファイルが同じウェイトとスタイルを名乗っています。使われるのはそのうち1つだけです。",
+      "pt": "Dois arquivos de uma família personalizada ocupam o mesmo peso e estilo; só um deles é usado."
     },
     "fix": {
       "en": "Give each file its real weight and style, or remove the extra one.",
@@ -138,7 +152,8 @@
       "ca": "Assigna a cada fitxer el seu pes i estil reals, o suprimeix el que sobra.",
       "zh": "给每个文件标上它真实的字重和样式，或删除多余的那个。",
       "ar": "أعطِ كل ملف وزنه ونمطه الحقيقيين، أو احذف الملف الزائد.",
-      "ja": "各ファイルに実際のウェイトとスタイルを指定するか、余分なファイルを削除してください。"
+      "ja": "各ファイルに実際のウェイトとスタイルを指定するか、余分なファイルを削除してください。",
+      "pt": "Atribua a cada arquivo o peso e o estilo reais, ou remova o que sobra."
     },
     "docs": {
       "slug": "configuration",
@@ -148,7 +163,8 @@
         "ca": "Avisos de fonts que falten",
         "zh": "缺失字体警告",
         "ar": "تحذيرات الخطوط المفقودة",
-        "ja": "フォント欠落の警告"
+        "ja": "フォント欠落の警告",
+        "pt": "Avisos de fontes ausentes"
       }
     }
   },
@@ -160,7 +176,8 @@
       "ca": "Línia fluixa",
       "zh": "松散行",
       "ar": "سطر متباعد",
-      "ja": "ゆるい行"
+      "ja": "ゆるい行",
+      "pt": "Linha frouxa"
     },
     "cause": {
       "en": "A justified line stretches its spaces beyond the threshold, usually because of a long word, a URL or a narrow measure.",
@@ -168,7 +185,8 @@
       "ca": "Una línia justificada estira els espais per sobre del llindar, gairebé sempre per una paraula llarga, un URL o una mesura estreta.",
       "zh": "某个两端对齐的行把空格拉得超过了阈值，通常是长单词、URL或行长太窄造成的。",
       "ar": "سطر مضبوط تتمدد مسافاته فوق الحد المسموح، وسبب ذلك عادةً كلمة طويلة أو عنوان URL أو سطر ضيق.",
-      "ja": "両端そろえの行で、語間がしきい値を超えて広がっています。原因はたいてい長い単語、URL、または狭い行長です。"
+      "ja": "両端そろえの行で、語間がしきい値を超えて広がっています。原因はたいてい長い単語、URL、または狭い行長です。",
+      "pt": "Uma linha justificada estica os espaços além do limite, quase sempre por causa de uma palavra longa, uma URL ou uma medida estreita."
     },
     "fix": {
       "en": "Turn on hyphenation in the right language, widen the measure, rephrase, or set the passage ragged.",
@@ -176,7 +194,8 @@
       "ca": "Activa la partició de mots en la llengua correcta, eixampla la mesura, reformula o compon aquest passatge en bandera.",
       "zh": "按正确的语言开启断词、加大行长、改写句子，或把这段排成齐左。",
       "ar": "فعّل تقسيم الكلمات بالواصلة باللغة الصحيحة، أو وسّع عرض السطر، أو أعد صياغة الجملة، أو اجعل المقطع غير مضبوط.",
-      "ja": "正しい言語でハイフネーションを有効にする、行長を広げる、文を書き換える、またはその箇所を左そろえ（行末不ぞろい）で組んでください。"
+      "ja": "正しい言語でハイフネーションを有効にする、行長を広げる、文を書き換える、またはその箇所を左そろえ（行末不ぞろい）で組んでください。",
+      "pt": "Ative a hifenização no idioma certo, aumente a medida, reescreva o trecho ou componha essa passagem alinhada à esquerda."
     },
     "docs": {
       "slug": "justification",
@@ -186,7 +205,8 @@
         "ca": "Depuració de línies fluixes",
         "zh": "松散行调试",
         "ar": "كشف الأسطر المتخلخلة",
-        "ja": "ゆるい行のデバッグ"
+        "ja": "ゆるい行のデバッグ",
+        "pt": "Depuração de linhas frouxas"
       }
     }
   },
@@ -198,7 +218,8 @@
       "ca": "Línia CJK curta",
       "zh": "中日韩行排不满",
       "ar": "سطر CJK أقصر من عرضه",
-      "ja": "行長に満たないCJKの行"
+      "ja": "行長に満たないCJKの行",
+      "pt": "Linha CJK curta"
     },
     "cause": {
       "en": "A justified line of Chinese, Japanese or Korean text would need more space between its characters than half an em (or `bodyText.maxJustifyTracking`) to reach the measure, usually because a long Latin word or web address on the next line cannot break.",
@@ -206,7 +227,8 @@
       "ca": "Una línia justificada de text xinès, japonès o coreà necessitaria més de mig quadratí entre els caràcters (o més que `bodyText.maxJustifyTracking`) per arribar a la mesura, gairebé sempre perquè una paraula llatina llarga o una adreça web de la línia següent no es pot tallar.",
       "zh": "一行两端对齐的中文、日文或韩文文字要排满行长，字间需要的空隙超过半个em（或`bodyText.maxJustifyTracking`），通常是因为下一行的长西文单词或网址无法断开。",
       "ar": "سطر مضبوط من نص صيني أو ياباني أو كوري يحتاج إلى مسافة بين حروفه تزيد على نصف em (أو على `bodyText.maxJustifyTracking`) ليبلغ عرض السطر، وسبب ذلك عادةً كلمة لاتينية طويلة أو عنوان ويب في السطر التالي لا يمكن كسره.",
-      "ja": "中国語・日本語・韓国語の両端そろえの行が、行長に達するために0.5em（または`bodyText.maxJustifyTracking`）を超える字間を必要としています。たいていは、次の行にある長い欧文の単語やWebアドレスが分割できないためです。"
+      "ja": "中国語・日本語・韓国語の両端そろえの行が、行長に達するために0.5em（または`bodyText.maxJustifyTracking`）を超える字間を必要としています。たいていは、次の行にある長い欧文の単語やWebアドレスが分割できないためです。",
+      "pt": "Uma linha justificada de texto chinês, japonês ou coreano precisaria de mais de meio eme entre os caracteres (ou mais que `bodyText.maxJustifyTracking`) para alcançar a medida, quase sempre porque uma palavra latina longa ou um endereço web na linha seguinte não pode ser quebrado."
     },
     "fix": {
       "en": "Break the long word or address yourself (a zero-width space, U+200B, where a line may end), move it, or widen the measure.",
@@ -214,7 +236,8 @@
       "ca": "Talla tu mateix la paraula o l'adreça llarga (un espai d'amplada zero, U+200B, on pot acabar la línia), mou-la o eixampla la mesura.",
       "zh": "自己断开那个长单词或网址（在可以换行的地方插入零宽空格U+200B），把它挪走，或加大行长。",
       "ar": "اكسر الكلمة الطويلة أو العنوان بنفسك (بمسافة صفرية العرض، U+200B، حيث يجوز أن ينتهي السطر)، أو انقلها، أو وسّع عرض السطر.",
-      "ja": "長い単語やアドレスを自分で区切る（行末にしてよい位置にゼロ幅スペースU+200Bを入れる）、移動する、または行長を広げてください。"
+      "ja": "長い単語やアドレスを自分で区切る（行末にしてよい位置にゼロ幅スペースU+200Bを入れる）、移動する、または行長を広げてください。",
+      "pt": "Quebre você mesmo a palavra ou o endereço longo (um espaço de largura zero, U+200B, onde a linha pode terminar), mude o trecho de lugar ou aumente a medida."
     },
     "docs": {
       "slug": "justification",
@@ -224,7 +247,8 @@
         "ca": "Xinès, japonès i coreà",
         "zh": "中文、日文和韩文",
         "ar": "الصينية واليابانية والكورية",
-        "ja": "中国語・日本語・韓国語"
+        "ja": "中国語・日本語・韓国語",
+        "pt": "Chinês, japonês e coreano"
       }
     }
   },
@@ -236,7 +260,8 @@
       "ca": "Paraula més ampla que la seva línia",
       "zh": "单词宽于行长",
       "ar": "كلمة أعرض من سطرها",
-      "ja": "行より長い単語"
+      "ja": "行より長い単語",
+      "pt": "Palavra mais larga que a linha"
     },
     "cause": {
       "en": "A word in Arabic script (or another script whose letters join: Syriac, N'Ko…) is wider than its line. Such a word is never divided, not even at a soft hyphen, because its pieces would lose their joining forms, so it runs past the measure.",
@@ -244,7 +269,8 @@
       "ca": "Una paraula en escriptura àrab (o una altra amb les lletres unides: siríaca, n'ko…) és més ampla que la seva línia. Una paraula així no es divideix mai, ni tan sols en un guionet discrecional, perquè els trossos perdrien les formes d'unió, de manera que sobresurt de la mesura.",
       "zh": "一个阿拉伯文字（或叙利亚文、N'Ko文等字母相连的文字）的单词比所在行还宽。这类单词从不拆开，软连字符处也不拆，否则拆开的部分会失去连写形式，所以它会超出行长。",
       "ar": "كلمة بالخط العربي (أو بخط آخر تتصل حروفه: السريانية، أنكو…) أعرض من سطرها. مثل هذه الكلمة لا تُقسَّم أبدًا، ولا حتى عند واصلة اختيارية، لأن أجزاءها ستفقد أشكال اتصالها، فتتجاوز عرض السطر.",
-      "ja": "アラビア文字（または文字が連結する他の文字体系：シリア文字、ンコ文字…）の単語が行より長くなっています。こうした単語は分割すると連結形が失われるため、ソフトハイフンの位置でも分割されず、行長からはみ出します。"
+      "ja": "アラビア文字（または文字が連結する他の文字体系：シリア文字、ンコ文字…）の単語が行より長くなっています。こうした単語は分割すると連結形が失われるため、ソフトハイフンの位置でも分割されず、行長からはみ出します。",
+      "pt": "Uma palavra em escrita árabe (ou outra cujas letras se ligam: siríaca, n'ko…) é mais larga que a linha. Uma palavra assim nunca é dividida, nem mesmo num hífen discricionário, porque as partes perderiam as formas de ligação, então ela ultrapassa a medida."
     },
     "fix": {
       "en": "Widen the measure (a wider column or table cell), set the text smaller, or put a space between words written together.",
@@ -252,7 +278,8 @@
       "ca": "Eixampla la mesura (una columna o una cel·la més ampla), redueix el cos del text o separa amb un espai les paraules escrites juntes.",
       "zh": "加大行长（更宽的栏或表格单元格）、缩小字号，或在连写的词之间加空格。",
       "ar": "وسّع عرض السطر (عمود أو خلية جدول أعرض)، أو صغّر حجم النص، أو ضع مسافة بين كلمات كُتبت متلاصقة.",
-      "ja": "行長を広げる（段や表のセルを広くする）、文字を小さくする、または続けて書かれた語の間にスペースを入れてください。"
+      "ja": "行長を広げる（段や表のセルを広くする）、文字を小さくする、または続けて書かれた語の間にスペースを入れてください。",
+      "pt": "Aumente a medida (uma coluna ou uma célula de tabela mais larga), reduza o corpo do texto ou separe com um espaço as palavras escritas juntas."
     },
     "docs": {
       "slug": "justification",
@@ -262,7 +289,8 @@
         "ca": "On no es talla mai una línia",
         "zh": "行从不断开的地方",
         "ar": "حيث لا ينكسر السطر أبدًا",
-        "ja": "行を分割しない箇所"
+        "ja": "行を分割しない箇所",
+        "pt": "Onde uma linha nunca quebra"
       }
     }
   },
@@ -274,7 +302,8 @@
       "ca": "Espaiat entre lletres en escriptura àrab",
       "zh": "阿拉伯文字的字距",
       "ar": "تباعد الحروف في الخط العربي",
-      "ja": "アラビア文字の字間"
+      "ja": "アラビア文字の字間",
+      "pt": "Espaçamento entre letras em escrita árabe"
     },
     "cause": {
       "en": "A paragraph style or heading level sets `letterSpacing`, and its text holds words in Arabic script (or another script whose letters join). Spacing those letters apart breaks the joins, so such words are set without it.",
@@ -282,7 +311,8 @@
       "ca": "Un estil de paràgraf o un nivell de títol defineix `letterSpacing`, i el seu text té paraules en escriptura àrab (o una altra amb les lletres unides). Separar aquestes lletres trenca les unions, de manera que aquestes paraules es componen sense l'espaiat.",
       "zh": "某个段落样式或标题级别设置了`letterSpacing`，而其文字含有阿拉伯文字（或其他字母相连的文字）的单词。拉开这些字母会破坏连写，所以这些单词按无字距排版。",
       "ar": "نمط فقرة أو مستوى عنوان يضبط `letterSpacing`، ونصه يحوي كلمات بالخط العربي (أو بخط آخر تتصل حروفه). المباعدة بين هذه الحروف تقطع اتصالها، فتُنضَّد تلك الكلمات من دونها.",
-      "ja": "段落スタイルまたは見出しレベルが`letterSpacing`を指定しており、そのテキストにアラビア文字（または文字が連結する他の文字体系）の単語が含まれています。文字の間を空けると連結が切れるため、そうした単語は字間を付けずに組まれます。"
+      "ja": "段落スタイルまたは見出しレベルが`letterSpacing`を指定しており、そのテキストにアラビア文字（または文字が連結する他の文字体系）の単語が含まれています。文字の間を空けると連結が切れるため、そうした単語は字間を付けずに組まれます。",
+      "pt": "Um estilo de parágrafo ou um nível de título define `letterSpacing`, e o texto dele contém palavras em escrita árabe (ou outra cujas letras se ligam). Afastar essas letras rompe as ligações, então essas palavras são compostas sem o espaçamento."
     },
     "fix": {
       "en": "Remove the letter-spacing from the style, or give the Arabic text a style of its own without it.",
@@ -290,7 +320,8 @@
       "ca": "Treu l'espaiat entre lletres de l'estil, o dona al text àrab un estil propi sense espaiat.",
       "zh": "去掉该样式的字距，或给阿拉伯文字单独设一个不加字距的样式。",
       "ar": "أزل تباعد الحروف من النمط، أو أعطِ النص العربي نمطًا خاصًّا به من دونه.",
-      "ja": "スタイルから字間の指定を外すか、アラビア語のテキストに字間を指定しない専用のスタイルを与えてください。"
+      "ja": "スタイルから字間の指定を外すか、アラビア語のテキストに字間を指定しない専用のスタイルを与えてください。",
+      "pt": "Tire o espaçamento entre letras do estilo ou dê ao texto árabe um estilo próprio sem ele."
     },
     "docs": {
       "slug": "justification",
@@ -300,7 +331,8 @@
         "ca": "Tracking com a últim recurs",
         "zh": "最后手段：字距",
         "ar": "التتبّع ملاذًا أخيرًا",
-        "ja": "最後の手段としてのトラッキング"
+        "ja": "最後の手段としてのトラッキング",
+        "pt": "Tracking como último recurso"
       }
     }
   },
@@ -312,7 +344,8 @@
       "ca": "Marques enganxades a la línia veïna",
       "zh": "标记挤到下一行",
       "ar": "العلامات تزاحم السطر التالي",
-      "ja": "圏点・傍線が次の行に接触"
+      "ja": "圏点・傍線が次の行に接触",
+      "pt": "Marcas encostam na linha vizinha"
     },
     "cause": {
       "en": "A paragraph with emphasis dots or proper-name and book-title lines has a line gap under half an em (five eighths with marks on both sides): the marks live in the leading, whose height never changes for them, so they touch the next line.",
@@ -320,7 +353,8 @@
       "ca": "Un paràgraf amb punts d'èmfasi o línies de nom propi i de títol té un buit entre línies de menys de mig em (cinc vuitens amb marques pels dos costats): les marques viuen a l'interlineat, que no creix per elles, de manera que toquen la línia veïna.",
       "zh": "带着重号或专名号、书名号的段落，行间空隙不到半个em（两侧都有标记时不到八分之五em）：这些标记位于行距之中，而行距不会为它们增高，于是碰到下一行。",
       "ar": "فقرة فيها نقاط توكيد أو خطوط لأسماء الأعلام وعناوين الكتب، وفراغها بين الأسطر أقل من نصف em (خمسة أثمان إذا كانت العلامات على الجانبين): العلامات تقع في تباعد الأسطر، وارتفاعه لا يتغير من أجلها، فتلامس السطر التالي.",
-      "ja": "圏点、または専名線・書名線のある段落の行間が0.5em未満です（両側に印がある場合は5/8em未満）。印は行間に置かれ、行間の高さは印のために変わらないため、次の行に接してしまいます。"
+      "ja": "圏点、または専名線・書名線のある段落の行間が0.5em未満です（両側に印がある場合は5/8em未満）。印は行間に置かれ、行間の高さは印のために変わらないため、次の行に接してしまいます。",
+      "pt": "Um parágrafo com pontos de ênfase ou com fios de nome próprio e de título de obra tem um vão entre linhas menor que meio eme (cinco oitavos com marcas dos dois lados): as marcas ficam na entrelinha, cuja altura não aumenta por causa delas, então encostam na linha vizinha."
     },
     "fix": {
       "en": "Give the paragraph a paragraph style with more leading, or raise `bodyText.lineHeight`.",
@@ -328,7 +362,8 @@
       "ca": "Dona al paràgraf un estil de paràgraf amb més interlineat, o apuja `bodyText.lineHeight`.",
       "zh": "给该段落设一个行距更大的段落样式，或调大`bodyText.lineHeight`。",
       "ar": "أعطِ الفقرة نمط فقرة بتباعد أسطر أكبر، أو ارفع `bodyText.lineHeight`.",
-      "ja": "行送りの大きい段落スタイルをその段落に与えるか、`bodyText.lineHeight`を大きくしてください。"
+      "ja": "行送りの大きい段落スタイルをその段落に与えるか、`bodyText.lineHeight`を大きくしてください。",
+      "pt": "Dê ao parágrafo um estilo de parágrafo com mais entrelinha ou aumente `bodyText.lineHeight`."
     },
     "docs": {
       "slug": "configuration",
@@ -338,7 +373,8 @@
         "ca": "Marques, ruby i warichu",
         "zh": "着重号、注音与夹注",
         "ar": "العلامات والروبي والواريتشو",
-        "ja": "圏点と傍線、ルビ、割注"
+        "ja": "圏点と傍線、ルビ、割注",
+        "pt": "Marcas, rubi e warichu"
       }
     }
   },
@@ -350,7 +386,8 @@
       "ca": "Lectures enganxades a la línia veïna",
       "zh": "注音挤到相邻行",
       "ar": "القراءات تزاحم السطر التالي",
-      "ja": "ルビが次の行に接触"
+      "ja": "ルビが次の行に接触",
+      "pt": "Leituras encostam na linha vizinha"
     },
     "cause": {
       "en": "A paragraph with ruby readings over or under its text has a line gap narrower than the readings: they sit in the leading and touch the line next to them.",
@@ -358,7 +395,8 @@
       "ca": "Un paràgraf amb lectures ruby damunt o sota del text té un buit entre línies més estret que les lectures: ocupen l'interlineat i toquen la línia veïna.",
       "zh": "在文字上方或下方带注音的段落，行间空隙比注音还窄：注音位于行距之中，碰到相邻的行。",
       "ar": "فقرة فيها قراءات روبي فوق نصها أو تحته، وفراغها بين الأسطر أضيق من القراءات: فهي تقع في تباعد الأسطر وتلامس السطر المجاور.",
-      "ja": "本文の上または下にルビを付けた段落で、行間がルビより狭くなっています。ルビは行間に置かれるため、隣の行に接してしまいます。"
+      "ja": "本文の上または下にルビを付けた段落で、行間がルビより狭くなっています。ルビは行間に置かれるため、隣の行に接してしまいます。",
+      "pt": "Um parágrafo com leituras rubi acima ou abaixo do texto tem um vão entre linhas mais estreito que as leituras: elas ocupam a entrelinha e encostam na linha vizinha."
     },
     "fix": {
       "en": "Set the paragraph with more leading (at least the text size plus `cjk.ruby.fontSize`), or make the readings smaller.",
@@ -366,7 +404,8 @@
       "ca": "Compon el paràgraf amb més interlineat (com a mínim el cos més `cjk.ruby.fontSize`), o redueix les lectures.",
       "zh": "给该段落设更大的行距（至少为正文字号加上`cjk.ruby.fontSize`），或把注音缩小。",
       "ar": "انضد الفقرة بتباعد أسطر أكبر (حجم النص مضافًا إليه `cjk.ruby.fontSize` على الأقل)، أو صغّر القراءات.",
-      "ja": "段落の行送りを大きくする（少なくとも文字サイズに`cjk.ruby.fontSize`を加えた値）か、ルビを小さくしてください。"
+      "ja": "段落の行送りを大きくする（少なくとも文字サイズに`cjk.ruby.fontSize`を加えた値）か、ルビを小さくしてください。",
+      "pt": "Componha o parágrafo com mais entrelinha (pelo menos o corpo do texto mais `cjk.ruby.fontSize`) ou reduza as leituras."
     },
     "docs": {
       "slug": "configuration",
@@ -376,7 +415,8 @@
         "ca": "Marques, ruby i warichu",
         "zh": "着重号、注音与夹注",
         "ar": "العلامات والروبي والواريتشو",
-        "ja": "圏点と傍線、ルビ、割注"
+        "ja": "圏点と傍線、ルビ、割注",
+        "pt": "Marcas, rubi e warichu"
       }
     }
   },
@@ -388,7 +428,8 @@
       "ca": "Les marques de kanbun envaeixen la línia veïna",
       "zh": "训点碰到相邻的行",
       "ar": "علامات الكانبون تلامس السطر المجاور",
-      "ja": "訓点が次の行に接触"
+      "ja": "訓点が次の行に接触",
+      "pt": "Marcas de kanbun encostam na linha vizinha"
     },
     "cause": {
       "en": "A paragraph of kanbun has okurigana beside its characters (or return marks in the line gap, `cjk.kunten.placement: 'interlinear'`) in a line gap narrower than the marks: they sit in the leading and touch the line next to them.",
@@ -396,7 +437,8 @@
       "ca": "Un paràgraf de kanbun porta okurigana al costat dels seus caràcters (o marques de retorn a l'interlineat, `cjk.kunten.placement: 'interlinear'`) en un buit entre línies més estret que les marques: ocupen l'interlineat i toquen la línia veïna.",
       "zh": "汉文段落在字旁带送假名（或用`cjk.kunten.placement: 'interlinear'`把返点排在行间），行间空隙却比这些训点还窄：训点位于行距之中，碰到相邻的行。",
       "ar": "فقرة كانبون فيها أوكوريغانا بجانب حروفها (أو علامات رجوع في الفراغ بين الأسطر، `cjk.kunten.placement: 'interlinear'`) وفراغها بين الأسطر أضيق من العلامات: فهي تقع في تباعد الأسطر وتلامس السطر المجاور.",
-      "ja": "漢文の段落で、文字の横の送り仮名（または行間に置いた返り点、`cjk.kunten.placement: 'interlinear'`）が、訓点より狭い行間に置かれています。訓点は行間に置かれるため、隣の行に接してしまいます。"
+      "ja": "漢文の段落で、文字の横の送り仮名（または行間に置いた返り点、`cjk.kunten.placement: 'interlinear'`）が、訓点より狭い行間に置かれています。訓点は行間に置かれるため、隣の行に接してしまいます。",
+      "pt": "Um parágrafo de kanbun traz okurigana ao lado dos caracteres (ou marcas de retorno no vão entre linhas, `cjk.kunten.placement: 'interlinear'`) num vão entre linhas mais estreito que as marcas: elas ocupam a entrelinha e encostam na linha vizinha."
     },
     "fix": {
       "en": "Set the paragraph with more leading (at least the text size plus `cjk.kunten.fontSize`), or make the marks smaller.",
@@ -404,7 +446,8 @@
       "ca": "Compon el paràgraf amb més interlineat (com a mínim el cos més `cjk.kunten.fontSize`), o redueix les marques.",
       "zh": "给该段落设更大的行距（至少为正文字号加上`cjk.kunten.fontSize`），或把训点缩小。",
       "ar": "انضد الفقرة بتباعد أسطر أكبر (حجم النص مضافًا إليه `cjk.kunten.fontSize` على الأقل)، أو صغّر العلامات.",
-      "ja": "段落の行送りを大きくする（少なくとも文字サイズに`cjk.kunten.fontSize`を加えた値）か、訓点を小さくしてください。"
+      "ja": "段落の行送りを大きくする（少なくとも文字サイズに`cjk.kunten.fontSize`を加えた値）か、訓点を小さくしてください。",
+      "pt": "Componha o parágrafo com mais entrelinha (pelo menos o corpo do texto mais `cjk.kunten.fontSize`) ou reduza as marcas."
     },
     "docs": {
       "slug": "configuration",
@@ -414,7 +457,8 @@
         "ca": "Marques, ruby i warichu",
         "zh": "着重号、注音与夹注",
         "ar": "العلامات والروبي والواريتشو",
-        "ja": "圏点と傍線、ルビ、割注"
+        "ja": "圏点と傍線、ルビ、割注",
+        "pt": "Marcas, rubi e warichu"
       }
     }
   },
@@ -426,7 +470,8 @@
       "ca": "Signes vocàlics enganxats a la línia veïna",
       "zh": "元音符号挤到相邻行",
       "ar": "الحركات تزاحم السطر التالي",
-      "ja": "母音記号が次の行に接触"
+      "ja": "母音記号が次の行に接触",
+      "pt": "Sinais vocálicos encostam na linha vizinha"
     },
     "cause": {
       "en": "A paragraph of vocalised Arabic sets its vowel marks (fatḥa, kasra, shadda, tanwīn…) in the leading, which never grows for them: where a mark over a word of one line reaches the letters or marks hanging under the word above it, the two lines touch.",
@@ -434,7 +479,8 @@
       "ca": "Un paràgraf d'àrab vocalitzat posa els signes vocàlics (fatḥa, kasra, shadda, tanwīn…) a l'interlineat, que no creix per ells: on un signe damunt d'una paraula d'una línia arriba a les lletres o als signes que pengen sota la paraula de sobre, les dues línies es toquen.",
       "zh": "带元音符号的阿拉伯文段落把元音符号（fatḥa、kasra、shadda、tanwīn等）放在行距之中，而行距不会为它们增高：某行一个词上方的符号碰到上一行正上方那个词下垂的字母或符号时，两行就挨在一起了。",
       "ar": "فقرة من نص عربي مشكول تضع حركاتها (الفتحة، الكسرة، الشدة، التنوين…) في تباعد الأسطر، وهو لا يزيد من أجلها: فحيث تبلغ حركةٌ فوق كلمة من سطرٍ الحروفَ أو الحركاتِ النازلة تحت الكلمة التي فوقها، يتلامس السطران.",
-      "ja": "母音符号付きのアラビア語の段落では、母音記号（ファトハ、カスラ、シャッダ、タンウィーン…）が行間に置かれ、行間は記号のために広がりません。ある行の単語の上の記号が、上の行の単語の下に垂れる文字や記号に届くと、2つの行が接してしまいます。"
+      "ja": "母音符号付きのアラビア語の段落では、母音記号（ファトハ、カスラ、シャッダ、タンウィーン…）が行間に置かれ、行間は記号のために広がりません。ある行の単語の上の記号が、上の行の単語の下に垂れる文字や記号に届くと、2つの行が接してしまいます。",
+      "pt": "Um parágrafo de árabe vocalizado coloca os sinais vocálicos (fatḥa, kasra, shadda, tanwīn…) na entrelinha, que não cresce por causa deles: onde um sinal sobre uma palavra de uma linha alcança as letras ou os sinais pendurados sob a palavra de cima, as duas linhas se tocam."
     },
     "fix": {
       "en": "Raise `bodyText.lineHeight` (1.7–1.85 em for partly vocalised text, 1.9–2.1 em for fully vocalised verse), give the paragraph a paragraph style with more leading, or set `bodyText.tashkil: 'strip-vowels'` for an edition without vowels.",
@@ -442,7 +488,8 @@
       "ca": "Apuja `bodyText.lineHeight` (1,7–1,85 em per a text vocalitzat en part, 1,9–2,1 em per a vers vocalitzat del tot), dona al paràgraf un estil de paràgraf amb més interlineat, o posa `bodyText.tashkil: 'strip-vowels'` per a una edició sense vocals.",
       "zh": "调大`bodyText.lineHeight`（部分标注元音的文本用1.7–1.85 em，全部标注元音的诗句用1.9–2.1 em），给该段落设一个行距更大的段落样式，或设`bodyText.tashkil: 'strip-vowels'`得到不标元音的版本。",
       "ar": "ارفع `bodyText.lineHeight` (من 1.7 إلى 1.85 em للنص المشكول جزئيًّا، ومن 1.9 إلى 2.1 em للشعر المشكول كاملًا)، أو أعطِ الفقرة نمط فقرة بتباعد أسطر أكبر، أو اضبط `bodyText.tashkil: 'strip-vowels'` لطبعة بلا حركات.",
-      "ja": "`bodyText.lineHeight`を大きくする（部分的に母音符号を付けたテキストは1.7〜1.85em、完全に母音符号を付けた韻文は1.9〜2.1em）、行送りの大きい段落スタイルをその段落に与える、または母音符号なしの版にするなら`bodyText.tashkil: 'strip-vowels'`を設定してください。"
+      "ja": "`bodyText.lineHeight`を大きくする（部分的に母音符号を付けたテキストは1.7〜1.85em、完全に母音符号を付けた韻文は1.9〜2.1em）、行送りの大きい段落スタイルをその段落に与える、または母音符号なしの版にするなら`bodyText.tashkil: 'strip-vowels'`を設定してください。",
+      "pt": "Aumente `bodyText.lineHeight` (1,7–1,85 em para texto vocalizado em parte, 1,9–2,1 em para verso totalmente vocalizado), dê ao parágrafo um estilo de parágrafo com mais entrelinha ou defina `bodyText.tashkil: 'strip-vowels'` para uma edição sem vogais."
     },
     "docs": {
       "slug": "configuration",
@@ -452,7 +499,8 @@
         "ca": "Text àrab",
         "zh": "阿拉伯文",
         "ar": "النص العربي",
-        "ja": "アラビア文字のテキスト"
+        "ja": "アラビア文字のテキスト",
+        "pt": "Texto árabe"
       }
     }
   },
@@ -464,7 +512,8 @@
       "ca": "Salt en la jerarquia de títols",
       "zh": "标题层级跳跃",
       "ar": "قفزة في تسلسل العناوين",
-      "ja": "見出し階層の飛び"
+      "ja": "見出し階層の飛び",
+      "pt": "Salto na hierarquia de títulos"
     },
     "cause": {
       "en": "A heading skips a level, such as an H1 followed directly by an H3.",
@@ -472,7 +521,8 @@
       "ca": "Un títol se salta un nivell, per exemple un H1 seguit directament d'un H3.",
       "zh": "某个标题跳过了一级，比如H1后面直接跟着H3。",
       "ar": "عنوان يتخطى مستوى، كعنوان H1 يليه مباشرةً عنوان H3.",
-      "ja": "見出しのレベルが1つ飛んでいます。たとえばH1の直後にH3が続いています。"
+      "ja": "見出しのレベルが1つ飛んでいます。たとえばH1の直後にH3が続いています。",
+      "pt": "Um título pula um nível, por exemplo um H1 seguido diretamente de um H3."
     },
     "fix": {
       "en": "Use the next level down, or restyle the level you meant instead of skipping one.",
@@ -480,7 +530,8 @@
       "ca": "Fes servir el nivell immediatament inferior, o canvia l'estil del nivell que volies en lloc de saltar-te'l.",
       "zh": "改用下一级标题，或者重新设定你想用的那一级的样式，而不是跳过一级。",
       "ar": "استعمل المستوى التالي مباشرةً، أو أعد تنسيق المستوى الذي قصدته بدل تخطي مستوى.",
-      "ja": "1つ下のレベルを使うか、レベルを飛ばす代わりに、意図したレベルのスタイルを変更してください。"
+      "ja": "1つ下のレベルを使うか、レベルを飛ばす代わりに、意図したレベルのスタイルを変更してください。",
+      "pt": "Use o nível imediatamente abaixo ou mude o estilo do nível que você queria, em vez de pular um."
     },
     "docs": {
       "slug": "configuration",
@@ -490,7 +541,8 @@
         "ca": "Avisos",
         "zh": "警告",
         "ar": "التحذيرات",
-        "ja": "警告"
+        "ja": "警告",
+        "pt": "Avisos"
       }
     }
   },
@@ -502,7 +554,8 @@
       "ca": "Títols consecutius",
       "zh": "连续标题",
       "ar": "عناوين متتالية",
-      "ja": "見出しの連続"
+      "ja": "見出しの連続",
+      "pt": "Títulos consecutivos"
     },
     "cause": {
       "en": "A heading follows another with no text between them (off by default).",
@@ -510,7 +563,8 @@
       "ca": "Un títol en segueix un altre sense text entre tots dos (desactivat per defecte).",
       "zh": "一个标题紧跟在另一个标题后面，中间没有正文（默认关闭）。",
       "ar": "عنوان يلي عنوانًا آخر بلا نص بينهما (معطَّل افتراضيًّا).",
-      "ja": "見出しの後に、本文を挟まずに別の見出しが続いています（初期設定では無効）。"
+      "ja": "見出しの後に、本文を挟まずに別の見出しが続いています（初期設定では無効）。",
+      "pt": "Um título vem logo depois de outro sem texto entre eles (desativado por padrão)."
     },
     "fix": {
       "en": "Add an introductory paragraph, or turn the check off where stacked headings are intended.",
@@ -518,7 +572,8 @@
       "ca": "Afegeix un paràgraf introductori, o desactiva la comprovació on vulguis dos títols seguits.",
       "zh": "加一段引言，或在有意叠放标题的地方关闭这项检查。",
       "ar": "أضف فقرة تمهيدية، أو عطّل الفحص حيث تكون العناوين المتراكبة مقصودة.",
-      "ja": "導入の段落を加えるか、見出しを重ねる意図がある箇所ではこの検査を無効にしてください。"
+      "ja": "導入の段落を加えるか、見出しを重ねる意図がある箇所ではこの検査を無効にしてください。",
+      "pt": "Acrescente um parágrafo introdutório ou desative a verificação onde os títulos empilhados forem intencionais."
     },
     "docs": {
       "slug": "configuration",
@@ -528,7 +583,8 @@
         "ca": "Avisos",
         "zh": "警告",
         "ar": "التحذيرات",
-        "ja": "警告"
+        "ja": "警告",
+        "pt": "Avisos"
       }
     }
   },
@@ -540,7 +596,8 @@
       "ca": "Llista després de títol",
       "zh": "标题后直接跟列表",
       "ar": "قائمة بعد عنوان",
-      "ja": "見出し直後のリスト"
+      "ja": "見出し直後のリスト",
+      "pt": "Lista depois de título"
     },
     "cause": {
       "en": "A list starts right after a heading, with no sentence to introduce it (off by default).",
@@ -548,7 +605,8 @@
       "ca": "Una llista comença just després d'un títol, sense una frase que la introdueixi (desactivat per defecte).",
       "zh": "列表紧接在标题之后开始，没有一句话引出它（默认关闭）。",
       "ar": "قائمة تبدأ مباشرةً بعد عنوان، بلا جملة تمهّد لها (معطَّل افتراضيًّا).",
-      "ja": "リストが見出しの直後から始まり、導入の文がありません（初期設定では無効）。"
+      "ja": "リストが見出しの直後から始まり、導入の文がありません（初期設定では無効）。",
+      "pt": "Uma lista começa logo depois de um título, sem uma frase que a apresente (desativado por padrão)."
     },
     "fix": {
       "en": "Introduce the list with a sentence ending in a colon, which also keeps it with the list.",
@@ -556,7 +614,8 @@
       "ca": "Introdueix la llista amb una frase que acabi en dos punts, que a més queda unida a la llista.",
       "zh": "用一个以冒号结尾的句子引出列表，这样它也会和列表排在一起。",
       "ar": "مهّد للقائمة بجملة تنتهي بنقطتين، وهذا يبقيها أيضًا مع القائمة.",
-      "ja": "コロンで終わる文でリストを導入してください。その文はリストと離れずに組まれます。"
+      "ja": "コロンで終わる文でリストを導入してください。その文はリストと離れずに組まれます。",
+      "pt": "Apresente a lista com uma frase terminada em dois-pontos, que também fica presa à lista."
     },
     "docs": {
       "slug": "configuration",
@@ -566,7 +625,8 @@
         "ca": "Avisos",
         "zh": "警告",
         "ar": "التحذيرات",
-        "ja": "警告"
+        "ja": "警告",
+        "pt": "Avisos"
       }
     }
   },
@@ -578,7 +638,8 @@
       "ca": "LaTeX no vàlid",
       "zh": "LaTeX无效",
       "ar": "LaTeX غير صالح",
-      "ja": "無効なLaTeX"
+      "ja": "無効なLaTeX",
+      "pt": "LaTeX inválido"
     },
     "cause": {
       "en": "MathJax could not parse a formula, so a red placeholder is printed instead.",
@@ -586,7 +647,8 @@
       "ca": "MathJax no ha pogut interpretar una fórmula, de manera que en el seu lloc s'imprimeix un marcador vermell.",
       "zh": "MathJax无法解析某个公式，因此印出了一个红色占位符。",
       "ar": "لم يتمكن MathJax من تحليل صيغة، فطُبع بدلها عنصر نائب أحمر.",
-      "ja": "MathJaxが数式を解析できなかったため、代わりに赤いプレースホルダーが印字されます。"
+      "ja": "MathJaxが数式を解析できなかったため、代わりに赤いプレースホルダーが印字されます。",
+      "pt": "O MathJax não conseguiu interpretar uma fórmula, então um marcador vermelho é impresso no lugar dela."
     },
     "fix": {
       "en": "Fix the TeX, or escape a dollar sign that was not meant as maths with \\$.",
@@ -594,7 +656,8 @@
       "ca": "Corregeix el TeX, o escriu \\$ on el signe de dòlar no obre una fórmula.",
       "zh": "改正TeX，或把不是用作数学公式的美元符号转义为\\$。",
       "ar": "صحّح شيفرة TeX، أو اهرب علامة دولار لم تُقصد بها الرياضيات بكتابة \\$.",
-      "ja": "TeXを修正するか、数式のつもりではないドル記号を\\$でエスケープしてください。"
+      "ja": "TeXを修正するか、数式のつもりではないドル記号を\\$でエスケープしてください。",
+      "pt": "Corrija o TeX ou escreva \\$ onde o cifrão não abre uma fórmula."
     },
     "docs": {
       "slug": "document-format",
@@ -604,7 +667,8 @@
         "ca": "Fórmules matemàtiques",
         "zh": "数学公式",
         "ar": "الصيغ الرياضية",
-        "ja": "数式"
+        "ja": "数式",
+        "pt": "Fórmulas matemáticas"
       }
     }
   },
@@ -616,7 +680,8 @@
       "ca": "Delimitador matemàtic sense tancar",
       "zh": "数学分隔符未闭合",
       "ar": "محدِّد رياضيات غير مغلق",
-      "ja": "閉じられていない数式の区切り記号"
+      "ja": "閉じられていない数式の区切り記号",
+      "pt": "Delimitador matemático não fechado"
     },
     "cause": {
       "en": "A $ opens inline maths that is never closed, usually because it belongs to a price.",
@@ -624,7 +689,8 @@
       "ca": "Un $ obre una fórmula en línia que no es tanca mai; sol ser el d'un preu.",
       "zh": "某个$开启了行内公式却没有闭合，通常是因为它属于一个价格。",
       "ar": "علامة $ تفتح رياضيات مضمّنة لا تُغلق أبدًا، وعادةً لأنها جزء من سعر.",
-      "ja": "$でインライン数式が始まっていますが、閉じられていません。たいていは価格に付いたドル記号です。"
+      "ja": "$でインライン数式が始まっていますが、閉じられていません。たいていは価格に付いたドル記号です。",
+      "pt": "Um $ abre uma fórmula em linha que nunca é fechada; em geral é o cifrão de um preço."
     },
     "fix": {
       "en": "Write \\$ for a literal dollar, or close the formula on the same line.",
@@ -632,7 +698,8 @@
       "ca": "Escriu \\$ per a un dòlar literal, o tanca la fórmula a la mateixa línia.",
       "zh": "字面的美元符号写成\\$，或在同一行内闭合公式。",
       "ar": "اكتب \\$ لعلامة دولار حرفية، أو أغلق الصيغة في السطر نفسه.",
-      "ja": "ドル記号そのものは\\$と書くか、同じ行で数式を閉じてください。"
+      "ja": "ドル記号そのものは\\$と書くか、同じ行で数式を閉じてください。",
+      "pt": "Escreva \\$ para um cifrão literal ou feche a fórmula na mesma linha."
     },
     "docs": {
       "slug": "document-format",
@@ -642,7 +709,8 @@
         "ca": "Fórmules matemàtiques",
         "zh": "数学公式",
         "ar": "الصيغ الرياضية",
-        "ja": "数式"
+        "ja": "数式",
+        "pt": "Fórmulas matemáticas"
       }
     }
   },
@@ -654,7 +722,8 @@
       "ca": "Fórmula destacada sense tancar",
       "zh": "行间公式未闭合",
       "ar": "صيغة عرض غير مغلقة",
-      "ja": "閉じていないディスプレイ数式"
+      "ja": "閉じていないディスプレイ数式",
+      "pt": "Fórmula destacada não fechada"
     },
     "cause": {
       "en": "A $$ display formula has no closing $$, so the rest of the block is read as maths.",
@@ -662,7 +731,8 @@
       "ca": "Una fórmula destacada oberta amb $$ no té el $$ de tancament, de manera que la resta del bloc es llegeix com a matemàtiques.",
       "zh": "某个$$行间公式没有闭合的$$，因此该块其余部分都被当作数学公式读取。",
       "ar": "صيغة عرض $$ ليس لها $$ إغلاق، فيُقرأ باقي الكتلة رياضيات.",
-      "ja": "$$で始まるディスプレイ数式に閉じの$$がないため、ブロックの残りが数式として読まれます。"
+      "ja": "$$で始まるディスプレイ数式に閉じの$$がないため、ブロックの残りが数式として読まれます。",
+      "pt": "Uma fórmula destacada aberta com $$ não tem o $$ de fechamento, então o resto do bloco é lido como matemática."
     },
     "fix": {
       "en": "Close the formula with $$, on the same line or on a line of its own.",
@@ -670,7 +740,8 @@
       "ca": "Tanca la fórmula amb $$, a la mateixa línia o en una línia a part.",
       "zh": "用$$闭合公式，可以写在同一行，也可以单独占一行。",
       "ar": "أغلق الصيغة بـ $$، في السطر نفسه أو في سطر مستقل.",
-      "ja": "同じ行または独立した行に$$を書いて、数式を閉じてください。"
+      "ja": "同じ行または独立した行に$$を書いて、数式を閉じてください。",
+      "pt": "Feche a fórmula com $$, na mesma linha ou numa linha separada."
     },
     "docs": {
       "slug": "document-format",
@@ -680,7 +751,8 @@
         "ca": "Fórmules matemàtiques",
         "zh": "数学公式",
         "ar": "الصيغ الرياضية",
-        "ja": "数式"
+        "ja": "数式",
+        "pt": "Fórmulas matemáticas"
       }
     }
   },
@@ -692,7 +764,8 @@
       "ca": "Marcador desconegut",
       "zh": "未知占位符",
       "ar": "عنصر نائب غير معروف",
-      "ja": "不明なプレースホルダー"
+      "ja": "不明なプレースホルダー",
+      "pt": "Marcador desconhecido"
     },
     "cause": {
       "en": "A design text uses a {name} placeholder that does not exist, so it prints literally.",
@@ -700,7 +773,8 @@
       "ca": "Un text de disseny fa servir un marcador {nom} que no existeix, de manera que s'imprimeix tal qual.",
       "zh": "某段设计文字用了不存在的{name}占位符，因此它按原样印出。",
       "ar": "نص في التصميم يستعمل عنصرًا نائبًا {name} غير موجود، فيُطبع حرفيًّا.",
-      "ja": "デザインのテキストが存在しない{name}プレースホルダーを使っているため、そのまま文字として印字されます。"
+      "ja": "デザインのテキストが存在しない{name}プレースホルダーを使っているため、そのまま文字として印字されます。",
+      "pt": "Um texto de design usa um marcador {name} que não existe, então ele é impresso literalmente."
     },
     "fix": {
       "en": "Use a supported placeholder ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), or write {{ and }} for literal braces.",
@@ -708,7 +782,8 @@
       "ca": "Fes servir un marcador admès ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), o escriu {{ i }} per a claus literals.",
       "zh": "使用支持的占位符（{pageNumber}、{chapterTitle}、{title}、{attr.x}……），字面花括号写成{{ and }}。",
       "ar": "استعمل عنصرًا نائبًا مدعومًا ({pageNumber}، {chapterTitle}، {title}، {attr.x}…)، أو اكتب {{ و }} لأقواس معقوفة حرفية.",
-      "ja": "対応しているプレースホルダー（{pageNumber}、{chapterTitle}、{title}、{attr.x}…）を使うか、波かっこそのものは{{と}}で書いてください。"
+      "ja": "対応しているプレースホルダー（{pageNumber}、{chapterTitle}、{title}、{attr.x}…）を使うか、波かっこそのものは{{と}}で書いてください。",
+      "pt": "Use um marcador aceito ({pageNumber}, {chapterTitle}, {title}, {attr.x}…) ou escreva {{ e }} para chaves literais."
     },
     "docs": {
       "slug": "configuration",
@@ -718,7 +793,8 @@
         "ca": "Elements de text",
         "zh": "文本元素",
         "ar": "عناصر النص",
-        "ja": "テキスト要素"
+        "ja": "テキスト要素",
+        "pt": "Elementos de texto"
       }
     }
   },
@@ -730,7 +806,8 @@
       "ca": "Falta la metadada del marcador",
       "zh": "占位符缺少元数据",
       "ar": "بيانات العنصر النائب مفقودة",
-      "ja": "プレースホルダーのメタデータなし"
+      "ja": "プレースホルダーのメタデータなし",
+      "pt": "Metadado do marcador ausente"
     },
     "cause": {
       "en": "A placeholder such as {author} or {title} has no value in the document's metadata, so it prints empty.",
@@ -738,7 +815,8 @@
       "ca": "Un marcador com {author} o {title} no té valor a les metadades del document, de manera que s'imprimeix buit.",
       "zh": "{author}或{title}之类的占位符在文档元数据中没有值，因此印出来是空的。",
       "ar": "عنصر نائب مثل {author} أو {title} ليس له قيمة في البيانات الوصفية للمستند، فيُطبع فارغًا.",
-      "ja": "{author}や{title}などのプレースホルダーに対応する値が文書のメタデータにないため、空のまま印字されます。"
+      "ja": "{author}や{title}などのプレースホルダーに対応する値が文書のメタデータにないため、空のまま印字されます。",
+      "pt": "Um marcador como {author} ou {title} não tem valor nos metadados do documento, então é impresso vazio."
     },
     "fix": {
       "en": "Add the value to the frontmatter, quoted, or remove the placeholder.",
@@ -746,7 +824,8 @@
       "ca": "Afegeix el valor al frontmatter, entre cometes, o treu el marcador.",
       "zh": "把这个值加到frontmatter里并加上引号，或删掉该占位符。",
       "ar": "أضف القيمة إلى الترويسة الأمامية (frontmatter) بين علامتي اقتباس، أو أزل العنصر النائب.",
-      "ja": "フロントマターに値を引用符で囲んで追加するか、プレースホルダーを削除してください。"
+      "ja": "フロントマターに値を引用符で囲んで追加するか、プレースホルダーを削除してください。",
+      "pt": "Acrescente o valor ao frontmatter, entre aspas, ou remova o marcador."
     },
     "docs": {
       "slug": "configuration",
@@ -756,7 +835,8 @@
         "ca": "Elements de text",
         "zh": "文本元素",
         "ar": "عناصر النص",
-        "ja": "テキスト要素"
+        "ja": "テキスト要素",
+        "pt": "Elementos de texto"
       }
     }
   },
@@ -768,7 +848,8 @@
       "ca": "Directiva desconeguda",
       "zh": "未知指令",
       "ar": "توجيه غير معروف",
-      "ja": "不明なディレクティブ"
+      "ja": "不明なディレクティブ",
+      "pt": "Diretiva desconhecida"
     },
     "cause": {
       "en": "A :::name line is not one of Postext's directives or containers, so it prints as text.",
@@ -776,7 +857,8 @@
       "ca": "Una línia :::nom no és cap de les directives ni dels contenidors de Postext, de manera que s'imprimeix com a text.",
       "zh": "某个:::name行不是Postext的指令或容器，因此被当作文字印出。",
       "ar": "سطر :::name ليس من توجيهات Postext أو حاوياته، فيُطبع نصًّا.",
-      "ja": ":::nameの行がPostextのディレクティブやコンテナーのどれにも当たらないため、テキストとして印字されます。"
+      "ja": ":::nameの行がPostextのディレクティブやコンテナーのどれにも当たらないため、テキストとして印字されます。",
+      "pt": "Uma linha :::nome não é nenhuma das diretivas nem dos contêineres do Postext, então é impressa como texto."
     },
     "fix": {
       "en": "Check the spelling against the supported names (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns, paper).",
@@ -784,7 +866,8 @@
       "ca": "Compara el nom amb els admesos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns, paper).",
       "zh": "对照支持的名称检查拼写（pagebreak、columnbreak、numbering、space、toc、callout、paragraphs、part、columns、paper）。",
       "ar": "طابق الإملاء مع الأسماء المدعومة (pagebreak، columnbreak، numbering، space، toc، callout، paragraphs، part، columns، paper).",
-      "ja": "対応している名前（pagebreak、columnbreak、numbering、space、toc、callout、paragraphs、part、columns、paper）と綴りを照らし合わせてください。"
+      "ja": "対応している名前（pagebreak、columnbreak、numbering、space、toc、callout、paragraphs、part、columns、paper）と綴りを照らし合わせてください。",
+      "pt": "Compare a grafia com os nomes aceitos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns, paper)."
     },
     "docs": {
       "slug": "document-format",
@@ -794,7 +877,8 @@
         "ca": "Directives",
         "zh": "指令",
         "ar": "التوجيهات",
-        "ja": "ディレクティブ"
+        "ja": "ディレクティブ",
+        "pt": "Diretivas"
       }
     }
   },
@@ -806,7 +890,8 @@
       "ca": "Contenidor sense tancar",
       "zh": "容器未闭合",
       "ar": "حاوية غير مغلقة",
-      "ja": "閉じられていないコンテナー"
+      "ja": "閉じられていないコンテナー",
+      "pt": "Contêiner não fechado"
     },
     "cause": {
       "en": "A ::: fence is never closed, so the container runs to the end of the document.",
@@ -814,7 +899,8 @@
       "ca": "Una tanca ::: no es tanca mai, de manera que el contenidor arriba fins al final del document.",
       "zh": "某个:::围栏从未闭合，因此容器一直延续到文档末尾。",
       "ar": "سياج ::: لا يُغلق أبدًا، فتمتد الحاوية إلى آخر المستند.",
-      "ja": ":::の囲いが閉じられていないため、コンテナーが文書の末尾まで続きます。"
+      "ja": ":::の囲いが閉じられていないため、コンテナーが文書の末尾まで続きます。",
+      "pt": "Uma cerca ::: nunca é fechada, então o contêiner vai até o fim do documento."
     },
     "fix": {
       "en": "Add a line holding a bare ::: where the container ends.",
@@ -822,7 +908,8 @@
       "ca": "Afegeix una línia només amb ::: on acaba el contenidor.",
       "zh": "在容器结束的地方加一行，只写一个:::。",
       "ar": "أضف سطرًا فيه ::: وحدها حيث تنتهي الحاوية.",
-      "ja": "コンテナーの終わる位置に、:::だけを書いた行を加えてください。"
+      "ja": "コンテナーの終わる位置に、:::だけを書いた行を加えてください。",
+      "pt": "Acrescente uma linha só com ::: onde o contêiner termina."
     },
     "docs": {
       "slug": "document-format",
@@ -832,7 +919,8 @@
         "ca": "Contenidors",
         "zh": "容器",
         "ar": "الحاويات",
-        "ja": "コンテナー"
+        "ja": "コンテナー",
+        "pt": "Contêineres"
       }
     }
   },
@@ -844,7 +932,8 @@
       "ca": "Estil de paràgraf desconegut",
       "zh": "未知段落样式",
       "ar": "نمط فقرة غير معروف",
-      "ja": "不明な段落スタイル"
+      "ja": "不明な段落スタイル",
+      "pt": "Estilo de parágrafo desconhecido"
     },
     "cause": {
       "en": "A :::paragraphs container names a style id that paragraphStyles does not define, so its paragraphs are set as body text.",
@@ -852,7 +941,8 @@
       "ca": "Un contenidor :::paragraphs anomena un id d'estil que paragraphStyles no defineix, de manera que els seus paràgrafs es componen com a text de cos.",
       "zh": "某个:::paragraphs容器指定的样式id没有在paragraphStyles中定义，因此其中的段落按正文排。",
       "ar": "حاوية :::paragraphs تسمّي معرّف نمط لا تعرّفه paragraphStyles، فتُنضَّد فقراتها نصًّا أساسيًّا.",
-      "ja": ":::paragraphsコンテナーが、paragraphStylesに定義されていないスタイルidを指定しているため、その段落は本文として組まれます。"
+      "ja": ":::paragraphsコンテナーが、paragraphStylesに定義されていないスタイルidを指定しているため、その段落は本文として組まれます。",
+      "pt": "Um contêiner :::paragraphs cita um id de estilo que paragraphStyles não define, então os parágrafos dele são compostos como texto corrido."
     },
     "fix": {
       "en": "Define the style in paragraphStyles or correct the id in the fence.",
@@ -860,7 +950,8 @@
       "ca": "Defineix l'estil a paragraphStyles o corregeix l'id a la tanca.",
       "zh": "在paragraphStyles中定义该样式，或改正围栏中的id。",
       "ar": "عرّف النمط في paragraphStyles أو صحّح المعرّف في السياج.",
-      "ja": "paragraphStylesにスタイルを定義するか、囲いに書いたidを修正してください。"
+      "ja": "paragraphStylesにスタイルを定義するか、囲いに書いたidを修正してください。",
+      "pt": "Defina o estilo em paragraphStyles ou corrija o id na cerca."
     },
     "docs": {
       "slug": "configuration",
@@ -870,7 +961,8 @@
         "ca": "El contenidor `:::paragraphs`",
         "zh": "`:::paragraphs`容器",
         "ar": "الحاوية `:::paragraphs`",
-        "ja": "`:::paragraphs`コンテナー"
+        "ja": "`:::paragraphs`コンテナー",
+        "pt": "O contêiner `:::paragraphs`"
       }
     }
   },
@@ -882,7 +974,8 @@
       "ca": "Tipus de requadre desconegut",
       "zh": "未知标注框类型",
       "ar": "نوع إطار غير معروف",
-      "ja": "不明な囲みの種類"
+      "ja": "不明な囲みの種類",
+      "pt": "Tipo de boxe desconhecido"
     },
     "cause": {
       "en": "A :::callout names a type that calloutStyles does not define, so it silently takes the first style.",
@@ -890,7 +983,8 @@
       "ca": "Un :::callout anomena un tipus que calloutStyles no defineix, de manera que pren sense avisar el primer estil.",
       "zh": "某个:::callout指定的类型没有在calloutStyles中定义，因此它不加提示地套用第一个样式。",
       "ar": "حاوية :::callout تسمّي نوعًا لا تعرّفه calloutStyles، فيأخذ النمط الأول دون أي تنبيه.",
-      "ja": ":::calloutが、calloutStylesに定義されていないtypeを指定しているため、何の知らせもなく最初のスタイルが使われます。"
+      "ja": ":::calloutが、calloutStylesに定義されていないtypeを指定しているため、何の知らせもなく最初のスタイルが使われます。",
+      "pt": "Um :::callout cita um tipo que calloutStyles não define, então ele assume o primeiro estilo sem avisar."
     },
     "fix": {
       "en": "Define the style or correct the type attribute.",
@@ -898,7 +992,8 @@
       "ca": "Defineix l'estil o corregeix l'atribut type.",
       "zh": "定义该样式，或改正type属性。",
       "ar": "عرّف النمط أو صحّح السمة type.",
-      "ja": "スタイルを定義するか、type属性を修正してください。"
+      "ja": "スタイルを定義するか、type属性を修正してください。",
+      "pt": "Defina o estilo ou corrija o atributo type."
     },
     "docs": {
       "slug": "configuration",
@@ -908,7 +1003,8 @@
         "ca": "El contenidor `:::callout`",
         "zh": "`:::callout`容器",
         "ar": "الحاوية `:::callout`",
-        "ja": "`:::callout`コンテナー"
+        "ja": "`:::callout`コンテナー",
+        "pt": "O contêiner `:::callout`"
       }
     }
   },
@@ -920,7 +1016,8 @@
       "ca": "Estil de xip desconegut",
       "zh": "未知行内标签样式",
       "ar": "نمط شارة غير معروف",
-      "ja": "不明なチップスタイル"
+      "ja": "不明なチップスタイル",
+      "pt": "Estilo de chip desconhecido"
     },
     "cause": {
       "en": "A chip names a style that chipStyles does not define, so it takes the first style.",
@@ -928,7 +1025,8 @@
       "ca": "Un xip anomena un estil que chipStyles no defineix, de manera que pren el primer estil.",
       "zh": "某个行内标签指定的样式没有在chipStyles中定义，因此它套用第一个样式。",
       "ar": "شارة تسمّي نمطًا لا تعرّفه chipStyles، فتأخذ النمط الأول.",
-      "ja": "チップが、chipStylesに定義されていないスタイルを指定しているため、最初のスタイルが使われます。"
+      "ja": "チップが、chipStylesに定義されていないスタイルを指定しているため、最初のスタイルが使われます。",
+      "pt": "Um chip cita um estilo que chipStyles não define, então ele assume o primeiro estilo."
     },
     "fix": {
       "en": "Define the style in chipStyles or correct the style attribute.",
@@ -936,7 +1034,8 @@
       "ca": "Defineix l'estil a chipStyles o corregeix l'atribut style.",
       "zh": "在chipStyles中定义该样式，或改正style属性。",
       "ar": "عرّف النمط في chipStyles أو صحّح السمة style.",
-      "ja": "chipStylesにスタイルを定義するか、style属性を修正してください。"
+      "ja": "chipStylesにスタイルを定義するか、style属性を修正してください。",
+      "pt": "Defina o estilo em chipStyles ou corrija o atributo style."
     },
     "docs": {
       "slug": "configuration",
@@ -946,7 +1045,8 @@
         "ca": "Estils de xip",
         "zh": "行内标签样式",
         "ar": "أنماط الشارات",
-        "ja": "チップスタイル"
+        "ja": "チップスタイル",
+        "pt": "Estilos de chip"
       }
     }
   },
@@ -958,7 +1058,8 @@
       "ca": "Identificador repetit",
       "zh": "标识符重复",
       "ar": "معرّف مستعمل مرتين",
-      "ja": "重複した識別子"
+      "ja": "重複した識別子",
+      "pt": "Identificador repetido"
     },
     "cause": {
       "en": "Two headings or anchors use the same id ({#id}, :anchor{#id}), so references reach the first one only.",
@@ -966,7 +1067,8 @@
       "ca": "Dos títols o àncores fan servir el mateix id ({#id}, :anchor{#id}), de manera que les referències només porten al primer.",
       "zh": "两个标题或锚点使用了同一个id（{#id}、:anchor{#id}），引用只会指向第一个。",
       "ar": "عنوانان أو مرساتان تستعملان المعرّف نفسه ({#id}، :anchor{#id})، فلا تصل الإحالات إلا إلى الأول.",
-      "ja": "2つの見出しまたはアンカーが同じid（{#id}、:anchor{#id}）を使っているため、参照は最初のものにしか届きません。"
+      "ja": "2つの見出しまたはアンカーが同じid（{#id}、:anchor{#id}）を使っているため、参照は最初のものにしか届きません。",
+      "pt": "Dois títulos ou âncoras usam o mesmo id ({#id}, :anchor{#id}), então as referências levam só ao primeiro."
     },
     "fix": {
       "en": "Give each heading or anchor its own id.",
@@ -974,7 +1076,8 @@
       "ca": "Dona a cada títol o àncora un id propi.",
       "zh": "为每个标题或锚点使用各自的id。",
       "ar": "أعطِ كل عنوان أو مرساة معرّفًا خاصًّا به.",
-      "ja": "見出しやアンカーごとに固有のidを付けてください。"
+      "ja": "見出しやアンカーごとに固有のidを付けてください。",
+      "pt": "Dê a cada título ou âncora um id próprio."
     },
     "docs": {
       "slug": "document-format",
@@ -984,7 +1087,8 @@
         "ca": "Referències creuades i àncores",
         "zh": "交叉引用与锚点",
         "ar": "الإحالات والمراسي",
-        "ja": "相互参照とアンカー"
+        "ja": "相互参照とアンカー",
+        "pt": "Referências cruzadas e âncoras"
       }
     }
   },
@@ -996,7 +1100,8 @@
       "ca": "Clau de cita desconeguda",
       "zh": "未知引用键",
       "ar": "مفتاح استشهاد غير معروف",
-      "ja": "不明な引用キー"
+      "ja": "不明な引用キー",
+      "pt": "Chave de citação desconhecida"
     },
     "cause": {
       "en": "A citation names a key that no reference of the book defines.",
@@ -1004,7 +1109,8 @@
       "ca": "Una cita anomena una clau que cap referència del llibre no defineix.",
       "zh": "某处引用的键在书中没有对应的参考文献。",
       "ar": "استشهاد يسمّي مفتاحًا لا يعرّفه أي مرجع في الكتاب.",
-      "ja": "引用が、本のどの文献にも定義されていないキーを指定しています。"
+      "ja": "引用が、本のどの文献にも定義されていないキーを指定しています。",
+      "pt": "Uma citação usa uma chave que nenhuma referência do livro define."
     },
     "fix": {
       "en": "Add the reference (front matter references or a :::references block) or correct the key.",
@@ -1012,7 +1118,8 @@
       "ca": "Afegeix la referència (references al front matter o un bloc :::references) o corregeix la clau.",
       "zh": "添加该参考文献（front matter中的references或:::references块），或改正键名。",
       "ar": "أضف المرجع (references في الترويسة الأمامية أو كتلة :::references) أو صحّح المفتاح.",
-      "ja": "文献を追加する（フロントマターのreferences、または:::referencesブロック）か、キーを修正してください。"
+      "ja": "文献を追加する（フロントマターのreferences、または:::referencesブロック）か、キーを修正してください。",
+      "pt": "Acrescente a referência (references no front matter ou um bloco :::references) ou corrija a chave."
     },
     "docs": {
       "slug": "document-format",
@@ -1022,7 +1129,8 @@
         "ca": "Citacions i bibliografia",
         "zh": "引用与参考文献",
         "ar": "الاستشهادات وقائمة المراجع",
-        "ja": "引用と参考文献"
+        "ja": "引用と参考文献",
+        "pt": "Citações e bibliografia"
       }
     }
   },
@@ -1034,7 +1142,8 @@
       "ca": "Cites sense format",
       "zh": "引用未排版",
       "ar": "الاستشهادات غير منسّقة",
-      "ja": "整形されていない引用"
+      "ja": "整形されていない引用",
+      "pt": "Citações sem formatação"
     },
     "cause": {
       "en": "The text cites works but no citation engine is registered, so citations print as written.",
@@ -1042,7 +1151,8 @@
       "ca": "El text cita obres però no hi ha cap motor de cites registrat, de manera que les cites s'imprimeixen tal com es van escriure.",
       "zh": "正文引用了文献，但没有注册引用引擎，因此引用按原文印出。",
       "ar": "النص يستشهد بأعمال لكن لا محرّك استشهادات مسجَّلًا، فتُطبع الاستشهادات كما كُتبت.",
-      "ja": "本文で文献を引用していますが、引用エンジンが登録されていないため、引用は書いたとおりに印字されます。"
+      "ja": "本文で文献を引用していますが、引用エンジンが登録されていないため、引用は書いたとおりに印字されます。",
+      "pt": "O texto cita obras, mas nenhum motor de citações está registrado, então as citações são impressas como foram escritas."
     },
     "fix": {
       "en": "Import postext-citeproc/register before laying the document out.",
@@ -1050,7 +1160,8 @@
       "ca": "Importa postext-citeproc/register abans de compondre el document.",
       "zh": "排版前导入 postext-citeproc/register。",
       "ar": "استورد postext-citeproc/register قبل إخراج المستند.",
-      "ja": "文書をレイアウトする前にpostext-citeproc/registerをインポートしてください。"
+      "ja": "文書をレイアウトする前にpostext-citeproc/registerをインポートしてください。",
+      "pt": "Importe postext-citeproc/register antes de fazer o layout do documento."
     },
     "docs": {
       "slug": "document-format",
@@ -1060,7 +1171,8 @@
         "ca": "Citacions i bibliografia",
         "zh": "引用与参考文献",
         "ar": "الاستشهادات وقائمة المراجع",
-        "ja": "引用と参考文献"
+        "ja": "引用と参考文献",
+        "pt": "Citações e bibliografia"
       }
     }
   },
@@ -1072,7 +1184,8 @@
       "ca": "Referències il·legibles",
       "zh": "参考文献无法读取",
       "ar": "مراجع غير مقروءة",
-      "ja": "読み取れない文献"
+      "ja": "読み取れない文献",
+      "pt": "Referências ilegíveis"
     },
     "cause": {
       "en": "A :::references block holds JSON or YAML that does not parse, so its references are left out.",
@@ -1080,7 +1193,8 @@
       "ca": "Un bloc :::references conté JSON o YAML que no es pot llegir, de manera que les seves referències queden fora.",
       "zh": ":::references块中的JSON或YAML无法解析，其中的参考文献被略去。",
       "ar": "كتلة :::references تحوي JSON أو YAML لا يمكن تحليله، فتُستبعد مراجعها.",
-      "ja": ":::referencesブロックのJSONまたはYAMLが解析できないため、その文献は除外されます。"
+      "ja": ":::referencesブロックのJSONまたはYAMLが解析できないため、その文献は除外されます。",
+      "pt": "Um bloco :::references contém JSON ou YAML que não pode ser lido, então as referências dele ficam de fora."
     },
     "fix": {
       "en": "Check the block's format attribute and its syntax.",
@@ -1088,7 +1202,8 @@
       "ca": "Revisa l'atribut format del bloc i la seva sintaxi.",
       "zh": "检查该块的format属性及其语法。",
       "ar": "تحقق من السمة format للكتلة ومن صياغتها.",
-      "ja": "ブロックのformat属性と構文を確認してください。"
+      "ja": "ブロックのformat属性と構文を確認してください。",
+      "pt": "Confira o atributo format do bloco e a sintaxe dele."
     },
     "docs": {
       "slug": "document-format",
@@ -1098,7 +1213,8 @@
         "ca": "Citacions i bibliografia",
         "zh": "引用与参考文献",
         "ar": "الاستشهادات وقائمة المراجع",
-        "ja": "引用と参考文献"
+        "ja": "引用と参考文献",
+        "pt": "Citações e bibliografia"
       }
     }
   },
@@ -1110,7 +1226,8 @@
       "ca": "Nota sense definició",
       "zh": "脚注缺少定义",
       "ar": "حاشية سفلية بلا تعريف",
-      "ja": "定義のない脚注"
+      "ja": "定義のない脚注",
+      "pt": "Nota de rodapé sem definição"
     },
     "cause": {
       "en": "A [^id] marker cites a note that no [^id]: paragraph defines, so the number prints over an empty note.",
@@ -1118,7 +1235,8 @@
       "ca": "Una marca [^id] cita una nota que cap paràgraf [^id]: no defineix, de manera que el número s'imprimeix sobre una nota buida.",
       "zh": "某个[^id]标记引用的注释没有对应的[^id]:段落来定义，因此编号印在一条空注释上。",
       "ar": "علامة [^id] تستشهد بحاشية لا تعرّفها أي فقرة [^id]:، فيُطبع الرقم فوق حاشية فارغة.",
-      "ja": "[^id]の合印が、どの[^id]:段落にも定義されていない注を指しているため、空の注に番号だけが印字されます。"
+      "ja": "[^id]の合印が、どの[^id]:段落にも定義されていない注を指しているため、空の注に番号だけが印字されます。",
+      "pt": "Uma chamada [^id] cita uma nota que nenhum parágrafo [^id]: define, então o número é impresso sobre uma nota vazia."
     },
     "fix": {
       "en": "Add a [^id]: paragraph with the note, or correct the id of the marker.",
@@ -1126,7 +1244,8 @@
       "ca": "Afegeix un paràgraf [^id]: amb la nota o corregeix l'id de la marca.",
       "zh": "加一个写有注释内容的[^id]:段落，或改正标记的id。",
       "ar": "أضف فقرة [^id]: فيها نص الحاشية، أو صحّح معرّف العلامة.",
-      "ja": "注の内容を書いた[^id]:段落を加えるか、合印のidを修正してください。"
+      "ja": "注の内容を書いた[^id]:段落を加えるか、合印のidを修正してください。",
+      "pt": "Acrescente um parágrafo [^id]: com a nota ou corrija o id da chamada."
     },
     "docs": {
       "slug": "configuration",
@@ -1136,7 +1255,8 @@
         "ca": "Notes a peu de pàgina",
         "zh": "脚注",
         "ar": "الحواشي السفلية",
-        "ja": "脚注"
+        "ja": "脚注",
+        "pt": "Notas de rodapé"
       }
     }
   },
@@ -1148,7 +1268,8 @@
       "ca": "Nota sense citar",
       "zh": "脚注从未被引用",
       "ar": "حاشية سفلية لا يُستشهد بها",
-      "ja": "参照されていない脚注"
+      "ja": "参照されていない脚注",
+      "pt": "Nota de rodapé nunca citada"
     },
     "cause": {
       "en": "A [^id]: definition has no marker in the text, so the note is not set.",
@@ -1156,7 +1277,8 @@
       "ca": "Una definició [^id]: no té marca al text, de manera que la nota no es compon.",
       "zh": "某个[^id]:定义在正文中没有标记，因此这条注释不会排出。",
       "ar": "تعريف [^id]: ليس له علامة في النص، فلا تُنضَّد الحاشية.",
-      "ja": "[^id]:の定義に対応する合印が本文にないため、その注は組まれません。"
+      "ja": "[^id]:の定義に対応する合印が本文にないため、その注は組まれません。",
+      "pt": "Uma definição [^id]: não tem chamada no texto, então a nota não é composta."
     },
     "fix": {
       "en": "Cite it with [^id] where it belongs, or delete the definition.",
@@ -1164,7 +1286,8 @@
       "ca": "Cita-la amb [^id] on correspongui o esborra la definició.",
       "zh": "在合适的位置用[^id]引用它，或删除这条定义。",
       "ar": "استشهد بها بـ [^id] في موضعها، أو احذف التعريف.",
-      "ja": "しかるべき位置に[^id]を書いて参照するか、定義を削除してください。"
+      "ja": "しかるべき位置に[^id]を書いて参照するか、定義を削除してください。",
+      "pt": "Cite a nota com [^id] onde ela deve ficar ou exclua a definição."
     },
     "docs": {
       "slug": "configuration",
@@ -1174,7 +1297,8 @@
         "ca": "Notes a peu de pàgina",
         "zh": "脚注",
         "ar": "الحواشي السفلية",
-        "ja": "脚注"
+        "ja": "脚注",
+        "pt": "Notas de rodapé"
       }
     }
   },
@@ -1186,7 +1310,8 @@
       "ca": "Els xips toquen la línia següent",
       "zh": "行内标签碰到下一行",
       "ar": "الشارات تلامس السطر التالي",
-      "ja": "チップが隣の行に接触"
+      "ja": "チップが隣の行に接触",
+      "pt": "Chips encostam na linha seguinte"
     },
     "cause": {
       "en": "A chip style's box is taller than the line pitch, so chips on consecutive lines touch.",
@@ -1194,7 +1319,8 @@
       "ca": "La caixa d'un estil de xip és més alta que l'interlineat, de manera que els xips de línies seguides es toquen.",
       "zh": "某个行内标签样式的框比行距还高，因此相邻两行的标签会相碰。",
       "ar": "صندوق نمط الشارة أطول من خطوة السطر، فتتلامس الشارات في الأسطر المتتالية.",
-      "ja": "チップスタイルのボックスが行送りより高いため、連続する行のチップどうしが接します。"
+      "ja": "チップスタイルのボックスが行送りより高いため、連続する行のチップどうしが接します。",
+      "pt": "A caixa de um estilo de chip é mais alta que a entrelinha, então os chips de linhas consecutivas se tocam."
     },
     "fix": {
       "en": "Reduce the chip's vertical padding, outline or size, or increase the leading.",
@@ -1202,7 +1328,8 @@
       "ca": "Redueix el farciment vertical, el contorn o el cos del xip, o augmenta l'interlineat.",
       "zh": "减小标签的竖向内边距、轮廓或尺寸，或加大行距。",
       "ar": "قلّل الحشو الرأسي للشارة أو حدّها الخارجي أو حجمها، أو زد تباعد الأسطر.",
-      "ja": "チップの上下のパディング、輪郭線、サイズを小さくするか、行送りを大きくしてください。"
+      "ja": "チップの上下のパディング、輪郭線、サイズを小さくするか、行送りを大きくしてください。",
+      "pt": "Reduza o preenchimento vertical, o contorno ou o tamanho do chip, ou aumente a entrelinha."
     },
     "docs": {
       "slug": "configuration",
@@ -1212,7 +1339,8 @@
         "ca": "Estils de xip",
         "zh": "行内标签样式",
         "ar": "أنماط الشارات",
-        "ja": "チップスタイル"
+        "ja": "チップスタイル",
+        "pt": "Estilos de chip"
       }
     }
   },
@@ -1224,7 +1352,8 @@
       "ca": "Format de numeració no vàlid",
       "zh": "编号格式无效",
       "ar": "صيغة ترقيم غير صالحة",
-      "ja": "無効な番号書式"
+      "ja": "無効な番号書式",
+      "pt": "Formato de numeração inválido"
     },
     "cause": {
       "en": "A :::numbering format is not one of decimal, lower-roman, upper-roman, lower-alpha or upper-alpha.",
@@ -1232,7 +1361,8 @@
       "ca": "El format d'un :::numbering no és cap de decimal, lower-roman, upper-roman, lower-alpha o upper-alpha.",
       "zh": "某个:::numbering的format不是decimal、lower-roman、upper-roman、lower-alpha或upper-alpha之一。",
       "ar": "صيغة :::numbering ليست واحدة من decimal أو lower-roman أو upper-roman أو lower-alpha أو upper-alpha.",
-      "ja": ":::numberingのformatが、decimal、lower-roman、upper-roman、lower-alpha、upper-alphaのいずれでもありません。"
+      "ja": ":::numberingのformatが、decimal、lower-roman、upper-roman、lower-alpha、upper-alphaのいずれでもありません。",
+      "pt": "O formato de um :::numbering não é nenhum de decimal, lower-roman, upper-roman, lower-alpha ou upper-alpha."
     },
     "fix": {
       "en": "Use one of the five page-number formats; lists and resources spell theirs differently.",
@@ -1240,7 +1370,8 @@
       "ca": "Fes servir un dels cinc formats de número de pàgina; les llistes i els recursos els escriuen d'una altra manera.",
       "zh": "使用这五种页码格式之一；列表和资源的格式写法不同。",
       "ar": "استعمل إحدى صيغ أرقام الصفحات الخمس؛ فالقوائم والموارد تكتب صيغها بطريقة مختلفة.",
-      "ja": "ノンブル用の5つの形式のいずれかを使ってください。リストやリソースでは形式の綴りが異なります。"
+      "ja": "ノンブル用の5つの形式のいずれかを使ってください。リストやリソースでは形式の綴りが異なります。",
+      "pt": "Use um dos cinco formatos de número de página; listas e recursos escrevem os deles de outro jeito."
     },
     "docs": {
       "slug": "document-format",
@@ -1250,7 +1381,8 @@
         "ca": "`:::numbering`",
         "zh": "`:::numbering`",
         "ar": "`:::numbering`",
-        "ja": "`:::numbering`"
+        "ja": "`:::numbering`",
+        "pt": "`:::numbering`"
       }
     }
   },
@@ -1262,7 +1394,8 @@
       "ca": "Inici de numeració no vàlid",
       "zh": "编号起始值无效",
       "ar": "بداية ترقيم غير صالحة",
-      "ja": "numberingの無効なstartAt"
+      "ja": "numberingの無効なstartAt",
+      "pt": "Início de numeração inválido"
     },
     "cause": {
       "en": "A :::numbering startAt is not a whole number of 1 or more.",
@@ -1270,7 +1403,8 @@
       "ca": "L'startAt d'un :::numbering no és un nombre enter igual o superior a 1.",
       "zh": "某个:::numbering的startAt不是大于等于1的整数。",
       "ar": "قيمة startAt في :::numbering ليست عددًا صحيحًا يساوي 1 أو أكثر.",
-      "ja": ":::numberingのstartAtが1以上の整数ではありません。"
+      "ja": ":::numberingのstartAtが1以上の整数ではありません。",
+      "pt": "O startAt de um :::numbering não é um número inteiro igual ou maior que 1."
     },
     "fix": {
       "en": "Give startAt a whole number, such as startAt=1.",
@@ -1278,7 +1412,8 @@
       "ca": "Dona a startAt un nombre enter, per exemple startAt=1.",
       "zh": "给startAt一个整数，比如startAt=1。",
       "ar": "أعطِ startAt عددًا صحيحًا، مثل startAt=1.",
-      "ja": "startAtにはstartAt=1のように整数を指定してください。"
+      "ja": "startAtにはstartAt=1のように整数を指定してください。",
+      "pt": "Dê a startAt um número inteiro, por exemplo startAt=1."
     },
     "docs": {
       "slug": "document-format",
@@ -1288,7 +1423,8 @@
         "ca": "`:::numbering`",
         "zh": "`:::numbering`",
         "ar": "`:::numbering`",
-        "ja": "`:::numbering`"
+        "ja": "`:::numbering`",
+        "pt": "`:::numbering`"
       }
     }
   },
@@ -1300,7 +1436,8 @@
       "ca": "Paritat de salt de pàgina no vàlida",
       "zh": "换页奇偶设置无效",
       "ar": "زوجية فاصل صفحة غير صالحة",
-      "ja": "改ページの無効な奇偶指定"
+      "ja": "改ページの無効な奇偶指定",
+      "pt": "Paridade de quebra de página inválida"
     },
     "cause": {
       "en": "A :::pagebreak parity is not odd, even, always-odd or always-even.",
@@ -1308,7 +1445,8 @@
       "ca": "La paritat d'un :::pagebreak no és odd, even, always-odd ni always-even.",
       "zh": "某个:::pagebreak的parity不是odd、even、always-odd或always-even。",
       "ar": "قيمة parity في :::pagebreak ليست odd أو even أو always-odd أو always-even.",
-      "ja": ":::pagebreakのparityが、odd、even、always-odd、always-evenのいずれでもありません。"
+      "ja": ":::pagebreakのparityが、odd、even、always-odd、always-evenのいずれでもありません。",
+      "pt": "A paridade de um :::pagebreak não é odd, even, always-odd nem always-even."
     },
     "fix": {
       "en": "Use odd or even to pad only when needed, always-odd or always-even to force a separator blank.",
@@ -1316,7 +1454,8 @@
       "ca": "Fes servir odd o even per omplir només quan calgui, i always-odd o always-even per forçar una pàgina en blanc de separació.",
       "zh": "用odd或even只在需要时补空白页，用always-odd或always-even强制插入一张隔页空白页。",
       "ar": "استعمل odd أو even لإضافة صفحة فارغة عند الحاجة فقط، وalways-odd أو always-even لفرض صفحة فارغة فاصلة.",
-      "ja": "必要なときだけ白ページを補うならoddまたはeven、区切りの白ページを必ず入れるならalways-oddまたはalways-evenを使ってください。"
+      "ja": "必要なときだけ白ページを補うならoddまたはeven、区切りの白ページを必ず入れるならalways-oddまたはalways-evenを使ってください。",
+      "pt": "Use odd ou even para completar só quando necessário, e always-odd ou always-even para forçar uma página em branco de separação."
     },
     "docs": {
       "slug": "document-format",
@@ -1326,7 +1465,8 @@
         "ca": "`:::pagebreak`",
         "zh": "`:::pagebreak`",
         "ar": "`:::pagebreak`",
-        "ja": "`:::pagebreak`"
+        "ja": "`:::pagebreak`",
+        "pt": "`:::pagebreak`"
       }
     }
   },
@@ -1338,7 +1478,8 @@
       "ca": "Mida d'espai no vàlida",
       "zh": "间距大小无效",
       "ar": "حجم فراغ غير صالح",
-      "ja": "スペースの無効な大きさ"
+      "ja": "スペースの無効な大きさ",
+      "pt": "Tamanho de espaço inválido"
     },
     "cause": {
       "en": "A :::space lines value is not a number above 0 and at most 20, so one line is used instead.",
@@ -1346,7 +1487,8 @@
       "ca": "El valor lines d'un :::space no és un nombre més gran que 0 i no més gran que 20, de manera que es fa servir una línia.",
       "zh": "某个:::space的lines值不是大于0且不超过20的数，因此改用一行。",
       "ar": "قيمة lines في :::space ليست عددًا أكبر من 0 ولا يتجاوز 20، فيُستعمل سطر واحد بدلها.",
-      "ja": ":::spaceのlinesの値が0より大きく20以下の数ではないため、代わりに1行分が使われます。"
+      "ja": ":::spaceのlinesの値が0より大きく20以下の数ではないため、代わりに1行分が使われます。",
+      "pt": "O valor lines de um :::space não é um número maior que 0 e no máximo 20, então é usada uma linha."
     },
     "fix": {
       "en": "Give lines a number between 0 and 20; fractions such as lines=0.5 are allowed.",
@@ -1354,7 +1496,8 @@
       "ca": "Dona a lines un nombre entre 0 i 20; s'admeten fraccions com lines=0.5.",
       "zh": "给lines一个0到20之间的数；允许用lines=0.5这样的小数。",
       "ar": "أعطِ lines عددًا بين 0 و20؛ والكسور مثل lines=0.5 مسموحة.",
-      "ja": "linesには0から20までの数を指定してください。lines=0.5のような小数も使えます。"
+      "ja": "linesには0から20までの数を指定してください。lines=0.5のような小数も使えます。",
+      "pt": "Dê a lines um número entre 0 e 20; frações como lines=0.5 são aceitas."
     },
     "docs": {
       "slug": "document-format",
@@ -1364,7 +1507,8 @@
         "ca": "`:::space`",
         "zh": "`:::space`",
         "ar": "`:::space`",
-        "ja": "`:::space`"
+        "ja": "`:::space`",
+        "pt": "`:::space`"
       }
     }
   },
@@ -1376,7 +1520,8 @@
       "ca": "Paritat de salt de títol no vàlida",
       "zh": "标题换页奇偶设置无效",
       "ar": "زوجية فاصل العنوان غير صالحة",
-      "ja": "不正な見出し前改ページの奇偶指定"
+      "ja": "不正な見出し前改ページの奇偶指定",
+      "pt": "Paridade de quebra de título inválida"
     },
     "cause": {
       "en": "A heading level's breakBefore.parity is not a supported value.",
@@ -1384,7 +1529,8 @@
       "ca": "El breakBefore.parity d'un nivell de títol no és un valor admès.",
       "zh": "某级标题的breakBefore.parity不是支持的值。",
       "ar": "قيمة breakBefore.parity لمستوى عنوان ليست قيمة مدعومة.",
-      "ja": "見出しレベルのbreakBefore.parityが、対応していない値です。"
+      "ja": "見出しレベルのbreakBefore.parityが、対応していない値です。",
+      "pt": "O breakBefore.parity de um nível de título não é um valor aceito."
     },
     "fix": {
       "en": "Use any, odd, even, always-odd or always-even.",
@@ -1392,7 +1538,8 @@
       "ca": "Fes servir any, odd, even, always-odd o always-even.",
       "zh": "使用any、odd、even、always-odd或always-even。",
       "ar": "استعمل any أو odd أو even أو always-odd أو always-even.",
-      "ja": "any、odd、even、always-odd、always-evenのいずれかを使ってください。"
+      "ja": "any、odd、even、always-odd、always-evenのいずれかを使ってください。",
+      "pt": "Use any, odd, even, always-odd ou always-even."
     },
     "docs": {
       "slug": "configuration",
@@ -1402,7 +1549,8 @@
         "ca": "Saltar abans",
         "zh": "前置分页",
         "ar": "الفاصل قبل العنوان",
-        "ja": "前で改ページ"
+        "ja": "前で改ページ",
+        "pt": "Quebra antes"
       }
     }
   },
@@ -1414,7 +1562,8 @@
       "ca": "Cascada de paritat",
       "zh": "奇偶连锁空白页",
       "ar": "تتابع فواصل الزوجية",
-      "ja": "奇偶指定の連鎖"
+      "ja": "奇偶指定の連鎖",
+      "pt": "Cascata de paridade"
     },
     "cause": {
       "en": "Parity breaks stack up and produce more than two blank pages in a row.",
@@ -1422,7 +1571,8 @@
       "ca": "Els salts amb paritat s'acumulen i produeixen més de dues pàgines en blanc seguides.",
       "zh": "奇偶换页层层叠加，连续产生了两页以上的空白页。",
       "ar": "فواصل الزوجية تتراكم وتُنتج أكثر من صفحتين فارغتين متتاليتين.",
-      "ja": "奇偶指定の改ページが重なり、白ページが3ページ以上続いています。"
+      "ja": "奇偶指定の改ページが重なり、白ページが3ページ以上続いています。",
+      "pt": "Quebras com paridade se acumulam e produzem mais de duas páginas em branco seguidas."
     },
     "fix": {
       "en": "Review always-odd breaks and breakBefore parities; for short chapters, parity any usually avoids the blanks.",
@@ -1430,7 +1580,8 @@
       "ca": "Revisa els salts always-odd i les paritats de breakBefore; en capítols curts, la paritat any sol evitar aquestes pàgines en blanc.",
       "zh": "检查always-odd换页和breakBefore的奇偶设置；章较短时，parity设为any通常可以避免这些空白页。",
       "ar": "راجع فواصل always-odd وقيم الزوجية في breakBefore؛ وللفصول القصيرة، تتجنب الزوجية any عادةً الصفحات الفارغة.",
-      "ja": "always-oddの改ページとbreakBeforeの奇偶指定を見直してください。短い章では、parityをanyにすると白ページを避けられることが多くあります。"
+      "ja": "always-oddの改ページとbreakBeforeの奇偶指定を見直してください。短い章では、parityをanyにすると白ページを避けられることが多くあります。",
+      "pt": "Revise as quebras always-odd e as paridades de breakBefore; em capítulos curtos, a paridade any costuma evitar essas páginas em branco."
     },
     "docs": {
       "slug": "configuration",
@@ -1440,7 +1591,8 @@
         "ca": "Saltar abans",
         "zh": "前置分页",
         "ar": "الفاصل قبل العنوان",
-        "ja": "前で改ページ"
+        "ja": "前で改ページ",
+        "pt": "Quebra antes"
       }
     }
   },
@@ -1452,7 +1604,8 @@
       "ca": "Etiquetes alfabètiques més enllà de la Z",
       "zh": "字母页码超过Z",
       "ar": "تسميات صفحات أبجدية بعد Z",
-      "ja": "Zを超えるアルファベットのページラベル"
+      "ja": "Zを超えるアルファベットのページラベル",
+      "pt": "Rótulos alfabéticos de página além do Z"
     },
     "cause": {
       "en": "Alphabetic page numbering runs past 26 pages, so the PDF has to spell labels such as AA page by page.",
@@ -1460,7 +1613,8 @@
       "ca": "La numeració alfabètica de pàgines passa de 26, de manera que el PDF ha d'escriure etiquetes com AA pàgina a pàgina.",
       "zh": "字母页码超过了26页，因此PDF只能逐页写出AA这样的标签。",
       "ar": "الترقيم الأبجدي للصفحات يتجاوز 26 صفحة، فيضطر ملف PDF إلى كتابة تسميات مثل AA صفحةً صفحة.",
-      "ja": "アルファベットのノンブルが26ページを超えるため、PDFではAAなどのラベルを1ページずつ記述する必要があります。"
+      "ja": "アルファベットのノンブルが26ページを超えるため、PDFではAAなどのラベルを1ページずつ記述する必要があります。",
+      "pt": "A numeração alfabética de páginas passa de 26 páginas, então o PDF precisa escrever rótulos como AA página por página."
     },
     "fix": {
       "en": "Switch to roman or decimal numbering for long runs.",
@@ -1468,7 +1622,8 @@
       "ca": "Passa a numeració romana o decimal en els trams llargs.",
       "zh": "长篇幅改用罗马数字或阿拉伯数字页码。",
       "ar": "انتقل إلى الترقيم الروماني أو العشري في السلاسل الطويلة.",
-      "ja": "長く続く範囲では、ローマ数字かアラビア数字の番号に切り替えてください。"
+      "ja": "長く続く範囲では、ローマ数字かアラビア数字の番号に切り替えてください。",
+      "pt": "Passe para numeração romana ou decimal nas sequências longas."
     },
     "docs": {
       "slug": "configuration",
@@ -1478,7 +1633,8 @@
         "ca": "Numeració",
         "zh": "页码编号",
         "ar": "ترقيم الصفحات",
-        "ja": "ノンブル"
+        "ja": "ノンブル",
+        "pt": "Numeração"
       }
     }
   },
@@ -1490,7 +1646,8 @@
       "ca": "El requadre desborda la seva columna",
       "zh": "标注框溢出所在栏",
       "ar": "إطار يفيض عن عموده",
-      "ja": "段からはみ出す囲み"
+      "ja": "段からはみ出す囲み",
+      "pt": "Boxe transborda a coluna"
     },
     "cause": {
       "en": "A box that no cut can split (a figure, table or :::columns group taller than the column, or too high splitMinLines) was placed overflowing; the engine records it in doc.warnings and the Sandbox lists it.",
@@ -1498,7 +1655,8 @@
       "ca": "Una caixa que cap tall no pot partir (una figura, una taula o un grup :::columns més alt que la columna, o un splitMinLines massa alt) s'ha col·locat desbordada; el motor ho anota a doc.warnings i el Sandbox ho mostra.",
       "zh": "某个无法在任何位置切开的框（比栏还高的图、表或:::columns组，或splitMinLines设得太高）被放置后溢出；引擎把它记在doc.warnings中，沙盒会列出它。",
       "ar": "صندوق لا يمكن لأي قطع أن يقسمه (شكل أو جدول أو مجموعة :::columns أطول من العمود، أو قيمة splitMinLines مرتفعة جدًّا) وُضع فائضًا؛ يسجّله المحرّك في doc.warnings ويعرضه Sandbox في قائمته.",
-      "ja": "どこでも分割できないボックス（段より高い図、表、:::columnsグループ、または大きすぎるsplitMinLines）が、はみ出した状態で配置されました。エンジンはこれをdoc.warningsに記録し、Sandboxが一覧に表示します。"
+      "ja": "どこでも分割できないボックス（段より高い図、表、:::columnsグループ、または大きすぎるsplitMinLines）が、はみ出した状態で配置されました。エンジンはこれをdoc.warningsに記録し、Sandboxが一覧に表示します。",
+      "pt": "Uma caixa que nenhum corte consegue dividir (uma figura, uma tabela ou um grupo :::columns mais alto que a coluna, ou um splitMinLines alto demais) foi colocada transbordando; o motor registra isso em doc.warnings e o Sandbox mostra na lista."
     },
     "fix": {
       "en": "Shorten the box, let it split with keepTogether: false, lower splitMinLines, or give it another span.",
@@ -1506,7 +1664,8 @@
       "ca": "Escurça la caixa, deixa que es parteixi amb keepTogether: false, abaixa splitMinLines o dona-li un altre span.",
       "zh": "缩短这个框、用keepTogether: false让它可以拆分、调低splitMinLines，或换一种通栏设置。",
       "ar": "قصّر الصندوق، أو اسمح بتقسيمه بـ keepTogether: false، أو اخفض splitMinLines، أو أعطِه امتدادًا آخر.",
-      "ja": "ボックスを短くする、keepTogether: falseで分割を許す、splitMinLinesを下げる、または別のスパンを指定してください。"
+      "ja": "ボックスを短くする、keepTogether: falseで分割を許す、splitMinLinesを下げる、または別のスパンを指定してください。",
+      "pt": "Encurte a caixa, deixe que ela se divida com keepTogether: false, reduza splitMinLines ou dê a ela outro span."
     },
     "docs": {
       "slug": "configuration",
@@ -1516,7 +1675,8 @@
         "ca": "El contenidor `:::callout`",
         "zh": "`:::callout`容器",
         "ar": "الحاوية `:::callout`",
-        "ja": "`:::callout`コンテナー"
+        "ja": "`:::callout`コンテナー",
+        "pt": "O contêiner `:::callout`"
       }
     }
   },
@@ -1528,7 +1688,8 @@
       "ca": "Disseny de títol tallat",
       "zh": "标题设计被截断",
       "ar": "تصميم العنوان مقطوع",
-      "ja": "見出しのデザインの欠け"
+      "ja": "見出しのデザインの欠け",
+      "pt": "Design de título cortado"
     },
     "cause": {
       "en": "A heading's design is taller than the page (or, for an in-column design, than its column), so the text of the design that lies past the foot is cut off.",
@@ -1536,7 +1697,8 @@
       "ca": "El disseny d'un títol és més alt que la pàgina (o, si és un disseny de columna, que la seva columna), de manera que el text del disseny que queda per sota del peu es talla.",
       "zh": "某个标题的设计比页面高（对于栏内设计，是比所在栏高），因此设计中超出页脚的文字被截掉。",
       "ar": "تصميم عنوان أطول من الصفحة (أو من عموده إذا كان تصميمًا داخل العمود)، فيُقطع نص التصميم الواقع بعد أسفل الصفحة.",
-      "ja": "見出しのデザインがページより（段内のデザインでは段より）高いため、デザインのうち下端を越えた部分のテキストが切れてしまいます。"
+      "ja": "見出しのデザインがページより（段内のデザインでは段より）高いため、デザインのうち下端を越えた部分のテキストが切れてしまいます。",
+      "pt": "O design de um título é mais alto que a página (ou, num design dentro da coluna, que a coluna), então o texto do design que passa do pé da página é cortado."
     },
     "fix": {
       "en": "Shorten the design (smaller `minHeight`, a shorter lead or a smaller picture), or give the page more room with a larger trim or smaller margins.",
@@ -1544,7 +1706,8 @@
       "ca": "Escurça el disseny (un `minHeight` menor, una entradeta més curta o una imatge més petita), o dona més espai a la pàgina amb un format més gran o marges més estrets.",
       "zh": "缩短设计（调小`minHeight`、缩短导语或换小一些的图片），或者用更大的成品尺寸或更窄的页边距给页面留出更多空间。",
       "ar": "قصّر التصميم (قيمة `minHeight` أصغر، أو مقدمة أقصر، أو صورة أصغر)، أو امنح الصفحة مساحة أكبر بقطع أكبر أو هوامش أصغر.",
-      "ja": "デザインを短くする（`minHeight`を小さくする、リードを短くする、画像を小さくする）か、仕上がりサイズを大きくするか余白を小さくして、ページに余裕を持たせてください。"
+      "ja": "デザインを短くする（`minHeight`を小さくする、リードを短くする、画像を小さくする）か、仕上がりサイズを大きくするか余白を小さくして、ページに余裕を持たせてください。",
+      "pt": "Encurte o design (um `minHeight` menor, um olho mais curto ou uma imagem menor) ou dê mais espaço à página com um formato maior ou margens menores."
     },
     "docs": {
       "slug": "configuration",
@@ -1554,7 +1717,8 @@
         "ca": "Span i disseny avançat",
         "zh": "通栏与高级设计",
         "ar": "الامتداد والتصميم المتقدم",
-        "ja": "幅と詳細デザイン"
+        "ja": "幅と詳細デザイン",
+        "pt": "Largura e design avançado"
       }
     }
   },
@@ -1566,7 +1730,8 @@
       "ca": "Referència d'ancoratge cíclica",
       "zh": "循环锚定引用",
       "ar": "إرساء دائري",
-      "ja": "循環するアンカー参照"
+      "ja": "循環するアンカー参照",
+      "pt": "Referência de ancoragem cíclica"
     },
     "cause": {
       "en": "Design elements anchor to each other in a loop, so none of them can be placed.",
@@ -1574,7 +1739,8 @@
       "ca": "Els elements de disseny s'ancoren els uns als altres en bucle, de manera que cap no es pot col·locar.",
       "zh": "几个设计元素相互锚定形成循环，因此一个都无法放置。",
       "ar": "عناصر التصميم ترتسي بعضها إلى بعض في حلقة، فلا يمكن وضع أي منها.",
-      "ja": "デザイン要素が互いにループ状にアンカーしているため、どの要素も配置できません。"
+      "ja": "デザイン要素が互いにループ状にアンカーしているため、どの要素も配置できません。",
+      "pt": "Elementos de design se ancoram uns nos outros em ciclo, então nenhum deles pode ser posicionado."
     },
     "fix": {
       "en": "Anchor one element of the chain to the container, the page or the bleed.",
@@ -1582,7 +1748,8 @@
       "ca": "Ancora un element de la cadena al contenidor, a la pàgina o a la sang.",
       "zh": "把链条中的一个元素锚定到容器、页面或出血边。",
       "ar": "أرسِ عنصرًا واحدًا من السلسلة إلى الحاوية أو الصفحة أو منطقة النزف.",
-      "ja": "連鎖の中の1つの要素を、コンテナー、ページ、または裁ち落としにアンカーしてください。"
+      "ja": "連鎖の中の1つの要素を、コンテナー、ページ、または裁ち落としにアンカーしてください。",
+      "pt": "Ancore um elemento da cadeia no contêiner, na página ou na sangria."
     },
     "docs": {
       "slug": "configuration",
@@ -1592,7 +1759,8 @@
         "ca": "Posicionament d'elements",
         "zh": "元素定位",
         "ar": "تموضع العناصر",
-        "ja": "要素の配置"
+        "ja": "要素の配置",
+        "pt": "Posicionamento de elementos"
       }
     }
   },
@@ -1604,7 +1772,8 @@
       "ca": "Referència d'ancoratge trencada",
       "zh": "悬空锚定引用",
       "ar": "إرساء إلى عنصر غير موجود",
-      "ja": "参照先のないアンカー"
+      "ja": "参照先のないアンカー",
+      "pt": "Referência de ancoragem quebrada"
     },
     "cause": {
       "en": "A design element anchors to an #id that no element in the slot has.",
@@ -1612,7 +1781,8 @@
       "ca": "Un element de disseny s'ancora a un #id que no té cap element de la ranura.",
       "zh": "某个设计元素锚定到的#id在该版面设计中没有任何元素使用。",
       "ar": "عنصر تصميم يرتسي إلى #id لا يملكه أي عنصر في الخانة.",
-      "ja": "デザイン要素が、そのスロットのどの要素も持たない#idにアンカーしています。"
+      "ja": "デザイン要素が、そのスロットのどの要素も持たない#idにアンカーしています。",
+      "pt": "Um elemento de design se ancora num #id que nenhum elemento do slot tem."
     },
     "fix": {
       "en": "Correct the id, or add the element it refers to.",
@@ -1620,7 +1790,8 @@
       "ca": "Corregeix l'id o afegeix l'element al qual es refereix.",
       "zh": "改正id，或添加它所指向的元素。",
       "ar": "صحّح المعرّف، أو أضف العنصر الذي يشير إليه.",
-      "ja": "idを修正するか、参照先の要素を追加してください。"
+      "ja": "idを修正するか、参照先の要素を追加してください。",
+      "pt": "Corrija o id ou acrescente o elemento a que ele se refere."
     },
     "docs": {
       "slug": "configuration",
@@ -1630,7 +1801,8 @@
         "ca": "Posicionament d'elements",
         "zh": "元素定位",
         "ar": "تموضع العناصر",
-        "ja": "要素の配置"
+        "ja": "要素の配置",
+        "pt": "Posicionamento de elementos"
       }
     }
   },
@@ -1642,7 +1814,8 @@
       "ca": "Text sempre retallat",
       "zh": "文字总被截断",
       "ar": "نص مقتطع دائمًا",
-      "ja": "常に切り詰められるテキスト"
+      "ja": "常に切り詰められるテキスト",
+      "pt": "Texto sempre cortado"
     },
     "cause": {
       "en": "A design text with overflow clip sits in a box too small for even one line, so it never shows whole.",
@@ -1650,7 +1823,8 @@
       "ca": "Un text de disseny amb overflow clip és en una caixa massa petita fins i tot per a una línia, de manera que no es veu mai sencer.",
       "zh": "某段设置了overflow clip的设计文字所在的框连一行都放不下，因此永远无法完整显示。",
       "ar": "نص تصميم بقيمة overflow clip يقع في صندوق لا يتسع حتى لسطر واحد، فلا يظهر كاملًا أبدًا.",
-      "ja": "overflowがclipのデザインテキストが、1行も入らない小さすぎるボックスに置かれているため、全体が表示されることはありません。"
+      "ja": "overflowがclipのデザインテキストが、1行も入らない小さすぎるボックスに置かれているため、全体が表示されることはありません。",
+      "pt": "Um texto de design com overflow clip está numa caixa pequena demais até para uma linha, então nunca aparece inteiro."
     },
     "fix": {
       "en": "Enlarge the box, or use overflow wrap or an ellipsis.",
@@ -1658,7 +1832,8 @@
       "ca": "Engrandeix la caixa, o fes servir overflow wrap o punts suspensius.",
       "zh": "放大这个框，或改用overflow wrap或省略号。",
       "ar": "كبّر الصندوق، أو استعمل overflow wrap أو علامة حذف (…).",
-      "ja": "ボックスを大きくするか、overflowをwrapにするか、省略記号を使ってください。"
+      "ja": "ボックスを大きくするか、overflowをwrapにするか、省略記号を使ってください。",
+      "pt": "Aumente a caixa ou use overflow wrap ou reticências."
     },
     "docs": {
       "slug": "configuration",
@@ -1668,7 +1843,8 @@
         "ca": "Elements de text",
         "zh": "文本元素",
         "ar": "عناصر النص",
-        "ja": "テキスト要素"
+        "ja": "テキスト要素",
+        "pt": "Elementos de texto"
       }
     }
   },
@@ -1680,7 +1856,8 @@
       "ca": "Títol a tota l'amplada sense salt",
       "zh": "通栏标题未设换页",
       "ar": "عنوان بعرض الصفحة بلا فاصل",
-      "ja": "改ページのない見出しのspan"
+      "ja": "改ページのない見出しのspan",
+      "pt": "Título na largura da página sem quebra"
     },
     "cause": {
       "en": "A heading level has span page but no breakBefore, so the band is ignored; any headings object also drops the H1 default break.",
@@ -1688,7 +1865,8 @@
       "ca": "Un nivell de títol té span page però no breakBefore, de manera que la banda s'ignora; a més, qualsevol objecte headings treu el salt per defecte de l'H1.",
       "zh": "某级标题设了span page却没有breakBefore，因此色带被忽略；而且只要提供headings对象，H1默认的换页也会失效。",
       "ar": "مستوى عنوان له span page لكن بلا breakBefore، فيُتجاهل الشريط؛ وأي كائن headings يُسقط كذلك الفاصل الافتراضي لعنوان H1.",
-      "ja": "見出しレベルにspan pageが指定されていますが、breakBeforeがないため、帯は無視されます。また、headingsオブジェクトを指定すると、H1の既定の改ページも外れます。"
+      "ja": "見出しレベルにspan pageが指定されていますが、breakBeforeがないため、帯は無視されます。また、headingsオブジェクトを指定すると、H1の既定の改ページも外れます。",
+      "pt": "Um nível de título tem span page mas não tem breakBefore, então a faixa é ignorada; além disso, qualquer objeto headings remove a quebra padrão do H1."
     },
     "fix": {
       "en": "Restate breakBefore: { enabled: true, parity } on that level.",
@@ -1696,7 +1874,8 @@
       "ca": "Torna a declarar breakBefore: { enabled: true, parity } en aquest nivell.",
       "zh": "在该级上重新写明breakBefore: { enabled: true, parity }。",
       "ar": "أعد تعيين breakBefore: { enabled: true, parity } في ذلك المستوى.",
-      "ja": "そのレベルにbreakBefore: { enabled: true, parity }を改めて指定してください。"
+      "ja": "そのレベルにbreakBefore: { enabled: true, parity }を改めて指定してください。",
+      "pt": "Declare de novo breakBefore: { enabled: true, parity } nesse nível."
     },
     "docs": {
       "slug": "configuration",
@@ -1706,7 +1885,8 @@
         "ca": "Span i disseny avançat",
         "zh": "通栏与高级设计",
         "ar": "الامتداد والتصميم المتقدم",
-        "ja": "幅と詳細デザイン"
+        "ja": "幅と詳細デザイン",
+        "pt": "Largura e design avançado"
       }
     }
   },
@@ -1718,7 +1898,8 @@
       "ca": "El text del títol no s'imprimeix",
       "zh": "标题文字未印出",
       "ar": "نص العنوان لا يُطبع",
-      "ja": "見出しのタイトルを参照していません"
+      "ja": "見出しのタイトルを参照していません",
+      "pt": "Texto do título não impresso"
     },
     "cause": {
       "en": "An advanced design has no element that prints {titleText}, so the heading's own words never appear.",
@@ -1726,7 +1907,8 @@
       "ca": "Un disseny avançat no té cap element que imprimeixi {titleText}, de manera que el text del títol mateix no apareix.",
       "zh": "某个高级设计中没有任何元素印出{titleText}，因此标题本身的文字永远不会出现。",
       "ar": "تصميم متقدم ليس فيه عنصر يطبع {titleText}، فلا تظهر كلمات العنوان نفسه أبدًا.",
-      "ja": "詳細デザインに{titleText}を印字する要素がないため、見出し自体の文言が表示されません。"
+      "ja": "詳細デザインに{titleText}を印字する要素がないため、見出し自体の文言が表示されません。",
+      "pt": "Um design avançado não tem nenhum elemento que imprima {titleText}, então as palavras do próprio título nunca aparecem."
     },
     "fix": {
       "en": "Add a text element with {titleText}, unless the heading is meant to be invisible.",
@@ -1734,7 +1916,8 @@
       "ca": "Afegeix un element de text amb {titleText}, tret que el títol hagi de ser invisible.",
       "zh": "加一个带{titleText}的文字元素，除非这个标题本来就应该不可见。",
       "ar": "أضف عنصرًا نصيًّا فيه {titleText}، إلا إذا كان العنوان مقصودًا أن يكون غير مرئي.",
-      "ja": "見出しを意図的に非表示にする場合を除き、{titleText}を含むテキスト要素を追加してください。"
+      "ja": "見出しを意図的に非表示にする場合を除き、{titleText}を含むテキスト要素を追加してください。",
+      "pt": "Acrescente um elemento de texto com {titleText}, a menos que o título deva ser invisível."
     },
     "docs": {
       "slug": "configuration",
@@ -1744,7 +1927,8 @@
         "ca": "Span i disseny avançat",
         "zh": "通栏与高级设计",
         "ar": "الامتداد والتصميم المتقدم",
-        "ja": "幅と詳細デザイン"
+        "ja": "幅と詳細デザイン",
+        "pt": "Largura e design avançado"
       }
     }
   },
@@ -1756,7 +1940,8 @@
       "ca": "Recurs desconegut",
       "zh": "未知资源",
       "ar": "مورد غير معروف",
-      "ja": "不明なリソース"
+      "ja": "不明なリソース",
+      "pt": "Recurso desconhecido"
     },
     "cause": {
       "en": "A :ref or ::resource names an id no resource has; the reference prints \"?\" and nothing is placed.",
@@ -1764,7 +1949,8 @@
       "ca": "Un :ref o un ::resource anomena un id que no té cap recurs; la referència imprimeix «?» i no es col·loca res.",
       "zh": "某个:ref或::resource指定的id没有对应的资源；引用处印出“?”，也不会放置任何内容。",
       "ar": ":ref أو ::resource يسمّي معرّفًا لا يملكه أي مورد؛ فتطبع الإحالة \"?\" ولا يوضع شيء.",
-      "ja": ":refまたは::resourceが、どのリソースにもないidを指定しています。参照は「?」と印字され、何も配置されません。"
+      "ja": ":refまたは::resourceが、どのリソースにもないidを指定しています。参照は「?」と印字され、何も配置されません。",
+      "pt": "Um :ref ou ::resource cita um id que nenhum recurso tem; a referência imprime “?” e nada é colocado."
     },
     "fix": {
       "en": "Correct the id (double quotes only) or add the resource.",
@@ -1772,7 +1958,8 @@
       "ca": "Corregeix l'id (només amb cometes dobles) o afegeix el recurs.",
       "zh": "改正id（只能用双引号），或添加该资源。",
       "ar": "صحّح المعرّف (بعلامات اقتباس مزدوجة فقط) أو أضف المورد.",
-      "ja": "idを修正する（二重引用符のみ使えます）か、リソースを追加してください。"
+      "ja": "idを修正する（二重引用符のみ使えます）か、リソースを追加してください。",
+      "pt": "Corrija o id (só com aspas duplas) ou acrescente o recurso."
     },
     "docs": {
       "slug": "document-format",
@@ -1782,7 +1969,8 @@
         "ca": "Referència en línia (la forma principal)",
         "zh": "行内引用（主要写法）",
         "ar": "الإحالة داخل السطر (الصيغة الأساسية)",
-        "ja": "インライン参照（基本の形）"
+        "ja": "インライン参照（基本の形）",
+        "pt": "Referência em linha (a forma principal)"
       }
     }
   },
@@ -1794,7 +1982,8 @@
       "ca": "Id de recurs duplicat",
       "zh": "资源id重复",
       "ar": "معرّف مورد مكرر",
-      "ja": "重複したリソースid"
+      "ja": "重複したリソースid",
+      "pt": "Id de recurso duplicado"
     },
     "cause": {
       "en": "Several resources share one id, and only one of them resolves.",
@@ -1802,7 +1991,8 @@
       "ca": "Diversos recursos comparteixen un mateix id i només se'n resol un.",
       "zh": "几个资源共用一个id，只有其中一个能被解析。",
       "ar": "عدة موارد تتشارك معرّفًا واحدًا، ولا يُحَلّ إلا أحدها.",
-      "ja": "複数のリソースが同じidを共有しており、解決されるのはそのうち1つだけです。"
+      "ja": "複数のリソースが同じidを共有しており、解決されるのはそのうち1つだけです。",
+      "pt": "Vários recursos compartilham o mesmo id, e só um deles é resolvido."
     },
     "fix": {
       "en": "Give every resource a unique id.",
@@ -1810,7 +2000,8 @@
       "ca": "Dona a cada recurs un id únic.",
       "zh": "给每个资源一个唯一的id。",
       "ar": "أعطِ كل مورد معرّفًا فريدًا.",
-      "ja": "すべてのリソースに固有のidを付けてください。"
+      "ja": "すべてのリソースに固有のidを付けてください。",
+      "pt": "Dê a cada recurso um id único."
     },
     "docs": {
       "slug": "document-format",
@@ -1820,7 +2011,8 @@
         "ca": "Referència en línia (la forma principal)",
         "zh": "行内引用（主要写法）",
         "ar": "الإحالة داخل السطر (الصيغة الأساسية)",
-        "ja": "インライン参照（基本の形）"
+        "ja": "インライン参照（基本の形）",
+        "pt": "Referência em linha (a forma principal)"
       }
     }
   },
@@ -1832,7 +2024,8 @@
       "ca": "Tipus de recurs desconegut",
       "zh": "未知资源类型",
       "ar": "نوع مورد غير معروف",
-      "ja": "不明なリソースの種類"
+      "ja": "不明なリソースの種類",
+      "pt": "Tipo de recurso desconhecido"
     },
     "cause": {
       "en": "A resource's typeId names a type that resourceTypes no longer defines, so a default type is used.",
@@ -1840,7 +2033,8 @@
       "ca": "El typeId d'un recurs anomena un tipus que resourceTypes ja no defineix, de manera que es fa servir un tipus per defecte.",
       "zh": "某个资源的typeId指向的类型已不在resourceTypes中定义，因此改用默认类型。",
       "ar": "قيمة typeId لمورد تسمّي نوعًا لم تعد resourceTypes تعرّفه، فيُستعمل نوع افتراضي.",
-      "ja": "リソースのtypeIdが、resourceTypesにもう定義されていない種類を指しているため、既定の種類が使われます。"
+      "ja": "リソースのtypeIdが、resourceTypesにもう定義されていない種類を指しているため、既定の種類が使われます。",
+      "pt": "O typeId de um recurso cita um tipo que resourceTypes não define mais, então é usado um tipo padrão."
     },
     "fix": {
       "en": "Define the type, or point the resource at an existing one.",
@@ -1848,7 +2042,8 @@
       "ca": "Defineix el tipus o fes que el recurs apunti a un d'existent.",
       "zh": "定义该类型，或让资源指向一个现有类型。",
       "ar": "عرّف النوع، أو اجعل المورد يشير إلى نوع موجود.",
-      "ja": "種類を定義するか、既存の種類をリソースに指定してください。"
+      "ja": "種類を定義するか、既存の種類をリソースに指定してください。",
+      "pt": "Defina o tipo ou aponte o recurso para um tipo existente."
     },
     "docs": {
       "slug": "configuration",
@@ -1858,7 +2053,8 @@
         "ca": "Tipus de recurs",
         "zh": "资源类型",
         "ar": "أنواع الموارد",
-        "ja": "リソースの種類"
+        "ja": "リソースの種類",
+        "pt": "Tipos de recurso"
       }
     }
   },
@@ -1870,7 +2066,8 @@
       "ca": "Imatge de baixa resolució",
       "zh": "图片分辨率过低",
       "ar": "صورة منخفضة الدقة",
-      "ja": "低解像度の画像"
+      "ja": "低解像度の画像",
+      "pt": "Imagem de baixa resolução"
     },
     "cause": {
       "en": "A bitmap is drawn more than 1.5 times wider than its pixels, so it will look blurry in print.",
@@ -1878,7 +2075,8 @@
       "ca": "Un mapa de bits es dibuixa més d'1,5 vegades més ample que els seus píxels, de manera que es veurà borrós en imprimir-lo.",
       "zh": "某张位图绘制的宽度超过其像素宽度的1.5倍，印刷出来会发虚。",
       "ar": "صورة نقطية تُرسم بعرض يزيد على 1.5 ضعف عدد نقاطها، فستبدو ضبابية في الطباعة.",
-      "ja": "ビットマップがピクセル数の1.5倍を超える幅で描画されるため、印刷するとぼやけて見えます。"
+      "ja": "ビットマップがピクセル数の1.5倍を超える幅で描画されるため、印刷するとぼやけて見えます。",
+      "pt": "Um bitmap é desenhado mais de 1,5 vez mais largo que seus pixels, então vai sair borrado na impressão."
     },
     "fix": {
       "en": "Supply about 300 dpi at the printed size, and declare the bitmap's real width and height.",
@@ -1886,7 +2084,8 @@
       "ca": "Proporciona uns 300 ppp a la mida d'impressió i declara l'amplada i l'alçada reals del mapa de bits.",
       "zh": "提供按印刷尺寸约300 dpi的图片，并声明位图的真实宽度和高度。",
       "ar": "وفّر نحو 300 dpi بالحجم المطبوع، وصرّح بالعرض والارتفاع الحقيقيين للصورة النقطية.",
-      "ja": "印刷サイズで約300dpiの画像を用意し、ビットマップの実際の幅と高さを宣言してください。"
+      "ja": "印刷サイズで約300dpiの画像を用意し、ビットマップの実際の幅と高さを宣言してください。",
+      "pt": "Forneça cerca de 300 dpi no tamanho impresso e declare a largura e a altura reais do bitmap."
     },
     "docs": {
       "slug": "document-format",
@@ -1896,7 +2095,8 @@
         "ca": "Recursos",
         "zh": "资源",
         "ar": "الموارد",
-        "ja": "リソース"
+        "ja": "リソース",
+        "pt": "Recursos"
       }
     }
   },
@@ -1908,7 +2108,8 @@
       "ca": "Emmagatzematge no disponible",
       "zh": "存储不可用",
       "ar": "التخزين غير متاح",
-      "ja": "ストレージを利用できません"
+      "ja": "ストレージを利用できません",
+      "pt": "Armazenamento indisponível"
     },
     "cause": {
       "en": "The browser blocks IndexedDB (private browsing, disabled storage), so uploaded pictures and fonts cannot be kept.",
@@ -1916,7 +2117,8 @@
       "ca": "El navegador bloqueja IndexedDB (navegació privada, emmagatzematge desactivat), de manera que les imatges i les fonts pujades no es poden desar.",
       "zh": "浏览器屏蔽了IndexedDB（隐私浏览、存储被禁用），因此上传的图片和字体无法保存。",
       "ar": "المتصفح يحظر IndexedDB (التصفح الخاص، أو تخزين معطَّل)، فلا يمكن الاحتفاظ بالصور والخطوط المرفوعة.",
-      "ja": "ブラウザーがIndexedDBをブロックしている（プライベートブラウズ、ストレージの無効化）ため、アップロードした画像やフォントを保持できません。"
+      "ja": "ブラウザーがIndexedDBをブロックしている（プライベートブラウズ、ストレージの無効化）ため、アップロードした画像やフォントを保持できません。",
+      "pt": "O navegador bloqueia o IndexedDB (navegação privada, armazenamento desativado), então as imagens e fontes enviadas não podem ser guardadas."
     },
     "fix": {
       "en": "Open the Sandbox in a normal window, or export a .postext bundle before closing it.",
@@ -1924,7 +2126,8 @@
       "ca": "Obre el Sandbox en una finestra normal, o exporta un paquet .postext abans de tancar-lo.",
       "zh": "在普通窗口中打开沙盒，或在关闭前导出一个.postext文件包。",
       "ar": "افتح Sandbox في نافذة عادية، أو صدّر حزمة .postext قبل إغلاقه.",
-      "ja": "Sandboxを通常のウィンドウで開くか、閉じる前に.postextバンドルを書き出してください。"
+      "ja": "Sandboxを通常のウィンドウで開くか、閉じる前に.postextバンドルを書き出してください。",
+      "pt": "Abra o Sandbox numa janela normal ou exporte um pacote .postext antes de fechá-lo."
     },
     "docs": {
       "slug": "sandbox",
@@ -1934,7 +2137,8 @@
         "ca": "Exportar i importar",
         "zh": "持久化",
         "ar": "حفظ العمل",
-        "ja": "作業内容の保存"
+        "ja": "作業内容の保存",
+        "pt": "Persistência"
       }
     }
   },
@@ -1946,7 +2150,8 @@
       "ca": "Frontmatter del capítol ignorat",
       "zh": "章的frontmatter被忽略",
       "ar": "تجاهل الترويسة الأمامية للفصل",
-      "ja": "フロントマターを無視"
+      "ja": "フロントマターを無視",
+      "pt": "Frontmatter do capítulo ignorado"
     },
     "cause": {
       "en": "Only the first chapter's frontmatter counts; a later chapter starts with a frontmatter block that is dropped.",
@@ -1954,7 +2159,8 @@
       "ca": "Només compta el frontmatter del primer capítol; un capítol posterior comença amb un bloc de frontmatter que es descarta.",
       "zh": "只有第一章的frontmatter有效；后面某一章以frontmatter块开头，这个块被丢弃。",
       "ar": "لا تُحتسب إلا الترويسة الأمامية (frontmatter) للفصل الأول؛ وفصل لاحق يبدأ بكتلة ترويسة أمامية تُسقَط.",
-      "ja": "有効なのは最初の章のフロントマターだけです。後の章の冒頭にあるフロントマターのブロックは破棄されます。"
+      "ja": "有効なのは最初の章のフロントマターだけです。後の章の冒頭にあるフロントマターのブロックは破棄されます。",
+      "pt": "Só o frontmatter do primeiro capítulo vale; um capítulo posterior começa com um bloco de frontmatter que é descartado."
     },
     "fix": {
       "en": "Keep the book's metadata in chapter one, and use heading attributes for per-chapter values.",
@@ -1962,7 +2168,8 @@
       "ca": "Deixa les metadades del llibre al primer capítol i fes servir atributs de títol per als valors de cada capítol.",
       "zh": "把书的元数据放在第一章，每章各自的值用标题属性来设。",
       "ar": "احتفظ بالبيانات الوصفية للكتاب في الفصل الأول، واستعمل سمات العناوين للقيم الخاصة بكل فصل.",
-      "ja": "本のメタデータは第1章に置き、章ごとの値には見出しの属性を使ってください。"
+      "ja": "本のメタデータは第1章に置き、章ごとの値には見出しの属性を使ってください。",
+      "pt": "Mantenha os metadados do livro no capítulo um e use atributos de título para os valores de cada capítulo."
     },
     "docs": {
       "slug": "sandbox",
@@ -1972,7 +2179,8 @@
         "ca": "Persistència",
         "zh": "书与章",
         "ar": "الكتب والفصول",
-        "ja": "本と章"
+        "ja": "本と章",
+        "pt": "Livros e capítulos"
       }
     }
   },
@@ -1984,7 +2192,8 @@
       "ca": "Inserció de recurs mal formada",
       "zh": "资源嵌入格式错误",
       "ar": "تضمين مورد مشوَّه",
-      "ja": "テキストとして組まれた埋め込み"
+      "ja": "テキストとして組まれた埋め込み",
+      "pt": "Inserção de recurso malformada"
     },
     "cause": {
       "en": "A `::name` line is not a well-formed embed on its own line (after a blank line, `::resource{id=\"…\"}` with the id as its only attribute), so it prints as text.",
@@ -1992,7 +2201,8 @@
       "ca": "Una línia `::nombre` no és una inserció ben formada en una línia pròpia (després d'una línia en blanc, `::resource{id=\"…\"}` amb l'id com a únic atribut), de manera que s'imprimeix com a text.",
       "zh": "某个`::name`行不是单独成行、格式正确的嵌入（前面空一行，写成`::resource{id=\"…\"}`，id是唯一的属性），因此被当作文字印出。",
       "ar": "سطر `::name` ليس تضمينًا سليم البنية في سطر مستقل (بعد سطر فارغ، `::resource{id=\"…\"}` والمعرّف سمته الوحيدة)، فيُطبع نصًّا.",
-      "ja": "`::name`の行が、単独の行に書かれた正しい形式の埋め込み（空行の後に、idだけを属性に持つ`::resource{id=\"…\"}`）になっていないため、テキストとして印字されます。"
+      "ja": "`::name`の行が、単独の行に書かれた正しい形式の埋め込み（空行の後に、idだけを属性に持つ`::resource{id=\"…\"}`）になっていないため、テキストとして印字されます。",
+      "pt": "Uma linha `::name` não é uma inserção bem formada na própria linha (depois de uma linha em branco, `::resource{id=\"…\"}` com o id como único atributo), então é impressa como texto."
     },
     "fix": {
       "en": "Put the embed alone on its line, after a blank line, with double quotes and no other attributes.",
@@ -2000,7 +2210,8 @@
       "ca": "Deixa la inserció sola a la seva línia, després d'una línia en blanc, amb cometes dobles i sense més atributs.",
       "zh": "让嵌入单独占一行，前面空一行，使用双引号，不带其他属性。",
       "ar": "ضع التضمين وحده في سطره، بعد سطر فارغ، بعلامات اقتباس مزدوجة وبلا سمات أخرى.",
-      "ja": "埋め込みは空行の後に単独の行で書き、二重引用符を使い、ほかの属性は付けないでください。"
+      "ja": "埋め込みは空行の後に単独の行で書き、二重引用符を使い、ほかの属性は付けないでください。",
+      "pt": "Deixe a inserção sozinha na linha, depois de uma linha em branco, com aspas duplas e sem outros atributos."
     },
     "docs": {
       "slug": "configuration",
@@ -2010,7 +2221,8 @@
         "ca": "Avisos del document",
         "zh": "文档中的警告",
         "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告"
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
       }
     }
   },
@@ -2022,7 +2234,8 @@
       "ca": "Marques en amplada completa",
       "zh": "全角标记符号",
       "ar": "ترميز بعرض كامل",
-      "ja": "全角の記法"
+      "ja": "全角の記法",
+      "pt": "Marcação em largura total"
     },
     "cause": {
       "en": "A line holds markup typed with a Chinese or Japanese input method: a `：：：` fence, a `＃` heading, a `［＾…］` footnote marker, `｛…｝` attributes or `＊＊…＊＊` bold. The parser reads only the ASCII forms, so the line prints as text.",
@@ -2030,7 +2243,8 @@
       "ca": "Una línia porta marques escrites amb un mètode d'entrada xinès o japonès: una tanca `：：：`, un encapçalament `＃`, una crida de nota `［＾…］`, atributs `｛…｝` o negreta `＊＊…＊＊`. L'analitzador només llegeix les formes ASCII, de manera que la línia s'imprimeix com a text.",
       "zh": "某行里有用中文或日文输入法打出的标记：`：：：`围栏、`＃`标题、`［＾…］`脚注标记、`｛…｝`属性或`＊＊…＊＊`粗体。解析器只识别ASCII形式，因此这一行被当作文字印出。",
       "ar": "سطر يحوي ترميزًا كُتب بطريقة إدخال صينية أو يابانية: سياج `：：：`، أو عنوان `＃`، أو علامة حاشية `［＾…］`، أو سمات `｛…｝`، أو عريض `＊＊…＊＊`. المحلّل لا يقرأ إلا صيغ ASCII، فيُطبع السطر نصًّا.",
-      "ja": "中国語または日本語の入力方式で入力した記法を含む行があります。`：：：`の囲い、`＃`の見出し、`［＾…］`の脚注の合印、`｛…｝`の属性、`＊＊…＊＊`の太字などです。パーサーはASCIIの形しか読まないため、その行はテキストとして印字されます。"
+      "ja": "中国語または日本語の入力方式で入力した記法を含む行があります。`：：：`の囲い、`＃`の見出し、`［＾…］`の脚注の合印、`｛…｝`の属性、`＊＊…＊＊`の太字などです。パーサーはASCIIの形しか読まないため、その行はテキストとして印字されます。",
+      "pt": "Uma linha tem marcação digitada com um método de entrada chinês ou japonês: uma cerca `：：：`, um título `＃`, uma chamada de nota `［＾…］`, atributos `｛…｝` ou negrito `＊＊…＊＊`. O analisador só lê as formas ASCII, então a linha é impressa como texto."
     },
     "fix": {
       "en": "Switch the input method to half-width (or English) for the markup and type `:::`, `#`, `[^…]`, `{…}` or `**…**`; the text between them stays Chinese.",
@@ -2038,7 +2252,8 @@
       "ca": "Passa el mètode d'entrada a amplada mitjana (o a l'anglès) per a les marques i escriu `:::`, `#`, `[^…]`, `{…}` o `**…**`; el text entre elles continua en xinès.",
       "zh": "输入标记时把输入法切换到半角（或英文），打出`:::`、`#`、`[^…]`、`{…}`或`**…**`；标记之间的文字仍然可以是中文。",
       "ar": "حوّل طريقة الإدخال إلى نصف العرض (أو الإنجليزية) عند كتابة الترميز واكتب `:::` أو `#` أو `[^…]` أو `{…}` أو `**…**`؛ ويبقى النص بينها بالصينية.",
-      "ja": "記法の部分だけ入力方式を半角（または英語）に切り替えて、`:::`、`#`、`[^…]`、`{…}`、`**…**`と入力してください。記法の間の本文は中国語のままでかまいません。"
+      "ja": "記法の部分だけ入力方式を半角（または英語）に切り替えて、`:::`、`#`、`[^…]`、`{…}`、`**…**`と入力してください。記法の間の本文は中国語のままでかまいません。",
+      "pt": "Mude o método de entrada para meia largura (ou para inglês) na marcação e digite `:::`, `#`, `[^…]`, `{…}` ou `**…**`; o texto entre elas continua em chinês."
     },
     "docs": {
       "slug": "configuration",
@@ -2048,7 +2263,8 @@
         "ca": "Avisos del document",
         "zh": "文档中的警告",
         "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告"
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
       }
     }
   },
@@ -2060,7 +2276,8 @@
       "ca": "Clau d'atribut no llegida",
       "zh": "属性键未被读取",
       "ar": "مفتاح سمة لا يُقرأ",
-      "ja": "読み取れない属性キー"
+      "ja": "読み取れない属性キー",
+      "pt": "Chave de atributo não lida"
     },
     "cause": {
       "en": "An attribute key holds letters outside ASCII (`作者=曹雪芹`). Keys are ASCII, so the attribute is ignored.",
@@ -2068,7 +2285,8 @@
       "ca": "Una clau d'atribut porta lletres fora de l'ASCII (`作者=曹雪芹`). Les claus són ASCII, de manera que l'atribut s'ignora.",
       "zh": "某个属性键含有ASCII以外的字符（`作者=曹雪芹`）。键只能是ASCII，因此该属性被忽略。",
       "ar": "مفتاح سمة يحوي حروفًا من خارج ASCII (`作者=曹雪芹`). المفاتيح بحروف ASCII، فتُتجاهل السمة.",
-      "ja": "属性キーにASCII以外の文字が含まれています（`作者=曹雪芹`）。キーはASCIIで書くものなので、その属性は無視されます。"
+      "ja": "属性キーにASCII以外の文字が含まれています（`作者=曹雪芹`）。キーはASCIIで書くものなので、その属性は無視されます。",
+      "pt": "Uma chave de atributo tem letras fora do ASCII (`作者=曹雪芹`). As chaves são ASCII, então o atributo é ignorado."
     },
     "fix": {
       "en": "Write the key in ASCII letters, digits, `_` and `-` (`author=曹雪芹`); the value may stay in any script.",
@@ -2076,7 +2294,8 @@
       "ca": "Escriu la clau amb lletres ASCII, xifres, `_` i `-` (`author=曹雪芹`); el valor pot seguir en qualsevol escriptura.",
       "zh": "键只用ASCII字母、数字、`_`和`-`来写（`author=曹雪芹`）；值可以用任何文字。",
       "ar": "اكتب المفتاح بحروف ASCII وأرقام و`_` و`-` (`author=曹雪芹`)؛ ويجوز أن تبقى القيمة بأي خط.",
-      "ja": "キーはASCIIの英字、数字、`_`、`-`で書いてください（`author=曹雪芹`）。値はどの文字体系でもかまいません。"
+      "ja": "キーはASCIIの英字、数字、`_`、`-`で書いてください（`author=曹雪芹`）。値はどの文字体系でもかまいません。",
+      "pt": "Escreva a chave com letras ASCII, algarismos, `_` e `-` (`author=曹雪芹`); o valor pode continuar em qualquer escrita."
     },
     "docs": {
       "slug": "document-format",
@@ -2086,7 +2305,8 @@
         "ca": "Valors dels atributs",
         "zh": "属性值",
         "ar": "قيم السمات",
-        "ja": "属性の値"
+        "ja": "属性の値",
+        "pt": "Valores de atributo"
       }
     }
   },
@@ -2098,7 +2318,8 @@
       "ca": "Estil de títol desconegut",
       "zh": "未知标题样式",
       "ar": "نمط عنوان غير معروف",
-      "ja": "不明な見出しスタイル"
+      "ja": "不明な見出しスタイル",
+      "pt": "Estilo de título desconhecido"
     },
     "cause": {
       "en": "A heading's `{style=\"…\"}` names no entry of `headingStyles`, so the heading keeps its level's settings.",
@@ -2106,7 +2327,8 @@
       "ca": "El `{style=\"…\"}` d'un títol no anomena cap entrada de `headingStyles`, de manera que el títol conserva la configuració del seu nivell.",
       "zh": "某个标题的`{style=\"…\"}`在`headingStyles`中找不到对应条目，因此标题沿用所在级别的设置。",
       "ar": "قيمة `{style=\"…\"}` لعنوان لا تسمّي أي مدخل في `headingStyles`، فيحتفظ العنوان بإعدادات مستواه.",
-      "ja": "見出しの`{style=\"…\"}`が`headingStyles`のどの項目も指していないため、その見出しはレベルの設定のままになります。"
+      "ja": "見出しの`{style=\"…\"}`が`headingStyles`のどの項目も指していないため、その見出しはレベルの設定のままになります。",
+      "pt": "O `{style=\"…\"}` de um título não corresponde a nenhuma entrada de `headingStyles`, então o título mantém as configurações do seu nível."
     },
     "fix": {
       "en": "Fix the id or add the style to `headingStyles`.",
@@ -2114,7 +2336,8 @@
       "ca": "Corregeix l'id o afegeix l'estil a `headingStyles`.",
       "zh": "改正id，或把该样式加到`headingStyles`中。",
       "ar": "صحّح المعرّف أو أضف النمط إلى `headingStyles`.",
-      "ja": "idを修正するか、`headingStyles`にスタイルを追加してください。"
+      "ja": "idを修正するか、`headingStyles`にスタイルを追加してください。",
+      "pt": "Corrija o id ou acrescente o estilo a `headingStyles`."
     },
     "docs": {
       "slug": "configuration",
@@ -2124,7 +2347,8 @@
         "ca": "Avisos del document",
         "zh": "文档中的警告",
         "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告"
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
       }
     }
   },
@@ -2136,7 +2360,8 @@
       "ca": "Amplada de la columna lateral ajustada",
       "zh": "边栏宽度被限定",
       "ar": "تقييد عرض العمود الجانبي",
-      "ja": "範囲外のサイド段"
+      "ja": "範囲外のサイド段",
+      "pt": "Largura da coluna lateral ajustada"
     },
     "cause": {
       "en": "A one-and-a-half layout's side column percentage would leave a column with no usable width, so the engine splits the width at another percentage.",
@@ -2144,7 +2369,8 @@
       "ca": "El percentatge de la columna lateral d'una maqueta de columna i mitja deixaria una columna sense amplada útil, de manera que el motor reparteix l'amplada amb un altre percentatge.",
       "zh": "一栏半版式的边栏百分比会让某一栏没有可用宽度，因此引擎按另一个百分比分配宽度。",
       "ar": "النسبة المئوية للعمود الجانبي في تخطيط العمود ونصف ستترك عمودًا بلا عرض صالح للاستعمال، فيقسم المحرّك العرض بنسبة أخرى.",
-      "ja": "1段半レイアウトのサイド段の割合では、使える幅のない段ができてしまうため、エンジンは別の割合で幅を分けます。"
+      "ja": "1段半レイアウトのサイド段の割合では、使える幅のない段ができてしまうため、エンジンは別の割合で幅を分けます。",
+      "pt": "A porcentagem da coluna lateral numa diagramação de coluna e meia deixaria uma coluna sem largura útil, então o motor divide a largura com outra porcentagem."
     },
     "fix": {
       "en": "Choose a `sideColumnPercent` inside the documented bounds, or widen the page or the gutter.",
@@ -2152,7 +2378,8 @@
       "ca": "Tria un `sideColumnPercent` dins dels límits documentats, o amplia la pàgina o l'espai entre columnes.",
       "zh": "在文档给出的范围内选择`sideColumnPercent`，或加宽页面或栏间距。",
       "ar": "اختر `sideColumnPercent` ضمن الحدود الموثّقة، أو وسّع الصفحة أو الفاصل بين الأعمدة.",
-      "ja": "ドキュメントに記載された範囲内の`sideColumnPercent`を選ぶか、ページまたは段間を広げてください。"
+      "ja": "ドキュメントに記載された範囲内の`sideColumnPercent`を選ぶか、ページまたは段間を広げてください。",
+      "pt": "Escolha um `sideColumnPercent` dentro dos limites documentados ou aumente a página ou a medianiz."
     },
     "docs": {
       "slug": "configuration",
@@ -2162,7 +2389,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2174,7 +2402,8 @@
       "ca": "Nombre de columnes ajustat",
       "zh": "栏数被限定",
       "ar": "تقييد عدد الأعمدة",
-      "ja": "範囲外の段数"
+      "ja": "範囲外の段数",
+      "pt": "Número de colunas ajustado"
     },
     "cause": {
       "en": "A 'multiple' layout's columnCount is not a whole number from 3 to 8, so the engine cuts the page into the nearest count that is.",
@@ -2182,7 +2411,8 @@
       "ca": "El columnCount d'una maqueta 'multiple' no és un nombre enter de 3 a 8, de manera que el motor divideix la pàgina en el nombre més proper que ho sigui.",
       "zh": "'multiple'版式的columnCount不是3到8之间的整数，因此引擎按最接近的有效栏数分栏。",
       "ar": "قيمة columnCount في تخطيط 'multiple' ليست عددًا صحيحًا من 3 إلى 8، فيقسم المحرّك الصفحة إلى أقرب عدد صالح.",
-      "ja": "'multiple'レイアウトのcolumnCountが3〜8の整数ではないため、エンジンはいちばん近い有効な段数でページを分けます。"
+      "ja": "'multiple'レイアウトのcolumnCountが3〜8の整数ではないため、エンジンはいちばん近い有効な段数でページを分けます。",
+      "pt": "O columnCount de uma diagramação 'multiple' não é um número inteiro de 3 a 8, então o motor divide a página no número válido mais próximo."
     },
     "fix": {
       "en": "Set `columnCount` to a whole number from 3 to 8; for one or two columns use `layoutType` `single` or `double`.",
@@ -2190,7 +2420,8 @@
       "ca": "Posa a `columnCount` un nombre enter de 3 a 8; per a una o dues columnes fes servir `layoutType` `single` o `double`.",
       "zh": "把`columnCount`设为3到8之间的整数；单栏或双栏请用`layoutType`的`single`或`double`。",
       "ar": "اجعل `columnCount` عددًا صحيحًا من 3 إلى 8؛ ولعمود واحد أو عمودين استعمل `layoutType` بالقيمة `single` أو `double`.",
-      "ja": "`columnCount`を3〜8の整数にしてください。1段や2段には`layoutType`の`single`か`double`を使います。"
+      "ja": "`columnCount`を3〜8の整数にしてください。1段や2段には`layoutType`の`single`か`double`を使います。",
+      "pt": "Defina `columnCount` como um número inteiro de 3 a 8; para uma ou duas colunas, use `layoutType` `single` ou `double`."
     },
     "docs": {
       "slug": "configuration",
@@ -2200,7 +2431,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2212,7 +2444,8 @@
       "ca": "Retícula de caràcters massa gran",
       "zh": "字符网格过大",
       "ar": "شبكة حروف أكبر مما يتسع",
-      "ja": "大きすぎる文字グリッド"
+      "ja": "大きすぎる文字グリッド",
+      "pt": "Grade de caracteres grande demais"
     },
     "cause": {
       "en": "`cjk.grid` asks for more characters per line or lines per page than the page margins leave room for at the body size and line height, so the grid is set with the most that fit.",
@@ -2220,7 +2453,8 @@
       "ca": "`cjk.grid` demana més caràcters per línia o més línies per pàgina dels que hi caben entre els marges amb aquest cos i aquest interlineat, de manera que la retícula es compon amb els que hi caben.",
       "zh": "`cjk.grid`要求的每行字数或每页行数，按正文字号和行距，超出了页边距留出的空间，因此网格按能容纳的最大值排出。",
       "ar": "`cjk.grid` يطلب حروفًا في السطر أو أسطرًا في الصفحة أكثر مما تتسع له هوامش الصفحة بحجم النص الأساسي وارتفاع السطر، فتُضبط الشبكة بأكبر عدد يتسع.",
-      "ja": "`cjk.grid`が求める1行の字数またはページあたりの行数が、本文のサイズと行の高さではページの余白の内側に収まらないため、収まる最大の値でグリッドを組みます。"
+      "ja": "`cjk.grid`が求める1行の字数またはページあたりの行数が、本文のサイズと行の高さではページの余白の内側に収まらないため、収まる最大の値でグリッドを組みます。",
+      "pt": "`cjk.grid` pede mais caracteres por linha ou mais linhas por página do que cabem entre as margens com esse corpo e essa entrelinha, então a grade é composta com o máximo que cabe."
     },
     "fix": {
       "en": "Lower `charsPerLine` or `linesPerPage`, narrow the margins (they are minimums), or set a smaller `bodyText.fontSize` or `lineHeight`.",
@@ -2228,7 +2462,8 @@
       "ca": "Abaixa `charsPerLine` o `linesPerPage`, estreny els marges (són mínims) o redueix `bodyText.fontSize` o `lineHeight`.",
       "zh": "调低`charsPerLine`或`linesPerPage`，缩小页边距（它们是最小值），或调小`bodyText.fontSize`或`lineHeight`。",
       "ar": "اخفض `charsPerLine` أو `linesPerPage`، أو ضيّق الهوامش (فهي حدود دنيا)، أو اضبط `bodyText.fontSize` أو `lineHeight` أصغر.",
-      "ja": "`charsPerLine`または`linesPerPage`を下げる、余白を狭める（余白は最小値です）、または`bodyText.fontSize`や`lineHeight`を小さくしてください。"
+      "ja": "`charsPerLine`または`linesPerPage`を下げる、余白を狭める（余白は最小値です）、または`bodyText.fontSize`や`lineHeight`を小さくしてください。",
+      "pt": "Reduza `charsPerLine` ou `linesPerPage`, estreite as margens (elas são mínimas) ou use um `bodyText.fontSize` ou um `lineHeight` menor."
     },
     "docs": {
       "slug": "configuration",
@@ -2238,7 +2473,8 @@
         "ca": "Retícula de caràcters",
         "zh": "字格",
         "ar": "شبكة الحروف",
-        "ja": "文字グリッド"
+        "ja": "文字グリッド",
+        "pt": "Grade de caracteres"
       }
     }
   },
@@ -2250,7 +2486,8 @@
       "ca": "Estil de taula desconegut",
       "zh": "未知表格样式",
       "ar": "نمط جدول غير معروف",
-      "ja": "不明な表スタイル"
+      "ja": "不明な表スタイル",
+      "pt": "Estilo de tabela desconhecido"
     },
     "cause": {
       "en": "A table resource's `styleId` names no entry of `tableStyles`, so the table uses the global `tableStyle`.",
@@ -2258,7 +2495,8 @@
       "ca": "L'`styleId` d'una taula no anomena cap entrada de `tableStyles`, de manera que la taula fa servir el `tableStyle` global.",
       "zh": "某个表格资源的`styleId`在`tableStyles`中找不到对应条目，因此该表使用全局的`tableStyle`。",
       "ar": "قيمة `styleId` لمورد جدول لا تسمّي أي مدخل في `tableStyles`، فيستعمل الجدول `tableStyle` العام.",
-      "ja": "表リソースの`styleId`が`tableStyles`のどの項目も指していないため、その表にはグローバルの`tableStyle`が使われます。"
+      "ja": "表リソースの`styleId`が`tableStyles`のどの項目も指していないため、その表にはグローバルの`tableStyle`が使われます。",
+      "pt": "O `styleId` de um recurso de tabela não corresponde a nenhuma entrada de `tableStyles`, então a tabela usa o `tableStyle` global."
     },
     "fix": {
       "en": "Fix the id or add the named style to `tableStyles`.",
@@ -2266,7 +2504,8 @@
       "ca": "Corregeix l'id o afegeix l'estil amb nom a `tableStyles`.",
       "zh": "改正id，或把命名样式加到`tableStyles`中。",
       "ar": "صحّح المعرّف أو أضف النمط المسمّى إلى `tableStyles`.",
-      "ja": "idを修正するか、`tableStyles`に名前付きスタイルを追加してください。"
+      "ja": "idを修正するか、`tableStyles`に名前付きスタイルを追加してください。",
+      "pt": "Corrija o id ou adicione o estilo com esse nome a `tableStyles`."
     },
     "docs": {
       "slug": "configuration",
@@ -2276,7 +2515,8 @@
         "ca": "Avisos del document",
         "zh": "文档中的警告",
         "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告"
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
       }
     }
   },
@@ -2288,7 +2528,8 @@
       "ca": "Quadrícula de taula irregular",
       "zh": "表格网格不规整",
       "ar": "شبكة جدول غير منتظمة",
-      "ja": "不規則な表のグリッド"
+      "ja": "不規則な表のグリッド",
+      "pt": "Grade de tabela irregular"
     },
     "cause": {
       "en": "A table's rows do not form a regular grid: merged cells overlap, or cells covered by a colSpan/rowSpan are missing instead of marked with `hiddenBy`, so later cells shift columns.",
@@ -2296,7 +2537,8 @@
       "ca": "Les files d'una taula no formen una quadrícula regular: hi ha cel·les combinades que se superposen, o falten les cel·les que cobreix un colSpan/rowSpan en lloc de marcar-les amb `hiddenBy`, de manera que les cel·les següents es desplacen de columna.",
       "zh": "某张表的各行没有构成规整的网格：合并单元格相互重叠，或者被colSpan/rowSpan覆盖的单元格缺失而没有用`hiddenBy`标记，于是后面的单元格错了栏。",
       "ar": "صفوف جدول لا تشكّل شبكة منتظمة: خلايا مدمجة تتداخل، أو خلايا يغطيها colSpan/rowSpan مفقودة بدل تعليمها بـ `hiddenBy`، فتنزاح الخلايا اللاحقة عن أعمدتها.",
-      "ja": "表の行が規則的なグリッドになっていません。結合セルが重なっているか、colSpan/rowSpanで覆われるセルが`hiddenBy`で示されずに欠けているため、後続のセルの列がずれます。"
+      "ja": "表の行が規則的なグリッドになっていません。結合セルが重なっているか、colSpan/rowSpanで覆われるセルが`hiddenBy`で示されずに欠けているため、後続のセルの列がずれます。",
+      "pt": "As linhas de uma tabela não formam uma grade regular: há células mescladas que se sobrepõem, ou as células cobertas por um colSpan/rowSpan foram omitidas em vez de marcadas com `hiddenBy`, e as células seguintes mudam de coluna."
     },
     "fix": {
       "en": "Keep every row the same length and mark covered cells with `hiddenBy` (or build merges with `mergeCells`).",
@@ -2304,7 +2546,8 @@
       "ca": "Mantén totes les files amb la mateixa longitud i marca les cel·les cobertes amb `hiddenBy` (o crea les combinacions amb `mergeCells`).",
       "zh": "让每一行长度相同，并用`hiddenBy`标记被覆盖的单元格（或者用`mergeCells`来合并）。",
       "ar": "اجعل كل الصفوف بطول واحد وعلّم الخلايا المغطّاة بـ `hiddenBy` (أو ادمج الخلايا بـ `mergeCells`).",
-      "ja": "すべての行の長さをそろえ、覆われるセルに`hiddenBy`を付けてください（または`mergeCells`で結合を作ってください）。"
+      "ja": "すべての行の長さをそろえ、覆われるセルに`hiddenBy`を付けてください（または`mergeCells`で結合を作ってください）。",
+      "pt": "Mantenha todas as linhas com o mesmo comprimento e marque as células cobertas com `hiddenBy` (ou crie as mesclagens com `mergeCells`)."
     },
     "docs": {
       "slug": "configuration",
@@ -2314,7 +2557,8 @@
         "ca": "Avisos del document",
         "zh": "文档中的警告",
         "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告"
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
       }
     }
   },
@@ -2326,7 +2570,8 @@
       "ca": "Imatge sense registrar",
       "zh": "图片未注册",
       "ar": "صورة غير مسجَّلة",
-      "ja": "画像を利用できません"
+      "ja": "画像を利用できません",
+      "pt": "Imagem não registrada"
     },
     "cause": {
       "en": "A placed image (figure, cell picture, callout icon or design image) had no registered bitmap when the page was painted, so a grey placeholder was drawn.",
@@ -2334,7 +2579,8 @@
       "ca": "Una imatge col·locada (figura, imatge de cel·la, icona de requadre o imatge de disseny) no tenia cap mapa de bits registrat en pintar la pàgina, de manera que es va dibuixar un marcador gris.",
       "zh": "某个放置的图片（图、单元格图片、标注框图标或设计图片）在绘制页面时还没有注册位图，因此画了一个灰色占位框。",
       "ar": "صورة موضوعة (شكل، أو صورة خلية، أو أيقونة إطار، أو صورة تصميم) لم تكن لها صورة نقطية مسجَّلة عند رسم الصفحة، فرُسم مكانها عنصر نائب رمادي.",
-      "ja": "配置された画像（図、セル内の画像、囲みのアイコン、デザイン画像）に、ページの描画時点で登録済みのビットマップがなかったため、灰色のプレースホルダーが描かれました。"
+      "ja": "配置された画像（図、セル内の画像、囲みのアイコン、デザイン画像）に、ページの描画時点で登録済みのビットマップがなかったため、灰色のプレースホルダーが描かれました。",
+      "pt": "Uma imagem posicionada (figura, imagem de célula, ícone de boxe ou imagem de design) não tinha bitmap registrado quando a página foi pintada, então foi desenhado um marcador cinza no lugar."
     },
     "fix": {
       "en": "Register every `fileId` before rendering (`registerResourceImage`, or `imageUrl`/`resourceBytes` for HTML and PDF).",
@@ -2342,7 +2588,8 @@
       "ca": "Registra cada `fileId` abans de renderitzar (`registerResourceImage`, o `imageUrl`/`resourceBytes` per a HTML i PDF).",
       "zh": "渲染前注册每一个`fileId`（用`registerResourceImage`，HTML和PDF则用`imageUrl`/`resourceBytes`）。",
       "ar": "سجّل كل `fileId` قبل الرسم (`registerResourceImage`، أو `imageUrl`/`resourceBytes` لـ HTML وPDF).",
-      "ja": "描画の前にすべての`fileId`を登録してください（`registerResourceImage`、HTMLとPDFでは`imageUrl`/`resourceBytes`）。"
+      "ja": "描画の前にすべての`fileId`を登録してください（`registerResourceImage`、HTMLとPDFでは`imageUrl`/`resourceBytes`）。",
+      "pt": "Registre cada `fileId` antes de renderizar (`registerResourceImage`, ou `imageUrl`/`resourceBytes` para HTML e PDF)."
     },
     "docs": {
       "slug": "configuration",
@@ -2352,7 +2599,8 @@
         "ca": "Avisos del document",
         "zh": "文档中的警告",
         "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告"
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
       }
     }
   },
@@ -2364,7 +2612,8 @@
       "ca": "Pila de fonts a fontFamily",
       "zh": "fontFamily中写了字体栈",
       "ar": "قائمة خطوط في fontFamily",
-      "ja": "フォントファミリーにフォントスタックを指定"
+      "ja": "フォントファミリーにフォントスタックを指定",
+      "pt": "Pilha de fontes em fontFamily"
     },
     "cause": {
       "en": "A `fontFamily` holds a CSS stack (`'Lora, serif'`); the engine measures and draws with the first family only.",
@@ -2372,7 +2621,8 @@
       "ca": "Un `fontFamily` conté una pila CSS (`'Lora, serif'`); el motor mesura i dibuixa només amb la primera família.",
       "zh": "某个`fontFamily`写的是CSS字体栈（`'Lora, serif'`）；引擎只用第一个字体族来测量和绘制。",
       "ar": "قيمة `fontFamily` تحوي قائمة خطوط CSS (`'Lora, serif'`)؛ والمحرّك يقيس ويرسم بالعائلة الأولى وحدها.",
-      "ja": "`fontFamily`にCSSのフォントスタック（`'Lora, serif'`）が書かれています。エンジンは最初のファミリーだけで計測・描画します。"
+      "ja": "`fontFamily`にCSSのフォントスタック（`'Lora, serif'`）が書かれています。エンジンは最初のファミリーだけで計測・描画します。",
+      "pt": "Um `fontFamily` contém uma pilha CSS (`'Lora, serif'`); o motor mede e desenha só com a primeira família."
     },
     "fix": {
       "en": "Give a single family name and load its faces before the first build.",
@@ -2380,7 +2630,8 @@
       "ca": "Indica una sola família i carrega'n les fonts abans de la primera composició.",
       "zh": "只写一个字体族名称，并在第一次构建前加载它的各个字面。",
       "ar": "أعطِ اسم عائلة واحدة وحمّل أوجهها قبل أول بناء.",
-      "ja": "ファミリー名を1つだけ指定し、最初のレイアウトの前にそのフェイスを読み込んでください。"
+      "ja": "ファミリー名を1つだけ指定し、最初のレイアウトの前にそのフェイスを読み込んでください。",
+      "pt": "Indique um único nome de família e carregue as fontes dela antes da primeira composição."
     },
     "docs": {
       "slug": "configuration",
@@ -2390,7 +2641,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2402,7 +2654,8 @@
       "ca": "Format de numeració desconegut",
       "zh": "未知编号格式",
       "ar": "صيغة أرقام غير معروفة",
-      "ja": "不明な番号形式"
+      "ja": "不明な番号形式",
+      "pt": "Formato de numeração desconhecido"
     },
     "cause": {
       "en": "A list `numberFormat`, a page numbering `format` or a resource type's counter format is none of the accepted spellings, so it numbers in decimal.",
@@ -2410,7 +2663,8 @@
       "ca": "Un `numberFormat` de llista, un `format` de numeració de pàgines o el format de comptador d'un tipus de recurs no és cap de les grafies acceptades, de manera que numera en decimal.",
       "zh": "列表的`numberFormat`、页码的`format`或某个资源类型的计数器格式不属于任何可接受的写法，因此按十进制编号。",
       "ar": "قيمة `numberFormat` لقائمة، أو `format` لترقيم الصفحات، أو صيغة عدّاد نوع مورد، ليست أيًّا من الكتابات المقبولة، فيُرقَّم بالأرقام العشرية.",
-      "ja": "リストの`numberFormat`、ノンブルの`format`、またはリソースの種類のカウンター形式が、受け付ける綴りのどれでもないため、アラビア数字で番号が振られます。"
+      "ja": "リストの`numberFormat`、ノンブルの`format`、またはリソースの種類のカウンター形式が、受け付ける綴りのどれでもないため、アラビア数字で番号が振られます。",
+      "pt": "Um `numberFormat` de lista, um `format` de numeração de páginas ou o formato de contador de um tipo de recurso não corresponde a nenhuma das grafias aceitas, então a numeração sai em decimal."
     },
     "fix": {
       "en": "Use one of the documented format spellings (for example `decimal`/`arabic`, `lower-roman`, `upper-alpha`).",
@@ -2418,7 +2672,8 @@
       "ca": "Fes servir una de les grafies de format documentades (per exemple `decimal`/`arabic`, `lower-roman`, `upper-alpha`).",
       "zh": "使用文档中列出的某种格式写法（例如`decimal`/`arabic`、`lower-roman`、`upper-alpha`）。",
       "ar": "استعمل إحدى كتابات الصيغ الموثّقة (مثل `decimal`/`arabic`، `lower-roman`، `upper-alpha`).",
-      "ja": "ドキュメントに記載された形式の綴りのいずれかを使ってください（たとえば`decimal`/`arabic`、`lower-roman`、`upper-alpha`）。"
+      "ja": "ドキュメントに記載された形式の綴りのいずれかを使ってください（たとえば`decimal`/`arabic`、`lower-roman`、`upper-alpha`）。",
+      "pt": "Use uma das grafias de formato documentadas (por exemplo `decimal`/`arabic`, `lower-roman`, `upper-alpha`)."
     },
     "docs": {
       "slug": "configuration",
@@ -2428,7 +2683,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2440,7 +2696,8 @@
       "ca": "Paràmetre desconegut",
       "zh": "未知设置项",
       "ar": "إعداد غير معروف",
-      "ja": "不明な設定"
+      "ja": "不明な設定",
+      "pt": "Configuração desconhecida"
     },
     "cause": {
       "en": "The heading settings, a heading style or a paragraph style carry a key the engine does not have, often a typo or a name borrowed from another tool, and the engine ignores it.",
@@ -2448,7 +2705,8 @@
       "ca": "La configuració dels títols, un estil de títol o un estil de paràgraf porten una clau que el motor no té, sovint una errada o un nom tret d'una altra eina, i el motor la ignora.",
       "zh": "标题设置、某个标题样式或段落样式中带有引擎没有的键，通常是笔误或从别的工具借来的名称，引擎会忽略它。",
       "ar": "إعدادات العناوين أو نمط عنوان أو نمط فقرة يحمل مفتاحًا لا يعرفه المحرّك، وكثيرًا ما يكون خطأً مطبعيًّا أو اسمًا مستعارًا من أداة أخرى، فيتجاهله المحرّك.",
-      "ja": "見出しの設定、見出しスタイル、または段落スタイルに、エンジンにないキーが含まれています。多くはタイプミスか、ほかのツールから借りた名前です。エンジンはこのキーを無視します。"
+      "ja": "見出しの設定、見出しスタイル、または段落スタイルに、エンジンにないキーが含まれています。多くはタイプミスか、ほかのツールから借りた名前です。エンジンはこのキーを無視します。",
+      "pt": "As configurações de títulos, um estilo de título ou um estilo de parágrafo trazem uma chave que o motor não tem, muitas vezes um erro de digitação ou um nome tirado de outra ferramenta, e o motor a ignora."
     },
     "fix": {
       "en": "Rename the key to the setting the warning suggests, or remove it.",
@@ -2456,7 +2714,8 @@
       "ca": "Canvia la clau pel paràmetre que proposa l'avís, o treu-la.",
       "zh": "把这个键改成警告建议的设置名，或删掉它。",
       "ar": "أعد تسمية المفتاح بالإعداد الذي يقترحه التحذير، أو أزله.",
-      "ja": "警告が示す設定名にキーを変更するか、キーを削除してください。"
+      "ja": "警告が示す設定名にキーを変更するか、キーを削除してください。",
+      "pt": "Troque a chave pela configuração que o aviso sugere ou remova-a."
     },
     "docs": {
       "slug": "configuration",
@@ -2466,7 +2725,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2478,7 +2738,8 @@
       "ca": "Valor de paràmetre desconegut",
       "zh": "未知的设置值",
       "ar": "قيمة إعداد غير معروفة",
-      "ja": "不明な設定値"
+      "ja": "不明な設定値",
+      "pt": "Valor de configuração desconhecido"
     },
     "cause": {
       "en": "A setting that takes one of a few words, such as `direction` (`auto`, `ltr` or `rtl`), holds another one, and the engine reads its default instead.",
@@ -2486,7 +2747,8 @@
       "ca": "Un paràmetre que admet unes poques paraules, com ara `direction` (`auto`, `ltr` o `rtl`), en porta una altra, i el motor llegeix en lloc seu el valor per defecte.",
       "zh": "某个只能取几个固定词的设置（例如`direction`，可取`auto`、`ltr`或`rtl`）写了别的值，引擎改用默认值。",
       "ar": "إعداد يأخذ كلمة من بضع كلمات، مثل `direction` (`auto` أو `ltr` أو `rtl`)، يحمل كلمة أخرى، فيقرأ المحرّك قيمته الافتراضية بدلها.",
-      "ja": "いくつかの語から1つを選ぶ設定（たとえば`direction`：`auto`、`ltr`、`rtl`）に別の語が指定されているため、エンジンは代わりに既定値を使います。"
+      "ja": "いくつかの語から1つを選ぶ設定（たとえば`direction`：`auto`、`ltr`、`rtl`）に別の語が指定されているため、エンジンは代わりに既定値を使います。",
+      "pt": "Uma configuração que aceita poucas palavras, como `direction` (`auto`, `ltr` ou `rtl`), traz outra, e o motor usa o valor padrão no lugar dela."
     },
     "fix": {
       "en": "Write one of the values the setting takes, or remove it to keep the default.",
@@ -2494,7 +2756,8 @@
       "ca": "Escriu un dels valors que admet el paràmetre, o treu-lo per quedar-te amb el valor per defecte.",
       "zh": "改成该设置可取的值之一，或删掉它以使用默认值。",
       "ar": "اكتب إحدى القيم التي يأخذها الإعداد، أو أزله للإبقاء على القيمة الافتراضية.",
-      "ja": "その設定が受け付ける値のいずれかを書くか、設定を削除して既定値のままにしてください。"
+      "ja": "その設定が受け付ける値のいずれかを書くか、設定を削除して既定値のままにしてください。",
+      "pt": "Escreva um dos valores que a configuração aceita ou remova-a para manter o padrão."
     },
     "docs": {
       "slug": "configuration",
@@ -2504,7 +2767,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2516,7 +2780,8 @@
       "ca": "Llengua de partició de mots no inclosa",
       "zh": "断词语言未内置",
       "ar": "لغة التقسيم غير مضمَّنة",
-      "ja": "この言語のハイフネーションパターンがありません"
+      "ja": "この言語のハイフネーションパターンがありません",
+      "pt": "Idioma de hifenização não incluído"
     },
     "cause": {
       "en": "The hyphenation locale is not one of the bundled pattern sets (en-us, es, fr, de, it, pt, ca, nl) after normalising region tags, so English patterns were used.",
@@ -2524,7 +2789,8 @@
       "ca": "La llengua de partició de mots no és cap dels jocs de patrons inclosos (en-us, es, fr, de, it, pt, ca, nl) després de normalitzar la regió, de manera que es van fer servir els patrons de l'anglès.",
       "zh": "断词语言在规范化地区标签后，不属于内置的任何一套断词模式（en-us、es、fr、de、it、pt、ca、nl），因此使用了英语模式。",
       "ar": "لغة تقسيم الكلمات بالواصلة ليست من مجموعات الأنماط المضمَّنة (en-us، es، fr، de، it، pt، ca، nl) بعد توحيد وسوم المناطق، فاستُعملت الأنماط الإنجليزية.",
-      "ja": "地域タグを正規化しても、ハイフネーションのロケールが同梱のパターン（en-us、es、fr、de、it、pt、ca、nl）のどれにも当たらないため、英語のパターンが使われました。"
+      "ja": "地域タグを正規化しても、ハイフネーションのロケールが同梱のパターン（en-us、es、fr、de、it、pt、ca、nl）のどれにも当たらないため、英語のパターンが使われました。",
+      "pt": "O idioma de hifenização não está entre os conjuntos de padrões incluídos (en-us, es, fr, de, it, pt, ca, nl) depois de normalizada a região, então foram usados os padrões do inglês."
     },
     "fix": {
       "en": "Use a bundled locale, or turn hyphenation off for that text.",
@@ -2532,7 +2798,8 @@
       "ca": "Fes servir una llengua inclosa o desactiva la partició de mots per a aquest text.",
       "zh": "使用内置的语言，或对这段文字关闭断词。",
       "ar": "استعمل لغة مضمَّنة، أو عطّل تقسيم الكلمات بالواصلة لذلك النص.",
-      "ja": "同梱のロケールを使うか、そのテキストのハイフネーションを無効にしてください。"
+      "ja": "同梱のロケールを使うか、そのテキストのハイフネーションを無効にしてください。",
+      "pt": "Use um idioma incluído ou desative a hifenização para esse texto."
     },
     "docs": {
       "slug": "configuration",
@@ -2542,7 +2809,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2554,7 +2822,8 @@
       "ca": "Marca d'índex sense terme",
       "zh": "索引标记缺少词条",
       "ar": "علامة فهرس بلا مصطلح",
-      "ja": "語のない索引マーク"
+      "ja": "語のない索引マーク",
+      "pt": "Marca de índice sem termo"
     },
     "cause": {
       "en": "An :index{…} mark has no term attribute and no bracketed text, so it files nothing.",
@@ -2562,7 +2831,8 @@
       "ca": "Una marca :index{…} no té atribut term ni text entre claudàtors, de manera que no registra res.",
       "zh": "某个:index{…}标记既没有term属性，也没有方括号中的文字，因此不会收录任何内容。",
       "ar": "علامة :index{…} ليس لها سمة term ولا نص بين قوسين معقوفين، فلا تضيف شيئًا إلى الفهرس.",
-      "ja": ":index{…}マークにterm属性も角かっこ内のテキストもないため、何も索引に登録されません。"
+      "ja": ":index{…}マークにterm属性も角かっこ内のテキストもないため、何も索引に登録されません。",
+      "pt": "Uma marca :index{…} não tem atributo term nem texto entre colchetes, então não registra nada no índice."
     },
     "fix": {
       "en": "Write :index[word] to index a word of the text, or :index{term=\"…\"} to name the entry.",
@@ -2570,7 +2840,8 @@
       "ca": "Escriu :index[paraula] per indexar una paraula del text, o :index{term=\"…\"} per anomenar l'entrada.",
       "zh": "写:index[word]把正文中的某个词编入索引，或写:index{term=\"…\"}来指定词条。",
       "ar": "اكتب :index[word] لفهرسة كلمة من النص، أو :index{term=\"…\"} لتسمية المدخل.",
-      "ja": "本文の語を索引に入れるなら:index[word]、項目名を指定するなら:index{term=\"…\"}と書いてください。"
+      "ja": "本文の語を索引に入れるなら:index[word]、項目名を指定するなら:index{term=\"…\"}と書いてください。",
+      "pt": "Escreva :index[palavra] para indexar uma palavra do texto, ou :index{term=\"…\"} para dar nome à entrada."
     },
     "docs": {
       "slug": "document-format",
@@ -2580,7 +2851,8 @@
         "ca": "Índex analític",
         "zh": "索引",
         "ar": "الفهرس الأبجدي",
-        "ja": "索引"
+        "ja": "索引",
+        "pt": "Índice remissivo"
       }
     }
   },
@@ -2592,7 +2864,8 @@
       "ca": "Remissió de l'índex a una entrada que no existeix",
       "zh": "索引互见指向不存在的词条",
       "ar": "إحالة فهرس إلى مدخل غير موجود",
-      "ja": "存在しない項目への索引の相互参照"
+      "ja": "存在しない項目への索引の相互参照",
+      "pt": "Remissão do índice a uma entrada inexistente"
     },
     "cause": {
       "en": "A see or seealso mark points at a term no mark of that index files, so the reader is sent to an entry that is not there.",
@@ -2600,7 +2873,8 @@
       "ca": "Una marca see o seealso remet a un terme que cap marca d'aquell índex no registra, de manera que el lector va a parar a una entrada que no hi és.",
       "zh": "某个see或seealso标记指向的词条，在该索引中没有任何标记收录，于是读者被引向一个不存在的词条。",
       "ar": "علامة see أو seealso تشير إلى مصطلح لا تضيفه أي علامة في ذلك الفهرس، فيُحال القارئ إلى مدخل غير موجود.",
-      "ja": "seeまたはseealsoのマークが、その索引のどのマークも登録していない語を指しているため、読者は存在しない項目へ案内されます。"
+      "ja": "seeまたはseealsoのマークが、その索引のどのマークも登録していない語を指しているため、読者は存在しない項目へ案内されます。",
+      "pt": "Uma marca see ou seealso remete a um termo que nenhuma marca desse índice registra, então o leitor é mandado para uma entrada que não existe."
     },
     "fix": {
       "en": "Write the target exactly as its entry's term (levels joined with !), or mark the target term somewhere in the text.",
@@ -2608,7 +2882,8 @@
       "ca": "Escriu la destinació igual que el terme de la seva entrada (amb els nivells units per !), o marca aquest terme en algun lloc del text.",
       "zh": "按目标词条的term原样写出目标（各级之间用!连接），或在正文某处标记目标词条。",
       "ar": "اكتب الهدف تمامًا كمصطلح مدخله (والمستويات موصولة بـ !)، أو علّم المصطلح الهدف في موضع ما من النص.",
-      "ja": "参照先は項目の語とまったく同じに書く（階層は!でつなぐ）か、参照先の語を本文のどこかでマークしてください。"
+      "ja": "参照先は項目の語とまったく同じに書く（階層は!でつなぐ）か、参照先の語を本文のどこかでマークしてください。",
+      "pt": "Escreva o destino exatamente como o termo da entrada (com os níveis unidos por !) ou marque esse termo em algum lugar do texto."
     },
     "docs": {
       "slug": "document-format",
@@ -2618,7 +2893,8 @@
         "ca": "Índex analític",
         "zh": "索引",
         "ar": "الفهرس الأبجدي",
-        "ja": "索引"
+        "ja": "索引",
+        "pt": "Índice remissivo"
       }
     }
   },
@@ -2630,7 +2906,8 @@
       "ca": "Interval de l'índex sense tancar",
       "zh": "索引范围未闭合",
       "ar": "نطاق فهرس غير مغلق",
-      "ja": "閉じられていない索引の範囲"
+      "ja": "閉じられていない索引の範囲",
+      "pt": "Intervalo do índice não fechado"
     },
     "cause": {
       "en": "A range=\"start\" mark has no range=\"end\" mark with the same term (or the reverse), so the entry prints one page instead of the range.",
@@ -2638,7 +2915,8 @@
       "ca": "Una marca range=\"start\" no té el seu range=\"end\" amb el mateix terme (o a l'inrevés), de manera que l'entrada imprimeix una pàgina en lloc de l'interval.",
       "zh": "某个range=\"start\"标记没有同一词条的range=\"end\"标记与之对应（或者反过来），因此该词条只印出一个页码，而不是页码范围。",
       "ar": "علامة range=\"start\" ليس لها علامة range=\"end\" بالمصطلح نفسه (أو العكس)، فيطبع المدخل صفحة واحدة بدل النطاق.",
-      "ja": "range=\"start\"のマークに、同じ語のrange=\"end\"のマークがない（またはその逆）ため、項目には範囲ではなく1ページだけが印字されます。"
+      "ja": "range=\"start\"のマークに、同じ語のrange=\"end\"のマークがない（またはその逆）ため、項目には範囲ではなく1ページだけが印字されます。",
+      "pt": "Uma marca range=\"start\" não tem uma marca range=\"end\" com o mesmo termo (ou o contrário), então a entrada imprime uma única página em vez do intervalo."
     },
     "fix": {
       "en": "Close the range with :index{term=\"…\" range=\"end\"} where the discussion ends, spelling the term the same way.",
@@ -2646,7 +2924,8 @@
       "ca": "Tanca l'interval amb :index{term=\"…\" range=\"end\"} on acaba l'explicació, escrivint el terme igual.",
       "zh": "在论述结束的地方用:index{term=\"…\" range=\"end\"}闭合范围，词条的写法要保持一致。",
       "ar": "أغلق النطاق بـ :index{term=\"…\" range=\"end\"} حيث ينتهي النقاش، بكتابة المصطلح بالطريقة نفسها.",
-      "ja": "記述の終わる位置に:index{term=\"…\" range=\"end\"}と書いて範囲を閉じてください。語は同じ綴りで書きます。"
+      "ja": "記述の終わる位置に:index{term=\"…\" range=\"end\"}と書いて範囲を閉じてください。語は同じ綴りで書きます。",
+      "pt": "Feche o intervalo com :index{term=\"…\" range=\"end\"} onde a explicação termina, escrevendo o termo do mesmo jeito."
     },
     "docs": {
       "slug": "document-format",
@@ -2656,7 +2935,8 @@
         "ca": "Índex analític",
         "zh": "索引",
         "ar": "الفهرس الأبجدي",
-        "ja": "索引"
+        "ja": "索引",
+        "pt": "Índice remissivo"
       }
     }
   },
@@ -2668,7 +2948,8 @@
       "ca": "Entrada de l'índex sense lectura",
       "zh": "索引词条缺少读音",
       "ar": "مدخل فهرس بلا قراءة",
-      "ja": "読みのない索引項目"
+      "ja": "読みのない索引項目",
+      "pt": "Entrada do índice sem leitura"
     },
     "cause": {
       "en": "A Japanese index files entries by their reading, and no algorithm reads kanji reliably: this entry has a kanji and none of its marks gives a reading (yomi, kana ruby on the marked text, or a kana sort key), so it files after the kana entries, by code point.",
@@ -2676,7 +2957,8 @@
       "ca": "Un índex japonès ordena les entrades per la seva lectura, i cap algorisme no llegeix els kanji amb fiabilitat: aquesta entrada té un kanji i cap de les seves marques no en dona la lectura (yomi, ruby en kana sobre el text marcat o una clau sort en kana), de manera que s'ordena després de les entrades en kana, per punt de codi.",
       "zh": "日文索引按读音排列词条，而汉字的读音无法可靠地自动推出：这个词条含有汉字，它的标记都没有给出读音（yomi、标记文字上的假名注音，或用假名写的sort键），因此它按码位排在假名词条之后。",
       "ar": "يرتّب الفهرس الياباني المداخل حسب قراءتها، ولا توجد خوارزمية تقرأ الكانجي بموثوقية: هذا المدخل فيه حرف كانجي ولا تعطي أي من علاماته قراءة (yomi، أو روبي بالكانا على النص المعلَّم، أو مفتاح sort بالكانا)، فيُرتَّب بعد مداخل الكانا حسب نقطة الترميز.",
-      "ja": "日本語の索引は項目を読みで並べますが、漢字を確実に読めるアルゴリズムはありません。この項目には漢字が含まれ、どのマークも読み（yomi、マークしたテキストのかなのルビ、またはかなのソートキー）を与えていないため、かなの項目の後にコードポイント順で並びます。"
+      "ja": "日本語の索引は項目を読みで並べますが、漢字を確実に読めるアルゴリズムはありません。この項目には漢字が含まれ、どのマークも読み（yomi、マークしたテキストのかなのルビ、またはかなのソートキー）を与えていないため、かなの項目の後にコードポイント順で並びます。",
+      "pt": "Um índice japonês ordena as entradas pela leitura, e nenhum algoritmo lê kanji com segurança: esta entrada tem um kanji e nenhuma das marcas dela dá uma leitura (yomi, rubi em kana sobre o texto marcado ou uma chave sort em kana), então ela é ordenada depois das entradas em kana, por ponto de código."
     },
     "fix": {
       "en": "Add yomi=\"…\" with the reading in kana to one of the entry's marks (:index[東京]{yomi=\"とうきょう\"}), or mark text that carries ruby ({東京|とう|きょう}).",
@@ -2684,7 +2966,8 @@
       "ca": "Afegeix yomi=\"…\" amb la lectura en kana a una de les marques de l'entrada (:index[東京]{yomi=\"とうきょう\"}), o marca un text que porti ruby ({東京|とう|きょう}).",
       "zh": "在词条的某个标记上加 yomi=\"…\"，用假名写出读音（:index[東京]{yomi=\"とうきょう\"}），或标记带注音的文字（{東京|とう|きょう}）。",
       "ar": "أضف yomi=\"…\" بالقراءة بالكانا إلى إحدى علامات المدخل (:index[東京]{yomi=\"とうきょう\"})، أو علّم نصًّا يحمل روبي ({東京|とう|きょう}).",
-      "ja": "項目のマークのどれかに、かなの読みを書いたyomi=\"…\"を加える（:index[東京]{yomi=\"とうきょう\"}）か、ルビ付きのテキスト（{東京|とう|きょう}）をマークしてください。"
+      "ja": "項目のマークのどれかに、かなの読みを書いたyomi=\"…\"を加える（:index[東京]{yomi=\"とうきょう\"}）か、ルビ付きのテキスト（{東京|とう|きょう}）をマークしてください。",
+      "pt": "Adicione yomi=\"…\" com a leitura em kana a uma das marcas da entrada (:index[東京]{yomi=\"とうきょう\"}) ou marque um texto que tenha rubi ({東京|とう|きょう})."
     },
     "docs": {
       "slug": "japanese-layout",
@@ -2694,7 +2977,8 @@
         "ca": "Índex en ordre gojūon",
         "zh": "五十音顺索引",
         "ar": "الفهرس بترتيب غوجوون",
-        "ja": "五十音順の索引"
+        "ja": "五十音順の索引",
+        "pt": "Índice remissivo em ordem gojūon"
       }
     }
   },
@@ -2706,7 +2990,8 @@
       "ca": "Caràcters sense glif en una font del PDF",
       "zh": "PDF字体中缺少字符",
       "ar": "حروف مفقودة من خط PDF",
-      "ja": "PDFのフォントにない文字"
+      "ja": "PDFのフォントにない文字",
+      "pt": "Caracteres sem glifo numa fonte do PDF"
     },
     "cause": {
       "en": "The last PDF set characters that no file of a face has a glyph for, such as a Chinese family served only as its Latin file, or Fontsource's chinese-traditional subset of Noto Serif TC, which has no full-width ，！？（）. They print as the font's empty box. postext-pdf reports it through onWarning as a missingGlyph warning.",
@@ -2714,7 +2999,8 @@
       "ca": "L'últim PDF va compondre caràcters per als quals cap fitxer d'una variant no té glif, com ara una família xinesa servida només amb el seu fitxer llatí, o el subconjunt chinese-traditional de Noto Serif TC a Fontsource, que no té ，！？（） d'amplada completa. S'imprimeixen com la caixa buida de la font. postext-pdf ho notifica per onWarning com a avís missingGlyph.",
       "zh": "上一次生成的PDF排了一些字符，而某个字面的所有文件中都没有这些字符的字形，比如一个只提供了拉丁文件的中文字体族，又比如Fontsource提供的Noto Serif TC的chinese-traditional子集，其中没有全角的“，！？（）”。这些字符会印成字体的空框。postext-pdf通过onWarning以missingGlyph警告报告这一问题。",
       "ar": "نضّد آخر ملف PDF حروفًا لا يحوي أي ملف من أوجه الخط شكلًا لها، كعائلة صينية لم يُقدَّم منها إلا ملفها اللاتيني، أو المجموعة الجزئية chinese-traditional من Noto Serif TC في Fontsource، وهي خالية من ，！？（） بالعرض الكامل. فتُطبع مربعَ الخط الفارغ. ويبلّغ postext-pdf عن ذلك عبر onWarning بتحذير missingGlyph.",
-      "ja": "直前のPDFで、どのフェイスのファイルにもグリフのない文字が組まれました。たとえば欧文用のファイルしか配信されていない中国語のファミリーや、全角の，！？（）を含まない、FontsourceのNoto Serif TCのchinese-traditionalサブセットです。これらの文字はフォントの空の四角として印字されます。postext-pdfはこれをonWarningを通じてmissingGlyph警告として報告します。"
+      "ja": "直前のPDFで、どのフェイスのファイルにもグリフのない文字が組まれました。たとえば欧文用のファイルしか配信されていない中国語のファミリーや、全角の，！？（）を含まない、FontsourceのNoto Serif TCのchinese-traditionalサブセットです。これらの文字はフォントの空の四角として印字されます。postext-pdfはこれをonWarningを通じてmissingGlyph警告として報告します。",
+      "pt": "O último PDF compôs caracteres para os quais nenhum arquivo de uma variante tem glifo, como uma família chinesa servida só com o arquivo latino, ou o subconjunto chinese-traditional da Noto Serif TC na Fontsource, que não tem ，！？（） de largura total. Eles saem impressos como a caixa vazia da fonte. O postext-pdf informa isso por onWarning como aviso missingGlyph."
     },
     "fix": {
       "en": "Give the PDF the files that hold those characters (the numbered unicode-range slices of a Fontsource CJK family), or choose a family that covers them.",
@@ -2722,7 +3008,8 @@
       "ca": "Dona al PDF els fitxers que contenen aquests caràcters (els fragments numerats per unicode-range d'una família CJK de Fontsource) o tria una família que els inclogui.",
       "zh": "给PDF提供包含这些字符的文件（Fontsource中日韩字体族按unicode-range编号的各个分片），或者换一个覆盖这些字符的字体族。",
       "ar": "أعطِ ملف PDF الملفات التي تحوي تلك الحروف (شرائح unicode-range المرقّمة لعائلة CJK من Fontsource)، أو اختر عائلة تغطيها.",
-      "ja": "それらの文字を含むファイル（FontsourceのCJKファミリーの、番号付きunicode-rangeスライス）をPDFに渡すか、それらの文字をカバーするファミリーを選んでください。"
+      "ja": "それらの文字を含むファイル（FontsourceのCJKファミリーの、番号付きunicode-rangeスライス）をPDFに渡すか、それらの文字をカバーするファミリーを選んでください。",
+      "pt": "Forneça ao PDF os arquivos que contêm esses caracteres (as fatias numeradas por unicode-range de uma família CJK da Fontsource) ou escolha uma família que os inclua."
     },
     "docs": {
       "slug": "configuration",
@@ -2732,7 +3019,8 @@
         "ca": "Fonts xineses, japoneses i coreanes",
         "zh": "中文、日文和韩文字体",
         "ar": "خطوط الصينية واليابانية والكورية",
-        "ja": "中国語・日本語・韓国語のフォント"
+        "ja": "中国語・日本語・韓国語のフォント",
+        "pt": "Fontes chinesas, japonesas e coreanas"
       }
     }
   },
@@ -2744,7 +3032,8 @@
       "ca": "Font variable al PDF",
       "zh": "PDF中的可变字体",
       "ar": "خط متغيّر في ملف PDF",
-      "ja": "PDF内の可変フォント"
+      "ja": "PDF内の可変フォント",
+      "pt": "Fonte variável no PDF"
     },
     "cause": {
       "en": "A face of the last PDF came from a variable font asked for at a weight other than its default instance. pdf-lib embeds the default instance only, so that text prints at the default weight (a bold set from NotoSerifSC[wght].ttf prints regular).",
@@ -2752,7 +3041,8 @@
       "ca": "Una variant de l'últim PDF va sortir d'una font variable demanada amb un pes diferent del de la seva instància per defecte. pdf-lib només incrusta la instància per defecte, de manera que aquest text s'imprimeix amb el pes per defecte (una negreta composta amb NotoSerifSC[wght].ttf surt rodona).",
       "zh": "上一次生成的PDF中，有一个字面来自可变字体，而请求的字重不是它的默认实例。pdf-lib只嵌入默认实例，因此这段文字按默认字重印出（用NotoSerifSC[wght].ttf设的粗体会印成常规体）。",
       "ar": "وجه خط في آخر ملف PDF جاء من خط متغيّر طُلب بوزن غير نسخته الافتراضية. ولا يضمّن pdf-lib إلا النسخة الافتراضية، فيُطبع ذلك النص بالوزن الافتراضي (العريض المأخوذ من NotoSerifSC[wght].ttf يُطبع عاديًّا).",
-      "ja": "直前のPDFのフェイスの1つが、既定のインスタンス以外のウェイトで指定された可変フォントから作られました。pdf-libは既定のインスタンスしか埋め込まないため、そのテキストは既定のウェイトで印字されます（NotoSerifSC[wght].ttfで組んだ太字はレギュラーで印字されます）。"
+      "ja": "直前のPDFのフェイスの1つが、既定のインスタンス以外のウェイトで指定された可変フォントから作られました。pdf-libは既定のインスタンスしか埋め込まないため、そのテキストは既定のウェイトで印字されます（NotoSerifSC[wght].ttfで組んだ太字はレギュラーで印字されます）。",
+      "pt": "Uma variante do último PDF veio de uma fonte variável pedida num peso diferente do da instância padrão. O pdf-lib só incorpora a instância padrão, então esse texto sai impresso no peso padrão (um negrito composto com NotoSerifSC[wght].ttf sai no peso regular)."
     },
     "fix": {
       "en": "Provide one static file per weight (fontTools varLib.instancer cuts them), or use Fontsource, which serves static weights.",
@@ -2760,7 +3050,8 @@
       "ca": "Dona un fitxer estàtic per pes (fontTools varLib.instancer els treu) o fes servir Fontsource, que serveix pesos estàtics.",
       "zh": "每个字重提供一个静态文件（可以用fontTools的varLib.instancer切出来），或者使用提供静态字重的Fontsource。",
       "ar": "وفّر ملفًّا ثابتًا لكل وزن (تقتطعها أداة varLib.instancer من fontTools)، أو استعمل Fontsource، فهو يقدّم أوزانًا ثابتة.",
-      "ja": "ウェイトごとに静的なファイルを1つずつ用意する（fontToolsのvarLib.instancerで切り出せます）か、静的なウェイトを配信するFontsourceを使ってください。"
+      "ja": "ウェイトごとに静的なファイルを1つずつ用意する（fontToolsのvarLib.instancerで切り出せます）か、静的なウェイトを配信するFontsourceを使ってください。",
+      "pt": "Forneça um arquivo estático por peso (o varLib.instancer do fontTools gera esses arquivos) ou use a Fontsource, que serve pesos estáticos."
     },
     "docs": {
       "slug": "configuration",
@@ -2770,7 +3061,8 @@
         "ca": "Fonts xineses, japoneses i coreanes",
         "zh": "中文、日文和韩文字体",
         "ar": "خطوط الصينية واليابانية والكورية",
-        "ja": "中国語・日本語・韓国語のフォント"
+        "ja": "中国語・日本語・韓国語のフォント",
+        "pt": "Fontes chinesas, japonesas e coreanas"
       }
     }
   },
@@ -2782,7 +3074,8 @@
       "ca": "Font CFF gran incrustada sencera",
       "zh": "大型CFF字体被整体嵌入",
       "ar": "خط CFF كبير مضمَّن كاملًا",
-      "ja": "大きなCFFフォントの全体埋め込み"
+      "ja": "大きなCFFフォントの全体埋め込み",
+      "pt": "Fonte CFF grande incorporada inteira"
     },
     "cause": {
       "en": "The last PDF embedded a CFF-flavoured OpenType file (.otf) over 2 MB whole, since postext-pdf does not subset CFF outlines. Source Han Serif adds 8 to 25 MB per weight.",
@@ -2790,7 +3083,8 @@
       "ca": "L'últim PDF va incrustar sencer un fitxer OpenType amb contorns CFF (.otf) de més de 2 MB, perquè postext-pdf no redueix els contorns CFF. Source Han Serif afegeix de 8 a 25 MB per pes.",
       "zh": "上一次生成的PDF整体嵌入了一个超过2 MB的CFF轮廓的OpenType文件（.otf），因为postext-pdf不对CFF轮廓做子集化。思源宋体（Source Han Serif）每个字重会增加8到25 MB。",
       "ar": "ضمّن آخر ملف PDF ملف OpenType بنكهة CFF (.otf) يزيد على 2 MB كاملًا، لأن postext-pdf لا يقتطع مجموعات جزئية من مخططات CFF. ويضيف Source Han Serif من 8 إلى 25 MB لكل وزن.",
-      "ja": "postext-pdfはCFFのアウトラインをサブセット化しないため、直前のPDFに2MBを超えるCFF形式のOpenTypeファイル（.otf）が丸ごと埋め込まれました。Source Han Serifでは1ウェイトあたり8〜25MB増えます。"
+      "ja": "postext-pdfはCFFのアウトラインをサブセット化しないため、直前のPDFに2MBを超えるCFF形式のOpenTypeファイル（.otf）が丸ごと埋め込まれました。Source Han Serifでは1ウェイトあたり8〜25MB増えます。",
+      "pt": "O último PDF incorporou inteiro um arquivo OpenType com contornos CFF (.otf) de mais de 2 MB, porque o postext-pdf não gera subconjuntos de contornos CFF. A Source Han Serif acrescenta de 8 a 25 MB por peso."
     },
     "fix": {
       "en": "Use the TrueType build of the face (Noto Serif CJK from Google Fonts or Fontsource), which is subset to the glyphs used.",
@@ -2798,7 +3092,8 @@
       "ca": "Fes servir la versió TrueType de la font (Noto Serif CJK de Google Fonts o Fontsource), que es redueix als glifs utilitzats.",
       "zh": "改用该字体的TrueType版本（来自Google Fonts或Fontsource的Noto Serif CJK），它会只保留用到的字形。",
       "ar": "استعمل نسخة TrueType من الوجه (Noto Serif CJK من Google Fonts أو Fontsource)، فهي تُقتطع إلى الأشكال المستعملة فقط.",
-      "ja": "そのフェイスのTrueType版（Google FontsまたはFontsourceのNoto Serif CJK）を使ってください。こちらは使われたグリフだけにサブセット化されます。"
+      "ja": "そのフェイスのTrueType版（Google FontsまたはFontsourceのNoto Serif CJK）を使ってください。こちらは使われたグリフだけにサブセット化されます。",
+      "pt": "Use a versão TrueType da fonte (Noto Serif CJK do Google Fonts ou da Fontsource), que é reduzida aos glifos usados."
     },
     "docs": {
       "slug": "configuration",
@@ -2808,7 +3103,8 @@
         "ca": "Fonts xineses, japoneses i coreanes",
         "zh": "中文、日文和韩文字体",
         "ar": "خطوط الصينية واليابانية والكورية",
-        "ja": "中国語・日本語・韓国語のフォント"
+        "ja": "中国語・日本語・韓国語のフォント",
+        "pt": "Fontes chinesas, japonesas e coreanas"
       }
     }
   },
@@ -2820,7 +3116,8 @@
       "ca": "Gir ignorat en text vertical",
       "zh": "竖排文字中忽略旋转",
       "ar": "تجاهل التدوير في النص العمودي",
-      "ja": "縦組みで無視された回転"
+      "ja": "縦組みで無視された回転",
+      "pt": "Rotação ignorada em texto vertical"
     },
     "cause": {
       "en": "A figure or table asks for a quarter turn (placement.rotate) in a document set vertically. Every figure and table of a vertical flow already stands upright, so the turn is not applied and the resource floats in its own span.",
@@ -2828,7 +3125,8 @@
       "ca": "Una figura o una taula demana un quart de volta (placement.rotate) en un document compost en vertical. Totes les figures i taules d'un flux vertical ja estan dretes, de manera que el gir no s'aplica i el recurs flota en el seu propi espai.",
       "zh": "在竖排的文档中，某个图或表要求旋转90度（placement.rotate）。竖排版面中的每个图和表本来就是直立的，因此不会旋转，该资源按自身的span设置浮动。",
       "ar": "شكل أو جدول يطلب ربع دورة (placement.rotate) في مستند منضَّد عموديًّا. وكل شكل وجدول في تدفق عمودي قائم أصلًا، فلا تُطبَّق الدورة ويطفو المورد في امتداده الخاص.",
-      "ja": "縦組みの文書で、図または表が90度の回転（placement.rotate）を求めています。縦組みの流れでは図や表はすでにすべて正立しているため、回転は適用されず、リソースは自身のスパンでフロートとして配置されます。"
+      "ja": "縦組みの文書で、図または表が90度の回転（placement.rotate）を求めています。縦組みの流れでは図や表はすでにすべて正立しているため、回転は適用されず、リソースは自身のスパンでフロートとして配置されます。",
+      "pt": "Uma figura ou tabela pede um quarto de volta (placement.rotate) num documento composto na vertical. Todas as figuras e tabelas de um fluxo vertical já ficam em pé, então a rotação não é aplicada e o recurso flutua no próprio espaço."
     },
     "fix": {
       "en": "Drop placement.rotate, or set the passage in a horizontal section (a heading style whose layout sets writingMode 'horizontal-tb'), where the figure turns as asked.",
@@ -2836,7 +3134,8 @@
       "ca": "Treu placement.rotate o compon aquell passatge en una secció horitzontal (un estil de títol el layout del qual fixi writingMode 'horizontal-tb'), on la figura gira tal com es demana.",
       "zh": "去掉placement.rotate，或者把这段内容放在横排的分节中（用一个layout把writingMode设为'horizontal-tb'的标题样式），图就会按要求旋转。",
       "ar": "احذف placement.rotate، أو انضد المقطع في قسم أفقي (نمط عنوان يضبط تخطيطُه writingMode 'horizontal-tb')، حيث يدور الشكل كما طُلب.",
-      "ja": "placement.rotateを外すか、その箇所を横組みの節（レイアウトでwritingModeを'horizontal-tb'にした見出しスタイル）に置いてください。そこでは図が指定どおりに回転します。"
+      "ja": "placement.rotateを外すか、その箇所を横組みの節（レイアウトでwritingModeを'horizontal-tb'にした見出しスタイル）に置いてください。そこでは図が指定どおりに回転します。",
+      "pt": "Remova placement.rotate ou componha esse trecho numa seção horizontal (um estilo de título cujo layout defina writingMode 'horizontal-tb'), onde a figura gira como pedido."
     },
     "docs": {
       "slug": "configuration",
@@ -2846,7 +3145,8 @@
         "ca": "Escriptura vertical",
         "zh": "竖排",
         "ar": "الكتابة العمودية",
-        "ja": "縦組み"
+        "ja": "縦組み",
+        "pt": "Escrita vertical"
       }
     }
   },
@@ -2858,7 +3158,8 @@
       "ca": "Atribut de paper no vàlid",
       "zh": "纸张属性无效",
       "ar": "سمة ورق غير صالحة",
-      "ja": "用紙の無効な属性"
+      "ja": "用紙の無効な属性",
+      "pt": "Atributo de papel inválido"
     },
     "cause": {
       "en": "A :::paper attribute has an unknown name or a value outside its range (a stock, finish or texture not in the list, a grammage or bulk of 0 or less, a texture strength outside 0–2, a shade that is neither a hex colour nor a palette id). The attribute is ignored.",
@@ -2866,7 +3167,8 @@
       "ca": "Un atribut de :::paper té un nom desconegut o un valor fora del seu rang (un paper, acabat o textura que no és a la llista, un gramatge o un gruix de 0 o menys, una intensitat de textura fora de 0–2, un to que no és un color hexadecimal ni un id de la paleta). L'atribut s'ignora.",
       "zh": ":::paper 的某个属性名称未知，或取值超出范围（纸种、表面处理或纹理不在列表中，克重或松厚度不大于 0，纹理强度不在 0–2 之间，色调既不是十六进制颜色也不是色板 id）。该属性被忽略。",
       "ar": "سمة في :::paper لها اسم غير معروف أو قيمة خارج نطاقها (نوع ورق أو تشطيب أو ملمس ليس في القائمة، أو وزن أو سماكة 0 أو أقل، أو شدة ملمس خارج 0–2، أو ظل ليس لونًا ست عشريًّا ولا معرّفًا من لوحة الألوان). فتُتجاهل السمة.",
-      "ja": ":::paperの属性名が不明か、値が範囲外です（一覧にない用紙の種類・仕上げ・テクスチャー、0以下の坪量や厚さ、0〜2の範囲外のテクスチャーの強さ、16進数の色でもパレットのidでもない色合い）。その属性は無視されます。"
+      "ja": ":::paperの属性名が不明か、値が範囲外です（一覧にない用紙の種類・仕上げ・テクスチャー、0以下の坪量や厚さ、0〜2の範囲外のテクスチャーの強さ、16進数の色でもパレットのidでもない色合い）。その属性は無視されます。",
+      "pt": "Um atributo de :::paper tem um nome desconhecido ou um valor fora da faixa permitida (um papel, acabamento ou textura que não está na lista, uma gramatura ou espessura de 0 ou menos, uma intensidade de textura fora de 0–2, um tom que não é cor hexadecimal nem id da paleta). O atributo é ignorado."
     },
     "fix": {
       "en": "Use the attribute names and values of the Folio viewer's paper settings: type, grammage, bulk, finish, texture, textureStrength, shade, showThrough.",
@@ -2874,7 +3176,8 @@
       "ca": "Fes servir els noms i valors de la configuració de paper del visor Folio: type, grammage, bulk, finish, texture, textureStrength, shade, showThrough.",
       "zh": "使用 Folio 查看器纸张设置的属性名称与取值：type、grammage、bulk、finish、texture、textureStrength、shade、showThrough。",
       "ar": "استعمل أسماء السمات وقيمها كما في إعدادات الورق في عارض Folio: type، grammage، bulk، finish، texture، textureStrength، shade، showThrough.",
-      "ja": "Folioビューアーの用紙設定と同じ属性名と値を使ってください。属性はtype、grammage、bulk、finish、texture、textureStrength、shade、showThroughです。"
+      "ja": "Folioビューアーの用紙設定と同じ属性名と値を使ってください。属性はtype、grammage、bulk、finish、texture、textureStrength、shade、showThroughです。",
+      "pt": "Use os nomes e valores das configurações de papel do visualizador Folio: type, grammage, bulk, finish, texture, textureStrength, shade, showThrough."
     },
     "docs": {
       "slug": "document-format",
@@ -2884,7 +3187,8 @@
         "ca": "`:::paper`",
         "zh": "`:::paper`",
         "ar": "`:::paper`",
-        "ja": "`:::paper`"
+        "ja": "`:::paper`",
+        "pt": "`:::paper`"
       }
     }
   },
@@ -2896,7 +3200,8 @@
       "ca": "Sistema de xifres desconegut",
       "zh": "未知的数字系统",
       "ar": "نظام أرقام غير معروف",
-      "ja": "不明な数字体系"
+      "ja": "不明な数字体系",
+      "pt": "Sistema de algarismos desconhecido"
     },
     "cause": {
       "en": "`numerals` holds a value other than `auto`, `latn`, `arab` or `arabext`, so the generated numbers take the digits of the document language instead.",
@@ -2904,7 +3209,8 @@
       "ca": "`numerals` porta un valor diferent d'`auto`, `latn`, `arab` o `arabext`, de manera que els nombres que genera el motor prenen les xifres de la llengua del document.",
       "zh": "`numerals`的值不是`auto`、`latn`、`arab`或`arabext`，引擎生成的数字改用文档语言的数字。",
       "ar": "`numerals` يحمل قيمة غير `auto` أو `latn` أو `arab` أو `arabext`، فتأخذ الأرقام المولَّدة أرقام لغة المستند بدلها.",
-      "ja": "`numerals`に`auto`、`latn`、`arab`、`arabext`以外の値が指定されているため、生成される番号には文書の言語の数字が使われます。"
+      "ja": "`numerals`に`auto`、`latn`、`arab`、`arabext`以外の値が指定されているため、生成される番号には文書の言語の数字が使われます。",
+      "pt": "`numerals` traz um valor diferente de `auto`, `latn`, `arab` ou `arabext`, então os números gerados usam os algarismos do idioma do documento."
     },
     "fix": {
       "en": "Write `latn` (0–9), `arab` (٠–٩) or `arabext` (۰–۹), or remove the setting to follow the document language.",
@@ -2912,7 +3218,8 @@
       "ca": "Escriu `latn` (0–9), `arab` (٠–٩) o `arabext` (۰–۹), o treu el paràmetre per seguir la llengua del document.",
       "zh": "改为`latn`（0–9）、`arab`（٠–٩）或`arabext`（۰–۹），或删掉该设置以跟随文档语言。",
       "ar": "اكتب `latn` (0–9) أو `arab` (٠–٩) أو `arabext` (۰–۹)، أو أزل الإعداد لاتباع لغة المستند.",
-      "ja": "`latn`（0–9）、`arab`（٠–٩）、`arabext`（۰–۹）のいずれかを書くか、設定を削除して文書の言語に従わせてください。"
+      "ja": "`latn`（0–9）、`arab`（٠–٩）、`arabext`（۰–۹）のいずれかを書くか、設定を削除して文書の言語に従わせてください。",
+      "pt": "Escreva `latn` (0–9), `arab` (٠–٩) ou `arabext` (۰–۹), ou remova a configuração para seguir o idioma do documento."
     },
     "docs": {
       "slug": "configuration",
@@ -2922,7 +3229,8 @@
         "ca": "Avisos de configuració",
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات",
-        "ja": "設定の警告"
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
       }
     }
   },
@@ -2934,7 +3242,8 @@
       "ca": "Vídeo sense portada",
       "zh": "视频没有封面",
       "ar": "فيديو بلا غلاف",
-      "ja": "ポスター画像のない動画"
+      "ja": "ポスター画像のない動画",
+      "pt": "Vídeo sem imagem de capa"
     },
     "cause": {
       "en": "A video resource the text uses has no `video.poster`, so print shows a dark box in the video's ratio with its play mark and QR code.",
@@ -2942,7 +3251,8 @@
       "ca": "Un recurs de vídeo que fa servir el text no té `video.poster`, de manera que l'imprès mostra un requadre fosc amb la proporció del vídeo, la marca de reproducció i el codi QR.",
       "zh": "正文用到的视频资源没有`video.poster`，印刷版显示一个按视频比例的深色方框，带播放标记和二维码。",
       "ar": "مورد فيديو يستعمله النص ليس له `video.poster`، فيظهر في المطبوع مربع داكن بنسبة الفيديو مع علامة التشغيل ورمز QR.",
-      "ja": "本文で使っている動画リソースに`video.poster`がないため、印刷では動画の縦横比の暗いボックスに、再生マークとQRコードだけが表示されます。"
+      "ja": "本文で使っている動画リソースに`video.poster`がないため、印刷では動画の縦横比の暗いボックスに、再生マークとQRコードだけが表示されます。",
+      "pt": "Um recurso de vídeo usado no texto não tem `video.poster`, então o impresso mostra uma caixa escura na proporção do vídeo, com o símbolo de reprodução e o QR code."
     },
     "fix": {
       "en": "Give the video a poster: a frame of the video or a picture of your own (`{ fileId, format, width, height }`), and register its bitmap like any picture.",
@@ -2950,7 +3260,8 @@
       "ca": "Dona una portada al vídeo: un fotograma seu o una imatge pròpia (`{ fileId, format, width, height }`), i registra'n el mapa de bits com qualsevol imatge.",
       "zh": "给视频一张封面：视频中的一帧或自己的图片（`{ fileId, format, width, height }`），并像其他图片一样注册它的位图。",
       "ar": "أعطِ الفيديو غلافًا: إطارًا منه أو صورة خاصة بك (`{ fileId, format, width, height }`)، وسجّل صورته النقطية كأي صورة.",
-      "ja": "動画にポスター画像（動画の1フレームか独自の画像、`{ fileId, format, width, height }`）を指定し、そのビットマップをほかの画像と同じように登録してください。"
+      "ja": "動画にポスター画像（動画の1フレームか独自の画像、`{ fileId, format, width, height }`）を指定し、そのビットマップをほかの画像と同じように登録してください。",
+      "pt": "Dê ao vídeo uma imagem de capa, um quadro do próprio vídeo ou uma imagem sua (`{ fileId, format, width, height }`), e registre o bitmap dela como o de qualquer imagem."
     }
   },
   "videoWithoutUrl": {
@@ -2961,7 +3272,8 @@
       "ca": "Vídeo sense adreça de producció",
       "zh": "视频没有正式发布地址",
       "ar": "فيديو بلا عنوان نشر",
-      "ja": "公開先アドレスのない動画"
+      "ja": "公開先アドレスのない動画",
+      "pt": "Vídeo sem endereço de produção"
     },
     "cause": {
       "en": "A self-hosted video (`source: 'file'`) has no http(s) `video.url`, so its printed poster gets no QR code or link, and an HTML or EPUB output without the file shows the poster.",
@@ -2969,7 +3281,8 @@
       "ca": "Un vídeo propi (`source: 'file'`) no té un `video.url` http(s), de manera que la portada impresa no porta codi QR ni enllaç, i una sortida HTML o EPUB sense el fitxer mostra la portada.",
       "zh": "自有视频（`source: 'file'`）没有 http(s) 的`video.url`，印刷封面因此没有二维码和链接；不带文件的 HTML 或 EPUB 输出只显示封面。",
       "ar": "فيديو خاص (`source: 'file'`) ليس له `video.url` بعنوان http(s)، فلا يحمل غلافه المطبوع رمز QR ولا رابطًا، وتعرض مخرجات HTML أو EPUB التي لا تحمل الملف الغلافَ.",
-      "ja": "自前でホストする動画（`source: 'file'`）にhttp(s)の`video.url`がないため、印刷されるポスター画像にQRコードもリンクも付かず、ファイルを含まないHTMLやEPUBの出力ではポスター画像が表示されます。"
+      "ja": "自前でホストする動画（`source: 'file'`）にhttp(s)の`video.url`がないため、印刷されるポスター画像にQRコードもリンクも付かず、ファイルを含まないHTMLやEPUBの出力ではポスター画像が表示されます。",
+      "pt": "Um vídeo hospedado por você (`source: 'file'`) não tem um `video.url` http(s), então a imagem de capa impressa fica sem QR code e sem link, e uma saída HTML ou EPUB sem o arquivo mostra a imagem de capa."
     },
     "fix": {
       "en": "Set `video.url` to the address the published video will have.",
@@ -2977,7 +3290,8 @@
       "ca": "Posa a `video.url` l'adreça que tindrà el vídeo publicat.",
       "zh": "把`video.url`设为视频发布后的地址。",
       "ar": "اجعل `video.url` العنوانَ الذي سيكون للفيديو بعد نشره.",
-      "ja": "公開後の動画のアドレスを`video.url`に設定してください。"
+      "ja": "公開後の動画のアドレスを`video.url`に設定してください。",
+      "pt": "Defina em `video.url` o endereço que o vídeo terá depois de publicado."
     }
   },
   "videoUrlInvalid": {
@@ -2988,7 +3302,8 @@
       "ca": "Enllaç de vídeo no reconegut",
       "zh": "无法识别的视频链接",
       "ar": "رابط فيديو غير معروف",
-      "ja": "認識できない動画リンク"
+      "ja": "認識できない動画リンク",
+      "pt": "Link de vídeo não reconhecido"
     },
     "cause": {
       "en": "A YouTube or Vimeo video's `video.url` is no link to a video of that platform, so no player is embedded and the poster is shown instead.",
@@ -2996,7 +3311,8 @@
       "ca": "El `video.url` d'un vídeo de YouTube o Vimeo no enllaça un vídeo d'aquesta plataforma, de manera que no s'insereix reproductor i es mostra la portada.",
       "zh": "YouTube 或 Vimeo 视频的`video.url`不是该平台的视频链接，因此不嵌入播放器，改为显示封面。",
       "ar": "`video.url` لفيديو من يوتيوب أو فيميو ليس رابطًا لفيديو على تلك المنصة، فلا يُضمَّن مشغّل ويُعرض الغلاف بدلًا منه.",
-      "ja": "YouTubeまたはVimeoの動画の`video.url`が、そのプラットフォームの動画へのリンクではないため、プレーヤーは埋め込まれず、代わりにポスター画像が表示されます。"
+      "ja": "YouTubeまたはVimeoの動画の`video.url`が、そのプラットフォームの動画へのリンクではないため、プレーヤーは埋め込まれず、代わりにポスター画像が表示されます。",
+      "pt": "O `video.url` de um vídeo do YouTube ou do Vimeo não é um link para um vídeo dessa plataforma, então nenhum player é incorporado e a imagem de capa aparece no lugar."
     },
     "fix": {
       "en": "Paste the video's own link (a watch page, a short link or an embed link), or change `video.source` to the platform it belongs to.",
@@ -3004,7 +3320,8 @@
       "ca": "Enganxa l'enllaç del vídeo (la pàgina del vídeo, un enllaç curt o un d'inserció), o canvia `video.source` a la seva plataforma.",
       "zh": "粘贴视频本身的链接（观看页、短链接或嵌入链接），或把`video.source`改为它所属的平台。",
       "ar": "الصق رابط الفيديو نفسه (صفحة المشاهدة أو رابطًا مختصرًا أو رابط تضمين)، أو غيّر `video.source` إلى منصته.",
-      "ja": "動画そのもののリンク（視聴ページ、短縮リンク、埋め込みリンク）を貼り付けるか、`video.source`を動画の属するプラットフォームに変更してください。"
+      "ja": "動画そのもののリンク（視聴ページ、短縮リンク、埋め込みリンク）を貼り付けるか、`video.source`を動画の属するプラットフォームに変更してください。",
+      "pt": "Cole o link do próprio vídeo (a página do vídeo, um link curto ou um link de incorporação) ou mude `video.source` para a plataforma a que ele pertence."
     }
   },
   "comicSplitSyntax": {
@@ -3015,7 +3332,8 @@
       "ca": "Repartiment de vinyetes il·legible",
       "zh": "分格切分无法读取",
       "ar": "تقسيم إطارات غير مقروء",
-      "ja": "コマ割りを読めない"
+      "ja": "コマ割りを読めない",
+      "pt": "Divisão de quadros ilegível"
     },
     "cause": {
       "en": "A page's split value has a character the grammar does not know, a bracket left open, or both / and | in the same list.",
@@ -3023,7 +3341,8 @@
       "ca": "El valor split d'una pàgina té un caràcter que la gramàtica no coneix, un claudàtor sense tancar, o / i | a la mateixa llista.",
       "zh": "某页的 split 值含有语法不认识的字符、未闭合的方括号，或在同一列表中同时用了 / 和 |。",
       "ar": "في قيمة split لإحدى الصفحات حرف لا تعرفه القواعد، أو قوس مربع لم يُغلق، أو / و | معًا في القائمة نفسها.",
-      "ja": "ページの split の値に、文法にない文字、閉じていない角括弧、または同じリスト内の / と | の混在があります。"
+      "ja": "ページの split の値に、文法にない文字、閉じていない角括弧、または同じリスト内の / と | の混在があります。",
+      "pt": "O valor split de uma página tem um caractere que a gramática não conhece, um colchete sem fechar, ou / e | na mesma lista."
     },
     "fix": {
       "en": "Write sizes as numbers, % or *, separate tiers with / and panels side by side with |, and close every bracket.",
@@ -3031,7 +3350,8 @@
       "ca": "Escriu les mides com a números, % o *, separa les tires amb / i les vinyetes del costat amb |, i tanca cada claudàtor.",
       "zh": "尺寸写成数字、% 或 *，层与层之间用 /，并排的格子用 |，并闭合每个方括号。",
       "ar": "اكتب المقاسات أرقامًا أو % أو *، وافصل الصفوف بـ / والإطارات المتجاورة بـ |، وأغلق كل قوس.",
-      "ja": "サイズは数値、% または * で書き、段は /、横に並ぶコマは | で区切り、角括弧はすべて閉じます。"
+      "ja": "サイズは数値、% または * で書き、段は /、横に並ぶコマは | で区切り、角括弧はすべて閉じます。",
+      "pt": "Escreva os tamanhos como números, % ou *, separe as fileiras com / e os quadros lado a lado com |, e feche todos os colchetes."
     },
     "docs": {
       "slug": "comics",
@@ -3041,7 +3361,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3053,7 +3374,8 @@
       "ca": "Mides de vinyeta per sobre del 100 %",
       "zh": "分格尺寸超过100%",
       "ar": "أحجام الإطارات تتجاوز 100٪",
-      "ja": "コマのサイズが100%を超えている"
+      "ja": "コマのサイズが100%を超えている",
+      "pt": "Tamanhos de quadro acima de 100 %"
     },
     "cause": {
       "en": "The sizes of one list of a split add up to more than 100 % of the cell they divide.",
@@ -3061,7 +3383,8 @@
       "ca": "Les mides d'una llista de split sumen més del 100 % de la cel·la que divideixen.",
       "zh": "split 中某一列表的尺寸加起来超过了被分割格子的 100%。",
       "ar": "مجموع مقاسات قائمة واحدة في split يتجاوز 100 % من الخلية التي تقسمها.",
-      "ja": "split のあるリストのサイズの合計が、分割するセルの 100 % を超えています。"
+      "ja": "split のあるリストのサイズの合計が、分割するセルの 100 % を超えています。",
+      "pt": "Os tamanhos de uma lista de split somam mais de 100 % da célula que dividem."
     },
     "fix": {
       "en": "Lower one of the sizes or turn the last one into * so it takes what is left.",
@@ -3069,7 +3392,8 @@
       "ca": "Abaixa una de les mides o converteix l'última en * perquè ocupi el que queda.",
       "zh": "减小其中一个尺寸，或把最后一个改成 *，让它占用剩下的空间。",
       "ar": "قلّل أحد المقاسات أو اجعل الأخير * ليأخذ ما يتبقى.",
-      "ja": "どれかのサイズを小さくするか、最後を * にして残りを使わせます。"
+      "ja": "どれかのサイズを小さくするか、最後を * にして残りを使わせます。",
+      "pt": "Diminua um dos tamanhos ou transforme o último em * para que ele ocupe o que sobra."
     },
     "docs": {
       "slug": "comics",
@@ -3079,7 +3403,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3091,7 +3416,8 @@
       "ca": "Vinyetes i cel·les no coincideixen",
       "zh": "分格数与格子数不符",
       "ar": "عدد الإطارات لا يطابق الخانات",
-      "ja": "コマの数と割りの数が合わない"
+      "ja": "コマの数と割りの数が合わない",
+      "pt": "Quadros e células não batem"
     },
     "cause": {
       "en": "A page has more ::panel lines than its split has cells, or fewer.",
@@ -3099,7 +3425,8 @@
       "ca": "Una pàgina té més línies ::panel que cel·les el seu split, o menys.",
       "zh": "某页的 ::panel 行数多于或少于其 split 的格子数。",
       "ar": "في الصفحة أسطر ::panel أكثر من خلايا split أو أقل منها.",
-      "ja": "ページの ::panel 行が split のセル数より多いか少ないです。"
+      "ja": "ページの ::panel 行が split のセル数より多いか少ないです。",
+      "pt": "Uma página tem mais linhas ::panel do que células no split, ou menos."
     },
     "fix": {
       "en": "Add or remove ::panel lines, or split or merge cells (the Sandbox's panel toolbar does both in one step).",
@@ -3107,7 +3434,8 @@
       "ca": "Afegeix o treu línies ::panel, o divideix o uneix cel·les (la barra de vinyeta del Sandbox fa les dues coses alhora).",
       "zh": "增加或删除 ::panel 行，或拆分、合并格子（Sandbox 的格子工具栏一步完成两者）。",
       "ar": "أضف أسطر ::panel أو احذفها، أو قسّم الخلايا أو ادمجها (شريط أدوات الإطار في Sandbox يفعل الأمرين دفعة واحدة).",
-      "ja": "::panel 行を追加・削除するか、セルを分割・結合します（Sandbox のコマ用ツールバーなら一度にできます）。"
+      "ja": "::panel 行を追加・削除するか、セルを分割・結合します（Sandbox のコマ用ツールバーなら一度にできます）。",
+      "pt": "Adicione ou remova linhas ::panel, ou divida ou junte células (a barra de ferramentas de quadro do Sandbox faz as duas coisas de uma vez)."
     },
     "docs": {
       "slug": "comics",
@@ -3117,7 +3445,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3129,7 +3458,8 @@
       "ca": "Text fora d'una línia de guió",
       "zh": "不在台词行里的文字",
       "ar": "نص خارج سطر الحوار",
-      "ja": "台本の行になっていない文字"
+      "ja": "台本の行になっていない文字",
+      "pt": "Texto fora de uma linha do roteiro"
     },
     "cause": {
       "en": "A line in a page is not a key: text script line, or comes before the first ::panel.",
@@ -3137,7 +3467,8 @@
       "ca": "Una línia de la pàgina no és una línia de guió clau: text, o va abans del primer ::panel.",
       "zh": "页中某行不是「键: 文字」形式的脚本行，或出现在第一个 ::panel 之前。",
       "ar": "سطر في الصفحة ليس سطر نص بالشكل «مفتاح: نص»، أو يأتي قبل أول ::panel.",
-      "ja": "ページ内の行が「キー: テキスト」形式のスクリプト行ではないか、最初の ::panel より前にあります。"
+      "ja": "ページ内の行が「キー: テキスト」形式のスクリプト行ではないか、最初の ::panel より前にあります。",
+      "pt": "Uma linha da página não é uma linha de roteiro no formato chave: texto, ou vem antes do primeiro ::panel."
     },
     "fix": {
       "en": "Start the line with a speaker id or caption: and a colon, indent continuation lines, and put every line under a ::panel.",
@@ -3145,7 +3476,8 @@
       "ca": "Comença la línia amb un identificador de personatge o caption: i dos punts, sagna les línies de continuació i posa cada línia sota un ::panel.",
       "zh": "行首写角色 id 或 caption 再加冒号，续行要缩进，并把每一行放在某个 ::panel 之下。",
       "ar": "ابدأ السطر بمعرّف الشخصية أو caption ثم نقطتين، وأزح أسطر المتابعة، وضع كل سطر تحت ::panel.",
-      "ja": "行は話者 ID か caption とコロンで始め、続きの行は字下げし、すべての行を ::panel の下に置きます。"
+      "ja": "行は話者 ID か caption とコロンで始め、続きの行は字下げし、すべての行を ::panel の下に置きます。",
+      "pt": "Comece a linha com o id de um personagem ou com caption, seguidos de dois-pontos, recue as linhas de continuação e coloque cada linha sob um ::panel."
     },
     "docs": {
       "slug": "comics",
@@ -3155,7 +3487,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3167,7 +3500,8 @@
       "ca": "Estil de bafarada desconegut",
       "zh": "未知的对白框样式",
       "ar": "نمط فقاعة غير معروف",
-      "ja": "不明なフキダシのスタイル"
+      "ja": "不明なフキダシのスタイル",
+      "pt": "Estilo de balão desconhecido"
     },
     "cause": {
       "en": "A script line names a balloon kind (a flag like {whisper} or style=…) that no balloon style declares.",
@@ -3175,7 +3509,8 @@
       "ca": "Una línia de guió anomena un tipus de globus (una marca com {whisper} o style=…) que cap estil de globus declara.",
       "zh": "某脚本行指定的对白框类型（如 {whisper} 或 style=…）没有任何对白框样式声明。",
       "ar": "يذكر سطر في النص نوع فقاعة (علامة مثل {whisper} أو style=…) لا يعرّفه أي نمط فقاعات.",
-      "ja": "スクリプト行が、どの吹き出しスタイルにもない種類（{whisper} などのフラグや style=…）を指定しています。"
+      "ja": "スクリプト行が、どの吹き出しスタイルにもない種類（{whisper} などのフラグや style=…）を指定しています。",
+      "pt": "Uma linha do roteiro indica um tipo de balão (uma marca como {whisper} ou style=…) que nenhum estilo de balão declara."
     },
     "fix": {
       "en": "Fix the spelling or add the style to comics.balloonStyles.",
@@ -3183,7 +3518,8 @@
       "ca": "Corregeix l'ortografia o afegeix l'estil a comics.balloonStyles.",
       "zh": "改正拼写，或把该样式加入 comics.balloonStyles。",
       "ar": "صحّح الكتابة أو أضف النمط إلى comics.balloonStyles.",
-      "ja": "綴りを直すか、そのスタイルを comics.balloonStyles に追加します。"
+      "ja": "綴りを直すか、そのスタイルを comics.balloonStyles に追加します。",
+      "pt": "Corrija a grafia ou adicione o estilo a comics.balloonStyles."
     },
     "docs": {
       "slug": "comics",
@@ -3193,7 +3529,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3205,7 +3542,8 @@
       "ca": "Dibuix de vinyeta no trobat",
       "zh": "找不到分格画面",
       "ar": "رسم الإطار غير موجود",
-      "ja": "コマの絵が見つからない"
+      "ja": "コマの絵が見つからない",
+      "pt": "Desenho do quadro não encontrado"
     },
     "cause": {
       "en": "A ::panel's art (or pop) names a picture resource that does not exist.",
@@ -3213,7 +3551,8 @@
       "ca": "L'art (o pop) d'un ::panel anomena un recurs d'imatge que no existeix.",
       "zh": "某个 ::panel 的 art（或 pop）指向不存在的图片资源。",
       "ar": "تشير art (أو pop) في أحد ::panel إلى مورد صورة غير موجود.",
-      "ja": "::panel の art（または pop）が存在しない画像リソースを指しています。"
+      "ja": "::panel の art（または pop）が存在しない画像リソースを指しています。",
+      "pt": "O art (ou pop) de um ::panel indica um recurso de imagem que não existe."
     },
     "fix": {
       "en": "Use the id of a bitmap or SVG resource, as listed in the Resources panel.",
@@ -3221,7 +3560,8 @@
       "ca": "Fes servir l'identificador d'un recurs de mapa de bits o SVG, tal com apareix al tauler Recursos.",
       "zh": "使用位图或 SVG 资源的 id，以资源面板中列出的为准。",
       "ar": "استخدم معرّف مورد صورة نقطية أو SVG كما يظهر في لوحة الموارد.",
-      "ja": "リソースパネルにあるビットマップまたは SVG リソースの ID を使います。"
+      "ja": "リソースパネルにあるビットマップまたは SVG リソースの ID を使います。",
+      "pt": "Use o id de um recurso bitmap ou SVG, como aparece no painel Recursos."
     },
     "docs": {
       "slug": "comics",
@@ -3231,7 +3571,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3243,7 +3584,8 @@
       "ca": "Dibuix mostrat sencer a la vinyeta",
       "zh": "画面在分格内完整显示",
       "ar": "الرسم معروض كاملًا في إطاره",
-      "ja": "絵がコマに全体表示されている"
+      "ja": "絵がコマに全体表示されている",
+      "pt": "Desenho mostrado inteiro no quadro"
     },
     "cause": {
       "en": "A panel's cell is too narrow or too flat to crop its picture without cutting into the picture's safe area.",
@@ -3251,7 +3593,8 @@
       "ca": "La cel·la d'una vinyeta és massa estreta o massa baixa per retallar-ne el dibuix sense entrar a la zona segura.",
       "zh": "某格太窄或太扁，无法在不切入安全区的情况下裁切图片。",
       "ar": "خلية الإطار ضيقة جدًا أو منخفضة جدًا بحيث لا يمكن قص صورتها دون المساس بالمنطقة الآمنة.",
-      "ja": "コマのセルが細すぎるか低すぎて、セーフエリアを削らずに画像を切り抜けません。"
+      "ja": "コマのセルが細すぎるか低すぎて、セーフエリアを削らずに画像を切り抜けません。",
+      "pt": "A célula de um quadro é estreita ou baixa demais para cortar o desenho sem entrar na área segura dele."
     },
     "fix": {
       "en": "Drag the split line to give the panel more room, or draw a smaller safe area on the picture.",
@@ -3259,7 +3602,8 @@
       "ca": "Arrossega la línia de split per donar més lloc a la vinyeta, o marca una zona segura més petita al dibuix.",
       "zh": "拖动分割线给这一格更多空间，或在图片上画一个更小的安全区。",
       "ar": "اسحب خط التقسيم لتمنح الإطار مساحة أكبر، أو ارسم منطقة آمنة أصغر على الصورة.",
-      "ja": "分割線をドラッグしてコマを広げるか、画像のセーフエリアを小さくします。"
+      "ja": "分割線をドラッグしてコマを広げるか、画像のセーフエリアを小さくします。",
+      "pt": "Arraste a linha da divisão para dar mais espaço ao quadro ou marque uma área segura menor no desenho."
     },
     "docs": {
       "slug": "comics",
@@ -3269,7 +3613,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3281,7 +3626,8 @@
       "ca": "Punt de personatge fora de la zona segura",
       "zh": "说话点在安全区外",
       "ar": "نقطة المتحدث خارج المنطقة الآمنة",
-      "ja": "話し手の位置がセーフエリアの外"
+      "ja": "話し手の位置がセーフエリアの外",
+      "pt": "Ponto de personagem fora da área segura"
     },
     "cause": {
       "en": "A speaker point marked on a picture lies outside its safe area, so a crop may hide the speaker.",
@@ -3289,7 +3635,8 @@
       "ca": "Un punt de personatge marcat en un dibuix queda fora de la seva zona segura, de manera que un retall el pot amagar.",
       "zh": "图片上标记的角色点位于安全区之外，裁切时角色可能被裁掉。",
       "ar": "نقطة شخصية معلَّمة على الصورة تقع خارج منطقتها الآمنة، فقد يخفيها القص.",
-      "ja": "画像に置いた話者の点がセーフエリアの外にあり、切り抜きで隠れることがあります。"
+      "ja": "画像に置いた話者の点がセーフエリアの外にあり、切り抜きで隠れることがあります。",
+      "pt": "Um ponto de personagem marcado num desenho fica fora da área segura, então um corte pode esconder o personagem."
     },
     "fix": {
       "en": "Enlarge the safe area to include the speaker, or move the point.",
@@ -3297,7 +3644,8 @@
       "ca": "Amplia la zona segura perquè inclogui el personatge, o mou el punt.",
       "zh": "扩大安全区把角色包含进去，或移动该点。",
       "ar": "وسّع المنطقة الآمنة لتشمل الشخصية، أو حرّك النقطة.",
-      "ja": "セーフエリアを広げて話者を含めるか、点を動かします。"
+      "ja": "セーフエリアを広げて話者を含めるか、点を動かします。",
+      "pt": "Amplie a área segura para incluir o personagem ou mova o ponto."
     },
     "docs": {
       "slug": "comics",
@@ -3307,7 +3655,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3319,7 +3668,8 @@
       "ca": "La bafarada no hi cap",
       "zh": "对白框放不下",
       "ar": "الفقاعة لا تتسع",
-      "ja": "フキダシが収まらない"
+      "ja": "フキダシが収まらない",
+      "pt": "O balão não cabe"
     },
     "cause": {
       "en": "A balloon could not be placed in its panel without covering a face, another balloon or the border.",
@@ -3327,7 +3677,8 @@
       "ca": "Un globus no s'ha pogut col·locar a la seva vinyeta sense tapar una cara, un altre globus o la vora.",
       "zh": "某个对白框在格内找不到不遮住脸、其他对白框或边框的位置。",
       "ar": "تعذّر وضع فقاعة في إطارها دون أن تغطي وجهًا أو فقاعة أخرى أو الحد.",
-      "ja": "吹き出しを、顔や他の吹き出し、枠線を覆わずにコマへ置けませんでした。"
+      "ja": "吹き出しを、顔や他の吹き出し、枠線を覆わずにコマへ置けませんでした。",
+      "pt": "Não foi possível posicionar um balão no quadro sem cobrir um rosto, outro balão ou a borda."
     },
     "fix": {
       "en": "Shorten the text, split it over two panels, give the panel more room, or pin the balloon with at=…; the lettering size never shrinks.",
@@ -3335,7 +3686,8 @@
       "ca": "Escurça el text, reparteix-lo en dues vinyetes, dona més lloc a la vinyeta o fixa el globus amb at=…; el cos de la retolació no es redueix mai.",
       "zh": "缩短文字、分到两格、给这一格更多空间，或用 at=… 固定对白框位置；字号永远不会缩小。",
       "ar": "اختصر النص، أو وزّعه على إطارين، أو امنح الإطار مساحة أكبر، أو ثبّت الفقاعة بـ at=…؛ حجم الحروف لا يصغر أبدًا.",
-      "ja": "文を短くする、2 コマに分ける、コマを広げる、または at=… で吹き出しを固定します。写植の文字サイズは縮みません。"
+      "ja": "文を短くする、2 コマに分ける、コマを広げる、または at=… で吹き出しを固定します。写植の文字サイズは縮みません。",
+      "pt": "Encurte o texto, divida-o entre dois quadros, dê mais espaço ao quadro ou fixe o balão com at=…; o corpo do letreiramento nunca diminui."
     },
     "docs": {
       "slug": "comics",
@@ -3345,7 +3697,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   },
@@ -3357,7 +3710,8 @@
       "ca": "Personatge sense punt",
       "zh": "没有说话点的角色",
       "ar": "متحدث بلا نقطة",
-      "ja": "位置のない話し手"
+      "ja": "位置のない話し手",
+      "pt": "Personagem sem ponto"
     },
     "cause": {
       "en": "A script line names a speaker that no picture on the page marks and the cast does not list.",
@@ -3365,7 +3719,8 @@
       "ca": "Una línia de guió anomena un personatge que cap dibuix de la pàgina marca i que el repartiment no inclou.",
       "zh": "某脚本行的角色既没有在该页任何图片上标记，也不在角色表中。",
       "ar": "يذكر سطر في النص شخصية لا تعلّمها أي صورة في الصفحة ولا ترد في قائمة الشخصيات.",
-      "ja": "スクリプト行の話者が、ページのどの画像にも印がなく、キャストにも載っていません。"
+      "ja": "スクリプト行の話者が、ページのどの画像にも印がなく、キャストにも載っていません。",
+      "pt": "Uma linha do roteiro indica um personagem que nenhum desenho da página marca e que não está no elenco."
     },
     "fix": {
       "en": "Mark the speaker on the panel picture, add them to comics.cast, or keep it as an off-panel voice.",
@@ -3373,7 +3728,8 @@
       "ca": "Marca el personatge al dibuix de la vinyeta, afegeix-lo a comics.cast o deixa'l com una veu fora de vinyeta.",
       "zh": "在格子的图片上标记该角色、把它加入 comics.cast，或将其保留为格外的声音。",
       "ar": "علّم الشخصية على صورة الإطار، أو أضفها إلى comics.cast، أو اتركها صوتًا من خارج الإطار.",
-      "ja": "コマの画像に話者の印を付けるか、comics.cast に加えるか、コマの外の声のままにします。"
+      "ja": "コマの画像に話者の印を付けるか、comics.cast に加えるか、コマの外の声のままにします。",
+      "pt": "Marque o personagem no desenho do quadro, adicione-o a comics.cast ou deixe-o como voz fora do quadro."
     },
     "docs": {
       "slug": "comics",
@@ -3383,7 +3739,8 @@
         "ca": "Avisos de còmic",
         "zh": "漫画警告",
         "ar": "تحذيرات القصص المصورة",
-        "ja": "漫画の警告"
+        "ja": "漫画の警告",
+        "pt": "Avisos de quadrinhos"
       }
     }
   }

@@ -1,0 +1,89 @@
+---
+title: "Uma folha xilográfica: moldura dupla, fios e faixa central"
+summary: "O comentário de Zhu Xi aos Analectos como uma matriz de madeira o imprimia: uma folha por página dupla, moldura dupla, fios e a faixa central na dobra."
+plain: "Um clássico chinês composto como os antigos livros impressos com matrizes de madeira. Cada página tem uma borda dupla e linhas finas entre as colunas, e as notas vão em letra miúda dentro das linhas."
+description: "Três folhas do comentário de Zhu Xi aos Analectos compostas no Postext como livro xilográfico: texto vertical, notas em duas fileiras, fios e rabo de peixe."
+question: "Como faço para compor uma folha xilográfica com moldura dupla, fios entre colunas e a faixa central na dobra?"
+aliases: ["xilogravura", "livro xilográfico", "impressão com matriz de madeira", "livro costurado à chinesa", "encadernação chinesa", "folha de rosto", "clássico chinês", "Analectos", "Zhu Xi", "rabo de peixe", "fios entre colunas", "moldura dupla", "meia folha", "número da folha", "線裝書", "刻本", "內封", "版心", "魚尾", "界行", "四周雙邊", "半葉", "論語集註"]
+pageNotes: { "1": "Página 1, a folha de rosto, sozinha à esquerda da lombada: uma moldura dupla dividida em três colunas por dois fios finos. A autoria 宋 朱子 集註 no alto da coluna direita, o título 論語集註 em caracteres Kai grandes descendo pelo meio e, no pé da coluna esquerda, três colunas curtas em vermelho: a nota desta edição. Sob a moldura, um colofão de duas linhas em letra pequena cinza.", "2": "Página 2, a metade direita da primeira folha: nove colunas dentro de uma linha externa grossa e uma interna fina, com um fio fino entre cada duas colunas. A partir da direita: 論語卷一, a autoria 宋 朱子 集註 embaixo na segunda coluna, 學而第一 com a sua nota em duas fileiras pequenas, depois 子曰學而時習之不亦說乎 e as notas de Zhu Xi dobradas dentro das colunas. Na borda esquerda, sobre a dobra, metade da faixa central: 論語集註, um rabo de peixe preto, 卷一 e o número da folha 一.", "3": "Página 3, a metade esquerda da mesma folha, com a outra metade da faixa central na borda direita, de modo que as páginas 2 e 3 lado a lado mostram a folha inteira com a faixa no meio.", "6": "Página 6, a metade direita da terceira folha. A primeira coluna continua com uma nota em duas fileiras pequenas, cortada onde terminou a segunda folha; o número da folha na dobra é 三.", "7": "Página 7, a metade esquerda da terceira folha. O texto termina uma coluna antes da moldura." }
+---
+
+## O que você vai compor
+
+Três folhas do comentário de Zhu Xi aos *Analectos* (論語集註), o começo do livro 學而, compostas como uma matriz de madeira as imprimia, depois de uma folha de rosto. Cada página é meia folha, de 121 × 213 mm, e cada página dupla é uma folha inteira, lida a partir da direita: em cada metade, nove colunas de 17 caracteres em Noto Serif TC de 20 pt, uma moldura dupla, um fio fino entre cada duas colunas e, na dobra, a faixa central (版心) com o título, um rabo de peixe preto, o *juan* e o número da folha. As notas de Zhu Xi se dobram em duas fileiras de caracteres de 10 pt dentro da coluna, depois das palavras que explicam. A margem superior é o dobro da inferior.
+
+## Preparo
+
+### 1 · Meia folha por página, uma folha por página dupla
+
+O código é [a resposta curta](#a-resposta-curta) acima. Uma matriz imprimia a folha (葉) inteira de uma vez, com as duas metades de cada lado da faixa central; o impressor dobrava o papel na faixa, com o lado impresso para fora, e costurava as bordas abertas, de modo que a faixa virava o corte da frente do livro. Estas páginas ficam como a folha saía da matriz. Cada página é meia folha. Num [livro encadernado pela direita](/pt/docs/configuration#encadernação), a página 1 fica sozinha à esquerda da lombada e cada página dupla seguinte junta uma página par à direita com a ímpar que vem depois, então, com a folha de rosto na página 1, cada página dupla contém uma folha. A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) define o 行款 da matriz, nove colunas de 17 caracteres, e as margens que ela deixa são exatas: a interna mede metade da faixa.
+
+O Postext numera páginas, não folhas. Cada folha abre com um título de nível 1 [oculto](/pt/docs/configuration#sobrescritas-por-nível): ele não imprime nada nem ocupa espaço, mas o seu `breakBefore` com `parity: 'even'` abre uma página direita, e o seu número, 一, 二, 三 por `numberingTemplate: '{1:一}'`, é o `{chapterNumber}` da faixa.
+
+### 2 · Cortar o texto onde cada folha termina
+
+O copista que passava um texto a limpo para o entalhador o ajustava à matriz, folha por folha. O Markdown faz o mesmo: o título de uma folha vai onde termina a nona coluna da metade esquerda da folha anterior, mesmo no meio de uma frase ou de uma nota. Uma nota cortada ali é fechada e aberta de novo, e como cada coluna dobra o seu próprio trecho de nota em duas fileiras, as fileiras saem como eram:
+
+```markdown
+子曰巧言令色鮮矣仁:warichu[巧好令善也好其言善其色致飾於]
+
+# 學而
+
+:warichu[外務以悦人則人欲肆而本心之德亡矣…]
+```
+
+A matriz não tem pontuação, então nenhuma regra de quebra de linha move um caractere, e toda coluna termina no 17º: as quebras de folha são contadas uma vez e não saem do lugar. As notas de Zhu Xi são trechos [`:warichu[…]`](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu) com metade do corpo, o padrão, 34 caracteres pequenos por fileira, com um ○ entre a leitura e a glosa, como na matriz.
+
+### 3 · Desenhar a matriz com os números da grade
+
+<Excerpt region="frame" />
+
+O cabeço é disposto sobre a folha de papel, então a moldura, os fios e a faixa são posicionados em pontos a partir do canto da página com os mesmos números que definem a grade: um [elemento de fio](/pt/docs/configuration#elementos-de-fio) a cada 29 pt na largura da mancha, uma [caixa](/pt/docs/configuration#elementos-de-caixa) a 4,5 pt do texto para a linha fina e outra 4,5 pt mais para fora para a grossa. Cada coluna de caracteres fica no meio do seu passo, então os fios caem a meio caminho entre as colunas. O texto da faixa desce a página em [elementos de texto vertical](/pt/docs/configuration#elementos-de-texto-verticais), e o rabo de peixe é um SVG num [elemento de imagem](/pt/docs/configuration#elementos-de-imagem), os dois centralizados entre os dois fios da faixa, sobre a dobra: cada página mostra 17 pt da faixa. Cada página desenha inteiros o texto da faixa e o rabo de peixe e mostra a parte do seu lado, e lado a lado as partes se encontram. As molduras passam da dobra pelo mesmo motivo.
+
+### 4 · Dar à folha de rosto um estilo próprio
+
+<Excerpt region="title" />
+
+A folha de rosto (內封) é um título de nível 1 com um [estilo de título](/pt/docs/configuration#estilos-de-título) oculto e sem número, então as folhas continuam contando a partir de 一. Um estilo governa as páginas da sua seção, e o `header` dele substitui ali o do documento: a folha de rosto ganha uma moldura fechada dividida em três colunas em vez dos elementos da meia folha. A autoria, a nota desta edição em Kai vermelho e o colofão vêm dos [atributos](/pt/docs/document-format#atributos-de-título) do título; o colofão é a única linha que muda com a língua da edição. `\n` num atributo começa uma coluna nova.
+
+### 5 · Carregar cada fonte com os caracteres que ela compõe
+
+<Excerpt region="voices" />
+
+O Fontsource serve cada fonte chinesa em cerca de cem arquivos por peso. A Song compõe as folhas, a faixa e os números de folha, então a chamada dela recebe a amostra e esses caracteres; a Kai compõe só o título e a nota. A matriz não tem pontuação, então nenhuma das duas precisa das formas verticais de `loadCjkFonts(…, { vertical: true })`.
+
+### 6 · Uma tinta sobre um papel quente
+
+<Excerpt region="palette" />
+
+O texto e as linhas da matriz são impressos no mesmo preto quente, com contraste de 14 : 1 sobre o papel. Mesmo assim são duas entradas da paleta, `ink` e `rule`, para que os fios possam mudar de cor sem mexer no texto. O vermelho fica reservado para o que esta edição acrescenta.
+
+## Variações
+
+### Pautar as colunas em vermelho
+
+As cópias feitas para o 四庫全書 foram escritas em papel pautado em vermelho (朱絲欄). Mude a cor dos fios; o rabo de peixe acompanha.
+
+```diff
+-  rule: '#1f1b17', // the frame, the column rules and the fish tail: the same block, same ink
++  rule: '#b3412e', // 朱絲欄: red rules under black text
+```
+
+### Entalhar outra matriz
+
+As matrizes tinham muitas contagens, e 半葉十行，行二十字 é uma das mais comuns. As molduras, a faixa, as três casas da folha de rosto e o recuo da autoria saem todos destes números, então se ajustam sozinhos; as quebras de folha no Markdown precisam ser contadas de novo.
+
+```diff
+-const [BODY, PITCH, CHARS, LINES] = [20, 29, 17, 9];
++const [BODY, PITCH, CHARS, LINES] = [17, 24.5, 20, 10];
+```
+
+### Comparar com uma página europeia sobre uma grade
+
+<RecipeLink slug="baseline-grid-book-page">Uma página de livro sobre a grade de linhas de base</RecipeLink> constrói a mancha a partir de uma contagem de linhas, como esta folha constrói a sua com colunas e caracteres; <RecipeLink slug="certificate-single-page">o diploma</RecipeLink> desenha a sua borda no cabeço de um estilo de título, como a folha de rosto aqui.
+
+## Erros comuns
+
+- As quebras de folha moram no Markdown. Se você mudar o texto, o corpo ou o 行款, uma folha que transborda empurra o título seguinte uma página adiante, e as páginas duplas deixam de coincidir com as folhas; uma que fica curta deixa colunas em branco antes da dobra. Confira a última coluna de cada página esquerda.
+- A transcrição do 四庫全書 digita 巳 tanto por 已 quanto por 己; esta amostra decide cada caso pela frase. A página ainda pede revisão contra os fac-símiles, e isso aparece: o comentário de 張敬夫 traz 必開其政 onde os *Analectos*, que ele repete, trazem 必聞其政, e dois caracteres vêm como imagens do glifo. A amostra compõe 聞, 傳 e 邦. Confira um trecho com uma segunda edição antes de compô-lo.
+- A mesma transcrição traz formas para as quais a Noto Serif TC não tem glifo (廹 徳 絶 逺 専 内). Cinco delas caem dentro da faixa de um arquivo do Fontsource, então `loadCjkFonts` as deixa passar, e aí o canvas as desenha com uma fonte do sistema e o postext-pdf imprime uma caixa vazia e avisa. 廹 não cai na faixa de nenhum arquivo, e `loadCjkFonts` para com um erro. A amostra compõe 迫 德 絕 遠 專 內.

@@ -1,0 +1,48 @@
+---
+title: "Duas tirinhas yonkoma numa página"
+summary: "Uma página de tirinhas de humor em quatro quadros: duas colunas de quatro, a tira da direita lida primeiro e o título de cada tira num boxe preto no 1º quadro."
+plain: "Uma página de tirinhas japonesas de quatro quadros, lado a lado como numa revista de mangá: você lê a tira da direita de cima para baixo e depois a da esquerda."
+description: "Duas tirinhas yonkoma (4-koma) numa página A5 no Postext: uma divisão para duas colunas, ordem da direita à esquerda, um título por tira e sete letreiramentos."
+question: "Como faço para pôr duas tirinhas yonkoma de quatro quadros lado a lado, lendo primeiro a da direita?"
+aliases: ["yonkoma", "4-koma", "四コマ", "4コマ漫画", "tirinha de quatro quadros", "tira de humor", "tirinha", "tira de mangá", "café de gatos", "chibi", "da direita para a esquerda", "título da tira", "maxColumnChars"]
+pageNotes: { "1": "O original japonês: duas colunas de quatro quadros; a da direita, com o título 朝ごはん num boxe preto, mostra a dona de um café dando de comer a três gatos, e a da esquerda, com o título いやし, um funcionário de escritório que veio se acalmar com os gatos.", "2": "A edição brasileira: os mesmos oito quadros, com os títulos Café da manhã e Terapia e os balões em linhas horizontais: “Bom dia, pessoal!”, “Uma tigela pra cada um, tá?”, “Vim ser curado pelos gatos…” e, no último quadro, “Não dá pra trabalhar. Que alegria!!”." }
+---
+
+## O que você vai compor
+
+Uma página de uma antologia de yonkoma, ねこ喫茶まどろみ (*Café Soneca*), escrita para a receita e desenhada num estilo chibi suave: Mugi cuida de um café de gatos com uma gata branca, um gato preto e uma gata tricolor. O yonkoma, a tirinha de quatro quadros, é a tira de humor do jornal posta em pé: quatro quadros iguais empilhados de cima para baixo, com apresentação, desenvolvimento, virada e piada final. Uma página de revista traz duas lado a lado, e como a página abre pela direita, a tira da direita vem primeiro. A página é A5, 148 × 210 mm, com o original japonês de um lado da página dupla e a edição na língua desta página do outro (a inglesa na página japonesa).
+
+## Preparo
+
+### 1 · Dividir a página em duas colunas de quatro
+
+O código é [a resposta curta](#a-resposta-curta) acima. A página inteira é um `:::page` com `split="* [* / * / * / *] | * [* / * / * / *]"`: duas colunas iguais, cada uma cortada em quatro faixas iguais. As oito linhas `::panel` preenchem as células na ordem de leitura, então as quatro primeiras pertencem à primeira tira, e com a leitura da direita para a esquerda a primeira coluna fica à direita (<Feature id="comic-panel-split">divisão da página</Feature>). A sarjeta entre as tiras tem 9 mm, e a sarjeta entre os quadros, 3 mm, para que o olho desça por uma tira antes de passar para a outra.
+
+### 2 · Pôr o título de cada tira no primeiro quadro
+
+<Excerpt region="balloons" />
+
+Um yonkoma tem título, e as antologias o imprimem num boxe na cabeça da tira. Aqui o título é uma linha do roteiro, `caption{title}: 朝ごはん`, e `title` é um estilo de balão próprio: branco sobre preto, encostado na borda do quadro, no canto superior do lado inicial, que neste livro é o direito. Ele é letreirado em cada edição como qualquer outra fala, então a página brasileira traz *Café da manhã* e *Terapia* nos mesmos boxes.
+
+### 3 · Marcar os gatos também como personagens que falam
+
+<Excerpt region="art" />
+
+Os gatos falam, `kuro: にゃ`, então cada imagem marca a boca e a cara deles como marca as de Mugi. Duas pequenas funções auxiliares encurtam a lista: `cat()` para um gato virado para o leitor e `nose()` para um com a cara enfiada na tigela ou na almofada. No terceiro quadro, Mugi está fora da imagem, e a fala dela, `mugi{tail=top}`, ganha um rabicho até a borda de cima.
+
+### 4 · Carregar as fontes de cada edição com as suas palavras
+
+<Excerpt region="fonts" />
+
+Cada fonte recebe as palavras que compõe: a Zen Antique, os balões; a Dela Gothic One, as onomatopeias (ガツガツ, じーっ, すやぁ, ずしっ). Um quadro de yonkoma é mais largo que alto, então as colunas japonesas param em seis caracteres (`maxColumnChars: 6`), e o letreiramento é meio ponto menor que numa página de história.
+
+### 5 · Pôr o original ao lado de cada edição
+
+<Excerpt region="editions" />
+
+Cada idioma do site letreira as tiras num arquivo próprio, de frente para o original japonês na página dupla; a página japonesa fica de frente para a edição em inglês. Em todos os idiomas, a tira da direita continua sendo lida primeiro.
+
+## Erros comuns
+
+- Num quadro pequeno, um balão vertical fica sem altura antes de ficar sem largura: o motor o compõe em mais colunas, mais curtas, quebrando entre palavras. O último grito do funcionário continua alto demais para o quadro de baixo em japonês, então ele é marcado com `break` (`kyaku{shout break}`): estoura a moldura para o quadro de cima em vez de cobrir os gatos, sem sair para a margem da página.
+- Uma onomatopeia grande fica longe dos rostos, como um balão: ずしっ fixada em `86% 82%` cobria a cara da gata tricolor na tira japonesa, e a composição avisava `comicBalloonOverflow`, então ali ela fica em `90% 88%`.

@@ -1,0 +1,584 @@
+{/* docs/japanese-layout-pt.mdx */}
+
+export const metadata = {
+  title: 'Composição japonesa',
+  sidebarTitle: 'Composição japonesa',
+  description: 'Como o Postext compõe o japonês, na vertical e na horizontal: a região Japão, kinsoku, espaçamento dos yakumono, colchetes no início do parágrafo, formas verticais, furigana, marcas de ênfase e linhas laterais, kanbun, contadores, títulos com gyōdori, notas, índice remissivo em ordem gojūon, citações, fontes e textos do Aozora Bunko',
+  lang: 'pt',
+  lastUpdated: '2026-10-05',
+  readingTime: '30 min',
+  order: 8,
+  plainSummary: "Esta página explica como o Postext compõe texto em japonês. Os livros japoneses são compostos de cima para baixo, em colunas lidas da direita para a esquerda, ou na horizontal, como esta página. Um documento em japonês segue as regras japonesas para quebrar as linhas, espaçar a pontuação, pôr pequenas guias de leitura sobre os caracteres e marcar a ênfase. A página trata também das notas, dos números escritos em kanji, dos títulos que ocupam um número fixo de linhas, do índice remissivo ordenado pelo som e de como trazer textos da biblioteca Aozora Bunko. No fim há dois exemplos completos e os limites que ainda existem.",
+};
+
+# Composição japonesa
+
+**Uma página japonesa mistura quatro escritas numa grade de células quadradas, e o espaçamento da pontuação faz parte do texto.**
+
+O Postext compõe o japonês na vertical e na horizontal, a partir de uma só fonte Markdown e uma só configuração. Um documento cujo idioma é o japonês quebra as linhas segundo as regras de kinsoku, dá a cada colchete e a cada vírgula o espaço que a composição japonesa lhes dá e o retira onde duas marcas se encontram, compõe o colchete que abre um parágrafo como faz a maioria dos romances, põe os kana pequenos e as marcas de uma linha vertical nas suas formas verticais, espaça os furigana em 1:2:1 sobre os seus kanji, coloca pontos de gergelim sobre as palavras enfatizadas, numera os capítulos 第一章 e ordena o índice pela leitura. Desde o postext 1.16, tudo isso decorre de `locale: 'ja'`; as versões anteriores compunham o japonês com os padrões do chinês continental. Esta página explica o que o motor faz e quais ajustes o controlam. A [referência de configuração](/pt/docs/configuration#tipografia-do-leste-asiático) lista cada chave com o seu valor padrão, e o [formato do documento](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu) descreve a marcação.
+
+As regras seguem os *Requirements for Japanese Text Layout* do W3C ([JLReq](https://www.w3.org/TR/jlreq/)), citados abaixo por seção, e a JIS X 4051, a norma japonesa que eles relatam. Boa parte do mecanismo é compartilhada com o chinês, e [Composição chinesa](/pt/docs/chinese-layout) descreve as partes que esta página só menciona: a grade de caracteres, a moldura girada de uma página vertical, a encadernação à direita e as saídas. As fontes de referência estão listadas no fim.
+
+## A região Japão
+
+Um documento cujo `locale` é japonês (`ja`, `ja-JP`, `ja-Jpan`, em maiúsculas ou minúsculas e com `-` ou `_`) recebe a região `japan` dos ajustes `cjk`. Todo campo `cjk` deixado em `'auto'` passa então à convenção japonesa, assim como as notas, o índice remissivo, as citações e as palavras embutidas. `cjk.region: 'japan'` também pode ser definido à mão, em qualquer documento, para compor uma página pelas regras japonesas; as palavras embutidas e os padrões das notas, do índice e das citações continuam seguindo o idioma. `DOCUMENT_LANGUAGES`, a lista que o seletor **Idioma do documento** do Sandbox mostra, tem 日本語 entre as entradas chinesas e o árabe.
+
+### O que muda com o idioma
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '230px' }}>Ajuste</th>
+      <th>Japão (<code>ja</code>)</th>
+      <th>China continental (<code>zh-Hans</code>)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Quebra de linha (<code>lineBreak</code>)</td><td><code>ja-very-strict</code>: kana pequenos, ー, 々 e 〜 nunca abrem uma linha</td><td><code>gb</code></td></tr>
+    <tr><td>Largura da pontuação (<code>punctuationWidth</code>)</td><td><code>fullwidth</code>, com a compressão de pares da JLReq; uma marca de fechamento mantém o seu meio em no fim da linha até que a linha precise dele</td><td><code>kaiming</code></td></tr>
+    <tr><td>？ e ！ dentro do parágrafo (<code>spaceAfterQuestion</code>)</td><td>um em de espaço depois deles</td><td>sem espaço</td></tr>
+    <tr><td>Um colchete que abre o parágrafo (<code>paragraphStartBracket</code>)</td><td><code>half</code>: na segunda metade do recuo</td><td>como em qualquer início de linha</td></tr>
+    <tr><td>Pontuação pendente (<code>hangingPunctuation</code>)</td><td><code>allow</code>, só para 、。，．</td><td><code>none</code></td></tr>
+    <tr><td><code>&#42;…&#42;</code> (<code>emphasis</code>, <code>emphasisMark</code>)</td><td>pontos de gergelim sobre o texto, à direita dele no texto vertical</td><td>pontos sob o texto</td></tr>
+    <tr><td><code>:book[…]</code> (<code>bookTitleMark</code>, <code>bookTitleBrackets</code>)</td><td><span lang="ja" className="font-body">『』</span>, com <span lang="ja" className="font-body">「」</span> dentro deles</td><td><span lang="ja" className="font-body">《》</span>, com <span lang="ja" className="font-body">〈〉</span> dentro deles</td></tr>
+    <tr><td>Colchetes do warichu (<code>warichu.open</code>, <code>close</code>)</td><td><span lang="ja" className="font-body">（）</span></td><td>nenhum</td></tr>
+    <tr><td>Rubi (<code>ruby.overhang</code>, <code>ruby.align</code>)</td><td>avança só sobre kana, espaçado em 1:2:1</td><td>um quarto do corpo do rubi sobre qualquer vizinho, centralizado</td></tr>
+    <tr><td><code>&#123;漢字|かん|じ&#125;</code></td><td>rubi jukugo</td><td>rubi mono</td></tr>
+    <tr><td>O token <code>一</code> numa numeração</td><td><code>japanese-informal</code>: 百一</td><td><code>simp-chinese-informal</code>: 一百零一</td></tr>
+    <tr><td>Notas num livro vertical</td><td>depois do capítulo (後注), marcadores （1） à direita da linha</td><td>no pé da coluna</td></tr>
+    <tr><td>Grupos do índice (<code>index.groupBy</code>)</td><td>linhas do gojūon pela leitura (あ行, か行…)</td><td>iniciais do pinyin</td></tr>
+    <tr><td>Idioma das citações</td><td><code>ja-JP</code></td><td><code>zh-CN</code></td></tr>
+    <tr><td>Figura, tabela, tabela continuada</td><td><span lang="ja" className="font-body">図、表、（続き）</span></td><td>图, 表, （续）</td></tr>
+  </tbody>
+</table>
+
+As palavras embutidas também são japonesas: as referências cruzadas imprimem <span lang="ja" className="font-body">第3章</span>, <span lang="ja" className="font-body">2.3節</span> e <span lang="ja" className="font-body">12ページ</span>, a bibliografia tem o título <span lang="ja" className="font-body">参考文献</span>, uma tabela ou um boxe dividido diz <span lang="ja" className="font-body">次ページへ続く</span>, o índice remissivo encabeça os seus símbolos e números com <span lang="ja" className="font-body">記号</span> e <span lang="ja" className="font-body">数字</span> e escreve as remissões com uma seta (<span lang="ja" className="font-body">金之助　→夏目漱石</span>, e <span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> depois das páginas), e um EPUB nomeia a sua navegação <span lang="ja" className="font-body">目次</span>, <span lang="ja" className="font-body">表紙</span>, <span lang="ja" className="font-body">本文</span>. Uma tabela de strings sem entrada em japonês dá inglês, nunca chinês. Os tipos figura e tabela numeram por capítulo, e uma legenda fica <span lang="ja" className="font-body">図1-1　東京の地図</span>: o rótulo e o número juntos, um espaço ideográfico antes do texto, sem ponto final (JLReq §4.3). Um `:ref` fica <span lang="ja" className="font-body">図1-1</span>, e uma tabela continuada, <span lang="ja" className="font-body">表1-1　東京の区（続き）</span>. Esses são os padrões de `captionStyle.labelNumberGap` e `labelSeparator` num documento japonês; um valor definido ali prevalece. A hifenização fica desligada, como em todo documento CJK, a menos que seja ativada para as palavras latinas.
+
+A mesma tag é declarada nas saídas: o documento HTML e cada uma das suas páginas levam `lang="ja"`, o canvas pinta com `ctx.lang`, e o PDF declara `/Lang (ja)` e dá forma ao texto com os glifos japoneses (veja [Fontes](#fontes)). O Unicode dá a 直, 骨 e 角 um único ponto de código cada, e uma fonte japonesa os desenha de modo diferente de uma chinesa.
+
+### Kanji, kana e rōmaji
+
+Uma linha japonesa contém kanji, hiragana, katakana e letras e algarismos latinos, o rōmaji. O Postext não precisa de nada para distingui-los: um parágrafo que tem mais caracteres CJK (kanji e kana contam igualmente) do que espaços entre palavras é composto pelo compositor CJK, caractere por caractere, e uma palavra latina ou um número dentro dele é uma unidade que nenhuma linha quebra por dentro. Entre texto japonês e texto latino, o compositor põe um quarto de em (`cjk.latinSpacing`), que uma linha justificada pode esticar até meio em (JLReq §3.2.2); um espaço que o autor digitou ali é substituído por ele, não somado. A prosa japonesa não tem espaços entre as palavras, então um espaço digitado entre duas palavras japonesas continua sendo um espaço.
+
+O rōmaji na grafia Hepburn modificada usa mácrons (<span lang="ja" className="font-body">Tōkyō</span>, <span lang="ja" className="font-body">Sōseki</span>), e a fonte precisa tê-los: o Postext não toma emprestado de outra família um glifo que falta. Uma palavra em outro idioma pode ser marcada com um isolamento, `:ltr[the Meiji era]{lang=en}`: o HTML a marca com `lang="en"`, e o PDF a compõe num `/Span` com o seu próprio `/Lang` e lhe dá as formas desse idioma. As letras e os algarismos de largura total (Ｋ, １２) são caracteres japoneses: ficam em pé no texto vertical e contam como um em cada.
+
+O katakana de meia largura (ｶﾀｶﾅ) não se usa em livros; escreva as formas de largura total ou deixe que o [conversor do Aozora](#textos-do-aozora-bunko) as troque. O traço ondulado 〜 (U+301C) e o til de largura total ～ (U+FF5E) que o texto do Windows dá no lugar dele são lidos ambos como a classe japonesa de hífen.
+
+### O Markdown de um capítulo japonês
+
+O japonês se escreve no mesmo Markdown que qualquer outro idioma, com as comodidades de um capítulo chinês:
+
+- **Quebre as linhas onde quiser.** Um fim de linha entre dois caracteres japoneses é descartado, então um editor pode quebrar o código-fonte em qualquer largura.
+- **Recue com a configuração.** Um parágrafo japonês tem recuo de um em: `bodyText.firstLineIndent: { value: 1, unit: 'em' }`. O analisador descarta os espaços ideográficos (U+3000) com que um parágrafo começa, então um texto digitado com eles fica recuado como um digitado sem eles.
+- **Digite a marcação em ASCII.** Um método de entrada japonês gera `：：：`, `＃` e `［＾1］`; eles saem impressos como texto, e a compilação reporta cada linha como `fullwidthMarkup`, com a forma ASCII a digitar. Os valores dos atributos podem estar entre <span lang="ja" className="font-body">「…」</span>.
+- **Ids e nomes de arquivo** mantêm kana e kanji, inclusive as marcas de sonorização: um capítulo com o título <span lang="ja" className="font-body">がっこう</span> é guardado com esse nome.
+
+## Composição horizontal
+
+Toda regra desta seção funciona da mesma forma ao longo de uma linha vertical; a seção seguinte acrescenta o que muda ali. O compositor é o mesmo que o chinês usa (veja [Composição chinesa › Composição horizontal](/pt/docs/chinese-layout#composição-horizontal)); a região Japão muda as suas regras onde a JLReq difere da clreq.
+
+### Quebra de linha (kinsoku)
+
+O kinsoku shori (禁則処理) mantém alguns caracteres fora do início da linha e outros fora do fim. `cjk.lineBreak` tem três níveis japoneses, segundo as três convenções do apêndice C.3 da JLReq; os níveis chineses continuam disponíveis.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Nível</th>
+      <th>Nunca no início de uma linha</th>
+      <th style={{ width: '220px' }}>Usado em</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>Colchetes e aspas de fechamento <span lang="ja" className="font-body">」』）〕】</span>; 、，。．; os hífens ‐ – ゠ 〜 ～; ？！‼⁇⁈⁉; ・：；; as marcas de repetição ゝゞヽヾ〻 e 々; a marca de som prolongado ー; os kana pequenos ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ; as unidades ％ ℃.</td><td>O padrão da JIS X 4051; o da região Japão.</td></tr>
+    <tr><td><code>ja-strict</code></td><td>Como <code>ja-very-strict</code>, mas kana pequenos, ー e 々 podem abrir uma linha.</td><td>Livros em geral (o “strict” da JLReq).</td></tr>
+    <tr><td><code>ja-loose</code></td><td>Só os colchetes e as aspas de fechamento, 、， e 。．. Hífens, ？！, pontos médios, marcas de repetição, kana pequenos e ー podem abrir uma linha.</td><td>Jornais (o “loose” da JLReq).</td></tr>
+  </tbody>
+</table>
+
+Em todos os níveis japoneses, nenhuma linha termina com um colchete ou aspas de abertura, um símbolo de moeda fica com o seu número (exceto em `ja-loose`), e a barra não tem regra (essa regra é da GB/T 15834). As marcas de dois em ―― e …… podem abrir uma linha, como a JLReq permite, mas nunca se dividem, e 〳〵 também não. Um número mantém o seu sinal e a sua unidade (<span lang="ja" className="font-body">¥1,500</span>, <span lang="ja" className="font-body">５０％</span>), uma palavra latina fica inteira, a menos que seja mais larga que a linha, e um marcador de nota nunca abre uma linha: fica com o caractere anterior.
+
+Quando o caractere seguinte não pode abrir uma linha, o compositor tenta primeiro acomodá-lo cedendo espaço na linha (oikomi, empurrar para dentro), na ordem da JLReq descrita abaixo, e só depois leva para baixo o caractere anterior (oidashi, empurrar para fora). `々` nunca é substituído, no início de linha, pelo kanji que repete (a JLReq menciona a prática; ela altera o texto).
+
+Os livros ilustrados e as cartilhas compostos em kana põem um espaço entre as frases (<span lang="ja" className="font-body">分かち書き</span>, <span lang="ja" className="font-body">むかし むかし、 ある ところに</span>) e só quebram as linhas ali. `cjk.wordBreak: 'keep-all'` as quebra assim: num espaço (U+0020 ou U+3000) e junto à pontuação onde o nível permite (depois de <span lang="ja" className="font-body">、。」</span>, antes de <span lang="ja" className="font-body">「</span>), nunca entre duas letras, kana, kanji ou caracteres latinos. As regras do nível continuam valendo nos espaços, e uma frase mais longa que a linha é quebrada por dentro como o nível a quebraria. Um estilo de parágrafo define o seu próprio valor com `wordBreak`, para uma cartilha citada num livro de prosa comum. Uma linha justificada absorve a sobra primeiro nos seus espaços, até meio em cada um, e depois entre os caracteres. O EPUB refluível escreve `word-break: keep-all`. O coreano, cujas palavras (어절) são separadas por espaços, aceita o mesmo ajuste.
+
+### Yakumono: espaçamento da pontuação
+
+A pontuação japonesa (yakumono, 約物) é composta em largura total: o glifo ocupa meio em e a outra metade é espaço, antes de um colchete de abertura, depois de um de fechamento e depois de 、。. ・：； ficam no meio do seu em, com um quarto de em de cada lado, e ？！ ocupam o seu em inteiro. O que a composição japonesa ajusta é esse espaço (JLReq §3.1):
+
+- **Pares.** Onde duas marcas se encontram, uma das metades vazias some: 」、 「「 、「 」「 。」 ocupam um em e meio em vez de dois, e <span lang="ja" className="font-body">」・</span> mantém um quarto de em entre os dois glifos (JLReq §3.1.4). `compressAdjacent` desliga isso.
+- **Fins de linha.** Uma marca de fechamento no fim da linha mantém o seu meio em. É o primeiro espaço cedido quando a linha precisa acomodar mais um caractere, e sai inteiro ou não sai.
+- **Dentro da linha**, o espaço depois de 。 nunca é reduzido, e os quartos de um ponto médio são cedidos antes dos meios em dos colchetes e de 、.
+- **？ e ！** recebem um em inteiro de espaço depois deles quando a frase continua (JLReq §3.1.6): <span lang="ja" className="font-body">本当？　そう思う</span>. Não antes de um colchete de fechamento ou de outro ？！, não no fim de um parágrafo ou de uma linha, e não de novo quando o autor digitou U+3000 ali. Esse espaço nunca estica nem encolhe. `cjk.spaceAfterQuestion` o desliga (ou o liga em outra região).
+- **Numerais.** 、 e ・ entre dois numerais kanji são compostos sem espaço e nunca quebram: <span lang="ja" className="font-body">二、三日</span>, <span lang="ja" className="font-body">三・一四</span>.
+
+<Illustration name="YakumonoSpacing" data='{"title": "Espaçamento da pontuação japonesa", "desc": "A linha 彼は「本当？うそ」、「いいえ」と答えた。 composta duas vezes, uma célula por em. Na primeira fileira, cada caractere ocupa um em inteiro e nada é acrescentado: 20 em. Na segunda, o colchete de fechamento antes da vírgula, a vírgula antes do colchete de abertura e o colchete de fechamento antes do ponto final cedem cada um meio em vazio, destacado na primeira fileira, e um em de espaço vem depois do ponto de interrogação: 19,5 em.", "caption": "Os pares de marcas se aproximam, e ？ seguido de texto recebe um em de espaço.", "solid": "Cada marca com um em, nada acrescentado", "jlreq": "Espaçamento da JLReq (a região Japão)", "blank": "meio em vazio cedido por um par", "aki": "espaço depois de ？", "sample": "彼は「本当？うそ」、「いいえ」と答えた。", "ems": "em"}' />
+
+Quando uma linha fica um pouco longa demais, ela devolve espaço nesta ordem (JLReq §3.8.3): os espaços entre palavras, depois o meio em que vem depois da marca que termina a linha (todo ou nada), depois os quartos de um ponto médio no fim da linha, depois os quartos dos pontos médios dentro da linha, depois os meios em dos colchetes, de 、 e de ，, e por último o espaço entre japonês e latim, até um oitavo de em. Quando uma linha fica curta, a sobra se distribui entre os caracteres como numa linha chinesa, exceto que não se acrescenta espaço depois de um colchete de abertura nem antes de um de fechamento, nem junto a 、。・：；？！ ou a um espaço ideográfico (JLReq §3.1.11).
+
+### Colchetes no início do parágrafo
+
+Um parágrafo com recuo de um em pode abrir com um colchete: é o que faz a maior parte dos diálogos de um romance. A JLReq §3.1.5 descreve três maneiras de compô-lo, e `cjk.paragraphStartBracket` escolhe uma:
+
+<Illustration name="BracketPatterns" data='{"title": "Três maneiras de compor um colchete que abre um parágrafo", "desc": "Quatro aberturas de parágrafo de duas linhas cada numa grade. Um parágrafo comum começa depois de um recuo de um em. O padrão 1 mantém o recuo e dá ao colchete um em próprio, de modo que o texto começa em 2 em. O padrão 3 põe o colchete na segunda metade do recuo, e o texto começa em 1 em, como no parágrafo comum. O padrão rente põe o colchete na margem, sem recuo. As segundas linhas começam na margem.", "caption": "O padrão do Japão é o ③: o colchete ocupa a segunda metade do recuo.", "plain": "Parágrafo comum", "indent": "① Recuo mantido", "half": "③ Meio recuo", "flush": "Rente (天付き)", "indentValue": "indent", "halfValue": "half", "flushValue": "flush", "plainSample": "私はその人を常に先生と呼んでいた。だからここでもただ先生と書くだけで本名は打ち明けない。", "bracketSample": "「先生はいつごろ東京へお帰りになるのですか」と私は母に聞いてみた。", "indentLegend": "o recuo de parágrafo de um em"}' />
+
+- **`'indent'`** (①): o recuo se mantém e o colchete ocupa um em próprio depois dele.
+- **`'half'`** (③, o padrão do Japão): o colchete cede o vazio antes do seu glifo, que passa a ocupar a segunda metade do recuo, e o texto se alinha com o texto dos outros parágrafos. Com um recuo de dois em, o texto começa em 2 em.
+- **`'flush'`** (天付き): o colchete fica na margem, sem recuo.
+
+Isso vale só para um parágrafo com recuo de primeira linha; um recuo deslocado ou a ausência de recuo ficam como estão. Numa região chinesa, `'auto'` compõe o colchete como em qualquer início de linha, como antes. Um colchete que abre uma linha quebrada dentro de um parágrafo é sempre composto rente (`trimLineStart`, ligado no Japão).
+
+### Pontuação pendente (burasagari)
+
+`cjk.hangingPunctuation` é `'auto'` por padrão. No Japão isso equivale a `'allow'`: um 、。，． que abriria a linha seguinte, e que o oikomi não consegue acomodar, fica pendurado além do fim da linha (burasagari, ぶら下げ), tanto na horizontal quanto na vertical. ？！, os colchetes e os pontos médios nunca ficam pendentes. Nas outras regiões, `'auto'` é `'none'`, como antes. `'force'` deixa pendente toda marca desse tipo que termina uma linha, e `'none'` desliga a pontuação pendente.
+
+### Justificação e a última linha
+
+O texto corrido japonês é justificado, com a última linha do parágrafo composta sem espaçamento extra. Uma linha que precisaria de mais de meio em entre os caracteres fica curta e é reportada como `cjkLooseLine` (veja [Hifenização e justificação](/pt/docs/justification#chinês-japonês-e-coreano)). Um parágrafo não termina numa linha de um só caractere (泣き別れ) quando `bodyText.avoidRunts` está ligado, o padrão: a linha de cima tenta primeiro acomodá-lo cedendo espaço da pontuação, desde que nenhuma linha fique frouxa, e só depois lhe passa um caractere.
+
+## Escrita vertical
+
+`layout.writingMode: 'vertical-rl'` compõe o livro de cima para baixo, encadernado à direita, com a primeira página sendo uma página da esquerda (JLReq §2.3). O modelo de página é o chinês: veja [Composição chinesa › Escrita vertical](/pt/docs/chinese-layout#escrita-vertical) para os andares, a encadernação à direita, as figuras e as saídas. Duas coisas valem a pena repetir para os livros japoneses. Os andares são preenchidos um depois do outro e não são equilibrados no fim de um capítulo (nariyuki), ao passo que as colunas de um livro horizontal são. E um estilo de título pode definir o seu próprio modo de escrita, de modo que um índice remissivo ou uma bibliografia podem ser compostos na horizontal no fim de um livro vertical, como acontece em muitos.
+
+### Formas verticais
+
+Na região Japão, cada caractere fica como pedem a JLReq §3.1 e o UAX #50:
+
+- **Os kana pequenos** (ぁ っ ャ ㇰ) usam a forma vertical da fonte, que fica acima e à direita da horizontal; uma fonte sem essa forma desloca o glifo em cerca de um oitavo de em.
+- **、。，．** ficam no canto superior direito da sua célula, como no continente. **：；** giram um quarto de volta. **！？** ficam em pé, centralizados. **・** ocupa um em inteiro.
+- **“ ”** são aspas só horizontais: uma linha vertical as imprime como 〝 〟. O texto mantém “ ” para a cópia e a busca no canvas e no PDF; o HTML copia 〝〟. ‘ ’ são giradas.
+- **Os colchetes, ー, 〜 e os travessões** acompanham a coluna.
+- **〳〵** (くの字点, a repetição de dois kana) é uma marca só vertical, de duas células de altura, que nunca se divide.
+
+O canvas usa as formas verticais da própria fonte quando o Sandbox carregou a gêmea `vert` da família, e o PDF as desenha pela fonte em modo vertical (veja [Composição chinesa › Texto vertical em cada saída](/pt/docs/chinese-layout#o-texto-vertical-em-cada-saída)).
+
+### Tate-chū-yoko
+
+Os números de até dois algarismos ficam em pé numa só célula (`cjk.uprightDigits`, 2 por padrão), e `:tcy[…]`, `:upright[…]` e `:sideways[…]` definem um trecho à mão, como no chinês. No Japão, os pares `!!`, `!?`, `?!` e `??` também ficam numa só célula em pé, em meia largura ou em largura total (<span lang="ja" className="font-body">すごい！？</span>): um par de largura total é pintado com as marcas de meia largura, que cabem num em sem que os seus traços fiquem pela metade. Um par encostado numa palavra latina (`Wow!!`), numa terceira marca (`!!!`) ou num algarismo fica como está. Uma célula dessas nunca abre uma linha.
+
+### Páginas, andares e fólios
+
+Um livro japonês vertical costuma imprimir o fólio em algarismos arábicos no pé, e um fólio vertical em kanji ao longo da margem externa quando o projeto gráfico prevê um: `page.pageNumbering.format: 'cjk-decimal'` escreve 一〇五 para a página 105, a forma posicional que os fólios usam (JLReq §2.6). Os capítulos abrem numa página ímpar, que num livro encadernado à direita é uma página da esquerda: `breakBefore: { enabled: true, parity: 'odd' }`. Os cabeços na margem externa de [Elementos de texto vertical](/pt/docs/configuration#elementos-de-texto-verticais) funcionam sem mudanças nos livros japoneses.
+
+## Furigana
+
+Os furigana são as leituras em kana compostas junto aos kanji: acima deles na horizontal, à direita deles na vertical. São rubi, e `:ruby[…]` e a forma compacta `{…|…}` os compõem como compõem o pinyin chinês, com três acréscimos japoneses: a forma como uma leitura se divide sobre a sua base, até onde ela pode avançar sobre os vizinhos e como uma leitura curta é espaçada.
+
+### Rubi mono, de grupo e jukugo
+
+```markdown
+{東京|とう|きょう}に行く。{紫陽花|あじさい}が咲いた。
+:ruby[昨日]{rt="きのう" mode=group}、:ruby[明日]{rt="あ|す" mode=jukugo align=jis}。
+```
+
+- **Rubi jukugo** (熟語ルビ): cada kanji de um composto tem a sua própria leitura, e uma linha pode quebrar entre eles, cada parte mantendo a sua leitura. Uma leitura pode avançar sobre o kanji seguinte da palavra quando é mais longa que o seu, mas as leituras nunca se sobrepõem; quando não cabem todas, a palavra divide a leitura como um grupo. Num documento japonês, `{東京|とう|きょう}` (uma leitura por `|`) é rubi jukugo.
+- **Rubi de grupo** (グループルビ): uma leitura sobre a palavra inteira, que nunca quebra. `{紫陽花|あじさい}` (uma leitura para a base), `group` ou `mode=group`. O `紫陽花《あじさい》` do Aozora é rubi de grupo, e o que o conversor escreve para ele também.
+- **Rubi mono** (モノルビ): uma leitura por kanji, sem avançar sobre os vizinhos, `mode=mono`. É o que `{東京|とう|きょう}` significa num documento chinês.
+
+### Avanço e alinhamento
+
+<Illustration name="RubyPlacement" data='{"title": "Espaçamento e avanço dos furigana", "desc": "Três exemplos com leituras em meio corpo sobre os caracteres base. Sobre 紫陽花, os quatro kana de あじさい são espaçados em 1:2:1, com um quarto de em entre eles e um oitavo em cada ponta. Sobre 志 em を志す, a leitura こころざ é mais longa que o seu kanji e avança meio em sobre を e す, os kana de cada lado. Sobre 東京に, cada kanji mantém a sua leitura; きょう começa onde とう termina e avança meio em sobre に.", "caption": "Uma leitura curta é espaçada em 1:2:1; uma longa pode avançar sobre kana, mas nunca sobre kanji.", "spreadTitle": "Leitura mais curta: 1:2:1", "spreadNote": "meia unidade nas pontas, uma entre os kana", "overhangTitle": "Leitura mais longa: sobre kana", "overhangNote": "até um caractere de rubi de cada lado", "jukugoTitle": "Rubi jukugo", "jukugoNote": "cada kanji mantém a sua leitura", "overhangLegend": "espaço que uma leitura ocupa sobre um vizinho"}' />
+
+`cjk.ruby.align` espaça uma leitura mais curta que a sua base. `'jis'` (o padrão do Japão) a espaça em 1:2:1, meia unidade antes do primeiro kana e depois do último, uma unidade entre eles (JIS X 4051, JLReq §3.3.6); `'center'` a centraliza sem espaçamento; `'start'` a compõe a partir do início da base. Uma leitura mais longa que a sua base avança sobre os caracteres vizinhos até onde `cjk.ruby.overhang` permite, e o resto do espaço vem de espaçar a base (1:2:1 com `'jis'`):
+
+- `'kana'` (o padrão do Japão): no máximo um caractere de rubi sobre um kana, um ー ou o lado vazio de uma marca de pontuação, meio caractere de rubi sobre um colchete de abertura, nada sobre um kanji, uma palavra latina ou outra leitura (JLReq §3.3.8).
+- `'any'`: meio caractere de rubi sobre qualquer vizinho sem leitura.
+- `'none'`: a base se alarga até a leitura inteira.
+
+No início e no fim da linha, uma leitura não passa da margem: fica rente a ela, e a base se desloca para dentro. `cjk.ruby.smallKana: 'full'` compõe os kana pequenos de uma leitura em tamanho normal (きよう para きょう), como fazem alguns livros para facilitar a leitura; `'keep'` (padrão) os imprime como foram escritos. Uma leitura pode ser escrita por palavra com `align=` e `mode=`, que prevalecem sobre a configuração. Numa região chinesa, os valores automáticos são os antigos, então o pinyin e o zhuyin são compostos como antes.
+
+Os furigana ficam no espaço entre as linhas: uma entrelinha do texto de cerca de 1,75 em deixa espaço para leituras em meio corpo (JLReq §2.4.2), e um espaço estreito demais é reportado como `rubyExceedsLeading`. Uma leitura de rubi também serve de leitura no índice remissivo para a palavra que marca (veja [Índice remissivo em ordem gojūon](#índice-remissivo-em-ordem-gojūon)).
+
+## Marcas de ênfase e linhas laterais
+
+O japonês não inclina as letras. Ele enfatiza com marcas junto aos caracteres e traça linhas ao lado deles para outros fins; as marcas preservam o texto, então a busca e o texto copiado leem os caracteres como foram escritos.
+
+### Marcas de ênfase (bōten)
+
+A ênfase do Markdown sobre texto japonês, `*とんと*`, imprime um ponto de gergelim (﹅, o 傍点 dos romances) sobre cada caractere na horizontal e à direita dele na vertical (JLReq §3.3.9); as letras latinas dentro da mesma ênfase mantêm o itálico. `:dots[…]` faz o mesmo de forma explícita, e os seus atributos escolhem a marca:
+
+```markdown
+それは*とんと*見当がつかぬ。:dots[ここ]{style=circle fill=open}が大切だ。
+```
+
+`cjk.emphasisMark` define o padrão do livro inteiro: `style` `'sesame'`, `'dot'` ou `'circle'`, `fill` `'filled'` ou `'open'` (um gergelim vazado é o 白ゴマ dos textos do Aozora), e `position` `'over'` (à direita no texto vertical) ou `'under'` (à esquerda). Os seus valores automáticos são os da região: gergelim por cima no Japão, um ponto por baixo na China. Um gergelim fica na mesma orientação sobre a folha nos dois modos de escrita. Quando os furigana e as marcas de ênfase estão do mesmo lado, as marcas ficam por fora das leituras.
+
+### Linhas laterais (bōsen)
+
+`:sideline[…]` traça uma linha ao lado do texto (傍線), por baixo dele na horizontal e à direita dele na vertical, passando pela pontuação e pelos espaços:
+
+```markdown
+:sideline[ここに線を引く]、:sideline[二重線]{style=double}、:sideline[波線]{style=wavy pos=over}
+```
+
+`style` é `solid` (padrão), `double`, `wavy` ou `dotted`; `pos` é `over` ou `under` (no texto vertical, over é à direita e under é à esquerda). Duas linhas laterais que se encontram cedem cada uma um oitavo de em. Funciona em qualquer escrita: uma frase em inglês sublinhada também é uma linha lateral. Uma linha lateral do mesmo lado dos furigana se sobrepõe a eles; ponha um dos dois do outro lado.
+
+### Títulos de obras e warichu
+
+`:book[こころ]` imprime <span lang="ja" className="font-body">『こころ』</span>, e um título dentro de um título recebe <span lang="ja" className="font-body">「」</span>. `cjk.bookTitleBrackets` define outros pares, do mais externo para o mais interno: `[{ open: '《', close: '》' }]`. `:warichu[…]` compõe uma nota em duas fileiras de meio corpo dentro da linha (割注), envolvida por padrão em <span lang="ja" className="font-body">（）</span> no Japão; `cjk.warichu.open: ''` e `close: ''` a compõem sem colchetes. `**…**` compõe negrito na família do texto; a ênfase em gótica da JLReq precisa de uma fonte de parágrafo ou de caractere própria.
+
+## Kanbun
+
+O chinês clássico lido como japonês (kanbun kundoku, 漢文訓読) leva pequenas marcas junto aos caracteres: os kaeriten (返り点), que dizem ao leitor que volte a um caractere mais tarde, os okurigana (送り仮名), as terminações japonesas, e o tatesen (竪点), que une dois caracteres. `:kunten[…]` os compõe; o texto não é reordenado, já que é lido com as marcas.
+
+```markdown
+:kunten[學]{okuri="ビテ"}而:kunten[時]{okuri="ニ"}:kunten[習]{kaeri="二" okuri="フ"}:kunten[之]{kaeri="一" okuri="ヲ"}。
+```
+
+- `kaeri`: a marca de retorno como é escrita: レ, 一 二 三 四, 上 中 下, 甲 乙 丙 丁, 天 地 人, e as combinadas 一レ 上レ 甲レ 天レ. Os pontos de código de kanbun ㆑ ㆒ … são lidos como os caracteres que representam.
+- `okuri`: os okurigana. Os parênteses do Aozora `（ヲ）` são descartados.
+- `tate`: um sinalizador; um tatesen une o caractere ao seguinte.
+
+As marcas acompanham o último caractere dos colchetes. Segundo a JIS X 4051 §5, os kaeriten são compostos em meio corpo depois do caractere, do lado do pé da linha (embaixo à esquerda no texto vertical), e ocupam meio em próprio; os okurigana ficam do lado da cabeça (à direita) a partir do meio do caractere, e os mais longos empurram o caractere seguinte. O texto horizontal transpõe as mesmas regras: os kaeriten depois do caractere, na sua metade inferior, e os okurigana acima da linha. `cjk.kunten` define o `fontSize` (meio em por padrão), a `color` e o `placement`: `'inline'` (padrão, como a JIS os compõe) ou `'interlinear'`, em que as marcas não ocupam avanço e ficam no espaço entre as linhas. O texto copiado, o HTML e o `/ActualText` do PDF leem <span lang="ja" className="font-body">學ビテ而時ニ習フ之ヲ</span>: os okurigana depois dos seus caracteres, as marcas de retorno omitidas. Um espaço entre linhas estreito demais para os okurigana é reportado como `kuntenExceedsLeading`.
+
+## Numerais e contadores
+
+Todo ajuste de numeração (números de página, listas ordenadas, notas de rodapé, contadores de recursos, modelos de título e rótulos de página do PDF) aceita os estilos japoneses do CSS Counter Styles:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Estilo</th>
+      <th>Imprime</th>
+      <th style={{ width: '120px' }}>Token</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>japanese-informal</code></td><td>一, 十, 十二, 百一, 千十, 一万一</td><td><code>一</code> num documento japonês</td></tr>
+    <tr><td><code>japanese-formal</code></td><td>壱, 壱拾, 壱百, 弐阡参</td><td><code>壱</code></td></tr>
+    <tr><td><code>hiragana</code></td><td>あ, い, う … ん, ああ</td><td><code>あ</code></td></tr>
+    <tr><td><code>katakana</code></td><td>ア, イ, ウ … ン, アア</td><td><code>ア</code></td></tr>
+    <tr><td><code>hiragana-iroha</code></td><td>い, ろ, は … す, いい</td><td><code>い</code></td></tr>
+    <tr><td><code>katakana-iroha</code></td><td>イ, ロ, ハ … ス, イイ</td><td><code>イ</code></td></tr>
+  </tbody>
+</table>
+
+`japanese-informal` conta como o japonês escreve os números por extenso: 十 sem um 一 à frente, nenhum 零 para uma casa vazia (百一), 万 億 兆 por grupos de quatro algarismos. `japanese-formal` escreve os 大字 dos documentos jurídicos, mantendo 壱 antes de cada unidade (壱拾, não 拾). As séries de kana seguem o gojūon (48 kana, ゐ e ゑ incluídos) e o poema iroha (47 kana), e continuam com dois kana depois do último. Os algarismos kanji posicionais (二〇二六) são `cjk-decimal`, a forma dos anos e dos fólios. Num documento japonês, o token `一` significa `japanese-informal`; num chinês, continua significando os numerais chineses, então `第{1:一}章` imprime 第百一章 em japonês e 第一百零一章 em chinês.
+
+```ts
+headings: {
+  levels: [{ level: 1, numberingTemplate: '第{1:一}章', numberSeparator: '　' }],
+},
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'japanese-informal', separator: '、' },
+    { level: 2, numberFormat: 'japanese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+},
+```
+
+Esses são os números de lista de um livro vertical (一、 （一） 1 （1） ①). Um livro técnico horizontal numera 1. （1） ア （ア） ①, a ordem do guia de redação do governo, com `katakana` nos níveis 3 e 4. `{1:words}` escreve um número por extenso em japonês (二十一) e `{1:ordinal}` com 第 (第二十一); `{numberHan}` num texto de design é `japanese-informal`. Uma parte numerada `:::part{number="第三巻"}` vale 3 para os marcadores que precisam de um número.
+
+## Títulos e blocos
+
+Os títulos japoneses são posicionados em linhas do texto e recuados em caracteres do texto, e alguns blocos são compostos a partir do pé da linha ou centralizados na página. Todos esses ajustes são opcionais: nada muda até que um livro os defina.
+
+### Linhas ocupadas (gyōdori)
+
+`lineSpan` num nível ou num estilo de título compõe o título nesse número de linhas do texto (行取り, JLReq §4.1.6): `lineSpan: 3` faz um título 3行取り, com os seus caracteres centralizados na faixa de três linhas, no lugar de `marginTop` e `marginBottom`. A faixa começa numa linha do texto, e o texto depois dela continua na grade, nos dois modos de escrita e com `cjk.grid`. Um título mais longo que a sua faixa ocupa o número inteiro de linhas seguinte. As aberturas (`span: 'page'`), os títulos com `advancedDesign`, os títulos ocultos e os títulos dentro de boxes mantêm as suas margens.
+
+### Recuos e espaçamento uniforme
+
+`indent` num nível ou num estilo recua o título a partir do início da linha em ems do **texto** (字下げ): `indent: { value: 6, unit: 'em' }` é 6字下げ, seja qual for o tamanho do próprio título. `jidori` espaça por igual um título de uma linha até esse número de ems **do próprio título** (字取り): com `jidori: 3`, 序章 é composto 序　章, ocupando três caracteres. `{jidori=5}` depois do texto de um título define um só título, e `{jidori=0}` desliga o do seu nível. Um título também pode levar o seu próprio `{indent=N}`, em ems do texto, por cima do do seu nível ou estilo: `## 一 {indent=3}`, e `{indent=0}` o compõe no início da linha. O conversor do Aozora o escreve em cada título a partir do ［＃N字下げ］ do original.
+
+```ts
+headings: {
+  levels: [
+    { level: 2, lineSpan: 3, indent: { value: 6, unit: 'em' } },
+    { level: 3, lineSpan: 2, indent: { value: 8, unit: 'em' }, jidori: 4 },
+  ],
+},
+```
+
+### Blocos a partir do pé e páginas centralizadas
+
+A data e a assinatura de uma carta são compostas rentes ao fim da linha (地付き), ou alguns caracteres acima dele (地からN字上げ). `:::paragraphs` aceita `align`, `indent` e `endIndent` como atributos, sem estilo, com números sem unidade contados em ems:
+
+```markdown
+:::paragraphs{align=end endIndent=1}
+大正三年四月
+夏目漱石
+:::
+```
+
+`endIndent` também é um campo dos estilos de parágrafo. `:::pagebreak{center}` centraliza o texto da página que ele abre entre a cabeça e o pé da mancha (na horizontal, no texto vertical): o ページの左右中央 de uma folha de rosto de parte ou de uma dedicatória. Termine a página com outro `:::pagebreak`.
+
+### Títulos no pé de uma página par
+
+`headings.keepWithNext` impede que um título feche uma coluna. A JLReq §4.1.7 permite que um título feche a última coluna de uma página par, já que o seu texto abre então a página em frente da mesma página dupla; `headings.keepWithNextSpread: true` permite isso, tanto em livros encadernados à esquerda quanto à direita.
+
+## Notas
+
+Os livros japoneses posicionam as notas de mais maneiras que os ocidentais (JLReq §4.2), e o Postext acrescenta para eles dois marcadores e uma posição. Um marcador vai antes de um 。 final de frase: escreva <span lang="ja" className="font-body">先生[^1]。</span>. O marcador fica com o caractere anterior e 。 nunca abre uma linha, então os três nunca se separam.
+
+### Marcadores
+
+`footnotes.markerPosition` aceita dois valores japoneses além de `'superscript'` e `'inline'`:
+
+- **`'right'`**: um marcador pequeno rente ao lado direito de uma linha vertical, como os livros verticais compõem （1）; na horizontal, é um sobrescrito. `markerSize` é 0,7 em por padrão.
+- **`'side'`** (合印): um marcador de cerca de 0,6 em junto à palavra marcada, do lado do rubi, terminando onde termina o último caractere da palavra. Não ocupa espaço na linha, que quebra e se justifica como se ele não estivesse ali.
+
+`footnotes.numberGap: 'em'` põe um em inteiro da nota (um espaço ideográfico junto a texto CJK) depois do número da própria nota, no lugar do espaço de meio em.
+
+### Padrões para livros japoneses
+
+Quando o autor não os define, um documento japonês recebe estes valores (a [referência de configuração](/pt/docs/configuration#notas-de-rodapé) tem todos os campos):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Campo</th>
+      <th>Livro vertical</th>
+      <th>Livro horizontal</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>placement</code></td><td><code>chapterEnd</code> (後注)</td><td><code>column</code></td></tr>
+    <tr><td><code>numbering</code></td><td><code>chapter</code></td><td><code>page</code></td></tr>
+    <tr><td><code>markerPosition</code></td><td><code>right</code></td><td>sobrescrito</td></tr>
+    <tr><td><code>markerTemplate</code></td><td><code>（&#123;n&#125;）</code>, algarismos em pé</td><td><code>&#123;n&#125;</code></td></tr>
+    <tr><td><code>separator.width</code></td><td>um terço da medida</td><td>um terço da medida</td></tr>
+    <tr><td>Notas depois do capítulo</td><td>um em depois do número, recuo deslocado de dois em</td><td>o mesmo, quando <code>placement</code> é <code>chapterEnd</code></td></tr>
+  </tbody>
+</table>
+
+Um valor explícito prevalece e é mantido quando o livro é salvo. Os documentos chineses, árabes e latinos mantêm os seus padrões.
+
+### Notas na página dupla (bōchū)
+
+`placement: 'spread'` compõe as notas de um livro vertical ao lado do texto (傍注), como fazem muitos livros acadêmicos e traduzidos: as notas citadas nas duas páginas de uma página dupla vão para o fim da página da esquerda, sob um fio de um terço da medida, numeradas por página dupla (`numbering: 'spread'`, o padrão com essa posição). Quando a página da esquerda não comporta todas com pelo menos uma linha de texto, as últimas notas ficam no pé da página da direita, e uma linha cujas notas não cabem em lugar nenhum passa para a página dupla seguinte junto com elas. Os livros horizontais não têm essa posição: neles, `'spread'` volta a ser `'column'`, com um aviso `unknownConfigValue`.
+
+## Índice remissivo em ordem gojūon
+
+Um índice remissivo japonês é ordenado pela leitura, não pelos caracteres: 漱石 fica em そ. Uma marca `:index` dá a leitura em kana com `yomi` (ou `reading`):
+
+```markdown
+:index[夏目漱石]{yomi="なつめそうせき"}は:index[{東京|とう|きょう}]に生まれた。
+```
+
+Quando uma marca não tem `yomi`, vale a leitura dos seus furigana (a segunda marca é ordenada como とうきょう), depois a sua chave `sort`, depois o texto. Uma entrada cuja chave ainda contém um kanji é reportada como `indexReadingMissing` e arquivada depois dos kana, sem cabeça de grupo. Dentro de `:index[…]`, escreva os furigana na forma compacta, já que `:ruby[…]` exigiria escapar os seus colchetes.
+
+A ordem é a da JIS X 4061: o katakana é ordenado como o hiragana, os kana pequenos como os grandes, ー como a vogal anterior (コーヒー entre こうちゃ e こおり), uma marca de repetição como o kana que repete, e os empates vão do simples ao sonoro e ao semissonoro (は ば ぱ). Primeiro vêm os símbolos, depois os números pelo valor, depois as palavras latinas, depois os kana. `index.groupBy: 'gojuon'` (automático num índice japonês) encabeça os grupos pela linha do gojūon, あ行, か行, さ行 … わ行; `'kana'`, pelo primeiro kana, como fazem os dicionários. As entradas latinas ficam sob as suas letras, antes dos kana. Os rótulos do índice são japoneses (veja [O que muda com o idioma](#o-que-muda-com-o-idioma)).
+
+## Citações
+
+Um documento japonês cita com o idioma CSL `ja-JP`: as citações narrativas unem dois autores com と e abreviam três ou mais com ほか (<span lang="ja" className="font-body">山田と佐藤</span>, <span lang="ja" className="font-body">鈴木ほか</span>), e um estilo que põe os títulos entre aspas usa <span lang="ja" className="font-body">「」</span> e <span lang="ja" className="font-body">『』</span>. O estilo `sist02` (SIST 02, a diretriz das revistas japonesas de ciência e tecnologia) vem incluído:
+
+```ts
+citations: { style: 'sist02' },
+```
+
+Um nome pessoal escrito em caracteres CJK com um espaço é lido com o sobrenome primeiro, no BibTeX e nos dados YAML ou JSON: `author = {夏目 漱石}` é o sobrenome 夏目 e o nome 漱石. Os nomes romanizados mantêm a ordem habitual. A bibliografia tem o título <span lang="ja" className="font-body">参考文献</span>. Veja [Citações e bibliografia](/pt/docs/document-format#citações-e-bibliografia).
+
+## Tabelas, legendas e notas
+
+Os furigana, as marcas de ênfase, as linhas laterais, os títulos de obras e o warichu são desenhados nas células de tabela, nas legendas e nas notas de recurso como no texto corrido, no tamanho da célula ou da legenda, no canvas, no PDF e no HTML, e a sua entrelinha é verificada da mesma forma. O texto de uma tabela ou de uma legenda é horizontal em todas as páginas: numa página vertical o bloco inteiro fica em pé, de modo que o tate-chū-yoko não muda nada ali e o texto de tabela vertical (縦組みの表) não está disponível.
+
+## HTML e EPUB
+
+A saída HTML escreve cada leitura como rubi semântico: `<ruby>東<rt>とう</rt>京<rt>きょう</rt></ruby>`, um `<ruby>` por palavra, que os leitores de tela leem. Toda página de um documento japonês leva `lang="ja"`, então um host que monta as páginas uma a uma também recebe as formas japonesas dos glifos. Um EPUB de layout fixo é feito dessas páginas.
+
+Um EPUB refluível leva as regras que um sistema de leitura consegue aplicar sozinho: `line-break: strict`, `normal` ou `loose` para os três níveis de kinsoku, `hanging-punctuation: allow-end` quando o livro usa pontuação pendente, `text-emphasis` para as marcas de gergelim sobre o texto, células em pé para os números curtos e os pares `!?` nos livros verticais, o em depois de ？！, as linhas laterais, os kunten, os marcadores de nota, as linhas ocupadas e os recuos dos títulos, e o `primary-writing-mode` de um livro vertical no seu pacote. A navegação recebe nomes em japonês. Veja [Livros EPUB](/pt/docs/configuration#livros-epub-postext-epub) para o resto da exportação.
+
+## Fontes
+
+O Postext compõe cada estilo numa só família, sem recorrer a outra para um caractere que falta, então um livro japonês precisa de uma fonte japonesa que cubra todos os caracteres que imprime.
+
+- **Noto Serif JP** (mincho, 明朝) para o texto e **Noto Sans JP** (gótica, ゴシック) para os títulos e os rótulos são o par habitual; cobrem a JIS X 0213, mácrons do rōmaji incluídos, e trazem as formas verticais. **Shippori Mincho** e **Shippori Mincho B1** têm o aspecto de uma página de bunko, mas não têm ō nem ū. **BIZ UDPMincho** tem kana proporcionais; a sua irmã de largura fixa, **BIZ UDMincho**, serve para uma grade de caracteres. **Zen Old Mincho**, **Klee One** (uma letra de livro didático) e **Kaisei Decol** servem para títulos e textos de destaque.
+- **O idioma da fonte.** Uma fonte chinesa (Noto Serif SC ou TC) desenha os kanji com formas chinesas: não componha japonês nela. Uma fonte pan-CJK (Source Han Serif, Noto Serif CJK) contém as duas, e o PDF dá forma a um documento japonês, e a um isolamento `{lang=ja}` em qualquer documento, com o sistema de idioma OpenType `JAN `, de modo que os seus kanji e as suas aspas recebem as formas japonesas.
+- **TrueType, não CFF.** As versões TrueType do Google Fonts e do Fontsource são reduzidas aos glifos usados. Os arquivos CFF `.otf` do Source Han e do Noto CJK são incorporados inteiros, de 8 a 25 MB por peso (`cffEmbeddedWhole`). Mantenha `vert`, `vrt2`, `vhea` e `vmtx` ao reduzir uma fonte para um livro vertical.
+- **No navegador**, o Fontsource serve uma família japonesa como cerca de cem arquivos numerados, cada um com parte dos caracteres; o Sandbox e a sua aba PDF carregam os que o texto usa. Nenhum arquivo do Fontsource contém hentaigana (𛀁) nem outros kana históricos.
+- **Sem itálico.** As fontes japonesas não têm; a ênfase é feita com marcas.
+
+[Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas), na referência de configuração, traz o código do provedor de fontes.
+
+## Textos do Aozora Bunko
+
+O Aozora Bunko (青空文庫) reúne milhares de textos japoneses em domínio público, digitados em texto simples com uma notação própria: leituras entre 《》, ｜ onde a base de uma leitura não começa numa mudança de escrita, e notas ［＃…］ para a diagramação, a ênfase, os títulos e os caracteres fora da JIS X 0208. A [skill postext-port](/pt/docs/skill) traz um conversor, `aozora.py` (Python 3.10, só a biblioteca padrão), que transforma um arquivo desses em Markdown do Postext:
+
+```bash
+python3 aozora.py 773_ruby_5968.zip -o kokoro.md --report report.json --styles styles.json
+```
+
+Ele lê um zip ou um arquivo de texto, em UTF-8 ou na codificação CP932 que os arquivos do Aozora usam, e escreve:
+
+- `漢字《かんじ》` e `｜麦藁帽《むぎわらぼう》` como rubi de grupo `{漢字|かんじ}`, e as leituras à esquerda como `pos=under`;
+- 傍点 como `:dots[…]{style=sesame}` (e as outras formas que o Postext desenha), 傍線 como `:sideline[…]`, 縦中横 como `:tcy[…]`, 割り注 como `:warichu[…]`, os kunten como `:kunten[…]`;
+- 大・中・小見出し como `#`, `##`, `###`; 改ページ, 改丁 e 改見開き como `:::pagebreak` com a sua paridade;
+- 字下げ, 地付き e 字上げ como `:::paragraphs{style="aozora-…"}`, cujos estilos de parágrafo ele devolve (`--styles`) para os `paragraphStyles` do projeto;
+- os gaiji (`※［＃「てへん＋劣」、第3水準1-84-77］`) como o caractere, pela JIS X 0213; ／＼ como 〳〵; o katakana de meia largura como de largura total.
+
+O U+3000 inicial de um parágrafo é descartado (a configuração faz o recuo), e um parágrafo que abre com um colchete fica a cargo de `cjk.paragraphStartBracket`, de modo que o padrão ③ cai exatamente onde o original o pôs. As notas editoriais (［＃「X」は底本では「Y」］) e o bloco bibliográfico do fim não são impressos: voltam no relatório e nos créditos, que o Aozora pede que acompanhem o texto. Tudo o que o conversor não conhece é listado no relatório com o número da linha. Veja [A skill postext-port](/pt/docs/skill#scripts).
+
+## Duas configurações completas
+
+As duas são JSON de predefinição, como o Sandbox as salva (`postext-config.json`).
+
+### Um romance bunko, composto na vertical
+
+Um bunko (文庫, 105 × 148 mm) em Noto Serif JP de 9 pt, com 38 caracteres por linha, composto na vertical e encadernado à direita. Os capítulos abrem numa página ímpar, numerados 第一章 e recuados quatro caracteres; as seções ocupam três linhas, seis caracteres abaixo. O kinsoku, o espaçamento dos yakumono, o padrão ③, a pontuação pendente, as marcas de gergelim, 『』, o espaçamento dos furigana e as notas de fim de capítulo vêm do idioma:
+
+```json
+{
+  "locale": "ja",
+  "page": {
+    "sizePreset": "custom",
+    "width": { "value": 105, "unit": "mm" },
+    "height": { "value": 148, "unit": "mm" },
+    "margins": {
+      "top": { "value": 14, "unit": "mm" },
+      "bottom": { "value": 13, "unit": "mm" },
+      "left": { "value": 10, "unit": "mm" },
+      "right": { "value": 9, "unit": "mm" },
+      "mirror": true
+    }
+  },
+  "layout": { "layoutType": "single", "writingMode": "vertical-rl" },
+  "bodyText": {
+    "fontFamily": "Noto Serif JP",
+    "fontSize": { "value": 9, "unit": "pt" },
+    "lineHeight": { "value": 1.75, "unit": "em" },
+    "textAlign": "justify",
+    "firstLineIndent": { "value": 1, "unit": "em" }
+  },
+  "headings": {
+    "fontFamily": "Noto Sans JP",
+    "levels": [
+      {
+        "level": 1,
+        "fontSize": { "value": 12, "unit": "pt" },
+        "numberingTemplate": "第{1:一}章",
+        "numberSeparator": "　",
+        "indent": { "value": 4, "unit": "em" },
+        "breakBefore": { "enabled": true, "parity": "odd" }
+      },
+      {
+        "level": 2,
+        "fontSize": { "value": 10, "unit": "pt" },
+        "lineSpan": 3,
+        "indent": { "value": 6, "unit": "em" }
+      }
+    ]
+  },
+  "cjk": { "grid": { "enabled": true, "charsPerLine": 38 } },
+  "header": { "elements": [] },
+  "footer": {
+    "elements": [
+      {
+        "kind": "text",
+        "id": "folio",
+        "content": "{pageNumber}",
+        "fontFamily": "Noto Serif JP",
+        "fontSize": { "value": 7, "unit": "pt" },
+        "overflow": "clip",
+        "placement": { "anchor": { "to": "container", "edge": "center" } }
+      }
+    ]
+  }
+}
+```
+
+`linesPerPage` fica de fora, então a página recebe tantas linhas quantas couberem na sua largura (15 aqui). `parity: 'odd'` abre cada capítulo numa página da esquerda, a página ímpar de um livro encadernado à direita. As notas não precisam de ajuste: vão depois de cada capítulo, marcadas （1） à direita da linha.
+
+### Um livro técnico em horizontal
+
+Um livro B5 (182 × 257 mm) composto na horizontal em Noto Serif JP de 9,5 pt, com títulos em Noto Sans JP, capítulos numerados 第1章, seções que ocupam três linhas e subseções que ocupam duas, listas numeradas 1. （1） ア （ア） ①, notas ao pé da página numeradas por página e um índice remissivo organizado pelas linhas do gojūon:
+
+```json
+{
+  "locale": "ja",
+  "page": {
+    "sizePreset": "custom",
+    "width": { "value": 182, "unit": "mm" },
+    "height": { "value": 257, "unit": "mm" },
+    "margins": {
+      "top": { "value": 22, "unit": "mm" },
+      "bottom": { "value": 22, "unit": "mm" },
+      "left": { "value": 20, "unit": "mm" },
+      "right": { "value": 18, "unit": "mm" },
+      "mirror": true
+    }
+  },
+  "layout": { "layoutType": "single" },
+  "bodyText": {
+    "fontFamily": "Noto Serif JP",
+    "fontSize": { "value": 9.5, "unit": "pt" },
+    "lineHeight": { "value": 1.75, "unit": "em" },
+    "textAlign": "justify",
+    "firstLineIndent": { "value": 1, "unit": "em" }
+  },
+  "headings": {
+    "fontFamily": "Noto Sans JP",
+    "levels": [
+      {
+        "level": 1,
+        "fontSize": { "value": 16, "unit": "pt" },
+        "numberingTemplate": "第{1}章",
+        "numberSeparator": "　",
+        "breakBefore": { "enabled": true, "parity": "odd" }
+      },
+      { "level": 2, "fontSize": { "value": 12, "unit": "pt" }, "numberingTemplate": "{1}.{2}", "lineSpan": 3 },
+      { "level": 3, "fontSize": { "value": 10, "unit": "pt" }, "lineSpan": 2 }
+    ]
+  },
+  "orderedLists": {
+    "levels": [
+      { "level": 1, "numberFormat": "arabic", "separator": "." },
+      { "level": 2, "numberFormat": "arabic", "prefix": "（", "separator": "）" },
+      { "level": 3, "numberFormat": "katakana", "separator": "" },
+      { "level": 4, "numberFormat": "katakana", "prefix": "（", "separator": "）" },
+      { "level": 5, "numberFormat": "circled-decimal", "separator": "" }
+    ]
+  },
+  "header": { "elements": [] },
+  "footer": {
+    "elements": [
+      {
+        "kind": "text",
+        "id": "folio",
+        "content": "{pageNumber}",
+        "fontFamily": "Noto Sans JP",
+        "fontSize": { "value": 8, "unit": "pt" },
+        "overflow": "clip",
+        "placement": { "anchor": { "to": "container", "edge": "center" } }
+      }
+    ]
+  }
+}
+```
+
+As chaves `cjk` e `footnotes` não são necessárias: o idioma dá ao japonês horizontal o seu kinsoku e o seu espaçamento, e as suas notas ao pé da página, numeradas por página, com um fio de um terço da medida. As legendas ficam assim: <span lang="ja" className="font-body">図1-1　構成</span>.
+
+## No Sandbox e nas Receitas
+
+No Sandbox, **Design › Sistema de escrita** reúne o idioma do documento (日本語), o modo de escrita, a encadernação e todos os ajustes `cjk`, inclusive os japoneses. **Ajustes para japonês › Revisar…** prepara um livro para o japonês num só passo, como bunko vertical ou como livro técnico horizontal, e lista antes cada alteração: Noto Serif JP e Noto Sans JP, entrelinha de 1,75 em, recuo de um em, a grade de caracteres de um livro vertical, 図 e 表, 第一章, títulos com gyōdori e com recuo, numeração de listas japonesa, e os ajustes chineses que atrapalhariam os japoneses de volta a *Automático*. Os seletores de fonte mostram as famílias japonesas num grupo, a amostra tipográfica exibe um trecho de <span lang="ja" className="font-body">吾輩は猫である</span> com as suas marcas de ênfase, e num livro japonês a barra de ferramentas do editor tem um botão de rubi e outro de tate-chū-yoko. Veja [Sandbox](/pt/docs/sandbox#painel-design).
+
+A estante de exemplos tem *Kokoro* (<span lang="ja" className="font-body">こころ</span>, 1914), de Natsume Sōseki, em japonês, [vertical e encadernado pela direita](/pt/sandbox#preset=kokoro&lang=ja), a partir do texto do Aozora Bunko, e o guia do próprio Sandbox tem [uma edição japonesa](/pt/sandbox#preset=postext-guide&lang=ja). As [Receitas](/pt/cookbook?col=japanese-layout) reúnem as receitas japonesas na coleção *Composição japonesa*, cada uma com uma página ou uma página dupla e o script que a compõe.
+
+## Limites conhecidos
+
+- **Kinsoku**: 々 no início de linha não é substituído pelo kanji que repete; a convenção “loose” intermediária que a JLReq descreve para revistas não tem nível próprio; dentro de uma nota warichu, ‥‥ pode ficar dividido entre as suas duas linhas.
+- **Yakumono**: o 、 sem espaço entre numerais kanji vale também para uma enumeração escrita 一、二、三; um ponto médio no fim da linha cede só o quarto de em que vem depois dele.
+- **Furigana**: a disposição jukugo encaixa cada leitura perto do seu kanji, sem cobrir todos os casos tabelados no apêndice F da JLReq; uma leitura no início de um parágrafo não avança sobre o recuo; uma palavra cortada dos dois lados numa mesma linha pode ficar um pouco longa.
+- **Marcas**: os triângulos, os círculos duplos e as cruzes do Aozora (三角, 二重丸, 蛇の目, ばつ傍点), as marcas do lado esquerdo que não sejam `pos=under` e as linhas laterais tracejadas ou de traço e ponto não são desenhados (o conversor avisa); uma linha lateral do mesmo lado que os furigana se sobrepõe a eles; `**…**` não troca para uma fonte gótica.
+- **Kanbun**: as marcas de retorno combinadas (一レ) são dois glifos de meio corpo, não uma marca composta; no modo interlinear, okurigana longos podem encostar nas marcas do caractere seguinte; as marcas dentro de notas warichu, legendas e células são descartadas.
+- **Títulos e blocos**: o gyōdori não se aplica dentro de boxes nem às aberturas; `:::pagebreak{center}` não encerra a página sozinho; não existe 字取り em linha para uma palavra do texto corrido.
+- **Notas**: as notas de página dupla numa página com vários andares vão para o pé do andar em que está o texto; livros horizontais não têm a colocação na página dupla; o espaço reservado para as notas adiadas é estimado antes de se conhecerem as figuras da página da esquerda.
+- **Índice remissivo**: o separador continua sendo `, `; as entradas latinas vêm antes dos kana, sem opção para colocá-las no fim; uma marca invisível não toma a leitura de um rubi que esteja em outro ponto da linha.
+- **Citações**: SIST 02 é o único estilo japonês incluído; as citações autor-data mantêm a pontuação ASCII; as bibliografias não são ordenadas pela leitura.
+- **Tabelas**: o texto das células e das legendas é horizontal em todas as páginas.
+- **Fontes**: uma família por estilo, sem fonte de reserva; fontes CFF são incorporadas inteiras; as métricas verticais proporcionais (`vpal`) não são usadas.
+- **Texto do design** (cabeços, aberturas, títulos de boxe) quebra o japonês entre quaisquer dois caracteres, sem kinsoku nem espaçamento de yakumono, e imprime as leituras e as marcas como texto simples.
+
+## Fontes de referência
+
+- W3C, [Requirements for Japanese Text Layout (JLReq)](https://www.w3.org/TR/jlreq/), Group Note.
+- JIS X 4051:2004 日本語文書の組版方法 (Regras de composição de documentos japoneses).
+- JIS X 4061:1996 [日本語文字列照合順番](https://kikakurui.com/x4/X4061-1996-01.html) (Ordenação de cadeias de caracteres japonesas).
+- W3C, [CSS Text Level 3](https://www.w3.org/TR/css-text-3/) e [Level 4](https://www.w3.org/TR/css-text-4/), [CSS Text Decoration Level 3](https://www.w3.org/TR/css-text-decor-3/) (`text-emphasis`), [CSS Ruby Annotation Layout](https://www.w3.org/TR/css-ruby-1/), [CSS Writing Modes Level 4](https://www.w3.org/TR/css-writing-modes-4/) e [CSS Counter Styles Level 3](https://www.w3.org/TR/css-counter-styles-3/#limited-japanese).
+- Anexos 14 e 50 do padrão Unicode, [Line Breaking Algorithm](https://www.unicode.org/reports/tr14/) e [Unicode Vertical Text Layout](https://www.unicode.org/reports/tr50/).
+- 青空文庫, [注記一覧](https://www.aozora.gr.jp/annotation/) (o guia de anotação do Aozora Bunko).
+- SIST 02 参照文献の書き方 (Agência Japonesa de Ciência e Tecnologia) e o [locale ja-JP](https://github.com/citation-style-language/locales) do CSL.

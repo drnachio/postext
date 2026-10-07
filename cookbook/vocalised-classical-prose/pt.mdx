@@ -1,0 +1,53 @@
+---
+title: "Prosa clássica vocalizada e os parênteses corânicos"
+summary: "Uma maqāma com vogal em cada letra, composta com uma entrelinha do dobro do corpo para que os sinais de uma linha não encostem nos da linha seguinte."
+plain: "Uma história árabe antiga impressa com todos os sinaizinhos de vogal em cima e embaixo das letras. As linhas ficam afastadas o bastante para que os sinais de uma não batam nos da linha de baixo."
+description: "Uma maqāma árabe com todas as vogais no Postext: Amiri em 14 pt sobre 28 pt, justificação com kashida, citações do Corão entre ﴿ ﴾ e o aviso de entrelinha."
+question: "Quanta entrelinha precisa o árabe com todas as vogais marcadas?"
+aliases: ["árabe vocalizado", "tashkīl", "harakat", "sinais vocálicos", "vogais árabes", "shadda", "kasra", "entrelinha em árabe", "espaçamento entre linhas", "entrelinha", "maqāma", "macama", "al-Hamadhānī", "parênteses corânicos", "parênteses ornamentais", "مقامات", "تشكيل", "حركات"]
+pageNotes: { "2": "A primeira página da maqāma: o título المقامة المارستانية em ruqʿa vermelho, o nome do autor em naskh negrito, uma linha latina pequena em cinza e depois o árabe justificado com um sinal de vogal em cada letra, com uma citação do Corão entre os parênteses ornamentais ﴿ ﴾ perto do pé." }
+---
+
+## O que você vai compor
+
+Quatro páginas de um livro árabe clássico em que cada letra leva a sua vogal: a *Maqāma do hospício*, de al-Hamadhānī, em que um louco do hospício de Basra deixa um teólogo sem resposta e depois diz o próprio nome em verso. O texto com todas as vogais empilha fatḥa e shadda em cima das letras e kasra embaixo, e esses sinais moram no espaço entre as linhas. Por isso a página é composta em Amiri, 14 pt sobre 28 pt, o dobro do corpo, e mais nada: a entrelinha é o projeto gráfico. O texto é justificado com kashidas, abre com um recuo de 1,5 em à direita e põe as suas três citações do Corão entre os parênteses ornamentais ﴿ ﴾ do muṣḥaf impresso. Só a linha latina do título e a nota sobre o texto mudam com a edição.
+
+## Preparo
+
+### 1 · Uma entrelinha do dobro do corpo
+
+O código é [a resposta curta](#a-resposta-curta) acima. A entrelinha nunca cresce para abrir espaço para os sinais: a kasra de uma linha e a shadda da seguinte dividem o mesmo vão, então o vão é escolhido pela linha mais vocalizada do livro ([Sinais vocálicos](/pt/docs/arabic-layout#sinais-vocálicos)). Neste texto, uma entrelinha de 1,6 vez o corpo deixa seis parágrafos com sinais que se chocam, e 1,9 ainda deixa um; com 2, nenhum. A composição avisa: quando duas linhas se chocam, ela aponta o parágrafo com `arabicMarksExceedLeading` e a entrelinha de que ele precisaria ([Texto árabe](/pt/docs/configuration#texto-árabe)).
+
+<PageShot page={2} crop="0,0.3,1,0.45" caption="Página 2: uma vogal em cada letra e 28 pt entre as linhas de base, de modo que as kasras de uma linha passam livres das shaddas da seguinte." />
+
+### 2 · Uma página pequena com uma medida larga
+
+<Excerpt region="page" />
+
+Uma página de 14 × 21 cm com margens laterais de 16 e 18 mm deixa uma medida de 106 mm, umas doze palavras vocalizadas, e dezessete linhas no passo de 28 pt. Os sinais deixam as linhas acinzentadas, então a página fica sóbria: sem cabeços, papel creme e um único título em vermelho. `mirror: true` põe a margem mais larga na lombada, que num livro encadernado pela direita é a borda direita de uma página ímpar ([Ordem das páginas e encadernação pela direita](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita)).
+
+### 3 · Títulos que respeitam a grade
+
+<Excerpt region="titles" />
+
+Os títulos não têm desenho: o título em ruqʿa ocupa uma caixa de linha com a altura de três linhas da grade, e o autor e a linha latina ocupam uma linha de 28 pt cada um, então a primeira linha de texto cai na grade. A linha latina leva `{dir=ltr}`, um título da esquerda para a direita num livro da direita para a esquerda ([Direção do documento, do bloco e do texto em linha](/pt/docs/arabic-layout#direção-do-documento-do-bloco-e-do-trecho)).
+
+## Variações
+
+### Tirar as vogais para uma edição de leitura
+
+`tashkil: 'strip'` remove da composição as vogais breves e a shadda, de modo que o mesmo texto pode ser composto com 1,6 vez o corpo; `'strip-vowels'` mantém a shadda.
+
+```diff
+-  textAlign: 'justify', kashida: 'auto', kashidaPatterns: 'naskh',
++  textAlign: 'justify', kashida: 'auto', kashidaPatterns: 'naskh', tashkil: 'strip',
+```
+
+### Ver o aviso
+
+Com a entrelinha em 1,6 vez o corpo, a composição aponta seis parágrafos com `arabicMarksExceedLeading`, cada um com a entrelinha de que precisa, até 1,89 em neste texto.
+
+```diff
+-const LEAD = 2 * SIZE; // pt: 28
++const LEAD = 1.6 * SIZE; // pt: 22.4
+```

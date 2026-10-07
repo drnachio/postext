@@ -1,0 +1,58 @@
+---
+title: "Um zine grampeado com capa de papel cartão"
+summary: "Dois blocos :::paper põem um cartão salmão na folha externa de um zine de oito páginas, e o postext-folio o mostra grampeado em canoa sobre papel jornal."
+plain: "Uma revistinha dobrada sobre um rio, com uma capa grossa e colorida e papel jornal fino por dentro. No visualizador 3D ela fica fechada na mesa e abre como a de verdade."
+description: "Um zine de oito páginas com folha de capa em cartão e miolo em papel jornal: dois blocos :::paper, grampo canoa e cover: 'pages' em config.folio, num pen."
+question: "Como faço para imprimir uma capa, um encarte ou um caderno de pranchas num papel diferente do resto do livro?"
+aliases: ["zine", "fanzine", "livreto", "grampo canoa", "acabamento canoa", "grampeado", "lombada canoa", "capa de cartão", "papel cartão", "papel jornal", "folha de capa", "encarte", "riso", "risografia"]
+pageNotes: { "1": "A capa sobre branco: a linha da edição, Low Tide numa grotesca azul grande, um subtítulo em itálico e onze linhas de maré azuis de comprimentos diferentes ao pé.", "3": "A matéria dos maçaricos: um chapéu azul, o título em preto, um fio azul curto e texto justificado.", "8": "A quarta capa: Low Tide em azul e uma linha pequena em maiúsculas, centralizadas." }
+---
+
+## O que você vai compor
+
+O número 3 de *Low Tide*, um zine gratuito sobre um estuário: oito páginas de 140 × 200 mm, duas folhas dobradas e grampeadas pela dobra. A folha externa, páginas 1–2 e 7–8, é um cartão salmão; a interna, páginas 3–6, é papel jornal barato. A capa é impressa num único azul de risografia sobre o cartão nu, sem campo de cor próprio, por isso nas páginas planas logo abaixo ela aparece sobre branco, e no Folio fica fechada na mesa, na cor do cartão, até você virá-la. Os dois papéis são dois blocos no Markdown, e o acabamento, três ajustes em `config.folio`.
+
+## Preparo
+
+### 1 · Cerque a folha externa
+
+<Excerpt region="cover-sheet" />
+
+Um livreto grampeado em canoa é uma pilha de folhas dobradas, então a folha de capa leva as duas primeiras e as duas últimas páginas. Um bloco cerca as páginas 1–2, outro as 7–8, e as páginas do meio ficam fora dos dois, no papel do próprio livro. Cada bloco começa e termina numa página nova, que aqui é justamente a página de que a capa e as boas-vindas precisam.
+
+### 2 · Papel jornal, grampo canoa, capas tiradas das páginas
+
+<Excerpt region="folio" />
+
+`folio.paper` é o papel jornal de toda página fora de um bloco. `saddleStitch` dobra as folhas em volta dos grampos, sem lombada plana, e `cover: 'pages'` faz as páginas 1 e 8 virarem como capas. No grampo canoa a capa vira como as outras folhas, só que mais rígida, e uma folha de capa que indica o seu próprio papel (o cartão) é desenhada nesse papel.
+
+### 3 · Uma capa a uma cor
+
+<Excerpt region="covers" />
+
+A capa é um estilo de título com margens zero e um design de página inteira: a linha da edição, o título em Bricolage Grotesque de 70 pt, o subtítulo em Newsreader itálico e onze linhas de maré cujos comprimentos saem de um gerador com semente, de modo que toda execução desenha as mesmas. Nada pinta o fundo da página: quem dá a cor é o cartão.
+
+### 4 · Uma abertura para cada matéria
+
+<Excerpt region="features" />
+
+Cada matéria é um título de nível 1 no estilo `feature`: página nova, um chapéu tirado dos atributos, o título e um fio azul curto. Passar as cinco matérias por um só estilo mantém o miolo do zine em duas famílias e uma cor de destaque.
+
+### 5 · Abra-o grampeado
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `createFolioFromDocument` lê o acabamento e as capas de `doc.config.folio`, e o papel de cada folha de `page.paper`. O pen avisa quando o número de páginas é ímpar, porque a página 8 só pode ser a quarta capa se cair numa página par.
+
+## Variações
+
+### Uma capa mais pesada e branca
+
+Mude os dois blocos e a folha de capa vira um cartão branco de 300 g; as páginas internas continuam em papel jornal.
+
+```diff
+-:::paper{type=cardStock grammage=250 shade=#f2c9b4}
++:::paper{type=cardStock grammage=300 shade=#fbfaf6}
+```
+
+### Um livreto simples
+
+Deixe os blocos de fora e a capa é uma folha do mesmo papel jornal das páginas, um pouco mais pesada. <RecipeLink slug="paper-swatch-book">O mostruário de papéis</RecipeLink> vai no sentido contrário e dá a cada folha o seu próprio papel.

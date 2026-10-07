@@ -1,0 +1,98 @@
+---
+title: "Abertura de capítulo sobre uma faixa sangrada"
+summary: "Uma abertura advancedDesign no título de nível 1: faixa sangrada, o número do capítulo sobre o seu fio, e chapéu e linha fina vindos dos atributos do título."
+plain: "As páginas de abertura de capítulo de um livro de geologia. Uma faixa colorida com um número grande vai até a borda de cima da página, e o desenho é definido uma vez só para todos os capítulos."
+description: "Abertura de capítulo de livro didático: faixa sangrada, número de 168 pt, chapéu e linha fina da linha do título e um estilo que recolore o capítulo 4."
+question: "Como faço uma abertura de capítulo com faixa de cor sangrada, número grande e título em duas linhas?"
+aliases: ["abertura de capítulo", "faixa de cor", "tarja de cor", "número de capítulo grande", "número do capítulo", "linha fina", "chapéu", "sobretítulo", "livro didático", "cores por capítulo", "marcador lateral", "índice de dedo"]
+pageNotes: { "1": "Uma faixa terracota ocupa o alto da página com o chapéu “Chapter 3 · Plate tectonics”, o título “The Restless Crust” em duas linhas, uma linha fina em itálico e um 3 branco apoiado no fio escuro da faixa; no pé da página, o corte de uma placa que mergulha sob outra.", "3": "O capítulo 4, “Fire from Below”, abre com o mesmo desenho em verde-azulado.", "4": "O capítulo 4 termina com as questões de revisão, o colofão e, na largura do pé da página, um corte verde-azulado de um vulcão-escudo e de um estratovulcão." }
+---
+
+## O que você vai compor
+
+As aberturas de capítulo de *Earth in Motion*, um livro didático de introdução à geologia numa página de 210 × 280 mm. O capítulo 3 abre sob uma faixa terracota sangrada no alto da página. Nela vão um chapéu espacejado, o título quebrado onde o autor quis, uma linha fina em itálico e um número de capítulo de 168 pt apoiado no fio escuro da faixa, junto à margem externa. Duas colunas justificadas começam sob a faixa, e o corte de uma placa que afunda ocupa o pé da página. O capítulo 4 repete o desenho em verde-azulado, até o marcador lateral, os números de seção, as remissões e o rótulo da sua figura. O desenho é definido uma vez, no título de nível 1. A linha de título de cada capítulo traz como atributos o tema do chapéu e a linha fina, e nomeia um estilo quando o capítulo muda de cor.
+
+## Preparo
+
+### 1 · Pendurar a faixa e o número na página
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. A faixa e o seu fio pendem do canto superior esquerdo da sangria. Como toda caixa ou fio sem largura própria, eles se esticam até a borda oposta dessa moldura, então chegam ao refile, e à sangria assim que `BLEED` é definido. O número pende do canto superior direito da página: `y: BAND - 0.8 * NUMERAL * PT` apoia a sua linha de base no fio, e `BEARING` desloca a sua caixa 2 mm para dentro da margem para compensar o espaço lateral do algarismo, de modo que a tinta fica mais ou menos alinhada com a borda do texto. O chapéu pende do contêiner. O título pende abaixo do chapéu e a linha fina abaixo do título, por âncoras `below` com `overflow: 'wrap'`, então um título mais longo empurra a linha fina para baixo. A linha fina é um elemento de texto preenchido com o atributo `lead` do título; uma linha de autor seria mais um, `{attr.author}`, encadeado do mesmo jeito. `minHeight: BAND - TOP + AIR` define onde começa o texto. A caixa do número desce 0,2 vez o seu corpo (11,9 mm) abaixo do fio, e uma abertura reserva espaço até o seu elemento mais baixo, por isso `AIR` precisa ter pelo menos 11,9 mm; com menos, seria a caixa do número que definiria onde começa o texto.
+
+### 2 · Dar a página ao título do capítulo
+
+<Excerpt region="levels" />
+
+`span: 'page'` abre cada capítulo numa página nova e estende o título de nível 1 sobre as duas colunas; `advancedDesign` desenha a abertura no lugar do texto do título, e o corpo começa abaixo da altura reservada. Sozinho, `span` toma a página seguinte, recto ou verso, e qualquer objeto `headings` desativa a quebra padrão para um recto. Por isso a quebra é declarada de novo com `parity: 'odd'`, que põe cada abertura num recto, onde a âncora à direita do número é a margem externa. No nível 2, `numberingTemplate: '{1}.{2}'` numera as seções 3.1, 3.2… na cor da faixa; um nível 3 com `'{1}.{2}.{3}'` seguiria com 3.1.1.
+
+### 3 · Nomear a cor do capítulo uma vez só
+
+<Excerpt region="palette" />
+
+Cada cor da configuração se liga a uma destas entradas. Os próprios valores padrão do motor se ligam a `main-color`, então apontar essa entrada para a cor da faixa muda também todos os valores padrão que a configuração deixa sem definir. A linha de título do capítulo 4, `# Fire from \\ Below {style="teal" topic="Volcanoes" lead="…"}`, escolhe o estilo, que troca `band` até o próximo título de nível 1. Os espaços de design acompanham a troca pela sua ligação com a paleta, e as cores de texto iguais ao `band` de base são repintadas, de modo que o marcador lateral, os números de seção e de lista, as remissões, o rótulo da legenda e o fólio no pé ficam verde-azulados <PageRef page={3}>nas páginas 43 e 44</PageRef>. A mesma linha preenche `{attr.topic}` e `{attr.lead}`, e a sua `\\` quebra `{titleText}` onde o autor quer ([atributos de título](/pt/docs/document-format#atributos-de-título), [quebras de linha nos títulos](/pt/docs/document-format#quebras-de-linha-em-títulos)).
+
+### 4 · Deixar a primeira citação posicionar cada figura
+
+<Excerpt region="figure" />
+
+Um `:ref` numera a sua figura e a coloca no primeiro espaço livre depois do parágrafo que a cita. A figura 3.1 é `auto`. Ela é citada na abertura enquanto as duas colunas ainda têm espaço, então ocupa o pé dessa página; como flutuante `top`, teria aberto a página 42, porque um flutuante nunca sobe acima da sua referência. A figura 4.1 é citada na parte de baixo da segunda coluna da página 43, onde uma faixa na largura da página já não cabe, e `bottom` a manda para a página 44. É a última página do capítulo, e numa última página o motor sobe os flutuantes do pé até ficarem logo abaixo das últimas linhas de texto, sem espaço acima deles.
+
+### 5 · Cabeços, marcador lateral e fólio no pé
+
+<Excerpt region="heads" />
+
+Cada elemento do cabeçalho pende de um canto superior da página e é filtrado por `parity`, então o fólio e o marcador ficam sempre na margem externa. A caixa do marcador pende do canto da sangria e se alarga com `BLEED`, para continuar sangrando depois do refile. `pages: 'body'` tira todos esses elementos das aberturas, que recebem um fólio no pé definido no rodapé. O verso nomeia o capítulo com `{chapterTitle}`, numa só linha, porque a `\\` só quebra o título na abertura. Livros didáticos costumam nomear a seção no recto. O Postext 1.4.1 não tem marcador de posição para a seção, então o cabeço do recto imprime o `{title}` do livro; nestas quatro páginas ele nunca aparece, porque os dois rectos são aberturas.
+
+### 6 · Começar o livro no capítulo 3
+
+<Excerpt region="build" />
+
+Estas páginas são os capítulos 3 e 4 de um livro mais longo, então `buildDocument` recebe uma `continuation` com os contadores como os capítulos 1 e 2 os deixaram. Com `h1: 2` nos seus `headings`, o próximo `#` é o capítulo 3: `{chapterNumber}` imprime 3, as seções são numeradas a partir de 3.1 e a primeira figura passa a ser a 3.1. `pageNumbering.startAt: 41` começa os fólios em 41. A primeira página continua sendo um recto qualquer que seja o seu fólio, porque a paridade é contada sobre a página física e `pageIndexOffset` fica em 0; o primeiro fólio, 41, é ímpar para combinar.
+
+## Variações
+
+### Fazer a faixa mais alta
+
+`BAND` define a altura da faixa, a posição do número e a altura reservada acima do texto. Uma faixa mais alta empurra texto para a página seguinte, então reajuste cada capítulo (veja o último erro comum) ou deixe os capítulos correrem seguidos.
+
+```diff
+-const BAND = 100; // mm from the trim to the foot of the band
++const BAND = 128; // mm from the trim to the foot of the band
+```
+
+### Imprimir com sangria
+
+Com uma sangria de 3 mm, a faixa, o seu fio e o marcador passam 3 mm do refile, o número continua sobre o fio e `page.cutLines` é ativado com o mesmo valor.
+
+```diff
+-const BLEED = 0; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
++const BLEED = 3; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
+```
+
+### Acrescentar uma cor para outro capítulo
+
+Cada cor de capítulo é mais uma entrada na paleta e mais um estilo; escreva `{style="slate"}` na linha de título desse capítulo.
+
+```diff
+   band2: '#2e6f73', // the second chapter colour, a teal; the sea in Figure 3.1
++  band3: '#3d4f6b', // a third chapter colour, a slate blue
+@@
+-const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } }];
++const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } },
++  { id: 'slate', palette: { band: palette.band3 } }];
+```
+
+### Deixar os capítulos correrem seguidos
+
+Com `'any'`, um capítulo abre na página seguinte. Depois de um capítulo que termina num recto, ele abre no verso, sem página em branco antes, e o seu número fica junto à lombada, já que pende da borda direita da página. Estas páginas não mudam, porque o capítulo 3 já termina num verso.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+## Erros comuns
+
+- A faixa tem altura fixa, enquanto o chapéu, o título e a linha fina pendem da margem superior e crescem para baixo, então uma linha fina mais longa ou um título de três linhas batem no fio. Limite as linhas finas a umas cinco linhas, como as duas edições fazem, ou calcule `BAND` a partir da abertura mais longa.
+- A fórmula do `y` do número supõe `lineHeight: 1`. A linha de base de um texto de design fica a 0,8 da altura da sua caixa de linha, e `0.8 * NUMERAL` só mede essa distância quando a caixa é tão alta quanto o corpo. Se você mudar a entrelinha ou a âncora, a fórmula tem que mudar junto. `BEARING` é ajustado a olho, porque cada algarismo tem o seu próprio espaço lateral (aqui o 3 e o 4 terminam a 0,8 mm um do outro).
+- A paleta de um estilo muda a cor dos elementos de design e do texto. Uma imagem mantém as cores com que foi desenhada: a figura 4.1 é verde-azulada porque o código a desenha a partir de `band2`, e uma figura terracota posta no capítulo 4 continuaria terracota.
+- Com `parity: 'odd'`, um capítulo que passa umas poucas linhas da sua última página deixa uma página quase vazia e um verso em branco antes da próxima abertura, e o postext 1.4.1 compõe essa página com uma coluna mais curta que o seu texto, então a última linha do capítulo se perde. Ajuste o texto, como as duas edições fazem aqui, e confira a última página de cada capítulo sempre que o texto ou `BAND` mudarem.

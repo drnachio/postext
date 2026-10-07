@@ -429,7 +429,7 @@
       "kokoro": "La novel·la de Natsume Sōseki (1914) en japonès, composta en vertical i enquadernada per la dreta com la primera edició d’Iwanami, amb la coberta, les guardes i la portada que va dissenyar Sōseki, tres de les seves pintures i furigana sobre els mots difícils. Només en japonès",
       "openstax-fisica": "Llibre de text a columna i mitja amb exemples resolts, comprovacions, taules i fórmules",
       "paradise-lost": "Edició anotada del poema de Milton en dotze llibres: les notes de Verity a peu de pàgina i les cinquanta làmines de Doré. Només en anglès",
-      "pepper-carrot": "L'episodi 8 del còmic de David Revoy en set llengües: les vinyetes originals sense text, amb els globus i la retolació que el motor compon a partir de cada traducció oficial. L'edició japonesa es retola en columnes i, com l'àrab, es llegeix de dreta a esquerra i s'obre per la dreta",
+      "pepper-carrot": "L'episodi 8 del còmic de David Revoy en vuit llengües: les vinyetes originals sense text, amb els globus i la retolació que el motor compon a partir de cada traducció oficial. L'edició japonesa es retola en columnes i, com l'àrab, es llegeix de dreta a esquerra i s'obre per la dreta",
       "pintura-espanola": "Catàleg d'exposició a una columna: fitxa i comentari davant de la làmina a pàgina",
       "senales": "Revista de l'Agència Europea de Medi Ambient a dues columnes amb obertures fotogràfiques, requadres, cites i panells de dades"
     }
@@ -3762,7 +3762,7 @@
     "title": "Accessibilitat",
     "lastUpdated": "Última actualització: octubre de 2026",
     "targetTitle": "Nivell de conformitat",
-    "targetText": "Volem que aquest lloc web i el Sandbox compleixin les Pautes d'Accessibilitat per al Contingut Web (WCAG) 2.2 en el nivell AAA, en anglès, castellà, català, xinès, japonès i àrab (de dreta a esquerra), amb el tema clar i amb el fosc. Cada pàgina passa proves automàtiques (axe-core i comprovacions pròpies per als criteris AAA) i un recorregut amb el teclat.",
+    "targetText": "Volem que aquest lloc web i el Sandbox compleixin les Pautes d'Accessibilitat per al Contingut Web (WCAG) 2.2 en el nivell AAA, en anglès, castellà, català, xinès, japonès, àrab (de dreta a esquerra) i portuguès del Brasil, amb el tema clar i amb el fosc. Cada pàgina passa proves automàtiques (axe-core i comprovacions pròpies per als criteris AAA) i un recorregut amb el teclat.",
     "prefsTitle": "Preferències de lectura",
     "prefsText": "El lloc compon els textos justificats i amb guionets, com els llibres que fa Postext. Si així et costa més llegir, la icona del llibre de la barra de menú obre les preferències de lectura. S'apliquen a totes les pàgines del lloc i es desen en aquest navegador.",
     "prefsTheme": "Tema: clar o fosc. És el mateix ajust que l'interruptor de la barra de menú; si no en tries cap, el lloc segueix el del teu sistema.",
@@ -3784,7 +3784,7 @@
     "limitations": [
       "Els dos vídeos narrats no tenen interpretació en llengua de signes (WCAG 1.2.6) ni audiodescripció ampliada (1.2.7). Cada vídeo té a sota una transcripció completa que descriu el que apareix a la pantalla a més de la narració.",
       "Les pistes de text dels vídeos només recullen la veu i estan marcades com a subtítols; encara no inclouen els sons ni la música.",
-      "No hi ha versió xinesa, japonesa ni àrab dels vídeos: les pàgines en xinès, en japonès i en àrab reprodueixen el vídeo en anglès amb una transcripció en la seva llengua.",
+      "No hi ha versió xinesa, japonesa, àrab ni portuguesa dels vídeos: les pàgines en xinès, en japonès, en àrab i en portuguès del Brasil reprodueixen el vídeo en anglès amb una transcripció en la seva llengua.",
       "La previsualització del Sandbox a la pestanya Canvas és una imatge de cada pàgina. El text és a la pestanya HTML i al tauler Text, on els lectors de pantalla el poden llegir.",
       "Els PDF que exportes des del Sandbox surten etiquetats per a l'accessibilitat, però la llegibilitat que tinguin depèn del contingut i del disseny que els donis."
     ],

@@ -1,0 +1,89 @@
+---
+title: "Lista de leituras com a exportação BibTeX do Zotero"
+summary: "A lista de leituras de um seminário com a exportação BibTeX do Zotero colada como veio, citada em Chicago autor-data, e nocite para obras que o texto não cita."
+plain: "A lista de leituras de um seminário universitário. O professor cola o arquivo que o Zotero exporta; o Postext compõe as citações e uma lista que inclui também livros que o texto não menciona."
+description: "Uma lista de leituras de curso no Postext: a exportação BibTeX do Zotero colada sem retoques, citações em Chicago autor-data e nocite para obras não citadas."
+question: "Como faço para usar uma exportação BibTeX do Zotero e listar obras que o texto não cita?"
+aliases: ["Zotero", "BibTeX", "nocite", "obras não citadas", "lista de leituras", "plano de ensino", "ementa", "bibliografia do curso", "leituras complementares", "bibliografia complementar", "Chicago autor-data", "bibliografia", "referências"]
+pageNotes: { "1": "Página 1: uma faixa verde-escura na metade de cima com o antetítulo HPS 214 · Seminar reading list · Autumn term 2026, o título Science as a Social Practice numa serifada leve de corpo grande e um olho em itálico; embaixo, duas colunas com a introdução e as semanas 1 a 3, com citações como Kuhn (1970) e (Shapin 1984).", "2": "Página 2: as semanas 4 a 6 e a seção Further reading, e depois a bibliografia em Chicago autor-data nas duas colunas: treze obras, cinco delas nunca citadas no texto, entre elas Fleck, Merton e López Piñero." }
+---
+
+## O que você vai compor
+
+A lista de leituras de um seminário de seis semanas sobre história e sociologia da ciência, composta numa página de 210 × 280 mm em duas colunas. Um campo verde-escuro ocupa a metade de cima da primeira página, com o título do curso em Spectral Light de 50 pt; o texto abaixo é o guia do professor para cada semana. As referências são a coleção do seminário no Zotero, exportada em BibTeX e colada no documento sem mexer numa linha: as chaves de citação do Zotero, as chaves em volta das maiúsculas, os acentos `{\"o}`, `month = dec` e os campos `file`, `keywords` e `urldate`. O texto cita oito das obras. As outras cinco, leituras de fundo que o seminário não discute, entram na lista por `nocite`.
+
+## Preparo
+
+### 1 · Dar nome ao estilo uma vez
+
+O código é [a resposta curta](#a-resposta-curta) acima. O motor de citações é registrado antes da primeira composição, e o estilo é uma única configuração: o Chicago autor-data escreve “(Shapin 1984)” para `[@shapin_pump_1984]` e “Shapin and Schaffer (1985)” para `@shapin_leviathan_1985` dentro da frase. As chaves são as que o Zotero montou com o primeiro autor, a primeira palavra significativa do título e o ano, então `gieryn_boundary-work_1983` mantém o hífen; o Postext lê um hífen ou um sublinhado dentro de uma chave como parte dela.
+
+### 2 · Colar a exportação como o Zotero a escreve
+
+O último bloco do documento guarda a exportação, uma entrada por obra, recuada com tabulações como o Zotero a escreve:
+
+```bibtex
+@article{gieryn_boundary-work_1983,
+	title = {Boundary-{Work} and the {Demarcation} of {Science} from {Non}-{Science}: …},
+	url = {https://www.jstor.org/stable/2095325},
+	doi = {10.2307/2095325},
+	urldate = {2026-08-21},
+	journal = {American Sociological Review},
+	author = {Gieryn, Thomas F.},
+	month = dec,
+	year = {1983},
+	keywords = {demarcation, week 4},
+	pages = {781--795},
+	file = {JSTOR Full Text PDF:/Users/hps214/Zotero/storage/2HJ8M6PA/Gieryn - 1983 - ….pdf:application/pdf},
+}
+```
+
+O leitor tira as chaves que protegem as maiúsculas, compõe `{\"o}` e `{\'e}` em ö e é, transforma `--` em meia-risca e lê `month = dec` como um nome de mês sem chaves. `urldate` vira a data de acesso, e `language` a língua da obra; `file`, `keywords`, `abstract` e `shorttitle` são ignorados, então nada do seu disco chega à página.
+
+### 3 · Trazer as obras que o texto não cita
+
+O frontmatter as lista pela chave:
+
+```yaml
+---
+title: "Science as a Social Practice"
+nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, @rheinberger_toward_1997, @lopez_pinero_ciencia_1979"
+---
+```
+
+A lista traz todas as obras citadas mais estas cinco, ordenadas juntas por autor, como o Chicago pede; nada marca uma entrada como não citada. `nocite: "@*"` lista a exportação inteira, e `bibliography.includeUncited: true` faz o mesmo a partir da configuração, para um projeto gráfico que sempre imprime a biblioteca toda.
+
+### 4 · Um campo verde para o cartão
+
+<Excerpt region="opener" />
+
+A faixa é uma caixa ancorada no refile, com 132 mm de altura, e as duas colunas começam 9 mm abaixo dela. O título, o fio e o olho são encadeados com âncoras `below`, de modo que um título de curso mais longo empurra o olho para baixo em vez de bater nele.
+
+<Excerpt region="palette" />
+
+## Variações
+
+### Listar a coleção inteira do Zotero
+
+Quando a exportação é a própria lista, dispense as chaves: todas as entradas do bloco são impressas, citadas ou não.
+
+```diff
+-nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, …"
++nocite: "@*"
+```
+
+### Mudar o estilo
+
+As mesmas chaves dão uma lista Harvard (Cite Them Right) sem nenhuma outra mudança.
+
+```diff
+-  style: 'chicago-author-date', // '(Gieryn 1983)', 'Shapin and Schaffer (1985)'
++  style: 'harvard-cite-them-right',
+```
+
+## Erros comuns
+
+- Uma chave em `nocite` que não corresponde a nenhuma entrada é descartada sem aviso. Copie as chaves da exportação em vez de digitá-las, e conte as entradas na página.
+- O Zotero monta as chaves a partir dos dados: corrija o nome de um autor ou um título no Zotero, e a próxima exportação pode mudar a chave, o que quebra todas as citações dela. Fixe as chaves antes de escrever o texto: o Zotero lê uma linha `Citation Key: …` no campo Extra de um item.
+- O Zotero exporta em UTF-8 por padrão, com os acentos como são. O bloco aqui foi exportado com a opção de codificação Western, que escreve `{\"o}`; o Postext lê as duas.
+- A 18ª edição do Chicago omite o local de publicação, então o campo `address` não é impresso, e um artigo com DOI mostra o DOI, e não o `url` do JSTOR.

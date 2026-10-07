@@ -1,0 +1,203 @@
+{/* docs/introduction-pt.mdx */}
+
+export const metadata = {
+  title: 'Introdução ao Postext',
+  sidebarTitle: 'Introdução',
+  description: 'O que é o Postext, por que ele existe e que problema resolve',
+  lang: 'pt',
+  lastUpdated: '2026-09-24',
+  readingTime: '7 min',
+  order: 1,
+  plainSummary: "O Postext é um software livre que monta as páginas de livros, revistas e relatórios na web. Há séculos os livros impressos seguem regras cuidadosas de diagramação, como manter as colunas da mesma altura e as imagens perto do texto que fala delas. As páginas da web nunca tiveram essas regras, e o Postext as traz. Você escreve o texto, e o Postext coloca cada linha, imagem e nota na página para você. Esta página conta por que o projeto existe e como ele começou.",
+};
+
+# Introdução ao Postext
+
+**Um compositor tipográfico programável para a web.**
+
+Abra qualquer livro bem composto. Repare em como o texto se assenta na página: colunas equilibradas,
+imagens encaixadas no fluxo, nenhum vão estranho, nenhuma linha solitária perdida no alto de uma coluna.
+Séculos de ofício foram necessários para que isso pareça natural.
+
+Agora abra uma página da web. Mesmo as melhores parecem diferentes. O texto esbarra nas imagens. As colunas
+transbordam ou ficam pela metade. As notas de rodapé vão parar no fim da página em vez de ficar perto das
+palavras que as citam. A web nos deu o layout responsivo, mas nunca nos deu a diagramação *editorial*.
+
+O Postext fecha essa lacuna. É um motor de layout que recebe o seu conteúdo (texto em markdown mais
+recursos declarados, como imagens bitmap, diagramas SVG e tabelas, incorporados por referência) e
+aplica as mesmas regras que um compositor profissional aplicaria: prevenção de órfãs e viúvas,
+equilíbrio de colunas, texto que contorna obstáculos, espaçamento deliberado. O resultado é uma
+geometria de página com qualidade de publicação, tanto para HTML quanto para PDF.
+
+Construído sobre o [`@chenglou/pretext`](https://github.com/chenglou/pretext), que mede texto sem DOM
+a uma velocidade que torna tudo isso possível.
+
+
+## A distância entre o impresso e a web
+
+Há séculos os compositores seguem regras que tornam o texto agradável de ler. Não são preferências
+estéticas: são princípios conquistados a duras penas e refinados por gerações de livros, jornais e
+revistas impressos:
+
+- Nada de órfãs (uma única linha de um parágrafo isolada no alto de uma coluna).
+- Nada de viúvas (uma única linha de um parágrafo deixada para trás no pé da coluna).
+- Colunas equilibradas (altura aproximadamente igual entre as colunas de uma página dupla).
+- Texto que contorna figuras, citações em destaque e imagens inseridas.
+- Notas de rodapé colocadas no pé da coluna em que são citadas.
+- Notas de margem alinhadas com o parágrafo que as cita.
+- Espaçamento consistente e deliberado em torno de títulos, citações em bloco e figuras.
+- Hifenização que evita caminhos de rato e bandeiras irregulares demais.
+
+Além dessas regras, duas dimensões concretas e mensuráveis mostram o quanto a web se afasta do impresso:
+
+- **Medida da linha.** Bringhurst situa a faixa confortável em **45 a 75 caracteres** por linha numa
+  coluna única (e **40 a 50** em várias colunas); a diretriz de acessibilidade
+  [WCAG 1.4.8](https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html) fixa o limite em 80.
+  A maioria dos sites deixa as linhas se estenderem a 100, 120 ou mais, bem além do ponto em que o
+  olho consegue acompanhar uma linha sem se perder.
+- **Entrelinha.** A tradição recomenda **1,3 a 1,5 vez o corpo da fonte**, e a
+  [WCAG 1.4.12](https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html) exige que o conteúdo
+  continue funcional com 1,5× ou mais. Mas o valor certo depende da medida: uma entrelinha que funciona
+  bem com 50 caracteres fica apertada com 90. Os compositores ajustam uma em função da outra; o CSS
+  não oferece nenhuma forma automática de fazer isso.
+
+E aqui o CSS se esgota: você tem `column-count` e pouco mais. Nenhum controle sobre a posição dos
+recursos, nenhuma noção de transbordamento, nenhuma prevenção de órfãs ou viúvas entre colunas, nenhuma
+forma nativa de fazer o texto contornar um obstáculo arbitrário. Os layouts editoriais de várias colunas
+na web continuam sendo feitos à mão: desenhos estáticos que quebram assim que o tamanho da tela muda.
+
+A web tem layout responsivo há mais de uma década: flexbox, grid, contêineres que se adaptam a qualquer
+tela. O que ela nunca teve foi diagramação *editorial* responsiva, aquela em que o conteúdo se redistribui
+com inteligência pelas colunas, em torno das imagens, passando pelas notas de rodapé, obedecendo às regras
+que tornam o texto *agradável de ler*.
+
+<Illustration name="CssGapVsEditorial" data='{"title": "A distância entre as colunas do CSS e a diagramação editorial", "desc": "O CSS oferece column-count e pouco mais; a diagramação editorial precisa de controle de órfãs e viúvas, fluxo em torno de obstáculos, equilíbrio de colunas, posicionamento de notas de rodapé e refinamento por convergência.", "caption": "O que o CSS oferece e o que a diagramação editorial de fato exige.", "cssTitle": "O que o CSS oferece", "cssLead": "column-count", "cssMore": "...e mais nada.", "cssCons": ["Sem controle de órfãs e viúvas", "Sem fluxo em torno de obstáculos", "Sem equilíbrio de colunas", "Sem posicionamento de notas de rodapé", "Sem convergência nem refinamento"], "gap": "a lacuna", "editorialTitle": "O que a diagramação editorial exige", "editorialPros": ["Prevenção de órfãs e viúvas", "Texto que contorna os recursos", "Colunas equilibradas", "Posicionamento de notas de rodapé", "Controle da hifenização", "Refinamento por convergência"], "equals": "= Postext"}' />
+
+
+## Uma década procurando a peça que faltava
+
+O projeto [Content First](https://medium.com/binpar/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
+começou em 2014 como uma primeira tentativa de levar a qualidade da diagramação editorial para a web.
+Layouts em colunas, experimentos de fluxo de texto, protótipos sucessivos, e sempre o mesmo muro:
+**não dá para tomar boas decisões de diagramação sem saber exatamente quanto espaço o texto vai
+ocupar.**
+
+Parece simples, mas é o problema inteiro. Cada vez que você pergunta ao navegador “qual é a altura deste
+parágrafo nesta largura?”, dispara um reflow completo do layout. Faça isso algumas centenas de vezes num
+documento complexo de várias colunas e a página trava. O navegador nunca foi pensado para esse tipo de
+medição especulativa: testar dez larguras de coluna diferentes para achar a melhor, testar onde quebrar
+um parágrafo, verificar se uma imagem cabe aqui ou precisa passar para a coluna seguinte.
+
+Faltava uma forma de medir texto rápido o bastante para experimentar à vontade, sem travar a thread
+principal. Durante uma década, essa ferramenta não existiu.
+
+
+## A peça que faltava
+
+Em 2025, Cheng Lou lançou o [`Pretext`](https://github.com/chenglou/pretext): uma biblioteca de medição
+de texto sem DOM, de 300 a 600 vezes mais rápida que o reflow do navegador e exata até o pixel no Chrome,
+no Safari e no Firefox. Ela usa as métricas de fonte do canvas e aritmética pura para calcular a altura
+do texto e as quebras de linha sem jamais tocar no DOM.
+
+Com o Pretext, o gargalo que bloqueou este trabalho por dez anos desaparece. Dá para medir milhares de
+blocos de texto em milissegundos, testar dez configurações de coluna diferentes e ficar com a melhor,
+rodar o algoritmo de layout inteiro a cada redimensionamento da janela sem bloquear a thread principal.
+
+O Postext é o passo seguinte.
+
+
+## Pretext + Postext
+
+O nome é proposital: duas metades da mesma operação. Mantê-las separadas importa porque são
+responsabilidades distintas (uma mede, a outra decide), e isolar a medição permite que qualquer
+renderizador a consuma sem se acoplar às regras editoriais.
+
+**Pretext** é o que acontece *antes* de o texto ser colocado: medir quanto espaço ele vai precisar.
+Sem DOM, baseado em canvas, operando com números puros.
+
+**Postext** é o que acontece *depois* da medição: as decisões editoriais. Com as dimensões exatas de
+cada bloco de texto em qualquer largura, o motor decide onde vai cada elemento: em que coluna, em que
+posição, contornando quais recursos, obedecendo a quais regras tipográficas.
+
+```ts
+import { prepare, layout } from '@chenglou/pretext';
+import { buildDocument, renderToCanvas, renderToHtml } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+// pretext: medir (o trabalho "pré")
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24);
+// => "Este parágrafo tem 144px de altura nesta largura de coluna."
+
+// postext: decidir (o trabalho "pós")
+const vdt = buildDocument(content, config);
+// => Uma Virtual Document Tree completa, com cada parágrafo,
+//     título e recurso colocados em coordenadas exatas.
+
+// Uma VDT, três modos de saída:
+const canvases = renderToCanvas(vdt);                       // bitmap exato até o pixel por página
+const html = renderToHtml(vdt);                             // DOM selecionável para a web
+const pdfBytes = await renderToPdf(vdt, { fontProvider });  // PDF pronto para impressão
+```
+
+O Pretext fornece as medidas. O Postext fornece a diagramação.
+
+<Illustration name="PretextPostextPipeline" data='{"title": "O Pretext mede, o Postext decide", "desc": "O Pretext oferece medição de texto sem DOM, baseada em canvas. O Postext usa essas dimensões exatas para decidir a coluna, a posição, o fluxo em torno dos recursos e as regras de órfãs, viúvas e equilíbrio.", "caption": "Duas metades da mesma operação: o Pretext antes, o Postext depois.", "pretextTitle": "Pretext", "pretextSubtitle": "medir", "pretextBullets": ["Sem DOM, baseado em canvas", "300 a 600x mais rápido que o reflow", "quebras de linha exatas até o pixel"], "bridge": ["dimensões", "exatas"], "postextTitle": "Postext", "postextSubtitle": "decidir", "postextBullets": ["Que coluna, que posição", "Fluxo em torno dos recursos", "Órfãs, viúvas, equilíbrio"]}' />
+
+*O Pretext foi criado por [Cheng Lou](https://github.com/chenglou). O Postext é construído sobre ele.*
+
+
+## Como funciona
+
+O processo tem três etapas:
+
+1. **Você fornece o conteúdo.** Texto em markdown mais recursos declarados: imagens bitmap, diagramas
+   SVG e tabelas. Um `:ref{id="..."}` no meio do texto numera o recurso e o faz flutuar para uma faixa
+   superior ou inferior perto da sua primeira referência, como um compositor de impressos posiciona as
+   figuras. O conteúdo continua puramente semântico: descreve *o que* apresentar, não *como*; as decisões
+   de diagramação nunca ficam fixadas no código-fonte. A seção Recursos do documento
+   [Formato do documento](/pt/docs/document-format) cobre a sintaxe completa.
+
+2. **O motor toma as decisões.** O Postext analisa o conteúdo, chama o Pretext para medir o texto com
+   exatidão de pixel sem tocar no DOM e então executa um pipeline de layout em várias passadas:
+   equilibra colunas, numera e posiciona os recursos flutuantes, evita viúvas e órfãs, alinha linhas de
+   base, refina o espaçamento. Cada decisão é guiada pela configuração: a geometria da página e do layout,
+   o texto corrido e os títulos, além de `tableStyle` para a tipografia das células de tabela,
+   `captionStyle` para as legendas das figuras e `diagramStyle` com `singleInk`, que recolore os diagramas
+   SVG em tons de uma única tinta mapeados pela luminância, para impressão com uma só cor especial. Você
+   controla as regras, o motor as aplica.
+
+3. **Você recebe uma diagramação completa.** Coordenadas e dimensões precisas de cada elemento em cada
+   página. Os renderizadores traduzem essa geometria para o formato de destino: **canvas** para uma
+   visualização em bitmap exata até o pixel (`renderToCanvas`, `renderPage`), **HTML** para tipografia
+   selecionável e sensível ao redimensionamento na web (`renderToHtml`, `renderToHtmlIndexed`) e **PDF**
+   para uma saída pronta para impressão com fontes incorporadas (`renderToPdf`, do pacote `postext-pdf`).
+   O mesmo conteúdo, as mesmas regras, três saídas intercambiáveis.
+
+<Illustration name="LayoutProcess" data='{"title": "Processo de layout em três etapas", "desc": "O markdown enriquecido mais a configuração entram no motor, que executa um pipeline de layout em várias passadas com a medição do Pretext dentro dele e produz HTML ou PDF renderizado.", "caption": "Entra conteúdo, sai geometria, que depois é renderizada no formato de destino.", "inputTitle": "Markdown enriquecido", "inputSubtitle": "+ configuração", "parse": "análise", "engineTitle": "Motor do Postext", "engineSub1": "medição do Pretext dentro", "engineSub2": "layout em várias passadas", "render": "renderização", "outputTitle": "HTML / PDF", "outputSubtitle": "saída renderizada"}' />
+
+Para ver em detalhe o funcionamento interno do motor (a Virtual Document Tree, o pipeline de várias
+passadas e o laço de convergência), consulte o documento [Arquitetura](/pt/docs/architecture). Para uma
+referência completa de todas as opções de configuração, da geometria da página ao estilo das tabelas,
+legendas e diagramas, consulte a página [Configuração](/pt/docs/configuration). E para experimentar tudo
+ao vivo (um editor de texto por capítulo, um painel Recursos com editor de tabelas e envio de imagens e
+SVG, um painel Design que percorre todas as configurações em termos editoriais e visualizações ao vivo
+em canvas, HTML e PDF), abra o [Sandbox](/pt/docs/sandbox).
+
+
+## Agradecimentos
+
+**[Pretext](https://github.com/chenglou/pretext)**, de Cheng Lou: a biblioteca de medição de texto que
+serve de base e torna o Postext possível. Sem uma medição sem DOM, exata até o pixel e abaixo do
+milissegundo, nada disto seria viável.
+
+**Content First** (~2014): a exploração original da diagramação editorial de alta qualidade na web.
+Uma década esbarrando em muros, aprendendo o que não funciona e firmando a convicção de que esse
+problema merece uma solução de verdade.
+
+O Postext se apoia em séculos de tradição tipográfica. As regras que ele implementa não foram inventadas:
+foram herdadas do trabalho de compositores, tipógrafos e designers que refinaram a arte de tornar o texto
+legível muito antes de existirem telas. Dos tipos móveis de Gutenberg à tipografia assimétrica de
+Tschichold e aos *Elementos do estilo tipográfico* de Bringhurst, o ofício de dispor o texto numa página
+evolui há mais de quinhentos anos. O Postext leva esse saber acumulado para a web, onde ele tem estado
+visivelmente ausente.

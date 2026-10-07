@@ -1,0 +1,75 @@
+---
+title: "Um livro feito de capítulos separados"
+summary: "buildBundle junta cinco arquivos Markdown num livro: cada capítulo abre em página ímpar, e páginas, capítulos e figuras seguem numerados de arquivo em arquivo."
+plain: "Um pequeno manual de apicultura escrito em arquivos separados, um por capítulo. O Postext junta tudo num livro só, e os números de página, capítulo e figura continuam de um arquivo para o outro."
+description: "Manual de apicultura em quatro estações, composto com buildBundle a partir de um arquivo Markdown por capítulo; o sumário dá o fólio em que cada capítulo abre."
+question: "Como faço para diagramar um livro capítulo a capítulo sem quebrar a numeração de páginas, capítulos e figuras?"
+aliases: ["livro com vários capítulos", "capítulos em arquivos separados", "numeração de páginas contínua", "numeração corrida", "capítulo em página ímpar", "sumário do livro", "PDF do livro inteiro", "buildBundle"]
+pageNotes: { "6": "A página 6 fica em branco: Winter ocupa uma página só, então Spring abre na página 7, a ímpar seguinte, e a página par entre as duas não tem cabeço nem fólio.", "11": "A página 11 é a única página ímpar de texto corrido do livro: o cabeço diz SUMMER, o título do capítulo, ao lado do fólio." }
+---
+
+## O que você vai compor
+
+*A Beekeeper’s Year* é um manual pequeno em quatro capítulos, um por estação. Ele começa pelo outono (Autumn), porque o ano do apicultor começa quando sai o último mel. Cada capítulo é um arquivo Markdown separado, sem nenhum número de página, capítulo ou figura. `buildBundle` leva essas contagens de um arquivo para o seguinte e compõe os capítulos, com um quinto arquivo para a capa e o sumário, como um livro de onze páginas. Todo capítulo abre numa página ímpar, sob um canto de favo que traz o número dele. O sumário, na página par diante de Autumn, espelha essa abertura com o título encostado na lombada e dá o fólio de cada capítulo. Um quadro de cria, desenhado em código, aparece uma vez em cada capítulo, das Figuras 1.1 a 4.1. A página 6 fica em branco porque Winter cabe numa página e Spring precisa abrir numa ímpar.
+
+## Preparo
+
+### 1 · Um arquivo por capítulo
+
+<Excerpt region="chapters" />
+
+Cada estação é um documento próprio, então você pode reescrever um capítulo sem abrir os outros. O primeiro documento tem o frontmatter, a capa e o sumário. No Postext 1.4.1 os documentos seguintes não herdam nenhum desses metadados, e o PDF lê o título e a autoria só do primeiro documento.
+
+### 2 · Regras que passam de um documento para outro
+
+O código deste passo está [na resposta curta](#a-resposta-curta), mais acima. [`buildBundle`](/pt/docs/configuration#diagramar-e-renderizar-um-pacote) diagrama os documentos em ordem com uma só configuração e passa a cada um uma `continuation` com o que veio antes: o número de páginas físicas já compostas, para que a paridade, as margens espelhadas e os cabeços de páginas pares e ímpares continuem; o fólio seguinte; e os contadores de capítulos e figuras. Com `parity: 'odd'`, um capítulo que vem depois de outro terminado numa página ímpar começa com uma página par em branco, e essa página pertence ao próprio documento dele ([quebra antes](/pt/docs/configuration#quebra-antes)). A capa e o sumário são [estilos de título](/pt/docs/configuration#estilos-de-título) com `numbered: false`, e por isso Autumn continua sendo o capítulo 1. Os dois herdam `span: 'page'` do nível de capítulo, o que põe cada um numa página só dele sem `:::pagebreak`. O estilo do sumário desliga a paridade herdada, que de outro modo deixaria a página 2 em branco.
+
+### 3 · Sumário do livro inteiro
+
+<Excerpt region="contents" />
+
+`:::toc` fica no primeiro documento, mas lista os capítulos e as seções do livro inteiro. `buildBundle` diagrama o livro, recolhe cada título com o rótulo de página que ele recebeu e diagrama o livro de novo com esse esquema até os rótulos pararem de mudar, no máximo três passadas ([sumário](/pt/docs/configuration#sumário)). Os meses sob cada título vêm de um atributo do título, `{months="…"}`, que a abertura também imprime.
+
+### 4 · Uma abertura, espelhada no sumário
+
+<Excerpt region="opener" />
+
+`{chapterNumber}` continua contando a partir dos documentos diagramados antes, e assim a abertura de Spring imprime 3, embora o arquivo dela não tenha número nenhum. A caixa do número é calculada a partir do centro da célula do favo, e número e favo pendem os dois do canto superior direito da sangria; mudar o formato ou acrescentar sangria para a gráfica os move juntos. Na página do sumário, o chapéu, lido de `{subtitle}`, e o título ficam alinhados à direita, encostados na lombada, e o favo passa para o canto externo da página par. O título fica então na mesma altura que o de Autumn na página em frente.
+
+### 5 · Cabeços em todos os documentos
+
+<Excerpt region="running-heads" />
+
+Só o primeiro documento tem frontmatter, então no Postext 1.4.1 `{title}` não imprime nada nos documentos seguintes, Autumn incluído. Por isso o cabeço das páginas pares traz o título do livro digitado como texto fixo. `{chapterTitle}` e `{pageNumber}` são resolvidos página a página e saem em todos os documentos; a página 11, a única ímpar de texto corrido, traz SUMMER ao lado do fólio. `pages: 'body'` tira os cabeços das aberturas e da página em branco.
+
+### 6 · Páginas duplas na tela, um PDF para o livro
+
+<Excerpt region="build" />
+
+`buildBundle` devolve uma lista de documentos, um por arquivo Markdown. `showPages` emparelha as páginas por `pageIndexOffset + page.index`, então a página 1 fica sozinha como ímpar, e as páginas 2 e 3, 4 e 5 e assim por diante ficam frente a frente. `renderToPdf` recebe a mesma lista e grava um único arquivo com os rótulos de página do livro e um marcador para cada capítulo e seção.
+
+## Variações
+
+### Imprimir um capítulo com os fólios do livro
+
+Passe um só documento para `renderToPdf` para tirar uma prova de Spring sozinho, numerado de 6 a 8 como no livro. A página 6 em branco vem junto, porque uma página par em branco antes de uma abertura pertence ao capítulo que abre depois dela.
+
+```diff
+-offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
++offerPdf(() => renderToPdf(docs[3], { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+```
+
+### Numerar as figuras em sequência no livro todo
+
+Um contador de figuras que nunca reinicia numera os quatro quadros de 1 a 4 através dos documentos, em vez de 1.1 a 4.1.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG)
++    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+## Erros comuns
+
+- No alto de uma página, e sob uma figura que encabeça a página, um intertítulo perde o `marginTop`. Um intertítulo que tira o espaço da margem fica a uma linha do texto nesses dois lugares e a uma linha e meia em todos os outros. Aqui o espaço está na própria linha do intertítulo: `lineHeight` é uma linha e meia e a margem, uma linha, de modo que todo intertítulo do livro fica à mesma distância do seu texto.
+- Por padrão, uma linha justificada pode esticar os espaços até o dobro da largura, e o algoritmo de quebra prefere isso a um hífen. Com esse padrão, a edição inglesa não tinha hífen nenhum, e linhas com espaços de quase o dobro da largura normal ficavam ao lado de linhas apertadas a 0,7. `maxWordSpacing: 1.7` faz o algoritmo hifenizar. Depois de mudar esse valor, confira a última linha de cada parágrafo: um limite mais apertado pode deixar uma palavra sozinha ali, e trocar umas poucas palavras do parágrafo resolve.

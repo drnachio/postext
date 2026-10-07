@@ -1,0 +1,66 @@
+---
+title: "Um índice onomástico e um índice de assuntos"
+summary: "Marcas com index=\"names\" alimentam um índice de pessoas e as demais um de assuntos; :::index imprime cada um em duas colunas e a montagem acerta as páginas."
+plain: "Um capítulo de um livro acadêmico sobre a história dos tipos de impressão. Mostra como montar duas listas no fim do livro, uma de pessoas e outra de temas, com a página em que cada um aparece."
+description: "Capítulo de monografia sobre tipos de impressão que termina com um índice onomástico e um de assuntos, ambos feitos de marcas :index num só documento Markdown."
+question: "Como imprimo um índice onomástico e um índice de assuntos a partir do mesmo texto?"
+aliases: ["índice onomástico", "índice de nomes", "índice de pessoas", "índice de assuntos", "índice remissivo", "índice analítico", "index of names", "subject index", "índice de materias", ":index", ":::index"]
+pageNotes: { "6": "O índice onomástico: sobrenomes invertidos sob letras em Bodoni, páginas principais em negrito.", "7": "O índice de assuntos: subentradas, remissões See e See also, e a Bíblia de 42 linhas arquivada sob a letra F." }
+---
+
+## O que você vai compor
+
+O capítulo quatro de *Letters of Metal*, uma monografia acadêmica sobre tipos de impressão composta em 155 × 235 mm: uma coluna de Crimson Pro, Bodoni itálico nos títulos, um destaque vermelho-tijolo. O ensaio vai da textura de Gutenberg aos modernos de Bodoni, passando por Jenson, Aldo e Griffo, Garamond e Plantin, Caslon e Baskerville, os pontos de Fournier e os tipos espanhóis que Pradell e Gil abriram e Ibarra imprimiu. Termina como esses livros terminam, com dois índices em páginas frente a frente: impressores, gravadores de punções e mecenas na página par; tipos, ferramentas e livros na ímpar. Os dois saem do mesmo texto marcado, e cada número de página neles é a página em que a marca caiu.
+
+## Preparo
+
+### 1 · Marcar cada pessoa para o índice onomástico e cada assunto para o principal
+
+O código é [a resposta curta](#a-resposta-curta) acima; o resto está no Markdown. Uma marca com `index="names"` vai para o índice que `:::index{index="names"}` imprime, e todas as outras vão para o índice principal, o que um `:::index` sem atributos imprime. Assim, `:index[Aldus Manutius]{term="Manutius, Aldus" index="names" main}` imprime o nome no texto e registra uma página em negrito sob *Manutius* no índice onomástico, enquanto `:index[italic]{term="Italic" main}`, duas linhas adiante, registra a mesma página sob *Italic* no de assuntos. Uma pessoa que também é assunto do capítulo pode levar as duas marcas.
+
+### 2 · Inverter os nomes e ordenar pela letra em que o leitor vai procurar
+
+Os nomes entram com o sobrenome primeiro: `term="Garamond, Claude"`, `term="Dall’Aglio, Margherita"`. A vírgula faz parte do termo, e por isso a ordenação põe *Didot, Firmin* antes de *Didot, François-Ambroise*, como faria um indexador. Quando a forma impressa cairia na letra errada, `sort` dá a chave: a edição inglesa marca `term="42-line Bible" sort="Forty-two-line Bible"`, e assim a Bíblia fica sob a letra F em vez de abrir um grupo 0–9. Subentradas (`term="Foundries!Plantin-Moretus"`), páginas principais em negrito (`main`), `range="start"` e `range="end"` em volta da seção sobre Bodoni e remissões (`see="Italic"`, `seealso="Matrices"`) fazem o resto; um destino de `see` com níveis é impresso com dois-pontos, como em *Humanist type. See Roman type: Venetian*.
+
+### 3 · Montar uma vez; o documento acerta os próprios números
+
+<Excerpt region="build" />
+
+O índice imprime números de página que só existem depois da diagramação, e imprimi-lo ocupa páginas. `buildDocument()` resolve isso: diagrama o capítulo, lê a página de cada marca, imprime os dois índices e diagrama de novo sempre que um número muda. Aqui os índices vêm depois do texto, então uma segunda passada confirma a primeira; um índice posto antes do texto deslocaria todas as páginas seguintes, e as passadas continuariam até concordarem. Acrescente um parágrafo à seção sobre Bodoni e o índice onomástico dá a Whittingham a nova página sozinho.
+
+### 4 · Dar a cada índice uma abertura sobre duas colunas
+
+<Excerpt region="opener" />
+
+O estilo de título da resposta curta faz três coisas por `# Index of Names {style="index"}`: abre uma página (`parity: 'any'`, para que os dois índices venham um depois do outro sem página em branco), compõe em duas colunas separadas por 7 mm a seção que vem depois dele e, com `numbered: false`, não mexe na contagem de capítulos. O estilo reaproveita a abertura de capítulo com um rebaixamento de seis linhas e um título de 20 pt, e as letras de grupo repetem o Bodoni dela na cor de destaque, com a altura de uma linha do índice, para que as colunas mantenham o passo.
+
+### 5 · Pôr o nome do índice na página ímpar
+
+<Excerpt region="running-heads" />
+
+O cabeço da página ímpar imprime `{chapterTitle}`, e o título de um índice é de nível um como o de qualquer capítulo, então as páginas seguintes trazem *Index of Subjects* no alto. `pages: 'body'` tira os cabeços das duas aberturas de índice, que levam um fólio no pé.
+
+## Variações
+
+### Imprimir um índice único
+
+Tire `index="names"` das marcas de pessoas e o segundo título: todas as marcas vão então para o índice principal, nomes e assuntos num só alfabeto.
+
+```diff
+-:index[Aldus Manutius]{term="Manutius, Aldus" index="names" main}
++:index[Aldus Manutius]{term="Manutius, Aldus" main}
+```
+
+### Tirar as letras de grupo
+
+Um índice onomástico curto como este se lê bem sem elas. `groups.enabled: false` remove as letras e deixa uma linha de espaço entre um grupo e outro; a configuração vale para os dois índices.
+
+```diff
+-  groups: { fontFamily: 'Bodoni Moda', fontSize: pt(11), fontWeight: 600, color: col('brick') },
++  groups: { enabled: false },
+```
+
+## Erros comuns
+
+- A configuração `index` é compartilhada: os dois índices usam a mesma fonte, a mesma entrelinha e as mesmas letras de grupo.
+- Uma marca numa legenda ou numa célula de tabela é impressa como foi escrita. Marque a pessoa no parágrafo que cita a figura.

@@ -1,0 +1,63 @@
+---
+title: "Haicais e tankas compostos na vertical"
+summary: "Os haicais de Bashō na sua prosa de viagem e doze tankas de três versos de Takuboku numa página 四六判: um verso por linha, recuados do alto, assinaturas no pé."
+plain: "Um pequeno livro de poemas japoneses: o diário de viagem de Bashō com os haicais em linhas próprias, e os poemas curtos de Takuboku em três versos cada, que uma virada de página nunca corta."
+description: "Oku no Hosomichi, de Bashō, e Um punhado de areia, de Takuboku, na vertical com Postext: haicais recuados três caracteres, tankas inteiros, assinaturas 地付き."
+question: "Como componho haicais e tankas na vertical, cada verso na sua linha e recuado a partir do alto?"
+aliases: ["haicai", "haiku", "俳句", "tanka", "短歌", "waka", "haibun", "俳文", "poesia vertical", "poesia japonesa", "句集", "歌集", "地付き", "jitsuki", "字取り", "jidori", "Oku no Hosomichi", "Trilha estreita ao confim", "おくのほそ道", "Bashō", "芭蕉", "Ishikawa Takuboku", "石川啄木", "一握の砂", "Um punhado de areia", "tanka de três versos"]
+pageNotes: { "1": "A primeira parte abre à esquerda da lombada: おくのほそ道 em Mincho negrito descendo pela direita, com （抄） depois e um fio cor de caqui, 松尾芭蕉 perto do pé, e em seguida o título 冒　頭 e o início do diário de viagem com as suas leituras.", "2": "O primeiro haicai de Bashō, 草の戸も住替る代ぞひなの家, numa linha própria três caracteres abaixo, e depois os títulos 旅　立 e 平　泉, cada um espaçado até três caracteres, com 行春や鳥啼魚の目は泪 entre eles.", "3": "A prosa de Hiraizumi, depois 夏草や兵どもが夢の跡 e o haicai de Sora 卯の花に兼房みゆる白毛かな, assinado 曾良 na parte de baixo da linha, e então 立石寺 e 閑さや岩にしみ入蝉の聲.", "5": "A segunda parte: 一握の砂 （抄） e 石川啄木, e depois os dois primeiros tankas de Takuboku, cada um em três versos recuados dois caracteres, com uma linha em branco entre eles." }
+---
+
+## O que você vai compor
+
+Oito páginas de um pequeno livro de poesia numa página 四六判 de 127 × 188 mm, encadernada pela direita. A primeira parte são sete estações da *Trilha estreita ao confim* de Bashō, a sua prosa com os seus haicais; a segunda, doze tankas de *Um punhado de areia*, de Ishikawa Takuboku, cada um nos três versos em que ele o escreveu. A prosa corre de cima para baixo, 36 caracteres por linha, em Shippori Mincho de 10 pt com um passo generoso de 1,9 em. Cada haicai fica numa linha própria três caracteres abaixo, cada tanka dois, e o haicai de Sora vem assinado 曾良 perto do pé da linha. Um tanka nunca se divide entre duas páginas, e um ＊ cor de caqui separa os grupos. O livro de poesia europeu é a <RecipeLink slug="poetry-collection">Nº 015</RecipeLink>; poemas Tang em chinês vertical, a <RecipeLink slug="tang-poems-facing-english">Nº 083</RecipeLink>.
+
+## Preparo
+
+### 1 · Um verso é um parágrafo, e o seu estilo diz onde ele começa
+
+O código está na [resposta curta](#a-resposta-curta), mais acima. O Postext não tem quebra de linha forçada, então cada verso de um poema é um parágrafo próprio dentro de um bloco `:::paragraphs`, e o estilo do bloco define o recuo: `indent: em(3)` põe um haicai três caracteres abaixo do alto da linha (o texto do Aozora os põe a dois; três dão mais respiro aos poemas), e `firstLineIndent: em(0)` impede que o recuo de um caractere do texto se some a ele. Os cerca de 17 caracteres de um haicai cabem em qualquer linha de 36, então ele nunca quebra. A assinatura é um parágrafo à parte: `textAlign: 'end'` a apoia no pé da linha (地付き, jitsuki) e `endIndent: em(5)` a sobe cinco caracteres a partir dali (地から五字上げ), como faz a edição de onde vem este texto ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
+
+### 2 · Mantenha cada tanka numa só página
+
+<Excerpt region="tanka" />
+
+Os três versos de um tanka são três parágrafos, e o motor mantém juntas as linhas de um parágrafo, mas nunca um parágrafo com o seguinte. Um boxe mantém o conteúdo junto, então cada tanka vai num `:::callout` cujo estilo não desenha nada: sem fundo, sem espaçamento interno e com uma margem de uma linha depois, a linha em branco entre os poemas. Na página 5 o terceiro tanka não cabe embaixo do título da parte e dos dois primeiros, então abre inteiro a página 6 em vez de deixar para trás o primeiro verso ([Estilos de boxe](/pt/docs/configuration#estilos-de-boxe)).
+
+### 3 · Espace os nomes de lugar até a mesma largura
+
+<Excerpt region="places" />
+
+As estações do caminho de Bashō são títulos de nível 2 com a altura de duas linhas do texto (2行取り), para que a prosa e os haicais seguintes fiquem na grade. `jidori: 3` espaça um nome mais curto até ocupar três dos seus próprios caracteres (字取り): 平泉 sai 平　泉, com um caractere inteiro entre eles, e todos os nomes terminam na mesma altura que 立石寺 e 最上川. Um nome que já tem três caracteres fica como está ([Ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)).
+
+### 4 · Abra cada parte numa página própria
+
+<Excerpt region="part" />
+
+Cada parte é um título de nível 1 cujo design põe o título, um pequeno （抄）, “seleção”, logo depois dele com `anchor.to: '#title'`, um fio curto cor de caqui ao lado do título e o poeta perto do pé da linha. O design reserva cinco linhas, e o texto começa depois delas na mesma grade.
+
+### 5 · Escolha uma fonte que tenha os sinais antigos
+
+<Excerpt region="voices" />
+
+A prosa de Bashō escreve palavras repetidas com o antigo sinal de iteração 〻 (日〻, 人〻), e textos mais antigos também usam o longo くの字点 〳〵. A Zen Old Mincho não tem nenhum dos dois: o canvas os pegaria de uma fonte do sistema e o PDF desenharia caixas vazias. Shippori Mincho, Noto Serif JP e Shippori Mincho B1 têm os dois, então os poemas são compostos em Shippori Mincho ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas)). O texto do Aozora também mantém as notas do editor sobre grafias antigas, `とら{え|（へ）}て`, que imprimem o kana esperado ao lado daquele que Bashō escreveu.
+
+## Variações
+
+### Separe as três frases do haicai
+
+Antologias escolares às vezes põem um espaço ideográfico entre os 5, 7 e 5 sons, para quem está aprendendo a forma; o espaço é um caractere do texto.
+
+```diff
+-{夏草|なつくさ}や{兵|つはもの}どもが夢の跡
++{夏草|なつくさ}や　{兵|つはもの}どもが　夢の跡
+```
+
+### Deixe um tanka longo se dividir
+
+Um estilo de boxe com `keepTogether: false` deixa um tanka começar no pé de uma página e continuar na seguinte, como faria uma antologia compacta de mil poemas.
+
+```diff
+-const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
++const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: false,
+```

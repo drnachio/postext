@@ -1,0 +1,68 @@
+---
+title: "Espaçamento uniforme em colunas estreitas justificadas"
+summary: "Quebra Knuth–Plass com os espaços entre 0,8 e 1,6 vez o normal, ao lado de um controle guloso com linhas frouxas, isoladas e curtas marcadas a partir do VDT."
+plain: "Uma pequena revista sobre tipografia, em colunas estreitas com as duas bordas do texto alinhadas. Mostra como manter iguais os espaços entre as palavras, ao lado de uma versão com as linhas desiguais marcadas em amarelo."
+description: "Uma revista de tipografia em A5 composta duas vezes: Knuth–Plass com espaços de 0,8 a 1,6 contra a quebra gulosa, com as linhas ruins marcadas a partir do VDT."
+question: "Como faço para ter uma justificação uniforme em colunas estreitas, com a hifenização certa para cada idioma?"
+aliases: ["justificação", "texto justificado", "espaçamento entre palavras", "rios", "caminhos de rato", "linhas frouxas", "Knuth-Plass", "cola", "quebra gulosa", "first fit", "primeiro ajuste", "viúvas", "órfãs", "linhas curtas", "hifenização", "idioma da hifenização", "colunas estreitas", "ajuste de texto", "copidesque", "justifiedSpaceRatio", "minWordSpacing", "maxWordSpacing"]
+pageNotes: { "1": "Uma faixa grafite traz o antetítulo Galley · No. 12 · Justification em amarelo marca-texto, o título The river problem em branco e um linha fina em itálico; abaixo, um diagrama: uma fileira de caixas brancas de palavras unidas por molas amarelas curtas, cuja última palavra ultrapassa uma linha tracejada que marca a medida, e a mesma fileira hifenizada, com as molas esticadas até a medida. Duas colunas justificadas do ensaio começam sob a faixa.", "2": "Duas colunas cheias: as seções Greedy and total fit, Fences for the glue, Hyphens e Widows, orphans and runts, com os ajustes em vigor (minWordSpacing 0.8, maxWordSpacing 1.6; widowPenalty, orphanPenalty, slackWeight) em fonte monoespaçada ao lado de um fio grafite.", "3": "O fim do ensaio em duas colunas niveladas, com os ajustes das linhas curtas e o colofão, sobre uma bancada de testes grafite no pé da página: um mesmo parágrafo alinhado à esquerda, justificado sem hífens (com espaços largos e as duas primeiras linhas alinhadas à esquerda) e justificado com hífens, e uma nota em branco." }
+---
+
+## O que você vai compor
+
+O número 12 de *Galley*, a revista de um laboratório de tipografia, composta em A5 em duas colunas de uns quarenta caracteres, em que uma linha justificada só tem cinco ou seis espaços entre palavras para absorver a folga. A abertura desenha o modelo de Knuth–Plass sobre uma faixa grafite: uma linha de caixas de palavras cujas molas amarelas de cola se esticam até preencher a medida. O ensaio explica por que as colunas estreitas ficam frouxas e imprime em fonte monoespaçada, entre os parágrafos, os ajustes por trás de cada regra. No pé da página 3, uma bancada de testes compõe um mesmo parágrafo alinhado à esquerda, justificado sem hífens e justificado com eles. O pen também compõe o número com a quebra de primeiro ajuste e sem as proteções contra viúvas e órfãs, e mostra as duas páginas 2 lado a lado acima das páginas, como no cartão desta receita, com as linhas frouxas pintadas de amarelo marca-texto e as linhas isoladas e curtas sinalizadas na margem.
+
+## Preparo
+
+### 1 · Aperte os limites e mantenha as proteções
+
+O código deste passo é [a resposta curta](#a-resposta-curta) logo acima. O [Knuth–Plass](/pt/docs/justification#knuth-plass-o-parágrafo-inteiro-de-uma-vez), a hifenização, as penalidades de viúvas, órfãs e linhas curtas e os títulos presos ao texto seguinte vêm ligados por padrão, então a edição publicada só estreita os [limites do espaçamento entre palavras](/pt/docs/justification#limites-do-espaçamento-entre-palavras) para 0,8 e 1,6 vez um espaço normal (os padrões são 0,6 e 2). Uma linha acima do limite superior custa mais que qualquer hífen ou linha curta, então o algoritmo tenta outras quebras antes; tire os dois limites e este ensaio compõe duas linhas acima de 1,6. A hifenização segue `locale` pelo código exato: `'es'`, `'fr'` e `'de'` têm os seus próprios padrões do TeX, enquanto `'es-ES'` é hifenizado como inglês americano, sem nenhum aviso.
+
+### 2 · Marque as linhas frouxas a partir da árvore de layout
+
+<Excerpt region="marks" />
+
+Só o Sandbox respeita `debug.looseLineHighlight`, e `doc.warnings` nunca lista uma linha frouxa, então `marks()` lê o próprio [VDT](/pt/docs/justification#depuração-de-linhas-frouxas). Cada linha justificada traz `justifiedSpaceRatio`, um parágrafo dividido entre duas colunas volta como um bloco por fragmento, e uma linha acima de 3× não tem proporção, porque o motor [a compõe alinhada à esquerda](/pt/docs/justification#linhas-que-o-algoritmo-não-consegue-preencher) e a marca com `line.ragged`. Com quarenta caracteres, os limites sozinhos não mantêm todas as linhas abaixo de 1,6; enquanto o texto do ensaio era ajustado, as marcas mostravam quais frases reescrever.
+
+### 3 · Ponha o controle ao lado da página publicada
+
+<Excerpt region="compare" />
+
+As duas edições usam o mesmo design, então qualquer diferença entre as duas páginas 2 vem do algoritmo de quebra e das suas proteções. Em inglês, o controle guloso deixa 47 das suas 110 linhas justificadas acima de 1,6 e 30 acima de 2, três delas acima de 3× e alinhadas à esquerda pelo motor, enquanto a edição Knuth–Plass mantém todas as 105 entre 0,80 e 1,60. Na página 2, o controle também leva a última linha de um parágrafo, sozinha, para o alto de uma coluna, o que `avoidOrphans: false` permite, e termina outro parágrafo numa linha curta.
+
+### 4 · Dê a cada ajuste um boxe próprio
+
+<Excerpt region="bench" />
+
+Um boxe compõe todas as colunas de um grupo [`:::columns`](/pt/docs/document-format#columns) com um só estilo de texto, então cada ficha é um boxe aninhado com o seu próprio `body`, e `breaks="3"` empilha na primeira coluna a ficha alinhada à esquerda e a ficha sem hifenização. A ficha alinhada à esquerda dispensa `hyphenation: false`, porque texto alinhado à esquerda nunca é hifenizado. A bancada flutua para o pé da página 3 com `placement: 'bottom'`, e o seu espaçamento interno inferior repete a moldura de 4 mm porque o `marginBottom` da última ficha é descartado no fim do boxe.
+
+### 5 · Desenhe o modelo na abertura
+
+<Excerpt region="opener" />
+
+O diagrama é um [elemento de imagem](/pt/docs/configuration#elementos-de-imagem) do design do H1. Como figura, seria um flutuante `top` na largura da página, e um flutuante `top` citado na página 1 abre a página 2. A faixa é uma caixa, e as caixas contam para a altura que uma abertura reserva, enquanto as imagens não contam, então o texto começa sob a faixa sem `minHeight`, uma linha mais abaixo por causa do `marginBottom` padrão do H1. Os rótulos são texto de design posto sobre as coordenadas do próprio desenho, já que um SVG desenhado como imagem não pode usar as fontes web da página.
+
+## Variações
+
+### Hifenize um texto em alemão
+
+Os padrões são buscados pelo código exato, então um texto em alemão precisa de `'de'`.
+
+```diff
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
++const locale = 'de'; // German patterns; 'de-DE' would hyphenate as English
+```
+
+### Marque só as piores linhas
+
+Suba o limiar de 1,6 para 2 e o marca-texto pinta só as linhas cujos espaços passaram do dobro.
+
+```diff
+-        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
++        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+```
+
+## Erros comuns
+
+- Um boxe que fica no fim de uma coluna desce para o pé dela quando as colunas são balanceadas, longe do parágrafo a que pertence. Ajuste o texto para que a coluna fique cheia, como foi preciso com o boxe de ajustes sob “Fences for the glue”.
+- A ficha sem hifenização não mostra os espaços mais largos de que precisaria. Uma linha justificada cujos espaços passariam de três vezes um espaço normal é composta alinhada à esquerda, com o espaçamento natural, num boxe tal como no texto corrido, e por isso as duas primeiras linhas da ficha terminam antes da medida. As linhas abaixo desse teto continuam justificadas, e são delas os espaços largos que a ficha mostra.

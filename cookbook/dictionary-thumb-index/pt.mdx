@@ -1,0 +1,59 @@
+---
+title: "Dicionário com índice de dedo que desce"
+summary: "Um laço cria um estilo de título por letra, e o cabeçalho de cada estilo imprime a aba azul-marinho da letra um degrau abaixo no corte, sobre um índice claro."
+plain: "Quatro páginas de um velho dicionário de marinheiros. Abas com letras descem pela borda externa de cada página, e a aba da letra atual é escura e fica mais baixa à medida que o alfabeto avança."
+description: "Quatro páginas do Sailor’s Word-Book de Smyth em duas colunas, com lemas em azul-marinho, iniciais de quatro linhas e uma aba que desce um degrau a cada letra."
+question: "Como faço para a aba de um dicionário descer pelo corte da frente de uma letra para a seguinte?"
+aliases: ["dicionário", "glossário", "vocabulário", "obra de referência", "índice de dedo", "índice de unha", "abas", "índice no corte", "abas sangradas", "lemas", "verbetes", "iniciais", "palavras-guia", "thumb index"]
+pageNotes: { "1": "A página 1 abre o dicionário sob uma faixa: uma âncora com o cabo enrolado, THE SAILOR’S WORD-BOOK em versaletes azul-marinho, o subtítulo e a autoria da folha de rosto de 1867 e um fio duplo. Abaixo vêm a nota do editor e um A azul-marinho de quatro linhas. Pela borda direita desce o índice de 22 abas, com o A em azul-marinho.", "2": "A página 2, par: os verbetes do A enchem a primeira coluna e terminam na segunda, onde um B azul-marinho abre a letra seguinte. Na borda esquerda a aba azul-marinho mostra o B, um degrau abaixo do A, embora a página comece no A.", "3": "A página 3: os verbetes do B terminam no pé da primeira coluna e um C azul-marinho abre a segunda. Na borda direita a aba do C se destaca do índice claro, dois degraus abaixo do A.", "4": "A página 4: os últimos verbetes do C enchem as duas colunas, que terminam na mesma altura, e um colofão de três linhas fecha a segunda." }
+---
+
+## O que você vai compor
+
+Quatro páginas de uma nova edição do *Sailor’s Word-Book* do almirante Smyth (1867), letras A a C, numa página de 150 × 200 mm. Os verbetes correm em duas colunas justificadas de Alegreya de 8 pt separadas por um fio fino, cada lema em negrito azul-marinho e cada linha de continuação com recuo deslocado de 1 em. Uma letra abre dentro da sua coluna, como uma inicial azul-marinho de quatro linhas sobre um fio cor de latão, e os verbetes seguem sem quebra de página. No corte da frente, toda página imprime o índice de dedo inteiro, 22 abas num tom claro. A aba da letra atual é azul-marinho, 3,2 mm mais larga que as outras, e desce um degrau a cada letra. A edição em espanhol mantém os lemas em inglês de Smyth e traduz os verbetes.
+
+## Preparo
+
+### 1 · Dê a cada letra um estilo de título com a sua aba
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `TABS` lista 22 abas, e as letras raras dividem uma (QR, UV, XYZ). Cada aba tem a altura de duas linhas do texto (7,34 mm), de modo que juntas preenchem as 44 linhas da mancha. O laço dá a cada letra um estilo de título cujo `header` acrescenta aos cabeços e ao índice claro a aba azul-marinho daquela letra, um degrau abaixo da anterior ([estilos de título](/pt/docs/configuration#estilos-de-título)). Cada célula é escrita duas vezes, uma por `parity`, e ancorada à borda externa da página, não ao contêiner do próprio cabeçalho. Esse contêiner é a margem superior, da largura da mancha e indo do refile até o texto, enquanto as abas precisam chegar ao corte da frente e descer pelas 44 linhas. Uma página recebe o cabeçalho da última seção que começa nela, por isso a <PageRef page={2}>página 2</PageRef> começa no A e mostra a aba do B.
+
+### 2 · Tire os cabeços da primeira página
+
+<Excerpt region="running-heads" />
+
+Os cabeços são elementos de texto ancorados à página e filtrados por `parity` e `pages: 'body'` ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O título da página 1 ocupa as duas colunas, o que faz dela uma página de abertura. Os cabeços pulam essa página, e o fólio dela vem do rodapé, um elemento com `pages: 'opener'` que imprime 6 mm abaixo da mancha. Numa página ímpar, `{chapterTitle}` imprime a letra do último título de nível 1 que está na página ou antes dela, *Letter C*. Desde o postext 1.5.0, `{firstMark.<key>}` e `{lastMark.<key>}` imprimem no lugar dela o primeiro e o último lema da página, as palavras-guia que a maioria dos dicionários traz; esta receita foi composta com a 1.4.1 e mantém a letra.
+
+### 3 · Dê cor aos lemas e a nada mais
+
+<Excerpt region="entries" />
+
+Cada verbete é um parágrafo de um bloco `:::paragraphs{style="entry"}`, com as linhas de continuação em recuo deslocado de 1 em ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). O `boldColor` do texto corrido deixa o **Note.** da página 1 na cor da tinta, e o `boldColor` do estilo de verbete imprime os lemas em azul-marinho. Um estilo de parágrafo não tem `italicColor`, então os subverbetes em itálico ficam na cor do texto corrido.
+
+### 4 · Ponha uma inicial de quatro linhas na coluna
+
+<Excerpt region="letter-heads" />
+
+`LETTER`, 55,8 pt, é o corpo em que uma maiúscula da Alegreya SC 900 (0,652 em de altura) se apoia na quarta linha de base e alcança a altura das maiúsculas da primeira linha do texto. A letra e o fio cor de latão terminam dentro da quinta linha, e o bloco do título desce até a linha seguinte da grade, então cada inicial ocupa cinco linhas e os verbetes abaixo dela continuam na grade. Na <PageRef page={3}>página 3</PageRef>, o C no alto da segunda coluna fica alinhado com as quatro primeiras linhas da primeira coluna. O nível 1 define `breakBefore: { enabled: false }`, e os estilos das letras herdam esse valor. Na 1.4.1 qualquer objeto `headings` já tira a quebra de página do nível 1; com o valor escrito, as letras continuam seguidas se uma versão futura trouxer a quebra de volta.
+
+### 5 · Estenda o título pelas duas colunas
+
+<Excerpt region="title" />
+
+O estilo do título ocupa a largura da página com uma faixa que reúne a âncora, o nome, um subtítulo e uma linha de autoria lidos de atributos do título, e um fio duplo ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O fio fino termina 45,1 mm abaixo do alto da mancha, então a faixa se ajusta a 13 linhas da grade, ou 47,7 mm. Sob um título na largura da página, o fio entre colunas continua começando no alto da mancha e atravessaria o título. Uma caixa da cor do papel cobre a faixa até o fio fino, e o fio entre colunas só aparece abaixo dela. `{titleText}` junta com um espaço as linhas quebradas do título oculto, e a 1.4.1 quebra um título na largura da página pela largura da coluna. No corpo padrão do H1, a faixa imprimia *Word- Book*, por isso o estilo do título compõe o título oculto no corpo do texto, o que faz o nome caber numa linha da coluna de 60 mm.
+
+## Variações
+
+### Imprima só a aba atual
+
+Os índices de dedo impressos costumam mostrar só a aba da letra atual; tire `ladder` do cabeçalho e a aba azul-marinho continua descendo do A ao C.
+
+```diff
+-  header: { elements: [...runningHeads, ...ladder,
++  header: { elements: [...runningHeads,
+```
+
+## Erros comuns
+
+- No postext 1.4.1, o fio entre colunas sob um título na largura da página começa no alto da mancha mesmo quando a faixa tem um número inteiro de linhas da grade, como esta. Uma caixa da cor da página, pintada por baixo dos outros elementos do design, o cobre.
+- Uma coluna de 60 mm comporta uns 50 caracteres, e o inglês de Smyth não pode ser reescrito. Na captura, 18 das 218 linhas justificadas em inglês (8%) esticam os espaços além de 1,7 vez a largura normal, contra menos de 2% no espanhol, cuja tradução foi ajustada à coluna. O inglês estava em 17% antes de os cinco verbetes que compunham pior (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*) serem trocados por outros. Escolha verbetes que componham bem, ou alargue a coluna.

@@ -1,0 +1,76 @@
+---
+title: "Datasheet: tabelas a partir de dados, cabeçalhos mesclados"
+summary: "Tabelas coladas como TSV, lidas com parseTSV e moldadas com mergeCells, setAlignment e setCellBackground; um mapa de registradores que se divide sozinho."
+plain: "A folha técnica de quatro páginas de um sensor eletrônico de temperatura. Mostra como montar tabelas com dados de uma planilha, com títulos compartilhados e uma tabela longa que continua na página seguinte."
+description: "Datasheet de um sensor em quatro páginas no Postext: cabeçalho mesclado de duas linhas, linhas zebradas, estilos de tabela nomeados e uma tabela que se divide."
+question: "Como transformo dados colados numa tabela com cabeçalhos mesclados, larguras e alinhamento por célula?"
+aliases: ["datasheet", "folha de dados", "folha técnica", "ficha técnica", "especificações", "características elétricas", "mapa de registradores", "pinagem", "células mescladas", "mesclar células", "colspan", "rowspan", "linhas zebradas", "tabela listrada", "TSV", "tabela a partir de planilha", "cabeçalho de tabela repetido"]
+pageNotes: { "1": "A primeira página: uma faixa violeta com o código da peça, uma linha fina e três números-chave; abaixo, as características e as aplicações, o desenho da pinagem, com o pad exposto tracejado porque fica sob o encapsulamento, e o circuito de aplicação típico.", "2": "A tabela de características elétricas ocupa a largura da página sob uma legenda que dá as condições de teste: um cabeçalho violeta de duas linhas em que “Value” cobre Min, Typ e Max, grupos de parâmetros mesclados numa primeira coluna lilás e um parâmetro a cada dois em fundo cinza.", "3": "A tabela de pinos encabeça a primeira coluna; o mapa de registradores, com os endereços e os valores de reset na fonte monoespaçada dos rótulos, preenche a segunda e termina com “Continued on the next page”.", "4": "O mapa de registradores continua com o cabeçalho repetido e “(continued)” na legenda, ao lado dos códigos de pedido numa moldura arredondada; o desenho do encapsulamento atravessa o pé da página." }
+---
+
+## O que você vai compor
+
+Este é o datasheet de quatro páginas do PX-7021, um sensor de temperatura de um fabricante imaginário, a Pyxis Microdevices. Quase tudo são tabelas, com cabeçalhos cheios de células mescladas e um mapa de registradores mais comprido que uma coluna. A primeira página abre com uma faixa violeta com o código da peça e três números-chave. Na página 2, uma tabela ocupa a largura da página. O cabeçalho de duas linhas põe Value sobre Min, Typ e Max; os grupos de parâmetros são mesclados ao longo da primeira coluna, e um parâmetro a cada dois recebe fundo cinza. O mapa de registradores quebra no pé da página 3 e continua na página 4 com o cabeçalho repetido, ao lado dos códigos de pedido e acima do desenho do encapsulamento. As tabelas são dados de planilha colados como TSV, porque o Postext não interpreta tabelas Markdown.
+
+## Preparo
+
+### 1 · Colar os dados e depois dar forma à tabela
+
+O código é a [resposta curta](#a-resposta-curta) acima. No postext 1.4.1, `parseTSV` deixa `headerRowCount` sem definir, então as duas linhas de cabeçalho são declaradas à mão; se a tabela se dividisse, as duas se repetiriam em cada parte. Os pesos de `columnWidths` somam 180, a largura da mancha em milímetros, de modo que cada peso é a largura da sua coluna na página. `mergeCells` mantém no lugar cada célula coberta e a marca com `hiddenBy`, assim nenhuma coluna se desloca. `setAlignment` trabalha célula por célula e apaga o alinhamento vertical quando você não o informa, por isso a maioria das chamadas passa `'middle'` de novo. O cinza alterna de um parâmetro para o seguinte, o que mantém as duas linhas de Accuracy no mesmo fundo; alternando por linha, a segunda ficaria branca.
+
+### 2 · Cada modelo vira um recurso
+
+<Excerpt region="resources" />
+
+Cada tabela e cada desenho é um recurso com legenda, e as tabelas acrescentam uma nota e um estilo nomeado. Legendas e notas aceitam itálico, subscrito e sobrescrito: a tabela elétrica dá as condições de teste com `*V*~DD~` na legenda e numera as notas com `^1^` na nota. Um flutuante ocupa o primeiro espaço livre depois do seu primeiro `:ref`. A Tabela 1 é citada na página 1 e posicionada na cabeça de uma página, na largura toda, então abre a página 2. O desenho do encapsulamento vai no pé de uma página, na largura toda, e as outras tabelas mantêm o posicionamento padrão, um flutuante com a largura de uma coluna. Uma tabela posicionada `here` nunca se divide.
+
+### 3 · Deixar uma tabela longa se dividir sozinha
+
+<Excerpt region="split" />
+
+A tabela de pinos e o mapa de registradores saem os dois de `groupedTable`. Uma linha com só a primeira célula preenchida é mesclada na largura da tabela e recebe o fundo violeta de título de grupo. Uma célula TSV não comporta quebra de linha, então os dados escrevem `\n` e a função a transforma numa quebra de verdade; uma linha que começa com `•` é então composta como item de lista. Os códigos curtos usam o estilo de chip `code`, que não tem fundo, borda nem preenchimento lateral e os compõe em Fira Mono a 0,9 em. Quando uma tabela flutuante não cabe na coluna vazia que lhe é oferecida, o motor a corta entre linhas e põe o resto no próximo espaço livre, sob o cabeçalho repetido, com `(continued)` depois da legenda. A linha de `continuesMarker`, “Continued on the next page”, vai sob a primeira parte, e a nota espera pela última ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)).
+
+### 4 · Um estilo da casa, uma variante por tabela
+
+<Excerpt region="styles" />
+
+`tableStyle` guarda o que todas as tabelas compartilham. Cada entrada de `tableStyles` define só o que as suas tabelas mudam, e um recurso escolhe uma com `table.styleId`. A tabela elétrica troca os fios finos cinza por fios brancos de 1,4 pt, que separam os fundos e mostram onde termina cada mesclagem. A tabela de códigos de pedido ganha uma moldura externa arredondada e a Fira Sans Condensed, para que as quatro colunas caibam numa coluna de texto.
+
+### 5 · Rótulos que continuam texto no PDF
+
+<Excerpt region="drawing" />
+
+Um SVG chega ao canvas como imagem, e uma imagem não pode usar as fontes web da página, então os rótulos da pinagem, do circuito e do desenho do encapsulamento cairiam numa fonte do sistema. O PDF recebe a marcação pura e compõe cada `<text>` como texto selecionável nas fontes que incorpora. Para o canvas, cada desenho é registrado uma segunda vez com o arquivo da Fira Mono dentro, baixado uma única vez pelo carregador de fontes do bloco pdf do kit.
+
+### 6 · Abertura, cabeço e rodapé
+
+<Excerpt region="furniture" />
+
+O código da peça é o título de nível 1, e o slot de design dele desenha a abertura: uma caixa violeta até a sangria, o logotipo, e um antetítulo, uma linha fina e três números-chave lidos dos atributos do título. Elementos de imagem funcionam nos slots de cabeçalho e rodapé assim como nas aberturas, então o rodapé começa com um que aponta para o recurso do logotipo. Os elementos do cabeço usam `pages: 'body'`, então nenhum deles sai na primeira página.
+
+## Variações
+
+### Separar todas as linhas com fios cinza
+
+Fios de meio ponto no cinza `rule` da paleta separam todas as linhas, com fundo ou sem; os brancos somem onde duas linhas sem fundo se encontram.
+
+```diff
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+```
+
+### Pôr as legendas das tabelas sobre uma barra
+
+O estilo de legenda do tipo tabela pode pintar uma barra atrás da legenda, aqui na cor da tinta, com o rótulo no amarelo de advertência.
+
+```diff
+-    ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
++    ...(type.id === 'table' && { captionStyle: { position: 'above', backgroundEnabled: true,
++      background: col('ink'), color: col('paper'), labelColor: col('hazard') } }) })),
+```
+
+## Erros comuns
+
+- A primeira parte de uma tabela dividida deixa o pé da coluna para o texto quando cabem três linhas ou mais embaixo dela, e sempre faz isso numa coluna que já tem um flutuante. Comece uma tabela longa numa coluna sem outro flutuante, como faz o mapa de registradores, e ajuste as linhas para que a primeira parte chegue ao pé da coluna.
+- Os elementos de texto de design são centralizados por padrão. A linha fina tem largura fixa, então precisa de `align: 'left'` para se alinhar sob o código da peça.
+- Na página de fechamento de um capítulo, o postext 1.4.1 sobe os flutuantes na largura da página posicionados abaixo do texto até uma linha do texto corrido abaixo dele, de modo que uma figura `bottom` ali fica sob a última linha de texto, e não no pé da página. O texto da página 4 foi redigido para encher as colunas, e o desenho do encapsulamento tem 48,3 mm de altura para que o texto acima dele termine numa linha da grade. Assim o desenho não tem espaço para subir e termina na mesma altura do pé das outras páginas.

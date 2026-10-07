@@ -1,0 +1,77 @@
+---
+title: "Clássico anotado com glosas na margem"
+summary: "O chá maluco de Alice em edição anotada: glosas verdes e vermelhas na margem externa, junto às linhas que explicam, cada uma chamada por uma letra da sua cor."
+plain: "Algumas páginas de Alice no País das Maravilhas com notas do editor na margem lateral. Cada nota fica ao lado das linhas que explica, marcada por uma letra colorida."
+description: "O capítulo VII de Alice no Postext como edição anotada, numa página de coluna e meia cuja coluna lateral só recebe glosas e fica sempre na borda externa."
+question: "Como ponho glosas na margem, ao lado do parágrafo que explicam, em vez de notas de rodapé?"
+aliases: ["notas na margem", "notas marginais", "glosas marginais", "notas laterais", "sidenotes", "marginália", "edição anotada", "edição comentada", "alternativa às notas de rodapé", "notas do editor", "chamadas de nota coloridas", "Alice no País das Maravilhas", "Lewis Carroll", "capitular no olho"]
+pageNotes: { "1": "O capítulo VII abre sob uma aquarela da mesa do chá debaixo de uma árvore, vista de cima: uma toalha branca comprida com xícaras sobre um gramado verde, um bule vermelho, pão com manteiga e o relógio do Chapeleiro na corrente, o Caxinguelê dormindo dentro de um bule numa ponta e uma poltrona vermelha na outra. Abaixo vêm o antetítulo CHAPTER VII em vermelho, o título A Mad Tea-Party e um olho de quatro linhas em itálico que começa com uma capitular verde. A nota sobre esta edição fica na margem direita, ao lado do olho. A glosa a (a Lebre de Março, em verde) acompanha o primeiro parágrafo e a glosa b (o Chapeleiro, em vermelho) vem abaixo dela; as letras sobrescritas a e b desse parágrafo saem nas mesmas cores.", "2": "Uma página par: a coluna de texto à direita e as glosas à esquerda, a c sobre o cabelo de Alice e a d sobre a charada em vermelho, a e sobre a lógica do Chapeleiro em verde e a f sobre a data em vermelho, no pé, cada uma ao lado do parágrafo que traz a sua letra sobrescrita.", "3": "Uma página ímpar: as glosas à direita, a g sobre a melhor manteiga e a h sobre o Caxinguelê, ambas em verde e cada uma na altura da linha que traz a sua letra. O trecho termina duas linhas acima do pé, no “I dare say you never even spoke to Time!” do Chapeleiro." }
+---
+
+## O que você vai compor
+
+O começo do capítulo VII de *Alice’s Adventures in Wonderland*, o chá maluco, composto em três páginas de uma edição anotada num formato de 156 × 234 mm. O texto de Carroll corre numa coluna justificada de Unna, com uns 66 caracteres por linha. Um canal de 33 mm junto à borda externa recebe as oito glosas do editor, cada uma ao lado do parágrafo que traz a sua letra, de modo que elas descem pela direita numa página ímpar e pela esquerda numa página par. As glosas sobre palavras e piadas são verdes, as de história são vermelhas, e cada letra no texto leva a cor da sua glosa. O capítulo abre sob uma aquarela da mesa do chá vista de cima, seguida do numeral, do título em Rozha One e de um olho em itálico com capitular verde; a nota sobre esta edição fica na margem, ao lado do olho.
+
+## Preparo
+
+### 1 · Dê a borda externa às glosas
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Num [layout de coluna e meia](/pt/docs/configuration#tipos-de-layout), `sideColumnPercent: 26` dá à coluna lateral 33 dos 127 mm entre as margens, e o texto fica com 89,5 mm depois da medianiz de 4,5 mm. `sideColumnRole: 'floats'` mantém Carroll fora da coluna lateral, que só recebe o que é colocado ali com `span: 'side'`. Uma [nota de rodapé](/pt/docs/document-format#notas-de-rodapé) espera no pé da coluna, sob um fio; na margem, cada glosa fica na altura da linha que explica, e as glosas não tiram linhas da coluna de texto. Os dois estilos de glosa só diferem na cor do fio fino e do título, então o leitor distingue uma glosa sobre uma palavra de uma glosa sobre história antes de lê-la.
+
+### 2 · Espelhe a página para o canal acompanhar a borda externa
+
+<Excerpt region="page" />
+
+Com `mirror: true` as margens se invertem em cada página par, e `sideColumnSide: 'outer'` leva o canal junto, de modo que as glosas descem pela direita da <PageRef page={1}>página 81</PageRef> e da <PageRef page={3}>página 83</PageRef> e pela esquerda da <PageRef page={2}>página 82</PageRef>. Margens superior e inferior de 22 mm deixam 190 mm, espaço para 38 linhas de 14 pt, e cada glosa começa numa linha da mesma grade.
+
+### 3 · Ponha cada glosa antes do parágrafo que ela explica
+
+<Excerpt region="text" />
+
+Um boxe com `span="side"` no seu [delimitador `:::callout`](/pt/docs/configuration#o-contêiner-callout) sai do fluxo e fica no canal na altura do bloco que vem depois do delimitador, então cada glosa é delimitada logo antes do parágrafo que traz a sua letra, como no exemplo abaixo. As glosas a e b pertencem ao lado do primeiro parágrafo, o que põe os seus delimitadores entre o título e esse parágrafo. Na 1.4.1, os dois boxes passam então a contar como o bloco depois do título, e `indentAfterHeading: false` não chegaria ao parágrafo; por isso a configuração deixa essa opção no valor padrão e o estilo `opening` compõe o parágrafo sem recuo. O texto corrido foi ajustado à coluna: em 9,5 pt, o parágrafo que começa com “Have some wine,” cabe numa linha de 89,5 mm, enquanto em 10,4 pt todas as medidas de 77 a 93 mm lhe deixavam uma última linha curta, como “ing tone.” ou “tone.”. O espaço entre palavras da Unna é estreito, 0,22 em, e com o `minWordSpacing` padrão de 0,6 uma linha da página 83 tinha os espaços apertados a 0,69 dessa largura; `minWordSpacing: 0.75` descarta essa linha.
+
+```markdown
+:::callout{type="context" span="side" title="c · Hair"}
+Tenniel drew Alice with long, loose hair. …
+:::
+
+“Your hair wants cutting,”:chip[^c^]{style="context"} said the Hatter. …
+```
+
+### 4 · Imprima cada letra na cor da sua glosa
+
+<Excerpt region="letters" />
+
+O Markdown não tem marcação para texto colorido, mas um estilo de [chip](/pt/docs/document-format#chips-em-linha) define uma cor de texto, então cada letra é um chip cujo estilo tem o mesmo nome do tipo da sua glosa. `:chip[^c^]{style="context"}` imprime um c vermelho, o mesmo vermelho do fio e do título da glosa c. Sem preenchimento, contorno, espaçamento interno nem separação, o chip não acrescenta largura, e cada linha quebra onde quebrava com um `^c^` simples.
+
+### 5 · Abra o capítulo sob a mesa do chá
+
+<Excerpt region="opener" />
+
+O [encaixe de design](/pt/docs/configuration#largura-e-design-avançado) do título ocupa a página inteira para que a pintura possa chegar ao refile. Um elemento de imagem não reserva altura, então o antetítulo, o título e o olho ficam pendurados abaixo da pintura e definem a reserva, que termina no mais baixo deles, arredondada para a grade; a margem inferior padrão do título acrescenta uma linha em branco. Com um olho de quatro linhas, o texto começa na linha 23, e uma quinta linha o levaria para a linha 24. O numeral, o olho e a nota sobre esta edição vêm de [atributos de título](/pt/docs/document-format#atributos-de-título), `{num="VII" headnote="…" source="…"}`. O numeral vem dali porque `{chapterNumber}` imprimiria 1 num trecho que é um documento à parte. O texto de design nunca é justificado, então a capitular abre o olho do editor, composto em bandeira e em itálico, e o texto de Carroll começa justificado no fluxo, logo abaixo. `dropSize()` dimensiona a inicial para que o seu topo se alinhe com as maiúsculas da primeira linha do olho.
+
+### 6 · Dê a cada glosa a cor do que ela explica
+
+<Excerpt region="palette" />
+
+O verde-grama marca as glosas sobre palavras, ditos e piadas, e o vermelho-geleia marca pessoas, datas e a história do texto. Um novo valor para `jam`, no mesmo objeto `palette`, recolore numa só edição as glosas de história, as suas letras e o antetítulo; a aquarela acima delas foi escolhida pelo mesmo verde-grama e pelo mesmo vermelho-geleia. Cada cor ligada à paleta também leva o seu hex, porque a 1.4.1 pinta a abertura e os cabeços a partir do hex (veja Erros comuns).
+
+## Variações
+
+### Mantenha as glosas à direita em todas as páginas
+
+Para uma edição lida uma página por vez na tela, desligue o espelhamento: `'outer'` passa a significar a borda direita de todas as páginas, e os cabeços continuam no lugar, já que são ancorados ao refile.
+
+```diff
+-    mirror: true } };
++    mirror: false } };
+```
+
+### Mande as notas longas para o pé da página
+
+Escreva uma nota longa demais para a margem como nota de rodapé, `[^1]` no texto e a definição `[^1]:` abaixo do parágrafo: o Postext a compõe no pé da coluna de texto, com 89,5 mm de largura sob um fio curto, e as glosas continuam com o canal. <RecipeLink slug="novel-footnotes-column-foot">Notas de rodapé no pé da coluna que as cita</RecipeLink> mostra como estilizar essas notas.
+
+## Erros comuns
+
+- As glosas se empilham na ordem do Markdown, uma embaixo da outra, então uma glosa longa empurra a seguinte para baixo. Na <PageRef page={1}>página 81</PageRef>, as duas letras caem na segunda linha do primeiro parágrafo: a glosa a começa na altura do parágrafo e a glosa b abaixo dela, cinco linhas abaixo da sua letra. Onde as letras ficam próximas, escreva glosas curtas.
+- O erro comum “Um boxe lateral depois de um título recua o parágrafo seguinte”, acima, recomenda delimitar o boxe depois do primeiro parágrafo. Uma glosa delimitada ali começa ao lado do segundo parágrafo (veja “Um boxe lateral começa na altura do bloco que vem depois do seu delimitador”), por isso esta edição deixa os dois delimitadores antes do primeiro parágrafo e compõe esse parágrafo sem recuo com o estilo `opening`.

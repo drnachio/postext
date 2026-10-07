@@ -1,0 +1,72 @@
+---
+# Todos os valores vão entre aspas. Limites: title ≤ 60 caracteres (um resultado, não uma lista de recursos);
+# summary 60–160 (a resposta em uma frase, nomeando o mecanismo); description 120–160
+title: "Uma página de livro com cabeços"
+summary: "Margens espelhadas, uma abertura de capítulo rebaixada e cabeços que sabem em que lado da página dupla estão, numa página de livro em brochura."
+description: "Uma página de livro no Postext: margens espelhadas, abertura rebaixada 52 mm, cabeços por paridade e fólio no pé nas aberturas, com o código completo."
+# plain: "…"           40–240 caracteres: o resumo em palavras do dia a dia, sem jargão (aparece como "Em poucas palavras")
+# question: "…"        opcional, ≤ 110 caracteres: reformula answers[0] para esta página
+# pageNotes: { "3": "…" }  opcional: texto alternativo extra para uma página capturada
+aliases: ["página de livro", "cabeços", "cabeço", "abertura de capítulo", "running heads"]
+---
+
+## O que você vai compor
+
+{/*
+  60–150 palavras, com a voz de um diretor de arte: a publicação, a ideia de design e por que
+  ela é difícil de conseguir em outro lugar. Dê nome à publicação ("uma edição de bolso de…",
+  "a edição de junho de…"). Sem listas de recursos: a seção Ingredientes é gerada a partir de
+  recipe.json. A página acrescenta sozinha, sob esta seção, a lista "Esta receita responde" (de answers).
+*/}
+
+As primeiras páginas de um romance em brochura: um capítulo que começa numa página ímpar, a um terço da altura, sob um antetítulo pequeno em letras espaçadas e um fio curto na única cor de destaque do livro; depois, página após página de texto justificado, com o título do livro à esquerda e o do capítulo à direita. Nada na página levanta a voz. O ofício está na geometria: margens que se espelham na página dupla, cabeços que sabem de que lado estão e um fólio que desce para o pé na abertura, onde um cabeço atrapalharia o título.
+
+## Preparo
+
+{/*
+  De 3 a 7 passos, cada um um H3 numerado "1 · …". Cada passo abre com um Excerpt de uma #region
+  de script.js (o arquivo composto, com os números de linha reais) e segue com 1–3 frases sobre o
+  PORQUÊ, não sobre o quê: o quê o leitor já vê. A resposta curta já mostra a #region answer: um
+  passo que trate dela remete para lá em vez de repeti-la. en.mdx, es.mdx e zh.mdx mostram as
+  mesmas regiões na mesma ordem.
+  Componentes opcionais: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
+*/}
+
+### 1 · A abertura é um design, não um título
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. O título de nível 1 mantém seu lugar no texto e no sumário, mas se desenha a partir de um encaixe de elementos: o antetítulo vem de um atributo do título, o título quebra numa medida fixa e o fio se ancora abaixo da altura que o título ocupar. `minHeight` rebaixa o texto corrido até a mesma linha em todas as aberturas, seja qual for o comprimento do título.
+
+### 2 · Os cabeços sabem em que página estão
+
+<Excerpt region="running-heads" />
+
+Cada elemento é ancorado à página física e filtrado por paridade, de modo que o fólio fica sempre na borda externa e o título do livro no verso. `pages: 'body'` os mantém fora da abertura, que recebe no lugar um fólio centralizado no pé, vindo do rodapé.
+
+### 3 · Uma só cor de destaque, ligada em todo lugar
+
+<Excerpt region="palette" />
+
+Cada cor da configuração nomeia sua entrada na paleta, então quem trocar uma amostra de cor muda o tom do livro inteiro, e uma parte ou um estilo de título pode recolorir uma seção pelo id. Apontar `main-color` para a cor de destaque pega todos os valores padrão que a configuração não redefine.
+
+## Variações
+
+{/*
+  Opcional, de 1 a 4 entradas: um H3 no imperativo, uma frase e um diff contra script.js,
+  ou um link para uma receita irmã.
+*/}
+
+### Componha o texto em duas colunas
+
+Um formato mais largo comporta duas colunas; a abertura ocupa as duas e os cabeços ficam onde estão.
+
+```diff
+-  layout: { layoutType: 'single' },
++  layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+## Erros comuns
+
+{/*
+  Opcional. Os erros comuns e os avisos listados em recipe.json aparecem aqui sozinhos;
+  acrescente uma linha só para um problema que pertença apenas a esta receita.
+*/}

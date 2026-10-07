@@ -1,0 +1,68 @@
+---
+title: "Uma proclamação Meiji em kanji e katakana"
+summary: "A Constituição de 1889 em vertical, em kanji e katakana: artigos 第一條 de um contador japanese-informal, uma moldura de fios e as referendas no pé."
+plain: "A constituição japonesa de 1889, escrita em kanji e katakana e impressa em linhas de cima para baixo como o diário oficial a imprimiu, com os artigos numerados em kanji."
+description: "Um documento Meiji no Postext: texto em kanji e katakana na vertical numa grade de 40 caracteres, artigos 第一條 de um contador de lista, moldura dupla e selo."
+question: "Como faço para compor um texto Meiji em kanji e katakana e numerar os artigos 第一條, 第二條?"
+aliases: ["katakana", "kanji katakana majiri", "漢字カタカナ交じり文", "Constituição Meiji", "大日本帝國憲法", "官報", "diário oficial", "artigos numerados em kanji", "第一條", "texto jurídico vertical", "formas antigas de kanji"]
+pageNotes: { "1": "A folha de rosto: 大日本帝國憲法 em Mincho pesado descendo pelo meio de um fio grosso e um fino, a data em vermelhão à direita, 官報號外 à esquerda e a linha em inglês deitada no pé.", "2": "As notas do editor, quatro itens abertos cada um pelo caractere 一, depois o título 上諭 e as primeiras linhas do édito, tudo em kanji e katakana.", "4": "御名　御璽 em vermelhão, a data e dez referendas compostas no pé das suas linhas.", "5": "O capítulo um: 第一章　天皇 dois caracteres abaixo, depois os artigos 第一條 a 第八條 em negrito e a segunda cláusula do artigo 8 um caractere abaixo." }
+---
+
+## O que você vai compor
+
+Uma reimpressão de oito páginas da Constituição Meiji como o Diário Oficial (官報) a publicou em 11 de fevereiro de 1889: o édito imperial, as referendas dos ministros e os dois primeiros capítulos, trinta e dois artigos. O texto é 漢字カタカナ交じり文 (kanji-katakana majiri-bun), a língua escrita das leis Meiji: os kanji levam as palavras, os katakana levam as terminações, e não há marcas de sonorização, nem kana pequeno, nem pontuação alguma. As páginas são A5, verticais e encadernadas pela direita, com uma grade de 40 × 15 caracteres dentro de um fio grosso e um fino. Os artigos são numerados por um contador de lista em kanji, de 第一條 a 第三十二條, e o selo e as referendas ficam onde o Diário os pôs.
+
+## Preparo
+
+### 1 · Deixe um contador de lista escrever 第十八條
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Cada artigo é um item de uma lista numerada do Markdown, e `orderedLists` dá ao número a forma do Diário: `numberFormat: 'japanese-informal'` escreve 十八, e não 一十八, `prefix: '第'` e `separator: '條'` o envolvem, e `gap: em(1)` deixa o espaço de largura inteira do original. Com `hangingIndent: false`, as linhas seguintes voltam ao início da linha em vez de ficarem penduradas sob o texto, como no Diário. O capítulo dois começa a sua lista em `18.`, então o contador continua de um capítulo para o outro, e os próprios capítulos são numerados 第一章 e 第二章 pelo modelo de título `第{2:一}章`, no mesmo estilo de contador ([listas numeradas](/pt/docs/configuration#listas-numeradas)).
+
+<PageShot page={5} crop="0.1,0.12,0.8,0.76" caption="Página 5: 第一章　天皇 dois caracteres abaixo, os artigos 第一條 a 第八條 em negrito e a segunda cláusula do artigo 8 um caractere abaixo." />
+
+### 2 · Deixe os katakana como o Diário os escreveu
+
+`locale: 'ja'` aplica as regras japonesas, e nenhuma delas reescreve o texto. 侵スヘカラス fica sem as marcas de sonorização (lê-se *okasu bekarazu*), 行フ mantém o seu kana histórico e 奪ハルヽ a sua marca de repetição em katakana. Sem kana pequeno nem pontuação no texto, as quebras de linha caem entre dois caracteres quaisquer; as regras de kinsoku continuam impedindo que ヽ e 々 abram uma linha. As notas do editor, em japonês moderno com hiragana, ficam ao lado do édito na página 2, e assim os dois jeitos de escrever japonês podem ser comparados numa mesma página.
+
+### 3 · Desenhe a moldura em todas as páginas
+
+<Excerpt region="frame" />
+
+O encaixe do cabeçalho desenha em milímetros da página, e não no fluxo vertical, então a moldura são duas caixas postas com os mesmos números que posicionam a mancha: `HEAD` a partir do alto, `SIDE` a partir de cada borda. As margens são calculadas a partir da grade em vez de deixadas por conta dela, e a mancha fica exatamente 6 mm para dentro do fio fino. O fólio, em kanji por `pageNumbering.format: 'japanese-informal'`, fica sob a moldura.
+
+### 4 · Componha a folha de rosto sobre o eixo
+
+<Excerpt region="cover" />
+
+Num fluxo vertical, `x` desce pela folha e `y` avança para a esquerda, então a coluna do título é posicionada pela distância até a borda direita da mancha. A data, na cor de destaque, e o nome do Diário ficam dos dois lados do título, a 18 mm do eixo.
+
+### 5 · Carregue cada fonte com o texto que ela compõe
+
+<Excerpt region="voices" />
+
+A Shippori Mincho B1, uma Mincho com as formas antigas 國, 條 e 權, carrega os arquivos do texto e dos títulos; a Noto Sans JP carrega só as notas do editor, os fólios e a linha em inglês. Uma fonte que recebe menos do que compõe faz a captura falhar (C12).
+
+## Variações
+
+### Pendure as linhas seguintes sob o texto
+
+Os livros de leis de hoje alinham a segunda linha de um artigo com o seu primeiro caractere de texto, e não com 第.
+
+```diff
+-  indent: em(0), hangingIndent: false, fontFamily: MINCHO, fontWeight: 800,
++  indent: em(0), hangingIndent: true, fontFamily: MINCHO, fontWeight: 800,
+```
+
+### Numere os artigos em daiji
+
+Alguns textos jurídicos e financeiros escrevem 壱, 弐, 参: o token 壱 ou o estilo `japanese-formal` dão 第壱條, 第弐條.
+
+```diff
+-  numberFormat: 'japanese-informal', prefix: '第', separator: '條', gap: em(1),
++  numberFormat: 'japanese-formal', prefix: '第', separator: '條', gap: em(1),
+```
+
+## Erros comuns
+
+- O Diário compõe os katakana das terminações menores que os kanji e espaça os cargos dos ministros por igual até uma mesma largura (字取り). O Postext compõe todos os caracteres no corpo do texto, e o seu espaçamento uniforme, `jidori`, vale só para títulos, por isso as referendas aqui só estão alinhadas no pé da linha.
+- Japonês e chinês divergem neste contador: num documento `ja`, o token `一` e `{2:一}` significam `japanese-informal` (百一, 十八); num chinês, significam o estilo chinês (一百零一, 十八). O livro chinês <RecipeLink slug="chinese-dates-upright">Datas e siglas em pé no texto vertical</RecipeLink> digita os seus 第一條 à mão.
