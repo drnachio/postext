@@ -163,7 +163,9 @@ function drawRoundedBox(
   }
 }
 
-function renderTextBlock(
+/** Paint a design text block (its box, then its lines: horizontal, bidi
+ *  or vertical), tagged through `mark`. */
+export function renderTextBlock(
   ctx: PageCtx,
   block: VDTDesignTextBlock,
   fontCache: FontCache,

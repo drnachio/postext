@@ -228,6 +228,16 @@ export class StructureFlow {
     return title;
   }
 
+  /** The `Div` of a comic page (`page.comic`): its panels' figures and
+   *  lettering go inside it, in reading order. Closes the open lists, box
+   *  and contents. */
+  comicPage(): StructElem {
+    this.lists = [];
+    this.callout = null;
+    this.toc = null;
+    return this.tree.root.child('Div');
+  }
+
   /** Heading element for a part-divider page (`page.partInfo`). */
   partHeading(): StructElem {
     this.lists = [];

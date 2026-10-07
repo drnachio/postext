@@ -1868,6 +1868,9 @@ export interface VDTComicArt {
   fileId: string;
   /** The bitmap's format, for a bitmap. */
   format?: string;
+  /** An SVG's vector print master (`Resource.svg.pdfFileId`): the PDF
+   *  embeds its first page in place of the SVG. */
+  pdfFileId?: string;
   /** Where the whole picture lands on the sheet (px). Larger than the cell
    *  on the axis a crop cuts; inside it on the axis a letterbox leaves. */
   box: BoundingBox;
