@@ -7,7 +7,7 @@ const intl = createMiddleware(routing);
 /** Pages with a Markdown rendition (app/md/[locale]/[[...path]]/route.ts);
  *  a section's OG image is not one of its pages. */
 const MARKDOWN_PAGE =
-  /^\/(en|es|ca|zh|ja|ar)(\/(docs(\/(?!opengraph-image\/?$)[a-z0-9-]+)?|cookbook(\/(?!opengraph-image\/?$)[a-z0-9-]+)?|license|privacy-policy|cookie-policy|accessibility|glossary|sandbox))?\/?$/;
+  /^\/(en|es|ca|zh|ja|ar|pt)(\/(docs(\/(?!opengraph-image\/?$)[a-z0-9-]+)?|cookbook(\/(?!opengraph-image\/?$)[a-z0-9-]+)?|license|privacy-policy|cookie-policy|accessibility|glossary|sandbox))?\/?$/;
 
 /** The weight an Accept header gives a media range: the most specific
  *  matching entry wins, and an entry without `q` weighs 1. */

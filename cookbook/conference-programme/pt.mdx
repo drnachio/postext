@@ -1,0 +1,67 @@
+---
+title: "Programa de congresso com uma grade de células mescladas"
+summary: "Um programa de dois dias: mergeCells estende a plenária pelas três salas e uma oficina por dois horários, e cada palestra leva a cor da sua trilha."
+plain: "O programa impresso de um congresso de dois dias sobre impressão e letras. A grade de horários deixa uma palestra ocupar todas as salas ou dois horários, com cada tema na sua cor."
+description: "Um programa de congresso em catalão no Postext: grade com células mescladas e cores por trilha que continua em outra página, e aberturas em faixas pretas."
+question: "Como faço para mesclar células de uma grade para a plenária ocupar todas as salas e a oficina dois horários?"
+aliases: ["programa de congresso", "programação do evento", "grade de programação", "grade horária", "horário", "agenda", "rowspan", "colspan", "células mescladas", "tabela colorida", "catalão", "Catalan"]
+pageNotes: { "1": "A capa sobre preto: o ele geminado maiúsculo, L·L, desenhado como um L violeta, um ponto âmbar e um L verde-azulado, cada L uma haste alta de pé arredondado. Abaixo, 7es Jornades · Programa em pequenas maiúsculas âmbar, Jornades de Tipografia i Edició Digital numa letra de display larga e branca, as datas 12–13.11.2026 em violeta e Girona · La Impremta, Barri Vell.", "2": "A quinta-feira abre com uma faixa preta no alto da página: Primera jornada · 12 de novembre em maiúsculas âmbar, um 12 branco com uns 39 mm de altura e Dijous ao lado, e uma fileira de formas violeta, verde-azuladas e âmbar ao longo da borda inferior da faixa. Abaixo, três parágrafos de avisos práticos com três amostras de cor que nomeiam as trilhas, depois Qui parla dijous e as primeiras notas sobre palestrantes, cada nome em negrito e as linhas de baixo recuadas.", "3": "A Taula 1, a grade de quinta-feira, ocupa a página: uma linha de cabeçalho preta com a hora e as três salas, as partes do dia em pequenas maiúsculas violeta, a conferência de abertura numa célula preta que atravessa as três salas, duas oficinas que ocupam dois horários cada e cada palestra num bloco violeta, verde-azulado ou âmbar. Continua a la pàgina següent fecha a página.", "4": "A grade termina no alto da página sob a mesma linha de cabeçalho, com a legenda agora terminada em (continuació): o passeio e o jantar da noite, e uma nota sobre a duração das sessões. Abaixo, o restante dos palestrantes de quinta-feira e Al vespre em duas colunas niveladas.", "5": "A sexta-feira abre com a mesma faixa, um 13 e Divendres. Uma introdução curta e o primeiro palestrante de sexta ficam acima da Taula 2, que ocupa inteira o pé da página: a plenária e o encerramento em preto, uma oficina em dois horários e as palestras nas cores das trilhas.", "6": "Uma planta de La Impremta no alto da página: os dois auditórios, o saguão com a chapelaria ao lado, a escada que sobe para a sala de oficinas e o pátio com duas árvores, numerados de 1 a 6 em discos pretos e nomeados na nota sob a Figura 1. Abaixo, os últimos palestrantes de sexta-feira, Com arribar e o colofão em duas colunas." }
+---
+
+## O que você vai compor
+
+O programa impresso de um congresso de tipografia inventado em Girona, escrito em catalão. A capa desenha o ele geminado maiúsculo, L·L, com três módulos coloridos sobre preto. Cada dia abre com uma faixa preta de 76 mm e o dia do mês num algarismo de 144 pt. A grade de quinta-feira é uma tabela. A conferência de abertura ocupa uma célula preta que atravessa as três salas, e cada oficina ocupa dois horários. As partes do dia encabeçam suas linhas na largura da grade inteira, e cada palestra é um bloco na cor da sua trilha, identificada pelas amostras de cor da legenda. A grade é mais alta que uma página, então ocupa a página 3 e termina na 4 sob a linha de cabeçalho repetida. A grade de sexta-feira, mais curta, cabe inteira no pé da sua página de abertura.
+
+## Preparo
+
+### 1 · Transforme cada linha do programa numa linha da tabela
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Cada dia é texto simples num arquivo de conteúdo, uma linha por horário: `|` separa as salas, uma letra indica a trilha, `*` marca uma plenária com fundo preto, `/` inicia cada linha depois do título e `^` prolonga a sessão do horário de cima. Todas as mesclagens saem de `mergeCells`. Uma linha com uma só sessão, como a plenária ou um intervalo, ocupa as três colunas de sala. Uma oficina ocupa a sua célula e a de baixo, e uma parte do dia (MATÍ, TARDA), escrita como uma linha sem `|`, ocupa as quatro colunas. As células cobertas por uma mesclagem continuam na grade, marcadas com `hiddenBy`, porque a coluna de uma célula é a sua posição na linha ([Construir modelos de tabela](/pt/docs/configuration#construção-de-modelos-de-tabela)). `headerRowCount: 1` faz dos nomes das salas a linha de cabeçalho. Os `columnWidths` são pesos relativos, e 12 + 3 × 42 somam os 138 mm da medida, então a coluna da hora tem 12 mm e cada sala 42 mm. `setAlignment(…, 'left', 'middle')` centraliza cada oficina na vertical nas suas duas linhas.
+
+### 2 · Deixe a quinta-feira continuar e a sexta ficar inteira
+
+<Excerpt region="split" />
+
+A grade de quinta-feira é citada na página 2 e posicionada no alto de uma página. Uma flutuante nunca sobe acima da sua referência, então a grade abre a página 3. Ela é mais alta que a página, e `overflow: 'split'` a corta entre duas linhas, nunca dentro de uma célula mesclada ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). A página 3 termina com a linha das 17.30 e o aviso embaixo. A página 4 repete a linha de cabeçalho e a legenda inteira, com as amostras de cor, seguida de `(continuació)`, e a nota só aparece sob esta última parte. A grade de sexta-feira vai para o pé de uma página e cabe sob o texto que a cita na página 5. O Postext 1.4.1 traz os nomes dos tipos de recurso e esses dois textos só em inglês e espanhol, então as palavras em catalão, plurais incluídos, são escritas sobre `defaultResourceTypes('ca')` e no estilo de tabela. `numberingTemplate: '{n}'` com `resetOn: 'never'` numera as duas grades numa só série, Taula 1 e Taula 2.
+
+### 3 · Corte os preenchimentos em blocos
+
+<Excerpt region="tiles" />
+
+`setCellBackground`, na resposta curta, dá a cada sessão a cor da paleta da sua trilha, e fios de 1,6 pt na cor do papel cortam os preenchimentos em blocos separados por linhas brancas ([Estilo de tabela](/pt/docs/configuration#estilo-de-tabela)). Uma tabela tem uma única cor de texto para as células do corpo, por isso o texto branco da plenária é um chip cujo estilo define a cor e desliga o preenchimento, a borda e o espaçamento lateral do chip. Os horários e as partes do dia também são chips, em Chivo Mono ([Estilos de chip](/pt/docs/configuration#estilos-de-chip)). Um chip nunca quebra entre linhas; o título de uma plenária e a linha do palestrante cabem cada um numa linha da célula de três salas. Na nota da planta, o chip `sala` deixa o texto como está e mantém numa só linha o número e o nome de cada sala, coisa que um espaço inseparável não faz na 1.4.1.
+
+### 4 · Abra cada dia com uma faixa
+
+<Excerpt region="opener" />
+
+O design do título de nível 1 desenha a faixa: uma caixa de 76 mm de altura a partir da borda da sangria, com a tira de módulos ao longo da borda inferior. A data vem do atributo `date` do título, e o algarismo, de `day`. O 1 da Unbounded 800 em 144 pt começa a tinta 0,76 mm para dentro da sua caixa, e a primeira maiúscula da data entre 0,1 e 0,2 mm para dentro da dela, por isso o algarismo se desloca 0,6 mm para a esquerda, e a data, o algarismo e o texto começam a tinta a menos de 0,2 mm um do outro. O nome do dia fica à direita do algarismo, baixado `BASELINE` × (144 − 26) pt para que as duas linhas de base coincidam, porque num texto de design com `lineHeight: 1` a linha de base fica a 0,8 da altura da caixa. `minHeight` reserva a página até 7 mm abaixo da faixa, e a grade de linhas de base arredonda essa reserva para cima, até 14 linhas, então a caixa da primeira linha de texto começa 10,2 mm abaixo da faixa. Com `AIR = 0` quem define a altura é a caixa do próprio algarismo, que passa da borda inferior da faixa, e o texto começa 5,6 mm abaixo da faixa.
+
+### 5 · Recue as linhas seguintes das notas dos palestrantes
+
+<Excerpt region="bios" />
+
+Cada palestrante é um parágrafo de um bloco `:::paragraphs{style="bio"}`. O nome em negrito começa na borda da coluna e as linhas de baixo entram 4 mm, em recuo deslocado, e assim os nomes se alinham coluna abaixo como num índice ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). O texto é alinhado à esquerda, e a 1.4.1 não controla linhas curtas em texto em bandeira, por isso cada nota foi reescrita até a última linha ter pelo menos duas palavras.
+
+## Variações
+
+### Arredonde os cantos da grade
+
+Uma tabela dividida arredonda os cantos superiores da primeira parte, na página 3, e os inferiores da última, na página 4, onde só o da direita aparece porque a coluna da hora não tem preenchimento.
+
+```diff
+-  cellPadding: mm(1.5) };
++  cellPadding: mm(1.5), borderRadius: mm(2.5) };
+```
+
+### Numere a grade de cada dia separadamente
+
+Contar por título de nível 1, como fazem os tipos predefinidos, dá Taula 1.1 e Taula 2.1 e transforma a planta em Figura 2.1; o estilo da capa não é numerado, então a quinta-feira é o título 1.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
++  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
+```
+
+## Erros comuns
+
+- As colunas da página 4 são niveladas à mão, com um `:::columnbreak` antes da nota de Rosa Fontanet. O Postext 1.4.1 não nivela a última página de um capítulo quando o resto de uma tabela dividida a abre, então a primeira coluna vai até o pé e a segunda fica curta. Mude a quebra de lugar sempre que o texto de quinta-feira mudar.

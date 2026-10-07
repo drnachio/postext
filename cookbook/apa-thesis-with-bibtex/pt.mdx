@@ -1,0 +1,61 @@
+---
+title: "Um capítulo de tese citado em APA 7"
+summary: "Um capítulo de tese de doutorado cujas citações [@key, p. 33] saem em APA 7 pelo citeproc-js, com a lista de referências montada a partir de um bloco BibTeX."
+plain: "Um capítulo de uma tese de doutorado. A autora escreve um código curto para cada fonte; o Postext imprime as citações e a lista de referências do final no estilo APA."
+description: "Um capítulo de tese no Postext: citações no formato do Pandoc em APA 7 com citeproc-js, referências do BibTeX com recuo deslocado e links para as seções."
+question: "Como cito fontes em APA 7 e monto a lista de referências a partir do meu arquivo BibTeX?"
+aliases: ["APA", "APA 7", "tese", "tese de doutorado", "dissertação", "dissertação de mestrado", "TCC", "BibTeX", "Zotero", "lista de referências", "referências bibliográficas", "autor-data", "citeproc"]
+pageNotes: { "1": "Página 1: uma faixa azul-clara no alto com o rótulo CHAPTER, o título Reading on Paper and on Screens: The State of the Evidence e um grande número 2 de traço fino à direita; abaixo, os primeiros parágrafos com citações autor-data como (Tinker, 1963) e links em azul e negrito para Section 2.1, 2.2 e 2.3.", "2": "Página 2: as seções 2.2 e 2.3 com citações narrativas como Delgado et al. (2018), uma citação com páginas (Ibáñez Roca, 2023, pp. 12–15) e o começo da lista References, sem número.", "3": "Página 3: o resto da lista References em APA 7, cada entrada com recuo deslocado e o DOI impresso por inteiro." }
+---
+
+## O que você vai compor
+
+O segundo capítulo de uma tese de doutorado em educação, a revisão de literatura: o que vinte anos de estudos dizem sobre ler no papel e na tela. O capítulo é composto numa página A4 encadernada à esquerda, em Literata com entrelinha de 16 pt, sob uma faixa clara no azul da universidade. A autora guarda as fontes no Zotero e cola a exportação em BibTeX; no texto, cada fonte é uma chave. O Postext formata cada citação em APA 7, com o autor, o ano e a página quando há, escreve “Delgado et al. (2018)” quando o nome faz parte da frase e monta a lista de referências na ordem e na forma que o estilo pede. Quando o orientador pedir Chicago, o estilo é a única linha que muda.
+
+## Preparo
+
+### 1 · Um motor, um estilo
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. O Postext lê as citações e deixa a redação delas a um motor de citações, registrado uma vez antes da primeira composição; `postext-citeproc` empacota o citeproc-js, o motor que o Zotero e o Mendeley usam, com dezesseis estilos CSL e os seus arquivos de idioma. `[@mangen2013]` dá “(Mangen et al., 2013)”, `@delgado2018` sem colchetes põe os autores dentro da frase e `[@ibanez2023, pp. 12–15]` leva o intervalo de páginas para dentro dos parênteses. Com o documento em espanhol, as mesmas chaves tiram os conectivos e as abreviaturas do arquivo de idioma espanhol, porque o motor segue o idioma do documento.
+
+### 2 · As referências vêm de um bloco BibTeX
+
+O último bloco do capítulo é `:::references{format=bibtex}`, com a exportação do Zotero colada dentro e os acentos escritos como `{\'a}`. `:::bibliography`, acima dele, coloca a lista sob o título References; sem ele, o Postext acrescenta a lista no fim. Só aparecem as obras citadas, ordenadas como a APA ordena, e cada citação no texto leva à sua entrada.
+
+### 3 · Um título sem número, referências por extenso
+
+<Excerpt region="refs" />
+
+O título das referências usa o estilo `references`, que o mantém no sumário mas fora da numeração, então a lista não vira a seção 2.4. `:ref{id="sec-speed"}` imprime “Section 2.2” com o rótulo de `crossRefs` e leva ao título; os números vêm de `startAt=2` no título do capítulo, o mesmo contador que os títulos usam.
+
+### 4 · A abertura fica numa faixa
+
+<Excerpt region="opener" />
+
+A faixa é uma caixa ancorada ao refile, e o texto começa 10 mm abaixo dela. O número é composto em Literata Light de 96 pt, à direita, onde é lido como uma forma e deixa ao título a medida inteira.
+
+<Excerpt region="palette" />
+
+## Variações
+
+### Mude o estilo
+
+O mesmo capítulo em Chicago autor-data tira a vírgula depois do nome e põe o ano depois dos autores na lista.
+
+```diff
+-  style: 'apa', // 'chicago-author-date', 'ieee', 'vancouver'… change nothing else
++  style: 'chicago-author-date',
+```
+
+### Deixe a lista menor que o texto
+
+Muitas universidades aceitam a lista de referências um corpo abaixo e em espaço simples.
+
+```diff
+-    fontSize: em(1), hangingIndent: mm(12.7), entrySpacing: pt(4),
++    fontSize: em(0.9), lineHeight: pt(13), hangingIndent: mm(12.7), entrySpacing: pt(3),
+```
+
+## Erros comuns
+
+- A APA escreve os títulos de artigos e livros só com a inicial maiúscula, e o citeproc-js imprime os títulos como os dados os trazem. O Zotero guarda a maioria dos títulos com maiúscula em cada palavra, então corrija-os no Zotero ou no BibTeX antes que cheguem à página.

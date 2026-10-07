@@ -35,6 +35,7 @@ const EDITIONS = {
   en: { locale: 'en-us', faces: ['Comic Neue', 'Bangers'] },
   es: { locale: 'es', faces: ['Comic Neue', 'Bangers'] },
   ca: { locale: 'ca', faces: ['Comic Neue', 'Bangers'] },
+  pt: { locale: 'pt-BR', faces: ['Comic Neue', 'Bangers'] },
   zh: { locale: 'zh-Hans', faces: ['Noto Sans SC', 'ZCOOL KuaiLe'] },
   ar: { locale: 'ar', faces: ['Playpen Sans Arabic', 'Lalezar'] },
 };
@@ -73,7 +74,7 @@ const balloons = () => [
 const config = () => ({ // a factory: the engine caches resolved configs per object
   // Each edition's language, written out (gotcha: ja-locale-tag); the original is built
   // with 'ja' in every edition (edition('ja') below).
-  locale: t({ ja: 'ja', en: 'en-us', es: 'es', ca: 'ca', zh: 'zh-Hans', ar: 'ar' }),
+  locale: t({ ja: 'ja', en: 'en-us', es: 'es', ca: 'ca', zh: 'zh-Hans', ar: 'ar', pt: 'pt-BR' }),
   colorPalette,
   page: {
     sizePreset: 'custom', width: mm(128), height: mm(182), dpi: 150, // B6, a tankōbon
@@ -113,6 +114,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'The old wooden kendo dojo at dusk, its doors open and lit.',
       es: 'El viejo dojo de madera al anochecer, con las puertas abiertas e iluminadas.',
       ca: 'L’antic dojo de fusta al capvespre, amb les portes obertes i il·luminades.',
+      pt: 'O velho dojô de madeira ao anoitecer, com as portas abertas e iluminadas.',
       zh: '黄昏时分的老木造剑道场，门敞开着，里面亮着灯。',
       ar: 'قاعة الكندو الخشبية القديمة عند الغسق، أبوابها مفتوحة ومضاءة.',
       ja: '夕暮れの古い木造の剣道場。戸が開いて、中に明かりがともっている。' }),
@@ -122,6 +124,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'Hana, alone in the dojo, swings her bamboo sword overhead.',
       es: 'Hana, sola en el dojo, alza la espada de bambú sobre la cabeza.',
       ca: 'La Hana, sola al dojo, aixeca l’espasa de bambú per sobre del cap.',
+      pt: 'Hana, sozinha no dojô, ergue a espada de bambu acima da cabeça.',
       zh: '花独自在道场里，把竹剑高举过头。',
       ar: 'هانا وحدها في القاعة ترفع سيف الخيزران فوق رأسها.',
       ja: 'ひとり道場で、竹刀を頭上に振りかぶる花。' }),
@@ -133,6 +136,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'Sora peeks round the sliding door, holding a shrine charm.',
       es: 'Sora se asoma por la puerta corredera con un amuleto en la mano.',
       ca: 'En Sora treu el cap per la porta corredissa amb un amulet a la mà.',
+      pt: 'Sora espia pela porta de correr com um amuleto na mão.',
       zh: '空从拉门后探出头，手里攥着护身符。',
       ar: 'سورا يطلّ من وراء الباب المنزلق وفي يده تميمة.',
       ja: 'お守りを手に、引き戸の陰からのぞく空。' }),
@@ -144,6 +148,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: "Close-up of Hana's sweating, startled face.",
       es: 'Primer plano del rostro sudoroso y sobresaltado de Hana.',
       ca: 'Primer pla de la cara suada i sobresaltada de la Hana.',
+      pt: 'Primeiro plano do rosto suado e assustado de Hana.',
       zh: '花满脸是汗、吃了一惊的特写。',
       ar: 'لقطة قريبة لوجه هانا المتعرّق المذعور.',
       ja: '汗をかき、はっとした花の顔のアップ。' }),
@@ -154,6 +159,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'Sora holds out the charm; Hana looks at it, sword on her shoulder.',
       es: 'Sora le tiende el amuleto; Hana lo mira con la espada al hombro.',
       ca: 'En Sora li allarga l’amulet; la Hana el mira amb l’espasa a l’espatlla.',
+      pt: 'Sora estende o amuleto; Hana olha para ele com a espada no ombro.',
       zh: '空递出护身符，花扛着竹剑看着它。',
       ar: 'سورا يمدّ التميمة، وهانا تنظر إليها والسيف على كتفها.',
       ja: '空がお守りを差し出し、竹刀を肩にかついだ花がそれを見る。' }),
@@ -167,6 +173,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'Coach Mori in the doorway, backlit, arms crossed.',
       es: 'El entrenador Mori en la puerta, a contraluz, de brazos cruzados.',
       ca: 'L’entrenador Mori a la porta, a contrallum, de braços plegats.',
+      pt: 'O treinador Mori na porta, contra a luz, de braços cruzados.',
       zh: '森老师站在门口，背着光，双臂抱在胸前。',
       ar: 'المدرّب موري عند الباب، والضوء خلفه، عاقدًا ذراعيه.',
       ja: '逆光の戸口で腕を組んで立つ森先生。' }),
@@ -177,6 +184,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: "Close-up of Mori's stern face breaking into a small smile.",
       es: 'Primer plano del rostro severo de Mori, que esboza una sonrisa.',
       ca: 'Primer pla de la cara severa d’en Mori, que esbossa un somriure.',
+      pt: 'Primeiro plano do rosto severo de Mori, que esboça um sorriso.',
       zh: '森老师严肃的脸上露出一丝笑意的特写。',
       ar: 'لقطة قريبة لوجه موري الصارم وقد ارتسمت عليه ابتسامة.',
       ja: '厳しい顔がふっとゆるむ森先生のアップ。' }),
@@ -187,6 +195,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'Kneeling, Hana ties the charm to her armour; Sora scratches his head.',
       es: 'De rodillas, Hana se ata el amuleto a la armadura; Sora se rasca la cabeza.',
       ca: 'De genolls, la Hana es lliga l’amulet a l’armadura; en Sora es grata el cap.',
+      pt: 'De joelhos, Hana amarra o amuleto na armadura; Sora coça a cabeça.',
       zh: '花跪坐着把护身符系在护具上，空挠着头。',
       ar: 'هانا جاثية تربط التميمة بدرعها، وسورا يحكّ رأسه.',
       ja: '正座してお守りを防具に結ぶ花と、頭をかく空。' }),
@@ -200,6 +209,7 @@ const ART = { // fractions of the picture: the same in every language
     alt: t({ en: 'Seen from behind, Hana and Sora sit on the school roof at sunset.',
       es: 'De espaldas, Hana y Sora sentados en la azotea del instituto al atardecer.',
       ca: 'D’esquena, la Hana i en Sora asseguts al terrat de l’institut a la posta.',
+      pt: 'De costas, Hana e Sora sentados no terraço da escola ao pôr do sol.',
       zh: '夕阳下，花和空坐在学校楼顶的背影。',
       ar: 'هانا وسورا جالسان على سطح المدرسة عند الغروب، من الخلف.',
       ja: '夕焼けの屋上に並んで座る花と空の後ろ姿。' }),
@@ -254,6 +264,7 @@ const docs = [await build('ja'), await build(FACING)];
 const TITLE = t({
   en: 'A manga read right to left', es: 'Un manga que se lee de derecha a izquierda',
   ca: 'Un manga que es llegeix de dreta a esquerra', zh: '从右往左读的漫画',
+  pt: 'Um mangá lido da direita para a esquerda',
   ar: 'مانغا تُقرأ من اليمين إلى اليسار', ja: '右から左へ読む漫画' });
 showBook(docs, { title: TITLE });
 offerPdf(() => renderToPdf(docs, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),

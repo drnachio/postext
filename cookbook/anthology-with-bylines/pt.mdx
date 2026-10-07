@@ -1,0 +1,83 @@
+---
+title: "Antologia com assinaturas de autor"
+summary: "Três ensaios sobre caminhar cujos títulos levam autor, ano e revista: a abertura imprime os três; os cabeços das páginas pares e o sumário, só o autor."
+plain: "Um livrinho de três ensaios sobre caminhar. O autor e o ano de cada ensaio são digitados uma vez e depois aparecem onde o livro precisa deles, como no sumário."
+description: "Uma antologia de bolso de Hazlitt, Thoreau e Stevenson composta no Postext: atributos de título preenchem as assinaturas, os cabeços pares e o sumário."
+question: "Como monto um sumário que se preenche sozinho, com pontilhados, números de página e o autor de cada ensaio?"
+aliases: ["antologia", "coletânea", "obra coletiva", "livro de ensaios", "colaboradores", "assinatura de autor", "crédito de autor", "autor sob o título no sumário", "autor no cabeço", "sumário com autores", "autor do capítulo", "subtítulo do sumário"]
+pageNotes: { "2": "O sumário: numerais romanos em vermelho-ferrugem, os títulos dos ensaios em Gloock com linhas de pontos espaçados até as páginas 3, 5 e 8, o nome de cada autor embaixo em itálico cor de urze e a nota sobre os textos fixada no pé da página.", "3": "O ensaio I abre sob o seu numeral e o seu título, com a assinatura WILLIAM HAZLITT e a procedência The New Monthly Magazine, 1822, acima de um fio fino.", "6": "Uma página par: o fólio e HENRY DAVID THOREAU no cabeço.", "7": "Uma página ímpar: o cabeço WALKING ao lado do fólio; o ensaio termina quatro linhas antes do pé." }
+---
+
+## O que você vai compor
+
+Nove páginas de *Afoot*, uma antologia de bolso com três ensaios sobre caminhar, de Hazlitt (1822), Thoreau (1862) e Stevenson (1876). Uma pintura de uma charneca ao entardecer ocupa a capa, um JPEG gerado com modelos de difusão. O sumário dá a cada ensaio um numeral vermelho-ferrugem, um título em Gloock, uma linha de pontos espaçados até a sua página e, embaixo, o nome do autor em itálico cor de urze. Cada ensaio abre com o seu numeral e o seu título, uma assinatura em maiúsculas espaçadas e uma linha com a revista e o ano da primeira publicação. As páginas pares levam o nome do autor, as ímpares o título do ensaio. O título de cada ensaio carrega o autor, o ano e a procedência como atributos, e a abertura, os cabeços e o sumário os imprimem a partir dali, então um quarto ensaio não exige nenhuma mudança na configuração.
+
+## Preparo
+
+### 1 · Numere os ensaios e rebaixe o texto
+
+<Excerpt region="opener" />
+
+O `numberingTemplate: '{1:I}'` do nível numera os ensaios I, II e III, e `{number}` imprime o numeral acima do título ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). `minHeight` reserva 12 linhas de 14 pt e o fio fino termina 7 mm acima disso, então, sob um título de uma linha, o texto começa a 79 mm da borda superior em todas as aberturas. Uma segunda linha de título em 26 pt acrescenta 9,9 mm e empurra o texto uma linha da grade para baixo; com `SINK = 14`, títulos de uma e de duas linhas começam o texto na mesma linha. `marginBottom: pt(0)` impede que a margem padrão do título se some à reserva.
+
+### 2 · Deixe o sumário se preencher sozinho
+
+<Excerpt region="contents" />
+
+`:::toc` no Markdown imprime uma entrada por título listado: número, título, linha de pontos, rótulo da página e, por meio de `subtitle`, o autor. `buildDocument` diagrama o livro de novo até os rótulos de página pararem de mudar, então um ensaio renomeado ou mais longo atualiza o sumário ([sumário](/pt/docs/configuration#sumário)). O Postext 1.4.1 coloca o centro do número de uma entrada 0,3 × o corpo da entrada acima da linha de base, e o Chrome coloca o centro da Gloock 0,3125 em acima da linha de base dela, então um numeral de 0,3 × 15 ÷ 0,3125 = 14,4 pt fica apoiado na linha de base do título de 15 pt; um de 12 pt sobe 0,3 mm. Um livro com partes também ganha uma linha para cada `:::part`, desenhada por `toc.parts.design`, como em <RecipeLink slug="parts-in-colour">Partes em cores</RecipeLink>.
+
+### 3 · Autor na página par, ensaio na ímpar
+
+<Excerpt region="running-heads" />
+
+Cada cabeço é ancorado à página, a 11 mm da borda superior, e `parity` escolhe o lado: o fólio se alinha com a borda externa do texto e o nome ou o título fica 7 mm mais para dentro. O `pages: 'body'` em `head()` mantém os cabeços fora das aberturas, onde a assinatura já nomeia o autor, e o `pages: 'opener'` do rodapé imprime ali um fólio no pé ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). `{chapterTitle}` imprime o título do ensaio sem o numeral.
+
+### 4 · Deixe a capa e o sumário fora da contagem
+
+<Excerpt region="front" />
+
+Com `numbered: false`, a capa e o sumário não avançam o contador, então Hazlitt é o I, e `toc: false` os mantém fora da lista ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os dois estilos herdam o `breakBefore` do nível, com paridade `'any'`, e é por isso que o sumário vem logo depois da capa, na página 2, sem um `:::pagebreak`. O estilo da capa ocupa a página inteira num livro de uma coluna porque um design mantido na coluna é recortado nas bordas superior e inferior da coluna, o que deixaria 20 mm de papel acima da paisagem.
+
+### 5 · Escreva cada cor por extenso com o seu vínculo à paleta
+
+<Excerpt region="palette" />
+
+Na 1.4.1, `colorPalette` chega aos estilos de texto mas não aos elementos de design, então `col()` escreve o hex de cada cor ao lado do seu `paletteId`: as assinaturas, os cabeços e a capa pintam esse hex. Apontar `main-color` para a cor da tinta cobre todos os valores padrão que a configuração não redefine, que de outro modo sairiam no azul do motor, `#295AA3`.
+
+## Variações
+
+### Indique onde cada ensaio saiu primeiro
+
+`toc.subtitle` imprime qualquer atributo do título, então o mesmo Markdown pode listar, sob cada título, a revista em que o ensaio saiu pela primeira vez.
+
+```diff
+-const authorLine = { enabled: true, attr: 'author', fontFamily: 'Spectral', fontSize: pt(10),
++const authorLine = { enabled: true, attr: 'source', fontFamily: 'Spectral', fontSize: pt(10),
+```
+
+### Ponha o título do livro na página par
+
+Muitos livros põem o próprio título na página par e o do capítulo na ímpar; `{title}` o lê do frontmatter do Markdown e imprime AFOOT.
+
+```diff
+-const versoAuthor = head('verso-author', '{attr.author}', 'even',
++const versoAuthor = head('verso-author', '{title}', 'even',
+```
+
+### Abra cada ensaio numa página ímpar
+
+Com a paridade `'odd'`, Stevenson passa para a página 9, depois de uma página 8 em branco. Os dois estilos dos elementos pré-textuais precisam então de um `'any'` próprio; senão, o sumário herda `'odd'` e abre na página 3, depois de uma página par em branco.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' } }; // 'any': each piece opens on the next page
++  breakBefore: { enabled: true, parity: 'odd' } };
+-const bare = { numbered: false, toc: false, header: { elements: [] }, footer: { elements: [] } };
++const bare = { numbered: false, toc: false, breakBefore: { enabled: true, parity: 'any' },
++  header: { elements: [] }, footer: { elements: [] } };
+```
+
+## Erros comuns
+
+- Hazlitt cita versos no meio das frases. Um parágrafo não guarda quebras de linha, então cada verso é um parágrafo próprio dentro de um contêiner `:::paragraphs{style="verse"}`, e a frase que continua depois dele vai num estilo `runon`, sem recuo. Uma citação em bloco do Markdown sairia num itálico cinza fixo, `#666666`, com o recuo de primeira linha do corpo e sem recuo lateral, e nenhuma configuração muda isso na 1.4.1.
+- Um atributo que falta num título não imprime nada e não gera aviso. Sem `author="…"`, a assinatura e o cabeço par de um ensaio saem vazios, e a linha dele sob o título some do sumário.
+- Os 14,4 pt do passo 2 valem só para a Gloock. Para outra fonte, descubra a que altura acima da linha de base o Chrome põe o centro dela: `measureText('I').alphabeticBaseline` com `textBaseline = 'middle'` devolve esse valor, com o sinal trocado, em pixels. Depois defina `numberFontSize` como 0,3 × o corpo da entrada dividido por essa distância em em (a da Hanken Grotesk é 0,2675 em).

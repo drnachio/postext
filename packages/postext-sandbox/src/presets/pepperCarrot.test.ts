@@ -1,5 +1,5 @@
 /* The Pepper&Carrot showcase bundle (apps/web/public/presets/pepper-carrot)
-   as the Sandbox opens it: episode 8 in seven editions, each a title page,
+   as the Sandbox opens it: episode 8 in eight editions, each a title page,
    six comic pages and the credits, whose scripts name only pictures, panel
    styles and balloon styles the bundle has, and whose faces carry every
    variant the editions ask of them. */
@@ -26,7 +26,7 @@ const manifest = ((await import(/* @vite-ignore */ new URL(`${BUNDLE}preset.json
   };
 }).default;
 
-const EDITIONS = ['en', 'es', 'ca', 'fr', 'ja', 'zh-Hans', 'ar'];
+const EDITIONS = ['en', 'es', 'ca', 'fr', 'pt-BR', 'ja', 'zh-Hans', 'ar'];
 
 const configOf = (locale: string): PostextConfig => ({ ...manifest.config, ...(manifest.localized[locale]?.config ?? {}) });
 
@@ -36,7 +36,7 @@ const chapters = (locale: string): Promise<{ file: string; md: string }[]> => Pr
 })));
 
 describe('pepper-carrot in the Sandbox', () => {
-  it('carries seven editions, opens in the reader’s language and shows the whole book', () => {
+  it('carries eight editions, opens in the reader’s language and shows the whole book', () => {
     expect(manifest.locale).toBe('en');
     expect(manifest.locales).toEqual(EDITIONS);
     expect(manifest.openLocale).toBeUndefined();

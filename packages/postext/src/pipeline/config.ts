@@ -28,8 +28,10 @@ import {
   resolveCitationsConfig,
   resolveCjkConfig,
   resolvePdfGenerationConfig,
+  resolvePrintConfig,
   resolveFolioConfig,
   resolveComicsConfig,
+  comicReadingDirection,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
   DEFAULT_LAYOUT_CONFIG,
@@ -71,7 +73,15 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const headings = verticalBalancing(resolveHeadingsConfig(config?.headings), layout, config?.headings?.balancing?.enabled);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
-  const page = resolvePageConfig(config?.page, documentLocale, layout.writingMode, direction);
+  // A comic book (a config with a `comics` section) read right to left is
+  // bound on the right when the binding is Auto: a manga, and a Japanese or
+  // Traditional Chinese edition of a Western comic. The section, not the
+  // `:::page` blocks of one chapter, decides it, so every chapter of a book
+  // is bound the same way.
+  const comicDirection = config?.comics
+    ? comicReadingDirection(config.comics, { locale: documentLocale, direction, writingMode: layout.writingMode })
+    : undefined;
+  const page = resolvePageConfig(config?.page, documentLocale, layout.writingMode, direction, comicDirection);
   // The digits of the generated numbers, from the document language unless
   // the config names them; kept only when they are not the European ones,
   // so a Latin document resolves exactly as before.
@@ -118,6 +128,9 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
       : {}),
     // Not used by layout: carried in the VDT for the PDF backend.
     ...(config?.pdfGeneration ? { pdfGeneration: resolvePdfGenerationConfig(config.pdfGeneration) } : {}),
+    // Print production (PDF/X, profile, black, preflight): postext-pdf and
+    // the preflight read it, layout does not.
+    ...(config?.print ? { print: resolvePrintConfig(config.print) } : {}),
     // Not used by layout either: the Folio 3D viewer reads it.
     ...(config?.folio ? { folio: resolveFolioConfig(config.folio, page.sizePreset) } : {}),
     // Comic pages: only a config that sets the section carries it (a

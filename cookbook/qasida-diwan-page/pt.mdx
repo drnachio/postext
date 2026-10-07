@@ -1,0 +1,59 @@
+---
+title: "Uma qasida numa página de divã, em dois hemistíquios"
+summary: "Um bloco :::verse compõe os quarenta e seis bayts de al-Mutanabbī em duas colunas de hemistíquios, cada metade esticada com kashidas até a mesma largura."
+plain: "Um poema árabe clássico impresso como nos livros antigos de poesia: cada verso dividido em duas metades lado a lado, esticadas até a mesma largura para que os finais fiquem alinhados ao longo da página."
+description: "Uma página do Dīwān de al-Mutanabbī no Postext: :::verse para bayts em dois hemistíquios, justificação com kashida, cabeção em ruqʿa e encadernação à direita."
+question: "Como componho verso árabe clássico com cada bayt em dois hemistíquios?"
+aliases: ["qasida", "cássida", "qaṣīda", "divã", "diwan", "dīwān", "bayt", "hemistíquio", "ṣadr", "ʿajuz", "poesia árabe", "verso árabe clássico", "al-Mutanabbī", "Sayf al-Dawla", "kashida", "tatweel", "قصيدة", "ديوان", "شطر"]
+pageNotes: { "2": "A página de abertura da qasida: no alto, uma faixa clara com fios vermelhos traz o título على قدر أهل العزم em ruqʿa vermelho, abaixo dele o metro من البحر الطويل em cúfico cinza pequeno, duas linhas de prosa que contam a ocasião e depois os bayts em duas colunas, com a metade direita e a metade esquerda de cada verso esticadas até a mesma largura." }
+---
+
+## O que você vai compor
+
+Quatro páginas de um divã, a poesia reunida de al-Mutanabbī, como os impressores do Cairo a compunham um século atrás: um anterrosto com ديوان em ruqʿa vermelho e depois, sob um cabeção com fios vermelhos, a qasida que ele recitou diante de Sayf al-Dawla em 954. Cada um dos quarenta e seis bayts é uma linha de dois hemistíquios, o ṣadr à direita e o ʿajuz à esquerda, os dois esticados com kashidas até a mesma largura, e assim as rimas em ‑mu descem em linha reta pela borda esquerda. O livro é encadernado pela direita, e os fólios contam com algarismos arábico-índicos. Só a nota sobre o texto, no fim, muda com a edição. <RecipeLink slug="tang-poems-facing-english">Poemas Tang diante dos versos em inglês</RecipeLink> compõe verso chinês clássico na sua própria grade.
+
+## Preparo
+
+### 1 · Um bayt por linha, as duas metades com a mesma largura
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Dentro de `:::verse`, cada linha é um bayt, e `||` separa os dois hemistíquios, então o Markdown se lê como o texto do Wikisource de onde veio ([:::verse](/pt/docs/document-format#verse)). O poema mede cada hemistíquio, toma a metade mais larga como largura das duas colunas (até metade da medida menos o vão central) e preenche cada metade até essa largura, primeiro com kashidas e depois com os espaços entre palavras ([Verso clássico](/pt/docs/arabic-layout#verso-clássico)). O estilo `bayt` é composto em 14 pt com passo de 26,6 pt, 1,9 vez o corpo, para que as šaddas e as kasras de linhas vizinhas não se encostem ([Sinais vocálicos](/pt/docs/arabic-layout#sinais-vocálicos)). O formato é de 17 × 24 cm: em 14 × 21 cm, um terço dos bayts não cabia na sua metade da medida de 104 mm e caía num arranjo escalonado, com o ṣadr e o ʿajuz em linhas próprias.
+
+<PageShot page={2} crop="0,0.45,1,0.55" caption="Página 2: cada hemistíquio esticado até a largura do mais largo. Uma metade curta recebe mais kashidas, e todas as rimas terminam na mesma borda esquerda." />
+
+### 2 · Uma faixa de cabeção em ruqʿa
+
+<Excerpt region="opener" />
+
+O título de nível 1 é desenhado pelo seu design: uma caixa tingida com um fio vermelho em cima e outro embaixo, o título centralizado sobre ela em Aref Ruqaa e, abaixo, o metro, tirado de um atributo do título, `{metre="من البحر الطويل"}`. Letra de display em ruqʿa não leva kashida, então o título mantém a sua largura natural ([Justificação e kashida](/pt/docs/arabic-layout#justificação-e-kashida)).
+
+### 3 · Cabeços nos lados da folha
+
+<Excerpt region="heads" />
+
+O texto corrido vai da direita para a esquerda, e nele esquerda e direita significam início e fim. Os cabeços continuam físicos. Num livro encadernado pela direita, o verso, uma página par, fica do lado direito da página dupla, então o seu fólio vai no alto à direita e o do reto no alto à esquerda: os dois ficam na borda externa ([Ordem das páginas e encadernação à direita](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita)). Só a etiqueta `locale: 'ar'` já define a direção, a encadernação e os algarismos arábico-índicos.
+
+### 4 · Um anterrosto sem nada no fluxo
+
+<Excerpt region="title" />
+
+O anterrosto é um estilo de título com `span: 'page'` e cabeçalho e rodapé próprios, vazios. O texto do título é o nome do poeta, então a palavra ديوان é texto de design, composta em 64 pt acima dele, e a linha em caracteres latinos sob a rima vem do atributo `latin`, que cada edição escreve no seu idioma.
+
+## Variações
+
+### Marque o vão com um ornamento
+
+Alguns divãs imprimem uma estrelinha entre os hemistíquios. `ornament` põe uma marca no meio do vão sem acrescentá-la ao texto.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" ornament="٭"}
+```
+
+### Dê a mesma largura a todos os hemistíquios
+
+Uma `width` fixa dá às duas colunas a mesma medida em todas as páginas do divã, seja qual for a metade mais larga de cada poema.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" width=58mm}
+```

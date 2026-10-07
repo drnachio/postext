@@ -41,7 +41,7 @@ export async function runDev(argv: readonly string[]): Promise<number> {
   const args = parseArgs(
     argv,
     {
-      lang: { type: "string", value: "en|es|ca|zh|ar|ja", choices: SAMPLE_LOCALES },
+      lang: { type: "string", value: "en|es|ca|zh|ar|ja|pt", choices: SAMPLE_LOCALES },
       port: { type: "int", value: "n", min: 1, max: 65535 },
       engine: { type: "string", value: "spec" },
     },

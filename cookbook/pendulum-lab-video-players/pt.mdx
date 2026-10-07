@@ -1,0 +1,75 @@
+---
+title: "Roteiro de laboratório com vídeos na tela e no EPUB"
+summary: "Dois recursos de vídeo com seus próprios MP4: o impresso mostra o primeiro quadro com um QR code; renderToHtml e postext-epub reproduzem os arquivos."
+plain: "Um roteiro de aula prática de física com dois vídeos curtos de um pêndulo. No papel, cada vídeo é uma imagem parada com um código para escanear; na tela e no livro digital, o vídeo roda na página."
+description: "Um roteiro de laboratório de física com dois vídeos MP4: impressos como capa com QR code, reproduzidos na edição HTML e embalados num EPUB de layout fixo."
+question: "Como a edição de tela e o EPUB reproduzem os vídeos do livro, e como faço para esconder o botão de download?"
+aliases: ["vídeo", "MP4", "vídeo HTML5", "player de vídeo", "reprodutor de vídeo", "botão de download", "nodownload", "controlslist", "QR code", "código QR", "vídeo no EPUB", "roteiro de laboratório", "aula prática", "apostila de exercícios", "resourceVideoUrl", "videoStyle"]
+pageNotes: { "1": "A abertura do roteiro 4.2: uma faixa cor de ferrugem com o título The period of a pendulum e três campos brancos para nome, turma e data; abaixo, o objetivo, os dois vídeos e a fundamentação em duas colunas. No pé, os primeiros quadros do Video 1 e do Video 2, cada um com um sinal de play escuro e um QR code.", "2": "O procedimento num boxe creme, uma tabela de medidas em branco, uma tabela de períodos exatos de 5° a 90° e quatro questões com caixas brancas para as respostas." }
+---
+
+## O que você vai compor
+
+O roteiro 4.2 de *Bench Physics*, uma apostila A4 para alunos de 16 a 18 anos, sobre o período de um pêndulo. Uma faixa cor de ferrugem traz o título e os campos para nome, turma e data. No pé da primeira página, dois vídeos do mesmo pêndulo, solto a partir de 10° e de 80°, ficam lado a lado. No papel, cada vídeo é o seu primeiro quadro, com um sinal de play e um QR code que abre o MP4. Na edição de tela ao lado das páginas, e no EPUB que o pen gera, os mesmos dois recursos rodam no próprio player de vídeo do leitor. A segunda página traz o procedimento, uma tabela para preencher, os períodos exatos calculados pelo código e quatro questões com caixas para as respostas.
+
+## Preparo
+
+### 1 · Dê a cada vídeo um endereço de produção e um arquivo
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Um vídeo seu tem dois endereços. `video.url` é onde o livro publicado vai encontrá-lo: o QR code o imprime e o PDF liga a capa do vídeo a ele, então aqui ele é o endereço do vídeo no jsDelivr, que um celular já consegue abrir hoje. `video.fileId` identifica o arquivo em si, guardado à parte como um bitmap, para as saídas que podem levá-lo junto ou reproduzi-lo de outro lugar (veja [Formato do documento › Vídeos](/pt/docs/document-format#vídeos)). As opções do player em `videoStyle.player` valem para todos os vídeos: rodam em loop, começam sem som, carregam inteiros (27 e 61 KB) e não oferecem download, picture-in-picture nem transmissão para outra tela, de modo que os vídeos ficam na folha.
+
+### 2 · Diagrame a edição de tela a partir do mesmo original
+
+<Excerpt region="screen" />
+
+A edição de tela fica na configuração, em `htmlViewer.overrides`, que o canvas e o PDF ignoram. A 122 dpi, cada medida dada em pontos sai cerca de um quarto maior do que a 96, então o texto de 9,4 pt aparece com 16 px no painel, e as legendas, os boxes e as tabelas crescem junto. A abertura mantém o título e deixa de lado a faixa e os campos, que são coisa do papel.
+
+### 3 · Reproduza os vídeos no painel
+
+<Excerpt region="pane" />
+
+`renderToHtml` compõe cada recurso de vídeo como um `<video>` do HTML5 com as opções do player como atributos: `controls`, `muted`, `loop`, `playsinline`, `preload="auto"`, `disablepictureinpicture`, `disableremoteplayback` e `controlslist="nodownload"`. Este último só esconde o botão. Quem tiver o endereço ainda consegue salvar o arquivo, então trate isso como arrumação da interface, não como proteção. `resourceVideoUrl` entrega ao renderizador um endereço reproduzível para cada `fileId`, como `resourceImageUrl` faz com as capas dos vídeos. Aqui ele é o arquivo publicado; um site que guarda os envios em outro lugar devolve a sua própria URL, ou uma URL de blob com os bytes. Sem ele, o player recorre a `video.url`, e sem nenhum dos dois o painel mostra a capa.
+
+### 4 · Empacote os vídeos num EPUB de layout fixo
+
+<Excerpt region="epub" />
+
+A folha é montada em torno de dois vídeos lado a lado e de caixas vazias para escrever, então o layout fixo a preserva: cada página como foi impressa, com um player onde estava a capa do vídeo. Um EPUB refluível também reproduziria os vídeos, um embaixo do outro na largura do texto. `resourceBytes` responde `video/mp4` para cada vídeo e um JPEG para cada capa, e o gerador os guarda em `media/` e `images/`. O EPUB mantém só os atributos que o seu esquema conhece (`controls`, `autoplay`, `muted`, `loop`, `playsinline`, `preload`), então o botão de download e o resto ficam por conta do sistema de leitura. O arquivo passa no EPUBCheck sem erros nem avisos.
+
+### 5 · Componha θ e π no canvas, no PDF e no EPUB
+
+A Source Serif 4 guarda as letras gregas num arquivo próprio do Fontsource, `greek`, ao lado do `latin`. `loadFonts(FONTS, markdown)` encontra letras gregas no texto e carrega esse arquivo para cada fonte da família, e o `fontsourceProvider` o incorpora ao PDF junto com o arquivo latin em cada fonte que compõe θ ou π, então essas duas letras não exigem código nenhum. O EPUB incorpora só as fontes que o pen lhe entrega, por isso o passo 4 lista os arquivos greek da fonte do texto depois dos latin, cada um limitado ao bloco grego pelo seu `unicodeRange`.
+
+### 6 · Calcule a tabela no código
+
+<Excerpt region="periods" />
+
+O período exato exige a integral elíptica completa *K*, e a média aritmético-geométrica a fornece em poucos passos: *T* = *T*~0~ / AGM(1, cos ½θ~0~). A tabela imprime três casas decimais com a vírgula decimal do espanhol, e as linhas de 10° e 80° batem com os vídeos: 2,010 s e 2,282 s, 0,2 % e 13,8 % mais longos que *T*~0~ = 2,006 s. Em 8 s, isso dá pouco menos de quatro oscilações completas no primeiro vídeo e três e meia no segundo.
+
+## Variações
+
+### Faça um vídeo começar sozinho
+
+O `player` de cada vídeo se sobrepõe a `videoStyle.player`. A reprodução automática sempre começa sem som, como os navegadores exigem.
+
+```diff
+ ];
++clips[0].video.player = { autoplay: true }; // the 10° clip starts as the pane opens
+```
+
+### Mostre na tela a capa impressa
+
+Com `html: 'poster'`, a edição HTML compõe a capa do vídeo com o sinal de play e o QR code, com link para o endereço de produção, no lugar do player.
+
+```diff
+ const videoStyle = {
++  html: 'poster',
+```
+
+### Use um vídeo do YouTube ou do Vimeo
+
+`source: 'youtube'` com o endereço do vídeo incorpora o player do YouTube a partir de `youtube-nocookie.com` (`privacy` vem ligado por padrão). Esse player aceita menos opções: controles, tela cheia, reprodução automática, sem som e loop; o do Vimeo acrescenta o menu de velocidade e o picture-in-picture, e nenhum dos dois oferece download. Um EPUB não pode incorporar o player de uma página web, então lá o vídeo é a sua capa com link para ele. As opções e o alcance de cada uma estão em [Configuração › Estilo de vídeo](/pt/docs/configuration#estilo-de-vídeo).
+
+## Erros comuns
+
+Os MP4 estão em H.264. Chrome, Edge, Safari e Firefox os reproduzem, assim como o Chrome for Testing que a captura usa. Um Chromium compilado sem os codecs proprietários, o padrão do projeto de código aberto, não reproduz; codifique os vídeos em WebM (`format: 'webm'`) se isso importar para os seus leitores.

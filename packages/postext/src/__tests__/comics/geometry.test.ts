@@ -110,15 +110,22 @@ describe('panel padding and reading direction', () => {
     expect(parseComicDimension('3')).toEqual({ value: 3, unit: 'mm' });
   });
 
-  it("reads auto as right to left in a right-to-left document, else as the art's direction", () => {
+  it("reads auto in the language's direction, else as the art's direction", () => {
     const page = { attrs: {} };
     const en = resolveAllConfig({ locale: 'en' });
     const ar = resolveAllConfig({ locale: 'ar' });
     const ja = resolveAllConfig({ locale: 'ja', layout: { writingMode: 'vertical-rl' } });
+    const jaHorizontal = resolveAllConfig({ locale: 'ja' });
+    const hans = resolveAllConfig({ locale: 'zh-Hans' });
+    const hant = resolveAllConfig({ locale: 'zh-Hant' });
     const western = resolveComicsConfig(undefined, 'ja');
     const manga = resolveComicsConfig({ artDirection: 'rtl' }, 'en');
     expect(comicPageDirection(page, western, en)).toBe('ltr');
-    expect(comicPageDirection(page, western, ja)).toBe('ltr');
+    expect(comicPageDirection(page, western, ja)).toBe('rtl');
+    expect(comicPageDirection(page, western, jaHorizontal)).toBe('rtl');
+    expect(comicPageDirection(page, western, hans)).toBe('ltr');
+    expect(comicPageDirection(page, western, hant)).toBe('rtl');
+    expect(comicPageDirection(page, resolveComicsConfig({ readingDirection: 'ltr' }), jaHorizontal)).toBe('ltr');
     expect(comicPageDirection(page, western, ar)).toBe('rtl');
     expect(comicPageDirection(page, manga, en)).toBe('rtl');
     expect(comicPageDirection({ attrs: { direction: 'ltr' } }, manga, en)).toBe('ltr');

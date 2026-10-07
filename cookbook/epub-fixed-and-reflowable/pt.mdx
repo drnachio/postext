@@ -1,0 +1,61 @@
+---
+title: "Um livro, dois EPUB 3: layout fixo e fluido"
+summary: "renderToEpub, do postext-epub, grava os capítulos que buildBundle diagramou como um EPUB de layout fixo e outro fluido; readEpub lista o que cada arquivo tem."
+plain: "Um livrinho de fábulas diagramado uma vez para impressão e salvo como dois e-books: um que mantém cada página impressa e outro cujo texto o celular ou o leitor digital recompõe no seu tamanho."
+description: "Um livro de três capítulos diagramado com buildBundle e gravado com postext-epub como EPUB 3 de layout fixo e fluido, cada um lido de volta com readEpub."
+question: "Como faço para exportar meu livro como EPUB, com páginas fixas ou com texto que se recompõe?"
+aliases: ["EPUB", "EPUB 3", "e-book", "ebook", "livro digital", "livro eletrônico", "layout fixo", "layout fluido", "texto fluido", "reflowable", "fixed layout", "postext-epub", "renderToEpub", "readEpub", "Kindle", "Apple Books"]
+pageNotes: { "1": "A folha de rosto: o autor em pequenas maiúsculas azuis, o título Fables of Aesop numa serifada de display, um fio curto e um subtítulo em itálico.", "3": "A abertura do Book I, The Lion’s Court, com a fábula The Lion and the Mouse embaixo." }
+---
+
+## O que você vai compor
+
+*Fables of Aesop*, dezoito fábulas em três livros numa página de 120 × 190 mm, com folha de rosto, página de créditos no verso dela e uma abertura rebaixada para cada livro. A edição em espanhol compõe *¡Adiós, Cordera!*, de Clarín, em três capítulos na mesma página. O livro é diagramado uma vez, capítulo por capítulo, e essa diagramação vira dois arquivos EPUB 3. O de layout fixo mantém cada página impressa: as aberturas, os cabeços e as quebras de linha, na Caslon incorporada. O arquivo fluido mantém o texto e a sua estrutura, e o aplicativo de leitura o recompõe num celular ou numa tela de tinta eletrônica. Os dois podem ser baixados da página, e os dois passam no EPUBCheck do W3C.
+
+## Preparo
+
+### 1 · Diagrame o livro em capítulos
+
+<Excerpt region="openers" />
+
+`buildBundle` diagrama cada capítulo como um documento próprio, levando os números de página e a paridade de um para o outro, então `docs` é o array que `renderToPdf` imprimiria. O gravador de EPUB lê o mesmo array: cada capítulo vira uma entrada de navegação, e o arquivo fluido grava um documento XHTML por capítulo. A folha de rosto e a página de créditos são o primeiro capítulo, e o frontmatter dele traz o título, o subtítulo e o autor do livro.
+
+### 2 · Entregue ao gravador os arquivos das fontes
+
+<Excerpt region="embed" />
+
+As fontes que o navegador carregou não são arquivos que o gravador consiga ler, então o código busca de novo os mesmos arquivos woff2 do Fontsource; o navegador já os tem em cache. Cada um vira um arquivo de fonte no EPUB e uma regra `@font-face`. Sem eles, o layout fixo poria o texto composto em Caslon numa fonte do próprio leitor, e as linhas deixariam de caber na medida.
+
+### 3 · Grave as duas versões
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `layout: 'fixed'` grava um documento XHTML por página impressa, no tamanho da página refilada, com texto de verdade e selecionável; `layout: 'reflowable'` reconstrói os parágrafos a partir das linhas compostas, tira os hífens que as quebras de linha acrescentaram e deriva uma folha de estilos da configuração. Uma data `modified` fixa faz cada execução gerar os mesmos bytes. Os metadados vêm do frontmatter do primeiro capítulo, então o título e o autor do arquivo são os impressos na folha de rosto.
+
+### 4 · Leia cada arquivo de volta
+
+<Excerpt region="shelf" />
+
+`readEpub` abre o arquivo como um aplicativo de leitura faz: o spine na ordem de leitura, o sumário, a lista de páginas e o layout. O arquivo fixo tem uma entrada de spine por página; o fluido tem quatro, uma por capítulo. Os dois levam uma lista de páginas com os fólios impressos, então o leitor consegue seguir uma citação até a página 9 em qualquer um deles. O link `<a download>` dá um nome de arquivo aos bytes; nada passa por um servidor.
+
+## Variações
+
+### Dê uma imagem de capa ao layout fixo
+
+Pinte a folha de rosto num canvas e passe-a como capa; `showsFirstPage` diz ao gravador para não acrescentá-la como uma página à parte.
+
+```diff
++const canvas = document.createElement('canvas');
++renderPageToCanvas(docs[0].pages[0], docs[0], canvas, { scale: 2 });
++const png = await new Promise((done) => canvas.toBlob(done, 'image/png'));
++const cover = { bytes: new Uint8Array(await png.arrayBuffer()), mediaType: 'image/png',
++  showsFirstPage: true };
+-const fixed = await renderToEpub(docs, { ...book, layout: 'fixed' });
++const fixed = await renderToEpub(docs, { ...book, layout: 'fixed', cover });
+```
+
+### Imprima os mesmos capítulos em PDF
+
+`renderToPdf(docs, …)`, do `postext-pdf`, recebe o mesmo array, então o PDF, o EPUB e a tela saem de uma única diagramação. <RecipeLink slug="catalan-pocket-novella">A novela catalã de bolso</RecipeLink> mostra o lado do PDF.
+
+## Erros comuns
+
+O arquivo fluido mantém o texto de um título, mas não o seu design: o antetítulo de cada abertura (*Book I*) é um elemento de design, então não está no texto. Ponha as palavras que o leitor precisa ver no próprio título ou no texto.

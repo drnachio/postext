@@ -6,7 +6,11 @@ import {
 } from 'pdf-lib';
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
-import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
+import type { HyphenationLocale, PdfColorSpace, PrintConfig, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
+import { authoredCmykColors, loadOutputProfile, outputProfileInfo, parseIccProfile, resolvePrintConfig, type CmykPercent, type ResolvedPrintConfig } from 'postext';
+import { createPrintColorMode, type ColorMode, type PrintColorMode } from '../print/colorMode';
+import { runPagePrintPass } from '../print/printPass';
+import { writePdfX } from '../print/pdfx';
 import { canonicalLocaleTag, cjkGridCells, comicBlockOnSheet, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule, verticalFlowOf } from 'postext';
 import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
@@ -116,6 +120,30 @@ export interface RenderToPdfOptions {
    *  and cannot reach those CDNs. Only the first successful load counts:
    *  HarfBuzz is loaded once per module instance. */
   harfbuzzWasm?: HarfBuzzWasmSource;
+  /** Print production settings (PDF/X standard, output profile, black,
+   *  …). When omitted, the first document's `config.print`, else the
+   *  defaults (no PDF/X). A PDF/X standard, or a `'cmyk'` colour space,
+   *  separates every colour through the output profile (ICC), converts
+   *  RGB pictures, makes 100 % K overprint and large black areas rich
+   *  black. */
+  print?: PrintConfig;
+  /** The output profile's bytes (an `.icc` file): the catalogue profile
+   *  `print.outputProfile` names, or the custom one. When omitted, a
+   *  catalogue profile is fetched from `profileBaseUrl`. */
+  outputProfile?: Uint8Array;
+  /** Where catalogue profiles are fetched from (`<base>/<id>.icc`).
+   *  Defaults to the npm CDN copy of postext's `icc/` folder. */
+  profileBaseUrl?: string;
+}
+
+/** A print setting the render could not honour. */
+export interface PdfPrintWarning {
+  /** `outputProfileUnavailable`: the output profile could not be loaded, so
+   *  CMYK was converted with the naive formula (no PDF/X was asked for;
+   *  with one, the render fails instead). `pageNegativeIgnored`: PDF/X-1a
+   *  has no blend modes, so the debug page negative was left out. */
+  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored';
+  message: string;
 }
 
 /** Right-to-left or joining text drawn without HarfBuzz. */
@@ -220,6 +248,7 @@ export type PdfWarning =
   | PdfVariableFontWarning
   | PdfCffEmbeddedWholeWarning
   | PdfComplexShapingWarning
+  | PdfPrintWarning
   | RenderWarning;
 
 /** The font warnings: the kinds that carry a `message`, logged when the
@@ -357,7 +386,7 @@ function paintPage(
   doc: VDTDocument,
   fontCache: FontCache,
   pageNegative: boolean,
-  colorSpace: PdfColorSpace,
+  colorSpace: ColorMode,
   resourceCtx: ResourceRenderContext,
   tree: StructTree | undefined,
   onMissingImage?: PageCtx['onMissingImage'],
@@ -703,7 +732,15 @@ export async function renderToPdf(
   // Each setting: the option when given, else the first document's
   // `pdfGeneration`, else the default.
   const settings = pdfSettings(options, first);
-  const colorSpace = settings.colorSpace;
+  const printConfig: ResolvedPrintConfig = options.print ? resolvePrintConfig(options.print) : first.config.print ?? resolvePrintConfig();
+  const printMode = await printColorMode(printConfig, settings.colorSpace, options, warn, docs);
+  const colorSpace: ColorMode = printMode ?? settings.colorSpace;
+  const pdfx = printMode && printMode.standard !== 'none' ? printMode.standard : undefined;
+  let pageNegative = options.pageNegative ?? false;
+  if (pageNegative && pdfx === 'pdfx1a') {
+    pageNegative = false;
+    warn({ kind: 'pageNegativeIgnored', message: 'postext-pdf: PDF/X-1a has no blend modes, so the page negative was left out' });
+  }
 
   // Accessible output: the structure tree the pages tag their content into.
   const tree = settings.accessible
@@ -724,7 +761,7 @@ export async function renderToPdf(
   // is embedded once.
   const resourceImages: ResourceImageMap = new Map();
   for (const doc of docs) {
-    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, options.fontProvider, resourceImages, options.rasterizeSvg);
+    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, options.fontProvider, resourceImages, options.rasterizeSvg, printMode);
   }
   options.onProgress?.({ phase: 'prepare', pages: 0, totalPages });
 
@@ -752,14 +789,18 @@ export async function renderToPdf(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
           }
         : undefined;
-      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false);
+      renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false);
+      // Black handling over the page's operators (overprint, rich black).
+      if (printMode) runPagePrintPass(pdfDoc.getPage(pdfDoc.getPageCount() - 1), printMode);
       rendered++;
       options.onProgress?.({ phase: 'pages', pages: rendered, totalPages });
     }
   }
 
   // Attach inline-ref link annotations now that every destination is known.
-  linkRegistry.finalize(pdfDoc, tree);
+  // A PDF/X file carries none: it is for the press, and annotations inside
+  // the bleed box are not allowed.
+  if (!pdfx) linkRegistry.finalize(pdfDoc, tree);
 
   if (settings.outlines) {
     addOutlines(pdfDoc, docs);
@@ -784,6 +825,63 @@ export async function renderToPdf(
   // A face asked for but never drawn with is not written.
   fontCache.dropUnusedFonts();
 
+  if (printMode && pdfx) {
+    writePdfX(pdfDoc, printMode, {
+      title: documentTitle(docs),
+      ...(metaAuthor ? { author: metaAuthor } : {}),
+      ...(languageTag(first.config) ? { lang: languageTag(first.config)! } : {}),
+      producer: 'postext-pdf',
+      creatorTool: 'postext',
+      pdfua: !!tree,
+    }, !printMode.convertImages);
+  }
+
   options.onProgress?.({ phase: 'save', pages: rendered, totalPages });
-  return pdfDoc.save();
+  // PDF/X-1a is PDF 1.4: no object or cross-reference streams.
+  const bytes = await pdfDoc.save(pdfx === 'pdfx1a' ? { useObjectStreams: false } : {});
+  if (pdfx) setHeaderVersion(bytes, pdfx === 'pdfx1a' ? '1.4' : '1.6');
+  return bytes;
+}
+
+/** pdf-lib always writes `%PDF-1.7`; PDF/X-1a:2003 is PDF 1.4 and PDF/X-4
+ *  PDF 1.6. The version has the same length, so no offset moves. */
+function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
+  if (String.fromCharCode(...bytes.subarray(0, 8)) !== '%PDF-1.7') return;
+  bytes[7] = version.charCodeAt(2);
+}
+
+/** The ICC print mode of a render, when it writes CMYK: a PDF/X standard
+ *  always does, and so does a `'cmyk'` colour space. Undefined for RGB and
+ *  grayscale output, and for plain CMYK when no profile could be loaded
+ *  (then the naive conversion runs, with a warning). */
+async function printColorMode(
+  config: ResolvedPrintConfig,
+  colorSpace: PdfColorSpace,
+  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl'>,
+  warn: (w: PdfWarning) => void,
+  docs: readonly VDTDocument[],
+): Promise<PrintColorMode | undefined> {
+  const pdfx = config.standard !== 'none';
+  if (!pdfx && colorSpace !== 'cmyk') return undefined;
+  const custom = config.outputProfile === 'custom' ? config.customProfile : undefined;
+  const info = custom ? undefined : outputProfileInfo(config.outputProfile);
+  try {
+    const profile = options.outputProfile
+      ? parseIccProfile(options.outputProfile)
+      : custom
+        ? (() => { throw new Error(`the custom output profile "${custom.name}" was not given (outputProfile)`); })()
+        : await loadOutputProfile(config.outputProfile, options.profileBaseUrl);
+    if (profile.colorSpace !== 'CMYK') throw new Error(`the output profile "${profile.description}" is not a CMYK profile`);
+    const condition = custom
+      ? { registryName: custom.registryName ?? 'Custom', condition: custom.name, name: profile.description || custom.name }
+      : { registryName: info!.registryName, condition: info!.condition, name: info!.name };
+    const authored = new Map<string, CmykPercent>();
+    for (const doc of docs) authoredCmykColors(doc.config, authored);
+    return createPrintColorMode(profile, config, condition, authored);
+  } catch (err) {
+    const reason = (err as Error).message;
+    if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);
+    warn({ kind: 'outputProfileUnavailable', message: `postext-pdf: output profile unavailable (${reason}); CMYK converted with the naive formula` });
+    return undefined;
+  }
 }

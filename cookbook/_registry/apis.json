@@ -8,7 +8,8 @@
       "ca": "Construir un document",
       "zh": "构建文档",
       "ar": "بناء مستند",
-      "ja": "文書のビルド"
+      "ja": "文書のビルド",
+      "pt": "Compilar um documento"
     }
   },
   "renderPage": {
@@ -19,7 +20,8 @@
       "ca": "Renderitzar una pàgina a un bitmap",
       "zh": "把页面渲染为位图",
       "ar": "رسم صفحة في صورة نقطية",
-      "ja": "ページをビットマップに描画する"
+      "ja": "ページをビットマップに描画する",
+      "pt": "Renderizar uma página como bitmap"
     }
   },
   "renderPageToCanvas": {
@@ -30,7 +32,8 @@
       "ca": "Renderitzar una pàgina a un bitmap",
       "zh": "把页面渲染为位图",
       "ar": "رسم صفحة في صورة نقطية",
-      "ja": "ページをビットマップに描画する"
+      "ja": "ページをビットマップに描画する",
+      "pt": "Renderizar uma página como bitmap"
     }
   },
   "renderToCanvas": {
@@ -41,7 +44,8 @@
       "ca": "Renderitzar una pàgina a un bitmap",
       "zh": "把页面渲染为位图",
       "ar": "رسم صفحة في صورة نقطية",
-      "ja": "ページをビットマップに描画する"
+      "ja": "ページをビットマップに描画する",
+      "pt": "Renderizar uma página como bitmap"
     }
   },
   "registerResourceImage": {
@@ -52,7 +56,8 @@
       "ca": "Superfície d'API",
       "zh": "API接口",
       "ar": "واجهة البرمجة المتاحة (API)",
-      "ja": "APIの概要"
+      "ja": "APIの概要",
+      "pt": "Superfície da API"
     }
   },
   "unregisterResourceImage": {
@@ -63,7 +68,8 @@
       "ca": "Superfície d'API",
       "zh": "API接口",
       "ar": "واجهة البرمجة المتاحة (API)",
-      "ja": "APIの概要"
+      "ja": "APIの概要",
+      "pt": "Superfície da API"
     }
   },
   "clearResourceImages": {
@@ -74,7 +80,8 @@
       "ca": "Superfície d'API",
       "zh": "API接口",
       "ar": "واجهة البرمجة المتاحة (API)",
-      "ja": "APIの概要"
+      "ja": "APIの概要",
+      "pt": "Superfície da API"
     }
   },
   "clearMeasurementCache": {
@@ -85,7 +92,8 @@
       "ca": "Memòria cau de mesures",
       "zh": "测量缓存",
       "ar": "ذاكرة القياس المؤقتة",
-      "ja": "計測キャッシュ"
+      "ja": "計測キャッシュ",
+      "pt": "Cache de medidas"
     }
   },
   "createMeasurementCache": {
@@ -96,7 +104,8 @@
       "ca": "Memòria cau de mesures",
       "zh": "测量缓存",
       "ar": "ذاكرة القياس المؤقتة",
-      "ja": "計測キャッシュ"
+      "ja": "計測キャッシュ",
+      "pt": "Cache de medidas"
     }
   },
   "measureGlyphWidth": {
@@ -107,7 +116,8 @@
       "ca": "Integrar el visor HTML",
       "zh": "集成HTML查看器",
       "ar": "دمج عارض HTML",
-      "ja": "HTMLビューアーの統合"
+      "ja": "HTMLビューアーの統合",
+      "pt": "Integração do visualizador HTML"
     }
   },
   "BuildCancelledError": {
@@ -118,7 +128,8 @@
       "ca": "Cancel·lació cooperativa dins del motor",
       "zh": "引擎内部的协作式取消",
       "ar": "الإلغاء التعاوني داخل المحرّك",
-      "ja": "エンジン内部の協調的キャンセル"
+      "ja": "エンジン内部の協調的キャンセル",
+      "pt": "Cancelamento cooperativo dentro do motor"
     }
   },
   "defaultResourceTypes": {
@@ -129,7 +140,8 @@
       "ca": "Tipus de recurs",
       "zh": "资源类型",
       "ar": "أنواع الموارد",
-      "ja": "リソースの種類"
+      "ja": "リソースの種類",
+      "pt": "Tipos de recurso"
     }
   },
   "applyHtmlViewerOverrides": {
@@ -140,7 +152,8 @@
       "ca": "Visor HTML",
       "zh": "HTML查看器",
       "ar": "عارض HTML",
-      "ja": "HTMLビューアー"
+      "ja": "HTMLビューアー",
+      "pt": "Visualizador HTML"
     }
   },
   "applySingleInkToSvg": {
@@ -151,7 +164,8 @@
       "ca": "Com funciona la tinta única",
       "zh": "单色模式的工作原理",
       "ar": "كيف يعمل الحبر الواحد",
-      "ja": "単色刷りの仕組み"
+      "ja": "単色刷りの仕組み",
+      "pt": "Como funciona a tinta única"
     }
   },
   "resolvePageConfig": {
@@ -162,7 +176,8 @@
       "ca": "Resoldre valors per defecte",
       "zh": "解析默认值",
       "ar": "استكمال القيم الافتراضية",
-      "ja": "既定値の解決"
+      "ja": "既定値の解決",
+      "pt": "Resolver valores padrão"
     }
   },
   "stripConfigDefaults": {
@@ -173,7 +188,8 @@
       "ca": "Eliminar valors per defecte",
       "zh": "剥离默认值",
       "ar": "حذف القيم الافتراضية",
-      "ja": "既定値の除去"
+      "ja": "既定値の除去",
+      "pt": "Remover valores padrão"
     }
   },
   "PAGE_SIZE_PRESETS": {
@@ -184,7 +200,8 @@
       "ca": "Mides de pàgina predefinides",
       "zh": "页面尺寸预设",
       "ar": "مقاسات الصفحة المسبقة",
-      "ja": "ページサイズのプリセット"
+      "ja": "ページサイズのプリセット",
+      "pt": "Predefinições de tamanho de página"
     }
   },
   "parseMarkdown": {
@@ -195,7 +212,8 @@
       "ca": "Anàlisi",
       "zh": "解析markdown",
       "ar": "التحليل",
-      "ja": "解析"
+      "ja": "解析",
+      "pt": "Análise do markdown"
     }
   },
   "parseMarkdownWithIssues": {
@@ -206,7 +224,8 @@
       "ca": "Anàlisi",
       "zh": "解析markdown",
       "ar": "التحليل",
-      "ja": "解析"
+      "ja": "解析",
+      "pt": "Análise do markdown"
     }
   },
   "extractFrontmatter": {
@@ -217,7 +236,8 @@
       "ca": "Anàlisi",
       "zh": "解析markdown",
       "ar": "التحليل",
-      "ja": "解析"
+      "ja": "解析",
+      "pt": "Análise do markdown"
     }
   },
   "KNOWN_DIRECTIVES": {
@@ -228,7 +248,8 @@
       "ca": "Directives",
       "zh": "指令",
       "ar": "التوجيهات",
-      "ja": "ディレクティブ"
+      "ja": "ディレクティブ",
+      "pt": "Diretivas"
     }
   },
   "KNOWN_CONTAINERS": {
@@ -239,7 +260,8 @@
       "ca": "Contenidors",
       "zh": "容器",
       "ar": "الحاويات",
-      "ja": "コンテナー"
+      "ja": "コンテナー",
+      "pt": "Contêineres"
     }
   },
   "initMathEngine": {
@@ -250,7 +272,8 @@
       "ca": "Fórmules matemàtiques",
       "zh": "数学公式",
       "ar": "الصيغ الرياضية",
-      "ja": "数式"
+      "ja": "数式",
+      "pt": "Fórmulas matemáticas"
     }
   },
   "parseTSV": {
@@ -261,7 +284,8 @@
       "ca": "Inserció en bloc (opcional, col·locació en línia explícita)",
       "zh": "块级嵌入（可选，显式的行内放置）",
       "ar": "التضمين في كتلة (اختياري، لوضع صريح داخل التدفق)",
-      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）"
+      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）",
+      "pt": "Inserção em bloco (opcional, posicionamento explícito em linha)"
     }
   },
   "mergeCells": {
@@ -272,7 +296,8 @@
       "ca": "Inserció en bloc (opcional, col·locació en línia explícita)",
       "zh": "块级嵌入（可选，显式的行内放置）",
       "ar": "التضمين في كتلة (اختياري، لوضع صريح داخل التدفق)",
-      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）"
+      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）",
+      "pt": "Inserção em bloco (opcional, posicionamento explícito em linha)"
     }
   },
   "setCellBackground": {
@@ -283,7 +308,8 @@
       "ca": "Inserció en bloc (opcional, col·locació en línia explícita)",
       "zh": "块级嵌入（可选，显式的行内放置）",
       "ar": "التضمين في كتلة (اختياري، لوضع صريح داخل التدفق)",
-      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）"
+      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）",
+      "pt": "Inserção em bloco (opcional, posicionamento explícito em linha)"
     }
   },
   "setCellImage": {
@@ -294,7 +320,8 @@
       "ca": "Inserció en bloc (opcional, col·locació en línia explícita)",
       "zh": "块级嵌入（可选，显式的行内放置）",
       "ar": "التضمين في كتلة (اختياري، لوضع صريح داخل التدفق)",
-      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）"
+      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）",
+      "pt": "Inserção em bloco (opcional, posicionamento explícito em linha)"
     }
   },
   "setAlignment": {
@@ -305,7 +332,8 @@
       "ca": "Inserció en bloc (opcional, col·locació en línia explícita)",
       "zh": "块级嵌入（可选，显式的行内放置）",
       "ar": "التضمين في كتلة (اختياري، لوضع صريح داخل التدفق)",
-      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）"
+      "ja": "ブロック埋め込み（任意、本文中への明示的な配置）",
+      "pt": "Inserção em bloco (opcional, posicionamento explícito em linha)"
     }
   },
   "continuationAfter": {
@@ -316,7 +344,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "contentOutline": {
@@ -327,7 +356,8 @@
       "ca": "Índex de continguts",
       "zh": "目录",
       "ar": "جدول المحتويات",
-      "ja": "目次"
+      "ja": "目次",
+      "pt": "Sumário"
     }
   },
   "outlineFromDoc": {
@@ -338,7 +368,8 @@
       "ca": "Índex de continguts",
       "zh": "目录",
       "ar": "جدول المحتويات",
-      "ja": "目次"
+      "ja": "目次",
+      "pt": "Sumário"
     }
   },
   "computeOutline": {
@@ -349,7 +380,8 @@
       "ca": "Índex de continguts",
       "zh": "目录",
       "ar": "جدول المحتويات",
-      "ja": "目次"
+      "ja": "目次",
+      "pt": "Sumário"
     }
   },
   "openBundle": {
@@ -360,7 +392,8 @@
       "ca": "Obrir un paquet",
       "zh": "打开文件包",
       "ar": "فتح حزمة",
-      "ja": "バンドルを開く"
+      "ja": "バンドルを開く",
+      "pt": "Abrir um pacote"
     }
   },
   "createBundle": {
@@ -371,7 +404,8 @@
       "ca": "Crear un paquet",
       "zh": "创建文件包",
       "ar": "إنشاء حزمة",
-      "ja": "バンドルを作成する"
+      "ja": "バンドルを作成する",
+      "pt": "Criar um pacote"
     }
   },
   "buildBundle": {
@@ -382,7 +416,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "loadBundleFonts": {
@@ -393,7 +428,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "registerBundleImages": {
@@ -404,7 +440,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "bundleImageUrl": {
@@ -415,7 +452,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "bundleResourceBytes": {
@@ -426,7 +464,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "bundleFontProvider": {
@@ -437,7 +476,8 @@
       "ca": "Compondre i renderitzar un paquet",
       "zh": "排版和渲染文件包",
       "ar": "إخراج حزمة ورسمها",
-      "ja": "バンドルを組んで描画する"
+      "ja": "バンドルを組んで描画する",
+      "pt": "Diagramar e renderizar um pacote"
     }
   },
   "readBundle": {
@@ -448,7 +488,8 @@
       "ca": "API de baix nivell",
       "zh": "底层API",
       "ar": "الواجهة البرمجية منخفضة المستوى",
-      "ja": "低レベルAPI"
+      "ja": "低レベルAPI",
+      "pt": "API de baixo nível"
     }
   },
   "zipBundle": {
@@ -459,7 +500,8 @@
       "ca": "API de baix nivell",
       "zh": "底层API",
       "ar": "الواجهة البرمجية منخفضة المستوى",
-      "ja": "低レベルAPI"
+      "ja": "低レベルAPI",
+      "pt": "API de baixo nível"
     }
   },
   "renderToHtml": {
@@ -470,7 +512,8 @@
       "ca": "Integrar el visor HTML",
       "zh": "集成HTML查看器",
       "ar": "دمج عارض HTML",
-      "ja": "HTMLビューアーの統合"
+      "ja": "HTMLビューアーの統合",
+      "pt": "Integração do visualizador HTML"
     }
   },
   "renderToHtmlIndexed": {
@@ -481,7 +524,8 @@
       "ca": "Pas següent",
       "zh": "进一步",
       "ar": "أبعد من ذلك",
-      "ja": "さらに進んだ統合"
+      "ja": "さらに進んだ統合",
+      "pt": "Indo além"
     }
   },
   "createLayoutWorker": {
@@ -492,7 +536,8 @@
       "ca": "Executar la composició en un Web Worker",
       "zh": "在Web Worker中运行排版",
       "ar": "تشغيل الإخراج في Web Worker",
-      "ja": "Web Workerでレイアウトを実行する"
+      "ja": "Web Workerでレイアウトを実行する",
+      "pt": "Executar o layout em um Web Worker"
     }
   },
   "renderToPdf": {
@@ -503,7 +548,8 @@
       "ca": "Generació de PDF",
       "zh": "生成PDF",
       "ar": "توليد ملفات PDF",
-      "ja": "PDFの生成"
+      "ja": "PDFの生成",
+      "pt": "Geração de PDF"
     }
   },
   "decompressWoff2": {
@@ -514,7 +560,8 @@
       "ca": "Proveïdor de fonts al navegador (Fontsource + WOFF2)",
       "zh": "浏览器字体提供函数（Fontsource + WOFF2）",
       "ar": "مزوّد الخطوط في المتصفح (Fontsource + WOFF2)",
-      "ja": "ブラウザー向けフォントプロバイダー（Fontsource + WOFF2）"
+      "ja": "ブラウザー向けフォントプロバイダー（Fontsource + WOFF2）",
+      "pt": "Provedor de fontes no navegador (Fontsource + WOFF2)"
     }
   },
   "createPdfWorker": {
@@ -525,7 +572,8 @@
       "ca": "Exportar PDF des del worker",
       "zh": "从工作线程驱动PDF导出",
       "ar": "تصدير PDF انطلاقًا من العامل",
-      "ja": "ワーカーからのPDF書き出し"
+      "ja": "ワーカーからのPDF書き出し",
+      "pt": "Conduzir a exportação de PDF a partir do worker"
     }
   },
   "registerCitationEngine": {
@@ -536,7 +584,8 @@
       "ca": "Citacions i bibliografia",
       "zh": "引用与参考文献",
       "ar": "الاستشهادات وقائمة المراجع",
-      "ja": "引用と参考文献"
+      "ja": "引用と参考文献",
+      "pt": "Citações e bibliografia"
     }
   },
   "createCiteprocEngine": {
@@ -547,7 +596,8 @@
       "ca": "Citacions i bibliografia",
       "zh": "引用与参考文献",
       "ar": "الاستشهادات وقائمة المراجع",
-      "ja": "引用と参考文献"
+      "ja": "引用と参考文献",
+      "pt": "Citações e bibliografia"
     }
   },
   "STYLES": {
@@ -558,7 +608,8 @@
       "ca": "Citacions i bibliografia",
       "zh": "引用与参考文献",
       "ar": "الاستشهادات وقائمة المراجع",
-      "ja": "引用と参考文献"
+      "ja": "引用と参考文献",
+      "pt": "Citações e bibliografia"
     }
   },
   "LOCALES": {
@@ -569,7 +620,8 @@
       "ca": "Citacions i bibliografia",
       "zh": "引用与参考文献",
       "ar": "الاستشهادات وقائمة المراجع",
-      "ja": "引用と参考文献"
+      "ja": "引用と参考文献",
+      "pt": "Citações e bibliografia"
     }
   },
   "createFolioFromDocument": {
@@ -580,7 +632,8 @@
       "ca": "Un llibre en 3D (`postext-folio`)",
       "zh": "3D书本（`postext-folio`）",
       "ar": "كتاب ثلاثي الأبعاد (`postext-folio`)",
-      "ja": "3Dの本（`postext-folio`）"
+      "ja": "3Dの本（`postext-folio`）",
+      "pt": "Um livro em 3D (`postext-folio`)"
     }
   },
   "createFolio": {
@@ -591,7 +644,8 @@
       "ca": "Un llibre en 3D (`postext-folio`)",
       "zh": "3D书本（`postext-folio`）",
       "ar": "كتاب ثلاثي الأبعاد (`postext-folio`)",
-      "ja": "3Dの本（`postext-folio`）"
+      "ja": "3Dの本（`postext-folio`）",
+      "pt": "Um livro em 3D (`postext-folio`)"
     }
   },
   "renderToEpub": {
@@ -602,7 +656,8 @@
       "ca": "Escriure un llibre",
       "zh": "写出一本书",
       "ar": "كتابة كتاب",
-      "ja": "本を書き出す"
+      "ja": "本を書き出す",
+      "pt": "Gravar um livro"
     }
   },
   "readEpub": {
@@ -613,7 +668,8 @@
       "ca": "Escriure un llibre",
       "zh": "写出一本书",
       "ar": "كتابة كتاب",
-      "ja": "本を書き出す"
+      "ja": "本を書き出す",
+      "pt": "Gravar um livro"
     }
   },
   "parseVideoUrl": {
@@ -624,7 +680,8 @@
       "ca": "Vídeos",
       "zh": "视频",
       "ar": "مقاطع الفيديو",
-      "ja": "動画"
+      "ja": "動画",
+      "pt": "Vídeos"
     }
   },
   "youtubePosterUrls": {
@@ -635,7 +692,8 @@
       "ca": "Vídeos",
       "zh": "视频",
       "ar": "مقاطع الفيديو",
-      "ja": "動画"
+      "ja": "動画",
+      "pt": "Vídeos"
     }
   },
   "resourceVideoLink": {
@@ -646,7 +704,8 @@
       "ca": "Vídeos",
       "zh": "视频",
       "ar": "مقاطع الفيديو",
-      "ja": "動画"
+      "ja": "動画",
+      "pt": "Vídeos"
     }
   },
   "videoWatchUrl": {
@@ -657,7 +716,8 @@
       "ca": "Vídeos",
       "zh": "视频",
       "ar": "مقاطع الفيديو",
-      "ja": "動画"
+      "ja": "動画",
+      "pt": "Vídeos"
     }
   },
   "bundleVideoUrl": {
@@ -668,7 +728,8 @@
       "ca": "Vídeos",
       "zh": "视频",
       "ar": "مقاطع الفيديو",
-      "ja": "動画"
+      "ja": "動画",
+      "pt": "Vídeos"
     }
   },
   "encodeQr": {
@@ -679,7 +740,8 @@
       "ca": "Codi QR",
       "zh": "二维码",
       "ar": "رمز QR",
-      "ja": "QRコード"
+      "ja": "QRコード",
+      "pt": "Código QR"
     }
   },
   "resolveVideoStyleConfig": {
@@ -690,7 +752,8 @@
       "ca": "Estil de vídeo",
       "zh": "视频样式",
       "ar": "نمط الفيديو",
-      "ja": "動画スタイル"
+      "ja": "動画スタイル",
+      "pt": "Estilo de vídeo"
     }
   }
 }

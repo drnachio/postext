@@ -32,7 +32,7 @@ export interface ComicScriptLine {
 }
 
 /** Attribute keys a script line reads; any other bare flag names a style. */
-const SCRIPT_KEYS = new Set(['at', 'to', 'tail', 'join', 'break', 'rotate', 'size', 'color', 'font', 'style', 'id', 'vertical', 'horizontal', 'mode']);
+const SCRIPT_KEYS = new Set(['at', 'to', 'tail', 'join', 'break', 'rotate', 'skew', 'size', 'color', 'font', 'style', 'id', 'vertical', 'horizontal', 'mode']);
 
 const POSITION_KEYWORDS: ReadonlySet<string> = new Set(['top-start', 'top-end', 'bottom-start', 'bottom-end', 'top', 'bottom']);
 const TAIL_VALUES: ReadonlySet<string> = new Set(['none', 'auto', 'top', 'bottom', 'start', 'end']);
@@ -206,6 +206,8 @@ function scriptHead(line: ComicScriptLine): Omit<ComicScriptItem, 'text' | 'span
   if (brk !== undefined) item.break = brk;
   const rotate = numberValue(attrs.rotate);
   if (rotate !== undefined) item.rotate = rotate;
+  const skew = numberValue(attrs.skew);
+  if (skew !== undefined) item.skew = skew;
   const size = numberValue(attrs.size);
   if (size !== undefined && size > 0) item.size = size;
   if (attrs.color?.trim()) item.color = attrs.color.trim();

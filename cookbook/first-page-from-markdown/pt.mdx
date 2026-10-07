@@ -1,0 +1,89 @@
+---
+title: "De uma string Markdown a uma página diagramada"
+summary: "Uma string Markdown com frontmatter vira páginas de revista em duas colunas pintadas em canvas, com seis cores nomeadas no lugar do azul padrão."
+plain: "As duas primeiras páginas de uma reportagem de viagem numa revista pequena, com uma faixa colorida e uma imagem. Mostra como um texto simples com alguns títulos vira uma página diagramada com as suas cores."
+description: "O pen carrega as fontes antes de compor, cria uma configuração nova a cada composição, monta a abertura com o frontmatter e pinta as páginas em canvas."
+question: "Como componho uma string Markdown em páginas diagramadas sem o azul padrão em títulos, negritos e marcadores?"
+aliases: ["primeiro documento", "primeiros passos", "olá mundo", "hello world", "início rápido", "markdown para canvas", "aparência padrão", "reportagem de viagem"]
+pageNotes: { "1": "Uma fotografia ocupa a parte de cima da página: salinas ao anoitecer e uma fileira de pegadas que sobe uma duna de areia até um marco de pedras na crista; sobre o céu escuro, o antetítulo CADERNO DE CAMPO, o título A trilha do sal, a linha fina “Quatro dias a pé pelo caminho dos carregadores, das salinas de Arvela ao mercado de Castrel.” e a assinatura POR LENA VARGA · MAIO DE 2026. Embaixo, duas colunas justificadas que abrem em negrito com “Os carregadores partiam do dique de Arvela.” e, ao pé, o fólio 1.", "2": "A página par seguinte: o fólio 2 e o título A TRILHA DO SAL como cabeço, duas colunas justificadas com os intertítulos A carga da volta e Entre os pinheiros em anil, uma lista com travessões e palavras iniciais em negrito (Grãos, Resina de pinheiro, Lã e couro, Pregos e anzóis), um sinal de fim quadrado depois de “um carregador recebia em grãos” e o colofão sob um fio fino: “Obra de ficção: Arvela, Sorra, Orsa e Castrel são lugares imaginários.”" }
+---
+
+## O que você vai compor
+
+As páginas de abertura de uma reportagem de viagem em *Caderno de campo*, uma revista pequena. A página 1 é uma abertura em página ímpar: uma fotografia de salinas e de uma duna ao anoitecer nos 58% de cima da página, o título em Young Serif de 54 pt e, embaixo, duas colunas justificadas que começam o texto com uma abertura em negrito. A página 2, no verso, continua sob um cabeço em maiúsculas espacejadas e termina com um sinal de fim e um colofão. O design inteiro cabe numa função de configuração e numa paleta de seis cores. O título vem do título de nível 1, e a linha fina, a autora e a data vêm do frontmatter da string Markdown, então o mesmo pen compõe qualquer matéria cujo título caiba em duas linhas; só a fotografia é exclusiva desta.
+
+## Preparo
+
+### 1 · Todas as fontes, antes da primeira composição
+
+<Excerpt region="fonts" />
+
+O Postext mede o texto com as fontes que o navegador já carregou e guarda as larguras em cache, então uma composição que roda antes de as fontes chegarem mantém as quebras de linha erradas. O kit carrega estes arquivos do Fontsource, os mesmos que um PDF incorporaria. Depois, `buildWithFonts` percorre as fontes que as páginas usam. Se um bloco ou um elemento de design estiver composto numa fonte que não foi carregada, ele emite um aviso no console, carrega a fonte e compõe de novo; quando o Fontsource não tem essa fonte, o pen para com um erro (veja “Erros comuns”). As variantes negrito e itálico de uma fonte de texto carregam sem aviso, e só quando a família as tem.
+
+### 2 · Dê nome às cores e aponte para os nomes
+
+<Excerpt region="palette" />
+
+Toda cor da configuração é `col('id')`, um identificador da paleta com o hexadecimal ao lado. `bodyText.boldColor`, `italicColor`, `referenceColor` e `unorderedLists.color` apontam para `ink`, e `headings.color` aponta para a cor de destaque. Os padrões do motor para títulos, negrito, itálico e marcadores estão ligados a `main-color`, e esta paleta aponta essa entrada para a cor de destaque, de modo que qualquer um deles que você deixar de fora sai anil, e não azul. O Postext 1.4.1 pinta os elementos de cabeçalho, de rodapé e de abertura, e também `referenceColor`, com o hexadecimal e ignora o identificador; por isso os objetos de design são funções: `config()` as chama a cada composição, e `col()` copia de `palette` o hexadecimal vigente toda vez. O sinal de fim é uma amostra de cor em linha que aponta para `band`, então uma troca de cor também chega a ele. O cabeço padrão não lê a paleta e continua azul até você substituí-lo (passo 5).
+
+### 3 · Uma fotografia cortada no seu quadro
+
+<Excerpt region="art" />
+
+As salinas, a duna e o marco de pedras são uma fotografia gerada com modelos de difusão, feita ao anoitecer para que o título claro se leia contra um céu escuro. O JPEG está cortado no quadro da faixa, `PAGE.width` × `BAND` milímetros, e o recurso declara seus pixels, 1440 × 1120, de modo que na largura inteira a imagem preenche a faixa exatamente. Uma faixa mais alta pede uma imagem cortada no novo quadro. A abertura a mostra por meio de um elemento de imagem que nomeia o recurso pelo identificador.
+
+### 4 · O frontmatter escreve a abertura
+
+<Excerpt region="opener" />
+
+O título de nível 1 ocupa as duas colunas, e sua abertura é um encaixe de elementos: a fotografia até a sangria e quatro textos encadeados um abaixo do outro. Um título mais longo empurra a linha fina e a assinatura para baixo em vez de se sobrepor a elas, mas a partir da terceira linha a assinatura cai sobre as salinas claras. `{titleText}` é o texto do título; `{subtitle}`, `{author}` e `{publishDate}` são campos do frontmatter. A `\\` no título quebra a linha onde você a puser ([quebras de linha em títulos](/pt/docs/document-format#quebras-de-linha-em-títulos)). `minHeight` conta a partir da margem superior, então a altura reservada termina 5 mm abaixo da faixa.
+
+### 5 · Cabeços no lugar do azul padrão
+
+<Excerpt region="running-heads" />
+
+Deixe `header` de fora e volta o padrão do motor: Open Sans sobre um fio de largura inteira, em todas as páginas. Aqui cada fólio é ancorado à página física e filtrado pela paridade, de modo que fica sempre na margem externa. O texto que o acompanha é ancorado ao fólio, a `GAP` milímetros, com `right-of` ou `left-of`, e um fólio de três ou quatro algarismos empurra o texto em vez de esbarrar nele. `pages: 'body'` deixa os quatro elementos fora da abertura. O rodapé tem um único fólio, o da abertura, e como `footer` está definido, as páginas de texto perdem o fólio centralizado padrão.
+
+### 6 · Componha com uma configuração nova e pinte
+
+<Excerpt region="build" />
+
+`config()` é uma função porque o motor guarda em cache cada configuração resolvida pela identidade do objeto, então um ajuste editado só faz efeito se cada composição receber um objeto novo. `showPages` dispõe as páginas como ficam num livro encadernado, com a página 1 sozinha à direita, e pinta cada uma com `renderPageToCanvas`.
+
+## Variações
+
+### Veja o que a configuração substitui
+
+Componha com uma configuração vazia e o mesmo Markdown sai numa página de 17 × 24 cm em EB Garamond de 8 pt, com títulos azuis em Open Sans e um cabeço azul sobre um fio; o kit carrega essas fontes para você, com um aviso no console.
+
+```diff
+-  () => buildDocument({ markdown, resources }, config()), markdown);
++  () => buildDocument({ markdown, resources }, {}), markdown);
+```
+
+### Troque a cor da página inteira
+
+Mude a cor de destaque e a execução seguinte pinta na nova cor os fólios, os intertítulos e o sinal de fim, porque `col()` copia o novo hexadecimal ao lado do identificador cada vez que `config()` roda. A fotografia mantém as próprias cores.
+
+```diff
+-  band: '#2b3a67', // the one accent (an indigo): the folios, the subheads, the end mark
++  band: '#3f5b3a', // the one accent (a pine green): the folios, the subheads, the end mark
+```
+
+### Pinte uma página no seu próprio canvas
+
+`renderPageToCanvas` dimensiona o canvas com o tamanho da página em pixels na resolução do documento (300 dpi por padrão) vezes `scale`, então `scale: 0.5` pinta a cerca de 150 dpi, e o CSS decide o tamanho com que aparece na tela.
+
+```diff
+-showPages(doc, {
+-  title: t({ en: 'From a Markdown string to a designed page',
+-    es: 'De una cadena Markdown a una página diseñada',
+-    pt: 'De uma string Markdown a uma página diagramada' }),
+-});
++const canvas = document.body.appendChild(document.createElement('canvas'));
++renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+```
+
+## Erros comuns
+
+- A Young Serif tem um peso só. Os títulos saem em negrito por padrão, então aqui `headings.fontWeight: 400` é obrigatório: sem ele, o kit procura uma Young Serif negrito que o Fontsource não tem, e o pen para com um erro.

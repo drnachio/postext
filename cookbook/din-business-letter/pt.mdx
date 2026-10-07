@@ -1,0 +1,52 @@
+---
+title: "Carta comercial segundo a DIN 5008"
+summary: "Um orçamento alemão de duas folhas A4. O assunto é o H1, e o design dele fixa o timbre, o endereço e o bloco de informações nas posições do formulário B."
+plain: "Um orçamento de duas páginas de uma oficina de janelas alemã. Mostra como pôr o endereço e as outras partes de uma carta comercial onde a norma alemã manda, para caber num envelope de janela."
+description: "Código de uma carta comercial DIN 5008 no Postext, com endereço na janela do envelope, bloco de informações, marcas de dobra, dados da empresa e Seite 2 von 2."
+question: "Como faço para fixar o endereço e o bloco de informações de uma carta nas posições em milímetros da DIN 5008?"
+aliases: ["carta comercial", "DIN 5008", "formulário B", "forma B", "janela do envelope", "envelope com janela", "campo de endereço", "papel timbrado", "timbre", "linha do remetente", "bloco de informações", "marcas de dobra", "marca de furação", "página 2 de 2", "assinatura", "orçamento", "Geschäftsbrief"]
+pageNotes: { "1": "A primeira folha de um orçamento em alemão da Fensterwerkstatt Tessin. Uma faixa azul-da-prússia no alto traz o desenho em branco de uma janela dupla, o nome Tessin com FENSTERWERKSTATT · BERLIN embaixo e, à direita, as três especialidades da oficina. Sob a faixa, a linha do remetente e um endereço de quatro linhas ficam dentro de quatro pequenas cantoneiras, e o bloco de informações desce pela direita com a data à parte. O assunto em negrito identifica o orçamento 2026-117 para 24 janelas duplas. O texto justificado é hifenizado pelas regras do alemão (mundgebla-sene fecha a quarta linha do primeiro parágrafo) e termina com uma lista de seis serviços. Marcas cinza de dobra e de furação ficam na borda esquerda, e os dados da empresa correm em três colunas no pé.", "2": "A segunda folha tem uma tira azul fina no alto e, abaixo dela, uma linha com o nome da oficina, a referência e a data, com Seite 2 von 2 à direita. O texto dá o preço e o cronograma e se oferece para levar um caixilho restaurado à assembleia dos condôminos. Vêm então Mit freundlichen Grüßen, uma assinatura em caneta esferográfica azul, o nome e o cargo, e três anexos sob Anlagen. As marcas de dobra e furação e os dados da empresa se repetem da primeira folha." }
+---
+
+## O que você vai compor
+
+A Fensterwerkstatt Tessin, uma oficina inventada de Berlim que restaura janelas duplas, manda um orçamento à administradora de um prédio de apartamentos. São duas folhas A4 em alemão, diagramadas segundo o formulário B da DIN 5008. Uma faixa azul-da-prússia no alto traz o logotipo e o nome da oficina. Embaixo dela, cada parte fica onde a norma manda: a linha do remetente e o endereço dentro do campo de 85 × 45 mm que aparece pela janela de um envelope DL, o bloco de informações a 125 mm da borda esquerda, o assunto em negrito duas linhas em branco abaixo do campo, e as marcas de dobra e de furação a 105, 148,5 e 210 mm. Os dados da empresa correm em três colunas no pé das duas folhas. A segunda folha repete a referência ao lado de “Seite 2 von 2” e termina com uma assinatura desenhada em código.
+
+## Preparo
+
+### 1 · Fixe a primeira página na folha em milímetros
+
+<Excerpt region="answer" highlight="1-4" />
+
+`at()` ancora um elemento pelo canto superior esquerdo a `'page'`, a caixa de refile ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)), então cada `x` e cada `y` é uma distância a partir do canto da folha, e os números da norma entram sem mudança: o endereço a 25 mm da esquerda e 62,7 mm do alto, o primeiro rótulo do bloco de informações a 125 e 50. Esses elementos formam o design do H1. O texto do título é o assunto (`{titleText}`) e os atributos dele guardam o endereço e as referências, de modo que a configuração guarda o papel timbrado e o Markdown guarda a carta. O assunto, a 100,6 mm, é o elemento mais baixo, então o título reserva a folha até o pé do assunto. `marginBottom` acrescenta as duas linhas em branco, e a saudação começa na linha seguinte da grade, a 117 mm.
+
+O endereço é um único atributo com `\n` entre as linhas. Na 1.4.1, um texto de design só transforma o `\n` de um atributo em quebra de linha quando o seu `paragraphIndent` é maior que zero. O endereço usa 0,01 pt, um recuo pequeno demais para se ver; com 0, a barra e o n saem impressos no endereço. Sem `span: 'page'`, o design fica na coluna de texto e é cortado na margem superior de 27 mm, o que tira o logotipo e o nome e deixa só os 5 mm de baixo da faixa.
+
+### 2 · Encadeie o bloco de informações a partir de um rótulo fixo
+
+<Excerpt region="info" />
+
+Só o primeiro rótulo é fixado na folha. Cada um dos outros é ancorado `'below'` do anterior, e cada valor ao seu rótulo com `'align-top'` e um deslocamento de 29 mm, então uma linha acrescentada a `INFO` não precisa de coordenadas. O texto de design põe a linha de base a 80% da caixa da linha. O rótulo de 7 pt com `lineHeight: 12 / 7` e o valor de 9 pt com `12 / 9` ganham os dois uma linha de 12 pt, e por isso dividem a linha de base em cada fileira de 4,23 mm.
+
+### 3 · Desenhe o timbre no mesmo design
+
+<Excerpt region="letterhead" />
+
+A faixa é uma caixa fixada no canto da folha. `width: 'fill'` a estende de borda a borda, e os seus 32 mm de altura a levam 5 mm além da margem superior de 27 mm. O logotipo é um elemento de imagem que desenha um recurso de 18 mm de altura e tira a largura do próprio desenho ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). O nome fica pendurado `'right-of'` do logotipo, e a linha do ofício, `'below'` do nome. Oito fios de 3 mm desenham uma cantoneira em cada canto do campo de endereço de 85 × 45 mm, a parte da folha que a janela do envelope mostra.
+
+### 4 · Ponha no cabeçalho e no rodapé o que todas as folhas compartilham
+
+<Excerpt region="furniture" />
+
+Um elemento do design do H1 fixado abaixo do assunto aumenta a altura que o título reserva. Com a marca de dobra de 210 mm no design, a saudação desce para 222,8 mm e a carta passa a ter três páginas. O espaço do cabeçalho é pintado em todas as páginas e não reserva espaço, por isso as três marcas vão nele ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). A página 1 abre com o H1, o que faz dela uma página `'opener'`, então `pages: 'body'` limita a tira azul, a linha de referência e `Seite {pageNumber} von {totalPages}` às folhas seguintes. A linha de referência lê os atributos do H1 com `{attr.unser-zeichen}` e `{attr.datum}`.
+
+### 5 · Ponha a assinatura no fluxo do texto
+
+<Excerpt region="signature" />
+
+`::resource{id="signature"}` põe o desenho embaixo de “Mit freundlichen Grüßen”, e `width: 0.297` o deixa com 49 mm de largura e 21,1 mm de altura, um pouco menos que quatro linhas de 15 pt. O texto depois de um recurso no fluxo volta para a grade do texto corrido. Com `0.25`, o desenho tinha 17,8 mm de altura, e os 3,4 mm que a grade acrescentava embaixo afastavam o nome da assinatura. O tipo de recurso tem `captionPrefix` vazio, e a 1.4.1 não compõe legenda quando o prefixo e a legenda estão vazios, então nenhum rótulo ou número aparece embaixo da assinatura ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O logotipo é um recurso do mesmo tipo, desenhado só pelo elemento de imagem. Nenhum `:ref` ou `::resource` o cita, então ele nunca entra no fluxo.
+
+## Erros comuns
+
+- O cartão sobre `\n` em atributos diz que, com `paragraphIndent` em 0, o texto fica numa linha só. Na 1.4.1 o endereço quebra ao chegar aos 75 mm de largura, e os dois caracteres `\n` saem impressos onde a linha deveria quebrar.
+- `{totalPages}` conta as páginas do documento inteiro, então com duas cartas num mesmo arquivo Markdown a segunda folha da primeira carta diria “Seite 2 von 4”. Componha cada carta separadamente.

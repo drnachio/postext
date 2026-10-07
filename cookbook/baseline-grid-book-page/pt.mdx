@@ -1,0 +1,76 @@
+---
+title: "Uma página de livro sobre a grade de linhas de base"
+summary: "Página em duas colunas espelhadas com mancha de exatamente 44 entrelinhas: o texto fica na mesma grade dos dois lados da medianiz e da lombada."
+plain: "Três páginas de um ensaio sobre como os livros antigos eram diagramados. Mostra como deixar cada linha de texto na mesma altura nas duas colunas e nas duas páginas que ficam frente a frente."
+description: "Ensaio sobre o cânone da página, composto no Postext com margens 2:3:4:6 espelhadas e duas colunas de 44 linhas; o texto volta à grade sob cada título."
+question: "Como faço para compor uma página em duas colunas com todas as linhas na mesma grade na página dupla?"
+aliases: ["ritmo vertical", "alinhar linhas entre colunas", "altura da mancha", "mancha gráfica", "cânone de Van de Graaf", "margens 2:3:4:6", "listas fora da grade", "colunas alinhadas no pé", "grade de linha de base", "baseline grid"]
+pageNotes: { "1": "A abertura: o título “O cânone secreto”, em itálico vermelho, ocupa a primeira coluna, e o desenho do cânone encabeça a segunda, com a legenda “Figura 1.1. O cânone sobre uma página dupla aberta de páginas 2:3”; linhas vermelho-claras da grade correm sob cada linha de texto, e os títulos “Como se traça o cânone” e “A figura de Villard” abrem as seções.", "2": "Uma página par com a margem externa à esquerda e o cabeço “A página pautada”. A “Nota de oficina”, em corpo menor, cai entre as linhas da grade; o título “Linhas onde se apoiar”, logo abaixo, fica meia linha fora da grade, e o texto sob ele volta às linhas. Na segunda coluna, “O que fica do cânone” e sua lista de três itens seguem a grade dos parágrafos ao lado.", "3": "Uma página ímpar com a margem interna à esquerda e o cabeço “O cânone secreto”: a Figura 1.2, as duas páginas comparadas, encabeça a página na largura da mancha, e o ensaio termina sob ela em duas colunas niveladas, com o colofão “Composto em Vollkorn de 9,8 sobre 13,4 pontos” fechando a segunda." }
+---
+
+## O que você vai compor
+
+As páginas 9 a 11 de *A página pautada*, uma coletânea sobre o ofício do livro, trazem “O cânone secreto”, um ensaio sobre as proporções que os copistas medievais davam às suas páginas. As margens seguem o cânone que o ensaio descreve, 2:3:4:6 e espelhadas, num formato de 210 × 280 mm com duas colunas de Vollkorn. Uma grade de linhas de base é desenhada sobre as páginas em vermelho-claro, e o texto corrido das duas colunas e das duas páginas que se olham assenta nela. O título em Playfair Display ocupa a primeira coluna da abertura, e o desenho do cânone encabeça a segunda. Os títulos de seção ficam meia linha fora da grade, e o texto sob eles volta para ela. Uma nota de oficina em corpo menor usa uma entrelinha própria de 10 pt. Na página 11, o ensaio termina sob uma figura na largura da página em duas colunas da mesma altura, e o colofão fecha a segunda.
+
+## Preparo
+
+### 1 · Os títulos podem sair da grade, as listas nunca
+
+<Excerpt region="flow" />
+
+O espaço acima de um título é mantido exatamente como foi definido, então 1,5 entrelinha põe o título entre duas linhas da grade, e o texto sob ele é ajustado à linha seguinte ([grade de linhas de base](/pt/docs/configuration#grade-de-linhas-de-base)). Uma lista não é ajustada antes do primeiro item, por isso a resposta curta zera as margens das listas (qualquer número inteiro de entrelinhas também serviria); com o 1,5 em padrão, os três itens da página 10 ficariam 1,3 pt abaixo das linhas da coluna ao lado. As duas linhas do título, em 46 pt, ocupam quatro entrelinhas cada uma, e a margem inferior dele mais uma, de modo que o ensaio começa na linha 10.
+
+<PageShot page={2} crop="0.14,0.1373,0.795,0.373" caption="Página 10: a lista da segunda coluna segue a grade dos parágrafos ao lado; a nota de oficina cai entre as linhas da grade, e o título sob ela fica meia linha fora, com o texto de volta à grade." />
+
+### 2 · Sair da grade de propósito, e voltar
+
+<Excerpt region="note" />
+
+A nota é um contêiner `:::paragraphs` em 7,8 sobre 10 pt, fora da grade. Depois do último parágrafo, a posição é arredondada para a linha seguinte da grade, e o título que vem a seguir fica onde ficaria depois do texto corrido ([o contêiner `:::paragraphs`](/pt/docs/configuration#o-contêiner-paragraphs)). O colofão usa o mesmo contêiner em 7,5 sobre 10 pt: as quatro linhas somam 40 pt, 0,2 pt a menos que três entrelinhas, e assim a última coluna do ensaio termina na mesma altura da vizinha.
+
+### 3 · Pôr as figuras onde a grade consiga absorvê-las
+
+<Excerpt region="figures" />
+
+Um flutuante nunca cai acima do parágrafo que o cita ([posicionamento](/pt/docs/document-format#posicionamento)). O cânone, citado na primeira coluna, ainda pode ocupar a cabeça da segunda na página 9; a comparação na largura da página, citada na página 10, espera pela 11. Cada faixa é arredondada para entrelinhas inteiras, de modo que o texto sob um desenho começa numa linha da grade, na altura da coluna ao lado e da página em frente. Dimensione o desenho pensando nesse arredondamento: com 61,8 mm, a faixa do cânone, legenda incluída, ocupa 17 entrelinhas; com 62,5 mm ocuparia 18 e deixaria quase uma linha em branco sob a legenda.
+
+<PageShot page={3} crop="0.05,0.07,0.83,0.465" caption="Página 11: o texto sob a figura na largura da página começa numa linha da grade, e o ensaio termina em duas colunas niveladas, com o colofão fechando a segunda." />
+
+### 4 · Deixar o balanceamento acertar as colunas
+
+<Excerpt region="balance" />
+
+Toda coluna cheia das páginas 9 e 10 termina na linha 44, porque a mancha tem exatamente 44 entrelinhas e o texto foi ajustado a ela. Manter o título com o texto seguinte e as regras de viúvas, órfãs e linhas curtas vêm ativados por padrão. Quando uma dessas regras faz uma coluna terminar com uma linha a menos, o balanceamento põe o espaço que falta acima de um título anterior ([balanceamento de colunas](/pt/docs/configuration#equilíbrio-de-colunas)), onde ele aparece como um vão; ajuste o texto até o balanceamento não ter nada para preencher. Na última página, ele divide as linhas restantes para que as duas colunas terminem na mesma linha.
+
+### 5 · Espelhar as margens e numerar a partir da página 9
+
+<Excerpt region="heads" />
+
+A resposta curta calcula a margem inferior: os 280 mm do formato, menos os 24 mm da margem superior e uma mancha de exatamente `LINES` entrelinhas (44 × 13,4 pt = 208 mm), deixam 48 mm, seis unidades, como pede a progressão 2:3:4:6. Com `mirror: true`, os 16 mm definidos em `left` são a margem interna, à esquerda numa página ímpar e à direita numa par ([margens espelhadas](/pt/docs/configuration#margens-espelhadas)); assim os cabeços, ancorados a `OUTER` milímetros da borda da página, terminam onde termina a mancha, do lado do corte. `pages: 'body'` tira os cabeços da abertura. `startAt: 9` imprime os fólios 9 a 11, e `pageIndexOffset: 8` conta as oito páginas anteriores, de modo que o espelhamento, a paridade dos cabeços e `breakBefore: 'odd'` acompanham o livro encadernado. Com um deslocamento de 7, a primeira página contaria como par, e a quebra para página ímpar poria uma página em branco antes do ensaio.
+
+## Variações
+
+### Esconder a grade para a gráfica
+
+`enabled` só controla as linhas desenhadas sobre as páginas prontas; a diagramação segue a grade de 13,4 pt de qualquer jeito, então nenhuma linha se move.
+
+```diff
+-  baselineGrid: { enabled: true, color: col('grid') },
++  baselineGrid: { enabled: false },
+```
+
+### Ver o que o balanceamento faz
+
+Sem balanceamento, a página 11 coloca as últimas catorze linhas e o colofão na primeira coluna e deixa a segunda vazia.
+
+```diff
+-const balancing = { stretchAfterFloats: false };
++const balancing = { enabled: false };
+```
+
+## Erros comuns
+
+- Um nível de título com `span: 'page'` e sem `advancedDesign` deveria atravessar as duas colunas, mas o postext 1.4.1 o mede com a largura de uma só: “O cânone secreto” sai numa linha na largura da página, mas reserva a altura de duas, com o fio de coluna desenhado através da faixa. Aqui o título fica na primeira coluna.
+- A regra de que um flutuante `top` nunca cai na página que o cita vale para os flutuantes na largura da página. Um flutuante `top` de coluna pode cair na página que o cita, na cabeça de uma coluna posterior, como a Figura 1.1 na página 9.
+- O tamanho da página, as margens e a medianiz usam unidades absolutas (mm, pt, cm, in). Ali um `em` não tem corpo de letra com que se medir, e a composição para com “dimensionToPx: baseFontSizePx is required for unit "em"”.
+- O espaço entre palavras da Vollkorn é estreito, 0,2 em, então numa coluna de uns 50 caracteres algumas linhas justificadas ficam frouxas ou apertadas. O texto de exemplo foi ajustado linha a linha com o relatório de linhas frouxas da captura; confira de novo depois de qualquer mudança no texto ou na medida.

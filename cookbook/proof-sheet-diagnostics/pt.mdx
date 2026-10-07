@@ -1,0 +1,68 @@
+---
+title: "Uma prova com cada erro marcado em vermelho"
+summary: "Uma prova de jornal revisada duas vezes, com cada erro que o motor aponta ou que o próprio pen encontra marcado em vermelho na página e ligado ao seu Markdown."
+plain: "Uma notícia de um semanário local, conferida duas vezes em busca de erros. Mostra como marcar cada erro em vermelho na página e ligá-lo à linha do texto que o causou."
+description: "Uma mesa de revisão no Postext: delimitadores abertos, calloutOverflow, ids desconhecidos e linhas frouxas marcados na página; um clique seleciona o Markdown."
+question: "Como descubro o que há de errado no meu documento e chego de cada erro da página ao seu Markdown?"
+aliases: ["prova", "prova tipográfica", "revisão de provas", "depurar um documento", "erros de análise", "doc.warnings", "calloutOverflow", "referência desconhecida", "diretiva desconhecida", "linhas frouxas", "mapeamento para o código-fonte", "clicar e ir ao código", "sourceStart", "word joiner", "escapar o cifrão"]
+pageNotes: { "1": "Página 1 de The Tideline, número 41: um carimbo PROOF · 2ND PASS com contorno vermelho no canto superior direito, uma fotografia noturna da balsa Marram atravessando um estuário escuro sob a lua cheia, o antetítulo Estuary · Transport, a manchete The Night Ferry Returns numa sem serifa preta e pesada, uma linha fina em itálico e a assinatura em monoespaçada. Seguem dois parágrafos justificados; o primeiro cita o mapa 1, uma planta da rota posta na coluna externa. No pé da página, o box The crossing in figures começa sob um fio vermelho.", "2": "Página 2: o box continua sem título sob seu fio vermelho, com o horário em duas colunas, e depois a notícia segue em serifada justificada. A coluna externa traz uma citação em destaque de Dana Whitcomb, uma cronologia das duas balsas (1971, 2015, 2026) e, no pé, o colofão." }
+---
+
+## O que você vai compor
+
+O número 41 de *The Tideline*, um semanário regional, abre com a volta da balsa noturna que atravessa o Sawyer, e o pen revisa a notícia duas vezes. A primeira prova é o texto como chegou à redação: a notícia corrigida com seis deslizes devolvidos, entre eles um carimbo escrito como uma diretiva que não existe e um box que nunca se fecha. Esses seis deslizes deixam dez marcas. Como no cartão, cada erro é sublinhado em vermelho na linha em que foi composto (uma linha frouxa recebe um fundo em vez disso), e seu número na margem corresponde à sua entrada na lista ao lado das páginas. Clicar numa linha ou numa entrada seleciona o seu Markdown. As páginas abaixo são a segunda prova. As verificações não encontram nada nela, e um carimbo PROOF · 2ND PASS fica preso no canto superior direito.
+
+## Preparo
+
+### 1 · Leia o que o motor informa e confira o resto
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `parseMarkdownWithIssues()` devolve um problema para cada `$`, `$$` ou `:::` que ficou aberto, e `doc.warnings` reúne um `calloutOverflow` para cada box que nenhum corte conseguiu dividir; na 1.4.1 o motor não informa mais nada. `doc.converged` e `doc.iterationCount` dizem se a diagramação se estabilizou, e esta notícia se estabiliza numa iteração, com ou sem os erros. O painel Verificações do Sandbox, descrito em [Painéis laterais](/pt/docs/sandbox#painéis-da-barra-lateral), também lista ids desconhecidos, diretivas desconhecidas e linhas frouxas, mas é o próprio Sandbox que os calcula, então `proof()` refaz esse trabalho. Ele compara os ids de `:ref` e `::resource` com os `resources` da composição, e os nomes dos delimitadores com `KNOWN_CONTAINERS` e `KNOWN_DIRECTIVES`. Para esta notícia, também aponta um bloco de lista cujo `startNumber` é um ano e qualquer fórmula, já que a notícia não tem nenhuma, e lê as linhas compostas em busca de espaços esticados além de `maxWordSpacing`, linhas em bandeira e hifens acrescentados dentro de um endereço.
+
+### 2 · Devolva os erros ao texto corrigido
+
+<Excerpt region="first-pass" />
+
+O pen guarda um único arquivo Markdown, a notícia corrigida, e tira dele a primeira prova desfazendo seis correções; assim as duas versões não se desencontram e cada marca tem uma causa conhecida. A versão corrigida é composta por último, e é ela que aparece nas páginas abaixo. `\$` [escapa](/pt/docs/document-format#convenções-de-escrita) o cifrão de um preço, e nenhuma fórmula se abre. Um word joiner (U+2060) antes de cada ano da cronologia da página 2 impede que uma entrada como *1971. The Tern…* abra uma lista numerada a partir desse ano; a primeira prova tira só o que vem antes de 1971. Com o esquema `https://`, a 1.4.1 compõe um endereço web como endereço, sem hifenizar e quebrando só nas junções, como na página 1 antes de *.example*. Sem ele, o endereço é uma palavra comum, e a primeira prova o hifeniza como *night-ferry*.
+
+### 3 · Marque cada erro onde ele foi composto
+
+<Excerpt region="marks" />
+
+Cada linha do VDT leva `sourceStart` e `sourceEnd`, e o intervalo de origem de um erro leva à linha que o imprimiu. Um delimitador de contêiner não imprime linha própria, e sua marca vai para a primeira linha que começa nos `REACH` (80) caracteres seguintes. Um `calloutOverflow` ganha uma barra sob o pé da coluna que ele indica. Um só deslize pode deixar várias marcas. Os cifrões sem escape transformam `$2.50 on foot, $` numa fórmula, que não imprime nada porque este pen nunca carrega o motor de matemática, e o terceiro cifrão abre uma fórmula que nunca se fecha. Sem esse trecho, uma linha do parágrafo das tarifas sai com espaços 1,9 vez maiores que o normal. Os dois delimitadores que faltam deixam o box e seu grupo `:::columns` abertos até o fim da notícia, e um grupo de colunas nunca se divide, então o box passa 256 mm da sua coluna. `proof()` considera uma linha frouxa quando o seu `justifiedSpaceRatio` passa de `maxWordSpacing` (1,6 aqui). Uma linha cujos espaços passariam de 3× não tem proporção para comparar, porque a 1.4.1 [a compõe em bandeira](/pt/docs/justification#linhas-que-o-algoritmo-não-consegue-preencher), e por isso `proof()` confere também `ragged`.
+
+### 4 · Selecione o Markdown por trás de uma linha
+
+<Excerpt region="source" />
+
+Um clique chega em pixels CSS. `onPageClick()` o converte para pixels de página, encontra a linha cujo `bbox` o contém e seleciona o intervalo de origem dessa linha no textarea; uma entrada da lista seleciona do mesmo jeito o intervalo do seu erro. `selectSource()` dá foco ao textarea sem rolar a página e define o seu `scrollTop` pela altura do texto anterior à seleção. Na 1.4.1, o `bbox` de uma linha justificada mantém a largura natural da linha, não a largura com que ela é pintada, então `linesOf()` o estende até a borda direita do bloco. Do contrário, o fundo pararia antes da margem, e um clique perto da borda direita não selecionaria nada.
+
+### 5 · Deixe o box se dividir e prenda o carimbo
+
+<Excerpt region="boxes" />
+
+`keepTogether: false` deixa o box de dados começar no pé da página 1 e continuar no verso sob o seu fio vermelho, sem título. O box não tem fundo nem fio no pé, então na página 2 só o branco separa o horário da notícia, e `marginBottom` é uma linha inteira de entrelinha, 14 pt; com 4 pt, o horário terminaria 1,5 mm acima do parágrafo seguinte. O carimbo é `placement: 'fixed'`, fora do fluxo e preso 8 mm abaixo da borda superior, e `width: 'auto'` o encolhe até a largura do título, 42 mm em vez dos 110 mm da coluna principal.
+
+## Variações
+
+### Mantenha o box inteiro
+
+Com o `keepTogether` padrão, o box passa inteiro para a página 2; a página 1 termina 33 mm antes e a notícia vai para uma terceira página.
+
+```diff
+-  { id: 'facts', keepTogether: false, backgroundEnabled: false, marginBottom: pt(LEAD),
++  { id: 'facts', backgroundEnabled: false, marginBottom: pt(LEAD),
+```
+
+### Interrompa uma composição que ainda tem erros
+
+Num script de build ou num teste, rode `proof()` sobre a versão final e lance um erro se ele encontrar alguma coisa.
+
+```diff
+ const doc = await build(markdown); // last: the corrected galley, the pages below
++if (proof(markdown, doc).length) throw new Error('The second pass still has faults.');
+```
+
+## Erros comuns
+
+- Ajuste o texto para que o box encha a página 1 até a última linha. Na 1.4.1, um box que fecha uma coluna desce quando as colunas são balanceadas: corte a última frase do primeiro parágrafo e o fio do box fica 6,4 mm abaixo do parágrafo das tarifas em vez de 2,4 mm.
+- Os deslocamentos de origem atrasam perto de endereços web e de escapes. Na 1.4.1, a hifenização insere um espaço de largura zero (U+200B) depois das barras de um endereço e `line.text` o mantém, então uma linha que contém um deles termina um caractere depois para cada um, e a linha seguinte começa com o mesmo atraso: na página 1, a linha que termina em *https://aldercounty* seleciona também o ponto de *.example*. O intervalo de uma linha que começa com um caractere escapado começa depois da barra invertida, como na linha da página 1 que abre com `$40`.

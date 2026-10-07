@@ -1,0 +1,61 @@
+---
+title: "Notas ao lado de um texto japonês vertical, na página dupla"
+summary: "O 1º capítulo de Brincadeiras de criança, de Ichiyō, com sete notas como 傍注: （1） à direita da linha e as notas da página dupla no corte da página esquerda."
+plain: "Um conto clássico japonês com explicações curtas dos seus nomes de lugares antigos. Os numerozinhos ficam ao lado do texto, e as explicações das duas páginas abertas se juntam na borda externa da página esquerda."
+description: "Takekurabe, de Ichiyō, no Postext com notas na página dupla: chamadas （1） à direita da linha, notas no corte da página esquerda, gergelim e 後注."
+question: "Como faço para compor as notas de um livro japonês vertical ao lado do texto, na página dupla?"
+aliases: ["傍注", "bōchū", "notas laterais", "notas na margem", "notas marginais", "後注", "kōchū", "notas de fim", "notas japonesas", "注", "（1）", "割注", "chamadas de nota", "notas da página dupla", "notas no corte", "傍点", "bōten", "gergelim", "たけくらべ", "Takekurabe", "Brincadeiras de criança", "Higuchi Ichiyō", "樋口一葉", "Yoshiwara"]
+pageNotes: { "1": "A folha de rosto, sozinha à esquerda: たけくらべ em Mincho negrito descendo pelo meio da página com um fio curto cor de ameixa ao lado, 樋口一葉 mais abaixo e o colofão no pé.", "2": "O capítulo um abre numa página direita: 一 fica sete caracteres abaixo numa faixa de três linhas, e o texto traz as chamadas pequenas （1） a （6） à direita da linha, as quatro primeiras na longa primeira frase, depois de 見返り柳, お齒ぐろ溝, 三階 e 大音寺前.", "3": "A página esquerda: oito linhas de texto com a chamada （7） e então, no corte, um fio curto cor de ameixa e as sete notas da página dupla em corpo menor, cada uma aberta pelo número e um espaço inteiro.", "4": "A última página do capítulo, com ぎつちよんちよん marcado por pontos de gergelim à direita dos caracteres." }
+---
+
+## O que você vai compor
+
+Quatro páginas de uma edição 四六判 de *Brincadeiras de criança* (たけくらべ, 1895–96), de Higuchi Ichiyō, o primeiro capítulo, com sete notas sobre o antigo bairro de Yoshiwara que o conto descreve. As notas são 傍注 (bōchū), as notas laterais dos clássicos japoneses de bolso: um （1） pequeno fica à direita da linha, depois da palavra que explica, e as notas citadas nas duas páginas de uma página dupla são compostas no corte da frente da página esquerda, sob um fio de um terço da linha, num corpo um quinto menor. O leitor encontra cada nota sem virar a página. O texto, com 42 caracteres em 17 linhas de Shippori Mincho em 9,25 pt, mantém o único parágrafo longuíssimo de Ichiyō e as marcas de gergelim sobre ぎつちよんちよん. As notas no pé da coluna num romance europeu estão na <RecipeLink slug="novel-footnotes-column-foot">Nº 071</RecipeLink>.
+
+## Preparo
+
+### 1 · Juntar as notas da página dupla no corte da página esquerda
+
+O código é [a resposta curta](#a-resposta-curta) acima. `footnotes.placement: 'spread'` compõe as notas citadas nas páginas 2 e 3 no fim do texto da página 3, que num livro encadernado pela direita é o seu corte da frente, e `numbering: 'spread'` recomeça em （1） as notas de cada página dupla ([Notas de rodapé](/pt/docs/configuration#notas-de-rodapé)). Uma nota citada na página direita espera pela esquerda; se as notas deixarem à página esquerda menos de uma linha de texto, as que sobram ficam no pé da página direita, como o JLReq permite. Um documento com a etiqueta `ja` já compõe as chamadas de um livro vertical como `（{n}）` à direita da linha, em 0,7 em, com os algarismos em pé: as duas linhas escritas aqui deixam isso à vista. `numberGap: 'em'` põe um caractere de nota inteiro depois do número, e `hangingIndent: em(2)` alinha as linhas seguintes depois dele.
+
+### 2 · Escrever as chamadas onde o japonês as põe
+
+O Markdown escreve `見返り柳[^1]` depois da palavra que a nota explica, e as notas como parágrafos `[^1]: …` no fim do capítulo. A chamada vem depois da palavra explicada; se fecha uma frase, vai antes do 。 (`…先生[^1]。`), e o motor nunca deixa um 。 ou uma chamada começar a linha. As sete notas foram escritas para esta receita: o que eram o 見返り柳 e a お齒ぐろ溝, onde ficava 大音寺前, o que se vendia no 酉の市, num japonês moderno e simples.
+
+### 3 · Manter as marcas de gergelim do original
+
+`cjk.emphasisMark` decide o que `*…*` e `:dots[…]` imprimem neste livro: pontos de gergelim, à direita de uma linha vertical. Um documento `ja` já os usa; escritas por extenso, as marcas acionam o kenten na lista de recursos da receita. O texto do Aozora marca ぎつちよんちよん com 傍点, e `aozora.py` o escreveu como `:dots[ぎつちよんちよん]{style=sesame}`; os livros chineses põem os pontos embaixo da linha ([Marcas, rubi e warichu](/pt/docs/configuration#marcas-rubi-e-warichu)).
+
+### 4 · Abrir numa página dupla
+
+<Excerpt region="opener" />
+
+A primeira frase do capítulo cita quatro notas nas suas três primeiras linhas. Sob um título na página 1, elas deixariam espaço para três linhas de texto: a página esquerda leva só as próprias notas. Uma folha de rosto sozinha na página 1 leva o capítulo para a página 2, uma página direita, e a primeira página dupla reúne o texto e todas as suas notas. A folha de rosto é um título de nível 1 cujo desenho ocupa a página, ancorado ao refile para que o título fique no eixo da página.
+
+### 5 · Pôr o hashira e os fólios no corte da frente
+
+<Excerpt region="furniture" />
+
+O título desce pela margem externa das páginas esquerdas, por fora das notas, e os fólios em kanji ficam no pé de todas as páginas, menos na folha de rosto.
+
+## Variações
+
+### Juntar as notas no fim do capítulo
+
+Sem `placement`, um livro `ja` vertical compõe as notas como 後注 (kōchū): depois do texto do capítulo, sob o mesmo fio, numeradas ao longo do capítulo. Aqui elas ocupam a metade esquerda da página 4.
+
+```diff
+-  placement: 'spread', // 傍注; 'chapterEnd' sets 後注 after the chapter instead
+-  numbering: 'spread',
++  placement: 'chapterEnd', // 後注, the default for a vertical ja book
++  numbering: 'chapter',
+```
+
+### Pôr a chamada ao lado da palavra
+
+`markerPosition: 'side'` compõe uma chamada menor no espaço ao lado da linha, como um rubi entre linhas, e assim ela não ocupa nada da linha.
+
+```diff
+-  markerPosition: 'right', markerTemplate: '（{n}）', // written out: 'ja' sets them so
++  markerPosition: 'side', markerTemplate: '{n}',
+```

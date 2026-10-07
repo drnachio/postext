@@ -1,0 +1,78 @@
+---
+title: "Uma novela catalã, hifenizada pelas regras do IEC"
+summary: "El transplantat, de Oller, completo num livro de bolso de 32 páginas: sílabas catalãs pelo IEC, l·l quebrado como il- | lusió e uma gravura por capítulo."
+plain: "Uma novela inteira em catalão, composta como um livrinho de bolso. As palavras se dividem no fim da linha como pedem as normas catalãs, inclusive o l duplo com ponto."
+description: "El transplantat, de Oller (texto de 1928), em bolso de 12 × 18,5 cm: locale 'ca', hifenização do IEC, l·l quebrado como il- | lusió, aberturas com gravura."
+question: "Como faço para hifenizar o catalão direito, com l·l, apóstrofos e pronomes ligados por hífen?"
+aliases: ["catalão", "català", "hifenização catalã", "divisão silábica catalã", "ela geminada", "l·l", "punt volat", "ponto alto", "IEC", "Institut d’Estudis Catalans", "pronomes enclíticos", "Narcís Oller", "livro de bolso", "novela completa", "frontispício", "gravura"]
+pageNotes: { "2": "O frontispício: uma gravura de um padeiro robusto, de avental branco, à porta da padaria da sua aldeia, com o fogo do forno atrás; embaixo, EL FORNER DE LES MONGES em versaletes.", "3": "A folha de rosto: NARCÍS OLLER em versaletes, El transplantat em itálico vermelho grande, De «Croquis del natural» logo abaixo e um fio vermelho curto.", "27": "Uma página de texto do capítulo IV. No meio da página, uma linha termina em titil- e a seguinte começa com laven: o ponto alto de titil·laven cede lugar ao hífen." }
+---
+
+## O que você vai compor
+
+*El transplantat*, de Narcís Oller, completo, com o texto das suas *Obres completes* (Barcelona, 1928), num livro de bolso de 12 × 18,5 cm e 32 páginas. Antes dos quatro capítulos vêm uma falsa folha de rosto, um frontispício com o padeiro diante do forno, a folha de rosto em Cormorant Garamond itálico vermelho e uma nota sobre a edição. Cada capítulo abre sob uma gravura de doze linhas de altura, com o seu número romano em vermelho. O texto, em Crimson Pro de 10,4 pt, se divide pelas sílabas catalãs como pede o Institut d’Estudis Catalans: no mínimo duas letras de cada lado, nenhuma quebra entre vogais em hiato nem logo depois de um apóstrofo, e *titil·laven* quebra como *titil-* | *laven*, com o hífen no lugar do ponto alto. Os diálogos levam travessão, e as citações, «cometes baixes».
+
+## Preparo
+
+### 1 · O catalão pelo seu código
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `locale: 'ca'` escolhe os padrões catalães, que desde o postext 1.14 seguem o *Llibre d’estil* do IEC ([idiomas suportados](/pt/docs/justification#idiomas-compatíveis)). São os padrões que o TeX usa, com no mínimo duas letras de cada lado da quebra em vez das três que o pacote do npm traz, de modo que *ter-ra*, *cai-xa* e *plu-ja* podem quebrar. Vogais em hiato ficam juntas (*cièn-cia*, *ca-mions*), mas um *i* entre vogais abre a sua sílaba (*fe-ia*). A *ela geminada* quebra entre os seus dois *l*: a linha termina em *titil-* e a seguinte começa com *laven*, sem ponto alto em nenhuma das duas, e o Knuth–Plass mede a linha sem o ponto.
+
+<PageShot page={27} crop="0.06,0.495,0.88,0.085" caption="Página 27: titil·laven no fim da linha, composto titil- | laven. É o único l·l que cai no fim de uma linha nestas 32 páginas." />
+
+`compounds: false` mantém o verbo e o seu pronome inteiros, a não ser pelo hífen que já os une (*arrossegar-* | *se*), a quebra que o IEC prefere ([hifenização](/pt/docs/configuration#hifenização)). Custa uma linha frouxa: na página 7, a linha anterior a *d’inaugurar-se* abre os espaços até 1,94 vez, mesmo com `maxJustifyTracking: 10` absorvendo o excesso nas outras linhas.
+
+### 2 · Uma página de bolso feita de linhas inteiras
+
+<Excerpt region="page" />
+
+A margem inferior sai do formato de refile, da margem superior e de `LINES`, de modo que a mancha comporta 29 linhas de 14 pt e toda página cheia termina na mesma linha de base. A medida de 89 mm dá cerca de 64 caracteres de Crimson Pro. `mirror: true` mantém a margem de 16 mm no lado da lombada nas duas páginas da página dupla ([margens espelhadas](/pt/docs/configuration#margens-espelhadas)).
+
+### 3 · Uma abertura para os quatro capítulos
+
+<Excerpt region="opener" />
+
+`resourceId: '{attr.art}'` desenha a imagem que o título indica, de modo que `# II {style="capitol" art="cap2"}` abre o capítulo II sob a sua própria gravura, com o mesmo estilo dos outros ([atributos de título](/pt/docs/document-format#atributos-de-título)). As imagens não reservam altura numa abertura, por isso `minHeight` guarda dezesseis linhas: doze para a gravura, depois o número e o seu fio, e o texto começa na décima sétima linha da página, igual em todos os capítulos.
+
+### 4 · Quatro páginas antes do capítulo I
+
+<Excerpt region="front" />
+
+Cada peça dos elementos pré-textuais é um título de nível 1 com estilo próprio: `# El transplantat {style="portada"}` imprime o autor e o subtítulo do frontmatter e o próprio título como título. Cada estilo repete a sua quebra de página, já que um estilo herda a do seu nível, e esvazia o cabeçalho e o rodapé, de modo que essas páginas não levam cabeços nem fólios. O frontispício cai na página 2, um verso, e fica de frente para a folha de rosto na página dupla.
+
+### 5 · O autor no verso, o título no recto
+
+<Excerpt region="heads" />
+
+`parity` põe o autor nas páginas pares e o título nas ímpares; `pages: 'body'` tira os dois das aberturas, onde entra um fólio no pé com `pages: 'opener'`. `SHIFT` centra cada cabeço sobre a mancha, que fica meio milímetro deslocada do centro da página porque as duas margens não medem o mesmo.
+
+### 6 · Cinco gravuras, sem legenda
+
+<Excerpt region="pictures" />
+
+As imagens pertencem a um tipo de recurso com `captionPrefix` vazio, então nada as numera nem as rotula. Cada uma é declarada com o seu tamanho em pixels e carregada com o seu identificador de arquivo antes da composição. Antes de salvá-las, o branco foi levado ao creme da página e o preto à tinta do texto, e por isso elas se imprimem como parte da página, não como fotos coladas por cima.
+
+## Variações
+
+### Deixar que os pronomes também se dividam
+
+Com o padrão `compounds: true`, *d’inaugurar-se* pode quebrar como *d’inau-gurar-se* e a página 7 perde a sua linha frouxa. Em troca, nestas páginas a quebra `titil-` | `laven` deixa de cair no fim da linha.
+
+```diff
+-  hyphenation: { compounds: false },
++  hyphenation: { compounds: true },
+```
+
+### Abrir cada capítulo numa página ímpar
+
+`parity: 'odd'` acrescenta uma página em branco antes de um capítulo que começaria numa página par, como numa edição mais folgada. O capítulo IV, que abre na página 26, passa para a 27, depois de uma página em branco.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' }, // a chapter opens on the next page, either side
++  breakBefore: { enabled: true, parity: 'odd' },
+```
+
+## Erros comuns
+
+- Copie o texto do Viquitexts com os itálicos: Oller marca *tentu*, *Ensanxe* e *palacio* como coloquiais ou castelhanas, e uma exportação em texto simples perde essas marcas. Confira as palavras duvidosas com o fac-símile do volume de 1928: seis vezes a transcrição traz *tom-* onde o verbo é *tornar* (*tomà*, *tomaré*, *tomar*), e uma vez *jom* em vez de *jorn*.
+- Com 6.800 palavras, os cinco arquivos de conteúdo e o kit deixam o script composto com cerca de 69 KB. Um livro inteiro é a maior amostra que um pen comporta; uma obra mais longa vai num pacote `.postext`.

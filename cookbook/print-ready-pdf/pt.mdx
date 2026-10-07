@@ -1,0 +1,72 @@
+---
+title: "PDF para gráfica: sangria, marcas de corte e CMYK"
+summary: "Um folheto de exposição com 3 mm de sangria e marcas de corte, exportado em PDF CMYK com os mapas e a planta tirados de matrizes de impressão."
+plain: "A folha de sala de uma exposição de mapas, pronta para mandar à gráfica. Mostra como deixar uma sobra além da borda da página, pôr marcas de corte e salvar um PDF nas cores que a gráfica usa."
+description: "Um folheto de exposição de quatro páginas no Postext, com 3 mm de sangria e marcas de corte, exportado em PDF CMYK com fontes, marcadores e matrizes."
+question: "Como exporto um PDF para gráfica com sangria, marcas de corte, CMYK, marcadores e rótulos de página?"
+aliases: ["PDF para gráfica", "PDF pronto para impressão", "fechamento de arquivo", "sangria", "marcas de corte", "marcas de refile", "CMYK", "quadricromia", "matriz de impressão", "pré-impressão", "folheto de exposição", "folha de sala", "prova em tons de cinza", "aba de índice"]
+pageNotes: { "1": "A capa, mostrada com seus 3 mm de sangria e as marcas de corte nos cantos: um mar verde-escuro com ilhas em verdes escalonados, uma rota laranja tracejada com quatro paradas que passa do refile e entra na sangria, o título em Space Grotesk de 50 pt e, no pé, as datas e o local.", "2": "A primeira página interna: o texto de abertura, as salas 1 e 2 sob seus antetítulos com uma parada da rota e uma ficha de peça depois de cada uma, e uma aba laranja com o fólio 2 saindo pela borda esquerda.", "3": "As salas 3 e 4, que terminam na mesma altura da página 2, e a aba com o fólio 3 saindo pela borda direita.", "4": "A quarta capa: as informações práticas, a planta da exposição (figura 1) com a rota laranja que sai do vestíbulo e percorre as salas 1 a 4, e uma faixa de relevo verde que sangra por três lados, com o local, as datas e o colofão." }
+---
+
+## O que você vai compor
+
+A folha de sala de *Cartografías imaginarias*, uma exposição inventada de mapas de lugares imaginários, do jeito que segue para a gráfica, em espanhol nas duas edições desta página. Cada página de 170 × 227 mm fica numa folha 22 mm maior, que leva a sangria e as marcas de corte. Na capa, uma rota laranja atravessa um arquipélago em verdes escalonados e passa do refile para a sangria. Por dentro, quatro salas em Karla em bandeira se abrem sob antetítulos com uma parada da rota, e uma aba laranja leva o fólio na borda externa; a quarta capa põe a planta sobre uma faixa de relevo. O código exporta o PDF de impressão, em CMYK com fontes, marcadores e rótulos de página, e uma prova em tons de cinza. No PDF de impressão, os mapas e a planta vêm de matrizes com tintas escolhidas a dedo; o texto, a aba e os anéis da rota passam pela conversão simples.
+
+## Preparo
+
+### 1 · Cores de tela escolhidas pela chapa
+
+<Excerpt region="palette" />
+
+Com `colorSpace: 'cmyk'`, o postext-pdf converte cada cor hexadecimal com uma fórmula simples, sem perfil ICC: o preto é 1 menos o canal RGB mais alto, e o ciano, o magenta e o amarelo saem cada um do seu canal e desse preto. Por isso um cinza neutro imprime só na chapa do preto (`#161616` vira K91), e uma cor com um canal no máximo imprime sem preto: o laranja `#ff6626` vira C0 M60 Y85 K0 na aba, nos anéis e na rota. O magenta sai em 0 sempre que o verde é o canal mais alto, e o verde do mar vira C82 M0 Y25 K76, que na prova aparece como um azul-petróleo. É por isso que os mapas e a planta vêm de matrizes de impressão (passo 5), e essa mistura de três tintas fica só no texto pequeno em verde e negrito dos antetítulos, da referência à figura e dos rótulos das legendas.
+
+### 2 · Uma aba que sobrevive à guilhotina
+
+<Excerpt region="tab" />
+
+A caixa da aba pende do quadro da sangria e tem `BLEED` a mais que a aba já refilada, de modo que um corte que caia um milímetro fora do refile ainda deixa laranja na borda; o fólio pende do quadro da página, que é o refile, e se centraliza nos 10 mm que sobram. `parity` escolhe as páginas em que cada elemento aparece, e `edge` muda junto para chegar à borda externa, enquanto `pages: 'body'` deixa a aba e os cabeços (`{title}` e `{subtitle}`, do frontmatter) fora das duas capas, que contam como aberturas porque cada uma começa com um título que ocupa a página ou salta para uma nova. Qualquer elemento do cabeçalho ou do rodapé se repete do mesmo jeito, então uma `image` com `parity` e `pages` põe uma marca-d'água ou uma imagem decorativa em todas as páginas; os encaixes são pintados por cima do texto, e um fundo de cor por trás dele vai em `page.backgroundColor`.
+
+### 3 · A arte até a sangria, o texto dentro do refile
+
+<Excerpt region="covers" />
+
+`cutLines` soma a cada lado da página a sangria, o afastamento da marca e a marca de 5 mm, 11 mm aqui, e como a resposta curta iguala o afastamento à sangria, as marcas começam na borda da sangria e vão para fora, na chapa do preto. Um elemento de imagem ancorado à sangria com `width: 'fill'` toma a largura desse quadro e mantém a própria proporção: o mapa da capa é desenhado com 176 × 233 mm, o formato refilado mais 3 mm de cada lado, e por isso chega à borda da sangria, onde começam as marcas, enquanto o texto pende da mancha, bem dentro do refile. A quarta capa é um estilo de título cujo rodapé substitui o do documento, com uma faixa do mesmo gerador ancorada ao pé da sangria e uma margem inferior que para o texto 8 mm acima dela.
+
+### 4 · Títulos que viram marcadores
+
+<Excerpt region="levels" />
+
+`renderToPdf` monta os marcadores a partir dos títulos, então cada sala é um título de nível 1 que segue o anterior sem quebra de página, e `numberingTemplate` dá ao antetítulo o seu `{number}` e ao marcador o seu prefixo: o PDF lista a capa, de “Sala 1 Una isla en ninguna parte” a “Sala 4 La isla del tesoro”, e as informações práticas. Um título desenhado esconde o próprio texto, mas o guarda para os marcadores e as tags; sem `fontFamily`, esse texto oculto sai em Open Sans 700, que as páginas carregariam e o PDF incorporaria só para ele. Os rótulos de página seguem `page.pageNumbering`, mantido no padrão, decimal a partir de 1, e assim a página 3 no visualizador de PDF é a que traz 3 na aba.
+
+### 5 · Matrizes de impressão com tintas exatas
+
+<Excerpt region="master" />
+
+Cada desenho é definido uma única vez, como traçados. A região da arte os transforma no SVG que o canvas pinta, e esta região escreve os mesmos traçados num PDF CMYK de uma página, com misturas escolhidas para que a prova se pareça com a tela; assim o mar fica em C100 M45 Y80 K55 em vez do C82 M0 Y25 K76 da conversão simples. Cada recurso indica sua matriz em `svg.pdfFileId`, `pressPdf()`, na resposta curta, entrega os bytes da matriz a `renderToPdf` com o id do SVG, e o postext-pdf incorpora essa página sem alteração, em vetores e com as tintas da matriz. Isso vale para a planta, que é uma figura, e para o mapa da capa e a faixa da quarta capa, que são imagens de design. A prova em tons de cinza recebe os SVGs, porque uma matriz incorporada nunca é convertida e continuaria em cores.
+
+## Variações
+
+### Peça 5 mm de sangria
+
+A arte, a aba e a escala gráfica são medidas a partir de `BLEED`, e as marcas de corte acompanham por meio de `markOffset`; para uma gráfica que peça 5 mm, basta esta mudança, e cada folha passa a medir 200 × 257 mm.
+
+```diff
+-const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
++const BLEED = 5; // mm of artwork past the trim: the cover, the tab and the back band reach it
+```
+
+### Imprima a arte a partir dos SVGs
+
+Sem `pdfFileId`, o arquivo de impressão desenha cada imagem a partir do seu SVG, ainda em vetores, mas pela conversão simples, e o mar sai em C82 M0 Y25 K76, um azul-petróleo.
+
+```diff
+-  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
++  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`,
+```
+
+## Erros comuns
+
+- O postext-pdf 1.4.1 grava cada página com uma única MediaBox, a folha inteira de 192 × 249 mm, sem TrimBox nem BleedBox, e imprime as marcas de corte só na chapa do preto. Informe à gráfica o formato refilado, 170 × 227 mm, ou acrescente as caixas numa ferramenta de pré-impressão se ela pedir PDF/X.
+- Na 1.4.1, uma marca de corte começa a `markOffset` do refile, não da sangria, então com uma sangria maior que o afastamento padrão de 3 mm as marcas saem impressas sobre a arte. Mantenha o afastamento igual à sangria, como `cutLines` faz aqui.
+- `renderToPdf` 1.4.1 não lê `config.pdfGeneration`. `pressPdf()` passa o espaço de cor como opção, e os marcadores e as tags vêm ativados por padrão.
+- Depois de gerado, cada botão vira um link “Open the PDF ↗” e um link de download, e só os de download trazem o nome do arquivo.

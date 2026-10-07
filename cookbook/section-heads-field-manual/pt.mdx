@@ -1,0 +1,76 @@
+---
+title: "Títulos de seção em sete níveis"
+summary: "Seções numeradas de 1.1 a 1.12 numa pílula âmbar que cresce com o número, mais quatro níveis abaixo delas e um sétimo feito com um estilo de título."
+plain: "Um capítulo de um manual de campo para equipes que cuidam de trilhas, sobre como tirar a água dos caminhos. Mostra como dar sete níveis aos títulos, cada um com a sua cara, para o leitor ver como as partes se encaixam."
+description: "Manual de campo de equipe de trilhas no Postext: títulos numerados em pílula, níveis com fio e itálico, sétimo nível, checklist sem número, listas aninhadas."
+question: "Como faço para numerar títulos como 1.1 e 1.1.1, dar um estilo a cada nível e pôr o número numa pílula?"
+aliases: ["títulos numerados", "numeração de seções", "numeração de títulos", "numeração decimal", "níveis de título", "H7", "sétimo nível de título", "mais de seis níveis", "selo com número", "pílula com número", "seção sem número", "títulos corridos", "lista numerada aninhada", "numeração a) i)", "lista de tarefas", "caixa de seleção", "checklist", "manual de campo", "manual técnico"]
+pageNotes: { "1": "A abertura do capítulo 1, Drainage: o número 1 numa pílula âmbar grande ao lado do título, uma linha fina em itálico e o perfil altimétrico de uma trilha que sobe para a direita ao longo do alto da página, em faixas de verde com doze pontos âmbar nos locais marcados para novos desviadores de água. Embaixo, duas colunas começam com as seções 1.1 a 1.3 em pílulas âmbar pequenas, uma lista com marcadores e o título com fio 1.2.1.", "2": "As seções 1.4 a 1.7 descem pelas duas colunas; a seção 1.5, cujo título quebra em duas linhas ao lado da pílula, reúne os títulos mais profundos do capítulo: os títulos com fio 1.5.1 e 1.5.2, títulos em itálico, o título verde Tools for the trench, o rótulo em maiúsculas monoespaçadas Steel bars e, embaixo dele, os nomes de duas ferramentas em itálico cinza.", "3": "O fim da 1.7 e depois as seções 1.8 a 1.12, com a pílula se alargando do 1.9 para o 1.10, regras de segurança que começam com termos em negrito verde e um Checklist sem número ao lado de um quadrado âmbar vazado, com uma lista numerada 1., a) e i. e duas caixas de tarefa; um colofão cinza pequeno fecha o capítulo." }
+---
+
+## O que você vai compor
+
+O capítulo 1 do manual de campo de uma equipe de trilhas, *Drainage*, em três páginas B5 a duas colunas: IBM Plex Serif no texto, IBM Plex Sans Condensed nos títulos e nos números de seção, IBM Plex Mono nos rótulos, nos fólios e nos números de subseção. A abertura põe o número do capítulo numa pílula âmbar grande sobre o perfil altimétrico de uma trilha, onde pontos âmbar marcam doze locais escolhidos para novos desviadores de água. Pílulas menores numeram as seções 1.1 a 1.12 e ficam mais largas no 1.10. Os títulos 1.2.1, 1.5.1 e 1.5.2 vão em maiúsculas espaçadas sob um fio verde. Os níveis 4 a 6 não têm número e mudam de letra (itálico serifado, condensado negrito em verde, maiúsculas monoespaçadas), e um sétimo nível em itálico cinza nomeia as ferramentas. As regras de segurança começam com termos corridos em verde. Um checklist sem número, marcado por um quadrado vazado, fecha o capítulo com listas numeradas 1., a) e i. e duas caixas de tarefa.
+
+## Preparo
+
+### 1 · Ponha o número numa pílula que cresce com ele
+
+O código está [na resposta curta](#a-resposta-curta) lá em cima. `numberingTemplate: '{1}.{2}'` junta os contadores do capítulo e da seção em 1.1 a 1.12 ([ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)). Um nível com design avançado deixa de imprimir o número antes do título, então o próprio design posiciona `{number}`. Aqui ele fica num elemento de texto com uma `box` preenchida, de cantos arredondados e sem largura, de modo que a pílula tem a largura do número mais o preenchimento: 10,1 mm no 1.9 e 12,7 mm no 1.10. `'right-of'` pendura o título na borda direita da pílula e alinha as suas linhas à esquerda, e é por isso que o título longo da 1.5 quebra ao lado do número ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)). O título também precisa de `overflow: 'wrap'`, porque por padrão o texto de design que não cabe é cortado com reticências. A pílula tem 3 pt a menos que duas linhas da grade, e todo título de seção começa numa linha da grade, então esses 3 pt são o espaço entre a pílula e o texto embaixo dela, quer o título abra uma coluna, quer venha depois de um parágrafo.
+
+<PageShot page={3} crop="0.07,0.3,0.44,0.215" caption="Página 3: a pílula se alarga do 1.9 para o 1.10, e o título anda para a direita a largura do algarismo a mais." />
+
+### 2 · Dê fio e espaçamento ao terceiro nível
+
+<Excerpt region="ruled" />
+
+Na versão 1.4.1, um nível de título não tem `letterSpacing`, mas o texto de design tem, então o nível 3 também é desenhado por um design: um fio verde de 0,75 pt, o número em IBM Plex Mono e, ao lado, o título espaçado. O terceiro contador de `'{1}.{2}.{3}'` recomeça em cada seção, por isso 1.2.1 e 1.5.1 terminam os dois em 1. `DROP` baixa só o fio. O número fica `LEAD - DROP` abaixo dele, o que mantém número e título uma linha da grade abaixo do alto do título, qualquer que seja o `DROP`. Com o fio mais perto do número do que do parágrafo de cima, ele é lido como parte do título.
+
+### 3 · Desça pelos níveis 4 a 6
+
+<Excerpt region="levels" />
+
+Um nível sem `numberingTemplate` não imprime número, então do nível 4 para baixo os títulos se distinguem pela letra, pela cor ou pela caixa: um itálico serifado no nível 4, a família de títulos em verde no 5 e maiúsculas monoespaçadas em seminegrito no 6. A entrelinha e as margens definidas no próprio `headings` chegam a todos os níveis e põem cada título na grade, com uma linha em branco acima e nenhuma abaixo. Qualquer objeto `headings` desliga a quebra de página padrão antes de um capítulo, por isso o nível 1 a declara de novo.
+
+### 4 · Faça um sétimo nível e uma seção sem número com estilos
+
+<Excerpt region="styles" />
+
+O Markdown para em `######`, e um título perde as marcas de negrito e itálico, então `###### *Rock bar*` sairia como mais um nível 6. O estilo de título `'level7'` compõe os nomes das ferramentas num itálico condensado cinza de peso 500, mais leve que o 600 do nível 6, e `textTransform: 'none'` desliga as maiúsculas que eles herdariam. Eles são lidos um degrau abaixo do rótulo monoespaçado acima deles, embora, com 8,4 pt, sejam maiores que os 7,8 pt do rótulo ([estilos de título](/pt/docs/configuration#estilos-de-título)). `numbered: false` deixa o checklist fora da contagem, então uma seção depois dele continuaria sendo a 1.13. Um `{number}` vazio ainda pintaria a pílula âmbar, por isso o estilo traz o seu próprio design, com um quadrado vazado no lugar da pílula. Os termos corridos em verde das regras de segurança vêm do `boldColor` de um estilo de parágrafo.
+
+### 5 · Mude os marcadores da lista com a profundidade
+
+<Excerpt region="lists" />
+
+Cada profundidade recebe de `levels` o seu marcador, a sua cor e o seu separador: o checklist conta 1., a) e i. ([ajustes por nível das listas ordenadas](/pt/docs/configuration#substituições-por-nível-listas-numeradas)) e os marcadores passam do verde ao verde-sálvia ([ajustes por nível das listas não ordenadas](/pt/docs/configuration#substituições-por-nível-listas-com-marcadores)). O nível 1 mantém o formato padrão, `'arabic'`; `'decimal'`, a palavra que o CSS usa, imprimiria “undefined”. Os dois itens `- [ ]` que fecham o checklist imprimem `taskCheckboxChar`, ☐ por padrão, no lugar do marcador, no verde dos marcadores de primeiro nível ([extensões de listas de tarefas](/pt/docs/configuration#extensões-para-listas-de-tarefas)). Com margens zero acima e abaixo, todas as listas ficam na grade de linhas de base.
+
+### 6 · Abra o capítulo sobre o perfil da trilha
+
+<Excerpt region="opener" />
+
+O perfil é um elemento de imagem da abertura, ancorado na página e tão largo quanto ela. Uma figura da largura da página, flutuando para o alto e citada na página 1, teria aberto a página 2 ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). Numa abertura, uma imagem não reserva altura, então `minHeight` começa o texto na primeira linha da grade que fique 6 mm ou mais abaixo dela. A legenda sobre o verde é texto de design, porque um SVG desenhado como imagem não consegue usar as fontes da página. A pílula grande reaproveita a letra e o preenchimento da pílula de seção, e `{number}` imprime o número do próprio capítulo, vindo de `numberingTemplate: '{1}'`.
+
+## Variações
+
+### Tire o número do capítulo das pílulas
+
+Tire o contador do capítulo do modelo e as pílulas vão de 1 a 12, alargando no 10; o nível 3 continua imprimindo 1.5.1 até que o seu próprio modelo também tire o `{1}`.
+
+```diff
+-const h2 = { level: 2, numberingTemplate: '{1}.{2}',
++const h2 = { level: 2, numberingTemplate: '{2}',
+```
+
+### Dê a todas as pílulas a mesma largura
+
+Uma largura fixa, a do 1.10, centraliza cada número numa pílula igual e alinha os títulos numa só coluna.
+
+```diff
+-  placement: at('container', 'top-left') }; // plus its padding
++  placement: { ...at('container', 'top-left'), size: { width: mm(12.7) } } };
+```
+
+## Erros comuns
+
+- O sétimo nível é um título de nível 6 com o estilo `level7`, então nenhum título do exemplo desce mais de um nível em relação ao título anterior: *The trench*, *Tools for the trench*, STEEL BARS e *Rock bar* são dos níveis 4, 5, 6 e 6. O aviso do Sandbox “Salto na hierarquia de títulos” aponta justamente esse tipo de pulo, por isso ele nunca aparece neste capítulo.
+- Uma linha de introdução que termina em dois-pontos só fica com a sua lista se o primeiro item couber no espaço que sobra: na versão 1.4.1 a regra verifica uma linha, então um primeiro item de duas linhas que encontra uma única linha livre passa sozinho para a coluna seguinte e deixa os dois-pontos isolados. A seção 1.2 mantém o primeiro item numa linha nas duas edições.

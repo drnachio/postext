@@ -1,0 +1,77 @@
+---
+title: "Datas e siglas em pé no texto vertical"
+summary: "Dois documentos de 1912 em escrita vertical, encadernados pela direita: números de dois algarismos ficam em pé sozinhos, e :tcy e :upright marcam o resto."
+plain: "Dois documentos chineses de 1912, impressos em colunas de cima para baixo. Mostra como compor datas, números e letras latinas para que se leiam bem dentro do texto vertical."
+description: "Documentos chineses no Postext: texto vertical em grade de 44 caracteres, datas em tate-chu-yoko, uma sigla empilhada, latim girado e cabeços externos."
+question: "Como mantenho as datas em pé num texto chinês vertical, e o que acontece com siglas e palavras latinas?"
+aliases: ["tate-chu-yoko", "縱中橫", "datas em chinês vertical", "números em texto vertical", "siglas em texto vertical", "algarismos em pé", "antologia de documentos", "proclamação", "cabeços na margem externa", "文告"]
+pageNotes: { "1": "A capa: um campo vermelhão dentro de um fio grosso e outro fino em vermelhão claro; o título 民國元年文告二種 desce pela direita em branco, e os dois documentos com as suas datas ocupam duas linhas à esquerda, com o 11 de 3月11日 em pé numa única casa.", "2": "A abertura da proclamação: uma faixa vermelhão pela borda direita traz o título, o subtítulo em inglês deitado de lado e a data no pé; a apresentação em letra Kai, dois caracteres mais abaixo, e depois a proclamação em Song.", "3": "A proclamação ocupa a página inteira e termina com a sua linha de data, doze caracteres mais abaixo, e, na linha seguinte, o aviso do selo em vermelhão, que começa um caractere abaixo de onde a data termina.", "4": "As notas à proclamação em letra Kai: 10月10日 em pé, 1911 e Sun Yat-sen deitados de lado, ROC empilhada letra por letra.", "5": "A abertura da Constituição Provisória: a faixa, a apresentação com 3月8日 e 第35號 em pé, a ordem de promulgação com o seu selo e a sua data, e depois o capítulo primeiro.", "6": "O capítulo segundo da constituição: os artigos 5 a 15, com as sete liberdades do artigo 6 dois caracteres mais abaixo.", "7": "As notas à constituição e o colofão, em inglês, deitado de lado." }
+---
+
+## O que você vai compor
+
+Uma antologia de sete páginas com dois textos fundadores da República da China: a proclamação com que Sun Wen assumiu o cargo em 1º de janeiro de 1912 e os dois primeiros capítulos da Constituição Provisória de 11 de março. As páginas são compostas na vertical, numa página de 184 × 260 mm encadernada pela direita. Os documentos mantêm os seus numerais chineses, 民國元年三月十一日. As apresentações e as notas, em letra Kai, dão em algarismos arábicos as datas do calendário ocidental, as quantidades e os números de série, e são esses algarismos que a receita compõe: 10月10日 põe cada número em pé na sua casa, 1912 e Sun Yat-sen vão deitados de lado, 民國115年 encaixa três algarismos numa casa e ROC empilha as suas letras. Uma capa vermelhão dentro de um fio duplo, uma faixa vermelhão onde cada documento abre e cabeços na margem externa com fólios em numerais chineses emolduram o texto.
+
+## Preparo
+
+### 1 · Deixar os números curtos para a configuração
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Com `cjk.uprightDigits: 2`, toda sequência de um ou dois algarismos num texto vertical fica em pé numa casa de um eme, os dois algarismos lado a lado: 10月10日, 第35號 e 7章56條 não precisam de marcação. Um número mais longo é composto inteiro de lado, como uma palavra latina, que é como o clreq compõe os números de quatro algarismos, então 1912 e 1644 descem pela linha girados um quarto de volta. Um número de três algarismos que deva ficar em pé leva uma marca: `民國:tcy[115]年` comprime o 115 dentro do eme. `:upright[ROC]` põe cada letra em pé numa casa própria, uma embaixo da outra, e a linha nunca quebra no meio ([números em texto vertical](/pt/docs/configuration#números-em-texto-vertical)).
+
+<PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Página 4, as notas: 10月10日 e 2月12日 em pé, 1911 e Sun Yat-sen de lado, 268 e 115 comprimidos com :tcy, ROC empilhada com :upright." />
+
+Os textos de 1912 ficam como foram impressos. As notas do editor seguem as normas de Taiwan para números, os 公文書橫式書寫數字使用原則 do Yuan Executivo, de 2004: datas, números de série e quantidades levam algarismos arábicos (1912年3月8日, 第35號, 7章56條), enquanto nomes próprios, expressões fixas e números redondos mantêm os numerais chineses (東三省, 四萬萬, 四億), assim como a data lunar, 辛亥年八月十九日. Quando uma nota cita um título ou um termo dos documentos, mantém a forma deles, 第一章 e 二十二行省. Essas normas foram escritas para documentos horizontais; compostos na vertical, os seus algarismos são justamente os que a receita precisa pôr em pé.
+
+### 2 · Abrir cada documento com uma faixa à direita
+
+<Excerpt region="opener" />
+
+Num fluxo vertical, o alto da página é a borda direita da folha, onde a leitura começa. Um design de título ancorado no alto da sangria é, portanto, uma faixa que desce pela borda direita, e o seu `size.height` é a sua largura no papel. Os deslocamentos giram com o fluxo: `x` mede para baixo na folha, `y` para a esquerda. A grade centra a mancha entre as margens, e `HEAD` repete essa conta, para que o título comece na altura do primeiro caractere de cada linha. `align: 'right'` leva a data ao pé da sua linha, onde as linhas de texto terminam, e `cjk.uprightDigits` alcança também o texto do design: o 11 de 3月11日 fica numa casa só, como no corpo. A faixa é a de <RecipeLink slug="chapter-opener-bleed-band">Abertura de capítulo sobre uma faixa sangrada</RecipeLink>, girada um quarto de volta.
+
+Um design de título não tem paridade, então a faixa sempre desce pela borda direita da folha. Na página 2, uma página da direita, essa borda é o corte dianteiro; na página 5, uma página da esquerda num livro encadernado pela direita, é a lombada, e o título começa a 8 mm da dobra, dentro da margem interna de 21,6 mm. Um caderno grampeado abre o bastante para isso. Num livro costurado ou colado, abra cada documento numa página da direita com `breakBefore.parity: 'even'`, que deixa a página 5 em branco.
+
+<PageShot page={2} crop="0.55,0.13,0.45,0.52" caption="Página 2: o título a partir do alto da mancha, a data no pé da faixa, o 10 de 晚上10時 e o 29 de 同月29日 em pé na apresentação." />
+
+### 3 · Pôr os cabeços na margem externa
+
+<Excerpt region="heads" />
+
+`anchor.to: 'outer'` é a margem do lado oposto à lombada, então num livro encadernado pela direita os cabeços descem pela borda esquerda do recto e pela borda direita do verso. O título fica quatro caracteres abaixo do alto da mancha e o fólio termina cinco acima do pé, ambos na vertical, a 80 % do corpo do texto ([elementos de texto verticais](/pt/docs/configuration#elementos-de-texto-verticais)). `pageNumbering.format: 'trad-chinese-informal'` imprime os fólios 三, 四, 六 e 七, e `pages: 'body'` os tira das duas aberturas.
+
+### 4 · Sangrar a capa com um design na largura da página
+
+<Excerpt region="cover" />
+
+Um design de título dentro de uma coluna é cortado no pé da coluna, e numa página vertical esse pé é a margem esquerda: um campo ancorado na sangria parava a 21,6 mm do refile esquerdo. Com `span: 'page'`, o título é composto como faixa de página, que não é cortada, e o campo chega às duas bordas. As duas molduras desenham o fio duplo, grosso e fino, dos livros impressos chineses: 1,6 pt e 0,5 pt, a 2 mm um do outro.
+
+### 5 · Carregar cada voz com o texto que ela compõe
+
+<Excerpt region="voices" />
+
+A Fontsource serve cada peso destas fontes em cerca de cem arquivos, cada um cobrindo uma faixa de caracteres, e `loadCjkFonts` carrega os arquivos que um texto toca. Recebendo só os títulos, os avisos de selo, o colofão, as linhas da capa e os fólios, cada peso da Noto Sans TC carrega 10 arquivos; com a amostra inteira, carregaria 35, e são três pesos. A LXGW WenKai TC recebe as apresentações e as notas e carrega 16. Uma fonte que recebe texto de menos faz a captura falhar (C12), e a captura nomeia os caracteres que precisou pegar de uma fonte de reserva.
+
+## Variações
+
+### Pôr em pé também os números de três algarismos
+
+Com 3, o 268 e o 115 das notas ocupam a sua casa sem marcação, como faria qualquer número de artigo ou de página até 999; 1912 continua de lado.
+
+```diff
+-  uprightDigits: 2,
++  uprightDigits: 3,
+```
+
+### Deitar todos os números de lado
+
+Com 0, nenhum número fica em pé sozinho: 10月10日 gira como 1912, e só o 268, o 115 e ROC, que estão marcados, continuam em pé.
+
+```diff
+-  uprightDigits: 2,
++  uprightDigits: 0,
+```
+
+## Erros comuns
+
+- A Noto Serif TC, do jeito que a Fontsource a serve, não tem 爲 nem 敎: a sua folha de estilo declara os dois, mas nenhum arquivo traz o glifo. A impressão de 1912 da constituição escreve 為 e 教 nessas formas. O canvas desenhou 敎 com uma fonte do sistema e o PDF não tinha glifo para ele, o que a captura acusou (C25). A antologia compõe 為 e 教, leva junto 靑 e 决 para 青 e 決, e a apresentação avisa.
+- A LXGW WenKai TC, do jeito que a Fontsource a serve, desenha 即, 為, 青 e 教 nas formas antigas 卽, 爲, 靑 e 敎, que destoam ao lado dos mesmos caracteres no texto em Song. As notas foram redigidas sem esses quatro; só a apresentação que lista as formas antigas da constituição precisa deles. Leia em tamanho real o texto em Kai das suas próprias notas.
+- Um número composto de lado se separa do chinês ao redor como uma palavra latina, um quarto de eme de cada lado (`cjk.latinSpacing`), e por isso as apresentações mostram `1912 年`; um número numa casa só não leva espaço, como um caractere chinês.

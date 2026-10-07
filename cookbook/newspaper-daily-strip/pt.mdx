@@ -1,0 +1,60 @@
+---
+title: "Uma tira diária e meia página de domingo no jornal"
+summary: "Suplemento de quadrinhos de um jornal: meia página de domingo no texto da capa e uma tira diária de quatro quadros no pé de uma página de quatro colunas."
+plain: "Duas páginas do caderno de quadrinhos de um jornal: uma história colorida grande na capa e, por dentro, uma entrevista com a cartunista em quatro colunas e a tira diária de quatro quadros embaixo."
+description: "Tiras de quadrinhos num jornal no Postext: blocos :::strip no texto ou flutuando sobre quatro colunas, meia página de domingo e tira diária em sete idiomas."
+question: "Como ponho uma tira de quadrinhos numa página de jornal, atravessando as colunas do texto?"
+aliases: ["tira de quadrinhos", "tirinha", "tira diária", "quadrinhos de domingo", "suplemento de quadrinhos", "caderno infantil", "quadrinhos de jornal", "HQ", "strip", "tira de 4 quadros", "comic strip", "tira cómica", "新聞漫画", "报纸漫画"]
+pageNotes: { "1": "A capa do caderno de quadrinhos: o título Quadrinhos em vermelho, a meia página de domingo (Pip e Otto pescando no gelo, o peixinho do Pip que pede “Me joga de volta.”, Otto fisgando uma bota com um TCHIBUM!) e três linhas de sumário: Nesta edição, Correio do gelo e No próximo domingo.", "2": "A página interna: o título Dez invernos no gelo sobre quatro colunas com uma entrevista, o boxe Pip e Otto em números, as cartas do Correio do gelo e um anúncio, e a tirinha diária do croissant no pé da página (“Bom dia, Otto! Um croissant, por favor.”, “Acabou de sair do forno!”, “Não tem um menorzinho?”, NHAC!, “Pronto. Menor.”)." }
+---
+
+## O que você vai compor
+
+O suplemento de quadrinhos de um jornal de fim de semana, *A Gazeta de Corrington*, dobrado em 230 × 310 mm. A capa traz a meia página de domingo de *Pip e Otto*, um pinguim e uma morsa que têm uma padaria num bloco de gelo, com o sumário embaixo. Por dentro, uma entrevista com a cartunista da tira ocupa quatro colunas, com cartas de leitores e um anúncio, e a tira diária da semana, quatro quadros quadrados, corre ao longo do pé da página. As duas histórias são blocos `:::strip` no texto do jornal, e o suplemento sai em sete idiomas.
+
+## Preparo
+
+### 1 · Escrever a tira onde o jornal a quer
+
+O código é [a resposta curta](#a-resposta-curta) acima. Um `:::strip` tem o corpo de uma página de quadrinhos (o seu `split`, as suas linhas `::panel` e o roteiro delas), mas é um bloco do texto ([tiras](/pt/docs/comics#tiras)). Na capa, de uma coluna, a tira de domingo é composta onde está escrita, com 210 mm de altura, e o sumário vem depois dela. A divisão dela, `55 / * [40 | *]`, dá à cena larga da pescaria uma fileira própria e às duas piadas uma fileira embaixo. Uma tira nunca se divide: se não cabe, passa inteira para a página seguinte.
+
+<PageShot page={1} crop="0,0,1,0.8" caption="A capa: a meia página de domingo composta no texto, com o sumário embaixo." />
+
+### 2 · Fazer a tira diária flutuar sobre as colunas
+
+A página de dentro abre com um H1 cujo estilo de título passa a seção para quatro colunas. A tira diária vem logo depois dele, com `span=page placement=bottom`: flutua até o pé da página na largura das quatro colunas, e as colunas da matéria terminam niveladas acima dela. Sem `height` nem `aspect`, uma tira assume a forma que deixa os quadros quadrados, aqui de quatro para um. Escrita com `placement=top`, ela abriria a página seguinte, porque um flutuante nunca sobe acima do ponto em que foi escrito.
+
+### 3 · Ajustar cada imagem à sua célula
+
+<Excerpt region="art" />
+
+As imagens foram desenhadas quadradas ou largas, e as células da divisão de domingo não são: a piada da bota cai numa célula de 112 × 88 mm. Cada área segura é cortada no que a piada precisa, Pip, Otto e a bota, para que o recorte nunca deixe faixas vazias em volta da imagem ([quadros e arte](/pt/docs/comics#quadros-e-arte)).
+
+### 4 · Imprimir a mesma página em sete jornais
+
+<Excerpt region="editions" />
+
+Cada edição compõe o jornal em fontes para a sua escrita e letreira as tiras com as suas próprias fontes de quadrinhos. Os balões japoneses correm na vertical, e a edição árabe, lida da direita para a esquerda, espelha os quadros de cada fileira e as colunas da página. As imagens e a divisão continuam as mesmas; só muda `content.<lang>.md` ([sentido de leitura](/pt/docs/comics#sentido-de-leitura)).
+
+## Variações
+
+### Dar uma altura fixa à tira diária
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* | * | * | *" span=page placement=bottom height=45mm}
+```
+
+### Pôr uma tira de uma coluna no texto
+
+Sem `span=page`, uma tira tem a largura da sua coluna e é composta onde está escrita, como uma figura no texto.
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* / * / * / *" aspect=0.25}
+```
+
+## Erros comuns
+
+- O cabeçalho da seção é desenhado pelo cabeçalho da página, não por uma abertura de H1, então nada além da linha do fólio fica acima da tira da capa.
+- Uma área segura mais larga que o formato da sua célula deixa a imagem com faixas do fundo do quadro em volta, e a montagem avisa `comicPanelLetterbox`.

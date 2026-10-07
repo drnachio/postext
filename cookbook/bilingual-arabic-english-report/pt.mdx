@@ -1,0 +1,46 @@
+---
+title: "Um relatório bilíngue árabe-inglês"
+summary: "Relatório anual em árabe com o inglês ao lado: {dir=ltr} em cada bloco inglês, :ltr[…] para nomes latinos nas linhas árabes e uma tabela da esquerda à direita."
+plain: "O relatório anual de uma fundação escrito em árabe, com cada parágrafo seguido da versão em inglês. A página mistura as duas direções sem que as palavras, os números ou as tabelas saiam de ordem."
+description: "Relatório bilíngue árabe-inglês no Postext: blocos marcados com {dir=ltr}, isolamentos :ltr[…] na linha, texto alinhado ao início e uma tabela em cada língua."
+question: "Como faço para misturar parágrafos, números e tabelas em árabe e em inglês na mesma página?"
+aliases: ["relatório bilíngue", "árabe e inglês", "árabe e português", "direção mista", "bidi", "bidirecional", "dir=ltr", "isolamento", "bloco LTR em RTL", "direção da tabela", "relatório anual", "IBM Plex Sans Arabic", "تقرير سنوي"]
+pageNotes: { "1": "A página de rosto: uma faixa verde-azulada no alto com o nome da fundação e o título التقرير السنوي ٢٠٢٥ em branco, em árabe, à direita, e o título em inglês, alinhado à esquerda, logo abaixo. Mais embaixo, a carta da diretora: um título árabe à direita, o rótulo em inglês à esquerda, e parágrafos árabes alinhados à direita, cada um seguido de um parágrafo em inglês menor e cinza, alinhado à esquerda." }
+---
+
+## O que você vai compor
+
+O relatório de 2025 de uma fundação de tradução imaginária, Dar al-Dad, numa página de 210 × 280 mm (a largura do A4) em IBM Plex Sans Arabic e IBM Plex Sans, as duas metades de uma mesma família. O relatório é árabe: corre da direita para a esquerda e numera as páginas ٢, ٣. Cada parágrafo árabe vem seguido da versão em inglês, menor e em cinza-ardósia, composta da esquerda para a direita e em bandeira à direita; cada título árabe leva um rótulo em inglês na outra margem. Os nomes latinos dentro das frases árabes mantêm a própria ordem, e os números do ano aparecem duas vezes, numa tabela árabe lida a partir da direita e numa inglesa lida a partir da esquerda. Na edição espanhola, a segunda língua é o espanhol.
+
+## Preparo
+
+### 1 · A segunda língua em blocos marcados
+
+O código está [na resposta curta](#a-resposta-curta), mais acima. O documento é árabe, então todo bloco corre da direita para a esquerda até o Markdown dizer o contrário: `{dir=ltr}` numa cerca `:::paragraphs` ou num título inverte aquele bloco, e `textAlign: 'start'` leva cada bloco para o lado em que ele começa, a direita no árabe e a esquerda no inglês ([Direção do documento, do bloco e do texto na linha](/pt/docs/arabic-layout#direção-do-documento-do-bloco-e-do-trecho)). Um nome latino dentro de uma linha árabe, :ltr[Harbour Modern Classics], é um isolamento: o algoritmo bidirecional o trata como uma peça neutra única, e as palavras árabes e a vírgula em volta dele ficam no lugar ([Isolamentos](/pt/docs/arabic-layout#isolamentos)). `emphasis: 'italic'` mantém *Middlemarch* em itálico no texto inglês; o motor nunca inclina uma letra árabe, seja qual for a configuração.
+
+### 2 · Uma tabela para cada direção
+
+<Excerpt region="tables" />
+
+A tabela árabe segue o documento: a primeira coluna, o programa, fica à direita, e `align: 'end'` encosta os números na borda esquerda das células. A tabela inglesa define `direction: 'ltr'`, então a primeira coluna fica à esquerda e `'end'` quer dizer a borda direita ([O que significam esquerda, direita, início e fim](/pt/docs/arabic-layout#o-que-significam-esquerda-direita-início-e-fim)). Os números árabes foram digitados em ٠–٩ e os ingleses em 0–9: os algarismos do documento só valem para os números que o motor escreve, como o número da tabela na legenda, جدول ١-١. Por isso a tabela inglesa tem um tipo próprio, sem contador: um número ali sairia como ٢.
+
+### 3 · Dois títulos numa faixa
+
+<Excerpt region="cover" />
+
+A página de rosto é o design do título de nível 1. O texto de design segue a direção do documento, então o nome e o título árabes não precisam de nada; o título inglês define `direction: 'ltr'` e se ancora na borda esquerda da página. A faixa é uma caixa ancorada na sangria, com 86 mm de altura, e o `minHeight` da abertura traz a carta da diretora para logo abaixo dela.
+
+## Variações
+
+### Pôr o inglês primeiro
+
+Um relatório para um conselho que não lê árabe troca os papéis: um documento em inglês, com os blocos sem marca, e os blocos árabes marcados com `{dir=rtl}`.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'en-us', // Arabic blocks then carry {dir=rtl}
+```
+
+## Erros comuns
+
+- Um número que o motor escreve dentro de um bloco inglês, seja um número de lista ou o rótulo de uma legenda, continua usando os algarismos do documento (٢ num relatório árabe). Dê a essas tabelas um tipo de recurso sem contador, ou escreva você mesmo os números.

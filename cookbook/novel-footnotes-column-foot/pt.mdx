@@ -1,0 +1,65 @@
+---
+title: "Notas de rodapé no pé da coluna que as cita"
+summary: "As chamadas [^id] do Markdown viram notas numeradas no pé da coluna que as cita, com chaves para uma coluna, notas no fim do capítulo e numeração contínua."
+plain: "Uma edição escolar de um romance clássico espanhol, em duas colunas. Mostra como pôr cada nota no pé da coluna que a menciona, para o leitor nunca ter de virar a página para encontrá-la."
+description: "Uma edição escolar do Lazarillo de Tormes em duas colunas: cada nota no pé da coluna que a cita, sob um fio curto, com o código completo do Postext."
+question: "Como componho as notas de rodapé no pé da coluna em que são citadas?"
+aliases: ["notas de rodapé", "notas no pé da página", "[^1]", "chamadas de nota", "notas de fim", "notas no fim do capítulo", "edição anotada", "edição escolar", "edição comentada"]
+---
+
+## O que você vai compor
+
+Uma edição escolar do *Lazarillo de Tormes*, em 210 × 280 mm e duas colunas de EB Garamond: o prólogo e o começo do primeiro tratado, em que Lázaro nasce num moinho do Tormes e sai pelo mundo com um cego. As notas explicam o que um leitor de 1554 sabia e um leitor de hoje não sabe: a aldeia de Tejares, a expedição à ilha de Los Gelves, o touro de pedra da ponte de Salamanca. Cada uma fica no pé da coluna que a cita, em corpo menor, sob um fio curto cor de vinho, e assim o olho desce do número à nota e volta sem virar a página. A edição inglesa traz as notas do próprio Clements Markham para a sua tradução de 1908.
+
+## Preparo
+
+### 1 · Citar a nota onde ela cabe e defini-la em qualquer lugar
+
+A configuração é [a resposta curta](#a-resposta-curta) acima; o resto é Markdown. `natives of Tejares,[^9]` imprime um número sobrescrito colado à vírgula, e um parágrafo que começa com `[^9]:` contém a nota. As definições saem do fluxo onde quer que você as escreva, então esta amostra as reúne todas no fim do capítulo, como as notas de Markham estavam no arquivo de origem. Os números seguem a ordem das chamadas, então os ids do Markdown podem ser palavras (`[^tejares]` na edição espanhola), e renumerar um capítulo nunca obriga a mexer nas notas.
+
+### 2 · Deixar espaço na coluna para as suas notas
+
+Antes de posicionar uma linha, a diagramação soma a altura das notas que essa linha cita pela primeira vez, e a do fio quando é a primeira nota da coluna. Uma linha cuja nota não cabe embaixo dela passa para a coluna seguinte com o seu parágrafo, segundo as regras de viúvas e órfãs, de modo que um número nunca aponta para uma nota de outra coluna. As notas se empilham a partir do pé, com corpo e entrelinha próprios, fora da grade de linhas de base, enquanto o texto acima delas continua na grade; o balanceamento de colunas conta só o texto.
+
+### 3 · Rebaixar todas as aberturas até a mesma linha
+
+<Excerpt region="opener" />
+
+A abertura ocupa as duas colunas e tira o chapéu do capítulo do atributo `kicker` do título. `minHeight` reserva dez linhas da grade, o bastante para um título de duas linhas em Bodoni com o seu fio, e assim o texto de cada capítulo começa na mesma linha e o fio nunca cai na primeira linha de texto.
+
+### 4 · Pôr o livro na página par e o capítulo na ímpar
+
+<Excerpt region="running-heads" />
+
+Os cabeços são ancorados à página conforme a paridade, com o fólio na borda externa; `pages: 'body'` os tira das aberturas, que recebem um fólio centralizado no pé. Um título de capítulo longo termina em reticências aos 120 mm em vez de esbarrar no fólio.
+
+### 5 · Experimentar as outras posições
+
+<Excerpt region="live" />
+
+Cada chave compõe o capítulo de novo com uma opção alterada. **One column** põe as notas no pé da página, que ali é a coluna. **End of chapter** as compõe depois do último parágrafo do capítulo e as desce até o pé da coluna que fecham, sob o mesmo fio. **Continuous** continua a numeração do prólogo no primeiro capítulo em vez de recomeçar em 1.
+
+## Variações
+
+### Manter as notas de fim de capítulo sob o texto
+
+Com `placement: 'chapterEnd'`, as notas ficam por padrão no pé da última coluna; `chapterEndAlign: 'text'` as põe logo abaixo do último parágrafo.
+
+```diff
+   placement: options.placement,
++  chapterEndAlign: 'text',
+```
+
+### Tirar o fio
+
+Sem o fio, as notas continuam separadas do texto por `spaceAbove` e `spaceBelowRule`.
+
+```diff
+-  separator: { width: 0.25, lineWidth: pt(0.5), color: col('oxblood') },
++  separator: { enabled: false },
+```
+
+## Erros comuns
+
+- Uma chamada numa legenda, numa célula de tabela ou num título é impressa como foi escrita: as notas são lidas em parágrafos, itens de lista, citações e boxes.
+- Uma nota nunca é dividida entre colunas: uma mais alta que a sua coluna passa do pé. Mantenha as notas em poucas linhas, como fazem os editores.

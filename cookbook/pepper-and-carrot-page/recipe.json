@@ -62,7 +62,8 @@
       "ca",
       "zh",
       "ar",
-      "ja"
+      "ja",
+      "pt"
     ]
   },
   "capture": {
@@ -140,6 +141,16 @@
           "es": "La traducción al árabe del episodio 8, «حفلةُ عيدِ ميلادِ فُلفُل»: los diálogos de las páginas 5 y 6 y los créditos"
         },
         "who": "Mahwiii",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The Brazilian Portuguese translation of episode 8, “A Festa de Aniversário da Pepper”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al portugués de Brasil del episodio 8, «A Festa de Aniversário da Pepper»: los diálogos de las páginas 5 y 6 y los créditos",
+          "pt": "A tradução para o português do Brasil do episódio 8, “A Festa de Aniversário da Pepper”: os diálogos das páginas 5 e 6 e os créditos"
+        },
+        "who": "Frederico Batista, with Alexandre E. Almeida",
         "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
         "license": "CC-BY-4.0"
       }

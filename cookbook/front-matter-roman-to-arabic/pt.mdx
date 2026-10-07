@@ -1,0 +1,92 @@
+---
+title: "Pré-textuais com fólios romanos, depois a página 1"
+summary: "A capa e os pré-textuais são títulos sem número contados em romanos minúsculos; :::numbering reinicia a contagem em 1 na página ímpar onde o romance começa."
+plain: "As primeiras páginas de uma edição de bolso de Frankenstein. Mostra como numerar as páginas antes da história com i, ii, iii e recomeçar da página 1 onde a história começa."
+description: "A capa e os pré-textuais de Frankenstein são contados de i a x, e a Letter I, numa página ímpar, é a página 1. O sumário e o PDF dão os mesmos números."
+question: "Como numero os pré-textuais com i, ii, iii e recomeço do 1 na página ímpar onde o romance começa?"
+aliases: ["paginação romana", "números romanos", "algarismos romanos", "elementos pré-textuais", "preliminares", "páginas iniciais", "capa do livro", "falsa folha de rosto", "anterrosto", "folha de rosto", "página de créditos", "ficha catalográfica", "dedicatória", "epígrafe", "frontispício", "página par em branco", "assinatura de carta", "reiniciar a numeração", "rótulos de página do PDF"]
+pageNotes: { "3": "A falsa folha de rosto, página iii. Seu estilo salta para uma página da direita, então o verso da capa, a página ii, fica em branco e sem fólio.", "4": "O frontispício, página iv, fica de frente para a folha de rosto, a v; nenhuma das duas imprime o fólio.", "10": "A última página do Preface: o fólio, x, vem em versaletes centralizado no pé.", "11": "A Letter I abre numa página da direita sob a aurora boreal sobre São Petersburgo; o fólio, 1, fica no mesmo lugar que o x da página em frente.", "13": "Página 3: numa página da direita, o cabeço põe o título da carta ao lado do fólio, os dois na direção da margem externa.", "14": "Página 4, o fim da Letter I: o cabeço põe o título do livro ao lado do fólio, e a assinatura de Walton vem alinhada à direita." }
+---
+
+## O que você vai compor
+
+As primeiras folhas de *Frankenstein* como clássico de bolso, em 129 × 198 mm: uma capa com um raio sobre o Mont Blanc, com o verso em branco, a falsa folha de rosto, um frontispício com o navio de Walton preso no gelo de frente para a folha de rosto, os créditos embaixo no verso dela, a dedicatória a Godwin sobre a epígrafe de Milton, um sumário e o Preface de 1818. Essas dez páginas são numeradas de i a x, mas só o sumário e o Preface imprimem os números. A Letter I começa o romance numa página da direita, sob a aurora boreal, e seu fólio diz 1 no mesmo lugar que o x da página em frente. A carta vai até a assinatura de Walton. O ix ao lado do Preface no sumário e o 1 ao lado da carta vêm das páginas prontas, e um leitor de PDF rotula as páginas do mesmo jeito. A capa, o frontispício e a aurora boreal são pinturas geradas com modelos de difusão, carregadas como bitmaps JPEG; a marca da editora e o cristal de gelo são desenhados em código.
+
+## Preparo
+
+### 1 · Cada folha é um título com design
+
+<Excerpt region="leaves" />
+
+Um título abre uma página própria e vira um marcador no PDF; o design do seu estilo posiciona os textos e as imagens da folha. Com `numbered: false` e `toc: false`, as folhas ficam fora da contagem de capítulos e do sumário. Um cabeçalho e um rodapé vazios dão a elas o que os gráficos chamam de fólios cegos: a folha de rosto não imprime número, mas continua sendo a página v, e por isso o Preface pode ser a ix. Só a falsa folha de rosto mantém a quebra para página ímpar, e é isso que deixa o verso da capa em branco. Os créditos, a dedicatória, a epígrafe e a despedida de Walton são blocos `:::paragraphs` compostos com os estilos do fim do trecho.
+
+### 2 · O sumário tira os números da diagramação
+
+<Excerpt region="contents" />
+
+`:::toc` lista cada título que o seu estilo deixa entrar, com o rótulo da página onde ele cai ([sumário](/pt/docs/configuration#sumário)). O Contents e o Preface compartilham o estilo `front`, que define `toc: false`, e o Preface o sobrescreve com `{toc="true"}`. Nem o Preface nem a Letter I são numerados, então suas entradas não imprimem número de capítulo. A segunda linha da entrada da carta é o atributo `to="…"` dela. Os números de página vêm na fonte dos fólios. As entradas começam na mesma linha de base que a primeira linha do Preface, de modo que as duas páginas em frente se alinham.
+
+### 3 · O romance abre numa página ímpar, sob a aurora boreal
+
+<Excerpt region="letter" />
+
+A pintura sangra pelo alto da página e se dissolve no papel embaixo, onde a carta começa. No Postext 1.4.1 uma imagem nunca conta para o espaço que uma abertura reserva (seus textos, fios e caixas contam, mesmo ancorados à página), então só `minHeight` põe a primeira linha abaixo da pintura ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O chapéu e a linha de data vêm dos atributos `to` e `dateline` do título. A Letter I também leva `{style="letter"}`, um estilo cujo único ajuste é `numbered: false`, porque as cartas de Walton vêm antes do Chapter I e não têm número de capítulo.
+
+### 4 · Os cabeços voltam com o romance
+
+<Excerpt region="heads" />
+
+Uma seção mantém o cabeçalho e o rodapé do documento, a menos que o seu estilo os substitua. Os pré-textuais substituem os dois e o estilo das cartas não, então a partir da página 1 o romance imprime estes cabeços nas páginas de texto e, na abertura, o fólio de pé definido na resposta curta. `{pageNumber}` imprime o rótulo da página em que está, por isso a função `folio()` põe x de um lado da lombada e 1 do outro com o mesmo design.
+
+### 5 · O PDF leva os mesmos números de página
+
+<Excerpt region="build" />
+
+`buildDocument` repete a diagramação até que os rótulos de página do sumário parem de mudar, então uma chamada basta. `renderToPdf` grava esses rótulos no PDF: num leitor que lê rótulos de página, o campo do número de página vai de i a x e depois recomeça em 1, e “ir para a página 1” abre a Letter I. Cada título vira um marcador com o nome do seu texto, por isso as folhas têm títulos simples (em inglês, como a amostra): Cover, Half title, Frontispiece, Title page, Imprint, Dedication.
+
+## Variações
+
+### Conte os pré-textuais em maiúsculas
+
+Algarismos romanos maiúsculos saem como versais completas na fonte dos fólios, mais altas que os versaletes dos romanos minúsculos.
+
+```diff
+-const pageNumbering = { format: 'lower-roman', startAt: 1 }; // startAt spelled out: cover = i
++const pageNumbering = { format: 'upper-roman', startAt: 1 }; // startAt spelled out: cover = I
+```
+
+### Numere o livro do começo ao fim
+
+Deixe `startAt` de fora e a contagem continua em algarismos arábicos, então a Letter I passa a ser a página 11, como nos livros que contam os pré-textuais junto com o texto.
+
+```diff
+-:::numbering{format="decimal" startAt=1}
++:::numbering{format="decimal"}
+```
+
+### Tire o frontispício
+
+Apague o título `# Frontispiece` e mande a folha de rosto para uma página ímpar: a página iv fica em branco, o Preface continua sendo a ix e a Letter I continua sendo a 1.
+
+```diff
+-  { id: 'title', ...blind, advancedDesign: design([ // v: four frontmatter fields, one attribute
++  { id: 'title', ...blind, breakBefore: { enabled: true, parity: 'odd' },
++    advancedDesign: design([ // v: four frontmatter fields, one attribute
+```
+
+### Acrescente sangria e marcas de corte para a gráfica
+
+Com `cutLines`, a capa e a abertura, ambas ancoradas à sangria, passam 3 mm do refile; os fólios e o número de páginas não mudam ([marcas de corte](/pt/docs/configuration#marcas-de-corte)).
+
+```diff
+     backgroundColor: col('paper'), pageNumbering,
++    cutLines: { enabled: true }, // a 3 mm bleed and crop marks
+```
+
+## Erros comuns
+
+- As folhas herdam a quebra `'odd'` do nível 1. Sem ajuste, cada uma espera uma página da direita. Os pré-textuais passam então de dez para catorze páginas, com mais quatro páginas pares em branco, e o frontispício fica de frente para uma página vazia em vez da folha de rosto. Redefina a quebra com `parity: 'any'`, como faz esta receita, ou desligue-a com `breakBefore: { enabled: false }`; um título com span de página abre sua própria página de qualquer jeito.
+- Tire o `:::pagebreak` antes de `:::numbering` quando o nível 1 quebra com `'always-odd'`, o padrão do motor para o H1. Se o texto anterior terminar numa página da direita, a quebra de página completa até a próxima ímpar, depois o título acrescenta sua página separadora e completa de novo, o que deixa três páginas em branco seguidas em vez de uma. Depois de uma quebra `'odd'`, como aqui, a quebra de página não muda nada; depois de `'any'`, é ela que põe a página 1 numa ímpar.
+- Um Preface que cresce uma página empurra a Letter I duas páginas adiante, porque a quebra para página ímpar acrescenta uma página par em branco antes dela. Confira o número de páginas sempre que editar os pré-textuais.
+- Mantenha os textos de uma abertura acima do pé da mancha. No Postext 1.4.1, um design de título que passa daí perde toda a altura reservada, `minHeight` incluído. Na capa nada muda, já que nenhum texto vem depois dela; numa abertura de capítulo, o texto começaria logo abaixo do título.
+- Os pontos de condução do sumário saem na fonte e na cor dos números de página, e `toc.leader` não tem cor própria, então aqui eles saem em azul-aço.

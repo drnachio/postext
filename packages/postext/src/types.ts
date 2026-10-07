@@ -680,6 +680,11 @@ export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 export interface ColorValue {
   hex: string;
   model: ColorModel;
+  /** The exact process values of a colour authored in CMYK (`model:
+   *  'cmyk'`), percent: a CMYK print render (`print`, or a `'cmyk'` PDF
+   *  colour space) sets them as they are instead of separating `hex`,
+   *  which is their screen rendering. */
+  cmyk?: CmykPercent;
   /** The `colorPalette` entry this colour follows, wherever it sits in the
    *  configuration (designs, callout labels and the `:ref` colour
    *  included): the entry's `hex` / `model` win, and the ones stored here
@@ -805,8 +810,13 @@ export interface PageConfig {
    *  margin is on its right, and viewers show the pairs `[3 | 2]`. With
    *  mirrored margins the recto therefore swaps `left` and `right`: `left`
    *  stays the inner margin. `'auto'` (the default) is `'right'` when
-   *  `layout.writingMode` is `'vertical-rl'` or the document runs right to
-   *  left (`PostextConfig.direction`), else `'left'`. Book-level:
+   *  `layout.writingMode` is `'vertical-rl'`, when the document runs right
+   *  to left (`PostextConfig.direction`), or when the config has a
+   *  `comics` section whose comics read right to left
+   *  (`comics.readingDirection` resolved, `comicReadingDirection`: a
+   *  manga, a Japanese or Traditional Chinese edition of a Western comic),
+   *  else `'left'`. The `comics` section decides, not the `:::page` blocks
+   *  of a chapter, so every chapter of a book is bound alike. Book-level:
    *  a heading style's own `layout` never changes it. */
   binding?: PageBinding;
 }
@@ -821,7 +831,8 @@ export interface ResolvedPageConfig {
   cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
   baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   pageNumbering: ResolvedPageNumberingConfig;
-  /** `binding` resolved: `'auto'` is `'right'` in a vertical document. */
+  /** `binding` resolved: `'auto'` is `'right'` in a vertical document, a
+   *  right-to-left one and a comic book read right to left. */
   binding: 'left' | 'right';
 }
 
@@ -4355,6 +4366,143 @@ export interface ResolvedCjkConfig {
 
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
 
+/** The PDF/X flavour postext-pdf writes: none (an ordinary PDF), PDF/X-1a
+ *  (CMYK only, no transparency; PDF/X-1a:2003) or PDF/X-4 (transparency
+ *  kept, colour-managed; PDF/X-4:2010). */
+export type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+/** How colours outside the output gamut are mapped: relative colorimetric
+ *  (in-gamut colours stay exact, paper white = white) or perceptual (the
+ *  whole gamut is compressed). */
+export type PrintRenderingIntent = 'relative' | 'perceptual';
+
+/** A CMYK recipe in percent (0..100 each). */
+export interface CmykPercent {
+  c: number;
+  m: number;
+  y: number;
+  k: number;
+}
+
+/** How black prints in a CMYK job. */
+export interface PrintBlackConfig {
+  /** Black and grey (neutral) colours print with black ink only, never as
+   *  a four-colour grey. Defaults to true. */
+  kOnlyNeutrals?: boolean;
+  /** 100 % K text and strokes overprint (no knock-out, so misregistration
+   *  never shows a white halo). Defaults to true. */
+  overprint?: boolean;
+  /** Large black areas (backgrounds, bands, boxes, shapes whose smaller
+   *  side reaches `richBlackMinSize`) print in rich black instead of
+   *  K only. Text never does. Defaults to true. */
+  richBlack?: boolean;
+  /** The rich-black recipe. Defaults to C60 M40 Y40 K100. */
+  richBlackColor?: CmykPercent;
+  /** The smaller side an area needs to print in rich black. Defaults to
+   *  6 mm. */
+  richBlackMinSize?: Dimension;
+}
+
+export interface ResolvedPrintBlackConfig {
+  kOnlyNeutrals: boolean;
+  overprint: boolean;
+  richBlack: boolean;
+  richBlackColor: CmykPercent;
+  richBlackMinSize: Dimension;
+}
+
+/** Thresholds of the print preflight (the Sandbox's Review panel, and
+ *  `preflightDocument`). */
+export interface PrintPreflightConfig {
+  /** Run the checks. Defaults to true. */
+  enabled?: boolean;
+  /** Placed images below this effective resolution (pixels per inch at
+   *  their printed size) get a warning. Defaults to 300. */
+  minImageResolution?: number;
+  /** Below this they are critical. Defaults to 150. */
+  criticalImageResolution?: number;
+  /** Rules and strokes thinner than this get a warning. Defaults to
+   *  0.25 pt. */
+  minRuleWidth?: Dimension;
+  /** Text smaller than this printed with more than one ink (a process
+   *  colour, rich black) gets a warning. Defaults to 9 pt. */
+  smallTextSize?: Dimension;
+  /** Distance inside the trim where text and important elements risk the
+   *  cut. Defaults to 5 mm. */
+  safeZone?: Dimension;
+  /** Backgrounds, pictures and bands whose edge stops this close to the
+   *  trim without reaching the bleed should bleed. Defaults to 3 mm. */
+  bleedSnap?: Dimension;
+  /** Report fonts a placed PDF print master does not embed. Defaults to
+   *  true. */
+  checkFonts?: boolean;
+}
+
+export interface ResolvedPrintPreflightConfig {
+  enabled: boolean;
+  minImageResolution: number;
+  criticalImageResolution: number;
+  minRuleWidth: Dimension;
+  smallTextSize: Dimension;
+  safeZone: Dimension;
+  bleedSnap: Dimension;
+  checkFonts: boolean;
+}
+
+/** An ICC output profile the user uploaded (their printer's), stored
+ *  out-of-band like a font or a picture. */
+export interface CustomOutputProfile {
+  /** The profile's name (its `desc` tag, or the file name). */
+  name: string;
+  /** Identifier of the stored `.icc` file. */
+  fileId: string;
+  /** The printing condition's registry name when the profile is one
+   *  (e.g. `FOGRA51`), for the PDF/X OutputConditionIdentifier; else
+   *  `Custom`. */
+  registryName?: string;
+  /** Total ink limit of the condition, percent. */
+  inkLimit?: number;
+}
+
+/** Print production: the PDF/X standard, the output profile CMYK is
+ *  separated with, how black prints, and the preflight thresholds. Layout
+ *  ignores it; postext-pdf and the preflight read it. */
+export interface PrintConfig {
+  /** PDF/X flavour. Defaults to `'none'`. Any PDF/X standard writes CMYK
+   *  through the output profile whatever `pdfGeneration.colorSpace` says. */
+  standard?: PdfXStandard;
+  /** The output profile, by catalogue id (`OUTPUT_PROFILES`), or
+   *  `'custom'` for `customProfile`. Defaults to `'fogra39'`. */
+  outputProfile?: string;
+  customProfile?: CustomOutputProfile;
+  /** Defaults to `'relative'`. */
+  renderingIntent?: PrintRenderingIntent;
+  /** Map sRGB black to the darkest printable black (relative intent).
+   *  Defaults to true. */
+  blackPointCompensation?: boolean;
+  /** Convert RGB pictures to the output CMYK. PDF/X-1a always does; in
+   *  PDF/X-4 false keeps them RGB, tagged sRGB, for the printer's RIP.
+   *  Defaults to true. */
+  convertImages?: boolean;
+  /** Total area coverage limit, percent. Defaults to the profile's. */
+  inkLimit?: number;
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+export interface ResolvedPrintConfig {
+  standard: PdfXStandard;
+  outputProfile: string;
+  customProfile?: CustomOutputProfile;
+  renderingIntent: PrintRenderingIntent;
+  blackPointCompensation: boolean;
+  convertImages: boolean;
+  /** The configured limit, else the profile's. */
+  inkLimit: number;
+  black: ResolvedPrintBlackConfig;
+  preflight: ResolvedPrintPreflightConfig;
+}
+
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it
  *  (`doc.config.pdfGeneration`), and `renderToPdf` takes each setting from
  *  its own options first, then from here (the first document's, for a
@@ -5355,10 +5503,15 @@ export interface ResolvedIndexConfig {
 
 /** The direction the panels of a comic page are read in: `'ltr'` (Western
  *  comics: the first panel of a tier at the left), `'rtl'` (manga and
- *  Arabic comics: at the right), `'auto'`: `'rtl'` in a right-to-left
- *  document (an Arabic edition mirrors its pages), else the direction the
- *  art was drawn for (`artDirection`): a Japanese edition of a Western
- *  comic reads left to right, a manga right to left in any language. */
+ *  Arabic comics: at the right), `'auto'`: the direction of the edition's
+ *  language, `'rtl'` in a right-to-left document (an Arabic edition), in
+ *  a vertical one and in a Japanese or Traditional Chinese one
+ *  (`comicsLocaleDirection`): a Japanese edition of a Western comic reads
+ *  right to left. Otherwise the direction the art was drawn for
+ *  (`artDirection`): a manga reads right to left in any language, a
+ *  Western comic left to right in English, Simplified Chinese or Korean.
+ *  With `page.binding: 'auto'` a book whose comics read right to left is
+ *  bound on the right. A page's `direction` attribute wins. */
 export type ComicReadingDirection = 'auto' | 'ltr' | 'rtl';
 
 /** How a panel's border is drawn: a clean stroke, none, or a hand-drawn
@@ -5540,6 +5693,12 @@ export interface BalloonStyleConfig {
   haloColor?: ColorValue;
   /** Rotation in degrees (sound effects). */
   rotate?: number;
+  /** Lean of the letters' upright strokes, degrees (sound effects, text
+   *  written on the art): positive leans them forward like italic, negative
+   *  back. Applied before `rotate`, about the same centre, so a title on a
+   *  book cover seen in perspective follows both the cover's top edge
+   *  (`rotate`) and its sides (`skew`). Default `0`. */
+  skew?: number;
 }
 
 export interface ResolvedBalloonStyleConfig {
@@ -5566,6 +5725,7 @@ export interface ResolvedBalloonStyleConfig {
   fontScale: number;
   align: 'center' | 'start';
   rotate: number;
+  skew: number;
   /** Unset: the lettering's. */
   fontFamily?: string;
   bold?: boolean;
@@ -5596,9 +5756,15 @@ export interface ComicCastMember {
  *  panel styles, the lettering, the balloon styles and the cast. Only
  *  documents with comic pages read it. */
 export interface ComicsConfig {
-  /** Default `'auto'`. */
+  /** The order panels are read in (see {@link ComicReadingDirection}).
+   *  Default `'auto'`: the edition's language decides (right to left in
+   *  Arabic, Japanese, Traditional Chinese and vertical documents), else
+   *  {@link artDirection}. */
   readingDirection?: ComicReadingDirection;
-  /** The direction the art was drawn for. Default `'ltr'`. */
+  /** The direction the art was drawn for: what `'auto'` reads in when the
+   *  edition's language has no direction of its own, and what
+   *  {@link mirrorArt} compares the page's direction with. Default
+   *  `'ltr'`. */
   artDirection?: 'ltr' | 'rtl';
   /** Mirror the pictures of a page read in the other direction than
    *  {@link artDirection} (a panel opts out with `mirror=false`). Default
@@ -5770,6 +5936,9 @@ export interface PostextConfig {
   comics?: ComicsConfig;
 
   pdfGeneration?: PdfGenerationConfig;
+
+  /** Print production: PDF/X, output profile, black, preflight. */
+  print?: PrintConfig;
 
   colorPalette?: ColorPaletteEntry[];
 

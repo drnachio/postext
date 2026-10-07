@@ -182,6 +182,7 @@ const COVER_ARIA = byLang(
   'Un plec obert dibuixat tal com el veu el motor: línies justificades de caixes de paraula sobre una retícula de línia de base, una banda de capítol, una figura flotant i una línia oberta en caixes, gomes i una penalització',
   'صفحتان متقابلتان مرسومتان كما يراهما المحرّك، تُقرآن من اليمين إلى اليسار: أسطر مضبوطة من صناديق الكلمات على شبكة خطوط القاعدة، وشريط فصل، وشكل عائم، وسطر مفتوح على صناديق ومسافات مرنة وجزاء',
   'エンジンの目で描いた見開き：ベースライングリッドに乗る、語のボックスを並べた両端そろえの行、章扉の帯、フロートした図、そしてボックスとグルーとペナルティに分けた一行',
+  'Uma página dupla aberta desenhada como o motor a vê: linhas justificadas de caixas de palavra sobre uma grade de linhas de base, uma faixa de capítulo, uma figura flutuante e uma linha aberta em caixas, colas e uma penalidade',
 );
 
 /** The cover art of an edition. The Arabic edition's spread is the mirror

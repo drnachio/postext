@@ -1,0 +1,65 @@
+---
+title: "Atividade com caixas de resposta e banco de palavras"
+summary: "Uma folha de ciências de quatro páginas: caixas de resposta brancas em cartões verde-claros, 2 mm abaixo de cada pergunta e fora da grade, e lacunas em chips."
+plain: "Uma folha de atividades de ciências para crianças de oito anos, sobre as partes de uma planta. Cada pergunta tem embaixo um quadro para a resposta, e algumas frases têm lacunas para completar com uma lista de palavras."
+description: "Uma folha de ciências do fundamental no Postext: caixas de resposta dentro de cartões, espaçadas em milímetros fora da grade, com chips para bancos e lacunas."
+question: "Como faço para pôr caixas de resposta em cartões com espaçamento exato, mais banco de palavras e lacunas?"
+aliases: ["folha de atividades", "ficha de exercícios", "atividade escolar", "caixa de resposta", "espaço para escrever", "boxe aninhado", "boxe dentro de boxe", "banco de palavras", "complete as lacunas", "preencha as lacunas", "exercício de lacunas", "ligue as colunas", "checklist", "lista de verificação", "frases eu consigo", "autoavaliação"]
+pageNotes: { "1": "Uma faixa verde-folha com uma pílula amarela UNIT 3, o título Plants and their parts, a linha da coleção e campos brancos para o nome do aluno e a data. À direita, um pé de ervilha com flores brancas cresce num disco branco cuja terra desce abaixo da faixa; seis pontos amarelos numeram a flor, a vagem, as ervilhas, a folha, o caule e as raízes. Sob uma introdução de três linhas, a atividade 1, num disco verde, encabeça um cartão verde-claro com duas perguntas, cada uma sobre uma caixa de resposta branca que começa com um pequeno Write here em cinza.", "2": "Atividade 2: um banco de palavras branco com chips amarelos e seis lacunas numeradas em três colunas. Atividade 3: um segundo banco de palavras e seis frases, cada uma com uma lacuna contornada, e uma nota Did you know? sobre as gavinhas.", "3": "Atividade 4: dentro do cartão, uma tabela branca de cantos arredondados com seis linhas, cada uma com um alimento desenhado e o nome dele à esquerda, um chip amarelo com uma parte da planta à direita e um vão largo entre os dois, com um ponto verde em cada ponta. Atividade 5: uma caixa de resposta alta para desenhar e nomear as partes de uma planta.", "4": "Atividade 6, uma ervilha para germinar em casa, com uma caixa I think e uma caixa I saw; How did I do?, encabeçado por uma estrela, lista três frases I can, cada uma depois de um círculo vazio para colorir; sob o cartão, duas linhas de colofão." }
+---
+
+## O que você vai compor
+
+A folha 3A de *Seedlings Science*, uma coleção inventada para crianças de oito anos, em quatro páginas de 200 × 260 mm impressas de um lado só. Uma faixa verde-folha traz a unidade numa pílula amarela, o título e campos brancos para nome e data; ao lado, um pé de ervilha em aquarela, dentro de um disco branco, tem as seis partes numeradas em amarelo. A aquarela foi gerada com modelos de difusão e já chega recortada no disco, em dois JPEGs que se encontram na borda da faixa: o de cima tem o verde da faixa nos cantos, e o de baixo, branco; os números e as linhas de chamada continuam em código, por cima da imagem. Cada atividade é um título numerado sobre um cartão verde-claro. Os cartões trazem caixas de resposta brancas com uma pequena indicação cinza e espaço para várias linhas, bancos de palavras em chips amarelos, lacunas contornadas dentro das frases, uma tabela de alimentos para ligar às partes da planta e uma lista de círculos para colorir. Cada caixa de resposta fica 2 mm abaixo da pergunta e 5 mm acima do que vem depois, e cada cartão termina 9 mm acima do que vier em seguida na página. O texto é composto em Andika, que a SIL desenhou para crianças em alfabetização.
+
+## Preparo
+
+### 1 · Tirar também os títulos da grade
+
+<Excerpt region="grid" />
+
+Na resposta curta, as margens de cada caixa se fundem com as das vizinhas, e a maior prevalece. Os 5 mm de um banco de palavras vencem os 2 mm acima da lista que vem embaixo, e os 5 mm da última caixa de resposta caem dentro dos 5 mm de preenchimento inferior do cartão, em vez de se somarem a eles. Na grade, um título de nível 2 reserva entre 10,8 e 14,1 mm em vez dos 8,6 mm do seu disco, porque o que vem depois volta para a linha de 17 pt seguinte; `headings.snapToGrid: false` mantém a reserva em 8,6 mm. Pôr `snapToGrid` nos estilos aninhados não muda nada, porque só o cartão externo pode sair da grade ([boxes aninhados](/pt/docs/configuration#o-contêiner-callout)). O balanceamento de colunas está desligado porque ele acrescenta espaço acima dos títulos para preencher a página; na página 2, poria 33 mm acima da atividade 3 em vez de 9.
+
+### 2 · Fazer de cada lacuna um chip
+
+<Excerpt region="chips" />
+
+Um chip é uma caixa inquebrável na linha, e o preenchimento dele é pintado para além da linha sem deixá-la mais alta. Um banco de palavras é uma fileira de chips num boxe aninhado `bank`. As lacunas, os pontos para ligar e os círculos para colorir também são chips, cada um contendo só um word joiner U+2060, porque no postext 1.4.1 um chip feito de espaços imprime a própria marcação ([chips em linha](/pt/docs/document-format#chips-em-linha)). `paddingX` define a largura: uma lacuna tem 34 mm dentro de uma frase e 38 mm sozinha numa coluna, e um círculo ganha de cada lado metade da sua altura de 1,25 em. Na lista de verificação, o círculo fica onde estaria o marcador (`bulletChar: ''`). Com 19,6 pt, uma lacuna é mais alta que a linha de 17 pt, e por isso cada uma tem um item de lista só para ela, a 24 pt do seguinte. Na 1.4.1, o Sandbox ainda mostra o aviso “Chips encostam na linha vizinha” para `blank`, `wide` e `tick`, porque compara cada chip com o passo de 17 pt das linhas e deixa de fora os 7 pt entre os itens da lista.
+
+### 3 · Numerar as atividades com um desenho de título
+
+<Excerpt region="activity" />
+
+Um título de nível 2 com `advancedDesign` mantém o seu lugar na coluna, e o design é desenhado no lugar do texto: um disco com `{number}`, que imprime o `numberingTemplate` do nível, e `{titleText}` à direita ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O disco e o título têm 8,6 mm de altura, e fora da grade o título reserva exatamente isso, então o design não precisa de `minHeight`. Como os números vêm do contador do nível 2, uma atividade inserida no Markdown renumera as que vêm depois. O título da autoavaliação usa um estilo com `numbered: false`, que o deixa fora da contagem, e uma estrela em SVG fica onde estaria o disco.
+
+### 4 · Pôr os desenhos nas células da tabela
+
+<Excerpt region="tables" />
+
+`TableCell.image` desenha um recurso dentro da célula, aqui com 76 % da largura da célula, e a linha cresce para caber. `verticalAlign: 'middle'` centraliza em relação ao desenho o nome do alimento, os pontos e o chip. A coluna mais larga, 31 % da tabela, fica vazia para o aluno traçar a linha. O estilo nomeado arredonda a moldura da tabela e recorta nela o preenchimento branco do corpo. Os fios da grade também são brancos: o canvas deixa um fio claro entre células preenchidas, e um fio branco de 1 pt sobre o painel branco o cobre ([estilos de tabela nomeados](/pt/docs/configuration#estilos-de-tabela-nomeados)). O tipo de recurso dela tem `captionPrefix` vazio, e a tabela não tem texto de legenda, então nenhuma legenda sai embaixo. `placement: { position: 'here' }` põe a tabela onde está a sua linha `::resource`, dentro do cartão.
+
+## Variações
+
+### Devolver os cartões à grade
+
+Com o padrão `snapToGrid: true`, o que vem depois de um cartão desce para a linha seguinte da grade de 17 pt, e os 9 mm sob cada cartão viram 14,5 mm sob a atividade 2, 13,2 mm sob a atividade 4 e 11,2 mm sob a atividade 6.
+
+```diff
+-  snapToGrid: false,
++  snapToGrid: true,
+```
+
+### Dar mais espaço a uma resposta
+
+`:::space` conta em linhas de 17 pt da própria caixa de resposta, e cada linha a mais dá ao aluno 6 mm a mais para escrever.
+
+```diff
+ Write here
+-:::space{lines=4}
++:::space{lines=6}
+```
+
+## Erros comuns
+
+- No postext 1.4.1, um boxe não consegue pautar as próprias linhas de escrita, porque os estilos de boxe não têm fundo pautado. As caixas de resposta ficam em branco e tiram a altura de `:::space`, e as linhas curtas de completar são chips contornados.
+- Um estilo de título com `numbered: false` continua desenhando o design do seu nível, com `{number}` vazio. Sem um design próprio, a autoavaliação abriria com um disco verde vazio, então `review` copia o design das atividades e põe a estrela onde ficava o disco.

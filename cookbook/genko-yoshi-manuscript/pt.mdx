@@ -1,0 +1,61 @@
+---
+title: "Um conto em genkō yōshi, um caractere por quadrado"
+summary: "Botchan em papel de manuscrito de 400 quadrados: uma grade de 20 × 20 desenhada, um caractere ou sinal por quadrado e os 、。 de início de linha pendurados."
+plain: "O papel de manuscrito japonês tem um quadrado para cada caractere. Esta página copia nele as primeiras linhas de um romance famoso, com o título, o nome do autor e cada sinal de pontuação onde as regras escolares japonesas mandam."
+description: "Genkō yōshi no Postext: uma grade de 20 × 20 caracteres desenhada, um caractere por quadrado, linhas de título e de nome, e 、。 pendurados sob o último quadrado."
+question: "Como componho japonês em papel de manuscrito, 20 quadrados por 20 linhas, um caractere em cada quadrado?"
+aliases: ["genkō yōshi", "genkouyoushi", "原稿用紙", "papel de manuscrito", "folha de 400 caracteres", "400字詰", "papel quadriculado", "grade de caracteres", "マス目", "masume", "papel de redação japonês", "作文", "sakubun", "kinsoku no manuscrito", "ぶら下げ", "burasage", "Botchan", "坊っちゃん", "Natsume Sōseki", "Klee One"]
+pageNotes: { "1": "A primeira folha, sozinha à esquerda: uma moldura dupla marrom-avermelhada em volta de 20 linhas de 20 quadrados cinza, 坊っちゃん na primeira linha a partir do terceiro quadrado, 夏目　漱石 na segunda terminando um quadrado antes do pé, e depois o texto de Botchan a partir da terceira linha, um caractere ou sinal em cada quadrado; um 、 que cai depois do vigésimo quadrado fica pendurado embaixo dele. O número da folha （1） e o rótulo impresso 20×20 ficam sob a moldura.", "3": "A terceira folha: o parágrafo termina na décima terceira linha, e as linhas restantes são quadrados vazios." }
+---
+
+## O que você vai compor
+
+Três folhas de papel de manuscrito japonês (原稿用紙, genkō yōshi), do modelo de 400 quadrados, com os três primeiros parágrafos de *Botchan*, de Natsume Sōseki, copiados como faria um escritor ou um aluno: 20 linhas de 20 quadrados, lidas de cima para baixo a partir da direita, em Klee One, uma fonte desenhada com caneta. O título fica na primeira linha a partir do terceiro quadrado e o nome do autor na segunda, um quadrado antes do pé; cada parágrafo começa depois de um quadrado vazio. Cada caractere, kana pequeno e sinal tem um quadrado próprio, e um 、 ou 。 que abriria uma linha é escrito embaixo do último quadrado da linha anterior. Uma moldura marrom-avermelhada, o número da folha e o rótulo impresso do papel, 20×20, completam a folha. A página chinesa contada em caracteres é a <RecipeLink slug="chinese-official-document">Nº 082</RecipeLink>.
+
+## Preparo
+
+### 1 · Desenhe os quadrados e dê a cada sinal um quadrado inteiro
+
+O código está na [resposta curta](#a-resposta-curta), mais acima. A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) faz a mancha medir 20 caracteres de 20 pt (7,1 mm) para baixo e 20 linhas de 27 pt (9,5 mm) na largura, e `show: true` desenha os quadrados num cinza-claro próprio, na tela, e no PDF quando `renderToPdf` recebe `characterGrid: true` (num livro a grade é um recurso de revisão, então o PDF a deixa de fora por padrão); a faixa de 2,5 mm entre duas linhas é onde quem escreve acrescenta leituras e correções. Um sinal japonês é meio glifo e meio eme de branco, e um livro recolhe brancos onde dois sinais se encontram ou onde um colchete abre a linha. No papel de manuscrito cada sinal mantém o seu quadrado, então `compressAdjacent: false` põe 。」 em dois quadrados e `trimLineStart: false` deixa a um colchete no início da linha o quadrado inteiro ([Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático)).
+
+### 2 · Siga as regras de linha do manuscrito
+
+O papel de manuscrito tem o seu próprio kinsoku. Um kana pequeno ou um ー pode começar uma linha, cada um no seu quadrado; `ja-loose` permite isso. Um 、 ou 。 que abriria uma linha é escrito no último quadrado da linha anterior, junto com o caractere que está ali, ou logo abaixo dele; `hangingPunctuation: 'force'` o pendura embaixo do vigésimo quadrado, e nenhuma linha é apertada. Com `'allow'`, o padrão para japonês, o motor primeiro recolhe o sinal na linha apertando a meio quadrado um 、 de dentro dela, o que um livro impresso faz e um manuscrito nunca faz: o resto dessa linha ficaria meio quadrado acima, atravessando as linhas da grade.
+
+### 3 · Escreva o título e o nome onde as regras mandam
+
+<Excerpt region="heading" />
+
+O título é um título com o tamanho e a fonte do texto, então ele preenche quadrados como qualquer outra linha: `lineSpan: 1` o mantém numa linha da grade e `indent: em(2)` deixa dois quadrados vazios acima dele ([Ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)). O nome é um parágrafo com `textAlign: 'end'` e `endIndent: em(1)`, que o faz terminar um quadrado antes do pé, e o Markdown escreve o quadrado em branco entre sobrenome e nome como um espaço ideográfico: `夏目　漱石`. O texto começa na terceira linha, e cada parágrafo depois de um quadrado vazio, o de `firstLineIndent: em(1)`.
+
+### 4 · Imprima a folha em volta dos quadrados
+
+<Excerpt region="sheet" />
+
+Os elementos do cabeçalho são desenhados na própria folha: numa página vertical, `x` corre para a direita e `y` para baixo a partir do canto superior esquerdo, ao contrário do design de um título, que é diagramado no quadro girado do texto. A moldura dupla fica a 1,5 mm dos quadrados em três lados e a 8 mm abaixo deles, onde caem os sinais pendurados. `GRID` e `MARGIN` a posicionam a partir dos mesmos números de que são feitas as margens da página; as margens passadas à página são meio milímetro menores, porque a grade as trata como mínimos e um encaixe exato poderia arredondar para 19 linhas.
+
+### 5 · Componha numa fonte de caneta
+
+<Excerpt region="pen" />
+
+A Klee One é desenhada com caneta e mantém as formas japonesas dos kanji, então as folhas parecem escritas à mão sem a irregularidade de uma digitalização. As formas verticais dela põem 、。 no canto superior direito do quadrado e giram ー e os colchetes, que é onde quem escreve os põe. Como toda família japonesa do Fontsource, ela vem em cerca de 120 arquivos, e `loadCjkFonts` baixa os que o texto precisa ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas)).
+
+## Variações
+
+### Confira a grade de um livro com os mesmos quadrados
+
+`show: true` funciona em qualquer grade de caracteres: no bunko da <RecipeLink slug="bunko-novel-furigana">Nº 117</RecipeLink> ele desenha os 38 × 15 quadrados sobre o texto, um jeito rápido de verificar que cada linha respeita a grade e cada título as suas três linhas.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+### Deixe os sinais se apertarem, como numa página impressa
+
+Com o padrão japonês, as folhas parecem um livro datilografado em papel quadriculado: um 、 que abriria uma linha é recolhido apertando outro, e o resto dessa linha fica meio quadrado fora da grade.
+
+```diff
+-  hangingPunctuation: 'force',
++  hangingPunctuation: 'allow',
+```

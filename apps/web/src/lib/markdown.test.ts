@@ -148,7 +148,7 @@ describe("links and inline HTML", () => {
   });
 
   it("leaves no site-relative link or stray inline HTML in any rendition (nor so in llms-full.txt)", () => {
-    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"]) {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar", "pt"]) {
       for (const path of markdownPaths(locale)) {
         // Prose only: fenced blocks and code spans hold samples.
         let fence = false;
@@ -161,12 +161,13 @@ describe("links and inline HTML", () => {
         }
       }
     }
-  });
+    // Seven locales of renditions: past the CI default of 120 s.
+  }, 300_000);
 });
 
 describe("llms.txt", () => {
   it("is written in the locale's language, with features, packages and links", () => {
-    for (const locale of ["es", "ca", "zh", "ja", "ar"]) {
+    for (const locale of ["es", "ca", "zh", "ja", "ar", "pt"]) {
       const txt = llmsTxt(locale);
       expect(txt, locale).not.toMatch(/source code, issues|video walkthroughs|PDF backend|EPUB writer/);
       for (const pkg of ["postext", "postext-pdf", "postext-epub", "postext-folio", "postext-citeproc"]) {
@@ -245,7 +246,7 @@ describe("page renditions", () => {
   });
 
   it("renders the Japanese layout guide as plain Markdown", () => {
-    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"]) {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar", "pt"]) {
       const md = pageMarkdown(locale, "/docs/japanese-layout")!;
       expect(md).toMatch(/^# /);
       expect(md).toMatch(/^> \*\*[^*]+: /m);
@@ -259,7 +260,7 @@ describe("page renditions", () => {
   });
 
   it("renders the Comics guide as plain Markdown", () => {
-    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"]) {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar", "pt"]) {
       const md = pageMarkdown(locale, "/docs/comics")!;
       expect(md).toMatch(/^# /);
       // The split illustration described in words, HTML tables as GFM, no JSX left over.

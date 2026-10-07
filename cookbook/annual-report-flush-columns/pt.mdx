@@ -1,0 +1,68 @@
+---
+title: "Relatório anual com colunas alinhadas no pé"
+summary: "O relatório anual de uma cooperativa de energia em duas colunas que terminam na mesma linha, com um boxe de números na largura e a última página nivelada."
+plain: "O relatório anual de uma pequena cooperativa de energia, em duas colunas. Mostra como fazer as duas colunas de texto terminarem exatamente na mesma altura."
+description: "Um relatório anual de cinco páginas composto no Postext numa grade de 50 linhas: cada coluna desce até a última linha e a página final termina nivelada."
+question: "Como faço cada coluna de um relatório terminar na última linha da grade, e a página final terminar nivelada?"
+aliases: ["justificação vertical", "colunas alinhadas no pé", "colunas equilibradas", "balanceamento de colunas", "colunas niveladas", "números-chave", "painel de números", "demonstração de resultados", "DRE", "relatório anual", "annual report", "cores por seção", "boxe flutuante"]
+pageNotes: { "1": "A capa: um fundo azul quase preto com Tidewell Community Energy em branco, 2025 em algarismos brancos muito grandes, Annual report and accounts em amarelo e o período em maiúsculas monoespaçadas espaçadas. Na metade inferior, uma fita verde-azulada e uma fita amarela se alargam e se cruzam de janeiro a dezembro, rotuladas WIND e SUN, sobre uma fileira de iniciais dos meses, com duas linhas de letra miúda no pé.", "2": "A carta da presidente sob uma faixa azul-mar e o título The wind and the sun took turns. Os primeiros parágrafos param na mesma altura nas duas colunas, acima de um boxe azul quase preto com três números em amarelo, 8.47 GWh, 2,316 e £84,000; a carta continua embaixo do boxe e termina numa assinatura manuscrita no pé da coluna direita.", "3": "O relatório de operações sob uma faixa verde-azulada, duas colunas com intertítulos verde-azulados, uma lista curta dos três maiores telhados e, no pé da página, um gráfico de barras duplas verde-azuladas e amarelas para os doze meses.", "4": "Uma nota sobre como se conta um quilowatt-hora, em duas colunas sob um fio verde-azulado no alto da página; abaixo, uma tabela de produção por local e um gráfico de anel com as horas das turbinas no alto das duas colunas, e depois o resto do relatório de operações até o pé.", "5": "O relatório da tesoureira sob uma faixa vermelho-tijolo: duas colunas curtas que param na mesma linha e, abaixo delas, a demonstração de resultados na largura da página, com uma linha de cabeçalho azul quase preta, títulos de grupo em itálico e subtotais em negrito sobre um tom claro." }
+---
+
+## O que você vai compor
+
+O relatório anual de 2025 da Tidewell Community Energy, uma cooperativa inventada com duas turbinas eólicas, uma usina solar e painéis em 21 telhados. Cinco páginas de 210 × 280 mm. Na capa, a produção eólica e a solar do ano correm como duas fitas sob um “2025” de 150 pt. A carta da presidente, o relatório de operações e as contas da tesouraria vêm em seguida, em duas colunas justificadas de Brygada 1918 numa grade de 50 linhas. As colunas cheias terminam na última linha da grade, e as curtas terminam niveladas com a vizinha. Um boxe com três números-chave atravessa a página da presidente, com a carta cortada em nível acima dele, e uma nota sobre medição flutua para o alto da página 4. Na página final, as duas colunas param na mesma linha, acima da demonstração de resultados. Um atributo de paleta pinta de verde-azulado as páginas de operações e de vermelho-tijolo a página de finanças.
+
+## Preparo
+
+### 1 · Mantenha cada linha na grade e deixe as alavancas fecharem os vãos
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. A mancha tem exatamente 50 linhas de 13,4 pt de altura, e a margem inferior (21,6 mm) é calculada a partir dessa altura. Um intertítulo ocupa uma linha da grade acima dele e uma para si, então uma coluna que termina curta fica curta em linhas inteiras, e linhas inteiras são o que o <Feature id="column-balancing">balanceamento de colunas</Feature> acrescenta. Na <PageRef page={3}>página 3</PageRef>, o parágrafo de três linhas sobre a chuva de granizo vai inteiro para a página 4 por causa de `avoidOrphans`, o nome que o Postext dá à regra que impede a última linha de um parágrafo de ficar sozinha no alto de uma coluna, e a coluna direita termina duas linhas curta. `maxLinesPerHeading: 1` dá uma dessas linhas ao espaço acima de *The Saltings and the roofs* e deixa a outra para a alavanca seguinte, que a acrescenta depois da lista de telhados. Com o padrão de 4, as duas linhas iriam para cima do título.
+
+### 2 · Corte o texto em nível acima de um boxe que atravessa a página
+
+<Excerpt region="figures" />
+
+Um boxe com `span="page"` divide uma página de duas colunas em faixas. Na <PageRef page={2}>página 2</PageRef>, a carta da presidente para em oito linhas em cada coluna acima do boxe e continua nas duas colunas abaixo dele. Dentro do boxe, `:::columns{count=3 breaks="3,5"}` abre a segunda e a terceira colunas no segundo e no terceiro número (o terceiro e o quinto blocos do grupo), em vez de cortar onde as colunas ficariam mais niveladas. O estilo de parágrafo `figure` compõe esses números em 26 pt, e o seu `boldColor` os imprime em amarelo.
+
+### 3 · Faça um boxe flutuar para o alto da página seguinte
+
+<Excerpt region="aside" />
+
+No Markdown, a nota sobre medição vem depois do primeiro parágrafo sobre Harrow Down, na página 3; `placement="top"` a tira do fluxo e a coloca no alto da página seguinte. O relatório preenche o resto da página 3, e a <PageRef page={4}>página 4</PageRef> abre com o boxe sobre as duas colunas. Abaixo dele, a tabela por local e o gráfico de anel, ambos com `position: 'top'`, encabeçam uma coluna cada, uma linha da grade mais abaixo do que ficariam sem os 3,5 mm de espaçamento interno inferior do boxe.
+
+### 4 · Dê a cada seção a sua cor sem página divisória
+
+<Excerpt region="palette" />
+
+Com `parts: { page: false }`, um delimitador como `:::part{number="02" title="Operations" palette="band=#1c6e67"}` não abre página. Ele dá nome à seção na faixa de abertura e nos rodapés correntes, e troca `band` em todas as páginas até a parte seguinte. As faixas, os intertítulos, os marcadores, os rótulos das legendas e o fio da nota usam `band`, então as páginas de operações saem em verde-azulado e a de finanças em vermelho-tijolo, enquanto a carta da presidente mantém o azul-mar de base (<Feature id="part-palettes">cores por parte</Feature>).
+
+### 5 · Monte as tabelas a partir dos dados e feche a última página nivelada
+
+<Excerpt region="data" />
+
+`statement()` transforma `DATA.accounts` na demonstração de resultados, linha a linha. Um rótulo que começa com `=` imprime em negrito, sobre o tom claro, a soma acumulada de cada ano; os custos são negativos nos dados, então o *Operating surplus* sai dessa soma sem nenhum total digitado à mão. Um rótulo sem números, *Income* ou *Operating costs*, vira uma única célula em itálico na largura da tabela, mesclada com `mergeCells`, que também escreve as células de preenchimento de que uma mesclagem precisa. Na <PageRef page={5}>página 5</PageRef>, a demonstração flutua na largura do pé da página, sob o relatório da tesoureira, que fecha o documento. Sem balanceamento, as colunas chegariam a 12 linhas na esquerda e 9 na direita; o corte final deixa as duas em 11, e a alavanca de títulos acrescenta acima de *Cash and reserves* a linha que ainda falta à coluna direita.
+
+## Variações
+
+### Deixe os títulos ficarem com todo o vão
+
+As duas linhas livres da página 3 vão então para cima de *The Saltings and the roofs*, e nenhuma depois da lista.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = {}; // the default: up to 4 lines above each heading
+```
+
+### Desligue o balanceamento
+
+A coluna direita da página 3 termina então duas linhas curta. Na página 5, a coluna esquerda chega a 12 linhas e a direita a 9, e a demonstração começa uma linha mais abaixo.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = { enabled: false };
+```
+
+## Erros comuns
+
+- Quando as colunas de uma página final diferem em uma linha, elas ficam como estão, com a esquerda uma linha mais longa, como um compositor as deixaria; o corte final só age numa diferença de duas linhas ou mais. Para terminar as duas juntas, alongue ou encurte o texto em uma linha.
+- O Postext 1.4.1 remove os espaços no fim das células de tabela, inclusive o espaço não separável. Para alinhar os números positivos com os custos entre parênteses, o código termina cada número positivo com um espaço não separável e um word joiner (U+2060).

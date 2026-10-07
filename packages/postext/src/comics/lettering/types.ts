@@ -122,6 +122,9 @@ export interface LetteringStyle {
   haloColor?: string;
   /** Default rotation in degrees (sound effects), clockwise. */
   rotate?: number;
+  /** Default lean of the letters in degrees (sound effects), positive
+   *  forward like italic; applied before `rotate`. */
+  skew?: number;
 }
 
 /** Text of a lettering item: plain text (a newline or U+2028 is a forced
@@ -166,6 +169,8 @@ export interface LetteringItem {
   breakBorder?: boolean;
   /** Rotation in degrees (sound effects), clockwise; else the style's. */
   rotate?: number;
+  /** Lean of the letters in degrees (sound effects); else the style's. */
+  skew?: number;
   /** Scale of the lettering size (sound effects, `size=`). */
   sizeScale?: number;
   /** The line's own writing mode (`vertical` / `horizontal`), over the

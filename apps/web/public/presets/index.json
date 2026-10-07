@@ -188,13 +188,14 @@
       "id": "pepper-carrot",
       "dir": "pepper-carrot",
       "name": "Pepper&Carrot · Pepper's Birthday Party",
-      "description": "El episodio 8 del cómic de David Revoy en siete idiomas: las viñetas originales sin texto, con los bocadillos y la rotulación que el motor compone a partir de las traducciones oficiales; los bocadillos japoneses van en vertical y las páginas árabes se leen de derecha a izquierda · Episode 8 of David Revoy's webcomic in seven languages: the original text-free panels, with balloons and lettering the engine sets from the official translations; the Japanese balloons are set vertically and the Arabic pages read right to left",
+      "description": "El episodio 8 del cómic de David Revoy en ocho idiomas: las viñetas originales sin texto, con los bocadillos y la rotulación que el motor compone a partir de las traducciones oficiales; la edición japonesa se rotula en vertical y, como la árabe, se lee de derecha a izquierda y se abre por la derecha · Episode 8 of David Revoy's webcomic in eight languages: the original text-free panels, with balloons and lettering the engine sets from the official translations; the Japanese edition is lettered vertically and, like the Arabic one, reads right to left and opens from the right",
       "locale": "en",
       "locales": [
         "en",
         "es",
         "ca",
         "fr",
+        "pt-BR",
         "ja",
         "zh-Hans",
         "ar"

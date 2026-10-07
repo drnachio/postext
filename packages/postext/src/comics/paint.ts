@@ -10,6 +10,29 @@ import type { ComicCastMember } from '../types';
 import type { VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTPoint } from '../vdt';
 import { translateComicPage } from './transform';
 
+/** The affine matrix `[a, b, c, d, e, f]` (canvas order, page px, y down:
+ *  x' = a·x + c·y + e, y' = b·x + d·y + f) a balloon is painted through:
+ *  its letters leaned by `skew` degrees, then turned by `rotate` degrees
+ *  clockwise, both about the centre of its box. Undefined when it has
+ *  neither. */
+export function comicBalloonMatrix(balloon: Pick<VDTComicBalloon, 'bbox' | 'rotate' | 'skew'>): [number, number, number, number, number, number] | undefined {
+  const deg = balloon.rotate ?? 0;
+  const skew = balloon.skew ?? 0;
+  if (!deg && !skew) return undefined;
+  const r = (deg * Math.PI) / 180;
+  const cos = Math.cos(r);
+  const sin = Math.sin(r);
+  const t = Math.tan((skew * Math.PI) / 180);
+  // R(rotate) · [1 −t; 0 1]
+  const a = cos;
+  const b = sin;
+  const c = -t * cos - sin;
+  const d = cos - t * sin;
+  const cx = balloon.bbox.x + balloon.bbox.width / 2;
+  const cy = balloon.bbox.y + balloon.bbox.height / 2;
+  return [a, b, c, d, cx - (a * cx + c * cy), cy - (b * cx + d * cy)];
+}
+
 /** A small deterministic hash (FNV-1a) for seeding a rough border. */
 export function comicHashString(s: string): number {
   let h = 0x811c9dc5;

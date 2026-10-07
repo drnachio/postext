@@ -1,0 +1,66 @@
+---
+title: "Cartilha de alfabetização com sílabas em chips"
+summary: "Uma unidade de cartilha em espanhol para a letra M: sílabas em chips na cor da sua vogal e uma grade de palavras ilustradas, com uma aquarela em cada célula."
+plain: "Três páginas de uma cartilha em espanhol para crianças pequenas, dedicadas à letra M. Cada sílaba fica numa etiqueta colorida, e cada palavra da grade tem o seu desenho."
+description: "Uma unidade de cartilha no Postext: um estilo de chip por vogal, palavras escritas com chips de sílaba encostados, grade arredondada e linhas para cobrir."
+question: "Como componho sílabas como chips coloridos no texto, uma cor por vogal, numa cartilha de alfabetização?"
+aliases: ["cartilha", "alfabetização", "método silábico", "sílabas", "famílias silábicas", "caderno de atividades infantil", "letramento", "cartilla"]
+pageNotes: { "1": "Uma faixa creme com um Mm gigante, uma borboleta e uma maçã; abaixo, as sílabas ma, me, mi, mo, mu e am, em, im, om, um em chips coloridos pela vogal, e depois oito palavras divididas em chips de sílaba.", "2": "Seis palavras com desenho, mano, mapa, mesa, mimosa, mono e muñeca, numa grade arredondada de ladrilhos creme, cada aquarela sobre as suas sílabas; abaixo, linhas para cobrir m, M e as cinco sílabas.", "3": "Quatro frases em 24 pt com as palavras novas em chips de sílaba, um box creme de sílabas contornadas para colorir, um recado para a família e o colofão." }
+---
+
+## O que você vai compor
+
+A unidade 7 de *Letra a letra*, uma cartilha espanhola inventada: três páginas sobre a letra M. As cartilhas espanholas ensinam a ler sílaba por sílaba, por isso a amostra existe só em espanhol. A abertura põe um Mm em DynaPuff de 190 pt numa faixa creme, ao lado de duas coisas cujo nome em espanhol começa com m, uma borboleta (*mariposa*) e uma maçã (*manzana*). As sílabas da unidade são chips na cor da sua vogal: a vermelho, e laranja, i verde-azulado, o azul, u roxo. As sílabas com m são preenchidas e as outras só contornadas, e assim a criança vê qual metade de *mesa* pertence a esta unidade. A página 38 traz seis palavras ilustradas numa grade arredondada, com uma aquarela em cada célula, e depois três linhas de letras para cobrir. As aquarelas foram geradas com modelos de difusão; a faixa, os ícones e as linhas para cobrir são desenhados em código. A página 39 tem quatro frases em 24 pt, um box de sílabas para colorir e um recado para a família.
+
+## Preparo
+
+### 1 · Um estilo de chip por vogal e uma função que escreve os chips
+
+[A resposta curta](#a-resposta-curta) monta 21 estilos de chip espalhando um mesmo objeto, `syllable`. Há um estilo preenchido por vogal para as sílabas com m, um contornado por vogal para as outras, um gêmeo `-frase` de cada um desses dez e `pinta`, o contorno em tinta que a criança pinta. `syllables()` transforma `{mi·mo·sa}` em três `:chip[…]` sem nada entre eles, de modo que as sílabas de uma palavra se encostam e a borda branca desenha a emenda. Do outro lado de um espaço entre palavras, um chip mantém pelo menos o seu `gap`, e 0,5 em deixa as palavras de uma fileira de 24 pt a 4,2 mm uma da outra, onde o espaço sozinho deixaria 2,3 mm. Dentro de uma frase, esse vão quase dobraria o espaço antes da palavra nova, então uma palavra que vem depois de outra recebe os gêmeos `-frase`, cujo `gap` de 0 deixa o espaço de 2,3 mm como está.
+
+### 2 · Uma entrelinha que dá espaço aos chips
+
+<Excerpt region="reading" />
+
+O enchimento vertical e a borda de um chip são pintados fora da sua linha e não somam entrelinha, então um chip mais alto que o passo da linha esbarra nos chips da linha de baixo. Um chip de sílaba de 24 pt tem 10,4 mm de altura; com entrelinha de 30 pt (10,6 mm), os chips de duas frases ficariam a 0,1 mm um do outro. As linhas que a criança lê recebem 45 pt e as fileiras de sílabas 60 pt, três e quatro linhas da grade de 15 pt das instruções.
+
+### 3 · Uma aquarela em cada célula
+
+<Excerpt region="pictures" />
+
+`setCellImage` põe uma imagem acima do texto de uma célula, com uma fração da largura interna da célula, aqui 0,72 (36,5 mm), e a linha cresce para acomodá-la. Cada aquarela é um JPEG pintado sobre branco e multiplicado pelo creme dos ladrilhos, então ela assenta no ladrilho sem caixa em volta. Abaixo de cada aquarela vem a palavra em chips de sílaba. Uma célula de tabela aceita marcação de chip como qualquer parágrafo. O estilo de tabela `dibujos` arredonda a moldura e os fundos em 5 mm e separa os ladrilhos creme com fios brancos de 4 pt.
+
+### 4 · Uma linha de espaço antes do box
+
+<Excerpt region="boxes" />
+
+O Markdown põe `:::space{lines=1}` entre a última frase e o box para colorir, uma linha de 15 pt (5,3 mm). O `marginTop` do box é 0, então essa linha é todo o espaço; sem ela, o box começaria onde termina a linha da última frase. Um `:::space` que abre um box é descartado, então o box começa com o enunciado e os chips da legenda de cores, e o seu próprio `:::space` vem depois deles, entre a legenda e a tarefa de colorir.
+
+### 5 · A abertura da letra
+
+<Excerpt region="opener" />
+
+O Mm é o texto do título (`{titleText}`); o número da unidade, a série e o nome da letra são atributos na mesma linha do título. A faixa, a borboleta e a maçã são imagens, e uma abertura não reserva altura para imagens. Sem `minHeight`, a abertura termina no pé da palavra *manzana*, a 88,7 mm do alto da página, e o título da primeira atividade começa a 99,3 mm, 2,6 mm acima do ponto mais baixo da onda (101,9 mm). Um `minHeight` de 16 linhas da grade termina a abertura a 102,7 mm, e as duas linhas de `marginTop` do título o fazem começar a 113,3 mm, na grade e 11,4 mm abaixo da onda.
+
+### 6 · Ícones ao lado dos títulos das atividades
+
+<Excerpt region="activities" />
+
+Cada título de atividade indica o seu estilo de título, como em `## Lee las frases {style="lee"}`, e o estilo desenha um ícone com o título centralizado ao lado. Os títulos continuam sendo de nível 2, então o nível `H2` define o espaçamento: duas linhas da grade de `lineHeight` para o título e mais duas de `marginTop` acima dele.
+
+## Variações
+
+### Arredonde as sílabas em pílulas
+
+Um raio maior que metade da altura do chip é limitado a essa metade, então um valor grande desenha pontas redondas. Uma sílaba de uma letra só sai quase um círculo, e as emendas dentro de uma palavra viram entalhes.
+
+```diff
+-  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
++  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
+```
+
+## Erros comuns
+
+Dê a `minHeight` linhas inteiras da grade. Com 85 mm, 0,33 mm além da 16ª linha, o primeiro título começou 0,33 mm fora da grade. O bloco do título então se estendeu até a linha seguinte da grade, com 15,5 mm de altura em vez de 10,6, e tudo abaixo dele na página 37 desceu 5,3 mm.
+
+Com o equilíbrio de colunas ligado, um `minHeight` de 16 linhas deixava as atividades da página 37 onde 17 linhas as punham: a página tinha uma linha da grade de sobra, e o equilíbrio a colocava acima do título da primeira atividade. A configuração desliga o equilíbrio (`headings.balancing`), e a linha de sobra fica no pé da página.

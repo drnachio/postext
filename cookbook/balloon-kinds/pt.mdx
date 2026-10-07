@@ -1,0 +1,62 @@
+---
+title: "Todos os tipos de balão numa página do farol"
+summary: "Uma página de quadrinhos com fala, pensamento, sussurro, grito, rádio, recordatório, voz interior, nota do editor e onomatopeias, cada um nomeado entre chaves."
+plain: "Uma página de quadrinhos sobre um resgate durante uma tempestade que usa todos os tipos de balão, com a folha de estilo do letreirista mostrando como cada um se escreve no roteiro."
+description: "Página de quadrinhos no Postext com todos os balões: fala, pensamento, sussurro, grito, rádio, recordatórios, voz interior, notas, onomatopeias, fora de quadro."
+question: "Como letreiro balões de pensamento, sussurro, grito e rádio, e aponto cada rabicho para quem fala?"
+aliases: ["balão de fala", "balão", "balão de pensamento", "balão de sussurro", "balão de grito", "balão de explosão", "balão de rádio", "recordatório", "legenda de narração", "onomatopeia", "SFX", "fora de quadro", "rabicho", "letreiramento", "speech balloon", "bocadillo", "吹き出し", "对话框"]
+pageNotes: { "1": "A folha de estilo: o título “Folha de estilo de letreiramento” em maiúsculas de destaque vermelhas e doze tipos de balão, cada um com sua marcação do roteiro num chip amarelo.", "2": "A página: um chamado de rádio na sala da lanterna, com recordatório, balão serrilhado de rádio e nota do editor; Maya sussurrando “Calma, Biscuit.” para o gato, que pensa “Será mesmo?” numa nuvem; o faroleiro gritando “Gannet! Rumo à luz!” num balão de explosão; o pesqueiro na tempestade com KA-BRUUM em vermelho; Maya na janela com “Vai. Vai. Vai.” numa caixa cinza de voz interior; a manhã seguinte nas pedras, com os balões unidos “Manda duas.” e “Uma é pro gato.”." }
+---
+
+## O que você vai compor
+
+A página 7 de *O farol de Porthcove*, uma história em quadrinhos sobre uma noite de tempestade num farol, com a folha de estilo do letreirista na frente. Um pesqueiro perde o motor, o faroleiro o guia pelo rádio, Maya espera com o gato e, de manhã, o mestre do barco agradece. A página usa todos os tipos de balão que o Postext desenha: fala, fala unida, pensamento, sussurro, grito, rádio, recordatórios de narração, voz interior, nota do editor, onomatopeia, uma voz fora de quadro e um balão fixado. O formato é o de um gibi americano, 168 × 259 mm, e a página sai em sete idiomas, entre eles o português.
+
+## Preparo
+
+### 1 · Dê nome ao tipo na linha do roteiro
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Uma linha do roteiro é `speaker{kind}: text`, e o tipo é o id de um estilo de balão. Os nove estilos embutidos cobrem os tipos de sempre: um oval com rabicho curvo para a fala, uma nuvem com bolinhas para o pensamento, um contorno tracejado para o sussurro, uma explosão com rabicho em cunha para o grito, um contorno em zigue-zague com rabicho em zigue-zague para uma voz pelo rádio ([estilos de balão](/pt/docs/comics#estilos-de-balão)). Um estilo na configuração com o mesmo id muda só o que ele nomeia: aqui, a cor do traço, o amarelo dos recordatórios e as 16 pontas da explosão. `caption`, `note` e `sfx` são personagens reservados: caixas de narração encaixadas num canto, a nota do editor a 0,8 × o corpo e letras de display sem balão.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="A chamada de rádio: um recordatório, o balão de rádio do mestre apontando para o aparelho, a resposta do faroleiro e a nota do editor." />
+
+### 2 · Aponte cada rabicho para quem fala
+
+<Excerpt region="art" />
+
+Cada desenho traz âncoras em frações da imagem: a boca para onde aponta o rabicho de uma fala, a cabeça para onde aponta um pensamento, o rosto que nenhum balão pode cobrir ([personagens e âncoras](/pt/docs/comics#personagens-e-âncoras)). O mestre do barco nunca aparece: a âncora dele no desenho da tempestade é o aparelho de rádio e, no desenho do mar, o barco. Quando quem fala não está no quadro, `tail=end` (ou `start`, `top`, `bottom`) leva o rabicho até essa borda, e `at="44% 22%"` fixa o centro de um balão num ponto do desenho, onde ele fica qualquer que seja o recorte. Duas linhas seguidas do mesmo personagem se juntam num só contorno com um só rabicho.
+
+### 3 · Dê a um personagem uma voz própria
+
+O elenco da resposta curta dá a toda linha `skipper:` o estilo de rádio, então o roteiro nunca repete `{radio}`. Uma linha ainda pode dizer outra coisa: no quadro da manhã, o mestre chama do barco, `skipper{speech tail=bottom}:`, num balão comum cujo rabicho sai pelo pé do quadro.
+
+### 4 · Letreire cada edição com as suas próprias fontes
+
+<Excerpt region="editions" />
+
+A mesma página sai em sete idiomas: `content.<lang>.md` só traz as palavras. Os balões japoneses são compostos na vertical em Zen Antique e as onomatopeias em Dela Gothic One; os árabes, em Playpen Sans Arabic, com Lalezar para o trovão. Itálico e negrito valem onde a fonte os tem: a voz interior sai em itálico em português e em redondo em japonês ([letreiramento](/pt/docs/comics#letreiramento)).
+
+## Variações
+
+### Use um balão ondulado para uma voz fraca ou doente
+
+Qualquer outro id vira um estilo próprio, aplicado sobre o balão de fala.
+
+```diff
+ const balloonStyles = [
++  { id: 'weak', shape: 'wavy', stroke: col('ink'), fontScale: 0.9 }, // maya{weak}: …
+   { id: 'speech', stroke: col('ink') },
+```
+
+### Junte duas linhas com um gargalo
+
+```diff
+-  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1) },
++  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1),
++    joinSameSpeaker: 'connector' },
+```
+
+## Erros comuns
+
+- Um ponto fixado é um ponto do desenho, mantido qualquer que seja o recorte. Uma onomatopeia fixada tão perto da borda que sairia do quadro (KA-BRUUM em `at="16% 28%"`) é empurrada de volta para dentro, então pode ficar um pouco afastada do ponto escrito.
+- Uma voz fora de quadro é letreirada junto à borda para onde aponta o rabicho: o agradecimento do mestre, `tail=bottom`, fica no pé do quadro da manhã, embora seja a primeira linha do quadro. Aponte o rabicho para a borda de cima quando uma linha dessas tiver de ser lida primeiro.

@@ -1,0 +1,64 @@
+---
+title: "Um livro de leitura vertical com zhuyin à direita"
+summary: "Um livro escolar de Taiwan composto na vertical: {守株|ㄕㄡˇ|ㄓㄨ} põe uma coluna de zhuyin à direita de cada caractere, com figuras e notas num andar de cima."
+plain: "Um livro de leitura escolar de Taiwan, impresso em colunas de cima para baixo. Cada caractere chinês tem ao lado um pequeno guia de pronúncia, para as crianças lerem palavras que ainda não aprenderam."
+description: "Uma lição de um livro de leitura de Taiwan no Postext: texto vertical em Kai com zhuyin ao lado de cada caractere, figuras e notas em cima, lombada à direita."
+question: "Como faço para pôr o zhuyin ao lado de cada caractere de um texto chinês vertical?"
+aliases: ["zhuyin", "bopomofo", "注音", "注音符號", "國語課本", "livro didático de Taiwan", "livro de leitura", "cartilha", "leitura vertical", "texto vertical", "直排", "寓言", "fábulas"]
+pageNotes: { "1": "Página 86, uma página par à direita da página dupla: uma figura de um lavrador sentado junto a um toco de árvore enquanto uma lebre foge; embaixo, o título 第十二課　寓言兩則 em vermelho, uma introdução, o título 一　守株待兔 e o texto original, cada caractere com o seu zhuyin; na borda direita, uma aba vermelha com 第三單元　寓言故事.", "2": "Página 87: no andar de cima, um boxe com quinze notas sobre as duas fábulas, numeradas ao longo da lição; embaixo, a versão moderna da primeira fábula e o original da segunda, 二　鄭人買履.", "3": "Página 88: uma figura do homem voltando para casa de uma barraca de sapatos rumo ao banquinho onde deixou a medida; embaixo, a versão moderna da segunda fábula e três perguntas sob 想一想.", "4": "Página 89: no andar de cima, um boxe sobre Han Fei e um boxe com seis caracteres novos e o seu zhuyin; embaixo, 語文天地 sobre as duas fábulas como expressões idiomáticas, com as entradas em vermelho, e o colofão." }
+---
+
+## O que você vai compor
+
+A lição 12 do livro 9 de *國語*, um livro de leitura inventado de quinto ano de Taiwan: duas fábulas do *Han Feizi*, a do lavrador de Song que espera junto a um toco por outra lebre e a do homem de Zheng que confia mais na sua medida do que nos próprios pés. Os livros de leitura de Taiwan são compostos na vertical, em letra Kai, com o zhuyin de cada caractere numa coluna à direita dele, para que a criança consiga ler um caractere antes de aprendê-lo. A lição abre numa página dupla encadernada pela direita. Em cima, um andar guarda as figuras, as notas, o autor e os caracteres novos; embaixo, a lição corre em Iansui de 16 pt, 23 caracteres por linha. A versão em escrita latina é <RecipeLink slug="textbook-margin-column">o livro didático com coluna na margem</RecipeLink>, cuja coluna lateral só de flutuantes é aqui o andar de cima, girado um quarto de volta.
+
+## Preparo
+
+### 1 · Uma coluna de zhuyin ao lado de cada caractere
+
+O código é [a resposta curta](#a-resposta-curta) acima. `{宋人|ㄙㄨㄥˋ|ㄖㄣˊ}` dá a cada caractere a sua leitura, uma por `|`; a pontuação fica fora das chaves, então 。e ， não recebem nenhuma. No texto vertical, uma leitura em bopomofo vai à direita da coluna, com os símbolos empilhados, a marca de tom à direita do último e o ponto do tom neutro acima do primeiro. Com metade do corpo do texto, `cjk.ruby.fontSize` deixa os símbolos com 0,3 em, então três símbolos cabem ao lado de um caractere, e duas leituras assim seguidas, como em 就像, ficam a pelo menos um quarto de símbolo uma da outra sem alargar nenhum dos dois caracteres; com 0,6 em, ㄇㄧㄥˊ fica mais alta que 明 e afasta os dois 明 de 明明. O passo de 32 pt entre linhas deixa um vão de um quadratim, que o zhuyin e as marcas de tom preenchem pela metade. O clreq pede 1,5 em quando o zhuyin fica entre linhas verticais; isso dá um passo de 40 pt e dez linhas por página, então esta página fica com um quadratim para ter 13 linhas de 23, e cada leitura fica a cerca de 8 pt da linha vizinha.
+
+### 2 · Figuras e notas no andar de cima
+
+<Excerpt region="upper-tier" />
+
+No texto vertical, as colunas de um layout `oneAndHalf` são andares, e `sideColumnSide: 'left'` põe em cima o que só aceita flutuantes. `::resource{id="plate-1"}` no texto manda a primeira figura para lá; o tipo `plate` não tem prefixo de legenda, e as figuras não têm legenda, então nada sai embaixo delas. Um boxe aberto com `span="side"` cai no andar a partir da linha em que foi aberto, e o texto dele desce pelo andar. As notas das duas fábulas são um único boxe, numerado ao longo da lição e aberto depois do primeiro original, que termina na página 86: ele preenche o andar da página 87, e assim as notas das duas fábulas ficam na página dupla que contém os originais. O zhuyin mede 0,3 em do texto que lê, e `cjk.ruby` é uma configuração única para o livro, então as notas e o boxe do autor são compostos em 13 pt para manter as leituras deles em 3,9 pt.
+
+### 3 · Quatro fontes, cada uma carregada com o seu texto
+
+<Excerpt region="build" />
+
+A lição é composta em Iansui, uma letra Kai desenhada a partir da Klee One nas formas padrão de caracteres de Taiwan, as que as crianças aprendem a escrever. As leituras ficam em LXGW WenKai TC, cujo ponto de tom neutro continua redondo em 4,8 pt, as notas em Noto Serif TC e os rótulos em Noto Sans TC. Cada fonte carrega os arquivos que contêm os caracteres que ela compõe: as leituras são separadas dos seus caracteres, e os boxes de notas vão só para a fonte Ming. `vertical: true` acrescenta as formas verticais, para que 「」 e 、 fiquem em pé como devem ao longo da coluna. `pageIndexOffset: 1` faz da página 86 uma página par, e assim a lição abre numa página dupla.
+
+### 4 · A aba e os fólios na borda externa
+
+<Excerpt region="furniture" />
+
+Num livro encadernado pela direita, a página par fica à direita da página dupla, então as páginas pares levam a aba da unidade e o fólio na borda direita, e as ímpares na esquerda. A aba é uma caixa com um elemento de texto por cima; `writingMode: 'vertical-rl'` no elemento compõe 第三單元　寓言故事 descendo pela aba, enquanto os fólios e as linhas do pé continuam horizontais.
+
+## Variações
+
+### Imprimir o zhuyin numa segunda cor
+
+Alguns livros de leitura imprimem as leituras mais claras que o texto, para que os caracteres fiquem em primeiro plano.
+
+```diff
+-  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5) },
++  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5), color: col('muted') },
+```
+
+### Pôr as leituras sobre texto horizontal
+
+<RecipeLink slug="pinyin-primer">A cartilha com pinyin</RecipeLink> põe uma sílaba sobre cada caractere em linhas horizontais, como fazem as primeiras cartilhas da China continental e de Hong Kong.
+
+## Erros comuns
+
+- Tire as leituras do dicionário de Taiwan. Ferramentas feitas sobre dicionários do continente, entre elas o pypinyin, dão 度 duó, 寧 nìng, 時候 shíhou e 市場 shìchǎng; o *Dicionário Revisado de Chinês Mandarim* do Ministério da Educação, que os livros de leitura de Taiwan seguem, lê ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ e ㄕˋ ㄔㄤˊ, e põe em tom neutro a segunda sílaba de 故事, 家裡 e 過來. O moedict.tw o oferece palavra por palavra. Ele mantém 一 e 不 no tom próprio, e esta lição também.
+
+- Desenhe alguns caracteres em cada fonte antes de misturá-las. A LXGW WenKai TC segue as formas herdadas e desenha 為 (U+70BA) como 爲, então uma lição composta nela imprimia 爲宋國笑 no texto e 為宋國笑 na nota em Ming da mesma página dupla. A Iansui desenha o 為 padrão.
+
+- Os números da lição e das fábulas são digitados nos títulos (`# 第十二課　{寓言兩則|…}`). Um `numberingTemplate` junta o número ao primeiro caractere do título, e quando esse caractere tem leitura, a leitura fica centralizada sobre o número e o caractere juntos.
+
+- Calcule o que o andar de cima de cada página precisa comportar e abra cada boxe onde a página dele tem espaço. O boxe do autor é aberto antes de 語文天地 para começar o andar da página 89, e o dos caracteres novos, aberto depois das expressões idiomáticas, vem em seguida. Um boxe ou uma figura que não encontra espaço antes do fim do texto sai numa página sem nada embaixo, e o seguinte fica de fora sem aviso, então confira se todos estão nas páginas.
+
+- A Iansui tem um só peso. Os títulos se destacam pelo tamanho, e as entradas das expressões idiomáticas pela cor: o estilo `idiom` define `boldFontWeight: 400` com a cor de destaque como `boldColor`, então `**…**` muda a cor e não a letra.

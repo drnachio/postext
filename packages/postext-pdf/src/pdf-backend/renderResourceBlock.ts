@@ -86,6 +86,8 @@ import { inkScaleOperators } from './inkScale';
 import { drawShapedTextPx, drawStyledWordPx } from './shapedText';
 import { segmentLanguages, segmentOffsets, wordParts } from './directedLine';
 import { loadComplexShaper, needsComplexShaping } from '../complexShaping';
+import type { PrintColorMode } from '../print/colorMode';
+import { embedPrintRaster } from '../print/images';
 
 /** Raw bytes of a resource binary, keyed by `fileId`. */
 export type ResourceBytesProvider = (fileId: string) => Uint8Array | undefined;
@@ -381,9 +383,15 @@ export async function preloadResourceImages(
   /** How to rasterise an SVG outside the vector subset; the document's
    *  own `Image` by default (a worker hands the job to its host). */
   rasterizeSvg: SvgRasterizer = rasterizeSvgWithDom,
+  /** A colour-managed print render: pictures are separated into CMYK
+   *  through its profile (and flattened for PDF/X-1a). */
+  printMode?: PrintColorMode,
 ): Promise<ResourceImageMap> {
   const out: ResourceImageMap = into ?? new Map();
   if (!bytesProvider) return out;
+  /** A bitmap embedded as the render wants it. */
+  const embedRaster = (data: Uint8Array, format: 'png' | 'jpeg'): Promise<PDFImage> =>
+    printMode ? embedPrintRaster(pdfDoc, data, format, printMode) : format === 'png' ? pdfDoc.embedPng(data) : pdfDoc.embedJpg(data);
   // Inline resources live in doc.blocks; floated resources only exist on
   // their page's float band (page.floats), so both must be walked.
   const blocks: VDTBlock[] = [...doc.blocks];
@@ -472,7 +480,7 @@ export async function preloadResourceImages(
           for (const shape of drawing.shapes) {
             if (shape.kind !== 'image') continue;
             try {
-              shape.pdfImage = shape.format === 'png' ? await pdfDoc.embedPng(shape.data) : await pdfDoc.embedJpg(shape.data);
+              shape.pdfImage = await embedRaster(shape.data, shape.format === 'png' ? 'png' : 'jpeg');
             } catch {
               shape.pdfImage = undefined;
             }
@@ -485,18 +493,18 @@ export async function preloadResourceImages(
           ? await inlineSvgFontsForRaster(svgText, wanted, fontProvider)
           : svgText;
         const png = await rasterizeSvg(rasterSvg, (size.w / 72) * RASTER_DPI, (size.h / 72) * RASTER_DPI);
-        if (png) out.set(fileId, { kind: 'image', image: await pdfDoc.embedPng(png) });
+        if (png) out.set(fileId, { kind: 'image', image: await embedRaster(png, 'png') });
         return;
       }
       let image: PDFImage | null = null;
       if (fmt === 'jpeg') {
-        image = await pdfDoc.embedJpg(bytes);
+        image = await embedRaster(bytes, 'jpeg');
       } else if (fmt === 'webp') {
         const png = await webpToPng(bytes);
-        if (png) image = await pdfDoc.embedPng(png);
+        if (png) image = await embedRaster(png, 'png');
       } else {
         // png / gif-first-frame / unknown all go through embedPng.
-        image = await pdfDoc.embedPng(bytes);
+        image = await embedRaster(bytes, 'png');
       }
       if (image) out.set(fileId, { kind: 'image', image });
     } catch (err) {

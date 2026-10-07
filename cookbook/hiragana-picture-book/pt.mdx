@@ -1,0 +1,57 @@
+---
+title: "Um livro ilustrado em hiragana, espaçado por frase"
+summary: "Um livro ilustrado vertical em hiragana com um espaço entre as frases (wakachigaki): keep-all mantém cada frase inteira, e as linhas só quebram nos espaços."
+plain: "Um livro ilustrado japonês para crianças pequenas, todo em hiragana, com um espaço depois de cada grupo de palavras e linhas que nunca o partem, sob uma imagem em cada página."
+description: "Um livro ilustrado japonês no Postext: hiragana na vertical a 20 pt com espaços wakachigaki, frases inteiras com keep-all e uma faixa de imagem em cada página."
+question: "Como espaço um livro ilustrado japonês por frases (wakachigaki) e quebro as linhas só nos espaços?"
+aliases: ["wakachigaki", "分かち書き", "わかち書き", "livro ilustrado", "livro infantil", "絵本", "hiragana", "ひらがな", "livro infantil japonês", "word-break", "cjk.wordBreak", "keep-all", "quebrar só nos espaços", "Klee One"]
+pageNotes: { "1": "A capa: a cena do rio na página inteira, um barco de papel vermelho sobre a água azul e o título かみの ふね em vermelho descendo pelo céu, à direita.", "2": "Página 2: uma menina dobrando o barco vermelho numa mesa; embaixo, seis linhas verticais curtas de hiragana, cada quebra num espaço entre frases.", "3": "Página 3: o barco já no rio e a menina acenando da margem; o texto começa com 「いって らっしゃい。」.", "8": "Página 8: noite, a lua e o reflexo dela na água; o texto conta como a lua ilumina o caminho do barco.", "10": "A última página: a menina numa janela olhando o mar, o texto, おしまい em vermelho no pé da sua linha e o colofão deitado." }
+---
+
+## O que você vai compor
+
+Um livro ilustrado de dez páginas, かみの ふね (*O barco de papel*), escrito para a receita e ilustrado com dez pinturas: depois da chuva, uma menina dobra um barco de papel vermelho, e o barco desce o rio, passa por um sapo, uma garça e a lua e chega ao mar. Ele é composto como se compõem os livros japoneses para os leitores mais novos: só hiragana, a 20 pt em Klee One, uma letra feita a partir do modelo dos livros didáticos escolares, e um espaço entre as frases, 分かち書き (wakachigaki), para que a criança leia uma frase de cada vez. As páginas são em paisagem, 260 × 200 mm, verticais e encadernadas pela direita: a imagem ocupa o alto da página, embaixo vêm linhas curtas de oito caracteres, e o barco segue para a esquerda à medida que as páginas viram.
+
+## Preparo
+
+### 1 · Mantenha cada frase inteira
+
+O código está na [resposta curta](#a-resposta-curta), mais acima. O texto japonês pode quebrar entre dois kana quaisquer, então um espaço entre frases só acrescenta respiro; sozinho, não impede que uma linha termine dentro de あか|い. `cjk.wordBreak: 'keep-all'` mantém apenas as quebras num espaço e junto da pontuação, depois de 、。」 ou antes de 「, como faz o `word-break: keep-all` do CSS, e as regras de kinsoku continuam valendo ([Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático)). O espaço é um U+0020 comum, de 0,35 em na Klee One, e a linha o descarta quando ele cai no fim. Um U+3000 também separa frases, mas é um caractere fixo de um eme de largura, que fica no fim da linha.
+
+<PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Página 3: oito linhas, cada uma terminando num espaço ou depois de 」 e 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
+
+O texto é alinhado sem justificação. Justificada, uma linha curta esticaria os espaços e os intervalos entre os kana para chegar ao pé da faixa; um livro ilustrado deixa cada linha onde a sua última frase termina.
+
+### 2 · Ponha as imagens numa faixa acima do texto
+
+<Excerpt region="layout" />
+
+No texto vertical, `'left'` é o alto da página, então uma diagramação de coluna e meia com a coluna lateral à esquerda vira duas faixas: as imagens flutuam na de cima (14 caracteres de altura) e o texto corre na de baixo (8 caracteres). Cada página cita a sua imagem com `::resource{id="…"}` e termina com `:::pagebreak`. O tipo de recurso das imagens não tem prefixo de legenda, e as imagens são 2,186 vezes mais largas do que altas, o formato da faixa, então cada uma a preenche ([escrita vertical](/pt/docs/configuration#escrita-vertical)).
+
+### 3 · Faça da capa uma imagem de página inteira
+
+<Excerpt region="cover" />
+
+A capa é um design de título na largura da página: a imagem é ancorada à sangria com o tamanho da própria página (no fluxo vertical, o seu `width` desce pela folha), e o título é composto descendo pelo céu, à direita, em Zen Maru Gothic de 60 pt.
+
+### 4 · Carregue as pinturas como bitmaps
+
+<Excerpt region="pictures" />
+
+As dez imagens são pinturas, arquivos JPEG em `assets/` da receita. As nove cenas são cortadas no formato da faixa, 612 : 280, e a capa no da página, 260 : 200, então cada uma preenche o seu quadro e nada é cortado. Cada uma é um recurso `bitmap` declarado com o seu tamanho em pixels, com texto alternativo no idioma do livro, e o arquivo é carregado com o `fileId` do recurso antes da composição. Com 1.400 px de largura, as cenas saem impressas a cerca de 165 dpi ao longo da faixa ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)).
+
+## Variações
+
+### Justifique as linhas
+
+Justificada, cada linha chega ao pé da faixa: primeiro se esticam os espaços entre as frases, até meio eme, e depois os intervalos entre os kana (JLReq §3.8). Uma linha curta de kana de 20 pt mostra então intervalos largos, e é por isso que a receita deixa as linhas sem justificar.
+
+```diff
+-  textAlign: 'left', firstLineIndent: em(0),
++  textAlign: 'justify', firstLineIndent: em(0),
+```
+
+## Erros comuns
+
+- `keep-all` mantém as quebras que o texto já tem: o Postext não encontra as frases, então quem escreve digita os espaços. Uma frase mais longa que a linha ainda quebra por dentro, no último ponto que as regras de kinsoku permitem.
+- O chinês nunca separa as palavras, e a cartilha chinesa <RecipeLink slug="zhuyin-vertical-reader">Uma cartilha vertical com zhuyin à direita</RecipeLink> ajuda os seus pequenos leitores com leituras; um livro ilustrado japonês não usa kanji, então não precisa de furigana, e os espaços entre as frases guiam a leitura.

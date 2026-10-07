@@ -66,7 +66,8 @@
       "ca",
       "zh",
       "ar",
-      "ja"
+      "ja",
+      "pt"
     ]
   },
   "capture": {
@@ -85,7 +86,8 @@
       {
         "what": {
           "en": "Strip panel: Pip walks into the bakery",
-          "es": "Viñeta de la tira: Pip entra en la panadería"
+          "es": "Viñeta de la tira: Pip entra en la panadería",
+          "pt": "Quadro da tirinha: Pip entra na padaria"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -94,7 +96,8 @@
       {
         "what": {
           "en": "Strip panel: Otto and the big croissant",
-          "es": "Viñeta de la tira: Otto y el cruasán grande"
+          "es": "Viñeta de la tira: Otto y el cruasán grande",
+          "pt": "Quadro da tirinha: Otto e o croissant grande"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -103,7 +106,8 @@
       {
         "what": {
           "en": "Strip panel: Pip and the croissant on the counter",
-          "es": "Viñeta de la tira: Pip y el cruasán en el mostrador"
+          "es": "Viñeta de la tira: Pip y el cruasán en el mostrador",
+          "pt": "Quadro da tirinha: Pip e o croissant no balcão"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -112,7 +116,8 @@
       {
         "what": {
           "en": "Strip panel: Otto eats the croissant",
-          "es": "Viñeta de la tira: Otto se come el cruasán"
+          "es": "Viñeta de la tira: Otto se come el cruasán",
+          "pt": "Quadro da tirinha: Otto come o croissant"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -121,7 +126,8 @@
       {
         "what": {
           "en": "Strip panel: fishing on the floe",
-          "es": "Viñeta de la tira: pescando en el témpano"
+          "es": "Viñeta de la tira: pescando en el témpano",
+          "pt": "Quadro da tirinha: pescaria no gelo"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -130,7 +136,8 @@
       {
         "what": {
           "en": "Strip panel: Pip and his fish",
-          "es": "Viñeta de la tira: Pip y su pez"
+          "es": "Viñeta de la tira: Pip y su pez",
+          "pt": "Quadro da tirinha: Pip e seu peixe"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -139,7 +146,8 @@
       {
         "what": {
           "en": "Strip panel: Otto lands a boot",
-          "es": "Viñeta de la tira: Otto pesca una bota"
+          "es": "Viñeta de la tira: Otto pesca una bota",
+          "pt": "Quadro da tirinha: Otto fisga uma bota"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",

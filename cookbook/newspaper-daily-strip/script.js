@@ -11,7 +11,7 @@ import {
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
-const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const LANG = 'en'; // @lang: the sample's language: 'en' | 'es' | 'ca' | 'zh' | 'ar' | 'ja' | 'pt'
 const RECIPE = 'newspaper-daily-strip';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -36,6 +36,7 @@ const [TEXT, LABEL, LETTERING, SFX] = t({
   en: ['Newsreader', 'Archivo Narrow', 'Comic Neue', 'Bangers'],
   es: ['Newsreader', 'Archivo Narrow', 'Comic Neue', 'Bangers'],
   ca: ['Newsreader', 'Archivo Narrow', 'Comic Neue', 'Bangers'],
+  pt: ['Newsreader', 'Archivo Narrow', 'Comic Neue', 'Bangers'],
   zh: ['Noto Serif SC', 'Noto Sans SC', 'ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou'],
   ja: ['Noto Serif JP', 'Noto Sans JP', 'Zen Antique', 'Dela Gothic One'],
   ar: ['Noto Naskh Arabic', 'Noto Kufi Arabic', 'Playpen Sans Arabic', 'Lalezar'],
@@ -81,7 +82,7 @@ const layout = { layoutType: 'multiple', columnCount: 4, gutterWidth: mm(GUTTER)
 // written after an opener can still take that page's foot (gotcha: top-float-next-page).
 const WIDTH = 230 - 2 * MARGIN.side; // mm: the text width
 const SECTION = t({ en: 'Funnies', es: 'Tebeos', ca: 'Còmics', zh: '漫画版', ar: 'صفحة الكوميكس',
-  ja: '漫画面' });
+  ja: '漫画面', pt: 'Quadrinhos' });
 const across = (y) => ({ ...at('page', 'top-left', MARGIN.side, y), size: { width: mm(WIDTH) } });
 const header = { elements: [
   { kind: 'text', id: 'folio', content: '{pageNumber}  ·  {title}  ·  {publishDate}',
@@ -94,7 +95,8 @@ const header = { elements: [
 ] };
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar' }),
+  locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
+    pt: 'pt-BR' }),
   colorPalette, comics,
   layout: { layoutType: 'single' }, // the cover; the inside page is a section in four columns
   // The pull-out is a tabloid sheet folded once more: 230 × 310 mm.
@@ -177,43 +179,50 @@ const ALT = {
     ca: 'En Pip, el pingüí, entra saludant a la petita fleca de l’Otto, la morsa.',
     zh: '企鹅皮普摇摇摆摆走进海象奥托的小面包店，挥着手。',
     ar: 'البطريق بيب يدخل مخبز الفظّ أوتو الصغير وهو يلوّح.',
-    ja: 'ペンギンのピップが手を振りながら、セイウチのオットーの小さなパン屋に入ってくる。' }),
+    ja: 'ペンギンのピップが手を振りながら、セイウチのオットーの小さなパン屋に入ってくる。',
+    pt: 'O pinguim Pip entra acenando na padariazinha da morsa Otto.' }),
   po2: t({ en: 'Otto proudly holds up a croissant as big as Pip.',
     es: 'Otto enseña orgulloso un cruasán tan grande como Pip.',
     ca: 'L’Otto ensenya orgullós un croissant tan gran com en Pip.',
     zh: '奥托得意地举起一个和皮普一样大的羊角面包。',
     ar: 'أوتو يرفع بفخر كرواسونًا بحجم بيب.',
-    ja: 'オットーが、ピップと同じくらい大きなクロワッサンを得意げに持ち上げる。' }),
+    ja: 'オットーが、ピップと同じくらい大きなクロワッサンを得意げに持ち上げる。',
+    pt: 'Otto ergue, todo orgulhoso, um croissant do tamanho do Pip.' }),
   po3: t({ en: 'Pip stands on the counter next to the giant croissant, scratching his head.',
     es: 'Pip, de pie en el mostrador junto al cruasán gigante, se rasca la cabeza.',
     ca: 'En Pip, dret al taulell al costat del croissant gegant, es grata el cap.',
     zh: '皮普站在柜台上，挨着巨大的羊角面包挠头。',
     ar: 'بيب واقف على المنضدة بجانب الكرواسون العملاق يحكّ رأسه.',
-    ja: 'ピップがカウンターの巨大なクロワッサンの横に立ち、頭をかいている。' }),
+    ja: 'ピップがカウンターの巨大なクロワッサンの横に立ち、頭をかいている。',
+    pt: 'Pip, de pé no balcão ao lado do croissant gigante, coça a cabeça.' }),
   po4: t({ en: 'Otto munches the big half of the croissant; Pip holds a tiny end piece.',
     es: 'Otto se come la mitad grande del cruasán; Pip sostiene una punta diminuta.',
     ca: 'L’Otto es menja la meitat gran del croissant; en Pip aguanta una punta minúscula.',
     zh: '奥托大口吃着大半个羊角面包；皮普手里拿着一小截面包尖。',
     ar: 'أوتو يلتهم النصف الكبير من الكرواسون، وبيب يمسك طرفًا صغيرًا.',
-    ja: 'オットーがクロワッサンの大きいほうをほおばり、ピップは小さな端っこを持っている。' }),
+    ja: 'オットーがクロワッサンの大きいほうをほおばり、ピップは小さな端っこを持っている。',
+    pt: 'Otto devora a metade grande do croissant; Pip segura uma pontinha.' }),
   po5: t({ en: 'Pip and Otto fish through a hole in an ice floe beside a tiny bakery hut.',
     es: 'Pip y Otto pescan por un agujero en un témpano, junto a una caseta de panadería.',
     ca: 'En Pip i l’Otto pesquen per un forat en un glaç, al costat d’una caseta de fleca.',
     zh: '皮普和奥托在浮冰的冰洞里钓鱼，旁边是一间小面包屋。',
     ar: 'بيب وأوتو يصطادان من ثقب في جليد طافٍ بجانب كوخ مخبز صغير.',
-    ja: '流氷の穴でピップとオットーが釣りをしている。そばに小さなパン屋の小屋。' }),
+    ja: '流氷の穴でピップとオットーが釣りをしている。そばに小さなパン屋の小屋。',
+    pt: 'Pip e Otto pescam num buraco do bloco de gelo, ao lado de uma padariazinha.' }),
   po6: t({ en: 'Pip proudly holds up a tiny, unimpressed fish.',
     es: 'Pip levanta orgulloso un pez diminuto y nada impresionado.',
     ca: 'En Pip aixeca orgullós un peix minúscul i gens impressionat.',
     zh: '皮普得意地举起一条小小的、一脸不屑的鱼。',
     ar: 'بيب يرفع بفخر سمكة صغيرة لا يبدو عليها أي إعجاب.',
-    ja: 'ピップが、少しもうれしそうでない小さな魚を得意げに持ち上げる。' }),
+    ja: 'ピップが、少しもうれしそうでない小さな魚を得意げに持ち上げる。',
+    pt: 'Pip ergue, todo orgulhoso, um peixinho nada impressionado.' }),
   po7: t({ en: 'Otto reels in a soggy boot; Pip has fallen on his back laughing.',
     es: 'Otto saca del agua una bota empapada; Pip se ha caído de espaldas de la risa.',
     ca: 'L’Otto treu de l’aigua una bota xopa; en Pip ha caigut d’esquena de riure.',
     zh: '奥托钓上来一只湿透的靴子；皮普笑得仰面摔倒。',
     ar: 'أوتو يسحب حذاءً مبتلًا، وبيب سقط على ظهره من الضحك.',
-    ja: 'オットーがずぶぬれの長靴を釣り上げ、ピップは笑いころげてあおむけに倒れている。' }),
+    ja: 'オットーがずぶぬれの長靴を釣り上げ、ピップは笑いころげてあおむけに倒れている。',
+    pt: 'Otto puxa uma bota encharcada; Pip caiu de costas de tanto rir.' }),
 };
 // #endregion
 
@@ -253,7 +262,8 @@ const resources = await Promise.all([
 ]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showBook(doc, { title: t({ en: 'A daily strip and a Sunday half page in the newspaper',
-  es: 'Una tira diaria y media página dominical en el periódico' }) });
+  es: 'Una tira diaria y media página dominical en el periódico',
+  pt: 'Uma tirinha diária e meia página de domingo no jornal' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 

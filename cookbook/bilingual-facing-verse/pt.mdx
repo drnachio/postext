@@ -1,0 +1,70 @@
+---
+title: "Tradução lado a lado, estrofe por estrofe"
+summary: "Cada poema é um boxe sem moldura com duas colunas: uma quebra fixa abre o inglês no título, e :::space deixa cada estrofe na altura do original."
+plain: "Um livrinho de poemas com o espanhol de um lado e a tradução inglesa ao lado. Cada estrofe da tradução começa na mesma altura que a do original."
+description: "Plaquete bilíngue composta no Postext: cada poema em espanhol fica diante da versão inglesa num boxe de duas colunas, com quebra fixa e :::space entre estrofes."
+question: "Como faço para pôr um poema e a tradução lado a lado, começando na mesma linha, estrofe por estrofe?"
+aliases: ["tradução lado a lado", "texto paralelo", "en face", "edição bilíngue", "poesia bilíngue", "tradução ao lado do original", "colunas dentro de um boxe", "atributo breaks", "quebra de coluna num boxe", "alinhar estrofes", "espaço entre estrofes", "verso que não cabe", "recuo deslocado", "verso", "plaquete", "edición bilingüe", "traducción enfrentada"]
+pageNotes: { "3": "A aquarela das salinas desce até 84 mm da borda superior. Embaixo dela, o poema I abre com o seu numeral; LA SALINA AL ALBA encabeça a coluna espanhola e THE SALT PANS AT DAWN o itálico inglês. O quarto verso inglês não cabe e continua na linha de baixo, e a primeira estrofe espanhola termina com duas linhas em branco, de modo que as duas segundas estrofes começam na mesma linha.", "4": "Os poemas II e III, cada um com o numeral sobre duas colunas cujas estrofes se correspondem verso a verso." }
+---
+
+## O que você vai compor
+
+Uma plaquete bilíngue de cinco poemas sobre uma salina no sul da Espanha, em 156 × 234 mm, com o espanhol à esquerda e a versão inglesa da própria autora à direita, verso a verso. Abrem o livro uma folha de rosto com um flamingo e a nota da autora; os poemas começam sob uma aquarela de tanques cor-de-rosa, montes de sal e flamingos ao amanhecer. Cada poema fica num boxe sem moldura, sob um numeral cor de garança em Castoro Titling, com o espanhol numa coluna e o inglês na outra. O inglês começa na mesma linha que o espanhol, e cada estrofe começa na altura do original. Quando um verso inglês é longo demais para a coluna, o resto dele continua na linha de baixo com recuo de 2 em, e a estrofe espanhola em frente termina com uma linha em branco a mais.
+
+## Preparo
+
+### 1 · Um poema é um boxe com uma quebra de coluna fixa
+
+O código está [na resposta curta](#a-resposta-curta), mais acima. `:::columns` só funciona dentro de um boxe, por isso cada poema é um boxe cujo estilo tira o fundo e o preenchimento e imprime o `title` da cerca, que é o numeral ([`:::columns`](/pt/docs/document-format#columns)). Sem `breaks`, o grupo corta onde as duas colunas ficam niveladas. As duas metades destes poemas têm a mesma altura, então o corte cai no título inglês de qualquer maneira; mas alongue dois versos de *The Rake* até eles não caberem, e o corte desce um bloco e deixa THE RAKE no pé da coluna espanhola. `breaks="14"` indica o bloco que abre a segunda coluna, e o título inglês a encabeça seja qual for a altura das duas metades.
+
+### 2 · Um parágrafo por verso, um :::space por quebra de estrofe
+
+<Excerpt region="verse" />
+
+O Markdown junta as linhas de um parágrafo, então cada verso é um parágrafo à parte, no estilo `verse`, em bandeira, que a versão 1.4.1 nunca hifeniza. Um `:::space` entre estrofes deixa uma linha em branco em cada coluna. Ele não é um bloco, e por isso `breaks` não o conta ([`:::space`](/pt/docs/document-format#space)). O verso inglês *each one standing on its own reflection.* é longo demais para a coluna de 55 mm e continua na linha de baixo com recuo de 2 em; a estrofe espanhola em frente termina com `:::space{lines=2}`, e as estrofes seguintes começam na mesma linha.
+
+<PageShot page={3} crop="0.1,0.385,0.8,0.248" caption="O poema I na página 3: reflection. passa para a linha de baixo no inglês, e a estrofe espanhola termina com duas linhas em branco em vez de uma." />
+
+### 3 · A nota é hifenizada na própria língua
+
+<Excerpt region="note" />
+
+`locale` escolhe os padrões de hifenização pelo código exato. Com `'es'`, a nota espanhola divide *ori-ginal* e *Duna-liella*; com os padrões ingleses as duas palavras vão inteiras para a linha seguinte, e só *arras-traba* se divide com ambos ([idiomas suportados](/pt/docs/justification#idiomas-compatíveis)). Os espaços entre palavras podem encolher até 0,8 e esticar até 1,35 da largura normal, e nenhuma linha justificada das duas notas passa disso. O título da nota é um design de um único elemento, o próprio título, colocado 36 mm abaixo do topo da mancha, e assim a nota começa a 73 mm da borda superior da página.
+
+### 4 · A folha de rosto e a aquarela são títulos
+
+<Excerpt region="front" />
+
+Cada uma é um título de nível 1 com estilo próprio ([estilos de título](/pt/docs/configuration#estilos-de-título)): o design da folha de rosto pega `{author}` do frontmatter, e os dois designs pegam `{attr.other}` dos atributos do título. A aquarela começa na borda superior da página, acima da mancha, onde um design mantido na coluna seria cortado, por isso o estilo dela tem `span: 'page'`. Uma imagem não reserva altura: sem `minHeight`, o título tem 25,6 mm e o poema I começa a 58 mm da borda, em cima de uma imagem que vai até 84 mm. Um `minHeight` de onze linhas, mais a margem inferior de uma linha do nível, faz o título terminar a 83,4 mm.
+
+### 5 · Os cabeços nomeiam as duas línguas
+
+<Excerpt region="heads" />
+
+A página par traz o título espanhol e a ímpar o inglês, na ordem das colunas. `pages: 'body'` tira os cabeços das três páginas que abrem com um título. A nota e a aquarela levam um fólio no pé no lugar deles, e o estilo da folha de rosto esvazia o cabeçalho e o rodapé ([elementos de texto](/pt/docs/configuration#elementos-de-texto)).
+
+## Variações
+
+### Alargar a medianiz
+
+Com 12 mm, as colunas ficam com 53 mm, e *Los turistas paran y hacen fotos:* deixa de caber no poema III, então a segunda estrofe começa uma linha abaixo da inglesa; termine a estrofe inglesa com `:::space{lines=2}` para nivelá-las.
+
+```diff
+-const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
++const GAP = 12; // mm between the original and the translation: each column is 53 mm wide
+```
+
+### Recuar mais os versos que não cabem
+
+Com 3 em, *reflection.* na página 3 começa um em mais para dentro.
+
+```diff
+-const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
++const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+```
+
+## Erros comuns
+
+- Um `:::space` posto antes do título inglês desaparece: a segunda coluna abre no bloco que `breaks` indica, e o espaço cai no corte. Ponha-o depois do título, como o `:::space{lines=0.5}` sob o título de cada coluna aqui.
+- Conte `breaks` a partir do título espanhol: com um título e 12 versos, o título inglês é o bloco 14. Cada verso é um bloco, então um verso espanhol a mais leva o título inglês para o bloco 15, e `breaks` precisa subir junto.

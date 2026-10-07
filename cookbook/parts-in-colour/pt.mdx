@@ -1,0 +1,76 @@
+---
+title: "Partes em cores com um único atributo"
+summary: "Num guia de campo de bolso, cada :::part redefine uma cor da paleta, que tinge a página divisória, o verso pintado, a aba lateral e a linha do sumário."
+plain: "Um guia de bolso de aves do estuário em duas partes, uma marrom e outra verde. Mostra como uma única cor por parte tinge a página de abertura, as abas, os números de página e a linha do sumário."
+description: "Um guia de campo de dois hábitats composto no Postext: cada :::part dá sua cor à página divisória, ao verso pintado, à aba lateral e à linha do sumário."
+question: "Como faço para dar a cada parte do livro sua cor, sua página divisória e um verso pintado?"
+aliases: ["guia de campo", "partes", "cores por seção", "seções por cores", "página divisória", "falsa folha de rosto", "verso pintado", "aba lateral", "índice de dedo", "cor da parte"]
+pageNotes: { "4": "A página 4 é o verso da página divisória da parte I. O texto a deixa em branco, e parts.versoDesign a pinta de ponta a ponta no marrom de lama da parte, com a aba da parte em negativo no corte e o nome dela no pé.", "8": "A página 8 é o verso da página divisória da parte II, pintada em verde-junco pelo mesmo design." }
+---
+
+## O que você vai compor
+
+*Birds of the Estuary* é um guia de campo de bolso em duas partes, uma para cada hábitat. Os lodaçais saem em marrom de lama e os juncais em verde-junco, e cada cor é escrita uma vez só, no `:::part` que abre o seu hábitat. Cada página divisória é um campo de cor com sangria, com um numeral romano de 150 pt e a lista das espécies do hábitat em creme. O verso da folha é pintado na mesma cor, com a aba da parte em negativo no corte. Nas páginas de espécies, a aba lateral, o fólio, o antetítulo, o fio sob o nome científico, as marcas de campo em negrito, os marcadores e o rótulo da prancha assumem a cor da parte. O sumário abre sob uma faixa com uma vista do estuário e dá a cada parte uma tarja na sua cor, com o número da página divisória. A capa, a faixa e as quatro pranchas são pinturas geradas com modelos de difusão, carregadas como bitmaps JPEG; a paleta de uma parte não alcança as imagens, então as cores delas são as delas mesmas.
+
+## Preparo
+
+### 1 · Uma entrada da paleta para as partes redefinirem
+
+<Excerpt region="palette" />
+
+Uma parte redefine entradas da paleta pelo id, então tudo o que deve mudar com o hábitat fica vinculado a uma só entrada, `band`. O valor próprio dela, um cinza-ardósia, só aparece fora das partes (no antetítulo da capa e no título da nota sob o sumário), e nenhuma outra cor da configuração tem o mesmo hex. `col()` escreve o hex ao lado do id, porque no Postext 1.4.1 a paleta do documento nunca chega aos elementos de design; a redefinição de uma parte chega, por meio do id.
+
+### 2 · Uma página divisória, o verso e a lista
+
+O código deste passo é [a resposta curta](#a-resposta-curta) logo acima. Um `:::part` abre uma [página divisória](/pt/docs/configuration#partes) numa página ímpar, e `parts.design` a diagrama sobre todo o refile. O Markdown entre as marcas do bloco começa a 125 mm da borda superior, abaixo do título: algumas linhas sobre o hábitat no estilo de parágrafo `habitat` e, depois, a lista das espécies em `bodyStyle`. `versoDesign` pinta o verso da folha (o campo e a aba em negativo) só quando essa página fica em branco, e `breakAfter: { parity: 'odd' }` a mantém em branco ao mandar a primeira espécie para a próxima página ímpar. `{numberRoman}` imprime o `number="I"` da parte em algarismo romano (`"1"` daria o mesmo I), enquanto as espécies são numeradas de 1 a 4 em algarismos arábicos. O `\\` do título quebra a linha só na página divisória; o sumário e os cabeços compõem o título numa linha só.
+
+### 3 · Os destaques do texto acompanham a parte
+
+<Excerpt region="flow" />
+
+De um `:::part` até o seguinte, toda cor de texto igual ao valor próprio de `band` assume o valor da parte ([o contêiner `:::part`](/pt/docs/configuration#o-contêiner-part)). Aqui são as marcas de campo em negrito, os marcadores e os rótulos das pranchas. O texto corrido e os itálicos ficam na cor da tinta. As pranchas são um tipo de recurso próprio, com o rótulo Plate e uma numeração que nunca reinicia, então contam de 1 a 4 junto com as espécies.
+
+### 4 · A abertura de cada espécie
+
+<Excerpt region="species" />
+
+A abertura de cada espécie imprime três atributos do título: `status` no antetítulo, depois do número, `size` à direita do antetítulo e `latin` sob o nome. O antetítulo e o fio sob o nome científico ficam vinculados a `band`, então um só design serve aos dois hábitats. O título não define quebra de página própria: cada espécie começa depois de um `:::pagebreak`, ou depois da quebra que vem após a parte, e assim sua página conta como página de texto e leva os cabeços. O tamanho sai sem as maiúsculas do rótulo, porque `cm` é um símbolo de unidade.
+
+### 5 · Uma tarja por parte no sumário
+
+<Excerpt region="contents" />
+
+`:::toc` dá uma linha a cada `:::part` e diagrama nela `toc.parts.design` com o número, o título, a página divisória e a paleta dessa parte ([sumário](/pt/docs/configuration#sumário)), então a mesma caixa sai marrom para os lodaçais e verde para os juncais. Cada espécie sob a tarja mostra o número, uma linha pontilhada e a página, com o nome científico do atributo `latin` na linha de baixo.
+
+### 6 · A parte nos cabeços e na aba
+
+<Excerpt region="running-heads" />
+
+Com `pages: 'body'`, os cabeços saem só nas páginas de texto. As páginas divisórias são páginas `part` e os versos pintados, páginas `blank`; a capa e o sumário abrem com um título na largura da página, o que faz deles páginas de abertura. O cabeço da página ímpar imprime `{partTitle}` numa linha só, e a aba no corte imprime `{partNumber}` sobre uma caixa cujo fundo fica vinculado a `band`.
+
+## Variações
+
+### Acrescente um terceiro hábitat
+
+Um bloco antes da primeira espécie do sapal acrescenta uma terceira cor, com sua página divisória, seu verso pintado e sua linha no sumário, e a configuração fica como está. Tire também a nota sob o sumário, porque a terceira tarja e suas espécies precisam do espaço.
+
+```diff
++:::part{number="III" title="The \\ Saltmarsh" palette="band=#6b4a7a"}
++:::
++
++# Common Shelduck {latin="Tadorna tadorna" size="58–67 cm" status="Resident"}
+```
+
+### Deixe a espécie de frente para a página divisória
+
+Sem a quebra para a próxima página ímpar, a primeira espécie começa no verso da página divisória, e não sobra nenhum verso em branco para `versoDesign` pintar.
+
+```diff
+-  breakAfter: { parity: 'odd' },
+```
+
+## Erros comuns
+
+- Uma parte recolore o texto comparando valores: qualquer cor de texto igual ao valor próprio de `band` muda com a parte, mesmo que esteja vinculada a outra entrada ou a nenhuma. Reserve esse hex só para `band`.
+- A aba imprime `{partNumber}`, que fica vazio fora de uma parte, então uma página de texto antes do primeiro `:::part` recebe uma aba cinza-ardósia vazia. Mantenha todas as páginas de texto dentro de alguma parte.
+- As imagens e as amostras de cor no texto mantêm as cores escritas nelas. As pranchas daqui tiram as cores do hábitat de `HABITAT`, no código, então uma cor nova num `:::part` precisa ser posta lá também.

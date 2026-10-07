@@ -1,0 +1,59 @@
+---
+title: "Uma página de jornal árabe em duas colunas"
+summary: "Um diário árabe com locale 'ar': a primeira coluna é a da direita, as manchetes ocupam as duas e as notas breves vão em três colunas da direita para a esquerda."
+plain: "A primeira página e uma página interna de um jornal árabe. A matéria começa na coluna da direita e continua na da esquerda, do jeito que os leitores árabes leem a página."
+description: "Um jornal árabe no Postext: duas colunas da direita para a esquerda, manchetes na largura da página, notas breves em três colunas e horários de oração."
+question: "Qual coluna vem primeiro numa página árabe, e como componho um jornal em duas colunas?"
+aliases: ["jornal árabe", "colunas de jornal", "colunas da direita para a esquerda", "ordem das colunas", "logotipo do jornal", "cabeçalho do jornal", "expediente", "Aref Ruqaa", "horários de oração", "صحيفة", "عمود", "مواقيت الصلاة"]
+pageNotes: { "1": "A primeira página: o nome الساحل em grandes letras ruqʿa azuis entre duas orelhas pequenas, abaixo um fio grosso e um fino, o chapéu النقل, uma manchete de duas linhas em cúfico preto na largura da página, uma linha fina, um mapa de uma linha de bonde ao longo de uma costa, a matéria em duas colunas começando pela direita e, no pé, uma faixa cor de areia com três notas breves em três colunas.", "2": "A página interna: uma retranca azul محليات sobre um fio grosso, uma manchete na largura da página, quatro matérias em duas colunas a partir da direita e, no pé, uma tabela de horários de oração na largura da página, com a primeira coluna, الفجر, à direita." }
+---
+
+## O que você vai compor
+
+Duas páginas de *الساحل*, um diário imaginário de uma cidade portuária imaginária, num formato compacto de 246 × 328 mm. A primeira página traz o nome do jornal em Aref Ruqaa de 84 pt, a matéria principal sobre o novo bonde da cidade sob uma manchete na largura da página e um mapa desenhado em código, e uma faixa de três notas breves no pé. A página 2 abre a seção local sob uma retranca azul, com quatro matérias e os horários de oração do dia. Tudo se lê a partir da direita: a primeira coluna de texto, as notas breves, as colunas da tabela, as orelhas do cabeçalho. <RecipeLink slug="newspaper-front-page">A primeira página em inglês</RecipeLink> compõe os mesmos elementos da esquerda para a direita.
+
+## Preparo
+
+### 1 · Duas colunas, a primeira à direita
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `layoutType: 'double'` e o fio entre colunas são as mesmas configurações de um jornal em inglês; `locale: 'ar'` vira a página, então a matéria preenche primeiro a coluna da direita e continua no alto da coluna da esquerda ([Ordem das páginas e encadernação à direita](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita)). Uma manchete sobre as duas colunas é um boxe na largura da página sem moldura, e as colunas abaixo dela começam niveladas. A faixa de notas breves é um boxe na largura da página que flutua para o pé, com `:::columns{count=3}` dentro, e as suas colunas também correm da direita para a esquerda, assim como a tabela de horários de oração da página 2: uma tabela composta na direção do documento põe a primeira coluna à direita.
+
+### 2 · Um cabeçalho entre duas orelhas
+
+<Excerpt region="nameplate" />
+
+O título de nível 1 da primeira página é o nome do jornal, pintado por um estilo de título. O design dele é desenhado na página espelhada, então `top-right` é o início da linha: o número da edição e a data vão ali, a cidade e o preço na outra ponta ([O que significam esquerda, direita, início e fim](/pt/docs/arabic-layout#o-que-significam-esquerda-direita-início-e-fim)). A ruqʿa é uma letra de título para poucas palavras em corpo grande; não tem kashida, e o texto corrido nunca a usa.
+
+### 3 · Retrancas de seção e linhas de fólio
+
+<Excerpt region="inside" />
+
+Uma página interna abre com um título de nível 1 desenhado como retranca sobre um fio grosso. A linha do fólio é um cabeçalho, então mantém os seus lados físicos: a página 2, par, tem o número no canto direito, o externo num jornal que abre pela direita. A primeira página esvazia o cabeçalho no seu estilo de título.
+
+### 4 · Um mapa desenhado em código
+
+<Excerpt region="art" />
+
+O mapa do bonde é um SVG de traçados e círculos nas cores da paleta, sem nenhum texto: as palavras de um desenho sairiam numa fonte do sistema, então os nomes dos lugares ficam na legenda. O tipo de imagem não tem contador nem rótulo, porque jornais não numeram as suas fotos.
+
+## Variações
+
+### Três colunas nas notas breves, quatro numa página mais larga
+
+A faixa é um boxe com colunas próprias, então pode ter mais que as duas do texto.
+
+```diff
+-:::columns{count=3 breaks="2,3"}
++:::columns{count=4 breaks="2,3,4"}
+```
+
+### Algarismos europeus para um jornal do Magreb
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag): rtl, digits ٠–٩
++  locale: 'ar-MA', // rtl, digits 0–9
+```
+
+## Erros comuns
+
+- Os horários de oração estão digitados com algarismos arábico-índicos nas células da tabela: `locale` só muda os números que o motor escreve, então uma edição do Magreb precisa digitá-los de novo.

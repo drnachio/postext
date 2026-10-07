@@ -1,0 +1,60 @@
+---
+title: "Uma página de álbum em linha clara, com recordatórios"
+summary: "Uma página de álbum franco-belga em quatro faixas: quadros de canto vivo, recordatórios amarelos nos cantos e balões em caixa mista, tudo pela config comics."
+plain: "Uma página de um álbum de quadrinhos europeu, com a voz do narrador em caixas amarelas e os diálogos em balões, escrita em texto simples e letreirada pelo Postext em sete línguas."
+description: "Uma página de tebeo espanhol no Postext: quatro faixas de quadros, recordatórios amarelos, um grito, um pensamento e uma onomatopeia, em sete línguas."
+question: "Como faço para compor uma página de álbum europeu com recordatórios de narração?"
+aliases: ["tebeo", "quadrinhos", "HQ", "história em quadrinhos", "bande dessinée", "BD", "linha clara", "ligne claire", "página de álbum", "álbum franco-belga", "recordatório", "legenda de narração", "cartouche", "cartela", "franco-belga", "balões", "letreiramento", "balloonStyles", "panelStyles"]
+---
+
+## O que você vai compor
+
+A primeira história de um álbum de quadrinhos espanhol, *Las naranjas de Carmen* (*As laranjas da Carmen* na edição brasileira): uma folha de rosto na página par e, em frente, uma página de sete quadros em quatro faixas, como se desenham os álbuns franco-belgas. Lola, de nove anos, vai à feira no domingo com o avô Paco e puxa a laranja de baixo da pirâmide de Carmen. Os desenhos são em linha clara com cores chapadas; os quadros têm contorno fino e canto vivo, a narração fica em caixas amarelas encaixadas nos cantos do quadro, e os diálogos são letreirados em maiúsculas e minúsculas, como fazem os letristas europeus. O texto fica no Markdown, um arquivo por língua: o original em espanhol e depois inglês, catalão, chinês, árabe, japonês e português, cada um letreirado pelo motor sobre a mesma divisão e os mesmos desenhos.
+
+## Preparo
+
+### 1 · O visual do álbum é uma config comics
+
+O código é a [resposta curta](#a-resposta-curta) acima. `comics.panel` define todos os quadros (um fio de tinta de 0,75 pt, cantos vivos) e `panelStyles` acrescenta um estilo nomeado sem contorno, que o último quadro usa com `style=open`: um epílogo num banco de praça, fora da feira. Os estilos de balão de fábrica são redefinidos pelo id: `caption` vira uma caixa amarelo-clara com contorno fino, `shout` uma explosão de dezesseis pontas, `sfx` o laranja das laranjas com contorno de tinta. O letreiramento mantém `textTransform: 'none'`; uma página americana usaria `'uppercase'`.
+
+A página em si é uma única diretiva no conteúdo, uma árvore de divisões e sete quadros, cada um com o seu roteiro:
+
+```md
+:::page{split="25 [60 | *] / 25 [55 | *] / 24 / * [50 | *]"}
+::panel{art=t1}
+caption: Los domingos, el abuelo Paco y yo íbamos al mercado.
+caption{at=bottom-end}: Siempre a la misma hora. Siempre por la misma puerta.
+::panel{art=t4}
+lola{thought}: La de abajo es la más gorda.
+paco{shout}: ¡Lola, esa no!
+```
+
+`caption` é um recordatório de narração (o primeiro vai para o canto superior do lado em que a leitura começa), `{at=bottom-end}` manda o segundo para o canto oposto, e um id de personagem como `lola` ou `paco` desenha um balão com o rabicho apontado para a boca que o desenho declara.
+
+### 2 · Os desenhos sabem onde cada personagem fala
+
+<Excerpt region="art" />
+
+Cada desenho declara o que todo recorte precisa manter (`safeArea`), onde ficam a boca, a cabeça e o rosto de cada personagem (`anchors`) e o que nenhum balão pode cobrir (`avoid`), tudo em frações do desenho. O quadro do desmoronamento ocupa a terceira faixa, 200 mm por 63 mm, então a zona segura dele é a faixa dos rostos e das laranjas voando; os quadros quadrados perdem o chão. Nada disso depende da língua, por isso as sete edições compartilham tudo.
+
+### 3 · Uma folha de rosto diante da história
+
+<Excerpt region="title-page" />
+
+A folha de rosto é um estilo de título: a linha da série na letra do letreiramento, o título na letra das onomatopeias (Bangers, ou Dela Gothic One, ZCOOL KuaiLe e Lalezar nas outras escritas) e uma vinheta da banca de Carmen na sua proporção de 3 : 2. A montagem passa `continuation: { pageIndexOffset: 1 }`, de modo que a folha de rosto cai numa página par e a história abre na ímpar em frente, a página 3.
+
+## Variações
+
+### Letreirar em maiúsculas, como um gibi americano
+
+Ponha o letreiramento em maiúsculas; a narração e os diálogos acompanham, e as escritas sem caixa alta e baixa (chinês, japonês, árabe) ficam como estão.
+
+```diff
+-    color: col('ink'), textTransform: 'none' }, // European letterers write in mixed case
++    color: col('ink'), textTransform: 'uppercase' },
+```
+
+## Erros comuns
+
+- O corpo do letreiramento é um só para o livro inteiro: uma tradução mais longa aumenta os balões e os move, nunca encolhe a letra. Confira as páginas em catalão e em árabe depois de mudar a divisão.
+- O texto alternativo de cada quadro fica no manifesto dos desenhos em sete línguas, escolhido com `t({ … })`; uma língua que falte na lista usa a primeira. `::panel{alt="…"}` num arquivo de conteúdo o substitui para um quadro.

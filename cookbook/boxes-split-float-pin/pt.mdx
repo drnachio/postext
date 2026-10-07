@@ -1,0 +1,85 @@
+---
+title: "Boxes que se dividem, flutuam e ficam fixos"
+summary: "Uma ficha de laboratório em que o boxe do procedimento se divide em duas colunas, a folha de dados vai para o alto da página seguinte e um selo fica fixo no pé."
+plain: "Uma ficha escolar de ciências para construir um relógio de sol. Mostra boxes que se dividem entre duas colunas, passam para o alto da página seguinte ou ficam fixos no pé de uma página."
+description: "Caderno escolar espanhol composto no Postext: um aviso inteiro, um procedimento dividido entre colunas, a folha de dados flutuando à página 43 e um selo fixo."
+question: "Como faço para dividir um boxe longo, fazer outro flutuar para a página seguinte e fixar um selo no pé?"
+aliases: ["boxe dividido", "boxe entre colunas", "keepTogether", "boxe que continua", "boxe flutuante", "selo fixo", "adesivo", "boxe fixo", "painel na largura da página", "painel em três colunas", "ficha de atividades", "ficha de laboratório", "caderno de atividades"]
+pageNotes: { "1": "A abertura da Práctica 4, Construye un reloj de sol (Construa um relógio de sol): uma faixa amarelo-sol com o título em grafite e, junto ao corte, um leque de sombras da tarde desenhado para a latitude de Madri. Abaixo da introdução, um painel amarelo Necesitarás atravessa as duas colunas, com três colunas próprias.", "2": "Uma barra grafite de segurança com um triângulo de aviso amarelo e, depois, o boxe amarelo Procedimiento com um selo de compasso no canto externo: os passos 1 a 4 sob o título, no pé da coluna da esquerda, e os passos 5 a 14 no alto da coluna da direita, na mesma medida, sem título nem selo.", "3": "O boxe Hoja de datos, uma folha amarelo-clara com uma tabela de doze meses do meio-dia solar de Madri, flutuando no alto da página; duas colunas de texto correm embaixo dele.", "4": "O relógio de perfil num meio-dia de verão e num de inverno, a tabela de registro dos alunos ao lado do fim do texto, uma faixa de resumo em três colunas na largura da página e um selo grafite Autoevaluación · 10 min fixo no pé, com uma mão apontando pendurada na margem." }
+---
+
+## O que você vai compor
+
+Quatro páginas de *Taller de ciencias*, um caderno escolar espanhol de atividades de laboratório: a Práctica 4, “Construye un reloj de sol” (Construa um relógio de sol). Na página 42, o aviso de segurança fica inteiro, e o procedimento de catorze passos, sobre fundo amarelo e com um selo de compasso no canto, começa no pé da coluna da esquerda e continua no alto da direita, na mesma medida e sem o título. A folha de dados de Madri sai do fluxo nessa página e encabeça a página 43, acima do texto. Um selo grafite, “Autoevaluación · 10 min”, fica fixo no pé da última página, com uma mão apontando na margem ao lado dele. Na abertura, uma faixa amarelo-sol traz um gráfico das sombras de uma vareta do meio-dia às cinco da tarde na latitude de Madri, e um painel lista os materiais em três colunas na largura da página.
+
+## Preparo
+
+### 1 · Um estilo de base para todos os boxes
+
+<Excerpt region="look" />
+
+Todo estilo parte de `box()`: o título em monoespaçada, letra de 8,8 pt contra os 9,4 pt do texto, e o preenchimento interno. Cada um acrescenta então um único recurso: uma barra grafite no aviso de segurança, um fundo amarelo no procedimento, um tom de papel na folha de dados, um fio superior no resumo, uma pílula grafite no selo. O aluno distingue os boxes por esse recurso antes de ler qualquer título. No procedimento, o fundo também marca a continuação: a parte no alto da coluna da direita não tem título, e só o amarelo a liga aos passos 1 a 4 no pé da coluna da esquerda.
+
+### 2 · Inteiro, dividido, flutuante e fixo
+
+O código está [na resposta curta](#a-resposta-curta), mais acima. O procedimento mede 192 mm e numa coluna cabem 211, então um boxe mantido inteiro pularia para o alto da coluna da direita e deixaria 43 mm vazios no pé da esquerda. `keepTogether: false` deixa o boxe começar onde ele cai e continuar na coluna seguinte, ou na página seguinte, como mostra a segunda variação ([o contêiner `:::callout`](/pt/docs/configuration#o-contêiner-callout)). A continuação perde o título e o ícone. Com um ícone na linha, ela também devolveria ao texto a coluna do ícone e comporia o resto mais largo; por isso o compasso fica no canto externo do boxe, onde não ocupa largura, e as duas partes mantêm a mesma medida. A cerca da folha de dados tem `placement="top"`, então o boxe sai do fluxo na <PageRef page={2}>página 42</PageRef> e encabeça a página seguinte. O selo é `fixed`, e um `offset.x` negativo leva a mão e o fio dela para a margem externa, para que a borda esquerda do selo fique alinhada com o texto.
+
+### 3 · Atravessar a página com um painel de três colunas
+
+<Excerpt region="panel" />
+
+Com `span: 'page'`, o boxe de materiais atravessa as duas colunas. A introdução acima dele é cortada na mesma altura, e o texto continua em duas colunas embaixo dele (<PageRef page={1}>página 41</PageRef>). Dentro da cerca, `:::columns{count=3 breaks="5,9"}` define onde começa cada coluna em vez de balanceá-las. `breaks` conta blocos filhos, e cada item de lista é um bloco, então a segunda e a terceira colunas abrem no quinto e no nono blocos, os rótulos em negrito. `columnGap` é a medianiz de 7 mm da página, e as colunas do painel ficam tão afastadas quanto as colunas de texto.
+
+```markdown
+:::callout{type="material" title="Necesitarás"}
+:::columns{count=3 breaks="5,9"}
+**Para la esfera**
+
+- Cartón pluma de 20 × 30 cm
+- La plantilla de la esfera
+- Pegamento y rotulador
+
+**Para el gnomon y la base**
+…
+:::
+:::
+```
+
+### 4 · Um amarelo para os fundos, outro mais claro para o boxe longo
+
+<Excerpt region="palette" />
+
+O amarelo-sol fica reservado para as áreas de cor, a faixa e o painel, onde o grafite e a tinta preta têm contraste de 7,4:1 e 8,6:1. Como cor de letra sobre branco ele chegaria a 1,8:1, por isso nunca leva texto. O procedimento usa `light`, um amarelo mais pálido: a tinta preta tem contraste de 11:1 sobre ele, e a divisão ainda aparece na miniatura da galeria. A folha de dados usa `tint`, mais próximo do papel, para não ser confundida com o procedimento, o outro boxe com fundo da página dupla. `main-color` aponta para o grafite, e assim os valores padrão que a configuração não sobrescreve saem em grafite e não no azul do motor.
+
+### 5 · Abrir com uma faixa amarela
+
+<Excerpt region="opener" />
+
+A faixa é um elemento de caixa ancorado na página, e o desenho, um elemento de imagem junto ao corte; o chapéu, o olho e a linha de sessões vêm de atributos na linha do título. Como a faixa está ancorada na página, a abertura já reserva a altura até o pé da faixa, e o texto começaria 3,6 mm abaixo dela. `minHeight: BAND - TOP + AIR` pede 8 mm; a reserva se ajusta à linha seguinte da grade, e o texto começa 8,4 mm abaixo da faixa.
+
+## Variações
+
+### Manter o procedimento inteiro
+
+Sem essa configuração, o procedimento, que cabe numa coluna, vai inteiro para o alto da coluna da direita e deixa 43 mm vazios no pé da esquerda.
+
+```diff
+-  box('pasos', { keepTogether: false, background: col('light'),
++  box('pasos', { background: col('light'),
+```
+
+### Fazer a folha de dados flutuar para o pé
+
+Com `placement="bottom"` em `content.es.md`, a folha de dados ocupa o pé da página 42, onde cai a cerca dela. O procedimento que ela desloca começa no alto da coluna da direita e se divide na virada da página, terminando no alto da página 43.
+
+```diff
+-:::callout{type="datos" placement="top" title="Hoja de datos · Madrid, 40,4° N · 3,7° O"}
++:::callout{type="datos" placement="bottom" title="Hoja de datos · Madrid, 40,4° N · 3,7° O"}
+```
+
+## Erros comuns
+
+- Um boxe mais alto que uma coluna inteira se divide, diga o que disser `keepTogether`. A configuração só decide nos boxes que cabem numa coluna, como este procedimento de 192 mm numa coluna de 211 mm.
+- `splitMinLines` conta as linhas do boxe inteiro de cada lado do corte, não as do passo que ele corta, então um corte ainda pode deixar uma linha de um passo sozinha. O texto antes do procedimento foi ajustado para que o corte caia entre os passos 4 e 5; na variação com a folha de dados no pé, a última linha do passo 11 abre sozinha a página 43. Qualquer mudança no texto acima de um boxe dividido pode mover o corte, então confira onde ele cai depois de cada uma.
+- Um ícone na linha ocupa uma coluna própria, e a continuação a devolve. Com o corte entre passos, o resto do boxe se desloca para a esquerda a largura do ícone e do espaço dele; com o corte dentro de um passo, o resto do passo é recomposto mais largo e pode imprimir palavras duas vezes. Um ícone no canto, ou uma faixa lateral onde o ícone se apoie, mantém as duas partes numa só medida.
+- Um boxe flutuante com `placement="top"` encabeça a página seguinte àquela em que cai a cerca dele, então a cerca vai na página anterior à que o boxe deve encabeçar. Aqui ela fica logo antes do procedimento, na página 42.

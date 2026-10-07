@@ -1,0 +1,66 @@
+---
+title: "Um manual cujas remissões apontam para páginas"
+summary: "Um manual de bicicleta cujas remissões dizem “veja a seção 3.2 na página 3”, para a frente e para trás, com todo número e página tirados da diagramação."
+plain: "Um manual curto de uma bicicleta de cicloturismo. Quando o texto manda você para outra seção, ele dá o número dessa seção e a página em que ela está, e os dois são links."
+description: "Um manual de produto no Postext: seções numeradas, âncoras em parágrafos e passos, e remissões por número, título e página que se atualizam e viram links."
+question: "Como faço para remeter a uma seção e à página dela, e manter os dois certos quando o livro muda?"
+aliases: ["referência cruzada", "remissão", "ver página", "veja a página", "referência de página", "pageref", "âncora", "rótulo", "veja a seção", "manual", "manual do proprietário", "manual do usuário", "links internos", "pandoc-crossref"]
+pageNotes: { "1": "Página 1: uma faixa azul-marinho na metade de cima com OWNER'S MANUAL, o nome do modelo Ardena T3 em letra condensada branca e grande, um subtítulo e a linha da edição, e depois um filete laranja; abaixo, uma introdução e um sumário cujos números de seção, títulos e números de página são todos remissões em laranja.", "2": "Página 2: a seção 1 com remissões como section 3.2 on page 3 e a frase close the lever so that it points backwards, que leva a um passo da seção 2.2; passos numerados para a altura do selim; a seção 2.1 sobre a pressão dos pneus.", "3": "Página 3: como tirar e pôr a roda dianteira, a seção 3 sobre os freios com um boxe Wet weather de filete lateral laranja, e o começo da 3.2.", "4": "Página 4: o ajuste do cabo, a seção 4 sobre a corrente com uma remissão de volta a Wet weather na página 3, e o calendário de manutenção, uma lista de intervalos que apontam cada um para uma seção e uma página." }
+---
+
+## O que você vai compor
+
+O manual do proprietário de uma bicicleta de cicloturismo fictícia, a Ardena T3: quatro páginas A5 compostas em Archivo, com o nome do modelo numa faixa azul-marinho sobre a primeira página. Um manual não é lido em ordem, então toda instrução que depende de outra diz onde ela está: *veja a seção 3.2 na página 3*. Quem escreve dá um identificador a um título, a um parágrafo ou a uma frase de um passo e escreve `:ref` onde o texto remete a ele; o Postext imprime o número, o título ou a página e o transforma em link. O sumário da capa é escrito do mesmo jeito, de modo que mover uma seção, ou traduzir o manual e deixá-lo se recompor, nunca deixa um número desatualizado.
+
+## Preparo
+
+### 1 · Dar nome àquilo a que o texto remete
+
+O código é [a resposta curta](#a-resposta-curta) acima. Os títulos recebem um identificador à maneira do Pandoc, `### Checking pad wear {#sec-pad-wear}`; o aviso sobre a pressão dos pneus começa com `:anchor{#warn-pressure}`, uma marca invisível; o último passo da montagem da roda é `[close the lever so that it points backwards]{#step-close-lever}`, que mantém as suas palavras e lhes dá um nome; e o boxe abre com `:::callout{#box-wet type="note" title="Wet weather"}`. Uma remissão ao passo imprime as palavras do passo; uma remissão ao boxe, o título dele.
+
+### 2 · Um destino, quatro maneiras de nomeá-lo
+
+`:ref{id="sec-pad-wear"}` imprime *section 3.2* com a palavra de `crossRefs.section`; `style=page` imprime *page 3* com a palavra de `crossRefs.page`; `style=title` imprime *Checking pad wear*; `style=pageNumber` imprime só o *3*. O sumário da capa combina o número sozinho, o título e a página sozinha, e assim se lê como um sumário. Em espanhol, as mesmas remissões imprimem *apartado 3.2* e *página 3*, porque os modelos seguem o idioma da edição.
+
+### 3 · As páginas se acertam sozinhas
+
+O número de uma página só é conhecido depois que o manual é diagramado. O motor o diagrama, lê a página em que caiu cada destino e diagrama de novo até que nenhuma remissão mude, o mesmo ciclo que preenche um sumário. Um texto que cresce na tradução, ou uma seção levada para o começo, muda as páginas, e as remissões as acompanham, para a frente e para trás.
+
+### 4 · Os números saem do contador de nível 2
+
+<Excerpt region="numbers" />
+
+O manual tem um único título de nível 1, o nome do modelo na capa, então as seções são numeradas a partir do nível 2: `{2}` dá de 1 a 5 e `{2}.{3}` dá 1.1, 1.2.
+
+### 5 · A capa é a abertura desse título
+
+<Excerpt region="cover" />
+
+A faixa tem 104 mm de altura, meia página, e um filete laranja a fecha. O chapéu, o subtítulo e a linha da edição são atributos do título, então a edição espanhola os troca no próprio texto.
+
+<Excerpt region="palette" />
+
+## Variações
+
+### Escrever “p.” nas remissões
+
+Uma obra de consulta com muitas remissões de página ganha espaço com a abreviatura.
+
+```diff
+-  page: t({ en: 'page {n}', es: 'página {n}' }), // spelt out: a manual is read by anyone
++  page: t({ en: 'p. {n}', es: 'pág. {n}' }),
+```
+
+### Deixar as remissões em preto
+
+Quando a maior parte da página são remissões, mantenha-as na cor do texto e em negrito; elas continuam sendo links no PDF e na tela.
+
+```diff
+-const references = { referenceColor: col('orange'), referenceBold: true };
++const references = { referenceColor: col('ink'), referenceBold: true };
+```
+
+## Erros comuns
+
+- Uma remissão a um `:anchor` sem estilo imprime a página, porque uma âncora invisível não tem palavras próprias. Use `[words]{#id}` quando a remissão tiver de citar o texto.
+- Um identificador tem de ser único no livro. As remissões chegam ao primeiro `{#sec-brakes}`, e o painel Verificações do Sandbox lista um segundo como `duplicateAnchor`.

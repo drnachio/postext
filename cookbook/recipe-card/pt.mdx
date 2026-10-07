@@ -1,0 +1,88 @@
+---
+title: "Ficha de receita: ingredientes ao lado do modo de preparo"
+summary: "Duas páginas de livro de receitas com uma ficha sob a aba SERVES 4: ingredientes, etiquetas e checklist à esquerda; passos com números vermelhos à direita."
+plain: "Duas páginas de um livro de receitas caseiras, uma receita em cada. Mostra como pôr os ingredientes e os passos do preparo lado a lado numa ficha."
+description: "Duas páginas de livro de receitas no Postext: ficha com aba de porções, ingredientes e preparo em duas colunas, números de passo grandes, chips e checklist."
+question: "Como ponho os ingredientes ao lado do modo de preparo, em duas colunas dentro de um box com aba de porções?"
+aliases: ["ficha de receita", "livro de receitas", "receita", "ingredientes", "modo de preparo", "duas colunas num box", "aba de porções", "rendimento", "serve 4 pessoas", "números de passo", "passos numerados", "etiquetas", "texto de apresentação", "checklist", "mise en place", "pictogramas"]
+pageNotes: { "1": "Tortilla de patatas: no alto, a fotografia de uma tortilha dourada com uma fatia separada, num prato branco de borda azul, sobre um guardanapo xadrez vermelho e uma mesa cor de açafrão, ao lado de um ramo de oliveira; uma nota manuscrita, “onion, always!”, aponta para a tortilha. O antetítulo, o título em duas linhas e três pílulas brancas ficam sobre o açafrão. Sob um texto de apresentação em itálico, uma ficha branca com uma aba vermelha SERVES 4 no canto superior direito reúne, à esquerda, cinco ingredientes com travessões verde-oliva, três chips de etiqueta e um checklist encabeçado pelos desenhos de uma tigela, uma frigideira e um prato; à direita, cinco passos com grandes algarismos vermelhos. Uma nota de uma linha sob a ficha: Keep the oil.", "2": "Gazpacho andaluz na página ao lado: uma tigela de sopa vermelho-alaranjada com cubinhos de legumes, gotas de azeite e uma colher, sobre um guardanapo xadrez azul e uma mesa verde-sálvia, com um tomate ao lado e a nota “serve it ice cold!”. A mesma ficha, com a aba SERVES 6, lista oito ingredientes e cinco passos; uma nota sobre preparar com antecedência e o colofão fecham a página, e o pé traz o nome da receita ao lado do fólio." }
+---
+
+## O que você vai compor
+
+Duas páginas espelhadas de *Salt & Olive Oil*, um livro de receitas caseiras espanholas inventado, no formato 190 × 250 mm, uma receita por página. Uma fotografia, gerada com modelos de difusão e carregada como JPEG, sangra pelos 104 mm do alto: uma tortilha com uma fatia separada numa mesa cor de açafrão, uma tigela de gazpacho numa mesa verde-sálvia. Sobre ela ficam o antetítulo, o título em Young Serif de 42 pt, pílulas com tempo, dificuldade e estação, e uma nota na letra manuscrita Caveat que aponta para o prato. Abaixo do texto de apresentação em itálico, uma ficha branca leva no canto superior direito uma aba vermelho-tomate com as porções. Os ingredientes descem pela coluna esquerda com travessões verde-oliva e chips de etiqueta; abaixo dos da tortilha, desenhos de uma tigela, uma frigideira e um prato encabeçam um checklist. O modo de preparo ocupa a coluna direita, e cada passo começa com um algarismo de estilo antigo de 26 pt.
+
+## Preparo
+
+### 1 · Dê a cada coluna um box próprio
+
+Com as listas soltas, um [grupo de colunas dentro de um box](/pt/docs/document-format#columns) corta onde as colunas ficam mais niveladas, entre blocos ou entre as linhas de um deles, e o primeiro passo do gazpacho se divide dos dois lados da medianiz: a primeira linha fecha a coluna de ingredientes e o resto abre a do preparo. Um box aninhado, como na [resposta curta](#a-resposta-curta) logo acima, é um só bloco, e o grupo nunca corta dentro dele. Para pôr uma imagem num deles é preciso um `::resource` com posicionamento `'here'`, porque qualquer outro faz dela uma flutuante, que sai do box e é posicionada como qualquer figura citada. O `label` do estilo da ficha transforma o `label="SERVES 4"` do delimitador na aba: um `offset` igual à sua `height` a apoia na borda superior da ficha, e o `rule` vai do canto oposto até o garfo e a faca ([estilos de boxe](/pt/docs/configuration#estilos-de-boxe)).
+
+### 2 · Centralize os números de passo em duas linhas
+
+<Excerpt region="steps" />
+
+O número de uma lista é pintado centralizado um pouco acima da primeira linha de base do item, então `numberFontSize` sozinho deixaria os algarismos de 26 pt na altura da primeira linha; `numberVerticalOffset` os baixa 2,5 mm, para o meio da faixa que vai das maiúsculas da primeira linha até a linha de base da segunda. A Young Serif tem algarismos de estilo antigo: 3, 4 e 5 descem abaixo da linha de base em que 1 e 2 se apoiam. Com `separatorColor` definido, o separador é pintado como um trecho à parte, e o ponto padrão sai verde-oliva ao lado de um algarismo vermelho ([listas numeradas](/pt/docs/configuration#listas-numeradas)).
+
+### 3 · Encabece o checklist com uma tira de desenhos
+
+<Excerpt region="prep" />
+
+O box `prep` só tem o título e o ícone, e por isso funciona como cabeçalho: uma `width` do ícone de 3,75 vezes o seu `size` estica o quadrado do ícone numa tira de 18,75 × 5 mm, e os três desenhos a preenchem à esquerda do título ([estilos de boxe](/pt/docs/configuration#estilos-de-boxe)). Um ícone ocupa uma coluna própria ao lado de tudo o que está no seu box, então as tarefas vêm depois do box, onde se alinham com os travessões dos ingredientes em vez de começar 21 mm para dentro. Os itens `- [ ]` imprimem a caixa de tarefa padrão, e `unorderedLists.marginTop: 0` deixa que eles sigam o cabeçalho à distância do seu `marginBottom`, os mesmos 2,4 mm que os títulos de coluna mantêm ([listas com marcadores](/pt/docs/configuration#listas-com-marcadores)).
+
+### 4 · Transforme as etiquetas em chips
+
+<Excerpt region="chips" />
+
+`:chip[Vegetarian]{style="tag"}` põe uma palavra numa caixa que nunca quebra entre linhas. Um `borderRadius` maior que metade da altura da caixa é limitado a essa metade, o que transforma as duas pontas em semicírculos; com `borderWidth: 0`, a pílula é desenhada só com o tom de fundo. A caixa tem 11,4 pt de altura, menos que os 12,8 pt de entrelinha da ficha, então uma segunda linha de etiquetas não encostaria na primeira ([estilos de chip](/pt/docs/configuration#estilos-de-chip)).
+
+### 5 · Um design, uma fotografia por receita
+
+<Excerpt region="opener" />
+
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` escolhe o estilo de título e preenche os seus encaixes com os atributos, entre eles o texto de apresentação em itálico ([atributos de título](/pt/docs/document-format#atributos-de-título)). O `resourceId` do elemento de imagem é `'{attr.art}'`, um marcador como o de um texto, e assim as duas receitas dividem um estilo e cada título indica a sua fotografia ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). Cada pílula é ancorada `right-of` à anterior, o título `above` à primeira pílula e o antetítulo acima do título, então um título mais longo empurra o antetítulo para cima enquanto as pílulas mantêm a sua linha. Na 1.4.1 a fotografia não reserva altura, mas o texto de apresentação embaixo dela reserva, e a ficha começa abaixo dele sem `minHeight`. A nota é ancorada à página, como a fotografia e a seta, um segundo elemento de imagem desenhado em código, e termina 2 mm antes da seta nas duas páginas, embora as margens espelhadas desloquem a mancha 2 mm para a direita na página ímpar.
+
+### 6 · Registre as imagens como recursos
+
+<Excerpt region="pictures" />
+
+Os dois elementos de imagem da abertura, o ícone da aba e o ícone do cabeçalho do checklist indicam cada um um recurso, e o canvas pinta o arquivo que `loadImage` ou `loadSvg` registrou para ele. Nenhum `:ref` cita esses recursos, então nenhum vira figura numerada. Nem uma fotografia nem um SVG desenhado como imagem podem usar as fontes web da página, por isso as imagens não levam palavras: as notas manuscritas são texto de design composto por cima.
+
+## Variações
+
+### Conte blocos em vez de pôr as colunas em boxes
+
+Sem os boxes de coluna, `breaks` indica o filho que abre a coluna direita, e cada item de lista, a linha de etiquetas e o cabeçalho do checklist contam como um: o gazpacho precisa de `breaks="10"` (oito ingredientes e as etiquetas vêm antes), a tortilha de `breaks="11"`. Os títulos de coluna e o espaço entre passos do estilo de coluna somem junto.
+
+```diff
+ :::callout{type="card" label="SERVES 6"}
+-:::columns{count=2}
+-:::callout{type="column" title="Ingredients"}
++:::columns{count=2 breaks="10"}
+ - **1.5 kg** ripe plum tomatoes
+@@ seven more ingredients and a blank line @@
+ :chip[Vegan]{style="tag"} :chip[No-cook]{style="tag"} :chip[Make ahead]{style="tag"}
+-:::
+-:::callout{type="column" title="Method"}
++
+ 1. Chop the tomatoes, seeded pepper, peeled cucumber and garlic.
+@@ steps 2 to 5 @@
+ :::
+-:::
+ :::
+```
+
+### Ponha a aba no canto esquerdo
+
+`'top-left'` espelha o rótulo: a aba passa para o canto esquerdo, o garfo e a faca para a direita dela, e o fio entra pela direita.
+
+```diff
+     background: col('tomato'), height: mm(TAB), offset: mm(TAB), paddingX: mm(2.6),
++    position: 'top-left', // 'top-right' by default
+```
+
+## Erros comuns
+
+- Na 1.4.1 um rótulo não tem `textTransform` nem `letterSpacing`, então SERVES 4 e PARA 4 são digitados em maiúsculas nos delimitadores.
+- A caixa de tarefa ☐ não está em nenhuma das três fontes, então o navegador a desenha com uma fonte do sistema e a forma muda de um sistema para outro.
+- Mantenha um ícone largo na coluna própria do box: com `position: 'corner'`, a 1.4.1 o desloca metade da altura, não metade da largura, e a tira de 18,75 mm passa 16 mm da borda direita do box.

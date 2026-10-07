@@ -36,7 +36,7 @@ import {
   resolveOrderedListsConfig,
   resolvePageConfig,
 } from 'postext';
-import { documentDirection } from './documentDirection';
+import { documentComicDirection, documentDirection } from './documentDirection';
 import {
   builtInTypes,
   canonicalJson,
@@ -227,7 +227,9 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
   // `direction` only when the author wrote one) is bound on the right too.
   const fromDirection = documentDirection(config.direction, fromLocale);
   const toDirection = documentDirection(config.direction, locale);
-  const fromBinding = resolvePageConfig(config.page, fromLocale, fromMode, fromDirection).binding;
+  // A comic book read right to left (a manga, a Traditional Chinese
+  // edition of a Western comic) is bound on the right in either mode (#593).
+  const fromBinding = resolvePageConfig(config.page, fromLocale, fromMode, fromDirection, documentComicDirection(config, fromLocale, fromMode, fromDirection)).binding;
   const modeTo: Extract<ChineseDefaultValue, { kind: 'writingMode' }> = { kind: 'writingMode', value: toMode, binding: 'left' };
   if (toMode !== fromMode) {
     rows.push({
@@ -242,7 +244,7 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
     });
   }
   const rawBinding = config.page?.binding;
-  const autoBinding = toMode === 'vertical-rl' || toDirection === 'rtl' ? 'right' : 'left';
+  const autoBinding = resolvePageConfig(undefined, locale, toMode, toDirection, documentComicDirection(config, locale, toMode, toDirection)).binding;
   if ((rawBinding === 'left' || rawBinding === 'right') && rawBinding !== autoBinding) {
     rows.push({
       id: 'binding',
@@ -484,7 +486,7 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
     return { id: row.id, from: row.from, to: row.to, customised: row.customised, required, applied };
   });
   // The binding the book ends with, now that the rows are applied.
-  modeTo.binding = resolvePageConfig(next.page, locale, toMode, toDirection).binding;
+  modeTo.binding = resolvePageConfig(next.page, locale, toMode, toDirection, documentComicDirection(next, locale, toMode, toDirection)).binding;
   return { locale, changes, config: next };
 }
 

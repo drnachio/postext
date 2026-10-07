@@ -12,7 +12,7 @@ import {
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
-const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const LANG = 'en'; // @lang: the sample's language: 'en' | 'es' | 'ca' | 'zh' | 'ar' | 'ja' | 'pt'
 const RECIPE = 'balloon-kinds';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ const colorPalette = [
 const [LETTERING, SFX] = t({
   en: ['Comic Neue', 'Bangers'], es: ['Comic Neue', 'Bangers'], ca: ['Comic Neue', 'Bangers'],
   ja: ['Zen Antique', 'Dela Gothic One'], zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou'],
-  ar: ['Playpen Sans Arabic', 'Lalezar'],
+  ar: ['Playpen Sans Arabic', 'Lalezar'], pt: ['Comic Neue', 'Bangers'],
 });
 // #endregion
 
@@ -64,7 +64,7 @@ const comics = {
   balloonStyles,
   // A speaker's own style: every `skipper:` line comes through the radio unless it says not.
   cast: [{ id: 'skipper', balloonStyle: 'radio', name: t({ en: 'The skipper', es: 'El patrón',
-    ca: 'El patró', zh: '船长', ar: 'الربّان', ja: '船長' }) }],
+    ca: 'El patró', zh: '船长', ar: 'الربّان', ja: '船長', pt: 'O capitão' }) }],
   runningHeads: true, // a comic page has no running head unless asked: here, its folio
 };
 // #endregion
@@ -75,7 +75,8 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
     offset: { x: mm(0), y: mm(-8) } } }] };
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar' }),
+  locale: t({ en: 'en-us', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
+    pt: 'pt-BR' }),
   colorPalette, comics,
   // The trim of an American comic book, 6⅝ × 10³⁄₁₆ in; the type area is the panel frame.
   page: { sizePreset: 'custom', width: mm(168), height: mm(259), dpi: 150,
@@ -129,7 +130,9 @@ const ART = {
       zh: '暴风雨之夜的灯室里，守塔人对着收音机的话筒说话，裹着毯子的玛雅在一旁听着。',
       ar: 'ليلة عاصفة في غرفة الفانوس: الحارس يتكلم في ميكروفون المذياع، ومايا الملتفّة ببطانية '
         + 'تصغي.',
-      ja: '嵐の夜の灯室。灯台守が無線のマイクに話しかけ、毛布にくるまったマヤが耳をすます。' }) },
+      ja: '嵐の夜の灯室。灯台守が無線のマイクに話しかけ、毛布にくるまったマヤが耳をすます。',
+      pt: 'Noite de tempestade na sala da lanterna: o faroleiro fala ao microfone do rádio e '
+        + 'Maya, enrolada num cobertor, escuta.' }) },
   'bk-whisper': { width: 1152, height: 1152,
     safeArea: { x: 0.3, y: 0.18, width: 0.54, height: 0.64 },
     anchors: [{ id: 'maya', x: 0.53, y: 0.47, head: { x: 0.52, y: 0.33 },
@@ -142,7 +145,9 @@ const ART = {
       ca: 'Sota la taula, la Maya xiuxiueja tapant-se la boca al gat taronja espantat.',
       zh: '桌子底下，玛雅用手挡着嘴，对受惊的橘猫说悄悄话。',
       ar: 'تحت المكتب تهمس مايا من وراء يدها للقط البرتقالي الخائف.',
-      ja: '机の下で、マヤが手で口をかくして、おびえたオレンジ色の猫にささやく。' }) },
+      ja: '机の下で、マヤが手で口をかくして、おびえたオレンジ色の猫にささやく。',
+      pt: 'Debaixo da mesa, Maya cobre a boca com a mão e sussurra para o gato laranja '
+        + 'assustado.' }) },
   'bk-shout': { width: 880, height: 1100, safeArea: { x: 0.2, y: 0.17, width: 0.55, height: 0.58 },
     anchors: [{ id: 'tomas', x: 0.48, y: 0.47, head: { x: 0.42, y: 0.33 },
       face: { x: 0.25, y: 0.28, width: 0.37, height: 0.32 } }],
@@ -155,7 +160,9 @@ const ART = {
         + 'ràdio.',
       zh: '守塔人对着话筒大喊的特写，收音机的刻度盘从下方照亮他的脸。',
       ar: 'لقطة قريبة للحارس يصرخ في الميكروفون، وأضواء لوحة المذياع تنيره من أسفل.',
-      ja: 'マイクに向かって叫ぶ灯台守のアップ。無線機の目盛りの光が下から顔を照らす。' }) },
+      ja: 'マイクに向かって叫ぶ灯台守のアップ。無線機の目盛りの光が下から顔を照らす。',
+      pt: 'Close do faroleiro gritando ao microfone, iluminado de baixo pelos mostradores do '
+        + 'rádio.' }) },
   'bk-sea': { width: 1200, height: 800, safeArea: { x: 0.08, y: 0.14, width: 0.46, height: 0.62 },
     anchors: [{ id: 'skipper', x: 0.28, y: 0.63 }, { id: 'sfx', x: 0.16, y: 0.36 }],
     avoid: [{ x: 0.13, y: 0.52, width: 0.24, height: 0.23 },
@@ -168,7 +175,9 @@ const ART = {
         + 'feix del far a la dreta.',
       zh: '夜里，一艘蓝色小渔船在暴风雨的浪头上颠簸；左边是闪电，右边是灯塔的光束。',
       ar: 'قارب صيد أزرق صغير يتقاذفه موج العاصفة ليلًا؛ برق على اليسار وشعاع المنارة على اليمين.',
-      ja: '夜の嵐の波にもまれる青い小さな漁船。左に稲妻、右に灯台の光。' }) },
+      ja: '夜の嵐の波にもまれる青い小さな漁船。左に稲妻、右に灯台の光。',
+      pt: 'Um pequeno barco pesqueiro azul jogado pelas ondas da tempestade à noite; um raio à '
+        + 'esquerda, o facho do farol à direita.' }) },
   'bk-window': { width: 1000, height: 1000,
     safeArea: { x: 0.25, y: 0.18, width: 0.58, height: 0.77 },
     anchors: [{ id: 'maya', x: 0.49, y: 0.41, head: { x: 0.42, y: 0.3 },
@@ -180,7 +189,8 @@ const ART = {
       ca: 'La Maya enganxa les mans i el nas al vidre mullat i mira la tempesta.',
       zh: '玛雅把双手和鼻子贴在满是雨水的窗户上，望着外面的暴风雨。',
       ar: 'تلصق مايا يديها وأنفها بالزجاج المبلل وتحدّق في العاصفة.',
-      ja: 'マヤが雨の窓に両手と鼻を押しつけ、嵐を見つめる。' }) },
+      ja: 'マヤが雨の窓に両手と鼻を押しつけ、嵐を見つめる。',
+      pt: 'Maya cola as mãos e o nariz no vidro molhado e olha a tempestade.' }) },
   'bk-morning': { width: 1000, height: 667,
     safeArea: { x: 0.14, y: 0.03, width: 0.64, height: 0.8 },
     anchors: [{ id: 'tomas', x: 0.565, y: 0.25, head: { x: 0.56, y: 0.15 },
@@ -199,7 +209,9 @@ const ART = {
         + 'hi ha el far.',
       zh: '第二天早上，阳光照着礁石，玛雅、守塔人和猫在挥手；灯塔立在他们身后。',
       ar: 'في الصباح التالي على الصخور المشمسة يلوّح مايا والحارس والقط، والمنارة خلفهم.',
-      ja: '翌朝、日の当たる岩の上でマヤと灯台守と猫が手を振る。後ろに灯台が立つ。' }) },
+      ja: '翌朝、日の当たる岩の上でマヤと灯台守と猫が手を振る。後ろに灯台が立つ。',
+      pt: 'Na manhã seguinte, nas pedras ao sol, Maya, o faroleiro e o gato acenam; atrás deles '
+        + 'está o farol.' }) },
 };
 // #endregion
 
@@ -233,7 +245,8 @@ const resources = await Promise.all([
 ]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showBook(doc, { title: t({ en: 'Every kind of balloon on a lighthouse page',
-  es: 'Todos los bocadillos en una página del faro' }) });
+  es: 'Todos los bocadillos en una página del faro',
+  pt: 'Todos os tipos de balão numa página do farol' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 

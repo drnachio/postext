@@ -1,0 +1,78 @@
+---
+title: "Clássico de bolso: capítulos curtos em sequência"
+summary: "Dom Casmurro em livro de bolso: capítulos curtos em sequência sob títulos desenhados na coluna; nenhuma quebra de página deixa linha ou título sozinhos."
+plain: "Cinco páginas de um romance clássico brasileiro num livrinho de bolso. Cada capítulo curto começa logo depois do anterior, e nenhuma página começa ou termina com uma linha solta."
+description: "Cinco páginas de Dom Casmurro em livro de bolso no Postext, com hifenização portuguesa: capítulos em sequência e nenhuma página aberta por linha solta."
+question: "Como encadeio capítulos curtos, com cada título junto do texto, sem órfãs nem última linha de uma palavra?"
+aliases: ["capítulos em sequência", "capítulos corridos", "capítulos curtos", "manter com o seguinte", "manter título com o texto", "viúvas e órfãs", "linha curta", "runts", "livro de bolso", "edição de bolso", "hifenização em português", "Machado de Assis", "Dom Casmurro", "capítulos em algarismos romanos", "trecho de um livro", "contadores de continuação"]
+pageNotes: { "1": "A capa: MACHADO DE ASSIS em maiúsculas creme sobre uma faixa ameixa, Dom Casmurro em Abril Fatface ameixa sobre um painel creme acima de um fio curto açafrão, e o selo açafrão da casuarina acima de COLEÇÃO CASUARINA na faixa ameixa do pé.", "2": "A prancha, fólio oculto 212: uma pintura do Pão de Açúcar e da Urca contra um céu de manhã âmbar com o sol baixo, um mar ameixa revolto com um nadador sozinho entre as ondas, e CAPÍTULO CXXIII sobre uma linha desse capítulo em itálico creme.", "3": "A página 213 continua o capítulo CXVIII. Perto do pé começa o capítulo CXIX, NÃO FAÇA ISSO, QUERIDA, sob um numeral ameixa, com duas linhas de texto embaixo; o cabeço o nomeia.", "4": "A página 214, sob o cabeço DOM CASMURRO: as duas últimas linhas do CXIX, depois o capítulo CXX, OS AUTOS, e ao pé o capítulo CXXI, A CATASTROPHE, com duas linhas sob o título.", "5": "A página 215: o fim do CXXI e o capítulo CXXII, O ENTERRO, que o cabeço nomeia.", "6": "A página 216, sob DOM CASMURRO: o fim do CXXII e o capítulo CXXIII, OLHOS DE RESSACA.", "7": "A página 217: as cinco últimas linhas do CXXIII, terminando em o nadador da manhã, e ao pé da página o colofão em letra miúda cinza ao lado do selo da casuarina." }
+---
+
+## O que você vai compor
+
+Cinco páginas de texto do final de *Dom Casmurro*, o romance de Machado de Assis de 1899, compostas no português original como um livro de bolso de 110 × 178 mm numa coleção inventada, a Coleção Casuarina. Uma capa em faixas ameixa, creme e ameixa traz o título em Abril Fatface e o selo açafrão da coleção, e uma prancha pintada do mar revolto do Flamengo, gerada com modelos de difusão, fica de frente para a página 213. O texto vai do fim do capítulo CXVIII ao fim do CXXIII, e nenhum capítulo abre página. Cada um começa duas linhas abaixo do fim do anterior (três no CXIX, para encher a página 213), sob um numeral romano ameixa, com o título em maiúsculas espaçadas e um fio curto açafrão. A página 214 tem dois títulos de capítulo; a 215 e a 216, um cada. Toda página de texto, menos a última, termina na sua 33ª linha, e nenhuma começa com uma linha solta.
+
+## Preparo
+
+### 1 · Encadeie os capítulos, cada título junto do seu texto
+
+<Excerpt region="answer" highlight="17-24" />
+
+O nível de capítulo tem a quebra desligada, e `marginTop` põe cada título duas linhas abaixo da última linha do capítulo anterior. O design dele não tem `span`, então o título é desenhado dentro da coluna, num bloco de três linhas de altura, e o texto embaixo dele fica na grade ([quebra antes](/pt/docs/configuration#quebra-antes), [span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). As regras de coesão ficam nos valores padrão. Os parágrafos de quatro linhas sob o CXIX e o CXXI deixam cada um duas linhas ao pé da sua página e levam duas para a seguinte; com `avoidOrphans: false`, eles se dividiriam em três e uma, e as páginas 214 e 215 começariam com uma linha solta ([órfãs, viúvas e linhas curtas](/pt/docs/configuration#órfãs-viúvas-linhas-curtas-e-regras-de-manter-junto)). O equilíbrio de colunas acrescenta uma terceira linha de espaço acima do CXIX, para que a página 213 termine na linha 33 ([equilíbrio de colunas](/pt/docs/configuration#equilíbrio-de-colunas)).
+
+<PageShot page={3} crop="0,.683,1,.317" caption="Página 213: o capítulo CXIX começa três linhas abaixo do fim do CXVIII e mantém duas linhas do seu texto ao pé." />
+
+### 2 · Monte uma página de 33 linhas, com hifenização portuguesa
+
+<Excerpt region="text" />
+
+A margem inferior tem 16,3 mm, o que sobra dos 178 mm de altura depois da margem superior de 15 mm e de 33 linhas de 12,6 pt, então toda página cheia termina na mesma linha. A Tinos, que tem as larguras da Times New Roman, compõe cerca de 59 caracteres por linha na medida de 84 mm em corpo 9,5. `locale: 'pt'` hifeniza com os padrões do português: *at-tracção*, *af-fluencia*, *genealogica-mente* ([idiomas suportados](/pt/docs/justification#idiomas-compatíveis)). Todo parágrafo leva recuo, inclusive o primeiro depois de um título, como costumam fazer as edições portuguesas e brasileiras, então `indentAfterHeading` fica no valor padrão.
+
+### 3 · O nome do livro na página par e o capítulo na ímpar
+
+<Excerpt region="heads" />
+
+`{title}` imprime o título do frontmatter, e `{chapterTitle}`, o último capítulo que começa na página ou antes dela, de modo que a página 217 nomeia o CXXIII, que começou na 216 ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). A página 213 nomeia o CXIX, que começa ao pé dela, embora as suas primeiras 25 linhas fechem o CXVIII: a versão 1.4.1 não tem marcador para o capítulo em que uma página abre. `SHIFT` leva os cabeços para o centro da mancha, 1 mm fora do centro da página, porque a margem interna é 2 mm mais larga que a externa.
+
+### 4 · Desenhe a capa e a prancha como títulos
+
+<Excerpt region="cover" />
+
+As duas são [estilos de título](/pt/docs/configuration#estilos-de-título) com `numbered: false`, então o primeiro capítulo numerado continua sendo o CXIX. `span: 'page'` faz de cada uma uma página de abertura. Sem ele, as faixas da capa param no alto e no pé da mancha, o cabeço e o fólio 1 são impressos na capa, e o título sai numa linha só. A legenda da prancha vem do seu título: CAPÍTULO CXXIII é o texto do título, e a citação em itálico é o atributo `quote` ([atributos de título](/pt/docs/document-format#atributos-de-título)). O `:::pagebreak` depois de cada uma mantém o texto longe da arte, já que a versão 1.4.1 não reserva espaço para a faixa do pé da capa nem para a imagem da prancha.
+
+### 5 · Diga ao trecho onde ele fica no livro
+
+<Excerpt region="excerpt" />
+
+`continuation.headings` dá os contadores de títulos a partir dos quais o trecho começa. Com `h1: 118`, o primeiro título numerado é o capítulo CXIX; sem ele, os cinco capítulos são numerados de I a V. `numberingTemplate: '{1:I}'` no nível de capítulo compõe esses números em algarismos romanos, e o design os imprime com `{number}`. `:::numbering{startAt=212}`, depois da quebra de página da capa, numera a prancha como 212 e as páginas de texto de 213 a 217 ([numeração](/pt/docs/document-format#numbering)).
+
+## Variações
+
+### Abra cada capítulo numa página nova
+
+Com uma quebra antes de cada capítulo, as cinco páginas de texto viram sete: a página 214 traz só o CXIX, com o título e quatro linhas, e a página 213, onde nenhum capítulo começa, recebe o título da prancha, CAPÍTULO CXXIII, como cabeço.
+
+```diff
+-  breakBefore: { enabled: false }, marginTop: pt(2 * LEAD), advancedDesign: chapterHead };
++  breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(2 * LEAD),
++  advancedDesign: chapterHead };
+```
+
+### Ponha o número do capítulo na página ímpar
+
+`{chapterNumber}` imprime o numeral do mesmo capítulo de onde vem o título: *CXIX · NÃO FAÇA ISSO, QUERIDA*.
+
+```diff
+-  head('recto-chapter', '{chapterTitle}', 'odd', SHIFT),
++  head('recto-chapter', '{chapterNumber} · {chapterTitle}', 'odd', SHIFT),
+```
+
+## Erros comuns
+
+- Subir `widowMinLines` para 3 na versão 1.4.1 deixa o CXIX e o CXXI manterem três linhas embaixo deles ao pé, e os seus parágrafos de quatro linhas passam a se dividir em três e uma: uma linha solta abre as páginas 214 e 215, qualquer que seja o `orphanPenalty`.
+- Se o CXVIII crescer algumas linhas, o CXIX só terá espaço para uma linha sob o título. `keepWithNext` então leva o título para a página 214, e a página 213 termina quatro ou cinco linhas mais curta; com `keepWithNext: false`, o título fecha a página 213 sem texto embaixo.
+- A prancha é um H1, então `{chapterTitle}` recorre a ela: uma página de texto em que nenhum capítulo começou desde a prancha, como a 213 depois que o CXIX muda de página, imprime CAPÍTULO CXXIII como cabeço.
+- Desligue `avoidRunts` e a última linha do livro fica só com *manhã.* em vez de *nadador da manhã.*
+- Sem o `:::pagebreak` depois da capa, e sem prancha, o capítulo CXVIII começa a 19,5 mm do alto da capa, sob a linha de 3 mm do título dela. Sem o que vem depois da prancha, onze linhas de texto são impressas sobre o mar quando a legenda sobe para 94 mm.
+- Nenhuma linha destas páginas quebra no hífen de uma ênclise (*Vesti-me*, *metteu-se*). Ponha *Emfim*, a primeira palavra do CXXIII, em itálico e a versão 1.4.1 manda esse parágrafo para o quebrador de linhas do texto com marcas inline, que termina uma linha em *vencer-* e começa a seguinte com *se a si mesma*, sem o hífen que a ortografia portuguesa repete no início da linha.
+- Essas quebras de página só valem para este texto, em 9,5 sobre 12,6 pt numa medida de 84 mm. Depois de mudar o texto, o corpo ou a medida, confira de novo o pé de cada página e o espaço acima de cada título.

@@ -103,6 +103,22 @@ Postextは**オープンソースの
 一語を変えれば、ページが
 組み直されます。
 :::`,
+  pt: `:::part{number="I" title="Fundamentos"
+  palette="band=#2b4acb"}
+:::
+
+# Por que Postext {lead="A tipografia
+impressa passou cinco séculos…"}
+
+O Postext é um **motor de layout
+de código aberto** que leva à web
+o ofício da tipografia impressa,
+como mostra :ref{id="fig-fluxo"}.
+
+:::callout{type="try"}
+Mude uma palavra: a página
+se compõe de novo.
+:::`,
 };
 
 export async function AboutSection() {

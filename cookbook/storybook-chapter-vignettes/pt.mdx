@@ -1,0 +1,62 @@
+---
+title: "Capítulos de livro infantil com vinhetas e sumários"
+summary: "Um único estilo de título abre todos os capítulos; cada título indica em atributos a sua vinheta e o seu sumário em itálico, que a abertura pinta."
+plain: "As primeiras páginas de uma edição infantil italiana de Pinóquio. Cada capítulo começa com uma ilustração própria em aquarela e um resumo curto do que acontece nele."
+description: "O Pinocchio de Collodi em italiano, composto no Postext: cada capítulo abre sob uma vinheta diferente, com a linha do capítulo e um sumário em itálico."
+question: "Como faço para abrir cada capítulo de um livro infantil com uma vinheta própria e um sumário em itálico?"
+aliases: ["livro infantil", "literatura infantil", "livro ilustrado", "vinheta", "vinheta de cabeça", "vinheta de fecho", "remate", "sumário do capítulo", "frontispício", "Pinóquio", "Pinocchio"]
+pageNotes: { "1": "A folha de rosto, numa página par: uma aquarela de colinas da Toscana com ciprestes e uma vila no alto sob um céu azul-claro, onde um velho de chapéu de palha leva uma carroça de lenha puxada por um burro até a oficina aberta de um carpinteiro; abaixo, LE AVVENTURE DI, Pinocchio em letras grandes de fantasia marrons, Storia di un burattino em itálico e CARLO COLLODI.", "2": "O capítulo I abre sob uma vinheta em aquarela que se funde com o papel: Mestre Cereja, careca e com o nariz vermelho como uma cereja, fica paralisado com o machado erguido sobre o tronco na bancada, entre plainas, serrotes e aparas. CAPITOLO I, o sumário de Collodi em duas linhas de itálico centralizado, os primeiros parágrafos e um disco cor de madeira com o fólio, centralizado no pé.", "3": "Uma página cheia do capítulo I sob o cabeço LE AVVENTURE DI PINOCCHIO, com o disco do fólio no canto externo do pé.", "4": "O fim do capítulo I sob o cabeço CAPITOLO I, fechado por duas cerejas vermelhas no cabinho, centralizadas e sem legenda.", "5": "O capítulo II abre sob uma vinheta em aquarela de Gepeto, com a peruca amarela encaracolada, recebendo o tronco de Mestre Cereja ao lado de uma panela vermelha de polenta fumegante; CAPITOLO II, um sumário de três linhas, os primeiros parágrafos e o colofão." }
+---
+
+## O que você vai compor
+
+As primeiras páginas de uma edição infantil italiana de *Le avventure di Pinocchio*, de Collodi, compostas em Averia Serif Libre de 13/19 pt numa página de 190 × 240 mm. Uma folha de rosto ilustrada, na página par, fica diante do capítulo I: uma aquarela das colinas da Toscana, onde uma carroça puxada por um burro leva lenha até a oficina de um carpinteiro, acima do título em Fredericka the Great. Cada capítulo abre sob uma vinheta em aquarela que se funde com o papel (Mestre Cereja com o machado erguido sobre o tronco falante no capítulo I, Gepeto com a peruca amarela recebendo o tronco no capítulo II) e segue com a linha do capítulo e o sumário de Collodi em itálico centralizado. As quatro imagens foram geradas com modelos de difusão a partir de um mesmo prompt de estilo e da paleta da página. Os cabeços só saem nas páginas 8 e 9, as duas sem abertura. Os fólios ficam em discos cor de madeira, e duas cerejas fecham o capítulo I sem legenda nem número.
+
+## Preparo
+
+### 1 · Um só estilo de título, a vinheta indicada em cada título
+
+O código deste passo está na [resposta curta](#a-resposta-curta). O `resourceId` de um elemento de imagem aceita os mesmos marcadores de um texto de design, então `'{attr.vignetta}'` desenha o recurso que o título indica, do mesmo jeito que `{attr.summary}` imprime o sumário. Os dois capítulos compartilham o estilo `capitolo` e indicam a imagem na linha do título: `# Capitolo II {style="capitolo" vignetta="polenta" summary="…"}`. Um terceiro capítulo precisa de mais um recurso e mais um título, não de outro estilo ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). A linha do capítulo é posicionada a partir do topo do contêiner, 6 mm abaixo da caixa da vinheta, em vez de ancorada em `#vignette`. Uma imagem não reserva altura, então os textos ancorados abaixo dela são medidos como se o desenho não estivesse ali; sem `minHeight`, o texto do capítulo I começaria a 62 mm do topo da página, dentro do desenho. Com `minHeight` como piso de 14 linhas, o texto do capítulo I começa na mesma linha que o do capítulo II, cujo sumário tem uma linha a mais; sem ele, o texto do capítulo I começa 6,7 mm mais acima ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)).
+
+### 2 · Carregar as pinturas como recursos bitmap
+
+<Excerpt region="pictures" />
+
+Cada imagem é um JPEG da pasta `assets/` da receita, declarado com o tamanho em pixels: a diagramação só lê esses tamanhos, e o canvas pinta o que `loadImage()` tiver registrado sob cada id de arquivo no momento em que desenha a página. As vinhetas e as cerejas foram geradas sobre branco e depois multiplicadas pela cor do papel, `#fffaf0`, de modo que as margens delas saem na cor da página e as imagens não têm borda visível. A ilustração da folha de rosto está recortada em 190:150, a proporção do seu campo, para que a imagem ajustada preencha o campo sem uma faixa de papel. A paisagem e as vinhetas são pintadas por elementos de imagem dos designs; as cerejas, por `::resource{id="ciliegie"}` no Markdown.
+
+### 3 · Fazer da folha de rosto um estilo de título
+
+<Excerpt region="frontispiece" />
+
+A folha de rosto é o primeiro título do Markdown, `# Pinocchio {style="frontespizio" kicker="Le avventure di"}`, e o estilo dela pinta tudo na página: a paisagem, com 150 mm de altura a partir da borda superior, e depois o antetítulo vindo do atributo, o título e, do frontmatter, o subtítulo e o autor. O estilo usa `span: 'page'` embora o livro tenha uma só coluna, porque um design preso à coluna é cortado no topo da mancha, e os 22 mm de cima da pintura sairiam como papel em branco. O `footer` vazio tira o disco do fólio que as aberturas de capítulo imprimem, e `pages: 'body'` já deixa os cabeços fora da página ([estilos de título](/pt/docs/configuration#estilos-de-título)).
+
+### 4 · Cabeços nas páginas de texto, fólios em discos
+
+<Excerpt region="folios" />
+
+`continuation` numera o trecho a partir da página 6 do livro, uma página par, de modo que a folha de rosto fica diante do capítulo I e o primeiro fólio impresso é o 7. `pages: 'body'` deixa os cabeços fora da folha de rosto e das duas aberturas, então eles só saem nas páginas 8 e 9, o título do livro na par e o do capítulo na ímpar ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O fólio é um texto de design num quadrado fixo de 7,4 mm cujo raio de canto é metade do lado, o que dá um círculo; `verticalAlign: 'middle'` e a entrelinha calculada no comentário centralizam os algarismos nele. Os algarismos cor de papel têm contraste de 4,98:1 sobre a madeira. `trail()` move cada rótulo espaçado para a direita metade do seu tracking, porque a 1.4.1 centraliza uma linha espaçada como se o espaço depois da última letra fizesse parte dela.
+
+### 5 · Fechar o capítulo com uma vinheta de fecho sem número
+
+<Excerpt region="tailpiece" />
+
+Um tipo de recurso imprime o seu `captionPrefix` e o número antes da legenda. Com o prefixo vazio e sem legenda, nada sai sob as cerejas; com `captionPrefix: 'Fregio'`, o mesmo recurso imprime *Fregio 1.* sob o desenho e fica 10 mm mais alto ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O `defaultPlacement` do tipo põe cada recurso onde está a sua linha `::resource`, com um sexto da medida de largura e centralizado, então o Markdown só precisa de `::resource{id="ciliegie"}` depois do último parágrafo do capítulo. As outras imagens compartilham o tipo, mas nenhum `:ref` ou `::resource` as menciona, por isso nunca são posicionadas nem contadas.
+
+## Variações
+
+### Abrir todo capítulo numa página ímpar
+
+Com `'odd'`, o capítulo II passa para a página 11 e a página 10 fica em branco; a folha de rosto desativa a sua própria quebra, porque herda a do nível e, sem isso, iria para a página 7 depois de uma página 6 em branco.
+
+```diff
+@@ the frontispiece style @@
+   id: 'frontespizio',
++  breakBefore: { enabled: false },
+@@ headings, in config() @@
+-    levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }],
++    levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }],
+```
+
+## Erros comuns
+
+- No Markdown, um espaço não separável (U+00A0) prende cada travessão de diálogo de Collodi à sua palavra, para que um travessão de fechamento nunca abra uma linha; outros dois mantêm juntos *di legno* e *in piedi* no fim dos seus parágrafos. Na 1.4.1, uma linha ainda pode quebrar num espaço não separável quando o parágrafo tem negrito ou itálico. O único parágrafo com esses espaços e uma palavra em itálico, o do *ohi* na página 9, tem quatro deles, e na captura todos caem no meio da linha ou no fim do parágrafo.

@@ -3,7 +3,7 @@ import { createPostextGuideConfig } from '../context/guideConfig';
 import { buildDefaultResources, defaultResourcesSignature } from '../defaultResources';
 import { coverThumbnailSvg } from '../defaultResources/cover';
 import { guideLang, type GuideLang } from '../defaultResources/lang';
-import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
 import type { PresetProvider } from './types';
 import { isPristineBook, sampleBook } from '../book/chapterOps';
 import type { BookContent } from '../book/types';
@@ -12,11 +12,12 @@ import { generateId } from '../storage/ids';
 export const BUILTIN_PRESET_ID = 'postext-guide';
 
 /** The editions of the guide, as the tags its summary lists: the library
- *  row offers ES, CA, EN, ع, 简 and 日 (see `localeShortTag`), and a
+ *  row offers ES, CA, EN, ع, 简, 日 and PT (see `localeShortTag`), and a
  *  permalink names one with `lang=`. The Latin-script editions first, then
- *  the three set in a script and a direction of their own, the Japanese one
- *  last (it came last, and the buttons before it keep their places). */
-export const BUILTIN_PRESET_LOCALES = ['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja'] as const;
+ *  the three set in a script and a direction of their own; the Japanese and
+ *  Brazilian Portuguese ones last, in the order they came (the buttons
+ *  before them keep their places). */
+export const BUILTIN_PRESET_LOCALES = ['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja', 'pt-BR'] as const;
 
 /** The guide's text in each edition. */
 export const GUIDE_MARKDOWN: Record<GuideLang, string> = {
@@ -26,10 +27,11 @@ export const GUIDE_MARKDOWN: Record<GuideLang, string> = {
   ca: DEFAULT_MARKDOWN_CA,
   ar: DEFAULT_MARKDOWN_AR,
   ja: DEFAULT_MARKDOWN_JA,
+  'pt-BR': DEFAULT_MARKDOWN_PT_BR,
 };
 
 /** Every edition of the guide's text, for the pristine-book checks. */
-export const GUIDE_SAMPLE_DOCUMENTS: readonly string[] = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA];
+export const GUIDE_SAMPLE_DOCUMENTS: readonly string[] = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR];
 
 /** Whether `book` is the untouched Chinese guide. In an English or Spanish
  *  interface the Chinese edition is opened on purpose (the 简 button, a
@@ -100,7 +102,8 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     source: 'builtin' as const,
     available: true,
     // Like the showcase presets, the row offers every edition: Spanish,
-    // Catalan, English, Arabic, Simplified Chinese and Japanese.
+    // Catalan, English, Arabic, Simplified Chinese, Japanese and Brazilian
+    // Portuguese.
     locales: [...BUILTIN_PRESET_LOCALES],
     license: 'MIT',
     thumbnailUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(coverThumbnailSvg())}`,
@@ -114,9 +117,10 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     if (fingerprintValue === null) {
       const source = JSON.stringify([
         opts.markdownOverride ?? null, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_CA,
-        DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA,
+        DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR,
         opts.configOverride ?? null, createPostextGuideConfig('en'), createPostextGuideConfig('es'), createPostextGuideConfig('zh-Hans'),
         createPostextGuideConfig('ca'), createPostextGuideConfig('ar'), createPostextGuideConfig('ja'),
+        createPostextGuideConfig('pt-BR'),
         defaultResourcesSignature(),
       ]);
       fingerprintValue = `builtin-${hashString(source)}`;
@@ -130,7 +134,7 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
       const lang = guideLang(locale);
       // A host override that is just one of the built-in samples (the web app
       // passes its locale's copy) still follows the locale asked for, so the
-      // ES / CA / EN / ع / 简 / 日 buttons switch the language; any other text is used as is.
+      // ES / CA / EN / ع / 简 / 日 / PT buttons switch the language; any other text is used as is.
       const custom = opts.markdownOverride !== undefined && !GUIDE_SAMPLE_DOCUMENTS.includes(opts.markdownOverride);
       const markdown = custom ? opts.markdownOverride! : GUIDE_MARKDOWN[lang];
       // A host config is the design of the host's own language: the Chinese,

@@ -1,0 +1,78 @@
+---
+title: "Espanhol justificado num romance de bolso"
+summary: "O início de Marianela em edição de bolso: hifenização espanhola, espaços abaixo de 1,7×, sem linhas curtas, capitular elevada e o mapa como Figura 1."
+plain: "As primeiras páginas de um romance espanhol de 1878 num livro de bolso. Mostra como manter iguais os espaços entre as palavras, dividindo as palavras nas sílabas certas do espanhol."
+description: "Marianela, de Galdós, em edição de bolso de 11,5 × 18 cm: hifenização espanhola, espaços abaixo de 1,7×, rayas, comillas latinas e um mapa como Figura 1."
+question: "Como justifico e hifenizo espanhol, com travessões de diálogo, aspas angulares e “Figura” em vez de “Figure”?"
+aliases: ["tipografia espanhola", "ortotipografia espanhola", "hifenização em espanhol", "divisão silábica em espanhol", "raya", "travessão de diálogo", "aspas angulares", "aspas francesas", "comillas latinas", "capitular elevada", "capitular", "letra capitular", "Figura em vez de Figure", "limite de espaçamento entre palavras", "linha curta hifenizada", "romance de bolso", "mapa no frontispício"]
+pageNotes: { "1": "O frontispício: um mapa conjectural das minas de Socartes, com o caminho pontilhado do viajante desde a vila, pela pinguela e pelo morro arborizado, até a borda da cava.", "2": "O capítulo I: CAPÍTULO PRIMERO em versaletes sobre um fio curto e o título Perdido em itálico; a um quarto da altura da página, o texto começa com um S elevado cor de sangue de boi." }
+---
+
+## O que você vai compor
+
+O início de *Marianela* (1878), de Galdós, numa edição de bolso de 11,5 × 18 cm, com um mapa conjectural das minas de Socartes de frente para o capítulo I. Acima do título do capítulo, em Libre Bodoni itálico, *capítulo primero* vem por extenso em versaletes; o texto, em Gentium Book Plus, começa a um quarto da altura da página com uma capitular elevada cor de sangue de boi. As palavras quebram nas sílabas do espanhol (*hie-rro*, *esta-blecimiento*) e os espaços entre palavras ficam abaixo de 1,7 vez a largura normal; nenhum parágrafo termina com o resto de uma palavra hifenizada. O diálogo é composto com *rayas*, os travessões que também abrem e fecham os *incisos* (apartes) do narrador. A senha do viajante vem entre «comillas latinas», e entre aspas duplas inglesas onde a nota da edição a cita dentro de outra citação. O mapa é a *Figura 1*, citada no texto como [fig. 1]. Cabeços em Marcellus SC dão o autor nas páginas pares e o título nas ímpares.
+
+## Preparo
+
+### 1 · Sílabas espanholas, espaços contidos
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `locale: 'es'` escolhe os padrões de hifenização do espanhol, e só esse código exato faz isso: com `'es-ES'`, estas páginas quebram *cabal-los*, *hi-erro* e *establec-imiento* pelas regras americanas, e os espaços de uma linha se abrem até 2,13× ([idiomas suportados](/pt/docs/justification#idiomas-compatíveis)). A justificação, o Knuth–Plass e as regras de viúvas e órfãs vêm ligados por padrão. A medida de 86 mm também precisa conter os espaços: com o `maxWordSpacing: 2` padrão, oito linhas passam de 1,6× e a mais aberta chega a 1,89×; com 1,7, a mais aberta fica em 1,65×, porque o quebrador hifeniza *hie-rro* e *ca-lles* em vez disso ([limites de espaçamento entre palavras](/pt/docs/justification#limites-do-espaçamento-entre-palavras)). Acima do limite, uma linha custa muito mais, mas continua sendo permitida, então numa medida mais estreita e sem quebra melhor ela ainda pode passar. `runtMinCharacters: 26` pega os restos hifenizados que o padrão de 20 larguras de espaço deixa passar: *siem- / pre adelante.* vira *Adelante, / siempre adelante.*, e *So- / cartes [fig. 1].* vira *de / Socartes [fig. 1].* ([linhas curtas](/pt/docs/configuration#órfãs-viúvas-linhas-curtas-e-regras-de-manter-junto)).
+
+### 2 · Uma página de bolso feita de linhas inteiras
+
+<Excerpt region="page" />
+
+A margem inferior é calculada a partir do refile, da margem superior e de `LINES`, de modo que a mancha comporta exatamente 30 linhas de 13,8 pt e toda página cheia termina na mesma linha de base, como as <PageRef page={3}>páginas 10 e 11</PageRef>. Com `mirror: true`, a margem interna de 15 mm fica junto à lombada e a externa de 14 mm junto ao corte da frente nas duas páginas da página dupla ([margens espelhadas](/pt/docs/configuration#margens-espelhadas)), e a medida de 86 mm comporta cerca de 57 caracteres de Gentium Book Plus em 10 pt.
+
+### 3 · O capítulo por extenso e uma capitular elevada
+
+<Excerpt region="opener" />
+
+Os modelos de numeração só imprimem algarismos (1, 01, I, i, A, a), nunca palavras, por isso *capítulo primero* vem do atributo `ordinal` do próprio título ([atributos de título](/pt/docs/document-format#atributos-de-título)). O Postext só desenha uma capitular em texto de design, que é composto em bandeira, e só quando esse texto tem `overflow: 'wrap'`. Para esconder a borda irregular, a capitular recebe uma única linha: `lines: 1` a eleva ao lado da linha guardada no atributo `lead`, e `INITIAL_GAP` foi ajustado até essa linha terminar rente, a 0,1 mm do fim da medida. O parágrafo continua no Markdown sem recuo ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O `marginBottom: 0` do nível de capítulo substitui a margem padrão, que acrescentaria uma linha em branco, e assim o texto continua na linha logo abaixo da linha de abertura.
+
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Página 9: o rótulo e o título do capítulo, e a capitular elevada ao lado de uma primeira linha que termina rente ao texto justificado embaixo dela." />
+
+### 4 · O mapa fica de frente para o capítulo como Figura 1
+
+<Excerpt region="figure" />
+
+`position: 'here'` põe o mapa onde está `::resource{id="plano"}`, sob um título próprio. Esse título faz da página 8 do livro uma abertura, e os cabeços pulam as aberturas. O estilo dele esvazia o rodapé e define a sua própria quebra, o que mantém a prancha de frente para o capítulo I, sem cabeço nem fólio, mesmo quando os capítulos abrem em páginas ímpares ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os tipos espanhóis da resposta curta imprimem *Figura 1.* sob o mapa (sem `resourceTypes`, sai *Figure 1.1*, qualquer que seja o locale) e *Fig. 1* no texto, que o `case="lower"` do `:ref` no Markdown transforma em *fig. 1*. A referência fica entre colchetes, que as edições espanholas usam para marcar o que o editor acrescenta ao texto do autor.
+
+### 5 · O autor na página par, o título na ímpar
+
+<Excerpt region="heads" />
+
+`parity: 'even'` põe o autor nas páginas pares e `'odd'`, o título nas ímpares, e `pages: 'body'` mantém os dois fora da abertura, onde o único elemento é o fólio ao pé, composto com `pages: 'opener'`. Cada cabeço é ancorado na página e levado por `SHIFT` para o centro da mancha, que fica meio milímetro fora do centro da página porque as margens interna e externa são diferentes. O fólio ao pé vem em duas paridades pelo mesmo motivo. Os fólios são compostos em Gentium, porque a Marcellus SC desenha 1 e 0 como I e O.
+
+### 6 · Pontuação espanhola no Markdown
+
+<Excerpt region="styles" />
+
+A <PageRef page={5}>página 12</PageRef>, a última, termina com três estilos de parágrafo. Os asteriscos, em Bodoni cor de sangue de boi, ficam centralizados depois de um [`:::space{lines=2}`](/pt/docs/document-format#space), já que linhas em branco não acrescentam espaço. A nota da edição tem 8,3 pt sobre 11 pt de entrelinha, e o colofão tem 7,5 pt no cinza dos cabeços. A nota fica na cor da tinta: um estilo de parágrafo não tem cor de itálico, então o *Marianela* em itálico numa nota cinza sairia mais escuro que as palavras em volta. No Markdown, o diálogo abre com uma raya (—), nunca com um hífen, porque um hífen e um espaço no início de uma linha abrem uma lista. *1878.* no início da nota abriria uma lista numerada, então um word joiner (U+2060) vai antes do ano. Os asteriscos são escapados (`\*`); sem o escape, o primeiro abriria uma lista com marcadores e os outros dois, um trecho em itálico, e a linha desapareceria.
+
+## Variações
+
+### Abra cada capítulo numa página ímpar
+
+Com `'odd'`, um capítulo que começaria numa página par recebe uma página em branco antes, como numa edição mais folgada. O capítulo I já abre numa ímpar, e a prancha mantém a sua página porque o estilo dela define a sua própria quebra.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Numere as figuras por capítulo
+
+Sem ajustes, os tipos espanhóis embutidos numeram as figuras dentro de cada título de nível 1: o mapa vira *Figura 1.1* e a referência, *fig. 1.1*.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LOCALE)
+-  .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
++const resourceTypes = defaultResourceTypes(LOCALE);
+```
+
+## Erros comuns
+
+- Um rebaixo de nove linhas em vez de oito deixou a página 11 com uma linha a menos, porque `avoidWidows` não deixaria um parágrafo começar na última linha da página. Depois de qualquer mudança nos ajustes ou no texto, confira o pé de cada página.
+- O atributo `lead` para no meio da frase (*…vino tranquila*), onde o parágrafo do Markdown continua (*y oscura la noche*), porque guarda exatamente as palavras que cabem ao lado da capitular. Outra fonte, outro corpo, outra medida ou outro `INITIAL_GAP` desfazem o ajuste rente: passe palavras de um para o outro até a linha terminar rente de novo.
+- Nenhuma destas fontes tem o asterismo ⁂ (U+2042) no arquivo latin do Fontsource, então o navegador o tiraria de uma fonte do sistema. De todo modo, os livros espanhóis marcam a pausa com três asteriscos espaçados.

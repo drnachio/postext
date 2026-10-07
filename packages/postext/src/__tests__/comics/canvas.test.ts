@@ -17,7 +17,7 @@ class StubCtx {
 /** A 2D context that logs the calls the panel painter makes. */
 function recordingCanvas(): { canvas: HTMLCanvasElement; calls: string[] } {
   const calls: string[] = [];
-  const logged = new Set(['clip', 'stroke', 'fill', 'fillText', 'strokeText', 'bezierCurveTo', 'rotate', 'drawImage', 'fillRect', 'scale', 'translate', 'arcTo', 'setLineDash']);
+  const logged = new Set(['clip', 'stroke', 'fill', 'fillText', 'strokeText', 'bezierCurveTo', 'rotate', 'transform', 'drawImage', 'fillRect', 'scale', 'translate', 'arcTo', 'setLineDash']);
   const ctx: Record<string | symbol, unknown> = new Proxy({}, {
     get(target: Record<string | symbol, unknown>, key) {
       if (typeof key === 'string' && logged.has(key)) {
@@ -180,7 +180,7 @@ describe('canvas painting of comic panels', () => {
     expect(calls.filter((c) => c === 'strokeStyle=#123456')).toHaveLength(1);
     // The sound effect after the balloons, turned about its centre, its
     // halo stroked under its letters.
-    const turn = calls.findIndex((c) => c.startsWith('rotate'));
+    const turn = calls.findIndex((c) => c.startsWith('transform('));
     expect(turn).toBeGreaterThan(text);
     expect(calls.findIndex((c, i) => i > turn && c.startsWith('strokeText'))).toBeGreaterThan(turn);
   });

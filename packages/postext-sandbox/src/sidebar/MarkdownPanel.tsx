@@ -1,13 +1,16 @@
 'use client';
 
-import { useRef } from 'react';
-import { Download, Upload, RotateCcw } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Download, FileInput, FileOutput, Upload, RotateCcw } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor';
 import { ChapterSwitcher } from '../editor/ChapterSwitcher';
 import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext';
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence';
 import { slugify } from '../panels/resources/slugify';
 import { ConfirmPopover, IconButton, PanelHeader, announce } from '../ui';
+import { DocxReadError, readDocx } from '../word/docxRead';
+import { WordImportDialog, type WordImportFile } from '../word/WordImportDialog';
+import { WordExportDialog } from '../word/WordExportDialog';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -18,6 +21,9 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   const { reload } = useSandboxPresets();
   const { hasResetBaseline, projects, activeProjectId } = useSandboxProjects();
   const importRef = useRef<HTMLInputElement>(null);
+  const wordRef = useRef<HTMLInputElement>(null);
+  const [wordFile, setWordFile] = useState<WordImportFile | null>(null);
+  const [wordExportOpen, setWordExportOpen] = useState(false);
   const activeName = projects.find((p) => p.id === activeProjectId)?.name ?? '';
   const chapterIndex = Math.max(0, state.chapters.findIndex((c) => c.id === state.activeChapterId));
   const chapter = state.chapters[chapterIndex];
@@ -37,6 +43,20 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
       announce(state.labels.importFileFailed.replace('__file__', file.name));
     }
     e.target.value = '';
+  };
+
+  // A Word manuscript opens the mapping dialog; nothing changes until its
+  // Import button.
+  const handleWordImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      setWordFile({ name: file.name, doc: readDocx(await file.arrayBuffer()) });
+    } catch (err) {
+      if (!(err instanceof DocxReadError)) console.error(err);
+      announce(state.labels.wordImportFailed.replace('__file__', file.name));
+    }
   };
 
   const exportName = () => {
@@ -93,6 +113,16 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
               className="hidden"
               aria-hidden="true"
             />
+            <IconButton label={state.labels.wordImport} icon={<FileInput size={14} />} onClick={() => wordRef.current?.click()} />
+            <IconButton label={state.labels.wordExport} icon={<FileOutput size={14} />} onClick={() => setWordExportOpen(true)} />
+            <input
+              ref={wordRef}
+              type="file"
+              accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={handleWordImport}
+              className="hidden"
+              aria-hidden="true"
+            />
           </>
         }
       />
@@ -101,6 +131,14 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
             undo history and caret (persisted per id in the store). */}
         <MarkdownEditor key={state.activeChapterId} isDark={isDark} />
       </div>
+      <WordImportDialog file={wordFile} onClose={() => setWordFile(null)} />
+      <WordExportDialog
+        open={wordExportOpen}
+        onClose={() => setWordExportOpen(false)}
+        chapterFileBase={exportName().replace(/\.md$/, '')}
+        bookFileBase={slugify(activeName) || 'document'}
+        bookTitle={activeName}
+      />
     </div>
   );
 }

@@ -1,0 +1,79 @@
+---
+title: "Figuras que flutuam até onde você as cita"
+summary: "Capítulo em duas colunas com sete figuras numeradas: seis flutuam do primeiro :ref até o primeiro espaço que a posição permite; uma fica onde ::resource a põe."
+plain: "Um capítulo de livro didático sobre montanhas, em duas colunas, com sete imagens numeradas. Mostra como cada imagem vai para o primeiro espaço livre depois que o texto a menciona."
+description: "Capítulo de livro didático em duas colunas no Postext: sete figuras numeradas pela primeira menção, seis flutuantes no primeiro espaço permitido e uma no texto."
+question: "Como faço para numerar e citar figuras e decidir se vão no alto, no pé, na largura toda ou ali mesmo?"
+aliases: ["posição de figuras", "posicionamento de figuras", "flutuantes", "referências cruzadas", "ver figura", "citar uma figura", "números de figura", "legendas", "figura no texto", "alto da página", "duas colunas", "Figura", "livro didático", "figure placement"]
+pageNotes: { "1": "A abertura do capítulo: uma fita azul pende do alto com um 2 branco na ponta, ao lado de uma placa azul-gelo que sangra pela borda externa com o antetítulo Chapter 2 · Glacial geomorphology, o título How glaciers carve mountain valleys e uma linha fina em itálico; seguem duas colunas de texto, e a Figure 2.1, um vale fluvial em V ao lado de um vale glacial em U cheio de gelo, ocupa o pé da página.", "2": "A Figure 2.3, um circo glacial em corte, abre a coluna da direita; a Figure 2.2, o perfil longitudinal de uma geleira de vale, atravessa as duas colunas no pé da página.", "3": "As Figures 2.4 e 2.5, abrasão e arrancamento, ficam lado a lado no alto das duas colunas; a Figure 2.6, uma roche moutonnée, fica dentro da coluna da esquerda exatamente onde o texto a apresenta.", "4": "A última página do capítulo: uma lista com marcadores de quatro sinais de glaciação na coluna da esquerda, a seção final e o colofão na da direita, e a Figure 2.7, uma vista em planta de duas geleiras que se juntam acima de um lago represado pela sua morena terminal, centralizada com metade da largura da mancha no pé." }
+---
+
+## O que você vai compor
+
+O capítulo 2 de *Mountain Landforms*, um livro didático de geomorfologia numa página de 200 × 250 mm. Uma fita azul com o número do capítulo pende do alto da abertura, ao lado da placa azul-gelo do título; seguem duas colunas justificadas de Faustina. As sete figuras, pinturas geradas com modelos de difusão e rotuladas em código, são numeradas na ordem da primeira menção. Seis flutuam até o primeiro espaço livre que a sua posição permite, contando a partir do parágrafo que as cita primeiro. A Figura 2.1, `auto`, cai no pé da abertura; a 2.3 abre a coluna da direita da página 28 e a 2.2 ocupa o pé dessa página; a 2.4 e a 2.5 abrem as duas colunas da página 29. A Figura 2.6 fica onde o texto a insere. A Figura 2.7, uma flutuante `top` citada na página 30, esperaria pela página 31, mas uma flutuante não pode sair do seu capítulo, então ela vai para o pé da página 30.
+
+## Preparo
+
+### 1 · Uma paleta para as páginas e as figuras
+
+<Excerpt region="palette" />
+
+Toda cor da configuração aponta para uma destas entradas, e as pinturas foram geradas nos mesmos tons de ardósia, azul-geleira e musgo, então as figuras ficam nas cores da página. Uma pintura mantém as próprias cores: um novo valor para `glacier` muda a fita, a placa e os rótulos, não o gelo das figuras. A cor de destaque é escura o bastante para letra pequena: 5,2:1 sobre o branco nos rótulos das legendas e nas citações, 4,5:1 sobre a placa de gelo no antetítulo. Cada figura é um SVG que incorpora a pintura como um JPEG em data URL e põe os rótulos por cima como texto, com um halo branco fino, para que fiquem nítidos e acompanhem o idioma da edição. Os rótulos são em IBM Plex Sans Condensed, incorporada em cada SVG, porque um SVG carregado como imagem não tem acesso às fontes web da página.
+
+### 2 · Dê nome às figuras no idioma do leitor
+
+<Excerpt region="captions" />
+
+`defaultResourceTypes(LANG)` dá nome aos tipos no idioma da amostra: as legendas dizem *Figure 2.3* aqui e *Figura 2.3* na edição em espanhol, onde só `locale: 'es'` hifenizaria o texto mas deixaria todas as legendas em inglês. Cada citação então toma a forma que a frase pede: `case="lower"` para *(fig. 2.1)* e, com `style="full"`, para *(figure 2.2)*; `style="number"` depois de um plural (*figures 2.4 and 2.5*); e `text="…"` para uma expressão como *the chapter’s first figure*, que não imprime número. Essa expressão remete a uma figura já posicionada; como primeira menção, ela ainda numeraria e posicionaria a figura.
+
+### 3 · Uma fita e uma placa de gelo para a abertura
+
+<Excerpt region="furniture" />
+
+A abertura são duas caixas e quatro textos: uma fita que pende do alto com o número do capítulo na ponta, uma placa de gelo que sangra pela borda externa, o antetítulo tirado do atributo `topic` do título, e o título e a linha fina encadeados abaixo dele. `minHeight` reserva a placa e pelo menos 5 mm abaixo dela, arredondados para cima em linhas inteiras da grade (uns 7 mm aqui), de modo que a Figura 2.1 ainda cabe na faixa do pé da mesma página. Os cabeços ficam nos cantos externos sobre um fio fino na cor `rule`, e `pages: 'body'` os tira da abertura, que recebe um fólio no pé.
+
+### 4 · Recuse ids desconhecidos antes da composição
+
+<Excerpt region="check" />
+
+Um `:ref` para um id que nenhum recurso tem imprime "?", e uma figura que ninguém menciona nunca é posicionada; o Sandbox avisa sobre o primeiro caso, mas o postext 1.4.1 não dá aviso a um pen em nenhum dos dois. A verificação lê o Markdown com `parseMarkdown`, o analisador do próprio motor, então encontra todos os `:ref` e `::resource` que a numeração e o posicionamento vão ler. Ela transforma um id desconhecido ou repetido, uma figura não citada, uma figura `here` sem linha `::resource` ou um tipo inexistente num único erro antes de a primeira página ser diagramada.
+
+### 5 · Comece a contagem onde o livro está
+
+<Excerpt region="build" />
+
+Este é o capítulo 2 de um livro mais longo, então a continuação registra um capítulo antes dele: as figuras numeradas `{h1}.{n}` começam em 2.1, e os fólios em 27. Na <PageRef page={2}>página 28</PageRef>, a Figura 2.3 fica acima da Figura 2.2, que tem o número menor porque o texto a cita primeiro. O `![]()` do Markdown é descartado, então cada figura é um recurso cujo SVG é registrado sob o seu `svg.fileId` antes da composição. Cada posição decorre de onde a figura é citada: `auto` para a 2.1, porque a placa ocupa o alto da abertura; `bottom` para o perfil, que ainda pode ocupar o pé da página que o cita; `top` para as figuras de coluna, que abrem os próximos altos de coluna livres; e `top` também para a 2.7, que acaba no pé da página 30 porque uma flutuante fica dentro do seu capítulo.
+
+## Variações
+
+### Numere as figuras sem o capítulo
+
+Tire o capítulo dos números e as figuras saem de 1 a 7; para uma contagem única no livro inteiro, diagrame os capítulos com `buildBundle` ou passe a cada capítulo o `continuationAfter()` do anterior.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
++    numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+### Ponha as legendas em cima, numa barra
+
+A legenda sobe para cima da figura, numa barra no azul-gelo da paleta, e a linha de crédito fica embaixo da figura; reajuste o texto, já que as duas edições passam então para uma quinta página.
+
+```diff
+   captionStyle: { // a cor do texto segue bodyText; a nota tem 0,85 × o corpo da legenda
++    position: 'above', backgroundEnabled: true, background: col('ice'),
+     fontFamily: LABEL, fontSize: pt(8.3), gap: mm(2.2),
+```
+
+### Ponha uma figura na margem
+
+Uma página em coluna e meia dá às figuras e às legendas um canal externo em que o texto nunca entra: veja <RecipeLink slug="textbook-margin-column">o livro didático com coluna na margem</RecipeLink>.
+
+### Faça as tabelas flutuarem do mesmo jeito
+
+Tabelas também são recursos, citadas e posicionadas pelas mesmas regras, e uma tabela longa se divide entre páginas: veja <RecipeLink slug="technical-datasheet">a ficha técnica</RecipeLink>.
+
+## Erros comuns
+
+- Na <PageRef page={4}>página 30</PageRef>, o parágrafo sobre os lagos cita a Figura 2.7 na primeira frase, porque uma figura entra na fila onde começa o parágrafo que a cita. Se essa frase fechasse o parágrafo anterior, que começa na página 29, a figura teria aberto a página 30, acima da linha que a cita.

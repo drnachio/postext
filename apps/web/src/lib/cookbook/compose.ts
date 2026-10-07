@@ -39,12 +39,15 @@ export class ComposeError extends Error {
 }
 
 /** The sample edition a site locale shows: its own when the recipe has one,
- *  the Spanish one for Catalan when there is one, otherwise the first sample
- *  language. */
+ *  the Spanish one for Catalan and the English one for Portuguese when there
+ *  is one, otherwise the first sample language. */
 export function variantFor(meta: Pick<RecipeMeta, "sample">, locale: Locale): SampleLocale {
   const has = (l: Locale) => meta.sample.locales.includes(l);
   if (has(locale)) return locale;
   if (locale === "ca" && has("es")) return "es";
+  // The Portuguese write-ups are translated from the English ones, whose
+  // page notes and quotations describe the English edition.
+  if (locale === "pt" && has("en")) return "en";
   return meta.sample.locales[0];
 }
 

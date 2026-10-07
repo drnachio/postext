@@ -1,0 +1,73 @@
+---
+title: "Um manual técnico japonês: kana, kanji e latim"
+summary: "Capítulo A5 de um livro japonês de programação: quebras e pontuação pelo JLReq, um quarto de eme antes do latim, código, 図3-1 e notas por página."
+plain: "Um capítulo de um livro japonês de programação, cheio de palavras em inglês, código e números. O Postext compõe a pontuação e as quebras de linha pelas regras japonesas e põe um espaço fino onde o japonês encontra o latim."
+description: "Um capítulo técnico japonês no Postext: locale 'ja' ativa o kinsoku e a pontuação do JLReq, um quarto de eme antes do latim e as legendas 図3-1."
+question: "Como faço para compor um livro técnico japonês com palavras latinas, código e a pontuação japonesa?"
+aliases: ["livro técnico japonês", "技術書", "横組み", "japonês horizontal", "kinsoku", "禁則処理", "yakumono", "約物", "四分アキ", "espaço entre japonês e latim", "和欧間", "JLReq", "JIS X 4051", "ぶら下げ", "pontuação pendurada", "図3-1", "notas de rodapé em japonês", "código no texto", "normalização Unicode"]
+pageNotes: { "1": "A abertura do capítulo, página 41: uma faixa verde-azulada clara ocupa o terço superior, com CHAPTER em versais pequenas espaçadas, um 3 grande verde-azulado e o título 文字列の正規化 em gótica negrito. Abaixo, um parágrafo de abertura em gótica, o primeiro parágrafo em mincho e a seção 3.1 sob um título de três linhas; o fólio 41 desce para o pé.", "3": "Página 43: as quatro formas de normalização numa lista com marcadores verde-azulados, um parágrafo que cita 表3-1, a tabela com a linha de cabeçalho verde-azulada 入力 NFC NFD NFKC e cinco linhas (が, ｶﾞ, ＡＢＣ, ①, ㍻), sua legenda 表3-1 em gótica verde-azulada e a seção 3.3 com os nomes de função unicodedata e normalize() numa fonte monoespaçada verde-azulada." }
+---
+
+## O que você vai compor
+
+Cinco páginas do capítulo 3 de um livro japonês de programação inventado, 実践 日本語テキスト処理 (Processamento prático de texto japonês), sobre normalização Unicode. Ele é composto como os livros japoneses de informática: A5, uma coluna de 36 caracteres por 29 linhas de Noto Serif JP em 9 pt, títulos em Noto Sans JP e código em BIZ UDGothic. O texto é o caso difícil da composição japonesa, porque quase toda frase traz uma palavra latina, um ponto de código, um número ou um nome de função: as quebras de linha seguem o 禁則処理 (kinsoku shori) mais estrito do JLReq, a pontuação mantém seu espaçamento de largura inteira e um quarto de eme separa o japonês do latim sem que ninguém digite um espaço. Uma figura, uma tabela, uma listagem de código e notas de rodapé vêm com rótulos japoneses: 図3-1, 表3-1 e números de nota sobrescritos, contados por página. <RecipeLink slug="code-listings-and-keycaps">Listagens de código e teclas</RecipeLink> é o mesmo tipo de página em inglês.
+
+## Preparo
+
+### 1 · As regras japonesas vêm com a etiqueta de idioma
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `locale: 'ja'` liga as regras do JLReq, os *Requirements for Japanese Text Layout* do W3C, e os valores escritos em `cjk` são os que `'auto'` escolhe para o japonês ([Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático)). Com `ja-very-strict`, nenhuma linha começa com ー, um kana pequeno, 々 ou um sinal de fechamento, e nenhuma termina com um parêntese ou colchete de abertura. A pontuação (約物, yakumono) mantém seu eme inteiro dentro da linha, e dois sinais que se encontram, como 」、, dividem um eme. Na <PageRef page={1}>página 41</PageRef>, a linha que termina em 実際に変換し、 põe o seu 、 além da borda direita da medida: é o ぶら下げ (burasage), e o motor só o usa quando, sem ele, teria de empurrar o sinal para a linha seguinte. `latinSpacing` põe um quarto de eme (四分アキ, shibun aki) entre Unicode e では, e entre U+304C e を, embora o Markdown não tenha espaço ali.
+
+<PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Página 41: um quarto de eme em volta de Unicode e Python, digitados sem espaço; o 、 no fim da segunda linha fica pendurado fora da medida." />
+
+A diferença em relação ao chinês está nos sinais. Um livro chinês do continente compõe 、 e ， em meia largura por padrão e 。 em largura inteira (Kaiming); um japonês mantém todos os sinais em largura inteira e só os aperta onde dois se encontram. As quebras do chinês não têm kana pequeno nem ー para afastar do início da linha, por isso `ja-very-strict` é um nível à parte.
+
+### 2 · Código numa fonte monoespaçada que tem kana
+
+<Excerpt region="listing" />
+
+O Postext não compõe blocos de código cercados, então o pen reescreve o Markdown antes da composição. Cada linha do bloco vira um parágrafo de um boxe com fundo de cor, e cada `` `name` `` vira um chip em BIZ UDGothic. A fonte faz diferença: a string do exemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, precisa de katakana de meia largura, letras de largura inteira e algarismos em círculo, que uma fonte de código ocidental não tem. A BIZ UDGothic compõe o latim de meia largura e o kana de largura inteira com passo fixo, e assim a listagem mantém suas colunas ([Chips no texto](/pt/docs/document-format#chips-em-linha)).
+
+### 3 · 図3-1 e 表3-1
+
+<Excerpt region="resources" />
+
+`defaultResourceTypes('ja')` dá aos tipos os nomes 図 e 表 e os numera por capítulo com hífen, e `continuation.headings` faz deste o capítulo 3, então a primeira figura é 図3-1. Um documento `ja` junta rótulo e número sem espaço e põe um espaço ideográfico depois do número, como os livros japoneses imprimem 図3-1　「が」の二つの表し方, de modo que o estilo de legenda só escolhe a fonte e as cores. A tabela fica em `'here'`, sob o parágrafo que a cita. Os rótulos da figura são só latinos, U+304C e E3 81 8C, desenhados com o arquivo latin da fonte de código embutido no SVG.
+
+### 4 · Notas por página, do jeito japonês
+
+<Excerpt region="notes" />
+
+As notas não pedem nenhum ajuste além do corpo: num documento japonês horizontal, os valores padrão são os que o JLReq descreve para livros horizontais, a nota no pé da coluna onde é citada, numerada a partir de 1 em cada página, com chamada sobrescrita e um fio de um terço da medida ([Notas de rodapé](/pt/docs/configuration#notas-de-rodapé)). A chamada vem antes do ponto final, `保存していた[^hfs]。`, para que o 。 nunca abra a linha seguinte separado dela.
+
+### 5 · Um título de seção de três linhas
+
+<Excerpt region="opener" />
+
+A abertura do capítulo é um design sobre o H1: uma faixa verde-azulada, o número do capítulo em 64 pt vindo de `{numberDecimal}` e o título. Os títulos de seção usam `lineSpan: 3`, o 行取り (gyōdori): cada um ocupa exatamente três linhas do texto, centralizado nelas, e o texto seguinte continua no compasso da grade. `headings.balancing.enabled: false` impede o motor de acrescentar linhas acima dos títulos para igualar uma página.
+
+## Variações
+
+### Deixe o kana pequeno e o ー abrirem linha
+
+`ja-strict` é a regra do JLReq para livros em geral: っ, ゃ e ー podem abrir linha, o que dá ao algoritmo de quebra mais pontos de corte e menos linhas espaçadas.
+
+```diff
+-  lineBreak: 'ja-very-strict', // no line starts with ー, small kana, 々, 」、。？・ or ：
++  lineBreak: 'ja-strict', // small kana, ー and 々 may open a line
+```
+
+### Sem espaço entre japonês e latim
+
+Algumas editoras compõem as palavras latinas coladas ao kana, sem o quarto de eme.
+
+```diff
+-  latinSpacing: em(0.25), // 四分アキ between kana or kanji and Latin letters or digits
++  latinSpacing: em(0), // Unicodeでは, set solid
+```
+
+## Erros comuns
+
+- Uma palavra latina não pode ser quebrada dentro de uma linha japonesa, então uma palavra longa no fim da linha deixa a linha anterior espaçada entre os caracteres. O primeiro rascunho deste capítulo glosava os termos em inglês, 正準等価（canonical equivalence）, e duas linhas saíram frouxas; os termos em inglês foram retirados onde não ajudavam o leitor.
+- Escolha a fonte de código pelos caracteres que o código contém. A M PLUS 1 Code, a primeira testada aqui, não tem katakana de meia largura: a tela recorreu a uma fonte do sistema para ｶﾞｲﾄﾞ e faltaram os glifos no PDF.
+- Uma listagem é um boxe só, mantido inteiro por padrão. Na página 43, as quatro linhas que sobravam sob 3.3 não comportavam a listagem, e ela abre a página 44.

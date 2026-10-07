@@ -11,18 +11,18 @@ import { validateRegistry } from "./validate.ts";
 
 // ─── In-memory fixture ──────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`, ja = `${en} (ja)`) => ({ en, es, ca, zh, ar, ja });
-const HEADINGS: Record<SectionId, [string, string, string, string, string, string]> = {
-  build: ["What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده", "できあがり"],
-  short: ["The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر", "手短な答え"],
-  ingredients: ["Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات", "材料"],
-  method: ["Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير", "作り方"],
-  whole: ["The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة", "レシピの全体"],
-  variations: ["Variations", "Variantes", "变化", "Variants", "تنويعات", "アレンジ"],
-  pitfalls: ["Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة", "よくあるつまずき"],
-  credits: ["Credits", "Créditos", "致谢", "Crèdits", "الحقوق", "クレジット"],
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`, ja = `${en} (ja)`, pt = `${en} (pt)`) => ({ en, es, ca, zh, ar, ja, pt });
+const HEADINGS: Record<SectionId, [string, string, string, string, string, string, string]> = {
+  build: ["What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده", "できあがり", "O que você vai compor"],
+  short: ["The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر", "手短な答え", "A resposta curta"],
+  ingredients: ["Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات", "材料", "Ingredientes"],
+  method: ["Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير", "作り方", "Preparo"],
+  whole: ["The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة", "レシピの全体", "A receita completa"],
+  variations: ["Variations", "Variantes", "变化", "Variants", "تنويعات", "アレンジ", "Variações"],
+  pitfalls: ["Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة", "よくあるつまずき", "Erros comuns"],
+  credits: ["Credits", "Créditos", "致谢", "Crèdits", "الحقوق", "クレジット", "Créditos"],
 };
-const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表のスタイル" } };
+const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表のスタイル", pt: "Estilo de tabela" } };
 
 function fixtureRegistry(): Registry {
   return {
@@ -57,7 +57,7 @@ function fixtureRegistry(): Registry {
     gaps: {
       footnotes: {
         label: L("Footnotes", "Notas al pie", "脚注", "Notes a peu de pàgina"),
-        aliases: { en: ["footnote"], es: ["nota al pie"], ca: ["nota a peu de pàgina"], zh: ["注脚"], ar: ["حاشية سفلية"], ja: ["脚注"] },
+        aliases: { en: ["footnote"], es: ["nota al pie"], ca: ["nota a peu de pàgina"], zh: ["注脚"], ar: ["حاشية سفلية"], ja: ["脚注"], pt: ["nota de rodapé"] },
         explanation: L("Not parsed."),
       },
     },

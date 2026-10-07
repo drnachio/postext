@@ -238,6 +238,7 @@ ana{thought}: First line,\
 | `join` / `join=false` | flag | force or forbid joining with the speaker's previous balloon |
 | `break` | flag | the balloon may cross the panel border into the gutter or the next panel (no `comicBalloonOverflow` for the crossing itself; what it covers there, a face or another panel's balloon, is still reported; its centre stays in its panel; never off the trim) |
 | `rotate` | degrees, clockwise | sound effects |
+| `skew` | degrees, lean of the letters (positive forward, like italic), applied before `rotate` | sound effects, text on the art in perspective (postext > 1.20.3) |
 | `size` | factor (`1.6`) | scales the text of this line (sound effects) |
 | `color` | `#hex` or palette id | text colour of this line |
 | `font` | family | face of this line (bundle it) |
@@ -421,7 +422,7 @@ Built-in balloon styles (keys of a `balloonStyles` entry: `shape`, `fill`,
 `burstPoints`, `burstDepth`, `padding`, `aspect`, `tail`, `tailWidth`,
 `tailReach`, `target` `mouth|head`, `position`, `butt`, `fontFamily`,
 `fontScale`, `bold`, `italic`, `color`, `textTransform`, `letterSpacing`,
-`align` `center|start`, `halo`, `haloColor`, `rotate`):
+`align` `center|start`, `halo`, `haloColor`, `rotate`, `skew`):
 
 | id | Look |
 |---|---|
@@ -449,13 +450,35 @@ A style for text drawn on the art (a letter, a sign) that translates:
 ```
 used as `sfx{writing at="34% 87%" rotate=13}: Invitation`.
 
+Text written on an object seen in perspective (a book's title plate): set it in
+the plate with forced breaks, `rotate` for the plate's top edge and `skew` for
+its sides, a colour taken from the art and a halo in the plate's colour (not
+paper white), so it reads as painted on rather than pasted over:
+
+```markdown
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
+  for Demons of\
+  CHAOSAH
+```
+
 ## 11. Reading direction
 
-- `comics.readingDirection: 'auto'` (default) = `rtl` in a right-to-left
-  document (an Arabic edition mirrors its pages), else `artDirection`
-  (default `ltr`). So a Japanese edition of a Western comic stays left to
-  right, and a manga (`artDirection: 'rtl'`) reads right to left in any
-  language.
+- `comics.readingDirection: 'auto'` (default) follows the edition's
+  language (postext > 1.20.2): `rtl` in a right-to-left document (an
+  Arabic edition mirrors its pages), in a vertical one, and in Japanese and
+  Traditional Chinese (`ja*`, `zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`);
+  otherwise `artDirection` (default `ltr`), Simplified Chinese and Korean
+  included. So a Japanese edition of a Western comic reads right to left,
+  and a manga (`artDirection: 'rtl'`) reads right to left in any language.
+  Engine helper: `comicReadingDirection(comics, { locale, direction,
+  writingMode })`; the locale table is `comicsLocaleDirection(tag)`.
+- The binding follows: with `page.binding: 'auto'`, a config with a
+  `comics` section whose comics read right to left is bound on the right
+  (spreads `[3 | 2]`, PDF `/Direction /R2L`, EPUB
+  `page-progression-direction="rtl"`, Folio turns leftward). The section
+  decides for the whole book, not a chapter's `:::page` blocks; a document
+  with comic pages and no `comics` section keeps its text's binding
+  (`comics: {}` is enough). An explicit `page.binding` wins.
 - A page's `direction=ltr|rtl` overrides both.
 - `rtl` mirrors only the order of side-by-side cells, slants and logical
   sides (`bleed` start/end, `pad`, `at=top-start`). Tiers stay top to
@@ -688,7 +711,7 @@ working queue client (`FAL_KEY` from the environment).
 
 ```jsonc
 "locale": "ja",
-"page": { "binding": "right" },
+"page": { "binding": "right" },        // 'auto' gives the same for a manga (postext > 1.20.2)
 "comics": { "artDirection": "rtl",
   "lettering": { "fontSize": { "value": 8, "unit": "pt" } } }   // Zen Antique, vertical, by default
 ```

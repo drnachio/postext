@@ -1,0 +1,63 @@
+---
+title: "Ensaio fotográfico com pranchas sangradas"
+summary: "As pranchas são estilos de título gerados a partir de uma lista, cada uma enchendo a página até o refile; a da tempestade cruza a medianiz em duas metades."
+plain: "Um fotolivro de paisagem que conta um dia na serra em seis imagens. Mostra como encher páginas inteiras com fotos até a borda e estender uma imagem sobre duas páginas lado a lado."
+description: "Um fotolivro de paisagem no Postext: seis pranchas de uma serra, cada uma um estilo de título feito a partir de uma lista, uma em página dupla, e três textos."
+question: "Como faço para dar a cada prancha de um ensaio fotográfico uma página sangrada e abrir uma em página dupla?"
+aliases: ["fotolivro", "livro de fotografia", "ensaio fotográfico", "foto sangrada", "sangria total", "prancha", "imagem na medianiz", "página dupla", "spread", "panorâmica", "lista de pranchas", "photobook", "full-bleed", "fotolibro", "lámina a sangre"]
+pageNotes: { "1": "A primeira prancha: cristas sobrepostas que se perdem numa névoa de amanhecer cor de pêssego sob um céu azul-escuro, SIERRA em maiúsculas brancas e grossas atravessando o céu com o subtítulo embaixo, e o numeral I e a hora 08:12 no canto inferior esquerdo.", "2": "Uma página de texto em papel cor de pedra clara: as horas numa monoespaçada pequena cor de ferrugem, o título The climb numa sem serifa larga e negrita, quatro parágrafos justificados numa coluna de 100 mm junto à lombada e o fólio no pé.", "3": "A prancha do meio-dia: um circo glaciar de granito cinza sobre um lago, com encostas escuras e matacões na frente, e o numeral II e 14:06 embaixo à esquerda.", "4": "A metade esquerda da prancha da tempestade: um teto de nuvens escuras, uma cortina de chuva sobre as cristas e o numeral III com 16:40 embaixo à esquerda.", "5": "A metade direita da prancha da tempestade: um raio sobre as cristas e, na borda direita, cristas distantes tingidas de luz quente onde o sol rompe as nuvens.", "6": "O texto Eleven seconds e, embaixo, a prancha IV, uma panorâmica estreita do entardecer com uma crista acesa em laranja sob faixas de nuvem num céu violeta, com a legenda IV, Dusk, 19:41.", "7": "A prancha da noite: a Via Láctea sobre cristas escuras e duas janelas acesas num abrigo de pedra, numerada V, 22:10.", "8": "O texto First snow, em quatro parágrafos.", "9": "A última prancha: o circo glaciar da prancha do meio-dia, branco de neve nova, numerada VI, 08:31, com o colofão em duas linhas de letra pequena no canto inferior direito." }
+---
+
+## O que você vai compor
+
+*Sierra*, um fotolivro de paisagem em formato 280 × 210 mm: um dia numa serra de granito em seis pranchas, da primeira luz até a manhã seguinte à primeira neve. Cada prancha enche a página até o refile e traz só um numeral pequeno e a hora no canto inferior esquerdo; a primeira traz também o título, SIERRA em Syne de 72 pt, vazado em branco no céu do amanhecer. A tempestade cruza a medianiz das páginas 4 e 5 como uma única imagem. Três textos curtos, compostos numa coluna de 100 mm junto à lombada, ficam de frente para as pranchas que vêm depois deles. O texto da tempestade termina numa prancha menor, a do entardecer, que flutua abaixo dele com o numeral na legenda. A última prancha mostra o circo glaciar da segunda, do mesmo matacão, coberto de neve. As pranchas são fotografias geradas com modelos de difusão; a da neve foi feita como edição da prancha do meio-dia, para que as duas vistas coincidam.
+
+## Preparo
+
+### 1 · Um estilo de título para cada prancha, gerado a partir de uma lista
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `plate()` gera um estilo de título a partir de cada linha de `PLATES`, e o Markdown define a ordem do ensaio, uma linha por prancha: `# Night {style="lamina" art="noche" n="V" hora="22:10"}`. O `resourceId` do elemento de imagem é `'{attr.art}'`, um marcador como os de um texto, então todas as pranchas simples compartilham o estilo `lamina` e indicam a sua imagem na linha do título; só a capa e a última prancha, que desenham elementos a mais, mantêm um estilo próprio ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). `span: 'page'` abre cada prancha numa página própria. As margens zeradas deixam a coluna da prancha da altura da página, e `minHeight` preenche essa coluna, de modo que o que vem depois de uma prancha começa na página seguinte. As duas configurações são necessárias. Sem `minHeight`, a metade direita da tempestade, que não desenha nenhum texto, fica só com a linha de 7,6 mm do próprio título, e o texto seguinte começa nessa página, por cima da imagem. Com as margens das páginas de texto, a coluna tem 158 mm de altura, menos que os 210 mm de `minHeight`, então o postext 1.4.1 descarta a reserva inteira e os três textos saem impressos por cima das pranchas que vêm antes deles.
+
+Os dois estilos da página dupla, `pliego` e `pliego-recto`, desenham a mesma imagem de 560 mm, aqui `art="tormenta"`: a metade do verso a partir da borda esquerda da página, a metade do anverso 280 mm mais à esquerda, de modo que cada página mostra a sua metade e o canvas corta o resto no refile. `parity: 'even'` mantém as duas metades frente a frente. Sem isso, tirar a prancha do meio-dia do Markdown poria a metade esquerda na página 3, uma página ímpar, e a metade direita no verso, na página 4; com isso, a página 3 fica em branco e a tempestade continua enchendo as páginas 4 e 5.
+
+### 2 · O numeral e a hora vêm da linha do título
+
+<Excerpt region="caption" />
+
+O numeral e a hora são atributos do título, então o conteúdo fica no Markdown e um só design serve para todas as pranchas. A hora fica pendurada `right-of` do numeral, o que alinha o topo dos dois. A linha de base de um texto de design fica a 0,8 da sua caixa de linha abaixo do topo do elemento, e a caixa de linha mede por padrão 1,2 vez o corpo, então `dropTo(13, 8)` desce a hora 0,8 × 1,2 × (13 − 8) pt e apoia a hora de 8 pt na linha de base do numeral de 13 pt, a 193,4 mm do topo da página. A hora começa com um ponto médio, como a legenda da prancha IV, porque o I da Syne é uma barra simples que, sozinha ao lado da hora, parece um fio. A metade direita da tempestade não tem legenda, e a prancha da neve compõe a sua na cor da tinta, porque o primeiro plano é branco.
+
+### 3 · Um título e um colofão nas próprias pranchas
+
+<Excerpt region="cover" />
+
+A primeira prancha é a capa. `{title}` e `{subtitle}` leem o frontmatter, e `extra` em `PLATES` acrescenta os dois elementos ao design dessa prancha, na cor da legenda. O colofão vai na última prancha do mesmo jeito, na cor da tinta sobre a neve: dois elementos de 7,5 pt, um por linha, a partir dos atributos `colofon` e `tipos`, alinhados à direita, o segundo na linha de base do numeral. Um único elemento com quebra automática quebraria onde a largura acabasse; com um elemento por linha, a quebra cai depois da licença.
+
+### 4 · Os textos seguem as pranchas sem quebra
+
+<Excerpt region="texts" />
+
+A prancha antes de um texto enche a sua página, então o texto começa na página seguinte sem quebra própria. Uma página cujo primeiro bloco é um título com quebra é uma página de abertura, e o `pages: 'body'` do fólio a deixa de fora. Sem quebra, as páginas de texto mantêm o fólio; as pranchas, abertas por títulos na largura da página, ficam sem ele. O postext 1.4.1 já remove a quebra do nível 1 assim que existe um objeto `headings`, então apagar `breakBefore: { enabled: false }` hoje não muda nada. A linha passa a importar quando uma versão restaurar a quebra padrão para página ímpar: ela impede que os textos quebrem, e assim as páginas deles continuam sendo páginas de texto, com fólio. `FOOT` põe o fólio na linha de base dos numerais das pranchas, a 193,4 mm do topo da página, de modo que o fólio de um texto e o numeral da prancha em frente ficam na mesma linha.
+
+### 5 · Declare todas as pranchas e cite só a que flutua
+
+<Excerpt region="plates" />
+
+Um elemento de imagem de um design desenha um recurso declarado, então as seis imagens estão em `resources`: JPEGs da pasta `assets/` da receita, cada um recortado no formato da página ou da página dupla que preenche e declarado com o seu tamanho em pixels, que é só o que a diagramação lê. `loadImage()` registra cada arquivo antes da composição. A prancha IV é a única citada com `:ref` e, por isso, a única que flutua. Ela ocupa o primeiro espaço livre depois da citação, na página do seu texto, uma linha abaixo do último parágrafo. Um tipo numerado lhe daria a legenda *Plate 1*, já que ela é o único recurso do seu tipo que flutua. `lamina`, em vez disso, tem um `numberingTemplate` vazio, e a própria legenda começa com IV. Na frase, o `text` do `:ref` dá nome à prancha, porque um `:ref` sem ele imprime só a palavra *plate*.
+
+## Variações
+
+### Faça as pranchas flutuarem de frente para os verbetes
+
+Para pranchas que flutuam até a página ímpar em frente a um verbete de catálogo, com a largura da figura calculada pelas proporções, veja <RecipeLink slug="catalogue-facing-plates">Verbetes de catálogo de frente para as pranchas</RecipeLink>.
+
+### Abra uma matéria sobre uma foto sangrada
+
+Para uma foto sangrada no alto de uma matéria, com o título e o olho por cima, veja <RecipeLink slug="magazine-feature-opener">a reportagem de revista</RecipeLink>.
+
+## Erros comuns
+
+- Nunca cite uma prancha que um design já desenha. Citada, ela também flutua como figura: um `:ref` à prancha do meio-dia no primeiro texto põe uma segunda cópia dela na página 3, e a tempestade anda duas páginas, depois de uma página em branco.
+- A prancha do entardecer fica uma linha abaixo do seu texto, não no pé da página. Na última página antes de uma prancha, o postext 1.4.1 sobe até o texto um flutuante que esteja abaixo dele, e `position: 'bottom'` não muda nada ali.
+- Cada texto foi ajustado para caber numa página nas duas edições. Se o primeiro passar para a página 3, a prancha do meio-dia vai para a página 4 e a tempestade para as páginas 6 e 7, depois de uma página 5 em branco.
+- A metade direita da tempestade é um segundo título `# Storm`. A página não imprime esse título, mas um `:::toc` montado a partir dos títulos lista a tempestade duas vezes, nas páginas 4 e 5.
+- As pranchas terminam no refile, que é a borda do canvas. Com `page.cutLines` ligado, o canvas cresce em volta do refile, e a sangria em volta de cada prancha mostra a cor do papel. Para impressão, ancore as pranchas em `'bleed'` e aumente cada uma pela medida da sangria em todos os lados.

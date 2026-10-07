@@ -36,7 +36,10 @@ pepper{join}: ...aviat arribaran...
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1 alt="Llamps. La Pepper, furiosa, treu del prestatge un llibre amb la cara d’un dimoni a la coberta. En Carrot està aterrit."}
 pepper{shout break}: Com han pogut fer-me això?!! A **mi** !!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: Encanteris de Dimonis del CHAOSAH Vol .1
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Encanteris de\
+  Dimonis del\
+  CHAOSAH\
+  Vol .1
 ::panel{art=e08p05-2 alt="Des de dalt, sota la pluja, la Pepper traça amb la vareta tres cercles màgics vermells i brillants a terra, amb el llibre obert a l’altra mà. En Carrot mira."}
 pepper{shout}: ...com que no puc confiar-hi...
 ::panel{art=e08p05-3 alt="La llum vermella dels cercles ho inunda tot. La Pepper, seriosa, aguanta el llibre obert sota la pluja."}

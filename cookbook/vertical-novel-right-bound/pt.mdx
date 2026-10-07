@@ -1,0 +1,76 @@
+---
+title: "Um romance chinês vertical, encadernado pela direita"
+summary: "O capítulo 1 de 三國演義 numa página 25開 de Taiwan: 40 caracteres por 16 colunas, um 回目 entre fios, cabeços no corte e fólios em numerais chineses."
+plain: "O primeiro capítulo de um romance clássico chinês numa edição de bolso de Taiwan. O texto corre em colunas de cima para baixo, lidas da direita para a esquerda, e o livro abre pela direita."
+description: "O capítulo 1 do Romance dos Três Reinos composto na vertical no Postext: grade de caracteres, abertura 第一回 entre fios, cabeços no corte, fólios chineses."
+question: "Como faço para compor um romance chinês na vertical, encadernado pela direita, com 第一回 e fólios chineses?"
+aliases: ["chinês vertical", "romance vertical", "直排", "豎排", "直書", "livro da direita para a esquerda", "páginas duplas da direita para a esquerda", "edição de Taiwan", "章回小說", "回目", "dístico do capítulo", "cabeço no corte", "邊峰", "fólios chineses", "numerais chineses", "25開", "繡像", "Romance dos Três Reinos", "三國演義", "tategaki"]
+pageNotes: { "1": "A folha de rosto, sozinha à esquerda da lombada: 三國演義 em caracteres grandes e negros dentro de uma moldura dupla vermelhão, 羅貫中　著 e 毛宗崗　評 em duas colunas à esquerda, e no pé um pé de imprensa de cinco linhas em inglês, centralizado no eixo da moldura do título, com o título do livro em itálico.", "2": "A prancha: uma xilogravura de 1592 com o juramento do jardim de pessegueiros, os três irmãos jurados diante de um altar com três taças e, atrás deles, o boi preto e o cavalo branco, numa moldura dupla preta; o título 桃園結義 e uma nota sobre a edição descem em duas colunas à esquerda dela.", "3": "O capítulo abre numa página esquerda: a partir da direita, uma coluna em branco, depois 第一回 e o dístico 宴桃園豪傑三結義 / 斬黃巾英雄首立功 em duas colunas entre três fios finos vermelhão, depois 詞曰： e os quatro versos do ci recuados quatro caracteres, e então o texto. O fólio 一 fica embaixo, na margem esquerda.", "4": "Uma página direita de texto, 16 colunas de 40 caracteres, com 三國演義 descendo pela margem direita e o fólio 二 embaixo, na mesma margem.", "5": "Uma página esquerda: o cabeço do corte, 第一回　宴桃園豪傑三結義　斬黃巾英雄首立功, desce pela margem esquerda, com o fólio 三 embaixo.", "11": "A última página: a ira de Zhang Fei contra Dong Zhuo, a quadra final recuada quatro caracteres e 畢竟董卓性命如何，且聽下文分解。 O resto da página fica em branco." }
+---
+
+## O que você vai compor
+
+Onze páginas de uma edição de bolso taiwanesa do *Romance dos Três Reinos*: o capítulo 1 inteiro, na versão de Mao Zonggang, composto de cima para baixo em colunas lidas a partir da direita, numa página de 148 × 210 mm (25開) encadernada pela direita. A folha de rosto fica sozinha à esquerda da lombada. Na página dupla seguinte, uma xilogravura de 1592 com o juramento do jardim de pessegueiros fica de frente para a abertura do capítulo, onde 第一回 e o seu dístico aparecem entre fios vermelhão. Cada página de texto tem 16 colunas de 40 caracteres, com cada sinal centralizado na sua casa. O título do livro desce pela margem externa das páginas direitas e o do capítulo pela das esquerdas, sobre fólios em numerais chineses. A mesma estrutura de livro num romance europeu de bolso está na <RecipeLink slug="trade-paperback-novel">Nº 038</RecipeLink>.
+
+## Preparo
+
+### 1 · Girar a página um quarto de volta e encadernar pela direita
+
+O código é [a resposta curta](#a-resposta-curta) acima. `layout.writingMode: 'vertical-rl'` dispõe cada página como uma página horizontal girada um quarto de volta no sentido horário: uma linha do fluxo é uma coluna de caracteres, lida a partir da direita, e a quebra de linhas, a justificação e o recuo de dois caracteres funcionam ao longo da coluna ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). `page.binding` fica em `'auto'`, que encaderna pela direita um livro vertical: a página 1 continua sendo o recto, mas é uma página esquerda, e `mirror: true` põe a margem interna dela, `left`, do lado direito ([Encadernação](/pt/docs/configuration#encadernação)). O `showBook` do kit mostra as páginas duplas como o livro abre, primeiro a página 1 sozinha e depois `[3 | 2]`; o PDF pede a mesma ordem aos visualizadores com `/Direction /R2L`, que o Acrobat respeita e o visualizador do Chrome ignora.
+
+A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) define a mancha como 40 caracteres de 10,5 pt na altura por 16 colunas de 19 pt na largura, 148,2 × 107,2 mm. As margens em `page` são mínimas: a grade aumenta cada par por igual, até 33,9 mm na cabeça e 27,9 no pé, 17,4 na lombada e 23,4 no corte. `locale: 'zh-Hant'` dá às configurações do Leste Asiático os valores de Taiwan, com cada sinal ocupando um quadratim inteiro e centralizado na sua casa, sem compressão entre sinais vizinhos. `trad-chinese-informal` imprime os fólios de 一 a 九, e `第{1:一}回` numera o capítulo ([Numeração](/pt/docs/configuration#numeração)).
+
+### 2 · Emoldurar o 回目 em duas colunas com fios
+
+<Excerpt region="opener" />
+
+O desenho de um título numa página vertical é disposto no quadro do fluxo: `x` desce pela coluna a partir da cabeça da mancha, e `y` atravessa a página a partir da borda direita. Por isso um fio `'horizontal'` é uma linha vertical no papel, do comprimento da coluna. Três fios de 0,5 pt emolduram duas colunas de título a 28,5 pt uma da outra, uma vez e meia o passo de coluna do texto. Cada coluna é uma linha de 28,5 pt com os caracteres no meio, a meio caminho entre dois fios. `{number}` imprime 第一回 em Noto Serif TC Bold, dois caracteres abaixo; `{titleText}` imprime o dístico em LXGW WenKai TC, um caractere depois. O título é escrito `# 宴桃園豪傑三結義 \\ 斬黃巾英雄首立功`, e a quebra forçada leva a segunda metade para a coluna seguinte, na mesma altura da primeira. `minHeight` reserva cinco colunas de 19 pt, então o texto começa na sua grade ([Span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). Onde o título é lido numa só linha, nos cabeços e nos marcadores do PDF, a quebra vira um espaço ideográfico.
+
+### 3 · Descer os cabeços e os fólios pelo corte
+
+<Excerpt region="fore-edge" />
+
+Os livros verticais de Taiwan costumam pôr o cabeço e o fólio de cima para baixo na margem externa. `writingMode: 'vertical-rl'` compõe um elemento do cabeço de cima para baixo no papel, e `anchor.to: 'outer'` o coloca na margem externa, a esquerda numa página ímpar e a direita numa par quando o livro é encadernado pela direita ([Elementos de texto vertical](/pt/docs/configuration#elementos-de-texto-verticais)). Os deslocamentos são medidos em quadratins do próprio elemento, de 8,5 pt, cerca de 80 % do corpo do texto: o cabeço começa quatro caracteres abaixo da cabeça da mancha, e o fólio termina cinco acima do pé. `parity` põe 三國演義 nas páginas direitas e o capítulo nas esquerdas. `pages: 'body'` tira os dois cabeços da página de abertura, que mantém o fólio.
+
+### 4 · Pôr a prancha antes do capítulo
+
+<Excerpt region="front" />
+
+A folha de rosto e a prancha são títulos de nível 1 com estilos próprios, `# 三國演義 {style="title" …}` e `# 桃園結義 {style="plate" …}`. `numbered: false` os deixa fora da contagem, de modo que o capítulo continua sendo 第一回, e o `header` próprio deles, vazio, substitui os cabeços do corte. O `breakBefore` do capítulo pede uma página ímpar, a 3, cuja página dupla tem a prancha à direita: o leitor vê a imagem antes do texto, como nas edições ilustradas (繡像) ([Estilos de título](/pt/docs/configuration#estilos-de-título)). Os fólios também deixam essas duas páginas de fora. Um editor chinês numera o texto (正文) a partir da primeira página dele, então uma linha `:::numbering{startAt=1}` logo antes do título do capítulo recomeça a contagem em 一 na página 3 ([`:::numbering`](/pt/docs/document-format#numbering)); a folha de rosto e a prancha continuam contando como folhas para a paridade, e o visualizador e o PDF as rotulam 一 e 二 do mesmo jeito (uma variação, mais abaixo, as rotula à parte).
+
+三國演義 fica centralizado ao longo da sua moldura: `RUN` é o comprimento de quatro caracteres de 40 pt e dos três intervalos de 10 pt entre eles, sem o espaçamento depois do último. O rodapé da folha de rosto compõe o pé de imprensa na largura do pé, na língua da edição, a partir do atributo `colophon` do título. A Noto Serif TC não tem itálico, então o pé de imprensa é composto em Source Serif 4: `inlineMarks: true` lê os asteriscos em volta do título do livro, e cada `\n` no atributo começa uma linha, de modo que as linhas quebram onde o sentido pede ([Elementos de texto](/pt/docs/configuration#elementos-de-texto)). A caixa tem o dobro da distância entre a esquerda da mancha e o eixo da moldura, o que põe o centro de cada linha sob 三國演義. O desenho da prancha pendura a xilogravura e a sua moldura dupla no canto superior direito da mancha e compõe a legenda em duas colunas à esquerda dela. No quadro do fluxo, a largura de uma caixa corre ao longo da página, então a `width` da imagem é a altura dela no papel; a imagem fica em pé no canvas, no HTML e no PDF, e o PDF etiquetado a lê como figura, com o seu texto alternativo.
+
+### 5 · Carregar cada voz com os caracteres que ela compõe
+
+<Excerpt region="voices" />
+
+O livro tem três vozes: Noto Serif TC (宋) para o texto, LXGW WenKai TC (楷) para o dístico e os versos, Noto Sans TC (黑) para o corte. O Fontsource serve cada peso de uma fonte chinesa em cerca de cem arquivos, cada um cobrindo uma faixa de caracteres, e `loadCjkFonts` baixa os arquivos que contêm o texto recebido ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas)). A fonte do texto recebe o capítulo inteiro e baixa 67 arquivos; a Kai recebe os títulos e os versos e baixa 25, a Hei 15 e o negrito 4. O negrito compõe sete caracteres e nenhuma pontuação, então não carrega formas verticais. A Source Serif 4 do pé de imprensa entra por `loadFonts`, como qualquer fonte latina, em redondo e itálico. `renderToPdf` recebe `cjkPdfProvider`, que incorpora os mesmos arquivos como subconjuntos, e `imageBytes` para a xilogravura.
+
+## Variações
+
+### Escrever os fólios algarismo por algarismo
+
+`cjk-decimal` escreve um numeral por algarismo. Este capítulo termina no fólio 九, onde os dois formatos coincidem; a partir da décima página de texto, 十 e 十一 seriam 一〇 e 一一.
+
+```diff
+-  pageNumbering: { format: 'trad-chinese-informal' }, // folios 一, 二 … 九, from the chapter
++  pageNumbering: { format: 'cjk-decimal' }, // folios 一, 二 … 九, 一〇, 一一
+```
+
+### Rotular à parte as páginas iniciais
+
+A folha de rosto e a prancha não imprimem fólio, mas o visualizador e o PDF as rotulam 一 e 二, como as duas primeiras páginas do texto; com rótulos romanos para as páginas iniciais e os numerais chineses passados para a linha `:::numbering`, o PDF conta i, ii, 一, 二…
+
+```diff
+-  pageNumbering: { format: 'trad-chinese-informal' }, // folios 一, 二 … 九, from the chapter
++  pageNumbering: { format: 'lower-roman' }, // i, ii: the title page and the plate
+```
+
+```diff
+-:::numbering{startAt=1}
++:::numbering{format="trad-chinese-informal" startAt=1}
+```
+
+### Compor o capítulo na horizontal
+
+A convenção da China continental compõe esse tipo de capítulo na horizontal, encadernado pela esquerda, em caracteres simplificados e com pontuação Kaiming: <RecipeLink slug="chinese-novel-horizontal">Uma página de romance chinês numa grade de 28 × 28</RecipeLink>.

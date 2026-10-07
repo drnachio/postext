@@ -11,7 +11,7 @@ import type { SettingsGroupId } from '../sections/registry';
 import { pageDrawingConfig } from '../sections/cjkGridReadout';
 import { documentLocaleLabel } from '../sections/BodyTextSection/constants';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
-import { documentDirection, documentLanguage } from '../../context/documentDirection';
+import { documentComicDirection, documentDirection, documentLanguage } from '../../context/documentDirection';
 import { PagePreview } from './PagePreview';
 import { columnCountUsed } from './multipleColumns';
 
@@ -30,11 +30,11 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   // The page as it is set: the character grid's margins when it is on.
   const drawn = useMemo(() => pageDrawingConfig(config), [config]);
   const layout = resolveLayoutConfig(drawn.layout);
-  // The language and its direction: a right-to-left book is bound on the
-  // right when the binding is Auto.
+  // The language and its direction: a right-to-left book, and a comic book
+  // read right to left, are bound on the right when the binding is Auto.
   const language = documentLanguage(config, defaultDocumentLocale(uiLocale));
   const direction = documentDirection(config.direction, language);
-  const page = resolvePageConfig(drawn.page, language, layout.writingMode, direction);
+  const page = resolvePageConfig(drawn.page, language, layout.writingMode, direction, documentComicDirection(config, language, layout.writingMode, direction));
   const body = resolveBodyTextConfig(config.bodyText, config.locale);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
   const palette = config.colorPalette ?? [];

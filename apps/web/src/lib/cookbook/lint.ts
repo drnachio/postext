@@ -223,6 +223,11 @@ function mostlyArabic(text: string): boolean {
  *  locale (packages/postext/src/locale.ts; the historic ones left out). */
 const RTL_SCRIPTS = new Set(["Arab", "Aran", "Hebr", "Syrc", "Thaa", "Nkoo", "Adlm", "Rohg", "Mand", "Samr"]);
 
+/** Scripts whose readers read comics right to left, as the engine's
+ *  `comicsLocaleDirection` reads a locale: Japanese ('ja' → 'Jpan') and
+ *  Traditional Chinese ('zh-Hant', 'zh-TW', 'zh-HK' → 'Hant'). */
+const COMICS_RTL_SCRIPTS = new Set(["Jpan", "Hant"]);
+
 /** The script a language tag names or implies once maximised ('ar' →
  *  'Arab', 'ur' → 'Arab', 'ks-Deva' → 'Deva'), or undefined. */
 function tagScript(tag: string | undefined): string | undefined {
@@ -289,7 +294,7 @@ export function lintPen(
   const title = /^\/\/ ═+ Postext Cookbook · Nº (\d{3,}) · (.+?) ═*\s*$/.exec(lines[0] ?? "");
   if (!title) fails.push(`script.js line 1: the banner starts "// ═══ Postext Cookbook · Nº ${number} · <title> ═══"`);
   else if (title[1] !== number) fails.push(`script.js line 1: the banner says Nº ${title[1]}; recipe.json says ${number}`);
-  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|ca|zh|ja|ar)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
+  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|ca|zh|ja|ar|pt)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
   if (!url || url[2] !== slug) fails.push(`script.js line 2: the banner links https://postext.dev/en/cookbook/${slug}`);
   if (!/^\/\/ Code: MIT\b/.test(lines[2] ?? "")) fails.push(`script.js line 3: the banner credits "// Code: MIT · Text: … · Photo: …"`);
   const needs = /^\/\/ Fonts: .+ · Needs postext ≥ (\d+\.\d+\.\d+)\s*$/.exec(lines[3] ?? "");
@@ -618,14 +623,23 @@ export function lintPen(
   // A book bound on its right edge lies open mirrored; the book block's
   // showBook (the cjk block has the same) shows it so. The binding is the
   // engine's (resolvePageBinding): page.binding as written, else 'auto',
-  // the right edge for vertical text and for text that runs right to left
-  // (direction, else the script of locale).
+  // the right edge for vertical text, for text that runs right to left
+  // (direction, else the script of locale) and for a book with a comics
+  // section whose comics read right to left (comicReadingDirection:
+  // readingDirection as written, else rtl in a Japanese or Traditional
+  // Chinese edition, else the art's direction).
   const binding = configString(scan, "page.binding");
   const direction = configString(scan, "direction");
+  const locale = configString(scan, "locale");
   const rtl = direction === "rtl" || ((direction === undefined || direction === "auto") &&
-    RTL_SCRIPTS.has(tagScript(configString(scan, "locale")) ?? ""));
+    RTL_SCRIPTS.has(tagScript(locale) ?? ""));
+  const vertical = configString(scan, "layout.writingMode") === "vertical-rl";
+  const comicAsked = configString(scan, "comics.readingDirection") ?? /\breadingDirection\s*:\s*['"](ltr|rtl)['"]/.exec(js)?.[1];
+  const comicArtRtl = (configString(scan, "comics.artDirection") ?? /\bartDirection\s*:\s*['"](ltr|rtl)['"]/.exec(js)?.[1]) === "rtl";
+  const comicRtl = keys.includes("comics") && (comicAsked === "rtl" || (comicAsked !== "ltr" &&
+    (rtl || vertical || COMICS_RTL_SCRIPTS.has(tagScript(locale) ?? "") || comicArtRtl)));
   const rightBound = binding === "right" || ((binding === undefined || binding === "auto") &&
-    (configString(scan, "layout.writingMode") === "vertical-rl" || rtl));
+    (vertical || rtl || comicRtl));
   if (rightBound && /\bshowPages\s*\(/.test(ownBare) && !/\bshowBook\s*\(/.test(ownBare)) {
     warns.push("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the book kit block (gotcha cjk-spread-order)");
   }
@@ -924,7 +938,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
   for (const locale of LOCALES) {
     const writeup = readWriteup(slug, locale, headings);
     if (!writeup) {
-      fails.push(`${locale}.mdx is missing (${locale === "zh" || locale === "ca" || locale === "ar" || locale === "ja" ? `the ${locale} page shows the English write-up meanwhile` : `the ${locale} page would 404`})`);
+      fails.push(`${locale}.mdx is missing (${locale === "zh" || locale === "ca" || locale === "ar" || locale === "ja" || locale === "pt" ? `the ${locale} page shows the English write-up meanwhile` : `the ${locale} page would 404`})`);
       continue;
     }
     fails.push(...writeup.issues);
@@ -946,8 +960,8 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     for (const link of refs.links) {
       if (!link.startsWith(`/${locale}/`)) fails.push(`${locale}.mdx: ${link} must use the /${locale}/ prefix`);
       else if (link.startsWith(`/${locale}/docs/`) && !docLinkExists(link)) fails.push(`${locale}.mdx: ${link} does not resolve`);
-      else if (/^\/(en|es|ca|zh|ja|ar)\/cookbook\/([a-z0-9-]+)/.test(link)) {
-        const target = /^\/(en|es|ca|zh|ja|ar)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
+      else if (/^\/(en|es|ca|zh|ja|ar|pt)\/cookbook\/([a-z0-9-]+)/.test(link)) {
+        const target = /^\/(en|es|ca|zh|ja|ar|pt)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
         if (!knownSlugs.includes(target)) fails.push(`${locale}.mdx: ${link} names no recipe`);
       }
     }

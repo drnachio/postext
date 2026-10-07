@@ -7,15 +7,19 @@ export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 };
 
 /** The language a document that names none is read in: the interface's.
- *  Its hyphenation dictionary (`en` → `en-us`), or for a Chinese interface
- *  the Chinese of its script (`zh`, `zh-Hans` → `zh-Hans`; `zh-TW` →
- *  `zh-Hant`), for a Japanese one `ja` (both set without hyphenation);
- *  English for any other interface. */
+ *  Its hyphenation dictionary (`en` → `en-us`, `es-ES` → `es`), or for a
+ *  Chinese interface the Chinese of its script (`zh`, `zh-Hans` →
+ *  `zh-Hans`; `zh-TW` → `zh-Hant`), for a Japanese one `ja` (both set
+ *  without hyphenation), for a Portuguese one (`pt`, `pt-BR`: the
+ *  interface is Brazilian) `pt-BR`, hyphenated with the Portuguese
+ *  patterns; English for any other interface. */
 export function defaultDocumentLocale(uiLocale: string): string {
   const script = chineseScriptOf(uiLocale);
   if (script) return script === 'Hant' ? 'zh-Hant' : 'zh-Hans';
   if (isJapaneseLanguage(uiLocale)) return 'ja';
-  return LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us';
+  const language = uiLocale.trim().toLowerCase().split(/[-_]/)[0] ?? '';
+  if (language === 'pt') return 'pt-BR';
+  return LOCALE_TO_HYPHENATION[uiLocale] ?? LOCALE_TO_HYPHENATION[language] ?? 'en-us';
 }
 
 /** `config` with the app locale's hyphenation dictionary filled in when the

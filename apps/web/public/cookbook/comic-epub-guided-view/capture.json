@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-epub-guided-view",
-  "sourceHash": "f5403202e0f032aa8f72f40637dd605461eb2cf3f0595483dd0d5a2cd0618dee",
+  "sourceHash": "7ab277f06364f1d6d5ff91a6715f196cbab93393b8e2de01d778acab01874eb8",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.20.3",
+    "postextPdf": "1.20.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.737Z",
+  "capturedAt": "2026-10-07T12:32:35.760Z",
   "variants": {
     "en": {
-      "hash8": "c754295e",
+      "hash8": "d6b18a1c",
       "vdtHash": "64c420f4051c59e7c12aca770d7ead2328540ded",
       "timings": {
-        "importMs": 4264,
-        "fontsMs": 1567,
-        "buildMs": 803,
-        "totalMs": 7593,
+        "importMs": 1018,
+        "fontsMs": 10545,
+        "buildMs": 251,
+        "totalMs": 12393,
         "builds": 1
       },
       "specimen": {
@@ -280,13 +280,13 @@
       }
     },
     "es": {
-      "hash8": "f044808f",
+      "hash8": "4fa77c9f",
       "vdtHash": "e3390a1020791a0ab7ade1d7db54b176d75fcf9d",
       "timings": {
-        "importMs": 3848,
-        "fontsMs": 132,
-        "buildMs": 208,
-        "totalMs": 4736,
+        "importMs": 943,
+        "fontsMs": 914,
+        "buildMs": 873,
+        "totalMs": 4594,
         "builds": 1
       },
       "specimen": {
@@ -549,13 +549,13 @@
       }
     },
     "ca": {
-      "hash8": "8743c04a",
+      "hash8": "4ed62d64",
       "vdtHash": "52378a5a6f5c12056b8aa0d4afd146f52762148e",
       "timings": {
-        "importMs": 158,
-        "fontsMs": 88,
-        "buildMs": 230,
-        "totalMs": 1012,
+        "importMs": 283,
+        "fontsMs": 124,
+        "buildMs": 247,
+        "totalMs": 1320,
         "builds": 1
       },
       "specimen": {
@@ -818,13 +818,13 @@
       }
     },
     "zh": {
-      "hash8": "c5fb25e0",
+      "hash8": "b0437e7e",
       "vdtHash": "1ae1a2a01eb6d5de92779490b23522a6747ebf11",
       "timings": {
-        "importMs": 175,
-        "fontsMs": 254,
-        "buildMs": 418,
-        "totalMs": 1685,
+        "importMs": 227,
+        "fontsMs": 324,
+        "buildMs": 430,
+        "totalMs": 1847,
         "builds": 1
       },
       "specimen": {
@@ -906,7 +906,7 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 844799,
+        "bytes": 844802,
         "pages": 3
       },
       "sandbox": {
@@ -1088,13 +1088,13 @@
       }
     },
     "ar": {
-      "hash8": "449a9d6c",
+      "hash8": "b7a8b84a",
       "vdtHash": "8bf6113f0eff83e357b09713e25ae9e612868aab",
       "timings": {
-        "importMs": 183,
-        "fontsMs": 147,
-        "buildMs": 207,
-        "totalMs": 1116,
+        "importMs": 207,
+        "fontsMs": 126,
+        "buildMs": 198,
+        "totalMs": 1076,
         "builds": 1
       },
       "specimen": {
@@ -1361,13 +1361,13 @@
       }
     },
     "ja": {
-      "hash8": "127699dd",
+      "hash8": "987ac8a7",
       "vdtHash": "f8f6efe72ebdc4d12658a7980593664ad3df4a12",
       "timings": {
-        "importMs": 227,
-        "fontsMs": 3856,
-        "buildMs": 1294,
-        "totalMs": 11982,
+        "importMs": 279,
+        "fontsMs": 649,
+        "buildMs": 397,
+        "totalMs": 2283,
         "builds": 1
       },
       "specimen": {
@@ -1449,7 +1449,7 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 847685,
+        "bytes": 847687,
         "pages": 3
       },
       "sandbox": {
@@ -1602,6 +1602,275 @@
         "features": [
           "balloon-styles",
           "cjk-line-breaking",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-speakers",
+          "epub-export",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "sound-effects"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "pt": {
+      "hash8": "542ae770",
+      "vdtHash": "55f251632ca226235a26fa4dae410d75d1032b48",
+      "timings": {
+        "importMs": 297,
+        "fontsMs": 92,
+        "buildMs": 213,
+        "totalMs": 1198,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          168,
+          259
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Comic Neue",
+          "sizePt": 10.5,
+          "leadingPt": 15
+        },
+        "families": [
+          "Bangers",
+          "Comic Neue"
+        ],
+        "pages": 3,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 20726,
+          "alt": "Página de abertura 1: O farol de Porthcove."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 240314,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "comic",
+          "w": 1000,
+          "h": 1542,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 208214,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "comic-epub-guided-view.pdf",
+        "bytes": 812985,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "comic-epub-guided-view.postext",
+        "bytes": 807252
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "readEpub",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToEpub",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.cast",
+          "comics.cast[].id",
+          "comics.cast[].name",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "comics.runningHeads",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 98,
+        "designElements": 1,
+        "directives": [
+          ":::paragraphs",
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bangers",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Comic Neue",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Comic Neue",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
           "comic-lettering",
           "comic-pages",
           "comic-panel-art",

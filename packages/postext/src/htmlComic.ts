@@ -14,7 +14,7 @@
 
 import type { ComicCastMember } from './types';
 import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock } from './vdt';
-import { comicBalloonGroups, comicBalloonKind, comicBalloonText, comicBorderPathData, comicPanelContinues, comicPanelPathData, comicSpeakerName } from './comics/paint';
+import { comicBalloonGroups, comicBalloonKind, comicBalloonMatrix, comicBalloonText, comicBorderPathData, comicPanelContinues, comicPanelPathData, comicSpeakerName } from './comics/paint';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c] ?? c);
@@ -120,7 +120,9 @@ function groupShapes(group: readonly VDTComicBalloon[]): string {
   const fills: string[] = [];
   for (const b of shaped) {
     const s = b.shape!;
-    const rot = b.rotate ? ` transform="rotate(${n3(b.rotate)} ${n3(b.bbox.x + b.bbox.width / 2)} ${n3(b.bbox.y + b.bbox.height / 2)})"` : '';
+    // A plain turn reads as one; a lean needs the whole matrix.
+    const m = b.skew ? comicBalloonMatrix(b) : undefined;
+    const rot = m ? ` transform="matrix(${m.map(n3).join(' ')})"` : b.rotate ? ` transform="rotate(${n3(b.rotate)} ${n3(b.bbox.x + b.bbox.width / 2)} ${n3(b.bbox.y + b.bbox.height / 2)})"` : '';
     const open = rot ? `<g${rot}>` : '';
     const close = rot ? '</g>' : '';
     const fill = s.fill && s.fill !== 'transparent' ? s.fill : undefined;
@@ -160,7 +162,9 @@ function balloonHtml(b: VDTComicBalloon, paint: ComicHtmlPaint): string {
   const kind = comicBalloonKind(b);
   const words = comicBalloonText(b);
   const decls: string[] = ['position:absolute', 'left:0', 'top:0', 'margin:0', `z-index:${kind === 'sfx' ? 3 : 2}`];
-  if (b.rotate) {
+  const m = b.skew ? comicBalloonMatrix(b) : undefined;
+  if (m) decls.push('transform-origin:0 0', `transform:matrix(${m.map(n3).join(',')})`);
+  else if (b.rotate) {
     decls.push(`transform-origin:${n3(b.bbox.x + b.bbox.width / 2)}px ${n3(b.bbox.y + b.bbox.height / 2)}px`, `transform:rotate(${n3(b.rotate)}deg)`);
   }
   if (b.halo && b.halo.width > 0) {

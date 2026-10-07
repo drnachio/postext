@@ -77,7 +77,8 @@ Change the accent and the next run paints the folios, the subheads and the end m
 ```diff
 -showPages(doc, {
 -  title: t({ en: 'From a Markdown string to a designed page',
--    es: 'De una cadena Markdown a una página diseñada' }),
+-    es: 'De una cadena Markdown a una página diseñada',
+-    pt: 'De uma string Markdown a uma página diagramada' }),
 -});
 +const canvas = document.body.appendChild(document.createElement('canvas'));
 +renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });

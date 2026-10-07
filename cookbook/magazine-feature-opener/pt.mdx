@@ -1,0 +1,71 @@
+---
+title: "Reportagem de revista: da foto de abertura ao sinal final"
+summary: "Uma abertura advancedDesign põe uma foto sangrada e tira do título chapéu, título, olho e assinatura; seguem dois boxes flutuantes e um chip de fecho."
+plain: "Uma reportagem de revista de natureza que abre com uma foto grande no alto da página. Mostra como dispor o título, a apresentação, o autor e o crédito da foto, e depois boxes e um pequeno sinal no fim."
+description: "Uma reportagem de revista no Postext: abertura com foto sangrada montada a partir do título em Markdown, aspas penduradas, dois boxes flutuantes e sinal final."
+question: "Como tiro do título em Markdown o chapéu, o olho, a assinatura e o crédito da foto de uma abertura?"
+aliases: ["reportagem de revista", "matéria de revista", "abertura de matéria", "foto de abertura", "olho", "linha fina", "assinatura", "crédito fotográfico", "citação em destaque", "aspas penduradas", "boxe de dados", "em números", "sinal final", "fim de matéria", "abertura de seção"]
+pageNotes: { "1": "Um lago de montanha que reflete as nuvens entre encostas outonais ocupa o alto da página; abaixo, o chapéu Climate · Field report, o título The Lake That Keeps Time em duas linhas, um olho em itálico e a assinatura, e depois duas colunas justificadas.", "2": "A página par: intertítulos em itálico verde-azulado, uma citação em destaque cujas aspas pendem na margem externa e um boxe At a glance sob um fio verde-azulado, no alto da coluna da direita.", "3": "A página ímpar: uma faixa de pinheiral nevado no alto, o fim da reportagem fechado por um pequeno quadrado preto e um painel escuro In numbers no pé.", "4": "Five Kinds of Ice, um guia de campo, abre com o mesmo design sobre o desenho de um lago congelado em corte, com o chapéu em ferrugem." }
+---
+
+## O que você vai compor
+
+A reportagem principal da edição de inverno de *Boreal*, uma revista de natureza, em página de 225 × 297 mm. A matéria abre sob um lago de montanha sangrado no alto da página. Abaixo da foto, um chapéu espacejado encabeça um título em duas linhas, com o olho em itálico à direita e a assinatura sob ele; o crédito do fotógrafo corre sob a foto. O título é o texto do título em Markdown, e chapéu, olho, assinatura e crédito são atributos dele. A matéria continua numa página dupla em duas colunas justificadas. A par tem uma citação em destaque com as aspas penduradas e um boxe de dados no alto da coluna da direita; a ímpar, uma faixa de pinheiral no alto e um painel escuro de números no pé. Um pequeno quadrado fecha a matéria. Na página seguinte, um guia de campo reaproveita a abertura com um desenho e o chapéu em ferrugem.
+
+## Preparo
+
+### 1 · Montar a abertura a partir da linha do título
+
+O código é [a resposta curta](#a-resposta-curta) acima. Cada `{attr.<key>}` imprime o valor `<key>="…"` da linha `#` da matéria, e `{titleText}` imprime o próprio título ([atributos de título](/pt/docs/document-format#atributos-de-título)), então cada matéria guarda os seus textos no próprio Markdown e todos os títulos de nível 1 compartilham um único design. A foto pende da borda superior da página e o contêiner começa 22 mm mais abaixo, então `depth - TOP` é a borda inferior da foto medida a partir do contêiner; o crédito fica 2 mm abaixo dessa linha, no canto superior direito, e o chapéu 9 mm abaixo, no esquerdo. O título vai `below` (abaixo) do chapéu, na medida `HEAD` de 118 mm. O olho vai `right-of` (à direita) do título, sem largura própria, e por isso as linhas dele vão até a borda do contêiner; a assinatura vai `below` o olho, de modo que um olho mais longo empurra a assinatura para baixo em vez de invadi-la. O nível não tem `minHeight`. O título e a assinatura terminam num preenchimento vazio de 5 mm que conta na altura da abertura, e assim o texto começa na primeira linha da grade pelo menos 5 mm abaixo do que terminar mais embaixo, ocupe cada um quantas linhas ocupar.
+
+### 2 · Declarar as imagens uma vez, com os pixels reais
+
+<Excerpt region="resources" />
+
+Um elemento de design indica a imagem pelo id do recurso, então a foto da abertura é declarada como qualquer figura, mas nunca é citada: só a abertura a desenha, até o refile, aonde nenhum flutuante chega. Os bitmaps são medidos a 150 `dpi`, o valor da página, e assim os 2000 px do pinheiral dão 339 mm e são reduzidos à medida de 195 mm, cerca de 260 dpi na impressão. As imagens têm um tipo próprio, com o prefixo da legenda e o modelo de numeração vazios, e por isso a legenda do pinheiral não leva número de figura. A faixa é um flutuante `top` na largura da página, e um flutuante no alto abre a página seguinte à que o cita. A linha `::resource` dela fica na página par, depois do parágrafo de 1944, e assim a faixa encabeça a ímpar.
+
+### 3 · Pendurar as aspas na margem
+
+<Excerpt region="quote" />
+
+Um ícone de glifo ocupa uma coluna própria ao lado do texto, o que recuaria a citação. O espaçamento negativo traz o texto de volta sobre o lado direito do quadrado do glifo, que está vazio. Um preenchimento esquerdo negativo da largura do que sobra dessa coluna (tamanho + espaçamento, 34 pt) leva depois a coluna para a margem, e o texto volta a começar na borda da coluna. A moldura do boxe continua na coluna, então um fundo não chegaria até as aspas. O quadrado começa 12 mm para fora, e as aspas, centralizadas nele, avançam cerca de 6 mm nos 14 mm da margem externa da página par. A edição espanhola compõe o seu « menor, porque o sinal angular fica mais baixo e é mais largo que as aspas curvas.
+
+### 4 · Levar os boxes ao alto de uma coluna e ao pé da página
+
+<Excerpt region="boxes" />
+
+Com `placement: 'top'` o boxe de dados flutua: sai do fluxo e ocupa o próximo alto de coluna livre, e o texto segue até o pé da coluna em vez de deixar um vão onde o boxe não coube. O painel de números flutua para o outro lado, até o pé da página, e ocupa as duas colunas; os três números são títulos de nível 4, um nível que a matéria nunca usa, distribuídos por `breaks="3,5"`, que conta blocos filhos, não linhas. O sinal final é um chip sem texto visível. O `paddingX` dá a largura do quadrado e o corpo do chip dá a altura, ambas de 1,05 em no tamanho do próprio chip.
+
+### 5 · Cabeços que nomeiam a edição e a matéria
+
+<Excerpt region="heads" />
+
+Os elementos de cabeçalho são pintados sobre a página e não reservam espaço, então cada peça é ancorada à página, na margem superior, com distâncias em milímetros. A página par traz o nome da revista e a edição, tirados do frontmatter, e a ímpar o título da reportagem; `pages: 'body'` tira os dois das aberturas, que levam só o fólio, no pé. Num texto de design, a linha de base fica a 0,8 da altura da caixa de linha, que mede 1,2 vez o corpo, e por isso `baseline()` desce o rótulo de 7,5 pt 0,34 mm abaixo do fólio de 8,5 pt e assenta o quadrado na mesma linha. Se você mudar qualquer um dos dois corpos, as três peças continuam numa só linha de base.
+
+### 6 · Reaproveitar a abertura na matéria seguinte
+
+<Excerpt region="guide" />
+
+A abertura é uma função, então o guia de campo recebe o mesmo design, com imagem e altura próprias, por meio de um estilo de título, `# Five Kinds of Ice {style="guide" kicker="Field guide" …}`. O desenho desce 126 mm pela página em vez de 160; o crédito e o chapéu são medidos a partir de `depth - TOP` e os outros textos pendem do chapéu, então todos sobem 34 mm e o texto do guia começa mais acima. A paleta do estilo troca `lake` por ferrugem nessas páginas, e assim o chapéu, e qualquer intertítulo ou boxe ligado a `lake`, fica ferrugem sem um argumento de cor em `opener()`; os chips não seguem a paleta, e por isso o sinal final é preto.
+
+## Variações
+
+### Abrir cada matéria numa página ímpar
+
+Com `'odd'`, o guia de campo passa para a página 61, e a 60 fica em branco.
+
+```diff
+- { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
++ { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Pôr o título sobre uma faixa de cor
+
+Para um capítulo de livro didático, em que uma faixa de cor e um número grande ocupam o lugar da foto, veja <RecipeLink slug="chapter-opener-bleed-band">Abertura de capítulo sobre uma faixa sangrada</RecipeLink>.
+
+## Erros comuns
+
+- Um elemento de imagem encaixa a imagem dentro da caixa e nunca a corta. Corte o JPEG nas proporções da caixa, aqui 225 × 160 mm, ou a foto encolhe e deixa faixas brancas nas bordas da página.
+- As aspas penduradas precisam de margem. Se uma edição levar a citação para uma coluna da direita, as aspas ocupam os 6 mm da medianiz e encostam no texto da coluna da esquerda: adiante ou atrase a citação um parágrafo.
+- A matéria está ajustada para terminar na página 59, acima do painel de números. Umas linhas a mais mandam o final para uma página própria, então, depois de editar, ajuste o texto de novo nos dois idiomas.
+- `runtMinCharacters: 40` evita últimas linhas de uma palavra só. Quando a quebra de linhas não consegue evitar uma última linha curta, o motor compõe o parágrafo com uma linha a menos, com espaços entre palavras mais apertados e, se não bastar, até 0,01 em a menos entre as letras. Depois de editar, procure um parágrafo assim apertado e corte ou acrescente algumas palavras nele; o texto publicado não precisa desse ajuste em nenhum dos dois idiomas.

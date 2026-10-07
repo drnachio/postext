@@ -38,7 +38,8 @@ import {
   setCharacterSpacing,
 } from 'pdf-lib';
 import { colorAlpha, hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
-import { joinsLetters, type CjkRegion, type ForcedOrientation, type PdfColorSpace, type RoundedOutline, type VDTChip } from 'postext';
+import { isPrintMode, modeKey, overPaper, type ColorMode } from '../print/colorMode';
+import { joinsLetters, type CjkRegion, type ForcedOrientation, type RoundedOutline, type VDTChip } from 'postext';
 import type { PageTagger } from './tagging';
 import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
 import { fileRuns, noteMissingGlyphs } from '../faceFiles';
@@ -48,7 +49,8 @@ export interface PageCtx {
   page: PDFPage;
   pageHeightPt: number;
   scale: number;
-  colorSpace: PdfColorSpace;
+  /** The output colour: a PDF colour space, or an ICC print mode. */
+  colorSpace: ColorMode;
   /** Marked-content state of an accessible (tagged) render; absent when the
    *  document is not tagged. Renderers route each drawing call to a
    *  structure element or flag it as an artifact through it. */
@@ -261,8 +263,8 @@ export function makeScale(dpi: number): number {
   return 72 / dpi;
 }
 
-export function whiteColor(colorSpace: PdfColorSpace): Color {
-  if (colorSpace === 'cmyk') return cmyk(0, 0, 0, 0);
+export function whiteColor(colorSpace: ColorMode): Color {
+  if (colorSpace === 'cmyk' || isPrintMode(colorSpace)) return cmyk(0, 0, 0, 0);
   if (colorSpace === 'grayscale') return grayscale(1);
   return rgb(1, 1, 1);
 }
@@ -285,12 +287,36 @@ interface AlphaColor {
  * `transparent` — in the output colour space. A translucent colour carries
  * its opacity along (see {@link alphaOf}); malformed input paints black.
  */
-export function colorFromHex(hex: string, colorSpace: PdfColorSpace): Color {
-  const key = `${colorSpace}|${hex}`;
+export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
+  const key = `${modeKey(colorSpace)}|${hex}`;
   const cached = colorCache.get(key);
   if (cached) return cached;
   const c = hexToRgb(hex);
   let color: Color;
+  if (isPrintMode(colorSpace)) {
+    // Through the output profile; PDF/X-1a has no transparency, so a
+    // translucent colour is set as it would print over the paper.
+    let alpha = colorAlpha(hex);
+    let [r, g, b] = [c.r, c.g, c.b];
+    if (alpha < 1 && colorSpace.flattenTransparency) {
+      [r, g, b] = overPaper(r, g, b, alpha);
+      alpha = 1;
+    }
+    const exact = colorSpace.authored.get(hex.slice(0, 7).toLowerCase());
+    if (exact && alpha < 1 && colorSpace.flattenTransparency) {
+      // A tint of the authored ink mix stands in for it over the paper.
+      const t = colorAlpha(hex);
+      color = cmyk(round4((exact.c / 100) * t), round4((exact.m / 100) * t), round4((exact.y / 100) * t), round4((exact.k / 100) * t));
+    } else if (exact) {
+      color = cmyk(round4(exact.c / 100), round4(exact.m / 100), round4(exact.y / 100), round4(exact.k / 100));
+    } else {
+      const k = colorSpace.transform.fromRgb(r, g, b);
+      color = cmyk(round4(k.c), round4(k.m), round4(k.y), round4(k.k));
+    }
+    if (alpha < 1) (color as AlphaColor).alpha = alpha;
+    colorCache.set(key, color);
+    return color;
+  }
   if (colorSpace === 'cmyk') {
     const k = rgbToCmyk(c);
     color = cmyk(k.c, k.m, k.y, k.k);
@@ -303,6 +329,11 @@ export function colorFromHex(hex: string, colorSpace: PdfColorSpace): Color {
   if (alpha < 1) (color as AlphaColor).alpha = alpha;
   colorCache.set(key, color);
   return color;
+}
+
+/** Four decimals: enough for a separation, and exact K 1 stays exact. */
+function round4(n: number): number {
+  return Math.round(n * 10000) / 10000;
 }
 
 /** Opacity of a colour made by {@link colorFromHex}, 0 … 1. */

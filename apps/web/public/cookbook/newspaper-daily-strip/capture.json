@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "newspaper-daily-strip",
-  "sourceHash": "f783fb2fa5e92ae18531573f7fd1a3ee9f24acab5e225a93859a8eae4b5e571c",
+  "sourceHash": "66c5963a25069b06ac057f2c112b738b5311ea3c990c58829a0d3962f5964078",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.20.3",
+    "postextPdf": "1.20.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.668Z",
+  "capturedAt": "2026-10-07T12:31:33.525Z",
   "variants": {
     "en": {
-      "hash8": "d6017f28",
+      "hash8": "e115bfff",
       "vdtHash": "815d9f6f55229d88ca592ce0b4572bf224a586d3",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 309,
-        "buildMs": 1348,
-        "totalMs": 3916,
+        "importMs": 363,
+        "fontsMs": 172,
+        "buildMs": 1450,
+        "totalMs": 4186,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 175
       },
       "pages": [
         {
@@ -333,13 +333,13 @@
       }
     },
     "es": {
-      "hash8": "b1bcaf88",
+      "hash8": "0b5eac18",
       "vdtHash": "ccc8ad3c2826fdb54a77b35fbdd964764f8da1f3",
       "timings": {
-        "importMs": 158,
-        "fontsMs": 133,
-        "buildMs": 1794,
-        "totalMs": 9185,
+        "importMs": 299,
+        "fontsMs": 159,
+        "buildMs": 1912,
+        "totalMs": 5123,
         "builds": 2
       },
       "specimen": {
@@ -360,7 +360,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 175
       },
       "pages": [
         {
@@ -410,7 +410,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 884608,
+        "bytes": 884610,
         "pages": 2
       },
       "sandbox": {
@@ -649,19 +649,19 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 1794 ms (warning at 1.5 s)"
+            "detail": "the build took 1912 ms (warning at 1.5 s)"
           }
         ]
       }
     },
     "ca": {
-      "hash8": "73d8e48c",
+      "hash8": "c17eaaf2",
       "vdtHash": "9f9c2f235d919dfc1fbe684dba7733783d2a91d8",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 119,
-        "buildMs": 1621,
-        "totalMs": 4291,
+        "importMs": 220,
+        "fontsMs": 153,
+        "buildMs": 1728,
+        "totalMs": 4590,
         "builds": 2
       },
       "specimen": {
@@ -682,7 +682,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 175
       },
       "pages": [
         {
@@ -732,7 +732,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 884043,
+        "bytes": 884042,
         "pages": 2
       },
       "sandbox": {
@@ -971,19 +971,19 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 1621 ms (warning at 1.5 s)"
+            "detail": "the build took 1728 ms (warning at 1.5 s)"
           }
         ]
       }
     },
     "zh": {
-      "hash8": "d347a9d6",
+      "hash8": "e0b81828",
       "vdtHash": "11c763a171f5875d36fbff39122ed5895b593fa2",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 1506,
-        "buildMs": 1275,
-        "totalMs": 3465,
+        "importMs": 328,
+        "fontsMs": 1032,
+        "buildMs": 1394,
+        "totalMs": 3308,
         "builds": 1
       },
       "specimen": {
@@ -1004,7 +1004,7 @@
           "Noto Serif SC"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 175
       },
       "pages": [
         {
@@ -1054,7 +1054,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1015460,
+        "bytes": 1015464,
         "pages": 2
       },
       "sandbox": {
@@ -1294,13 +1294,13 @@
       }
     },
     "ar": {
-      "hash8": "f16f8af5",
+      "hash8": "864ebd83",
       "vdtHash": "b6f6320bf51f7fe7952021c95fdd7fd44a0bafca",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 190,
-        "buildMs": 3372,
-        "totalMs": 8408,
+        "importMs": 231,
+        "fontsMs": 212,
+        "buildMs": 2201,
+        "totalMs": 3202,
         "builds": 1
       },
       "specimen": {
@@ -1321,7 +1321,7 @@
           "Noto Naskh Arabic"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 175
       },
       "pages": [
         {
@@ -1372,7 +1372,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 896737,
+        "bytes": 896734,
         "pages": 2
       },
       "sandbox": {
@@ -1609,19 +1609,19 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 3372 ms (warning at 1.5 s)"
+            "detail": "the build took 2201 ms (warning at 1.5 s)"
           }
         ]
       }
     },
     "ja": {
-      "hash8": "c47b729f",
+      "hash8": "57e9479b",
       "vdtHash": "debe22a1508d46f1dbb140937907cc2ab3c61730",
       "timings": {
-        "importMs": 146,
-        "fontsMs": 1924,
-        "buildMs": 2701,
-        "totalMs": 5312,
+        "importMs": 290,
+        "fontsMs": 911,
+        "buildMs": 2879,
+        "totalMs": 4645,
         "builds": 1
       },
       "specimen": {
@@ -1642,7 +1642,7 @@
           "Noto Serif JP"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 175
       },
       "pages": [
         {
@@ -1692,7 +1692,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1007166,
+        "bytes": 1007174,
         "pages": 2
       },
       "sandbox": {
@@ -1932,7 +1932,329 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the build took 2701 ms (warning at 1.5 s)"
+            "detail": "the build took 2879 ms (warning at 1.5 s)"
+          }
+        ]
+      }
+    },
+    "pt": {
+      "hash8": "d06b7bf9",
+      "vdtHash": "8acce17e51368a9714696e7d4806e562776dcead",
+      "timings": {
+        "importMs": 545,
+        "fontsMs": 518,
+        "buildMs": 1037,
+        "totalMs": 3963,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          310
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Newsreader",
+          "sizePt": 9,
+          "leadingPt": 12.200000000000001
+        },
+        "families": [
+          "Archivo Narrow",
+          "Newsreader"
+        ],
+        "pages": 2,
+        "ownLines": 175
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "body",
+          "w": 1000,
+          "h": 1348,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 115750,
+          "alt": "Página 1."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1348,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 174170,
+          "alt": "Página de abertura 2: Dez invernos no gelo."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "newspaper-daily-strip.pdf",
+        "bytes": 882768,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "newspaper-daily-strip.postext",
+        "bytes": 812421,
+        "folio": "bebc74ee"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].bold",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].fontFamily",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].stroke",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.inset",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.columnCount",
+          "headingStyles[].layout.columnRule",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 203,
+        "designElements": 4,
+        "directives": [
+          ":::strip",
+          ":::paragraphs",
+          ":::callout"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 7,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "balloon-styles",
+          "callout-splitting",
+          "callout-styles",
+          "comic-lettering",
+          "comic-panel-art",
+          "comic-panel-styles",
+          "comic-strips",
+          "heading-attributes",
+          "heading-styles",
+          "multiple-columns",
+          "opener-band",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "sound-effects"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 5,
+          "share": 0.0714,
+          "worst": 2.32
+        },
+        "findings": [
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "5 of 70 justified lines (7.1 %) stretch past 2× (worst 2.32×); loosest: p. 2 2.32× “O trabalho começa na segunda,”, p. 2 2.23× “jornais brasileiros recebem Acabou”, p. 2 2.07× “da época, Martin Fry, publicou as”"
           }
         ]
       }

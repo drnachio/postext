@@ -1,0 +1,78 @@
+---
+title: "Um documento oficial chinês pela GB/T 9704"
+summary: "Um aviso de quatro páginas em A4 pela norma nacional: 28 × 22 caracteres de 三号, timbre vermelho, títulos 一、（一）1.（1）, anexo e fólios “— 1 —”."
+plain: "Um aviso oficial chinês de quatro páginas. Segue as regras nacionais para esse tipo de documento, com cabeçalho vermelho, seções numeradas e números de página num formato fixo."
+description: "Documento oficial chinês no Postext pela GB/T 9704—2012: A4, grade de 28 × 22 caracteres, timbre vermelho, títulos numerados, anexo, 版记 e fólios."
+question: "Como diagramo um documento oficial chinês pela GB/T 9704, com timbre vermelho, grade e fólios?"
+aliases: ["documento oficial", "documento oficial chinês", "aviso oficial", "公文", "公文格式", "GB/T 9704", "党政机关公文格式", "timbre vermelho", "红头文件", "发文字号", "版记", "三号", "仿宋", "一、（一）1.（1）", "grade de caracteres em A4", "fólio entre travessões", "papel timbrado"]
+pageNotes: { "1": "Página 1 de um aviso da associação fictícia 示例市出版协会. No alto à direita, um carimbo de borda vermelha que diz 样张; no alto à esquerda, o número de exemplar 000001. De lado a lado, em grandes caracteres vermelhos, o nome do emissor seguido de 文件; depois, o número do documento 示出协〔2026〕7号 centrado sobre um fio vermelho na largura inteira, e o título em duas linhas centradas de letra preta pesada, a de cima mais curta. Abaixo, o destinatário 各会员单位, o parágrafo de abertura, o primeiro título 一、培训时间 e três linhas de texto. O fólio — 1 — fica à direita, sob o texto.", "2": "Página 2: títulos de quatro níveis, 二、培训地点, （一）排版规范, 1.公文格式 e （1）版心与字体, cada um na sua linha e com recuo de dois caracteres, sobre parágrafos de 28 caracteres por linha. No fim da penúltima linha, uma vírgula pende além da borda direita do texto. O fólio — 2 — fica à esquerda.", "3": "Página 3: os últimos títulos do aviso, a linha de anexo 附件：培训日程安排, o nome do emissor e a data puxados para a direita, a observação （此件公开发布） e o fólio — 3 — à direita.", "4": "Página 4: o anexo. 附件 no alto à esquerda, o título centrado 培训日程安排 e uma tabela com fios dos três dias do curso, com cada data ocupando duas linhas. No pé, entre um fio grosso, um fino e outro grosso, a linha de cópias 抄送 e o órgão expedidor com 2026年9月28日印发. O fólio — 4 — à esquerda e, bem no pé, uma linha pequena com os nomes das fontes." }
+---
+
+## O que você vai compor
+
+Um aviso de uma associação de editores inventada, numa cidade também inventada, 示例市 (“Cidade Exemplo”), composto como uma repartição da China continental compõe os seus papéis pela GB/T 9704—2012, 《党政机关公文格式》. São quatro páginas A4 de 28 caracteres por linha e 22 linhas por página. A página 1 abre com o nome do emissor em vermelho, o número do documento sobre um fio vermelho e um título de duas linhas em 二号. Os títulos são numerados 一、（一）1.（1）, cada nível na sua fonte. A assinatura e a data ficam à direita, e um anexo numa página própria traz no pé o 版记 entre fios. Os fólios dizem “— 1 —”, à direita nas páginas ímpares e à esquerda nas pares. Cada folha avisa na margem superior que é um modelo. <RecipeLink slug="din-business-letter">Carta comercial pela DIN 5008</RecipeLink> faz o mesmo trabalho com uma norma europeia.
+
+## Preparo
+
+### 1 · Uma mancha contada em casas
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. A GB/T 9704 fixa a margem superior em 37 mm e a margem de encadernação em 28 mm, e enche uma mancha de 156 × 225 mm com 22 linhas de 28 caracteres de corpo 三号. `cjk.grid` toma os números como estão: 28 emes de 15,75 pt dão 155,6 mm, e 22 linhas de 29 pt dão 225,1 mm ([grade de caracteres](/pt/docs/configuration#grade-de-caracteres)). No Word, o 三号 tem 16 pt, o que faria a linha ter 158 mm, mais larga que a mancha da norma; 15,75 pt é o valor das tabelas dos tipógrafos. Com a grade ligada, as margens são mínimas. Estas deixam 0,02 mm para distribuir, então a mancha fica onde a norma a põe. A norma pede 仿宋 para o texto; a Fontsource não tem nenhuma Fangsong, então o texto é composto na Song da Noto Serif SC (veja Erros comuns).
+
+Todo sinal ocupa uma casa inteira e não cede nada dela, então numa linha de chinês os caracteres ficam nas colunas da grade que a norma desenha. Os algarismos arábicos são mais estreitos que uma casa, então numa linha como 版心156毫米×225毫米 os caracteres depois dos algarismos caem entre as colunas. Quando uma vírgula cai na 29ª casa, `hangingPunctuation: 'allow'` a deixa pendurada na margem em vez de mandar um caractere para a linha seguinte e espaçar o resto ([pontuação pendente](/pt/docs/configuration#pontuação-pendente)).
+
+<PageShot page={2} crop="0.08,0.683,0.9,0.2" caption="Página 2: a vírgula depois de 各一份 enche a 28ª casa; a que vem depois de 可自愿报名 pende numa 29ª, além da borda da mancha, e a linha seguinte começa na margem." />
+
+### 2 · Quatro níveis de títulos, uma linha cada
+
+<Excerpt region="levels" />
+
+A norma compõe 一、 em 黑体, （一） em 楷体, e 1. e （1） na fonte do texto, todos no corpo do texto. `{2:一}` imprime o numeral chinês informal na escrita de `locale` ([numeração](/pt/docs/configuration#numeração)). Com o corpo e a entrelinha do texto e sem margens, um título ocupa uma linha da grade, e o texto embaixo dele também fica na grade. Os títulos não têm recuo próprio, então os dois espaços ideográficos no começo de cada modelo são as duas casas que a norma deixa ([configurações por nível](/pt/docs/configuration#sobrescritas-por-nível)).
+
+### 3 · O timbre, linha por linha
+
+<Excerpt region="letterhead" />
+
+O timbre é o design do H1, cujos atributos trazem o número de exemplar, o emissor e o número do documento: a configuração guarda o papel timbrado, e o Markdown, o documento. `lineTop(n)` dá o topo da linha *n* da grade, então cada elemento fica onde a norma o conta: o número, duas linhas em branco abaixo do nome do emissor; o título, duas linhas em branco abaixo do fio vermelho. A 46 pt, a tinta do nome vai de 35 mm abaixo do topo da mancha até o pé da linha 5, o que deixa as linhas 6 e 7 em branco e põe o número na linha 8; a 48 pt ela entraria na linha 6 e empurraria o resto da página uma linha para baixo. A `\\` no título o quebra depois de 关于举办, uma linha curta sobre uma longa: um trapézio, uma das duas formas que a norma admite (a outra é o losango). `minHeight` reserva 13 linhas e `marginBottom`, mais uma, então o destinatário começa na linha 15 ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)).
+
+### 4 · Fólios sob a mancha
+
+<Excerpt region="folios" />
+
+No rodapé, a borda superior do contêiner é o pé da mancha, então `offset.y` mede para baixo a partir do texto ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). Os travessões ficam 7 mm abaixo dela e a uma casa de 四号 da borda externa: `parity` põe os fólios ímpares à direita e os pares à esquerda. A margem superior imprime `{subtitle}`, do frontmatter. Essa linha e o colofão sob o 版记 são tudo o que muda entre a edição em inglês e a em espanhol.
+
+### 5 · O anexo e o 版记
+
+<Excerpt region="annex" />
+
+O título do anexo tem um estilo próprio: página nova, 附件 na linha 1, o título na linha 3 e nenhuma margem sob as três linhas que ele reserva. A linha 4 em branco é o espaço que todo recurso em linha mantém acima de si (`inlineResourceGap`, em [layout](/pt/docs/configuration#diagramação)), então o fio superior da tabela fica na linha 5. O 版记 faz parte do mesmo design, desenhado nas duas linhas da grade que terminam no pé da mancha. Os seus elementos têm `reserve: false`, então não somam nada ao espaço que o título ocupa e a tabela não é empurrada para baixo deles. A norma põe o 版记 na última página, depois dos anexos; com um anexo de uma página, essa é a página do anexo. Um anexo mais longo precisaria que o 版记 fosse desenhado por um título na sua última página.
+
+### 6 · O bloco de assinatura
+
+<Excerpt region="styles" />
+
+Um aviso sem carimbo põe o nome do emissor a duas casas da margem direita e a data embaixo, começando duas casas mais à direita. Uma data mais longa que o nome termina, em vez disso, a duas casas da margem direita, e o nome se desloca para a esquerda para manter o degrau de duas casas. A nossa mede 6,9 emes, um pouco menos que os 7 do nome, então, ao pé da letra, começaria duas casas à direita do nome e terminaria a 0,14 em da margem. Lemos a regra pelo que ela quer, uma data que nunca encosta na borda, e aplicamos o segundo caso: a data termina a pouco mais de duas casas da margem. `indent` põe as duas linhas em casas inteiras, a 17 e 19 emes da margem ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
+
+## Variações
+
+### Comprimir os sinais que se encontram
+
+Pares como ），e 》（ ocupam uma casa e meia em vez de duas, como na maioria dos livros; os caracteres que vêm depois saem das colunas da grade.
+
+```diff
+-  punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false,
++  punctuationWidth: 'fullwidth', compressAdjacent: true, trimLineStart: true,
+```
+
+### Mostrar a grade enquanto você compõe a página
+
+O canvas desenha um quadrado cinza para cada casa da grade de 28 × 22, e o PDF não o inclui a não ser que `renderToPdf` receba `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+## Erros comuns
+
+- A 150 dpi, uma linha de 29 pt mede 60,41666… px. Quando um título e um parágrafo de duas linhas caíam nas três últimas linhas de uma página, a verificação que mantém o título junto do seu texto somava as linhas da grade 10⁻¹³ px a menos e mandava o título para a página seguinte, deixando três linhas em branco. A 144 dpi, um ponto são dois pixels e as somas dão exatas, então a página mantém as suas 22 linhas.
+- Uma linha justificada distribui a sua folga entre os caracteres chineses e os espaços que tiver, e o espaço leva mais do que a sua parte: na página 2, o de GB/T 15834 abriu quase o dobro da largura do de GB/T 9704, logo acima. O conteúdo escreve os dois números com um espaço não separável (U+00A0), que mantém cada número inteiro, e a folga vai para entre os caracteres.

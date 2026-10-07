@@ -100,7 +100,7 @@ export function retargetScript(script: string, slug: string, number: number): { 
   if (banner.test(out)) out = out.replace(banner, `$1${String(number).padStart(3, "0")}`);
   else notes.push("script.js has no `// ═══ Postext Cookbook · Nº …` banner line");
   // The page URL in the banner, whatever placeholder the template uses.
-  out = out.replace(/(postext\.dev\/(?:en|es|ca|zh|ja|ar)\/cookbook\/)[^\s'"`)]+/g, `$1${slug}`);
+  out = out.replace(/(postext\.dev\/(?:en|es|ca|zh|ja|ar|pt)\/cookbook\/)[^\s'"`)]+/g, `$1${slug}`);
   // Repository paths that still name the source recipe.
   if (oldSlug && oldSlug !== slug && SLUG_PATTERN.test(oldSlug)) {
     out = out.split(`cookbook/${oldSlug}/`).join(`cookbook/${slug}/`);

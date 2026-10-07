@@ -14,6 +14,9 @@ export { computePageTextExtent } from './vdt';
 export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './columnRule';
 export type { FootnoteRuleSegment } from './columnRule';
 export { cropMarkSegments } from './cropMarks';
+export * from './color';
+export { preflightDocument } from './preflight';
+export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity } from './preflight';
 export type { CropMarkSegment } from './cropMarks';
 export { columnClipRect, designOverlayOverhang, headingDesignOverhangAbove, hangingPunctuationOverhang } from './columnClip';
 export { lineInkExtent } from './lineInk';
@@ -27,7 +30,7 @@ export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, ini
 export type { CjkComposition, PunctuationSide } from './measure';
 export type { BreakTrace, LineWidthStep, MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';
 export { hyphenateText, setHyphenationLocale, HYPHENATION_LOCALES, matchHyphenationLocale } from './hyphenate';
-export { DOCUMENT_LANGUAGES, isCjkLanguage, isJapaneseLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, stringsFor, directionOf, defaultNumeralsFor } from './locale';
+export { DOCUMENT_LANGUAGES, isCjkLanguage, isJapaneseLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, stringsFor, directionOf, comicsLocaleDirection, defaultNumeralsFor } from './locale';
 export type { DocumentLanguage } from './locale';
 export { parseMarkdown } from './parse';
 export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV, tableGridIssues } from './table/model';
@@ -47,7 +50,7 @@ export {
   translateComicPage, translateComicPanel, translateComicSplitter, translateComicBalloon, translateSvgPath, comicBlockOnSheet, pageComics,
   comicLetteringStyle, comicLetteringLocale, comicLetteringVertical, comicFontFamilies, markdownHasComics,
   letterPanel, letterPanelDetailed, presetLetteringStyles,
-  comicBalloonKind, comicBalloonText, comicSpeakerName, comicBalloonGroups, comicPanelPathData, comicBorderPathData, polygonPathData, comicPanelContinues, isComicSpreadPartner, joinComicSpread,
+  comicBalloonKind, comicBalloonText, comicBalloonMatrix, comicSpeakerName, comicBalloonGroups, comicPanelPathData, comicBorderPathData, polygonPathData, comicPanelContinues, isComicSpreadPartner, joinComicSpread,
 } from './comics';
 export type {
   ComicSplitAxis, ComicSplitSize, ComicSplitItem, ComicSplitList, ComicSplitToken, ComicSplitIssue, ComicSplitParse, ComicScriptLine,
@@ -57,7 +60,8 @@ export type {
   ComicFrameContext, ComicStripPlacement, ComicStripContext, ComicStripAlign, ComicSpreadContext, ComicSpreadPage, ComicBalloonKind,
 } from './comics';
 export { renderComicPanels, renderComicPanel, comicPanelPath, comicRoughBorder, renderComicBalloons, renderComicBalloon, renderComicPage } from './canvas-backend/comic';
-export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './defaults/comics';
+export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, comicReadingDirection, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './defaults/comics';
+export type { ComicDirectionContext } from './defaults/comics';
 export { layoutVideo, playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 export { encodeQr } from './video/qr';
 export { coordinateVideoPlayback, playsAlongside, videosToPause, VIDEO_PLAYBACK_SCRIPT } from './video/playback';
@@ -68,6 +72,7 @@ export type { HeadingDesignCut } from './pipeline/headingDesignCuts';
 export { extractFrontmatter, metadataText } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
 export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, DEFAULT_COLUMN_BALANCING, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings, resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, defaultCaptionLabels, DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults, DEFAULT_VIDEO_STYLE_CONFIG, DEFAULT_VIDEO_PLAYER_OPTIONS, resolveVideoStyleConfig, resolveVideoPlayerOptions, stripVideoStyleDefaults, DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults, DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutStylesConfig, stripCalloutStylesDefaults, DEFAULT_CHIP_STYLES, DEFAULT_CHIP_STYLE_STATIC, resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults, DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults, dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults, DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, mergeConfigOverrides, applyHtmlViewerOverrides, DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults, FOLIO_PAPER_STOCKS, FOLIO_MAX_TILT, DEFAULT_FOLIO_CONFIG, isNewspaperSizePreset, folioDefaultsFor, folioForTrim, resolveFolioConfig, stripFolioDefaults, wrapFolioYaw, DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults, defaultResourceTypes, defaultVideoResourceType, effectiveResourceTypes, DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults, DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesDefaults, DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults, DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, parseFootnoteNumberFormat, resolveCrossRefsConfig, stripCrossRefsDefaults, DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults, DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults, DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark, defaultCjkBookTitleBrackets, defaultCjkEmphasisMark, defaultCjkWarichuBrackets, defaultCjkHangingPunctuation, defaultCjkSpaceAfterQuestion, defaultCjkParagraphStartBracket, defaultCjkRubyOverhang, defaultCjkRubyAlign } from './defaults';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, stripPrintDefaults, profileInkLimit } from './defaults';
 export type { FolioPaperStock } from './defaults';
 export { resolvePlaceholders, computeChapterTitles, computeChapterTitlesAtTop, computeChapterNumbers, computeChapterNumbersAtTop, collectPlaceholderNames, isKnownPlaceholder, isMetadataPlaceholder, computeChapterAttrs, computePartValues, blockLinesText, plainTitleText } from './pipeline/placeholders';
 export type { PlaceholderContext, PlaceholderResult, PlaceholderResolveOptions, ChapterTitlePageInfo, PartPageInfo, PageMarks, BlockLinesTextOptions } from './pipeline/placeholders';
@@ -313,6 +318,16 @@ export type {
   PdfColorSpace,
   PdfGenerationConfig,
   ResolvedPdfGenerationConfig,
+  PdfXStandard,
+  PrintRenderingIntent,
+  CmykPercent,
+  PrintBlackConfig,
+  ResolvedPrintBlackConfig,
+  PrintPreflightConfig,
+  ResolvedPrintPreflightConfig,
+  CustomOutputProfile,
+  PrintConfig,
+  ResolvedPrintConfig,
   FolioConfig,
   FolioPaperConfig,
   FolioBindingConfig,

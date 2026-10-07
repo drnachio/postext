@@ -36,7 +36,10 @@ pepper{join}: ...al final vendrán.
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1 alt="Relámpagos. Pimienta, furiosa, saca de la estantería un libro con la cara de un demonio en la tapa. Zanahoria está aterrado."}
 pepper{shout break}: ¡¡¿ Cómo han sido capaces de hacerme esto ?!! ¿¡¡¡ A **mí** !!!?
-sfx{writing at="77.2% 14.2%" rotate=-16}: Conjuros de los Demonios de CAOSAH Vol .1
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Conjuros de los\
+  Demonios de\
+  CAOSAH\
+  Vol .1
 ::panel{art=e08p05-2 alt="Desde arriba, bajo la lluvia, Pimienta traza con su varita tres círculos mágicos rojos y brillantes en el suelo, con el libro abierto en la otra mano. Zanahoria mira."}
 pepper{shout}: ... ya que no puedo contar con ellas ...
 ::panel{art=e08p05-3 alt="La luz roja de los círculos lo inunda todo. Pimienta, seria, sostiene el libro abierto bajo la lluvia."}

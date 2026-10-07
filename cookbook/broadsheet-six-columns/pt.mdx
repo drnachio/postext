@@ -1,0 +1,63 @@
+---
+title: "Um jornal standard em seis colunas"
+summary: "Quatro páginas de um diário em formato standard: seis colunas com fio, fotos e boxes em duas a cinco delas, anúncios na largura da página e opinião em cinco."
+plain: "Quatro páginas de um jornal diário grande, compostas em seis colunas estreitas. Mostra como pôr uma foto ou um boxe sobre várias colunas e como dar cinco colunas a uma página."
+description: "Jornal standard de seis colunas no Postext, com o código: diagramação múltipla, fotos e boxes em k colunas, anúncios de página e uma seção em cinco colunas."
+question: "Como faço para compor um jornal standard em seis colunas, com fotos e boxes que ocupem duas, três ou quatro?"
+aliases: ["jornal standard", "broadsheet", "formato standard", "jornal", "diário", "seis colunas", "cinco colunas", "várias colunas", "grade de jornal", "foto em várias colunas", "boxe de matéria", "boxe de dados", "notas curtas", "página de opinião", "cartas dos leitores", "continuação", "continua na página 2"]
+pageNotes: { "1": "A primeira página do The Corrington Despatch: o cabeçalho entre uma orelha com a previsão do tempo e outra com as marés, uma faixa com fundo de cor e quatro chamadas, a manchete Tram to the docks wins council vote after six-hour debate em quatro colunas sobre uma foto de um cais de pedra com guindastes ao amanhecer, a matéria principal em quatro colunas embaixo, com uma tabela de financiamento no pé das colunas 3 e 4, uma segunda matéria nas colunas 5 e 6 com uma foto de três engenheiros diante de uma comporta e o texto na coluna 5, uma coluna de notas In brief na coluna 6 sobre um boxe de dados com fundo de cor e, no pé, um anúncio na largura da página de uma corrida de 10 km.", "2": "Página 2, City: um título de continuação na largura da página, Market Street traders count the cost of two years of digging, sobre seis pernas curtas; depois a matéria sobre moradia Rents rise 9% in a year as students return, com um boxe de fundo de cor com cinco números grandes nas colunas 1 e 2 ao lado de uma foto de uma rua de casas de tijolo nas colunas 3 a 6, a matéria nas seis colunas embaixo e um anúncio grande de imobiliária no pé.", "3": "Página 3, Opinion, em cinco colunas: os dois editoriais do jornal na coluna 1, um artigo de opinião intitulado Close the Albert Baths and the city loses more than a pool nas colunas 2 a 4 sobre uma foto de uma piscina vitoriana, com o texto nas colunas 2 a 4, as cartas na coluna 5 e um anúncio de concerto na largura da página na metade inferior.", "4": "Página 4, Arts & Weather: uma manchete de teatro na largura da página, uma foto de três atores num escritório de navegação dos anos 1920 em cinco colunas, a crítica em cinco colunas embaixo, uma coluna de roteiro What's on na coluna 6 e, no pé, um boxe de fundo de cor com a previsão do tempo: uma tabela de cinco dias com símbolos de céu desenhados." }
+---
+
+## O que você vai compor
+
+Quatro páginas do *The Corrington Despatch*, um diário inventado, num formato standard de 375 × 597 mm. O texto corre em seis colunas de 55,2 mm com medianizes de 4 mm e um fio fino em cada uma: uma medida de uns 38 caracteres em 9 pt, a de um jornal standard de verdade. A primeira página traz o cabeçalho com duas orelhas, uma faixa de chamadas, uma matéria principal cuja manchete e foto ocupam quatro colunas, uma segunda matéria com foto em duas colunas, uma coluna de notas, uma tabela de financiamento e um boxe de dados em duas colunas, e um anúncio no pé. A página 2 abre com a continuação de uma matéria da capa, a página 3 passa para cinco colunas com os editoriais, um artigo de opinião e as cartas, e a última página traz uma crítica de teatro e a previsão do tempo.
+
+## Preparo
+
+### 1 · Seis colunas num formato standard
+
+O código deste passo está [na resposta curta](#a-resposta-curta), mais acima. `page.sizePreset: 'broadsheet'` define o formato de 375 × 597 mm, e `layoutType: 'multiple'` com `columnCount: 6` corta os 351 mm de largura do texto em seis colunas iguais ([Tipos de diagramação](/pt/docs/configuration#tipos-de-layout)). Cada uma tem (351 − 5 × 4) / 6 = 55,2 mm, o que em Newsreader de 9 pt comporta uns 38 caracteres, então o texto precisa de hifenização, de `minWordSpacing: 0.8` para manter os espaços abertos e de `maxJustifyTracking: 15` para distribuir uma linha frouxa entre as letras. O fio de coluna desenha uma linha de 0,4 pt em cada medianiz, interrompida onde um flutuante ou um boxe a cruza. Até o postext 1.17, o corpo tinha no máximo duas colunas, e por isso a <RecipeLink slug="newspaper-front-page">Nº 027</RecipeLink> compunha as quatro colunas de notas dentro de um boxe.
+
+### 2 · Um flutuante em k colunas ocupa a primeira sequência de colunas vazias
+
+<Excerpt region="pictures" highlight="1-6" />
+
+`placement.columns` dá a uma foto ou tabela a largura em colunas, medianizes incluídas: quatro colunas da primeira página são 232,7 mm. O motor procura o espaço a partir da coluna em que o texto está, da esquerda para a direita. Um flutuante `top` ocupa o alto da primeira sequência de k colunas que ainda não têm texto e começam na mesma altura; um flutuante `bottom` ocupa o pé da coluna em que está o texto e das vazias depois dela. Assim, a tabela de financiamento, citada num parágrafo da coluna 3, fica no pé das colunas 3 e 4, e na <PageRef page={2}>página 2</PageRef> o boxe de dados, aberto primeiro, ocupa as colunas 1 e 2, o que deixa as colunas 3 a 6 como a primeira sequência nivelada para a foto de quatro colunas aberta depois dele. Na ordem inversa, o boxe se empilharia sob a foto. Um k igual ao número de colunas da página (ou maior) ocupa a largura da página, o mesmo que `span: 'page'`.
+
+### 3 · Boxes de manchete, boxes de dados e anúncios
+
+<Excerpt region="boxes" />
+
+Um `:::callout` com `placement="top"` e `columns="4"` flutua sobre quatro colunas como uma foto. A manchete e a linha fina da matéria principal são um boxe assim, aberto antes do texto dela, então ele ocupa as colunas 1 a 4 e a foto se empilha embaixo. O boxe da manchete da segunda matéria vem depois da principal no texto, após um `:::columnbreak`: o texto já está na coluna 5 nesse ponto, e as colunas 5 e 6 são o primeiro par vazio. Cada anúncio é um boxe com `columns="6"`, na largura da página, aberto primeiro na sua página para que o pé fique reservado antes de chegar qualquer texto, e os títulos de continuação das páginas 2 e 4 são boxes na largura da página, como na Nº 027. `balancing.trailing: false` deixa cada página encher as colunas até o pé, já que aqui toda página fecha uma seção.
+
+### 4 · O cabeçalho é o H1 da primeira página
+
+<Excerpt region="nameplate" />
+
+`# The Corrington Despatch` usa o estilo de título `front`: o nome em Playfair Display Black de 64 pt, duas orelhas preenchidas com os atributos do título e a linha da data entre um fio fino e outro grosso. A abertura tem nove linhas da grade de altura. Na 1.18.0, uma abertura ocupa a coluna 1, então um flutuante de k colunas aberto logo depois dela começa na coluna 2; a faixa de chamadas com fundo de cor, um boxe na largura da página, abre uma nova faixa cuja primeira coluna está vazia, e a matéria principal ocupa as colunas 1 a 4.
+
+### 5 · A página de opinião corre em cinco colunas
+
+<Excerpt region="sections" />
+
+`# Opinion {style="opinion"}` abre uma seção cujo estilo de título define `layout: { layoutType: 'multiple', columnCount: 5 }`. A seção mantém a medianiz e o fio de coluna do documento e só muda o número de colunas, então os editoriais, o artigo de opinião e as cartas correm numa medida de 67 mm, uns 47 caracteres. O boxe da manchete do artigo é `columns="3"`, aberto quando o editorial já começou na coluna 1, e por isso cai nas colunas 2 a 4 com a foto embaixo; duas linhas `:::columnbreak` mandam o artigo para a coluna 2 e as cartas para a coluna 5.
+
+## Variações
+
+### Compor um berliner em cinco colunas
+
+O mesmo jornal num berliner de 315 × 470 mm: cinco colunas de 55 mm, a medida das seis do standard. O fio do fólio também fica com a largura menor; depois reajuste cada página.
+
+```diff
+-const layout = { layoutType: 'multiple', columnCount: 6, gutterWidth: mm(GUTTER),
++const layout = { layoutType: 'multiple', columnCount: 5, gutterWidth: mm(GUTTER),
+-      size: { width: mm(375 - 2 * MARGIN.side) } }] };
++      size: { width: mm(315 - 2 * MARGIN.side) } }] };
+-  page: { sizePreset: 'broadsheet', dpi: 150, backgroundColor: col('paper'), // 375 × 597 mm
++  page: { sizePreset: 'berliner', dpi: 150, backgroundColor: col('paper'), // 315 × 470 mm
+```
+
+## Erros comuns
+
+- Um flutuante aberto depois que o texto já passou pelas colunas dele não encontra espaço na página e abre a seguinte. Na primeira página, a matéria principal precisa terminar na coluna 4: com um parágrafo a mais, o boxe da manchete e a foto da segunda matéria vão para a página 2.
+- Cada página aqui é ajustada à mão, como o editor de fechamento ajusta um jornal: as linhas `:::space` dos anúncios e o tamanho de cada matéria definem onde as colunas terminam. Mudou uma matéria, reajuste a página dela.

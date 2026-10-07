@@ -213,6 +213,18 @@ describe('japaneseDefaults', () => {
     expect(r.config.page?.binding).toBe('left');
   });
 
+  it('names the right binding a horizontal Japanese comic book ends with, and takes back an explicit left one (#593)', () => {
+    const comic: PostextConfig = { ...createDefaultConfig('en'), comics: {} };
+    const r = japaneseDefaults(comic, { book: 'horizontal', fallbackLocale: 'en' });
+    expect(resolvePageConfig(r.config.page, r.config.locale, 'horizontal-tb', 'ltr', 'rtl').binding).toBe('right');
+    const bound: PostextConfig = { ...comic, page: { ...comic.page, binding: 'left' } };
+    const b = japaneseDefaults(bound, { book: 'horizontal', fallbackLocale: 'en' });
+    expect(change(b, 'binding')).toMatchObject({ to: { kind: 'binding', value: 'right', auto: true }, customised: true });
+    // A text book set horizontally keeps its left binding.
+    const text = japaneseDefaults({ ...createDefaultConfig('en'), page: { binding: 'left' } }, { book: 'horizontal', fallbackLocale: 'en' });
+    expect(ids(text)).not.toContain('binding');
+  });
+
   it('prints the folio in kanji only when the design sets it vertically', () => {
     const plain = japaneseDefaults(createDefaultConfig('en'), { book: 'vertical' });
     expect(ids(plain)).not.toContain('folio');

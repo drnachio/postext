@@ -121,15 +121,24 @@ describe('letterPanel: placement (SPEC D3.3)', () => {
     });
   }
 
-  it('maps every printed character back to its source', () => {
-    const loc = LOCS[0]!;
-    const items = itemsFor(loc).map((it) => ({ ...it, sourceMap: Array.from({ length: (it.text as string).length }, (_, k) => it.sourceStart + k) }));
-    const [b] = letterPanel(panelFor(loc), items);
-    const t = b!.text[0]!;
-    expect(t.sourceText).toBe(t.lines.map((l) => l.text).join('\n'));
-    expect(t.sourceMap).toHaveLength(t.sourceText!.length);
-    expect(t.sourceStart).toBe(0);
-  });
+  // Every writing mode and direction: the Sandbox maps a click on the
+  // glyphs of a balloon to the script through it (#595).
+  for (const loc of LOCS) {
+    it(`maps every printed character back to its source (${loc.tag})`, () => {
+      const items = itemsFor(loc).map((it) => ({ ...it, sourceMap: Array.from({ length: (it.text as string).length }, (_, k) => it.sourceStart + k) }));
+      const [b] = letterPanel(panelFor(loc), items);
+      const t = b!.text[0]!;
+      expect(t.sourceText).toBe(t.lines.map((l) => l.text).join('\n'));
+      expect(t.sourceMap).toHaveLength(t.sourceText!.length);
+      expect(t.sourceStart).toBe(0);
+      // Each printed character maps to itself in the script line (set in
+      // capitals where the script has cases).
+      const src = items[0]!.text as string;
+      t.sourceText!.split('').forEach((ch, i) => {
+        if (ch !== '\n') expect(src[t.sourceMap![i]!]!.toLocaleUpperCase(loc.tag)).toBe(ch.toLocaleUpperCase(loc.tag));
+      });
+    });
+  }
 });
 
 describe('letterPanel: kinds, joins, pins and fallbacks', () => {

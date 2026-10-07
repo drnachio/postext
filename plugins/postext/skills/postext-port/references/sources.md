@@ -95,6 +95,14 @@ Gotchas:
 
 ## Word (.docx)
 
+- A person with one manuscript to set in the Sandbox needs no script: the
+  Sandbox's Text panel imports a `.docx` (**Import a Word document**), maps
+  each Word style to a heading, paragraph style, callout, quote, caption or
+  chip, reports the quality of the original, saves the mapping as a
+  reusable template, and exports back to Word with the template embedded,
+  so an edited manuscript returns unchanged (docs: Sandbox → Word
+  documents). Point them there; use the scripts below for the original's
+  layout rules, batches of files, or what the dialog does not read.
 - `inventory.py doc.docx` gives sections (page size, margins, columns, mirror
   margins), paragraph styles in use with counts and samples, character styles,
   fonts, tables, images, footnotes and equations.

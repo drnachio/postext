@@ -58,6 +58,7 @@
     "runt-tracking-unpainted",
     "palette-skips-designs",
     "resource-double-quotes",
+    "hyphenation-locales",
     "quote-frontmatter",
     "fonts-first"
   ],
@@ -112,6 +113,11 @@
       "note": "the U+00A0 after Mr. and Mrs. holds only in plain paragraphs; in the two paragraphs with italics it is an ordinary space, and neither line happens to break there"
     },
     {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact bundled code ('en-us' | 'pt'): 'pt-BR' would hyphenate the Portuguese edition as American English"
+    },
+    {
       "followup": "EF-113",
       "package": "postext",
       "note": "the cover style sets span: 'page' in this single-column book: kept in the column, its design is clipped at the column top (165 mm down, the section's margin), so the art disappears and the title loses its top"
@@ -128,7 +134,8 @@
   ],
   "sample": {
     "locales": [
-      "en"
+      "en",
+      "pt"
     ]
   },
   "capture": {
@@ -170,7 +177,8 @@
       {
         "what": {
           "en": "The Awakening (1899), chapters I and II",
-          "es": "The Awakening (El despertar, 1899), capítulos I y II"
+          "es": "The Awakening (El despertar, 1899), capítulos I y II",
+          "pt": "The Awakening (O despertar, 1899), capítulos I e II, na edição em inglês"
         },
         "who": "Kate Chopin",
         "source": "https://www.gutenberg.org/ebooks/160",
@@ -178,8 +186,19 @@
       },
       {
         "what": {
+          "en": "Quincas Borba (1891), chapters I to III, the Portuguese edition’s text, in modern spelling",
+          "es": "Quincas Borba (1891), capítulos I a III, el texto de la edición portuguesa, en ortografía actualizada",
+          "pt": "Quincas Borba (1891), capítulos I a III, com a ortografia atualizada"
+        },
+        "who": "Machado de Assis",
+        "source": "https://pt.wikisource.org/wiki/Quincas_Borba",
+        "license": "PD"
+      },
+      {
+        "what": {
           "en": "The colophon",
-          "es": "El colofón"
+          "es": "El colofón",
+          "pt": "O colofão"
         },
         "who": "Postext Cookbook",
         "license": "original"
@@ -189,7 +208,8 @@
       {
         "what": {
           "en": "The cover’s view of the gulf, a painting",
-          "es": "La vista del golfo de la cubierta, una pintura"
+          "es": "La vista del golfo de la cubierta, una pintura",
+          "pt": "A vista do mar da capa, uma pintura"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -198,7 +218,8 @@
       {
         "what": {
           "en": "The camomile tailpiece, drawn in code in the page’s palette",
-          "es": "El florón de manzanilla, dibujado en código con la paleta de la página"
+          "es": "El florón de manzanilla, dibujado en código con la paleta de la página",
+          "pt": "A vinheta de camomila, desenhada em código com a paleta da página"
         },
         "who": "Ignacio Ferro",
         "license": "MIT"

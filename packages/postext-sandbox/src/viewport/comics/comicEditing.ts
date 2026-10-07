@@ -15,7 +15,13 @@
  * line is pinned. Each group is also a focusable handle: arrow keys move
  * it, Enter pins it, Delete unpins it. While it moves, a ghost that would
  * cover a face or a zone the picture keeps clear, or run out of the panel,
- * turns orange and the tooltip says why (#580).
+ * turns orange and the tooltip says why (#580). A press on a balloon's
+ * words is not a grab: it selects them in the Markdown editor, as on the
+ * body text (#595; `balloonText.ts`); the balloon drags from its body
+ * round them.
+ *
+ * A click on a panel's picture (or on the visible part of its pop-out
+ * cut-out) opens that picture in the Resources panel (#594).
  *
  * Tails (#580): a balloon's tail tip shows the crosshair; dragging it
  * points the tail at the spot it is dropped on (`to="x% y%"`, fractions
@@ -57,7 +63,9 @@ import {
   type SplitterPosition,
 } from './comicDrag';
 import { canMergeNext, canSplitPanel, mergePanelChanges, moveSplitterChanges, splitPanelChanges } from './comicSource';
-import { comicBySource, comicHitAt, panelKeyAction, type ComicHit } from './comicHit';
+import { comicBySource, comicHitAt, comicPressAt, panelKeyAction, type ArtOpacity, type ComicHit, type ComicPress } from './comicHit';
+import { balloonTextNearest, type TextMeasure } from './balloonText';
+import { registryArtOpacity } from './artAlpha';
 import {
   BALLOON_NUDGE_PERCENT,
   BALLOON_NUDGE_SHIFT_PERCENT,
@@ -125,6 +133,20 @@ export interface ComicEditOptions {
   /** A drag ended (released, cancelled, Escape): the caller lets the
    *  pointer go. */
   onDragEnd?: (pointerId: number) => void;
+  /** Whether a pop-out cut-out shows ink at a point (its opaque pixels
+   *  open it); the image registry's pictures when left out. */
+  artOpacity?: ArtOpacity;
+  /** How the balloon words are measured; a canvas 2D context when left
+   *  out. */
+  measure?: TextMeasure;
+}
+
+/** The words of a balloon pressed at a point (#595): the caret's source
+ *  offset there, and where a selection dragged from it ends at another
+ *  point (held to the same balloon's words). */
+export interface BalloonTextPress {
+  offset: number;
+  head(at: ComicPointer | null): number | null;
 }
 
 /** A page point under the pointer. */
@@ -139,8 +161,9 @@ export interface ComicEditor {
    *  (the caller captures the pointer and leaves the text alone). */
   pointerDown(ev: PointerEvent, at: ComicPointer | null): boolean;
   /** A move while nothing is pressed: the resize cursor over a splitter,
-   *  `move` over a balloon, `crosshair` over a tail tip (null elsewhere),
-   *  the panel toolbar over a panel. */
+   *  `move` over a balloon (`text` over its words), `crosshair` over a
+   *  tail tip, `pointer` over a panel's picture (null elsewhere), the
+   *  panel toolbar over a panel. */
   hover(ev: PointerEvent, at: ComicPointer | null): string | null;
   /** A move while a splitter, a balloon or a tail tip is held. */
   dragMove(ev: PointerEvent, at: ComicPointer | null): void;
@@ -150,9 +173,18 @@ export interface ComicEditor {
    *  click on a pinned balloon right after the first unpins it (the page
    *  gets no `dblclick`: the press's default is prevented). */
   pointerUp(ev: PointerEvent, cancel?: boolean): boolean;
-  /** The source offset of the balloon (or tail tip) under a point (its
-   *  script line), for a click to put the caret there; null off them. */
+  /** The source offset of the balloon (or tail tip) under a point, for a
+   *  click to put the caret there: the character's on its words (#595),
+   *  else its script line's; null off them. */
   balloonSourceAt(at: ComicPointer | null): number | null;
+  /** The words of a balloon under a point (#595): a press there selects
+   *  text instead of dragging the balloon. Null off its glyphs (its body
+   *  round them, its tail), or where its words do not map back. */
+  balloonText(at: ComicPointer | null): BalloonTextPress | null;
+  /** The resource of the panel picture under a point (#594): its art, or
+   *  its pop-out cut-out where that shows; null on a balloon, a split
+   *  line, a gutter or a panel with no picture. */
+  panelArtAt(at: ComicPointer | null): string | null;
   dragging(): boolean;
   /** Whether a splitter lies under a point. */
   onSplitter(at: ComicPointer | null): boolean;
@@ -178,6 +210,9 @@ const FOCUS_RING = '0 0 0 2px #fff, 0 0 0 4px rgba(37, 99, 235, 0.95)';
 const BALLOON_DRAG_THRESHOLD_PX = 3;
 /** The longest pause between the two clicks of a double click (ms). */
 const DOUBLE_CLICK_MS = 450;
+/** Screen px past the ends of a line of balloon words that still count as
+ *  its glyphs (#595). */
+const GLYPH_SLOP_SCREEN_PX = 2;
 
 interface DragState {
   page: number;
@@ -1407,6 +1442,24 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
     return comicHitAt(comics, at.x, at.y, { band: minBand(at.pageIndex), tipRadius: tipRadius(at.pageIndex) });
   };
 
+  const textOptions = (page: number) => ({
+    slop: GLYPH_SLOP_SCREEN_PX * surface.sheetPxPerCssPx(page),
+    ...(opts.measure ? { measure: opts.measure } : {}),
+  });
+  /** What a press under a point does (#594, #595): the hit refined to a
+   *  balloon's words (`text`) or a panel's picture (`art`). */
+  const pressAt = (at: ComicPointer | null): ComicPress | null => {
+    if (!at || !enabled()) return null;
+    const comics = comicsOf(at.pageIndex);
+    if (comics.length === 0) return null;
+    return comicPressAt(comics, at.x, at.y, {
+      band: minBand(at.pageIndex),
+      tipRadius: tipRadius(at.pageIndex),
+      text: textOptions(at.pageIndex),
+      opaque: opts.artOpacity ?? registryArtOpacity,
+    });
+  };
+
   const clearHover = (): void => {
     if (!hover) return;
     hover = null;
@@ -1433,6 +1486,9 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       // Balloons lie over the borders and gutters: they are grabbed before
       // the split lines.
       if (hit.kind === 'balloon') {
+        // On its words, the press selects text (#595); round them, it
+        // grabs the balloon.
+        if (pressAt(at)?.kind === 'text') return false;
         const m = balloonMove(page, hit.comic, hit.balloon);
         if (!m) return false;
         hideBar();
@@ -1462,7 +1518,8 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       const page = at.pageIndex;
       if (!hit) {
         clearHover();
-        return null;
+        // A cut-out breaking a panel's border opens its picture.
+        return pressAt(at)?.kind === 'art' ? 'pointer' : null;
       }
       if (hit.kind === 'tail') {
         const changed = hover?.page !== page || hover?.tail !== hit.balloon;
@@ -1477,7 +1534,8 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
         hover = { page, balloons: members };
         hideBar();
         if (changed) repaint();
-        return 'move';
+        // Its words select text; the rest of it drags.
+        return pressAt(at)?.kind === 'text' ? 'text' : 'move';
       }
       const s = hit.kind === 'splitter' ? hit.splitter : null;
       const panel = hit.kind === 'panel' ? hit.panel : null;
@@ -1486,7 +1544,8 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       if (s) hideBar();
       else if (panel) showBar(page, hit.comic, panel);
       if (changed) repaint();
-      return s ? splitterCursor(s) : null;
+      // A panel's picture opens in the Resources panel on a click (#594).
+      return s ? splitterCursor(s) : pressAt(at)?.kind === 'art' ? 'pointer' : null;
     },
     dragMove(ev, at) {
       const td = tdrag;
@@ -1544,8 +1603,25 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       return true;
     },
     balloonSourceAt(at) {
-      const hit = hitAt(at);
-      return hit && (hit.kind === 'balloon' || hit.kind === 'tail') ? hit.balloon.sourceStart : null;
+      const press = pressAt(at);
+      if (press?.kind === 'text') return press.offset;
+      return press?.kind === 'balloon' || press?.kind === 'tail' ? press.balloon.sourceStart : null;
+    },
+    balloonText(at) {
+      const press = pressAt(at);
+      if (!at || press?.kind !== 'text') return null;
+      const { balloon } = press;
+      const page = at.pageIndex;
+      return {
+        offset: press.offset,
+        // The head stays in the words pressed: past them, their nearest
+        // line and end.
+        head: (p) => (p && p.pageIndex === page ? balloonTextNearest(balloon, p.x, p.y, textOptions(page)) : null),
+      };
+    },
+    panelArtAt(at) {
+      const press = pressAt(at);
+      return press?.kind === 'art' ? press.art.resourceId : null;
     },
     dragging: () => drag !== null || bdrag !== null || tdrag !== null,
     onSplitter(at) {

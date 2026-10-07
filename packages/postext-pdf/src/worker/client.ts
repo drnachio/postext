@@ -135,7 +135,11 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
         for (const [, bytes] of resourceBytes) {
           if (bytes.buffer instanceof ArrayBuffer) buffers.add(bytes.buffer);
         }
-        const { pageNegative, outlines, colorSpace, accessible } = renderOptions;
+        const { pageNegative, outlines, colorSpace, accessible, print, profileBaseUrl } = renderOptions;
+        // The profile is copied, like the HarfBuzz bytes below; a relative
+        // base URL resolves against this page.
+        const outputProfile = renderOptions.outputProfile?.slice();
+        const profileBase = profileBaseUrl ? new URL(profileBaseUrl, sourceBase()).href : undefined;
         // A URL goes as its string, resolved against this page (the worker's
         // own location is its script); bytes are copied, so the
         // caller's buffer stays usable for the next render.
@@ -145,7 +149,13 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
           : ArrayBuffer.isView(wasm) ? new Uint8Array(wasm.buffer, wasm.byteOffset, wasm.byteLength).slice()
           : wasm.slice(0);
         try {
-          send({ kind: 'render', id, docs, settings: { pageNegative, outlines, colorSpace, accessible, ...(harfbuzzWasm ? { harfbuzzWasm } : {}) }, resourceBytes }, [...buffers]);
+          send({ kind: 'render', id, docs, settings: {
+              pageNegative, outlines, colorSpace, accessible,
+              ...(print ? { print } : {}),
+              ...(outputProfile ? { outputProfile } : {}),
+              ...(profileBase ? { profileBaseUrl: profileBase } : {}),
+              ...(harfbuzzWasm ? { harfbuzzWasm } : {}),
+            }, resourceBytes }, [...buffers]);
         } catch (err) {
           pending.delete(id);
           current = null;

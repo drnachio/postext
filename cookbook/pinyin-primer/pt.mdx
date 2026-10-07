@@ -1,0 +1,68 @@
+---
+title: "Uma cartilha com pinyin: a leitura sobre cada caractere"
+summary: "Rubi caractere a caractere numa cartilha de Hong Kong: {人之初|rén zhī chū} centraliza uma sílaba de pinyin sobre cada caractere, em Andika, num vão de 28 pt."
+plain: "Páginas de uma cartilha infantil de Hong Kong. Mostra como imprimir a pronúncia em letras latinas acima de cada caractere chinês, com quadriculados para treinar a escrita."
+description: "Uma cartilha chinesa composta no Postext: uma sílaba de pinyin sobre cada caractere de uma Kai de 26 pt, títulos com leitura e quadriculados, com todo o código."
+question: "Como faço para pôr pinyin sobre cada caractere de um texto chinês, como numa cartilha?"
+aliases: ["pinyin", "注音版", "cartilha", "livro de leitura", "cartilha de alfabetização", "rubi", "ruby", "三字經", "Clássico dos Três Caracteres", "田字格", "quadriculado de escrita", "caderno de caligrafia"]
+pageNotes: { "1": "Lição um, 人之初: uma faixa verde-clara com o selo vermelho 第一課, um broto e o título com seu pinyin rén zhī chū; quatro dísticos do Clássico dos Três Caracteres com uma sílaba de pinyin sobre cada caractere; seis quadriculados de escrita com 人之本不相以 e uma nota para as famílias.", "2": "Lição dois, 昔孟母, sobre a história da mãe de Mêncio: a mesma página com uma lançadeira de tear atravessando a urdidura, os quadriculados com 子母山五方名 e uma nota sobre Mêncio e Dou Yanshan.", "3": "Lição três, 養不教: um pincel traçando uma pincelada num quadriculado, quatro dísticos, os quadriculados com 父師學幼老何 e uma nota sobre o tom de bù.", "4": "Lição quatro, 玉不琢: um disco de jade entalhado num cordão vermelho, quatro dísticos, os quadriculados com 玉成知方友禮, uma nota para as famílias e o colofão." }
+---
+
+## O que você vai compor
+
+Duas páginas duplas de 《蒙學誦讀》, uma cartilha inventada de Hong Kong, onde as crianças leem em voz alta o *Clássico dos Três Caracteres* em mandarim (putonghua). Cada página é uma lição de quatro dísticos em Kai de 一号 (26 pt), cada caractere sob a sua sílaba de pinyin. As sílabas estão em Andika porque ela desenha o a e o g de um só bojo que os livros escolares chineses imprimem. Uma faixa clara traz o selo vermelho da lição, uma pequena aquarela e o título em 初号 (42 pt) com a sua própria leitura. Abaixo do texto, seis quadriculados de escrita (田字格) trazem os caracteres para copiar, e uma nota explica à família o que os versos querem dizer. A equivalente em espanhol é <RecipeLink slug="reading-primer-syllables">a cartilha de sílabas em chips</RecipeLink>, em que cada sílaba é um chip colorido em vez de uma leitura sobre um caractere.
+
+Uma cartilha foge de propósito das regras do livro chinês. Uma criança lê poucos caracteres grandes por vez, então a linha leva doze de 26 pt, quando um livro põe de 25 a 40 de 10,5 pt, e a entrelinha passa um pouco do dobro do corpo para caberem as leituras. Cada dístico fica centralizado numa linha própria, sem justificação nem recuo. O texto está em Kai, a letra que segue o pincel, porque ela mostra os traços que a criança aprende a escrever; um livro o comporia em Song.
+
+## Preparo
+
+### 1 · Uma sílaba sobre cada caractere
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `{人之初|rén zhī chū}` dá três leituras a três caracteres, separadas pelos espaços: cada sílaba fica centralizada sobre o seu caractere, e a linha pode quebrar entre eles. A leitura não ocupa espaço próprio. Ela fica no vão entre as linhas, aqui 54 − 26 = 28 pt, e um vão mais estreito que a leitura gera o aviso `rubyExceedsLeading`. Já uma sílaba mais larga que o seu caractere ocupa espaço: ela alarga a caixa desse caractere, e numa linha centralizada os caracteres seguintes saem da grade. As leituras usam o corpo em que as sílabas mais largas da amostra, xiāng e zhuān, ainda cabem sobre um caractere, 0,38 em (9,9 pt): cada dístico tem oito caracteres e cada caractere mantém o seu quadrado. Com 0,45 em, 性相近，習相遠 se esticaria até oito caracteres e meio e abriria vãos em volta de 相.
+
+### 2 · O título mantém a sua leitura
+
+<Excerpt region="opener" />
+
+O texto de um design não imprime leituras, então o título não pode vir do design da abertura. O título de nível 1, 第一課, desenha a faixa, a ilustração e o selo vermelho; o título da lição é o título de nível 2 logo abaixo, um título simples em 初号 que o compositor de texto compõe com o seu pinyin. `reserve: false` deixa a faixa e a ilustração fora da altura do título, e `span: 'page'` as pinta por baixo do texto.
+
+O design de um título ignora `parity`, então a ilustração tem um elemento de cada lado da página: `{attr.left}` a 14 mm da borda esquerda e `{attr.right}` a 14 mm da direita. As lições em páginas pares escrevem `# 第一課 {left="sprout"}` e as das ímpares `{right="shuttle"}`, de modo que cada ilustração fica do lado externo da página dupla; o elemento cujo atributo falta não desenha nada.
+
+### 3 · Seis quadriculados a partir de um atributo
+
+<Excerpt region="squares" />
+
+`### 我會寫 {write="人之本不相以"}` passa ao design os seis caracteres num único atributo. Na LXGW WenKai TC, todo caractere chinês tem um eme de largura, então um tracking igual ao passo dos quadriculados menos um eme (18,4 − 10,6 mm) leva cada caractere ao seu quadriculado, e um único elemento de texto preenche a fileira. O quadriculado é um SVG desenhado em código: uma moldura vermelha e uma cruz tracejada.
+
+### 4 · Cada fonte carrega os seus próprios caracteres
+
+<Excerpt region="voices" />
+
+O Fontsource corta cada fonte chinesa em cerca de cem arquivos por intervalo de caracteres. A fonte Kai compõe a amostra inteira e carrega os arquivos que contêm os seus caracteres. A fonte Hei compõe só os selos, os rótulos e o rodapé, então recebe esse texto e baixa poucos arquivos. A Andika vem de `loadFonts`, que acrescenta o arquivo latin-ext quando o texto tem letras além do Latin-1, como ǎ e ǐ.
+
+### 5 · A pontuação de Hong Kong vem do locale
+
+<Excerpt region="locale" />
+
+`zh-HK` define as regras de Hong Kong: pontuação de largura inteira e as regras básicas de quebra de linha, que nenhum dístico daqui precisa. A LXGW WenKai TC desenha a vírgula e o ponto no meio do quadrado, como Hong Kong e Taiwan os imprimem, e é por isso que esta cartilha é de Hong Kong. Uma cartilha da China continental também é composta em Kai, em caracteres simplificados, com a vírgula e o ponto no canto inferior esquerdo do quadrado. Mas o Fontsource não tem uma Kai de texto para o chinês simplificado, e a tradicional colaria esses sinais no caractere seguinte, então uma página continental nestas Receitas usa a Noto Serif SC, a fonte Song da <RecipeLink slug="chinese-novel-horizontal">página de romance continental</RecipeLink>.
+
+## Variações
+
+### Mostre a grade enquanto compõe a página
+
+`show: true` desenha no canvas os doze quadrados de cada linha; o PDF os deixa de fora, a menos que `renderToPdf` receba `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11 },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11, show: true },
+```
+
+### Ponha o zhuyin ao lado dos caracteres
+
+As leituras em bopomofo ficam numa coluna à direita de cada caractere; <RecipeLink slug="zhuyin-vertical-reader">a cartilha com zhuyin</RecipeLink> as compõe numa página vertical.
+
+## Erros comuns
+
+- Esta receita não oferece PDF. O `fontsourceProvider` do kit incorpora só o arquivo latin de uma fonte, e as letras com tom ā ǎ ǐ ǒ ǔ estão no latin-ext, então o PDF as perderia e o postext-pdf avisaria cada uma como `missingGlyph`. Se precisar de um, componha as leituras numa fonte chinesa, cujos arquivos o `cjkPdfProvider` escolhe caractere a caractere.
+
+- Confira cada caractere dos quadriculados com as formas padrão da região. A LXGW WenKai TC desenha 為 com a parte de cima 爫 de 爲, uma forma mais antiga que passa no texto corrido, como em 老何為 e 為人子 aqui, mas não num quadriculado que uma criança de Hong Kong copia. Por isso a lição três treina 幼.

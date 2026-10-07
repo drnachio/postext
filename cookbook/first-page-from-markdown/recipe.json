@@ -28,13 +28,13 @@
     { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
     { "followup": "EF-13", "package": "postext", "note": "one family name per fontFamily" },
-    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" },
+    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es' | 'pt'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" },
     { "followup": "EF-56", "package": "postext", "note": "the opener's design texts give lineHeight as a multiple (1, 1.3), never pt(): a dimension measures the opener as NaN and drops its reservation with no warning (gotcha design-lineheight-multiple)" }
   ],
   "related": ["magazine-feature-opener", "running-heads-by-parity", "chapter-opener-bleed-band"],
   "engine": { "postext": "1.4.1" },
   "kit": ["core", "fonts", "viewer", "images"],
-  "sample": { "locales": ["en", "es"] },
+  "sample": { "locales": ["en", "es", "pt"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },
   "folio": {
     "paper": {"type": "coatedSilk", "grammage": 90},
@@ -49,7 +49,8 @@
       {
         "what": {
           "en": "The salt pans and the dune at dusk on the opener, a photograph",
-          "es": "Las salinas y la duna al anochecer de la apertura, una fotografía"
+          "es": "Las salinas y la duna al anochecer de la apertura, una fotografía",
+          "pt": "As salinas e a duna ao anoitecer da abertura, uma fotografia"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",

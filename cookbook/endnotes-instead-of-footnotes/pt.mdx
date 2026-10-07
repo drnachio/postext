@@ -1,0 +1,75 @@
+---
+title: "Notas de fim numa página própria, em duas colunas"
+summary: "Um pré-processador curto numera as notas [^1] e as reúne sob um título Notes, cujo estilo as compõe numa página própria, em duas colunas."
+plain: "Uma pequena edição de uma famosa palestra de ciência sobre uma vela. Mostra como juntar as notas no fim, numa página própria em duas colunas, em vez de no pé de cada página."
+description: "A primeira palestra de Faraday sobre a vela, com seis notas de fim. Cada chamada [^1] sai elevada, e as notas vêm numa página própria em duas colunas."
+question: "Como faço para compor as notas [^1] como notas de fim, numa página própria sob um título?"
+aliases: ["notas de rodapé", "notas de fim", "notas no final", "seção de notas", "chamadas de nota", "números sobrescritos", "sobrescrito", "[^1]", "notas GFM", "recuo deslocado", "edição crítica", "notas do editor", "edição de leitura", "endnotes"]
+pageNotes: { "1": "A abertura da Lecture I: um campo de fuligem na metade de cima da página, com a fotografia de uma vela acesa apoiada na borda inferior, o antetítulo LECTURE I em laranja e o título A Candle em creme. O texto começa embaixo, e a primeira chamada de nota é um 1 pequeno e elevado em laranja-escuro.", "4": "Um painel escuro abre a página: duas chamas de vela, uma sob uma cúpula de vidro e outra em corte com setas de ar subindo, com a legenda Figure 1. Abaixo dele a palestra corre até o fim, com o 6 elevado no primeiro parágrafo.", "5": "As notas: uma faixa de fuligem com a fotografia de uma vela recém-apagada soltando fumaça, depois seis notas em duas colunas de corpo menor, cada número em negrito laranja-escuro pendurado no recuo, e um colofão; as duas colunas terminam na mesma linha." }
+---
+
+## O que você vai compor
+
+A Lecture I de *The Chemical History of a Candle*, de Michael Faraday, composta como uma pequena edição de leitura numa página de 156 × 234 mm. A palestra abre num campo de fuligem com uma vela acesa apoiada na borda inferior, uma fotografia gerada com modelos de difusão cujo preto é o mesmo da fuligem, e o texto corre numa coluna justificada de Libre Bodoni. Onde um livro poria notas de rodapé, pequenos números elevados em laranja-escuro mandam o leitor para o fim da palestra. As notas vêm numa página própria, sob uma faixa de fuligem com a vela apagada, em duas colunas alinhadas à esquerda de corpo 8,2 pt, com cada número em negrito pendurado no recuo. Três das seis são de William Crookes, tiradas da reimpressão de 1908 da sua edição de 1861; as outras três são novas e assinadas *Ed.* As duas colunas terminam na mesma linha, e o colofão fecha a segunda.
+
+## Preparo
+
+### 1 · Transforme as notas de rodapé em notas de fim antes da composição
+
+O pré-processador é [a resposta curta](#a-resposta-curta) lá em cima. O Postext compõe sozinho as notas `[^1]` ([notas de rodapé](/pt/docs/document-format#notas-de-rodapé)), no pé da coluna que as cita ou, com `placement: 'chapterEnd'`, depois do último bloco do capítulo. Nos dois casos elas ficam na coluna do capítulo, na fonte do texto, sob um fio curto. Esta edição dá às notas um título, uma faixa e uma página em duas colunas, e um estilo de título só faz isso para um título escrito no Markdown. Por isso o código reescreve o Markdown antes de chamar `buildDocument`, e o motor nunca vê um `[^1]`. Ele numera as chamadas na ordem em que o texto as cita pela primeira vez e põe todas as definições, nessa ordem, onde está a primeira delas, sob `## Notes`. Cada nota começa com `**1**`, já que `1. ` abriria uma lista numerada. Um word joiner (U+2060) abre cada chamada; sem ele, o `**` da chamada depois de `*Royal George*` se juntaria ao asterisco que fecha o itálico num `***`, e os asteriscos sairiam impressos.
+
+### 2 · Reserve o negrito para as chamadas
+
+<Excerpt region="markers" />
+
+O pré-processador escreve cada chamada como `**^n^**`. Os acentos circunflexos põem o número a 58% do corpo do texto, elevado em um terço desse corpo ([formatação em linha](/pt/docs/document-format#formatação-em-linha)), e o negrito lhe dá `bodyText.boldColor`, que está livre porque Faraday nunca usa negrito. Um algarismo de 5,8 pt precisa de contraste de 4,5:1 sobre o papel, e o laranja da chama chega só a 2,6:1, então as chamadas usam o tom de brasa, mais escuro. A remissão `[Fig. 1]` na <PageRef page={3}>página 17</PageRef> sai na mesma cor, em redondo, porque `referenceColor` herda por padrão a cor do negrito e `referenceBold: false` tira o negrito.
+
+### 3 · Componha as notas em corpo menor, com o número pendurado
+
+<Excerpt region="notes" />
+
+As notas ficam em 8,2 pt sobre 10,7 pt, uns quatro quintos do corpo do texto. O código mede o `hangingIndent` do estilo na Libre Bodoni depois que as fontes carregam: um 5 em negrito e um espaço de meio quadratim dão 1,12 em, de modo que a primeira palavra de cada nota se alinha com as linhas de continuação ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). Com o número para fora, no recuo, as notas não precisam de espaço entre elas. Elas são alinhadas à esquerda porque a justificação esticaria esse espaço de meio quadratim, e uma coluna justificada de 55 mm em corpo 8,2 pt fica frouxa. Os tis marcam subscritos como os circunflexos marcam sobrescritos, como em `C~25~H~52~` na nota 4 e `H~2~O` na nota 5.
+
+### 4 · Dê às notas uma página em duas colunas
+
+<Excerpt region="section" />
+
+O título `## Notes {style="notes" …}` abre uma seção cujas páginas recebem o layout e o design do estilo. `parity: 'any'` a começa na página seguinte, par ou ímpar, e `span: 'page'` estende a faixa pelas duas colunas, de modo que ela chega ao refile e a segunda coluna começa embaixo dela ([estilos de título](/pt/docs/configuration#estilos-de-título)). A faixa define a reserva, mas a primeira linha da grade livre dela fica só 3 mm abaixo da fuligem, então `BAND_GAP` soma 5 mm a `minHeight` e as notas começam uma linha mais abaixo. O fio fino entre as colunas é declarado no `layout` do documento, porque a 1.4.1 não desenha o `columnRule` de um estilo de título. O equilíbrio de colunas vem ligado por padrão e corta a última página para que as duas colunas terminem na mesma linha ([equilíbrio de colunas](/pt/docs/configuration#equilíbrio-de-colunas)).
+
+### 5 · Abra a palestra num campo de fuligem
+
+<Excerpt region="opener" />
+
+O campo é uma caixa ancorada à página, e a vela, um elemento de imagem com um JPEG, se apoia na borda inferior dele. O primeiro nível de título define `span: 'page'` embora a palestra tenha uma só coluna: sem isso, a 1.4.1 corta o design no alto da coluna em vez de pintá-lo a partir do refile. O antetítulo, o subtítulo e a autoria vêm da linha do título, `# A Candle {kicker="Lecture I" subtitle="…" byline="…"}`, então a Lecture II não precisaria de código novo. O campo desce além do título, por isso é ele que define a reserva. A margem inferior padrão do título, de 0,5 em, se soma a ela, e o texto começa uma linha da grade abaixo da primeira linha livre da fuligem. O subtítulo tem 86 mm de largura para quebrar depois de um travessão, já que um espaço inseparável não segura a quebra em texto de design.
+
+### 6 · Use a chama sobre a fuligem e a brasa sobre o papel
+
+<Excerpt region="palette" />
+
+O laranja da chama tem contraste de 6:1 sobre a fuligem, mas só de 2,6:1 sobre o papel. Ele colore os antetítulos das faixas escuras e a Figura 1; tudo o que é pequeno e sai em laranja sobre o papel (chamadas, números das notas, o rótulo da figura) usa a brasa, mais escura, com 5,1:1. `main-color` aponta para a brasa, então um valor padrão que a configuração não repete acompanha o design em vez de sair em azul.
+
+<Note>Um comentário curto pode ficar no texto, entre parênteses. Glosas que o leitor precisa ver ao lado da linha podem ir numa coluna lateral, como em <RecipeLink slug="textbook-margin-column">Livro didático com coluna na margem</RecipeLink>.</Note>
+
+## Variações
+
+### Deixe o Postext compor as notas
+
+Tire `endnotes()` e o título `## Notes`, ponha uma linha em branco entre as definições (o motor lê uma definição até a próxima linha em branco) e acrescente `footnotes: { placement: 'chapterEnd' }` à configuração. O motor numera as chamadas e compõe as notas no fim da palestra, depois do colofão, na sua única coluna; <RecipeLink slug="novel-footnotes-column-foot">Notas de rodapé no pé da coluna que as cita</RecipeLink> mostra como estilizar as notas que o motor compõe.
+
+### Imprima as chamadas na cor da tinta
+
+Se o texto usa negrito para a sua própria ênfase, imprima as chamadas na cor da tinta, já que `boldColor` colore igualmente as chamadas e cada palavra em negrito.
+
+```diff
+-const markers = { boldColor: col('ember'), // **^n^**: a superscript at 58 % of the text size
++const markers = { boldColor: col('ink'), // **^n^**: a superscript at 58 % of the text size
+```
+
+### Deixe as colunas de notas terminarem desniveladas
+
+Desligue o equilíbrio da última página, e a primeira coluna se enche até o pé antes de a segunda começar.
+
+```diff
+-  headings: { fontFamily: DISPLAY, color: col('ink'), levels: [
++  headings: { fontFamily: DISPLAY, color: col('ink'), balancing: { trailing: false }, levels: [
+```

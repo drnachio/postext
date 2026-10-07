@@ -1,0 +1,60 @@
+---
+title: "Fotos que crescem até encher uma coluna curta"
+summary: "Cada foto marca uma área segura; o equilíbrio das colunas pode cortar fora dela para alongar a foto, e a coluna que tinha ficado curta termina rente."
+description: "Uma reportagem de revista em duas colunas em que as fotos com área segura crescem em linhas da grade para encher colunas curtas, ao lado da versão sem ela."
+plain: "Diga à diagramação qual parte de cada foto precisa aparecer sempre. Quando faltam algumas linhas numa coluna, a foto fica mais alta em vez de deixar um buraco."
+question: "Como faço para deixar uma foto ser cortada para encher uma coluna curta sem perder o assunto dela?"
+aliases: ["área segura", "zona segura", "cortar para caber", "recorte automático", "reenquadramento", "foto flexível", "encher a coluna", "área de foco"]
+---
+
+## O que você vai compor
+
+Três páginas de uma revista do litoral: uma reportagem sobre os ofícios de uma cidadezinha de estuário, com uma foto sangrada na abertura e cinco fotos nas colunas. O pen compõe a reportagem duas vezes a partir do mesmo texto. Na primeira composição, as fotos mantêm o formato dos arquivos, e na <PageRef page={2}>página 2</PageRef> as duas colunas terminam uma linha antes do fim da grade: a da esquerda sob o último parágrafo, a da direita acima da foto do pé. Na segunda, cada foto indica a parte do enquadramento que precisa aparecer sempre, e o motor corta fora dela: na <PageRef page={5}>mesma página</PageRef>, a marisqueira e o remendador de redes crescem uma linha cada um, e as duas colunas terminam na última linha da grade. Ninguém precisou escolher os cortes.
+
+## Preparo
+
+### 1 · Marque o que precisa ficar, e nada mais
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Uma área segura são quatro frações da imagem, medidas a partir do canto superior esquerdo. O motor pode mostrar a foto em qualquer formato entre o arquivo inteiro e esse retângulo, sempre na largura da coluna: mais alta cortando as laterais, mais baixa cortando em cima e embaixo. O que fica fora da área é cortado em proporção às margens de cada lado, então Rosa, à direita do centro no cais, continua à direita do centro quando as laterais são cortadas.
+
+### 2 · Deixe o equilíbrio compensar a sobra só com as fotos
+
+A mesma região configura o equilíbrio. Os recursos de costume dele acrescentam branco: uma linha acima de um título, ar embaixo de uma foto, um parágrafo com uma linha a mais. Aqui eles estão desligados, para que a composição simples mostre cada coluna curta como ela fica. Uma foto com área segura é testada primeiro de qualquer forma, antes de qualquer um desses recursos, porque uma foto mais alta não abre buraco no texto.
+
+### 3 · A área segura pertence ao recurso
+
+<Excerpt region="photos" />
+
+`safeArea` fica no recurso, ao lado do arquivo, da legenda e do posicionamento, então a foto a mantém onde quer que flutue e em qualquer documento que a use. O pen a passa ou a omite, e essa é a única diferença entre as duas composições. O estuário da abertura é desenhado pelo estilo de título, não flutua, então não precisa de área segura.
+
+### 4 · Componha as duas e compare
+
+<Excerpt region="builds" />
+
+Os dois documentos saem de uma mesma configuração e de um mesmo texto Markdown. Só as páginas que continuam são preenchidas até o pé: a <PageRef page={3}>página 3</PageRef> fecha a reportagem, e numa página de fechamento as colunas só precisam terminar na mesma altura uma da outra, o que aqui já acontece, então nenhuma foto cresce ali. O botão do PDF compõe a versão que estiver na mesa, e o PDF recorta cada foto na moldura do mesmo jeito.
+
+## Variações
+
+### Mantenha uma foto em linha junto do texto
+
+Uma foto com `position: 'here'` e área segura é cortada em cima e embaixo quando fica um pouco alta demais para o espaço que sobra na coluna, em vez de passar para a coluna seguinte.
+
+```diff
+-const PLACEMENT = { pulpeira: { position: 'here' } }; // the rest float to the first free slot
++const PLACEMENT = { pulpeira: { position: 'here' }, faro: { position: 'here' } };
+```
+
+### Devolva ao equilíbrio os outros recursos
+
+Com os valores padrão, as fotos continuam vindo primeiro, e os títulos e os flutuantes ficam com o que a área segura de uma foto não consegue cobrir.
+
+```diff
+-const balancing = { enabled: true, maxLinesPerHeading: 0, stretchAfterLists: false,
+-  stretchAfterFloats: false, looseParagraphs: false };
++const balancing = { enabled: true };
+```
+
+## Erros comuns
+
+- Uma área segura que cobre a imagem inteira, ou que tenha um lado menor que 2 % dela, é ignorada: a foto aparece inteira, como se não tivesse área segura.
+- Só crescem os flutuantes de coluna e as fotos em linha. Uma foto flutuante na largura das duas colunas mantém o formato, porque crescer empurraria de uma vez todas as colunas embaixo dela.

@@ -1,0 +1,53 @@
+---
+title: "Uma página de Bulaq: o texto emoldurado pelo comentário"
+summary: "O comentário gramatical de Ibn ʿAqīl na coluna principal e as glosas na coluna lateral externa, ao lado das passagens que explicam, numa moldura de fios duplos."
+plain: "Uma página feita como os livros árabes impressos no Cairo no século XIX: o texto principal no meio, notas curtas sobre ele numa coluna estreita junto à borda, e a página toda cercada por linhas impressas."
+description: "Página no estilo de Bulaq no Postext: coluna e meia com boxes laterais para a ḥāshiya, um fio de coluna e uma moldura de fios para cada lado da página dupla."
+question: "Como faço para diagramar uma página de Bulaq, com o comentário emoldurando o texto?"
+aliases: ["Bulaq", "Būlāq", "ḥāshiya", "hashiya", "hamish", "comentário na margem", "glosa marginal", "sharḥ", "página de comentário", "Ibn ʿAqīl", "Alfiyya", "Ibn Mālik", "gramática árabe", "moldura de fios", "jadwal", "شرح ابن عقيل", "حاشية", "هامش"]
+pageNotes: { "2": "A primeira página de texto dentro de uma moldura de fios duplos: um título de capítulo vermelho em ruqʿa, os versos iniciais da Alfiyya em vermelho, dois por linha, e o comentário de Ibn ʿAqīl em preto; numa coluna estreita junto à borda direita, atrás de um fio vertical, duas glosas cujas primeiras palavras estão em vermelho." }
+---
+
+## O que você vai compor
+
+Seis páginas compostas como a tipografia de Bulaq e as suas sucessoras do Cairo imprimiam um comentário no século XIX. A explicação de Ibn ʿAqīl para os primeiros versos da Alfiyya, a gramática em mil versos de Ibn Mālik, corre na coluna principal, com os versos em vermelho; na margem externa fica uma ḥāshiya, glosas curtas que começam com as palavras do texto que explicam, ao lado da passagem a que pertencem. Um fio duplo emoldura a mancha, com uma faixa no alto para o capítulo e o fólio, e um fio simples separa o texto da sua margem. Numa página de Bulaq de verdade, a ḥāshiya contorna o texto por três lados; o Postext a põe de um lado só, e esta receita deixa isso claro.
+
+## Preparo
+
+### 1 · A ḥāshiya numa coluna lateral própria
+
+O código está [na resposta curta](#a-resposta-curta), mais acima. Uma diagramação em coluna e meia cuja coluna lateral só recebe flutuantes mantém o comentário fora do fluxo do texto: cada glosa é um `:::callout{type="hashiya" span="side"}` escrito depois do parágrafo que explica, e fica na altura desse parágrafo ([Diagramação](/pt/docs/configuration#diagramação)). O boxe não tem fundo, borda nem preenchimento, então se lê como texto composto na margem, com o lema em negrito, que o `boldColor` deixa vermelho. `sideColumnSide: 'outer'` põe a coluna junto ao corte nas duas páginas: à direita da página par, que fica à direita num livro encadernado pela direita.
+
+<PageShot page={3} crop="0,0.08,1,0.4" caption="Página 3: a glosa sobre «كديز» fica ao lado do parágrafo que usa a palavra, na borda externa, atrás do fio de coluna." />
+
+### 2 · Uma moldura desenhada para cada lado da página dupla
+
+<Excerpt region="frame" />
+
+A moldura são três elementos de design de página no cabeçalho: duas caixas com borda e sem preenchimento, a 1,3 mm uma da outra, e um fio sob a faixa que leva o cabeço. Os elementos de página são físicos, então a moldura é montada duas vezes, uma para cada paridade, a partir das margens daquele lado ([Ordem das páginas e encadernação pela direita](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita)). O fólio fica na ponta externa da faixa em todas as páginas, aberturas incluídas; o título do capítulo é centralizado e fica fora da abertura, onde o próprio título aparece logo abaixo.
+
+### 3 · Uma folha de rosto dentro da mesma moldura
+
+<Excerpt region="title" />
+
+A folha de rosto reaproveita a moldura sem a faixa. As linhas dela vêm de atributos do título, `on` e `margin`, então a folha de rosto inteira é uma linha de Markdown, e a linha em caracteres latinos abaixo delas muda conforme a edição.
+
+## Variações
+
+### Pôr o comentário do lado interno
+
+Algumas tipografias põem a ḥāshiya junto à lombada, e o texto fica com a margem externa, mais larga.
+
+```diff
+-const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'outer',
++const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'inner',
+```
+
+### Cercar cada glosa com um fio
+
+Um fio fino em volta de cada glosa, como em algumas edições cairotas posteriores, é a própria borda do boxe.
+
+```diff
+-  stripe: { enabled: false }, border: { enabled: false },
++  stripe: { enabled: false }, border: { enabled: true, width: pt(0.4), color: col('rule') },
+```

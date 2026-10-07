@@ -1,0 +1,67 @@
+---
+title: "Um boletim semanal: os primeiros relatórios sobre a aids"
+summary: "Dois relatórios do CDC de 1981 recompostos num boletim em papel carta: cabeçalho, casos com rótulos na linha, estilos para Reported by e a nota editorial."
+plain: "Um boletim de saúde pública de 1981, composto de novo em papel carta. Cada tipo de parágrafo (os casos, a lista dos médicos que os comunicaram, o comentário da redação) tem sua aparência, e as referências são numeradas sozinhas."
+description: "Um boletim epidemiológico semanal no Postext: cabeçalho, casos, estilos para Reported by e a nota editorial, citações AMA entre parênteses, tabelas TSV."
+question: "Como faço para compor um boletim semanal, com casos clínicos, nota editorial e referências numeradas?"
+aliases: ["MMWR", "boletim epidemiológico", "série de casos", "relato de caso", "caso clínico", "relatório de vigilância", "saúde pública", "Reported by", "nota editorial", "doenças de notificação compulsória", "estilo AMA", "aids", "1981"]
+pageNotes: { "1": "Página 1: uma faixa azul-escura com a marca Surveillance Notes em branco, abaixo uma linha com o número da edição e um sumário de três entradas, um fio duplo e o primeiro relatório, Pneumocystis Pneumonia — Los Angeles, de 5 de junho de 1981. Duas colunas de texto abrem os casos com os rótulos Patient 1, Patient 2 e Patient 3 em negrito azul; no pé da coluna esquerda, uma nota sobre amostras pareadas. No pé da página, a Figura 1: uma linha do tempo dos cinco pacientes de setembro de 1980 a maio de 1981, com barras cinza para a doença anterior à pneumonia, pontos azuis para o mês do diagnóstico, losangos vazados para os achados de CMV com data e cruzes para as duas mortes.", "2": "Página 2: a Tabela 1, os cinco casos num relance (idade, mês do diagnóstico, evidência de CMV, outros achados, evolução), na largura das duas colunas; abaixo, os últimos casos, o parágrafo de síntese, a linha Reported by em itálico pequeno cinza e o começo da Editorial Note, com o rótulo em negrito azul.", "3": "Página 3: o fim da nota editorial à esquerda e cinco referências numeradas à direita, as duas colunas terminando na mesma altura; sob um fio duplo na largura da página, o segundo relatório, Kaposi's Sarcoma and Pneumocystis Pneumonia Among Homosexual Men — New York City and California, começa na metade de baixo e continua nas duas colunas; sua Tabela 1, as queixas iniciais de 20 pacientes, fica no pé da coluna direita.", "4": "Página 4: o relatório de julho continua, com uma longa lista Reported by em itálico pequeno e sua nota editorial.", "5": "Página 5: as últimas linhas do relatório de julho e suas referências, numeradas de 1 a 19, equilibradas em duas colunas.", "6": "Página 6: uma página final em uma coluna, Notifiable Diseases — United States, com a tabela semanal de 29 doenças sob um cabeçalho de duas linhas e, depois, o colofão." }
+---
+
+## O que você vai compor
+
+Seis páginas de um boletim epidemiológico semanal em papel carta US, que reproduzem os dois relatórios em que os Centros de Controle de Doenças (CDC) descreveram pela primeira vez o que depois ficou conhecido como aids: cinco casos de pneumonia por *Pneumocystis* em Los Angeles (5 de junho de 1981) e os casos de sarcoma de Kaposi que vieram em seguida (3 de julho de 1981). O cabeçalho é um desenho original no espírito de um boletim oficial da época, uma faixa azul com a marca numa sem serifa condensada sobre duas colunas de Plex Serif. Cada voz do relatório tem seu estilo: os casos sob rótulos numerados em negrito, a linha *Reported by* em itálico pequeno, a *Editorial Note*, as citações entre parênteses e uma lista numerada. O texto, as referências e as tabelas são os que o CDC imprimiu; a linha do tempo e a tabela de casos da página 2 são da edição.
+
+## Preparo
+
+### 1 · Um estilo de parágrafo para cada voz
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Um relatório de boletim é escrito em vários registros: os casos, a lista de quem os comunicou e o comentário da redação. Envolver cada trecho em `:::paragraphs{style="…"}` dá a ele uma aparência sem mexer nas palavras: a linha *Reported by* desce para 7,8 pt em itálico condensado, fora da grade de linhas de base, enquanto os casos mantêm a textura do corpo com seus rótulos `**Patient 1:**` na cor de destaque. As citações são escritas `[@walzer1974]`; `american-medical-association` com `marker: 'parentheses'` as imprime como (1) e ordena a lista pela ordem de citação, como fazia o boletim, `numbering: 'chapter'` conta as citações de cada relatório a partir de 1, e `scope: 'chapter'` põe a lista dele logo abaixo, com os mesmos números.
+
+### 2 · Um cabeçalho que abre o primeiro relatório
+
+<Excerpt region="masthead" />
+
+O cabeçalho é o design do estilo de título do primeiro relatório, então ele sai uma vez só, na página 1, e os cabeços pulam essa página (`pages: 'body'`). O antetítulo e a data vêm de atributos do H1 de cada relatório, e o título é `{titleText}`: um elemento de texto com `inlineMarks: true` mantém em itálico o gênero que aparece no título. O relatório de julho abre com os mesmos três elementos sob um fio duplo. Seu estilo de título ocupa a largura da página com `spanBreak: false`, então ele começa onde termina o relatório de junho: as colunas de cima terminam na mesma altura e o texto continua nas duas colunas de baixo, do jeito que o boletim emendava um relatório no outro.
+
+### 3 · Três tabelas a partir de texto separado por tabulações
+
+<Excerpt region="resources" />
+
+Cada tabela é um slot de conteúdo com texto separado por tabulações, o formato que uma planilha copia, e `parseTSV` o transforma em modelo. Uma coluna de números se alinha à direita com o cabeçalho centralizado; quatro chamadas a `mergeCells` montam o cabeçalho de duas linhas do resumo das doenças de notificação compulsória. O tipo tabela reinicia o contador a cada H1 (`resetOn: 'h1'`), de modo que cada relatório tem a sua Tabela 1, como em 1981.
+
+### 4 · Um só azul, vinculado em todo lugar
+
+<Excerpt region="palette" />
+
+A faixa, os rótulos, os fólios, os cabeçalhos das tabelas e o gráfico apontam para a mesma entrada da paleta, então quem trocar `accent` pela cor do seu próprio boletim recolore as seis páginas de uma vez.
+
+## Variações
+
+### Números de referência sobrescritos
+
+A maioria das revistas médicas sobe os números em vez de colocá-los entre parênteses.
+
+```diff
+-const citations = { style: 'american-medical-association', marker: 'parentheses',
++const citations = { style: 'american-medical-association', marker: 'superscript',
+```
+
+### Cada relatório em página nova
+
+Uma série de reimpressões que arquiva os relatórios separadamente abre cada um numa página nova.
+
+```diff
+-    { id: 'report', span: 'page', spanBreak: false, advancedDesign: opener },
++    { id: 'report', span: 'page', advancedDesign: opener },
+```
+
+### Use a lista Vancouver
+
+<RecipeLink slug="medical-article-vancouver">Um artigo médico no estilo Vancouver</RecipeLink> ajusta o estilo `elsevier-vancouver` que acompanha o motor para seguir a forma de referência da NLM.
+
+## Erros comuns
+
+- Sem `numbering: 'chapter'`, os números das referências continuam pelo documento inteiro e `scope: 'chapter'` só separa as listas: o relatório de julho citaria as obras 4 e de 6 a 23, onde o boletim imprimiu de 1 a 19.
+- A nota de 1981 *Paired specimens not run in parallel* é chamada por um asterisco: `footnotes.numberFormat: 'symbols'` usa *, †, ‡ e recomeça a cada página. Dessas marcas, só o asterisco está no arquivo latin de uma fonte do Fontsource (a adaga está no latin-ext e a adaga dupla em nenhum dos dois), então uma página com duas ou três notas precisa de uma fonte que as tenha, ou de `symbols: ['*', '§', '¶']`.
+- O texto de 1981 fica como foi impresso, com a terminologia da época, e o colofão avisa isso. Uma reimpressão não corrige o texto que reproduz; o que a edição acrescenta (a linha do tempo, a tabela de casos, a linha em itálico azul sob o primeiro parágrafo) vai num estilo próprio e identificado.

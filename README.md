@@ -214,7 +214,7 @@ Everything below ships today in `postext` 1.16 and its companion packages (`post
 
 ### Website
 
-- [postext.dev](https://postext.dev/) in English, Spanish, Catalan, Simplified Chinese, Japanese and Arabic, built to WCAG 2.2 AAA, with a Markdown version of every page for agents (`<page>.md`, `llms.txt`).
+- [postext.dev](https://postext.dev/) in English, Spanish, Catalan, Brazilian Portuguese, Simplified Chinese, Japanese and Arabic, built to WCAG 2.2 AAA, with a Markdown version of every page for agents (`<page>.md`, `llms.txt`).
 
 ### Configuration-driven
 
@@ -259,7 +259,7 @@ postext/
 | `packages/postext-epub` | The EPUB 3 writer: a laid-out book as a fixed-layout or reflowable EPUB, plus `readEpub` for viewers. Published to npm as `postext-epub`. |
 | `packages/postext-citeproc` | The citation engine: formats Pandoc-syntax citations with citeproc-js and builds the bibliography, with 19 bundled CSL styles and 12 CSL locales. Published to npm as `postext-citeproc`. |
 | `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports — embedded by the web app. |
-| `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in six languages. |
+| `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in seven languages. |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
 
 Documentation lives in the top-level `docs/` folder as one MDX file per topic and locale (`<topic>-<locale>.mdx`, in `en`, `es`, `ca`, `zh` and `ar`), rendered by `apps/web`. The doc pages of the [GitHub wiki](https://github.com/drnachio/postext/wiki) are generated from the English files.
@@ -446,7 +446,7 @@ Every milestone of the original roadmap is closed. Postext now typesets full boo
 - [x] Pictures with a safe area ([#442](https://github.com/drnachio/postext/issues/442)) and video resources: poster, play mark and QR code in print, players in HTML and EPUB ([#460](https://github.com/drnachio/postext/issues/460))
 - [x] The Cookbook, the showcase books and the built-in guide in five languages
 - [x] The `postext-port` agent skill
-- [x] The website in six languages, at WCAG 2.2 AAA
+- [x] The website in seven languages, at WCAG 2.2 AAA
 
 What comes next is driven by the community: open an issue that describes the publication you are trying to set and where Postext falls short.
 

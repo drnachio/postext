@@ -12,7 +12,7 @@
 import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock } from '../vdt';
 import { drawResourceImage } from './renderResourceBlock';
 import { renderTextBlock } from './headerFooter';
-import { comicRoughBorder } from '../comics/paint';
+import { comicBalloonMatrix, comicRoughBorder } from '../comics/paint';
 
 export { roughOutline, comicRoughBorder } from '../comics/paint';
 
@@ -174,16 +174,12 @@ function haloOf(block: VDTDesignTextBlock, halo: NonNullable<VDTComicBalloon['ha
 }
 
 /** Paint one balloon: its outline (when it carries its group's), then its
- *  halo and its text, turned by `rotate` degrees about its box's centre. */
+ *  halo and its text, leaned by `skew` and turned by `rotate` degrees
+ *  about its box's centre. */
 export function renderComicBalloon(ctx: CanvasRenderingContext2D, balloon: VDTComicBalloon): void {
   ctx.save();
-  if (balloon.rotate) {
-    const cx = balloon.bbox.x + balloon.bbox.width / 2;
-    const cy = balloon.bbox.y + balloon.bbox.height / 2;
-    ctx.translate(cx, cy);
-    ctx.rotate((balloon.rotate * Math.PI) / 180);
-    ctx.translate(-cx, -cy);
-  }
+  const m = comicBalloonMatrix(balloon);
+  if (m) ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
   if (balloon.shape) paintBalloonShape(ctx, balloon.shape);
   if (balloon.halo && balloon.halo.width > 0) {
     ctx.lineJoin = 'round';

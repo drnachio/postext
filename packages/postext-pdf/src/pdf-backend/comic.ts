@@ -42,7 +42,7 @@ import {
   type Color,
   type PDFOperator,
 } from 'pdf-lib';
-import { comicBalloonText as sharedBalloonText, comicPanelContinues, comicRoughBorder } from 'postext';
+import { comicBalloonMatrix, comicBalloonText as sharedBalloonText, comicPanelContinues, comicRoughBorder } from 'postext';
 import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock, VDTPoint } from 'postext';
 import type { FontCache } from '../fontCache';
 import { renderTextBlock, type SlotMark } from './headerFooter';
@@ -188,16 +188,24 @@ export function rotationMatrix(deg: number, cxPx: number, cyPx: number, scale: n
   return [cos, -sin, sin, cos, cx - cos * cx - sin * cy, cy + sin * cx - cos * cy];
 }
 
-/** Run `paint` turned by the balloon's rotation about the centre of its
- *  box (sound effects); straight through when it has none. */
+/** A sheet matrix in page px (canvas order, y down) as a matrix in the
+ *  backend's points (y up): F·M·F⁻¹ with F(x, y) = (s·x, H − s·y). */
+export function sheetMatrixToPdf(m: readonly [number, number, number, number, number, number], scale: number, pageHeightPt: number): PdfMatrix {
+  const [a, b, c, d, e, f] = m;
+  const H = pageHeightPt;
+  return [a, -b, -c, d, c * H + scale * e, H - d * H - scale * f];
+}
+
+/** Run `paint` leaned and turned as the balloon asks (`skew`, `rotate`,
+ *  about the centre of its box: sound effects); straight through when it
+ *  has neither. */
 function withRotation(ctx: PageCtx, balloon: VDTComicBalloon, paint: () => void): void {
-  const deg = balloon.rotate ?? 0;
-  if (!deg) {
+  const m = comicBalloonMatrix(balloon);
+  if (!m) {
     paint();
     return;
   }
-  const { x, y, width, height } = balloon.bbox;
-  pushFrame(ctx, rotationMatrix(deg, x + width / 2, y + height / 2, ctx.scale, ctx.pageHeightPt));
+  pushFrame(ctx, sheetMatrixToPdf(m, ctx.scale, ctx.pageHeightPt));
   try {
     paint();
   } finally {

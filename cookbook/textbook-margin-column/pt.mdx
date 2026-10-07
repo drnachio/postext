@@ -1,0 +1,91 @@
+---
+title: "Livro didático com coluna na margem"
+summary: "Página em coluna e meia cuja coluna externa só recebe flutuantes: figuras e glosas com span 'side' se empilham ali, e captionSide leva as demais legendas."
+plain: "Um capítulo de um livro de física com uma coluna larga de texto e outra estreita junto à borda externa. A coluna estreita traz diagramas e notas curtas ao lado do texto a que se referem."
+description: "O código Postext de um capítulo de física com uma coluna só de flutuantes na margem externa, para diagramas de raios, glosas de termos-chave e legendas."
+question: "Como faço para manter figuras, legendas e glosas numa coluna na margem externa onde o texto nunca entra?"
+aliases: ["coluna na margem", "coluna marginal", "notas de margem", "notas marginais", "sidenotes", "glosas", "legendas laterais", "legendas na margem", "figuras na margem", "coluna e meia", "layout Tufte", "livro didático de física"]
+pageNotes: { "1": "O capítulo 4 abre com o título Light and Lenses na coluna de texto e um 4 verde grande na margem externa, com os objetivos de aprendizagem abaixo e, na altura da seção 4.1, uma glosa de termo-chave ao lado do parágrafo que define o índice de refração; um diagrama de uma lente queimando ao sol, sobre um painel escuro, ocupa o pé da coluna de texto, com a legenda ao lado, na margem.", "2": "Na página par, a coluna da margem fica à esquerda: nela se empilham um diagrama da refração, a glosa do ângulo crítico e um diagrama de um bloco de vidro semicircular, e a figura da fibra óptica, no pé da coluna de texto, tem a legenda na margem.", "3": "Um painel escuro em que um feixe branco atravessa um prisma e se abre num espectro cruza as duas colunas na cabeça da página ímpar; na margem, a glosa da dispersão começa logo abaixo da frase que define o termo, a da distância focal fica na altura da seção 4.3, e a legenda de um diagrama de lentes sobre uma chapa clara fica no pé.", "4": "A figura da lente divergente encabeça a coluna da margem da última página; o painel Key ideas começa abaixo do parágrafo de fechamento do capítulo, na altura do título Questions, e corre ao lado das questões; um colofão de uma linha fecha o capítulo." }
+---
+
+## O que você vai compor
+
+O capítulo 4 de *Lever and Lens*, um livro didático de física introdutória numa página de 210 × 275 mm. O texto corrido ocupa uma coluna larga e nunca entra na margem externa, um canal de 53 mm. O número do capítulo, um 4 verde, fica nesse canal na altura do título, e os objetivos de aprendizagem vêm embaixo. Os diagramas de raios se empilham a partir da cabeça do canal, e os termos-chave vão em glosas verde-menta ao lado dos trechos que os definem. As figuras que ficam na coluna de texto, sobre chapas escuras ou claras, têm as legendas na margem, na altura do pé da figura. Só o painel do prisma atravessa as duas colunas. As margens são espelhadas, então o canal fica no lado do corte de todas as páginas, à direita numa ímpar e à esquerda numa par.
+
+## Preparo
+
+### 1 · Entregar a margem aos flutuantes
+
+O código deste passo é a [resposta curta](#a-resposta-curta) acima. Numa [diagramação em coluna e meia](/pt/docs/configuration#tipos-de-layout), `sideColumnPercent: 30` dá à coluna lateral 30% dos 176 mm de largura da mancha (52,8 mm), e a coluna de texto fica com o que sobra depois da medianiz de 7 mm (116 mm, uns 75 caracteres de Merriweather de 9,3 pt). `sideColumnRole: 'floats'` mantém o texto corrido fora da coluna lateral, e `sideColumnSide: 'outer'` a põe no lado externo, que as margens espelhadas alternam de uma página para outra. As figuras vão para lá com `span: 'side'`. Um boxe com `span="side"` no bloco sai do fluxo e entra no canal na altura a que o texto chegou, então cada glosa começa na altura do bloco que vem depois dela.
+
+### 2 · Deixar a citação posicionar cada figura
+
+<Excerpt region="figures" />
+
+O primeiro `:ref` a uma figura a numera e a coloca onde o seu [posicionamento](/pt/docs/document-format#posicionamento) manda. Uma figura `span: 'side'` se empilha a partir da cabeça do canal na página que a cita, por mais abaixo que esteja a citação, e passa para a página seguinte quando o resto do canal é curto demais. As figuras 4.2 e 4.3, ambas citadas na <PageRef page={2}>página 88</PageRef>, descem pelo canal dessa página com a glosa do ângulo crítico entre elas. O prisma é um flutuante `top` na largura da página citado na página 88, e um flutuante nunca fica acima da sua citação, então ele abre a página 89 sobre as duas colunas. As figuras 4.1, 4.4 e 4.6 ficam na coluna de texto e recebem `captionSide` do `defaultPlacement` do tipo figura. Elas ocupam o espaço de baixo da coluna, então cada legenda fica na altura do pé da sua figura; num espaço de cima, ela se alinharia com o topo da figura.
+
+### 3 · Abrir o capítulo na margem
+
+<Excerpt region="opener" />
+
+O título de nível 1 fica na coluna de texto, onde um [slot de design](/pt/docs/configuration#largura-e-design-avançado) empilha o texto, o fio e a linha fina; o antetítulo pende do canto superior direito da página, e o numeral pende do antetítulo, os dois com a largura do canal. `minHeight` fixa a abertura em nove linhas da grade (42,9 mm), o bastante para um título de uma linha, o fio e uma linha fina de quatro linhas, então uma linha fina mais curta não puxa o texto para cima. O antetítulo e o numeral de 104 pt terminam 40,6 mm abaixo da margem superior, dentro dessas nove linhas, então também não empurram o texto para baixo. O canal só fica à direita numa página ímpar, por isso o H1 quebra para uma página ímpar. O boxe de objetivos vem depois do primeiro parágrafo, e não logo depois do título, e nenhuma figura de margem é citada antes dele (veja Erros comuns).
+
+### 4 · Manter os fólios na borda do canal
+
+<Excerpt region="heads" />
+
+Cada elemento é ancorado na página física e filtrado por `parity`, então fólio e cabeço ficam na mesma borda que o canal nos dois lados da página dupla. `pages: 'body'` os deixa fora da abertura, que recebe no lugar um fólio no pé do canal.
+
+### 5 · Começar o livro no capítulo 4
+
+<Excerpt region="build" />
+
+Estas páginas são o capítulo 4 de um livro mais longo. A continuação põe o contador de capítulos em 3, então `{chapterNumber}` imprime 4 e o `numberingTemplate: '{1}.{2}'` do nível 2 numera as seções de 4.1 a 4.3; as figuras vão de 4.1 a 4.7. `## Questions {style="plain"}` usa uma entrada de `headingStyles` com `numbered: false`, então esse título não tem número. Os fólios começam em 87 porque a primeira página é ímpar, e uma página ímpar leva fólio ímpar.
+
+### 6 · Dar nome às cores uma vez só
+
+<Excerpt region="palette" />
+
+Cada cor da configuração está ligada a uma entrada da paleta e também carrega o seu hex, que `col()` copia do mesmo objeto. O Postext 1.4.1 pinta os elementos de design e a cor das referências com esse hex, não com a entrada da paleta (veja Erros comuns). Para mudar as cores do capítulo, edite `palette`: os diagramas leem o mesmo objeto, então o vidro, os raios, os painéis escuros e a chapa clara mudam junto com os numerais, os rótulos e as glosas. `main-color` aponta para a cor de destaque, então qualquer cor padrão dos estilos de texto que a configuração deixa sem definir sai em verde, não no azul do motor.
+
+## Variações
+
+### Manter as legendas sob as figuras
+
+Com os padrões simples do tipo figura, as legendas das figuras 4.1, 4.4 e 4.6 tomam linhas da coluna de texto, e o canal só recebe diagramas e glosas.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
+-  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
++const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+```
+
+### Pôr o canal à direita em todas as páginas
+
+Para um documento lido uma página por vez na tela, pare de espelhar as margens e passe o fólio e o cabeço da página par para a borda direita; assim os capítulos podem abrir em qualquer página.
+
+```diff
+-  sideColumnSide: 'outer', // right on a recto, left on a verso (the margins are mirrored)
++  sideColumnSide: 'right', // what 'outer' means anyway once the margins stop mirroring
+-    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } }, // left: recto's inner
++    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: false } },
+-      { level: 1, breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(LEAD),
++      { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(LEAD),
+-const verso = { parity: 'even', edge: 'top-left' }; // x counts in from the left edge
++const verso = { parity: 'even', edge: 'top-right' };
+-  head({ id: 'verso-folio', ...verso, ...folio, x: OUTER }),
+-  head({ id: 'verso-title', ...verso, content: '{title}', x: OUTER + HEAD_GAP }),
++  head({ id: 'verso-folio', ...verso, ...folio, x: -OUTER }),
++  head({ id: 'verso-title', ...verso, content: '{title}', x: -(OUTER + HEAD_GAP) }),
+-  head({ id: 'drop-folio', ...recto, ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
++  head({ id: 'drop-folio', ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
+```
+
+### Abrir o capítulo sob uma faixa de cor
+
+<RecipeLink slug="chapter-opener-bleed-band">Abertura de capítulo sobre uma faixa sangrada</RecipeLink> sangra uma faixa de cor no alto da página e compõe sobre ela o título e um número de capítulo de 168 pt.
+
+## Erros comuns
+
+- Figuras e glosas se empilham no canal na ordem em que o texto chega a elas, nunca lado a lado. O bloco da glosa do ângulo crítico vem depois do parágrafo da lei de Snell e antes do parágrafo que cita a figura 4.3, então na <PageRef page={2}>página 88</PageRef> ela fica entre as figuras 4.2 e 4.3, ao lado do parágrafo que apresenta o termo. Com o bloco depois dessa citação, ela cairia sob a figura 4.3.
+- Na primeira página de um capítulo, cite figuras de margem só depois do boxe de objetivos. As figuras laterais se empilham a partir da cabeça do canal sem abrir espaço para o antetítulo e o numeral ancorados ali, então uma figura citada no primeiro parágrafo é pintada por cima deles.

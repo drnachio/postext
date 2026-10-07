@@ -1,0 +1,65 @@
+---
+title: "Mudar as cores de um documento inteiro com uma paleta"
+summary: "Cada cor da configuração leva um id de paleta, e uma só função compõe a programação de um festival em vermelho, verde-azulado, violeta ou areia."
+plain: "Um folheto quadrado para um festival de música, mostrado em quatro combinações de cores. Mostra como trocar todas as cores do documento de uma vez escolhendo outro conjunto de cores."
+description: "A programação de um festival em duas páginas cujos títulos, negritos, marcadores, chips, amostras de cor, células, cabeço e fólio tomam a cor de uma só paleta."
+question: "Como faço para trocar o azul padrão dos títulos, do negrito e dos marcadores pelas cores da minha paleta?"
+aliases: ["paleta de cores", "recolorir", "trocar as cores", "combinação de cores", "esquema de cores", "cores do tema", "cores da marca", "identidade visual", "main-color", "paletteId", "azul padrão", "visualização ao vivo", "cache da configuração", "structuredClone"]
+pageNotes: { "1": "A frente da programação: um campo vermelho sobre a metade superior com o antetítulo Almarén · 12–18 June 2027, o título Riverside Music Week em branco e uma onda de barras arredondadas claras; abaixo, duas colunas alinhadas à esquerda abrem com uma introdução e listam de sábado a segunda, cada evento com o horário em negrito vermelho e um chip: Free com contorno vermelho, ou o preço em branco sobre vermelho.", "2": "O verso: uma barra de legenda vermelha sobre uma grade de seis palcos por sete dias, os nomes dos palcos alinhados à direita junto às casas, quadrados vermelhos para os shows pagos e rosa-claros para os eventos gratuitos, com uma legenda de amostras de cor; depois, de terça a sexta em duas colunas, um boxe Tickets sob uma tarja vermelha, o colofão e o fólio 2 numa pílula vermelha." }
+---
+
+## O que você vai compor
+
+A programação de *Riverside Music Week*, um festival fictício numa cidade à beira de um rio, impressa como um folheto quadrado de 200 mm. A página da frente tem um campo de cor na metade superior, com o título em Syne 800 de 46 pt e uma onda de barras arredondadas claras; abaixo, duas colunas alinhadas à esquerda percorrem a semana dia a dia, cada evento com o horário em negrito e um chip com o preço. O verso resume a semana numa grade de casas coloridas sob uma barra de legenda, depois lista de terça a sexta e termina com um boxe de ingressos sob uma tarja e o colofão. Acima das páginas, o pen mostra quatro provas, em vermelho, verde-azulado, violeta e areia. As cores delas vêm de sete entradas de paleta nomeadas pela função, mais `main-color` apontada para a cor da faixa. Clique numa prova e o documento inteiro é composto de novo naquela paleta.
+
+## Preparo
+
+### 1 · Dê nome às cores pela função que cumprem
+
+<Excerpt region="palette" />
+
+`band` preenche os campos de cor, `onBand` colore o texto composto sobre eles, `deep` é o destaque para texto sobre papel branco e `tint` o preenchimento claro. Cada combinação define essas quatro e divide os três neutros. Contra o branco, a faixa verde-azulada mede 3,3:1 e a faixa areia 2,1:1, pouco para texto branco sobre a faixa ou para texto na cor da faixa sobre o papel. Essas duas paletas põem `onBand` na cor da tinta, e as quatro compõem negritos e títulos em `deep`, um tom mais escuro que mede entre 5,99:1 (areia) e 8,40:1 (violeta) sobre o branco.
+
+### 2 · Ligue tudo o que o motor imprimiria em azul
+
+<Excerpt region="links" />
+
+O azul do motor é uma entrada de paleta, `main-color` (#295AA3), e [os seus padrões](/pt/docs/configuration#a-paleta-padrão) apontam para ela os títulos, o negrito, o itálico, as remissões, os marcadores e o cabeço. Aqui, cada um deles leva um id de paleta: horários e termos-chave em negrito `deep`, itálicos na cor da tinta, marcadores em `band` e, na página 2, o cabeço em `deep` e o fólio em `onBand` numa pílula `band`. `retint()` também aponta `main-color` para a faixa; como esta configuração define todas as cores, isso não muda nada nestas páginas, mas um estilo acrescentado depois sem cor pega a faixa em vez do azul. O boxe de ingressos não define uma cor de negrito própria, então herda `bodyText.boldColor` com o seu id de paleta, e o negrito dele muda com a combinação.
+
+### 3 · Desenhe a arte com caixas de design
+
+<Excerpt region="opener" />
+
+A abertura é um [encaixe de design](/pt/docs/configuration#elementos-de-caixa) com uma caixa que sangra pela borda superior, 29 barras arredondadas para a onda e três elementos de texto: o próprio texto do título, e o antetítulo e a linha fina vindos dos atributos dele. As barras são caixas e não um SVG, então o preenchimento delas é mais uma ligação a `tint` que `relink()` reescreve; um SVG teria de ser redesenhado e registrado de novo para cada combinação. Sozinha, a caixa da faixa faria o texto começar na linha da grade 2,4 mm abaixo da faixa; `minHeight`, 18 linhas ou 85,1 mm abaixo da margem superior, reserva mais e leva a primeira linha para 7 mm abaixo dela.
+
+### 4 · Deixe a paleta preencher a tabela
+
+<Excerpt region="grid" />
+
+A grade é um recurso de tabela, fora da configuração, então `relink()` nunca mexe nela. Mesmo assim, os [preenchimentos de célula](/pt/docs/document-format#inserção-em-bloco-opcional-posicionamento-explícito-em-linha) levam ids de paleta, e o motor os resolve pela paleta do documento quando compõe a tabela; os `:swatch{color="band"}` e `:swatch{color="tint"}` da legenda, na nota da tabela, se resolvem do mesmo jeito. Os chips da programação usam os mesmos dois ids, e assim a casa preenchida, o chip ao lado de um horário e a amostra da legenda batem em todas as combinações.
+
+### 5 · Monte uma configuração nova a cada clique
+
+<Excerpt region="live" />
+
+Cada botão chama `retint()`, que chama `config()`, então cada composição recebe um objeto novo, sem nenhuma resolução em cache por trás. O motor resolve uma configuração uma vez e [guarda o resultado associado àquele objeto](/pt/docs/configuration#estado-global-compartilhado-em-uma-página). Mantenha uma configuração e altere as entradas da paleta no próprio objeto, e a composição seguinte reaproveita a resolução antiga: num teste com a versão 1.4.1, os títulos, os marcadores, os chips e a barra de legenda ficaram com a primeira cor, enquanto as amostras e os preenchimentos de célula, que leem a paleta durante a composição, pegaram a nova. Atribuir um novo array `colorPalette` ao mesmo objeto não mudou nada. Um `structuredClone()` da configuração editada recebe, sim, uma resolução nova, mas os encaixes de design e a cor das remissões ainda trazem o hexadecimal antigo, então a faixa, a onda, os cabeços e fólios e “Table 1” continuaram vermelhos; `retint()` reescreve esses hexadecimais e devolve um objeto novo.
+
+## Variações
+
+### Mantenha o negrito na cor da tinta
+
+Deixe o destaque para os títulos, os marcadores e os chips, e componha os horários e os termos-chave na cor do texto.
+
+```diff
+-  boldColor: col('deep'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
++  boldColor: col('ink'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
+```
+
+### Dê a cada parte de um livro uma cor própria
+
+Para cores que mudam dentro de um mesmo documento, parte a parte, veja <RecipeLink slug="parts-in-colour">Partes em cores a partir de um atributo</RecipeLink>.
+
+## Erros comuns
+
+- Apague `relink()` e componha a edição verde-azulada para ver o que o postext 1.4.1 deixa para trás: a faixa, a onda, o título branco, o cabeço, a pílula do fólio e a remissão “Table 1” mantêm as cores da edição vermelha, enquanto o texto, as listas, os chips, a barra de legenda, a tabela e o boxe de ingressos acompanham a paleta.
+- Mantenha `bodyText.boldColor` definido quando um boxe tiver texto em negrito. O boxe o copia, com o id de paleta; deixe-o sem definir e a versão 1.4.1 copia o padrão, e na edição verde-azulada o negrito fora do boxe pega a cor da faixa enquanto “week pass”, dentro do boxe, sai em #295AA3.

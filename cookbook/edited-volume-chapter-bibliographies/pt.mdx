@@ -1,0 +1,73 @@
+---
+title: "Uma coletânea com bibliografia em cada capítulo"
+summary: "Três ensaios de três autores, cada um num documento próprio em buildBundle e cada um fechado por uma lista Chicago autor-data só com as obras que cita."
+plain: "Um livro de ensaios de autores diferentes. Cada ensaio traz o nome do autor sob o título e termina com a sua própria lista de referências, como nas coletâneas."
+description: "Uma coletânea no Postext: capítulos de buildBundle com o nome do autor tirado dos atributos do título e bibliografia por capítulo no estilo Chicago autor-data."
+question: "Como faço para dar a cada capítulo de uma coletânea o nome do seu autor e a sua própria lista de referências?"
+aliases: ["coletânea", "obra coletiva", "livro organizado", "anais", "capítulos de autores", "referências por capítulo", "bibliografia por capítulo", "Chicago autor-data", "autoria do capítulo", "edited volume"]
+pageNotes: { "1": "Página 1: a folha de rosto, um campo vermelho de gráfica nos dois terços de cima com The Working Page em Caslon branca grande e o subtítulo em itálico; abaixo, os organizadores em maiúsculas vermelhas e os três autores em itálico.", "2": "Página 2: o sumário, três ensaios numerados com pontilhado e número de página, cada um com o nome do autor em itálico cinza sob o título.", "5": "Página 5: o fim do capítulo 1 e a sua lista de References com quatro obras, entre elas Eisenstein 1979 e Gaskell 1972.", "8": "Página 8: o fim do capítulo 2 e a sua própria lista de References, que repete Eisenstein 1979 porque este capítulo também o cita." }
+---
+
+## O que você vai compor
+
+*The Working Page*, uma pequena coletânea de ensaios sobre a história da impressão, organizada por dois pesquisadores e escrita por três. Cada ensaio chega do seu autor como um arquivo Markdown com um bloco BibTeX próprio, e é assim que o livro o mantém: um volume de 155 × 235 mm em Libre Caslon, uma folha de rosto vermelha e capítulos que abrem com um número, um título e o nome do autor. Cada capítulo fecha com a sua própria lista de References em Chicago autor-data, que contém só as obras citadas naquele ensaio. *The Printing Press as an Agent of Change*, de Eisenstein, é citado por dois autores e por isso aparece nas duas listas; a *New Introduction to Bibliography* de Gaskell faz o mesmo nos capítulos 1 e 3.
+
+## Preparo
+
+### 1 · Um documento por autor
+
+<Excerpt region="chapters" />
+
+O alcance da [resposta curta](#a-resposta-curta) é o de um documento. `buildBundle` diagrama os quatro documentos como um só livro, então os números de página, os números de capítulo e o sumário seguem em sequência, enquanto cada `:::bibliography` reúne as citações do seu próprio arquivo. As referências ficam onde o autor as escreveu: uma chave definida em qualquer capítulo vale para o livro inteiro, então uma única entrada compartilhada bastaria, mas capítulos autônomos podem ser trocados ou reordenados sem quebrar a lista de outro ensaio.
+
+### 2 · A autoria é um atributo do título
+
+<Excerpt region="byline" />
+
+O título de cada ensaio leva `author="…"` e um título curto, `short="…"`, para o cabeço. A abertura imprime o autor sob o título, o cabeço da página par nomeia o autor do ensaio a que a página pertence, e o sumário imprime o nome numa linha sob cada entrada. Nada nas páginas iniciais do livro lista os autores duas vezes.
+
+### 3 · A abertura
+
+<Excerpt region="opener" />
+
+Antetítulo, título e autoria se empilham a partir do alto da mancha, cada um ancorado abaixo do anterior, de modo que um título de duas linhas, como o do capítulo 3, empurra a autoria e o fio para baixo junto com ele. A reserva de 48 mm comporta um título de duas linhas, e o texto começa na mesma linha da grade em todos os capítulos.
+
+### 4 · Cabeços para um livro de muitos autores
+
+<Excerpt region="running-heads" />
+
+Uma coletânea nomeia o autor na página par e o capítulo na ímpar, onde uma monografia imprimiria o título do livro e o do capítulo. Os cabeços são filtrados para `pages: 'body'`, então as aberturas levam só um fólio no pé.
+
+### 5 · As páginas iniciais
+
+<Excerpt region="front" />
+
+A folha de rosto e o sumário são dois títulos sem número no primeiro documento, sem cabeços e sem entrada no sumário. Os designs deles leem `{title}` e `{subtitle}` do frontmatter, e os organizadores e autores, dos atributos do próprio título.
+
+## Variações
+
+### Uma lista para o volume inteiro
+
+Algumas editoras reúnem todas as obras numa única bibliografia no fim. Mude o alcance e tire os três títulos `## References`; a lista passa a vir depois do último capítulo.
+
+```diff
+-    scope: 'chapter',
+-    title: '', // nenhum parágrafo de título em negrito: cada capítulo tem o seu próprio título ## References
++    scope: 'book',
++    title: 'Bibliography',
+```
+
+### Cite em APA
+
+Um volume de ciências sociais muda o estilo e mais nada.
+
+```diff
+-  style: 'chicago-author-date', // o autor-data das humanidades: (Eisenstein 1979)
++  style: 'apa',
+```
+
+## Erros comuns
+
+- `scope: 'chapter'` lista o que o documento cita antes do `:::bibliography`, não o que a sua seção H1 cita. Com todos os ensaios num único arquivo Markdown, a segunda lista repete as obras do primeiro ensaio e a terceira repete as dos dois.
+- No livro inteiro vale a primeira definição de cada chave. Se dois autores usarem `smith2001` para obras diferentes, o ensaio posterior cita sem aviso o livro do autor anterior: ponha um prefixo nas chaves de cada autor, ou confira as listas com os originais.
+- A desambiguação é calculada para o livro inteiro. Duas obras diferentes de Smith de 2001 em capítulos diferentes podem sair como 2001a e 2001b, mesmo quando a lista de um capítulo contém só uma delas.

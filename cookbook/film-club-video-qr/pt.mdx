@@ -1,0 +1,74 @@
+---
+title: "Programa de cineclube com QR codes nos pôsteres"
+summary: "Cada filme é um recurso de vídeo cujo pôster sai impresso com uma marca de reprodução e um QR code que o abre no YouTube; no PDF, o pôster também é um link."
+plain: "Um programa de seis páginas para a temporada de outono de um cineclube, com quatro curtas. Cada página de filme traz uma imagem com um código que o celular lê para ver o filme, e no PDF basta clicar na imagem."
+description: "Programa de cineclube no Postext: quatro filmes do YouTube como recursos de vídeo, impressos como cartelas com marca de reprodução, QR code de 20 mm e link."
+question: "Como imprimo um vídeo num programa para o leitor abri-lo lendo o código na página ou clicando no PDF?"
+aliases: ["vídeo impresso", "QR code", "código QR", "YouTube", "botão de play", "pôster do vídeo", "quadro do filme", "programa de cinema", "cineclube", "ler o código para assistir", "link de vídeo no PDF", "vídeo"]
+pageNotes: { "1": "A capa: uma faixa preta de tela na metade de cima com o chapéu Lumen Film Club · Autumn 2026 em dourado, OPEN MOVIES em maiúsculas altas e condensadas, uma linha fina em itálico, quatro chips nas cores dos filmes com as datas 6, 13, 20 e 27 Nov e a linha do local; abaixo, sobre papel creme, dois parágrafos de apresentação que citam Film 1 a Film 4.", "2": "Sessão 1, Elephants Dream: o chapéu em vermelho, o título em maiúsculas condensadas e uma linha de créditos; depois a cartela, engrenagens e cabos de cobre sobre azul-petróleo escuro com o nome do filme, uma marca de reprodução vermelha e arredondada no canto superior esquerdo e um QR code sobre uma placa creme no canto inferior direito; embaixo, a legenda Film 1 com o endereço curto youtu.be/TLkA0RELQ1g e dois parágrafos sobre o filme.", "3": "Sessão 2, Big Buck Bunny: uma cartela com um sol cor de pêssego sobre colinas verdes e borboletas, a mesma marca de reprodução e o mesmo QR code, a legenda Film 2 e dois parágrafos.", "4": "Sessão 3, Tears of Steel: uma cartela com uma silhueta urbana escura, a torre de uma igreja e uma lua com anel em dourado, com a marca de reprodução, o QR code, a legenda Film 3 e dois parágrafos.", "5": "Sessão 4, Spring: uma cartela com cristas azuis na névoa, pinheiros escuros e uma única luz vermelha, com a marca de reprodução, o QR code, a legenda Film 4 e dois parágrafos.", "6": "Informações práticas: horários e preços, por que o cineclube pode exibir esses filmes, como assistir em casa, os créditos dos quatro filmes com suas licenças e o colofão." }
+---
+
+## O que você vai compor
+
+O programa de outono do Lumen Film Club, um livreto de 165 × 235 mm em papel creme: uma capa com faixa preta de tela e o título da temporada em Big Shoulders Display, e depois uma página para cada um de quatro filmes abertos da Blender Foundation. Cada página de filme começa com um chapéu vermelho com a sessão, o título em maiúsculas condensadas e uma linha de créditos, seguidos de uma cartela na medida inteira de 125 mm. Uma marca de reprodução vermelha fica no canto superior esquerdo da cartela, e um QR code de 20 mm no inferior direito. O sócio que perdeu uma sexta-feira aponta o celular para o código e o filme abre no YouTube; no PDF, a cartela inteira é o link. O endereço curto embaixo de cada cartela serve para o celular que não conseguir ler o código.
+
+## Preparo
+
+### 1 · Cada filme é um recurso de vídeo
+
+O código está na [resposta curta](#a-resposta-curta), mais acima. Um recurso de vídeo é posicionado, legendado e numerado como uma figura, e o impresso o mostra como seu pôster com duas sobreposições. A marca de reprodução e o código vão para cantos opostos e nunca se encontram, e o pôster, com 70 mm de altura, deixa espaço para os dois. O código tem 20 mm com uma zona de silêncio de dois módulos: `https://youtu.be/` mais um identificador de onze caracteres dá 29 módulos no nível Q, de modo que cada módulo mede 0,61 mm, cerca do dobro do que a câmera de um celular precisa. Q é o nível mais alto que mantém 29 módulos com esse comprimento (o motor sobe de M para ele por conta própria); H exigiria 33 e reduziria os módulos a 0,54 mm. O tipo `video` embutido imprimiria *Video 1.1*; renomeado para *Film* e contado com `{n}` no documento inteiro, ele numera as quatro sessões da temporada de *Film 1* a *Film 4*, e as citações da capa imprimem as mesmas palavras.
+
+### 2 · Escreva o endereço curto e deixe o motor completá-lo
+
+<Excerpt region="films" />
+
+O endereço de cada entrada é o que sai impresso embaixo da cartela, `youtu.be/TLkA0RELQ1g`, que o leitor consegue digitar. `parseVideoUrl` lê qualquer forma de endereço do YouTube ou do Vimeo, e `videoWatchUrl` escreve o endereço canônico a partir do que foi lido: o QR code e o link do PDF guardam os dois `https://youtu.be/<id>`. Um erro de digitação que não deixe um identificador válido faz `parseVideoUrl` devolver `undefined`, e o pen para antes da composição, então um link quebrado nunca chega à gráfica.
+
+### 3 · Desenhe uma cartela para o pôster
+
+<Excerpt region="art" />
+
+Na maioria dos projetos o pôster é um quadro do filme: o Sandbox o busca quando você informa o endereço, e no código `youtubePosterUrls(id)` lista as miniaturas do YouTube da maior (1280 × 720) para baixo. Os quadros das plataformas pertencem aos filmes e às suas licenças, e um programa impresso pode usar cartelas próprias, por isso cada filme ganha aqui uma desenhada num canvas na sua cor, com o motivo, o título, o ano e o diretor do filme. A cartela deixa livres os cantos superior esquerdo e inferior direito para as sobreposições. É um canvas e não um SVG porque um SVG desenhado como imagem não alcança as fontes web da página, e as cartelas compõem o texto nas fontes do livreto. Cada cartela tem 1600 × 900 pixels, o 16:9 dos filmes, e `video.poster` declara esse tamanho: na medida de 125 mm ela sai impressa a 325 dpi. Um vídeo sem pôster sai como uma caixa escura em 16:9 com a mesma marca e o mesmo código, e a composição emite um aviso.
+
+### 4 · Ponha o pôster embaixo da abertura
+
+<Excerpt region="furniture" />
+
+Cada filme é um título de nível 1 cuja abertura empilha o chapéu da sessão, o título e a linha de créditos, os três vindos de atributos do título. `::resource` coloca o pôster logo abaixo com `position: 'here'`, e assim todas as páginas de filme seguem a mesma ordem. A capa é um estilo de título cuja faixa, título e chips são elementos de design; os quatro chips tiram da paleta as cores dos filmes, como fazem as cartelas.
+
+### 5 · Uma paleta para as páginas e as cartelas
+
+<Excerpt region="palette" />
+
+A tinta, o vermelho e o creme são os do livreto; as quatro cores dos filmes (com os nomes dos projetos Orange, Peach e Mango da Blender, mais Spring) pintam os chips da capa e as cartelas. A marca de reprodução usa o mesmo vermelho dos chapéus, e a placa do QR code é o creme da página com os módulos em tinta: um código escuro sobre uma placa clara, o contraste que todo aplicativo leitor espera.
+
+## Variações
+
+### Imprima o quadro do próprio filme
+
+Busque a maior miniatura do YouTube em vez de desenhar uma cartela, quando a licença do filme e a sua hospedagem permitirem, e declare o tamanho do próprio quadro.
+
+```diff
+-for (const f of FILMS) await titleCard(f); // after the fonts: the cards set type too
++for (const f of FILMS) { // 1280 × 720, maxresdefault.jpg, the first of youtubePosterUrls
++  await loadImage(`${f.id}.png`, youtubePosterUrls(parseVideoUrl(f.address).id)[0]);
++}
+```
+
+### Reproduza os filmes na edição HTML
+
+`renderToHtml` põe em cada vídeo o player do YouTube com privacidade aprimorada, e um EPUB mostra o pôster com link para o filme; `videoStyle.html: 'poster'` mantém a cartela impressa também na tela. Veja [Vídeos](/pt/docs/document-format#vídeos) e [Estilo de vídeo](/pt/docs/configuration#estilo-de-vídeo).
+
+### Centralize uma marca maior
+
+Uma marca no meio da cartela é reconhecida como player de vídeo do fundo da sala; as cartelas deixam sem texto a faixa do meio, então ela cobre só o motivo.
+
+```diff
+-  playMark: { shape: 'rounded', position: 'top-left', size: mm(8), inset: mm(4),
++  playMark: { shape: 'rounded', position: 'center', size: mm(14), inset: mm(4),
+```
+
+## Erros comuns
+
+- O motor limita o código a 45 % do lado menor do pôster e a marca de reprodução a 40 %. Num pôster pequeno, um código de 20 mm fica menor, e seus módulos também: um código de 20 mm precisa de um pôster com pelo menos 45 mm de altura.
+- Duas sobreposições com a mesma posição se cobrem. Dê à marca de reprodução e ao código cantos diferentes, e desenhe o pôster com esses cantos livres.

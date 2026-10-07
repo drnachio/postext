@@ -1,0 +1,62 @@
+---
+title: "PDF acessível e etiquetado (PDF/UA)"
+summary: "Um guia de reciclagem em PDF/UA-1 etiquetado, com texto alternativo, células de cabeçalho, idioma e sumário com links; a visualização desenha as tags."
+plain: "Um guia de reciclagem de quatro páginas feito por uma prefeitura. Mostra como criar um PDF que os leitores de tela conseguem seguir, com descrições das imagens e tabelas que eles leem em voz alta."
+description: "Um guia municipal de reciclagem composto no Postext e exportado como PDF etiquetado que passa no PDF/UA-1, com texto alternativo, cabeçalhos de tabela e idioma."
+question: "Como exporto um PDF etiquetado (PDF/UA) com texto alternativo, células de cabeçalho e idioma do documento?"
+aliases: ["PDF/UA", "PDF/UA-1", "PDF acessível", "PDF etiquetado", "PDF com tags", "leitor de tela", "texto alternativo", "ordem de leitura", "árvore de estrutura", "células de cabeçalho", "idioma do documento", "acessibilidade", "veraPDF", "guia de reciclagem"]
+pageNotes: { "1": "A capa: uma faixa azul-marinho nos três quintos superiores, com o título Reciclar en el barrio em letra branca grande, em duas linhas, e, ao pé dela, as cinco lixeiras de rua (amarela, azul, verde, marrom e cinza, cada uma com um pictograma branco ou escuro) sobre um meio-fio amarelo. Abaixo, uma linha fina em corpo grande e, no pé da página, o nome da prefeitura em letra monoespaçada pequena.", "2": "A página 2: Índice, o sumário com as duas seções numeradas e suas subseções, linhas pontilhadas e números de página, sobre três boxes com fundo colorido: Cómo usar esta guía, Esta guía, en otros formatos e Datos útiles. Na segunda coluna, Presentación, uma carta de cinco parágrafos, num corpo maior que o do texto e assinada pela vereadora responsável pelo meio ambiente.", "3": "A página 3 com a ordem de leitura desenhada: uma faixa azul-marinho com um numeral 1 amarelo e o título Qué va en cada contenedor e, abaixo, duas colunas em que cada bloco etiquetado está dentro de uma caixa magenta, numerada de 1 a 14 e com o nome da sua tag (H1, P, Figure, H2, Table). A figura mostra as cinco lixeiras; cada lixeira tem um título e um parágrafo, e a tabela 1.1 indica a lixeira de onze itens, com um quadrado colorido ao lado do nome de cada lixeira e um vazio ao lado do ecoponto. O parágrafo sobre o vidro continua na segunda coluna e mantém seu número, 9, numa caixa tracejada, e o rodapé está marcado como Artifact.", "4": "A página 4: uma faixa azul-marinho com o numeral 2 e Lo que no va al contenedor; depois, o ecoponto com uma lista com marcadores do que ele recebe, os dias de coleta na tabela 2.1, quatro passos numerados para agendar a coleta de móveis e o colofão." }
+---
+
+## O que você vai compor
+
+*Reciclar en el barrio* é o guia de reciclagem de uma prefeitura espanhola inventada: quatro páginas A4 para ler na tela ou imprimir em casa. A capa, azul-marinho, mostra as cinco lixeiras de rua sobre um meio-fio amarelo. A página 2 reúne o sumário e três boxes ao lado de uma carta da vereadora; as páginas 3 e 4 trazem as duas seções, em duas colunas em bandeira de Atkinson Hyperlegible Next. O código exporta um PDF etiquetado que passa nas verificações PDF/UA-1 do veraPDF, com títulos, listas, boxes e tabelas na ordem de leitura, texto alternativo na figura e células de cabeçalho nas duas tabelas. O arquivo declara título e idioma (`es`), e os marcadores e as linhas do sumário levam às páginas. As tags não se imprimem, então o código as desenha sobre a página 3 da visualização, a que aparece aqui, com cada bloco etiquetado numa caixa numerada e identificada pela tag. O PDF baixado não tem essa sobreposição.
+
+## Preparo
+
+### 1 · O idioma e o título do documento
+
+<Excerpt region="identity" />
+
+O postext-pdf grava o idioma das tags a partir de `locale`, aqui `/Lang es`, para que um leitor de tela leia o guia com pronúncia espanhola; sem isso, o arquivo declara `en-US`. O `title` e o `author` do frontmatter de `content.es.md` viram o título e o autor do PDF, e o arquivo pede aos visualizadores que mostrem esse título na barra da janela em vez do nome do arquivo. `defaultResourceTypes(LANG)` dá às legendas e às citações seus nomes em espanhol: “Figura 1.1”, “tabla 1.1”. [A resposta curta](#a-resposta-curta) dá à figura e às tabelas seu texto acessível: o `altText` vira a descrição alternativa da figura (`/Alt`) e o `/Summary` de cada tabela, e a primeira linha e a primeira coluna das duas tabelas são etiquetadas como células de cabeçalho.
+
+### 2 · Uma só estrutura de títulos, e uma faixa de capa só com o título
+
+<Excerpt region="headings" />
+
+A árvore de tags tira seus elementos H1 e H2 dos títulos do Markdown, e os marcadores do PDF saem da mesma lista; assim, a capa, o sumário, a carta e as duas seções são de nível 1, e os intertítulos, de nível 2. O postext-pdf etiqueta cada elemento de texto do design de um título como parte desse título. Por isso a faixa da capa leva apenas o título, e a linha fina e o nome da prefeitura vão abaixo dela, como parágrafos. As faixas azul-marinho, o meio-fio e a fileira de lixeiras são elementos de design, e o PDF marca caixas e imagens de design como artefatos, então elas não precisam de texto alternativo e o leitor de tela as pula.
+
+### 3 · Um sumário com links
+
+<Excerpt region="contents" />
+
+`:::toc` lista os H1 e os H2 com os números de página que eles imprimem, e no PDF cada uma das onze linhas leva ao alto da sua página. As citações `:ref` “figura 1.1” e “tabla 1.1”, na página 3, e “tabla 2.1”, na página 4, levam à figura e às tabelas. As linhas pontilhadas usam a letra dos números de página, Atkinson Hyperlegible Next Bold, porque na Public Sans uma sequência de pontos finais fica mais espaçada que o ponto isolado a partir do qual a linha é calculada, e os pontos invadiam os números.
+
+### 4 · A ordem de leitura, desenhada na página
+
+<Excerpt region="reading-order" />
+
+Um leitor de tela segue as tags, e `renderToPdf` etiqueta cada página na ordem em que a pinta: o título da faixa, a primeira coluna de cima para baixo, a segunda e, por fim, os flutuantes da página. Esta função repete essa ordem para numerar as caixas da página 3, e a árvore de estrutura do PDF lista os mesmos catorze elementos na mesma ordem. É por causa dessa ordem que a figura e as duas tabelas ficam no fluxo, com `placement: { position: 'here' }` e uma linha `::resource`. Flutuando no pé da primeira coluna, a figura 1.1 seria etiquetada depois da tabela 1.1, o último bloco da página. O parágrafo sobre o vidro que continua na segunda coluna mantém um só número, 9, porque o PDF etiqueta as duas partes como um único parágrafo.
+
+### 5 · Cores escolhidas pelo contraste
+
+<Excerpt region="palette" />
+
+O PDF/UA-1 não verifica cor, mas a WCAG 2.2 pede 4,5:1 entre o texto e o fundo. A tinta mede 15,6:1 sobre branco, a letra branca 12,5:1 sobre as faixas azul-marinho e o cinza do rodapé 7,0:1. O amarelo dá 1,8:1 sobre branco, por isso só aparece sobre o azul-marinho (6,9:1) e como preenchimento. Os pictogramas seguem o 3:1 que a WCAG pede para gráficos: branco quando atinge essa proporção contra a lixeira, tinta sobre a amarela. `cell()` escreve o nome de cada lixeira ao lado da sua amostra de cor e dá ao ecoponto um quadrado vazio, de modo que nenhuma instrução depende de distinguir cores.
+
+## Variações
+
+### Deixe a figura flutuar
+
+Tire o posicionamento e a figura 1.1 flutua para o pé da primeira coluna da página 3, e o PDF a etiqueta depois da tabela 1.1, o último bloco da página.
+
+```diff
+-  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
++  { id: 'contenedores', typeId: 'figure', kind: 'svg',
+```
+
+## Erros comuns
+
+O código não consegue validar o próprio PDF, porque o veraPDF roda fora do navegador. Baixe o arquivo e rode `verapdf -f ua1 accessible-tagged-pdf.pdf`; a cópia capturada para esta página passa. O validador não sabe dizer se um texto alternativo descreve a imagem, então ouça o guia também com um leitor de tela.
+
+Este guia foi capturado com o postext 1.4.1, em que um link de Markdown imprimia as palavras sem acrescentar nenhum link ao PDF; por isso o colofão imprime o endereço da web completo. A partir do postext 1.10, um link `[text](url)` funciona no PDF e é etiquetado como um elemento `Link` cujo texto são as palavras com o link.

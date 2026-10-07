@@ -1,0 +1,78 @@
+---
+title: "Uma página de romance chinês numa grade de 28 × 28"
+summary: "“Minha terra natal”, de Lu Xun, num 大32开: 28 caracteres por linha, 28 linhas por página, quebras GB, pontuação Kaiming e espaço entre han e latim."
+plain: "O começo de um conto de Lu Xun composto como uma brochura chinesa. Mostra como pôr exatamente 28 caracteres em cada linha e 28 linhas em cada página, seguindo as regras chinesas de pontuação."
+description: "Página de romance da China continental no Postext: cjk.grid compõe 28 × 28 caracteres de 五号 num 大32开, com quebras GB, pontuação Kaiming e recuo de dois."
+question: "Como componho uma página chinesa contada em caracteres, 28 por linha e 28 linhas por página?"
+aliases: ["romance chinês", "chinês simplificado", "chinês horizontal", "grade de caracteres", "版心", "mancha em caracteres", "pontuação Kaiming", "开明式", "quebra de linha GB", "避头尾", "regras de início de linha", "espaço entre chinês e latim", "recuo de dois caracteres", "大32开", "Lu Xun"]
+pageNotes: { "1": "A prancha: uma lua dourada num céu azul-escuro sobre uma faixa de mar e, na areia, entre fileiras de melancias listradas, um menino com uma argola de prata no pescoço crava um forcado de aço na areia à sua frente enquanto o bicho que ele mirava foge por entre as suas pernas. No alto, três linhas do conto em letra de pincel branca.", "2": "A abertura: o título 故乡 em caracteres Song pretos, separados por meio caractere, um fio azul curto e o nome do autor, 鲁迅; embaixo, vinte linhas de texto justificado, cada parágrafo com recuo de dois caracteres, e o fólio 71 no pé." }
+---
+
+## O que você vai compor
+
+O começo de “Minha terra natal” (故乡, 1921), de Lu Xun, como uma brochura da China continental com a sua primeira coletânea o comporia: uma página 大32开, de 140 × 203 mm, cuja mancha é contada em caracteres, 28 por linha e 28 linhas por página, em Noto Serif SC de corpo 五号 (10,5 pt). Todo parágrafo começa com recuo de dois caracteres; vírgulas e aspas ocupam meio caractere, como na maioria dos livros do continente; nenhuma linha começa com 。 ou ， e nenhuma termina com “. O conto abre num recto, sob o seu título no peso preto da Song. Em frente, uma prancha pintada mostra o campo de melancias ao luar de que o narrador se lembra, com as palavras que o descrevem na letra de pincel Ma Shan Zheng. <RecipeLink slug="spanish-pocket-novel">Espanhol justificado num romance de bolso</RecipeLink> faz o mesmo trabalho com uma escrita latina.
+
+## Preparo
+
+### 1 · Uma página contada em caracteres
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `cjk.grid` faz a medida ter 28 emes de `bodyText.fontSize` (294 pt, 103,7 mm) e a mancha, 28 linhas de `lineHeight` (462 pt, 163 mm), e depois desloca as margens para que caibam, então uma linha cheia de han tem exatamente 28 caracteres e toda página cheia termina na mesma linha ([grade de caracteres](/pt/docs/configuration#grade-de-caracteres)). Os cinco ajustes abaixo da grade são o que `locale: 'zh-Hans'` já dá sozinho; estão escritos por extenso para você poder mudar um de cada vez, embora `compressAdjacent` não mude nada enquanto `punctuationWidth` não for `'fullwidth'`: com Kaiming, dois sinais seguidos nunca ocupam mais de 1,5 em. Na <PageRef page={2}>página 71</PageRef>, o 。 que fecha um parágrafo não cabe, e as regras de início de linha (todos os níveis de `lineBreak` menos `'none'`; `'gb'` acrescenta a barra) o proíbem de abrir uma linha. A linha o recolhe compondo com meio caractere de largura o 。 depois de 事 (push-in), e assim 事。宏 se aperta e o parágrafo não ganha mais uma linha ([larguras da pontuação](/pt/docs/configuration#largura-da-pontuação)). O espaço das linhas curtas é distribuído entre os caracteres, nunca entre palavras, e nestas páginas não passa de 0,05 em ([chinês, japonês e coreano](/pt/docs/justification#chinês-japonês-e-coreano)).
+
+<PageShot page={2} crop="0.1,0.82,0.8,0.11" caption="Página 71: as últimas linhas de um parágrafo. 事。宏 se aperta para que 看。 caiba na linha em vez de abrir outra." />
+
+### 2 · Um 大32开 com margem superior maior
+
+<Excerpt region="page" />
+
+Com a grade ligada, as margens são mínimas: a grade põe a mancha no espaço que elas deixam e distribui o que sobra. 22 e 18 mm deixam exatamente 163 mm, então a margem superior continua 4 mm maior que a inferior, como nos livros chineses; os 18 mm de cada lado deixam 0,3 mm para distribuir. Se você pedir mais caracteres ou linhas do que cabem, a grade é reduzida ao que cabe, com um aviso `cjkGridClamped`; o corpo e a entrelinha ficam como foram escritos.
+
+### 3 · Um título rebaixado um número inteiro de linhas
+
+<Excerpt region="opener" />
+
+`minHeight` tem oito linhas de 16,5 pt, então o texto sob o título começa na nona linha da grade, nas mesmas linhas de base de qualquer outra página. Os 23 pt de espaçamento entre letras põem meio caractere entre 故 e 乡, o espaçamento habitual num título de dois caracteres; o Postext não conta o espaçamento depois do último caractere ao centrar a linha, então o título fica no eixo da página ([estilos de título](/pt/docs/configuration#estilos-de-título)).
+
+### 4 · O livro no verso, o conto no recto
+
+<Excerpt region="heads" />
+
+Os romances do continente trazem o título do livro sobre os versos e o do conto sobre os rectos, centrados, com o fólio na borda externa e um fio fino embaixo dos dois. `pages: 'body'` os mantém fora da abertura e da prancha, e a abertura recebe o seu fólio no pé. Os cabeços são compostos em Noto Sans SC, a Hei, a 8 pt: pequenos, mas numa voz diferente da Song do texto.
+
+### 5 · Uma prancha sobre a folha inteira
+
+<Excerpt region="plate" />
+
+A imagem pertence a um título próprio, `# 月下的瓜地 {style="plate" …}`, cujo estilo desenha a página e tira dela o cabeço e o fólio. A prancha precisa de `span: 'page'`, porque o design de um título que fica na coluna é cortado no pé da coluna, 18 mm antes do refile. `runningChapter: false` com `toc: false` a deixa fora dos marcadores do PDF, que começam em 故乡. As três linhas da citação são três atributos e três elementos de texto, porque o texto de design tem a sua própria quebra de linhas e não aplica as larguras da pontuação chinesa; quebradas à mão, as linhas também perdem as vírgulas, como costuma acontecer nas linhas de destaque em chinês.
+
+### 6 · Letras latinas e algarismos no texto chinês
+
+<Excerpt region="styles" />
+
+A nota e o colofão da <PageRef page={7}>página 76</PageRef> são onde algarismos e nomes latinos encostam no han. `latinSpacing` põe um quarto de eme onde quer que se toquem, como no 1921年 da nota e no 用Noto Serif SC五号 do colofão, digitados sem espaço algum ([espaço entre han e latim](/pt/docs/configuration#espaço-entre-han-e-latim)); numa linha justificada, esse espaço é o primeiro a crescer, até meio eme. A nota é composta a 9,1875 pt, e não nos 9 pt do 小五, para que 32 dos seus caracteres preencham a medida: a 9 pt sobravam dois terços de eme em cada linha, e os espaços entre han e latim ficavam com eles. No Markdown, os nomes das fontes estão unidos por espaços não separáveis (U+00A0), que o espaço entre han e latim não toca: com espaços comuns, as linhas em bandeira do colofão quebravam Noto Sans / SC.
+
+## Variações
+
+### Compor toda a pontuação em largura cheia (全角式)
+
+Vírgulas, vírgulas de enumeração e aspas ocupam um caractere inteiro, 。” ocupa dois e cada linha comporta menos caracteres de texto.
+
+```diff
+-  punctuationWidth: 'kaiming', // ，、：； quotes, brackets ½ em; 。？！ one em, ½ at a line end
+-  compressAdjacent: true, // idle under Kaiming (no pair tops 1.5 em); 'fullwidth' needs it
++  punctuationWidth: 'fullwidth',
++  compressAdjacent: false,
+```
+
+### Mostrar a grade enquanto você compõe a página
+
+O canvas desenha um quadrado cinza-claro para cada posição de caractere de cada linha (稿纸); o PDF não o inclui a não ser que `renderToPdf` receba `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+## Erros comuns
+
+- A prancha é um título, e um título ganha marcador no PDF: sem `runningChapter: false` e `toc: false` no estilo da prancha, os marcadores começariam em 月下的瓜地, um marcador de primeiro nível antes de 故乡. Com só um dos dois ajustes, o marcador continua lá. O PDF com tags ainda mantém o título da prancha como H1.
+- A fonte dos próprios títulos tem de ser uma das que `FONTS` carrega, mesmo quando um design pinta todos os títulos: com o peso padrão 700, o kit encontrou Noto Serif SC 700 na diagramação e carregou o seu arquivo latino com um aviso. `headings.fontWeight: 400` mantém os blocos de título na fonte do texto.

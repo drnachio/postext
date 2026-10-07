@@ -26,6 +26,13 @@ describe('localeShortTag', () => {
     expect(localeShortTag('en-GB', ['es', 'en-GB'])).toEqual({ text: 'en' });
   });
 
+  it('shows the language for the only Portuguese edition, named for the Brazilian interface', () => {
+    // The guide's row: PT once upper-cased by the row style.
+    expect(localeShortTag('pt-BR', ['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja', 'pt-BR'])).toEqual({ text: 'pt' });
+    expect(localeDisplayName('pt-BR', 'pt-BR')).toMatch(/^português \(Brasil\)$/i);
+    expect(localeDisplayName('en', 'pt-BR')).toBe('inglês');
+  });
+
   it('shows ع for the only Arabic edition, the tag when there are two', () => {
     expect(localeShortTag('ar', ['es', 'en', 'ar'])).toEqual({ text: 'ع', lang: 'ar' });
     expect(localeShortTag('ar-EG', ['ar-EG', 'en'])).toEqual({ text: 'ع', lang: 'ar' });

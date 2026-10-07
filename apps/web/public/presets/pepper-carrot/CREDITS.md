@@ -1,6 +1,6 @@
 # Credits — Pepper&Carrot · Pepper's Birthday Party
 
-Showcase preset for the Postext sandbox: episode 8 of the webcomic Pepper&Carrot (June 2015), in seven
+Showcase preset for the Postext sandbox: episode 8 of the webcomic Pepper&Carrot (June 2015), in eight
 languages, re-lettered and re-laid out by Postext.
 
 ## The comic
@@ -20,6 +20,7 @@ Art & Scenario: David Revoy. Episode sources: https://www.peppercarrot.com/0_sou
 | `es` | Episodio 8: El cumpleaños de Pimienta | Art & Scenario: David Revoy — Translation: Juanjo Faico — Contribution: Andrej Ficko, Hồ Nhựt Châu |
 | `ca` | Episodi 8: La festa d'aniversari de la Pepper | Art & Scenario: David Revoy — Translation: Juan José Segura |
 | `fr` | Épisode 8 : L'anniversaire de Pepper | Art & Scenario: David Revoy (original version) — Proofreading: Aurélien Gâteau |
+| `pt-BR` | Episódio 8: A Festa de Aniversário da Pepper | Art & Scenario: David Revoy — Translation: Frederico Batista — Proofreading: Alexandre E. Almeida |
 | `ja` | エピソード 8: ペッパーの誕生パーティー | Art & Scenario: David Revoy — Translation: guruguru — Contribution: Hồ Nhựt Châu |
 | `zh-Hans` | 第8集：小辣椒的生日 | Art & Scenario: David Revoy — Translation: Ran Zhuang |
 | `ar` | حلقة ٨ : حفلةُ عيدِ ميلادِ فُلفُل | Art & Scenario: David Revoy — Translation: Mahwiii |

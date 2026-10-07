@@ -1,0 +1,61 @@
+---
+title: "Um conto japonês em dois andares, com o título sobre ambos"
+summary: "Dois contos de Akutagawa numas obras completas: dois andares de 25 caracteres numa página A5, cada título sobre ambos numa página ímpar, finais como caem."
+plain: "Dois contos como os imprime uma coleção de obras completas japonesa: o texto desce pela página em duas faixas empilhadas, cada conto abre numa página da esquerda com o título na altura toda, e a última página não é nivelada."
+description: "Akutagawa em dois andares verticais no Postext: títulos sobre os dois andares, obras que abrem em página ímpar, seções de 3 linhas e finais sem nivelar."
+question: "Como componho um conto japonês em dois andares, com o título sobre ambos, abrindo na página da esquerda?"
+aliases: ["二段組", "nidangumi", "dois andares", "duas faixas verticais", "duas colunas na vertical", "段", "dan", "andares", "zenshū", "全集", "obras completas", "tankōbon", "単行本", "成り行き", "nariyuki", "última página sem nivelar", "título sobre os andares", "Akutagawa", "芥川龍之介", "蜘蛛の糸", "O fio da aranha", "The Spider's Thread", "尾生の信"]
+pageNotes: { "1": "A página 211 de um volume de obras completas, sozinha à esquerda da lombada: 蜘蛛の糸 desce grande pela direita da página, atravessando os dois andares, 芥川龍之介 perto do pé, depois o texto em dois andares com um fio fino entre eles, a seção 一 com três linhas de largura no andar de cima e um colofão de duas linhas em inglês no pé.", "4": "A última página de O fio da aranha: o andar de cima ocupa a página toda, com a seção 三, e o de baixo tem três linhas e a data （大正七年四月十六日）, erguida um caractere acima do pé.", "5": "O conto seguinte, 尾生の信, abre na página da esquerda em frente, com o título atravessando os dois andares.", "7": "A última página: o texto termina a um terço do andar de cima, e o andar de baixo fica vazio." }
+---
+
+## O que você vai compor
+
+Sete páginas de um volume de obras completas (全集) numa página A5 encadernada pela direita: *O fio da aranha* e *A fé de Bisei*, de Akutagawa Ryūnosuke, compostos em dois andares (二段組) de 25 caracteres de altura e 21 linhas de largura, em Noto Serif JP de 9 pt, com um fio fino entre os andares. Cada conto abre numa página ímpar, a da esquerda, com o título em 20 pt descendo pelos dois andares e o nome do autor perto do pé; os fólios continuam a partir da página 211. As seções 一 二 三 ocupam três linhas do seu andar. Quando um conto termina, a última página fica como o texto cai, o 成り行き (nariyuki) japonês: na página 214, o andar de cima ocupa a página toda e o de baixo tem três linhas e a data. O jornal chinês em andares verticais é a <RecipeLink slug="vertical-newspaper-tiers">Nº 084</RecipeLink>, e um título de capítulo sobre duas colunas horizontais é a <RecipeLink slug="five-chapter-openers">Nº 017</RecipeLink>.
+
+## Preparo
+
+### 1 · Duas colunas giradas um quarto de volta são dois andares
+
+O código é a [resposta curta](#a-resposta-curta) acima. Numa página com `writingMode: 'vertical-rl'`, `layoutType: 'double'` empilha as duas colunas: a primeira enche o andar de cima a partir da direita, depois o de baixo, e a medianiz é a faixa entre eles ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) conta os caracteres de cima para baixo num andar, então cada andar tem 25 caracteres de 9 pt e a medianiz é arredondada para dois caracteres inteiros; as 21 linhas de 15,75 pt na largura ocupam 116,7 mm dos 148 mm da página. O fio entre os andares atravessa a página, com 0,4 pt num cinza quente.
+
+O balanceamento do Postext terminaria os dois andares da última página de um conto na mesma linha, que é como os jornais chineses e a maioria dos livros europeus em duas colunas fecham um capítulo. Um livro japonês em andares deixa o texto cair: o andar de cima percorre a página toda antes de o de baixo começar. `balancing.trailing: false` é essa escolha, e `enabled: false`, que a inclui, também impede o balanceamento de acrescentar linhas acima dos títulos numa grade de caracteres ([Balanceamento de colunas](/pt/docs/configuration#equilíbrio-de-colunas)).
+
+### 2 · Descer o título da obra pelos dois andares
+
+<Excerpt region="opener" />
+
+Um nível de título com `span: 'page'` é diagramado na altura toda da página, os dois andares e a medianiz, no começo do fluxo, à direita de uma página vertical; os andares começam depois das sete linhas que o design dele reserva. Um título assim sempre abre uma página, e `breakBefore.parity: 'odd'` faz dela a da esquerda: *O fio da aranha* termina na página 214, uma página par, então *A fé de Bisei* abre na 215 sem página em branco entre os dois ([Span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). No design, `x` desce pela página e `y` a atravessa a partir da borda direita da mancha; o nome do autor é posicionado a partir do pé do andar de baixo, três caracteres acima.
+
+### 3 · Numerar as seções em três linhas do seu andar
+
+O segundo nível, `lineSpan: 3` com `indent: em(8)`, compõe 一 二 三 oito caracteres abaixo do topo do andar, numa faixa de três linhas, como o texto do Aozora as marca (八字下げ, 中見出し), de modo que o texto depois de um número de seção continua nas linhas do andar ao lado ([Ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)). As datas que fecham os contos, （大正七年四月十六日）, ficam erguidas um caractere acima do pé do andar (地から一字上げ) com `:::paragraphs{align=end endIndent=1}`; o conversor do Aozora as escreve como um estilo `aozora-end1` que as encosta no pé, e os atributos do bloco acrescentam a subida de um caractere.
+
+### 4 · Pôr o volume e a obra na margem do corte
+
+<Excerpt region="furniture" />
+
+`anchor.to: 'outer'` põe o hashira na margem do corte, o nome do volume, 芥川龍之介集, nas páginas da direita e o título da obra nas da esquerda, e `pages: 'body'` os deixa fora das páginas onde uma obra abre ([Elementos de texto verticais](/pt/docs/configuration#elementos-de-texto-verticais)). O fólio é composto atravessado na margem, em algarismos arábicos, como muitas obras completas o imprimem: descendo pela margem do corte, três algarismos ficariam deitados. `pageNumbering.startAt: 211` numera as páginas como o volume as numera. O estilo de título da primeira obra traz o colofão com `pages: 'opener'`, porque o rodapé de um estilo serve a todas as páginas da sua seção.
+
+## Variações
+
+### Nivelar a última página
+
+Sem `balancing`, a última página de cada obra é cortada nivelada: a página 214 termina com 10 linhas no andar de cima e 11 no de baixo, o fechamento que um livro chinês ou europeu em colunas usa.
+
+```diff
+-const balancing = { enabled: false, trailing: false };
++const balancing = {}; // the defaults: the closing band is cut level
+```
+
+### Abrir cada obra na página seguinte
+
+`parity: 'any'` começa uma obra na página que vier, como fazem as revistas e as antologias de textos muito curtos.
+
+```diff
+-const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' } };
++const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } };
+```
+
+### Compor o conto num só andar
+
+Romances e bunko compõem o texto num só andar, sem medianiz; a <RecipeLink slug="bunko-novel-furigana">Nº 117</RecipeLink> compõe um bunko assim.

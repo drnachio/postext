@@ -10,7 +10,7 @@ import {
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
-const LANG = 'en'; // @lang: the language of the album: 'es' | 'en' | 'ca' | 'zh' | 'ar' | 'ja'
+const LANG = 'en'; // @lang: the album's language: 'es' | 'en' | 'ca' | 'zh' | 'ar' | 'ja' | 'pt'
 const RECIPE = 'tebeo-album-page';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -30,10 +30,11 @@ const colorPalette = [
 ];
 // #endregion
 
-const LOCALE = t({ es: 'es', en: 'en-gb', ca: 'ca', zh: 'zh-Hans', ar: 'ar', ja: 'ja' });
+const LOCALE = t({ es: 'es', en: 'en-gb', ca: 'ca', zh: 'zh-Hans', ar: 'ar', ja: 'ja',
+  pt: 'pt-BR' });
 // A hand that letters in upper and lower case for the Latin editions; the engine's comic
 // faces for Chinese, Japanese and Arabic, which a Latin hand cannot set.
-const LATIN = ['es', 'en', 'ca'].includes(LANG);
+const LATIN = ['es', 'en', 'ca', 'pt'].includes(LANG);
 const LETTER = LATIN ? 'Patrick Hand' : defaultComicFont(LOCALE);
 const DISPLAY = defaultComicSfxFont(LOCALE); // Bangers, Dela Gothic One, ZCOOL KuaiLe, Lalezar
 
@@ -57,7 +58,7 @@ const comics = {
   cast: [ // names for the tagged PDF and EPUB, which read the balloons aloud
     { id: 'lola', name: 'Lola' },
     { id: 'paco', name: t({ es: 'el abuelo Paco', en: 'Grandpa Paco', ca: "l'avi Paco",
-      zh: '帕科爷爷', ar: 'الجد باكو', ja: 'パコおじいちゃん' }) },
+      zh: '帕科爷爷', ar: 'الجد باكو', ja: 'パコおじいちゃん', pt: 'o vovô Paco' }) },
     { id: 'carmen', name: 'Carmen' },
   ],
   runningHeads: true, // the folio prints on the comic page too
@@ -137,7 +138,9 @@ const ART = {
         + 'comprant i coloms.',
       zh: '马德里一个晴朗的星期天：广场上一座铁架玻璃顶的市场，有买菜的人和鸽子。',
       ar: 'يوم أحد مشمس في مدريد: سوق من الحديد والزجاج في ساحة، فيها متسوّقون وحمام.',
-      ja: '晴れた日曜日のマドリード。広場に鉄とガラスの市場が建ち、買い物客とハトがいる。' }),
+      ja: '晴れた日曜日のマドリード。広場に鉄とガラスの市場が建ち、買い物客とハトがいる。',
+      pt: 'Um domingo de sol em Madri: um mercado de ferro e vidro numa praça, com gente fazendo '
+        + 'compras e pombos.' }),
   },
   t2: { width: 1000, height: 1000, safeArea: box([.1, .1, .85, .72]),
     alt: t({ en: 'Inside the market, Lola pulls her grandfather Paco by the hand, pointing ahead '
@@ -148,7 +151,9 @@ const ART = {
         + 'les parades.',
       zh: '市场里，萝拉拉着爷爷帕科的手，指着摊位之间的前方。',
       ar: 'داخل السوق تشدّ لولا جدّها باكو من يده وتشير إلى الأمام بين الأكشاك.',
-      ja: '市場の中、ローラが祖父パコの手を引き、売り場のあいだの先を指さしている。' }),
+      ja: '市場の中、ローラが祖父パコの手を引き、売り場のあいだの先を指さしている。',
+      pt: 'Dentro do mercado, Lola puxa o avô Paco pela mão e aponta adiante, entre as '
+        + 'bancas.' }),
     anchors: [
       who('paco', .315, .28, [.32, .2], [.22, .13, .17, .19]),
       who('lola', .7, .415, [.66, .33], [.6, .3, .17, .17]),
@@ -164,7 +169,9 @@ const ART = {
         + 'fa brillar una taronja.',
       zh: '萝拉仰头望着一座高高的橙子金字塔，水果摊主卡门正在擦亮一个橙子。',
       ar: 'لولا تنظر إلى هرم عالٍ من البرتقال، بينما كارمن بائعة الفاكهة تلمّع برتقالة.',
-      ja: 'ローラがそびえるオレンジのピラミッドを見上げ、果物屋のカルメンはオレンジをみがいている。' }),
+      ja: 'ローラがそびえるオレンジのピラミッドを見上げ、果物屋のカルメンはオレンジをみがいている。',
+      pt: 'Lola olha para cima, para uma pirâmide altíssima de laranjas, enquanto Carmen, a '
+        + 'feirante, lustra uma laranja.' }),
     anchors: [
       who('lola', .235, .43, [.19, .36], [.14, .3, .13, .18]),
       who('carmen', .795, .27, [.8, .19], [.74, .12, .13, .19]),
@@ -180,7 +187,9 @@ const ART = {
         + 'aixeca la mà per aturar-la.',
       zh: '萝拉伸手去拿最底下的一个橙子；帕科吓了一跳，举手想拦住她。',
       ar: 'لولا تمدّ يدها إلى برتقالة في أسفل الكومة، وباكو مذعورًا يرفع يده ليوقفها.',
-      ja: 'ローラが山のいちばん下のオレンジに手をのばし、あわてたパコが止めようと手を上げる。' }),
+      ja: 'ローラが山のいちばん下のオレンジに手をのばし、あわてたパコが止めようと手を上げる。',
+      pt: 'Lola estica a mão para uma laranja da base da pilha; Paco, assustado, levanta a mão '
+        + 'para impedi-la.' }),
     anchors: [
       who('paco', .31, .3, [.28, .17], [.17, .1, .2, .26]),
       who('lola', .635, .485, [.61, .38], [.48, .28, .27, .27]),
@@ -197,7 +206,9 @@ const ART = {
       zh: '橙子金字塔塌了：橙子滚得到处都是，帕科的贝雷帽飞了出去，卡门举起双手，鸽子四散飞走。',
       ar: 'ينهار هرم البرتقال: البرتقال يتدحرج في كل مكان، وقبعة باكو تطير، وكارمن ترفع يديها، '
         + 'والحمام يتفرّق.',
-      ja: 'オレンジのピラミッドがくずれる。オレンジが転がり、パコのベレー帽が飛び、カルメンが両手を上げ、ハトが散る。' }),
+      ja: 'オレンジのピラミッドがくずれる。オレンジが転がり、パコのベレー帽が飛び、カルメンが両手を上げ、ハトが散る。',
+      pt: 'A pirâmide de laranjas desaba: laranjas rolam por toda parte, a boina de Paco sai '
+        + 'voando, Carmen ergue os braços e os pombos fogem.' }),
     anchors: [
       who('lola', .15, .44, [.14, .37], [.08, .32, .12, .15]),
       who('paco', .34, .31, [.33, .27], [.27, .22, .12, .14]),
@@ -216,7 +227,9 @@ const ART = {
       zh: '萝拉、帕科和卡门跪在地上，笑着把橙子捡进贝雷帽和围裙里；一只鸽子在啄一个橙子。',
       ar: 'لولا وباكو وكارمن جاثون يجمعون البرتقال في القبعة والمريلة وهم يضحكون، وحمامة تنقر '
         + 'واحدة.',
-      ja: 'ローラとパコとカルメンがひざをつき、笑いながらオレンジをベレー帽とエプロンに集める。ハトが一つつついている。' }),
+      ja: 'ローラとパコとカルメンがひざをつき、笑いながらオレンジをベレー帽とエプロンに集める。ハトが一つつついている。',
+      pt: 'Lola, Paco e Carmen, de joelhos, juntam as laranjas na boina e no avental, rindo; um '
+        + 'pombo bica uma delas.' }),
     anchors: [
       who('lola', .245, .42, [.24, .33], [.17, .27, .14, .2]),
       who('paco', .49, .3, [.48, .22], [.42, .14, .14, .2]),
@@ -233,7 +246,9 @@ const ART = {
         + 'la boina d’en Paco.',
       zh: '公园长椅上，萝拉和帕科剥着橙子笑着；一只鸽子停在帕科的贝雷帽上。',
       ar: 'على مقعد في الحديقة يقشّر لولا وباكو البرتقال ويضحكان، وحمامة تقف على قبعة باكو.',
-      ja: '公園のベンチでローラとパコがオレンジをむいて笑っている。パコのベレー帽にハトがとまっている。' }),
+      ja: '公園のベンチでローラとパコがオレンジをむいて笑っている。パコのベレー帽にハトがとまっている。',
+      pt: 'Num banco de praça, Lola e Paco descascam laranjas e riem; um pombo pousou na boina '
+        + 'de Paco.' }),
     anchors: [
       who('lola', .32, .45, [.31, .35], [.24, .3, .15, .22]),
       who('paco', .6, .38, [.65, .25], [.54, .2, .19, .24]),
@@ -261,7 +276,8 @@ const continuation = { pageIndexOffset: 1, pageNumbering: { startAt: 2 } };
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources, continuation }, config()), markdown);
 showBook(doc, { title: t({ es: 'Una página de álbum', en: 'An album page', ca: "Una pàgina d'àlbum",
-  zh: '一页欧式漫画', ar: 'صفحة من ألبوم مصوّر', ja: 'BDのアルバムの一ページ' }) });
+  zh: '一页欧式漫画', ar: 'صفحة من ألبوم مصوّر', ja: 'BDのアルバムの一ページ',
+  pt: 'Uma página de álbum' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 

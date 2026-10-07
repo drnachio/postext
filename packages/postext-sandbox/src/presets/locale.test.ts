@@ -189,6 +189,24 @@ describe('Japanese editions', () => {
   });
 });
 
+describe('a Brazilian Portuguese interface', () => {
+  const guide = { id: 'postext-guide', locales: ['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja', 'pt-BR'] };
+  const showcase = { id: 'deep-sky', locale: 'es', locales: ['es', 'en'] };
+
+  it('opens the guide in its Brazilian edition for any Portuguese tag', () => {
+    for (const viewer of ['pt-BR', 'pt', 'pt-PT']) {
+      expect(choosePresetOpen({ summary: guide, viewer, drafts: [] }).locale, viewer).toBe('pt-BR');
+    }
+    expect(presetLocaleFor(guide, 'pt')).toBe('pt-BR');
+    expect(activeLocaleTag(guide.locales, 'pt-BR')).toBe('pt-BR');
+  });
+
+  it('reads a book without a Portuguese edition in English', () => {
+    expect(presetReaderLocale(showcase, 'pt-BR')).toBe('en');
+    expect(choosePresetOpen({ summary: showcase, viewer: 'pt-BR', drafts: [] })).toEqual({ locale: 'en', draft: null });
+  });
+});
+
 describe('bundleContentLocales', () => {
   it('lists the locales of a multi-language bundle and the one it is written in', () => {
     const chapters = (l: string) => [{ title: l, file: `${l}.md` }];

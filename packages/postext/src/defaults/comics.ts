@@ -11,9 +11,10 @@ import type {
   ResolvedLetteringConfig,
   ResolvedNamedPanelStyleConfig,
   ResolvedPanelStyleConfig,
+  WritingMode,
 } from '../types';
 import type { ResolvedConfig } from '../vdt';
-import { chineseScriptOf, isJapaneseLanguage, localeScript, presentTag } from '../locale';
+import { chineseScriptOf, comicsLocaleDirection, isJapaneseLanguage, localeScript, presentTag } from '../locale';
 import { colorsEqual, dimensionsEqual } from './shared';
 
 const HEX = (hex: string): ColorValue => ({ hex, model: 'hex' });
@@ -156,6 +157,7 @@ const BALLOON_BASE: Omit<ResolvedBalloonStyleConfig, 'id' | 'name'> = {
   fontScale: 1,
   align: 'center',
   rotate: 0,
+  skew: 0,
 };
 
 /** The built-in balloon styles, by kind (sound effects take their face from
@@ -254,6 +256,7 @@ function resolveBalloonStyle(partial: BalloonStyleConfig, locale: string | undef
     fontScale: partial.fontScale ?? b.fontScale,
     align: partial.align ?? b.align,
     rotate: partial.rotate ?? b.rotate,
+    skew: partial.skew ?? b.skew,
   };
   const family = partial.fontFamily ?? sfxFont;
   if (family) out.fontFamily = family;
@@ -306,6 +309,38 @@ export function resolveComicsConfig(partial: ComicsConfig | undefined, locale?: 
     runningHeads: partial?.runningHeads === true,
     ...(partial?.viewerLeaf ? { viewerLeaf: partial.viewerLeaf } : {}),
   };
+}
+
+/** What the reading direction of a document's comics depends on besides
+ *  the `comics` section: the document language (`locale`), its resolved
+ *  base direction and its writing mode. */
+export interface ComicDirectionContext {
+  locale?: string;
+  direction?: 'ltr' | 'rtl';
+  writingMode?: WritingMode;
+}
+
+/** The direction a document's comics read in (`comics.readingDirection`
+ *  resolved; a page's own `direction` attribute still wins over it, see
+ *  `comicPageDirection`). `'ltr'` or `'rtl'` as written; `'auto'` (or
+ *  unset) is `'rtl'` when the document runs right to left (an Arabic
+ *  edition), is set vertically (`layout.writingMode: 'vertical-rl'`), or
+ *  is in a language whose readers read comics right to left
+ *  ({@link comicsLocaleDirection}: Japanese, Traditional Chinese), so a
+ *  localized edition of a Western comic reads in its language's
+ *  direction; otherwise it is the direction the art was drawn for
+ *  (`comics.artDirection`: a manga stays right to left in English, a
+ *  Western comic left to right in Simplified Chinese or Korean). With
+ *  `page.binding: 'auto'`, a document with a `comics` section reading
+ *  right to left is bound on the right. */
+export function comicReadingDirection(
+  comics: Pick<ComicsConfig, 'readingDirection' | 'artDirection'> | undefined,
+  doc: ComicDirectionContext,
+): 'ltr' | 'rtl' {
+  const asked = comics?.readingDirection;
+  if (asked === 'ltr' || asked === 'rtl') return asked;
+  if (doc.direction === 'rtl' || doc.writingMode === 'vertical-rl' || comicsLocaleDirection(doc.locale) === 'rtl') return 'rtl';
+  return comics?.artDirection === 'rtl' ? 'rtl' : 'ltr';
 }
 
 const defaultsByLocale = new Map<string, ResolvedComicsConfig>();

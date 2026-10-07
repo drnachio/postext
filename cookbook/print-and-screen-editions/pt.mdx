@@ -1,0 +1,74 @@
+---
+title: "Um só original, edições impressa e de tela"
+summary: "As duas edições saem de uma configuração: htmlViewer.overrides guarda o design escuro de tela e applyHtmlViewerOverrides o mescla antes de cada composição HTML."
+plain: "A seção de meteorologia de uma revista, feita duas vezes com o mesmo texto. Mostra como um mesmo conjunto de configurações dá uma versão impressa em colunas e outra escura, numa coluna só, para ler na tela."
+description: "Uma seção de revista no Postext, impressa em duas colunas e em modo de leitura HTML escuro e redimensionável, com um só Markdown e uma configuração."
+question: "Como faço para mostrar o mesmo documento num modo de leitura HTML responsivo, com design de tela mais simples?"
+aliases: ["edição de tela", "modo de leitura", "visualização de leitura", "edição web", "modo escuro", "tema noturno", "HTML responsivo", "redimensionar", "ResizeObserver", "Shadow DOM", "htmlViewer overrides"]
+pageNotes: { "1": "A página divisória de Notes on Weather: um campo azul-chuva com traços de chuva brancos em diagonal que deixam o texto livre, um numeral romano I alto, o título da parte, Autumn, e as três notas listadas no pé.", "2": "A nota Rain: uma faixa clara cor de neblina com o antetítulo Autumn · Note 1, o título em Gloock e um olho em itálico, duas colunas justificadas e um pluviômetro desenhado em corte no alto da segunda coluna.", "3": "A nota Fog: duas colunas equilibradas sobre uma panorâmica que atravessa o pé da página, a fotografia de um vale coberto de neblina ao nascer do sol, com a torre de uma igreja, árvores e um rio aparecendo através dela e uma margem cercada em primeiro plano.", "4": "A nota Wind: uma rosa dos ventos encabeça a segunda coluna, com as pétalas azuis mais longas apontando para oeste e sudoeste, e a nota termina com o colofão da edição." }
+---
+
+## O que você vai compor
+
+*Notes on Weather*, a seção de outono de uma pequena revista, composta duas vezes a partir do mesmo Markdown. No papel, é uma edição de 225 × 297 mm: uma página divisória azul-chuva, três notas que abrem sob uma faixa clara cor de neblina, duas colunas justificadas, desenhos de um pluviômetro e de uma rosa dos ventos e uma fotografia de um vale com neblina. Na tela, é uma única coluna alinhada à esquerda em Newsreader, cinza-claro sobre quase preto, em texto HTML que o leitor pode selecionar e copiar, sem página divisória, faixas de neblina nem fólios. O painel abre no pluviômetro, reduzido à altura do painel e desenhado em cores noturnas, ao lado da página impressa em que ele fica. Role para cima para ver a abertura de Rain, ou arraste o canto do painel, e o texto é diagramado de novo no tamanho novo. O design de tela são nove chaves em `htmlViewer.overrides`, dentro da configuração da edição impressa.
+
+## Preparo
+
+### 1 · Um conjunto de nomes de cor, dois conjuntos de valores
+
+<Excerpt region="palette" />
+
+Toda cor da configuração aponta para um id da paleta, e o hex escrito ao lado é só o valor de reserva diurno. Assim, a edição de tela passa para as cores noturnas trocando um único array. Os [overrides](/pt/docs/configuration#visualizador-html) da [resposta curta](#a-resposta-curta) mesclam objetos chave a chave e os níveis de título por `level`, e substituem inteiro qualquer outro array, inclusive `colorPalette`. `main-color` faz parte da paleta, então os valores padrão do motor que o usam também mudam. No postext 1.4.1, a paleta nova não chega aos elementos de design nem à cor das referências, por isso `relink()` reescreve cada cor vinculada a partir da paleta da configuração mesclada.
+
+### 2 · Aberturas: uma faixa no papel, as palavras na tela
+
+<Excerpt region="opener" />
+
+Os elementos de antetítulo, título e olho são definidos uma vez e espalhados nos dois designs, então as duas edições mostram os mesmos atributos do título: `{attr.kicker}`, `{attr.lead}` e o `{partTitle}` da parte. No papel, um título de nível 1 quebra para uma página nova e ocupa as duas colunas, e o seu design pendura uma faixa cor de neblina a partir da sangria. `minHeight` reserva a altura da faixa abaixo da margem superior, mais `AIR`, os 9 mm entre a faixa e a primeira linha. Os títulos impressos têm 54 pt porque cada um é uma palavra curta e o único texto grande da sua página. Na tela, o mesmo nível vira um título na coluna, sem faixa e sem ar. O override se mescla por `level`, então toda configuração do título que ele não repete fica como na edição impressa.
+
+### 3 · Uma página divisória que só existe no papel
+
+<Excerpt region="part" />
+
+Na edição impressa, `:::part` abre <PageRef page={1}>a página divisória azul-chuva</PageRef>: uma caixa sangrada em todas as bordas, um elemento de imagem com traços de chuva que deixam o texto livre, o numeral e o título vindos do bloco e a lista de notas em branco. Os overrides de tela definem `parts.page: false`, então nenhuma página é aberta e a lista não é composta. A [parte](/pt/docs/configuration#partes) continua aplicando o seu número e o seu título às notas seguintes, e o antetítulo de tela diz “Autumn · Note 1”, como o impresso.
+
+### 4 · Desenhe cada figura duas vezes
+
+<Excerpt region="figures" />
+
+Trocar a paleta não recolore um SVG, então cada desenho é feito uma vez por paleta. O vale é uma fotografia, um único JPEG que as duas edições compartilham. `figures(edition)` monta os mesmos recursos para as duas edições, cada um apontando para o arquivo da sua edição: `gauge-day.svg` no impresso, `gauge-night.svg` na tela. Ids, legendas, textos alternativos e posicionamentos não mudam, então cada `:ref` do Markdown leva à mesma figura, com o mesmo número, nas duas edições. Na edição de tela, o texto alternativo vai em cada `<img alt>`, onde um leitor de tela o encontra.
+
+### 5 · Hospede a edição de tela
+
+<Excerpt region="screen" />
+
+Cada página de tela tem a altura do painel, então `fitFiguresToPage` reduz o pluviômetro até ele caber numa página com a legenda ([layout](/pt/docs/configuration#diagramação)). A 96 dpi, a resolução que o CSS pressupõe, os milímetros e pontos herdados do impresso aparecem no tamanho nominal ([integrar o visualizador HTML](/pt/docs/configuration#integração-do-visualizador-html)). O pen escreve as linhas com posição absoluta de `renderToHtml` dentro de um Shadow DOM, onde os seletores da página não as alcançam. O `all: initial` do contêiner também bloqueia propriedades herdadas como `letter-spacing`: o motor mediu as linhas sem elas, e um valor herdado faria o texto se sobrepor. As páginas HTML são transparentes, a menos que alguém as pinte, então `page.backgroundColor` tira da paleta o papel noturno. O ResizeObserver espera 150 ms e só recompõe, a partir de uma `config()` nova, quando a largura ou a altura do painel mudou; depois da recomposição, o painel volta a rolar até a mesma fração da sua altura.
+
+## Variações
+
+### Leia de dia
+
+Tire a paleta noturna e use os valores diurnos para o painel e as figuras; a edição de tela passa a mostrar páginas brancas, tinta escura e os desenhos diurnos.
+
+```diff
+-  colorPalette: paletteOf(night), // arrays are replaced whole: the night values
+   parts: { page: false }, // no divider page; the part still names the notes after it
+@@
+-pane.style.background = night.paper; // the pane's own ground, beside the pages and the scrollbar
++pane.style.background = day.paper; // the pane's own ground, beside the pages and the scrollbar
+@@
+-  const screenDoc = buildDocument({ markdown, resources: figures('night') },
++  const screenDoc = buildDocument({ markdown, resources: figures('day') },
+```
+
+### Dê às aberturas impressas um número de capítulo sobre uma faixa colorida
+
+Para uma abertura impressa mais pesada, com uma faixa saturada e um número de capítulo grande, veja <RecipeLink slug="chapter-opener-bleed-band">Abertura de capítulo sobre uma faixa sangrada</RecipeLink>; os overrides de tela continuam iguais.
+
+## Erros comuns
+
+- Confira o fim de cada nota depois de editar. Se o último parágrafo de uma nota empurrar um rabo de duas linhas para uma página nova (o controle de viúvas mantém as duas linhas juntas), o postext 1.4.1 dá à coluna dessa página a altura de uma linha, e o canvas corta a segunda. As duas amostras foram ajustadas para que nenhuma nota termine assim.
+- Em texto alinhado à esquerda, a 1.4.1 pode terminar uma linha no “(” antes de uma referência, e num painel que o leitor pode redimensionar alguma largura vai produzir essa quebra. Estas notas escrevem “as Fig. 2 shows”, nunca “(Fig. 2)”.
+- Deixe um parágrafo de tela começar na última linha de uma página (`avoidWidows: false`). Com essa regra ligada, a 1.4.1 pode forçar um parágrafo mais alto que a página, inteiro, para o vão embaixo de uma figura, onde ele passa do pé da página; um painel de 240 × 460 ou 260 × 500 px mostra isso.
+- Mantenha o painel com pelo menos 400 px de altura (o `min-height` do pen). Num painel estreito com menos de uns 350 px de altura, a abertura de tela fica mais alta que a área de conteúdo da página; o postext 1.4.1 então descarta a reserva inteira e compõe o primeiro parágrafo por cima do título.
+- Dê um tamanho ao painel antes de diagramá-lo. Um painel sem largura, escondido ou espremido numa linha flex, daria uma página de largura zero, e é por isso que `showScreen()` ignora um painel mais estreito ou mais baixo que `FOLDED`, 200 px.

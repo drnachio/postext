@@ -1,0 +1,64 @@
+---
+title: "Reportagem de revista num grid de três colunas"
+summary: "layoutType 'multiple' divide a página em três colunas; placement.columns põe fotos e uma citação flutuante sobre duas delas, ou sobre as três."
+plain: "Uma reportagem de viagem de seis páginas de uma revista mensal, composta em três colunas estreitas. Mostra como pôr fotos e uma citação grande sobre duas colunas ou a página toda, e um boxe de dicas práticas numa só."
+description: "Uma reportagem de viagem no Postext em três colunas: página dupla de abertura com foto, fotos em uma, duas ou três colunas, citação flutuante e boxe lateral."
+question: "O Postext compõe uma página de revista em três colunas, com fotos ocupando duas delas?"
+aliases: ["revista em três colunas", "três colunas", "grid de revista", "grade de revista", "foto em duas colunas", "citação em duas colunas", "citação em destaque", "boxe lateral", "reportagem de viagem", "página dupla de abertura", "foto em página dupla", "capitular", "olho", "assinatura", "sinal final", "mapa de localização"]
+pageNotes: { "1": "A página par da abertura: salinas ao nascer do sol enchem a página, com o chapéu Islands · The Atlantic e o título The Salt Rakers of Marisal em branco sobre a água escura do pé.", "2": "A página ímpar: a mesma foto continua no alto, um salineiro com o seu rodo de madeira diante de uma fileira de montes de sal branco; abaixo, o primeiro parágrafo com uma capitular azul de quatro linhas na primeira coluna, o olho em itálico e a assinatura nas outras duas, e depois três colunas de texto.", "3": "Três colunas justificadas com intertítulos azuis; a foto de um rodo empurrando um monte de sal molhado encabeça a segunda e a terceira colunas.", "4": "Uma foto das salinas cor-de-rosa vistas de cima atravessa a página; abaixo, uma citação em destaque sob um fio azul ocupa a segunda e a terceira colunas.", "5": "A foto de uma peneira que recolhe cristais de sal encabeça a segunda e a terceira colunas; o retrato de uma salineira idosa com um cesto fica no pé da primeira.", "6": "A página de fecho: um boxe com fundo de cor, Visiting Marisal, com um pequeno mapa da ilha, ocupa o alto da primeira coluna; uma foto alta de um porto ao anoitecer ocupa as outras duas; a matéria termina nivelada nas três colunas com um pequeno quadrado azul." }
+---
+
+## O que você vai compor
+
+Seis páginas da edição de novembro de *Meridian*, uma revista mensal de viagem, em página de 225 × 297 mm. A reportagem abre numa página dupla: uma só foto de salinas ao nascer do sol atravessa as duas páginas, com o título vazado em branco sobre a água à esquerda e, à direita, sob a imagem, o primeiro parágrafo com a capitular, o olho e a assinatura. Depois o texto corre em três colunas justificadas de 61,7 mm cada. As fotos ocupam duas colunas, a largura toda ou uma coluna; uma citação em destaque atravessa duas colunas entre os parágrafos; um boxe com fundo de cor e um mapa da ilha abre a página de fecho. Um pequeno quadrado azul encerra o texto.
+
+## Preparo
+
+### 1 · Dividir a página em três colunas e deixar os flutuantes ocuparem uma, duas ou três
+
+O código é [a resposta curta](#a-resposta-curta) acima. `layoutType: 'multiple'` com `columnCount: 3` divide a mancha de 195 mm em três colunas iguais; com uma medianiz de 5 mm, cada uma tem 61,7 mm de largura, uns 40 caracteres de Source Serif em 9,6 pt. O `placement.columns` de uma imagem ocupa esse número de colunas vizinhas e as medianizes entre elas: a foto do rodo tem 128,3 mm de largura, e a das salinas, com `span: 'page'`, os 195 mm inteiros. O estilo da citação faz o mesmo com um boxe: `columns: 2` num estilo com `placement: 'top'` leva o boxe ao alto de duas colunas livres, e o texto continua em volta. Um grid de três colunas convém a uma reportagem com muitas fotos, porque cada uma pode ocupar uma, duas ou três colunas. Um texto longo com poucas imagens se lê melhor em duas colunas mais largas.
+
+### 2 · Abrir numa página dupla, com uma foto atravessando as duas páginas
+
+<Excerpt region="spread" />
+
+Cada metade da foto pertence a um estilo de título com `span: 'page'`, e um título na largura da página sempre abre uma página nova, então a página do título e a do olho vêm uma depois da outra. A metade esquerda enche a página par e não reserva nada (`reserve: false`), e assim o título pode ficar sobre a água do pé. A direita é cortada em 165 mm, e o primeiro parágrafo, o olho e a assinatura pendem do contêiner sob ela. Esse parágrafo é um texto de design com uma capitular (`dropCap`) de quatro linhas, na largura de uma coluna; o preenchimento inferior vazio dele conta na altura da abertura, e as colunas começam 6 mm abaixo. `continuation.pageIndexOffset: 83` faz da página 84 uma página par, e as duas metades ficam frente a frente.
+
+### 3 · Declarar as fotos e citar cada uma onde ela deve cair
+
+<Excerpt region="resources" />
+
+Um flutuante vai para o primeiro alto (ou pé) livre das suas colunas depois da linha que o cita, então são as linhas `::resource` que decidem as páginas. A foto da peneira é citada no alto da primeira coluna da quinta página, quando a segunda e a terceira ainda estão vazias, e as encabeça na mesma página. A do porto é citada no fim dessa página e encabeça duas colunas da seguinte. Fotos do mesmo tipo nunca passam umas à frente das outras, então as citações seguem a ordem da matéria. Os bitmaps são medidos a 150 dpi, o valor da página: 1500 px dão 254 mm e são reduzidos aos 128,3 mm de duas colunas.
+
+### 4 · Cabeços e fólios fora da página dupla de abertura
+
+<Excerpt region="heads" />
+
+Os elementos de cabeçalho são pintados sobre a página e não reservam espaço, então o fólio e o rótulo são ancorados à página, na margem superior. `pages: 'body'` os tira das duas páginas da abertura, que são páginas de abertura porque cada uma começa com um título na largura da página. A página ímpar da abertura recebe o fólio no pé, por meio de `pages: 'opener'` e `parity: 'odd'`; a par, toda ocupada pela foto, não leva nenhum.
+
+### 5 · Desenhar em código o mapa do boxe
+
+<Excerpt region="art" />
+
+O mapa é um recurso SVG com `placement: 'here'`, citado dentro da cerca do boxe, e por isso fica sob o título do boxe, na medida dele. Não tem letreiros: o texto dentro de um SVG não pode usar as fontes web da página, então a legenda nomeia as formas. A ponta de seta da rota da balsa é um traçado, porque um `<marker>` não sobreviveria à exportação para PDF.
+
+## Variações
+
+### Pôr a citação sobre as três colunas
+
+Um boxe flutuante dá preferência ao atributo `columns` da cerca sobre o do estilo, então uma citação pode ocupar a largura toda.
+
+```diff
+- :::callout{type="pull"}
++ :::callout{type="pull" columns="3"}
+```
+
+### Compor a reportagem em duas colunas
+
+Para uma reportagem com menos fotos e parágrafos mais longos, veja <RecipeLink slug="magazine-feature-opener">Reportagem de revista: da foto de abertura ao sinal final</RecipeLink>, numa diagramação `double`.
+
+## Erros comuns
+
+- Uma foto em duas colunas encabeça duas colunas que ainda estejam vazias. Citada na segunda coluna, ela não encontra esse par na página, porque só resta a terceira coluna, e espera a página seguinte.
+- A matéria está ajustada para terminar nivelada na sexta página, sob a foto do porto. Depois de editar, confira que a última página continua cheia: com umas linhas a menos, a foto vai para uma página só dela.
+- Com linhas de 40 caracteres, um parágrafo justificado tem poucos pontos de quebra. `maxJustifyTracking: 15` deixa uma linha que não cabe com o dobro do espaço normal receber até 0,015 em de tracking. Corrija uma última linha de uma palavra só editando o texto, como foi feito nestas páginas.

@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 038 · Trade paperback: sunk openers and recto chapters ═══
 // https://postext.dev/en/cookbook/trade-paperback-novel
-// Code: MIT · Text: Kate Chopin, The Awakening, 1899 (PD, Gutenberg #160) · Cover: diffusion models
+// Code: MIT · Text: The Awakening (Gutenberg #160), Quincas Borba (PD) · Cover: diffusion models
 // Fonts: Crimson Pro, Cormorant Garamond, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
 
-const LANG = 'en'; // @lang: the language of the sample document (this recipe is English only)
+const LANG = 'en'; // @lang: the sample's language: 'en' (Chopin) | 'pt' (Machado de Assis)
 const RECIPE = 'trade-paperback-novel';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -142,17 +142,21 @@ const svg = (id, fileId, width, height, altText) => ({ id, typeId: 'ornament', k
 // The cover is a painting, a JPEG in assets/ cut to the art's 140 × 134 mm, declared at its pixels.
 const painting = { id: 'cover', typeId: 'ornament', kind: 'bitmap', createdAt: 0, updatedAt: 0,
   bitmap: { fileId: 'cover-1190.jpg', format: 'jpeg', width: 1190, height: 1139 },
-  altText: 'The gulf seen between the trunks of water-oaks, a lugger on the horizon; a white '
-    + 'sunshade comes up from the beach through the camomile.' };
+  altText: t({ en: 'The gulf seen between the trunks of water-oaks, a lugger on the horizon; a '
+    + 'white sunshade comes up from the beach through the camomile.',
+  pt: 'O mar visto entre os troncos de duas árvores, um veleiro no horizonte; uma sombrinha '
+    + 'branca sobe da praia por um caminho entre flores amarelas e brancas.' }) };
 const resources = [
   painting,
   // ::resource places each ornament once, so each chapter end has its own id.
-  ...['I', 'II'].map((n, i) => svg(`tailpiece-${i + 1}`, 'fleuron.svg', 40, 12,
-    `A camomile flower between two sprigs closes chapter ${n}.`)),
+  ...t({ en: ['I', 'II'], pt: ['I', 'II', 'III'] }).map((n, i) => svg(`tailpiece-${i + 1}`,
+    'fleuron.svg', 40, 12, t({ en: `A camomile flower between two sprigs closes chapter ${n}.`,
+      pt: `Uma flor de camomila entre dois ramos fecha o capítulo ${n}.` }))),
 ];
 // #endregion
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
+  locale: t({ en: 'en-us', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   resourceTypes: [ornament],
   page,
@@ -174,7 +178,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
-const markdown = /* @content */ ''; // content.en.md, inlined by the Cookbook
+const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // #region art: the fleuron, drawn in millimetres in the page's colour
 function drawFleuron(color) { // a camomile head between two leafy sprigs
@@ -204,6 +208,7 @@ await loadImage(painting.bitmap.fileId, asset(painting.bitmap.fileId));
 await loadSvg('fleuron.svg', drawFleuron(palette.rubric));
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources }, config()), markdown);
-showPages(doc, { title: 'Trade paperback: sunk openers and recto chapters' });
+showPages(doc, { title: t({ en: 'Trade paperback: sunk openers and recto chapters',
+  pt: 'Romance em brochura: aberturas rebaixadas em página ímpar' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

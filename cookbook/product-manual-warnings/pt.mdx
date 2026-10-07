@@ -1,0 +1,65 @@
+---
+title: "Manual de produto com avisos de segurança"
+summary: "O manual de uma chaleira em alemão: os boxes WARNUNG e VORSICHT levam o triângulo numa faixa da cor de alerta, e as legendas dizem Abbildung e Tabelle."
+plain: "Um manual de instruções de sete páginas, em alemão, para uma chaleira elétrica. Mostra como fazer quadros de aviso de segurança com o triângulo de alerta, em vermelho ou âmbar conforme o nível de perigo."
+description: "Manual de eletrodoméstico em alemão no Postext: avisos com triângulo numa faixa colorida, teclas em chips, desenho das peças e tabela dividida em duas páginas."
+question: "Como faço boxes de aviso com um ícone sobre uma faixa colorida, num idioma que o Postext não rotula?"
+aliases: ["aviso de segurança", "box de advertência", "box de cuidado", "quadro de aviso", "palavra de advertência", "palavra de sinalização", "triângulo de perigo", "manual de instruções", "manual do usuário", "alemão", "Bedienungsanleitung", "WARNUNG", "VORSICHT", "tecla", "tabela de solução de problemas", "tabela de defeitos"]
+pageNotes: { "1": "A capa: Verra W1 em branco sobre uma parede verde-azulada, acima de uma chaleira branca desenhada em traço verde-azulado, apoiada no terço inferior branco da página, com Bedienungsanleitung, uma aba DE e a linha do modelo.", "2": "A seção 1, Sicherheitshinweise, sob uma aba verde-azulada com um 1 branco. Três parágrafos, o último com as palavras de advertência em chips vermelho, âmbar e verde-azulado, e depois dois boxes: WARNUNG · STROMSCHLAG, com um triângulo branco sobre uma faixa vermelha dentro de uma moldura fina vermelha, e VORSICHT · VERBRÜHUNGSGEFAHR, com um triângulo preto sobre uma faixa âmbar.", "3": "A seção 2: a chaleira vista de lado com oito linhas de chamada numeradas em verde-azulado, Abbildung 1, e a Tabelle 1, uma legenda de quatro linhas cujos números são chips redondos verde-azulados e cuja linha do painel de controle mostra três teclas contornadas; depois, dois parágrafos curtos e uma lista de verificação de três itens.", "4": "A seção 3: passos com números grandes em verde-azulado e teclas em chips contornados, travessões aninhados em dois níveis sob o último passo, um box HINWEIS verde-azulado com cantos arredondados e um ícone de informação, e uma lista de quatro temperaturas.", "5": "A seção 4, Reinigung und Entkalken: dois parágrafos, três passos de descalcificação com números grandes em verde-azulado e um box HINWEIS; depois, a seção 5, Störungen beheben, cujo parágrafo cita a Tabelle 2.", "6": "A Tabelle 2, a tabela de solução de problemas: uma linha de cabeçalho preta, cada defeito em negrito numa célula que abrange todas as suas causas e Fortsetzung auf der nächsten Seite sob a última linha.", "7": "A Tabelle 2 continua sob o cabeçalho repetido e com (Fortsetzung) na legenda; depois, Technische Daten numa tabela de quatro colunas e Entsorgung com um colofão." }
+---
+
+## O que você vai compor
+
+Um manual de instruções de sete páginas para a Verra W1, uma chaleira elétrica inventada, em alemão e em A5. A página de segurança põe os dois níveis de perigo em boxes: uma faixa na cor de alerta desce pelo lado esquerdo e leva o triângulo de advertência, e uma moldura fina da mesma cor fecha o box, vermelha em WARNUNG e âmbar em VORSICHT. HINWEIS, o nível para danos ao aparelho, troca a faixa e o triângulo por um fundo verde-azulado de cantos arredondados. O parágrafo acima dos boxes traz as três palavras de advertência em chips preenchidos. A página 3 tem um desenho das peças com linhas de chamada numeradas sobre a legenda, e na página 4 os nomes das teclas são chips contornados ao lado de números de passo grandes. A tabela de solução de problemas ocupa as páginas 6 e 7. As legendas dizem Abbildung e Tabelle, e a tabela dividida leva Fortsetzung nas duas páginas.
+
+## Preparo
+
+### 1 · Uma faixa que leva o triângulo
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. `stripe` pinta a faixa pela borda esquerda. Quando um box tem faixa lateral, a 1.4.1 centraliza o ícone sobre a faixa em vez de lhe dar uma coluna própria ([estilos de boxe](/pt/docs/configuration#estilos-de-boxe)), e `align: 'top'` alinha a borda superior do ícone com a do título. A `border` da mesma cor fecha a faixa numa moldura; sem ela, o texto do box ficaria solto na página, ao lado de uma barra colorida. `PAD_Y` é calculado para que o título, o espaço abaixo dele e os enchimentos superior e inferior somem duas linhas da grade de 12,8 pt. O corpo mantém a entrelinha da grade, e assim cada box tem um número inteiro de linhas de altura (10 em WARNUNG, 8 em VORSICHT), e `marginTop: pt(LEAD)` deixa exatamente uma linha entre os dois boxes da página 2. VORSICHT mantém o âmbar na faixa e na moldura e põe o título e os marcadores na cor do texto: âmbar sobre branco dá um contraste de 2,0:1, e texto pequeno precisa de 4,5:1. HINWEIS parte da mesma base (`...notice(…)`) e desliga a faixa e a moldura, então seu ícone de informação ganha uma coluna própria e `borderRadius` arredonda um fundo liso.
+
+### 2 · Nomes em alemão para figuras e tabelas
+
+<Excerpt region="types" />
+
+`locale: 'de'` dá ao manual a hifenização alemã, mas a 1.4.1 só traz em inglês e em espanhol os nomes dos tipos de recurso e as notas de continuação de uma tabela dividida. Sem estas linhas, as legendas diriam Figure 2.1 e Table 5.1, e sob a primeira parte da tabela dividida se leria Continued. Um tipo de recurso escrito à mão precisa informar todos os campos, inclusive os da numeração, e é isso que `counted` fornece: `{n}` com `resetOn: 'never'` numera o manual inteiro em sequência (Abbildung 1, Tabelle 1 a 3) em vez de recomeçar em cada seção. Só o tipo tabela define `captionStyle.position: 'above'`, então as tabelas levam a legenda acima do cabeçalho e o desenho mantém a sua embaixo.
+
+### 3 · Teclas, palavras de advertência e números de peça como chips
+
+<Excerpt region="chips" />
+
+`taste` contorna o nome de uma tecla na fonte monoespaçada, sem preenchimento, do jeito que o rótulo vem impresso no botão. Os chips das palavras de advertência são preenchidos com as cores dos seus boxes, e o chip âmbar põe a palavra na cor do texto, como o título de VORSICHT. `nr` dá aos números de peça um raio maior que metade da altura, e eles saem como discos, iguais aos círculos numerados do desenho. O tamanho dos chips é dado em em do texto ao redor: uma tecla tem 8,6 pt no texto corrido e 7,5 pt numa célula de tabela ([estilos de chip](/pt/docs/configuration#estilos-de-chip)).
+
+### 4 · Números de passo na linha de base
+
+<Excerpt region="steps" />
+
+Os passos são uma lista numerada com os algarismos em Red Hat Display 800 de 15 pt, em verde-azulado, sem separador. A 1.4.1 centraliza o número de uma lista na primeira linha em vez de apoiá-lo na linha de base, e um algarismo de 15 pt ao lado de texto de 9,3 pt fica cerca de 1 pt abaixo da linha. `numberVerticalOffset: pt(-1)`, um valor medido na captura, ergue o pé do algarismo até a linha de base. `itemSpacing` separa os passos em 5 pt para dar espaço aos algarismos grandes. Os marcadores aninhados sob um passo começam a 6,5 mm, na altura do texto do passo; são travessões verde-azulados, e os do terceiro nível são cinza ([listas numeradas](/pt/docs/configuration#listas-numeradas)).
+
+### 5 · Números de seção numa aba invertida
+
+<Excerpt region="section" />
+
+Cada seção é um título de nível 1 dentro da coluna, desenhado a partir de um encaixe de design. A aba imprime `{number}` (preenchido por `numberingTemplate: '{1}'`) em branco sobre um quadrado verde-azulado, e o título começa 3 mm à direita dela. Número e título têm o mesmo corpo e a mesma entrelinha, e por isso o mesmo enchimento superior os assenta na mesma linha de base. A aba é um quadrado de 22 pt, 3,6 pt a menos que duas linhas da grade de 12,8 pt, e o título não passa de duas linhas da grade. A capa também é um título de nível 1, com um estilo de título sem número, de modo que Sicherheitshinweise é a seção 1.
+
+### 6 · Uma tabela de solução de problemas com células mescladas que se divide
+
+<Excerpt region="tables" />
+
+Cada tabela é um TSV num arquivo de conteúdo próprio. Nos dados de solução de problemas, uma linha cuja primeira célula está vazia pertence ao defeito de cima, e `mergeCells` junta essas primeiras células numa única célula alta e marca como ocultas as que ela cobre. `parseTSV` não define linha de cabeçalho, então `headerRowCount: 1` a declara, e é essa linha que se repete na página 7. A tabela é mais alta que uma página, e na 1.4.1 só uma tabela flutuante se divide; por isso `position: 'top'` a transforma em flutuante. O corte cai entre linhas e nunca atravessa uma célula mesclada, e cada defeito fica na mesma página que suas causas ([tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). Ela é citada na página 5 e abre a página 6, a primeira depois da citação que uma flutuante no topo pode ocupar. `fold` põe as duas metades de uma lista lado a lado, na legenda e nos dados técnicos, e a legenda centraliza os chips de número com `align: 'center'`.
+
+## Variações
+
+### Numere figuras e tabelas por seção
+
+Com o número da seção no modelo e um reinício em cada seção, o desenho vira Abbildung 2.1 e a tabela de solução de problemas, Tabelle 5.1.
+
+```diff
+-const counted = { numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // 1, 2…
++const counted = { numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal' };
+```
+
+## Erros comuns
+
+- Na 1.4.1, o item que vem depois de uma lista aninhada recebe o `itemSpacing` da lista aninhada, não o da sua própria lista. Com 5 pt entre os passos e nenhum entre os marcadores, um passo que viesse depois de uma lista com marcadores ficaria 5 pt mais perto que os outros; por isso, aqui, só o último passo tem marcadores.
+- O equilíbrio de colunas empurra um box que fecha uma página até a última linha da grade, e todo o espaço que sobra na página se abre acima do box ([equilíbrio de colunas](/pt/docs/configuration#equilíbrio-de-colunas)). O texto da página 2 foi ajustado para encher a coluna sem sobra. Apague um marcador de VORSICHT e o box continua terminando no pé, mas o espaço entre os dois boxes passa de 4,5 para 13,6 mm; com `headings: { balancing: { enabled: false } }`, o box fica uma linha abaixo de WARNUNG e a página termina duas linhas antes do pé.

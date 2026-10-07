@@ -37,7 +37,7 @@ describe("the showcase shelf", () => {
 
   it("carries Pepper&Carrot in every site language, French as well", () => {
     const entry = (presetIndex as { presets: { id: string; locales: string[]; tags: string[]; license: string }[] }).presets.find((p) => p.id === "pepper-carrot")!;
-    expect(entry.locales).toEqual(["en", "es", "ca", "fr", "ja", "zh-Hans", "ar"]);
+    expect(entry.locales).toEqual(["en", "es", "ca", "fr", "pt-BR", "ja", "zh-Hans", "ar"]);
     expect(entry.tags).toContain("comic");
     expect(entry.license).toContain("CC BY 4.0");
   });

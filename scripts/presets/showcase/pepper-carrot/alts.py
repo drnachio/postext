@@ -4,8 +4,9 @@ of the bundle (Pepper&Carrot language codes, `cn` = Simplified Chinese).
 What each picture shows, for a reader who cannot see it: one or two
 sentences, the balloons left out (the reader gets them as text). Pepper and
 Carrot carry the names each translation gives them (Pimienta and Zanahoria
-in Spanish, 小辣椒 and 萝卜头 in Chinese, فُلفُل and جزر in Arabic). The three
-witches of page 2 are named only in English and French, the languages
+in Spanish, 小辣椒 and 萝卜头 in Chinese, فُلفُل and جزر in Arabic; Brazilian
+Portuguese keeps Pepper and Carrot). The three witches of page 2 are named
+only in English and French, the languages
 whose names for them are David Revoy's own; this episode never names them,
 so the other editions describe them instead of guessing a translation.
 
@@ -26,6 +27,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "パーティーの支度ができた低いテーブルの前で、ペッパーが喜んで両手を上げ、キャロットも笑っている。テーブルにはティーポットとカップケーキ、ろうそくを立てたバースデーケーキ。頭上には三角の旗飾り。",
         "cn": "小辣椒高兴地举起双手，萝卜头坐在一张布置好派对的矮桌旁。桌上有茶壶、纸杯蛋糕和插着蜡烛的生日蛋糕，头顶挂着一串串彩旗。",
         "ar": "فُلفُل ترفع ذراعيها فرحًا، وجزر أمام طاولة منخفضة أُعدّت لحفلة: إبريق شاي وكعكات صغيرة وكعكة عيد ميلاد بشموعها، تحت أشرطة من الرايات الملوّنة.",
+        "pt": "Pepper, de braços erguidos de alegria, e Carrot diante de uma mesa baixa arrumada para uma festa: um bule, cupcakes e um bolo de aniversário com velas, sob varais de bandeirinhas.",
     },
     "e08p01-1": {
         "en": "Pepper sits on the edge of her bed in an attic lit by a skylight, her hands on her knees. Carrot watches her from the floor.",
@@ -35,6 +37,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "天窓から光が差しこむ屋根裏部屋で、ペッパーがベッドの端に座り、ひざに手を置いている。キャロットが床から見上げている。",
         "cn": "阳光从天窗照进阁楼，小辣椒坐在床边，双手放在膝上。萝卜头在地板上望着她。",
         "ar": "فُلفُل جالسة على حافة سريرها في علّية يضيئها شبّاك في السقف، ويداها على ركبتيها، وجزر يراقبها من الأرض.",
+        "pt": "Pepper está sentada na beirada da cama, num sótão iluminado por uma claraboia, com as mãos nos joelhos. Carrot a observa do chão.",
     },
     "e08p01-2": {
         "en": "Close-up: Pepper gazes into the distance, downcast. Carrot, at her shoulder, looks up at her.",
@@ -44,6 +47,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "アップ。ペッパーが沈んだ顔で遠くを見つめ、肩のそばのキャロットが彼女を見上げている。",
         "cn": "特写：小辣椒神情低落，望向远方。萝卜头靠在她肩边，抬头看着她。",
         "ar": "لقطة قريبة: فُلفُل تحدّق في البعيد حزينة، وجزر عند كتفها يرفع عينيه إليها.",
+        "pt": "Primeiro plano: Pepper olha para longe, abatida. Carrot, junto ao ombro dela, ergue os olhos para ela.",
     },
     "e08p01-3": {
         "en": "Pepper buries her face in her hand, a few tears falling. Carrot clings to her arm, worried.",
@@ -53,6 +57,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "ペッパーが手で顔をおおい、涙がこぼれる。キャロットが心配そうに彼女の腕にしがみついている。",
         "cn": "小辣椒用手捂住脸，落下几滴眼泪。萝卜头担心地抱住她的胳膊。",
         "ar": "فُلفُل تدفن وجهها في يدها وتسقط منها دموع قليلة، وجزر يتشبّث بذراعها قلقًا.",
+        "pt": "Pepper esconde o rosto na mão, e algumas lágrimas caem. Carrot se agarra ao braço dela, preocupado.",
     },
     "e08p01-4": {
         "en": "Carrot, wide-eyed, points at a framed drawing of the witches of the Potion Contest, propped beside the winner’s gold coin.",
@@ -62,6 +67,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "キャロットが目を丸くして、魔法薬コンテストの魔女たちを描いた額入りの絵を指さす。絵の横には優勝の金貨が立てかけてある。",
         "cn": "萝卜头瞪大眼睛，指着一幅装在相框里的画，画的是魔药大赛上的魔女们，旁边立着冠军的金币。",
         "ar": "جزر، بعينين واسعتين، يشير إلى رسم مؤطَّر لساحرات مسابقة الجُرعات، وبجانبه عملة الفائزة الذهبية.",
+        "pt": "Carrot, de olhos arregalados, aponta para um desenho emoldurado das bruxas do Torneio de Poções, apoiado ao lado da moeda de ouro da vencedora.",
     },
     "e08p02-1": {
         "en": "Pepper sits up on her bed and lifts her hands, delighted by the idea. Carrot sits facing her, smiling.",
@@ -71,6 +77,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "ベッドに座ったペッパーが、名案に目を輝かせて両手を上げる。向かいに座ったキャロットがにっこりしている。",
         "cn": "小辣椒坐在床上，举起双手，为这个主意高兴不已。萝卜头坐在她对面，笑眯眯的。",
         "ar": "فُلفُل جالسة على سريرها ترفع يديها مسرورة بالفكرة، وجزر جالس قبالتها مبتسمًا.",
+        "pt": "Pepper, sentada na cama, levanta as mãos, encantada com a ideia. Carrot, sentado diante dela, sorri.",
     },
     "e08p02-2": {
         "en": "Pepper, smiling, writes invitations with a quill while Carrot holds up an envelope. A small white bird waits on the windowsill.",
@@ -80,6 +87,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "ペッパーがほほえみながら羽ペンで招待状を書き、キャロットが封筒を掲げている。窓辺では小さな白い鳥が待っている。",
         "cn": "小辣椒微笑着用羽毛笔写邀请函，萝卜头举着一个信封。窗台上停着一只白色的小鸟。",
         "ar": "فُلفُل تكتب الدعوات بريشة وهي تبتسم، وجزر يرفع ظرفًا. وعلى حافة النافذة طائر أبيض صغير ينتظر.",
+        "pt": "Pepper, sorridente, escreve os convites com uma pena enquanto Carrot segura um envelope. Um passarinho branco espera no parapeito da janela.",
     },
     "e08p02-3": {
         "en": "Coriander, at her window with her invitation, gives a thumbs-up as Pepper and Carrot fly past on a broom. A grumpy black hen sits beside her.",
@@ -89,6 +97,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "巻き毛の魔女が窓辺で招待状を手に親指を立て、ほうきで飛んでいくペッパーとキャロットを見送る。そばには不機嫌そうな黒いめんどり。",
         "cn": "一位卷发魔女拿着邀请函站在窗前，竖起大拇指，小辣椒和萝卜头骑着扫帚从窗外飞过。她身旁蹲着一只板着脸的黑母鸡。",
         "ar": "ساحرة ذات شعر مجعّد عند نافذتها والدعوة في يدها، ترفع إبهامها بينما تمرّ فُلفُل وجزر طائرين على مكنسة. وبجانبها دجاجة سوداء عابسة.",
+        "pt": "Uma bruxa de cabelos cacheados, na janela e com o convite na mão, faz sinal de positivo enquanto Pepper e Carrot passam voando numa vassoura. Ao lado dela, uma galinha preta de cara amarrada.",
     },
     "e08p02-4": {
         "en": "Seen from above, Shichimi waves from a green clearing by a steaming cauldron, her invitation in her other hand and her fox at her feet. Pepper waves back from her broom.",
@@ -98,6 +107,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "上から見たところ。緑の空き地で、淡い色の髪の若い魔女が湯気の立つ大釜のそばから手を振る。もう片方の手には招待状、足もとには狐。ほうきに乗ったペッパーが手を振り返す。",
         "cn": "俯视：一位浅色头发的年轻魔女站在绿色林间空地上冒着热气的大锅旁挥手，另一只手拿着邀请函，脚边跑着她的狐狸。骑在扫帚上的小辣椒也向她挥手。",
         "ar": "من الأعلى: ساحرة شابة فاتحة الشعر تلوّح من فسحة خضراء بجانب قِدر يتصاعد منه البخار، والدعوة في يدها الأخرى وثعلبها عند قدميها. وفُلفُل تردّ التحية من على مكنستها.",
+        "pt": "Vista de cima: uma jovem bruxa de cabelos claros acena de uma clareira verde, ao lado de um caldeirão fumegante, com o convite na outra mão e a raposa aos pés. Pepper acena de volta da vassoura.",
     },
     "e08p02-5": {
         "en": "Saffron reads her invitation with a smile on a balcony above the rooftops, her white cat beside her. Pepper and Carrot fly off towards the setting sun.",
@@ -107,6 +117,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "赤毛の魔女が、街の屋根を見下ろすバルコニーで招待状を読んでほほえむ。そばには白い猫。ペッパーとキャロットは夕日に向かって飛び去っていく。",
         "cn": "一位红发魔女站在俯瞰屋顶的阳台上，微笑着读邀请函，身旁坐着她的白猫。小辣椒和萝卜头朝着落日飞去。",
         "ar": "ساحرة صهباء تقرأ دعوتها مبتسمة على شرفة تطلّ على أسطح المدينة، وقطّها الأبيض بجانبها. وتبتعد فُلفُل وجزر طائرين نحو الشمس الغاربة.",
+        "pt": "Uma bruxa ruiva lê o convite sorrindo numa sacada acima dos telhados, com o gato branco ao lado. Pepper e Carrot se afastam voando rumo ao pôr do sol.",
     },
     "e08p03-1": {
         "en": "Pepper’s cottage, its roof overgrown with greenery, stands at the edge of a wood beside a pond on a fine day. Bunting hangs across the porch.",
@@ -116,6 +127,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "晴れた日。森のはずれ、池のほとりに、屋根が緑におおわれたペッパーの小さな家が建っている。玄関先には旗飾りが下がっている。",
         "cn": "晴朗的一天。小辣椒的小屋坐落在树林边、池塘旁，屋顶长满了绿植，门廊下挂着彩旗。",
         "ar": "بيت فُلفُل الصغير، وقد كسا الخضار سقفه، قائم عند طرف غابة بجانب بركة في يوم صحو، والرايات تتدلّى عند مدخله.",
+        "pt": "A casinha de Pepper, com o telhado coberto de plantas, fica na beira de um bosque, junto a um lago, num dia de sol. Bandeirinhas pendem da varanda.",
     },
     "e08p03-2": {
         "en": "Inside, bunting hangs from the beams and cupcakes, a cake and a teapot wait on the low table. Pepper throws up her arms; Carrot grins.",
@@ -125,6 +137,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "家の中。梁から旗飾りが下がり、低いテーブルにはカップケーキとケーキとティーポットが並ぶ。ペッパーが両手を上げ、キャロットは満面の笑み。",
         "cn": "屋里，房梁上挂满彩旗，矮桌上摆着纸杯蛋糕、蛋糕和茶壶。小辣椒高举双臂，萝卜头笑得合不拢嘴。",
         "ar": "في الداخل تتدلّى الرايات من العوارض، وعلى الطاولة المنخفضة كعكات صغيرة وكعكة وإبريق شاي. فُلفُل ترفع ذراعيها، وجزر يبتسم ملء وجهه.",
+        "pt": "Lá dentro, bandeirinhas pendem das vigas, e cupcakes, um bolo e um bule esperam na mesa baixa. Pepper ergue os braços; Carrot sorri de orelha a orelha.",
     },
     "e08p03-3": {
         "en": "Later: Pepper waits at the table, chin in one hand, a cupcake in the other. Carrot dozes with his head on the table.",
@@ -134,6 +147,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "しばらくして。ペッパーが片手でほおづえをつき、もう片方の手にカップケーキを持って待っている。キャロットはテーブルに頭をのせてうとうとしている。",
         "cn": "过了一会儿：小辣椒一手托着下巴，一手拿着纸杯蛋糕，坐在桌边等着。萝卜头把头搁在桌上打起了瞌睡。",
         "ar": "بعد حين: فُلفُل تنتظر إلى الطاولة، ذقنها على يدها وفي الأخرى كعكة صغيرة، وجزر يغفو ورأسه على الطاولة.",
+        "pt": "Mais tarde: Pepper espera à mesa, com o queixo apoiado numa mão e um cupcake na outra. Carrot cochila com a cabeça sobre a mesa.",
     },
     "e08p04-1": {
         "en": "Rain pours down around the awning over the party table. Pepper, anxious, holds out a hand to the rain; Carrot sits soaked beside the table.",
@@ -143,6 +157,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "パーティーのテーブルにかけた日よけのまわりに、雨が激しく降っている。ペッパーが不安げに雨へ手を差し出し、ずぶぬれのキャロットがテーブルのそばに座っている。",
         "cn": "大雨倾盆，打在派对桌上方的遮雨棚四周。小辣椒不安地伸手接雨，浑身湿透的萝卜头坐在桌边。",
         "ar": "المطر ينهمر حول المظلّة المنصوبة فوق طاولة الحفلة. فُلفُل تمدّ يدها إلى المطر قلقة، وجزر جالس بجانب الطاولة وقد ابتلّ تمامًا.",
+        "pt": "Chove forte em volta do toldo armado sobre a mesa da festa. Pepper, aflita, estende a mão para a chuva; Carrot, encharcado, está sentado ao lado da mesa.",
     },
     "e08p04-2": {
         "en": "Night and rain: Pepper sits alone by a lantern at the party table, scowling. Carrot sleeps curled up on the table.",
@@ -152,6 +167,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "夜の雨。ペッパーがパーティーのテーブルでランタンのそばにひとり座り、顔をしかめている。キャロットはテーブルの上で丸くなって眠っている。",
         "cn": "夜晚，下着雨：小辣椒独自坐在派对桌旁的提灯边，眉头紧锁。萝卜头蜷在桌上睡着了。",
         "ar": "ليل ومطر: فُلفُل وحدها عند فانوس على طاولة الحفلة، عابسة، وجزر نائم ملتفًّا على الطاولة.",
+        "pt": "Noite e chuva: Pepper, sozinha junto a uma lanterna na mesa da festa, está de cara fechada. Carrot dorme enrolado sobre a mesa.",
     },
     "e08p04-3": {
         "en": "Close-up of Pepper’s face under her hat in the rain, her eyes burning red, her mouth set in anger.",
@@ -161,6 +177,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "雨の中、帽子の下のペッパーの顔のアップ。目が赤く燃え、怒りに口を引き結んでいる。",
         "cn": "雨中，帽檐下小辣椒的面部特写：双眼燃着红光，嘴唇紧抿，满脸怒意。",
         "ar": "لقطة قريبة لوجه فُلفُل تحت قبّعتها في المطر: عيناها تتّقدان احمرارًا، وفمها مطبق من الغضب.",
+        "pt": "Primeiro plano do rosto de Pepper sob o chapéu, na chuva: os olhos ardem em vermelho e a boca se crispa de raiva.",
     },
     "e08p05-1": {
         "en": "Lightning. Pepper, furious, pulls a book with a demon’s face on its cover from the shelf. Carrot is terrified.",
@@ -170,6 +187,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "稲妻。怒ったペッパーが、表紙に悪魔の顔のある本を棚から引き抜く。キャロットはおびえている。",
         "cn": "电闪雷鸣。小辣椒怒气冲冲地从书架上抽出一本封面有恶魔脸的书。萝卜头吓坏了。",
         "ar": "برق. فُلفُل غاضبة تسحب من الرفّ كتابًا على غلافه وجه شيطان، وجزر مذعور.",
+        "pt": "Relâmpagos. Pepper, furiosa, tira da estante um livro com a cara de um demônio na capa. Carrot está apavorado.",
     },
     "e08p05-2": {
         "en": "From above, in the rain, Pepper draws three glowing red magic circles on the ground with her wand, the open book in her other hand. Carrot watches.",
@@ -179,6 +197,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "上から見たところ。雨の中、ペッパーが片手に開いた本を持ち、杖で地面に赤く光る魔法陣を三つ描く。キャロットが見ている。",
         "cn": "俯视：雨中，小辣椒一手捧着打开的书，一手用魔杖在地上画出三个发光的红色魔法阵。萝卜头在一旁看着。",
         "ar": "من الأعلى، تحت المطر، ترسم فُلفُل بعصاها ثلاث دوائر سحرية حمراء متوهّجة على الأرض، والكتاب مفتوح في يدها الأخرى، وجزر يراقب.",
+        "pt": "Vista de cima, sob a chuva, Pepper traça com a varinha três círculos mágicos vermelhos e brilhantes no chão, com o livro aberto na outra mão. Carrot observa.",
     },
     "e08p05-3": {
         "en": "Red light from the circles floods the scene. Pepper, grim, holds the open book in the rain.",
@@ -188,6 +207,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "魔法陣の赤い光があたりを満たす。ペッパーが険しい顔で、雨の中、開いた本を持っている。",
         "cn": "魔法阵的红光笼罩一切。小辣椒神情严峻，在雨中捧着打开的书。",
         "ar": "ضوء الدوائر الأحمر يغمر المشهد، وفُلفُل متجهّمة تمسك الكتاب مفتوحًا تحت المطر.",
+        "pt": "A luz vermelha dos círculos inunda a cena. Pepper, séria, segura o livro aberto na chuva.",
     },
     "e08p06-1": {
         "en": "Seen from behind, Pepper, the book in her hand, faces three huge demons with glowing red eyes rising in the storm, one holding a trident. Carrot, at her feet, is terrified.",
@@ -197,6 +217,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "後ろ姿のペッパーが本を手に、嵐の中に現れた赤い目の巨大な悪魔三体と向き合う。一体は三叉の矛を持っている。足もとのキャロットはおびえきっている。",
         "cn": "小辣椒背对着我们，手拿那本书，面对暴风雨中升起的三个红眼巨魔，其中一个握着三叉戟。她脚边的萝卜头吓得魂飞魄散。",
         "ar": "فُلفُل من الخلف، والكتاب في يدها، تواجه ثلاثة شياطين ضخمة بعيون حمراء متوهّجة تنهض في العاصفة، أحدها يحمل رمحًا ثلاثي الشُّعب، وجزر عند قدميها مذعور.",
+        "pt": "De costas, Pepper, com o livro na mão, enfrenta três demônios enormes de olhos vermelhos e brilhantes que se erguem na tempestade; um deles empunha um tridente. Carrot, aos pés dela, está apavorado.",
     },
     "e08p06-2": {
         "en": "Pepper, lit red, smiles a sly smile.",
@@ -206,6 +227,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "赤い光に照らされたペッパーが、にやりと笑う。",
         "cn": "被红光映照的小辣椒狡黠地一笑。",
         "ar": "فُلفُل، والضوء الأحمر على وجهها، تبتسم ابتسامة ماكرة.",
+        "pt": "Pepper, iluminada de vermelho, abre um sorriso malicioso.",
     },
     "e08p06-3": {
         "en": "The party after all: by candlelight, Pepper clinks teacups with the biggest demon while Carrot laughs, and the other two demons smile around the table.",
@@ -215,6 +237,7 @@ ALT: dict[str, dict[str, str]] = {
         "ja": "結局パーティーは開かれた。ろうそくの明かりの中、ペッパーがいちばん大きな悪魔とティーカップで乾杯し、キャロットが笑う。ほかの二体の悪魔もテーブルを囲んでほほえんでいる。",
         "cn": "派对终究开成了：烛光下，小辣椒和最大的恶魔碰杯喝茶，萝卜头哈哈大笑，另外两个恶魔也围坐在桌边，笑眯眯的。",
         "ar": "الحفلة تُقام في النهاية: على ضوء الشموع تقرع فُلفُل فنجان شايها بفنجان أكبر الشياطين بينما يضحك جزر، والشيطانان الآخران يبتسمان حول الطاولة.",
+        "pt": "No fim, a festa acontece: à luz de velas, Pepper brinda com sua xícara de chá com o maior dos demônios enquanto Carrot ri, e os outros dois demônios sorriem em volta da mesa.",
     },
 }
 

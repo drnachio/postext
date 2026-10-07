@@ -1,0 +1,78 @@
+---
+title: "Comentário em tinta vermelha na linha e na margem superior"
+summary: "Uma página chinesa comentada, na vertical: os comentários laterais do manuscrito em duas fileiras vermelhas dentro da linha, e os da margem, sobre o texto."
+plain: "Seis páginas de um romance clássico chinês, impresso em colunas que se leem de cima para baixo. As notas antigas de um leitor aparecem em vermelho dentro das linhas e numa faixa acima do texto."
+description: "O capítulo 1 da História da pedra (manuscrito Jiaxu) com os comentários de Zhiyan Zhai, na vertical no Postext: notas warichu na linha e comentários no alto."
+question: "Como componho uma edição comentada, com notas em duas linhas dentro da linha e comentários na margem superior?"
+aliases: ["edição comentada", "comentário em tinta vermelha", "tinta vermelhão", "Zhiyan Zhai", "História da pedra", "O sonho da câmara vermelha", "Sonho do pavilhão vermelho", "notas na margem superior", "眉批", "雙行夾批", "脂批", "評點", "紅樓夢"]
+pageNotes: {"1": "A página 1, ímpar num livro encadernado pela direita, abre com 脂硯齋重評石頭記 em letra vermelha pequena descendo pela borda direita da mancha; depois, 第一回 em caracteres grandes em negrito e o dístico 甄士隱夢幻識通靈 / 賈雨村風塵懷閨秀 em duas colunas. O texto começa à esquerda deles. Uma única coluna vermelha na margem superior, 妙！自謂落墮情根，故無補天之用。, fica sobre o segundo parágrafo; os comentários laterais aparecem como pares de fileiras vermelhas minúsculas dentro das colunas.", "4": "A página 4: a longa resposta da pedra ao taoísta. Três comentários vermelhos ocupam a metade esquerda da margem superior: oito colunas de 事則實事… sobre o parágrafo que começa com 「竟不如我, depois 開卷一篇立意… em duas colunas e 斯亦太過。 em uma, sobre o resto da fala. Abaixo, pequenas notas vermelhas de duas fileiras interrompem as colunas.", "5": "A página 5: cinco comentários atravessam a margem superior, cada um sobre o trecho que discute: 雪芹舊有… e 若云雪芹… sobre o parágrafo que nomeia Cao Xueqin, 能觧者方有辛酸之淚… sobre a quadra 滿紙荒唐言，一把辛酸淚, 今而後… ao lado dele, e 真。後之甄寶玉… sobre 廟傍住着, onde entra a família Zhen. O fólio 五 fica no pé da margem esquerda.", "6": "A página 6, par: as duas últimas colunas do parágrafo dos Zhen sob uma margem superior vazia; depois, a nota da edição (本編說明) em Kai, dois caracteres abaixo do texto, e o colofão em sem serifa cinza pequena, com as letras latinas deitadas ao longo de duas colunas. O título do livro encabeça a margem direita, sobre o fólio 六."}
+---
+
+## O que você vai compor
+
+O começo do capítulo 1 da *História da pedra* no manuscrito Jiaxu, a cópia que traz os comentários de Zhiyan Zhai, recomposto em seis páginas de uma edição comentada no formato 16开, de 184 × 260 mm, na vertical e encadernado pela direita. O texto de Cao Xueqin vai em Noto Serif TC, com 36 caracteres por coluna e 18 colunas por página. O manuscrito escreve em vermelho, ao lado das colunas, os 61 comentários laterais (側批) deste trecho. O Postext não compõe nada entre duas colunas, então esta edição leva cada um para dentro da linha, dobrado em duas fileiras vermelhão com metade do corpo, logo depois das palavras que ele comenta, como as edições comentadas impressas compõem os seus 雙行夾批. Os dez comentários da margem superior (眉批) ficam em Kai vermelha numa faixa de 42 mm acima do texto, sobre o trecho que discutem, e o leitor acompanha o texto e o comentário de uma só vez.
+
+## Preparo
+
+### 1 · Transforme a coluna lateral na margem superior
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Uma página vertical é uma página horizontal girada um quarto de volta, então a coluna lateral de uma [diagramação em coluna e meia](/pt/docs/configuration#tipos-de-layout) vira uma faixa que atravessa a página, e `sideColumnSide: 'left'` põe essa faixa no alto ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) arredonda `sideColumnPercent: 19` para 10 caracteres do corpo, 120 pt, e a medianiz para dois; o fio de coluna vira o filete que separa os comentários do texto. O estilo dos comentários não tem caixa: Kai de 7 pt, 17 caracteres por coluna, um corpo em que nenhum dos dez comentários termina numa coluna de um só caractere, e `snapToGrid: false`, para que os comentários se empilhem no seu próprio passo de 10 pt em vez dos 21 pt do corpo.
+
+Os dois tipos de comentário são marcados onde o manuscrito os tem. Um comentário lateral é um trecho [`:warichu[…]`](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu), que `cjk.warichu` colore; um comentário da margem superior é um box delimitado com `span="side"` logo antes do trecho que ele discute:
+
+```markdown
+:::callout{type="meipi" span="side"}
+妙！自謂落墮情根，故無補天之用。
+:::
+
+原來女媧氏煉石補天之時，:warichu[補天濟世，勿認真，用常言。]于大荒山:warichu[荒唐也。]…
+```
+
+### 2 · Componha o número do capítulo e o dístico pelas primeiras colunas
+
+<Excerpt region="opener" />
+
+Numa página vertical, a abertura é diagramada no quadro do fluxo: o texto desce, `below` quer dizer à esquerda e um deslocamento `x` move um elemento coluna abaixo. Primeiro vem o título do livro em Hei vermelha, depois 第一回 em 30 pt, dois dos seus próprios caracteres mais abaixo, e então as duas metades do dístico, tiradas dos [atributos de título](/pt/docs/document-format#atributos-de-título) `{a="…" b="…"}`, mais abaixo ainda, e assim o número e o dístico descem a página em degraus, como num 回目 impresso. `minHeight: mm(46)` deixa uma coluna livre entre o dístico e o texto.
+
+### 3 · Leve os cabeços pela borda externa
+
+<Excerpt region="fore-edge" />
+
+São os cabeços da borda externa de [Elementos de texto verticais](/pt/docs/configuration#elementos-de-texto-verticais): `anchor.to: 'outer'` é a margem do lado oposto à lombada, a esquerda de uma página ímpar e a direita de uma par num livro encadernado pela direita, e `writingMode: 'vertical-rl'` compõe o texto de cima para baixo. A mancha aqui inclui a faixa dos comentários, então os “quatro caracteres abaixo do alto” são medidos a partir do topo dos comentários vermelhos. `trad-chinese-informal` imprime os fólios de 一 a 六.
+
+### 4 · Carregue cada voz com o texto que ela compõe
+
+<Excerpt region="voices" />
+
+O Fontsource serve cada fonte chinesa em cerca de cem arquivos por peso. A Song compõe a amostra inteira no peso regular e só 第一回 em negrito; a Kai, só os comentários da margem superior e a nota da edição; e a Hei, só os cabeços, os fólios e o colofão, então cada chamada baixa os arquivos de que os seus próprios caracteres precisam. `vertical: true` carrega também a pontuação vertical de cada fonte para o canvas.
+
+### 5 · Duas tintas
+
+<Excerpt region="palette" />
+
+A página é impressa em duas cores, como o manuscrito foi escrito: um preto quente para o texto e um vermelhão para cada comentário, o antetítulo do capítulo e nada mais. O vermelhão tem contraste de 5,5 : 1 com o papel, o bastante para as fileiras de 6 pt dos comentários laterais. `main-color` aponta para ele, então qualquer valor padrão que a configuração não redefine sai vermelho, nunca azul.
+
+## Variações
+
+### Imprima os comentários numa só tinta
+
+Para uma impressão em uma cor, componha as notas em preto entre colchetes e os comentários da margem superior na tinta apagada; os colchetes saem no corpo do texto, antes da primeira fileira da nota e depois da última.
+
+```diff
+-  warichu: { color: col('vermilion') },
++  warichu: { color: col('ink'), open: '〔', close: '〕' },
+-  body: { fontFamily: KAI, fontSize: pt(7), lineHeight: pt(10), color: col('vermilion'),
++  body: { fontFamily: KAI, fontSize: pt(7), lineHeight: pt(10), color: col('muted'),
+```
+
+### Compare com uma edição em alfabeto latino
+
+A mesma técnica numa página horizontal é <RecipeLink slug="annotated-classic-glosses">o clássico anotado com glosas na margem</RecipeLink>: a coluna lateral fica na borda externa (`sideColumnSide: 'outer'`), e cada glosa fica ao lado do parágrafo que explica em vez de acima dele.
+
+## Erros comuns
+
+- Um comentário da margem superior fica na altura da coluna a que o texto chegou no seu delimitador, então o delimitador vai logo antes do trecho que ele discute; posto depois, o comentário começa ao lado do parágrafo seguinte. Um delimitador fica entre dois blocos, nunca dentro de um parágrafo, então, quando o manuscrito comenta uma frase no meio de um parágrafo longo, esta edição quebra o parágrafo ali: antes de 石頭聽了, antes de 廟傍住着 e uma vez dentro da fala da pedra, antes de 竟不如我, onde o novo parágrafo abre de novo com 「, como faz uma citação que se estende por dois parágrafos.
+- A faixa comporta o que a sua página comporta. Um comentário longo demais para o que resta dela volta para a direita até que a sua última coluna encontre a borda esquerda do texto, e um que ainda assim não caiba espera a página seguinte, junto com todos os comentários delimitados depois dele. Cada comentário começa numa coluna do texto e deixa uma coluna do corpo livre depois do anterior. Os três comentários do manuscrito sobre a fala da pedra ocupam onze colunas da faixa: com o delimitador antes de 今之人, onde a transcrição os põe, o último deles, 斯亦太過, esperava a <PageRef page={5}>página 5</PageRef> e empurrava um passo adiante os comentários de lá. Esta edição quebra a fala uma frase antes, antes de 竟不如我, e os três ficam na <PageRef page={4}>página 4</PageRef>.
+- Com `avoidWidows` ligado, um parágrafo que abriria na última coluna de uma página passa inteiro para a seguinte, a página termina com uma coluna a menos e um comentário delimitado antes desse parágrafo fica para trás. Os livros chineses deixam um parágrafo abrir em qualquer coluna, então `avoidWidows: false` enche cada página com as suas 18. `avoidOrphans` continua ligado: a última coluna de um parágrafo sozinha no alto de uma página (孤行) é o que um editor chinês evita.
+- Dois comentários laterais escritos um logo depois do outro se dobram em fileiras que se leem como uma só nota. O Markdown mantém um espaço ideográfico (U+3000) entre eles.
+- A Noto Serif TC não tem glifo para algumas formas do manuscrito, como 縂, 竒 e 数. O canvas as preenche com uma fonte do sistema, e o PDF as deixa em branco e as lista em C25. Esta edição usa as formas padrão e mantém as variantes que as fontes têm.

@@ -12,7 +12,7 @@ import {
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
-const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const LANG = 'en'; // @lang: the sample's language: 'en' | 'es' | 'ca' | 'zh' | 'ar' | 'ja' | 'pt'
 const RECIPE = 'splash-inset-broken-border';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ const colorPalette = [
 const [LETTERING, SFX] = t({
   en: ['Comic Neue', 'Bangers'], es: ['Comic Neue', 'Bangers'], ca: ['Comic Neue', 'Bangers'],
   ja: ['Zen Antique', 'Dela Gothic One'], zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou'],
-  ar: ['Playpen Sans Arabic', 'Lalezar'],
+  ar: ['Playpen Sans Arabic', 'Lalezar'], pt: ['Comic Neue', 'Bangers'],
 });
 // #endregion
 
@@ -69,7 +69,8 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { x: mm(0), y: mm(-7) } } }] };
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar' }),
+  locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
+    pt: 'pt-BR' }),
   colorPalette, comics,
   // The trim of an American comic book, 6⅝ × 10³⁄₁₆ in, with 3 mm of bleed.
   page: { sizePreset: 'custom', width: mm(168), height: mm(259), bleed: mm(3), dpi: 150,
@@ -113,7 +114,9 @@ const ALT = {
     zh: '暴风雨之夜，红白相间的灯塔，浪头在礁石上炸开，光束穿过雨幕，后面是闪电。',
     ar: 'المنارة الحمراء والبيضاء في ليلة عاصفة، والموج يتفجّر على الصخور، وشعاعها يشقّ المطر، '
       + 'وخلفها برق.',
-    ja: '嵐の夜の赤と白の灯台。岩に波が砕け、光の帯が雨を切り裂き、後ろで稲妻が光る。' }),
+    ja: '嵐の夜の赤と白の灯台。岩に波が砕け、光の帯が雨を切り裂き、後ろで稲妻が光る。',
+    pt: 'O farol vermelho e branco numa noite de tempestade: as ondas arrebentam nas pedras, o '
+      + 'facho corta a chuva e, atrás, cai um raio.' }),
   'sp-maya-face': t({ en: 'Maya’s face behind a rain-streaked window, hood up, lit by the lamp.',
     es: 'La cara de Maya tras una ventana surcada de lluvia, con la capucha puesta y la luz de la '
       + 'lámpara.',
@@ -121,13 +124,15 @@ const ALT = {
       + 'del llum.',
     zh: '玛雅戴着兜帽，脸贴在满是雨痕的窗后，被灯光照亮。',
     ar: 'وجه مايا خلف نافذة يسيل عليها المطر، والقلنسوة على رأسها، ونور المصباح عليها.',
-    ja: '雨の筋が流れる窓の向こうに、フードをかぶったマヤの顔。ランプの光に照らされている。' }),
+    ja: '雨の筋が流れる窓の向こうに、フードをかぶったマヤの顔。ランプの光に照らされている。',
+    pt: 'O rosto de Maya atrás de uma janela riscada de chuva, de capuz, à luz da lamparina.' }),
   'sp-wave': t({ en: 'A huge wave bursts over black rocks below the lighthouse at night.',
     es: 'Una ola enorme revienta sobre las rocas negras al pie del faro, de noche.',
     ca: 'Una onada enorme esclata sobre les roques negres al peu del far, de nit.',
     zh: '夜里，一道巨浪在灯塔下的黑色礁石上炸开。',
     ar: 'موجة هائلة تتفجّر ليلًا فوق الصخور السوداء تحت المنارة.',
-    ja: '夜、灯台の下の黒い岩に巨大な波が砕け散る。' }),
+    ja: '夜、灯台の下の黒い岩に巨大な波が砕け散る。',
+    pt: 'Uma onda enorme arrebenta nas pedras negras ao pé do farol, à noite.' }),
   'sp-tomas': t({ en: 'The keeper in an oilskin on the lantern gallery holds up a storm lantern, '
       + 'his beard whipping in the wind.',
     es: 'El farero, con impermeable de hule en la galería, levanta un farol; el viento le agita '
@@ -136,13 +141,16 @@ const ALT = {
       + 'barba.',
     zh: '守塔人穿着油布雨衣站在灯室回廊上，高举一盏防风灯，胡子被风吹得乱飞。',
     ar: 'الحارس بمعطفه المشمّع على شرفة الفانوس يرفع مصباح العاصفة، والريح تعبث بلحيته.',
-    ja: '油合羽の灯台守が回廊でカンテラを掲げる。ひげが風にあおられている。' }),
+    ja: '油合羽の灯台守が回廊でカンテラを掲げる。ひげが風にあおられている。',
+    pt: 'O faroleiro, de capa impermeável na galeria, ergue um lampião; o vento agita a barba '
+      + 'dele.' }),
   'sp-tomas-pop': t({ en: 'A herring gull flies out across the panel’s left border.',
     es: 'Una gaviota sale volando por el borde izquierdo de la viñeta.',
     ca: 'Una gavina surt volant per la vora esquerra de la vinyeta.',
     zh: '一只银鸥飞出格子的左边框。',
     ar: 'نورس فضي يطير خارجًا عبر الحافة اليسرى للإطار.',
-    ja: 'セグロカモメがコマの左の枠を越えて飛んでいく。' }),
+    ja: 'セグロカモメがコマの左の枠を越えて飛んでいく。',
+    pt: 'Uma gaivota sai voando pela borda esquerda do quadro.' }),
 };
 // #endregion
 
@@ -174,7 +182,8 @@ const resources = await Promise.all([
 ]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showBook(doc, { title: t({ en: 'A splash page, an inset and a broken border',
-  es: 'Una página splash, una viñeta insertada y un borde roto' }) });
+  es: 'Una página splash, una viñeta insertada y un borde roto',
+  pt: 'Uma página splash, um quadro inserido e uma borda quebrada' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);
 

@@ -1,0 +1,64 @@
+---
+title: "Prova com cartão-resposta"
+summary: "Uma prova de história de quatro páginas em US Letter, com bolinhas e pontuações feitas com chips, questões numeradas 1, a), i) e linhas traçadas por uma tabela."
+plain: "Uma prova de história de quatro páginas com capa, bolinhas para marcar e páginas pautadas para escrever. Mostra como numerar as questões e os itens e indicar quanto vale cada um."
+description: "Uma prova no Postext, com campos do aluno e cartão-resposta na capa, questões 1, a), i), pontuações em chips e linhas de resposta traçadas por uma tabela."
+question: "Como faço para diagramar uma prova com cartão-resposta, itens a) e i), pontuação e linhas pautadas?"
+aliases: ["prova", "avaliação", "simulado", "prova escrita", "cartão-resposta", "folha de respostas", "gabarito", "bolinhas", "leitura óptica", "OMR", "múltipla escolha", "linhas de resposta", "pauta", "pontuação", "numeração de questões", "número de inscrição", "vire a página", "exam paper"]
+pageNotes: { "1": "Uma faixa carmesim no terço de cima traz a linha da sessão, History em letras brancas muito grossas, Paper 2 · Sources and interpretations e The American Civil War, 1863 em itálico, sobre o ano 1863 desenhado em contorno branco e cortado pela borda inferior da faixa. Abaixo: a data e a duração, um formulário de cantos arredondados com campos para nome, turma, número de inscrição e a nota sobre 25, um boxe rosa-claro com instruções e informações em duas colunas e, sob o título carmesim Section A answer grid, um painel rosa-claro com linhas numeradas de 1 a 10, cada uma com quatro bolinhas carmesim de A a D. No pé, em maiúsculas carmesim: Do not turn over until you are told to do so.", "2": "Section A, 10 marks: dez questões de múltipla escolha sobre 1863, cada uma com um número grande em negrito e um ponto carmesim, e sob cada questão uma linha de quatro alternativas, cada uma aberta por uma bolinha com a sua letra.", "3": "Section B, 15 marks: o discurso de Gettysburg como Source A ao lado de uma tarja carmesim, assinado Abraham Lincoln. November 19, 1863, com uma pequena linha de crédito embaixo; depois a questão 11 com os itens a) i), a) ii), b) e c), cada um terminado num chip rosa com a sua pontuação, e Turn over no pé.", "4": "A página de respostas: grupos de linhas cinza a cada duas linhas de texto, a primeira linha de cada grupo com o seu item em carmesim, de uma linha para 11 a) i) até oito para 11 c); End of questions e o colofão fecham a página." }
+---
+
+## O que você vai compor
+
+A prova 2 de um simulado de história sobre a Guerra Civil Americana, composta como um caderno de quatro páginas em US Letter. A capa é uma faixa carmesim com o ano 1863 desenhado em contorno, sobre os campos do aluno, as instruções em duas colunas e um cartão-resposta de bolinhas com letras para a Section A. A página 2 traz dez questões de múltipla escolha, cada uma seguida das suas quatro alternativas, e cada alternativa abre com uma bolinha com letra, como as do cartão. A página 3 compõe o discurso de Gettysburg como Source A e numera as questões sobre ele como 11, a), i), com a pontuação de cada item num chip. A página 4 é pautada para as respostas, uma linha a cada duas linhas de texto, e cada grupo de linhas abre com o número do seu item. Toda página depois da capa leva fólio e uma margem com fio para o corretor, e a única página ímpar entre elas diz Turn over.
+
+## Preparo
+
+### 1 · Numere as questões e ponha as alternativas embaixo
+
+<Excerpt region="numbering" />
+
+Cada nível de `orderedLists` escolhe o seu `numberFormat` e o seu `separator`, e `separatorColor` pinta o ponto e os parênteses na cor de destaque enquanto o número fica na cor da tinta ([listas numeradas](/pt/docs/configuration#listas-numeradas)). Com `numberWidth: 'level'`, os números se alinham à direita pelo mais largo do seu nível, então o texto de todas as questões começa a 23 pt: os 17 pt de '10.' mais `GAP`. As quatro alternativas são um único item de lista com marcador com `bulletChar` vazio, no mesmo nível das questões e não aninhado nelas. O texto dele começa no `indent` da lista, que é '10.' medido na fonte dos números mais `GAP`, e assim as alternativas se alinham sob a primeira letra da questão com qualquer fonte; o boxe de instruções define `indent: pt(0)`, porque as listas dentro de um boxe usam o recuo do documento. Entre dois itens do mesmo nível, o espaço é o `itemSpacing` do primeiro: 5 pt depois de um item numerado, 15 pt depois de uma linha de alternativas. Aninhada na sua questão, a linha de alternativas pegaria os 5 pt da lista de questões dos dois lados.
+
+### 2 · Faça as bolinhas e as pontuações com chips
+
+<Excerpt region="chips" />
+
+Um chip é uma caixa dentro da linha, e uma quebra de linha nunca cai dentro dele ([chips em linha](/pt/docs/document-format#chips-em-linha)). Com uma única maiúscula dentro, `paddingX: em(0.3)` deixa a caixa quase tão larga quanto alta: de 4,5 a 4,8 mm de largura no cartão, para uma altura de 4,7 mm. `borderRadius: em(1)` passa da metade da caixa, e o raio de um chip é limitado à metade do seu lado menor, então as pontas ficam totalmente redondas. Um chip sem `style` usa a primeira entrada de `chipStyles`, por isso as oitenta bolinhas, quarenta no cartão e quarenta nas alternativas, são chips simples como `:chip[A]`; só o exemplo preenchido das instruções e as pontuações citam um estilo. O Postext 1.4.1 não tem tabulações, então as pontuações não podem ficar alinhadas à direita; cada chip fecha o seu item, pelo menos 0,5 em (`gap`) depois da última palavra.
+
+### 3 · Dê a cada formulário o seu estilo de tabela
+
+<Excerpt region="forms" />
+
+Os campos do aluno, o cartão-resposta e as linhas de resposta são três `tableStyles`, escolhidos por tabela com `styleId` ([estilos de tabela com nome](/pt/docs/configuration#estilos-de-tabela-nomeados)). As linhas de resposta da [resposta curta](#a-resposta-curta) usam `rules: 'horizontal'` e um espaçamento interno que dá a cada linha da tabela a altura de duas linhas do texto, então cada fio cai 30 pt (10,6 mm) abaixo do anterior, numa de cada duas linhas da grade de 15 pt do texto. O Postext 1.4.1 descarta uma linha de célula vazia ou que só tenha um espaço inseparável, por isso a linha do meio, em branco, do campo MARK leva um word joiner U+2060: essa célula tem três linhas e define a linha inteira da tabela em 14,4 mm, contra 10,8 mm com um espaço inseparável. O cartão traça os fios no mesmo tom do preenchimento, porque o canvas deixa emendas claras entre células preenchidas. O título dele é uma legenda posta 1,6 mm acima ([estilo de legenda](/pt/docs/configuration#estilo-de-legenda)). Um título de seção ficaria pelo menos uma linha do texto (5,3 mm) mais alto, porque toda tabela posicionada 'here' mantém esse espaço acima dela. O tipo `form` tem `captionPrefix` vazio, então nenhum rótulo 'Form 1.' aparece antes do título.
+
+### 4 · Desenhe a capa com os atributos do título
+
+<Excerpt region="cover" />
+
+A capa é um único título, `# History {style="cover" …}`, e o estilo dele desenha uma faixa, o ano e quatro linhas de texto preenchidas com os atributos do título. Com `span: 'page'`, a página conta como abertura e a faixa pode ser pintada acima da margem superior de 22 mm. Sem isso, o design é cortado no alto da coluna, então a faixa começa na margem e a linha da sessão se perde. As `margins` do estilo alargam a coluna da capa para os 168 mm inteiros por causa dos formulários, e o título seguinte, um nível 1 sem estilo, devolve as páginas do miolo à medida de 134 mm.
+
+### 5 · Tire o fólio e o Turn over da capa
+
+<Excerpt region="furniture" />
+
+Todo elemento fixo das páginas do miolo leva `pages: 'body'`, então a capa, que é uma abertura, mostra só o seu próprio aviso (`pages: 'opener'`). Por isso as seções começam com `:::pagebreak` e um título sem `breakBefore`. Um título que quebra a página faz dela uma abertura, e as páginas 2 e 3 perderiam o fólio, o cabeço e a margem. `parity: 'odd'` mantém o Turn over na página ímpar, já que uma página par já está de frente para a página seguinte.
+
+## Variações
+
+### Imprima em A4
+
+A faixa, o ano, o fio da margem e o aviso tiram as medidas de `PAGE`, então passar para A4 é mudar uma linha. Os blocos da capa mantêm o lugar, e o branco sob o cartão cresce 17,6 mm nas duas edições.
+
+```diff
+-const [TEXT, LABEL, PAGE] = ['PT Serif', 'Inter Tight', { w: 215.9, h: 279.4 }]; // US Letter
++const [TEXT, LABEL, PAGE] = ['PT Serif', 'Inter Tight', { w: 210, h: 297 }]; // A4
+```
+
+### Acrescente um banco de palavras ou uma lista de verificação
+
+Bancos de palavras, lacunas e círculos para colorir também são chips: <RecipeLink slug="worksheet-answer-boxes">a folha de atividades com caixas de resposta e banco de palavras</RecipeLink> compõe um banco de chips amarelos num boxe aninhado e uma lista de verificação que abre cada linha com um círculo vazio.
+
+## Erros comuns
+
+- Linhas de resposta entre os itens de uma questão partem a lista dela: a lista depois da tabela começa uma nova sequência, e cada sequência alinha os números à direita pelo seu próprio número mais largo, então o texto de ii) começaria 1 mm à direita do texto de i). Aqui as respostas ficam numa página própria, e todos os itens ficam numa só lista.

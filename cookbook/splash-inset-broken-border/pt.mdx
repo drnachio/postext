@@ -1,0 +1,61 @@
+---
+title: "Página splash, quadro sobreposto e requadro quebrado"
+summary: "Tempestade em duas páginas de HQ: splash sangrada sob quadro sobreposto, fileira sangrada em três bordas, gaivota fora do requadro, quadro só de recordatórios."
+plain: "Duas páginas de uma HQ sobre uma tempestade: uma imagem enorme que enche a primeira página, com uma imagem pequena de uma menina por cima, e depois uma página em que uma gaivota sai voando do quadro."
+description: "Páginas de HQ no Postext com uma splash sangrada, um quadro sobreposto, sangria nas bordas escolhidas, arte que quebra o requadro e um quadro só de texto."
+question: "Como faço para sangrar um quadro de HQ para fora da página ou deixar o desenho sair do requadro?"
+aliases: ["página splash", "splash page", "quadro sangrado", "sangria", "quadro sobreposto", "quadro inserido", "requadro quebrado", "quebra de requadro", "desenho saindo do quadro", "pop-out", "broken border", "viñeta insertada", "裁ち切り", "出血"]
+pageNotes: { "1": "A splash: o farol numa noite de tempestade, sangrado nos quatro lados, KA-BRUUM! em letras brancas junto ao raio, um recordatório no alto à esquerda (“Na noite da grande tempestade, a luz de Porthcove não se apagou.”) e, embaixo à direita, um pequeno quadro emoldurado com o rosto de Maya atrás de uma janela com chuva e o balão “O vovô ainda está lá fora, na galeria.”", "2": "Página 2: uma onda que arrebenta nas pedras com um CHUÁÁÁ!, sangrada no alto e nas laterais; embaixo, o faroleiro ergue um lampião (“Calma, minha velha. Já viu pior.” “Eu também.”) enquanto uma gaivota sai voando pela borda esquerda do quadro, e um quadro estreito azul-noite com dois recordatórios: “Ao amanhecer, o vento acalmou.” e “As gaivotas voltaram primeiro.”" }
+---
+
+## O que você vai compor
+
+Duas páginas da tempestade de *O farol de Porthcove*. A primeira é uma splash: uma única imagem do farol na tempestade sai por todas as bordas da página, com um pequeno quadro com requadro de Maya na janela sobreposto ao canto de baixo. A segunda abre com uma onda sangrada em três bordas; embaixo, uma gaivota sai voando do quadro do faroleiro por cima do requadro, e um quadro estreito sem imagem traz dois recordatórios sobre um fundo azul-noite. O formato é o do gibi americano, 168 × 259 mm com 3 mm de sangria, e as páginas saem em sete idiomas.
+
+## Preparo
+
+### 1 · Sangre a splash em todas as bordas
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `split="*"` faz uma única célula da moldura inteira, e `bleed` na página leva todo quadro que toca a moldura até a caixa de sangria, 3 mm além do refile, sem requadro nesses lados ([dividir a página](/pt/docs/comics#dividir-a-página)). Na página 2, `bleed="top start end"` na onda sangra só esses três lados; o pé dela mantém a sarjeta em relação aos quadros de baixo. `start` e `end` seguem a direção de leitura, então a edição árabe sangra os mesmos lados.
+
+### 2 · Sobreponha um quadro à splash
+
+`inset="56 64 38 30"` põe o quadro de Maya a 56% e 64% do quadro anterior, com 38% de largura e 30% de altura. Um quadro sobreposto não ocupa célula: ele fica por cima da splash, mantém o seu próprio requadro e é lido logo depois dela. A imagem dele é recortada para a sua própria caixa pela área segura, aqui o rosto de Maya.
+
+<PageShot page={1} crop="0.35,0.55,0.65,0.45" caption="O quadro sobreposto: o rosto de Maya no seu próprio requadro sobre o canto de baixo da splash, com a voz interior dela." />
+
+### 3 · Deixe uma gaivota quebrar o requadro
+
+<Excerpt region="art" />
+
+`pop=sp-tomas-pop` indica uma segunda imagem para o quadro do faroleiro: um PNG transparente do tamanho da imagem dele, só com a gaivota. O Postext recorta e posiciona essa imagem exatamente como a arte do quadro e depois a desenha por cima do requadro e fora do recorte do quadro, de modo que a parte da gaivota que fica além da célula voa sobre o requadro e a margem ([quadros e arte](/pt/docs/comics#quadros-e-arte)). `focus="45% 50%"` desliza o recorte para a esquerda dentro do que a área segura permite, para que a gaivota fique sobre a borda esquerda e não lá fora, na margem.
+
+### 4 · Deixe um quadro sem imagem
+
+<Excerpt region="palette" />
+
+Um `::panel` sem `art` é uma célula vazia com o requadro do estilo de quadro; `bg=night` a preenche com uma cor da paleta. Os seus recordatórios, `at=top` e `at=bottom`, ficam encostados nas bordas de cima e de baixo, um momento de calma depois da tempestade.
+
+## Variações
+
+### Sangre também a fileira de baixo inteira
+
+```diff
+-::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%"}
++::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%" bleed="bottom start"}
+```
+
+### Dê ao quadro sobreposto um requadro branco
+
+Um estilo de quadro nomeado muda um quadro; `style=` no quadro o escolhe.
+
+```diff
+   panel: { borderWidth: pt(1.2), borderColor: col('ink'), background: col('paper') },
++  panelStyles: [{ id: 'framed', borderWidth: pt(3), borderColor: col('paper') }],
+```
+
+## Erros comuns
+
+- A camada pop precisa ter exatamente o tamanho em pixels da imagem do quadro: o Postext a recorta com a mesma janela, então um recorte menor cairia no lugar errado.
+- A sangria precisa de `page.bleed`; sem ele, um quadro sangrado para no refile.
+- Uma onomatopeia junto a uma borda sangrada pode invadir a sangria, além do refile, onde a guilhotina a corta. A japonesa ザッバーン é uma coluna de cinco caracteres de altura, por isso fica presa mais abaixo que as onomatopeias latinas, em `60% 44%`.

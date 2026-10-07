@@ -1,0 +1,80 @@
+---
+title: "Peça de teatro: elenco, personagens e rubricas"
+summary: "O início da peça de Wilde numa edição para atores. Os nomes saem em negrito ameixa e as rubricas em itálico cinza; o elenco é lido de linhas com tabulação."
+plain: "O começo de uma comédia famosa de Oscar Wilde, impressa para os atores. O nome de quem fala se destaca em negrito colorido, e as rubricas ficam em cinza para que o ator possa pulá-las."
+description: "Edição para atores de The Importance of Being Earnest composta no Postext: folha de rosto em cartaz ameixa e o elenco da estreia de 1895 diante do primeiro ato."
+question: "Como faço para compor uma peça: nomes dos personagens, rubricas, títulos de ato e cena e o elenco?"
+aliases: ["teatro", "peça de teatro", "texto dramático", "dramaturgia", "edição para atores", "roteiro de teatro", "rubricas", "falas", "nomes dos personagens", "elenco", "lista de personagens", "dramatis personae", "recuo deslocado", "cartaz", "folha de rosto", "vinheta", "cravo", "Oscar Wilde", "The Importance of Being Earnest", "A importância de ser prudente"]
+pageNotes: { "1": "A folha de rosto: uma folha cor de ameixa dentro de uma moldura dupla dourada cujos fios se cruzam nos cantos. O subtítulo corre em maiúsculas douradas espaçadas acima do título, que ocupa quatro linhas, com maiúsculas fat face para “Importance” e “Earnest” e itálico para “The” e “of Being”. Abaixo vêm um cravo dourado entre duas volutas, o autor em maiúsculas espaçadas e, no pé, o teatro e a data da estreia.", "2": "Os personagens da peça numa tabela sob uma faixa ameixa com o elenco original, o teatro e a data, e à direita o ator que criou cada papel. Abaixo, as três cenas da peça e um colofão.", "3": "O primeiro ato começa com o título em maiúsculas ameixa e um cravo ameixa. A cena vem em itálico cinza centralizado sob um rótulo em versaletes; depois começam as falas, cada uma com o nome do personagem em negrito ameixa e as linhas seguintes recuadas.", "4": "Falas com as linhas seguintes recuadas e três rubricas centralizadas entre elas: a entrada e a saída de Lane e a entrada de Jack.", "5": "A página termina na fala de Algernon sobre divórcios, que uma rubrica em itálico cinza corta em duas." }
+---
+
+## O que você vai compor
+
+O começo de *The Importance of Being Earnest*, de Oscar Wilde, composto como uma edição para atores de cinco páginas em 140 × 216 mm. A folha de rosto é um cartaz cor de ameixa dentro de uma moldura dupla dourada, com *Importance* e *Earnest* em maiúsculas fat face e um cravo dourado sob o título. Diante do primeiro ato, o elenco dá o nome do ator que criou cada papel no St James’s Theatre em 1895. Cada fala abre com o nome do personagem em negrito ameixa e recua 5 mm as linhas seguintes, de modo que o ator acha a próxima deixa de relance. As rubricas, dentro de uma fala ou entre duas, vêm em itálico cinza, e o olho as salta quando o ator repassa o texto. A edição em espanhol é uma tradução nova que segue o costume do teatro em espanhol, com travessão depois de cada nome e as rubricas entre parênteses.
+
+## Preparo
+
+### 1 · Um ato é um título comum
+
+<Excerpt region="acts" />
+
+O título do ato é um título de nível 1 em Abril Fatface de 24 pt, sem slot de design. `textTransform` o passa para maiúsculas, e as três linhas de 13,6 pt da grade que ele ocupa deixam as maiúsculas 5,5 mm abaixo do topo da mancha ([títulos](/pt/docs/configuration#títulos)). `textAlign: 'center'` não aceita um valor por nível, então centraliza também os títulos do elenco e o rótulo *Scene*. `breakBefore` com paridade `'odd'` leva o ato para uma página ímpar, diante do elenco. A configuração precisa repetir isso, porque qualquer objeto `headings` desativa a quebra de página do primeiro nível ([quebrar antes](/pt/docs/configuration#quebra-antes)).
+
+### 2 · O elenco é uma tabela lida de linhas com tabulação
+
+<Excerpt region="cast" />
+
+O Postext não tem tabelas com barras verticais, então cada tabela é um recurso. As linhas estão em `content.cast.en.md`, uma por linha de texto com uma tabulação entre as células, e `parseTSV` as transforma num modelo ([montar modelos de tabela](/pt/docs/configuration#construção-de-modelos-de-tabela)). A única linha sem tabulação, a do elenco original com o teatro e a data, vira uma linha mesclada: `mergeCells` dá à primeira célula `colSpan: 2` e mantém a segunda na grade, marcada com `hiddenBy`. `headerRowCount: 1` põe essa linha na faixa ameixa. Nenhuma outra linha tem preenchimento, porque o canvas mostra uma emenda clara entre duas células preenchidas lado a lado. A coluna dos atores ocupa um terço da largura, e cada célula dela fica alinhada à direita. As cenas passam pela mesma função com um estilo nomeado sem fios ([estilos de tabela nomeados](/pt/docs/configuration#estilos-de-tabela-nomeados)). Uma tabela compõe todo o texto das células numa só cor, a tinta do texto, a não ser que `bodyColor` indique outra, por isso os nomes em negrito dos personagens saem em tinta aqui e em ameixa no diálogo.
+
+### 3 · Ornamentos sem número nem legenda
+
+<Excerpt region="ornament" />
+
+Um tipo de recurso com `captionPrefix` e `shortLabel` vazios imprime as imagens sozinhas ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O `defaultPlacement` dele coloca o cravo onde está `::resource{id="fleuron"}`, centralizado e com 0,24 da medida de 107 mm, uns 26 mm. As duas tabelas usam um segundo tipo sem numeração, então nenhuma leva o rótulo *Table 1*.
+
+### 4 · A folha de rosto é um estilo de título
+
+<Excerpt region="playbill" />
+
+`# The Importance of Being Earnest {style="playbill" …}` leva o título em quatro atributos, que o design compõe em duas famílias: Abril Fatface de 40 e 60 pt para os substantivos e Libre Baskerville itálico de 17 pt para *The* e *of Being* ([atributos de título](/pt/docs/document-format#atributos-de-título)). O fundo ameixa, a moldura e o cravo são um único SVG desenhado em código e ancorado na sangria ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). O estilo usa `span: 'page'` embora o livro tenha uma só coluna. Preso à coluna, o design seria cortado no alto e no pé da mancha, 20 mm abaixo do topo da folha e 23,3 mm acima do pé. O `header` vazio do estilo tira os cabeços do elenco, que pertence à mesma seção, e o `footer` vazio tira da folha de rosto o fólio no pé, que sairia em ameixa sobre ameixa ([estilos de título](/pt/docs/configuration#estilos-de-título)).
+
+As imagens de uma abertura não reservam altura, então o título ocupa a página só até a linha de texto mais baixa, a da estreia, a 176 mm. O espaço que sobra embaixo é curto demais para o título seguinte, e as páginas capturadas saem iguais sem o `:::pagebreak` depois da folha de rosto. A quebra está ali para edições futuras: sem ela, subir o teatro e a estreia para 150 e 156 mm faz *The Persons of the Play* começar sobre a folha ameixa. Na 1.4.1, uma linha centralizada com `letterSpacing` fica deslocada para a esquerda metade desse espaçamento, por isso `line()` move cada linha espaçada a mesma distância para a direita. *OSCAR WILDE* fica a 0,07 mm do centro, e não a 0,56.
+
+### 5 · Cabeços que pulam a primeira página do ato
+
+<Excerpt region="heads" />
+
+A página par traz o título da peça, tirado do frontmatter, e a ímpar o do ato, de `{chapterTitle}`, os dois em maiúsculas de Playfair Display SC, com o fólio em ameixa na margem externa ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). A primeira página do ato conta como abertura porque o primeiro bloco dela é um título que quebra a página, então `pages: 'body'` tira os cabeços dela, e o rodapé lhe dá no lugar um fólio no pé.
+
+<Note>
+Um roteiro de cinema recua o diálogo dos dois lados em vez de usar recuo deslocado: <RecipeLink slug="screenplay-format">Formato de roteiro de cinema</RecipeLink> compõe cada fala como um boxe sem moldura com a largura do bloco de diálogo.
+</Note>
+
+## Variações
+
+### Alinhar as rubricas com as linhas recuadas
+
+Alinhada à esquerda e com um recuo de primeira linha de 5 mm, uma rubrica de uma linha começa onde começam as linhas recuadas das falas, e a descrição da cena vira dois parágrafos recuados sob o rótulo centralizado.
+
+```diff
+ const direction = { id: 'direction', fontSize: pt(8.6),
+-  textAlign: 'center', firstLineIndent: pt(0) };
++  textAlign: 'left', firstLineIndent: mm(5) };
+```
+
+### Deixar uma linha entre as falas
+
+`paragraphSpacing: true` acrescenta uma linha da grade em branco depois de cada fala. O ato em inglês passa então de três para cinco páginas, e o em espanhol para quatro.
+
+```diff
+   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
++  paragraphSpacing: true,
+ };
+```
+
+## Erros comuns
+
+- Todo trecho em itálico do diálogo assume `italicColor`, inclusive a ênfase, por isso o *is* enfático de Lane sai no cinza das rubricas. O cinza precisa ficar em `bodyText` porque, na 1.4.1, um estilo de parágrafo não consegue dar ao seu itálico uma cor própria; só em redondo o *is* ficaria em tinta.
+- Três falas de Wilde terminam numa palavra sozinha: *information.*, *that?* e *you.* O script define `bodyText.maxRuntTracking: 0` por causa do erro *O ajuste de linhas curtas pode apertar um tracking que nunca é pintado*. Com o valor padrão, a 1.4.1 sobe *that?* para a linha anterior com 2,0 mm de tracking negativo que o canvas não pinta, e a linha sai com os espaços entre palavras na metade da largura. Mexendo só no espaçamento entre palavras, *that?* sobe apenas com um `minWordSpacing` de 0,5, que esmaga a linha do mesmo jeito, ou com uma medida 1,5 mm mais larga, que deixa dez linhas mais frouxas que 1,5 vez o espaço normal, em vez de duas. As páginas em inglês ficam com as três linhas curtas para não mudar as palavras de Wilde. A tradução espanhola foi reescrita onde uma linha terminava numa palavra de uma letra ou onde uma sílaba ficava sozinha.
+- Os nomes são hifenizados como qualquer outra palavra: *Au-gusta* e *Gwen-dolen* se partem entre duas linhas na página 5. Um word joiner (U+2060) dentro de *Augusta* mantém o nome inteiro, mas estica a linha de cima até 1,71 vez o espaço normal, então o texto em inglês fica com os hífens.
+- No canvas, a Playfair Display SC desenha *fi* como uma ligadura em minúscula, e *first* sairia com um *fi* minúsculo entre versaletes. Por isso a faixa do elenco diz *The original cast*.

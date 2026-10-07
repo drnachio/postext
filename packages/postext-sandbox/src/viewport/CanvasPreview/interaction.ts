@@ -17,7 +17,7 @@ import {
 } from './geometry';
 import { resourceTextAtPixel, type ResourceTextHit } from './resourceHit';
 import type { SandboxLabels } from '../../types/labels';
-import { createComicEditor, slotComicSurface, type ComicEditor, type ComicSurface } from '../comics/comicEditing';
+import { createComicEditor, slotComicSurface, type BalloonTextPress, type ComicEditor, type ComicSurface } from '../comics/comicEditing';
 
 function sameTarget(a: ResourceFocusTarget, b: ResourceFocusTarget): boolean {
   if (a.kind !== b.kind) return false;
@@ -213,7 +213,9 @@ export interface PageInteraction {
  * The page interaction of the viewers that show the document's pages: a
  * click puts the caret in the source, a drag selects, a double click a
  * word, a click on a link follows it, on editable resource text opens its
- * resource. `locate` says which page and point an event falls on, so a
+ * resource. On a comic, the words of a balloon select as the body text
+ * does (#595) while its body drags it, and a click on a panel's picture
+ * opens that picture in the Resources panel (#594). `locate` says which page and point an event falls on, so a
  * single element can carry several pages (the Folio's spread).
  */
 export function attachPageInteraction(target: HTMLElement, opts: PageInteractionOptions): PageInteraction {
@@ -371,6 +373,12 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   // Set when the drag started on resource text: the head stays inside the
   // same resource run (a drag that leaves the cell keeps its last head).
   let dragResource: ResourceTextHit | null = null;
+  // Set when the drag started on a comic balloon's words (#595): the head
+  // stays in that balloon's words.
+  let dragBalloonText: BalloonTextPress | null = null;
+  // Where the last press went down: a click that ends a drag across a
+  // panel's picture does not open it (#594).
+  let pressClient: { x: number; y: number } | null = null;
   let dragAnchorClient: { x: number; y: number } | null = null;
   let dragPointerId: number | null = null;
   let dragging = false;
@@ -393,6 +401,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     const at = locate(ev);
     if (!at) return;
     pageIndex = at.pageIndex;
+    pressClient = { x: ev.clientX, y: ev.clientY };
     if (comic?.pointerDown(ev, at)) {
       comicPress = true;
       ev.preventDefault();
@@ -400,9 +409,13 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
       return;
     }
     comicPress = false;
-    const resourceHit = resolveResourceHit(ev);
-    const offset = resourceHit ? resourceHit.offset : resolveOffset(ev);
+    // A balloon's words select text as the body text does (#595): the
+    // comic tools left the press alone.
+    const balloonText = comic?.balloonText(at) ?? null;
+    const resourceHit = balloonText ? null : resolveResourceHit(ev);
+    const offset = balloonText ? balloonText.offset : resourceHit ? resourceHit.offset : resolveOffset(ev);
     if (offset === null) return;
+    dragBalloonText = balloonText;
     dragResource = resourceHit;
     dragAnchorOffset = offset;
     dragAnchorClient = { x: ev.clientX, y: ev.clientY };
@@ -437,6 +450,13 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
       dragging = true;
     }
     ev.preventDefault();
+    if (dragBalloonText) {
+      const head = dragBalloonText.head(locate(ev));
+      if (head === null || head === lastHead) return;
+      lastHead = head;
+      focusEditor(dragAnchorOffset, head, false);
+      return;
+    }
     if (dragResource) {
       const hit = resolveResourceHit(ev);
       if (!hit || hit.resourceId !== dragResource.resourceId || !sameTarget(hit.target, dragResource.target)) return;
@@ -466,6 +486,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     dragAnchorOffset = null;
     dragAnchorClient = null;
     dragResource = null;
+    dragBalloonText = null;
     dragging = false;
     lastHead = null;
     if (wasDragging) {
@@ -523,11 +544,21 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     // A cover picture or logo drawn by a design slot: open its resource so
     // the image can be replaced.
     if (touchTap) return;
-    // A comic balloon (#571): the caret goes to its script line.
+    // A comic balloon (#571): the caret goes to the character clicked in
+    // its words (#595), else to its script line.
     const balloonOffset = comic?.balloonSourceAt(at) ?? null;
     if (balloonOffset !== null) {
       ev.preventDefault();
       focusEditor(balloonOffset, balloonOffset, false);
+      return;
+    }
+    // A comic panel's picture (#594): open it in the Resources panel, as
+    // a click on a figure does; not at the end of a drag across it.
+    const moved = pressClient !== null && Math.hypot(ev.clientX - pressClient.x, ev.clientY - pressClient.y) >= DRAG_THRESHOLD_PX;
+    const panelArtId = moved ? null : comic?.panelArtAt(at) ?? null;
+    if (panelArtId !== null) {
+      ev.preventDefault();
+      openResource(panelArtId);
       return;
     }
     const designImageId = resolveDesignImage(ev);
@@ -557,6 +588,20 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
       return;
     }
     pageIndex = at.pageIndex;
+    // A balloon's words: the word double clicked (#595).
+    const balloonText = comic?.balloonText(at) ?? null;
+    if (balloonText) {
+      ev.preventDefault();
+      focusEditor(balloonText.offset, balloonText.offset, true);
+      return;
+    }
+    // A panel's picture stays open in the Resources panel (#594).
+    const panelArtId = comic?.panelArtAt(at) ?? null;
+    if (panelArtId !== null) {
+      ev.preventDefault();
+      openResource(panelArtId);
+      return;
+    }
     const designImageId = touchTap ? resolveDesignImage(ev) : null;
     if (designImageId !== null) {
       ev.preventDefault();

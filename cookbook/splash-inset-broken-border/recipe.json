@@ -60,7 +60,8 @@
       "ca",
       "zh",
       "ar",
-      "ja"
+      "ja",
+      "pt"
     ]
   },
   "capture": {
@@ -79,7 +80,8 @@
       {
         "what": {
           "en": "Panel picture: the lighthouse in the storm (splash)",
-          "es": "Viñeta: el faro en la tormenta (splash)"
+          "es": "Viñeta: el faro en la tormenta (splash)",
+          "pt": "Quadro: o farol na tempestade (splash)"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -88,7 +90,8 @@
       {
         "what": {
           "en": "Panel picture: Maya at the window (inset)",
-          "es": "Viñeta: Maya en la ventana (viñeta insertada)"
+          "es": "Viñeta: Maya en la ventana (viñeta insertada)",
+          "pt": "Quadro: Maya na janela (quadro inserido)"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -97,7 +100,8 @@
       {
         "what": {
           "en": "Panel picture: the wave on the rocks",
-          "es": "Viñeta: la ola en las rocas"
+          "es": "Viñeta: la ola en las rocas",
+          "pt": "Quadro: a onda nas pedras"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -106,7 +110,8 @@
       {
         "what": {
           "en": "Panel picture: the keeper on the gallery",
-          "es": "Viñeta: el farero en la galería"
+          "es": "Viñeta: el farero en la galería",
+          "pt": "Quadro: o faroleiro na galeria"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",
@@ -115,7 +120,8 @@
       {
         "what": {
           "en": "Panel picture: the gull flying over the border (transparent layer)",
-          "es": "Viñeta: la gaviota que vuela sobre el borde (capa transparente)"
+          "es": "Viñeta: la gaviota que vuela sobre el borde (capa transparente)",
+          "pt": "Quadro: a gaivota que voa sobre a borda (camada transparente)"
         },
         "who": "Generated With Diffusion Models",
         "license": "original",

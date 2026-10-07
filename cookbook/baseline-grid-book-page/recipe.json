@@ -38,7 +38,7 @@
     {
       "followup": "EF-14",
       "package": "postext",
-      "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code would hyphenate the Spanish edition as American English"
+      "note": "locale is the exact bundled code ('en-us' | 'es' | 'pt'): a region-tagged code such as 'pt-BR' would hyphenate the Spanish or Portuguese edition as American English"
     },
     {
       "followup": "EF-33",
@@ -69,7 +69,7 @@
   ],
   "engine": { "postext": "1.4.1" },
   "kit": ["core", "fonts", "viewer", "images"],
-  "sample": { "locales": ["en", "es"] },
+  "sample": { "locales": ["en", "es", "pt"] },
   "capture": {
     "hero": 1,
     "card": "crop",
@@ -89,7 +89,8 @@
       {
         "what": {
           "en": "The essay “The Secret Canon” and its Spanish version “El canon secreto”, written for this recipe",
-          "es": "El ensayo «El canon secreto» y su versión inglesa, «The Secret Canon», escritos para esta receta"
+          "es": "El ensayo «El canon secreto» y su versión inglesa, «The Secret Canon», escritos para esta receta",
+          "pt": "O ensaio “The Secret Canon” e suas versões em espanhol e português, “El canon secreto” e “O cânone secreto”, escritos para esta receta"
         },
         "who": "Postext Cookbook",
         "license": "CC-BY-4.0"
@@ -99,7 +100,8 @@
       {
         "what": {
           "en": "The two drawings, made in code in the page's palette",
-          "es": "Los dos dibujos, hechos en código con la paleta de la página"
+          "es": "Los dos dibujos, hechos en código con la paleta de la página",
+          "pt": "Os dois desenhos, feitos em código com a paleta da página"
         },
         "who": "Postext Cookbook",
         "license": "CC-BY-4.0"

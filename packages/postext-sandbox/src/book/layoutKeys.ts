@@ -91,9 +91,11 @@ const resourceKeys = new WeakMap<readonly Resource[], string>();
 export function configKeyOf(config: PostextConfig): string {
   let key = configKeys.get(config);
   if (key === undefined) {
-    // How the Folio viewer presents the book does not shape its pages.
+    // How the Folio viewer presents the book does not shape its pages, nor
+    // does how it is separated and checked for print.
     const layout: PostextConfig = { ...config };
     delete layout.folio;
+    delete layout.print;
     key = hash(stableStringify(stripConfigDefaults(layout)));
     configKeys.set(config, key);
   }

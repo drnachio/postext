@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "manga-right-to-left",
-  "sourceHash": "cd2df6cd4f1f13c292767aa9be706421706ef4ba1b73fecf28118fe27329cac5",
+  "sourceHash": "4abcd4be9cefa8e70230ab2b8304f1fb61fd15bd836146297ec9002b791d43d9",
   "engine": {
-    "postext": "1.20.1",
-    "postextPdf": "1.20.1",
+    "postext": "1.20.3",
+    "postextPdf": "1.20.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T10:13:06.785Z",
+  "capturedAt": "2026-10-07T12:31:33.460Z",
   "variants": {
     "en": {
-      "hash8": "2858c9c3",
+      "hash8": "405a142b",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 185,
-        "fontsMs": 408,
-        "buildMs": 1264,
-        "totalMs": 2942,
+        "importMs": 404,
+        "fontsMs": 714,
+        "buildMs": 1318,
+        "totalMs": 3516,
         "builds": 2
       },
       "specimen": {
@@ -36,7 +36,7 @@
         },
         "families": [],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 134
       },
       "pages": [
         {
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "ecce1628",
+      "hash8": "a3b8e4e2",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 158,
-        "fontsMs": 250,
-        "buildMs": 1256,
-        "totalMs": 2746,
+        "importMs": 490,
+        "fontsMs": 612,
+        "buildMs": 1324,
+        "totalMs": 3505,
         "builds": 2
       },
       "specimen": {
@@ -280,7 +280,7 @@
         },
         "families": [],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 134
       },
       "pages": [
         {
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "6221be0f",
+      "hash8": "f14f8f69",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 250,
-        "buildMs": 1256,
-        "totalMs": 2786,
+        "importMs": 498,
+        "fontsMs": 619,
+        "buildMs": 1331,
+        "totalMs": 3585,
         "builds": 2
       },
       "specimen": {
@@ -524,7 +524,7 @@
         },
         "families": [],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 134
       },
       "pages": [
         {
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "b0e07180",
+      "hash8": "723533e1",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 253,
-        "buildMs": 1261,
-        "totalMs": 7038,
+        "importMs": 477,
+        "fontsMs": 822,
+        "buildMs": 1373,
+        "totalMs": 4424,
         "builds": 2
       },
       "specimen": {
@@ -768,7 +768,7 @@
         },
         "families": [],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 134
       },
       "pages": [
         {
@@ -987,13 +987,13 @@
       }
     },
     "ar": {
-      "hash8": "4b4f6bea",
+      "hash8": "2ea85eb5",
       "vdtHash": "c4f6386f59669ebec0168fbe2ea7e1b804875630",
       "timings": {
-        "importMs": 176,
-        "fontsMs": 246,
-        "buildMs": 1260,
-        "totalMs": 2773,
+        "importMs": 427,
+        "fontsMs": 576,
+        "buildMs": 1343,
+        "totalMs": 3512,
         "builds": 2
       },
       "specimen": {
@@ -1012,7 +1012,7 @@
         },
         "families": [],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 134
       },
       "pages": [
         {
@@ -1085,7 +1085,7 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1530181,
+        "bytes": 1530174,
         "pages": 4
       },
       "sandbox": {
@@ -1231,13 +1231,13 @@
       }
     },
     "ja": {
-      "hash8": "4f82af13",
+      "hash8": "7020575f",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 291,
-        "buildMs": 1265,
-        "totalMs": 2870,
+        "importMs": 255,
+        "fontsMs": 394,
+        "buildMs": 1314,
+        "totalMs": 3043,
         "builds": 2
       },
       "specimen": {
@@ -1256,7 +1256,7 @@
         },
         "families": [],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 134
       },
       "pages": [
         {
@@ -1335,6 +1335,250 @@
       "sandbox": {
         "file": "manga-right-to-left.postext",
         "bytes": 1411588,
+        "folio": "80b0969c"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "comics",
+          "comics.artDirection",
+          "comics.balloonStyles",
+          "comics.balloonStyles[].color",
+          "comics.balloonStyles[].fill",
+          "comics.balloonStyles[].haloColor",
+          "comics.balloonStyles[].id",
+          "comics.balloonStyles[].italic",
+          "comics.balloonStyles[].roundness",
+          "comics.balloonStyles[].stroke",
+          "comics.balloonStyles[].strokeWidth",
+          "comics.gutter",
+          "comics.gutter.horizontal",
+          "comics.gutter.vertical",
+          "comics.lettering",
+          "comics.lettering.color",
+          "comics.lettering.fontFamily",
+          "comics.lettering.fontSize",
+          "comics.lettering.writingMode",
+          "comics.mirrorArt",
+          "comics.panel",
+          "comics.panel.background",
+          "comics.panel.borderColor",
+          "comics.panel.borderWidth",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.binding",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "comics",
+          "footer",
+          "header",
+          "headings",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 79,
+        "designElements": 0,
+        "directives": [
+          ":::page"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 9,
+          "table": 0
+        },
+        "fonts": [],
+        "features": [
+          "balloon-styles",
+          "cjk-line-breaking",
+          "comic-lettering",
+          "comic-pages",
+          "comic-panel-art",
+          "comic-panel-split",
+          "comic-panel-styles",
+          "comic-reading-direction",
+          "furigana",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "ruby",
+          "sound-effects",
+          "tate-chu-yoko"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "build 2: its configuration differs from the first's, which the book keeps"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "pt": {
+      "hash8": "a4d7141b",
+      "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
+      "timings": {
+        "importMs": 320,
+        "fontsMs": 380,
+        "buildMs": 1348,
+        "totalMs": 3176,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          128,
+          182
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7.5,
+        "mirror": true,
+        "body": {
+          "family": "Zen Antique",
+          "sizePt": 9,
+          "leadingPt": 15
+        },
+        "families": [],
+        "pages": 4,
+        "ownLines": 134
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1422,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 178452,
+          "alt": "Página 1."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1422,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 169780,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "1",
+          "role": "comic",
+          "w": 1000,
+          "h": 1422,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 179820,
+          "alt": "Página 1."
+        },
+        {
+          "n": 4,
+          "label": "2",
+          "role": "comic",
+          "w": 1000,
+          "h": 1422,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 179120,
+          "alt": "Página 2."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "manga-right-to-left.pdf",
+        "bytes": 1521930,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "manga-right-to-left.postext",
+        "bytes": 1411519,
         "folio": "80b0969c"
       },
       "detected": {
