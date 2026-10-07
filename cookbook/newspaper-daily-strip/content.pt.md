@@ -55,7 +55,7 @@ Ela mandou as seis primeiras tirinhas para a Gazeta no verão de 2016, com uma c
 
 O trabalho começa na segunda, com cinco rascunhos a lápis em folhas A4, quatro quadros por folha. Na quarta, já estão arte-finalizados e coloridos. Os desenhos chegam ao jornal sem nenhuma palavra; o texto vai à parte, num roteiro curto: quem fala, em que quadro e o quê. Cada onomatopeia ganha uma linha própria.
 
-O hábito começou com a edição francesa, em 2019. “Letrear uma tira duas vezes à mão era uma semana de trabalho”, conta. “Agora cada jornal compõe o texto na sua língua, e os balões são desenhados em volta.” Os jornais brasileiros recebem *Acabou de sair do forno!*; a edição japonesa compõe os balões em colunas verticais, e a árabe lê os quadros da direita para a esquerda. Os desenhos nunca mudam.
+O hábito começou com a edição francesa, em 2019. “Letrear uma tira duas vezes à mão era uma semana de trabalho”, conta. “Agora cada jornal compõe o texto na sua língua, e os balões são desenhados em volta.” Os jornais brasileiros recebem *Acabou de sair do forno!*; a edição japonesa compõe os balões em colunas verticais e, como a árabe, lê os quadros da direita para a esquerda. Os desenhos nunca mudam.
 
 A tira dominical é a exceção à regra dos quatro quadros. Ocupa meia página, em cores, e Barlow a trata como um conto curto: três quadros, uma piada mais lenta e quase sempre um peixe. A desta semana está na capa.
 

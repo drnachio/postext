@@ -36,7 +36,7 @@ const colorPalette = [
 // The lettering and sound-effect faces of each edition: the engine's defaults, but for Chinese
 // two ZCOOL faces drawn for cartoons instead of Noto Sans SC. content.<lang>.md holds the words
 // of each edition under the same speaker ids; Japanese balloons are set vertically, and the
-// Arabic edition, read right to left, mirrors the order of the panels in every row.
+// Japanese and Arabic editions, read right to left, mirror the order of the panels in every row.
 const [LETTERING, SFX] = t({
   en: ['Comic Neue', 'Bangers'], es: ['Comic Neue', 'Bangers'], ca: ['Comic Neue', 'Bangers'],
   ja: ['Zen Antique', 'Dela Gothic One'], zh: ['ZCOOL KuaiLe', 'ZCOOL QingKe HuangYou'],

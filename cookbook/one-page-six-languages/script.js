@@ -37,7 +37,7 @@ const comics = {
   // one for the whole book: a longer translation grows its balloons, never shrinks its text.
   lettering: { fontSize: pt(8.5), lineHeight: 1.12, color: col('ink') },
   // writingMode 'auto' (the default): Japanese is lettered in vertical columns.
-  // readingDirection 'auto': an Arabic page reads from the right, so the
+  // readingDirection 'auto': a Japanese or Arabic page reads from the right, so the
   // tier of three panels is laid out right to left from the same split. The art keeps
   // its drawn direction (mirrorArt: false).
   panel: { borderWidth: pt(1), borderColor: col('ink') },

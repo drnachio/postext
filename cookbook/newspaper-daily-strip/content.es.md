@@ -55,7 +55,7 @@ Mandó las seis primeras tiras al Despacho en el verano de 2016, con una carta d
 
 El trabajo empieza el lunes con cinco bocetos a lápiz en hojas A4, cuatro recuadros por hoja. El miércoles ya están entintados y coloreados. Los dibujos llegan al periódico sin una sola palabra; el texto va aparte, en un guion breve: quién habla, en qué viñeta y qué dice. Cada onomatopeya tiene su propia línea.
 
-La costumbre empezó con la edición francesa, en 2019. «Rotular una tira dos veces a mano era una semana de trabajo», cuenta. «Ahora cada periódico compone el texto en su idioma y los bocadillos se dibujan alrededor». Los periódicos españoles reciben «¡Recién salido del horno!»; la edición japonesa compone los bocadillos en columnas verticales, y la árabe lee las viñetas de derecha a izquierda. Los dibujos no cambian nunca.
+La costumbre empezó con la edición francesa, en 2019. «Rotular una tira dos veces a mano era una semana de trabajo», cuenta. «Ahora cada periódico compone el texto en su idioma y los bocadillos se dibujan alrededor». Los periódicos españoles reciben «¡Recién salido del horno!»; la edición japonesa compone los bocadillos en columnas verticales y, como la árabe, lee las viñetas de derecha a izquierda. Los dibujos no cambian nunca.
 
 La tira del domingo es la excepción a la regla de las cuatro viñetas. Ocupa media página, en color, y Barlow la trata como un cuento corto: tres viñetas, un chiste más lento y casi siempre un pez. La de esta semana está en la portada.
 
