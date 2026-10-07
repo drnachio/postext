@@ -248,7 +248,7 @@ function scoreLines(
   const aspect = wMax / across;
   // A text that fits one short line (column) keeps it: the aspect only
   // shapes texts long enough to need several.
-  const short = n === 1 && (vertical ? wMax <= maxLen : wMax <= 9 * em);
+  const short = n === 1 && (vertical ? wMax <= Math.min(maxLen, 6.5 * em) : wMax <= 9 * em);
   let s = (short ? 0.15 : 4) * Math.log(aspect / target) ** 2;
   // Diamond profile: each line against the oval chord at its place.
   let dev = 0;
