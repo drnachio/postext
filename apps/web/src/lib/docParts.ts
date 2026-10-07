@@ -15,7 +15,7 @@ const PARTS: DocPart[] = [
 ];
 
 /** Last `order` of each part (inclusive); anything later is "practice". */
-const PART_ENDS = [2, 8];
+const PART_ENDS = [2, 9];
 
 export function docPart(order: number): DocPart {
   const i = PART_ENDS.findIndex((end) => order <= end);

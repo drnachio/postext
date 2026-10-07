@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-07',
   readingTime: '30 min',
   order: 3,
   plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages, PDF files and EPUB e-books from code.",
@@ -53,6 +53,7 @@ This reference is long. These are the main blocks:
 - [Heading styles](#heading-styles) — named styles for `{style="…"}` headings: unnumbered chapters, front matter with its own running heads, geometry and palette.
 - [Table of contents](#table-of-contents) — what `:::toc` prints: entry typography, leaders, page numbers, author lines, part rows.
 - [Back-of-book index](#back-of-book-index) — what `:::index` prints: entry typography, indents, page-number separators and ranges, letter groups, sorting language.
+- [Comics](#comics) — `comics`: the frame and gutters of comic pages, panel styles, lettering, balloon styles and the cast. The guide is [Comics](/en/docs/comics).
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -6156,6 +6157,532 @@ const config: PostextConfig = {
 </table>
 
 The page numbers come from the book's outline, as the contents' do: `computeOutline()` and `contentOutline()` list the index marks of a text as entries of kind `'indexMark'` (with `indexMark.path`, `sort`, `see`, `seeAlso`, `main`, `range` and `index`), and `outlineFromDoc()` gives each the page it landed on, which the build records in `doc.indexMarks` (`{ sourceStart, pageIndex }` per mark). `buildDocument()` lays a document that prints its own index out again until the numbers settle; a host laying out a book chapter by chapter hands the chapter holding `:::index` the whole book's outline as `PostextContent.outline`. `tocOutline()` and `indexOutline()` split an outline into what the contents and the index read, so a host can key each chapter to the part it prints: the Sandbox lays the index chapter out again only when a mark moves, and the contents chapter only when a heading does. `contentOutline()` also says whether a text prints an index (`hasIndex`).
+
+## Comics
+
+The `comics` property configures comic pages (`:::page`), strips (`:::strip`) and spreads: the frame and the gutters the panels are cut from, the panel styles, the lettering, the balloon styles and the cast. Only documents with comics read it; a document without them lays out exactly as before, and a document with comics and no `comics` section takes the defaults of its language. The markup and the way pages are lettered are explained in [Comics](/en/docs/comics).
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: 'Maya' }, { id: 'tomas', name: 'Grandpa Tomás' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>The order of the panels in a tier. <code>'auto'</code> reads right to left in a right-to-left document and in the direction of <code>artDirection</code> otherwise. A page's <code>direction</code> attribute overrides it.</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>The reading direction the art was drawn for: <code>'rtl'</code> for manga.</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Flip the pictures of a page read in the other direction than <code>artDirection</code>. A panel keeps its picture as drawn with <code>mirror=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>the page margins</td>
+      <td>Margins of their own for comic pages (<code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>mirror</code>). The panels are cut from the box they leave; unset, from the page's text area.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>The room between tiers. A page's <code>gutter</code> attribute overrides it.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>The room between panels side by side in a tier.</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>see below</td>
+      <td>The default panel style.</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>Named panel styles, picked with <code>:::page&#123;style=…&#125;</code> or <code>::panel&#123;style=…&#125;</code>. Each has an <code>id</code>, an optional <code>name</code> (editor UIs only) and the fields of a panel style; unset fields follow <code>panel</code>.</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>see below</td>
+      <td>The face, size and house rules of every balloon of the book.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>the nine built-in styles</td>
+      <td>Balloon styles by kind. The built-in ones are always there; an entry with one of their ids changes it, an entry with a new id adds a style laid over <code>speech</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>The characters (see <a href="#cast">Cast</a>).</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Print the running heads and folios on comic pages. Off, a comic page is all panels and its number still counts.</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>unset</td>
+      <td>For hosts whose pages are not leaves: lays comic pages out on a print leaf (<code>width</code>, <code>height</code>, <code>margins</code>) scaled to <code>fitWidth</code> px (and at most <code>fitHeight</code> px tall) at the top of the page. The Sandbox's HTML viewer sets it; it is never saved with a document.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Panel styles
+
+`comics.panel` and each entry of `comics.panelStyles`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>Border width; <code>0</code> draws none. The border is stroked on the panel's outline.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>black</td>
+      <td>Border colour (palette-linkable).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Corner radius of a rectangular panel, clamped to half its shorter side. A panel cut by a slanted line keeps sharp corners.</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>A clean line, a hand-drawn line that wobbles a little (seeded from the panel, so the same on every build), or none.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>white</td>
+      <td>The fill under the picture: the colour of an empty panel and of the bands around a picture shown whole.</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code> crops the picture to fill the panel, never into its safe area; <code>contain</code> shows it whole.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Panels in this style run past the frame to the trim and the bleed on every side that touches the frame.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Lettering
+
+`comics.lettering` sets every balloon of the book. There is one size: a balloon style can scale it (`fontScale`), and text is never shrunk to fit a balloon.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>The lettering face. Unset: <code>Comic Neue</code>; <code>Zen Antique</code> in Japanese, <code>Noto Sans SC</code> in Simplified Chinese, <code>LXGW WenKai TC</code> in Traditional Chinese, <code>Playpen Sans Arabic</code> in Arabic, Persian and Urdu (<code>defaultComicFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>The size of balloon text. Comics are usually lettered at 7 to 9 pt on the printed page.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>Distance between lines, a multiple of the size. Left at the default, vertical, Chinese and Japanese balloons take 1.5 and Arabic ones 1.45.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>black</td>
+      <td>Text colour.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set all the lettering bold or italic. Chinese, Japanese and Arabic lettering is never slanted.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Extra room between letters; <code>em</code> is relative to the text size. Never applied to Arabic.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> letters Japanese and Traditional Chinese, and any document set in vertical writing, in vertical columns, and everything else horizontally.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>All capitals, the classic look of American and European lettering. Scripts without case are left as they are.</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Leave out the full stop that ends a balloon (<code>。</code> in manga). <code>'auto'</code>: in Japanese and Chinese only.</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Letter an em dash as <code>--</code>, a habit of American lettering.</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>Room kept between a balloon and its panel's border. A caption butted to the border ignores it.</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>Two balloons in a row from the same speaker: bodies merged into one outline, linked by a narrow neck, or kept apart. A script line asks for its own with <code>join</code> or <code>join=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>Vertical lettering: the most characters in one column of a balloon. Sound effects break after five.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Balloon styles
+
+Each entry of `comics.balloonStyles` is laid over the built-in style of the same id (`speech`, `thought`, `whisper`, `shout`, `radio`, `caption`, `inner`, `note`, `sfx`), or over `speech` for a new id. The defaults below are those of `speech`; the [Comics page](/en/docs/comics#balloon-styles) lists what each built-in style changes. Lengths in `em` are relative to the balloon's text size.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>The word a script line names the style with: <code>ben&#123;whisper&#125;: …</code> or <code>style=whisper</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>The outline around the text. <code>'none'</code> sets the text straight on the picture.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>white</td>
+      <td>Balloon fill.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>black</td>
+      <td>Outline colour.</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>Outline width.</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>A dashed outline (a whisper).</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>A double outline.</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Hand-drawn wobble of the outline, 0 to 1, seeded from the balloon so it never changes between builds.</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>The superellipse exponent of an oval: 2 is an ellipse, higher values are squarer.</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>The spikes of a burst; <code>0</code> counts them from the perimeter.</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>The depth of a burst's spikes, a fraction of the body's radius.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>The air between the text and the outline.</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>The width over height the line breaking aims the text block at (horizontal lettering).</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>The tail.</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>The width of the tail where it leaves the outline.</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>How far the tail reaches toward its speaker, a fraction of the gap from the outline to the mouth.</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>What the tail points at: the anchor's mouth, or its head (thought balloons).</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Where the balloon goes when the line pins none: placed by the lettering, or at a corner or edge of the panel.</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set a corner or edge balloon flush against the panel border (captions).</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>the lettering face</td>
+      <td>The face of this style. <code>sfx</code> defaults to the sound-effect face of the language: <code>Bangers</code>, <code>Dela Gothic One</code> in Japanese, <code>ZCOOL KuaiLe</code> in Simplified Chinese, <code>LXGW WenKai TC</code> in Traditional Chinese, <code>Lalezar</code> in Arabic (<code>defaultComicSfxFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>The text size, a multiple of the lettering size.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>the lettering's</td>
+      <td>Bold or italic text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the lettering's</td>
+      <td>Text colour.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>the lettering's</td>
+      <td>All capitals for this style.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>the lettering's</td>
+      <td>Extra room between letters.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>Line alignment inside the balloon.</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>none</td>
+      <td>An outline drawn around the letters, its width, so text reads over the picture (sound effects).</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>white</td>
+      <td>The colour of the halo.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Rotation in degrees, clockwise. A line's <code>rotate</code> attribute wins.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Cast
+
+Each entry of `comics.cast` describes a character:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>The speaker key of the script and of the pictures' anchors.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>The name the HTML output and the reflowable EPUB print before the character's lines, and editors show.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>The style of the character's lines that name none.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the style's</td>
+      <td>Text colour of the character's balloons.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the style's</td>
+      <td>Fill of the character's balloons.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>the style's</td>
+      <td>The face of the character's balloons.</td>
+    </tr>
+  </tbody>
+</table>
+
+A line's own `color` and `font` win over the cast, and the cast over the balloon style. Every comic colour may be a palette entry, which follows the palette like any linked colour.
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => every field filled; Zen Antique and Dela Gothic One as the faces
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => undefined when everything is a default
+
+const shout = pickBalloonStyle(resolved, 'shout'); // the built-in shout with the book's changes
+const night = pickPanelStyle(resolved, 'night');   // a named panel style, else the default panel
+```
 
 ## Units and colors
 

@@ -31,6 +31,7 @@ const DOC_PAGES: Record<string, string> = {
   "chinese-layout": "Chinese-Layout",
   "arabic-layout": "Arabic-Layout",
   "japanese-layout": "Japanese-Layout",
+  comics: "Comics",
   contributing: "Contributing",
   sandbox: "Sandbox",
   skill: "Agent-Skill",
@@ -69,6 +70,11 @@ const CONFIGURATION_PAGES: { page: string; title: string; sections: string[] }[]
     page: "Configuration-Styles",
     title: "Configuration: paragraph, chip, callout and heading styles, parts",
     sections: ["Paragraph styles", "Chip styles", "Callout styles", "Parts", "Heading styles"],
+  },
+  {
+    page: "Configuration-Comics",
+    title: "Configuration: comics",
+    sections: ["Comics"],
   },
   {
     page: "Configuration-Fonts-Colors-and-Viewers",
@@ -257,7 +263,7 @@ function header(doc: Built, title: string, part: boolean): string {
   else lines.push(`> ${doc.description}`, "");
   lines.push(
     `*Generated from ${source}${doc.lastUpdated ? ` (updated ${doc.lastUpdated})` : ""}. ` +
-      `Read it on [postext.dev](${SITE}/en/docs/${doc.slug}), where it is also available in Spanish, Catalan, Chinese and Arabic. ` +
+      `Read it on [postext.dev](${SITE}/en/docs/${doc.slug}), where it is also available in Spanish, Catalan, Chinese, Arabic and Japanese. ` +
       `To change this page, edit the MDX and run \`pnpm wiki\` in \`apps/web\`.*`,
     ""
   );

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-07',
   readingTime: '10 min',
   order: 5,
   plainSummary: "This page explains how to write a text that Postext can lay out. You write in Markdown, a simple way of writing where a few symbols mark headings, lists, bold words and links. Postext also understands some extra marks for boxes, footnotes, pictures, tables and formulas. The page lists every mark it accepts and the ones it ignores. It ends with advice on writing text that is easy to read.",
@@ -191,6 +191,14 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td>Print the back-of-book index here: every term marked with <code>:index</code> in the book, sorted and grouped by letter, with the pages it falls on, typeset per the <code>index</code> configuration. <code>:::index&#123;index="names"&#125;</code> prints a named index. See <a href="#back-of-book-index">Back-of-book index</a>.</td>
     </tr>
     <tr>
+      <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
+      <td>A comic page: its <code>::panel</code> lines and their script lines, laid out as panels and lettered balloons on a page of its own. See <a href="#comics">Comics</a>.</td>
+    </tr>
+    <tr>
+      <td><code>:::strip&#123;…&#125;</code> … <code>:::</code></td>
+      <td>A comic strip in the text flow, a column or a page wide. See <a href="#strip"><code>:::strip</code></a>.</td>
+    </tr>
+    <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
       <td>A poem in classical Arabic layout: one bayt a line, its two hemistichs separated by <code>||</code>, set side by side at one common width. See <a href="#verse">below</a>.</td>
     </tr>
@@ -199,7 +207,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today (and `references` and `verse` as fenced blocks) — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today (and `references`, `verse`, `page` and `strip` as fenced blocks) — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
 
 ### Attribute values
 
@@ -1332,6 +1340,26 @@ The VDT records the crop on the resource block: `bodySource` is the part of the 
 Recipe Nº 116 in the Cookbook, [Photos that grow to fill a short column](/en/cookbook/photos-fill-short-columns), sets a two-column magazine feature twice, without and with safe areas, so you can compare the pages one beside the other.
 
 
+### Speaker anchors and avoid zones
+
+A picture that is a comic panel's art can also say where its people are, for the lettering (see [Comics](#comics)). `anchors` lists one point per speaker and `avoid` the regions no balloon covers, both in fractions of the picture like the safe area:
+
+```ts
+const radio: Resource = {
+  id: 'lh-radio', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'lh-radio.jpg', format: 'jpeg', width: 1000, height: 1000 },
+  safeArea: { x: 0, y: 0.36, width: 0.62, height: 0.56 },
+  anchors: [
+    // the keeper: mouth, head (for thought balloons) and face
+    { id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 }, face: { x: 0.29, y: 0.4, width: 0.16, height: 0.18 } },
+  ],
+  avoid: [{ x: 0, y: 0.44, width: 0.22, height: 0.26 }], // the radio
+};
+```
+
+An anchor's `id` is the speaker key of the script (`tomas: …`), or `sfx` for the point the panel's sound effects gather at; `x` and `y` are the mouth a speech balloon's tail points at, `head` the point a thought balloon's bubbles point at (the mouth when unset) and `face` a rectangle no balloon covers. The engine maps every point through the panel's crop and mirror, so a tail stays on its speaker whatever shape the panel takes; an anchor outside the safe area raises `comicAnchorOutsideSafeArea`, because a crop may cut it off. Anchors belong to the picture and serve every translation of the comic. Only comic panels read them; a figure ignores them. In the Sandbox they are marked in the **Safe area & lettering** dialog of the [Resources panel](/en/docs/sandbox#resources-panel).
+
+
 ### Videos
 
 A **video** resource (`kind: 'video'`) is a YouTube or Vimeo video, or a video of your own: a file kept in the book (MP4, WebM) or one at a web address, a file on a server or an **HLS stream** (an `.m3u8` playlist). It is placed, captioned, floated and cited like a picture, and numbered in a sequence of its own: the built-in `video` type prints *Video 1.1*, *Video 1.2*… beside *Figure 1.1* and *Table 1.1* (see [Configuration › Resource types](/en/docs/configuration#resource-types)). Each output shows it as it can:
@@ -1466,6 +1494,93 @@ book.stopVideo();
 `videos: false` turns it off. `toggleVideoAt({ page, x, y })` does what a click there does, and `pageVideoSpots(page, doc)` lists where each video lies on a page, for a host that draws its own controls.
 
 Two Cookbook recipes set videos: Nº 131, [A film club programme with QR codes on the posters](/en/cookbook/film-club-video-qr), prints each film as a title card with a play mark and a QR code, and Nº 132, [A lab sheet whose clips play on screen and in the EPUB](/en/cookbook/pendulum-lab-video-players), sets the player options for the HTML edition and packs its own clips in a fixed-layout EPUB.
+
+## Comics
+
+Comic pages, strips and spreads are written in two fenced blocks whose bodies the engine reads itself, line by line: `:::page` and `:::strip`. Inside them, `::panel` lines start the panels and script lines letter them. The guide, with the layout rules, the lettering and the outputs, is [Comics](/en/docs/comics); the settings are in [Configuration › Comics](/en/docs/configuration#comics).
+
+### `:::page`
+
+```md
+:::page{split="30 [30 | 20 | *] / *" gutter=4mm}
+::panel{art=lh-arrive}
+caption: Every summer, Maya spent a week at the lighthouse.
+maya: Grandpa! I'm here!
+::panel{art=lh-radio focus="40% 50%"}
+tomas: Just in time.
+::panel{art=lh-maya}
+maya{thought}: That valve looks loose…
+::panel{art=lh-beam bleed}
+sfx{rotate=-8}: KRAK
+:::
+```
+
+A `:::page` block is one comic page: it opens a fresh page, takes all of it, and the text after its closing `:::` starts on the next page. Its attributes are `split` (how the page is cut into cells: sizes in percent separated by `/` for tiers and `|` for panels side by side, a bracketed list to cut a cell again, `*` for the rest, `a~b` for a slanted line), `gutter` (one length, or two: between tiers and between panels; a bare number is in millimetres), `style` (a named panel style), `bleed`, `direction` (`ltr` or `rtl`, also written `dir`) and `spread` (see [Spreads](#spreads)). Without `split` the panels are stacked in equal tiers. Markdown blocks, containers and directives are not read inside the block; `<!-- comments -->` are.
+
+### Panels
+
+A line `::panel{…}` starts a panel, which fills the next cell in reading order and runs to the next `::panel` line or the closing fence:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>art=&lt;id&gt;</code></td><td>The picture: a bitmap or SVG resource. Without it the panel is empty.</td></tr>
+    <tr><td><code>fit=cover</code>, <code>fit=contain</code></td><td>Crop the picture to fill the cell (never into its safe area), or show it whole.</td></tr>
+    <tr><td><code>focus="x% y%"</code></td><td>The point to keep centred where the safe area leaves room.</td></tr>
+    <tr><td><code>style=…</code>, <code>border=none</code>, <code>border=0.5mm</code>, <code>bg=#hex</code></td><td>A named panel style, the border, the background (a colour, a palette id or <code>none</code>).</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Run the sides that touch the frame out to the trim and the bleed.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>Make the panel smaller than its cell: one to four lengths or percentages (top, end, bottom, start).</td></tr>
+    <tr><td><code>inset="x y w h"</code></td><td>Lay the panel over the previous one, at that box in percentages of it, instead of giving it a cell.</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>A transparent cut-out drawn over the border with the art's crop (a broken border).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Flip the picture, or keep it as drawn on a mirrored page.</td></tr>
+    <tr><td><code>alt="…"</code>, <code>id=…</code></td><td>The text alternative (else the resource's <code>altText</code>) and an anchor id.</td></tr>
+  </tbody>
+</table>
+
+### Script lines
+
+Each line of a panel is one balloon, caption or sound effect, written `key{attributes}: text`:
+
+```md
+maya: Grandpa! I'm here!
+tomas{whisper}: Shh. Listen.
+caption{at=bottom-end}: Three streets away.
+sfx{at="62% 40%" rotate=-8 size=1.4}: KRAK
+ben{tail=start}: (from off the panel) Over here!
+maya: This line goes on
+  on the next line,\
+  and breaks here.
+```
+
+- The **key** is a speaker id (letters, digits, `_`, `.`, `-`), the same in every translation; `caption`, `sfx` and `note` are reserved. The colon may be the full-width `：`.
+- A bare word in the braces is a **balloon style** (`thought`, `whisper`, `shout`, `radio`, `inner` or one of `comics.balloonStyles`); `style=` says the same.
+- `at` pins the balloon: a point in percentages of the panel's picture (`at="62% 40%"`), or a corner or edge (`top-start`, `top-end`, `bottom-start`, `bottom-end`, `top`, `bottom`). `to` points the tail at a point of the picture; `tail=none` drops it and `tail=top|bottom|start|end` points it off the panel. `join` and `join=false` join the balloon to the previous one of the same speaker or keep it apart; `break` lets it cross the border. `rotate` (degrees), `size` (a scale, for sound effects), `color` and `font` change its lettering.
+- A line indented by two spaces or a tab continues the balloon above; a backslash at the end of a line breaks the text there. Blank lines are ignored.
+- The text is inline Markdown: emphasis (lettered bold italic), `:tcy`, `:ruby`, `:ltr` and `:rtl` (the last three print as plain text in balloons). Footnotes and `:ref` marks are not read.
+
+### `:::strip`
+
+```md
+:::strip{split="* | * | *" aspect=3 span=page placement=top}
+::panel{art=pip-1}
+pip: Morning, Otto!
+::panel{art=pip-2}
+::panel{art=pip-3}
+otto: Is it?
+:::
+```
+
+A `:::strip` has the body of a page but sits in the text as one unbreakable box, cut into panels: `span` (`column`, the default, or `page`), `placement` (`here`, the default, where it is written; or `top`, `bottom`, `auto`, floated like a figure), and its size, either `height` (a length, a bare number in millimetres) or `aspect` (width over height: `3`, `4/1`, `4:1`; by default the proportions that make its panels square). Without `split` the panels sit side by side. Strips are read at the top level of a chapter only.
+
+### Spreads
+
+`:::page{spread}` lays one page across two facing pages: the split covers both text areas joined at the spine, without their inner margins, and a panel may cross the spine. The spread opens on an even page, after a blank page when needed. See [Comics › Spreads](/en/docs/comics#spreads).
+
 
 ## What is NOT supported
 

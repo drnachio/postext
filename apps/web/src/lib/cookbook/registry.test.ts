@@ -184,10 +184,9 @@ describe("cookbook/_registry", () => {
           .filter(([, g]) => g.docs)
           .map(([id, g]): [string, DocAnchor] => [`gaps.${id}`, g.docs!]),
       ];
-      // A docs page announced before it is written (the comic features
-      // point at docs/comics, issue #572): its anchors are checked from the
-      // day docs/<slug>-en.mdx exists.
-      const UPCOMING_DOCS = ["comics"];
+      // A docs page announced before it is written: list its slug here and
+      // its anchors are checked from the day docs/<slug>-en.mdx exists.
+      const UPCOMING_DOCS: string[] = [];
       const written = (slug: string) =>
         !UPCOMING_DOCS.includes(slug) || fs.existsSync(path.join(REPO_DIR, "docs", `${slug}-en.mdx`));
       const dead = anchors.filter(([, anchor]) => written(anchor.slug)).flatMap(([where, anchor]) =>
