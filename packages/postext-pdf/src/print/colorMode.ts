@@ -9,6 +9,7 @@
 
 import {
   outputTransform,
+  type CmykPercent,
   type IccProfile,
   type OutputTransform,
   type PdfColorSpace,
@@ -31,6 +32,8 @@ export interface PrintColorMode {
   flattenTransparency: boolean;
   /** Convert RGB pictures to the output CMYK. */
   convertImages: boolean;
+  /** Colours authored in CMYK, by screen hex (`#rrggbb`): set as they are. */
+  authored: ReadonlyMap<string, CmykPercent>;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -53,6 +56,7 @@ export function createPrintColorMode(
   profile: IccProfile,
   config: ResolvedPrintConfig,
   condition: PrintColorMode['condition'],
+  authored: ReadonlyMap<string, CmykPercent> = new Map(),
 ): PrintColorMode {
   const transform = outputTransform(profile, {
     intent: config.renderingIntent,
@@ -62,7 +66,7 @@ export function createPrintColorMode(
   const flattenTransparency = config.standard === 'pdfx1a';
   return {
     kind: 'print',
-    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}`,
+    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}`,
     standard: config.standard,
     profile,
     transform,
@@ -70,7 +74,12 @@ export function createPrintColorMode(
     condition,
     flattenTransparency,
     convertImages: config.standard === 'pdfx1a' || config.convertImages,
+    authored,
   };
+}
+
+function authoredKey(authored: ReadonlyMap<string, CmykPercent>): string {
+  return [...authored].map(([hex, c]) => `${hex}=${c.c},${c.m},${c.y},${c.k}`).join(';');
 }
 
 /** Pre-compose a translucent sRGB colour over white paper. */

@@ -40,3 +40,4 @@ export {
   type OutputProfileInfo,
 } from './catalogue';
 export { srgbProfileBytes } from './srgbProfile';
+export { authoredCmykColors } from './authored';

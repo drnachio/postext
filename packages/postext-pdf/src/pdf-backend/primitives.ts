@@ -302,8 +302,17 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
       [r, g, b] = overPaper(r, g, b, alpha);
       alpha = 1;
     }
-    const k = colorSpace.transform.fromRgb(r, g, b);
-    color = cmyk(round4(k.c), round4(k.m), round4(k.y), round4(k.k));
+    const exact = colorSpace.authored.get(hex.slice(0, 7).toLowerCase());
+    if (exact && alpha < 1 && colorSpace.flattenTransparency) {
+      // A tint of the authored ink mix stands in for it over the paper.
+      const t = colorAlpha(hex);
+      color = cmyk(round4((exact.c / 100) * t), round4((exact.m / 100) * t), round4((exact.y / 100) * t), round4((exact.k / 100) * t));
+    } else if (exact) {
+      color = cmyk(round4(exact.c / 100), round4(exact.m / 100), round4(exact.y / 100), round4(exact.k / 100));
+    } else {
+      const k = colorSpace.transform.fromRgb(r, g, b);
+      color = cmyk(round4(k.c), round4(k.m), round4(k.y), round4(k.k));
+    }
     if (alpha < 1) (color as AlphaColor).alpha = alpha;
     colorCache.set(key, color);
     return color;

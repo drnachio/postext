@@ -7,7 +7,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, PrintConfig, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { loadOutputProfile, outputProfileInfo, parseIccProfile, resolvePrintConfig, type ResolvedPrintConfig } from 'postext';
+import { authoredCmykColors, loadOutputProfile, outputProfileInfo, parseIccProfile, resolvePrintConfig, type CmykPercent, type ResolvedPrintConfig } from 'postext';
 import { createPrintColorMode, type ColorMode, type PrintColorMode } from '../print/colorMode';
 import { runPagePrintPass } from '../print/printPass';
 import { writePdfX } from '../print/pdfx';
@@ -733,7 +733,7 @@ export async function renderToPdf(
   // `pdfGeneration`, else the default.
   const settings = pdfSettings(options, first);
   const printConfig: ResolvedPrintConfig = options.print ? resolvePrintConfig(options.print) : first.config.print ?? resolvePrintConfig();
-  const printMode = await printColorMode(printConfig, settings.colorSpace, options, warn);
+  const printMode = await printColorMode(printConfig, settings.colorSpace, options, warn, docs);
   const colorSpace: ColorMode = printMode ?? settings.colorSpace;
   const pdfx = printMode && printMode.standard !== 'none' ? printMode.standard : undefined;
   let pageNegative = options.pageNegative ?? false;
@@ -859,6 +859,7 @@ async function printColorMode(
   colorSpace: PdfColorSpace,
   options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl'>,
   warn: (w: PdfWarning) => void,
+  docs: readonly VDTDocument[],
 ): Promise<PrintColorMode | undefined> {
   const pdfx = config.standard !== 'none';
   if (!pdfx && colorSpace !== 'cmyk') return undefined;
@@ -874,7 +875,9 @@ async function printColorMode(
     const condition = custom
       ? { registryName: custom.registryName ?? 'Custom', condition: custom.name, name: profile.description || custom.name }
       : { registryName: info!.registryName, condition: info!.condition, name: info!.name };
-    return createPrintColorMode(profile, config, condition);
+    const authored = new Map<string, CmykPercent>();
+    for (const doc of docs) authoredCmykColors(doc.config, authored);
+    return createPrintColorMode(profile, config, condition, authored);
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

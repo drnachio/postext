@@ -680,6 +680,11 @@ export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 export interface ColorValue {
   hex: string;
   model: ColorModel;
+  /** The exact process values of a colour authored in CMYK (`model:
+   *  'cmyk'`), percent: a CMYK print render (`print`, or a `'cmyk'` PDF
+   *  colour space) sets them as they are instead of separating `hex`,
+   *  which is their screen rendering. */
+  cmyk?: CmykPercent;
   /** The `colorPalette` entry this colour follows, wherever it sits in the
    *  configuration (designs, callout labels and the `:ref` colour
    *  included): the entry's `hex` / `model` win, and the ones stored here

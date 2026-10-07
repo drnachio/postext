@@ -211,3 +211,18 @@ describe('profiles', () => {
     expect(warnings.map((w) => w.kind)).toContain('outputProfileUnavailable');
   });
 });
+
+describe('authored CMYK', () => {
+  it('sets a colour authored in CMYK with its exact values, through a palette link too', async () => {
+    const doc = buildDocument({ markdown: 'Cyan text.\n\n# Heading' }, config({
+      colorPalette: [{ id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } }],
+      bodyText: { fontFamily: 'Lora', color: { hex: '#00a0e3', model: 'cmyk', paletteId: 'brand' } },
+    }));
+    const bytes = await renderToPdf(doc, { fontProvider: async () => new Uint8Array(fontBytes), outputProfile: fogra39, colorSpace: 'cmyk', accessible: false });
+    const pdf = await PDFDocument.load(bytes);
+    const c = pdf.getPage(0).node.Contents();
+    const s = c instanceof PDFArray ? pdf.context.lookup(c.get(0)) : c;
+    const raw = s instanceof PDFRawStream ? new TextDecoder('latin1').decode(decodePDFRawStream(s).decode()) : '';
+    expect(raw).toMatch(/1 0 0 0 k/);
+  });
+});
