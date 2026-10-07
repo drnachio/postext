@@ -23,7 +23,7 @@ export interface EpubWorkerHandle {
    *  and the cover are transferred, not copied: the caller's views of them
    *  are empty afterwards, so pass copies of bytes it keeps. Aborting the
    *  signal rejects at once with an `AbortError` and stops the worker. */
-  render(docs: EpubSource, options: EpubWorkerRenderOptions): Promise<Uint8Array>;
+  render(docs: EpubSource | VDTDocument, options: EpubWorkerRenderOptions): Promise<Uint8Array>;
   dispose(): void;
 }
 
@@ -207,7 +207,7 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
 
   return {
     async render(input, renderOptions) {
-      const docs: VDTDocument[] = [...input];
+      const docs: VDTDocument[] = Array.isArray(input) ? [...input] : [input as VDTDocument];
       const { signal } = renderOptions;
       signal?.throwIfAborted();
       const resourceBytes = await gatherResourceBytes(docs, renderOptions.resourceBytes);

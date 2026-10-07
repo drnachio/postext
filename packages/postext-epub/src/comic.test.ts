@@ -30,6 +30,11 @@ describe('fixed layout of comic pages', () => {
     opf = text(book, 'OEBPS/content.opf');
   });
 
+  it('takes one document as well as a chain, as renderToPdf does', async () => {
+    const one = readEpub(await renderToEpub(docs[0]!, options('fixed')));
+    expect(one.files.has('OEBPS/content.opf')).toBe(true);
+  });
+
   it('declares one data navigation document, out of the spine', () => {
     expect(opf).toMatch(/<item id="regions" href="regions.xhtml" media-type="application\/xhtml\+xml" properties="data-nav"\/>/);
     expect(book.spine.some((s) => s.path.endsWith('regions.xhtml'))).toBe(false);
