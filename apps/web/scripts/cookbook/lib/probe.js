@@ -888,7 +888,13 @@ function legibility(page, doc, blocks, resolved) {
   slot(page.openerBand);
   slot(page.header);
   slot(page.footer);
+  // Comic panels (a :::page, a :::strip in the flow): their pictures and fills.
+  const comicPanels = (comic) => {
+    for (const panel of comic?.panels ?? []) if (panel.art || filled(panel.background)) sum += box(panel.bbox);
+  };
+  comicPanels(page.comic);
   for (const block of blocks) {
+    comicPanels(block.comic);
     const rb = block.resourceBlock;
     if (rb && (rb.kind === 'bitmap' || rb.kind === 'svg')) sum += box(rb.bodyRect);
     if (rb?.captionBar) sum += box(rb.captionBar.rect);
