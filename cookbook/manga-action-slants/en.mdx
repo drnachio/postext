@@ -1,0 +1,48 @@
+---
+title: "An action page with slanted gutters"
+summary: "The page that decides a kendo final: slanted gutters (40~55) in the split, a borderless strike panel, and ドン kept in Japanese under a small translation."
+plain: "One page of a fight in a Japanese comic, with tilted gaps between the panels so the action seems to lean, and the big Japanese sound of the hit left in place with a small translation beside it."
+description: "A manga action page in Postext: slanted gutters written 40~55 in the split, a borderless panel for the hit, ドン kept in Japanese with a subtitle per edition."
+question: "How do I tilt the gutters between panels for an action scene in a comic?"
+aliases: ["slanted panels", "diagonal gutters", "斜めのコマ割り", "action page", "fight scene", "speed lines", "効果線", "sound effects", "SFX", "描き文字", "onomatopoeia", "borderless panel", "枠なし", "subtitle SFX", "ドン"]
+pageNotes: { "1": "The Japanese original: a wide shot of the final, a strip of Hana's eyes behind her grille, a tier split by a gutter that leans to the left, the opponent's thrust on the right and Hana's strike on the left under a huge vertical ドン, then a last tier tilted the other way.", "2": "The English edition of the same page: ドン set across the strike with WHAM in small capitals under it." }
+---
+
+## What you'll build
+
+The page where the kendo final is decided, from the same manga as <RecipeLink slug="manga-right-to-left">the right-to-left recipe</RecipeLink>, in two editions side by side: the Japanese original and its lettering in this page's language (English on the Japanese page). Four tiers: the gym, Hana's eyes through her helmet grille, the exchange, and the reactions. The third tier is cut by a gutter that leans, so the opponent's thrust and Hana's counter seem to rush at each other; the fourth leans the other way and slows the page down. Hana's strike has no frame at all, and its sound effect, ドン, is set in a heavy Japanese gothic that every edition keeps, with a small translation under it in the translated pages.
+
+## Method
+
+### 1 · Slant the gutter in the split
+
+The code is [the short answer](#the-short-answer) above. A size written `40~55` gives a cell's far edge two positions: 40 % of the tier at the top, 55 % at the bottom. The cells stay convex polygons, the gutter keeps its width measured across the slant, and with right-to-left reading the slant mirrors with the order, so the first cell is still the right-hand one. The page's split is `24 / 18 / * [40~55 | *] / 24 [58~64 | *]`: two straight tiers to set up the moment, a slanted one for the hit, and a last one tilted the other way (<Feature id="comic-panel-split">page split</Feature>).
+
+### 2 · Shout in bursts and let the effects break out
+
+<Excerpt region="balloons" />
+
+The kiai of both fighters are shouts: an 18-spike burst with deeper spikes than the default. The sound effects have no balloon at all; they are lettered on the art with a white edge, 2.2 pt, so they read over the speed lines. The strike's panel is written `::panel{art=strike border=none}`, and its ドン carries `break`, so it may cross the slanted gutter into the panel beside it, the way a letterer lets a sound spill over the frame (<Feature id="sound-effects">sound effects</Feature>).
+
+### 3 · Keep ドン in Japanese and subtitle it
+
+<Excerpt region="fonts" />
+
+In manga the sound effects are part of the drawing, and licensed editions usually leave them in place and add a small translation beside them. The script does the same: every edition has the line `sfx{… font="Dela Gothic One" break}: ドン`; the editions lettered in rows add `vertical` to it, so ドン keeps the column it has in the original, and set a second, smaller effect under it, WHAM or ¡ZAS!. Because the face is named on the line, each edition loads Dela Gothic One with just the characters of ドン, whatever its own lettering face is.
+
+### 4 · Fit the safe areas to slanted cells
+
+<Excerpt region="art" />
+
+A slanted cell is wider at one end than at the other, and the picture has to cover it whole. Each safe area is cut to what the panel needs, the eyes for the grille close-up and Sora's upper body for the cheer, so it fits inside the cell's widest crop and the engine never has to letterbox the picture.
+
+### 5 · Set the original beside each edition
+
+<Excerpt region="editions" />
+
+Each language of the site letters the page in its own file, and the Japanese original faces it on the other side of the spread (the Japanese page faces the English edition). ドン stays in every edition, each one brings its own subtitle (WHAM, ZAS!, 咚, بوم!), and the slants never move.
+
+## Pitfalls
+
+- A sound effect kept in Japanese in an edition lettered in rows is set in a row, like the rest of the edition, unless its line says `vertical`.
+- Sora's cheer is longer than his small panel in Japanese, Spanish and Catalan: left to the engine it crossed the border and the build warned `comicBalloonOverflow`. Those editions mark it `break` (`sora{shout break}`): it bursts up through the frame into the gutter and the panel above on purpose, and nothing is reported. A `break` balloon never runs into the page margin unless its panel bleeds; a pin (`at=`) puts it anywhere else.

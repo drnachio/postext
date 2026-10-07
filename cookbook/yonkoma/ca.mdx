@@ -1,0 +1,47 @@
+---
+title: "Dues tires yonkoma en una pàgina"
+summary: "Una pàgina de tires còmiques de quatre vinyetes: dues columnes de quatre, la tira de la dreta primer i el títol de cada tira en un requadre negre."
+plain: "Una pàgina de tires còmiques japoneses de quatre vinyetes, l'una al costat de l'altra com en una revista de manga: es llegeix la tira de la dreta de dalt a baix i després la de l'esquerra."
+description: "Dues tires yonkoma (4-koma) en una pàgina A5 amb Postext: una divisió per a dues columnes, lectura de dreta a esquerra, un títol per tira i sis retolacions."
+question: "Com poso dues tires yonkoma de quatre vinyetes l'una al costat de l'altra, llegint primer la de la dreta?"
+aliases: ["yonkoma", "4-koma", "四コマ", "4コマ漫画", "tira de quatre vinyetes", "tira còmica", "tira de manga", "cafè de gats", "chibi", "dreta a esquerra", "títol de la tira", "maxColumnChars"]
+---
+
+## Què compondràs
+
+Una pàgina d'una antologia de yonkoma, ねこ喫茶まどろみ (*Cafè Becaina*), escrita per a aquesta recepta i dibuixada en un estil chibi suau: la Mugi porta un cafè de gats amb una gata blanca, un gat negre i una gata tricolor. El yonkoma, la tira de quatre vinyetes, és la tira còmica de diari posada dreta: quatre vinyetes iguals apilades de dalt a baix, plantejament, desenvolupament, gir i cop final. Una pàgina de revista en porta dues, l'una al costat de l'altra, i com que la pàgina s'obre per la dreta, la tira de la dreta va primer. La pàgina és A5, 148 × 210 mm, amb l'original japonès en un costat del plec i l'edició en la llengua d'aquesta pàgina a l'altre (l'anglesa a la pàgina japonesa).
+
+## Elaboració
+
+### 1 · Divideix la pàgina en dues columnes de quatre
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Tota la pàgina és un `:::page` amb `split="* [* / * / * / *] | * [* / * / * / *]"`: dues columnes iguals, cadascuna tallada en quatre franges iguals. Les vuit línies `::panel` omplen les cel·les en ordre de lectura, de manera que les quatre primeres són de la primera tira, i amb la lectura de dreta a esquerra la primera columna es col·loca a la dreta (<Feature id="comic-panel-split">divisió de la pàgina</Feature>). El carrer entre les tires fa 9 mm i el carrer entre vinyetes, 3 mm, i així la mirada baixa per una tira abans de passar a la següent.
+
+### 2 · Posa el títol de cada tira a la primera vinyeta
+
+<Excerpt region="balloons" />
+
+Un yonkoma té títol, i les antologies l'imprimeixen en un requadre al capdamunt de la tira. Aquí el títol és una línia del guió, `caption{title}: 朝ごはん`, i `title` és un estil de bafarada propi: blanc sobre negre, enganxat a la vora de la vinyeta a la cantonada superior del costat d'inici, que en aquest llibre és la dreta. Es retola a cada edició com qualsevol altra línia, i a la pàgina catalana els mateixos requadres diuen *L'esmorzar* i *Teràpia*.
+
+### 3 · Marca també els gats com a personatges
+
+<Excerpt region="art" />
+
+Els gats parlen, `kuro: にゃ`, així que cada imatge en marca la boca i la cara igual que les de la Mugi. Dues funcions petites escurcen la llista: `cat()` per a un gat que mira el lector i `nose()` per a un amb la cara ficada al bol o al coixí. A la tercera vinyeta la Mugi no surt al dibuix, i la seva línia `mugi{tail=top}` porta el rabet a la vora de dalt.
+
+### 4 · Carrega les fonts de cada edició amb les seves paraules
+
+<Excerpt region="fonts" />
+
+Cada font rep les paraules que compon: Zen Antique les bafarades i Dela Gothic One les onomatopeies (ガツガツ, じーっ, すやぁ, ずしっ). Una vinyeta de yonkoma és més ampla que alta, així que les columnes japoneses es tallen als sis caràcters (`maxColumnChars: 6`) i la retolació és mig punt més petita que en una pàgina d'història.
+
+### 5 · Posa l'original al costat de cada edició
+
+<Excerpt region="editions" />
+
+Cada llengua del lloc retola les tires al seu propi arxiu, davant de l'original japonès a l'altre costat del plec; la pàgina japonesa s'aparella amb l'edició anglesa. En totes les llengües es continua llegint primer la tira de la dreta.
+
+## Errors freqüents
+
+- En una vinyeta petita, una bafarada vertical es queda sense altura abans que sense amplada: el motor la compon en més columnes, més curtes, tallant entre paraules. L'últim crit de l'oficinista continua sent massa alt per a la vinyeta de baix en japonès, així que es marca amb `break` (`kyaku{shout break}`): trenca el marc cap a la vinyeta de sobre en lloc de tapar els gats, sense sortir al marge de la pàgina.
+- Una onomatopeia gran s'aparta de les cares com una bafarada: ずしっ fixada a `86% 82%` tapava la cara de la gata tricolor a la tira japonesa i la construcció avisava `comicBalloonOverflow`, així que allà va a `90% 88%`.

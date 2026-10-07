@@ -1,0 +1,61 @@
+---
+title: "Una pàgina splash, una vinyeta inserida i una vora trencada"
+summary: "Una tempesta en dues pàgines: una splash a sang amb una vinyeta inserida, una tira sagnada per tres costats, una gavina que creua la vora i cartel·les soles."
+plain: "Dues pàgines d’un còmic sobre una tempesta: una imatge enorme que omple tota la primera pàgina amb una petita vinyeta d’una nena a sobre, i una pàgina on una gavina surt volant del seu marc."
+description: "Pàgines de còmic amb Postext: una splash a sang, una vinyeta inserida, sagnat als costats que triïs, art que trenca la vora i una vinyeta només de text."
+question: "Com trec una vinyeta a sang o deixo que el dibuix trenqui la vora de la vinyeta?"
+aliases: ["pàgina splash", "vinyeta a sang", "sagnat", "vinyeta inserida", "vora trencada", "dibuix que surt de la vinyeta", "splash page", "broken border", "裁ち切り", "出血"]
+pageNotes: { "1": "La splash: el far en una nit de tempesta, a sang pels quatre costats, BRRROOM! en lletres blanques al costat del llamp, una cartel·la a dalt a l’esquerra i una petita vinyeta emmarcada amb la cara de la Maya darrere una finestra amb pluja, a baix a la dreta.", "2": "Pàgina 2: una onada que esclata a les roques, a sang per dalt i pels costats; a sota, el faroner amb un fanal mentre una gavina surt volant per la vora esquerra de la seva vinyeta, i una vinyeta estreta blau nit amb dues cartel·les." }
+---
+
+## Què compondràs
+
+Dues pàgines de la tempesta de *La llum de Porthcove*. La primera és una splash: una sola imatge del far enmig de la tempesta surt per totes les vores de la pàgina, amb una petita vinyeta emmarcada de la Maya a la finestra sobre el racó inferior. La segona s’obre amb una onada sagnada per tres costats; a sota, una gavina surt de la vinyeta del faroner creuant la vora, i una vinyeta estreta sense imatge porta dues cartel·les sobre un fons blau nit. El format és el d’un còmic americà, 168 × 259 mm amb 3 mm de sagnat, i les pàgines surten en sis idiomes.
+
+## Elaboració
+
+### 1 · Treu la splash a sang per tots els costats
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `split="*"` fa una sola cel·la amb tot el marc, i `bleed` a la pàgina porta cada vinyeta que toca el marc fins a la caixa de sagnat, 3 mm més enllà del tall, sense filet en aquests costats ([dividir la pàgina](/ca/docs/comics#dividir-la-pàgina)). A la pàgina 2, `bleed="top start end"` a l’onada sagna només aquests tres costats; el peu conserva el carrer amb les vinyetes de sota. `start` i `end` segueixen el sentit de lectura, així que l’edició àrab sagna els mateixos costats.
+
+### 2 · Posa una vinyeta inserida sobre la splash
+
+`inset="56 64 38 30"` col·loca la vinyeta de la Maya al 56 %, 64 % de la vinyeta anterior, amb un 38 % d’ample i un 30 % d’alt. Una vinyeta inserida no ocupa cel·la: se superposa a la splash, conserva el seu propi filet i es llegeix just després d’ella. La seva imatge es retalla a la seva pròpia caixa segons la seva zona segura, aquí la cara de la Maya.
+
+<PageShot page={1} crop="0.35,0.55,0.65,0.45" caption="La vinyeta inserida: la cara de la Maya al seu marc sobre el racó inferior de la splash, amb la seva veu interior." />
+
+### 3 · Deixa que una gavina trenqui la vora
+
+<Excerpt region="art" />
+
+`pop=sp-tomas-pop` dona a la vinyeta del faroner una segona imatge: un PNG transparent de la mida del seu dibuix on només hi ha la gavina. Postext la retalla i la col·loca exactament com el dibuix de la vinyeta, i la pinta després del filet i fora del retall de la vinyeta, de manera que la part de la gavina que queda fora de la cel·la vola sobre la vora i el marge ([vinyetes i imatges](/ca/docs/comics#vinyetes-i-imatges)). `focus="45% 50%"` desplaça l’enquadrament a l’esquerra dins del que permet la zona segura, perquè la gavina creui la vora esquerra en lloc de quedar-se al marge.
+
+### 4 · Deixa una vinyeta sense imatge
+
+<Excerpt region="palette" />
+
+Un `::panel` sense `art` és una cel·la buida amb el filet de l’estil de vinyeta; `bg=night` l’omple amb un color de la paleta. Les seves cartel·les, `at=top` i `at=bottom`, s’encaixen a les vores de dalt i de baix: una pausa després de la tempesta.
+
+## Variants
+
+### Sagna també la tira de baix
+
+```diff
+-::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%"}
++::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%" bleed="bottom start"}
+```
+
+### Dona a la vinyeta inserida un marc blanc
+
+Un estil de vinyeta amb nom canvia una sola vinyeta; `style=` a la vinyeta el tria.
+
+```diff
+   panel: { borderWidth: pt(1.2), borderColor: col('ink'), background: col('paper') },
++  panelStyles: [{ id: 'framed', borderWidth: pt(3), borderColor: col('paper') }],
+```
+
+## Errors freqüents
+
+- La capa emergent ha de tenir exactament la mida en píxels de la imatge de la vinyeta: Postext la retalla amb la mateixa finestra, així que un retall més petit cauria en un altre lloc.
+- El sagnat necessita `page.bleed`; sense, una vinyeta a sang s’atura al tall.
+- Una onomatopeia al costat d’una vora sagnada pot entrar al sagnat, més enllà del tall, on la guillotina la retalla. La ザッバーン japonesa és una columna de cinc caràcters, així que va fixada més avall que les onomatopeies llatines, a `60% 44%`.

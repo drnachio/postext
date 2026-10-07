@@ -1,0 +1,62 @@
+---
+title: "Every kind of balloon on a lighthouse page"
+summary: "One comic page with speech, thought, whisper, shout, radio, caption, inner voice, editor's note and sound effects, each named in braces on its script line."
+plain: "A comic page about a storm rescue that uses every kind of speech balloon, with a letterer's style sheet that shows how each one is written in the script."
+description: "A Postext comic page with every balloon kind: speech, thought, whisper, shout, radio, captions, inner voice, notes, sound effects, off-panel and pinned."
+question: "How do I letter thought, whisper, shout and radio balloons, and point each tail at its speaker?"
+aliases: ["speech balloon", "speech bubble", "thought bubble", "whisper balloon", "burst balloon", "radio balloon", "caption box", "sound effect", "SFX", "off-panel", "tail", "bocadillo", "吹き出し", "对话框"]
+pageNotes: { "1": "The style sheet: the title in red display capitals, then twelve kinds of balloon, each with its script markup in a yellow chip.", "2": "The page: a radio call in the lamp room with a caption, a jagged radio balloon and an editor's note; Maya whispering to the cat, who thinks in a cloud; the keeper shouting in a burst; the trawler in the storm with KRA-KOOM in red; Maya at the window in a grey inner-voice box; the next morning on the rocks with joined balloons." }
+---
+
+## What you'll build
+
+Page 7 of *The Porthcove Light*, a comic about a storm night at a lighthouse, with the letterer's style sheet in front of it. A trawler loses its engine, the keeper talks it in by radio, Maya waits with the cat, and in the morning the skipper thanks them. The page uses every kind of balloon Postext draws: speech, joined speech, thought, whisper, shout, radio, narration captions, an inner voice, an editor's note, a sound effect, an off-panel voice and a pinned balloon. The trim is an American comic book, 168 × 259 mm, and the page comes in six languages.
+
+## Method
+
+### 1 · Name the kind in the script line
+
+The code is [the short answer](#the-short-answer) above. A line of the script is `speaker{kind}: text`, and the kind is the id of a balloon style. The nine built-in styles cover the usual kinds: an oval with a curved tail for speech, a cloud with bubbles for thought, a dashed outline for a whisper, a burst with a wedge tail for a shout, a jagged outline with a zigzag tail for a voice through a radio ([balloon styles](/en/docs/comics#balloon-styles)). A style in the config with the same id changes only what it names: here the stroke colour, the caption yellow and the burst's 16 points. `caption`, `note` and `sfx` are reserved speakers: narration boxes butted into a corner, the editor's note at 0.8 × the size, and display letters with no balloon.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="The radio call: a caption, the skipper's radio balloon pointing at the set, the keeper's reply and the editor's note." />
+
+### 2 · Point each tail at a speaker
+
+<Excerpt region="art" />
+
+Each picture carries anchors in fractions of the picture: the mouth a speech tail aims at, the head a thought aims at, the face no balloon may cover ([speakers and anchors](/en/docs/comics#speakers-and-anchors)). The skipper is never drawn: his anchor in the storm picture is the radio set, in the sea picture his boat. When the speaker is not in the panel, `tail=end` (or `start`, `top`, `bottom`) runs the tail to that edge, and `at="44% 22%"` pins a balloon's centre to a point of the picture, so it stays there whatever the crop. Two lines in a row from one speaker join into one outline with one tail.
+
+### 3 · Give a character a voice of their own
+
+The cast in the short answer gives every `skipper:` line the radio style, so the script never repeats `{radio}`. A line can still say otherwise: in the morning panel the skipper calls from his boat, `skipper{speech tail=bottom}:`, in an ordinary balloon whose tail runs off the foot of the panel.
+
+### 4 · Letter each edition in its own faces
+
+<Excerpt region="editions" />
+
+The same page comes in six languages: `content.<lang>.md` holds only the words. The Japanese balloons are set vertically in Zen Antique and its sound effects in Dela Gothic One, the Arabic ones in Playpen Sans Arabic with Lalezar for the thunder. Italics and bold apply where the face has them: the inner voice is italic in English, upright in Japanese ([lettering](/en/docs/comics#lettering)).
+
+## Variations
+
+### Use a wavy balloon for a sick or weak voice
+
+Any other id becomes a style of its own, laid over the speech balloon.
+
+```diff
+ const balloonStyles = [
++  { id: 'weak', shape: 'wavy', stroke: col('ink'), fontScale: 0.9 }, // maya{weak}: …
+   { id: 'speech', stroke: col('ink') },
+```
+
+### Join two lines with a neck instead
+
+```diff
+-  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1) },
++  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1),
++    joinSameSpeaker: 'connector' },
+```
+
+## Pitfalls
+
+- A pin is a point of the picture, kept whatever the crop. A sound effect pinned so near the edge that it would leave the panel (KRA-KOOM at `at="16% 28%"`) is slid back inside, so it may sit a little off the point written.
+- An off-panel voice is lettered by the border its tail points to: the skipper's thanks, `tail=bottom`, sits at the foot of the morning panel although it is the panel's first line. Point the tail at the top border when such a line has to be read first.

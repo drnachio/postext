@@ -1,0 +1,48 @@
+---
+title: "Two yonkoma strips on a page"
+summary: "A page of four-panel gag strips: two columns of four panels, the right strip read first, each strip titled in a black box in its first panel."
+plain: "A page of short Japanese comic strips, four panels each, set side by side the way a manga magazine prints them: you read the right-hand strip from top to bottom, then the left one."
+description: "Two yonkoma (4-koma) strips on an A5 page in Postext: one split for both columns, right-to-left order, a title box per strip, and six letterings of the jokes."
+question: "How do I set two four-panel yonkoma strips side by side, the right one read first?"
+aliases: ["yonkoma", "4-koma", "四コマ", "4コマ漫画", "four-panel comic", "gag strip", "manga strip", "neko café", "chibi", "right to left", "strip title", "maxColumnChars"]
+pageNotes: { "1": "The Japanese original: two columns of four panels; the right column, titled 朝ごはん in a black box, shows a café owner feeding three cats, the left one, titled いやし, an office worker who came to be soothed by the cats.", "2": "The English edition: the same eight panels, titled Breakfast and Therapy, the balloons set in horizontal lines." }
+---
+
+## What you'll build
+
+A page from a yonkoma anthology, ねこ喫茶まどろみ (*Café Doze*), written for the recipe and drawn in a soft chibi style: Mugi runs a cat café with a white, a black and a calico cat. Yonkoma, four-panel strips, are the newspaper gag strip turned on its side: four equal panels stacked top to bottom, set up, develop, turn, punchline. A magazine page carries two of them side by side, and because the page opens from the right, the right-hand strip comes first. The page is A5, 148 × 210 mm, with the Japanese original on one side of the spread and the edition in this page's language on the other (English on the Japanese page).
+
+## Method
+
+### 1 · Split the page into two columns of four
+
+The code is [the short answer](#the-short-answer) above. The whole page is one `:::page` with `split="* [* / * / * / *] | * [* / * / * / *]"`: two equal columns, each cut into four equal tiers. The eight `::panel` lines fill the cells in reading order, so the first four belong to the first strip, and with right-to-left reading the first column is laid out on the right (<Feature id="comic-panel-split">page split</Feature>). The gutter between the strips is 9 mm and the gutter between panels 3 mm, so the eye goes down a strip before it crosses to the next.
+
+### 2 · Title each strip in its first panel
+
+<Excerpt region="balloons" />
+
+A yonkoma has a title, and an anthology prints it in a box at the head of the strip. Here the title is a script line, `caption{title}: 朝ごはん`, and `title` is a balloon style of its own: white on black, flush against the panel border in the top start corner, which is the top right in this book. It is lettered in each edition like any other line, so the English page reads *Breakfast* and *Therapy* in the same boxes.
+
+### 3 · Mark the cats as speakers too
+
+<Excerpt region="art" />
+
+The cats speak, `kuro: にゃ`, so each picture marks their mouths and faces as it marks Mugi's. Two small helpers keep the list short: `cat()` for a cat that faces the reader and `nose()` for one whose face is buried in a bowl or a cushion. In the third panel Mugi is out of the picture, and her line `mugi{tail=top}` gets a tail to the top edge.
+
+### 4 · Load each edition's faces with its words
+
+<Excerpt region="fonts" />
+
+Each face gets the words it sets: Zen Antique the balloons, Dela Gothic One the sound effects (ガツガツ, じーっ, すやぁ, ずしっ). A yonkoma panel is wider than it is tall, so the Japanese columns stop at six characters (`maxColumnChars: 6`) and the lettering is half a point smaller than in a story page.
+
+### 5 · Set the original beside each edition
+
+<Excerpt region="editions" />
+
+Each language of the site letters the strips in its own file, facing the Japanese original across the spread; the Japanese page faces the English edition. The order stays right strip first in every language.
+
+## Pitfalls
+
+- In a small panel a vertical balloon runs out of height before it runs out of width: the engine sets it in more, shorter columns, breaking between words. The office worker's last shout is still too tall for the bottom panel in Japanese, so it is marked `break` (`kyaku{shout break}`): it bursts up through the frame into the panel above instead of covering the cats, and stays out of the page margin.
+- A large sound effect is kept off faces like a balloon: ずしっ pinned at `86% 82%` covered the calico's face in the Japanese strip and the build warned `comicBalloonOverflow`, so there it sits at `90% 88%`.

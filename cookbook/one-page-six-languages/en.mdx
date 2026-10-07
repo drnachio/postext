@@ -1,0 +1,48 @@
+---
+title: "One page lettered in six languages"
+summary: "One comic page, split and pictures fixed, lettered from a script per language: the locale picks the face, Japanese goes vertical, Arabic reads from the right."
+plain: "The same comic page in English, Spanish, French, Japanese, Chinese and Arabic: only the words change, and Postext redraws every balloon around them."
+description: "A comic page re-lettered in Postext: one split and five pictures, a script per language, vertical Japanese balloons and an Arabic page laid out right to left."
+question: "How do I re-letter a comic in another language?"
+aliases: ["re-lettering", "relettering", "translation", "comic translation", "localisation", "manga translation", "vertical lettering", "right to left comic", "rotulación", "写植", "嵌字", "defaultComicFont"]
+---
+
+## What you'll build
+
+One page of a comic, *The Lighthouse Radio*: Maya arrives at her grandfather's lighthouse as a storm comes in, the radio is dead, and the culprit is Biscuit, asleep on the cable. The split and the five watercolour pictures are fixed; what changes from one edition to the next is a script of nine lines. Each edition of this recipe sets its own language, and every edition also sets the French page beside it: English and French, Spanish and French, and so on through Japanese, Chinese and Arabic. The engine redraws each balloon around the words it holds. Japanese is lettered in vertical columns in Zen Antique. The Arabic page reads from the right, so the three panels of the middle tier change places.
+
+## Method
+
+### 1 · One config for every language
+
+The code is [the short answer](#the-short-answer) above. Nothing in the config names a language but `locale`. With no `fontFamily`, the lettering takes the comic face of the document language (`defaultComicFont`): Comic Neue, Zen Antique, Noto Sans SC or Playpen Sans Arabic, and the sound effect the matching display face. `writingMode: 'auto'` turns the Japanese balloons into vertical columns; `readingDirection: 'auto'` reads the Arabic page from the right, so the same `split="30 / 35 [* | * | *] / *"` sets the radio panel on the right and the cat on the left. The speaker ids (`maya`, `tomas`) are the same in every script, and the pictures' anchors answer to them.
+
+The size is one for the whole book. The English script has 216 letters, the Spanish 220, the French 224, the Chinese 74 characters; the longer scripts get larger balloons, never smaller type.
+
+### 2 · French rides along in every edition
+
+<Excerpt region="editions" />
+
+The site has no French pages, so each edition builds two documents: its own page, then the French one from `content.fr.en.md`, with the same config and a `locale` of `'fr'`. The config is spread into a new object, because the engine caches resolved configs by identity. The French script uses the narrow no-break space before `!` and `?`, as French typesetting does.
+
+### 3 · The pictures do not change
+
+<Excerpt region="art" />
+
+The safe areas are cut to the cells of this split: the middle tier holds three panels about 46 mm wide and 80 mm tall, so each square picture keeps a column 56–58 % of its width, with the speaker's face inside. The pictures are not mirrored for Arabic (`mirrorArt` stays false): Maya still walks up the path from the left, and only the order of the panels follows the reading.
+
+## Variations
+
+### Mirror the pictures for the Arabic edition
+
+`mirrorArt: true` flips every picture when the page reads the other way from the art's drawn direction. Leave a panel with lettering or a clock in it unflipped with `::panel{mirror=false}`.
+
+```diff
+   readingDirection: 'auto', // the default, written out: it is what an edition flips
++  mirrorArt: true,
+```
+
+## Pitfalls
+
+- A script line names a speaker by id, not by name: write `maya:` in every language. The name a screen reader announces is `cast[].name`.
+- The French page shares the edition's pictures, so its panels' alt text is in the edition's language; give `::panel{alt="…"}` in `content.fr.en.md` for French alt text.

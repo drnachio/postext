@@ -1,0 +1,62 @@
+---
+title: "Todos los bocadillos en una página del faro"
+summary: "Una página de cómic con diálogo, pensamiento, susurro, grito, radio, cartela, voz interior, nota del editor y onomatopeyas, cada uno nombrado entre llaves."
+plain: "Una página de cómic sobre un rescate en plena tormenta que usa todos los tipos de bocadillo, con la hoja de estilo del rotulista que enseña cómo se escribe cada uno en el guion."
+description: "Una página de cómic con Postext y todos los bocadillos: diálogo, pensamiento, susurro, grito, radio, cartelas, voz interior, notas y onomatopeyas."
+question: "¿Cómo rotulo bocadillos de pensamiento, susurro, grito y radio, y apunto cada rabillo a quien habla?"
+aliases: ["bocadillo", "globo", "bocadillo de pensamiento", "susurro", "grito", "bocadillo de radio", "cartela", "onomatopeya", "fuera de campo", "rabillo", "speech balloon", "吹き出し", "对话框"]
+pageNotes: { "1": "La hoja de estilo: el título en mayúsculas rojas y doce tipos de bocadillo, cada uno con su marcado del guion en una pastilla amarilla.", "2": "La página: una llamada por radio en la sala de la linterna, con cartela, bocadillo quebrado de radio y nota del editor; Maya susurrando al gato, que piensa en una nube; el farero gritando en un estallido; el pesquero en la tormenta con BRRROOM en rojo; Maya en la ventana con la voz interior en una caja gris; la mañana siguiente en las rocas, con bocadillos unidos." }
+---
+
+## Lo que vas a componer
+
+La página 7 de *La luz de Porthcove*, un cómic sobre una noche de tormenta en un faro, con la hoja de estilo del rotulista delante. Un pesquero se queda sin motor, el farero lo guía por radio, Maya espera con el gato y por la mañana el patrón les da las gracias. La página usa todos los bocadillos que dibuja Postext: diálogo, diálogo unido, pensamiento, susurro, grito, radio, cartelas de narración, voz interior, nota del editor, onomatopeya, una voz fuera de campo y un bocadillo fijado. El formato es el de un cómic americano, 168 × 259 mm, y la página sale en seis idiomas.
+
+## Elaboración
+
+### 1 · Nombra el tipo en la línea del guion
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Una línea del guion es `personaje{tipo}: texto`, y el tipo es el identificador de un estilo de bocadillo. Los nueve estilos de serie cubren los tipos habituales: un óvalo con rabillo curvo para el diálogo, una nube con burbujas para el pensamiento, un contorno discontinuo para el susurro, un estallido con rabillo en cuña para el grito y un contorno quebrado con rabillo en zigzag para una voz por radio ([estilos de bocadillo](/es/docs/comics#estilos-de-bocadillo)). Un estilo de la configuración con el mismo identificador cambia solo lo que nombra: aquí el color del trazo, el amarillo de las cartelas y las 16 puntas del estallido. `caption`, `note` y `sfx` son personajes reservados: cartelas encajadas en una esquina, la nota del editor a 0,8 veces el cuerpo y letras de cartel sin bocadillo.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="La llamada por radio: una cartela, el bocadillo de radio del patrón apuntando al aparato, la respuesta del farero y la nota del editor." />
+
+### 2 · Apunta cada rabillo a quien habla
+
+<Excerpt region="art" />
+
+Cada imagen lleva anclas en fracciones de la imagen: la boca a la que apunta el rabillo de un diálogo, la cabeza a la que apunta un pensamiento y la cara que ningún bocadillo puede tapar ([personajes y anclas](/es/docs/comics#personajes-y-anclas)). Al patrón no se le ve nunca: su ancla en la imagen de la tormenta es la radio y, en la del mar, su barco. Cuando quien habla no está en la viñeta, `tail=end` (o `start`, `top`, `bottom`) lleva el rabillo a ese borde, y `at="44% 22%"` fija el centro de un bocadillo en un punto de la imagen, que se mantiene con cualquier recorte. Dos líneas seguidas de un mismo personaje se funden en un contorno con un solo rabillo.
+
+### 3 · Dale a un personaje su propia voz
+
+El reparto de la respuesta corta da a cada línea `skipper:` el estilo de radio, así que el guion no repite `{radio}`. Una línea puede decir otra cosa: en la viñeta de la mañana el patrón grita desde su barco, `skipper{speech tail=bottom}:`, con un bocadillo normal cuyo rabillo sale por el pie de la viñeta.
+
+### 4 · Rotula cada edición con sus letras
+
+<Excerpt region="editions" />
+
+La misma página sale en seis idiomas: `content.<lang>.md` solo lleva las palabras. Los bocadillos japoneses van en vertical con Zen Antique y sus onomatopeyas con Dela Gothic One; los árabes, con Playpen Sans Arabic y Lalezar para el trueno. La cursiva y la negrita se aplican donde la letra las tiene: la voz interior va en cursiva en inglés y en redonda en japonés ([rotulación](/es/docs/comics#rotulación)).
+
+## Variantes
+
+### Usa un bocadillo ondulado para una voz débil
+
+Cualquier otro identificador es un estilo nuevo, que parte del bocadillo de diálogo.
+
+```diff
+ const balloonStyles = [
++  { id: 'weak', shape: 'wavy', stroke: col('ink'), fontScale: 0.9 }, // maya{weak}: …
+   { id: 'speech', stroke: col('ink') },
+```
+
+### Une dos líneas con un cuello
+
+```diff
+-  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1) },
++  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1),
++    joinSameSpeaker: 'connector' },
+```
+
+## Errores frecuentes
+
+- Un punto fijado es un punto del dibujo y se mantiene con cualquier recorte. Una onomatopeya fijada tan cerca del borde que saldría de la viñeta (¡BRRROOM! en `at="16% 28%"`) se mete de nuevo dentro, así que puede quedar algo apartada del punto escrito.
+- Una voz fuera de la viñeta se rotula junto al borde al que apunta su rabillo: el agradecimiento del patrón, `tail=bottom`, va al pie de la viñeta de la mañana aunque sea su primera línea. Apunta el rabillo al borde de arriba cuando una línea así tenga que leerse primero.

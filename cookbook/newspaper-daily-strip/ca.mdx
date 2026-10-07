@@ -1,0 +1,60 @@
+---
+title: "Una tira diària i mitja pàgina de diumenge al diari"
+summary: "El suplement de còmics d’un diari: mitja pàgina de diumenge composta al text de la portada i una tira diària flotada al peu d’una pàgina a quatre columnes."
+plain: "Dues pàgines de la secció de còmics d’un diari: un còmic gran en color a la portada i, a dins, una entrevista amb la dibuixant a quatre columnes i la tira diària de quatre vinyetes a baix."
+description: "Tires còmiques en un diari amb Postext: blocs :::strip al text o flotats sobre quatre columnes, mitja pàgina de diumenge i tira diària en sis idiomes."
+question: "Com poso una tira còmica en una pàgina de diari, a l’amplada de les columnes del text?"
+aliases: ["tira còmica", "tira diària", "tira de premsa", "còmic de diumenge", "suplement de còmics", "historieta", "comic strip", "daily strip", "新聞漫画", "报纸漫画"]
+pageNotes: { "1": "La portada del suplement: la capçalera Còmics en vermell, la mitja pàgina de diumenge (en Pip i l’Otto pescant en un glaç, el peix minúscul d’en Pip, l’Otto traient una bota) i tres línies de sumari.", "2": "La pàgina interior: el titular Deu hiverns al glaç sobre quatre columnes amb una entrevista, un requadre de xifres, cartes de lectors i un anunci, i la tira diària del croissant al peu." }
+---
+
+## Què compondràs
+
+El suplement de còmics d’un diari de cap de setmana, *El Despatx de Corrington*, plegat a 230 × 310 mm. La portada porta la mitja pàgina de diumenge d’*En Pip i l’Otto*, un pingüí i una morsa que tenen una fleca sobre un glaç, amb el sumari a sota. A dins, una entrevista amb la dibuixant ocupa quatre columnes, amb cartes de lectors i un anunci, i la tira diària de la setmana, quatre vinyetes quadrades, corre al peu de la pàgina. Les dues historietes són blocs `:::strip` del text del diari, i el suplement surt en sis idiomes.
+
+## Elaboració
+
+### 1 · Escriu la tira on la vol el diari
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un `:::strip` té el cos d’una pàgina de còmic (el seu `split`, les línies `::panel` i el guió), però és un bloc del text ([tires](/ca/docs/comics#tires)). A la portada, a una columna, la tira de diumenge es compon on és escrita, amb 210 mm d’alt, i el sumari va al darrere. La seva divisió, `55 / * [40 | *]`, dona a l’escena ampla de la pesca una tira pròpia i deixa a baix una fila per als dos acudits. Una tira no es parteix mai: si no hi cap, passa sencera a la pàgina següent.
+
+<PageShot page={1} crop="0,0,1,0.8" caption="La portada: la mitja pàgina de diumenge composta al text i el sumari a sota." />
+
+### 2 · Fes flotar la tira diària sobre les columnes
+
+La pàgina interior s’obre amb un H1 l’estil de títol del qual passa la secció a quatre columnes. La tira diària va just després, amb `span=page placement=bottom`: flota al peu de la pàgina amb l’amplada de les quatre columnes, i les columnes de l’article acaben igualades a sobre. Sense `height` ni `aspect`, una tira pren la forma que fa quadrades les seves vinyetes, aquí quatre a un. Amb `placement=top` obriria la pàgina següent, perquè un flotant no puja mai per sobre del punt on s’escriu.
+
+### 3 · Ajusta cada imatge a la seva vinyeta
+
+<Excerpt region="art" />
+
+Les imatges es van dibuixar quadrades o apaïsades, i les cel·les de la divisió de diumenge no ho són: l’acudit de la bota cau en una cel·la de 112 × 88 mm. Cada zona segura es retalla al que necessita l’acudit, en Pip, l’Otto i la bota, perquè l’enquadrament no deixi mai bandes ([vinyetes i imatges](/ca/docs/comics#vinyetes-i-imatges)).
+
+### 4 · Imprimeix la mateixa pàgina en sis diaris
+
+<Excerpt region="editions" />
+
+Cada edició compon el diari amb lletres per a la seva escriptura i retola les tires amb les seves pròpies lletres de còmic. Les bafarades japoneses van en vertical, i l’edició àrab, que es llegeix de dreta a esquerra, inverteix les vinyetes de cada fila i les columnes de la pàgina. Les imatges i la divisió no canvien; només canvia `content.<lang>.md` ([sentit de lectura](/ca/docs/comics#sentit-de-lectura)).
+
+## Variants
+
+### Fixa l’alçada de la tira diària
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* | * | * | *" span=page placement=bottom height=45mm}
+```
+
+### Posa una tira d’una columna al text
+
+Sense `span=page`, una tira té l’amplada de la seva columna i es compon on és escrita, com una figura en línia.
+
+```diff
+-:::strip{split="* | * | * | *" span=page placement=bottom}
++:::strip{split="* / * / * / *" aspect=0.25}
+```
+
+## Errors freqüents
+
+- La capçalera de la secció la dibuixa la capçalera de pàgina, no un H1 amb obertura, així que damunt de la tira de la portada només hi ha la línia del foli.
+- Una zona segura més ampla que la forma de la seva cel·la deixa la imatge amb bandes del fons de la vinyeta, i la composició avisa amb `comicPanelLetterbox`.

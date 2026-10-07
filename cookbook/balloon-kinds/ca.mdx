@@ -1,0 +1,62 @@
+---
+title: "Totes les bafarades en una pàgina del far"
+summary: "Una pàgina de còmic amb diàleg, pensament, xiuxiueig, crit, ràdio, cartel·la, veu interior, nota de l’editor i onomatopeies, cadascuna nomenada entre claus."
+plain: "Una pàgina de còmic sobre un rescat enmig de la tempesta que fa servir tots els tipus de bafarada, amb el full d’estil del retolador que ensenya com s’escriu cadascuna al guió."
+description: "Una pàgina de còmic amb Postext i totes les bafarades: diàleg, pensament, xiuxiueig, crit, ràdio, cartel·les, veu interior, notes i onomatopeies."
+question: "Com retolo bafarades de pensament, xiuxiueig, crit i ràdio, i apunto cada rabet a qui parla?"
+aliases: ["bafarada", "globus", "bafarada de pensament", "xiuxiueig", "crit", "bafarada de ràdio", "cartel·la", "onomatopeia", "fora de camp", "rabet", "speech balloon", "吹き出し", "对话框"]
+pageNotes: { "1": "El full d’estil: el títol en majúscules vermelles i dotze tipus de bafarada, cadascun amb el seu marcatge del guió en una pastilla groga.", "2": "La pàgina: una trucada per ràdio a la sala de la llanterna, amb cartel·la, bafarada trencada de ràdio i nota de l’editor; la Maya xiuxiuejant al gat, que pensa en un núvol; el faroner cridant en un esclat; el pesquer a la tempesta amb BRRROOM en vermell; la Maya a la finestra amb la veu interior en una caixa grisa; l’endemà al matí a les roques, amb bafarades unides." }
+---
+
+## Què compondràs
+
+La pàgina 7 de *La llum de Porthcove*, un còmic sobre una nit de tempesta en un far, amb el full d’estil del retolador al davant. Un pesquer es queda sense motor, el faroner el guia per ràdio, la Maya espera amb el gat i al matí el patró els dona les gràcies. La pàgina fa servir totes les bafarades que dibuixa Postext: diàleg, diàleg unit, pensament, xiuxiueig, crit, ràdio, cartel·les de narració, veu interior, nota de l’editor, onomatopeia, una veu fora de camp i una bafarada fixada. El format és el d’un còmic americà, 168 × 259 mm, i la pàgina surt en sis idiomes.
+
+## Elaboració
+
+### 1 · Anomena el tipus a la línia del guió
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Una línia del guió és `personatge{tipus}: text`, i el tipus és l’identificador d’un estil de bafarada. Els nou estils de sèrie cobreixen els tipus habituals: un oval amb rabet corbat per al diàleg, un núvol amb bombolles per al pensament, un contorn discontinu per al xiuxiueig, un esclat amb rabet en falca per al crit i un contorn trencat amb rabet en zig-zag per a una veu per ràdio ([estils de bafarada](/ca/docs/comics#estils-de-bafarada)). Un estil de la configuració amb el mateix identificador canvia només el que anomena: aquí el color del traç, el groc de les cartel·les i les 16 puntes de l’esclat. `caption`, `note` i `sfx` són personatges reservats: cartel·les encaixades en un racó, la nota de l’editor a 0,8 vegades el cos i lletres de cartell sense bafarada.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="La trucada per ràdio: una cartel·la, la bafarada de ràdio del patró apuntant a l’aparell, la resposta del faroner i la nota de l’editor." />
+
+### 2 · Apunta cada rabet a qui parla
+
+<Excerpt region="art" />
+
+Cada imatge porta àncores en fraccions de la imatge: la boca a què apunta el rabet d’un diàleg, el cap a què apunta un pensament i la cara que cap bafarada no pot tapar ([personatges i àncores](/ca/docs/comics#personatges-i-àncores)). El patró no es veu mai: la seva àncora a la imatge de la tempesta és la ràdio i, a la del mar, el seu vaixell. Quan qui parla no és a la vinyeta, `tail=end` (o `start`, `top`, `bottom`) porta el rabet a aquella vora, i `at="44% 22%"` fixa el centre d’una bafarada en un punt de la imatge, que es manté amb qualsevol retall. Dues línies seguides d’un mateix personatge es fonen en un contorn amb un sol rabet.
+
+### 3 · Dona a un personatge la seva pròpia veu
+
+El repartiment de la resposta curta dona a cada línia `skipper:` l’estil de ràdio, de manera que el guió no repeteix `{radio}`. Una línia pot dir una altra cosa: a la vinyeta del matí el patró crida des del vaixell, `skipper{speech tail=bottom}:`, amb una bafarada normal el rabet de la qual surt pel peu de la vinyeta.
+
+### 4 · Retola cada edició amb les seves lletres
+
+<Excerpt region="editions" />
+
+La mateixa pàgina surt en sis idiomes: `content.<lang>.md` només porta les paraules. Les bafarades japoneses van en vertical amb Zen Antique i les onomatopeies amb Dela Gothic One; les àrabs, amb Playpen Sans Arabic i Lalezar per al tro. La cursiva i la negreta s’apliquen on la lletra les té: la veu interior va en cursiva en anglès i en rodona en japonès ([retolació](/ca/docs/comics#retolació)).
+
+## Variants
+
+### Fes servir una bafarada ondulada per a una veu feble
+
+Qualsevol altre identificador és un estil nou, que parteix de la bafarada de diàleg.
+
+```diff
+ const balloonStyles = [
++  { id: 'weak', shape: 'wavy', stroke: col('ink'), fontScale: 0.9 }, // maya{weak}: …
+   { id: 'speech', stroke: col('ink') },
+```
+
+### Uneix dues línies amb un coll
+
+```diff
+-  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1) },
++  lettering: { fontFamily: LETTERING, fontSize: pt(7.5), color: col('ink'), inset: mm(1),
++    joinSameSpeaker: 'connector' },
+```
+
+## Errors freqüents
+
+- Un punt fixat és un punt del dibuix i es manté amb qualsevol retall. Una onomatopeia fixada tan a prop de la vora que sortiria de la vinyeta (BRRROOM! a `at="16% 28%"`) es torna a ficar a dins, així que pot quedar una mica apartada del punt escrit.
+- Una veu de fora de la vinyeta es retola al costat de la vora on apunta la seva cua: l'agraïment del patró, `tail=bottom`, va al peu de la vinyeta del matí encara que en sigui la primera línia. Apunta la cua a la vora de dalt quan una línia així s'hagi de llegir primer.

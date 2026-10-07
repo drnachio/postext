@@ -1,0 +1,174 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 144,
+  "status": "published",
+  "chapter": "comics",
+  "order": 10,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-panel-split",
+      "comic-panel-art"
+    ],
+    "also": [
+      "comic-speakers",
+      "picture-safe-area",
+      "comic-panel-styles",
+      "comic-pages",
+      "comic-lettering",
+      "comic-relettering",
+      "balloon-styles",
+      "sound-effects",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q162",
+    "Q170",
+    "Q164"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar",
+      "ja"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Panel picture: Maya arrives at the lighthouse",
+          "es": "Viñeta: Maya llega al faro"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-arrive.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: Tomás at the radio",
+          "es": "Viñeta: Tomás junto a la radio"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-radio.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: Maya finds the problem",
+          "es": "Viñeta: Maya encuentra el problema"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-maya.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: Biscuit asleep on the cable",
+          "es": "Viñeta: Biscuit dormido sobre el cable"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-biscuit.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: the lamp lit at night",
+          "es": "Viñeta: el faro encendido de noche"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lh-beam.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL QingKe HuangYou",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "downloads": {
+    "pdf": true
+  }
+}

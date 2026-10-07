@@ -1,0 +1,273 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 155,
+  "status": "published",
+  "chapter": "comics",
+  "order": 120,
+  "level": 3,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-relettering",
+      "comic-speakers"
+    ],
+    "also": [
+      "comic-panel-split",
+      "comic-panel-art",
+      "comic-panel-styles",
+      "credit-notes",
+      "comic-pages",
+      "comic-lettering",
+      "balloon-styles",
+      "sound-effects",
+      "picture-safe-area",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q177",
+    "Q164"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar",
+      "ja"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Pepper&Carrot, episode 8, “Pepper's Birthday Party” (June 2015): story and dialogue",
+          "es": "Pepper&Carrot, episodio 8, «Pepper's Birthday Party» (junio de 2015): guion y diálogos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The English translation of episode 8, “Pepper's Birthday Party”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al inglés del episodio 8, «Pepper's Birthday Party»: los diálogos de las páginas 5 y 6 y los créditos"
+        },
+        "who": "Alex Gryson",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The Spanish translation of episode 8, “El cumpleaños de Pimienta”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al español del episodio 8, «El cumpleaños de Pimienta»: los diálogos de las páginas 5 y 6 y los créditos"
+        },
+        "who": "Juanjo Faico, with Andrej Ficko and Hồ Nhựt Châu",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The Catalan translation of episode 8, “La festa d'aniversari de la Pepper”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al catalán del episodio 8, «La festa d'aniversari de la Pepper»: los diálogos de las páginas 5 y 6 y los créditos"
+        },
+        "who": "Juan José Segura",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The Simplified Chinese translation of episode 8, “小辣椒的生日”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al chino simplificado del episodio 8, «小辣椒的生日»: los diálogos de las páginas 5 y 6 y los créditos"
+        },
+        "who": "Ran Zhuang",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The Japanese translation of episode 8, “ペッパーの誕生パーティー”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al japonés del episodio 8, «ペッパーの誕生パーティー»: los diálogos de las páginas 5 y 6 y los créditos"
+        },
+        "who": "guruguru, with Hồ Nhựt Châu",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The Arabic translation of episode 8, “حفلةُ عيدِ ميلادِ فُلفُل”: the dialogue of pages 5 and 6 and the credits",
+          "es": "La traducción al árabe del episodio 8, «حفلةُ عيدِ ميلادِ فُلفُل»: los diálogos de las páginas 5 y 6 y los créditos"
+        },
+        "who": "Mahwiii",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Panel 5-1 of episode 8, cut from the text-free artwork",
+          "es": "Viñeta 5-1 del episodio 8, recortada del dibujo sin textos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0",
+        "file": "e08p05-1.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel 5-2 of episode 8, cut from the text-free artwork",
+          "es": "Viñeta 5-2 del episodio 8, recortada del dibujo sin textos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0",
+        "file": "e08p05-2.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel 5-3 of episode 8, cut from the text-free artwork",
+          "es": "Viñeta 5-3 del episodio 8, recortada del dibujo sin textos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0",
+        "file": "e08p05-3.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel 6-1 of episode 8, cut from the text-free artwork",
+          "es": "Viñeta 6-1 del episodio 8, recortada del dibujo sin textos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0",
+        "file": "e08p06-1.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel 6-2 of episode 8, cut from the text-free artwork",
+          "es": "Viñeta 6-2 del episodio 8, recortada del dibujo sin textos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0",
+        "file": "e08p06-2.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel 6-3 of episode 8, cut from the text-free artwork",
+          "es": "Viñeta 6-3 del episodio 8, recortada del dibujo sin textos"
+        },
+        "who": "David Revoy",
+        "source": "https://www.peppercarrot.com/0_sources/ep08_Pepper-s-Birthday-Party/",
+        "license": "CC-BY-4.0",
+        "file": "e08p06-3.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Grenze Gotisch",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Serif JP",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL QingKe HuangYou",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Serif SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Naskh Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "downloads": {
+    "pdf": true
+  }
+}

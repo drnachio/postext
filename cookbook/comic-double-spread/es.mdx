@@ -1,0 +1,56 @@
+---
+title: "Una página de cómic a doble página"
+summary: "Un :::page con la marca spread extiende una sola división sobre dos páginas enfrentadas: una panorámica cruza el lomo y la tira de abajo se parte en el pliegue."
+plain: "Un cómic montado sobre dos páginas enfrentadas como si fueran una: un dibujo ancho de un mercado lleno de gente cruza el centro del libro y debajo van tres viñetas."
+description: "Una doble página de cómic en Postext: una división sobre las dos páginas, una panorámica de 1.900 px que cruza el lomo y la tira de abajo cortada en el pliegue."
+question: "¿Cómo extiendo una página de cómic a doble página?"
+aliases: ["doble página", "página doble", "panorámica", "splash a doble página", "double spread", "見開き", "跨页", "spread", "pliego", "pageIndexOffset"]
+---
+
+## Lo que vas a componer
+
+La segunda historia del álbum de <RecipeLink slug="tebeo-album-page">Nº 152</RecipeLink>, *¡Abuelo!*, contada en dos páginas enfrentadas. Un sábado de diciembre el mercado está hasta los topes y Lola pierde a su abuelo entre la gente. La mitad de arriba de la doble página es una sola panorámica de 432 mm: Lola, diminuta, a la izquierda del todo; Paco buscándola a la derecha del todo, y entre los dos el pasillo del mercado, que va a dar al pliegue. Debajo, tres viñetas: Lola sola entre piernas, Paco silbando subido a una caja de fruta y el reencuentro, con la boina por los aires. La división se escribe una vez para las dos páginas, así que la panorámica cruza el lomo y la calle de la tira de abajo cae en el pliegue. El original está en castellano; las ediciones en inglés, catalán, chino, árabe y japonés rotulan la misma doble página.
+
+## Elaboración
+
+### 1 · Una división para las dos páginas
+
+El código está en [la respuesta corta](#la-respuesta-corta). Todo el cómic es una directiva con la marca `spread`:
+
+```md
+:::page{spread split="55 / * [25 | 25 | *]"}
+::panel{art=ds1}
+caption: Un sábado de diciembre, el mercado estaba hasta los topes.
+lola: ¿Abuelo?
+paco{shout}: ¿Lola? ¡Lolaaa!
+```
+
+El marco va del margen exterior de la página par al de la impar; los márgenes interiores desaparecen. La primera tira, el 55 % de la altura, es una sola viñeta que cruza el lomo. En la segunda, `25 | 25 | *` pone su primera línea al 25 % y la segunda al 50 %, que es el lomo: dos viñetas cuadradas en la página par y el reencuentro en la impar. Una doble página empieza en página par, y la página 1 de un documento es impar, así que la construcción pasa `continuation: { pageIndexOffset: 1 }`: este episodio sigue el álbum en la página 2 y no hace falta una página en blanco delante.
+
+### 2 · Una panorámica que da para dos páginas
+
+<Excerpt region="art" />
+
+La panorámica es el único dibujo que se imprime a través del pliegue, 432 × 144 mm, por eso va a 1.900 px (380 KB); los otros tres tienen entre 1.000 y 1.200 px. Su zona segura la conserva casi entera, y sus dos personajes están en los extremos, al 6 % y al 92 % del ancho, lejos del lomo, donde la encuadernación se tragaría un bocadillo. El dibujo se hizo con el centro libre de caras: el pasillo del mercado va a dar al pliegue.
+
+### 3 · Los bocadillos del álbum
+
+<Excerpt region="balloons" />
+
+Los estilos de bocadillo son los del Nº 152: bocadillos blancos, cartelas amarillo pálido, un estallido para el grito de Paco, un contorno discontinuo para el susurro de Lola y el silbido en la letra de las onomatopeyas del álbum, Bangers en las ediciones latinas. `cast` da al PDF y al EPUB los nombres que leen antes de cada intervención.
+
+## Variantes
+
+### Abre el libro con la doble página
+
+Quita la continuación y el motor deja la página 1 en blanco (rol `blank`), de modo que la doble página sigue cayendo en las páginas 2 y 3.
+
+```diff
+-const continuation = { pageIndexOffset: 1, pageNumbering: { startAt: 2 } };
++const continuation = {};
+```
+
+## Errores frecuentes
+
+- Los bocadillos no entran en una franja de 8 mm alrededor del lomo, tampoco los fijados con `at`: un personaje de pie en el pliegue tiene el bocadillo apartado a un lado. Deja a los personajes lejos del centro de una viñeta que cruce el lomo.
+- Un bocadillo no tapa a dos personajes cuyas caras se tocan, en un abrazo o en una pelea, aunque uno de ellos sea quien habla. En la edición árabe la doble página se lee desde la derecha, el reencuentro pasa a la página izquierda y la boina en el aire ocupa su esquina de arriba a la derecha; los dos bocadillos de Paco van sobre el mercado, junto a su cabeza, y no encima del abrazo. Marca las dos caras en el dibujo (`face`) para que el motor vea que se tocan.

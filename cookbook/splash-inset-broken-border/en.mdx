@@ -1,0 +1,61 @@
+---
+title: "A splash page, an inset and a broken border"
+summary: "A storm in two comic pages: a full-bleed splash under an inset panel, a tier bled off three edges, a gull flying out over its border, a captions-only panel."
+plain: "Two pages of a comic about a storm: one huge picture filling the whole first page with a small picture of a girl set into it, then a page where a gull flies out of its frame."
+description: "Postext comic pages with a full-bleed splash, an inset panel, bleed on chosen edges, pop-out art that breaks the panel border and a text-only panel."
+question: "How do I bleed a comic panel off the page, or let the art break out of the panel border?"
+aliases: ["splash page", "full-bleed panel", "bleed", "inset panel", "broken border", "pop-out", "panel break", "página splash", "viñeta insertada", "裁ち切り", "出血"]
+pageNotes: { "1": "The splash page: the lighthouse in a night storm, bled off all four edges, KRA-KOOM in white letters by the lightning, a caption at the top left and a small framed inset of Maya's face behind a rainy window at the lower right.", "2": "Page 2: a wave bursting on the rocks, bled off the top and both sides; below, the keeper holding up a lantern while a gull flies out across the panel's left border, and a narrow night-blue panel with two captions." }
+---
+
+## What you'll build
+
+Two pages from the storm in *The Porthcove Light*. The first is a splash: one picture of the lighthouse in the storm runs off every edge of the page, with a small framed panel of Maya at her window laid over its lower corner. The second opens with a wave bled off three edges; under it, a gull flies out of the keeper's panel across its border, and a narrow panel with no picture holds two captions on a night-blue ground. The trim is an American comic book, 168 × 259 mm with 3 mm of bleed, and the pages come in six languages.
+
+## Method
+
+### 1 · Bleed the splash off every edge
+
+The code is [the short answer](#the-short-answer) above. `split="*"` makes one cell of the whole frame, and `bleed` on the page runs every panel that touches the frame out to the bleed box, 3 mm past the trim, with no border on those sides ([splitting the page](/en/docs/comics#splitting-the-page)). On page 2, `bleed="top start end"` on the wave bleeds only those three sides; its foot keeps the gutter to the panels below. `start` and `end` follow the reading direction, so the Arabic edition bleeds the same sides.
+
+### 2 · Lay an inset over the splash
+
+`inset="56 64 38 30"` places Maya's panel at 56%, 64% of the panel before it, 38% wide and 30% deep. An inset takes no cell: it is laid over the splash, keeps its own border and is read right after it. Its picture is cropped to its own box by its safe area, here Maya's face.
+
+<PageShot page={1} crop="0.35,0.55,0.65,0.45" caption="The inset: Maya's face in its own frame over the lower corner of the splash, with her inner voice." />
+
+### 3 · Let a gull break the border
+
+<Excerpt region="art" />
+
+`pop=sp-tomas-pop` names a second picture for the keeper's panel: a transparent PNG the size of his picture with only the gull on it. Postext crops and places it exactly like the panel's art, then draws it after the border and outside the panel's clip, so the part of the gull that lies beyond the cell flies over the border and the margin ([panels and art](/en/docs/comics#panels-and-art)). `focus="45% 50%"` slides the crop left inside what the safe area allows, so the gull sits across the left edge rather than out in the margin.
+
+### 4 · Leave a panel without a picture
+
+<Excerpt region="palette" />
+
+A `::panel` with no `art` is an empty cell with the panel style's border; `bg=night` fills it with a palette colour. Its captions, `at=top` and `at=bottom`, are butted to its top and bottom edges, a quiet beat after the storm.
+
+## Variations
+
+### Bleed the whole bottom tier as well
+
+```diff
+-::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%"}
++::panel{art=sp-tomas pop=sp-tomas-pop focus="45% 50%" bleed="bottom start"}
+```
+
+### Give the inset a white frame
+
+A named panel style changes one panel; `style=` on the panel picks it.
+
+```diff
+   panel: { borderWidth: pt(1.2), borderColor: col('ink'), background: col('paper') },
++  panelStyles: [{ id: 'framed', borderWidth: pt(3), borderColor: col('paper') }],
+```
+
+## Pitfalls
+
+- The pop layer must have exactly the panel picture's pixel size: Postext crops it with the same window, so a smaller cut-out would land in the wrong place.
+- Bleed needs `page.bleed`; without it a bleeding panel stops at the trim.
+- A sound effect beside a bleeding edge may run into the bleed, past the trim, where the guillotine cuts it. The Japanese ザッバーン is a column five characters tall, so it is pinned lower than the Latin effects, at `60% 44%`.

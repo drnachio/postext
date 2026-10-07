@@ -1,0 +1,60 @@
+---
+title: "Una página de álbum en línea clara con cartelas de narración"
+summary: "Una página de álbum francobelga en cuatro tiras: viñetas de marco fino, cartelas amarillas en las esquinas y bocadillos en minúsculas, desde la config comics."
+plain: "Una página de un álbum de tebeo europeo, con la voz del narrador en recuadros amarillos y los diálogos en bocadillos, escrita en texto plano y rotulada por Postext en seis idiomas."
+description: "Una página de tebeo en Postext: cuatro tiras de viñetas, cartelas amarillas, un grito, un pensamiento y una onomatopeya, rotulada de nuevo en seis idiomas."
+question: "¿Cómo compongo una página de álbum europeo con cartelas de narración?"
+aliases: ["tebeo", "historieta", "bande dessinée", "BD", "línea clara", "ligne claire", "página de álbum", "cartela", "cartucho", "francobelga", "bocadillos", "balloonStyles", "panelStyles"]
+---
+
+## Lo que vas a componer
+
+La primera historia de un álbum de tebeo, *Las naranjas de Carmen*: una portadilla en la página par y, enfrente, una página de siete viñetas en cuatro tiras, como se dibujan los álbumes francobelgas. Lola, de nueve años, va al mercado con su abuelo Paco un domingo y saca la naranja de abajo de la pirámide de Carmen. Los dibujos son de línea clara con colores planos; los marcos son finos y de esquina viva, la narración va en cartelas amarillas encajadas en las esquinas de la viñeta y los diálogos se rotulan en mayúsculas y minúsculas, como rotulan los europeos. El texto está en Markdown, un archivo por idioma: el original en castellano y luego inglés, catalán, chino, árabe y japonés, que el motor rotula sobre la misma división y los mismos dibujos.
+
+## Elaboración
+
+### 1 · El aspecto del álbum es una config comics
+
+El código está en [la respuesta corta](#la-respuesta-corta). `comics.panel` define todos los marcos (un filete de tinta de 0,75 pt, esquinas vivas) y `panelStyles` añade uno con nombre y sin borde, que la última viñeta toma con `style=open`: un epílogo en un banco del parque, fuera del mercado. Los estilos de bocadillo de serie se redefinen por su id: `caption` pasa a ser una cartela amarillo pálido con un contorno fino, `shout` un estallido de dieciséis puntas y `sfx` toma el naranja de las naranjas con un contorno de tinta. La rotulación deja `textTransform: 'none'`; una página americana pondría `'uppercase'`.
+
+La página es una sola directiva en el contenido, un árbol de divisiones y siete viñetas, cada una con su guion:
+
+```md
+:::page{split="25 [60 | *] / 25 [55 | *] / 24 / * [50 | *]"}
+::panel{art=t1}
+caption: Los domingos, el abuelo Paco y yo íbamos al mercado.
+caption{at=bottom-end}: Siempre a la misma hora. Siempre por la misma puerta.
+::panel{art=t4}
+lola{thought}: La de abajo es la más gorda.
+paco{shout}: ¡Lola, esa no!
+```
+
+`caption` es una cartela de narración (la primera va a la esquina superior del lado en que empieza la lectura), `{at=bottom-end}` manda la segunda a la esquina opuesta, y un personaje como `lola` o `paco` dibuja un bocadillo con el rabillo hacia la boca que declara el dibujo.
+
+### 2 · Los dibujos saben dónde habla cada uno
+
+<Excerpt region="art" />
+
+Cada dibujo declara lo que todo recorte debe conservar (`safeArea`), dónde están la boca, la cabeza y la cara de cada personaje (`anchors`) y lo que ningún bocadillo puede tapar (`avoid`), siempre en fracciones del dibujo. La viñeta del derrumbe ocupa la tercera tira, 200 mm por 63 mm, así que su zona segura es la franja de las caras y las naranjas en el aire; las viñetas cuadradas pierden el suelo. Nada de esto depende del idioma, y las seis ediciones lo comparten.
+
+### 3 · Una portadilla frente a la historia
+
+<Excerpt region="title-page" />
+
+La portadilla es un estilo de título: la serie en la letra de la rotulación, el título en la de las onomatopeyas (Bangers, o Dela Gothic One, ZCOOL KuaiLe y Lalezar en las otras escrituras) y una viñeta del puesto de Carmen con su forma de 3 : 2. La construcción pasa `continuation: { pageIndexOffset: 1 }`, de modo que la portadilla cae en página par y la historia empieza enfrente, en la página 3.
+
+## Variantes
+
+### Rotula en mayúsculas, como un cómic americano
+
+Pon la rotulación en mayúsculas; narración y diálogos la siguen, y las escrituras sin caja (chino, japonés, árabe) se quedan como están.
+
+```diff
+-    color: col('ink'), textTransform: 'none' }, // European letterers write in mixed case
++    color: col('ink'), textTransform: 'uppercase' },
+```
+
+## Errores frecuentes
+
+- El cuerpo de la rotulación es uno para todo el libro: una traducción más larga agranda sus bocadillos y los mueve, nunca encoge la letra. Revisa las páginas en catalán y en árabe después de tocar la división.
+- El texto alternativo de cada viñeta está en el manifiesto de los dibujos en seis idiomas y se elige con `t({ … })`; un idioma que falte en la lista lee el primero. `::panel{alt="…"}` en un archivo de contenido lo sustituye para una viñeta.

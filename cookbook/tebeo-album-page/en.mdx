@@ -1,0 +1,60 @@
+---
+title: "An album page in clear line, with narration captions"
+summary: "A Franco-Belgian album page in four tiers: square frames, yellow narration boxes in the corners, balloons lettered in mixed case, all from the comics config."
+plain: "A page of a European comic album, with the narrator's words in yellow boxes and the dialogue in balloons, written in plain text and drawn by Postext in six languages."
+description: "A Spanish tebeo page in Postext: four tiers of panels, yellow narration captions, a burst, a cloud and a sound effect, lettered again in six languages."
+question: "How do I set a European album page with narration captions?"
+aliases: ["tebeo", "bande dessinée", "BD", "ligne claire", "clear line", "album page", "narration caption", "cartouche", "cartela", "Franco-Belgian", "balloonStyles", "panelStyles"]
+---
+
+## What you'll build
+
+The first story of a Spanish comic album, *Las naranjas de Carmen*: a title page on the verso and, facing it, one page of seven panels in four tiers, the way Franco-Belgian albums are drawn. Lola, nine, and her grandfather Paco go to the market on Sunday; she pulls the bottom orange out of Carmen's pyramid. The pictures are flat-coloured clear line; the frames are thin and square, the narration sits in yellow boxes butted into the panel corners, and the dialogue is lettered in upper and lower case, as European letterers write it. The text lives in Markdown, one file per language: the Spanish original, then English, Catalan, Chinese, Arabic and Japanese, each lettered by the engine on the same split and the same art.
+
+## Method
+
+### 1 · The album's look is a comics config
+
+The code is [the short answer](#the-short-answer) above. `comics.panel` sets every frame (a 0.75 pt ink line, square corners) and `panelStyles` adds a named one with no border, which the last panel takes with `style=open`: an epilogue on a park bench, out of the market. The built-in balloon styles are restyled by id: `caption` becomes a pale yellow box with a thin outline, `shout` a sixteen-point burst, `sfx` the orange of the oranges with an ink outline. The lettering keeps `textTransform: 'none'`; an American page would set it to `'uppercase'`.
+
+The page itself is one directive in the content, a split tree and seven panels, each with its script:
+
+```md
+:::page{split="25 [60 | *] / 25 [55 | *] / 24 / * [50 | *]"}
+::panel{art=t1}
+caption: Los domingos, el abuelo Paco y yo íbamos al mercado.
+caption{at=bottom-end}: Siempre a la misma hora. Siempre por la misma puerta.
+::panel{art=t4}
+lola{thought}: La de abajo es la más gorda.
+paco{shout}: ¡Lola, esa no!
+```
+
+`caption` is a narration box (the first one goes to the top-start corner), `{at=bottom-end}` sends the second to the opposite corner, and a speaker id such as `lola` or `paco` draws a balloon with its tail to the mouth the picture declares.
+
+### 2 · The pictures carry their speakers
+
+<Excerpt region="art" />
+
+Each picture declares what every crop must keep (`safeArea`), where each speaker's mouth, head and face are (`anchors`) and what no balloon may cover (`avoid`), all in fractions of the picture. The crash panel spans the third tier, 200 mm by 63 mm, so its safe area is the band of faces and flying oranges; the square panels lose their floor. Nothing here depends on the language, so the six editions share it.
+
+### 3 · A title page faces the story
+
+<Excerpt region="title-page" />
+
+The title page is a heading style: the series line in the lettering face, the title in the face of the sound effects (Bangers, or Dela Gothic One, ZCOOL KuaiLe and Lalezar in the other scripts), and a vignette of Carmen's stall at its own 3 : 2 shape. The build passes `continuation: { pageIndexOffset: 1 }`, so the title page is a verso and the story opens on the facing recto, page 3.
+
+## Variations
+
+### Letter in capitals, as an American comic
+
+Set the lettering in upper case; the narration and the dialogue follow, and the scripts without case (Chinese, Japanese, Arabic) are left as they are.
+
+```diff
+-    color: col('ink'), textTransform: 'none' }, // European letterers write in mixed case
++    color: col('ink'), textTransform: 'uppercase' },
+```
+
+## Pitfalls
+
+- The lettering size is one for the whole book: a longer translation grows its balloons and moves them, it never shrinks the type. Check the Catalan and Arabic pages after a change to the split.
+- The alt text of each panel sits in the art manifest in six languages, picked with `t({ … })`; a language missing from the list reads the first one. `::panel{alt="…"}` in a content file replaces it for one panel.

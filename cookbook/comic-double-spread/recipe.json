@@ -1,0 +1,183 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 154,
+  "status": "published",
+  "chapter": "comics",
+  "order": 110,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "comic-spreads"
+    ],
+    "also": [
+      "comic-panel-split",
+      "comic-panel-art",
+      "comic-speakers",
+      "comic-pages",
+      "comic-lettering",
+      "comic-relettering",
+      "balloon-styles",
+      "comic-panel-styles",
+      "mirrored-margins",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q172"
+  ],
+  "gotchas": [
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "es",
+      "en",
+      "ca",
+      "zh",
+      "ar",
+      "ja"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "pages": "all",
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "¡Abuelo! (Grandpa!), a two-page comic written for this recipe, in six languages",
+          "es": "¡Abuelo!, una historieta a doble página escrita para esta receta, en seis idiomas"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Panorama of the crowded market hall: tiny Lola stands lost on the far left; far right, her grandfather searches the crowd.",
+          "es": "Panorámica del mercado abarrotado: Lola, diminuta, perdida a la izquierda del todo; a la derecha del todo, su abuelo la busca entre la gente."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "ds1-1900.jpg"
+      },
+      {
+        "what": {
+          "en": "Lola, tearful, stands among grown-ups' legs and shopping bags.",
+          "es": "Lola, llorosa, entre piernas de adultos y bolsas de la compra."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "ds2.jpg"
+      },
+      {
+        "what": {
+          "en": "Paco stands on a fruit crate and whistles through his fingers; shoppers turn to look.",
+          "es": "Paco, subido a una caja de fruta, silba con los dedos; la gente se vuelve a mirar."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "ds3.jpg"
+      },
+      {
+        "what": {
+          "en": "Lola leaps into her grandfather's arms; his beret flies off and the stallholders smile.",
+          "es": "Lola salta a los brazos de su abuelo; la boina sale volando y los tenderos sonríen."
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "ds4.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Patrick Hand",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "related": [
+    "tebeo-album-page",
+    "one-page-six-languages"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}

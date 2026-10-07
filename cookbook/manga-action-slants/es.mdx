@@ -1,0 +1,48 @@
+---
+title: "Una página de acción con calles inclinadas"
+summary: "La página que decide una final de kendo: calles inclinadas (40~55) en la división, una viñeta sin borde para el golpe y ドン en japonés con su traducción."
+plain: "Una página de pelea de un cómic japonés, con los espacios entre viñetas inclinados para que la acción parezca lanzarse, y el gran sonido japonés del golpe en su sitio con una traducción pequeña al lado."
+description: "Una página de acción de manga en Postext: calles inclinadas escritas 40~55 en la división, una viñeta sin borde para el golpe y ドン en japonés con su subtítulo."
+question: "¿Cómo inclino las calles entre viñetas en una escena de acción de un cómic?"
+aliases: ["viñetas inclinadas", "calles diagonales", "斜めのコマ割り", "página de acción", "escena de pelea", "líneas cinéticas", "効果線", "onomatopeyas", "SFX", "描き文字", "viñeta sin borde", "枠なし", "subtitular onomatopeyas", "ドン"]
+pageNotes: { "1": "El original japonés: un plano general de la final, una franja con los ojos de Hana tras la rejilla, una franja partida por una calle que se inclina, el ataque del rival a la derecha y el golpe de Hana a la izquierda bajo un gran ドン vertical, y una última franja inclinada al revés.", "2": "La edición española de la misma página: ドン atraviesa el golpe con ¡ZAS! en pequeño debajo." }
+---
+
+## Lo que vas a componer
+
+La página en la que se decide la final de kendo, del mismo manga que <RecipeLink slug="manga-right-to-left">la receta de derecha a izquierda</RecipeLink>, en dos ediciones una junto a otra: el original japonés y su rotulación en la lengua de esta página (en inglés en la página japonesa). Cuatro franjas: el pabellón, los ojos de Hana tras la rejilla del casco, el intercambio de golpes y las reacciones. La tercera franja la corta una calle inclinada, así que el ataque del rival y el contraataque de Hana parecen lanzarse el uno contra el otro; la cuarta se inclina al revés y frena la página. El golpe de Hana no tiene borde, y su onomatopeya, ドン, va en una gótica japonesa muy negra que todas las ediciones conservan, con una traducción pequeña debajo en las páginas traducidas.
+
+## Elaboración
+
+### 1 · Inclina la calle en la división
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un tamaño escrito `40~55` da al borde lejano de una celda dos posiciones: el 40 % de la franja arriba y el 55 % abajo. Las celdas siguen siendo polígonos convexos, la calle conserva su anchura medida en perpendicular a la inclinación y, con la lectura de derecha a izquierda, la inclinación se refleja junto con el orden, así que la primera celda sigue siendo la de la derecha. La división de la página es `24 / 18 / * [40~55 | *] / 24 [58~64 | *]`: dos franjas rectas que preparan el momento, una inclinada para el golpe y una última inclinada al revés (<Feature id="comic-panel-split">división de la página</Feature>).
+
+### 2 · Grita con estallidos y deja que las onomatopeyas se salgan
+
+<Excerpt region="balloons" />
+
+Los kiai de los dos contendientes son gritos: un estallido de 18 puntas, más hondas que las de serie. Las onomatopeyas no llevan bocadillo; se rotulan sobre el dibujo con un filo blanco de 2,2 pt para que se lean encima de las líneas cinéticas. La viñeta del golpe se escribe `::panel{art=strike border=none}`, y su ドン lleva `break`, así que puede cruzar la calle inclinada hacia la viñeta vecina, como deja un rotulista que un sonido desborde el marco (<Feature id="sound-effects">onomatopeyas</Feature>).
+
+### 3 · Conserva ドン en japonés y subtitúlalo
+
+<Excerpt region="fonts" />
+
+En el manga, las onomatopeyas forman parte del dibujo, y las ediciones con licencia suelen dejarlas en su sitio y añadir al lado una traducción pequeña. El guion hace lo mismo: todas las ediciones tienen la línea `sfx{… font="Dela Gothic One" break}: ドン`; las ediciones rotuladas en líneas le añaden `vertical`, para que ドン conserve la columna que tiene en el original, y ponen debajo una segunda onomatopeya, más pequeña, ¡ZAS! o WHAM. Como la fuente va nombrada en la línea, cada edición carga Dela Gothic One solo con los caracteres de ドン, sea cual sea su propia letra de rotulación.
+
+### 4 · Ajusta las zonas seguras a las celdas inclinadas
+
+<Excerpt region="art" />
+
+Una celda inclinada es más ancha por un extremo que por el otro, y la imagen tiene que cubrirla entera. Cada zona segura se recorta a lo que la viñeta necesita, los ojos en el primer plano de la rejilla y el busto de Sora en la celebración, para que quepa en el recorte más ancho de la celda y el motor nunca tenga que dejar franjas vacías alrededor de la imagen.
+
+### 5 · Pon el original junto a cada edición
+
+<Excerpt region="editions" />
+
+Cada idioma del sitio rotula la página en su propio archivo, y el original japonés queda enfrente, al otro lado del pliego (la página japonesa se empareja con la edición inglesa). ドン se queda en todas las ediciones, cada una trae su subtítulo (¡ZAS!, WHAM, 咚, بوم!) y las inclinaciones no se mueven.
+
+## Errores frecuentes
+
+- Una onomatopeya que se deja en japonés en una edición rotulada en líneas se compone en línea, como el resto de la edición, salvo que su línea diga `vertical`.
+- El grito de Sora es más largo que su viñeta pequeña en japonés, español y catalán: dejado al motor, cruzaba el borde y la construcción avisaba `comicBalloonOverflow`. Esas ediciones lo marcan con `break` (`sora{shout break}`): rompe el marco hacia arriba, hacia la calle y la viñeta de encima, a propósito, y no se avisa de nada. Un bocadillo con `break` nunca se sale al margen de la página salvo que su viñeta sangre; para llevarlo a otro sitio está el punto fijado (`at=`).

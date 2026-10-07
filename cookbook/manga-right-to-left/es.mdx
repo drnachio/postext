@@ -1,0 +1,48 @@
+---
+title: "Manga de derecha a izquierda con rotulación vertical"
+summary: "Dos páginas de manga dibujadas para leerse de derecha a izquierda: artDirection rtl conserva el orden de las viñetas en cada edición; el japonés va en columnas."
+plain: "Dos páginas de un cómic japonés. Las japonesas llevan el texto de arriba abajo en columnas estrechas; las demás ediciones mantienen el orden japonés de las viñetas, empezando arriba a la derecha."
+description: "Un manga de kendo de dos páginas en Postext: el original japonés en columnas verticales y otras cinco ediciones que se leen de derecha a izquierda."
+question: "¿Cómo maqueto un manga que se lee de derecha a izquierda, con el japonés en vertical dentro de los bocadillos?"
+aliases: ["manga", "漫画", "右綴じ", "derecha a izquierda", "manga sin invertir", "sentido oriental", "tategaki", "縦書き", "bocadillos verticales", "artDirection", "readingDirection", "Zen Antique", "furigana", "tate-chu-yoko"]
+pageNotes: { "1": "El original japonés, página 1: un dojo al anochecer en la primera franja con una cartela en la esquina superior derecha; debajo, Hana con la espada a la derecha y Sora en la puerta a la izquierda; todos los bocadillos en columnas.", "3": "La edición española, página 1: las mismas viñetas en los mismos sitios, con los bocadillos rehechos alrededor de líneas horizontales." }
+---
+
+## Lo que vas a componer
+
+Las dos primeras páginas de un manga de kendo, 前の晩 (*La noche antes*), escrito para esta receta y dibujado en blanco y negro: Hana entrena sola la víspera del torneo de la prefectura, Sora le lleva un amuleto del santuario y el entrenador los manda a casa. Primero va el original japonés, rotulado como en una revista semanal: letra antigua (kana de corte Mincho, kanji de corte Gothic), bocadillos altos en vez de anchos y sin punto al final. Enfrente, las mismas dos páginas en la lengua de esta página (en inglés en la página japonesa), empezando también por la viñeta de arriba a la derecha, como se publica el manga con licencia desde principios de los 2000. El formato es B6, 128 × 182 mm, el del tankōbon.
+
+## Elaboración
+
+### 1 · Lee en el sentido en que se dibujó
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un mangaka compone cada página desde arriba a la derecha: la primera viñeta, el primer personaje que habla y el recorrido de la mirada por cada franja empiezan ahí. `artDirection: 'rtl'` se lo dice al motor, y con el sentido de lectura en `'auto'` todas las ediciones siguen al dibujo; una edición árabe se leería de derecha a izquierda de todos modos. El dibujo nunca se refleja. Las editoriales occidentales invertían el manga hasta 2002, más o menos, y los lectores veían a todos los espadachines volverse zurdos y los kimonos cruzarse al revés: dejar las páginas como se dibujaron le cuesta al lector una costumbre, e invertirlas le cuesta el dibujo. Cada `:::page` lleva su división, `30 / 34 [46 | *] / * [44 | *]`, y la primera celda de cada franja se coloca a la derecha (<Feature id="comic-reading-direction">sentido de lectura</Feature>).
+
+### 2 · Marca a cada personaje una sola vez, sobre el dibujo
+
+<Excerpt region="art" />
+
+Las palabras cambian con el idioma; el dibujo no. Cada imagen lleva una zona segura que todo recorte respeta y, por cada personaje, una boca (adonde apunta el rabillo), una cabeza (para los bocadillos de pensamiento) y una cara que ningún bocadillo puede tapar, todo en fracciones de la imagen. Cada línea del guion nombra a quien habla, `sora: …`, y el motor coloca el bocadillo junto a ese personaje en cualquier idioma. Si quien habla no sale en la viñeta, como Sora cuando aparece el entrenador en la puerta, el rabillo va hacia el borde: `sora{tail=bottom}`.
+
+### 3 · Deja que cada idioma ponga sus bocadillos
+
+<Excerpt region="balloons" />
+
+Los estilos dicen qué clase de voz lleva cada bocadillo: un óvalo para hablar, un contorno discontinuo para susurrar, una nube para pensar y un recuadro gris para la voz interior de Hana. Cómo se colocan las palabras dentro es cosa de cada edición. En japonés, el motor compone columnas de ocho caracteres como mucho, quita el 。 que cierra un bocadillo y conserva el 、, pone de pie en un solo cuadratín las dos cifras de 第42回 (`:tcy[42]`) y junta `!?` en una sola celda. El guion da la lectura de cada nombre la primera vez que aparece, `{一ノ瀬|いちのせ}`, como hace el manga con el furigana sobre los nombres. En español, los mismos bocadillos se vuelven óvalos con líneas horizontales, y su orden sigue empezando por la derecha.
+
+### 4 · Carga las fuentes de cada edición con sus palabras
+
+<Excerpt region="fonts" />
+
+Zen Antique y Dela Gothic One se publican en un centenar de archivos cada una, uno por bloque de caracteres: cada fuente se carga con las palabras que compone, los bocadillos la primera y las onomatopeyas la segunda, y la página solo descarga los archivos que necesita. `loadComicFonts` declara la negrita de un grito y la cursiva de una voz interior a partir de los archivos que estas fuentes sí tienen, así que la pantalla y el PDF dibujan las mismas letras.
+
+### 5 · Pon el original junto a cada edición
+
+<Excerpt region="editions" />
+
+Cada idioma de este sitio tiene su propia edición de las dos páginas, escrita en su `content.<lang>.md`, y cada edición queda frente al original japonés: `/* @content@ja */` incluye `content.ja.md` en todas las ediciones, y la página japonesa empareja el original con la rotulación inglesa. La edición china también va en columnas, porque un libro que se abre por la derecha no mezcla bocadillos verticales y horizontales; la árabe se lee de derecha a izquierda por su propio sentido.
+
+## Errores frecuentes
+
+- Pon a la derecha al primer personaje que habla en cada viñeta. Los bocadillos siguen el orden de lectura, así que en la viñeta en la que Sora entrega el amuleto el guion le da la primera frase a Hana, que está a la derecha. Si hablara antes Sora, sus bocadillos se quedarían en su lado de la viñeta, pero las columnas japonesas no dejan sitio debajo para la respuesta de Hana: quedaría a su lado, a la derecha, y se leería primero.
+- Un bocadillo que no cabe en su viñeta puede salirse del borde, y el motor lo avisa (`comicBalloonOverflow`). Antes de recortar el diálogo, dale más sitio a esa viñeta en la división.

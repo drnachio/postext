@@ -1,0 +1,62 @@
+---
+title: "A Pepper&Carrot page re-lettered from its transcript"
+summary: "Two pages of Pepper&Carrot (CC BY 4.0) set again from David Revoy’s text-free art and the official translations, every balloon lettered in six languages."
+plain: "Two pages of an open-licensed web comic, rebuilt from the artist's pictures without words and from the translations people made of it, so the balloons are drawn fresh in each language."
+description: "Pepper&Carrot episode 8 (CC BY 4.0) re-lettered by Postext: panels cut from the text-free art, speakers from the original tails, six translations."
+question: "Can I re-letter an open-licensed comic from its transcript instead of editing its lettered pages?"
+aliases: ["Pepper&Carrot", "David Revoy", "re-lettering", "scanlation", "comic translation", "transcript", "open comic", "CC BY comic", "rotular de nuevo", "写植し直し", "重新嵌字"]
+pageNotes: { "1": "The title page: Episode 8: Pepper's Birthday Party in red, a short note on what the pages are, and the credits of the art, the story and the translation, with the CC BY 4.0 licence.", "2": "Page 5: lightning as Pepper, furious, pulls a spell book from the shelf (a jagged shout balloon, the book's title in gold on its cover); from above, Pepper draws three red magic circles in the rain; DZZZOOO in red across a red-lit close-up.", "3": "Page 6: three red-eyed demons rise in the storm and speak in black balloons with white blackletter; Pepper smiles slyly; the demons, Pepper and Carrot drink tea by candlelight, with the caption Episode 8 FIN." }
+---
+
+## What you'll build
+
+Pages 5 and 6 of *Pepper&Carrot* episode 8, "Pepper's Birthday Party", by David Revoy, the open-licensed web comic (CC BY 4.0) about a young witch and her cat. Revoy publishes his pages without their words and the community translates the transcript into dozens of languages. Here those pieces are put back together by Postext: the panels are cut from his text-free pages, the page grid is his, and every balloon, shout, sound effect and the title on the spell book are lettered by the engine from the official English, Spanish, Catalan, Chinese, Japanese and Arabic translations. A title page carries the credits the licence asks for.
+
+## Method
+
+### 1 · Turn the transcript into a script
+
+The code is [the short answer](#the-short-answer) above. A conversion script reads the episode's source files: it cuts each page into panels along its white gutters and writes the split it measured (`29.9 / 49.3 / *` for page 5), takes each balloon's words from the translation's SVG, and names its speaker from the transcript ([translating a comic](/en/docs/comics#translating-a-comic)). The result is one line per balloon, `pepper{shout break}: …`, with the shape the original balloon had: a jagged outline became `shout`, a balloon that crossed the border `break`. The demons' accent, with its *š* and *ā*, is the translators' and stays.
+
+<PageShot page={2} crop="0,0,1,0.34" caption="Page 5, panel 1: Pepper's shout, lettered from the English translation, and the book's title in gold on its cover." />
+
+### 2 · Anchor the speakers where Revoy's tails pointed
+
+<Excerpt region="art" />
+
+Revoy's balloons are in his source files as vector shapes, tails included. The conversion follows each tail to its tip and records it as the speaker's anchor in fractions of the panel, so the new balloons point where his did: at Pepper's open mouth, at the demon in the middle ([speakers and anchors](/en/docs/comics#speakers-and-anchors)). The safe areas keep each panel's subject when the cells are a few millimetres off his.
+
+### 3 · Give each voice its own letters
+
+<Excerpt region="editions" />
+
+The cast in the short answer gives the demons black balloons with white letters, as Revoy draws them, and a voice of their own: Grenze Gotisch, a blackletter, in the Latin editions. The `writing` style sets text on an object, the book's title in gold. Each edition takes faces for its script; the Japanese balloons are vertical, the Arabic page reads right to left ([lettering](/en/docs/comics#lettering)).
+
+### 4 · Credit every translator, with every letter
+
+<Excerpt region="vietnamese" />
+
+The licence asks for the author, the source, the licence and a note of the changes; the title page prints them in each edition's words, from the episode's own credits. One contributor to the Spanish and Japanese translations is Hồ Nhựt Châu, and Vietnamese letters are in a Fontsource file of their own: the recipe loads it for the credits' face and hands it to the PDF.
+
+## Variations
+
+### Port all six pages
+
+The episode's pipeline writes the six pages; the 21 panels weigh 1.8 MB. Add the other `:::page` blocks and their panels.
+
+```diff
+ const resources = await Promise.all([
++  panel('e08p01-1', asset('e08p01-1.jpg')), // … and the other fourteen panels of pages 1 to 4
+   panel('e08p05-1', asset('e08p05-1.jpg')), panel('e08p05-2', asset('e08p05-2.jpg')),
+```
+
+### Round the panels as Revoy does on page 2
+
+```diff
+   panel: { borderWidth: pt(0), background: col('paper') },
++  panelStyles: [{ id: 'rounded', borderRadius: mm(5.8) }], // ::panel{style=rounded}
+```
+
+## Pitfalls
+
+- Keep the credits in the document: the pictures travel with the PDF, and CC BY 4.0 asks that the attribution travel with them.

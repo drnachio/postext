@@ -1,0 +1,63 @@
+---
+title: "Las mismas viñetas en tres divisiones de página"
+summary: "Cinco viñetas en tres árboles de división: split en :::page corta la página y la zona segura de cada imagen mantiene a la vista lo importante."
+plain: "Una página de cómic dibujada una vez y maquetada de tres maneras. Las mismas cinco imágenes y los mismos diálogos llenan tres rejillas de viñetas distintas, y cada imagen se recorta de nuevo para su viñeta."
+description: "Una prueba de maqueta de cómic con Postext: las mismas cinco viñetas en tres árboles de división, reencuadradas por su zona segura y rotuladas en seis idiomas."
+question: "¿Cómo divido una página de cómic en viñetas sin perder la cara del personaje cuando la viñeta cambia de forma?"
+aliases: ["rejilla de viñetas", "maqueta de cómic", "división de página", "árbol de división", "tiras", "viñeta insertada", "zona segura", "encuadre", "recorte", "panel grid", "コマ割り", "分格"]
+pageNotes: { "1": "La portada de la prueba: el título en mayúsculas rojas y los tres planes, cada uno con su atributo split en rojo.", "2": "Plan A: una tira ancha con Maya subiendo al faro, tres viñetas en fila (el farero con la radio, Maya señalando el suelo, el gato dormido con PRRRR en rojo) y una escena ancha del faro encendido de noche.", "3": "Plan B: dos columnas; a la izquierda la llegada de Maya y el farero con la radio, en vertical; a la derecha Maya señalando, el gato y el faro de noche.", "4": "Plan C: una tira superior con tres viñetas estrechas y el gato en una viñeta insertada sobre la de Maya, y una viñeta alta del faro de noche con dos bocadillos junto a la galería." }
+---
+
+## Lo que vas a componer
+
+Una prueba de maqueta para una página de cómic, *La luz de Porthcove*: una portada y la misma página en tres planes, para que el autor elija. Las cinco imágenes (Maya subiendo al faro, su abuelo ante una radio muda, Maya señalando el suelo, el gato dormido sobre el cable, el faro encendido de noche) y los seis textos rotulados no cambian; solo cambia el `split` de cada `:::page`. Cada imagen se recorta otra vez para su viñeta y cada bocadillo se coloca otra vez junto a quien habla. El formato es el de un cómic americano, 168 × 259 mm, y la prueba sale en seis ediciones, cada una rotulada en su idioma.
+
+## Elaboración
+
+### 1 · Corta la página con un árbol de división
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un `:::page` ocupa la caja de la página, aquí 144 × 227 mm, y su atributo `split` la corta. `/` separa filas, `|` separa columnas, cada medida es un porcentaje de la celda que corta, `*` reparte lo que queda y un corchete vuelve a cortar esa celda en el otro eje ([dividir la página](/es/docs/comics#dividir-la-página)). El plan C, `30 [30 | 20 | *] / *`, hace una tira del 30 % de alto, la parte en celdas del 30 % y del 20 % de ancho más el resto, y deja debajo una sola celda alta. Las calles quedan a caballo de cada línea: 4 mm entre tiras, 3 mm entre viñetas de una misma tira. Las líneas `::panel` llenan las celdas en orden de lectura: las filas de arriba abajo y las columnas desde el lado de inicio.
+
+<PageShot page={4} crop="0,0,1,0.34" caption="Plan C: la tira 30 | 20 | resto, con el gato en una viñeta insertada sobre la tercera." />
+
+### 2 · Dale a cada imagen una zona segura
+
+<Excerpt region="art" />
+
+Cada imagen se dibuja una vez y se recorta para llenar la celda que le toque. La zona segura es lo que todo recorte conserva entero ([viñetas e imágenes](/es/docs/comics#viñetas-e-imágenes)). La de la radio es solo el farero, el 24 % del ancho, así que la celda de 26 mm del plan C lo muestra de la gorra a las botas y deja fuera la radio; las celdas anchas de los planes A y B enseñan las dos cosas. Si una celda no puede contener la zona segura, la imagen queda con bandas y la composición avisa (`comicPanelLetterbox`). Las anclas marcan la boca y la cara de cada personaje en las mismas fracciones, de modo que los rabillos lo encuentran en cualquier recorte.
+
+### 3 · Pon una viñeta sobre otra
+
+La división del plan C da cuatro celdas para cinco viñetas. El gato entra con `inset="50 50 46 46"`: una viñeta del 46 % de ancho y de alto, colocada en el 50 %, 50 % de la viñeta anterior, la de Maya. Una viñeta insertada no ocupa celda, así que las siguientes conservan su sitio, y se lee justo después de la que tapa.
+
+### 4 · Rotula seis ediciones con la misma maqueta
+
+<Excerpt region="editions" />
+
+La división, las imágenes, los recortes y las anclas son iguales en todos los idiomas; `content.<lang>.md` solo lleva las palabras, con los mismos identificadores de personaje (`maya`, `tomas`). La edición japonesa compone los bocadillos en vertical, con ocho caracteres por columna, y quita el 。 final; la árabe se lee de derecha a izquierda, así que las viñetas de cada fila se invierten, pero las imágenes no. El cuerpo de la rotulación es 8 pt en todas: un texto más largo da un bocadillo más grande, nunca una letra más pequeña ([rotulación](/es/docs/comics#rotulación)).
+
+## Variantes
+
+### Inclina la tira central
+
+Una medida escrita `30~40` lleva la calle final de esa celda del 30 % en un extremo al 40 % en el otro. Las celdas inclinadas pierden las esquinas redondeadas.
+
+```diff
+-:::page{split="30 / 35 [* | * | *] / *"}
++:::page{split="30 / 35 [30~40 | * | *] / *"}
+```
+
+### Invierte las imágenes en la edición árabe
+
+Por defecto, las imágenes conservan su orientación. Un cómic dibujado sin rótulos ni relojes puede seguir el sentido de lectura.
+
+```diff
+ const comics = {
++  mirrorArt: true, // las imágenes se invierten en una edición de derecha a izquierda
+   gutter: { horizontal: mm(4), vertical: mm(3) },
+```
+
+## Errores frecuentes
+
+- Una celda de un quinto del ancho de la página admite unas cuatro palabras por línea a 8 pt, y en el plan C el farero tiene la cara en mitad de la suya: sus dos bocadillos sobre la tormenta no caben ni encima ni debajo. Allí la primera de las dos frases lleva `break` (`tomas{break}:`), así que la pareja puede cruzar la calle hacia la viñeta de Maya; el motor deja el segundo bocadillo detrás del primero y nunca lo saca al margen de la página. Sin `break`, la construcción avisa `comicBalloonOverflow`.
+- Una zona segura más ceñida da un recorte limpio en más celdas, pero lo que queda fuera puede perderse: las botas en la primera tira del plan A, la radio en el plan C.

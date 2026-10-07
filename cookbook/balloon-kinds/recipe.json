@@ -1,0 +1,179 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 145,
+  "status": "published",
+  "chapter": "comics",
+  "order": 20,
+  "level": 2,
+  "genres": [
+    "comic"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "balloon-styles",
+      "sound-effects",
+      "comic-speakers"
+    ],
+    "also": [
+      "comic-panel-split",
+      "comic-panel-art",
+      "comic-pages",
+      "comic-lettering",
+      "comic-relettering",
+      "color-palette",
+      "canvas-rendering",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q168",
+    "Q167",
+    "Q169",
+    "Q163"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.20.1",
+    "postextPdf": "1.20.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk",
+    "arabic",
+    "comics"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es",
+      "ca",
+      "zh",
+      "ar",
+      "ja"
+    ]
+  },
+  "capture": {
+    "hero": 2,
+    "card": "page"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Panel picture: the storm in the lamp room",
+          "es": "Viñeta: la tormenta en la sala de la linterna"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bk-storm.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: Maya and the cat under the desk",
+          "es": "Viñeta: Maya y el gato bajo la mesa"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bk-whisper.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: the keeper shouting into the microphone",
+          "es": "Viñeta: el farero gritando al micrófono"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bk-shout.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: the trawler in the storm",
+          "es": "Viñeta: el pesquero en la tormenta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bk-sea.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: Maya at the window",
+          "es": "Viñeta: Maya en la ventana"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bk-window.jpg"
+      },
+      {
+        "what": {
+          "en": "Panel picture: the next morning on the rocks",
+          "es": "Viñeta: la mañana siguiente en las rocas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "bk-morning.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Comic Neue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bangers",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Zen Antique",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Dela Gothic One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL KuaiLe",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "ZCOOL QingKe HuangYou",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lalezar",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-07",
+  "updated": "2026-10-07",
+  "downloads": {
+    "pdf": true
+  }
+}
