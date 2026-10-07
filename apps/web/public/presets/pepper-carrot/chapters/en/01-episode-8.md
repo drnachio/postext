@@ -36,7 +36,10 @@ pepper{join}: ... they'll come ...
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1 alt="Lightning. Pepper, furious, pulls a book with a demon’s face on its cover from the shelf. Carrot is terrified."}
 pepper{shout break}: How could they do this to me ?!! To **me** !!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: Incantations for Demons of CHAOSAH Vol .1
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
+  for Demons of\
+  CHAOSAH\
+  Vol .1
 ::panel{art=e08p05-2 alt="From above, in the rain, Pepper draws three glowing red magic circles on the ground with her wand, the open book in her other hand. Carrot watches."}
 pepper{shout}: ... since I can't count on them ...
 ::panel{art=e08p05-3 alt="Red light from the circles floods the scene. Pepper, grim, holds the open book in the rain."}

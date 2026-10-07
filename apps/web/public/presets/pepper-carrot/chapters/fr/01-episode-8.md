@@ -36,7 +36,10 @@ pepper{join}: ...elles viendront !
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1 alt="Des éclairs. Pepper, furieuse, tire de l’étagère un livre dont la couverture porte un visage de démon. Carrot est terrifié."}
 pepper{shout break}: Comment peuvent-elles me faire ça ?!! À **moi** !!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: Incantations des Démons CHAOSAH Vol .1
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
+  des Démons\
+  CHAOSAH\
+  Vol .1
 ::panel{art=e08p05-2 alt="Vue d’en haut, sous la pluie, Pepper trace à la baguette trois cercles magiques rouges et lumineux sur le sol, le livre ouvert dans l’autre main. Carrot regarde."}
 pepper{shout}: ... Puisque je ne peux pas compter sur elles...
 ::panel{art=e08p05-3 alt="La lumière rouge des cercles envahit la scène. Pepper, l’air sombre, tient le livre ouvert sous la pluie."}

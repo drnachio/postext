@@ -550,7 +550,53 @@
    "elements": []
   },
   "footer": {
-   "elements": []
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folio",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -5.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Comic Neue",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#6b625a",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "pages": "comic"
+    }
+   ]
   },
   "comics": {
    "readingDirection": "auto",
@@ -561,7 +607,7 @@
       "unit": "mm"
      },
      "bottom": {
-      "value": 8.72,
+      "value": 14.0,
       "unit": "mm"
      },
      "left": {
@@ -639,6 +685,36 @@
       "value": 0,
       "unit": "pt"
      }
+    },
+    {
+     "id": "plate",
+     "name": "Title on the art",
+     "shape": "none",
+     "tail": "none",
+     "fontFamily": "Zen Antique",
+     "fontScale": 0.88,
+     "bold": false,
+     "italic": false,
+     "align": "center",
+     "aspect": 3,
+     "color": {
+      "hex": "#e4cf96",
+      "model": "hex",
+      "paletteId": "gilt"
+     },
+     "halo": {
+      "value": 0.5,
+      "unit": "pt"
+     },
+     "haloColor": {
+      "hex": "#151a20",
+      "model": "hex",
+      "paletteId": "plate"
+     },
+     "letterSpacing": {
+      "value": 0.2,
+      "unit": "pt"
+     }
     }
    ],
    "cast": [
@@ -664,7 +740,8 @@
       "paletteId": "paper"
      }
     }
-   ]
+   ],
+   "runningHeads": true
   },
   "colorPalette": [
    {
@@ -720,6 +797,22 @@
     "name": "Monster balloons",
     "value": {
      "hex": "#0f0f0f",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "gilt",
+    "name": "Gilt lettering",
+    "value": {
+     "hex": "#e4cf96",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "plate",
+    "name": "Title plate",
+    "value": {
+     "hex": "#151a20",
      "model": "hex"
     }
    }
@@ -980,43 +1073,95 @@
            },
            "offset": {
             "x": {
-             "value": 20,
+             "value": 177,
              "unit": "mm"
             },
             "y": {
-             "value": 160.05,
+             "value": 157,
              "unit": "mm"
             }
            },
            "size": {
             "width": {
-             "value": 170.0,
+             "value": 10,
              "unit": "mm"
             },
-            "height": "auto"
+            "height": {
+             "value": 118,
+             "unit": "mm"
+            }
            }
           },
           "content": "Pepper&Carrot",
           "fontFamily": "Dela Gothic One",
           "fontSize": {
-           "value": 18,
+           "value": 14,
            "unit": "pt"
           },
           "fontWeight": 400,
           "italic": false,
-          "align": "center",
-          "verticalAlign": "middle",
-          "lineHeight": 1.2,
+          "align": "left",
+          "verticalAlign": "top",
+          "lineHeight": 1.25,
           "overflow": "wrap",
           "color": {
            "hex": "#b4402a",
            "model": "hex",
            "paletteId": "accent"
           },
+          "writingMode": "vertical-rl",
           "letterSpacing": {
-           "value": 1.5,
+           "value": 1,
            "unit": "pt"
           }
+         },
+         {
+          "kind": "text",
+          "id": "episode",
+          "placement": {
+           "anchor": {
+            "to": "page",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 163,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 157,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 11,
+             "unit": "mm"
+            },
+            "height": {
+             "value": 118,
+             "unit": "mm"
+            }
+           }
+          },
+          "content": "{attr.episode}",
+          "fontFamily": "Dela Gothic One",
+          "fontSize": {
+           "value": 16,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "left",
+          "verticalAlign": "top",
+          "lineHeight": 1.25,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1d1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          },
+          "writingMode": "vertical-rl"
          },
          {
           "kind": "text",
@@ -1028,40 +1173,43 @@
            },
            "offset": {
             "x": {
-             "value": 20,
+             "value": 136,
              "unit": "mm"
             },
             "y": {
-             "value": 173.05,
+             "value": 157,
              "unit": "mm"
             }
            },
            "size": {
             "width": {
-             "value": 170.0,
+             "value": 22,
              "unit": "mm"
             },
-            "height": "auto"
+            "height": {
+             "value": 124,
+             "unit": "mm"
+            }
            }
           },
-          "content": "{titleText}",
+          "content": "{attr.name}",
           "fontFamily": "Dela Gothic One",
           "fontSize": {
-           "value": 32,
+           "value": 29,
            "unit": "pt"
           },
           "fontWeight": 400,
           "italic": false,
-          "align": "center",
-          "verticalAlign": "middle",
-          "lineHeight": 1.12,
+          "align": "left",
+          "verticalAlign": "top",
+          "lineHeight": 1.25,
           "overflow": "wrap",
           "color": {
            "hex": "#1d1a17",
            "model": "hex",
            "paletteId": "ink"
           },
-          "direction": "auto"
+          "writingMode": "vertical-rl"
          },
          {
           "kind": "text",
@@ -1073,40 +1221,43 @@
            },
            "offset": {
             "x": {
-             "value": 20,
+             "value": 72,
              "unit": "mm"
             },
             "y": {
-             "value": 228.05,
+             "value": 171,
              "unit": "mm"
             }
            },
            "size": {
             "width": {
-             "value": 170.0,
+             "value": 9,
              "unit": "mm"
             },
-            "height": "auto"
+            "height": {
+             "value": 100,
+             "unit": "mm"
+            }
            }
           },
           "content": "{attr.art}",
           "fontFamily": "Zen Antique",
           "fontSize": {
-           "value": 14,
+           "value": 13,
            "unit": "pt"
           },
           "fontWeight": 400,
           "italic": false,
-          "align": "center",
-          "verticalAlign": "middle",
-          "lineHeight": 1.2,
+          "align": "left",
+          "verticalAlign": "top",
+          "lineHeight": 1.25,
           "overflow": "wrap",
           "color": {
            "hex": "#1d1a17",
            "model": "hex",
            "paletteId": "ink"
           },
-          "direction": "auto"
+          "writingMode": "vertical-rl"
          },
          {
           "kind": "text",
@@ -1118,40 +1269,43 @@
            },
            "offset": {
             "x": {
-             "value": 20,
+             "value": 60,
              "unit": "mm"
             },
             "y": {
-             "value": 239.05,
+             "value": 171,
              "unit": "mm"
             }
            },
            "size": {
             "width": {
-             "value": 170.0,
+             "value": 9,
              "unit": "mm"
             },
-            "height": "auto"
+            "height": {
+             "value": 108,
+             "unit": "mm"
+            }
            }
           },
           "content": "{attr.credit}",
           "fontFamily": "Zen Antique",
           "fontSize": {
-           "value": 11.5,
+           "value": 11,
            "unit": "pt"
           },
           "fontWeight": 400,
           "italic": false,
-          "align": "center",
-          "verticalAlign": "middle",
-          "lineHeight": 1.35,
+          "align": "left",
+          "verticalAlign": "top",
+          "lineHeight": 1.25,
           "overflow": "wrap",
           "color": {
-           "hex": "#1d1a17",
+           "hex": "#6b625a",
            "model": "hex",
-           "paletteId": "ink"
+           "paletteId": "muted"
           },
-          "direction": "auto"
+          "writingMode": "vertical-rl"
          },
          {
           "kind": "text",
@@ -1159,43 +1313,47 @@
           "placement": {
            "anchor": {
             "to": "page",
-            "edge": "bottom-left"
+            "edge": "top-left"
            },
            "offset": {
             "x": {
-             "value": 20,
+             "value": 24,
              "unit": "mm"
             },
             "y": {
-             "value": -16,
+             "value": 171,
              "unit": "mm"
             }
            },
            "size": {
             "width": {
-             "value": 170.0,
+             "value": 7,
              "unit": "mm"
             },
-            "height": "auto"
+            "height": {
+             "value": 108,
+             "unit": "mm"
+            }
            }
           },
           "content": "www.peppercarrot.com · CC BY 4.0",
           "fontFamily": "Zen Antique",
           "fontSize": {
-           "value": 9,
+           "value": 8.5,
            "unit": "pt"
           },
           "fontWeight": 400,
           "italic": false,
-          "align": "center",
-          "verticalAlign": "middle",
-          "lineHeight": 1.2,
+          "align": "left",
+          "verticalAlign": "top",
+          "lineHeight": 1.25,
           "overflow": "wrap",
           "color": {
            "hex": "#6b625a",
            "model": "hex",
            "paletteId": "muted"
-          }
+          },
+          "writingMode": "vertical-rl"
          }
         ]
        }
@@ -1239,7 +1397,7 @@
         "unit": "mm"
        },
        "bottom": {
-        "value": 8.72,
+        "value": 14.0,
         "unit": "mm"
        },
        "left": {
@@ -1322,6 +1480,36 @@
         "value": 0,
         "unit": "pt"
        }
+      },
+      {
+       "id": "plate",
+       "name": "Title on the art",
+       "shape": "none",
+       "tail": "none",
+       "fontFamily": "Zen Antique",
+       "fontScale": 0.88,
+       "bold": false,
+       "italic": false,
+       "align": "center",
+       "aspect": 3,
+       "color": {
+        "hex": "#e4cf96",
+        "model": "hex",
+        "paletteId": "gilt"
+       },
+       "halo": {
+        "value": 0.5,
+        "unit": "pt"
+       },
+       "haloColor": {
+        "hex": "#151a20",
+        "model": "hex",
+        "paletteId": "plate"
+       },
+       "letterSpacing": {
+        "value": 0.2,
+        "unit": "pt"
+       }
       }
      ],
      "cast": [
@@ -1347,7 +1535,8 @@
         "paletteId": "paper"
        }
       }
-     ]
+     ],
+     "runningHeads": true
     },
     "resourceTypes": [
      {
@@ -1366,7 +1555,56 @@
        "align": "center"
       }
      }
-    ]
+    ],
+    "footer": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folio",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "bottom"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": -5.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 30,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Sans JP",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#6b625a",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "pages": "comic"
+      }
+     ]
+    }
    },
    "resources": [
     {
@@ -1763,7 +2001,7 @@
         "unit": "mm"
        },
        "bottom": {
-        "value": 8.72,
+        "value": 14.0,
         "unit": "mm"
        },
        "left": {
@@ -1841,6 +2079,36 @@
         "value": 0,
         "unit": "pt"
        }
+      },
+      {
+       "id": "plate",
+       "name": "Title on the art",
+       "shape": "none",
+       "tail": "none",
+       "fontFamily": "Noto Sans SC",
+       "fontScale": 0.88,
+       "bold": false,
+       "italic": false,
+       "align": "center",
+       "aspect": 3,
+       "color": {
+        "hex": "#e4cf96",
+        "model": "hex",
+        "paletteId": "gilt"
+       },
+       "halo": {
+        "value": 0.5,
+        "unit": "pt"
+       },
+       "haloColor": {
+        "hex": "#151a20",
+        "model": "hex",
+        "paletteId": "plate"
+       },
+       "letterSpacing": {
+        "value": 0.2,
+        "unit": "pt"
+       }
       }
      ],
      "cast": [
@@ -1866,7 +2134,8 @@
         "paletteId": "paper"
        }
       }
-     ]
+     ],
+     "runningHeads": true
     },
     "resourceTypes": [
      {
@@ -1885,7 +2154,56 @@
        "align": "center"
       }
      }
-    ]
+    ],
+    "footer": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folio",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "bottom"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": -5.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 30,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Sans SC",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#6b625a",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "pages": "comic"
+      }
+     ]
+    }
    },
    "resources": [
     {
@@ -2290,7 +2608,56 @@
        "align": "center"
       }
      }
-    ]
+    ],
+    "footer": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folio",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "bottom"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": -5.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 30,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Playpen Sans Arabic",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#6b625a",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "pages": "comic"
+      }
+     ]
+    }
    },
    "resources": [
     {
@@ -2308,7 +2675,13 @@
    "file": "resources/e08-cover.jpg",
    "width": 1100,
    "height": 765,
-   "altText": "Pepper, arms raised in joy, and Carrot at a low table set for a party: a teapot, cupcakes and a birthday cake with candles under strings of bunting."
+   "altText": "Pepper, arms raised in joy, and Carrot at a low table set for a party: a teapot, cupcakes and a birthday cake with candles under strings of bunting.",
+   "safeArea": {
+    "x": 0.12,
+    "y": 0.19,
+    "width": 0.8,
+    "height": 0.58
+   }
   },
   {
    "id": "e08p01-1",
@@ -2319,10 +2692,10 @@
    "height": 739,
    "altText": "Pepper sits on the edge of her bed in an attic lit by a skylight, her hands on her knees. Carrot watches her from the floor.",
    "safeArea": {
-    "x": 0.1,
-    "y": 0.12,
-    "width": 0.86,
-    "height": 0.88
+    "x": 0.2,
+    "y": 0.2,
+    "width": 0.7,
+    "height": 0.76
    }
   },
   {
@@ -2334,10 +2707,10 @@
    "height": 214,
    "altText": "Close-up: Pepper gazes into the distance, downcast. Carrot, at her shoulder, looks up at her.",
    "safeArea": {
-    "x": 0.23,
-    "y": 0.0,
-    "width": 0.38,
-    "height": 1.0
+    "x": 0.25,
+    "y": 0.08,
+    "width": 0.35,
+    "height": 0.92
    },
    "anchors": [
     {
@@ -2370,10 +2743,10 @@
    "height": 199,
    "altText": "Pepper buries her face in her hand, a few tears falling. Carrot clings to her arm, worried.",
    "safeArea": {
-    "x": 0.18,
-    "y": 0.0,
-    "width": 0.58,
-    "height": 1.0
+    "x": 0.24,
+    "y": 0.04,
+    "width": 0.51,
+    "height": 0.96
    }
   },
   {
@@ -2385,10 +2758,10 @@
    "height": 473,
    "altText": "Carrot, wide-eyed, points at a framed drawing of the witches of the Potion Contest, propped beside the winner’s gold coin.",
    "safeArea": {
-    "x": 0.02,
-    "y": 0.05,
-    "width": 0.9,
-    "height": 0.95
+    "x": 0.06,
+    "y": 0.2,
+    "width": 0.77,
+    "height": 0.62
    }
   },
   {
@@ -2400,10 +2773,10 @@
    "height": 448,
    "altText": "Pepper sits up on her bed and lifts her hands, delighted by the idea. Carrot sits facing her, smiling.",
    "safeArea": {
-    "x": 0.15,
+    "x": 0.17,
     "y": 0.08,
-    "width": 0.85,
-    "height": 0.92
+    "width": 0.69,
+    "height": 0.6
    },
    "anchors": [
     {
@@ -2442,10 +2815,10 @@
    "height": 407,
    "altText": "Pepper, smiling, writes invitations with a quill while Carrot holds up an envelope. A small white bird waits on the windowsill.",
    "safeArea": {
-    "x": 0.08,
-    "y": 0.05,
-    "width": 0.72,
-    "height": 0.9
+    "x": 0.17,
+    "y": 0.07,
+    "width": 0.62,
+    "height": 0.86
    }
   },
   {
@@ -2457,10 +2830,10 @@
    "height": 1200,
    "altText": "Coriander, at her window with her invitation, gives a thumbs-up as Pepper and Carrot fly past on a broom. A grumpy black hen sits beside her.",
    "safeArea": {
-    "x": 0.0,
-    "y": 0.08,
-    "width": 1.0,
-    "height": 0.92
+    "x": 0.03,
+    "y": 0.12,
+    "width": 0.83,
+    "height": 0.71
    }
   },
   {
@@ -2472,10 +2845,10 @@
    "height": 1200,
    "altText": "Seen from above, Shichimi waves from a green clearing by a steaming cauldron, her invitation in her other hand and her fox at her feet. Pepper waves back from her broom.",
    "safeArea": {
-    "x": 0.0,
-    "y": 0.1,
-    "width": 1.0,
-    "height": 0.9
+    "x": 0.17,
+    "y": 0.14,
+    "width": 0.79,
+    "height": 0.6
    }
   },
   {
@@ -2487,10 +2860,10 @@
    "height": 1200,
    "altText": "Saffron reads her invitation with a smile on a balcony above the rooftops, her white cat beside her. Pepper and Carrot fly off towards the setting sun.",
    "safeArea": {
-    "x": 0.0,
-    "y": 0.18,
-    "width": 1.0,
-    "height": 0.82
+    "x": 0.04,
+    "y": 0.22,
+    "width": 0.8,
+    "height": 0.64
    }
   },
   {
@@ -2502,10 +2875,10 @@
    "height": 481,
    "altText": "Pepper’s cottage, its roof overgrown with greenery, stands at the edge of a wood beside a pond on a fine day. Bunting hangs across the porch.",
    "safeArea": {
-    "x": 0.45,
-    "y": 0.05,
-    "width": 0.5,
-    "height": 0.9
+    "x": 0.55,
+    "y": 0.16,
+    "width": 0.33,
+    "height": 0.74
    },
    "anchors": [
     {
@@ -2524,10 +2897,10 @@
    "height": 576,
    "altText": "Inside, bunting hangs from the beams and cupcakes, a cake and a teapot wait on the low table. Pepper throws up her arms; Carrot grins.",
    "safeArea": {
-    "x": 0.22,
-    "y": 0.1,
-    "width": 0.6,
-    "height": 0.85
+    "x": 0.28,
+    "y": 0.22,
+    "width": 0.53,
+    "height": 0.58
    },
    "anchors": [
     {
@@ -2560,10 +2933,10 @@
    "height": 604,
    "altText": "Later: Pepper waits at the table, chin in one hand, a cupcake in the other. Carrot dozes with his head on the table.",
    "safeArea": {
-    "x": 0.22,
-    "y": 0.12,
-    "width": 0.58,
-    "height": 0.83
+    "x": 0.27,
+    "y": 0.29,
+    "width": 0.51,
+    "height": 0.51
    }
   },
   {
@@ -2575,10 +2948,10 @@
    "height": 589,
    "altText": "Rain pours down around the awning over the party table. Pepper, anxious, holds out a hand to the rain; Carrot sits soaked beside the table.",
    "safeArea": {
-    "x": 0.2,
-    "y": 0.15,
-    "width": 0.68,
-    "height": 0.8
+    "x": 0.28,
+    "y": 0.3,
+    "width": 0.57,
+    "height": 0.54
    },
    "anchors": [
     {
@@ -2611,10 +2984,10 @@
    "height": 574,
    "altText": "Night and rain: Pepper sits alone by a lantern at the party table, scowling. Carrot sleeps curled up on the table.",
    "safeArea": {
-    "x": 0.3,
-    "y": 0.15,
-    "width": 0.55,
-    "height": 0.8
+    "x": 0.32,
+    "y": 0.34,
+    "width": 0.51,
+    "height": 0.52
    }
   },
   {
@@ -2626,10 +2999,10 @@
    "height": 498,
    "altText": "Close-up of Pepper’s face under her hat in the rain, her eyes burning red, her mouth set in anger.",
    "safeArea": {
-    "x": 0.1,
-    "y": 0.05,
-    "width": 0.8,
-    "height": 0.95
+    "x": 0.27,
+    "y": 0.15,
+    "width": 0.46,
+    "height": 0.71
    }
   },
   {
@@ -2641,10 +3014,10 @@
    "height": 500,
    "altText": "Lightning. Pepper, furious, pulls a book with a demon’s face on its cover from the shelf. Carrot is terrified.",
    "safeArea": {
-    "x": 0.0,
-    "y": 0.0,
-    "width": 0.92,
-    "height": 1.0
+    "x": 0.25,
+    "y": 0.03,
+    "width": 0.62,
+    "height": 0.74
    },
    "anchors": [
     {
@@ -2683,10 +3056,10 @@
    "height": 823,
    "altText": "From above, in the rain, Pepper draws three glowing red magic circles on the ground with her wand, the open book in her other hand. Carrot watches.",
    "safeArea": {
-    "x": 0.0,
-    "y": 0.05,
-    "width": 0.9,
-    "height": 0.95
+    "x": 0.1,
+    "y": 0.09,
+    "width": 0.77,
+    "height": 0.81
    },
    "anchors": [
     {
@@ -2719,10 +3092,10 @@
    "height": 342,
    "altText": "Red light from the circles floods the scene. Pepper, grim, holds the open book in the rain.",
    "safeArea": {
-    "x": 0.1,
-    "y": 0.0,
-    "width": 0.88,
-    "height": 1.0
+    "x": 0.09,
+    "y": 0.15,
+    "width": 0.81,
+    "height": 0.8
    },
    "anchors": [
     {
@@ -2741,10 +3114,10 @@
    "height": 646,
    "altText": "Seen from behind, Pepper, the book in her hand, faces three huge demons with glowing red eyes rising in the storm, one holding a trident. Carrot, at her feet, is terrified.",
    "safeArea": {
-    "x": 0.0,
-    "y": 0.05,
-    "width": 1.0,
-    "height": 0.95
+    "x": 0.15,
+    "y": 0.06,
+    "width": 0.73,
+    "height": 0.9
    },
    "anchors": [
     {
@@ -2789,10 +3162,10 @@
    "height": 290,
    "altText": "Pepper, lit red, smiles a sly smile.",
    "safeArea": {
-    "x": 0.5,
-    "y": 0.0,
-    "width": 0.48,
-    "height": 1.0
+    "x": 0.59,
+    "y": 0.15,
+    "width": 0.3,
+    "height": 0.77
    }
   },
   {
@@ -2804,10 +3177,10 @@
    "height": 730,
    "altText": "The party after all: by candlelight, Pepper clinks teacups with the biggest demon while Carrot laughs, and the other two demons smile around the table.",
    "safeArea": {
-    "x": 0.03,
-    "y": 0.05,
-    "width": 0.94,
-    "height": 0.95
+    "x": 0.09,
+    "y": 0.1,
+    "width": 0.77,
+    "height": 0.7
    }
   }
  ],
