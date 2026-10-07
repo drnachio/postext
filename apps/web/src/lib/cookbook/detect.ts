@@ -403,14 +403,26 @@ export function configString(scan: JsScan, dotted: string): string | undefined {
     const at = objectValueAt(scan, open, key);
     if (at === -1) return undefined;
     if (i === keys.length - 1) {
-      const head = scan.code.slice(at, at + 400);
-      const literal = /^(['"`])([^'"`\n]*)\1/.exec(head)?.[2];
-      return literal ?? editionString(scan.code, head);
+      return stringAt(scan.code, at, 1);
     }
     if (scan.bare[at] !== "{") return undefined;
     open = at;
   }
   return undefined;
+}
+
+/** The string at `at`: a literal, a `t({ … })` per edition, or a top-level
+ *  `const` holding one (`locale: LOCALE` with `const LOCALE = t({ … })`),
+ *  followed `depth` times. */
+function stringAt(code: string, at: number, depth: number): string | undefined {
+  const head = code.slice(at, at + 400);
+  const literal = /^(['"`])([^'"`\n]*)\1/.exec(head)?.[2];
+  if (literal !== undefined) return literal;
+  const edition = editionString(code, head);
+  if (edition !== undefined || depth <= 0) return edition;
+  const name = /^([A-Za-z_$][\w$]*)\s*[,}\n]/.exec(head)?.[1];
+  const decl = name ? new RegExp(`^const ${name.replace(/\$/g, "\\$")}\\s*=\\s*`, "m").exec(code) : null;
+  return decl ? stringAt(code, decl.index + decl[0].length, depth - 1) : undefined;
 }
 
 /** A value written per edition, `t({ en: 'en', ja: 'ja', zh: 'zh-Hans' })`,

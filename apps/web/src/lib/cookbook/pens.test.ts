@@ -161,6 +161,14 @@ describe("configString", () => {
     expect(configString(scanJs(pen("es")), "locale")).toBe("en");
     expect(configString(scanJs(pen("ar")), "page.binding")).toBe("left");
   });
+
+  it("follows a top-level const that holds the value", () => {
+    const pen = (lang: string) => `const LANG = '${lang}'; // @lang\nconst LOCALE = t({ es: 'es', ja: 'ja' });\n` +
+      "const config = () => ({ locale: LOCALE, page: { binding: BINDING } });\nconst BINDING = 'right';\n";
+    expect(configString(scanJs(pen("ja")), "locale")).toBe("ja");
+    expect(configString(scanJs(pen("es")), "locale")).toBe("es");
+    expect(configString(scanJs(pen("ja")), "page.binding")).toBe("right");
+  });
 });
 
 describe("lintPen (fixture)", () => {

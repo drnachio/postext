@@ -648,6 +648,10 @@ export function lintPen(
   return { fails: [...new Set(fails)], warns: [...new Set(warns)] };
 }
 
+/** Japanese families on Fontsource (Noto Serif JP, Zen Antique, Shippori
+ *  Mincho, Klee One, Dela Gothic One…). */
+const JAPANESE_FACE = /\sJP$|^(?:Zen|Shippori|Klee|Dela Gothic|Kaisei|BIZ UD|M PLUS|Kiwi Maru|Yuji|Sawarabi|Hina Mincho|Murecho|Yusei Magic|Mochiy|Kosugi)\b/;
+
 /** What a recipe listing the `cjk` kit block must do: when its text is
  *  Chinese, Japanese or Korean, hand the PDF the faces' files and tag the
  *  document with its language (a Latin book may list the block for
@@ -685,8 +689,11 @@ function lintCjk(
     // A face named in the Chinese entry of a per-edition table
     // (`t({ … zh: ['Noto Serif SC', …] })`) sets only the Chinese edition.
     const zhOnly = (family: string) => new RegExp(`\\bzh\\s*:\\s*\\[?[^\\]\\n]*['"]${family}['"]`).test(ownCode);
-    const chinese = fontFamilies(penFonts(ownCode, scan)).filter((family) => /\s(?:SC|TC|HK)$/.test(family) && !zhOnly(family));
-    if (chinese.length) {
+    const families = fontFamilies(penFonts(ownCode, scan));
+    const chinese = families.filter((family) => /\s(?:SC|TC|HK)$/.test(family) && !zhOnly(family));
+    // A pen with an edition per language lists the Chinese edition's face
+    // beside the Japanese one; only a pen with no Japanese face sets kana in it.
+    if (chinese.length && !families.some((family) => JAPANESE_FACE.test(family))) {
       warns.push(`script.js: Japanese text with ${chinese.join(", ")} in FONTS: a Chinese face draws the kanji in Chinese forms (直, 骨, 角) and the kana in its own design; ` +
         "set the Japanese in a Japanese face (Noto Serif JP, Noto Sans JP, Shippori Mincho) and keep the Chinese one for Chinese quotations (gotcha ja-fonts-kana)");
     }
