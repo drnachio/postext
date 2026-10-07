@@ -7,6 +7,7 @@ import {
   createVDTDocument,
   createVDTBlock,
   createBoundingBox,
+  createVDTColumn,
   pageIsMirrored,
   pageIsVertical,
   type VDTDocument,
@@ -100,10 +101,12 @@ import {
   pageLayoutOf,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
+import { layoutComicPage, comicPageLayoutWarnings } from '../comics/layoutPage';
 import {
   applyStyleAttrs,
   computePageMetrics,
   flowPageMirrored,
+  pageMirrored,
   sheetRectToFlow,
   isMarkerBlock,
   nextNonMarkerBlock,
@@ -2415,7 +2418,7 @@ function placeDocumentPass(
     // a chapter laid out on its own) opening with a styled heading.
     const page = doc.pages[cursor.pageIndex];
     if (
-      page && !page.partInfo && cursor.columnIndex === 0
+      page && !page.partInfo && !page.comic && cursor.columnIndex === 0
       && !pageHasContent(page) && !(page.floats && page.floats.length > 0)
     ) {
       const fresh = createPageWithColumns(page.index, geomResolved, contentArea, pageWidthPx, pageHeightPx, pageIndexOffset);
@@ -2673,7 +2676,7 @@ function placeDocumentPass(
    */
   const openSpanHeadingHere = (blockIdx: number, rawBlock: ContentBlock, level: ResolvedHeadingLevelConfig): boolean => {
     const page = doc.pages[cursor.pageIndex]!;
-    if (page.partInfo || currentColumn(doc, cursor).kind === 'span') return false;
+    if (page.partInfo || page.comic || currentColumn(doc, cursor).kind === 'span') return false;
     const band = currentBand(page, cursor);
     const cols = bandColumns(page, band);
     if (cols.length === 0) return false;
@@ -2799,7 +2802,7 @@ function placeDocumentPass(
     const balancingCfg = resolved.headings.balancing;
     if (!balancingCfg.enabled || !balancingCfg.trailing) return;
     const page = doc.pages[cursor.pageIndex]!;
-    if (page.columns[cursor.columnIndex]?.kind === 'span' || page.partInfo) return;
+    if (page.columns[cursor.columnIndex]?.kind === 'span' || page.partInfo || page.comic) return;
     const band = currentBand(page, cursor);
     const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
     if (cols.length < 2 || cols.some((c) => c.forcedBreak)) return;
@@ -2948,6 +2951,10 @@ function placeDocumentPass(
   /** A closed `:::paper` still owes a page break before the next placed
    *  block. */
   let pendingPaperBreak = false;
+  /** A comic page (`:::page`) was laid out on the current page: the next
+   *  placed block opens a new one (a page that ends the document leaves no
+   *  empty page behind). */
+  let pendingComicBreak = false;
   /** The page break around a `:::paper` run (block `boundaryIndex`): the
    *  flow closes like a chapter's and the next block opens a page. */
   const breakForPaper = (boundaryIndex: number): void => {
@@ -2977,7 +2984,7 @@ function placeDocumentPass(
   /** A page holding something the reader sees: column content, a float, a
    *  part opener. A parity blank is not one. */
   const pageTakesNumbering = (page: VDTPage): boolean =>
-    pageHasContent(page) || (page.floats?.length ?? 0) > 0 || page.partInfo !== undefined;
+    pageHasContent(page) || (page.floats?.length ?? 0) > 0 || page.partInfo !== undefined || page.comic !== undefined;
 
   /** Commits a pending `:::numbering` change to the first page from the
    *  directive on that receives content: the page the directive opens (the
@@ -4434,7 +4441,9 @@ function placeDocumentPass(
     enqueueFloatsFor(blockIdx);
 
     // --- Directives ----------------------------------------------------
-    if (rawBlock.type === 'directive') {
+    // (A comic page, `:::page`, is placed below, once a closed part or
+    // paper run has taken its page break.)
+    if (rawBlock.type === 'directive' && rawBlock.directiveName !== 'page') {
       const name = rawBlock.directiveName;
       const attrs = rawBlock.directiveAttrs ?? {};
       if (name === 'pagebreak') {
@@ -4594,6 +4603,38 @@ function placeDocumentPass(
     if (pendingPaperBreak) {
       pendingPaperBreak = false;
       breakForPaper(blockIdx);
+    }
+    // `:::page`: a comic page owns a fresh page — its panels, split lines
+    // and lettering laid out on the sheet (`layoutComicPage`); nothing
+    // flows on it, and what follows starts on the next page.
+    if (rawBlock.type === 'directive' && rawBlock.directiveName === 'page') {
+      if (rawBlock.comic) {
+        pendingComicBreak = false;
+        pendingSpacing = 0;
+        closeFlowSegment(blockIdx);
+        leaveCurrentPage();
+        cursor.columnIndex = 0;
+        const page = doc.pages[cursor.pageIndex]!;
+        page.columns = [createVDTColumn(0, page.contentArea)];
+        page.comic = layoutComicPage(rawBlock.comic, {
+          resolved,
+          page,
+          trimBox: pageMetrics.physical.trimBox,
+          bleedBox: pageMetrics.physical.bleedBox,
+          resources: resourceById,
+          sourceOffset: bodyOffset,
+          mirrorMargins: pageMirrored(resolved, page.index, pageIndexOffset, true),
+        });
+        pendingComicBreak = true;
+        flushPendingNumberingAtBoundary();
+      }
+      continue;
+    }
+    if (pendingComicBreak) {
+      pendingComicBreak = false;
+      pendingSpacing = 0;
+      leaveCurrentPage();
+      flushPendingNumberingAtBoundary();
     }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
@@ -6152,6 +6193,8 @@ export function* buildDocumentGen(
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? [])];
+  // Comic panels whose cell cannot hold their picture's safe area (#556).
+  for (const page of doc.pages) if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
   const annotations = annotateDocument(doc, doc.config?.cjk);
