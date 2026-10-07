@@ -165,8 +165,9 @@ export function parseComicFence(markdown: string, fenceStart: number): { source:
 
   const splitRange = attrSources.split;
   const split = attrs.split;
-  // Without a `split` the panels stack in equal tiers.
-  const splitParse = parseComicSplit(split ?? Array.from({ length: Math.max(1, panels.length) }, () => '*').join(' / '));
+  // Without a `split` the panels of a page stack in equal tiers; those of
+  // a strip sit side by side (a daily strip).
+  const splitParse = parseComicSplit(split ?? Array.from({ length: Math.max(1, panels.length) }, () => '*').join(kind === 'strip' ? ' | ' : ' / '));
   if (split === undefined) {
     // No offsets into a value that is not written.
     splitParse.issues = [];

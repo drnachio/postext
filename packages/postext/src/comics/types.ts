@@ -112,9 +112,10 @@ export interface ComicPanelSource {
   items: ComicScriptItem[];
 }
 
-/** A comic page (or, later, a strip) as written. */
+/** A comic page or strip as written. */
 export interface ComicPageSource {
-  /** The fence that opened it. `'strip'` is reserved for `:::strip`. */
+  /** The fence that opened it: `:::page` (a page of its own, or two for a
+   *  spread) or `:::strip` (a block in the text flow, #566). */
   kind: 'page' | 'strip';
   /** The fence's attributes as written. */
   attrs: DirectiveAttrs;
@@ -126,7 +127,8 @@ export interface ComicPageSource {
   attrsEnd: number;
   /** The `split` value as written and parsed; its range is
    *  `attrSources.split`. Unset when the fence has no `split`: the panels
-   *  then stack in equal tiers. */
+   *  of a page then stack in equal tiers, those of a strip sit side by
+   *  side. */
   split?: string;
   splitParse: ComicSplitParse;
   panels: ComicPanelSource[];
