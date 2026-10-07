@@ -164,7 +164,7 @@ const PARAGRAPH_STYLE_KEYS = {
 // The comics tables (#562).
 const COMICS_KEYS = {
   readingDirection: true, artDirection: true, mirrorArt: true, frame: true, gutter: true, panel: true,
-  panelStyles: true, lettering: true, balloonStyles: true, cast: true, runningHeads: true,
+  panelStyles: true, lettering: true, balloonStyles: true, cast: true, runningHeads: true, viewerLeaf: true,
 } satisfies Record<keyof ComicsConfig, true>;
 const COMICS_FRAME_KEYS = { margins: true } satisfies Record<keyof NonNullable<ComicsConfig['frame']>, true>;
 const COMICS_GUTTER_KEYS = { horizontal: true, vertical: true } satisfies Record<keyof NonNullable<ComicsConfig['gutter']>, true>;

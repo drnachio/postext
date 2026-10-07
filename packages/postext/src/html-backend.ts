@@ -38,6 +38,8 @@ import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarker
 import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 import { isHlsMimeType, mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
 import type { VDTResourceVideo } from './vdt';
+import type { ComicCastMember } from './types';
+import { renderComicHtml } from './htmlComic';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -184,6 +186,9 @@ interface HtmlPaint extends RenderHtmlOptions {
    *  word in another one named by the author (`VDTLineSegment.lang`)
    *  declares its own. */
   rootLang?: string;
+  /** `comics.cast`: the names a comic page's speakers are announced
+   *  under. */
+  comicCast?: readonly ComicCastMember[];
 }
 
 /** A direction of text, as a `dir` attribute names it. */
@@ -2286,7 +2291,10 @@ function renderPageDetailed(
     `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
   ).join('');
   const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, vflow ? page.height : page.width, vflow ? page.width : page.height) : '';
-  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
+  // A comic page's panels and lettering, on the sheet (never through the
+  // flow frame), under the running heads, as the canvas paints them.
+  const comicHtml = page.comic ? renderComicPageHtml(page, sheetOptions) : '';
+  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + comicHtml + slotParts.join('');
   // A vertical page's flow: one box turned a quarter turn clockwise, its
   // text lines turned back and set vertically (see `renderVerticalLine`).
   const anchorsHtml = (options.anchors ?? [])
@@ -2302,7 +2310,7 @@ function renderPageDetailed(
     ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
     : page.flow?.writingMode === 'horizontal-tb'
       ? `<div class="pt-flow pt-flow-mirrored" style="position:absolute;left:0;top:0;width:${page.width}px;height:${page.height}px;transform:scaleX(-1);transform-origin:${page.flow.mirror.originX / 2}px 0;">${MIRRORED_FLOW_STYLE}${flowHtml}</div>`
-      : flowHtml) + slotParts.join('');
+      : flowHtml) + comicHtml + slotParts.join('');
   // A right-to-left document's pages say so, with its language, for a host
   // that mounts them apart from the document's root (#379); so do a
   // Japanese document's, whose glyph forms (a pan-CJK face's `locl`) and
@@ -2318,6 +2326,21 @@ function renderPageDetailed(
     clipDecl +
     `">${innerHtml}</div>`;
   return { outerHtml, innerHtml, blocks, decorationHtml };
+}
+
+/** The markup of a page's comic (`page.comic`, #565): see
+ *  `renderComicHtml`. Its pictures come from `resourceImageUrl` (a miss
+ *  reported once and drawn as a placeholder), tinted to the ink when
+ *  single ink applies; its lettering is design text. */
+function renderComicPageHtml(page: VDTPage, options: HtmlPaint): string {
+  const comic = page.comic!;
+  return renderComicHtml(comic, page.width, page.height, {
+    artUrl: (art) => imageUrl(options, art.fileId, art.resourceId),
+    artStyle: (art, url) => inkFilterDecl(options, art.kind === 'svg', url),
+    text: (block) => renderDesignTextBlock(block, options),
+    idBase: `pt-p-${(options.pageIndexOffset ?? 0) + page.index}-panel`,
+    ...(options.comicCast ? { cast: options.comicCast } : {}),
+  });
 }
 
 /** What turns the runs and pictures of a mirrored flow back (see
@@ -2430,7 +2453,8 @@ export function renderToHtmlIndexed(
   const reported = new Set<string>();
   const linkTargets = anchoredResourceIds(doc);
   for (const id of options.refTargets ?? []) linkTargets.add(id);
-  const anchorPaint: Pick<HtmlPaint, 'anchors' | 'pageIndexOffset' | 'dir' | 'lang' | 'rootLang'> = {
+  const anchorPaint: Pick<HtmlPaint, 'anchors' | 'pageIndexOffset' | 'dir' | 'lang' | 'rootLang' | 'comicCast'> = {
+    ...(doc.config.comics?.cast.length ? { comicCast: doc.config.comics.cast } : {}),
     ...(doc.anchors ? { anchors: doc.anchors } : {}),
     pageIndexOffset: doc.pageIndexOffset ?? 0,
     ...(docLang ? { rootLang: docLang } : {}),
@@ -2452,7 +2476,7 @@ export function renderToHtmlIndexed(
           },
         }
       : { ...options, linkTargets, ...anchorPaint };
-    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
+    const gridCells = doc.config.cjk?.grid?.show && !p.comic ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
     const detail = renderPageDetailed(p, p.background ?? background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({

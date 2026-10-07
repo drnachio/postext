@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { DesignElement, PostextConfig } from 'postext';
-import { buildHtmlConfigOverride, partTitlesOf } from './configOverride';
+import { buildHtmlConfigOverride, hasComicPages, partTitlesOf } from './configOverride';
 
 // No canvas under node: every glyph measures 10px.
 vi.mock('postext', async (importOriginal) => ({
@@ -441,4 +441,20 @@ describe('buildHtmlConfigOverride', () => {
     expect(partTitlesOf(md)).toEqual(['I Los materiales\nde la célula']);
     expect(partTitlesOf('# Sin partes\n')).toEqual([]);
   });
+
+  it('sets comic pages on the print leaf, scaled to the width given (and a page tall in the paged view)', () => {
+    const doc: PostextConfig = { ...base, page: { width: mm(170), height: mm(240), margins: { top: mm(15), bottom: mm(15), left: mm(10), right: mm(10) } }, comics: { mirrorArt: true } };
+    const paged = buildHtmlConfigOverride(doc, { ...opts, comicWidthPx: 800 });
+    expect(paged.comics!.mirrorArt).toBe(true);
+    expect(paged.comics!.viewerLeaf).toMatchObject({ width: mm(170), height: mm(240), fitWidth: 800, fitHeight: 852 });
+    expect(paged.comics!.viewerLeaf!.margins!.left).toEqual(mm(10));
+    const scroll = buildHtmlConfigOverride(doc, { ...opts, columnMode: 'single', comicWidthPx: 1100 });
+    expect(scroll.comics!.viewerLeaf!.fitWidth).toBe(1100);
+    expect(scroll.comics!.viewerLeaf!.fitHeight).toBeUndefined();
+    // Without comic pages the comics settings are left alone.
+    expect(buildHtmlConfigOverride(doc, opts).comics).toEqual({ mirrorArt: true });
+    expect(hasComicPages('Text\n\n:::page{split="*"}\n::panel\n:::\n')).toBe(true);
+    expect(hasComicPages('A :::page in a sentence.')).toBe(false);
+  });
 });
+

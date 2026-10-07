@@ -2014,6 +2014,11 @@ export interface VDTComicPage {
   /** The side of a two-page spread (`:::page{spread}`, #567) this page
    *  holds, physical: the left page or the right one of the open book. */
   spread?: 'left' | 'right';
+  /** Where the leaf the page was laid out on lies on the page, when it is
+   *  not the page itself (`comics.viewerLeaf`: a host whose page is a
+   *  screen, such as the Sandbox's HTML viewer, lays comic pages out on a
+   *  print leaf scaled to fit it). Absent on paper. */
+  leaf?: BoundingBox;
   /** Panels in reading order. */
   panels: VDTComicPanel[];
   splitters: VDTComicSplitter[];

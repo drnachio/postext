@@ -257,6 +257,7 @@ export function resolveComicsConfig(partial: ComicsConfig | undefined, locale?: 
     balloonStyles: resolveBalloonStyles(partial?.balloonStyles, locale),
     cast: (partial?.cast ?? []).filter((c) => c && typeof c.id === 'string' && c.id.length > 0),
     runningHeads: partial?.runningHeads === true,
+    ...(partial?.viewerLeaf ? { viewerLeaf: partial.viewerLeaf } : {}),
   };
 }
 

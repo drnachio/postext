@@ -12,27 +12,9 @@
 import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock, VDTPoint } from '../vdt';
 import { drawResourceImage } from './renderResourceBlock';
 import { renderTextBlock } from './headerFooter';
+import { comicRoughBorder } from '../comics/paint';
 
-/** A small deterministic hash (FNV-1a) for seeding a rough border. */
-function hashString(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return h >>> 0;
-}
-
-/** A seeded pseudo-random sequence in [-1, 1] (mulberry32). */
-function noise(seed: number): () => number {
-  let a = seed || 1;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return (((t ^ (t >>> 14)) >>> 0) / 4294967296) * 2 - 1;
-  };
-}
+export { roughOutline, comicRoughBorder } from '../comics/paint';
 
 /** Trace a panel's outline as the current path: its polygon, or a rounded
  *  rectangle when it has a radius. */
@@ -58,36 +40,6 @@ export function comicPanelPath(ctx: CanvasRenderingContext2D, panel: Pick<VDTCom
   ctx.moveTo(pts[0]!.x, pts[0]!.y);
   for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i]!.x, pts[i]!.y);
   ctx.closePath();
-}
-
-/** A hand-drawn version of a closed outline: points every few px pushed
- *  off the line by a seeded amount. */
-export function roughOutline(points: readonly VDTPoint[], seed: number, amplitude: number, step: number): VDTPoint[] {
-  const rand = noise(seed);
-  const out: VDTPoint[] = [];
-  for (let i = 0; i < points.length; i++) {
-    const a = points[i]!;
-    const b = points[(i + 1) % points.length]!;
-    const len = Math.hypot(b.x - a.x, b.y - a.y);
-    const n = Math.max(1, Math.round(len / step));
-    const nx = len > 0 ? -(b.y - a.y) / len : 0;
-    const ny = len > 0 ? (b.x - a.x) / len : 0;
-    for (let k = 0; k < n; k++) {
-      const t = k / n;
-      // Corners stay put; the wobble grows away from them.
-      const j = k === 0 ? 0 : rand() * amplitude;
-      out.push({ x: a.x + t * (b.x - a.x) + nx * j, y: a.y + t * (b.y - a.y) + ny * j });
-    }
-  }
-  return out;
-}
-
-/** The hand-drawn outline a `rough` border strokes: the panel's polygon
- *  wobbled by a seed from its id, index and source offset, so every
- *  renderer draws the same line. */
-export function comicRoughBorder(panel: Pick<VDTComicPanel, 'id' | 'index' | 'sourceStart' | 'polygon' | 'border'>): VDTPoint[] {
-  const w = panel.border.width;
-  return roughOutline(panel.polygon, hashString(`${panel.id ?? ''}#${panel.index}#${panel.sourceStart}`), w * 0.6, Math.max(4, w * 6));
 }
 
 function drawArt(ctx: CanvasRenderingContext2D, art: VDTComicArt, inkHex: string | null): boolean {
