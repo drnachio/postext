@@ -99,7 +99,10 @@ export function comicBorderPathData(panel: VDTComicPanel): string {
  *  `caption`, `note`) and whether it has a speaker. */
 export type ComicBalloonKind = 'speech' | 'caption' | 'sfx';
 
-export function comicBalloonKind(balloon: Pick<VDTComicBalloon, 'style' | 'speaker'>): ComicBalloonKind {
+export function comicBalloonKind(balloon: Pick<VDTComicBalloon, 'style' | 'speaker'> & { kind?: VDTComicBalloon['kind'] }): ComicBalloonKind {
+  if (balloon.kind === 'sfx') return 'sfx';
+  if (balloon.kind === 'caption' || balloon.kind === 'note') return 'caption';
+  if (balloon.kind === 'balloon') return balloon.speaker ? 'speech' : 'caption';
   if (balloon.style === 'sfx') return 'sfx';
   if (balloon.style === 'caption' || balloon.style === 'note') return 'caption';
   return balloon.speaker ? 'speech' : 'caption';
