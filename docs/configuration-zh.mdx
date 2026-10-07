@@ -132,7 +132,7 @@ const document = buildDocument(content, {
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>书籍装订的一侧。<code>layout.writingMode</code>为<code>'vertical-rl'</code>或文档从右到左（<a href="#文本方向"><code>direction</code></a>）时，<code>'auto'</code>即<code>'right'</code>，否则为<code>'left'</code>。右侧装订的书从左页开始，页边距的镜像方向也相反。这是全书级设置：标题样式自己的<code>layout</code>不会改变它。见<a href="#binding">装订</a>。</td>
+      <td>书籍装订的一侧。<code>layout.writingMode</code>为<code>'vertical-rl'</code>、文档从右到左（<a href="#文本方向"><code>direction</code></a>）或其<a href="#漫画"><code>comics</code></a>部分从右往左读（日本漫画，西方漫画的日文版或繁体中文版）时，<code>'auto'</code>即<code>'right'</code>，否则为<code>'left'</code>。右侧装订的书从左页开始，页边距的镜像方向也相反。这是全书级设置：标题样式自己的<code>layout</code>不会改变它。见<a href="#装订">装订</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -169,6 +169,8 @@ const document = buildDocument(content, {
 页码和书眉不会自行移动：把页码印在外侧角的模板，需要为右侧装订分别设置奇数页和偶数页的元素（元素可以带`parity`）。
 
 从右到左书写的书（阿拉伯文、波斯文、希伯来文等）也在右侧装订：文档的[`direction`](#文本方向)解析为`'rtl'`时，`'auto'`给出右侧。这样的书还会把整个文字流镜像：第一栏在右边，缩进、列表标记、浮动体和脚注都在右侧；页眉和页脚的槽位保持物理方向。见[阿拉伯文排版](/zh/docs/arabic-layout#页序与右侧装订)。
+
+从右往左读的漫画书也在右侧装订：配置中有`comics`部分且其阅读方向解析为`'rtl'`时，`'auto'`给出右侧。日本漫画（`comics.artDirection: 'rtl'`）以及西方漫画的日文版或繁体中文版都是如此。由这一部分为全书决定，而不是某一章的`:::page`块。见[漫画](/zh/docs/comics#阅读方向)。
 
 ### 页面尺寸预设
 
@@ -6185,7 +6187,7 @@ const config: PostextConfig = {
       <td><code>readingDirection</code></td>
       <td><code>'auto' | 'ltr' | 'rtl'</code></td>
       <td><code>'auto'</code></td>
-      <td>一行中各分格的顺序。<code>'auto'</code>在从右到左的文档中从右往左读，否则按<code>artDirection</code>的方向读。页面的<code>direction</code>属性可以覆盖它。</td>
+      <td>一行中各分格的顺序。<code>'auto'</code>在从右到左的文档、竖排文档以及日文和繁体中文中从右往左读，否则按<code>artDirection</code>的方向读（简体中文和韩文也是如此）。页面的<code>direction</code>属性可以覆盖它。<code>page.binding: 'auto'</code>时，漫画从右往左读的书在右侧装订。</td>
     </tr>
     <tr>
       <td><code>artDirection</code></td>

@@ -132,7 +132,7 @@ const document = buildDocument(content, {
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>本を綴じる側の辺。<code>'auto'</code>は、<code>layout.writingMode</code>が<code>'vertical-rl'</code>のとき、または文書が右から左に流れるとき（<a href="#テキストの方向"><code>direction</code></a>）は<code>'right'</code>、それ以外は<code>'left'</code>になります。右綴じの本は左ページから始まり、余白の左右の入れ替えも逆になります。本全体に対する設定で、見出しスタイル自身の<code>layout</code>で変わることはありません。<a href="#綴じ">綴じ</a>を参照してください。</td>
+      <td>本を綴じる側の辺。<code>'auto'</code>は、<code>layout.writingMode</code>が<code>'vertical-rl'</code>のとき、文書が右から左に流れるとき（<a href="#テキストの方向"><code>direction</code></a>）、または<a href="#漫画"><code>comics</code></a>セクションが右から左に読むとき（マンガ、欧米のコミックの日本語版や繁体字中国語版）は<code>'right'</code>、それ以外は<code>'left'</code>になります。右綴じの本は左ページから始まり、余白の左右の入れ替えも逆になります。本全体に対する設定で、見出しスタイル自身の<code>layout</code>で変わることはありません。<a href="#綴じ">綴じ</a>を参照してください。</td>
     </tr>
   </tbody>
 </table>
@@ -169,6 +169,8 @@ const document = buildDocument(content, {
 ノンブルと柱はひとりでには移動しません。ページ番号を外側の角に置くテンプレートでは、奇数ページ用と偶数ページ用の要素を右綴じに合わせて設定する必要があります（要素は`parity`を取ります）。
 
 右から左に書く本（アラビア語、ペルシア語、ヘブライ語など）も右綴じです。文書の[`direction`](#テキストの方向)が`'rtl'`に解決されると、`'auto'`は右綴じになります。こうした本は流れ全体も反転するため、最初の段は右側になり、字下げ、リストの行頭記号、フロート、注は右に置かれます。ヘッダーとフッターのスロットは物理的な位置のままです。[アラビア語の組版](/ja/docs/arabic-layout#ページの順序と右綴じ)を参照してください。
+
+右から左に読むコミックの本も右綴じです。設定に`comics`セクションがあり、その読む向きが`'rtl'`に解決されると、`'auto'`は右綴じになります。マンガ（`comics.artDirection: 'rtl'`）と、欧米のコミックの日本語版や繁体字中国語版がこれに当たります。決めるのはこのセクションで、本全体に効きます。ある章の`:::page`ブロックで決まるのではありません。[漫画](/ja/docs/comics#読む方向)を参照してください。
 
 ### ページサイズのプリセット
 
@@ -6189,7 +6191,7 @@ const config: PostextConfig = {
       <td><code>readingDirection</code></td>
       <td><code>'auto' | 'ltr' | 'rtl'</code></td>
       <td><code>'auto'</code></td>
-      <td>段の中のコマの順序です。<code>'auto'</code>は、右から左に書く文書では右から左へ、それ以外では<code>artDirection</code>の方向へ読みます。ページの<code>direction</code>属性が優先されます。</td>
+      <td>段の中のコマの順序です。<code>'auto'</code>は、右から左に書く文書、縦組みの文書、日本語と繁体字中国語の文書では右から左へ、それ以外では（簡体字中国語と韓国語を含め）<code>artDirection</code>の方向へ読みます。ページの<code>direction</code>属性が優先されます。<code>page.binding: 'auto'</code>のとき、コミックを右から左に読む本は右綴じになります。</td>
     </tr>
     <tr>
       <td><code>artDirection</code></td>
