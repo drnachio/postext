@@ -1,13 +1,17 @@
 /**
- * Canvas painting of a comic page's panels (#563): per panel, its
- * background, then its picture clipped to its outline (flipped when
- * mirrored), then its border, then its pop-out cut-out over the border.
- * Balloons are painted on top by the lettering painter. Everything is in
- * sheet coordinates: call it outside any flow frame.
+ * Canvas painting of a comic page (#563): per panel, its background, then
+ * its picture clipped to its outline (flipped when mirrored), then its
+ * border, then its pop-out cut-out over the border; then the lettering
+ * (SPEC D5): balloons and captions, each join group's outline stroked at
+ * twice its width and then filled (so joined bodies, necks and the tail
+ * merge into one outline), its text over it; sound effects last. Nothing
+ * of the lettering is clipped: a balloon may break the border. Everything
+ * is in sheet coordinates: call it outside any flow frame.
  */
 
-import type { VDTComicArt, VDTComicPage, VDTComicPanel, VDTPoint } from '../vdt';
+import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock, VDTPoint } from '../vdt';
 import { drawResourceImage } from './renderResourceBlock';
+import { renderTextBlock } from './headerFooter';
 
 /** A small deterministic hash (FNV-1a) for seeding a rough border. */
 function hashString(s: string): number {
@@ -137,4 +141,106 @@ export function renderComicPanel(ctx: CanvasRenderingContext2D, panel: VDTComicP
 /** Paint the panels of a comic page, in reading order. */
 export function renderComicPanels(ctx: CanvasRenderingContext2D, comic: VDTComicPage, inkHex: string | null = null): void {
   for (const panel of comic.panels) renderComicPanel(ctx, panel, inkHex);
+}
+
+/** Trace an SVG path made of M, L, C and Z commands (absolute, as the
+ *  lettering writes them) as the current path. */
+export function traceComicPath(ctx: CanvasRenderingContext2D, d: string): void {
+  ctx.beginPath();
+  const re = /([MLCZ])([^MLCZ]*)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(d)) !== null) {
+    const n = m[2]!.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+    switch (m[1]!.toUpperCase()) {
+      case 'M':
+        for (let i = 0; i + 1 < n.length; i += 2) (i === 0 ? ctx.moveTo(n[i]!, n[i + 1]!) : ctx.lineTo(n[i]!, n[i + 1]!));
+        break;
+      case 'L':
+        for (let i = 0; i + 1 < n.length; i += 2) ctx.lineTo(n[i]!, n[i + 1]!);
+        break;
+      case 'C':
+        for (let i = 0; i + 5 < n.length; i += 6) ctx.bezierCurveTo(n[i]!, n[i + 1]!, n[i + 2]!, n[i + 3]!, n[i + 4]!, n[i + 5]!);
+        break;
+      default:
+        ctx.closePath();
+    }
+  }
+}
+
+/** The outline of a balloon (body, necks and tail as one path), the
+ *  Comicraft way: stroked at twice its width (a double outline first: the
+ *  outer ring, then the fill-coloured gap), then filled over, so the inner
+ *  half of every stroke and the seams between subpaths disappear. */
+function paintBalloonShape(ctx: CanvasRenderingContext2D, shape: NonNullable<VDTComicBalloon['shape']>): void {
+  const w = shape.strokeWidth;
+  const stroke = shape.stroke && w > 0 ? shape.stroke : undefined;
+  traceComicPath(ctx, shape.d);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  if (stroke) {
+    ctx.strokeStyle = stroke;
+    if (shape.double) {
+      const gap = shape.double.gap;
+      ctx.lineWidth = 2 * (2 * w + gap);
+      ctx.stroke();
+      if (shape.fill) {
+        ctx.strokeStyle = shape.fill;
+        ctx.lineWidth = 2 * (w + gap);
+        ctx.stroke();
+        ctx.strokeStyle = stroke;
+      }
+    }
+    if (shape.dash && shape.dash.length > 0) {
+      ctx.setLineDash(shape.dash.map((v) => v * 2));
+      ctx.lineCap = 'butt';
+    }
+    ctx.lineWidth = 2 * w;
+    ctx.stroke();
+    if (shape.dash && shape.dash.length > 0) ctx.setLineDash([]);
+  }
+  if (shape.fill) {
+    ctx.fillStyle = shape.fill;
+    ctx.fill('nonzero');
+  }
+}
+
+/** A text block painted as its halo: the glyphs filled and stroked at
+ *  twice the halo width in the halo colour, with round joins. */
+function haloOf(block: VDTDesignTextBlock, halo: NonNullable<VDTComicBalloon['halo']>): VDTDesignTextBlock {
+  return { ...block, color: halo.color, stroke: { widthPx: 2 * halo.width, color: halo.color } };
+}
+
+/** Paint one balloon: its outline (when it carries its group's), then its
+ *  halo and its text, turned by `rotate` degrees about its box's centre. */
+export function renderComicBalloon(ctx: CanvasRenderingContext2D, balloon: VDTComicBalloon): void {
+  ctx.save();
+  if (balloon.rotate) {
+    const cx = balloon.bbox.x + balloon.bbox.width / 2;
+    const cy = balloon.bbox.y + balloon.bbox.height / 2;
+    ctx.translate(cx, cy);
+    ctx.rotate((balloon.rotate * Math.PI) / 180);
+    ctx.translate(-cx, -cy);
+  }
+  if (balloon.shape) paintBalloonShape(ctx, balloon.shape);
+  if (balloon.halo && balloon.halo.width > 0) {
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    for (const block of balloon.text) renderTextBlock(ctx, haloOf(block, balloon.halo));
+  }
+  for (const block of balloon.text) renderTextBlock(ctx, block);
+  ctx.restore();
+}
+
+/** Paint the lettering of a comic page: balloons, captions and notes in
+ *  reading order (each join group's outline, then its text), then the
+ *  sound effects over everything. */
+export function renderComicBalloons(ctx: CanvasRenderingContext2D, comic: VDTComicPage): void {
+  for (const b of comic.balloons) if (b.kind !== 'sfx') renderComicBalloon(ctx, b);
+  for (const b of comic.balloons) if (b.kind === 'sfx') renderComicBalloon(ctx, b);
+}
+
+/** Paint a whole comic page: its panels, then its lettering. */
+export function renderComicPage(ctx: CanvasRenderingContext2D, comic: VDTComicPage, inkHex: string | null = null): void {
+  renderComicPanels(ctx, comic, inkHex);
+  renderComicBalloons(ctx, comic);
 }

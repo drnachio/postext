@@ -9,16 +9,19 @@
  * `comics.readingDirection` (or the page's `direction`).
  */
 
-import type { ColorPaletteEntry, Dimension, Resource, ResolvedComicsConfig, ResolvedPanelStyleConfig } from '../types';
-import type { BoundingBox, ContentWarning, ResolvedConfig, VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTPage } from '../vdt';
+import type { ColorPaletteEntry, ComicCastMember, Dimension, Resource, ResolvedBalloonStyleConfig, ResolvedComicsConfig, ResolvedPanelStyleConfig } from '../types';
+import type { BoundingBox, ContentWarning, ResolvedConfig, VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTPage, VDTPoint } from '../vdt';
 import { flowRectToPage } from '../vdt';
 import { resolvedDirection } from '../pipeline/config';
 import { dimensionToPx } from '../units';
-import { pickPanelStyle, resolvedComics } from '../defaults/comics';
-import { comicArtCrop } from './art';
-import { clipPolygon, comicGeometry, physicalSide, polygonBBox, type ComicCell, type ComicFrameSide } from './geometry';
+import { chineseScriptOf, directionOf, isCjkLanguage, isJapaneseLanguage, presentTag } from '../locale';
+import { DEFAULT_LETTERING_STATIC, pickBalloonStyle, pickPanelStyle, resolvedComics } from '../defaults/comics';
+import { comicArtCrop, comicArtPointToPage, comicArtRectToPage } from './art';
+import { clipPolygon, comicGeometry, physicalSide, pointInPolygon, polygonBBox, type ComicCell, type ComicFrameSide } from './geometry';
 import { parseComicPoint } from './script';
-import type { ComicPageSource, ComicPanelSource } from './types';
+import { letterPanelDetailed } from './lettering/letter';
+import type { LetteringAnchor, LetteringItem, LetteringPanel, LetteringStyle } from './lettering/types';
+import type { ComicPageSource, ComicPanelSource, ComicScriptItem } from './types';
 
 /** What the build hands the comic page layout. */
 export interface ComicPageContext {
@@ -174,7 +177,8 @@ function comicGutters(source: ComicPageSource, comics: ResolvedComicsConfig, dpi
  *  pass's pages reach the document). */
 const layoutWarnings = new WeakMap<VDTComicPage, ContentWarning[]>();
 
-/** The warnings the layout of a comic page found (`comicPanelLetterbox`). */
+/** The warnings the layout of a comic page found (`comicPanelLetterbox`,
+ *  `comicBalloonOverflow`). */
 export function comicPageLayoutWarnings(comic: VDTComicPage): readonly ContentWarning[] {
   return layoutWarnings.get(comic) ?? [];
 }
@@ -186,12 +190,129 @@ export function setComicLayoutWarnings(comic: VDTComicPage, warnings: readonly C
   else layoutWarnings.delete(comic);
 }
 
+/** The document language the lettering is set in (as
+ *  {@link resolvedComics} reads it). */
+export function comicLetteringLocale(resolved: ResolvedConfig): string {
+  const h = resolved.bodyText.hyphenation;
+  return presentTag(resolved.locale) ?? presentTag(h.tag) ?? presentTag(h.locale) ?? 'en';
+}
+
+/** Whether balloons are set vertically: `lettering.writingMode`, `auto`
+ *  meaning vertical for Japanese and Traditional Chinese (the comics of
+ *  both are lettered in columns) and in a vertical document. */
+export function comicLetteringVertical(comics: ResolvedComicsConfig, resolved: ResolvedConfig, locale: string): boolean {
+  const mode = comics.lettering.writingMode;
+  if (mode === 'vertical') return true;
+  if (mode === 'horizontal') return false;
+  return isJapaneseLanguage(locale) || chineseScriptOf(locale) === 'Hant' || resolved.layout.writingMode === 'vertical-rl';
+}
+
+/** The role's own balloon style. */
+function roleStyleId(role: ComicScriptItem['role']): string {
+  return role === 'speech' ? 'speech' : role;
+}
+
 /**
- * The lettering of a page's panels: balloons, captions and sound effects,
- * in reading order. Set by the lettering modules (#559–#561); until they are
- * wired in, a comic page carries no balloons.
+ * A balloon style of the config resolved to the lettering's px style
+ * (SPEC D4 → D3): the style over the book's lettering, the speaker's cast
+ * entry and the line's own `color` / `font` over both. One lettering size
+ * per book: `fontScale` is the only factor (a sound effect's `size=` scales
+ * the item, not the style).
  */
-export function letterPanels(_input: {
+export function comicLetteringStyle(input: {
+  style: ResolvedBalloonStyleConfig;
+  comics: ResolvedComicsConfig;
+  cast?: ComicCastMember;
+  item?: Pick<ComicScriptItem, 'color' | 'font'>;
+  locale: string;
+  vertical: boolean;
+  dpi: number;
+  palette?: readonly ColorPaletteEntry[];
+}): LetteringStyle {
+  const { style: st, comics, cast, item, locale, vertical, dpi } = input;
+  const L = comics.lettering;
+  const em = dimensionToPx(L.fontSize, dpi);
+  const size = em * (st.fontScale > 0 ? st.fontScale : 1);
+  const cjk = isCjkLanguage(locale);
+  const rtl = directionOf(locale) === 'rtl';
+  // Leading: the book's, or what a column of CJK or a line of Arabic needs
+  // when the book leaves the default.
+  const lineHeight = L.lineHeight !== DEFAULT_LETTERING_STATIC.lineHeight ? L.lineHeight
+    : vertical || cjk ? 1.5 : rtl ? 1.45 : L.lineHeight;
+  const letterSpacing = dimensionToPx(st.letterSpacing ?? L.letterSpacing, dpi, size);
+  const dropFinalStop = L.dropFinalStop === 'auto' ? undefined : L.dropFinalStop;
+  const out: LetteringStyle = {
+    id: st.id,
+    shape: st.shape,
+    fill: cast?.fill?.hex ?? st.fill.hex,
+    stroke: st.stroke.hex,
+    strokeWidth: dimensionToPx(st.strokeWidth, dpi, size),
+    ...(st.dash ? { dash: true } : {}),
+    ...(st.double ? { double: true } : {}),
+    ...(st.wobble ? { wobble: st.wobble } : {}),
+    roundness: st.roundness,
+    ...(st.burstPoints ? { burstPoints: st.burstPoints } : {}),
+    ...(st.burstDepth ? { burstDepthRatio: st.burstDepth } : {}),
+    padding: dimensionToPx(st.padding, dpi, size),
+    aspect: st.aspect,
+    tail: st.tail,
+    tailWidth: dimensionToPx(st.tailWidth, dpi, size),
+    tailReach: st.tailReach,
+    target: st.target,
+    position: st.position,
+    ...(st.butt ? { butt: true } : {}),
+    fontFamily: item?.font?.trim() || cast?.fontFamily || st.fontFamily || L.fontFamily,
+    fontSizePx: size,
+    lineHeight,
+    fontWeight: (st.bold ?? L.bold) ? 700 : 400,
+    // Italics only in scripts that have them (the lettering of Arabic,
+    // Hebrew and CJK is never slanted).
+    ...((st.italic ?? L.italic) && !cjk && !rtl ? { italic: true } : {}),
+    color: attrColor(item?.color, input.palette) ?? cast?.color?.hex ?? (st.color ?? L.color).hex,
+    textTransform: st.textTransform ?? L.textTransform,
+    ...(letterSpacing ? { letterSpacing } : {}),
+    align: st.align,
+    emphasis: 'bold-italic',
+    writingMode: 'auto',
+    maxColumnChars: L.maxColumnChars,
+    ...(dropFinalStop !== undefined ? { dropFinalStop } : {}),
+    ...(L.doubleDash ? { doubleDash: true } : {}),
+    ...(st.halo ? { halo: dimensionToPx(st.halo, dpi, size), haloColor: st.haloColor?.hex ?? '#ffffff' } : {}),
+    ...(st.rotate ? { rotate: st.rotate } : {}),
+  };
+  return out;
+}
+
+/** A point given in fractions of a panel's picture (of its cell, for a
+ *  panel without one) on the page. */
+function panelPoint(panel: VDTComicPanel, at: { x: number; y: number }): VDTPoint {
+  if (panel.art) return comicArtPointToPage(panel.art, at.x, at.y);
+  return { x: panel.bbox.x + at.x * panel.bbox.width, y: panel.bbox.y + at.y * panel.bbox.height };
+}
+
+/** The anchors of a panel's picture on the page, each with whether its
+ *  mouth is in view. */
+function panelAnchors(panel: VDTComicPanel, resource: Resource | undefined): LetteringAnchor[] {
+  const art = panel.art;
+  if (!art || !resource?.anchors) return [];
+  return resource.anchors.map((a) => {
+    const mouth = comicArtPointToPage(art, a.x, a.y);
+    return {
+      id: a.id,
+      mouth,
+      ...(a.head ? { head: comicArtPointToPage(art, a.head.x, a.head.y) } : {}),
+      ...(a.face ? { face: comicArtRectToPage(art, a.face) } : {}),
+      visible: pointInPolygon(panel.polygon, mouth),
+    };
+  });
+}
+
+function overlaps(a: BoundingBox, b: BoundingBox): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+}
+
+/** What {@link letterPanels} needs. */
+export interface LetterPanelsInput {
   source: ComicPageSource;
   panels: readonly VDTComicPanel[];
   /** The script of each laid-out panel (undefined for an empty cell). */
@@ -201,8 +322,92 @@ export function letterPanels(_input: {
   resources: ReadonlyMap<string, Resource>;
   direction: 'ltr' | 'rtl';
   sourceOffset: number;
-}): VDTComicBalloon[] {
-  return [];
+  /** The page's gutters (px): room a balloon that breaks the border may
+   *  take outside its panel. */
+  gutter?: { rows: number; columns: number };
+  pageIndex?: number;
+  /** Regions of the frame no balloon should cover (the spine of a spread). */
+  avoid?: readonly BoundingBox[];
+}
+
+/**
+ * The lettering of a page's panels (#559–#561): balloons, captions and
+ * sound effects, in reading order (panel order, then script order), and the
+ * `comicBalloonOverflow` warnings of the balloons that could not be placed
+ * cleanly.
+ */
+export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBalloon[]; warnings: ContentWarning[] } {
+  const { panels, panelSources, comics, resolved, resources, direction, sourceOffset: off } = input;
+  const dpi = resolved.page.dpi;
+  const locale = comicLetteringLocale(resolved);
+  const vertical = comicLetteringVertical(comics, resolved, locale);
+  const L = comics.lettering;
+  const insetPx = dimensionToPx(L.inset, dpi);
+  const bleedPx = Math.max(insetPx, input.gutter ? Math.max(input.gutter.rows, input.gutter.columns) : 0);
+  const castById = new Map(comics.cast.map((c) => [c.id, c] as const));
+  const balloons: VDTComicBalloon[] = [];
+  const warnings: ContentWarning[] = [];
+  panels.forEach((panel, pi) => {
+    const src = panelSources[pi];
+    if (!src || src.items.length === 0) return;
+    const resource = panel.art ? resources.get(panel.art.resourceId) : undefined;
+    const lp: LetteringPanel = {
+      index: panel.index,
+      polygon: panel.polygon,
+      bbox: panel.bbox,
+      insetPx,
+      direction,
+      writingMode: vertical ? 'vertical' : 'horizontal',
+      locale,
+      anchors: panelAnchors(panel, resource),
+      avoid: [
+        ...(panel.art ? (resource?.avoid ?? []).map((r) => comicArtRectToPage(panel.art!, r)) : []),
+        ...(input.avoid ?? []).filter((r) => overlaps(r, panel.bbox)),
+      ],
+      dpi,
+      bleedPx,
+    };
+    const items: LetteringItem[] = src.items.map((it, k) => {
+      const cast = it.speaker ? castById.get(it.speaker) : undefined;
+      const own = pickBalloonStyle(comics, it.style?.trim());
+      const st = own ?? pickBalloonStyle(comics, it.role === 'speech' ? cast?.balloonStyle : undefined)
+        ?? pickBalloonStyle(comics, roleStyleId(it.role)) ?? pickBalloonStyle(comics, 'speech')!;
+      const tail = it.tail;
+      return {
+        id: `${panel.index}:${k}`,
+        order: k,
+        kind: it.role === 'speech' ? 'balloon' : it.role,
+        ...(it.speaker ? { speaker: it.speaker } : {}),
+        text: it.spans.length > 0 ? it.spans : it.text,
+        sourceMap: it.sourceMap.map((o) => o + off),
+        sourceStart: it.sourceStart + off,
+        sourceEnd: it.sourceEnd + off,
+        style: comicLetteringStyle({ style: st, comics, ...(cast ? { cast } : {}), item: it, locale, vertical, dpi, ...(resolved.colorPalette ? { palette: resolved.colorPalette } : {}) }),
+        ...(it.at ? { pin: panelPoint(panel, it.at) } : {}),
+        ...(it.atKeyword ? { position: it.atKeyword } : {}),
+        ...(it.to ? { tailTarget: panelPoint(panel, it.to) } : tail && tail !== 'none' && tail !== 'auto' ? { tailTarget: tail } : {}),
+        ...(tail === 'none' ? { tail: 'none' as const } : {}),
+        ...(it.join !== undefined ? { join: it.join } : {}),
+        ...(it.break ? { breakBorder: true } : {}),
+        ...(it.rotate !== undefined ? { rotate: it.rotate } : {}),
+        ...(it.size !== undefined && it.size > 0 ? { sizeScale: it.size } : {}),
+      };
+    });
+    const r = letterPanelDetailed(lp, items, { joinSameSpeaker: L.joinSameSpeaker, groupBase: pi * 1000 });
+    balloons.push(...r.balloons);
+    for (const d of r.diagnostics) {
+      warnings.push({
+        kind: 'comicBalloonOverflow',
+        panel: d.panelIndex,
+        reasons: d.reasons,
+        fallbacks: d.fallbacks,
+        sourceStart: d.sourceStart,
+        sourceEnd: d.sourceEnd,
+        ...(input.pageIndex !== undefined ? { pageIndex: input.pageIndex } : {}),
+      });
+    }
+  });
+  return { balloons, warnings };
 }
 
 /** What {@link layoutComicFrame} needs: the box the panels are cut from
@@ -219,6 +424,9 @@ export interface ComicFrameContext {
   sourceOffset?: number;
   /** The page the warnings are reported on. */
   pageIndex: number;
+  /** Regions no balloon should cover, besides those of the pictures (the
+   *  spine of a spread), in the frame's coordinates. */
+  avoid?: readonly BoundingBox[];
 }
 
 /** Lay out a comic page. */
@@ -243,13 +451,14 @@ export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext
   const direction = comicPageDirection(source, comics, resolved);
   const pageStyle = pickPanelStyle(comics, source.attrs.style?.trim());
   const flowPanels = source.panels.filter((p) => !p.attrs.inset);
+  const gutters = comicGutters(source, comics, dpi);
   const styleOf = (p: ComicPanelSource | undefined) => (p?.attrs.style ? pickPanelStyle(comics, p.attrs.style.trim()) : pageStyle);
   const geometry = comicGeometry({
     tree: source.splitParse.tree,
     frame,
     bleedBox: ctx.bleedBox,
     direction,
-    gutter: comicGutters(source, comics, dpi),
+    gutter: gutters,
     bleed: (i) => bleedSides(source, flowPanels[i], styleOf(flowPanels[i]), direction),
   });
   const warnings: ContentWarning[] = [];
@@ -344,7 +553,9 @@ export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext
     splitters,
     balloons: [],
   };
-  comic.balloons = letterPanels({ source, panels, panelSources, comics, resolved, resources, direction, sourceOffset: off });
+  const lettered = letterPanels({ source, panels, panelSources, comics, resolved, resources, direction, sourceOffset: off, gutter: gutters, pageIndex: ctx.pageIndex, ...(ctx.avoid ? { avoid: ctx.avoid } : {}) });
+  comic.balloons = lettered.balloons;
+  warnings.push(...lettered.warnings);
   if (warnings.length > 0) layoutWarnings.set(comic, warnings);
   return comic;
 }

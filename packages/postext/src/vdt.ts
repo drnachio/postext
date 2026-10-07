@@ -1963,6 +1963,11 @@ export interface VDTComicBalloon {
   id: string;
   panelIndex: number;
   order: number;
+  /** What the script line is: a speaker's balloon, a caption, a sound
+   *  effect or an editor's note (from its key: `caption`, `sfx`, `note`,
+   *  else a speaker). Renderers and tagging go by it, not by the style id
+   *  (a book may name a sound-effect style anything). */
+  kind: 'balloon' | 'caption' | 'sfx' | 'note';
   /** The balloon style id (`speech`, `thought`…). */
   style: string;
   speaker?: string;
@@ -2394,6 +2399,18 @@ export type ContentWarning = ContentWarningBase & (
    *  crop may cut it off, and the tail then points off the panel. An
    *  authoring hint. Points at the panel's `art`. */
   | { kind: 'comicAnchorOutsideSafeArea'; resourceId: string; anchorId: string }
+  /** A balloon of a comic panel could not be placed cleanly (#561): it
+   *  still covers a speaker's face, another balloon, an avoid zone or a
+   *  mouth, or runs outside its panel, after every fallback (`fallbacks`:
+   *  crossing the border, covering avoid zones, reshaping the text). The
+   *  lettering never shrinks; a shorter line, a bigger panel or an `at=`
+   *  pin fixes it. Found by the layout; points at the script line. */
+  | { kind: 'comicBalloonOverflow'; panel: number; reasons: ('face' | 'balloon' | 'outside' | 'avoid' | 'anchor')[]; fallbacks: ('breakBorder' | 'coverAvoid' | 'reshape')[] }
+  /** A speaker id that no picture of its comic page marks with an anchor
+   *  and no `comics.cast` entry names (a slip in the id, most often): its
+   *  tails point off the panel. Only raised on pages whose pictures mark
+   *  anchors. Informational. Points at the first line of that speaker. */
+  | { kind: 'comicUnknownSpeaker'; speaker: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

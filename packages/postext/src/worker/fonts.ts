@@ -18,7 +18,8 @@ function familyOf(fontString: string): string | null {
 }
 
 /** The font families the text of a laid-out document is set in (blocks,
- *  their segments, and the header, footer and opener designs). */
+ *  their segments, the header, footer and opener designs, and the
+ *  lettering of comic pages). */
 export function documentFontFamilies(doc: VDTDocument): string[] {
   const families = new Set<string>();
   const add = (fontString: string | undefined) => {
@@ -33,6 +34,13 @@ export function documentFontFamilies(doc: VDTDocument): string[] {
   for (const page of doc.pages) {
     for (const slot of [page.header, page.footer, page.openerBand]) {
       for (const el of slot?.blocks ?? []) if (el.kind === 'text') add(el.fontString);
+    }
+    // The lettering of a comic page: balloons, captions, sound effects.
+    for (const balloon of page.comic?.balloons ?? []) {
+      for (const el of balloon.text) {
+        add(el.fontString);
+        for (const line of el.lines) for (const run of line.runs ?? []) add(run.fontString);
+      }
     }
   }
   return [...families];

@@ -92,6 +92,7 @@ export function layoutComicSpread(source: ComicPageSource, ctx: ComicSpreadConte
   // Where the right sheet's origin sits in spread coordinates: its trim
   // box's left edge on the left one's right edge (the spine).
   const spine = left.trimBox.x + left.trimBox.width;
+  const spineBand = (8 / 25.4) * resolved.page.dpi;
   const shift = spine - right.trimBox.x;
   const top = Math.min(leftFrame.y, rightFrame.y);
   const bottom = Math.max(leftFrame.y + leftFrame.height, rightFrame.y + rightFrame.height);
@@ -114,6 +115,9 @@ export function layoutComicSpread(source: ComicPageSource, ctx: ComicSpreadConte
     resources: ctx.resources,
     ...(ctx.sourceOffset !== undefined ? { sourceOffset: ctx.sourceOffset } : {}),
     pageIndex: left.page.index,
+    // Balloons keep out of the gutter of the binding: a band of 8 mm about
+    // the spine (a balloon there would be cut in two, or lost in the fold).
+    avoid: [{ x: spine - spineBand / 2, y: frame.y - 1, width: spineBand, height: frame.height + 2 }],
   });
   const warnings = comicPageLayoutWarnings(whole);
   const sideOfPanel = (index: number): 'left' | 'right' => {
@@ -155,7 +159,7 @@ export function layoutComicSpread(source: ComicPageSource, ctx: ComicSpreadConte
     // A panel's warning goes to the page holding its centre (once, even
     // for a panel across the spine).
     setComicLayoutWarnings(comic, warnings
-      .filter((w) => (w.kind === 'comicPanelLetterbox' ? sideOfPanel(w.panel) : 'left') === side)
+      .filter((w) => (w.kind === 'comicPanelLetterbox' || w.kind === 'comicBalloonOverflow' ? sideOfPanel(w.panel) : 'left') === side)
       .map((w) => ({ ...w, pageIndex: page.index })));
     return comic;
   };

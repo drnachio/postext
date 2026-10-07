@@ -61,5 +61,34 @@ export function comicSourceWarnings(
       }
     }
   }
+  out.push(...unknownSpeakers(source, comics, resources));
+  return out;
+}
+
+/** Speakers no picture of the page marks and no cast entry names
+ *  (`comicUnknownSpeaker`), once per speaker at its first line. Off-panel
+ *  speech is legitimate, so a speaker only counts as unknown when it has
+ *  an anchor in no picture of the whole page; and pages whose pictures
+ *  mark no anchors at all (an author who does not use them) raise none. */
+function unknownSpeakers(source: ComicPageSource, comics: ResolvedComicsConfig, resources: ReadonlyMap<string, Resource>): ContentWarning[] {
+  const marked = new Set<string>();
+  for (const panel of source.panels) {
+    for (const key of ['art', 'pop'] as const) {
+      const id = panel.attrs[key]?.trim();
+      for (const a of (id ? resources.get(id)?.anchors : undefined) ?? []) marked.add(a.id);
+    }
+  }
+  if (marked.size === 0) return [];
+  const cast = new Set(comics.cast.map((c) => c.id));
+  const seen = new Set<string>();
+  const out: ContentWarning[] = [];
+  for (const panel of source.panels) {
+    for (const item of panel.items) {
+      const who = item.role === 'speech' ? item.speaker : undefined;
+      if (!who || marked.has(who) || cast.has(who) || seen.has(who)) continue;
+      seen.add(who);
+      out.push({ kind: 'comicUnknownSpeaker', speaker: who, sourceStart: item.keyStart, sourceEnd: item.keyEnd });
+    }
+  }
   return out;
 }

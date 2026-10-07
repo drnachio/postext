@@ -207,10 +207,11 @@ function withRotation(ctx: PageCtx, balloon: VDTComicBalloon, paint: () => void)
 
 // ------------------------------------------------------------ structure
 
-/** A sound effect: its style is `sfx` (the reserved script key's default
- *  style). The VDT balloon carries no kind of its own. */
-export function isComicSoundEffect(balloon: Pick<VDTComicBalloon, 'style'>): boolean {
-  return balloon.style === 'sfx';
+/** A sound effect: a balloon of kind `sfx` (the script line's `sfx`
+ *  key, whatever style it names). A VDT from before balloons had a kind
+ *  falls back on the `sfx` style id. */
+export function isComicSoundEffect(balloon: Pick<VDTComicBalloon, 'style'> & { kind?: VDTComicBalloon['kind'] }): boolean {
+  return balloon.kind !== undefined ? balloon.kind === 'sfx' : balloon.style === 'sfx';
 }
 
 /** Plain text of a balloon's lettering: its lines joined with a space,

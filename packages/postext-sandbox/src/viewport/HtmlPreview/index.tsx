@@ -320,9 +320,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     // Wait for required fonts, so measurement isn't poisoned by fallbacks.
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = missingConfigFontSpecs(currentConfig);
+      const missing = missingConfigFontSpecs(currentConfig, currentSource.markdown);
       if (missing.length > 0) {
-        await ensureConfigFontsLoaded(currentConfig);
+        await ensureConfigFontsLoaded(currentConfig, currentSource.markdown);
         if (seq !== renderSeqRef.current) return;
       }
     }

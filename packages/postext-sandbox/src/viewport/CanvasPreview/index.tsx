@@ -385,11 +385,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // uses `fillText` against the document's FontFaceSet, so we must hold off
     // the first build until faces are loaded. The worker loads its own copy
     // of the same fonts separately (see `useLayoutWorker`).
+    // The text decides some faces too (a comic page letters in its own).
+    const fontText = deferredBookSource ? deferredBookSource.chapters.map((c) => c.markdown) : deferredSource.book.markdown;
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = missingConfigFontSpecs(deferredConfig);
+      const missing = missingConfigFontSpecs(deferredConfig, fontText);
       if (missing.length > 0) {
         onGeneratingChangeRef.current?.(true);
-        ensureConfigFontsLoaded(deferredConfig).then(() => {
+        ensureConfigFontsLoaded(deferredConfig, fontText).then(() => {
           if (!cancelled) setRebuildKey((k) => k + 1);
         });
         return () => {
@@ -401,8 +403,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // Vertical text: the canvas paints brackets and punctuation with the
     // fonts' vertical forms, through twin faces loaded once per family; the
     // pages are painted again when they land (with the fallbacks meanwhile).
-    if (!verticalTwinsSettled(deferredConfig)) {
-      loadVerticalTwins(deferredConfig).then((added) => {
+    if (!verticalTwinsSettled(deferredConfig, fontText)) {
+      loadVerticalTwins(deferredConfig, fontText).then((added) => {
         if (added && !cancelled) setRebuildKey((k) => k + 1);
       });
     }

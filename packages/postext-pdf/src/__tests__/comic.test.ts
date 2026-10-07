@@ -167,7 +167,7 @@ function letter(page: VDTPage): VDTComicBalloon[] {
   const c1 = { x: p1!.bbox.x + p1!.bbox.width / 2, y: p1!.bbox.y + 40 };
   const c2 = { x: p2!.bbox.x + p2!.bbox.width * 0.7, y: p2!.bbox.y + p2!.bbox.height * 0.55 };
   const speech: VDTComicBalloon = {
-    id: 'b1', panelIndex: 0, order: 0, style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 0, group: 0,
+    id: 'b1', panelIndex: 0, order: 0, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 0, group: 0,
     // The body of the joined balloon below it is a subpath of the same
     // outline: one stroke, one fill, so the two merge.
     shape: { d: ellipseWithTail(c0.x, c0.y, 62, 22, { x: c0.x - 75, y: c0.y + 30 }) + ellipse(c0.x - 5, c0.y + 36, 48, 15), fill: '#ffffff', stroke: '#111111', strokeWidth: 1.2 },
@@ -177,18 +177,18 @@ function letter(page: VDTPage): VDTComicBalloon[] {
   };
   // Joined to the first: its outline is carried by the group's first balloon.
   const joined: VDTComicBalloon = {
-    id: 'b2', panelIndex: 0, order: 1, style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 0, group: 0,
+    id: 'b2', panelIndex: 0, order: 1, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 0, group: 0,
     text: [textBlock('SOMETHING!', c0.x - 35, c0.y + 40)],
     bbox: { x: c0.x - 40, y: c0.y + 28, width: 80, height: 20 },
   };
   const whisper: VDTComicBalloon = {
-    id: 'b3', panelIndex: 1, order: 2, style: 'whisper', speaker: 'ben', sourceStart: 0, sourceEnd: 0, group: 1,
+    id: 'b3', panelIndex: 1, order: 2, kind: 'balloon', style: 'whisper', speaker: 'ben', sourceStart: 0, sourceEnd: 0, group: 1,
     shape: { d: ellipseWithTail(c1.x, c1.y, 50, 20, { x: c1.x + 10, y: c1.y + 60 }), fill: '#ffffff', stroke: '#111111', strokeWidth: 1, dash: [3, 2], double: { gap: 2 } },
     text: [textBlock('SHH…', c1.x - 15, c1.y + 5)],
     bbox: { x: c1.x - 50, y: c1.y - 20, width: 100, height: 40 },
   };
   const sfx: VDTComicBalloon = {
-    id: 'b4', panelIndex: 2, order: 3, style: 'sfx', sourceStart: 0, sourceEnd: 0, group: 2,
+    id: 'b4', panelIndex: 2, order: 3, kind: 'sfx', style: 'sfx', sourceStart: 0, sourceEnd: 0, group: 2,
     text: [textBlock('KRAK', c2.x - 28, c2.y + 10, '#d02020', 28)],
     bbox: { x: c2.x - 30, y: c2.y - 20, width: 60, height: 40 },
     rotate: -10,

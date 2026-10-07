@@ -758,6 +758,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'comicPanelLetterbox':
       text = `Panel ${w.panel + 1} cannot hold the safe area of "${w.resourceId}" under a crop — the picture is shown whole within bands of the panel background`;
       break;
+    case 'comicBalloonOverflow':
+      text = `A balloon of panel ${w.panel + 1} does not fit cleanly (${w.reasons.join(', ') || 'crowded'}) — shorten the line, enlarge the panel or pin it with at=`;
+      break;
+    case 'comicUnknownSpeaker':
+      text = `No picture of this comic page marks the speaker "${w.speaker}" and no cast entry names it — its tails point off the panel`;
+      break;
     case 'comicAnchorOutsideSafeArea':
       text = `The anchor "${w.anchorId}" of "${w.resourceId}" lies outside the picture's safe area — a crop may cut it off`;
       break;

@@ -98,7 +98,9 @@ function drawBoxBackground(
   ctx.restore();
 }
 
-function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBlock): void {
+/** Paint one design text block (horizontal, right to left or vertical) as
+ *  the design slots do; also used for the lettering of comic balloons. */
+export function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBlock): void {
   if (block.box) {
     drawBoxBackground(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
   }
