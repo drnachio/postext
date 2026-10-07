@@ -221,15 +221,15 @@ function sampleText(t: string, x: number, y: number): VDTDesignTextBlock {
 function sampleBalloons(comic: VDTComicPage): VDTComicBalloon[] {
   const [a, b] = [comic.panels[0]!.bbox, comic.panels[1]!.bbox];
   return [
-    { id: 'b1', panelIndex: 0, order: 0, style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 1, group: 0,
+    { id: 'b1', panelIndex: 0, order: 0, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 1, group: 0,
       shape: { d: `M${a.x + 8} ${a.y + 8}h60v20h-60Z M${a.x + 70} ${a.y + 8}h60v20h-60Z`, fill: '#ffffff', stroke: '#111111', strokeWidth: 1 },
       text: [sampleText('Did you hear', a.x + 8, a.y + 10)], bbox: { x: a.x + 8, y: a.y + 8, width: 60, height: 20 } },
-    { id: 'b2', panelIndex: 0, order: 1, style: 'speech', speaker: 'ana', sourceStart: 2, sourceEnd: 3, group: 0,
+    { id: 'b2', panelIndex: 0, order: 1, kind: 'balloon', style: 'speech', speaker: 'ana', sourceStart: 2, sourceEnd: 3, group: 0,
       text: [sampleText('that?', a.x + 70, a.y + 10)], bbox: { x: a.x + 70, y: a.y + 8, width: 60, height: 20 } },
-    { id: 'c1', panelIndex: 1, order: 0, style: 'caption', sourceStart: 4, sourceEnd: 5, group: 1,
+    { id: 'c1', panelIndex: 1, order: 0, kind: 'caption', style: 'caption', sourceStart: 4, sourceEnd: 5, group: 1,
       shape: { d: `M${b.x} ${b.y}h70v16h-70Z`, fill: '#fff3c4', stroke: '#111111', strokeWidth: 1 },
       text: [sampleText('Lyon, 1943.', b.x + 2, b.y + 2)], bbox: { x: b.x, y: b.y, width: 70, height: 16 } },
-    { id: 's1', panelIndex: 1, order: 1, style: 'sfx', sourceStart: 6, sourceEnd: 7, group: 2, rotate: -8, halo: { width: 1.5, color: '#ffffff' },
+    { id: 's1', panelIndex: 1, order: 1, kind: 'sfx', style: 'sfx', sourceStart: 6, sourceEnd: 7, group: 2, rotate: -8, halo: { width: 1.5, color: '#ffffff' },
       text: [sampleText('KRAK', b.x + 20, b.y + 40)], bbox: { x: b.x + 20, y: b.y + 40, width: 40, height: 16 } },
   ];
 }
@@ -267,7 +267,7 @@ export function stripSpreadSampleBook(): VDTDocument[] {
       const p = c.panels.find((q) => q.index === 2);
       if (!p) continue;
       const x = c.spread === 'left' ? p.bbox.x + 4 : p.bbox.x + p.bbox.width - 64;
-      c.balloons = [{ id: `s-${c.spread}`, panelIndex: 2, order: c.spread === 'left' ? 0 : 1, style: 'caption', sourceStart: 0, sourceEnd: 1, group: c.spread === 'left' ? 0 : 1,
+      c.balloons = [{ id: `s-${c.spread}`, panelIndex: 2, order: c.spread === 'left' ? 0 : 1, kind: 'caption', style: 'caption', sourceStart: 0, sourceEnd: 1, group: c.spread === 'left' ? 0 : 1,
         text: [sampleText(c.spread === 'left' ? 'Meanwhile,' : 'far away.', x, p.bbox.y + 4)], bbox: { x, y: p.bbox.y + 4, width: 60, height: 14 } }];
     }
   }
