@@ -362,5 +362,16 @@
       "ar": "نمط الفيديو",
       "ja": "動画スタイル"
     }
+  },
+  "comics": {
+    "slug": "comics",
+    "heading": {
+      "en": "Comic pages",
+      "es": "Páginas de cómic",
+      "ca": "Pàgines de còmic",
+      "zh": "漫画页",
+      "ar": "صفحات القصص المصورة",
+      "ja": "漫画のページ"
+    }
   }
 }

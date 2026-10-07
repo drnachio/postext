@@ -49,17 +49,17 @@ export type PartColor = "blue" | "gilt" | "vermilion";
 export type ChapterId =
   | "page" | "type" | "headings"
   | "running-heads" | "structure" | "boxes" | "figures" | "tables"
-  | "publications" | "output";
+  | "publications" | "output" | "comics";
 export const CHAPTER_IDS: readonly ChapterId[] = [
   "page", "type", "headings", "running-heads", "structure", "boxes", "figures", "tables",
-  "publications", "output",
+  "publications", "output", "comics",
 ];
 export type GenreId =
   | "novel" | "poetry" | "textbook" | "workbook" | "manual" | "paper" | "report"
-  | "magazine" | "newsletter" | "catalogue" | "photobook" | "ephemera" | "any";
+  | "magazine" | "newsletter" | "catalogue" | "photobook" | "comic" | "ephemera" | "any";
 export const GENRE_IDS: readonly GenreId[] = [
   "novel", "poetry", "textbook", "workbook", "manual", "paper", "report", "magazine",
-  "newsletter", "catalogue", "photobook", "ephemera", "any",
+  "newsletter", "catalogue", "photobook", "comic", "ephemera", "any",
 ];
 export type OutputId = "canvas" | "html" | "pdf" | "epub" | "bundle" | "live";
 export const OUTPUT_IDS: readonly OutputId[] = ["canvas", "html", "pdf", "epub", "bundle", "live"];
@@ -82,9 +82,14 @@ export const REQUIRED_AUTHORED_SECTIONS: readonly SectionId[] = ["build", "metho
  *  arabic files of Arabic-script faces) are listed only by the recipes that
  *  set such text; `book` (`showBook`, spreads of a book bound on either
  *  edge) by the right-bound books. The cjk block carries its own copy of
- *  `showBook`, so a recipe lists `book` or `cjk`, never both. */
-export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk" | "arabic" | "book";
-export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic", "book"];
+ *  `showBook`, so a recipe lists `book` or `cjk`, never both. `comics`
+ *  (the comic lettering faces in every weight a balloon style asks for,
+ *  panel pictures from an art manifest, a PDF provider for every script)
+ *  by the comic recipes, after the blocks it calls (`images` for
+ *  `comicPanel`, `pdf` for `comicPdfProvider`, and `cjk` or `arabic` for
+ *  the faces of those scripts). */
+export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk" | "arabic" | "book" | "comics";
+export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic", "book", "comics"];
 export const REQUIRED_KIT: readonly KitBlock[] = ["core", "fonts", "viewer"];
 
 export type CardMode = "spread" | "page" | "loupe" | "crop" | "screenshot";
@@ -329,7 +334,7 @@ export interface Taxonomy {
 
 export type FeatureGroup =
   | "page" | "text" | "fonts" | "languages" | "headings" | "furniture" | "boxes" | "figures"
-  | "tables" | "math" | "structure" | "colour" | "pdf" | "html" | "integration";
+  | "tables" | "math" | "structure" | "colour" | "pdf" | "html" | "integration" | "comics";
 
 export interface Feature {
   label: Localized;

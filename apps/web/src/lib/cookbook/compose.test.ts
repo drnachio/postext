@@ -16,6 +16,7 @@ const KIT: Record<KitBlock, string> = {
   cjk: "// ─── Kit · cjk\nfunction loadCjkFonts() {}",
   arabic: "// ─── Kit · arabic\nfunction loadArabicFonts() {}",
   book: "// ─── Kit · book\nfunction showBook() {}",
+  comics: "// ─── Kit · comics\nfunction loadComicFonts() {}",
 };
 
 const SCRIPT = [
@@ -136,7 +137,7 @@ describe("composePen", () => {
 
   it("composes against the real kit", () => {
     const kit = readKit();
-    expect(Object.keys(kit).sort()).toEqual(["arabic", "book", "cjk", "core", "fonts", "images", "pdf", "viewer"]);
+    expect(Object.keys(kit).sort()).toEqual(["arabic", "book", "cjk", "comics", "core", "fonts", "images", "pdf", "viewer"]);
     const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: ["core", "fonts", "viewer", "pdf", "images", "cjk"] }, "en", { kit });
     expect(pen.js).toContain("function buildWithFonts(");
     expect(pen.js).toContain("function offerPdf(");

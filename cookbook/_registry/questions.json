@@ -3225,5 +3225,345 @@
       "ja": "週報、その報告"
     },
     "theme": "publications"
+  },
+  "Q162": {
+    "kind": "how",
+    "text": {
+      "en": "How do I divide a page into comic panels?",
+      "es": "¿Cómo divido una página en viñetas?",
+      "ca": "Com divideixo una pàgina en vinyetes?",
+      "zh": "怎样把一页分成漫画格？",
+      "ar": "كيف أقسّم صفحة إلى إطارات قصة مصورة؟",
+      "ja": "ページをコマに割るには？"
+    },
+    "index": {
+      "en": "Panels, dividing a page into",
+      "es": "Viñetas, dividir una página en",
+      "ca": "Vinyetes, dividir una pàgina en",
+      "zh": "分格，把一页分成漫画格",
+      "ar": "الإطارات، تقسيم الصفحة إليها",
+      "ja": "コマ割り、ページの"
+    },
+    "theme": "comics"
+  },
+  "Q163": {
+    "kind": "how",
+    "text": {
+      "en": "How do I write speech balloons in Markdown?",
+      "es": "¿Cómo escribo los bocadillos en Markdown?",
+      "ca": "Com escric les bafarades en Markdown?",
+      "zh": "怎样用Markdown写对话框？",
+      "ar": "كيف أكتب فقاعات الحوار في Markdown؟",
+      "ja": "吹き出しをMarkdownで書くには？"
+    },
+    "index": {
+      "en": "Speech balloons, written in Markdown",
+      "es": "Bocadillos, escritos en Markdown",
+      "ca": "Bafarades, escrites en Markdown",
+      "zh": "对话框，用Markdown写",
+      "ar": "فقاعات الحوار، كتابتها في Markdown",
+      "ja": "吹き出し、Markdownでの書き方"
+    },
+    "theme": "comics"
+  },
+  "Q164": {
+    "kind": "how",
+    "text": {
+      "en": "How do I re-letter a comic in another language?",
+      "es": "¿Cómo rotulo un cómic en otro idioma?",
+      "ca": "Com retolo un còmic en una altra llengua?",
+      "zh": "怎样把漫画用另一种语言重新嵌字？",
+      "ar": "كيف أعيد كتابة نصوص قصة مصورة بلغة أخرى؟",
+      "ja": "漫画を別の言語で写植し直すには？"
+    },
+    "index": {
+      "en": "Comics, re-lettered in another language",
+      "es": "Cómics, rotulados en otro idioma",
+      "ca": "Còmics, retolats en una altra llengua",
+      "zh": "漫画，用另一种语言重新嵌字",
+      "ar": "القصص المصورة، إعادة كتابة نصوصها بلغة أخرى",
+      "ja": "漫画、別の言語での写植"
+    },
+    "theme": "comics"
+  },
+  "Q165": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay out manga to read right to left?",
+      "es": "¿Cómo maqueto un manga que se lea de derecha a izquierda?",
+      "ca": "Com maqueto un manga que es llegeixi de dreta a esquerra?",
+      "zh": "怎样排一部从右往左读的日本漫画？",
+      "ar": "كيف أنضّد مانغا تُقرأ من اليمين إلى اليسار؟",
+      "ja": "右から左へ読む漫画を組むには？"
+    },
+    "index": {
+      "en": "Manga, read right to left",
+      "es": "Manga, lectura de derecha a izquierda",
+      "ca": "Manga, lectura de dreta a esquerra",
+      "zh": "日本漫画，从右往左读",
+      "ar": "المانغا، القراءة من اليمين إلى اليسار",
+      "ja": "漫画、右から左へ読む順序"
+    },
+    "theme": "comics"
+  },
+  "Q166": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put a comic strip on a newspaper page?",
+      "es": "¿Cómo pongo una tira cómica en una página de periódico?",
+      "ca": "Com poso una tira còmica en una pàgina de diari?",
+      "zh": "怎样在报纸版面上放一条漫画？",
+      "ar": "كيف أضع شريطًا مصورًا في صفحة جريدة؟",
+      "ja": "新聞の紙面に帯漫画を載せるには？"
+    },
+    "index": {
+      "en": "Comic strips, on a newspaper page",
+      "es": "Tiras cómicas, en una página de periódico",
+      "ca": "Tires còmiques, en una pàgina de diari",
+      "zh": "漫画条，放在报纸版面上",
+      "ar": "الشرائط المصورة، في صفحة جريدة",
+      "ja": "帯漫画、新聞の紙面の"
+    },
+    "theme": "comics"
+  },
+  "Q167": {
+    "kind": "how",
+    "text": {
+      "en": "How do I point a balloon's tail at the character who speaks?",
+      "es": "¿Cómo hago que el rabillo del bocadillo apunte al personaje que habla?",
+      "ca": "Com faig que la cua de la bafarada apunti al personatge que parla?",
+      "zh": "怎样让对话框的尾巴指向说话的人物？",
+      "ar": "كيف أجعل ذيل الفقاعة يشير إلى الشخصية التي تتكلم؟",
+      "ja": "吹き出しのしっぽを話している人物に向けるには？"
+    },
+    "index": {
+      "en": "Balloon tails, pointed at the speaker",
+      "es": "Rabillos de bocadillo, apuntados a quien habla",
+      "ca": "Cues de bafarada, apuntades a qui parla",
+      "zh": "对话框尾巴，指向说话人",
+      "ar": "ذيول الفقاعات، توجيهها إلى المتحدث",
+      "ja": "吹き出しのしっぽ、話者への向け方"
+    },
+    "theme": "comics"
+  },
+  "Q168": {
+    "kind": "how",
+    "text": {
+      "en": "How do I show thought, whisper, shout and radio balloons?",
+      "es": "¿Cómo muestro bocadillos de pensamiento, susurro, grito y radio?",
+      "ca": "Com mostro bafarades de pensament, xiuxiueig, crit i ràdio?",
+      "zh": "怎样区分想法、耳语、喊叫和无线电的对话框？",
+      "ar": "كيف أُظهر فقاعات التفكير والهمس والصراخ واللاسلكي؟",
+      "ja": "思考、ささやき、叫び、無線の吹き出しを描き分けるには？"
+    },
+    "index": {
+      "en": "Balloons, thought, whisper, shout and radio",
+      "es": "Bocadillos de pensamiento, susurro, grito y radio",
+      "ca": "Bafarades de pensament, xiuxiueig, crit i ràdio",
+      "zh": "对话框，想法、耳语、喊叫和无线电",
+      "ar": "الفقاعات، للتفكير والهمس والصراخ واللاسلكي",
+      "ja": "吹き出し、思考・ささやき・叫び・無線の"
+    },
+    "theme": "comics"
+  },
+  "Q169": {
+    "kind": "how",
+    "text": {
+      "en": "How do I letter sound effects over the art?",
+      "es": "¿Cómo rotulo onomatopeyas sobre la imagen?",
+      "ca": "Com retolo onomatopeies sobre la imatge?",
+      "zh": "怎样在画面上写拟声字？",
+      "ar": "كيف أكتب المؤثرات الصوتية فوق الرسم؟",
+      "ja": "絵の上に擬音の描き文字を入れるには？"
+    },
+    "index": {
+      "en": "Sound effects, lettered over the art",
+      "es": "Onomatopeyas, rotuladas sobre la imagen",
+      "ca": "Onomatopeies, retolades sobre la imatge",
+      "zh": "拟声字，写在画面上",
+      "ar": "المؤثرات الصوتية، كتابتها فوق الرسم",
+      "ja": "擬音、絵の上の描き文字"
+    },
+    "theme": "comics"
+  },
+  "Q170": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep a face in view when a panel crops the picture?",
+      "es": "¿Cómo evito que el recorte de una viñeta corte la cara de un personaje?",
+      "ca": "Com evito que el retall d'una vinyeta talli la cara d'un personatge?",
+      "zh": "格子裁切画面时，怎样让人物的脸留在画内？",
+      "ar": "كيف أُبقي الوجه ظاهرًا حين يقصّ الإطار الصورة؟",
+      "ja": "コマが絵をトリミングしても顔が切れないようにするには？"
+    },
+    "index": {
+      "en": "Panels, cropping the picture around a face",
+      "es": "Viñetas, recortar la imagen sin cortar la cara",
+      "ca": "Vinyetes, retallar la imatge sense tallar la cara",
+      "zh": "分格，裁切画面时保留人脸",
+      "ar": "الإطارات، قصّ الصورة مع إبقاء الوجه",
+      "ja": "コマ、顔を残すトリミング"
+    },
+    "theme": "comics"
+  },
+  "Q171": {
+    "kind": "how",
+    "text": {
+      "en": "How do I run a panel off the page edge or let a figure break its border?",
+      "es": "¿Cómo llevo una viñeta a sangre o hago que una figura rompa su borde?",
+      "ca": "Com porto una vinyeta a sang o faig que una figura en trenqui la vora?",
+      "zh": "怎样让一格出血到页边外，或让人物冲出格框？",
+      "ar": "كيف أمدّ إطارًا حتى حافة الصفحة أو أجعل شخصية تخرج من حدوده؟",
+      "ja": "コマを裁ち切りにしたり、人物を枠線からはみ出させたりするには？"
+    },
+    "index": {
+      "en": "Panels, bleeding and broken borders",
+      "es": "Viñetas a sangre y bordes rotos",
+      "ca": "Vinyetes a sang i vores trencades",
+      "zh": "分格，出血与破格",
+      "ar": "الإطارات، الامتداد إلى الحافة وكسر الحدود",
+      "ja": "コマ、裁ち切りと枠線越え"
+    },
+    "theme": "comics"
+  },
+  "Q172": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay one comic page across a double-page spread?",
+      "es": "¿Cómo extiendo una página de cómic por una doble página?",
+      "ca": "Com estenc una pàgina de còmic per una doble pàgina?",
+      "zh": "怎样把一页漫画铺满跨页？",
+      "ar": "كيف أمدّ صفحة قصة مصورة على صفحتين متقابلتين؟",
+      "ja": "漫画のページを見開きいっぱいに広げるには？"
+    },
+    "index": {
+      "en": "Spreads, comic pages across",
+      "es": "Dobles páginas de cómic",
+      "ca": "Dobles pàgines de còmic",
+      "zh": "跨页，漫画页铺满",
+      "ar": "الصفحات المزدوجة، في القصص المصورة",
+      "ja": "見開き、漫画の"
+    },
+    "theme": "comics"
+  },
+  "Q173": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a four-panel yonkoma strip?",
+      "es": "¿Cómo compongo una tira yonkoma de cuatro viñetas?",
+      "ca": "Com componc una tira yonkoma de quatre vinyetes?",
+      "zh": "怎样排一组四格漫画？",
+      "ar": "كيف أنضّد شريط يونكوما من أربعة إطارات؟",
+      "ja": "4コマ漫画を組むには？"
+    },
+    "index": {
+      "en": "Yonkoma, four-panel strips",
+      "es": "Yonkoma, tiras de cuatro viñetas",
+      "ca": "Yonkoma, tires de quatre vinyetes",
+      "zh": "四格漫画",
+      "ar": "اليونكوما، شرائط من أربعة إطارات",
+      "ja": "4コマ漫画"
+    },
+    "theme": "comics"
+  },
+  "Q174": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a comic EPUB readable panel by panel?",
+      "es": "¿Cómo hago un EPUB de cómic que se lea viñeta a viñeta?",
+      "ca": "Com faig un EPUB de còmic que es llegeixi vinyeta a vinyeta?",
+      "zh": "怎样做一本可以逐格阅读的漫画EPUB？",
+      "ar": "كيف أصنع EPUB لقصة مصورة يُقرأ إطارًا إطارًا؟",
+      "ja": "コマごとに読める漫画のEPUBを作るには？"
+    },
+    "index": {
+      "en": "EPUB, comics read panel by panel",
+      "es": "EPUB, cómics leídos viñeta a viñeta",
+      "ca": "EPUB, còmics llegits vinyeta a vinyeta",
+      "zh": "EPUB，逐格阅读的漫画",
+      "ar": "EPUB، قراءة القصص المصورة إطارًا إطارًا",
+      "ja": "EPUB、コマ送りで読む漫画"
+    },
+    "theme": "comics"
+  },
+  "Q175": {
+    "kind": "how",
+    "text": {
+      "en": "How do I slant the gutters between panels?",
+      "es": "¿Cómo inclino las calles entre viñetas?",
+      "ca": "Com inclino les separacions entre vinyetes?",
+      "zh": "怎样让格与格之间的间距倾斜？",
+      "ar": "كيف أجعل الفواصل بين الإطارات مائلة؟",
+      "ja": "コマの間白を斜めにするには？"
+    },
+    "index": {
+      "en": "Gutters, slanted",
+      "es": "Calles inclinadas entre viñetas",
+      "ca": "Separacions inclinades entre vinyetes",
+      "zh": "格间距，倾斜",
+      "ar": "الفواصل بين الإطارات، المائلة",
+      "ja": "間白、斜めの"
+    },
+    "theme": "comics"
+  },
+  "Q176": {
+    "kind": "how",
+    "text": {
+      "en": "How do I letter Japanese vertically inside balloons?",
+      "es": "¿Cómo rotulo japonés en vertical dentro de los bocadillos?",
+      "ca": "Com retolo japonès en vertical dins de les bafarades?",
+      "zh": "怎样在对话框里竖排日文？",
+      "ar": "كيف أكتب اليابانية عموديًا داخل الفقاعات؟",
+      "ja": "吹き出しに日本語を縦書きで写植するには？"
+    },
+    "index": {
+      "en": "Balloons, vertical Japanese lettering in",
+      "es": "Bocadillos, japonés vertical en",
+      "ca": "Bafarades, japonès vertical a",
+      "zh": "对话框，竖排日文",
+      "ar": "الفقاعات، الكتابة اليابانية العمودية داخلها",
+      "ja": "吹き出し、縦書きの写植"
+    },
+    "theme": "comics"
+  },
+  "Q177": {
+    "kind": "how",
+    "text": {
+      "en": "How do I re-letter an open-licensed comic from its transcript?",
+      "es": "¿Cómo rotulo de nuevo un cómic de licencia libre a partir de su transcripción?",
+      "ca": "Com retolo de nou un còmic de llicència lliure a partir de la seva transcripció?",
+      "zh": "怎样根据文字稿为一部开放许可的漫画重新嵌字？",
+      "ar": "كيف أعيد كتابة نصوص قصة مصورة ذات ترخيص مفتوح انطلاقًا من نصها المكتوب؟",
+      "ja": "オープンライセンスの漫画を書き起こしから写植し直すには？"
+    },
+    "index": {
+      "en": "Comics, open-licensed, re-lettered from a transcript",
+      "es": "Cómics de licencia libre, rotulados a partir de la transcripción",
+      "ca": "Còmics de llicència lliure, retolats a partir de la transcripció",
+      "zh": "开放许可的漫画，根据文字稿重新嵌字",
+      "ar": "القصص المصورة ذات الترخيص المفتوح، إعادة كتابة نصوصها من النص المكتوب",
+      "ja": "オープンライセンスの漫画、書き起こしからの写植"
+    },
+    "theme": "comics"
+  },
+  "Q178": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a European album page with narration captions?",
+      "es": "¿Cómo compongo una página de álbum europeo con cartelas de narración?",
+      "ca": "Com componc una pàgina d'àlbum europeu amb cartutxos de narració?",
+      "zh": "怎样排一页带旁白框的欧式漫画画册？",
+      "ar": "كيف أنضّد صفحة ألبوم أوروبي مع تعليقات سردية؟",
+      "ja": "ナレーションの枠が入ったヨーロッパのアルバム漫画のページを組むには？"
+    },
+    "index": {
+      "en": "Album pages, with narration captions",
+      "es": "Páginas de álbum, con cartelas de narración",
+      "ca": "Pàgines d'àlbum, amb cartutxos de narració",
+      "zh": "欧式漫画画册页，带旁白框",
+      "ar": "صفحات الألبوم، مع التعليقات السردية",
+      "ja": "アルバム漫画、ナレーション枠のある"
+    },
+    "theme": "comics"
   }
 }

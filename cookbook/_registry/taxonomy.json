@@ -1,5 +1,5 @@
 {
-  "$comment": "The Cookbook's book structure: parts (the docs' part colours and numerals), the ten chapters a recipe belongs to (exactly one each; ids and numbers are permanent, new chapters are appended, cap 12), the secondary facets (genres, outputs, levels) and the localised H2 headings of the write-up template. Labels here feed the gallery's filters, the band and the catalogue; no UI string for these lives in messages/*.json.",
+  "$comment": "The Cookbook's book structure: parts (the docs' part colours and numerals), the chapters a recipe belongs to (exactly one each; ids and numbers are permanent, new chapters are appended, cap 12), the secondary facets (genres, outputs, levels) and the localised H2 headings of the write-up template. Labels here feed the gallery's filters, the band and the catalogue; no UI string for these lives in messages/*.json.",
   "parts": [
     { "id": "page", "number": "I", "color": "blue", "title": { "en": "The page", "es": "La página", "ca": "La pàgina", "zh": "页面", "ar": "الصفحة", "ja": "ページ" } },
     { "id": "book", "number": "II", "color": "gilt", "title": { "en": "The book", "es": "El libro", "ca": "El llibre", "zh": "图书", "ar": "الكتاب", "ja": "本" } },
@@ -145,6 +145,20 @@
         "ar": "من نص Markdown إلى Canvas وHTML وPDF: الخطوط، وملفات PDF الجاهزة للطباعة والموسومة، وطبعات الشاشة، والحزم، والعمّال، والتشخيص، وإعادة البناء الحية.",
         "ja": "Markdownの文字列からcanvas、HTML、PDFへ。フォント、入稿用PDFとタグ付きPDF、画面版、バンドル、ワーカー、診断、ライブ再ビルド。"
       }
+    },
+    {
+      "id": "comics",
+      "number": 11,
+      "part": "practice",
+      "title": { "en": "Comics & manga", "es": "Cómic y manga", "ca": "Còmic i manga", "zh": "漫画与连环画", "ar": "القصص المصوّرة والمانغا", "ja": "コミックと漫画" },
+      "intro": {
+        "en": "Comic pages split into panels, balloons lettered from a Markdown script, manga read right to left, strips on a newspaper page, double-page spreads and one page re-lettered in six languages.",
+        "es": "Páginas de cómic divididas en viñetas, bocadillos rotulados a partir de un guion en Markdown, manga que se lee de derecha a izquierda, tiras en una página de periódico, dobles páginas y una misma página rotulada en seis idiomas.",
+        "ca": "Pàgines de còmic dividides en vinyetes, bafarades retolades a partir d'un guió en Markdown, manga que es llegeix de dreta a esquerra, tires en una pàgina de diari, dobles pàgines i una mateixa pàgina retolada en sis llengües.",
+        "zh": "分格的漫画页、根据Markdown脚本嵌字的对话框、从右往左读的日本漫画、报纸版面上的漫画条、跨页，以及用六种语言重新嵌字的同一页。",
+        "ar": "صفحات قصص مصوّرة مقسّمة إلى إطارات، وفقاعات حوار تُكتب من نص Markdown، ومانغا تُقرأ من اليمين إلى اليسار، وشرائط مصوّرة في صفحة جريدة، وصفحات مزدوجة، وصفحة واحدة يُعاد خطّ نصوصها بست لغات.",
+        "ja": "コマに割った漫画のページ、Markdownの台本から写植する吹き出し、右から左へ読む漫画、新聞紙面の帯漫画、見開き、6言語で写植し直した同じページ。"
+      }
     }
   ],
   "genres": [
@@ -159,6 +173,7 @@
     { "id": "newsletter", "title": { "en": "Newspapers & newsletters", "es": "Periódicos y boletines", "ca": "Diaris i butlletins", "zh": "报纸与通讯", "ar": "الجرائد والنشرات", "ja": "新聞とニュースレター" } },
     { "id": "catalogue", "title": { "en": "Catalogues", "es": "Catálogos", "ca": "Catàlegs", "zh": "目录册", "ar": "الكتالوجات", "ja": "カタログ" } },
     { "id": "photobook", "title": { "en": "Photobooks", "es": "Fotolibros", "ca": "Fotollibres", "zh": "摄影集", "ar": "كتب الصور", "ja": "写真集" } },
+    { "id": "comic", "title": { "en": "Comics", "es": "Cómics", "ca": "Còmics", "zh": "漫画", "ar": "القصص المصوّرة", "ja": "漫画・コミック" } },
     { "id": "ephemera", "title": { "en": "Single sheets & ephemera", "es": "Hojas sueltas y efímeros", "ca": "Fulls solts i efímers", "zh": "单页与零散印品", "ar": "الأوراق المفردة والمطبوعات العابرة", "ja": "一枚物とエフェメラ" } },
     { "id": "any", "title": { "en": "Any genre", "es": "Cualquier género", "ca": "Qualsevol gènere", "zh": "任意类型", "ar": "أي نوع", "ja": "すべてのジャンル" } }
   ],

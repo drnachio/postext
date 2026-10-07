@@ -350,7 +350,7 @@ describe("lintPen (a Chinese recipe)", () => {
   it("asks for cjkPdfProvider, the locale, showBook for right-bound books and the vertical twin's import", () => {
     const latinPdf = lintCjk((s) => s.replace("fontProvider: cjkPdfProvider", "fontProvider: fontsourceProvider")).fails;
     expect(latinPdf).toContain(
-      "script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)",
+      "script.js: renderToPdf takes fontProvider: cjkPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)",
     );
     const lang = lintCjk((s) => s.replace("  locale: 'zh-Hant',", "  locale: LANG,")).warns;
     expect(lang).toContain(
@@ -550,7 +550,7 @@ describe("lintPen (an Arabic recipe)", () => {
     expect(noBlock.concat(lintArabic().warns).filter((w) => w.includes("outside Fontsource latin"))).toEqual([]);
     const latinPdf = lintArabic((s) => s.replace("fontProvider: arabicPdfProvider", "fontProvider: fontsourceProvider")).fails;
     expect(latinPdf).toContain(
-      "script.js: renderToPdf takes fontProvider: arabicPdfProvider (fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)",
+      "script.js: renderToPdf takes fontProvider: arabicPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)",
     );
     const lang = lintArabic((s) => s.replace("  locale: 'ar',", "  locale: LANG,")).fails;
     expect(lang).toContain(
@@ -602,6 +602,59 @@ describe("lintPen (an Arabic recipe)", () => {
     const noBook = lintArabic(undefined, undefined, arabicMeta(["arabic"])).fails;
     expect(noBook).toContain('script.js: calls showBook() from the "book" kit block, which recipe.json "kit" does not list');
     expect(lintArabic(undefined, undefined, arabicMeta(["arabic", "cjk"])).fails.filter((f) => f.includes("showBook"))).toEqual([]);
+  });
+});
+
+// ─── A comic recipe (#572) ──────────────────────────────────────────────────
+
+const COMIC_PAGE = `# The lighthouse
+
+:::page{split="30 [*|*] / *" gutter=4mm}
+::panel{art=arrive}
+caption: The headland, before the storm.
+maya: Grandpa! The radio is on!
+::panel{art=arrive focus="40% 50%"}
+tomas{whisper}: Hush. Listen.
+  It is the ferry.
+::panel{art=arrive bleed}
+sfx{rotate=-8 at="60% 30%"}: KRAKOOM
+:::
+`;
+
+function comicScript(s: string): string {
+  return s
+    .replace(/const resources = \[\n[\s\S]*?\n\];\n/, "const PANELS = { arrive: { width: 1100, height: 733, safeArea: { x: 0.2, y: 0.08, width: 0.42, height: 0.82 } } };\n")
+    .replace("await loadImage('photo.jpg', asset('photo.jpg'));",
+      "const resources = [await comicPanel('arrive', asset('lh-arrive.jpg'), PANELS.arrive)];\nawait loadComicFonts(FONTS, markdown);")
+    .replace("Archivo: ['700'] };", "Archivo: ['700'], 'Comic Neue': ['400', '700'], Bangers: ['400'] };")
+    .replace("  header: { elements: [] },", "  comics: { lettering: { fontSize: pt(8) } },\n  header: { elements: [] },")
+    .replace("fontProvider: fontsourceProvider", "fontProvider: comicPdfProvider")
+    .replace("// @kit core fonts viewer pdf images", "// @kit core fonts viewer pdf images comics");
+}
+
+function comicMeta(kit: KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "comics"]): RecipeMeta {
+  return { ...fixtureMeta(), chapter: "comics", genres: ["comic"], kit };
+}
+
+describe("lintPen (a comic recipe)", () => {
+  const content = { en: COMIC_PAGE, es: COMIC_PAGE.replace("The headland, before the storm.", "El cabo, antes de la tormenta.") };
+  const lintComic = (meta = comicMeta()) =>
+    lint(comicScript, { meta, sources: { content, assets: ["assets/lh-arrive.jpg"] } });
+
+  it("passes a pen with a :::page, the comics config and the comics block", () => {
+    const { fails, warns } = lintComic();
+    expect(fails).toEqual([]);
+    expect(warns.filter((w) => /kit block|directive|config/.test(w))).toEqual([]);
+    expect(markdownConstructs(COMIC_PAGE).directives).toContain(":::page");
+  });
+
+  it("asks for the blocks the comics functions call", () => {
+    expect(lintComic(comicMeta(["core", "fonts", "viewer", "pdf", "comics"])).fails).toContain(
+      'script.js: comicPanel() needs the "images" kit block, which recipe.json "kit" does not list',
+    );
+    expect(lintComic(comicMeta(["core", "fonts", "viewer", "pdf", "images"])).fails).toContain(
+      'script.js: calls loadComicFonts() from the "comics" kit block, which recipe.json "kit" does not list',
+    );
   });
 });
 

@@ -66,7 +66,8 @@
         "figures",
         "tables",
         "publications",
-        "output"
+        "output",
+        "comics"
       ]
     },
     "order": {
@@ -96,6 +97,7 @@
           "newsletter",
           "catalogue",
           "photobook",
+          "comic",
           "ephemera",
           "any"
         ]
@@ -253,7 +255,8 @@
           "images",
           "cjk",
           "arabic",
-          "book"
+          "book",
+          "comics"
         ]
       },
       "minItems": 3,
