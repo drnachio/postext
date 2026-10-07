@@ -129,7 +129,7 @@ const box = ([x, y, width, height]) => ({ x, y, width, height });
 const who = (id, x, y, head, face) => ({ id, x, y,
   ...(head && { head: { x: head[0], y: head[1] } }), ...(face && { face: box(face) }) });
 const ART = {
-  t1: { width: 1100, height: 733, safeArea: box([.2, .25, .72, .67]),
+  t1: { width: 1100, height: 733, safeArea: box([.22, .17, .62, .6]),
     alt: t({ en: 'A sunny Sunday in Madrid: an iron-and-glass market hall on a plaza with shoppers '
         + 'and pigeons.',
       es: 'Un domingo de sol en Madrid: un mercado de hierro y cristal en una plaza, con gente de '
@@ -142,7 +142,7 @@ const ART = {
       pt: 'Um domingo de sol em Madri: um mercado de ferro e vidro numa praça, com gente fazendo '
         + 'compras e pombos.' }),
   },
-  t2: { width: 1000, height: 1000, safeArea: box([.1, .1, .85, .72]),
+  t2: { width: 1000, height: 1000, safeArea: box([.2, .13, .71, .46]),
     alt: t({ en: 'Inside the market, Lola pulls her grandfather Paco by the hand, pointing ahead '
         + 'between the stalls.',
       es: 'Dentro del mercado, Lola tira de la mano de su abuelo Paco y señala adelante, entre '
@@ -160,7 +160,7 @@ const ART = {
     ],
     avoid: [box([.82, .4, .1, .06])],
   },
-  t3: { width: 1200, height: 800, safeArea: box([.05, .1, .9, .78]),
+  t3: { width: 1200, height: 800, safeArea: box([.13, .12, .79, .58]),
     alt: t({ en: 'Lola gazes up at a towering pyramid of oranges while Carmen, the fruit seller, '
         + 'polishes an orange.',
       es: 'Lola mira hacia arriba una pirámide altísima de naranjas mientras Carmen, la frutera, '
@@ -178,7 +178,7 @@ const ART = {
     ],
     avoid: [box([.4, .2, .2, .15])],
   },
-  t4: { width: 1152, height: 1152, safeArea: box([.05, .06, .9, .68]),
+  t4: { width: 1152, height: 1152, safeArea: box([.08, .08, .76, .65]),
     alt: t({ en: 'Lola reaches for an orange at the bottom of the pile; Paco, alarmed, raises a '
         + 'hand to stop her.',
       es: 'Lola alarga la mano hacia una naranja de la base del montón; Paco, alarmado, levanta '
@@ -196,7 +196,7 @@ const ART = {
     ],
     avoid: [box([.7, .78, .15, .1]), box([.1, .36, .15, .19])],
   },
-  t5: { width: 1100, height: 733, safeArea: box([.02, .2, .96, .42]),
+  t5: { width: 1100, height: 733, safeArea: box([.06, .16, .9, .41]),
     alt: t({ en: "The orange pyramid collapses: oranges roll everywhere, Paco's beret flies off, "
         + "Carmen throws up her hands, pigeons scatter.",
       es: 'La pirámide se derrumba: las naranjas ruedan por todas partes, la boina de Paco sale '
@@ -217,7 +217,7 @@ const ART = {
     ],
     avoid: [box([.24, .12, .09, .1])],
   },
-  t6: { width: 1200, height: 800, safeArea: box([.05, .08, .9, .87]),
+  t6: { width: 1200, height: 800, safeArea: box([.15, .1, .68, .58]),
     alt: t({ en: 'Lola, Paco and Carmen kneel to gather the oranges into the beret and the apron, '
         + 'laughing; a pigeon pecks one.',
       es: 'Lola, Paco y Carmen, de rodillas, recogen las naranjas en la boina y el delantal entre '
@@ -237,7 +237,7 @@ const ART = {
     ],
     avoid: [box([.74, .75, .14, .2])],
   },
-  t7: { width: 1300, height: 867, safeArea: box([.15, 0, .75, .95]),
+  t7: { width: 1300, height: 867, safeArea: box([.19, .17, .56, .58]),
     alt: t({ en: "On a park bench, Lola and Paco peel oranges and laugh; a pigeon sits on Paco's "
         + "beret.",
       es: 'En un banco del parque, Lola y Paco pelan naranjas y se ríen; una paloma se ha posado '
