@@ -400,6 +400,19 @@ function headZones(panel: VDTComicPanel, resource: Resource | undefined): (Bound
   });
 }
 
+/** The body under every marked face (a figure's chest and arms, two
+ *  hugging characters), as a region better left uncovered: a balloon goes
+ *  over the background before it goes over the action. A cost per area,
+ *  never a fault. */
+function bodyZones(panel: VDTComicPanel, resource: Resource | undefined): (BoundingBox & { weight: number })[] {
+  const art = panel.art;
+  if (!art || !resource?.anchors) return [];
+  return resource.anchors.filter((a) => a.id !== 'sfx' && a.face).map((a) => {
+    const f = comicArtRectToPage(art, a.face!);
+    return { x: f.x - 0.3 * f.width, y: f.y + f.height, width: 1.6 * f.width, height: 2 * f.height, weight: 1.5 };
+  });
+}
+
 /** The picture's safe area as a region better left uncovered, when the art
  *  marks no face and no avoid zone (nothing else tells the lettering what
  *  matters in it). */
@@ -504,7 +517,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
         ...headGuards(panel, resource, dimensionToPx(L.fontSize, dpi)),
         ...(input.avoid ?? []).filter((r) => overlaps(r, panel.bbox)),
       ],
-      softAvoid: [...softSafeArea(panel, resource), ...headZones(panel, resource)],
+      softAvoid: [...softSafeArea(panel, resource), ...headZones(panel, resource), ...bodyZones(panel, resource)],
       ...(panel.border.style !== 'none' && panel.border.width > 0 ? { borderPx: panel.border.width } : {}),
       neighbours: panels.filter((q) => q !== panel).map((q) => q.bbox),
       ...(input.frame ? { limit: input.frame } : {}),

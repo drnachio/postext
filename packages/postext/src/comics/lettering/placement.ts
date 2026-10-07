@@ -88,6 +88,7 @@ const W = {
   tangent: 0.6,
   ownTail: 25,
   otherFace: 15,
+  tailOverFigure: 5,
   side: 3,
   soft: 0.035,
   longTail: 0.3,
@@ -404,11 +405,22 @@ function evaluate(
     // long by necessity.)
     if (gap > 6 * em) S('longTail', (W.longTail * (gap - 6 * em)) / em);
     if (centre.y > target.y) S('below', (W.below * (centre.y - target.y)) / em);
-    // A tail over another character's face reads as theirs.
+    // A tail over another character's face (or the top of the head)
+    // reads as theirs.
     const tip = add(edge, scale(norm(sub(target, edge)), gap * 0.55));
     for (const f of scene.faces) {
-      if (!segmentHitsRect(edge, tip, shrink(f, 0.1))) continue;
-      S('otherFace', pointInRect(target, f) ? 1 : W.otherFace);
+      const head = { x: f.x, y: f.y - 0.3 * f.height, width: f.width, height: 1.3 * f.height };
+      if (!segmentHitsRect(edge, tip, shrink(head, 0.1))) continue;
+      S('otherFace', pointInRect(target, head) ? 1 : W.otherFace);
+    }
+    // A tail drawn across another figure (the body under a marked face):
+    // the eye follows it through the wrong character.
+    const drawn = tailSegment(unit, v, at, target);
+    for (const a of scene.panel.anchors) {
+      if (!a.face || a.mouth === target || a.head === target) continue;
+      const f = a.face;
+      const figure = { x: f.x - 0.2 * f.width, y: f.y + f.height, width: 1.4 * f.width, height: 1.6 * f.height };
+      if (segmentHitsRect(drawn[0], drawn[1], figure)) S('tailOverFigure', W.tailOverFigure);
     }
   } else if (unit.target.kind === 'offPanel' && target) {
     // An off-panel speaker's balloon sits by the border its voice comes
@@ -771,6 +783,38 @@ function swapCrossing(scene: Scene, placed: Layout, firstOrder: number): Layout 
   return undefined;
 }
 
+/** The layout with one pair of free units taken out and placed again
+ * (each order in turn, the second seeing the first) when that lowers the
+ * whole layout's cost; else undefined. A single move cannot undo a pair
+ * that blocks itself: the first speaker's balloon in the corner the second
+ * needs, the second pushed onto the figures. */
+function replacePair(scene: Scene, placed: Layout, firstOrder: number): Layout | undefined {
+  const free = (p: Layout[number]) => !p.unit.pin && !p.unit.position && p.unit.kind !== 'sfx';
+  const base = totalCost(scene, placed, firstOrder);
+  let best: Layout | undefined;
+  let cost = base;
+  for (let i = 0; i < placed.length; i++) {
+    for (let j = i + 1; j < placed.length; j++) {
+      if (!free(placed[i]!) || !free(placed[j]!)) continue;
+      for (const [first, second] of [[i, j], [j, i]] as const) {
+        const out: Layout = [...placed];
+        const p1 = out[first]!;
+        const c1 = bestFor(scene, p1.unit, out.filter((_, m) => m !== i && m !== j), firstOrder);
+        out[first] = { ...p1, variant: c1.variant, level: c1.level, at: c1.at, ev: c1.ev };
+        const p2 = out[second]!;
+        const c2 = bestFor(scene, p2.unit, out.filter((_, m) => m !== second), firstOrder);
+        out[second] = { ...p2, variant: c2.variant, level: c2.level, at: c2.at, ev: c2.ev };
+        const c = totalCost(scene, out, firstOrder);
+        if (c < cost - 1e-6) {
+          cost = c;
+          best = out;
+        }
+      }
+    }
+  }
+  return best;
+}
+
 /**
  * A placed layout with its crossed tails undone: pairs of balloons whose
  * tails cross (or all but touch) trade places or are placed again, each
@@ -858,6 +902,12 @@ export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], p
   // one they speak in): try again from where the speakers stand, each
   // balloon by its own speaker first.
   if (ordered.length > 1 && crossings(scene, placed!) > 0) tries('speaker');
+  // Pairs placed again together, while that helps (a few rounds).
+  for (let round = 0; round < 3 && ordered.length > 1; round++) {
+    const next = replacePair(scene, placed!, firstOrder);
+    if (!next) break;
+    placed = solveFrom(scene, next, firstOrder, passes);
+  }
   const final: Layout = placed!;
   const diagnostics: LetteringDiagnostic[] = [];
   for (let i = 0; i < final.length; i++) {

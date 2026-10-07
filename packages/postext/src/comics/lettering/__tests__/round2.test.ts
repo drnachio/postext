@@ -12,6 +12,7 @@ import { shapeText } from '../shape-text';
 import type { LetteringItem, LetteringPanel, Point, Rect } from '../types';
 import { buildDocument } from '../../../pipeline';
 import { parseComicScript } from '../../script';
+import { comicArtRectToPage } from '../../art';
 
 beforeAll(() => installStubMeasure());
 
@@ -218,5 +219,39 @@ describe('ruby on a line the bidi algorithm reorders', () => {
       x += runs[i]!.width;
     }
     expect(Math.abs(centre(rubies[0]!.bbox).x - nameX)).toBeLessThan(0.6 * EM);
+  });
+});
+
+describe('balloons over the background, not over the action', () => {
+  // Nº 154, the reunion (ds4): Lola leaps into her grandfather's arms, his
+  // beret flies off; Paco answers in a joined pair. Right to left (Arabic).
+  const hug = {
+    id: 'hug', typeId: 'figure', kind: 'bitmap' as const, createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'file-hug', format: 'png', width: 1200, height: 800 },
+    anchors: [
+      { id: 'lola', x: 0.51, y: 0.27, head: { x: 0.47, y: 0.2 }, face: { x: 0.42, y: 0.14, width: 0.13, height: 0.19 } },
+      { id: 'paco', x: 0.595, y: 0.31, head: { x: 0.62, y: 0.22 }, face: { x: 0.55, y: 0.14, width: 0.15, height: 0.22 } },
+    ],
+    avoid: [{ x: 0.67, y: 0.06, width: 0.13, height: 0.22 }],
+  };
+  const md = `:::page{split="*"}
+::panel{art=hug}
+lola: جدي!
+paco: ها أنتِ ذي يا شقية!
+paco: وها هي قبعتي تطير!
+:::
+`;
+  it('keeps a joined pair off the two hugging figures', () => {
+    const doc = buildDocument({ markdown: md, resources: [hug] }, { page: { sizePreset: 'custom', width: { value: 230, unit: 'mm' }, height: { value: 170, unit: 'mm' } }, locale: 'ar' });
+    const comic = doc.pages.find((p) => p.comic)!.comic!;
+    const art = comic.panels[0]!.art!;
+    const bodies = hug.anchors.map((a) => {
+      const f = comicArtRectToPage(art, a.face);
+      return { x: f.x, y: f.y + f.height, width: f.width, height: 1.5 * f.height };
+    });
+    const paco = comic.balloons.filter((b) => b.speaker === 'paco');
+    expect(paco).toHaveLength(2);
+    const area = (a: Rect, b: Rect) => Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
+    for (const b of paco) for (const body of bodies) expect(area(b.bbox, body)).toBeLessThan(0.05 * b.bbox.width * b.bbox.height);
   });
 });

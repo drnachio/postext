@@ -279,8 +279,8 @@ function unitVariants(group: readonly Piece[], panel: LetteringPanel): { variant
       const bbox = boundsOf(rim);
       // A joined balloon set back against the reading direction reads out
       // of order: beside it, a fault the order alone would not see; below
-      // it, a slight one.
-      const back = group.length > 1 && !vertical && arr.lean < 0 ? (arr.side ? 6 : 0.8) : 0;
+      // it, a lesser one (the eye still has to step back).
+      const back = group.length > 1 && !vertical && arr.lean < 0 ? (arr.side ? 12 : 2.5) : 0;
       // A reshaped text block that parts its text worse than the preferred
       // one (a phrase or a word cut: 猫ちゃ|んに) pays for it.
       const worse = group.reduce((sum, p, i) => sum + Math.max(0, p.shapes[shapeIndex[i]!]!.shaped.breakCost - p.shapes[0]!.shaped.breakCost), 0);
