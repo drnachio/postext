@@ -3566,7 +3566,14 @@
     "warningsComicBalloonOverflowTitle": "El globo no cabe",
     "warningsComicBalloonOverflowDetail": "un globo de la viñeta __panel__ no se pudo colocar sin tapar una cara, otro globo o el borde; se coloca donde mejor cabe. Acorta el texto o da más espacio a la viñeta",
     "warningsComicUnknownSpeakerTitle": "Personaje sin punto",
-    "warningsComicUnknownSpeakerDetail": "ningún dibujo marca a este personaje y el reparto no lo incluye; sus rabillos apuntan al borde de la viñeta"
+    "warningsComicUnknownSpeakerDetail": "ningún dibujo marca a este personaje y el reparto no lo incluye; sus rabillos apuntan al borde de la viñeta",
+    "comicSplitterLabel": "Separador de viñetas __n__ de __total__",
+    "comicSplitterHint": "Las flechas mueven el separador un 1 % (con Mayús, un 5 %). Intro escribe la nueva posición en el split de la página; Escape la deshace.",
+    "comicPanelToolbar": "Viñeta __n__",
+    "comicSplitHorizontal": "Dividir con una línea horizontal",
+    "comicSplitVertical": "Dividir con una línea vertical",
+    "comicMergeNext": "Unir con la viñeta siguiente",
+    "comicLetterboxHint": "La viñeta __n__ quedará con bandas: la zona segura de su imagen ya no cabe en la celda."
   },
   "PlainLanguage": {
     "heading": "En pocas palabras",

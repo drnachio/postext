@@ -71,6 +71,7 @@ import {
   splitChapterAtHeadings,
 } from '../book/chapterOps';
 import { composeBookMemo } from '../book/compose';
+import { applyTextChanges, changesApply, type TextChange } from '../book/textChanges';
 import { hidePresetId, unhidePresetId } from '../presets/hidden';
 import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
@@ -288,6 +289,11 @@ export interface SandboxState {
 
 export type SandboxAction =
   | { type: 'SET_MARKDOWN'; payload: string }
+  /** Text changes on one chapter made outside the editor (a splitter
+   *  dragged on a comic page, #568). Refused unless the chapter is still
+   *  `baseLength` long and every change finds the text it expects, so a
+   *  change computed on a layout older than the text never lands. */
+  | { type: 'EDIT_CHAPTER_MARKDOWN'; payload: { chapterId: string; changes: TextChange[]; baseLength?: number } }
   | { type: 'SET_CONFIG'; payload: PostextConfig }
   | { type: 'UPDATE_CONFIG'; payload: Partial<PostextConfig> }
   | { type: 'TOGGLE_PANEL'; payload: PanelId }
@@ -402,6 +408,18 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       if (action.payload === state.markdown) return state;
       const book = replaceChapterMarkdown(bookOf(state), state.activeChapterId, action.payload);
       return { ...state, chapters: book.chapters, markdown: action.payload };
+    }
+    case 'EDIT_CHAPTER_MARKDOWN': {
+      const { chapterId, changes, baseLength } = action.payload;
+      const chapter = state.chapters.find((c) => c.id === chapterId);
+      if (!chapter || changes.length === 0) return state;
+      const text = chapterId === state.activeChapterId ? state.markdown : chapter.markdown;
+      if (baseLength !== undefined && text.length !== baseLength) return state;
+      if (!changesApply(text, changes)) return state;
+      const next = applyTextChanges(text, changes);
+      if (next === text) return state;
+      const book = replaceChapterMarkdown(bookOf(state), chapterId, next);
+      return { ...state, chapters: book.chapters, ...(chapterId === state.activeChapterId ? { markdown: next } : {}) };
     }
     case 'SET_BOOK': {
       const next = withBook(state, action.payload, true);

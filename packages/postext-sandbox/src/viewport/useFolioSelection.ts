@@ -10,7 +10,8 @@ import type { ComposedBook } from '../book/types';
 import { findCaretBlockIdx } from './CanvasPreview/caret';
 import { createOverlaySvg } from './CanvasPreview/dom';
 import { findResourceLocation } from './CanvasPreview/geometry';
-import { attachPageInteraction } from './CanvasPreview/interaction';
+import { attachPageInteraction, type PageInteraction } from './CanvasPreview/interaction';
+import { drawMarksCanvas, type ComicMark, type ComicSurface } from './comics/comicEditing';
 import { drawOverlay } from './CanvasPreview/overlay';
 import { usePageNavigator } from './usePageNavigator';
 
@@ -87,6 +88,13 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
   const debugConfig = useSandboxSelector((s) => s.config.debug);
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const resources = useSandboxSelector((s) => s.resources);
+  const labels = useSandboxSelector((s) => s.labels);
+  const labelsRef = useRef(labels);
+  labelsRef.current = labels;
+  /** The comic page tools' marks of each page (#568), drawn over the
+   *  selection's. */
+  const comicMarksRef = useRef<Map<number, { marks: ComicMark[]; cssToSheet: number }>>(new Map());
+  const interactionHandleRef = useRef<PageInteraction | null>(null);
 
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
@@ -114,7 +122,13 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
 
   const decorate = useCallback((index: number, ctx: CanvasRenderingContext2D): boolean => {
     const rects = marksRef.current.get(index);
-    if (!rects?.length) return false;
+    const comic = comicMarksRef.current.get(index);
+    if (comic) {
+      ctx.save();
+      drawMarksCanvas(ctx, comic.marks, comic.cssToSheet);
+      ctx.restore();
+    }
+    if (!rects?.length) return comic !== undefined;
     // Over the print, as the canvas's overlay lies over its page.
     ctx.globalCompositeOperation = 'multiply';
     for (const r of rects) {
@@ -214,6 +228,9 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
   useEffect(() => {
     refresh();
   }, [refresh, docKey]);
+  useEffect(() => {
+    interactionHandleRef.current?.comic?.sync();
+  }, [docKey]);
   useEffect(() => () => window.clearTimeout(followTimerRef.current), []);
 
   /** A new viewer: its pointer selects on the pages in select and magnify
@@ -221,7 +238,51 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
    *  the marks follow the spreads it opens. */
   const attach = useCallback((viewer: FolioDocumentViewer) => {
     const el = viewer.element;
-    attachPageInteraction(el, {
+    comicMarksRef.current = new Map();
+    // The book shows the trimmed page; the document's coordinates are the
+    // sheet's.
+    const toFolio = (pageIndex: number, x: number, y: number) => {
+      const doc = docRef.current;
+      const page = doc?.pages[pageIndex];
+      if (!doc || !page) return null;
+      const inset = Math.max(0, doc.trimOffset);
+      return { page: pageIndex, x: (x - inset) / Math.max(1, page.width - 2 * inset), y: (y - inset) / Math.max(1, page.height - 2 * inset) };
+    };
+    const cssToSheet = (pageIndex: number): number => {
+      const page = docRef.current?.pages[pageIndex];
+      const a = page ? toFolio(pageIndex, 0, page.height / 2) : null;
+      const b = page ? toFolio(pageIndex, page.width, page.height / 2) : null;
+      const pa = a ? viewer.pointOnScreen(a) : null;
+      const pb = b ? viewer.pointOnScreen(b) : null;
+      const d = pa && pb ? Math.hypot(pb.x - pa.x, pb.y - pa.y) : 0;
+      return page && d > 0 ? page.width / d : 1;
+    };
+    const comicSurface: ComicSurface = {
+      host: el,
+      pages: () => [...viewer.state.pages],
+      paint: (pageIndex, marks) => {
+        const had = comicMarksRef.current.has(pageIndex);
+        if (!marks || marks.length === 0) {
+          comicMarksRef.current.delete(pageIndex);
+          if (had) viewer.redecorate([pageIndex]);
+          return;
+        }
+        comicMarksRef.current.set(pageIndex, { marks, cssToSheet: cssToSheet(pageIndex) });
+        viewer.redecorate([pageIndex]);
+      },
+      place: (node, pageIndex, x, y) => {
+        const pt = toFolio(pageIndex, x, y);
+        const at = pt ? viewer.pointOnScreen(pt) : null;
+        if (!at) return false;
+        const rect = el.getBoundingClientRect();
+        node.style.left = `${at.x - rect.left}px`;
+        node.style.top = `${at.y - rect.top}px`;
+        node.style.transform = '';
+        return true;
+      },
+      sheetPxPerCssPx: cssToSheet,
+    };
+    interactionHandleRef.current = attachPageInteraction(el, {
       locate: (ev) => {
         const doc = docRef.current;
         const hit = viewer.pageAt(ev);
@@ -241,17 +302,24 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
       pageSourceRef,
       showLocation: (_doc, loc) => viewer.goToPage(loc.pageIndex),
       setCursor: (cursor) => {
-        el.style.cursor = cursor === 'pointer' ? 'pointer' : '';
+        el.style.cursor = cursor === 'text' ? '' : cursor;
       },
       // Under the magnifying glass too: what lies at its centre (#543).
       enabled: () => interactionRef.current === 'select' || interactionRef.current === 'magnify',
       touchSelects: true,
+      // Comic splitters and panels are edited in select mode only (#568).
+      comicSurface,
+      labelsRef,
+      comicEnabled: () => interactionRef.current === 'select',
     });
   }, [docRef, sourceRef, interactionRef, navigateRef]);
 
   /** The book came to rest on (or was sent to) another spread: mark the
    *  pages round it. */
-  const onSpread = useCallback(() => refreshRef.current(), []);
+  const onSpread = useCallback(() => {
+    refreshRef.current();
+    interactionHandleRef.current?.comic?.sync();
+  }, []);
 
   return { decorate, attach, onSpread };
 }

@@ -3566,7 +3566,14 @@
     "warningsComicBalloonOverflowTitle": "La bafarada no hi cap",
     "warningsComicBalloonOverflowDetail": "una bafarada de la vinyeta __panel__ no s'ha pogut col·locar sense tapar una cara, una altra bafarada o la vora; es col·loca on millor hi cap. Escurça el text o dona més espai a la vinyeta",
     "warningsComicUnknownSpeakerTitle": "Personatge sense punt",
-    "warningsComicUnknownSpeakerDetail": "cap dibuix marca aquest personatge i el repartiment no l'inclou; les seves cues apunten a la vora de la vinyeta"
+    "warningsComicUnknownSpeakerDetail": "cap dibuix marca aquest personatge i el repartiment no l'inclou; les seves cues apunten a la vora de la vinyeta",
+    "comicSplitterLabel": "Separador de vinyetes __n__ de __total__",
+    "comicSplitterHint": "Les fletxes mouen el separador un 1 % (amb Maj, un 5 %). Retorn escriu la nova posició al split de la pàgina; Escapada la desfà.",
+    "comicPanelToolbar": "Vinyeta __n__",
+    "comicSplitHorizontal": "Divideix amb una línia horitzontal",
+    "comicSplitVertical": "Divideix amb una línia vertical",
+    "comicMergeNext": "Uneix amb la vinyeta següent",
+    "comicLetterboxHint": "La vinyeta __n__ quedarà amb bandes: la zona segura de la seva imatge ja no cap a la cel·la."
   },
   "PlainLanguage": {
     "heading": "En poques paraules",

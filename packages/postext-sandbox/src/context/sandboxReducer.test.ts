@@ -326,3 +326,29 @@ describe('book loading and drafts', () => {
     expect(sandboxReducer(base, { type: 'SET_PRESET', payload: { id: 'x', config: undefined } }).presetConfig).toBeUndefined();
   });
 });
+
+describe('EDIT_CHAPTER_MARKDOWN (edits made on the previews, #568)', () => {
+  const page = ':::page{split="30 / *"}\n::panel\n::panel\n:::\n';
+  const change = { from: 15, to: 17, insert: '45', expect: '30' };
+
+  it('applies the changes to the active chapter and its mirror', () => {
+    const s = baseState({ markdown: page, chapters: [ch('a', page), ch('b', '# B')] });
+    const next = sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes: [change], baseLength: page.length } });
+    expect(next.markdown).toContain('split="45 / *"');
+    expect(next.chapters[0]!.markdown).toBe(next.markdown);
+  });
+
+  it('edits another chapter without touching the editor text', () => {
+    const s = baseState({ chapters: [ch('a', '# A'), ch('b', page)] });
+    const next = sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'b', changes: [change] } });
+    expect(next.markdown).toBe('# A');
+    expect(next.chapters[1]!.markdown).toContain('split="45 / *"');
+  });
+
+  it('refuses changes computed on another text', () => {
+    const s = baseState({ markdown: page, chapters: [ch('a', page), ch('b', '# B')] });
+    expect(sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes: [change], baseLength: page.length + 1 } })).toBe(s);
+    expect(sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes: [{ ...change, expect: '31' }] } })).toBe(s);
+    expect(sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'zz', changes: [change] } })).toBe(s);
+  });
+});

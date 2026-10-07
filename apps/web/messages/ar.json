@@ -3566,7 +3566,14 @@
     "warningsComicBalloonOverflowTitle": "الفقاعة لا تتسع",
     "warningsComicBalloonOverflowDetail": "تعذّر وضع فقاعة في الإطار __panel__ دون أن تغطي وجهًا أو فقاعة أخرى أو الحدّ؛ فوُضعت حيث تتسع أكثر. اختصر النص أو امنح الإطار مساحة أكبر",
     "warningsComicUnknownSpeakerTitle": "متحدث بلا نقطة",
-    "warningsComicUnknownSpeakerDetail": "لا يعلّم أي رسم هذا المتحدث، ولا تذكره قائمة الشخصيات؛ فتتجه ذيوله إلى حافة الإطار"
+    "warningsComicUnknownSpeakerDetail": "لا يعلّم أي رسم هذا المتحدث، ولا تذكره قائمة الشخصيات؛ فتتجه ذيوله إلى حافة الإطار",
+    "comicSplitterLabel": "فاصل اللوحات __n__ من __total__",
+    "comicSplitterHint": "تحرّك مفاتيح الأسهم الفاصل بنسبة 1 % (ومع Shift بنسبة 5 %). يكتب Enter الموضع الجديد في split الصفحة، ويعيده Escape إلى مكانه.",
+    "comicPanelToolbar": "اللوحة __n__",
+    "comicSplitHorizontal": "تقسيم بخط أفقي",
+    "comicSplitVertical": "تقسيم بخط عمودي",
+    "comicMergeNext": "دمج مع اللوحة التالية",
+    "comicLetterboxHint": "ستظهر اللوحة __n__ بأشرطة فارغة: لم تعد المنطقة الآمنة لصورتها تتسع في الخلية."
   },
   "PlainLanguage": {
     "heading": "باختصار",

@@ -16,6 +16,8 @@ import {
   type ResourceLocation,
 } from './geometry';
 import { resourceTextAtPixel, type ResourceTextHit } from './resourceHit';
+import type { SandboxLabels } from '../../types/labels';
+import { createComicEditor, slotComicSurface, type ComicEditor, type ComicSurface } from '../comics/comicEditing';
 
 function sameTarget(a: ResourceFocusTarget, b: ResourceFocusTarget): boolean {
   if (a.kind !== b.kind) return false;
@@ -127,6 +129,9 @@ export function attachSlotClickHandler(
    *  whole book stitched from per-chapter layouts (each page's offsets are
    *  its chapter's). Null: every page maps through `sourceRef`. */
   pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>,
+  /** The interface strings: with them, a comic page's splitters and panels
+   *  can be edited on the page (#568). */
+  labelsRef?: MutableRefObject<SandboxLabels>,
 ): void {
   slot.style.cursor = 'text';
   attachPageInteraction(slot, {
@@ -153,6 +158,7 @@ export function attachSlotClickHandler(
     setCursor: (cursor) => {
       slot.style.cursor = cursor;
     },
+    ...(labelsRef ? { labelsRef, comicSurface: slotComicSurface(slot, pageIndex, pageWidthPx, pageHeightPx) } : {}),
   });
 }
 
@@ -176,14 +182,30 @@ export interface PageInteractionOptions {
   pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>;
   /** Brings a resource or anchor of the document into view. */
   showLocation: (doc: VDTDocument, loc: ResourceLocation) => void;
-  /** The cursor over the pages: `text`, or `pointer` over a link. */
-  setCursor: (cursor: 'text' | 'pointer') => void;
+  /** The cursor over the pages: `text`, `pointer` over a link, a resize
+   *  cursor over a comic splitter. */
+  setCursor: (cursor: PageCursor) => void;
   /** Whether the pointer is the reader's to select with now (the Folio's
    *  select mode); always, when left out. */
   enabled?: () => boolean;
   /** A finger drags a selection too (the Folio, where it never scrolls);
    *  otherwise a touch drag scrolls and a tap only follows links. */
   touchSelects?: boolean;
+  /** Where the comic page tools draw (#568); with `labelsRef`, a comic
+   *  page's splitters drag and its panels split and merge. */
+  comicSurface?: ComicSurface;
+  labelsRef?: MutableRefObject<SandboxLabels>;
+  /** Whether the comic tools are on now; `enabled` when left out. */
+  comicEnabled?: () => boolean;
+}
+
+/** The cursors the page interaction sets. */
+export type PageCursor = 'text' | 'pointer' | 'default' | 'row-resize' | 'col-resize';
+
+/** What the page interaction hands back to its viewer. */
+export interface PageInteraction {
+  /** The comic tools, when the viewer has them. */
+  comic: ComicEditor | null;
 }
 
 /**
@@ -193,13 +215,33 @@ export interface PageInteractionOptions {
  * resource. `locate` says which page and point an event falls on, so a
  * single element can carry several pages (the Folio's spread).
  */
-export function attachPageInteraction(target: HTMLElement, opts: PageInteractionOptions): void {
+export function attachPageInteraction(target: HTMLElement, opts: PageInteractionOptions): PageInteraction {
   const { locate, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef, resourcesRef, pageSourceRef } = opts;
   const on = () => opts.enabled?.() ?? true;
   // The page the drag (or the click) started on: its book maps the offsets.
   let pageIndex = -1;
   const sourceOfPage = (page = pageIndex): ComposedBook | null =>
     pageSourceRef?.current ? pageSourceRef.current(page) : sourceRef.current;
+
+  // The comic page tools (#568): a splitter under the pointer is dragged
+  // instead of the text, a panel shows its toolbar.
+  const comic = opts.comicSurface && opts.labelsRef
+    ? createComicEditor({
+        surface: opts.comicSurface,
+        docRef,
+        sourceOfPage: (page) => sourceOfPage(page),
+        dispatchRef,
+        ...(resourcesRef ? { resourcesRef } : {}),
+        labelsRef: opts.labelsRef,
+        enabled: () => (opts.comicEnabled ?? on)(),
+        onDragEnd: (pointerId) => {
+          try { target.releasePointerCapture(pointerId); } catch { /* not captured */ }
+        },
+      })
+    : null;
+  // A press that went to the comic tools: its click and the mouse events
+  // that follow it are not the text's.
+  let comicPress = false;
 
   const resolveSheetPoint = (ev: MouseEvent): PagePointer | null => locate(ev);
   // The point in the page's flow frame, where the text, the floats and
@@ -350,6 +392,13 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     const at = locate(ev);
     if (!at) return;
     pageIndex = at.pageIndex;
+    if (comic?.pointerDown(ev, at)) {
+      comicPress = true;
+      ev.preventDefault();
+      try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
+      return;
+    }
+    comicPress = false;
     const resourceHit = resolveResourceHit(ev);
     const offset = resourceHit ? resourceHit.offset : resolveOffset(ev);
     if (offset === null) return;
@@ -363,8 +412,17 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   });
 
   target.addEventListener('pointermove', (ev) => {
+    if (comic?.dragging()) {
+      comic.dragMove(ev, locate(ev));
+      return;
+    }
     if (dragPointerId === null) {
+      const comicCursor = comic ? comic.hover(ev, ev.pointerType === 'touch' && !opts.touchSelects ? null : locate(ev)) : null;
       if (!on()) return;
+      if (comicCursor) {
+        opts.setCursor(comicCursor as PageCursor);
+        return;
+      }
       // Hover feedback: refs, contents rows and design images read as links.
       opts.setCursor(isFollowable(resolveLink(ev), ev) || resolvePageTarget(ev) !== null || resolveDesignImage(ev) !== null ? 'pointer' : 'text');
       return;
@@ -394,6 +452,10 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   });
 
   const endDrag = (ev: PointerEvent): void => {
+    if (comic?.dragging()) {
+      comic.pointerUp(ev, ev.type === 'pointercancel');
+      return;
+    }
     if (dragPointerId === null || ev.pointerId !== dragPointerId) return;
     const wasDragging = dragging;
     try { target.releasePointerCapture(ev.pointerId); } catch { /* ignore */ }
@@ -411,8 +473,21 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
 
   target.addEventListener('pointerup', endDrag);
   target.addEventListener('pointercancel', endDrag);
+  if (comic) {
+    target.addEventListener('pointerleave', () => comic.leave());
+    // Text selection starts on the mouse press a pointer press turns into.
+    target.addEventListener('mousedown', (ev) => {
+      if (comicPress) ev.preventDefault();
+    });
+  }
 
   target.addEventListener('click', (ev) => {
+    if (comicPress) {
+      comicPress = false;
+      ev.preventDefault();
+      ev.stopPropagation();
+      return;
+    }
     if (suppressNextClick) {
       suppressNextClick = false;
       ev.preventDefault();
@@ -467,6 +542,10 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     if (!on()) return;
     const at = locate(ev);
     if (!at) return;
+    if (comic?.onSplitter(at)) {
+      ev.preventDefault();
+      return;
+    }
     pageIndex = at.pageIndex;
     const designImageId = touchTap ? resolveDesignImage(ev) : null;
     if (designImageId !== null) {
@@ -485,4 +564,6 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     ev.preventDefault();
     focusEditor(offset, offset, true);
   });
+
+  return { comic };
 }

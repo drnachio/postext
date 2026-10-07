@@ -2952,5 +2952,12 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsComicBalloonOverflowDetail: t("warningsComicBalloonOverflowDetail"),
     warningsComicUnknownSpeakerTitle: t("warningsComicUnknownSpeakerTitle"),
     warningsComicUnknownSpeakerDetail: t("warningsComicUnknownSpeakerDetail"),
+    comicSplitterLabel: t("comicSplitterLabel"),
+    comicSplitterHint: t("comicSplitterHint"),
+    comicPanelToolbar: t("comicPanelToolbar"),
+    comicSplitHorizontal: t("comicSplitHorizontal"),
+    comicSplitVertical: t("comicSplitVertical"),
+    comicMergeNext: t("comicMergeNext"),
+    comicLetterboxHint: t("comicLetterboxHint"),
   };
 }

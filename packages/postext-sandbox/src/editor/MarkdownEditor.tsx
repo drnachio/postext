@@ -5,6 +5,7 @@ import { DEFAULT_CHIP_STYLES, canonicalLocaleTag, defaultResourceTypes } from 'p
 import { documentLanguage } from '../context/documentDirection';
 import { defaultDocumentLocale } from '../controls/hyphenation';
 import { useCodeMirror } from './useCodeMirror';
+import { registerEditorView } from './viewerEdits';
 import { EditorToolbar } from './EditorToolbar';
 import { useUiRtl } from '../ui/direction';
 import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
@@ -75,6 +76,16 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     rtl,
     lang,
   });
+
+  // Edits made on the previews (#568) undo through this editor's history
+  // while it is open.
+  useEffect(() => {
+    registerEditorView(state.activeChapterId, viewRef.current);
+    const id = state.activeChapterId;
+    return () => registerEditorView(id, null);
+    // The editor is keyed by chapter: one id for its whole life.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // If this editor unmounts (e.g. user switches to another viewport tab),
   // force focused=false so the canvas overlay stops rendering the caret.

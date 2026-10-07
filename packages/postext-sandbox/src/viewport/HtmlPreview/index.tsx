@@ -28,6 +28,7 @@ import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
 import { attachSlotClickHandler } from '../CanvasPreview/interaction';
+import { syncComicEditors } from '../comics/comicEditing';
 import { usePageNavigator } from '../usePageNavigator';
 import type { BookPageMap } from '../usePageHashSync';
 import { composedBookPageMap } from '../../book/stitch';
@@ -153,6 +154,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const localeRef = useRef(state.locale);
   const resourcesRef = useRef(state.resources);
   fontScaleRef.current = fontScale;
+  const labelsRef = useRef(state.labels);
+  labelsRef.current = state.labels;
   columnModeRef.current = columnMode;
   sourceRef.current = deferredSource;
   wholeBookRef.current = deferredWholeBook;
@@ -506,6 +509,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           builtSourceRef,
           navigateRef,
           resourcesRef,
+          undefined,
+          labelsRef,
         );
       };
 
@@ -647,6 +652,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
+    // The comic splitter handles follow the new layout (#568).
+    syncComicEditors();
     const debug = resolveDebugConfig(state.config.debug);
     const source = builtSourceRef.current;
     const mapped = source ? toBookSelection(source, activeChapterId, state.selection) : state.selection;
