@@ -1450,6 +1450,31 @@ function layoutTextElement(
   return [main, capPrim];
 }
 
+/**
+ * One design text element laid out on its own, its box's top left corner at
+ * `(x, y)` and nothing around it to clamp it: the text `text` as given (no
+ * placeholders are read; inline marks are when `el.inlineMarks`). Set
+ * vertically when `el.writingMode` is `'vertical-rl'` and the text is
+ * measured horizontally now. Used by the comics lettering, which chooses
+ * every line break itself (newlines) and sets each balloon as design text.
+ */
+export function layoutTextElementAt(
+  el: ResolvedDesignTextElement,
+  text: string,
+  x: number,
+  y: number,
+  dpi: number,
+  frame: { direction?: 'ltr' | 'rtl'; mirrored?: boolean } = {},
+): ResolvedTextPrimitive {
+  const room = 1e6;
+  const pin: AnchorResult = { anchorX: x, anchorY: y, pinX: 'start', pinY: 'start' };
+  const container: AnchorReference = { x: x - room, y: y - room, width: 2 * room, height: 2 * room };
+  const prims = el.writingMode === 'vertical-rl' && getMeasureWritingMode() !== 'vertical-rl'
+    ? layoutVerticalTextElement(el, text, pin, container, dpi, false)
+    : layoutTextElement(el, text, pin, container, dpi, false, frame);
+  return prims[0]!;
+}
+
 const flipPin = (p: Pin): Pin => (p === 'start' ? 'end' : p === 'end' ? 'start' : 'middle');
 
 /**

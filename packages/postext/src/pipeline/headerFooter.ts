@@ -99,7 +99,10 @@ function textAlignOffsetX(
   return Math.max(0, (contentWidth - lineWidth) / 2);
 }
 
-function primitiveToBlock(prim: ResolvedPrimitive): VDTDesignBlock {
+/** A laid-out design primitive as the VDT block the renderers paint (also
+ *  used by the comics lettering, which lays out balloon text as design
+ *  text). */
+export function primitiveToBlock(prim: ResolvedPrimitive): VDTDesignBlock {
   if (prim.kind === 'text') return textPrimitiveToBlock(prim);
   if (prim.kind === 'rule') return rulePrimitiveToBlock(prim);
   if (prim.kind === 'image') return imagePrimitiveToBlock(prim);
