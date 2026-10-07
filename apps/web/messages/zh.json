@@ -3566,7 +3566,14 @@
     "warningsComicBalloonOverflowTitle": "对白框放不下",
     "warningsComicBalloonOverflowDetail": "第__panel__格的一个对白框无论放在哪里都会挡住脸、别的对白框或边框，已放在最合适的位置。请缩短文字或给这一格更多空间",
     "warningsComicUnknownSpeakerTitle": "没有说话点的角色",
-    "warningsComicUnknownSpeakerDetail": "没有画面标出这个角色，角色表里也没有它；它的尾巴指向分格边缘"
+    "warningsComicUnknownSpeakerDetail": "没有画面标出这个角色，角色表里也没有它；它的尾巴指向分格边缘",
+    "comicSplitterLabel": "分格线 __n__ / __total__",
+    "comicSplitterHint": "方向键将分格线移动 1%（按住 Shift 为 5%）。按 Enter 将新位置写入页面的 split；按 Esc 恢复原位。",
+    "comicPanelToolbar": "第 __n__ 格",
+    "comicSplitHorizontal": "用水平线分割",
+    "comicSplitVertical": "用垂直线分割",
+    "comicMergeNext": "与下一格合并",
+    "comicLetterboxHint": "第 __n__ 格将出现留边：图片的安全区域已放不进该格。"
   },
   "PlainLanguage": {
     "heading": "简单来说",

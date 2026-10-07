@@ -3566,7 +3566,14 @@
     "warningsComicBalloonOverflowTitle": "Balloon does not fit",
     "warningsComicBalloonOverflowDetail": "a balloon of panel __panel__ could not be placed without covering a face, another balloon or the border; it is set where it fits best. Shorten the text or give the panel more room",
     "warningsComicUnknownSpeakerTitle": "Speaker with no point",
-    "warningsComicUnknownSpeakerDetail": "no picture marks this speaker and the cast does not list it; its tails point to the panel's edge"
+    "warningsComicUnknownSpeakerDetail": "no picture marks this speaker and the cast does not list it; its tails point to the panel's edge",
+    "comicSplitterLabel": "Panel splitter __n__ of __total__",
+    "comicSplitterHint": "Arrow keys move the splitter by 1 % (with Shift, 5 %). Enter writes the new position into the page's split; Escape puts it back.",
+    "comicPanelToolbar": "Panel __n__",
+    "comicSplitHorizontal": "Split with a horizontal line",
+    "comicSplitVertical": "Split with a vertical line",
+    "comicMergeNext": "Merge with the next panel",
+    "comicLetterboxHint": "Panel __n__ will be letterboxed: its picture's safe area no longer fits the cell."
   },
   "PlainLanguage": {
     "heading": "In short",

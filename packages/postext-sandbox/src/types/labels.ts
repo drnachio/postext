@@ -3043,4 +3043,13 @@ export interface SandboxLabels {
   warningsComicBalloonOverflowDetail: string;
   warningsComicUnknownSpeakerTitle: string;
   warningsComicUnknownSpeakerDetail: string;
+
+  // Comic page tools on the previews (#568)
+  comicSplitterLabel: string;
+  comicSplitterHint: string;
+  comicPanelToolbar: string;
+  comicSplitHorizontal: string;
+  comicSplitVertical: string;
+  comicMergeNext: string;
+  comicLetterboxHint: string;
 }

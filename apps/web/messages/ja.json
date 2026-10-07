@@ -3566,7 +3566,14 @@
     "warningsComicBalloonOverflowTitle": "フキダシが収まらない",
     "warningsComicBalloonOverflowDetail": "コマ__panel__のフキダシを、顔やほかのフキダシや枠にかからずに置けませんでした。いちばん収まりのよい位置に置いています。文字を短くするか、コマを広げてください",
     "warningsComicUnknownSpeakerTitle": "位置のない話し手",
-    "warningsComicUnknownSpeakerDetail": "この話し手を指定した絵がなく、登場人物にもいません。しっぽはコマの端を指します"
+    "warningsComicUnknownSpeakerDetail": "この話し手を指定した絵がなく、登場人物にもいません。しっぽはコマの端を指します",
+    "comicSplitterLabel": "コマ割り線 __n__ / __total__",
+    "comicSplitterHint": "矢印キーで割り線を 1% 動かします（Shift で 5%）。Enter で新しい位置をページの split に書き込み、Esc で元に戻します。",
+    "comicPanelToolbar": "コマ __n__",
+    "comicSplitHorizontal": "横線で分割",
+    "comicSplitVertical": "縦線で分割",
+    "comicMergeNext": "次のコマと結合",
+    "comicLetterboxHint": "コマ __n__ は余白付きになります：画像のセーフエリアがコマに収まりません。"
   },
   "PlainLanguage": {
     "heading": "かんたんな説明",
