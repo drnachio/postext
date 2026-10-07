@@ -4,6 +4,8 @@
  *   const LANG = 'en'; // @lang           → the edition's language
  *   /* @content *\/ ''                    → a literal of content.<lang>.md
  *   /* @content:<slot> *\/ ''             → a literal of content.<slot>.<lang>.md
+ *   /* @content@<lang> *\/ ''             → content.<lang>.md of that edition, in every
+ *                                          edition (a manga's original beside each lettering)
  *   // @kit …                             → the kit blocks in `recipe.kit` (last line)
  *
  * The composed file is self-sufficient: CodePen, Copy, the .html download,
@@ -19,7 +21,7 @@ import { KIT_ORDER } from "./types.ts";
 export const COMPOSE_VERSION = 1;
 
 const LANG_MARKER = /^(\s*const LANG = )'([a-z]{2})'(;\s*\/\/ @lang\b.*)$/m;
-const CONTENT_MARKER = /\/\* @content(?::([a-z0-9-]+))? \*\/ ''/g;
+const CONTENT_MARKER = /\/\* @content(?::([a-z0-9-]+))?(?:@([a-z]{2}))? \*\/ ''/g;
 const KIT_MARKER = /^\/\/ @kit\b.*$/gm;
 const REGION_START = /^\s*\/\/ #region ([a-z0-9-]+)(?::\s*(.*))?$/;
 const REGION_END = /^\s*\/\/ #endregion\b/;
@@ -112,7 +114,9 @@ export function composePen(
   for (const match of js.matchAll(CONTENT_MARKER)) {
     const index = match.index ?? 0;
     out += js.slice(last, index);
-    const literal = contentLiteral(contentFor(sources, match[1], variant, fallback));
+    // `@<lang>` pins the edition: every edition inlines that one's file.
+    const pinned = match[2] as SampleLocale | undefined;
+    const literal = contentLiteral(contentFor(sources, match[1], pinned ?? variant, pinned ?? fallback));
     const start = countLines(out) + 1;
     out += literal;
     contentRanges.push([start, start + countLines(literal)]);

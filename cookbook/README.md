@@ -231,6 +231,7 @@ CodePen, Copy, the `.html` download and the capture all run, so they are identic
 | `const LANG = 'en'; // @lang` | the edition's language |
 | `/* @content */ ''` | a literal of `content.<lang>.md` (falling back to `sample.locales[0]`) |
 | `/* @content:<slot> */ ''` | a literal of `content.<slot>.<lang>.md` |
+| `/* @content@<lang> */ ''` | a literal of `content.<lang>.md` of that edition, in every edition (the Japanese original a manga sets beside each lettering) |
 | `// @kit` (last line) | the kit blocks listed in `recipe.json` `kit`, in the order core, fonts, viewer, pdf, images, cjk, arabic, book, comics |
 | `// #region <id>: <title>` … `// #endregion` | kept as is; the write-up excerpts regions by id |
 
