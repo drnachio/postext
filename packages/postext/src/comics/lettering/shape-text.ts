@@ -24,7 +24,7 @@ import { cjkRegionOf, directionOf, isJapaneseLanguage, languageOf } from '../../
 import type { CjkLineBreakLevel } from '../../measure/cjkClasses';
 import type { CjkRegion, ResolvedDesignTextElement } from '../../types';
 import type { VDTDesignTextBlock } from '../../vdt';
-import { breakPoints, hasMarks, markupOf, type BreakPoint, type PreparedText } from './text';
+import { breakPoints, hasMarks, isIsolateControl, markupOf, type BreakPoint, type PreparedText } from './text';
 import { boundsOf } from './geom';
 import type { LetteringStyle, Rect } from './types';
 
@@ -506,7 +506,10 @@ function rubyBlocks(
     c.lines.forEach((line, li) => {
       const pl = printed[li];
       const box = ink[li];
-      if (!pl || !box || pl.order || pl.runs?.some((r) => r.rtl)) return;
+      if (!pl || !box) return;
+      // A line the bidi algorithm reorders (a Japanese name in an Arabic
+      // balloon): where each base sits comes from its run's place.
+      const where = pl.order || pl.runs?.some((r) => r.rtl) ? reorderedSpan(p, line, pl, m) : undefined;
       let k = line.start;
       while (k < line.end) {
         const r = p.style[k]!.ruby;
@@ -516,8 +519,17 @@ function rubyBlocks(
         }
         let e = k + 1;
         if (r.group) while (e < line.end && p.style[e]!.ruby?.id === r.id) e++;
-        const from = m.width(line.start, k);
-        const to = m.width(line.start, e);
+        let from = m.width(line.start, k);
+        let to = m.width(line.start, e);
+        if (where) {
+          const span = where(k, e);
+          // A base cut across runs, or set right to left: no reading.
+          if (!span) {
+            k = e;
+            continue;
+          }
+          [from, to] = span;
+        }
         const reading = r.text;
         const el: ResolvedDesignTextElement = {
           kind: 'text', id: 'ruby', parity: 'all',
@@ -549,6 +561,51 @@ function rubyBlocks(
     });
   }, region);
   return out;
+}
+
+/**
+ * Where a range `[k, e)` of the prepared text sits along a printed line
+ * whose runs the bidi algorithm reordered: `[from, to]` from the line's
+ * start (`xOffset`), or undefined when the range is not inside one
+ * left-to-right run. The runs carry the printed text in logical order
+ * (isolate controls stripped); `order` is the visual order they are
+ * painted in.
+ */
+function reorderedSpan(
+  p: PreparedText,
+  line: { start: number; end: number },
+  pl: VDTDesignTextBlock['lines'][number],
+  m: Measurer,
+): (k: number, e: number) => [number, number] | undefined {
+  const runs = pl.runs ?? [];
+  const order = pl.order ?? runs.map((_, i) => i);
+  // Visual x of each run.
+  const xs = new Array<number>(runs.length).fill(0);
+  let x = 0;
+  for (const i of order) {
+    xs[i] = x;
+    if (!runs[i]!.stacked) x += runs[i]!.width;
+  }
+  // The prepared-text index where each run starts (printed characters only).
+  const kept: number[] = [];
+  for (let q = line.start; q < line.end; q++) if (!isIsolateControl(p.text[q]!)) kept.push(q);
+  const starts: number[] = [];
+  let printed = 0;
+  for (const r of runs) {
+    starts.push(kept[printed] ?? line.end);
+    printed += r.text.length;
+  }
+  return (k, e) => {
+    for (let i = 0; i < runs.length; i++) {
+      const a = starts[i]!;
+      const b = i + 1 < runs.length ? starts[i + 1]! : line.end;
+      if (k < a || e > b) continue;
+      if (runs[i]!.rtl) return undefined;
+      const from = xs[i]! + m.width(a, k);
+      return [from, from + m.width(k, e)];
+    }
+    return undefined;
+  };
 }
 
 /** The ink box of every line (column) of a laid-out block. */

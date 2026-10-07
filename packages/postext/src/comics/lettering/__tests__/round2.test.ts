@@ -192,3 +192,31 @@ describe('CJK lines break between words', () => {
     for (const l of lines) expect(l.endsWith('魔') || l.endsWith('大')).toBe(false);
   });
 });
+
+describe('ruby on a line the bidi algorithm reorders', () => {
+  const ar = presetLetteringStyles({ fontSizePx: EM, locale: 'ar', fontFamily: 'Test' });
+  it('sets the reading over a Japanese name inside an Arabic balloon', () => {
+    // Logically last, the name is painted at the left end of the line.
+    const spans = [
+      { text: 'أهلًا يا ', bold: false, italic: false },
+      { text: '山田', bold: false, italic: false, ruby: { text: 'やまだ', group: true, id: 1 } },
+    ];
+    const p = panel(rect(0, 0, 800, 300), { locale: 'ar', direction: 'rtl' });
+    const [b] = letterPanel(p, [item('1', 0, undefined, spans, { ...ar.speech!, tail: 'none' })]);
+    const [base, ...rubies] = b!.text;
+    expect(base!.lines).toHaveLength(1);
+    const line = base!.lines[0]!;
+    expect(line.runs?.some((r) => r.rtl)).toBe(true);
+    expect(rubies.map((r) => r.lines[0]!.text)).toEqual(['やまだ']);
+    // Over 山田, which the line paints first (at its left end).
+    const runs = line.runs!;
+    const order = line.order ?? runs.map((_, i) => i);
+    let x = base!.bbox.x + line.xOffset;
+    let nameX = Number.NaN;
+    for (const i of order) {
+      if (runs[i]!.text.includes('山田')) nameX = x + runs[i]!.text.indexOf('山田') * EM + EM;
+      x += runs[i]!.width;
+    }
+    expect(Math.abs(centre(rubies[0]!.bbox).x - nameX)).toBeLessThan(0.6 * EM);
+  });
+});

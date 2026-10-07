@@ -128,8 +128,10 @@ export interface LetteringStyle {
  *  line break), or inline spans as the Markdown parser gives them
  *  (`parseInlineFormatting` / `parseInlineSnippetSpans`). Bold, italic,
  *  superscript and subscript, and in vertical text `:tcy` / `:upright` /
- *  `:sideways` are set; ruby, isolates and other annotations print as
- *  their plain text. */
+ *  `:sideways` are set; ruby is set at half size over its base (beside a
+ *  column), on lines the bidi algorithm reorders too, unless the base is
+ *  itself right to left; `:ltr` / `:rtl` isolate their run; other
+ *  annotations print as their plain text. */
 export type LetteringText = string | readonly InlineSpan[];
 
 /** One balloon, caption, sound effect or note of a panel's script. */
