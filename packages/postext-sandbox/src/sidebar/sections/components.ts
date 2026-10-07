@@ -32,6 +32,11 @@ import { PdfGenerationSection } from './PdfGenerationSection';
 import { FolioSection } from './FolioSection';
 import { DebugSection } from './DebugSection';
 import { WarningsConfigSection } from './WarningsConfigSection';
+import { ComicsPanelsSection } from './comics/ComicsPanelsSection';
+import { ComicsPanelStylesSection } from './comics/ComicsPanelStylesSection';
+import { ComicsLetteringSection } from './comics/ComicsLetteringSection';
+import { ComicsBalloonStylesSection } from './comics/ComicsBalloonStylesSection';
+import { ComicsCastSection } from './comics/ComicsCastSection';
 
 /** Section id → component. Kept apart from the registry so the registry
  *  stays a pure data module. */
@@ -63,6 +68,11 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'videoStyle': VideoStyleSection,
   'calloutStyles': CalloutStylesSection,
   'chipStyles': ChipStylesSection,
+  'comicsPanels': ComicsPanelsSection,
+  'comicsPanelStyles': ComicsPanelStylesSection,
+  'comicsLettering': ComicsLetteringSection,
+  'comicsBalloonStyles': ComicsBalloonStylesSection,
+  'comicsCast': ComicsCastSection,
   'htmlViewer': HtmlViewerSection,
   'folio': FolioSection,
   'pdfGeneration': PdfGenerationSection,

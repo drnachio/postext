@@ -13,6 +13,7 @@ import { chipHighlight, chipTheme } from './chipSyntax';
 import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { verseHighlight, verseTheme } from './verseSyntax';
+import { comicHighlight, comicTheme } from './comicSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
 import { bidiLines, rtlEditor } from './bidiLines';
@@ -98,6 +99,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       orientationHighlight,
       verseTheme,
       verseHighlight,
+      comicTheme,
+      comicHighlight,
       annotationTheme,
       annotationHighlight,
       indexTheme,
