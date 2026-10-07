@@ -53,12 +53,12 @@ Os atributos da linha de abertura:
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>split="…"</code></td><td>Como a moldura é cortada em células (veja <a href="#splitting-the-page">Dividir a página</a>). Sem ele, os quadros são empilhados em fileiras de mesma altura.</td></tr>
+    <tr><td><code>split="…"</code></td><td>Como a moldura é cortada em células (veja <a href="#dividir-a-página">Dividir a página</a>). Sem ele, os quadros são empilhados em fileiras de mesma altura.</td></tr>
     <tr><td><code>gutter=4mm</code>, <code>gutter="4mm 2mm"</code></td><td>O espaço entre as fileiras e, quando há um segundo valor, entre quadros lado a lado. Um número sem unidade está em milímetros. Sem ele: <code>comics.gutter</code> (4 mm e 2 mm).</td></tr>
     <tr><td><code>style=…</code></td><td>Um estilo de quadro nomeado para todos os quadros da página (<code>comics.panelStyles</code>).</td></tr>
     <tr><td><code>bleed</code></td><td>Todo quadro que toca a moldura se estende até o refile e entra na sangria.</td></tr>
-    <tr><td><code>direction=rtl</code>, <code>dir=ltr</code></td><td>O sentido de leitura desta página, seja qual for o da configuração (veja <a href="#reading-direction">Sentido de leitura</a>).</td></tr>
-    <tr><td><code>spread</code></td><td>Distribui a página por duas páginas lado a lado (veja <a href="#spreads">Páginas duplas</a>).</td></tr>
+    <tr><td><code>direction=rtl</code>, <code>dir=ltr</code></td><td>O sentido de leitura desta página, seja qual for o da configuração (veja <a href="#sentido-de-leitura">Sentido de leitura</a>).</td></tr>
+    <tr><td><code>spread</code></td><td>Distribui a página por duas páginas lado a lado (veja <a href="#páginas-duplas">Páginas duplas</a>).</td></tr>
   </tbody>
 </table>
 
@@ -147,11 +147,11 @@ Uma linha `::panel{…}` inicia um quadro; o seu roteiro vai até a próxima lin
     <tr><td><code>style=…</code></td><td>Um estilo de quadro nomeado para este quadro.</td></tr>
     <tr><td><code>border=none</code>, <code>border=0.5mm</code></td><td>Sem borda, ou uma borda com essa espessura.</td></tr>
     <tr><td><code>bg=#1b1b2f</code></td><td>O fundo do quadro: uma cor, um id da paleta ou <code>none</code>.</td></tr>
-    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Veja <a href="#bleed">Sangria</a>.</td></tr>
-    <tr><td><code>pad="…"</code></td><td>Veja <a href="#padding-and-insets">Recuo interno e quadros sobrepostos</a>.</td></tr>
+    <tr><td><code>bleed</code>, <code>bleed="top start"</code>, <code>bleed=false</code></td><td>Veja <a href="#sangria">Sangria</a>.</td></tr>
+    <tr><td><code>pad="…"</code></td><td>Veja <a href="#recuo-interno-e-quadros-sobrepostos">Recuo interno e quadros sobrepostos</a>.</td></tr>
     <tr><td><code>inset="x y w h"</code></td><td>Coloca este quadro sobre o anterior em vez de lhe dar uma célula.</td></tr>
-    <tr><td><code>pop=&lt;id&gt;</code></td><td>Um recorte desenhado por cima da borda (veja <a href="#pop-out-art">Arte que sai do quadro</a>).</td></tr>
-    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Espelha o desenho deste quadro, ou o mantém como foi desenhado quando a página espelha os seus desenhos (veja <a href="#reading-direction">Sentido de leitura</a>).</td></tr>
+    <tr><td><code>pop=&lt;id&gt;</code></td><td>Um recorte desenhado por cima da borda (veja <a href="#arte-que-sai-do-quadro">Arte que sai do quadro</a>).</td></tr>
+    <tr><td><code>mirror</code>, <code>mirror=false</code></td><td>Espelha o desenho deste quadro, ou o mantém como foi desenhado quando a página espelha os seus desenhos (veja <a href="#sentido-de-leitura">Sentido de leitura</a>).</td></tr>
     <tr><td><code>alt="…"</code></td><td>O texto alternativo do quadro, para o PDF marcado, o HTML e o EPUB. Sem ele: o <code>altText</code> do recurso.</td></tr>
     <tr><td><code>id=…</code></td><td>Um id para o quadro, que as saídas HTML e EPUB usam como âncora.</td></tr>
   </tbody>
@@ -217,6 +217,7 @@ Os atributos de uma linha de roteiro:
     <tr><td><code>join</code>, <code>join=false</code></td><td>Une este balão ao anterior do mesmo personagem, ou o mantém separado, seja o que for que <code>comics.lettering.joinSameSpeaker</code> diga.</td></tr>
     <tr><td><code>break</code></td><td>Deixa o balão atravessar a borda do quadro para a sarjeta ou o quadro seguinte. A travessia não é informada como transbordamento, já que foi pedida; o que o balão cobre do outro lado (um rosto, o balão de outro quadro) continua sendo, e o seu centro fica dentro do próprio quadro.</td></tr>
     <tr><td><code>rotate=-8</code></td><td>Gira o balão ou a onomatopeia, em graus, no sentido horário.</td></tr>
+    <tr><td><code>skew=-8</code></td><td>Inclina as letras esse número de graus (positivo para a frente, como o itálico; negativo para trás), antes de qualquer giro: texto escrito sobre um objeto visto em perspectiva, o título na capa de um livro, uma placa. Com <code>rotate</code>, o letreiramento acompanha ao mesmo tempo a borda superior do objeto e as suas laterais. Um estilo de balão o define para todas as suas linhas com <code>skew</code>.</td></tr>
     <tr><td><code>size=1.5</code></td><td>Muda a escala do letreiramento de uma onomatopeia.</td></tr>
     <tr><td><code>color=#c0392b</code></td><td>A cor do letreiramento: uma cor hexadecimal ou um id da paleta.</td></tr>
     <tr><td><code>font="…"</code></td><td>A fonte desta linha.</td></tr>
@@ -433,14 +434,16 @@ caption: The Saturday market, from the clock tower.
 :::
 ```
 
-Uma página dupla começa num verso, a página par, para que as duas metades fiquem frente a frente: uma página em branco é acrescentada antes dela quando a HQ começaria num recto, inclusive bem no início de um livro, onde a página 1 fica sozinha. Num livro com encadernação à esquerda, o verso é a página da esquerda; num livro com encadernação à direita (árabe, japonês e chinês verticais), é a da direita. Cada página leva a sua metade: os quadros que chegam ao seu lado, cortados na lombada, e o desenho de um quadro que atravessa a lombada aparece nas duas páginas. Os quadros com sangria sangram pela cabeça, pelo pé e pelas bordas externas, nunca na lombada. Nada é letreirado numa faixa de 8 mm em volta da lombada, onde a encadernação o engoliria: um balão fixado ali desliza para o lado mais próximo. Cada balão fica na página que contém o seu centro.
+Uma página dupla começa num verso, a página par, para que as duas metades fiquem frente a frente: uma página em branco é acrescentada antes dela quando a HQ começaria num recto, inclusive bem no início de um livro, onde a página 1 fica sozinha. Num livro com encadernação à esquerda, o verso é a página da esquerda; num livro com encadernação à direita (árabe, japonês e chinês verticais, uma HQ lida da direita para a esquerda), é a da direita. Cada página leva a sua metade: os quadros que chegam ao seu lado, cortados na lombada, e o desenho de um quadro que atravessa a lombada aparece nas duas páginas. Os quadros com sangria sangram pela cabeça, pelo pé e pelas bordas externas, nunca na lombada. Nada é letreirado numa faixa de 8 mm em volta da lombada, onde a encadernação o engoliria: um balão fixado ali desliza para o lado mais próximo. Cada balão fica na página que contém o seu centro.
 
 ## Sentido de leitura
 
 Uma HQ ocidental é lida da esquerda para a direita: o primeiro quadro de uma fileira fica à esquerda. Mangás e quadrinhos árabes são lidos da direita para a esquerda. O Postext obtém o sentido de `comics.readingDirection`:
 
-- `'auto'` (o padrão): da direita para a esquerda num documento da direita para a esquerda, de modo que uma edição árabe espelha as suas páginas; caso contrário, o sentido para o qual a arte foi desenhada, `comics.artDirection` (`'ltr'` por padrão). Uma edição japonesa de uma HQ ocidental continua da esquerda para a direita; um mangá, com `artDirection: 'rtl'`, continua da direita para a esquerda em qualquer idioma.
+- `'auto'` (o padrão): o sentido do idioma da edição. Da direita para a esquerda num documento da direita para a esquerda, de modo que uma edição árabe espelha as suas páginas; num documento vertical; e em japonês e chinês tradicional (`ja`, `zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`), de modo que uma edição japonesa de uma HQ ocidental é lida da direita para a esquerda, como os mangás. Em qualquer outro idioma, incluídos o chinês simplificado e o coreano (manhua e manhwa hoje são lidos da esquerda para a direita), é o sentido para o qual a arte foi desenhada, `comics.artDirection` (`'ltr'` por padrão): um mangá, com `artDirection: 'rtl'`, é lido da direita para a esquerda em qualquer idioma.
 - `'ltr'` ou `'rtl'` impõe um sentido ao livro inteiro, e o atributo `direction` de uma página o impõe a essa página.
+
+A encadernação acompanha os quadrinhos. Com `page.binding: 'auto'`, um livro cuja seção `comics` é lida da direita para a esquerda é encadernado à direita: a página 1 fica sozinha à esquerda da lombada, as páginas duplas são lidas `[3 | 2]`, os visualizadores viram as páginas para a esquerda, o PDF pede a ordem de páginas da direita para a esquerda e o EPUB declara uma progressão de páginas da direita para a esquerda. A seção `comics` decide pelo livro inteiro, então um capítulo sem páginas de quadrinhos é encadernado como os outros; a `direction` própria de uma página não muda a lombada de lugar. Um documento cujas páginas de quadrinhos seguem os valores padrão, sem seção `comics`, mantém a encadernação do seu texto (basta `comics: {}` para encaderná-lo no sentido de leitura dos seus quadrinhos). `page.binding: 'left'` ou `'right'` continua tendo prioridade. Veja [Encadernação](/pt/docs/configuration#encadernação).
 
 A mesma fonte gera as duas diagramações. Uma página da direita para a esquerda distribui os quadros de cada fileira a partir da direita, então o quadro 1 fica no alto à direita; as inclinações se espelham junto, assim como os lados lógicos de `bleed`, `pad` e as palavras-chave de canto (um recordatório em `top-start` fica no alto à direita). As fileiras mantêm a sua ordem de cima para baixo, e a ordem de leitura do roteiro não muda. O letreiramento também espelha as suas regras: o primeiro balão de um quadro tende para a direita, e o seguinte só pode ficar mais alto se estiver mais à esquerda.
 
@@ -504,7 +507,7 @@ Cada aviso indica a linha ou o atributo a que se refere, e o painel Verificaçõ
     </tr>
   </thead>
   <tbody>
-    <tr><td>Divisão de quadros ilegível<br /><code>comicSplitSyntax</code></td><td>Um valor de <code>split</code> não pode ser lido por inteiro: um caractere solto, um <code>[</code> sem fechar, <code>/</code> e <code>|</code> misturados numa lista, ou uma lista entre colchetes no mesmo eixo da mãe. A parte legível é usada; um valor sem nada legível dá um único quadro.</td><td>Corrija o valor de acordo com a <a href="#splitting-the-page">gramática</a>: um só tipo de separador por lista, e colchetes para mudar de eixo.</td></tr>
+    <tr><td>Divisão de quadros ilegível<br /><code>comicSplitSyntax</code></td><td>Um valor de <code>split</code> não pode ser lido por inteiro: um caractere solto, um <code>[</code> sem fechar, <code>/</code> e <code>|</code> misturados numa lista, ou uma lista entre colchetes no mesmo eixo da mãe. A parte legível é usada; um valor sem nada legível dá um único quadro.</td><td>Corrija o valor de acordo com a <a href="#dividir-a-página">gramática</a>: um só tipo de separador por lista, e colchetes para mudar de eixo.</td></tr>
     <tr><td>Tamanhos de quadro acima de 100 %<br /><code>comicSplitOverflow</code></td><td>Os tamanhos de uma lista somam mais de 100 %. Eles são reduzidos, e cada <code>&#42;</code> mantém 5 %.</td><td>Diminua os tamanhos, ou troque um deles por <code>&#42;</code>.</td></tr>
     <tr><td>Quadros e células não batem<br /><code>comicPanelCount</code></td><td>A página tem mais linhas <code>::panel</code> do que a sua divisão tem células (os quadros que sobram ficam de fora), ou menos (as últimas células ficam vazias).</td><td>Acrescente ou remova células na divisão, ou quadros no roteiro. Uma linha <code>::panel</code> vazia dá uma célula vazia de propósito.</td></tr>
     <tr><td>Texto fora de uma linha do roteiro<br /><code>comicStrayText</code></td><td>Texto antes da primeira linha <code>::panel</code>, ou uma linha sem <code>key:</code> que não continua a linha de cima. Ele é letreirado como recordatório.</td><td>Comece a linha com uma chave (<code>caption:</code>, <code>maya:</code>), ou recue-a com dois espaços para continuar o balão de cima.</td></tr>

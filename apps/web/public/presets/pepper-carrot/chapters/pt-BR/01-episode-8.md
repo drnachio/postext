@@ -36,7 +36,10 @@ pepper{join}: ...que elas virão...
 :::page{split="29.9 / 49.3 / *"}
 ::panel{art=e08p05-1 alt="Relâmpagos. Pepper, furiosa, tira da estante um livro com a cara de um demônio na capa. Carrot está apavorado."}
 pepper{shout break}: Como elas puderam fazer isso comigo?!! **COMIGO** !!!
-sfx{writing at="77.2% 14.2%" rotate=-16}: Encantos de Demónios CAOSAH Vol 1
+sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Encantos de\
+  Demónios\
+  CAOSAH\
+  Vol 1
 ::panel{art=e08p05-2 alt="Vista de cima, sob a chuva, Pepper traça com a varinha três círculos mágicos vermelhos e brilhantes no chão, com o livro aberto na outra mão. Carrot observa."}
 pepper{shout}: ...já que eu não posso contar com elas ...
 ::panel{art=e08p05-3 alt="A luz vermelha dos círculos inunda a cena. Pepper, séria, segura o livro aberto na chuva."}

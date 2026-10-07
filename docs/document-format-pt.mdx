@@ -97,7 +97,7 @@ O Postext reconhece sete tipos de bloco de texto, além das diretivas e dos recu
     <tr>
       <td>Fórmula destacada</td>
       <td><code>$$ … $$</code></td>
-      <td>Uma fórmula LaTeX composta como bloco próprio. Sai centralizada na coluna, ajustada à grade de linhas de base como um título, e se mantém vetorial na saída em PDF. As formas de uma linha e de várias linhas entre cercas são descritas em <a href="#mathematical-formulas">Fórmulas matemáticas</a>.</td>
+      <td>Uma fórmula LaTeX composta como bloco próprio. Sai centralizada na coluna, ajustada à grade de linhas de base como um título, e se mantém vetorial na saída em PDF. As formas de uma linha e de várias linhas entre cercas são descritas em <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -188,11 +188,11 @@ As diretivas são marcas de controle de uma linha, escritas como `:::name` ou `:
     </tr>
     <tr>
       <td><code>:::index</code></td>
-      <td>Imprime o índice remissivo aqui: todos os termos marcados com <code>:index</code> no livro, ordenados e agrupados por letra, com as páginas em que caem, compostos conforme a configuração <code>index</code>. <code>:::index&#123;index="names"&#125;</code> imprime um índice com nome. Veja <a href="#back-of-book-index">Índice remissivo</a>.</td>
+      <td>Imprime o índice remissivo aqui: todos os termos marcados com <code>:index</code> no livro, ordenados e agrupados por letra, com as páginas em que caem, compostos conforme a configuração <code>index</code>. <code>:::index&#123;index="names"&#125;</code> imprime um índice com nome. Veja <a href="#índice-remissivo">Índice remissivo</a>.</td>
     </tr>
     <tr>
       <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Uma página de quadrinhos: as suas linhas <code>::panel</code> e as linhas de roteiro de cada uma, diagramadas como quadros e balões letreirados em uma página só para elas. Veja <a href="#comics">Quadrinhos</a>.</td>
+      <td>Uma página de quadrinhos: as suas linhas <code>::panel</code> e as linhas de roteiro de cada uma, diagramadas como quadros e balões letreirados em uma página só para elas. Veja <a href="#quadrinhos">Quadrinhos</a>.</td>
     </tr>
     <tr>
       <td><code>:::strip&#123;…&#125;</code> … <code>:::</code></td>
@@ -618,17 +618,17 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
     <tr>
       <td>Versaletes</td>
       <td><code>:smallcaps[texto]</code></td>
-      <td>Letras minúsculas compostas como maiúsculas a 70% do tamanho do texto: o nome de uma personagem numa peça de teatro, uma sigla no texto corrido. Aceita outras marcas dentro e em volta; veja <a href="#small-capitals">Versaletes</a>.</td>
+      <td>Letras minúsculas compostas como maiúsculas a 70% do tamanho do texto: o nome de uma personagem numa peça de teatro, uma sigla no texto corrido. Aceita outras marcas dentro e em volta; veja <a href="#versaletes">Versaletes</a>.</td>
     </tr>
     <tr>
       <td>Orientação no texto vertical</td>
       <td><code>:tcy[12]</code>, <code>:upright[GDP]</code>, <code>:sideways[12]</code></td>
-      <td>No texto vertical: uma única célula em pé (tate-chu-yoko), cada caractere em pé numa célula própria, ou o trecho inteiro girado. Não têm efeito no texto horizontal; veja <a href="#orientation-in-vertical-text">Orientação no texto vertical</a>.</td>
+      <td>No texto vertical: uma única célula em pé (tate-chu-yoko), cada caractere em pé numa célula própria, ou o trecho inteiro girado. Não têm efeito no texto horizontal; veja <a href="#orientação-no-texto-vertical">Orientação no texto vertical</a>.</td>
     </tr>
     <tr>
       <td>Marcas chinesas</td>
       <td><code>:dots[不可]</code>, <code>:name[賈寶玉]</code>, <code>:book[石頭記]</code></td>
-      <td>Pontos de ênfase (着重号), a linha de nome próprio (专名号) e a marca de título de obra (书名号: 《》 ou uma linha ondulada, conforme <code>cjk.bookTitleMark</code>). O texto fica como foi escrito; veja <a href="#chinese-marks-ruby-and-warichu">Marcas chinesas, rubi e warichu</a>.</td>
+      <td>Pontos de ênfase (着重号), a linha de nome próprio (专名号) e a marca de título de obra (书名号: 《》 ou uma linha ondulada, conforme <code>cjk.bookTitleMark</code>). O texto fica como foi escrito; veja <a href="#marcas-chinesas-rubi-e-warichu">Marcas chinesas, rubi e warichu</a>.</td>
     </tr>
     <tr>
       <td>Rubi</td>
@@ -668,12 +668,12 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
     <tr>
       <td>Chip</td>
       <td><code>:chip[texto]</code></td>
-      <td>Um trecho de texto dentro de uma caixa que quebra como uma unidade só: um banco de palavras, uma tecla, uma etiqueta. Estilizado por <code>chipStyles</code>; veja <a href="#inline-chips">Chips em linha</a>.</td>
+      <td>Um trecho de texto dentro de uma caixa que quebra como uma unidade só: um banco de palavras, uma tecla, uma etiqueta. Estilizado por <code>chipStyles</code>; veja <a href="#chips-em-linha">Chips em linha</a>.</td>
     </tr>
     <tr>
       <td>Fórmula em linha</td>
       <td><code>$…$</code></td>
-      <td>Uma fórmula LaTeX que flui com o texto em volta, por exemplo <code>$e^{'{i\\pi}'}+1=0$</code>. Composta pelo MathJax e renderizada como contornos vetoriais em todos os renderizadores. Use <code>\\$</code> para um cifrão literal. A escala, a forma destacada (<code>$$ … $$</code>) e o tratamento de erros estão em <a href="#mathematical-formulas">Fórmulas matemáticas</a>.</td>
+      <td>Uma fórmula LaTeX que flui com o texto em volta, por exemplo <code>$e^{'{i\\pi}'}+1=0$</code>. Composta pelo MathJax e renderizada como contornos vetoriais em todos os renderizadores. Use <code>\\$</code> para um cifrão literal. A escala, a forma destacada (<code>$$ … $$</code>) e o tratamento de erros estão em <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -1377,7 +1377,7 @@ Um recurso de **vídeo** (`kind: 'video'`) é um vídeo do YouTube ou do Vimeo, 
     </tr>
     <tr>
       <td>Folio</td>
-      <td>O pôster, tal como impresso. Um clique nele reproduz o vídeo <strong>na própria página</strong>, e ele continua tocando enquanto a folha vira (veja <a href="#videos-on-folios-pages">Vídeos nas páginas do Folio</a> mais abaixo). Os vídeos do YouTube e do Vimeo continuam sendo pôsteres.</td>
+      <td>O pôster, tal como impresso. Um clique nele reproduz o vídeo <strong>na própria página</strong>, e ele continua tocando enquanto a folha vira (veja <a href="#vídeos-nas-páginas-do-folio">Vídeos nas páginas do Folio</a> mais abaixo). Os vídeos do YouTube e do Vimeo continuam sendo pôsteres.</td>
     </tr>
     <tr>
       <td>Visualizador HTML</td>

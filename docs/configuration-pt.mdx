@@ -132,7 +132,7 @@ A propriedade `page` controla as dimensões físicas e a aparência da página.
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>A borda em que o livro é encadernado. <code>'auto'</code> equivale a <code>'right'</code> quando <code>layout.writingMode</code> é <code>'vertical-rl'</code> ou o documento corre da direita para a esquerda (<a href="#text-direction"><code>direction</code></a>), e a <code>'left'</code> nos demais casos. Um livro encadernado à direita abre numa página da esquerda e espelha as margens no sentido contrário. Vale para o livro inteiro: o <code>layout</code> próprio de um estilo de título nunca o altera. Veja <a href="#binding">Encadernação</a>.</td>
+      <td>A borda em que o livro é encadernado. <code>'auto'</code> equivale a <code>'right'</code> quando <code>layout.writingMode</code> é <code>'vertical-rl'</code>, quando o documento corre da direita para a esquerda (<a href="#direção-do-texto"><code>direction</code></a>) ou quando a sua seção <a href="#quadrinhos"><code>comics</code></a> é lida da direita para a esquerda (um mangá, uma edição em japonês ou em chinês tradicional), e a <code>'left'</code> nos demais casos. Um livro encadernado à direita abre numa página da esquerda e espelha as margens no sentido contrário. Vale para o livro inteiro: o <code>layout</code> próprio de um estilo de título nunca o altera. Veja <a href="#encadernação">Encadernação</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -169,6 +169,8 @@ Com essa configuração, toda página ímpar tem uma margem de 2,2 cm à esquerd
 Fólios e cabeços não mudam de lugar sozinhos: um modelo que imprime o número da página no canto externo precisa ter seus elementos de páginas ímpares e pares ajustados para a borda direita (os elementos aceitam `parity`).
 
 Um livro escrito da direita para a esquerda (árabe, persa, hebraico…) também é encadernado à direita: `'auto'` dá a borda direita quando a [`direction`](#direção-do-texto) do documento resulta em `'rtl'`. Um livro assim também espelha todo o fluxo, de modo que sua primeira coluna é a da direita, e os recuos, os marcadores de lista, os flutuantes e as notas ficam à direita; os espaços de cabeçalho e rodapé continuam físicos. Veja [Composição árabe](/pt/docs/arabic-layout#ordem-das-páginas-e-encadernação-à-direita).
+
+Uma HQ lida da direita para a esquerda também é encadernada à direita: `'auto'` dá a borda direita quando a configuração tem uma seção `comics` cujo sentido de leitura resulta em `'rtl'`. É o caso de um mangá (`comics.artDirection: 'rtl'`) e de uma edição em japonês ou em chinês tradicional de uma HQ ocidental. Quem decide é a seção, para o livro inteiro, e não os blocos `:::page` de um capítulo. Veja [Quadrinhos](/pt/docs/comics#sentido-de-leitura).
 
 ### Predefinições de tamanho de página
 
@@ -315,7 +317,7 @@ O bloco `page.pageNumbering` controla como os rótulos de página são formatado
       <td><code>format</code></td>
       <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code>, ou um estilo do Leste Asiático</td>
       <td><code>'decimal'</code></td>
-      <td>Estilo numérico usado nos rótulos de página. Os estilos do Leste Asiático (<code>'trad-chinese-informal'</code> numera as páginas 一, 二, 三) estão listados em <a href="#numbering-format-spellings">Grafias dos formatos de numeração</a>.</td>
+      <td>Estilo numérico usado nos rótulos de página. Os estilos do Leste Asiático (<code>'trad-chinese-informal'</code> numera as páginas 一, 二, 三) estão listados em <a href="#grafias-dos-formatos-de-numeração">Grafias dos formatos de numeração</a>.</td>
     </tr>
     <tr>
       <td><code>startAt</code></td>
@@ -416,7 +418,7 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>columnCount</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>Em quantas colunas iguais um layout <code>'multiple'</code> divide o corpo: um número inteiro de 3 a 8. Um valor fora desse intervalo, ou que não seja inteiro, é limitado e informado (veja <a href="#layout-types">Tipos de layout</a>). O layout <code>'multiple'</code> próprio de um estilo de título usa o número do documento, a menos que defina o seu. Desde o postext 1.18.</td>
+      <td>Em quantas colunas iguais um layout <code>'multiple'</code> divide o corpo: um número inteiro de 3 a 8. Um valor fora desse intervalo, ou que não seja inteiro, é limitado e informado (veja <a href="#tipos-de-layout">Tipos de layout</a>). O layout <code>'multiple'</code> próprio de um estilo de título usa o número do documento, a menos que defina o seu. Desde o postext 1.18.</td>
     </tr>
     <tr>
       <td><code>gutterWidth</code></td>
@@ -428,7 +430,7 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>sideColumnPercent</code></td>
       <td><code>number</code></td>
       <td><code>33</code></td>
-      <td>Largura da coluna lateral como porcentagem da área de conteúdo. Qualquer valor que deixe alguma largura para as duas colunas é usado como foi escrito; um que não deixe é limitado, e o build informa isso (veja <a href="#layout-types">Tipos de layout</a>). Só se aplica ao layout <code>'oneAndHalf'</code>.</td>
+      <td>Largura da coluna lateral como porcentagem da área de conteúdo. Qualquer valor que deixe alguma largura para as duas colunas é usado como foi escrito; um que não deixe é limitado, e o build informa isso (veja <a href="#tipos-de-layout">Tipos de layout</a>). Só se aplica ao layout <code>'oneAndHalf'</code>.</td>
     </tr>
     <tr>
       <td><code>sideColumnRole</code></td>
@@ -464,25 +466,25 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>inlineResourceGap</code></td>
       <td><code>'around' | 'above'</code></td>
       <td><code>'around'</code></td>
-      <td>Onde um recurso inline (<code>placement.position: 'here'</code>, incorporado com <code>::resource</code>) mantém o vão de flutuante, uma linha. <code>'around'</code> o mantém acima e abaixo do recurso, e o texto seguinte volta à grade de linhas de base abaixo desse vão; um título, uma lista, um boxe ou outro recurso inline logo depois compartilha o vão de baixo com o seu próprio espaço acima, valendo o maior dos dois. <code>'above'</code> o mantém só acima: o texto depois do recurso recomeça na linha seguinte da grade, por mais perto que ela esteja (de nada a uma linha), como até o postext 1.4. As configurações guardadas por versões anteriores cujos capítulos incorporam um recurso são lidas com <code>'above'</code>, para que suas páginas não se movam (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>). Uma configuração escrita em código para a 1.4 mantém o espaçamento antigo definindo ela mesma <code>'above'</code>, ou com <code>pinLegacyInlineGap</code> de <code>postext/bundle</code>.</td>
+      <td>Onde um recurso inline (<code>placement.position: 'here'</code>, incorporado com <code>::resource</code>) mantém o vão de flutuante, uma linha. <code>'around'</code> o mantém acima e abaixo do recurso, e o texto seguinte volta à grade de linhas de base abaixo desse vão; um título, uma lista, um boxe ou outro recurso inline logo depois compartilha o vão de baixo com o seu próprio espaço acima, valendo o maior dos dois. <code>'above'</code> o mantém só acima: o texto depois do recurso recomeça na linha seguinte da grade, por mais perto que ela esteja (de nada a uma linha), como até o postext 1.4. As configurações guardadas por versões anteriores cujos capítulos incorporam um recurso são lidas com <code>'above'</code>, para que suas páginas não se movam (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>). Uma configuração escrita em código para a 1.4 mantém o espaçamento antigo definindo ela mesma <code>'above'</code>, ou com <code>pinLegacyInlineGap</code> de <code>postext/bundle</code>.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGapInBoxes</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Se um recurso inline dentro de um boxe (<code>:::callout</code>) mantém o vão definido por <code>inlineResourceGap</code>, uma linha do próprio texto do boxe: acima do recurso, e também abaixo com <code>'around'</code>, valendo o maior entre ele e o espaço próprio do bloco seguinte. No topo ou no pé do boxe, ou de um fragmento de um boxe dividido, o espaçamento interno já separa o recurso e nenhum vão é acrescentado. <code>false</code> coloca o recurso logo abaixo do texto anterior e o texto seguinte logo abaixo do recurso, como até o postext 1.4. As configurações guardadas por versões anteriores cujos capítulos incorporam um recurso dentro de um boxe são lidas com <code>false</code> (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>); em código, <code>pinLegacyBoxResourceGap</code> de <code>postext/bundle</code> faz o mesmo.</td>
+      <td>Se um recurso inline dentro de um boxe (<code>:::callout</code>) mantém o vão definido por <code>inlineResourceGap</code>, uma linha do próprio texto do boxe: acima do recurso, e também abaixo com <code>'around'</code>, valendo o maior entre ele e o espaço próprio do bloco seguinte. No topo ou no pé do boxe, ou de um fragmento de um boxe dividido, o espaçamento interno já separa o recurso e nenhum vão é acrescentado. <code>false</code> coloca o recurso logo abaixo do texto anterior e o texto seguinte logo abaixo do recurso, como até o postext 1.4. As configurações guardadas por versões anteriores cujos capítulos incorporam um recurso dentro de um boxe são lidas com <code>false</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>); em código, <code>pinLegacyBoxResourceGap</code> de <code>postext/bundle</code> faz o mesmo.</td>
     </tr>
     <tr>
       <td><code>boxChildSplitMinLines</code></td>
       <td><code>number</code></td>
       <td><code>2</code></td>
-      <td>Mínimo de linhas de um parágrafo ou item de lista que um corte dentro dele deixa de cada lado quando um boxe se divide (<code>splitMinLines</code>, em <a href="#callout-styles">Estilos de boxe</a>, continua contando todas as linhas do boxe de cada lado do corte). Um número inteiro, no mínimo 1. Com o padrão, um corte nunca deixa uma linha solta de um parágrafo ou item no pé de uma coluna ou no alto da seguinte; um estilo de boxe cujo <code>splitMinLines</code> seja menor define o limite no lugar dele. <code>1</code> permite que um corte deixe uma linha do parágrafo ou item de um lado, como até o postext 1.4. As configurações guardadas por versões anteriores cujos capítulos têm um <code>:::callout</code> são lidas com <code>1</code> (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>); em código, <code>pinLegacyBoxChildCut</code> de <code>postext/bundle</code> faz o mesmo.</td>
+      <td>Mínimo de linhas de um parágrafo ou item de lista que um corte dentro dele deixa de cada lado quando um boxe se divide (<code>splitMinLines</code>, em <a href="#estilos-de-boxe">Estilos de boxe</a>, continua contando todas as linhas do boxe de cada lado do corte). Um número inteiro, no mínimo 1. Com o padrão, um corte nunca deixa uma linha solta de um parágrafo ou item no pé de uma coluna ou no alto da seguinte; um estilo de boxe cujo <code>splitMinLines</code> seja menor define o limite no lugar dele. <code>1</code> permite que um corte deixe uma linha do parágrafo ou item de um lado, como até o postext 1.4. As configurações guardadas por versões anteriores cujos capítulos têm um <code>:::callout</code> são lidas com <code>1</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>); em código, <code>pinLegacyBoxChildCut</code> de <code>postext/bundle</code> faz o mesmo.</td>
     </tr>
     <tr>
       <td><code>writingMode</code></td>
       <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
       <td><code>'horizontal-tb'</code></td>
-      <td>Como correm as linhas. <code>'vertical-rl'</code> compõe texto chinês e japonês na vertical: caracteres de cima para baixo, cada linha à esquerda da anterior. O <code>layout</code> de um estilo de título o herda, a menos que defina o seu, então um apêndice horizontal pode vir depois de um livro vertical. Veja <a href="#vertical-writing">Escrita vertical</a>.</td>
+      <td>Como correm as linhas. <code>'vertical-rl'</code> compõe texto chinês e japonês na vertical: caracteres de cima para baixo, cada linha à esquerda da anterior. O <code>layout</code> de um estilo de título o herda, a menos que defina o seu, então um apêndice horizontal pode vir depois de um livro vertical. Veja <a href="#escrita-vertical">Escrita vertical</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -634,7 +636,7 @@ Os padrões da tabela abaixo são os de um elemento de texto que você mesmo adi
       <td><code>direction</code></td>
       <td><code>'ltr' | 'rtl' | 'auto'</code></td>
       <td>a do documento</td>
-      <td>Direção base do texto: para onde vão seus caracteres neutros, a ordem dos trechos em uma linha e o que significam os lados <code>'start'</code> e <code>'end'</code>. <code>'auto'</code> lê a primeira letra forte do texto resolvido e, sem ela, usa a <a href="#text-direction"><code>direction</code></a> do documento. Trechos em árabe e hebraico são lidos da direita para a esquerda, qualquer que seja a base. Um texto que contém uma letra árabe nunca recebe espaçamento entre letras (<code>letterSpacing</code> é ignorado para o texto inteiro) e suas palavras nunca são cortadas ao quebrar ou truncar a linha; uma palavra mais larga que a caixa transborda e é reportada como <code>unbreakableWordOverflow</code>.</td>
+      <td>Direção base do texto: para onde vão seus caracteres neutros, a ordem dos trechos em uma linha e o que significam os lados <code>'start'</code> e <code>'end'</code>. <code>'auto'</code> lê a primeira letra forte do texto resolvido e, sem ela, usa a <a href="#direção-do-texto"><code>direction</code></a> do documento. Trechos em árabe e hebraico são lidos da direita para a esquerda, qualquer que seja a base. Um texto que contém uma letra árabe nunca recebe espaçamento entre letras (<code>letterSpacing</code> é ignorado para o texto inteiro) e suas palavras nunca são cortadas ao quebrar ou truncar a linha; uma palavra mais larga que a caixa transborda e é reportada como <code>unbreakableWordOverflow</code>.</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -712,13 +714,13 @@ Os padrões da tabela abaixo são os de um elemento de texto que você mesmo adi
       <td><code>box</code></td>
       <td><code>ElementBoxStyle</code></td>
       <td>—</td>
-      <td>Fundo e borda opcionais desenhados atrás do texto: <code>backgroundColor</code>, <code>borderColor</code>, <code>borderWidth</code>, <code>borderRadius</code> e um <code>padding</code> por lado que amplia a caixa além do texto (veja <a href="#box-elements">Elementos de caixa</a> para os campos).</td>
+      <td>Fundo e borda opcionais desenhados atrás do texto: <code>backgroundColor</code>, <code>borderColor</code>, <code>borderWidth</code>, <code>borderRadius</code> e um <code>padding</code> por lado que amplia a caixa além do texto (veja <a href="#elementos-de-caixa">Elementos de caixa</a> para os campos).</td>
     </tr>
     <tr>
       <td><code>dropCap</code></td>
       <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
       <td>—</td>
-      <td>Capitular: a primeira letra composta em tamanho grande ao lado das primeiras <code>lines</code> linhas (padrão 2), com família, peso e cor próprios, a <code>gap</code> de distância do texto. A letra assenta na linha de base da última linha que ocupa, e <code>fontSize</code> tem como padrão o tamanho que alinha o topo dela com as maiúsculas da primeira linha: o tamanho do texto mais <code>lines</code> − 1 entrelinhas, considerando as maiúsculas como 0,72 do tamanho da letra (uma família cujas maiúsculas sejam bem mais altas ou mais baixas que isso pede um <code>fontSize</code> próprio). Um texto com capitular quebra linhas qualquer que seja o seu <code>overflow</code>; com <code>'clip'</code>, suas linhas ainda são cortadas na borda de uma caixa de altura fixa. Uma <code>color</code> vinculada à paleta acompanha as paletas de parte e de seção, como o resto do design. No design de um título, a letra não reserva espaço abaixo do texto: a parte da caixa da sua linha que fica abaixo da linha de base não empurra o corpo para baixo. Uma letra que desce abaixo da linha de base (um Q ou um J em muitas famílias) pode então invadir o espaço sob o design: dê ao título uma <code>marginBottom</code> para isso. Até o postext 1.4, o tamanho padrão deixava a letra tão alta quanto todas as caixas de linha que ela ocupa, de modo que o topo dela ficava acima da primeira linha; um <code>overflow</code> diferente de <code>'wrap'</code> descartava a letra sem aviso; uma paleta de seção ou de parte deixava a cor dela como estava; e uma letra tão profunda quanto o texto ao lado podia empurrar o corpo uma linha da grade para baixo. Configurações salvas antes mantêm o tamanho do 1.4, escrito como <code>fontSize</code> (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>).</td>
+      <td>Capitular: a primeira letra composta em tamanho grande ao lado das primeiras <code>lines</code> linhas (padrão 2), com família, peso e cor próprios, a <code>gap</code> de distância do texto. A letra assenta na linha de base da última linha que ocupa, e <code>fontSize</code> tem como padrão o tamanho que alinha o topo dela com as maiúsculas da primeira linha: o tamanho do texto mais <code>lines</code> − 1 entrelinhas, considerando as maiúsculas como 0,72 do tamanho da letra (uma família cujas maiúsculas sejam bem mais altas ou mais baixas que isso pede um <code>fontSize</code> próprio). Um texto com capitular quebra linhas qualquer que seja o seu <code>overflow</code>; com <code>'clip'</code>, suas linhas ainda são cortadas na borda de uma caixa de altura fixa. Uma <code>color</code> vinculada à paleta acompanha as paletas de parte e de seção, como o resto do design. No design de um título, a letra não reserva espaço abaixo do texto: a parte da caixa da sua linha que fica abaixo da linha de base não empurra o corpo para baixo. Uma letra que desce abaixo da linha de base (um Q ou um J em muitas famílias) pode então invadir o espaço sob o design: dê ao título uma <code>marginBottom</code> para isso. Até o postext 1.4, o tamanho padrão deixava a letra tão alta quanto todas as caixas de linha que ela ocupa, de modo que o topo dela ficava acima da primeira linha; um <code>overflow</code> diferente de <code>'wrap'</code> descartava a letra sem aviso; uma paleta de seção ou de parte deixava a cor dela como estava; e uma letra tão profunda quanto o texto ao lado podia empurrar o corpo uma linha da grade para baixo. Configurações salvas antes mantêm o tamanho do 1.4, escrito como <code>fontSize</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>).</td>
     </tr>
     <tr>
       <td><code>paragraphIndent</code></td>
@@ -736,25 +738,25 @@ Os padrões da tabela abaixo são os de um elemento de texto que você mesmo adi
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Lê o texto resolvido (valores dos marcadores incluídos) como Markdown inline: <code>**bold**</code>, <code>*italic*</code>, <code>^superscript^</code>, <code>~subscript~</code>. Desativado, os sinais são impressos como foram escritos. No design de um título, <code>{'{titleText}'}</code> então mantém os trechos de negrito, itálico, sobrescrito e subscrito do próprio título (<code>*Pneumocystis*</code>, <code>CO~2~</code>), com os demais caracteres escapados para serem impressos como foram escritos (desde o postext 1.19). Veja <a href="#inline-marks-and-outlines">Marcas inline e contornos</a>.</td>
+      <td>Lê o texto resolvido (valores dos marcadores incluídos) como Markdown inline: <code>**bold**</code>, <code>*italic*</code>, <code>^superscript^</code>, <code>~subscript~</code>. Desativado, os sinais são impressos como foram escritos. No design de um título, <code>{'{titleText}'}</code> então mantém os trechos de negrito, itálico, sobrescrito e subscrito do próprio título (<code>*Pneumocystis*</code>, <code>CO~2~</code>), com os demais caracteres escapados para serem impressos como foram escritos (desde o postext 1.19). Veja <a href="#marcas-inline-e-contornos">Marcas inline e contornos</a>.</td>
     </tr>
     <tr>
       <td><code>stroke</code></td>
       <td><code>&#123; width, color?, hollow? &#125;</code></td>
       <td>—</td>
-      <td>Contorno desenhado em volta das letras: <code>width</code> (uma <code>Dimension</code>, centrada nas bordas dos glifos), <code>color</code> (padrão: a cor do texto; uma capitular usa a própria cor) e <code>hollow</code> (<code>true</code> pinta só o contorno). Veja <a href="#inline-marks-and-outlines">Marcas inline e contornos</a>.</td>
+      <td>Contorno desenhado em volta das letras: <code>width</code> (uma <code>Dimension</code>, centrada nas bordas dos glifos), <code>color</code> (padrão: a cor do texto; uma capitular usa a própria cor) e <code>hollow</code> (<code>true</code> pinta só o contorno). Veja <a href="#marcas-inline-e-contornos">Marcas inline e contornos</a>.</td>
     </tr>
     <tr>
       <td><code>writingMode</code></td>
       <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
       <td><code>'horizontal-tb'</code></td>
-      <td><code>'vertical-rl'</code> compõe o texto de cima para baixo, com as linhas da direita para a esquerda e os caracteres em pé: um cabeço descendo pela margem externa, um título vertical ao lado de um capítulo horizontal. Veja <a href="#vertical-text-elements">Elementos de texto verticais</a>.</td>
+      <td><code>'vertical-rl'</code> compõe o texto de cima para baixo, com as linhas da direita para a esquerda e os caracteres em pé: um cabeço descendo pela margem externa, um título vertical ao lado de um capítulo horizontal. Veja <a href="#elementos-de-texto-verticais">Elementos de texto verticais</a>.</td>
     </tr>
     <tr>
       <td><code>reserve</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Só em designs de título: se o elemento conta para a altura que o título reserva no fluxo do texto. <code>false</code> para decoração que pode ficar sob o texto (um selo no pé da página, uma moldura, uma faixa lateral). Veja <a href="#reserved-height">Altura reservada</a>. Os designs de cabeçalho, de rodapé e de parte o ignoram.</td>
+      <td>Só em designs de título: se o elemento conta para a altura que o título reserva no fluxo do texto. <code>false</code> para decoração que pode ficar sob o texto (um selo no pé da página, uma moldura, uma faixa lateral). Veja <a href="#altura-reservada">Altura reservada</a>. Os designs de cabeçalho, de rodapé e de parte o ignoram.</td>
     </tr>
     <tr>
       <td><code>marginFromBody</code></td>
@@ -1043,13 +1045,13 @@ Os elementos de fio desenham uma linha: horizontal, atravessando o espaço, ou v
       <td><code>reserve</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Só em designs de título: se o fio conta para a altura que o título reserva no fluxo do texto (veja <a href="#reserved-height">Altura reservada</a>).</td>
+      <td>Só em designs de título: se o fio conta para a altura que o título reserva no fluxo do texto (veja <a href="#altura-reservada">Altura reservada</a>).</td>
     </tr>
     <tr>
       <td><code>placement</code></td>
       <td><code>ElementPlacement</code></td>
       <td>derivado de <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
-      <td>Posicionamento avançado (veja <a href="#element-placement">Posicionamento de elementos</a>). <code>size.width</code> / <code>size.height</code> definem o comprimento do fio; <code>width: 'fill'</code> é o antigo <code>'full'</code>.</td>
+      <td>Posicionamento avançado (veja <a href="#posicionamento-de-elementos">Posicionamento de elementos</a>). <code>size.width</code> / <code>size.height</code> definem o comprimento do fio; <code>width: 'fill'</code> é o antigo <code>'full'</code>.</td>
     </tr>
   </tbody>
 </table>
@@ -1126,7 +1128,7 @@ Os elementos de caixa pintam um retângulo de cantos arredondados dentro do espa
       <td><code>reserve</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Só em designs de título: se a caixa conta para a altura que o título reserva no fluxo do texto (veja <a href="#reserved-height">Altura reservada</a>).</td>
+      <td>Só em designs de título: se a caixa conta para a altura que o título reserva no fluxo do texto (veja <a href="#altura-reservada">Altura reservada</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -1176,7 +1178,7 @@ Um elemento `image` desenha um recurso bitmap ou SVG do documento: o logotipo da
       <td><code>placement</code></td>
       <td><code>ElementPlacement</code></td>
       <td>—</td>
-      <td>Âncora, deslocamento e tamanho (veja <a href="#element-placement">Posicionamento de elementos</a>). Um lado <code>'fill'</code> vai até a borda do contêiner.</td>
+      <td>Âncora, deslocamento e tamanho (veja <a href="#posicionamento-de-elementos">Posicionamento de elementos</a>). Um lado <code>'fill'</code> vai até a borda do contêiner.</td>
     </tr>
     <tr>
       <td><code>parity</code>, <code>pages</code></td>
@@ -1188,7 +1190,7 @@ Um elemento `image` desenha um recurso bitmap ou SVG do documento: o logotipo da
       <td><code>reserve</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Só em designs de título: se a imagem conta para a altura que o título reserva no fluxo do texto (veja <a href="#reserved-height">Altura reservada</a>).</td>
+      <td>Só em designs de título: se a imagem conta para a altura que o título reserva no fluxo do texto (veja <a href="#altura-reservada">Altura reservada</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -1332,19 +1334,19 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
       <td><code>'auto'</code></td>
-      <td>Como <code>*…*</code> é composto: em itálico, na fonte em negrito e em <code>boldColor</code>, em redondo em <code>italicColor</code>, ou em redondo com um fio sobre as palavras. <code>'auto'</code> é <code>'bold'</code> em um documento escrito em alfabeto árabe e <code>'italic'</code> em qualquer outro. Veja <a href="#arabic-text">Texto árabe</a>.</td>
+      <td>Como <code>*…*</code> é composto: em itálico, na fonte em negrito e em <code>boldColor</code>, em redondo em <code>italicColor</code>, ou em redondo com um fio sobre as palavras. <code>'auto'</code> é <code>'bold'</code> em um documento escrito em alfabeto árabe e <code>'italic'</code> em qualquer outro. Veja <a href="#texto-árabe">Texto árabe</a>.</td>
     </tr>
     <tr>
       <td><code>tashkil</code></td>
       <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
       <td><code>'keep'</code></td>
-      <td>Sinais vocálicos árabes: compostos como foram escritos, todos removidos, ou removidos exceto a shadda. Veja <a href="#arabic-text">Texto árabe</a>.</td>
+      <td>Sinais vocálicos árabes: compostos como foram escritos, todos removidos, ou removidos exceto a shadda. Veja <a href="#texto-árabe">Texto árabe</a>.</td>
     </tr>
     <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>Alinhamento do texto. <code>'left'</code> (ou <code>'start'</code>) é o lado em que a linha começa: a direita, em um parágrafo da direita para a esquerda (veja <a href="#text-direction">Direção do texto</a>). O texto justificado distribui o espaçamento em cada linha para obter bordas regulares. As últimas linhas dos parágrafos justificados ficam em bandeira, na sua largura natural, exceto quando o Knuth-Plass aceitou uma última linha cheia demais contando com a compressão da cola; nesse caso, os espaços entre palavras são comprimidos para que a linha caiba exatamente na medida (a semântica de ajuste da cola do TeX, aplicada do mesmo jeito nos renderizadores canvas, HTML e PDF).</td>
+      <td>Alinhamento do texto. <code>'left'</code> (ou <code>'start'</code>) é o lado em que a linha começa: a direita, em um parágrafo da direita para a esquerda (veja <a href="#direção-do-texto">Direção do texto</a>). O texto justificado distribui o espaçamento em cada linha para obter bordas regulares. As últimas linhas dos parágrafos justificados ficam em bandeira, na sua largura natural, exceto quando o Knuth-Plass aceitou uma última linha cheia demais contando com a compressão da cola; nesse caso, os espaços entre palavras são comprimidos para que a linha caiba exatamente na medida (a semântica de ajuste da cola do TeX, aplicada do mesmo jeito nos renderizadores canvas, HTML e PDF).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1428,25 +1430,25 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Usa a quebra de linhas ótima de Knuth-Plass em vez do método guloso (a primeira que cabe). Produz um espaçamento entre palavras mais regular ao longo do parágrafo. Um parágrafo em chinês, japonês ou coreano (veja <a href="#east-asian-typography">Tipografia do Leste Asiático</a>), ou um com uma palavra mais larga que a coluna, continua sendo composto linha a linha; um parágrafo latino que cita algumas palavras CJK a mantém. O texto em bandeira também a usa com <code>optimalRagged</code>. Veja <a href="/pt/docs/justification">Hifenização e justificação</a>.</td>
+      <td>Usa a quebra de linhas ótima de Knuth-Plass em vez do método guloso (a primeira que cabe). Produz um espaçamento entre palavras mais regular ao longo do parágrafo. Um parágrafo em chinês, japonês ou coreano (veja <a href="#tipografia-do-leste-asiático">Tipografia do Leste Asiático</a>), ou um com uma palavra mais larga que a coluna, continua sendo composto linha a linha; um parágrafo latino que cita algumas palavras CJK a mantém. O texto em bandeira também a usa com <code>optimalRagged</code>. Veja <a href="/pt/docs/justification">Hifenização e justificação</a>.</td>
     </tr>
     <tr>
       <td><code>optimalRagged</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Quebra também com Knuth-Plass o texto corrido em bandeira: texto do corpo, citações e itens de lista alinhados à esquerda, à direita ou ao centro, e os estilos de parágrafo em bandeira, os corpos de boxe e os corpos das partes e dos estilos de seção. Os espaços entre palavras mantêm a largura. O algoritmo de quebra avalia quanto falta a cada linha para chegar à medida (uma linha 3 em mais curta custa o mesmo que uma linha justificada em <code>maxWordSpacing</code>), de modo que regulariza a borda em vez de encher cada linha antes da seguinte, e as regras de linhas curtas (<code>avoidRunts</code>, <code>tightenRunts</code>) e <code>hyphenateAcrossColumns</code> funcionam no texto em bandeira como no justificado. Com <code>hyphenation.ragged</code>, a zona continua decidindo quais sílabas podem terminar uma linha (veja <a href="#ragged-text">Texto em bandeira</a>). Títulos, legendas, notas, células de tabela e o sumário em bandeira continuam sendo compostos linha a linha. Requer <code>optimalLineBreaking</code>. <code>false</code> compõe o texto em bandeira linha a linha, como até o postext 1.4; as configurações salvas antes que compunham algum texto corrido em bandeira são lidas com esse valor (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>).</td>
+      <td>Quebra também com Knuth-Plass o texto corrido em bandeira: texto do corpo, citações e itens de lista alinhados à esquerda, à direita ou ao centro, e os estilos de parágrafo em bandeira, os corpos de boxe e os corpos das partes e dos estilos de seção. Os espaços entre palavras mantêm a largura. O algoritmo de quebra avalia quanto falta a cada linha para chegar à medida (uma linha 3 em mais curta custa o mesmo que uma linha justificada em <code>maxWordSpacing</code>), de modo que regulariza a borda em vez de encher cada linha antes da seguinte, e as regras de linhas curtas (<code>avoidRunts</code>, <code>tightenRunts</code>) e <code>hyphenateAcrossColumns</code> funcionam no texto em bandeira como no justificado. Com <code>hyphenation.ragged</code>, a zona continua decidindo quais sílabas podem terminar uma linha (veja <a href="#texto-em-bandeira">Texto em bandeira</a>). Títulos, legendas, notas, células de tabela e o sumário em bandeira continuam sendo compostos linha a linha. Requer <code>optimalLineBreaking</code>. <code>false</code> compõe o texto em bandeira linha a linha, como até o postext 1.4; as configurações salvas antes que compunham algum texto corrido em bandeira são lidas com esse valor (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>).</td>
     </tr>
     <tr>
       <td><code>breakAfterDashes</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Permite que uma linha termine depois de um travessão ou meia-risca colado entre palavras: <code>say—that’s</code>, <code>riddles.—I</code>, <code>Hamburg–Berlin</code>, também quando a palavra depois do travessão está em outro estilo (<code>see—*and*</code>). O Knuth-Plass o trata como um espaço entre palavras, e a linha termina no travessão sem nada acrescentado. Nunca depois de um travessão que abre um aparte ou uma fala de diálogo (<code>—dijo</code>, <code>said "—Hola</code>, <code>sagte »—Ich</code>: um espaço, ou um espaço e aspas, antes do travessão; depois de aspas que fecham uma palavra, como em <code>"no"—and</code>, no alemão <code>„nein“—und</code> ou no francês <code>« non »—et</code>, a linha pode terminar), antes de pontuação (<code>él—,</code>), antes de aspas ou de um parêntese (<code>thinking—" and</code>, <code>says—“no”</code>, <code>says—(no)</code>: aspas depois de um travessão costumam fechar a fala que o travessão interrompeu), dentro de uma sequência de travessões, nem dentro de um intervalo de números escrito com meia-risca (<code>1914–1918</code>). <code>false</code> mantém as quebras do 1.4: o Knuth-Plass nunca quebra depois de um travessão, e o algoritmo linha a linha do texto em bandeira formatado ou hifenizado só quebra entre duas letras; as configurações salvas antes cujo texto tem um travessão assim são lidas com esse valor (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>). Vale para o texto corrido, títulos, listas, citações e boxes. Legendas, notas, células de tabela e o sumário mantêm as quebras do 1.4, e um parágrafo simples em bandeira composto linha a linha segue as regras próprias do pretext em qualquer caso.</td>
+      <td>Permite que uma linha termine depois de um travessão ou meia-risca colado entre palavras: <code>say—that’s</code>, <code>riddles.—I</code>, <code>Hamburg–Berlin</code>, também quando a palavra depois do travessão está em outro estilo (<code>see—*and*</code>). O Knuth-Plass o trata como um espaço entre palavras, e a linha termina no travessão sem nada acrescentado. Nunca depois de um travessão que abre um aparte ou uma fala de diálogo (<code>—dijo</code>, <code>said "—Hola</code>, <code>sagte »—Ich</code>: um espaço, ou um espaço e aspas, antes do travessão; depois de aspas que fecham uma palavra, como em <code>"no"—and</code>, no alemão <code>„nein“—und</code> ou no francês <code>« non »—et</code>, a linha pode terminar), antes de pontuação (<code>él—,</code>), antes de aspas ou de um parêntese (<code>thinking—" and</code>, <code>says—“no”</code>, <code>says—(no)</code>: aspas depois de um travessão costumam fechar a fala que o travessão interrompeu), dentro de uma sequência de travessões, nem dentro de um intervalo de números escrito com meia-risca (<code>1914–1918</code>). <code>false</code> mantém as quebras do 1.4: o Knuth-Plass nunca quebra depois de um travessão, e o algoritmo linha a linha do texto em bandeira formatado ou hifenizado só quebra entre duas letras; as configurações salvas antes cujo texto tem um travessão assim são lidas com esse valor (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>). Vale para o texto corrido, títulos, listas, citações e boxes. Legendas, notas, células de tabela e o sumário mantêm as quebras do 1.4, e um parágrafo simples em bandeira composto linha a linha segue as regras próprias do pretext em qualquer caso.</td>
     </tr>
     <tr>
       <td><code>breakAfterHyphens</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Permite que uma linha termine depois do hífen de uma palavra composta, um hífen entre duas letras (<code>well-</code> · <code>known</code>, <code>vencer-</code> · <code>se</code>), em todos os parágrafos que o Knuth-Plass quebra. A linha termina no hífen e nada é acrescentado; a quebra tem o custo de uma sílaba. Nunca depois de um hífen junto a um algarismo ou a um sinal (<code>COVID-19</code>, <code>-5 °C</code>). Um parágrafo justificado sem formatação inline só quebra ali com duas letras de cada lado do hífen, para que nenhuma linha termine no <code>e-</code> de <code>e-mail</code>. <code>false</code> mantém as quebras do 1.4: um parágrafo justificado sem formatação inline nunca quebra ali, enquanto o mesmo parágrafo com uma palavra em itálico em qualquer lugar, um parágrafo em bandeira e um parágrafo composto linha a linha quebram; as configurações salvas antes cujo texto tem uma palavra composta são lidas com esse valor (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes escritos pelo postext 1.4 ou anterior</a>). Vale para o texto corrido, títulos, listas, citações e boxes. Veja <a href="/pt/docs/justification#palavras-compostas">Palavras compostas</a>.</td>
+      <td>Permite que uma linha termine depois do hífen de uma palavra composta, um hífen entre duas letras (<code>well-</code> · <code>known</code>, <code>vencer-</code> · <code>se</code>), em todos os parágrafos que o Knuth-Plass quebra. A linha termina no hífen e nada é acrescentado; a quebra tem o custo de uma sílaba. Nunca depois de um hífen junto a um algarismo ou a um sinal (<code>COVID-19</code>, <code>-5 °C</code>). Um parágrafo justificado sem formatação inline só quebra ali com duas letras de cada lado do hífen, para que nenhuma linha termine no <code>e-</code> de <code>e-mail</code>. <code>false</code> mantém as quebras do 1.4: um parágrafo justificado sem formatação inline nunca quebra ali, enquanto o mesmo parágrafo com uma palavra em itálico em qualquer lugar, um parágrafo em bandeira e um parágrafo composto linha a linha quebram; as configurações salvas antes cujo texto tem uma palavra composta são lidas com esse valor (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>). Vale para o texto corrido, títulos, listas, citações e boxes. Veja <a href="/pt/docs/justification#palavras-compostas">Palavras compostas</a>.</td>
     </tr>
     <tr>
       <td><code>repeatHyphen</code></td>
@@ -1458,7 +1460,7 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>blockquote</code></td>
       <td><code>BlockquoteConfig</code></td>
       <td>veja abaixo</td>
-      <td>Como as citações em bloco do Markdown (<code>&gt; …</code>) são compostas: cor, itálico e recuos. Veja <a href="#blockquotes">Citações</a>.</td>
+      <td>Como as citações em bloco do Markdown (<code>&gt; …</code>) são compostas: cor, itálico e recuos. Veja <a href="#citações">Citações</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -1554,7 +1556,7 @@ Quando o alinhamento do texto é `'justify'`, a hifenização evita o espaçamen
       <td><code>ragged</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Hifeniza também o texto em bandeira (alinhado à esquerda, à direita ou ao centro), dentro da <code>zone</code>. Veja <a href="#ragged-text">Texto em bandeira</a>.</td>
+      <td>Hifeniza também o texto em bandeira (alinhado à esquerda, à direita ou ao centro), dentro da <code>zone</code>. Veja <a href="#texto-em-bandeira">Texto em bandeira</a>.</td>
     </tr>
     <tr>
       <td><code>zone</code></td>
@@ -1847,7 +1849,7 @@ Além da hifenização e dos limites de espaçamento, a configuração do texto 
       <td><code>colonListRoom</code></td>
       <td><code>'item' | 'line'</code></td>
       <td><code>'item'</code></td>
-      <td>O espaço que <code>keepColonWithList</code> pede sob a linha dos dois-pontos. <code>'item'</code>: o que as regras de órfãs e viúvas para listas deixariam do primeiro item no pé da coluna, uma linha quando ele pode ser dividido ali, ele inteiro quando elas o mantêm junto (um item de duas linhas, por exemplo). <code>'line'</code>: uma linha, como até o postext 1.4; um primeiro item que essas regras mantêm inteiro vai então sozinho para a coluna seguinte e deixa a linha dos dois-pontos no pé. Uma configuração salva antes do <code>configVersion</code> 6, num livro que introduz uma lista com dois-pontos, é lida com <code>'line'</code> (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes gravados pelo postext 1.4 ou anterior</a>). Qualquer outro valor é lido como <code>'item'</code>.</td>
+      <td>O espaço que <code>keepColonWithList</code> pede sob a linha dos dois-pontos. <code>'item'</code>: o que as regras de órfãs e viúvas para listas deixariam do primeiro item no pé da coluna, uma linha quando ele pode ser dividido ali, ele inteiro quando elas o mantêm junto (um item de duas linhas, por exemplo). <code>'line'</code>: uma linha, como até o postext 1.4; um primeiro item que essas regras mantêm inteiro vai então sozinho para a coluna seguinte e deixa a linha dos dois-pontos no pé. Uma configuração salva antes do <code>configVersion</code> 6, num livro que introduz uma lista com dois-pontos, é lida com <code>'line'</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes gravados pelo postext 1.4 ou anterior</a>). Qualquer outro valor é lido como <code>'item'</code>.</td>
     </tr>
     <tr>
       <td><code>hyphenateAcrossColumns</code></td>
@@ -1859,7 +1861,7 @@ Além da hifenização e dos limites de espaçamento, a configuração do texto 
       <td><code>paragraphContainerSpacing</code></td>
       <td><code>'collapse' | 'add'</code></td>
       <td><code>'collapse'</code></td>
-      <td>O espaço sob um contêiner <code>:::paragraphs</code> que fecha num parágrafo, entre esse parágrafo e o bloco seguinte (veja <a href="#the-paragraphs-container">O contêiner <code>:::paragraphs</code></a>). <code>'collapse'</code>: o maior entre o <code>spaceBetween</code> e o <code>marginBottom</code> do estilo e o espaçamento de parágrafo do texto em volta do contêiner (uma linha com <code>paragraphSpacing</code>; num boxe, o do boxe), fundido com o espaço que o bloco seguinte reserva acima de si, como entre dois parágrafos de texto corrido: um título sob uma bibliografia fica à distância do próprio <code>marginTop</code>, não dessa margem mais o espaçamento das entradas. <code>'add'</code>: como até o postext 1.4, só o espaço do estilo é posto sob a última linha antes do ajuste à grade, o espaço próprio do bloco seguinte é somado abaixo dele, e o espaçamento de parágrafo fica de fora, de modo que o parágrafo depois do contêiner podia ficar mais perto dele do que de qualquer outro. Uma configuração salva antes do <code>configVersion</code> 8 que declara um estilo de parágrafo, num livro que contém um contêiner assim, é lida com <code>'add'</code> (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes gravados pelo postext 1.4 ou anterior</a>). Um <code>marginBottom</code> negativo puxa o bloco seguinte para cima em qualquer caso.</td>
+      <td>O espaço sob um contêiner <code>:::paragraphs</code> que fecha num parágrafo, entre esse parágrafo e o bloco seguinte (veja <a href="#o-contêiner-paragraphs">O contêiner <code>:::paragraphs</code></a>). <code>'collapse'</code>: o maior entre o <code>spaceBetween</code> e o <code>marginBottom</code> do estilo e o espaçamento de parágrafo do texto em volta do contêiner (uma linha com <code>paragraphSpacing</code>; num boxe, o do boxe), fundido com o espaço que o bloco seguinte reserva acima de si, como entre dois parágrafos de texto corrido: um título sob uma bibliografia fica à distância do próprio <code>marginTop</code>, não dessa margem mais o espaçamento das entradas. <code>'add'</code>: como até o postext 1.4, só o espaço do estilo é posto sob a última linha antes do ajuste à grade, o espaço próprio do bloco seguinte é somado abaixo dele, e o espaçamento de parágrafo fica de fora, de modo que o parágrafo depois do contêiner podia ficar mais perto dele do que de qualquer outro. Uma configuração salva antes do <code>configVersion</code> 8 que declara um estilo de parágrafo, num livro que contém um contêiner assim, é lida com <code>'add'</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes gravados pelo postext 1.4 ou anterior</a>). Um <code>marginBottom</code> negativo puxa o bloco seguinte para cima em qualquer caso.</td>
     </tr>
   </tbody>
 </table>
@@ -1943,7 +1945,7 @@ A propriedade `headings` controla a tipografia de todos os níveis de título (H
       <td><code>keepWithNextSplit</code></td>
       <td><code>'rules' | 'fill'</code></td>
       <td><code>'rules'</code></td>
-      <td>Como o parágrafo sob um título se divide quando o título acaba no pé de uma coluna e empurrar o parágrafo inteiro deixaria o título para trás. <code>'rules'</code>: o máximo de linhas que cabem, desde que fiquem pelo menos <code>bodyText.widowMinLines</code> sob o título e pelo menos <code>bodyText.orphanMinLines</code> passem para a coluna seguinte; quando nenhuma divisão respeita as duas, o título segue com o parágrafo, e o equilíbrio de colunas preenche o espaço que ele deixa. <code>'fill'</code>: tantas linhas quantas couberem, por menos que passem adiante, então um parágrafo de quatro linhas com espaço para três se divide em 3 + 1. Até o postext 1.4 todo título se dividia assim, e as configurações salvas antes do <code>configVersion</code> 8 mantêm esse comportamento (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes gravados pelo postext 1.4 ou anterior</a>). Com <code>avoidWidows</code> ou <code>avoidOrphans</code> desligado, esse lado da regra deixa de valer.</td>
+      <td>Como o parágrafo sob um título se divide quando o título acaba no pé de uma coluna e empurrar o parágrafo inteiro deixaria o título para trás. <code>'rules'</code>: o máximo de linhas que cabem, desde que fiquem pelo menos <code>bodyText.widowMinLines</code> sob o título e pelo menos <code>bodyText.orphanMinLines</code> passem para a coluna seguinte; quando nenhuma divisão respeita as duas, o título segue com o parágrafo, e o equilíbrio de colunas preenche o espaço que ele deixa. <code>'fill'</code>: tantas linhas quantas couberem, por menos que passem adiante, então um parágrafo de quatro linhas com espaço para três se divide em 3 + 1. Até o postext 1.4 todo título se dividia assim, e as configurações salvas antes do <code>configVersion</code> 8 mantêm esse comportamento (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes gravados pelo postext 1.4 ou anterior</a>). Com <code>avoidWidows</code> ou <code>avoidOrphans</code> desligado, esse lado da regra deixa de valer.</td>
     </tr>
     <tr>
       <td><code>snapToGrid</code></td>
@@ -1955,7 +1957,7 @@ A propriedade `headings` controla a tipografia de todos os níveis de título (H
       <td><code>inlineMarks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Se um título lê as marcas na linha como um parágrafo lê: <code>*italic*</code>, <code>**bold**</code>, <code>^superscript^</code>, <code>~subscript~</code>, <code>:smallcaps[…]</code> e links. Um trecho em itálico inverte a inclinação do título, então sai em redondo num título em itálico; um trecho em negrito usa <code>bodyText.boldFontWeight</code>, ou o peso do próprio título quando este for mais pesado. O sumário também mostra os trechos em negrito e itálico; os cabeços e os marcadores do PDF imprimem só o texto. Com <code>false</code>, os marcadores são descartados e as palavras saem no estilo do próprio título, como até o postext 1.4. A abertura padrão de um título <code>span: 'page'</code> sem design também compõe os trechos em negrito, itálico, sobrescrito e subscrito; um design de título (uma faixa de abertura com design ou um <code>advancedDesign</code> na coluna) imprime <code>{'{titleText}'}</code> como texto simples de qualquer forma, a não ser que o elemento de texto leia marcas na linha (<code>inlineMarks: true</code>): aí <code>{'{titleText}'}</code> mantém os trechos em negrito, itálico, sobrescrito e subscrito do título (desde o postext 1.19). As configurações salvas antes disso cujos títulos têm marcas são lidas com <code>false</code> (veja <a href="#bundles-written-by-postext-14-or-earlier">Pacotes gravados pelo postext 1.4 ou anterior</a>).</td>
+      <td>Se um título lê as marcas na linha como um parágrafo lê: <code>*italic*</code>, <code>**bold**</code>, <code>^superscript^</code>, <code>~subscript~</code>, <code>:smallcaps[…]</code> e links. Um trecho em itálico inverte a inclinação do título, então sai em redondo num título em itálico; um trecho em negrito usa <code>bodyText.boldFontWeight</code>, ou o peso do próprio título quando este for mais pesado. O sumário também mostra os trechos em negrito e itálico; os cabeços e os marcadores do PDF imprimem só o texto. Com <code>false</code>, os marcadores são descartados e as palavras saem no estilo do próprio título, como até o postext 1.4. A abertura padrão de um título <code>span: 'page'</code> sem design também compõe os trechos em negrito, itálico, sobrescrito e subscrito; um design de título (uma faixa de abertura com design ou um <code>advancedDesign</code> na coluna) imprime <code>{'{titleText}'}</code> como texto simples de qualquer forma, a não ser que o elemento de texto leia marcas na linha (<code>inlineMarks: true</code>): aí <code>{'{titleText}'}</code> mantém os trechos em negrito, itálico, sobrescrito e subscrito do título (desde o postext 1.19). As configurações salvas antes disso cujos títulos têm marcas são lidas com <code>false</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes gravados pelo postext 1.4 ou anterior</a>).</td>
     </tr>
     <tr>
       <td><code>balancing</code></td>
@@ -2232,7 +2234,7 @@ As sobrescritas por nível aceitam as mesmas propriedades que os padrões gerais
       <td><code>letterSpacing</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Tracking depois de cada glifo do título, inclusive os espaços e o prefixo de numeração, como o <code>letter-spacing</code> do CSS. Um valor positivo espaça as letras (maiúsculas compostas com <code>textTransform: 'uppercase'</code> costumam pedir um pouco: <code>&#123; value: 0.12, unit: 'em' &#125;</code>), um negativo aperta um corpo de destaque. Um valor em <code>em</code> é relativo ao <code>fontSize</code> do nível. As linhas do título são medidas com ele, então quebram onde termina o texto espaçado, e canvas, HTML e PDF o pintam igual. Uma linha centralizada ou alinhada à direita é posicionada pelas letras: o tracking depois do último glifo fica de fora, como no texto de design, para que um título centralizado se alinhe com a abertura padrão de um título <code>span: 'page'</code>. Um nível desenhado pelo seu <code>advancedDesign</code> o ignora, como os outros campos tipográficos daqui: cada elemento de texto do design tem o próprio <code>letterSpacing</code>. Um <a href="#heading-styles">estilo de título</a> também o define, para os títulos que o usam. Até o postext 1.4 os títulos não tinham tracking, e a chave era descartada sem aviso.</td>
+      <td>Tracking depois de cada glifo do título, inclusive os espaços e o prefixo de numeração, como o <code>letter-spacing</code> do CSS. Um valor positivo espaça as letras (maiúsculas compostas com <code>textTransform: 'uppercase'</code> costumam pedir um pouco: <code>&#123; value: 0.12, unit: 'em' &#125;</code>), um negativo aperta um corpo de destaque. Um valor em <code>em</code> é relativo ao <code>fontSize</code> do nível. As linhas do título são medidas com ele, então quebram onde termina o texto espaçado, e canvas, HTML e PDF o pintam igual. Uma linha centralizada ou alinhada à direita é posicionada pelas letras: o tracking depois do último glifo fica de fora, como no texto de design, para que um título centralizado se alinhe com a abertura padrão de um título <code>span: 'page'</code>. Um nível desenhado pelo seu <code>advancedDesign</code> o ignora, como os outros campos tipográficos daqui: cada elemento de texto do design tem o próprio <code>letterSpacing</code>. Um <a href="#estilos-de-título">estilo de título</a> também o define, para os títulos que o usam. Até o postext 1.4 os títulos não tinham tracking, e a chave era descartada sem aviso.</td>
     </tr>
     <tr>
       <td><code>lineSpan</code></td>
@@ -2256,19 +2258,19 @@ As sobrescritas por nível aceitam as mesmas propriedades que os padrões gerais
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Modelo do número automático do nível. Um token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime o contador corrente desse nível de título, opcionalmente formatado por um sufixo (<code>{'{1:I}'}</code> romano maiúsculo, <code>{'{1:i}'}</code> romano minúsculo, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> com zeros à esquerda, <code>{'{1:words}'}</code> por extenso (<em>twenty-one</em>), <code>{'{1:ordinal}'}</code> como ordinal (<em>twenty-first</em>), <code>{'{1:一}'}</code> em numerais chineses (japoneses num documento em japonês: 第百一章), <code>{'{1:〇}'}</code> algarismo por algarismo, <code>{'{1:壹}'}</code> em numerais financeiros e <code>{'{1:①}'}</code> circulado, ou qualquer nome de <a href="#numbering-format-spellings">Grafias dos formatos de numeração</a>), e qualquer outro texto é literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> para 第一百二十回; uma barra invertida escapa uma chave literal). Um token cujo contador ainda está vazio desaparece junto com o separador vizinho. Vazio (o padrão) significa sem número automático. O número gerado é anteposto ao título no fluxo, alimenta o marcador <code>{'{number}'}</code> de uma posição de design avançado (onde o prefixo em si não é anteposto) e é impresso no sumário. Veja <a href="#spelled-out-numbers">Números por extenso</a> para as palavras, e <a href="#heading-styles">Estilos de título</a> para um modelo próprio em alguns títulos de um nível.</td>
+      <td>Modelo do número automático do nível. Um token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime o contador corrente desse nível de título, opcionalmente formatado por um sufixo (<code>{'{1:I}'}</code> romano maiúsculo, <code>{'{1:i}'}</code> romano minúsculo, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> com zeros à esquerda, <code>{'{1:words}'}</code> por extenso (<em>twenty-one</em>), <code>{'{1:ordinal}'}</code> como ordinal (<em>twenty-first</em>), <code>{'{1:一}'}</code> em numerais chineses (japoneses num documento em japonês: 第百一章), <code>{'{1:〇}'}</code> algarismo por algarismo, <code>{'{1:壹}'}</code> em numerais financeiros e <code>{'{1:①}'}</code> circulado, ou qualquer nome de <a href="#grafias-dos-formatos-de-numeração">Grafias dos formatos de numeração</a>), e qualquer outro texto é literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> para 第一百二十回; uma barra invertida escapa uma chave literal). Um token cujo contador ainda está vazio desaparece junto com o separador vizinho. Vazio (o padrão) significa sem número automático. O número gerado é anteposto ao título no fluxo, alimenta o marcador <code>{'{number}'}</code> de uma posição de design avançado (onde o prefixo em si não é anteposto) e é impresso no sumário. Veja <a href="#números-por-extenso">Números por extenso</a> para as palavras, e <a href="#estilos-de-título">Estilos de título</a> para um modelo próprio em alguns títulos de um nível.</td>
     </tr>
     <tr>
       <td><code>numberSeparator</code></td>
       <td><code>string</code></td>
       <td><code>' '</code></td>
-      <td>O que fica entre o número e o título: na coluna, na abertura padrão de um nível <code>span: 'page'</code>, nos cabeços que imprimem a linha do título e nos marcadores do PDF. O separador do nível 1 também une o número e o título de uma parte na página de parte padrão e na linha de parte padrão do sumário. Os títulos de capítulo chineses usam um espaço ideográfico ou nada (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). O sumário mantém a própria coluna de número (<code>toc.levels[].numberGap</code>). Um <a href="#heading-styles">estilo de título</a> pode definir o seu. Quando um título é partido em dois com <code>{'\\\\'}</code>, como os títulos em dístico dos romances chineses, as formas de uma linha só (a coluna, o sumário, os cabeços) unem as metades com um espaço ideográfico quando os dois lados são caracteres chineses ou japoneses, e com um espaço nos demais casos.</td>
+      <td>O que fica entre o número e o título: na coluna, na abertura padrão de um nível <code>span: 'page'</code>, nos cabeços que imprimem a linha do título e nos marcadores do PDF. O separador do nível 1 também une o número e o título de uma parte na página de parte padrão e na linha de parte padrão do sumário. Os títulos de capítulo chineses usam um espaço ideográfico ou nada (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). O sumário mantém a própria coluna de número (<code>toc.levels[].numberGap</code>). Um <a href="#estilos-de-título">estilo de título</a> pode definir o seu. Quando um título é partido em dois com <code>{'\\\\'}</code>, como os títulos em dístico dos romances chineses, as formas de uma linha só (a coluna, o sumário, os cabeços) unem as metades com um espaço ideográfico quando os dois lados são caracteres chineses ou japoneses, e com um espaço nos demais casos.</td>
     </tr>
     <tr>
       <td><code>numberPosition</code></td>
       <td><code>'before' | 'replace'</code></td>
       <td><code>'before'</code></td>
-      <td>Onde fica o número gerado. <code>'before'</code>: antes do título, unido por <code>numberSeparator</code>. <code>'replace'</code>: o número é o título inteiro e o título escrito na fonte não é impresso, então <code># Night</code> com <code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code> imprime الليلة الثانية. O sumário lista o número como título da entrada (sem coluna de número), e os cabeços (<code>{chapterTitle}</code>, <code>{titleText}</code>) e os marcadores do PDF também o leem; <code>{number}</code> fica vazio num título assim. Só para títulos numerados com modelo (o do nível ou o do estilo deles); qualquer outro mantém o título. Um <a href="#heading-styles">estilo de título</a> pode definir o seu, <code>'before'</code> para manter os títulos que o nível substituiria.</td>
+      <td>Onde fica o número gerado. <code>'before'</code>: antes do título, unido por <code>numberSeparator</code>. <code>'replace'</code>: o número é o título inteiro e o título escrito na fonte não é impresso, então <code># Night</code> com <code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code> imprime الليلة الثانية. O sumário lista o número como título da entrada (sem coluna de número), e os cabeços (<code>{chapterTitle}</code>, <code>{titleText}</code>) e os marcadores do PDF também o leem; <code>{number}</code> fica vazio num título assim. Só para títulos numerados com modelo (o do nível ou o do estilo deles); qualquer outro mantém o título. Um <a href="#estilos-de-título">estilo de título</a> pode definir o seu, <code>'before'</code> para manter os títulos que o nível substituiria.</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
@@ -2280,7 +2282,7 @@ As sobrescritas por nível aceitam as mesmas propriedades que os padrões gerais
       <td><code>hidden</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Um título estrutural: não imprime nada nem ocupa espaço na coluna ou num boxe (nem texto, nem margens, nem faixa de abertura), mas faz todo o resto que um título faz. O <code>breakBefore</code> dele continua abrindo página, ele abre a seção do seu estilo, conta (a menos que o estilo diga <code>numbered: false</code>) e é listado por <code>:::toc</code>, nomeado pelos cabeços <code>{'{chapterTitle}'}</code> e vira marcador no PDF. Serve para uma dedicatória, uma página de epígrafe ou um colofão de que o sumário e os marcadores do leitor precisam, mas que a página não mostra. Defina-o num <a href="#heading-styles">estilo de título</a> em vez de num nível inteiro; um título o sobrescreve com <code>{'{hidden="true"}'}</code> / <code>{'{hidden="false"}'}</code>.</td>
+      <td>Um título estrutural: não imprime nada nem ocupa espaço na coluna ou num boxe (nem texto, nem margens, nem faixa de abertura), mas faz todo o resto que um título faz. O <code>breakBefore</code> dele continua abrindo página, ele abre a seção do seu estilo, conta (a menos que o estilo diga <code>numbered: false</code>) e é listado por <code>:::toc</code>, nomeado pelos cabeços <code>{'{chapterTitle}'}</code> e vira marcador no PDF. Serve para uma dedicatória, uma página de epígrafe ou um colofão de que o sumário e os marcadores do leitor precisam, mas que a página não mostra. Defina-o num <a href="#estilos-de-título">estilo de título</a> em vez de num nível inteiro; um título o sobrescreve com <code>{'{hidden="true"}'}</code> / <code>{'{hidden="false"}'}</code>.</td>
     </tr>
   </tbody>
 </table>
@@ -2379,7 +2381,7 @@ Cada nível de título aceita dois campos adicionais que controlam como o títul
       <td><code>span</code></td>
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
-      <td>Com <code>'page'</code>, o título é tratado como abertura de capítulo, e seu design avançado (se ativado) é ligado à página como uma faixa de abertura acima do corpo. Combine com <code>breakBefore.enabled: true</code> para que a abertura sempre comece uma página nova. Sem um design próprio, o título é pintado por uma abertura padrão em toda a área de conteúdo, na tipografia e na entrelinha do nível, com seus trechos em negrito, itálico e sobrescrito ou subscrito (<code>headings.inlineMarks</code>), e a faixa é medida nessa largura. A faixa comporta todas as linhas que a abertura pinta: quando a abertura ocupa mais linhas que a medida do próprio título (um título justificado cujos espaços se encolheriam para caber numa linha, uma quebra forçada <code>{'\\\\'}</code>), a faixa também as ocupa. Até o postext 1.4 a faixa era medida com o título quebrado na largura da coluna, de modo que um título que cabe numa linha da área de conteúdo ocupava uma faixa de duas linhas de altura, com a linha centralizada nela. As outras colunas começam abaixo da faixa, como a coluna do próprio título. O texto que abre uma delas começa onde começaria o texto logo abaixo da abertura, seja o que for que siga a abertura na sua própria coluna: a <code>marginBottom</code> da abertura abaixo do seu título ou do seu design, levada à próxima linha da grade quando o nível se ajusta a ela. Um título, uma fórmula em destaque ou uma linha do sumário que abre uma delas fica alinhado com o primeiro título ou a primeira fórmula em destaque abaixo da abertura, margens incluídas como lá; quando a coluna da abertura continua com outra coisa, começa onde começa esse texto. Um título oculto abaixo da abertura não conta, e o espaço que o <a href="#column-balancing">balanceamento de colunas</a> acrescenta acima do título abaixo da abertura não se repete nas outras colunas. O que essas colunas ajustam à grade cai na grade da página. Até o postext 1.4 o primeiro bloco delas ficava no pé da faixa: fora da grade quando a faixa terminava entre duas linhas, e colado à faixa, sem margem, quando um título seguia a abertura (uma linha mais alto que agora quando a faixa terminava na grade); um título ali também perdia a margem superior que o título da primeira coluna mantinha.</td>
+      <td>Com <code>'page'</code>, o título é tratado como abertura de capítulo, e seu design avançado (se ativado) é ligado à página como uma faixa de abertura acima do corpo. Combine com <code>breakBefore.enabled: true</code> para que a abertura sempre comece uma página nova. Sem um design próprio, o título é pintado por uma abertura padrão em toda a área de conteúdo, na tipografia e na entrelinha do nível, com seus trechos em negrito, itálico e sobrescrito ou subscrito (<code>headings.inlineMarks</code>), e a faixa é medida nessa largura. A faixa comporta todas as linhas que a abertura pinta: quando a abertura ocupa mais linhas que a medida do próprio título (um título justificado cujos espaços se encolheriam para caber numa linha, uma quebra forçada <code>{'\\\\'}</code>), a faixa também as ocupa. Até o postext 1.4 a faixa era medida com o título quebrado na largura da coluna, de modo que um título que cabe numa linha da área de conteúdo ocupava uma faixa de duas linhas de altura, com a linha centralizada nela. As outras colunas começam abaixo da faixa, como a coluna do próprio título. O texto que abre uma delas começa onde começaria o texto logo abaixo da abertura, seja o que for que siga a abertura na sua própria coluna: a <code>marginBottom</code> da abertura abaixo do seu título ou do seu design, levada à próxima linha da grade quando o nível se ajusta a ela. Um título, uma fórmula em destaque ou uma linha do sumário que abre uma delas fica alinhado com o primeiro título ou a primeira fórmula em destaque abaixo da abertura, margens incluídas como lá; quando a coluna da abertura continua com outra coisa, começa onde começa esse texto. Um título oculto abaixo da abertura não conta, e o espaço que o <a href="#equilíbrio-de-colunas">balanceamento de colunas</a> acrescenta acima do título abaixo da abertura não se repete nas outras colunas. O que essas colunas ajustam à grade cai na grade da página. Até o postext 1.4 o primeiro bloco delas ficava no pé da faixa: fora da grade quando a faixa terminava entre duas linhas, e colado à faixa, sem margem, quando um título seguia a abertura (uma linha mais alto que agora quando a faixa terminava na grade); um título ali também perdia a margem superior que o título da primeira coluna mantinha.</td>
     </tr>
     <tr>
       <td><code>spanBreak</code></td>
@@ -2397,7 +2399,7 @@ Cada nível de título aceita dois campos adicionais que controlam como o títul
       <td><code>advancedDesign.minHeight</code></td>
       <td><code>Dimension</code></td>
       <td>—</td>
-      <td>Altura mínima reservada para o título no fluxo da coluna. O título ocupa <code>max(design content bottom, minHeight)</code>, depois a <code>marginBottom</code> do título abaixo dele (do seu estilo de título, do seu nível ou de <code>headings.marginBottom</code>; 0,5 em do tamanho do título por padrão), e a soma é arredondada para cima até a grade de linhas de base quando os títulos se ajustam a ela. Assim, uma abertura pode empurrar o texto do corpo para baixo (ou tomar a página inteira) mesmo quando seus elementos são baixos ou estão ancorados nos quadros da página ou da sangria acima do título. Para uma faixa com exatamente <code>minHeight</code> de altura, defina essa <code>marginBottom</code> como 0 e faça de <code>minHeight</code> um número inteiro de linhas da grade. Vale sempre que <code>enabled</code> for true, mesmo com o espaço vazio. Veja em <a href="#reserved-height">Altura reservada</a> o que conta como base do conteúdo do design.</td>
+      <td>Altura mínima reservada para o título no fluxo da coluna. O título ocupa <code>max(design content bottom, minHeight)</code>, depois a <code>marginBottom</code> do título abaixo dele (do seu estilo de título, do seu nível ou de <code>headings.marginBottom</code>; 0,5 em do tamanho do título por padrão), e a soma é arredondada para cima até a grade de linhas de base quando os títulos se ajustam a ela. Assim, uma abertura pode empurrar o texto do corpo para baixo (ou tomar a página inteira) mesmo quando seus elementos são baixos ou estão ancorados nos quadros da página ou da sangria acima do título. Para uma faixa com exatamente <code>minHeight</code> de altura, defina essa <code>marginBottom</code> como 0 e faça de <code>minHeight</code> um número inteiro de linhas da grade. Vale sempre que <code>enabled</code> for true, mesmo com o espaço vazio. Veja em <a href="#altura-reservada">Altura reservada</a> o que conta como base do conteúdo do design.</td>
     </tr>
   </tbody>
 </table>
@@ -2798,7 +2800,7 @@ A propriedade `orderedLists` controla as listas numeradas (`1.`, `2)` etc.). Sã
       <td><code>numberFormat</code></td>
       <td><code>OrderedListNumberFormat</code></td>
       <td><code>'arabic'</code></td>
-      <td>Estilo do número: <code>'arabic'</code>, <code>'lower-alpha'</code>, <code>'upper-alpha'</code>, <code>'lower-roman'</code>, <code>'upper-roman'</code>. As grafias das outras configurações também funcionam (<code>'decimal'</code>, <code>'roman-lower'</code>, <code>'i'</code>…; veja <a href="#numbering-format-spellings">Grafias dos formatos de numeração</a>); um valor desconhecido numera em algarismos arábicos e é relatado.</td>
+      <td>Estilo do número: <code>'arabic'</code>, <code>'lower-alpha'</code>, <code>'upper-alpha'</code>, <code>'lower-roman'</code>, <code>'upper-roman'</code>. As grafias das outras configurações também funcionam (<code>'decimal'</code>, <code>'roman-lower'</code>, <code>'i'</code>…; veja <a href="#grafias-dos-formatos-de-numeração">Grafias dos formatos de numeração</a>); um valor desconhecido numera em algarismos arábicos e é relatado.</td>
     </tr>
     <tr>
       <td><code>prefix</code></td>
@@ -3608,7 +3610,7 @@ interface CjkConfig {
       <td><code>punctuationWidth</code></td>
       <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
       <td><code>'auto'</code></td>
-      <td>A largura com que se compõem os sinais de largura cheia (veja <a href="#punctuation-widths">Largura da pontuação</a>). <code>'auto'</code>: <code>'kaiming'</code> para a China continental, <code>'fullwidth'</code> para Taiwan, Hong Kong e Japão (no Japão com as regras do JLReq para pares, fins de linha e pontos médios).</td>
+      <td>A largura com que se compõem os sinais de largura cheia (veja <a href="#largura-da-pontuação">Largura da pontuação</a>). <code>'auto'</code>: <code>'kaiming'</code> para a China continental, <code>'fullwidth'</code> para Taiwan, Hong Kong e Japão (no Japão com as regras do JLReq para pares, fins de linha e pontos médios).</td>
     </tr>
     <tr>
       <td><code>compressAdjacent</code></td>
@@ -3620,13 +3622,13 @@ interface CjkConfig {
       <td><code>trimLineStart</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>Um parêntese ou aspa de abertura que inicia uma linha cede seu meio eme anterior, e um de fechamento que termina uma linha cede o meio eme posterior. <code>'auto'</code>: ativado para a China continental, Hong Kong e Japão, desativado para Taiwan. No Japão, um sinal de fechamento no fim da linha conserva seu meio eme até que a linha precise dele (veja <a href="#punctuation-widths">Largura da pontuação</a>).</td>
+      <td>Um parêntese ou aspa de abertura que inicia uma linha cede seu meio eme anterior, e um de fechamento que termina uma linha cede o meio eme posterior. <code>'auto'</code>: ativado para a China continental, Hong Kong e Japão, desativado para Taiwan. No Japão, um sinal de fechamento no fim da linha conserva seu meio eme até que a linha precise dele (veja <a href="#largura-da-pontuação">Largura da pontuação</a>).</td>
     </tr>
     <tr>
       <td><code>hangingPunctuation</code></td>
       <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
       <td><code>'auto'</code></td>
-      <td>Se um sinal de pausa ou de fim de frase pode ficar pendente além do fim da linha (veja <a href="#hanging-punctuation">Pontuação pendente</a>). <code>'auto'</code>: <code>'allow'</code> no Japão (só 、。，．), <code>'none'</code> nas demais regiões. Até o postext 1.15 o padrão era <code>'none'</code>, que é o que <code>'auto'</code> continua sendo fora do Japão.</td>
+      <td>Se um sinal de pausa ou de fim de frase pode ficar pendente além do fim da linha (veja <a href="#pontuação-pendente">Pontuação pendente</a>). <code>'auto'</code>: <code>'allow'</code> no Japão (só 、。，．), <code>'none'</code> nas demais regiões. Até o postext 1.15 o padrão era <code>'none'</code>, que é o que <code>'auto'</code> continua sendo fora do Japão.</td>
     </tr>
     <tr>
       <td><code>spaceAfterQuestion</code></td>
@@ -3650,25 +3652,25 @@ interface CjkConfig {
       <td><code>latinSpacing</code></td>
       <td><code>Dimension</code></td>
       <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
-      <td>O espaço entre um caractere han e uma letra ou algarismo latino vizinho, em emes do corpo do texto CJK ou em qualquer medida; <code>0</code> o desativa (veja <a href="#space-between-han-and-latin">Espaço entre han e latim</a>).</td>
+      <td>O espaço entre um caractere han e uma letra ou algarismo latino vizinho, em emes do corpo do texto CJK ou em qualquer medida; <code>0</code> o desativa (veja <a href="#espaço-entre-han-e-latim">Espaço entre han e latim</a>).</td>
     </tr>
     <tr>
       <td><code>uprightDigits</code></td>
       <td><code>0 | 2 | 3 | 4</code></td>
       <td><code>2</code></td>
-      <td>Texto vertical: um número de no máximo essa quantidade de algarismos fica em pé numa única célula (tate-chu-yoko), a menos que esteja numa frase latina, cujas palavras ele então acompanha deitado; <code>0</code> o desativa (veja <a href="#numbers-in-vertical-text">Números em texto vertical</a>).</td>
+      <td>Texto vertical: um número de no máximo essa quantidade de algarismos fica em pé numa única célula (tate-chu-yoko), a menos que esteja numa frase latina, cujas palavras ele então acompanha deitado; <code>0</code> o desativa (veja <a href="#números-em-texto-vertical">Números em texto vertical</a>).</td>
     </tr>
     <tr>
       <td><code>grid</code></td>
       <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
       <td>desativado</td>
-      <td>A mancha em caracteres por linha e linhas por página (veja <a href="#character-grid">Grade de caracteres</a>).</td>
+      <td>A mancha em caracteres por linha e linhas por página (veja <a href="#grade-de-caracteres">Grade de caracteres</a>).</td>
     </tr>
     <tr>
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'dots'</code></td>
       <td><code>'auto'</code></td>
-      <td>O que a ênfase do Markdown (<code>*…*</code>) faz com os caracteres chineses e japoneses: <code>'dots'</code> põe uma marca de ênfase junto a cada um, como faz <code>:dots[…]</code> (com a forma e o lado de <code>emphasisMark</code>), e as letras latinas dentro da mesma ênfase mantêm o itálico; <code>'italic'</code> os inclina, o que uma fonte CJK só consegue simular. <code>'auto'</code>: <code>'dots'</code> quando o idioma do documento é chinês ou japonês, <code>'italic'</code> nos demais casos (veja <a href="#marks-ruby-and-warichu">Marcas, rubi e warichu</a>).</td>
+      <td>O que a ênfase do Markdown (<code>*…*</code>) faz com os caracteres chineses e japoneses: <code>'dots'</code> põe uma marca de ênfase junto a cada um, como faz <code>:dots[…]</code> (com a forma e o lado de <code>emphasisMark</code>), e as letras latinas dentro da mesma ênfase mantêm o itálico; <code>'italic'</code> os inclina, o que uma fonte CJK só consegue simular. <code>'auto'</code>: <code>'dots'</code> quando o idioma do documento é chinês ou japonês, <code>'italic'</code> nos demais casos (veja <a href="#marcas-rubi-e-warichu">Marcas, rubi e warichu</a>).</td>
     </tr>
     <tr>
       <td><code>emphasisMark</code></td>
@@ -3710,7 +3712,7 @@ interface CjkConfig {
       <td><code>kunten</code></td>
       <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
       <td>meio corpo, <code>'inline'</code></td>
-      <td>As marcas de kanbun de <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): seu corpo (por padrão <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), sua cor (por padrão <code>annotationColor</code>, senão a do texto) e <code>placement</code>: <code>'inline'</code> compõe as marcas de retorno depois do seu caractere, ocupando meio eme, como a JIS as compõe; <code>'interlinear'</code> põe todas as marcas no espaço entre as linhas, sem ocupar avanço. Igual em todas as regiões (veja <a href="#marks-ruby-and-warichu">Marcas, rubi e warichu</a>).</td>
+      <td>As marcas de kanbun de <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): seu corpo (por padrão <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), sua cor (por padrão <code>annotationColor</code>, senão a do texto) e <code>placement</code>: <code>'inline'</code> compõe as marcas de retorno depois do seu caractere, ocupando meio eme, como a JIS as compõe; <code>'interlinear'</code> põe todas as marcas no espaço entre as linhas, sem ocupar avanço. Igual em todas as regiões (veja <a href="#marcas-rubi-e-warichu">Marcas, rubi e warichu</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -3980,7 +3982,7 @@ interface ResourceType {
     <tr>
       <td><code>counterFormat</code></td>
       <td><code>ResourceCounterFormat</code></td>
-      <td>Como o contador <code>{'{n}'}</code> é impresso: decimal (<code>1, 2, 3</code>), romano minúsculo/maiúsculo (<code>i, ii</code> / <code>I, II</code>) ou alfabético minúsculo/maiúsculo (<code>a, b</code> / <code>A, B</code>). As grafias de páginas e listas também são aceitas (<code>'lower-roman'</code>, <code>'arabic'</code>…; veja <a href="#numbering-format-spellings">Grafias dos formatos de numeração</a>); um valor desconhecido conta em decimal e é reportado. Os tokens de título (<code>{'{h1}'}</code>…) sempre saem em decimal.</td>
+      <td>Como o contador <code>{'{n}'}</code> é impresso: decimal (<code>1, 2, 3</code>), romano minúsculo/maiúsculo (<code>i, ii</code> / <code>I, II</code>) ou alfabético minúsculo/maiúsculo (<code>a, b</code> / <code>A, B</code>). As grafias de páginas e listas também são aceitas (<code>'lower-roman'</code>, <code>'arabic'</code>…; veja <a href="#grafias-dos-formatos-de-numeração">Grafias dos formatos de numeração</a>); um valor desconhecido conta em decimal e é reportado. Os tokens de título (<code>{'{h1}'}</code>…) sempre saem em decimal.</td>
     </tr>
     <tr>
       <td><code>captionPrefix</code></td>
@@ -3990,12 +3992,12 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (opcional)</td>
-      <td>Posicionamento usado pelos recursos deste tipo que não definem o próprio <code>placement</code>: <code>position</code>, <code>span</code>, <code>rotate</code>, <code>width</code>, <code>align</code>, <code>captionSide</code> e <code>columns</code>, cada um resolvido separadamente. Quando nem o recurso nem o tipo definem um campo, vale o padrão embutido: <code>auto</code> / <code>column</code>, sem giro, largura total, alinhado à esquerda, legenda embaixo da figura. Veja <a href="#numbering-and-references">Numeração e referências</a> abaixo para a cadeia de resolução e <a href="/pt/docs/document-format#recursos">Formato do documento › Recursos</a> para o que cada valor faz, inclusive nos recursos girados.</td>
+      <td>Posicionamento usado pelos recursos deste tipo que não definem o próprio <code>placement</code>: <code>position</code>, <code>span</code>, <code>rotate</code>, <code>width</code>, <code>align</code>, <code>captionSide</code> e <code>columns</code>, cada um resolvido separadamente. Quando nem o recurso nem o tipo definem um campo, vale o padrão embutido: <code>auto</code> / <code>column</code>, sem giro, largura total, alinhado à esquerda, legenda embaixo da figura. Veja <a href="#numeração-e-referências">Numeração e referências</a> abaixo para a cadeia de resolução e <a href="/pt/docs/document-format#recursos">Formato do documento › Recursos</a> para o que cada valor faz, inclusive nos recursos girados.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
-      <td>Substituição parcial do <a href="#caption-style">estilo de legenda</a> para os recursos deste tipo. Só as chaves que você define substituem o <code>captionStyle</code> global; todo o resto é herdado (uma <code>color</code> substituída também define as cores do rótulo e da nota, a menos que elas sejam definidas explicitamente). Uso típico: tabelas com legenda <em>em cima</em>, sobre uma barra colorida, enquanto as figuras mantêm a legenda embaixo. Referências à paleta são resolvidas como qualquer outra cor.</td>
+      <td>Substituição parcial do <a href="#estilo-de-legenda">estilo de legenda</a> para os recursos deste tipo. Só as chaves que você define substituem o <code>captionStyle</code> global; todo o resto é herdado (uma <code>color</code> substituída também define as cores do rótulo e da nota, a menos que elas sejam definidas explicitamente). Uso típico: tabelas com legenda <em>em cima</em>, sobre uma barra colorida, enquanto as figuras mantêm a legenda embaixo. Referências à paleta são resolvidas como qualquer outra cor.</td>
     </tr>
   </tbody>
 </table>
@@ -4184,7 +4186,7 @@ const config: PostextConfig = {
       <td><code>bodyAlternateBackgroundEnabled</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Linhas zebradas: preenche uma a cada duas linhas do corpo com <code>bodyAlternateBackground</code>. Veja <a href="#zebra-rows">linhas zebradas</a>.</td>
+      <td>Linhas zebradas: preenche uma a cada duas linhas do corpo com <code>bodyAlternateBackground</code>. Veja <a href="#linhas-zebradas">linhas zebradas</a>.</td>
     </tr>
     <tr>
       <td><code>bodyAlternateBackground</code></td>
@@ -4250,7 +4252,7 @@ const config: PostextConfig = {
       <td><code>continuesMarker</code></td>
       <td><code>string</code></td>
       <td><code>'Continued'</code> / <code>'Continúa'</code></td>
-      <td>Texto desse aviso, alinhado à direita embaixo da parte, na tipografia das notas (veja <a href="#caption-style">estilo de legenda</a>). O padrão acompanha o idioma do documento (veja <a href="#document-language">Idioma do documento</a> para os oito idiomas).</td>
+      <td>Texto desse aviso, alinhado à direita embaixo da parte, na tipografia das notas (veja <a href="#estilo-de-legenda">estilo de legenda</a>). O padrão acompanha o idioma do documento (veja <a href="#idioma-do-documento">Idioma do documento</a> para os oito idiomas).</td>
     </tr>
   </tbody>
 </table>
@@ -5315,7 +5317,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>border</code></td>
       <td><code>&#123; enabled, color, width &#125;</code></td>
       <td><code>false</code>, <code>#cccccc</code>, <code>0.5pt</code></td>
-      <td>Contorno do boxe, traçado por dentro da borda do boxe, como a borda de um elemento de caixa (veja <a href="#box-elements">Elementos de caixa</a>).</td>
+      <td>Contorno do boxe, traçado por dentro da borda do boxe, como a borda de um elemento de caixa (veja <a href="#elementos-de-caixa">Elementos de caixa</a>).</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
@@ -5357,7 +5359,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>body</code></td>
       <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
       <td>herda <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografia dos parágrafos e itens de lista dentro do boxe. Todo campo não definido herda o texto do corpo; <code>italicColor</code> define a cor dos trechos em itálico (uma citação em destaque em itálico na cor do boxe). <code>fontWeight</code> / <code>boldFontWeight</code> definem os pesos dos trechos regulares e em negrito; <code>italic</code> compõe o boxe em itálico, com os trechos <code>*…*</code> voltando ao redondo; <code>smallCaps</code> o compõe em versaletes. Veja <a href="#typography-inside-a-box">Tipografia dentro de um boxe</a> para o que mais o texto do boxe recebe.</td>
+      <td>Tipografia dos parágrafos e itens de lista dentro do boxe. Todo campo não definido herda o texto do corpo; <code>italicColor</code> define a cor dos trechos em itálico (uma citação em destaque em itálico na cor do boxe). <code>fontWeight</code> / <code>boldFontWeight</code> definem os pesos dos trechos regulares e em negrito; <code>italic</code> compõe o boxe em itálico, com os trechos <code>*…*</code> voltando ao redondo; <code>smallCaps</code> o compõe em versaletes. Veja <a href="#tipografia-dentro-de-um-boxe">Tipografia dentro de um boxe</a> para o que mais o texto do boxe recebe.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -5405,7 +5407,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>repeatTitle</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Repete o título no alto de cada continuação de um boxe dividido, seguido de <code>continuedSuffix</code> (“Pontos-chave (cont.)”). A repetição usa o estilo do título. Um boxe sem título não repete nada. Veja <a href="#marks-on-a-split-box">Marcas em um boxe dividido</a>.</td>
+      <td>Repete o título no alto de cada continuação de um boxe dividido, seguido de <code>continuedSuffix</code> (“Pontos-chave (cont.)”). A repetição usa o estilo do título. Um boxe sem título não repete nada. Veja <a href="#marcas-em-um-boxe-dividido">Marcas em um boxe dividido</a>.</td>
     </tr>
     <tr>
       <td><code>continuedSuffix</code></td>
@@ -5441,7 +5443,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>numbering</code></td>
       <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
       <td>não definido</td>
-      <td>Conta os boxes deste estilo como enunciados numerados: teoremas, lemas, definições. Veja <a href="#numbered-statements-and-proofs">Enunciados numerados e demonstrações</a>.</td>
+      <td>Conta os boxes deste estilo como enunciados numerados: teoremas, lemas, definições. Veja <a href="#enunciados-numerados-e-demonstrações">Enunciados numerados e demonstrações</a>.</td>
     </tr>
     <tr>
       <td><code>endMark</code></td>
@@ -5650,7 +5652,7 @@ const config: PostextConfig = {
       <td><code>breakBefore.parity</code></td>
       <td><code>HeadingBreakParity</code></td>
       <td><code>'odd'</code></td>
-      <td>Paridade da página em que a parte começa. Mesmos valores e mesmas regras de posse das páginas em branco que o <a href="#break-before">breakBefore</a> dos títulos: uma página em branco inserida para alcançar a paridade pertence à parte (o seu <code>{'{partTitle}'}</code> já resolve para a nova parte); o separador obrigatório de <code>'always-*'</code> pertence ao conteúdo anterior.</td>
+      <td>Paridade da página em que a parte começa. Mesmos valores e mesmas regras de posse das páginas em branco que o <a href="#quebra-antes">breakBefore</a> dos títulos: uma página em branco inserida para alcançar a paridade pertence à parte (o seu <code>{'{partTitle}'}</code> já resolve para a nova parte); o separador obrigatório de <code>'always-*'</code> pertence ao conteúdo anterior.</td>
     </tr>
     <tr>
       <td><code>breakAfter.enabled</code></td>
@@ -5680,7 +5682,7 @@ const config: PostextConfig = {
       <td><code>versoDesign</code></td>
       <td><code>DesignSlot</code></td>
       <td>vazio</td>
-      <td>Design do verso em branco que vem depois de uma página de parte (o verso da folha divisória): mesmo contêiner e mesmos marcadores de substituição que <code>design</code>. Deixe vazio para um verso liso. Só é pintado quando a página depois da página da parte fica em branco, o que exige uma quebra com paridade: veja <a href="#the-verso-design">O design do verso</a> abaixo.</td>
+      <td>Design do verso em branco que vem depois de uma página de parte (o verso da folha divisória): mesmo contêiner e mesmos marcadores de substituição que <code>design</code>. Deixe vazio para um verso liso. Só é pintado quando a página depois da página da parte fica em branco, o que exige uma quebra com paridade: veja <a href="#o-design-do-verso">O design do verso</a> abaixo.</td>
     </tr>
     <tr>
       <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
@@ -5846,7 +5848,7 @@ const config: PostextConfig = {
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td>o do nível</td>
-      <td>Modelo com que os títulos do estilo são numerados, no lugar do modelo do nível (os mesmos tokens de <a href="#per-level-overrides"><code>levels[].numberingTemplate</code></a>). O contador continua sendo o do nível: um estilo de apêndice com <code>'Appendix {'{1:A}'}'</code> depois de cinco capítulos imprimiria <em>Appendix F</em>, então reinicie a contagem com <code>{'{startAt=1}'}</code> no primeiro apêndice. <code>''</code> não imprime número, mas o título continua contando: nem mesmo o ordinal de capítulo que o sumário e <code>{'{chapterNumber}'}</code> mostram para um título de nível 1 sem modelo. O número aparece no fluxo, no <code>{'{number}'}</code> do design do estilo, no sumário e em <code>{'{chapterNumber}'}</code>.</td>
+      <td>Modelo com que os títulos do estilo são numerados, no lugar do modelo do nível (os mesmos tokens de <a href="#sobrescritas-por-nível"><code>levels[].numberingTemplate</code></a>). O contador continua sendo o do nível: um estilo de apêndice com <code>'Appendix {'{1:A}'}'</code> depois de cinco capítulos imprimiria <em>Appendix F</em>, então reinicie a contagem com <code>{'{startAt=1}'}</code> no primeiro apêndice. <code>''</code> não imprime número, mas o título continua contando: nem mesmo o ordinal de capítulo que o sumário e <code>{'{chapterNumber}'}</code> mostram para um título de nível 1 sem modelo. O número aparece no fluxo, no <code>{'{number}'}</code> do design do estilo, no sumário e em <code>{'{chapterNumber}'}</code>.</td>
     </tr>
     <tr>
       <td><code>header</code>, <code>footer</code></td>
@@ -5864,19 +5866,19 @@ const config: PostextConfig = {
       <td><code>layout</code></td>
       <td><code>LayoutConfig</code></td>
       <td><code>layout</code></td>
-      <td>Disposição de colunas das páginas da seção (<code>layoutType</code>, <code>gutterWidth</code>…): uma única coluna larga para um prefácio composto num livro de duas colunas. O seu <code>columnRule</code> é desenhado nas páginas da seção, e cada campo que ele deixa sem valor usa o valor de <code>layout.columnRule</code> do documento, então uma seção que só muda as colunas mantém o fio do documento (veja <a href="#column-rule">Fio entre colunas</a>).</td>
+      <td>Disposição de colunas das páginas da seção (<code>layoutType</code>, <code>gutterWidth</code>…): uma única coluna larga para um prefácio composto num livro de duas colunas. O seu <code>columnRule</code> é desenhado nas páginas da seção, e cada campo que ele deixa sem valor usa o valor de <code>layout.columnRule</code> do documento, então uma seção que só muda as colunas mantém o fio do documento (veja <a href="#fio-entre-colunas">Fio entre colunas</a>).</td>
     </tr>
     <tr>
       <td><code>bodyStyle</code></td>
       <td><code>PartsBodyStyleConfig</code></td>
       <td>herda <code>bodyText</code></td>
-      <td>Tipografia dos parágrafos, citações e listas da seção: os mesmos campos de <a href="#parts">parts.bodyStyle</a>.</td>
+      <td>Tipografia dos parágrafos, citações e listas da seção: os mesmos campos de <a href="#partes">parts.bodyStyle</a>.</td>
     </tr>
     <tr>
       <td><code>palette</code></td>
       <td><code>Record&lt;string, string&gt;</code></td>
       <td><code>{'{}'}</code></td>
-      <td>Substituições de paleta (id → hex) para as páginas da seção, por cima das da parte atual: o mesmo mecanismo do atributo <code>palette</code> de uma parte, e com o mesmo alcance. Vale não só para os slots de design dessas páginas (cabeços, a faixa de abertura, toda cor vinculada a um id substituído), mas também para o fluxo de texto, pelo valor: toda cor do fluxo igual ao valor base de uma entrada substituída (títulos, cores de negrito, itálico e referências, marcadores e números de lista, rótulos e barras de legenda, texto, fios e preenchimentos de tabela, boxes (fundo, borda, faixa, título) e chips (preenchimento, contorno e texto)) usa o valor da seção, como acontece numa parte, incluindo a regra para duas entradas com o mesmo valor base (veja <a href="#the-part-container">O contêiner <code>:::part</code></a>). As amostras de cor no texto mantêm a cor escrita nelas. A cor da página também acompanha: quando <code>page.backgroundColor</code> está vinculada a uma entrada substituída (ou, sem vínculo, tem o valor base dela), as páginas da seção são pintadas com o valor da seção, e assim as páginas de economia de um jornal saem em salmão enquanto as demais ficam brancas. Desde o postext 1.18.</td>
+      <td>Substituições de paleta (id → hex) para as páginas da seção, por cima das da parte atual: o mesmo mecanismo do atributo <code>palette</code> de uma parte, e com o mesmo alcance. Vale não só para os slots de design dessas páginas (cabeços, a faixa de abertura, toda cor vinculada a um id substituído), mas também para o fluxo de texto, pelo valor: toda cor do fluxo igual ao valor base de uma entrada substituída (títulos, cores de negrito, itálico e referências, marcadores e números de lista, rótulos e barras de legenda, texto, fios e preenchimentos de tabela, boxes (fundo, borda, faixa, título) e chips (preenchimento, contorno e texto)) usa o valor da seção, como acontece numa parte, incluindo a regra para duas entradas com o mesmo valor base (veja <a href="#o-contêiner-part">O contêiner <code>:::part</code></a>). As amostras de cor no texto mantêm a cor escrita nelas. A cor da página também acompanha: quando <code>page.backgroundColor</code> está vinculada a uma entrada substituída (ou, sem vínculo, tem o valor base dela), as páginas da seção são pintadas com o valor da seção, e assim as páginas de economia de um jornal saem em salmão enquanto as demais ficam brancas. Desde o postext 1.18.</td>
     </tr>
   </tbody>
 </table>
@@ -6192,7 +6194,7 @@ const config: PostextConfig = {
       <td><code>readingDirection</code></td>
       <td><code>'auto' | 'ltr' | 'rtl'</code></td>
       <td><code>'auto'</code></td>
-      <td>A ordem dos quadros numa fileira. <code>'auto'</code> lê da direita para a esquerda num documento da direita para a esquerda e, nos demais casos, no sentido de <code>artDirection</code>. O atributo <code>direction</code> de uma página tem prioridade.</td>
+      <td>A ordem dos quadros numa fileira. <code>'auto'</code> lê da direita para a esquerda num documento da direita para a esquerda, num documento vertical e em japonês e chinês tradicional e, nos demais casos, no sentido de <code>artDirection</code> (incluídos o chinês simplificado e o coreano). O atributo <code>direction</code> de uma página tem prioridade. Com <code>page.binding: 'auto'</code>, um livro cujos quadrinhos são lidos da direita para a esquerda é encadernado à direita.</td>
     </tr>
     <tr>
       <td><code>artDirection</code></td>
@@ -6252,7 +6254,7 @@ const config: PostextConfig = {
       <td><code>cast</code></td>
       <td><code>ComicCastMember[]</code></td>
       <td><code>[]</code></td>
-      <td>Os personagens (veja <a href="#cast">Elenco</a>).</td>
+      <td>Os personagens (veja <a href="#elenco">Elenco</a>).</td>
     </tr>
     <tr>
       <td><code>runningHeads</code></td>
@@ -7316,27 +7318,27 @@ A propriedade `debug` reúne dois tipos de recursos de autoria: sobreposições 
     <tr>
       <td><code>cursorSync</code></td>
       <td><code>SyncIndicatorConfig</code></td>
-      <td>Cursor espelhado no layout renderizado; veja <a href="#visual-overlays">Sobreposições visuais</a>.</td>
+      <td>Cursor espelhado no layout renderizado; veja <a href="#sobreposições-visuais">Sobreposições visuais</a>.</td>
     </tr>
     <tr>
       <td><code>selectionSync</code></td>
       <td><code>SyncIndicatorConfig</code></td>
-      <td>Seleção do texto-fonte destacada na página; veja <a href="#visual-overlays">Sobreposições visuais</a>.</td>
+      <td>Seleção do texto-fonte destacada na página; veja <a href="#sobreposições-visuais">Sobreposições visuais</a>.</td>
     </tr>
     <tr>
       <td><code>looseLineHighlight</code></td>
       <td><code>LooseLineHighlightConfig</code></td>
-      <td>Sobreposição nas linhas justificadas frouxas; veja <a href="#visual-overlays">Sobreposições visuais</a>.</td>
+      <td>Sobreposição nas linhas justificadas frouxas; veja <a href="#sobreposições-visuais">Sobreposições visuais</a>.</td>
     </tr>
     <tr>
       <td><code>pageNegative</code></td>
       <td><code>{'{ enabled: boolean }'}</code></td>
-      <td>Negativo de alto contraste da página; veja <a href="#visual-overlays">Sobreposições visuais</a>.</td>
+      <td>Negativo de alto contraste da página; veja <a href="#sobreposições-visuais">Sobreposições visuais</a>.</td>
     </tr>
     <tr>
       <td><code>warnings</code></td>
       <td><code>WarningsToggleConfig</code></td>
-      <td>Um booleano por tipo de aviso de autoria mostrado no editor; veja <a href="#warnings">Avisos</a>.</td>
+      <td>Um booleano por tipo de aviso de autoria mostrado no editor; veja <a href="#avisos">Avisos</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -7672,7 +7674,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>raggedTableGrid</code></td>
-      <td>A grade de uma tabela não é retangular depois de contadas as mesclagens (veja <a href="#building-table-models">Montar modelos de tabela</a>).</td>
+      <td>A grade de uma tabela não é retangular depois de contadas as mesclagens (veja <a href="#construção-de-modelos-de-tabela">Montar modelos de tabela</a>).</td>
       <td>Células se deslocam sobre uma mesclagem ou deixam um buraco. <code>reason</code> (<code>'spanOverlap'</code> / <code>'missingCells'</code>), <code>row</code> e <code>col</code> localizam o primeiro problema; <code>count</code> diz quantos são.</td>
     </tr>
   </tbody>
@@ -8350,7 +8352,7 @@ O componente `HtmlPreview` do Sandbox (`packages/postext-sandbox/src/viewport/Ht
       <td>Texto vertical (<code>layout.writingMode: 'vertical-rl'</code>)</td>
       <td>Caracteres pintados uma célula por vez, girados de volta à posição em pé; formas verticais por meio de uma fonte gêmea (<code>loadVerticalAlternates</code>).</td>
       <td>O fluxo em uma caixa girada um quarto de volta; cada linha girada de volta à posição em pé e composta com <code>writing-mode: vertical-rl</code>, de modo que o navegador usa as formas verticais e põe os caracteres em pé; números curtos em <code>text-combine-upright: all</code>; um travessão, reticências, um ponto médio ou um til ondulado em uma caixa da sua célula (o navegador o avançaria pela largura horizontal), e um travessão esticado para preenchê-la por <code>flow.dashAdvances</code>.</td>
-      <td>Caracteres em pé por meio de uma gêmea <code>Identity-V</code> de cada fonte; veja <a href="#vertical-text-in-the-pdf">Texto vertical no PDF</a>.</td>
+      <td>Caracteres em pé por meio de uma gêmea <code>Identity-V</code> de cada fonte; veja <a href="#texto-vertical-no-pdf">Texto vertical no PDF</a>.</td>
     </tr>
     <tr>
       <td>Imagens</td>
@@ -8398,8 +8400,8 @@ O pacote expõe um único ponto de entrada e alguns tipos:
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`**: recebe um `VDTDocument` (ou os capítulos de um livro como uma lista deles) e devolve os bytes brutos do PDF.
 - **`PdfFontProvider`**: a assinatura de callback `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que `renderToPdf` usa para pedir os bytes de uma fonte quando precisa incorporar uma nova combinação de família/peso/estilo. `request.codePoints` contém os caracteres que as páginas compõem naquela variante; a resposta é um arquivo, ou vários que juntos formam a variante (veja [Fontes chinesas, japonesas e coreanas](#fontes-chinesas-japonesas-e-coreanas)).
-- **`RenderToPdfOptions`**: `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm? }`. `outlines`, `accessible` e `colorSpace` assumem o `pdfGeneration` do documento quando omitidos (veja [Geração de PDF (configuração)](#geração-de-pdf-configuração)). `resourceBytes` é descrito em [Bytes de recursos e matrizes de impressão](#bytes-de-recursos-e-matrizes-de-impressão); `onWarning`, em [Quais variantes são pedidas ao provedor](#quais-variantes-são-pedidas-ao-provedor) e em [Avisos no documento](#avisos-no-documento). `characterGrid: true` imprime a grade que `cjk.grid.show` desenha na tela e que, de outro modo, o PDF deixa de fora (veja [Grade de caracteres](#grade-de-caracteres)). `harfbuzzWasm` diz de onde carregar o `harfbuzz.wasm` do HarfBuzz (uma URL, relativa à página, ou os bytes do arquivo) para um documento com texto da direita para a esquerda ou de letras ligadas; se omitido, usa a cópia ao lado do módulo do postext-pdf e, depois, a mesma versão do harfbuzzjs no jsDelivr e no esm.sh.
-- **`PdfWarning`**: um problema não fatal informado por `onWarning`; distinga pelo `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), uma variante composta em outro corte da sua família; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para os quais nenhum arquivo de uma variante tem glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), uma fonte variável pedida em um peso diferente da sua instância padrão; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), uma fonte CFF de mais de 2 MB incorporada inteira; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), texto da direita para a esquerda ou de letras ligadas desenhado sem o HarfBuzz, que não pôde ser carregado (`reason` lista onde ele foi procurado), de modo que os sinais do árabe ficam mal posicionados; ou `'missingImage'`, uma imagem sem bytes desenhada como espaço reservado (informado apenas a um `onWarning` que você passe; sem ele, os avisos de fontes vão para `console.warn`).
+- **`RenderToPdfOptions`**: `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl? }`. `outlines`, `accessible` e `colorSpace` assumem o `pdfGeneration` do documento quando omitidos (veja [Geração de PDF (configuração)](#geração-de-pdf-configuração)). `resourceBytes` é descrito em [Bytes de recursos e matrizes de impressão](#bytes-de-recursos-e-matrizes-de-impressão); `onWarning`, em [Quais variantes são pedidas ao provedor](#quais-variantes-são-pedidas-ao-provedor) e em [Avisos no documento](#avisos-no-documento). `characterGrid: true` imprime a grade que `cjk.grid.show` desenha na tela e que, de outro modo, o PDF deixa de fora (veja [Grade de caracteres](#grade-de-caracteres)). `harfbuzzWasm` diz de onde carregar o `harfbuzz.wasm` do HarfBuzz (uma URL, relativa à página, ou os bytes do arquivo) para um documento com texto da direita para a esquerda ou de letras ligadas; se omitido, usa a cópia ao lado do módulo do postext-pdf e, depois, a mesma versão do harfbuzzjs no jsDelivr e no esm.sh. `print` recebe as configurações de produção gráfica (padrão PDF/X, perfil de saída, preto, verificação de pré-impressão) e, se omitido, assume o `print` do documento; com um padrão PDF/X, ou com `colorSpace: 'cmyk'`, cada cor passa pela separação de cores com o perfil ICC de saída, cujos bytes `outputProfile` fornece (senão, ele é baixado de `profileBaseUrl`, por padrão a cópia da pasta `icc/` do postext na CDN do npm).
+- **`PdfWarning`**: um problema não fatal informado por `onWarning`; distinga pelo `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), uma variante composta em outro corte da sua família; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para os quais nenhum arquivo de uma variante tem glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), uma fonte variável pedida em um peso diferente da sua instância padrão; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), uma fonte CFF de mais de 2 MB incorporada inteira; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), texto da direita para a esquerda ou de letras ligadas desenhado sem o HarfBuzz, que não pôde ser carregado (`reason` lista onde ele foi procurado), de modo que os sinais do árabe ficam mal posicionados; `'outputProfileUnavailable'` (`PdfPrintWarning`), uma renderização em CMYK cujo perfil de saída não pôde ser carregado, convertida com a fórmula simples; `'pageNegativeIgnored'` (`PdfPrintWarning`), a página em negativo deixada de fora de um arquivo PDF/X-1a; ou `'missingImage'`, uma imagem sem bytes desenhada como espaço reservado (informado apenas a um `onWarning` que você passe; sem ele, os avisos de fontes vão para `console.warn`).
 - **`decompressWoff2(bytes): Uint8Array`**: função auxiliar que converte um arquivo WOFF2 em bytes TTF, o formato que `pdf-lib` consegue incorporar diretamente.
 - **`createPdfWorker(options?)`**, de `postext-pdf/worker`: a mesma renderização em um Web Worker; veja [Renderizar o PDF em um worker](#renderizar-o-pdf-em-um-worker).
 
@@ -8805,7 +8807,7 @@ book.resetView();
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>folio</code></td><td>As <a href="#folio-viewer-config">configurações <code>folio</code></a>: inclinação, papel, encadernação, superfície, iluminação. Substitui as do documento quando informado.</td></tr>
+    <tr><td><code>folio</code></td><td>As <a href="#visualizador-folio-configuração">configurações <code>folio</code></a>: inclinação, papel, encadernação, superfície, iluminação. Substitui as do documento quando informado.</td></tr>
     <tr><td><code>pageWidthMm</code></td><td>A largura de refile de uma página em mm, que dá a escala da espessura do papel e das capas. A partir do documento: a página refilada no seu dpi. Padrão 150 para <code>createFolio</code>.</td></tr>
     <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>: páginas do livro além das informadas, contadas na espessura dos blocos de páginas e nunca desenhadas.</td></tr>
     <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>: a primeira página informada é a capa da frente, a última, a capa de trás (quando cai em um verso). Elas viram como capas rígidas e nenhuma caixa de capa é desenhada. A partir do documento: <code>binding.cover: 'pages'</code> em um livro que começa na sua primeira página e termina na última.</td></tr>
@@ -9074,7 +9076,7 @@ const { bytes, manifest, warnings } = await createBundle({
     <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>: uma imagem de capa (PNG, JPEG, WebP, GIF ou SVG).</td></tr>
     <tr><td><code>canvasScope</code></td><td><code>'book'</code> pede aos visualizadores que diagramem o livro inteiro como um único canvas.</td></tr>
     <tr><td><code>mtime</code></td><td>A data de modificação gravada em todos os arquivos do zip (um <code>Date</code>, um timestamp ou uma string de data). Se omitida, é o momento da chamada, então duas chamadas com a mesma entrada geram bytes diferentes. Passe uma data fixa e a mesma entrada gera os mesmos bytes, que você pode comparar ou calcular o hash. Um zip guarda data e hora sem fuso horário, em passos de dois segundos, de 1980 a 2099, e a data é gravada no horário local da máquina. Para bytes que coincidam em qualquer máquina, construa a data a partir de campos locais, como <code>new Date(1980, 0, 1)</code>: um timestamp ou uma string terminada em <code>Z</code> designa um instante, que cai em um horário local diferente em cada fuso (<code>'1980-01-01T00:00:00Z'</code> ainda é 1979 a oeste de UTC). Uma data fora desses anos, em horário local, lança um erro.</td></tr>
-    <tr><td><code>localized</code></td><td>Mais idiomas do mesmo livro, por tag de idioma: <code>&#123; es: &#123; chapters?, config?, resources? &#125; &#125;</code>. As entradas acima passam então a ser o conteúdo de <code>locale</code>, que se torna obrigatório. Veja <a href="#bilingual-bundles">Pacotes bilíngues</a>.</td></tr>
+    <tr><td><code>localized</code></td><td>Mais idiomas do mesmo livro, por tag de idioma: <code>&#123; es: &#123; chapters?, config?, resources? &#125; &#125;</code>. As entradas acima passam então a ser o conteúdo de <code>locale</code>, que se torna obrigatório. Veja <a href="#pacotes-bilíngues">Pacotes bilíngues</a>.</td></tr>
   </tbody>
 </table>
 
