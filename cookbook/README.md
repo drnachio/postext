@@ -55,8 +55,15 @@ in Headings; a whole magazine *issue* belongs in Complete publications.
 | | 8 | `tables` | Tables | Tablas |
 | III · In practice | 9 | `publications` | Complete publications | Publicaciones completas |
 | | 10 | `output` | Output & integration | Salida e integración |
+| | 11 | `comics` | Comics & manga | Cómic y manga |
 
 A recipe in `publications` composes at least eight features over at least four pages.
+Chapter numbers are permanent and new chapters are appended, so `comics` (11) sits in part III
+after `output`: it holds the recipes whose subject is a comic page or strip (`:::page`,
+`:::strip`, lettering, balloons, reading direction); a magazine that merely prints a strip among
+its articles stays in `publications`. Its features are in the `comics` group of
+`features.json`, its questions are Q162–Q178 and its planned recipes are wave 11 of
+`_roadmap.json` (Nº 144–155).
 
 ## 2. Folder anatomy
 
@@ -140,16 +147,16 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `status` | `draft` → `published` (by the reviewer) → `retired` (needs `replacedBy`). |
 | `chapter`, `order` | One chapter; sparse order inside it (10, 20, 30…). |
 | `level` | 1 Basic, 2 Intermediate, 3 Advanced (rubric below). The lint warns when the code reads two levels away. |
-| `genres` | 1–3 of `novel poetry textbook workbook manual paper report magazine newsletter catalogue photobook ephemera any`. |
+| `genres` | 1–3 of `novel poetry textbook workbook manual paper report magazine newsletter catalogue photobook comic ephemera any`. |
 | `outputs` | 1–4 of `canvas html pdf epub bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
-| `answers` | Question ids (`Q01`…`Q144`); `answers[0]` is the question the recipe page leads with. |
+| `answers` | Question ids (`Q01`…`Q178`); `answers[0]` is the question the recipe page leads with. |
 | `gaps` | Unsupported features the recipe works around (gives the Workaround badge). |
 | `gotchas`, `explainsWarnings` | Shared pitfalls and warning kinds shown under Pitfalls. |
 | `related` | Up to four hand-picked sibling slugs; the rest are computed. |
 | `workarounds` | Engine bugs the recipe routes around: `{ followup?, issue?, package, note }`, revisited when fixed. |
 | `engine` | `postext` minimum version (≤ the released one, or the next release in a preview draft, §3); `postextPdf` for PDF recipes; `math`, `worker` flags. |
-| `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images`, `cjk`, `arabic` and `book` when used (`book` or `cjk`, never both: each declares `showBook`). |
+| `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images`, `cjk`, `arabic`, `book` and `comics` when used (`book` or `cjk`, never both: each declares `showBook`). |
 | `sample.locales` | Languages with a `content.<lang>.md`; `[0]` is the fallback edition. |
 | `capture` | `hero` (a page, or a spread `[verso, recto]`; page 1 is a recto on its own), `card` (`spread`, `page`, `loupe`, `crop`, `screenshot`), `focus` for loupe and crop, `pages`, `expect`, and `doc`, the recorded build whose pages are published: `last` by default, `first` or an index from 0, or a list of them for a pen that builds several documents, such as two editions (Nº 079). The pages of a list are numbered on from one build to the next, each build's page 1 stands alone, and the checks, the detected features and the Sandbox bundle read the first build. Page numbers count from 1 at the document's first page, whatever its printed folio (`continuation.pageNumbering.startAt`) or its place in the book (`continuation.pageIndexOffset`). Versos and rectos follow the physical book page (`pageIndexOffset` + index + 1), not the folio: the capture checks that a spread's verso is an even book page. A spread is named in reading order, `[verso, recto]`, also in a book bound on the right, which the light table and the card lay out mirrored (`[3 \| 2]`). |
 | `downloads.pdf` | Keep and serve the PDF the pen builds. |
@@ -224,7 +231,7 @@ CodePen, Copy, the `.html` download and the capture all run, so they are identic
 | `const LANG = 'en'; // @lang` | the edition's language |
 | `/* @content */ ''` | a literal of `content.<lang>.md` (falling back to `sample.locales[0]`) |
 | `/* @content:<slot> */ ''` | a literal of `content.<slot>.<lang>.md` |
-| `// @kit` (last line) | the kit blocks listed in `recipe.json` `kit`, in the order core, fonts, viewer, pdf, images, cjk, arabic, book |
+| `// @kit` (last line) | the kit blocks listed in `recipe.json` `kit`, in the order core, fonts, viewer, pdf, images, cjk, arabic, book, comics |
 | `// #region <id>: <title>` … `// #endregion` | kept as is; the write-up excerpts regions by id |
 
 The banner's four lines, the section banners `1 · Design`, `2 · Content`, `3 · Fonts`,
@@ -300,6 +307,9 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `loadArabicFonts(faces, text)` | arabic | The arabic file of every listed weight of each Arabic family (Amiri, Noto Naskh Arabic, Scheherazade New…; the other families of `faces` are left alone), after `loadFonts`, which loads their latin files. Fails on an Arabic-script character the arabic files lack, or when api.fontsource.org does not answer. List every weight the pages set in Arabic in `FONTS`: a weight `buildWithFonts` loads late gets its latin file only (C12 fails it). |
 | `arabicPdfProvider` | arabic | The PDF font provider for such faces: the arabic file when the face sets Arabic, then latin, and latin-ext for letters such as ā ḥ ʿ; postext-pdf shapes the Arabic with HarfBuzz from those bytes. Other families go to `fontsourceProvider`, so list `pdf` too. |
 | `showBook(doc \| docs, { title, binding })` | book | `showPages` for a book bound on either edge: a right-bound document (`doc.binding`, `'right'` for `page.binding: 'right'` and, with the binding left to `'auto'`, for right-to-left text and vertical text) lies mirrored, page 1 alone on the left of the spine, then `[3 \| 2]`. The `cjk` block carries the same function for the Chinese recipes captured with it; a recipe lists one of the two. |
+| `loadComicFonts(faces, text)` | comics | After `loadFonts` (and `loadCjkFonts` or `loadArabicFonts` for those scripts): for each family, the regular, bold, italic and bold italic Fontsource does not ship are declared with its nearest file, so the bold of a shout or a sound effect and the italic of an inner voice measure and paint the letters the PDF embeds, not a bold or a slant the browser makes up. The comic faces of `defaultComicFont` and `defaultComicSfxFont` (Comic Neue, Zen Antique, Noto Sans SC, LXGW WenKai TC, Playpen Sans Arabic; Bangers, Dela Gothic One, ZCOOL KuaiLe, Lalezar) mostly ship one weight: list in `FONTS` only what Fontsource ships (`Bangers: ['400']`) and let this block add the rest. A CJK face needs the `cjk` block, an Arabic face setting Arabic the `arabic` block. |
+| `comicPdfProvider` | comics | The PDF font provider of a comic in any script: CJK faces to `cjkPdfProvider`, Arabic faces to `arabicPdfProvider` (when those blocks are listed), the rest to `fontsourceProvider`; each embeds the shipped file `loadComicFonts` declared. Needs the `pdf` block. |
+| `comicPanel(id, asset('x.jpg'), meta)` | comics | Loads a panel picture and returns its resource for `art=` and `pop=`, with the `safeArea`, `anchors` and `avoid` of `meta`, its entry in the art manifest (`{ width, height, alt, safeArea, anchors, avoid }`). Write `asset('…')` in the call, so the lint checks the file. Needs the `images` block. |
 
 A change to the kit changes every recipe's source hash, so every capture goes stale and the
 whole Cookbook is verified again.
@@ -735,7 +745,7 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `features.json` | about 150 user-facing features: label, definition, search aliases, group, docs anchor, research ids, optional detect rules | kebab-case id |
 | `apis.json` | exported engine symbols → docs section | symbol name |
 | `config.json` | top-level config keys → docs section | key |
-| `questions.json` | the reader questions Q01–Q153, how/why, index form, theme, gap | `Qnn` |
+| `questions.json` | the reader questions Q01–Q178, how/why, index form, theme, gap | `Qnn` |
 | `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the recipes and questions that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
 | `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them | kebab-case id |

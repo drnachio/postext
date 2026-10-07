@@ -100,6 +100,16 @@ export const KIT_IMPORTS: Record<KitBlock, { module: "postext" | "postext-pdf"; 
   arabic: null,
   // showBook calls the viewer block's showPages.
   book: null,
+  // loadComicFonts, comicPdfProvider and comicPanel call the fonts, pdf,
+  // cjk, arabic and images blocks (KIT_CALLS).
+  comics: null,
+};
+
+/** Kit functions that call another block's: the recipe that calls one
+ *  lists that block too, or the pen throws a ReferenceError at run time. */
+export const KIT_CALLS: Readonly<Record<string, readonly KitBlock[]>> = {
+  comicPanel: ["images"],
+  comicPdfProvider: ["pdf"],
 };
 
 /** Namespace URIs in inline SVG, never fetched. */
@@ -494,6 +504,13 @@ export function lintPen(
         fails.push(`script.js: calls ${name}() from the "${blocks[blocks.length - 1]}" kit block, which recipe.json "kit" does not list`);
       }
     }
+    for (const [name, needs] of Object.entries(KIT_CALLS)) {
+      if (!referencesIdentifier(ownBare, name)) continue;
+      for (const block of needs) {
+        usedBlocks.add(block);
+        if (!meta.kit?.includes(block)) fails.push(`script.js: ${name}() needs the "${block}" kit block, which recipe.json "kit" does not list`);
+      }
+    }
     for (const block of meta.kit ?? []) {
       if (!usedBlocks.has(block)) warns.push(`recipe.json: the "${block}" kit block is inlined but never called`);
     }
@@ -638,8 +655,8 @@ function lintCjk(
   fails: string[],
   warns: string[],
 ): void {
-  if (cjkPdf && !/\bcjkPdfProvider\b/.test(ownBare)) {
-    fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
+  if (cjkPdf && !/\b(?:cjkPdfProvider|comicPdfProvider)\b/.test(ownBare)) {
+    fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
   }
   const tagged = /\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode);
   const tag = configString(scan, "locale");
@@ -675,8 +692,8 @@ function lintArabic(
   arabicBook: boolean,
   fails: string[],
 ): void {
-  if (arabicPdf && !/\barabicPdfProvider\b/.test(ownBare)) {
-    fails.push("script.js: renderToPdf takes fontProvider: arabicPdfProvider (fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)");
+  if (arabicPdf && !/\b(?:arabicPdfProvider|comicPdfProvider)\b/.test(ownBare)) {
+    fails.push("script.js: renderToPdf takes fontProvider: arabicPdfProvider (or the comics block's comicPdfProvider; fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)");
   }
   const script = tagScript(configString(scan, "locale"));
   if (arabicBook && script !== "Arab" && script !== "Aran") {
