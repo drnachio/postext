@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
 import { DEFAULT_FOLIO_CONFIG } from 'postext';
 import type { FolioInteraction } from 'postext-folio';
 import { useSandboxDispatch, useSandboxStateGetter } from '../context/SandboxContext';
@@ -10,10 +10,12 @@ import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 import { usePageHashSync, pageIndexOf, pageNumberAt, EMPTY_VIEWER_LAYOUT, type BookPageMap, type ViewerLayout } from './usePageHashSync';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { useLargeTargets } from '../ui/largeTargets';
-import { loadFolioInteraction, saveFolioInteraction } from '../storage/persistence';
 
-const INTERACTIONS: readonly FolioInteraction[] = ['hand', 'orbit', 'select', 'magnify'];
 const INTERACTION_KEYS: Record<string, FolioInteraction> = { h: 'hand', o: 'orbit', s: 'select', m: 'magnify' };
+
+// The mode picked during this visit: a page load starts with the hand
+// (turning pages), a tab switch back to Folio keeps the reader's choice.
+let visitInteraction: FolioInteraction = 'hand';
 
 /** The Folio tab: the book in 3D, kept in step with `#chapter=C&page=P`
  *  like the canvas (the page is the one on the right of the open spread),
@@ -25,15 +27,11 @@ export function FolioViewport() {
   const [spread, setSpread] = useState<readonly number[]>([]);
   const [rightToLeft, setRightToLeft] = useState(false);
   const previewRef = useRef<FolioPreviewHandle | null>(null);
-  // What the left button does on the book, remembered between visits.
-  const [interaction, setInteraction] = useState<FolioInteraction>('hand');
-  useEffect(() => {
-    const saved = loadFolioInteraction();
-    if (saved && (INTERACTIONS as readonly string[]).includes(saved)) setInteraction(saved as FolioInteraction);
-  }, []);
+  // What the left button does on the book.
+  const [interaction, setInteraction] = useState<FolioInteraction>(() => visitInteraction);
   const handleSetInteraction = useCallback((mode: FolioInteraction) => {
     setInteraction(mode);
-    saveFolioInteraction(mode);
+    visitInteraction = mode;
   }, []);
   // H, O, S and M switch the mode while the book (or its bar) has the focus.
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {

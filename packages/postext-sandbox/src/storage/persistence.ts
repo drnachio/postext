@@ -347,15 +347,9 @@ export function loadColorMode(fieldId: string): string | null {
   }
 }
 
+// No longer written: Folio opens with the hand tool on every visit (#587).
+// Kept so a reset clears what older versions stored.
 const FOLIO_INTERACTION_KEY = 'postext-sandbox-folio-interaction';
-
-export function saveFolioInteraction(mode: string): void {
-  getStorage()?.setItem(FOLIO_INTERACTION_KEY, mode);
-}
-
-export function loadFolioInteraction(): string | null {
-  return getStorage()?.getItem(FOLIO_INTERACTION_KEY) ?? null;
-}
 
 export function saveCanvasViewMode(mode: string): void {
   getStorage()?.setItem(CANVAS_VIEW_MODE_KEY, mode);
