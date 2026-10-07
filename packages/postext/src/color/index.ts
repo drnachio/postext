@@ -39,3 +39,4 @@ export {
   loadOutputProfile,
   type OutputProfileInfo,
 } from './catalogue';
+export { srgbProfileBytes } from './srgbProfile';

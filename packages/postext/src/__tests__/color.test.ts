@@ -117,3 +117,17 @@ describe('pixel LUT', () => {
     }
   });
 });
+
+describe('built-in sRGB profile', () => {
+  it('parses back as a matrix/TRC RGB profile that matches sRGB', async () => {
+    const { srgbProfileBytes } = await import('../color');
+    const p = parseIccProfile(srgbProfileBytes());
+    expect(p.colorSpace).toBe('RGB');
+    expect(p.pcs).toBe('XYZ');
+    expect(p.version).toBeCloseTo(2.1);
+    expect(p.matrixTrc).toBeDefined();
+    const trc = p.matrixTrc!.trc[0];
+    expect(trc(0.5)).toBeCloseTo(0.214, 2);
+    expect(p.matrixTrc!.matrix[4]).toBeCloseTo(0.7169, 3);
+  });
+});
