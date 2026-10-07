@@ -28,7 +28,7 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page', 'strip']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line, after a space — or right
@@ -490,17 +490,17 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       continue;
     }
 
-    // A comic page (#555): `:::page{split=…}` … `:::`, its panels and
-    // script read whole (`parseComicFence`).
+    // A comic page (#555) or strip (#566): `:::page{split=…}` … `:::`, its
+    // panels and script read whole (`parseComicFence`).
     const comicMatch = trimmed.match(DIRECTIVE_RE);
-    if (comicMatch && comicMatch[1] === 'page') {
+    if (comicMatch && (comicMatch[1] === 'page' || comicMatch[1] === 'strip')) {
       const comic = parseComicFence(markdown, lineOffsets[i]!);
       if (comic) {
         blocks.push({
           type: 'directive',
           text: '',
           spans: [],
-          directiveName: 'page',
+          directiveName: comic.source.kind,
           directiveAttrs: comic.source.attrs,
           comic: comic.source,
           sourceStart: comic.source.sourceStart,

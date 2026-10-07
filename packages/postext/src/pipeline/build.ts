@@ -102,6 +102,9 @@ import {
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 import { layoutComicPage, comicPageLayoutWarnings } from '../comics/layoutPage';
+import { comicStripExtent, comicStripPlacement, layoutComicStrip } from '../comics/strip';
+import { isComicSpread, layoutComicSpread } from '../comics/spread';
+import type { ComicPageSource } from '../comics/types';
 import {
   applyStyleAttrs,
   computePageMetrics,
@@ -918,6 +921,45 @@ function placeDocumentPass(
   const CALLOUT_FLOAT_PREFIX = 'callout:';
   const calloutFloatOf = (resourceId: string) =>
     resourceId.startsWith(CALLOUT_FLOAT_PREFIX) ? calloutFloats.get(Number(resourceId.slice(CALLOUT_FLOAT_PREFIX.length))) : undefined;
+  /** Floated comic strips (`:::strip{placement=top|bottom|auto}`, or a
+   *  page-wide strip set `here` on a page of several columns, #566): the
+   *  pending float carries the synthetic id `comic:<idx>`, the content
+   *  index of the strip's block (see `comicStripOf`). */
+  const COMIC_STRIP_PREFIX = 'comic:';
+  const comicStripOf = (resourceId: string): { idx: number; source: ComicPageSource } | undefined => {
+    if (!resourceId.startsWith(COMIC_STRIP_PREFIX)) return undefined;
+    const idx = Number(resourceId.slice(COMIC_STRIP_PREFIX.length));
+    const source = contentBlocks[idx]?.comic;
+    return source ? { idx, source } : undefined;
+  };
+  /** A strip's extent across the flow at a measure of `width` px, at most
+   *  `max` px (a fresh column, less what a float band keeps). */
+  const comicStripExtentAt = (source: ComicPageSource, width: number, max: number): number =>
+    comicStripExtent(source, width, resolved.page.dpi, pageIsVertical(doc.pages[cursor.pageIndex]!), max);
+  /** The block of a strip `width` × `extent` px (flow), its comic laid out
+   *  in its box on the sheet (the flow box turned on a vertical page); `y`
+   *  is 0 until it is placed. */
+  const buildComicStripBlock = (blockIdx: number, source: ComicPageSource, x: number, width: number, extent: number, pageIndex: number): VDTBlock => {
+    const raw = contentBlocks[blockIdx]!;
+    const blk = createVDTBlock(`comic-strip-${blockIdx}`, 'resource', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
+    blk.contentIndex = blockIdx;
+    blk.sourceStart = raw.sourceStart + bodyOffset;
+    blk.sourceEnd = raw.sourceEnd + bodyOffset;
+    blk.dirty = false;
+    blk.snappedToGrid = false;
+    blk.lines = [];
+    blk.bbox = createBoundingBox(x, 0, width, extent);
+    const vertical = pageIsVertical(doc.pages[pageIndex] ?? doc.pages[cursor.pageIndex]!);
+    blk.comic = layoutComicStrip(source, {
+      resolved,
+      width: vertical ? extent : width,
+      height: vertical ? width : extent,
+      resources: resourceById,
+      sourceOffset: bodyOffset,
+      pageIndex,
+    });
+    return blk;
+  };
   /** Boxes laid out for a band, waiting for the band's `y` (built in
    *  `buildFloatBlock`, committed in `commitFloatBlock`). */
   const calloutFloatResults = new Map<VDTBlock, { result: CalloutLayoutResult; startIdx: number; plan: PlannedCallout }>();
@@ -1104,6 +1146,14 @@ function placeDocumentPass(
     const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
+    const strip = comicStripOf(resourceId);
+    if (strip) {
+      // A strip: its height at the band's width, never taller than a page
+      // keeps for a float band.
+      const ms: FloatMeasure = { height: comicStripExtentAt(strip.source, width, contentArea.height - 2 * floatGapPx) };
+      floatMeasureMemo.set(key, ms);
+      return ms;
+    }
     const cf = calloutFloatOf(resourceId);
     if (cf) {
       // A floated box: its frame at the band's width, title and icon
@@ -1165,6 +1215,11 @@ function placeDocumentPass(
      *  corner icon hangs on the left there). */
     mirrored = false,
   ): { block: VDTBlock; height: number } | null => {
+    const strip = comicStripOf(resourceId);
+    if (strip) {
+      const height = comicStripExtentAt(strip.source, width, contentArea.height - 2 * floatGapPx);
+      return { block: buildComicStripBlock(strip.idx, strip.source, x, width, height, cursor.pageIndex), height };
+    }
     const cf = calloutFloatOf(resourceId);
     if (cf) {
       const startIdx = Number(resourceId.slice(CALLOUT_FLOAT_PREFIX.length));
@@ -1484,7 +1539,8 @@ function placeDocumentPass(
       calloutBandPages.add(page);
       return;
     }
-    offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
+    // (A strip's comic is relative to its block: nothing to move.)
+    if (built.block.resourceBlock) offsetResourceBlockToAbsolute(built.block.resourceBlock, 0, y);
     built.block.bbox = createBoundingBox(x, y, width, built.height);
     built.block.pageIndex = page.index;
     built.block.columnIndex = col.index;
@@ -3502,7 +3558,7 @@ function placeDocumentPass(
         closeBandAndInsertSpan(page, cols, cutY, built.block, need, cursor, spacing, built.height);
         // The float was built at (x, 0): move its inner geometry down to
         // where the span column put it.
-        offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, built.block.bbox.y);
+        if (built.block.resourceBlock) offsetResourceBlockToAbsolute(built.block.resourceBlock, 0, built.block.bbox.y);
         built.block.contentIndex = f.firstBlockIdx;
         doc.blocks.push(built.block);
         floatsPlaced++;
@@ -4418,6 +4474,121 @@ function placeDocumentPass(
     }).splitAt > 0;
   };
 
+  /** The page break into a page of the parity `even` asks (a spread opens
+   *  on a verso, an even page): the page the cursor stands on, an empty
+   *  one, is marked a parity blank and passed while its number is odd. Even
+   *  at the start of a document (page 1 stands alone, a recto). */
+  const breakToEvenPage = (): void => {
+    for (let guard = 0; guard < 4; guard++) {
+      const page = doc.pages[cursor.pageIndex]!;
+      if ((page.index + pageIndexOffset + 1) % 2 === 0) return;
+      page.blankForParity = true;
+      const start = cursor.pageIndex;
+      do {
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
+      } while (cursor.pageIndex === start);
+    }
+  };
+
+  /**
+   * `:::page{spread}` (#567): a comic laid over two facing pages. It opens
+   * on a verso — an even page, the left one of a left-bound book and the
+   * right one of a right-bound book — with a parity blank before it when
+   * needed; the verso and the recto after it get one half each
+   * (`layoutComicSpread`). The cursor is left on the recto.
+   */
+  const placeComicSpread = (source: ComicPageSource): void => {
+    breakToEvenPage();
+    const verso = doc.pages[cursor.pageIndex]!;
+    verso.columns = [createVDTColumn(0, verso.contentArea)];
+    const start = cursor.pageIndex;
+    do {
+      advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
+    } while (cursor.pageIndex === start);
+    const recto = doc.pages[cursor.pageIndex]!;
+    recto.columns = [createVDTColumn(0, recto.contentArea)];
+    const side = (page: VDTPage) => ({
+      page,
+      trimBox: pageMetrics.physical.trimBox,
+      bleedBox: pageMetrics.physical.bleedBox,
+      mirrorMargins: pageMirrored(resolved, page.index, pageIndexOffset, true),
+    });
+    const versoIsLeft = resolved.page.binding !== 'right';
+    const [left, right] = layoutComicSpread(source, {
+      resolved,
+      resources: resourceById,
+      sourceOffset: bodyOffset,
+      left: side(versoIsLeft ? verso : recto),
+      right: side(versoIsLeft ? recto : verso),
+    });
+    verso.comic = versoIsLeft ? left : right;
+    recto.comic = versoIsLeft ? right : left;
+  };
+
+  /**
+   * `:::strip` (#566): a comic in the flow, kept together. Set `here`, it
+   * takes the column it falls in at that column's measure — or moves whole
+   * to the next column or page, taking a run of headings closing the
+   * column along (keep-with-next; returns the index to replay from then).
+   * Floated (`placement=top|bottom|auto`), or page-wide on a page of
+   * several columns, it waits in the float queue for the first free band
+   * from here on, as a figure does.
+   */
+  const placeComicStrip = (blockIdx: number, source: ComicPageSource): number | undefined => {
+    const place = comicStripPlacement(source.attrs);
+    const page = doc.pages[cursor.pageIndex]!;
+    if (place.position !== 'here' || (place.span === 'page' && multiColumnBand(page))) {
+      const key = `${COMIC_STRIP_PREFIX}${blockIdx}`;
+      // A keep-with-next replay passes the fence again: enqueue once.
+      if (!enqueuedFloatIds.has(key)) {
+        enqueuedFloatIds.add(key);
+        const col = page.columns[cursor.columnIndex];
+        pendingFloats.push({
+          resourceId: key,
+          firstBlockIdx: blockIdx,
+          position: place.position === 'here' ? 'auto' : place.position,
+          span: place.span,
+          ...(col ? { refPageIndex: page.index, refY: col.bbox.y + (col.bbox.height - col.availableHeight) } : {}),
+        });
+      }
+      return undefined;
+    }
+    const col = currentColumn(doc, cursor);
+    const extent = comicStripExtentAt(source, col.bbox.width, contentArea.height);
+    const spacingBefore = Math.max(pendingSpacing, floatGapPx);
+    if (col.blocks.length > 0 && extent > col.availableHeight - spacingBefore + FIT_EPS) {
+      const run = trailingHeadingRun(col);
+      if (run > 0 && run < col.blocks.length) {
+        const rolled = rollbackHeadings(col);
+        pendingSpacing = 0;
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(extent));
+        return (rolled[0]!.contentIndex ?? blockIdx - rolled.length) - 1;
+      }
+    }
+    const blk = buildComicStripBlock(blockIdx, source, 0, col.bbox.width, extent, cursor.pageIndex);
+    // One placeholder line carries the strip's height (as an inline
+    // figure's does).
+    blk.lines = [{ text: '', bbox: { x: 0, y: 0, width: col.bbox.width, height: extent }, baseline: 0, hyphenated: false, segments: [], isLastLine: true }];
+    enterBand(blockIdx, 0);
+    placeAtomicBlock(blk, extent, spacingBefore, cursor, doc, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(extent));
+    enterBand(blockIdx, 0);
+    // Laid out again where it landed: the page it reports on, and the
+    // measure of that column (a side column, another section's).
+    const landed = buildComicStripBlock(blockIdx, source, 0, blk.bbox.width, extent, cursor.pageIndex);
+    blk.comic = landed.comic;
+    doc.blocks.push(blk);
+    // The flow after the strip goes back to the baseline grid, and the
+    // float gap is owed below it, as after an inline figure.
+    const rCol = currentColumn(doc, cursor);
+    const usedHeight = rCol.bbox.height - rCol.availableHeight;
+    const snappedBottom = Math.ceil((usedHeight - 0.01) / baselineGrid) * baselineGrid;
+    rCol.availableHeight = Math.max(0, rCol.bbox.height - snappedBottom);
+    const owed = resolved.layout.inlineResourceGap === 'above' ? 0 : floatGapPx - (snappedBottom - usedHeight);
+    pendingSpacing = owed > 0.01 ? Math.ceil((owed - 0.01) / baselineGrid) * baselineGrid : 0;
+    inlineGapOwed = pendingSpacing > 0 ? { afterIdx: blockIdx, pending: pendingSpacing, exact: owed } : null;
+    return undefined;
+  };
+
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
@@ -4441,9 +4612,9 @@ function placeDocumentPass(
     enqueueFloatsFor(blockIdx);
 
     // --- Directives ----------------------------------------------------
-    // (A comic page, `:::page`, is placed below, once a closed part or
-    // paper run has taken its page break.)
-    if (rawBlock.type === 'directive' && rawBlock.directiveName !== 'page') {
+    // (A comic page, `:::page`, and a strip, `:::strip`, are placed below,
+    // once a closed part or paper run has taken its page break.)
+    if (rawBlock.type === 'directive' && rawBlock.directiveName !== 'page' && rawBlock.directiveName !== 'strip') {
       const name = rawBlock.directiveName;
       const attrs = rawBlock.directiveAttrs ?? {};
       if (name === 'pagebreak') {
@@ -4614,17 +4785,20 @@ function placeDocumentPass(
         closeFlowSegment(blockIdx);
         leaveCurrentPage();
         cursor.columnIndex = 0;
-        const page = doc.pages[cursor.pageIndex]!;
-        page.columns = [createVDTColumn(0, page.contentArea)];
-        page.comic = layoutComicPage(rawBlock.comic, {
-          resolved,
-          page,
-          trimBox: pageMetrics.physical.trimBox,
-          bleedBox: pageMetrics.physical.bleedBox,
-          resources: resourceById,
-          sourceOffset: bodyOffset,
-          mirrorMargins: pageMirrored(resolved, page.index, pageIndexOffset, true),
-        });
+        if (isComicSpread(rawBlock.comic)) placeComicSpread(rawBlock.comic);
+        else {
+          const page = doc.pages[cursor.pageIndex]!;
+          page.columns = [createVDTColumn(0, page.contentArea)];
+          page.comic = layoutComicPage(rawBlock.comic, {
+            resolved,
+            page,
+            trimBox: pageMetrics.physical.trimBox,
+            bleedBox: pageMetrics.physical.bleedBox,
+            resources: resourceById,
+            sourceOffset: bodyOffset,
+            mirrorMargins: pageMirrored(resolved, page.index, pageIndexOffset, true),
+          });
+        }
         pendingComicBreak = true;
         flushPendingNumberingAtBoundary();
       }
@@ -4635,6 +4809,19 @@ function placeDocumentPass(
       pendingSpacing = 0;
       leaveCurrentPage();
       flushPendingNumberingAtBoundary();
+    }
+    // `:::strip`: a comic in the flow, one unbreakable box set here or
+    // floated to a band like a figure (`placeComicStrip`).
+    if (rawBlock.type === 'directive' && rawBlock.directiveName === 'strip') {
+      if (rawBlock.comic) {
+        const rewind = placeComicStrip(blockIdx, rawBlock.comic);
+        if (rewind !== undefined) {
+          blockIdx = rewind;
+          continue;
+        }
+      }
+      flushPendingNumberingAtBoundary();
+      continue;
     }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
@@ -6194,7 +6381,14 @@ export function* buildDocumentGen(
   // whose letter-spacing such words do not take.
   const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? [])];
   // Comic panels whose cell cannot hold their picture's safe area (#556).
-  for (const page of doc.pages) if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
+  for (const page of doc.pages) {
+    if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
+    // Strips (#566), reported on the page they landed on.
+    const strips = new Set<VDTBlock>();
+    for (const col of page.columns) for (const b of col.blocks) if (b.comic) strips.add(b);
+    for (const b of page.floats ?? []) if (b.comic) strips.add(b);
+    for (const b of strips) loose.push(...comicPageLayoutWarnings(b.comic!).map((w) => ({ ...w, pageIndex: page.index })));
+  }
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
   const annotations = annotateDocument(doc, doc.config?.cjk);

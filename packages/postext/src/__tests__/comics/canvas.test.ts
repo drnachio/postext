@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { buildDocument, renderPageToCanvas, registerResourceImage, clearResourceImages } from '../../index';
+import { buildDocument, renderPageToCanvas, registerResourceImage, clearResourceImages, pageComics } from '../../index';
 import type { Resource } from '../../types';
 
 class StubCtx {
@@ -65,6 +65,45 @@ describe('canvas painting of comic panels', () => {
     expect(flip).toBeGreaterThan(firstDraw);
     expect(at('drawImage', flip)).toBeGreaterThan(flip);
     expect(calls.filter((c) => c === 'stroke()')).toHaveLength(1);
+  });
+
+  it('paints a strip set in the flow on the sheet, where its block sits', () => {
+    registerResourceImage('pic-file', { width: 1000, height: 1000 } as unknown as HTMLImageElement);
+    const md = 'Some text.\n\n:::strip{split="* | *"}\n::panel{art=pic bg="#00ff00"}\n::panel{art=pic}\n:::\n\nMore text.';
+    const doc = buildDocument({ markdown: md, resources }, {});
+    const page = doc.pages[0]!;
+    const block = page.columns[0]!.blocks.find((b) => b.comic)!;
+    const onSheet = pageComics(page)[0]!;
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(page, doc, canvas);
+    const green = calls.indexOf('fillStyle=#00ff00');
+    expect(green).toBeGreaterThan(-1);
+    // Both pictures drawn at their box on the sheet (the block's place
+    // added to the strip's own coordinates).
+    const draws = calls.filter((c) => c.startsWith('drawImage'));
+    expect(draws).toHaveLength(2);
+    const box = onSheet.panels[0]!.art!.box;
+    expect(box.y).toBeCloseTo(block.comic!.panels[0]!.art!.box.y + block.bbox.y, 3);
+    expect(draws[0]).toContain(`${Math.round(box.x)},${Math.round(box.y)}`);
+    expect(calls.filter((c) => c === 'stroke()')).toHaveLength(2);
+  });
+
+  it('paints each page of a spread with its half, a panel across the spine on both', () => {
+    registerResourceImage('pic-file', { width: 1000, height: 1000 } as unknown as HTMLImageElement);
+    const md = ':::page{spread split="*"}\n::panel{art=pic}\n:::';
+    const doc = buildDocument({ markdown: md, resources }, {});
+    const [left, right] = doc.pages.filter((p) => p.comic);
+    for (const page of [left!, right!]) {
+      const { canvas, calls } = recordingCanvas();
+      renderPageToCanvas(page, doc, canvas);
+      expect(calls.filter((c) => c.startsWith('clip'))).not.toHaveLength(0);
+      expect(calls.filter((c) => c.startsWith('drawImage'))).toHaveLength(1);
+      expect(calls.filter((c) => c === 'stroke()')).toHaveLength(1);
+    }
+    // The right page draws the same picture a page's width to the left.
+    const l = left!.comic!.panels[0]!.art!.box;
+    const r = right!.comic!.panels[0]!.art!.box;
+    expect(l.x - r.x).toBeCloseTo(left!.width - 2 * doc.trimOffset, 3);
   });
 
   it('draws rough borders and rounded corners', () => {

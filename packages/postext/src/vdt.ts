@@ -1526,6 +1526,13 @@ export interface VDTBlock {
    *  right-to-left book, an Arabic quotation in a left-to-right one.
    *  Absent when the block runs as its frame does. */
   direction?: 'ltr' | 'rtl';
+  /** A comic strip (`:::strip`, #566) on a `type: 'resource'` block with no
+   *  `resourceBlock`: its panels, split lines and lettering. Coordinates
+   *  are relative to the top-left corner of the block's box ON THE SHEET
+   *  (`flowRectToPage(page, block.bbox)`), physical whatever the page's
+   *  writing mode or direction; renderers and the Sandbox read it through
+   *  `comicBlockOnSheet` / `pageComics`, which move it onto the sheet. */
+  comic?: VDTComicPage;
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
@@ -1984,17 +1991,23 @@ export interface VDTComicBalloon {
 }
 
 /** A comic page (`:::page`): its panels, the split lines between them and
- *  the lettering, on the sheet. */
+ *  the lettering, on the sheet. Also the comic of a strip
+ *  (`VDTBlock.comic`, relative to the block's box on the sheet) and each
+ *  page of a two-page spread (`spread`: that page's panels clipped to its
+ *  side of the spine, its split lines, its balloons, on its own sheet). */
 export interface VDTComicPage {
   /** The `:::page` block in the source. */
   sourceStart: number;
   sourceEnd: number;
   /** The box the panels are cut from (the content area, or
-   *  `comics.frame.margins`), page px. */
+   *  `comics.frame.margins`), page px. On a page of a spread, the part of
+   *  the spread's frame on this page (from its outer edge to the spine); on
+   *  a strip, the block's box (`x = y = 0`). */
   frame: BoundingBox;
   /** The reading direction the page was laid out in. */
   direction: 'ltr' | 'rtl';
-  /** The side of a two-page spread this page holds. */
+  /** The side of a two-page spread (`:::page{spread}`, #567) this page
+   *  holds, physical: the left page or the right one of the open book. */
   spread?: 'left' | 'right';
   /** Panels in reading order. */
   panels: VDTComicPanel[];

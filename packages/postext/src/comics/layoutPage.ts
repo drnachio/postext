@@ -144,7 +144,7 @@ function insetBox(value: string | undefined, of: BoundingBox): BoundingBox | und
 
 /** The frame of a page: the content area on the sheet, or the trim inset
  *  by `comics.frame.margins`. */
-function comicFrame(ctx: ComicPageContext, comics: ResolvedComicsConfig): BoundingBox {
+export function comicPageFrame(ctx: Pick<ComicPageContext, 'resolved' | 'page' | 'trimBox' | 'mirrorMargins'>, comics: ResolvedComicsConfig = resolvedComics(ctx.resolved)): BoundingBox {
   const m = comics.frame.margins;
   if (!m) return flowRectToPage(ctx.page, ctx.page.contentArea);
   const dpi = ctx.resolved.page.dpi;
@@ -179,6 +179,13 @@ export function comicPageLayoutWarnings(comic: VDTComicPage): readonly ContentWa
   return layoutWarnings.get(comic) ?? [];
 }
 
+/** Set the layout warnings of a comic laid out in parts (each page of a
+ *  spread gets those of its panels). Internal to the comics modules. */
+export function setComicLayoutWarnings(comic: VDTComicPage, warnings: readonly ContentWarning[]): void {
+  if (warnings.length > 0) layoutWarnings.set(comic, [...warnings]);
+  else layoutWarnings.delete(comic);
+}
+
 /**
  * The lettering of a page's panels: balloons, captions and sound effects,
  * in reading order. Set by the lettering modules (#559–#561); until they are
@@ -198,14 +205,42 @@ export function letterPanels(_input: {
   return [];
 }
 
+/** What {@link layoutComicFrame} needs: the box the panels are cut from
+ *  and the box bleeding panels run out to, in the coordinates the comic is
+ *  laid out in (a page's sheet, a strip's own box, a spread's two sheets
+ *  side by side). */
+export interface ComicFrameContext {
+  resolved: ResolvedConfig;
+  frame: BoundingBox;
+  bleedBox: BoundingBox;
+  resources: ReadonlyMap<string, Resource>;
+  /** Added to every source offset of `source` (see
+   *  {@link ComicPageContext.sourceOffset}). */
+  sourceOffset?: number;
+  /** The page the warnings are reported on. */
+  pageIndex: number;
+}
+
 /** Lay out a comic page. */
 export function layoutComicPage(source: ComicPageSource, ctx: ComicPageContext): VDTComicPage {
-  const { resolved, resources } = ctx;
+  return layoutComicFrame(source, {
+    resolved: ctx.resolved,
+    frame: comicPageFrame(ctx),
+    bleedBox: ctx.bleedBox,
+    resources: ctx.resources,
+    ...(ctx.sourceOffset !== undefined ? { sourceOffset: ctx.sourceOffset } : {}),
+    pageIndex: ctx.page.index,
+  });
+}
+
+/** Lay out a comic (a page, a strip, a spread) in a given frame: its
+ *  cells, panels, split lines and lettering, in the frame's coordinates. */
+export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext): VDTComicPage {
+  const { resolved, resources, frame } = ctx;
   const dpi = resolved.page.dpi;
   const off = ctx.sourceOffset ?? 0;
   const comics = resolvedComics(resolved);
   const direction = comicPageDirection(source, comics, resolved);
-  const frame = comicFrame(ctx, comics);
   const pageStyle = pickPanelStyle(comics, source.attrs.style?.trim());
   const flowPanels = source.panels.filter((p) => !p.attrs.inset);
   const styleOf = (p: ComicPanelSource | undefined) => (p?.attrs.style ? pickPanelStyle(comics, p.attrs.style.trim()) : pageStyle);
@@ -254,7 +289,7 @@ export function layoutComicPage(source: ComicPageSource, ctx: ComicPageContext):
       const h = art.width > 0 && art.height > 0 ? art.height : cell.bbox.height;
       crop = comicArtCrop({ width: w, height: h, cell: cell.bbox, fit, ...(art.resource.safeArea ? { safeArea: art.resource.safeArea } : {}), ...(focus ? { focus } : {}), mirrored });
       panel.art = artOf(art, crop, mirrored);
-      if (crop.fallback) warnings.push({ kind: 'comicPanelLetterbox', resourceId: art.resource.id, panel: index, sourceStart: panel.sourceStart, sourceEnd: (p?.lineEnd ?? source.sourceStart) + off, pageIndex: ctx.page.index });
+      if (crop.fallback) warnings.push({ kind: 'comicPanelLetterbox', resourceId: art.resource.id, panel: index, sourceStart: panel.sourceStart, sourceEnd: (p?.lineEnd ?? source.sourceStart) + off, pageIndex: ctx.pageIndex });
     }
     const pop = pictureOf(resources, attrs.pop?.trim());
     if (pop) {
