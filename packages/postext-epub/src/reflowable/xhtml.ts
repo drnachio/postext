@@ -1,8 +1,9 @@
 // The semantic model to EPUB 3 XHTML content documents: one per chapter
 // (or part opener), with its footnotes after the text.
 
-import { bidiClassOf, isHlsMimeType, mediaFragment, type VDTResourceVideo } from 'postext';
+import { bidiClassOf, comicPanelSvg, isHlsMimeType, mediaFragment, type VDTResourceVideo } from 'postext';
 import type {
+  ComicNode,
   FileModel,
   InlineItem,
   LinkTarget,
@@ -109,6 +110,7 @@ export function bidiLevels(items: readonly InlineItem[], base: number): number[]
 
 class Writer {
   private svgCount = 0;
+  private comicCount = 0;
   /** The direction the inline content written now is set in: the
    *  document's, or a block's that differs from it. */
   private dir: 'ltr' | 'rtl';
@@ -325,7 +327,45 @@ class Writer {
         return this.toc(node);
       case 'marker':
         return `<div class="pt-marker">${this.inline(node.inl)}</div>`;
+      case 'comic':
+        return this.comic(node);
     }
+  }
+
+  /**
+   * A comic page (#565): each panel a figure with its picture — an SVG
+   * whose view box is the panel, so it shows the part of the picture the
+   * page prints, clipped to the panel's outline, with its border and
+   * pop-out — named by its text alternative, then its lettering in reading
+   * order: `<b>Speaker</b>: words`, captions as narration, sound effects
+   * in italics. A panel's picture is as wide as the text at most.
+   */
+  private comic(node: ComicNode): string {
+    const pre = this.inline(node.pre);
+    const panels = node.panels.map((p) => {
+      const parts: string[] = [];
+      if (p.panel.art) {
+        const svg = comicPanelSvg(p.panel, {
+          href: (art) => {
+            const href = this.ctx.imageHref(art.fileId);
+            return href ? relativeHref(this.file.href, href) : undefined;
+          },
+          clipId: `comic-clip-${++this.comicCount}`,
+          ...(p.panel.altText ? { label: p.panel.altText } : {}),
+          standalone: {},
+        });
+        parts.push(`<figure class="pt-comic-panel"${p.id ? ` id="${p.id}"` : ''}>${svg}</figure>`);
+      } else if (p.id) {
+        parts.push(`<span id="${p.id}"></span>`);
+      }
+      for (const line of p.lines) {
+        if (line.kind === 'sfx') parts.push(`<p class="pt-comic-sfx"><i>${xmlText(line.text)}</i></p>`);
+        else if (line.kind === 'caption') parts.push(`<p class="pt-comic-caption">${xmlText(line.text)}</p>`);
+        else parts.push(`<p class="pt-comic-line">${line.speaker ? `<b>${xmlText(line.speaker)}</b>: ` : ''}${xmlText(line.text)}</p>`);
+      }
+      return parts.join('\n');
+    });
+    return `<section class="pt-comic"${this.dirAttr(node.dir)}>${pre}\n${panels.join('\n')}\n</section>`;
   }
 
   /**

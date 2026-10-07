@@ -3,7 +3,7 @@
 // kept as inline items, links as targets resolved once every chapter has
 // been walked (a cross-reference may point at a later chapter).
 
-import type { VDTResourceVideo } from 'postext';
+import type { VDTComicPanel, VDTResourceVideo } from 'postext';
 
 /** Where a link goes, resolved to `file#id` by the registry. */
 export type LinkTarget =
@@ -209,6 +209,35 @@ export interface TocNode {
   rows: TocRowNode[];
 }
 
+/** A line of a comic page's lettering, as the reflowable book reads it:
+ *  a character's words after their name, narration (a caption), or a
+ *  sound effect. */
+export interface ComicLineNode {
+  kind: 'speech' | 'caption' | 'sfx';
+  /** The speaker's name (`comics.cast[].name`, else their id). */
+  speaker?: string;
+  text: string;
+}
+
+/** A panel of a comic page: its picture, cropped to the panel as printed
+ *  (an SVG that shows the panel's part of the picture), then its lettering
+ *  in reading order. */
+export interface ComicPanelNode {
+  panel: VDTComicPanel;
+  /** Element id of the panel (its `#id`), when it has one. */
+  id?: string;
+  lines: ComicLineNode[];
+}
+
+/** A comic page (`:::page`, #565). */
+export interface ComicNode {
+  k: 'comic';
+  pre: InlineItem[];
+  /** The page's reading direction, when it differs from the document's. */
+  dir?: 'ltr' | 'rtl';
+  panels: ComicPanelNode[];
+}
+
 /** Page starts and anchors with no text of their own to sit in (a blank
  *  page, the last page of a chapter). */
 export interface MarkerNode {
@@ -227,6 +256,7 @@ export type Node =
   | MathNode
   | VerseNode
   | TocNode
+  | ComicNode
   | MarkerNode;
 
 /** A footnote: its paragraph and the file of its first marker. */

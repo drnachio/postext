@@ -102,6 +102,14 @@ export interface RenderToEpubOptions {
   onProgress?: (progress: EpubProgress) => void;
   onWarning?: (warning: EpubWarning) => void;
   signal?: AbortSignal;
+  /** Fixed layout with comic pages (`:::page`): add Kindle Panel View, a
+   *  tap target over each panel that magnifies it (KF8 region
+   *  magnification, `app-amzn-magnify`), and the Kindle comic metadata.
+   *  Each target holds a copy of its page's comic, hidden until tapped, so
+   *  pages grow by one copy per panel: for books bound for Kindle
+   *  (Kindle Previewer / KDP). Default false; the region-based navigation
+   *  every reading system may use is written either way. */
+  kindlePanelView?: boolean;
 }
 
 /** The input both renditions read. */
@@ -179,7 +187,11 @@ export interface EpubPublication {
   /** A reflowable book set in vertical lines (Chinese, Japanese): the
    *  package names its writing mode (`primary-writing-mode`), which some
    *  reading systems read before they open a content document (#428). */
-  writingMode?: 'vertical-rl';
+  writingMode?: 'vertical-rl' | 'horizontal-rl';
+  /** Kindle comic metadata (fixed layout with comic pages and
+   *  {@link RenderToEpubOptions.kindlePanelView}): `book-type`,
+   *  `original-resolution` and `RegionMagnification`. */
+  kindle?: { comic: true; originalResolution: { width: number; height: number }; regionMagnification: boolean };
   /** Fixed-layout rendition properties. */
   fixed?: {
     spread: 'none' | 'landscape' | 'both' | 'auto';

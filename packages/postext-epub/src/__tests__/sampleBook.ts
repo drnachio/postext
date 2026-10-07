@@ -4,7 +4,7 @@
 
 import fs from 'node:fs';
 import { buildBundle } from 'postext';
-import type { PostextConfig, Resource, VDTDocument } from 'postext';
+import type { PostextConfig, Resource, VDTComicBalloon, VDTComicPage, VDTDesignTextBlock, VDTDocument } from 'postext';
 
 // Text measured with a fixed advance (half an em per character): stable
 // line breaks without a font file or a DOM.
@@ -180,4 +180,56 @@ export function japaneseSampleBook(): VDTDocument[] {
       page: { ...config.page, binding: 'right' },
     },
   });
+}
+
+/** A comic page (#565) between two paragraphs: three panels of the sample
+ *  picture (one slanted, one mirrored), lettered as the lettering engine
+ *  letters them — a join group of two balloons, a caption and a sound
+ *  effect — and the cast's names. `direction: 'rtl'` reads the page right
+ *  to left (a manga). */
+export function comicSampleBook(direction: 'ltr' | 'rtl' = 'ltr'): VDTDocument[] {
+  const chapter = [
+    '# A comic',
+    '',
+    `Before the page. ${para}`,
+    '',
+    ':::page{split="40 [55~45 | *] / *" #street}',
+    '::panel{art=f1 #first}',
+    '::panel{art=f1 mirror alt="Ana at the door"}',
+    '::panel{art=f1 border=none}',
+    ':::',
+    '',
+    `After the page. ${para}`,
+  ].join('\n');
+  const docs = buildBundle({
+    chapters: [{ markdown: chapter }],
+    config: { ...config, comics: { readingDirection: direction, cast: [{ id: 'ana', name: 'Ana' }] } },
+    resources,
+  });
+  for (const doc of docs) {
+    for (const page of doc.pages) {
+      if (page.comic) page.comic.balloons = sampleBalloons(page.comic);
+    }
+  }
+  return docs;
+}
+
+function sampleText(t: string, x: number, y: number): VDTDesignTextBlock {
+  return { kind: 'text', bbox: { x, y, width: 60, height: 14 }, fontString: '400 10px "Lora"', color: '#111111', clip: false, lines: [{ text: t, xOffset: 0, baselineY: y + 10, width: 50 }] };
+}
+
+function sampleBalloons(comic: VDTComicPage): VDTComicBalloon[] {
+  const [a, b] = [comic.panels[0]!.bbox, comic.panels[1]!.bbox];
+  return [
+    { id: 'b1', panelIndex: 0, order: 0, style: 'speech', speaker: 'ana', sourceStart: 0, sourceEnd: 1, group: 0,
+      shape: { d: `M${a.x + 8} ${a.y + 8}h60v20h-60Z M${a.x + 70} ${a.y + 8}h60v20h-60Z`, fill: '#ffffff', stroke: '#111111', strokeWidth: 1 },
+      text: [sampleText('Did you hear', a.x + 8, a.y + 10)], bbox: { x: a.x + 8, y: a.y + 8, width: 60, height: 20 } },
+    { id: 'b2', panelIndex: 0, order: 1, style: 'speech', speaker: 'ana', sourceStart: 2, sourceEnd: 3, group: 0,
+      text: [sampleText('that?', a.x + 70, a.y + 10)], bbox: { x: a.x + 70, y: a.y + 8, width: 60, height: 20 } },
+    { id: 'c1', panelIndex: 1, order: 0, style: 'caption', sourceStart: 4, sourceEnd: 5, group: 1,
+      shape: { d: `M${b.x} ${b.y}h70v16h-70Z`, fill: '#fff3c4', stroke: '#111111', strokeWidth: 1 },
+      text: [sampleText('Lyon, 1943.', b.x + 2, b.y + 2)], bbox: { x: b.x, y: b.y, width: 70, height: 16 } },
+    { id: 's1', panelIndex: 1, order: 1, style: 'sfx', sourceStart: 6, sourceEnd: 7, group: 2, rotate: -8, halo: { width: 1.5, color: '#ffffff' },
+      text: [sampleText('KRAK', b.x + 20, b.y + 40)], bbox: { x: b.x + 20, y: b.y + 40, width: 40, height: 16 } },
+  ];
 }

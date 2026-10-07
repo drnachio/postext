@@ -17,10 +17,11 @@
 //   - a part (a divider page, or `partMarks` without one) opens a
 //     document of its own and the chapter goes on in a new one.
 
-import type { ResolvedConfig, VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
-import { canonicalLocaleTag, dimensionToPx, primaryFontFamily } from 'postext';
+import type { ResolvedConfig, VDTBlock, VDTComicPage, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
+import { canonicalLocaleTag, comicBalloonKind, comicBalloonText, comicSpeakerName, dimensionToPx, primaryFontFamily } from 'postext';
 import type {
   CalloutNode,
+  ComicNode,
   FileModel,
   FigureNode,
   HeadingEntry,
@@ -239,6 +240,7 @@ class DocWalker {
       for (const col of page.columns) {
         for (const block of col.blocks) this.place(block, this.root);
       }
+      if (page.comic) this.comic(page.comic);
       // Floats: footnotes are collected now; the rest is read later, in
       // groups (a floated box with its content).
       let group: VDTBlock[] = [];
@@ -334,6 +336,43 @@ class DocWalker {
   private flushPages(): void {
     const items = this.takePages();
     if (items.length > 0) this.file!.nodes.push({ k: 'marker', inl: items });
+  }
+
+  // --- comic pages -----------------------------------------------------------
+
+  /** A comic page (#565): each panel's picture, cropped as printed, then
+   *  its lettering as text, in reading order — a character's words after
+   *  their name, captions as narration, sound effects set apart. */
+  private comic(comic: VDTComicPage): void {
+    const cast = this.config.comics?.cast;
+    const pageDir = comic.direction === (this.dir ?? 'ltr') ? undefined : comic.direction;
+    const node: ComicNode = { k: 'comic', pre: this.takePages(), ...(pageDir ? { dir: pageDir } : {}), panels: [] };
+    for (const panel of comic.panels) {
+      for (const art of [panel.art, panel.pop]) if (art) this.book.images.add(art.fileId);
+      if (panel.art) {
+        if (panel.altText) this.book.altText = true;
+        else this.book.missingAlt = true;
+      }
+      let id: string | undefined;
+      if (panel.id && !this.book.anchors.has(panel.id)) {
+        id = idOf('a-', panel.id);
+        this.book.anchors.set(panel.id, { file: this.file!, id });
+      }
+      const lines = comic.balloons
+        .filter((b) => b.panelIndex === panel.index)
+        .map((b) => {
+          const kind = comicBalloonKind(b);
+          return {
+            kind,
+            ...(kind === 'speech' && b.speaker ? { speaker: comicSpeakerName(b.speaker, cast) } : {}),
+            text: comicBalloonText(b),
+          };
+        })
+        .filter((l) => l.text.length > 0);
+      node.panels.push({ panel, ...(id ? { id } : {}), lines });
+    }
+    this.lastContainer = undefined;
+    this.file!.nodes.push(node);
   }
 
   // --- containers ----------------------------------------------------------

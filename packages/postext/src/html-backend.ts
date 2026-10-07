@@ -2231,6 +2231,8 @@ interface PageRenderResult {
    *  header, footer. Lives outside `blocks`, so a patcher that diffs blocks
    *  must compare this separately to catch a design-only change. */
   decorationHtml: string;
+  /** A comic page's markup (`page.comic`), part of `innerHtml`. */
+  comicHtml?: string;
 }
 
 function renderPageDetailed(
@@ -2325,7 +2327,7 @@ function renderPageDetailed(
     bgDecl +
     clipDecl +
     `">${innerHtml}</div>`;
-  return { outerHtml, innerHtml, blocks, decorationHtml };
+  return { outerHtml, innerHtml, blocks, decorationHtml, ...(comicHtml ? { comicHtml } : {}) };
 }
 
 /** The markup of a page's comic (`page.comic`, #565): see
@@ -2380,6 +2382,9 @@ export interface HtmlRenderIndexPage {
   blocks: Array<{ id: string; html: string }>;
   /** Non-block markup (opener band, header, footer); see `PageRenderResult`. */
   decorationHtml: string;
+  /** A comic page's markup (`page.comic`): its panels and lettering, laid
+   *  over the page box; part of `innerHtml` (and of `decorationHtml`). */
+  comicHtml?: string;
 }
 
 export interface HtmlRenderIndex {
@@ -2486,6 +2491,7 @@ export function renderToHtmlIndexed(
       innerHtml: detail.innerHtml,
       blocks: detail.blocks,
       decorationHtml: detail.decorationHtml,
+      ...(detail.comicHtml ? { comicHtml: detail.comicHtml } : {}),
     });
   }
 

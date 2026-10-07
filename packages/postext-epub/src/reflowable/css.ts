@@ -269,6 +269,12 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('figure', ['margin: 1em 0', 'text-align: center', 'page-break-inside: avoid', 'break-inside: avoid']));
   out.push(rule('figure img', ['max-width: 100%', 'height: auto']));
   out.push(rule('figure video', ['width: 100%', 'height: auto', 'background-color: #000']));
+  // Comic pages (#565): each panel's picture as wide as the text at most,
+  // its lettering under it as plain lines.
+  out.push(rule('.pt-comic', ['margin: 1em 0']));
+  out.push(rule('.pt-comic-panel', ['margin: 1em 0 0.5em']));
+  out.push(rule('.pt-comic-panel svg', ['display: block', 'max-width: 100%', 'height: auto', 'margin: 0 auto']));
+  out.push(rule('.pt-comic p', ['text-indent: 0', 'margin: 0.25em 0']));
   out.push(rule('a.pt-video-link', ['display: block']));
   out.push(rule('figcaption, caption', [
     fam(cap.fontFamily),

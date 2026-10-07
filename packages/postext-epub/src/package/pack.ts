@@ -110,6 +110,14 @@ export function buildOpf(pub: EpubPublication, identifier = bookIdentifier(pub.m
   // Kindle and some Japanese reading systems take the writing mode from
   // the package rather than from the stylesheet (#428).
   if (pub.writingMode) add(`<meta name="primary-writing-mode" content="${pub.writingMode}"/>`);
+  // Kindle comics (#565): panel view and the page size its regions are
+  // measured against.
+  if (pub.kindle) {
+    add(`<meta name="book-type" content="comic"/>`);
+    add(`<meta name="fixed-layout" content="true"/>`);
+    add(`<meta name="original-resolution" content="${pub.kindle.originalResolution.width}x${pub.kindle.originalResolution.height}"/>`);
+    if (pub.kindle.regionMagnification) add(`<meta name="RegionMagnification" content="true"/>`);
+  }
   const cover = pub.items.find((i) => i.properties?.includes('cover-image'));
   // EPUB 2 readers (and some current ones) look the cover picture up here.
   if (cover) add(`<meta name="cover" content="${escapeAttr(cover.id)}"/>`);
