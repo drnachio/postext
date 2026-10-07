@@ -3515,6 +3515,8 @@
     "comicsBalloonButtHelp": "把框紧贴分格边框放，旁白框常这样放。",
     "comicsBalloonRotate": "旋转",
     "comicsBalloonRotateHelp": "倾斜角度（度），多用于拟声词。单独一行可以用rotate=指定。",
+    "comicsBalloonSkew": "倾斜字形",
+    "comicsBalloonSkewHelp": "字母竖笔的倾斜角度（度），正值向前倾，与斜体相同：用于以透视角度看到的物体上的文字，如书的封面、招牌。在旋转之前应用。单独一行可以用skew=指定。",
     "comicsBalloonGroupText": "文字",
     "comicsBalloonFontHelp": "未设置时用嵌字字体（拟声词按文档语言使用一种标题字体）。",
     "comicsBalloonFontScale": "字号倍数",

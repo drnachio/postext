@@ -3515,6 +3515,8 @@
     "comicsBalloonButtHelp": "Coloca la caja pegada al borde de la viñeta, como suelen ir las cartelas.",
     "comicsBalloonRotate": "Giro",
     "comicsBalloonRotateHelp": "Inclinación en grados, sobre todo para onomatopeyas. Una línea puede fijar la suya con rotate=.",
+    "comicsBalloonSkew": "Inclinación de las letras",
+    "comicsBalloonSkewHelp": "Cuánto se inclinan los trazos verticales de las letras, en grados (positivo hacia delante, como la cursiva): texto escrito sobre un objeto visto en perspectiva, la tapa de un libro, un cartel. Se aplica antes del giro. Una línea puede fijar la suya con skew=.",
     "comicsBalloonGroupText": "Rotulación",
     "comicsBalloonFontHelp": "Sin definir: la letra de la rotulación (las onomatopeyas usan una letra de titulares para el idioma del documento).",
     "comicsBalloonFontScale": "Tamaño",

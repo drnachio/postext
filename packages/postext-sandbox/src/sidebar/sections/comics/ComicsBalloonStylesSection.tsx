@@ -315,6 +315,18 @@ function BalloonStyleCard({ style, own, otherIds, onChange, onResetField, onRena
             isDefault={unset('rotate')}
             onReset={reset('rotate')}
           />
+          <NumberInput
+            label={labels.comicsBalloonSkew}
+            tooltip={labels.comicsBalloonSkewHelp}
+            value={style.skew}
+            onChange={(v) => onChange({ skew: v })}
+            min={-60}
+            max={60}
+            step={1}
+            suffix="°"
+            isDefault={unset('skew')}
+            onReset={reset('skew')}
+          />
         </CollapsibleSection>
 
         <CollapsibleSection title={labels.comicsBalloonGroupText} sectionId={`${prefix}.text`} variant="subsection">

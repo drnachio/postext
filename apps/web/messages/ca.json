@@ -3515,6 +3515,8 @@
     "comicsBalloonButtHelp": "Col·loca la caixa enganxada a la vora de la vinyeta, com solen anar els cartutxos.",
     "comicsBalloonRotate": "Gir",
     "comicsBalloonRotateHelp": "Inclinació en graus, sobretot per a onomatopeies. Una línia pot fixar la seva amb rotate=.",
+    "comicsBalloonSkew": "Inclinació de les lletres",
+    "comicsBalloonSkewHelp": "Quant s'inclinen els traços verticals de les lletres, en graus (positiu cap endavant, com la cursiva): text escrit sobre un objecte vist en perspectiva, la tapa d'un llibre, un rètol. S'aplica abans del gir. Una línia pot fixar la seva amb skew=.",
     "comicsBalloonGroupText": "Retolació",
     "comicsBalloonFontHelp": "Sense definir: la lletra de la retolació (les onomatopeies fan servir una lletra de titulars per a la llengua del document).",
     "comicsBalloonFontScale": "Mida",

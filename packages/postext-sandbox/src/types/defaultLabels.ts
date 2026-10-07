@@ -2908,6 +2908,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   comicsBalloonButtHelp: "Set the box flush against the panel border, as captions often are (a butted caption).",
   comicsBalloonRotate: "Rotation",
   comicsBalloonRotateHelp: "Tilt in degrees, mostly for sound effects. A line can set its own with rotate=.",
+  comicsBalloonSkew: "Lean",
+  comicsBalloonSkewHelp: "How far the letters' upright strokes lean, in degrees (positive forward, like italic): text written on an object seen in perspective, a book cover, a sign. Applied before the rotation. A line can set its own with skew=.",
   comicsBalloonGroupText: "Lettering",
   comicsBalloonFontHelp: "Unset: the lettering face (sound effects use a display face for the document's language).",
   comicsBalloonFontScale: "Size",

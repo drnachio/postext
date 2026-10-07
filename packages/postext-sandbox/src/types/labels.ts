@@ -2989,6 +2989,8 @@ export interface SandboxLabels {
   comicsBalloonButtHelp: string;
   comicsBalloonRotate: string;
   comicsBalloonRotateHelp: string;
+  comicsBalloonSkew: string;
+  comicsBalloonSkewHelp: string;
   comicsBalloonGroupText: string;
   comicsBalloonFontHelp: string;
   comicsBalloonFontScale: string;

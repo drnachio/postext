@@ -2898,6 +2898,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     comicsBalloonButtHelp: t("comicsBalloonButtHelp"),
     comicsBalloonRotate: t("comicsBalloonRotate"),
     comicsBalloonRotateHelp: t("comicsBalloonRotateHelp"),
+    comicsBalloonSkew: t("comicsBalloonSkew"),
+    comicsBalloonSkewHelp: t("comicsBalloonSkewHelp"),
     comicsBalloonGroupText: t("comicsBalloonGroupText"),
     comicsBalloonFontHelp: t("comicsBalloonFontHelp"),
     comicsBalloonFontScale: t("comicsBalloonFontScale"),

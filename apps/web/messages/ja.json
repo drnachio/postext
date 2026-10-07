@@ -3515,6 +3515,8 @@
     "comicsBalloonButtHelp": "箱をコマの枠にぴったり付けて置きます。ナレーションによく使います。",
     "comicsBalloonRotate": "回転",
     "comicsBalloonRotateHelp": "傾きの角度（度）で、主に描き文字に使います。行ごとにrotate=で指定することもできます。",
+    "comicsBalloonSkew": "字形の傾き",
+    "comicsBalloonSkewHelp": "文字の縦画の傾き（度）。正の値で斜体のように前へ傾きます。遠近法で見た物の上の文字（本の表紙、看板など）に使います。回転の前に適用されます。行ごとにskew=で指定することもできます。",
     "comicsBalloonGroupText": "文字",
     "comicsBalloonFontHelp": "未設定のときは写植の書体です（描き文字には文書の言語に合った見出し用の書体を使います）。",
     "comicsBalloonFontScale": "サイズ",
