@@ -9,6 +9,7 @@
  * holding that character.
  */
 
+import { remapComicSource } from '../comics/page';
 import type { AnchorMark, ContentBlock, IndexMark, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { stripInlineFormatting } from './inlineFormatting';
@@ -360,6 +361,7 @@ export function remapParseOffsets(
     for (const s of b.spans) {
       if (s.math) s.math = { ...s.math, sourceStart: toOriginal(s.math.sourceStart), sourceEnd: toOriginal(s.math.sourceEnd) };
     }
+    if (b.comic) remapComicSource(b.comic, toOriginal);
   }
   for (const issue of result.issues) {
     issue.sourceStart = toOriginal(issue.sourceStart);
