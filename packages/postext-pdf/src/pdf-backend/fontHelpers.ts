@@ -1,4 +1,5 @@
 import type { VDTDocument, VDTBlock, VDTDesignSlot, VDTLine } from 'postext';
+import { pageComics } from 'postext';
 
 /** The four faces a run of rich text picks from by its bold / italic flags. */
 interface FaceSet {
@@ -54,8 +55,9 @@ export function collectFontText(doc: VDTDocument, into: FontText = new Map()): F
     // Floated resources live on their page's float band, not in a column.
     for (const block of page.floats ?? []) addBlockFonts(block, out);
     for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
-    // A comic page's lettering: design text in its balloons.
-    for (const balloon of page.comic?.balloons ?? []) addSlotFonts({ blocks: balloon.text }, out);
+    // The lettering of the page's comics (its comic page or half of a
+    // spread, its strips): design text in their balloons.
+    for (const comic of pageComics(page)) for (const balloon of comic.balloons) addSlotFonts({ blocks: balloon.text }, out);
   }
   return out;
 }

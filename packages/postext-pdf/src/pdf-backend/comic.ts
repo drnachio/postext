@@ -42,7 +42,7 @@ import {
   type Color,
   type PDFOperator,
 } from 'pdf-lib';
-import { comicRoughBorder } from 'postext';
+import { comicBalloonText as sharedBalloonText, comicPanelContinues, comicRoughBorder } from 'postext';
 import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock, VDTPoint } from 'postext';
 import type { FontCache } from '../fontCache';
 import { renderTextBlock, type SlotMark } from './headerFooter';
@@ -214,22 +214,9 @@ export function isComicSoundEffect(balloon: Pick<VDTComicBalloon, 'style'> & { k
   return balloon.kind !== undefined ? balloon.kind === 'sfx' : balloon.style === 'sfx';
 }
 
-/** Plain text of a balloon's lettering: its lines joined with a space,
- *  except between two CJK characters (a vertical column break, a wrapped
- *  Chinese or Japanese line). */
-export function comicBalloonText(balloon: Pick<VDTComicBalloon, 'text'>): string {
-  const cjk = /[　-ヿ㐀-鿿豈-﫿＀-￯]/;
-  let out = '';
-  for (const block of balloon.text) {
-    for (const line of block.lines) {
-      const text = line.text.trim();
-      if (!text) continue;
-      if (out && !(cjk.test(out[out.length - 1]!) && cjk.test(text[0]!))) out += ' ';
-      out += text;
-    }
-  }
-  return out;
-}
+/** Plain text of a balloon's lettering (the engine's `comicBalloonText`:
+ *  lines joined with a space, none between two CJK characters). */
+export const comicBalloonText: (balloon: Pick<VDTComicBalloon, 'text'>) => string = sharedBalloonText;
 
 /** The elements a comic page's content goes to. */
 interface ComicTags {
@@ -245,8 +232,8 @@ function panelAlt(panel: VDTComicPanel): string {
 /** Build the page's structure in reading order before anything is
  *  painted: the pictures are painted before the lettering, but each
  *  panel's balloons are read right after its picture. */
-function comicStructure(ctx: PageCtx, structure: StructureFlow, comic: VDTComicPage): ComicTags {
-  const div = structure.comicPage();
+function comicStructure(ctx: PageCtx, structure: StructureFlow, comic: VDTComicPage, own?: StructElem): ComicTags {
+  const div = own ?? structure.comicPage();
   const figures: ComicTags['figures'] = [];
   const balloons = new Map<VDTComicBalloon, StructElem>();
   const addBalloon = (b: VDTComicBalloon) => {
@@ -258,7 +245,9 @@ function comicStructure(ctx: PageCtx, structure: StructureFlow, comic: VDTComicP
   for (const panel of comic.panels) {
     known.add(panel.index);
     const { x, y, width, height } = panel.bbox;
-    figures[panel.index] = panel.art || panel.pop
+    // The second half of a panel across a spread's spine is read with its
+    // first half, on the other page: painted as an artifact here.
+    figures[panel.index] = (panel.art || panel.pop) && !comicPanelContinues(comic, panel)
       ? div.child('Figure', { alt: panelAlt(panel), attributes: figureLayout(ctx, x, y, width, height) })
       : undefined;
     for (const b of comic.balloons) if (b.panelIndex === panel.index) addBalloon(b);
@@ -410,15 +399,19 @@ export function comicBalloonGroups(balloons: readonly VDTComicBalloon[]): VDTCom
   return [...all.filter((g) => !sfx(g)), ...all.filter(sfx)];
 }
 
-/** Paint a comic page: panels, then lettering. */
+/** Paint a comic (a comic page, a half of a spread, a strip on the
+ *  sheet): panels, then lettering. Tagged in `div` when given (a strip's,
+ *  placed where the strip is read), else in a `Div` of its own at the end
+ *  of the document read so far (a comic page). */
 export function renderComicPage(
   ctx: PageCtx,
   comic: VDTComicPage,
   fontCache: FontCache,
   images: ResourceImageMap | undefined,
   structure?: StructureFlow,
+  div?: StructElem,
 ): void {
-  const tags = structure ? comicStructure(ctx, structure, comic) : undefined;
+  const tags = structure ? comicStructure(ctx, structure, comic, div) : undefined;
   for (const panel of comic.panels) renderComicPanelPdf(ctx, panel, images, tags?.figures[panel.index]);
   for (const group of comicBalloonGroups(comic.balloons)) renderBalloonGroup(ctx, group, fontCache, tags);
 }

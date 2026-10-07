@@ -14,7 +14,8 @@
 import type { BoundingBox, ResolvedConfig, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTPoint } from '../vdt';
 import type { Resource } from '../types';
 import { clipPolygon, polygonBBox } from './geometry';
-import { comicPageFrame, comicPageLayoutWarnings, layoutComicFrame, setComicLayoutWarnings, type ComicPageContext } from './layoutPage';
+import { comicPageFrame, comicPageLayoutWarnings, comicViewerLeaf, layoutComicFrame, setComicLayoutWarnings, type ComicPageContext } from './layoutPage';
+import { resolvedComics } from '../defaults/comics';
 import { translateComicBalloon, translateComicPanel, translateComicSplitter } from './transform';
 import type { ComicPageSource } from './types';
 
@@ -28,7 +29,7 @@ export function isComicSpread(source: Pick<ComicPageSource, 'kind' | 'attrs'>): 
 }
 
 /** One page of a spread as the build hands it over. */
-export type ComicSpreadPage = Pick<ComicPageContext, 'page' | 'trimBox' | 'bleedBox' | 'mirrorMargins'>;
+export type ComicSpreadPage = Pick<ComicPageContext, 'page' | 'trimBox' | 'bleedBox' | 'mirrorMargins' | 'contentBox'>;
 
 export interface ComicSpreadContext {
   resolved: ResolvedConfig;
@@ -85,7 +86,17 @@ function clipSplitter(s: VDTComicSplitter, minX: number, maxX: number): VDTComic
  * page; bleeding panels bleed through the outer edges (head, foot, fore
  * edges), never at the spine.
  */
-export function layoutComicSpread(source: ComicPageSource, ctx: ComicSpreadContext): [VDTComicPage, VDTComicPage] {
+export function layoutComicSpread(source: ComicPageSource, given: ComicSpreadContext): [VDTComicPage, VDTComicPage] {
+  // A host's screen pages (`comics.viewerLeaf`): each half on a print
+  // leaf of its own, scaled, as a comic page is.
+  const comics = resolvedComics(given.resolved);
+  const leafL = comicViewerLeaf(comics, given.resolved, given.left.trimBox);
+  const leafR = comicViewerLeaf(comics, given.resolved, given.right.trimBox);
+  const onLeaf = (p: ComicSpreadPage, leaf: NonNullable<typeof leafL>): ComicSpreadPage =>
+    ({ ...p, trimBox: leaf.box, bleedBox: leaf.box, contentBox: leaf.content, mirrorMargins: false });
+  const ctx: ComicSpreadContext = leafL && leafR
+    ? { ...given, resolved: { ...given.resolved, page: { ...given.resolved.page, dpi: leafL.dpi } }, left: onLeaf(given.left, leafL), right: onLeaf(given.right, leafR) }
+    : given;
   const { resolved, left, right } = ctx;
   const leftFrame = comicPageFrame({ resolved, ...left });
   const rightFrame = comicPageFrame({ resolved, ...right });
@@ -152,6 +163,7 @@ export function layoutComicSpread(source: ComicPageSource, ctx: ComicSpreadConte
       frame: ownFrame,
       direction: whole.direction,
       spread: side,
+      ...(leafL && leafR ? { leaf: side === 'left' ? leafL.box : leafR.box } : {}),
       panels,
       splitters,
       balloons,

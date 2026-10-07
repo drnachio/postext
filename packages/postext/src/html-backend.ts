@@ -2,6 +2,7 @@ import { footnoteRuleSegments } from './columnRule';
 import type {
   VDTDocument,
   VDTPage,
+  VDTComicPage,
   VDTBlock,
   VDTLine,
   VDTLineSegment,
@@ -40,6 +41,7 @@ import { isHlsMimeType, mediaFragment, videoElementAttributes, videoEmbedAllow }
 import type { VDTResourceVideo } from './vdt';
 import type { ComicCastMember } from './types';
 import { renderComicHtml } from './htmlComic';
+import { comicBlockOnSheet, pageComics } from './comics/transform';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -2204,7 +2206,7 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
  * per-block DOM patching — consumers can replace a single block's outerHTML
  * without touching the rest of the page.
  */
-function renderBlock(block: VDTBlock, options: HtmlPaint): string {
+function renderBlock(block: VDTBlock, options: HtmlPaint, extra = ''): string {
   // A note is where its markers link to (#264).
   const note = block.footnoteNote !== undefined && !block.hidden
     ? zeroSizeAnchor(footnoteElementId(block.footnoteNote), block.bbox.x, block.bbox.y)
@@ -2213,6 +2215,7 @@ function renderBlock(block: VDTBlock, options: HtmlPaint): string {
     `<div class="pt-block" data-block-id="${esc(block.id)}" style="display:contents;">` +
     note +
     renderBlockInner(block, options) +
+    extra +
     `</div>`
   );
 }
@@ -2267,16 +2270,26 @@ function renderPageDetailed(
   const options: HtmlPaint = vflow
     ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(vflow.centralBaselines ? { axes: vflow.centralBaselines } : {}), ...(vflow.dashAdvances ? { dashes: vflow.dashAdvances } : {}) } }
     : inked;
+  // The comics the page shows (#565–#567): its comic page (or its half of
+  // a spread), then its strips, each on the sheet. A strip is read where
+  // it stands in the text: on a page whose flow is the sheet its markup
+  // goes in its block; on a vertical or mirrored page, whose flow box is
+  // turned, it is laid over the sheet with the comic page.
+  const comics = pageComics(page);
+  const plainFlow = !vflow && page.flow?.writingMode !== 'horizontal-tb';
+  const comicMarkup = (comic: VDTComicPage): string => renderComicPageHtml(page, comic, comics.indexOf(comic), options.vertical ? { ...options, vertical: undefined } : options);
+  const stripInBlock = (block: VDTBlock): string =>
+    plainFlow && block.comic && !block.hidden ? comicMarkup(comicBlockOnSheet(page, block)!) : '';
   const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {
     for (const block of col.blocks) {
-      blocks.push({ id: block.id, html: renderBlock(block, options) });
+      blocks.push({ id: block.id, html: renderBlock(block, options, stripInBlock(block)) });
     }
   }
   // Floated resources live in page bands outside the columns (a span:'page'
   // float crosses the gutter); they carry absolute geometry already.
   for (const fb of page.floats ?? []) {
-    blocks.push({ id: fb.id, html: renderBlock(fb, options) });
+    blocks.push({ id: fb.id, html: renderBlock(fb, options, stripInBlock(fb)) });
   }
   const blocksHtml = blocks.map((b) => b.html).join('');
   // Same paint order as the canvas backend: the opener / part band goes
@@ -2298,8 +2311,9 @@ function renderPageDetailed(
   const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, vflow ? page.height : page.width, vflow ? page.width : page.height) : '';
   // A comic page's panels and lettering, on the sheet (never through the
   // flow frame), under the running heads, as the canvas paints them.
-  const comicHtml = page.comic ? renderComicPageHtml(page, sheetOptions) : '';
-  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + comicHtml + slotParts.join('');
+  const comicHtml = page.comic ? comicMarkup(page.comic) : '';
+  const sheetComicsHtml = comicHtml + (plainFlow ? '' : comics.filter((c) => c !== page.comic).map(comicMarkup).join(''));
+  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + sheetComicsHtml + slotParts.join('');
   // A vertical page's flow: one box turned a quarter turn clockwise, its
   // text lines turned back and set vertically (see `renderVerticalLine`).
   const anchorsHtml = (options.anchors ?? [])
@@ -2315,7 +2329,7 @@ function renderPageDetailed(
     ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
     : page.flow?.writingMode === 'horizontal-tb'
       ? `<div class="pt-flow pt-flow-mirrored" style="position:absolute;left:0;top:0;width:${page.width}px;height:${page.height}px;transform:scaleX(-1);transform-origin:${page.flow.mirror.originX / 2}px 0;">${MIRRORED_FLOW_STYLE}${flowHtml}</div>`
-      : flowHtml) + comicHtml + slotParts.join('');
+      : flowHtml) + sheetComicsHtml + slotParts.join('');
   // A right-to-left document's pages say so, with its language, for a host
   // that mounts them apart from the document's root (#379); so do a
   // Japanese document's, whose glyph forms (a pan-CJK face's `locl`) and
@@ -2333,17 +2347,18 @@ function renderPageDetailed(
   return { outerHtml, innerHtml, blocks, decorationHtml, ...(comicHtml ? { comicHtml } : {}) };
 }
 
-/** The markup of a page's comic (`page.comic`, #565): see
- *  `renderComicHtml`. Its pictures come from `resourceImageUrl` (a miss
- *  reported once and drawn as a placeholder), tinted to the ink when
- *  single ink applies; its lettering is design text. */
-function renderComicPageHtml(page: VDTPage, options: HtmlPaint): string {
-  const comic = page.comic!;
+/** The markup of a comic on a page (its comic page, a half of a spread or
+ *  a strip, on the sheet; #565): see `renderComicHtml`. Its pictures come
+ *  from `resourceImageUrl` (a miss reported once and drawn as a
+ *  placeholder), tinted to the ink when single ink applies; its lettering
+ *  is design text. `k`: its place among the page's comics (`pageComics`),
+ *  which keeps its ids apart from theirs. */
+function renderComicPageHtml(page: VDTPage, comic: VDTComicPage, k: number, options: HtmlPaint): string {
   return renderComicHtml(comic, page.width, page.height, {
     artUrl: (art) => imageUrl(options, art.fileId, art.resourceId),
     artStyle: (art, url) => inkFilterDecl(options, art.kind === 'svg', url),
     text: (block) => renderDesignTextBlock(block, options),
-    idBase: `pt-p-${(options.pageIndexOffset ?? 0) + page.index}-panel`,
+    idBase: `pt-p-${(options.pageIndexOffset ?? 0) + page.index}${k > 0 ? `-c${k}` : ''}-panel`,
     ...(options.comicCast ? { cast: options.comicCast } : {}),
   });
 }

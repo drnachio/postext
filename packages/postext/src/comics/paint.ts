@@ -7,7 +7,8 @@
  */
 
 import type { ComicCastMember } from '../types';
-import type { VDTComicBalloon, VDTComicPanel, VDTPoint } from '../vdt';
+import type { VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTPoint } from '../vdt';
+import { translateComicPage } from './transform';
 
 /** A small deterministic hash (FNV-1a) for seeding a rough border. */
 export function comicHashString(s: string): number {
@@ -145,4 +146,83 @@ export function comicBalloonGroups(balloons: readonly VDTComicBalloon[]): VDTCom
     g.push(b);
   }
   return groups;
+}
+
+/**
+ * Whether a panel of one page of a two-page spread (`comic.spread`) is the
+ * second half of a panel that crosses the spine: the part on the page read
+ * second (the right page left to right, the left page right to left). Its
+ * picture is painted, but it is read, listed and named once, with the half
+ * on the page read first.
+ */
+export function comicPanelContinues(comic: Pick<VDTComicPage, 'spread' | 'frame' | 'direction'>, panel: Pick<VDTComicPanel, 'bbox'>): boolean {
+  if (!comic.spread) return false;
+  const f = comic.frame;
+  const crosses = comic.spread === 'left'
+    ? panel.bbox.x + panel.bbox.width > f.x + f.width + 0.25
+    : panel.bbox.x < f.x - 0.25;
+  if (!crosses) return false;
+  return comic.spread !== (comic.direction === 'rtl' ? 'right' : 'left');
+}
+
+/** Whether `b` is the other page of the spread `a` belongs to. */
+export function isComicSpreadPartner(a: Pick<VDTComicPage, 'spread' | 'sourceStart'>, b: Pick<VDTComicPage, 'spread' | 'sourceStart'> | undefined): boolean {
+  return !!a.spread && !!b?.spread && a.spread !== b.spread && a.sourceStart === b.sourceStart;
+}
+
+/** The convex hull of points (monotone chain), clockwise on the sheet. */
+function convexHull(points: readonly VDTPoint[]): VDTPoint[] {
+  const pts = [...points].sort((p, q) => p.x - q.x || p.y - q.y);
+  if (pts.length < 3) return pts;
+  const cross = (o: VDTPoint, a: VDTPoint, b: VDTPoint) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const lower: VDTPoint[] = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2]!, lower[lower.length - 1]!, p) <= 1e-9) lower.pop();
+    lower.push(p);
+  }
+  const upper: VDTPoint[] = [];
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i]!;
+    while (upper.length >= 2 && cross(upper[upper.length - 2]!, upper[upper.length - 1]!, p) <= 1e-9) upper.pop();
+    upper.push(p);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+
+/**
+ * The two pages of a spread joined back into one comic, in the left page's
+ * coordinates (the right page set against it at the spine): each panel
+ * once, a panel crossing the spine whole again (its two halves' outlines
+ * joined; its picture's box is the same on both), balloons of both pages,
+ * in reading order. What an output that does not show pages reads (the
+ * reflowable EPUB).
+ */
+export function joinComicSpread(left: VDTComicPage, right: VDTComicPage): VDTComicPage {
+  const shift = left.frame.x + left.frame.width - right.frame.x;
+  const moved = translateComicPage(right, shift, 0);
+  const byIndex = new Map<number, VDTComicPanel>();
+  for (const p of left.panels) byIndex.set(p.index, p);
+  for (const p of moved.panels) {
+    const l = byIndex.get(p.index);
+    if (!l) {
+      byIndex.set(p.index, p);
+      continue;
+    }
+    const polygon = convexHull([...l.polygon, ...p.polygon]);
+    const xs = polygon.map((q) => q.x);
+    const ys = polygon.map((q) => q.y);
+    const bbox = { x: Math.min(...xs), y: Math.min(...ys), width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) };
+    byIndex.set(p.index, { ...l, polygon, bbox, radius: 0 });
+  }
+  const panels = [...byIndex.values()].sort((a, b) => a.index - b.index);
+  const balloons = [...left.balloons, ...moved.balloons].sort((a, b) => a.panelIndex - b.panelIndex || a.order - b.order);
+  const { spread: _spread, ...rest } = left;
+  void _spread;
+  return {
+    ...rest,
+    frame: { x: left.frame.x, y: Math.min(left.frame.y, moved.frame.y), width: moved.frame.x + moved.frame.width - left.frame.x, height: Math.max(left.frame.height, moved.frame.height) },
+    panels,
+    splitters: [...left.splitters, ...moved.splitters],
+    balloons,
+  };
 }

@@ -410,3 +410,53 @@ describe('comic pages in the PDF', () => {
     expect(contentOps(plain, comicIndex)).toContain('Do');
   });
 });
+
+/** Where pictures `w` × `h` (px at 72 dpi = pt) are drawn: their top-left
+ *  corners on the sheet, rounded. */
+function drawnAt(ops: string, w: number, h: number): number[][] {
+  const H = 560;
+  const re = /1 0 0 1 (\S+) (\S+) cm\n(?:1 0 0 1 0 0 cm\n)?(\S+) 0 0 (\S+) 0 0 cm/g;
+  return [...ops.matchAll(re)]
+    .filter((m) => Math.abs(Number(m[3]) - w) < 0.01 && Math.abs(Number(m[4]) - h) < 0.01)
+    .map((m) => [n(Number(m[1])), n(H - Number(m[2]) - h)]);
+}
+
+describe('strips and spreads in the PDF', () => {
+  const figures = (e: Elem): Elem[] => [...(e.type === 'Figure' ? [e] : []), ...e.kids.flatMap(figures)];
+
+  it('paints a strip on its page and reads it where it stands in the text', async () => {
+    const md = 'Before the strip.\n\n:::strip{split="* | *" aspect=3}\n::panel{art=land}\n::panel{art=tall}\n:::\n\nAfter the strip.';
+    const d = buildDocument({ markdown: md, resources }, config);
+    const pageIndex = d.pages.findIndex((p) => p.columns.some((c) => c.blocks.some((b) => b.comic)));
+    const block = d.pages[pageIndex]!.columns.flatMap((c) => c.blocks).find((b) => b.comic)!;
+    const out = await PDFDocument.load(await renderToPdf(d, { fontProvider, resourceBytes: (id) => files[id] }));
+    const ops = contentOps(out, pageIndex);
+    // Both pictures drawn at their boxes on the sheet (the strip's box moved
+    // to where the block sits).
+    for (const p of block.comic!.panels) expect(drawnAt(ops, p.art!.box.width, p.art!.box.height)).toContainEqual([n(block.bbox.x + p.art!.box.x), n(block.bbox.y + p.art!.box.y)]);
+    const root = structRoot(out);
+    const types = root.kids.map((k) => k.type);
+    const at = types.indexOf('Div');
+    expect(types.slice(at - 1, at + 2)).toEqual(['P', 'Div', 'P']);
+    expect(root.kids[at]!.kids.map((k) => k.type)).toEqual(['Figure', 'Figure']);
+    expect(root.kids[at]!.kids[0]!.alt).toBe('A meadow under a red sun');
+  }, 60_000);
+
+  it('paints both halves of a spread, a panel across the spine tagged once', async () => {
+    const md = ':::page{spread split="50 / * [* | * | *]"}\n::panel{art=land}\n::panel{art=tall}\n::panel{art=land}\n::panel{art=tall}\n:::\n\nAfter the spread.';
+    const d = buildDocument({ markdown: md, resources }, config);
+    const [l, r] = d.pages.filter((p) => p.comic);
+    const out = await PDFDocument.load(await renderToPdf(d, { fontProvider, resourceBytes: (id) => files[id] }));
+    // The wide top panel's picture on both pages.
+    const top = l!.comic!.panels[0]!.art!.box;
+    expect(drawnAt(contentOps(out, l!.index), top.width, top.height)).toContainEqual([n(top.x), n(top.y)]);
+    const topR = r!.comic!.panels[0]!.art!.box;
+    expect(drawnAt(contentOps(out, r!.index), topR.width, topR.height)).toContainEqual([n(topR.x), n(topR.y)]);
+    // Four panels, four figures: the halves on the right page continue the
+    // left page's.
+    const divs = structRoot(out).kids.filter((k) => k.type === 'Div');
+    expect(divs).toHaveLength(2);
+    expect(divs.flatMap(figures)).toHaveLength(4);
+    expect(divs[1]!.kids.filter((k) => k.type === 'Figure')).toHaveLength(1);
+  }, 60_000);
+});

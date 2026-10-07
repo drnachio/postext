@@ -43,5 +43,8 @@ export {
   comicBorderPathData,
   comicRoughBorder,
   polygonPathData,
+  comicPanelContinues,
+  isComicSpreadPartner,
+  joinComicSpread,
 } from './paint';
 export type { ComicBalloonKind } from './paint';
