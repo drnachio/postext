@@ -33,6 +33,21 @@ export type { CellPos, CellRange, ParseTSVOptions, TableGridIssue } from './tabl
 export { collectContentWarnings, formatWarning } from './pipeline/contentWarnings';
 export { collectHeadingDesignCuts } from './pipeline/headingDesignCuts';
 export { normalizeSafeArea, resourceSafeArea, safeAreaHeightRange, safeAreaSource, uncroppedPictureBox } from './pipeline/safeArea';
+export {
+  parseComicSplit, serializeComicSplit, moveComicSplitLine, splitComicCell, mergeComicCells, comicSplitLines, comicSplitLeaves, comicSplitListAt, COMIC_MIN_CELL_PERCENT,
+  parseComicScript, parseComicPoint, readBalloonText, parseComicFence, isComicFence, COMIC_FENCES,
+  comicGeometry, pointInPolygon, polygonBBox, physicalSide,
+  comicArtCrop, comicCropFeasibleRange, comicArtPointToPage, comicArtRectToPage, anchorsOutsideSafeArea,
+  layoutComicPage, letterPanels, comicPageDirection, comicPanelPadding, parseComicDimension, comicPageLayoutWarnings,
+  comicSourceWarnings, COMIC_RESERVED_KEYS,
+} from './comics';
+export type {
+  ComicSplitAxis, ComicSplitSize, ComicSplitItem, ComicSplitList, ComicSplitToken, ComicSplitIssue, ComicSplitParse, ComicScriptLine,
+  ComicCell, ComicSplitLine, ComicGeometry, ComicGeometryInput, ComicFrameSide, ComicCropInput, ComicCrop, ComicPageContext,
+  ComicPageSource, ComicPanelSource, ComicScriptItem, ComicScriptRole, ComicSourceRange, ComicTailSide,
+} from './comics';
+export { renderComicPanels, renderComicPanel, comicPanelPath } from './canvas-backend/comic';
+export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './defaults/comics';
 export { layoutVideo, playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 export { encodeQr } from './video/qr';
 export { coordinateVideoPlayback, playsAlongside, videosToPause, VIDEO_PLAYBACK_SCRIPT } from './video/playback';
@@ -87,6 +102,24 @@ export type {
   ResourceRotation,
   ResourcePlacement,
   ResourceSafeArea,
+  ResourceAnchor,
+  ComicsConfig,
+  ResolvedComicsConfig,
+  ComicReadingDirection,
+  ComicPanelBorderStyle,
+  ComicPanelFit,
+  PanelStyleConfig,
+  NamedPanelStyleConfig,
+  ResolvedPanelStyleConfig,
+  ResolvedNamedPanelStyleConfig,
+  LetteringConfig,
+  ResolvedLetteringConfig,
+  ComicBalloonShape,
+  ComicBalloonTail,
+  ComicBalloonPosition,
+  BalloonStyleConfig,
+  ResolvedBalloonStyleConfig,
+  ComicCastMember,
   Resource,
   TableCell,
   TableCellAlign,
@@ -386,6 +419,12 @@ export type {
   VDTVerticalFlowFrame,
   VDTMirroredFlowFrame,
   TableCellFillRects,
+  VDTPoint,
+  VDTComicArt,
+  VDTComicPanel,
+  VDTComicSplitter,
+  VDTComicBalloon,
+  VDTComicPage,
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
 export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, pageIsMirrored, verticalFlowOf, lineTextAlign, DEFAULT_CENTRAL_BASELINE } from './vdt';

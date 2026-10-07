@@ -28,6 +28,8 @@ import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
 import { DEFAULT_HEADING_STYLES } from '../defaults/headingStyles';
 import { resolveAllConfig } from './config';
 import { planHeadingSections, sectionWritingMode } from './headingStyles';
+import { comicSourceWarnings } from '../comics/warnings';
+import { resolvedComics } from '../defaults/comics';
 
 /** A `:::name` line: the name starts it, whatever follows (a line the parser
  *  does not take as a fence — an unknown name, or text after the name — is
@@ -230,6 +232,7 @@ export function collectContentWarnings(
     }
   };
 
+  let comics: ReturnType<typeof resolvedComics> | undefined;
   for (const b of blocks) {
     blockIdx++;
     const range = { start: b.sourceStart, end: b.sourceEnd };
@@ -261,6 +264,16 @@ export function collectContentWarnings(
           // lies past the heading's own range).
           const value = b.attrSources?.style;
           out.push({ kind: 'unknownHeadingStyle', style, level: b.level ?? 1, ...abs({ start: b.sourceStart, end: value?.end ?? b.sourceEnd }) });
+        }
+        break;
+      }
+      case 'directive': {
+        // A comic page (#555): its split, panels, script and pictures.
+        if (b.comic) {
+          comics ??= resolvedComics(resolveAllConfig(config));
+          for (const w of comicSourceWarnings(b.comic, comics, byId)) {
+            out.push({ ...w, ...abs({ start: w.sourceStart ?? b.sourceStart, end: w.sourceEnd ?? b.sourceEnd }) });
+          }
         }
         break;
       }
@@ -467,6 +480,16 @@ export function locateContentWarnings(doc: VDTDocument, warnings: readonly Conte
         if (holder === undefined || b.pageIndex < holder) holder = b.pageIndex;
       } else if (b.sourceStart > offset && (!next || b.sourceStart < next.start || (b.sourceStart === next.start && b.pageIndex < next.page))) {
         next = { start: b.sourceStart, page: b.pageIndex };
+      }
+    }
+    // A comic page holds no block: its whole source range is its page.
+    for (const page of doc.pages) {
+      const c = page.comic;
+      if (!c) continue;
+      if (offset >= c.sourceStart && offset <= c.sourceEnd) {
+        if (holder === undefined || page.index < holder) holder = page.index;
+      } else if (c.sourceStart > offset && (!next || c.sourceStart < next.start)) {
+        next = { start: c.sourceStart, page: page.index };
       }
     }
     return holder ?? next?.page;
@@ -711,6 +734,32 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'columnCountClamped':
       text = `${w.path}: ${w.value} is not a column count from 3 to 8 — the page is cut into ${w.used} columns`;
+      break;
+    case 'comicSplitSyntax':
+      text = `A comic page's split cannot be read as written: ${w.message}`;
+      break;
+    case 'comicSplitOverflow':
+      text = `The sizes of a comic page's split add up to ${w.total} % — they are scaled down to fit`;
+      break;
+    case 'comicPanelCount':
+      text = w.panels > w.cells
+        ? `A comic page has ${w.panels} panels and its split ${w.cells} cells — the last ${w.panels - w.cells} are not set`
+        : `A comic page has ${w.panels} panels and its split ${w.cells} cells — the last ${w.cells - w.panels} cells stay empty`;
+      break;
+    case 'comicStrayText':
+      text = `"${w.text}" is not a script line (key: text) or sits before the first ::panel — it is lettered as a caption`;
+      break;
+    case 'comicUnknownBalloonStyle':
+      text = `Unknown balloon style "${w.style}" — the line takes the default style of its key`;
+      break;
+    case 'comicUnknownArt':
+      text = `A comic panel names "${w.resourceId}", which is no picture resource — the panel is set empty`;
+      break;
+    case 'comicPanelLetterbox':
+      text = `Panel ${w.panel + 1} cannot hold the safe area of "${w.resourceId}" under a crop — the picture is shown whole within bands of the panel background`;
+      break;
+    case 'comicAnchorOutsideSafeArea':
+      text = `The anchor "${w.anchorId}" of "${w.resourceId}" lies outside the picture's safe area — a crop may cut it off`;
       break;
     case 'cjkGridClamped':
       text = `${w.path}: ${w.value} ${w.path.endsWith('charsPerLine') ? 'characters per line' : 'lines'} do not fit inside the margins — the grid is set with ${w.used}`;

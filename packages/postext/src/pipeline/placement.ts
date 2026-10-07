@@ -141,11 +141,11 @@ export function pageHasContent(page: VDTPage): boolean {
   return page.columns.some((c) => c.blocks.length > 0);
 }
 
-/** Whether the page holds anything at all — column content or floats (a
- *  page carrying only a drained float band is occupied: the next chapter
- *  must not open on it). */
+/** Whether the page holds anything at all — column content, floats or a
+ *  comic page (a page carrying only a drained float band is occupied: the
+ *  next chapter must not open on it). */
 export function pageIsOccupied(page: VDTPage): boolean {
-  return pageHasContent(page) || (page.floats?.length ?? 0) > 0;
+  return pageHasContent(page) || (page.floats?.length ?? 0) > 0 || page.comic !== undefined;
 }
 
 // ---------------------------------------------------------------------------
