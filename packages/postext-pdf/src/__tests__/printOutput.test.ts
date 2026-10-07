@@ -226,3 +226,21 @@ describe('authored CMYK', () => {
     expect(raw).toMatch(/1 0 0 0 k/);
   });
 });
+
+describe('inspectPrintMaster', () => {
+  it('reports non-embedded fonts, RGB colour and transparency in a placed PDF', async () => {
+    const { inspectPrintMaster } = await import('../print/inspectMaster');
+    const { StandardFonts, rgb, cmyk } = await import('pdf-lib');
+    const loose = await PDFDocument.create();
+    const page = loose.addPage([200, 200]);
+    page.drawText('Hi', { font: await loose.embedFont(StandardFonts.Helvetica), size: 12, color: rgb(1, 0, 0), opacity: 0.5 });
+    const report = await inspectPrintMaster(await loose.save());
+    expect(report.nonEmbeddedFonts).toEqual(['Helvetica']);
+    expect(report.rgb).toBe(true);
+    expect(report.transparency).toBe(true);
+
+    const clean = await PDFDocument.create();
+    clean.addPage([200, 200]).drawRectangle({ x: 10, y: 10, width: 50, height: 50, color: cmyk(0, 1, 0, 0) });
+    expect(await inspectPrintMaster(await clean.save())).toEqual({ nonEmbeddedFonts: [], rgb: false, transparency: false });
+  });
+});

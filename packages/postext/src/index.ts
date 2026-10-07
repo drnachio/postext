@@ -15,6 +15,8 @@ export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './colu
 export type { FootnoteRuleSegment } from './columnRule';
 export { cropMarkSegments } from './cropMarks';
 export * from './color';
+export { preflightDocument } from './preflight';
+export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity } from './preflight';
 export type { CropMarkSegment } from './cropMarks';
 export { columnClipRect, designOverlayOverhang, headingDesignOverhangAbove, hangingPunctuationOverhang } from './columnClip';
 export { lineInkExtent } from './lineInk';

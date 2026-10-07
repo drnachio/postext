@@ -92,6 +92,7 @@ describe("package exports", () => {
       "footnoteRuleSegments",
       "pageColumnRule",
       "cropMarkSegments",
+      "preflightDocument",
       "columnClipRect",
       "designOverlayOverhang",
       "headingDesignOverhangAbove",
