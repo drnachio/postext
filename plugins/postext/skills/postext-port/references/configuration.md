@@ -145,11 +145,11 @@ page
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
-└─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl' or the document is right to left)   postext ≥ 1.9
+└─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl', the document is right to left, or its comics section reads right to left: a manga, a ja/zh-Hant edition, postext > 1.20.2)   postext ≥ 1.9
 ```
 Gotchas
 - Page 1 is odd (recto). With `mirror: true`, `left` is the spine margin on every page.
-- `binding: 'right'` (vertical Chinese and Japanese books and Arabic/RTL books, by default): page 1 is still the recto but sits on the
+- `binding: 'right'` (vertical Chinese and Japanese books, Arabic/RTL books and comic books read right to left, by default): page 1 is still the recto but sits on the
   LEFT of its spread; with `mirror: true` the odd pages carry the inner (`left`) margin on their right.
   The Sandbox shows spreads `[3 | 2]`, the PDF asks viewers for `/Direction /R2L`. Folio templates do not
   swap sides by themselves: set odd/even elements for the right edge.
@@ -1253,7 +1253,7 @@ balloon style key, cast, reading direction) is in
 
 ```jsonc
 "comics": {
-  "artDirection": "ltr",                       // 'rtl' for manga; readingDirection 'auto' follows it (rtl in an RTL document)
+  "artDirection": "ltr",                       // 'rtl' for manga; readingDirection 'auto' follows it, except rtl in an RTL, vertical, ja or zh-Hant document
   "gutter": { "horizontal": {"value": 4, "unit": "mm"}, "vertical": {"value": 2, "unit": "mm"} },
   "panel": { "borderWidth": {"value": 1, "unit": "pt"}, "borderStyle": "solid" },
   "panelStyles": [ { "id": "rounded", "borderRadius": {"value": 5, "unit": "mm"} } ],

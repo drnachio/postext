@@ -268,7 +268,7 @@ the page images instead of claiming the port is visually verified.
 | Balloon on a face, or below its speaker | mark the face (`anchors[].face`) or an `avoid` zone; give the panel's top more room; pin with `at=` |
 | Balloons of one speaker merged into one outline when the source has two | `join=false` on the second line |
 | Manga panels read left to right | `comics.artDirection: 'rtl'` (or the page's `direction=rtl`); never reverse the split by hand |
-| Spread's panel 1 on the second page | the book's binding: a right-to-left comic in a left-bound book; set `page.binding: 'right'` |
+| Spread's panel 1 on the second page | the book's binding: a right-to-left comic in a left-bound book; give the config a `comics` section and leave `page.binding` on `'auto'`, or set `'right'` |
 | Lettering too small on an A4 album | `comics.lettering.fontSize` (default 7.5 pt): 9–10 pt |
 
 Accept remaining deviations explicitly and list them as known gaps, for

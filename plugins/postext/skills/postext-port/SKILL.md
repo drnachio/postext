@@ -227,9 +227,13 @@ Comics traps (postext ≥ 1.20; [references/comics.md](references/comics.md)):
   the lettering and sound-effect faces (Comic Neue and Bangers by default;
   Zen Antique and Dela Gothic One for Japanese; Playpen Sans Arabic and
   Lalezar for Arabic).
-- **Manga** keeps `comics.artDirection: 'rtl'` in every language and a
-  right binding; Japanese and Traditional Chinese balloons are vertical by
-  default. An Arabic edition reads right to left from `locale: 'ar'` alone.
+- **Manga** keeps `comics.artDirection: 'rtl'` in every language, and
+  `page.binding: 'auto'` binds it on the right; Japanese and Traditional
+  Chinese balloons are vertical by default. A Japanese or Traditional
+  Chinese edition of a Western comic reads right to left and is right-bound
+  by itself (`readingDirection: 'auto'`, postext > 1.20.2): set
+  `readingDirection: 'ltr'` only to keep the Western order on purpose. An
+  Arabic edition reads right to left from `locale: 'ar'` alone.
 
 Full references (load the one you need):
 
