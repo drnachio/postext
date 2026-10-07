@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "print-ready-pdf",
-  "sourceHash": "958d27904ad66bd995f149a663f2f9d7398da3355e69dbeba824fcf735e9e139",
+  "sourceHash": "891300f6410b4ace07896b1d59ff6df832a1e717093360d5e44d4d7a0d11de1d",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.22.0",
+    "postextPdf": "1.22.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.302Z",
+  "capturedAt": "2026-10-07T18:07:55.628Z",
   "variants": {
     "es": {
-      "hash8": "16feb863",
+      "hash8": "b7ef9af6",
       "vdtHash": "d75476b65d721b2af71c3ac07956033c86c6b167",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 73,
-        "buildMs": 12,
-        "totalMs": 923,
+        "importMs": 373,
+        "fontsMs": 118,
+        "buildMs": 11,
+        "totalMs": 1172,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Space Mono"
         ],
         "pages": 4,
-        "ownLines": 250
+        "ownLines": 283
       },
       "pages": [
         {
@@ -83,7 +83,7 @@
           "h": 1297,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 53948,
+          "bytes": 54684,
           "alt": "Página de apertura 4: Información práctica. Figura 1. Plano de la exposición, con el itinerario en naranja."
         }
       ],
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "print-ready-pdf.pdf",
-        "bytes": 356514,
+        "bytes": 476982,
         "pages": 4
       },
       "sandbox": {
         "file": "print-ready-pdf.postext",
-        "bytes": 102088,
+        "bytes": 102428,
         "folio": "2465c19b"
       },
       "detected": {
@@ -129,6 +129,9 @@
           "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "loadOutputProfile",
+          "outputTransform",
+          "preflightDocument",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToPdf"
@@ -227,6 +230,11 @@
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
           "paragraphStyles[].lineHeight",
+          "print",
+          "print.outputProfile",
+          "print.preflight",
+          "print.preflight.smallTextSize",
+          "print.standard",
           "resourceTypes",
           "resourceTypes[].captionPrefix",
           "resourceTypes[].counterFormat",
@@ -249,9 +257,10 @@
           "locale",
           "page",
           "paragraphStyles",
+          "print",
           "resourceTypes"
         ],
-        "configLeaves": 382,
+        "configLeaves": 385,
         "designElements": 23,
         "directives": [
           ":::pagebreak",

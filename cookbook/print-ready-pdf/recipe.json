@@ -18,7 +18,7 @@
     ]
   },
   "answers": ["Q13", "Q02", "Q79"],
-  "gaps": ["pdf-x"],
+  "gaps": [],
   "gotchas": [
     "pdf-master-resourcebytes", "pdf-provider-all-styles", "svg-no-marker-filters",
     "svg-no-webfonts", "latin-subset", "opener-image-no-reserve", "ragged-no-hyphenation",
@@ -35,10 +35,9 @@
     { "followup": "EF-05", "package": "postext", "note": "the rooms' level-1 headings state breakBefore: { enabled: false }, since any headings object drops the default break; the back cover breaks through its heading style" },
     { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because design elements read the hex (gotcha palette-skips-designs)" },
     { "followup": "EF-90", "package": "postext", "note": "the cover's map, a bleed-anchored image, reserves no height, so the text puts :::pagebreak after the cover heading; without it the lead and the first room print over the map" },
-    { "followup": "EF-120", "package": "postext", "note": "crop marks start markOffset outside the trim, not outside the bleed, so a bleed wider than the 3 mm default offset puts the marks on the artwork (canvas and PDF): cutLines sets markOffset: mm(BLEED) so one number keeps them clear" },
-    { "followup": "EF-124", "package": "postext-pdf", "note": "renderToPdf never reads config.pdfGeneration, so pressPdf() passes colorSpace as a renderToPdf option, and the bookmarks and page labels come from its defaults" }
+    { "followup": "EF-120", "package": "postext", "note": "crop marks start markOffset outside the trim, not outside the bleed, so a bleed wider than the 3 mm default offset puts the marks on the artwork (canvas and PDF): cutLines sets markOffset: mm(BLEED) so one number keeps them clear" }
   ],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "engine": { "postext": "1.22.0", "postextPdf": "1.22.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["es"] },
   "capture": {
@@ -66,5 +65,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-07"
 }

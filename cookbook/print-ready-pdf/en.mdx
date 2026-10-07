@@ -1,16 +1,16 @@
 ---
-title: "Print-ready PDF: bleed, crop marks and CMYK"
-summary: "An exhibition leaflet laid out with 3 mm of bleed and crop marks, exported as a CMYK PDF that takes its maps and floor plan from print masters."
+title: "Print-ready PDF: bleed, crop marks and PDF/X"
+summary: "An exhibition leaflet with 3 mm of bleed and crop marks, exported as PDF/X-4 on FOGRA51 with print masters and a clean preflight."
 plain: "A leaflet for a map exhibition, ready to send to a print shop. It shows how to add extra room past the page edge and cutting marks, and save a PDF in the colours printing presses use."
-description: "A four-page exhibition leaflet in Postext with 3 mm of bleed and crop marks, exported as a CMYK PDF with embedded fonts, bookmarks and print masters."
-question: "How do I export a print-ready PDF with bleed, crop marks, CMYK colour, bookmarks and page labels?"
-aliases: ["print-ready PDF", "bleed", "crop marks", "trim marks", "CMYK", "print master", "prepress", "exhibition leaflet", "room sheet", "exhibition guide", "greyscale proof", "thumb tab"]
+description: "A four-page Postext leaflet with 3 mm of bleed and crop marks, exported as PDF/X-4 on FOGRA51 with fonts, bookmarks and print masters."
+question: "How do I export a print-ready PDF/X file with bleed, crop marks, an ICC profile, bookmarks and page labels?"
+aliases: ["print-ready PDF", "bleed", "crop marks", "trim marks", "CMYK", "print master", "prepress", "exhibition leaflet", "room sheet", "exhibition guide", "greyscale proof", "thumb tab", "PDF/X-4", "FOGRA51", "PSO Coated v3", "output intent", "preflight", "rich black", "overprint"]
 pageNotes: { "1": "The cover, shown with its 3 mm of bleed and the crop marks at the corners: a dark green sea with islands in stepped greens, a dashed orange route with four stops that runs off the trim into the bleed, the title in 50 pt Space Grotesk, and the dates and venue at the foot.", "2": "The first inside page: the lead, rooms 1 and 2 under their waypoint kickers with an object label after each, and an orange tab with the folio 2 off the left edge.", "3": "Rooms 3 and 4, ending level with page 2, and the tab with the folio 3 off the right edge.", "4": "The back cover: practical information, the floor plan (figure 1) with the orange route from the vestibule through rooms 1 to 4, and a band of green relief that bleeds off three sides, with the venue, the dates and the colophon." }
 ---
 
 ## What you'll build
 
-The room sheet for *Cartografías imaginarias*, an invented exhibition of maps of imaginary places, as it goes to the printer, in Spanish on both editions of this page. Each 170 × 227 mm page sits on a sheet 22 mm larger that carries the bleed and the crop marks. On the cover an orange route crosses an archipelago in stepped greens and runs off the trim into the bleed. Inside, four rooms in ragged Karla open under waypoint kickers and an orange tab carries the folio off the fore-edge; the back cover sets a floor plan above a band of relief. The pen exports the press PDF, in CMYK with its fonts, bookmarks and page labels, and a greyscale proof. In the press PDF the maps and the plan come from print masters in hand-picked inks; the type, the tab and the waypoint rings take the plain conversion.
+The room sheet for *Cartografías imaginarias*, an invented exhibition of maps of imaginary places, as it goes to the printer, in Spanish on both editions of this page. Each 170 × 227 mm page sits on a sheet 22 mm larger that carries the bleed and the crop marks. On the cover an orange route crosses an archipelago in stepped greens and runs off the trim into the bleed. Inside, four rooms in ragged Karla open under waypoint kickers and an orange tab carries the folio off the fore-edge; the back cover sets a floor plan above a band of relief. The pen exports the press file, a PDF/X-4 separated for FOGRA51 (the PSO Coated v3 condition of the 150 g coated stock) with its fonts, bookmarks and page labels, and a greyscale proof, and runs the preflight on the layout before it offers them. In the press file the maps and the plan come from print masters in hand-picked inks, and the type, the tab and the waypoint rings use the same inks through a palette authored in CMYK.
 
 ## Method
 
@@ -18,7 +18,7 @@ The room sheet for *Cartografías imaginarias*, an invented exhibition of maps o
 
 <Excerpt region="palette" />
 
-With `colorSpace: 'cmyk'`, postext-pdf converts each hex with a plain formula and no ICC profile: black is 1 minus the highest RGB channel, and cyan, magenta and yellow each come from their own channel and that black. A neutral grey therefore prints on the black plate alone (`#161616` becomes K91), and a colour with one channel at full strength prints with no black: the orange `#ff6626` becomes C0 M60 Y85 K0 in the tab, the rings and the route. Magenta comes out at 0 whenever green is the highest channel, so the forest becomes C82 M0 Y25 K76, which proofs as a petrol teal; the maps and the plan come from print masters for that reason (step 5), and the three-ink build stays only on the small bold forest type of the kickers, the figure reference and the caption labels.
+`print: { standard: 'pdfx4', outputProfile: 'fogra51' }` in the configuration separates every colour through the FOGRA51 profile that ships with postext. Neutral greys print on the black plate alone, their K picked so the tone matches: `#161616` becomes K95 and the running heads' `#666666` K66, and 100 % K text overprints. The profile would print the forest as C90 M43 Y71 K62 and the orange as C0 M70 Y90 K0, a shade off the route of the masters (step 5), so those two, the sage and the paper colour are authored in CMYK: `ColorValue.cmyk` holds the build, the hex stays for the screen, and every palette-linked use prints the build as written. The paper colour is C0 M0 Y0 K0: type reversed out of the forest prints no ink, so no plate can shift it.
 
 ### 2 · A thumb tab that survives the guillotine
 
@@ -42,7 +42,7 @@ The tab's box hangs from the bleed frame and is `BLEED` wider than the finished 
 
 <Excerpt region="master" />
 
-Each drawing is defined once, as paths. The art region turns them into the SVG the canvas paints, and this region writes the same paths into a one-page CMYK PDF with builds chosen so that a proof matches the screen, which puts the sea at C100 M45 Y80 K55 instead of the plain C82 M0 Y25 K76. Each resource names its master in `svg.pdfFileId`, `pressPdf()` in the short answer hands the master's bytes to `renderToPdf` under the SVG's id, and postext-pdf embeds that page unchanged, as vectors in the master's own inks. That holds for the plan, a figure, and for the cover map and the back band, which are design images. The greyscale proof gets the SVGs instead, because an embedded master is never converted and would stay in colour.
+Each drawing is defined once, as paths. The art region turns them into the SVG the canvas paints, and this region writes the same paths into a one-page CMYK PDF with builds chosen so that a proof matches the screen, which puts the sea at C100 M45 Y80 K55, the forest of the palette. Each resource names its master in `svg.pdfFileId`, `pressPdf()` in the short answer hands the master's bytes to `renderToPdf` under the SVG's id, and postext-pdf embeds that page unchanged, as vectors in the master's own inks. That holds for the plan, a figure, and for the cover map and the back band, which are design images. The greyscale proof gets the SVGs instead, because an embedded master is never converted and would stay in colour.
 
 ## Variations
 
@@ -57,7 +57,7 @@ The artwork, the tab and the scale bar are sized from `BLEED`, and the crop mark
 
 ### Print the artwork from its SVGs
 
-Without `pdfFileId` the press file draws each picture from its SVG, still as vectors but through the plain conversion, and the sea prints C82 M0 Y25 K76, a petrol teal.
+Without `pdfFileId` the press file draws each picture from its SVG, still as vectors and through the profile: the forest, authored in CMYK, keeps C100 M45 Y80 K55, while the other greens of the islands take the profile's separations instead of the hand-picked ones.
 
 ```diff
 -  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
@@ -66,7 +66,9 @@ Without `pdfFileId` the press file draws each picture from its SVG, still as vec
 
 ## Pitfalls
 
-- postext-pdf 1.4.1 writes each page as a single MediaBox, the whole 192 × 249 mm sheet, with no TrimBox or BleedBox, and prints the crop marks on the black plate only. Give the print shop the trim size, 170 × 227 mm, or add the boxes in a prepress tool if the shop asks for PDF/X.
-- In 1.4.1 a crop mark starts `markOffset` outside the trim, not outside the bleed, so with a bleed wider than the default 3 mm offset the marks print over the artwork. Keep the offset equal to the bleed, as `cutLines` does here.
-- `renderToPdf` 1.4.1 does not read `config.pdfGeneration`. `pressPdf()` passes the colour space as an option, and bookmarks and tagging are on by default.
+- A PDF/X standard always writes CMYK, whatever `colorSpace` says, so the greyscale proof overrides `print` with `{ standard: 'none' }` beside `colorSpace: 'grayscale'`.
+- A PDF/X render fails without its output profile. `renderToPdf` fetches `fogra51.icc` from `profileBaseUrl` (postext.dev's `/icc/` here); pass the file's bytes as `outputProfile` to serve it yourself.
+- The preflight flags text under 9 pt set in more than one ink. The 7.5 pt bold labels in forest hold in four inks on coated stock, so `print.preflight.smallTextSize` is 7 pt; the 6.3 pt colophon, in sage it would be three inks on a four-ink band, is reversed to paper instead.
+- A PDF/X file carries no link annotations, since a file for the press may not have them inside its bleed box; the bookmarks stay.
+- A crop mark starts `markOffset` outside the trim, not outside the bleed, so with a bleed wider than the default 3 mm offset the marks print over the artwork. Keep the offset equal to the bleed, as `cutLines` does here.
 - Once built, each button turns into an "Open the PDF ↗" link and a download link, and only the download links carry the file names.

@@ -1526,7 +1526,8 @@
         "ja": "印刷入稿用のPDF",
         "pt": "PDFs prontos para impressão"
       }
-    }
+    },
+    "fixedIn": "1.22.0"
   },
   "hard-line-breaks": {
     "label": {

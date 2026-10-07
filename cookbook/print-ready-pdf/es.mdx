@@ -1,16 +1,16 @@
 ---
-title: "PDF listo para imprenta: sangrado, marcas de corte y CMYK"
-summary: "Un folleto de exposición con 3 mm de sangrado y marcas de corte, exportado a PDF CMYK con los mapas y el plano tomados de másteres de impresión."
+title: "PDF listo para imprenta: sangrado, marcas de corte y PDF/X"
+summary: "Un folleto de exposición con 3 mm de sangrado y marcas de corte, exportado a PDF/X-4 sobre FOGRA51 con másteres de impresión y un preflight limpio."
 plain: "Una hoja de sala para una exposición de mapas, lista para la imprenta. Enseña a añadir un margen extra más allá del borde y marcas de corte, y a guardar un PDF en los colores que usan las imprentas."
-description: "Un folleto de exposición de cuatro páginas, compuesto en Postext con 3 mm de sangrado y marcas de corte, en un PDF CMYK con fuentes, marcadores y másteres."
-question: "¿Cómo exporto un PDF para imprenta con sangrado, marcas de corte, CMYK, marcadores y etiquetas de página?"
-aliases: ["PDF listo para imprenta", "sangrado", "sangre", "marcas de corte", "CMYK", "cuatricromía", "máster de impresión", "preimpresión", "folleto de exposición", "hoja de sala", "prueba en escala de grises", "uñero"]
+description: "Un folleto de cuatro páginas compuesto en Postext con 3 mm de sangrado y marcas de corte, en PDF/X-4 sobre FOGRA51 con fuentes, marcadores y másteres."
+question: "¿Cómo exporto un PDF/X con sangrado, marcas de corte, perfil ICC, marcadores y etiquetas de página?"
+aliases: ["PDF listo para imprenta", "sangrado", "sangre", "marcas de corte", "CMYK", "cuatricromía", "máster de impresión", "preimpresión", "folleto de exposición", "hoja de sala", "prueba en escala de grises", "uñero", "PDF/X-4", "FOGRA51", "PSO Coated v3", "condición de salida", "preflight", "negro enriquecido", "sobreimpresión"]
 pageNotes: { "1": "La cubierta, con sus 3 mm de sangrado y las marcas de corte en las esquinas: un mar verde oscuro con islas en verdes escalonados, una ruta naranja discontinua con cuatro paradas que sale del corte hacia el sangrado, el título en Space Grotesk de 50 puntos y, al pie, las fechas y el lugar.", "2": "La primera página interior: la entradilla, las salas 1 y 2 con su antetítulo junto a una parada de la ruta y su ficha, y un uñero naranja con el folio 2 que sale por el borde izquierdo.", "3": "Las salas 3 y 4, que terminan a la misma altura que la página 2, y el uñero con el folio 3 en el borde derecho.", "4": "La contracubierta: la información práctica, el plano de la exposición (figura 1) con el itinerario naranja que sale del vestíbulo y recorre las salas 1 a 4, y una banda de relieve verde a sangre por tres lados con el lugar, las fechas y el colofón." }
 ---
 
 ## Lo que vas a componer
 
-La hoja de sala de *Cartografías imaginarias*, una exposición inventada de mapas de lugares imaginarios, tal como se manda a la imprenta. Cada página, de 170 × 227 mm, va en una hoja 22 mm mayor con el sangrado y las marcas de corte. En la cubierta, una ruta naranja cruza un archipiélago en verdes escalonados y sale del corte hacia el sangrado. Dentro, cuatro salas en Karla en bandera se abren bajo antetítulos con una parada de la ruta, y un uñero naranja lleva el folio en el corte exterior; la contracubierta pone el plano sobre una banda de relieve. El código exporta el PDF de imprenta, en CMYK con fuentes, marcadores y etiquetas de página, y una prueba en grises. En ese PDF, mapas y plano salen de másteres con tintas elegidas a mano; el texto, el uñero y las paradas pasan por la conversión simple.
+La hoja de sala de *Cartografías imaginarias*, una exposición inventada de mapas de lugares imaginarios, tal como se manda a la imprenta. Cada página, de 170 × 227 mm, va en una hoja 22 mm mayor con el sangrado y las marcas de corte. En la cubierta, una ruta naranja cruza un archipiélago en verdes escalonados y sale del corte hacia el sangrado. Dentro, cuatro salas en Karla en bandera se abren bajo antetítulos con una parada de la ruta, y un uñero naranja lleva el folio en el corte exterior; la contracubierta pone el plano sobre una banda de relieve. El código exporta el archivo de imprenta, un PDF/X-4 separado para FOGRA51 (la condición PSO Coated v3 del estucado de 150 g) con fuentes, marcadores y etiquetas de página, y una prueba en grises, y pasa el preflight sobre la maquetación antes de ofrecerlos. En el archivo de imprenta, mapas y plano salen de másteres con tintas elegidas a mano, y el texto, el uñero y las paradas usan esas mismas tintas gracias a una paleta definida en CMYK.
 
 ## Elaboración
 
@@ -18,7 +18,7 @@ La hoja de sala de *Cartografías imaginarias*, una exposición inventada de map
 
 <Excerpt region="palette" />
 
-Con `colorSpace: 'cmyk'`, postext-pdf convierte cada color hexadecimal con una fórmula simple, sin perfil ICC: el negro es 1 menos el canal RGB de valor más alto, y el cian, el magenta y el amarillo salen cada uno de su propio canal y de ese negro. Por eso un gris neutro se imprime solo con la plancha del negro (`#161616` queda en K91) y un color con un canal al máximo se imprime sin negro: el naranja `#ff6626` queda en C0 M60 Y85 K0, igual en el uñero que en las paradas y la ruta. Cuando el verde es el canal más alto, el magenta sale a 0, y el verde del mar queda en C82 M0 Y25 K76, que en una prueba se ve azul petróleo. De ahí que los mapas y el plano salgan de másteres de impresión (paso 5) y que esa mezcla de tres tintas quede solo en el texto pequeño en verde y negrita de los antetítulos, la referencia a la figura y las etiquetas de los pies.
+Con `print: { standard: 'pdfx4', outputProfile: 'fogra51' }` en la configuración, cada color se separa con el perfil FOGRA51 que trae postext. Los grises neutros se imprimen solo con la plancha del negro, con el K elegido para que el tono no cambie: `#161616` queda en K95 y el `#666666` de las cabeceras en K66, y el texto al 100 % de K sobreimprime. El perfil imprimiría el verde como C90 M43 Y71 K62 y el naranja como C0 M70 Y90 K0, un matiz distinto del de la ruta de los másteres (paso 5), así que esos dos, el verde salvia y el color del papel se definen en CMYK: `ColorValue.cmyk` guarda la mezcla, el hexadecimal se queda para la pantalla y todo uso vinculado a la paleta imprime la mezcla tal como está escrita. El color del papel es C0 M0 Y0 K0: el texto calado sobre el verde no lleva tinta, y ninguna plancha puede desplazarlo.
 
 ### 2 · Un uñero que sobrevive a la guillotina
 
@@ -42,7 +42,7 @@ La caja del uñero cuelga del marco del sangrado y mide `BLEED` más que el uñe
 
 <Excerpt region="master" />
 
-Cada dibujo se define una sola vez, como trazados. La región del arte los convierte en el SVG que pinta el lienzo, y esta región escribe los mismos trazados en un PDF CMYK de una página, con mezclas elegidas para que la prueba se parezca a la pantalla; así el mar va en C100 M45 Y80 K55 y no en el C82 M0 Y25 K76 de la conversión simple. Cada recurso nombra su máster en `svg.pdfFileId`, `pressPdf()` (en la respuesta corta) entrega los bytes del máster a `renderToPdf` con el identificador del SVG, y postext-pdf incrusta esa página tal cual, en vectores y con las tintas del máster. Lo hace con el plano, que es una figura, y con el mapa de la cubierta y la banda de la contracubierta, que son imágenes de diseño. La prueba en escala de grises recibe los SVG, porque un máster incrustado nunca se convierte y seguiría en color.
+Cada dibujo se define una sola vez, como trazados. La región del arte los convierte en el SVG que pinta el lienzo, y esta región escribe los mismos trazados en un PDF CMYK de una página, con mezclas elegidas para que la prueba se parezca a la pantalla; así el mar va en C100 M45 Y80 K55, el verde de la paleta. Cada recurso nombra su máster en `svg.pdfFileId`, `pressPdf()` (en la respuesta corta) entrega los bytes del máster a `renderToPdf` con el identificador del SVG, y postext-pdf incrusta esa página tal cual, en vectores y con las tintas del máster. Lo hace con el plano, que es una figura, y con el mapa de la cubierta y la banda de la contracubierta, que son imágenes de diseño. La prueba en escala de grises recibe los SVG, porque un máster incrustado nunca se convierte y seguiría en color.
 
 ## Variantes
 
@@ -57,7 +57,7 @@ El arte, el uñero y la escala gráfica se miden desde `BLEED`, y las marcas de 
 
 ### Imprime el arte desde sus SVG
 
-Sin `pdfFileId`, el PDF de imprenta dibuja cada imagen desde su SVG, también en vectores pero con la conversión simple, y el mar sale en C82 M0 Y25 K76, un azul petróleo.
+Sin `pdfFileId`, el archivo de imprenta dibuja cada imagen desde su SVG, también en vectores y a través del perfil: el verde, definido en CMYK, conserva C100 M45 Y80 K55, pero los demás verdes de las islas toman las separaciones del perfil y no las elegidas a mano.
 
 ```diff
 -  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
@@ -66,7 +66,9 @@ Sin `pdfFileId`, el PDF de imprenta dibuja cada imagen desde su SVG, también en
 
 ## Errores frecuentes
 
-- postext-pdf 1.4.1 escribe cada página con una sola MediaBox, la hoja entera de 192 × 249 mm, sin TrimBox ni BleedBox, e imprime las marcas de corte solo en la plancha del negro. Indica a la imprenta el formato cortado, 170 × 227 mm, o añade las cajas con una herramienta de preimpresión si te pide PDF/X.
-- En 1.4.1, una marca de corte empieza a `markOffset` del corte, no del sangrado, así que con un sangrado mayor que la separación por defecto de 3 mm las marcas se imprimen sobre la ilustración. Mantén la separación igual al sangrado, como hace aquí `cutLines`.
-- `renderToPdf` 1.4.1 no lee `config.pdfGeneration`. `pressPdf()` le pasa el espacio de color como opción, y los marcadores y el etiquetado vienen activados por defecto.
+- Una norma PDF/X escribe siempre CMYK, diga lo que diga `colorSpace`, así que la prueba en grises sustituye `print` por `{ standard: 'none' }` junto a `colorSpace: 'grayscale'`.
+- Un PDF/X no se genera sin su perfil de salida. `renderToPdf` descarga `fogra51.icc` de `profileBaseUrl` (aquí, la carpeta `/icc/` de postext.dev); para servirlo tú, pasa los bytes del archivo como `outputProfile`.
+- El preflight señala el texto de menos de 9 pt que lleva más de una tinta. Las etiquetas de 7,5 pt en negrita y en verde aguantan bien cuatro tintas sobre papel estucado, así que `print.preflight.smallTextSize` es 7 pt; el colofón de 6,3 pt, que en verde salvia serían tres tintas sobre una banda de cuatro, va calado en el color del papel.
+- Un archivo PDF/X no lleva anotaciones de enlace, porque un archivo para imprenta no puede tenerlas dentro de su BleedBox; los marcadores se mantienen.
+- Una marca de corte empieza a `markOffset` del corte, no del sangrado, así que con un sangrado mayor que la separación por defecto de 3 mm las marcas se imprimen sobre la ilustración. Mantén la separación igual al sangrado, como hace aquí `cutLines`.
 - Una vez generado, cada botón se convierte en un enlace «Open the PDF ↗» y otro de descarga, y solo los de descarga llevan el nombre de su archivo.
