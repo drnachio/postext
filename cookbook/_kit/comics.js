@@ -47,8 +47,8 @@ async function loadComicFonts(faces, text = '') {
 }
 
 /** The files of a shipped face ({ url, range }): a CJK face's slices (the
- *  cjk block reads them from its stylesheet), else latin, the latin-ext
- *  and greek files `text` needs, and the arabic file when `text` holds
+ *  cjk block reads them from its stylesheet), else latin, the latin-ext,
+ *  greek and vietnamese files `text` needs, and the arabic file when `text` holds
  *  Arabic. */
 async function comicFaceFiles(family, weight, style, meta, text) {
   if (meta.subsets?.some((subset) => /^(chinese|japanese|korean)/.test(subset))) {
@@ -74,6 +74,7 @@ function comicRange(subset) {
     'latin-ext': 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,'
       + 'U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF',
     greek: 'U+0370-03FF',
+    vietnamese: 'U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB',
   }[subset];
 }
 
