@@ -79,6 +79,8 @@ import {
   stroke,
 } from 'pdf-lib';
 import { type PageCtx, colorFromHex, textShows } from './primitives';
+import { isPrintMode, modeKey } from '../print/colorMode';
+import { applyPrintPass, overprintStateDict } from '../print/printPass';
 import { shapedSvgText } from './shapedText';
 import { complexShaperReady, needsComplexShaping } from '../complexShaping';
 
@@ -1482,6 +1484,14 @@ class FormResources {
     return name;
   }
 
+  /** An ExtGState of the form's own (the print pass's overprint states). */
+  extGState(dict: PDFDict): PDFName {
+    const key = `GSp${Object.keys(this.gsDict).length + 1}`;
+    this.gsDict[key] = dict;
+    this.alphas.set(key, PDFName.of(key));
+    return PDFName.of(key);
+  }
+
   alpha(ca: number, CA: number): PDFOperator | null {
     if (ca >= 1 && CA >= 1) return null;
     const id = `${round(ca)}|${round(CA)}`;
@@ -1515,9 +1525,20 @@ class FormResources {
   }
 }
 
+/** `#rrggbb` with an alpha byte appended (`#rrggbbaa`). */
+function withAlpha(hex: string, alpha: number): string {
+  const byte = Math.round(Math.max(0, Math.min(1, alpha)) * 255).toString(16).padStart(2, '0');
+  return `${hex.slice(0, 7)}${byte}`;
+}
+
 /** The operators that paint `drawing`'s items in its root user space. */
 function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: PageCtx['colorSpace']): PDFOperator[] {
   const ops: PDFOperator[] = [];
+  // PDF/X-1a has no transparency: a translucent paint is set as it would
+  // print over the paper, and no alpha state is written.
+  const flatten = isPrintMode(colorSpace) && colorSpace.flattenTransparency;
+  const paint = (hex: string, alpha: number) => colorFromHex(flatten && alpha < 1 ? withAlpha(hex, alpha) : hex, colorSpace);
+  const alphaState = (ca: number, CA: number) => (flatten ? null : res.alpha(ca, CA));
   for (const shape of drawing.shapes) {
     ops.push(pushGraphicsState());
     for (const c of shape.clips) {
@@ -1538,7 +1559,7 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
       for (const run of shape.runs) {
         const font = run.font.pdfFont;
         if (!font) continue;
-        const gs = res.alpha(run.fill.alpha, 1);
+        const gs = alphaState(run.fill.alpha, 1);
         ops.push(pushGraphicsState());
         if (gs) ops.push(gs);
         // Text matrix: local → root, then undo the root y-flip so glyphs
@@ -1557,7 +1578,7 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
           body.push(show.op);
         }
         ops.push(
-          setFillingColor(colorFromHex(run.fill.hex, colorSpace)),
+          setFillingColor(paint(run.fill.hex, run.fill.alpha)),
           beginText(),
           setFontAndSize(res.font(shows[0]!.font), round(run.size)),
           setTextMatrix(round(a), round(b), round(c), round(d), round(e), round(f)),
@@ -1569,13 +1590,13 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
       ops.push(popGraphicsState());
       continue;
     }
-    const gs = res.alpha(shape.fill?.alpha ?? 1, shape.stroke?.alpha ?? 1);
+    const gs = alphaState(shape.fill?.alpha ?? 1, shape.stroke?.alpha ?? 1);
     if (gs) ops.push(gs);
-    if (shape.fill) ops.push(setFillingColor(colorFromHex(shape.fill.hex, colorSpace)));
+    if (shape.fill) ops.push(setFillingColor(paint(shape.fill.hex, shape.fill.alpha)));
     if (shape.stroke) {
       const st = shape.stroke;
       ops.push(
-        setStrokingColor(colorFromHex(st.hex, colorSpace)),
+        setStrokingColor(paint(st.hex, st.alpha)),
         setLineWidth(round(st.width)),
         setLineCap(st.cap),
         setLineJoin(st.join),
@@ -1617,15 +1638,25 @@ function vectorForm(ctx: PageCtx, drawing: VectorDrawing): VectorForm {
   if (!byDrawing) formsByContext.set(context, (byDrawing = new WeakMap()));
   let bySpace = byDrawing.get(drawing);
   if (!bySpace) byDrawing.set(drawing, (bySpace = new Map()));
-  let form = bySpace.get(ctx.colorSpace);
+  const spaceKey = modeKey(ctx.colorSpace);
+  let form = bySpace.get(spaceKey);
   if (!form) {
     const res = new FormResources(context);
-    const ops = drawingOps(drawing, res, ctx.colorSpace);
+    let ops = drawingOps(drawing, res, ctx.colorSpace);
+    if (isPrintMode(ctx.colorSpace)) {
+      const states = new Map<string, PDFName>();
+      ops = applyPrintPass(ops, ctx.colorSpace, (flags) => {
+        const key = `${flags.fill}|${flags.stroke}`;
+        let name = states.get(key);
+        if (!name) states.set(key, (name = res.extGState(context.obj(overprintStateDict(flags)))));
+        return name;
+      });
+    }
     const [vx, vy, vw, vh] = drawing.viewBox;
     const bbox: [number, number, number, number] = [vx, vy, vx + vw, vy + vh];
     const stream = context.formXObject(ops, { BBox: bbox.map(round), Resources: res.dict() });
     form = { ref: context.register(stream), stream, bbox };
-    bySpace.set(ctx.colorSpace, form);
+    bySpace.set(spaceKey, form);
   }
   return form;
 }
