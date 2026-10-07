@@ -92,7 +92,7 @@ const box = ([x, y, width, height]) => ({ x, y, width, height });
 const who = (id, x, y, head, face) => ({ id, x, y,
   ...(head && { head: { x: head[0], y: head[1] } }), ...(face && { face: box(face) }) });
 const ART = {
-  'lh-arrive': { width: 1100, height: 733, safeArea: box([.2, .2, .42, .64]),
+  'lh-arrive': { width: 1100, height: 733, safeArea: box([.22, .08, .4, .64]),
     alt: t({ en: 'A girl in a yellow raincoat walks up a coastal path towards a red-and-white '
         + 'lighthouse, a fat orange cat trotting ahead; storm clouds gather over the sea.',
       es: 'Una niña con chubasquero amarillo sube por un camino de costa hacia un faro '
@@ -108,7 +108,7 @@ const ART = {
     ],
     avoid: [box([.51, .09, .1, .43])],
   },
-  'lh-radio': { width: 1000, height: 1000, safeArea: box([.02, .36, .56, .56]),
+  'lh-radio': { width: 1000, height: 1000, safeArea: box([.11, .36, .36, .31]),
     alt: t({ en: 'The old keeper, white-bearded in a navy sweater and cap, taps a valve radio '
         + 'in the lamp room, microphone in hand; the great lens glows beside him.',
       es: 'El viejo farero, de barba blanca, jersey azul marino y gorra, golpea una radio '
@@ -123,7 +123,7 @@ const ART = {
     ],
     avoid: [box([0, .44, .22, .26])],
   },
-  'lh-maya': { width: 1100, height: 1100, safeArea: box([.22, .2, .56, .75]),
+  'lh-maya': { width: 1100, height: 1100, safeArea: box([.25, .27, .41, .68]),
     alt: t({ en: 'Close-up of Maya frowning at the floor and pointing down.',
       es: 'Primer plano de Maya, que frunce el ceño mirando al suelo y señala hacia abajo.',
       zh: '玛雅的特写：她皱着眉头看着地板，手指向下指。',
@@ -134,7 +134,7 @@ const ART = {
     ],
     avoid: [box([.27, .73, .25, .22])],
   },
-  'lh-biscuit': { width: 1000, height: 1000, safeArea: box([.38, .26, .56, .59]),
+  'lh-biscuit': { width: 1000, height: 1000, safeArea: box([.58, .25, .42, .33]),
     alt: t({ en: 'Under the desk, the fat orange cat sleeps on his back on top of the black '
         + 'radio cable, squashing it flat.',
       es: 'Bajo la mesa, el gato naranja gordo duerme panza arriba encima del cable negro '
@@ -147,7 +147,7 @@ const ART = {
     ],
     avoid: [box([.93, .28, .07, .24]), box([0, .72, .4, .1])],
   },
-  'lh-beam': { width: 1200, height: 800, safeArea: box([.14, .02, .73, .64]),
+  'lh-beam': { width: 1200, height: 800, safeArea: box([.15, .01, .25, .3]),
     alt: t({ en: 'Night: the lighthouse beam sweeps over a dark sea; Maya and her grandfather '
         + 'stand on the lantern gallery, and far out a fishing boat shows its lights.',
       es: 'De noche, el haz del faro barre un mar oscuro; Maya y su abuelo están en la '
