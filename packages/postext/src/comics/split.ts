@@ -367,11 +367,14 @@ function editsFor(list: ComicSplitList, start: number[], end: number[], touched:
   };
   // 1. Only the touched items that are not stars.
   const candidates: SizeEdit[][] = [];
-  candidates.push(touched.filter((i) => !list.items[i]!.size.star).map(fixedEdit));
-  // 2. Every touched item fixed.
+  const nonStars = touched.filter((i) => !list.items[i]!.size.star).map(fixedEdit);
+  candidates.push(nonStars);
+  // 2. One touched star written out, the other kept.
+  for (const i of touched) if (list.items[i]!.size.star) candidates.push([...nonStars, fixedEdit(i)]);
+  // 3. Every touched item fixed.
   candidates.push(touched.map(fixedEdit));
   for (const edits of candidates) if (linesMatch(list, edits, start, end)) return edits;
-  // 3. Every item fixed.
+  // 4. Every item fixed.
   return list.items.map((_, i) => fixedEdit(i));
 }
 
