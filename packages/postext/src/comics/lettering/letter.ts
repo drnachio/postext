@@ -285,12 +285,14 @@ function samplesOf(body: Body): { rim: Point[]; inside: Point[] } {
   return { rim, inside };
 }
 
-function rotateAbout(p: Point, c: Point, deg: number): Point {
-  if (!deg) return p;
+/** `p` leaned by `skew` degrees (positive: the top forward, as italic)
+ *  and then turned by `deg` degrees clockwise, both about `c`. */
+function rotateAbout(p: Point, c: Point, deg: number, skew = 0): Point {
+  if (!deg && !skew) return p;
   const a = (deg * Math.PI) / 180;
   const cos = Math.cos(a);
   const sin = Math.sin(a);
-  const dx = p.x - c.x;
+  const dx = p.x - c.x - Math.tan((skew * Math.PI) / 180) * (p.y - c.y);
   const dy = p.y - c.y;
   return { x: c.x + dx * cos - dy * sin, y: c.y + dx * sin + dy * cos };
 }
@@ -372,13 +374,16 @@ function buildVariant(group: readonly Piece[], panel: LetteringPanel, shapeIndex
     bodies.push(translateBody(local, shift.x, shift.y));
     shifts.push(shift);
   });
-  const rot = group[0]!.item.kind === 'sfx' ? (group[0]!.item.rotate ?? group[0]!.style.rotate ?? 0) : 0;
+  const sfx = group[0]!.item.kind === 'sfx';
+  const rot = sfx ? (group[0]!.item.rotate ?? group[0]!.style.rotate ?? 0) : 0;
+  // A lean steeper than 60 degrees is not lettering any more.
+  const skew = sfx ? Math.max(-60, Math.min(60, group[0]!.item.skew ?? group[0]!.style.skew ?? 0)) : 0;
   const rim: Point[] = [];
   const inside: Point[] = [];
   for (const b of bodies) {
     const s = samplesOf(b);
-    rim.push(...s.rim.map((q) => rotateAbout(q, b.centre, rot)));
-    inside.push(...s.inside.map((q) => rotateAbout(q, b.centre, rot)));
+    rim.push(...s.rim.map((q) => rotateAbout(q, b.centre, rot, skew)));
+    inside.push(...s.inside.map((q) => rotateAbout(q, b.centre, rot, skew)));
   }
   const bbox = boundsOf(rim);
   // A joined balloon set back against the reading direction, below the
@@ -389,7 +394,7 @@ function buildVariant(group: readonly Piece[], panel: LetteringPanel, shapeIndex
   const worse = group.reduce((sum, p, i) => sum + Math.max(0, p.shapes[shapeIndex[i]!]!.shaped.breakCost - p.shapes[0]!.shaped.breakCost), 0);
   const cost = back + 0.8 * worse;
   return {
-    variant: { bodies, reshaped, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(cost ? { cost } : {}) },
+    variant: { bodies, reshaped, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(skew ? { skew } : {}), ...(cost ? { cost } : {}) },
     meta: { pieces: [...group], shapeIndex, shifts },
   };
 }
@@ -490,6 +495,7 @@ function outputUnit(
       bbox: rectOf(body.bbox.x, body.bbox.y, body.bbox.width, body.bbox.height),
       ...(i === 0 && tailTip ? { tailTip } : {}),
       ...(variant.rotate ? { rotate: variant.rotate } : {}),
+      ...(variant.skew ? { skew: variant.skew } : {}),
       ...(piece.style.halo ? { halo: { width: piece.style.halo, color: piece.style.haloColor ?? '#ffffff' } } : {}),
     };
     return out;

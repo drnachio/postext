@@ -242,7 +242,7 @@ const BALLOON_STYLE_KEYS = {
   id: true, name: true, shape: true, fill: true, stroke: true, strokeWidth: true, dash: true, double: true, wobble: true,
   roundness: true, burstPoints: true, burstDepth: true, padding: true, aspect: true, tail: true, tailWidth: true,
   tailReach: true, target: true, position: true, butt: true, fontFamily: true, fontScale: true, bold: true, italic: true,
-  color: true, textTransform: true, letterSpacing: true, align: true, halo: true, haloColor: true, rotate: true,
+  color: true, textTransform: true, letterSpacing: true, align: true, halo: true, haloColor: true, rotate: true, skew: true,
 } satisfies Record<keyof BalloonStyleConfig, true>;
 const CAST_KEYS = {
   id: true, name: true, balloonStyle: true, color: true, fill: true, fontFamily: true,

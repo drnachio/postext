@@ -2024,6 +2024,11 @@ export interface VDTComicBalloon {
   tailTip?: VDTPoint;
   /** Rotation in degrees about the bbox centre (sound effects). */
   rotate?: number;
+  /** Lean of the letters in degrees about the bbox centre, applied before
+   *  `rotate` (positive: the tops forward, as italic). Painters apply
+   *  `translate(c) · rotate(rotate) · [1 −tan(skew); 0 1] · translate(−c)`
+   *  (`comicBalloonMatrix`). */
+  skew?: number;
   halo?: { width: number; color: string };
 }
 

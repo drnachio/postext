@@ -15,7 +15,8 @@ import {
 import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTComicBalloon, VDTDesignTextBlock, VDTDocument, VDTPage } from 'postext';
 import { renderToPdf } from '../pdf-backend';
-import { comicBalloonGroups, comicBalloonText, rotationMatrix } from '../pdf-backend/comic';
+import { comicBalloonGroups, comicBalloonText, rotationMatrix, sheetMatrixToPdf } from '../pdf-backend/comic';
+import { comicBalloonMatrix } from 'postext';
 
 // Comic pages in the PDF (#564): panels clipped to their outline with the
 // whole picture drawn at its box, mirrored art, borders, balloons painted
@@ -351,6 +352,19 @@ describe('comic pages in the PDF', () => {
     const band = ops.indexOf('3 w', inner);
     expect(band).toBeGreaterThan(inner);
     expect(band).toBeLessThan(dashed);
+  });
+
+  it('maps a sheet matrix to the backend: a plain turn is the rotation matrix, a lean keeps the centre', () => {
+    const bbox = { x: 120, y: 340, width: 60, height: 30 };
+    const H = 800;
+    const r = sheetMatrixToPdf(comicBalloonMatrix({ bbox, rotate: -10 })!, 0.75, H);
+    const ref = rotationMatrix(-10, 150, 355, 0.75, H);
+    r.forEach((v, i) => expect(v).toBeCloseTo(ref[i]!, 9));
+    const s = sheetMatrixToPdf(comicBalloonMatrix({ bbox, rotate: -11, skew: -8 })!, 0.75, H);
+    const cx = 150 * 0.75;
+    const cy = H - 355 * 0.75;
+    expect(s[0] * cx + s[2] * cy + s[4]).toBeCloseTo(cx, 9);
+    expect(s[1] * cx + s[3] * cy + s[5]).toBeCloseTo(cy, 9);
   });
 
   it('turns a sound effect about its centre and puts a halo under its letters', () => {

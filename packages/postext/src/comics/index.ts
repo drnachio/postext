@@ -46,5 +46,6 @@ export {
   comicPanelContinues,
   isComicSpreadPartner,
   joinComicSpread,
+  comicBalloonMatrix,
 } from './paint';
 export type { ComicBalloonKind } from './paint';

@@ -62,6 +62,9 @@ export interface ComicScriptItem {
   /** Sound effects: rotation (degrees), size (a multiple of the lettering
    *  size), colour and face. */
   rotate?: number;
+  /** Sound effects: lean of the letters (degrees, `skew=`), see
+   *  `BalloonStyleConfig.skew`. */
+  skew?: number;
   size?: number;
   color?: string;
   font?: string;

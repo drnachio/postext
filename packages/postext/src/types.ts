@@ -5540,6 +5540,12 @@ export interface BalloonStyleConfig {
   haloColor?: ColorValue;
   /** Rotation in degrees (sound effects). */
   rotate?: number;
+  /** Lean of the letters' upright strokes, degrees (sound effects, text
+   *  written on the art): positive leans them forward like italic, negative
+   *  back. Applied before `rotate`, about the same centre, so a title on a
+   *  book cover seen in perspective follows both the cover's top edge
+   *  (`rotate`) and its sides (`skew`). Default `0`. */
+  skew?: number;
 }
 
 export interface ResolvedBalloonStyleConfig {
@@ -5566,6 +5572,7 @@ export interface ResolvedBalloonStyleConfig {
   fontScale: number;
   align: 'center' | 'start';
   rotate: number;
+  skew: number;
   /** Unset: the lettering's. */
   fontFamily?: string;
   bold?: boolean;

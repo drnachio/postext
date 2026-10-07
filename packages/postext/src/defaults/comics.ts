@@ -156,6 +156,7 @@ const BALLOON_BASE: Omit<ResolvedBalloonStyleConfig, 'id' | 'name'> = {
   fontScale: 1,
   align: 'center',
   rotate: 0,
+  skew: 0,
 };
 
 /** The built-in balloon styles, by kind (sound effects take their face from
@@ -254,6 +255,7 @@ function resolveBalloonStyle(partial: BalloonStyleConfig, locale: string | undef
     fontScale: partial.fontScale ?? b.fontScale,
     align: partial.align ?? b.align,
     rotate: partial.rotate ?? b.rotate,
+    skew: partial.skew ?? b.skew,
   };
   const family = partial.fontFamily ?? sfxFont;
   if (family) out.fontFamily = family;

@@ -226,6 +226,7 @@ describe("package exports", () => {
       "presetLetteringStyles",
       "comicBalloonKind",
       "comicBalloonText",
+      "comicBalloonMatrix",
       "comicSpeakerName",
       "comicBalloonGroups",
       "comicPanelPathData",

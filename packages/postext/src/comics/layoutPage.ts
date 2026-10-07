@@ -313,6 +313,7 @@ export function comicLetteringStyle(input: {
     ...(L.doubleDash ? { doubleDash: true } : {}),
     ...(st.halo ? { halo: dimensionToPx(st.halo, dpi, size), haloColor: st.haloColor?.hex ?? '#ffffff' } : {}),
     ...(st.rotate ? { rotate: st.rotate } : {}),
+    ...(st.skew ? { skew: st.skew } : {}),
   };
   return out;
 }
@@ -557,6 +558,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
         ...(it.join !== undefined ? { join: it.join } : {}),
         ...(it.break ? { breakBorder: true } : {}),
         ...(it.rotate !== undefined ? { rotate: it.rotate } : {}),
+        ...(it.skew !== undefined ? { skew: it.skew } : {}),
         ...(it.size !== undefined && it.size > 0 ? { sizeScale: it.size } : {}),
         ...(it.writingMode ? { writingMode: it.writingMode } : {}),
       };
