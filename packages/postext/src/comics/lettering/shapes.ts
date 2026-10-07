@@ -225,7 +225,7 @@ function burstBody(p: BodyParams): Body {
   const count = p.style.burstPoints && p.style.burstPoints >= 5
     ? Math.round(p.style.burstPoints)
     : Math.max(9, Math.min(26, Math.round(per / (2.1 * p.em))));
-  const depth = p.style.burstDepth ?? 1.1 * p.em;
+  const depth = p.style.burstDepth ?? (p.style.burstDepthRatio ? p.style.burstDepthRatio * (a + b) / 2 : 1.1 * p.em);
   const valleys = resampleClosed(core, count, rnd());
   const pts: Point[] = [];
   for (let i = 0; i < count; i++) {

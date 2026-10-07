@@ -65,8 +65,10 @@ export interface LetteringStyle {
   roundness?: number;
   /** Burst: number of spikes (0 or absent: from the perimeter). */
   burstPoints?: number;
-  /** Burst: spike length, px (absent: 1.1 em). */
+  /** Burst: spike length, px. Absent: `burstDepthRatio` of the body's
+   *  mean radius (the config's unitless `burstDepth`), else 1.1 em. */
   burstDepth?: number;
+  burstDepthRatio?: number;
   /** Air between the text and the outline, px, constant all round. */
   padding: number;
   /** Target width / height of the text block (horizontal text); vertical
