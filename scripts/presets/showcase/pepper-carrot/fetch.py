@@ -6,7 +6,7 @@
 - the episode `info.json`, `README.md` and `hi-res/titles.json`;
 - the text-free art: `hi-res/gfx-only/gfx_…E08Pnn.jpg` for the cover and
   every page (2481x3503), and with `--lossless` the PNG masters;
-- per language (en, ja, es, fr, cn, ca, ar): the Inkscape SVGs
+- per language (en, ja, es, fr, cn, ca, ar, pt): the Inkscape SVGs
   `lang/<xx>/E08Pnn.svg` (layers `speechbubbles` and `txt`), `info.json`
   (translator credits), the transcript `ep08_<xx>_transcript.md` when the
   translator wrote one, the accessibility transcript
