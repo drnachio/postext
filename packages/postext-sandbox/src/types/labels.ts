@@ -358,6 +358,9 @@ export interface SandboxLabels {
   pdfForceColorSpaceTooltip: string;
   pdfColorSpace: string;
   pdfColorSpaceTooltip: string;
+  printCustomRegistryName: string;
+  printCustomRegistryNameTooltip: string;
+  printProfileRemove: string;
   /** Canvas and Folio toolbar switch: show the pages as they will print. */
   printPreview: string;
   printPreviewLoading: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useRef, useState } from 'react';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, X } from 'lucide-react';
 import {
   DEFAULT_CUT_LINES,
   DEFAULT_PRINT_BLACK_CONFIG,
@@ -30,6 +30,7 @@ import {
   NestedGroup,
   NumberInput,
   SelectInput,
+  TextInput,
   ToggleSwitch,
 } from '../../controls';
 import { putBlob } from '../../storage/blobStore';
@@ -115,6 +116,22 @@ export const PrintSection = memo(function PrintSection() {
     }
   };
 
+  // The uploaded profile goes: back to the default condition. Its blob is
+  // left to the project's clean-up, which keeps only referenced files.
+  const removeProfile = () => {
+    const next = { ...raw };
+    delete next.customProfile;
+    if (next.outputProfile === 'custom') delete next.outputProfile;
+    dispatch({ type: 'UPDATE_CONFIG', payload: { print: Object.keys(next).length > 0 ? next : undefined } });
+  };
+  const updateCustom = (registryName: string) => {
+    if (!cfg.customProfile) return;
+    const custom = { ...cfg.customProfile };
+    if (registryName.trim()) custom.registryName = registryName.trim();
+    else delete custom.registryName;
+    update({ customProfile: custom });
+  };
+
   const standardOptions = [
     { value: 'none', label: labels.printStandardNone },
     { value: 'pdfx1a', label: labels.printStandardX1a },
@@ -174,10 +191,10 @@ export const PrintSection = memo(function PrintSection() {
       </CollapsibleSection>
 
       <CollapsibleSection title={labels.printGroupOutput} sectionId="print-output" variant="subsection">
-        <SelectInput label={labels.printStandard} value={cfg.standard} options={standardOptions}
+        <SelectInput stacked label={labels.printStandard} value={cfg.standard} options={standardOptions}
           onChange={(v) => update({ standard: v as PrintConfig['standard'] })} tooltip={labels.printStandardTooltip}
           isDefault={cfg.standard === D.standard} onReset={() => resetField('standard')} />
-        <SelectInput label={labels.printOutputProfile} value={cfg.outputProfile} options={profileOptions}
+        <SelectInput stacked label={labels.printOutputProfile} value={cfg.outputProfile} options={profileOptions}
           onChange={(v) => update({ outputProfile: v })} tooltip={labels.printOutputProfileTooltip}
           isDefault={cfg.outputProfile === D.outputProfile} onReset={() => { resetField('outputProfile'); }} />
         <div className="flex flex-col gap-1">
@@ -202,10 +219,28 @@ export const PrintSection = memo(function PrintSection() {
               e.target.value = '';
             }}
           />
+          {cfg.customProfile && (
+            <button
+              type="button"
+              onClick={removeProfile}
+              className="flex items-center justify-center gap-1.5 rounded border text-xs"
+              style={{ borderColor: 'var(--rule)', color: 'var(--slate)', padding: '6px' }}
+            >
+              <X size={14} aria-hidden="true" />
+              <span>{labels.printProfileRemove}</span>
+            </button>
+          )}
           {uploadError && <span role="alert" className="text-xs" style={{ color: 'var(--destructive)' }}>{uploadError}</span>}
           {setup.error && <span role="alert" className="text-xs" style={{ color: 'var(--destructive)' }}>{fill(labels.printProfileError, { reason: setup.error })}</span>}
         </div>
-        <SelectInput label={labels.printRenderingIntent} value={cfg.renderingIntent} options={intentOptions}
+        {cfg.outputProfile === 'custom' && cfg.customProfile && (
+          <NestedGroup>
+            <TextInput label={labels.printCustomRegistryName} value={cfg.customProfile.registryName ?? ''} onChange={updateCustom}
+              placeholder="Custom" tooltip={labels.printCustomRegistryNameTooltip} isDefault={!cfg.customProfile.registryName}
+              onReset={() => updateCustom('')} />
+          </NestedGroup>
+        )}
+        <SelectInput stacked label={labels.printRenderingIntent} value={cfg.renderingIntent} options={intentOptions}
           onChange={(v) => update({ renderingIntent: v as PrintConfig['renderingIntent'] })} tooltip={labels.printRenderingIntentTooltip}
           isDefault={cfg.renderingIntent === D.renderingIntent} onReset={() => resetField('renderingIntent')} />
         <ToggleSwitch label={labels.printBlackPointCompensation} checked={cfg.blackPointCompensation}
