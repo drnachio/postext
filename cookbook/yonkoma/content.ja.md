@@ -26,6 +26,6 @@ kyaku{tail=top}: ……全員寝てる
 ::panel{art=laptop}
 kyaku: しかたない、仕事するか……
 ::panel{art=keyboard}
-sfx{at="90% 88%" rotate=-10}: ずしっ
+sfx{at="86% 84%" rotate=-10}: ずしっ
 kyaku{shout break}: 仕事できないけど幸せーっ！！
 :::

@@ -26,6 +26,6 @@ kyaku{tail=top}: ……全都睡着了
 ::panel{art=laptop}
 kyaku: 没办法，干活吧……
 ::panel{art=keyboard}
-sfx{at="86% 82%" rotate=-10}: 咚
+sfx{at="70% 80%" rotate=-10}: 咚
 kyaku{shout}: 干不了活，可是好幸福！！
 :::
