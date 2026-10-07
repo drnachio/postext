@@ -123,6 +123,57 @@ describe('tails never cross', () => {
   });
 });
 
+describe('three speakers in a row', () => {
+  // Faces high, little sky: the script order (right, middle, left) is the
+  // reverse of where they stand; no two tails may cross.
+  const CELL = rect(0, 0, 900, 420);
+  const faces = [rect(90, 60, 110, 110), rect(390, 40, 110, 110), rect(690, 50, 110, 110)];
+  const anchors = ['lola', 'paco', 'carmen'].map((id, i) => ({ id, mouth: { x: faces[i]!.x + 55, y: faces[i]!.y + 85 }, face: faces[i]!, visible: true }));
+  const orders: string[][] = [['carmen', 'paco', 'lola'], ['lola', 'carmen', 'paco'], ['paco', 'carmen', 'lola']];
+  for (const order of orders) {
+    it(`never crosses tails (${order.join(' → ')})`, () => {
+      const lines: Record<string, string> = { carmen: 'Come on, with three of us this will take no time.', paco: 'This beret has never carried anything so good.', lola: 'Sorry, Carmen!' };
+      const out = letterPanel(panel(CELL, { anchors }), order.map((sp, k) => item(String(k), k, sp, lines[sp]!)));
+      const tails = out.map(tailOf);
+      for (let i = 0; i < tails.length; i++) {
+        for (let j = i + 1; j < tails.length; j++) expect(segmentsCross(tails[i]![0], tails[i]![1], tails[j]![0], tails[j]![1])).toBe(false);
+      }
+      // (The outline may graze a face's box; the text never covers one.)
+      const inner = (r: Rect): Rect => ({ x: r.x + 0.08 * r.width, y: r.y + 0.08 * r.height, width: 0.84 * r.width, height: 0.84 * r.height });
+      for (const b of out) for (const f of faces) expect(overlap(inner(b.bbox), f)).toBe(false);
+    });
+  }
+});
+
+describe('corner captions and joined pairs', () => {
+  it('moves a corner caption to the other corner when its own holds a face', () => {
+    const CELL = rect(0, 0, 500, 300);
+    const face = rect(380, 0, 110, 120);
+    const [c] = letterPanel(panel(CELL, { direction: 'rtl', locale: 'ar', anchors: [{ id: 'carmen', mouth: { x: 435, y: 100 }, face, visible: true }] }), [
+      { id: 'c', order: 0, kind: 'caption', text: 'In the market.', sourceStart: 0, sourceEnd: 5, style: ar.caption! },
+    ]);
+    expect(overlap(c!.bbox, face)).toBe(false);
+    // The top-end corner of a right-to-left page: the left one.
+    expect(c!.bbox.x).toBeLessThan(10);
+    expect(c!.bbox.y).toBeLessThan(10);
+  });
+
+  it('never sets a joined balloon back against the reading direction', () => {
+    const CELL = rect(0, 0, 260, 520);
+    const k = { id: 'tomas', mouth: { x: 150, y: 470 }, visible: true };
+    const out = letterPanel(panel(CELL, { anchors: [k] }), [
+      item('a', 0, 'tomas', 'Just in time. The radio is gone deaf,'),
+      item('b', 1, 'tomas', 'and there is a storm on the way.'),
+    ]);
+    expect(out[0]!.group).toBe(out[1]!.group);
+    // The second reads after the first: below it, not up and to its left.
+    const a = out[0]!.bbox;
+    const b = out[1]!.bbox;
+    expect(b.y + b.height / 2).toBeGreaterThan(a.y + a.height / 2);
+    expect(b.x + b.width / 2).toBeGreaterThanOrEqual(a.x + a.width / 2 - 0.5 * a.width);
+  });
+});
+
 describe('heads and hats kept clear', () => {
   it('keeps balloons off the region a guard marks above a face (hat, hair)', () => {
     // The layout passes a face grown upward as an avoid zone (see

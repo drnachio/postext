@@ -196,11 +196,13 @@ export function prepareText(read: PreparedText, style: LetteringStyle, opts: Pre
   if (lang === 'zh') p = replaceAll(p, /…+/g, (m) => (m.length % 2 === 1 ? `${m}…` : m));
   if (style.doubleDash) p = replaceAll(p, /—/g, '--');
   // Columns of Japanese or Chinese: ASCII `!` and `?` stand upright as
-  // their full-width forms (a pair in one cell, `!?` → `⁉`), as a
-  // vertical setter writes them; turned sideways they read as dashes.
+  // their full-width forms, as a vertical setter writes them (turned
+  // sideways they read as dashes). A Japanese pair (`!?`, `!!`) is left
+  // as it is: the vertical layout sets it upright in one cell (JLReq
+  // 3.1.10) with the face's own glyphs (comic faces often lack ⁉ ‼).
   if (opts.vertical && (lang === 'ja' || lang === 'zh')) {
-    const pairs: Record<string, string> = { '!!': '‼', '??': '⁇', '?!': '⁈', '!?': '⁉' };
-    p = replaceAll(p, /[!?]{1,2}/g, (m) => pairs[m] ?? (m === '!' ? '！' : '？'));
+    const full = (c: string) => (c === '!' ? '！' : '？');
+    p = replaceAll(p, /[!?]+/g, (m) => (lang === 'ja' && m.length === 2 ? m : [...m].map(full).join('')));
   }
   const dropStop = style.dropFinalStop ?? dropsFinalStopByDefault(opts.locale);
   if (dropStop) {

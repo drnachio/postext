@@ -32,6 +32,9 @@ export interface UnitVariant {
   rim: Point[];
   /** Rotation of a sound effect, degrees (its box is the rotated one). */
   rotate?: number;
+  /** What the arrangement costs as it reads (a joined balloon set back,
+   *  against the reading direction, reads out of order). */
+  cost?: number;
 }
 
 /** Where a unit's tail aims, as placement sees it. */
@@ -73,7 +76,7 @@ const W = {
   balloon: 60,
   outside: 120,
   order: 1.2,
-  orderBase: 2,
+  orderBase: 5,
   distance: 0.7,
   far: 0.18,
   below: 0.3,
@@ -222,6 +225,7 @@ function evaluate(
     soft += x;
     if (terms) terms[k] = (terms[k] ?? 0) + x;
   };
+  if (v.cost) S('arrangement', v.cost);
   const H = (k: string, x: number) => {
     hard += x;
     if (terms) terms[`!${k}`] = (terms[`!${k}`] ?? 0) + x;
@@ -263,22 +267,29 @@ function evaluate(
   let out = 0;
   let farOut = 0;
   let intrude = 0;
+  let offPage = 0;
   // A butted caption sits flush with the border itself.
   const area0 = unit.butt && unit.position ? scene.buttPoly : scene.visible;
   for (const p of rim) {
     if (!pointInConvex(p, area0) && !(unit.butt && unit.position && dist(nearestOnPolygon(p, area0), p) < 1)) {
       out++;
       if (!pointInRect(p, scene.outer)) farOut++;
-      if (scene.neighbours.some((r) => pointInRect(p, r)) || (scene.limit && !pointInRect(p, scene.limit))) intrude++;
+      if (scene.limit && !pointInRect(p, scene.limit)) offPage++;
+      else if (scene.neighbours.some((r) => pointInRect(p, r))) intrude++;
     }
   }
-  // Into another panel (over its art and its own lettering) or off the
-  // live area of the page: the worst ways out.
-  if (intrude > 0) {
-    H('neighbour', (12 * W.outside * intrude) / rim.length + 200);
+  // Off the live area of the page, or into another panel (over its art
+  // and its own lettering): the worst ways out. A sound effect its author
+  // placed (`at=`) may run over the border and into the next panel, as
+  // drawn sound does; never off the page.
+  const drawnSound = unit.kind === 'sfx' && unit.pin !== undefined;
+  if (offPage > 0 || (intrude > 0 && !drawnSound)) {
+    H('neighbour', (12 * W.outside * (offPage + (drawnSound ? 0 : intrude))) / rim.length + 200);
     reasons.add('outside');
-  }
-  if (unit.kind !== 'sfx' || out > 0) {
+  } else if (intrude > 0) S('neighbour', 4 + (8 * intrude) / rim.length);
+  if (drawnSound) {
+    if (out > 0) S('breakBorder', (3 * out) / rim.length);
+  } else if (unit.kind !== 'sfx' || out > 0) {
     if (level.breakBorder && unit.breakBorder) {
       if (farOut > 0) {
         H('outside', (W.outside * farOut) / rim.length + 10);
@@ -327,7 +338,7 @@ function evaluate(
       // (unless they run to one speaker).
       const gapTails = segmentDistance(mine[0], mine[1], theirs[0], theirs[1]);
       if (gapTails === 0) S('cross', W.cross);
-      else if (gapTails < 0.6 * em && dist(target!, otarget!) > em) S('cross', 0.6 * W.cross);
+      else if (gapTails < 0.6 * em && dist(target!, otarget!) > em) S('cross', 0.4 * W.cross);
     }
     if (mine && ov.bodies.some((b) => segmentHitsRect(mine[0], mine[1], shrink(movedRect(b.bbox, o.at), 0.12)))) S('tailThrough', W.tailThrough);
     if (theirs && v.bodies.some((b) => segmentHitsRect(theirs[0], theirs[1], shrink(movedRect(b.bbox, at), 0.12)))) S('tailThrough', W.tailThrough);
@@ -491,6 +502,20 @@ export function positionAnchor(scene: Pick<Scene, 'visible' | 'panel' | 'fwd' | 
   return p;
 }
 
+/** A corner or edge unit's anchors: its own corner first, then — a cost
+ *  each, so taken only when its own covers a face, an avoid zone or a
+ *  balloon — the other corner of that edge, the middle of it, and the
+ *  corners of the opposite edge. */
+function positionAnchors(scene: Scene, v: UnitVariant, position: LetteringPosition, butt: boolean): { at: Point; extra: number }[] {
+  const top = position.startsWith('top');
+  const across: LetteringPosition = position.endsWith('start') ? (top ? 'top-end' : 'bottom-end') : position.endsWith('end') ? (top ? 'top-start' : 'bottom-start') : (top ? 'top-start' : 'bottom-start');
+  const middle: LetteringPosition = top ? 'top' : 'bottom';
+  const flip = (q: LetteringPosition): LetteringPosition => (q.startsWith('top') ? q.replace('top', 'bottom') : q.replace('bottom', 'top')) as LetteringPosition;
+  const list: [LetteringPosition, number][] = [[position, 0], [across, 2], [middle, 3], [flip(position), 5], [flip(across), 6]];
+  const seen = new Set<LetteringPosition>();
+  return list.filter(([q]) => (seen.has(q) ? false : (seen.add(q), true))).map(([q, extra]) => ({ at: positionAnchor(scene, v, q, butt), extra }));
+}
+
 const LEVELS: Level[] = [
   { breakBorder: false, coverAvoid: false },
   { breakBorder: true, coverAvoid: false },
@@ -514,27 +539,38 @@ function better(a: Eval, b: Eval): boolean {
 function bestFor(scene: Scene, unit: PlaceUnit, others: readonly Placed[], firstOrder: number, fixed?: { variant: number; level: number }): Choice {
   let fallback: Choice | undefined;
   const variants = fixed ? [fixed.variant] : unit.variants.map((_, i) => i);
-  for (const vi of variants) {
-    const levels = fixed ? [fixed.level] : LEVELS.map((_, i) => i).filter((i) => i === 0 || unit.breakBorder || i === 2);
-    for (const li of levels) {
-      const level = LEVELS[li]!;
-      let best: Choice | undefined;
-      const cands = unit.pin
-        ? pinAnchors(scene, unit, vi)
+  const levels = fixed ? [fixed.level] : LEVELS.map((_, i) => i).filter((i) => i === 0 || unit.breakBorder || i === 2);
+  // Every arrangement of a joined group competes on its cost; a reshaped
+  // text block (wider or narrower than its best shape) pays a little for
+  // its poorer shape, and is tried before covering an avoid zone (a
+  // letterer reshapes the text before covering a hand).
+  const penalty = (vi: number) => (unit.variants[vi]!.reshaped ? RESHAPE_COST : 0);
+  for (const li of levels) {
+    const level = LEVELS[li]!;
+    let best: (Choice & { score: number }) | undefined;
+    for (const vi of variants) {
+      const cands: { at: Point; extra: number }[] = unit.pin
+        // (The pin as written wins unless it runs out of the panel.)
+        ? pinAnchors(scene, unit, vi).map((at, i) => ({ at, extra: i === 0 ? 0 : 4 }))
         : unit.position
-          ? [positionAnchor(scene, unit.variants[vi]!, unit.position, unit.butt === true)]
-          : candidates(scene, unit, vi);
-      for (const at of cands) {
+          ? positionAnchors(scene, unit.variants[vi]!, unit.position, unit.butt === true)
+          : candidates(scene, unit, vi).map((at) => ({ at, extra: 0 }));
+      for (const { at, extra } of cands) {
         const ev = evaluate(scene, unit, vi, at, others, level, firstOrder);
-        if (!best || better(ev, best.ev)) best = { variant: vi, level: li, at, ev };
+        const score = ev.hard * 1000 + ev.soft + penalty(vi) + extra;
+        if (!best || score < best.score - 1e-9) best = { variant: vi, level: li, at, ev, score };
       }
-      if (!best) continue;
-      if (best.ev.hard === 0) return best;
-      if (!fallback || better(best.ev, fallback.ev)) fallback = best;
     }
+    if (!best) continue;
+    const choice: Choice = { variant: best.variant, level: best.level, at: best.at, ev: best.ev };
+    if (choice.ev.hard === 0) return choice;
+    if (!fallback || better(choice.ev, fallback.ev)) fallback = choice;
   }
   return fallback!;
 }
+
+/** What choosing a reshaped text block costs (its poorer shape). */
+const RESHAPE_COST = 1.5;
 
 /** A pinned unit's anchors: on its pin, and moved the least that keeps
  *  its box inside the panel (a pinned label too long for the room left
@@ -570,7 +606,11 @@ export interface PlacementResult {
 type Layout = (Placed & { level: number; ev: Eval })[];
 
 /** Greedy placement in reading order, then local improvement passes. */
-function solve(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, passes: number, bigFirst = false): Layout {
+/** The order units are first placed in: the reading order, the biggest
+ *  first, or by where their speakers stand (from the start side). */
+type Sequence = 'reading' | 'big' | 'speaker';
+
+function solve(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, passes: number, mode: Sequence = 'reading'): Layout {
   const placed: Layout = [];
   // Corner and edge captions first, then pinned units, then the rest in
   // reading order (or the biggest first: in a crowded panel the balloon
@@ -579,7 +619,10 @@ function solve(scene: Scene, ordered: readonly PlaceUnit[], firstOrder: number, 
   // takes the room it needs first, the sound fills what is left.
   const rank = (u: PlaceUnit) => (u.position ? 0 : u.pin ? 1 : u.kind === 'sfx' && !u.near ? 3 : 2);
   const size = (u: PlaceUnit) => u.variants[0]!.bbox.width * u.variants[0]!.bbox.height;
-  const sequence = [...ordered].sort((a, b) => rank(a) - rank(b) || (bigFirst ? size(b) - size(a) : 0) || a.order - b.order);
+  const standing = (u: PlaceUnit) => (u.target.kind === 'point' ? scene.fwd * u.target.point.x : Number.POSITIVE_INFINITY);
+  const sequence = [...ordered].sort((a, b) => rank(a) - rank(b)
+    || (mode === 'big' ? size(b) - size(a) : mode === 'speaker' ? standing(a) - standing(b) : 0)
+    || a.order - b.order);
   for (const unit of sequence) {
     const c = bestFor(scene, unit, placed, firstOrder);
     placed.push({ unit, variant: c.variant, at: c.at, level: c.level, ev: c.ev });
@@ -705,6 +748,24 @@ export function uncrossTails(panel: LetteringPanel, placed: readonly Placed[]): 
   return layout.map(({ ev: _ev, level: _level, ...rest }) => rest);
 }
 
+/** How many pairs of tails of a layout cross (or all but touch). */
+function crossings(scene: Scene, placed: Layout): number {
+  let n = 0;
+  for (let i = 0; i < placed.length; i++) {
+    for (let j = i + 1; j < placed.length; j++) {
+      const a = placed[i]!;
+      const b = placed[j]!;
+      const ta = tailTargetOf(a.unit, scene, a.at);
+      const tb = tailTargetOf(b.unit, scene, b.at);
+      if (!ta || !tb || dist(ta, tb) <= Math.min(a.unit.em, b.unit.em)) continue;
+      const sa = tailSegment(a.unit, a.unit.variants[a.variant]!, a.at, ta);
+      const sb = tailSegment(b.unit, b.unit.variants[b.variant]!, b.at, tb);
+      if (segmentDistance(sa[0], sa[1], sb[0], sb[1]) < 0.6 * Math.min(a.unit.em, b.unit.em)) n++;
+    }
+  }
+  return n;
+}
+
 /** The whole layout's cost under the plain weights (hard faults first). */
 function totalCost(scene: Scene, placed: Layout, firstOrder: number): number {
   let hard = 0;
@@ -731,9 +792,9 @@ export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], p
   const firstOrder = ordered.find((u) => u.kind !== 'sfx' && u.kind !== 'note')?.order ?? Number.NaN;
   let placed: Layout | undefined;
   let bestCost = Number.POSITIVE_INFINITY;
-  const tries = (bigFirst: boolean) => {
+  const tries = (mode: Sequence) => {
     for (const bias of HEIGHT_BIASES) {
-      let run = solve({ ...scene, heightBias: bias }, ordered, firstOrder, passes, bigFirst);
+      let run = solve({ ...scene, heightBias: bias }, ordered, firstOrder, passes, mode);
       // Settle under the plain weights.
       if (bias !== 1) run = solveFrom(scene, run, firstOrder, passes);
       const cost = totalCost(scene, run, firstOrder);
@@ -743,11 +804,15 @@ export function placeUnits(panel: LetteringPanel, units: readonly PlaceUnit[], p
       }
     }
   };
-  tries(false);
+  tries('reading');
   // A layout with a fault left (a balloon out of the panel, over a face or
   // another balloon): the greedy order may have boxed the last balloons
   // in; try again placing the biggest first.
-  if (bestCost >= 1000 && ordered.length > 1) tries(true);
+  if (bestCost >= 1000 && ordered.length > 1) tries('big');
+  // Tails still crossing (speakers standing in the order opposite to the
+  // one they speak in): try again from where the speakers stand, each
+  // balloon by its own speaker first.
+  if (ordered.length > 1 && crossings(scene, placed!) > 0) tries('speaker');
   const final: Layout = placed!;
   const diagnostics: LetteringDiagnostic[] = [];
   for (let i = 0; i < final.length; i++) {

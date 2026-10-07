@@ -10,12 +10,17 @@ const prep = (text: string | InlineSpan[], locale: string, extra: Record<string,
 const span = (text: string, bold = false, italic = false, more: Partial<InlineSpan> = {}): InlineSpan => ({ text, bold, italic, ...more });
 
 describe('lettering text: house rules (SPEC D3.1)', () => {
-  it('stands ASCII ! and ? upright in Japanese columns (a pair in one cell), not in rows', () => {
+  it('stands ASCII ! and ? upright in Japanese columns (a pair left to the one-cell rule), not in rows', () => {
     const v = (t: string) => prepareText(readLetteringText(t, [...t].map((_, i) => 100 + i)), styleFor('ja'), { locale: 'ja', vertical: true });
     const col = v('キャロット!? 本当!');
-    expect(col.text).toBe('キャロット⁉ 本当！');
+    // The pair stays ASCII: the vertical layout sets it in one cell with
+    // the face's own glyphs (comic faces lack ⁉ ‼).
+    expect(col.text).toBe('キャロット!? 本当！');
     expect(col.source[5]).toBe(105);
-    expect(col.source[6]).toBe(107);
+    expect(col.source[6]).toBe(106);
+    expect(v('メン!!!').text).toBe('メン！！！');
+    // Chinese columns set every mark full width.
+    expect(prepareText(readLetteringText('真的!?', undefined), styleFor('ja'), { locale: 'zh', vertical: true }).text).toBe('真的！？');
     expect(prepareText(readLetteringText('本当!', undefined), styleFor('ja'), { locale: 'ja', vertical: false }).text).toBe('本当!');
     expect(prepareText(readLetteringText('Really!?', undefined), styleFor('en'), { locale: 'en', vertical: true }).text).toBe('REALLY!?');
   });

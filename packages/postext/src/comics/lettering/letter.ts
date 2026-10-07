@@ -265,7 +265,11 @@ function unitVariants(group: readonly Piece[], panel: LetteringPanel): { variant
         inside.push(...s.inside.map((q) => rotateAbout(q, b.centre, rot)));
       }
       const bbox = boundsOf(rim);
-      variants.push({ bodies, reshaped: k > 0, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}) });
+      // A joined balloon set back against the reading direction reads out
+      // of order: beside it, a fault the order alone would not see; below
+      // it, a slight one.
+      const back = group.length > 1 && !vertical && arr.lean < 0 ? (arr.side ? 6 : 0.8) : 0;
+      variants.push({ bodies, reshaped: k > 0, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(back ? { cost: back } : {}) });
       meta.push({ pieces: [...group], shapeIndex, shifts });
     }
   }
