@@ -521,11 +521,12 @@ export function createBookPlanner(): BookPlanner {
 }
 
 /** Pages at the start of `doc` holding no block: the parity padding
- *  before a chapter opener. */
+ *  before a chapter opener. A comic page (`page.comic`) holds no block but
+ *  is content: a chapter of comic pages starts on its first one. */
 export function leadingBlankPageCount(doc: VDTDocument): number {
   const pageCount = doc.pages.length;
   let n = 0;
-  while (n < pageCount && !doc.blocks.some((b) => b.pageIndex === n)) n++;
+  while (n < pageCount && !doc.pages[n]!.comic && !doc.blocks.some((b) => b.pageIndex === n)) n++;
   return n;
 }
 

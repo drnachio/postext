@@ -400,6 +400,15 @@ describe('chapterLayoutFromDoc', () => {
     expect(restarted).toMatchObject({ leadingBlankPages: 1, firstContentPageNumber: { value: 1 }, firstContentPageFormat: 'decimal', lastPageNumber: { value: 2 } });
   });
 
+  it('counts comic pages as content: a chapter of comic pages has no leading blank', () => {
+    // A parity blank, then two comic pages (no blocks: the panels and the
+    // balloons live on `page.comic`).
+    const comic = doc([{ value: 2 }, { value: 3 }, { value: 4 }], []);
+    (comic.pages[1] as { comic?: unknown }).comic = { panels: [] };
+    (comic.pages[2] as { comic?: unknown }).comic = { panels: [] };
+    expect(chapterLayoutFromDoc(comic, plan(true), inputs)).toMatchObject({ pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 } });
+  });
+
   it('records nothing for an unpaginated plan or an empty document', () => {
     expect(chapterLayoutFromDoc(doc([{ value: 1 }], [0]), plan(false), inputs)).toBeNull();
     expect(chapterLayoutFromDoc(doc([], []), plan(true), inputs)).toBeNull();
