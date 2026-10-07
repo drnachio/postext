@@ -403,13 +403,14 @@ function headZones(panel: VDTComicPanel, resource: Resource | undefined): (Bound
 /** The body under every marked face (a figure's chest and arms, two
  *  hugging characters), as a region better left uncovered: a balloon goes
  *  over the background before it goes over the action. A cost per area,
- *  never a fault. */
-function bodyZones(panel: VDTComicPanel, resource: Resource | undefined): (BoundingBox & { weight: number })[] {
+ *  never a fault; each zone names its figure (`owner`), so that a balloon
+ *  costs more over another character than over its own speaker. */
+function bodyZones(panel: VDTComicPanel, resource: Resource | undefined): (BoundingBox & { weight: number; owner: string })[] {
   const art = panel.art;
   if (!art || !resource?.anchors) return [];
   return resource.anchors.filter((a) => a.id !== 'sfx' && a.face).map((a) => {
     const f = comicArtRectToPage(art, a.face!);
-    return { x: f.x - 0.3 * f.width, y: f.y + f.height, width: 1.6 * f.width, height: 2 * f.height, weight: 1.5 };
+    return { x: f.x - 0.3 * f.width, y: f.y + f.height, width: 1.6 * f.width, height: 2 * f.height, weight: 1.5, owner: a.id };
   });
 }
 
@@ -520,7 +521,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
       anchors: panelAnchors(panel, resource),
       avoid: [
         ...(panel.art ? (resource?.avoid ?? []).map((r) => comicArtRectToPage(panel.art!, r)) : []),
-        ...headGuards(panel, resource, dimensionToPx(L.fontSize, dpi)),
+        ...headGuards(panel, resource, dimensionToPx(L.fontSize, dpi)).map((g) => ({ ...g, guard: true })),
       ],
       keepOut: (input.avoid ?? []).filter((r) => overlaps(r, insetBox2(panel.bbox, -2 * insetPx))),
       softAvoid: [...softSafeArea(panel, resource), ...headZones(panel, resource), ...bodyZones(panel, resource)],

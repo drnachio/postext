@@ -24,7 +24,12 @@ interface Piece {
   style: LetteringStyle;
   prepared: PreparedText;
   shapes: { shaped: ShapedText; body: Body; reshaped: boolean }[];
+  /** How many of `shapes` the first search uses (the rest are spares,
+   *  added when the panel cannot be lettered cleanly with those). */
+  main: number;
   vertical: boolean;
+  /** The options it was shaped with. */
+  opts: ShapeOptions;
   /** How it joins the piece before it in its group. */
   joinPrev?: 'butt' | 'connector';
 }
@@ -69,10 +74,26 @@ export function letterPanelDetailed(panel: LetteringPanel, items: readonly Lette
       sourceStart: first.item.sourceStart,
       sourceEnd: group[group.length - 1]!.item.sourceEnd,
       ...(first.item.kind === 'sfx' ? sfxNear(panel) : {}),
+      ...(first.item.speaker ? { speaker: first.item.speaker } : {}),
       em: first.style.fontSizePx,
     };
   });
-  const { placed, diagnostics } = placeUnits(panel, units, env.passes ?? 3);
+  // A panel the first search cannot letter cleanly is searched again with
+  // spare shapes: shorter lines (more, shorter columns) for each balloon,
+  // and joined groups stacked straight with every balloon fitted to the
+  // panel's room alike.
+  const extend = (): boolean => {
+    let added = false;
+    groups.forEach((group, gi) => {
+      const extra = spareVariants(group, panel);
+      if (extra.variants.length === 0) return;
+      units[gi]!.variants.push(...extra.variants);
+      metas.get(group[0]!.item.id)!.push(...extra.meta);
+      added = true;
+    });
+    return added;
+  };
+  const { placed, diagnostics } = placeUnits(panel, units, env.passes ?? 3, extend);
   const balloons: ComicBalloonOut[] = [];
   placed.forEach((p, gi) => {
     const meta = metas.get(p.unit.id)![p.variant]!;
@@ -154,7 +175,71 @@ function pieceOf(panel: LetteringPanel, item: LetteringItem, env: LetteringEnv):
     const target = style.aspect ?? (vertical ? 1.3 : 1.8);
     for (const k of [3, 5]) add1(shapeTextCandidates(prepared, style, { ...opts, aspect: target * k }, 1)[0]!, true);
   }
-  return { item, style, prepared, shapes, vertical };
+  return { item, style, prepared, shapes, main: shapes.length, vertical, opts };
+}
+
+/** Fractions of a balloon's own length its spare shapes keep (more,
+ *  shorter lines or columns: a short line in a close-up, set as two
+ *  columns over the hair rather than one over the face). */
+const SPARE_LENGTHS = [0.7, 0.5, 0.36];
+/** Fractions of the panel's room the balloons of a joined group are
+ *  fitted to alike in its spare variants (a narrow cell). */
+const SPARE_ROOM = [0.82, 0.7, 0.6, 0.45];
+
+/** Spare shape of `p` no longer than `maxLength` px along its lines
+ *  (appended to its shapes, deduplicated); its index, or undefined when it
+ *  sets the text as one of the shapes it has. */
+function spareShape(p: Piece, maxLength: number): number | undefined {
+  if (maxLength <= p.style.fontSizePx) return undefined;
+  const s = shapeTextCandidates(p.prepared, p.style, { ...p.opts, maxLength }, 1)[0]!;
+  const k = s.lines.map((l) => `${l.start}-${l.end}`).join(',');
+  const same = p.shapes.findIndex((x) => x.shaped.lines.map((l) => `${l.start}-${l.end}`).join(',') === k);
+  if (same >= 0) return same;
+  p.shapes.push({ shaped: s, body: buildBody(s.ink, p.style.fontSizePx, p.style, p.item.id), reshaped: true });
+  return p.shapes.length - 1;
+}
+
+/** The spare variants of a unit (see `extend` in {@link letterPanelDetailed}):
+ *  a single balloon in shorter lines; a joined group with every balloon
+ *  fitted to the same share of the room, stacked straight (columns side by
+ *  side). Empty for sound effects and units that have them already. */
+function spareVariants(group: Piece[], panel: LetteringPanel): { variants: UnitVariant[]; meta: VariantMeta[] } {
+  const first = group[0]!;
+  if (first.item.kind === 'sfx' || group.some((p) => p.shapes.length > p.main)) return { variants: [], meta: [] };
+  const vertical = first.vertical;
+  const along = (b: Body) => (vertical ? b.bbox.height : b.bbox.width);
+  const sets: number[][] = [];
+  const seen = new Set<string>();
+  const add = (set: (number | undefined)[]) => {
+    const full = set.map((k) => k ?? 0);
+    const key = full.join(',');
+    // (A single balloon in a shape it has already is no spare.)
+    if ((group.length === 1 && full[0]! < first.main) || seen.has(key)) return;
+    seen.add(key);
+    sets.push(full);
+  };
+  if (group.length === 1) {
+    const own = along(first.shapes[0]!.body) - 2 * first.style.padding;
+    for (const f of SPARE_LENGTHS) add([spareShape(first, f * own)]);
+  } else {
+    const vis = boundsOf(insetConvex(panel.polygon, panel.insetPx));
+    const room = vertical ? vis.height : vis.width;
+    for (const f of SPARE_ROOM) {
+      add(group.map((p) => (along(p.shapes[0]!.body) > f * room ? spareShape(p, f * room - 2 * p.style.padding) : 0)));
+    }
+  }
+  const arrangements: Arrangement[] = group.length === 1 ? [{ side: false, lean: 0 }]
+    : vertical ? [{ side: true, lean: 0.18 }, { side: false, lean: 0 }] : [{ side: false, lean: 0 }, { side: false, lean: 0.12 }];
+  const variants: UnitVariant[] = [];
+  const meta: VariantMeta[] = [];
+  for (const set of sets) {
+    for (const arr of arrangements) {
+      const built = buildVariant(group, panel, set, arr, true);
+      variants.push(built.variant);
+      meta.push(built.meta);
+    }
+  }
+  return { variants, meta };
 }
 
 /** Consecutive balloons of one speaker and one style, joined (butted or
@@ -210,88 +295,103 @@ function rotateAbout(p: Point, c: Point, deg: number): Point {
   return { x: c.x + dx * cos - dy * sin, y: c.y + dx * sin + dy * cos };
 }
 
+/** How the bodies of a joined group sit: the next one below the one
+ *  before (`side: false`) or beside it, leaning forward (`lean` > 0), straight
+ *  or back. */
+type Arrangement = { side: boolean; lean: number };
+
 /** The variants a unit can be placed as: each shape of its pieces, and
  *  for a joined group each arrangement of its bodies. */
 function unitVariants(group: readonly Piece[], panel: LetteringPanel): { variants: UnitVariant[]; meta: VariantMeta[] } {
   const variants: UnitVariant[] = [];
   const meta: VariantMeta[] = [];
-  const shapeCount = Math.max(...group.map((p) => p.shapes.length));
-  const fwd = panel.direction === 'rtl' ? -1 : 1;
+  const shapeCount = Math.max(...group.map((p) => p.main));
   const vertical = group[0]!.vertical;
   // Arrangements of a joined group: the next body below the one before
-  // (horizontal text: leaning forward, straight, back) or beside it
-  // (forward, back, a little lower); columns go beside first (forward is
-  // to the left), then below. The placement keeps the one whose tail runs
-  // clear and that fits the panel.
-  type Arrangement = { side: boolean; lean: number };
+  // (horizontal text: leaning forward, straight, back) or beside it,
+  // forward and a little lower; columns go beside first (forward is to
+  // the left), then below. Never beside it against the reading direction:
+  // the eye would read the second first (a narrow cell stacks the group
+  // and lets it run out rather than set it back). The placement keeps the
+  // one whose tail runs clear and that fits the panel.
   const arrangements: Arrangement[] = group.length === 1 ? [{ side: false, lean: 0 }]
     : vertical
       ? [{ side: true, lean: 0.18 }, { side: true, lean: 0.45 }, { side: true, lean: -0.1 }, { side: false, lean: 0 }]
-      : [{ side: false, lean: 0.28 }, { side: false, lean: 0 }, { side: false, lean: -0.28 }, { side: true, lean: 1 }, { side: true, lean: -1 }];
+      : [{ side: false, lean: 0.28 }, { side: false, lean: 0 }, { side: false, lean: -0.28 }, { side: true, lean: 1 }];
   for (let k = 0; k < shapeCount; k++) {
     for (const arr of arrangements) {
-      const shapeIndex = group.map((p) => Math.min(k, p.shapes.length - 1));
-      const bodies: Body[] = [];
-      const shifts: Point[] = [];
-      group.forEach((p, i) => {
-        const local = p.shapes[shapeIndex[i]!]!.body;
-        let shift: Point;
-        if (i === 0) shift = { x: -local.centre.x, y: -local.centre.y };
-        else {
-          const prev = bodies[i - 1]!;
-          const join = p.joinPrev ?? 'butt';
-          const em = p.style.fontSizePx;
-          const pw = prev.bbox.width;
-          const ph = prev.bbox.height;
-          const w = local.bbox.width;
-          const h = local.bbox.height;
-          let cx: number;
-          let cy: number;
-          if (!vertical && !arr.side) {
-            const overlap = join === 'butt' ? 0.2 * Math.min(ph, h) : -0.9 * em;
-            cy = prev.bbox.y + ph - overlap + h / 2;
-            cx = prev.centre.x + fwd * arr.lean * Math.min(pw, w) * 1.4;
-          } else if (!vertical) {
-            const overlap = join === 'butt' ? 0.2 * Math.min(pw, w) : -0.9 * em;
-            cx = prev.centre.x + fwd * arr.lean * (pw / 2 + w / 2 - overlap);
-            cy = prev.centre.y + 0.45 * Math.min(ph, h);
-          } else if (arr.side) {
-            const overlap = join === 'butt' ? 0.2 * Math.min(pw, w) : -0.9 * em;
-            // Columns read right to left: the next body to the left.
-            cx = prev.bbox.x + overlap - w / 2;
-            cy = prev.centre.y + arr.lean * Math.min(ph, h);
-          } else {
-            const overlap = join === 'butt' ? 0.2 * Math.min(ph, h) : -0.9 * em;
-            cy = prev.bbox.y + ph - overlap + h / 2;
-            cx = prev.centre.x;
-          }
-          shift = { x: cx - local.centre.x, y: cy - local.centre.y };
-        }
-        bodies.push(translateBody(local, shift.x, shift.y));
-        shifts.push(shift);
-      });
-      const rot = group[0]!.item.kind === 'sfx' ? (group[0]!.item.rotate ?? group[0]!.style.rotate ?? 0) : 0;
-      const rim: Point[] = [];
-      const inside: Point[] = [];
-      for (const b of bodies) {
-        const s = samplesOf(b);
-        rim.push(...s.rim.map((q) => rotateAbout(q, b.centre, rot)));
-        inside.push(...s.inside.map((q) => rotateAbout(q, b.centre, rot)));
-      }
-      const bbox = boundsOf(rim);
-      // A joined balloon set back against the reading direction reads out
-      // of order: beside it, a fault the order alone would not see; below
-      // it, a lesser one (the eye still has to step back).
-      const back = group.length > 1 && !vertical && arr.lean < 0 ? (arr.side ? 12 : 2.5) : 0;
-      // A reshaped text block that parts its text worse than the preferred
-      // one (a phrase or a word cut: 猫ちゃ|んに) pays for it.
-      const worse = group.reduce((sum, p, i) => sum + Math.max(0, p.shapes[shapeIndex[i]!]!.shaped.breakCost - p.shapes[0]!.shaped.breakCost), 0);
-      const cost = back + 0.8 * worse;
-      variants.push({ bodies, reshaped: k > 0, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(cost ? { cost } : {}) });
-      meta.push({ pieces: [...group], shapeIndex, shifts });
+      const built = buildVariant(group, panel, group.map((p) => Math.min(k, p.main - 1)), arr, k > 0);
+      variants.push(built.variant);
+      meta.push(built.meta);
     }
   }
   return { variants, meta };
+}
+
+/** One variant of a unit: each piece in its shape `shapeIndex[i]`, the
+ *  bodies arranged as `arr`. */
+function buildVariant(group: readonly Piece[], panel: LetteringPanel, shapeIndex: number[], arr: Arrangement, reshaped: boolean): { variant: UnitVariant; meta: VariantMeta } {
+  const fwd = panel.direction === 'rtl' ? -1 : 1;
+  const vertical = group[0]!.vertical;
+  const bodies: Body[] = [];
+  const shifts: Point[] = [];
+  group.forEach((p, i) => {
+    const local = p.shapes[shapeIndex[i]!]!.body;
+    let shift: Point;
+    if (i === 0) shift = { x: -local.centre.x, y: -local.centre.y };
+    else {
+      const prev = bodies[i - 1]!;
+      const join = p.joinPrev ?? 'butt';
+      const em = p.style.fontSizePx;
+      const pw = prev.bbox.width;
+      const ph = prev.bbox.height;
+      const w = local.bbox.width;
+      const h = local.bbox.height;
+      let cx: number;
+      let cy: number;
+      if (!vertical && !arr.side) {
+        const overlap = join === 'butt' ? 0.2 * Math.min(ph, h) : -0.9 * em;
+        cy = prev.bbox.y + ph - overlap + h / 2;
+        cx = prev.centre.x + fwd * arr.lean * Math.min(pw, w) * 1.4;
+      } else if (!vertical) {
+        const overlap = join === 'butt' ? 0.2 * Math.min(pw, w) : -0.9 * em;
+        cx = prev.centre.x + fwd * arr.lean * (pw / 2 + w / 2 - overlap);
+        cy = prev.centre.y + 0.45 * Math.min(ph, h);
+      } else if (arr.side) {
+        const overlap = join === 'butt' ? 0.2 * Math.min(pw, w) : -0.9 * em;
+        // Columns read right to left: the next body to the left.
+        cx = prev.bbox.x + overlap - w / 2;
+        cy = prev.centre.y + arr.lean * Math.min(ph, h);
+      } else {
+        const overlap = join === 'butt' ? 0.2 * Math.min(ph, h) : -0.9 * em;
+        cy = prev.bbox.y + ph - overlap + h / 2;
+        cx = prev.centre.x;
+      }
+      shift = { x: cx - local.centre.x, y: cy - local.centre.y };
+    }
+    bodies.push(translateBody(local, shift.x, shift.y));
+    shifts.push(shift);
+  });
+  const rot = group[0]!.item.kind === 'sfx' ? (group[0]!.item.rotate ?? group[0]!.style.rotate ?? 0) : 0;
+  const rim: Point[] = [];
+  const inside: Point[] = [];
+  for (const b of bodies) {
+    const s = samplesOf(b);
+    rim.push(...s.rim.map((q) => rotateAbout(q, b.centre, rot)));
+    inside.push(...s.inside.map((q) => rotateAbout(q, b.centre, rot)));
+  }
+  const bbox = boundsOf(rim);
+  // A joined balloon set back against the reading direction, below the
+  // one before, makes the eye step back: a little cost.
+  const back = group.length > 1 && !vertical && arr.lean < 0 ? 2.5 : 0;
+  // A reshaped text block that parts its text worse than the preferred
+  // one (a phrase or a word cut: 猫ちゃ|んに) pays for it.
+  const worse = group.reduce((sum, p, i) => sum + Math.max(0, p.shapes[shapeIndex[i]!]!.shaped.breakCost - p.shapes[0]!.shaped.breakCost), 0);
+  const cost = back + 0.8 * worse;
+  return {
+    variant: { bodies, reshaped, bbox, samples: inside, rim, ...(rot ? { rotate: rot } : {}), ...(cost ? { cost } : {}) },
+    meta: { pieces: [...group], shapeIndex, shifts },
+  };
 }
 
 /** Where the tail of a unit's first piece aims (SPEC D1.4, D3.3). */

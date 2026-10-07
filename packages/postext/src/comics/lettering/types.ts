@@ -206,8 +206,10 @@ export interface LetteringPanel {
   /** Locale of the text (BCP 47). */
   locale: string;
   anchors: readonly LetteringAnchor[];
-  /** Regions balloons must not cover (hands, key objects), page px. */
-  avoid?: readonly Rect[];
+  /** Regions balloons must not cover (hands, key objects), page px. A
+   *  `guard` is one the layout derives (the hair or hat over a face), which
+   *  the last fallback covers before it covers what the art marks. */
+  avoid?: readonly (Rect & { guard?: boolean })[];
   /** Regions no lettering ever covers, page px, whatever its fallbacks
    *  or its pin: the fold of a spread (a balloon there is cut in two, or
    *  lost in the binding). A pinned balloon slides off them. */
@@ -215,8 +217,11 @@ export interface LetteringPanel {
   /** Regions better left uncovered, page px: a balloon over them costs a
    *  little per area, but is never a fault (the picture's safe area, when
    *  the art marks no face and no avoid zone); `weight` scales the cost
-   *  (default 1). */
-  softAvoid?: readonly (Rect & { weight?: number })[];
+   *  (default 1). `owner` names the anchor whose figure the region is (the
+   *  body under a marked face): a balloon costs more over another
+   *  character than over its own speaker, and over two figures that touch
+   *  (a hug, a fight) as much as over another's. */
+  softAvoid?: readonly (Rect & { weight?: number; owner?: string })[];
   dpi: number;
   /** The other panels of the page (their boxes, px): a balloon that runs
    *  out of its panel must never run into one of them. */
@@ -225,9 +230,10 @@ export interface LetteringPanel {
    *  inside it — a panel that bleeds is lettered in its part inside it —
    *  unless it breaks the border on purpose (`breakBorder`, a pin). */
   limit?: Rect;
-  /** The trim of the sheet, px: a balloon that breaks its border on
-   *  purpose may leave the live area, never the trim (less `insetPx`).
-   *  Default: `limit`. */
+  /** The trim of the sheet, px: a pinned balloon may leave the live area,
+   *  never the trim (less `insetPx`); so may a `break` balloon of a panel
+   *  that bleeds (one of a panel inside the live area crosses into the
+   *  gutter and the next panel, never into the margin). Default: `limit`. */
   trim?: Rect;
   /** How far a sound effect that breaks its border on purpose may run,
    *  px: the trim, and the bleed on the sides the panel bleeds to (drawn
