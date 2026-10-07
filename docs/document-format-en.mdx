@@ -1577,7 +1577,7 @@ otto: Is it?
 :::
 ```
 
-A `:::strip` has the body of a page but sits in the text as one unbreakable box, cut into panels: `span` (`column`, the default, or `page`), `placement` (`here`, the default, where it is written; or `top`, `bottom`, `auto`, floated like a figure), and its size, either `height` (a length, a bare number in millimetres) or `aspect` (width over height: `3`, `4/1`, `4:1`; by default the proportions that make its panels square). Without `split` the panels sit side by side. Strips are read at the top level of a chapter only.
+A `:::strip` has the body of a page but sits in the text as one unbreakable box, cut into panels: `span` (`column`, the default, or `page`), `placement` (`here`, the default, where it is written; or `top`, `bottom`, `auto`, floated like a figure), and its size, either `height` (a length, a bare number in millimetres) or `aspect` (width over height: `3`, `4/1`, `4:1`; by default the proportions that make its panels square). A page-wide strip set `here` on a page of several columns cuts the columns where it stands, as a page-wide box does. `width` makes it narrower than the measure it spans (`60%` of it, or a length) and `align` sets it at the `start`, `center` (the default) or `end` of that measure, along the text direction. `caption="…"` sets a caption under it in the caption style; with `type=figure` (a resource type) the caption takes the type's label and number and the strip counts in that type's sequence, and with `id=…` a `:ref` names it. Without `split` the panels sit side by side. Strips are read at the top level of a chapter only.
 
 ### Spreads
 

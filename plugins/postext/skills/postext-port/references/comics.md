@@ -288,15 +288,40 @@ sfx: CHOMP
 |---|---|---|
 | `split` | split expression | absent: the panels side by side (`* \| * \| …`) |
 | `span` | `column` (default) \| `page` | the column's measure, or the content width across columns |
-| `placement` | `here` (default) \| `top` \| `bottom` \| `auto` | in the flow where written, or floated like a figure (first free slot after this point; strips never overtake each other). `span=page` + `here` on a multi-column page floats (`auto`) |
+| `placement` | `here` (default) \| `top` \| `bottom` \| `auto` | in the flow where written, or floated like a figure (first free slot after this point; strips never overtake each other). `span=page` + `here` on a multi-column page cuts the band where it stands (a page-span box: columns above end level, text goes on below; next page when it does not fit); on a one-column page it is set in the flow |
+| `width` | `60%` \| dimension (bare number = mm) | narrower than the measure it spans (a share of it, or a length; never wider) |
+| `align` | `center` (default) \| `start` \| `end` | where a narrower strip stands; follows the text direction (start = right on an RTL page, top of a vertical column) |
 | `height` | dimension (bare number = mm) | the strip's extent across the flow |
-| `aspect` | `3`, `4/1`, `4:1` | width over height; default: cells across over cells down (square panels) |
+| `aspect` | `3`, `4/1`, `4:1` | width over height of the strip's own width; default: cells across over cells down (square panels) |
+| `caption` | `"inline Markdown"` | a caption under the strip (over it with `captionStyle.position: 'above'`), at the strip's width, in `captionStyle` (the type's own `captionStyle` too); per edition: write it in each content file's language |
+| `type` | a resource type id (`figure`) | with a `caption`: the label and number of that type ("Figure 3."), counted in its sequence with its resources, in reading order; absent or unknown: plain caption, not counted |
+| `id` | identifier | a numbered strip is named by `:ref{id="…"}` (label + number, linked) |
 | `gutter`, `style`, `bleed`, `direction` | as on a page | nothing bleeds out of a strip |
 
 A strip is never split: it moves whole to the next column or page (a
-heading just above travels with it) and is clamped to a column's height.
-The flow snaps back to the grid after it, with the float gap
-(`layout.inlineResourceGap`) around it.
+heading just above travels with it) and is clamped to a column's height
+(its caption included). The flow snaps back to the grid after it, with the
+float gap (`layout.inlineResourceGap`) around it. A newspaper strip with a
+credit line, or a strip that is "Figure 4" of a textbook:
+
+```md
+:::strip{split="* | * | *" width=70% caption="*Pip & Otto*, by A. Author."}
+::panel{art=po1}
+::panel{art=po2}
+::panel{art=po3}
+:::
+
+:::strip{split="* | *" span=page caption="Two frames of the experiment." type=figure id=frames}
+::panel{art=f1}
+::panel{art=f2}
+:::
+
+As :ref{id="frames"} shows, …
+```
+
+Port a printed strip's caption or credit into `caption=` (not a paragraph
+after the strip: the caption keeps with the strip, takes the caption
+style and is tagged as its caption in PDF, HTML and EPUB).
 
 ## 8. Spreads
 
@@ -481,9 +506,11 @@ used as `sfx{writing at="34% 87%" rotate=13}: Invitation`.
   fixed layout with region-based panel navigation (and Kindle Panel View
   on request); reflowable editions print each panel picture followed by
   its dialogue (`Speaker: words`, names from `cast`).
-- Every output paints strips (`:::strip`, in columns and floated) and
-  both halves of a spread: the canvas, the PDF, the HTML viewer and both
-  EPUB layouts.
+- Every output paints strips (`:::strip`, in columns, floated or across
+  the page) and both halves of a spread: the canvas, the PDF, the HTML
+  viewer and both EPUB layouts. A strip's caption is its `Caption` in the
+  tagged PDF and the `<figcaption>` of a `<figure>` holding the strip in
+  HTML and EPUB.
 - **Fonts**: the lettering face, the SFX face and every face a style, cast
   entry or `font=` names must be in the manifest's `fonts` for headless
   renders and the PDF (the browser alone can fetch Google Fonts).
@@ -509,6 +536,7 @@ used as `sfx{writing at="34% 87%" rotate=13}: Invitation`.
 | `comicBalloonOverflow` | a balloon does not fit cleanly (`face`, `balloon`, `outside`, `avoid`, `anchor`; with the fallbacks tried). A crossing asked for with `break` or an `at=` pin is not counted as `outside` | shorten or break the line, give the panel more room, mark the face/avoid zones tighter, allow `break`, or pin it with `at=` |
 | `comicUnknownSpeaker` (info) | a speaker no picture of the page marks and no cast entry names: its tail points off the panel | add the anchor to the picture, add a `cast` entry, or fix a renamed key |
 | `comicAnchorOutsideSafeArea` | an anchor lies outside its picture's safe area: a crop may cut the speaker | grow the safe area over the mouth |
+| `unknownConfigValue` (config) | a comics setting holds a word outside its choices (`readingDirection`, `artDirection`, panel `borderStyle`/`fit`, lettering `writingMode`/`textTransform`/`dropFinalStop`/`joinSameSpeaker`, balloon `shape`/`tail`/`target`/`position`/`align`/`textTransform`): read as the default; `used` and the closest word (`suggestion`) are given | write one of the listed words (§10) |
 
 ## 15. Measuring pages: `comic_panels.py`
 
@@ -722,6 +750,9 @@ working queue client (`FAL_KEY` from the environment).
   not read there.
 - Long lines in very small cells are reported (`outside`), not solved:
   shorten the line or give the cell room.
+- A strip spans a column or the page, never `k` columns of a wider page;
+  strips are read at the top level of a chapter only (not in callouts,
+  tables or footnotes); a citation in a strip's caption prints as written.
 - Webtoons (one long vertical strip) have no scroll layout: set each
   screen as a `:::page` of a tall custom page size, or as a run of
   `:::strip{span=page}` blocks in a single-column book.

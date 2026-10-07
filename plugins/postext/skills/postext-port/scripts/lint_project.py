@@ -26,6 +26,7 @@ Exit code 1 when there are errors (or warnings with --strict).
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import re
 import sys
@@ -804,7 +805,8 @@ def check_arabic_font_files(root: Path, fonts: list[dict], families: set[str], r
 # Raw-body comic blocks (parse/blockParser.ts reads them whole up to `:::`).
 COMIC_BLOCKS = {"page", "strip"}
 COMIC_PAGE_ATTRS = {"split", "gutter", "style", "bleed", "direction", "dir", "spread", "id"}
-COMIC_STRIP_ATTRS = {"split", "gutter", "style", "bleed", "direction", "dir", "span", "placement", "height", "aspect", "id"}
+COMIC_STRIP_ATTRS = {"split", "gutter", "style", "bleed", "direction", "dir", "span", "placement", "height", "aspect", "id",
+                     "width", "align", "caption", "type"}
 COMIC_PANEL_ATTRS = {"art", "fit", "focus", "style", "border", "bg", "bleed", "mirror", "pop", "inset", "pad", "alt", "id"}
 # Keys a script line reads (comics/script.ts SCRIPT_KEYS); any other bare
 # flag names a balloon style.
@@ -1088,7 +1090,12 @@ def check_comics_config(cfg: dict, where: str, rep: Report) -> None:
 
     def enum(node, key: str, path: str) -> None:
         if isinstance(node, dict) and key in node and node[key] not in COMICS_ENUMS[key]:
-            rep.error(f"{path}.{key}", f"{node[key]!r} is not one of {sorted(COMICS_ENUMS[key])}")
+            # The engine reads the default and reports unknownConfigValue
+            # with the closest word (configWarnings.ts, #590).
+            close = difflib.get_close_matches(str(node[key]).lower(), sorted(COMICS_ENUMS[key]), n=1, cutoff=0.6)
+            hint = f" (did you mean {close[0]!r}?)" if close else ""
+            rep.error(f"{path}.{key}", f"{node[key]!r} is not one of {sorted(COMICS_ENUMS[key])}{hint}: the default is used "
+                                       "(unknownConfigValue)")
 
     def absolute(node, key: str, path: str) -> None:
         v = node.get(key) if isinstance(node, dict) else None
@@ -1165,7 +1172,11 @@ def _comic_point_ok(v: str) -> bool:
     return bool(COMIC_POINT_RE.match(v))
 
 
-def _check_comic_fence_attrs(kind: str, attrs: dict[str, str], where: str, panel_styles: set[str], rep: Report) -> None:
+COMIC_WIDTH_RE = re.compile(r"^\s*(?:[0-9]*\.?[0-9]+\s*%|[0-9]*\.?[0-9]+\s*(mm|cm|in|pt|px)?)\s*$")
+
+
+def _check_comic_fence_attrs(kind: str, attrs: dict[str, str], where: str, panel_styles: set[str], rep: Report,
+                             types: set[str] | None = None) -> None:
     allowed = COMIC_PAGE_ATTRS if kind == "page" else COMIC_STRIP_ATTRS
     for k, v in attrs.items():
         if k not in allowed:
@@ -1190,6 +1201,27 @@ def _check_comic_fence_attrs(kind: str, attrs: dict[str, str], where: str, panel
             rep.warn(where, f"height={attrs['height']!r} is not a length (bare numbers are mm): ignored")
         if "aspect" in attrs and not re.fullmatch(r"\s*[0-9]*\.?[0-9]+\s*(?:[/:]\s*[0-9]*\.?[0-9]+)?\s*", attrs["aspect"]):
             rep.warn(where, f"aspect={attrs['aspect']!r} is not a ratio (3, 4/1, 4:1): ignored")
+        # Width, alignment and caption (#590).
+        if "width" in attrs and not COMIC_WIDTH_RE.match(attrs["width"]):
+            rep.warn(where, f"width={attrs['width']!r} is not a share of the measure (60%) or a length (bare numbers are mm): "
+                            "the strip takes the whole measure")
+        if "align" in attrs and attrs["align"].strip().lower() not in ("start", "center", "end"):
+            rep.warn(where, f"align={attrs['align']!r} is read as center (start | center | end; start and end follow the "
+                            "text direction)")
+        if "align" in attrs and "width" not in attrs:
+            rep.info(where, "align without width: the strip takes the whole measure, there is nothing to align")
+        caption = attrs.get("caption", "").strip()
+        if "caption" in attrs and not caption:
+            rep.warn(where, "caption is empty: no caption is set")
+        if attrs.get("type"):
+            if types is not None and attrs["type"] not in types:
+                rep.warn(where, f"type={attrs['type']!r} is not in resourceTypes {sorted(types)}: the caption is plain and "
+                                "the strip is not counted")
+            elif not caption:
+                rep.warn(where, "type without caption: the strip is not counted (a numbered strip needs a caption)")
+        if attrs.get("id") and not (caption and attrs.get("type")):
+            rep.info(where, f"id={attrs['id']!r}: a :ref names a strip only when it is numbered (caption and type=…); "
+                            "otherwise it prints ?")
 
 
 def _check_panel_attrs(attrs: dict[str, str], where: str, ctx: dict, rep: Report) -> None:
@@ -1292,7 +1324,7 @@ def check_comic_block(name: str, kind: str, attrs: dict[str, str], body: list[tu
     """One `:::page` / `:::strip` block: its attributes, split, panels and
     script lines (comics.md §3-§7)."""
     where = f"{name}:{fence_line}"
-    _check_comic_fence_attrs(kind, attrs, where, ctx["panel_styles"], rep)
+    _check_comic_fence_attrs(kind, attrs, where, ctx["panel_styles"], rep, ctx.get("types"))
     split = attrs.get("split")
     cells = None
     if split is not None:
@@ -1425,7 +1457,8 @@ def new_comic_ctx(cfg: dict, resources: list[dict], ids: dict[str, set[str]]) ->
     """What the comic checks of one edition share and collect."""
     balloons, panels = comic_style_ids(cfg)
     return {"res_kinds": {r.get("id"): resource_kind(r) for r in resources}, "balloon_styles": balloons,
-            "panel_styles": panels, "palette": ids.get("palette", set()), "speakers": {}, "arts": set(),
+            "panel_styles": panels, "palette": ids.get("palette", set()), "types": ids.get("types", {"figure", "table"}),
+            "speakers": {}, "arts": set(),
             "faces": set(), "blocks": []}
 
 

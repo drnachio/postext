@@ -390,17 +390,34 @@ sfx: CHOF
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Tan ancha como la columna en la que cae (el valor por defecto) o como la caja de texto.</td></tr>
-    <tr><td><code>placement=here</code></td><td>El valor por defecto: se compone en el texto donde está escrita. Una tira cómica nunca se parte; la que no cabe pasa entera a la columna o la página siguiente, y se lleva consigo un título que tenga justo encima.</td></tr>
-    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Flota como una figura a la cabeza o al pie de la primera página con sitio a partir de ese punto. Una tira a ancho de página escrita <code>here</code> en una página de varias columnas también flota.</td></tr>
+    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Ocupa la columna en la que cae (el valor por defecto) o la caja de texto.</td></tr>
+    <tr><td><code>placement=here</code></td><td>El valor por defecto: se compone en el texto donde está escrita. Una tira cómica nunca se parte; la que no cabe pasa entera a la columna o la página siguiente, y se lleva consigo un título que tenga justo encima. Una tira a ancho de página escrita <code>here</code> en una página de varias columnas corta las columnas donde está, como un bloque a ancho de página: el texto de encima termina a la misma altura en todas las columnas, la tira cruza la página y el texto sigue en las columnas de debajo. Si el resto de la página no tiene sitio para ella, abre la página siguiente.</td></tr>
+    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Flota como una figura a la cabeza o al pie de la primera página con sitio a partir de ese punto.</td></tr>
+    <tr><td><code>width=60%</code>, <code>width=12cm</code></td><td>La anchura de la tira: una parte de la medida que ocupa (la columna, o la caja de texto con <code>span=page</code>) o una longitud (un número solo está en milímetros). Nunca es más ancha que esa medida. Sin él, la tira toma la medida entera.</td></tr>
+    <tr><td><code>align=start</code>, <code>center</code>, <code>end</code></td><td>Dónde queda una tira más estrecha dentro de su medida. El valor por defecto es <code>center</code>. <code>start</code> y <code>end</code> siguen la dirección del texto: el inicio es el borde derecho en una página de derecha a izquierda y la cabeza de la columna en una página vertical.</td></tr>
     <tr><td><code>height=4cm</code></td><td>La altura de la tira (un número solo está en milímetros).</td></tr>
-    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>La anchura dividida por la altura. Sin él, la tira toma las proporciones que hacen cuadradas sus viñetas (cuatro viñetas en fila: 4).</td></tr>
+    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>La anchura de la propia tira dividida por la altura. Sin él, la tira toma las proporciones que hacen cuadradas sus viñetas (cuatro viñetas en fila: 4).</td></tr>
+    <tr><td><code>caption="…"</code></td><td>Un pie bajo la tira (o sobre ella, con <code>captionStyle.position: 'above'</code>), compuesto al ancho de la tira con el estilo de pie de las figuras. El texto es Markdown en línea, escrito en el idioma de cada edición.</td></tr>
+    <tr><td><code>type=figure</code></td><td>Numera una tira con pie como un recurso de ese tipo: el pie empieza con la etiqueta y el número del tipo («Figura 3.»), y la tira cuenta en la secuencia de ese tipo, en orden de lectura junto con los recursos del tipo. Sin <code>type</code>, o con un tipo que no corresponde a ningún tipo de recurso, el pie es llano y la tira no se cuenta.</td></tr>
+    <tr><td><code>id=…</code></td><td>Nombra una tira numerada: <code>:ref&#123;id="…"&#125;</code> imprime su etiqueta y su número, como los de una figura, y enlaza con ella.</td></tr>
   </tbody>
 </table>
 
-Una tira cómica sin `split` pone sus viñetas una junto a otra. Su caja es su marco: las calles, los estilos de viñeta y la rotulación son los de la configuración, y nada va a sangre. Una tira más alta que una columna se reduce a la columna. Después de ella el texto sigue en la línea siguiente de la rejilla base, con el espacio que pide `layout.inlineResourceGap`, como tras una figura en línea. En una página vertical la tira se dispone en su caja girada, de modo que un yonkoma `* / * / * / *` con `aspect=0.25` corre a lo largo de una columna vertical.
+Una tira cómica sin `split` pone sus viñetas una junto a otra. Su caja es su marco: las calles, los estilos de viñeta y la rotulación son los de la configuración, y nada va a sangre. Una tira más alta que una columna se reduce a la columna, pie incluido. Después de ella el texto sigue en la línea siguiente de la rejilla base, con el espacio que pide `layout.inlineResourceGap`, como tras una figura en línea. En una página vertical la tira se dispone en su caja girada, de modo que un yonkoma `* / * / * / *` con `aspect=0.25` corre a lo largo de una columna vertical, y su pie la sigue como una columna de texto.
 
-En el VDT una tira es un bloque de `type: 'resource'` con un campo `comic` y sin `resourceBlock`; sus coordenadas son relativas a la caja del bloque en el pliego. `pageComics(page)` da el cómic de una página y las tiras de sus columnas y sus flotantes, todos llevados al pliego.
+```md
+:::strip{split="* | * | *" width=70% caption="Pip y Otto sobre el hielo." type=figure id=pip-ice}
+::panel{art=pip-1}
+::panel{art=pip-2}
+::panel{art=pip-3}
+:::
+
+Como muestra :ref{id="pip-ice"}, el hielo era fino.
+```
+
+El pie toma todo lo que fija el estilo de pie: la letra y el cuerpo, los colores de la etiqueta y del texto, el peso y la inclinación de la etiqueta, el espacio entre la tira y el pie, la alineación y la barra de fondo. El `captionStyle` propio de un tipo se aplica a las tiras numeradas en él.
+
+En el VDT una tira es un bloque de `type: 'resource'` con un campo `comic` y sin `resourceBlock`; sus coordenadas son relativas a la caja del bloque en el pliego, y una tira más estrecha, o una con el pie encima, queda dentro de esa caja (`comic.frame` no empieza entonces en su esquina). Un pie son las propias `lines` del bloque, compuestas con las letras y los colores del pie, y `stripCaption` dice qué líneas son, dónde están, el tipo y el número, y la barra. `pageComics(page)` da el cómic de una página y las tiras de sus columnas y sus flotantes, todos llevados al pliego.
 
 ## Dobles páginas
 
@@ -458,6 +475,8 @@ Todas las salidas pintan el mismo cómic: los fondos de las viñetas, las imáge
 - **EPUB de maquetación fija.** Las páginas son las del libro impreso. El libro lleva además **navegación por regiones** (`regions.xhtml`, EPUB Region-Based Navigation 1.0): una región `panel` por viñeta en orden de lectura, con sus bocadillos, cartelas y onomatopeyas anidados en ella, para que un sistema de lectura pueda recorrer el libro viñeta a viñeta. El avance de las páginas sigue el sentido de lectura de los cómics. La opción `kindlePanelView: true` de `renderToEpub` añade Kindle Panel View: una zona táctil por viñeta y una copia ampliada que llena la pantalla, con los metadatos que pide Kindle.
 - **EPUB fluido.** Ahí una página de cómic no tiene página que conservar, así que cada viñeta se convierte en su imagen, recortada exactamente como en la página, seguida de sus líneas como texto: «**Maya**: ¡Abuelo! ¡Ya estoy aquí!», las cartelas como párrafos y las onomatopeyas en cursiva.
 
+El pie de una tira se pinta con el texto, como el de una figura. En un PDF etiquetado es el `Caption` del `Div` de la tira, que se lee después de sus viñetas (antes, cuando va sobre la tira). En el HTML, en el EPUB de maquetación fija y en el EPUB fluido, la tira y su pie son un solo `<figure>`, con el pie como su `<figcaption>`; en una página vertical o de derecha a izquierda, donde la imagen de la tira queda sobre el pliego, el HTML deja el pie en el texto, aparte.
+
 ## Editar cómics en el Sandbox
 
 En el canvas, en las páginas HTML y en el modo de selección del Folio, una página de cómic se puede editar con el puntero, y cada cambio se escribe de vuelta en el Markdown del capítulo (la [guía del Sandbox](/es/docs/sandbox#editar-cómics) da los detalles):
@@ -467,7 +486,7 @@ En el canvas, en las páginas HTML y en el modo de selección del Folio, una pá
 - **Bocadillos.** Arrastrar un bocadillo lo fija: su línea de guion recibe `at="x% y%"` en porcentajes de la imagen de la viñeta, y un grupo unido se mueve entero. Mientras se mueve, el bocadillo se vuelve naranja donde taparía una cara o una zona libre o se saldría de su viñeta, y la etiqueta dice cuál de las tres. Las flechas desplazan un 1 % el bocadillo que tiene el foco, y un doble clic en un bocadillo fijado quita la fijación.
 - **Rabillos.** Arrastrar la punta de un rabillo escribe en la línea `to="x% y%"`, el punto al que apunta; un doble clic en la punta lo quita, y el rabillo vuelve a apuntar a su personaje. Desde un bocadillo con el foco, T pasa a su rabillo, cuyo destino mueven las flechas.
 - **Teclado.** Una viñeta con el foco se divide con H (una línea horizontal) o V (una línea vertical) y se une con la siguiente con M.
-- **Tiras.** Todas las herramientas sirven también en los bloques `:::strip`, en una columna o flotantes, y escriben en la valla de la propia tira.
+- **Tiras.** Todas las herramientas sirven también en los bloques `:::strip`, en una columna, flotantes o a lo ancho de la página, más estrechos que su medida o con un pie, y escriben en la valla de la propia tira.
 - **Imágenes.** La zona segura, los personajes y las zonas libres de una imagen se marcan en el panel de Recursos (véase [Personajes y anclas](#personajes-y-anclas)).
 - **Ajustes.** El panel Diseño tiene un grupo **Cómic**: sentido de lectura, marco y calles, la viñeta por defecto y los estilos de viñeta, la rotulación y los estilos de globo, cada uno con su vista previa.
 - **Editor.** El editor de texto colorea `:::page`, `::panel` y las líneas de guion, y el panel de revisión enumera los avisos de cómic en sus líneas.
@@ -500,6 +519,8 @@ Cada aviso nombra la línea o el atributo al que se refiere, y el panel de revis
 
 Los avisos vuelven en los `contentWarnings` del documento con el intervalo de la fuente de la línea o del atributo al que se refieren (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
 
+Un ajuste de cómic que admite unas pocas palabras y lleva otra, como `shape: 'ovl'` en un estilo de bocadillo o `readingDirection: 'rlt'`, se lee como su valor por defecto y el panel de revisión lo enumera como **Valor de ajuste desconocido** (`unknownConfigValue`), con el valor que usó el motor y la palabra a la que más se parece. Los ajustes comprobados son `readingDirection`, `artDirection`, el `borderStyle` y el `fit` de un estilo de viñeta, el `writingMode`, el `textTransform`, el `dropFinalStop` y el `joinSameSpeaker` de la rotulación, y el `shape`, el `tail`, el `target`, el `position`, el `align` y el `textTransform` de un estilo de bocadillo.
+
 ## Desde el código
 
 Un cómic no necesita nada más que `buildDocument`: los recursos llevan las imágenes con sus zonas seguras, sus anclas y sus zonas libres, y la configuración puede llevar `comics`. La rotulación mide su texto con las fuentes cargadas, así que las letras de rotulación tienen que estar cargadas antes de componer, como cualquier otra letra: `comicFontFamilies(config, markdown)` enumera las letras que necesitan los cómics de un documento (la de rotulación, las de todos los estilos de bocadillo y las del reparto), y `markdownHasComics(markdown)` dice si un texto tiene páginas de cómic o tiras. En el PDF, al proveedor de fuentes se le piden esas letras como cualquier otra.
@@ -511,7 +532,7 @@ El cómic compuesto está en el VDT: `page.comic` (`VDTComicPage`) guarda el mar
 - **Solo árboles de divisiones.** Una división corta cada celda en dos con una línea que la atraviesa de lado a lado, así que no se pueden escribir las disposiciones en las que ninguna línea cruza la página entera, como un molinete de cuatro viñetas alrededor de una quinta. Las viñetas superpuestas y las imágenes que rompen la viñeta cubren casi todo aquello para lo que sirven esas disposiciones.
 - **Formas de viñeta.** Las viñetas son polígonos convexos; las viñetas redondas, irregulares o sin borde, las imágenes giradas o ampliadas y las líneas cinéticas se dibujan en las imágenes, no las hace Postext.
 - **Rotulación.** El ruby sobre una base de derecha a izquierda se omite, y las demás anotaciones se imprimen como texto llano dentro de los bocadillos. La colocación se hace viñeta a viñeta: se evita que los rabillos se crucen por coste, no se trazan unos alrededor de otros, y el paso de una viñeta a la siguiente no se equilibra. Las líneas largas en celdas muy pequeñas se avisan, no se resuelven. La protección de una cara sin marcar se mide a partir de la boca y del punto de la cabeza (unos pocos em si el ancla no tiene cabeza), así que en un primer plano puede proteger la boca más que la cara; marca la cara.
-- **Las tiras cómicas** aún no tienen `width`, `align`, `columns` ni pie, solo se leen en el nivel superior de un capítulo (no dentro de un recuadro, una tabla o una nota al pie), y una tira a ancho de página escrita `here` en una página de varias columnas flota en lugar de cortar las columnas donde está escrita.
+- **Las tiras cómicas** no pueden ocupar menos columnas que las de la página (`columns=2` en una página de tres) y solo se leen en el nivel superior de un capítulo (no dentro de un recuadro, una tabla o una nota al pie). Una cita en el pie de una tira se imprime tal como está escrita.
 - **Dobles páginas.** Una viñeta redondeada cortada en el lomo pierde todas sus esquinas redondeadas. Un cómic de derecha a izquierda en un libro encuadernado por la izquierda sigue abriéndose en la página izquierda, así que su primera viñeta cae en la segunda página de la doble página.
 - **Las imágenes que rompen la viñeta** toman el recorte de la imagen de la viñeta, así que el recorte transparente debe tener el mismo tamaño que esa imagen.
 - **Salidas.** El texto alternativo de reserva de una viñeta sin `alt` ni `altText` es «Panel N», en inglés. La navegación por regiones describe las viñetas inclinadas por sus cajas envolventes. Kindle Panel View copia el cómic de una página una vez por viñeta, lo que agranda el archivo, y no se ha comprobado en Kindle Previewer.

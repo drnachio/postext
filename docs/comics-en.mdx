@@ -390,17 +390,34 @@ sfx: SPLOSH
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>span=column</code>, <code>span=page</code></td><td>As wide as the column it falls in (the default) or as the text area.</td></tr>
-    <tr><td><code>placement=here</code></td><td>The default: set in the text where it is written. A strip never splits; one that does not fit moves whole to the next column or page, taking a heading just above it along.</td></tr>
-    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Floated like a figure to the head or foot of the first page with room from this point on. A page-wide strip written <code>here</code> on a page of several columns floats too.</td></tr>
+    <tr><td><code>span=column</code>, <code>span=page</code></td><td>Spans the column it falls in (the default) or the text area.</td></tr>
+    <tr><td><code>placement=here</code></td><td>The default: set in the text where it is written. A strip never splits; one that does not fit moves whole to the next column or page, taking a heading just above it along. A page-wide strip written <code>here</code> on a page of several columns cuts the columns where it stands, as a page-wide box does: the text above it ends level in every column, the strip runs across the page, and the text goes on in the columns under it. When the rest of the page cannot hold it, it opens the next page.</td></tr>
+    <tr><td><code>placement=top</code>, <code>bottom</code>, <code>auto</code></td><td>Floated like a figure to the head or foot of the first page with room from this point on.</td></tr>
+    <tr><td><code>width=60%</code>, <code>width=12cm</code></td><td>The strip's width: a share of the measure it spans (the column, or the text area with <code>span=page</code>) or a length (a bare number is in millimetres). Never wider than that measure. Unset, the strip takes the whole measure.</td></tr>
+    <tr><td><code>align=start</code>, <code>center</code>, <code>end</code></td><td>Where a narrower strip stands in its measure. The default is <code>center</code>. <code>start</code> and <code>end</code> follow the text direction: the start is the right edge on a right-to-left page and the top of a column on a vertical page.</td></tr>
     <tr><td><code>height=4cm</code></td><td>The strip's height (a bare number is in millimetres).</td></tr>
-    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>Width over height. Unset, the strip takes the proportions that make its panels square (four panels in a row: 4).</td></tr>
+    <tr><td><code>aspect=4</code>, <code>aspect=4/1</code></td><td>Width over height, the width being the strip's own. Unset, the strip takes the proportions that make its panels square (four panels in a row: 4).</td></tr>
+    <tr><td><code>caption="…"</code></td><td>A caption under the strip (or over it, with <code>captionStyle.position: 'above'</code>), set at the strip's width in the caption style of figures. The text is inline Markdown, written in each edition's own language.</td></tr>
+    <tr><td><code>type=figure</code></td><td>Numbers a captioned strip as a resource of that type: the caption opens with the type's label and number (“Figure 3.”), and the strip counts in that type's sequence, in reading order with the type's resources. Without <code>type</code>, or with a type no resource type has, the caption is plain and the strip is not counted.</td></tr>
+    <tr><td><code>id=…</code></td><td>Names a numbered strip: <code>:ref&#123;id="…"&#125;</code> prints its label and number, as it does a figure's, and links to it.</td></tr>
   </tbody>
 </table>
 
-A strip without `split` sets its panels side by side. The strip's box is its frame: the gutters, panel styles and lettering are those of the configuration, and nothing bleeds. A strip taller than a column is reduced to the column. After it the text goes on at the next line of the baseline grid, with the gap `layout.inlineResourceGap` asks for, as after an inline figure. On a vertical page the strip is laid out in its turned box, so a yonkoma `* / * / * / *` with `aspect=0.25` runs down a vertical column.
+A strip without `split` sets its panels side by side. The strip's box is its frame: the gutters, panel styles and lettering are those of the configuration, and nothing bleeds. A strip taller than a column is reduced to the column, its caption included. After it the text goes on at the next line of the baseline grid, with the gap `layout.inlineResourceGap` asks for, as after an inline figure. On a vertical page the strip is laid out in its turned box, so a yonkoma `* / * / * / *` with `aspect=0.25` runs down a vertical column, and its caption follows it as a column of text.
 
-In the VDT a strip is a block of `type: 'resource'` with a `comic` field and no `resourceBlock`; its coordinates are relative to the block's box on the sheet. `pageComics(page)` gives a page's comic and the strips of its columns and floats, all moved onto the sheet.
+```md
+:::strip{split="* | * | *" width=70% caption="Pip and Otto on the ice." type=figure id=pip-ice}
+::panel{art=pip-1}
+::panel{art=pip-2}
+::panel{art=pip-3}
+:::
+
+As :ref{id="pip-ice"} shows, the ice was thin.
+```
+
+The caption takes everything the caption style sets: the face and size, the colours of the label and of the text, the label's weight and slant, the gap between the strip and the caption, the alignment and the bar behind it. A type's own `captionStyle` applies to the strips numbered in it.
+
+In the VDT a strip is a block of `type: 'resource'` with a `comic` field and no `resourceBlock`; its coordinates are relative to the block's box on the sheet, and a narrower strip, or one under its caption, stands inside that box (`comic.frame` does not start at its corner then). A caption is the block's own `lines`, set in the caption's fonts and colours, and `stripCaption` says which lines they are, where they stand, the type and number, and the bar. `pageComics(page)` gives a page's comic and the strips of its columns and floats, all moved onto the sheet.
 
 ## Spreads
 
@@ -458,6 +475,8 @@ Every output paints the same comic: panel backgrounds, pictures clipped to the p
 - **Fixed-layout EPUB.** The pages are those of the print book. The book also carries **region-based navigation** (`regions.xhtml`, EPUB Region-Based Navigation 1.0): one `panel` region per panel in reading order, its balloons, captions and sound effects nested in it, so a reading system can move through the book panel by panel. The page progression follows the comics' reading direction. The option `kindlePanelView: true` of `renderToEpub` adds Kindle Panel View: a tap target per panel and a magnified copy that fills the screen, with the metadata Kindle asks for.
 - **Reflowable EPUB.** A comic page has no page to keep there, so each panel becomes its picture, cropped exactly as on the page, followed by its lines as text: "**Maya**: Grandpa! I'm here!", the captions as paragraphs, the sound effects in italics.
 
+A strip's caption is painted with the text, as a figure's is. In a tagged PDF it is the `Caption` of the strip's `Div`, read after its panels (before them when it is set over the strip). In the HTML, the fixed-layout EPUB and the reflowable EPUB the strip and its caption are one `<figure>`, the caption its `<figcaption>`; on a vertical or right-to-left page, where the strip's picture lies over the sheet, the HTML keeps the caption in the text on its own.
+
 ## Editing comics in the Sandbox
 
 In the canvas, the HTML pages and the Folio's select mode, a comic page can be edited with the pointer, and every edit is written back into the chapter's Markdown (the [Sandbox guide](/en/docs/sandbox#editing-comics) has the details):
@@ -467,7 +486,7 @@ In the canvas, the HTML pages and the Folio's select mode, a comic page can be e
 - **Balloons.** Dragging a balloon pins it: its script line gets `at="x% y%"` in percentages of the panel's picture, a joined group moving as one. While it moves, the balloon turns orange where it would cover a face or an avoid zone or run out of its panel, and the tooltip says which. The arrow keys nudge a focused balloon by 1 %, and a double click on a pinned balloon removes the pin.
 - **Tails.** Dragging a tail's tip writes `to="x% y%"`, the point the tail aims at, into the line; a double click on the tip removes it, and the tail points at its speaker again. From a focused balloon, T moves to its tail, whose target the arrow keys move.
 - **Keyboard.** A focused panel splits with H (a horizontal line) or V (a vertical line) and merges with the next panel with M.
-- **Strips.** Every tool works on `:::strip` blocks too, in a column or floated, and writes into the strip's own fence.
+- **Strips.** Every tool works on `:::strip` blocks too, in a column, floated or across the page, narrower than their measure or under a caption, and writes into the strip's own fence.
 - **Pictures.** The safe area, the speakers and the avoid zones of a picture are marked in the Resources panel (see [Speakers and anchors](#speakers-and-anchors)).
 - **Settings.** The Design panel has a **Comics** group: reading direction, frame and gutters, the default panel and the panel styles, the lettering, and the balloon styles, each with a preview.
 - **Editor.** The text editor colours `:::page`, `::panel` and script lines, and the Checks panel lists the comic warnings at their lines.
@@ -500,6 +519,8 @@ Every warning names the line or attribute it concerns, and the Sandbox's Checks 
 
 The warnings come back in the document's `contentWarnings` with the source range of the line or attribute they concern (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
 
+A comics setting that takes one of a few words and holds another, such as `shape: 'ovl'` in a balloon style or `readingDirection: 'rlt'`, is read as its default and listed in the Checks panel as **Unknown setting value** (`unknownConfigValue`), with the value the engine used and the word it is closest to. The settings checked are `readingDirection`, `artDirection`, a panel style's `borderStyle` and `fit`, the lettering's `writingMode`, `textTransform`, `dropFinalStop` and `joinSameSpeaker`, and a balloon style's `shape`, `tail`, `target`, `position`, `align` and `textTransform`.
+
 ## From code
 
 A comic needs nothing beyond `buildDocument`: the resources carry the pictures with their safe areas, anchors and avoid zones, and the config may carry `comics`. The lettering measures its text with the loaded fonts, so the lettering faces must be loaded before the layout, as any face is: `comicFontFamilies(config, markdown)` lists the faces a document's comics need (the lettering face, the faces of every balloon style and of the cast), and `markdownHasComics(markdown)` says whether a text has comic pages or strips. In the PDF, the font provider is asked for those faces like any other.
@@ -511,7 +532,7 @@ The laid-out comic is in the VDT: `page.comic` (`VDTComicPage`) holds the frame,
 - **Split trees only.** A split cuts each cell in two with a line that runs across it, so layouts where no line crosses the whole page, such as a pinwheel of four panels around a fifth, cannot be written. Insets and pop-out art cover most of what those layouts are for.
 - **Panel shapes.** Panels are convex polygons; round, ragged or borderless vignette panels, rotated or zoomed art, and speed lines are drawn in the pictures, not by Postext.
 - **Lettering.** Ruby over a right-to-left base is left out, and other annotations print as plain text inside balloons. Placement is per panel: tails are kept from crossing by cost, not routed around each other, and the flow from one panel to the next is not balanced. Long lines in very small cells are reported, not solved. The guard over an unmarked face is sized from the mouth and the head point (a few ems when the anchor has no head), so in a close-up it may protect the mouth more than the face; mark the face.
-- **Strips** have no `width`, `align`, `columns` or caption yet, are read only at the top level of a chapter (not inside a callout, a table or a footnote), and a page-wide strip written `here` on a page of several columns floats instead of cutting the columns where it is written.
+- **Strips** cannot span a number of columns short of the page (`columns=2` on a page of three), and are read only at the top level of a chapter (not inside a callout, a table or a footnote). A citation in a strip's caption prints as written.
 - **Spreads.** A rounded panel cut at the spine loses all its round corners. A right-to-left comic in a left-bound book still opens on the left page, so its first panel lands on the second page of the spread.
 - **Pop-out art** takes the crop of the panel's art, so the cut-out must be the same size as the art picture.
 - **Outputs.** The fallback alternative text of a panel with no `alt` and no `altText` is "Panel N", in English. Region-based navigation describes slanted panels by their bounding boxes. Kindle Panel View copies the comic of a page once per panel, which makes the file larger, and has not been checked in Kindle Previewer.
