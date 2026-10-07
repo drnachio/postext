@@ -7,6 +7,14 @@
  * next one. Every splitter is also a focusable separator: arrow keys move
  * it, Enter writes it.
  *
+ * Balloons (#571): a balloon under the pointer shows the move cursor and
+ * drags (a ghost of its outline follows the pointer); on release its line
+ * is pinned there (`at="x% y%"`, fractions of the panel's picture). Shift
+ * keeps the drag to one axis, Escape cancels, a double click unpins, Alt
+ * turns a sound effect (`rotate=`). A joined group moves whole: its first
+ * line is pinned. Each group is also a focusable handle: arrow keys move
+ * it, Enter pins it, Delete unpins it.
+ *
  * The controller is DOM-only and viewer-neutral: a `ComicSurface` says
  * where its floating parts go and paints its marks (an SVG layer over a
  * page slot, or the Folio's page decorations). The geometry is in
@@ -14,7 +22,7 @@
  */
 
 import type { Dispatch, MutableRefObject } from 'react';
-import type { Resource, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTDocument, VDTPoint } from 'postext';
+import type { BoundingBox, Resource, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTDocument, VDTPoint } from 'postext';
 import type { SandboxAction } from '../../context/SandboxContext';
 import type { ComposedBook } from '../../book/types';
 import type { SandboxLabels } from '../../types/labels';
@@ -35,6 +43,23 @@ import {
   type SplitterPosition,
 } from './comicDrag';
 import { canMergeNext, canSplitPanel, mergePanelChanges, moveSplitterChanges, splitPanelChanges } from './comicSource';
+import {
+  BALLOON_NUDGE_PERCENT,
+  BALLOON_NUDGE_SHIFT_PERCENT,
+  balloonAt,
+  balloonGhost,
+  balloonGrabCentre,
+  balloonGroup,
+  balloonPanel,
+  boxCentre,
+  dragBalloon,
+  groupBox,
+  nudgeDelta,
+  pinAfterMove,
+  rotateAbout,
+  turnAngle,
+} from './balloonDrag';
+import { comicBalloonItem, pinLineChanges, rotateLineChanges, unpinLineChanges } from './balloonSource';
 
 /** A shape the tools draw over a page (sheet px; `width` and `dash` in
  *  CSS px, whatever the zoom). */
@@ -87,16 +112,24 @@ export interface ComicPointer {
 }
 
 export interface ComicEditor {
-  /** A press: true when it grabbed a splitter (the caller captures the
-   *  pointer and leaves the text alone). */
+  /** A press: true when it grabbed a splitter or a balloon (the caller
+   *  captures the pointer and leaves the text alone). */
   pointerDown(ev: PointerEvent, at: ComicPointer | null): boolean;
-  /** A move while nothing is pressed: the resize cursor over a splitter
-   *  (null elsewhere), the panel toolbar over a panel. */
+  /** A move while nothing is pressed: the resize cursor over a splitter,
+   *  `move` over a balloon (null elsewhere), the panel toolbar over a
+   *  panel. */
   hover(ev: PointerEvent, at: ComicPointer | null): string | null;
-  /** A move while a splitter is held. */
+  /** A move while a splitter or a balloon is held. */
   dragMove(ev: PointerEvent, at: ComicPointer | null): void;
-  /** The press ends: the line is written (or not, `cancel`). */
-  pointerUp(ev: PointerEvent, cancel?: boolean): void;
+  /** The press ends: the line is written (or not, `cancel`). False when
+   *  the press was a plain click on a balloon (it never moved): the click
+   *  is then the text's (the caret goes to the balloon's line). A second
+   *  click on a pinned balloon right after the first unpins it (the page
+   *  gets no `dblclick`: the press's default is prevented). */
+  pointerUp(ev: PointerEvent, cancel?: boolean): boolean;
+  /** The source offset of the balloon under a point (its script line), for
+   *  a click to put the caret there; null off the balloons. */
+  balloonSourceAt(at: ComicPointer | null): number | null;
   dragging(): boolean;
   /** Whether a splitter lies under a point. */
   onSplitter(at: ComicPointer | null): boolean;
@@ -111,6 +144,12 @@ const ACCENT_BAND = 'rgba(37, 99, 235, 0.16)';
 const ACCENT_CELL = 'rgba(37, 99, 235, 0.07)';
 const WARN_FILL = 'rgba(234, 88, 12, 0.26)';
 const WARN_STROKE = 'rgba(194, 65, 12, 0.95)';
+const GHOST_FILL = 'rgba(37, 99, 235, 0.10)';
+/** Screen px a press on a balloon travels before it is a drag (less is a
+ *  click: the caret goes to its line). */
+const BALLOON_DRAG_THRESHOLD_PX = 3;
+/** The longest pause between the two clicks of a double click (ms). */
+const DOUBLE_CLICK_MS = 450;
 
 interface DragState {
   page: number;
@@ -126,6 +165,47 @@ interface KeyState {
   page: number;
   splitter: VDTComicSplitter;
   pos: SplitterPosition;
+}
+
+/** A balloon group held by the pointer, or moved from the keyboard. */
+interface BalloonMove {
+  page: number;
+  comic: VDTComicPage;
+  /** The group, its first balloon (whose line is pinned) first. */
+  members: VDTComicBalloon[];
+  panel: VDTComicPanel;
+  /** The centre the move carries (the written pin, else the first
+   *  balloon's box centre). */
+  centre: VDTPoint;
+  /** The box round the group (kept inside the panel). */
+  box: BoundingBox;
+  /** Sheet travel so far. */
+  delta: VDTPoint;
+  /** A sound effect's rotation now, and as laid out (degrees). */
+  rotate: number;
+  rotate0: number;
+}
+
+interface BalloonDrag extends BalloonMove {
+  grab: VDTPoint;
+  pointerId: number;
+  moved: boolean;
+  /** Alt on a sound effect: the drag turns it. */
+  turning: boolean;
+}
+
+/** A balloon group's identity across relayouts: its page's comic and its
+ *  first line (an edit of that line leaves its start where it was). */
+function balloonKey(comic: VDTComicPage, first: Pick<VDTComicBalloon, 'sourceStart'>): string {
+  return `b${comic.sourceStart}:${first.sourceStart}`;
+}
+
+const isSoundEffect = (b: VDTComicBalloon) => (b.kind ?? (b.style === 'sfx' ? 'sfx' : 'balloon')) === 'sfx';
+
+/** A balloon's text, for its handle's name. */
+function balloonText(members: readonly VDTComicBalloon[]): string {
+  const text = members.flatMap((b) => b.text.flatMap((t) => t.lines.map((l) => l.text))).join(' ').replace(/\s+/g, ' ').trim();
+  return text.length > 48 ? `${text.slice(0, 47)}…` : text;
 }
 
 /** A splitter's identity across relayouts: its page's comic and its place
@@ -212,10 +292,19 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
   const enabled = () => !disposed && opts.enabled();
   const label = (key: keyof SandboxLabels) => labelsRef.current[key];
 
-  let hover: { page: number; splitter?: VDTComicSplitter; panel?: VDTComicPanel } | null = null;
+  let hover: { page: number; splitter?: VDTComicSplitter; panel?: VDTComicPanel; balloons?: VDTComicBalloon[] } | null = null;
   let drag: DragState | null = null;
   let key: KeyState | null = null;
   let focused: { page: number; splitter: VDTComicSplitter } | null = null;
+  /** A balloon group held by the pointer. */
+  let bdrag: BalloonDrag | null = null;
+  /** A balloon group moved with the arrow keys, not written yet. */
+  let bkey: BalloonMove | null = null;
+  /** The balloon group whose handle has the focus. */
+  let bfocused: { page: number; members: VDTComicBalloon[] } | null = null;
+  /** The last plain click on a balloon group (a second one soon after on
+   *  the same group is a double click). */
+  let lastTap: { key: string; time: number; x: number; y: number } | null = null;
   /** Pages painted last, to clear when they have nothing to show. */
   const painted = new Set<number>();
 
@@ -250,13 +339,40 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
     return { marks, letterboxed };
   };
 
+  /** The outline of a balloon group (dashed: under the pointer; solid:
+   *  its handle has the focus). */
+  const balloonMarks = (members: readonly VDTComicBalloon[], strong: boolean): ComicMark[] =>
+    balloonGhost(members, { x: 0, y: 0 }).map((points) => ({ points, closed: true, stroke: ACCENT, width: strong ? 2 : 1.5, ...(strong ? {} : { dash: [5, 3] }) }));
+
+  /** A group on the move: where it was, dashed, and its ghost where it
+   *  would go (turned, for a sound effect). */
+  const movingBalloonMarks = (m: BalloonMove): ComicMark[] => {
+    const marks: ComicMark[] = balloonGhost(m.members, { x: 0, y: 0 }).map((points) => ({ points, closed: true, stroke: ACCENT, width: 1, dash: [4, 4] }));
+    const turn = m.rotate - m.rotate0;
+    const pivot = boxCentre(m.members[0]!.bbox);
+    const at = { x: pivot.x + m.delta.x, y: pivot.y + m.delta.y };
+    for (const poly of balloonGhost(m.members, m.delta)) {
+      marks.push({ points: turn ? poly.map((p) => rotateAbout(p, at, turn)) : poly, closed: true, fill: GHOST_FILL, stroke: ACCENT, width: 2 });
+    }
+    const c = { x: m.centre.x + m.delta.x, y: m.centre.y + m.delta.y };
+    const r = 4 * surface.sheetPxPerCssPx(m.page);
+    marks.push({ points: [{ x: c.x - r, y: c.y }, { x: c.x + r, y: c.y }], stroke: ACCENT, width: 1.5 });
+    marks.push({ points: [{ x: c.x, y: c.y - r }, { x: c.x, y: c.y + r }], stroke: ACCENT, width: 1.5 });
+    return marks;
+  };
+
   let lastLetterboxed: number[] = [];
 
   const repaint = (): void => {
     const byPage = new Map<number, ComicMark[]>();
     const add = (page: number, marks: ComicMark[]) => byPage.set(page, [...(byPage.get(page) ?? []), ...marks]);
     lastLetterboxed = [];
-    if (drag) {
+    if (bdrag) {
+      if (bdrag.moved) add(bdrag.page, movingBalloonMarks(bdrag));
+      else add(bdrag.page, balloonMarks(bdrag.members, true));
+    } else if (bkey) {
+      add(bkey.page, movingBalloonMarks(bkey));
+    } else if (drag) {
       const r = movingMarks(drag.page, drag.comic, drag.splitter, drag.pos);
       add(drag.page, r.marks);
       lastLetterboxed = r.letterboxed;
@@ -269,7 +385,9 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       }
     } else {
       if (focused) add(focused.page, splitterMarks(focused.page, focused.splitter, true));
-      if (hover?.splitter) add(hover.page, splitterMarks(hover.page, hover.splitter, false));
+      if (bfocused) add(bfocused.page, balloonMarks(bfocused.members, true));
+      if (hover?.balloons) add(hover.page, balloonMarks(hover.balloons, false));
+      else if (hover?.splitter) add(hover.page, splitterMarks(hover.page, hover.splitter, false));
       else if (hover?.panel) add(hover.page, [{ points: hover.panel.polygon, closed: true, stroke: ACCENT, width: 1, dash: [6, 4] }]);
     }
     for (const page of painted) if (!byPage.has(page)) surface.paint(page, null);
@@ -313,6 +431,22 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
   };
   const hideTip = () => {
     tip.style.display = 'none';
+  };
+
+  /** Where a group on the move would be pinned (or how far it turns). */
+  const balloonTipText = (m: BalloonMove): string => {
+    if (m.rotate !== m.rotate0) return `${Math.round(m.rotate * 10) / 10}°`;
+    const at = pinAfterMove(m.panel, m.centre, m.delta);
+    return label('comicBalloonPin').replace('__x__', percentText(at.x * 100)).replace('__y__', percentText(at.y * 100));
+  };
+
+  const showBalloonTip = (m: BalloonMove, at: VDTPoint): void => {
+    tip.textContent = balloonTipText(m);
+    tip.style.whiteSpace = 'pre-line';
+    tip.style.background = 'rgba(15, 23, 42, 0.92)';
+    tip.style.display = '';
+    if (!surface.place(tip, m.page, at.x, at.y)) tip.style.display = 'none';
+    tip.style.transform = `${tip.style.transform} translate(14px, 14px)`;
   };
 
   // -------------------------------------------------------------- toolbar
@@ -414,6 +548,51 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
     commit(page, comic, moveSplitterChanges(book.markdown, comic, s, pos.start, slanted ? pos.end : undefined));
   };
 
+  /** The script line of a group's first balloon in its page's source. */
+  const balloonLine = (page: number, comic: VDTComicPage, first: VDTComicBalloon) => {
+    const book = opts.sourceOfPage(page);
+    if (!book) return null;
+    const item = comicBalloonItem(book.markdown, comic, first.sourceStart);
+    return item ? { book, item } : null;
+  };
+
+  /** A group to move: its members, its panel and the centre the move
+   *  carries; null when its line cannot be found in the source. */
+  const balloonMove = (page: number, comic: VDTComicPage, b: VDTComicBalloon): BalloonMove | null => {
+    const members = balloonGroup(comic, b);
+    const first = members[0];
+    const panel = first ? balloonPanel(comic, first) : null;
+    if (!first || !panel) return null;
+    const line = balloonLine(page, comic, first);
+    if (!line) return null;
+    const rotate = first.rotate ?? 0;
+    return { page, comic, members, panel, centre: balloonGrabCentre(panel, first, line.item.at), box: groupBox(members), delta: { x: 0, y: 0 }, rotate, rotate0: rotate };
+  };
+
+  /** Write where a group was moved (or how far it was turned). */
+  const commitBalloon = (m: BalloonMove): void => {
+    const comic = comicOf(m.page);
+    if (!comic) return;
+    const line = balloonLine(m.page, comic, m.members[0]!);
+    if (!line) return;
+    if (Math.abs(m.rotate - m.rotate0) >= 0.05) {
+      commit(m.page, comic, rotateLineChanges(line.book.markdown, line.item, m.rotate));
+      return;
+    }
+    if (Math.hypot(m.delta.x, m.delta.y) < 1e-6) return;
+    commit(m.page, comic, pinLineChanges(line.book.markdown, line.item, pinAfterMove(m.panel, m.centre, m.delta)));
+  };
+
+  /** Take a group's pin off; false when its line has none. */
+  const unpinBalloon = (page: number, comic: VDTComicPage, b: VDTComicBalloon): boolean => {
+    const first = balloonGroup(comic, b)[0] ?? b;
+    const line = balloonLine(page, comic, first);
+    const changes = line ? unpinLineChanges(line.book.markdown, line.item) : null;
+    if (!changes) return false;
+    commit(page, comic, changes);
+    return true;
+  };
+
   const panelAction = (kind: 'rows' | 'columns' | 'merge'): void => {
     const target = barPanel;
     hideBar();
@@ -442,7 +621,106 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
   hint.id = hintId;
   hint.hidden = true;
   handles.appendChild(hint);
+  const balloonHintId = `${hintId}-balloon`;
+  const balloonHint = document.createElement('span');
+  balloonHint.id = balloonHintId;
+  balloonHint.hidden = true;
+  handles.appendChild(balloonHint);
   let handlesKey = '';
+
+  /** The handle of a balloon group: Tab reaches it, the arrow keys move
+   *  the group (1 % of the picture, Shift 5 %), Enter pins it there,
+   *  Escape puts it back, Delete unpins it. */
+  const balloonHandleFor = (page: number, comic: VDTComicPage, members: VDTComicBalloon[], i: number, total: number): HTMLElement => {
+    const first = members[0]!;
+    const h = document.createElement('div');
+    h.tabIndex = 0;
+    h.setAttribute('role', 'button');
+    h.setAttribute('aria-label', label('comicBalloonLabel').replace('__n__', String(i + 1)).replace('__total__', String(total)).replace('__text__', balloonText(members)));
+    h.setAttribute('aria-describedby', balloonHintId);
+    const id = balloonKey(comic, first);
+    h.dataset.comicBalloon = id;
+    h.dataset.page = String(page);
+    Object.assign(h.style, {
+      position: 'absolute',
+      width: '24px',
+      height: '24px',
+      borderRadius: '12px',
+      pointerEvents: 'none',
+      transformOrigin: '0 0',
+    } satisfies Partial<CSSStyleDeclaration>);
+    const mid = boxCentre(first.bbox);
+    const place = () => {
+      if (surface.place(h, page, mid.x, mid.y)) h.style.transform = `${h.style.transform} translate(-50%, -50%)`;
+    };
+    place();
+    /** The group as the current document lays it out. */
+    const live = (): { comic: VDTComicPage; b: VDTComicBalloon } | null => {
+      const c = comicOf(page);
+      const b = c?.balloons.find((o) => o.sourceStart === first.sourceStart);
+      return c && b ? { comic: c, b } : null;
+    };
+    h.addEventListener('focus', () => {
+      place();
+      const l = live();
+      if (!l) return;
+      bfocused = { page, members: balloonGroup(l.comic, l.b) };
+      repaint();
+    });
+    h.addEventListener('blur', () => {
+      if (bfocused && bfocused.members[0]?.sourceStart === first.sourceStart) bfocused = null;
+      bkey = null;
+      hideTip();
+      repaint();
+    });
+    h.addEventListener('keydown', (ev) => {
+      const l = live();
+      if (!l || !enabled()) return;
+      const dir = { ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 }, ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 } }[ev.key];
+      if (dir) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const m = bkey ?? balloonMove(page, l.comic, l.b);
+        if (!m) return;
+        const step = nudgeDelta(m.panel, dir, ev.shiftKey ? BALLOON_NUDGE_SHIFT_PERCENT : BALLOON_NUDGE_PERCENT);
+        const want = { x: m.centre.x + m.delta.x + step.x, y: m.centre.y + m.delta.y + step.y };
+        bkey = { ...m, delta: dragBalloon(m.centre, m.centre, want, m.panel.bbox, { box: m.box }) };
+        repaint();
+        showBalloonTip(bkey, { x: bkey.centre.x + bkey.delta.x, y: bkey.centre.y + bkey.delta.y });
+        return;
+      }
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!bkey) return;
+        refocus = { key: id, until: Date.now() + 8000 };
+        const m = bkey;
+        bkey = null;
+        hideTip();
+        commitBalloon(m);
+        repaint();
+        return;
+      }
+      if (ev.key === 'Escape' && bkey) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        bkey = null;
+        hideTip();
+        repaint();
+        return;
+      }
+      if (ev.key === 'Delete' || ev.key === 'Backspace') {
+        ev.preventDefault();
+        ev.stopPropagation();
+        bkey = null;
+        hideTip();
+        refocus = { key: id, until: Date.now() + 8000 };
+        unpinBalloon(page, l.comic, l.b);
+        repaint();
+      }
+    });
+    return h;
+  };
 
   const handleFor = (page: number, comic: VDTComicPage, s: VDTComicSplitter, i: number, total: number): HTMLElement => {
     const h = document.createElement('div');
@@ -540,17 +818,33 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
     const pages = doc ? surface.pages().filter((p) => doc.pages[p]?.comic) : [];
     const sig = pages.map((p) => {
       const c = doc!.pages[p]!.comic!;
-      return `${p}@${c.sourceStart}:${c.splitters.map((s) => `${s.path.join('.')}/${s.boundary}=${s.startPercent},${s.endPercent},${s.a.x.toFixed(1)},${s.a.y.toFixed(1)}`).join(';')}`;
+      return `${p}@${c.sourceStart}:${c.splitters.map((s) => `${s.path.join('.')}/${s.boundary}=${s.startPercent},${s.endPercent},${s.a.x.toFixed(1)},${s.a.y.toFixed(1)}`).join(';')}`
+        + `#${c.balloons.map((b) => `${b.sourceStart}/${b.group}=${b.bbox.x.toFixed(1)},${b.bbox.y.toFixed(1)}`).join(';')}`;
     }).join('|');
     if (sig === handlesKey) return;
     handlesKey = sig;
+    // Marks of balloons laid out before are stale: the outline under the
+    // pointer comes back with its next move, a focused group is read again.
+    let stale = false;
+    if (hover?.balloons) {
+      hover = null;
+      stale = true;
+    }
+    if (bfocused) {
+      const first = bfocused.members[0];
+      const c = comicOf(bfocused.page);
+      const b = first && c ? c.balloons.find((o) => o.sourceStart === first.sourceStart) : undefined;
+      bfocused = b && c ? { page: bfocused.page, members: balloonGroup(c, b) } : null;
+      stale = true;
+    }
     // The HTML pages live in a shadow root: its own active element.
     const root = handles.getRootNode() as Document | ShadowRoot;
     const active = root.activeElement ?? null;
-    const hadFocus = active && handles.contains(active) ? (active as HTMLElement).dataset.comicSplitter : undefined;
+    const hadFocus = active && handles.contains(active) ? ((active as HTMLElement).dataset.comicSplitter ?? (active as HTMLElement).dataset.comicBalloon) : undefined;
     const idle = document.activeElement === null || document.activeElement === document.body;
-    for (const el of [...handles.querySelectorAll('[data-comic-splitter]')]) el.remove();
+    for (const el of [...handles.querySelectorAll('[data-comic-splitter], [data-comic-balloon]')]) el.remove();
     hint.textContent = label('comicSplitterHint');
+    balloonHint.textContent = label('comicBalloonHint');
     const want = hadFocus ?? (refocus && refocus.until > Date.now() ? refocus.key : undefined);
     for (const p of pages) {
       const comic = doc!.pages[p]!.comic!;
@@ -562,7 +856,22 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
           h.focus({ preventScroll: true });
         }
       });
+      // One handle per join group, in reading order.
+      const groups: VDTComicBalloon[][] = [];
+      for (const b of comic.balloons) {
+        const g = balloonGroup(comic, b);
+        if (g[0] === b) groups.push(g);
+      }
+      groups.forEach((g, i) => {
+        const h = balloonHandleFor(p, comic, g, i, groups.length);
+        handles.appendChild(h);
+        if (want && h.dataset.comicBalloon === want && (idle || hadFocus)) {
+          refocus = null;
+          h.focus({ preventScroll: true });
+        }
+      });
     }
+    if (stale) repaint();
   };
   if (typeof queueMicrotask === 'function') queueMicrotask(sync);
   const entry = { host, sync };
@@ -582,9 +891,10 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
   // ------------------------------------------------------------- pointer
 
   const onKey = (ev: KeyboardEvent) => {
-    if (ev.key !== 'Escape' || !drag) return;
+    if (ev.key !== 'Escape' || (!drag && !bdrag)) return;
     ev.preventDefault();
-    endDrag(true);
+    if (bdrag) endBalloonDrag(true);
+    else endDrag(true);
   };
 
   const endDrag = (cancel: boolean): void => {
@@ -598,11 +908,61 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
     repaint();
   };
 
+  /** A balloon drag ends: written when it moved (one edit), else it was a
+   *  click, and the second of a double click unpins. Returns whether the
+   *  press was the tools' (false: a plain click, the text's). */
+  const endBalloonDrag = (cancel: boolean): boolean => {
+    const d = bdrag;
+    if (!d) return false;
+    bdrag = null;
+    window.removeEventListener('keydown', onKey, true);
+    opts.onDragEnd?.(d.pointerId);
+    hideTip();
+    let consumed = d.moved || cancel;
+    if (d.moved) hover = null;
+    if (!cancel && d.moved) {
+      lastTap = null;
+      commitBalloon(d);
+    } else if (!cancel) {
+      const tapKey = balloonKey(d.comic, d.members[0]!);
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      const near = (t: NonNullable<typeof lastTap>) => Math.hypot(t.x - d.grab.x, t.y - d.grab.y) < 8 * surface.sheetPxPerCssPx(d.page);
+      if (lastTap && lastTap.key === tapKey && now - lastTap.time < DOUBLE_CLICK_MS && near(lastTap)) {
+        lastTap = null;
+        consumed = unpinBalloon(d.page, d.comic, d.members[0]!);
+      } else {
+        lastTap = { key: tapKey, time: now, x: d.grab.x, y: d.grab.y };
+      }
+    }
+    repaint();
+    return consumed;
+  };
+
+  /** The balloon under a point, when the tools are on. */
+  const balloonUnder = (at: ComicPointer | null): { comic: VDTComicPage; b: VDTComicBalloon } | null => {
+    if (!at || !enabled()) return null;
+    const comic = comicOf(at.pageIndex);
+    const b = comic ? balloonAt(comic, at.x, at.y) : null;
+    return comic && b ? { comic, b } : null;
+  };
+
   return {
     pointerDown(ev, at) {
       if (!enabled() || !at) return false;
       const comic = comicOf(at.pageIndex);
       if (!comic) return false;
+      // Balloons lie over the borders and gutters: they are grabbed first.
+      const b = balloonAt(comic, at.x, at.y);
+      if (b) {
+        const m = balloonMove(at.pageIndex, comic, b);
+        if (!m) return false;
+        hideBar();
+        sync();
+        bdrag = { ...m, grab: { x: at.x, y: at.y }, pointerId: ev.pointerId, moved: false, turning: false };
+        window.addEventListener('keydown', onKey, true);
+        repaint();
+        return true;
+      }
       const s = splitterAt(comic, at.x, at.y, minBand(at.pageIndex));
       if (!s) return false;
       hideBar();
@@ -632,9 +992,18 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       }
       // Over the toolbar: keep it as it is.
       if (bar.contains(ev.target as Node)) return 'default';
+      const b = balloonAt(comic, at.x, at.y);
+      if (b) {
+        const members = balloonGroup(comic, b);
+        const changed = hover?.page !== at.pageIndex || hover?.balloons?.[0] !== members[0];
+        hover = { page: at.pageIndex, balloons: members };
+        hideBar();
+        if (changed) repaint();
+        return 'move';
+      }
       const s = splitterAt(comic, at.x, at.y, minBand(at.pageIndex));
       const panel = s ? null : panelAt(comic, at.x, at.y);
-      const changed = hover?.page !== at.pageIndex || hover?.splitter !== (s ?? undefined) || hover?.panel !== (panel ?? undefined);
+      const changed = hover?.page !== at.pageIndex || hover?.balloons !== undefined || hover?.splitter !== (s ?? undefined) || hover?.panel !== (panel ?? undefined);
       hover = s ? { page: at.pageIndex, splitter: s } : panel ? { page: at.pageIndex, panel } : null;
       if (s) hideBar();
       else if (panel) showBar(at.pageIndex, comic, panel);
@@ -643,6 +1012,26 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       return s ? splitterCursor(s) : null;
     },
     dragMove(ev, at) {
+      const bd = bdrag;
+      if (bd) {
+        if (ev.pointerId !== bd.pointerId || !at || at.pageIndex !== bd.page) return;
+        ev.preventDefault();
+        const pointer = { x: at.x, y: at.y };
+        if (!bd.moved && Math.hypot(pointer.x - bd.grab.x, pointer.y - bd.grab.y) < BALLOON_DRAG_THRESHOLD_PX * surface.sheetPxPerCssPx(bd.page)) return;
+        bd.moved = true;
+        // Alt turns a sound effect about its centre instead of moving it.
+        bd.turning = ev.altKey && bd.members.length === 1 && isSoundEffect(bd.members[0]!);
+        if (bd.turning) {
+          bd.delta = { x: 0, y: 0 };
+          bd.rotate = turnAngle(boxCentre(bd.members[0]!.bbox), bd.grab, pointer, bd.rotate0, ev.shiftKey);
+        } else {
+          bd.rotate = bd.rotate0;
+          bd.delta = dragBalloon(bd.centre, bd.grab, pointer, bd.panel.bbox, { axisLock: ev.shiftKey, box: bd.box });
+        }
+        repaint();
+        showBalloonTip(bd, pointer);
+        return;
+      }
       const d = drag;
       if (!d || ev.pointerId !== d.pointerId || !at || at.pageIndex !== d.page) return;
       ev.preventDefault();
@@ -653,20 +1042,28 @@ export function createComicEditor(opts: ComicEditOptions): ComicEditor {
       if (d.moved) showTip(d.page, { x: at.x, y: at.y }, pos, d.splitter);
     },
     pointerUp(ev, cancel = false) {
-      if (!drag || ev.pointerId !== drag.pointerId) return;
+      if (bdrag) {
+        if (ev.pointerId !== bdrag.pointerId) return true;
+        return endBalloonDrag(cancel);
+      }
+      if (!drag || ev.pointerId !== drag.pointerId) return true;
       endDrag(cancel);
+      return true;
     },
-    dragging: () => drag !== null,
+    balloonSourceAt(at) {
+      return balloonUnder(at)?.b.sourceStart ?? null;
+    },
+    dragging: () => drag !== null || bdrag !== null,
     onSplitter(at) {
       if (!at || !enabled()) return false;
       const comic = comicOf(at.pageIndex);
       return comic !== null && splitterAt(comic, at.x, at.y, minBand(at.pageIndex)) !== null;
     },
     leave() {
-      if (drag) return;
+      if (drag || bdrag) return;
       hover = null;
       hideBar();
-      if (!key) hideTip();
+      if (!key && !bkey) hideTip();
       repaint();
     },
     sync,

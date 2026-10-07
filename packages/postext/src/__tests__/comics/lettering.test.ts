@@ -197,6 +197,17 @@ describe('comic lettering in the build', () => {
     expect(bens[2]!.shape).toBeDefined();
   });
 
+  it('keeps a joined group whole when its first line is pinned, that balloon on the pin (#571)', () => {
+    const md = ':::page\n::panel{art=room}\nben{at="62% 22%"}: Listen to me.\nben: We leave tonight. Pack only what you can carry.\n:::\n';
+    const comic = comicOf(buildDocument({ markdown: md, resources }, config('en')));
+    const [first, second] = comic.balloons;
+    expect(first!.group).toBe(second!.group);
+    expect(first!.shape).toBeDefined();
+    expect(second!.shape).toBeUndefined();
+    const pin = comicArtPointToPage(comic.panels[0]!.art!, 0.62, 0.22);
+    expect(dist(centre(first!), pin)).toBeLessThan(1);
+  });
+
   it('lays out documents without comics exactly as before (no balloons anywhere)', () => {
     const doc = buildDocument({ markdown: '# Title\n\nSome text.\n' }, config('en'));
     expect(doc.pages.every((p) => p.comic === undefined)).toBe(true);

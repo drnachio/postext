@@ -3,6 +3,7 @@ import { sandboxReducer, type SandboxState } from './SandboxContext';
 import { DEFAULT_LABELS } from '../types';
 import { BUILTIN_PRESET_ID } from '../presets';
 import { WHOLE_BOOK_MAX_CHAPTERS } from '../book/scope';
+import { comicBalloonItem, pinLineChanges, unpinLineChanges } from '../viewport/comics/balloonSource';
 
 function ch(id: string, markdown = ''): SandboxState['chapters'][number] {
   return { id, title: id.toUpperCase(), markdown, createdAt: 1, updatedAt: 1 };
@@ -350,5 +351,26 @@ describe('EDIT_CHAPTER_MARKDOWN (edits made on the previews, #568)', () => {
     expect(sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes: [change], baseLength: page.length + 1 } })).toBe(s);
     expect(sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes: [{ ...change, expect: '31' }] } })).toBe(s);
     expect(sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'zz', changes: [change] } })).toBe(s);
+  });
+});
+
+describe('EDIT_CHAPTER_MARKDOWN with a balloon pin (#571)', () => {
+  const page = ':::page\n::panel{art=room}\nana{whisper}：今の聞こえた？\nben: Nothing.\n:::\n';
+  const comic = { sourceStart: 0, sourceEnd: page.length };
+  const item = comicBalloonItem(page, comic, page.indexOf('ana'))!;
+
+  it('writes the pin on the line as one edit, refused once the line moved on', () => {
+    const changes = pinLineChanges(page, item, { x: 0.425, y: 0.18 });
+    expect(changes).toHaveLength(1);
+    const s = baseState({ markdown: page, chapters: [ch('a', page)] });
+    const next = sandboxReducer(s, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes, baseLength: page.length } });
+    expect(next.markdown).toBe(':::page\n::panel{art=room}\nana{whisper at="42.5% 18%"}：今の聞こえた？\nben: Nothing.\n:::\n');
+    expect(next.chapters[0]!.markdown).toBe(next.markdown);
+    // A second drag computed on the old text does not write.
+    expect(sandboxReducer(next, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes, baseLength: page.length } })).toBe(next);
+    // Unpinned again from the new text.
+    const pinned = comicBalloonItem(next.markdown, { sourceStart: 0, sourceEnd: next.markdown.length }, next.markdown.indexOf('ana'))!;
+    const back = sandboxReducer(next, { type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: 'a', changes: unpinLineChanges(next.markdown, pinned)! } });
+    expect(back.markdown).toBe(page);
   });
 });

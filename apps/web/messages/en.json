@@ -3573,7 +3573,10 @@
     "comicSplitHorizontal": "Split with a horizontal line",
     "comicSplitVertical": "Split with a vertical line",
     "comicMergeNext": "Merge with the next panel",
-    "comicLetterboxHint": "Panel __n__ will be letterboxed: its picture's safe area no longer fits the cell."
+    "comicLetterboxHint": "Panel __n__ will be letterboxed: its picture's safe area no longer fits the cell.",
+    "comicBalloonLabel": "Balloon __n__ of __total__: __text__",
+    "comicBalloonHint": "Arrow keys move the balloon by 1 % of the picture (with Shift, 5 %). Enter pins it there; Escape puts it back; Delete unpins it. With the mouse: drag it (Shift keeps to one direction), double-click to unpin; Alt-drag turns a sound effect.",
+    "comicBalloonPin": "At __x__ across, __y__ down"
   },
   "PlainLanguage": {
     "heading": "In short",

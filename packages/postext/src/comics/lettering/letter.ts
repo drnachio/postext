@@ -136,7 +136,9 @@ function groupPieces(pieces: readonly Piece[], env: LetteringEnv): Piece[][] {
 function joinMode(prev: Piece, p: Piece, env: LetteringEnv): 'butt' | 'connector' | 'none' {
   if (p.item.kind !== 'balloon' || prev.item.kind !== 'balloon') return 'none';
   if (!p.item.speaker || p.item.speaker !== prev.item.speaker || p.style.id !== prev.style.id) return 'none';
-  if (p.item.pin || p.item.position || prev.item.pin) return 'none';
+  // A pinned line starts its group (the drag of a joined group pins its
+  // first line, #571): the lines after it may still join it.
+  if (p.item.pin || p.item.position) return 'none';
   if (p.item.join === false) return 'none';
   if (p.item.join === 'butt' || p.item.join === 'connector') return p.item.join;
   const def = env.joinSameSpeaker ?? 'butt';

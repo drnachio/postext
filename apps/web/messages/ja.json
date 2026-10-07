@@ -3573,7 +3573,10 @@
     "comicSplitHorizontal": "横線で分割",
     "comicSplitVertical": "縦線で分割",
     "comicMergeNext": "次のコマと結合",
-    "comicLetterboxHint": "コマ __n__ は余白付きになります：画像のセーフエリアがコマに収まりません。"
+    "comicLetterboxHint": "コマ __n__ は余白付きになります：画像のセーフエリアがコマに収まりません。",
+    "comicBalloonLabel": "フキダシ __n__ / __total__：__text__",
+    "comicBalloonHint": "矢印キーでフキダシを画像の 1% 動かします（Shift で 5%）。Enter でその位置に固定し、Esc で元に戻し、Delete で固定を外します。マウスでは：ドラッグで動かし（Shift で一方向のみ）、ダブルクリックで固定を外します。Alt を押しながらドラッグすると描き文字を回転します。",
+    "comicBalloonPin": "横 __x__、縦 __y__"
   },
   "PlainLanguage": {
     "heading": "かんたんな説明",

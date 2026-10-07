@@ -2959,5 +2959,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     comicSplitVertical: t("comicSplitVertical"),
     comicMergeNext: t("comicMergeNext"),
     comicLetterboxHint: t("comicLetterboxHint"),
+    comicBalloonLabel: t("comicBalloonLabel"),
+    comicBalloonHint: t("comicBalloonHint"),
+    comicBalloonPin: t("comicBalloonPin"),
   };
 }

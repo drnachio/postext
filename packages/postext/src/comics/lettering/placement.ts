@@ -469,10 +469,14 @@ function bestFor(scene: Scene, unit: PlaceUnit, others: readonly Placed[], first
   return fallback!;
 }
 
-/** The anchor that puts a pinned unit's box centre on its pin. */
+/** The anchor that puts a pinned unit's box centre on its pin; for a
+ *  joined group, the centre of its first body's box (the pinned line's
+ *  balloon: the lines joined to it follow wherever the group arranges
+ *  them). */
 function pinAnchor(unit: PlaceUnit, vi: number): Point {
   const v = unit.variants[vi]!;
-  return { x: unit.pin!.x - (v.bbox.x + v.bbox.width / 2), y: unit.pin!.y - (v.bbox.y + v.bbox.height / 2) };
+  const box = v.bodies.length > 1 ? v.bodies[0]!.bbox : v.bbox;
+  return { x: unit.pin!.x - (box.x + box.width / 2), y: unit.pin!.y - (box.y + box.height / 2) };
 }
 
 /** The result of placing a panel's units. */

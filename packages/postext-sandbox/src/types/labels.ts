@@ -3052,4 +3052,11 @@ export interface SandboxLabels {
   comicSplitVertical: string;
   comicMergeNext: string;
   comicLetterboxHint: string;
+
+  // Balloon drag on the previews (#571)
+  /** A balloon group's keyboard handle (`__n__`, `__total__`, `__text__`). */
+  comicBalloonLabel: string;
+  comicBalloonHint: string;
+  /** Where a dragged balloon would be pinned (`__x__`, `__y__`: percents). */
+  comicBalloonPin: string;
 }

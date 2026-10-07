@@ -3573,7 +3573,10 @@
     "comicSplitHorizontal": "Dividir con una línea horizontal",
     "comicSplitVertical": "Dividir con una línea vertical",
     "comicMergeNext": "Unir con la viñeta siguiente",
-    "comicLetterboxHint": "La viñeta __n__ quedará con bandas: la zona segura de su imagen ya no cabe en la celda."
+    "comicLetterboxHint": "La viñeta __n__ quedará con bandas: la zona segura de su imagen ya no cabe en la celda.",
+    "comicBalloonLabel": "Globo __n__ de __total__: __text__",
+    "comicBalloonHint": "Las flechas mueven el globo un 1 % de la imagen (con Mayús, un 5 %). Intro lo fija ahí; Escape lo devuelve a su sitio; Suprimir lo suelta. Con el ratón: arrástralo (Mayús lo mantiene en una dirección) y haz doble clic para soltarlo; Alt y arrastrar gira una onomatopeya.",
+    "comicBalloonPin": "En __x__ de ancho, __y__ de alto"
   },
   "PlainLanguage": {
     "heading": "En pocas palabras",

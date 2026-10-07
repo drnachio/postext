@@ -3573,7 +3573,10 @@
     "comicSplitHorizontal": "Divideix amb una línia horitzontal",
     "comicSplitVertical": "Divideix amb una línia vertical",
     "comicMergeNext": "Uneix amb la vinyeta següent",
-    "comicLetterboxHint": "La vinyeta __n__ quedarà amb bandes: la zona segura de la seva imatge ja no cap a la cel·la."
+    "comicLetterboxHint": "La vinyeta __n__ quedarà amb bandes: la zona segura de la seva imatge ja no cap a la cel·la.",
+    "comicBalloonLabel": "Bafarada __n__ de __total__: __text__",
+    "comicBalloonHint": "Les fletxes mouen la bafarada un 1 % de la imatge (amb Maj, un 5 %). Retorn la fixa allà; Escapada la torna al seu lloc; Suprimir la deixa anar. Amb el ratolí: arrossega-la (Maj la manté en una direcció) i fes doble clic per deixar-la anar; Alt i arrossegar gira una onomatopeia.",
+    "comicBalloonPin": "A __x__ d'amplada, __y__ d'alçada"
   },
   "PlainLanguage": {
     "heading": "En poques paraules",

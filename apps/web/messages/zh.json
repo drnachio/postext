@@ -3573,7 +3573,10 @@
     "comicSplitHorizontal": "用水平线分割",
     "comicSplitVertical": "用垂直线分割",
     "comicMergeNext": "与下一格合并",
-    "comicLetterboxHint": "第 __n__ 格将出现留边：图片的安全区域已放不进该格。"
+    "comicLetterboxHint": "第 __n__ 格将出现留边：图片的安全区域已放不进该格。",
+    "comicBalloonLabel": "对白框 __n__ / __total__：__text__",
+    "comicBalloonHint": "方向键将对白框移动图片的 1%（按住 Shift 为 5%）。按 Enter 将其固定在该处；按 Esc 恢复原位；按 Delete 取消固定。使用鼠标：拖动对白框（按住 Shift 只沿一个方向），双击取消固定；按住 Alt 拖动可旋转拟声词。",
+    "comicBalloonPin": "横向 __x__，纵向 __y__"
   },
   "PlainLanguage": {
     "heading": "简单来说",

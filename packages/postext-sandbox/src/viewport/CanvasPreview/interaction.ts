@@ -183,7 +183,7 @@ export interface PageInteractionOptions {
   /** Brings a resource or anchor of the document into view. */
   showLocation: (doc: VDTDocument, loc: ResourceLocation) => void;
   /** The cursor over the pages: `text`, `pointer` over a link, a resize
-   *  cursor over a comic splitter. */
+   *  cursor over a comic splitter, `move` over a comic balloon. */
   setCursor: (cursor: PageCursor) => void;
   /** Whether the pointer is the reader's to select with now (the Folio's
    *  select mode); always, when left out. */
@@ -200,7 +200,7 @@ export interface PageInteractionOptions {
 }
 
 /** The cursors the page interaction sets. */
-export type PageCursor = 'text' | 'pointer' | 'default' | 'row-resize' | 'col-resize';
+export type PageCursor = 'text' | 'pointer' | 'default' | 'row-resize' | 'col-resize' | 'move';
 
 /** What the page interaction hands back to its viewer. */
 export interface PageInteraction {
@@ -223,8 +223,8 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   const sourceOfPage = (page = pageIndex): ComposedBook | null =>
     pageSourceRef?.current ? pageSourceRef.current(page) : sourceRef.current;
 
-  // The comic page tools (#568): a splitter under the pointer is dragged
-  // instead of the text, a panel shows its toolbar.
+  // The comic page tools (#568, #571): a splitter or a balloon under the
+  // pointer is dragged instead of the text, a panel shows its toolbar.
   const comic = opts.comicSurface && opts.labelsRef
     ? createComicEditor({
         surface: opts.comicSurface,
@@ -453,7 +453,9 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
 
   const endDrag = (ev: PointerEvent): void => {
     if (comic?.dragging()) {
-      comic.pointerUp(ev, ev.type === 'pointercancel');
+      // A balloon pressed and let go where it was: the click is the
+      // text's (the caret goes to its line).
+      if (!comic.pointerUp(ev, ev.type === 'pointercancel')) comicPress = false;
       return;
     }
     if (dragPointerId === null || ev.pointerId !== dragPointerId) return;
@@ -520,6 +522,13 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     // A cover picture or logo drawn by a design slot: open its resource so
     // the image can be replaced.
     if (touchTap) return;
+    // A comic balloon (#571): the caret goes to its script line.
+    const balloonOffset = comic?.balloonSourceAt(at) ?? null;
+    if (balloonOffset !== null) {
+      ev.preventDefault();
+      focusEditor(balloonOffset, balloonOffset, false);
+      return;
+    }
     const designImageId = resolveDesignImage(ev);
     if (designImageId !== null) {
       ev.preventDefault();
