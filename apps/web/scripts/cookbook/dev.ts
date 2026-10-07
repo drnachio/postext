@@ -20,7 +20,7 @@ export const DEV_USAGE = `pnpm cookbook dev <slug> [--lang es] [--port 4400] [--
   Serves the page the capture runs, with live reload: saving a file under
   cookbook/<slug>/ or cookbook/_kit/ recomposes the pen and reloads it.
 
-  --lang <en|es>     Sample edition (default: the recipe's first sample language)
+  --lang <locale>    Sample edition (default: the recipe's first sample language)
   --port <n>         Port of the local server (default 4400)
   --engine <spec>    npm (default: the released version), npm@x.y.z, or local (the
                      workspace packages' dist: run tsc in packages/postext and postext-pdf)`;

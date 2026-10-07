@@ -393,7 +393,10 @@ export function objectValueAt(scan: JsScan, open: number, key: string): number {
 
 /** The string a config path holds in `const config = () => ({ … })`
  *  (`configString(scan, "page.binding")` → "right"), through nested object
- *  literals only; undefined when it is not a plain string there. */
+ *  literals only; undefined when it is not a plain string there. The value
+ *  may also be the edition's entry of `t({ en: '…', ja: '…' })` (the pen's
+ *  `const LANG`), written in place or in a top-level `const` it names, as a
+ *  comic re-lettered per language writes its `locale`. */
 export function configString(scan: JsScan, dotted: string): string | undefined {
   const range = configObjectRange(scan);
   if (!range) return undefined;
@@ -402,11 +405,30 @@ export function configString(scan: JsScan, dotted: string): string | undefined {
   for (const [i, key] of keys.entries()) {
     const at = objectValueAt(scan, open, key);
     if (at === -1) return undefined;
-    if (i === keys.length - 1) return /^(['"`])([^'"`\n]*)\1/.exec(scan.code.slice(at, at + 200))?.[2];
+    if (i === keys.length - 1) return stringValueAt(scan, at, 1);
     if (scan.bare[at] !== "{") return undefined;
     open = at;
   }
   return undefined;
+}
+
+/** The string at `at`: a literal, `t({ … })` read for the pen's LANG, or a
+ *  top-level `const` holding either (followed `depth` times). */
+function stringValueAt(scan: JsScan, at: number, depth: number): string | undefined {
+  const head = scan.code.slice(at, at + 200);
+  const literal = /^(['"`])([^'"`\n]*)\1/.exec(head);
+  if (literal) return literal[2];
+  if (/^t\(\s*\{/.test(head)) {
+    const lang = /^const LANG = '([a-z-]+)'/m.exec(scan.code)?.[1];
+    const open = at + head.indexOf("{");
+    if (!lang) return undefined;
+    const value = objectValueAt(scan, open, lang);
+    return value === -1 ? undefined : /^(['"`])([^'"`\n]*)\1/.exec(scan.code.slice(value, value + 200))?.[2];
+  }
+  const name = /^([A-Za-z_$][\w$]*)\s*[,}\n]/.exec(head)?.[1];
+  if (!name || depth <= 0) return undefined;
+  const decl = new RegExp(`^const ${name.replace(/\$/g, "\\$")}\\s*=\\s*`, "m").exec(scan.code);
+  return decl ? stringValueAt(scan, (decl.index ?? 0) + decl[0].length, depth - 1) : undefined;
 }
 
 /** Top-level keys of `const config = () => ({ … })`, unique, in source order. */

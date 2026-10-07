@@ -7,6 +7,7 @@ import {
   KNOWN_CONTAINERS,
   KNOWN_DIRECTIVES,
   configKeys,
+  configString,
   detectPen,
   markdownConstructs,
   parseImports,
@@ -687,6 +688,12 @@ describe("detect", () => {
     expect(usedApis(spread)).toEqual(["parseTSV"]);
     expect(configKeys(pen.js)).toEqual(["locale", "resourceTypes", "colorPalette", "page", "bodyText", "headings", "header", "footer"]);
     expect(configKeys("const config = () => ({ page, ...base, [k]: 1, 'bodyText': {}, layout() {} });")).toEqual(["page", "bodyText", "layout"]);
+    // A locale per edition: the entry of t({…}) for the pen's LANG, in place or through a const.
+    const editions = (lang: string) => `const LANG = '${lang}';\nconst LOCALE = t({ es: 'es', ja: 'ja', ar: 'ar' });\n` +
+      "const config = () => ({ locale: LOCALE, page: { binding: t({ es: 'left', ar: 'right' }) } });";
+    expect(configString(scanJs(editions("ja")), "locale")).toBe("ja");
+    expect(configString(scanJs(editions("ar")), "page.binding")).toBe("right");
+    expect(configString(scanJs(editions("ja")), "page.binding")).toBeUndefined();
     expect(penFonts(pen.js)).toEqual([
       { family: "Newsreader", weight: 400, style: "normal" },
       { family: "Newsreader", weight: 400, style: "italic" },

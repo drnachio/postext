@@ -26,6 +26,8 @@ const FALLBACK_CONTAINERS = ['callout', 'paragraphs', 'part', 'columns', 'paper'
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CLOSE_RE = /^:::\s*$/;
 const RESOURCE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
+/** Fences whose raw body holds `::panel` lines and balloon scripts. */
+const COMIC_FENCES = new Set(['page', 'strip']);
 
 // ─── The record ─────────────────────────────────────────────────────────────
 
@@ -465,12 +467,24 @@ export function facts({ select = 'last', hero = [] } = {}) {
         excerpt: body.slice(issue.sourceStart, issue.sourceStart + 60).split('\n')[0],
       });
     }
+    // A comic page or strip reads its own body: its `::panel` lines are
+    // the engine's, not stray leaf directives.
+    let comicBody = false;
     body.split('\n').forEach((raw, i) => {
       const line = raw.trim();
+      if (comicBody) {
+        if (CLOSE_RE.test(line)) comicBody = false;
+        else if (/^::panel\b/.test(line)) directives.add('panel');
+        return;
+      }
       if (line.startsWith(':::')) {
         if (CLOSE_RE.test(line)) return;
         const m = DIRECTIVE_RE.exec(line);
-        if (m && fenceNames.has(m[1])) { directives.add(m[1]); return; }
+        if (m && fenceNames.has(m[1])) {
+          directives.add(m[1]);
+          comicBody = COMIC_FENCES.has(m[1]);
+          return;
+        }
         badFences.push({ chapter, line: i + 1, text: line.slice(0, 80), name: /^:::\s*([\w-]*)/.exec(line)?.[1] ?? '' });
       } else if (/^::[a-z]/i.test(line)) {
         if (RESOURCE_RE.test(line)) { directives.add('resource'); return; }

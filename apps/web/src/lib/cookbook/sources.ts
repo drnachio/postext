@@ -7,7 +7,7 @@ import path from "node:path";
 import { COOKBOOK_DIR, KIT_DIR, recipeDir } from "./paths.ts";
 import { penJson } from "./compose.ts";
 import type { KitBlock, RecipeMeta, RecipeSources } from "./types.ts";
-import { KIT_ORDER, SLUG_PATTERN } from "./types.ts";
+import { KIT_ORDER, SAMPLE_LOCALES, SLUG_PATTERN } from "./types.ts";
 
 function readOptional(file: string): string {
   return fs.existsSync(file) ? fs.readFileSync(file, "utf-8") : "";
@@ -41,13 +41,16 @@ function listFiles(dir: string, base = dir): string[] {
   });
 }
 
+/** `content.<lang>.md` or `content.<slot>.<lang>.md`, in a sample language. */
+const CONTENT_FILE = new RegExp(`^content\\.(?:([a-z0-9-]+)\\.)?(${SAMPLE_LOCALES.join("|")})\\.md$`);
+
 /** The raw files of a recipe folder. */
 export function readRecipeSources(slug: string): RecipeSources {
   if (!SLUG_PATTERN.test(slug)) throw new Error(`Cookbook: invalid slug "${slug}"`);
   const dir = recipeDir(slug);
   const content: Record<string, string> = {};
   for (const name of fs.readdirSync(dir)) {
-    const match = /^content\.(?:([a-z0-9-]+)\.)?(en|es)\.md$/.exec(name);
+    const match = CONTENT_FILE.exec(name);
     if (!match) continue;
     content[match[1] ? `${match[1]}.${match[2]}` : match[2]] = fs.readFileSync(path.join(dir, name), "utf-8");
   }
