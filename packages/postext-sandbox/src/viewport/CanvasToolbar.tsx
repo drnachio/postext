@@ -19,6 +19,7 @@ import { groupPagesIntoRows } from './CanvasPreview/layoutUtils';
 import { Tooltip, useUiRtl } from '../ui';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { useLargeTargets } from '../ui/largeTargets';
+import { PrintPreviewButton } from '../print/PrintPreviewButton';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -424,6 +425,8 @@ export function CanvasToolbar({
         onClick={() => onSetViewMode('spread')}
         active={viewMode === 'spread'}
       />
+      <ToolbarSeparator />
+      <PrintPreviewButton />
       <ToolbarSeparator />
       <ToolbarButton
         icon={<ChevronUp size={16} aria-hidden="true" />}

@@ -312,6 +312,18 @@
       "pt": "Geração de PDF (configuração)"
     }
   },
+  "print": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Print production (config)",
+      "es": "Producción para imprenta (configuración)",
+      "ca": "Producció per a impremta (configuració)",
+      "zh": "印刷输出（配置）",
+      "ar": "الإنتاج الطباعي (الإعدادات)",
+      "ja": "印刷出力（設定）",
+      "pt": "Produção gráfica (configuração)"
+    }
+  },
   "colorPalette": {
     "slug": "configuration",
     "heading": {

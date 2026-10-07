@@ -29,6 +29,7 @@ import { VideoStyleSection } from './VideoStyleSection';
 import { ResourceTypesSection } from './ResourceTypesSection';
 import { HtmlViewerSection } from './HtmlViewerSection';
 import { PdfGenerationSection } from './PdfGenerationSection';
+import { PrintSection } from './PrintSection';
 import { FolioSection } from './FolioSection';
 import { DebugSection } from './DebugSection';
 import { WarningsConfigSection } from './WarningsConfigSection';
@@ -76,6 +77,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'htmlViewer': HtmlViewerSection,
   'folio': FolioSection,
   'pdfGeneration': PdfGenerationSection,
+  'print': PrintSection,
   'debug': DebugSection,
   'warnings': WarningsConfigSection,
 };

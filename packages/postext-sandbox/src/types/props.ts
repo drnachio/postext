@@ -27,6 +27,9 @@ export interface PostextSandboxProps {
   /** Remote preset sources (base URLs serving `index.json`), tried in order
    *  after the built-in preset. */
   presetSources?: PresetSourceSpec[];
+  /** Where the print output profiles are fetched from (`<base>/<id>.icc`,
+   *  the files of postext's `icc/` folder). Defaults to the npm CDN copy. */
+  outputProfileBaseUrl?: string;
   /** Books the host links to by a fragment key of its own, e.g.
    *  `{ recipe: (slug, lang) => \`/cookbook/${slug}/${lang}/${slug}.postext\` }`
    *  for `#recipe=<slug>&lang=es`. The bundle is fetched (same origin only)

@@ -283,7 +283,23 @@ export async function readBundle(
     { content: chapters.map((c) => c.markdown) },
   );
   const customFonts = [...(manifest.config?.customFonts ?? []), ...fontSet.families];
-  const config = customFonts.length > 0 ? { ...baseConfig, customFonts } : baseConfig;
+  let config = customFonts.length > 0 ? { ...baseConfig, customFonts } : baseConfig;
+  // An uploaded output profile (`print.customProfile`), named by its path in
+  // the bundle.
+  const profile = config.print?.customProfile;
+  if (profile) {
+    const bytes = await readFile(profile.fileId).catch(() => null);
+    if (bytes) {
+      blobs.push({ fileId: ids.blob(profile.fileId), file: profile.fileId, bytes, mime: 'application/vnd.iccprofile' });
+      config = { ...config, print: { ...config.print, customProfile: { ...profile, fileId: ids.blob(profile.fileId) } } };
+    } else {
+      onWarning?.(`output profile "${profile.fileId}" not found, ignored`);
+      const print = { ...config.print };
+      delete print.customProfile;
+      if (print.outputProfile === 'custom') delete print.outputProfile;
+      config = { ...config, print };
+    }
+  }
 
   return { manifest, locale: served, chapters, config, resources, blobs, fonts };
 }
@@ -482,6 +498,13 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
 
   const configWithoutFonts: Partial<PostextConfig> = { ...stripConfigDefaults(content.config) };
   delete configWithoutFonts.customFonts;
+  // An uploaded output profile travels as a file, named by its path.
+  const profile = configWithoutFonts.print?.customProfile;
+  if (profile) {
+    const path = `profiles/${slugify(profile.name) || 'output-profile'}.icc`;
+    files.push({ path, fileId: profile.fileId, kind: 'blob', owner: 'print' });
+    configWithoutFonts.print = { ...configWithoutFonts.print, customProfile: { ...profile, fileId: path } };
+  }
 
   // Chapter files: `chapters/01-intro.md`, or one folder per locale when
   // any locale has chapters of its own (`chapters/es/01-intro.md`).

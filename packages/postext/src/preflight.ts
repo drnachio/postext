@@ -116,6 +116,7 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
   const smallTextPx = dimensionToPx(pf.smallTextSize, dpi);
   const safePx = dimensionToPx(pf.safeZone, dpi);
   const snapPx = dimensionToPx(pf.bleedSnap, dpi);
+  const tenthMmPx = dimensionToPx({ value: 0.1, unit: 'mm' }, dpi);
   const out: PreflightIssue[] = [];
   const t = options.transform;
 
@@ -243,7 +244,8 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
         [trim.y + trim.height - (rect.y + rect.height), 'bottom'],
       ];
       for (const [gap, edge] of gaps) {
-        if (gap > 1e-3 && gap < snapPx) {
+        // Under a tenth of a millimetre the box reaches the trim (rounding).
+        if (gap > tenthMmPx && gap < snapPx) {
           out.push({ kind: 'nearTrim', severity: 'warning', pageIndex, rect, gapMm: Math.round(pxToMm(gap) * 10) / 10, edge });
           return;
         }
@@ -264,6 +266,10 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
           if (b.imageKind !== 'svg') checkImage(b.fileId, b.bbox.width, b.bbox.height, 1, 1, pageIndex, b.bbox);
           checkNearTrim(b.bbox);
         } else if (b.kind === 'text') {
+          // What the block shows (a placeholder that resolved to nothing
+          // prints nothing).
+          const shown = b.lines.map((l) => l.text).join(' ').trim();
+          if (!shown) continue;
           const hex = hex6(b.color);
           if (b.box && !isTransparent(b.box.backgroundColor)) checkCoverage(b.box.backgroundColor, pageIndex, b.bbox);
           if (!hex) continue;
@@ -273,7 +279,7 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
           if (size !== undefined && size < smallTextPx - 1e-6 && inks > 1) {
             out.push({
               kind: 'smallProcessText', severity: 'warning', pageIndex, rect: b.bbox,
-              sizePt: Math.round(pxToPt(size) * 10) / 10, inks, color: hex, text: (b.sourceText ?? '').trim().slice(0, 40),
+              sizePt: Math.round(pxToPt(size) * 10) / 10, inks, color: hex, text: shown.slice(0, 40),
               ...(b.sourceStart !== undefined ? { sourceStart: b.sourceStart, ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}) } : {}),
             });
           }

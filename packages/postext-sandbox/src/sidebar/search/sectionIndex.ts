@@ -12,6 +12,7 @@
 
 import { LOCALE_TAGS, STYLE_CATALOG } from 'postext-citeproc/catalog';
 import type { PostextConfig, Resource } from 'postext';
+import { OUTPUT_PROFILES } from 'postext';
 import {
   DEFAULT_BALLOON_STYLES,
   DEFAULT_BODY_TEXT_CONFIG,
@@ -145,6 +146,9 @@ function sourceWords(
     case 'citationStyles':
       // The style picker names each bundled style.
       return [...STYLE_CATALOG.flatMap((s) => [s.title, s.short, s.fields ?? '']), ...LOCALE_TAGS];
+    case 'outputProfiles':
+      // The profile picker names each catalogue profile, and an uploaded one.
+      return [...OUTPUT_PROFILES.map((p) => p.name), ...(config.print?.customProfile ? [config.print.customProfile.name] : [])];
   }
 }
 

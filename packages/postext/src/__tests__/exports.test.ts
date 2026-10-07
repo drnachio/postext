@@ -586,6 +586,8 @@ describe("package exports", () => {
       "loadOutputProfile",
       "srgbProfileBytes",
       "authoredCmykColors",
+      "createPrintPreview",
+      "proofPixels",
     ]);
   });
 });

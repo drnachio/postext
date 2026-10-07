@@ -67,7 +67,7 @@ YouTube上也有：[在那里观看](https://www.youtube.com/watch?v=P_hKidkjSkw
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>inventory.py</code></td><td>初步查看任意源文件：几何尺寸、字体、使用中的样式、媒体、需要OCR的页面</td></tr>
+    <tr><td><code>inventory.py</code></td><td>初步查看任意源文件：几何尺寸、字体、使用中的样式、媒体、需要OCR的页面；对按PDF/X印刷的PDF，给出其输出条件和出血，以及重现它们的<code>print</code>设置。</td></tr>
     <tr><td><code>measure_layout.py</code></td><td>PDF的页边距、栏、栏间距和行距（即基线网格）</td></tr>
     <tr><td><code>pdf_extract.py</code></td><td>PDF → 按<em>字体角色</em>（字体/字号/颜色）生成的章节草稿：阅读顺序、段落、去除断词连字符、粗体/斜体、上标/下标、列表、题注</td></tr>
     <tr><td><code>pdf_figures.py</code></td><td>从PDF中裁出图：原始分辨率的照片、SVG预览图、矢量PDF印刷原稿</td></tr>
@@ -80,7 +80,7 @@ YouTube上也有：[在那里观看](https://www.youtube.com/watch?v=P_hKidkjSkw
     <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>对字体做实例化、子集化、缩放和拆分（按书中用字裁剪的中文或日文字体保留其竖排字形和度量，阿拉伯文字体保留其连写字形和tatweel）；把图片转换为sRGB、裁边和拼接；把<code>.ai</code>/<code>.pdf</code>插图转换成SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>搭建项目及其生成脚本，构建<code>preset.json</code>，打包<code>.postext</code>文件</td></tr>
     <tr><td><code>lint_project.py</code></td><td>找出解析器和加载器会悄悄弄错的所有问题；对中文、日文和韩文文本，还会找出项目自带字体排不出的字符；对日文文本，会指出设成中文语言的假名文本、中文字体或中文设置、章节里残留的青空文库标记，以及没有读音的汉字索引条目；对阿拉伯文文本，会指出缺少阿拉伯语的语言设置、只有拉丁字母或没有连写表的字体、字母间距、强制断词和斜体强调；对漫画，会指出无法读取的<code>split</code>表达式、与分割单元数不符的分格、未知的图片和对话框或分格样式、格式错误的说话人锚点、项目没有附带的嵌字字体，以及各语言版本之间不一致的页面</td></tr>
-    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，并输出警告。加上<code>--jpeg</code>时，它用引擎自己的Canvas渲染器把指定的页面（<code>--pages 12-15</code>）画成JPEG文件，只需一两秒，代理不必生成PDF就能查看页面；<code>--out</code>写出PDF</td></tr>
+    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，并输出警告。加上<code>--jpeg</code>时，它用引擎自己的Canvas渲染器把指定的页面（<code>--pages 12-15</code>）画成JPEG文件，只需一两秒，代理不必生成PDF就能查看页面；<code>--out</code>写出PDF。为印刷设置的书会输出PREFLIGHT行（低分辨率图片、过细线条、多色小字、超出上限的墨量、靠近裁切线的文字），其PDF按ICC输出特性文件分色。</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>把源文件页面和Postext页面并排放置，Postext页面取自渲染出的PDF或JPEG文件夹</td></tr>
   </tbody>
 </table>

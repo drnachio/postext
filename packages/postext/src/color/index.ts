@@ -41,3 +41,4 @@ export {
 } from './catalogue';
 export { srgbProfileBytes } from './srgbProfile';
 export { authoredCmykColors } from './authored';
+export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof';

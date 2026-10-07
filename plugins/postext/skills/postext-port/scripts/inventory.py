@@ -53,6 +53,88 @@ def attr(el, name: str, default=None):
 # ---------------------------------------------------------------------------
 
 
+# Printing conditions a PDF/X output intent may name -> postext's catalogue
+# (`print.outputProfile`). ECI's own profile names map to their condition.
+CONDITIONS = [
+    (r"FOGRA\s*51|PSO\s*Coated\s*v3", "fogra51"),
+    (r"FOGRA\s*52|PSO\s*Uncoated\s*v3", "fogra52"),
+    (r"FOGRA\s*39|ISO\s*Coated\s*v2|Coated\s*FOGRA39", "fogra39"),
+    (r"FOGRA\s*47|PSO\s*Uncoated\s*ISO", "fogra47"),
+    (r"FOGRA\s*29|ISO\s*Uncoated", "fogra29"),
+    (r"FOGRA\s*30", "fogra30"),
+    (r"FOGRA\s*27", "fogra27"),
+    (r"FOGRA\s*28|ISO\s*Web\s*Coated", "fogra28"),
+    (r"FOGRA\s*45|LWC\s*Improved", "fogra45"),
+    (r"FOGRA\s*40|SC\s*paper", "fogra40"),
+    (r"TR\s*0?06|GRACoL", "gracol2006"),
+    (r"TR\s*0?03|SWOP.*3", "swop3"),
+    (r"TR\s*0?05|SWOP.*5", "swop5"),
+    (r"IFRA\s*26|ISO\s*News", "ifra26"),
+    (r"TR\s*0?02|SNAP", "snap2007"),
+]
+
+
+def print_setup(doc, p0) -> dict:
+    """The source's print set-up: its PDF/X version, the output intent's
+    printing condition and the bleed (BleedBox past the TrimBox), with the
+    `print` / `page.cutLines` config that reproduces it."""
+    out: dict = {}
+    cat = doc.pdf_catalog()
+
+    def string_of(xref_or_obj: str) -> str:
+        m = re.search(r"\((.*?)\)\s*$", xref_or_obj or "", re.S)
+        return m.group(1) if m else (xref_or_obj or "").strip("/ ")
+
+    version = ""
+    try:
+        info = doc.xref_get_key(-1, "Info")
+        if info[0] == "xref":
+            version = string_of(doc.xref_get_key(int(info[1].split()[0]), "GTS_PDFXVersion")[1])
+    except Exception:
+        pass
+    condition = ""
+    try:
+        kind, val = doc.xref_get_key(cat, "OutputIntents")
+        refs = re.findall(r"(\d+) 0 R", val) if kind in ("array", "xref") else []
+        if kind == "xref":
+            refs = re.findall(r"(\d+) 0 R", doc.xref_object(int(val.split()[0])))
+        for r in refs:
+            for key in ("OutputConditionIdentifier", "OutputCondition", "Info"):
+                v = string_of(doc.xref_get_key(int(r), key)[1])
+                if v:
+                    condition = condition or v
+                    for pat, pid in CONDITIONS:
+                        if re.search(pat, v, re.I):
+                            out["print_profile"] = pid
+                            break
+                if "print_profile" in out:
+                    break
+    except Exception:
+        pass
+    if version:
+        out["pdfx_version"] = version
+    if condition:
+        out["output_condition"] = condition
+    bb, tb = p0.bleedbox, p0.trimbox
+    bleed = 0.0
+    if tb != p0.mediabox and bb != tb:
+        bleed = round(min(tb.x0 - bb.x0, tb.y0 - bb.y0, bb.x1 - tb.x1, bb.y1 - tb.y1) * PT_MM, 1)
+        if bleed > 0:
+            out["bleed_mm"] = bleed
+    suggested: dict = {}
+    if version or condition:
+        std = "pdfx1a" if re.search(r"X-1a", version, re.I) else "pdfx4"
+        suggested["print"] = {"standard": std, **({"outputProfile": out["print_profile"]} if "print_profile" in out else {})}
+    if bleed > 0:
+        suggested["page.cutLines"] = {"enabled": True, "bleed": {"value": bleed, "unit": "mm"}}
+    if suggested:
+        out["suggested_config"] = suggested
+        if condition and "print_profile" not in out:
+            out["note_print"] = (f"output condition {condition!r} is not in postext's catalogue: ask for the printer's .icc "
+                                 "and set print.outputProfile 'custom' with print.customProfile")
+    return out
+
+
 def inv_pdf(path: Path, pages_spec: str | None) -> dict:
     try:
         import fitz  # type: ignore
@@ -71,6 +153,7 @@ def inv_pdf(path: Path, pages_spec: str | None) -> dict:
     if tb != p0.mediabox:
         out["trimbox_mm"] = [mm(tb.x0 * PT_MM), mm(tb.y0 * PT_MM), mm(tb.x1 * PT_MM), mm(tb.y1 * PT_MM)]
         out["note_trim"] = "media box larger than trim box: measure everything from the trim (subtract the bleed/slug)"
+    out.update(print_setup(doc, p0))
     sizes = Counter((round(doc[i].rect.width), round(doc[i].rect.height)) for i in range(n))
     if len(sizes) > 1:
         out["page_sizes_pt"] = {f"{w}x{h}": c for (w, h), c in sizes.most_common()}

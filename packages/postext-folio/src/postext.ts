@@ -1,4 +1,4 @@
-import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
+import { renderPageToCanvas, type PrintPreview, type VDTDocument, type VDTPage } from "postext";
 import { folioForTrim, resolveFolioConfig, type FolioPaperConfig } from "postext";
 import { BLOCK_PAGES, type PageSource } from "./pageFlip";
 import { createFolio, type FolioAppearance, type FolioOptions, type FolioPagePoint, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
@@ -14,6 +14,9 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
   /** Passed to `renderPageToCanvas` (see its `RenderPageOptions`). */
   singleInk?: boolean;
   pageNegative?: boolean;
+  /** The print preview (soft proof) of the pages (`createPrintPreview`
+   *  with `paper: false`: the paper shade of the book tints them). */
+  printPreview?: PrintPreview;
   /** A page's text alternative. Default `Page n`. */
   alt?: (index: number) => string;
   /**
@@ -312,6 +315,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       scale: width / trimmedSize(page, current).width,
       singleInk: options.singleInk,
       pageNegative: options.pageNegative,
+      ...(options.printPreview ? { printPreview: options.printPreview } : {}),
     });
     const old = canvases[i];
     if (old) old.width = old.height = 0;
@@ -754,7 +758,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
             if (had && had.doc === current && had.width >= w) return resolve(had.canvas);
             const canvas = document.createElement("canvas");
             const scale = w / size.width;
-            renderPageToCanvas(page, current, canvas, { trim: true, scale, singleInk: options.singleInk, pageNegative: options.pageNegative });
+            renderPageToCanvas(page, current, canvas, { trim: true, scale, singleInk: options.singleInk, pageNegative: options.pageNegative, ...(options.printPreview ? { printPreview: options.printPreview } : {}) });
             const entry: Sharp = { canvas, bare: null, width: w, doc: current };
             // The decorations too (a selection), over the page as painted.
             decorateSharp(i, entry);

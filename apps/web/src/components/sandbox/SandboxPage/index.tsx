@@ -70,6 +70,7 @@ export function SandboxPage() {
       labels={labels}
       locale={locale}
       presetSources={PRESET_SOURCES}
+      outputProfileBaseUrl="/icc/"
       hashBundles={HASH_BUNDLES}
       themeToggle={<ThemeToggle compact />}
       languageSwitcher={<CompactLanguageSwitcher />}

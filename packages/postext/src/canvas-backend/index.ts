@@ -14,6 +14,7 @@ import { setVerticalPaint } from './verticalText';
 import { beginMirroredFlow } from './mirrorFrame';
 import { renderComicPage } from './comic';
 import { pageComics } from '../comics/transform';
+import { proofPixels, type PrintPreview } from '../color/softProof';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -50,6 +51,11 @@ export interface RenderPageOptions {
    *  leaving out the bleed, the slug and the crop marks. `scale` still
    *  counts bitmap pixels per page pixel. No effect without cut lines. */
   trim?: boolean;
+  /** Paint the page as it will print (#606): the finished page goes
+   *  through the soft proof of the output profile (`createPrintPreview`),
+   *  large black areas in rich black; then the trim, bleed and safe-zone
+   *  guides and the preflight marks it carries are drawn over it. */
+  printPreview?: PrintPreview;
 }
 
 /** How far the painted area sits inside the sheet: the trim offset when
@@ -288,8 +294,75 @@ function paintContext(
     ctx.filter = 'none';
   }
 
+  if (options?.printPreview) paintPrintPreview(ctx, canvas, page, doc, options.printPreview, sx, inset);
+
   if (inset === 0) renderCutLines(ctx, page, doc);
 }
+
+/** The soft proof over the painted page, then its screen guides. */
+function paintPrintPreview(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  page: VDTPage,
+  doc: VDTDocument,
+  preview: PrintPreview,
+  pxPerPagePx: number,
+  inset: number,
+): void {
+  const w = canvas.width;
+  const h = canvas.height;
+  let image: ImageData;
+  try {
+    image = ctx.getImageData(0, 0, w, h);
+  } catch {
+    // A tainted canvas (a cross-origin picture) cannot be read back.
+    return;
+  }
+  proofPixels(image.data, w, h, preview, pxPerPagePx);
+  ctx.putImageData(image, 0, 0);
+
+  const guides = preview.guides;
+  const marks = preview.marksFor?.(page.index) ?? [];
+  if (!guides && marks.length === 0) return;
+  ctx.save();
+  const line = 1 / pxPerPagePx;
+  ctx.lineWidth = line;
+  if (guides) {
+    const trim = doc.trimOffset;
+    const bleed = trim > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
+    const box = (d: number) => [trim + d, trim + d, page.width - 2 * (trim + d), page.height - 2 * (trim + d)] as const;
+    ctx.setLineDash([]);
+    ctx.strokeStyle = PREVIEW_TRIM_COLOR;
+    if (trim > inset) ctx.strokeRect(...box(0));
+    if (bleed > 0 && inset === 0) {
+      ctx.strokeStyle = PREVIEW_BLEED_COLOR;
+      ctx.strokeRect(...box(-bleed));
+    }
+    if (guides.safeZonePx > 0) {
+      ctx.strokeStyle = PREVIEW_SAFE_COLOR;
+      ctx.setLineDash([4 * line, 3 * line]);
+      ctx.strokeRect(...box(guides.safeZonePx));
+    }
+  }
+  if (marks.length > 0) {
+    ctx.setLineDash([]);
+    ctx.lineWidth = 2 * line;
+    ctx.strokeStyle = PREVIEW_MARK_COLOR;
+    ctx.fillStyle = PREVIEW_MARK_FILL;
+    for (const m of marks) {
+      ctx.fillRect(m.x, m.y, m.width, m.height);
+      ctx.strokeRect(m.x, m.y, m.width, m.height);
+    }
+  }
+  ctx.restore();
+}
+
+/** Screen-only colours of the print preview's guides. */
+const PREVIEW_TRIM_COLOR = '#00a3d9';
+const PREVIEW_BLEED_COLOR = '#d9008f';
+const PREVIEW_SAFE_COLOR = '#2fa84f';
+const PREVIEW_MARK_COLOR = '#e5484d';
+const PREVIEW_MARK_FILL = 'rgba(229, 72, 77, 0.12)';
 
 export function renderPage(page: VDTPage, doc: VDTDocument, options?: RenderPageOptions): HTMLCanvasElement {
   const canvas = document.createElement('canvas');

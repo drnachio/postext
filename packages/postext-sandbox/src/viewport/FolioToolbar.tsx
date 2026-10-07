@@ -4,6 +4,7 @@ import type { FocusEventHandler } from 'react';
 import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, Save, Search, TextCursor } from 'lucide-react';
 import type { FolioInteraction } from 'postext-folio';
 import { useSandboxLabels } from '../context/SandboxContext';
+import { PrintPreviewButton } from '../print/PrintPreviewButton';
 import {
   PageNumberInput,
   PinToolbarButton,
@@ -132,6 +133,8 @@ export function FolioToolbar({
           active={interaction === 'magnify'}
         />
       </div>
+      <ToolbarSeparator />
+      <PrintPreviewButton />
       <ToolbarSeparator />
       <PinToolbarButton
         pinned={pinned}

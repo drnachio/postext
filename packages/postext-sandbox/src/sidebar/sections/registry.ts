@@ -58,6 +58,7 @@ export type SettingsSectionId =
   | 'htmlViewer'
   | 'folio'
   | 'pdfGeneration'
+  | 'print'
   | 'debug'
   | 'warnings';
 
@@ -134,6 +135,9 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'comicsCast', group: 'comics', labelKey: 'comicsCastSection', configKeys: ['comics'] },
   { id: 'headerFooter', group: 'running', labelKey: 'headerFooter', configKeys: ['header', 'footer'] },
   { id: 'parts', group: 'parts', labelKey: 'parts', configKeys: ['parts'] },
+  // Print preparation: `print`, and the crop marks under `page.cutLines`
+  // (see `sectionHasOverrides`).
+  { id: 'print', group: 'output', labelKey: 'printSection', configKeys: ['print', 'page'] },
   { id: 'pdfGeneration', group: 'output', labelKey: 'pdfGenerationSection', configKeys: ['pdfGeneration'] },
   { id: 'htmlViewer', group: 'output', labelKey: 'htmlViewer', configKeys: ['htmlViewer'] },
   { id: 'folio', group: 'folio', labelKey: 'folioSection', configKeys: ['folio'] },

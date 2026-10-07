@@ -84,7 +84,13 @@ export function remapContentFileIds(content: ProjectContent, map: FileIdMapper):
     }),
   }));
 
-  const config: PostextConfig = customFonts ? { ...content.config, customFonts } : content.config;
+  // An uploaded output profile travels under its own id too.
+  const profile = content.config.print?.customProfile;
+  const profileId = profile ? remapBlob(profile.fileId, 'output-profile.icc') : undefined;
+  let config: PostextConfig = customFonts ? { ...content.config, customFonts } : content.config;
+  if (profile && profileId && profileId !== profile.fileId) {
+    config = { ...config, print: { ...config.print, customProfile: { ...profile, fileId: profileId } } };
+  }
   return { content: { ...content, config, resources }, blobPairs, fontPairs };
 }
 

@@ -3,12 +3,14 @@ import type { WarningPayload } from './types';
 /** How the Checks panel groups warnings, in triage order: what breaks the
  *  output first (missing fonts, figures), then the markup, then the fine
  *  typesetting that is usually many small items. */
-export type WarningCategory = 'fonts' | 'figures' | 'markup' | 'design' | 'typesetting' | 'system';
+export type WarningCategory = 'fonts' | 'figures' | 'markup' | 'design' | 'typesetting' | 'preflight' | 'system';
 
-export const WARNING_CATEGORY_ORDER: readonly WarningCategory[] = ['fonts', 'figures', 'markup', 'design', 'typesetting', 'system'];
+export const WARNING_CATEGORY_ORDER: readonly WarningCategory[] = ['fonts', 'figures', 'markup', 'design', 'typesetting', 'preflight', 'system'];
 
 export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
   switch (kind) {
+    case 'preflight':
+      return 'preflight';
     case 'missingFont':
     case 'missingFontFamily':
     case 'missingFontVariant':

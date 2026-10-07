@@ -59,8 +59,10 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
       return hasKeys(config.debug?.warnings);
     case 'page':
       // The baseline grid is stored under `page` but belongs to Debug, the
-      // binding to Writing system.
-      return Object.keys(config.page ?? {}).some((k) => k !== 'baselineGrid' && k !== 'binding');
+      // binding to Writing system, the crop marks to Print preparation.
+      return Object.keys(config.page ?? {}).some((k) => k !== 'baselineGrid' && k !== 'binding' && k !== 'cutLines');
+    case 'print':
+      return hasKeys(config.print) || config.page?.cutLines !== undefined;
     case 'layout':
       // The writing mode belongs to Writing system.
       return Object.keys(config.layout ?? {}).some((k) => k !== 'writingMode');

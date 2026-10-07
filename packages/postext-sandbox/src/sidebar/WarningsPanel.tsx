@@ -1,13 +1,23 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { AlertTriangle, ChevronRight, CircleCheck, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database, MessageCircle, LayoutGrid } from 'lucide-react';
+import { AlertTriangle, ChevronRight, CircleCheck, Printer, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database, MessageCircle, LayoutGrid } from 'lucide-react';
 import { HYPHENATION_LOCALES, KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
 import { useSandbox, useSandboxWarnings } from '../context/SandboxContext';
 import { Collapsible, EmptyState, ListRow, PanelBody, PanelHeader, cn } from '../ui';
 import { WARNING_CATEGORY_ORDER, warningCategory, type WarningCategory } from '../warnings/categories';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
+import { preflightDetail, preflightTitle } from '../print/preflightText';
+import { fill } from '../print/fillTokens';
+import { readViewHash, viewHashFragment } from '../storage/viewHash';
+
+/** Open a book page in the viewer: the fragment names it, and the viewer
+ *  follows a fragment change (see `usePageHashSync`). */
+function goToBookPage(page: number): void {
+  if (typeof window === 'undefined') return;
+  window.location.hash = viewHashFragment({ ...readViewHash(), page });
+}
 
 /** Where a design warning points: the slot (`header`, `part`, `H2`); for
  *  a heading style its `{style="…"}` and, for the running heads of its
@@ -22,6 +32,8 @@ function slotWhere(payload: { slot: string; level?: number; styleId?: string; co
 
 function iconFor(kind: WarningPayload['kind']) {
   switch (kind) {
+    case 'preflight':
+      return Printer;
     case 'missingFont':
     case 'missingFontFamily':
     case 'missingFontVariant':
@@ -137,6 +149,8 @@ function iconFor(kind: WarningPayload['kind']) {
 
 function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
   switch (payload.kind) {
+    case 'preflight':
+      return preflightTitle(payload.check, labels);
     case 'missingFont':
       return labels.warningsMissingFontTitle;
     case 'missingFontFamily':
@@ -350,6 +364,8 @@ function formatVariantList(
 
 function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
   switch (payload.kind) {
+    case 'preflight':
+      return preflightDetail(payload.check, labels);
     case 'missingFont':
       return `"${payload.family}" — ${labels.warningsMissingFontDetail}`;
     case 'missingFontFamily':
@@ -614,24 +630,27 @@ function WarningItem({
   onClick: (w: Warning) => void;
 }) {
   const Icon = iconFor(warning.payload.kind);
-  const clickable = warning.sourceStart !== undefined || isFontWarning(warning.payload.kind);
+  const preflightPage = warning.payload.kind === 'preflight' ? warning.payload.page : undefined;
+  const critical = warning.payload.kind === 'preflight' && warning.payload.check.severity === 'critical';
+  const clickable = warning.sourceStart !== undefined || isFontWarning(warning.payload.kind) || preflightPage !== undefined;
   const title = titleFor(warning.payload, labels);
   const detail = detailFor(warning.payload, labels);
   const line = warning.chapterLine ?? warning.line;
   const chapterTag = multiChapter && warning.chapterIndex !== undefined
     ? labels.warningsChapterLabel.replace('__n__', String(warning.chapterIndex + 1))
     : null;
-  const lineTag = line !== undefined
+  const pageTag = preflightPage !== undefined ? fill(labels.preflightPage, { page: preflightPage }) : null;
+  const lineTag = pageTag ?? (line !== undefined
     ? [chapterTag, `${labels.warningsLineLabel} ${line}`].filter(Boolean).join(' · ')
-    : chapterTag;
+    : chapterTag);
 
   return (
     <ListRow
       onSelect={clickable ? () => onClick(warning) : undefined}
       ariaLabel={`${title}${lineTag ? ` (${lineTag})` : ''}`}
       alignTop
-      leading={<Icon size={16} aria-hidden="true" style={{ color: 'var(--brand)', marginTop: 1 }} />}
-      title={title}
+      leading={<Icon size={16} aria-hidden="true" style={{ color: critical ? 'var(--destructive)' : 'var(--brand)', marginTop: 1 }} />}
+      title={critical ? `${title} · ${labels.preflightCritical}` : title}
       subtitle={detail}
       tags={lineTag ? (
         <span className="ms-auto shrink-0 text-[10px] font-medium" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
@@ -650,6 +669,11 @@ export function WarningsPanel() {
   const multiChapter = state.chapters.length > 1;
 
   const handleClick = (w: Warning) => {
+    // A preflight finding opens its page in the viewer.
+    if (w.payload.kind === 'preflight' && w.payload.page !== undefined) {
+      goToBookPage(w.payload.page);
+      return;
+    }
     if (isFontWarning(w.payload.kind)) {
       // Surface the custom-font manager so the user can upload the missing
       // variant, re-add the family, or disambiguate duplicates.
@@ -699,6 +723,7 @@ function categoryLabel(category: WarningCategory, labels: SandboxLabels): string
     case 'markup': return labels.warningsGroupMarkup;
     case 'design': return labels.warningsGroupDesign;
     case 'typesetting': return labels.warningsGroupTypesetting;
+    case 'preflight': return labels.warningsGroupPreflight;
     case 'system': return labels.warningsGroupSystem;
   }
 }

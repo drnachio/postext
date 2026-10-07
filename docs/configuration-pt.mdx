@@ -58,6 +58,7 @@ Esta referência é longa. Estes são os blocos principais:
 - [Fontes personalizadas](#fontes-personalizadas) — declarar famílias tipográficas enviadas pelo usuário ao lado das Google Fonts.
 - [Visualizador HTML](#visualizador-html) — largura de coluna desejada e quebra de linha para o renderizador HTML.
 - [Geração de PDF (configuração)](#geração-de-pdf-configuração) — marcadores do documento (outlines), saída acessível (marcada) e espaço de cor forçado para o renderizador PDF.
+- [Produção gráfica (configuração)](#produção-gráfica-configuração) — `print`: PDF/X-1a e PDF/X-4, os perfis de saída ICC, o preto (cinzas só em K, sobreimpressão, preto composto), as cores definidas em CMYK, o preflight e a simulação de impressão.
 - [Visualizador Folio (configuração)](#visualizador-folio-configuração) — papel, encadernação, superfície e luz do visualizador de livro em 3D.
 - [Depuração](#depuração) — sobreposições visuais e avisos de autoria para o editor.
 - [Uso programático](#uso-programático) — `buildDocument`, os avisos que ele informa, resolvers, caches.
@@ -114,7 +115,7 @@ A propriedade `page` controla as dimensões físicas e a aparência da página.
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>Pontos por polegada. Define como as unidades físicas (cm, mm, in) são convertidas em pixels.</td>
+      <td>Os pixels por polegada com que a diagramação trabalha: como as unidades físicas (cm, mm, in, pt) viram os seus pixels. Não é a resolução das imagens, mas um bitmap composto no seu próprio tamanho ocupa um pixel da diagramação por pixel da imagem e, assim, é impresso com esse número de ppi: mantenha 300 para impressão. O [preflight](#preflight) verifica a resolução efetiva de cada imagem.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -242,7 +243,7 @@ page: {
 
 ### Marcas de corte
 
-Quando ativadas, o canvas cresce para incluir uma área de sangria, e o motor desenha marcas de corte em cada canto para a produção gráfica.
+Quando ativadas, o canvas cresce para incluir uma área de sangria, e o motor desenha marcas de corte em cada canto para a produção gráfica. O PDF dá a cada página uma TrimBox e uma BleedBox; um arquivo [PDF/X](#pdfx-1a-e-pdfx-4) as tem mesmo sem marcas de corte. No Sandbox, elas são definidas em **Exportação › Preparação para impressão**.
 
 <table>
   <thead>
@@ -6711,12 +6712,13 @@ As cores são guardadas com uma representação hexadecimal e um modelo de cor d
 
 ```ts
 interface ColorValue {
-  hex: string;        // '#ff0000', 'transparent' etc.
-  model: ColorModel;  // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  hex: string;         // '#ff0000', 'transparent' etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // Os valores exatos de quadricromia de uma cor definida em CMYK.
 }
 ```
 
-O campo `model` indica o espaço de cor pretendido. Para renderização na web, o normal é `'hex'` ou `'rgb'`. Em fluxos de impressão, `'cmyk'` registra a intenção de que a cor seja especificada em CMYK ao exportar para PDF.
+O campo `model` indica o espaço de cor pretendido. Para renderização na web, o normal é `'hex'` ou `'rgb'`. Em fluxos de impressão, `'cmyk'` diz que a cor foi especificada em CMYK, e `cmyk` guarda os seus valores: uma renderização de impressão em CMYK os aplica como estão, e `hex` é a forma como aparecem na tela (veja [Cores definidas em CMYK](#cores-definidas-em-cmyk)).
 
 Como o Postext mira uma saída de qualidade editorial, a cor padrão do texto do corpo vem com `model: 'cmyk'` (`#000000`). As cores de títulos, negrito, itálico e listas usam por padrão a **Cor principal** vinculada à paleta (`#295AA3`, `model: 'hex'`). O fundo da página e as sobreposições da interface (grade de linhas de base, marcas de corte, indicadores de depuração) usam por padrão `model: 'hex'`. Sobrescreva `color.model` em qualquer campo se precisar de outra semântica de exportação.
 
@@ -7029,7 +7031,7 @@ interface PdfGenerationConfig {
       <td><code>colorSpace</code></td>
       <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
       <td><code>'cmyk'</code></td>
-      <td>Espaço de cor de destino usado quando `forceColorSpace` está ligado. Use `'cmyk'` para impressão offset, `'rgb'` para PDFs só de tela e `'grayscale'` para provas de impressão em preto e branco. Não tem efeito quando `forceColorSpace` é false.</td>
+      <td>Espaço de cor de destino usado quando `forceColorSpace` está ligado. Use `'cmyk'` para impressão offset, `'rgb'` para PDFs só de tela e `'grayscale'` para provas de impressão em preto e branco. Não tem efeito quando `forceColorSpace` é false. O CMYK é separado com o perfil de saída de [`print`](#produção-gráfica-configuração) (FOGRA39 por padrão) e o seu tratamento do preto, e as imagens RGB também são convertidas; com um padrão PDF/X definido ali, o arquivo sai em CMYK diga isto o que disser.</td>
     </tr>
     <tr>
       <td><code>accessible</code></td>
@@ -7066,6 +7068,315 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 Veja [Como gerar PDFs](#geração-de-pdf) abaixo para a receita completa de exportação.
+
+
+## Produção gráfica (configuração)
+
+A propriedade `print` diz como um livro vai para a gráfica: o padrão PDF/X do arquivo, o perfil de saída com que o seu CMYK é separado, como o preto é impresso e os limites do preflight. A diagramação a ignora, então mudá-la nunca move uma linha. Três coisas a leem: o `postext-pdf` quando grava o arquivo, `preflightDocument` quando verifica um documento diagramado, e a simulação de impressão dos visualizadores canvas e Folio.
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': um PDF comum.
+  outputProfile?: string;                  // Um id do catálogo ('fogra39', 'fogra51'…) ou 'custom'.
+  customProfile?: CustomOutputProfile;     // Um arquivo .icc enviado.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separa as imagens RGB (o PDF/X-1a sempre separa).
+  inkLimit?: number;                       // Cobertura total de tinta, em porcentagem.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // A descrição do perfil, ou o nome do arquivo.
+  fileId: string;         // O arquivo .icc guardado.
+  registryName?: string;  // O nome da condição no registro ICC (FOGRA51…); senão, 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Propriedade</th>
+      <th style={{ width: '170px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>A variante PDF/X do arquivo. `'pdfx1a'` grava PDF/X-1a:2003: só CMYK e cinza, sem transparências, aceito por qualquer gráfica. `'pdfx4'` grava PDF/X-4: mantém as transparências e o gerenciamento de cor, para os fluxos atuais. Os dois separam cada cor com o perfil de saída, diga o que disser `pdfGeneration.colorSpace`.</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>A condição de impressão para a qual o CMYK é separado: um id do [catálogo de perfis](#perfis-de-saída), ou `'custom'` para `customProfile`. Um id que o catálogo não tem, ou `'custom'` sem arquivo, volta ao padrão e gera um aviso de configuração.</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>nenhum</td>
+      <td>Um perfil de saída CMYK que você fornece, o que a sua gráfica lhe der (o `PSOcoated_v3.icc` da ECI, por exemplo). Os bytes dele são guardados à parte, como os de uma fonte; `renderToPdf` os recebe na opção `outputProfile`. `registryName` é gravado como identificador da condição na condição de saída.</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>A colorimétrica relativa mantém exatas as cores que a máquina consegue imprimir e leva as outras à cor imprimível mais próxima; a perceptual comprime toda a gama, para que as cores fora dela mantenham as relações entre si.</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Com a intenção relativa, leva o preto da tela ao preto mais escuro que a máquina imprime, para que os tons mais escuros mantenham o detalhe em vez de empastar.</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Separa as imagens RGB em CMYK com o perfil. O PDF/X-1a sempre separa. No PDF/X-4, `false` as deixa em RGB, marcadas como sRGB pelo `/DefaultRGB` das páginas, para que o RIP da gráfica as converta. Os JPEGs em CMYK e em cinza são sempre incorporados como estão.</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>o do perfil</td>
+      <td>O maior total de C+M+Y+K, em porcentagem, que o preflight aceita. Por padrão, o limite para o qual o perfil separa (300 % na maioria das condições de offset, 230 % no papel jornal IFRA26).</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>veja <a href="#preto">Preto</a></td>
+      <td>Cinzas só em K, sobreimpressão e preto composto.</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>veja <a href="#preflight">Preflight</a></td>
+      <td>O que o preflight verifica e os seus limites.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### Perfis de saída
+
+O `postext` traz estes perfis de saída CMYK na sua pasta `icc/` (`postext/icc/<id>.icc` em qualquer CDN do npm, e `/icc/<id>.icc` em postext.dev). Nenhum deles tem restrições de direitos autorais conhecidas (CC0): os perfis FOGRA, GRACoL, SWOP e de jornal do colord, gerados a partir dos dados de caracterização de cada condição, e o FOGRA51 e o FOGRA52, construídos pelo postext com o ArgyllCMS a partir dos dados da própria Fogra. Os perfis da ECI (ISO Coated v2, PSO Coated v3, PSO Uncoated v3) descrevem as mesmas condições, mas não podem ser redistribuídos; envie-os como perfil personalizado se a sua gráfica pedir um deles.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Id</th>
+      <th>Condição</th>
+      <th style={{ width: '150px' }}>Nome no registro</th>
+      <th style={{ width: '90px' }}>Limite de tinta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>Offset, papel couché (condição ISO Coated v2)</td><td>FOGRA39</td><td>300 %</td></tr>
+    <tr><td><code>fogra51</code></td><td>Offset, couché premium (condição PSO Coated v3)</td><td>FOGRA51</td><td>300 %</td></tr>
+    <tr><td><code>fogra52</code></td><td>Offset, papel sem revestimento sem madeira (condição PSO Uncoated v3)</td><td>FOGRA52</td><td>300 %</td></tr>
+    <tr><td><code>fogra47</code></td><td>Offset, papel branco sem revestimento (PSO Uncoated ISO 12647)</td><td>FOGRA47</td><td>300 %</td></tr>
+    <tr><td><code>fogra29</code></td><td>Offset, papel branco sem revestimento</td><td>FOGRA29</td><td>300 %</td></tr>
+    <tr><td><code>fogra30</code></td><td>Offset, papel amarelado sem revestimento</td><td>FOGRA30</td><td>340 %</td></tr>
+    <tr><td><code>fogra27</code></td><td>Offset, couché (ISO 12647-2:1996)</td><td>FOGRA27</td><td>300 %</td></tr>
+    <tr><td><code>fogra28</code></td><td>Rotativa offset heatset, LWC brilhante</td><td>FOGRA28</td><td>300 %</td></tr>
+    <tr><td><code>fogra45</code></td><td>Rotativa offset heatset, LWC melhorado</td><td>FOGRA45</td><td>300 %</td></tr>
+    <tr><td><code>fogra40</code></td><td>Rotativa offset heatset, papel SC</td><td>FOGRA40</td><td>340 %</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006, couché grau 1</td><td>CGATS TR 006</td><td>300 %</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006, couché grau 3</td><td>CGATS TR 003</td><td>300 %</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006, couché grau 5</td><td>CGATS TR 005</td><td>300 %</td></tr>
+    <tr><td><code>ifra26</code></td><td>Papel jornal coldset (ISO 12647-3)</td><td>IFRA26</td><td>230 %</td></tr>
+    <tr><td><code>snap2007</code></td><td>Papel jornal SNAP 2007</td><td>CGATS TR 002</td><td>320 %</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf` lê os bytes do perfil na sua opção `outputProfile`; sem eles, baixa o arquivo do catálogo de `profileBaseUrl` (por padrão `https://cdn.jsdelivr.net/npm/postext/icc/`). Uma renderização PDF/X cujo perfil não pode ser carregado falha; uma renderização CMYK comum usa a fórmula simples e informa um aviso `outputProfileUnavailable`.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a e PDF/X-4
+
+Os dois padrões gravam:
+
+- a condição de saída (`GTS_PDFX`), que nomeia a condição de impressão e incorpora o perfil de destino;
+- a identificação no dicionário Info (`GTS_PDFXVersion`, `/Trapped /False`, o título e as datas) e nos metadados XMP (`pdfxid:GTSPDFXVersion`, os ids do documento e da versão), junto com a identificação PDF/UA quando o arquivo é marcado;
+- uma TrimBox e uma BleedBox em cada página (a página inteira quando não há marcas de corte);
+- o `/ID` do trailer;
+- cada cor em DeviceCMYK (ou cinza) passada pelo perfil, e as marcas de corte em cor de registro;
+- nenhuma anotação de link: um arquivo para a gráfica não traz nenhuma dentro da caixa de sangria, então os links do PDF de tela ficam de fora (os marcadores ficam).
+
+O PDF/X-1a:2003 é PDF 1.4 sem fluxos de objetos e não tem transparências: uma cor translúcida é aplicada como sairia impressa sobre o papel, o alfa de uma imagem é achatado sobre branco, e a página em negativo de depuração fica de fora (com um aviso `pageNegativeIgnored`). O PDF/X-4 é PDF 1.6: as transparências ficam, cada página recebe um grupo de transparência que mescla em CMYK, e as imagens RGB mantidas por `convertImages: false` são marcadas como sRGB pelo `/DefaultRGB`.
+
+Uma matriz de impressão em PDF (`svg.pdfFileId`) é incorporada como está, então as cores, as fontes e as transparências dela são as suas; o preflight informa o que ela traz.
+
+### Preto
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Cinzas e preto só com tinta preta.
+  overprint?: boolean;          // O preto 100 % K sobreimprime.
+  richBlack?: boolean;          // Áreas pretas grandes em preto composto.
+  richBlackColor?: CmykPercent; // { c, m, y, k } em porcentagem.
+  richBlackMinSize?: Dimension; // O lado menor de que uma área precisa.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '140px' }}>Tipo</th>
+      <th style={{ width: '170px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Uma cor neutra (`#000000`, `#808080`…) é impressa só com tinta preta, com o K escolhido para que a luminosidade coincida, nunca como um cinza de quadricromia que muda com o registro. As imagens mantêm a geração de preto do próprio perfil.</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Tudo o que é pintado só em 100 % K (texto preto, fios, traços, formas pretas pequenas) sobreimprime (`op`/`OP` com `OPM 1`), e assim uma chapa que se desloca na máquina nunca abre uma borda branca em volta. Todo o resto vaza; imagens e degradês nunca sobreimprimem.</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Um preenchimento preto cujo lado menor chega a `richBlackMinSize` (um fundo, uma faixa, uma caixa) é impresso em `richBlackColor` e vaza, para parecer profundo em vez de cinza-escuro. O texto nunca vira preto composto.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>A receita do preto composto, em porcentagem. Mantenha o total abaixo do limite de tinta; o preflight o verifica.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>O lado menor que uma área preta precisa ter para ser impressa em preto composto.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Cores definidas em CMYK
+
+Uma cor escrita em CMYK mantém os seus valores exatos: `ColorValue.cmyk` (em porcentagem) é aplicado como está numa renderização de impressão, e `hex` é a forma como ela aparece na tela. Uma entrada da paleta definida em CMYK vale para todas as cores vinculadas a ela.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Preflight
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi no tamanho impresso.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Propriedade</th>
+      <th style={{ width: '110px' }}>Tipo</th>
+      <th style={{ width: '100px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Executa as verificações.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Um bitmap colocado com menos pixels por polegada que isso no tamanho impresso, recorte incluído, recebe um aviso: figuras, imagens em células de tabela, imagens de design, quadros de quadrinhos. Um bitmap composto no seu próprio tamanho é impresso com `page.dpi`, então uma página diagramada a 150 dpi imprime cada imagem assim a 150 ppi.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Abaixo disso, o aviso é crítico. Nunca acima de `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Fios, bordas, fios entre colunas, fios de tabela e bordas de quadros de quadrinhos mais finos que isso.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Texto menor que isso composto em mais de uma tinta (uma cor de quadricromia, preto composto): fica borrado quando as chapas se deslocam. O texto preto, só em K, nunca conta.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Texto mais perto do refile que isso, onde a guilhotina pode cortá-lo.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Uma caixa ou imagem que para a essa distância do refile sem chegar à sangria: leve-a para a sangria ou recue-a.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Informa as fontes que um PDF inserido não incorpora (o Sandbox inspeciona cada matriz de impressão com `inspectPrintMaster`). O Postext incorpora todas as fontes que compõe.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` executa as verificações num documento diagramado e devolve uma lista de problemas, cada um com um `kind`, uma `severity` (`'critical'`, `'warning'` ou `'info'`), o `pageIndex` absoluto no livro, o `rect` do elemento em questão (px da página) e, quando o elemento tem, o seu intervalo no código-fonte. Os tipos são `lowImageResolution`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` e `nearTrim`. Sem um `transform`, uma cor neutra conta como uma tinta e qualquer outra como três, e a cobertura não é verificada; com um, as contagens e a cobertura são exatas.
+
+```ts
+import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // tamanhos em pixels dos bitmaps
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', tirado do arquivo
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### Simulação de impressão
+
+Uma página do canvas pode ser pintada como vai sair impressa. `createPrintPreview(transform, print, { paper, dpi })` monta a prova de cor em tela de uma configuração: cada pixel é separado com o perfil (cinzas só em K, como no PDF) e mostrado de volta na tela, sobre o branco do próprio papel quando `paper` é true; as áreas pretas grandes o bastante para o preto composto aparecem em preto composto. Passe-a a `renderPageToCanvas` como `printPreview`; `guides` acrescenta as linhas do refile, da sangria e da área de segurança, e `marksFor` contorna áreas de uma página (os `rect`s do preflight). O `postext-folio` recebe o mesmo objeto como `printPreview` (com `paper: false`, já que o tom do papel do livro tinge as suas páginas).
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### Motor de cor
+
+O gerenciamento de cor que o postext usa é exportado para as suas próprias ferramentas. Ele lê perfis ICC v2 e v4 (matriz/TRC e as tabelas de consulta `mft1`, `mft2`, `mAB`, `mBA`) em TypeScript puro, sem WebAssembly.
+
+- `parseIccProfile(bytes)` lê um perfil; `deviceChannels(profile)` dá o seu número de canais.
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })` devolve `fromRgb(r, g, b)` (sRGB 0..1 → CMYK 0..1), `toLab(cmyk, paper?)` e `proof(cmyk, paper?)` (CMYK → sRGB de tela).
+- `cmykToLab`, `labToCmyk`, `srgbToLab`, `labToSrgb`, `deltaE` e `totalAreaCoverage` são as conversões avulsas; `buildRgbLut` / `sampleRgbLut` criam e leem tabelas densas para o trabalho por pixel.
+- `OUTPUT_PROFILES`, `outputProfileInfo(id)` e `loadOutputProfile(id, baseUrl?)` dão o catálogo; `srgbProfileBytes()` grava o perfil sRGB com que o PDF/X-4 marca o RGB; `authoredCmykColors(config)` lista as cores que uma configuração define em CMYK.
+
+O resolvedor e o redutor seguem o padrão das outras seções: `resolvePrintConfig`, `stripPrintDefaults` e `profileInkLimit(config)` (o limite do perfil que uma configuração nomeia, antes de qualquer `inkLimit` que o substitua), com `DEFAULT_PRINT_CONFIG`, `DEFAULT_PRINT_BLACK_CONFIG`, `DEFAULT_PRINT_PREFLIGHT_CONFIG` e `DEFAULT_RICH_BLACK`.
 
 
 ## Visualizador Folio (configuração)
@@ -8729,9 +9040,10 @@ O worker de layout de `postext/worker` precisa do mesmo invólucro ao redor de `
 Para fluxos de produção gráfica, ajuste estas opções de configuração antes de renderizar:
 
 - **`page.cutLines.enabled: true`**: acrescenta a área de sangria e as marcas de corte ao redor do refile, e dá a cada página uma TrimBox e uma BleedBox. Veja [Marcas de corte](#marcas-de-corte).
-- **`colorSpace: 'cmyk'`** (ou `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`): escreve as cores que o postext pinta (texto, fios, preenchimentos, figuras vetoriais) em DeviceCMYK (as marcas de corte ficam sempre na cor de registro). Bitmaps e matrizes de impressão em PDF são incorporados como estão, então uma foto RGB continua RGB: converta-a antes de adicioná-la.
-- **`page.dpi: 300`** (ou mais): os pontos de PDF são fixos em 72 por polegada, mas os cálculos de layout do Postext rodam em pixels; um DPI maior dá uma subdivisão mais fina para elementos medidos em `mm` ou `cm`.
-- **`colors.model: 'cmyk'`**: preserva a intenção de que as cores foram definidas no espaço CMYK. O valor `hex` de reserva ainda é o que de fato se usa para desenhar no PDF hoje; `model` está documentado aqui porque segue para o VDT para uso de ferramentas posteriores.
+- **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (ou `'pdfx1a'`): um arquivo PDF/X com a condição de saída, a identificação e as caixas que uma gráfica confere; cada cor e cada imagem RGB separadas com o perfil ICC, o preto 100 % K sobreimpresso e as áreas pretas grandes em preto composto. Veja [Produção gráfica (configuração)](#produção-gráfica-configuração).
+- **`colorSpace: 'cmyk'`** (ou `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`): a mesma separação, sem a identificação PDF/X (as marcas de corte ficam sempre na cor de registro). As matrizes de impressão em PDF são incorporadas como estão.
+- **`page.dpi: 300`**: os px por polegada da diagramação; um bitmap composto no seu próprio tamanho é impresso com essa resolução. O [preflight](#preflight) informa as imagens abaixo de 300 ppi no tamanho impresso.
+- **`ColorValue.cmyk`**: uma cor definida em CMYK é impressa com os seus valores exatos.
 - **`{ pageNegative: true }`** em `RenderToPdfOptions`: inverte a área de refile com um modo de mesclagem Difference (as marcas de corte não são invertidas). Útil em verificações de pré-impressão de tipografia escura sobre fundo claro.
 
 ### Implementação de referência

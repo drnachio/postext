@@ -251,9 +251,11 @@ class Idml:
         self.pstyles = {n: resolve(raw_p, n) for n in raw_p}
         self.cstyles = {n: resolve(raw_c, n) for n in raw_c}
         self.colors = {}
+        self.swatch_names = {}
         if "Resources/Graphic.xml" in self.z.namelist():
             for c in self.xml("Resources/Graphic.xml").iter("Color"):
                 self.colors[short(c.get("Self"))] = (c.get("Space"), c.get("ColorValue"))
+                self.swatch_names[short(c.get("Self"))] = c.get("Name") or short(c.get("Self"))
 
     def hexcolor(self, name: str) -> str:
         c = self.colors.get(short(name))
@@ -268,6 +270,27 @@ class Idml:
         else:
             return ""
         return "#%02x%02x%02x" % tuple(round(v) for v in rgb)
+
+    def palette(self) -> list[dict]:
+        """The document's named swatches as `colorPalette` entries. A CMYK
+        swatch keeps its exact values (`cmyk`, percent), which a print render
+        sets as they are; `hex` is its screen colour. InDesign's own
+        [Registration], [Paper], [None] and [Black] are left out."""
+        out, seen = [], set()
+        for key, (space, value) in self.colors.items():
+            name = self.swatch_names.get(key, key)
+            if not value or name.startswith("[") or name in seen:
+                continue
+            hexv = self.hexcolor(key)
+            if not hexv:
+                continue
+            seen.add(name)
+            entry = {"id": slugify(name) or f"swatch-{len(out) + 1}", "name": name, "value": {"hex": hexv, "model": "hex"}}
+            vals = [float(v) for v in value.split()]
+            if space == "CMYK" and len(vals) == 4:
+                entry["value"] = {"hex": hexv, "model": "cmyk", "cmyk": dict(zip("cmyk", (round(v, 1) for v in vals)))}
+            out.append(entry)
+        return out
 
     def _topics(self) -> None:
         """The index topics: Self -> (levels, sort key), plus the See / See
@@ -758,6 +781,11 @@ def cmd_markdown(args) -> None:
         (out / "chapters" / args.lang / name).write_text(body, encoding="utf-8")
         manifest.append({"title": title or f"Chapter {n}", "file": f"chapters/{args.lang}/{name}"})
     (out / "resources.json").write_text(json.dumps(resources, ensure_ascii=False, indent=2), encoding="utf-8")
+    palette = doc.palette()
+    if palette:
+        # Merge into config.colorPalette; CMYK swatches print with their values.
+        (out / "palette.json").write_text(json.dumps(palette, ensure_ascii=False, indent=2), encoding="utf-8")
+        report["swatches -> palette.json (merge into config.colorPalette; CMYK ones keep their values)"] += len(palette)
     (out / "chapters.json").write_text(json.dumps({args.lang: manifest}, ensure_ascii=False, indent=2), encoding="utf-8")
     rep = [f"# IDML extraction report: {Path(args.idml).name}", "",
            f"- stories used: {len(order)}; chapters: {len(manifest)}; resources: {len(resources)}", ""]

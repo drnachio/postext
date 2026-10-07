@@ -30,6 +30,7 @@ import { LargeTargetsProvider, useLargeTargets } from './ui/largeTargets';
 import { LargeTargetsToggle } from './ui/LargeTargetsToggle';
 import { FolioLoading } from './viewport/FolioLoading';
 import type { PanelId } from './types';
+import { setOutputProfileBaseUrl } from './print/printSetup';
 
 // three.js loads with the Folio tab, not with the sandbox.
 const FolioViewport = lazy(() => import('./viewport/FolioViewport').then((m) => ({ default: m.FolioViewport })));
@@ -350,6 +351,7 @@ export function PostextSandbox({
   labels,
   locale,
   presetSources,
+  outputProfileBaseUrl,
   hashBundles,
   onConfigChange,
   onMarkdownChange,
@@ -358,6 +360,8 @@ export function PostextSandbox({
   homeUrl,
   homeLink,
 }: PostextSandboxProps) {
+  // Before any child asks for a profile.
+  setOutputProfileBaseUrl(outputProfileBaseUrl);
   const isDark = typeof document !== 'undefined'
     ? document.documentElement.classList.contains('dark')
     : true;

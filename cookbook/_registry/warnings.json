@@ -3743,5 +3743,47 @@
         "pt": "Avisos de quadrinhos"
       }
     }
+  },
+  "preflight": {
+    "source": "sandbox",
+    "label": {
+      "en": "Preflight",
+      "es": "Preflight",
+      "ca": "Preflight",
+      "zh": "印前检查",
+      "ar": "الفحص قبل الطباعة",
+      "ja": "プリフライト",
+      "pt": "Preflight"
+    },
+    "cause": {
+      "en": "A book set up for print (a PDF/X standard, a CMYK PDF or crop marks) has something a printer would reject: a picture under the minimum resolution at its printed size, an RGB picture, a rule too thin, small text in several inks, ink over the limit, text in the safe zone, a box stopping just short of the trim, or a placed PDF with fonts it does not embed.",
+      "es": "Un libro preparado para imprenta (con norma PDF/X, PDF en CMYK o marcas de corte) tiene algo que una imprenta rechazaría: una imagen por debajo de la resolución mínima a su tamaño impreso, una imagen RGB, un filete demasiado fino, texto pequeño en varias tintas, tinta por encima del límite, texto en la zona de seguridad, una caja que se queda justo antes del corte o un PDF colocado con fuentes sin incrustar.",
+      "ca": "Un llibre preparat per a impremta (amb norma PDF/X, PDF en CMYK o marques de tall) té alguna cosa que una impremta rebutjaria: una imatge per sota de la resolució mínima a la seva mida impresa, una imatge RGB, un filet massa fi, text petit en diverses tintes, tinta per sobre del límit, text a la zona de seguretat, una caixa que es queda just abans del tall o un PDF col·locat amb fonts sense incrustar.",
+      "zh": "为印刷设置的书（PDF/X标准、CMYK PDF或裁切标记）有印厂会拒收的问题：图片在印刷尺寸下低于最低分辨率、RGB图片、线条过细、多色小字、墨量超出上限、文字进入安全区、方框止于裁切线内侧附近，或置入的PDF有未嵌入的字体。",
+      "ar": "في كتاب مُعدّ للطباعة (بمعيار PDF/X أو PDF بألوان CMYK أو علامات قص) ما سترفضه المطبعة: صورة دون الدقة الدنيا بحجمها المطبوع، أو صورة RGB، أو خط رفيع جدًا، أو نص صغير بعدة أحبار، أو حبر فوق الحد، أو نص في المنطقة الآمنة، أو صندوق يتوقف قبل خط القص بقليل، أو PDF مدرج بخطوط غير مضمّنة.",
+      "ja": "印刷用に設定した本（PDF/X規格、CMYKのPDF、トンボ）に、印刷所に断られる箇所があります。印刷サイズで最低解像度に満たない画像、RGB画像、細すぎる罫、複数インキの小さな文字、上限を超えるインキ量、セーフゾーン内の文字、仕上がり線の手前で止まるボックス、フォントを埋め込んでいない配置PDFです。",
+      "pt": "Um livro preparado para impressão (padrão PDF/X, PDF em CMYK ou marcas de refile) tem algo que uma gráfica recusaria: uma imagem abaixo da resolução mínima no tamanho impresso, uma imagem RGB, um fio fino demais, texto pequeno em várias tintas, tinta acima do limite, texto na área de segurança, uma caixa que para logo antes do refile ou um PDF inserido com fontes não incorporadas."
+    },
+    "fix": {
+      "en": "Click the entry to open its page: replace or enlarge the picture, thicken the rule, set small text in black or one ink, move text inside the safe zone, run boxes into the bleed. The thresholds are in print.preflight.",
+      "es": "Pulsa la entrada para abrir su página: sustituye o amplía la imagen, engrosa el filete, compón el texto pequeño en negro o en una tinta, mete el texto dentro de la zona de seguridad, lleva las cajas a sangre. Los umbrales están en print.preflight.",
+      "ca": "Fes clic a l'entrada per obrir-ne la pàgina: substitueix o amplia la imatge, engruixeix el filet, compon el text petit en negre o en una tinta, posa el text dins la zona de seguretat, porta les caixes a sang. Els llindars són a print.preflight.",
+      "zh": "点击条目打开对应页面：替换或放大图片、加粗线条、把小字改为黑色或单色、把文字移入安全区、让方框延伸到出血。阈值在 print.preflight 中。",
+      "ar": "انقر الإدخال لفتح صفحته: استبدل الصورة أو كبّرها، وزد سماكة الخط، واجعل النص الصغير بالأسود أو بحبر واحد، وانقل النص داخل المنطقة الآمنة، ومدّ الصناديق إلى النزف. الحدود في print.preflight.",
+      "ja": "項目をクリックしてそのページを開きます。画像を差し替えるか大きくし、罫を太くし、小さな文字は墨か1色にし、文字をセーフゾーンの内側に移し、ボックスは塗り足しまで伸ばします。しきい値は print.preflight にあります。",
+      "pt": "Clique na entrada para abrir a página: troque ou amplie a imagem, engrosse o fio, componha o texto pequeno em preto ou numa só tinta, leve o texto para dentro da área de segurança, estenda as caixas até a sangria. Os limites estão em print.preflight."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Preflight",
+        "es": "Preflight",
+        "ca": "Preflight",
+        "zh": "印前检查",
+        "ar": "الفحص قبل الطباعة",
+        "ja": "プリフライト",
+        "pt": "Preflight"
+      }
+    }
   }
 }

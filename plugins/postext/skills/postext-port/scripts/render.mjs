@@ -4,7 +4,7 @@
 //
 //   node render.mjs <project | book.postext> [--lang es] [--chapters all|0,2] [--out book.pdf]
 //        [--jpeg out-dir --pages 3,7-9 --dpi 100 --quality 85]
-//        [--png out-dir --dpi 60 --pages 1-8] [--tools DIR | --repo /path/to/postext]
+//        [--png out-dir --dpi 60 --pages 1-8] [--preflight] [--tools DIR | --repo /path/to/postext]
 //
 // --jpeg paints the pages straight from the layout with the engine's own
 // canvas renderer (`renderPageToCanvas` on @napi-rs/canvas), the painter the
@@ -19,6 +19,11 @@
 //   npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
 // --repo uses a Postext monorepo checkout's built dists instead (and then also
 // runs the sandbox's own warning panel logic).
+// A book with `print` (PDF/X, a CMYK PDF, crop marks) is preflighted: PREFLIGHT
+// lines list low-resolution pictures, thin rules, small text in several inks,
+// ink over the limit, text in the safe zone and boxes short of the trim
+// (--preflight forces it). The PDF separates through the output profile from
+// postext's icc/ folder, or the bundle's custom one.
 //
 // The browser measures with canvas and loads Google Fonts for families you did
 // not bundle; here only bundled faces exist, so bundle every family you use.
@@ -69,8 +74,11 @@ const TOOL_DIRS = [opt('tools', null), process.env.POSTEXT_TOOLS, join(homedir()
 // `migrateConfig` (postext >= 1.5).
 const REPO = opt('repo', null);
 let postext, pdf, fontkit, computeWarnings = null, bundleApi = null;
+// Where postext's own files are (its `icc/` output profiles).
+let POSTEXT_DIR = null;
 if (REPO) {
   const imp = (p) => import(pathToFileURL(join(resolve(REPO), p)).href);
+  POSTEXT_DIR = join(resolve(REPO), 'packages/postext');
   postext = await imp('packages/postext/dist/index.js');
   pdf = await imp('packages/postext-pdf/dist/index.js');
   const req = createRequire(join(resolve(REPO), 'packages/postext-pdf/package.json'));
@@ -87,6 +95,7 @@ if (REPO) {
   }
   const req = createRequire(join(dir, 'package.json'));
   const entry = (name, sub) => pathToFileURL(join(dirname(req.resolve(`${name}/package.json`)), sub)).href;
+  POSTEXT_DIR = dirname(req.resolve('postext/package.json'));
   postext = await import(entry('postext', 'dist/index.js'));
   pdf = await import(entry('postext-pdf', 'dist/index.js'));
   fontkit = (await import(pathToFileURL(req.resolve('@pdf-lib/fontkit')).href)).default;
@@ -323,6 +332,39 @@ for (const w of engineWarnings) {
 for (const w of doc.configWarnings ?? []) {
   console.log(`CONFIG ${w.kind}: ${postext.formatWarning ? postext.formatWarning(w) : JSON.stringify(w)}`);
 }
+// ---- print production (postext >= 1.22): the output profile and the preflight --------
+// `print` (PDF/X, output profile, black, preflight) or a CMYK PDF needs the
+// ICC output profile: a catalogue one from postext's `icc/` folder, or the
+// custom one the bundle carries (`print.customProfile.fileId` is its path).
+const printConfig = postext.resolvePrintConfig ? postext.resolvePrintConfig(config.print) : null;
+const cmykPdf = !!config.pdfGeneration?.forceColorSpace && (config.pdfGeneration.colorSpace ?? 'cmyk') === 'cmyk';
+let outputProfile = null;
+if (printConfig && (printConfig.standard !== 'none' || cmykPdf || opt('preflight', null) !== null || args.includes('--preflight'))) {
+  const file = printConfig.outputProfile === 'custom' && printConfig.customProfile
+    ? join(BUNDLE, printConfig.customProfile.fileId)
+    : join(POSTEXT_DIR, 'icc', `${printConfig.outputProfile}.icc`);
+  if (existsSync(file)) outputProfile = new Uint8Array(readFileSync(file));
+  else console.log(`PRINT output profile not found: ${file}`);
+}
+// The preflight runs for a book set up for print (a PDF/X standard, a CMYK
+// PDF, crop marks) or with --preflight: what a printer would reject.
+if (postext.preflightDocument && printConfig?.preflight.enabled
+  && (printConfig.standard !== 'none' || cmykPdf || doc.config.page.cutLines.enabled || args.includes('--preflight'))) {
+  const transform = outputProfile
+    ? postext.outputTransform(postext.parseIccProfile(outputProfile), {
+        intent: printConfig.renderingIntent,
+        blackPointCompensation: printConfig.blackPointCompensation,
+        preserveNeutrals: printConfig.black.kOnlyNeutrals,
+      })
+    : undefined;
+  const issues = postext.preflightDocument(doc, { print: printConfig, resources, cmyk: printConfig.standard !== 'none' || cmykPdf, ...(transform ? { transform } : {}) });
+  for (const i of issues) {
+    const { kind, severity, pageIndex, rect: _r, sourceStart, sourceEnd: _e, ...detail } = i;
+    console.log(`PREFLIGHT ${severity} ${kind} page ${doc.pages[pageIndex]?.pageNumberValue ?? pageIndex + 1}${sourceStart != null ? ` at ${where(sourceStart)}` : ''}: ${JSON.stringify(detail)}`);
+  }
+  if (!issues.length) console.log(`PREFLIGHT clean (${printConfig.standard}, ${printConfig.outputProfile})`);
+}
+
 if (computeWarnings) {
   const IGNORE = new Set(['missingFont', 'missingFontFamily', 'storageUnavailable', opt('show-loose') ? '' : 'looseLine']);
   // The kinds the engine reported above are listed once.
@@ -413,6 +455,8 @@ if (OUT || PNG) {
       return (await loadFace(v.file)).bytes;
     },
     resourceBytes: (fileId) => blobs.get(fileId),
+    // PDF/X and CMYK output separate through the profile loaded above.
+    ...(outputProfile ? { outputProfile } : {}),
     // missingGlyph (characters no file of a face has), variableFontDefaultInstance, cffEmbeddedWhole.
     onWarning: (w) => console.log(`PDF-WARN ${w.kind}: ${w.message ?? JSON.stringify(w)}`),
     // SVGs outside the PDF vector subset: rasterise with ImageMagick when present.
