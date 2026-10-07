@@ -1376,13 +1376,13 @@ interface ElementPlacement {
       <td><code>indentAfterHeading</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>设为<code>false</code>时，紧跟在标题后面的第一段不做首行缩进，这是科技出版物和许多图书样式常用的排版惯例。紧跟在<a href="/en/docs/document-format#space"><code>:::space</code></a>行后面的段落同样如此。夹在两者之间、排在正文之外的框（位于侧栏<code>span: 'side'</code>、浮动到页首或页脚，或固定位置）以及浮动的图都会被跳过：在它所在的栏里，这个段落仍然算作紧跟标题，照样顶格排。排在正文中的框（<code>placement: 'here'</code>）则算数，它后面的段落会缩进。开启<code>hangingIndent</code>时此项不起作用。</td>
+      <td>设为<code>false</code>时，紧跟在标题后面的第一段不做首行缩进，这是科技出版物和许多图书样式常用的排版惯例。紧跟在<a href="/zh/docs/document-format#space"><code>:::space</code></a>行后面的段落同样如此。夹在两者之间、排在正文之外的框（位于侧栏<code>span: 'side'</code>、浮动到页首或页脚，或固定位置）以及浮动的图都会被跳过：在它所在的栏里，这个段落仍然算作紧跟标题，照样顶格排。排在正文中的框（<code>placement: 'here'</code>）则算数，它后面的段落会缩进。开启<code>hangingIndent</code>时此项不起作用。</td>
     </tr>
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
       <td><code>2</code></td>
-      <td>两端对齐文字中词间距的上限，以正常空格宽度的倍数表示。只要段落允许，Knuth-Plass就让每一行都保持在这个上限之内，先尝试给一个词断词，或把多余的空白分摊到相邻各行；任何断点组合都无法控制在上限内的行会超出上限，超过正常空格3倍的行则改为齐左排出。超过这个比例的行视为“松散”行：见<a href="/en/docs/justification#lines-the-breaker-cannot-fill">断行器填不满的行</a>；如果想让这些行改用少量字距补足，见<code>maxJustifyTracking</code>。</td>
+      <td>两端对齐文字中词间距的上限，以正常空格宽度的倍数表示。只要段落允许，Knuth-Plass就让每一行都保持在这个上限之内，先尝试给一个词断词，或把多余的空白分摊到相邻各行；任何断点组合都无法控制在上限内的行会超出上限，超过正常空格3倍的行则改为齐左排出。超过这个比例的行视为“松散”行：见<a href="/zh/docs/justification#断行算法填不满的行">断行器填不满的行</a>；如果想让这些行改用少量字距补足，见<code>maxJustifyTracking</code>。</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
@@ -1394,7 +1394,7 @@ interface ElementPlacement {
       <td><code>maxJustifyTracking</code></td>
       <td><code>number</code></td>
       <td><code>0</code></td>
-      <td>当一行两端对齐的文字只靠词间距会拉伸到超过<code>maxWordSpacing</code>，或压缩到低于<code>minWordSpacing</code>时，这一行最多可以使用的字距，单位为千分之一em，可正可负（InDesign的单位：10 = 每个字符0.01 em）。超出上下限的那部分调整量分配到字母之间，于是松散行的词间距回到<code>maxWordSpacing</code>，过紧的行则以<code>minWordSpacing</code>排进行长。Knuth-Plass在选择断点时会把它计入，但只用于单靠词间距会超出上下限的那些行：其他行、段落末行（除非它超长）、只有一个词的行以及含有行内标签的行都不加字距。该值作为<code>letterSpacing</code>记录在行上，Canvas、HTML和PDF都会按它绘制。需要开启<code>optimalLineBreaking</code>。设为<code>0</code>即关闭。见<a href="/en/docs/justification#tracking-as-a-last-resort">字距作为最后手段</a>。</td>
+      <td>当一行两端对齐的文字只靠词间距会拉伸到超过<code>maxWordSpacing</code>，或压缩到低于<code>minWordSpacing</code>时，这一行最多可以使用的字距，单位为千分之一em，可正可负（InDesign的单位：10 = 每个字符0.01 em）。超出上下限的那部分调整量分配到字母之间，于是松散行的词间距回到<code>maxWordSpacing</code>，过紧的行则以<code>minWordSpacing</code>排进行长。Knuth-Plass在选择断点时会把它计入，但只用于单靠词间距会超出上下限的那些行：其他行、段落末行（除非它超长）、只有一个词的行以及含有行内标签的行都不加字距。该值作为<code>letterSpacing</code>记录在行上，Canvas、HTML和PDF都会按它绘制。需要开启<code>optimalLineBreaking</code>。设为<code>0</code>即关闭。见<a href="/zh/docs/justification#最后手段字距">字距作为最后手段</a>。</td>
     </tr>
     <tr>
       <td><code>kashida</code></td>
@@ -1424,7 +1424,7 @@ interface ElementPlacement {
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>使用Knuth-Plass最优断行，而不是贪心的逐行填充。整个段落的词间距会更均匀。中文、日文或韩文段落（见<a href="#east-asian-typography">东亚排版</a>），以及含有比栏还宽的词的段落，仍然逐行排；只引用了少量CJK词语的拉丁文段落则照常使用最优断行。配合<code>optimalRagged</code>，不齐行文字也使用它。见<a href="/en/docs/justification">断词与两端对齐</a>。</td>
+      <td>使用Knuth-Plass最优断行，而不是贪心的逐行填充。整个段落的词间距会更均匀。中文、日文或韩文段落（见<a href="#east-asian-typography">东亚排版</a>），以及含有比栏还宽的词的段落，仍然逐行排；只引用了少量CJK词语的拉丁文段落则照常使用最优断行。配合<code>optimalRagged</code>，不齐行文字也使用它。见<a href="/zh/docs/justification">断词与两端对齐</a>。</td>
     </tr>
     <tr>
       <td><code>optimalRagged</code></td>
@@ -1442,7 +1442,7 @@ interface ElementPlacement {
       <td><code>breakAfterHyphens</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>在Knuth-Plass断行的每个段落里，允许在复合词的连字符（夹在两个字母之间的连字符）之后断行（<code>well-</code> · <code>known</code>、<code>vencer-</code> · <code>se</code>）。行在连字符处结束，不添加任何字符；这个断点的代价与音节断点相同。与数字或符号相邻的连字符之后从不断行（<code>COVID-19</code>、<code>-5 °C</code>）。没有行内格式的两端对齐段落，只有连字符两侧各有两个字母时才在此断行，所以不会有一行结束在<code>e-mail</code>的<code>e-</code>上。设为<code>false</code>时保留1.4的断行方式：没有行内格式的两端对齐段落从不在此断行，而同一个段落只要任意位置有一个斜体词，以及不齐行段落和逐行排的段落，都会在此断行；早先保存、正文中含有复合词的配置读取时采用这个值（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。它作用于连续正文、标题、列表、引用块和框。见<a href="/en/docs/justification#compound-words">复合词</a>。</td>
+      <td>在Knuth-Plass断行的每个段落里，允许在复合词的连字符（夹在两个字母之间的连字符）之后断行（<code>well-</code> · <code>known</code>、<code>vencer-</code> · <code>se</code>）。行在连字符处结束，不添加任何字符；这个断点的代价与音节断点相同。与数字或符号相邻的连字符之后从不断行（<code>COVID-19</code>、<code>-5 °C</code>）。没有行内格式的两端对齐段落，只有连字符两侧各有两个字母时才在此断行，所以不会有一行结束在<code>e-mail</code>的<code>e-</code>上。设为<code>false</code>时保留1.4的断行方式：没有行内格式的两端对齐段落从不在此断行，而同一个段落只要任意位置有一个斜体词，以及不齐行段落和逐行排的段落，都会在此断行；早先保存、正文中含有复合词的配置读取时采用这个值（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。它作用于连续正文、标题、列表、引用块和框。见<a href="/zh/docs/justification#复合词">复合词</a>。</td>
     </tr>
     <tr>
       <td><code>repeatHyphen</code></td>
@@ -1562,7 +1562,7 @@ bodyText: { fontFamily: "'EB Garamond', Georgia, serif" } // 用EB Garamond排�
       <td><code>compounds</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>允许词典拆分复合词（两个字母之间带连字符的词，如<code>af-ter-dinner</code>）中的各个词。设为<code>false</code>时，这样的词除了自带的连字符外保持完整，行仍然可以在那个连字符处结束（<code>after-</code> · <code>dinner</code>），与TeX的做法相同。词中手动输入的软连字符照样断开，比整行还宽的复合词也照样拆分。它作用于连续正文、标题、列表、引用块和框；题注、注释、表格单元格和目录继续拆分复合词。见<a href="/en/docs/justification#compound-words">复合词</a>。</td>
+      <td>允许词典拆分复合词（两个字母之间带连字符的词，如<code>af-ter-dinner</code>）中的各个词。设为<code>false</code>时，这样的词除了自带的连字符外保持完整，行仍然可以在那个连字符处结束（<code>after-</code> · <code>dinner</code>），与TeX的做法相同。词中手动输入的软连字符照样断开，比整行还宽的复合词也照样拆分。它作用于连续正文、标题、列表、引用块和框；题注、注释、表格单元格和目录继续拆分复合词。见<a href="/zh/docs/justification#复合词">复合词</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -3008,7 +3008,7 @@ interface MathConfig {
       <td><code>indentAfterDisplay</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>独立公式之后的段落像其他段落一样首行缩进。设为<code>false</code>时，紧跟在独立公式后面的每个段落都顶格排，作为被公式打断的那句话的延续（“其中<em>L</em>是……”）。写在段落内部的公式（上下都没有空行）后面总是顶格排：它的闭合<code>$$</code>下面的文字延续这个段落，从不缩进（见<a href="/en/docs/document-format#mathematical-formulas">数学公式</a>）。</td>
+      <td>独立公式之后的段落像其他段落一样首行缩进。设为<code>false</code>时，紧跟在独立公式后面的每个段落都顶格排，作为被公式打断的那句话的延续（“其中<em>L</em>是……”）。写在段落内部的公式（上下都没有空行）后面总是顶格排：它的闭合<code>$$</code>下面的文字延续这个段落，从不缩进（见<a href="/zh/docs/document-format#数学公式">数学公式</a>）。</td>
     </tr>
     <tr>
       <td><code>keepWithLeadIn</code></td>
@@ -3984,7 +3984,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code>（可选）</td>
-      <td>该类型中未设定自身<code>placement</code>的资源所用的位置：<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>和<code>columns</code>，各字段分别解析。资源和类型都没有设定某个字段时，采用内置默认值：<code>auto</code> / <code>column</code>、不旋转、占满整个宽度、左对齐、题注在图下。解析顺序见下文<a href="#numbering-and-references">编号与引用</a>，各取值的作用（包括旋转的资源）见<a href="/en/docs/document-format#resources">文档格式 › 资源</a>。</td>
+      <td>该类型中未设定自身<code>placement</code>的资源所用的位置：<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>和<code>columns</code>，各字段分别解析。资源和类型都没有设定某个字段时，采用内置默认值：<code>auto</code> / <code>column</code>、不旋转、占满整个宽度、左对齐、题注在图下。解析顺序见下文<a href="#numbering-and-references">编号与引用</a>，各取值的作用（包括旋转的资源）见<a href="/zh/docs/document-format#资源">文档格式 › 资源</a>。</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -4915,7 +4915,7 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>smallCaps</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>把段落排成小型大写字母：小写字母按70%的字号排成大写，大写字母保持原字号，各后端的绘制方式一致（见<a href="/en/docs/document-format#small-capitals">小型大写字母</a>），适合演员表、术语表的词头。</td>
+      <td>把段落排成小型大写字母：小写字母按70%的字号排成大写，大写字母保持原字号，各后端的绘制方式一致（见<a href="/zh/docs/document-format#小型大写字母">小型大写字母</a>），适合演员表、术语表的词头。</td>
     </tr>
     <tr>
       <td><code>hyphenation</code></td>

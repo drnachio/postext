@@ -92,7 +92,8 @@ describe("docs table of contents", () => {
     (page, locale) => {
       const { source } = getDocSource(page, locale)!;
       const own = new Set(extractToc(source).map((t) => t.id));
-      for (const m of source.matchAll(/\]\(\/(en|es|ca|zh|ja|ar)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
+      // Markdown links and the <a href> of table cells alike.
+      for (const m of source.matchAll(/(?:\]\(|href=")\/(en|es|ca|zh|ja|ar)\/docs\/([a-z-]+)(?:#([^)"]+))?[)"]/g)) {
         const [, lang, slug, anchor] = m;
         expect(lang, m[0]).toBe(locale);
         const doc = getDocSource(slug!, locale);

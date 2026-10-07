@@ -1,9 +1,9 @@
 {
   "Metadata": {
     "title": "Postext — Tipògraf programable per al web",
-    "description": "Un motor de maquetació que connecta la tradició tipogràfica amb el web modern. Rep markdown semàntic i retorna pàgines amb qualitat editorial — renderitzades a HTML, canvas i PDF a punt per a impremta.",
+    "description": "Un motor de maquetació que connecta la tradició tipogràfica amb el web modern. Rep markdown semàntic i retorna pàgines amb qualitat editorial — renderitzades a HTML, canvas, PDF a punt per a impremta i EPUB.",
     "ogTitle": "Postext — Tipògraf programable per al web",
-    "ogDescription": "Rep markdown semàntic i retorna pàgines amb qualitat editorial — renderitzades a HTML, canvas i PDF a punt per a impremta.",
+    "ogDescription": "Rep markdown semàntic i retorna pàgines amb qualitat editorial — renderitzades a HTML, canvas, PDF a punt per a impremta i EPUB.",
     "ogImageAlt": "Postext — Tipògraf programable per al web",
     "keywords": "tipògraf, tipografia, motor de maquetació, react, markdown, pretext, maquetació editorial, equilibri de columnes, òrfenes, vídues, partició de mots, pdf, justificació, knuth-plass"
   },

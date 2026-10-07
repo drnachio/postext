@@ -70,7 +70,7 @@ export const metadata = {
     </tr>
     <tr>
       <td><strong>注释</strong></td>
-      <td>脚注或章末注，在Markdown中写成<code>[^id]</code>标记加<code>[^id]:</code>定义（见<a href="/en/docs/document-format#footnotes">脚注</a>）。旁注，以及内容模型所接受的<code>PostextNote</code>列表，都没有实现：引擎不读取<code>notes</code>。</td>
+      <td>脚注或章末注，在Markdown中写成<code>[^id]</code>标记加<code>[^id]:</code>定义（见<a href="/zh/docs/document-format#脚注">脚注</a>）。旁注，以及内容模型所接受的<code>PostextNote</code>列表，都没有实现：引擎不读取<code>notes</code>。</td>
     </tr>
     <tr>
       <td><strong>基线网格</strong></td>
@@ -195,7 +195,7 @@ Italy by 1465 and France by 1470.
 
 ### 配置
 
-排版流水线的每个方面都由`PostextConfig`控制。各部分的完整概览（页面、布局、正文、标题、列表、数学公式、页眉页脚……）见<a href="/en/docs/configuration">配置</a>页；与本文关系最密切的是：
+排版流水线的每个方面都由`PostextConfig`控制。各部分的完整概览（页面、布局、正文、标题、列表、数学公式、页眉页脚……）见<a href="/zh/docs/configuration">配置</a>页；与本文关系最密切的是：
 
 <table>
   <thead>
@@ -208,27 +208,27 @@ Italy by 1465 and France by 1470.
   <tbody>
     <tr>
       <td><code>bodyText</code> / <code>headings</code></td>
-      <td>按字段设置的段末孤行/段首孤行/孤字罚分、保持不分离的规则、两端对齐的限度、断词，见<a href="/en/docs/configuration#body-text">配置 → 正文</a></td>
+      <td>按字段设置的段末孤行/段首孤行/孤字罚分、保持不分离的规则、两端对齐的限度、断词，见<a href="/zh/docs/configuration#正文">配置 → 正文</a></td>
       <td>第2遍、第5遍</td>
     </tr>
     <tr>
       <td><code>tableStyle</code></td>
-      <td><code>kind: 'table'</code>资源的单元格排版、边框、圆角、表头和表体的填充，以及表格用<code>table.styleId</code>选用的<code>tableStyles</code>命名变体，见<a href="/en/docs/configuration#table-style">配置 → 表格样式</a></td>
+      <td><code>kind: 'table'</code>资源的单元格排版、边框、圆角、表头和表体的填充，以及表格用<code>table.styleId</code>选用的<code>tableStyles</code>命名变体，见<a href="/zh/docs/configuration#表格样式">配置 → 表格样式</a></td>
       <td>第4遍</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
-      <td>资源题注的排版：带编号的标签和说明文字，见<a href="/en/docs/configuration#caption-style">配置 → 题注样式</a></td>
+      <td>资源题注的排版：带编号的标签和说明文字，见<a href="/zh/docs/configuration#题注样式">配置 → 题注样式</a></td>
       <td>第4遍</td>
     </tr>
     <tr>
       <td><code>diagramStyle</code></td>
-      <td><code>singleInk</code> + <code>inkColor</code>：按亮度把SVG图表重新着色为同一种油墨的不同深浅，使图在单一专色印刷时也能忠实再现，见<a href="/en/docs/configuration#diagram-style">配置 → 图表样式</a></td>
+      <td><code>singleInk</code> + <code>inkColor</code>：按亮度把SVG图表重新着色为同一种油墨的不同深浅，使图在单一专色印刷时也能忠实再现，见<a href="/zh/docs/configuration#图示样式">配置 → 图表样式</a></td>
       <td>后端</td>
     </tr>
     <tr>
       <td><code>resourceTypes</code></td>
-      <td>按类型的资源编号：模板、计数格式、重置范围、默认浮动位置，见<a href="/en/docs/configuration#resource-types">配置 → 资源类型</a></td>
+      <td>按类型的资源编号：模板、计数格式、重置范围、默认浮动位置，见<a href="/zh/docs/configuration#资源类型">配置 → 资源类型</a></td>
       <td>第1遍、第4遍</td>
     </tr>
     <tr>
