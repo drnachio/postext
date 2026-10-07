@@ -558,7 +558,9 @@ export function lintPen(
     }
     // Japanese when its kana sentences outweigh the rest: a Chinese page
     // that quotes a Japanese title stays Chinese.
-    if (edition && length.japanese * 2 > length.cjk) japaneseText = true;
+    // A Latin edition that keeps one Japanese sound effect (ドン) stays Latin: the
+    // kana must also outweigh its Latin words.
+    if (edition && length.japanese * 2 > length.cjk && length.japanese > length.words) japaneseText = true;
     for (const line of malformedResourceEmbeds(text)) fails.push(`${file}: "${line}" is not \`::resource{id="…"}\` (double quotes, id only)`);
     for (const name of markdownConstructs(text).unknown) fails.push(`${file}: ":::${name}" is not a Postext directive (it prints as text)`);
     fails.push(...unquotedFrontmatter(text, file));
