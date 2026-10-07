@@ -9,7 +9,7 @@
  * is in sheet coordinates: call it outside any flow frame.
  */
 
-import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock, VDTPoint } from '../vdt';
+import type { VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTDesignTextBlock } from '../vdt';
 import { drawResourceImage } from './renderResourceBlock';
 import { renderTextBlock } from './headerFooter';
 import { comicRoughBorder } from '../comics/paint';
@@ -105,7 +105,10 @@ export function traceComicPath(ctx: CanvasRenderingContext2D, d: string): void {
     const n = m[2]!.trim().split(/[\s,]+/).filter(Boolean).map(Number);
     switch (m[1]!.toUpperCase()) {
       case 'M':
-        for (let i = 0; i + 1 < n.length; i += 2) (i === 0 ? ctx.moveTo(n[i]!, n[i + 1]!) : ctx.lineTo(n[i]!, n[i + 1]!));
+        for (let i = 0; i + 1 < n.length; i += 2) {
+          if (i === 0) ctx.moveTo(n[i]!, n[i + 1]!);
+          else ctx.lineTo(n[i]!, n[i + 1]!);
+        }
         break;
       case 'L':
         for (let i = 0; i + 1 < n.length; i += 2) ctx.lineTo(n[i]!, n[i + 1]!);

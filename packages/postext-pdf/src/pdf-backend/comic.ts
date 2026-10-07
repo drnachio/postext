@@ -340,8 +340,9 @@ function strokeBalloon(ctx: PageCtx, shape: NonNullable<VDTComicBalloon['shape']
  *  round joins, under the glyphs painted next. */
 function paintHalo(ctx: PageCtx, block: VDTDesignTextBlock, halo: NonNullable<VDTComicBalloon['halo']>, fontCache: FontCache, mark: SlotMark | undefined): void {
   if (halo.width <= 0) return;
-  const { box: _box, ...rest } = block;
-  const haloBlock: VDTDesignTextBlock = { ...rest, stroke: { color: halo.color, widthPx: 2 * halo.width, hollow: true } };
+  // The halo strokes the glyphs only: the block's box is painted once, by
+  // the text pass.
+  const haloBlock: VDTDesignTextBlock = { ...block, box: undefined, stroke: { color: halo.color, widthPx: 2 * halo.width, hollow: true } };
   ctx.tags?.close();
   ctx.page.pushOperators(pushGraphicsState(), setLineJoin(LineJoinStyle.Round));
   renderTextBlock(ctx, haloBlock, fontCache, mark ? { artifact: { type: 'Layout' } } : undefined);
