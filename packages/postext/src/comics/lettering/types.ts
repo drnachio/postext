@@ -209,15 +209,24 @@ export interface LetteringPanel {
   /** The other panels of the page (their boxes, px): a balloon that runs
    *  out of its panel must never run into one of them. */
   neighbours?: readonly Rect[];
-  /** The live area of the page (the comic's frame, px): lettering never
-   *  runs out of it, even when it breaks a panel's border. */
+  /** The live area of the page (the comic's frame, px): lettering keeps
+   *  inside it — a panel that bleeds is lettered in its part inside it —
+   *  unless it breaks the border on purpose (`breakBorder`, a pin). */
   limit?: Rect;
+  /** The trim of the sheet, px: a balloon that breaks its border on
+   *  purpose may leave the live area, never the trim (less `insetPx`).
+   *  Default: `limit`. */
+  trim?: Rect;
+  /** How far a sound effect that breaks its border on purpose may run,
+   *  px: the trim, and the bleed on the sides the panel bleeds to (drawn
+   *  sound runs off the page with the art). Default: `trim`. */
+  sheet?: Rect;
+  /** The balloons other panels of the page set already (their boxes, px):
+   *  a balloon that leaves its panel never covers one. */
+  foreign?: readonly Rect[];
   /** Width of the panel's border, px (centred on the polygon): a butted
    *  caption sits against its inner edge, its outline over the border. */
   borderPx?: number;
-  /** Room a balloon that breaks the border may take outside the panel
-   *  (the gutter), px. Default: `insetPx`. */
-  bleedPx?: number;
 }
 
 /** Measuring context and book-wide settings. Text is measured through the

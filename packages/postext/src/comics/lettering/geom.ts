@@ -141,6 +141,16 @@ export function clipHalfPlane(poly: readonly Point[], p: Point, n: Point): Point
   return out;
 }
 
+/** The part of a convex `poly` inside the rectangle `r`. */
+export function clipToRect(poly: readonly Point[], r: Rect): Point[] {
+  let out: Point[] = [...poly];
+  out = clipHalfPlane(out, { x: r.x, y: r.y }, { x: 1, y: 0 });
+  out = clipHalfPlane(out, { x: r.x + r.width, y: r.y }, { x: -1, y: 0 });
+  out = clipHalfPlane(out, { x: r.x, y: r.y }, { x: 0, y: 1 });
+  out = clipHalfPlane(out, { x: r.x, y: r.y + r.height }, { x: 0, y: -1 });
+  return out;
+}
+
 /** Where the ray from `o` along `dir` first leaves the polygon (the
  *  distance along `dir`, normalised), or undefined. */
 export function rayExit(o: Point, dir: Point, poly: readonly Point[]): number | undefined {

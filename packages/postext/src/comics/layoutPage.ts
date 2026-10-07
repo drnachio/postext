@@ -442,14 +442,31 @@ export interface LetterPanelsInput {
   resources: ReadonlyMap<string, Resource>;
   direction: 'ltr' | 'rtl';
   sourceOffset: number;
-  /** The page's gutters (px): room a balloon that breaks the border may
-   *  take outside its panel. */
-  gutter?: { rows: number; columns: number };
   pageIndex?: number;
   /** Regions of the frame no balloon should cover (the spine of a spread). */
   avoid?: readonly BoundingBox[];
-  /** The comic's frame (the page's live area): no lettering runs out of it. */
+  /** The comic's frame (the page's live area): lettering keeps inside it
+   *  unless it breaks a border on purpose. */
   frame?: BoundingBox;
+  /** The trim of the sheet (default: the frame) and the bleed box: no
+   *  lettering runs off the trim; a sound effect breaking its border may
+   *  run into the bleed beside a panel that bleeds. */
+  trim?: BoundingBox;
+  bleedBox?: BoundingBox;
+}
+
+/** The intersection of two boxes (empty boxes have no size). */
+function intersect(a: BoundingBox, b: BoundingBox): BoundingBox {
+  const x = Math.max(a.x, b.x);
+  const y = Math.max(a.y, b.y);
+  return { x, y, width: Math.max(0, Math.min(a.x + a.width, b.x + b.width) - x), height: Math.max(0, Math.min(a.y + a.height, b.y + b.height) - y) };
+}
+
+/** The smallest box holding both. */
+function union(a: BoundingBox, b: BoundingBox): BoundingBox {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return { x, y, width: Math.max(a.x + a.width, b.x + b.width) - x, height: Math.max(a.y + a.height, b.y + b.height) - y };
 }
 
 /**
@@ -465,7 +482,7 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
   const vertical = comicLetteringVertical(comics, resolved, locale);
   const L = comics.lettering;
   const insetPx = dimensionToPx(L.inset, dpi);
-  const bleedPx = Math.max(insetPx, input.gutter ? Math.max(input.gutter.rows, input.gutter.columns) : 0);
+  const trim = input.trim ?? input.frame;
   const castById = new Map(comics.cast.map((c) => [c.id, c] as const));
   const balloons: VDTComicBalloon[] = [];
   const warnings: ContentWarning[] = [];
@@ -491,8 +508,11 @@ export function letterPanels(input: LetterPanelsInput): { balloons: VDTComicBall
       ...(panel.border.style !== 'none' && panel.border.width > 0 ? { borderPx: panel.border.width } : {}),
       neighbours: panels.filter((q) => q !== panel).map((q) => q.bbox),
       ...(input.frame ? { limit: input.frame } : {}),
+      ...(trim ? { trim, sheet: input.bleedBox ? intersect(input.bleedBox, union(trim, panel.bbox)) : trim } : {}),
+      // What the panels before this one lettered: a balloon breaking out
+      // of either panel never covers the other's.
+      foreign: balloons.filter((b) => overlaps(b.bbox, panel.bbox)).map((b) => b.bbox),
       dpi,
-      bleedPx,
     };
     const items: LetteringItem[] = src.items.map((it, k) => {
       const cast = it.speaker ? castById.get(it.speaker) : undefined;
@@ -554,6 +574,9 @@ export interface ComicFrameContext {
   /** Regions no balloon should cover, besides those of the pictures (the
    *  spine of a spread), in the frame's coordinates. */
   avoid?: readonly BoundingBox[];
+  /** The trim of the sheet(s), in the frame's coordinates: no lettering
+   *  runs off it. Default: the frame. */
+  trimBox?: BoundingBox;
 }
 
 /** Lay out a comic page. */
@@ -575,6 +598,7 @@ export function layoutComicPage(source: ComicPageSource, given: ComicPageContext
     resolved: ctx.resolved,
     frame: comicPageFrame(ctx),
     bleedBox: ctx.bleedBox,
+    trimBox: ctx.trimBox,
     resources: ctx.resources,
     ...(ctx.sourceOffset !== undefined ? { sourceOffset: ctx.sourceOffset } : {}),
     pageIndex: ctx.page.index,
@@ -695,7 +719,7 @@ export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext
     splitters,
     balloons: [],
   };
-  const lettered = letterPanels({ source, panels, panelSources, comics, resolved, resources, direction, sourceOffset: off, gutter: gutters, pageIndex: ctx.pageIndex, frame, ...(ctx.avoid ? { avoid: ctx.avoid } : {}) });
+  const lettered = letterPanels({ source, panels, panelSources, comics, resolved, resources, direction, sourceOffset: off, pageIndex: ctx.pageIndex, frame, bleedBox: ctx.bleedBox, ...(ctx.trimBox ? { trim: ctx.trimBox } : {}), ...(ctx.avoid ? { avoid: ctx.avoid } : {}) });
   comic.balloons = lettered.balloons;
   warnings.push(...lettered.warnings);
   if (warnings.length > 0) layoutWarnings.set(comic, warnings);

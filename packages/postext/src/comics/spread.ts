@@ -119,10 +119,17 @@ export function layoutComicSpread(source: ComicPageSource, given: ComicSpreadCon
     width: shift + right.bleedBox.x + right.bleedBox.width - left.bleedBox.x,
     height: Math.max(left.bleedBox.y + left.bleedBox.height, right.bleedBox.y + right.bleedBox.height) - Math.min(left.bleedBox.y, right.bleedBox.y),
   };
+  const trimBox: BoundingBox = {
+    x: left.trimBox.x,
+    y: Math.min(left.trimBox.y, right.trimBox.y),
+    width: shift + right.trimBox.x + right.trimBox.width - left.trimBox.x,
+    height: Math.max(left.trimBox.y + left.trimBox.height, right.trimBox.y + right.trimBox.height) - Math.min(left.trimBox.y, right.trimBox.y),
+  };
   const whole = layoutComicFrame(source, {
     resolved,
     frame,
     bleedBox,
+    trimBox,
     resources: ctx.resources,
     ...(ctx.sourceOffset !== undefined ? { sourceOffset: ctx.sourceOffset } : {}),
     pageIndex: left.page.index,

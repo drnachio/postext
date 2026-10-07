@@ -12,7 +12,7 @@
 // text block; then it is placed anyway and reported.
 
 import {
-  boundsOf, dist, insetConvex, nearestOnPolygon, norm, pointInConvex, pointInRect, rayExit, rectsOverlap, segmentHitsRect,
+  boundsOf, clipToRect, dist, insetConvex, nearestOnPolygon, norm, pointInConvex, pointInRect, rayExit, rectsOverlap, segmentHitsRect,
   segmentDistance, sub, add, scale,
 } from './geom';
 import { tailLength, type Body } from './shapes';
@@ -87,7 +87,7 @@ const W = {
   tangent: 0.6,
   ownTail: 25,
   otherFace: 15,
-  side: 0.9,
+  side: 3,
   soft: 0.035,
   longTail: 0.3,
 };
@@ -101,8 +101,6 @@ interface Scene {
   panel: LetteringPanel;
   visible: Point[];
   visBox: Rect;
-  /** The room a balloon breaking the border may take. */
-  outer: Rect;
   faces: Rect[];
   avoid: Rect[];
   /** Regions better left uncovered (the picture's safe area when the art
@@ -114,6 +112,14 @@ interface Scene {
   neighbours: Rect[];
   /** The page's live area. */
   limit?: Rect;
+  /** How far a balloon / a sound effect breaking its border on purpose
+   *  may run (the trim less the inset; the trim and the panel's bleed). */
+  edge?: Rect;
+  edgeSfx?: Rect;
+  /** Other panels' balloons. */
+  foreign: Rect[];
+  /** The panel's polygon inside the live area (see {@link livePolygon}). */
+  live: Point[];
   /** What a butted caption sits flush against: the panel's polygon, inset
    *  by half its border (the caption's outline then lies on the border). */
   buttPoly: Point[];
@@ -121,16 +127,30 @@ interface Scene {
   heightBias?: number;
 }
 
+/** The part of a panel lettering may use: its polygon, less what runs
+ *  past the page's live area (a bleeding panel's art reaches the edge of
+ *  the sheet; its lettering stays where the trim cannot cut it). */
+export function livePolygon(panel: Pick<LetteringPanel, 'polygon' | 'limit'>): Point[] {
+  if (!panel.limit) return panel.polygon.map((p) => ({ ...p }));
+  const clipped = clipToRect(panel.polygon, panel.limit);
+  return clipped.length >= 3 ? clipped : panel.polygon.map((p) => ({ ...p }));
+}
+
+function insetRect(r: Rect, d: number): Rect {
+  const dx = Math.min(d, r.width / 2);
+  const dy = Math.min(d, r.height / 2);
+  return { x: r.x + dx, y: r.y + dy, width: r.width - 2 * dx, height: r.height - 2 * dy };
+}
+
 function sceneOf(panel: LetteringPanel): Scene {
-  let visible = insetConvex(panel.polygon, panel.insetPx);
-  if (visible.length < 3) visible = panel.polygon.map((p) => ({ ...p }));
-  const bleed = panel.bleedPx ?? panel.insetPx;
-  const b = panel.bbox;
+  const live = livePolygon(panel);
+  let visible = insetConvex(live, panel.insetPx);
+  if (visible.length < 3) visible = live;
+  const trim = panel.trim ?? panel.limit;
   return {
     panel,
     visible,
     visBox: boundsOf(visible),
-    outer: { x: b.x - bleed, y: b.y - bleed, width: b.width + 2 * bleed, height: b.height + 2 * bleed },
     faces: panel.anchors.filter((a) => a.face).map((a) => a.face!),
     avoid: [...(panel.avoid ?? [])],
     soft: [...(panel.softAvoid ?? [])],
@@ -139,14 +159,18 @@ function sceneOf(panel: LetteringPanel): Scene {
     buttPoly: buttPolygon(panel),
     neighbours: [...(panel.neighbours ?? [])],
     ...(panel.limit ? { limit: panel.limit } : {}),
+    ...(trim ? { edge: insetRect(trim, panel.insetPx), edgeSfx: panel.sheet ?? trim } : {}),
+    foreign: [...(panel.foreign ?? [])],
+    live,
   };
 }
 
 function buttPolygon(panel: LetteringPanel): Point[] {
   const half = (panel.borderPx ?? 0) / 2;
-  if (half <= 0) return panel.polygon.map((p) => ({ ...p }));
-  const poly = insetConvex(panel.polygon, half);
-  return poly.length >= 3 ? poly : panel.polygon.map((p) => ({ ...p }));
+  const live = livePolygon(panel);
+  if (half <= 0) return live;
+  const poly = insetConvex(live, half);
+  return poly.length >= 3 ? poly : live;
 }
 
 const moved = (pts: readonly Point[], at: Point): Point[] => pts.map((p) => ({ x: p.x + at.x, y: p.y + at.y }));
@@ -175,7 +199,7 @@ function tailTargetOf(unit: PlaceUnit, scene: Scene, centre: Point): Point | und
 /** The border point an off-panel tail runs to: toward a cropped anchor,
  *  on a named side, else the nearest border point. */
 export function offPanelPoint(panel: LetteringPanel, centre: Point, toward?: Point, side?: PanelSide): Point {
-  const poly = panel.polygon;
+  const poly = livePolygon(panel);
   if (toward) {
     const u = norm(sub(toward, centre));
     const t = rayExit(centre, u, poly);
@@ -262,10 +286,16 @@ function evaluate(
       reasons.add('anchor');
     }
   }
-  // Outside the panel (the room past the border when breaking it).
+  // Outside the panel. A unit that breaks its border on purpose (`break`,
+  // at the level that allows it; a pin, where its author put it) may run
+  // past the border, the gutter and the live area: a little cost, never a
+  // fault — but never off the sheet, and never into another panel's art
+  // unless it is a sound effect or a `break` (drawn sound and a balloon
+  // breaking into the next panel are both the letterer's call).
   const rim = moved(v.rim, at);
+  const intended = unit.pin !== undefined || (level.breakBorder && unit.breakBorder === true);
+  const edge = intended ? (unit.kind === 'sfx' ? scene.edgeSfx : scene.edge) ?? scene.limit : scene.limit;
   let out = 0;
-  let farOut = 0;
   let intrude = 0;
   let offPage = 0;
   // A butted caption sits flush with the border itself.
@@ -273,31 +303,39 @@ function evaluate(
   for (const p of rim) {
     if (!pointInConvex(p, area0) && !(unit.butt && unit.position && dist(nearestOnPolygon(p, area0), p) < 1)) {
       out++;
-      if (!pointInRect(p, scene.outer)) farOut++;
-      if (scene.limit && !pointInRect(p, scene.limit)) offPage++;
+      if (edge && !pointInRect(p, edge)) offPage++;
       else if (scene.neighbours.some((r) => pointInRect(p, r))) intrude++;
     }
   }
-  // Off the live area of the page, or into another panel (over its art
-  // and its own lettering): the worst ways out. A sound effect its author
-  // placed (`at=`) may run over the border and into the next panel, as
-  // drawn sound does; never off the page.
-  const drawnSound = unit.kind === 'sfx' && unit.pin !== undefined;
-  if (offPage > 0 || (intrude > 0 && !drawnSound)) {
-    H('neighbour', (12 * W.outside * (offPage + (drawnSound ? 0 : intrude))) / rim.length + 200);
+  const mayIntrude = intended && (unit.kind === 'sfx' || unit.breakBorder === true);
+  if (offPage > 0 || (intrude > 0 && !mayIntrude)) {
+    H('neighbour', (12 * W.outside * (offPage + (mayIntrude ? 0 : intrude))) / rim.length + 200);
     reasons.add('outside');
   } else if (intrude > 0) S('neighbour', 4 + (8 * intrude) / rim.length);
-  if (drawnSound) {
-    if (out > 0) S('breakBorder', (3 * out) / rim.length);
-  } else if (unit.kind !== 'sfx' || out > 0) {
-    if (level.breakBorder && unit.breakBorder) {
-      if (farOut > 0) {
-        H('outside', (W.outside * farOut) / rim.length + 10);
+  if (intended) {
+    if (out > 0) {
+      const f = out / rim.length;
+      // Breaking the border is a matter of degree: a balloon may stick out
+      // of its panel, but one whose middle stands outside it reads as
+      // another panel's (drawn sound may; so may a balloon its author
+      // pinned). A pinned balloon (no `break`) slides back in when it can.
+      S('breakBorder', 3 * f + (unit.kind !== 'sfx' && !unit.breakBorder ? 6 : 0));
+      if (unit.kind !== 'sfx' && !unit.pin && !pointInConvex({ x: box.x + box.width / 2, y: box.y + box.height / 2 }, scene.live)) {
+        H('outside', W.outside * f + 10);
         reasons.add('outside');
-      } else S('breakBorder', (3 * out) / rim.length);
-    } else if (out > 0) {
-      H('outside', (W.outside * out) / rim.length + 10);
-      reasons.add('outside');
+      }
+    }
+  } else if (out > 0) {
+    H('outside', (W.outside * out) / rim.length + 10);
+    reasons.add('outside');
+  }
+  // Balloons of the other panels (a balloon breaking into this one).
+  for (const r of scene.foreign) {
+    if (!rectsOverlap(box, r, 0.3 * em)) continue;
+    const a = coveredArea(samples, grow(r, 0.3 * em), area);
+    if (a > 0) {
+      H('balloon', (W.balloon * a) / em2 + W.balloon);
+      reasons.add('balloon');
     }
   }
   // Other balloons: overlap is a fault, a near miss (a tangent) a blemish.
@@ -360,7 +398,9 @@ function evaluate(
     S('distance', gap < ideal ? (W.distance * (ideal - gap)) / em : (W.far * (gap - ideal)) / em);
     if (gap < 0.7 * em) S('tooClose', 3);
     // A tail longer than a few ems reads as an arrow: the cost of a far
-    // balloon grows faster past six ems.
+    // balloon grows faster past six ems. (Over a close-up the balloon goes
+    // above the head and its tail runs down past the face: that one is
+    // long by necessity.)
     if (gap > 6 * em) S('longTail', (W.longTail * (gap - 6 * em)) / em);
     if (centre.y > target.y) S('below', (W.below * (centre.y - target.y)) / em);
     // A tail over another character's face reads as theirs.
@@ -370,9 +410,10 @@ function evaluate(
       S('otherFace', pointInRect(target, f) ? 1 : W.otherFace);
     }
   } else if (unit.target.kind === 'offPanel' && target) {
-    // An off-panel speaker's balloon sits by the border its tail runs to:
-    // a tail across the whole panel reads as an arrow.
-    S('side', (W.side * Math.max(0, dist(edgePoint(v, at, target), target) - 1.5 * em)) / em);
+    // An off-panel speaker's balloon sits by the border its voice comes
+    // from, with a short tail to it (the letterer's practice): a tail
+    // across the panel reads as an arrow, so the balloon moves instead.
+    S('side', (W.side * Math.max(0, dist(edgePoint(v, at, target), target) - 1.2 * em)) / em);
   }
   if (unit.kind === 'sfx' && unit.near) S('sfxNear', (0.5 * dist(centre, unit.near)) / em);
   // High in the panel; the first one in the top start corner.
@@ -579,7 +620,10 @@ function pinAnchors(scene: Scene, unit: PlaceUnit, vi: number): Point[] {
   const p = pinAnchor(unit, vi);
   const v = unit.variants[vi]!;
   const box = movedRect(v.bbox, p);
-  const vb = scene.visBox;
+  // Drawn sound stays where its author put it, over borders and all; it
+  // only slides back onto the sheet. A pinned balloon slides into its
+  // panel when it would run out of it.
+  const vb = unit.kind === 'sfx' ? (scene.edgeSfx ?? scene.limit ?? scene.visBox) : scene.visBox;
   const shift = (lo: number, size: number, min: number, max: number) =>
     size > max - min ? (min + max) / 2 - (lo + size / 2) : lo < min ? min - lo : lo + size > max ? max - (lo + size) : 0;
   const dx = shift(box.x, box.width, vb.x, vb.x + vb.width);
