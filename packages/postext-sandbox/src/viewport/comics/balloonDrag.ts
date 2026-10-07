@@ -9,7 +9,7 @@
  * Pure: everything is in sheet pixels (`VDTComicPage` coordinates).
  */
 
-import { comicArtPointToPage, comicArtRectToPage, pointInPolygon, type BoundingBox, type Resource, type VDTComicBalloon, type VDTComicPage, type VDTComicPanel, type VDTPoint } from 'postext';
+import { comicArtPointToPage, comicArtRectToPage, comicBalloonMatrix, pointInPolygon, type BoundingBox, type Resource, type VDTComicBalloon, type VDTComicPage, type VDTComicPanel, type VDTPoint } from 'postext';
 
 /** The step of an arrow key (percent of the picture, or of the cell). */
 export const BALLOON_NUDGE_PERCENT = 1;
@@ -29,11 +29,29 @@ export function rotateAbout(p: VDTPoint, c: VDTPoint, deg: number): VDTPoint {
 
 export const boxCentre = (b: BoundingBox): VDTPoint => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
 
-/** Whether a sheet point lies on a balloon: inside its box, turned with the
- *  balloon (a rotated sound effect), grown by `slop` px. */
+/** A point of a balloon's own frame on the sheet: leaned and turned as the
+ *  balloon is painted (`skew`, `rotate`; the engine's comicBalloonMatrix). */
+export function fromBalloonFrame(b: Pick<VDTComicBalloon, 'bbox' | 'rotate' | 'skew'>, p: VDTPoint): VDTPoint {
+  const m = comicBalloonMatrix(b);
+  return m ? { x: m[0] * p.x + m[2] * p.y + m[4], y: m[1] * p.x + m[3] * p.y + m[5] } : p;
+}
+
+/** A sheet point in a balloon's own frame (the inverse of
+ *  {@link fromBalloonFrame}). */
+export function toBalloonFrame(b: Pick<VDTComicBalloon, 'bbox' | 'rotate' | 'skew'>, p: VDTPoint): VDTPoint {
+  const m = comicBalloonMatrix(b);
+  if (!m) return p;
+  const [a, bb, c, d, e, f] = m;
+  const det = a * d - bb * c;
+  const x = p.x - e;
+  const y = p.y - f;
+  return { x: (d * x - c * y) / det, y: (-bb * x + a * y) / det };
+}
+
+/** Whether a sheet point lies on a balloon: inside its box, turned and
+ *  leaned with the balloon (a sound effect), grown by `slop` px. */
 export function onBalloon(b: VDTComicBalloon, x: number, y: number, slop = 0): boolean {
-  const c = boxCentre(b.bbox);
-  const p = rotateAbout({ x, y }, c, -(b.rotate ?? 0));
+  const p = toBalloonFrame(b, { x, y });
   return p.x >= b.bbox.x - slop && p.x <= b.bbox.x + b.bbox.width + slop && p.y >= b.bbox.y - slop && p.y <= b.bbox.y + b.bbox.height + slop;
 }
 
@@ -207,11 +225,10 @@ export function flattenPath(d: string, steps = 8): VDTPoint[][] {
   return out;
 }
 
-/** The corners of a balloon's box, turned with it. */
+/** The corners of a balloon's box, turned and leaned with it. */
 function boxPolygon(b: VDTComicBalloon): VDTPoint[] {
   const { x, y, width: w, height: h } = b.bbox;
-  const c = boxCentre(b.bbox);
-  return [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }].map((p) => rotateAbout(p, c, b.rotate ?? 0));
+  return [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }].map((p) => fromBalloonFrame(b, p));
 }
 
 /** The outline of a group moved by `delta`: its compound outline (bodies,
@@ -222,8 +239,7 @@ export function balloonGhost(members: readonly VDTComicBalloon[], delta: VDTPoin
   const move = (p: VDTPoint) => ({ x: p.x + delta.x, y: p.y + delta.y });
   const shaped = members.find((b) => b.shape?.d);
   if (shaped) {
-    const c = boxCentre(shaped.bbox);
-    for (const poly of flattenPath(shaped.shape!.d)) out.push(poly.map((p) => move(rotateAbout(p, c, shaped.rotate ?? 0))));
+    for (const poly of flattenPath(shaped.shape!.d)) out.push(poly.map((p) => move(fromBalloonFrame(shaped, p))));
   }
   for (const b of members) {
     if (b === shaped || (shaped && !b.shape)) continue;

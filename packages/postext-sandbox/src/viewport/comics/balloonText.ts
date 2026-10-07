@@ -23,7 +23,7 @@
  */
 
 import type { VDTComicBalloon, VDTDesignTextBlock, VDTPoint } from 'postext';
-import { boxCentre, rotateAbout } from './balloonDrag';
+import { toBalloonFrame } from './balloonDrag';
 
 /** The advance of a text in a CSS font (px), or null when nothing can
  *  measure it (the characters then share a run's advance evenly). */
@@ -203,9 +203,10 @@ function boundaryToSource(block: VDTDesignTextBlock, line: LineFrame, plain: num
   return map[Math.min(end - 1, map.length - 1)]! + 1;
 }
 
-/** The point in the balloon's own frame (a sound effect turned back). */
+/** The point in the balloon's own frame (a sound effect turned and
+ *  leaned back). */
 function unturned(balloon: VDTComicBalloon, x: number, y: number): VDTPoint {
-  return balloon.rotate ? rotateAbout({ x, y }, boxCentre(balloon.bbox), -balloon.rotate) : { x, y };
+  return toBalloonFrame(balloon, { x, y });
 }
 
 export interface BalloonTextOptions {
