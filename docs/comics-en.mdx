@@ -452,10 +452,11 @@ Every output paints the same comic: panel backgrounds, pictures clipped to the p
 
 ## Editing comics in the Sandbox
 
-In the canvas, the HTML pages and the Folio's select mode, a comic page can be edited with the pointer, and every edit is written back into the chapter's Markdown:
+In the canvas, the HTML pages and the Folio's select mode, a comic page can be edited with the pointer, and every edit is written back into the chapter's Markdown (the [Sandbox guide](/en/docs/sandbox#editing-comics) has the details):
 
 - **Splitters.** Over a gutter the pointer turns into a resize cursor. Dragging it moves the split line; on release the new percentage is written into the page's `split` value (the attribute is added when the page has none), and the page is laid out again. Shift snaps to steps of 5 %, Alt moves only the nearer end, slanting the line, and no cell gets narrower than 5 %. While dragging, a panel whose picture would be letterboxed is marked. Each splitter is also a focusable separator: the arrow keys move it by 1 % (5 % with Shift), Enter writes the position, Escape puts it back.
 - **Panels.** A small toolbar over a panel splits it with a horizontal or a vertical line, adding an empty `::panel` for the new cell after it, or merges it with the next panel: the split line goes, and the merged panel keeps the first panel's picture and both scripts.
+- **Balloons.** Dragging a balloon pins it: its script line gets `at="x% y%"` in percentages of the panel's picture, a joined group moving as one. The arrow keys nudge a focused balloon by 1 %, and a double click on a pinned balloon removes the pin.
 - **Pictures.** The safe area, the speakers and the avoid zones of a picture are marked in the Resources panel (see [Speakers and anchors](#speakers-and-anchors)).
 - **Settings.** The Design panel has a **Comics** group: reading direction, frame and gutters, the default panel and the panel styles, the lettering, and the balloon styles, each with a preview.
 - **Editor.** The text editor colours `:::page`, `::panel` and script lines, and the Checks panel lists the comic warnings at their lines.

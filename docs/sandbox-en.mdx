@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-07',
   readingTime: '15 min',
   order: 11,
   plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. You can choose fonts, page sizes, columns and colours, and add pictures. You can organise your work as a book with chapters and download it as a PDF or as an EPUB e-book. Your work is saved in your own browser as you go.",
@@ -528,6 +528,17 @@ Everything you open in the Sandbox is a **book**, the way an InDesign book file 
 - **Chapter openers.** No page break is forced between chapters: a chapter whose first block is a level-1 heading opens on a fresh page through the heading's own *break before* setting, exactly like a chapter that starts mid-document.
 - **Sync.** Clicking a paragraph of any chapter in the Canvas or HTML preview switches the editor to that chapter and places the caret; the editor caret is highlighted in the previews wherever the chapter sits in the book. Warnings carry their chapter.
 - **Existing documents** open as a book with one chapter; nothing changes until a second chapter is added.
+
+## Editing comics
+
+A chapter with comic pages (`:::page`) or strips (`:::strip`) can be edited on the pages themselves, in the Canvas tab, the HTML tab and the Folio's select mode. Every change is written into the chapter's Markdown, as a typed edit would be, so the editor's undo takes it back. The markup and the lettering rules are explained in [Comics](/en/docs/comics).
+
+- **Splitters.** Over the gutter between two panels the pointer turns into a resize cursor. Drag it to move the split line; on release the new percentage is written into the page's `split` attribute (added to the fence when the page has none) and the page is laid out again. Shift snaps the line to steps of 5 %, Alt moves only the end nearer the pointer, slanting the line, and no panel gets narrower than 5 %. While you drag, a panel whose picture would no longer keep its safe area in view is marked, with a hint. Each splitter is also a focusable separator: the arrow keys move it by 1 % (5 % with Shift), Enter writes the position and Escape puts it back.
+- **Split and merge.** Over a panel a small toolbar offers **Split with a horizontal line**, **Split with a vertical line** (an empty `::panel` line is added for the new cell, right after this panel) and **Merge with the next panel**: the line between them goes, and the merged panel keeps the first panel's picture and takes the script lines of both.
+- **Balloons.** Drag a balloon to pin it: on release its script line gets `at="x% y%"`, the point in percentages of the panel's picture (of the cell for a panel without one), so the pin stays on the same spot of the drawing through crops, splitter drags and translations. A joined group moves as one, pinned by its first balloon. The arrow keys nudge a focused balloon by 1 % (5 % with Shift), and a double click on a pinned balloon removes its `at`, handing it back to the automatic placement.
+- **Speakers and avoid zones.** On a picture in the [Resources panel](#resources-panel), the **Safe area & lettering** field opens a dialog with three modes. **Safe area** marks the part of the picture that must stay in view. **Speakers** places one point per character: a click on the picture adds a speaker there and focuses its id, which must be the speaker key the script uses (`maya: …`); its mouth, head (where thought bubbles point) and face (never covered by a balloon) are dragged into place. **Avoid zones** are rectangles no balloon covers, drawn by dragging over the picture. Every mark can be moved with the arrow keys (Shift for larger steps) and removed with Delete; the dialog keeps its own undo, and a speaker outside the safe area is flagged.
+- **Settings.** The Design panel's **Comics** group holds the comics configuration: reading direction and mirrored pictures, the frame and the gutters, the default panel and the named panel styles, the lettering, and the balloon styles, each with a preview of its outline.
+- **Editor and checks.** The text editor colours `:::page`, `:::strip`, `::panel` lines and the keys and attributes of script lines. The Checks panel lists the comic warnings (an unreadable split, panels and cells that do not match, a balloon that does not fit…) at the line they concern; see [Comics › Comic warnings](/en/docs/comics#comic-warnings).
 
 ## Persistence
 
