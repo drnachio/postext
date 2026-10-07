@@ -108,7 +108,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // area is what every crop keeps: Tomás alone, not his radio, so a cell a fifth of the page
 // wide still shows him; the lighthouse and the gallery, not the boat, so a tall cell holds them.
 const ART = {
-  'lh-arrive': { width: 1100, height: 733, safeArea: { x: 0.2, y: 0.1, width: 0.3, height: 0.68 },
+  'lh-arrive': { width: 1100, height: 733, safeArea: { x: 0.22, y: 0.08, width: 0.4, height: 0.64 },
     anchors: [{ id: 'maya', x: 0.29, y: 0.52, head: { x: 0.27, y: 0.47 },
       face: { x: 0.22, y: 0.42, width: 0.12, height: 0.16 } },
     { id: 'biscuit', x: 0.4, y: 0.68, face: { x: 0.37, y: 0.64, width: 0.07, height: 0.08 } }],
@@ -125,7 +125,7 @@ const ART = {
       pt: 'Uma menina de capa de chuva amarela sobe um caminho à beira-mar rumo a um farol '
         + 'vermelho e branco, com um gato laranja gordo à frente.' }) },
   'lh-radio': { width: 1000, height: 1000,
-    safeArea: { x: 0.28, y: 0.36, width: 0.24, height: 0.56 },
+    safeArea: { x: 0.27, y: 0.38, width: 0.24, height: 0.3 },
     anchors: [{ id: 'tomas', x: 0.345, y: 0.52, head: { x: 0.38, y: 0.44 },
       face: { x: 0.29, y: 0.4, width: 0.16, height: 0.18 } }],
     avoid: [{ x: 0, y: 0.44, width: 0.22, height: 0.26 }],
@@ -141,7 +141,7 @@ const ART = {
       ja: '白いひげの老灯台守が、紺のセーターに帽子姿でマイクを握り、真空管ラジオをたたいている。',
       pt: 'O velho faroleiro, de barba branca, suéter azul-marinho e boné, dá batidinhas num '
         + 'rádio valvulado com o microfone na mão.' }) },
-  'lh-maya': { width: 1100, height: 1100, safeArea: { x: 0.32, y: 0.22, width: 0.42, height: 0.73 },
+  'lh-maya': { width: 1100, height: 1100, safeArea: { x: 0.25, y: 0.27, width: 0.41, height: 0.68 },
     anchors: [{ id: 'maya', x: 0.54, y: 0.565, head: { x: 0.5, y: 0.3 },
       face: { x: 0.4, y: 0.33, width: 0.24, height: 0.29 } }],
     avoid: [{ x: 0.27, y: 0.73, width: 0.25, height: 0.22 }],
@@ -153,7 +153,7 @@ const ART = {
       ja: 'マヤのアップ。眉をひそめて床を見つめ、下を指さしている。',
       pt: 'Close de Maya, de testa franzida, olhando para o chão e apontando para baixo.' }) },
   'lh-biscuit': { width: 1000, height: 1000,
-    safeArea: { x: 0.5, y: 0.22, width: 0.34, height: 0.6 },
+    safeArea: { x: 0.58, y: 0.25, width: 0.42, height: 0.33 },
     anchors: [{ id: 'biscuit', x: 0.72, y: 0.355, head: { x: 0.73, y: 0.32 },
       face: { x: 0.64, y: 0.27, width: 0.2, height: 0.18 } }],
     avoid: [{ x: 0.93, y: 0.28, width: 0.07, height: 0.24 },
@@ -169,7 +169,7 @@ const ART = {
       ja: '机の下で、太ったオレンジ色の猫がラジオの黒いコードの真上にあおむけで眠っている。',
       pt: 'Debaixo da mesa, o gato laranja gordo dorme de barriga para cima bem em cima do cabo '
         + 'preto do rádio.' }) },
-  'lh-beam': { width: 1200, height: 800, safeArea: { x: 0.14, y: 0.02, width: 0.36, height: 0.64 },
+  'lh-beam': { width: 1200, height: 800, safeArea: { x: 0.15, y: 0.01, width: 0.25, height: 0.3 },
     anchors: [{ id: 'maya', x: 0.235, y: 0.15,
       face: { x: 0.21, y: 0.11, width: 0.05, height: 0.07 } },
       { id: 'tomas', x: 0.3, y: 0.145, face: { x: 0.28, y: 0.11, width: 0.04, height: 0.06 } }],
