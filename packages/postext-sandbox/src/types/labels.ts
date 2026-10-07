@@ -3059,4 +3059,18 @@ export interface SandboxLabels {
   comicBalloonHint: string;
   /** Where a dragged balloon would be pinned (`__x__`, `__y__`: percents). */
   comicBalloonPin: string;
+
+  // Comic tools on strips, tails, panels from the keyboard, drop hints (#580)
+  /** A panel's keyboard handle (`__n__`, `__total__`). */
+  comicPanelLabel: string;
+  comicPanelHint: string;
+  /** A tail's keyboard handle (`__n__`, `__total__`, `__text__`). */
+  comicTailLabel: string;
+  comicTailHint: string;
+  /** Where a dragged tail would aim (`__x__`, `__y__`: percents). */
+  comicTailTo: string;
+  /** Why a dragged balloon's ghost turns orange. */
+  comicBalloonCoversFace: string;
+  comicBalloonCoversAvoid: string;
+  comicBalloonOutsidePanel: string;
 }

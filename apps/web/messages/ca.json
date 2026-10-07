@@ -3577,8 +3577,16 @@
     "comicMergeNext": "Uneix amb la vinyeta següent",
     "comicLetterboxHint": "La vinyeta __n__ quedarà amb bandes: la zona segura de la seva imatge ja no cap a la cel·la.",
     "comicBalloonLabel": "Bafarada __n__ de __total__: __text__",
-    "comicBalloonHint": "Les fletxes mouen la bafarada un 1 % de la imatge (amb Maj, un 5 %). Retorn la fixa allà; Escapada la torna al seu lloc; Suprimir la deixa anar. Amb el ratolí: arrossega-la (Maj la manté en una direcció) i fes doble clic per deixar-la anar; Alt i arrossegar gira una onomatopeia.",
-    "comicBalloonPin": "A __x__ d'amplada, __y__ d'alçada"
+    "comicBalloonHint": "Les fletxes mouen la bafarada un 1 % de la imatge (amb Maj, un 5 %). Retorn la fixa allà; Escapada la torna al seu lloc; Suprimir la deixa anar. Amb el ratolí: arrossega-la (Maj la manté en una direcció) i fes doble clic per deixar-la anar; Alt i arrossegar gira una onomatopeia. T passa al seu bec.",
+    "comicBalloonPin": "A __x__ d'amplada, __y__ d'alçada",
+    "comicPanelLabel": "Vinyeta __n__ de __total__",
+    "comicPanelHint": "H divideix la vinyeta amb una línia horitzontal, V amb una línia vertical i M la uneix amb la vinyeta següent. Retorn obre la seva barra d'eines.",
+    "comicTailLabel": "Bec de la bafarada __n__ de __total__: __text__",
+    "comicTailHint": "Les fletxes mouen el punt on apunta el bec un 1 % de la imatge (amb Maj, un 5 %). Retorn l'escriu; Escapada el torna al seu lloc; Suprimir fa que torni a apuntar al seu parlant; T torna a la bafarada. Amb el ratolí: arrossega la punta del bec i fes-hi doble clic perquè torni a apuntar al seu parlant.",
+    "comicTailTo": "Bec cap a __x__ d'amplada, __y__ d'alçada",
+    "comicBalloonCoversFace": "Aquí taparia una cara.",
+    "comicBalloonCoversAvoid": "Aquí taparia una zona de la imatge que ha de quedar lliure.",
+    "comicBalloonOutsidePanel": "Aquí sortiria de la vinyeta."
   },
   "PlainLanguage": {
     "heading": "En poques paraules",

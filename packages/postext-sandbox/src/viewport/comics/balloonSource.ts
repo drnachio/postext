@@ -159,3 +159,16 @@ export function unpinBalloonChanges(markdown: string, comic: Pick<VDTComicPage, 
   const item = comicBalloonItem(markdown, comic, sourceStart);
   return item ? unpinLineChanges(markdown, item) : null;
 }
+
+/** The changes that point a script line's tail at `to` (fractions of the
+ *  panel's picture, or of its cell): `to="x% y%"`, replaced in place when
+ *  the line has one (#580). */
+export function tailLineChanges(markdown: string, item: ComicScriptItem, to: { x: number; y: number }): TextChange[] {
+  return setLineAttrChanges(markdown, item, 'to', pinValue(to), true);
+}
+
+/** The changes that take a script line's tail target off (`to`), so the
+ *  tail points at its speaker again; null when the line has none. */
+export function untailLineChanges(markdown: string, item: ComicScriptItem): TextChange[] | null {
+  return removeLineAttrChanges(markdown, item, 'to');
+}

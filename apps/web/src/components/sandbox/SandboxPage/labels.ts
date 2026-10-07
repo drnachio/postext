@@ -2962,5 +2962,13 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     comicBalloonLabel: t("comicBalloonLabel"),
     comicBalloonHint: t("comicBalloonHint"),
     comicBalloonPin: t("comicBalloonPin"),
+    comicPanelLabel: t("comicPanelLabel"),
+    comicPanelHint: t("comicPanelHint"),
+    comicTailLabel: t("comicTailLabel"),
+    comicTailHint: t("comicTailHint"),
+    comicTailTo: t("comicTailTo"),
+    comicBalloonCoversFace: t("comicBalloonCoversFace"),
+    comicBalloonCoversAvoid: t("comicBalloonCoversAvoid"),
+    comicBalloonOutsidePanel: t("comicBalloonOutsidePanel"),
   };
 }

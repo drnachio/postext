@@ -3577,8 +3577,16 @@
     "comicMergeNext": "次のコマと結合",
     "comicLetterboxHint": "コマ __n__ は余白付きになります：画像のセーフエリアがコマに収まりません。",
     "comicBalloonLabel": "フキダシ __n__ / __total__：__text__",
-    "comicBalloonHint": "矢印キーでフキダシを画像の 1% 動かします（Shift で 5%）。Enter でその位置に固定し、Esc で元に戻し、Delete で固定を外します。マウスでは：ドラッグで動かし（Shift で一方向のみ）、ダブルクリックで固定を外します。Alt を押しながらドラッグすると描き文字を回転します。",
-    "comicBalloonPin": "横 __x__、縦 __y__"
+    "comicBalloonHint": "矢印キーでフキダシを画像の 1% 動かします（Shift で 5%）。Enter でその位置に固定し、Esc で元に戻し、Delete で固定を外します。マウスでは：ドラッグで動かし（Shift で一方向のみ）、ダブルクリックで固定を外します。Alt を押しながらドラッグすると描き文字を回転します。T でそのシッポに移ります。",
+    "comicBalloonPin": "横 __x__、縦 __y__",
+    "comicPanelLabel": "コマ __n__ / __total__",
+    "comicPanelHint": "H でコマを横線で分割し、V で縦線で分割し、M で次のコマと結合します。Enter でツールバーを開きます。",
+    "comicTailLabel": "フキダシ __n__ / __total__ のシッポ：__text__",
+    "comicTailHint": "矢印キーでシッポが指す点を画像の 1% 動かします（Shift で 5%）。Enter で書き込み、Esc で元に戻し、Delete でシッポを話し手に向け直し、T でフキダシに戻ります。マウスでは：シッポの先をドラッグし、ダブルクリックで話し手に向け直します。",
+    "comicTailTo": "シッポの向き 横 __x__、縦 __y__",
+    "comicBalloonCoversFace": "ここでは顔を隠してしまいます。",
+    "comicBalloonCoversAvoid": "ここでは画像の空けておく部分を隠してしまいます。",
+    "comicBalloonOutsidePanel": "ここではコマからはみ出します。"
   },
   "PlainLanguage": {
     "heading": "かんたんな説明",

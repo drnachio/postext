@@ -183,7 +183,8 @@ export interface PageInteractionOptions {
   /** Brings a resource or anchor of the document into view. */
   showLocation: (doc: VDTDocument, loc: ResourceLocation) => void;
   /** The cursor over the pages: `text`, `pointer` over a link, a resize
-   *  cursor over a comic splitter, `move` over a comic balloon. */
+   *  cursor over a comic splitter, `move` over a comic balloon,
+   *  `crosshair` over a balloon's tail tip. */
   setCursor: (cursor: PageCursor) => void;
   /** Whether the pointer is the reader's to select with now (the Folio's
    *  select mode); always, when left out. */
@@ -200,7 +201,7 @@ export interface PageInteractionOptions {
 }
 
 /** The cursors the page interaction sets. */
-export type PageCursor = 'text' | 'pointer' | 'default' | 'row-resize' | 'col-resize' | 'move';
+export type PageCursor = 'text' | 'pointer' | 'default' | 'row-resize' | 'col-resize' | 'move' | 'crosshair';
 
 /** What the page interaction hands back to its viewer. */
 export interface PageInteraction {

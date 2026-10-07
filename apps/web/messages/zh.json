@@ -3577,8 +3577,16 @@
     "comicMergeNext": "与下一格合并",
     "comicLetterboxHint": "第 __n__ 格将出现留边：图片的安全区域已放不进该格。",
     "comicBalloonLabel": "对白框 __n__ / __total__：__text__",
-    "comicBalloonHint": "方向键将对白框移动图片的 1%（按住 Shift 为 5%）。按 Enter 将其固定在该处；按 Esc 恢复原位；按 Delete 取消固定。使用鼠标：拖动对白框（按住 Shift 只沿一个方向），双击取消固定；按住 Alt 拖动可旋转拟声词。",
-    "comicBalloonPin": "横向 __x__，纵向 __y__"
+    "comicBalloonHint": "方向键将对白框移动图片的 1%（按住 Shift 为 5%）。按 Enter 将其固定在该处；按 Esc 恢复原位；按 Delete 取消固定。使用鼠标：拖动对白框（按住 Shift 只沿一个方向），双击取消固定；按住 Alt 拖动可旋转拟声词。按 T 转到它的尾巴。",
+    "comicBalloonPin": "横向 __x__，纵向 __y__",
+    "comicPanelLabel": "第 __n__ 格（共 __total__ 格）",
+    "comicPanelHint": "按 H 用水平线分割该格，按 V 用垂直线分割，按 M 与下一格合并。按 Enter 打开其工具栏。",
+    "comicTailLabel": "对白框 __n__ / __total__ 的尾巴：__text__",
+    "comicTailHint": "方向键将尾巴所指的点移动图片的 1%（按住 Shift 为 5%）。按 Enter 写入；按 Esc 恢复原位；按 Delete 让尾巴重新指向说话人；按 T 回到对白框。使用鼠标：拖动尾巴的尖端，双击尖端让尾巴重新指向说话人。",
+    "comicTailTo": "尾巴指向横向 __x__，纵向 __y__",
+    "comicBalloonCoversFace": "放在这里会遮住人脸。",
+    "comicBalloonCoversAvoid": "放在这里会遮住图片中需要留空的区域。",
+    "comicBalloonOutsidePanel": "放在这里会超出分格。"
   },
   "PlainLanguage": {
     "heading": "简单来说",

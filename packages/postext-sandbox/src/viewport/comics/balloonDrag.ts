@@ -9,7 +9,7 @@
  * Pure: everything is in sheet pixels (`VDTComicPage` coordinates).
  */
 
-import { comicArtPointToPage, type BoundingBox, type VDTComicBalloon, type VDTComicPage, type VDTComicPanel, type VDTPoint } from 'postext';
+import { comicArtPointToPage, comicArtRectToPage, pointInPolygon, type BoundingBox, type Resource, type VDTComicBalloon, type VDTComicPage, type VDTComicPanel, type VDTPoint } from 'postext';
 
 /** The step of an arrow key (percent of the picture, or of the cell). */
 export const BALLOON_NUDGE_PERCENT = 1;
@@ -247,4 +247,167 @@ export function groupBox(members: readonly VDTComicBalloon[]): BoundingBox {
     }
   }
   return Number.isFinite(x0) ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : { x: 0, y: 0, width: 0, height: 0 };
+}
+
+// ---------------------------------------------------------------------------
+// Tails (#580)
+// ---------------------------------------------------------------------------
+
+/** The reach of a tail tip's hit circle (CSS px, whatever the zoom). */
+export const TAIL_HIT_SCREEN_PX = 7;
+
+/** The balloon whose tail tip lies within `radius` of `(x, y)` (the one
+ *  painted on top when two are that close); null elsewhere. */
+export function tailTipAt(comic: VDTComicPage, x: number, y: number, radius: number): VDTComicBalloon | null {
+  const order = balloonPaintOrder(comic);
+  let best: VDTComicBalloon | null = null;
+  let bestD = radius;
+  for (let i = order.length - 1; i >= 0; i--) {
+    const b = order[i]!;
+    if (!b.tailTip) continue;
+    const d = Math.hypot(b.tailTip.x - x, b.tailTip.y - y);
+    if (d <= bestD) {
+      best = b;
+      bestD = d;
+    }
+  }
+  return best;
+}
+
+/** A tail target as written (`to="x% y%"`): fractions of the panel's
+ *  picture (mirrored art flipped, crops included), or of its cell, rounded
+ *  to a tenth of a percent and kept on the picture (a target on its
+ *  cropped part points the tail at the border, toward it). */
+export function pageToTailTarget(panel: Pick<VDTComicPanel, 'art' | 'bbox'>, p: VDTPoint): { x: number; y: number } {
+  const at = roundPin(pageToPin(panel, p));
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  return { x: clamp(at.x), y: clamp(at.y) };
+}
+
+/** Where a tail points now, on the page: its written `to`, else the mouth
+ *  of its speaker's anchor on the panel's picture, else its tip. */
+export function tailTargetNow(
+  panel: Pick<VDTComicPanel, 'art' | 'bbox'>,
+  tip: VDTPoint,
+  to?: { x: number; y: number },
+  mouth?: { x: number; y: number },
+): VDTPoint {
+  if (to) return pinToPage(panel, to);
+  if (mouth && panel.art) return comicArtPointToPage(panel.art, mouth.x, mouth.y);
+  return tip;
+}
+
+/** Where the line from a box's centre to `target` leaves the ellipse the
+ *  box holds: the base a tail grows from, near enough for a preview. */
+export function ellipseExit(box: BoundingBox, target: VDTPoint): VDTPoint {
+  const c = boxCentre(box);
+  const dx = target.x - c.x;
+  const dy = target.y - c.y;
+  const rx = box.width / 2;
+  const ry = box.height / 2;
+  const k = rx > 0 && ry > 0 ? Math.sqrt((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry)) : 0;
+  if (k <= 1) return target;
+  return { x: c.x + dx / k, y: c.y + dy / k };
+}
+
+// ---------------------------------------------------------------------------
+// Where a dragged balloon would land (#580)
+// ---------------------------------------------------------------------------
+
+/** The regions of a panel no balloon should cover, on the page: the faces
+ *  its picture marks, a guard over each speaker whose anchor marks none
+ *  (the engine's: a few `em` round the mouth, mostly above it), and the
+ *  picture's avoid zones. */
+export function balloonKeepOut(panel: Pick<VDTComicPanel, 'art'>, resource: Pick<Resource, 'anchors' | 'avoid'> | undefined, em: number): { faces: BoundingBox[]; avoid: BoundingBox[] } {
+  const art = panel.art;
+  if (!art || !resource) return { faces: [], avoid: [] };
+  const faces: BoundingBox[] = [];
+  for (const a of resource.anchors ?? []) {
+    if (a.face) {
+      faces.push(comicArtRectToPage(art, a.face));
+      continue;
+    }
+    if (a.id === 'sfx' || em <= 0) continue;
+    const mouth = comicArtPointToPage(art, a.x, a.y);
+    const head = a.head ? comicArtPointToPage(art, a.head.x, a.head.y) : mouth;
+    const x0 = Math.min(mouth.x, head.x) - 1.6 * em;
+    const x1 = Math.max(mouth.x, head.x) + 1.6 * em;
+    const y0 = Math.min(mouth.y, head.y) - 2.6 * em;
+    const y1 = Math.max(mouth.y, head.y) + 0.7 * em;
+    faces.push({ x: x0, y: y0, width: x1 - x0, height: y1 - y0 });
+  }
+  return { faces, avoid: (resource.avoid ?? []).map((r) => comicArtRectToPage(art, r)) };
+}
+
+/** The type size of a balloon's lettering (px), read from its first text
+ *  block's font; 0 when it has none. */
+export function balloonEm(b: Pick<VDTComicBalloon, 'text'>): number {
+  const font = b.text[0]?.fontString ?? '';
+  const m = /(\d+(?:\.\d+)?)px/.exec(font);
+  return m ? Number(m[1]) : 0;
+}
+
+const overlapArea = (a: BoundingBox, b: BoundingBox): number => {
+  const w = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+  const h = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+  return w > 0 && h > 0 ? w * h : 0;
+};
+
+/** How far a point lies outside a polygon (0 inside): its distance to
+ *  the nearest edge. */
+function outsideBy(poly: readonly VDTPoint[], p: VDTPoint): number {
+  if (pointInPolygon(poly, p)) return 0;
+  let best = Infinity;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]!;
+    const b = poly[(i + 1) % poly.length]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2)) : 0;
+    best = Math.min(best, Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)));
+  }
+  return best;
+}
+
+/** How far a group moved by `delta` runs out of a panel: the furthest
+ *  point of its outline (its boxes, for balloons drawn without one). */
+export function groupOutsideBy(members: readonly VDTComicBalloon[], delta: VDTPoint, polygon: readonly VDTPoint[]): number {
+  if (polygon.length < 3) return 0;
+  let worst = 0;
+  for (const poly of balloonGhost(members, delta)) for (const p of poly) worst = Math.max(worst, outsideBy(polygon, p));
+  return worst;
+}
+
+/** What is wrong with a group dropped `delta` away: its bodies would cover
+ *  a face or an avoid zone (more than a sliver: 2 % of the body), or run
+ *  out of the panel further than where it was laid out (by more than
+ *  `slack` px: a balloon wider than its panel is not flagged for staying
+ *  as far out; never for a line written with `break`). */
+export interface BalloonDropIssues {
+  face: boolean;
+  avoid: boolean;
+  outside: boolean;
+}
+
+export function balloonDropIssues(
+  members: readonly VDTComicBalloon[],
+  delta: VDTPoint,
+  panel: Pick<VDTComicPanel, 'polygon'>,
+  keepOut: { faces: readonly BoundingBox[]; avoid: readonly BoundingBox[] },
+  opts: { breakBorder?: boolean; slack?: number } = {},
+): BalloonDropIssues {
+  const slack = opts.slack ?? 1;
+  const out: BalloonDropIssues = { face: false, avoid: false, outside: false };
+  for (const b of members) {
+    const moved = { x: b.bbox.x + delta.x, y: b.bbox.y + delta.y, width: b.bbox.width, height: b.bbox.height };
+    const sliver = Math.max(1, moved.width * moved.height * 0.02);
+    if (keepOut.faces.some((f) => overlapArea(moved, f) > sliver)) out.face = true;
+    if (keepOut.avoid.some((f) => overlapArea(moved, f) > sliver)) out.avoid = true;
+  }
+  if (!opts.breakBorder) {
+    const before = groupOutsideBy(members, { x: 0, y: 0 }, panel.polygon);
+    out.outside = groupOutsideBy(members, delta, panel.polygon) > before + slack;
+  }
+  return out;
 }

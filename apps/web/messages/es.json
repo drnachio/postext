@@ -3577,8 +3577,16 @@
     "comicMergeNext": "Unir con la viñeta siguiente",
     "comicLetterboxHint": "La viñeta __n__ quedará con bandas: la zona segura de su imagen ya no cabe en la celda.",
     "comicBalloonLabel": "Globo __n__ de __total__: __text__",
-    "comicBalloonHint": "Las flechas mueven el globo un 1 % de la imagen (con Mayús, un 5 %). Intro lo fija ahí; Escape lo devuelve a su sitio; Suprimir lo suelta. Con el ratón: arrástralo (Mayús lo mantiene en una dirección) y haz doble clic para soltarlo; Alt y arrastrar gira una onomatopeya.",
-    "comicBalloonPin": "En __x__ de ancho, __y__ de alto"
+    "comicBalloonHint": "Las flechas mueven el globo un 1 % de la imagen (con Mayús, un 5 %). Intro lo fija ahí; Escape lo devuelve a su sitio; Suprimir lo suelta. Con el ratón: arrástralo (Mayús lo mantiene en una dirección) y haz doble clic para soltarlo; Alt y arrastrar gira una onomatopeya. T pasa a su rabillo.",
+    "comicBalloonPin": "En __x__ de ancho, __y__ de alto",
+    "comicPanelLabel": "Viñeta __n__ de __total__",
+    "comicPanelHint": "H divide la viñeta con una línea horizontal, V con una línea vertical y M la une con la viñeta siguiente. Intro abre su barra de herramientas.",
+    "comicTailLabel": "Rabillo del globo __n__ de __total__: __text__",
+    "comicTailHint": "Las flechas mueven el punto al que apunta el rabillo un 1 % de la imagen (con Mayús, un 5 %). Intro lo escribe; Escape lo devuelve a su sitio; Suprimir hace que vuelva a apuntar a su hablante; T vuelve al globo. Con el ratón: arrastra la punta del rabillo y haz doble clic en ella para que vuelva a apuntar a su hablante.",
+    "comicTailTo": "Rabillo hacia __x__ de ancho, __y__ de alto",
+    "comicBalloonCoversFace": "Aquí taparía una cara.",
+    "comicBalloonCoversAvoid": "Aquí taparía una zona de la imagen que debe quedar libre.",
+    "comicBalloonOutsidePanel": "Aquí se saldría de la viñeta."
   },
   "PlainLanguage": {
     "heading": "En pocas palabras",
