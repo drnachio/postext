@@ -1575,7 +1575,7 @@ Os três renderizadores (a visualização no canvas, o visualizador HTML e a sa�
 - Um parágrafo que passa de uma página para a outra também conta a partir da linha que cita. Quando o parágrafo começa no pé da página 5 e a referência cai na página 6 (ou o parágrafo inteiro vai para a página 6, porque não cabem linhas suficientes dele no pé da página 5), a referência está na página 6: um flutuante `top` abre a página 7, e um `auto` ocupa o pé da página 6 quando há espaço para ele. O mesmo vale entre as colunas de uma página, e para um boxe dividido entre páginas: uma figura que a segunda parte dele cita espera por essa parte.
 - **Mudou no postext 1.5.** Até o postext 1.4, um flutuante entrava na fila quando o layout chegava ao parágrafo que o cita, de modo que a página para onde esse parágrafo continuava (ou para onde ia) podia abrir com o flutuante, acima da linha que contém a referência. Uma figura assim agora fica uma página depois, ou no pé da página quando pede `auto`; o número de páginas pode mudar.
 
-#### Contorno de texto
+### Contorno de texto
 
 Uma imagem, uma tabela ou uma caixa mais estreita que a coluna pode ficar de um lado dela com o texto composto ao lado, como numa revista ou num boletim. Dê ao posicionamento um lado de `wrap` e, se quiser, um `width`:
 

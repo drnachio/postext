@@ -1576,7 +1576,7 @@ Los tres backends — la previsualización en canvas, el visor HTML y la salida 
 - Un párrafo que pasa de una página a la siguiente también cuenta desde su línea de cita. Cuando el párrafo empieza al pie de la página 5 y la referencia cae en la 6 — o el párrafo entero pasa a la 6 porque al pie de la 5 no caben suficientes líneas suyas —, la referencia está en la 6: un flotante `top` abre la página 7, y uno `auto` ocupa el pie de la 6 si cabe. Lo mismo vale entre las columnas de una página y para una caja partida entre páginas: la figura que cita su segunda parte espera a esa parte.
 - **Cambia en postext 1.5.** Hasta postext 1.4 un flotante entraba en la cola cuando la maquetación llegaba al párrafo que lo cita, así que la página a la que ese párrafo pasaba (o se trasladaba entero) podía abrirse con el flotante, por encima de la línea que lleva la referencia. Esa figura cae ahora una página más tarde, o al pie de la página cuando pide `auto`; el número de páginas puede cambiar.
 
-#### Ajuste del texto
+### Ajuste del texto
 
 Una imagen, una tabla o una caja más estrecha que su columna puede colocarse en uno de sus lados con el texto compuesto al lado, como en una revista o un boletín. Da a su colocación un lado de `wrap` y, si quieres, un `width`:
 

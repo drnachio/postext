@@ -1576,7 +1576,7 @@ All three backends — the canvas preview, the HTML viewer, and the PDF output �
 - A paragraph that runs from one page onto the next counts from its citing line too. When the paragraph begins at the foot of page 5 and the reference falls on page 6 — or the whole paragraph moves to page 6, because not enough of its lines fit at the foot of page 5 — the reference is on page 6: a `top` float opens page 7, and an `auto` one takes the foot of page 6 when there is room for it. The same holds between the columns of a page, and for a box split across pages: a figure its second part cites waits for that part.
 - **Changed in postext 1.5.** Up to postext 1.4 a float was queued when the layout reached the paragraph that cites it, so the page such a paragraph ran onto (or moved to) could open with the float, above the line holding the reference. Such a figure now lands a page later, or at the foot of the page when it asks for `auto`; a page-count change can follow.
 
-#### Text wrap
+### Text wrap
 
 A picture, a table or a box narrower than its column can stand at one side of it with the text running beside it, as in a magazine or a newsletter. Give its placement a `wrap` side and, if you like, a `width`:
 
