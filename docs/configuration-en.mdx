@@ -5085,7 +5085,7 @@ Per-type overrides are merged with `mergeCaptionStyle(resolvedCaptionStyle, over
 
 ## Diagram style
 
-The `diagramStyle` property controls how embedded SVG diagrams (`kind: 'svg'` resources) are coloured. Its single feature today is **single-ink mode**: a recolouring pass that maps every colour in a diagram to a tint of one ink, so figures reproduce faithfully when the document is printed with a single spot colour.
+The `diagramStyle` property controls how embedded SVG diagrams (`kind: 'svg'` resources) are coloured and which fonts their text is set in. **Single-ink mode** is a recolouring pass that maps every colour in a diagram to a tint of one ink, so figures reproduce faithfully when the document is printed with a single spot colour. **Inlined fonts** embed in each SVG the faces its text names, so its labels are set in the document's fonts on the canvas, in HTML and in EPUB (see [Fonts in SVG text](#fonts-in-svg-text)).
 
 ```ts
 const config: PostextConfig = {
@@ -5117,6 +5117,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>Main Color (<code>#295AA3</code>)</td>
       <td>The ink. Defaults to the document's main palette colour (palette-linked via <code>paletteId: 'main-color'</code>), so swapping the palette swatch retints the diagrams along with headings and bold runs.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Embed in each SVG the faces its text names (<code>font-family</code>) as <code>@font-face</code> data URIs before it is shown as an image: on the canvas, in HTML, in EPUB and in the PDF's raster fallback. Never written into the stored file. A resource opts out with <code>svg.inlineFonts: false</code> (since postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5198,6 +5204,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 `renderToHtml` takes its `singleInk` default from the resolver's own flag, so `bundleImageUrl(bundle)` needs no option.
 
 For every colour the markup pass rewrites (hex, `rgb()` and `hsl()` values, `white` and `black`; see [How single ink works](#how-single-ink-works)), the pixel mapping gives the same result, antialiased edges and gradients included. The two differ where the markup pass leaves a colour alone: named colours other than `white` and `black`, `currentColor`, shapes and text with no fill (drawn in the default black), and bitmaps embedded in the SVG are tinted on screen but keep their colour in the PDF. Give every element of a diagram an explicit hex, `rgb()` or `hsl()` colour to get identical output. When the canvas cannot read the pixels back (an `<img>` from another origin, loaded without CORS), the picture is painted untinted.
+
+### Fonts in SVG text
+
+An SVG picture is shown through an image: an `<img>` on the canvas, in HTML and in EPUB. An image document cannot see the page's web fonts, so `<text font-family="IBM Plex Sans">` would fall back to a system face. Since postext 1.25 the engine embeds the faces the text names in the markup before the picture is decoded or handed out as a URL: one `@font-face` rule per font file, its bytes as a data URI, in a `<style>` right after the root `<svg>` tag. The PDF needs none of this: it sets SVG text as real text in its embedded fonts (see [Resource bytes and print masters](#resource-bytes-and-print-masters)).
+
+What the text asks for is read from `font-family`, `font-weight`, `font-style` and `font`, as attributes, in `style` attributes and inherited from enclosing groups; a `<style>` rule that names a family counts too. Generic families (`serif`, `sans-serif`…) and text in `<title>` or `<desc>` are left out, and a family the SVG declares itself with `@font-face` is left alone. A run falls through its `font-family` list to the first family that has a face. Recolouring for single ink comes first, then the fonts.
+
+The faces come from a **provider** with the contract of postext-pdf's `PdfFontProvider`, so one provider serves both: it is called with the family, weight and style, and the characters the SVG sets in that face, and answers with one file or several. A family served as unicode-range slices (Fontsource, Google Fonts) is answered with the slices those characters need, so an SVG with Latin labels carries the `latin` file only. The default provider reads the engine's font registry: `loadBundleFonts` registers a bundle's faces there, and a host registers its own with `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, or `registerFontUrl(…)` for a file fetched the first time an SVG needs it. A family nothing registered is looked for in the `@font-face` rules of the page's readable style sheets. A `FontFace` added to `document.fonts` from bytes keeps no bytes, so the engine cannot read it back: register those faces too.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recoloured, fonts inlined, decoded, registered
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+Where it happens:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recolours (`inkHex`), inlines (`fonts`, a provider; `inlineFonts: false` skips it), decodes and registers the picture as a vector source, and resolves to what became of each face. `registerBundleImages(bundle)` does the same for a bundle's SVGs, from the bundle's own faces first. `prepareSvgMarkup(svgText, options)` returns the prepared markup for a host that decodes on its own.
+- **HTML.** `bundleImageUrl(bundle)` serves SVG markup with the bundle's faces inlined. `renderToHtml(doc, { inlineSvgFonts: true })` inlines into the SVG `data:` URIs `resourceImageUrl` returns, from the faces the registry holds in memory (or `inlineSvgFonts: { fonts, maxBytes, withhold }`). An object URL cannot be read synchronously, so a host that serves blob URLs inlines before it makes them.
+- **EPUB.** `postext-epub` inlines from the book's `fonts`, then `svgFonts.provider`, before it writes an SVG (see [EPUB books](#epub-books-postext-epub)).
+- **PDF.** SVG text is set as real text in the embedded fonts. A `<style>` that holds only `@font-face` rules (faces an author embedded) no longer makes the figure fall back to a raster. When a figure does fall back (a filter, a gradient), its raster is made with the faces inlined from the PDF's `fontProvider`.
+
+The lower-level functions are exported too: `svgFontRequests(svgText)` lists each run's families, weight, style and characters; `inlineSvgFonts(svgText, provider, options)` and `inlineSvgFontsSync(svgText, syncProvider, options)` return the markup; `inlineSvgFontsDetailed` adds a report of each face (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Option</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Most font bytes embedded in one SVG (before base64, which adds a third). Faces that together exceed it are not embedded at all, and <code>svgFontsTooLarge</code> is reported.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>all four</td>
+      <td>The file formats to embed; files of other formats are skipped.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>none</td>
+      <td>Families to leave out of a file that leaves the app (not redistributable). Their reference stays and the reader falls back; <code>onWithheld(family)</code> is told of each.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>none</td>
+      <td>Told of a family with no face (<code>svgFontUnavailable</code>) and of the size cap (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Opting out.** `diagramStyle.inlineFonts: false` leaves every SVG as stored; `svg.inlineFonts: false` on a resource leaves that one byte for byte as it is, for an SVG that carries its own faces or must not change. A bundle writes the resource's opt-out as `"inlineFonts": false` in its `preset.json`.
+
+**Licences.** Inlining puts font files inside pictures that can leave the app (an HTML export, an EPUB). It happens when a picture is shown or exported, never in the stored resource bytes, and `withhold` keeps out the families a licence does not let you hand on: the EPUB writer withholds the faces marked `redistributable: false`, and the Sandbox the custom families marked so.
 
 
 ## Video style
@@ -8938,7 +9010,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)` returns a one-line English description. A host that localises its messages switches on `kind` instead — and keeps a default branch, since minor releases may add kinds. `collectContentWarnings(markdown, config, resources)` returns the content warnings without laying anything out (the list the build adds, without `pageIndex`), for an editor that checks the text as it is typed. `collectHeadingDesignCuts(doc)` checks a finished layout for heading designs whose text runs past the foot of their page or column (`kind: 'headingDesignCut'`; see [Reserved height](#reserved-height)), which the layout itself does not report, and `formatWarning` describes its results as well. The Sandbox's **Checks** panel lists them all.
 
-The renderers report what they cannot paint as asked through an `onWarning` option: `renderPageToCanvas`, `renderPage` and `renderToCanvas` (`RenderPageOptions`), `renderToHtml` and `renderToHtmlIndexed` (`RenderHtmlOptions`), and `renderToPdf` (`RenderToPdfOptions`, also through the PDF worker). Today there is one render kind, `missingImage`: an image — a figure, a table cell's image, a callout icon, a design image — with nothing to draw is painted as a neutral placeholder and reported, once per `fileId` and render call, with its `pageIndex`, the `resourceId` when the painter knows it (figures and cell images), and in the PDF the `documentIndex` of a multi-document render. Nothing to draw means no `registerResourceImage` for the `fileId` on the canvas, no URL from `resourceImageUrl` in HTML, and no bytes from `resourceBytes` — or bytes that do not decode — in the PDF. A bitmap or SVG resource that names no `fileId` at all has nothing to ask for: it is drawn as a placeholder without a report. Render warnings are not stored in the VDT: what a host can supply changes after the layout.
+The renderers report what they cannot paint as asked through an `onWarning` option: `renderPageToCanvas`, `renderPage` and `renderToCanvas` (`RenderPageOptions`), `renderToHtml` and `renderToHtmlIndexed` (`RenderHtmlOptions`), and `renderToPdf` (`RenderToPdfOptions`, also through the PDF worker). The main render kind is `missingImage`: an image — a figure, a table cell's image, a callout icon, a design image — with nothing to draw is painted as a neutral placeholder and reported, once per `fileId` and render call, with its `pageIndex`, the `resourceId` when the painter knows it (figures and cell images), and in the PDF the `documentIndex` of a multi-document render. Nothing to draw means no `registerResourceImage` for the `fileId` on the canvas, no URL from `resourceImageUrl` in HTML, and no bytes from `resourceBytes` — or bytes that do not decode — in the PDF. A bitmap or SVG resource that names no `fileId` at all has nothing to ask for: it is drawn as a placeholder without a report. Two more kinds come from the hosts that embed fonts in SVG pictures (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` with `inlineSvgFonts`, postext-epub; see [Fonts in SVG text](#fonts-in-svg-text)), with the picture's `fileId` and `resourceId`: `svgFontUnavailable` (`family`, `weight`, `style`), a family its text names with no face to embed, so the image sets that text in a fallback face; and `svgFontsTooLarge` (`bytes`, `maxBytes`), faces over the size cap, none embedded. Render warnings are not stored in the VDT: what a host can supply changes after the layout.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9855,7 +9927,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)` returns the raw bytes of a picture, and the backend sniffs them:
 
 - PNG, JPEG, GIF and WebP embed as images;
-- SVG markup is drawn as vector paths, or rasterised at 600 dpi in the browser when it uses features outside the vector subset;
+- SVG markup is drawn as vector paths, its `text` set as real text in the document's embedded fonts, or rasterised at 600 dpi in the browser when it uses features outside the vector subset. A `<style>` that holds only `@font-face` rules (faces an author embedded) is skipped and keeps the figure vector (since postext-pdf 1.25); any other style sheet makes it a raster, made with the faces its text names inlined from `fontProvider` (unless `diagramStyle.inlineFonts` or the resource's `svg.inlineFonts` is `false`);
 - a PDF has its first page embedded verbatim, as a form XObject.
 
 Each picture is stored in the file once, however many times it is drawn. An SVG drawn as vector paths becomes a form XObject that every page paints, so a frame or a logo in the page design of a thirty-page document is written once, not thirty times; each further page adds a few hundred bytes. Up to postext-pdf 1.4 every page carried its own copy of the paths.
@@ -10130,10 +10202,10 @@ const bytes = await renderToEpub(docs, {
 
 A single document is a book of one chapter: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** writes the file. `options` is `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** writes the file. `options` is `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: `title` and `language` (a BCP 47 tag) are required; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` and `modified` are optional. A bare ISBN becomes `urn:isbn:…`. Without an `identifier` the book gets a `urn:uuid:` derived from its title, creators and language, so a new version of the same book keeps its place in a reader's library. Pass `modified` too for byte-identical output.
-- **`fonts`**: the faces to embed, `{ family, weight, style, bytes, format, unicodeRange? }` with `format` one of `woff2`, `woff`, `ttf`, `otf`. Each face becomes a file and an `@font-face` rule; several files with their `unicodeRange` make one face (Google Fonts slices). A family, weight or style the pages use with no embedded face is reported as `missingFont`, and reading systems substitute their own. Embed only fonts whose licence allows it.
-- **`resourceBytes(fileId)`**: the pictures the pages place, sync or async, as `{ bytes, mediaType }`; an empty `mediaType` is read from the bytes. Give bitmaps as stored and SVGs as their source, not the PDF print master (`svg.pdfFileId`). Each picture is stored once. A single-ink book (`diagramStyle.singleInk`) has its SVGs recoloured in the file. A picture with no bytes is reported as `missingImage` and left as an empty frame.
+- **`fonts`**: the faces to embed, `{ family, weight, style, bytes, format, unicodeRange? }` with `format` one of `woff2`, `woff`, `ttf`, `otf`. Each face becomes a file and an `@font-face` rule; several files with their `unicodeRange` make one face (Google Fonts slices). A family, weight or style the pages use with no embedded face is reported as `missingFont`, and reading systems substitute their own. Embed only fonts whose licence allows it: a face with `redistributable: false` is never written into the file (the book may be set with it, but its file stays out, also of SVG pictures).
+- **`resourceBytes(fileId)`**: the pictures the pages place, sync or async, as `{ bytes, mediaType }`; an empty `mediaType` is read from the bytes. Give bitmaps as stored and SVGs as their source, not the PDF print master (`svg.pdfFileId`). Each picture is stored once. A single-ink book (`diagramStyle.singleInk`) has its SVGs recoloured in the file. An SVG gets the faces its text names embedded in it, since a reading system shows it as an image that cannot see the book's fonts (see [Fonts in SVG text](#fonts-in-svg-text)): from `fonts` (the slices that hold its characters), then from **`svgFonts.provider`** for a family the book's text does not use. Families of faces marked `redistributable: false`, and those `svgFonts.withhold(family)` names, stay out and are reported once each as `fontWithheld`; a family with no face is reported as `svgFontUnavailable`, faces over `svgFonts.maxBytes` (2 MiB) as `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` and a resource's `svg.inlineFonts: false` keep the bytes as given. A picture with no bytes is reported as `missingImage` and left as an empty frame.
 - **`cover`**: `{ bytes, mediaType, alt? }`, a JPEG, PNG, WebP or SVG picture. The book then opens on a cover document holding it, and it is the package's `cover-image` (the thumbnail in a library). Without one, the fixed layout names its first page as the cover and the reflowable book has no cover picture.
 - **`onProgress({ phase, done, total })`**: `resources` (fonts and pictures), `documents` (pages for a fixed layout, chapters for a reflowable one), then `package`. **`signal`** aborts between steps.
 - **`readEpub(bytes)`** reads a file back for a viewer, without `DOMParser`: layout, metadata, reading direction, every file by path, the manifest, the spine, the table of contents, the page list, the fixed-layout viewport and the cover. The sandbox's reader is built on it.
@@ -10249,8 +10321,8 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 
 Four helpers connect an opened bundle to the engine and the backends:
 
-- **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
-- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`), video posters included. **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`, and **`bundleVideoUrl(bundle)`** its `resourceVideoUrl` resolver for the video files a bundle carries. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
+- **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`, and their bytes with the engine's font registry for SVG pictures (`registerFontBytes`). Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
+- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`), video posters included. **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`, and **`bundleVideoUrl(bundle)`** its `resourceVideoUrl` resolver for the video files a bundle carries. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)). Both also embed in each SVG the faces its text names, from the bundle's own fonts first, then from the faces registered with the engine (see [Fonts in SVG text](#fonts-in-svg-text)); `registerBundleImages(bundle, { onWarning })` and `bundleImageUrl(bundle, { onWarning })` report a family with no face.
 - **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) or the index (`:::index`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
 - **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback` with the renderer's arguments, `request` included, and passes on whatever it returns. A fallback that fetches only a family's `latin` file prints a Chinese family the bundle does not embed as empty boxes; one that answers with slices, such as `sliceFontProvider` in [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts), prints it whole.
 
