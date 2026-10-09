@@ -85,6 +85,11 @@ Gotchas:
   bullets.
 - **Small caps** extract as lower case: restore roman numerals ("xix" → "XIX")
   and acronyms.
+- **Tabbed lines** (a menu, a cast list, a price list, marks at the margin):
+  the extractor joins the parts with a space and drops the dot leader, or
+  keeps the dots as text. Delete typed leaders, write `:tab` between the
+  parts and set the stops on the paragraph's style (playbooks B13);
+  `extract_tables.py` may read such a page as a table: it is not one.
 - **Infographic pages** (hundreds of vector drawings, little text): cut them
   as figures, or transcribe the data as tables/callouts. Retyping data is
   legitimate.
@@ -138,6 +143,11 @@ Gotchas:
 - Tracked changes: accept or reject them in Word first.
 - Word's "manual" formatting (bold paragraphs used as headings) has no
   style. Map by inspection, or add styles in Word before converting.
+- Tabs: `pandoc_to_postext.py` writes a Word tab as a space. Where the
+  source aligns text at tab stops (menus, cast lists, forms), write `:tab`
+  there and copy the stops of the Word style (Paragraph → Tabs) into the
+  paragraph style's `tabStops` (playbooks B13). The Sandbox's Word import
+  does both by itself.
 
 ## PowerPoint (.pptx)
 
@@ -178,7 +188,10 @@ Gotchas:
   printed line there. A side box goes before the first paragraph that starts
   after it; a page-wide box goes before the first paragraph that ends after it.
 - Tab-led centred paragraphs are usually displayed equations
-  (`:::paragraphs{style="equation"}`). Paragraphs set smaller than body to
+  (`:::paragraphs{style="equation"}`). `idml_extract.py` writes every tab as
+  a space; where a paragraph style aligns text with its `TabList` (a menu, a
+  cast list, a price list), write `:tab` and copy the stops into the
+  paragraph style's `tabStops` (playbooks B13). Paragraphs set smaller than body to
   copy-fit a page belong in a `compact` paragraph style.
 - Linked artwork (`.ai`, `.psd`, `.tif`, `.eps`) is in the package's Links
   folder. Convert it with `convert_assets.py` (`.ai`/`.pdf` → SVG) and

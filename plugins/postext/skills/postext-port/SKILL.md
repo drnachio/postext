@@ -89,6 +89,11 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   line of verse a line, a blank line between stanzas, leading spaces for its
   indents (§12). Code lines still need one paragraph per line inside
   `:::paragraphs{style="…"}`.
+- **Tabs** (postext ≥ 1.23): write `:tab` where the source aligns text at a
+  stop (a price, an actor, marks at the margin), and give the paragraph's
+  style `tabStops` (document-format.md §10.9, configuration.md §4a). A tab
+  character is a tab only in a paragraph whose style has stops; elsewhere it
+  is a word space.
 
 Config traps:
 
@@ -256,7 +261,7 @@ Full references (load the one you need):
   them to config.
 - [references/playbooks.md](references/playbooks.md): the unusual cases
   already solved (parts with palettes, openers, verse, line numbers, glosses,
-  footnotes, back-of-book indexes,
+  footnotes, back-of-book indexes, tab stops for menus, cast lists and forms,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions, Chinese books set
   horizontally and vertically, CJK fonts, Japanese books (horizontal, and
@@ -456,6 +461,9 @@ Read each chapter against the source pages and apply
 - line numbers in the margin (critical editions, poetry, statutes) from the
   config `lineNumbers` (postext ≥ 1.23, configuration.md §19f), with the
   source's typed numbers removed from the text, never side boxes;
+- menus, price lists, cast lists, exam marks, forms and run-in indexes as
+  paragraphs with tab stops and `:tab` (postext ≥ 1.23, playbooks B13), never
+  as two-column tables or runs of spaces;
 - sizes that grow with the text and reflowable content wherever they make
   sense, not fixed sizes or breaks copied from the source pages (see Rules
   of thumb).

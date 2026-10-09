@@ -264,6 +264,8 @@ bodyText
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true, indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0 }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading
+├─ tabStops          TabStop[]       unset           (≥ 1.23, §4a) tab stops of every paragraph, list item and quotation; a paragraph style or a callout body that sets its own replaces them
+├─ tabInterval       Dimension       unset           (≥ 1.23, §4a) default stops every interval past the last stop, from the start of the measure; unset = a tab past the last stop is a word space
 └─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true }
                       locale: any BCP 47 tag; patterns for 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl' (region ignored; other languages → en-us + console warning)
                       ragged: also hyphenate ragged text, only where the word does not fit and sending it down would leave a gap wider than zone (em = text size); line by line ≤ 2 hyphenated lines in a row, with optimalRagged two in a row are only discouraged
@@ -271,7 +273,7 @@ bodyText
 ```
 H&J / Knuth–Plass
 ```
-├─ optimalLineBreaking  boolean  true   Knuth-Plass (false = greedy)
+├─ optimalLineBreaking  boolean  true   Knuth-Plass (false = greedy); a paragraph holding a tab is always set greedy (§4a)
 ├─ optimalRagged        boolean  true   ragged running text (body, blockquotes, lists, ragged paragraph styles, box bodies, part and section bodies) broken with Knuth-Plass too: even edge, runt rules work;
 │                        false = line by line (1.4; a preset without configVersion 7 that sets running text ragged reads false)
 ├─ breakAfterDashes     boolean  true   a line may end after an em/en dash set closed between words (say—that's, riddles.—I); never after an opening dash (—dijo, said "—Hola), before punctuation, a quote or a bracket (thinking—" and, says—“no”), or inside 1914–1918;
@@ -311,6 +313,82 @@ Gotchas
 - For a Spanish book set top-level `locale: 'es'` (hyphenation follows unless `hyphenation.locale` is set).
 - All widow/orphan/runt rules are soft penalties, never hard.
 - No-break spaces (U+00A0, U+202F, U+2007) and the word joiner (U+2060) glue their neighbours on every breaker; type the character, not `&nbsp;`. U+00A0 is in practically every face; a face without U+202F/U+2007 gets half a word space / a digit width.
+
+### 4a. Tab stops — `TabStop` (postext ≥ 1.23)
+
+Text aligned at positions across the measure inside a paragraph: a menu's
+prices flush right after the dish, a cast list's actors after a dot leader,
+an exam question's marks at the margin, a form's blanks, a run-in index
+entry's page numbers. **Set these as paragraphs with tab stops, never as
+two-column tables, `:::space`, runs of no-break spaces or chips.** A tab is
+written `:tab` in the text (document-format.md §10.9).
+
+`tabStops?: TabStop[]` and `tabInterval?: Dimension` go in three places:
+`bodyText` (every paragraph, list item and quotation), a paragraph style
+(§11; replaces the body's, unset = the body's, `[]` = none) and a callout
+style's `body` (§12; replaces the body's inside the box). All absent by
+default.
+
+| `TabStop` key | default | notes |
+|---|---|---|
+| `position` | required | from the start edge of the paragraph's measure (after a paragraph style's `indent`): a Dimension (`em` = the paragraph's own size; a length as text such as `"120mm"` also reads), `'end'` = the line's end edge, or a share of the measure (`'50%'`). Anything else: the stop is left out (`unknownConfigValue`) |
+| `align` | `'start'` | `'start'` (the text after the tab starts at the stop), `'end'` (ends there: prices, page numbers, marks), `'center'`, `'decimal'` (the first decimal separator sits on the stop; a run with none ends on it). An unknown word reads `'start'` (`unknownConfigValue`) |
+| `leader` | none | repeated over the room before the stop: `'.'`, `'. '` (spaced dots), `'·'`, `'_'`, `'-'`, any short text in the paragraph's face, or `'rule'` (a line drawn a little under the baseline: a form's blank). Set flush with the END of its room, so the leaders of several lines line up; in the paragraph's face and colour |
+| `leaderGap` | `0.5em` | room between the text and the leader and between the leader and the text at the stop (the contents' `leader.gap`); none before a leader that opens the line, none after one with nothing after it |
+| `decimalChar` | the document language's | `'decimal'` stops: `.` in en/zh/ja/ar, `,` in es/ca/pt/fr/de… |
+
+An unknown key in a stop raises `unknownConfigKey` (`leaders` → `leader`?).
+
+How a tab is set:
+- A tab goes to the first stop past the text before it, among the stops after
+  the one the line's previous tab took (the n-th tab of a line usually takes
+  the n-th stop). Past the last stop: with `tabInterval`, the next multiple
+  of it from the start of the measure; without, a word space.
+- **Overrun** (the text before the tab already passed every remaining stop):
+  an `end`, `center` or `decimal` stop takes the last word before the tab
+  down to the next line with the text at the stop (the text before sets
+  narrower, as a contents row narrows its title for its page number); a
+  `start` stop breaks the line before the tab, so the text after it starts
+  the next line at its stop.
+- A paragraph holding a tab is set **line by line** (greedy), never
+  Knuth–Plass, and column balancing never loosens or tracks it. Chinese and
+  Japanese text in it breaks between characters by the document's rules,
+  without punctuation compression or inter-character justification;
+  paragraphs with ruby, warichu or kanbun set their tabs as word spaces.
+- Justified text: a line holding a tab is not stretched before its last tab;
+  only the word spaces after it take the slack, and only on a line that is
+  not the paragraph's last. A centred or right-aligned paragraph sets its
+  tabbed lines from the start side (stops are positions on the measure).
+- Right to left: stops are measured from the right; an `end` stop sits at the
+  left, leaders run between in visual order.
+- Vertical text (`layout.writingMode: 'vertical-rl'`): no stops; a `:tab` is a
+  word space and raises the content warning `tabInVerticalText`.
+- Not in headings, captions, table cells, design text (openers, running
+  heads) or `:::toc` rows (those keep `toc.leader`, §9). No `leaderColor`.
+
+Outputs: canvas, PDF, HTML viewer and fixed EPUB paint the leaders; they are
+never text (plain text, copy, search and the source map have `\t` at each tab
+and no dots), the HTML hides them from screen readers and tagged PDF sets
+them as artifacts (pdftotext reads "Soup 8.50"). Reflowable EPUB turns each
+tabbed line into a flex row: an `end`, `center` or `decimal` stop, or one
+with a leader, pushes the next part to the row's end (a leader becomes a
+dotted or solid border); a `start` stop keeps the part before it at its
+printed width. VDT: `line.tabbed`, the tab's `space` segment carries
+`tab: {align, at}`, leader segments `leader: 'text' | 'rule'`.
+
+```json
+"paragraphStyles": [
+  { "id": "menu", "firstLineIndent": {"value": 0, "unit": "em"}, "textAlign": "left",
+    "tabStops": [{ "position": "end", "align": "end", "leader": ". " }] },
+  { "id": "cast", "firstLineIndent": {"value": 0, "unit": "em"}, "smallCaps": true,
+    "tabStops": [{ "position": "end", "align": "end", "leader": "." }] },
+  { "id": "form", "firstLineIndent": {"value": 0, "unit": "em"},
+    "tabStops": [{ "position": {"value": 30, "unit": "mm"} },
+                 { "position": "end", "leader": "rule" }] },
+  { "id": "prices", "tabStops": [{ "position": "70%", "align": "decimal" },
+                                 { "position": "end", "align": "end" }] }
+]
+```
 
 ---------------------------------------------------------------------------------
 
@@ -664,7 +742,7 @@ toc
 │     numberFontWeight (= entry weight ?? body bold weight), numberColor, marginTop=0, marginBottom=0
 ├─ unnumbered   TocEntryStyleConfig partial — for headings of a style with numbered:false
 ├─ pageNumber   { fontFamily, fontSize (= level-1), fontWeight (= body weight), italic=false, color, width=2em }
-├─ leader       { enabled=true, char='.', gap=0.5em }      ('. ' spaces the dots)
+├─ leader       { enabled=true, char='.', gap=0.5em }      ('. ' spaces the dots; the leader code body tab stops use, §4a; an artifact in tagged PDF ≥ 1.23)
 ├─ subtitle     { enabled=false, attr='author', fontFamily, fontSize, fontWeight, italic=true, color, indent=0 }
 └─ parts        { enabled=true, breakBefore=false, design: DesignSlot (row; placeholders {number} {numberRoman}… {titleText} {pageNumber}),
                   height = 2em (twice the body size, not two body lines), marginTop=0, marginBottom=0 }
@@ -749,7 +827,10 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
   wordBreak?: 'normal'|'keep-all' (≥ 1.16; unset = cjk.wordBreak; CJK lines only)
   lineNumbers?: boolean          (≥ 1.23, §19f; unset = counted when lineNumbers.count is 'all', and a poem
                                  set in the style counts under 'verse'; true = counted under 'verse' too and
-                                 inside a callout; false = never) }
+                                 inside a callout; false = never)
+  tabStops?: TabStop[]           (≥ 1.23, §4a; unset = bodyText.tabStops, [] = none; a tab character in the
+                                 style's text is then a tab too) — menus, price lists, cast lists, forms, marks
+  tabInterval?: Dimension        (≥ 1.23, §4a; unset = the body's) }
 ```
 Inside the container the flow leaves the baseline grid. When it closes on a paragraph, the space under it merges
 with the next block's own (a heading's `marginTop`) and is at least the text's paragraph spacing
@@ -799,7 +880,8 @@ All em values = the callout body font size.
                  color=main, textTransform='none'|'uppercase', gap=0.5em, letterSpacing=0, indent=0,
                  lineHeight=1.2em (em = title size; set the body leading to keep boxes a whole number of lines) }
   body = { fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight,
-           textAlign: 'left'|'justify', hyphenation: boolean, paragraphSpacing, firstLineIndent }   → inherit bodyText
+           textAlign: 'left'|'justify', hyphenation: boolean, paragraphSpacing, firstLineIndent,
+           tabStops, tabInterval (≥ 1.23, §4a: replace the body's inside the box) }   → inherit bodyText
          + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight? }  → inherit unorderedLists
            (a set `color` also colours ordered-list numbers, even when equal to unorderedLists.color)

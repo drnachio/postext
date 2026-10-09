@@ -207,6 +207,45 @@ describe.skipIf(!python)("postext-port lint on line numbers", () => {
   });
 });
 
+describe.skipIf(!python)("postext-port lint on tab stops", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+  const mm = (value: number) => ({ value, unit: "mm" });
+
+  it("checks the stops, the :tab attributes and tab characters no style sets", () => {
+    const text = CHAPTER + "\n湯 :tab{at=wide align=right size=2} 八元\n\n茶\t三元\n";
+    const { out } = lint(project({
+      ...fonts,
+      paragraphStyles: [{ id: "menu", tabStops: [{ position: "far", align: "right", leaders: "." }, "end"], tabInterval: mm(0) }],
+      calloutStyles: [{ id: "box", body: { tabStops: { position: "end" } } }],
+    }, text));
+    expect(out).toContain("paragraphStyles[0].tabStops[0].position 'far' is no length, 'end' or percentage: the stop is left out");
+    expect(out).toContain("paragraphStyles[0].tabStops[0].align 'right' is not one of ['center', 'decimal', 'end', 'start']: read as 'start'");
+    expect(out).toContain("paragraphStyles[0].tabStops[0].leaders is not a tab stop key (leader?) (ignored)");
+    expect(out).toContain("paragraphStyles[0].tabStops[1] must be an object");
+    expect(out).toContain("paragraphStyles[0].tabInterval must be a length above 0");
+    expect(out).toContain("calloutStyles[0].body.tabStops must be a list of stops");
+    expect(out).toContain(":tab{size=…} is not read");
+    expect(out).toContain(":tab{at=wide} is no length, 'end' or percentage");
+    expect(out).toContain(":tab{align=right} is not one of");
+    expect(lint(project(fonts, text)).out).toContain("a tab character inside a line is a word space unless the paragraph's style sets tabStops");
+  });
+
+  it("warns that a :tab in vertical text is a word space", () => {
+    const { out } = lint(project({ ...fonts, layout: { layoutType: "single", writingMode: "vertical-rl" } }, CHAPTER + "\n湯 :tab 八元\n"));
+    expect(out).toContain(":tab in vertical text is set as a word space (tabInVerticalText)");
+  });
+
+  it("passes well-formed stops and leaves 3:table alone", () => {
+    const text = CHAPTER + "\n湯 :tab 八元\n\n茶\t三元 :tab{at=120mm align=end leader=\". \" gap=2pt}\n\n3:table\n";
+    const { out } = lint(project({
+      ...fonts,
+      bodyText: { ...fonts.bodyText, tabInterval: mm(12.5) },
+      paragraphStyles: [{ id: "menu", tabStops: [{ position: mm(40) }, { position: "end", align: "end", leader: "rule", leaderGap: mm(1) }, { position: "75%", align: "decimal", decimalChar: "," }] }],
+    }, text));
+    expect(out).not.toMatch(/tabStops|tabInterval|:tab|tab character/);
+  });
+});
+
 /** An Arabic chapter with a Latin marker word, in a one-locale project. */
 function arabicProject(config: object, text?: string, fonts: object[] = []): string {
   const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ar-"));

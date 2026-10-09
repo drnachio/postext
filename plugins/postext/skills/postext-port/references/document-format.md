@@ -166,6 +166,7 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 - **Forced line break in a paragraph (postext ≥ 1.23).** A backslash at the end of a source line, or `\\` followed by a space, ends the line inside the paragraph (CommonMark's hard break): the line before is set at its natural width (never justified), the text after starts a new line of the same paragraph with no first-line indent (a hanging indent hangs it). Paragraphs, quotes (`> a\` over `> b`), footnotes and list items (one source line: use `\\ `) take it. **No break:** a backslash ending the paragraph (prints), `\\` glued to the next character (`\\*`, `C:\\Temp` print), backslashes in inline code or maths, **two trailing spaces** (trimmed). Two breaks in a row are one: for an empty line start a new paragraph or write `:::space`. Use it for addresses, a letter's greeting, signature blocks, dedications, the lines of a title page set as text. A preset stamped below `configVersion` 9 whose chapters end a line with a backslash reads with `bodyText.hardLineBreaks: false` (backslashes print): write `"configVersion": 9`. Up to 1.22 there was no break: each such line had to be its own paragraph inside a `:::paragraphs{style="…"}` container (§6.2).
 - **Verse goes in `:::verse`** (postext ≥ 1.23, §12): one line of verse a line, blank lines between stanzas, leading spaces as indents, turnovers hung. No backslash on every line.
 - Leading and trailing whitespace of every line is trimmed. Internal runs of spaces survive in the text but are measured as spaces.
+- **Tabs (postext ≥ 1.23, §10.9).** `:tab` is always a tab. A tab character (U+0009) inside a line is a tab **only in a paragraph whose resolved style has `tabStops` or `tabInterval`** (body text, paragraph style or callout body); everywhere else it is a word space, as up to 1.22. A tab character at the start of a source line is trimmed with the line: start a line at a stop with `:tab`. Headings, captions and table cells keep their own meaning of tabs.
 - **Non-breaking spaces (postext ≥ 1.5):** U+00A0, the narrow U+202F and the figure space U+2007 **glue** the words on either side, on every breaker (plain and rich text, Knuth–Plass, captions, cells, boxes, design text): a number and its unit (37 °C, with U+202F), a group of thousands (225 000, with U+00A0), a label and its number. Each keeps its own width; justification stretches only the word spaces. The word joiner U+2060 glues with no width. Type the character itself, not `&nbsp;` (HTML is not interpreted). A glued group wider than the whole line breaks at its last no-break space. The atomic inline units are therefore NBSP-glued groups, text that touches with no space (`**word**.`, `(:ref{…})`), a `:chip` and a `:ref` label. Up to 1.4 a paragraph with inline formatting or a `:ref` could break at a NBSP, and the port scripts replaced it with a plain space; they keep it now.
 - **Soft hyphen U+00AD** is honoured as a discretionary break, with a hyphen added at the break (; `knuthPlass/`).
 - A **hard hyphen between two letters** (`enseñanza-aprendizaje`) is a break opportunity; the line ends on the existing hyphen.
@@ -188,7 +189,7 @@ Pipeline order per block:
 4. `extractInlineMath`
 5. `parseInlineFormatting` (link syntax reduced to its text, with the URL kept as a range on the span; images and code stripped; then bold, italic and scripts)
 
-Earlier passes shield their content from later ones. Math is extracted before emphasis, so `*` inside `$…$` is safe.
+Earlier passes shield their content from later ones. Math is extracted before emphasis, so `*` inside `$…$` is safe. Tabs (`:tab`, tab characters, §10.9) are taken out after the maths, outside inline code, link destinations and directive attributes.
 
 | Markup | Syntax | Result / notes | Source |
 |---|---|---|---|
@@ -199,6 +200,7 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Bold inside italic | `*a **b** c*` | **does not work.** The outer `*` stay literal; only `b` is bold | |
 | Superscript | `^x^` | 58% of the size, raised 1/3 em. Content must start and end with a non-space; no newline; no inner `^` | `:289-308` |
 | Subscript | `~x~` | 58% of the size, lowered 0.15 em. Same rules. A subscript and a superscript that touch (`T~0~^2^`, either order) are stacked, the subscript 0.25 em down; a space, a letter or a word joiner (U+2060) between them sets them one after the other. A stacked pair never parts at a line break (a word too wide for the line breaks before it) | `:289-308` |
+| Tab (≥ 1.23) | `:tab`, `:tab{at=… align=… leader=…}` | goes to the paragraph's next tab stop, or to the one-off stop of its attributes; see §10.9 | |
 | Small caps | `:smallcaps[x]` | lowercase letters as capitals at 70% of the size (synthesised, identical on every backend). Takes marks inside and around it; `\]` for a literal `]`; empty or unclosed stays literal. Headings strip the markup. See §10.3 | |
 | Inline code | `` `x` `` | **backticks removed, rendered as plain body text, literally**: emphasis markers, `$`, links, `:ref{…}` and chips inside it print as written (the way to show syntax). | `:313-318` |
 | Link | `[text](url)` | text kept and set exactly as without the link. The URL becomes a live link in HTML (`<a>`) and PDF (a URI annotation), not on canvas. Only `http`, `https`, `mailto`, `tel`, `ftp` and relative URLs are linked; any other scheme keeps the text only. The destination takes **balanced parentheses** as in CommonMark (`[Wiki](…/A_(b))` links the whole URL); an unbalanced one ends at the first `)` and the text is set with no link. A `"title"` is ignored; `<…>` may hold spaces. Works in paragraphs, lists, quotes, callouts, captions, notes and cells, not in headings or chips | `replaceLinkSyntax`, `linkHref` |
@@ -400,7 +402,7 @@ Source: ; .
 
 ---
 
-## 8. Attribute grammar (shared by fences, directives, heading attrs, `:ref`, `:swatch`, `:chip{…}`)
+## 8. Attribute grammar (shared by fences, directives, heading attrs, `:ref`, `:swatch`, `:chip{…}`, `:tab{…}`)
 
 . Token regex: `([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s]+)))?`
 - Forms: `key="v"`, `key='v'`, `key=bare`, and a bare `key` (becomes `""`).
@@ -598,6 +600,72 @@ Heart failure:index{term="Heart!failure" range="start"} … :index{term="Heart!f
 - **Notes:** write `[^id]` markers before a following punctuation mark (`الكتاب[^1]،`); never type «(١)» — `footnotes.markerTemplate: '({n})'` prints it.
 - **Verse:** classical poems → `:::verse` (§12); Wikisource `{{أبيات|ṣadr \\ ʿajuz …}}` maps line by line. Free verse (no `||`) is the same fence, set line by line; a Latin poem in an Arabic book takes `{dir=ltr lang=en}` on it.
 
+### 10.9 Tabs and tab stops: `:tab`, `:tab{…}` (postext ≥ 1.23)
+
+Text aligned at positions inside a paragraph: a menu's price flush right
+after the dish, a cast list's actor after a dot leader, an exam question's
+marks at the margin, a form's blank, a price column on its decimal point.
+The stops belong to the paragraph's style (`tabStops`, configuration.md §4a);
+the text says where each tab is.
+
+- `:tab` is always a tab, in any paragraph, list item, quotation, callout or
+  `:::paragraphs` group. The spaces around it are taken into it: write
+  `Soup :tab 8.50`. A bare `:tab` followed by a letter is text (`3:table`);
+  inside inline code, maths, link destinations and directive attributes it
+  is text.
+- `:tab{at=120mm align=end leader="." gap=2pt decimal=","}` sets a one-off
+  stop for that tab only, with no style needed. `at` takes a length (a bare
+  number is pt), `end` or a percentage (`at=50%`); `align` is `start`
+  (default), `end`, `center` or `decimal`; `leader` as in the config (`"."`,
+  `". "`, `"·"`, `"_"`, `"-"`, `rule`); `gap` is the leader gap (default
+  0.5em). Without a valid `at` the tab takes the paragraph's stops.
+- A tab character (U+0009) inside a line is a tab only where the paragraph's
+  style has stops (§3.3). Tab characters in a row (spaces between them aside)
+  are one character of the text that goes on that many stops. Prefer `:tab`
+  in chapters you write: it reads the same in every paragraph and survives
+  editors that turn tabs into spaces.
+- A tab goes to the first stop past the text before it, among the stops after
+  the one the line's previous tab took. Past the last stop: the next
+  `tabInterval`, else a word space.
+- **Overrun:** text too long for its stop. An `end`, `center` or `decimal`
+  stop takes the last word before the tab down to the next line with the
+  text at the stop (a dish name that runs long keeps its price on its last
+  line); a `start` stop breaks the line before the tab, and the text after it
+  starts the next line at the stop.
+- The leader sits flush with the end of its room, `gap` clear of the text on
+  either side (no gap before it when the tab opens the line, none after when
+  nothing follows: a form's blank `Name :tab` with an end stop and
+  `leader: 'rule'` runs to the margin).
+- A paragraph with a tab is set line by line (never Knuth–Plass); justified
+  lines stretch only the spaces after their last tab. Vertical text: a word
+  space and the warning `tabInVerticalText`.
+- Plain text, copy, search and the Word export read `\t` at each tab and
+  never the leader; tagged PDF reads a space. The Sandbox's Word import turns
+  a Word tab in body text into `:tab` (with the stop Word set for it as
+  `:tab{at=… align=… leader=…}`, or bare `:tab` when the paragraph maps to a
+  style with stops).
+
+```md
+:::paragraphs{style="menu"}
+Leek and potato soup :tab 8.50
+
+Grilled sea bream, fennel and orange :tab 21.00
+:::
+
+:::paragraphs{style="cast"}
+Hamlet, Prince of Denmark :tab Ana Ruiz
+
+Ophelia :tab Marta Gil
+:::
+
+1. In which year did the Battle of Gettysburg take place? :tab :chip[1 mark]{style="marks"}
+```
+
+With `menu` and `cast` styles holding one stop `{position: 'end', align:
+'end', leader: '. '}` (or `'.'`), and the exam's list items taking a body
+stop `bodyText.tabStops: [{position: 'end', align: 'end'}]` (or, with no
+style at all, `:tab{at=end align=end}`).
+
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
 
 - **Inline `$…$`**:
@@ -708,6 +776,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
 - `chapterFrontmatterIgnored`, `calloutOverflow`
+- `tabInVerticalText` (≥ 1.23: a `:tab` in vertical text, set as a word space), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a tab stop's unknown key, `align` or position (configuration.md §4a)
 - `lineNumberOverlap` (≥ 1.23: a line number in the side column falls on a side box, side caption or float; painted anyway), and the config warning `lineNumbersUnsupported` (`lineNumbers.enabled` on a vertical document, which gets no numbers)
 - `fullwidthMarkup` (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊` typed with a Chinese input method: set as text), `attributeKeyInvalid` (a key outside ASCII, `作者=曹雪芹`: dropped, the block's other keys still apply)
 
@@ -746,6 +815,12 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Dialogue dash | `—` (U+2014), never `- `. |
 | Verse / poetry / song lyrics | `:::verse` (postext ≥ 1.23): one line of verse a line, a blank line between stanzas, leading spaces for indents; `{style="verse"}` for the face and margins, `turnover=right` for bracketed turnovers, `keepStanzas=N` for short forms. A classical Arabic poem (two hemistichs a line) is the same fence with `ṣadr || ʿajuz` per line. |
 | Line numbers in the margin (critical editions, poetry, statutes, line-referenced texts) | config `lineNumbers` (postext ≥ 1.23, configuration.md §19f): `count:'verse'` for poems, `'all'` for prose; `:::verse{lineStart=37}` for a poem resumed mid-way, `numbered=false` to leave one out, `:::numbering{lines=1}` to restart; a paragraph style with `lineNumbers: true` counts prose under `'verse'` and boxed text. Delete the source's typed numbers from the text; never rebuild them with side boxes. |
+| Menu, price list, wine list (dish … price) | Paragraphs in a style with an `end` stop (`tabStops: [{position: 'end', align: 'end', leader: '. '}]`, or no leader): `Soup :tab 8.50` (§10.9, configuration.md §4a). A dish and its translation on two lines of one paragraph: end the first with a backslash. A `decimal` stop lines prices up on their point. Not a two-column table. |
+| Cast list, dramatis personae (role … actor) | A paragraph style with an `end` stop and a dot leader: `Ophelia :tab Marta Gil`. |
+| Marks or points flush right (exam papers, worksheets) | A body or list stop `{position: 'end', align: 'end'}` and `… question? :tab :chip[2 marks]{style="marks"}`, or `:tab{at=end align=end}` in the line itself. |
+| Form with blanks to fill (Name ______) | A style with an `end` stop and `leader: 'rule'` (`Name :tab`); a label column first with a `start` stop at a length (`Name :tab :tab`). Answer lines of a set height are still `:::space` in a box. |
+| Run-in index or list of entries with page numbers at the margin (a list of figures, a price catalogue) | A style with an `end` stop and a `.` leader: `Coleridge, S. T. :tab 12, 48`. The generated contents and index have their own leaders (`toc.leader`, `:::index`). |
+| Columns of figures inside running text (a small account, two aligned values) | A style with two or more stops (`start` at lengths, `decimal` for amounts). A real grid with a header row, rules or merged cells stays a table resource. |
 | Address / signature | One paragraph whose lines end in a backslash (postext ≥ 1.23, §3.3), inside `:::paragraphs{style="…"}` for its style; up to 1.22 one paragraph per line with blank lines between. |
 | Arabic text in a Latin book, Latin in an Arabic one | Block: `:::paragraphs{dir=ltr}` / `{dir=rtl}`; phrase: `:ltr[…]{lang=en}` / `:rtl[…]{lang=ar}` (§10.8). |
 | Epigraph, dedication, colophon, lead-in | `:::paragraphs{style="…"}`, with the style defined in config. |
@@ -754,7 +829,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | List item with several paragraphs | Not possible. Merge into one line, or follow the item with a plain paragraph. |
 | Sidebar / box / "Key points" / exercise | `:::callout{type="…" title="…" label="…"}`. Two columns inside use `:::columns`. Answer boxes use a nested callout. |
 | Figure / photo / diagram | A resource plus `:ref{id="…"}` in the sentence that first cites it (auto float). For an unnumbered ornament or a fixed spot: `placement.position:"here"` plus `::resource{id="…"}` on its own line. |
-| Table | A table resource (`TableModel` JSON). Cite it with `:ref`. Math inside cells is impossible; use `^ ^`/`~ ~`/Unicode. |
+| Table | A table resource (`TableModel` JSON). Cite it with `:ref`. Math inside cells is impossible; use `^ ^`/`~ ~`/Unicode. Text the source aligned with tab stops (a menu, a cast list, marks at the margin, a form) is not a table: paragraphs with tab stops (rows above). |
 | Cross-reference "see Fig. 3.2" | `see :ref{id="fig-x"}`. For "Figure 3.2" use `style="full"`; for "figure 3.2" add `case="lower"`; for a bare number use `style="number"`. |
 | Cross-reference to a section or page | **Unsupported.** Write the text literally. |
 | Footnote | Convert each to a `[^n]` marker after the cited word or punctuation plus a `[^n]: text` definition paragraph in the same chapter (under the paragraph, or all at the chapter's end). Numbers come from the order of citation, not the source. A note cited in a heading, caption or table cell: move the marker into the text, or set the note in the caption/cell itself. Endnotes: `footnotes.placement: 'chapterEnd'` (§10.4). |

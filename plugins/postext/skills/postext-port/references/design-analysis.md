@@ -173,6 +173,7 @@ alignment, indent, space before and after (in grid lines), and hyphenation.
 | Tables | `tableStyle` (+ named `tableStyles`): header fill/typography, rules, borders, padding, radius, `overflow: "split"` |
 | Boxes | `calloutStyles[]` (§5) |
 | Inline chips / key caps | `chipStyles[]` |
+| Text aligned at stops inside a line (menu prices, cast lists, marks, forms, entries with page numbers) | `tabStops` on the paragraph style, `bodyText` or a callout `body` (configuration.md §4a) + `:tab` in the text; not a table |
 
 - Units: geometry in **mm**, type in **pt**; `em` only where the reference
   allows it (never for page, gutter, body size, heading sizes or design
@@ -181,6 +182,13 @@ alignment, indent, space before and after (in grid lines), and hyphenation.
 - **Horizontal scaling** in the source (body at 105–110 %): build a scaled
   face (`fonts.py scale`). Postext has no horizontal-scale setting.
 - Semibold used as bold: add a 600 face and set `bodyText.boldFontWeight: 600`.
+- **Tab stops** (postext ≥ 1.23): where values line up from line to line,
+  record each stop's position from the start of the text (after the style's
+  indent; `'end'` when it touches the right edge of the measure, a
+  percentage when it sits at a share of it), its alignment (left edges =
+  `start`, right edges = `end`, decimal points = `decimal`), the leader
+  (dots, spaced dots, a middle dot, a rule) and the room left between the
+  leader and the text (`leaderGap`, default 0.5 em).
 - Chinese type roles by face rather than weight: Song/Ming (宋体/明體) body, Hei (黑体) headings and labels,
   Kai (楷体) quotations, verse, prefaces, signatures, Fangsong (仿宋) official text. Headings are usually
   10–20 % larger than the body, set in Hei or bold Song, centred or indented two characters. Emphasis is

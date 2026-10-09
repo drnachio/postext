@@ -16,10 +16,12 @@ a reading, and whether the bundled fonts have a glyph for every character the
 chapters set (with fontTools installed; without it that check is skipped);
 for Arabic text, the document language and direction, the fonts that set it
 (and their glyphs and shaping tables), letter-spacing on its styles, forced
-hyphenation and italic emphasis; for comics (`:::page`, `:::strip`), the
-split expressions, panels, script lines, balloon and panel styles, the
-`comics` config, speaker anchors and safe areas, the lettering faces, and
-whether every edition sets the same pages. Pure Python otherwise.
+hyphenation and italic emphasis; tab stops (`tabStops`, `:tab{…}`, `:tab`
+in vertical text, tab characters no style turns into tabs); for comics
+(`:::page`, `:::strip`), the split expressions, panels, script lines,
+balloon and panel styles, the `comics` config, speaker anchors and safe
+areas, the lettering faces, and whether every edition sets the same pages.
+Pure Python otherwise.
 
 Exit code 1 when there are errors (or warnings with --strict).
 """
@@ -274,6 +276,116 @@ def check_line_numbers(cfg: dict, where: str, rep: Report) -> None:
     if ln.get("position") == "side" and not (lay.get("layoutType") == "oneAndHalf" and lay.get("sideColumnRole") == "floats"):
         rep.info(where, "lineNumbers.position 'side' needs layout oneAndHalf with sideColumnRole 'floats'; "
                         "pages without that side column set the numbers 'outer'")
+
+
+TAB_STOP_KEYS = {"position", "align", "leader", "leaderGap", "decimalChar"}
+TAB_STOP_ALIGNS = {"start", "end", "center", "decimal"}
+TAB_ATTR_KEYS = {"at", "align", "leader", "gap", "decimal"}
+_LENGTH_UNITS = {"cm", "mm", "in", "pt", "px", "em", "rem"}
+_LENGTH_TEXT_RE = re.compile(r"^\s*(-?\d+(?:\.\d+)?|-?\.\d+)\s*(cm|mm|in|pt|px|em|rem)?\s*$", re.I)
+# `:tab` or `:tab{…}`; a bare `:tab` followed by a letter is text (`3:table`).
+TAB_DIRECTIVE_RE = re.compile(r":tab(?:\{([^}\n]*)\}|(?![^\W\d_]))")
+_CODE_SPAN_RE = re.compile(r"`[^`\n]*`")
+
+
+def _is_dimension(v) -> bool:
+    return (isinstance(v, dict) and isinstance(v.get("value"), (int, float)) and not isinstance(v.get("value"), bool)
+            and v.get("unit") in _LENGTH_UNITS)
+
+
+def _tab_position_ok(v) -> bool:
+    """A stop position the engine reads (defaults/tabStops.ts): a Dimension,
+    'end', a percentage or a length written as text."""
+    if isinstance(v, dict):
+        return _is_dimension(v)
+    if not isinstance(v, str):
+        return False
+    t = v.strip().lower()
+    return t == "end" or bool(re.fullmatch(r"(\d+(?:\.\d+)?|\.\d+)\s*%", t)) or bool(_LENGTH_TEXT_RE.match(t))
+
+
+def _tab_settings(cfg: dict) -> list[tuple[str, dict]]:
+    """Every place that sets tab stops: body text, paragraph styles, callout bodies."""
+    out: list[tuple[str, dict]] = []
+    if isinstance(cfg.get("bodyText"), dict):
+        out.append(("bodyText", cfg["bodyText"]))
+    for i, ps in enumerate(cfg.get("paragraphStyles") or []):
+        if isinstance(ps, dict):
+            out.append((f"paragraphStyles[{i}]", ps))
+    for i, cs in enumerate(cfg.get("calloutStyles") or []):
+        if isinstance(cs, dict) and isinstance(cs.get("body"), dict):
+            out.append((f"calloutStyles[{i}].body", cs["body"]))
+    return out
+
+
+def check_tab_stops(cfg: dict, where: str, texts: list[tuple[str, str]], rep: Report) -> None:
+    """Tab stops (postext >= 1.23): `tabStops` / `tabInterval` on the body,
+    paragraph styles and callout bodies, `:tab{…}` attributes, `:tab` in
+    vertical text, and tab characters no style turns into tabs."""
+    any_stops = False
+    for path, node in _tab_settings(cfg):
+        if "tabInterval" in node:
+            any_stops = True
+            if not _is_dimension(node["tabInterval"]) or node["tabInterval"]["value"] <= 0:
+                rep.warn(where, f"{path}.tabInterval must be a length above 0 ({{value, unit}}): ignored")
+        if "tabStops" not in node:
+            continue
+        stops = node["tabStops"]
+        if not isinstance(stops, list):
+            rep.warn(where, f"{path}.tabStops must be a list of stops: ignored")
+            continue
+        any_stops = any_stops or bool(stops)
+        for j, stop in enumerate(stops):
+            p = f"{path}.tabStops[{j}]"
+            if not isinstance(stop, dict):
+                rep.warn(where, f"{p} must be an object {{position, align?, leader?, leaderGap?, decimalChar?}}")
+                continue
+            for k in stop:
+                if k not in TAB_STOP_KEYS:
+                    near = difflib.get_close_matches(k, sorted(TAB_STOP_KEYS), n=1)
+                    rep.warn(where, f"{p}.{k} is not a tab stop key{f' ({near[0]}?)' if near else ''} (ignored)")
+            if not _tab_position_ok(stop.get("position")):
+                rep.warn(where, f"{p}.position {stop.get('position')!r} is no length, 'end' or percentage: "
+                                "the stop is left out")
+            if "align" in stop and stop["align"] not in TAB_STOP_ALIGNS:
+                rep.warn(where, f"{p}.align {stop['align']!r} is not one of {sorted(TAB_STOP_ALIGNS)}: read as 'start'")
+            if "leader" in stop and not (isinstance(stop["leader"], str) and stop["leader"]):
+                rep.warn(where, f"{p}.leader must be a non-empty string ('.', '. ', '·', '_', '-', 'rule'): no leader")
+            if "leaderGap" in stop and not _is_dimension(stop["leaderGap"]):
+                rep.warn(where, f"{p}.leaderGap must be a length ({{value, unit}}): the default 0.5em is used")
+            if stop.get("decimalChar") is not None and stop.get("align") != "decimal":
+                rep.info(where, f"{p}.decimalChar only counts on an align 'decimal' stop")
+    vertical = (cfg.get("layout") or {}).get("writingMode") == "vertical-rl"
+    for name, text in texts:
+        literal_tab_at = None
+        for i, raw in enumerate(text.split("\n")):
+            line = _CODE_SPAN_RE.sub("", raw.strip())
+            if line.startswith("#"):
+                continue  # headings keep their own meaning of a tab
+            for m in TAB_DIRECTIVE_RE.finditer(line):
+                at = f"{name}:{i + 1}"
+                if vertical:
+                    rep.warn(at, ":tab in vertical text is set as a word space (tabInVerticalText): "
+                                 "tab stops are set in horizontal text only")
+                    continue
+                if m.group(1) is None:
+                    continue
+                attrs = parse_attrs(m.group(1))
+                for k in attrs:
+                    if k not in TAB_ATTR_KEYS:
+                        rep.warn(at, f":tab{{{k}=…}} is not read (keys: at, align, leader, gap, decimal)")
+                if not _tab_position_ok(attrs.get("at")):
+                    rep.warn(at, f":tab{{at={attrs.get('at', '')}}} is no length, 'end' or percentage: the tab takes "
+                                 "the paragraph's stops instead")
+                if "align" in attrs and attrs["align"].strip().lower() not in TAB_STOP_ALIGNS:
+                    rep.warn(at, f":tab{{align={attrs['align']}}} is not one of {sorted(TAB_STOP_ALIGNS)}: read as 'start'")
+                if "gap" in attrs and not _LENGTH_TEXT_RE.match(attrs["gap"]):
+                    rep.warn(at, f":tab{{gap={attrs['gap']}}} is no length: the default 0.5em is used")
+            if literal_tab_at is None and re.search(r"\S\t", re.sub(r"^(?:[-*+]|\d+[.)])\s+", "", line)):
+                literal_tab_at = i + 1
+        if literal_tab_at is not None and not any_stops and not vertical:
+            rep.warn(f"{name}:{literal_tab_at}", "a tab character inside a line is a word space unless the paragraph's "
+                                                 "style sets tabStops or tabInterval; give the style stops, or write :tab")
 
 
 FOLIO_ENUMS = {
@@ -2128,6 +2240,7 @@ def main() -> None:
                 check_cjk_lines(c["file"], chapter, rep, japanese_book or is_japanese_text(
                     len(KANA_RE.findall(chapter)), len(HAN_RE.findall(chapter))))
         check_index(index, rep, lang, japanese_book)
+        check_tab_stops(cfg, f"config ({lang})", texts, rep)
         embedded |= comic_ctx["arts"]  # panel pictures are placed by art=, not cited
         check_comic_edition(lang, cfg, comic_ctx, resources, m.get("fonts", []), rep)
         if comic_ctx["blocks"]:

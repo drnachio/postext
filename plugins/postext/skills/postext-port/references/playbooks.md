@@ -435,6 +435,65 @@ Use a paragraph style: smaller size, tighter leading, a hanging indent, and a
 negative `marginTop` to sit closer to its heading. One paragraph per entry;
 in a PDF, a new entry starts on each un-indented line.
 
+### B13. Tab stops: menus, price lists, cast lists, marks, forms, run-in indexes
+Text the source aligns at fixed positions inside a line (postext ≥ 1.23;
+configuration.md §4a, document-format.md §10.9) is paragraphs whose style has
+`tabStops`, with `:tab` where the source has a tab. Never rebuild it as a
+two-column table resource, runs of no-break spaces, `:::space` or chips
+pushed apart. How to read the source: a value whose right edge lines up
+from line to line is an `end` stop (at `'end'` when it touches the margin,
+else at the measured distance from the start of the text); values lined up
+on their decimal point are `decimal`; columns whose left edges line up are
+`start` stops at lengths; dots, a dotted line or a ruled blank between are
+the leader (`'.'`, `'. '` when the dots are spaced, `'·'`, `'rule'`). Measure
+positions from the start of the paragraph's measure, after the style's
+`indent`.
+
+- **Menu, price list, wine list**: a `menu` style with one stop
+  `{position: 'end', align: 'end'}` (add `leader: '. '` when the source sets
+  dots) and one paragraph per dish, `Leek and potato soup :tab 8.50`. A dish
+  with its translation under it: one paragraph whose first line ends in a
+  backslash (`Sopa de puerros\` over `Leek and potato soup :tab 8.50`). A
+  long dish name takes its last word down with the price instead of
+  overrunning it. Two price columns (glass, bottle): two stops,
+  `{position: '78%', align: 'end'}` and `{position: 'end', align: 'end'}`;
+  their headings (12 cl, 75 cl) are one more paragraph in the same style. A
+  wine list with region rows spanning the card may read better as a table
+  resource: keep it there only when it needs merged rows or rules.
+- **Cast list, dramatis personae**: `{position: 'end', align: 'end', leader:
+  '.'}` with `smallCaps` for the roles if the source sets them so,
+  `Ophelia :tab Marta Gil`. A role that wraps keeps the actor on its last
+  line.
+- **Exam papers, worksheets**: marks flush right on the question's last line,
+  `… take place? :tab :chip[1 mark]{style="marks"}`, with the list's stop
+  from `bodyText.tabStops: [{position: 'end', align: 'end'}]` (or
+  `:tab{at=end align=end}` in the line). Answer lines are still
+  `:::space{lines=N}` in a box (C1); a single ruled blank after a prompt is a
+  `rule` leader.
+- **Forms**: `Name :tab` in a style whose stop is `{position: 'end', leader:
+  'rule'}`; labels in a column, blanks after it: a `start` stop at the
+  label column's width plus the ruled `end` stop, `Name :tab :tab`.
+- **Run-in indexes, lists of figures, catalogue entries**: `{position:
+  'end', align: 'end', leader: '.'}` and `Coleridge, S. T. :tab 12, 48`. The
+  book's own contents and back-of-book index are generated (`:::toc`,
+  `:::index`); do not type them with tabs.
+- **Small accounts and tables inside prose** (two or three aligned values, no
+  header rules): start stops at lengths, a `decimal` stop for amounts
+  (`decimalChar` follows the locale). A real grid with a header row, rules,
+  fills or merged cells stays a table resource (D9).
+- Paragraphs holding a tab are set line by line, never Knuth–Plass, and
+  justified lines stretch only after their last tab, so set such styles
+  `textAlign: 'left'` unless the source justifies the text after the tab.
+  Vertical books have no tab stops: a `:tab` there is a word space
+  (`tabInVerticalText`); set such lists as a table resource or as lines with
+  `:::paragraphs` styles.
+- Word sources: the Sandbox's Word import turns each Word tab into `:tab`
+  with the attributes of the stop Word set for it (its paragraph's and its
+  style's `w:tabs`, as one-off `:tab{at=… align=… leader=…}`); the extractor
+  scripts write a tab as a space, so put `:tab` back where the source aligns
+  text, and give the paragraph style the stops (from the IDML `TabList` or
+  the Word style) so the text keeps bare `:tab`.
+
 ---
 
 ## C. Boxes (callouts)
@@ -573,6 +632,9 @@ recoloured to tints of `main-color`). This disables print masters.
   one table: merge it and drop the repeated header.
 - "Tables" that are really framed text boxes: one row per paragraph, or a
   callout.
+- "Tables" that are really tabbed text (a menu, a cast list, a list of
+  entries with page numbers at the margin, a form): paragraphs with tab
+  stops (B13), not a table resource.
 - Cell lists: `• item` lines, two spaces per nesting level.
 - Tables cited and printed right under their paragraph: placement `here` +
   `::resource`. The rest float.
