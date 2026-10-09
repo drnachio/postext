@@ -71,7 +71,20 @@ export type InlineItem =
   /** The start of a printed page (`epub:type="pagebreak"`). */
   | { t: 'page'; bookIndex: number }
   /** An anchor set in the text (an empty element carrying its id). */
-  | { t: 'anchor'; id: string };
+  | { t: 'anchor'; id: string }
+  /** A tab at its stop (#622): the line it is on is written as a row of
+   *  the parts between its tabs (`pt-tab-row`). `fill`: the stop pushes
+   *  the text after it to the row's end (an end, centre or decimal stop, or
+   *  any with a leader); otherwise the part before it is at least `minEm`
+   *  wide (a start stop, its place in the print). */
+  | TabItem;
+
+export interface TabItem {
+  t: 'tab';
+  fill: boolean;
+  leader?: 'text' | 'rule';
+  minEm?: number;
+}
 
 export interface ParagraphNode {
   k: 'p';

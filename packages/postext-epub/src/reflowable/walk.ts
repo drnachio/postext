@@ -72,6 +72,8 @@ export interface BookModel {
   stanzas?: boolean;
   /** Whether a line of verse carries its number (#621). */
   lineNumbers?: boolean;
+  /** Whether a line holds a tab at its stop (#622). */
+  tabs?: boolean;
   /** The classes of emphasis marks other than the filled dot on the
    *  default side the text uses (`inline.ts` `dotsClasses`, #428). */
   dots: Set<string>;
@@ -528,6 +530,7 @@ class DocWalker {
 
   private appendBlockLines(sink: TextSink, block: VDTBlock, lines: readonly VDTLine[] = block.lines, before: InlineItem[] = []): void {
     const ctx = this.ctx(block);
+    if (lines.some((l) => l.tabbed)) this.book.tabs = true;
     appendLines(sink, lines, ctx, (line, i) => [...(i === 0 ? before : []), ...this.anchorsAt(block, line)]);
   }
 

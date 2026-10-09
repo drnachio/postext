@@ -317,7 +317,23 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
   // line decides: `segments` may be a part of it, a poem's hemistich.)
   const offsets = (line.segments ?? segs).some((s) => s.kashida !== undefined && s.kashida.length > 0);
   let first = true;
+  // Where the part before the next tab starts (#622).
+  let partFrom = 0;
   for (const [i, seg] of segs.entries()) {
+    // A tab at its stop (#622): the stop, its leader read off the segment
+    // after it; the leader and the gap after it are print only.
+    if (seg.tab) {
+      const leader = segs[i + 1]?.leader;
+      let width = 0;
+      for (let k = partFrom; k <= i; k++) if (!segs[k]!.leader) width += segs[k]!.width;
+      out.push({ t: 'tab', fill: seg.tab.align !== 'start' || leader !== undefined, ...(leader ? { leader } : {}), ...(ctx.basePx > 0 ? { minEm: width / ctx.basePx } : {}) });
+      partFrom = i + 1;
+      continue;
+    }
+    if (seg.leader || (line.tabbed && seg.kind === 'space' && seg.text === '')) {
+      partFrom = i + 1;
+      continue;
+    }
     const link = linkOf(seg, ctx);
     const raw = rawOf(seg, ctx);
     if (raw !== undefined) {

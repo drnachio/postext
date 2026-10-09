@@ -70,9 +70,17 @@ const SAMPLE_POEM = [
   ':::',
 ];
 
+/** Tab stops (#622): a dot leader to a price flush right, and a rule to
+ *  the end of the line. */
+const SAMPLE_TABS = [
+  'Soup of the day :tab{at=end align=end leader="."} 8.50',
+  '',
+  'Signed: :tab{at=end leader=rule}',
+];
+
 export const SAMPLE_CHAPTERS = [
   ['---', 'title: Sample book', 'author: Ada Lovelace', '---', '', '# Opening chapter {#opening}', '', `See :ref{id=f1} and the [closing words](#closing). ${para.repeat(3)}`, '', '::resource{id=f1}', '', '## A section', '', para.repeat(12)].join('\n'),
-  ['# Second chapter', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4), '', ...SAMPLE_POEM].join('\n'),
+  ['# Second chapter', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4), '', ...SAMPLE_POEM, '', ...SAMPLE_TABS].join('\n'),
 ];
 
 export function sampleBook(): VDTDocument[] {

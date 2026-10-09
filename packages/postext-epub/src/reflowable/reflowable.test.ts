@@ -664,3 +664,29 @@ describe('reflowable rendition: hanging paragraph styles (#620)', () => {
     expect(css).toMatch(/p\.ps-pair \{\n {2}padding-inline-start: 3em;\n {2}text-indent: -2em;\n\}/);
   });
 });
+
+describe('reflowable rendition: tab stops (#622)', () => {
+  const config = { ...baseConfig, bodyText: { ...baseConfig.bodyText, tabStops: [{ position: 'end' as const, align: 'end' as const, leader: '.' }] } };
+
+  it('writes a line holding tabs as a row of its parts, the leader a border hidden from assistive technology', async () => {
+    const md = ['Soup of the day\t8.50', '', 'Roast lamb\t21.00', '', para].join('\n');
+    const { pub, files, all } = await render([layOut(md, config)]);
+    expectSound(pub, files);
+    expect(all).toContain('<p><span class="pt-tab-row"><span class="pt-tab-part">Roast lamb</span><span class="pt-tab-fill pt-leader-dots" aria-hidden="true"></span><span class="pt-tab-part">21.00</span></span></p>');
+    expect(all).not.toMatch(/\.\.\./);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-tab-row {');
+    expect(css).toContain('.pt-leader-dots {');
+  });
+
+  it('keeps a start stop\'s part at its printed width, the rest of the row after it', async () => {
+    const start = { ...baseConfig, bodyText: { ...baseConfig.bodyText, tabStops: [{ position: { value: 3, unit: 'em' as const } }] } };
+    const { all } = await render([layOut('Q1\tThe question that follows the number.', start)]);
+    expect(all).toMatch(/<span class="pt-tab-part" style="min-width:[\d.]+em">(?:<span epub:type="pagebreak"[^>]*><\/span>)?Q1<\/span><span class="pt-tab-gap" aria-hidden="true"><\/span><span class="pt-tab-part pt-tab-rest">The question/);
+  });
+
+  it('writes no tab rules for a book without tabs', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('.pt-tab-row');
+  });
+});

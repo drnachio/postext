@@ -18,6 +18,8 @@ export interface StylesheetOptions {
   stanzas?: boolean;
   /** Lines of verse carry their numbers (#621): the margin they stand in. */
   lineNumbers?: boolean;
+  /** A line holds a tab at its stop (#622): the tab rows. */
+  tabs?: boolean;
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
    *  filled dot on the default side): their rules are written only then
    *  (`inline.ts` `dotsClasses`, #428). */
@@ -552,6 +554,18 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     ]));
     out.push(rule('[dir="rtl"] .pt-stanza, .pt-stanza[dir="rtl"]', ['padding-left: 0', 'padding-right: 3em']));
     out.push(rule('[dir="rtl"] .pt-line-number, .pt-stanza[dir="rtl"] .pt-line-number', ['right: auto', 'left: 100%', 'margin-right: 0', 'margin-left: 0.8em']));
+  }
+  // Tab stops (#622): a line holding tabs is a row of its parts; a filler
+  // (with its leader as a border on the baseline) pushes the part after it
+  // to the row's end, a start stop's part keeps its printed width.
+  if (options.tabs) {
+    out.push(rule('.pt-tab-row', ['display: flex', 'align-items: baseline', 'text-indent: 0']));
+    out.push(rule('.pt-tab-part', ['flex: 0 1 auto']));
+    out.push(rule('.pt-tab-rest', ['flex: 1 1 0']));
+    out.push(rule('.pt-tab-fill', ['flex: 1 1 auto', 'min-width: 1em', 'margin: 0 0.5em']));
+    out.push(rule('.pt-tab-gap', ['flex: 0 0 0.5em']));
+    out.push(rule('.pt-leader-dots', ['border-bottom: 0.12em dotted currentColor']));
+    out.push(rule('.pt-leader-rule', ['border-bottom: 0.06em solid currentColor']));
   }
   if (options.verse) {
     // The poem as wide as its widest bayt, centred: its hemistichs share

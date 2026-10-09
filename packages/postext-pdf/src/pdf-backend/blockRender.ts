@@ -1,5 +1,5 @@
 import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
-import { isJapaneseLanguage, lineTextAlign, segmentOrientation } from 'postext';
+import { isJapaneseLanguage, leaderRuleGeometry, lineTextAlign, segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
@@ -253,6 +253,23 @@ function renderSegments(
       x += composed && seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
       continue;
     }
+    if (seg.leader) {
+      // A leader (a contents row's, a tab stop's, #622): a layout artifact
+      // under an empty `/ActualText`, so no text extraction reads it.
+      uris.other();
+      tagArtifact(ctx, { type: 'Layout' });
+      if (seg.leader === 'rule') {
+        const { dy, thickness } = leaderRuleGeometry(blockSize);
+        fillRectPx(ctx, x, baseline + dy - thickness / 2, seg.width, thickness, blockColor);
+      } else {
+        const fontStr = seg.fontString ?? pickSegmentFont(!!seg.bold, !!seg.italic, block);
+        const colorHex = seg.color ?? pickSegmentColor(!!seg.bold, !!seg.italic, block);
+        drawTextPx(ctx, seg.text, x, baseline, fontCache.get(fontStr) ?? blockFont, parseFontString(fontStr)?.sizePx ?? blockSize,
+          colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace), undefined, '');
+      }
+      x += seg.width;
+      continue;
+    }
     if (seg.kind !== 'text' || seg.chip) uris.other();
     if (seg.kind === 'math') {
       if (elem) {
@@ -471,7 +488,7 @@ function renderLineText(
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
-    if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
+    if (spaceCount > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
       renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, justifiedSpaceWidth, tracking);
       return;
@@ -524,7 +541,7 @@ function renderLineText(
  *  `:upright`, `:sideways`) keeps its segment apart. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return s.bold || s.italic || s.runs !== undefined || s.sideMarker !== undefined || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.leader !== undefined;
 }
 
 /** {@link segmentIsStyled} for a line of the CJK composer or one down a
