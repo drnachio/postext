@@ -75,6 +75,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'math':
     case 'footnotes':
     case 'lineNumbers':
+    case 'codeStyle':
     case 'crossRefs':
     case 'citations':
     case 'cjk':

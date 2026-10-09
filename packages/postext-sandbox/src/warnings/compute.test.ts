@@ -459,6 +459,23 @@ describe('engine content warnings', () => {
     expect(warningCategory('dropCap')).toBe('typesetting');
   });
 
+  it('lists a code listing wider than its box, and a code fence left open (#624)', () => {
+    const g = globalThis as unknown as { OffscreenCanvas?: unknown };
+    g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };
+    const md = ['Text.', '', '```js', `const s = "${'a'.repeat(200)}";`, '```', '', '```py', 'open()'].join('\n');
+    const config: PostextConfig = {};
+    const doc = buildDocument({ markdown: md }, config);
+    const all = computeWarnings({ markdown: md, config, doc, resources: [] });
+    const overflow = all.filter((w): w is typeof w & { payload: Extract<WarningPayload, { kind: 'codeOverflow' }> } => w.payload.kind === 'codeOverflow');
+    expect(overflow.map((w) => [w.payload.mode, w.payload.lines, w.payload.lang, w.line])).toEqual([['wrap', 1, 'js', 4]]);
+    expect(warningCategory('codeOverflow')).toBe('typesetting');
+    const open = all.filter((w) => w.payload.kind === 'unclosedCodeBlock');
+    expect(open.map((w) => [w.payload, w.line])).toEqual([[{ kind: 'unclosedCodeBlock', delimiter: '```', lang: 'py' }, 7]]);
+    // A book stored before #624 reads its fences as Markdown: no listing, no warning.
+    const legacy = computeWarnings({ markdown: md, config: { codeStyle: { blocks: false } }, doc: null, resources: [] });
+    expect(legacy.map((w) => w.payload.kind)).not.toContain('unclosedCodeBlock');
+  });
+
   it('flags an image the previews cannot read, unless storage itself is out', () => {
     const md = 'Look :ref{id="photo"}.';
     const found = computeWarnings({ markdown: md, config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']) })

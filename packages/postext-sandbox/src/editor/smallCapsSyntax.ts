@@ -3,6 +3,7 @@
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for inline small capitals (`:smallcaps[text]`): a
@@ -43,7 +44,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     let pos = from;
     while (pos <= to) {
       const line = doc.lineAt(pos);
-      if (line.text.includes(OPENER)) {
+      if (line.text.includes(OPENER) && !inFencedCode(doc, line.number)) {
         for (const r of smallCapsRanges(line.text)) {
           builder.add(line.from + r.from, line.from + r.to, r.kind === 'delim' ? delimMark : textMark);
         }

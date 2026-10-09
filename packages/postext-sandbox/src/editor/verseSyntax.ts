@@ -3,6 +3,7 @@
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for `:::verse` poems (#378, #620): a highlighter that
@@ -104,7 +105,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     }
     const kinds = verseLineKinds(lines.map((l) => l.text), open);
     lines.forEach((line, i) => {
-      if (i > last - first) return;
+      if (i > last - first || inFencedCode(doc, first + i)) return;
       if (kinds[i] === 'fence') {
         builder.add(line.from, line.from + line.text.length, fenceMark);
       } else if (kinds[i] === 'bayt') {

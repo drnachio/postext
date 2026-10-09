@@ -3,6 +3,7 @@
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import type { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for inline chips (`:chip[text]{style="…"}`): a highlighter
@@ -43,7 +44,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     let pos = from;
     while (pos <= to) {
       const line = doc.lineAt(pos);
-      if (line.text.includes(':chip[')) {
+      if (line.text.includes(':chip[') && !inFencedCode(doc, line.number)) {
         for (const r of chipRanges(line.text)) {
           const mark = r.kind === 'delim' ? delimMark : r.kind === 'text' ? textMark : attrMark;
           builder.add(line.from + r.from, line.from + r.to, mark);

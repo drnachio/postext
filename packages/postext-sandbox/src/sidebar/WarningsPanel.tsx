@@ -49,6 +49,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'arabicMarksExceedLeading':
     case 'lineNumberOverlap':
     case 'dropCap':
+    case 'codeOverflow':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -68,6 +69,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'attributeKeyInvalid':
     case 'tabInVerticalText':
     case 'unclosedContainer':
+    case 'unclosedCodeBlock':
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
     case 'unknownChipStyle':
@@ -205,6 +207,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsTabInVerticalTextTitle;
     case 'unclosedContainer':
       return labels.warningsUnclosedContainerTitle;
+    case 'unclosedCodeBlock':
+      return labels.warningsUnclosedCodeBlockTitle;
     case 'unknownParagraphStyle':
       return labels.warningsUnknownParagraphStyleTitle;
     case 'unknownCalloutType':
@@ -306,6 +310,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsLineNumberOverlapTitle;
     case 'dropCap':
       return labels.warningsDropCapTitle;
+    case 'codeOverflow':
+      return labels.warningsCodeOverflowTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
     case 'unknownConfigValue':
@@ -436,6 +442,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail.replace('__names__', KNOWN_FENCE_NAMES)}`;
     case 'unclosedContainer':
       return `:::${payload.name} — ${labels.warningsUnclosedContainerDetail}`;
+    case 'unclosedCodeBlock':
+      return `${payload.delimiter}${payload.lang ?? ''} — ${labels.warningsUnclosedCodeBlockDetail}`;
     case 'malformedEmbed':
       return `::${payload.name} — ${labels.warningsMalformedEmbedDetail}`;
     case 'fullwidthMarkup':
@@ -565,6 +573,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path} — ${labels.warningsLineNumbersUnsupportedDetail}`;
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
+    case 'codeOverflow': {
+      const detail = payload.mode === 'wrap' ? labels.warningsCodeOverflowWrap
+        : payload.mode === 'clip' ? labels.warningsCodeOverflowClip
+          : labels.warningsCodeOverflowShrink;
+      return detail.replace('__lines__', String(payload.lines)).replace('__scale__', String(Math.round((payload.scale ?? 1) * 100)));
+    }
     case 'dropCap': {
       const detail = payload.reason === 'shortParagraph'
         ? payload.handling === 'shrink' ? labels.warningsDropCapShortShrink : payload.handling === 'skip' ? labels.warningsDropCapShortSkip : labels.warningsDropCapShortReserve

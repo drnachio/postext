@@ -3,6 +3,7 @@
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for tabs in body text (#622): marks `:tab` and the
@@ -75,7 +76,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     for (let n = start; n <= last; n++) lines.push(doc.line(n).text);
     const ok = tabbableLines(lines);
     for (let n = first; n <= last; n++) {
-      if (!ok[n - start]) continue;
+      if (!ok[n - start] || inFencedCode(doc, n)) continue;
       const line = doc.line(n);
       for (const r of tabRanges(line.text)) builder.add(line.from + r.from, line.from + r.to, r.kind === 'tab' ? tabMark : attrMark);
     }

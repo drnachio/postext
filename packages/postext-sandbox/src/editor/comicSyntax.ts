@@ -2,6 +2,7 @@
 
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor highlighting for comic pages (`:::page{…}` and `:::strip{…}` …
@@ -169,6 +170,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     }
     const kinds = comicLineKinds(lines.map((l) => l.text), open);
     lines.forEach((line, i) => {
+      if (inFencedCode(doc, first + i)) return;
       for (const r of comicLineRanges(line.text, kinds[i]!)) {
         if (r.to > r.from) builder.add(line.from + r.from, line.from + r.to, MARKS[r.kind]);
       }

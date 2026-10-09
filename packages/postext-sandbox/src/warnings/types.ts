@@ -30,6 +30,7 @@ export type WarningKind =
   | 'attributeKeyInvalid'
   | 'tabInVerticalText'
   | 'unclosedContainer'
+  | 'unclosedCodeBlock'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
   | 'unknownChipStyle'
@@ -81,6 +82,7 @@ export type WarningKind =
   | 'lineNumbersUnsupported'
   | 'lineNumberOverlap'
   | 'dropCap'
+  | 'codeOverflow'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -172,6 +174,7 @@ export type WarningPayload =
   /** A `:::name` container fence was still open at the end of the document;
    *  the parser auto-closed it. Points at the opening fence. */
   | { kind: 'unclosedContainer'; name: string }
+  | { kind: 'unclosedCodeBlock'; delimiter: '```' | '~~~'; lang?: string }
   /** A `:::paragraphs{style="…"}` container names a style id that is not in
    *  `config.paragraphStyles`; the paragraphs render as body text. */
   | { kind: 'unknownParagraphStyle'; style: string }
@@ -326,6 +329,7 @@ export type WarningPayload =
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }
   /** A paragraph's drop cap could not be set as configured (#623). */
+  | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
   | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
