@@ -1547,7 +1547,8 @@
         "line breaks in verse",
         "leading spaces",
         "indented line of verse",
-        "poem indentation"
+        "poem indentation",
+        "backslash at the end of a line"
       ],
       "es": [
         "salto de línea manual",
@@ -1556,7 +1557,8 @@
         "saltos de línea en verso",
         "espacios iniciales",
         "verso sangrado",
-        "sangría de un poema"
+        "sangría de un poema",
+        "barra invertida al final de línea"
       ],
       "ca": [
         "salt de línia manual",
@@ -1565,7 +1567,8 @@
         "salts de línia en vers",
         "espais inicials",
         "vers sagnat",
-        "sagnat d'un poema"
+        "sagnat d'un poema",
+        "barra inversa al final de línia"
       ],
       "zh": [
         "强制换行",
@@ -1574,7 +1577,8 @@
         "诗歌换行",
         "行首空格",
         "诗行缩进",
-        "hard line break"
+        "hard line break",
+        "行末反斜杠"
       ],
       "ar": [
         "كسر سطر إجباري",
@@ -1582,7 +1586,8 @@
         "سطر جديد داخل الفقرة",
         "كسر الأسطر في الشعر",
         "مسافات بادئة",
-        "إزاحة أبيات القصيدة"
+        "إزاحة أبيات القصيدة",
+        "شرطة مائلة عكسية في آخر السطر"
       ],
       "ja": [
         "強制改行",
@@ -1590,7 +1595,8 @@
         "ソフトリターン",
         "詩の改行",
         "行頭の空白",
-        "詩の字下げ"
+        "詩の字下げ",
+        "行末のバックスラッシュ"
       ],
       "pt": [
         "quebra de linha forçada",
@@ -1600,17 +1606,18 @@
         "espaços iniciais",
         "verso recuado",
         "recuo de poema",
-        "poesia"
+        "poesia",
+        "barra invertida no fim da linha"
       ]
     },
     "explanation": {
-      "en": "A :::verse block keeps a poem as it is written: each line of Markdown is a line of verse, a blank line starts a new stanza and leading spaces indent the line (two spaces an em). An overlong line turns over with a hanging indent, or flush right behind a bracket, and keepStanzas keeps a haiku or a tanka whole. A paragraph style that sets its own firstLineIndent pairs it with its hangingIndent. Up to postext 1.22 every line needed a paragraph of its own in a :::paragraphs container, its indent written as em spaces (U+2003) behind a word joiner (U+2060).",
-      "es": "Un bloque :::verse conserva el poema tal como se escribe: cada línea de Markdown es un verso, una línea en blanco abre otra estrofa y los espacios iniciales sangran el verso (dos espacios, un eme). Un verso demasiado largo se parte con sangría colgada, o a la derecha tras un corchete, y keepStanzas mantiene entero un haiku o una tanka. Un estilo de párrafo que fija su propia firstLineIndent la combina con su hangingIndent. Hasta postext 1.22 cada verso necesitaba un párrafo propio en un contenedor :::paragraphs, con la sangría escrita como espacios eme (U+2003) tras un unidor de palabras (U+2060).",
-      "ca": "Un bloc :::verse conserva el poema tal com s'escriu: cada línia de Markdown és un vers, una línia en blanc obre una altra estrofa i els espais inicials sagnen el vers (dos espais, un eme). Un vers massa llarg es parteix amb sagnat penjat, o a la dreta darrere d'un claudàtor, i keepStanzas manté sencer un haiku o una tanka. Un estil de paràgraf que fixa la seva pròpia firstLineIndent la combina amb la seva hangingIndent. Fins a postext 1.22 cada vers necessitava un paràgraf propi dins un contenidor :::paragraphs, amb el sagnat escrit com a espais eme (U+2003) després d'un unidor de paraules (U+2060).",
-      "zh": ":::verse块按原样保留诗：Markdown的每一行就是一行诗，空行开始新的诗节，行首空格缩进该行（两个空格为一个em）。过长的诗行以悬挂缩进转行，或在方括号后靠右排；keepStanzas让俳句或短歌保持完整。段落样式自己设置的firstLineIndent可以与其hangingIndent搭配使用。在postext 1.22及以前，每一行都要在:::paragraphs容器中自成一段，缩进写成放在连接符（U+2060）后面的em空格（U+2003）。",
-      "ar": "تحفظ كتلة :::verse القصيدة كما كُتبت: كل سطر من Markdown سطر من الشعر، والسطر الفارغ يبدأ مقطعًا جديدًا، والمسافات البادئة تزيح السطر (مسافتان تساويان em واحدًا). والسطر الأطول من اللازم يُكمَل بإزاحة معلّقة، أو إلى الطرف بعد قوس معقوف، ويُبقي keepStanzas الهايكو أو التانكا كاملًا. ونمط الفقرة الذي يحدّد firstLineIndent بنفسه يجمعها مع hangingIndent. وحتى postext 1.22 كان كل سطر يحتاج إلى فقرة مستقلة في حاوية :::paragraphs، وتُكتب إزاحته مسافاتِ em (U+2003) بعد رابط كلمات (U+2060).",
-      "ja": ":::verseブロックは詩を書いたとおりに保ちます。Markdownの1行が詩の1行、空行で次の連が始まり、行頭の空白で字下げします（空白2つで1 em）。長すぎる行はぶら下げて折り返すか、角括弧の後ろに置いて行末側に寄せ、keepStanzasは俳句や短歌を分けずに保ちます。段落スタイル自身が決めたfirstLineIndentは、そのhangingIndentと組み合わせて使えます。postext 1.22までは、各行を:::paragraphsコンテナーの中の独立した段落にし、字下げを単語結合子（U+2060）の後ろのem幅の空白（U+2003）で書く必要がありました。",
-      "pt": "Um bloco :::verse mantém o poema como foi escrito: cada linha de Markdown é um verso, uma linha em branco abre outra estrofe e os espaços iniciais recuam o verso (dois espaços, um eme). Um verso longo demais se parte com recuo pendente, ou à direita depois de um colchete, e keepStanzas mantém inteiro um haicai ou um tanka. Um estilo de parágrafo que define o seu próprio firstLineIndent o combina com o seu hangingIndent. Até o postext 1.22 cada linha precisava de um parágrafo próprio em um contêiner :::paragraphs, com o recuo escrito como espaços eme (U+2003) depois de um word joiner (U+2060)."
+      "en": "A :::verse block keeps a poem as it is written: each line of Markdown is a line of verse, a blank line starts a new stanza and leading spaces indent the line (two spaces an em). An overlong line turns over with a hanging indent, or flush right behind a bracket, and keepStanzas keeps a haiku or a tanka whole. A paragraph style that sets its own firstLineIndent pairs it with its hangingIndent. In running text a backslash at the end of a line, or \\\\ before a space, breaks the line without starting a new paragraph (an address, the greeting of a letter). Up to postext 1.22 every line of a poem needed a paragraph of its own in a :::paragraphs container, its indent written as em spaces (U+2003) behind a word joiner (U+2060), and a backslash ending a line printed.",
+      "es": "Un bloque :::verse conserva el poema tal como se escribe: cada línea de Markdown es un verso, una línea en blanco abre otra estrofa y los espacios iniciales sangran el verso (dos espacios, un eme). Un verso demasiado largo se parte con sangría colgada, o a la derecha tras un corchete, y keepStanzas mantiene entero un haiku o una tanka. Un estilo de párrafo que fija su propia firstLineIndent la combina con su hangingIndent. En el texto corrido, una barra invertida al final de una línea, o \\\\ ante un espacio, parte la línea sin empezar otro párrafo (una dirección, el saludo de una carta). Hasta postext 1.22 cada verso de un poema necesitaba un párrafo propio en un contenedor :::paragraphs, con la sangría escrita como espacios eme (U+2003) tras un unidor de palabras (U+2060), y una barra invertida al final de una línea se imprimía.",
+      "ca": "Un bloc :::verse conserva el poema tal com s'escriu: cada línia de Markdown és un vers, una línia en blanc obre una altra estrofa i els espais inicials sagnen el vers (dos espais, un eme). Un vers massa llarg es parteix amb sagnat penjat, o a la dreta darrere d'un claudàtor, i keepStanzas manté sencer un haiku o una tanka. Un estil de paràgraf que fixa la seva pròpia firstLineIndent la combina amb la seva hangingIndent. En el text corrent, una barra inversa al final d'una línia, o \\\\ davant d'un espai, parteix la línia sense començar un altre paràgraf (una adreça, la salutació d'una carta). Fins a postext 1.22 cada vers d'un poema necessitava un paràgraf propi dins un contenidor :::paragraphs, amb el sagnat escrit com a espais eme (U+2003) després d'un unidor de paraules (U+2060), i una barra inversa al final d'una línia s'imprimia.",
+      "zh": ":::verse块按原样保留诗：Markdown的每一行就是一行诗，空行开始新的诗节，行首空格缩进该行（两个空格为一个em）。过长的诗行以悬挂缩进转行，或在方括号后靠右排；keepStanzas让俳句或短歌保持完整。段落样式自己设置的firstLineIndent可以与其hangingIndent搭配使用。在正文中，行末的反斜杠或后跟空格的\\\\会在段落内换行而不另起一段（地址、书信的称呼）。在postext 1.22及以前，诗的每一行都要在:::paragraphs容器中自成一段，缩进写成放在连接符（U+2060）后面的em空格（U+2003），行末的反斜杠也会照样印出。",
+      "ar": "تحفظ كتلة :::verse القصيدة كما كُتبت: كل سطر من Markdown سطر من الشعر، والسطر الفارغ يبدأ مقطعًا جديدًا، والمسافات البادئة تزيح السطر (مسافتان تساويان em واحدًا). والسطر الأطول من اللازم يُكمَل بإزاحة معلّقة، أو إلى الطرف بعد قوس معقوف، ويُبقي keepStanzas الهايكو أو التانكا كاملًا. ونمط الفقرة الذي يحدّد firstLineIndent بنفسه يجمعها مع hangingIndent. وفي النص الجاري تكسر الشرطة المائلة العكسية في آخر السطر، أو \\\\ المتبوعة بمسافة، السطرَ دون بدء فقرة جديدة (عنوان بريدي، تحية رسالة). وحتى postext 1.22 كان كل سطر من القصيدة يحتاج إلى فقرة مستقلة في حاوية :::paragraphs، وتُكتب إزاحته مسافاتِ em (U+2003) بعد رابط كلمات (U+2060)، وكانت الشرطة المائلة العكسية في آخر السطر تُطبع.",
+      "ja": ":::verseブロックは詩を書いたとおりに保ちます。Markdownの1行が詩の1行、空行で次の連が始まり、行頭の空白で字下げします（空白2つで1 em）。長すぎる行はぶら下げて折り返すか、角括弧の後ろに置いて行末側に寄せ、keepStanzasは俳句や短歌を分けずに保ちます。段落スタイル自身が決めたfirstLineIndentは、そのhangingIndentと組み合わせて使えます。地の文では、行末のバックスラッシュ、または後ろにスペースのある\\\\で、新しい段落を始めずに段落の中で改行します（住所、手紙の宛名など）。postext 1.22までは、詩の各行を:::paragraphsコンテナーの中の独立した段落にし、字下げを単語結合子（U+2060）の後ろのem幅の空白（U+2003）で書く必要があり、行末のバックスラッシュはそのまま印字されていました。",
+      "pt": "Um bloco :::verse mantém o poema como foi escrito: cada linha de Markdown é um verso, uma linha em branco abre outra estrofe e os espaços iniciais recuam o verso (dois espaços, um eme). Um verso longo demais se parte com recuo pendente, ou à direita depois de um colchete, e keepStanzas mantém inteiro um haicai ou um tanka. Um estilo de parágrafo que define o seu próprio firstLineIndent o combina com o seu hangingIndent. No texto corrido, uma barra invertida no fim de uma linha, ou \\\\ antes de um espaço, quebra a linha sem começar outro parágrafo (um endereço, a saudação de uma carta). Até o postext 1.22 cada verso de um poema precisava de um parágrafo próprio em um contêiner :::paragraphs, com o recuo escrito como espaços eme (U+2003) depois de um word joiner (U+2060), e uma barra invertida no fim de uma linha era impressa."
     },
     "docs": {
       "slug": "document-format",
