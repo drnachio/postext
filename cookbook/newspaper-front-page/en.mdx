@@ -47,13 +47,13 @@ The code for this step is [the short answer](#the-short-answer) above. A page's 
 :::
 ```
 
-`placement="bottom"` floats the box to the foot of <PageRef page={1}>page 1</PageRef>, where it takes 36.9 mm, and the story fills the 83 mm of columns above it. Nor does 1.4.1 wrap text round a picture. A float takes a whole band of its column or of the page, so the lead photo is a band across both columns inside the banner box, and the bridge drawing takes the full width of column 1. To set text beside a picture, use the same kind of box: in `:::columns{count=2 breaks="2"}` the `::resource` line opens the first column and the text the second.
+`placement="bottom"` floats the box to the foot of <PageRef page={1}>page 1</PageRef>, where it takes 36.9 mm, and the story fills the 83 mm of columns above it. The lead photo stays a band across both columns inside the banner box: the text runs beside a picture narrower than its column, on one side of it, never round a picture across two columns. The bridge drawing on page 2 has its text beside it (step 5).
 
 ### 5 · Pictures inline, tables as floats
 
 <Excerpt region="floats" />
 
-The photograph is inline in the banner box because a page-wide `top` float never lands above the line that cites it; as a float, the photo would open page 2 (see Pitfalls). The bridge drawing is inline too, after the paragraph about the pier. The forecast floats to the head of a column and lands at the top of the right one. The ward table floats under both columns, where the column rule stops. On the last page it sits right under the balanced columns, so the copy above it was fitted to bring it down to the foot. Both resource types set `captionPrefix: ''`, and 1.4.1 prints a caption label only when the prefix has text, so no caption starts with "Figure 1".
+The photograph is inline in the banner box because a page-wide `top` float never lands above the line that cites it; as a float, the photo would open page 2 (see Pitfalls). The bridge drawing is inline too, after the paragraph about the pier, and `wrap: 'right'` with `width: 0.47` sets it at the right of column 1, 47 % of the column wide, the next paragraphs running beside it and then under it at the full measure ([text wrap](/en/docs/document-format#text-wrap)). At that width no line beside it is set loose; the copy of the story was refitted to the shorter drawing. The forecast floats to the head of a column and lands at the top of the right one. The ward table floats under both columns, where the column rule stops. On the last page it sits right under the balanced columns, so the copy above it was fitted to bring it down to the foot. Both resource types set `captionPrefix: ''`, and 1.4.1 prints a caption label only when the prefix has text, so no caption starts with "Figure 1".
 
 ### 6 · An inside page opens on a section flag
 

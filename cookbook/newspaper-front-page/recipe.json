@@ -32,7 +32,7 @@
       "paragraph-styles",
       "float-placement",
       "inline-embeds",
-      "credit-notes",
+      "text-wrap",
       "table-styles",
       "resource-types",
       "cell-images"
@@ -45,8 +45,7 @@
     "Q27"
   ],
   "gaps": [
-    "three-columns",
-    "text-wrap"
+    "three-columns"
   ],
   "gotchas": [
     "callout-columns",
@@ -100,7 +99,7 @@
     }
   ],
   "engine": {
-    "postext": "1.19.1"
+    "postext": "1.24.0"
   },
   "kit": [
     "core",
@@ -184,5 +183,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-10-06"
+  "updated": "2026-10-09"
 }

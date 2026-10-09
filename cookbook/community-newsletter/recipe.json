@@ -19,7 +19,7 @@
       "chips"
     ],
     "also": [
-      "callout-columns",
+      "text-wrap",
       "heading-styles",
       "float-placement",
       "callout-styles",
@@ -44,12 +44,8 @@
     "Q60",
     "Q51"
   ],
-  "gaps": [
-    "text-wrap"
-  ],
+  "gaps": [],
   "gotchas": [
-    "split-paragraph-measure",
-    "callout-columns",
     "quote-frontmatter",
     "ragged-no-hyphenation",
     "ragged-runts",
@@ -68,11 +64,6 @@
     "worksheet-answer-boxes"
   ],
   "workarounds": [
-    {
-      "followup": "EF-157",
-      "package": "postext",
-      "note": "each column ends on a whole paragraph followed by a :::columnbreak, and the copy of both editions is fitted so no paragraph runs over from one column into the other: in 1.4.1 a paragraph is broken into lines once, at the width of the column it starts in, so a paragraph cut at the foot of the 113 mm column prints its 113 mm lines in the 57 mm column, clipped, and one cut at the foot of the narrow column keeps 57 mm lines in the next page's wide column (gotcha split-paragraph-measure)"
-    },
     {
       "followup": "EF-101",
       "package": "postext",
@@ -115,7 +106,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.24.0"
   },
   "kit": [
     "core",
@@ -190,5 +181,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-09"
 }

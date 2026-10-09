@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "community-newsletter",
-  "sourceHash": "b2844544909bc15e5b48f7bcd07a45fc7eaa83501022a00e2978708f22015f32",
+  "sourceHash": "b6bb66f04e49e0a0ea7faaaf749d47d82861b62bdbe9fec1189cede804c2cc00",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.869Z",
+  "capturedAt": "2026-10-09T21:08:28.795Z",
   "variants": {
     "en": {
-      "hash8": "4bd66695",
-      "vdtHash": "860be31b5b7eba4012dc943fd0899e54ef32298b",
+      "hash8": "4a323cd4",
+      "vdtHash": "d5f528c1898961589bbd0d00ab128b8154b465c0",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 44,
-        "buildMs": 15,
-        "totalMs": 830,
+        "importMs": 23670,
+        "fontsMs": 86,
+        "buildMs": 21,
+        "totalMs": 24611,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Work Sans"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 172
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 136712,
+          "bytes": 140996,
           "alt": "Page 2: What goes into the bays. Bay one in March. Temperature at the centre of the heap, read at nine each morning. In the shaded band, 55 to 65 °C, most weed seeds die. · What goes where. One cabbage to a square; four lettuces, chard or marigolds; nine beetroot, beans or oni…"
         }
       ],
@@ -89,7 +89,7 @@
       },
       "sandbox": {
         "file": "community-newsletter.postext",
-        "bytes": 81219,
+        "bytes": 81089,
         "folio": "0414c868"
       },
       "detected": {
@@ -109,27 +109,6 @@
           "bodyText.paragraphSpacing",
           "bodyText.referenceColor",
           "bodyText.textAlign",
-          "calloutStyles",
-          "calloutStyles[].background",
-          "calloutStyles[].body",
-          "calloutStyles[].body.fontSize",
-          "calloutStyles[].body.lineHeight",
-          "calloutStyles[].body.paragraphSpacing",
-          "calloutStyles[].columnGap",
-          "calloutStyles[].id",
-          "calloutStyles[].padding",
-          "calloutStyles[].padding.bottom",
-          "calloutStyles[].padding.left",
-          "calloutStyles[].padding.right",
-          "calloutStyles[].padding.top",
-          "calloutStyles[].titleStyle",
-          "calloutStyles[].titleStyle.color",
-          "calloutStyles[].titleStyle.fontFamily",
-          "calloutStyles[].titleStyle.fontSize",
-          "calloutStyles[].titleStyle.fontWeight",
-          "calloutStyles[].titleStyle.gap",
-          "calloutStyles[].titleStyle.letterSpacing",
-          "calloutStyles[].titleStyle.textTransform",
           "captionStyle",
           "captionStyle.color",
           "captionStyle.fontFamily",
@@ -238,7 +217,6 @@
         ],
         "configSections": [
           "bodyText",
-          "calloutStyles",
           "captionStyle",
           "chipStyles",
           "colorPalette",
@@ -251,14 +229,12 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 290,
+        "configLeaves": 275,
         "designElements": 8,
         "directives": [
           ":::paragraphs",
           "::resource",
-          ":::columnbreak",
-          ":::callout",
-          ":::columns"
+          ":::columnbreak"
         ],
         "inline": [
           "{attrs}",
@@ -297,8 +273,6 @@
           }
         ],
         "features": [
-          "callout-columns",
-          "callout-styles",
           "chips",
           "column-and-a-half",
           "column-rule",
@@ -324,17 +298,23 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "781bf941",
-      "vdtHash": "8163e866383dc0f5e0c095bb6f9466ac2e38bc7b",
+      "hash8": "a1d94580",
+      "vdtHash": "2d63db2667b0a76991738b00efd6a90668e9169c",
       "timings": {
-        "importMs": 156,
+        "importMs": 293,
         "fontsMs": 43,
-        "buildMs": 15,
-        "totalMs": 833,
+        "buildMs": 14,
+        "totalMs": 1012,
         "builds": 2
       },
       "specimen": {
@@ -357,7 +337,7 @@
           "Work Sans"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 172
       },
       "pages": [
         {
@@ -379,7 +359,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 139480,
+          "bytes": 142058,
           "alt": "Página 2: Qué va en los cajones. El cajón uno en marzo. Temperatura en el centro, a las nueve. En la franja, de 55 a 65 °C, mueren casi todas las semillas de malas hierbas. · Cómo se planta el bancal. Una col por cuadro; cuatro lechugas, acelgas o caléndulas; nueve remolachas,…"
         }
       ],
@@ -407,7 +387,7 @@
       },
       "sandbox": {
         "file": "community-newsletter.postext",
-        "bytes": 81892,
+        "bytes": 81766,
         "folio": "0414c868"
       },
       "detected": {
@@ -427,27 +407,6 @@
           "bodyText.paragraphSpacing",
           "bodyText.referenceColor",
           "bodyText.textAlign",
-          "calloutStyles",
-          "calloutStyles[].background",
-          "calloutStyles[].body",
-          "calloutStyles[].body.fontSize",
-          "calloutStyles[].body.lineHeight",
-          "calloutStyles[].body.paragraphSpacing",
-          "calloutStyles[].columnGap",
-          "calloutStyles[].id",
-          "calloutStyles[].padding",
-          "calloutStyles[].padding.bottom",
-          "calloutStyles[].padding.left",
-          "calloutStyles[].padding.right",
-          "calloutStyles[].padding.top",
-          "calloutStyles[].titleStyle",
-          "calloutStyles[].titleStyle.color",
-          "calloutStyles[].titleStyle.fontFamily",
-          "calloutStyles[].titleStyle.fontSize",
-          "calloutStyles[].titleStyle.fontWeight",
-          "calloutStyles[].titleStyle.gap",
-          "calloutStyles[].titleStyle.letterSpacing",
-          "calloutStyles[].titleStyle.textTransform",
           "captionStyle",
           "captionStyle.color",
           "captionStyle.fontFamily",
@@ -556,7 +515,6 @@
         ],
         "configSections": [
           "bodyText",
-          "calloutStyles",
           "captionStyle",
           "chipStyles",
           "colorPalette",
@@ -569,14 +527,12 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 290,
+        "configLeaves": 275,
         "designElements": 8,
         "directives": [
           ":::paragraphs",
           "::resource",
-          ":::columnbreak",
-          ":::callout",
-          ":::columns"
+          ":::columnbreak"
         ],
         "inline": [
           "{attrs}",
@@ -615,8 +571,6 @@
           }
         ],
         "features": [
-          "callout-columns",
-          "callout-styles",
           "chips",
           "column-and-a-half",
           "column-rule",
@@ -642,7 +596,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

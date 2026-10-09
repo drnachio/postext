@@ -458,13 +458,13 @@
       ]
     },
     "explanation": {
-      "en": "Fixed in postext 1.24: placement.wrap sets a picture narrower than its column at one side of it, and the text after it runs beside it, then full width under it: a ::resource placed 'here', or a one-column float at the head or foot of a column. layout.wrap holds the gap, the narrowest text beside it and the default width. A box takes :::callout{wrap=\"right\" width=0.4}. A :::columns group holding the text and the picture is no longer needed.",
-      "es": "Resuelto en postext 1.24: placement.wrap coloca una imagen más estrecha que su columna en uno de sus lados, y el texto que le sigue se compone a su lado y después a todo el ancho debajo: un ::resource colocado 'here', o un flotante de una columna en la cabecera o el pie de una columna. layout.wrap guarda la separación, el texto más estrecho a su lado y el ancho por defecto. Una caja admite :::callout{wrap=\"right\" width=0.4}. Ya no hace falta un grupo :::columns con el texto y la imagen.",
-      "ca": "Resolt a postext 1.24: placement.wrap col·loca una imatge més estreta que la columna a un dels costats, i el text que la segueix es compon al costat i després a tota l'amplada a sota: un ::resource col·locat 'here', o un flotant d'una columna al capdamunt o al peu d'una columna. layout.wrap desa la separació, el text més estret al costat i l'amplada per defecte. Una caixa admet :::callout{wrap=\"right\" width=0.4}. Ja no cal un grup :::columns amb el text i la imatge.",
-      "zh": "已在postext 1.24中解决：placement.wrap把比栏窄的图片放在栏的一侧，后面的正文排在它旁边，到它下方后恢复全宽：可以是放在'here'的::resource，也可以是位于栏首或栏尾、宽一栏的浮动体。layout.wrap存放间距、旁边正文的最小宽度和默认宽度。框可以写成:::callout{wrap=\"right\" width=0.4}。不再需要用:::columns组把正文和图片放在一起。",
-      "ar": "حُلّت في postext 1.24: يضع placement.wrap صورة أضيق من عمودها في أحد جانبيه، ويُصفّ النص الذي يليها بجانبها ثم بكامل العرض تحتها: ::resource موضوع 'here'، أو عنصر عائم بعرض عمود واحد في أعلى عمود أو أسفله. ويحفظ layout.wrap المسافة وأضيق نص بجانبها والعرض الافتراضي. ويقبل الصندوق :::callout{wrap=\"right\" width=0.4}. ولم تعد هناك حاجة إلى مجموعة :::columns تضم النص والصورة.",
-      "ja": "postext 1.24で解決：placement.wrapは段より狭い図版を段の片側に置き、続く本文をその横に、下では全幅で組みます。'here'に置いた::resourceにも、段頭や段末に置く1段幅のフロートにも使えます。layout.wrapには間隔、横の本文の最小幅、既定の幅があります。ボックスは:::callout{wrap=\"right\" width=0.4}と書けます。本文と図版を:::columnsグループにまとめる必要はもうありません。",
-      "pt": "Resolvido no postext 1.24: placement.wrap põe uma imagem mais estreita que a coluna de um lado dela, e o texto seguinte é composto ao lado e depois na largura toda embaixo: um ::resource posto em 'here', ou um flutuante de uma coluna no alto ou no pé de uma coluna. layout.wrap guarda o espaço, o texto mais estreito ao lado e a largura padrão. Uma caixa aceita :::callout{wrap=\"right\" width=0.4}. Não é mais preciso um grupo :::columns com o texto e a imagem."
+      "en": "Fixed in postext 1.24: placement.wrap sets a picture narrower than its column at one side of it, and the text after it runs beside it, then full width under it: a ::resource placed 'here', or a one-column float at the head or foot of a column. layout.wrap holds the gap, the narrowest text beside it and the default width. A box takes :::callout{wrap=\"right\" width=0.4}. Up to 1.23 the text beside a picture needed a :::columns group holding both.",
+      "es": "Resuelto en postext 1.24: placement.wrap coloca una imagen más estrecha que su columna en uno de sus lados, y el texto que le sigue se compone a su lado y después a todo el ancho debajo: un ::resource colocado 'here', o un flotante de una columna en la cabecera o el pie de una columna. layout.wrap guarda la separación, el texto más estrecho a su lado y el ancho por defecto. Una caja admite :::callout{wrap=\"right\" width=0.4}. Hasta la 1.23, para poner texto junto a una imagen hacía falta un grupo :::columns con los dos.",
+      "ca": "Resolt a postext 1.24: placement.wrap col·loca una imatge més estreta que la columna a un dels costats, i el text que la segueix es compon al costat i després a tota l'amplada a sota: un ::resource col·locat 'here', o un flotant d'una columna al capdamunt o al peu d'una columna. layout.wrap desa la separació, el text més estret al costat i l'amplada per defecte. Una caixa admet :::callout{wrap=\"right\" width=0.4}. Fins a la 1.23, per posar text al costat d'una imatge calia un grup :::columns amb tots dos.",
+      "zh": "已在postext 1.24中解决：placement.wrap把比栏窄的图片放在栏的一侧，后面的正文排在它旁边，到它下方后恢复全宽：可以是放在'here'的::resource，也可以是位于栏首或栏尾、宽一栏的浮动体。layout.wrap存放间距、旁边正文的最小宽度和默认宽度。框可以写成:::callout{wrap=\"right\" width=0.4}。1.23及以前，要让正文排在图片旁边，只能用:::columns组把两者放在一起。",
+      "ar": "حُلّت في postext 1.24: يضع placement.wrap صورة أضيق من عمودها في أحد جانبيه، ويُصفّ النص الذي يليها بجانبها ثم بكامل العرض تحتها: ::resource موضوع 'here'، أو عنصر عائم بعرض عمود واحد في أعلى عمود أو أسفله. ويحفظ layout.wrap المسافة وأضيق نص بجانبها والعرض الافتراضي. ويقبل الصندوق :::callout{wrap=\"right\" width=0.4}. وحتى 1.23 كان وضع النص بجانب صورة يحتاج إلى مجموعة :::columns تضمّهما.",
+      "ja": "postext 1.24で解決：placement.wrapは段より狭い図版を段の片側に置き、続く本文をその横に、下では全幅で組みます。'here'に置いた::resourceにも、段頭や段末に置く1段幅のフロートにも使えます。layout.wrapには間隔、横の本文の最小幅、既定の幅があります。ボックスは:::callout{wrap=\"right\" width=0.4}と書けます。1.23までは、図版の横に本文を組むには、両方を:::columnsグループにまとめる必要がありました。",
+      "pt": "Resolvido no postext 1.24: placement.wrap põe uma imagem mais estreita que a coluna de um lado dela, e o texto seguinte é composto ao lado e depois na largura toda embaixo: um ::resource posto em 'here', ou um flutuante de uma coluna no alto ou no pé de uma coluna. layout.wrap guarda o espaço, o texto mais estreito ao lado e a largura padrão. Uma caixa aceita :::callout{wrap=\"right\" width=0.4}. Até a 1.23, pôr texto ao lado de uma imagem exigia um grupo :::columns com os dois."
     },
     "docs": {
       "slug": "document-format",
@@ -477,7 +477,8 @@
         "ja": "回り込み",
         "pt": "Contorno de texto"
       }
-    }
+    },
+    "fixedIn": "1.24.0"
   },
   "body-drop-cap": {
     "label": {

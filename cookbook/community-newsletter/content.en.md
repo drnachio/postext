@@ -68,13 +68,11 @@ Fill one bay at a time, with green and brown in equal barrow-loads: grass cuttin
 
 Turning lets air into the middle of the heap, and the temperature climbs again: bay one, turned on 18 March, was back above 60 °C two days later. The rota on the hut door puts two plots in charge of the fork each week. In September every plot can take away two barrow-loads of finished compost, and whatever is left goes on the demonstration bed by the gate.
 
-:::callout{type="bed" title="Sixteen squares by the gate"}
-:::columns{count=2 breaks="2"}
-The demonstration bed by the gate is 1.2 metres square, edged with the same scaffold boards as the bays. This year it holds compost from the council depot, 15 centimetres deep; next spring it gets our own. Strings divide the bed into sixteen squares, 30 centimetres a side, each planted with one, four, nine or sixteen plants according to the size of the crop. Year 5 from St Anne’s planted it on 20 March and will keep its diary.
+#### Sixteen squares by the gate {style="kicker"}
 
 ::resource{id="bed"}
-:::
-:::
+
+The demonstration bed by the gate is 1.2 metres square, edged with the same scaffold boards as the bays. This year it holds compost from the council depot, 15 centimetres deep; next spring it gets our own. Strings divide the bed into sixteen squares, 30 centimetres a side, each planted with one, four, nine or sixteen plants according to the size of the crop. Year 5 from St Anne’s planted it on 20 March and will keep its diary.
 
 :::columnbreak
 

@@ -47,13 +47,13 @@ El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. 
 :::
 ```
 
-`placement="bottom"` porta el requadre al peu de la <PageRef page={1}>pàgina 1</PageRef>, on ocupa 36,9 mm, i la notícia omple els 83 mm de columna que queden a sobre. La 1.4.1 tampoc no fa que el text envolti una imatge. Un flotant ocupa una banda sencera de la seva columna o de la pàgina; per això la foto principal és una banda sobre les dues columnes dins del requadre del titular, i el dibuix del pont ocupa tota l'amplada de la columna 1. Per posar text al costat d'una imatge serveix el mateix tipus de requadre: a `:::columns{count=2 breaks="2"}`, la línia `::resource` obre la primera columna i el text, la segona.
+`placement="bottom"` porta el requadre al peu de la <PageRef page={1}>pàgina 1</PageRef>, on ocupa 36,9 mm, i la notícia omple els 83 mm de columna que queden a sobre. La foto principal continua sent una banda sobre les dues columnes dins del requadre del titular: el text es compon al costat d'una imatge més estreta que la columna, a un costat, mai al voltant d'una imatge que ocupa dues columnes. El dibuix del pont de la pàgina 2 porta el text al costat (pas 5).
 
 ### 5 · Imatges en línia, taules flotants
 
 <Excerpt region="floats" />
 
-La foto va en línia dins del requadre del titular perquè un flotant `top` a tota l'amplada mai no cau per sobre de la línia que el cita; com a flotant, obriria la pàgina 2 (vegeu Errors freqüents). El dibuix del pont també va en línia, després del paràgraf sobre la pila. La previsió flota al capdamunt d'una columna i cau a la de la dreta. La taula de barris flota sota les dues columnes, on s'atura el filet de columna. A l'última pàgina es col·loca just sota les columnes igualades, i per això el text de sobre està ajustat perquè la taula arribi al peu. Els dos tipus de recurs fixen `captionPrefix: ''`, i la 1.4.1 només imprimeix l'etiqueta del peu quan el prefix té text, així que cap peu no comença per «Figure 1».
+La foto va en línia dins del requadre del titular perquè un flotant `top` a tota l'amplada mai no cau per sobre de la línia que el cita; com a flotant, obriria la pàgina 2 (vegeu Errors freqüents). El dibuix del pont també va en línia, després del paràgraf sobre la pila, i `wrap: 'right'` amb `width: 0.47` el col·loca a la dreta de la columna 1, amb el 47 % de la seva amplada, i els paràgrafs següents es componen al costat i després a sota a la mesura completa ([ajust del text](/ca/docs/document-format#ajust-del-text)). Amb aquesta amplada cap línia del costat no queda fluixa; el text de la notícia es va reajustar al dibuix més baix. La previsió flota al capdamunt d'una columna i cau a la de la dreta. La taula de barris flota sota les dues columnes, on s'atura el filet de columna. A l'última pàgina es col·loca just sota les columnes igualades, i per això el text de sobre està ajustat perquè la taula arribi al peu. Els dos tipus de recurs fixen `captionPrefix: ''`, i la 1.4.1 només imprimeix l'etiqueta del peu quan el prefix té text, així que cap peu no comença per «Figure 1».
 
 ### 6 · Una pàgina interior obre amb un rètol de secció
 
