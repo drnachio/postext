@@ -36,6 +36,10 @@ export type BundleResourceSpec = Omit<Resource, 'createdAt' | 'updatedAt' | 'bit
    *  vectors, embedded verbatim by the PDF backend in place of the SVG
    *  (`Resource.svg.pdfFileId`). */
   pdfFile?: string;
+  /** SVG resources only (#630): `false` keeps the markup as stored when
+   *  it is shown as an image, with no `@font-face` added for the families
+   *  its text names (`Resource.svg.inlineFonts`). */
+  inlineFonts?: false;
   /** Video resources only (#454): the poster frame's file. `file` is then
    *  the video itself (a self-hosted `.mp4` / `.webm`), and `width` /
    *  `height` the poster's size. The `video` object carries the rest

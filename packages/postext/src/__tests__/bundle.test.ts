@@ -133,6 +133,17 @@ describe('createBundle', () => {
     expect(opened.files.get(profile!.fileId)).toEqual(icc);
   });
 
+  it('carries an SVG\'s font opt-out through a bundle (#630)', async () => {
+    const { bytes, manifest } = await createBundle({
+      name: 'x',
+      markdown: '# X\n\n::resource{id=fig-map}',
+      resources: [{ ...svgResource, svg: { ...svgResource.svg!, inlineFonts: false } }],
+      files: { 'map-upload': SVG },
+    });
+    expect(manifest.resources?.[0]).toMatchObject({ id: 'fig-map', inlineFonts: false });
+    expect((await openBundle(bytes)).resources[0]!.svg).toMatchObject({ inlineFonts: false });
+  });
+
   it('drops a resource whose payload is missing, with a warning', async () => {
     const { manifest, warnings } = await createBundle({ name: 'x', markdown: '# X', resources: [svgResource] });
     expect(manifest.resources).toBeUndefined();

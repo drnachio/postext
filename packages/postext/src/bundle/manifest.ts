@@ -443,7 +443,7 @@ export function resourceFromSpec(
   fileIdFor: (file: string) => string = identity,
 ): Resource {
   const now = Date.now();
-  const { file, pdfFile, poster, width, height, resolution, fileResolution, ...rest } = spec;
+  const { file, pdfFile, poster, width, height, resolution, fileResolution, inlineFonts, ...rest } = spec;
   const base: Resource = { ...rest, createdAt: now, updatedAt: now };
   if (spec.kind === 'video' || (file && isVideoFile(file))) {
     // A video (#454): its own file (self-hosted) and its poster frame.
@@ -471,10 +471,11 @@ export function resourceFromSpec(
 
   if (isSvgFile(file)) {
     const master = pdfFile && isPdfFile(pdfFile) ? { pdfFileId: fileIdFor(pdfFile) } : {};
+    const fonts = inlineFonts === false ? { inlineFonts: false } : {};
     return {
       ...base,
       kind: 'svg',
-      svg: w && h ? { fileId, width: w, height: h, ...master } : { fileId, ...master },
+      svg: w && h ? { fileId, width: w, height: h, ...master, ...fonts } : { fileId, ...master, ...fonts },
     };
   }
   const format = BITMAP_FORMAT_BY_EXT[fileExtension(file)];
