@@ -583,7 +583,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
           <Section title={labels.wordOptionsHeading}>
             {optionRow(labels.wordOptionLineBreaks, (
               <Select size="sm" value={working.options.lineBreaks} onValueChange={(v) => setOption('lineBreaks', v)} ariaLabel={labels.wordOptionLineBreaks}
-                options={[{ value: 'space', label: labels.wordOptionLineBreaksSpace }, { value: 'paragraph', label: labels.wordOptionLineBreaksParagraph }]} />
+                options={[{ value: 'break', label: labels.wordOptionLineBreaksBreak }, { value: 'space', label: labels.wordOptionLineBreaksSpace }, { value: 'paragraph', label: labels.wordOptionLineBreaksParagraph }]} />
             ))}
             {optionRow(labels.wordOptionDirect, (
               <Select size="sm" value={working.options.directFormatting} onValueChange={(v) => setOption('directFormatting', v)} ariaLabel={labels.wordOptionDirect}

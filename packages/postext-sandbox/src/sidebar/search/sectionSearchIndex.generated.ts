@@ -1007,6 +1007,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'bodyGroupVerse',
       'bodyHangingIndent',
       'bodyHangingIndentTooltip',
+      'bodyHardLineBreaks',
+      'bodyHardLineBreaksTooltip',
       'bodyHyphenateAcrossColumns',
       'bodyHyphenateAcrossColumnsTooltip',
       'bodyHyphenateCompounds',

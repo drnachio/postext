@@ -13,6 +13,7 @@ import { chipHighlight, chipTheme } from './chipSyntax';
 import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { verseHighlight, verseTheme } from './verseSyntax';
+import { hardBreakHighlight, hardBreakTheme } from './hardBreakSyntax';
 import { comicHighlight, comicTheme } from './comicSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
@@ -101,6 +102,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       orientationHighlight,
       verseTheme,
       verseHighlight,
+      hardBreakTheme,
+      hardBreakHighlight,
       comicTheme,
       comicHighlight,
       annotationTheme,

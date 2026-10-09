@@ -835,6 +835,8 @@ export interface SandboxLabels {
   bodyBreakAfterDashesTooltip: string;
   bodyBreakAfterHyphens: string;
   bodyBreakAfterHyphensTooltip: string;
+  bodyHardLineBreaks: string;
+  bodyHardLineBreaksTooltip: string;
   bodyRepeatHyphen: string;
   bodyRepeatHyphenTooltip: string;
   bodyGroupBlockquotes: string;
@@ -3287,6 +3289,7 @@ export interface SandboxLabels {
   wordOptionLineBreaks: string;
   wordOptionLineBreaksSpace: string;
   wordOptionLineBreaksParagraph: string;
+  wordOptionLineBreaksBreak: string;
   wordOptionDirect: string;
   wordOptionDirectKeep: string;
   wordOptionDirectIgnore: string;

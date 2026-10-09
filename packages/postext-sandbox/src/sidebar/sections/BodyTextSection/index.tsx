@@ -330,6 +330,14 @@ export const BodyTextSection = memo(function BodyTextSection() {
           onReset={() => resetField('breakAfterHyphens')}
         />
         <ToggleSwitch
+          label={labels.bodyHardLineBreaks}
+          checked={bodyText.hardLineBreaks}
+          onChange={(checked) => updateBodyText({ hardLineBreaks: checked })}
+          tooltip={labels.bodyHardLineBreaksTooltip}
+          isDefault={bodyText.hardLineBreaks === D.hardLineBreaks}
+          onReset={() => resetField('hardLineBreaks')}
+        />
+        <ToggleSwitch
           label={labels.bodyRepeatHyphen}
           checked={bodyText.repeatHyphen}
           onChange={(checked) => updateBodyText({ repeatHyphen: checked })}
