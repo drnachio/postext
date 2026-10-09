@@ -84,6 +84,14 @@ export function lineWidthAt(maxWidthPx: number, options: MeasureBlockOptions | u
   return lineMeasure(maxWidthPx, options?.restWidths, li) - end - lineStartAt(options, li);
 }
 
+/** {@link lineWidthAt} as a function of the line, its values kept as they
+ *  are computed: Knuth–Plass asks for the width of the same lines over and
+ *  over. One per measurement (the options do not change in it). */
+export function lineWidthFunction(maxWidthPx: number, options: MeasureBlockOptions | undefined): (li: number) => number {
+  const known: number[] = [];
+  return (li) => known[li] ?? (known[li] = lineWidthAt(maxWidthPx, options, li));
+}
+
 /** Give each line set short beside a picture (`lineInsets`, #627) its
  *  span (`VDTLine.measure`, flagged `wrap`): from its start (`bbox.x`, its
  *  inset and indent) to its measure less its end inset. Renderers justify

@@ -13,7 +13,7 @@ import {
   reconstructRichLines,
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
-import { lineStartAt, lineWidthAt, markInsetLines, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineStartAt, lineWidthAt, lineWidthFunction, markInsetLines, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
@@ -1701,7 +1701,7 @@ function measureRichText(
     // The runt threshold counts word spaces on ragged text too.
     const spaceWidth = ragged ? normalSpaceWidthFor(normalFont) + letterSpacingPx : normalSpaceWidth;
     const items = richTokensToItems(tokens, spaceWidth, maxStretchRatio, minShrinkRatio, repeatHyphen);
-    const lineWidthFn = (li: number) => lineWidthAt(maxWidthPx, options, li);
+    const lineWidthFn = lineWidthFunction(maxWidthPx, options);
     const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
     const runtMinWidth = runtPenalty > 0

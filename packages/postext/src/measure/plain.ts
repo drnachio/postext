@@ -16,7 +16,7 @@ import {
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
-import { lineStartAt, lineWidthAt, markInsetLines, maxLineIndent, maxLineInset, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineStartAt, lineWidthAt, lineWidthFunction, markInsetLines, maxLineIndent, maxLineInset, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
@@ -322,7 +322,7 @@ export function measureBlock(
     const hardHyphens = ragged || options.breakAfterHyphens === true || keepCompounds;
     const dotWidth = geminateDotWidth(text, font);
     const items = pretextSegmentsToItems(prepared, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2, dotWidth);
-    const lineWidthFn = (li: number) => lineWidthAt(maxWidthPx, options, li);
+    const lineWidthFn = lineWidthFunction(maxWidthPx, options);
     const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
     const runtMinWidth = runtPenalty > 0
