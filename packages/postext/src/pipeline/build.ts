@@ -119,7 +119,7 @@ import {
   prevNonMarkerBlock,
   rollbackTrailingBlocks,
 } from './buildHelpers';
-import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
+import { measureContentBlock, type BlockMeasureContext, type DropCapNote, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
 import { containerStyle, paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
 import {
   appendChapterEndNotes,
@@ -197,7 +197,8 @@ import {
   type BandCapZone,
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
-import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { cjkLooseLineWarnings, collectContentWarnings, dropCapWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { dropCapSinkAfter } from './dropCap';
 import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
 import { annotateArabicMarks } from '../arabicMarks';
@@ -2243,6 +2244,8 @@ function placeDocumentPass(
   /** Blocks whose style tracks text of a joining script, which is set
    *  untracked (see `BlockMeasureContext.joiningLetterSpacing`). */
   const joiningLetterSpacing = new Set<number>();
+  /** Paragraphs whose drop cap could not be set as configured (#623). */
+  const dropCapNotes = new Map<number, DropCapNote>();
   // Everything per-block measurement needs that is constant for this pass.
   const measureCtx: BlockMeasureContext = {
     resolved,
@@ -2268,6 +2271,7 @@ function placeDocumentPass(
     floatedIds,
     leftFlow: calloutsOutOfFlow,
     joiningLetterSpacing,
+    dropCapNotes,
     ...(footnoteNumbering.numbers.size > 0 ? { footnoteNumbers: footnoteNumbering.numbers } : {}),
     ...(anchorRefContext ? { anchorRefs: anchorRefContext } : {}),
   };
@@ -5238,6 +5242,10 @@ function placeDocumentPass(
     }
     if (!measuredBlock) continue;
     const { kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender } = measuredBlock;
+    /** The drop cap opening the paragraph (#623): stamped on the fragment
+     *  that holds its first line. A paragraph broken again for a column of
+     *  another width takes the one of that setting. */
+    let capInfo = measuredBlock.dropCap;
     /** Tracking the block's lines are set with; a paragraph moved whole into
      *  a column of another width is measured again, and may change it. */
     let { letterSpacingPx } = measuredBlock;
@@ -5328,6 +5336,31 @@ function placeDocumentPass(
 
 
     const finalizeListItem = (blk: VDTBlock, isFirstPart: boolean) => {
+      // The drop cap (#623) stands on the baseline of the line it sinks to,
+      // beside the first fragment only.
+      const capLine = blk.lines[0];
+      if (isFirstPart && capInfo && capLine) {
+        const cap = capInfo;
+        blk.dropCap = {
+          text: cap.text,
+          fontString: cap.fontString,
+          color: cap.color,
+          x: blk.bbox.x + cap.x,
+          baselineY: capLine.baseline + (cap.sink - 1) * style.lineHeightPx,
+          width: cap.width,
+          fontSizePx: cap.fontSizePx,
+          lines: cap.lines,
+          sink: cap.sink,
+          ...(cap.sourceStart !== undefined ? { sourceStart: cap.sourceStart, sourceEnd: cap.sourceEnd } : {}),
+          plainStart: cap.plainStart,
+          plainEnd: cap.plainEnd,
+          word: cap.word,
+          wordRest: cap.wordRest,
+          ...(cap.hang ? { hang: { text: cap.hang.text, fontString: cap.hang.fontString, x: blk.bbox.x + cap.hang.x, baselineY: capLine.baseline, width: cap.hang.width } } : {}),
+        };
+        // The block's source range starts at the initial.
+        if (cap.sourceStart !== undefined && (blk.sourceStart === undefined || cap.sourceStart < blk.sourceStart)) blk.sourceStart = cap.sourceStart;
+      }
       if (!listBullet) return;
       blk.listDepth = listDepth;
       blk.listKind = listKind;
@@ -5483,6 +5516,7 @@ function placeDocumentPass(
           // Nothing placed yet: the whole block, for this column.
           const again = measureContentBlock(rawBlock, blockIdx, curCol.bbox.width, blockMeasureCtx, { styleOverride });
           if (again && again.measured.lines.length > 0) {
+            capInfo = again.dropCap;
             brokenForWidth = curCol.bbox.width;
             laterWidths = [];
             letterSpacingPx = again.letterSpacingPx;
@@ -5615,6 +5649,11 @@ function placeDocumentPass(
           balancing = { levers: [vdtType === 'heading' ? 'heading' : 'afterFloat'], spaceAbove: extraPx };
         }
       }
+      // A raised initial (#623) keeps its rise clear above the paragraph,
+      // in whole grid lines.
+      if (partIndex === 0 && capInfo && capInfo.rise > 0.5) {
+        spacingBefore += Math.ceil((capInfo.rise - 0.5) / baselineGrid) * baselineGrid;
+      }
       // A loose paragraph's extra line is balancing height too (it lands
       // whole in this column — loose candidates are never split parts).
       const looseTracking = looseOutcome.get(blockIdx);
@@ -5654,6 +5693,11 @@ function placeDocumentPass(
       // actual content bottom so the reserved block height (and the
       // subsequent marginBottom + grid snap) starts from there.
       let effectiveRemainHeight = totalRemainHeight;
+      // A paragraph shorter than its drop cap sinks (#623, `'reserve'`):
+      // the block keeps the room under the initial.
+      if (partIndex === 0 && capInfo && capInfo.minLines > remainingLines.length) {
+        effectiveRemainHeight = capInfo.minLines * style.lineHeightPx;
+      }
       /** How far the lines of a 行取り heading go down its band (#424). */
       let lineSpanShift = 0;
       if (lineSpan !== undefined && partIndex === 0) {
@@ -5953,9 +5997,11 @@ function placeDocumentPass(
             ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
             : naturalBottom;
           const remainAfterHeading = curCol.bbox.height - snappedBottom;
-          const minLinesNeeded = resolved.bodyText.avoidWidows
-            ? Math.max(1, resolved.bodyText.widowMinLines)
-            : 1;
+          // A drop cap opening the text (#623) needs its lines under it.
+          const minLinesNeeded = Math.max(
+            resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1,
+            dropCapSinkAfter(blockIdx, blockMeasureCtx),
+          );
           // A `:::space` between the heading and its text needs room too.
           const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx
             + spaceLinesAfter(contentBlocks, blockIdx) * baselineGrid;
@@ -6113,7 +6159,8 @@ function placeDocumentPass(
         // (the no-fit branch below rolls it back).
         const headingRun = partIndex === 0 ? trailingHeadingRun(curCol) : 0;
         if (choice.splitAt === 0 && headingRun > 0 && headingRun < curCol.blocks.length) {
-          const minKeep = effectiveAvoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
+          // A drop cap's lines stay with it (#623).
+          const minKeep = Math.max(effectiveAvoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1, partIndex === 0 && capInfo ? capInfo.sink : 1);
           const minTail = effectiveAvoidOrphans && resolved.headings.keepWithNextSplit === 'rules'
             ? Math.max(1, resolved.bodyText.orphanMinLines)
             : 1;
@@ -6244,6 +6291,14 @@ function placeDocumentPass(
         // poem cannot leave, after its first line at least.
         while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameVerseLine(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
           choice = { splitAt: choice.splitAt - 1, demerit: choice.demerit };
+        }
+        // A paragraph a drop cap opens never breaks before the initial's
+        // last line (#623): it moves on whole, unless it is alone in an
+        // empty column too short for those lines, where it breaks all the
+        // same (and says so).
+        if (partIndex === 0 && capInfo && choice.splitAt > 0 && choice.splitAt < Math.min(capInfo.sink, remainingLines.length)) {
+          if (curCol.blocks.length > 0) choice = { splitAt: 0, demerit: choice.demerit };
+          else blockMeasureCtx.dropCapNotes?.set(blockIdx, { reason: 'split' });
         }
         // A stanza `keepStanzas` covers (a haiku, a tanka) moves on whole,
         // unless the column is empty: it cannot do better anywhere.
@@ -6526,6 +6581,7 @@ function placeDocumentPass(
   doc.converged = true;
   doc.iterationCount = 1;
   if (joiningLetterSpacing.size > 0) joiningSpacingWarnings.set(doc, joiningLetterSpacingWarnings(doc, joiningLetterSpacing));
+  if (dropCapNotes.size > 0) dropCapWarningsByDoc.set(doc, dropCapWarnings(doc, dropCapNotes));
 
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
 }
@@ -6604,7 +6660,7 @@ export function* buildDocumentGen(
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
-  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...lineNumberWarnings(doc)];
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc)];
   // Comic panels whose cell cannot hold their picture's safe area (#556).
   for (const page of doc.pages) {
     if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
@@ -6640,6 +6696,8 @@ const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 /** The `joiningScriptLetterSpacing` warnings of the last pass, per
  *  document. */
 const joiningSpacingWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
+/** The `dropCap` warnings of the last pass, per document (#623). */
+const dropCapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {

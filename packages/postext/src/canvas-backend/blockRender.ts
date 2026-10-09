@@ -1,4 +1,4 @@
-import type { VDTBlock, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
+import type { VDTBlock, VDTDropCap, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
 import { leaderRuleGeometry, lineTextAlign } from '../vdt';
 import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
@@ -537,6 +537,21 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.restore();
 }
 
+/** A paragraph's drop cap (#623) on its baseline, and an opening mark
+ *  hung before it at text size. */
+function renderDropCap(ctx: CanvasRenderingContext2D, cap: VDTDropCap): void {
+  ctx.save();
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = cap.color;
+  ctx.font = cap.fontString;
+  fillFlowText(ctx, cap.text, cap.x, cap.baselineY);
+  if (cap.hang) {
+    ctx.font = cap.hang.fontString;
+    fillFlowText(ctx, cap.hang.text, cap.hang.x, cap.hang.baselineY);
+  }
+  ctx.restore();
+}
+
 function renderStrikethrough(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   if (!block.strikethroughText) return;
   ctx.save();
@@ -607,6 +622,7 @@ export function renderBlock(
   if (block.type === 'listItem') {
     renderBullet(ctx, block);
   }
+  if (block.dropCap) renderDropCap(ctx, block.dropCap);
   const style: BlockTextStyle = {
     font: block.fontString,
     boldFont: block.boldFontString,

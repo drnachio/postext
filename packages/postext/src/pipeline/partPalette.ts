@@ -43,7 +43,7 @@ const TABLE_KEYS = [
 /** The colour of a block's text a setting sets: its running text, bold and
  *  italic runs, references, list marker (a bullet or a number), or a
  *  number's separator. */
-export type TextColorRole = 'color' | 'bold' | 'italic' | 'ref' | 'bullet' | 'separator';
+export type TextColorRole = 'color' | 'bold' | 'italic' | 'ref' | 'bullet' | 'separator' | 'dropCap';
 
 /** The colours of a contents row: the entry's text (bold and italic runs
  *  included), its number, and its page number and subtitle. */
@@ -139,6 +139,9 @@ function frameRoles(rest: string): FrameColorRole[] {
  *  at `path` sets: none for a design, the page, the debug overlay… */
 function kindsOfPath(path: readonly string[], cfg: ResolvedConfig): FlowColorKind[] {
   if (path.some((k) => DESIGN_KEYS.has(k))) return [];
+  // A body paragraph's drop cap (#623), set by a paragraph style or a
+  // heading level or style.
+  if (path.includes('dropCap')) return ['text:dropCap'];
   const [top, second] = path;
   const index = Number(second);
   // The setting inside a style, indices left out (`note.color`).
@@ -397,6 +400,8 @@ function recolorBlock(block: VDTBlock, r: PageRemaps): void {
   // A run with a colour of its own: a contents entry's page number or
   // subtitle.
   recolorLines(block.lines, r.by(toc ? [['toc:segment']] : heading ?? []), r);
+  // A drop cap (#623): its own setting's colour, or the paragraph's.
+  if (block.dropCap) block.dropCap.color = r.by([['text:dropCap'], ['text:color']])(block.dropCap.color) ?? block.dropCap.color;
   // A callout frame's decoration (background, border, stripe, title) is a
   // design overlay resolved from the style's palette-linked colours.
   if (block.type === 'callout' && block.designOverlay) recolorFrame(block.designOverlay.blocks, block.callout?.styleId, r);

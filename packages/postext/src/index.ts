@@ -228,6 +228,10 @@ export type {
   ResolvedParagraphStyleConfig,
   ParagraphTextTransform,
   TabStop,
+  ParagraphDropCap,
+  DropCapLeadIn,
+  DropCapPunctuation,
+  DropCapShortParagraph,
   TabStopAlign,
   TabStopPosition,
   CalloutStyleConfig,
@@ -464,6 +468,7 @@ export type {
   VDTComicBalloon,
   VDTComicPage,
   VDTStripCaption,
+  VDTDropCap,
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
 export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, pageIsMirrored, verticalFlowOf, lineTextAlign, leaderRuleGeometry, DEFAULT_CENTRAL_BASELINE } from './vdt';

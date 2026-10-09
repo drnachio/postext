@@ -18,8 +18,8 @@ function familyOf(fontString: string): string | null {
 }
 
 /** The font families the text of a laid-out document is set in (blocks,
- *  their segments, the header, footer and opener designs, the line
- *  numbers, and the
+ *  their segments and drop caps, the header, footer and opener designs,
+ *  the line numbers, and the
  *  lettering of comic pages). */
 export function documentFontFamilies(doc: VDTDocument): string[] {
   const families = new Set<string>();
@@ -31,6 +31,9 @@ export function documentFontFamilies(doc: VDTDocument): string[] {
     if (block.lines.length === 0) continue;
     add(block.fontString);
     for (const line of block.lines) for (const seg of line.segments ?? []) add(seg.fontString);
+    // A drop cap's face (#623), and its hung mark's.
+    add(block.dropCap?.fontString);
+    add(block.dropCap?.hang?.fontString);
   }
   for (const page of doc.pages) {
     for (const slot of [page.header, page.footer, page.openerBand, page.lineNumbers]) {

@@ -5,6 +5,7 @@ import type {
   ResolvedBodyTextConfig,
 } from '../types';
 import { dimensionsEqual, startEndAsLeftRight } from './shared';
+import { isDropCap } from './dropCap';
 
 /** No paragraph styles ship by default — a document declares its own. */
 export const DEFAULT_PARAGRAPH_STYLES: ParagraphStyleConfig[] = [];
@@ -54,6 +55,8 @@ function resolveParagraphStyleConfig(
     // Absent unless set: the paragraphs take the body's tab stops (#622).
     ...(Array.isArray(partial.tabStops) ? { tabStops: partial.tabStops } : {}),
     ...(partial.tabInterval ? { tabInterval: partial.tabInterval } : {}),
+    // Absent unless set: no drop cap (#623).
+    ...(isDropCap(partial.dropCap) ? { dropCap: partial.dropCap } : {}),
   };
 }
 
@@ -101,6 +104,7 @@ export function stripParagraphStylesDefaults(
     if (s.lineNumbers !== undefined) r.lineNumbers = s.lineNumbers;
     if (Array.isArray(s.tabStops)) r.tabStops = s.tabStops;
     if (s.tabInterval !== undefined) r.tabInterval = s.tabInterval;
+    if (isDropCap(s.dropCap)) r.dropCap = s.dropCap;
     return r;
   });
 }

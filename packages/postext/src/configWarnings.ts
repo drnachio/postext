@@ -25,6 +25,8 @@ import type {
   LineNumbersConfig,
   ResolvedLineNumbersConfig,
   TabStop,
+  ParagraphDropCap,
+  DropCapLeadIn,
 } from './types';
 import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
@@ -40,6 +42,7 @@ import { parseFootnoteNumberFormat } from './defaults/footnotes';
 import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics';
 import { resolvePrintConfig } from './defaults/print';
 import { isTabStopAlign, parseTabStopPosition } from './defaults/tabStops';
+import { DROP_CAP_PUNCTUATION, DROP_CAP_SHORT_PARAGRAPH, isDropCap, readDropCap } from './defaults/dropCap';
 import { outputProfileInfo } from './color/catalogue';
 import { LINE_NUMBERS_ALIGNS, LINE_NUMBERS_COUNTS, LINE_NUMBERS_MULTI_COLUMN, LINE_NUMBERS_POSITIONS, LINE_NUMBERS_RESTARTS } from './defaults/lineNumbers';
 
@@ -128,6 +131,52 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   out.push(...collectPrintChoiceWarnings(config));
   out.push(...collectLineNumbersWarnings(config));
   out.push(...collectTabStopWarnings(config));
+  out.push(...collectDropCapWarnings(config));
+  return out;
+}
+
+/** The drop cap settings of a config (#623): each paragraph style's, each
+ *  heading level's and each heading style's (and those of the HTML
+ *  viewer's overrides), with their paths. */
+function dropCapSettings(config: PostextConfig): { cap: ParagraphDropCap; path: string }[] {
+  const out: { cap: ParagraphDropCap; path: string }[] = [];
+  const add = (cap: unknown, path: string) => {
+    if (isDropCap(cap)) out.push({ cap, path });
+  };
+  const from = (c: Pick<PostextConfig, 'headings' | 'headingStyles' | 'paragraphStyles'> | undefined, prefix: string) => {
+    if (!c) return;
+    (c.paragraphStyles ?? []).forEach((s, i) => add((s as { dropCap?: unknown } | undefined)?.dropCap, `${prefix}paragraphStyles[${i}].dropCap`));
+    const levels = (c.headings as { levels?: unknown } | undefined)?.levels;
+    if (Array.isArray(levels)) levels.forEach((l, i) => add((l as { dropCap?: unknown } | undefined)?.dropCap, `${prefix}headings.levels[${i}].dropCap`));
+    (c.headingStyles ?? []).forEach((s, i) => add((s as { dropCap?: unknown } | undefined)?.dropCap, `${prefix}headingStyles[${i}].dropCap`));
+  };
+  from(config, '');
+  from(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
+  return out;
+}
+
+/** A drop cap whose `punctuation` or `shortParagraph` is not one of its
+ *  words, or whose `lines`, `sink` or `characters` is no whole number from
+ *  1 (#623): the default is used. */
+function collectDropCapWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  for (const { cap, path } of dropCapSettings(config)) {
+    const read = readDropCap(cap);
+    if (cap.punctuation !== undefined && !(DROP_CAP_PUNCTUATION as readonly unknown[]).includes(cap.punctuation)) {
+      const suggestion = closestKey(String(cap.punctuation), DROP_CAP_PUNCTUATION);
+      out.push({ kind: 'unknownConfigValue', path: `${path}.punctuation`, value: String(cap.punctuation), used: read.punctuation, ...(suggestion ? { suggestion } : {}) });
+    }
+    if (cap.shortParagraph !== undefined && !(DROP_CAP_SHORT_PARAGRAPH as readonly unknown[]).includes(cap.shortParagraph)) {
+      const suggestion = closestKey(String(cap.shortParagraph), DROP_CAP_SHORT_PARAGRAPH);
+      out.push({ kind: 'unknownConfigValue', path: `${path}.shortParagraph`, value: String(cap.shortParagraph), used: read.shortParagraph, ...(suggestion ? { suggestion } : {}) });
+    }
+    for (const key of ['lines', 'sink', 'characters'] as const) {
+      const v: unknown = cap[key];
+      if (v !== undefined && !(typeof v === 'number' && Number.isFinite(v) && v >= 1)) {
+        out.push({ kind: 'unknownConfigValue', path: `${path}.${key}`, value: String(v), used: String(read[key]) });
+      }
+    }
+  }
   return out;
 }
 
@@ -299,7 +348,7 @@ const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
   marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, spanBreak: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
-  lineSpan: true, indent: true, jidori: true,
+  lineSpan: true, indent: true, jidori: true, dropCap: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
@@ -307,14 +356,21 @@ const HEADING_STYLE_KEYS = {
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
   marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true, spanBreak: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, lineSpan: true, indent: true, jidori: true,
+  dropCap: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {
   id: true, name: true, fontFamily: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
   hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
   marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true, lineNumbers: true,
-  tabStops: true, tabInterval: true,
+  tabStops: true, tabInterval: true, dropCap: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
+// A body paragraph's drop cap (#623) and its lead-in.
+const DROP_CAP_KEYS = {
+  lines: true, sink: true, characters: true, fontFamily: true, fontWeight: true, italic: true, fontSize: true,
+  color: true, gap: true, punctuation: true, leadIn: true, shortParagraph: true, each: true,
+} satisfies Record<keyof ParagraphDropCap, true>;
+const DROP_CAP_LEAD_IN_KEYS = { words: true, smallCaps: true, uppercase: true } satisfies Record<keyof DropCapLeadIn, true>;
 // A tab stop (#622).
 const TAB_STOP_KEYS = {
   position: true, align: true, leader: true, leaderGap: true, decimalChar: true,
@@ -422,6 +478,10 @@ function collectUnknownKeyWarnings(config: PostextConfig): ConfigWarning[] {
   checkConfig(config, '');
   checkConfig(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
   for (const { stops, path } of tabStopLists(config)) stops.forEach((st, i) => check(st, TAB_STOP_KEYS, `${path}[${i}]`));
+  for (const { cap, path } of dropCapSettings(config)) {
+    check(cap, DROP_CAP_KEYS, path);
+    check(cap.leadIn, DROP_CAP_LEAD_IN_KEYS, `${path}.leadIn`);
+  }
   check(config.lineNumbers, LINE_NUMBERS_KEYS, 'lineNumbers');
   // Comics: the section, its frame, gutters, panel styles, lettering,
   // balloon styles and cast.

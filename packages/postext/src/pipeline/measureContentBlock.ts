@@ -42,6 +42,8 @@ import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
 import { startEndAsLeftRight } from '../defaults/shared';
 import { prepareTabs } from './tabs';
+import { fullPlainOffset, paragraphDropCap, prepareDropCap, type MeasuredDropCap, type PreparedDropCap } from './dropCap';
+import { lineIndentAt } from '../measure/types';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -79,6 +81,18 @@ export interface BlockMeasureContext
    *  script (Arabic…), which is set without it. The build reports them
    *  (`joiningScriptLetterSpacing`). */
   joiningLetterSpacing?: Set<number>;
+  /** Filled by the measurement: the content indices of the paragraphs a
+   *  drop cap was meant to open and could not as configured (#623), and
+   *  why; the build reports them (`dropCap` content warnings). */
+  dropCapNotes?: Map<number, DropCapNote>;
+}
+
+/** Why a paragraph's drop cap was not set as configured (see
+ *  `BlockMeasureContext.dropCapNotes`). */
+export interface DropCapNote {
+  reason: 'shortParagraph' | 'joiningScript' | 'verticalText' | 'noLetter' | 'split';
+  handling?: 'reserve' | 'shrink' | 'skip';
+  lines?: number;
 }
 
 /** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
@@ -108,6 +122,9 @@ export interface MeasuredContentBlock {
   /** Tracking the text was measured with (px per glyph), when column
    *  balancing asked for it — renderers must paint the block with it. */
   letterSpacingPx?: number;
+  /** A paragraph a drop cap opens (#623): the letter, relative to the
+   *  column. Its lines were set short of it. */
+  dropCap?: MeasuredDropCap;
 }
 
 export interface MeasureContentBlockOptions {
@@ -141,6 +158,11 @@ export interface MeasureContentBlockOptions {
    *  `columnWidth` px wide (see `MeasureBlockOptions.restWidths`). Such a
    *  measurement is not cached. */
   restColumnWidths?: readonly { fromLine: number; columnWidth: number }[];
+  /** Internal to the drop cap (#623): the paragraph measured again set
+   *  without it (`skip`), with the initial over `lines` lines (a short
+   *  paragraph's `'shrink'`), or with a lead-in of `leadInWords` words
+   *  (the first line's, counted by the first setting). */
+  dropCap?: { skip?: true; lines?: number; leadInWords?: number };
 }
 
 /**
@@ -326,6 +348,25 @@ export function measureContentBlock(
   const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
   const prepared = prepareTabs(contentBlock, style, resolved, { vertical, rich: hasRichFonts });
   contentBlock = prepared.block;
+  // A drop cap (#623): the initial comes out of the text the measurers
+  // break, and the lines it stands beside are indented by it.
+  let dropCap: PreparedDropCap | undefined;
+  const capSettings = vdtType === 'paragraph' && !opts?.dropCap?.skip ? paragraphDropCap(rawBlock, blockIdx, style, ctx) : undefined;
+  if (capSettings) {
+    if (!opts?.dropCap) ctx.dropCapNotes?.delete(blockIdx);
+    const shrunk = opts?.dropCap?.lines;
+    const settings = shrunk !== undefined ? { ...capSettings, lines: shrunk, sink: Math.min(capSettings.sink, shrunk) } : capSettings;
+    if (vertical) {
+      ctx.dropCapNotes?.set(blockIdx, { reason: 'verticalText' });
+    } else {
+      const prep = prepareDropCap(contentBlock, settings, style, resolved, opts?.dropCap?.leadInWords);
+      if (typeof prep === 'string') ctx.dropCapNotes?.set(blockIdx, { reason: prep });
+      else {
+        dropCap = prep;
+        contentBlock = prep.block;
+      }
+    }
+  }
   const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab || s.tab
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline || s.kunten
     // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
@@ -462,6 +503,15 @@ export function measureContentBlock(
   // The paragraph's base direction: its own (`{dir=…}`), else the
   // document's (`setMeasureDirection`). Passed only when the block sets
   // one, so the measurements of every other block keep their cache keys.
+  // The drop cap's lines (#623): its width and gap on each line it sinks,
+  // the paragraph's own indents after them (its first-line indent dropped).
+  const capIndents = dropCap
+    ? (() => {
+      const base = { firstLineIndentPx: effectiveFirstLineIndent, hangingIndent: measureHangingIndent, ...(measureLineIndents ? { lineIndentsPx: measureLineIndents } : {}) };
+      const after = dropCap.sink === 0 ? 0 : lineIndentAt(base, dropCap.sink);
+      return [...dropCap.indents, measureHangingIndent || measureLineIndents ? after : 0];
+    })()
+    : undefined;
   const measureOptions = {
     ...(contentBlock.direction !== undefined ? { direction: contentBlock.direction } : {}),
     textAlign: style.textAlign,
@@ -469,14 +519,15 @@ export function measureContentBlock(
     // A paragraph style's own `wordBreak`: passed only when set, so the
     // measurements of every other block keep their cache keys.
     ...(style.cjkWordBreak !== undefined ? { cjkWordBreak: style.cjkWordBreak } : {}),
-    firstLineIndentPx: effectiveFirstLineIndent,
-    hangingIndent: measureHangingIndent,
-    // A first-line indent paired with a hanging one (#620): passed only
-    // then, so every other block keeps its cache key.
-    ...(measureLineIndents ? { lineIndentsPx: measureLineIndents } : {}),
+    firstLineIndentPx: capIndents ? 0 : effectiveFirstLineIndent,
+    hangingIndent: capIndents ? false : measureHangingIndent,
+    // A first-line indent paired with a hanging one (#620), or the lines a
+    // drop cap shortens (#623): passed only then, so every other block
+    // keeps its cache key.
+    ...(capIndents ? { lineIndentsPx: capIndents } : measureLineIndents ? { lineIndentsPx: measureLineIndents } : {}),
     // A numbered bibliography entry (#290): its label in a column as wide
     // as the turnover lines' indent.
-    ...(measureHangingIndent && !measureLineIndents && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
+    ...(measureHangingIndent && !measureLineIndents && !capIndents && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
     // Tab stops (#622): passed only to a block that holds a tab.
     ...(prepared.tabs ? { tabs: prepared.tabs } : {}),
     optimal: resolved.bodyText.optimalLineBreaking,
@@ -614,6 +665,24 @@ export function measureContentBlock(
 
   if (measured.lines.length === 0) return null;
 
+  if (dropCap) {
+    // A lead-in of the whole first line: its words, counted on this
+    // setting, set again in small capitals (two settings at most).
+    if (dropCap.settings.leadIn?.words === 'line' && opts?.dropCap?.leadInWords === undefined) {
+      const first = measured.lines[0]!;
+      const words = first.text.trim().split(/\s+/).filter((w) => w.length > 0).length - (first.hyphenated && measured.lines.length > 1 ? 1 : 0);
+      return measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, dropCap: { ...opts?.dropCap, leadInWords: Math.max(1, words) } });
+    }
+    // A paragraph of fewer lines than the initial sinks.
+    const n = measured.lines.length;
+    if (n < dropCap.sink && opts?.dropCap?.lines === undefined) {
+      const handling = dropCap.settings.shortParagraph;
+      ctx.dropCapNotes?.set(blockIdx, { reason: 'shortParagraph', handling, ...(handling === 'shrink' ? { lines: n } : {}) });
+      if (handling === 'skip') return measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, dropCap: { skip: true } });
+      if (handling === 'shrink') return measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, dropCap: { ...opts?.dropCap, lines: n } });
+    }
+  }
+
   // A callout style's end mark (a proof's ∎, #530): flush right on the
   // last line.
   if (contentBlock.endMark !== undefined) measured = flushEndMark(measured, contentBlock.endMark, measureMaxWidth);
@@ -643,6 +712,53 @@ export function measureContentBlock(
 
   // Per-line source-range mapping using the block's plain→source map.
   // Accounts for heading numbering prefix which prepends chars with no source.
+  if (dropCap) {
+    // The lines were cut from the text without the initial: they are
+    // stamped against it, and their plain offsets then count past it, so
+    // they index the paragraph's own text and source map.
+    const { start, end } = dropCap.removed;
+    const strippedRaw: ContentBlock = {
+      ...rawBlock,
+      text: rawBlock.text.slice(0, start) + rawBlock.text.slice(end),
+      sourceMap: [...rawBlock.sourceMap.slice(0, start), ...rawBlock.sourceMap.slice(end)],
+      sourceStart: start === 0 ? rawBlock.sourceMap[end] ?? rawBlock.sourceStart : rawBlock.sourceStart,
+    };
+    stampSourceRanges(measured, strippedRaw, contentBlock, bodyOffset, ctx.source);
+    for (const line of measured.lines) {
+      if (line.plainStart !== undefined) line.plainStart = fullPlainOffset(dropCap, line.plainStart);
+      if (line.plainEnd !== undefined) line.plainEnd = fullPlainOffset(dropCap, line.plainEnd);
+    }
+    const map = rawBlock.sourceMap;
+    const width = dropCap.width;
+    const capX = (opposite ? measureMaxWidth - width : 0) + xShift;
+    const placed: MeasuredDropCap = {
+      text: dropCap.text,
+      fontString: dropCap.fontString,
+      fontSizePx: dropCap.fontSizePx,
+      color: dropCap.color,
+      width,
+      x: capX,
+      lines: dropCap.lines,
+      sink: dropCap.sink,
+      rise: dropCap.rise,
+      minLines: dropCap.settings.shortParagraph === 'reserve' ? dropCap.sink : 0,
+      plainStart: dropCap.plainStart,
+      plainEnd: dropCap.plainEnd,
+      // From the block's start when it opens the paragraph (markup before
+      // the letter, `**L`, included), so the block's range is unchanged.
+      ...(map.length > dropCap.plainStart
+        ? { sourceStart: (dropCap.plainStart === 0 ? rawBlock.sourceStart : map[dropCap.plainStart]!) + bodyOffset, sourceEnd: map[dropCap.plainEnd - 1]! + 1 + bodyOffset }
+        : {}),
+      word: dropCap.word,
+      wordRest: dropCap.wordRest,
+      ...(dropCap.hang ? { hang: { ...dropCap.hang, x: opposite ? capX + width : capX - dropCap.hang.width } } : {}),
+    };
+    return {
+      kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: rawBlock.sourceMap.map((o) => o + bodyOffset), mathDisplayRender,
+      ...(trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}),
+      dropCap: placed,
+    };
+  }
   const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset, ctx.source);
 
   return {

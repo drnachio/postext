@@ -4,6 +4,7 @@ import type {
   VDTPage,
   VDTComicPage,
   VDTBlock,
+  VDTDropCap,
   VDTLine,
   VDTLineSegment,
   VDTAnchor,
@@ -1212,6 +1213,9 @@ function renderLine(
   rootLang?: string,
   /** The block's line after this one (see {@link lineEndText}). */
   next?: VDTLine,
+  /** Markup set at the start of the line's box, before its text (a drop
+   *  cap, #623). */
+  lead = '',
 ): string {
   const font = quoteFontString(block.fontString);
   const strikethroughDecl = block.strikethroughText ? 'text-decoration:line-through;' : '';
@@ -1231,8 +1235,27 @@ function renderLine(
     strikethroughDecl +
     trackingDecl +
     (lineCjkDecl(line) ? CJK_TEXT_DECL : '') +
-    `">${renderSegments(line, block, targets, rootDir, rootLang, lineEndText(line, next))}</div>`
+    `">${lead}${renderSegments(line, block, targets, rootDir, rootLang, lineEndText(line, next))}</div>`
   );
+}
+
+/**
+ * A paragraph's drop cap (#623), as the first runs of its first line's box:
+ * an opening mark hung before it, then the initial, each standing on its
+ * baseline (a box in the line's font shifted down to it, the glyphs in an
+ * inner box of their own face with no line height, as a contents number
+ * sits on its line). In the markup they come right before the line's text,
+ * with nothing between, so a copy and a screen reader read the first word
+ * whole.
+ */
+function dropCapHtml(cap: VDTDropCap, line: VDTLine, lineFont: string): string {
+  const run = (text: string, font: string, x: number, baselineY: number, width: number, cls: string): string =>
+    `<span class="${cls}" style="position:absolute;left:${(x - line.bbox.x).toFixed(3)}px;top:${(baselineY - line.baseline).toFixed(3)}px;` +
+    `width:${width.toFixed(3)}px;height:${line.bbox.height}px;font:${lineFont};color:${cap.color};white-space:pre;` +
+    (hasCJK(text) ? CJK_TEXT_DECL : '') +
+    `"><span style="font:${quoteFontString(font)};line-height:0;">${esc(text)}</span></span>`;
+  const hang = cap.hang ? run(cap.hang.text, cap.hang.fontString, cap.hang.x, cap.hang.baselineY, cap.hang.width, 'pt-dropcap-hang') : '';
+  return hang + run(cap.text, cap.fontString, cap.x, cap.baselineY, cap.width, 'pt-dropcap');
 }
 
 // ---------------------------------------------------------------------------
@@ -2241,7 +2264,8 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block, options.dir));
   block.lines.forEach((line, i) => {
     const next = block.lines[i + 1];
-    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next));
+    const lead = i === 0 && block.dropCap && !v ? dropCapHtml(block.dropCap, line, quoteFontString(block.fontString)) : '';
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next, lead));
   });
   return parts.join('');
 }

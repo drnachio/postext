@@ -1382,6 +1382,50 @@ export interface ResolvedResourceBlock {
   continuesLines: VDTLine[];
 }
 
+/**
+ * A paragraph's drop cap (#623, {@link VDTBlock.dropCap}), in page
+ * coordinates of the flow frame, as a list marker's are. The block's
+ * lines do not hold it: its first line starts after it. Its plain text and
+ * source range are the paragraph's own, so the block's `sourceMap` and the
+ * first line's `plainStart` (which counts past it) read the word whole.
+ */
+export interface VDTDropCap {
+  /** The initial as printed: its letters, with an opening mark set with
+   *  the cap (`punctuation: 'with-cap'`). */
+  text: string;
+  fontString: string;
+  /** Hex. */
+  color: string;
+  /** Left edge of the initial's advance. */
+  x: number;
+  /** The baseline it stands on: that of the paragraph's line `sink`. */
+  baselineY: number;
+  /** Its advance width. */
+  width: number;
+  /** Its size (px) and how many lines it spans and sinks. */
+  fontSizePx: number;
+  lines: number;
+  sink: number;
+  /** Source range of the characters it prints (an opening mark hung or set
+   *  with it included). */
+  sourceStart?: number;
+  sourceEnd?: number;
+  /** The paragraph's plain-text range it stands for, from 0 (the first
+   *  line's `plainStart` counts past it). */
+  plainStart: number;
+  plainEnd: number;
+  /** The whole first word as the paragraph reads it, the initial
+   *  included ("Se" of "Se puso"): a tagged PDF gives it as the
+   *  `/ActualText` of the initial and the rest of the word. */
+  word: string;
+  /** How many characters of the first line's text finish that word (the
+   *  "e" of "Se"); 0 when the initial is a word of its own. */
+  wordRest: number;
+  /** An opening mark hung before the initial at text size
+   *  (`punctuation: 'hang'`), on the first line's baseline. */
+  hang?: { text: string; fontString: string; x: number; baselineY: number; width: number };
+}
+
 /** See {@link VDTBlock.stripCaption}. */
 export interface VDTStripCaption {
   /** Index of the first caption line in the block's `lines`, and how many
@@ -1563,6 +1607,10 @@ export interface VDTBlock {
   /** Absolute page X coordinate where the prefix run starts (on the
    *  bullet's `bulletY` / `bulletBaselineY`, as the separator). */
   prefixX?: number;
+  /** A drop cap opening the paragraph (#623), on the fragment that holds
+   *  its first line only: renderers paint it beside the lines, which were
+   *  set short of it. */
+  dropCap?: VDTDropCap;
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
@@ -2552,6 +2600,17 @@ export type ContentWarning = ContentWarningBase & (
    *  of that column: both are painted where they are. Points at the line
    *  it numbers; `number` is the number as printed. */
   | { kind: 'lineNumberOverlap'; number: string }
+  /** A paragraph a drop cap opens (#623) that could not take it as
+   *  configured. `reason`: `'shortParagraph'`, fewer lines than the
+   *  initial sinks (`handling` says what `shortParagraph` did: kept the
+   *  room, shrank the initial to `lines`, or left it out); `'split'`, the
+   *  paragraph broke before the initial's last line, alone in a column
+   *  too short for it; `'joiningScript'`, its first letter joins the next
+   *  (Arabic, Syriac, N'Ko) and is not set apart; `'verticalText'`, drop
+   *  caps are set in horizontal text only; `'noLetter'`, it opens with no
+   *  letter or digit to set large (a reference, a formula, a note mark).
+   *  `text` is the paragraph's first line. Found by the layout. */
+  | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

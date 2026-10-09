@@ -1,4 +1,4 @@
-import type { CjkWordBreak, Dimension, EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TabStop, TextAlign } from '../types';
+import type { CjkWordBreak, Dimension, EmphasisStyle, ParagraphDropCap, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TabStop, TextAlign } from '../types';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
@@ -77,6 +77,10 @@ export interface BlockStyle {
    *  written; `measureContentBlock` resolves them. Unset: none. */
   tabStops?: TabStop[];
   tabInterval?: Dimension;
+  /** A paragraph style's drop cap (#623), as written: the first paragraph
+   *  of a group in the style opens with it (every one with `each`).
+   *  `measureContentBlock` reads it. Unset: none. */
+  dropCap?: ParagraphDropCap;
 }
 
 /** The tab stop fields of a style (#622), absent when unset. */
@@ -337,5 +341,6 @@ export function resolveParagraphStyle(
     ...(style.textTransform === 'uppercase' ? { uppercase: true } : {}),
     ...(style.wordBreak ? { cjkWordBreak: style.wordBreak } : {}),
     ...tabFields(style.tabStops ?? body.tabStops, style.tabInterval ?? body.tabInterval),
+    ...(style.dropCap ? { dropCap: style.dropCap } : {}),
   };
 }

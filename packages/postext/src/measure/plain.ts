@@ -339,7 +339,7 @@ export function measureBlock(
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'plain' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,
-      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths),
+      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths, options.lineIndentsPx),
       trackingPerChar,
       ...(ragged ? { raggedStretch: raggedStretchPx(font) } : {}),
     });

@@ -2055,6 +2055,90 @@ export interface ResolvedVideoStyleConfig {
  *  optional and inherits the body text when unset, so a style only needs to
  *  spell out what differs from running text. See
  *  {@link ResolvedParagraphStyleConfig}. */
+/** How a drop cap treats an opening quote, `¿`, `¡` or bracket before
+ *  the letter (#623; see {@link ParagraphDropCap.punctuation}). */
+export type DropCapPunctuation = 'with-cap' | 'hang' | 'text';
+
+/** What a drop cap does in a paragraph of fewer lines than it sinks
+ *  (#623; see {@link ParagraphDropCap.shortParagraph}). */
+export type DropCapShortParagraph = 'reserve' | 'shrink' | 'skip';
+
+/** The first words after a drop cap set in small capitals or capitals
+ *  (#623; see {@link ParagraphDropCap.leadIn}). */
+export interface DropCapLeadIn {
+  /** How many words, or `'line'` for the whole first line. */
+  words?: number | 'line';
+  /** Small capitals (as `:smallcaps[…]`). Default `true` unless
+   *  {@link uppercase} is set. */
+  smallCaps?: boolean;
+  /** Capitals. Default `false`. */
+  uppercase?: boolean;
+}
+
+/**
+ * A drop cap (or a raised initial) opening a body paragraph (#623): the
+ * first letter set large at the start of the paragraph, its first
+ * {@link sink} lines shortened around it on the start side (the left in
+ * Latin text, the right in Arabic and Hebrew). The paragraph is broken,
+ * justified and hyphenated as any other, and it never breaks before its
+ * line {@link sink}, so the letter keeps its lines across columns and
+ * pages. Set by a paragraph style (the first paragraph of a
+ * `:::paragraphs{style=…}` group, or every one with {@link each}) or a
+ * heading level or style (the first body paragraph after the heading);
+ * `{dropcap}`, `{dropcap=false}` and `{dropcap=N}` on the group's fence or
+ * the heading line switch it on, off or set its lines.
+ */
+export interface ParagraphDropCap {
+  /** Lines the initial spans, from the top of its capitals to its
+   *  baseline. Default `3`; `1` with a larger {@link fontSize} is a raised
+   *  initial standing on the first baseline. */
+  lines?: number;
+  /** Lines the initial drops into the text: it stands on the baseline of
+   *  line `sink`, and those lines are shortened. Fewer than {@link lines}
+   *  raises the initial above the first line, and the paragraph keeps that
+   *  rise clear above it (whole grid lines). Default {@link lines} (a true
+   *  drop cap). */
+  sink?: number;
+  /** Grapheme clusters set large: `É`, a letter with a combining mark, a
+   *  surrogate pair each count one. Default `1`. */
+  characters?: number;
+  /** Face of the initial. Default the paragraph's. */
+  fontFamily?: string;
+  /** Default the paragraph's weight. */
+  fontWeight?: number;
+  /** Default `false`. */
+  italic?: boolean;
+  /** Size of the initial. Default: the size that sets the top of its
+   *  capitals level with the capitals of the first line while it stands
+   *  {@link lines} lines down, both cap heights measured from the faces
+   *  (0.72 of the size when a face gives none). */
+  fontSize?: Dimension;
+  /** Default the paragraph's colour; a palette-linked colour follows part
+   *  and section palettes. */
+  color?: ColorValue;
+  /** Space between the initial and the shortened lines. Default `0.15em`
+   *  of the text size. */
+  gap?: Dimension;
+  /** An opening quote, `¿`, `¡` or bracket before the letter:
+   *  `'with-cap'` sets it at the initial's size as part of it, `'hang'`
+   *  at text size outside the measure before the initial, `'text'` at text
+   *  size at the start of the first line, after the initial. Default
+   *  `'with-cap'`. */
+  punctuation?: DropCapPunctuation;
+  /** The first words after the initial in small capitals or capitals. */
+  leadIn?: DropCapLeadIn;
+  /** A paragraph of fewer lines than {@link sink}: `'reserve'` keeps the
+   *  block {@link sink} lines tall so the next block clears the initial,
+   *  `'shrink'` sets the initial over the paragraph's own lines, `'skip'`
+   *  sets the paragraph without one. A content warning says so in each
+   *  case. Default `'reserve'`. */
+  shortParagraph?: DropCapShortParagraph;
+  /** A paragraph style's drop cap opens every paragraph of its group (a
+   *  catalogue of entries), not the first only. Read on paragraph styles
+   *  alone. Default `false`. */
+  each?: boolean;
+}
+
 export interface ParagraphStyleConfig {
   /** Identifier referenced from `:::paragraphs{style="…"}`. */
   id: string;
@@ -2163,6 +2247,9 @@ export interface ParagraphStyleConfig {
   tabStops?: TabStop[];
   /** Default stops past the last of {@link tabStops}. Unset: the body's. */
   tabInterval?: Dimension;
+  /** A drop cap opening the first paragraph of each `:::paragraphs` group
+   *  in the style (#623; every paragraph with `each: true`). Unset: none. */
+  dropCap?: ParagraphDropCap;
 }
 
 /** Where a tab stop stands (#622): a length from the start edge of the
@@ -2244,6 +2331,8 @@ export interface ResolvedParagraphStyleConfig {
   tabStops?: TabStop[];
   /** Absent when the style sets none. */
   tabInterval?: Dimension;
+  /** Absent when the style sets none (#623). */
+  dropCap?: ParagraphDropCap;
 }
 
 // ---------------------------------------------------------------------------
@@ -3078,6 +3167,12 @@ export interface HeadingLevelConfig {
    *  `{jidori=N}` (`{jidori=0}` turns it off). Unset (default): no
    *  spacing. */
   jidori?: number;
+  /** A drop cap opening the first body paragraph after a heading of this
+   *  level or style (#623), found past markers, boxes that left the flow
+   *  and floated figures; never a paragraph inside a box. A heading turns
+   *  it off with `{dropcap=false}` or sets its lines with `{dropcap=N}`; a
+   *  heading style turns its level's off with `false`. Unset: none. */
+  dropCap?: ParagraphDropCap | false;
 }
 
 export type HeadingTextTransform = 'none' | 'uppercase';
@@ -3118,6 +3213,9 @@ export interface ResolvedHeadingLevelConfig {
   indent?: Dimension;
   /** Absent unless set (see {@link HeadingLevelConfig.jidori}). */
   jidori?: number;
+  /** Absent unless set (see {@link HeadingLevelConfig.dropCap}); a heading
+   *  style's `false` lays an explicit `undefined` over its level's. */
+  dropCap?: ParagraphDropCap;
 }
 
 export interface HeadingsConfig {

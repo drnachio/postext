@@ -213,5 +213,20 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
     const bodyText = resolveBodyTextConfig(config.bodyText, config.locale);
     add(primaryFontFamily(bodyText.fontFamily), { weight: typeof ln.fontWeight === 'number' ? ln.fontWeight : bodyText.fontWeight, style: ln.italic === true ? 'italic' : 'normal' });
   }
+  // Drop caps (#623) with no face of their own: the paragraph's family (a
+  // paragraph style's, else the body's), in the cap's weight and slant.
+  const capUse = (cap: unknown, family: string | undefined, weight: number | undefined): void => {
+    if (!cap || typeof cap !== 'object') return;
+    const c = cap as { fontFamily?: unknown; fontWeight?: unknown; italic?: unknown };
+    if (typeof c.fontFamily === 'string' && c.fontFamily.trim()) return;
+    const bodyText = resolveBodyTextConfig(config.bodyText, config.locale);
+    add(primaryFontFamily(family ?? bodyText.fontFamily), {
+      weight: typeof c.fontWeight === 'number' ? c.fontWeight : weight ?? bodyText.fontWeight,
+      style: c.italic === true ? 'italic' : 'normal',
+    });
+  };
+  for (const style of config.paragraphStyles ?? []) capUse(style.dropCap, style.fontFamily, style.fontWeight);
+  for (const level of config.headings?.levels ?? []) capUse(level.dropCap, undefined, undefined);
+  for (const style of config.headingStyles ?? []) capUse(style.dropCap, undefined, undefined);
   return usage;
 }

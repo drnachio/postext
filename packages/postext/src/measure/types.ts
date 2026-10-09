@@ -29,9 +29,10 @@ export function lineMeasure(maxWidthPx: number, steps: readonly LineWidthStep[] 
 }
 
 /** The line from which the measure stops changing: after the first line
- *  (its indent) and after the last step. */
-export function uniformMeasureFrom(steps: readonly LineWidthStep[] | undefined): number {
-  let from = 1;
+ *  (its indent), after the last step and after the last entry of an indent
+ *  table (`lineIndentsPx`: the lines a drop cap shortens, #623). */
+export function uniformMeasureFrom(steps: readonly LineWidthStep[] | undefined, indents?: readonly number[]): number {
+  let from = Math.max(1, (indents?.length ?? 0) - 1);
   if (steps) for (const s of steps) from = Math.max(from, s.fromLine);
   return from;
 }
