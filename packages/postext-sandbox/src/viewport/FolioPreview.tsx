@@ -2,7 +2,7 @@
 
 import { forwardRef, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { createFolioFromDocument, type FolioDocumentViewer, type FolioInteraction, type FolioLabels } from 'postext-folio';
-import { resolveColorValue, resolveDebugConfig, resolveDiagramStyleConfig, type PostextConfig, type VDTDocument } from 'postext';
+import { resolveColorValue, resolveDebugConfig, resolveDiagramStyleConfig, watchFonts, onFontsChanged, type PostextConfig, type VDTDocument } from 'postext';
 import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import type { BookPlan } from '../book/types';
@@ -242,12 +242,16 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     regenerate: () => setRebuildKey((k) => k + 1),
   }), []);
 
-  // A face that lands after the first measurement: lay out again.
+  // A face that lands after the first measurement: the engine's watch
+  // (#629) drops its family's measurements; lay out again.
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
-    const onLoadingDone = () => setRebuildKey((k) => k + 1);
-    document.fonts.addEventListener('loadingdone', onLoadingDone);
-    return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
+    const stop = watchFonts(document.fonts);
+    const off = onFontsChanged(() => setRebuildKey((k) => k + 1));
+    return () => {
+      off();
+      stop();
+    };
   }, []);
 
   // BUILD: the same documents the canvas lays out, under the same cache keys.

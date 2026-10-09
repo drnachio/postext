@@ -218,6 +218,10 @@ export interface SandboxLabels {
   warningsThresholdLabel: string;
   warningsMissingFontTitle: string;
   warningsMissingFontDetail: string;
+  warningsFontFallbackTitle: string;
+  /** `__face__`: the family, weight and slant (`"Garamond" 700 italic`). */
+  warningsFontFallbackMissingDetail: string;
+  warningsFontFallbackSynthesizedDetail: string;
   warningsLooseLineTitle: string;
   warningsCjkLooseLineTitle: string;
   warningsCjkLooseLineDetail: string;

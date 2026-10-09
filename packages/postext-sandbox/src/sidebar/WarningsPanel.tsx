@@ -37,6 +37,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'missingFont':
     case 'missingFontFamily':
     case 'missingFontVariant':
+    case 'fontFallback':
     case 'duplicateFontVariant':
       return Type;
     case 'looseLine':
@@ -170,6 +171,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsMissingFontFamilyTitle;
     case 'missingFontVariant':
       return labels.warningsMissingFontVariantTitle;
+    case 'fontFallback':
+      return labels.warningsFontFallbackTitle;
     case 'duplicateFontVariant':
       return labels.warningsDuplicateFontVariantTitle;
     case 'looseLine':
@@ -411,6 +414,9 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `"${payload.family}" — ${labels.warningsMissingFontFamilyDetail}`;
     case 'missingFontVariant':
       return `"${payload.family}" [${formatVariantList(payload.variants)}] — ${labels.warningsMissingFontVariantDetail}`;
+    case 'fontFallback':
+      return (payload.reason === 'missing' ? labels.warningsFontFallbackMissingDetail : labels.warningsFontFallbackSynthesizedDetail)
+        .replace('__face__', `"${payload.family}" ${formatVariantList([payload])}`);
     case 'duplicateFontVariant': {
       const slots = payload.variants
         .map((v) => `${v.weight}${v.style === 'italic' ? ' italic' : ''} ×${v.count}`)
@@ -697,6 +703,7 @@ function isFontWarning(kind: WarningPayload['kind']): boolean {
     kind === 'missingFont' ||
     kind === 'missingFontFamily' ||
     kind === 'missingFontVariant' ||
+    kind === 'fontFallback' ||
     kind === 'duplicateFontVariant' ||
     kind === 'missingGlyph' ||
     kind === 'variableFontDefaultInstance' ||

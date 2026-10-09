@@ -8,6 +8,7 @@ export type WarningKind =
   | 'missingFont'
   | 'missingFontFamily'
   | 'missingFontVariant'
+  | 'fontFallback'
   | 'duplicateFontVariant'
   | 'looseLine'
   | 'cjkLooseLine'
@@ -109,6 +110,10 @@ export type WarningKind =
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
+  /** The engine's `fontFallback` (#629): a face the layout's text was set
+   *  in that the font set could not give when it was built — missing, or
+   *  drawn by the browser from another weight or slant. */
+  | { kind: 'fontFallback'; family: string; weight: number; style: 'normal' | 'italic'; reason: 'missing' | 'synthesized' }
   /** Referenced family is neither a loaded Google Font nor a custom
    *  family in `customFonts`. Silently falls back to a system font at
    *  render time; this warning makes the fall-through visible. */

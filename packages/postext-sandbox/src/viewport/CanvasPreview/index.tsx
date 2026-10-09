@@ -8,7 +8,7 @@ import { stitchDocuments, type StitchedBook } from '../../book/stitch';
 import type { ComposedBook } from '../../book/types';
 import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook';
 import { preflightInputs } from '../../print/preflightInputs';
-import { dimensionToPx, preflightDocument, renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
+import { dimensionToPx, preflightDocument, renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue, watchFonts, onFontsChanged } from 'postext';
 import type { BoundingBox, PrintPreview } from 'postext';
 import { previewFor, usePrintSetup } from '../../print/printSetup';
 import { usePrintPreview } from '../../print/printPreviewToggle';
@@ -409,17 +409,20 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     applyDisplaySize(displayWidth, displayHeight);
   }, [zoom, fitMode, applyDisplaySize]);
 
-  // Rebuild when any font finishes loading after the initial layout.
-  // document.fonts.ready only waits for *currently pending* faces; a face
-  // requested later (or one that slips past the preload) can land after the
-  // first measurement, poisoning the cache with fallback metrics. Bumping
-  // rebuildKey on loadingdone invalidates the measurement cache and triggers
-  // a fresh buildDocument with the now-loaded glyph widths.
+  // Rebuild when faces arrive after the initial layout. document.fonts.ready
+  // only waits for *currently pending* faces; a face requested later (or one
+  // that slips past the preload) can land after the first measurement. The
+  // engine's watch (#629) drops what was measured in those families, once
+  // a frame however many slices a burst brings, and bumping rebuildKey
+  // lays the pages out again with the real glyph widths.
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
-    const onLoadingDone = () => setRebuildKey((k) => k + 1);
-    document.fonts.addEventListener('loadingdone', onLoadingDone);
-    return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
+    const stop = watchFonts(document.fonts);
+    const off = onFontsChanged(() => setRebuildKey((k) => k + 1));
+    return () => {
+      off();
+      stop();
+    };
   }, []);
 
   // BUILD effect — produces a new VDT document when the markdown, config, or

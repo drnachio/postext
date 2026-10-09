@@ -146,6 +146,15 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
       });
       return;
     }
+    if (w.kind === 'fontFallback') {
+      // A face the layout measured with a fallback (#629): one per face,
+      // whatever chapter found it; no place in the text.
+      out.push({
+        id: `font-fallback-${w.family}-${w.weight}-${w.style}`,
+        payload: { kind: 'fontFallback', family: w.family, weight: w.weight, style: w.style, reason: w.reason },
+      });
+      return;
+    }
     if (!LAYOUT_CONTENT_KINDS.has(w.kind)) return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
@@ -1229,7 +1238,10 @@ function computeDocumentWarnings(params: {
     }
 
     const families = getConfigFontFamilies(config);
-    const specMissing = new Set(detectMissingFonts(config));
+    // With a layout, the engine's `fontFallback` says which faces it
+    // measured with a fallback (#629); this probe covers the time before
+    // the first one.
+    const specMissing = new Set(doc ? [] : detectMissingFonts(config));
     // Where emphasis is set as dots, only the Latin letters and digits of
     // `*…*` ask the body family for its italics.
     const text = { latinEmphasis: hasLatinEmphasis(blocks) };
@@ -1299,7 +1311,13 @@ function computeDocumentWarnings(params: {
   if (toggles.looseLines && doc) {
     warnings.push(...collectLooseLineWarnings(doc, debug, markdown));
   }
-  if (doc) warnings.push(...collectLayoutWarnings(doc, markdown));
+  if (doc) {
+    // A family the Sandbox already names as unknown or short of files is
+    // not reported again as a fallback.
+    const named = new Set(warnings.flatMap((w) => (w.payload.kind === 'missingFontFamily' || w.payload.kind === 'missingFontVariant' ? [w.payload.family.toLowerCase()] : [])));
+    warnings.push(...collectLayoutWarnings(doc, markdown).filter((w) => w.payload.kind !== 'fontFallback'
+      || (toggles.missingFont && !(w.payload.reason === 'missing' && named.has(w.payload.family.toLowerCase())))));
+  }
   if (doc) warnings.push(...collectHeadingDesignCutWarnings(doc, markdown));
 
   warnings.push(...collectHeaderFooterWarnings(config, doc, markdown, bookMetadata));

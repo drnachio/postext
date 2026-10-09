@@ -14,6 +14,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'missingFont':
     case 'missingFontFamily':
     case 'missingFontVariant':
+    case 'fontFallback':
     case 'duplicateFontVariant':
     case 'fontFamilyStack':
     case 'missingGlyph':
