@@ -1,6 +1,6 @@
 ---
 title: "Edició crítica: numeració de versos i notes per vers"
-summary: "El Lycidas de Milton, text de 1645: una funció compta els versos, posa el número cada cinc en un requadre lateral i obre cada nota amb el número del vers."
+summary: "El Lycidas de Milton, text de 1645: lineNumbers numera els versos de cinc en cinc a la columna lateral, i cada nota s'obre amb el número del seu vers."
 plain: "Una edició crítica d'un poema de Milton. Cada cinc versos apareix un número al marge, i les notes que segueixen el poema remeten per número als versos que expliquen."
 description: "Lycidas com a edició crítica a Postext, amb els versos numerats de cinc en cinc en una columna lateral de 6 mm i les notes remeses a aquests números."
 question: "Com numero al marge els versos d'un poema de cinc en cinc i remeto les notes a aquests números?"
@@ -14,21 +14,21 @@ pageNotes: { "1": "La pàgina d'obertura: una branca de llorer amb baies verdes 
 
 ## Elaboració
 
-### 1 · Compta els versos abans de compondre
+### 1 · Compta els versos
 
-El codi d'aquest pas és [la resposta curta](#la-resposta-curta), més amunt. Postext no numera línies, així que `numberVerse()` compta els versos al Markdown abans de compondre. Dona a cada vers un paràgraf propi i, cada cinc versos, afegeix un `:::callout{type="lineno" span="side"}` amb el número. Un requadre lateral es col·loca a la seva columna a l'altura a què ha arribat el text a la seva tanca, així que el requadre comença sota el vers al qual segueix. L'emplenament superior de l'estil, de menys una línia (−14,5 pt), puja el número al nivell d'aquest vers i deixa el requadre sense alçada ([estils d'avís](/ca/docs/configuration#estils-davís)). Amb la tanca abans del vers, el requadre quedaria a la seva altura a gairebé totes les pàgines, però quan el vers numerat obre pàgina, el requadre puja al costat de l'última línia de la pàgina anterior. Dins del requadre, l'estil de paràgraf `number` alinea les xifres a la dreta i els dona l'interlineat del vers, 14,5 pt, de manera que cada número cau a la línia de base del seu vers.
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta), més amunt. `lineNumbers` compta els versos del poema i imprimeix el número de cada cinquè al seu costat, sobre la seva línia de base, en Libre Franklin de 7,5 pt i verd llorer ([numeració de línies](/ca/docs/configuration#numeració-de-línies)). `count: 'verse'` compta només els versos dels poemes `:::verse`, així que la nota sobre el text i les notes que segueixen el poema no porten número, i un vers massa llarg per a la mesura comptaria una sola vegada: el que passa a la línia següent no porta número. `restart: 'document'` manté un sol compte en tot el poema. Els números es pinten al costat de versos que la composició ja ha col·locat, així que no en mouen mai cap.
 
 ### 2 · Una columna de sis mil·límetres
 
 <Excerpt region="page" />
 
-Amb `sideColumnRole: 'floats'`, la columna estreta d'una disposició `oneAndHalf` rep requadres laterals i mai text ([tipus de disposició](/ca/docs/configuration#tipus-de-disposició)). `sideColumnPercent` és un percentatge de la caixa de text, i el codi el calcula a partir de mil·límetres: 6 de 90 mm, prou per al número més ample. Les xifres de Libre Franklin són proporcionals, i a 7,5 pt el zero és la més ampla (1,8 mm, davant d'1,2 mm de l'u), així que el número més ample del poema és el 100, amb 4,9 mm; el 180 i el 190 fan 4,8 mm. `'outer'` segueix els marges simètrics, de manera que els números queden a la dreta del vers a les pàgines senars i a l'esquerra a les parelles; a les senars acaben a la mateixa vora que el foli de sobre. La columna del vers fa 80 mm, 1,9 mm més que el vers 31, el més llarg, així que cap vers no passa a la línia següent.
+Amb `sideColumnRole: 'floats'`, la columna estreta d'una disposició `oneAndHalf` mai no rep text ([tipus de disposició](/ca/docs/configuration#tipus-de-disposició)), i `position: 'side'` hi compon els números, arran de la vora del costat del vers; els 4 mm de separació entre columnes són la distància entre un vers i el seu número. `sideColumnPercent` és un percentatge de la caixa de text, i el codi el calcula a partir de mil·límetres: 6 de 90 mm, prou per al número més ample. Les xifres de Libre Franklin són proporcionals, i a 7,5 pt el zero és la més ampla (1,8 mm, davant d'1,2 mm de l'u), així que el número més ample del poema és el 100, amb 4,9 mm; el 180 i el 190 fan 4,8 mm. `'outer'` segueix els marges simètrics, de manera que els números queden a la dreta del vers a les pàgines senars, alineats a l'esquerra, i a la seva esquerra a les parelles, alineats a la dreta: a totes comencen o acaben a la mateixa distància del vers. La columna del vers fa 80 mm, 1,9 mm més que el vers 31, el més llarg, així que cap vers no passa a la línia següent.
 
-### 3 · Cada vers és un paràgraf
+### 3 · El poema és un sol bloc `:::verse`
 
 <Excerpt region="verse" />
 
-Postext uneix les línies d'un paràgraf de Markdown, així que cada vers necessita un paràgraf propi, i `numberVerse()` posa cadascun en un contenidor `:::paragraphs` amb l'estil del vers ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). Un mateix estil no pot sagnar un vers i alhora donar sagnat francès al que no li càpiga a la línia, així que els catorze versos curts de Milton, el 4 entre ells, porten un estil propi: en un paràgraf d'una sola línia, un sagnat de primera línia de 2 em desplaça tot el vers. Cada línia en blanc entre estrofes es converteix en `:::space{lines=1}`, una línia de la retícula. Al principi d'una pàgina es descarta ([`:::space`](/ca/docs/document-format#space)), així que la pàgina 2 comença amb el vers 15 a dalt de la caixa de text i el canvi d'estrofa entre els versos 14 i 15 no es veu (mira «Errors freqüents»).
+Un bloc `:::verse` conserva el poema tal com s'escriu: cada línia de Markdown és un vers, una línia en blanc separa les estrofes i els espais davant d'un vers són el seu sagnat ([`:::verse`](/ca/docs/document-format#verse)). L'obertura anomena l'estil del vers i `align=start`, que alinea el poema amb el marge en lloc de centrar-lo sobre el seu vers més llarg. Entre dues estrofes queda una línia en blanc de la retícula (`stanzaSpace`, una línia). Els catorze versos curts de Milton, el 4 entre ells, comencen amb dos espais, i `indentStep: em(1)` els converteix en 2 em. L'espai entre estrofes es descarta al principi d'una pàgina, així que la pàgina 2 comença amb el vers 15 a dalt de la caixa de text i el canvi d'estrofa entre els versos 14 i 15 no es veu (mira «Errors freqüents»).
 
 ### 4 · El llorer, el títol i la nota preliminar
 
@@ -57,8 +57,8 @@ Cada element s'ancora a la pàgina i es filtra amb `parity` i `pages: 'body'` ([
 Els poemes llargs se solen numerar de deu en deu; la columna de 6 mm es queda com està.
 
 ```diff
--const EVERY = 5;
-+const EVERY = 10;
+-  interval: 5,
++  interval: 10,
 ```
 
 ### Deixa tots els números a la dreta del vers
@@ -72,6 +72,6 @@ Amb la columna lateral fixa a la dreta, els números queden a la dreta del vers 
 
 ## Errors freqüents
 
-- Un vers numerat que no cap a la mesura porta el número al costat de la seva última línia, perquè la tanca del requadre lateral va després del paràgraf sencer. A 80 mm cap vers de *Lycidas* no passa a la línia següent; si estreteixes la mesura, revisa els versos numerats.
-- `:::space` es descarta al principi d'una pàgina, així que el canvi d'estrofa entre els versos 14 i 15, que coincideix amb el pas de la pàgina 1 a la 2, no es veu. Si la teva edició ha de marcar tots els canvis d'estrofa, sagna el primer vers de cadascuna en lloc de deixar una línia en blanc, com fa l'edició de 1645.
-- [La targeta sobre requadres laterals](#gotcha-side-box-starts-at-fence) aconsella posar la tanca d'una glossa abans del seu paràgraf, perquè comenci a l'altura de la seva primera línia. El número de vers, en canvi, va després del seu vers i puja amb l'emplenament negatiu: amb la tanca abans, el número d'un vers que obre pàgina puja al costat de l'última línia de la pàgina anterior (pas 1).
+- L'espai entre estrofes es descarta al principi d'una pàgina, així que el canvi d'estrofa entre els versos 14 i 15, que coincideix amb el pas de la pàgina 1 a la 2, no es veu. Si la teva edició ha de marcar tots els canvis d'estrofa, sagna el primer vers de cadascuna en lloc de deixar una línia en blanc, com fa l'edició de 1645: dos espais davant d'aquest vers.
+- Els números comparteixen la columna lateral amb qualsevol requadre o peu lateral que hi afegeixis. Un número que cau sobre un d'ells s'imprimeix igualment, i el Sandbox l'avisa (`lineNumberOverlap`); mou el requadre o porta els números al marge exterior amb `position: 'outer'`.
+- Les notes continuen escrivint a mà els seus números de vers (`:chip[8]{style="line"}`): de moment, una nota no pot apuntar a un vers i imprimir-ne el número. Si canvies el text, confronta els números de les notes amb els del marge.

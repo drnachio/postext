@@ -14,15 +14,14 @@
   ],
   "features": {
     "primary": [
-      "side-boxes",
-      "paragraph-styles",
-      "vertical-space"
+      "line-numbers",
+      "verse",
+      "side-column-floats"
     ],
     "also": [
-      "side-column-floats",
       "column-and-a-half",
+      "paragraph-styles",
       "chips",
-      "callout-styles",
       "mirrored-margins",
       "opener-design",
       "design-elements",
@@ -42,12 +41,8 @@
     "Q18",
     "Q23"
   ],
-  "gaps": [
-    "line-numbers",
-    "hard-line-breaks"
-  ],
+  "gaps": [],
   "gotchas": [
-    "side-box-starts-at-fence",
     "ragged-no-hyphenation",
     "ragged-runts",
     "attr-values",
@@ -68,11 +63,6 @@
     "side-heads-hanging-numbers"
   ],
   "workarounds": [
-    {
-      "followup": "EF-161",
-      "package": "postext",
-      "note": "each number is fenced after its line and lifted back onto it by a top padding of minus one line (LEAD). Fenced before its line, the number of a line that opens a page slid up beside the last line of the page before: a side box fenced when the text column is full slides up the side column instead of waiting for the next page"
-    },
     {
       "followup": "EF-05",
       "package": "postext",
@@ -109,14 +99,9 @@
       "note": "the headnote is design text, which has no inline italics (gotcha design-text-no-inline-marks), so it cannot set Chester and Irish apart as 1645 does; the whole headnote is italic and the note on the text claims the 1645 italic of names for the poem only"
     },
     {
-      "followup": "EF-128",
-      "package": "postext",
-      "note": "short lines take a style of their own (firstLineIndent 2 em) instead of the verse style with its hangingIndent: one paragraph style cannot indent a line and also hang its turnover"
-    },
-    {
       "followup": "EF-21",
       "package": "postext",
-      "note": "verse and notes are ragged, and 1.4.1 never hyphenates ragged text (gotcha ragged-no-hyphenation): the verse needs no hyphenation setting, and the rag of the notes was read on the capture. If ragged text starts to hyphenate, give the verse style hyphenation: false"
+      "note": "the notes are ragged, and 1.4.1 never hyphenates ragged text (gotcha ragged-no-hyphenation): their rag was read on the capture. The verse is a :::verse poem, which is never hyphenated unless its style asks"
     },
     {
       "followup": "EF-147",
@@ -125,7 +110,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.23.0"
   },
   "kit": [
     "core",

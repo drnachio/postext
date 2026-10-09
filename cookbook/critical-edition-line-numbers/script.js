@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 044 · Critical edition: line numbers and line-keyed notes ═══
 // https://postext.dev/en/cookbook/critical-edition-line-numbers
 // Code: MIT · Text: Milton, Poems (1645) (PD) · Notes: CC BY 4.0 · Laurel: diffusion models
-// Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 // Lycidas in the spelling of 1645, with a number beside every fifth line and two pages of
 // notes keyed to those numbers, so the verse carries no note markers.
 import {
@@ -27,38 +27,21 @@ const colorPalette = Object.entries(palette)
 const [TEXT, DISPLAY, LABEL] = ['Linden Hill', 'Imbue', 'Libre Franklin'];
 const LEAD = 14.5; // pt: the leading of the verse, and the grid every page keeps
 
-// #region answer: count the lines, and after every fifth set its number in the margin
-// The poem is written one line of verse to a line of Markdown, with a blank line between
-// verse paragraphs and two spaces before a short line. numberVerse() gives each line a
-// paragraph of its own and, after every fifth, a side box that holds its number. A side box
-// stands where the text has reached at its fence, under the line it follows; a top padding
-// of minus one line lifts the number back onto that line. Fenced before its line instead,
-// the number of a line that opens a page slides up beside the last line of the page before
-// (gotcha: side-box-starts-at-fence).
-const EVERY = 5;
-const rows = (...lines) => lines.join('\n');
-function numberVerse(markdown) {
-  return markdown.replace(/^:::paragraphs\{style="verse"\}\n([\s\S]*?)\n:::$/gm, (_, poem) => {
-    let n = 0;
-    return poem.split('\n').map((line) => {
-      if (!line.trim()) return ':::space{lines=1}'; // one blank line of the grid
-      n += 1;
-      const style = line.startsWith('  ') ? 'short' : 'verse';
-      const verse = rows(`:::paragraphs{style="${style}"}`, line.trim(), ':::');
-      if (n % EVERY) return verse;
-      return rows(verse, '', ':::callout{type="lineno" span="side"}',
-        ':::paragraphs{style="number"}', n, ':::', ':::');
-    }).join('\n\n');
-  });
-}
-const lineno = { id: 'lineno', backgroundEnabled: false, // no box: only the number shows
-  padding: { top: pt(-LEAD), right: pt(0), bottom: pt(0), left: pt(0) } };
-// The number: right-aligned, so the numbers share a right edge, and at the verse's leading,
-// so it sits on the baseline of its line.
-const number = { id: 'number', fontFamily: LABEL, fontSize: pt(7.5), lineHeight: pt(LEAD),
-  color: col('laurel'), textAlign: 'right' };
-// Hook-up: calloutStyles: [lineno], paragraphStyles: [number, …] and
-// buildDocument({ markdown: numberVerse(markdown) }, config()).
+// #region answer: count the lines, and set every fifth number in the margin
+// The poem is one :::verse block, written as 1645 prints it: a line of verse a line, a blank
+// line between verse paragraphs and two spaces before a short line. lineNumbers counts its
+// lines of verse (a line that turned over would still count once) and prints the multiples
+// of five beside their lines, on their baselines. position 'side' puts them in the side
+// column of the one-and-a-half layout, flush with its edge next to the verse.
+const lineNumbers = {
+  enabled: true,
+  count: 'verse', // the lines of :::verse poems; the notes are prose and not counted
+  interval: 5,
+  restart: 'document', // one count through the poem
+  position: 'side',
+  fontFamily: LABEL, fontSize: pt(7.5), color: col('laurel'),
+};
+// Hook-up: lineNumbers in the config; the Markdown goes to buildDocument as it is written.
 // #endregion
 
 // #region page: a poetry trim, and a channel for the numbers at the fore-edge
@@ -71,7 +54,7 @@ const [MEASURE, GUTTER, CHANNEL] = [80, 4, 6]; // mm: the longest line of Lycida
 const OUTER = TRIM_W - INNER - MEASURE - GUTTER - CHANNEL; // 28 mm beyond the numbers
 const layout = {
   layoutType: 'oneAndHalf',
-  sideColumnRole: 'floats', // the side column takes side boxes, never text
+  sideColumnRole: 'floats', // the side column takes the numbers, never text
   sideColumnSide: 'outer', // right of the verse on a recto, left of it on a verso
   // 6 of 90 mm. The zero is Libre Franklin's widest figure, so '100' (4.9 mm) is the widest number.
   sideColumnPercent: (CHANNEL / (MEASURE + GUTTER + CHANNEL)) * 100,
@@ -81,14 +64,13 @@ const page = { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi:
   margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } };
 // #endregion
 
-// #region verse: a paragraph per line, ragged, and the short lines set in
-const verseStyles = [
-  // Ragged, like all the text here (bodyText). A line too long for the measure would turn
-  // over and hang 2 em in; none does at 80 mm.
-  { id: 'verse', hangingIndent: em(2) },
-  // Milton's short lines: a one-line paragraph, so the first-line indent moves all of it.
-  { id: 'short', firstLineIndent: em(2) },
-];
+// #region verse: one poem, its verse paragraphs as stanzas, the short lines set in
+// A blank line between verse paragraphs leaves one line of the grid (stanzaSpace, 1). Two
+// leading spaces set a short line in 2 em (indentStep, 1 em a space here, against the default
+// half em). The verse is ragged, like all the text here; a line too long for the measure would
+// turn over and hang 2 em past its own start, but none does at 80 mm.
+const verse = { indentStep: em(1) };
+const verseStyles = [{ id: 'verse', hangingIndent: em(2) }];
 // #endregion
 
 // #region opener: the laurel, the title in tall capitals, and the headnote of 1645
@@ -176,14 +158,14 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     // Ragged throughout, verse and notes alike, so nothing is hyphenated
     // (gotcha: ragged-no-hyphenation).
-    textAlign: 'left', firstLineIndent: pt(0),
+    textAlign: 'left', firstLineIndent: pt(0), verse,
   },
   // The designs print the titles, but each heading's own text is still measured, in this face.
   // Left at the default, the page would fetch Open Sans 700 for text it never paints.
   headings: { fontFamily: DISPLAY, fontWeight: 300, levels: [poem] },
   headingStyles: [notesHead],
-  paragraphStyles: [...verseStyles, number, ...noteStyles],
-  calloutStyles: [lineno],
+  paragraphStyles: [...verseStyles, ...noteStyles],
+  lineNumbers,
   chipStyles,
 });
 
@@ -205,7 +187,7 @@ const FONTS = { 'Linden Hill': ['400', '400i'], Imbue: ['300'], 'Libre Franklin'
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown + notes);
-const source = `${numberVerse(markdown)}\n\n${notes}`;
+const source = `${markdown}\n\n${notes}`;
 const doc = await buildWithFonts(() => buildDocument({ markdown: source, resources }, config()),
   source);
 showPages(doc, { title: 'Lycidas · with line numbers and notes' });
