@@ -290,6 +290,7 @@ describe("package exports", () => {
       "PAGE_SIZE_PRESETS",
       "resolvePageConfig",
       "DEFAULT_LAYOUT_CONFIG",
+      "DEFAULT_FLOAT_MIN_SCALE",
       "DEFAULT_COLUMN_RULE",
       "DEFAULT_COLUMN_BALANCING",
       "resolveLayoutConfig",

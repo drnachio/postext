@@ -1376,6 +1376,11 @@ export interface ResolvedResourceBlock {
    *  safe area (the room the fit and balancing levers have), and the px
    *  the levers already set it taller (`delta`, negative when shorter). */
   bodyFlex?: { shrink: number; grow: number; delta: number };
+  /** For a floated picture scaled to the room of its slot
+   *  (`placement.shrink`, #626): the share of its width it keeps, below 1.
+   *  Absent when the picture is set at its size (or only cropped within
+   *  its safe area). */
+  shrinkScale?: number;
   /** For bitmap/svg: the out-of-band binary id to resolve at render time. */
   fileId?: string;
   /** For bitmap: the source format (e.g. `'png'`, `'jpeg'`, `'webp'`). */
@@ -2661,6 +2666,13 @@ export type ContentWarning = ContentWarningBase & (
    *  lines wrap too) or cut at the box's edge (`'clip'`). `lines` counts
    *  the source lines too wide. Found by the layout. */
   | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
+  /** `floatShrunk` (#626): a floated picture was set smaller than its size
+   *  to fit the room of its slot (`placement.shrink`), at `scale` of its
+   *  width. `overflowPx`: at its smallest scale (`placement.minScale`) it
+   *  still runs this far past the foot of the page's text block, on a page
+   *  where it had nowhere else to go. Found by the layout; information
+   *  more than a fault, unless it overflows. */
+  | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowPx?: number }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

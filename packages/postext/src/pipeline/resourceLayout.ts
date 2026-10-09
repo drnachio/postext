@@ -155,6 +155,21 @@ export interface ResourceLayoutInput {
   /** Widest a figure's image (bitmap or SVG) may be set; the caption and
    *  note keep `columnWidth`. Defaults to `columnWidth`. */
   maxBodyWidth?: number;
+  /** Tallest a picture's body (bitmap, SVG, video poster) may be set: a
+   *  float scaled to the room of its slot (`placement.shrink`, #626). The
+   *  picture is cropped within its safe area first (keeping its width),
+   *  then scaled, width and height together, never below `minBodyScale`;
+   *  the result records the scale (`shrinkScale`). The caption and note
+   *  are not counted: the caller takes them off the slot's room. Ignored
+   *  for tables and turned blocks. */
+  maxBodyHeight?: number;
+  /** The smallest scale `maxBodyHeight` sets the picture at (0–1); the
+   *  body then stands taller than the cap. Default 0. */
+  minBodyScale?: number;
+  /** Measure the caption and note at this width instead of the slot's,
+   *  set under the picture per `placement.align`: the layout's own rounds
+   *  for `placement.captionMeasure: 'body'`. */
+  captionWidth?: number;
   /** Make a picture with a safe area (`Resource.safeArea`) this many px
    *  taller (or shorter, when negative) than it would be set, by cropping
    *  outside its safe area; clamped to the range the safe area allows (see
@@ -1451,7 +1466,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     resourceType,
     number,
     resolved,
-    width: input.captionAside?.width ?? columnWidth,
+    width: input.captionAside?.width ?? input.captionWidth ?? columnWidth,
     resourceNumbering,
     resourceTypes,
     resources,
@@ -1499,7 +1514,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     measuredNote = measureSnippetLines(
       slanted,
       [noteFontString, noteBoldFontString, noteItalicFontString, noteBoldItalicFontString],
-      Math.max(1, input.captionAside?.width ?? columnWidth),
+      Math.max(1, input.captionAside?.width ?? input.captionWidth ?? columnWidth),
       noteLineHeightPx,
       { textAlign: cs.note.align },
     );
@@ -1586,6 +1601,25 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     }
     pageRoom = room;
   }
+  // A float scaled to the room of its slot (`placement.shrink`, #626): the
+  // caller gives the tallest body the slot holds. A picture with a safe
+  // area is cropped first, keeping its width; then width and height scale
+  // together, never below `minBodyScale`.
+  let shrinkScale: number | undefined;
+  // The balancing lever never grows the body past that room.
+  if (input.maxBodyHeight !== undefined && picture && !rotate) {
+    const cap = Math.max(0, input.maxBodyHeight);
+    if (bodyHeight > cap + 0.01 && bodyHeight > 0) {
+      if (flexRange) bodyHeight = Math.max(cap, flexRange(bodyWidth).min);
+      if (bodyHeight > cap + 0.01) {
+        const k = Math.max(Math.min(1, Math.max(0, input.minBodyScale ?? 0)), cap / bodyHeight);
+        bodyWidth *= k;
+        bodyHeight *= k;
+        if (k < 1 - 1e-6) shrinkScale = k;
+      }
+    }
+    pageRoom = Math.min(pageRoom ?? Infinity, Math.max(cap, bodyHeight));
+  }
 
   // A picture with a safe area set taller or shorter than its own ratio:
   // the lever's delta, within what the safe area (and the page) allows.
@@ -1601,6 +1635,25 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyFlex = { shrink: Math.max(0, bodyHeight - range.min), grow: Math.max(0, max - bodyHeight), delta: bodyHeight - before };
   }
 
+  // A picture narrower than its slot whose caption takes its width
+  // (`placement.captionMeasure: 'body'`): laid out again with the caption
+  // and note at the picture's width. A narrower caption may wrap onto more
+  // lines and leave the picture less room (`fitFiguresToPage`), so a few
+  // rounds follow the width down.
+  const captionMeasure = resource.placement?.captionMeasure ?? resourceType?.defaultPlacement?.captionMeasure;
+  if (
+    captionMeasure === 'body' && picture && !rotate && !input.captionAside
+    && input.captionWidth === undefined && bodyWidth < columnWidth - 0.5
+  ) {
+    let width = bodyWidth;
+    let out = layoutResourceBlock({ ...input, captionWidth: width });
+    for (let round = 0; round < 2 && out.block.bodyRect.width < width - 0.5; round++) {
+      width = out.block.bodyRect.width;
+      out = layoutResourceBlock({ ...input, captionWidth: width });
+    }
+    return out;
+  }
+
   // --- Vertical stacking -------------------------------------------------
   // above: [caption band] gap [body] noteGap [note]
   // below: [body] gap [caption band] noteGap [note]
@@ -1612,6 +1665,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     : captionAbove ? 0 : bodyHeight + (captionBandHeight > 0 ? captionGapPx : 0);
   const bodyY = captionAbove ? captionHeight : 0;
   const asideDx = aside ? aside.dx : 0;
+  // A caption measured to the picture (`placement.captionMeasure: 'body'`)
+  // sits under it per `placement.align`, as the picture sits in the slot.
+  const captionDx = !aside && input.captionWidth !== undefined && input.captionWidth < columnWidth
+    ? (columnWidth - input.captionWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align)
+    : asideDx;
   // A picture narrower than its slot — shrunk to fit the page or the room
   // left (`layout.fitFiguresToPage`), or a bitmap smaller than the column —
   // sits in the slot per `placement.align`, as a float narrowed by
@@ -1636,21 +1694,21 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       })),
     };
   }
-  const captionLines = shiftLines(measuredCaption, asideDx + captionPaddingPx, captionBandY + captionPaddingPx);
+  const captionLines = shiftLines(measuredCaption, captionDx + captionPaddingPx, captionBandY + captionPaddingPx);
   // A table's rules are stroked centred on the cell edges, so its outer
   // frame reaches half a stroke beyond the body on each side; the caption
   // bar spans that same outer extent, or it would read a hair narrower.
   const barOverhang = table ? table.borderWidthPx / 2 : 0;
   const captionBar = cs.backgroundEnabled && captionBandHeight > 0
     ? {
-        rect: createBoundingBox(asideDx - barOverhang || 0, captionBandY, (aside?.width ?? columnWidth) + 2 * barOverhang, captionBandHeight),
+        rect: createBoundingBox(captionDx - barOverhang || 0, captionBandY, (aside?.width ?? input.captionWidth ?? columnWidth) + 2 * barOverhang, captionBandHeight),
         background: cs.background.hex,
       }
     : undefined;
   const noteY = aside
     ? captionBandY + captionBandHeight + noteGapPx
     : (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
-  const noteLines = shiftLines(measuredNote, asideDx, noteY);
+  const noteLines = shiftLines(measuredNote, captionDx, noteY);
   // The marker takes the note's slot (a continuing slice has no note).
   const continuesLines = shiftLines(measuredContinues, 0, aside ? bodyHeight + noteGapPx : noteY);
   const totalHeight = aside
@@ -1668,6 +1726,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyRect,
     ...(bodySource ? { bodySource } : {}),
     ...(bodyFlex ? { bodyFlex } : {}),
+    ...(shrinkScale !== undefined ? { shrinkScale } : {}),
     fileId,
     format,
     captionLines,

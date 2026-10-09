@@ -125,6 +125,10 @@ export interface FloatMeasure {
   /** A floated box's `marginTop` (px), when it is wider than the float
    *  gap: the space a bottom band keeps above the box. */
   gapAbove?: number;
+  /** For a picture (bitmap, SVG, video poster): the height of its body
+   *  and the scale it is set at (1 unless scaled to its slot), which
+   *  `placement.shrink` reads (#626). */
+  body?: { height: number; scale: number };
 }
 
 /** The space a top band keeps under `built`: the float gap, or a floated

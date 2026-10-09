@@ -1,4 +1,4 @@
-import type { LayoutConfig, LayoutType, ResolvedLayoutConfig } from '../types';
+import type { FloatShrinkConfig, FloatShrinkMode, LayoutConfig, LayoutType, ResolvedLayoutConfig } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_COLUMN_RULE = {
@@ -6,6 +6,29 @@ export const DEFAULT_COLUMN_RULE = {
   color: { hex: '#cccccc', model: 'hex' } as const,
   lineWidth: { value: 0.5, unit: 'pt' } as const,
 };
+
+/** The smallest scale `placement.shrink` sets a picture at, when nothing
+ *  says otherwise (#626). */
+export const DEFAULT_FLOAT_MIN_SCALE = 0.7;
+
+/** A `floatShrink.mode` / `placement.shrink` as written: one of the three
+ *  words, else `undefined`. */
+export function floatShrinkModeOf(value: unknown): FloatShrinkMode | undefined {
+  return value === 'never' || value === 'page' || value === 'slot' ? value : undefined;
+}
+
+/** A `minScale` as written: a number in (0, 1], else `undefined`. */
+export function floatMinScaleOf(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 1 ? value : undefined;
+}
+
+/** `layout.floatShrink` resolved: a mode and a smallest scale. */
+export function resolveFloatShrink(partial?: FloatShrinkConfig): { mode: FloatShrinkMode; minScale: number } {
+  return {
+    mode: floatShrinkModeOf(partial?.mode) ?? 'never',
+    minScale: floatMinScaleOf(partial?.minScale) ?? DEFAULT_FLOAT_MIN_SCALE,
+  };
+}
 
 export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   layoutType: 'double',
@@ -16,6 +39,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   sideColumnSide: 'right',
   columnRule: { ...DEFAULT_COLUMN_RULE },
   fitFiguresToPage: false,
+  floatShrink: { mode: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE },
   hugClosingFloats: true,
   inlineResourceGap: 'around',
   inlineResourceGapInBoxes: true,
@@ -24,7 +48,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
 };
 
 export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfig {
-  if (!partial) return { ...DEFAULT_LAYOUT_CONFIG };
+  if (!partial) return { ...DEFAULT_LAYOUT_CONFIG, floatShrink: { ...DEFAULT_LAYOUT_CONFIG.floatShrink } };
 
   return {
     layoutType: partial.layoutType ?? DEFAULT_LAYOUT_CONFIG.layoutType,
@@ -41,6 +65,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
         }
       : { ...DEFAULT_COLUMN_RULE },
     fitFiguresToPage: partial.fitFiguresToPage ?? DEFAULT_LAYOUT_CONFIG.fitFiguresToPage,
+    floatShrink: resolveFloatShrink(partial.floatShrink),
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
     inlineResourceGap: partial.inlineResourceGap === 'above' ? 'above' : DEFAULT_LAYOUT_CONFIG.inlineResourceGap,
     inlineResourceGapInBoxes: partial.inlineResourceGapInBoxes ?? DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes,
@@ -86,6 +111,17 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   if (layout.fitFiguresToPage !== undefined && layout.fitFiguresToPage !== DEFAULT_LAYOUT_CONFIG.fitFiguresToPage) {
     result.fitFiguresToPage = layout.fitFiguresToPage;
     hasOverride = true;
+  }
+  if (layout.floatShrink) {
+    const fs: FloatShrinkConfig = {};
+    const mode = floatShrinkModeOf(layout.floatShrink.mode);
+    const minScale = floatMinScaleOf(layout.floatShrink.minScale);
+    if (mode !== undefined && mode !== DEFAULT_LAYOUT_CONFIG.floatShrink.mode) fs.mode = mode;
+    if (minScale !== undefined && minScale !== DEFAULT_LAYOUT_CONFIG.floatShrink.minScale) fs.minScale = minScale;
+    if (fs.mode !== undefined || fs.minScale !== undefined) {
+      result.floatShrink = fs;
+      hasOverride = true;
+    }
   }
   if (layout.hugClosingFloats !== undefined && layout.hugClosingFloats !== DEFAULT_LAYOUT_CONFIG.hugClosingFloats) {
     result.hugClosingFloats = layout.hugClosingFloats;

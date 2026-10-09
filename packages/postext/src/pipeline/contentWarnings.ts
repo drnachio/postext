@@ -605,6 +605,36 @@ export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlyS
   return out;
 }
 
+/** A `floatShrunk` warning for each floated picture the layout set smaller
+ *  to fit the room of its slot (`placement.shrink`, #626), with how far it
+ *  still runs past the text block's foot when even its smallest scale did
+ *  not fit. `sourceRangeOf` gives the range of the content block that first
+ *  cites it. */
+export function floatShrinkWarnings(
+  doc: VDTDocument,
+  sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
+): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  for (const page of doc.pages) {
+    for (const block of page.floats ?? []) {
+      const rb = block.resourceBlock;
+      if (!rb || rb.shrinkScale === undefined) continue;
+      const foot = page.contentArea.y + page.contentArea.height;
+      const overflowPx = Math.round(block.bbox.y + block.bbox.height - foot);
+      const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
+      out.push({
+        kind: 'floatShrunk',
+        resourceId: rb.resource.id,
+        scale: Math.round(rb.shrinkScale * 1000) / 1000,
+        ...(overflowPx > 0 ? { overflowPx } : {}),
+        ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
+        pageIndex: page.index,
+      });
+    }
+  }
+  return out;
+}
+
 /** A `dropCap` warning for the first placed part of each paragraph (by
  *  content index) whose drop cap could not be set as configured (#623). */
 export function dropCapWarnings(
@@ -770,6 +800,11 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
           : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
       break;
     }
+    case 'floatShrunk':
+      text = w.overflowPx !== undefined
+        ? `The picture "${w.resourceId}" is set at its smallest scale, ${Math.round(w.scale * 100)} % of its size, and still runs ${w.overflowPx} px past the foot of the page's text block`
+        : `The picture "${w.resourceId}" is set at ${Math.round(w.scale * 100)} % of its size to fit the room left on its page`;
+      break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
       break;

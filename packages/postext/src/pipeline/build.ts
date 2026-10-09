@@ -158,6 +158,7 @@ import {
   enumerateCurrentPageSlots,
   measureFloatBand,
   floatGapAbove,
+  floatGapBelow,
   measureSideStack,
   clearSideObstacles,
   columnHasFloatBand,
@@ -179,6 +180,7 @@ import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
 import { codeBoxStyle, codeParseOptions, wrapCodeBlocks } from './codeBlocks';
 import { buildCodeLineNumbers, codeOverflowWarnings } from './codeLines';
 import { pickTableStyle } from '../defaults/tableStyle';
+import { DEFAULT_FLOAT_MIN_SCALE } from '../defaults/layout';
 import { buildLineNumbers, lineNumberWarnings } from './lineNumbers';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
@@ -199,7 +201,7 @@ import {
   type BandCapZone,
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
-import { cjkLooseLineWarnings, collectContentWarnings, dropCapWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { cjkLooseLineWarnings, collectContentWarnings, dropCapWarnings, floatShrinkWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
 import { dropCapSinkAfter } from './dropCap';
 import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
@@ -776,7 +778,7 @@ function placeDocumentPass(
   // mode of the styled section the reference sits in (a horizontal
   // appendix of a vertical book turns its figures as asked).
   const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated,
-    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl');
+    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl', resolved.layout.floatShrink);
   const floatedIds = floatedResourceIds(floatPlan, incorporated, resources, resourceTypes);
   const floatsByFirstBlock = new Map<number, PlannedFloat[]>();
   for (const f of floatPlan) {
@@ -1239,12 +1241,17 @@ function placeDocumentPass(
    *  in the side column, relative to the float's left edge. */
   type CaptionAside = { dx: number; width: number; alignBottom: boolean; offsetY?: number };
   const asideKey = (a?: CaptionAside): string => (a ? `:aside${a.dx.toFixed(1)}x${a.width.toFixed(1)}${a.alignBottom ? 'b' : 't'}${(a.offsetY ?? 0).toFixed(1)}` : '');
+  /** The tallest body a picture scaled to its slot may take, and its
+   *  smallest scale (`placement.shrink`, #626). */
+  type BodyCap = { maxBodyHeight: number; minScale: number };
+  const capKey = (cap?: BodyCap): string => (cap ? `:cap${cap.maxBodyHeight.toFixed(2)}@${cap.minScale}` : '');
   const layoutFloat = (
     resourceId: string,
     width: number,
     slice?: TableSliceSpec,
     rotated?: FloatRotation,
     aside?: CaptionAside,
+    cap?: BodyCap,
   ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics; asideHeight?: number } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
@@ -1265,6 +1272,7 @@ function placeDocumentPass(
       ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
       ...(flexPx > 0 ? { bodyHeightDelta: flexPx } : {}),
+      ...(cap && !rotated ? { maxBodyHeight: cap.maxBodyHeight, minBodyScale: cap.minScale } : {}),
     });
   };
 
@@ -1327,8 +1335,8 @@ function placeDocumentPass(
   /** Height (and caption baseline) of a float at a given width, memoised —
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
-  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside): FloatMeasure | null => {
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}`;
+  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap): FloatMeasure | null => {
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
     const strip = comicStripOf(resourceId);
@@ -1361,7 +1369,7 @@ function placeDocumentPass(
       floatMeasureMemo.set(key, mc);
       return mc;
     }
-    const laid = layoutFloat(resourceId, width, slice, rotated, aside);
+    const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap);
     let m: FloatMeasure | null = null;
     if (laid && laid.block.rotation) {
       // A rotated block takes its band whole: no caption baseline to align,
@@ -1379,10 +1387,12 @@ function placeDocumentPass(
         if (ln.bbox.y < bodyBottom - 0.5) continue;
         if (lastBaseline === undefined || ln.baseline > lastBaseline) lastBaseline = ln.baseline;
       }
+      const picture = rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video';
       m = {
         height: laid.totalHeight,
         ...(lastBaseline !== undefined ? { lastCaptionBaseline: lastBaseline } : {}),
         ...(laid.asideHeight !== undefined ? { asideHeight: laid.asideHeight } : {}),
+        ...(picture ? { body: { height: rb.bodyRect.height, scale: rb.shrinkScale ?? 1 } } : {}),
       };
     }
     floatMeasureMemo.set(key, m);
@@ -1406,6 +1416,8 @@ function placeDocumentPass(
     /** The page is a verso of mirrored margins (a floated box's `'outer'`
      *  corner icon hangs on the left there). */
     mirrored = false,
+    /** A picture scaled to its slot (`placement.shrink`). */
+    cap?: BodyCap,
   ): { block: VDTBlock; height: number } | null => {
     const strip = comicStripOf(resourceId);
     if (strip) {
@@ -1419,7 +1431,7 @@ function placeDocumentPass(
       calloutFloatResults.set(result.frame, { result, startIdx, plan: cf.plan });
       return { block: result.frame, height: result.totalHeight };
     }
-    const laid = layoutFloat(resourceId, width, slice, rotated, aside);
+    const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap);
     if (!laid) return null;
     const { block: rb, totalHeight } = laid;
     const id = slice && slice.startRow > 0 ? `float-${resourceId}-cont-${slice.startRow}` : `float-${resourceId}`;
@@ -1742,6 +1754,53 @@ function placeDocumentPass(
     (page.floats ??= []).push(built.block);
   };
 
+  /**
+   * A picture float scaled to `room` px of a slot instead of moving on
+   * (`placement.shrink`, #626): the tallest body that keeps its band
+   * within the room. A top band rounds up to the grid, so the float may
+   * stand as tall as the grid multiple within the room, less its gap; a
+   * bottom band (its caption's last baseline on the grid) and a side
+   * stack give the room back px for px. The caption's height may change
+   * with the picture's width (`captionMeasure: 'body'`) and a safe area
+   * crops before it scales, so the cap is refined over a few rounds. The
+   * scale never goes below the float's `minScale`; `fits` is false when
+   * even that does not hold the room. Null for a float that does not
+   * scale (no `shrink`, not an upright picture, the rest of a table) or
+   * already fits.
+   */
+  const shrinkToRoom = (
+    f: PlannedFloat,
+    width: number,
+    aside: CaptionAside | undefined,
+    full: FloatMeasure,
+    room: number,
+    topBand: boolean,
+    bandOf: (m: FloatMeasure) => { need: number; y: number },
+  ): { measure: FloatMeasure; need: number; y: number; cap: BodyCap; fits: boolean } | null => {
+    if (!f.shrink || !full.body || f.rotate || f.startRow) return null;
+    const minScale = f.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
+    const excessOf = (m: FloatMeasure, band: { need: number }): number => topBand
+      ? m.height + floatGapBelow(m, floatGapPx) - Math.floor((room + 0.01) / baselineGrid) * baselineGrid
+      : band.need - room;
+    let measure = full;
+    let band = bandOf(full);
+    let cap: BodyCap | undefined;
+    for (let round = 0; round < 4; round++) {
+      const excess = excessOf(measure, band);
+      if (excess <= 0.01) break;
+      const next: BodyCap = { maxBodyHeight: Math.max(0, measure.body!.height - excess), minScale };
+      if (cap && next.maxBodyHeight >= cap.maxBodyHeight - 0.01) break;
+      cap = next;
+      const m = measureFloat(f.resourceId, width, undefined, undefined, aside, cap);
+      if (!m?.body) return null;
+      measure = m;
+      band = bandOf(m);
+      if (m.body.scale <= minScale + 1e-6) break;
+    }
+    if (!cap) return null;
+    return { measure, ...band, cap, fits: excessOf(measure, band) <= 0.01 };
+  };
+
   const placeFloatInColumns = (
     page: VDTPage,
     f: PlannedFloat,
@@ -1759,6 +1818,12 @@ function placeDocumentPass(
     const { width, xLeft, rotated, aside, sideCol } = probe;
     let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
+    /** A picture scaled to this slot (`placement.shrink`, #626). */
+    let cap: BodyCap | undefined;
+    const bandOf = (m: FloatMeasure) => measureFloatBand(
+      position, m, targetCols, page.contentArea, baselineGrid, floatGapPx,
+      (c) => (anchorToCap ? c.bbox.y + c.bbox.height : trueBottom(c, uncappedBottoms)),
+    );
     /** The float was cut to this slot (a table slice). */
     let cut = false;
     /** A rotated block wider than the band (its upright height). */
@@ -1769,21 +1834,34 @@ function placeDocumentPass(
       // when the rest of the column takes it; otherwise it waits for the
       // side column of the next page — where it is set anyway, overflowing,
       // when even an empty column cannot hold it (a dominating figure).
+      let cap: BodyCap | undefined;
       if (need > first.availableHeight + 0.01) {
         // A column that already holds something — a float, a box, or a
         // heading design standing in it — is no empty column to overflow.
         const holds = sideUsedBottom(first) > first.bbox.y + 0.5 || (sideObstacles.get(first)?.length ?? 0) > 0;
-        if (mode === 'strict' || holds) return 'defer';
         // An empty column shortened by a band above it (a page-span box,
         // a top float) is no measure of the float: when a full column
         // would hold it, it waits for one instead of overflowing this one.
-        if (shortSideColumn(page, first) && measure.height <= page.contentArea.height + 0.01) return 'defer';
-        // Overflowing a column a side caption has shortened: the next pass
-        // sets that caption under its figure and gives the column back.
-        const cutBy = asideCutBy.get(first);
-        if (cutBy !== undefined) captionUnderProposals.add(cutBy);
+        const waitsForFull = shortSideColumn(page, first) && measure.height <= page.contentArea.height + 0.01;
+        const lastResort = mode === 'fresh' && !holds && !waitsForFull;
+        // A picture scaled to the room the column keeps (#626): any slot
+        // with `'slot'`, when it holds it at its smallest scale or more;
+        // the empty column it would overflow with `'page'` too, at its
+        // smallest scale if need be.
+        if (f.shrink === 'slot' || (f.shrink && lastResort)) {
+          const s = shrinkToRoom(f, width, undefined, measure, first.availableHeight, false,
+            (m) => measureSideStack(m, first, refY, page.contentArea, baselineGrid, floatGapPx, sideObstacles.get(first)));
+          if (s && (s.fits || lastResort)) ({ measure, need, y, cap } = s);
+        }
+        if (need > first.availableHeight + 0.01) {
+          if (!lastResort) return 'defer';
+          // Overflowing a column a side caption has shortened: the next pass
+          // sets that caption under its figure and gives the column back.
+          const cutBy = asideCutBy.get(first);
+          if (cutBy !== undefined) captionUnderProposals.add(cutBy);
+        }
       }
-      const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated);
+      const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, false, undefined, false, cap);
       if (!built) return 'skip';
       first.availableHeight = Math.max(0, first.availableHeight - need);
       commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
@@ -1810,8 +1888,23 @@ function placeDocumentPass(
         const gallery = need <= minAvail + 0.01
           && f.refPageIndex !== undefined && f.refPageIndex < page.index
           && calloutBandPages.has(page) && !calloutFloatOf(f.resourceId);
-        if (!gallery) return 'defer';
-        galleryFill = true;
+        if (gallery) {
+          galleryFill = true;
+        } else {
+          // A picture that scales to any slot (#626) takes the room left
+          // beside the other band, the text room kept, when it holds it
+          // at its smallest scale or more.
+          const s = f.shrink === 'slot' ? shrinkToRoom(f, width, aside, measure, minAvail - minTextPx, position === 'top', bandOf) : null;
+          if (!s?.fits) return 'defer';
+          ({ measure, need, y, cap } = s);
+        }
+      }
+      // Dominating the band: a picture that scales (`'page'` or `'slot'`,
+      // #626) takes the band's room, at its smallest scale if need be —
+      // then it runs past the band, as any dominating float does.
+      if (need > minAvail + 0.01 && f.shrink && !rotated) {
+        const s = shrinkToRoom(f, width, aside, measure, minAvail, position === 'top', bandOf);
+        if (s) ({ measure, need, y, cap } = s);
       }
       if (need > minAvail + 0.01 || tooWide(measure)) {
         // Dominating the band: a table is cut to it (a rotated table, to
@@ -1836,6 +1929,18 @@ function placeDocumentPass(
       // current page's foot, and waits for a fresh page to be cut to when
       // too wide.
       if (f.rotate || tooWide(measure)) return 'defer';
+      // A picture that scales to any slot (#626) takes this one when it
+      // holds it at its smallest scale or more (the text room kept next
+      // to another band, as `fitsStrict` keeps it); the loop below checks
+      // the band as for any float.
+      if (f.shrink === 'slot' && measure.body && !rotated) {
+        const room = Math.min(...targetCols.map((c) => c.availableHeight - (columnHasFloatBand(page, c) ? minTextPx : 0)));
+        if (need > room + 0.01) {
+          const s = shrinkToRoom(f, width, aside, measure, room, position === 'top', bandOf);
+          if (!s?.fits) return 'defer';
+          ({ measure, need, y, cap } = s);
+        }
+      }
       for (const c of targetCols) {
         if (position === 'bottom' && uncappedBottoms.has(c) && !anchorToCap) {
           // Trailing cap: the band must lie entirely below the level cut.
@@ -1892,7 +1997,7 @@ function placeDocumentPass(
     // An upright figure of a vertical page stands at the head of its tier
     // (`placement.align`: `left` the top, `center`, `right` the foot).
     const flush = rotated?.upright ? (f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0) : rotated ? rotatedFlushEnd(page) : false;
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, mirroredOf(page));
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, mirroredOf(page), cap);
     if (!built) return 'skip';
 
     // The caption beside the figure takes its band of the side column: a
@@ -6606,6 +6711,12 @@ function placeDocumentPass(
   doc.iterationCount = 1;
   if (joiningLetterSpacing.size > 0) joiningSpacingWarnings.set(doc, joiningLetterSpacingWarnings(doc, joiningLetterSpacing));
   if (dropCapNotes.size > 0) dropCapWarningsByDoc.set(doc, dropCapWarnings(doc, dropCapNotes));
+  // Pictures scaled to the room of their slot (#626), at the block citing them.
+  const shrunk = floatShrinkWarnings(doc, (idx) => {
+    const b = contentBlocks[idx];
+    return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
+  });
+  if (shrunk.length > 0) floatShrinkWarningsByDoc.set(doc, shrunk);
 
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
 }
@@ -6684,7 +6795,7 @@ export function* buildDocumentGen(
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
-  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc)];
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? [])];
   // Comic panels whose cell cannot hold their picture's safe area (#556).
   for (const page of doc.pages) {
     if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
@@ -6722,6 +6833,8 @@ const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 const joiningSpacingWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 /** The `dropCap` warnings of the last pass, per document (#623). */
 const dropCapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
+/** The `floatShrunk` warnings of a build (#626), found by its last pass. */
+const floatShrinkWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {

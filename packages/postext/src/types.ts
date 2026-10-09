@@ -106,7 +106,37 @@ export interface ResourcePlacement {
    *  figure's top (its bottom for a bottom float). A page without such a
    *  column keeps the caption under the figure. Column floats only. */
   captionSide?: boolean;
+  /** Scale a floated picture (bitmap, SVG, a video's poster) down, keeping
+   *  its proportions, to the room a slot has, instead of moving it on
+   *  (#626). `'never'`: a float either fits a slot at its size or waits
+   *  for a later one. `'page'`: a float too tall for the band of a fresh
+   *  page — the content area less what already stands there: an opener,
+   *  other floats, footnotes, the float gap — shrinks to that band.
+   *  `'slot'`: as `'page'`, and a float too tall for a slot of the page it
+   *  is cited on (or for a fresh page's band beside another float) shrinks
+   *  to it when it fits there at {@link minScale} or more; the slots are
+   *  tried in their usual order. A picture with a safe area is cropped
+   *  within it first. Tables (which split), floated boxes, comic strips,
+   *  rotated floats and inline embeds are never scaled by it. Default:
+   *  the type's `defaultPlacement`, then `layout.floatShrink.mode`, then
+   *  `'never'`. */
+  shrink?: FloatShrinkMode;
+  /** The smallest scale {@link shrink} sets a picture at, 0 to 1 (default
+   *  0.7, then `layout.floatShrink.minScale`). A slot that needs less is
+   *  passed over; on a fresh page, where the float has nowhere else to go,
+   *  it is set at this scale and runs past the band. */
+  minScale?: number;
+  /** The measure of a picture's caption and note when the picture is
+   *  narrower than its slot (scaled by {@link shrink} or
+   *  `layout.fitFiguresToPage`, or a bitmap smaller than the column):
+   *  `'slot'` (the default) keeps the slot's measure; `'body'` sets them
+   *  as wide as the picture, under it per {@link align}. */
+  captionMeasure?: 'slot' | 'body';
 }
+
+/** How a floated picture is scaled to the room of a slot (see
+ *  `ResourcePlacement.shrink`). */
+export type FloatShrinkMode = 'never' | 'page' | 'slot';
 
 /** A user-definable category of resource (e.g. "Figure", "Table"). Drives
  *  numbering, caption prefixes, and inline-reference labels. */
@@ -902,6 +932,13 @@ export interface LayoutConfig {
    *  pages are sized for their figures; the HTML viewer, whose pages are as
    *  tall as the screen, turns it on. */
   fitFiguresToPage?: boolean;
+  /** The document's default for scaling a floated picture to the room of
+   *  its slot (#626): `mode` as `ResourcePlacement.shrink`, `minScale` as
+   *  `ResourcePlacement.minScale` (default 0.7). A resource's placement,
+   *  then its type's `defaultPlacement`, override it. Default
+   *  `{ mode: 'never' }`. Unlike {@link fitFiguresToPage}, a hard cap at
+   *  the content area, this looks at the band the float would take. */
+  floatShrink?: FloatShrinkConfig;
   /** On the closing page of a chapter (and of the document), move the
    *  page-wide figures and tables set below the last band of text up to sit
    *  one float gap under it, stacked in their order, instead of at the page
@@ -955,6 +992,13 @@ export interface LayoutConfig {
   writingMode?: WritingMode;
 }
 
+/** The document default for scaling floated pictures (see
+ *  `LayoutConfig.floatShrink`). */
+export interface FloatShrinkConfig {
+  mode?: FloatShrinkMode;
+  minScale?: number;
+}
+
 /** Where an inline resource keeps the float gap (see
  *  `LayoutConfig.inlineResourceGap`). */
 export type InlineResourceGap = 'around' | 'above';
@@ -970,6 +1014,7 @@ export interface ResolvedLayoutConfig {
   sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   fitFiguresToPage: boolean;
+  floatShrink: { mode: FloatShrinkMode; minScale: number };
   hugClosingFloats: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
