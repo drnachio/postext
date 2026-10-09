@@ -503,22 +503,22 @@
   },
   "bitmap-print-size": {
     "title": {
-      "en": "Bitmaps are laid out in px at the document dpi: declare print size",
-      "es": "Los mapas de bits se miden en píxeles a la resolución del documento: declara el tamaño de impresión",
-      "ca": "Els mapes de bits es mesuren en píxels a la resolució del document: declara la mida d'impressió",
-      "zh": "位图按文档dpi以px排版：声明印刷尺寸",
-      "ar": "الصور النقطية تُوزَّع بالبكسل بدقة dpi المستند: صرّح بمقاس الطباعة",
-      "ja": "ビットマップは文書のdpiでのpxで配置される。印刷サイズを宣言する",
-      "pt": "Bitmaps são diagramados em px na resolução do documento: declare o tamanho de impressão"
+      "en": "Bitmaps take their print size from a resolution: declare it, not print-size pixels",
+      "es": "Los mapas de bits toman su tamaño de impresión de una resolución: declárala, no calcules píxeles de impresión",
+      "ca": "Els mapes de bits prenen la mida d'impressió d'una resolució: declara-la, no calculis píxels d'impressió",
+      "zh": "位图的印刷尺寸取自分辨率：声明分辨率，不要换算印刷像素",
+      "ar": "الصور النقطية تأخذ مقاس طباعتها من دقتها: صرّح بالدقة لا ببكسلات محسوبة للطباعة",
+      "ja": "ビットマップの印刷サイズは解像度で決まる。印刷用のピクセル数を計算せず、解像度を宣言する",
+      "pt": "Bitmaps tiram o tamanho de impressão de uma resolução: declare-a, não calcule pixels de impressão"
     },
     "body": {
-      "en": "A bitmap resource is sized from the width and height it declares, in pixels at the document's dpi, not from the file. Declare the print-size pixels (about 300 dpi at the printed width) so the figure lands at the right size and stays sharp.",
-      "es": "Un recurso de mapa de bits toma su tamaño del ancho y el alto que declara, en píxeles a la resolución del documento, no del archivo. Declara los píxeles del tamaño de impresión (unos 300 ppp al ancho impreso) para que la figura salga a su tamaño y nítida.",
-      "ca": "Un recurs de mapa de bits pren la mida de l'amplada i l'alçada que declara, en píxels a la resolució del document, no del fitxer. Declara els píxels de la mida d'impressió (uns 300 ppp a l'amplada impresa) perquè la figura surti a la seva mida i nítida.",
-      "zh": "位图资源的尺寸取自它声明的宽和高，单位是文档dpi下的像素，而不是取自文件本身。声明印刷尺寸对应的像素数（按印刷宽度约300 dpi），图才会以正确的大小出现并保持清晰。",
-      "ar": "يُحدَّد مقاس مورد الصورة النقطية من العرض والارتفاع اللذين يصرّح بهما، بالبكسل بدقة dpi المستند، لا من الملف. صرّح بعدد البكسلات المناسب للطباعة (نحو 300 dpi بالعرض المطبوع) ليقع الشكل بالمقاس الصحيح ويبقى حادًّا.",
-      "ja": "ビットマップのリソースの大きさは、ファイルからではなく、宣言した幅と高さ（文書のdpiでのピクセル数）から決まります。印刷サイズのピクセル数（刷り上がりの幅で約300 dpi）を宣言すれば、図は正しい大きさに収まり、鮮明さも保たれます。",
-      "pt": "Um recurso bitmap é dimensionado pela largura e pela altura que declara, em pixels na resolução (dpi) do documento, não pelo arquivo. Declare os pixels do tamanho de impressão (cerca de 300 dpi na largura impressa) para que a figura saia no tamanho certo e nítida."
+      "en": "A bitmap without a resolution is laid out one pixel per layout pixel at the document's dpi, so a 2400 px photo is 406 mm wide on a 150 dpi page. Declare the file's real pixels and give the picture its resolution (bitmap.resolution: 300), or set layout.bitmapResolution for every bitmap: a ppi, or 'file' to read the one the file states. The column still caps the picture.",
+      "es": "Un mapa de bits sin resolución se coloca a un píxel por píxel de maquetación a la resolución del documento, así que una foto de 2400 px mide 406 mm de ancho en una página de 150 ppp. Declara los píxeles reales del archivo y da a la imagen su resolución (bitmap.resolution: 300), o fija layout.bitmapResolution para todos los mapas de bits: unos ppp, o 'file' para leer la que indica el archivo. La columna sigue limitando la imagen.",
+      "ca": "Un mapa de bits sense resolució es col·loca a un píxel per píxel de maquetació a la resolució del document, així que una foto de 2400 px fa 406 mm d'amplada en una pàgina de 150 ppp. Declara els píxels reals del fitxer i dona a la imatge la seva resolució (bitmap.resolution: 300), o fixa layout.bitmapResolution per a tots els mapes de bits: uns ppp, o 'file' per llegir la que indica el fitxer. La columna continua limitant la imatge.",
+      "zh": "没有分辨率的位图按文档dpi以一个像素对应一个排版像素放置，所以2400 px的照片在150 dpi的页面上宽406 mm。声明文件的实际像素，并给图片设分辨率（bitmap.resolution: 300），或为所有位图设置layout.bitmapResolution：一个ppi值，或用'file'读取文件标明的分辨率。栏宽仍会限制图片。",
+      "ar": "الصورة النقطية بلا دقة تُوضع ببكسل لكل بكسل تخطيط بدقة dpi المستند، فصورة من 2400 px عرضها 406 mm في صفحة 150 dpi. صرّح ببكسلات الملف الحقيقية وأعطِ الصورة دقتها (bitmap.resolution: 300)، أو اضبط layout.bitmapResolution لكل الصور النقطية: قيمة ppi، أو 'file' لقراءة الدقة التي يذكرها الملف. يظل العمود يحدّ الصورة.",
+      "ja": "解像度のないビットマップは、文書のdpiで1ピクセルを1レイアウトピクセルとして置かれるため、2400 pxの写真は150 dpiのページで幅406 mmになります。ファイルの実際のピクセル数を宣言し、画像に解像度を与える（bitmap.resolution: 300）か、すべてのビットマップにlayout.bitmapResolutionを設定します。値はppi、またはファイルが記す解像度を読む'file'です。段の幅は引き続き画像の上限になります。",
+      "pt": "Um bitmap sem resolução é colocado a um pixel por pixel da diagramação na resolução do documento, então uma foto de 2400 px mede 406 mm de largura numa página de 150 dpi. Declare os pixels reais do arquivo e dê à imagem sua resolução (bitmap.resolution: 300), ou ajuste layout.bitmapResolution para todos os bitmaps: um valor de ppi, ou 'file' para ler o que o arquivo informa. A coluna continua limitando a imagem."
     },
     "feature": "resources"
   },
