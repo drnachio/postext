@@ -458,6 +458,7 @@ The Markdown only cites them.
 - Recognised in paragraphs, list items, blockquotes, **headings**, callouts, and in resource captions, notes and table cells.
 - **Not recognised inside `:chip[…]`** (stays literal).
 - **The first mention places the resource.** A floated resource (`placement.position` `auto`/`top`/`bottom`) goes into the first free slot **after** its first reference: the bottom of the current column, the top of the next, or a band of the next page. You do NOT embed it again.
+- **Head of the citing page** (≥ 1.25): `placement.citingPage: true` (or `layout.floatsAtCitingPage`) lets a `top`/`auto` float head the page (column) where its citing line lands instead; the text above the reference moves down under it. Cite where the text wants the reference, not earlier to pull a figure forward.
 - Floats of one type never overtake each other.
 - Floats are flushed at chapter openers (`breakBefore`), `:::part`, `floatBarrier` callouts, and the end of the document. `:::pagebreak` sends pending floats to the next page.
 

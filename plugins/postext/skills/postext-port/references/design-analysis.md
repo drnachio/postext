@@ -303,6 +303,7 @@ per-resource `placement`:
 | Landscape table on its own page | `span: "page"`, `rotate: "ccw"` |
 | Tall plate that must fit the page | `shrink: "page"` (≥ 1.24; `minScale` default 0.7), `captionMeasure: "body"`, `align: "center"` |
 | Figure that should stay on the page that cites it, a little smaller, rather than move on | `shrink: "slot"`, `minScale: 0.8` (≥ 1.24) |
+| Figure at the head of the page that cites it, the text above the reference set under it (LaTeX `[t]`) | `position: "top"`, `citingPage: true` (≥ 1.25); `layout.floatsAtCitingPage` for every float |
 
 Floats of one numbering sequence never overtake each other. Resources are
 numbered by their first mention.

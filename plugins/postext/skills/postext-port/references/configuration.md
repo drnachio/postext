@@ -193,6 +193,8 @@ layout
 │                                                             pHYs/JFIF/EXIF (bitmap.fileResolution), 72/96 = unset
 ├─ floatShrink        { mode='never', minScale=0.7 }          ≥ 1.24 document default of placement.shrink / minScale (see §ResourcePlacement)
 ├─ wrap               { gap?, minTextWidth=12em, minLinesBeside=2, defaultWidth=0.45 }   ≥ 1.24 text wrap defaults (placement.wrap, callout wrap); gap unset = one body line; minTextWidth a Dimension or a share of the column
+├─ floatsAtCitingPage boolean                                default false  ≥ 1.25 document default of placement.citingPage (see §ResourcePlacement)
+├─ maxTopFraction     number                                 default 0.7    ≥ 1.25 largest share of the column a float heading its citing page takes (with the floats already there)
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
@@ -1119,6 +1121,13 @@ wrap?:    'none' (default) | 'left' | 'right' | 'start' | 'end'   ≥ 1.24: text
                          (minLinesBeside) = band + textWrap warning; columns with a wrap are not balanced
 wrapGap?: Dimension      ≥ 1.24: space between the wrapped item (caption included) and the text beside and under it;
                          default layout.wrap.gap, else one body line
+citingPage?: boolean     ≥ 1.25, position top/auto, span column/page, not rotated: head the page (page span) or column
+                         (column span, columns too) where the citing line lands, LaTeX's [t], instead of the first free
+                         slot after it; the text above the reference moves down under it. Only when it fits within
+                         layout.maxTopFraction of the column, the earlier floats of its sequence are set, no explicit
+                         break opens the page (chapter's first page, part, :::pagebreak), nothing page-wide stands above
+                         the citing line, and the citing line stays on that page; else its usual slot. Falls back to
+                         layout.floatsAtCitingPage. Read after its citation in tagged PDF / HTML
 ```
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the

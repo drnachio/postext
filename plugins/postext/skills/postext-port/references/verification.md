@@ -304,7 +304,7 @@ the page images instead of claiming the port is visually verified.
 | Column one or two lines short at the foot | column balancing (`headings.balancing`), on by default: extra grid lines above headings → after lists → under top floats → loose paragraphs; `maxLooseParagraphs`, `maxTracking` |
 | Chapter's last page ragged between columns | `balancing.trailing` |
 | Short columns before a page-wide box | `balancing.beforeSpan`; `keepTogether: false` on the box |
-| Figure lands pages after its citation | cite earlier; `position: "auto"`; check the sequence order (floats never overtake); a page float cited on an opener goes to the next page |
+| Figure lands pages after its citation | `citingPage: true` (≥ 1.25, top/auto floats) to head the citing page; `position: "auto"` (the foot of the citing page); check the sequence order (floats never overtake); a float cited on a chapter's first page or after a break goes to the next page |
 | Box placed whole where the source runs text around it | floated box (`placement: "auto"`/`"top"`), fence right after the citing paragraph |
 | Box cut or overflowing | `keepTogether: false` + `splitMinLines`; floats yield to keep-together boxes |
 | Only the heading of a section fits at a column foot | it moves on by itself (a heading never closes a column); check `keepWithNext` |

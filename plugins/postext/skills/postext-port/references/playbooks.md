@@ -627,6 +627,14 @@ Ways to choose placement automatically:
   column (width 0.9 when wide);
 - by original width: wider than the column → page.
 
+A figure the source sets at the head of the page that cites it (a plate
+over the text that introduces it, LaTeX's `[t]`): `citingPage: true` on
+its placement or its type's `defaultPlacement` (≥ 1.25), or
+`layout.floatsAtCitingPage` for the whole book. Do not move the citation
+earlier to drag the figure forward. It never heads a chapter's first page
+or a page after a forced break; `layout.maxTopFraction` (0.7) caps how
+much of the column it takes.
+
 ### D4. Vector figures for print
 Keep the original vector artwork as a single-page PDF **print master**
 (`pdfFile`). The PDF export embeds it verbatim, so text stays text. The screen
