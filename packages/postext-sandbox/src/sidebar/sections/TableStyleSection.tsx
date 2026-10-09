@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveBodyTextConfig, resolveTableStyleConfig } from 'postext';
-import type { TableStyleConfig, ResolvedTableStyleConfig, TableRules, TableOverflow, TableTextTransform, DimensionUnit } from 'postext';
+import type { TableStyleConfig, ResolvedTableStyleConfig, TableRules, TableOverflow, TableTextTransform, TableSpanRules, TableContinuedFootRule, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -16,6 +16,7 @@ import {
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
 const BORDER_UNITS: DimensionUnit[] = ['pt', 'px'];
+const RULE_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const RADIUS_UNITS: DimensionUnit[] = ['pt', 'px', 'mm'];
 const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
@@ -53,7 +54,11 @@ export function TableStyleFields({
     { value: 'horizontal', label: labels.tableRulesHorizontal },
     { value: 'outer', label: labels.tableRulesOuter },
     { value: 'none', label: labels.tableRulesNone },
+    { value: 'booktabs', label: labels.tableRulesBooktabs },
   ];
+  // Booktabs (#625) strokes its own widths and has no frame to round:
+  // `borderWidth` and `borderRadius` do not apply to it.
+  const booktabs = ts.borders && ts.rules === 'booktabs';
   const overflowOptions = [
     { value: 'split', label: labels.tableOverflowSplit },
     { value: 'clip', label: labels.tableOverflowClip },
@@ -232,29 +237,105 @@ export function TableStyleFields({
               onReset={() => resetField('borderColor')}
               fieldId={`${fieldIdPrefix}-borderColor`}
             />
-            <DimensionInput
-              label={labels.tableBorderWidth}
-              value={ts.borderWidth}
-              onChange={(v) => update({ borderWidth: v })}
-              min={0}
-              step={0.25}
-              units={BORDER_UNITS}
-              isDefault={unset('borderWidth')}
-              onReset={() => resetField('borderWidth')}
-            />
+            {!booktabs && (
+              <DimensionInput
+                label={labels.tableBorderWidth}
+                value={ts.borderWidth}
+                onChange={(v) => update({ borderWidth: v })}
+                min={0}
+                step={0.25}
+                units={BORDER_UNITS}
+                isDefault={unset('borderWidth')}
+                onReset={() => resetField('borderWidth')}
+              />
+            )}
+            {booktabs && (
+              <>
+                <DimensionInput
+                  label={labels.tableHeavyRuleWidth}
+                  value={ts.heavyRuleWidth}
+                  onChange={(v) => update({ heavyRuleWidth: v })}
+                  min={0}
+                  step={0.01}
+                  units={RULE_UNITS}
+                  tooltip={labels.tableHeavyRuleWidthTooltip}
+                  isDefault={unset('heavyRuleWidth')}
+                  onReset={() => resetField('heavyRuleWidth')}
+                />
+                <DimensionInput
+                  label={labels.tableLightRuleWidth}
+                  value={ts.lightRuleWidth}
+                  onChange={(v) => update({ lightRuleWidth: v })}
+                  min={0}
+                  step={0.01}
+                  units={RULE_UNITS}
+                  tooltip={labels.tableLightRuleWidthTooltip}
+                  isDefault={unset('lightRuleWidth')}
+                  onReset={() => resetField('lightRuleWidth')}
+                />
+                <SelectInput
+                  label={labels.tableSpanRules}
+                  value={ts.spanRules}
+                  options={[
+                    { value: 'trimmed', label: labels.tableSpanRulesTrimmed },
+                    { value: 'full', label: labels.tableSpanRulesFull },
+                    { value: 'none', label: labels.tableSpanRulesNone },
+                  ]}
+                  onChange={(v) => update({ spanRules: v as TableSpanRules })}
+                  tooltip={labels.tableSpanRulesTooltip}
+                  isDefault={unset('spanRules')}
+                  onReset={() => resetField('spanRules')}
+                />
+                {ts.spanRules !== 'none' && (
+                  <DimensionInput
+                    label={labels.tableSpanRuleWidth}
+                    value={ts.spanRuleWidth}
+                    onChange={(v) => update({ spanRuleWidth: v })}
+                    min={0}
+                    step={0.01}
+                    units={RULE_UNITS}
+                    tooltip={labels.tableSpanRuleWidthTooltip}
+                    isDefault={unset('spanRuleWidth')}
+                    onReset={() => resetField('spanRuleWidth')}
+                  />
+                )}
+                {ts.spanRules === 'trimmed' && (
+                  <DimensionInput
+                    label={labels.tableSpanRuleTrim}
+                    value={ts.spanRuleTrim}
+                    onChange={(v) => update({ spanRuleTrim: v })}
+                    min={0}
+                    step={0.05}
+                    units={SPACING_UNITS}
+                    tooltip={labels.tableSpanRuleTrimTooltip}
+                    isDefault={unset('spanRuleTrim')}
+                    onReset={() => resetField('spanRuleTrim')}
+                  />
+                )}
+                <ToggleSwitch
+                  label={labels.tableGroupRules} tooltip={labels.tableGroupRulesTooltip}
+                  checked={ts.groupRules}
+                  onChange={(v) => update({ groupRules: v })}
+                  isDefault={unset('groupRules')}
+                  onReset={() => resetField('groupRules')}
+                />
+              </>
+            )}
           </>
         )}
-        <DimensionInput
-          label={labels.tableBorderRadius}
-          value={ts.borderRadius}
-          onChange={(v) => update({ borderRadius: v })}
-          min={0}
-          step={0.5}
-          units={RADIUS_UNITS}
-          tooltip={labels.tableBorderRadiusTooltip}
-          isDefault={unset('borderRadius')}
-          onReset={() => resetField('borderRadius')}
-        />
+        {!booktabs && (
+          <DimensionInput
+            label={labels.tableBorderRadius}
+            value={ts.borderRadius}
+            onChange={(v) => update({ borderRadius: v })}
+            min={0}
+            step={0.5}
+            units={RADIUS_UNITS}
+            tooltip={labels.tableBorderRadiusTooltip}
+            isDefault={unset('borderRadius')}
+            onReset={() => resetField('borderRadius')}
+          />
+        )}
         <DimensionInput
           label={labels.tableCellPadding}
           value={ts.cellPadding}
@@ -279,6 +360,21 @@ export function TableStyleFields({
         />
         {ts.overflow === 'split' && (
           <>
+            {booktabs && (
+              <SelectInput
+                label={labels.tableContinuedFootRule}
+                value={ts.continuedFootRule}
+                options={[
+                  { value: 'bottom', label: labels.tableContinuedFootRuleBottom },
+                  { value: 'light', label: labels.tableContinuedFootRuleLight },
+                  { value: 'none', label: labels.tableContinuedFootRuleNone },
+                ]}
+                onChange={(v) => update({ continuedFootRule: v as TableContinuedFootRule })}
+                tooltip={labels.tableContinuedFootRuleTooltip}
+                isDefault={unset('continuedFootRule')}
+                onReset={() => resetField('continuedFootRule')}
+              />
+            )}
             <TextInput
               label={labels.tableContinuedSuffix}
               value={ts.continuedSuffix}
