@@ -529,24 +529,24 @@
       ]
     },
     "explanation": {
-      "en": "Drop caps exist only in design text elements. Put the lead paragraph in a heading attribute and draw it with a dropCap in the opener design.",
-      "es": "Las capitulares solo existen en los elementos de texto de diseño. Pon la entradilla en un atributo del título y dibújala con dropCap en el diseño de la apertura.",
-      "ca": "Les caplletres només existeixen als elements de text de disseny. Posa l'entradeta en un atribut del títol i dibuixa-la amb dropCap al disseny de l'obertura.",
-      "zh": "首字下沉只存在于版面设计的文本元素中。把开头一段放进标题属性，在章首页设计中用dropCap画出来。",
-      "ar": "لا توجد الحروف الاستهلالية إلا في عناصر نص التصميم. ضع الفقرة الأولى في سمة عنوان وارسمها بـ dropCap في تصميم صفحة الافتتاح.",
-      "ja": "ドロップキャップはデザインのテキスト要素にしかありません。冒頭の段落を見出しの属性に入れ、章扉のデザインでdropCapを使って描いてください。",
-      "pt": "As capitulares só existem nos elementos de texto do design. Ponha o parágrafo de abertura em um atributo do título e desenhe-o com dropCap no design da abertura."
+      "en": "A heading level's or heading style's dropCap opens the first paragraph after the heading with its first letter set large, and a paragraph style's opens the first paragraph of each :::paragraphs group (every one with each: true). The lines beside the letter are shortened and set with the rest of the text: justified, hyphenated, never broken before the letter's last line. lines, sink (a raised initial), punctuation, a lead-in in small capitals and {dropcap=false} or {dropcap=2} on a heading or a fence; the cap heights are measured from the faces.",
+      "es": "El dropCap de un nivel o de un estilo de título abre el primer párrafo tras el título con su primera letra en grande, y el de un estilo de párrafo abre el primer párrafo de cada grupo :::paragraphs (cada uno con each: true). Las líneas junto a la letra se acortan y se componen con el resto del texto: justificadas, con división silábica y sin cortarse antes de la última línea de la letra. lines, sink (una inicial elevada), punctuation, una entrada en versalitas y {dropcap=false} o {dropcap=2} en un título o una apertura de grupo; las alturas de mayúscula se miden en las fuentes.",
+      "ca": "El dropCap d'un nivell o d'un estil de títol obre el primer paràgraf després del títol amb la primera lletra en gran, i el d'un estil de paràgraf obre el primer paràgraf de cada grup :::paragraphs (cadascun amb each: true). Les línies al costat de la lletra s'escurcen i es componen amb la resta del text: justificades, amb partició de mots i sense tallar-se abans de l'última línia de la lletra. lines, sink (una inicial elevada), punctuation, una entrada en versaletes i {dropcap=false} o {dropcap=2} en un títol o una obertura de grup; les altures de majúscula es mesuren en les fonts.",
+      "zh": "标题级别或标题样式的dropCap让标题后的第一段以放大的首字开头，段落样式的dropCap让每个:::paragraphs组的第一段（each: true时每一段）这样开头。首字旁的几行随之缩短，与其余文字一起排：两端对齐、断字，不会在首字的最后一行之前分开。可设lines、sink（凸起首字）、punctuation、小型大写字母的引导词，并在标题或组开头用{dropcap=false}或{dropcap=2}；大写字母高度按字体实测。",
+      "ar": "يفتتح dropCap في مستوى عنوان أو نمط عنوان أولَ فقرة بعد العنوان بحرفها الأول مكبّرًا، ويفتتح dropCap في نمط فقرة أولَ فقرة من كل مجموعة :::paragraphs (كل فقرة مع each: true). تُقصَّر الأسطر المجاورة للحرف وتُصفّ مع بقية النص: مضبوطة وموصولة، ولا تنقسم قبل آخر سطر يجاور الحرف. ومنها lines وsink (حرف بارز) وpunctuation وكلمات استهلال بحروف كبيرة صغيرة و{dropcap=false} أو {dropcap=2} على عنوان أو فاتحة مجموعة؛ وتُقاس ارتفاعات الحروف الكبيرة من الخطوط.",
+      "ja": "見出しレベルや見出しスタイルのdropCapは見出しのあとの最初の段落を、段落スタイルのdropCapは各:::paragraphsグループの最初の段落（each: trueならすべての段落）を、最初の文字を大きくして始めます。文字の横の行は短くなり、ほかの本文と同じく両端揃え・ハイフネーションで組まれ、文字の最後の行より前で分かれません。lines、sink（レイズドイニシャル）、punctuation、スモールキャピタルのリードイン、見出しやグループ開始行の{dropcap=false}や{dropcap=2}が使えます。大文字の高さはフォントから測ります。",
+      "pt": "O dropCap de um nível ou de um estilo de título abre o primeiro parágrafo após o título com a primeira letra em tamanho grande, e o de um estilo de parágrafo abre o primeiro parágrafo de cada grupo :::paragraphs (cada um com each: true). As linhas ao lado da letra são encurtadas e compostas com o resto do texto: justificadas, hifenizadas, sem se dividir antes da última linha da letra. lines, sink (uma inicial elevada), punctuation, uma abertura em versaletes e {dropcap=false} ou {dropcap=2} em um título ou na abertura de um grupo; as alturas das maiúsculas são medidas nas fontes."
     },
     "docs": {
       "slug": "configuration",
       "heading": {
-        "en": "Text elements",
-        "es": "Elementos de texto",
-        "ca": "Elements de text",
-        "zh": "文本元素",
-        "ar": "عناصر النص",
-        "ja": "テキスト要素",
-        "pt": "Elementos de texto"
+        "en": "Drop caps",
+        "es": "Letras capitulares",
+        "ca": "Caplletres",
+        "zh": "首字下沉",
+        "ar": "الحروف الاستهلالية",
+        "ja": "ドロップキャップ",
+        "pt": "Capitulares"
       }
     }
   },

@@ -2508,6 +2508,103 @@
     },
     "since": "1.23.0"
   },
+  "body-drop-caps": {
+    "label": {
+      "en": "Drop caps in body paragraphs",
+      "es": "Capitulares en párrafos de texto",
+      "ca": "Caplletres en paràgrafs de text",
+      "zh": "正文段落的首字下沉",
+      "ar": "الحروف الاستهلالية في فقرات المتن",
+      "ja": "本文段落のドロップキャップ",
+      "pt": "Capitulares em parágrafos do texto"
+    },
+    "definition": {
+      "en": "dropCap on a heading level, a heading style or a paragraph style opens a body paragraph with its first letter set large beside its first lines, which are shortened and set with the text; a raised initial, an opening quote hung or set with the letter, a lead-in in small capitals.",
+      "es": "dropCap en un nivel de título, un estilo de título o un estilo de párrafo abre un párrafo del texto con su primera letra en grande junto a sus primeras líneas, que se acortan y se componen con el texto; una inicial elevada, una comilla de apertura colgada o junto a la letra, una entrada en versalitas.",
+      "ca": "dropCap en un nivell de títol, un estil de títol o un estil de paràgraf obre un paràgraf del text amb la primera lletra en gran al costat de les primeres línies, que s'escurcen i es componen amb el text; una inicial elevada, unes cometes d'obertura penjades o amb la lletra, una entrada en versaletes.",
+      "zh": "在标题级别、标题样式或段落样式上设置dropCap，正文段落就以放大的首字开头，首字旁的几行缩短并与正文一起排；可做凸起首字、悬挂或随首字放大的开引号，以及小型大写字母的引导词。",
+      "ar": "يفتتح dropCap في مستوى عنوان أو نمط عنوان أو نمط فقرة فقرةً من المتن بحرفها الأول مكبّرًا إلى جانب أسطرها الأولى، التي تُقصَّر وتُصفّ مع النص؛ ومنه الحرف البارز، وعلامة التنصيص الافتتاحية معلّقة أو مع الحرف، وكلمات الاستهلال بحروف كبيرة صغيرة.",
+      "ja": "見出しレベル、見出しスタイル、段落スタイルのdropCapで、本文の段落を最初の文字を大きくして冒頭の数行の横に置いて始めます。その行は短くなり本文と一緒に組まれます。レイズドイニシャル、ぶら下げや頭文字と一緒の始め引用符、スモールキャピタルのリードインも組めます。",
+      "pt": "dropCap em um nível de título, um estilo de título ou um estilo de parágrafo abre um parágrafo do texto com a primeira letra em tamanho grande ao lado das primeiras linhas, que são encurtadas e compostas com o texto; uma inicial elevada, aspas de abertura penduradas ou junto da letra, uma abertura em versaletes."
+    },
+    "aliases": {
+      "en": [
+        "drop cap",
+        "initial letter",
+        "raised initial",
+        "versal",
+        "lead-in small caps",
+        "dropCap"
+      ],
+      "es": [
+        "capitular",
+        "letra capital",
+        "inicial elevada",
+        "versal",
+        "entrada en versalitas",
+        "dropCap"
+      ],
+      "ca": [
+        "caplletra",
+        "lletra capital",
+        "inicial elevada",
+        "entrada en versaletes",
+        "dropCap"
+      ],
+      "zh": [
+        "首字下沉",
+        "首字放大",
+        "凸起首字",
+        "drop cap",
+        "dropCap"
+      ],
+      "ar": [
+        "حرف استهلالي",
+        "حرف بارز",
+        "الحرف الأول الكبير",
+        "dropCap"
+      ],
+      "ja": [
+        "ドロップキャップ",
+        "イニシャル",
+        "レイズドイニシャル",
+        "リードイン",
+        "dropCap"
+      ],
+      "pt": [
+        "capitular",
+        "letra capitular",
+        "inicial elevada",
+        "versal",
+        "abertura em versaletes",
+        "dropCap"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Drop caps",
+        "es": "Letras capitulares",
+        "ca": "Caplletres",
+        "zh": "首字下沉",
+        "ar": "الحروف الاستهلالية",
+        "ja": "ドロップキャップ",
+        "pt": "Capitulares"
+      }
+    },
+    "detect": {
+      "config": [
+        "headings.levels[].dropCap",
+        "headingStyles[].dropCap",
+        "paragraphStyles[].dropCap"
+      ],
+      "markdown": [
+        "\\{[^{}\\n]*\\bdropcap\\b"
+      ]
+    },
+    "since": "1.23.0"
+  },
   "bibliography": {
     "label": {
       "en": "Bibliographies and glossaries",

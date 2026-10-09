@@ -58,6 +58,7 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "joiningScriptLetterSpacing", page: 1, detail: "كتاب" },
     { kind: "lineNumberOverlap", page: 2, detail: "line 40" },
     { kind: "tabInVerticalText", page: null, detail: ":tab" },
+    { kind: "dropCap", page: 1, detail: "shortParagraph (reserve): A short paragraph." },
   ];
 
   it("fails a recipe on the Arabic, word-overflow, line-number and tab warnings it does not expect", () => {
@@ -68,6 +69,7 @@ describe("C5: content warnings on how the text is set (#401)", () => {
       ["fail", 'joiningScriptLetterSpacing "كتاب" on page 1'],
       ["fail", 'lineNumberOverlap "line 40" on page 2'],
       ["fail", 'tabInVerticalText ":tab"'],
+      ["fail", 'dropCap "shortParagraph (reserve): A short paragraph." on page 1'],
     ]);
   });
 
@@ -253,6 +255,16 @@ describe("right-binding detection", () => {
     expect(tabs([], "Soup :tab 8.50")).toBe(true);
     expect(tabs([], "Marks :tab{at=end align=end} 2")).toBe(true);
     expect(tabs([], "Chapter 3:table of results")).toBe(false);
+  });
+
+  it("finds body drop caps in the config and the {dropcap} attribute (#623)", () => {
+    const caps = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("body-drop-caps");
+    expect(caps(["headings.levels.dropCap"])).toBe(true);
+    expect(caps(["headingStyles.dropCap"])).toBe(true);
+    expect(caps(["paragraphStyles.dropCap"])).toBe(true);
+    expect(caps([], "# Lost {dropcap=false}")).toBe(true);
+    expect(caps([], ':::paragraphs{style="entry" dropcap}')).toBe(true);
+    expect(caps(["headings.levels.advancedDesign.slot.elements.dropCap"])).toBe(false);
   });
 
   it("comes from the binding, not from any writing mode", () => {

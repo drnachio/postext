@@ -111,8 +111,10 @@ export interface ProbeFacts {
   /** Content warnings on how the text is set (`arabicMarksExceedLeading`,
    *  `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), with the
    *  words they name, `lineNumberOverlap` (a line number in the side
-   *  column on a side box or float), with the number, and
-   *  `tabInVerticalText` (a `:tab` set as a word space in vertical text). */
+   *  column on a side box or float), with the number,
+   *  `tabInVerticalText` (a `:tab` set as a word space in vertical text),
+   *  and `dropCap` (a paragraph whose drop cap could not be set as
+   *  configured), with its reason and first line. */
   textWarnings?: { kind: string; page: number | null; detail: string }[];
   /** `doc.configWarnings` of the builds, one per value: settings the engine
    *  could not use as written and what it used instead (C31). */

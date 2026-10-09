@@ -3911,5 +3911,47 @@
         "pt": "Paradas de tabulação"
       }
     }
+  },
+  "dropCap": {
+    "source": "engine",
+    "label": {
+      "en": "Drop cap not set as configured",
+      "es": "Capitular no compuesta como se pidió",
+      "ca": "Caplletra no composta com es demanava",
+      "zh": "首字下沉未按设置排出",
+      "ar": "حرف استهلالي لم يُصفّ كما ضُبط",
+      "ja": "ドロップキャップが設定どおりに組まれていない",
+      "pt": "Capitular não composta como pedido"
+    },
+    "cause": {
+      "en": "A paragraph a dropCap opens cannot take it as set: it has fewer lines than the initial sinks (shortParagraph kept the room, shrank the initial or left it out), it broke before the initial's last line alone in a column too short, its first letter joins the next (Arabic), it is set vertically, or it opens with no letter (a reference, a formula, a note mark).",
+      "es": "Un párrafo que abre un dropCap no puede llevarlo como está: tiene menos líneas de las que baja la inicial (shortParagraph reservó el espacio, la encogió o la quitó), se cortó antes de la última línea de la inicial solo en una columna demasiado corta, su primera letra se une a la siguiente (árabe), está compuesto en vertical o no empieza por una letra (una referencia, una fórmula, una llamada de nota).",
+      "ca": "Un paràgraf que obre un dropCap no el pot portar tal com està: té menys línies de les que baixa la inicial (shortParagraph en va reservar l'espai, la va encongir o la va treure), es va tallar abans de l'última línia de la inicial sol en una columna massa curta, la primera lletra s'uneix a la següent (àrab), està compost en vertical o no comença per una lletra (una referència, una fórmula, una crida de nota).",
+      "zh": "dropCap所开头的段落无法按设置排出：段落行数少于首字下沉的行数（shortParagraph保留了空间、缩小了首字或取消了它）；段落独占一栏而该栏太短，在首字最后一行之前分开；首字母与后一个字母相连（阿拉伯文）；段落竖排；或段落开头不是字母（引用、公式、注号）。",
+      "ar": "فقرة يفتتحها dropCap لا يمكن أن تحمله كما ضُبط: أسطرها أقل مما ينزله الحرف (حفظ shortParagraph المكان أو صغّر الحرف أو أسقطه)، أو انقسمت قبل آخر سطر يجاور الحرف وهي وحدها في عمود قصير، أو حرفها الأول يتصل بما بعده (العربية)، أو صُفّت عموديًا، أو لا تبدأ بحرف (إحالة أو معادلة أو علامة حاشية).",
+      "ja": "dropCapで始まる段落が設定どおりに組めません。段落の行数が頭文字の沈む行数より少ない（shortParagraphが空きを取った、頭文字を小さくした、外した）、短い段に単独で置かれて頭文字の最後の行より前で分かれた、最初の文字が次の文字とつながる（アラビア文字）、縦組みである、文字で始まらない（参照、数式、注の合印）のいずれかです。",
+      "pt": "Um parágrafo que um dropCap abre não pode levá-lo como definido: tem menos linhas do que a inicial desce (shortParagraph reservou o espaço, reduziu a inicial ou a retirou), dividiu-se antes da última linha da inicial sozinho numa coluna curta demais, a primeira letra se liga à seguinte (árabe), está composto na vertical ou não começa por uma letra (uma referência, uma fórmula, uma chamada de nota)."
+    },
+    "fix": {
+      "en": "Choose shortParagraph for short paragraphs, give a column room for the initial's lines, or turn the drop cap off for that chapter with {dropcap=false} on its heading.",
+      "es": "Elige shortParagraph para los párrafos cortos, deja en la columna sitio para las líneas de la inicial o quita la capitular de ese capítulo con {dropcap=false} en su título.",
+      "ca": "Tria shortParagraph per als paràgrafs curts, deixa a la columna espai per a les línies de la inicial o treu la caplletra d'aquell capítol amb {dropcap=false} al seu títol.",
+      "zh": "为短段落选择shortParagraph，在栏中给首字的几行留出空间，或在该章标题上写{dropcap=false}取消首字下沉。",
+      "ar": "اختر shortParagraph للفقرات القصيرة، أو اترك في العمود مكانًا لأسطر الحرف، أو ألغِ الحرف الاستهلالي لذلك الفصل بـ{dropcap=false} على عنوانه.",
+      "ja": "短い段落にはshortParagraphを選ぶか、段に頭文字の行が入る余地を残すか、その章の見出しに{dropcap=false}を書いてドロップキャップを外してください。",
+      "pt": "Escolha shortParagraph para os parágrafos curtos, deixe na coluna espaço para as linhas da inicial ou retire a capitular desse capítulo com {dropcap=false} no título."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Drop caps",
+        "es": "Letras capitulares",
+        "ca": "Caplletres",
+        "zh": "首字下沉",
+        "ar": "الحروف الاستهلالية",
+        "ja": "ドロップキャップ",
+        "pt": "Capitulares"
+      }
+    }
   }
 }
