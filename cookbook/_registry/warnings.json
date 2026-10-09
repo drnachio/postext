@@ -4205,5 +4205,47 @@
         "pt": "Avisos de configuração"
       }
     }
+  },
+  "invalidFrontmatter": {
+    "source": "engine",
+    "label": {
+      "en": "Invalid front matter",
+      "es": "Front matter no válido",
+      "ca": "Front matter no vàlid",
+      "zh": "前置元数据无效",
+      "ar": "بيانات تمهيدية غير صالحة",
+      "ja": "フロントマターが不正",
+      "pt": "Front matter inválido"
+    },
+    "cause": {
+      "en": "The block between the --- lines is not valid YAML, so the chapter is set without its metadata (title, author, language) and the block is left out of the text.",
+      "es": "El bloque entre las líneas --- no es YAML válido, así que el capítulo se compone sin sus metadatos (título, autor, idioma) y el bloque queda fuera del texto.",
+      "ca": "El bloc entre les línies --- no és YAML vàlid, de manera que el capítol es compon sense les seves metadades (títol, autor, llengua) i el bloc queda fora del text.",
+      "zh": "---两行之间的块不是有效的YAML，因此该章在没有元数据（标题、作者、语言）的情况下排版，该块也不进入正文。",
+      "ar": "الكتلة بين سطرَي --- ليست YAML صالحًا، فيُنضَّد الفصل بلا بياناته الوصفية (العنوان والمؤلف واللغة) وتبقى الكتلة خارج النص.",
+      "ja": "---の行に挟まれたブロックが正しいYAMLではないため、章はメタデータ（タイトル、著者、言語）なしで組まれ、ブロックは本文に入りません。",
+      "pt": "O bloco entre as linhas --- não é YAML válido, então o capítulo é composto sem seus metadados (título, autor, idioma) e o bloco fica fora do texto."
+    },
+    "fix": {
+      "en": "Read the line and column the warning gives and check quotes, colons and indentation there; quote every value that holds a colon.",
+      "es": "Lee la línea y la columna que da el aviso y revisa allí comillas, dos puntos y sangrías; entrecomilla todo valor que lleve dos puntos.",
+      "ca": "Llegeix la línia i la columna que dona l'avís i revisa-hi cometes, dos punts i sagnats; posa entre cometes tot valor que porti dos punts.",
+      "zh": "查看警告给出的行和列，检查那里的引号、冒号和缩进；含冒号的值一律加引号。",
+      "ar": "اقرأ السطر والعمود اللذين يذكرهما التحذير وافحص هناك علامات الاقتباس والنقطتين والإزاحة؛ ضع بين علامتي اقتباس كل قيمة فيها نقطتان.",
+      "ja": "警告が示す行と列を見て、そこの引用符、コロン、インデントを確かめてください。コロンを含む値はすべて引用符で囲みます。",
+      "pt": "Leia a linha e a coluna que o aviso indica e confira ali aspas, dois-pontos e recuos; ponha entre aspas todo valor que tenha dois-pontos."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Frontmatter",
+        "es": "Frontmatter",
+        "ca": "Frontmatter",
+        "zh": "前置元数据",
+        "ar": "البيانات التمهيدية (frontmatter)",
+        "ja": "フロントマター",
+        "pt": "Frontmatter"
+      }
+    }
   }
 }
