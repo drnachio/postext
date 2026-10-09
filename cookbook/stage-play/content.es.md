@@ -10,11 +10,43 @@ author: "Oscar Wilde"
 
 ## Personajes de la obra
 
-::resource{id="persons"}
+:::paragraphs{style="bill-head"}
+Reparto del estreno · Teatro St James’s, 14 de febrero de 1895
+:::
+
+:::paragraphs{style="person"}
+**John Worthing**, juez de paz :tab Mr. George Alexander
+
+**Algernon Moncrieff** :tab Mr. Allen Aynesworth
+
+**Canónigo Chasuble**, doctor en Teología :tab Mr. H. H. Vincent
+
+**Merriman**, mayordomo :tab Mr. Frank Dyall
+
+**Lane**, criado :tab Mr. F. Kinsey Peile
+
+**Lady Bracknell** :tab Miss Rose Leclercq
+
+**La honorable Gwendolen Fairfax** :tab Miss Irene Vanbrugh
+
+**Cecily Cardew** :tab Miss Evelyn Millard
+
+**Miss Prism**, institutriz :tab Mrs. George Canninge
+:::
 
 ## Lugares de la acción
 
-::resource{id="scenes"}
+:::paragraphs{style="scene"}
+:tab Acto I :tab Piso de Algernon Moncrieff en Half-Moon Street, W.
+
+:tab Acto II :tab Jardín de la casa solariega de Woolton.
+
+:tab Acto III :tab Salón de la casa solariega de Woolton.
+:::
+
+:::paragraphs{style="direction"}
+*Época: la actual.*
+:::
 
 :::paragraphs{style="colophon"}
 Texto inglés: Proyecto Gutenberg, libro electrónico n.º 844, de dominio público; traducción de esta edición. Compuesto en Libre Baskerville, Abril Fatface y Playfair Display SC (SIL Open Font License).

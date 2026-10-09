@@ -1,34 +1,34 @@
 ---
-title: "Cardápio de bistrô: preços alinhados sem tabulação"
-summary: "Um cardápio de bistrô impresso dos dois lados, com os preços em tabelas sem fios e um fio cor de latão ancorado de cada lado do título de cada seção."
-plain: "Um cardápio de duas faces para um restaurante inventado de Paris. Mostra como alinhar os pratos e os preços em linhas certinhas usando tabelas sem linhas visíveis."
-description: "O cardápio de outono de um bistrô parisiense imaginário, composto no Postext em tabelas sem fios: pratos e preços na frente, vinhos por região no verso."
-question: "Como faço para alinhar à direita os preços de um cardápio, com cabeçalho e linhas mescladas, sem tabulação?"
-aliases: ["cardápio", "menu", "menu de restaurante", "carta", "carta de vinhos", "lista de preços", "tabulação", "paradas de tabulação", "preços alinhados à direita", "tabela sem bordas", "tabela sem fios", "selos de dieta", "título entre fios"]
+title: "Cardápio de bistrô: preços numa parada de tabulação"
+summary: "Um cardápio de bistrô de duas faces: preços rentes à direita numa parada de tabulação, vinhos numa tabela sem fios e um fio de latão de cada lado dos títulos."
+plain: "Um cardápio de duas faces para um restaurante inventado de Paris. Mostra como levar cada preço até a borda direita com uma tabulação e como compor uma carta de vinhos numa tabela sem linhas visíveis."
+description: "O cardápio de outono de um bistrô parisiense imaginário, no Postext: pratos com o preço numa parada de tabulação na frente, vinhos em tabela sem fios no verso."
+question: "Como alinho à direita os preços de um cardápio, e a carta de vinhos com cabeçalho e linhas mescladas?"
+aliases: ["cardápio", "menu", "menu de restaurante", "carta", "carta de vinhos", "lista de preços", "tabulação", "paradas de tabulação", "parada de tabulação", "tabulação à direita", "tab stop", "preços alinhados à direita", "tabela sem bordas", "tabela sem fios", "selos de dieta", "título entre fios"]
 pageNotes: { "1": "A frente do cardápio em papel creme: um toldo listrado cor de vinho e palha numa barra de latão, Les Tanneurs em Limelight cor de vinho e, embaixo, Bistrot parisien depuis 1931 e Carte d’automne 2026. Três títulos de seção centralizados, Entrées, Plats e Desserts, cada um entre dois fios de latão que vão até as margens e cada um sobre quatro pratos: o nome francês em negrito com a guarnição, uma linha em inglês em itálico embaixo e o preço em negrito na margem direita. Quatro pratos levam um disco verde-escuro com V e cinco uma pílula contornada com SG. No pé, duas linhas pequenas centralizadas: a legenda dos selos e, depois, a origem da carne bovina e o aviso de que o serviço está incluído.", "2": "O verso: duas taças, quatro garrafas e uma jarra numa prateleira de latão sobre La Cave. Uma carta de vinhos encabeçada por Appellation · cépage, 12 cl e 75 cl, com as regiões Bulles, Blancs e Rouges centralizadas de lado a lado; o Saint-Émilion tem um travessão na coluna da taça. Abaixo, Le Comptoir, entre dois fios de latão, lista kir, pastis, chope e café, e um pequeno colofão centralizado corre no pé." }
 ---
 
 ## O que você vai compor
 
-O cardápio de outono do Les Tanneurs, um bistrô parisiense imaginário: uma só folha de 230 × 310 mm impressa dos dois lados. Na frente, um toldo listrado pende sobre o nome, composto em Limelight. Cada título de seção fica entre dois fios de latão que vão até as margens, com quatro pratos embaixo. Um prato é o nome francês em negrito com a guarnição, uma linha em inglês em itálico logo abaixo e o preço em negrito, alinhado à direita. Um disco verde-escuro com V marca os pratos vegetarianos, e uma pílula contornada com SG os sem glúten. No verso, a carta de vinhos fica sob uma prateleira de garrafas, com os preços da taça e da garrafa em colunas encabeçadas por 12 cl e 75 cl. O Postext não tem tabulação, então cada coluna de preços pertence a uma tabela sem fios e sem legenda.
+O cardápio de outono do Les Tanneurs, um bistrô parisiense imaginário: uma só folha de 230 × 310 mm impressa dos dois lados. Na frente, um toldo listrado pende sobre o nome, composto em Limelight. Cada título de seção fica entre dois fios de latão que vão até as margens, com quatro pratos embaixo. Um prato é o nome francês em negrito com a guarnição, uma linha em inglês em itálico logo abaixo e o preço em negrito, alinhado à direita. Um disco verde-escuro com V marca os pratos vegetarianos, e uma pílula contornada com SG os sem glúten. Cada prato é um só parágrafo, e uma tabulação leva o preço até uma parada na margem direita. No verso, a carta de vinhos fica sob uma prateleira de garrafas, com os preços da taça e da garrafa em colunas encabeçadas por 12 cl e 75 cl, numa tabela sem fios e sem legenda.
 
 ## Preparo
 
-### 1 · Uma tabela onde ficariam as tabulações
+### 1 · Uma parada de tabulação onde vai o preço
 
-O código está [na resposta curta](#a-resposta-curta), mais acima. Cada seção é uma tabela de duas colunas. O prato, uma quebra de linha e a tradução em itálico dividem a primeira célula, e o preço fica alinhado à direita na segunda, na primeira linha de base do prato, porque as duas células começam no alto da linha da tabela. `columnWidths` recebe pesos, então `[6, 1]` dá aos preços 22,6 mm dos 158 mm da medida. `rules: 'none'` e `headerBackgroundEnabled: false` tiram a grade e a linha de cabeçalho cinza que o [estilo de tabela](/pt/docs/configuration#estilo-de-tabela) padrão desenha. `cellPadding: pt(LEAD / 4)` faz cada prato ocupar duas linhas e meia da entrelinha de 14,5 pt, e uma seção de quatro pratos termina na décima linha da grade. Com o preenchimento padrão, 0,375 em, cada seção termina 0,9 mm abaixo dessa linha, cada título seguinte desce uma linha e o cardápio passa para quatro páginas.
+O código está [na resposta curta](#a-resposta-curta), mais acima. Cada seção é um grupo `:::paragraphs{style="dish"}`, um parágrafo por prato ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). O estilo do prato tem uma só parada, em `'end'`, o fim da medida, com `align: 'end'`: o texto depois de uma tabulação termina nela. Assim, `:tab **7**` depois da guarnição e dos selos leva o preço até a margem direita, seja qual for o comprimento do prato ([tabulações e paradas de tabulação](/pt/docs/document-format#tabulações-e-paradas-de-tabulação)). `:tab` absorve os espaços em volta dele, e a barra invertida no fim da linha é uma quebra de linha forçada, de modo que a tradução em itálico começa uma segunda linha do mesmo parágrafo e o preço fica na primeira. `spaceBetween` deixa meia linha entre dois pratos, e assim cada prato ocupa duas linhas e meia da entrelinha de 14,5 pt. `indent` e `endIndent` de um quarto de linha alinham os pratos com o texto das células da carta de vinhos no verso. Um parágrafo com tabulação é composto linha a linha; aqui todas as linhas são em bandeira de qualquer modo.
 
 ### 2 · Um só tipo de recurso, no lugar e sem número
 
 <Excerpt region="type" />
 
-Os tipos de figura e de tabela que vêm no motor imprimem uma linha de legenda e fazem cada recurso flutuar até o primeiro espaço livre depois da primeira referência. O tipo `menu` não tem prefixo de legenda, e as peças dele não têm legenda, então nada se imprime sob uma seção. Dê a ele `captionPrefix: 'Menu'` e uma linha numerada aparece sob cada peça, começando por “Menu 1.” sob o toldo, e o cardápio passa para quatro páginas. `defaultPlacement` põe cada tabela e cada desenho na sua linha `::resource` ([inserção em bloco](/pt/docs/document-format#inserção-em-bloco-opcional-posicionamento-explícito-em-linha)). Sem ele, os três títulos de seção ficam um atrás do outro no alto da frente, e as tabelas flutuam abaixo deles, as sobremesas primeiro. O toldo e as garrafas são recursos SVG do mesmo tipo, desenhados em código e registrados com o `loadSvg` do kit.
+Os tipos de figura e de tabela que vêm no motor imprimem uma linha de legenda e fazem cada recurso flutuar até o primeiro espaço livre depois da primeira referência. O tipo `menu` não tem prefixo de legenda, e as peças dele não têm legenda, então nada se imprime sob os desenhos nem sob a carta de vinhos. Dê a ele `captionPrefix: 'Menu'` e uma linha numerada aparece sob cada peça, começando por “Menu 1.” sob o toldo, e o cardápio passa para quatro páginas. `defaultPlacement` põe a carta de vinhos e cada desenho na sua linha `::resource` ([inserção em bloco](/pt/docs/document-format#inserção-em-bloco-opcional-posicionamento-explícito-em-linha)). Sem ele, a carta de vinhos flutua até o pé do verso, abaixo de Le Comptoir e do colofão. O toldo e as garrafas são recursos SVG do mesmo tipo, desenhados em código e registrados com o `loadSvg` do kit.
 
 ### 3 · Mesclar as linhas de região
 
 <Excerpt region="wines" />
 
-Na 1.4.1, `parseTSV` não marca nenhuma linha como cabeçalho, por isso `wineList` define `headerRowCount: 1` à mão. Appellation · cépage, 12 cl e 75 cl saem então sobre as colunas na fonte do cabeçalho, Josefin Sans. Uma linha com um só campo nomeia uma região. A célula dela vira uma célula de cabeçalho centralizada, e `mergeCells` a estende pelas três colunas e marca com `hiddenBy` as duas células que ela cobre ([montar modelos de tabela](/pt/docs/configuration#construção-de-modelos-de-tabela)). Centralizado só na primeira coluna, BLANCS ficaria 22,6 mm à esquerda do eixo em que La Cave e Le Comptoir estão centralizados. Uma linha em branco no TSV vira uma linha de células vazias, com uma linha e meia de altura, e é ela o respiro acima de Blancs e Rouges.
+A carta de vinhos continua sendo uma tabela: os seus dois preços ficam em colunas sob os cabeçalhos, 12 cl e 75 cl, que uma fileira de paradas de tabulação deixaria sem cabeçalho. `parseTSV` não marca nenhuma linha como cabeçalho, por isso `wineList` define `headerRowCount: 1` à mão. Appellation · cépage, 12 cl e 75 cl saem então sobre as colunas na fonte do cabeçalho, Josefin Sans. Uma linha com um só campo nomeia uma região. A célula dela vira uma célula de cabeçalho centralizada, e `mergeCells` a estende pelas três colunas e marca com `hiddenBy` as duas células que ela cobre ([montar modelos de tabela](/pt/docs/configuration#construção-de-modelos-de-tabela)). Centralizado só na primeira coluna, BLANCS ficaria 22,6 mm à esquerda do eixo em que La Cave e Le Comptoir estão centralizados. Uma linha em branco no TSV vira uma linha de células vazias, com uma linha e meia de altura, e é ela o respiro acima de Blancs e Rouges.
 
 ### 4 · Pendurar um fio de cada lado do título de seção
 
@@ -40,13 +40,13 @@ Um título de seção é um design dentro da coluna. O elemento `{titleText}` n�
 
 <Excerpt region="badges" />
 
-Um chip desenha uma caixa em volta de um trecho de texto dentro da linha ([estilos de chip](/pt/docs/configuration#estilos-de-chip)), então `:chip[V]{style="veg"}` digitado depois da guarnição põe o disco na linha francesa do prato, tanto numa célula de tabela como num parágrafo. Os estilos de chip definem `bold: true` porque um chip assume o peso do texto em volta, 400 depois de uma guarnição, e `FONTS` carrega a Josefin Sans só em 700. As notas sob as sobremesas e o colofão do verso são blocos `:::paragraphs` em 9 e 7,5 pt, e os dois estilos têm um `marginTop` de uma linha ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)), porque uma tabela posta com `'here'` não deixa espaço embaixo de si. Sem essa margem, as notas começam na linha seguinte à linha em inglês da tábua de queijos, como se fizessem parte do prato.
+Um chip desenha uma caixa em volta de um trecho de texto dentro da linha ([estilos de chip](/pt/docs/configuration#estilos-de-chip)), então `:chip[V]{style="veg"}` digitado depois da guarnição põe o disco na linha francesa do prato, antes da tabulação. Os estilos de chip definem `bold: true` porque um chip assume o peso do texto em volta, 400 depois de uma guarnição, e `FONTS` carrega a Josefin Sans só em 700. As notas sob as sobremesas e o colofão do verso são blocos `:::paragraphs` em 9 e 7,5 pt, e os dois estilos têm um `marginTop` de uma linha ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). Sem essa margem, as notas começam na linha seguinte à linha em inglês da tábua de queijos, como se fizessem parte do prato.
 
 ### 6 · Centralizar o cardápio num só eixo
 
 <Excerpt region="centred" />
 
-`headings.textAlign` e `bodyText.textAlign` põem na linha central do cardápio tudo o que não é tabela. `lineHeight: pt(3 * LEAD)` dá ao nome de 48 pt três linhas da grade. Sem isso, o nome usa a entrelinha padrão e ocupa quatro linhas, a segunda linha de notas vai para uma página só dela e o cardápio passa para quatro páginas. Na 1.4.1, qualquer objeto `headings` desliga a quebra do H1, e mesmo assim o nível 1 declara `breakBefore: { enabled: false }`, porque o nome e La Cave pertencem à página do desenho acima deles. Volte ao padrão, `{ enabled: true, parity: 'always-odd' }`, e cada desenho fica sozinho numa página, sete páginas ao todo. A configuração não define `locale`, porque a 1.4.1 só hifeniza texto corrido justificado, e nada neste cardápio é justificado.
+`headings.textAlign` e `bodyText.textAlign` põem na linha central do cardápio tudo menos os pratos e a carta de vinhos. `lineHeight: pt(3 * LEAD)` dá ao nome de 48 pt três linhas da grade. Sem isso, o nome usa a entrelinha padrão e ocupa quatro linhas, a segunda linha de notas vai para uma página só dela e o cardápio passa para quatro páginas. O nível 1 desliga a quebra do H1, `breakBefore: { enabled: false }`, porque o nome e La Cave pertencem à página do desenho acima deles. Deixe o padrão, `{ enabled: true, parity: 'always-odd' }`, e cada desenho fica sozinho numa página, sete páginas ao todo. A configuração não define `locale`: nada neste cardápio é justificado, e o texto em bandeira só é hifenizado com `bodyText.hyphenation.ragged` ligado.
 
 ## Variações
 
@@ -59,16 +59,25 @@ Uma largura fixa no lugar de `'fill'` deixa cada fio com 20 mm, a 4 mm do títul
 +    size: { width: mm(20) }, // 20 mm, wherever the title ends
 ```
 
-### Riscar as linhas como um livro-caixa
+### Levar pontos até o preço
 
-`rules: 'horizontal'` desenha um fio fino de latão de 0,5 pt acima e abaixo de cada linha. Os fios não ocupam espaço, então os dois lados mantêm a diagramação, e as linhas em branco acima de Blancs e Rouges ganham também um par de fios.
+Um preenchimento ocupa o espaço antes da parada. `'. '` repete um ponto e um espaço, de meio em depois do último selo ou da última palavra do prato até meio em antes do preço.
 
 ```diff
--const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a dish: 2½ lines of LEAD
+-  tabStops: [{ position: 'end', align: 'end' }],
++  tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+```
+
+### Riscar a carta de vinhos como um livro-caixa
+
+`rules: 'horizontal'` desenha um fio fino de latão de 0,5 pt acima e abaixo de cada linha da carta de vinhos. Os fios não ocupam espaço, então os dois lados mantêm a diagramação, e as linhas em branco acima de Blancs e Rouges ganham também um par de fios.
+
+```diff
+-const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a row: 1½ lines of LEAD
 +const tableStyle = { rules: 'horizontal', borderColor: col('brass'),
 +  borderWidth: pt(0.5), cellPadding: pt(LEAD / 4),
 ```
 
 ## Erros comuns
 
-Dê a cada elemento de fio um `thickness`. Na 1.4.1, um fio sem espessura não pinta nada, embora a referência de configuração dê 0,5 pt como padrão. Apague-o de `rule()` e os dois fios de cada título de seção desaparecem.
+Deixe espaço para o preço na primeira linha do prato. Quando o prato e a guarnição passam do lugar de que o preço precisa, a parada leva a última palavra do prato para a linha seguinte junto com o preço, e a linha em inglês vem depois deles: o prato passa a ocupar três linhas e a seção termina uma linha mais abaixo.

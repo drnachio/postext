@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 049 · Exam paper with an answer sheet ═════════════════
 // https://postext.dev/en/cookbook/exam-paper
 // Code: MIT · Text: Lincoln (PD); questions, Spanish translation (CC BY 4.0) · Art: in code
-// Fonts: PT Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: PT Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -157,8 +157,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, margins: { top: mm(TOP),
     bottom: mm(BOTTOM), left: mm(LEFT), right: mm(RIGHT) } }, layout: { layoutType: 'single' },
   bodyText: { fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
-    boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
-    textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
+    boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'), textAlign: 'left',
+    firstLineIndent: pt(0), paragraphSpacing: true, tabStops: [{ position: 'end', align: 'end' }] },
   // No page break: a :::pagebreak opens each section, so its page stays a body page with a
   // folio. A heading that breaks the page makes an opener, which pages: 'body' leaves bare.
   headings: { fontFamily: LABEL, levels: [{ level: 1, breakBefore: { enabled: false },

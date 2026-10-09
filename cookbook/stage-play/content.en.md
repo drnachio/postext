@@ -10,11 +10,43 @@ author: "Oscar Wilde"
 
 ## The Persons of the Play
 
-::resource{id="persons"}
+:::paragraphs{style="bill-head"}
+The original cast · St James’s Theatre, 14 February 1895
+:::
+
+:::paragraphs{style="person"}
+**John Worthing**, J.P. :tab Mr. George Alexander
+
+**Algernon Moncrieff** :tab Mr. Allen Aynesworth
+
+**Rev. Canon Chasuble**, D.D. :tab Mr. H. H. Vincent
+
+**Merriman**, butler :tab Mr. Frank Dyall
+
+**Lane**, manservant :tab Mr. F. Kinsey Peile
+
+**Lady Bracknell** :tab Miss Rose Leclercq
+
+**Hon. Gwendolen Fairfax** :tab Miss Irene Vanbrugh
+
+**Cecily Cardew** :tab Miss Evelyn Millard
+
+**Miss Prism**, governess :tab Mrs. George Canninge
+:::
 
 ## The Scenes of the Play
 
-::resource{id="scenes"}
+:::paragraphs{style="scene"}
+:tab Act I :tab Algernon Moncrieff’s Flat in Half-Moon Street, W.
+
+:tab Act II :tab The Garden at the Manor House, Woolton.
+
+:tab Act III :tab Drawing-Room at the Manor House, Woolton.
+:::
+
+:::paragraphs{style="direction"}
+*Time: The Present.*
+:::
 
 :::paragraphs{style="colophon"}
 Text: Project Gutenberg eBook #844, in the public domain. Set in Libre Baskerville, Abril Fatface and Playfair Display SC (SIL Open Font License).

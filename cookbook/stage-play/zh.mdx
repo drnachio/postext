@@ -1,11 +1,11 @@
 ---
 title: "剧本：角色表、说话人与舞台提示"
-summary: "把王尔德剧作的开头排成演出本。人名用梅紫色粗体，舞台提示用灰色斜体；角色表从制表符分隔的行中读取。"
+summary: "把王尔德剧作的开头排成演出本：人名用梅紫色粗体，舞台提示用灰色斜体，角色表用一行点引到制表位上的每位演员。"
 plain: "奥斯卡·王尔德一部名剧的开头，排成演员用的剧本。说话人的名字用彩色粗体，舞台说明用灰色，方便演员跳过。"
 description: "用Postext排出《The Importance of Being Earnest》的演出本：书名页是一张梅紫色的戏单，1895年的首演角色表与第一幕相对。"
 question: "怎样排剧本：说话人姓名、舞台提示、幕与场的标题，以及角色表？"
-aliases: ["剧本", "戏剧", "play", "drama", "演出本", "acting edition", "play script", "舞台剧", "stage play", "舞台提示", "stage directions", "说话人姓名", "speaker names", "角色名", "character names", "角色表", "演员表", "cast list", "dramatis personae", "悬挂缩进", "hanging indent", "戏单", "playbill", "书名页", "title page", "花饰", "fleuron", "康乃馨", "carnation", "王尔德", "Oscar Wilde", "The Importance of Being Earnest", "不可儿戏"]
-pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边框，框线在四角交叉。副标题用加大字距的金色大写字母排在标题上方；标题占四行，“Importance”和“Earnest”用粗肥体（fat face）大写字母，“The”和“of Being”用斜体。下面是两道卷饰之间的一朵金色康乃馨、加大字距大写的作者名，页脚处是剧院名和首演日期。", "2": "剧中人物排成一张表，上方的梅紫色色带写明首演阵容、剧院和日期，每个角色右侧是首演该角色的演员。下面是全剧的三个场景和版权页信息。", "3": "第一幕以梅紫色大写的标题和一朵梅紫色康乃馨开始。场景说明用居中的灰色斜体排在一个小型大写字母标签下；然后台词开始，每段都以梅紫色粗体的说话人姓名开头，转行悬挂缩进。", "4": "转行悬挂的台词，其间居中排着三条舞台提示：Lane的上场和下场，以及Jack的上场。", "5": "本页结束于Algernon关于离婚的那段台词，中间被一条灰色斜体的舞台提示隔成两半。" }
+aliases: ["剧本", "戏剧", "play", "drama", "演出本", "acting edition", "play script", "舞台剧", "stage play", "舞台提示", "stage directions", "说话人姓名", "speaker names", "角色名", "character names", "角色表", "演员表", "cast list", "dramatis personae", "前导符", "点状前导符", "dot leader", "制表位", "tab stop", "悬挂缩进", "hanging indent", "戏单", "playbill", "书名页", "title page", "花饰", "fleuron", "康乃馨", "carnation", "王尔德", "Oscar Wilde", "The Importance of Being Earnest", "不可儿戏"]
+pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边框，框线在四角交叉。副标题用加大字距的金色大写字母排在标题上方；标题占四行，“Importance”和“Earnest”用粗肥体（fat face）大写字母，“The”和“of Being”用斜体。下面是两道卷饰之间的一朵金色康乃馨、加大字距大写的作者名，页脚处是剧院名和首演日期。", "2": "剧中人物排在一行居中的梅紫色小型大写字母之下，这一行写明首演阵容、剧院和日期：每个角色以梅紫色粗体排在左侧，接着是一行点，首演该角色的演员排在右页边距处。下面是全剧的三个场景，幕次在一栏中右对齐，地点从下一栏开始，然后是灰色斜体的剧情时间和版权页信息。", "3": "第一幕以梅紫色大写的标题和一朵梅紫色康乃馨开始。场景说明用居中的灰色斜体排在一个小型大写字母标签下；然后台词开始，每段都以梅紫色粗体的说话人姓名开头，转行悬挂缩进。", "4": "转行悬挂的台词，其间居中排着三条舞台提示：Lane的上场和下场，以及Jack的上场。", "5": "本页结束于Algernon关于离婚的那段台词，中间被一条灰色斜体的舞台提示隔成两半。" }
 ---
 
 ## 成品一览
@@ -20,17 +20,17 @@ pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边�
 
 幕标题是一个一级标题，用24 pt的Abril Fatface，没有版面设计槽位。`textTransform`把它排成大写，13.6 pt的三条网格线让大写字母位于版心顶部以下5.5 mm处（[标题](/zh/docs/configuration#标题)）。`textAlign: 'center'`不能按级别设置，所以角色表的标题和*Scene*标签也会居中。parity为`'odd'`的`breakBefore`让这一幕从右页开始，与角色表相对。配置中必须重新写明这一项，因为只要有`headings`对象，一级标题的分页就会被关闭（[分页前置](/zh/docs/configuration#前置分页)）。
 
-### 2 · 角色表是从制表符分隔的行中读取的表
+### 2 · 角色表用一行点引到每位演员
 
 <Excerpt region="cast" />
 
-Postext没有管道表格，所以每张表都是一个资源。各行写在`content.cast.en.md`中，一行对应表的一行，单元格之间用制表符分隔，`parseTSV`把它们转成模型（[构建表格模型](/zh/docs/configuration#构建表格模型)）。唯一没有制表符的那一行，即带剧院和日期的首演阵容，成为一个合并行：`mergeCells`给它的第一个单元格设`colSpan: 2`，第二个单元格保留在网格中，标记为`hiddenBy`。`headerRowCount: 1`让这一行排在梅紫色色带中。其他行都不填色，因为两个填色单元格并排时，Canvas会在它们之间显出一道浅色接缝。演员一栏占宽度的三分之一，其中每个单元格都右对齐。场景表用同一个函数生成，套用一个没有线的具名样式（[具名表格样式](/zh/docs/configuration#命名表格样式)）。表格中所有单元格的文字都用同一种颜色，即正文墨色，除非`bodyColor`指定别的颜色，所以剧中人物的粗体姓名在这里印成墨色，在对白中则是梅紫色。
+每个角色是`person`样式的一个段落，演员名写在`:tab`之后（[制表符与制表位](/zh/docs/document-format#制表符与制表位)）。这个样式只有一个制表位，位于`'end'`即行长末端，设了`align: 'end'`，演员名就止于那里。它的`leader: '.'`用句点填满制表位之前的空白，与角色和演员名各隔半个em；`spaceBetween`让每个角色占一行半。角色名是粗体，所以印成梅紫色，和对白中说话人的名字一样。首演阵容、剧院和日期用`bill-head`样式排在名单上方，以Playfair Display SC居中，这款字体的小写字母就是小型大写字母。场景表用两个制表位：`:tab Act I :tab …`让*Act I*止于第一个制表位（距行首15 mm，`align: 'end'`），所以三幕在一栏中右对齐；地点从第二个制表位开始，再往后2 mm。剧情时间是一行居中的文字，用舞台提示的样式。
 
 ### 3 · 不带编号和题注的装饰图
 
 <Excerpt region="ornament" />
 
-`captionPrefix`和`shortLabel`为空的资源类型只印图片本身（[资源类型](/zh/docs/configuration#资源类型)）。它的`defaultPlacement`把康乃馨放在`::resource{id="fleuron"}`所在的位置，居中，宽为107 mm行长的0.24，约26 mm。两张表用第二个不编号的类型，所以都不会标成*Table 1*。
+`captionPrefix`和`shortLabel`为空的资源类型只印图片本身（[资源类型](/zh/docs/configuration#资源类型)）。它的`defaultPlacement`把康乃馨放在`::resource{id="fleuron"}`所在的位置，居中，宽为107 mm行长的0.24，约26 mm。
 
 ### 4 · 书名页是一个标题样式
 
@@ -77,4 +77,4 @@ Postext没有管道表格，所以每张表都是一个资源。各行写在`con
 - 对白中的每一段斜体都使用`italicColor`，包括强调，所以Lane那个强调的*is*会印成舞台提示的灰色。灰色只能设在`bodyText`上，因为在1.4.1中段落样式不能给自己的斜体单独设颜色；只有用正体，*is*才能保持墨色。
 - 王尔德有三段台词以单独一个词结尾：*information.*、*that?*和*you.*。脚本设了`bodyText.maxRuntTracking: 0`，原因见易错点*A runt fix can tighten tracking that is never painted*。用默认值时，1.4.1会用2.0 mm的负字距把*that?*拉上去，而Canvas不绘制这个字距，这一行印出来词间距只有正常的一半。只靠词间距的话，要么把`minWordSpacing`设为0.5，*that?*才会上移，但这一行同样被挤压；要么把行长加宽1.5 mm，但这样会有十行的词间距超过正常的1.5倍，而不是两行。英文页面宁可保留这三个孤字，也不改王尔德的原文。西班牙语译文则在凡是一行以单字母词结尾或一个音节单独成行的地方都改了措辞。
 - 人名和其他词一样会断词：第5页上*Au-gusta*和*Gwen-dolen*跨行断开。在*Augusta*中间加一个词连接符（U+2060）能让它保持完整，但会把上一行的词间距拉到正常的1.71倍，所以英文文本保留了连字符。
-- Playfair Display SC在Canvas上把*fi*画成小写连字，所以*first*会在小型大写字母中间印出一个小写的*fi*。这就是角色表色带上写*The original cast*的原因。
+- Playfair Display SC在Canvas上把*fi*画成小写连字，所以*first*会在小型大写字母中间印出一个小写的*fi*。这就是角色表开头一行写*The original cast*的原因。

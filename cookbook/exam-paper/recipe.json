@@ -16,9 +16,10 @@
     "primary": [
       "numbered-lists",
       "chips",
-      "table-styles"
+      "tab-stops"
     ],
     "also": [
+      "table-styles",
       "table-model",
       "resource-types",
       "inline-embeds",
@@ -34,8 +35,7 @@
       "design-images",
       "callout-styles",
       "callout-columns",
-      "paragraph-styles",
-      "color-palette"
+      "paragraph-styles"
     ]
   },
   "answers": [
@@ -45,9 +45,7 @@
     "Q68",
     "Q31"
   ],
-  "gaps": [
-    "tab-stops"
-  ],
+  "gaps": [],
   "gotchas": [
     "numbering-vocabularies",
     "cell-blank-line",
@@ -105,7 +103,7 @@
     }
   ],
   "engine": {
-    "postext": "1.19.1"
+    "postext": "1.23.0"
   },
   "kit": [
     "core",

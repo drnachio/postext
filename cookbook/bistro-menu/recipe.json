@@ -9,24 +9,20 @@
   "genres": ["ephemera"],
   "outputs": ["canvas"],
   "features": {
-    "primary": ["table-model", "table-style", "design-anchoring"],
-    "also": ["chips", "paragraph-styles", "opener-design", "design-elements", "resource-types", "inline-embeds", "resources", "page-background", "heading-typography", "color-palette", "page-breaks", "canvas-rendering"]
+    "primary": ["tab-stops", "paragraph-styles", "table-model"],
+    "also": ["design-anchoring", "table-style", "chips", "opener-design", "design-elements", "resource-types", "inline-embeds", "resources", "page-background", "heading-typography", "color-palette", "page-breaks", "canvas-rendering"]
   },
   "answers": ["Q65", "Q51", "Q73", "Q10"],
-  "gaps": ["tab-stops"],
-  "gotchas": ["merged-cells-hiddenby", "here-table-no-split", "here-figure-no-space-after", "design-lineheight-multiple", "headings-drop-h1-break", "ragged-no-hyphenation", "config-cache-identity", "fonts-first"],
+  "gaps": [],
+  "gotchas": ["merged-cells-hiddenby", "here-table-no-split", "here-figure-no-space-after", "design-lineheight-multiple", "ragged-no-hyphenation", "config-cache-identity", "fonts-first"],
   "workarounds": [
     {"followup": "EF-34", "package": "postext", "note": "parseTSV leaves headerRowCount unset, so the wine list's head row is declared by hand; the region rows are merged with mergeCells, which marks the covered cells hiddenBy"},
-    {"followup": "EF-93", "package": "postext", "note": "an inline table gets a grid line above it and only the snap leftover below, which is nothing here because each course ends on a grid line. The notes and colophon paragraph styles carry a marginTop of one line; without it the notes start on the line after the last dessert"},
-    {"followup": "EF-05", "package": "postext", "note": "headings.levels[0].breakBefore states the H1 break off, because the name and La Cave stay on the page of the drawing above them; with the always-odd default restored each drawing stands alone on a page and the card runs to seven pages"},
     {"followup": "EF-56", "package": "postext", "note": "the course-head title's lineHeight is a multiple of its size, 0.96 (14.4 pt), so the design stays inside one 14.5 pt grid line"},
-    {"followup": "EF-136", "package": "postext", "note": "each course-head rule states its thickness, 0.75 pt: a rule element without one paints nothing, although the docs give 0.5 pt as the default"},
-    { "followup": "EF-166","package": "postext", "note": "the colophon is a centred paragraph style after the last table rather than that table's note, because 1.4.1 sets caption and note lines flush left with the column whatever captionStyle.align and captionStyle.note.align say"},
-    {"followup": "EF-21", "package": "postext", "note": "every line on the card is centred or set in a table cell, and 1.4.1 hyphenates justified body text only, so the config sets no locale and each dish and translation is written short enough to stay on one line of its cell"}
+    {"followup": "EF-21", "package": "postext", "note": "every line on the card is centred or set flush left (a dish, a row of the wine list), and ragged text is hyphenated only with bodyText.hyphenation.ragged, so the config sets no locale and each dish and translation is written short enough to stay on one line"}
   ],
   "related": ["garden-almanac", "recipe-card", "anchoring-cheat-sheet", "first-page-from-markdown"],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.23.0"
   },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": {
