@@ -467,7 +467,8 @@ function renderComposedLine(
   ctx.textBaseline = 'alphabetic';
 
   const lineIndent = line.bbox.x - columnX;
-  const effectiveWidth = columnWidth - lineIndent;
+  // A line beside a wrapped picture (#627) fills its own span.
+  const effectiveWidth = line.measure?.wrap ? line.measure.width : columnWidth - lineIndent;
   const segments = line.segments;
   // A line of the CJK composer was measured character by character, any
   // other word by word: two marks that meet are painted apart where they

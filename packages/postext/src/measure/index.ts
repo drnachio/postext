@@ -5,7 +5,7 @@ import { measureRichBlock } from './rich';
 import { cachedMeasureBlock as cachedPlainBlock, cachedMeasureRichBlock as cachedRichBlock } from './cache';
 import { hasCompound } from './breakRules';
 
-export type { BreakTrace, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
+export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
 export { lineIndentAt, maxLineIndent } from './types';
 export { buildFontString, initHyphenator, clearMeasurementCache, createMeasurementCache } from './font';
 export { measureGlyphWidth, measureTextWidth } from './canvas';
@@ -55,8 +55,8 @@ function cacheFor(cache: MeasurementCache, options: MeasureBlockOptions | undefi
 
 /** {@link measureBlock} through `cache`: the same text, font, width,
  *  leading and options measured before come back from it (a copy). A
- *  measurement with `options.keepBreaks` or `options.restWidths` is never
- *  cached, since its lines follow the breaks it keeps or the measures it
+ *  measurement with `options.keepBreaks`, `options.restWidths` or
+ *  `options.lineInsets` is never cached, since its lines follow the breaks it keeps or the measures it
  *  was given: it is measured afresh and leaves the cache as it was. One
  *  with `breakAfterDashes`, `optimalRagged`, `breakAfterHyphens`,
  *  `hyphenateCompounds: false` or `repeatHyphen` is kept apart from the
@@ -69,7 +69,7 @@ export function cachedMeasureBlock(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
-  return options?.keepBreaks || options?.restWidths
+  return options?.keepBreaks || options?.restWidths || options?.lineInsets
     ? measureBlock(text, font, maxWidthPx, lineHeightPx, options)
     : cachedPlainBlock(text, font, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, text));
 }
@@ -88,7 +88,7 @@ export function cachedMeasureRichBlock(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
-  return options?.keepBreaks || options?.restWidths
+  return options?.keepBreaks || options?.restWidths || options?.lineInsets
     ? measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options)
     : cachedRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, spans.map((s) => s.text).join('')));
 }

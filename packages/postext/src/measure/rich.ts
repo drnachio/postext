@@ -13,7 +13,7 @@ import {
   reconstructRichLines,
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
-import { lineIndentAt, lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineStartAt, lineWidthAt, markInsetLines, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
@@ -1655,7 +1655,8 @@ function measureRichText(
   }
 
   const shouldHyphenate = options?.hyphenate ?? false;
-  const indentOf = (li: number): number => lineIndentAt(options, li);
+  // Each line's start: its indent past its inset beside a picture (#627).
+  const indentOf = (li: number): number => lineStartAt(options, li);
   const textAlign = options?.textAlign ?? 'left';
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const hyphenationZonePx = shouldHyphenate ? options?.hyphenationZonePx : undefined;
@@ -1682,7 +1683,7 @@ function measureRichText(
   const withKashida = (lines: VDTLine[]) => {
     if (!kashida) return;
     justifyLinesWithKashida(lines, (li) => {
-      return lineMeasure(maxWidthPx, options?.restWidths, li) - indentOf(li);
+      return lineWidthAt(maxWidthPx, options, li);
     }, normalSpaceWidth, kashida, (seg, text) => textWidth(text, fontOf(seg), false));
   };
 
@@ -1700,7 +1701,7 @@ function measureRichText(
     // The runt threshold counts word spaces on ragged text too.
     const spaceWidth = ragged ? normalSpaceWidthFor(normalFont) + letterSpacingPx : normalSpaceWidth;
     const items = richTokensToItems(tokens, spaceWidth, maxStretchRatio, minShrinkRatio, repeatHyphen);
-    const lineWidthFn = (li: number) => lineMeasure(maxWidthPx, options.restWidths, li) - indentOf(li);
+    const lineWidthFn = (li: number) => lineWidthAt(maxWidthPx, options, li);
     const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
     const runtMinWidth = runtPenalty > 0
@@ -1718,7 +1719,7 @@ function measureRichText(
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'rich' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,
-      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths, options.lineIndentsPx),
+      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths, options.lineIndentsPx, options.lineInsets),
       trackingPerChar,
       ...(ragged ? { raggedStretch: raggedStretchPx(normalFont) } : {}),
       ...(ragged && hyphenationZonePx !== undefined ? { hyphenationZone: hyphenationZonePx } : {}),
@@ -1734,6 +1735,7 @@ function measureRichText(
         if (bidi) withDirections(kpLines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
         if (languages.length > 0) applySegmentLanguages(kpLines, plainText, languages);
         withKashida(kpLines);
+        markInsetLines(kpLines, maxWidthPx, options);
         return {
           lines: kpLines,
           totalHeight: kpLines.length * lineHeightPx,
@@ -1765,7 +1767,7 @@ function measureRichText(
 
   while (tokenIdx < tokens.length) {
     const lineIndent = indentOf(lineIndex);
-    const lineMaxWidth = lineMeasure(maxWidthPx, options?.restWidths, lineIndex) - lineIndent;
+    const lineMaxWidth = lineWidthAt(maxWidthPx, options, lineIndex);
 
     const lineTokens: RichToken[] = [];
     let lineWidth = 0;
@@ -2072,6 +2074,7 @@ function measureRichText(
   if (bidi) withDirections(lines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
   if (languages.length > 0) applySegmentLanguages(lines, plainText, languages);
   withKashida(lines);
+  markInsetLines(lines, maxWidthPx, options);
   return { lines, totalHeight: y };
 }
 

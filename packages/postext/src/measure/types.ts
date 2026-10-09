@@ -28,12 +28,85 @@ export function lineMeasure(maxWidthPx: number, steps: readonly LineWidthStep[] 
   return width;
 }
 
+/** Lines of a paragraph set short on either side (see
+ *  `MeasureBlockOptions.lineInsets`): the lines beside a picture that
+ *  text wraps round (#627). The sides are the measurer's: `start` is the
+ *  side the lines are set from (the flow's left; the indent's side), `end`
+ *  the other. A paragraph set against its frame's direction keeps them
+ *  where they are when its lines are mirrored (`mirrorLineSpans`). */
+export interface LineInsetStep {
+  /** First line (0-based) set short. */
+  fromLine: number;
+  /** Last line (0-based, inclusive) set short; unset, every later line. */
+  toLine?: number;
+  /** Room taken off the start side (px), before the line's own indent. */
+  startInsetPx: number;
+  /** Room taken off the end side (px). */
+  endInsetPx: number;
+}
+
+/** The insets of line `li` (0-based): the sum of the steps that cover it. */
+export function lineInsetsAt(steps: readonly LineInsetStep[] | undefined, li: number): { start: number; end: number } {
+  let start = 0;
+  let end = 0;
+  if (steps) {
+    for (const s of steps) {
+      if (s.fromLine > li || (s.toLine !== undefined && s.toLine < li)) continue;
+      start += Math.max(0, s.startInsetPx);
+      end += Math.max(0, s.endInsetPx);
+    }
+  }
+  return { start, end };
+}
+
+/** The largest inset (both sides together) any line takes. */
+export function maxLineInset(steps: readonly LineInsetStep[] | undefined): number {
+  if (!steps || steps.length === 0) return 0;
+  let max = 0;
+  for (const s of steps) {
+    const at = lineInsetsAt(steps, s.fromLine);
+    max = Math.max(max, at.start + at.end);
+  }
+  return max;
+}
+
+/** Where line `li` starts, from the measure's start (px): its indent
+ *  (`lineIndentAt`) past its start inset (`lineInsets`). */
+export function lineStartAt(options: MeasureBlockOptions | undefined, li: number): number {
+  const inset = options?.lineInsets ? lineInsetsAt(options.lineInsets, li).start : 0;
+  return inset + lineIndentAt(options, li);
+}
+
+/** The room line `li` breaks to (px): its measure (`lineMeasure`) less
+ *  its insets and its indent. */
+export function lineWidthAt(maxWidthPx: number, options: MeasureBlockOptions | undefined, li: number): number {
+  const end = options?.lineInsets ? lineInsetsAt(options.lineInsets, li).end : 0;
+  return lineMeasure(maxWidthPx, options?.restWidths, li) - end - lineStartAt(options, li);
+}
+
+/** Give each line set short beside a picture (`lineInsets`, #627) its
+ *  span (`VDTLine.measure`, flagged `wrap`): from its start (`bbox.x`, its
+ *  inset and indent) to its measure less its end inset. Renderers justify
+ *  and align the line in it. Lines with no inset are left as they are. */
+export function markInsetLines(lines: VDTLine[], maxWidthPx: number, options: MeasureBlockOptions | undefined): void {
+  const steps = options?.lineInsets;
+  if (!steps || steps.length === 0) return;
+  lines.forEach((line, li) => {
+    const { start, end } = lineInsetsAt(steps, li);
+    if (!(start > 0) && !(end > 0)) return;
+    const width = Math.max(0, lineMeasure(maxWidthPx, options.restWidths, li) - end - line.bbox.x);
+    line.measure = { x: line.bbox.x, width, wrap: true };
+  });
+}
+
 /** The line from which the measure stops changing: after the first line
- *  (its indent), after the last step and after the last entry of an indent
- *  table (`lineIndentsPx`: the lines a drop cap shortens, #623). */
-export function uniformMeasureFrom(steps: readonly LineWidthStep[] | undefined, indents?: readonly number[]): number {
+ *  (its indent), after the last step, after the last entry of an indent
+ *  table (`lineIndentsPx`: the lines a drop cap shortens, #623) and after
+ *  the last line set short beside a picture (`lineInsets`, #627). */
+export function uniformMeasureFrom(steps: readonly LineWidthStep[] | undefined, indents?: readonly number[], insets?: readonly LineInsetStep[]): number {
   let from = Math.max(1, (indents?.length ?? 0) - 1);
   if (steps) for (const s of steps) from = Math.max(from, s.fromLine);
+  if (insets) for (const s of insets) from = Math.max(from, s.toLine !== undefined ? s.toLine + 1 : s.fromLine);
   return from;
 }
 
@@ -136,6 +209,13 @@ export interface MeasureBlockOptions {
    *  already placed kept by `keepBreaks`. Every breaker honours it. Such a
    *  measurement is never cached. */
   restWidths?: readonly LineWidthStep[];
+  /** Lines set short on either side (#627, see {@link LineInsetStep}): the
+   *  lines of a paragraph beside a picture that text wraps round. A line
+   *  starts past its start inset (its indent after it) and breaks to its
+   *  measure less both insets; `VDTLine.bbox.x` and `VDTLine.measure`
+   *  carry them. Every breaker honours it. Such a measurement is never
+   *  cached. */
+  lineInsets?: readonly LineInsetStep[];
   /** Knuth-Plass looseness: re-break the paragraph with this many lines more
    *  (column balancing's "run a paragraph long" lever) or fewer — negative —
    *  when a feasible sequence of that length exists. Ignored on the greedy

@@ -29,7 +29,7 @@
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import { lineLevels, visualOrder, type BidiParagraph } from '../bidi';
 import { insideJoiningWord } from './joining';
-import { lineMeasure, type LineWidthStep } from './types';
+import { lineInsetsAt, lineMeasure, type LineInsetStep, type LineWidthStep } from './types';
 
 let measureDirection: 'ltr' | 'rtl' = 'ltr';
 
@@ -210,13 +210,18 @@ export function applyLineDirections(
  * at the span's left edge. Renderers align the line in that span from its
  * start side: a ragged line, or the last line of a justified paragraph,
  * ends flush right (see `VDTLine.measure`). `maxWidthPx` and `restWidths`
- * are the measures the lines were broken at, from the block's left edge.
+ * are the measures the lines were broken at, from the block's left edge;
+ * `insets`, the lines set short beside a wrapped picture (#627).
  */
-export function mirrorLineSpans(lines: VDTLine[], maxWidthPx: number, restWidths?: readonly LineWidthStep[]): void {
+export function mirrorLineSpans(lines: VDTLine[], maxWidthPx: number, restWidths?: readonly LineWidthStep[], insets?: readonly LineInsetStep[]): void {
   lines.forEach((line, i) => {
-    const width = Math.max(0, lineMeasure(maxWidthPx, restWidths, i) - line.bbox.x);
-    line.measure = { x: 0, width };
-    line.bbox.x = 0;
+    // A line beside a wrapped picture (#627) keeps its insets where they
+    // are, on the flow's sides: only its indent changes side.
+    const inset = lineInsetsAt(insets, i);
+    const indent = Math.max(0, line.bbox.x - inset.start);
+    const width = Math.max(0, lineMeasure(maxWidthPx, restWidths, i) - inset.start - inset.end - indent);
+    line.measure = { x: inset.start, width };
+    line.bbox.x = inset.start;
   });
 }
 
