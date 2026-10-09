@@ -14,7 +14,7 @@ Where the online docs disagree, this file is right (§14).
 - Constructs the parser does not recognise are **never dropped silently**. They become literal paragraph text, except that inline images are removed. A link `[text](url)` is recognised: its text is set in the flow and its URL becomes a live link in the HTML and PDF output (§4).
 - Figures, images, SVGs and tables are **not written in Markdown**. They are `Resource` objects (JSON) kept outside the text and cited by id (§9).
 - Visual styling lives in the config and is selected by id: callout `type`, paragraph-container `style`, heading `style`, chip `style`, palette ids. An unknown id falls back to a default and triggers a sandbox warning (§13).
-- Blank lines separate blocks. **Consecutive non-blank lines join into one paragraph with a single space.** No hard line break syntax exists in paragraphs (§3.3); a poem keeps its lines in `:::verse` (§12, postext ≥ 1.23).
+- Blank lines separate blocks. **Consecutive non-blank lines join into one paragraph with a single space.** A backslash at the end of a line, or `\\` before a space, forces a line break inside the paragraph (§3.3, postext ≥ 1.23); a poem keeps its lines in `:::verse` (§12).
 
 Block-level dispatch order for each non-blank line:
 1. single-line display math `$$…$$`
@@ -113,7 +113,7 @@ Real presets use: `{style="…" toc="false" series="…" publisher="…"}`, `{le
 - Opener designs (`{titleText}`) break the line there.
 - The in-column heading, running heads, `{chapterTitle}`, the outline, the TOC and the PDF outline show a space.
 - The same `\\` works inside `:::part{title="…"}`.
-- In body paragraphs `\\` is a literal backslash.
+- In body paragraphs, quotes and list items `\\` before a space is a forced line break too (§3.3, postext ≥ 1.23); up to 1.22 it printed.
 
 ```md
 # Concepts of health and illness. \\ Community health {author="I. Zango Martín"}
@@ -163,7 +163,8 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 
 ### 3.3 Line breaks, whitespace, special characters
 
-- **No hard line break in a paragraph.** Trailing two spaces are trimmed away, and a trailing `\` stays as a literal backslash. **Verse goes in `:::verse`** (postext ≥ 1.23, §12): one line of verse a line, blank lines between stanzas, leading spaces as indents, turnovers hung. An address or signature line must still be **its own paragraph** (blank line between), inside a `:::paragraphs{style="…"}` container (§6.2).
+- **Forced line break in a paragraph (postext ≥ 1.23).** A backslash at the end of a source line, or `\\` followed by a space, ends the line inside the paragraph (CommonMark's hard break): the line before is set at its natural width (never justified), the text after starts a new line of the same paragraph with no first-line indent (a hanging indent hangs it). Paragraphs, quotes (`> a\` over `> b`), footnotes and list items (one source line: use `\\ `) take it. **No break:** a backslash ending the paragraph (prints), `\\` glued to the next character (`\\*`, `C:\\Temp` print), backslashes in inline code or maths, **two trailing spaces** (trimmed). Two breaks in a row are one: for an empty line start a new paragraph or write `:::space`. Use it for addresses, a letter's greeting, signature blocks, dedications, the lines of a title page set as text. A preset stamped below `configVersion` 9 whose chapters end a line with a backslash reads with `bodyText.hardLineBreaks: false` (backslashes print): write `"configVersion": 9`. Up to 1.22 there was no break: each such line had to be its own paragraph inside a `:::paragraphs{style="…"}` container (§6.2).
+- **Verse goes in `:::verse`** (postext ≥ 1.23, §12): one line of verse a line, blank lines between stanzas, leading spaces as indents, turnovers hung. No backslash on every line.
 - Leading and trailing whitespace of every line is trimmed. Internal runs of spaces survive in the text but are measured as spaces.
 - **Non-breaking spaces (postext ≥ 1.5):** U+00A0, the narrow U+202F and the figure space U+2007 **glue** the words on either side, on every breaker (plain and rich text, Knuth–Plass, captions, cells, boxes, design text): a number and its unit (37 °C, with U+202F), a group of thousands (225 000, with U+00A0), a label and its number. Each keeps its own width; justification stretches only the word spaces. The word joiner U+2060 glues with no width. Type the character itself, not `&nbsp;` (HTML is not interpreted). A glued group wider than the whole line breaks at its last no-break space. The atomic inline units are therefore NBSP-glued groups, text that touches with no space (`**word**.`, `(:ref{…})`), a `:chip` and a `:ref` label. Up to 1.4 a paragraph with inline formatting or a `:ref` could break at a NBSP, and the port scripts replaced it with a plain space; they keep it now.
 - **Soft hyphen U+00AD** is honoured as a discretionary break, with a hyphen added at the break (; `knuthPlass/`).
@@ -743,7 +744,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Paragraph | Lines separated by blank lines. Watch §3.2 line-start traps (`- ` dialogue, `1998.` openings). |
 | Dialogue dash | `—` (U+2014), never `- `. |
 | Verse / poetry / song lyrics | `:::verse` (postext ≥ 1.23): one line of verse a line, a blank line between stanzas, leading spaces for indents; `{style="verse"}` for the face and margins, `turnover=right` for bracketed turnovers, `keepStanzas=N` for short forms. A classical Arabic poem (two hemistichs a line) is the same fence with `ṣadr || ʿajuz` per line. |
-| Address / signature | `:::paragraphs{style="…"}`, one paragraph per line with blank lines between. |
+| Address / signature | One paragraph whose lines end in a backslash (postext ≥ 1.23, §3.3), inside `:::paragraphs{style="…"}` for its style; up to 1.22 one paragraph per line with blank lines between. |
 | Arabic text in a Latin book, Latin in an Arabic one | Block: `:::paragraphs{dir=ltr}` / `{dir=rtl}`; phrase: `:ltr[…]{lang=en}` / `:rtl[…]{lang=ar}` (§10.8). |
 | Epigraph, dedication, colophon, lead-in | `:::paragraphs{style="…"}`, with the style defined in config. |
 | Block quotation | `> …` (single block), or `:::paragraphs{style="quote"}` for multiple paragraphs. |

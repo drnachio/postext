@@ -231,7 +231,9 @@ let config = { colorPalette: postext.cloneDefaultColorPalette(), resourceTypes: 
 // size, space around inline resources, plain headings, drop-cap sizes, the
 // room under a colon line, box cuts, breaks at dashes and at compounds'
 // hyphens, ragged breaking, the split under a heading and the space under
-// paragraph containers. `migrateConfig` looks at every chapter of this
+// paragraph containers; one stamped 8 (postext 1.5 to 1.22), a poem with no
+// separator set as centred hemistichs and the backslashes that end a line
+// printed. `migrateConfig` looks at every chapter of this
 // language, as the Sandbox loads them all.
 if (typeof bundleApi?.migrateConfig === 'function') {
   const content = chapterSpecs.map((c) => readFileSync(join(BUNDLE, c.file), 'utf8'));
@@ -266,6 +268,8 @@ if (typeof bundleApi?.migrateConfig === 'function') {
     [(c) => c.bodyText?.optimalRagged, 'line-by-line ragged text'],
     [(c) => c.headings?.keepWithNextSplit, 'split under a heading'],
     [(c) => c.bodyText?.paragraphContainerSpacing, 'space under paragraph containers'],
+    [(c) => c.bodyText?.verse?.layout, 'centred lines of a poem with no separator'],
+    [(c) => c.bodyText?.hardLineBreaks, 'printed line-end backslashes'],
   ].filter(([of]) => of(read) !== of(config)).map(([, what]) => what);
   if (kept.length) {
     const v = manifest.configVersion;
@@ -275,7 +279,7 @@ if (typeof bundleApi?.migrateConfig === 'function') {
         ? `"configVersion": ${JSON.stringify(v)}, which is not a number and counts as none`
         : `"configVersion": ${v}, older than this engine's ${bundleApi.CONFIG_VERSION}`;
     const list = kept.length > 1 ? `${kept.slice(0, -1).join(', ')} and ${kept.at(-1)}` : kept[0];
-    console.log(`NOTE preset.json has ${stamp}: read as the Sandbox reads it, with the ${list} postext 1.4 used. Set "configVersion": ${bundleApi.CONFIG_VERSION} once the config is written for today's rules.`);
+    console.log(`NOTE preset.json has ${stamp}: read as the Sandbox reads it, with the ${list} of the postext that wrote it. Set "configVersion": ${bundleApi.CONFIG_VERSION} once the config is written for today's rules.`);
   }
   config = read;
 }

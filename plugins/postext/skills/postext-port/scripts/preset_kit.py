@@ -54,8 +54,11 @@ from typing import Any
 # introduces a list, the lines a box cut leaves of a paragraph, the line
 # breaks after a closed dash and after a compound's hyphen, the breaking of
 # ragged text, the split of a paragraph under a heading and the space under
-# :::paragraphs containers pinned to 1.4.
-CONFIG_VERSION = 8
+# :::paragraphs containers pinned to 1.4. A manifest stamped 8 (postext 1.5
+# to 1.22) gets the rules-9 pins: a :::verse poem with no separator as
+# centred hemistichs, a first-line indent dropped from a style that hangs, a
+# backslash ending a line printed. An engine older than 1.23 reads 9 as 8.
+CONFIG_VERSION = 9
 
 # ---------------------------------------------------------------------------
 # primitives
@@ -529,7 +532,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "configVersion": 8, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 9, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),

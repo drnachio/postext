@@ -82,10 +82,13 @@ Postext Markdown is **not CommonMark**. These habits break a port:
 - **Extra blank lines add no space.** Where the source has deliberate
   vertical space (a scene break, room above a signature), write
   `:::space` (one body line) or `:::space{lines=N}`.
-- **No hard line breaks in paragraphs**: write a poem as `:::verse`, one
+- **Line breaks inside a paragraph** (postext ≥ 1.23): end the source line
+  with a backslash, or write `\\` and a space, for an address, a letter's
+  greeting or a signature block kept in one paragraph (document-format.md
+  §3.3). Two trailing spaces are no break. Write a poem as `:::verse`, one
   line of verse a line, a blank line between stanzas, leading spaces for its
-  indents (postext ≥ 1.23; document-format.md §12). Addresses and code
-  lines still need one paragraph per line inside `:::paragraphs{style="…"}`.
+  indents (§12). Code lines still need one paragraph per line inside
+  `:::paragraphs{style="…"}`.
 
 Config traps:
 

@@ -357,7 +357,18 @@ Drop reference-number superscripts when the notes themselves are dropped.
 ### B4. Epigraphs, dedications, signatures, interview questions, sources lines
 Each gets a paragraph style (`:::paragraphs{style="…"}`), including
 right-aligned ones, a question in the accent colour with `boldColor`, and a
-source line in a small face.
+source line in a small face. A block of short lines that belong together (a
+signature with its title, an address, a dedication over two lines) is one
+paragraph whose lines end in a backslash (postext ≥ 1.23; document-format.md
+§3.3), not one paragraph per line: it then keeps together by the paragraph
+rules and its lines are never justified.
+
+```md
+:::paragraphs{style="signature"}
+Ana Ruiz\
+Director of the Observatory
+:::
+```
 
 ### B5. Equations
 - A real math source (LaTeX, MathML, OMML) becomes `$…$` / `$$…$$`, with

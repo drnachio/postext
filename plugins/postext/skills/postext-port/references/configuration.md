@@ -278,6 +278,8 @@ H&J / Knuth–Plass
 ├─ breakAfterHyphens    boolean  true   Knuth-Plass may end a line after a compound's hyphen (well- | known) in every paragraph;
 │                        false = 1.4 breaks: a justified paragraph without formatting never breaks there (a preset without configVersion 8 whose chapters set a compound reads false)
 ├─ repeatHyphen         boolean  false  the line after a break at a compound's hyphen opens with a hyphen too (vencer- | -se; Portuguese, Spanish RAE 2010); line.repeatedHyphen; never in a URL
+├─ hardLineBreaks       boolean  true   (≥ 1.23) a backslash ending a source line, or `\\` + space, is a forced line break in paragraphs, quotes, list items;
+│                        false = 1.22: the backslashes print (a preset below configVersion 9 whose chapters end a line with `\` reads false)
 ├─ maxWordSpacing       number   2      × normal space; also the cap for balancing "loose" paragraphs
 ├─ minWordSpacing       number   0.6    × normal space
 ├─ avoidRunts           true;  runtMinCharacters 20;  runtPenalty 1000;  avoidRuntsInLists true
@@ -1290,7 +1292,7 @@ of the balloon text. Bundle the lettering and sound-effect faces.
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```
-{ version: 2, configVersion: 8, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
+{ version: 2, configVersion: 9, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
@@ -1300,7 +1302,7 @@ of the balloon text. Bundle the lettering and sound-effect faces.
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
                               view?: { canvasScope?: 'book'|'chapter' } } } }   // the edition's view over `view` (≥ 1.9.2)
 ```
-`configVersion: 8` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
+`configVersion: 9` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
 the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
 when one is embedded inside a `:::callout`, `headings.inlineMarks: false` when a heading carries `*`, `_`, `^`,
@@ -1311,7 +1313,10 @@ running text ragged, `bodyText.breakAfterHyphens: false` when a chapter sets a h
 `headings.keepWithNextSplit: 'fill'` when a chapter has a heading, `bodyText.paragraphContainerSpacing: 'add'`
 when the config declares a paragraph style and a chapter opens a `:::paragraphs` container, and every design
 drop cap's 1.4 size written out. A manifest stamped 5 gets the pins of rules 6, 7 and 8 only; one stamped 6,
-those of rules 7 and 8; one stamped 7, those of rules 8. The pins keep what those rules changed, not
+those of rules 7 and 8; one stamped 7, those of rules 8; one stamped 8 (postext 1.5 to 1.22), those of rules 9:
+`bodyText.verse.layout: 'bayt'` when a chapter sets a `:::verse` poem with no `||`, the `firstLineIndent` of a
+paragraph style that also hangs dropped, and `bodyText.hardLineBreaks: false` when a chapter ends a line with a
+backslash or sets `\\` before a space. The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
