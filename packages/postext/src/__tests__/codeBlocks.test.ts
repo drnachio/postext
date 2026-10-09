@@ -249,6 +249,13 @@ describe('code listings: the layout', () => {
     expect(code!.lines[0]!.segments![0]!.fontString).toContain('17px');
   });
 
+  it('follows the flow of a vertical book, with no line numbers', () => {
+    const doc = buildDocument({ markdown: ['本文。', '', '```js {lineNumbers}', 'let a = 1;', '```'].join('\n') }, config({ locale: 'ja', layout: { layoutType: 'single', writingMode: 'vertical-rl' } }));
+    const [code] = codeBlocks(doc);
+    expect(code!.lines.map((l) => l.text)).toEqual(['let a = 1;']);
+    expect(doc.pages.every((p) => !p.lineNumbers)).toBe(true);
+  });
+
   it('is laid out in a right-to-left document left to right, from the far side', () => {
     const doc = buildDocument({ markdown: ['نص.', '', '```', 'let a = 1;', '```'].join('\n') }, config({ locale: 'ar' }));
     const [code] = codeBlocks(doc);
