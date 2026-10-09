@@ -1,4 +1,4 @@
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { iccProfile } from '../assets';
 import type { CommandContext } from '../context';
 import { pageLabelOf, sourceAt } from '../layout';
@@ -19,15 +19,30 @@ export default async function check(ctx: CommandContext): Promise<void> {
     const transform = icc
       ? outputTransform(parseIccProfile(icc), { intent: print.renderingIntent, blackPointCompensation: print.blackPointCompensation, preserveNeutrals: print.black.kOnlyNeutrals })
       : undefined;
+    // The pixels each bitmap's file really has (#631), read from its header.
+    const sizes = new Map<string, { width: number; height: number } | undefined>();
+    const imageSize = (fileId: string) => {
+      if (!sizes.has(fileId)) {
+        const bytes = book.files.get(fileId);
+        const info = bytes ? bitmapInfo(bytes) : undefined;
+        sizes.set(fileId, info ? { width: info.width, height: info.height } : undefined);
+      }
+      return sizes.get(fileId);
+    };
+    const value = (v: unknown): string => {
+      if (typeof v === 'number') return String(Math.round(v * 100) / 100);
+      if (v && typeof v === 'object' && 'width' in v && 'height' in v) return `${(v as { width: number }).width}×${(v as { height: number }).height}`;
+      return String(v);
+    };
     let issues = 0;
     reporter.time('preflight', () => layout.docs.forEach((doc, i) => {
-      for (const issue of preflightDocument(doc, { print, resources: book.resources, cmyk: print.standard !== 'none' || cmyk, ...(transform ? { transform } : {}) })) {
+      for (const issue of preflightDocument(doc, { print, resources: book.resources, imageSize, cmyk: print.standard !== 'none' || cmyk, ...(transform ? { transform } : {}) })) {
         const { kind, severity, pageIndex, rect: _rect, sourceStart, sourceEnd: _end, ...detail } = issue;
         issues++;
         reporter.warn({
           kind: `preflight.${kind}`,
           severity: severity === 'critical' ? 'error' : severity === 'warning' ? 'warning' : 'info',
-          message: Object.entries(detail).map(([k, v]) => `${k} ${typeof v === 'number' ? Math.round(v * 100) / 100 : v}`).join(', '),
+          message: Object.entries(detail).map(([k, v]) => `${k} ${value(v)}`).join(', '),
           at: sourceAt(layout.chapters[i], sourceStart),
           page: pageLabelOf(doc, pageIndex),
         });
