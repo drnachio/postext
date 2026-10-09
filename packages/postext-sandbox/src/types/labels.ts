@@ -1387,6 +1387,12 @@ export interface SandboxLabels {
   balanceClosingBoxFirst: string;
   balanceClosingBoxLast: string;
   balanceClosingBoxOff: string;
+  balanceGridLines: string;
+  balanceGridLinesTooltip: string;
+  balanceGridLinesAllow: string;
+  balanceGridLinesOff: string;
+  balanceGridNote: string;
+  balanceGridOffNote: string;
   balanceMaxTracking: string;
   balanceMaxTrackingTooltip: string;
 

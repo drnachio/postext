@@ -113,7 +113,7 @@ describe('working configuration', () => {
     expect(config.headings?.levels).toEqual([{ level: 1, breakBefore: { enabled: false } }]);
     // A save stamps the copy, so the next load reads it as it is.
     saveConfig(config);
-    expect(map.get('postext-sandbox-config-version')).toBe('10');
+    expect(map.get('postext-sandbox-config-version')).toBe('11');
     expect(loadConfig()).toEqual(config);
   });
   it('reads a stamped copy as it is', async () => {
@@ -220,8 +220,8 @@ describe('working configuration', () => {
     // of verse turn over at their natural spacing (#620).
     expect(configFromExport({ ...legacy, configVersion: 9 })).toEqual({ headings: { fontFamily: 'Georgia' }, bodyText: { verse: { tighten: false } } });
     // Exports carry the version since 1.5, and read back as they are.
-    expect(configFromExport({ ...legacy, configVersion: 10 })).toEqual({ headings: { fontFamily: 'Georgia' } });
-    expect(configFromExport({ ...styled, configVersion: 10 })).toEqual({ paragraphStyles: [{ id: 'verse' }] });
+    expect(configFromExport({ ...legacy, configVersion: 11 })).toEqual({ headings: { fontFamily: 'Georgia' } });
+    expect(configFromExport({ ...styled, configVersion: 11 })).toEqual({ paragraphStyles: [{ id: 'verse' }] });
   });
   // The applied preset's snapshot hashed the copy as it was stored; once the
   // copy is migrated on load, an untouched book must still read untouched
