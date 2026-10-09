@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 096 · A humanities essay with MLA works cited ══════════
 // https://postext.dev/en/cookbook/mla-humanities-essay
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Spectral, Spectral SC (SIL OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: Spectral, Spectral SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
 } from 'https://esm.sh/postext';

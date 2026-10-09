@@ -1,10 +1,10 @@
 ---
 title: "Un assaig d'humanitats amb obres citades en MLA"
-summary: "Un assaig literari amb cites [@clau, 48] que surten en MLA 9, autor i pàgina, amb una cita en bloc i la llista d'obres citades presa de dades CSL-YAML."
+summary: "Un assaig literari amb cites [@clau, 48] que surten en MLA 9, autor i pàgina, amb una cita en bloc i la llista d'obres citades presa de dades BibTeX."
 plain: "Un assaig sobre un poema de Keats, tal com l'imprimeix una revista literària. L'autora escriu una clau curta per a cada font; Postext imprimeix l'autor i la pàgina entre parèntesis i la llista d'obres citades al final, en estil MLA."
 description: "Un assaig literari amb Postext: cites MLA 9 d'autor i pàgina amb citeproc-js, títol abreujat per a dues obres de Keats, cita en bloc i obres citades."
 question: "Com cito en MLA i munto la llista d'obres citades d'un assaig de literatura?"
-aliases: ["MLA", "MLA 9", "obres citades", "Works Cited", "autor-pàgina", "assaig literari", "humanitats", "cita en bloc", "cita llarga", "citeproc"]
+aliases: ["MLA", "MLA 9", "obres citades", "Works Cited", "autor-pàgina", "assaig literari", "humanitats", "cita en bloc", "cita llarga", "BibTeX", "shorttitle", "citeproc"]
 pageNotes: { "1": "Pàgina 1: una banda negra sobre la meitat superior amb l'avantítol ASSAIGS · POESIA ROMÀNTICA, el títol Freda pastoral en cursiva fina de mida gran, un subtítol sobre l'«Ode on a Grecian Urn» de Keats i la signatura Helena Ward, sobre una franja vermell argila; a sota, els primers paràgrafs amb cites com (Jack) i (McDermott).", "2": "Pàgina 2: títols de secció en versaletes vermelles; cites de l'oda amb referències MLA (Keats, «Ode» 1–3), després només els números de vers, com (8–9), i la frase d'Eliot seguida de (230).", "3": "Pàgina 3: la secció de les cartes, amb (Keats, Letters 41) i una cita en bloc sagnada 2 em amb la referència (Keats, Letters 48) després del punt final.", "4": "Pàgina 4: Obres citades, en ordre alfabètic amb sagnat francès; la segona obra de Keats comença amb una ratlla triple; un petit colofó a sota." }
 ---
 
@@ -14,13 +14,13 @@ Un assaig d'una revista literària trimestral: quatre pàgines sobre qui diu els
 
 ## Elaboració
 
-### 1 · L'estil és MLA; les dades, CSL
+### 1 · L'estil és MLA; les dades, BibTeX
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El motor de cites es registra una vegada i `citations.style` anomena l'estil MLA inclòs; citeproc-js hi redacta cada cita i la llista. Les referències van en un bloc `:::references{format=csl-yaml}` al final de l'assaig. Aquí es fa servir CSL-YAML i no BibTeX perquè MLA necessita un títol abreujat per a les dues obres de Keats, i el lector de BibTeX de postext 1.12.1 descarta el camp `shorttitle`; en CSL el camp es diu `title-short`.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El motor de cites es registra una vegada i `citations.style` anomena l'estil MLA inclòs; citeproc-js hi redacta cada cita i la llista. Les referències van en un bloc `:::references{format=bibtex}` al final de l'assaig, escrites tal com les exporta un gestor de referències. MLA necessita un títol abreujat per a les dues obres de Keats, i el camp `shorttitle` de cada entrada el dona (en CSL es diu `title-short`).
 
-### 2 · Tres maneres de citar
+### 2 · Quatre maneres de citar
 
-El text cita una obra amb `[@jack1967]`, que imprimeix «(Jack)» perquè l'assaig es refereix al llibre sencer. Amb pàgina, `[@keats-letters, 41]` imprimeix «(Keats, *Letters* 41)»: se citen dues obres de Keats, així que citeproc hi afegeix el títol abreujat per distingir-les. Quan la frase ja anomena el crític, `[-@eliot1932, 230]` omet el nom i imprimeix «(230)». Un cop citada l'oda amb els seus números de vers, les cites següents porten només els números, escrits entre parèntesis normals, com permet MLA.
+El text cita una obra amb `[@jack1967]`, que imprimeix «(Jack)» perquè l'assaig es refereix al llibre sencer. Amb pàgina, `[@keats-letters, 41]` imprimeix «(Keats, *Letters* 41)»: se citen dues obres de Keats, així que citeproc hi afegeix el títol abreujat per distingir-les. Quan la frase ja anomena el crític, `[-@eliot1932, 230]` omet el nom i imprimeix «(230)». Una cita narrativa sense pàgina, `@stillinger1974 recoge`, imprimeix només el nom, «Stillinger recoge», amb un sol espai darrere: MLA no té res a posar entre parèntesis. Un cop citada l'oda amb els seus números de vers, les cites següents porten només els números, escrits entre parèntesis normals, com permet MLA.
 
 ### 3 · Una cita en bloc amb la referència després del punt
 
@@ -64,5 +64,4 @@ El mateix assaig en Chicago posa l'any després de l'autor, «(Brooks 1947, 165)
 
 ## Errors freqüents
 
-- Una cita narrativa sense pàgina, `@stillinger1974 registra`, imprimeix el nom amb un segon espai darrere en postext 1.12.1. Cita aquesta obra entre claudàtors al final de la frase, com fa aquest assaig, o dona'n una pàgina.
 - citeproc-js imprimeix els títols tal com vénen a les dades. MLA escriu els títols anglesos amb majúscula a cada paraula principal, així que escriu-los així a les referències.

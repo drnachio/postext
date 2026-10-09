@@ -1,10 +1,10 @@
 ---
 title: "按MLA格式引用的人文学科论文"
-summary: "一篇文学论文：正文写[@key, 48]，按MLA 9排成著者-页码引文，有一段独立引文，引用文献表取自CSL-YAML数据。"
+summary: "一篇文学论文：正文写[@key, 48]，按MLA 9排成著者-页码引文，有一段独立引文，引用文献表取自BibTeX数据。"
 plain: "一篇谈济慈诗作的论文，按文学期刊的样子排印。作者给每条文献起一个短代号写进正文，Postext按MLA格式在括号里印出作者和页码，并在文末列出引用文献。"
 description: "用Postext排文学论文：citeproc-js生成MLA 9著者-页码引文，济慈的两部作品加简短标题，独立引文和Works Cited文献表。"
 question: "文学论文怎样按MLA格式引用，并生成Works Cited文献表？"
-aliases: ["MLA", "MLA 9", "Works Cited", "引用文献", "著者-页码制", "文学论文", "人文学科", "独立引文", "citeproc"]
+aliases: ["MLA", "MLA 9", "Works Cited", "引用文献", "著者-页码制", "文学论文", "人文学科", "独立引文", "BibTeX", "shorttitle", "citeproc"]
 pageNotes: { "1": "第1页：上半页是一条黑色色带，上有ESSAYS · ROMANTIC POETRY字样、细斜体大字标题Cold Pastoral、关于济慈《希腊古瓮颂》的副标题和署名Helena Ward，色带下方是一道陶土红色细条；下面是开头几段，带有(Jack)、(McDermott)这样的引文。", "2": "第2页：红色小型大写字母的节标题；引用颂诗的诗句，MLA引文写作(Keats, “Ode” 1–3)，此后只写行号，如(8–9)；艾略特的话后面跟着(230)。", "3": "第3页：关于书信的一节，有(Keats, Letters 41)，以及一段缩进2 em的独立引文，引文出处(Keats, Letters 48)放在末尾句号之后。", "4": "第4页：Works Cited，按字母排序，悬挂缩进；济慈的第二部作品以三连划线代替姓名；下方是一行小字版权说明。" }
 ---
 
@@ -14,13 +14,13 @@ pageNotes: { "1": "第1页：上半页是一条黑色色带，上有ESSAYS · RO
 
 ## 做法
 
-### 1 · 样式用MLA，数据用CSL
+### 1 · 样式用MLA，数据用BibTeX
 
-代码就是上面的[简短回答](#简短回答)。引用引擎注册一次，`citations.style`指定内置的MLA样式，citeproc-js据此写出每条引文和文献表。文献数据放在论文末尾的`:::references{format=csl-yaml}`块里。这里用CSL-YAML而不用BibTeX，是因为MLA要给济慈的两部作品加简短标题，而postext 1.12.1的BibTeX读取器会丢掉`shorttitle`字段；CSL里对应的字段是`title-short`。
+代码就是上面的[简短回答](#简短回答)。引用引擎注册一次，`citations.style`指定内置的MLA样式，citeproc-js据此写出每条引文和文献表。文献数据放在论文末尾的`:::references{format=bibtex}`块里，写法与文献管理软件导出的一样。MLA要给济慈的两部作品加简短标题，由每个条目的`shorttitle`字段提供（CSL里对应的字段是`title-short`）。
 
-### 2 · 三种引用方式
+### 2 · 四种引用方式
 
-正文用`[@jack1967]`引用整部著作，印出"(Jack)"。带页码的`[@keats-letters, 41]`印出"(Keats, *Letters* 41)"：文中引用了济慈的两部作品，citeproc加上简短标题加以区分。句中已经点出评论者姓名时，`[-@eliot1932, 230]`省去姓名，只印"(230)"。颂诗第一次连同行号引用之后，后面的引文只写行号，用普通括号直接打出，这是MLA允许的。
+正文用`[@jack1967]`引用整部著作，印出"(Jack)"。带页码的`[@keats-letters, 41]`印出"(Keats, *Letters* 41)"：文中引用了济慈的两部作品，citeproc加上简短标题加以区分。句中已经点出评论者姓名时，`[-@eliot1932, 230]`省去姓名，只印"(230)"。不带页码的叙述式引文`@stillinger1974 records`只印出姓名，即"Stillinger records"，姓名后只有一个空格：MLA在括号里没有内容可写。颂诗第一次连同行号引用之后，后面的引文只写行号，用普通括号直接打出，这是MLA允许的。
 
 ### 3 · 独立引文，出处放在句号之后
 
@@ -64,5 +64,4 @@ pageNotes: { "1": "第1页：上半页是一条黑色色带，上有ESSAYS · RO
 
 ## 常见问题
 
-- 不带页码的叙述式引文，如`@stillinger1974 records`，在postext 1.12.1里会在姓名后多出一个空格。可以像本文那样，把这类引文放在分句末尾的方括号里，或者给出页码。
 - citeproc-js按数据原样印出标题。MLA要求英文标题实词首字母大写，所以在文献数据里就要这样写。

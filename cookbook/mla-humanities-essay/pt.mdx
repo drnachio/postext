@@ -1,10 +1,10 @@
 ---
 title: "Um ensaio de humanidades com obras citadas em MLA"
-summary: "Ensaio literário cujas citações [@key, 48] viram referências MLA 9 de autor e página, com citação em bloco e lista de obras citadas feita de dados CSL-YAML."
+summary: "Ensaio literário cujas citações [@key, 48] viram referências MLA 9 de autor e página, com citação em bloco e lista de obras citadas feita de dados BibTeX."
 plain: "Um ensaio sobre um poema de Keats, como uma revista literária o imprime. A autora escreve um código curto para cada fonte; o Postext imprime o autor e a página entre parênteses e a lista de obras citadas no fim, no estilo MLA."
 description: "Um ensaio literário no Postext: citações MLA 9 de autor e página com citeproc-js, título abreviado para duas obras de Keats, citação em bloco e obras citadas."
 question: "Como cito no padrão MLA e monto a lista de obras citadas de um ensaio de literatura?"
-aliases: ["MLA", "MLA 9", "obras citadas", "Works Cited", "autor-página", "ensaio literário", "humanidades", "citação em bloco", "citação longa", "citação recuada", "três hífens", "citeproc"]
+aliases: ["MLA", "MLA 9", "obras citadas", "Works Cited", "autor-página", "ensaio literário", "humanidades", "citação em bloco", "citação longa", "citação recuada", "três hífens", "BibTeX", "shorttitle", "citeproc"]
 pageNotes: { "1": "Página 1: uma faixa preta sobre a metade de cima com o chapéu ESSAYS · ROMANTIC POETRY, o título Cold Pastoral em itálico leve e grande, um subtítulo sobre a Ode on a Grecian Urn de Keats e a assinatura Helena Ward, sobre uma tira vermelho-argila; abaixo, os primeiros parágrafos com citações como (Jack) e (McDermott).", "2": "Página 2: títulos de seção em versaletes vermelhos; trechos da ode com citações MLA (Keats, “Ode” 1–3), depois só os números dos versos, como (8–9), e a frase de Eliot seguida de (230).", "3": "Página 3: a seção sobre as cartas, com (Keats, Letters 41) e uma citação em bloco recuada 2 em cuja referência (Keats, Letters 48) vem depois do ponto final.", "4": "Página 4: Works Cited, em ordem alfabética com recuo deslocado; a segunda obra de Keats começa com um travessão triplo; um pequeno colofão embaixo." }
 ---
 
@@ -14,13 +14,13 @@ Um ensaio de uma revista literária trimestral: quatro páginas sobre quem diz o
 
 ## Preparo
 
-### 1 · O estilo é MLA; os dados são CSL
+### 1 · O estilo é MLA; os dados são BibTeX
 
-O código é [a resposta curta](#a-resposta-curta) acima. O motor de citações é registrado uma vez e `citations.style` indica o estilo MLA incluído; o citeproc-js escreve com ele cada citação e a lista. As referências ficam num bloco `:::references{format=csl-yaml}` no fim do ensaio. Aqui se usa CSL-YAML em vez de BibTeX porque o MLA precisa de um título abreviado para as duas obras de Keats, e o leitor de BibTeX do postext 1.12.1 descarta o campo `shorttitle`; em CSL o campo se chama `title-short`.
+O código é [a resposta curta](#a-resposta-curta) acima. O motor de citações é registrado uma vez e `citations.style` indica o estilo MLA incluído; o citeproc-js escreve com ele cada citação e a lista. As referências ficam num bloco `:::references{format=bibtex}` no fim do ensaio, escritas como um gerenciador de referências as exporta. O MLA precisa de um título abreviado para as duas obras de Keats, e o campo `shorttitle` de cada entrada o fornece (em CSL ele se chama `title-short`).
 
-### 2 · Três tipos de citação
+### 2 · Quatro tipos de citação
 
-O texto cita uma obra com `[@jack1967]`, que imprime “(Jack)” porque o ensaio se refere ao livro como um todo. Com página, `[@keats-letters, 41]` imprime “(Keats, *Letters* 41)”: há duas obras de Keats citadas, então o citeproc acrescenta o título abreviado para distingui-las. Quando a frase já nomeia o crítico, `[-@eliot1932, 230]` omite o nome e imprime “(230)”. Depois que a ode foi citada com os números dos versos, os trechos seguintes levam só os números, digitados entre parênteses comuns, como o MLA permite.
+O texto cita uma obra com `[@jack1967]`, que imprime “(Jack)” porque o ensaio se refere ao livro como um todo. Com página, `[@keats-letters, 41]` imprime “(Keats, *Letters* 41)”: há duas obras de Keats citadas, então o citeproc acrescenta o título abreviado para distingui-las. Quando a frase já nomeia o crítico, `[-@eliot1932, 230]` omite o nome e imprime “(230)”. Uma citação narrativa sem página, `@stillinger1974 records`, imprime só o nome, “Stillinger records”, com um único espaço depois: o MLA não tem nada a pôr entre parênteses. Depois que a ode foi citada com os números dos versos, os trechos seguintes levam só os números, digitados entre parênteses comuns, como o MLA permite.
 
 ### 3 · Uma citação em bloco com a referência depois do ponto final
 
@@ -64,5 +64,4 @@ O mesmo ensaio em Chicago põe o ano depois do autor, “(Brooks 1947, 165)”, 
 
 ## Erros comuns
 
-- Uma citação narrativa sem página, `@stillinger1974 records`, imprime o nome com um segundo espaço depois dele no postext 1.12.1. Cite essa obra entre colchetes no fim da oração, como faz este ensaio, ou dê uma página.
 - O citeproc-js imprime os títulos como os dados os trazem. O MLA usa maiúscula em cada palavra principal nos títulos em inglês, então escreva-os assim nas referências.

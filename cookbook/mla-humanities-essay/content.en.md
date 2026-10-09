@@ -17,7 +17,7 @@ The fourth stanza turns from the dancers to a procession, a priest leading a hei
 
 ## The punctuation of the last lines
 
-In the last stanza the speaker gives up questioning. The urn “dost tease us out of thought / As doth eternity: Cold Pastoral!” (44–45), and it will outlast this generation as “a friend to man, to whom thou say’st, / ‘Beauty is truth, truth beauty,’—that is all / Ye know on earth, and all ye need to know” (48–50). In the 1820 volume the inverted commas close after “beauty,” so the urn says five words and someone else says the rest. The *Annals* text has no inverted commas, and neither have the transcripts made by Keats’s friends [@stillinger1974]. An editor has to choose, and the choice decides who says “that is all”: the urn to mankind, the poet to his reader, or the poet to the figures on the urn.
+In the last stanza the speaker gives up questioning. The urn “dost tease us out of thought / As doth eternity: Cold Pastoral!” (44–45), and it will outlast this generation as “a friend to man, to whom thou say’st, / ‘Beauty is truth, truth beauty,’—that is all / Ye know on earth, and all ye need to know” (48–50). In the 1820 volume the inverted commas close after “beauty,” so the urn says five words and someone else says the rest. The *Annals* text has no inverted commas, and @stillinger1974 records that neither have the transcripts made by Keats’s friends. An editor has to choose, and the choice decides who says “that is all”: the urn to mankind, the poet to his reader, or the poet to the figures on the urn.
 
 The lines have had hostile readers. T. S. Eliot found the couplet “a serious blemish on a beautiful poem” [-@eliot1932, 230], a statement that was either untrue or one he could not understand. Cleanth Brooks answered that the words are “a speech ‘in character’” [-@brooks1947, 165], fitted to the urn that utters them, and set them beside Edgar’s “Ripeness is all” in *King Lear*. His reading needs the 1820 punctuation: if the urn speaks only the five words inside the commas, the motto is the urn’s, and the comment after the dash belongs to the poet who has listened to it.
 
@@ -41,56 +41,56 @@ Read with the letter beside it, the couplet is less a doctrine than a refusal. T
 Set in Spectral and Spectral SC (SIL OFL). Text: original essay, CC BY 4.0; quotations from Keats’s 1820 volume and Colvin’s edition of the letters.
 :::
 
-:::references{format=csl-yaml}
-- id: keats-ode
-  type: chapter
-  author: [{family: Keats, given: John}]
-  title: Ode on a Grecian Urn
-  title-short: Ode
-  container-title: "Lamia, Isabella, The Eve of St. Agnes, and Other Poems"
-  publisher: Taylor and Hessey
-  issued: 1820
-  page: 113-116
-- id: keats-letters
-  type: book
-  author: [{family: Keats, given: John}]
-  editor: [{family: Colvin, given: Sidney}]
-  title: Letters of John Keats to His Family and Friends
-  title-short: Letters
-  publisher: Macmillan
-  issued: 1925
-- id: jack1967
-  type: book
-  author: [{family: Jack, given: Ian}]
-  title: Keats and the Mirror of Art
-  publisher: Clarendon Press
-  issued: 1967
-- id: mcdermott1948
-  type: article-journal
-  author: [{family: McDermott, given: William C.}]
-  title: Keats and Sosibios
-  container-title: The Classical Journal
-  volume: 44
-  issue: 1
-  page: 33-34
-  issued: 1948
-- id: stillinger1974
-  type: book
-  author: [{family: Stillinger, given: Jack}]
-  title: "The Texts of Keats’s Poems"
-  publisher: Harvard UP
-  issued: 1974
-- id: eliot1932
-  type: chapter
-  author: [{family: Eliot, given: T. S.}]
-  title: Dante
-  container-title: "Selected Essays, 1917–1932"
-  publisher: Faber and Faber
-  issued: 1932
-- id: brooks1947
-  type: book
-  author: [{family: Brooks, given: Cleanth}]
-  title: "The Well Wrought Urn: Studies in the Structure of Poetry"
-  publisher: Reynal and Hitchcock
-  issued: 1947
+:::references{format=bibtex}
+@incollection{keats-ode,
+  author    = {Keats, John},
+  title     = {Ode on a Grecian Urn},
+  shorttitle = {Ode},
+  booktitle = {Lamia, Isabella, The Eve of St. Agnes, and Other Poems},
+  publisher = {Taylor and Hessey},
+  year      = 1820,
+  pages     = {113--116},
+}
+@book{keats-letters,
+  author    = {Keats, John},
+  editor    = {Colvin, Sidney},
+  title     = {Letters of John Keats to His Family and Friends},
+  shorttitle = {Letters},
+  publisher = {Macmillan},
+  year      = 1925,
+}
+@book{jack1967,
+  author    = {Jack, Ian},
+  title     = {Keats and the Mirror of Art},
+  publisher = {Clarendon Press},
+  year      = 1967,
+}
+@article{mcdermott1948,
+  author    = {McDermott, William C.},
+  title     = {Keats and Sosibios},
+  journal   = {The Classical Journal},
+  volume    = 44,
+  number    = 1,
+  pages     = {33--34},
+  year      = 1948,
+}
+@book{stillinger1974,
+  author    = {Stillinger, Jack},
+  title     = {The Texts of Keats’s Poems},
+  publisher = {Harvard UP},
+  year      = 1974,
+}
+@incollection{eliot1932,
+  author    = {Eliot, T. S.},
+  title     = {Dante},
+  booktitle = {Selected Essays, 1917--1932},
+  publisher = {Faber and Faber},
+  year      = 1932,
+}
+@book{brooks1947,
+  author    = {Brooks, Cleanth},
+  title     = {The Well Wrought Urn: Studies in the Structure of Poetry},
+  publisher = {Reynal and Hitchcock},
+  year      = 1947,
+}
 :::

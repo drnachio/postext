@@ -39,19 +39,9 @@
     "hyphenation-locales",
     "config-cache-identity"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "the references are CSL-YAML, not BibTeX: parseBibtex (packages/postext/src/citations/bibtex.ts) does not map shorttitle to title-short, so MLA would print the full title of each Keats work in every citation"
-    },
-    {
-      "package": "postext",
-      "note": "no narrative citation without a locator (@stillinger1974 records…): in an author-page style, postext-citeproc's composite citation leaves a trailing space, so the name is followed by two spaces"
-    }
-  ],
   "engine": {
-    "postext": "1.12.1",
-    "postextPdf": "1.12.1"
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0"
   },
   "kit": [
     "core",
@@ -120,7 +110,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-01",
-  "updated": "2026-10-01",
+  "updated": "2026-10-09",
   "downloads": {
     "pdf": true
   }
