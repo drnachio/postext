@@ -1517,6 +1517,77 @@ bodyText: {
 
 Sandboxでは、これらは**本文**セクションの**引用ブロック**グループにあります。
 
+### 詩
+
+行に半句の区切りがない`:::verse`の詩は行ごとに組みます（[文書の書式 › `:::verse`](/ja/docs/document-format#verse)を参照）。`bodyText.verse`はそうした詩の既定値を決め、詩の開始行に同じ名前の属性を書くと、その詩だけの値になります。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>開始行で組み方を指定していない詩の組み方。<code>'auto'</code>：区切り（<code>||</code>）のある行があれば対句として、なければ行ごとに組みます。<code>'bayt'</code>：常に対句として組み、区切りのない詩は各行を1つの半句として中央に置きます（postext 1.22までの組み方）。</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>詩の行頭の空白1つの幅（タブは4つ、全角スペースは2つと数えます）。<code>em</code>は詩のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>行長より長い詩の行の折り返し方。次の行にぶら下げるか、<code>turnoverMark</code>の後ろに置いて行末側に寄せます。</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>詩の段落スタイルが<code>hangingIndent</code>を決めていないとき、ぶら下げた折り返しを行頭から下げる量。</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>行末側に寄せた折り返しの前の記号。</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>連と連のあきで、詩の行送りを単位にします。ベースライングリッド上では整数行になり、<code>snapToGrid: false</code>の段落スタイルでは正確な量を保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>この行数以下の連は1つの段に収めます。<code>0</code>はオフです。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // 折り返しは角括弧付きで行末側へ。短歌は分けない。
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+これらの設定より前に保存された設定（`configVersion`が8以前）で、区切りのない詩を組んでいるものは`layout: 'bayt'`として読まれ、詩はpostext 1.22で組まれたとおり中央に置かれます。
+
+Sandboxでは、これらは**本文**セクションの**詩**グループにあります。
+
+
 ### `fontFamily`には1つのファミリー
 
 `fontFamily`は、ここでもほかのフォントファミリーの項目（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、チップスタイルやデザイン要素の`fontFamily`など）でも、**1つの**ファミリーを指定します。Canvas、HTML出力、PDFは同じ書体で組む必要があり、PDFはフォールバックの連鎖なしにファミリーごとに1つのフォントを埋め込むため、CSSのフォントスタックが代替として使えるものはありません。スタックを指定すると最初のファミリーで組まれ、[設定の警告](#設定の警告)として報告されます。
@@ -4946,13 +5017,13 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>本文の1行目のインデント</td>
-      <td><code>indent</code>から測った1行目のインデント。<code>hangingIndent</code>が0でないときは無視されます。</td>
+      <td>1行目の字下げで、<code>indent</code>から測ります。<code>hangingIndent</code>が0でないときは、スタイル自身が決めた場合だけ使われます。1行目は<code>indent + firstLineIndent</code>から、2行目以降は<code>indent + hangingIndent</code>から始まるので、詩の行を1 em下げて折り返しを3 emぶら下げられます。本文から受け継いだ値はぶら下げインデントに譲り、1行目は<code>indent</code>から始まります（postext 1.22までと同じ。それ以前に保存された設定では、そうしたスタイルの明示的な値が外されます）。</td>
     </tr>
     <tr>
       <td><code>hangingIndent</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>1行目を除くすべての行に適用するインデントで、<code>indent</code>から測ります。参考文献や用語集の典型的な形です。</td>
+      <td>1行目以外のすべての行に適用するインデントで、<code>indent</code>から測ります。参考文献や用語集の典型的な形で、詩の行の折り返しにも使います。1行目は<code>indent</code>から、スタイル自身が<code>firstLineIndent</code>を決めていればその位置から始まります。</td>
     </tr>
     <tr>
       <td><code>spaceBetween</code></td>

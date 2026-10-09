@@ -310,6 +310,21 @@ A data e a assinatura de uma carta são compostas rentes ao fim da linha (地付
 
 `headings.keepWithNext` impede que um título feche uma coluna. A JLReq §4.1.7 permite que um título feche a última coluna de uma página par, já que o seu texto abre então a página em frente da mesma página dupla; `headings.keepWithNextSpread: true` permite isso, tanto em livros encadernados à esquerda quanto à direita.
 
+### Poemas, haicais e tankas
+
+Escreva um poema em um bloco `:::verse`, um verso por linha de Markdown e uma linha em branco entre estrofes. Os espaços iniciais recuam o verso: um espaço ideográfico (U+3000) ou dois espaços ASCII equivalem a um caractere com o `indentStep` padrão. Em texto vertical cada verso é uma coluna que pende do topo (`align` vale `start` por padrão) e o seu recuo se conta para baixo a partir do topo; um verso mais longo que a coluna se parte pelas regras de quebra de linha do texto. `keepStanzas` mantém as estrofes curtas em uma só página: três linhas para um haicai, cinco para um tanka.
+
+```md
+:::verse{keepStanzas=5}
+田子の浦に
+　うち出でてみれば
+白妙の
+　富士の高嶺に
+雪は降りつつ
+:::
+```
+
+
 ## Notas
 
 Os livros japoneses posicionam as notas de mais maneiras que os ocidentais (JLReq §4.2), e o Postext acrescenta para eles dois marcadores e uma posição. Um marcador vai antes de um 。 final de frase: escreva <span lang="ja" className="font-body">先生[^1]。</span>. O marcador fica com o caractere anterior e 。 nunca abre uma linha, então os três nunca se separam.

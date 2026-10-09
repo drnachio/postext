@@ -72,7 +72,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
     <tr>
       <td>段落</td>
       <td>一行或多行纯文本</td>
-      <td>连续的非空、非特殊行用一个空格连接，作为一个段落输出。在两个中文或日文字符（表意文字、假名、全角标点，以及紧挨它们的弯引号、破折号或省略号）之间，换行符则直接去掉，与CSS的做法相同，因此中文段落在源文本中可以在任意位置换行。在两个这样的符号之间（<code>“你好”⏎“再见”</code>、<code>他说……⏎“好”</code>），由符号外侧的字符决定：其中一个是中文或日文时，换行符去掉；<code>“hello”⏎“bye”</code>则保留空格。韩文保留空格。段落内的手动换行不会保留，要开始新段落请用空行。</td>
+      <td>连续的非空、非特殊行用一个空格连接，作为一个段落输出。在两个中文或日文字符（表意文字、假名、全角标点，以及紧挨它们的弯引号、破折号或省略号）之间，换行符则直接去掉，与CSS的做法相同，因此中文段落在源文本中可以在任意位置换行。在两个这样的符号之间（<code>“你好”⏎“再见”</code>、<code>他说……⏎“好”</code>），由符号外侧的字符决定：其中一个是中文或日文时，换行符去掉；<code>“hello”⏎“bye”</code>则保留空格。韩文保留空格。段落内的手动换行不会保留，要开始新段落请用空行。诗的各行要按原样保留，请放进<a href="#verse"><code>:::verse</code></a>块。</td>
     </tr>
     <tr>
       <td>引用块</td>
@@ -200,7 +200,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>按古典阿拉伯排法排的诗：每行一联（bayt），两个半行用<code>||</code>分开，以同一宽度并排。见<a href="#verse">下文</a>。</td>
+      <td>一首诗：按书写逐行排（每行一行诗，空行分隔诗节，行首空格为缩进）；各行用<code>||</code>分开两个半行时，按古典阿拉伯排法排。见<a href="#verse">下文</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -526,6 +526,59 @@ Two lines lower still.
 
 
 ### `:::verse`
+
+一首诗。`:::verse`有两种排法：**逐行**，大多数诗都这样印；或者qaṣīda的**古典阿拉伯排法**，每一联分成两个半行并排。各行带有半行分隔符（`||`，或两边有空格的`\\`）的诗按阿拉伯排法排，其他的诗逐行排；开始标记上的`layout=lines`或`layout=bayt`可以指定其一。
+
+#### 逐行
+
+照印出来的样子写诗：Markdown的一行就是一行诗，诗节之间空一行，行首加空格表示缩进。
+
+```md
+:::verse
+轻轻的我走了，
+  正如我轻轻的来；
+我轻轻的招手，
+  作别西天的云彩。
+
+那河畔的金柳，
+  是夕阳中的新娘；
+:::
+```
+
+- **诗行。** 每个非空行是一行诗，单独按行内Markdown读取：斜体、小型大写、注释和引用都可用。连续的空行只算一次换节。
+- **缩进。** 每个行首空格宽`indentStep`，默认0.5 em，所以两个空格缩进一个字；制表符算四个空格，全角空格（U+3000）算两个。
+- **转行。** 比版心宽的诗行在词间空格处转行（中文诗行按中文的断行规则在字间转行）。`turnover=hang`（默认）时，余下部分悬挂在下一行，从该行自身的起点缩进`hang`：诗的段落样式的`hangingIndent`，没有则为2 em（`bodyText.verse.hang`）。`turnover=right`时，余下部分贴齐版心末端，前面加开方括号（`turnoverMark`，默认`[`），这是英语和西班牙语诗集的做法。诗行不加连字符断词，除非其段落样式自己设置了`hyphenation: true`。一行诗和它的转行绝不在分栏或分页处分开。
+- **诗节。** 两个诗节之间的间距是诗的一行行距；`stanzaSpace=0.5`为半行，长度值（`stanzaSpace=6pt`）则精确设定。在基线网格上取整到网格行。分栏和分页优先落在诗节之间；在诗节内部则按孤行和寡行规则断开，这时只计该诗节的行数。`keepStanzas=N`让不超过N行的诗节保持完整：俳句用`keepStanzas=3`，短歌用`keepStanzas=5`。
+- **位置。** 诗以最长的一行为准在版心中居中，各行与诗的起点对齐（`align=center`，散文中引诗的常见排法）；`align=start`让诗与版心起点对齐，这也是竖排的默认值。引出诗的段落，其最后一行与诗的前几行留在一起。
+- **错行。** 写成`+ …`的行从上一行结束处、隔一个词间空格开始，即诗剧中两个角色共用的一行。以加号开头的行写作`\+`。
+- **停顿。** 开始标记上有`keepSpaces`时，行内两个及以上的连续空格保持其宽度；没有时，空格像在任何段落中一样合并为一个。
+- **字体与方向。** `style`指定一个段落样式，给出字体、字号、行距、`indent`以及诗上下的间距。`dir`和`lang`设置诗的方向和语言：阿拉伯文书中的拉丁文诗（`dir=ltr`）从其自身的起始一侧缩进。竖排时每行诗是一列，从天头起缩进。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>属性</th>
+      <th style={{ width: '200px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>、<code>bayt</code>或<code>auto</code>：某行带分隔符时用阿拉伯排法。</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>一个行首空格的宽度。</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code>或<code>right</code>。</td></tr>
+    <tr><td><code>hang</code></td><td>样式的<code>hangingIndent</code>，没有则为<code>2em</code></td><td>悬挂转行从该行起点缩进的量。</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>靠右转行前的标记。</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>诗节间距：单独的数字按诗的行距计行数，长度值即为该长度。</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>不超过此行数的诗节保持完整；0为关闭。</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>关闭</td><td>保留行内两个及以上的连续空格。</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code>（竖排为<code>start</code>）</td><td>以最长的一行为准居中，或与起点对齐。</td></tr>
+    <tr><td><code>style</code>、<code>dir</code>、<code>lang</code></td><td>—</td><td>诗的段落样式、方向和语言。</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse`设置所有诗的默认值（见[配置 › 诗歌](/zh/docs/configuration#诗歌)）。纯文本按原样保留诗：行与行之间一个换行，诗节之间一个空行，所以复制的段落和搜索都逐行读取；流式EPUB把每个诗节排成一个元素，其中各行悬挂转行，带标签的PDF把每个诗节标为一个段落。
+
+#### 古典阿拉伯排法
 
 按古典阿拉伯排法排的诗（qaṣīda、qiṭʿa）：每一联（*bayt*）排一行，分成两半，前半行（*ṣadr*）在起始一侧（阿拉伯文为右侧），后半行（*ʿajuz*）在结束一侧，中间留空。每行写一联，两个半行用`||`分开（也可以像维基文库的文本那样，用两边各有一个空格的`\\`）。没有分隔符的行是单独的半行，在诗中居中。
 

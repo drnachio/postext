@@ -1517,6 +1517,77 @@ bodyText: {
 
 In the Sandbox these are the **Blockquotes** group of the Body text section.
 
+### Verse
+
+A `:::verse` poem whose lines carry no hemistich separator is set line by line (see [Document format › `:::verse`](/en/docs/document-format#verse)). `bodyText.verse` gives the defaults of such poems; an attribute of the same name on a poem's fence sets it for that poem.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '140px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How a poem whose fence names no layout is set. <code>'auto'</code>: as bayts when a line carries a separator (<code>||</code>), line by line otherwise. <code>'bayt'</code>: as bayts always, a poem with no separator as centred single hemistichs, as up to postext 1.22.</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Width of one leading space of a line of verse (a tab counts four, an ideographic space two); <code>em</code> is the poem's size.</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>How a line wider than the measure turns over: hanging on the next line, or flush with the end of the measure behind <code>turnoverMark</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Indent of a hanging turnover from its line's start, when the poem's paragraph style sets no <code>hangingIndent</code>.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>The mark before a turnover set flush right.</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Space between stanzas, in lines of the poem's leading. On the baseline grid it comes out whole grid lines; a paragraph style with <code>snapToGrid: false</code> keeps it exact.</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Keep any stanza of this many lines of verse or fewer whole in one column. <code>0</code> is off.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // Turnovers flush right behind a bracket; tankas kept whole.
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+A configuration stored before these settings (`configVersion` 8 or older) that lays out a poem with no separator is read with `layout: 'bayt'`, so the poem keeps the centred lines postext 1.22 gave it.
+
+In the Sandbox these are the **Verse** group of the Body text section.
+
+
 ### One family per `fontFamily`
 
 `fontFamily` — here and in every other font-family field (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, a chip style's or a design element's `fontFamily`…) — names **one** family. The canvas, the HTML output and the PDF must set the same face, and the PDF embeds one font per family with no fallback chain, so there is nothing for a CSS font stack to fall back to. A stack is set in its first family and reported as a [configuration warning](#configuration-warnings):
@@ -4946,13 +5017,13 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>body first-line indent</td>
-      <td>Indent of the first line, from <code>indent</code>. Ignored when <code>hangingIndent</code> is non-zero.</td>
+      <td>Indent of the first line, from <code>indent</code>. With a non-zero <code>hangingIndent</code> it applies only when the style sets it itself: the first line starts at <code>indent + firstLineIndent</code> and the turnovers at <code>indent + hangingIndent</code>, so a line of verse can start 1 em in and hang its turnover 3 em. Inherited from the body, it gives way to the hanging indent and the first line starts at <code>indent</code>, as up to postext 1.22 (a configuration stored before has an explicit one dropped from such a style).</td>
     </tr>
     <tr>
       <td><code>hangingIndent</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Indent applied to every line except the first, from <code>indent</code> — the classic bibliography or glossary shape.</td>
+      <td>Indent applied to every line except the first, from <code>indent</code> — the classic bibliography or glossary shape, and the turnover of a line of verse. The first line starts at <code>indent</code>, or at the style's own <code>firstLineIndent</code> when it sets one.</td>
     </tr>
     <tr>
       <td><code>spaceBetween</code></td>

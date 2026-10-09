@@ -292,6 +292,8 @@ Escreva o poema em um bloco `:::verse`, um bayt por linha, com os hemistíquios 
 
 O texto simples mantém o poema como foi escrito, um bayt por linha, e deixa de fora as kashidas e o ornamento. Veja [`:::verse`](/pt/docs/document-format#verse) no formato de documento.
 
+**Verso livre e poemas latinos.** Um poema cujas linhas não trazem `||` — verso livre moderno, ou um poema latino citado em um livro árabe (`:::verse{dir=ltr lang=pt}`) — é composto linha a linha: cada linha do texto é um verso, as linhas em branco separam estrofes, os espaços iniciais recuam a partir do próprio lado de início do poema e os versos longos demais se partem com recuo pendente. Veja [`:::verse` › Linha a linha](/pt/docs/document-format#linha-a-linha).
+
 ## Sumário e índice remissivo
 
 **Sumário.** Muitos livros árabes, sobretudo as edições clássicas, imprimem o sumário (فهرس ou فهرس المحتويات) no final. `:::toc` imprime o sumário onde quer que esteja, então coloque-o no último capítulo, sob um título que fique fora dele:

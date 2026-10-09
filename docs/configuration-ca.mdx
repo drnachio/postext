@@ -1512,6 +1512,77 @@ bodyText: {
 
 Al Sandbox són el grup **Cites** de la secció **Text base**.
 
+### Vers
+
+Un poema `:::verse` les línies del qual no porten separador d'hemistiquis es compon línia a línia (vegeu [Format del document › `:::verse`](/ca/docs/document-format#verse)). `bodyText.verse` dona els valors per defecte d'aquests poemes; un atribut del mateix nom a l'obertura d'un poema el fixa per a aquell poema.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '140px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Com es compon un poema l'obertura del qual no anomena composició. <code>'auto'</code>: en baits quan una línia porta separador (<code>||</code>), línia a línia si no. <code>'bayt'</code>: sempre en baits, i un poema sense separador com a hemistiquis solts centrats, com fins a postext 1.22.</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Amplada d'un espai inicial d'un vers (un tabulador en compta quatre, un espai ideogràfic dos); <code>em</code> és el cos del poema.</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>Com es parteix un vers més ample que la caixa: penjat a la línia següent, o contra el final de la caixa darrere de <code>turnoverMark</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sagnat de la resta penjada des de l'inici del seu vers, quan l'estil de paràgraf del poema no fixa <code>hangingIndent</code>.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>El signe davant d'una resta composta a la dreta.</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Espai entre estrofes, en línies de l'interlineat del poema. A la retícula de base surt en línies senceres; un estil de paràgraf amb <code>snapToGrid: false</code> el conserva exacte.</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Mantenir en una sola columna tota estrofa d'aquests versos o menys. <code>0</code> ho desactiva.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // Restes a la dreta darrere d'un claudàtor; les tankes, senceres.
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+Una configuració desada abans d'aquests ajustos (`configVersion` 8 o anterior) que compon un poema sense separador es llegeix amb `layout: 'bayt'`, de manera que el poema conserva les línies centrades que li donava postext 1.22.
+
+Al Sandbox són el grup **Vers** de la secció **Text base**.
+
+
 ### Una sola família per `fontFamily`
 
 `fontFamily` —aquí i en qualsevol altre camp de família tipogràfica (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, el `fontFamily` d'un estil de xip o d'un element de disseny…)— anomena **una** família. El canvas, la sortida HTML i el PDF han de compondre amb la mateixa font, i el PDF incrusta una font per família, sense cadena de reserva, de manera que una llista de fonts CSS no té a què recórrer. Una llista es compon en la seva primera família i es notifica com a [avís de configuració](#avisos-de-configuració):
@@ -4932,13 +5003,13 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>sagnat del cos</td>
-      <td>Sagnat de la primera línia, des de <code>indent</code>. S'ignora quan <code>hangingIndent</code> no és zero.</td>
+      <td>Sagnat de la primera línia, des de <code>indent</code>. Amb una <code>hangingIndent</code> diferent de zero només s'aplica quan l'estil el fixa per si mateix: la primera línia comença a <code>indent + firstLineIndent</code> i les següents a <code>indent + hangingIndent</code>, de manera que un vers pot entrar 1 em i penjar la seva resta 3 em. Heretat del cos, cedeix davant del sagnat francès i la primera línia comença a <code>indent</code>, com fins a postext 1.22 (a una configuració desada abans se li treu l'explícit d'un estil així).</td>
     </tr>
     <tr>
       <td><code>hangingIndent</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Sagnat aplicat a totes les línies llevat de la primera, des de <code>indent</code> — la forma clàssica de bibliografies i glossaris.</td>
+      <td>Sagnat aplicat a totes les línies excepte la primera, des de <code>indent</code> — la forma clàssica d'una bibliografia o d'un glossari, i la resta d'un vers partit. La primera línia comença a <code>indent</code>, o a la <code>firstLineIndent</code> pròpia de l'estil quan la fixa.</td>
     </tr>
     <tr>
       <td><code>spaceBetween</code></td>

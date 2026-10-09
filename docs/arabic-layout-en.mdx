@@ -292,6 +292,8 @@ Write the poem in a `:::verse` block, one bayt a line, its hemistichs separated 
 
 The plain text keeps the poem as written, one bayt per line, and leaves out the kashidas and the ornament. See [`:::verse`](/en/docs/document-format#verse) in the document format.
 
+**Free verse and Latin poems.** A poem whose lines carry no `||` — modern free verse, or a Latin poem quoted in an Arabic book (`:::verse{dir=ltr lang=en}`) — is set line by line instead: each source line a line of verse, blank lines between stanzas, leading spaces an indent measured from the poem's own start side, overlong lines turned over with a hanging indent. See [`:::verse` › Line by line](/en/docs/document-format#line-by-line).
+
 ## Contents and index
 
 **Contents.** Many Arabic books, classical editions above all, print their contents (فهرس or فهرس المحتويات) at the end. `:::toc` prints the contents wherever it stands, so put it in the last chapter under a heading that is left out of it:

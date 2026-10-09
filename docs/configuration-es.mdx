@@ -1517,6 +1517,77 @@ bodyText: {
 
 En el Sandbox son el grupo **Citas** de la sección **Texto base**.
 
+### Verso
+
+Un poema `:::verse` cuyas líneas no llevan separador de hemistiquios se compone línea a línea (véase [Formato del documento › `:::verse`](/es/docs/document-format#verse)). `bodyText.verse` da los valores por defecto de esos poemas; un atributo del mismo nombre en la apertura de un poema lo fija para ese poema.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '140px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Cómo se compone un poema cuya apertura no nombra composición. <code>'auto'</code>: en baits cuando una línea lleva separador (<code>||</code>), línea a línea si no. <code>'bayt'</code>: siempre en baits, y un poema sin separador como hemistiquios sueltos centrados, como hasta postext 1.22.</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Anchura de un espacio inicial de un verso (un tabulador cuenta cuatro, un espacio ideográfico dos); <code>em</code> es el cuerpo del poema.</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>Cómo se parte un verso más ancho que la caja: colgado en la línea siguiente, o contra el final de la caja tras <code>turnoverMark</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sangría del resto colgado desde el inicio de su verso, cuando el estilo de párrafo del poema no fija <code>hangingIndent</code>.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>El signo ante un resto compuesto a la derecha.</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Espacio entre estrofas, en líneas del interlineado del poema. En la retícula de base resulta en líneas enteras; un estilo de párrafo con <code>snapToGrid: false</code> lo conserva exacto.</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Mantener en una sola columna toda estrofa de estos versos o menos. <code>0</code> lo desactiva.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // Restos a la derecha tras un corchete; las tankas, enteras.
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+Una configuración guardada antes de estos ajustes (`configVersion` 8 o anterior) que compone un poema sin separador se lee con `layout: 'bayt'`, de modo que el poema conserva las líneas centradas que le daba postext 1.22.
+
+En el Sandbox son el grupo **Verso** de la sección **Texto base**.
+
+
 ### Una sola familia por `fontFamily`
 
 `fontFamily` —aquí y en cualquier otro campo de familia tipográfica (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, el `fontFamily` de un estilo de chip o de un elemento de diseño…)— nombra **una** familia. El canvas, la salida HTML y el PDF tienen que componer con la misma fuente, y el PDF incrusta una fuente por familia, sin cadena de respaldo, así que una lista de fuentes CSS no tiene a qué recurrir. Una lista se compone en su primera familia y se notifica como [aviso de configuración](#avisos-de-configuración):
@@ -4946,13 +5017,13 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>sangría del cuerpo</td>
-      <td>Sangría de la primera línea, desde <code>indent</code>. Se ignora cuando <code>hangingIndent</code> no es cero.</td>
+      <td>Sangría de la primera línea, desde <code>indent</code>. Con una <code>hangingIndent</code> distinta de cero solo se aplica cuando el estilo la fija por sí mismo: la primera línea empieza en <code>indent + firstLineIndent</code> y las siguientes en <code>indent + hangingIndent</code>, así que un verso puede entrar 1 em y colgar su resto 3 em. Heredada del cuerpo, cede ante la sangría francesa y la primera línea empieza en <code>indent</code>, como hasta postext 1.22 (a una configuración guardada antes se le quita la explícita de un estilo así).</td>
     </tr>
     <tr>
       <td><code>hangingIndent</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Sangría aplicada a todas las líneas salvo la primera, desde <code>indent</code> — la forma clásica de bibliografías y glosarios.</td>
+      <td>Sangría aplicada a todas las líneas salvo la primera, desde <code>indent</code> — la forma clásica de una bibliografía o un glosario, y el resto de un verso partido. La primera línea empieza en <code>indent</code>, o en la <code>firstLineIndent</code> propia del estilo cuando la fija.</td>
     </tr>
     <tr>
       <td><code>spaceBetween</code></td>

@@ -72,7 +72,7 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Paragraph</td>
       <td>Plain text over one or more lines</td>
-      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph.</td>
+      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph. A poem, whose lines must stay as written, goes in a <a href="#verse"><code>:::verse</code></a> block.</td>
     </tr>
     <tr>
       <td>Blockquote</td>
@@ -200,7 +200,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>A poem in classical Arabic layout: one bayt a line, its two hemistichs separated by <code>||</code>, set side by side at one common width. See <a href="#verse">below</a>.</td>
+      <td>A poem, set line by line as written (each line a line of verse, blank lines between stanzas, leading spaces an indent), or in the classical Arabic layout when its lines part their hemistichs with <code>||</code>. See <a href="#verse">below</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -526,6 +526,59 @@ For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
 
 ### `:::verse`
+
+A poem. `:::verse` sets it in one of two layouts: **line by line**, as most poems are printed, or the **classical Arabic layout** of a qaṣīda, each bayt in two hemistichs side by side. A poem whose lines carry a hemistich separator (`||`, or a spaced `\\`) takes the Arabic layout and any other the line layout; `layout=lines` or `layout=bayt` on the fence names one.
+
+#### Line by line
+
+Write the poem as it is printed: one line of verse a line of Markdown, a blank line between stanzas, and spaces before a line to indent it.
+
+```md
+:::verse
+Whose woods these are I think I know.
+His house is in the village though;
+  He will not see me stopping here
+  To watch his woods fill up with snow.
+
+My little horse must think it queer
+To stop without a farmhouse near
+:::
+```
+
+- **Lines.** Every non-blank line is a line of verse, read as inline Markdown on its own: italics, small capitals, notes and references all work. A run of blank lines is one stanza break.
+- **Indents.** Each leading space is `indentStep` wide, 0.5 em by default, so two spaces indent a line one em; a tab counts four spaces and an ideographic space (U+3000) two.
+- **Turnovers.** A line wider than the measure turns over at a word space. With `turnover=hang` (the default) the rest hangs on the next line, `hang` in from the line's own start: the `hangingIndent` of the poem's paragraph style, else 2 em (`bodyText.verse.hang`). With `turnover=right` it is set flush with the end of the measure behind an opening bracket (`turnoverMark`, `[` by default), the custom of English and Spanish editions. Verse is not hyphenated unless its paragraph style sets `hyphenation: true` itself. A line and its turnover never part at a column or page break.
+- **Stanzas.** The space between two stanzas is one line of the poem's leading; `stanzaSpace=0.5` makes it half a line, and a length (`stanzaSpace=6pt`) sets it exactly. On the baseline grid it comes out whole grid lines. Columns and pages break between stanzas first; inside a stanza they break by the orphan and widow rules, which then count the stanza's lines. `keepStanzas=N` keeps any stanza of N lines or fewer whole: a haiku takes `keepStanzas=3`, a tanka `keepStanzas=5`.
+- **Placement.** The poem is centred in the measure on its longest line, every line flush with the poem's start (`align=center`, the usual setting for a poem quoted in prose); `align=start` sets it flush with the start of the measure, the default in vertical text. The paragraph that introduces the poem keeps its last line with the first lines of verse.
+- **Stepped lines.** A line written `+ …` starts where the line above ended, a word space on, as a line of dramatic verse shared between two speakers. Write `\+` for a line that opens with a plus sign.
+- **Caesuras.** With `keepSpaces` on the fence, a run of two or more spaces inside a line keeps its width; without it, spaces collapse as in any paragraph.
+- **Type and direction.** `style` names a paragraph style, which gives the face, size, leading, `indent`, and the space above and below the poem. `dir` and `lang` set its direction and language: a Latin poem in an Arabic book (`dir=ltr`) is indented from its own start side. In vertical text each line of verse is a column, indented from the head.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Attribute</th>
+      <th style={{ width: '200px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>, <code>bayt</code>, or <code>auto</code>: the bayt layout when a line carries a separator.</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>Width of one leading space.</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code> or <code>right</code>.</td></tr>
+    <tr><td><code>hang</code></td><td>the style's <code>hangingIndent</code>, else <code>2em</code></td><td>Indent of a hanging turnover from its line's start.</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>The mark before a turnover set flush right.</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>Space between stanzas: a bare number counts lines of the poem's leading, a length is that length.</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>Keep stanzas of this many lines or fewer whole; 0 is off.</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>off</td><td>Keep runs of two or more spaces inside a line.</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> in vertical text)</td><td>Centre the poem on its longest line, or set it flush with the start.</td></tr>
+    <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Paragraph style, direction and language of the poem.</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse` sets the defaults for every poem (see [Configuration › Verse](/en/docs/configuration#verse)). The plain text keeps the poem as written, a line feed between lines and a blank line between stanzas, so a copied passage and a search read it line by line; the reflowable EPUB sets a stanza an element whose lines hang their turnovers, and the tagged PDF tags a stanza a paragraph.
+
+#### Classical Arabic layout
 
 A poem in the classical Arabic layout (a qaṣīda, a qiṭʿa): each verse, the *bayt*, on one line in two halves, the *ṣadr* on the start side (the right in Arabic) and the *ʿajuz* on the end side, with a gap between them. Write one bayt a line, its hemistichs separated by `||` (a `\\` with a space on each side, as in Wikisource texts, works too). A line without a separator is a single hemistich, centred on the poem.
 

@@ -1517,6 +1517,77 @@ bodyText: {
 
 في Sandbox، هذه هي مجموعة **الاقتباسات الكتلية** في قسم نص المتن.
 
+### الشعر
+
+القصيدة `:::verse` التي لا تحمل أسطرها فاصل الشطرين تُصَفّ سطرًا سطرًا (انظر [تنسيق المستند › `:::verse`](/ar/docs/document-format#verse)). ويعطي `bodyText.verse` القيم الافتراضية لهذه القصائد؛ والسمة التي تحمل الاسم نفسه في سطر فتح القصيدة تحدّدها لتلك القصيدة.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '140px' }}>النوع</th>
+      <th style={{ width: '120px' }}>الافتراضي</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>كيف تُصَفّ قصيدة لا يسمّي سطر فتحها تخطيطًا. <code>'auto'</code>: أبياتًا حين يحمل سطر فاصلًا (<code>||</code>)، وسطرًا سطرًا في غير ذلك. <code>'bayt'</code>: أبياتًا دائمًا، والقصيدة بلا فاصل أشطرًا مفردة في الوسط، كما كانت حتى postext 1.22.</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>عرض مسافة واحدة في أول سطر من الشعر (علامة الجدولة بأربع، والمسافة الإيديوغرافية باثنتين)؛ و<code>em</code> هو حجم القصيدة.</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>كيف يُكمَل سطر أعرض من العرض: معلّقًا في السطر التالي، أو ملاصقًا لنهاية العرض بعد <code>turnoverMark</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>إزاحة التتمّة المعلّقة عن بداية سطرها حين لا يحدّد نمط فقرة القصيدة <code>hangingIndent</code>.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>العلامة التي تسبق تتمّة مصفوفة إلى الطرف.</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>المسافة بين المقاطع، بأسطر من تباعد أسطر القصيدة. وعلى شبكة خط الأساس تصير أسطرًا كاملة؛ ونمط الفقرة الذي فيه <code>snapToGrid: false</code> يبقيها دقيقة.</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>إبقاء كل مقطع لا تزيد أسطره على هذا العدد في عمود واحد. <code>0</code> يعطّله.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // التتمّات إلى الطرف بعد قوس معقوف؛ والتانكا كاملة.
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+الإعداد المحفوظ قبل هذه الإعدادات (`configVersion` 8 أو أقدم) الذي يصفّ قصيدة بلا فاصل يُقرأ مع `layout: 'bayt'`، فتحتفظ القصيدة بالأسطر الموسّطة التي أعطاها إياها postext 1.22.
+
+في Sandbox، هذه هي مجموعة **الشعر** في قسم نص المتن.
+
+
 ### عائلة واحدة لكل `fontFamily`
 
 `fontFamily` — هنا وفي كل حقل آخر لعائلة الخط (`headings.fontFamily`، و`tableStyle.bodyFontFamily`، و`separatorFontFamily`، و`fontFamily` لنمط شارة أو لعنصر تصميم…) — يسمّي عائلة **واحدة**. فمخرجات Canvas وHTML وPDF يجب أن تنضّد الوجه نفسه، وPDF يضمّن خطًا واحدًا لكل عائلة بلا سلسلة بدائل، فلا يوجد ما ترجع إليه سلسلة خطوط CSS. السلسلة تُنضَّد بعائلتها الأولى ويُبلَّغ عنها [تحذيرَ إعدادات](#تحذيرات-الإعدادات):
@@ -4946,13 +5017,13 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>إزاحة السطر الأول في المتن</td>
-      <td>إزاحة السطر الأول، مقيسة من <code>indent</code>. تُتجاهل حين تكون <code>hangingIndent</code> غير صفرية.</td>
+      <td>إزاحة السطر الأول، من <code>indent</code>. مع <code>hangingIndent</code> غير صفري لا تُطبَّق إلا إذا حدّدها النمط نفسه: يبدأ السطر الأول عند <code>indent + firstLineIndent</code> والأسطر التالية عند <code>indent + hangingIndent</code>، فيمكن لسطر من الشعر أن يُزاح em واحدًا وتُعلَّق تتمّته 3 em. وإذا كانت موروثة من المتن تفسح للإزاحة المعلّقة ويبدأ السطر الأول عند <code>indent</code>، كما كان حتى postext 1.22 (والإعداد المحفوظ قبل ذلك تُحذف منه القيمة الصريحة في نمط كهذا).</td>
     </tr>
     <tr>
       <td><code>hangingIndent</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>إزاحة تُطبَّق على كل الأسطر ما عدا الأول، مقيسة من <code>indent</code>: الشكل التقليدي للمراجع ومسارد المصطلحات.</td>
+      <td>إزاحة تُطبَّق على كل الأسطر ما عدا الأول، من <code>indent</code> — الشكل الكلاسيكي للمراجع ومسارد المصطلحات، وتتمّة سطر الشعر. يبدأ السطر الأول عند <code>indent</code>، أو عند <code>firstLineIndent</code> الخاص بالنمط إذا حدّده.</td>
     </tr>
     <tr>
       <td><code>spaceBetween</code></td>

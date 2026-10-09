@@ -310,6 +310,21 @@ A letter's date and signature are set flush with the end of the line (地付き)
 
 `headings.keepWithNext` keeps a heading from closing a column. JLReq §4.1.7 lets a heading close the last column of an even page, since its text then opens the facing page of the same spread; `headings.keepWithNextSpread: true` allows that, in left- and right-bound books alike.
 
+### Poems, haiku and tanka
+
+Write a poem in a `:::verse` block, one line of verse a line of Markdown, a blank line between stanzas. Leading spaces indent a line: an ideographic space (U+3000) or two ASCII spaces is one character at the default `indentStep`. In vertical text each line of verse is a column hanging from the head (`align` defaults to `start`), its indent counted down from the head; a line longer than the column turns over with the line-break rules of the text. `keepStanzas` keeps short stanzas on one page: three lines for a haiku, five for a tanka.
+
+```md
+:::verse{keepStanzas=5}
+田子の浦に
+　うち出でてみれば
+白妙の
+　富士の高嶺に
+雪は降りつつ
+:::
+```
+
+
 ## Notes
 
 Japanese books place notes in more ways than Western ones (JLReq §4.2), and Postext adds two markers and one placement for them. A marker goes before a sentence-final 。: write <span lang="ja" className="font-body">先生[^1]。</span>. The marker stays with the character before it and 。 never opens a line, so the three are never parted.

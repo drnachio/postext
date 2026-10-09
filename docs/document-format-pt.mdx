@@ -72,7 +72,7 @@ O Postext reconhece sete tipos de bloco de texto, além das diretivas e dos recu
     <tr>
       <td>Parágrafo</td>
       <td>Texto simples em uma ou mais linhas</td>
-      <td>Linhas consecutivas que não estão em branco nem são especiais são unidas com um único espaço e saem como um só parágrafo. Entre dois caracteres chineses ou japoneses (ideogramas, kana, pontuação de largura total, e aspas curvas, travessões ou reticências ao lado deles), a quebra de linha é descartada, como faz o CSS, então um parágrafo em chinês pode ser quebrado em qualquer ponto do texto de origem. Entre duas dessas marcas (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>), decidem os caracteres que vêm depois delas: a quebra de linha some quando um deles é chinês ou japonês, e <code>“hello”⏎“bye”</code> mantém o espaço. O coreano mantém o espaço. Quebras de linha manuais dentro de um parágrafo não são preservadas; use uma linha em branco para começar um parágrafo novo.</td>
+      <td>Linhas consecutivas que não estão em branco nem são especiais são unidas com um único espaço e saem como um só parágrafo. Entre dois caracteres chineses ou japoneses (ideogramas, kana, pontuação de largura total, e aspas curvas, travessões ou reticências ao lado deles), a quebra de linha é descartada, como faz o CSS, então um parágrafo em chinês pode ser quebrado em qualquer ponto do texto de origem. Entre duas dessas marcas (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>), decidem os caracteres que vêm depois delas: a quebra de linha some quando um deles é chinês ou japonês, e <code>“hello”⏎“bye”</code> mantém o espaço. O coreano mantém o espaço. Quebras de linha manuais dentro de um parágrafo não são preservadas; use uma linha em branco para começar um parágrafo novo. Um poema, cujas linhas devem ficar como foram escritas, vai em um bloco <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Citação</td>
@@ -200,7 +200,7 @@ As diretivas são marcas de controle de uma linha, escritas como `:::name` ou `:
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>Um poema na disposição árabe clássica: um bayt por linha, os seus dois hemistíquios separados por <code>||</code> e compostos lado a lado com uma largura comum. Veja <a href="#verse">abaixo</a>.</td>
+      <td>Um poema, composto linha a linha como foi escrito (cada linha um verso, linhas em branco entre estrofes, espaços iniciais como recuo), ou na disposição árabe clássica quando as suas linhas separam os hemistíquios com <code>||</code>. Veja <a href="#verse">abaixo</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -526,6 +526,59 @@ Para uma quebra fixa em vez de espaço, use `:::columnbreak` ou `:::pagebreak`.
 
 
 ### `:::verse`
+
+Um poema. `:::verse` o compõe de uma de duas maneiras: **linha a linha**, como se imprime a maioria dos poemas, ou na **disposição árabe clássica** de uma qaṣīda, cada bayt em dois hemistíquios lado a lado. Um poema cujas linhas trazem separador de hemistíquios (`||`, ou um `\\` entre espaços) toma a disposição árabe, e qualquer outro a composição linha a linha; `layout=lines` ou `layout=bayt` na abertura escolhe uma.
+
+#### Linha a linha
+
+Escreva o poema como ele é impresso: um verso por linha de Markdown, uma linha em branco entre estrofes e espaços antes de um verso para recuá-lo.
+
+```md
+:::verse
+Minha terra tem palmeiras,
+Onde canta o Sabiá;
+  As aves, que aqui gorjeiam,
+  Não gorjeiam como lá.
+
+Nosso céu tem mais estrelas,
+Nossas várzeas têm mais flores,
+:::
+```
+
+- **Versos.** Cada linha não vazia é um verso, lido como Markdown em linha por si só: itálico, versalete, notas e referências funcionam. Uma série de linhas em branco é uma única quebra de estrofe.
+- **Recuos.** Cada espaço inicial mede `indentStep`, 0,5 em por padrão, de modo que dois espaços recuam o verso um em; uma tabulação vale quatro espaços e um espaço ideográfico (U+3000), dois.
+- **Versos partidos.** Um verso mais largo que a mancha se parte em um espaço entre palavras. Com `turnover=hang` (padrão) o resto fica pendente na linha seguinte, `hang` para dentro desde o início do próprio verso: o `hangingIndent` do estilo de parágrafo do poema, ou 2 em (`bodyText.verse.hang`). Com `turnover=right` é composto encostado ao fim da mancha depois de um colchete de abertura (`turnoverMark`, `[` por padrão), o costume das edições espanholas e inglesas. O verso não é hifenizado, a menos que o seu estilo de parágrafo defina `hyphenation: true` por si mesmo. Um verso e o seu resto nunca se separam em uma quebra de coluna ou de página.
+- **Estrofes.** O espaço entre duas estrofes é uma linha da entrelinha do poema; `stanzaSpace=0.5` o reduz a meia linha, e um comprimento (`stanzaSpace=6pt`) o fixa exato. Na grade de linhas de base resulta em linhas inteiras. Colunas e páginas quebram primeiro entre estrofes; dentro de uma estrofe, pelas regras de viúvas e órfãs, que então contam as linhas da estrofe. `keepStanzas=N` mantém inteira toda estrofe de N linhas ou menos: um haicai leva `keepStanzas=3` e um tanka `keepStanzas=5`.
+- **Posição.** O poema é centralizado na mancha pelo seu verso mais longo, com todos os versos alinhados ao início do poema (`align=center`, o habitual para um poema citado em prosa); `align=start` o alinha ao início da mancha, o padrão em texto vertical. O parágrafo que apresenta o poema mantém a sua última linha junto aos primeiros versos.
+- **Versos escalonados.** Um verso escrito `+ …` começa onde terminou o de cima, um espaço adiante, como o verso partilhado entre duas personagens no teatro em verso. Escreva `\+` para um verso que começa com um sinal de mais.
+- **Cesuras.** Com `keepSpaces` na abertura, uma série de dois ou mais espaços dentro de um verso mantém a sua largura; sem ele, os espaços se reduzem a um como em qualquer parágrafo.
+- **Tipo e direção.** `style` nomeia um estilo de parágrafo, que dá a família, o corpo, a entrelinha, o `indent` e o espaço acima e abaixo do poema. `dir` e `lang` definem a sua direção e o seu idioma: um poema latino em um livro árabe (`dir=ltr`) é recuado a partir do seu próprio lado de início. Em texto vertical cada verso é uma coluna, recuada a partir do topo.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Atributo</th>
+      <th style={{ width: '200px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>, <code>bayt</code> ou <code>auto</code>: a disposição árabe quando uma linha traz separador.</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>Largura de um espaço inicial.</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code> ou <code>right</code>.</td></tr>
+    <tr><td><code>hang</code></td><td>o <code>hangingIndent</code> do estilo, ou <code>2em</code></td><td>Recuo do resto pendente desde o início do seu verso.</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>O sinal antes de um resto composto à direita.</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>Espaço entre estrofes: um número sozinho conta linhas da entrelinha do poema, um comprimento é esse comprimento.</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>Não partir estrofes com este número de linhas ou menos; 0 desliga.</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>desligado</td><td>Manter as séries de dois ou mais espaços dentro de um verso.</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> em texto vertical)</td><td>Centralizar o poema pelo seu verso mais longo ou alinhá-lo ao início.</td></tr>
+    <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Estilo de parágrafo, direção e idioma do poema.</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse` define os valores padrão de todos os poemas (veja [Configuração › Verso](/pt/docs/configuration#verso)). O texto simples mantém o poema como foi escrito, uma quebra de linha entre versos e uma linha em branco entre estrofes, de modo que um trecho copiado e uma busca o leem verso a verso; o EPUB fluido compõe cada estrofe como um elemento cujos versos deixam pendente o seu resto, e o PDF marcado marca cada estrofe como um parágrafo.
+
+#### Disposição árabe clássica
 
 Um poema na disposição árabe clássica (uma qaṣīda, uma qiṭʿa): cada verso, o *bayt*, em uma linha dividida em duas metades, o *ṣadr* no lado de início (a direita, em árabe) e o *ʿajuz* no lado de fim, com um espaço entre eles. Escreva um bayt por linha, com os hemistíquios separados por `||` (um `\\` com um espaço de cada lado, como nos textos do Wikisource, também funciona). Uma linha sem separador é um hemistíquio único, centralizado no poema.
 

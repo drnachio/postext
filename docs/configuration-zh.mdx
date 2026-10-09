@@ -1514,6 +1514,77 @@ bodyText: {
 
 在沙盒中，这些设置位于“正文”部分的**引用块**分组。
 
+### 诗歌
+
+各行不带半行分隔符的`:::verse`诗逐行排（见[文档格式 › `:::verse`](/zh/docs/document-format#verse)）。`bodyText.verse`给出这类诗的默认值；诗的开始标记上同名的属性只对该诗生效。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '140px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>开始标记未指定排法的诗如何排。<code>'auto'</code>：某行带分隔符（<code>||</code>）时按对句排，否则逐行排。<code>'bayt'</code>：总是按对句排，没有分隔符的诗每行作为单独的半行居中，与postext 1.22及以前相同。</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>诗行行首一个空格的宽度（制表符算四个，全角空格算两个）；<code>em</code>为诗的字号。</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>比版心宽的诗行如何转行：悬挂在下一行，或贴齐版心末端、前加<code>turnoverMark</code>。</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>诗的段落样式未设<code>hangingIndent</code>时，悬挂转行从该行起点缩进的量。</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>靠右转行前的标记。</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>诗节间距，以诗的行距为单位。在基线网格上取整到网格行；段落样式设<code>snapToGrid: false</code>时保持精确值。</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>不超过此行数的诗节整个留在一栏中。<code>0</code>为关闭。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // 转行靠右并加方括号；短歌不拆分。
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+在这些设置出现之前保存的配置（`configVersion`为8或更早），如果其中有不带分隔符的诗，读取时使用`layout: 'bayt'`，诗保持postext 1.22给出的居中排法。
+
+在沙盒中，这些设置位于“正文”部分的**诗歌**分组。
+
+
 ### 每个`fontFamily`只写一个字体族
 
 `fontFamily`，无论是这里还是其他任何字体族字段（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、行内标签样式或设计元素的`fontFamily`……），都只指定**一个**字体族。Canvas、HTML输出和PDF必须使用同一款字体，而PDF对每个字体族只嵌入一款字体，没有回退链，所以CSS字体栈没有可以回退的对象。写成字体栈时，按其中第一个字体族排版，并报告一条[配置警告](#配置警告)：
@@ -4943,13 +5014,13 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>正文首行缩进</td>
-      <td>首行缩进，从<code>indent</code>量起。<code>hangingIndent</code>不为零时忽略。</td>
+      <td>首行的缩进，从<code>indent</code>算起。<code>hangingIndent</code>不为零时，仅在样式自己设置了它时生效：首行从<code>indent + firstLineIndent</code>开始，其余行从<code>indent + hangingIndent</code>开始，因此一行诗可以缩进1 em、转行悬挂3 em。若继承自正文，则让位于悬挂缩进，首行从<code>indent</code>开始，与postext 1.22及以前相同（之前保存的配置中，这类样式里显式设置的值会被去掉）。</td>
     </tr>
     <tr>
       <td><code>hangingIndent</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>除首行外每一行的缩进，从<code>indent</code>量起，即参考文献或术语表的经典形式。</td>
+      <td>除首行外所有行的缩进，从<code>indent</code>算起，即参考文献或术语表的经典样式，也是诗行的转行。首行从<code>indent</code>开始；样式自己设置了<code>firstLineIndent</code>时，从该值开始。</td>
     </tr>
     <tr>
       <td><code>spaceBetween</code></td>

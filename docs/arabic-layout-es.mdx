@@ -292,6 +292,8 @@ Escribe el poema en un bloque `:::verse`, un bayt por línea, con sus hemistiqui
 
 El texto plano conserva el poema tal como se escribió, un bayt por línea, y deja fuera las cachidas y el ornamento. Véase [`:::verse`](/es/docs/document-format#verse) en el formato de documento.
 
+**Verso libre y poemas latinos.** Un poema cuyas líneas no llevan `||` — verso libre moderno, o un poema latino citado en un libro árabe (`:::verse{dir=ltr lang=es}`) — se compone en cambio línea a línea: cada línea del texto es un verso, las líneas en blanco separan estrofas, los espacios iniciales sangran desde el propio lado de comienzo del poema y los versos demasiado largos se parten con sangría colgada. Véase [`:::verse` › Línea a línea](/es/docs/document-format#línea-a-línea).
+
 ## Índice general e índice analítico
 
 **Índice general.** Muchos libros árabes, sobre todo las ediciones clásicas, imprimen su índice (فهرس o فهرس المحتويات) al final. `:::toc` imprime el índice general allí donde esté, así que colócalo en el último capítulo bajo un título que quede fuera de él:
