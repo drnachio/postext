@@ -458,8 +458,21 @@ export interface Resource {
   bitmap?: {
     fileId: string;
     format: string;
+    /** The file's width in pixels (not its print size). */
     width: number;
+    /** The file's height in pixels. */
     height: number;
+    /** Pixels per inch of the picture at its natural print size (#631):
+     *  its natural width in layout px is `width × page.dpi / resolution`
+     *  (the height likewise), and the column still caps it. Absent:
+     *  `layout.bitmapResolution` decides (by default the pixels are read
+     *  at `page.dpi`). */
+    resolution?: number;
+    /** The resolution stored in the file (PNG `pHYs`, JPEG JFIF / EXIF,
+     *  WebP EXIF; a Word picture's printed extent), as the host read it,
+     *  horizontal ppi. Used under `layout.bitmapResolution: 'file'`, where
+     *  72 and 96 count as unset; shown by the Sandbox. */
+    fileResolution?: number;
   };
   /** Present when `kind === 'svg'`. */
   svg?: {
@@ -880,6 +893,10 @@ export interface PageConfig {
   width?: Dimension;
   height?: Dimension;
   margins?: PageMargins;
+  /** Layout px per inch: every length is converted at this rate, and a
+   *  bitmap without a resolution of its own (see `Resource.bitmap.resolution`
+   *  and `layout.bitmapResolution`) is laid out one pixel per layout px.
+   *  Default 300. */
   dpi?: number;
   cutLines?: CutLinesConfig;
   baselineGrid?: BaselineGridConfig;
@@ -977,6 +994,13 @@ export interface LayoutConfig {
    *  pages are sized for their figures; the HTML viewer, whose pages are as
    *  tall as the screen, turns it on. */
   fitFiguresToPage?: boolean;
+  /** How a bitmap without its own `resolution` takes its natural print
+   *  size (#631): `'document'` (default) reads its pixels at `page.dpi`;
+   *  a number is the ppi of every such bitmap; `'file'` uses the
+   *  resolution read from the file (`Resource.bitmap.fileResolution`),
+   *  72 and 96 counting as unset, else `page.dpi`. The column caps the
+   *  natural size either way; a smaller picture is never enlarged. */
+  bitmapResolution?: BitmapResolution;
   /** The document's default for scaling a floated picture to the room of
    *  its slot (#626): `mode` as `ResourcePlacement.shrink`, `minScale` as
    *  `ResourcePlacement.minScale` (default 0.7). A resource's placement,
@@ -1042,6 +1066,10 @@ export interface LayoutConfig {
   writingMode?: WritingMode;
 }
 
+/** How bitmaps without a resolution of their own are sized (see
+ *  `LayoutConfig.bitmapResolution`): `'document'`, `'file'` or a ppi. */
+export type BitmapResolution = 'document' | 'file' | number;
+
 /** The document default for scaling floated pictures (see
  *  `LayoutConfig.floatShrink`). */
 export interface FloatShrinkConfig {
@@ -1072,6 +1100,7 @@ export interface ResolvedLayoutConfig {
   sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   fitFiguresToPage: boolean;
+  bitmapResolution: BitmapResolution;
   floatShrink: { mode: FloatShrinkMode; minScale: number };
   wrap: ResolvedTextWrapConfig;
   hugClosingFloats: boolean;

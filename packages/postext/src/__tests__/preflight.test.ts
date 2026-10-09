@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a Node built-in: the package compiles without @types/node.
 import { readFileSync as readFile } from 'node:fs';
 import { buildDocument } from '../pipeline';
-import { preflightDocument, type PreflightIssue } from '../preflight';
+import { placedImageResolutions, preflightDocument, type PreflightIssue } from '../preflight';
 import { resolvePrintConfig } from '../defaults/print';
 import { outputTransform, parseIccProfile } from '../color';
 import type { PostextConfig, Resource } from '../types';
@@ -64,6 +64,37 @@ describe('preflightDocument', () => {
     // At 300 dpi the same picture prints at 300 ppi.
     const sharp = buildDocument({ markdown: '::resource{id="pic"}', resources: [picture] }, config());
     expect(kinds(preflightDocument(sharp))).not.toContain('lowImageResolution');
+  });
+
+  it("works the resolution out from the file's real pixels when the host knows them (#631)", () => {
+    const doc = buildDocument({ markdown: '::resource{id="pic"}', resources: [picture] }, config());
+    // Declared 600 × 400, printed at 300 ppi; the file has half the pixels.
+    const imageSize = (id: string) => (id === 'pic.jpg' ? { width: 300, height: 200 } : undefined);
+    const issues = preflightDocument(doc, { imageSize });
+    const low = issues.find((i) => i.kind === 'lowImageResolution');
+    expect(low?.kind === 'lowImageResolution' && low.ppi).toBe(150);
+    const mismatch = issues.filter((i) => i.kind === 'declaredPixelsMismatch');
+    expect(mismatch).toHaveLength(1);
+    expect(mismatch[0]!.severity).toBe('warning');
+    if (mismatch[0]!.kind === 'declaredPixelsMismatch') {
+      expect(mismatch[0]!.declared).toEqual({ width: 600, height: 400 });
+      expect(mismatch[0]!.actual).toEqual({ width: 300, height: 200 });
+      expect(mismatch[0]!.resourceId).toBe('pic');
+    }
+    // A pixel off is rounding, not a mismatch.
+    expect(kinds(preflightDocument(doc, { imageSize: () => ({ width: 601, height: 400 }) }))).not.toContain('declaredPixelsMismatch');
+    // A file with more pixels than declared is a note.
+    expect(preflightDocument(doc, { imageSize: () => ({ width: 1200, height: 800 }) }).find((i) => i.kind === 'declaredPixelsMismatch')?.severity).toBe('info');
+  });
+
+  it('placedImageResolutions lists every placed bitmap with its ppi, preflight on or off (#631)', () => {
+    const doc = buildDocument({ markdown: '::resource{id="pic"}', resources: [{ ...picture, bitmap: { ...picture.bitmap!, resolution: 600 } }] }, config());
+    const placed = placedImageResolutions(doc);
+    expect(placed).toHaveLength(1);
+    expect(placed[0]!.resourceId).toBe('pic');
+    expect(placed[0]!.ppi).toBeCloseTo(600, 6);
+    const off = buildDocument({ markdown: '::resource{id="pic"}', resources: [picture] }, config({ print: { preflight: { enabled: false } } }));
+    expect(placedImageResolutions(off)[0]!.ppi).toBeCloseTo(300, 6);
   });
 
   it('flags RGB pictures in a CMYK job only', () => {

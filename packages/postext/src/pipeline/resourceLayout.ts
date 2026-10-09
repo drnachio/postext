@@ -31,6 +31,7 @@
  * row metrics the full-table layout reports.
  */
 
+import { bitmapLayoutSize } from '../bitmapResolution';
 import { findAnchorTarget, resolveAnchorRefLabel, unprefixedId, type AnchorTargets, type CrossRefStrings } from './crossRefs';
 import { measuringVertically, withMeasureWritingMode } from '../measure/vertical';
 import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
@@ -404,6 +405,8 @@ interface CellFontSet {
 
 /** Fully-resolved table styling consumed by {@link layoutTable}. */
 interface TableLayoutStyle {
+  /** Layout px per inch (`page.dpi`), for a cell picture's natural size. */
+  dpi: number;
   body: CellFontSet;
   header: CellFontSet;
   borderColor: string;
@@ -660,6 +663,7 @@ function fitCellImage(
   align: TableCellAlign,
   innerWidth: number,
   resources: Resource[],
+  dpi: number,
 ): FittedCellImage | null {
   if (!image) return null;
   const resource = resources.find((r) => r.id === image.resourceId);
@@ -678,7 +682,9 @@ function fitCellImage(
     kind = 'bitmap';
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
-    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, target);
+    // At its natural print size (#631), never enlarged.
+    const natural = bitmapLayoutSize(resource.bitmap, dpi);
+    const fit = fitWidth(natural.width, natural.height, target);
     width = fit.width;
     height = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
@@ -962,7 +968,7 @@ function layoutTableIn(
       );
       // An embedded image sits at the top of the cell; the text (when
       // there is any) runs under it, a padding's worth below.
-      const image = cell.hiddenBy ? null : fitCellImage(cell.image, align, Math.max(1, cellWidth), resources);
+      const image = cell.hiddenBy ? null : fitCellImage(cell.image, align, Math.max(1, cellWidth), resources, style.dpi);
       const textHeight = m.totalHeight;
       const textY = image ? image.height + (textHeight > 0 ? cellPaddingPx : 0) : 0;
       const lines = image && textHeight > 0 ? shiftLines(m.lines, 0, textY) : m.lines;
@@ -1340,7 +1346,10 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   if (resource.kind === 'bitmap' && resource.bitmap) {
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
-    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, Math.min(columnWidth, input.maxBodyWidth ?? columnWidth));
+    // Its pixels at its own resolution (#631), else at `page.dpi`; the
+    // column caps it, a smaller picture keeps its size.
+    const natural = bitmapLayoutSize(resource.bitmap, dpi);
+    const fit = fitWidth(natural.width, natural.height, Math.min(columnWidth, input.maxBodyWidth ?? columnWidth));
     bodyWidth = fit.width;
     bodyHeight = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
@@ -1389,6 +1398,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
         }
       : undefined;
     const style: TableLayoutStyle = {
+      dpi,
       body: {
         fontString: buildFontString(ts.bodyFontFamily, bodyFontPx, normalWeight),
         boldFontString: buildFontString(ts.bodyFontFamily, bodyFontPx, boldWeight),

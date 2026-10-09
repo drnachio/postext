@@ -41,6 +41,7 @@ export {
   resourceFromSpec,
   svgSize,
   bitmapSize,
+  bitmapInfo,
 } from './manifest';
 export type { BundleFontFiles } from './manifest';
 export type {
@@ -58,6 +59,9 @@ export type {
   BundleFileReader,
   BundleIdScheme,
   BundleImageSize,
+  BitmapInfo,
+  BitmapFileResolution,
+  BitmapResolutionSource,
   BundleChapter,
   BundleBlob,
   BundleFontFile,

@@ -18,8 +18,12 @@ export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './colu
 export type { FootnoteRuleSegment } from './columnRule';
 export { cropMarkSegments } from './cropMarks';
 export * from './color';
-export { preflightDocument } from './preflight';
-export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity } from './preflight';
+export { preflightDocument, placedImageResolutions } from './preflight';
+export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity, PlacedImageResolution } from './preflight';
+export { bitmapResolutionFor, effectiveBitmapResolution, bitmapLayoutSize, isPlaceholderResolution } from './bitmapResolution';
+export { bitmapResolutionOf } from './defaults/layout';
+export { bitmapInfo, bitmapSize } from './bundle';
+export type { BitmapInfo, BitmapFileResolution, BitmapResolutionSource } from './bundle';
 export type { CropMarkSegment } from './cropMarks';
 export { columnClipRect, designOverlayOverhang, headingDesignOverhangAbove, hangingPunctuationOverhang } from './columnClip';
 export { lineInkExtent } from './lineInk';
@@ -180,6 +184,7 @@ export type {
   LayoutConfig,
   ResolvedLayoutConfig,
   InlineResourceGap,
+  BitmapResolution,
   FloatShrinkMode,
   FloatShrinkConfig,
   WrapSide,

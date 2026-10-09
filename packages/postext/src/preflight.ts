@@ -7,7 +7,9 @@
  * - Pictures whose effective resolution at their printed size (pixels per
  *   inch, crop included) falls under `print.preflight.minImageResolution`
  *   (critical under `criticalImageResolution`): figures, table-cell
- *   pictures, design images, comic panels.
+ *   pictures, design images, comic panels. The pixels are the file's when
+ *   the host knows them (`imageSize`), else the resource's declaration.
+ * - Bitmaps whose declared pixel size and file disagree (#631).
  * - RGB pictures in a CMYK job (converted on export, or kept RGB by a
  *   PDF/X-4 that does not convert them), when the host says which
  *   pictures are RGB (`imageColor`).
@@ -38,6 +40,11 @@ export type PreflightIssue = {
   sourceEnd?: number;
 } & (
   | { kind: 'lowImageResolution'; fileId: string; resourceId?: string; ppi: number; minimum: number }
+  /** A bitmap that declares a pixel size its file does not have (more
+   *  than a pixel off either way): its print size and resolution are
+   *  worked out from the declaration. Reported once, where it is first
+   *  placed; `warning` when the declaration exceeds the file. */
+  | { kind: 'declaredPixelsMismatch'; fileId: string; resourceId?: string; declared: { width: number; height: number }; actual: { width: number; height: number } }
   | { kind: 'rgbImage'; fileId: string; resourceId?: string; converted: boolean }
   | { kind: 'thinRule'; widthPt: number; minimumPt: number; color: string }
   | { kind: 'smallProcessText'; sizePt: number; inks: number; color: string; text: string }
@@ -59,6 +66,11 @@ export interface PreflightOptions {
    *  coverage exactly. Without it a neutral counts one ink and any other
    *  colour three, and coverage is not checked. */
   transform?: OutputTransform;
+  /** The real pixel size of a bitmap's file (the decoded image, or
+   *  `bitmapInfo` on its bytes), when the host knows it: the resolution is
+   *  worked out from it, and a declaration that disagrees is reported
+   *  (`declaredPixelsMismatch`). */
+  imageSize?: (fileId: string) => { width: number; height: number } | undefined;
   /** Whether a picture's file is RGB, CMYK or gray (from its bytes). */
   imageColor?: (fileId: string) => 'rgb' | 'cmyk' | 'gray' | undefined;
   /** The job is CMYK (a PDF/X standard, or a CMYK PDF). Defaults to true
@@ -101,10 +113,38 @@ function bitmapSizes(doc: VDTDocument, resources: readonly Resource[] | undefine
   return out;
 }
 
+/** One placed bitmap and its effective resolution there (#631): the
+ *  file's pixels shown (crop and safe area counted) over its printed size
+ *  in inches, the smaller of the two axes. */
+export interface PlacedImageResolution {
+  fileId: string;
+  resourceId?: string;
+  /** Book-absolute page index. */
+  pageIndex: number;
+  ppi: number;
+  /** Printed size, layout px. */
+  width: number;
+  height: number;
+}
+
+/** Every bitmap placed in `doc` with its effective resolution: figures,
+ *  table-cell pictures, design images and comic panels, one entry per
+ *  placement. Uses `options.resources` and `options.imageSize` as
+ *  {@link preflightDocument} does; runs whether or not preflight is on. */
+export function placedImageResolutions(doc: VDTDocument, options: Pick<PreflightOptions, 'resources' | 'imageSize'> = {}): PlacedImageResolution[] {
+  const placed: PlacedImageResolution[] = [];
+  runPreflight(doc, { ...options, print: undefined }, placed);
+  return placed;
+}
+
 export function preflightDocument(doc: VDTDocument, options: PreflightOptions = {}): PreflightIssue[] {
+  return runPreflight(doc, options);
+}
+
+function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: PlacedImageResolution[]): PreflightIssue[] {
   const print = options.print ?? doc.config.print ?? resolvePrintConfig();
   const pf = print.preflight;
-  if (!pf.enabled) return [];
+  if (!pf.enabled && !placed) return [];
   const dpi = doc.config.page.dpi;
   const pxToPt = (px: number) => (px / dpi) * 72;
   const pxToMm = (px: number) => (px / dpi) * MM_PER_IN;
@@ -151,13 +191,29 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
     }
   };
 
+  // The file's pixels against the declaration, once per file.
+  const mismatchSeen = new Set<string>();
   const checkImage = (fileId: string | undefined, placedW: number, placedH: number, fracW: number, fracH: number, pageIndex: number, rect: BoundingBox, resourceId?: string, src?: { start?: number; end?: number }) => {
     if (!fileId) return;
-    const size = sizes.get(fileId);
+    const declared = sizes.get(fileId);
+    const real = options.imageSize?.(fileId);
+    const actual = real && real.width > 0 && real.height > 0 ? { w: real.width, h: real.height } : undefined;
+    const size = actual ?? declared;
     const source = src?.start !== undefined ? { sourceStart: src.start, ...(src.end !== undefined ? { sourceEnd: src.end } : {}) } : {};
-    const rid = resourceId ?? size?.id;
+    const rid = resourceId ?? declared?.id;
+    if (pf.enabled && declared && actual && !mismatchSeen.has(fileId) && (Math.abs(declared.w - actual.w) > 1 || Math.abs(declared.h - actual.h) > 1)) {
+      mismatchSeen.add(fileId);
+      const over = declared.w > actual.w + 1 || declared.h > actual.h + 1;
+      out.push({
+        kind: 'declaredPixelsMismatch', severity: over ? 'warning' : 'info', pageIndex, rect, fileId,
+        declared: { width: declared.w, height: declared.h }, actual: { width: actual.w, height: actual.h },
+        ...(rid ? { resourceId: rid } : {}), ...source,
+      });
+    }
     if (size && placedW > 0 && placedH > 0) {
       const ppi = Math.min((size.w * fracW) / (placedW / dpi), (size.h * fracH) / (placedH / dpi));
+      placed?.push({ fileId, ...(rid ? { resourceId: rid } : {}), pageIndex, ppi, width: placedW, height: placedH });
+      if (!pf.enabled) return;
       if (ppi < pf.minImageResolution - EPS) {
         out.push({
           kind: 'lowImageResolution',
@@ -167,7 +223,7 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
         });
       }
     }
-    if (cmykJob && options.imageColor?.(fileId) === 'rgb') {
+    if (pf.enabled && cmykJob && options.imageColor?.(fileId) === 'rgb') {
       const converted = print.standard === 'pdfx1a' || print.convertImages;
       out.push({ kind: 'rgbImage', severity: converted ? 'info' : 'warning', pageIndex, rect, fileId, converted, ...(rid ? { resourceId: rid } : {}), ...source });
     }

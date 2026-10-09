@@ -1,4 +1,5 @@
 import { flowTextWidth, getMeasureWritingMode, lineBaselineOffset, withMeasureWritingMode } from '../measure/vertical';
+import { bitmapLayoutSize } from '../bitmapResolution';
 import type {
   AnchorEdge,
   ColorValue,
@@ -1616,8 +1617,10 @@ function layoutImageElement(
   const payload = resource?.bitmap ?? resource?.svg;
   const fileId = payload?.fileId;
   if (!fileId) return undefined;
-  const picW = payload?.width && payload.width > 0 ? payload.width : 1;
-  const picH = payload?.height && payload.height > 0 ? payload.height : 1;
+  // A bitmap's own size is its pixels at its resolution (#631).
+  const own = resource?.bitmap ? bitmapLayoutSize(resource.bitmap, dpi) : payload;
+  const picW = own?.width && own.width > 0 ? own.width : 1;
+  const picH = own?.height && own.height > 0 ? own.height : 1;
   const natW = upright ? picH : picW;
   const natH = upright ? picW : picH;
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi);

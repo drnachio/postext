@@ -1,3 +1,4 @@
+import { withBitmapResolutions } from '../bitmapResolution';
 import { plainTitleBreaks } from '../parse/inlineFormatting';
 import type { PostextContent, PostextConfig, Resource, ResourceType, ResourceRotation, HeadingBreakParity, ResolvedCalloutStyleConfig, ResolvedHeadingLevelConfig, CalloutSpan } from '../types';
 import type { HeadingPlaceholderInfo } from '../design/placeholders';
@@ -501,6 +502,11 @@ function placeDocumentPass(
    *  shortened it, so what does not fit it may still fit a full column. */
   const shortSideColumn = (page: VDTPage, col: VDTColumn): boolean => col.bbox.height < page.contentArea.height - 0.5;
   const resolved = resolveAllConfig(config);
+  // Bitmaps sized by the document's `layout.bitmapResolution` carry it as
+  // their own `resolution` from here on (#631); under the default policy
+  // the content is untouched.
+  const stampedResources = content.resources && withBitmapResolutions(content.resources, resolved.layout.bitmapResolution);
+  if (stampedResources && stampedResources !== content.resources) content = { ...content, resources: stampedResources as Resource[] };
   // Tracking rungs a loose paragraph may climb: none, then 5‰ steps up to
   // the cap (`headings.balancing.maxTracking`, thousandths of an em), the
   // cap itself always included. Only the smallest rung that gains the line

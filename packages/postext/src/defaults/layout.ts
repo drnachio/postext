@@ -1,4 +1,4 @@
-import type { Dimension, FloatShrinkConfig, FloatShrinkMode, LayoutConfig, LayoutType, ResolvedLayoutConfig, ResolvedTextWrapConfig, TextWrapConfig } from '../types';
+import type { BitmapResolution, Dimension, FloatShrinkConfig, FloatShrinkMode, LayoutConfig, LayoutType, ResolvedLayoutConfig, ResolvedTextWrapConfig, TextWrapConfig } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_COLUMN_RULE = {
@@ -72,6 +72,13 @@ export function resolveTextWrap(partial?: TextWrapConfig): ResolvedTextWrapConfi
   };
 }
 
+/** A `bitmapResolution` as written (#631): `'document'`, `'file'` or a
+ *  positive ppi; else `undefined`. */
+export function bitmapResolutionOf(value: unknown): BitmapResolution | undefined {
+  if (value === 'document' || value === 'file') return value;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
 export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   layoutType: 'double',
   columnCount: 3,
@@ -81,6 +88,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   sideColumnSide: 'right',
   columnRule: { ...DEFAULT_COLUMN_RULE },
   fitFiguresToPage: false,
+  bitmapResolution: 'document',
   floatShrink: { mode: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE },
   wrap: { ...DEFAULT_TEXT_WRAP },
   hugClosingFloats: true,
@@ -108,6 +116,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
         }
       : { ...DEFAULT_COLUMN_RULE },
     fitFiguresToPage: partial.fitFiguresToPage ?? DEFAULT_LAYOUT_CONFIG.fitFiguresToPage,
+    bitmapResolution: bitmapResolutionOf(partial.bitmapResolution) ?? DEFAULT_LAYOUT_CONFIG.bitmapResolution,
     floatShrink: resolveFloatShrink(partial.floatShrink),
     wrap: resolveTextWrap(partial.wrap),
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
@@ -154,6 +163,11 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.fitFiguresToPage !== undefined && layout.fitFiguresToPage !== DEFAULT_LAYOUT_CONFIG.fitFiguresToPage) {
     result.fitFiguresToPage = layout.fitFiguresToPage;
+    hasOverride = true;
+  }
+  const bitmapResolution = bitmapResolutionOf(layout.bitmapResolution);
+  if (bitmapResolution !== undefined && bitmapResolution !== DEFAULT_LAYOUT_CONFIG.bitmapResolution) {
+    result.bitmapResolution = bitmapResolution;
     hasOverride = true;
   }
   if (layout.floatShrink) {

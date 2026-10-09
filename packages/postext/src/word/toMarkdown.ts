@@ -23,6 +23,23 @@ export interface ImportedPicture {
   name?: string;
   alt?: string;
   caption?: string;
+  /** The picture's printed extent in the document, EMU (914 400 an
+   *  inch): with the file's pixels it gives the resolution the author
+   *  set it at (`pictureResolution`). */
+  widthEmu?: number;
+  heightEmu?: number;
+}
+
+const EMU_PER_INCH = 914400;
+
+/** The resolution a Word picture was printed at (#631): its pixel width
+ *  over its extent in inches, rounded to two decimals; undefined without
+ *  an extent or pixels. Hosts store it as `Resource.bitmap.fileResolution`,
+ *  in preference to the file's own metadata. */
+export function pictureResolution(pic: Pick<ImportedPicture, 'widthEmu'>, pixelWidth: number): number | undefined {
+  const emu = pic.widthEmu;
+  if (!emu || !Number.isFinite(emu) || emu <= 0 || !(pixelWidth > 0)) return undefined;
+  return Math.round((pixelWidth / (emu / EMU_PER_INCH)) * 100) / 100;
 }
 
 export interface ImportedTable {
@@ -410,7 +427,11 @@ class Converter {
       }
       const base = slugify(img.alt ?? '', '') || slugify(img.name ?? '', '') || 'figure';
       const id = this.uniqueId(/^(picture|imagen|image|figure)\b/i.test(base) || !/[a-z]/.test(base) ? `fig-${this.pictures.length + 1}` : base);
-      const pic: ImportedPicture = { id, media, ...(img.name ? { name: img.name } : {}), ...(img.alt ? { alt: img.alt } : {}) };
+      const pic: ImportedPicture = {
+        id, media, ...(img.name ? { name: img.name } : {}), ...(img.alt ? { alt: img.alt } : {}),
+        ...(img.widthEmu && img.widthEmu > 0 ? { widthEmu: img.widthEmu } : {}),
+        ...(img.heightEmu && img.heightEmu > 0 ? { heightEmu: img.heightEmu } : {}),
+      };
       if (this.pendingCaption !== undefined) {
         pic.caption = this.pendingCaption;
         this.pendingCaption = undefined;
