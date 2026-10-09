@@ -12,6 +12,7 @@ import type {
   TableCellNode,
   TableNode,
   TocNode,
+  StanzaNode,
   VerseNode,
 } from './model';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline';
@@ -323,6 +324,8 @@ class Writer {
       }
       case 'verse':
         return this.verse(node);
+      case 'stanza':
+        return this.stanza(node);
       case 'toc':
         return this.toc(node);
       case 'marker':
@@ -393,6 +396,22 @@ class Writer {
       return `<p class="pt-bayt"><span class="pt-sadr">${this.inline(b.sadr)}</span>${ornament} <span class="pt-ajuz">${this.inline(b.ajuz)}</span></p>`;
     }));
     return `<div${this.classAttr(['pt-verse', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${bayts.join('\n')}\n</div>`;
+  }
+
+  /**
+   * A stanza of a poem set line by line (#620): one element, each line of
+   * verse a block-level span that hangs its turnovers (`padding-inline-
+   * start` the line's indent plus the hang, `text-indent` the hang back),
+   * so the reading system turns an overlong line over as the print does.
+   */
+  private stanza(node: StanzaNode): string {
+    const pre = this.inline(node.pre);
+    const hang = round2(node.hangEm);
+    const lines = this.within(node.dir, () => node.lines.map((l) => {
+      const style = `padding-inline-start: ${round2(l.indentEm + node.hangEm)}em; text-indent: -${hang}em`;
+      return `<span class="pt-verse-line" style="${style}">${this.inline(l.inl)}</span>`;
+    }));
+    return `<div${this.classAttr(['pt-stanza', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${lines.join('\n')}\n</div>`;
   }
 
   private list(node: ListNode): string {
@@ -589,4 +608,9 @@ ${notes}
 </body>
 </html>
 `;
+}
+
+/** A length in ems for a style attribute: at most three decimals. */
+function round2(v: number): string {
+  return String(Math.round(v * 1000) / 1000);
 }

@@ -38,6 +38,8 @@ import type {
   TableNode,
   TocNode,
   TocRowNode,
+  StanzaNode,
+  VerseLineNode,
   VerseNode,
 } from './model';
 import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, type InlineContext, type TextSink } from './inline';
@@ -66,6 +68,8 @@ export interface BookModel {
   maths: boolean;
   /** Whether a `:::verse` poem was read. */
   verse: boolean;
+  /** Whether a poem set line by line was read (#620). */
+  stanzas?: boolean;
   /** The classes of emphasis marks other than the filled dot on the
    *  default side the text uses (`inline.ts` `dotsClasses`, #428). */
   dots: Set<string>;
@@ -119,6 +123,15 @@ interface Container {
 interface Sink extends TextSink {
   top: Node;
   file: FileModel;
+}
+
+/** A stanza of a poem set line by line being read, across the fragments
+ *  of its block (#620). */
+interface OpenStanza {
+  node: StanzaNode;
+  top: Node;
+  /** Where the last line's text goes: its turnovers run on there. */
+  sink?: TextSink;
 }
 
 /** A poem being read, across the fragments of its block. */
@@ -178,6 +191,7 @@ class DocWalker {
   private callouts = new Map<number, { node: CalloutNode; state: Container }>();
   private readonly sinks = new Map<string, Sink>();
   private readonly verses = new Map<string, OpenVerse>();
+  private readonly stanzas = new Map<string, OpenStanza>();
   private readonly tables = new Map<string, TableNode>();
   private readonly figures = new Set<string>();
   /** Text blocks read so far, with their content index: where floats go. */
@@ -536,6 +550,13 @@ class DocWalker {
       this.record(block, verse.top);
       return;
     }
+    const stanza = this.stanzas.get(key);
+    if (stanza) {
+      this.enter(block, root);
+      this.stanzaLines(stanza, block);
+      this.record(block, stanza.top);
+      return;
+    }
     const sink = this.sinks.get(key);
     if (sink && block.indexLevel !== undefined && block.lines.some((l) => l.indexLevel !== undefined)) {
       // An index block's fragment that starts entries of its own.
@@ -681,6 +702,10 @@ class DocWalker {
       this.verse(block, state, key);
       return;
     }
+    if (block.lines.some((l) => l.verseLine !== undefined)) {
+      this.stanza(block, state, key);
+      return;
+    }
     const node: ParagraphNode = { k: 'p', inl: [], ...(block.direction ? { dir: block.direction } : {}) };
     const cls: string[] = [];
     if (block.bibEntry !== undefined) {
@@ -727,6 +752,58 @@ class DocWalker {
     this.verses.set(key, open);
     this.verseLines(open, block);
     this.record(block, open.top);
+  }
+
+  /** A stanza of a poem set line by line (#620): its lines of verse, each
+   *  with its indent and the hang of its turnovers, in ems of its text. */
+  private stanza(block: VDTBlock, state: Container, key: string): void {
+    const style = this.styleHints ? block.paragraphStyleId : undefined;
+    const em = fontPx(block.fontString) || this.bodyPx;
+    // The hang the print gave a turnover, else the configuration's.
+    let hangPx = dimensionToPx(this.config.bodyText.verse.hang, this.config.page.dpi, em);
+    for (let i = 1; i < block.lines.length; i++) {
+      const line = block.lines[i]!;
+      const head = block.lines[i - 1]!;
+      if (line.verseLine?.turnover && !head.verseLine?.turnover && !line.segments?.[0]?.inserted) {
+        hangPx = Math.abs(line.bbox.x - head.bbox.x);
+        break;
+      }
+    }
+    const node: StanzaNode = {
+      k: 'stanza',
+      pre: this.takePages(),
+      lines: [],
+      hangEm: hangPx / em,
+      ...(style ? { cls: [idOf('ps-', style)] } : {}),
+      ...(block.direction ? { dir: block.direction } : {}),
+    };
+    state.nodes.push(node);
+    this.book.stanzas = true;
+    const open: OpenStanza = { node, top: this.topOf(state, node) };
+    this.stanzas.set(key, open);
+    this.stanzaLines(open, block);
+    this.record(block, open.top);
+  }
+
+  /** The lines of a stanza's fragment: a line of verse opens a line, its
+   *  turnovers run on in it (the mark of a turnover set flush right is
+   *  print, left out). Page starts waiting for text open the next line. */
+  private stanzaLines(open: OpenStanza, block: VDTBlock): void {
+    const ctx = this.ctx(block);
+    const em = fontPx(block.fontString) || this.bodyPx;
+    for (const line of block.lines) {
+      const before = [...this.takePages(), ...this.anchorsAt(block, line)];
+      const v = line.verseLine;
+      const segs = (line.segments ?? []).filter((g, j) => !(j === 0 && v?.turnover && g.inserted));
+      if (v?.turnover && open.sink) {
+        appendLine(open.sink, line, ctx, before, segs);
+        continue;
+      }
+      const verseLine: VerseLineNode = { inl: [], indentEm: (v?.indent ?? 0) / em };
+      open.node.lines.push(verseLine);
+      open.sink = { inl: verseLine.inl };
+      appendLine(open.sink, line, ctx, before, segs);
+    }
   }
 
   /**
@@ -1144,6 +1221,9 @@ class DocWalker {
           }
           case 'verse':
             for (const b of n.bayts) text.push(plainText(b.sadr), plainText(b.ajuz));
+            break;
+          case 'stanza':
+            for (const l of n.lines) text.push(plainText(l.inl));
             break;
           default:
             break;

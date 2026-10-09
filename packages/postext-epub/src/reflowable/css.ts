@@ -14,6 +14,8 @@ export interface StylesheetOptions {
   vertical: boolean;
   /** The book sets a `:::verse` poem (its rules are written only then). */
   verse?: boolean;
+  /** The book sets a poem line by line (#620): the stanza rules. */
+  stanzas?: boolean;
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
    *  filled dot on the default side): their rules are written only then
    *  (`inline.ts` `dotsClasses`, #428). */
@@ -393,7 +395,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   for (const s of config.paragraphStyles) {
     const sPx = px(s.fontSize);
     const cls = idOf('ps-', s.id);
-    out.push(rule(`p.${cls}, div.pt-verse.${cls}`, [
+    out.push(rule(`p.${cls}, div.pt-verse.${cls}, div.pt-stanza.${cls}`, [
       fam(s.fontFamily),
       `font-size: ${round(sPx / bodyPx)}em`,
       lh(s.lineHeight, sPx),
@@ -522,6 +524,13 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   // with the end side, so the rhymes stand in one column as in print. On
   // a narrow screen the two halves stagger, the ʿajuz on its own line
   // flush with the end, as the print does when they do not fit.
+  // A stanza set line by line (#620): its lines of verse, a blank line
+  // between stanzas, never hyphenated; each line's hang is on its own
+  // element.
+  if (options.stanzas) {
+    out.push(rule('.pt-stanza', ['margin: 0 0 1em', 'text-indent: 0', 'text-align: start', 'hyphens: manual']));
+    out.push(rule('.pt-verse-line', ['display: block']));
+  }
   if (options.verse) {
     // The poem as wide as its widest bayt, centred: its hemistichs share
     // one width, as in print, instead of drifting to the screen's edges.

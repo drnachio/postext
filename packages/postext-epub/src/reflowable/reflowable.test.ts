@@ -443,7 +443,8 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     ':::paragraphs{style="lead"}', 'A lead paragraph.', ':::', '',
     ':::paragraphs{style="coda"}', 'A closing paragraph.', ':::', '',
     ':::callout{type="note"}', ':::paragraphs{style="lead"}', 'A lead inside a box.', ':::', ':::', '',
-    ':::verse{style="poem"}', 'One line of verse', ':::',
+    ':::verse{style="poem"}', 'One line || of verse', ':::', '',
+    ':::verse{style="poem"}', 'A line of verse', '  set line by line', ':::',
   ].join('\n');
 
   it('classes paragraphs, boxed ones and poems by the style they were set in', async () => {
@@ -453,8 +454,9 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     expect(all).toContain('<p class="ps-coda">A closing paragraph.</p>');
     expect(all).toMatch(/<aside class="pt-callout pt-callout-note">\n<p class="ps-lead">A lead inside a box\.<\/p>/);
     expect(all).toMatch(/<div class="pt-verse ps-poem">/);
+    expect(all).toMatch(/<div class="pt-stanza ps-poem">/);
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
-    expect(css).toContain('p.ps-poem, div.pt-verse.ps-poem {');
+    expect(css).toContain('p.ps-poem, div.pt-verse.ps-poem, div.pt-stanza.ps-poem {');
   });
 
   it('tells an older document\'s styles from their faces', async () => {
@@ -462,6 +464,7 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     // Same face: no class to give.
     expect(all).toMatch(/<p>(?:<span epub:type="pagebreak"[^>]*><\/span>)?A lead paragraph\.<\/p>/);
     expect(all).toMatch(/<div class="pt-verse">/);
+    expect(all).toMatch(/<div class="pt-stanza">/);
   });
 
   it('nests index entries by the level the engine gives, not by their indent', async () => {
@@ -576,5 +579,44 @@ describe('reflowable rendition: Japanese note markers (JLReq §4.2.3)', () => {
     const { pub } = await render([layOut(`${para}[^a]\n\n[^a]: Note.`)]);
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
     expect(css).not.toContain('pt-note-');
+  });
+});
+
+describe('reflowable rendition: verse line by line (#620)', () => {
+  const poem = [
+    'Before the poem.', '',
+    ':::verse{align=start}',
+    'Whose woods these are I think I know.',
+    '  His house is in the village though; and this line runs on past the measure of the page, so it turns over',
+    '',
+    'He will not see me stopping here',
+    ':::', '',
+    'After the poem.',
+  ].join('\n');
+
+  it('writes a stanza an element, a line of verse a block that hangs its turnovers', async () => {
+    const { pub, files, all } = await render([layOut(poem, baseConfig)]);
+    expectSound(pub, files);
+    const stanzas = all.match(/<div class="pt-stanza">[\s\S]*?<\/div>/g) ?? [];
+    expect(stanzas).toHaveLength(2);
+    const lines = stanzas[0]!.match(/<span class="pt-verse-line" style="([^"]*)">([\s\S]*?)<\/span>/g) ?? [];
+    expect(lines).toHaveLength(2);
+    // The indented line: its own indent plus the hang, the hang taken back.
+    const [, style, text] = /style="([^"]*)">([\s\S]*?)<\/span>$/.exec(lines[1]!)!;
+    const [pad, hang] = /padding-inline-start: ([\d.]+)em; text-indent: -([\d.]+)em/.exec(style!)!.slice(1).map(Number);
+    expect(hang).toBeGreaterThan(0);
+    expect(pad! - hang!).toBeCloseTo(1, 2);
+    // The line and its turnover read as one line.
+    expect(text!.replace(/<[^>]+>/g, '')).toContain('His house is in the village though; and this line runs on past the measure of the page, so it turns over');
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-verse-line {');
+    expect(css).toContain('.pt-stanza {');
+  });
+
+  it('leaves the bracket of a turnover set flush right out', async () => {
+    const md = poem.replace('{align=start}', '{align=start turnover=right}');
+    const { all } = await render([layOut(md, baseConfig)]);
+    const stanza = (all.match(/<div class="pt-stanza">[\s\S]*?<\/div>/) ?? [''])[0]!;
+    expect(stanza).not.toContain('[');
   });
 });

@@ -251,7 +251,7 @@ export function measureVerseLines(input: VerseLinesInput): MeasuredBlock {
   };
   rows.forEach((row, i) => {
     if (row.stanza !== stanza.index) return;
-    const verseLine = (turnover: boolean) => ({ stanza: stanza.index, line: i, turnover });
+    const verseLine = (turnover: boolean) => ({ stanza: stanza.index, line: i, turnover, ...(!turnover && row.indent > 0 ? { indent: row.indent } : {}) });
     if (row.indent + row.width <= measure + 0.01) {
       const [line] = measureSpans(row.spans, ONE_LINE, base);
       if (line) push(line, line.segments ?? [], x0 + row.indent, verseLine(false));

@@ -184,6 +184,29 @@ export interface VerseNode {
   dir?: 'ltr' | 'rtl';
 }
 
+/** A line of verse of a stanza (#620): its text, the turnovers run on
+ *  after it, and its own indent. */
+export interface VerseLineNode {
+  inl: InlineItem[];
+  /** The line's indent, in ems of the stanza's text. */
+  indentEm: number;
+}
+
+/** A stanza of a `:::verse` poem set line by line (#620): one block-level
+ *  line a line of verse, each hanging its turnovers `hangEm` in, so a
+ *  reading system's reflow turns an overlong line over as the print does. */
+export interface StanzaNode {
+  k: 'stanza';
+  /** Page starts and anchors that come before its first line. */
+  pre: InlineItem[];
+  lines: VerseLineNode[];
+  /** The turnovers' hang, in ems of the stanza's text. */
+  hangEm: number;
+  /** The paragraph style its fence names (`ps-<id>`). */
+  cls?: string[];
+  dir?: 'ltr' | 'rtl';
+}
+
 export interface MathNode {
   k: 'math';
   pre: InlineItem[];
@@ -260,6 +283,7 @@ export type Node =
   | TableNode
   | MathNode
   | VerseNode
+  | StanzaNode
   | TocNode
   | ComicNode
   | MarkerNode;

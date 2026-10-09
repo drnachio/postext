@@ -729,11 +729,13 @@ export interface VDTLine {
    *  through the whole poem) and whether it is a turnover, the part of a
    *  line of verse too wide for the measure set on the line after it. A
    *  column or page never breaks between a line and its turnover.
-   *  `stanzaEnd` is set on the last line of a stanza another follows
-   *  (copied text puts a blank line there). The widths of the line's
-   *  segments are final (the block is set flush left): renderers paint
-   *  them as they are. Absent on any other line. */
-  verseLine?: { stanza: number; line: number; turnover: boolean; stanzaEnd?: true };
+   *  `indent` is the line's indent (px, from the poem's start side: its
+   *  leading spaces × `indentStep`, or where a stepped line starts), set
+   *  on its first line when not 0. `stanzaEnd` is set on the last line of
+   *  a stanza another follows (copied text puts a blank line there). The
+   *  widths of the line's segments are final (the block is set flush
+   *  left): renderers paint them as they are. Absent on any other line. */
+  verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true };
   /** The first line of an entry of a back-of-book index (`:::index`): the
    *  entry's level (0 a main entry, 1 a sub-entry…). A block of the index
    *  may set more than one entry (the page-less entries heading its

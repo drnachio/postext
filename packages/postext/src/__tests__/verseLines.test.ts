@@ -132,9 +132,9 @@ describe(':::verse line by line: the layout', () => {
     ]);
     expect(lines.map((l) => l.verseLine)).toEqual([
       { stanza: 0, line: 0, turnover: false },
-      { stanza: 0, line: 1, turnover: false, stanzaEnd: true },
+      { stanza: 0, line: 1, turnover: false, indent: 20, stanzaEnd: true },
       { stanza: 1, line: 2, turnover: false },
-      { stanza: 1, line: 3, turnover: false },
+      { stanza: 1, line: 3, turnover: false, indent: 40 },
     ]);
     expect(lines[1]!.baseline - lines[0]!.baseline).toBeCloseTo(30, 6);
     // One line of the poem's leading between the stanzas.

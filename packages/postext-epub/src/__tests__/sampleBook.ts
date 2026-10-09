@@ -57,9 +57,20 @@ const resources: Resource[] = [{
 }];
 
 const para = 'Body text that runs on for a while so the page fills and the paragraph wraps over several lines. ';
+/** A poem set line by line (#620): two stanzas, an indent, a turnover. */
+const SAMPLE_POEM = [
+  ':::verse',
+  'Whose woods these are I think I know.',
+  '  His house is in the village though; this line runs on past the measure and turns over.',
+  '',
+  'He will not see me stopping here',
+  '  To watch his woods fill up with snow.',
+  ':::',
+];
+
 export const SAMPLE_CHAPTERS = [
   ['---', 'title: Sample book', 'author: Ada Lovelace', '---', '', '# Opening chapter {#opening}', '', `See :ref{id=f1} and the [closing words](#closing). ${para.repeat(3)}`, '', '::resource{id=f1}', '', '## A section', '', para.repeat(12)].join('\n'),
-  ['# Second chapter', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4)].join('\n'),
+  ['# Second chapter', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4), '', ...SAMPLE_POEM].join('\n'),
 ];
 
 export function sampleBook(): VDTDocument[] {
