@@ -1026,16 +1026,15 @@
       "pt": "Como mostro listagens de código?"
     },
     "index": {
-      "en": "Code listings, workarounds for",
-      "es": "Listados de código, alternativas a los",
-      "ca": "Llistats de codi, alternatives als",
-      "zh": "代码清单，变通办法",
-      "ar": "قوائم الشيفرة، حلول بديلة",
-      "ja": "コードリスト、代替手段",
-      "pt": "Listagens de código, alternativas para"
+      "en": "Code listings",
+      "es": "Listados de código",
+      "ca": "Llistats de codi",
+      "zh": "代码清单",
+      "ar": "قوائم الشيفرة",
+      "ja": "コードリスト",
+      "pt": "Listagens de código"
     },
-    "theme": "boxes",
-    "gap": "code-blocks"
+    "theme": "boxes"
   },
   "Q48": {
     "kind": "how",

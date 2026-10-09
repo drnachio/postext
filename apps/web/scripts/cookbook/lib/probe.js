@@ -19,7 +19,7 @@ const LATIN = [
 ];
 const MAIN_COLOR = '#295AA3';
 /** Content warnings on how the text is set that C5 reports. */
-const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing', 'lineNumberOverlap', 'tabInVerticalText', 'dropCap']);
+const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing', 'lineNumberOverlap', 'tabInVerticalText', 'dropCap', 'codeOverflow']);
 /** What a comic warning names: the picture, the panel, the speaker, the style. */
 function comicDetail(w) {
   return [w.resourceId, w.anchorId, w.panel === undefined ? undefined : `panel ${w.panel + 1}`,
@@ -727,7 +727,8 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // than its measure, letter-spacing a joining script ignores (#368), a line
   // number in the side column painted over a side box or float (#621), a
   // `:tab` in vertical text, set as a word space (#622), a paragraph whose
-  // drop cap could not be set as configured (#623), and a comic's (a
+  // drop cap could not be set as configured (#623), a code listing with
+  // lines wider than its box (#624), and a comic's (a
   // picture letterboxed in its cell, a balloon that found no room, more
   // panels than cells…), except a speaker with no anchor, which
   // is how an off-panel voice is written.
@@ -736,7 +737,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     .map((w) => ({
       kind: w.kind,
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
-      detail: w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
+      detail: w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
     })));
   // C31: config values the engine replaced (a character grid cut to the
   // page, an unknown numbering format, a key no setting has). Every

@@ -113,8 +113,9 @@ export interface ProbeFacts {
    *  words they name, `lineNumberOverlap` (a line number in the side
    *  column on a side box or float), with the number,
    *  `tabInVerticalText` (a `:tab` set as a word space in vertical text),
-   *  and `dropCap` (a paragraph whose drop cap could not be set as
-   *  configured), with its reason and first line. */
+   *  `dropCap` (a paragraph whose drop cap could not be set as
+   *  configured), with its reason and first line, and `codeOverflow` (a
+   *  code listing with lines wider than its box), with what was done. */
   textWarnings?: { kind: string; page: number | null; detail: string }[];
   /** `doc.configWarnings` of the builds, one per value: settings the engine
    *  could not use as written and what it used instead (C31). */

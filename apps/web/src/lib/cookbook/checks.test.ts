@@ -59,6 +59,7 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "lineNumberOverlap", page: 2, detail: "line 40" },
     { kind: "tabInVerticalText", page: null, detail: ":tab" },
     { kind: "dropCap", page: 1, detail: "shortParagraph (reserve): A short paragraph." },
+    { kind: "codeOverflow", page: 2, detail: "wrap: 1 line(s) of js" },
   ];
 
   it("fails a recipe on the Arabic, word-overflow, line-number and tab warnings it does not expect", () => {
@@ -70,6 +71,7 @@ describe("C5: content warnings on how the text is set (#401)", () => {
       ["fail", 'lineNumberOverlap "line 40" on page 2'],
       ["fail", 'tabInVerticalText ":tab"'],
       ["fail", 'dropCap "shortParagraph (reserve): A short paragraph." on page 1'],
+      ["fail", 'codeOverflow "wrap: 1 line(s) of js" on page 2'],
     ]);
   });
 
@@ -265,6 +267,14 @@ describe("right-binding detection", () => {
     expect(caps([], "# Lost {dropcap=false}")).toBe(true);
     expect(caps([], ':::paragraphs{style="entry" dropcap}')).toBe(true);
     expect(caps(["headings.levels.advancedDesign.slot.elements.dropCap"])).toBe(false);
+  });
+
+  it("finds code listings in codeStyle and in a ``` or ~~~ fence (#624)", () => {
+    const code = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("code-listings");
+    expect(code(["codeStyle.tokens.keyword.color"])).toBe(true);
+    expect(code([], "Text.\n\n```js\nlet a = 1;\n```")).toBe(true);
+    expect(code([], "~~~~ console\n$ ls\n~~~~")).toBe(true);
+    expect(code([], "Inline `code` only, and a ``double`` span.")).toBe(false);
   });
 
   it("comes from the binding, not from any writing mode", () => {

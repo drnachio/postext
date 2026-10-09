@@ -66,24 +66,24 @@
       ]
     },
     "explanation": {
-      "en": "Triple-backtick fences and indented code are set line by line as ordinary paragraphs. Set listings with a monospace paragraph style, hyphenation off and left aligned, inside :::paragraphs or a callout; inline code works.",
-      "es": "Las vallas de tres acentos graves y el código sangrado se componen línea a línea como párrafos normales. Compón los listados con un estilo de párrafo monoespaciado, sin separación silábica y alineado a la izquierda, dentro de :::paragraphs o de un recuadro; el código en línea sí funciona.",
-      "ca": "Les tanques de tres accents greus i el codi sagnat es componen línia a línia com a paràgrafs normals. Compon els llistats amb un estil de paràgraf monoespaiat, sense partició de mots i alineat a l'esquerra, dins de :::paragraphs o d'un requadre; el codi en línia sí que funciona.",
-      "zh": "三个反引号的围栏和缩进代码都按普通段落逐行排版。排代码清单时，在:::paragraphs或标注框中使用等宽字体的段落样式，关闭断词并左对齐；行内代码可以正常使用。",
-      "ar": "تُنضَّد الأسوار ذات العلامات الثلاث والشيفرة ذات المسافة البادئة سطرًا سطرًا كفقرات عادية. انضد قوائم الشيفرة بنمط فقرة بخط ثابت العرض، مع تعطيل تقسيم الكلمات والمحاذاة إلى اليسار، داخل :::paragraphs أو إطار؛ أما الشيفرة المضمّنة فتعمل.",
-      "ja": "3連バッククォートのフェンスやインデントしたコードは、通常の段落として1行ずつ組まれます。コードリストは、等幅の段落スタイル（ハイフネーションなし、左そろえ）を使って:::paragraphsか囲みの中に組んでください。インラインコードは使えます。",
-      "pt": "Os blocos delimitados por três crases e o código recuado são compostos linha a linha como parágrafos comuns. Componha as listagens com um estilo de parágrafo monoespaçado, sem hifenização e alinhado à esquerda, dentro de :::paragraphs ou de um boxe; o código inline funciona."
+      "en": "Fixed in postext 1.23: a ``` or ~~~ fence is a code listing, set line by line as typed in a box that codeStyle designs: indents, tabs and runs of spaces kept, long lines turned over behind a mark, set smaller or cut, line numbers, highlighted lines and a title from the info string. codeStyle.indentedCode reads indented code too, and codeStyle.inline sets `code` in the code face. Up to 1.22 a fence's lines were set as ordinary paragraphs, so listings were monospace paragraph styles in :::paragraphs or a callout, with escapes and no-break spaces.",
+      "es": "Resuelto en postext 1.23: una valla ``` o ~~~ es un listado de código, compuesto línea a línea tal como se escribió en una caja que diseña codeStyle: se conservan las sangrías, los tabuladores y las series de espacios; las líneas largas pasan a la siguiente tras una marca, se componen más pequeñas o se cortan, y hay números de línea, líneas resaltadas y un título tomado de la cadena de información. codeStyle.indentedCode lee también el código sangrado, y codeStyle.inline compone `código` en la letra del código. Hasta la 1.22 las líneas de una valla se componían como párrafos normales, así que los listados eran estilos de párrafo monoespaciados dentro de :::paragraphs o de un recuadro, con escapes y espacios de no separación.",
+      "ca": "Resolt a postext 1.23: una tanca ``` o ~~~ és un llistat de codi, compost línia a línia tal com es va escriure en una caixa que dissenya codeStyle: es conserven els sagnats, els tabuladors i les sèries d'espais; les línies llargues passen a la següent darrere una marca, es componen més petites o es tallen, i hi ha números de línia, línies ressaltades i un títol pres de la cadena d'informació. codeStyle.indentedCode llegeix també el codi sagnat, i codeStyle.inline compon `codi` en la lletra del codi. Fins a la 1.22 les línies d'una tanca es componien com a paràgrafs normals, de manera que els llistats eren estils de paràgraf monoespaiats dins de :::paragraphs o d'un requadre, amb escapaments i espais no separables.",
+      "zh": "已在postext 1.23中解决：```或~~~围栏就是一段代码清单，按书写原样逐行排在由codeStyle设计的框中：保留缩进、制表符和连续空格；过长的行在标记后转到下一行、缩小排版或截断；可加行号、高亮行，并以信息字符串中的文字为标题。codeStyle.indentedCode也会读取缩进代码，codeStyle.inline用代码字体排`代码`。1.22及以前，围栏中的各行按普通段落排版，代码清单只能在:::paragraphs或标注框中用等宽段落样式排，并借助转义和不换行空格。",
+      "ar": "حُلّت في postext 1.23: السور ``` أو ~~~ قائمة شيفرة تُنضَّد سطرًا سطرًا كما كُتبت في إطار يصممه codeStyle: تُحفظ المسافات البادئة والجدولات وتتابع المسافات، وتنتقل الأسطر الطويلة إلى ما تحتها خلف علامة أو تُصغَّر أو تُقطع، ومعها ترقيم الأسطر والأسطر المميّزة وعنوان من سلسلة المعلومات. يقرأ codeStyle.indentedCode الشيفرة ذات المسافة البادئة أيضًا، ويضع codeStyle.inline `الشيفرة` بخط الشيفرة. حتى 1.22 كانت أسطر السور تُنضَّد فقرات عادية، فكانت القوائم أنماط فقرات بخط ثابت العرض داخل :::paragraphs أو إطار، مع محارف الهروب والمسافات غير الفاصلة.",
+      "ja": "postext 1.23で解決しました。```または~~~のフェンスはコードリストで、codeStyleが設計する枠の中に、書いたとおり1行ずつ組まれます。インデント、タブ、連続する空白はそのまま残り、長い行は印の後ろで次の行へ送るか、小さく組むか、切り落とします。行番号、強調する行、情報文字列から取るタイトルも付けられます。codeStyle.indentedCodeはインデントしたコードも読み、codeStyle.inlineは`コード`をコードの書体で組みます。1.22までは、フェンスの各行は通常の段落として組まれたので、コードリストは:::paragraphsや囲みの中の等幅の段落スタイルで、エスケープとノーブレークスペースを使って組んでいました。",
+      "pt": "Corrigido no postext 1.23: uma cerca ``` ou ~~~ é uma listagem de código, composta linha a linha como foi escrita numa caixa que o codeStyle desenha: recuos, tabulações e sequências de espaços são mantidos; as linhas longas passam para baixo atrás de uma marca, são compostas menores ou cortadas; há números de linha, linhas realçadas e um título tirado da string de informação. codeStyle.indentedCode lê também o código recuado, e codeStyle.inline compõe `código` na fonte do código. Até a 1.22 as linhas de uma cerca eram compostas como parágrafos comuns, então as listagens eram estilos de parágrafo monoespaçados dentro de :::paragraphs ou de um boxe, com escapes e espaços não separáveis."
     },
     "docs": {
       "slug": "document-format",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Code blocks",
+        "es": "Bloques de código",
+        "ca": "Blocs de codi",
+        "zh": "代码块",
+        "ar": "كتل الشيفرة",
+        "ja": "コードブロック",
+        "pt": "Blocos de código"
       }
     }
   },
@@ -141,24 +141,24 @@
       ]
     },
     "explanation": {
-      "en": "There is no code colouring. A listing can use bold and italic runs whose colours the style sets, but keywords and strings are not detected.",
-      "es": "No hay coloreado de código. Un listado puede usar fragmentos en negrita y cursiva cuyos colores fija el estilo, pero las palabras clave y las cadenas no se detectan.",
-      "ca": "No hi ha coloració de codi. Un llistat pot fer servir fragments en negreta i cursiva amb els colors que fixa l'estil, però les paraules clau i les cadenes no es detecten.",
-      "zh": "不支持代码着色。代码清单可以使用粗体和斜体片段，颜色由样式设定，但不会识别关键字和字符串。",
-      "ar": "لا يوجد تلوين للشيفرة. يمكن أن تستعمل قائمة الشيفرة مقاطع عريضة ومائلة يحدد النمط ألوانها، لكن الكلمات المفتاحية والسلاسل النصية لا تُكتشف.",
-      "ja": "コードの色分けはありません。コードリストには太字やイタリックの範囲を使え、その色はスタイルで設定できますが、キーワードや文字列は検出されません。",
-      "pt": "Não há coloração de código. Uma listagem pode usar trechos em negrito e itálico cujas cores o estilo define, mas palavras-chave e strings não são detectadas."
+      "en": "Fixed in postext 1.23: a fence's language (```js, ```python, ```bash, ```console …) colours its listing with the built-in tokenizer, and codeStyle.tokens sets the colour, bold and italic of each kind of token (keyword, string, comment, prompt, output …). registerCodeHighlighter plugs in a highlighter for other languages; highlight: 'none' sets every listing plain. Up to 1.22 a listing could only use bold and italic runs whose colours the style set, written by hand.",
+      "es": "Resuelto en postext 1.23: el lenguaje de una valla (```js, ```python, ```bash, ```console…) colorea su listado con el analizador incorporado, y codeStyle.tokens fija el color, la negrita y la cursiva de cada clase de elemento (keyword, string, comment, prompt, output…). registerCodeHighlighter conecta un coloreador para otros lenguajes; highlight: 'none' compone todos los listados sin color. Hasta la 1.22 un listado solo podía usar fragmentos en negrita y cursiva, marcados a mano, con los colores que fijaba el estilo.",
+      "ca": "Resolt a postext 1.23: el llenguatge d'una tanca (```js, ```python, ```bash, ```console…) acoloreix el llistat amb l'analitzador incorporat, i codeStyle.tokens fixa el color, la negreta i la cursiva de cada classe d'element (keyword, string, comment, prompt, output…). registerCodeHighlighter connecta un acoloridor per a altres llenguatges; highlight: 'none' compon tots els llistats sense color. Fins a la 1.22 un llistat només podia fer servir fragments en negreta i cursiva, marcats a mà, amb els colors que fixava l'estil.",
+      "zh": "已在postext 1.23中解决：围栏的语言（```js、```python、```bash、```console等）让内置分词器为清单着色，codeStyle.tokens设定每类记号（keyword、string、comment、prompt、output等）的颜色、粗体和斜体。registerCodeHighlighter可以为其他语言接入着色器；highlight: 'none'让所有清单不着色。1.22及以前，清单只能用手工标出的粗体和斜体片段，颜色由样式设定。",
+      "ar": "حُلّت في postext 1.23: لغة السور (```js و```python و```bash و```console …) تلوّن قائمتها بالمحلل المدمج، ويضبط codeStyle.tokens لون كل نوع من العناصر وثخانته وميله (keyword وstring وcomment وprompt وoutput …). يربط registerCodeHighlighter ملوِّنًا للغات أخرى؛ ويجعل highlight: 'none' كل القوائم بلا تلوين. حتى 1.22 لم يكن للقائمة إلا مقاطع عريضة ومائلة تُعلَّم يدويًا ويحدد النمط ألوانها.",
+      "ja": "postext 1.23で解決しました。フェンスの言語（```js、```python、```bash、```consoleなど）に応じて、組み込みのトークナイザーがコードリストを色分けし、codeStyle.tokensがトークンの種類（keyword、string、comment、prompt、outputなど）ごとに色、太字、イタリックを決めます。registerCodeHighlighterでほかの言語のハイライターを組み込めます。highlight: 'none'にするとすべてのコードリストを色なしで組みます。1.22までは、手で付けた太字やイタリックの範囲に、スタイルで決めた色を付けることしかできませんでした。",
+      "pt": "Corrigido no postext 1.23: a linguagem de uma cerca (```js, ```python, ```bash, ```console…) colore a listagem com o analisador embutido, e codeStyle.tokens define a cor, o negrito e o itálico de cada tipo de token (keyword, string, comment, prompt, output…). registerCodeHighlighter conecta um realçador para outras linguagens; highlight: 'none' compõe todas as listagens sem cor. Até a 1.22 uma listagem só podia usar trechos em negrito e itálico, marcados à mão, com as cores que o estilo definia."
     },
     "docs": {
-      "slug": "document-format",
+      "slug": "configuration",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Syntax colouring",
+        "es": "Coloreado de sintaxis",
+        "ca": "Colors de sintaxi",
+        "zh": "语法着色",
+        "ar": "تلوين الصياغة",
+        "ja": "構文の色分け",
+        "pt": "Coloração de sintaxe"
       }
     }
   },

@@ -2508,6 +2508,108 @@
     },
     "since": "1.23.0"
   },
+  "code-listings": {
+    "label": {
+      "en": "Code listings",
+      "es": "Listados de código",
+      "ca": "Llistats de codi",
+      "zh": "代码清单",
+      "ar": "قوائم الشيفرة",
+      "ja": "コードリスト",
+      "pt": "Listagens de código"
+    },
+    "definition": {
+      "en": "``` fences set as code: line by line as typed, in a box, with syntax colours, line numbers, highlighted lines and long lines turned over, set smaller or cut.",
+      "es": "Vallas ``` compuestas como código: línea a línea tal como se escribieron, en una caja, con colores de sintaxis, números de línea, líneas resaltadas y líneas largas que pasan a la siguiente, se componen más pequeñas o se cortan.",
+      "ca": "Tanques ``` compostes com a codi: línia a línia tal com es van escriure, en una caixa, amb colors de sintaxi, números de línia, línies ressaltades i línies llargues que passen a la següent, es componen més petites o es tallen.",
+      "zh": "把```围栏排成代码：按书写原样逐行排在框中，带语法着色、行号和高亮行；过长的行转行、缩小或截断。",
+      "ar": "أسوار ``` تُنضَّد شيفرةً: سطرًا سطرًا كما كُتبت، في إطار، بألوان الصياغة وترقيم الأسطر وأسطر مميّزة، وتنتقل الأسطر الطويلة إلى ما تحتها أو تُصغَّر أو تُقطع.",
+      "ja": "```のフェンスをコードとして組みます。書いたとおり1行ずつ枠の中に組み、構文の色分け、行番号、強調する行を付け、長い行は次の行へ送るか、小さく組むか、切り落とします。",
+      "pt": "Cercas ``` compostas como código: linha a linha como foram escritas, numa caixa, com cores de sintaxe, números de linha, linhas realçadas e linhas longas que passam para baixo, são compostas menores ou cortadas."
+    },
+    "aliases": {
+      "en": [
+        "code block",
+        "```",
+        "fenced code",
+        "code listing",
+        "syntax highlighting",
+        "inline code",
+        "monospace block"
+      ],
+      "es": [
+        "bloque de código",
+        "```",
+        "listado de código",
+        "resaltado de sintaxis",
+        "código en línea",
+        "bloque monoespaciado"
+      ],
+      "ca": [
+        "bloc de codi",
+        "```",
+        "llistat de codi",
+        "ressaltat de sintaxi",
+        "codi en línia",
+        "bloc monoespaiat"
+      ],
+      "zh": [
+        "代码块",
+        "```",
+        "代码清单",
+        "语法高亮",
+        "行内代码",
+        "等宽字体",
+        "code block"
+      ],
+      "ar": [
+        "كتلة شيفرة",
+        "```",
+        "قائمة شيفرة",
+        "تلوين الصياغة",
+        "الشيفرة المضمّنة",
+        "code block"
+      ],
+      "ja": [
+        "コードブロック",
+        "```",
+        "コードリスト",
+        "シンタックスハイライト",
+        "インラインコード",
+        "等幅"
+      ],
+      "pt": [
+        "bloco de código",
+        "```",
+        "listagem de código",
+        "realce de sintaxe",
+        "código em linha",
+        "bloco monoespaçado"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Code listings",
+        "es": "Listados de código",
+        "ca": "Llistats de codi",
+        "zh": "代码清单",
+        "ar": "قوائم الشيفرة",
+        "ja": "コードリスト",
+        "pt": "Listagens de código"
+      }
+    },
+    "detect": {
+      "config": [
+        "codeStyle"
+      ],
+      "markdown": [
+        "(?:^|\\n) {0,3}(?:`{3,}|~{3,})"
+      ]
+    },
+    "since": "1.23.0"
+  },
   "body-drop-caps": {
     "label": {
       "en": "Drop caps in body paragraphs",
