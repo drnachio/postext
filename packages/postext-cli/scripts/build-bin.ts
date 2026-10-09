@@ -13,7 +13,7 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import type { BunPlugin } from 'bun';
 
 const ROOT = resolve(import.meta.dir, '..');
@@ -79,16 +79,26 @@ async function napiAddon(t: Target): Promise<string> {
  *  The addon is embedded as a plain file and copied once into the cache
  *  folder (~/.cache/postext/skia-<version>-<platform>.node): loaded from
  *  there, it starts in a few milliseconds instead of being unpacked to a
- *  temporary file on every run. Where the cache cannot be written, the
- *  embedded copy is loaded as it is. */
+ *  temporary file on every run. Data files the platform package ships
+ *  beside the addon (Windows: Skia's ICU data, `icudtl.dat`, without which
+ *  it cannot set a paragraph) are embedded and copied next to it. Where the
+ *  cache cannot be written, the embedded copy is loaded as it is. */
 function napiPlugin(addon: string, t: Target): BunPlugin {
   const name = `skia-${napiPkg.version}-${t.napi}.node`;
+  const pkgDir = dirname(addon);
+  const extras = readdirSync(pkgDir).filter((f) => !f.endsWith('.node') && !['README.md', 'package.json', 'LICENSE'].includes(f));
   return {
     name: 'napi-canvas-addon',
     setup(build) {
       build.onResolve({ filter: /^postext-skia-addon$/ }, () => ({ path: 'postext-skia-addon', namespace: 'postext-skia' }));
       build.onLoad({ filter: /.*/, namespace: 'postext-skia' }, () => ({
-        contents: `import path from ${JSON.stringify(addon)} with { type: 'file' };\nexport default path;\n`,
+        contents: [
+          `import path from ${JSON.stringify(addon)} with { type: 'file' };`,
+          ...extras.map((f, i) => `import extra${i} from ${JSON.stringify(join(pkgDir, f))} with { type: 'file' };`),
+          'export default path;',
+          `export const extras = [${extras.map((f, i) => `[${JSON.stringify(f)}, extra${i}]`).join(', ')}];`,
+          '',
+        ].join('\n'),
         loader: 'js',
       }));
       build.onLoad({ filter: /@napi-rs[\\/]canvas[\\/]js-binding\.js$/ }, () => ({
@@ -96,7 +106,7 @@ function napiPlugin(addon: string, t: Target): BunPlugin {
 const fs = require('fs');
 const nodePath = require('path');
 const os = require('os');
-const embedded = require('postext-skia-addon').default;
+const { default: embedded, extras } = require('postext-skia-addon');
 function cacheDir() {
   if (process.env.POSTEXT_CACHE_DIR) return process.env.POSTEXT_CACHE_DIR;
   if (process.platform === 'win32') return nodePath.join(process.env.LOCALAPPDATA || nodePath.join(os.homedir(), 'AppData', 'Local'), 'postext', 'cache');
@@ -108,11 +118,18 @@ function load() {
     const size = fs.statSync(embedded).size;
     let ok = false;
     try { ok = fs.statSync(target).size === size; } catch {}
-    if (!ok) {
-      fs.mkdirSync(nodePath.dirname(target), { recursive: true });
-      const tmp = target + '.' + process.pid + '.tmp';
-      fs.writeFileSync(tmp, fs.readFileSync(embedded));
-      fs.renameSync(tmp, target);
+    const put = (file, source) => {
+      fs.mkdirSync(nodePath.dirname(file), { recursive: true });
+      const tmp = file + '.' + process.pid + '.tmp';
+      fs.writeFileSync(tmp, fs.readFileSync(source));
+      fs.renameSync(tmp, file);
+    };
+    if (!ok) put(target, embedded);
+    for (const [fileName, source] of extras) {
+      const file = nodePath.join(nodePath.dirname(target), fileName);
+      let same = false;
+      try { same = fs.statSync(file).size === fs.statSync(source).size; } catch {}
+      if (!same) put(file, source);
     }
     return require(target);
   } catch {
