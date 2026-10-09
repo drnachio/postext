@@ -15,13 +15,14 @@
 // its own name, so the layout and the PDF agree, and a warning says so.
 
 import { GlobalFonts } from '@napi-rs/canvas';
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { extname, join } from 'node:path';
 import { collectFontUsage, configFontFamilies, STANDARD_FONT_VARIANTS, type FontVariantUse } from 'postext';
 import { decompressWoff2 } from 'postext-pdf';
 import { EMBEDDED_FACES, FALLBACK_FAMILY, readEmbedded } from './assets';
 import type { Book } from './input';
+import { ensureDir } from './io';
 import type { Reporter } from './log';
 
 export type FaceSource = 'book' | 'font-dir' | 'embedded' | 'cache' | 'download' | 'fallback';
@@ -213,7 +214,7 @@ async function familyMeta(family: string, dir: string, offline: boolean): Promis
   } catch {
     return undefined;
   }
-  mkdirSync(dir, { recursive: true });
+  ensureDir(dir);
   writeFileSync(file, JSON.stringify(meta));
   return meta;
 }
@@ -238,7 +239,7 @@ async function download(family: string, variants: FontVariantUse[], dir: string)
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Google Fonts answered ${res.status} for "${family}"`);
   const css = await res.text();
-  mkdirSync(dir, { recursive: true });
+  ensureDir(dir);
   const faces = [...css.matchAll(/font-style:\s*(\w+);\s*font-weight:\s*(\d+);[^}]*?url\(([^)]+)\)/g)];
   await Promise.all(faces.map(async ([, style, weight, src]) => {
     const file = join(dir, variantFile({ weight: Number(weight), style: style === 'italic' ? 'italic' : 'normal' }));

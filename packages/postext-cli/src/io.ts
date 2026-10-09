@@ -1,5 +1,16 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+
+/** Create a folder and its parents. Bun on Windows throws EEXIST for a
+ *  folder that exists even with `recursive` (`.` included). */
+export function ensureDir(dir: string): void {
+  if (existsSync(dir)) return;
+  try {
+    mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    if (!existsSync(dir)) throw err;
+  }
+}
 
 /** Write `bytes` to `path`, creating its folder; "-" writes to stdout. */
 export async function writeOut(path: string, bytes: Uint8Array | string): Promise<void> {
@@ -7,7 +18,7 @@ export async function writeOut(path: string, bytes: Uint8Array | string): Promis
     await new Promise<void>((resolve, reject) => process.stdout.write(bytes, (err) => (err ? reject(err) : resolve())));
     return;
   }
-  mkdirSync(dirname(path), { recursive: true });
+  ensureDir(dirname(path));
   writeFileSync(path, bytes);
 }
 

@@ -118,8 +118,13 @@ function load() {
     const size = fs.statSync(embedded).size;
     let ok = false;
     try { ok = fs.statSync(target).size === size; } catch {}
+    // Bun on Windows throws EEXIST for a folder that exists, even with recursive.
+    const ensureDir = (dir) => {
+      if (fs.existsSync(dir)) return;
+      try { fs.mkdirSync(dir, { recursive: true }); } catch (err) { if (!fs.existsSync(dir)) throw err; }
+    };
     const put = (file, source) => {
-      fs.mkdirSync(nodePath.dirname(file), { recursive: true });
+      ensureDir(nodePath.dirname(file));
       const tmp = file + '.' + process.pid + '.tmp';
       fs.writeFileSync(tmp, fs.readFileSync(source));
       fs.renameSync(tmp, file);
