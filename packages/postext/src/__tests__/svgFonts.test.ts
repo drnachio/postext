@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
 import { resolveObjectURL } from 'node:buffer';
 import {
   buildDocument,
