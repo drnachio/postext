@@ -59,9 +59,11 @@ from typing import Any
 # centred hemistichs, a first-line indent dropped from a style that hangs, a
 # backslash ending a line printed. A manifest stamped 9 (postext 1.23) gets
 # the rules-10 pin: a line of verse a little too wide turns over instead of
-# tightening its word spaces. An engine older than 1.23 reads 9 as 8, one
-# older than 1.24 reads 10 as 9.
-CONFIG_VERSION = 10
+# tightening its word spaces. A manifest stamped 10 (postext 1.24) gets the
+# rules-11 pin: a horizontal page on a character grid stays balanced. An
+# engine older than 1.23 reads 9 as 8, one older than 1.24 reads 10 as 9,
+# one older than 1.25 reads 11 as 10.
+CONFIG_VERSION = 11
 
 # ---------------------------------------------------------------------------
 # primitives
@@ -541,7 +543,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "configVersion": 10, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 11, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),

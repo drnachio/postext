@@ -594,8 +594,10 @@ Defaults:
 enabled true | maxLinesPerHeading 4 | stretchAfterLists true | maxLinesAfterList 1
 stretchAfterFloats true | maxLinesAfterFloat 1 | looseParagraphs true | maxLooseParagraphs 2
 trackParagraphs true | maxTracking 10 (‰ em) | trailing true | beforeSpan true
-closingBox 'first'  ('first' | 'last' | 'off')
+closingBox 'first'  ('first' | 'last' | 'off') | gridLines 'allow' ('allow' | 'off', ≥ 1.25)
 ```
+`enabled` is off by default in vertical text and on a character grid (`cjk.grid.enabled`, ≥ 1.25);
+`true` turns it on there.
 Levers in order: box closing a short column pushed to the foot → extra grid lines above headings
 (favouring lower level numbers) → after list ends → under top floats → loose paragraphs
 (TeX looseness +1, within `bodyText.maxWordSpacing`, optional ≤ maxTracking positive tracking).
@@ -604,6 +606,13 @@ Levers in order: box closing a short column pushed to the foot → extra grid li
 box lever after the spacing levers (the box takes only the fraction of a line they leave, so a
 box annotating the paragraph above it stays close to it); `'off'` never moves the box. Disable
 `enabled` for ragged-bottom books.
+On a character grid (≥ 1.25) balancing turned on keeps every character in its cell: the line levers
+add whole grid lines (the grid's pitch), `gridLines: 'off'` keeps them out (a standard that counts
+lines, GB/T 9704's 22 × 28), and a CJK paragraph runs a line long only when its characters spread
+≤ `maxTracking` apart, with no letter tracking (so a grid of whole cells rarely gets one). Leave
+`enabled` unset on a grid page: it is already off. `doc.gridBalancing` / `column.gridRefused` in the
+VDT say why a grid column ends short. Up to 1.24 a horizontal grid was balanced with loose paragraphs
+spread off the cells; recipes set `enabled: false` against it.
 
 ---------------------------------------------------------------------------------
 
@@ -1375,7 +1384,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `wordBreak` | `'normal'` | ≥ 1.16; `'keep-all'`: lines break only at spaces (U+0020, U+3000) and next to punctuation the level allows, never between two letters (kana, kanji, hangul, Latin): kana written with a space between phrases (分かち書き: picture books, primers) and Korean; a phrase longer than the line breaks inside. Replaces word joiners (U+2060) between kana. A paragraph style may set its own `wordBreak` |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
 | `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4), but not inside a Latin sentence (a Latin word on both sides, past spaces, numbers and marks), where they run sideways with it; `:tcy[…]` / `:sideways[…]` by hand |
-| `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |
+| `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped`. Column balancing is off on a grid unless `headings.balancing.enabled` (≥ 1.25, §5.2) |
 | `emphasis` | `'dots'` in a Chinese or Japanese document | what `*…*` does to CJK characters (`'italic'` fakes a slant) |
 | `emphasisMark` | `{style: 'auto', fill: 'auto', position: 'auto'}` | ≥ 1.16; the shape of `*…*` dots and of `:dots` without attributes: `style` `'dot'\|'circle'\|'sesame'`, `fill` `'filled'\|'open'`, `position` `'over'\|'under'` (over = right in vertical text). Auto: Chinese dot under (right in vertical); Japan sesame ﹅ over / right in both directions. Dots go outside a ruby reading on the same side |
 | `bookTitleMark` | brackets / wavy / wavy / brackets | `:book[…]` prints its brackets, a wavy line under it, or `'none'` |
@@ -1437,8 +1446,8 @@ Guide: https://postext.dev/en/docs/japanese-layout. Everything below follows fro
 | centred page (扉, dedication) | `:::pagebreak{center}` | the next page's text centred head to foot (across the page in vertical text) |
 | kanbun | `:kunten[字]{kaeri="レ" okuri="ヲ"}`, `cjk.kunten` | 返り点 small at the lower left, 送り仮名 at the right (vertical) |
 
-Vertical multi-tier pages run on at a chapter end (nariyuki) with `headings.balancing.trailing: false`; the
-default balances them. Fonts: Noto Serif JP (body), Noto Sans JP (headings, gothic emphasis), or Shippori
+Vertical multi-tier pages run on at a chapter end (nariyuki) by default: balancing is off in vertical
+text (and on a character grid, ≥ 1.25) unless `headings.balancing.enabled: true`. Fonts: Noto Serif JP (body), Noto Sans JP (headings, gothic emphasis), or Shippori
 Mincho / B1 for a bunko look (it has no ō ū: rōmaji with macrons needs another face for that text).
 
 ```json
@@ -1606,7 +1615,7 @@ fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```
-{ version: 2, configVersion: 10, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
+{ version: 2, configVersion: 11, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
@@ -1616,7 +1625,7 @@ fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
                               view?: { canvasScope?: 'book'|'chapter' } } } }   // the edition's view over `view` (≥ 1.9.2)
 ```
-`configVersion: 10` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
+`configVersion: 11` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
 the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
 when one is embedded inside a `:::callout`, `headings.inlineMarks: false` when a heading carries `*`, `_`, `^`,
@@ -1634,7 +1643,8 @@ backslash or sets `\\` before a space, and `codeStyle.blocks: false` when a chap
 fence (its lines then read as Markdown); one stamped 9 (postext 1.23), those of rules 10:
 `bodyText.verse.tighten: false` when a chapter sets a poem line by line, and `overflow: 'ellipsis-end'` written
 on every text element of a heading design or a part page (`parts.design`, `parts.versoDesign`) that sets none
-(in `htmlViewer.overrides` too). The pins keep what those rules changed, not
+(in `htmlViewer.overrides` too); one stamped 10 (postext 1.24), that of rules 11:
+`headings.balancing.enabled: true` on a horizontal `cjk.grid` config that does not set it. The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —

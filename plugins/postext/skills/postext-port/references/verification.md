@@ -184,7 +184,7 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
   (heading breaks, formula size, space around inline resources, plain
   headings, drop-cap sizes, room under a colon line, box cuts, breaks at dashes, breaks at
   compounds' hyphens, ragged breaking, split under a heading, space under paragraph containers).
-  Set `"configVersion": 10` and check the pages again when the config is meant for today's rules.
+  Set `"configVersion": 11` and check the pages again when the config is meant for today's rules.
 - Run each language (`--lang`).
 
 ## 3. Compare with the source, page by page

@@ -32,7 +32,7 @@ function project(config: object, text = CHAPTER, withFont = false): string {
     fonts.push({ name: "Noto Serif TC", variants: [{ weight: 400, style: "normal", file: "fonts/NotoSerifTC-Regular.woff2" }] });
   }
   const manifest = {
-    version: 2, configVersion: 10, id: "t", name: "T", locale: "zh-Hant",
+    version: 2, configVersion: 11, id: "t", name: "T", locale: "zh-Hant",
     chapters: { "zh-Hant": [{ title: "第一回", file: "chapters/zh-Hant/01-hui.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts,
@@ -85,7 +85,7 @@ describe.skipIf(!python)("postext-port lint on Chinese text", () => {
       extra,
     ].join("\n");
     const manifest = {
-      version: 2, configVersion: 10, id: "t", name: "T", locale: "en",
+      version: 2, configVersion: 11, id: "t", name: "T", locale: "en",
       chapters: { en: [{ title: "One", file: "chapters/01.md" }] },
       config: {
         locale: "en", header: { elements: [] }, layout: { layoutType: "single" },
@@ -353,7 +353,7 @@ function arabicProject(config: object, text?: string, fonts: object[] = []): str
     "",
   ].join("\n"));
   const manifest = {
-    version: 2, configVersion: 10, id: "t", name: "T", locale: "ar",
+    version: 2, configVersion: 11, id: "t", name: "T", locale: "ar",
     chapters: { ar: [{ title: "الفصل الأول", file: "chapters/ar/01.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts,
@@ -430,7 +430,7 @@ function japaneseProject(config: object, text = JA_CHAPTER): string {
   mkdirSync(path.join(dir, "chapters/ja"), { recursive: true });
   writeFileSync(path.join(dir, "chapters/ja/01.md"), text);
   const manifest = {
-    version: 2, configVersion: 10, id: "t", name: "T",
+    version: 2, configVersion: 11, id: "t", name: "T",
     chapters: { ja: [{ title: "上", file: "chapters/ja/01.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts: [],
@@ -556,7 +556,7 @@ function comicProject(config: object, chapters: Record<string, string>, resource
     anchors: [{ id: "ana", x: 0.3, y: 0.5, face: { x: 0.2, y: 0.3, width: 0.2, height: 0.2 } }, { id: "ben", x: 0.7, y: 0.5 }],
   }));
   const manifest = {
-    version: 2, configVersion: 10, id: "t", name: "T", locale: Object.keys(chapters)[0],
+    version: 2, configVersion: 11, id: "t", name: "T", locale: Object.keys(chapters)[0],
     chapters: specs,
     config: { header: { elements: [] }, layout: { layoutType: "single" }, locale: "en", ...config },
     resources: pictures, fonts,
