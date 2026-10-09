@@ -521,7 +521,7 @@ sfx{plate at="77.3% 14.4%" rotate=-11 skew=-8}: Incantations\
 
 ## 13. Output
 
-- **Canvas** (Sandbox, `render.mjs --jpeg`): panels, art, borders,
+- **Canvas** (Sandbox, `postext build --watch --images`, `render.mjs --jpeg`): panels, art, borders,
   balloons, sound effects. **PDF**: the same, tagged (a `Div` per page, a
   `Figure` per panel with its alt text, a `P` per balloon after its panel,
   sound effects as `Span` with `/ActualText`). **HTML** viewer: a

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Instale a skill postext-port no Claude Code, no Codex ou em qualquer agente e deixe que ela transforme um PDF, Word, PowerPoint, EPUB, InDesign ou HTML em um projeto do Postext que segue a diagramação original',
   lang: 'pt',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-09',
   readingTime: '8 min',
   order: 12,
   plainSummary: "Esta página é para quem já tem um livro ou um documento em outro formato, como PDF, Word ou InDesign, e quer passá-lo para o Postext. Um assistente de inteligência artificial, chamado agente, pode fazer quase todo o trabalho se você der a ele um pequeno complemento chamado skill. A skill ensina o agente a copiar o texto e a refazer o design do original. A página explica como instalá-la, o que pedir e como conferir o resultado. Um vídeo de uns cinco minutos mostra cada passo.",
@@ -200,7 +200,7 @@ pré-compilado que permite pintar as páginas do livro direto em JPEG.
 Ferramentas opcionais: `ocrmypdf` para digitalizações, ImageMagick e veraPDF
 para verificações PDF/UA.
 
-Sem Node? A [linha de comando](/pt/docs/command-line) faz o mesmo layout, as imagens de página, as verificações e os PDFs com um único executável autônomo, sem instalar nada; a skill a usa quando as ferramentas do Node não estão instaladas e para verificar o `.postext` entregue como o leitor vai abri-lo.
+O ciclo de trabalho roda na [linha de comando](/pt/docs/command-line), um executável autônomo que não precisa ser instalado: o agente mantém o projeto descompactado e deixa `postext build --watch` rodando sobre as páginas em que está trabalhando, de modo que cada mudança aparece como JPEG cerca de um segundo depois, mesmo num livro longo. Os pacotes do Node são opcionais: eles rodam o `render.mjs`, que acrescenta as verificações extras do Sandbox.
 
 ## Como usar
 
@@ -231,11 +231,13 @@ O agente segue o fluxo de trabalho:
    depois os revisa e passa para o Markdown do Postext: boxes, estilos de
    parágrafo, partes, atributos de título para as aberturas, citações `:ref`,
    recursos de tabela e de figura.
-5. **Verificação.** Ele passa o linter no projeto, diagrama-o sem interface,
-   renderiza como JPEGs as páginas em que está trabalhando e olha para elas, e
-   as compara com a fonte página por página até que as quebras de página, as
-   figuras e os boxes coincidam. O PDF é gerado para as verificações de
-   impressão, não a cada olhada.
+5. **Verificação.** Ele passa o linter e deixa `postext build --watch`
+   rodando sobre o projeto descompactado: muda um capítulo ou uma
+   configuração, olha o JPEG da página, repintado cerca de um segundo
+   depois, e muda de novo até que as quebras de página, as figuras e os
+   boxes coincidam com a fonte página por página. A cada etapa concluída
+   ele roda as verificações completas (`postext check` e o linter). O PDF é
+   gerado para as verificações de impressão, não a cada olhada.
 6. **Entrega.** Ele define o papel, a encadernação e as capas do livro para o
    visualizador Folio e empacota `my-book.postext`.
 

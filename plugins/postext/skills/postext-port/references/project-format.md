@@ -260,6 +260,18 @@ embeds them with `::resource{id="…"}` (placement `here`).
 
 ## 6. Rendering headlessly
 
+While working, keep the project unpacked and let the `postext` executable lay
+it out on every save (verification.md §2):
+
+```bash
+postext build my-book --locale es --images /tmp/pages --pages 12-15 -f jpeg --watch > /tmp/watch.log 2>&1 &
+```
+
+It reads only the files the manifest names (the generator, `source/` and the
+other project files are ignored, and so are their changes), and
+`postext pack my-book` leaves the same files out of the bundle as
+`preset_kit.py pack`.
+
 `scripts/render.mjs` lays the project out in Node with the real engine and the
 bundle's own fonts, prints warnings, and writes chosen pages as JPEGs
 (painted by the engine's canvas renderer) and/or a PDF:
@@ -271,7 +283,8 @@ node render.mjs book.postext --jpeg /tmp/pages --pages '#1'            # a packe
 node render.mjs my-book --lang es --out /tmp/my-book.pdf               # the PDF, for print checks
 ```
 
-The JPEGs are the way to look at pages while iterating (verification.md §2);
+One-shot JPEGs from `render.mjs` are the fallback for the loop and its
+`SANDBOX-WARN` lines a milestone check (verification.md §2);
 `--png` rasterises the PDF instead and needs poppler.
 
 It mirrors the sandbox loader (defaults ← config ← localized config; chapters

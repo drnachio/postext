@@ -44,27 +44,41 @@ Read every WARN:
 
 ## 2. Headless layout
 
+### The work loop: `postext build --watch`
+
+Work on the unpacked project folder with one watcher running on the pages at
+hand (SKILL.md §7 has the full recipe, with the wait for each rebuild):
+
 ```bash
-node scripts/render.mjs my-book --lang es                                   # layout + diagnostics only
-node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15   # + those pages as JPEGs
-node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf            # + the PDF (print checks)
+postext build my-book --locale es --images /tmp/pages --pages 12-15 -f jpeg --dpi 100 --watch > /tmp/watch.log 2>&1 &
 ```
 
-### The `postext` executable (no Node, no npm)
+Every save of a chapter, of `preset.json` (run the generator) or of a
+resource lays the whole book out again with the engine and fonts still
+loaded, about a second on a long book, and rewrites `/tmp/pages/page-NNN.jpg`
+(NNN = position in the book); the log gets the build's warnings, with chapter
+file:line and page, and a `rebuilt in N ms` line, or `error …` when the save
+breaks the book (the last good pages stay). Files that are not part of the
+book (`source/`, `*.py`, `resources.json`, `report.md`, `layouts*.json`) are
+neither read nor watched. To look at other pages, stop it
+(`pkill -f "postext build my-book"`) and start it with the new `--pages`.
+`--pages` takes printed numbers (`12-15`, `iv`) or positions (`'#40'`,
+`'#10-#20'`). Add `--pdf /tmp/my-book.pdf` to the same command when the PDF
+itself is what you are checking (fonts, print settings); it costs more per
+round.
 
-The [postext command line](https://postext.dev/en/docs/command-line) lays a
-project out with the same engine and the Sandbox's reading of the manifest,
-from one self-contained executable (macOS, Linux, Windows; download it from
+### One-shot commands
+
+The [postext command line](https://postext.dev/en/docs/command-line) (one
+self-contained executable per system: download it from
 `https://github.com/drnachio/postext/releases/latest/download/postext-<system>`,
-or `npx postext-cli`). Use it when the tools folder is not set up, or to check
-the delivered `.postext` exactly as a user will open it:
+or `npx postext-cli`):
 
 ```bash
 postext check my-book --locale es --json                         # every warning with chapter file:line and page; exit 3 on errors
 postext images my-book --locale es --pages 12-15 -f jpeg --dpi 100 -o /tmp/pages   # same page-NNN.jpg names as render.mjs
 postext image my-book --locale es --page '#40' --dpi 150 -o /tmp/p40.png
 postext pdf my-book --locale es -o /tmp/my-book.pdf              # print checks; --pdfx x4 --profile fogra51 to try print settings
-postext build my-book --locale es --images /tmp/pages --pages 12-15 -f jpeg --watch   # re-paints on every save
 postext info my-book --pages                                     # chapters, pages, where each font family comes from
 ```
 
@@ -76,7 +90,19 @@ family the project does not bundle is downloaded from Google Fonts (and
 cached) as the browser would, where `render.mjs` measures it with a
 stand-in face; `--offline` keeps it from downloading.
 
-### Page JPEGs (the inner loop)
+### `render.mjs` (Node)
+
+```bash
+node scripts/render.mjs my-book --lang es                                   # layout + diagnostics only
+node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15   # + those pages as JPEGs
+node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf            # + the PDF (print checks)
+```
+
+Each call loads the engine afresh (a few seconds): use it at milestones for its
+`SANDBOX-WARN`, `NOTE` and `PARSE` lines, or for the loop when the executable
+cannot be had.
+
+### Page JPEGs from `render.mjs`
 
 `--jpeg DIR` paints pages with the engine's own canvas renderer
 (`renderPageToCanvas` on `@napi-rs/canvas`, the Sandbox Canvas tab's
@@ -96,7 +122,7 @@ layout. Open the files to look at them. Options:
 Requires `npm i @napi-rs/canvas` in the tools folder (the script says so if
 it is missing). Images are decoded by Skia: bitmaps and SVGs both paint;
 `JPEG-WARN … does not decode` names a file to convert. Use the JPEGs for
-every look while iterating; the PDF (`--out`, `--png`) is for the print
+every look while iterating (better still, the watch loop above); the PDF (`--out`, `--png`) is for the print
 checks in §5 and the final hand-off. `--png` rasterises the PDF with
 pdftoppm and is slower.
 
