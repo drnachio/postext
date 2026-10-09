@@ -1707,6 +1707,8 @@
     "headingLineSpanTooltip": "标题恰好占用正文的这么多行，文字在其中居中，取代上下外边距：3 表示占三行的位置（3行取り）。标题本身需要更多行时，取下一个整数行。0 保留外边距。不用于整页标题页和自带设计的标题",
     "headingIndent": "缩进（正文字数）",
     "headingIndentTooltip": "标题从行首缩进的距离（字下げ），其中 em 指正文字号：4 em 即四个正文字。标题的行宽相应缩短，居中的标题在余下的宽度里居中",
+    "headingFirstLineIndent": "首行缩进（正文字数）",
+    "headingFirstLineIndentTooltip": "仅缩进标题的第一行，从缩进处算起，其中 em 指正文字号：2 em 即两个正文字。长标题转行后的各行从缩进处起排，与 GB/T 9704 对标题的要求一致。居中的标题在余下的宽度里居中第一行。单个标题可用 '{'firstLineIndent=N'}' 另设",
     "headingJidori": "均排宽度（字取り）",
     "headingJidoriTooltip": "单行标题若窄于这么多个标题字，就均匀拉开字距，排满这一宽度：3 把「序章」排成「序　章」。单个标题可用 '{'jidori=N'}' 自行设定。0 表示不拉开",
     "headingHidden": "隐藏（结构用）",

@@ -1707,6 +1707,8 @@
     "headingLineSpanTooltip": "El títol ocupa exactament aquest nombre de línies del text, centrat en elles, en lloc dels marges superior i inferior: 3 el situa en l'espai de tres línies (3行取り). Si en necessita més, pren el nombre enter següent. 0 conserva els marges. No s'aplica a les portadelles ni als títols amb disseny propi",
     "headingIndent": "Sagnat (caràcters del text)",
     "headingIndentTooltip": "Sagnat del títol des de l'inici de la línia (字下げ), en què em és el cos del text: 4 em són quatre caràcters del text. La mesura del títol s'estreny en aquesta quantitat, i un títol centrat se centra en el que queda",
+    "headingFirstLineIndent": "Sagnat de primera línia (caràcters del text)",
+    "headingFirstLineIndentTooltip": "Sagnat només de la primera línia del títol, comptat des del sagnat, en què em és el cos del text: 2 em són dos caràcters del text. Les línies següents d'un títol llarg comencen al sagnat, com demana la GB/T 9704. Un títol centrat centra la primera línia en el que queda. Un títol fixa el seu amb '{'firstLineIndent=N'}'",
     "headingJidori": "Amplada d'espaiat uniforme (字取り)",
     "headingJidoriTooltip": "Un títol d'una línia més estret que aquest nombre dels seus propis caràcters s'espaia de manera uniforme fins a ocupar aquesta amplada: 3 compon 序章 com a 序　章. Un títol fixa el seu amb '{'jidori=N'}'. 0 deixa els títols com són",
     "headingHidden": "Ocult (estructural)",

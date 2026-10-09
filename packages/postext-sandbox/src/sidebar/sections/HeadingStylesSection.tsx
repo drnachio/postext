@@ -179,7 +179,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
   };
   const headingFields: (keyof HeadingStyleConfig)[] = [
     'fontSize', 'lineHeight', 'fontFamily', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
-    'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'jidori', 'dropCap', 'breakBefore', 'span', 'hidden', 'advancedDesign',
+    'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'firstLineIndent', 'jidori', 'dropCap', 'breakBefore', 'span', 'hidden', 'advancedDesign',
   ];
   const hasHeadingOverrides = headingFields.some((f) => style[f] !== undefined);
   const resetHeadingFields = () => {
@@ -549,6 +549,17 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           tooltip={labels.headingIndentTooltip}
           isDefault={unset('indent')}
           onReset={() => set('indent', undefined)}
+          units={INDENT_UNITS}
+        />
+        <DimensionInput
+          label={labels.headingFirstLineIndent}
+          value={style.firstLineIndent ?? lvl.firstLineIndent ?? ZERO_EM}
+          onChange={(dim) => set('firstLineIndent', dim)}
+          min={0}
+          step={0.5}
+          tooltip={labels.headingFirstLineIndentTooltip}
+          isDefault={unset('firstLineIndent')}
+          onReset={() => set('firstLineIndent', undefined)}
           units={INDENT_UNITS}
         />
         <NumberInput

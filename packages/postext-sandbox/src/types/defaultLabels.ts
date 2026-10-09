@@ -1115,6 +1115,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   headingLineSpanTooltip: 'The heading takes exactly this many body lines, its text centred in them, in place of its top and bottom margins: 3 sets it in the room of three lines (3行取り). A heading that needs more lines takes the next whole number. 0 keeps the margins. Not used by page openers or headings drawn from their own design',
   headingIndent: 'Indent (body characters)',
   headingIndentTooltip: 'Indent of the heading from the start of the line (字下げ), in which em is the body size: 4 em is four body characters. The heading\'s measure narrows by it, and a centred heading centres in what is left',
+  headingFirstLineIndent: 'First-line indent (body characters)',
+  headingFirstLineIndentTooltip: 'Indent of the heading\'s first line only, measured from the indent, in which em is the body size: 2 em is two body characters. The lines a long heading wraps onto start at the indent, as GB/T 9704 sets its heads. A centred heading centres its first line in what is left. A heading sets its own with {firstLineIndent=N}',
   headingJidori: 'Even spacing width (字取り)',
   headingJidoriTooltip: 'A one-line heading narrower than this many of its own characters is spaced out evenly to fill that width: 3 sets 序章 as 序　章. A heading sets its own with {jidori=N}. 0 leaves headings as they are',
   headingHidden: 'Hidden (structural)',

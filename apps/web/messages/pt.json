@@ -1707,6 +1707,8 @@
     "headingLineSpanTooltip": "O título ocupa exatamente este número de linhas do corpo, com o texto centralizado nelas, no lugar das margens superior e inferior: 3 o compõe no espaço de três linhas (3行取り). Um título que precisa de mais linhas ocupa o número inteiro seguinte. 0 mantém as margens. Não se aplica às aberturas de página nem aos títulos desenhados com design próprio",
     "headingIndent": "Recuo (caracteres do corpo)",
     "headingIndentTooltip": "Recuo do título a partir do início da linha (字下げ), em que o em é o tamanho do corpo: 4 em são quatro caracteres do corpo. A medida do título diminui nesse valor, e um título centralizado se centraliza no que sobra",
+    "headingFirstLineIndent": "Recuo da primeira linha (caracteres do corpo)",
+    "headingFirstLineIndentTooltip": "Recuo apenas da primeira linha do título, contado a partir do recuo, em que o em é o tamanho do corpo: 2 em são dois caracteres do corpo. As linhas seguintes de um título longo começam no recuo, como a GB/T 9704 compõe seus títulos. Um título centralizado centraliza a primeira linha no que sobra. Um título define o seu com '{'firstLineIndent=N'}'",
     "headingJidori": "Largura de espaçamento uniforme (字取り)",
     "headingJidoriTooltip": "Um título de uma linha mais estreito que este número dos seus próprios caracteres é espaçado de modo uniforme até ocupar essa largura: 3 compõe 序章 como 序　章. Um título define o seu com '{'jidori=N'}'. 0 deixa os títulos como estão",
     "headingHidden": "Oculto (estrutural)",

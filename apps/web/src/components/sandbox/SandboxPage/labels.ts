@@ -1088,6 +1088,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     headingLineSpanTooltip: t("headingLineSpanTooltip"),
     headingIndent: t("headingIndent"),
     headingIndentTooltip: t("headingIndentTooltip"),
+    headingFirstLineIndent: t("headingFirstLineIndent"),
+    headingFirstLineIndentTooltip: t("headingFirstLineIndentTooltip"),
     headingJidori: t("headingJidori"),
     headingJidoriTooltip: t("headingJidoriTooltip"),
     headingHidden: t("headingHidden"),

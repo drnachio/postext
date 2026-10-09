@@ -2387,6 +2387,8 @@
     "headingLineSpanTooltip": "El título ocupa exactamente este número de líneas del texto, centrado en ellas, en lugar de sus márgenes superior e inferior: 3 lo sitúa en el espacio de tres líneas (3行取り). Si necesita más líneas, toma el siguiente número entero. 0 conserva los márgenes. No se aplica a las portadillas ni a los títulos con diseño propio",
     "headingIndent": "Sangría (caracteres del texto)",
     "headingIndentTooltip": "Sangría del título desde el inicio de la línea (字下げ), en la que em es el cuerpo del texto: 4 em son cuatro caracteres del texto. La medida del título se estrecha en esa cantidad, y un título centrado se centra en lo que queda",
+    "headingFirstLineIndent": "Sangría de primera línea (caracteres del texto)",
+    "headingFirstLineIndentTooltip": "Sangría solo de la primera línea del título, contada desde la sangría, en la que em es el cuerpo del texto: 2 em son dos caracteres del texto. Las líneas siguientes de un título largo empiezan en la sangría, como pide la GB/T 9704. Un título centrado centra su primera línea en lo que queda. Un título fija la suya con '{'firstLineIndent=N'}'",
     "headingJidori": "Ancho de espaciado uniforme (字取り)",
     "headingJidoriTooltip": "Un título de una línea más estrecho que este número de sus propios caracteres se espacia de forma uniforme hasta ocupar ese ancho: 3 compone 序章 como 序　章. Un título fija el suyo con '{'jidori=N'}'. 0 deja los títulos como están",
     "headingHidden": "Oculto (estructural)",

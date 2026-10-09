@@ -1172,6 +1172,8 @@ export interface SandboxLabels {
   headingLineSpanTooltip: string;
   headingIndent: string;
   headingIndentTooltip: string;
+  headingFirstLineIndent: string;
+  headingFirstLineIndentTooltip: string;
   headingJidori: string;
   headingJidoriTooltip: string;
   headingHidden: string;
