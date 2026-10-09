@@ -478,6 +478,18 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td>段より狭い図版やボックスの横に組む本文（<code>placement.wrap</code>、ボックスの<code>wrap</code>）：<code>gap</code>は対象と本文との間隔（未設定なら本文 1 行分）、<code>minTextWidth</code>は横の本文の最小行長で、長さまたは段幅の割合（これより狭いと対象は全幅を占め、<code>textWrap</code>警告が出ます）、<code>minLinesBeside</code>は横に組む意味のある最少行数、<code>defaultWidth</code>は<code>width</code>のない回り込む対象が占める段幅の割合。<a href="/ja/docs/document-format#回り込み">文書の書式 › 回り込み</a>を参照。postext 1.24以降。</td>
     </tr>
     <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>placement.citingPage</code>の文書全体の既定値です。<code>'top'</code>または<code>'auto'</code>のフロートを、最初に参照する行のあるページ（ページ幅のフロート）または段（段幅のフロート）の先頭に置けるようにします。その行の後の最初の空き位置ではありません。参照より前の本文はその下に送られます（<a href="/ja/docs/document-format#配置">ドキュメント形式 › 配置</a>を参照）。リソースの配置、次にその種類の<code>defaultPlacement</code>がこれより優先されます。postext 1.25 から。</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>参照するページまたは段の先頭に置くフロートが、すでにそこにあるフロートと合わせて段の高さに占めてよい最大の割合（0〜1）です。ページに本文の余地を残します（LaTeX の<code>\topfraction</code>）。これを超えるフロートは通常の位置に置かれます。postext 1.25 から。</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -4408,7 +4420,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや 1 段幅のフロートを段の片側に置き、`wrapGap`離して本文を横に組みます。既定値は`layout.wrap`にあります（[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。
+`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや 1 段幅のフロートを段の片側に置き、`wrapGap`離して本文を横に組みます。既定値は`layout.wrap`にあります（[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。`citingPage`は、`top`または`auto`のフロートを、参照行の後の最初の空き位置ではなく、参照行のあるページまたは段の先頭に置きます。`layout.floatsAtCitingPage`が文書の既定値、`layout.maxTopFraction`がそのフロートの占めてよい段の割合です（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。
 
 `columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
 

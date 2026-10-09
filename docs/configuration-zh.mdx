@@ -478,6 +478,18 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td>正文排在比栏窄的图片或框旁边（<code>placement.wrap</code>、框的<code>wrap</code>）：<code>gap</code>，对象与正文之间的距离（未设置时为一行正文）；<code>minTextWidth</code>，旁边正文的最小行宽，可以是长度或栏宽的比例（更窄时对象占满整条，并给出<code>textWrap</code>警告）；<code>minLinesBeside</code>，值得在旁边排的最少行数；<code>defaultWidth</code>，绕排对象未设<code>width</code>时所占栏宽的比例。见<a href="/zh/docs/document-format#文字绕排">文档格式 › 文字绕排</a>。postext 1.24起。</td>
     </tr>
     <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>placement.citingPage</code>的文档默认值：<code>'top'</code>或<code>'auto'</code>浮动体可以占据首次引用它的那一行所在页面（通栏浮动体）或栏（单栏浮动体）的顶部，而不是该行之后的第一个空位；引用处之上的文字移到它下方（参见<a href="/zh/docs/document-format#位置">文档格式 › 位置</a>）。资源自身的位置设置、其次是其类型的<code>defaultPlacement</code>会覆盖它。自 postext 1.25 起。</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>置于引用页（栏）顶部的浮动体，连同该处已有的浮动体，最多可占栏高的比例（0 到 1），使该页仍留有正文的位置（即 LaTeX 的<code>\topfraction</code>）。超过这一比例的浮动体放到它通常的位置。自 postext 1.25 起。</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -4405,7 +4417,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement`与资源自身的`placement`形状相同。`position`选择浮动体可占用的空位种类：`auto`（默认）取第一次引用之后的第一个空位，`top` / `bottom`把范围限定在该种版带，`here`把资源行内嵌入。`span`设定浮动体的宽度范围：一栏、整个内容宽度，或一栏半版式中只放浮动体的侧栏。`rotate`把资源旋转四分之一圈，并使它成为单独占一页的通栏浮动体。`width`把浮动体收窄为所在栏宽的一个比例（通栏浮动体则为页宽的比例），比如宽栏里的一张小表。`align`说明这种较窄的浮动体放在哪里（默认靠左，也可居中或靠右），也说明比空位窄的图片在空位中的位置：比栏窄的位图，或被`layout.fitFiguresToPage`缩小的图像。题注和注释保持空位的行长。（postext 1.4及以前，这类图片总是左对齐排放。）`captionSide`把题注放在图旁，位于一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），与图的顶边平齐（底部浮动体则与底边平齐）；它只作用于栏内浮动体，没有这种侧栏的页面仍把题注放在图下。资源和它的类型都没有设定位置时，内置默认值为`auto` / `column`。`shrink`（`'never'`、`'page'`、`'slot'`）和`minScale`（未设时为0.7）把浮动图片缩小到所在位置的空间，而不是移到后面；`captionMeasure: 'body'`让比所在位置窄的图片的题注和说明与图片同宽（见[文档格式 › 位置](/zh/docs/document-format#位置)）；`layout.floatShrink`给出前两项的文档级默认值。`wrap`把行内嵌入或宽一栏的浮动体放在栏的一侧，正文排在旁边，相隔`wrapGap`；`layout.wrap`存放默认值（见[文档格式 › 文字绕排](/zh/docs/document-format#文字绕排)）。
+`ResourcePlacement`与资源自身的`placement`形状相同。`position`选择浮动体可占用的空位种类：`auto`（默认）取第一次引用之后的第一个空位，`top` / `bottom`把范围限定在该种版带，`here`把资源行内嵌入。`span`设定浮动体的宽度范围：一栏、整个内容宽度，或一栏半版式中只放浮动体的侧栏。`rotate`把资源旋转四分之一圈，并使它成为单独占一页的通栏浮动体。`width`把浮动体收窄为所在栏宽的一个比例（通栏浮动体则为页宽的比例），比如宽栏里的一张小表。`align`说明这种较窄的浮动体放在哪里（默认靠左，也可居中或靠右），也说明比空位窄的图片在空位中的位置：比栏窄的位图，或被`layout.fitFiguresToPage`缩小的图像。题注和注释保持空位的行长。（postext 1.4及以前，这类图片总是左对齐排放。）`captionSide`把题注放在图旁，位于一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），与图的顶边平齐（底部浮动体则与底边平齐）；它只作用于栏内浮动体，没有这种侧栏的页面仍把题注放在图下。资源和它的类型都没有设定位置时，内置默认值为`auto` / `column`。`shrink`（`'never'`、`'page'`、`'slot'`）和`minScale`（未设时为0.7）把浮动图片缩小到所在位置的空间，而不是移到后面；`captionMeasure: 'body'`让比所在位置窄的图片的题注和说明与图片同宽（见[文档格式 › 位置](/zh/docs/document-format#位置)）；`layout.floatShrink`给出前两项的文档级默认值。`wrap`把行内嵌入或宽一栏的浮动体放在栏的一侧，正文排在旁边，相隔`wrapGap`；`layout.wrap`存放默认值（见[文档格式 › 文字绕排](/zh/docs/document-format#文字绕排)）。`citingPage`让`top`或`auto`浮动体置于其引用行所在页或栏的顶部，而不是引用行之后的第一个空位；`layout.floatsAtCitingPage`给出文档默认值，`layout.maxTopFraction`给出它可以占用的栏高比例（参见[文档格式 › 位置](/zh/docs/document-format#位置)）。
 
 `columns`（postext 1.18起）让`span: 'column'`浮动体在多栏页面上横跨这么多相邻的栏，例如报纸五栏中横跨两栏的照片。它的宽度是这些栏加上其间的栏间距。它占用一组顶端平齐的空栏的栏首，或者引用它的那一栏及其后空栏的栏脚；栏数等于或大于页面的栏数时，它就是通栏浮动体。`'page'`和`'side'`跨度、旋转的资源（`rotate`）以及行内嵌入（`here`）忽略此项；`captionSide`只对一栏宽的浮动体有效。
 

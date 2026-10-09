@@ -1046,7 +1046,7 @@ export interface LayoutConfig {
   /** The largest share of a column's height, 0 to 1, a float set at the
    *  head of the page or column that cites it (`placement.citingPage`) may
    *  take with the floats already standing there, so the page keeps some
-   *  text above the fold (LaTeX's `\topfraction`). Default 0.7. */
+   *  room for its text (LaTeX's `\topfraction`). Default 0.7. */
   maxTopFraction?: number;
   /** On the closing page of a chapter (and of the document), move the
    *  page-wide figures and tables set below the last band of text up to sit
