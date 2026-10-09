@@ -167,6 +167,10 @@ export function ResourceDetail({
   const placementShrink = currentPlacement.shrink ?? typePlacement.shrink ?? floatShrink?.mode ?? 'never';
   const placementMinScale = currentPlacement.minScale ?? typePlacement.minScale ?? floatShrink?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
   const placementCaptionMeasure = currentPlacement.captionMeasure ?? typePlacement.captionMeasure ?? 'slot';
+  // Heading the page or column that cites it (#633): the resource's own
+  // value → its type's → the document's `layout.floatsAtCitingPage`.
+  const floatsAtCitingPage = useSandboxSelector((s) => s.config.layout?.floatsAtCitingPage);
+  const placementCitingPage = currentPlacement.citingPage ?? typePlacement.citingPage ?? floatsAtCitingPage ?? false;
 
   // Named table style (`config.tableStyles`); unset = the document's table style.
   const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
@@ -468,6 +472,19 @@ export function ResourceDetail({
               step={1}
               isDefault={currentPlacement.columns === undefined}
               onReset={() => setPlacementKey('columns', undefined)}
+            />
+          )}
+          {/* A top or automatic float may head the page (column) where the
+              line citing it lands, the text above the reference moving
+              down under it (#633). Not for turned or side-column floats. */}
+          {!placementInline && !placementRotated && placementPosition !== 'bottom' && placementSpan !== 'side' && (
+            <ToggleSwitch
+              label={labels.resourceTypePlacementCitingPage}
+              tooltip={labels.resourceTypePlacementCitingPageTooltip}
+              checked={placementCitingPage}
+              onChange={(v) => setPlacementKey('citingPage', v)}
+              isDefault={currentPlacement.citingPage === undefined}
+              onReset={() => setPlacementKey('citingPage', undefined)}
             />
           )}
           {/* Width fraction and alignment of a resource narrower than its

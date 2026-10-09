@@ -2744,6 +2744,8 @@ export interface SandboxLabels {
   resourceTypePlacementAlignTooltip: string;
   resourceTypePlacementCaptionSide: string;
   resourceTypePlacementCaptionSideTooltip: string;
+  resourceTypePlacementCitingPage: string;
+  resourceTypePlacementCitingPageTooltip: string;
   resourceTypePlacementShrink: string;
   resourceTypePlacementShrinkTooltip: string;
   resourceShrinkNever: string;
@@ -3045,6 +3047,10 @@ export interface SandboxLabels {
   floatShrinkTooltip: string;
   floatShrinkMinScale: string;
   floatShrinkMinScaleTooltip: string;
+  floatsAtCitingPage: string;
+  floatsAtCitingPageTooltip: string;
+  maxTopFraction: string;
+  maxTopFractionTooltip: string;
   textWrapGap: string;
   textWrapGapTooltip: string;
   textWrapMinTextWidth: string;

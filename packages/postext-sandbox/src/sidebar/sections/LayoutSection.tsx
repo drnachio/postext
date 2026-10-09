@@ -364,6 +364,29 @@ export const LayoutSection = memo(function LayoutSection() {
           />
         </NestedGroup>
       )}
+      {/* Floats heading the page or column that cites them (#633): the
+          default a resource type or a resource may override, and the share
+          of the column such a float may take. */}
+      <ToggleSwitch
+        label={labels.floatsAtCitingPage}
+        checked={layout.floatsAtCitingPage}
+        onChange={(v) => updateLayout({ floatsAtCitingPage: v })}
+        tooltip={labels.floatsAtCitingPageTooltip}
+        isDefault={layout.floatsAtCitingPage === D.floatsAtCitingPage}
+        onReset={() => resetField('floatsAtCitingPage')}
+      />
+      <NumberInput
+        label={labels.maxTopFraction}
+        value={Math.round(layout.maxTopFraction * 100)}
+        onChange={(v) => updateLayout({ maxTopFraction: Math.min(100, Math.max(10, v)) / 100 })}
+        min={10}
+        max={100}
+        step={5}
+        suffix="%"
+        tooltip={labels.maxTopFractionTooltip}
+        isDefault={layout.maxTopFraction === D.maxTopFraction}
+        onReset={() => resetField('maxTopFraction')}
+      />
       {/* Text wrap round pictures and boxes (#627): the defaults a
           resource, a resource type or a box may set aside. */}
       <DimensionInput
