@@ -143,6 +143,7 @@ embeds them with `::resource{id="…"}` (placement `here`).
 // svg — size read from width/height/viewBox if omitted; optional vector print master
 { "id": "cell-diagram", "typeId": "figure", "kind": "svg", "file": "resources/cell-diagram.svg",
   "pdfFile": "resources/cell-diagram.pdf",       // single-page PDF embedded verbatim in the PDF export
+  "inlineFonts": false,                          // optional (≥ 1.25): keep the markup as stored, no fonts embedded
   "caption": "…", "placement": { "position": "auto", "span": "column" } }
 
 // table — a TableModel, no file
@@ -213,13 +214,19 @@ embeds them with `::resource{id="…"}` (placement `here`).
   and `counterFormat` (decimal, roman-upper…).
 - Ids: descriptive slugs from the caption (`fig-cohort-study`), never numbers —
   numbers are computed from the first mention, so chapters can move.
-- Words drawn inside an SVG only render with the page fonts when they are
-  outlines, or `@font-face` subsets embedded in the SVG's `<defs>` (an `<img>`
-  cannot see the page's fonts). The PDF backend draws SVG `<text>` with the
-  document's embedded faces.
+- Words drawn inside an SVG: keep them as `<text>` and name the family in
+  `font-family` (postext ≥ 1.25). An `<img>` cannot see the page's fonts, so
+  the engine embeds the faces the text names as `@font-face` data URIs when
+  the picture is shown (canvas, HTML, EPUB): the bundle's own fonts first,
+  then registered or Google families. The PDF sets SVG `<text>` with the
+  document's embedded faces. No outlining, no hand-made `@font-face`; set
+  `"inlineFonts": false` on an SVG resource that carries its own faces or
+  must stay byte-identical. Checks: `svgFontUnavailable` (a family with no
+  face), `svgFontsTooLarge` (over 2 MB).
 - The PDF backend draws an SVG vector subset (paths, groups, `use`, clipPath,
-  solid paints, opacity, text, data-URI images); filters, masks and gradients
-  fall back to a raster. A `pdfFile` master is embedded as-is (best fidelity
+  solid paints, opacity, text, data-URI images); filters, masks, gradients and
+  style sheets fall back to a raster, except a `<style>` holding only
+  `@font-face` rules (≥ 1.25), which stays vector. A `pdfFile` master is embedded as-is (best fidelity
   for print: keep the original vector artwork). Chrome paints nothing past ~20
   nested SVG filters: flatten such figures.
 

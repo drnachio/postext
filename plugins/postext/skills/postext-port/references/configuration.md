@@ -1201,8 +1201,11 @@ Caption text supports inline markdown; a bold lead sentence is written as `**…
 
 ## 18. `diagramStyle`
 
-`{ singleInk = false, inkColor = main-color }` — recolours every SVG to tints of one ink by
-luminance (spot-colour books). Disables SVG `pdfFileId` print masters when on.
+`{ singleInk = false, inkColor = main-color, inlineFonts = true }` — `singleInk` recolours every
+SVG to tints of one ink by luminance (spot-colour books) and disables SVG `pdfFileId` print
+masters when on. `inlineFonts` (≥ 1.25) embeds in each SVG the faces its `<text>` names before it
+is shown as an image (canvas, HTML, EPUB, PDF raster fallback), so labels set in the book's fonts;
+a resource opts out with `svg.inlineFonts: false` (`"inlineFonts": false` in preset.json).
 
 ## 18a. `videoStyle` — VideoStyleConfig (postext ≥ 1.16)
 
@@ -1628,7 +1631,7 @@ fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
-  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, resolution?, fileResolution?, note? ],
+  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, inlineFonts?, width?, height?, resolution?, fileResolution?, note? ],
   fonts: [ { name, variants: [{ weight, style, file: "fonts/X.woff2" }], redistributable? } ],
   localized?: { "<locale>": { config?: Partial<PostextConfig> (top-level keys REPLACED wholesale),
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],

@@ -281,7 +281,8 @@ def bitmap(project: Path | str, id_: str, file: str, caption: str = "", *, type_
 def svg(project: Path | str, id_: str, file: str, caption: str = "", *, type_id: str = "figure",
         pdf_file: str | None = None, alt: str | None = None, note: str | None = None,
         position: str | None = None, span: str | None = None, safe_area: dict | None = None,
-        anchors: list | None = None, avoid: list | None = None, **placement) -> dict:
+        anchors: list | None = None, avoid: list | None = None, inline_fonts: bool = True,
+        **placement) -> dict:
     size = svg_size(Path(project) / file)
     r = {"id": id_, "typeId": type_id, "kind": "svg", "file": file, "caption": caption,
          "altText": alt if alt is not None else re.sub(r"[*_^~]", "", caption)}
@@ -290,6 +291,9 @@ def svg(project: Path | str, id_: str, file: str, caption: str = "", *, type_id:
     _picture_marks(r, safe_area, anchors, avoid)
     if pdf_file:
         r["pdfFile"] = pdf_file
+    if not inline_fonts:
+        # Keep the markup as stored: no @font-face added when shown (postext >= 1.25).
+        r["inlineFonts"] = False
     if note:
         r["note"] = note
     pl = _placement(position, span, **placement)

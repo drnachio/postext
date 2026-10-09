@@ -654,10 +654,13 @@ For picture clusters with soft masks or blends, render the region at 300 dpi.
 Keep crop regions in a JSON so they can be tuned.
 
 ### D6. Live-text figures (translated editions)
-Keep labels as SVG `<text>` and embed `@font-face` WOFF2 subsets of the
-faces they use in the SVG's own `<defs>`, since an `<img>` cannot see page
-fonts. Key translations by source text, not by run index (indices move when
-a crop is tuned).
+Keep labels as SVG `<text>` and name the family in `font-family`: since
+postext 1.25 the engine embeds the faces they use when the picture is shown
+(the bundle's fonts, then Google families), and the PDF sets them as real
+text, so neither outlines nor hand-made `@font-face` subsets are needed.
+Ship the faces the labels use in the bundle's `fonts` when they are not
+Google families. Key translations by source text, not by run index (indices
+move when a crop is tuned).
 
 - Words baked into rasters or outlined: erase them (interpolating the
   background) and set new `<text>`.

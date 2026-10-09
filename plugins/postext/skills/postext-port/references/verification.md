@@ -311,7 +311,7 @@ the page images instead of claiming the port is visually verified.
 | Over-stretched justified lines (URLs, long compounds) | the engine sets those lines ragged; break URLs with `/`; add soft hyphens (U+00AD) |
 | Word overflowing a table cell | the engine divides it; widen `columnWidths` |
 | Numbered list drifting off the grid | restate list margins in pt/grid units for both list types |
-| Text in a figure in the wrong font | outline the text, or embed `@font-face` subsets in the SVG |
+| Text in a figure in the wrong font | the bundle (or Google) must hold the family its `font-family` names, spelt the same; Checks shows `svgFontUnavailable` (≥ 1.25 embeds the faces itself) |
 | Blank figure in the browser | too many nested SVG filters: flatten |
 | Page count differs by one per chapter | a copy-fitted source (`compact` style), or accept it and note it |
 | Chinese lines a character longer or shorter than the source's | `cjk.grid` `charsPerLine`; the region's `punctuationWidth` (Kaiming vs full width) and `compressAdjacent` |
