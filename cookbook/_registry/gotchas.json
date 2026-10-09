@@ -2402,22 +2402,22 @@
   },
   "circled-numbers-western": {
     "title": {
-      "en": "Circled numbers ① ② are set as Latin text",
-      "es": "Los números en círculo ① ② se componen como texto latino",
-      "ca": "Els números en cercle ① ② es componen com a text llatí",
-      "zh": "带圈数字①②按拉丁文排",
-      "ar": "الأرقام المحاطة بدائرة ① ② تُوضع نصًا لاتينيًا",
-      "ja": "丸数字① ②はラテン文字として組まれる",
-      "pt": "Números em círculo ① ② são compostos como texto latino"
+      "en": "Circled numbers ① ② are Chinese characters in Chinese text",
+      "es": "Los números en círculo ① ② son caracteres chinos en el texto chino",
+      "ca": "Els números en cercle ① ② són caràcters xinesos en el text xinès",
+      "zh": "带圈数字①②在中文里按汉字排",
+      "ar": "الأرقام المحاطة بدائرة ① ② حروف صينية في النص الصيني",
+      "ja": "丸数字① ②は中国語のテキストでは漢字として組まれる",
+      "pt": "Números em círculo ① ② são caracteres chineses no texto chinês"
     },
     "body": {
-      "en": "In a Chinese paragraph the composer sets ① to ⑳ as Latin letters: a line may end on a number whose sense opens the next line, and cjk.latinSpacing puts its quarter em between the number and the character after it. Type a word joiner (U+2060) after each number: the number stays on the line of its sense and the space goes.",
-      "es": "En un párrafo chino, el compositor trata ① a ⑳ como letras latinas: una línea puede acabar en un número cuya acepción empieza en la línea siguiente, y cjk.latinSpacing pone su cuarto de cuadratín entre el número y el carácter siguiente. Escribe una unión de palabras (U+2060) después de cada número: el número se queda en la línea de su acepción y el espacio desaparece.",
-      "ca": "En un paràgraf xinès, el compositor tracta de ① a ⑳ com a lletres llatines: una línia pot acabar en un número l'accepció del qual comença a la línia següent, i cjk.latinSpacing posa el seu quart de quadratí entre el número i el caràcter següent. Escriu una unió de paraules (U+2060) després de cada número: el número es queda a la línia de la seva accepció i l'espai desapareix.",
-      "zh": "在中文段落中，排版器把①到⑳当作拉丁字母处理：一行可能以一个编号结尾，而它所属的内容却从下一行开始，cjk.latinSpacing还会在编号和其后的汉字之间加四分之一em的间距。在每个编号后输入一个词连接符（U+2060），编号就会和它的内容留在同一行，间距也随之消失。",
-      "ar": "في الفقرة الصينية يضع المنضِّد ① إلى ⑳ حروفًا لاتينية: قد ينتهي سطر برقم يفتتح معناه السطر التالي، ويضع cjk.latinSpacing ربع em بين الرقم والحرف الذي يليه. اكتب رابط الكلمات (U+2060) بعد كل رقم: فيبقى الرقم على سطر معناه وتزول المسافة.",
-      "ja": "中国語の段落では、組版処理は①から⑳をラテン文字として組みます。意味の上で次の行に続く番号で行が終わることがあり、cjk.latinSpacingは番号とその次の文字の間に四分アキを入れます。各番号の後ろにワードジョイナー（U+2060）を入力してください。番号は意味の続く行にとどまり、空きも消えます。",
-      "pt": "Em um parágrafo chinês, o compositor trata ① a ⑳ como letras latinas: uma linha pode terminar em um número cuja acepção começa na linha seguinte, e cjk.latinSpacing coloca o seu quarto de eme entre o número e o caractere seguinte. Digite uma junção de palavras (U+2060) depois de cada número: o número fica na linha da sua acepção e o espaço desaparece."
+      "en": "Type a sense or item number as it is, before its text (`**①**天也`): the composer sets ① to ⑳, ⑴, ⒈, ⓐ and ❶ as Chinese characters, in one cell with no Han–Latin space beside them, and keeps them off a line end at every line-breaking level but none and ja-loose (cjk.circledNumbers, default 'cjk'). No word joiner (U+2060) after the number. cjk.circledNumbers: 'western' sets them as Latin letters, as up to postext 1.24, with a quarter em on both sides.",
+      "es": "Escribe el número de acepción o de elemento tal cual, delante de su texto (`**①**天也`): el compositor trata ① a ⑳, ⑴, ⒈, ⓐ y ❶ como caracteres chinos, en una celda sin espacio entre chino y latín a su lado, y no los deja al final de una línea en ningún nivel de corte salvo none y ja-loose (cjk.circledNumbers, por defecto 'cjk'). Sin unión de palabras (U+2060) después del número. cjk.circledNumbers: 'western' los compone como letras latinas, como hasta postext 1.24, con un cuarto de cuadratín a cada lado.",
+      "ca": "Escriu el número d'accepció o d'element tal com és, davant del seu text (`**①**天也`): el compositor tracta de ① a ⑳, ⑴, ⒈, ⓐ i ❶ com a caràcters xinesos, en una cel·la sense espai entre xinès i llatí al costat, i no els deixa al final d'una línia en cap nivell de tall llevat de none i ja-loose (cjk.circledNumbers, per defecte 'cjk'). Sense unió de paraules (U+2060) després del número. cjk.circledNumbers: 'western' els compon com a lletres llatines, com fins a postext 1.24, amb un quart de quadratí a cada costat.",
+      "zh": "义项或条目编号照原样写在其内容之前（`**①**天也`）：排版器把①到⑳、⑴、⒈、ⓐ和❶按汉字排，各占一格，旁边不加中西文间距，并且除none和ja-loose外的所有断行级别都不让它们位于行尾（cjk.circledNumbers，默认'cjk'）。编号后面不必再加词连接符（U+2060）。cjk.circledNumbers: 'western'把它们按拉丁字母排，与postext 1.24及之前相同，两侧各加四分之一em。",
+      "ar": "اكتب رقم المعنى أو البند كما هو، قبل نصه (`**①**天也`): يصفّ المنضِّد ① إلى ⑳ و⑴ و⒈ وⓐ و❶ حروفًا صينية، في خانة واحدة بلا مسافة بين الصيني واللاتيني بجانبها، ولا يتركها في نهاية السطر في أي مستوى للكسر عدا none وja-loose (cjk.circledNumbers، والافتراضي 'cjk'). لا حاجة إلى رابط الكلمات (U+2060) بعد الرقم. ويصفّها cjk.circledNumbers: 'western' حروفًا لاتينية، كما حتى postext 1.24، بربع em على كل جانب.",
+      "ja": "語義や項目の番号は、そのまま本文の前に書きます（`**①**天也`）。組版処理は①〜⑳、⑴、⒈、ⓐ、❶を漢字として扱い、1字分の枠に収めて和欧間のアキを入れず、none と ja-loose 以外のすべての改行レベルで行末に置きません（cjk.circledNumbers、既定は'cjk'）。番号の後ろにワードジョイナー（U+2060）は要りません。cjk.circledNumbers: 'western' にすると、postext 1.24までと同じくラテン文字として組み、前後に四分アキを入れます。",
+      "pt": "Digite o número de acepção ou de item como está, antes do texto (`**①**天也`): o compositor trata ① a ⑳, ⑴, ⒈, ⓐ e ❶ como caracteres chineses, numa célula sem espaço entre han e latim ao lado, e não os deixa no fim de uma linha em nenhum nível de quebra exceto none e ja-loose (cjk.circledNumbers, padrão 'cjk'). Nada de junção de palavras (U+2060) depois do número. cjk.circledNumbers: 'western' os compõe como letras latinas, como até o postext 1.24, com um quarto de eme de cada lado."
     },
     "feature": "han-latin-spacing"
   },
