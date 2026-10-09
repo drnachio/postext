@@ -117,7 +117,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>عدد البكسلات في البوصة الذي يعمل به الإخراج: به تُحوَّل الوحدات المادية (cm وmm وin وpt) إلى بكسلاته. ليس دقة الصور، لكن الصورة النقطية المرسومة بحجمها الأصلي تأخذ بكسلًا واحدًا من الإخراج لكل بكسل فيها، فتُطبع بهذا العدد من البكسلات في البوصة (ppi): أبقِه 300 للطباعة. ويفحص [الفحص قبل الطباعة](#الفحص-قبل-الطباعة) الدقة الفعلية لكل صورة.</td>
+      <td>عدد البكسلات في البوصة الذي يعمل به الإخراج: به تُحوَّل الوحدات المادية (cm وmm وin وpt) إلى بكسلاته. والصورة النقطية التي ليست لها دقة خاصة بها تأخذ بكسلًا واحدًا من الإخراج لكل بكسل فيها، فتُطبع بهذا العدد من البكسلات في البوصة (ppi): أبقِه 300 للطباعة، أو أعطِ الصور دقة (<code>Resource.bitmap.resolution</code>، <code>layout.bitmapResolution</code>؛ انظر [صيغة المستند › مقاس الصورة النقطية](/ar/docs/document-format#مقاس-الصورة-النقطية)). ويفحص [الفحص قبل الطباعة](#الفحص-قبل-الطباعة) الدقة الفعلية لكل صورة.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -458,6 +458,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>يصغّر الشكل (صورة نقطية أو SVG) الذي تكون صورته وتعليقه وملاحظته معًا أطول من مساحة المحتوى حتى يتسع لها (والصورة ذات المنطقة الآمنة، <code>Resource.safeArea</code>، تُقصّ أولًا داخلها بكامل عرضها، ولا تُصغَّر إلا إذا بقيت لا تتسع)، ويصغّر الشكل المدرج في سياق النص الذي يزيد قليلًا على المساحة الباقية في عموده (حتى نصف عرضه، مع احتفاظ التعليق بعرض العمود) فيبقى مع نصه. وتقع الصورة المصغّرة في خانتها وفق <code>placement.align</code>. يفعّله عارض HTML، لأن صفحاته لا تزيد طولًا على الشاشة؛ أما الصفحات المطبوعة فمقاسها يناسب أشكالها.</td>
+    </tr>
+    <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>كيف تأخذ الصورة النقطية التي ليس لها <code>bitmap.resolution</code> خاص بها مقاسَ طباعتها الطبيعي. <code>'document'</code> تقرأ بكسلاتها بقيمة <code>page.dpi</code>؛ والرقم هو دقة كل صورة من هذا النوع بالـppi (<code>300</code>: الصورة ذات 2400 px عرضها 203.2 mm أيًّا كانت دقة الصفحة)؛ و<code>'file'</code> تستخدم الدقة التي يذكرها ملفها (<code>bitmap.fileResolution</code>)، وتُعدّ فيها 72 و96 غير محددتين، وإلا فـ<code>page.dpi</code>. يظل العمود يحدّ الصورة، ولا تُكبَّر الصورة الأصغر أبدًا. انظر <a href="/ar/docs/document-format#مقاس-الصورة-النقطية">صيغة المستند › مقاس الصورة النقطية</a>. منذ postext 1.24.</td>
     </tr>
     <tr>
       <td><code>floatShrink</code></td>
@@ -8188,7 +8194,7 @@ interface PrintPreflightConfig {
   </thead>
   <tbody>
     <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يشغّل الفحوص.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية المرسومة بحجمها الأصلي تُطبع بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية التي ليست لها دقة خاصة بها تُطبع بمقاسها الطبيعي بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi؛ أما التي لها دقة (`bitmap.resolution`، `layout.bitmapResolution`) فتُطبع بمقاسها الطبيعي بتلك الدقة.</td></tr>
     <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>دونها يصبح التحذير حرجًا. ولا تتجاوز `minImageResolution` أبدًا.</td></tr>
     <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>الخطوط الفاصلة، والحدود، وفواصل الأعمدة، وخطوط الجداول، وحدود إطارات القصص المصورة الأرفع من هذا.</td></tr>
     <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>النص الأصغر من هذا الحجم المكتوب بأكثر من حبر (لون رباعي، أسود غني): يصبح ضبابيًا إذا انزاحت الألواح. ولا يُحسب النص الأسود بالأسود K وحده أبدًا.</td></tr>
@@ -8198,10 +8204,10 @@ interface PrintPreflightConfig {
   </tbody>
 </table>
 
-تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة.
+تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`declaredPixelsMismatch` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة. وتُحسب دقة الصورة من البكسلات التي يصرّح بها موردها، أو من بكسلات الملف نفسه حين يقدّمها `imageSize(fileId)` (`bitmapInfo` على البايتات، أو الصورة بعد فك ترميزها): والتصريح الذي يبتعد عن الملف بأكثر من بكسل واحد يُبلَّغ عنه مرة واحدة بالنوع `declaredPixelsMismatch`، وهو تحذير حين يدّعي بكسلات أكثر مما في الملف. وتسرد `placedImageResolutions(doc, { resources, imageSize })` كل صورة نقطية موضوعة مع دقتها الفعلية بالـppi، سواء كان الفحص قبل الطباعة مفعّلًا أم لا.
 
 ```ts
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { inspectPrintMaster } from 'postext-pdf';
 
 const print = resolvePrintConfig(config.print);
@@ -8210,6 +8216,7 @@ const issues = preflightDocument(doc, {
   print,
   transform,
   resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
   imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
 });
 if (issues.some((i) => i.severity === 'critical')) process.exit(1);
@@ -9938,7 +9945,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`** — يضيف منطقة النزف وعلامات القص حول حدّ القص، ويعطي كل صفحة TrimBox وBleedBox. انظر [خطوط القص](#خطوط-القص).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (أو `'pdfx1a'`) — ملف PDF/X فيه نية الإخراج والتعريف والمربعات التي تتحقق منها المطبعة؛ ويُفصَل كل لون وكل صورة RGB عبر ملف تعريف ICC، ويُطبع الأسود 100% K فوق الألوان، وتُطبع المساحات السوداء الكبيرة بالأسود الغني. انظر [الإنتاج الطباعي (الإعدادات)](#الإنتاج-الطباعي-الإعدادات).
 - **`colorSpace: 'cmyk'`** (أو `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — الفصل نفسه من غير تعريف PDF/X (وعلامات القص بلون التسجيل دائمًا). وتُضمَّن نسخ PDF الأصلية للطباعة كما هي.
-- **`page.dpi: 300`** — عدد بكسلات الإخراج في البوصة: الصورة النقطية المرسومة بحجمها الأصلي تُطبع بهذه الدقة. ويبلّغ [الفحص قبل الطباعة](#الفحص-قبل-الطباعة) عن الصور التي تقل دقتها عن 300 ppi بحجمها المطبوع.
+- **`page.dpi: 300`** — عدد بكسلات الإخراج في البوصة: الصورة النقطية التي ليست لها دقة خاصة بها تُطبع بهذه الدقة بمقاسها الطبيعي. ويبلّغ [الفحص قبل الطباعة](#الفحص-قبل-الطباعة) عن الصور التي تقل دقتها عن 300 ppi بحجمها المطبوع.
 - **`ColorValue.cmyk`** — يُطبع اللون المعرّف بقيم CMYK بقيمه الدقيقة.
 - **`{ pageNegative: true }`** في `RenderToPdfOptions` — يعكس منطقة حدّ القص باستخدام نمط الدمج Difference (وتبقى علامات القص غير معكوسة). مفيد لفحوص ما قبل الطباعة (preflight) على الطباعة الداكنة فوق الفاتح.
 
@@ -10353,9 +10360,9 @@ const es = await openBundle(bytes, { locale: 'es' });   // Spanish chapters, con
 يصدّر `postext/bundle` أيضًا اللبنات التي يقوم عليها `openBundle` و`createBundle`، للمضيفين الذين يخزّنون الحزم أو يقدّمونها بطريقتهم (مجلد غير مضغوط عبر HTTP، أو سجلات في قاعدة بيانات):
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**: طبقة الأرشيف. يتسامح الفتح مع مجلد في المستوى الأعلى، ويتجاهل مُدخلات `__MACOSX` والملفات التي يبدأ اسمها بنقطة (dotfiles). وتُرفض المسارات التي تخرج من الحزمة. ويؤرّخ `mtime` الملفات كما يفعل مُدخل `createBundle`.
-- **`readBundle(manifest, readFile, options)`** يقرأ بيانًا مع دالة الاستدعاء `readFile(path)` ويحوّلهما إلى فصول وإعدادات وموارد وصور وخطوط. يضبط `options` اللغة، وطريقة تسمية معرّفات الملفات (`ids`)، والإعدادات الأساسية (`baseConfig`، تحت إعدادات البيان؛ وهي افتراضيًا لوحة الألوان وأنواع الموارد في `bundleBaseConfig` بلغة الحزمة، التي يعيدها `resolveBundleConfigLocale(manifest, locale)`، وعلى المضيف الذي يمرّر `baseConfig` خاصًا به أن يكيّفه مع تلك اللغة؛ وتحت بيان أقدم من `configVersion: 4` يُثبَّت `math` الخاص بها مع ما في الحزمة، وتحت بيان أقدم من 5 الفراغ تحت المورد المضمَّن في `layout` الخاص بها، وتحت بيان أقدم من 6 الفراغ في الأطر في `layout`، والمساحة تحت سطر النقطتين في `bodyText`، والعلامات المضمَّنة في `headings`، وأحجام الحروف الاستهلالية، وتحت بيان أقدم من 7 فواصل الشرطات وتقسيم الأسطر غير المضبوطة في `bodyText`، وتحت بيان أقدم من 8 التقسيم تحت العنوان في `headings`، وفواصل الكلمات المركبة والفراغ تحت حاويات `:::paragraphs` في `bodyText`، انظر [الحزم التي كتبها postext 1.4 أو ما قبله](#الحزم-التي-كتبها-postext-14-أو-ما-قبله))، وطريقة قياس المقاسات الأصلية.
+- **`readBundle(manifest, readFile, options)`** يقرأ بيانًا مع دالة الاستدعاء `readFile(path)` ويحوّلهما إلى فصول وإعدادات وموارد وصور وخطوط. يضبط `options` اللغة، وطريقة تسمية معرّفات الملفات (`ids`)، والإعدادات الأساسية (`baseConfig`، تحت إعدادات البيان؛ وهي افتراضيًا لوحة الألوان وأنواع الموارد في `bundleBaseConfig` بلغة الحزمة، التي يعيدها `resolveBundleConfigLocale(manifest, locale)`، وعلى المضيف الذي يمرّر `baseConfig` خاصًا به أن يكيّفه مع تلك اللغة؛ وتحت بيان أقدم من `configVersion: 4` يُثبَّت `math` الخاص بها مع ما في الحزمة، وتحت بيان أقدم من 5 الفراغ تحت المورد المضمَّن في `layout` الخاص بها، وتحت بيان أقدم من 6 الفراغ في الأطر في `layout`، والمساحة تحت سطر النقطتين في `bodyText`، والعلامات المضمَّنة في `headings`، وأحجام الحروف الاستهلالية، وتحت بيان أقدم من 7 فواصل الشرطات وتقسيم الأسطر غير المضبوطة في `bodyText`، وتحت بيان أقدم من 8 التقسيم تحت العنوان في `headings`، وفواصل الكلمات المركبة والفراغ تحت حاويات `:::paragraphs` في `bodyText`، انظر [الحزم التي كتبها postext 1.4 أو ما قبله](#الحزم-التي-كتبها-postext-14-أو-ما-قبله))، وطريقة قياس المقاسات الأصلية. ويقرأ `readResolution` دقة كل صورة نقطية من ملفها إلى `bitmap.fileResolution`؛ وقيمته الافتراضية true حين تضبط الحزمة `layout.bitmapResolution: 'file'`.
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: جانب الكتابة، مقسومًا إلى خطة خالصة (أسماء الملفات والبيان) وجلب البايتات عبر دالتَي الاستدعاء `readBlob` / `readFont`.
-- **`isBundleManifest(value)`**، ومنتقيات اللغة (`pickChapterSpecs`، `pickLocaleOverrides`، `pickBundleView`، `resolveBundleLocale`، `resolveBundleConfigLocale`)، و`svgSize` / `bitmapSize`، وأنواع الصيغة (`BundleManifest`، `BundleResourceSpec`، `BundleFontFamilySpec`، …).
+- **`isBundleManifest(value)`**، ومنتقيات اللغة (`pickChapterSpecs`، `pickLocaleOverrides`، `pickBundleView`، `resolveBundleLocale`، `resolveBundleConfigLocale`)، و`svgSize` / `bitmapSize` / `bitmapInfo` (بكسلات الصورة النقطية والدقة التي يذكرها ملفها)، وأنواع الصيغة (`BundleManifest`، `BundleResourceSpec`، `BundleFontFamilySpec`، …).
 - **`CONFIG_VERSION`، `migrateConfig(config, configVersion, { content })`، `pinLegacyHeadingBreaks(config)`، `pinLegacyMathSize(config)`، `pinLegacyInlineGap(config)`، `pinLegacyBoxResourceGap(config)`، `pinLegacyHeadingMarks(config)`، `pinLegacyDropCapSize(config)`، `pinLegacyColonListRoom(config)`، `pinLegacyBoxChildCut(config)`، `pinLegacyDashBreaks(config)`، `pinLegacyRaggedBreaking(config)`، `pinLegacyHeadingSplit(config)`، `pinLegacyParagraphContainerSpacing(config)`، `pinLegacyHyphenBreaks(config)` و`LEGACY_MATH_SIZE`** (0.5 ÷ 0.442): تحوّل إعدادات مخزنة إلى مصطلحات اليوم (انظر [الحزم التي كتبها postext 1.4 أو ما قبله](#الحزم-التي-كتبها-postext-14-أو-ما-قبله)). يطبّقها `readBundle`؛ ويستطيع ذلك أيضًا المضيف الذي يخزّن الإعدادات بطريقته، مرة واحدة لكل نسخة مخزنة.
 
 يقوم Sandbox على هذه الأدوات، ويضيف إليها معرّفات التخزين الخاصة به وسجلات الصفحات في `layouts.json`.
