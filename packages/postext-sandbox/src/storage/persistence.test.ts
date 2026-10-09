@@ -189,6 +189,7 @@ describe('working configuration', () => {
       bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false },
       codeStyle: { blocks: false },
       tableStyle: { splitInline: false },
+      cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false },
     });
     // One stamped 5 gets the version-6, version-7 and version-8 pins only
     // (EF-110, EF-115, EF-117, EF-122; EF-141; EF-186).
@@ -198,33 +199,34 @@ describe('working configuration', () => {
       bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false },
       codeStyle: { blocks: false },
       tableStyle: { splitInline: false },
+      cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false },
     });
     // One stamped 6 gets the version-7 and version-8 pins only: the dash
     // breaks, the ragged breaking when it sets text ragged (EF-141,
     // EF-147), the split under a heading (EF-185) and the compound breaks
     // (EF-186).
-    expect(configFromExport({ ...legacy, configVersion: 6 })).toEqual({ headings: { fontFamily: 'Georgia', keepWithNextSplit: 'fill' }, bodyText: { breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false } });
+    expect(configFromExport({ ...legacy, configVersion: 6 })).toEqual({ headings: { fontFamily: 'Georgia', keepWithNextSplit: 'fill' }, bodyText: { breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     const ragged = { ...legacy, config: { bodyText: { textAlign: 'left' as const } } };
-    expect(configFromExport({ ...ragged, configVersion: 6 })).toEqual({ bodyText: { textAlign: 'left', breakAfterDashes: false, optimalRagged: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, headings: { keepWithNextSplit: 'fill' }, codeStyle: { blocks: false } });
+    expect(configFromExport({ ...ragged, configVersion: 6 })).toEqual({ bodyText: { textAlign: 'left', breakAfterDashes: false, optimalRagged: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, headings: { keepWithNextSplit: 'fill' }, codeStyle: { blocks: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     // One stamped 7 gets the version-8 pins only: the split under a
     // heading, the compound breaks, and the space under containers when it
     // declares a paragraph style (EF-159, EF-181).
-    expect(configFromExport({ ...legacy, configVersion: 7 })).toEqual({ headings: { fontFamily: 'Georgia', keepWithNextSplit: 'fill' }, bodyText: { breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false } });
+    expect(configFromExport({ ...legacy, configVersion: 7 })).toEqual({ headings: { fontFamily: 'Georgia', keepWithNextSplit: 'fill' }, bodyText: { breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     const styled = { ...legacy, config: { paragraphStyles: [{ id: 'verse' }] } };
-    expect(configFromExport({ ...styled, configVersion: 7 })).toEqual({ paragraphStyles: [{ id: 'verse' }], headings: { keepWithNextSplit: 'fill' }, bodyText: { breakAfterHyphens: false, paragraphContainerSpacing: 'add', verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false } });
+    expect(configFromExport({ ...styled, configVersion: 7 })).toEqual({ paragraphStyles: [{ id: 'verse' }], headings: { keepWithNextSplit: 'fill' }, bodyText: { breakAfterHyphens: false, paragraphContainerSpacing: 'add', verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     // One stamped 8 (postext 1.5 to 1.22) gets the version-9 and version-10
     // pins only: the verse layout, a first-line indent dropped from a style
     // that hangs, the printed backslashes (#620), fences read as Markdown
     // (#624) and the 1.23 verse turnovers.
     const hanging = { ...legacy, config: { paragraphStyles: [{ id: 'bib', firstLineIndent: { value: 1, unit: 'em' as const }, hangingIndent: { value: 2, unit: 'em' as const } }] } };
-    expect(configFromExport({ ...legacy, configVersion: 8 })).toEqual({ headings: { fontFamily: 'Georgia' }, bodyText: { verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false } });
-    expect(configFromExport({ ...hanging, configVersion: 8 })).toEqual({ paragraphStyles: [{ id: 'bib', hangingIndent: { value: 2, unit: 'em' } }], bodyText: { verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false } });
+    expect(configFromExport({ ...legacy, configVersion: 8 })).toEqual({ headings: { fontFamily: 'Georgia' }, bodyText: { verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
+    expect(configFromExport({ ...hanging, configVersion: 8 })).toEqual({ paragraphStyles: [{ id: 'bib', hangingIndent: { value: 2, unit: 'em' } }], bodyText: { verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     // One stamped 9 (postext 1.23) gets the version-10 pin only: its lines
     // of verse turn over at their natural spacing (#620).
-    expect(configFromExport({ ...legacy, configVersion: 9 })).toEqual({ headings: { fontFamily: 'Georgia' }, bodyText: { verse: { tighten: false } }, tableStyle: { splitInline: false } });
+    expect(configFromExport({ ...legacy, configVersion: 9 })).toEqual({ headings: { fontFamily: 'Georgia' }, bodyText: { verse: { tighten: false } }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     // One stamped 10 (postext 1.24) gets the version-11 pins: its inline
     // tables move whole (#634).
-    expect(configFromExport({ ...legacy, configVersion: 10 })).toMatchObject({ headings: { fontFamily: 'Georgia' }, tableStyle: { splitInline: false } });
+    expect(configFromExport({ ...legacy, configVersion: 10 })).toMatchObject({ headings: { fontFamily: 'Georgia' }, tableStyle: { splitInline: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
     // Exports carry the version since 1.5, and read back as they are.
     expect(configFromExport({ ...legacy, configVersion: 11 })).toEqual({ headings: { fontFamily: 'Georgia' } });
     expect(configFromExport({ ...styled, configVersion: 11 })).toEqual({ paragraphStyles: [{ id: 'verse' }] });
