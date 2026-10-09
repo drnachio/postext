@@ -4768,7 +4768,7 @@ const config: PostextConfig = {
 - 线的颜色取`borderColor`（关联调色板的颜色随调色板和`:::part palette`变化），`borders: false`关闭所有线。`borderWidth`不起作用，`borderRadius`也不起作用：线保持直线，单元格填充色仍按圆角外框裁切。表头填充、斑马纹和单元格自己的`background`与其他线型一样有效，画在线的下面。
 - 跨页拆分的表格每部分都重复表头行，所以每部分都以粗线和表头线开头。末行下的粗线只收尾最后一部分；延续到下一页的部分以`continuedFootRule`收尾：细线（`'light'`，默认）、粗线（`'bottom'`）或不画（`'none'`）。
 
-排版只计算一次这些线。VDT 中的表格以`strokes`（`{ x1, y1, x2, y2, widthPx }`，相对于表体左上角）携带它们，画布、HTML 查看器、PDF 和固定版式 EPUB 照此绘制；在带标签的 PDF 中它们是版面工件。流式 EPUB 把它们写成表格和表头的 CSS 边框，两端缩短的线用背景线绘制。在 Sandbox 中，于*线条*下拉框选择**三线表（booktabs）**会显示这些字段，并隐藏*边框宽度*和*圆角半径*。
+排版只计算一次这些线。VDT 中的表格以`strokes`（`{ x1, y1, x2, y2, widthPx }`，相对于表体左上角）携带它们，画布、HTML 查看器、PDF 和固定版式 EPUB 照此绘制；在带标签的 PDF 中它们是版面工件。流式 EPUB 把它们写成表格和表头的 CSS 边框，两端缩短的线用背景线绘制。在 Sandbox 中，于*线条*下拉框选择**三线表**（booktabs）会显示这些字段，并隐藏*边框宽度*和*圆角半径*。
 
 ### 命名表格样式
 
