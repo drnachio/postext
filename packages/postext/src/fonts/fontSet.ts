@@ -122,8 +122,9 @@ interface Watch {
 const watches = new WeakMap<FontFaceSetLike, Watch>();
 
 function nextFrame(run: () => void): void {
-  const g = globalThis as { requestAnimationFrame?: (cb: () => void) => unknown };
-  if (typeof g.requestAnimationFrame === 'function') g.requestAnimationFrame(run);
+  const g = globalThis as { requestAnimationFrame?: (cb: () => void) => unknown; document?: { hidden?: boolean } };
+  // A hidden page runs no animation frames: a timer stands in.
+  if (typeof g.requestAnimationFrame === 'function' && !g.document?.hidden) g.requestAnimationFrame(run);
   else setTimeout(run, 16);
 }
 
