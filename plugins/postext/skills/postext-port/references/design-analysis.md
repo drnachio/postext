@@ -249,8 +249,9 @@ paint order: text, rule, box and image elements (configuration.md §7).
   `{attr.<key>}`. For the book title in running heads, a literal string is
   safer than `{title}`.
 - Text element tops from a measured baseline: top ≈ baseline − 0.8 × size ×
-  line-height. Cap long titles with `size.maxWidth` and
-  `overflow: "ellipsis-end"`. Right/bottom anchors need negative offsets.
+  line-height. Cap long running-head titles with `size.maxWidth` (a running
+  head ends in `…` by default; opener and part titles wrap, ≥ 1.24, so leave
+  their `overflow` out). Right/bottom anchors need negative offsets.
 - **Chapter opener**: H1 `span: "page"`, `breakBefore` (parity from the book:
   odd = recto), and `advancedDesign.enabled` with elements for:
   - bleed band;

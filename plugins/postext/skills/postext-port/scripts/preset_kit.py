@@ -124,16 +124,19 @@ def place(anchor: str = "page", edge: str = "top-left", x: float = 0, y: float =
 
 def text_el(id_: str, content: str, placement: dict, *, font: str, size: float, weight: int = 400,
             italic: bool = False, fill: dict | None = None, align: str = "left", valign: str = "top",
-            overflow: str = "ellipsis-end", line_height: float | None = None, uppercase: bool = False,
+            overflow: str | None = None, line_height: float | None = None, uppercase: bool = False,
             letter_spacing: float | None = None, parity: str | None = None, pages: str | None = None,
             **extra) -> dict:
     """Design text element. `content` is a template: {pageNumber}, {chapterTitle},
     {chapterNumber}, {partTitle}, {partNumber}, {title}, {titleText}, {number},
     {attr.<key>}… Set every typographic field: element defaults are not the
-    body's."""
+    body's. `overflow` left out follows the slot (postext ≥ 1.24): a heading
+    or part design wraps, a running head, folio or contents row ends in `…`."""
     el = {"kind": "text", "id": id_, "placement": placement, "content": content,
           "fontFamily": font, "fontSize": pt(size), "fontWeight": weight, "italic": italic,
-          "color": fill or color("#000000"), "align": align, "verticalAlign": valign, "overflow": overflow}
+          "color": fill or color("#000000"), "align": align, "verticalAlign": valign}
+    if overflow:
+        el["overflow"] = overflow
     if line_height:
         el["lineHeight"] = line_height
     if uppercase:

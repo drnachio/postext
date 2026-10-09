@@ -168,6 +168,10 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
   Add `yomi="…"` to its marks.
 - `WARN rotateIgnoredVertical`: a figure with `placement.rotate` is cited in vertical text, where figures
   already stand upright. Remove the rotation.
+- `WARN designTextTruncated` (≥ 1.24): a design text lost part of a line to fit its width (an ellipsis, or
+  ink clipped past its box), named by slot and element id. Compare with the source: a title the source
+  breaks onto lines wants `overflow: 'wrap'` (the default in heading and part designs) or a wider box; a
+  running head the source cuts may keep it.
 - `CONFIG cjkGridClamped`: `cjk.grid` asked for more characters or lines than the margins leave room for.
 - `PDF-WARN missingGlyph` (with `--out`): characters no file of a face has a glyph for; they print as
   empty boxes. `variableFontDefaultInstance`: a variable font printed at its default weight.

@@ -688,7 +688,8 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
 **text** (`DesignTextElement`, )
 ```
 { kind:'text', id, placement, content: string (template; '{{' '}}' = literal braces),
-  fontSize: Dimension(abs)  REQUIRED,  overflow: 'wrap'|'ellipsis-start'|'ellipsis-end'|'ellipsis-middle'|'clip'  REQUIRED in type
+  fontSize: Dimension(abs)  REQUIRED,  overflow?: 'wrap'|'ellipsis-start'|'ellipsis-end'|'ellipsis-middle'|'clip'
+    (≥ 1.24 unset = the slot's: 'wrap' in heading and part designs, 'ellipsis-end' in header/footer/toc rows)
   fontFamily='EB Garamond', fontWeight=400, italic=false, color=#000000,
   align='center' ('left'|'center'|'right'|'justify' — justify: word spaces stretched on every wrapped line
     but a paragraph's last; with hyphenate a word is also cut at a syllable to fill), verticalAlign='middle'
@@ -718,8 +719,15 @@ and the container edge it grows toward: an offset toward that edge shrinks it (t
 `top`/`bottom`), one past it leaves it empty (ellipsis) or one letter per line (wrap) — use a
 fixed `size.width` or anchor to `'page'`.
 Element defaults are NOT the built-in header's (Open Sans 8pt/600 main colour) — set everything.
-Resolver falls back to `overflow: 'ellipsis-end'` if omitted; use `'wrap'` for multi-line titles
-with a fixed `size.width`.
+`overflow` left out (≥ 1.24) follows the slot: `'wrap'` in heading designs (`advancedDesign.slot`, levels
+and heading styles) and part pages (`parts.design`, `parts.versoDesign`), `'ellipsis-end'` in running
+heads, folios (`header`, `footer`, a style's own) and contents part rows (`toc.parts.design`, fixed
+height). So leave it out on opener and part titles, and set it only where the slot's default is wrong (a
+running head that should wrap, a one-line kicker in an opener). Before 1.24 every slot fell back to
+`'ellipsis-end'`: when the pen pins an older engine, write `'wrap'` on titles. Every line cut by an
+ellipsis, or clipped with ink past its box, raises the content warning `designTextTruncated` (≥ 1.24;
+`slot`, `elementId`, `text`, `mode`, `pageIndex`, once a chapter for a running head): read it in the
+render and fix the title or the box unless the cut is meant.
 Header/footer placeholders: `{pageNumber}` (the page LABEL, e.g. "xii"), `{totalPages}`,
 `{title}`, `{subtitle}`, `{author}`, `{publishDate}` (front matter), `{chapterTitle}` (latest H1),
 `{chapterNumber}`, `{chapterTitleAtTop}` / `{chapterNumberAtTop}` (the chapter in force at the top
@@ -1600,7 +1608,10 @@ those of rules 7 and 8; one stamped 7, those of rules 8; one stamped 8 (postext 
 `bodyText.verse.layout: 'bayt'` when a chapter sets a `:::verse` poem with no `||`, the `firstLineIndent` of a
 paragraph style that also hangs dropped, `bodyText.hardLineBreaks: false` when a chapter ends a line with a
 backslash or sets `\\` before a space, and `codeStyle.blocks: false` when a chapter opens a ```` ``` ```` or `~~~`
-fence (its lines then read as Markdown). The pins keep what those rules changed, not
+fence (its lines then read as Markdown); one stamped 9 (postext 1.23), those of rules 10:
+`bodyText.verse.tighten: false` when a chapter sets a poem line by line, and `overflow: 'ellipsis-end'` written
+on every text element of a heading design or a part page (`parts.design`, `parts.versoDesign`) that sets none
+(in `htmlViewer.overrides` too). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
@@ -1732,7 +1743,7 @@ shows the reverse page more than any stock but bible (its coldset ink soaks into
 
 1. `page.margins` default: docs "2 cm all sides"; code top/bottom 2 cm, **left/right 1.5 cm**.
 2. Lists `fontFamily`/`fontWeight`/`italic`/`color`: docs "item text"; code = **marker only**, item text is body style.
-3. Design text `overflow` default: docs `'wrap'`; resolver fallback `'ellipsis-end'` (field is required in the type anyway).
+3. (Fixed in 1.24) Design text `overflow` default: follows the slot (`'wrap'` in heading and part designs, `'ellipsis-end'` elsewhere); up to 1.23 the resolver fell back to `'ellipsis-end'` everywhere and the type required the field.
 4. `bodyText.textAlign`: docs list 2 values; type is full `TextAlign` (`left|justify|center|right`). (`headings.textAlign` is documented with all four.) Caption `align` and `note.align` take all four; `center` / `right` work since 1.5 (1.4 set them flush left).
 5. postext 1.4 and earlier: the H1 `breakBefore` default only survives when `headings` is entirely absent. Fixed since (merged per field); restate it for older versions.
 6. (Fixed) `defaultResourceTypes(locale)` is locale-aware, and the engine now calls it with the document language when `resourceTypes` is unset; older engines used English there.
