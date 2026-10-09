@@ -117,7 +117,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>排版所用的每英寸像素数，即物理单位（cm、mm、in、pt）换算成排版像素的比例。它不是图片的分辨率；但按原始尺寸放置的位图，每个图像像素占一个排版像素，所以印出来就是这么多ppi。用于印刷时请保持300。[印前检查](#印前检查)会检查每张图片的有效分辨率。</td>
+      <td>排版所用的每英寸像素数，即物理单位（cm、mm、in、pt）换算成排版像素的比例。没有自身分辨率的位图，每个图像像素占一个排版像素，所以印出来就是这么多ppi。用于印刷时请保持300，或者给图片设一个分辨率（<code>Resource.bitmap.resolution</code>、<code>layout.bitmapResolution</code>；见[文档格式 › 位图尺寸](/zh/docs/document-format#位图尺寸)）。[印前检查](#印前检查)会检查每张图片的有效分辨率。</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -458,6 +458,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>图（位图或SVG）的图像、题注和注释加起来比内容区域还高时，把它缩小到放得下（设了安全区<code>Resource.safeArea</code>的图片先在安全区以内按原宽度裁切，仍然放不下时才缩小）；行内图比所在栏的剩余空间稍高时，也把它排小一些（最小到原宽度的一半，题注仍保持该栏的行长），让它留在文字旁边。缩小后的图像按<code>placement.align</code>放在自己的位置里。HTML查看器会打开这一项，因为它的页面只有屏幕那么高；印刷页面的尺寸是按其中的图来定的。</td>
+    </tr>
+    <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>没有自身<code>bitmap.resolution</code>的位图如何取得自然印刷尺寸。<code>'document'</code>按<code>page.dpi</code>读取它的像素；数字是所有这类位图的ppi（<code>300</code>：2400 px的图片宽203.2 mm，与页面的dpi无关）；<code>'file'</code>使用文件标明的分辨率（<code>bitmap.fileResolution</code>），72和96算作未标明，未标明时用<code>page.dpi</code>。图片仍受栏宽限制，较小的图片从不放大。见<a href="/zh/docs/document-format#位图尺寸">文档格式 › 位图尺寸</a>。postext 1.24起。</td>
     </tr>
     <tr>
       <td><code>floatShrink</code></td>
@@ -8184,7 +8190,7 @@ interface PrintPreflightConfig {
   </thead>
   <tbody>
     <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>运行检查。</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>放置的位图在印刷尺寸下（含裁剪）每英寸像素数低于此值时给出警告，包括图、表格单元格中的图片、版面设计图像和漫画分格。按原始尺寸放置的位图以`page.dpi`印刷，所以以150 dpi排版的页面上，每张这样的图片都以150 ppi印刷。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>放置的位图在印刷尺寸下（含裁剪）每英寸像素数低于此值时给出警告，包括图、表格单元格中的图片、版面设计图像和漫画分格。没有自身分辨率的位图按自然尺寸以`page.dpi`印刷，所以以150 dpi排版的页面上，每张这样的图片都以150 ppi印刷；设了分辨率（`bitmap.resolution`、`layout.bitmapResolution`）的位图按自然尺寸以该分辨率印刷。</td></tr>
     <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>低于此值时，警告为严重。不会高于`minImageResolution`。</td></tr>
     <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>比此值更细的线条、边框、栏线、表格线和漫画分格边框。</td></tr>
     <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>小于此字号、用多于一种墨印刷的文字（印刷色、复合黑）：印版偏移时会发虚。只用K的黑色文字从不计入。</td></tr>
@@ -8194,10 +8200,10 @@ interface PrintPreflightConfig {
   </tbody>
 </table>
 
-`preflightDocument(doc, options)`对排好的文档运行这些检查，返回一个问题列表。每个问题带有`kind`、`severity`（`'critical'`、`'warning'`或`'info'`）、全书范围的页序`pageIndex`、出问题的`rect`（页面px），以及元素有源码范围时的源码范围。`kind`有`lowImageResolution`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`和`nearTrim`。没有`transform`时，中性色算一种墨，其他颜色算三种，也不检查总墨量；给出`transform`时，墨数和总墨量都是准确的。
+`preflightDocument(doc, options)`对排好的文档运行这些检查，返回一个问题列表。每个问题带有`kind`、`severity`（`'critical'`、`'warning'`或`'info'`）、全书范围的页序`pageIndex`、出问题的`rect`（页面px），以及元素有源码范围时的源码范围。`kind`有`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`和`nearTrim`。没有`transform`时，中性色算一种墨，其他颜色算三种，也不检查总墨量；给出`transform`时，墨数和总墨量都是准确的。图片的分辨率按资源声明的像素计算；`imageSize(fileId)`给出文件本身的像素时（对字节调用`bitmapInfo`，或取自解码后的图像），则按文件的像素计算：声明与文件相差超过一个像素时，报告一次`declaredPixelsMismatch`，声明的像素多于文件实有的像素时为警告。`placedImageResolutions(doc, { resources, imageSize })`列出每张放置的位图及其有效ppi，不论印前检查是否开启。
 
 ```ts
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { inspectPrintMaster } from 'postext-pdf';
 
 const print = resolvePrintConfig(config.print);
@@ -8206,6 +8212,7 @@ const issues = preflightDocument(doc, {
   print,
   transform,
   resources,                                    // 位图的像素尺寸
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // 文件的实际像素
   imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray'，取自文件
 });
 if (issues.some((i) => i.severity === 'critical')) process.exit(1);
@@ -9934,7 +9941,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`**：在成品尺寸周围加上出血区域和裁切标记，并给每一页设置TrimBox和BleedBox。见[裁切线](#裁切线)。
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（或`'pdfx1a'`）：写出PDF/X文件，带有印厂会检查的输出意图、标识和页面框；所有颜色和RGB图片都经ICC特性文件分色，100% K叠印，大面积黑色用复合黑。见[印刷输出（配置）](#印刷输出配置)。
 - **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：同样的分色，但没有PDF/X标识（裁切标记始终用套准色）。PDF印刷母版原样嵌入。
-- **`page.dpi: 300`**：排版的每英寸像素数；按原始尺寸放置的位图以这个分辨率印刷。[印前检查](#印前检查)会报告印刷尺寸下不足300 ppi的图片。
+- **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](#印前检查)会报告印刷尺寸下不足300 ppi的图片。
 - **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切标记不反转）。适合对浅底深字的排版做印前检查。
 
@@ -10349,9 +10356,9 @@ const es = await openBundle(bytes, { locale: 'es' });   // 西班牙语的章节
 `postext/bundle`还导出了`openBundle`和`createBundle`背后的构建模块，供以自己的方式存储或提供文件包的宿主使用（例如通过HTTP提供的解压目录、数据库中的记录）：
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**：压缩包层。打开时允许有一个顶层文件夹，并忽略`__MACOSX`条目和点文件。会拒绝逃出文件包范围的路径。`mtime`给文件标注日期的方式与`createBundle`的同名输入相同。
-- <strong>`readBundle(manifest, readFile, options)`</strong>根据清单和一个`readFile(path)`回调读出章节、配置、资源、图片和字体。`options`设置语言、文件id的命名方式（`ids`）、基础配置（`baseConfig`，位于清单配置之下；默认是文件包语言下`bundleBaseConfig`的调色板和资源类型，该语言由`resolveBundleConfigLocale(manifest, locale)`返回，传入自己的`baseConfig`的宿主应把它本地化为该语言；清单早于`configVersion: 4`时，其`math`与文件包的一起固定；早于5时，固定其`layout`的行内间距；早于6时，固定其`layout`的框内间距、`bodyText`的冒号行下方空间、`headings`的行内标记和首字下沉大小；早于7时，固定其`bodyText`的破折号断行和齐左断行；早于8时，固定其`headings`的标题下方切分，以及`bodyText`的复合词断行和`:::paragraphs`容器下方的间距，见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)），以及固有尺寸的测量方式。
+- <strong>`readBundle(manifest, readFile, options)`</strong>根据清单和一个`readFile(path)`回调读出章节、配置、资源、图片和字体。`options`设置语言、文件id的命名方式（`ids`）、基础配置（`baseConfig`，位于清单配置之下；默认是文件包语言下`bundleBaseConfig`的调色板和资源类型，该语言由`resolveBundleConfigLocale(manifest, locale)`返回，传入自己的`baseConfig`的宿主应把它本地化为该语言；清单早于`configVersion: 4`时，其`math`与文件包的一起固定；早于5时，固定其`layout`的行内间距；早于6时，固定其`layout`的框内间距、`bodyText`的冒号行下方空间、`headings`的行内标记和首字下沉大小；早于7时，固定其`bodyText`的破折号断行和齐左断行；早于8时，固定其`headings`的标题下方切分，以及`bodyText`的复合词断行和`:::paragraphs`容器下方的间距，见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)），以及固有尺寸的测量方式。`readResolution`从文件读取每张位图的分辨率，写入`bitmap.fileResolution`；文件包设了`layout.bitmapResolution: 'file'`时默认为true。
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**：写出的一侧，分为一个纯粹的计划（文件名和清单）和通过`readBlob` / `readFont`回调解析字节两步。
-- **`isBundleManifest(value)`**、语言选择函数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize`，以及格式类型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`……）。
+- **`isBundleManifest(value)`**、语言选择函数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize` / `bitmapInfo`（位图的像素及其文件标明的分辨率），以及格式类型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`……）。
 - **`CONFIG_VERSION`、`migrateConfig(config, configVersion, { content })`、`pinLegacyHeadingBreaks(config)`、`pinLegacyMathSize(config)`、`pinLegacyInlineGap(config)`、`pinLegacyBoxResourceGap(config)`、`pinLegacyHeadingMarks(config)`、`pinLegacyDropCapSize(config)`、`pinLegacyColonListRoom(config)`、`pinLegacyBoxChildCut(config)`、`pinLegacyDashBreaks(config)`、`pinLegacyRaggedBreaking(config)`、`pinLegacyHeadingSplit(config)`、`pinLegacyParagraphContainerSpacing(config)`、`pinLegacyHyphenBreaks(config)`和`LEGACY_MATH_SIZE`**（0.5 ÷ 0.442）：把存储的配置转换为现行规则的表述（见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)）。`readBundle`会应用它们；以自己的方式存储配置的宿主也可以使用，每份存储的副本用一次。
 
 沙盒就建立在这些函数之上，另外加上它自己的存储id和`layouts.json`页数记录。

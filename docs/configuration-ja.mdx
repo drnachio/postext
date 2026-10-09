@@ -117,7 +117,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。画像の解像度ではありませんが、原寸で配置したビットマップは画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにしてください。各画像の実効解像度は[プリフライト](#プリフライト)で確認します。</td>
+      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。自身の解像度を持たないビットマップは、画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにするか、画像に解像度を指定してください（<code>Resource.bitmap.resolution</code>、<code>layout.bitmapResolution</code>。[ドキュメント形式 › ビットマップのサイズ](/ja/docs/document-format#ビットマップのサイズ)を参照）。各画像の実効解像度は[プリフライト](#プリフライト)で確認します。</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -458,6 +458,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>画像、キャプション、注を合わせた高さが版面より高くなる図（ビットマップまたはSVG）を、収まるまで縮小します（セーフエリア<code>Resource.safeArea</code>を持つ画像は、まず全幅のままセーフエリアの範囲内でトリミングされ、それでも収まらないときだけ縮小されます）。また、段に残った空きに対して少しだけ高すぎるインラインの図を小さく組み（幅の半分まで。キャプションは段の幅のまま）、本文から離れないようにします。縮小された画像は<code>placement.align</code>に従って枠の中に置かれます。HTMLビューアーはページの高さが画面の高さまでしかないため、この設定を有効にします。印刷用のページは図に合わせた大きさになっています。</td>
+    </tr>
+    <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>自身の<code>bitmap.resolution</code>を持たないビットマップが、原寸の印刷サイズをどう決めるかを指定します。<code>'document'</code>はピクセルを<code>page.dpi</code>で読みます。数値はそうしたビットマップすべてのppiになります（<code>300</code>なら、2400 pxの画像はページのdpiにかかわらず幅203.2 mm）。<code>'file'</code>はファイルに記載された解像度（<code>bitmap.fileResolution</code>）を使い、記載がなければ<code>page.dpi</code>になります。72と96は記載なしとして扱います。画像は段の幅を上限とするのは変わらず、それより小さい画像が拡大されることはありません。<a href="/ja/docs/document-format#ビットマップのサイズ">ドキュメント形式 › ビットマップのサイズ</a>を参照。postext 1.24から。</td>
     </tr>
     <tr>
       <td><code>floatShrink</code></td>
@@ -8187,7 +8193,7 @@ interface PrintPreflightConfig {
   </thead>
   <tbody>
     <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>検査を実行します。</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。原寸で配置したビットマップは`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。自身の解像度を持たないビットマップは原寸では`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。解像度（`bitmap.resolution`、`layout.bitmapResolution`）を持つビットマップは、原寸ではその解像度で印刷されます。</td></tr>
     <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>これを下回ると、警告は重大になります。`minImageResolution`より大きくはなりません。</td></tr>
     <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>これより細い罫線、枠、段間罫、表の罫、漫画のコマの枠。</td></tr>
     <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>これより小さく、複数のインキ（プロセスカラー、リッチブラック）で刷る文字。版がずれるとにじみます。K版だけの黒い文字は対象になりません。</td></tr>
@@ -8197,10 +8203,10 @@ interface PrintPreflightConfig {
   </tbody>
 </table>
 
-`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題は、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素が持っていればそのソースの範囲を持ちます。`kind`は`lowImageResolution`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。
+`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題は、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素が持っていればそのソースの範囲を持ちます。`kind`は`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。画像の解像度は、リソースが宣言するピクセル数から求めます。`imageSize(fileId)`がファイル自体のピクセル数を返すとき（バイト列に対する`bitmapInfo`、またはデコードした画像）は、そちらを使います。宣言がファイルと1ピクセルより大きく食い違うと`declaredPixelsMismatch`として1回報告され、ファイルにあるより多いピクセル数を宣言している場合は警告になります。`placedImageResolutions(doc, { resources, imageSize })`は、プリフライトの有効・無効にかかわらず、配置したすべてのビットマップをその実効ppiとともに一覧にします。
 
 ```ts
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { inspectPrintMaster } from 'postext-pdf';
 
 const print = resolvePrintConfig(config.print);
@@ -8209,6 +8215,7 @@ const issues = preflightDocument(doc, {
   print,
   transform,
   resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
   imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
 });
 if (issues.some((i) => i.severity === 'critical')) process.exit(1);
@@ -9937,7 +9944,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`** — 仕上がり線の周りに裁ち落とし領域とトンボを加え、各ページにTrimBoxとBleedBoxを設定します。[トンボ](#トンボ)を参照してください。
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（または`'pdfx1a'`） — 印刷所が確認する出力インテント、識別情報、ボックスを備えたPDF/Xファイルを書き出します。すべての色とRGBの画像はICCプロファイルで分版され、K 100%はオーバープリントになり、大きな黒い面はリッチブラックで刷られます。[印刷出力（設定）](#印刷出力設定)を参照してください。
 - **`colorSpace: 'cmyk'`**（または`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`） — PDF/Xの識別情報なしで、同じ分版を行います（トンボは常にレジストレーションカラーです）。PDFの印刷用マスターはそのまま埋め込まれます。
-- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。原寸で配置したビットマップは、この解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](#プリフライト)が報告します。
+- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](#プリフライト)が報告します。
 - **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
 - **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
 
@@ -10352,9 +10359,9 @@ Sandbox、エージェントスキル、`postext`パッケージはどれも同�
 `postext/bundle`は、`openBundle`と`createBundle`の土台になる部品も書き出しています。バンドルを独自の方法で保存したり配信したりするホスト（HTTPで配信する展開済みのディレクトリー、データベースのレコードなど）向けです。
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**：アーカイブの層。開くときはトップレベルのフォルダーを許容し、`__MACOSX`の項目とドットファイルを無視します。バンドルの外に出るパスは拒否します。`mtime`は`createBundle`の入力と同じようにファイルの日時を決めます。
-- **`readBundle(manifest, readFile, options)`**：マニフェストと`readFile(path)`コールバックから、章、設定、リソース、画像、フォントを読み込みます。`options`では、ロケール、ファイルidの命名方法（`ids`）、基本設定（`baseConfig`。マニフェストの設定の下に置かれます。既定ではバンドルの言語での`bundleBaseConfig`のパレットとリソースタイプで、その言語は`resolveBundleConfigLocale(manifest, locale)`が返します。独自の`baseConfig`を渡すホストは、それをこの言語にローカライズしてください。`configVersion: 4`より古いマニフェストではその`math`がバンドルのものと一緒に固定され、5より古ければ`layout`のインラインのアキ、6より古ければ`layout`のボックスの中のアキ、`bodyText`のコロンで終わる行の下の余地、`headings`のインラインのマーク、ドロップキャップのサイズ、7より古ければ`bodyText`のダッシュでの改行と行末不ぞろいの改行、8より古ければ`headings`の見出しの下での分割と、`bodyText`の複合語の改行および`:::paragraphs`コンテナーの下のアキが固定されます。[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）、固有のサイズの計測方法を指定します。
+- **`readBundle(manifest, readFile, options)`**：マニフェストと`readFile(path)`コールバックから、章、設定、リソース、画像、フォントを読み込みます。`options`では、ロケール、ファイルidの命名方法（`ids`）、基本設定（`baseConfig`。マニフェストの設定の下に置かれます。既定ではバンドルの言語での`bundleBaseConfig`のパレットとリソースタイプで、その言語は`resolveBundleConfigLocale(manifest, locale)`が返します。独自の`baseConfig`を渡すホストは、それをこの言語にローカライズしてください。`configVersion: 4`より古いマニフェストではその`math`がバンドルのものと一緒に固定され、5より古ければ`layout`のインラインのアキ、6より古ければ`layout`のボックスの中のアキ、`bodyText`のコロンで終わる行の下の余地、`headings`のインラインのマーク、ドロップキャップのサイズ、7より古ければ`bodyText`のダッシュでの改行と行末不ぞろいの改行、8より古ければ`headings`の見出しの下での分割と、`bodyText`の複合語の改行および`:::paragraphs`コンテナーの下のアキが固定されます。[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）、固有のサイズの計測方法を指定します。`readResolution`は各ビットマップの解像度をファイルから読み取り、`bitmap.fileResolution`に入れます。バンドルが`layout.bitmapResolution: 'file'`を指定しているときは、既定でtrueです。
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**：書き出し側。純粋な計画（ファイル名とマニフェスト）と、`readBlob` / `readFont`コールバックによるバイト列の解決に分かれています。
-- **`isBundleManifest(value)`**、ロケールの選択関数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize`、形式の型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`、…）。
+- **`isBundleManifest(value)`**、ロケールの選択関数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize` / `bitmapInfo`（ビットマップのピクセル数と、ファイルに記載された解像度）、形式の型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`、…）。
 - **`CONFIG_VERSION`、`migrateConfig(config, configVersion, { content })`、`pinLegacyHeadingBreaks(config)`、`pinLegacyMathSize(config)`、`pinLegacyInlineGap(config)`、`pinLegacyBoxResourceGap(config)`、`pinLegacyHeadingMarks(config)`、`pinLegacyDropCapSize(config)`、`pinLegacyColonListRoom(config)`、`pinLegacyBoxChildCut(config)`、`pinLegacyDashBreaks(config)`、`pinLegacyRaggedBreaking(config)`、`pinLegacyHeadingSplit(config)`、`pinLegacyParagraphContainerSpacing(config)`、`pinLegacyHyphenBreaks(config)`、`LEGACY_MATH_SIZE`**（0.5 ÷ 0.442）：保存した設定を現在の規則で表したものにします（[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）。`readBundle`はこれを適用します。設定を独自の方法で保存するホストも、保存したコピーごとに1回ずつ適用できます。
 
 Sandboxはこれらの上に作られています。Sandboxは独自の保存用idと`layouts.json`のページ記録を加えます。

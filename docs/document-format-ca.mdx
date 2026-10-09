@@ -1593,6 +1593,23 @@ Una imatge, una taula o una caixa més estreta que la columna es pot col·locar 
 - **Sortides.** El llenç, el visor HTML, el PDF i l'EPUB de maquetació fixa componen les línies tal com es van maquetar; un PDF etiquetat llegeix la imatge o la caixa abans del paràgraf que va al costat. Un EPUB adaptable la fa flotar al seu costat amb CSS, amb la mateixa part de l'amplada del text.
 - **Encara no.** Text a tots dos costats d'una imatge, ajust al contorn, ajust dins el contingut d'una caixa i ajust en escriptura vertical (l'element conserva la banda, amb un avís). Les columnes amb un element ajustat queden fora de l'equilibrat de columnes.
 
+### Mida dels mapes de bits
+
+Un mapa de bits declara els seus píxels: `bitmap.width` i `bitmap.height` són els píxels del fitxer, no una mida d'impressió. Quants n'entren en una polzada decideix a quina mida es compon la imatge abans que el seu buit la limiti. Hi ha tres maneres de donar-li mida:
+
+- **Els seus píxels als dpi de la pàgina** (el valor per defecte). Sense resolució, un píxel de la imatge és un píxel de la maquetació (`page.dpi`, 300 si no s'indica): una fotografia de 2400 px fa 8 polzades (203,2 mm) d'amplada en una pàgina a 300 dpi, i el doble en una a 150.
+- **Una resolució.** `bitmap.resolution` són els ppp de la imatge a la seva mida natural d'impressió, de manera que la seva amplada natural és `width × page.dpi / resolution` en una pàgina de qualsevol resolució: 2400 px amb `resolution: 300` fan 203,2 mm d'amplada en una pàgina maquetada a 150 dpi o a 300. `layout.bitmapResolution` dona una resolució a tot mapa de bits que no en tingui una de pròpia: un nombre (`300`), o `'file'`, la resolució que indica el seu fitxer (`bitmap.fileResolution`: el `pHYs` d'un PNG, la densitat JFIF o EXIF d'un JPEG, l'EXIF d'un WebP; en una imatge importada de Word, la mida a què Word la imprimia). Les càmeres, les captures de pantalla i les exportacions per al web sovint indiquen 72 o 96 ppp quan no saben res d'una mida d'impressió, així que amb `'file'` aquests dos valors compten com a no indicats i la imatge conserva els seus píxels als dpi de la pàgina; un 72 declarat al recurs mateix es pren tal com està escrit. `'document'`, el valor per defecte, és la primera manera.
+- **Una part de la columna.** `placement.width` estreny un flotant o una inserció en línia a una fracció de la seva columna (o de la pàgina), i una imatge més gran que aquesta part s'hi redueix, tingui els píxels que tingui (vegeu [Col·locació](#collocació)).
+
+En tots els casos el buit limita la imatge, sense canviar-ne les proporcions, i una imatge més petita no s'amplia mai. La mateixa mida natural val per a una imatge en una cel·la de taula i per a un element `image` d'un disseny amb mida `'auto'`. El PDF incrusta el fitxer tal com és, a la mida col·locada. El [preflight](/ca/docs/configuration#preflight) revisa la resolució a què s'imprimeix cada imatge, i el [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos) del Sandbox la mostra per a cada imatge. Des de postext 1.24.
+
+```json
+{ "id": "port", "typeId": "figure", "kind": "bitmap", "caption": "El port a l'alba.",
+  "bitmap": { "fileId": "port.jpg", "format": "jpeg", "width": 2400, "height": 1600, "resolution": 300 } }
+```
+
+`bitmapInfo(bytes)` (de `postext` i `postext/bundle`) llegeix els píxels d'un fitxer i la resolució que indica, `{ width, height, resolution?: { x, y, source } }`; un paquet obert amb `'file'` n'omple `fileResolution`, i el Sandbox la conserva per a cada imatge que s'hi puja.
+
 ### Zona segura
 
 Un recurs bitmap o SVG pot marcar una **zona segura**: el rectangle de la imatge que conté allò que importa (una persona i una franja del paisatge que l'envolta, la part dibuixada d'un gràfic) i que sempre es veu. És el camp `safeArea` del recurs, quatre fraccions (0–1) de la mida intrínseca de la imatge mesurades des del seu angle superior esquerre: `x` i `width` són fraccions de l'amplada, `y` i `height` de l'alçada. El nom diu què s'ha de conservar; una caixa de retall diria per on tallar.
