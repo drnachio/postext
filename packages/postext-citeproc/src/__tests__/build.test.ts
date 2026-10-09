@@ -160,6 +160,14 @@ describe('MLA narrative citations in the paragraph (#640)', () => {
     }
   });
 
+  it('the HTML output carries no space at the end of the citation', () => {
+    const html = renderToHtml(doc);
+    const text = (h: string) => h.replace(/<[^>]+>/g, '');
+    const narrative = /<a href="#pt-a-ref-stillinger1974"[^>]*>(.*?)<\/a>(.*?)records/.exec(html)!;
+    expect(text(narrative[1]!)).toBe('Stillinger');
+    expect(text(narrative[2]!)).toBe(' ');
+  });
+
   it('BibTeX shorttitle tells two works by one author apart', () => {
     const text = lines(doc).join('\n');
     expect(text).toContain('(Keats, Letters 41; Keats, “Ode” 1–3)');
