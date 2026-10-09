@@ -168,6 +168,48 @@
       }
     }
   },
+  "fontFallback": {
+    "source": "engine",
+    "label": {
+      "en": "Font fallback in the layout",
+      "es": "Fuente sustituida en la composición",
+      "ca": "Font substituïda a la composició",
+      "zh": "排版时使用了替代字体",
+      "ar": "خط بديل في الإخراج",
+      "ja": "レイアウトで代替フォントを使用",
+      "pt": "Fonte substituta no layout"
+    },
+    "cause": {
+      "en": "A face the text was set in was not in the font set when the document was laid out (`reason: 'missing'`), or the family has no file for that weight or slant and the browser draws it from another face (`'synthesized'`), so the line breaks were measured with a face that is not the one the PDF embeds.",
+      "es": "Una fuente con la que se compuso el texto no estaba en el conjunto de fuentes cuando se compuso el documento (`reason: 'missing'`), o la familia no tiene archivo para ese peso o esa inclinación y el navegador la dibuja a partir de otra (`'synthesized'`), así que los cortes de línea se midieron con una fuente que no es la que incrusta el PDF.",
+      "ca": "Una font amb què es va compondre el text no era al conjunt de fonts quan es va compondre el document (`reason: 'missing'`), o la família no té fitxer per a aquest pes o aquesta inclinació i el navegador la dibuixa a partir d'una altra (`'synthesized'`), de manera que els talls de línia es van mesurar amb una font que no és la que incrusta el PDF.",
+      "zh": "排版时，文字所用的某个字体不在字体集合中（`reason: 'missing'`），或该字族没有对应字重或倾斜的文件，浏览器用同族的其他字体模拟（`'synthesized'`）；因此断行是用一种与PDF所嵌入字体不同的字体测量的。",
+      "ar": "وجهٌ صُفّ به النص لم يكن في مجموعة الخطوط حين أُخرج المستند (`reason: 'missing'`)، أو ليس للعائلة ملف لذلك الوزن أو الميل فيرسمه المتصفح من وجه آخر (`'synthesized'`)، فقيست فواصل الأسطر بخط غير الذي يضمّنه ملف PDF.",
+      "ja": "文書をレイアウトした時点で、本文に使われたフォントがフォントセットになかった（`reason: 'missing'`）か、ファミリーにそのウェイトや斜体のファイルがなくブラウザーが別のフォントから合成した（`'synthesized'`）ため、改行位置がPDFに埋め込まれるフォントとは別のフォントで計測されました。",
+      "pt": "Uma fonte com que o texto foi composto não estava no conjunto de fontes quando o documento foi composto (`reason: 'missing'`), ou a família não tem arquivo para esse peso ou essa inclinação e o navegador a desenha a partir de outra (`'synthesized'`), então as quebras de linha foram medidas com uma fonte que não é a que o PDF incorpora."
+    },
+    "fix": {
+      "en": "Load the faces before the first build: `prepareFonts(content, config, { resolve })`, or build with `buildDocumentWithFonts`, which also loads any face the pages used and builds again. For `synthesized`, load that weight or slant, or set a weight the family ships.",
+      "es": "Carga las fuentes antes de la primera composición: `prepareFonts(content, config, { resolve })`, o compón con `buildDocumentWithFonts`, que además carga cualquier fuente que hayan usado las páginas y vuelve a componer. Para `synthesized`, carga ese peso o esa inclinación, o elige un peso que la familia tenga.",
+      "ca": "Carrega les fonts abans de la primera composició: `prepareFonts(content, config, { resolve })`, o compon amb `buildDocumentWithFonts`, que a més carrega qualsevol font que hagin fet servir les pàgines i torna a compondre. Per a `synthesized`, carrega aquest pes o aquesta inclinació, o tria un pes que la família tingui.",
+      "zh": "在首次构建前加载字体：`prepareFonts(content, config, { resolve })`，或用`buildDocumentWithFonts`构建，它还会加载页面实际用到的字体并重新构建。对`synthesized`，请加载该字重或倾斜，或改用该字族提供的字重。",
+      "ar": "حمّل الخطوط قبل البناء الأول: `prepareFonts(content, config, { resolve })`، أو ابنِ بـ`buildDocumentWithFonts` التي تحمّل كذلك أي وجه استعملته الصفحات ثم تعيد البناء. وفي حالة `synthesized` حمّل ذلك الوزن أو الميل، أو اختر وزنًا تملكه العائلة.",
+      "ja": "最初のビルドの前にフォントを読み込んでください。`prepareFonts(content, config, { resolve })`を使うか、`buildDocumentWithFonts`でビルドすれば、ページが実際に使ったフォントも読み込んで再ビルドします。`synthesized`の場合は、そのウェイトや斜体を読み込むか、ファミリーにあるウェイトを指定してください。",
+      "pt": "Carregue as fontes antes da primeira composição: `prepareFonts(content, config, { resolve })`, ou componha com `buildDocumentWithFonts`, que também carrega qualquer fonte que as páginas usaram e compõe de novo. Para `synthesized`, carregue esse peso ou essa inclinação, ou escolha um peso que a família tenha."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento",
+        "ca": "Avisos del document",
+        "zh": "文档中的警告",
+        "ar": "التحذيرات في المستند",
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento"
+      }
+    }
+  },
   "looseLine": {
     "source": "sandbox",
     "label": {

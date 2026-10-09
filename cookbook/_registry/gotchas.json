@@ -67,22 +67,22 @@
   },
   "fonts-first": {
     "title": {
-      "en": "Load every face before layout",
-      "es": "Carga todas las fuentes antes de componer",
-      "ca": "Carrega totes les fonts abans de compondre",
-      "zh": "排版前加载所有字体",
-      "ar": "حمّل كل أوجه الخط قبل الإخراج",
-      "ja": "レイアウトの前にすべてのフォントを読み込む",
-      "pt": "Carregue todas as fontes antes do layout"
+      "en": "Load the faces before layout: prepareFonts",
+      "es": "Carga las fuentes antes de componer: prepareFonts",
+      "ca": "Carrega les fonts abans de compondre: prepareFonts",
+      "zh": "排版前加载字体：prepareFonts",
+      "ar": "حمّل الخطوط قبل الإخراج: prepareFonts",
+      "ja": "レイアウトの前にフォントを読み込む：prepareFonts",
+      "pt": "Carregue as fontes antes do layout: prepareFonts"
     },
     "body": {
-      "en": "Layout measures text with the faces the browser has loaded and caches the widths, so a face that arrives after the first build leaves wrong line breaks and a PDF that no longer matches the screen. Load every weight and style first, and call clearMeasurementCache() before rebuilding when one arrives late.",
-      "es": "La composición mide el texto con las fuentes que el navegador ha cargado y guarda los anchos, así que una fuente que llega después de la primera composición deja cortes de línea erróneos y un PDF que ya no coincide con la pantalla. Carga antes todos los pesos y estilos, y llama a clearMeasurementCache() antes de recomponer si alguna llega tarde.",
-      "ca": "La composició mesura el text amb les fonts que el navegador ha carregat i en desa les amplades, així que una font que arriba després de la primera composició deixa talls de línia erronis i un PDF que ja no coincideix amb la pantalla. Carrega abans tots els pesos i estils, i crida clearMeasurementCache() abans de recompondre si alguna arriba tard.",
-      "zh": "排版用浏览器已加载的字体测量文字，并缓存宽度，所以首次构建之后才到的字体会造成断行错误，PDF也不再与屏幕一致。先加载所有字重和样式；有字体迟到时，重新构建前调用clearMeasurementCache()。",
-      "ar": "يقيس الإخراج النص بأوجه الخط التي حمّلها المتصفح ويخزّن العروض مؤقتًا، فالوجه الذي يصل بعد البناء الأول يترك فواصل أسطر خاطئة وملف PDF لم يعد يطابق الشاشة. حمّل كل وزن وكل نمط أولًا، واستدعِ clearMeasurementCache() قبل إعادة البناء إذا تأخر وصول أحدها.",
-      "ja": "レイアウトはブラウザーが読み込んだフォントで文字を計測し、その幅をキャッシュします。最初のビルドのあとに届いたフォントがあると改行位置が狂い、PDFも画面と一致しなくなります。すべてのウェイトとスタイルを先に読み込み、遅れて届いたときは再ビルドの前にclearMeasurementCache()を呼んでください。",
-      "pt": "O motor de layout mede o texto com as fontes que o navegador carregou e guarda as larguras em cache, então uma fonte que chega depois da primeira composição deixa quebras de linha erradas e um PDF que não corresponde mais à tela. Carregue antes todos os pesos e estilos e chame clearMeasurementCache() antes de recompor quando alguma chegar atrasada."
+      "en": "Layout measures text with the faces the browser has when it runs. Build with buildDocumentWithFonts(content, config, { resolve }), or call prepareFonts first: it loads every face the configuration and its text ask for (from the page's @font-face rules, or from a resolver that hands over the files), for the characters the text sets, and buildDocumentWithFonts lays out again with any face the pages used that was missing. A face that arrives later drops its family's measurements on its own, and doc.contentWarnings lists any face measured with a fallback as fontFallback.",
+      "es": "La composición mide el texto con las fuentes que tiene el navegador en ese momento. Compón con buildDocumentWithFonts(content, config, { resolve }), o llama antes a prepareFonts: carga todas las fuentes que piden la configuración y su texto (desde las reglas @font-face de la página o desde un resolutor que entrega los archivos), para los caracteres que compone el texto, y buildDocumentWithFonts vuelve a componer con cualquier fuente que hayan usado las páginas y faltara. Una fuente que llega más tarde descarta por sí sola las medidas de su familia, y doc.contentWarnings lista como fontFallback cualquier fuente medida con una de sustitución.",
+      "ca": "La composició mesura el text amb les fonts que té el navegador en aquell moment. Compon amb buildDocumentWithFonts(content, config, { resolve }), o crida abans prepareFonts: carrega totes les fonts que demanen la configuració i el seu text (des de les regles @font-face de la pàgina o des d'un resolutor que lliura els fitxers), per als caràcters que compon el text, i buildDocumentWithFonts torna a compondre amb qualsevol font que hagin fet servir les pàgines i faltés. Una font que arriba més tard descarta tota sola les mesures de la seva família, i doc.contentWarnings llista com a fontFallback qualsevol font mesurada amb una de substitució.",
+      "zh": "排版用运行时浏览器已有的字体测量文字。用buildDocumentWithFonts(content, config, { resolve })构建，或先调用prepareFonts：它按文字实际用到的字符，加载配置和文本需要的全部字体（来自页面的@font-face规则，或来自交出字体文件的resolver），而buildDocumentWithFonts会在页面用到了缺失字体时加载并重新排版。之后才到的字体会自动作废其字族的测量结果；用替代字体测量的字体会以fontFallback列在doc.contentWarnings中。",
+      "ar": "يقيس الإخراج النص بالخطوط التي يملكها المتصفح لحظة تشغيله. ابنِ بـbuildDocumentWithFonts(content, config, { resolve })، أو استدعِ prepareFonts أولًا: فهي تحمّل كل خط يطلبه الإعداد ونصه (من قواعد @font-face في الصفحة، أو من محلِّل يسلّم الملفات) للأحرف التي يصفّها النص، وتعيد buildDocumentWithFonts الإخراج بأي خط استعملته الصفحات وكان ناقصًا. والخط الذي يصل لاحقًا يُسقط قياسات عائلته من تلقاء نفسه، وتسرد doc.contentWarnings كل خط قيس ببديل تحت fontFallback.",
+      "ja": "レイアウトは、実行時にブラウザーが持っているフォントで文字を計測します。buildDocumentWithFonts(content, config, { resolve })でビルドするか、先にprepareFontsを呼んでください。設定と本文が求めるすべてのフォントを（ページの@font-faceルール、またはファイルを渡すresolverから）本文の文字に合わせて読み込み、buildDocumentWithFontsはページが使ったのに欠けていたフォントがあれば読み込んで組み直します。あとから届いたフォントはそのファミリーの計測結果を自動で破棄し、代替フォントで計測されたフォントはdoc.contentWarningsにfontFallbackとして挙がります。",
+      "pt": "O layout mede o texto com as fontes que o navegador tem no momento em que roda. Componha com buildDocumentWithFonts(content, config, { resolve }), ou chame antes prepareFonts: ela carrega todas as fontes que a configuração e o texto pedem (das regras @font-face da página ou de um resolvedor que entrega os arquivos), para os caracteres que o texto compõe, e buildDocumentWithFonts refaz o layout com qualquer fonte que as páginas usaram e faltava. Uma fonte que chega depois descarta sozinha as medidas da sua família, e doc.contentWarnings lista como fontFallback qualquer fonte medida com uma substituta."
     },
     "feature": "font-loading"
   },
@@ -632,22 +632,22 @@
   },
   "config-cache-identity": {
     "title": {
-      "en": "A config is cached by identity: build a fresh object",
-      "es": "Una configuración se cachea por identidad: crea un objeto nuevo",
-      "ca": "Una configuració es desa a la memòria cau per identitat: crea un objecte nou",
-      "zh": "配置按对象身份缓存：每次新建一个对象",
-      "ar": "يُخزَّن الإعداد مؤقتًا بحسب هويته: ابنِ كائنًا جديدًا",
-      "ja": "設定はオブジェクトの同一性でキャッシュされる。毎回新しいオブジェクトを作る",
-      "pt": "A configuração fica em cache pela identidade: crie um objeto novo"
+      "en": "A config changed in place is resolved again",
+      "es": "Una configuración modificada en el mismo objeto se resuelve de nuevo",
+      "ca": "Una configuració modificada al mateix objecte es resol de nou",
+      "zh": "就地修改的配置会重新解析",
+      "ar": "الإعداد المعدَّل في مكانه يُحسب من جديد",
+      "ja": "その場で書き換えた設定は解決し直される",
+      "pt": "Uma configuração alterada no próprio objeto é resolvida de novo"
     },
     "body": {
-      "en": "The engine caches resolved configs by object identity, so changing a config in place and building again reuses the old result. Build a fresh object for every build, which is why a recipe's config is a factory: config().",
-      "es": "El motor guarda en caché las configuraciones resueltas según la identidad del objeto, así que modificar el mismo objeto y volver a componer reutiliza el resultado anterior. Crea un objeto nuevo en cada composición: por eso la configuración de una receta es una función, config().",
-      "ca": "El motor desa a la memòria cau les configuracions resoltes segons la identitat de l'objecte, de manera que modificar el mateix objecte i tornar a compondre reutilitza el resultat anterior. Crea un objecte nou a cada composició: per això la configuració d'una recepta és una funció, config().",
-      "zh": "引擎按对象身份缓存解析后的配置，所以就地修改配置再构建，会复用旧的结果。每次构建都新建一个对象，这也是食谱的配置写成工厂函数config()的原因。",
-      "ar": "يخزّن المحرّك الإعدادات المحسوبة مؤقتًا بحسب هوية الكائن، فتعديل الإعداد في مكانه ثم البناء مجددًا يعيد استخدام النتيجة القديمة. ابنِ كائنًا جديدًا في كل بناء، ولهذا يكون إعداد الوصفة دالة مصنِّعة: config().",
-      "ja": "エンジンは解決済みの設定をオブジェクトの同一性でキャッシュします。そのため、設定をその場で書き換えて再ビルドすると前の結果が再利用されます。ビルドのたびに新しいオブジェクトを作ってください。レシピの設定がファクトリー関数config()になっているのはこのためです。",
-      "pt": "O motor guarda em cache as configurações resolvidas pela identidade do objeto, então alterar uma configuração no próprio objeto e compor de novo reaproveita o resultado antigo. Crie um objeto novo a cada composição; por isso a configuração de uma receita é uma função, config()."
+      "en": "The engine caches each resolved config against its object, and every build first checks that the object still reads as it did when it was resolved: a config changed in place (config.bodyText.fontSize = …, a palette colour) is resolved again on the next build. Reusing one object is fine; a config() factory is no longer needed. A host that changes a config between builds without building can call invalidateConfig(config).",
+      "es": "El motor guarda cada configuración resuelta asociada a su objeto, y cada composición comprueba primero que el objeto sigue igual que cuando se resolvió: una configuración modificada en el mismo objeto (config.bodyText.fontSize = …, un color de la paleta) se resuelve de nuevo en la siguiente composición. Reutilizar un objeto está bien; ya no hace falta una función config(). Un anfitrión que modifica una configuración entre composiciones sin componer puede llamar a invalidateConfig(config).",
+      "ca": "El motor desa cada configuració resolta associada al seu objecte, i cada composició comprova primer que l'objecte continua igual que quan es va resoldre: una configuració modificada al mateix objecte (config.bodyText.fontSize = …, un color de la paleta) es resol de nou a la composició següent. Reutilitzar un objecte és correcte; ja no cal una funció config(). Un amfitrió que modifica una configuració entre composicions sense compondre pot cridar invalidateConfig(config).",
+      "zh": "引擎把每份解析后的配置与其对象关联缓存，每次构建前都会先检查该对象是否仍与解析时一致：就地修改的配置（config.bodyText.fontSize = …、调色板颜色）会在下次构建时重新解析。重复使用同一个对象没有问题，不再需要config()工厂函数。在两次构建之间修改配置却不构建的宿主，可以调用invalidateConfig(config)。",
+      "ar": "يخزّن المحرّك كل إعداد محسوب مرتبطًا بكائنه، ويتحقق كل بناء أولًا من أن الكائن ما زال كما كان حين حُسب: فالإعداد المعدَّل في مكانه (config.bodyText.fontSize = …، لون في اللوحة) يُحسب من جديد في البناء التالي. لا بأس بإعادة استعمال كائن واحد، ولم تعد الدالة المصنِّعة config() لازمة. ويمكن للمضيف الذي يعدّل إعدادًا بين بناءين دون أن يبني أن يستدعي invalidateConfig(config).",
+      "ja": "エンジンは解決済みの設定をそのオブジェクトに結びつけてキャッシュし、ビルドのたびにまず、そのオブジェクトが解決時と同じ内容かを確かめます。その場で書き換えた設定（config.bodyText.fontSize = …、パレットの色）は次のビルドで解決し直されます。同じオブジェクトを使い回して構わず、config()ファクトリーはもう要りません。ビルドせずに設定を書き換えるホストは、invalidateConfig(config)を呼べます。",
+      "pt": "O motor guarda cada configuração resolvida associada ao seu objeto, e cada composição verifica primeiro se o objeto continua como estava quando foi resolvido: uma configuração alterada no próprio objeto (config.bodyText.fontSize = …, uma cor da paleta) é resolvida de novo na composição seguinte. Reaproveitar um objeto não tem problema; a função config() deixa de ser necessária. Um host que altera uma configuração entre composições sem compor pode chamar invalidateConfig(config)."
     },
     "feature": "canvas-rendering"
   },
