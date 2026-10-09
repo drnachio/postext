@@ -436,6 +436,14 @@ describe('engine content warnings', () => {
     expect(found.map((w) => [w.payload.key, w.line])).toEqual([['作者', 1]]);
   });
 
+  it('flags a :tab in vertical text, set as a word space (#622)', () => {
+    const md = '品名 :tab 値段';
+    const vertical: PostextConfig = { layout: { layoutType: 'single', writingMode: 'vertical-rl' }, locale: 'ja' };
+    const found = find(md, 'tabInVerticalText', vertical);
+    expect(found.map((w) => [md.slice(w.sourceStart, w.sourceEnd), w.line])).toEqual([[':tab', 1]]);
+    expect(find(md, 'tabInVerticalText')).toEqual([]);
+  });
+
   it('flags an image the previews cannot read, unless storage itself is out', () => {
     const md = 'Look :ref{id="photo"}.';
     const found = computeWarnings({ markdown: md, config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']) })

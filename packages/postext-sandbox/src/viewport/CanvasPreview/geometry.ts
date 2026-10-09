@@ -19,8 +19,8 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  */
 export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean, dropLeadingHyphen = false): number {
   // Brackets the layout added (a book title's 《》, a warichu note's) are
-  // no plain text (#193, #195).
-  if (seg.refContinues || seg.inserted) return 0;
+  // no plain text (#193, #195), nor a tab stop's leader (#622).
+  if (seg.refContinues || seg.inserted || seg.leader !== undefined) return 0;
   if (seg.refResourceId !== undefined) return 1;
   if (seg.kind === 'swatch') return 1;
   // The tatweels kashida justification inserted are painted, not plain
@@ -268,8 +268,9 @@ export function placeLineSegments(block: VDTBlock, line: VDTLine, mirrored: bool
   }
   // A line set ragged inside a justified paragraph (a loose CJK line, a
   // line a URL left unfillable) is painted at its natural width; an
-  // overfull last line has its spaces compressed to the measure.
-  const justify = block.textAlign === 'justify' && spaceCount > 0
+  // overfull last line has its spaces compressed to the measure. A line
+  // holding a tab stop is set as measured (#622).
+  const justify = block.textAlign === 'justify' && spaceCount > 0 && !line.tabbed
     && ((line.isLastLine === false && !line.ragged) || naturalWidth > effectiveWidth);
   const spaceWidth = justify ? (effectiveWidth - wordWidth) / spaceCount : undefined;
   const align = lineTextAlign(line, block.textAlign);
@@ -540,7 +541,7 @@ export function xForPlainInLine(
   if (!placed) {
     const blockRight = block.bbox.x + block.bbox.width;
     const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
-    const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
+    const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged && !line.tabbed;
     const renderedWidth = justifyFill
       ? Math.max(line.bbox.width, blockRight - line.bbox.x)
       : line.bbox.width;

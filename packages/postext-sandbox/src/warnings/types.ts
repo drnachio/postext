@@ -28,6 +28,7 @@ export type WarningKind =
   | 'malformedEmbed'
   | 'fullwidthMarkup'
   | 'attributeKeyInvalid'
+  | 'tabInVerticalText'
   | 'unclosedContainer'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
@@ -164,6 +165,9 @@ export type WarningPayload =
   /** An attribute key with letters outside ASCII (`作者=曹雪芹`): the
    *  attribute is ignored. */
   | { kind: 'attributeKeyInvalid'; key: string }
+  /** A `:tab` in a block set in vertical text (#622): tab stops are set
+   *  in horizontal text only, so the tab is a word space. */
+  | { kind: 'tabInVerticalText' }
   /** A `:::name` container fence was still open at the end of the document;
    *  the parser auto-closed it. Points at the opening fence. */
   | { kind: 'unclosedContainer'; name: string }

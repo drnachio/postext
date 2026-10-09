@@ -327,7 +327,8 @@ function chipBoxesOf(block: VDTBlock, line: VDTLine): ChipBox[] {
   }
   let x = line.bbox.x;
   let spaceWidth: number | undefined;
-  if (block.textAlign === 'justify' && spaces > 0 && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) {
+  // A line holding a tab stop is set as measured (#622).
+  if (block.textAlign === 'justify' && spaces > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) {
     spaceWidth = (effectiveWidth - words) / spaces;
   } else if (block.textAlign === 'center' || block.textAlign === 'right') {
     const slack = Math.max(0, effectiveWidth - natural);

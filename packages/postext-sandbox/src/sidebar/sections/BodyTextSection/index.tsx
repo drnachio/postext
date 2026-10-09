@@ -29,6 +29,7 @@ import { AlignPicture } from '../../settings/pictures';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
 import { isArabicScriptLanguage } from '../../../context/arabicDefaults';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides';
+import { TabStopsField } from '../../settings/TabStopsField';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -379,6 +380,12 @@ export const BodyTextSection = memo(function BodyTextSection() {
           tooltip={labels.bodyParagraphSpacingTooltip}
           isDefault={isParagraphSpacingDefault}
           onReset={() => resetField('paragraphSpacing')}
+        />
+        <TabStopsField
+          stops={raw?.tabStops}
+          interval={raw?.tabInterval}
+          onStopsChange={(next) => (next === undefined ? resetField('tabStops') : updateBodyText({ tabStops: next }))}
+          onIntervalChange={(next) => (next === undefined ? resetField('tabInterval') : updateBodyText({ tabInterval: next }))}
         />
       </FieldGroup>
       <FieldGroup title={labels.bodyGroupColor}>

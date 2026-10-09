@@ -14,6 +14,7 @@ import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { verseHighlight, verseTheme } from './verseSyntax';
 import { hardBreakHighlight, hardBreakTheme } from './hardBreakSyntax';
+import { tabHighlight, tabTheme } from './tabSyntax';
 import { comicHighlight, comicTheme } from './comicSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
@@ -104,6 +105,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       verseHighlight,
       hardBreakTheme,
       hardBreakHighlight,
+      tabTheme,
+      tabHighlight,
       comicTheme,
       comicHighlight,
       annotationTheme,

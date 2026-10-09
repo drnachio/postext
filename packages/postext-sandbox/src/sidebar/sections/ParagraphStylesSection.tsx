@@ -19,6 +19,7 @@ import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
+import { TabStopsField } from '../settings/TabStopsField';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -100,6 +101,8 @@ function ParagraphStyleCard({
   // Line numbers (#621): shown once the document numbers lines, or when
   // the style says whether its lines are counted.
   const lineNumbersOn = useSandboxSelector((s) => s.config.lineNumbers?.enabled === true);
+  // Tab stops (#622): an unset interval is the body's.
+  const bodyTabInterval = useSandboxSelector((s) => s.config.bodyText?.tabInterval);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -380,6 +383,14 @@ function ParagraphStyleCard({
         tooltip={labels.paragraphStyleHangingIndentTooltip}
         isDefault={unset('hangingIndent')}
         onReset={() => onResetField('hangingIndent')}
+      />
+      <TabStopsField
+        inherits
+        stops={style.tabStops}
+        interval={style.tabInterval}
+        inheritedInterval={bodyTabInterval}
+        onStopsChange={(next) => (next === undefined ? onResetField('tabStops') : onChange({ tabStops: next }))}
+        onIntervalChange={(next) => (next === undefined ? onResetField('tabInterval') : onChange({ tabInterval: next }))}
       />
       <DimensionInput
         label={labels.paragraphStyleSpaceBetween}

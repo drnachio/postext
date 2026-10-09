@@ -63,6 +63,7 @@ import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 import { hasSeveralColumns } from '../settings/multiColumnBook';
 import { MULTIPLE_COLUMNS_MAX } from '../settings/multipleColumns';
+import { TabStopsField } from '../settings/TabStopsField';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -356,6 +357,8 @@ function CalloutStyleCard({
   const markerSide = flowSideLabels(rtl, labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   // Ragged bodies hyphenate too once the body text turns ragged hyphenation on.
   const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
+  // Tab stops of the box (#622): an unset interval is the body's.
+  const bodyTabInterval = useSandboxSelector((s) => s.config.bodyText?.tabInterval);
   // A floated box across several columns (#505): offered when a page of the
   // book has more than one, or when the style sets it.
   const severalColumns = useSandboxSelector((s) => hasSeveralColumns(s.config));
@@ -1466,6 +1469,14 @@ function CalloutStyleCard({
           units={SPACING_UNITS}
           isDefault={groupUnset('body', 'firstLineIndent')}
           onReset={() => resetGroupField('body', 'firstLineIndent')}
+        />
+        <TabStopsField
+          inherits
+          stops={style.body?.tabStops}
+          interval={style.body?.tabInterval}
+          inheritedInterval={bodyTabInterval}
+          onStopsChange={(next) => (next === undefined ? resetGroupField('body', 'tabStops') : body({ tabStops: next }))}
+          onIntervalChange={(next) => (next === undefined ? resetGroupField('body', 'tabInterval') : body({ tabInterval: next }))}
         />
       </CollapsibleSection>
 
