@@ -1,0 +1,51 @@
+{
+  "name": "postext-cli",
+  "version": "1.22.1",
+  "description": "The postext command line: PDF, HTML, EPUB, page images and Word files from a .postext book or loose Markdown, in one self-contained executable for Linux, macOS and Windows.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://postext.dev/",
+  "keywords": [
+    "postext",
+    "cli",
+    "pdf",
+    "epub",
+    "typesetting",
+    "markdown",
+    "book"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drnachio/postext.git",
+    "directory": "packages/postext-cli"
+  },
+  "bin": {
+    "postext": "npm/postext.js"
+  },
+  "files": [
+    "npm/postext.js",
+    "bin/readme.txt"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "build:bin": "bun scripts/build-bin.ts",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test",
+    "start": "bun src/main.ts"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "1.0.10",
+    "@pdf-lib/fontkit": "^1.1.1",
+    "@postext/typescript-config": "workspace:*",
+    "@types/bun": "^1.3.0",
+    "bun": "1.4.2",
+    "eslint": "^9.39.4",
+    "postext": "workspace:*",
+    "postext-citeproc": "workspace:*",
+    "postext-epub": "workspace:*",
+    "postext-pdf": "workspace:*",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}

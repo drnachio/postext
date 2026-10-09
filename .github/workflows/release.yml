@@ -17,6 +17,11 @@
 #    packages are out and before the version commit, and a re-run then
 #    releases every package at the next version (release-version.sh syncs
 #    to npm, then bumps).
+#    The command line (postext-cli) publishes seven more packages:
+#    postext-cli and postext-cli-<platform> (macos-arm64, macos-x64,
+#    linux-x64, linux-arm64, linux-x64-musl, windows-x64). Their steps
+#    never block a release: until the token covers them they fail on their
+#    own and the executables still reach the GitHub Release.
 # 2. Go to https://github.com/drnachio/postext/settings/secrets/actions
 #    Click "New repository secret"
 #    Name:  NPM_TOKEN
@@ -42,6 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     # Skip release commits to avoid infinite loops
     if: "!contains(github.event.head_commit.message, 'chore: release')"
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -124,11 +131,28 @@ jobs:
           VERSION=$(.github/scripts/release-version.sh packages/postext-epub postext-epub ${{ steps.bump.outputs.type }} | tee /dev/stderr | tail -1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      # The command line carries the engine it was built with: same version.
+      - name: Set postext-cli version
+        run: |
+          node -e "const f='packages/postext-cli/package.json';const fs=require('fs');const p=JSON.parse(fs.readFileSync(f));p.version='${{ steps.version.outputs.version }}';fs.writeFileSync(f,JSON.stringify(p,null,2)+'\\n')"
+
       # Build & test the packages (postext-pdf, postext-folio,
       # postext-citeproc and postext-epub build against the freshly bumped
       # workspace postext)
-      - run: pnpm turbo run build --filter=postext --filter=postext-pdf --filter=postext-folio --filter=postext-citeproc --filter=postext-epub
-      - run: pnpm turbo run test --filter=postext --filter=postext-pdf --filter=postext-folio --filter=postext-citeproc --filter=postext-epub
+      - run: pnpm turbo run build --filter=postext --filter=postext-pdf --filter=postext-folio --filter=postext-citeproc --filter=postext-epub --filter=postext-cli
+      - run: pnpm turbo run test --filter=postext --filter=postext-pdf --filter=postext-folio --filter=postext-citeproc --filter=postext-epub --filter=postext-cli
+
+      # The self-contained executables (Bun, cross-compiled for every
+      # platform from this runner) and bin/readme.txt. The cli-smoke job
+      # runs them on each system before cli-release publishes them.
+      - name: Build the command-line executables
+        run: pnpm --filter postext-cli build:bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: postext-cli
+          path: packages/postext-cli/bin/
+          retention-days: 7
 
       # Publish to npm
       - name: Publish postext to npm
@@ -178,7 +202,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json packages/postext-citeproc/package.json packages/postext-epub/package.json
+          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json packages/postext-citeproc/package.json packages/postext-epub/package.json packages/postext-cli/package.json packages/postext-cli/bin/readme.txt
           # The pagination, when the step above wrote and verified all of it
           if [ "${{ steps.layouts.outcome }}" = success ]; then
             git add apps/web/public/presets
@@ -205,3 +229,73 @@ jobs:
           git checkout develop
           git merge main --no-edit
           git push origin develop
+
+  # The executables on the systems they were built for: help, a PDF, a page
+  # image, a bundle round trip and a Word export (scripts/smoke.sh).
+  cli-smoke:
+    name: CLI smoke (${{ matrix.file }})
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, file: postext-linux-x64 }
+          - { os: ubuntu-24.04-arm, file: postext-linux-arm64 }
+          - { os: ubuntu-latest, file: postext-linux-x64-musl, alpine: true }
+          - { os: macos-latest, file: postext-macos-arm64 }
+          - { os: windows-latest, file: postext-windows-x64.exe }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: packages/postext-cli/scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: postext-cli
+          path: bin
+      - name: Smoke test
+        if: ${{ !matrix.alpine }}
+        shell: bash
+        run: sh packages/postext-cli/scripts/smoke.sh "bin/${{ matrix.file }}"
+      # musl: in an Alpine container (actions themselves cannot run in one)
+      - name: Smoke test (Alpine)
+        if: ${{ matrix.alpine }}
+        run: docker run --rm -v "$PWD:/w" -w /w alpine:3 sh -c 'apk add --no-cache libstdc++ libgcc >/dev/null && sh packages/postext-cli/scripts/smoke.sh "bin/${{ matrix.file }}"'
+
+  # GitHub Release v<version> with every executable, SHA256SUMS and
+  # readme.txt; then npm (postext-cli + one package per platform). The npm
+  # steps never fail the release (see the header).
+  cli-release:
+    name: Publish the command line
+    needs: [release, cli-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: postext-cli
+          path: packages/postext-cli/bin
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          cd packages/postext-cli/bin
+          NOTES="Command-line executables of postext $VERSION: no installation, no runtime. See readme.txt; \`npx postext-cli\` also works with Node.js."
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" postext-* SHA256SUMS readme.txt --clobber
+          else
+            gh release create "v$VERSION" postext-* SHA256SUMS readme.txt --title "postext $VERSION" --notes "$NOTES" --verify-tag
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Publish postext-cli to npm
+        continue-on-error: true
+        working-directory: packages/postext-cli
+        run: node scripts/npm-publish.mjs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
