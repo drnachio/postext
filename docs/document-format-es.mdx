@@ -72,7 +72,7 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
     <tr>
       <td>Párrafo</td>
       <td>Texto plano en una o más líneas</td>
-      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Los saltos de línea manuales dentro de un párrafo no se conservan — usa una línea en blanco para empezar un nuevo párrafo. Un poema, cuyas líneas deben quedar como están escritas, va en un bloque <a href="#verse"><code>:::verse</code></a>.</td>
+      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Un salto de línea escrito en el texto no se conserva, salvo si la línea termina en una barra invertida (un salto de línea forzado, ver <a href="#saltos-de-línea">Saltos de línea</a>); una línea en blanco empieza un párrafo nuevo. Un poema, cuyas líneas deben quedar como están escritas, va en un bloque <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
@@ -620,6 +620,27 @@ Los números de página son los que el documento imprime realmente. Un documento
 
 :::index
 ```
+
+### Saltos de línea
+
+Las líneas de un párrafo se unen con un espacio. Para terminar una línea dentro de un párrafo sin empezar otro (una dirección, el saludo de una carta, una dedicatoria), termina la línea del texto con una barra invertida, el salto forzado de CommonMark, o escribe `\\` seguido de un espacio:
+
+```md
+Al guardián del faro,\
+al final del muelle norte.
+
+Ana Ruiz \\ Calle Mayor 4 \\ 28013 Madrid
+```
+
+- La línea anterior a un salto se compone con su anchura natural, como la última línea de un párrafo, sin estirarse hasta la caja. El texto que sigue abre una línea nueva del mismo párrafo, sin sangría de primera línea ni espacio encima; con sangría francesa cuelga como cualquier línea tras la primera.
+- Lo admiten los párrafos, las citas (`> Primera línea\` sobre `> segunda línea`), las notas al pie y los elementos de lista. Un elemento de lista ocupa una sola línea del texto, así que se parte con `\\`.
+- Una barra invertida al final del párrafo se imprime, como en CommonMark, y dos saltos seguidos son uno: para una línea vacía, empieza un párrafo nuevo o añade un [`:::space`](#space).
+- Un `\\` pegado al carácter siguiente no es un salto: `\\*` imprime una barra invertida y un asterisco escapado, `C:\\Temp` las dos barras. En el código en línea y en una fórmula las barras son del código y de la fórmula.
+- Dos espacios al final de una línea, el otro salto forzado de CommonMark, no lo son: no se ven en un editor y muchos editores los dejan olvidados, así que partirían líneas que nadie quiso partir.
+- El texto copiado del visor HTML lleva un salto de línea en ese punto, el EPUB adaptable un `<br/>`, el texto del PDF un fin de línea y una exportación a Word un salto de línea manual (Mayús+Intro), que la importación de Word vuelve a leer como salto.
+- Un poema conserva sus versos, sangrías y estrofas en un bloque [`:::verse`](#verse), sin una barra en cada línea.
+
+Hasta postext 1.22 la barra invertida se imprimía y las líneas se unían con un espacio. Un libro guardado entonces cuyo texto termina una línea con una barra invertida, o pone `\\` ante un espacio, conserva esa lectura (`bodyText.hardLineBreaks: false`, ver [Configuración › Paquetes escritos por postext 1.4 o anterior](/es/docs/configuration#paquetes-escritos-por-postext-14-o-anterior)).
 
 ### Saltos de línea en los títulos
 
@@ -1648,6 +1669,7 @@ Postext no reconoce las siguientes características de CommonMark. O se tratan c
 - **Tablas** — las tablas con pipes no se parsean. Las tablas se modelan como recursos estructurados en `PostextContent.resources`.
 - **Enlaces por referencia** — `[texto][id]` con su bloque de definición.
 - **Autolinks** — `<https://example.com>`.
+- **Saltos de línea con dos espacios al final** — los espacios se recortan. Termina la línea con una barra invertida (ver [Saltos de línea](#saltos-de-línea)).
 - **Tachado** — `~~texto~~`. El renderizador de tachado está reservado actualmente para tareas completadas.
 - **Notas al margen** — no están implementadas, y el motor ignora `PostextContent.notes`, aunque los tipos lo acepten. Las notas al pie y las de final de capítulo se escriben con `[^id]` (ver [Notas al pie](#notas-al-pie)); hasta postext 1.5 había que componerlas como texto.
 

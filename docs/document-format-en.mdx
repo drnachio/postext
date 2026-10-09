@@ -72,7 +72,7 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Paragraph</td>
       <td>Plain text over one or more lines</td>
-      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph. A poem, whose lines must stay as written, goes in a <a href="#verse"><code>:::verse</code></a> block.</td>
+      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. A line break typed in the source is not kept, unless the line ends with a backslash (a forced line break, see <a href="#line-breaks">Line breaks</a>); a blank line starts a new paragraph. A poem, whose lines must stay as written, goes in a <a href="#verse"><code>:::verse</code></a> block.</td>
     </tr>
     <tr>
       <td>Blockquote</td>
@@ -620,6 +620,27 @@ The page numbers are the ones the document actually prints. A document laid out 
 
 :::index
 ```
+
+### Line breaks
+
+The lines of a paragraph join with a space. To end a line inside a paragraph without starting a new one (an address, the greeting of a letter, a dedication), end the source line with a backslash, CommonMark's hard break, or write `\\` followed by a space:
+
+```md
+To the keeper of the lighthouse,\
+at the end of the northern pier.
+
+Ana Ruiz \\ Calle Mayor 4 \\ 28013 Madrid
+```
+
+- The line before a break is set at its natural width, as the last line of a paragraph is, never stretched to the measure. The text after it opens a new line of the same paragraph, with no first-line indent and no space above; under a hanging indent it hangs like any line after the first.
+- Paragraphs, quotations (`> First line\` over `> second line`), footnotes and list items take it. A list item is one line of source, so it breaks at `\\`.
+- A backslash that ends the paragraph prints, as in CommonMark, and two breaks in a row make one: for an empty line, start a new paragraph or add a [`:::space`](#space).
+- A `\\` glued to the next character is no break: `\\*` prints a backslash and an escaped asterisk, `C:\\Temp` both backslashes. In inline code and in a formula the backslashes belong to the code and to the formula.
+- Two spaces at the end of a line, CommonMark's other hard break, are not one: they cannot be seen in an editor, and many editors leave them behind, so they would break lines nobody meant to break.
+- Text copied from the HTML viewer has a line feed at the break, the reflowable EPUB a `<br/>`, the text of the PDF a line end, and a Word export a manual line break (Shift+Enter), which the Word import reads back as a break.
+- A poem keeps its lines, indents and stanzas in a [`:::verse`](#verse) block, with no backslash on every line.
+
+Up to postext 1.22 the backslash printed and the lines joined with a space. A book stored then whose text ends a line with a backslash, or sets `\\` before a space, keeps that reading (`bodyText.hardLineBreaks: false`, see [Configuration › Bundles written by postext 1.4 or earlier](/en/docs/configuration#bundles-written-by-postext-14-or-earlier)).
 
 ### Line breaks in titles
 
@@ -1648,6 +1669,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 - **Tables** — pipe tables are not parsed. Tables are modeled as structured resources on `PostextContent.resources`.
 - **Reference-style links** — `[text][id]` plus a definition block.
 - **Autolinks** — `<https://example.com>`.
+- **Hard line breaks made with two trailing spaces** — the spaces are trimmed. End the line with a backslash instead (see [Line breaks](#line-breaks)).
 - **Strikethrough** — `~~text~~`. The strikethrough renderer is currently reserved for completed task items.
 - **Margin notes** — not implemented, and `PostextContent.notes`, which the types accept, is ignored by the engine. Footnotes and chapter-end notes are written with `[^id]` (see [Footnotes](#footnotes)); up to postext 1.5 they had to be set as text.
 

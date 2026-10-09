@@ -72,7 +72,7 @@ O Postext reconhece sete tipos de bloco de texto, além das diretivas e dos recu
     <tr>
       <td>Parágrafo</td>
       <td>Texto simples em uma ou mais linhas</td>
-      <td>Linhas consecutivas que não estão em branco nem são especiais são unidas com um único espaço e saem como um só parágrafo. Entre dois caracteres chineses ou japoneses (ideogramas, kana, pontuação de largura total, e aspas curvas, travessões ou reticências ao lado deles), a quebra de linha é descartada, como faz o CSS, então um parágrafo em chinês pode ser quebrado em qualquer ponto do texto de origem. Entre duas dessas marcas (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>), decidem os caracteres que vêm depois delas: a quebra de linha some quando um deles é chinês ou japonês, e <code>“hello”⏎“bye”</code> mantém o espaço. O coreano mantém o espaço. Quebras de linha manuais dentro de um parágrafo não são preservadas; use uma linha em branco para começar um parágrafo novo. Um poema, cujas linhas devem ficar como foram escritas, vai em um bloco <a href="#verse"><code>:::verse</code></a>.</td>
+      <td>Linhas consecutivas que não estão em branco nem são especiais são unidas com um único espaço e saem como um só parágrafo. Entre dois caracteres chineses ou japoneses (ideogramas, kana, pontuação de largura total, e aspas curvas, travessões ou reticências ao lado deles), a quebra de linha é descartada, como faz o CSS, então um parágrafo em chinês pode ser quebrado em qualquer ponto do texto de origem. Entre duas dessas marcas (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>), decidem os caracteres que vêm depois delas: a quebra de linha some quando um deles é chinês ou japonês, e <code>“hello”⏎“bye”</code> mantém o espaço. O coreano mantém o espaço. Uma quebra de linha digitada no texto não se mantém, a não ser que a linha termine em uma barra invertida (uma quebra de linha forçada, veja <a href="#quebras-de-linha">Quebras de linha</a>); uma linha em branco começa um parágrafo novo. Um poema, cujas linhas devem ficar como foram escritas, vai em um bloco <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Citação</td>
@@ -620,6 +620,27 @@ Os números de página são os que o documento realmente imprime. Um documento d
 
 :::index
 ```
+
+### Quebras de linha
+
+As linhas de um parágrafo se unem com um espaço. Para terminar uma linha dentro de um parágrafo sem começar outro (um endereço, a saudação de uma carta, uma dedicatória), termine a linha do texto com uma barra invertida, a quebra forçada do CommonMark, ou escreva `\\` seguido de um espaço:
+
+```md
+Ao guardião do farol,\
+no fim do cais norte.
+
+Ana Souza \\ Rua Direita 4 \\ 01002-000 São Paulo
+```
+
+- A linha anterior a uma quebra é composta com a sua largura natural, como a última linha de um parágrafo, sem ser esticada até a mancha. O texto seguinte abre uma linha nova do mesmo parágrafo, sem recuo de primeira linha nem espaço acima; com recuo deslocado, pende como qualquer linha depois da primeira.
+- Valem os parágrafos, as citações (`> Primeira linha\` sobre `> segunda linha`), as notas de rodapé e os itens de lista. Um item de lista ocupa uma só linha do texto, por isso quebra com `\\`.
+- Uma barra invertida no fim do parágrafo é impressa, como no CommonMark, e duas quebras seguidas valem uma: para uma linha vazia, comece um parágrafo novo ou acrescente um [`:::space`](#space).
+- Um `\\` colado ao caractere seguinte não é quebra: `\\*` imprime uma barra invertida e um asterisco escapado, `C:\\Temp` as duas barras. No código em linha e em uma fórmula as barras pertencem ao código e à fórmula.
+- Dois espaços no fim de uma linha, a outra quebra forçada do CommonMark, não são quebra: não se veem em um editor, e muitos editores os deixam esquecidos, de modo que quebrariam linhas que ninguém quis quebrar.
+- O texto copiado do visualizador HTML traz uma quebra de linha nesse ponto, o EPUB fluido um `<br/>`, o texto do PDF um fim de linha e uma exportação para o Word uma quebra de linha manual (Shift+Enter), que a importação do Word volta a ler como quebra.
+- Um poema mantém os versos, os recuos e as estrofes em um bloco [`:::verse`](#verse), sem uma barra em cada linha.
+
+Até o postext 1.22 a barra invertida era impressa e as linhas se uniam com um espaço. Um livro salvo então cujo texto termina uma linha com uma barra invertida, ou põe `\\` antes de um espaço, mantém essa leitura (`bodyText.hardLineBreaks: false`, veja [Configuração › Pacotes gravados pelo postext 1.4 ou anterior](/pt/docs/configuration#pacotes-gravados-pelo-postext-14-ou-anterior)).
 
 ### Quebras de linha em títulos
 
@@ -1647,6 +1668,7 @@ O Postext não reconhece os seguintes recursos do CommonMark. Eles são tratados
 - **Tabelas**: tabelas com barras verticais não são analisadas. As tabelas são modeladas como recursos estruturados em `PostextContent.resources`.
 - **Links por referência**: `[text][id]` mais um bloco de definição.
 - **Autolinks**: `<https://example.com>`.
+- **Quebras de linha com dois espaços no fim**: os espaços são removidos. Termine a linha com uma barra invertida (veja [Quebras de linha](#quebras-de-linha)).
 - **Tachado**: `~~text~~`. O renderizador de tachado está reservado, por ora, aos itens de tarefa concluídos.
 - **Notas de margem**: não implementadas, e `PostextContent.notes`, que os tipos aceitam, é ignorado pelo motor. As notas de rodapé e as notas de fim de capítulo são escritas com `[^id]` (veja [Notas de rodapé](#notas-de-rodapé)); até o postext 1.5, tinham de ser compostas como texto.
 

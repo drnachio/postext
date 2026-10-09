@@ -72,7 +72,7 @@ Postext reconeix set tipus de bloc de prosa, a més de les directives i les inse
     <tr>
       <td>Paràgraf</td>
       <td>Text pla en una o més línies</td>
-      <td>Les línies no buides i no especials consecutives s'uneixen amb un únic espai i s'emeten com un sol paràgraf. Entre dos caràcters xinesos o japonesos (ideogrames, kana, puntuació d'amplada completa, i cometes tipogràfiques, guions llargs o punts suspensius al costat d'aquests) el final de línia desapareix, com en CSS, de manera que un paràgraf xinès es pot tallar en qualsevol punt del codi font. Entre dos d'aquests signes (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) decideixen els caràcters que hi ha més enllà: el final de línia desapareix si un d'ells és xinès o japonès, i <code>“hello”⏎“bye”</code> conserva el seu espai. El coreà conserva el seu espai. Els salts de línia manuals dins d'un paràgraf no es conserven — fes servir una línia en blanc per començar un paràgraf nou. Un poema, les línies del qual han de quedar tal com s'escriuen, va en un bloc <a href="#verse"><code>:::verse</code></a>.</td>
+      <td>Les línies no buides i no especials consecutives s'uneixen amb un únic espai i s'emeten com un sol paràgraf. Entre dos caràcters xinesos o japonesos (ideogrames, kana, puntuació d'amplada completa, i cometes tipogràfiques, guions llargs o punts suspensius al costat d'aquests) el final de línia desapareix, com en CSS, de manera que un paràgraf xinès es pot tallar en qualsevol punt del codi font. Entre dos d'aquests signes (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) decideixen els caràcters que hi ha més enllà: el final de línia desapareix si un d'ells és xinès o japonès, i <code>“hello”⏎“bye”</code> conserva el seu espai. El coreà conserva el seu espai. Un salt de línia escrit al text no es conserva, tret que la línia acabi en una barra inversa (un salt de línia forçat, vegeu <a href="#salts-de-línia">Salts de línia</a>); una línia en blanc comença un paràgraf nou. Un poema, les línies del qual han de quedar tal com s'escriuen, va en un bloc <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
@@ -620,6 +620,27 @@ Els números de pàgina són els que el document imprimeix realment. Un document
 
 :::index
 ```
+
+### Salts de línia
+
+Les línies d'un paràgraf s'uneixen amb un espai. Per acabar una línia dins d'un paràgraf sense començar-ne un altre (una adreça, la salutació d'una carta, una dedicatòria), acaba la línia del text amb una barra inversa, el salt forçat de CommonMark, o escriu `\\` seguit d'un espai:
+
+```md
+Al guardià del far,\
+al final del moll nord.
+
+Anna Puig \\ Carrer Major 4 \\ 08001 Barcelona
+```
+
+- La línia anterior a un salt es compon amb la seva amplada natural, com l'última línia d'un paràgraf, sense estirar-se fins a la caixa. El text que segueix obre una línia nova del mateix paràgraf, sense sagnat de primera línia ni espai a sobre; amb sagnat francès penja com qualsevol línia després de la primera.
+- L'admeten els paràgrafs, les cites (`> Primera línia\` sobre `> segona línia`), les notes al peu i els elements de llista. Un element de llista ocupa una sola línia del text, així que es parteix amb `\\`.
+- Una barra inversa al final del paràgraf s'imprimeix, com a CommonMark, i dos salts seguits són un de sol: per a una línia buida, comença un paràgraf nou o afegeix un [`:::space`](#space).
+- Un `\\` enganxat al caràcter següent no és un salt: `\\*` imprimeix una barra inversa i un asterisc escapat, `C:\\Temp` les dues barres. Al codi en línia i en una fórmula les barres són del codi i de la fórmula.
+- Dos espais al final d'una línia, l'altre salt forçat de CommonMark, no ho són: no es veuen en un editor i molts editors els hi deixen oblidats, així que partirien línies que ningú no volia partir.
+- El text copiat del visor HTML porta un salt de línia en aquest punt, l'EPUB adaptable un `<br/>`, el text del PDF un final de línia i una exportació a Word un salt de línia manual (Maj+Retorn), que la importació de Word torna a llegir com a salt.
+- Un poema conserva els versos, els sagnats i les estrofes en un bloc [`:::verse`](#verse), sense una barra a cada línia.
+
+Fins a postext 1.22 la barra inversa s'imprimia i les línies s'unien amb un espai. Un llibre desat aleshores el text del qual acaba una línia amb una barra inversa, o posa `\\` davant d'un espai, conserva aquesta lectura (`bodyText.hardLineBreaks: false`, vegeu [Configuració › Paquets escrits per postext 1.4 o anterior](/ca/docs/configuration#paquets-escrits-per-postext-14-o-anterior)).
 
 ### Salts de línia als títols
 
@@ -1647,6 +1668,7 @@ Postext no reconeix les característiques següents de CommonMark. O es tracten 
 - **Taules** — les taules amb barres verticals no s'analitzen. Les taules es modelen com a recursos estructurats a `PostextContent.resources`.
 - **Enllaços per referència** — `[texto][id]` amb el seu bloc de definició.
 - **Autoenllaços** — `<https://example.com>`.
+- **Salts de línia amb dos espais al final** — els espais es retallen. Acaba la línia amb una barra inversa (vegeu [Salts de línia](#salts-de-línia)).
 - **Ratllat** — `~~texto~~`. El renderitzador de ratllat està reservat actualment per a tasques completades.
 - **Notes al marge** — no estan implementades, i el motor ignora `PostextContent.notes`, encara que els tipus ho acceptin. Les notes a peu de pàgina i les de final de capítol s'escriuen amb `[^id]` (vegeu [Notes a peu de pàgina](#notes-a-peu-de-pàgina)); fins a postext 1.5 calia compondre-les com a text.
 
