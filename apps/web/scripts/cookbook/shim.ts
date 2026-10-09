@@ -91,7 +91,7 @@ function localImports(): Record<string, string> {
   };
   for (const dep of ["@chenglou/pretext", "fflate", "gray-matter", "hypher", "react"]) imports[dep] = esm("postext", dep);
   for (const lang of ["ca", "de", "en-us", "es", "fr", "it", "nl", "pt"]) imports[`hyphenation.${lang}`] = esm("postext", `hyphenation.${lang}`);
-  for (const dep of ["@pdf-lib/fontkit", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
+  for (const dep of ["@pdf-lib/fontkit", "@pdf-lib/upng", "jpeg-js", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
   // HarfBuzz (the PDF's Arabic shaping) from the workspace's own files, as a
   // bundler ships it: esm.sh's build gives it a Node `process`, and its
   // Emscripten loader then takes the Node path and fails in the browser.
