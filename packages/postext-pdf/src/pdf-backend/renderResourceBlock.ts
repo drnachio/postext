@@ -38,7 +38,7 @@ import type {
   VDTComicArt,
   VDTPage,
 } from 'postext';
-import { applySingleInkToSvg, pageComics, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
+import { applySingleInkToSvg, fontFaceRule, injectSvgStyle, sniffFontFormat, svgDeclaredFontFamilies, pageComics, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
 import { roundedRectSvgPath } from './headerFooter';
 import { pdfUri } from './links';
 import { parseFontString } from '../fontString';
@@ -266,30 +266,12 @@ function fontResolverFor(fontCache: FontCache): VectorFontResolver {
   };
 }
 
-const FONT_MIME: Record<string, string> = { ttf: 'font/ttf', otf: 'font/otf', woff2: 'font/woff2', woff: 'font/woff' };
-
-function sniffFontFormat(bytes: Uint8Array): string {
-  const tag = String.fromCharCode(...bytes.subarray(0, 4));
-  if (tag === 'OTTO') return 'otf';
-  if (tag === 'wOF2') return 'woff2';
-  if (tag === 'wOFF') return 'woff';
-  return 'ttf';
-}
-
-function toBase64(bytes: Uint8Array): string {
-  if (typeof Buffer !== 'undefined') return Buffer.from(bytes).toString('base64');
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) {
-    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 0x8000)));
-  }
-  return btoa(binary);
-}
-
 /** Before an SVG with text is rasterised through an `<img>` — which cannot
  *  see any page font — embed the faces its runs ask for as `@font-face` data
- *  URIs, fetched from the same provider the body text uses. Families the
- *  provider cannot supply are skipped (the image falls back to a system
- *  face, as the screen preview would). */
+ *  URIs, fetched from the same provider the body text uses (#630: the
+ *  engine's `fontFaceRule` / `injectSvgStyle`). Families the provider cannot
+ *  supply are skipped (the image falls back to a system face, as the screen
+ *  preview would), and so are those the SVG declares itself. */
 export async function inlineSvgFontsForRaster(
   svgText: string,
   fontStrings: string[],
@@ -297,23 +279,19 @@ export async function inlineSvgFontsForRaster(
 ): Promise<string> {
   let css = '';
   const codePoints = svgCodePoints(svgText);
+  const declared = new Set(svgDeclaredFontFamilies(svgText).map((f) => f.toLowerCase()));
   for (const fs of fontStrings) {
     const parsed = parseFontString(fs);
-    if (!parsed) continue;
+    if (!parsed || declared.has(parsed.family.toLowerCase())) continue;
     const answer = await provider(parsed.family, parsed.weight, parsed.style, { codePoints }).catch(() => null);
     // A face of several files is one @font-face per file: the browser
     // looks each character up in them in turn.
     for (const bytes of Array.isArray(answer) ? answer : answer ? [answer] : []) {
       if (bytes.length === 0) continue;
-      const format = sniffFontFormat(bytes);
-      css += `@font-face{font-family:"${parsed.family.replace(/["\\]/g, '')}";font-weight:${parsed.weight};font-style:${parsed.style};src:url(data:${FONT_MIME[format]};base64,${toBase64(bytes)})}`;
+      css += fontFaceRule(parsed.family, parsed.weight, parsed.style, bytes, sniffFontFormat(bytes) ?? 'ttf');
     }
   }
-  if (!css) return svgText;
-  const m = /<svg\b[^>]*?>/i.exec(svgText);
-  if (!m || m[0].endsWith('/>')) return svgText;
-  const at = m.index + m[0].length;
-  return `${svgText.slice(0, at)}<style type="text/css"><![CDATA[${css}]]></style>${svgText.slice(at)}`;
+  return injectSvgStyle(svgText, css);
 }
 
 /** Largest placement of each `fileId` in points, to size raster fallbacks. */
@@ -403,6 +381,14 @@ export async function preloadResourceImages(
   const inkHex = ds?.singleInk
     ? resolveColorValue(ds.inkColor, doc.config.colorPalette, ds.inkColor).hex
     : null;
+  // SVGs whose raster fallback keeps its markup as it is (#630:
+  // `diagramStyle.inlineFonts: false`, a resource's `svg.inlineFonts: false`).
+  const inlineFonts = ds?.inlineFonts !== false;
+  const keepMarkup = new Set<string>();
+  for (const block of blocks) {
+    const svg = block.resourceBlock?.resource?.svg;
+    if (svg?.inlineFonts === false && svg.fileId) keepMarkup.add(svg.fileId);
+  }
   // Vector print masters (`svg.pdfFileId`) by the SVG's own `fileId`: every
   // use of the picture names its master — the figure, a table cell, a
   // design image or box icon — so the master is embedded wherever the SVG
@@ -489,7 +475,7 @@ export async function preloadResourceImages(
           return;
         }
         const size = placements.get(fileId) ?? { w: 360, h: 270 };
-        const rasterSvg = wanted.length > 0 && fontProvider
+        const rasterSvg = wanted.length > 0 && fontProvider && inlineFonts && !keepMarkup.has(fileId)
           ? await inlineSvgFontsForRaster(svgText, wanted, fontProvider)
           : svgText;
         const png = await rasterizeSvg(rasterSvg, (size.w / 72) * RASTER_DPI, (size.h / 72) * RASTER_DPI);

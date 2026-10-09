@@ -326,7 +326,7 @@ describe('inlineSvgFontsForRaster', () => {
       if (family !== 'Roboto Condensed') throw new Error('unknown');
       return new Uint8Array([0x00, 0x01, 0x00, 0x00, 0x00]);
     });
-    expect(out).toContain('<style type="text/css"><![CDATA[@font-face{font-family:"Roboto Condensed";font-weight:700;font-style:italic;src:url(data:font/ttf;base64,AAEAAAA=)}]]></style><text');
+    expect(out).toContain('<style type="text/css"><![CDATA[@font-face{font-family:"Roboto Condensed";font-weight:700;font-style:italic;src:url(data:font/ttf;base64,AAEAAAA=) format("truetype")}]]></style><text');
     expect(out).not.toContain('Nope');
     expect(await inlineSvgFontsForRaster(svg, [], async () => new Uint8Array())).toBe(svg);
   });
@@ -444,6 +444,32 @@ describe('preloadResourceImages', () => {
     expect(asText((images.get('t') as { drawing: { shapes: VectorItem[] } }).drawing.shapes[0]).runs[0]!.text).toBe('hi');
     // Only the named family is requested; generic families are never fetched.
     expect(requested).toEqual(['Roboto Condensed']);
+  });
+
+  // #630: an author who embedded the faces (a `<style>` of `@font-face`
+  // rules only) keeps a vector figure, its text in the embedded font.
+  it('emits an SVG whose style sheet holds only @font-face rules as vectors with real text', async () => {
+    const face = '@font-face{font-family:"Roboto Condensed";font-weight:400;src:url(data:font/woff2;base64,d09GMgABAAAAAA==) format("woff2")}';
+    const svg = new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'
+      + `<style type="text/css"><![CDATA[/* faces */ ${face}]]></style>`
+      + '<text x="1" y="5" font-family="Roboto Condensed" font-size="4">hi</text></svg>',
+    );
+    const { pdfDoc } = await pageCtx();
+    const fontCache = new FontCache(pdfDoc, async () => new Uint8Array(fs.readFileSync(ROBOTO)));
+    const images = await preloadResourceImages(pdfDoc, doc('ff'), () => svg, fontCache);
+    expect(images.get('ff')).toMatchObject({ kind: 'vector' });
+    const run = asText((images.get('ff') as { drawing: { shapes: VectorItem[] } }).drawing.shapes[0]).runs[0]!;
+    expect(run.text).toBe('hi');
+    expect(run.font.pdfFont?.name).toMatch(/Fraunces/);
+  });
+
+  it('still bails out on a style sheet with any other rule', () => {
+    const resolver: VectorFontResolver = () => ({ pdfFont: null as never, widthOf: () => 0 });
+    const withRule = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><style>@font-face{font-family:X;src:url(x.woff2)} text{fill:red}</style><rect width="1" height="1"/></svg>';
+    expect(svgToVectorDrawing(withRule, { fonts: resolver })).toBeNull();
+    const facesOnly = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><style>@font-face{font-family:X;src:url(x.woff2)}</style><rect width="1" height="1"/></svg>';
+    expect(svgToVectorDrawing(facesOnly, { fonts: resolver })).not.toBeNull();
   });
 
   it('leaves unsupported SVG absent outside the browser (no raster fallback available)', async () => {
