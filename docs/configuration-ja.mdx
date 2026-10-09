@@ -460,6 +460,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td>画像、キャプション、注を合わせた高さが版面より高くなる図（ビットマップまたはSVG）を、収まるまで縮小します（セーフエリア<code>Resource.safeArea</code>を持つ画像は、まず全幅のままセーフエリアの範囲内でトリミングされ、それでも収まらないときだけ縮小されます）。また、段に残った空きに対して少しだけ高すぎるインラインの図を小さく組み（幅の半分まで。キャプションは段の幅のまま）、本文から離れないようにします。縮小された画像は<code>placement.align</code>に従って枠の中に置かれます。HTMLビューアーはページの高さが画面の高さまでしかないため、この設定を有効にします。印刷用のページは図に合わせた大きさになっています。</td>
     </tr>
     <tr>
+      <td><code>floatShrink</code></td>
+      <td><code>FloatShrinkConfig</code></td>
+      <td><code>mode: 'never'</code></td>
+      <td>フロートの図版の<code>placement.shrink</code>（<code>mode</code>：<code>'never'</code>、<code>'page'</code>、<code>'slot'</code>）と<code>placement.minScale</code>（<code>minScale</code>、未設定なら0.7）のドキュメント既定値です。図版を次へ送らずに、縦横比を保って置き場所の空きまで縮小します（<a href="/ja/docs/document-format#配置">ドキュメント形式 › 配置</a>を参照）。リソース自身の配置、次にその種類の<code>defaultPlacement</code>がこれより優先します。<code>fitFiguresToPage</code>はすべての図を版面に収める上限です。<code>floatShrink</code>は、扉の下、ほかのフロートの横、脚注の上など、フロートが実際に使う帯を見ます。postext 1.24から。</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -4366,7 +4372,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。
+`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。
 
 `columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
 
@@ -8846,6 +8852,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>codeOverflow</code></td>
       <td><a href="#コードリスト">コードリスト</a>に枠より長い行がある。<code>mode</code>は<code>codeStyle.overflow</code>が行った処理（<code>'wrap'</code>、<code>'shrink'</code>、<code>'clip'</code>）、<code>lines</code>は長すぎた元の行の数、<code>scale</code>は縮小したコードリストを組んだサイズ（<code>fontSize</code>に対する割合）、<code>lang</code>はフェンスの言語です。コードリストを指します。</td>
       <td><code>mode</code>が示すとおり、行は折り返されるか、小さく組まれるか、切られます。</td>
+    </tr>
+    <tr>
+      <td><code>floatShrunk</code></td>
+      <td>フロートの図版を、置き場所の空きに収めるため元より小さく組みました（<code>placement.shrink</code>）。<code>resourceId</code>はその図版、<code>scale</code>は保った幅の比率です。<code>overflowPx</code>があれば、ほかに行き場のない新しいページで、最小倍率（<code>placement.minScale</code>）で組んでもなお版面の下端からはみ出す量です。最初に引用している段落を指します。</td>
+      <td>図版はその倍率で印刷されます。版面からはみ出すのは<code>overflowPx</code>があるときだけです。</td>
     </tr>
   </tbody>
 </table>

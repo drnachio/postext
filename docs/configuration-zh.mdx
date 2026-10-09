@@ -460,6 +460,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td>图（位图或SVG）的图像、题注和注释加起来比内容区域还高时，把它缩小到放得下（设了安全区<code>Resource.safeArea</code>的图片先在安全区以内按原宽度裁切，仍然放不下时才缩小）；行内图比所在栏的剩余空间稍高时，也把它排小一些（最小到原宽度的一半，题注仍保持该栏的行长），让它留在文字旁边。缩小后的图像按<code>placement.align</code>放在自己的位置里。HTML查看器会打开这一项，因为它的页面只有屏幕那么高；印刷页面的尺寸是按其中的图来定的。</td>
     </tr>
     <tr>
+      <td><code>floatShrink</code></td>
+      <td><code>FloatShrinkConfig</code></td>
+      <td><code>mode: 'never'</code></td>
+      <td>浮动图片的<code>placement.shrink</code>（<code>mode</code>：<code>'never'</code>、<code>'page'</code>或<code>'slot'</code>）和<code>placement.minScale</code>（<code>minScale</code>，未设时为0.7）的文档级默认值：把图片按原比例缩小到所在位置的空间，而不是移到后面（见<a href="/zh/docs/document-format#位置">文档格式 › 位置</a>）。资源自己的位置设置、其次是资源类型的<code>defaultPlacement</code>，会覆盖它。<code>fitFiguresToPage</code>把所有图限制在版心之内；<code>floatShrink</code>看的是浮动体实际要占的横带：篇章页之下、其他浮动体旁边或脚注之上。postext 1.24起。</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -4363,7 +4369,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement`与资源自身的`placement`形状相同。`position`选择浮动体可占用的空位种类：`auto`（默认）取第一次引用之后的第一个空位，`top` / `bottom`把范围限定在该种版带，`here`把资源行内嵌入。`span`设定浮动体的宽度范围：一栏、整个内容宽度，或一栏半版式中只放浮动体的侧栏。`rotate`把资源旋转四分之一圈，并使它成为单独占一页的通栏浮动体。`width`把浮动体收窄为所在栏宽的一个比例（通栏浮动体则为页宽的比例），比如宽栏里的一张小表。`align`说明这种较窄的浮动体放在哪里（默认靠左，也可居中或靠右），也说明比空位窄的图片在空位中的位置：比栏窄的位图，或被`layout.fitFiguresToPage`缩小的图像。题注和注释保持空位的行长。（postext 1.4及以前，这类图片总是左对齐排放。）`captionSide`把题注放在图旁，位于一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），与图的顶边平齐（底部浮动体则与底边平齐）；它只作用于栏内浮动体，没有这种侧栏的页面仍把题注放在图下。资源和它的类型都没有设定位置时，内置默认值为`auto` / `column`。
+`ResourcePlacement`与资源自身的`placement`形状相同。`position`选择浮动体可占用的空位种类：`auto`（默认）取第一次引用之后的第一个空位，`top` / `bottom`把范围限定在该种版带，`here`把资源行内嵌入。`span`设定浮动体的宽度范围：一栏、整个内容宽度，或一栏半版式中只放浮动体的侧栏。`rotate`把资源旋转四分之一圈，并使它成为单独占一页的通栏浮动体。`width`把浮动体收窄为所在栏宽的一个比例（通栏浮动体则为页宽的比例），比如宽栏里的一张小表。`align`说明这种较窄的浮动体放在哪里（默认靠左，也可居中或靠右），也说明比空位窄的图片在空位中的位置：比栏窄的位图，或被`layout.fitFiguresToPage`缩小的图像。题注和注释保持空位的行长。（postext 1.4及以前，这类图片总是左对齐排放。）`captionSide`把题注放在图旁，位于一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），与图的顶边平齐（底部浮动体则与底边平齐）；它只作用于栏内浮动体，没有这种侧栏的页面仍把题注放在图下。资源和它的类型都没有设定位置时，内置默认值为`auto` / `column`。`shrink`（`'never'`、`'page'`、`'slot'`）和`minScale`（未设时为0.7）把浮动图片缩小到所在位置的空间，而不是移到后面；`captionMeasure: 'body'`让比所在位置窄的图片的题注和说明与图片同宽（见[文档格式 › 位置](/zh/docs/document-format#位置)）；`layout.floatShrink`给出前两项的文档级默认值。
 
 `columns`（postext 1.18起）让`span: 'column'`浮动体在多栏页面上横跨这么多相邻的栏，例如报纸五栏中横跨两栏的照片。它的宽度是这些栏加上其间的栏间距。它占用一组顶端平齐的空栏的栏首，或者引用它的那一栏及其后空栏的栏脚；栏数等于或大于页面的栏数时，它就是通栏浮动体。`'page'`和`'side'`跨度、旋转的资源（`rotate`）以及行内嵌入（`here`）忽略此项；`captionSide`只对一栏宽的浮动体有效。
 
@@ -8843,6 +8849,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>codeOverflow</code></td>
       <td><a href="#代码清单">代码清单</a>中有比框更宽的行。<code>mode</code>是<code>codeStyle.overflow</code>所做的处理（<code>'wrap'</code>、<code>'shrink'</code>、<code>'clip'</code>），<code>lines</code>是过宽的源文行数，<code>scale</code>是缩小后的清单所用的字号（<code>fontSize</code>的比例），<code>lang</code>是围栏的语言。指向该清单。</td>
       <td>按<code>mode</code>所说，这些行折行、缩小或截断。</td>
+    </tr>
+    <tr>
+      <td><code>floatShrunk</code></td>
+      <td>浮动图片为放进所在位置的空间而按小于原尺寸排入（<code>placement.shrink</code>）。<code>resourceId</code>指明是哪一个，<code>scale</code>是保留的宽度比例；如有<code>overflowPx</code>，表示在没有别处可去的新页上，按最小比例（<code>placement.minScale</code>）排入后仍超出版心底部的距离。指向第一次引用它的段落。</td>
+      <td>图片按这个比例印出；只有<code>overflowPx</code>这样说时才超出版心。</td>
     </tr>
   </tbody>
 </table>
