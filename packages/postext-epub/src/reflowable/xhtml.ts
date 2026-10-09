@@ -13,10 +13,14 @@ import type {
   TableNode,
   TocNode,
   StanzaNode,
+  CodeNode,
   TabItem,
   VerseNode,
 } from './model';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline';
+
+/** Style id of a code listing's box (`postext` `CODE_BOX_STYLE_ID`). */
+const CODE_BOX_STYLE = '__postext-code';
 import type { BookModel, Loc } from './walk';
 
 /** What a content document needs from the rest of the book. */
@@ -359,6 +363,12 @@ class Writer {
       case 'list':
         return this.list(node);
       case 'callout': {
+        // A code listing's box (#624): a plain block, its title over the
+        // listing.
+        if (node.styleId === CODE_BOX_STYLE) {
+          const heading = node.title ? `<p class="pt-code-title">${xmlText(node.title)}</p>\n` : '';
+          return `<div class="pt-code-box">\n${heading}${this.nodes(node.children)}\n</div>`;
+        }
         const title = node.title ? `<p class="pt-callout-title">${xmlText(node.title)}</p>\n` : '';
         // A pull quote keeps its box on the page; one that repeats the
         // text is hidden from assistive technology (`doc-pullquote`, a
@@ -381,6 +391,8 @@ class Writer {
         return this.verse(node);
       case 'stanza':
         return this.stanza(node);
+      case 'code':
+        return this.code(node);
       case 'toc':
         return this.toc(node);
       case 'marker':
@@ -468,6 +480,25 @@ class Writer {
       return `<span class="pt-verse-line" style="${style}">${num}${this.inline(l.inl)}</span>`;
     }));
     return `<div${this.classAttr(['pt-stanza', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${lines.join('\n')}\n</div>`;
+  }
+
+  /** A code listing (#624): `<pre><code>` as written, one source line a
+   *  line, its tokens in their colours, the lines a fence highlights
+   *  marked; the numbers, padded to one width, hidden from assistive
+   *  technology. Read left to right in any book. */
+  private code(node: CodeNode): string {
+    const pre = this.inline(node.pre);
+    const width = Math.max(0, ...node.lines.map((l) => l.num?.length ?? 0));
+    const body = node.lines.map((l) => {
+      const num = l.num !== undefined ? `<span class="pt-code-num" aria-hidden="true">${xmlText(l.num.padStart(width))}</span>` : '';
+      const runs = l.runs.map((r) => {
+        const decl = [r.color && `color:${r.color}`, r.bold && 'font-weight:bold', r.italic && 'font-style:italic'].filter(Boolean).join(';');
+        return decl ? `<span style="${xmlAttr(decl)}">${xmlText(r.text)}</span>` : xmlText(r.text);
+      }).join('');
+      return num + (l.highlight ? `<mark class="pt-code-hl">${runs}</mark>` : runs);
+    }).join('\n');
+    const lang = node.lang ? ` class="language-${xmlAttr(node.lang.replace(/[^\w+#.-]/g, ''))}"` : '';
+    return `${pre ? `<div>${pre}</div>\n` : ''}<pre class="pt-code" dir="ltr"><code${lang}>${body}</code></pre>`;
   }
 
   private list(node: ListNode): string {

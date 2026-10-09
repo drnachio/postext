@@ -269,8 +269,8 @@ describe('code listings: lines wider than the box', () => {
     expect(lines[0]!.codeLine!.wrapped).toBe(true);
     for (const c of conts) {
       expect(c.segments![0]!.leader).toBe('text');
-      expect(c.segments![0]!.text).toBe('↪');
-      expect(c.text.includes('↪')).toBe(false);
+      expect(c.segments![0]!.text).toBe('»');
+      expect(c.text.includes('»')).toBe(false);
     }
     // The pieces join into the line as written.
     const joined = lines.slice(0, lines.findIndex((l) => l.text === 'short')).map((l) => l.text).join('');

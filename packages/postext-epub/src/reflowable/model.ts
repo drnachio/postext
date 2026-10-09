@@ -223,6 +223,34 @@ export interface StanzaNode {
   dir?: 'ltr' | 'rtl';
 }
 
+/** A run of a line of code (#624): its text and the colour, weight and
+ *  slant the print set it in. */
+export interface CodeRun {
+  text: string;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+}
+
+/** A source line of a code listing (#624): its runs (a line the print
+ *  turned over is joined again), its number and whether the fence
+ *  highlights it. */
+export interface CodeLineNode {
+  runs: CodeRun[];
+  num?: string;
+  highlight?: boolean;
+}
+
+/** A code listing (#624): `<pre><code>`, line by line as written. */
+export interface CodeNode {
+  k: 'code';
+  /** Page starts and anchors that come before its first line. */
+  pre: InlineItem[];
+  /** The fence's language (`language-<lang>` on the `<code>`). */
+  lang?: string;
+  lines: CodeLineNode[];
+}
+
 export interface MathNode {
   k: 'math';
   pre: InlineItem[];
@@ -300,6 +328,7 @@ export type Node =
   | MathNode
   | VerseNode
   | StanzaNode
+  | CodeNode
   | TocNode
   | ComicNode
   | MarkerNode;

@@ -5,7 +5,7 @@
 // rule sets a width the screen would have to honour.
 
 import type { ColorValue, Dimension, ResolvedConfig } from 'postext';
-import { dimensionToPx, primaryFontFamily } from 'postext';
+import { dimensionToPx, primaryFontFamily, resolvedCodeStyle } from 'postext';
 import { idOf, round } from './inline';
 
 /** What the walk found that decides the writing mode of the book. */
@@ -20,6 +20,8 @@ export interface StylesheetOptions {
   lineNumbers?: boolean;
   /** A line holds a tab at its stop (#622): the tab rows. */
   tabs?: boolean;
+  /** The book sets a code listing (#624): the listing's box and lines. */
+  code?: boolean;
   /** The drop caps the paragraphs open with (#623), as `lines-sink`. */
   dropCaps?: readonly string[];
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
@@ -568,6 +570,36 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     out.push(rule('.pt-tab-gap', ['flex: 0 0 0.5em']));
     out.push(rule('.pt-leader-dots', ['border-bottom: 0.12em dotted currentColor']));
     out.push(rule('.pt-leader-rule', ['border-bottom: 0.06em solid currentColor']));
+  }
+  // Code listings (#624): the box of `codeStyle` around `<pre><code>`, the
+  // lines as written in the code face, turned over by the reading system
+  // when the screen is narrow (`pre-wrap`); numbers and wrap left out of a
+  // selection; the highlighted lines tinted.
+  if (options.code) {
+    const cs = resolvedCodeStyle(config);
+    const codePx = dimensionToPx(cs.fontSize, dpi, bodyPx);
+    const bodyLead = body.lineHeight.unit === 'em' || body.lineHeight.unit === 'rem' ? body.lineHeight.value * bodyPx : px(body.lineHeight);
+    const codeLead = cs.lineHeight ? lh(cs.lineHeight, codePx) : `line-height: ${round(bodyLead / codePx)}`;
+    const len = (d: Dimension) => em(d, codePx);
+    out.push(rule('.pt-code-box', [
+      'display: block',
+      `margin: ${em(cs.marginTop, codePx)} 0 ${em(cs.marginBottom, codePx)}`,
+      `font-size: ${round(codePx / bodyPx)}em`,
+      cs.backgroundEnabled && color(cs.background, 'background-color'),
+      cs.border.enabled && `border: ${round(px(cs.border.width) / codePx)}em solid ${cs.border.color.hex}`,
+      px(cs.borderRadius, codePx) > 0 && `border-radius: ${len(cs.borderRadius)}`,
+      `padding: ${len(cs.padding.top)} ${len(cs.padding.right)} ${len(cs.padding.bottom)} ${len(cs.padding.left)}`,
+      'text-indent: 0',
+    ]));
+    out.push(rule('.pt-code-title', [fam(cs.titleStyle?.fontFamily ?? cs.fontFamily), 'font-weight: bold', 'margin: 0 0 0.4em', 'text-indent: 0']));
+    out.push(rule('pre.pt-code', [
+      fam(cs.fontFamily), 'font-size: 1em', codeLead, 'margin: 0', color(cs.color),
+      'white-space: pre-wrap', 'overflow-wrap: anywhere', `tab-size: ${cs.tabSize}`, `-moz-tab-size: ${cs.tabSize}`,
+      'text-align: left', 'hyphens: none',
+    ]));
+    out.push(rule('pre.pt-code code', ['font: inherit', 'background: none']));
+    out.push(rule('.pt-code-num', [color(cs.lineNumberColor), 'margin-right: 1em', '-webkit-user-select: none', 'user-select: none']));
+    out.push(rule('mark.pt-code-hl', [color(cs.highlightBackground, 'background-color'), 'color: inherit']));
   }
   // Drop caps (#623): CSS initial letters, `lines` tall, sunk `sink`
   // lines; a reading system without `initial-letter` floats the letter,

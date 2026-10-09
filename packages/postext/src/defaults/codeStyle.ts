@@ -38,7 +38,10 @@ export const DEFAULT_CODE_STYLE: Omit<ResolvedCodeStyleConfig, 'color' | 'tokens
   tabSize: 4,
   overflow: 'wrap',
   wrapIndent: 2,
-  wrapMarker: '↪',
+  // `↪` is missing from most code faces (JetBrains Mono, Ubuntu Mono…):
+  // a missing glyph prints as a box and fails PDF/UA. `»` is in every
+  // Latin face.
+  wrapMarker: '»',
   minFontScale: 0.8,
   lineNumbers: false,
   lineNumberColor: { hex: '#8a8a8a', model: 'hex' },

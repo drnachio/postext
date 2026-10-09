@@ -39,6 +39,8 @@ import type {
   TocNode,
   TocRowNode,
   StanzaNode,
+  CodeNode,
+  CodeRun,
   VerseLineNode,
   VerseNode,
 } from './model';
@@ -74,6 +76,8 @@ export interface BookModel {
   lineNumbers?: boolean;
   /** Whether a line holds a tab at its stop (#622). */
   tabs?: boolean;
+  /** Whether a code listing was read (#624). */
+  code?: boolean;
   /** The drop caps the paragraphs open with (#623), as `lines-sink`
    *  pairs: one rule each. */
   dropCaps?: Set<string>;
@@ -134,6 +138,11 @@ interface Sink extends TextSink {
 
 /** A stanza of a poem set line by line being read, across the fragments
  *  of its block (#620). */
+interface OpenCode {
+  node: CodeNode;
+  top: Node;
+}
+
 interface OpenStanza {
   node: StanzaNode;
   top: Node;
@@ -199,6 +208,7 @@ class DocWalker {
   private readonly sinks = new Map<string, Sink>();
   private readonly verses = new Map<string, OpenVerse>();
   private readonly stanzas = new Map<string, OpenStanza>();
+  private readonly codes = new Map<string, OpenCode>();
   /** The numbers printed beside lines (#621), by block id and line
    *  index: a line of verse carries its own. */
   private readonly lineNumbers = new Map<string, string>();
@@ -571,6 +581,10 @@ class DocWalker {
       this.record(block, stanza.top);
       return;
     }
+    if (block.type === 'code') {
+      this.code(block, root, key);
+      return;
+    }
     const sink = this.sinks.get(key);
     if (sink && block.indexLevel !== undefined && block.lines.some((l) => l.indexLevel !== undefined)) {
       // An index block's fragment that starts entries of its own.
@@ -814,6 +828,38 @@ class DocWalker {
     const open: OpenStanza = { node, top: this.topOf(state, node) };
     this.stanzas.set(key, open);
     this.stanzaLines(open, block);
+    this.record(block, open.top);
+  }
+
+  /** A code listing's fragment (#624): a source line opens a line of the
+   *  listing, a continuation of a wrapped line runs on in it; the wrap
+   *  marker and the numbers are print, left out. */
+  private code(block: VDTBlock, root: Container, key: string): void {
+    const state = this.enter(block, root);
+    let open = this.codes.get(key);
+    if (!open) {
+      const node: CodeNode = { k: 'code', pre: this.takePages(), lines: [], ...(block.code?.lang ? { lang: block.code.lang } : {}) };
+      state.nodes.push(node);
+      this.book.code = true;
+      open = { node, top: this.topOf(state, node) };
+      this.codes.set(key, open);
+    }
+    const lines = open.node.lines;
+    for (const line of block.lines) {
+      const runs: CodeRun[] = [];
+      for (const seg of line.segments ?? []) {
+        if (seg.leader || seg.inserted) continue;
+        const text = seg.kind === 'space' && seg.labelTab ? '\t' : seg.text;
+        if (!text) continue;
+        runs.push({ text, ...(seg.color ? { color: seg.color } : {}), ...(seg.bold ? { bold: true } : {}), ...(seg.italic ? { italic: true } : {}) });
+      }
+      const info = line.codeLine;
+      if (info?.continued && lines.length > 0) {
+        lines[lines.length - 1]!.runs.push(...runs);
+        continue;
+      }
+      lines.push({ runs, ...(info?.number !== undefined ? { num: info.number } : {}), ...(info?.highlight ? { highlight: true } : {}) });
+    }
     this.record(block, open.top);
   }
 

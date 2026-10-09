@@ -1699,8 +1699,9 @@ export interface CodeStyleConfig {
   /** Indent of a wrapped line's continuations, in character cells.
    *  Default `2`. */
   wrapIndent?: number;
-  /** Set in the indent of a continuation line. Default `'↪'`; `''` sets
-   *  none. */
+  /** Set in the indent of a continuation line. Default `'»'` (a mark
+   *  every Latin face carries; `'↪'` is missing from most code faces);
+   *  `''` sets none. */
   wrapMarker?: string;
   /** `'shrink'`: the smallest size the listing is set at, as a share of
    *  `fontSize`; past it the lines wrap. Default `0.8`. */

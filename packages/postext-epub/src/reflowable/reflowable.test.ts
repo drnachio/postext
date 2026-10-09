@@ -710,3 +710,45 @@ describe('reflowable rendition: drop caps (#623)', () => {
     expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-dropcap');
   });
 });
+
+describe('reflowable rendition: code listings (#624)', () => {
+  const md = [
+    'A listing:', '',
+    '```js {title="app.js" lineNumbers highlight="2"}',
+    'function f(a) {',
+    '\treturn a < 1 ? "x" : 2; // note',
+    '}',
+    '```', '', para,
+  ].join('\n');
+
+  it('writes the listing in its box as <pre><code>, its tokens coloured, its numbers hidden', async () => {
+    const { pub, files, all } = await render([layOut(md, baseConfig)]);
+    expectSound(pub, files);
+    expect(all).toContain('<div class="pt-code-box">');
+    expect(all).toContain('<p class="pt-code-title">app.js</p>');
+    expect(all).toMatch(/<pre class="pt-code" dir="ltr"><code class="language-js">/);
+    expect(all).toContain('<span class="pt-code-num" aria-hidden="true">1</span><span style="color:#8b2c8f">function</span>');
+    expect(all).toMatch(/<mark class="pt-code-hl">\t<span style="color:#8b2c8f">return<\/span> a &lt; <span style="color:#985f00">1<\/span>/);
+    expect(all).toContain('<span style="color:#7a7f87;font-style:italic">// note</span>');
+    // The source text, line by line, once the markup is gone.
+    const code = /<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!
+      .replace(/<span class="pt-code-num"[^>]*>[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    expect(code).toBe('function f(a) {\n\treturn a < 1 ? "x" : 2; // note\n}');
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('pre.pt-code {');
+    expect(css).toContain('tab-size: 4;');
+    expect(css).toContain('.pt-code-box {');
+  });
+
+  it('joins a line the print turned over', async () => {
+    const long = `const s = "${'a'.repeat(120)}";`;
+    const { all } = await render([layOut(['```js', long, '```'].join('\n'), baseConfig)]);
+    const code = /<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"');
+    expect(code).toBe(long);
+  });
+
+  it('writes no code rules for a book without code', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-code');
+  });
+});
