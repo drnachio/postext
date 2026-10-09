@@ -154,7 +154,7 @@ import {
   type PlannedCallout,
   type CalloutLineWidth,
 } from './calloutLayout';
-import { layoutCaptionText, layoutResourceBlock, planTableSlice, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
+import { chooseTableSlice, layoutCaptionText, layoutResourceBlock, MIN_TAIL_ROWS, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
 import {
   computeFloatPlan,
   floatedResourceIds,
@@ -1275,8 +1275,6 @@ function placeDocumentPass(
   };
   const floatGapPx = bodyStyle.lineHeightPx;
   const minTextPx = bodyStyle.lineHeightPx * 3;
-  /** Fewest body rows the closing slice of a split table carries. */
-  const MIN_TAIL_ROWS = 3;
 
   /** Offset a resolved resource block's caption/table geometry from
    *  block-relative to absolute page coordinates (mirrors inline placement). */
@@ -1667,25 +1665,6 @@ function placeDocumentPass(
     // A top band rounds up to the grid: the tallest float it holds within
     // `avail` is the grid multiple below it, less the gap.
     const hMax = Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx;
-    let end = planTableSlice(metrics, startRow, (rotated ? width : hMax) - overhead);
-    const floor = firstBody + 1;
-    if (end < floor) {
-      // Nothing fits. A fresh page carries the smallest slice anyway (it
-      // overflows, as a dominating figure would) rather than stall the
-      // queue; a slot of the current page is simply not this table's.
-      if (mode === 'strict') return 'none';
-      end = floor;
-    }
-    // A last page holding a row or two under a repeated header reads as a
-    // stranded tail: give the closing slice at least `MIN_TAIL_ROWS` rows by
-    // handing some back from this one (at a breakable edge, not under a
-    // group head), when this slice can spare them.
-    const tail = rowCount - end;
-    if (overflow === 'split' && tail > 0 && tail < MIN_TAIL_ROWS) {
-      let e = rowCount - MIN_TAIL_ROWS;
-      while (e > floor && (!(metrics.breakableAfter[e - 1] ?? true) || metrics.groupHeaderRow[e - 1])) e--;
-      if (e >= floor && e >= end - MIN_TAIL_ROWS) end = e;
-    }
     const fits = (slice: TableSliceSpec): boolean => {
       const measure = measureFloat(f.resourceId, width, slice, rotated);
       if (!measure) return true;
@@ -1696,20 +1675,17 @@ function placeDocumentPass(
       );
       return need <= avail + 0.01;
     };
-    const sliceFor = (e: number): TableSliceSpec => ({
-      startRow,
-      endRow: e,
-      continues: e < rowCount && overflow === 'split',
+    // Nothing fits: a fresh page carries the smallest slice anyway (it
+    // overflows, as a dominating figure would) rather than stall the
+    // queue; a slot of the current page is simply not this table's.
+    const slice = chooseTableSlice(metrics, startRow, (rotated ? width : hMax) - overhead, {
+      floor: firstBody + 1,
+      force: mode === 'fresh',
+      split: overflow === 'split',
+      fits,
     });
-    let slice = sliceFor(end);
-    // The caption may wrap differently with its suffix, the closing slice
-    // carries the note instead of the marker: verify, backing off a row at
-    // a time (over breakable edges) when the band still overflows.
-    for (let guard = 0; guard < 8 && end > floor && !fits(slice); guard++) {
-      do end--; while (end > floor && !(metrics.breakableAfter[end - 1] ?? true));
-      slice = sliceFor(end);
-    }
-    if (mode === 'strict' && !fits(slice)) return 'none';
+    if (!slice) return 'none';
+    const end = slice.endRow;
     const rest: PlannedFloat | undefined = slice.continues ? { ...f, startRow: end } : undefined;
     return rest ? { slice, rest } : { slice };
   };
@@ -5022,6 +4998,162 @@ function placeDocumentPass(
     }
   };
 
+  /**
+   * An inline table (`::resource` placed `here`) that does not fit the room
+   * left in its column (#634), by its style's `overflow` when
+   * `splitInline` is on: `'split'` cuts it between rows with the rules of a
+   * floated table (`chooseTableSlice`: breakable edges, group heads, the
+   * closing slice's three rows, header repeat, caption suffix, marker,
+   * note on the last slice), the first slice keeping the float gap above
+   * it and at least the header and {@link MIN_HEAD_ROWS} rows (fewer, and
+   * the whole table starts in the next column, as before); every
+   * continuation opens at the head of the next column, laid out at that
+   * column's width, before the text after the table. `'clip'` keeps the
+   * leading rows of a table taller than a column that fit the head of
+   * one, `'hide'` leaves such a table out. Returns `'whole'` when the
+   * table is placed as one block by the caller (it fits, or the rule does
+   * not apply), `'dropped'`, or `'placed'`: every slice is placed and the
+   * cursor sits in the column of the last one, which the caller snaps
+   * under. `blk` is the first slice's block, filled in here.
+   */
+  const MIN_HEAD_ROWS = 2;
+  const placeInlineTableSlices = (
+    raw: ContentBlock,
+    blockIdx: number,
+    blk: VDTBlock,
+    ctx: BlockMeasureContext,
+    styleOverride: BlockStyle | undefined,
+    resource: Resource,
+    wholeHeight: number,
+    spacingBefore: number,
+  ): 'whole' | 'dropped' | 'placed' => {
+    const style = pickTableStyle(resolved, resource.table?.styleId);
+    if (!style.splitInline || pageIsVertical(doc.pages[cursor.pageIndex]!)) return 'whole';
+    const rowCount = resource.table?.model.rows.length ?? 0;
+    const first = currentColumn(doc, cursor);
+    const room = first.availableHeight - (first.blocks.length === 0 ? 0 : spacingBefore);
+    if (wholeHeight <= room + FIT_EPS) return 'whole';
+    const overflow = style.overflow;
+    // `'clip'` and `'hide'` concern a table no column holds; a shorter one
+    // moves whole to the next column, as before.
+    const taller = wholeHeight > contentArea.height + FIT_EPS;
+    if (overflow !== 'split' && !taller) return 'whole';
+    if (overflow === 'hide') return 'dropped';
+    const measureAt = (width: number, slice?: TableSliceSpec) =>
+      measureContentBlock(raw, blockIdx, width, ctx, { styleOverride, ...(slice ? { tableSlice: slice } : {}) });
+    const metricsMemo = new Map<string, TableRowMetrics | null>();
+    const metricsAt = (width: number): TableRowMetrics | null => {
+      const key = width.toFixed(2);
+      let m = metricsMemo.get(key);
+      if (m === undefined) metricsMemo.set(key, (m = measureAt(width)?.tableRows ?? null));
+      return m;
+    };
+    const firstMetrics = metricsAt(first.bbox.width);
+    if (!firstMetrics || rowCount === 0) return 'whole';
+    const headerRows = firstMetrics.headerRowCount;
+    // Too few rows to leave a head and a tail worth the cut.
+    if (overflow === 'split' && rowCount - headerRows < MIN_HEAD_ROWS + MIN_TAIL_ROWS) return 'whole';
+    /** The rows a slice from `startRow` must carry at least, and its height
+     *  at `width` (caption and marker included): what a page opened for it
+     *  keeps clear of the floats it flushes (EF-160). */
+    const floorOf = (startRow: number): number => (startRow === 0
+      ? Math.min(rowCount, headerRows + (overflow === 'split' ? MIN_HEAD_ROWS : 1))
+      : Math.max(startRow, headerRows) + 1);
+    const minHeightAt = (width: number, startRow: number): number => {
+      const floor = floorOf(startRow);
+      const probe = measureAt(width, { startRow, endRow: floor, continues: floor < rowCount && overflow === 'split' });
+      return probe?.measured.totalHeight ?? 0;
+    };
+    let startRow = 0;
+    let part = 0;
+    let moves = 0;
+    let block = blk;
+    for (;;) {
+      enterBand(blockIdx, part);
+      let col = currentColumn(doc, cursor);
+      if (col.kind === 'span') {
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(minHeightAt(col.bbox.width, startRow)));
+        continue;
+      }
+      const width = col.bbox.width;
+      const metrics = metricsAt(width) ?? firstMetrics;
+      const spacing = part === 0 && col.blocks.length > 0 ? spacingBefore : 0;
+      const avail = col.availableHeight - spacing;
+      const restSlice: TableSliceSpec | undefined = startRow > 0 ? { startRow, endRow: rowCount, continues: false } : undefined;
+      const rest = measureAt(width, restSlice);
+      if (!rest?.resourceBlock) return part === 0 ? 'whole' : 'placed';
+      let placed = rest;
+      let slice: TableSliceSpec | null = null;
+      if (rest.measured.totalHeight > avail + FIT_EPS) {
+        const atHead = col.blocks.length === 0;
+        // `'clip'` keeps the rows the head of a column holds.
+        if (overflow === 'clip' && !atHead && moves < 4) {
+          moves++;
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(minHeightAt(width, startRow)));
+          continue;
+        }
+        const firstBody = startRow > 0 ? Math.max(startRow, headerRows) : headerRows;
+        const probe = measureAt(width, { startRow, endRow: firstBody + 1, continues: true });
+        const overhead = probe?.resourceBlock ? probe.measured.totalHeight - probe.resourceBlock.bodyRect.height : 0;
+        // An empty column of full height (or a run of short ones behind)
+        // takes the smallest slice even when it overflows: a fresh page
+        // always progresses.
+        const force = atHead && (col.bbox.height >= contentArea.height - baselineGrid || moves >= 4);
+        slice = chooseTableSlice(metrics, startRow, avail - overhead, {
+          floor: floorOf(startRow),
+          force,
+          split: overflow === 'split',
+          fits: (s) => (measureAt(width, s)?.measured.totalHeight ?? Infinity) <= avail + FIT_EPS,
+        });
+        if (!slice) {
+          // Not even the head rows fit: the (rest of the) table starts in
+          // the next column.
+          moves++;
+          pendingSpacing = 0;
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(minHeightAt(width, startRow)));
+          continue;
+        }
+        const m = measureAt(width, slice);
+        if (!m?.resourceBlock) return part === 0 ? 'whole' : 'placed';
+        placed = m;
+      }
+      // The slice's block: the first one is the caller's.
+      if (part > 0) {
+        block = createVDTBlock(`block-${blockIdCounter++}`, 'resource', blk.fontString, blk.color, blk.textAlign);
+        block.contentIndex = blockIdx;
+        stampBlockExtras(block, raw);
+        block.dirty = false;
+        block.snappedToGrid = false;
+        block.sourceStart = blk.sourceStart;
+        block.sourceEnd = blk.sourceEnd;
+      }
+      const rb = placed.resourceBlock!;
+      const height = placed.measured.totalHeight;
+      block.resourceBlock = rb;
+      block.lines = [{
+        text: '',
+        bbox: { x: 0, y: 0, width: rb.bodyRect.width, height },
+        baseline: 0,
+        hyphenated: false,
+        segments: [],
+        isLastLine: true,
+      }];
+      col = currentColumn(doc, cursor);
+      if (spacing > 0) col.availableHeight -= spacing;
+      placeBlockInColumn(block, height, col, cursor);
+      offsetResourceBlockToAbsolute(rb, block.bbox.x, block.bbox.y);
+      doc.blocks.push(block);
+      enterBand(blockIdx, part);
+      if (!slice?.continues) return 'placed';
+      // The rest opens the next column, with no gap above it.
+      startRow = slice.endRow;
+      part++;
+      moves = 0;
+      pendingSpacing = 0;
+      advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(minHeightAt(width, startRow)));
+    }
+  };
+
   const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
     const style = pickCalloutStyle(calloutStyles, plan.attrs.type)!;
     const firstFrameId = `block-${blockIdCounter++}`;
@@ -5940,58 +6072,69 @@ function placeDocumentPass(
       // float would, unless the block before asked for more. A wrapped one
       // stands level with the next line's top instead.
       const spacingBefore = wraps ? pendingSpacing : Math.max(pendingSpacing, floatGapPx);
-      const columnBefore = col;
-      enterBand(blockIdx, 0);
-      placeAtomicBlock(
-        blk, groupHeight, spacingBefore, cursor, doc, geomResolved,
-        contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(groupHeight),
-      );
-      enterBand(blockIdx, 0);
-      // Too tall for the room left in its column, a wrapped picture moved
-      // on with its anchor: say so.
-      if (wraps && currentColumn(doc, cursor) !== columnBefore && columnBefore.blocks.length > 0) {
-        textWrapNotes.push({
-          kind: 'textWrap', reason: 'moved', resourceId: kind.resource!.id,
-          sourceStart: rawBlock.sourceStart + bodyOffset, sourceEnd: rawBlock.sourceEnd + bodyOffset, pageIndex: cursor.pageIndex,
-        });
-      }
-      // `placeBlockInColumn` (inside placeAtomicBlock) shifts `blk.lines`; the
-      // resource's own caption/table lines live on `resourceBlock` and must be
-      // offset to absolute page coordinates here using the placed bbox origin.
-      offsetResourceBlockToAbsolute(resourceBlock, blk.bbox.x, blk.bbox.y);
-      const grown = figureGrowPx > 0 ? resourceBlock.bodyFlex?.delta ?? 0 : 0;
-      if (grown > 0.01) {
-        blk.balancing = { levers: ['flexFigure'], spaceAbove: 0, bodyGrowth: grown };
-        addBalanceExtra(currentColumn(doc, cursor), grown);
-      }
-      doc.blocks.push(blk);
-      // A wrapped picture (#627): the flow goes on under it and its gap, on
-      // a grid line, unless the next block takes the band back to run
-      // beside it (see `pendingWrap`).
-      if (wraps && wrapSpec) {
-        const rCol = currentColumn(doc, cursor);
-        const top = blk.bbox.y;
-        const bottomRel = Math.ceil((top - rCol.bbox.y + groupHeight + wrapGap - 0.01) / baselineGrid) * baselineGrid;
-        rCol.availableHeight = Math.max(0, Math.min(rCol.availableHeight, rCol.bbox.height - bottomRel));
-        pendingSpacing = 0;
-        inlineGapOwed = null;
-        const exWidth = wrapExclusionWidth(rCol.bbox.width, rCol.bbox.width * wrapSpec.width, wrapGap);
-        pendingWrap = {
-          col: rCol,
-          blocks: rCol.blocks.length,
-          cursorY: columnCursorY(rCol),
-          ex: {
-            x: wrapSpec.side === 'left' ? rCol.bbox.x : rCol.bbox.x + rCol.bbox.width - exWidth,
-            y: top,
-            width: exWidth,
-            height: rCol.bbox.y + bottomRel - top,
-            side: wrapSpec.side,
-            gap: exWidth - rCol.bbox.width * wrapSpec.width,
-            ownerId: blk.id,
-          },
-        };
+      // An inline table that does not fit the room left in its column is
+      // cut between rows (#634), by the rules of a floated one.
+      const sliced = !wraps && !resourceBlock.rotation && resourceBlock.table && kind.resource
+        ? placeInlineTableSlices(rawBlock, blockIdx, blk, blockMeasureCtx, styleOverride, kind.resource, groupHeight, spacingBefore)
+        : 'whole';
+      if (sliced === 'dropped') {
         flushPendingNumberingAtBoundary();
         continue;
+      }
+      const columnBefore = col;
+      if (sliced === 'whole') {
+        enterBand(blockIdx, 0);
+        placeAtomicBlock(
+          blk, groupHeight, spacingBefore, cursor, doc, geomResolved,
+          contentArea, pageWidthPx, pageHeightPx, onAtomicNewPage(groupHeight),
+        );
+        enterBand(blockIdx, 0);
+        // Too tall for the room left in its column, a wrapped picture moved
+        // on with its anchor: say so.
+        if (wraps && currentColumn(doc, cursor) !== columnBefore && columnBefore.blocks.length > 0) {
+          textWrapNotes.push({
+            kind: 'textWrap', reason: 'moved', resourceId: kind.resource!.id,
+            sourceStart: rawBlock.sourceStart + bodyOffset, sourceEnd: rawBlock.sourceEnd + bodyOffset, pageIndex: cursor.pageIndex,
+          });
+        }
+        // `placeBlockInColumn` (inside placeAtomicBlock) shifts `blk.lines`; the
+        // resource's own caption/table lines live on `resourceBlock` and must be
+        // offset to absolute page coordinates here using the placed bbox origin.
+        offsetResourceBlockToAbsolute(resourceBlock, blk.bbox.x, blk.bbox.y);
+        const grown = figureGrowPx > 0 ? resourceBlock.bodyFlex?.delta ?? 0 : 0;
+        if (grown > 0.01) {
+          blk.balancing = { levers: ['flexFigure'], spaceAbove: 0, bodyGrowth: grown };
+          addBalanceExtra(currentColumn(doc, cursor), grown);
+        }
+        doc.blocks.push(blk);
+        // A wrapped picture (#627): the flow goes on under it and its gap, on
+        // a grid line, unless the next block takes the band back to run
+        // beside it (see `pendingWrap`).
+        if (wraps && wrapSpec) {
+          const rCol = currentColumn(doc, cursor);
+          const top = blk.bbox.y;
+          const bottomRel = Math.ceil((top - rCol.bbox.y + groupHeight + wrapGap - 0.01) / baselineGrid) * baselineGrid;
+          rCol.availableHeight = Math.max(0, Math.min(rCol.availableHeight, rCol.bbox.height - bottomRel));
+          pendingSpacing = 0;
+          inlineGapOwed = null;
+          const exWidth = wrapExclusionWidth(rCol.bbox.width, rCol.bbox.width * wrapSpec.width, wrapGap);
+          pendingWrap = {
+            col: rCol,
+            blocks: rCol.blocks.length,
+            cursorY: columnCursorY(rCol),
+            ex: {
+              x: wrapSpec.side === 'left' ? rCol.bbox.x : rCol.bbox.x + rCol.bbox.width - exWidth,
+              y: top,
+              width: exWidth,
+              height: rCol.bbox.y + bottomRel - top,
+              side: wrapSpec.side,
+              gap: exWidth - rCol.bbox.width * wrapSpec.width,
+              ownerId: blk.id,
+            },
+          };
+          flushPendingNumberingAtBoundary();
+          continue;
+        }
       }
       // Snap the flow position after the resource to the baseline grid (the
       // group height is arbitrary), baking in at least marginBottom — same

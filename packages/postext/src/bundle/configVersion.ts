@@ -3,7 +3,7 @@
 // the number as `configVersion` (every writer since postext 1.5 sets it);
 // the Sandbox numbers its stored projects the same way.
 
-import type { BodyTextConfig, CodeStyleConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig } from '../types';
+import type { BodyTextConfig, CodeStyleConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig, TableStyleConfig } from '../types';
 import { DEFAULT_MATH_CONFIG } from '../defaults/math';
 import { dimensionsEqual } from '../defaults/shared';
 import { DEFAULT_TEXT_ELEMENT, resolveDesignLineHeight } from '../defaults/headerFooter';
@@ -91,10 +91,14 @@ import { codeFenceOpen } from '../parse/codeFence';
  *   - a text element of a heading design or a part page that sets no
  *     `overflow` wraps onto more lines (#628), where up to 1.23 it was cut
  *     with an ellipsis ({@link pinLegacyDesignOverflow}).
- * - 11, one rule:
+ * - 11, two rules:
  *   - a horizontal page on a character grid (`cjk.grid.enabled`) is not
  *     balanced unless `headings.balancing.enabled` says so (#632), where
- *     up to 1.24 it was ({@link pinLegacyGridBalancing}).
+ *     up to 1.24 it was ({@link pinLegacyGridBalancing});
+ *   - a table placed `here` follows its style's `overflow`
+ *     (`tableStyle.splitInline`, #634): one that does not fit the room
+ *     left in its column is cut between rows, where up to 1.24 it moved
+ *     whole to the next column ({@link pinLegacyInlineTableSplit}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -160,6 +164,8 @@ const DESIGN_OVERFLOW_RULES = 10;
 /** The rules that leave a horizontal page on a character grid unbalanced
  *  by default. */
 const GRID_BALANCING_RULES = 11;
+/** The rules that cut an inline table between rows. */
+const INLINE_TABLE_SPLIT_RULES = 11;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -594,6 +600,20 @@ export function pinLegacyGridBalancing<T extends Partial<PostextConfig>>(config:
   const balancing = isRecord(headings.balancing) ? headings.balancing : {};
   if (balancing.enabled !== undefined) return config;
   return { ...config, headings: { ...headings, balancing: { ...balancing, enabled: true } } };
+}
+
+/**
+ * A configuration written before #634 (postext 1.24 or earlier), pinned to
+ * the way 1.24 placed a table set `here`: `tableStyle.splitInline: false`,
+ * so an inline table that does not fit the room left in its column moves
+ * whole to the next one, where today it is cut between rows. The named
+ * table styles inherit it. A configuration that sets `splitInline` is
+ * returned as it is (the same object).
+ */
+export function pinLegacyInlineTableSplit<T extends Partial<PostextConfig>>(config: T): T {
+  const tableStyle: TableStyleConfig = isRecord(config.tableStyle) ? config.tableStyle : {};
+  if (tableStyle.splitInline !== undefined) return config;
+  return { ...config, tableStyle: { ...tableStyle, splitInline: false } };
 }
 
 /** Whether markdown holds a poem set line by line: a `:::verse` fence
@@ -1103,8 +1123,9 @@ export interface MigrateConfigOptions {
  * line by line, the text elements of its heading and part designs
  * that set no `overflow` by {@link pinLegacyDesignOverflow}; one older
  * than 11 has the balancing of a horizontal page on a character grid
- * pinned by {@link pinLegacyGridBalancing}. A current one is returned as it is (the same
- * object).
+ * pinned by {@link pinLegacyGridBalancing}, and its inline tables by {@link
+ * pinLegacyInlineTableSplit}, unless `options.content` shows it embeds no
+ * resource. A current one is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -1136,6 +1157,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, out)) out = pinLegacyVerseTightening(out);
   if (rules < DESIGN_OVERFLOW_RULES) out = pinLegacyDesignOverflow(out);
   if (rules < GRID_BALANCING_RULES) out = pinLegacyGridBalancing(out);
+  if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) out = pinLegacyInlineTableSplit(out);
   return out;
 }
 
@@ -1155,8 +1177,9 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * the container space when it declares a paragraph style), the heading
  * marks and the split under a heading on the `headings` in force, the
  * drop caps and the overflow of heading and part design texts wherever
- * they sit in the merged configuration, and the balancing of a horizontal
- * character grid on the merged `cjk`, `layout` and `headings`.
+ * they sit in the merged configuration, the balancing of a horizontal
+ * character grid on the merged `cjk`, `layout` and `headings`, and the
+ * inline tables on the `tableStyle` in force.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
 export function migrateBundleConfig(
@@ -1190,5 +1213,6 @@ export function migrateBundleConfig(
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, merged)) merged = pinLegacyVerseTightening(merged);
   if (rules < DESIGN_OVERFLOW_RULES) merged = pinLegacyDesignOverflow(merged);
   if (rules < GRID_BALANCING_RULES) merged = pinLegacyGridBalancing(merged);
+  if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) merged = pinLegacyInlineTableSplit(merged);
   return merged;
 }

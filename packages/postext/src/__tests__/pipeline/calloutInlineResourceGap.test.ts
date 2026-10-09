@@ -128,9 +128,11 @@ describe('configurations stored before rules 6 keep the 1.4 box spacing', () => 
     expect(migrateConfig(config, 5).layout).toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false });
     // Today's rules, or a book with no resource in a box: as it is.
     expect(migrateConfig(config, CONFIG_VERSION, { content: MD })).toBe(config);
-    expect(migrateConfig(config, 5, { content: `${TEXT}\n\n::resource{id="t"}\n\n${boxed(TEXT)}` })).toBe(config);
+    // (An embed outside a box still gets the version-11 inline table pin,
+    // #634, on `tableStyle`.)
+    expect(migrateConfig(config, 5, { content: `${TEXT}\n\n::resource{id="t"}\n\n${boxed(TEXT)}` }).layout).toBe(config.layout);
     // Only a line inside an open `:::callout`, nested containers counted.
-    expect(migrateConfig(config, 5, { content: `:::paragraphs\n::resource{id="t"}\n:::\n\n${boxed(TEXT)}` })).toBe(config);
+    expect(migrateConfig(config, 5, { content: `:::paragraphs\n::resource{id="t"}\n:::\n\n${boxed(TEXT)}` }).layout).toBe(config.layout);
     expect(migrateConfig(config, 5, { content: `:::callout\n:::columns{count=2}\nText.\n:::\n::resource{id="t"}\n:::` }).layout)
       .toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false });
     expect(migrateConfig(config, 5, { content: ['No box.', `Text.\r\n${boxed('  ::resource{id="t"}  ')}`] }).layout)

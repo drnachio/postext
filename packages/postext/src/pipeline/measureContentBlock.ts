@@ -28,7 +28,7 @@ import { measureVerse } from './verse';
 import { measureVerseLines, verseLinesSettings, versesLineByLine } from './verseLines';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
-import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
+import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
 import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -123,6 +123,9 @@ export interface MeasuredContentBlock {
   mathDisplayRender?: ReturnType<typeof renderMath>;
   /** Present for `resource` kinds: the laid-out image/table + caption group. */
   resourceBlock?: ResolvedResourceBlock;
+  /** A table measured in full: its row metrics at this width, from which a
+   *  slice is planned (an inline table split across columns, #634). */
+  tableRows?: TableRowMetrics;
   /** Tracking the text was measured with (px per glyph), when column
    *  balancing asked for it — renderers must paint the block with it. */
   letterSpacingPx?: number;
@@ -184,6 +187,9 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks on a vertical page: set upright, the frame at most
    *  this wide (see `ResourceLayoutInput.upright`). */
   uprightMaxLength?: number;
+  /** Table resources: lay out only these rows, the slice of an inline
+   *  table split across columns (#634, `ResourceLayoutInput.slice`). */
+  tableSlice?: TableSliceSpec;
   /** Lines (1-based) a column or a page ends on, which should not end on
    *  a hyphen (`bodyText.hyphenateAcrossColumns: false`). */
   avoidHyphenAtLines?: readonly number[];
@@ -384,7 +390,7 @@ export function measureContentBlock(
     const frac = wrap ? wrap.width : typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
     const align = wrap ? wrap.side : startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
-    const { resourceBlock, measured } = runMeasurement({
+    const { resourceBlock, measured, tableRows } = runMeasurement({
       vdtType,
       rawBlock,
       contentBlock,
@@ -404,6 +410,7 @@ export function measureContentBlock(
       ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
       ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
       ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
+      ...(opts?.tableSlice ? { tableSlice: opts.tableSlice } : {}),
     });
     if (!resourceBlock) return null;
     if (frac < 1) {
@@ -412,7 +419,7 @@ export function measureContentBlock(
       if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
       else shiftResourceBlockX(resourceBlock, dx);
     }
-    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
+    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock, ...(tableRows ? { tableRows } : {}) };
   }
 
   // Inline code in the code face (#624, `codeStyle.inline`), before the

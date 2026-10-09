@@ -75,7 +75,9 @@ describe('pinLegacyDesignOverflow (#628)', () => {
       expect(overflowOf(migrateConfig(stored(), v).parts!.design, 'partTitle'), String(v)).toBe('ellipsis-end');
     }
     const current = stored();
-    expect(migrateConfig(current, 10)).toBe(current);
+    // (Content with no embed: the version-11 inline table pin, #634, has
+    // nothing to pin.)
+    expect(migrateConfig(current, 10, { content: '' })).toBe(current);
   });
 
   it('returns the same object when nothing needs the pin', () => {

@@ -821,6 +821,56 @@ export function planTableSlice(metrics: TableRowMetrics, startRow: number, bodyB
   return cut > floor || best <= floor ? cut : best;
 }
 
+/** Fewest body rows the closing slice of a split table carries: a last
+ *  page holding a row or two under a repeated header reads as stranded. */
+export const MIN_TAIL_ROWS = 3;
+
+/**
+ * The slice of a table, from `startRow` on, that a room fits: the rows
+ * {@link planTableSlice} allows within `budget` px of body, the closing
+ * slice given at least {@link MIN_TAIL_ROWS} rows (handed back from this
+ * one at a breakable edge, not under a group head, when it can spare
+ * them), then checked by `fits` — the caption may wrap differently with
+ * its suffix, and the closing slice carries the note instead of the
+ * marker — backing off a row at a time over breakable edges while it
+ * fails. `floor` is the exclusive end row of the smallest slice worth
+ * setting. Below it, or when even that slice fails `fits`, the result is
+ * `null`, unless `force`: then the smallest slice is returned (it
+ * overflows, as a dominating figure would). `split` makes a slice that
+ * stops short of the last row go on (`continues`, the marker); without it
+ * the rows left over are dropped (`overflow: 'clip'`). Shared by floated
+ * tables (`splitTableFloat`, a band's room) and inline ones (#634, the
+ * room left in a column).
+ */
+export function chooseTableSlice(
+  metrics: TableRowMetrics,
+  startRow: number,
+  budget: number,
+  opts: { floor: number; force: boolean; split: boolean; fits: (slice: TableSliceSpec) => boolean },
+): TableSliceSpec | null {
+  const rowCount = metrics.rowHeights.length;
+  const { floor, split } = opts;
+  let end = planTableSlice(metrics, startRow, budget);
+  if (end < floor) {
+    if (!opts.force) return null;
+    end = floor;
+  }
+  const tail = rowCount - end;
+  if (split && tail > 0 && tail < MIN_TAIL_ROWS) {
+    let e = rowCount - MIN_TAIL_ROWS;
+    while (e > floor && (!(metrics.breakableAfter[e - 1] ?? true) || metrics.groupHeaderRow[e - 1])) e--;
+    if (e >= floor && e >= end - MIN_TAIL_ROWS) end = e;
+  }
+  const sliceFor = (e: number): TableSliceSpec => ({ startRow, endRow: e, continues: e < rowCount && split });
+  let slice = sliceFor(end);
+  for (let guard = 0; guard < 8 && end > floor && !opts.fits(slice); guard++) {
+    do end--; while (end > floor && !(metrics.breakableAfter[end - 1] ?? true));
+    slice = sliceFor(end);
+  }
+  if (!opts.force && !opts.fits(slice)) return null;
+  return slice;
+}
+
 /**
  * The physical alignment of a cell's content (#371). Cell text reads its
  * alignment in its own direction, as body text does: `'left'` / `'start'`

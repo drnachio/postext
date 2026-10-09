@@ -2178,6 +2178,14 @@ export interface TableStyleConfig {
    *  it on the following pages (`'split'`, the default), keep only the rows
    *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
   overflow?: TableOverflow;
+  /** Apply {@link overflow} to tables placed `here` too (#634): an inline
+   *  table that does not fit the room left in its column is cut between
+   *  rows and goes on at the head of the next column, before the text
+   *  after it (`'split'`); one taller than a column keeps its leading
+   *  rows (`'clip'`) or is left out (`'hide'`). `false` keeps the rule of
+   *  postext 1.24 and earlier: an inline table moves whole to the next
+   *  column. Default `true`. */
+  splitInline?: boolean;
   /** Suffix appended to the caption of every continuation slice of a split
    *  table (e.g. "Table 6-4. Title *(cont.)*"). Defaults to `"(cont.)"`. */
   continuedSuffix?: string;
@@ -2260,6 +2268,7 @@ export interface ResolvedTableStyleConfig {
   groupRules: boolean;
   continuedFootRule: TableContinuedFootRule;
   overflow: TableOverflow;
+  splitInline: boolean;
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;
   continuesMarker: string;
