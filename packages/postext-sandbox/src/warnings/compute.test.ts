@@ -459,6 +459,31 @@ describe('engine content warnings', () => {
     expect(warningCategory('dropCap')).toBe('typesetting');
   });
 
+  it('lists a picture float shrunk to its slot, and one that still overruns (#626)', () => {
+    const g = globalThis as unknown as { OffscreenCanvas?: unknown };
+    g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };
+    const px = (value: number) => ({ value, unit: 'px' as const });
+    const config: PostextConfig = {
+      page: { dpi: 144, width: px(600), height: px(400), margins: { top: px(0), bottom: px(0), left: px(0), right: px(0) } },
+      layout: { layoutType: 'single' },
+    };
+    const plate = (id: string, minScale: number): Resource => ({
+      id, typeId: 'figure', kind: 'bitmap', caption: 'A plate.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: `${id}.jpg`, format: 'jpeg', width: 3000, height: 2000 },
+      placement: { shrink: 'page', minScale },
+    });
+    const md = 'Text :ref{id="a"}.\n\n:::pagebreak\n\nMore :ref{id="b"}.';
+    const resources = [plate('a', 0.5), plate('b', 0.95)];
+    const doc = buildDocument({ markdown: md, resources }, config);
+    const found = computeWarnings({ markdown: md, config, doc, resources })
+      .filter((w): w is typeof w & { payload: Extract<WarningPayload, { kind: 'floatShrunk' }> } => w.payload.kind === 'floatShrunk');
+    expect(found.map((w) => [w.payload.resourceId, w.payload.scale < 1, w.payload.overflowMm !== undefined, w.line])).toEqual([
+      ['a', true, false, 1],
+      ['b', true, true, 5],
+    ]);
+    expect(warningCategory('floatShrunk')).toBe('figures');
+  });
+
   it('lists a code listing wider than its box, and a code fence left open (#624)', () => {
     const g = globalThis as unknown as { OffscreenCanvas?: unknown };
     g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };

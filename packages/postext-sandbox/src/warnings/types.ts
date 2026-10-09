@@ -83,6 +83,7 @@ export type WarningKind =
   | 'lineNumberOverlap'
   | 'dropCap'
   | 'codeOverflow'
+  | 'floatShrunk'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -330,6 +331,10 @@ export type WarningPayload =
   | { kind: 'lineNumberOverlap'; number: string }
   /** A paragraph's drop cap could not be set as configured (#623). */
   | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
+  /** A floated picture set smaller to fit the room of its slot
+   *  (`placement.shrink`, #626), at `scale` of its width; `overflowMm`:
+   *  at its smallest scale it still runs that far past the text block. */
+  | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowMm?: number }
   | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the

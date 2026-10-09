@@ -128,6 +128,23 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
     // wider than their line and the styles whose letter-spacing such words
     // do not take, and the comic panels and balloons the layout had to
     // force (a letterboxed picture, a balloon that does not fit).
+    if (w.kind === 'floatShrunk') {
+      // A picture scaled to its slot (#626); an overrun in mm, as for boxes.
+      const mmPerPx = 25.4 / doc.config.page.dpi;
+      out.push({
+        id: `layout-floatShrunk-${w.resourceId}-${i}`,
+        payload: {
+          kind: 'floatShrunk',
+          resourceId: w.resourceId,
+          scale: w.scale,
+          ...(w.overflowPx !== undefined ? { overflowMm: Math.round(w.overflowPx * mmPerPx * 10) / 10 } : {}),
+        },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (!LAYOUT_CONTENT_KINDS.has(w.kind)) return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;

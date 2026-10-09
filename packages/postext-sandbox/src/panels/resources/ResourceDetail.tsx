@@ -9,7 +9,9 @@ import type {
   ResourceFloatPosition as PlacementPosition,
   ResourceFloatSpan as PlacementSpan,
   ResourceRotation,
+  FloatShrinkMode,
 } from 'postext';
+import { DEFAULT_FLOAT_MIN_SCALE } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type ResourceFocusTarget } from '../../context/SandboxContext';
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
 import { ConfirmPopover, IconButton, PanelBody, PanelHeader } from '../../ui';
@@ -149,7 +151,14 @@ export function ResourceDetail({
   // The alignment places a resource narrower than its slot: one narrowed by
   // Width, or a picture (bitmap or SVG) narrower than the column — smaller
   // than it, or shrunk by `layout.fitFiguresToPage` — at any width.
-  const alignApplies = placementWidthPercent < 100 || resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
+  const isPicture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
+  const alignApplies = placementWidthPercent < 100 || isPicture;
+  // Shrinking a floated picture to the room of its slot (#626): the
+  // resource's own value → its type's → the document's `layout.floatShrink`.
+  const floatShrink = useSandboxSelector((s) => s.config.layout?.floatShrink);
+  const placementShrink = currentPlacement.shrink ?? typePlacement.shrink ?? floatShrink?.mode ?? 'never';
+  const placementMinScale = currentPlacement.minScale ?? typePlacement.minScale ?? floatShrink?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
+  const placementCaptionMeasure = currentPlacement.captionMeasure ?? typePlacement.captionMeasure ?? 'slot';
 
   // Named table style (`config.tableStyles`); unset = the document's table style.
   const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
@@ -490,6 +499,54 @@ export function ResourceDetail({
               onChange={(v) => setPlacementKey('captionSide', v)}
               isDefault={currentPlacement.captionSide === undefined}
               onReset={() => setPlacementKey('captionSide', undefined)}
+            />
+          )}
+          {/* A floated picture scaled to the room of its slot instead of
+              moving on (#626), never below its smallest scale; the caption
+              at the slot's measure or the picture's. */}
+          {isPicture && !placementInline && !placementRotated && (
+            <SelectInput
+              stacked
+              label={labels.resourceTypePlacementShrink}
+              tooltip={labels.resourceTypePlacementShrinkTooltip}
+              value={placementShrink}
+              options={[
+                { value: 'never', label: labels.resourceShrinkNever },
+                { value: 'page', label: labels.resourceShrinkPage },
+                { value: 'slot', label: labels.resourceShrinkSlot },
+              ]}
+              onChange={(v) => setPlacementKey('shrink', v as FloatShrinkMode)}
+              isDefault={currentPlacement.shrink === undefined}
+              onReset={() => setPlacementKey('shrink', undefined)}
+            />
+          )}
+          {isPicture && !placementInline && !placementRotated && placementShrink !== 'never' && (
+            <NumberInput
+              label={labels.resourceTypePlacementMinScale}
+              tooltip={labels.resourceTypePlacementMinScaleTooltip}
+              value={Math.round(placementMinScale * 100)}
+              onChange={(v) => setPlacementKey('minScale', Math.min(100, Math.max(5, v)) / 100)}
+              min={5}
+              max={100}
+              step={5}
+              suffix="%"
+              isDefault={currentPlacement.minScale === undefined}
+              onReset={() => setPlacementKey('minScale', undefined)}
+            />
+          )}
+          {isPicture && !placementRotated && (
+            <SelectInput
+              variant="segmented"
+              label={labels.resourceTypePlacementCaptionMeasure}
+              tooltip={labels.resourceTypePlacementCaptionMeasureTooltip}
+              value={placementCaptionMeasure}
+              options={[
+                { value: 'slot', label: labels.resourceCaptionMeasureSlot },
+                { value: 'body', label: labels.resourceCaptionMeasurePicture },
+              ]}
+              onChange={(v) => setPlacementKey('captionMeasure', v === 'body' ? 'body' : 'slot')}
+              isDefault={currentPlacement.captionMeasure === undefined}
+              onReset={() => setPlacementKey('captionMeasure', undefined)}
             />
           )}
         </div>

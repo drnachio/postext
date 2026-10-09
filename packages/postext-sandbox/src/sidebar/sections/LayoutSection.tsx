@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
-import type { LayoutConfig, Dimension, ColorValue } from 'postext';
+import type { LayoutConfig, Dimension, ColorValue, FloatShrinkMode } from 'postext';
 import {
   ChoiceInput,
   CollapsibleSection,
@@ -52,6 +52,14 @@ export const LayoutSection = memo(function LayoutSection() {
       type: 'UPDATE_CONFIG',
       payload: { layout: hasKeys ? next : undefined },
     });
+  };
+
+  const resetFloatShrinkField = (field: 'mode' | 'minScale') => {
+    if (!raw?.floatShrink) return;
+    const next = { ...raw.floatShrink };
+    delete next[field];
+    if (Object.keys(next).length > 0) updateLayout({ floatShrink: next });
+    else resetField('floatShrink');
   };
 
   const resetColumnRuleField = (field: 'enabled' | 'color' | 'lineWidth') => {
@@ -267,6 +275,37 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.fitFiguresToPage === D.fitFiguresToPage}
         onReset={() => resetField('fitFiguresToPage')}
       />
+      {/* Floated pictures scaled to the room of their slot (#626): the
+          default a resource type or a resource may override. */}
+      <SelectInput
+        label={labels.floatShrink}
+        value={layout.floatShrink.mode}
+        options={[
+          { value: 'never', label: labels.resourceShrinkNever },
+          { value: 'page', label: labels.resourceShrinkPage },
+          { value: 'slot', label: labels.resourceShrinkSlot },
+        ]}
+        onChange={(v) => updateLayout({ floatShrink: { ...raw?.floatShrink, mode: v as FloatShrinkMode } })}
+        tooltip={labels.floatShrinkTooltip}
+        isDefault={layout.floatShrink.mode === D.floatShrink.mode}
+        onReset={() => resetFloatShrinkField('mode')}
+      />
+      {layout.floatShrink.mode !== 'never' && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.floatShrinkMinScale}
+            value={Math.round(layout.floatShrink.minScale * 100)}
+            onChange={(v) => updateLayout({ floatShrink: { ...raw?.floatShrink, minScale: Math.min(100, Math.max(5, v)) / 100 } })}
+            min={5}
+            max={100}
+            step={5}
+            suffix="%"
+            tooltip={labels.floatShrinkMinScaleTooltip}
+            isDefault={layout.floatShrink.minScale === D.floatShrink.minScale}
+            onReset={() => resetFloatShrinkField('minScale')}
+          />
+        </NestedGroup>
+      )}
       <SelectInput
         label={labels.inlineResourceGap}
         value={layout.inlineResourceGap}

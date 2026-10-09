@@ -110,6 +110,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'duplicateResourceId':
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
+    case 'floatShrunk':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'videoWithoutPoster':
@@ -282,6 +283,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDanglingTypeRefTitle;
     case 'bitmapTooSmall':
       return labels.warningsBitmapTooSmallTitle;
+    case 'floatShrunk':
+      return labels.warningsFloatShrunkTitle;
     case 'unknownTableStyle':
       return labels.warningsUnknownTableStyleTitle;
     case 'raggedTableGrid':
@@ -543,6 +546,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `#${payload.resourceId} → ${payload.typeId} — ${labels.warningsDanglingTypeRefDetail}`;
     case 'bitmapTooSmall':
       return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail}`;
+    case 'floatShrunk':
+      return `#${payload.resourceId} — ${(payload.overflowMm !== undefined ? labels.warningsFloatShrunkOverflowDetail : labels.warningsFloatShrunkDetail)
+        .replace('__scale__', String(Math.round(payload.scale * 100)))
+        .replace('__mm__', String(payload.overflowMm ?? 0))}`;
     case 'unknownTableStyle':
       return `#${payload.resourceId} · styleId="${payload.styleId}" — ${labels.warningsUnknownTableStyleDetail}`;
     case 'raggedTableGrid': {

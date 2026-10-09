@@ -24,6 +24,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'duplicateResourceId':
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
+    case 'floatShrunk':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'videoWithoutPoster':

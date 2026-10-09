@@ -78,6 +78,24 @@ describe('ResourceDetail placement: width and align', () => {
     expect(align(html)).toBe(false);
   });
 
+  it('offers Shrink to fit and Caption width on a floated picture, Smallest scale once it shrinks (#626)', () => {
+    const shrink = (html: string) => row(html, L.resourceTypePlacementShrink);
+    const minScale = (html: string) => row(html, L.resourceTypePlacementMinScale);
+    const measure = (html: string) => row(html, L.resourceTypePlacementCaptionMeasure);
+    const plain = render(bitmap({ position: 'auto' }));
+    expect(shrink(plain)).toBe(true);
+    expect(minScale(plain)).toBe(false);
+    expect(measure(plain)).toBe(true);
+    expect(minScale(render(bitmap({ position: 'auto', shrink: 'slot' })))).toBe(true);
+    // Not for an inline embed (Caption width still applies), a turned
+    // figure or a table.
+    const inline = render(bitmap({ position: 'here' }));
+    expect(shrink(inline)).toBe(false);
+    expect(measure(inline)).toBe(true);
+    expect(shrink(render(bitmap({ position: 'auto', rotate: 'ccw' })))).toBe(false);
+    expect(shrink(render(table({ position: 'auto' })))).toBe(false);
+  });
+
   it('says in the tooltip that Align also places a picture narrower than its slot', () => {
     expect(L.resourceTypePlacementAlignTooltip).toMatch(/picture/);
   });

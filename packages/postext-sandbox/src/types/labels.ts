@@ -1743,6 +1743,9 @@ export interface SandboxLabels {
   warningsCodeOverflowWrap: string;
   warningsCodeOverflowShrink: string;
   warningsCodeOverflowClip: string;
+  warningsFloatShrunkTitle: string;
+  warningsFloatShrunkDetail: string;
+  warningsFloatShrunkOverflowDetail: string;
   warningsUnclosedCodeBlockTitle: string;
   warningsUnclosedCodeBlockDetail: string;
   warningsLineNumbersUnsupportedTitle: string;
@@ -2700,6 +2703,17 @@ export interface SandboxLabels {
   resourceTypePlacementAlignTooltip: string;
   resourceTypePlacementCaptionSide: string;
   resourceTypePlacementCaptionSideTooltip: string;
+  resourceTypePlacementShrink: string;
+  resourceTypePlacementShrinkTooltip: string;
+  resourceShrinkNever: string;
+  resourceShrinkPage: string;
+  resourceShrinkSlot: string;
+  resourceTypePlacementMinScale: string;
+  resourceTypePlacementMinScaleTooltip: string;
+  resourceTypePlacementCaptionMeasure: string;
+  resourceTypePlacementCaptionMeasureTooltip: string;
+  resourceCaptionMeasureSlot: string;
+  resourceCaptionMeasurePicture: string;
   htmlViewerOverrides: string;
   htmlViewerOverridesHint: string;
   htmlViewerOverridesInvalid: string;
@@ -2974,6 +2988,10 @@ export interface SandboxLabels {
   layoutMultipleDescription: string;
   fitFiguresToPage: string;
   fitFiguresToPageTooltip: string;
+  floatShrink: string;
+  floatShrinkTooltip: string;
+  floatShrinkMinScale: string;
+  floatShrinkMinScaleTooltip: string;
   hugClosingFloats: string;
   hugClosingFloatsTooltip: string;
   inlineResourceGap: string;
