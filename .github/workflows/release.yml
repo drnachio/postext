@@ -145,10 +145,14 @@ jobs:
       # The self-contained executables (Bun, cross-compiled for every
       # platform from this runner) and bin/readme.txt. The cli-smoke job
       # runs them on each system before cli-release publishes them.
+      # Never blocks the packages' release: without the artifact, the
+      # cli-smoke and cli-release jobs fail on their own.
       - name: Build the command-line executables
+        continue-on-error: true
         run: pnpm --filter postext-cli build:bin
 
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: postext-cli
           path: packages/postext-cli/bin/
