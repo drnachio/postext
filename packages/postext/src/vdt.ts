@@ -1834,6 +1834,9 @@ export interface VDTExclusion {
   /** The side of the column it stands at, in the flow (the text runs on the
    *  other side). */
   side: 'left' | 'right';
+  /** The space between the item and the text beside it (px), part of
+   *  `width`. */
+  gap: number;
   /** The id of the block that wraps the text: an inline figure's block, a
    *  float's, or a box's frame. */
   ownerId: string;

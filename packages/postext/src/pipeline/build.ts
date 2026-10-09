@@ -2123,6 +2123,7 @@ function placeDocumentPass(
             width: exWidth,
             height: need,
             side: f.wrap,
+            gap: exWidth - width,
             ownerId: built.block.id,
           },
         });
@@ -4735,6 +4736,7 @@ function placeDocumentPass(
           width: exWidth,
           height: col.bbox.y + bottomRel - top,
           side: wrap.side,
+          gap: exWidth - width,
           ownerId: frame.id,
         },
       };
@@ -5706,6 +5708,7 @@ function placeDocumentPass(
             width: exWidth,
             height: rCol.bbox.y + bottomRel - top,
             side: wrapSpec.side,
+            gap: exWidth - rCol.bbox.width * wrapSpec.width,
             ownerId: blk.id,
           },
         };
