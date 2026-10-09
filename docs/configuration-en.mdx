@@ -117,7 +117,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. It is not the resolution of pictures, but a bitmap set at its own size takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print. The [preflight](#preflight) checks each picture's effective resolution.</td>
+      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. A bitmap without a resolution of its own takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print, or give the pictures a resolution (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; see [Document format › Bitmap size](/en/docs/document-format#bitmap-size)). The [preflight](#preflight) checks each picture's effective resolution.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -458,6 +458,12 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Shrink a figure (bitmap or SVG) whose image, caption and note would stand taller than the content area until they fit it (a picture with a safe area, <code>Resource.safeArea</code>, is first cropped within it at its full width, and only shrunk if it still does not fit), and set an inline figure a little too tall for the room left in its column smaller (down to half its width, the caption keeping the column's measure) so it stays with its text. A shrunk image sits in its slot per <code>placement.align</code>. The HTML viewer turns it on, since its pages are only as tall as the screen; printed pages are sized for their figures.</td>
+    </tr>
+    <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>How a bitmap without its own <code>bitmap.resolution</code> takes its natural print size. <code>'document'</code> reads its pixels at <code>page.dpi</code>; a number is the ppi of every such bitmap (<code>300</code>: a 2400 px picture is 203.2 mm wide whatever the page's dpi); <code>'file'</code> uses the resolution its file states (<code>bitmap.fileResolution</code>), 72 and 96 counting as unset, else <code>page.dpi</code>. The column still caps the picture, and a smaller one is never enlarged. See <a href="/en/docs/document-format#bitmap-size">Document format › Bitmap size</a>. Since postext 1.24.</td>
     </tr>
     <tr>
       <td><code>floatShrink</code></td>
@@ -8188,7 +8194,7 @@ interface PrintPreflightConfig {
   </thead>
   <tbody>
     <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Run the checks.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>A placed bitmap under this many pixels per inch at its printed size, crop included, gets a warning: figures, table-cell pictures, design images, comic panels. A bitmap set at its own size prints at `page.dpi`, so a page laid out at 150 dpi prints every such picture at 150 ppi.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>A placed bitmap under this many pixels per inch at its printed size, crop included, gets a warning: figures, table-cell pictures, design images, comic panels. A bitmap with no resolution of its own prints at `page.dpi` at its natural size, so a page laid out at 150 dpi prints every such picture at 150 ppi; one with a resolution (`bitmap.resolution`, `layout.bitmapResolution`) prints at that resolution at its natural size.</td></tr>
     <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Under this the warning is critical. Never above `minImageResolution`.</td></tr>
     <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Rules, borders, column rules, table rules and comic panel borders thinner than this.</td></tr>
     <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text under this size set in more than one ink (a process colour, rich black): it blurs when the plates shift. Black text, K only, never counts.</td></tr>
@@ -8198,10 +8204,10 @@ interface PrintPreflightConfig {
   </tbody>
 </table>
 
-`preflightDocument(doc, options)` runs the checks on a laid-out document and returns a list of issues, each with a `kind`, a `severity` (`'critical'`, `'warning'` or `'info'`), the book-absolute `pageIndex`, the offending `rect` (page px) and, when the element has one, its source range. The kinds are `lowImageResolution`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` and `nearTrim`. Without a `transform` a neutral counts one ink and any other colour three, and coverage is not checked; with one, the counts and the coverage are exact.
+`preflightDocument(doc, options)` runs the checks on a laid-out document and returns a list of issues, each with a `kind`, a `severity` (`'critical'`, `'warning'` or `'info'`), the book-absolute `pageIndex`, the offending `rect` (page px) and, when the element has one, its source range. The kinds are `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` and `nearTrim`. Without a `transform` a neutral counts one ink and any other colour three, and coverage is not checked; with one, the counts and the coverage are exact. The resolution of a picture is worked out from the pixels its resource declares, or from the file's own when `imageSize(fileId)` gives them (`bitmapInfo` on the bytes, or the decoded image): a declaration more than a pixel away from the file is reported once as `declaredPixelsMismatch`, a warning when it claims more pixels than the file has. `placedImageResolutions(doc, { resources, imageSize })` lists every placed bitmap with its effective ppi, whether the preflight is on or not.
 
 ```ts
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { inspectPrintMaster } from 'postext-pdf';
 
 const print = resolvePrintConfig(config.print);
@@ -8210,6 +8216,7 @@ const issues = preflightDocument(doc, {
   print,
   transform,
   resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
   imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
 });
 if (issues.some((i) => i.severity === 'critical')) process.exit(1);
@@ -9938,7 +9945,7 @@ For production print workflows, tune these configuration options before renderin
 - **`page.cutLines.enabled: true`** — adds bleed area and crop marks around the trim, and gives every page a TrimBox and a BleedBox. See [Cut lines](#cut-lines).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (or `'pdfx1a'`) — a PDF/X file with the output intent, the identification and the boxes a printer checks; every colour and RGB picture separated through the ICC profile, 100 % K overprinting and large black areas in rich black. See [Print production (config)](#print-production-config).
 - **`colorSpace: 'cmyk'`** (or `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — the same separation without the PDF/X identification (crop marks are always in registration colour). PDF print masters are embedded as they are.
-- **`page.dpi: 300`** — the layout's px per inch: a bitmap set at its own size prints at this resolution. The [preflight](#preflight) reports pictures under 300 ppi at their printed size.
+- **`page.dpi: 300`** — the layout's px per inch: a bitmap with no resolution of its own prints at this resolution at its natural size. The [preflight](#preflight) reports pictures under 300 ppi at their printed size.
 - **`ColorValue.cmyk`** — a colour authored in CMYK prints with its exact values.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` — inverts the trim area using a Difference blend mode (cut marks stay un-inverted). Useful for preflight checks on dark-on-light typography.
 
@@ -10353,9 +10360,9 @@ Because the Sandbox, the agent skill and the `postext` package all read and writ
 `postext/bundle` also exports the building blocks behind `openBundle` and `createBundle`, for hosts that store or serve bundles their own way (an unzipped directory over HTTP, records in a database):
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**: the archive layer. Opening tolerates a top-level folder and ignores `__MACOSX` entries and dotfiles. Paths that escape the bundle are refused. `mtime` dates the files as `createBundle`'s input does.
-- **`readBundle(manifest, readFile, options)`** reads a manifest plus a `readFile(path)` callback into chapters, config, resources, pictures and fonts. `options` sets the locale, how file ids are named (`ids`), the base configuration (`baseConfig`, under the manifest's; by default the palette and the resource types of `bundleBaseConfig` in the bundle's language, which `resolveBundleConfigLocale(manifest, locale)` returns, and a host that passes its own `baseConfig` should localise it to that language; under a manifest older than `configVersion: 4` its `math` is pinned with the bundle's, under one older than 5 its `layout`'s inline gap, under one older than 6 its `layout`'s gap in boxes, its `bodyText`'s colon-line room, its `headings`' inline marks and its drop-cap sizes, under one older than 7 its `bodyText`'s dash breaks and ragged breaking, and under one older than 8 its `headings`' split under a heading and its `bodyText`'s compound breaks and space under `:::paragraphs` containers, see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)) and how intrinsic sizes are measured.
+- **`readBundle(manifest, readFile, options)`** reads a manifest plus a `readFile(path)` callback into chapters, config, resources, pictures and fonts. `options` sets the locale, how file ids are named (`ids`), the base configuration (`baseConfig`, under the manifest's; by default the palette and the resource types of `bundleBaseConfig` in the bundle's language, which `resolveBundleConfigLocale(manifest, locale)` returns, and a host that passes its own `baseConfig` should localise it to that language; under a manifest older than `configVersion: 4` its `math` is pinned with the bundle's, under one older than 5 its `layout`'s inline gap, under one older than 6 its `layout`'s gap in boxes, its `bodyText`'s colon-line room, its `headings`' inline marks and its drop-cap sizes, under one older than 7 its `bodyText`'s dash breaks and ragged breaking, and under one older than 8 its `headings`' split under a heading and its `bodyText`'s compound breaks and space under `:::paragraphs` containers, see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)) and how intrinsic sizes are measured. `readResolution` reads each bitmap's resolution from its file into `bitmap.fileResolution`; it defaults to true when the bundle sets `layout.bitmapResolution: 'file'`.
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: the writing side, split into a pure plan (file names and manifest) and resolving the bytes through `readBlob` / `readFont` callbacks.
-- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `pickBundleView`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize`, and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
+- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `pickBundleView`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize` / `bitmapInfo` (a bitmap's pixels and the resolution its file states), and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
 - **`CONFIG_VERSION`, `migrateConfig(config, configVersion, { content })`, `pinLegacyHeadingBreaks(config)`, `pinLegacyMathSize(config)`, `pinLegacyInlineGap(config)`, `pinLegacyBoxResourceGap(config)`, `pinLegacyHeadingMarks(config)`, `pinLegacyDropCapSize(config)`, `pinLegacyColonListRoom(config)`, `pinLegacyBoxChildCut(config)`, `pinLegacyDashBreaks(config)`, `pinLegacyRaggedBreaking(config)`, `pinLegacyHeadingSplit(config)`, `pinLegacyParagraphContainerSpacing(config)`, `pinLegacyHyphenBreaks(config)` and `LEGACY_MATH_SIZE`** (0.5 ÷ 0.442): a stored configuration in today's terms (see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)). `readBundle` applies it; a host that stores configurations its own way can too, once per stored copy.
 
 The Sandbox is built on these. It adds its own storage ids and the `layouts.json` page records.
