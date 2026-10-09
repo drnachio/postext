@@ -1440,24 +1440,24 @@
       ]
     },
     "explanation": {
-      "en": "Table rules come in four patterns: grid, horizontal (a rule between every pair of rows), outer and none. None of them draws only a top rule, a rule under the header and a bottom rule. Use 'horizontal' with hairlines in a light rule colour, and set the header apart by its face, weight and colour.",
-      "es": "Los filetes de tabla siguen cuatro patrones: rejilla, horizontal (un filete entre cada par de filas), exterior y ninguno. Ninguno dibuja solo un filete arriba, otro bajo la cabecera y otro al pie. Usa 'horizontal' con filetes finos en un color claro y distingue la cabecera por la fuente, el peso y el color.",
-      "ca": "Els filets de taula segueixen quatre patrons: retícula, horitzontal (un filet entre cada parell de files), exterior i cap. Cap d'aquests patrons no dibuixa només un filet a dalt, un altre sota la capçalera i un altre al peu. Fes servir 'horizontal' amb filets fins d'un color clar i distingeix la capçalera per la font, el pes i el color.",
-      "zh": "表格线有四种样式：grid（网格）、horizontal（每两行之间一条线）、outer（外框）和none（无）。没有一种只画顶线、表头下的线和底线。用'horizontal'配上浅色的细线，再用字体、字重和颜色把表头区分出来。",
-      "ar": "تأتي خطوط الجداول في أربعة أنماط: grid، وhorizontal (خط بين كل صفين)، وouter، وnone. لا يرسم أي منها خطًّا علويًّا وخطًّا تحت الرأس وخطًّا سفليًّا فقط. استعمل 'horizontal' بخطوط شعرية بلون خطوط فاتح، وميّز الرأس بوجهه ووزنه ولونه.",
-      "ja": "表の罫線には、grid、horizontal（すべての行の間に罫線）、outer、noneの4パターンがあります。上罫、見出し行の下の罫線、下罫だけを引くものはありません。'horizontal'を薄い罫線色のヘアラインで使い、見出し行は書体、ウェイト、色で区別してください。",
-      "pt": "Os fios de tabela seguem quatro padrões: grade, horizontal (um fio entre cada par de linhas), externo e nenhum. Nenhum deles desenha só um fio no topo, outro abaixo do cabeçalho e outro no pé. Use 'horizontal' com fios finos em uma cor clara e destaque o cabeçalho pela fonte, pelo peso e pela cor."
+      "en": "Fixed in postext 1.24: tableStyle.rules 'booktabs' draws a heavy rule above the table and under its last row, a light rule under the header rows and no vertical rules, with short rules under heads that span several columns (trimmed at both ends by default) and, with groupRules, a light rule above group-head rows. heavyRuleWidth, lightRuleWidth and spanRuleWidth default to 0.08em, 0.05em and 0.03em of the body cell size; a part of a split table that goes on closes with continuedFootRule. Up to 1.23 the nearest pattern was 'horizontal' with pale hairlines, which ruled every row.",
+      "es": "Resuelto en postext 1.24: tableStyle.rules 'booktabs' traza un filete grueso encima de la tabla y bajo su última fila, uno fino bajo las filas de cabecera y ningún filete vertical, con filetes cortos bajo las cabeceras que abarcan varias columnas (recortados por los dos extremos por defecto) y, con groupRules, un filete fino encima de las filas que encabezan un grupo. heavyRuleWidth, lightRuleWidth y spanRuleWidth valen por defecto 0.08em, 0.05em y 0.03em del cuerpo de las celdas; la parte de una tabla partida que sigue se cierra con continuedFootRule. Hasta la 1.23 el patrón más parecido era 'horizontal' con filetes finos de color claro, que ponía un filete entre todas las filas.",
+      "ca": "Resolt a postext 1.24: tableStyle.rules 'booktabs' traça un filet gruixut a sobre de la taula i sota la seva última fila, un de prim sota les files de capçalera i cap filet vertical, amb filets curts sota les capçaleres que abasten diverses columnes (retallats pels dos extrems per defecte) i, amb groupRules, un filet prim a sobre de les files que encapçalen un grup. heavyRuleWidth, lightRuleWidth i spanRuleWidth valen per defecte 0.08em, 0.05em i 0.03em del cos de les cel·les; la part d'una taula dividida que continua es tanca amb continuedFootRule. Fins a la 1.23 el patró més semblant era 'horizontal' amb filets fins de color clar, que posava un filet entre totes les files.",
+      "zh": "已在 postext 1.24 中解决：tableStyle.rules 设为 'booktabs' 时，表格上方和末行下方各画一条粗线，表头行下画一条细线，不画竖线；跨多列的表头下画短线（默认两端缩短），开启 groupRules 后，分组标题行上方再加一条细线。heavyRuleWidth、lightRuleWidth 和 spanRuleWidth 默认分别为正文单元格字号的 0.08em、0.05em 和 0.03em；跨页表格延续部分的收尾线由 continuedFootRule 决定。1.23 及以前最接近的只有 'horizontal' 配浅色细线，每两行之间都会画线。",
+      "ar": "حُلّت في postext 1.24: يرسم tableStyle.rules بالقيمة 'booktabs' خطًّا سميكًا فوق الجدول وتحت صفه الأخير، وخطًّا رفيعًا تحت صفوف الترويسة، ولا خطوط عمودية، مع خطوط قصيرة تحت الترويسات الممتدة على أكثر من عمود (مقصّرة من طرفيها افتراضيًّا)، ومع groupRules خطًّا رفيعًا فوق الصفوف التي ترأس مجموعة. القيم الافتراضية لـ heavyRuleWidth وlightRuleWidth وspanRuleWidth هي 0.08em و0.05em و0.03em من حجم خط خلايا المتن؛ ويُختم جزء الجدول المقسوم الذي يتبع بـ continuedFootRule. وحتى 1.23 كان أقرب نمط هو 'horizontal' بخطوط شعرية فاتحة، يرسم خطًّا بين كل الصفوف.",
+      "ja": "postext 1.24で解決：tableStyle.rulesを'booktabs'にすると、表の上と最終行の下に太罫、見出し行の下に細罫を引き、縦罫は引きません。複数列にまたがる見出しの下には短い罫（既定で両端を詰める）を引き、groupRulesを有効にするとグループの見出し行の上に細罫を加えます。heavyRuleWidth、lightRuleWidth、spanRuleWidthの既定値は本文セルの文字サイズの0.08em、0.05em、0.03emです。分割した表の続く部分はcontinuedFootRuleで閉じます。1.23までは、薄いヘアラインの'horizontal'がいちばん近いパターンで、すべての行の間に罫線が入りました。",
+      "pt": "Resolvido no postext 1.24: tableStyle.rules 'booktabs' traça um fio grosso acima da tabela e abaixo da última linha, um fino sob as linhas de cabeçalho e nenhum fio vertical, com fios curtos sob os cabeçalhos que abrangem várias colunas (encurtados nas duas pontas por padrão) e, com groupRules, um fio fino acima das linhas que abrem um grupo. heavyRuleWidth, lightRuleWidth e spanRuleWidth valem por padrão 0.08em, 0.05em e 0.03em do corpo das células; a parte de uma tabela dividida que continua fecha com continuedFootRule. Até a 1.23 o padrão mais próximo era 'horizontal' com fios finos de cor clara, que punha um fio entre todas as linhas."
     },
     "docs": {
       "slug": "configuration",
       "heading": {
-        "en": "Table style",
-        "es": "Estilo de tablas",
-        "ca": "Estil de taules",
-        "zh": "表格样式",
-        "ar": "نمط الجداول",
-        "ja": "表スタイル",
-        "pt": "Estilo de tabela"
+        "en": "Booktabs rules",
+        "es": "Filetes booktabs",
+        "ca": "Filets booktabs",
+        "zh": "三线表",
+        "ar": "خطوط booktabs",
+        "ja": "booktabs の罫線",
+        "pt": "Fios booktabs"
       }
     }
   },
