@@ -7783,6 +7783,8 @@ El panel **Revisión** del Sandbox muestra en su grupo *Fuentes* tres modos de f
 
 Al pulsar cualquiera de los avisos se abre el panel **Fuentes** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
 
+Cuando ya hay una composición, el panel muestra también el aviso del motor **Fuente sustituida en la composición** (`fontFallback`): una cara sin la que se midieron las páginas, porque falta o porque el navegador la dibuja a partir de otro peso o de otra inclinación. Una familia que ya figura como desconocida o con una variante faltante no aparece dos veces. Antes de la primera composición, ocupa su lugar una comprobación contra `document.fonts`.
+
 ## Paleta de colores
 
 La propiedad `colorPalette` de `PostextConfig` permite definir un conjunto reutilizable de colores con nombre y referenciarlos desde cualquier `ColorValue` de la configuración. Es el equivalente en Postext a las custom properties de CSS o al panel de muestras de InDesign: cambia la entrada una sola vez y todos los colores que apunten a ella se actualizan en el documento.
@@ -8991,6 +8993,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>Un recurso o una caja con el texto ajustado a su alrededor (<code>placement.wrap</code>, el <code>wrap</code> de una caja) que no se compone como se pidió. <code>reason</code>: <code>'tooNarrow'</code> (el texto de al lado quedaría más estrecho que <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (es más bajo que <code>layout.wrap.minLinesBeside</code> líneas), <code>'moved'</code> (uno en línea demasiado alto para el espacio que queda en su columna pasó a la siguiente, con su ancla) o <code>'verticalText'</code>. <code>resourceId</code> nombra un recurso, <code>box</code> el estilo de una caja. Señala la inserción o la caja.</td>
       <td>El elemento ocupa su banda entera, o se coloca en la columna siguiente, según la razón.</td>
     </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>Una cara con la que se compuso el texto (<code>family</code>, <code>weight</code>, <code>style</code>) que el conjunto de fuentes no podía dar cuando se ejecutó el build: <code>reason: 'missing'</code>, no había cargada ni instalada ninguna cara de la familia; <code>'synthesized'</code>, el peso o la inclinación salen de otra cara de la familia (una cursiva 700 pedida a una familia que solo tiene una redonda 400). Se comprueba donde hay un conjunto de fuentes (<code>document.fonts</code>, el <code>self.fonts</code> de un worker o <code>BuildDocumentOptions.fontSet</code>), bajo <code>debug.warnings.missingFont</code>. No lleva página ni rango de origen.</td>
+      <td>El texto se mide y se dibuja con la fuente de reserva, o con la cara que el navegador engruesa o inclina; sus cortes de línea cambian cuando llega la cara. Ver <a href="#cargar-las-fuentes-antes-de-componer">Cargar las fuentes antes de componer</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9157,28 +9164,64 @@ const blocks = parseMarkdown(content);
 
 Consulta la página de [Formato del documento](/es/docs/document-format) para ver la lista completa de construcciones markdown que reconoce Postext.
 
-### Caché de medidas
+### Cargar las fuentes antes de componer
 
-La medición del texto es el paso costoso del proceso de composición. Dos clases de caché la abaratan, y se vacían de forma distinta:
-
-- **Una caché de bloques que es tuya.** `createMeasurementCache()` devuelve una `MeasurementCache` que recuerda cada párrafo medido, con su texto, sus fuentes, su ancho, sus opciones de corte de línea y el diccionario de separación silábica activo como clave. Pásala como tercer argumento de `buildDocument` (o de `buildDocumentAsync`) para reutilizar las medidas entre las pasadas de convergencia y entre composiciones: un editor que recompone el documento en cada pulsación mide entonces solo los párrafos que cambiaron. Sin ella, cada pasada vuelve a medir todos los bloques. Un párrafo leído de la caché es igual que uno medido de nuevo, así que una composición con caché corta cada línea como una sin ella; en postext 1.4.1 un párrafo guardado en caché perdía la marca de una última línea demasiado corta, y el ajuste de esas líneas y el equilibrado de columnas podían cortarlo de otra manera. El worker de composición conserva una entre composiciones y la sustituye cuando cambian las fuentes.
-- **Cachés globales de anchos.** Los anchos de palabra se guardan por cadena de fuente en un estado de módulo que comparten todas las composiciones de la página, y pretext tiene su propia caché. Son las que quedan obsoletas cuando una fuente web llega después de haberse medido el texto con una fuente de reserva.
+La composición mide el texto con las caras que tiene el conjunto de fuentes en el momento en que se ejecuta. `prepareFonts` carga antes del primer build todas las caras que piden una configuración y su texto: el cuerpo, los encabezados, las listas, los títulos y cuerpos de los recuadros, las tablas, los textos de los elementos de diseño, los titulillos, el índice de contenidos, el código y la rotulación de los cómics, en cada peso e inclinación que fija la configuración (las cuatro de la familia del cuerpo, porque `**` y `*` componen en ella la negrita y la cursiva). Cada cara se carga para los caracteres que compone el documento, de modo que una familia servida en tramos de `unicode-range` (latín extendido, griego, árabe, los tramos CJK de Google Fonts y Fontsource) trae los archivos que el texto necesita.
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// Los archivos del anfitrión: el contrato del proveedor de fuentes del PDF, así que una misma función sirve a los dos.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// Ha terminado de cargar una fuente web: los anchos medidos con la de reserva no valen.
-await document.fonts.ready;
-clearMeasurementCache();           // sin argumento: vacía las cachés globales de anchos
-cache = createMeasurementCache();  // una caché de bloques no tiene clear(); crea otra
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// O en una sola llamada: preparar, componer, cargar las caras que usaron las páginas y no estaban, y volver a componer.
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()` no recibe argumentos ni toca ninguna `MeasurementCache`: sus bloques también se midieron con los anchos viejos, así que descártala y crea una nueva. Recomponer tras cargar una fuente sin vaciar las cachés da los mismos cortes de línea, medidos con la fuente de reserva.
+- **Las caras que declara la página** (una regla `@font-face`, un `FontFace` ya añadido) se cargan a través del conjunto de fuentes (`document.fonts.load`, o `self.fonts` en un worker). **Las que no declara** se piden a `resolve(family, weight, style, { text, codePoints })`, que responde con un archivo (bytes o una URL), con varios (los tramos de una cara), con `{ source, unicodeRange, weight, style }` para un tramo o un rango variable, o con `null`. El motor las añade como `FontFace` cuando han cargado todas, en el orden de la configuración y de cada respuesta (latin, luego latin-ext, luego greek si el resolutor responde así), de modo que el conjunto de fuentes queda igual sea cual sea el orden en que lleguen los archivos. También las registra en el registro de fuentes que leen las [imágenes SVG](#fuentes-en-el-texto-de-los-svg) y los workers de composición. Un resolutor puede declarar la cara por su cuenta (añadir una hoja de estilos) y responder `null`.
+- **El informe** enumera en `loaded` las caras que cubre una cara cargada (o una familia instalada), en `missing` las que siguen faltando y en `synthesized` las que el navegador sintetizaría a partir de otro peso o de otra inclinación. `timeoutMs` (10 000 por defecto) limita la espera; una cara que para entonces siga cargando cuenta como faltante. Donde no hay conjunto de fuentes (Node), `prepareFonts` no hace nada y da todas las caras por cargadas.
+- **`buildDocumentWithFonts(content, config, options)`** prepara, compone con `buildDocumentAsync`, lee las caras en las que las páginas compusieron texto de verdad, carga las que faltaban y vuelve a componer (dos composiciones más como mucho). `withLoadedFonts(build, options)` hace lo mismo alrededor de cualquier función de composición, para un libro que se compone capítulo a capítulo o para un paquete (`buildBundle`) que devuelve varios documentos. `options.onFonts` recibe el informe final.
+- **Después del build**, cada cara con la que se compuso el texto y que el conjunto de fuentes no pudo dar figura en `doc.contentWarnings` como `fontFallback` (ver [Avisos del documento](#avisos-del-documento)).
+
+Las caras que llegan más tarde se recogen solas. El motor apunta, por cada conjunto de fuentes, qué caras de cada familia estaban cargadas la última vez que miró; un build vuelve a mirar al empezar (solo si el conjunto creció, menguó o terminó de cargar una cara) y descarta lo medido en las familias cuyas caras cambiaron. `watchFonts(fontSet)` hace lo mismo a medida que cargan las caras, como mucho una vez por fotograma de animación por muchos tramos que traiga una ráfaga, y `onFontsChanged(listener)` le dice al anfitrión qué familias cambiaron, para que vuelva a componer las páginas:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts por defecto
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` pone en marcha la vigilancia sobre el conjunto en el que carga (`watch: false` la deja apagada).
+
+### Caché de medidas
+
+La medición del texto es el paso costoso del proceso de composición. Dos clases de caché la abaratan:
+
+- **Una caché de bloques que es tuya.** `createMeasurementCache()` devuelve una `MeasurementCache` que recuerda cada párrafo medido, con su texto, sus fuentes, su ancho, sus opciones de corte de línea y el diccionario de separación silábica activo como clave. Pásala como tercer argumento de `buildDocument` (o de `buildDocumentAsync`) para reutilizar las medidas entre las pasadas de convergencia y entre composiciones: un editor que recompone el documento en cada pulsación mide entonces solo los párrafos que cambiaron. Sin ella, cada pasada vuelve a medir todos los bloques. Un párrafo leído de la caché es igual que uno medido de nuevo, así que una composición con caché corta cada línea como una sin ella; en postext 1.4.1 un párrafo guardado en caché perdía la marca de una última línea demasiado corta, y el ajuste de esas líneas y el equilibrado de columnas podían cortarlo de otra manera. La caché lleva la generación de medidas con la que se llenó: cuando llegan o se van caras de una familia, su siguiente consulta descarta los bloques compuestos en esa familia, así que una caché que se conserva mientras cargan las fuentes nunca sirve líneas medidas con la de reserva.
+- **Cachés globales de anchos.** Los anchos de palabra se guardan por cadena de fuente en un estado de módulo que comparten todas las composiciones de la página, y pretext tiene su propia caché. El motor descarta los anchos de una familia cuando cambian sus caras (al empezar un build, desde `watchFonts`, desde `prepareFonts` y desde `loadBundleFonts`); la caché de pretext no tiene índice por familia y se vacía entera.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// Se añadió a document.fonts una cara de "EB Garamond": el siguiente build la ve,
+// con la misma caché, y vuelve a medir esa familia.
+doc = buildDocument(content, config, cache);
+
+// Un anfitrión que cambia caras que el motor no puede ver (un conjunto de fuentes propio) lo avisa:
+evictFontFamilies(['EB Garamond']);   // los anchos y los bloques en caché de esa familia
+clearMeasurementCache();              // todas las familias
+```
 
 Para aplicaciones que miden el texto pieza a pieza, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` y `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` reciben los argumentos de `measureBlock` y `measureRichBlock` más la caché, al final.
 
@@ -9187,8 +9230,8 @@ Para aplicaciones que miden el texto pieza a pieza, `cachedMeasureBlock(text, fo
 Parte del estado de Postext vive en variables de módulo. Todo lo que importa `postext` en el mismo contexto de JavaScript (*realm*) lo comparte: una página y sus scripts comparten una copia, mientras que cada iframe y cada worker tienen la suya. Con un documento por página no se nota. Con varios documentos en la misma página —dos vistas previas en vivo, una galería de ejemplos— sí:
 
 - **Imágenes de los recursos.** `registerResourceImage(fileId, image)` llena un único registro indexado por `fileId`, que leen `renderPage` y `renderPageToCanvas`. Dos documentos que registran `figure.svg` comparten esa entrada: gana el último registro, para los dos. Pon a los identificadores de archivo un prefijo por documento, y llama a `unregisterResourceImage(fileId)` o a `clearResourceImages()` cuando un documento desaparece. Los rásteres que guarda en caché el backend de canvas usan la misma clave y se descartan con la imagen.
-- **Medidas del texto.** Los anchos medidos se guardan en caché por cadena de fuente y texto para todo el contexto. El texto medido antes de que una fuente web terminara de cargarse conserva los anchos de la fuente de reserva, en todos los documentos, hasta que `clearMeasurementCache()` (sin argumentos) vacía las cachés: llámala cuando las fuentes hayan cargado y vuelve a componer.
-- **Configuraciones resueltas.** Cada objeto de configuración se resuelve una vez y el resultado queda en caché asociado a ese objeto. Una configuración modificada en el sitio y compuesta de nuevo se compone con sus ajustes antiguos: pasa un objeto nuevo en cada cambio (`{ ...config, … }` o `structuredClone(config)`).
+- **Medidas del texto.** Los anchos medidos se guardan en caché por cadena de fuente y texto para todo el contexto. Cuando llegan o se van caras de una familia, el motor descarta los anchos de esa familia para todos los documentos (ver [Cargar las fuentes antes de componer](#cargar-las-fuentes-antes-de-componer)); `clearMeasurementCache()` los descarta todos.
+- **Configuraciones resueltas.** Cada objeto de configuración se resuelve una vez y el resultado queda en caché asociado a ese objeto. Antes de nada, cada build compara el objeto con el texto que tenía cuando se resolvió (un `JSON.stringify`, unos 0,1 ms para una configuración de libro de 55 KB y 1,5 ms para una de 240 KB), así que una configuración modificada en el sitio, a cualquier profundidad (`config.bodyText.fontSize = …`, un color de la paleta), se vuelve a resolver. `invalidateConfig(config)` descarta la resolución a mano. `stableStringify` y `hashString` dan una clave de contenido que no depende del orden de las claves, para los anfitriones que guardan composiciones en caché por configuración.
 - **Idioma de la separación silábica.** Cada build fija el idioma de separación silábica de todo el proceso al `bodyText.hyphenation.locale` de su documento. Las funciones exportadas `hyphenateText(text)` y `layoutDesignSlot` usan el idioma del último build salvo que les pases uno: llama a `hyphenateText(text, 'es')`.
 - **Motor de fórmulas.** Hay un único motor MathJax y una única caché de fórmulas renderizadas por contexto; `initMathEngine()` lo arranca para todos.
 
@@ -9358,7 +9401,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**Un worker no ve las fuentes de la página.** Tiene su propio conjunto de fuentes, que solo contiene las caras enviadas con `registerFonts` y las fuentes instaladas en el sistema. Cuando un build compone texto en una familia que el worker no encuentra, ese texto se mide con una fuente de reserva, así que sus cortes de línea no coincidirán con los de la página. El cliente imprime entonces un aviso en la consola por familia (`"EB Garamond" is not available inside the layout worker…`) y enumera las familias en `BuildStats.missingFonts`, que recibe el callback `onStats` de `build`.
+**Un worker no ve las fuentes de la página.** Tiene su propio conjunto de fuentes, que solo contiene las caras enviadas con `registerFonts` y las fuentes instaladas en el sistema. Cuando un build compone texto en una familia que el worker no encuentra, ese texto se mide con una fuente de reserva, así que sus cortes de línea no coincidirán con los de la página. El cliente imprime entonces un aviso en la consola por familia (`"EB Garamond" is not available inside the layout worker…`) y enumera las familias en `BuildStats.missingFonts`, que recibe el callback `onStats` de `build`. El propio documento lleva esas mismas caras como avisos de contenido `fontFallback`.
+
+`handle.prepareFonts(content, config, options)` ejecuta [`prepareFonts`](#cargar-las-fuentes-antes-de-componer) en la página y después envía al worker los archivos de cada cara encontrada que guarda el registro de fuentes (los archivos del resolutor, las caras de un paquete, las reglas `@font-face` legibles de la página), y de ellos solo los tramos que contienen caracteres del documento. Cuando llegan caras al worker, este descarta solo las medidas de esas familias, además de su caché de documentos terminados.
 
 ### Recolección de payloads de fuente (Fontsource / Google Fonts)
 
@@ -9452,6 +9497,7 @@ Las piezas clave de la API pública:
 - **`resolveHtmlViewerConfig(partial)`** — completa los valores por defecto del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitivas de medida usadas para derivar un ancho de columna real en píxeles a partir de un objetivo en caracteres.
 - **`createMeasurementCache` / `clearMeasurementCache`** — cachés enchufables para reutilizar medidas entre recomposiciones.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`** — cargan las caras del documento antes de componer y vuelven a componer cuando llegan caras nuevas (ver [Cargar las fuentes antes de componer](#cargar-las-fuentes-antes-de-componer)).
 
 ### Ejemplo en vivo: una cadena HTML
 
@@ -9473,6 +9519,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9582,12 +9630,13 @@ export function PostextHtmlViewer({
 
     // Vuelve a medir cuando cargan las web fonts para que los anchos de glifo no
     // queden tomados a partir de las fuentes de reserva.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9599,7 +9648,7 @@ Algunas notas sobre lo que hace el ejemplo:
 
 - **Se mide la columna, no se aproxima.** Como `maxCharsPerLine` es un *objetivo* expresado en caracteres, el ancho real en píxeles depende de la fuente del cuerpo. `measureGlyphWidth` da una medida real sobre la fuente elegida, manteniendo la medida consistente al cambiar de fuente.
 - **Se reescribe la página.** El visor HTML trata cada "página" del VDT como una columna en pantalla. El ejemplo sobrescribe `page.width` con el ancho medido de columna, pone los márgenes a cero (el padding vive fuera de la página, en el `.pt-doc` envolvente) y usa `HTML_DPI = 144` para que `8pt` de cuerpo resuelva a `16px`.
-- **Atento a la carga de fuentes.** `document.fonts.loadingdone` se dispara cuando llega una web font recién solicitada. Sin recomponer entonces, el primer render usa métricas de la fuente de reserva y se produce un salto cuando llega la real.
+- **Atento a la carga de fuentes.** `watchFonts` escucha `document.fonts` y, una vez por fotograma, descarta lo medido en las familias cuyas caras han llegado; `onFontsChanged` vuelve a componer entonces la columna. Sin recomponer, el primer render usa métricas de la fuente de reserva y se produce un salto cuando llega la real.
 - **Se reutiliza la caché de medidas.** Crear la caché una sola vez por componente hace que los resizes y los cambios de escala de fuente reutilicen medidas del render anterior en lugar de volver a medir cada párrafo.
 
 ### Siguiente paso

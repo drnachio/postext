@@ -7765,6 +7765,8 @@ El tauler **Revisió** del Sandbox mostra al seu grup *Fonts* tres modes de fall
 
 Si prems qualsevol dels avisos, s'obre el tauler **Fonts** perquè hi pugis la variant necessària, tornis a afegir la família o desfacis l'ambigüitat dels duplicats.
 
+Quan ja hi ha una composició, el tauler també mostra l'avís del motor **Font substituïda a la composició** (`fontFallback`): una cara sense la qual es van mesurar les pàgines, perquè falta o perquè el navegador la dibuixa a partir d'un altre pes o d'una altra inclinació. Una família que ja surt com a desconeguda o amb una variant que falta no hi apareix dues vegades. Abans de la primera composició, n'ocupa el lloc una comprovació contra `document.fonts`.
+
 ## Paleta de colors
 
 La propietat `colorPalette` de `PostextConfig` permet definir un conjunt reutilitzable de colors amb nom i fer-hi referència des de qualsevol `ColorValue` de la configuració. És l'equivalent a Postext de les custom properties de CSS o del tauler de mostres d'InDesign: canvia l'entrada una sola vegada i tots els colors que hi apuntin s'actualitzen al document.
@@ -8972,6 +8974,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Un recurs o una caixa amb el text ajustat al voltant (<code>placement.wrap</code>, el <code>wrap</code> d'una caixa) que no es compon com es va demanar. <code>reason</code>: <code>'tooNarrow'</code> (el text del costat quedaria més estret que <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (és més baix que <code>layout.wrap.minLinesBeside</code> línies), <code>'moved'</code> (un en línia massa alt per a l'espai que queda a la columna ha passat a la següent, amb la seva àncora) o <code>'verticalText'</code>. <code>resourceId</code> anomena un recurs, <code>box</code> l'estil d'una caixa. Assenyala la inserció o la caixa.</td>
       <td>L'element ocupa la banda sencera, o es col·loca a la columna següent, segons la raó.</td>
     </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>Una cara amb què es va compondre el text (<code>family</code>, <code>weight</code>, <code>style</code>) que el conjunt de fonts no podia donar quan es va executar el build: <code>reason: 'missing'</code>, no hi havia carregada ni instal·lada cap cara de la família; <code>'synthesized'</code>, el pes o la inclinació surten d'una altra cara de la família (una cursiva 700 demanada a una família que només té una rodona 400). Es comprova on hi ha un conjunt de fonts (<code>document.fonts</code>, el <code>self.fonts</code> d'un worker o <code>BuildDocumentOptions.fontSet</code>), sota <code>debug.warnings.missingFont</code>. No porta pàgina ni interval d'origen.</td>
+      <td>El text es mesura i es dibuixa amb la font de reserva, o amb la cara que el navegador fa més gruixuda o inclinada; els seus talls de línia canvien quan arriba la cara. Vegeu <a href="#carregar-les-fonts-abans-de-compondre">Carregar les fonts abans de compondre</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9137,28 +9144,64 @@ const blocks = parseMarkdown(content);
 ```
 
 Consulta la pàgina de [Format del document](/ca/docs/document-format) per veure la llista completa de construccions markdown que reconeix Postext.
-### Memòria cau de mesures
+### Carregar les fonts abans de compondre
 
-La mesura del text és el pas costós del procés de composició. Dues menes de memòria cau l'abarateixen, i es buiden de manera diferent:
-
-- **Una memòria cau de blocs que és teva.** `createMeasurementCache()` retorna una `MeasurementCache` que recorda cada paràgraf mesurat, amb el seu text, les seves fonts, la seva amplada, les seves opcions de tall de línia i el diccionari de partició de mots actiu com a clau. Passa-la com a tercer argument de `buildDocument` (o de `buildDocumentAsync`) per reutilitzar les mesures entre les passades de convergència i entre composicions: un editor que recompon el document a cada pulsació mesura llavors només els paràgrafs que han canviat. Sense ella, cada passada torna a mesurar tots els blocs. Un paràgraf llegit de la memòria cau és igual que un de mesurat de nou, de manera que una composició amb memòria cau talla cada línia com una sense; a postext 1.4.1 un paràgraf desat a la memòria cau perdia la marca d'una última línia massa curta, i l'ajust d'aquestes línies i l'equilibrat de columnes podien tallar-lo d'una altra manera. El worker de composició en conserva una entre composicions i la substitueix quan canvien les fonts.
-- **Memòries cau globals d'amplades.** Les amplades de paraula es desen per cadena de font en un estat de mòdul que comparteixen totes les composicions de la pàgina, i pretext té la seva pròpia memòria cau. Són les que queden obsoletes quan una font web arriba després d'haver mesurat el text amb una font de reserva.
+La composició mesura el text amb les cares que té el conjunt de fonts en el moment en què s'executa. `prepareFonts` carrega abans del primer build totes les cares que demanen una configuració i el seu text: el cos, els encapçalaments, les llistes, els títols i els cossos dels requadres, les taules, els textos dels elements de disseny, els titolets, l'índex de continguts, el codi i la retolació dels còmics, en cada pes i inclinació que fixa la configuració (les quatre de la família del cos, perquè `**` i `*` hi componen la negreta i la cursiva). Cada cara es carrega per als caràcters que compon el document, de manera que una família servida en trams de `unicode-range` (llatí estès, grec, àrab, els trams CJK de Google Fonts i Fontsource) porta els fitxers que el text necessita.
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// Els fitxers de l'amfitrió: el contracte del proveïdor de fonts del PDF, així que una mateixa funció serveix per a tots dos.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// Ha acabat de carregar una font web: les amplades mesurades amb la de reserva no serveixen.
-await document.fonts.ready;
-clearMeasurementCache();           // sense argument: buida les memòries cau globals d'amplades
-cache = createMeasurementCache();  // una memòria cau de blocs no té clear(); crea'n una altra
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// O en una sola crida: preparar, compondre, carregar les cares que han fet servir les pàgines i no hi eren, i tornar a compondre.
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()` no rep arguments ni toca cap `MeasurementCache`: els seus blocs també es van mesurar amb les amplades velles, així que descarta-la i crea'n una de nova. Recompondre després de carregar una font sense buidar les memòries cau dona els mateixos talls de línia, mesurats amb la font de reserva.
+- **Les cares que declara la pàgina** (una regla `@font-face`, un `FontFace` ja afegit) es carreguen a través del conjunt de fonts (`document.fonts.load`, o `self.fonts` en un worker). **Les que no declara** es demanen a `resolve(family, weight, style, { text, codePoints })`, que respon amb un fitxer (bytes o una URL), amb diversos (els trams d'una cara), amb `{ source, unicodeRange, weight, style }` per a un tram o un rang variable, o amb `null`. El motor les afegeix com a `FontFace` quan s'han carregat totes, en l'ordre de la configuració i de cada resposta (latin, després latin-ext, després greek si el resolutor respon així), de manera que el conjunt de fonts queda igual sigui quin sigui l'ordre en què arribin els fitxers. També les inscriu al registre de fonts que llegeixen les [imatges SVG](#fonts-al-text-dels-svg) i els workers de composició. Un resolutor pot declarar la cara pel seu compte (afegir un full d'estils) i respondre `null`.
+- **L'informe** enumera a `loaded` les cares que cobreix una cara carregada (o una família instal·lada), a `missing` les que encara falten i a `synthesized` les que el navegador sintetitzaria a partir d'un altre pes o d'una altra inclinació. `timeoutMs` (10 000 per defecte) limita l'espera; una cara que llavors encara s'estigui carregant compta com a absent. On no hi ha conjunt de fonts (Node), `prepareFonts` no fa res i dona totes les cares per carregades.
+- **`buildDocumentWithFonts(content, config, options)`** prepara, compon amb `buildDocumentAsync`, llegeix les cares en què les pàgines han compost text de debò, carrega les que hi faltaven i torna a compondre (dues composicions més com a màxim). `withLoadedFonts(build, options)` fa el mateix al voltant de qualsevol funció de composició, per a un llibre que es compon capítol a capítol o per a un paquet (`buildBundle`) que retorna diversos documents. `options.onFonts` rep l'informe final.
+- **Després del build**, cada cara amb què es va compondre el text i que el conjunt de fonts no va poder donar apareix a `doc.contentWarnings` com a `fontFallback` (vegeu [Avisos del document](#avisos-del-document)).
+
+Les cares que arriben més tard es recullen soles. El motor anota, per a cada conjunt de fonts, quines cares de cada família hi havia carregades l'última vegada que s'hi va fixar; un build hi torna a mirar en començar (només si el conjunt ha crescut, s'ha encongit o ha acabat de carregar una cara) i descarta el que s'havia mesurat en les famílies amb cares canviades. `watchFonts(fontSet)` fa el mateix a mesura que es carreguen les cares, com a molt una vegada per fotograma d'animació per molts trams que porti una ràfega, i `onFontsChanged(listener)` diu a l'amfitrió quines famílies han canviat, perquè torni a compondre les pàgines:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts per defecte
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` engega la vigilància sobre el conjunt on carrega (`watch: false` la deixa apagada).
+
+### Memòria cau de mesures
+
+La mesura del text és el pas costós del procés de composició. Dues menes de memòria cau l'abarateixen:
+
+- **Una memòria cau de blocs que és teva.** `createMeasurementCache()` retorna una `MeasurementCache` que recorda cada paràgraf mesurat, amb el seu text, les seves fonts, la seva amplada, les seves opcions de tall de línia i el diccionari de partició de mots actiu com a clau. Passa-la com a tercer argument de `buildDocument` (o de `buildDocumentAsync`) per reutilitzar les mesures entre les passades de convergència i entre composicions: un editor que recompon el document a cada pulsació mesura llavors només els paràgrafs que han canviat. Sense ella, cada passada torna a mesurar tots els blocs. Un paràgraf llegit de la memòria cau és igual que un de mesurat de nou, de manera que una composició amb memòria cau talla cada línia com una sense; a postext 1.4.1 un paràgraf desat a la memòria cau perdia la marca d'una última línia massa curta, i l'ajust d'aquestes línies i l'equilibrat de columnes podien tallar-lo d'una altra manera. La memòria cau porta la generació de mesures amb què es va omplir: quan arriben o se'n van cares d'una família, la seva consulta següent descarta els blocs compostos en aquella família, de manera que una memòria cau que es conserva mentre es carreguen les fonts mai no serveix línies mesurades amb la de reserva.
+- **Memòries cau globals d'amplades.** Les amplades de paraula es desen per cadena de font en un estat de mòdul que comparteixen totes les composicions de la pàgina, i pretext té la seva pròpia memòria cau. El motor descarta les amplades d'una família quan en canvien les cares (en començar un build, des de `watchFonts`, des de `prepareFonts` i des de `loadBundleFonts`); la memòria cau de pretext no té índex per família i es buida sencera.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// S'ha afegit a document.fonts una cara d'"EB Garamond": el build següent la veu,
+// amb la mateixa memòria cau, i torna a mesurar aquella família.
+doc = buildDocument(content, config, cache);
+
+// Un amfitrió que canvia cares que el motor no pot veure (un conjunt de fonts propi) ho avisa:
+evictFontFamilies(['EB Garamond']);   // les amplades i els blocs desats d'aquella família
+clearMeasurementCache();              // totes les famílies
+```
 
 Per a aplicacions que mesuren el text peça a peça, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` i `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` reben els arguments de `measureBlock` i `measureRichBlock` més la memòria cau, al final.
 
@@ -9167,8 +9210,8 @@ Per a aplicacions que mesuren el text peça a peça, `cachedMeasureBlock(text, f
 Part de l'estat de Postext viu en variables de mòdul. Tot el que importa `postext` en el mateix context de JavaScript (*realm*) el comparteix: una pàgina i els seus scripts comparteixen una còpia, mentre que cada iframe i cada worker tenen la seva. Amb un document per pàgina no es nota. Amb diversos documents a la mateixa pàgina —dues previsualitzacions en directe, una galeria d'exemples— sí:
 
 - **Imatges dels recursos.** `registerResourceImage(fileId, image)` omple un únic registre indexat per `fileId`, que llegeixen `renderPage` i `renderPageToCanvas`. Dos documents que registren `figure.svg` comparteixen aquesta entrada: guanya l'últim registre, per a tots dos. Posa als identificadors de fitxer un prefix per document, i crida `unregisterResourceImage(fileId)` o `clearResourceImages()` quan un document desapareix. Els ràsters que desa a la memòria cau el backend de canvas fan servir la mateixa clau i es descarten amb la imatge.
-- **Mesures del text.** Les amplades mesurades es desen a la memòria cau per cadena de font i text per a tot el context. El text mesurat abans que una font web acabés de carregar-se conserva les amplades de la font de reserva, en tots els documents, fins que `clearMeasurementCache()` (sense arguments) buida les memòries cau: crida-la quan les fonts s'hagin carregat i torna a compondre.
-- **Configuracions resoltes.** Cada objecte de configuració es resol una vegada i el resultat queda a la memòria cau associat a aquest objecte. Una configuració modificada al lloc i composta de nou es compon amb els valors antics: passa un objecte nou a cada canvi (`{ ...config, … }` o `structuredClone(config)`).
+- **Mesures del text.** Les amplades mesurades es desen a la memòria cau per cadena de font i text per a tot el context. Quan arriben o se'n van cares d'una família, el motor descarta les amplades d'aquella família per a tots els documents (vegeu [Carregar les fonts abans de compondre](#carregar-les-fonts-abans-de-compondre)); `clearMeasurementCache()` les descarta totes.
+- **Configuracions resoltes.** Cada objecte de configuració es resol una vegada i el resultat queda a la memòria cau associat a aquest objecte. Abans de res, cada build compara l'objecte amb el text que tenia quan es va resoldre (un `JSON.stringify`, uns 0,1 ms per a una configuració de llibre de 55 KB i 1,5 ms per a una de 240 KB), de manera que una configuració modificada al lloc, a qualsevol profunditat (`config.bodyText.fontSize = …`, un color de la paleta), es torna a resoldre. `invalidateConfig(config)` descarta la resolució a mà. `stableStringify` i `hashString` donen una clau de contingut que no depèn de l'ordre de les claus, per als amfitrions que desen composicions a la memòria cau per configuració.
 - **Llengua de la partició de mots.** Cada build fixa la llengua de partició de mots de tot el procés al `bodyText.hyphenation.locale` del seu document. Les funcions exportades `hyphenateText(text)` i `layoutDesignSlot` fan servir la llengua de l'últim build tret que els en passis una: crida `hyphenateText(text, 'es')`.
 - **Motor de fórmules.** Hi ha un únic motor MathJax i una única memòria cau de fórmules renderitzades per context; `initMathEngine()` l'engega per a tots.
 
@@ -9338,7 +9381,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**Un worker no veu les fonts de la pàgina.** Té el seu propi conjunt de fonts, que només conté les cares enviades amb `registerFonts` i les fonts instal·lades al sistema. Quan un build compon text en una família que el worker no troba, aquest text es mesura amb una font de reserva, així que els seus talls de línia no coincidiran amb els de la pàgina. El client imprimeix llavors un avís a la consola per família (`"EB Garamond" is not available inside the layout worker…`) i enumera les famílies a `BuildStats.missingFonts`, que rep el callback `onStats` de `build`.
+**Un worker no veu les fonts de la pàgina.** Té el seu propi conjunt de fonts, que només conté les cares enviades amb `registerFonts` i les fonts instal·lades al sistema. Quan un build compon text en una família que el worker no troba, aquest text es mesura amb una font de reserva, així que els seus talls de línia no coincidiran amb els de la pàgina. El client imprimeix llavors un avís a la consola per família (`"EB Garamond" is not available inside the layout worker…`) i enumera les famílies a `BuildStats.missingFonts`, que rep el callback `onStats` de `build`. El document mateix porta aquestes cares com a avisos de contingut `fontFallback`.
+
+`handle.prepareFonts(content, config, options)` executa [`prepareFonts`](#carregar-les-fonts-abans-de-compondre) a la pàgina i després envia al worker els fitxers de cada cara trobada que guarda el registre de fonts (els fitxers del resolutor, les cares d'un paquet, les regles `@font-face` llegibles de la pàgina), i d'aquests només els trams que contenen caràcters del document. Quan arriben cares al worker, aquest descarta només les mesures d'aquelles famílies, a més de la seva memòria cau de documents acabats.
 
 ### Recol·lecció de payloads de font (Fontsource / Google Fonts)
 
@@ -9432,6 +9477,7 @@ Les peces clau de l'API pública:
 - **`resolveHtmlViewerConfig(partial)`** — completa els valors per defecte del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitives de mesura que serveixen per derivar una amplada de columna real en píxels a partir d'un objectiu en caràcters.
 - **`createMeasurementCache` / `clearMeasurementCache`** — memòries cau endollables per reutilitzar mesures entre recomposicions.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`** — carreguen les cares del document abans de compondre i tornen a compondre quan n'arriben de noves (vegeu [Carregar les fonts abans de compondre](#carregar-les-fonts-abans-de-compondre)).
 
 ### Exemple en directe: una cadena HTML
 
@@ -9453,6 +9499,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9562,12 +9610,13 @@ export function PostextHtmlViewer({
 
     // Torna a mesurar quan es carreguen les web fonts perquè les amplades de glif no
     // quedin preses a partir de les fonts de reserva.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9579,7 +9628,7 @@ Algunes notes sobre el que fa l'exemple:
 
 - **Es mesura la columna, no s'aproxima.** Com que `maxCharsPerLine` és un *objectiu* expressat en caràcters, l'amplada real en píxels depèn de la font del cos. `measureGlyphWidth` dona una mesura real sobre la font triada, i manté la mesura coherent quan es canvia de font.
 - **Es reescriu la pàgina.** El visor HTML tracta cada "pàgina" del VDT com una columna en pantalla. L'exemple sobreescriu `page.width` amb l'amplada mesurada de columna, posa els marges a zero (el padding viu fora de la pàgina, al `.pt-doc` que l'embolcalla) i fa servir `HTML_DPI = 144` perquè `8pt` de cos resolgui a `16px`.
-- **Atent a la càrrega de fonts.** `document.fonts.loadingdone` es dispara quan arriba una web font acabada de sol·licitar. Si no es recompon llavors, el primer render fa servir mètriques de la font de reserva i es produeix un salt quan arriba la real.
+- **Atent a la càrrega de fonts.** `watchFonts` escolta `document.fonts` i, una vegada per fotograma, descarta el que s'havia mesurat en les famílies amb cares acabades d'arribar; `onFontsChanged` torna a compondre llavors la columna. Si no es recompon, el primer render fa servir mètriques de la font de reserva i es produeix un salt quan arriba la real.
 - **Es reutilitza la memòria cau de mesures.** Crear la memòria cau una sola vegada per component fa que els redimensionaments i els canvis d'escala de font reutilitzin mesures del render anterior en lloc de tornar a mesurar cada paràgraf.
 
 ### Pas següent

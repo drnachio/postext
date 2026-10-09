@@ -7782,6 +7782,8 @@ Sandboxの**検査**パネルは、カスタムフォントに固有の3種類�
 
 これらの警告をクリックするとフォントパネルが開き、欠けているバリアントのアップロード、ファミリーの再追加、重複の解消ができます。
 
+レイアウトができた後は、エンジンが報告する**レイアウトで代替フォントを使用**（`fontFallback`）もパネルに並びます。ページの計測に使われなかったフェイスのことで、存在しないか、ブラウザーが同じファミリーの別のウェイトや傾きから作って描いたものです。不明なファミリーやバリアントの欠落としてすでに挙がっているファミリーは、重ねて表示しません。最初のレイアウトの前は、`document.fonts`に対する検査がその代わりを務めます。
+
 ## カラーパレット
 
 `PostextConfig`の`colorPalette`プロパティは、名前付きの色の再利用可能なセットを定義し、設定内の任意の`ColorValue`から参照できるようにします。CSSのカスタムプロパティやInDesignのスウォッチパネルに相当するもので、パレットの項目を1回変えれば、それを指すすべての色が文書全体で更新されます。
@@ -8990,6 +8992,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>本文を回り込ませる設定のリソースまたはボックス（<code>placement.wrap</code>、ボックスの<code>wrap</code>）が指定どおりに組まれなかったこと。<code>reason</code>：<code>'tooNarrow'</code>（横の本文が<code>layout.wrap.minTextWidth</code>より狭くなる）、<code>'fewLines'</code>（<code>layout.wrap.minLinesBeside</code>行より低い）、<code>'moved'</code>（段の残りに収まらない本文中の対象がアンカーとともに次の段へ移った）、<code>'verticalText'</code>。<code>resourceId</code>はリソース、<code>box</code>はボックスのスタイル。埋め込みまたはボックスを指します。</td>
       <td>理由に応じて、対象は全幅を占めるか、次の段に置かれます。</td>
     </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>テキストを組んだフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）を、ビルドの時点でフォントセットが用意できなかったこと。<code>reason: 'missing'</code>は、そのファミリーのフェイスが1つも読み込まれておらず、インストールもされていない場合。<code>'synthesized'</code>は、そのウェイトや傾きをファミリーの別のフェイスから作っている場合です（400のレギュラーしかないファミリーに700のイタリックを求めたときなど）。フォントセットがある環境（<code>document.fonts</code>、ワーカーの<code>self.fonts</code>、<code>BuildDocumentOptions.fontSet</code>）で検査し、<code>debug.warnings.missingFont</code>で切り替えます。ページもソースの範囲も持ちません。</td>
+      <td>テキストは代替フォントで、またはブラウザーが太くしたり傾けたりしたフェイスで計測・描画されます。そのフェイスが届くと改行が変わります。<a href="#レイアウトの前にフォントを読み込む">レイアウトの前にフォントを読み込む</a>を参照してください。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9156,28 +9163,64 @@ const blocks = parseMarkdown(content);
 
 Postextが認識するMarkdownの構文の全一覧は、[文書形式](/ja/docs/document-format)のページを参照してください。
 
-### 計測キャッシュ
+### レイアウトの前にフォントを読み込む
 
-テキストの計測は、レイアウトの中で負荷の高い処理です。2種類のキャッシュがこれを軽くしており、クリアの方法はそれぞれ異なります。
-
-- **自分で持つブロックキャッシュ**。`createMeasurementCache()`は`MeasurementCache`を返します。これは計測したすべての段落を、テキスト、フォント、幅、改行のオプション、有効なハイフネーション辞書をキーとして記憶します。`buildDocument`（または`buildDocumentAsync`）の3番目の引数に渡すと、収束パスの間やビルドの間で計測結果を再利用できます。キー入力のたびに文書をレイアウトするエディターなら、変更された段落だけを計測すれば済みます。キャッシュがなければ、パスのたびにすべてのブロックを計測し直します。キャッシュから読んだ段落は新たに計測した段落と同じなので、キャッシュを使ったビルドは、使わないビルドとすべての行を同じように組みます。postext 1.4.1では、キャッシュした段落から最終行がラントであるという印が失われ、ラントの詰めや段末そろえで違う改行になることがありました。レイアウトのワーカーはビルドをまたいで1つのキャッシュを持ち、フォントが変わると新しいものに置き換えます。
-- **グローバルな幅のキャッシュ**。語の幅は、ページ内のすべてのビルドが共有するモジュールの状態に、フォント文字列ごとにキャッシュされます。pretextも独自のキャッシュを持っています。テキストを代替フォントで計測した後にWebフォントが届くと、これらは古くなります。
+レイアウトは、実行した時点でフォントセットにあるフェイスでテキストを計測します。`prepareFonts`は最初のビルドの前に、設定とそのテキストが求めるすべてのフェイスを読み込みます。対象は本文、見出し、リスト、囲みのタイトルと本文、表、デザインのテキスト、柱、目次、コード、漫画の写植で、設定が指定するウェイトと傾きのそれぞれを読み込みます（本文のファミリーは4つです。`**`と`*`がその中で太字とイタリックを組むためです）。各フェイスは文書が組む文字の分だけ読み込むので、`unicode-range`のスライスとして配信されるファミリー（Latin Extended、ギリシア文字、アラビア文字、Google FontsとFontsourceのCJKのスライス）からは、テキストに必要なファイルが届きます。
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// ホストのファイル。PDFのフォントプロバイダーと同じ取り決めなので、1つの関数を両方で使える。
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// A web font finished loading: widths measured with the fallback are stale.
-await document.fonts.ready;
-clearMeasurementCache();           // no argument: clears the global width caches
-cache = createMeasurementCache();  // a block cache has no clear(); start a new one
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded、report.missing、report.synthesized：{ family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// 1回の呼び出しでもよい：準備し、ビルドし、ページが使ったのに無かったフェイスを読み込んで、もう一度ビルドする。
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()`は引数を取らず、`MeasurementCache`には触れません。そのブロックも古い幅で計測されているので、破棄して新しいものを作ってください。フォントの読み込み後にクリアせずに再ビルドしても、代替フォントで計測したのと同じ改行になります。
+- **ページが宣言しているフェイス**（`@font-face`規則、追加済みの`FontFace`）は、フォントセットを通して読み込みます（`document.fonts.load`、ワーカーでは`self.fonts`）。**宣言していないフェイス**は`resolve(family, weight, style, { text, codePoints })`に問い合わせます。リゾルバーは、ファイル1つ（バイト列またはURL）、複数のファイル（1つのフェイスのスライス）、スライスや可変の範囲を表す`{ source, unicodeRange, weight, style }`、または`null`を返します。エンジンはすべての読み込みが終わってから、設定の順と各回答の順（リゾルバーがそう返せば、latin、latin-ext、greekの順）にそれらを`FontFace`として追加します。そのため、ファイルがどんな順で届いてもフォントセットは同じになります。さらに、[SVGの画像](#svgの文字のフォント)とレイアウトのワーカーが読むフォントレジストリにも登録します。リゾルバーが自分でフェイスを宣言し（スタイルシートを追加して）、`null`を返してもかまいません。
+- **レポート**には、読み込んだフェイス（またはインストール済みのファミリー）で賄えるフェイス、まだ`missing`のフェイス、ブラウザーが別のウェイトや傾きから`synthesize`するフェイスが並びます。待ち時間の上限は`timeoutMs`（既定は10 000）で、その時点でまだ読み込み中のフェイスは欠落として数えます。フォントセットがない環境（Node）では、`prepareFonts`は何もせず、すべてのフェイスを読み込み済みとして報告します。
+- **`buildDocumentWithFonts(content, config, options)`**：フォントを準備し、`buildDocumentAsync`でビルドし、ページが実際にテキストを組んだフェイスを読み取り、欠けていたものを読み込んで、もう一度ビルドします（追加のビルドは最大2回）。`withLoadedFonts(build, options)`は、任意のビルド関数のまわりで同じことを行います。章ごとにビルドする本や、複数の文書を返すバンドル（`buildBundle`）に使えます。`options.onFonts`は最終的なレポートを受け取ります。
+- **ビルドの後**、テキストを組んだフェイスのうちフォントセットが用意できなかったものは、すべて`doc.contentWarnings`に`fontFallback`として挙がります（[文書の中の警告](#文書の中の警告)を参照）。
+
+後から届いたフェイスは、エンジンが自分で拾います。エンジンはフォントセットごとに、前回確かめたときに各ファミリーのどのフェイスが読み込まれていたかを覚えています。ビルドは開始時にもう一度確かめ（フォントセットが増えたか減ったか、フェイスの読み込みが終わったときだけ）、フェイスが変わったファミリーで計測した結果を捨てます。`watchFonts(fontSet)`はフェイスが読み込まれるたびに同じことを行い、一度に届くスライスがいくつあっても、アニメーションフレームあたり最大1回にとどめます。`onFontsChanged(listener)`は、どのファミリーが変わったかをホストに知らせるので、ホストはページをレイアウトし直せます。
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // 既定はdocument.fonts
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts`は、読み込み先のフォントセットの監視を始めます（`watch: false`で無効になります）。
+
+### 計測キャッシュ
+
+テキストの計測は、レイアウトの中で負荷の高い処理です。2種類のキャッシュがこれを軽くしています。
+
+- **自分で持つブロックキャッシュ**。`createMeasurementCache()`は`MeasurementCache`を返します。これは計測したすべての段落を、テキスト、フォント、幅、改行のオプション、有効なハイフネーション辞書をキーとして記憶します。`buildDocument`（または`buildDocumentAsync`）の3番目の引数に渡すと、収束パスの間やビルドの間で計測結果を再利用できます。キー入力のたびに文書をレイアウトするエディターなら、変更された段落だけを計測すれば済みます。キャッシュがなければ、パスのたびにすべてのブロックを計測し直します。キャッシュから読んだ段落は新たに計測した段落と同じなので、キャッシュを使ったビルドは、使わないビルドとすべての行を同じように組みます。postext 1.4.1では、キャッシュした段落から最終行がラントであるという印が失われ、ラントの詰めや段末そろえで違う改行になることがありました。キャッシュは、自分が埋められたときの計測の世代を持っています。あるファミリーのフェイスが届いたり消えたりすると、次の参照のときにそのファミリーで組んだブロックを捨てるので、フォントの読み込みをまたいで保持したキャッシュが、代替フォントで計測した行を返すことはありません。
+- **グローバルな幅のキャッシュ**。語の幅は、ページ内のすべてのビルドが共有するモジュールの状態に、フォント文字列ごとにキャッシュされます。pretextも独自のキャッシュを持っています。エンジンは、あるファミリーのフェイスが変わると（ビルドの開始時、`watchFonts`、`prepareFonts`、`loadBundleFonts`）、そのファミリーの幅を捨てます。pretextのキャッシュにはファミリーごとの索引がないので、丸ごと消去します。
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// "EB Garamond"のフェイスがdocument.fontsに追加された：次のビルドはそれを見て、
+// 同じキャッシュのまま、そのファミリーを計測し直す。
+doc = buildDocument(content, config, cache);
+
+// エンジンから見えないフェイス（ホスト独自のフォントセット）を変えるホストは、そう伝える：
+evictFontFamilies(['EB Garamond']);   // そのファミリーの幅とキャッシュしたブロック
+clearMeasurementCache();              // すべてのファミリー
+```
 
 テキストを少しずつ計測するアプリケーション向けに、`cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)`と`cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)`があります。`measureBlock`と`measureRichBlock`の引数に加えて、最後にキャッシュを取ります。
 
@@ -9186,8 +9229,8 @@ doc = buildDocument(content, config, cache);
 Postextの状態の一部は、モジュールレベルの変数にあります。同じJavaScriptのレルム（realm）で`postext`をインポートするものは、すべてこれを共有します。ページとそのスクリプトは1つのコピーを共有し、iframeやワーカーはそれぞれ自分のコピーを持ちます。1ページに1文書なら問題は起きません。1ページに複数の文書がある場合（2つのライブプレビュー、サンプルのギャラリーなど）は影響が出ます。
 
 - **リソースの画像**。`registerResourceImage(fileId, image)`は、`fileId`をキーとする1つの登録簿に書き込み、`renderPage`と`renderPageToCanvas`がそこから読みます。2つの文書がどちらも`figure.svg`を登録すると、その項目を共有し、最後の登録が両方に適用されます。ファイルidには文書ごとの接頭辞を付け、文書が不要になったら`unregisterResourceImage(fileId)`か`clearResourceImages()`を呼んでください。canvasバックエンドがキャッシュするラスターも同じキーで管理され、画像と一緒に破棄されます。
-- **テキストの計測**。計測した幅は、フォント文字列とテキストごとにレルム全体でキャッシュされます。Webフォントの読み込み完了前に計測したテキストは、`clearMeasurementCache()`（引数なし）がキャッシュを空にするまで、どの文書でも代替フォントの幅のままです。フォントが読み込まれたらこれを1回呼び、ビルドし直してください。
-- **解決済みの設定**。設定オブジェクトはそれぞれ1回だけ解決され、その結果がオブジェクトに結び付けてキャッシュされます。設定をその場で書き換えてビルドし直すと、古い設定でレイアウトされます。変更のたびに新しいオブジェクトを渡してください（`{ ...config, … }`または`structuredClone(config)`）。
+- **テキストの計測**。計測した幅は、フォント文字列とテキストごとにレルム全体でキャッシュされます。あるファミリーのフェイスが届いたり消えたりすると、エンジンはすべての文書についてそのファミリーの幅を捨てます（[レイアウトの前にフォントを読み込む](#レイアウトの前にフォントを読み込む)を参照）。`clearMeasurementCache()`はすべてを捨てます。
+- **解決済みの設定**。設定オブジェクトはそれぞれ1回だけ解決され、その結果がオブジェクトに結び付けてキャッシュされます。ビルドのたびに、まずオブジェクトを解決したときのテキストと比べるので（`JSON.stringify`を1回。55 KBの本の設定で約0.1 ms、240 KBの設定で約1.5 ms）、その場で書き換えた設定は、どの深さの変更でも（`config.bodyText.fontSize = …`、パレットの色）解決し直されます。`invalidateConfig(config)`を呼べば、解決結果を手動で捨てられます。`stableStringify`と`hashString`は、キーの順序に左右されない内容のキーを返します。設定ごとにレイアウトをキャッシュするホスト向けです。
 - **ハイフネーションの言語**。ビルドのたびに、プロセス全体のハイフネーション言語が、その文書の`bodyText.hyphenation.locale`に設定されます。公開されている`hyphenateText(text)`と`layoutDesignSlot`は、言語を渡さなければ最後のビルドの言語を使います。`hyphenateText(text, 'es')`のように呼んでください。
 - **数式エンジン**。MathJaxのエンジンと描画済み数式のキャッシュは、レルムに1つずつです。`initMathEngine()`は全員のためにそれを起動します。
 
@@ -9357,7 +9400,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**ワーカーにはページのフォントが見えません**。ワーカーは独自のフォントセットを持ち、そこにあるのは`registerFonts`で送ったフェイスと、システムにインストールされたフォントだけです。ワーカーが見つけられないファミリーでテキストを組むビルドでは、そのテキストは代替フォントで計測されるため、改行がページと一致しません。このときクライアントは、ファミリーごとに1回コンソールに警告を出し（`"EB Garamond" is not available inside the layout worker…`）、そのファミリーを`BuildStats.missingFonts`に挙げます。これは`build`の`onStats`コールバックが受け取ります。
+**ワーカーにはページのフォントが見えません**。ワーカーは独自のフォントセットを持ち、そこにあるのは`registerFonts`で送ったフェイスと、システムにインストールされたフォントだけです。ワーカーが見つけられないファミリーでテキストを組むビルドでは、そのテキストは代替フォントで計測されるため、改行がページと一致しません。このときクライアントは、ファミリーごとに1回コンソールに警告を出し（`"EB Garamond" is not available inside the layout worker…`）、そのファミリーを`BuildStats.missingFonts`に挙げます。これは`build`の`onStats`コールバックが受け取ります。文書自体も、同じフェイスを`fontFallback`のコンテンツ警告として持っています。
+
+`handle.prepareFonts(content, config, options)`は、ページで[`prepareFonts`](#レイアウトの前にフォントを読み込む)を実行し、見つかったフェイスのうちフォントレジストリがファイルを持っているもの（リゾルバーのファイル、バンドルのフェイス、ページの読み取り可能な`@font-face`規則）を、文書の文字を含むスライスに限ってワーカーに送ります。フェイスがワーカーに届くと、ワーカーはそのファミリーの計測結果と、仕上がった文書のキャッシュだけを捨てます。
 
 ### フォントペイロードの収集（Fontsource / Google Fonts）
 
@@ -9451,6 +9496,7 @@ HTMLビューアーは、Postextの画面向けのレンダラーです。ペー
 - **`resolveHtmlViewerConfig(partial)`**：HTMLビューアーの既定値（`maxCharsPerLine`、`columnGap`、`optimalLineBreaking`）を補います。
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`**：目標の文字数から実際の段幅をピクセルで求めるための計測の基本関数です。
 - **`createMeasurementCache` / `clearMeasurementCache`**：差し替え可能なキャッシュで、再レイアウトの間で計測結果を再利用できます。
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`**：レイアウトの前に文書のフェイスを読み込み、フェイスが届いたらレイアウトし直します（[レイアウトの前にフォントを読み込む](#レイアウトの前にフォントを読み込む)を参照）。
 
 ### ライブサンプル：HTML文字列
 
@@ -9472,6 +9518,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9579,12 +9627,13 @@ export function PostextHtmlViewer({
     ro.observe(host);
 
     // Re-measure when web fonts land so glyph widths aren't taken from fallbacks.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9596,7 +9645,7 @@ export function PostextHtmlViewer({
 
 - **段幅は概算せずに計測する**。`maxCharsPerLine`は文字数で表した*目標*なので、実際のピクセル幅は本文のフォントによって変わります。`measureGlyphWidth`は選んだフォントで実際に計測するので、フォントを差し替えても行の長さが一定に保たれます。
 - **ページの書き換え**。HTMLビューアーは、VDTの各「ページ」を画面上の1つの段として扱います。この例では`page.width`を計測した段幅で上書きし、余白をゼロにして（パディングはページの外側、包んでいる`.pt-doc`のdivにあります）、`HTML_DPI = 144`を使うことで`8pt`の本文が`16px`になるようにしています。
-- **フォントの読み込みへの対応**。`document.fonts.loadingdone`は、新たに要求したWebフォントが届いたときに発火します。再レイアウトしなければ、最初の描画は代替フォントの計量値を使い、本来のフォントが届いたときに表示が跳ねます。
+- **フォントの読み込みへの対応**。`watchFonts`は`document.fonts`を監視し、フェイスが届いたファミリーで計測した結果を、1フレームに1回捨てます。続いて`onFontsChanged`が段をレイアウトし直します。再レイアウトしなければ、最初の描画は代替フォントの計量値を使い、本来のフォントが届いたときに表示が跳ねます。
 - **計測キャッシュの再利用**。コンポーネントごとに1回だけキャッシュを作ることで、サイズ変更やフォントの拡大縮小のときに、すべての段落を計測し直さず、前回の描画の計測結果を再利用できます。
 
 ### さらに進んだ統合

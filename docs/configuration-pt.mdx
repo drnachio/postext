@@ -7785,6 +7785,8 @@ O painel **Verificações** do Sandbox lista, no grupo *Fontes*, três falhas es
 
 Clicar em qualquer um desses avisos abre o painel Fontes, para você enviar a variante que falta, adicionar a família de novo ou diferenciar as duplicadas.
 
+Quando já existe um layout, o painel também lista o aviso do motor **Fonte alternativa no layout** (`fontFallback`): uma face sem a qual as páginas foram medidas, seja porque falta, seja porque o navegador a desenha a partir de outro peso ou de outra inclinação. Uma família que já aparece como desconhecida ou com variante ausente não é listada duas vezes. Antes do primeiro layout, uma verificação contra `document.fonts` ocupa o lugar desse aviso.
+
 ## Paleta de cores
 
 A propriedade `colorPalette` de `PostextConfig` permite definir um conjunto reutilizável de cores com nome e referenciá-las a partir de qualquer `ColorValue` da configuração. É o equivalente, no Postext, às propriedades personalizadas do CSS ou ao painel de amostras do InDesign: você muda a entrada da paleta uma vez, e todas as cores que apontam para ela se atualizam no documento inteiro.
@@ -8993,6 +8995,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Um recurso ou caixa com o texto contornando-o (<code>placement.wrap</code>, o <code>wrap</code> de uma caixa) que não é composto como pedido. <code>reason</code>: <code>'tooNarrow'</code> (o texto ao lado ficaria mais estreito que <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (é mais baixo que <code>layout.wrap.minLinesBeside</code> linhas), <code>'moved'</code> (um em linha alto demais para o espaço que resta na coluna passou para a seguinte, com a âncora) ou <code>'verticalText'</code>. <code>resourceId</code> nomeia um recurso, <code>box</code> o estilo de uma caixa. Aponta para a inserção ou a caixa.</td>
       <td>O elemento ocupa a faixa inteira, ou fica na coluna seguinte, conforme o motivo.</td>
     </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>Uma face em que o texto foi composto (<code>family</code>, <code>weight</code>, <code>style</code>) e que o conjunto de fontes não pôde fornecer quando a compilação rodou: <code>reason: 'missing'</code>, nenhuma face da família estava carregada nem instalada; <code>'synthesized'</code>, o peso ou a inclinação vêm de outra face da família (um itálico 700 pedido a uma família que só tem o regular 400). É verificado onde há um conjunto de fontes (<code>document.fonts</code>, o <code>self.fonts</code> de um worker ou <code>BuildDocumentOptions.fontSet</code>), sob <code>debug.warnings.missingFont</code>. Sem página e sem trecho do código-fonte.</td>
+      <td>O texto é medido e desenhado com a fonte alternativa, ou com a face que o navegador engrossa ou inclina; suas quebras de linha mudam quando a face chega. Veja <a href="#carregar-as-fontes-antes-do-layout">Carregar as fontes antes do layout</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9159,28 +9166,64 @@ const blocks = parseMarkdown(content);
 
 Veja a página [Formato do documento](/pt/docs/document-format) para a lista completa das construções de markdown que o Postext reconhece.
 
-### Cache de medidas
+### Carregar as fontes antes do layout
 
-A medição de texto é a etapa cara do layout. Dois tipos de cache a mantêm barata, e eles são limpos de maneiras diferentes:
-
-- **Um cache de blocos que é seu.** `createMeasurementCache()` devolve um `MeasurementCache` que guarda cada parágrafo medido, com chave formada por texto, fontes, largura, opções de quebra de linha e dicionário de hifenização ativo. Passe-o como terceiro argumento de `buildDocument` (ou de `buildDocumentAsync`) para reaproveitar as medidas entre as passadas de convergência e entre compilações: um editor que diagrama o documento a cada tecla passa a medir só os parágrafos que mudaram. Sem ele, cada passada mede todos os blocos de novo. Um parágrafo lido do cache é idêntico a um medido do zero, então uma compilação com cache compõe cada linha como uma compilação sem cache; no postext 1.4.1, um parágrafo vindo do cache perdia a marca de última linha curta, e o aperto dessas linhas e o balanceamento de colunas podiam então quebrá-lo de outro jeito. O worker de layout mantém um cache entre compilações e o substitui quando as fontes mudam.
-- **Caches globais de larguras.** As larguras das palavras ficam em cache por string de fonte, em estado de módulo compartilhado por todas as compilações da página, e o pretext mantém um cache próprio. Esses caches ficam desatualizados quando uma fonte web chega depois que o texto foi medido com uma fonte alternativa.
+O layout mede o texto com as faces que o conjunto de fontes tem no momento em que roda. `prepareFonts` carrega, antes da primeira compilação, todas as faces que uma configuração e o seu texto pedem: o corpo, os títulos, as listas, os títulos e o corpo dos boxes, as tabelas, os textos de design, os cabeços, o sumário, o código e o letreiramento dos quadrinhos, em cada peso e inclinação que a configuração define (as quatro da família do corpo, já que `**` e `*` compõem negrito e itálico nela). Cada face é carregada para os caracteres que o documento compõe, de modo que uma família servida em fatias de `unicode-range` (latim estendido, grego, árabe, as fatias CJK do Google Fonts e do Fontsource) traz os arquivos de que o texto precisa.
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// Os arquivos do host: o contrato do provedor de fontes do PDF, então uma só função atende aos dois.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// Uma fonte web terminou de carregar: as larguras medidas com a fonte alternativa estão desatualizadas.
-await document.fonts.ready;
-clearMeasurementCache();           // sem argumento: limpa os caches globais de larguras
-cache = createMeasurementCache();  // um cache de blocos não tem clear(); crie um novo
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// Ou numa só chamada: preparar, compilar, carregar qualquer face que as páginas usaram e não estava lá, compilar de novo.
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()` não recebe argumentos e não mexe em um `MeasurementCache`: os blocos dele também foram medidos com as larguras antigas, então descarte-o e crie um novo. Recompilar depois que uma fonte carrega, sem limpar os caches, dá as mesmas quebras de linha, medidas com a fonte alternativa.
+- **As faces que a página declara** (uma regra `@font-face`, um `FontFace` já adicionado) são carregadas pelo conjunto de fontes (`document.fonts.load`, ou `self.fonts` num worker). **As que ela não declara** são pedidas a `resolve(family, weight, style, { text, codePoints })`, que responde com um arquivo (bytes ou uma URL), vários arquivos (as fatias de uma face), `{ source, unicodeRange, weight, style }` para uma fatia ou um intervalo variável, ou `null`. O motor as adiciona como `FontFace` quando todas terminam de carregar, na ordem da configuração e de cada resposta (latin, depois latin-ext, depois greek, quando o resolvedor responde assim), de modo que o conjunto de fontes fica igual seja qual for a ordem em que os arquivos chegam. Ele também as registra no registro de fontes que as [imagens SVG](#fontes-no-texto-dos-svg) e os workers de layout leem. Um resolvedor pode declarar a face por conta própria (adicionar uma folha de estilo) e responder `null`.
+- **O relatório** lista as faces que uma face carregada atende (ou uma família instalada), as que continuam ausentes (`missing`) e as que o navegador sintetizaria a partir de outro peso ou inclinação (`synthesized`). `timeoutMs` (10 000 por padrão) limita a espera; uma face que ainda está carregando passa então a contar como ausente. Onde não há conjunto de fontes (Node), `prepareFonts` não faz nada e informa todas as faces como carregadas.
+- **`buildDocumentWithFonts(content, config, options)`** prepara, compila com `buildDocumentAsync`, lê as faces em que as páginas de fato compuseram texto, carrega as que faltavam e compila de novo (no máximo duas compilações a mais). `withLoadedFonts(build, options)` faz o mesmo em volta de qualquer função de compilação, para um livro compilado capítulo a capítulo ou um pacote (`buildBundle`) que devolve vários documentos. `options.onFonts` recebe o relatório final.
+- **Depois da compilação**, cada face em que o texto foi composto e que o conjunto de fontes não pôde fornecer aparece em `doc.contentWarnings` como `fontFallback` (veja [Avisos no documento](#avisos-no-documento)).
+
+As faces que chegam mais tarde são percebidas sozinhas. O motor guarda, por conjunto de fontes, quais faces de cada família estavam carregadas da última vez que olhou; uma compilação olha de novo ao começar (só quando o conjunto cresceu, diminuiu ou terminou de carregar uma face) e descarta o que foi medido nas famílias cujas faces mudaram. `watchFonts(fontSet)` faz o mesmo à medida que as faces carregam, no máximo uma vez por quadro de animação, por mais fatias que uma rajada traga, e `onFontsChanged(listener)` avisa o host de quais famílias mudaram, para que ele diagrame as páginas de novo:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts por padrão
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` inicia a observação no conjunto em que carrega as faces (`watch: false` a deixa desligada).
+
+### Cache de medidas
+
+A medição de texto é a etapa cara do layout. Dois tipos de cache a mantêm barata:
+
+- **Um cache de blocos que é seu.** `createMeasurementCache()` devolve um `MeasurementCache` que guarda cada parágrafo medido, com chave formada por texto, fontes, largura, opções de quebra de linha e dicionário de hifenização ativo. Passe-o como terceiro argumento de `buildDocument` (ou de `buildDocumentAsync`) para reaproveitar as medidas entre as passadas de convergência e entre compilações: um editor que diagrama o documento a cada tecla passa a medir só os parágrafos que mudaram. Sem ele, cada passada mede todos os blocos de novo. Um parágrafo lido do cache é idêntico a um medido do zero, então uma compilação com cache compõe cada linha como uma compilação sem cache; no postext 1.4.1, um parágrafo vindo do cache perdia a marca de última linha curta, e o aperto dessas linhas e o balanceamento de colunas podiam então quebrá-lo de outro jeito. O cache guarda a geração de medidas em que foi preenchido: quando faces de uma família chegam ou saem, a consulta seguinte descarta os blocos compostos nessa família, de modo que um cache mantido através do carregamento das fontes nunca entrega linhas medidas com a fonte alternativa.
+- **Caches globais de larguras.** As larguras das palavras ficam em cache por string de fonte, em estado de módulo compartilhado por todas as compilações da página, e o pretext mantém um cache próprio. O motor descarta as larguras de uma família quando as faces dela mudam (no início de uma compilação, por `watchFonts`, por `prepareFonts` e por `loadBundleFonts`); o cache do pretext não tem índice por família e é limpo inteiro.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// Uma face de "EB Garamond" foi adicionada a document.fonts: a compilação seguinte a enxerga,
+// com o mesmo cache, e mede essa família de novo.
+doc = buildDocument(content, config, cache);
+
+// Um host que muda faces que o motor não consegue ver (um conjunto de fontes próprio) avisa:
+evictFontFamilies(['EB Garamond']);   // as larguras e os blocos em cache dessa família
+clearMeasurementCache();              // todas as famílias
+```
 
 Para aplicações que medem texto pedaço por pedaço, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` e `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` recebem os argumentos de `measureBlock` e de `measureRichBlock` mais o cache, por último.
 
@@ -9189,8 +9232,8 @@ Para aplicações que medem texto pedaço por pedaço, `cachedMeasureBlock(text,
 Parte do estado do Postext fica em variáveis de módulo. Tudo o que importa `postext` no mesmo realm de JavaScript o compartilha: uma página e seus scripts compartilham uma cópia, enquanto cada iframe e cada worker têm a sua. Com um documento por página, isso passa despercebido. Com vários documentos em uma página (duas visualizações ao vivo, uma galeria de exemplos), não:
 
 - **Imagens de recursos.** `registerResourceImage(fileId, image)` preenche um único registro com chave `fileId`, que `renderPage` e `renderPageToCanvas` leem. Dois documentos que registram `figure.svg` dividem essa entrada: o último registro vale, para os dois. Dê aos ids de arquivo um prefixo por documento e chame `unregisterResourceImage(fileId)` ou `clearResourceImages()` quando um documento deixar de existir. Os rasters que o renderizador de canvas guarda em cache usam a mesma chave e são descartados junto com a imagem.
-- **Medidas de texto.** As larguras medidas ficam em cache por string de fonte e texto, para o realm inteiro. Um texto medido antes de uma fonte web terminar de carregar mantém as larguras da fonte alternativa, para todos os documentos, até que `clearMeasurementCache()` (sem argumentos) esvazie os caches: chame-a quando as fontes tiverem carregado e compile de novo.
-- **Configurações resolvidas.** Cada objeto de configuração é resolvido uma vez, e o resultado fica em cache associado a esse objeto. Uma configuração alterada no próprio objeto e compilada de novo é diagramada com as configurações antigas: passe um objeto novo a cada mudança (`{ ...config, … }` ou `structuredClone(config)`).
+- **Medidas de texto.** As larguras medidas ficam em cache por string de fonte e texto, para o realm inteiro. Quando faces de uma família chegam ou saem, o motor descarta as larguras dessa família para todos os documentos (veja [Carregar as fontes antes do layout](#carregar-as-fontes-antes-do-layout)); `clearMeasurementCache()` descarta todas.
+- **Configurações resolvidas.** Cada objeto de configuração é resolvido uma vez, e o resultado fica em cache associado a esse objeto. Cada compilação compara antes o objeto com o texto que ele tinha quando foi resolvido (um `JSON.stringify`, cerca de 0,1 ms para uma configuração de livro de 55 KB e 1,5 ms para uma de 240 KB), então uma configuração alterada no próprio objeto, em qualquer profundidade (`config.bodyText.fontSize = …`, uma cor da paleta), é resolvida de novo. `invalidateConfig(config)` descarta a resolução manualmente. `stableStringify` e `hashString` dão uma chave de conteúdo que não depende da ordem das chaves, para hosts que guardam layouts em cache por configuração.
 - **Idioma de hifenização.** Cada compilação define o idioma de hifenização global do processo como o `bodyText.hyphenation.locale` do seu documento. As funções exportadas `hyphenateText(text)` e `layoutDesignSlot` usam o idioma da última compilação, a menos que você passe um: chame `hyphenateText(text, 'es')`.
 - **Motor de matemática.** Há um único motor MathJax e um único cache de fórmulas renderizadas para o realm; `initMathEngine()` o inicia para todos.
 
@@ -9360,7 +9403,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**Um worker não enxerga as fontes da página.** Ele tem um conjunto de fontes próprio, só com as faces enviadas por `registerFonts` e as fontes instaladas no sistema. Quando uma compilação compõe texto em uma família que o worker não encontra, esse texto é medido com uma fonte alternativa, e as quebras de linha não vão coincidir com as da página. O cliente então imprime um aviso no console por família (`"EB Garamond" is not available inside the layout worker…`) e lista as famílias em `BuildStats.missingFonts`, que o callback `onStats` de `build` recebe.
+**Um worker não enxerga as fontes da página.** Ele tem um conjunto de fontes próprio, só com as faces enviadas por `registerFonts` e as fontes instaladas no sistema. Quando uma compilação compõe texto em uma família que o worker não encontra, esse texto é medido com uma fonte alternativa, e as quebras de linha não vão coincidir com as da página. O cliente então imprime um aviso no console por família (`"EB Garamond" is not available inside the layout worker…`) e lista as famílias em `BuildStats.missingFonts`, que o callback `onStats` de `build` recebe. O próprio documento traz as mesmas faces como avisos de conteúdo `fontFallback`.
+
+`handle.prepareFonts(content, config, options)` executa [`prepareFonts`](#carregar-as-fontes-antes-do-layout) na página e depois envia ao worker os arquivos de cada face encontrada que o registro de fontes guarda (os arquivos do resolvedor, as faces de um pacote, as regras `@font-face` legíveis da página), só das fatias que contêm os caracteres do documento. Quando as faces chegam ao worker, ele descarta as medidas apenas dessas famílias e o seu cache de documentos prontos.
 
 ### Coleta de fontes (Fontsource / Google Fonts)
 
@@ -9454,6 +9499,7 @@ As peças principais da API pública:
 - **`resolveHtmlViewerConfig(partial)`**: preenche os valores padrão do visualizador HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`**: primitivas de medição usadas para obter a largura real da coluna em pixels a partir de um número de caracteres desejado.
 - **`createMeasurementCache` / `clearMeasurementCache`**: caches plugáveis, para reaproveitar medições entre um layout e outro.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`**: carregam as faces do documento antes do layout e diagramam de novo quando chegam faces (veja [Carregar as fontes antes do layout](#carregar-as-fontes-antes-do-layout)).
 
 ### Exemplo ao vivo: uma string HTML
 
@@ -9475,6 +9521,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9582,12 +9630,13 @@ export function PostextHtmlViewer({
     ro.observe(host);
 
     // Mede de novo quando as fontes web chegam, para que as larguras dos glifos não venham das fontes substitutas.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9599,7 +9648,7 @@ Algumas observações sobre o que esse exemplo faz:
 
 - **Mede a coluna em vez de estimá-la.** Como `maxCharsPerLine` é um *alvo* expresso em caracteres, a largura real em pixels depende da fonte do texto corrido. `measureGlyphWidth` faz uma medição de verdade com a fonte escolhida, o que mantém a medida constante quando a fonte muda.
 - **Reescreve a página.** O visualizador HTML trata cada “página” do VDT como uma coluna na tela. O exemplo substitui `page.width` pela largura de coluna medida, zera as margens (o espaçamento interno fica fora da página, na div `.pt-doc` que a envolve) e usa `HTML_DPI = 144` para que um texto de `8pt` resulte em `16px`.
-- **Leva em conta o carregamento das fontes.** `document.fonts.loadingdone` dispara quando chega uma fonte web recém-solicitada. Sem refazer o layout, a primeira renderização usa as métricas de uma fonte substituta e salta quando a fonte verdadeira chega.
+- **Leva em conta o carregamento das fontes.** `watchFonts` escuta `document.fonts` e, uma vez por quadro, descarta o que foi medido nas famílias cujas faces chegaram; `onFontsChanged` então diagrama a coluna de novo. Sem refazer o layout, a primeira renderização usa as métricas de uma fonte substituta e salta quando a fonte verdadeira chega.
 - **Reaproveita o cache de medição.** Criar o cache uma vez por componente faz com que redimensionamentos e mudanças de escala da fonte reaproveitem as medições da renderização anterior, em vez de medir de novo cada parágrafo.
 
 ### Indo além

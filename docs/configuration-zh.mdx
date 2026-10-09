@@ -7779,6 +7779,8 @@ interface PostextConfig {
 
 点击其中任何一条警告都会打开字体面板，方便你上传缺少的变体、重新添加字体家族或区分重复的变体。
 
+有了排版结果之后，面板还会列出引擎报告的**排版时使用了替代字体**（`fontFallback`）：页面测量时没有用上的字体，要么根本没有，要么是浏览器借同一字体家族的另一个字重或倾斜画出来的。已经作为未知字体家族或缺少变体列出的字体家族不会重复列出。在第一次排版之前，由针对`document.fonts`的检查代替它。
+
 ## 调色板
 
 `PostextConfig`上的`colorPalette`属性让你定义一组可复用的命名颜色，并在配置中任何`ColorValue`里引用它们。它相当于Postext中的CSS自定义属性，或InDesign的色板面板：改一次调色板条目，所有指向它的颜色都会在整个文档中随之更新。
@@ -8987,6 +8989,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>设置了让正文绕排的资源或框（<code>placement.wrap</code>、框的<code>wrap</code>）未能按要求排版。<code>reason</code>：<code>'tooNarrow'</code>（旁边的正文会窄于<code>layout.wrap.minTextWidth</code>）、<code>'fewLines'</code>（矮于<code>layout.wrap.minLinesBeside</code>行）、<code>'moved'</code>（行内对象高于所在栏剩余空间，已随锚点移到下一栏）或<code>'verticalText'</code>。<code>resourceId</code>指资源，<code>box</code>指框的样式。指向嵌入处或框。</td>
       <td>按原因所述，对象占满整条，或放在下一栏。</td>
     </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>文字排版所用的某个字体（<code>family</code>、<code>weight</code>、<code>style</code>），在构建时字体集给不出来：<code>reason: 'missing'</code>表示该字体族没有任何字体已加载，系统中也没有安装；<code>'synthesized'</code>表示这个字重或倾斜取自该字体族的另一个字体（向只有400常规体的字体族要700斜体）。在有字体集的地方检查（<code>document.fonts</code>、工作线程的<code>self.fonts</code>，或<code>BuildDocumentOptions.fontSet</code>），由<code>debug.warnings.missingFont</code>控制。没有页码，也没有源文本范围。</td>
+      <td>文字用回退字体测量和绘制，或用浏览器加粗、倾斜后的字体；该字体到达后，断行会随之改变。见<a href="#排版前加载字体">排版前加载字体</a>。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9153,28 +9160,64 @@ const blocks = parseMarkdown(content);
 
 Postext能识别的markdown结构完整列表见[文档格式](/zh/docs/document-format)页面。
 
-### 测量缓存
+### 排版前加载字体
 
-文本测量是排版中开销最大的步骤。有两类缓存让它保持低开销，两者的清除方式不同：
-
-- **由你持有的块缓存。**`createMeasurementCache()`返回一个`MeasurementCache`，它记住每个测量过的段落，键由段落的文本、字体、宽度、断行选项和当前的断词词典组成。把它作为`buildDocument`（或`buildDocumentAsync`）的第三个参数传入，就能在各轮收敛之间和多次构建之间复用测量结果：每次按键都重新排版的编辑器，只需测量改动过的段落。不传缓存时，每一轮都会重新测量所有块。从缓存读出的段落与重新测量的段落完全相同，因此带缓存的构建与不带缓存的构建排出的每一行都一样；在postext 1.4.1中，缓存的段落会丢失“末行是孤字”的标记，孤字收紧和各栏齐底随后可能以不同方式断行。布局工作线程在多次构建之间保留一个缓存，字体变化时换成新的。
-- **全局宽度缓存**。单词宽度按字体字符串缓存在模块状态中，页面中的所有构建共享；pretext也有自己的一份缓存。如果文本先用回退字体测量，之后网络字体才到达，这些缓存就会过时。
+排版用运行时字体集中已有的字体测量文本。`prepareFonts`在第一次构建之前，加载配置及其文本要求的所有字体：正文、标题、列表、标注框的标题和正文、表格、设计文字、书眉、目录、代码和漫画嵌字，配置设定的每种字重和倾斜都包括在内（正文字体族要四种，因为`**`和`*`在其中排出粗体和斜体）。每个字体只按文档排出的字符加载，所以以`unicode-range`切片提供的字体族（拉丁扩展、希腊、阿拉伯，以及Google Fonts和Fontsource的中日韩切片）只取回文本需要的文件。
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// 宿主的文件：沿用PDF字体提供函数的约定，一个函数两处共用。
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// 一个网络字体加载完成：用回退字体测得的宽度已经过时。
-await document.fonts.ready;
-clearMeasurementCache();           // 不带参数：清除全局宽度缓存
-cache = createMeasurementCache();  // 块缓存没有clear()；新建一个
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded、report.missing、report.synthesized：{ family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// 或者一次调用：准备、构建、加载页面用到却还没有的字体，再构建一次。
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()`不接受参数，也不会动`MeasurementCache`：块缓存里的块同样是用旧宽度测量的，所以要丢掉它，新建一个。字体加载后不清除缓存就重新构建，得到的仍是按回退字体测量的断行。
+- **页面声明的字体**（一条`@font-face`规则、一个已添加的`FontFace`）通过字体集加载（`document.fonts.load`，在工作线程中是`self.fonts`）。**页面没有声明的字体**交给`resolve(family, weight, style, { text, codePoints })`，它返回一个文件（字节或URL）、多个文件（一个字体的各个切片）、表示一个切片或一段可变范围的`{ source, unicodeRange, weight, style }`，或者`null`。引擎等它们全部加载完毕，再按配置的顺序和每次返回的顺序（解析函数这样返回时，先latin，再latin-ext，再greek）作为`FontFace`添加，所以无论文件以什么顺序到达，字体集都相同。引擎还把它们注册到字体注册表中，[SVG图片](#svg文字中的字体)和布局工作线程都从那里读取。解析函数也可以自己声明字体（添加一张样式表），然后返回`null`。
+- **报告**列出有已加载字体（或已安装的字体族）可用的字体、仍然`missing`的字体，以及浏览器会借另一个字重或倾斜`synthesize`出来的字体。`timeoutMs`（默认10 000）限定等待的时间，到时仍在加载的字体算作缺失。在没有字体集的环境（Node）中，`prepareFonts`什么也不做，并报告所有字体都已加载。
+- **`buildDocumentWithFonts(content, config, options)`**：准备字体，用`buildDocumentAsync`构建，读出页面实际排字所用的字体，加载其中缺少的，再构建一次（最多多构建两次）。`withLoadedFonts(build, options)`对任意构建函数做同样的事，适用于逐章构建的书，或返回多个文档的文件包（`buildBundle`）。`options.onFonts`接收最终的报告。
+- **构建之后**，文字排版所用而字体集给不出来的每个字体，都在`doc.contentWarnings`中列为`fontFallback`（见[文档中的警告](#文档中的警告)）。
+
+之后才到达的字体，引擎会自己察觉。引擎为每个字体集记下它上次查看时每个字体族已加载了哪些字体；每次构建开始时再看一次（只在字体集变大、变小或有字体加载完成时），并丢弃在字体有变化的字体族中测得的结果。`watchFonts(fontSet)`在字体加载的过程中做同样的事，一批无论带来多少个切片，每个动画帧最多一次；`onFontsChanged(listener)`告诉宿主哪些字体族变了，以便它重新排版页面：
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // 默认为document.fonts
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts`会在它加载字体的那个字体集上开始监视（`watch: false`则不开启）。
+
+### 测量缓存
+
+文本测量是排版中开销最大的步骤。有两类缓存让它保持低开销：
+
+- **由你持有的块缓存。**`createMeasurementCache()`返回一个`MeasurementCache`，它记住每个测量过的段落，键由段落的文本、字体、宽度、断行选项和当前的断词词典组成。把它作为`buildDocument`（或`buildDocumentAsync`）的第三个参数传入，就能在各轮收敛之间和多次构建之间复用测量结果：每次按键都重新排版的编辑器，只需测量改动过的段落。不传缓存时，每一轮都会重新测量所有块。从缓存读出的段落与重新测量的段落完全相同，因此带缓存的构建与不带缓存的构建排出的每一行都一样；在postext 1.4.1中，缓存的段落会丢失“末行是孤字”的标记，孤字收紧和各栏齐底随后可能以不同方式断行。缓存记着填充它时的测量代次：某个字体族的字体到达或离开后，它在下一次查找时丢弃用该字体族排出的块，因此跨越字体加载保留下来的缓存，绝不会给出按回退字体测量的行。
+- **全局宽度缓存**。单词宽度按字体字符串缓存在模块状态中，页面中的所有构建共享；pretext也有自己的一份缓存。某个字体族的字体发生变化时（构建开始时、`watchFonts`、`prepareFonts`和`loadBundleFonts`），引擎丢弃该字体族的宽度；pretext的缓存没有按字体族的索引，只能整个清空。
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// "EB Garamond"的一个字体加入了document.fonts：下一次构建会看到它，
+// 用同一个缓存，重新测量这个字体族。
+doc = buildDocument(content, config, cache);
+
+// 宿主更换了引擎看不到的字体（它自己的字体集）时，要告诉引擎：
+evictFontFamilies(['EB Garamond']);   // 该字体族的宽度和缓存的块
+clearMeasurementCache();              // 所有字体族
+```
 
 对于逐段测量文本的应用，`cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)`和`cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)`接受与`measureBlock`、`measureRichBlock`相同的参数，最后再加上缓存。
 
@@ -9183,8 +9226,8 @@ doc = buildDocument(content, config, cache);
 Postext的部分状态存放在模块级变量中。同一个JavaScript realm中导入`postext`的所有代码共享这些状态：一个页面和它的脚本共享一份，而每个iframe、每个工作线程各有自己的一份。一个页面只有一个文档时不会察觉到这一点；一个页面中有多个文档（两个实时预览、一组示例）时就会：
 
 - **资源图片。**`registerResourceImage(fileId, image)`填充一个以`fileId`为键的注册表，`renderPage`和`renderPageToCanvas`从中读取。两个文档都注册`figure.svg`时会共用这一项：最后一次注册生效，对两个文档都是如此。请给文件id加上各文档自己的前缀，并在文档移除时调用`unregisterResourceImage(fileId)`或`clearResourceImages()`。Canvas后端缓存的栅格图也按同样的键存放，随图片一起丢弃。
-- **文本测量**。测得的宽度按字体字符串和文本缓存，整个realm共享。在网络字体加载完成之前测量的文本，会一直沿用回退字体的宽度，所有文档都是如此，直到`clearMeasurementCache()`（不带参数）清空这些缓存为止：字体加载完成后调用一次，然后重新构建。
-- **已解析的配置**。每个配置对象只解析一次，结果按该对象缓存。原地修改配置后再次构建，排版仍使用旧设置：每次修改都应传入一个新对象（`{ ...config, … }`或`structuredClone(config)`）。
+- **文本测量**。测得的宽度按字体字符串和文本缓存，整个realm共享。某个字体族的字体到达或离开时，引擎为所有文档丢弃该字体族的宽度（见[排版前加载字体](#排版前加载字体)）；`clearMeasurementCache()`则全部丢弃。
+- **已解析的配置**。每个配置对象只解析一次，结果按该对象缓存。每次构建都先把对象与解析时的文本作比较（一次`JSON.stringify`，55 KB的整书配置约0.1 ms，240 KB的约1.5 ms），所以原地修改过的配置，无论改在哪一层（`config.bodyText.fontSize = …`、调色板中的一个颜色），都会重新解析。`invalidateConfig(config)`可以手动丢弃解析结果。`stableStringify`和`hashString`给出与键的顺序无关的内容键，供按配置缓存排版结果的宿主使用。
 - **断词语言**。每次构建都会把进程级的断词语言设为该文档的`bodyText.hyphenation.locale`。导出的`hyphenateText(text)`和`layoutDesignSlot`使用最近一次构建的语言，除非你显式传入：调用`hyphenateText(text, 'es')`。
 - **数学引擎**。整个realm只有一个MathJax引擎和一份已渲染公式的缓存；`initMathEngine()`为所有文档启动它。
 
@@ -9354,7 +9397,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**工作线程看不到页面的字体**。它有自己的字体集，只包含通过`registerFonts`发送的字体和系统中安装的字体。构建时如果某段文字使用的字族在工作线程中找不到，这段文字就用回退字体测量，断行会与页面对不上。此时客户端会为每个字族在控制台打印一条警告（`"EB Garamond" is not available inside the layout worker…`），并把这些字族列在`BuildStats.missingFonts`中，`build`的`onStats`回调会收到它。
+**工作线程看不到页面的字体**。它有自己的字体集，只包含通过`registerFonts`发送的字体和系统中安装的字体。构建时如果某段文字使用的字族在工作线程中找不到，这段文字就用回退字体测量，断行会与页面对不上。此时客户端会为每个字族在控制台打印一条警告（`"EB Garamond" is not available inside the layout worker…`），并把这些字族列在`BuildStats.missingFonts`中，`build`的`onStats`回调会收到它。文档本身也把这些字体作为`fontFallback`内容警告带在身上。
+
+`handle.prepareFonts(content, config, options)`在页面上运行[`prepareFonts`](#排版前加载字体)，然后把它找到的、字体注册表中有文件的每个字体（解析函数的文件、文件包的字体、页面可读的`@font-face`规则）发送给工作线程，而且只发送含有文档字符的切片。字体到达工作线程后，它只丢弃这些字体族的测量结果，以及它缓存的已完成文档。
 
 ### 收集字体载荷（Fontsource / Google Fonts）
 
@@ -9448,6 +9493,7 @@ HTML查看器是Postext面向屏幕的渲染器。它不把页面栅格化成位
 - **`resolveHtmlViewerConfig(partial)`**：补齐HTML查看器的默认值（`maxCharsPerLine`、`columnGap`、`optimalLineBreaking`）。
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`**：测量原语，用来根据目标字符数算出实际的栏宽像素值。
 - **`createMeasurementCache` / `clearMeasurementCache`**：可插拔的缓存，让多次重新排版复用测量结果。
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`**：在排版前加载文档的字体，并在字体到达时重新排版（见[排版前加载字体](#排版前加载字体)）。
 
 ### 在线示例：HTML字符串
 
@@ -9469,6 +9515,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9576,12 +9624,13 @@ export function PostextHtmlViewer({
     ro.observe(host);
 
     // Web字体加载完成后重新测量，避免字形宽度取自后备字体。
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9593,7 +9642,7 @@ export function PostextHtmlViewer({
 
 - **测量栏宽，而不是估算。**`maxCharsPerLine`是以字符数表示的*目标*，实际的像素宽度取决于正文字体。`measureGlyphWidth`针对所选字体给出真实的测量值，换字体后行长也保持一致。
 - **改写页面**。HTML查看器把每个VDT“页面”当作屏幕上的一栏。示例用测得的栏宽覆盖`page.width`，把页边距设为0（内边距放在页面外，由外层的`.pt-doc` div提供），并使用`HTML_DPI = 144`，使`8pt`的正文换算为`16px`。
-- **感知字体加载**。新请求的Web字体到达时会触发`document.fonts.loadingdone`。如果不重新排版，首次渲染用的是后备字体的度量，真正的字体到达后版面会跳动。
+- **感知字体加载**。`watchFonts`监听`document.fonts`，每帧最多一次，丢弃在有字体到达的字体族中测得的结果；随后`onFontsChanged`重新排出这一栏。如果不重新排版，首次渲染用的是后备字体的度量，真正的字体到达后版面会跳动。
 - **复用测量缓存**。每个组件只创建一次缓存，调整尺寸或改变字体缩放时就能复用上一次渲染的测量结果，不必重新测量每个段落。
 
 ### 进一步
