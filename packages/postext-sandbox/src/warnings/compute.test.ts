@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { computeWarnings } from './compute';
+import { warningCategory } from './categories';
 import type { WarningPayload } from './types';
 import type { ComposedBook } from '../book/types';
 
@@ -442,6 +444,19 @@ describe('engine content warnings', () => {
     const found = find(md, 'tabInVerticalText', vertical);
     expect(found.map((w) => [md.slice(w.sourceStart, w.sourceEnd), w.line])).toEqual([[':tab', 1]]);
     expect(find(md, 'tabInVerticalText')).toEqual([]);
+  });
+
+  it('lists a paragraph whose drop cap could not be set as configured (#623)', () => {
+    // A measuring canvas for the layout (no DOM here): 7 px a glyph.
+    const g = globalThis as unknown as { OffscreenCanvas?: unknown };
+    g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };
+    const md = '# One\n\nA short paragraph.';
+    const config: PostextConfig = { headings: { levels: [{ level: 1, dropCap: { lines: 3, shortParagraph: 'shrink' } }] } };
+    const doc = buildDocument({ markdown: md }, config);
+    const found = computeWarnings({ markdown: md, config, doc, resources: [] })
+      .filter((w): w is typeof w & { payload: Extract<WarningPayload, { kind: 'dropCap' }> } => w.payload.kind === 'dropCap');
+    expect(found.map((w) => [w.payload.reason, w.payload.handling, w.line])).toEqual([['shortParagraph', 'shrink', 3]]);
+    expect(warningCategory('dropCap')).toBe('typesetting');
   });
 
   it('flags an image the previews cannot read, unless storage itself is out', () => {

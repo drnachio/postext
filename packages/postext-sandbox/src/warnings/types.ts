@@ -80,6 +80,7 @@ export type WarningKind =
   | 'unknownNumerals'
   | 'lineNumbersUnsupported'
   | 'lineNumberOverlap'
+  | 'dropCap'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -324,6 +325,8 @@ export type WarningPayload =
   /** A line number set in the side column overlaps a side box, caption or
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }
+  /** A paragraph's drop cap could not be set as configured (#623). */
+  | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
    *  key; `suggestion` names the setting it is closest to, when one is. */

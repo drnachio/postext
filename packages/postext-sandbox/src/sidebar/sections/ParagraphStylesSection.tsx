@@ -20,6 +20,7 @@ import { SearchScope } from '../search/SearchScope';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
 import { TabStopsField } from '../settings/TabStopsField';
+import { DropCapFields } from '../settings/DropCapFields';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -392,6 +393,24 @@ function ParagraphStyleCard({
         onStopsChange={(next) => (next === undefined ? onResetField('tabStops') : onChange({ tabStops: next }))}
         onIntervalChange={(next) => (next === undefined ? onResetField('tabInterval') : onChange({ tabInterval: next }))}
       />
+      <ToggleSwitch
+        label={labels.paragraphStyleDropCap}
+        checked={style.dropCap !== undefined}
+        onChange={(v) => (v ? onChange({ dropCap: { ...style.dropCap } }) : onResetField('dropCap'))}
+        tooltip={labels.paragraphStyleDropCapTooltip}
+        isDefault={unset('dropCap')}
+        onReset={() => onResetField('dropCap')}
+      />
+      {style.dropCap && (
+        <DropCapFields
+          kind="body"
+          each
+          value={style.dropCap}
+          onChange={(dropCap) => onChange({ dropCap })}
+          inherited={{ fontFamily: resolved.fontFamily, fontWeight: resolved.fontWeight, color: resolved.color }}
+          fieldId={`paragraph-style-dropcap-${style.id}`}
+        />
+      )}
       <DimensionInput
         label={labels.paragraphStyleSpaceBetween}
         value={resolved.spaceBetween}

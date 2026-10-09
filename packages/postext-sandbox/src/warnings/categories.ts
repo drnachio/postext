@@ -63,6 +63,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'alphaPdfOverflow':
     case 'chipOverlap':
     case 'lineNumberOverlap':
+    case 'dropCap':
     case 'parityCascade':
     case 'unsupportedHyphenationLocale':
     case 'comicBalloonOverflow':

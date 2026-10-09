@@ -57,6 +57,7 @@ import { SlotEditor } from './HeaderFooterSection/SlotEditor';
 import { PartsOrderedListsOverrides, PartsUnorderedListsOverrides } from './PartsListOverrides';
 import { breakParityOptions } from './HeadingsSection/breakParityOptions';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
+import { DropCapFields } from '../settings/DropCapFields';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -178,7 +179,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
   };
   const headingFields: (keyof HeadingStyleConfig)[] = [
     'fontSize', 'lineHeight', 'fontFamily', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
-    'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'jidori', 'breakBefore', 'span', 'hidden', 'advancedDesign',
+    'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'jidori', 'dropCap', 'breakBefore', 'span', 'hidden', 'advancedDesign',
   ];
   const hasHeadingOverrides = headingFields.some((f) => style[f] !== undefined);
   const resetHeadingFields = () => {
@@ -561,6 +562,30 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           isDefault={unset('jidori')}
           onReset={() => set('jidori', undefined)}
         />
+        <SelectInput
+          label={labels.headingStyleDropCap}
+          value={style.dropCap === undefined ? 'level' : style.dropCap === false ? 'none' : 'own'}
+          variant="segmented"
+          stacked
+          options={[
+            { value: 'level', label: labels.headingStyleDropCapLevel },
+            { value: 'own', label: labels.headingStyleDropCapOwn },
+            { value: 'none', label: labels.headingStyleDropCapNone },
+          ]}
+          onChange={(v) => set('dropCap', v === 'level' ? undefined : v === 'none' ? false : { ...(lvl.dropCap ?? {}) })}
+          tooltip={labels.headingStyleDropCapTooltip}
+          isDefault={unset('dropCap')}
+          onReset={() => set('dropCap', undefined)}
+        />
+        {style.dropCap && (
+          <DropCapFields
+            kind="body"
+            value={style.dropCap}
+            onChange={(dropCap) => set('dropCap', dropCap)}
+            inherited={{ fontFamily: base.bodyText.fontFamily, fontWeight: base.bodyText.fontWeight, color: base.bodyText.color }}
+            fieldId={`${prefix}-dropcap`}
+          />
+        )}
         <ToggleSwitch
           label={labels.headingBreakBefore}
           checked={style.breakBefore?.enabled ?? lvl.breakBefore.enabled}

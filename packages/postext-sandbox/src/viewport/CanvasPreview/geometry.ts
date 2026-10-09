@@ -653,6 +653,16 @@ export function pixelToSourceOffset(
   }
   if (!hitBlock) return null;
 
+  // A drop cap (#623): a click on the initial lands before it, or after
+  // it on its right half (the start of the rest of the word).
+  const cap = hitBlock.dropCap;
+  if (cap && cap.sourceStart !== undefined && xPage >= cap.x && xPage <= cap.x + cap.width
+    && yPage >= cap.baselineY - cap.fontSizePx && yPage <= cap.baselineY) {
+    const after = xPage > cap.x + cap.width / 2;
+    if (!after) return cap.sourceStart;
+    return hitBlock.sourceMap?.[cap.plainEnd - (hitBlock.plainPrefixLen ?? 0)] ?? cap.sourceEnd ?? null;
+  }
+
   // 2. Find the line whose vertical band contains yPage; snap to nearest if
   //    click is in the gap between lines.
   let hitLine: VDTDocument['blocks'][number]['lines'][number] | undefined;

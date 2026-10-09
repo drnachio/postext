@@ -48,6 +48,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'kuntenExceedsLeading':
     case 'arabicMarksExceedLeading':
     case 'lineNumberOverlap':
+    case 'dropCap':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -303,6 +304,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsLineNumbersUnsupportedTitle;
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapTitle;
+    case 'dropCap':
+      return labels.warningsDropCapTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
     case 'unknownConfigValue':
@@ -562,6 +565,15 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path} — ${labels.warningsLineNumbersUnsupportedDetail}`;
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
+    case 'dropCap': {
+      const detail = payload.reason === 'shortParagraph'
+        ? payload.handling === 'shrink' ? labels.warningsDropCapShortShrink : payload.handling === 'skip' ? labels.warningsDropCapShortSkip : labels.warningsDropCapShortReserve
+        : payload.reason === 'split' ? labels.warningsDropCapSplit
+          : payload.reason === 'joiningScript' ? labels.warningsDropCapJoining
+            : payload.reason === 'verticalText' ? labels.warningsDropCapVertical
+              : labels.warningsDropCapNoLetter;
+      return detail.replace('__text__', payload.text).replace('__lines__', String(payload.lines ?? ''));
+    }
     case 'unknownConfigKey':
       return `${payload.path} — ${labels.warningsUnknownConfigKeyDetail}${payload.suggestion ? ` ${labels.warningsUnknownConfigKeySuggestion.replace('__suggestion__', payload.suggestion)}` : ''}`;
     case 'unknownConfigValue':
