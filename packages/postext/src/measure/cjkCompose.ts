@@ -1641,27 +1641,37 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
 const TITLE_OPEN = '《〈︽︿';
 const TITLE_CLOSE = '》〉︾﹀';
 
+/** The kind of title bracket unit `u` is, when it is one: the index of a
+ *  typed 《〈 (or 》〉) in {@link TITLE_OPEN} ({@link TITLE_CLOSE}), or -1 for
+ *  a bracket `cjk.bookTitleMark` added round a `:book[…]` title (『』 in
+ *  Japan); undefined for any other unit. */
+function titleBracket(u: Unit, side: 'open' | 'close'): number | undefined {
+  if (u.kind !== 'text' || u.graphemes !== 1 || u.note) return undefined;
+  const typed = (side === 'open' ? TITLE_OPEN : TITLE_CLOSE).indexOf(u.text);
+  if (typed >= 0) return typed;
+  return u.style.inserted && u.first === (side === 'open' ? 'opening' : 'closing') ? -1 : undefined;
+}
+
 /**
  * The extents of the book titles among `units`, as `[from, to)` of the
  * title's own units (its brackets left out): every `《…》` or `〈…〉`
  * (nested ones too, each matched with its own closing bracket; one never
- * closed is no title), whether typed or added by `cjk.bookTitleMark`, and
- * every run of units of one `:book[…]` title (`VDTSegmentMarks.bookTitle`,
- * which a title set with the wavy line or bare carries alone).
+ * closed is no title) and every `:book[…]` title, in the brackets
+ * `cjk.bookTitleMark` adds or, set with the wavy line or bare, as the run
+ * of units that carries its mark (`VDTSegmentMarks.bookTitle`).
  */
 function titleExtents(units: readonly Unit[]): [number, number][] {
   const out: [number, number][] = [];
   const open: { at: number; kind: number }[] = [];
   for (let k = 0; k < units.length; k++) {
     const u = units[k]!;
-    if (u.kind !== 'text' || u.graphemes !== 1) continue;
-    const o = TITLE_OPEN.indexOf(u.text);
-    if (o >= 0) {
+    const o = titleBracket(u, 'open');
+    if (o !== undefined) {
       open.push({ at: k, kind: o });
       continue;
     }
-    const c = TITLE_CLOSE.indexOf(u.text);
-    if (c < 0) continue;
+    const c = titleBracket(u, 'close');
+    if (c === undefined) continue;
     // The innermost title this bracket closes; brackets opened inside it
     // and never closed are dropped.
     let q = open.length - 1;
@@ -1679,12 +1689,7 @@ function titleExtents(units: readonly Unit[]): [number, number][] {
     }
     let end = k + 1;
     while (end < units.length && units[end]!.style.marks?.bookTitle === id) end++;
-    // The brackets `cjk.bookTitleMark` adds, when they carry the mark too.
-    let from = k;
-    let to = end;
-    if (TITLE_OPEN.includes(units[from]!.text) && units[from]!.graphemes === 1) from++;
-    if (to > from && TITLE_CLOSE.includes(units[to - 1]!.text) && units[to - 1]!.graphemes === 1) to--;
-    if (to > from) out.push([from, to]);
+    out.push([k, end]);
     k = end;
   }
   return out;

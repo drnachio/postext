@@ -75,3 +75,12 @@ describe('book titles (cjk.titleMinChars)', () => {
     expect(linesOf(buildDocument({ markdown: md }, vertical({ titleMinChars: 1 })))[0]).toBe('一二三四五六《說');
   });
 });
+
+describe('book titles marked :book[…] in Japanese text', () => {
+  it('keeps the brackets the region adds (『』) as a title', () => {
+    const ja = (cjk: PostextConfig['cjk']): PostextConfig => ({ ...config(8, cjk, 'ja'), cjk: { punctuationWidth: 'fullwidth', lineBreak: 'ja-strict', ...cjk } });
+    const md = '一二三四五六:book[説文]解字八九十一';
+    expect(linesOf(buildDocument({ markdown: md }, ja({ titleMinChars: 1 })))[0]).toBe('一二三四五六『説');
+    expect(linesOf(buildDocument({ markdown: md }, ja({})))[0]).toBe('一二三四五六');
+  });
+});
