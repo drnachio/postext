@@ -7342,6 +7342,13 @@ const MAX_TOC_ROUNDS = 3;
  *  placement pass, before the band caps run. */
 const MAX_CITING_PAGE_ROUNDS = 3;
 
+/** The floats heading their citing page a build has settled so far (#633):
+ *  the slots kept and the floats refused for good. */
+interface CitingPageState {
+  hints: Map<string, CitingPageSlot>;
+  refused: Set<string>;
+}
+
 export function buildDocument(
   content: PostextContent,
   config?: PostextConfig,
@@ -7479,6 +7486,10 @@ function* buildDocumentRounds(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): Generator<void, VDTDocument, void> {
+  // The floats heading their citing page (#633) carry over from one round
+  // of the contents or of the note numbers to the next: the layout barely
+  // moves between them, and each round would otherwise settle them again.
+  const citing: CitingPageState = { hints: new Map(), refused: new Set() };
   // A document printing its own table of contents (`:::toc` with no
   // host-supplied outline) is laid out with the page labels of the previous
   // build until they no longer change: the contents' own length moves what
@@ -7494,17 +7505,17 @@ function* buildDocumentRounds(
     };
     if (hasTocDirective(parsed) || hasIndexDirective(parsed) || pageRefs()) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings, content.continuation?.statementCounters);
-      let doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, 0), content);
+      let doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, 0, citing), content);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);
         if (sameOutline(after, outline)) break;
         outline = after;
-        doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, round + 1), content);
+        doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, round + 1, citing), content);
       }
       return doc;
     }
   }
-  return withIndexMarks(yield* buildDocumentNumbered(content, config, cache, options), content);
+  return withIndexMarks(yield* buildDocumentNumbered(content, config, cache, options, 0, citing), content);
 }
 
 /** The number each note's marker prints in `doc` (its first marker). */
@@ -7541,8 +7552,9 @@ function* buildDocumentNumbered(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
   tocRound = 0,
+  citing?: CitingPageState,
 ): Generator<void, VDTDocument, void> {
-  let doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound);
+  let doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound, undefined, citing);
   const f = doc.config.footnotes;
   if ((f.placement !== 'column' && f.placement !== 'spread') || (f.numbering !== 'page' && f.numbering !== 'column' && f.numbering !== 'spread')) return doc;
   for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
@@ -7556,7 +7568,7 @@ function* buildDocumentNumbered(
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);
     if (sameFootnoteNumbers(next, used)) break;
-    doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound, next);
+    doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound, next, citing);
   }
   return doc;
 }
@@ -7570,6 +7582,9 @@ function* buildDocumentBalanced(
   options?: BuildDocumentOptions,
   tocRound = 0,
   footnoteNumbers?: ReadonlyMap<string, string>,
+  /** Floats heading their citing page settled by an earlier round of the
+   *  same build (#633): seeds the hints and the refusals. */
+  citing: CitingPageState = { hints: new Map(), refused: new Set() },
 ): Generator<void, VDTDocument, void> {
   // Each pass reports its own progress, numbered in build order.
   let passIndex = 0;
@@ -7588,8 +7603,8 @@ function* buildDocumentBalanced(
   // `PassHints.citingPageFloats`): once a pass keeps one there, every later
   // pass opens that page with it; a float refused once (its citing line
   // left the page, or it could not be set there) is never proposed again.
-  const citingPage = new Map<string, CitingPageSlot>();
-  const citingRefused = new Set<string>();
+  const citingPage = citing.hints;
+  const citingRefused = citing.refused;
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
     const started = onPass ? now() : 0;
