@@ -428,3 +428,12 @@ describe('rounding (#622)', () => {
     }
   });
 });
+
+describe('spaced leaders (#622)', () => {
+  it('end on their last dot, a gap before the text at the stop', () => {
+    const [line] = linesOf('Soup\t8.50', config(stops({ position: 'end', align: 'end', leader: '. ', leaderGap: pt(7) })));
+    const leader = leaderOf(line!)!;
+    expect(leader.seg.text.endsWith('.')).toBe(true);
+    expect(placeOf(line!, '8.50').start - leader.end).toBeCloseTo(7, 3);
+  });
+});

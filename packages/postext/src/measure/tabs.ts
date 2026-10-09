@@ -160,7 +160,11 @@ function leaderFor(stop: TabStopPx, x: number, width: number, textAfter: boolean
   const end = width - after;
   if (stop.leader === 'rule') return { text: '', width: room, rule: true, end };
   const fit = fitLeader(stop.leader!, room, leaderWidth);
-  return fit ? { text: fit.text, width: fit.width, end } : undefined;
+  if (!fit) return undefined;
+  // A spaced leader (`'. '`) ends on its last dot, not on the space after
+  // it, so the dots stand the gap's width from the text at the stop.
+  const text = fit.text.trimEnd();
+  return text.length > 0 ? { text, width: text === fit.text ? fit.width : leaderWidth(text), end } : undefined;
 }
 
 /** The decimal separator of numbers in `locale` (Western digits): `.` in
