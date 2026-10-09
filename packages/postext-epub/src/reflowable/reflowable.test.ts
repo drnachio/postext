@@ -139,6 +139,19 @@ describe('joining lines', () => {
     expect(sink.inl.map((i) => (i.t === 'text' ? i.text : i.t === 'raw' ? i.xhtml : '')).join('')).toBe('Roses red,<br/>violets');
   });
 
+  it('keeps a forced line break (#620), across a page break too', () => {
+    const sink: TextSink = { inl: [] };
+    appendLines(sink, [line([seg('Roses'), space(), seg('red,')], { isLastLine: true, hardBreak: true })], ctx());
+    // The next fragment of the paragraph, on the next page.
+    appendLines(sink, [line([seg('violets')]), line([seg('blue.')], { isLastLine: true })], ctx());
+    expect(sink.inl.map((i) => (i.t === 'text' ? i.text : i.t === 'raw' ? i.xhtml : '')).join('')).toBe('Roses red,<br/>violets blue.');
+  });
+
+  it('writes a forced line break of the text as <br/> (#620)', async () => {
+    const { all } = await render([layOut(`First line\\\nand the paragraph goes on.\n\n${para}`)]);
+    expect(all).toContain('First line<br/>and the paragraph goes on.');
+  });
+
   it('sets ruby without the <rp> brackets EPUB discourages', () => {
     const sink: TextSink = { inl: [] };
     appendLine(sink, line([seg('漢', { ruby: { text: 'ㄏㄢˋ', position: 'right' } as VDTLineSegment['ruby'] })]), ctx('zh-Hant'));

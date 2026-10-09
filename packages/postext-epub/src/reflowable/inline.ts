@@ -400,7 +400,9 @@ function firstChar(items: InlineItem[]): string {
 export function appendLine(sink: TextSink, line: VDTLine, ctx: InlineContext, before: InlineItem[] = [], segments?: VDTLineSegment[], hardBreak = false): void {
   const items = lineItems(line, ctx, segments);
   const prev = sink.prev;
-  if (hardBreak && sink.inl.length > 0) {
+  // A line after a forced break inside a paragraph (#620) opens a line of
+  // its own in the reflowed text too, across a column or page break.
+  if ((hardBreak || prev?.hardBreak) && sink.inl.length > 0) {
     sink.inl.push({ t: 'raw', xhtml: '<br/>' });
   } else if (prev && sink.inl.length > 0) {
     const last = lastText(sink.inl);
