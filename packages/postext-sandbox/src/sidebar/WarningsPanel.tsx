@@ -113,6 +113,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
     case 'floatShrunk':
+    case 'textWrap':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'videoWithoutPoster':
@@ -129,6 +130,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownNumberFormat':
     case 'unknownNumerals':
     case 'lineNumbersUnsupported':
+    case 'wrapUnsupported':
       return List;
     case 'unknownConfigKey':
     case 'unknownConfigValue':
@@ -315,6 +317,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownNumeralsTitle;
     case 'lineNumbersUnsupported':
       return labels.warningsLineNumbersUnsupportedTitle;
+    case 'wrapUnsupported':
+      return labels.warningsWrapUnsupportedTitle;
+    case 'textWrap':
+      return labels.warningsTextWrapTitle;
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapTitle;
     case 'dropCap':
@@ -591,6 +597,15 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumeralsDetail.replace('__used__', payload.used)}`;
     case 'lineNumbersUnsupported':
       return `${payload.path} — ${labels.warningsLineNumbersUnsupportedDetail}`;
+    case 'wrapUnsupported':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsWrapUnsupportedDetail}`;
+    case 'textWrap': {
+      const detail = payload.reason === 'tooNarrow' ? labels.warningsTextWrapTooNarrow
+        : payload.reason === 'fewLines' ? labels.warningsTextWrapFewLines
+          : payload.reason === 'moved' ? labels.warningsTextWrapMoved
+            : labels.warningsTextWrapVertical;
+      return `${payload.resourceId !== undefined ? `#${payload.resourceId}` : `:::callout${payload.box ? ` (${payload.box})` : ''}`} — ${detail}`;
+    }
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
     case 'codeOverflow': {

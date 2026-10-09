@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDocument } from 'postext';
+import { buildDocument, defaultResourceTypes } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { computeWarnings } from './compute';
 import { warningCategory } from './categories';
@@ -457,6 +457,30 @@ describe('engine content warnings', () => {
       .filter((w): w is typeof w & { payload: Extract<WarningPayload, { kind: 'dropCap' }> } => w.payload.kind === 'dropCap');
     expect(found.map((w) => [w.payload.reason, w.payload.handling, w.line])).toEqual([['shortParagraph', 'shrink', 3]]);
     expect(warningCategory('dropCap')).toBe('typesetting');
+  });
+
+  it('lists a picture that cannot wrap text round it, and a type default in vertical text (#627)', () => {
+    const g = globalThis as unknown as { OffscreenCanvas?: unknown };
+    g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };
+    const px = (value: number) => ({ value, unit: 'px' as const });
+    const config: PostextConfig = {
+      page: { dpi: 144, width: px(600), height: px(800), margins: { top: px(0), bottom: px(0), left: px(0), right: px(0) } },
+      layout: { layoutType: 'single' },
+    };
+    const wide: Resource = {
+      id: 'wide', typeId: 'figure', kind: 'bitmap', caption: 'A plate.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'w.jpg', format: 'jpeg', width: 3000, height: 2000 },
+      placement: { position: 'here', wrap: 'right', width: 0.9 },
+    };
+    const md = 'Text.\n\n::resource{id="wide"}\n\nMore text.';
+    const doc = buildDocument({ markdown: md, resources: [wide] }, config);
+    const found = computeWarnings({ markdown: md, config, doc, resources: [wide] }).filter((w) => w.payload.kind === 'textWrap');
+    expect(found.map((w) => [w.payload, w.line])).toEqual([[{ kind: 'textWrap', reason: 'tooNarrow', resourceId: 'wide' }, 3]]);
+    expect(warningCategory('textWrap')).toBe('figures');
+    const vertical: PostextConfig = { layout: { writingMode: 'vertical-rl' }, resourceTypes: [{ ...defaultResourceTypes()[0]!, defaultPlacement: { wrap: 'right' } }] };
+    const cw = computeWarnings({ markdown: 'Text.', config: vertical, doc: null }).filter((w) => w.payload.kind === 'wrapUnsupported');
+    expect(cw).toHaveLength(1);
+    expect(warningCategory('wrapUnsupported')).toBe('design');
   });
 
   it('lists a picture float shrunk to its slot, and one that still overruns (#626)', () => {

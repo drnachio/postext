@@ -25,7 +25,8 @@ import {
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
 import { arabicNumberFormatOptions, eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
-import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import { CollapsibleSection, DimensionInput, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import { wrapSideOf } from '../settings/textWrap';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
@@ -407,6 +408,33 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                     isDefault={type.defaultPlacement?.captionSide === undefined}
                     onReset={() => updateTypePlacement(type, { captionSide: undefined })}
                   />
+                  {/* Text wrap (#627): resources of this type at a side of
+                      their column, the text running beside them. */}
+                  <SelectInput
+                    variant="segmented"
+                    label={labels.resourceTypePlacementWrap}
+                    value={wrapSideOf(type.defaultPlacement?.wrap)}
+                    options={[
+                      { value: 'none', label: labels.resourceWrapNone },
+                      { value: 'left', label: floatSide.left },
+                      { value: 'right', label: floatSide.right },
+                    ]}
+                    onChange={(v) => updateTypePlacement(type, { wrap: v === 'left' || v === 'right' ? v : undefined })}
+                    tooltip={labels.resourceTypePlacementWrapTooltip}
+                    isDefault={type.defaultPlacement?.wrap === undefined}
+                    onReset={() => updateTypePlacement(type, { wrap: undefined })}
+                  />
+                  {wrapSideOf(type.defaultPlacement?.wrap) !== 'none' && (
+                    <DimensionInput
+                      label={labels.resourceTypePlacementWrapGap}
+                      value={type.defaultPlacement?.wrapGap ?? config.layout?.wrap?.gap ?? resolveBodyTextConfig(config.bodyText).lineHeight}
+                      onChange={(v) => updateTypePlacement(type, { wrapGap: v })}
+                      units={['pt', 'mm', 'em']}
+                      tooltip={labels.resourceTypePlacementWrapGapTooltip}
+                      isDefault={type.defaultPlacement?.wrapGap === undefined}
+                      onReset={() => updateTypePlacement(type, { wrapGap: undefined })}
+                    />
+                  )}
                   {/* A floated picture of this type scaled to the room of its
                       slot (#626); the document default is
                       `layout.floatShrink`. */}

@@ -2,8 +2,8 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
-import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
-import type { LayoutConfig, Dimension, ColorValue, FloatShrinkMode } from 'postext';
+import { resolveLayoutConfig, resolveBodyTextConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
+import type { LayoutConfig, Dimension, ColorValue, FloatShrinkMode, TextWrapConfig } from 'postext';
 import {
   ChoiceInput,
   CollapsibleSection,
@@ -61,6 +61,17 @@ export const LayoutSection = memo(function LayoutSection() {
     if (Object.keys(next).length > 0) updateLayout({ floatShrink: next });
     else resetField('floatShrink');
   };
+
+  const resetWrapField = (field: keyof TextWrapConfig) => {
+    if (!raw?.wrap) return;
+    const next = { ...raw.wrap };
+    delete next[field];
+    if (Object.keys(next).length > 0) updateLayout({ wrap: next });
+    else resetField('wrap');
+  };
+  // The wrap gap's default: one body line (#627).
+  const bodyText = useSandboxSelector((s) => s.config.bodyText);
+  const bodyLine = resolveBodyTextConfig(bodyText).lineHeight;
 
   const resetColumnRuleField = (field: 'enabled' | 'color' | 'lineWidth') => {
     if (!raw?.columnRule) return;
@@ -306,6 +317,66 @@ export const LayoutSection = memo(function LayoutSection() {
           />
         </NestedGroup>
       )}
+      {/* Text wrap round pictures and boxes (#627): the defaults a
+          resource, a resource type or a box may set aside. */}
+      <DimensionInput
+        label={labels.textWrapGap}
+        value={layout.wrap.gap ?? bodyLine}
+        onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, gap: v } })}
+        units={['pt', 'mm', 'em']}
+        tooltip={labels.textWrapGapTooltip}
+        isDefault={raw?.wrap?.gap === undefined}
+        onReset={() => resetWrapField('gap')}
+      />
+      <NestedGroup>
+        {typeof layout.wrap.minTextWidth === 'number' ? (
+          <NumberInput
+            label={labels.textWrapMinTextWidth}
+            value={Math.round(layout.wrap.minTextWidth * 100)}
+            onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, minTextWidth: Math.min(100, Math.max(1, v)) / 100 } })}
+            min={1}
+            max={100}
+            step={5}
+            suffix="%"
+            tooltip={labels.textWrapMinTextWidthTooltip}
+            isDefault={raw?.wrap?.minTextWidth === undefined}
+            onReset={() => resetWrapField('minTextWidth')}
+          />
+        ) : (
+          <DimensionInput
+            label={labels.textWrapMinTextWidth}
+            value={layout.wrap.minTextWidth}
+            onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, minTextWidth: v } })}
+            units={['em', 'mm', 'pt']}
+            tooltip={labels.textWrapMinTextWidthTooltip}
+            isDefault={raw?.wrap?.minTextWidth === undefined}
+            onReset={() => resetWrapField('minTextWidth')}
+          />
+        )}
+        <NumberInput
+          label={labels.textWrapMinLinesBeside}
+          value={layout.wrap.minLinesBeside}
+          onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, minLinesBeside: Math.max(1, Math.round(v)) } })}
+          min={1}
+          max={10}
+          step={1}
+          tooltip={labels.textWrapMinLinesBesideTooltip}
+          isDefault={layout.wrap.minLinesBeside === D.wrap.minLinesBeside}
+          onReset={() => resetWrapField('minLinesBeside')}
+        />
+        <NumberInput
+          label={labels.textWrapDefaultWidth}
+          value={Math.round(layout.wrap.defaultWidth * 100)}
+          onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, defaultWidth: Math.min(95, Math.max(5, v)) / 100 } })}
+          min={5}
+          max={95}
+          step={5}
+          suffix="%"
+          tooltip={labels.textWrapDefaultWidthTooltip}
+          isDefault={layout.wrap.defaultWidth === D.wrap.defaultWidth}
+          onReset={() => resetWrapField('defaultWidth')}
+        />
+      </NestedGroup>
       <SelectInput
         label={labels.inlineResourceGap}
         value={layout.inlineResourceGap}

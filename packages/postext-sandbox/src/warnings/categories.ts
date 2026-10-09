@@ -25,6 +25,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
     case 'floatShrunk':
+    case 'textWrap':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'videoWithoutPoster':
@@ -49,6 +50,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'unknownNumberFormat':
     case 'unknownNumerals':
     case 'lineNumbersUnsupported':
+    case 'wrapUnsupported':
     case 'unknownConfigKey':
     case 'unknownConfigValue':
     case 'headingDesignCut':

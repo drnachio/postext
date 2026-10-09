@@ -11,12 +11,13 @@ import type {
   ResourceRotation,
   FloatShrinkMode,
 } from 'postext';
-import { DEFAULT_FLOAT_MIN_SCALE } from 'postext';
+import { DEFAULT_FLOAT_MIN_SCALE, DEFAULT_TEXT_WRAP, resolveBodyTextConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type ResourceFocusTarget } from '../../context/SandboxContext';
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
 import { ConfirmPopover, IconButton, PanelBody, PanelHeader } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
-import { NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import { DimensionInput, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import { wrapSideOf } from '../../sidebar/settings/textWrap';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
@@ -144,7 +145,13 @@ export function ResourceDetail({
   // the book has more than one, or when the resource sets it.
   const placementColumns = currentPlacement.columns ?? typePlacement.columns ?? 1;
   const severalColumns = useSandboxSelector((s) => hasSeveralColumns(s.config));
-  const placementWidthPercent = Math.round((currentPlacement.width ?? typePlacement.width ?? 1) * 100);
+  // Text wrap (#627): the side of the column the resource sits on with the
+  // text beside it; a wrapped resource without a width of its own takes
+  // `layout.wrap.defaultWidth`.
+  const layoutWrap = useSandboxSelector((s) => s.config.layout?.wrap);
+  const bodyLineHeight = useSandboxSelector((s) => s.config.bodyText?.lineHeight);
+  const placementWrap = wrapSideOf(currentPlacement.wrap ?? typePlacement.wrap);
+  const placementWidthPercent = Math.round((currentPlacement.width ?? typePlacement.width ?? (placementWrap !== 'none' ? layoutWrap?.defaultWidth ?? DEFAULT_TEXT_WRAP.defaultWidth : 1)) * 100);
   // An inline embed is never turned; a turned resource is a page-span float.
   const placementInline = placementPosition === 'here';
   const placementRotated = !placementInline && placementRotate !== 'none';
@@ -499,6 +506,35 @@ export function ResourceDetail({
               onChange={(v) => setPlacementKey('captionSide', v)}
               isDefault={currentPlacement.captionSide === undefined}
               onReset={() => setPlacementKey('captionSide', undefined)}
+            />
+          )}
+          {/* Text wrap (#627): an inline resource or a one-column float at
+              a side of its column, the text running beside it; its gap. */}
+          {!placementRotated && (placementInline || (placementSpan === 'column' && placementColumns <= 1)) && (
+            <SelectInput
+              variant="segmented"
+              label={labels.resourceTypePlacementWrap}
+              tooltip={labels.resourceTypePlacementWrapTooltip}
+              value={placementWrap}
+              options={[
+                { value: 'none', label: labels.resourceWrapNone },
+                { value: 'left', label: floatSide.left },
+                { value: 'right', label: floatSide.right },
+              ]}
+              onChange={(v) => setPlacementKey('wrap', v === 'left' || v === 'right' ? v : 'none')}
+              isDefault={currentPlacement.wrap === undefined}
+              onReset={() => setPlacementKey('wrap', undefined)}
+            />
+          )}
+          {!placementRotated && placementWrap !== 'none' && (
+            <DimensionInput
+              label={labels.resourceTypePlacementWrapGap}
+              tooltip={labels.resourceTypePlacementWrapGapTooltip}
+              value={currentPlacement.wrapGap ?? typePlacement.wrapGap ?? layoutWrap?.gap ?? resolveBodyTextConfig({ ...(bodyLineHeight ? { lineHeight: bodyLineHeight } : {}) }).lineHeight}
+              onChange={(v) => setPlacementKey('wrapGap', v)}
+              units={['pt', 'mm', 'em']}
+              isDefault={currentPlacement.wrapGap === undefined}
+              onReset={() => setPlacementKey('wrapGap', undefined)}
             />
           )}
           {/* A floated picture scaled to the room of its slot instead of

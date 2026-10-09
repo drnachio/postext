@@ -96,6 +96,20 @@ describe('ResourceDetail placement: width and align', () => {
     expect(shrink(render(table({ position: 'auto' })))).toBe(false);
   });
 
+  it('offers Text wrap on an inline embed and a column float, its gap once it wraps (#627)', () => {
+    const wrap = (html: string) => row(html, L.resourceTypePlacementWrap);
+    const gap = (html: string) => row(html, L.resourceTypePlacementWrapGap);
+    expect(wrap(render(bitmap({ position: 'here' })))).toBe(true);
+    expect(wrap(render(bitmap({ position: 'auto' })))).toBe(true);
+    expect(gap(render(bitmap({ position: 'here' })))).toBe(false);
+    expect(gap(render(bitmap({ position: 'here', wrap: 'right' })))).toBe(true);
+    // A page-span float and a turned one keep their band whole.
+    expect(wrap(render(bitmap({ position: 'auto', span: 'page' })))).toBe(false);
+    expect(wrap(render(bitmap({ position: 'auto', rotate: 'ccw' })))).toBe(false);
+    // A wrapped picture with no width of its own shows the default share.
+    expect(render(bitmap({ position: 'here', wrap: 'left' }))).toMatch(/value="45"/);
+  });
+
   it('says in the tooltip that Align also places a picture narrower than its slot', () => {
     expect(L.resourceTypePlacementAlignTooltip).toMatch(/picture/);
   });

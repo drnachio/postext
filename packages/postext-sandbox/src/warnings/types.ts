@@ -82,8 +82,10 @@ export type WarningKind =
   | 'unknownNumberFormat'
   | 'unknownNumerals'
   | 'lineNumbersUnsupported'
+  | 'wrapUnsupported'
   | 'lineNumberOverlap'
   | 'dropCap'
+  | 'textWrap'
   | 'codeOverflow'
   | 'floatShrunk'
   | 'unknownConfigKey'
@@ -343,6 +345,13 @@ export type WarningPayload =
   /** `lineNumbers.enabled` on a vertical document (#621): it gets no line
    *  numbers. */
   | { kind: 'lineNumbersUnsupported'; path: string; value: string; used: string }
+  /** A resource type's `defaultPlacement.wrap` in a vertical document
+   *  (#627): ignored, the figures keep their bands whole. */
+  | { kind: 'wrapUnsupported'; path: string; value: string; used: string }
+  /** A resource or a box set to wrap text round it that does not (#627):
+   *  the text beside it would be too narrow, it is too short for lines
+   *  beside it, it moved on to the next column, or the text is vertical. */
+  | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
   /** A line number set in the side column overlaps a side box, caption or
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }
