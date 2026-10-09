@@ -613,8 +613,16 @@ class Writer {
     const order = [...rows.keys()].sort((a, b) => a - b);
     const head = order.filter((r) => r < node.headerRows && rows.get(r)!.every((c) => c.header));
     const body = order.filter((r) => !head.includes(r));
+    // A body row heads a group when its only cell runs across every column
+    // (in a table of several) or all its cells are header cells: with
+    // booktabs group rules it is ruled above (#625).
+    const colCount = Math.max(0, ...[...node.cells.values()].map((c) => c.col + c.colSpan));
+    const heads = (r: number) => {
+      const cells = rows.get(r)!;
+      return (cells.length === 1 && cells[0]!.colSpan >= colCount && colCount > 1) || cells.every((c) => c.header);
+    };
     const row = (r: number, inHead: boolean) =>
-      `<tr>${rows.get(r)!.sort((a, b) => a.col - b.col).map((c) => this.cell(c, inHead ? 'col' : c.col === 0 ? 'row' : '')).join('')}</tr>`;
+      `<tr${this.classAttr([!inHead && node.groupRules && heads(r) && 'pt-group'])}>${rows.get(r)!.sort((a, b) => a.col - b.col).map((c) => this.cell(c, inHead ? 'col' : c.col === 0 ? 'row' : '')).join('')}</tr>`;
     const widths = node.columnWidths && node.columnWidths.every((w) => w > 0) ? node.columnWidths : undefined;
     const total = widths?.reduce((a, b) => a + b, 0) ?? 0;
     const cols = widths ? `<colgroup>${widths.map((w) => `<col style="width:${Math.round((w / total) * 1000) / 10}%"/>`).join('')}</colgroup>\n` : '';
@@ -623,7 +631,7 @@ class Writer {
     const tbody = body.length > 0 ? `<tbody>\n${body.map((r) => row(r, false)).join('\n')}\n</tbody>\n` : '';
     const note = node.note.length > 0 ? `\n<p class="pt-note">${this.inline(node.note)}</p>` : '';
     const pre = this.inline(node.pre);
-    return `<div class="pt-table">${pre}<table id="${node.id}">\n${caption}${cols}${thead}${tbody}</table>${note}</div>`;
+    return `<div class="pt-table">${pre}<table id="${node.id}"${this.classAttr([node.styleClass])}>\n${caption}${cols}${thead}${tbody}</table>${note}</div>`;
   }
 
   private toc(node: TocNode): string {

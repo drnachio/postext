@@ -18,7 +18,7 @@
 //     document of its own and the chapter goes on in a new one.
 
 import type { ResolvedConfig, VDTBlock, VDTComicPage, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
-import { canonicalLocaleTag, comicBalloonKind, comicBalloonText, comicSpeakerName, dimensionToPx, isComicSpreadPartner, joinComicSpread, primaryFontFamily } from 'postext';
+import { canonicalLocaleTag, comicBalloonKind, comicBalloonText, comicSpeakerName, dimensionToPx, isComicSpreadPartner, joinComicSpread, pickTableStyle, primaryFontFamily } from 'postext';
 import type {
   CalloutNode,
   ComicNode,
@@ -1153,6 +1153,11 @@ class DocWalker {
           ...(res.table?.model.columnWidths ? { columnWidths: res.table.model.columnWidths } : {}),
           cells: new Map(),
         };
+        // A named table style is a class the stylesheet styles (#625).
+        const styleId = res.table?.styleId;
+        if (styleId && this.config.tableStyles?.some((st) => st.id === styleId)) node.styleClass = idOf('pt-table-', styleId);
+        const style = pickTableStyle(this.config, styleId);
+        if (style.borders && style.rules === 'booktabs' && style.groupRules) node.groupRules = true;
         this.tables.set(res.id, node);
         state.nodes.push(node);
         if (!this.book.resources.has(res.id)) this.book.resources.set(res.id, { file: this.file!, id: node.id });

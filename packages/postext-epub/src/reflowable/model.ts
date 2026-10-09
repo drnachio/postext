@@ -174,6 +174,11 @@ export interface TableNode {
   headerRows: number;
   columnWidths?: number[];
   cells: Map<string, TableCellNode>;
+  /** The class of its named table style (`pt-table-<id>`, #625). */
+  styleClass?: string;
+  /** Mark the body rows that head a group (`pt-group`): its style draws a
+   *  booktabs rule above them (`groupRules`). */
+  groupRules?: boolean;
 }
 
 /** One bayt of a `:::verse` poem (#378): its ṣadr and ʿajuz, or a lone

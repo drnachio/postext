@@ -4,7 +4,7 @@
 // line heights are ratios, colours come from the resolved palette, and no
 // rule sets a width the screen would have to honour.
 
-import type { ColorValue, Dimension, ResolvedConfig } from 'postext';
+import type { ColorValue, Dimension, ResolvedConfig, ResolvedTableStyleConfig } from 'postext';
 import { dimensionToPx, primaryFontFamily, resolvedCodeStyle } from 'postext';
 import { idOf, round } from './inline';
 
@@ -315,10 +315,80 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('.pt-missing', ['border: 1px dashed currentColor', 'padding: 1em', 'font-style: italic']));
 
   const ts = config.tableStyle;
+  /** A rule `widthPx` (at the page dpi) wide, in CSS px. */
+  const line = (widthPx: number, c: ColorValue) => `${round(Math.max(0.5, widthPx * (96 / dpi)))}px solid ${c.hex}`;
+  /** What a table style decides, by element: on `table` for the document's
+   *  style; on `table.pt-table-<id>` for a named one (#625), which then
+   *  also undoes what the document's style (`reset`) sets and it does not. */
+  const tableStyleDecls = (st: ResolvedTableStyleConfig, reset: ResolvedTableStyleConfig | undefined) => {
+    const cellPx = px(st.bodyFontSize);
+    const booktabs = st.borders && st.rules === 'booktabs';
+    const border = st.borders && st.rules !== 'none' && !booktabs && px(st.borderWidth) > 0
+      ? line(px(st.borderWidth), st.borderColor)
+      : undefined;
+    const tableBorder = border !== undefined && (st.rules === 'outer' || st.rules === 'grid');
+    // Booktabs: a heavy rule above and under the table, a light one under
+    // the header and, under a head spanning columns above the last header
+    // row, a span rule, trimmed at both ends by a background line (a CSS
+    // border cannot be).
+    const width = (d: Dimension) => {
+      const v = px(d, cellPx);
+      return booktabs && v > 0 ? Math.max(0.25, v) : 0;
+    };
+    const heavy = width(st.heavyRuleWidth);
+    const light = width(st.lightRuleWidth);
+    const span = st.spanRules !== 'none' ? width(st.spanRuleWidth) : 0;
+    const wasBooktabs = reset?.borders === true && reset.rules === 'booktabs';
+    const extra: [string, (string | false | undefined)[]][] = [];
+    if (light > 0) extra.push(['thead', [`border-bottom: ${line(light, st.borderColor)}`]]);
+    else if (wasBooktabs) extra.push(['thead', ['border-bottom: none']]);
+    const spanSel = 'thead > tr:not(:last-child) > th[colspan]';
+    if (span > 0 && st.spanRules === 'trimmed') {
+      extra.push([spanSel, [
+        `background-image: linear-gradient(${st.borderColor.hex}, ${st.borderColor.hex})`,
+        'background-repeat: no-repeat',
+        'background-position: center bottom',
+        `background-size: calc(100% - ${round(2 * (px(st.spanRuleTrim, cellPx) / cellPx))}em) ${round(Math.max(0.5, span * (96 / dpi)))}px`,
+      ]]);
+    } else {
+      if (span > 0) extra.push([spanSel, [`border-bottom: ${line(span, st.borderColor)}`]]);
+      if (wasBooktabs && reset!.spanRules === 'trimmed') extra.push([spanSel, ['background-image: none']]);
+    }
+    if (st.groupRules && light > 0) {
+      extra.push(['tbody > tr.pt-group:not(:first-child) > *', [`border-top: ${line(light, st.borderColor)}`]]);
+    }
+    return {
+      table: [
+        reset && fam(st.bodyFontFamily),
+        reset && `font-size: ${round(cellPx / bodyPx)}em`,
+        reset && color(st.bodyColor),
+        tableBorder ? `border: ${border}` : reset && 'border: none',
+        heavy > 0 && `border-top: ${line(heavy, st.borderColor)}`,
+        heavy > 0 && `border-bottom: ${line(heavy, st.borderColor)}`,
+      ],
+      cells: [
+        reset && `padding: ${round(px(st.cellPadding, cellPx) / cellPx)}em`,
+        border && st.rules === 'grid' ? `border: ${border}` : undefined,
+        border && st.rules === 'horizontal' ? `border-block: ${border}` : undefined,
+        reset && !(border && (st.rules === 'grid' || st.rules === 'horizontal')) && 'border: none',
+      ],
+      td: [st.bodyBackgroundEnabled ? color(st.bodyBackground, 'background-color') : reset && 'background-color: transparent'],
+      alt: st.bodyAlternateBackgroundEnabled ? [color(st.bodyAlternateBackground, 'background-color')] : undefined,
+      th: [
+        fam(st.headerFontFamily),
+        `font-size: ${round(px(st.headerFontSize) / cellPx)}em`,
+        color(st.headerColor),
+        `font-weight: ${st.headerBold ? 'bold' : 'normal'}`,
+        st.headerItalic ? 'font-style: italic' : reset && 'font-style: normal',
+        st.headerTextTransform === 'uppercase' ? 'text-transform: uppercase' : reset && 'text-transform: none',
+        st.headerLetterSpacing.value !== 0 ? `letter-spacing: ${round(px(st.headerLetterSpacing, cellPx) / cellPx)}em` : reset && 'letter-spacing: normal',
+        st.headerBackgroundEnabled ? color(st.headerBackground, 'background-color') : reset && 'background-color: transparent',
+      ],
+      extra,
+    };
+  };
   const bodyCellPx = px(ts.bodyFontSize);
-  const border = ts.borders && ts.rules !== 'none' && px(ts.borderWidth) > 0
-    ? `${round(Math.max(0.5, px(ts.borderWidth) * (96 / dpi)))}px solid ${ts.borderColor.hex}`
-    : undefined;
+  const base = tableStyleDecls(ts, undefined);
   out.push(rule('.pt-table', ['margin: 1em 0', 'overflow-x: auto']));
   out.push(rule('table', [
     'border-collapse: collapse',
@@ -329,27 +399,29 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     color(ts.bodyColor),
     'text-indent: 0',
     'hyphens: manual',
-    border && (ts.rules === 'outer' || ts.rules === 'grid') ? `border: ${border}` : undefined,
+    ...base.table,
   ]));
   out.push(rule('th, td', [
     `padding: ${round(px(ts.cellPadding, bodyCellPx) / bodyCellPx)}em`,
     'vertical-align: top',
     'text-align: start',
-    border && ts.rules === 'grid' ? `border: ${border}` : undefined,
-    border && ts.rules === 'horizontal' ? `border-block: ${border}` : undefined,
+    ...base.cells,
   ]));
-  out.push(rule('td', [ts.bodyBackgroundEnabled && color(ts.bodyBackground, 'background-color')]));
-  if (ts.bodyAlternateBackgroundEnabled) out.push(rule('td.pt-alt', [color(ts.bodyAlternateBackground, 'background-color')]));
-  out.push(rule('th', [
-    fam(ts.headerFontFamily),
-    `font-size: ${round(px(ts.headerFontSize) / bodyCellPx)}em`,
-    color(ts.headerColor),
-    `font-weight: ${ts.headerBold ? 'bold' : 'normal'}`,
-    ts.headerItalic && 'font-style: italic',
-    ts.headerTextTransform === 'uppercase' && 'text-transform: uppercase',
-    ts.headerLetterSpacing.value !== 0 && `letter-spacing: ${round(px(ts.headerLetterSpacing, bodyCellPx) / bodyCellPx)}em`,
-    ts.headerBackgroundEnabled && color(ts.headerBackground, 'background-color'),
-  ]));
+  out.push(rule('td', base.td));
+  if (base.alt) out.push(rule('td.pt-alt', base.alt));
+  out.push(rule('th', base.th));
+  for (const [sel, decls] of base.extra) out.push(rule(sel, decls));
+  for (const st of config.tableStyles ?? []) {
+    const table = `table.${idOf('pt-table-', st.id)}`;
+    const sub = (sel: string) => sel.split(', ').map((x) => `${table} ${x}`).join(', ');
+    const d = tableStyleDecls(st, ts);
+    out.push(rule(table, d.table));
+    out.push(rule(sub('th, td'), d.cells));
+    out.push(rule(sub('td'), d.td));
+    if (d.alt) out.push(rule(sub('td.pt-alt'), d.alt));
+    out.push(rule(sub('th'), d.th));
+    for (const [sel, decls] of d.extra) out.push(rule(sub(sel), decls));
+  }
   out.push(rule('td img, th img', ['max-width: 100%', 'height: auto', 'display: block', 'margin: 0 auto']));
 
   // --- callouts ------------------------------------------------------------

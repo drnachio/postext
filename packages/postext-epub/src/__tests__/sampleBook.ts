@@ -104,6 +104,43 @@ export function layOutBook(chapters: string[], overrides: PostextConfig = {}): V
   return buildBundle({ chapters: chapters.map((markdown) => ({ markdown })), config: { ...config, ...overrides } });
 }
 
+/** Journal tables (#625): the document's style and a named one set with
+ *  booktabs rules, a head over two columns and group rules. */
+export function booktabsSampleBook(): VDTDocument[] {
+  const cell = (content: string, extra: Record<string, unknown> = {}) => ({ content, ...extra });
+  const table = (id: string, styleId?: string): Resource => ({
+    id,
+    typeId: 'table',
+    kind: 'table',
+    caption: `Results ${id}.`,
+    createdAt: 0,
+    updatedAt: 0,
+    table: {
+      ...(styleId ? { styleId } : {}),
+      model: {
+        headerRowCount: 2,
+        rows: [
+          [cell('Model', { isHeader: true, rowSpan: 2 }), cell('Accuracy', { isHeader: true, colSpan: 2 }), cell('', { hiddenBy: { row: 0, col: 1 } })],
+          [cell('', { hiddenBy: { row: 0, col: 0 } }), cell('Train', { isHeader: true }), cell('Test', { isHeader: true })],
+          [cell('Baselines', { colSpan: 3 }), cell('', { hiddenBy: { row: 2, col: 0 } }), cell('', { hiddenBy: { row: 2, col: 0 } })],
+          [cell('Linear'), cell('81.2'), cell('79.9')],
+          [cell('Ours', { colSpan: 3 }), cell('', { hiddenBy: { row: 4, col: 0 } }), cell('', { hiddenBy: { row: 4, col: 0 } })],
+          [cell('Deep'), cell('94.0'), cell('91.3')],
+        ],
+      },
+    },
+  });
+  return buildBundle({
+    chapters: [{ markdown: ['# Results', '', `See :ref{id=t1} and :ref{id=t2}. ${para.repeat(3)}`, '', '::resource{id=t1}', '', para.repeat(2), '', '::resource{id=t2}'].join('\n') }],
+    config: {
+      ...config,
+      tableStyle: { rules: 'booktabs', headerBackgroundEnabled: false, groupRules: true },
+      tableStyles: [{ id: 'grid', rules: 'grid', headerBackgroundEnabled: true }],
+    },
+    resources: [table('t1'), table('t2', 'grid')],
+  });
+}
+
 /** Amiri (OFL), the subset the PDF backend's Arabic tests embed. */
 export const AMIRI = new Uint8Array(fs.readFileSync(new URL('../../../postext-pdf/src/__tests__/fixtures/arabic/amiri-subset.ttf', import.meta.url)));
 
