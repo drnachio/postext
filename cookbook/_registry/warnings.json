@@ -4037,5 +4037,47 @@
         "pt": "Listagens de código"
       }
     }
+  },
+  "floatShrunk": {
+    "source": "engine",
+    "label": {
+      "en": "Picture shrunk to fit",
+      "es": "Imagen reducida para que quepa",
+      "ca": "Imatge reduïda perquè hi càpiga",
+      "zh": "图片已缩小以放下",
+      "ar": "صورة مصغَّرة لتتسع",
+      "ja": "収まるよう縮小した図版",
+      "pt": "Imagem reduzida para caber"
+    },
+    "cause": {
+      "en": "A floated picture with placement.shrink (or layout.floatShrink) was taller than the room of its slot, so the engine set it smaller, at the scale the warning gives. With overflowPx it did not fit even at minScale on a fresh page, where it had nowhere else to go, and runs past the foot of the text block.",
+      "es": "Una imagen flotante con placement.shrink (o layout.floatShrink) era más alta que el sitio de su hueco, así que el motor la compuso más pequeña, a la escala que da el aviso. Con overflowPx no cabía ni a minScale en una página nueva, donde no tenía otro sitio adonde ir, y sobresale del pie de la caja de texto.",
+      "ca": "Una imatge flotant amb placement.shrink (o layout.floatShrink) era més alta que l'espai del seu buit, de manera que el motor la va compondre més petita, a l'escala que dona l'avís. Amb overflowPx no hi cabia ni a minScale en una pàgina nova, on no tenia cap altre lloc on anar, i sobresurt del peu de la caixa de text.",
+      "zh": "设了placement.shrink（或layout.floatShrink）的浮动图片高于所在位置的空间，引擎于是按警告给出的比例把它缩小。带overflowPx时，表示它在没有别处可去的新页上即使缩到minScale也放不下，超出了版心底部。",
+      "ar": "كانت صورة عائمة ذات placement.shrink (أو layout.floatShrink) أطول من حيّز موضعها، فصفّها المحرّك أصغر، بالمقياس الذي يذكره التنبيه. ومع overflowPx لم تتسع حتى بمقياس minScale في صفحة جديدة لم يكن لها مكان آخر تذهب إليه، فهي تتجاوز أسفل مساحة النص.",
+      "ja": "placement.shrink（またはlayout.floatShrink）を設定したフロートの図版が置き場所の空きより高かったため、エンジンが警告にある倍率で小さく組みました。overflowPxがあるときは、ほかに行き場のない新しいページでminScaleでも収まらず、版面の下端からはみ出しています。",
+      "pt": "Uma imagem flutuante com placement.shrink (ou layout.floatShrink) era mais alta que o espaço da sua posição, então o motor a compôs menor, na escala que o aviso indica. Com overflowPx ela não coube nem em minScale numa página nova, onde não tinha outro lugar para onde ir, e ultrapassa o pé da mancha de texto."
+    },
+    "fix": {
+      "en": "Nothing to do when the scale reads well: the warning is information. If the picture comes out too small, raise minScale (it then moves on instead), give it more room (a shorter caption, span: 'page'), or switch shrink to 'never'. With overflowPx, lower minScale or let the picture take a page of its own.",
+      "es": "Nada que hacer si la escala se lee bien: el aviso es informativo. Si la imagen queda demasiado pequeña, sube minScale (entonces sigue adelante), dale más sitio (un pie más corto, span: 'page') o pon shrink en 'never'. Con overflowPx, baja minScale o deja que la imagen ocupe una página propia.",
+      "ca": "Res a fer si l'escala es llegeix bé: l'avís és informatiu. Si la imatge queda massa petita, apuja minScale (aleshores continua endavant), dona-li més espai (un peu més curt, span: 'page') o posa shrink a 'never'. Amb overflowPx, abaixa minScale o deixa que la imatge ocupi una pàgina pròpia.",
+      "zh": "比例读起来合适就无需处理：这条警告只是提示。图片显得太小时，提高minScale（这样它会移到后面）、给它更多空间（缩短题注、span: 'page'），或把shrink设为'never'。带overflowPx时，降低minScale，或让图片单独占一页。",
+      "ar": "لا شيء يلزم إن كان المقياس مقروءًا: التنبيه للعلم. وإن خرجت الصورة صغيرة جدًّا، فارفع minScale (فتنتقل حينئذ إلى ما بعده)، أو امنحها حيّزًا أكبر (تعليق أقصر، span: 'page')، أو اجعل shrink مساويًا لـ'never'. ومع overflowPx، اخفض minScale أو دع الصورة تأخذ صفحة خاصة بها.",
+      "ja": "倍率が読みやすければ対応は不要で、この警告は情報です。図版が小さすぎるなら、minScaleを上げる（そのときは次へ送られます）、空きを増やす（短いキャプション、span: 'page'）、shrinkを'never'にする、のいずれかにします。overflowPxがあるときは、minScaleを下げるか、図版に1ページを丸ごと使わせます。",
+      "pt": "Nada a fazer se a escala ficar legível: o aviso é informativo. Se a imagem sair pequena demais, aumente minScale (ela então segue adiante), dê-lhe mais espaço (uma legenda mais curta, span: 'page') ou ponha shrink em 'never'. Com overflowPx, diminua minScale ou deixe a imagem ocupar uma página só para ela."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento"
+      }
+    }
   }
 }

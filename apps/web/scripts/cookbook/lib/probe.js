@@ -728,16 +728,18 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // number in the side column painted over a side box or float (#621), a
   // `:tab` in vertical text, set as a word space (#622), a paragraph whose
   // drop cap could not be set as configured (#623), a code listing with
-  // lines wider than its box (#624), and a comic's (a
+  // lines wider than its box (#624), a floated picture that runs past the
+  // text block even at its smallest scale (#626; one merely shrunk to its
+  // slot is what the recipe asked for), and a comic's (a
   // picture letterboxed in its cell, a balloon that found no room, more
   // panels than cells…), except a speaker with no anchor, which
   // is how an off-panel voice is written.
   out.textWarnings = docs.flatMap((doc) => (doc.contentWarnings ?? [])
-    .filter((w) => TEXT_WARNING_KINDS.has(w.kind) || (/^comic[A-Z]/.test(w.kind) && w.kind !== 'comicUnknownSpeaker'))
+    .filter((w) => TEXT_WARNING_KINDS.has(w.kind) || (w.kind === 'floatShrunk' && w.overflowPx !== undefined) || (/^comic[A-Z]/.test(w.kind) && w.kind !== 'comicUnknownSpeaker'))
     .map((w) => ({
       kind: w.kind,
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
-      detail: w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
+      detail: w.kind === 'floatShrunk' ? `${w.resourceId} at ${Math.round(w.scale * 100)} %: ${w.overflowPx} px past the text block` : w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
     })));
   // C31: config values the engine replaced (a character grid cut to the
   // page, an unknown numbering format, a key no setting has). Every
