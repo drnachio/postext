@@ -750,6 +750,9 @@ function lineEndText(line: VDTLine, next: VDTLine | undefined): string {
   // A line of verse in the line layout (#620): a space before its
   // turnover, a newline after it, a blank line after a stanza.
   if (line.verseLine) return next?.verseLine?.turnover ? ' ' : line.verseLine.stanzaEnd ? '\n\n' : '\n';
+  // A line of a code listing (#624): nothing before its continuation (a
+  // wrapped line reads whole), a newline after each source line.
+  if (line.codeLine) return next?.codeLine?.continued ? '' : '\n';
   // A forced line break the author typed (#620).
   if (line.verse || line.hardBreak || (!next && line.isLastLine !== false)) return '\n';
   if (next && line.plainEnd !== undefined && next.plainStart !== undefined) return next.plainStart > line.plainEnd ? ' ' : '';

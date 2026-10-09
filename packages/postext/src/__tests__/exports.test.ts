@@ -47,6 +47,9 @@ describe("package exports", () => {
     const exportedKeys = Object.keys(postext);
     expect(exportedKeys).toEqual([
       "createLayout",
+      "registerCodeHighlighter",
+      "highlightCode",
+      "builtinCodeLanguage",
       "buildDocument",
       "BuildCancelledError",
       "continuationAfter",
@@ -402,6 +405,14 @@ describe("package exports", () => {
       "resolveLineNumbersConfig",
       "stripLineNumbersDefaults",
       "defaultLineNumbersRestart",
+      "DEFAULT_CODE_STYLE",
+      "DEFAULT_CODE_TOKENS",
+      "CODE_TOKEN_KINDS",
+      "CODE_OVERFLOWS",
+      "resolveCodeStyleConfig",
+      "resolvedCodeStyle",
+      "stripCodeStyleDefaults",
+
       "resolveCrossRefsConfig",
       "stripCrossRefsDefaults",
       "DEFAULT_CITATIONS_CONFIG",

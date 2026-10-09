@@ -176,6 +176,8 @@ import {
 } from './resourceNumbering';
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
 import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
+import { codeBoxStyle, codeParseOptions, wrapCodeBlocks } from './codeBlocks';
+import { buildCodeLineNumbers, codeOverflowWarnings } from './codeLines';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { buildLineNumbers, lineNumberWarnings } from './lineNumbers';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
@@ -605,7 +607,9 @@ function placeDocumentPass(
   // (#376), for the outline and the layout alike.
   // A configuration stored before #620 prints the backslashes of forced
   // line breaks (`bodyText.hardLineBreaks: false`).
-  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(literalBreaksFor(parseMarkdownMemo(markdownBody), resolved), resolved.bodyText.tashkil), resolved), resolved);
+  // Code fences (#624) as `codeStyle` reads them: a configuration stored
+  // before #624 reads their lines as Markdown (`codeStyle.blocks: false`).
+  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(literalBreaksFor(parseMarkdownMemo(markdownBody, codeParseOptions(resolved)), resolved), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
     ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }], content.resources)[0] : undefined);
   const citationsApplied = citationContext
@@ -671,7 +675,10 @@ function placeDocumentPass(
   // page where it stands (#535): each goes in a frameless page-span box,
   // set by the span-block path like any other.
   const spanEmbeds = wrapPageSpanEmbeds(numberedBlocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []));
-  const contentBlocks = spanEmbeds.blocks;
+  // Code listings (#624): each in a box of the code style, which the
+  // callout machinery places and splits.
+  const codeBoxes = wrapCodeBlocks(spanEmbeds.blocks, resolved);
+  const contentBlocks = codeBoxes.blocks;
   if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
@@ -723,9 +730,17 @@ function placeDocumentPass(
   // The callout styles, with the frameless box of the page-span embeds
   // when there are any: the float gap (a line) above and below it, as an
   // inline resource keeps in a column.
-  const calloutStyles = spanEmbeds.wrapped
-    ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig([spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')], resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
+  // The listings' box (#624) likewise.
+  const syntheticBoxes = [
+    ...(spanEmbeds.wrapped ? [spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')] : []),
+    ...(codeBoxes.wrapped ? [codeBoxStyle(resolved)] : []),
+  ];
+  const calloutStyles = syntheticBoxes.length > 0
+    ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig(syntheticBoxes, resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
     : resolved.calloutStyles;
+  // A box nested in another looks its style up in the configuration it is
+  // laid out with: the listings' box among them.
+  const calloutResolved: ResolvedConfig = codeBoxes.wrapped ? { ...resolved, calloutStyles } : resolved;
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
   const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
   const orderedMetrics = computeOrderedListRunMetrics(contentBlocks, resolved, bodyStyle.fontSizePx);
@@ -3422,7 +3437,7 @@ function placeDocumentPass(
         childStartIdx: startIdx + 1 + from.child,
         width,
         ctx: measureCtx,
-        resolved,
+        resolved: calloutResolved,
         containerId: plan.containerId,
         frameId,
         nextChildId: () => `${frameId}-c${n++}`,
@@ -3512,8 +3527,10 @@ function placeDocumentPass(
     if (full.units.length === 0) return null;
     // A head that goes on also carries the style's continuation marker.
     const tail = tailOf(full) + full.continuesMarkerPx;
-    /** Candidate cuts with the head's content bottom. */
-    const candidates: { cut: CalloutCut; bottom: number }[] = [];
+    /** Candidate cuts with the head's content bottom. A `soft` cut parts a
+     *  wrapped code line from its continuation (#624): taken only when no
+     *  other cut fits. */
+    const candidates: { cut: CalloutCut; bottom: number; soft?: true }[] = [];
     /** Collect the cuts among `units` (one box's items; `below` = the tails
      *  of the nested boxes around them), each side of a cut holding enough
      *  by the box's `min` lines: a block counts as one line, a nested box
@@ -3557,6 +3574,7 @@ function placeDocumentPass(
                 candidates.push({
                   cut: { child: k, line: lineBase + l, widths: k === from.child ? cutWidths(from, width) : [{ fromLine: 0, width }] },
                   bottom: line.bbox.y + line.bbox.height + below,
+                  ...(c.lines[l]?.codeLine?.continued ? { soft: true as const } : {}),
                 });
               }
             }
@@ -3581,6 +3599,9 @@ function placeDocumentPass(
     const viable = candidates
       .filter((c) => !insideGroup(c.cut))
       .sort((a, b) => b.bottom - a.bottom);
+    // A wrapped code line stays with its continuations when a cut
+    // elsewhere fits (#624).
+    viable.sort((a, b) => (a.soft ? 1 : 0) - (b.soft ? 1 : 0));
     for (const c of viable) {
       if (c.bottom + tail > roomPx + 0.01) continue;
       const result = L.layoutRange(from, c.cut, width, frameId, continuation, mirrored);
@@ -6571,6 +6592,9 @@ function placeDocumentPass(
       return text.length > 0 ? { styleId, text } : undefined;
     },
   });
+  // The line numbers of code listings (#624), in the same slot, after the
+  // margin numbers' palette pass: they keep `codeStyle.lineNumberColor`.
+  if (codeBoxes.wrapped) buildCodeLineNumbers(doc);
 
   // Vertical pages: the axis each font's upright characters turn about.
   if (doc.pages.some((p) => pageIsVertical(p))) stampCentralBaselines(doc);
@@ -6660,7 +6684,7 @@ export function* buildDocumentGen(
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
-  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc)];
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc)];
   // Comic panels whose cell cannot hold their picture's safe area (#556).
   for (const page of doc.pages) {
     if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
@@ -6702,7 +6726,7 @@ const dropCapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
   const { content: body, contentOffset } = extractFrontmatter(content.markdown);
-  const blocks = parseMarkdownMemo(body);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(doc.config));
   if (content.markdown.includes(':index')) {
     const marks = locateIndexMarks(doc, blocks, contentOffset);
     if (marks) doc.indexMarks = marks;
@@ -6727,7 +6751,7 @@ function* buildDocumentRounds(
   // follows, and a numbering restart after the front matter usually settles
   // it in one extra round.
   if (content.outline === undefined) {
-    const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
+    const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content, codeParseOptions(resolveAllConfig(config)));
     // A reference printing an anchor's page (#263) settles the same way.
     const pageRefs = (): boolean => {
       if (!hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id)))) return false;

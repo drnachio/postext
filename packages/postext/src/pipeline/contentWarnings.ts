@@ -27,6 +27,7 @@ import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
 import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
 import { DEFAULT_HEADING_STYLES } from '../defaults/headingStyles';
 import { resolveAllConfig } from './config';
+import { codeParseOptions } from './codeBlocks';
 import { planHeadingSections, sectionWritingMode } from './headingStyles';
 import { comicSourceWarnings } from '../comics/warnings';
 import { resolvedComics } from '../defaults/comics';
@@ -154,7 +155,7 @@ export function collectContentWarnings(
   } catch {
     // Malformed frontmatter: the build reports it; scan the text as is.
   }
-  const blocks = parseMarkdownMemo(body);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(resolveAllConfig(config)));
   const out: ContentWarning[] = [];
   const abs = (r: SourceRange) => ({ sourceStart: r.start + offset, sourceEnd: r.end + offset });
 
@@ -760,6 +761,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
               ? `"${w.text}": drop caps are set in horizontal text only — the paragraph is set without one`
               : `"${w.text}": the paragraph opens with no letter to set as a drop cap — it is set without one`;
       break;
+    case 'codeOverflow': {
+      const what = `${w.lines === 1 ? 'A line' : `${w.lines} lines`} of a${w.lang ? ` ${w.lang}` : ''} code listing ${w.lines === 1 ? 'is' : 'are'} wider than its box`;
+      text = w.mode === 'wrap'
+        ? `${what} — turned over`
+        : w.mode === 'clip'
+          ? `${what} — cut at the box's edge`
+          : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
+      break;
+    }
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
       break;

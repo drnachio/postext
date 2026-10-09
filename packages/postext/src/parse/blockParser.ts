@@ -5,7 +5,7 @@
  * positions back into the original markdown.
  */
 
-import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue, VerseLineInfo, VerseStanza } from './types';
+import type { CodeBlockInfo, ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue, ParseOptions, VerseLineInfo, VerseStanza } from './types';
 import { attachEquationAnchors } from './equationLabels';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
@@ -17,8 +17,10 @@ import { joinEastAsianLines } from './softBreaks';
 import { asciiDigits } from '../arabicNumerals';
 import { indentColumn, listDepth, nestListItem } from './listNesting';
 import { parseComicFence } from '../comics/page';
+import { closesCodeFence, codeFenceOpen } from './codeFence';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
+export { codeFenceOpen } from './codeFence';
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 /** `:::name` or `:::name{attrs}` on its own line. Shared by single-line
@@ -84,28 +86,78 @@ const INTERRUPTING_MATH_SINGLE_RE = /^\s*\$\$((?:(?!\$\$)[\s\S])+)\$\$\s*$/;
  *  (missing/empty id, extra attrs) fall through to paragraph parsing. */
 const RESOURCE_DIRECTIVE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
-// Small LRU memo used by parseMarkdownMemo, keyed by the input string. The
-// returned array and its ContentBlocks are treated as read-only by the rest
-// of the pipeline. A few slots (not one) because a book is counted chapter
-// by chapter — continuation, outline, warnings and the layout itself each
-// parse the same few chapters in turn, and a single slot thrashed between
-// them.
-const PARSE_MEMO_SLOTS = 8;
-const _parseMemo = new Map<string, { blocks: ContentBlock[]; issues: ParseIssue[] }>();
+/** A fence's info string read (#624): the first word is the language
+ *  (lower-cased); a `{…}` block after it, or `key=value` pairs, are
+ *  attributes in the directive grammar; anything else after the language
+ *  is the title (```` ```console Terminal ````). */
+export function readCodeInfo(info: string): Pick<CodeBlockInfo, 'lang' | 'attrs' | 'title'> {
+  let rest = info.trim();
+  let lang: string | undefined;
+  const first = /^([^\s{]+)\s*/.exec(rest);
+  if (first) {
+    lang = first[1]!.toLowerCase();
+    rest = rest.slice(first[0].length);
+  }
+  let attrs: DirectiveAttrs = {};
+  const brace = /\{([^{}]*)\}\s*$/.exec(rest);
+  if (brace) {
+    attrs = parseDirectiveAttrs(brace[1]!);
+    rest = rest.slice(0, brace.index).trim();
+  } else if (/[=\uFF1D]/.test(rest)) {
+    attrs = parseDirectiveAttrs(rest);
+    rest = '';
+  }
+  const title = attrs.title !== undefined ? attrs.title : rest !== '' ? rest : undefined;
+  return { ...(lang ? { lang } : {}), attrs, ...(title !== undefined && title.trim() !== '' ? { title: title.trim() } : {}) };
+}
 
-function parseMemoLookup(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  const hit = _parseMemo.get(markdown);
+/** How far a line of indented code is indented (#624): the length of the
+ *  leading whitespace that reaches column 4 (a tab to the next multiple of
+ *  4), or -1 when it does not reach it. */
+function indentedCodeCut(line: string): number {
+  let col = 0;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === ' ') col += 1;
+    else if (c === '\t') col = col - (col % 4) + 4;
+    else return -1;
+    if (col >= 4) return i + 1;
+  }
+  return -1;
+}
+
+// Small LRU memo used by parseMarkdownMemo, keyed by the input string (one
+// per way of reading it, see `ParseOptions`). The returned array and its
+// ContentBlocks are treated as read-only by the rest of the pipeline. A few
+// slots (not one) because a book is counted chapter by chapter —
+// continuation, outline, warnings and the layout itself each parse the same
+// few chapters in turn, and a single slot thrashed between them.
+const PARSE_MEMO_SLOTS = 8;
+const _parseMemos = new Map<string, Map<string, { blocks: ContentBlock[]; issues: ParseIssue[] }>>();
+
+/** The options as one key: the default reading is `''`. */
+function optionsKey(options: ParseOptions | undefined): string {
+  const fences = options?.fences !== false;
+  const indented = options?.indentedCode === true;
+  return fences && !indented ? '' : `${fences ? 'f' : 'n'}${indented ? 'i' : ''}`;
+}
+
+function parseMemoLookup(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const key = optionsKey(options);
+  let memo = _parseMemos.get(key);
+  if (!memo) _parseMemos.set(key, (memo = new Map()));
+  const hit = memo.get(markdown);
   if (hit) {
     // Refresh recency: a Map iterates in insertion order.
-    _parseMemo.delete(markdown);
-    _parseMemo.set(markdown, hit);
+    memo.delete(markdown);
+    memo.set(markdown, hit);
     return hit;
   }
-  const result = parseMarkdownWithIssues(markdown);
-  _parseMemo.set(markdown, result);
-  if (_parseMemo.size > PARSE_MEMO_SLOTS) {
-    const oldest = _parseMemo.keys().next().value;
-    if (oldest !== undefined) _parseMemo.delete(oldest);
+  const result = parseMarkdownWithIssues(markdown, options);
+  memo.set(markdown, result);
+  if (memo.size > PARSE_MEMO_SLOTS) {
+    const oldest = memo.keys().next().value;
+    if (oldest !== undefined) memo.delete(oldest);
   }
   return result;
 }
@@ -119,16 +171,16 @@ export const PARSE_MEMO_CAPACITY = PARSE_MEMO_SLOTS;
  * This avoids reparsing a document on each keystroke when upstream
  * recomputes only because a sibling state changed.
  */
-export function parseMarkdownMemo(markdown: string): ContentBlock[] {
-  return parseMemoLookup(markdown).blocks;
+export function parseMarkdownMemo(markdown: string, options?: ParseOptions): ContentBlock[] {
+  return parseMemoLookup(markdown, options).blocks;
 }
 
-export function parseMarkdownWithIssuesMemo(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  return parseMemoLookup(markdown);
+export function parseMarkdownWithIssuesMemo(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  return parseMemoLookup(markdown, options);
 }
 
-export function parseMarkdown(markdown: string): ContentBlock[] {
-  return parseMarkdownWithIssues(markdown).blocks;
+export function parseMarkdown(markdown: string, options?: ParseOptions): ContentBlock[] {
+  return parseMarkdownWithIssues(markdown, options).blocks;
 }
 
 /**
@@ -136,15 +188,43 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
  * non-blank, non-special lines into paragraphs. Index marks (`:index…`)
  * are taken out first and attached to the blocks holding them
  * (`ContentBlock.indexMarks`); every source offset still points into
- * `markdown`.
+ * `markdown`. `options` picks how code is read (#624): fences on, indented
+ * code off by default.
  */
-export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  const marks = extractIndexMarks(markdown);
-  if (!marks) return attachDirections(attachContainerAnchors(attachEquationAnchors(parseBlocks(markdown), markdown)));
-  const result = parseBlocks(marks.text);
+export function parseMarkdownWithIssues(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const marks = extractIndexMarks(markdown, { fences: options?.fences !== false });
+  if (!marks) return attachInlineCode(attachDirections(attachContainerAnchors(attachEquationAnchors(parseBlocks(markdown, options), markdown))), markdown);
+  const result = parseBlocks(marks.text, options);
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
-  return attachDirections(attachContainerAnchors(attachEquationAnchors(result, markdown)));
+  return attachInlineCode(attachDirections(attachContainerAnchors(attachEquationAnchors(result, markdown))), markdown);
+}
+
+/** Inline code (`` `x` ``, outside an escape) between two backticks on
+ *  one line, as `protectCodeSpans` reads it. */
+const INLINE_CODE_RE = /(?<!\\)`([^`\n]+?)`/g;
+
+/** Text blocks whose inline code a layout may set in the code face. */
+const INLINE_CODE_HOSTS = new Set<ContentBlock['type']>(['heading', 'paragraph', 'blockquote', 'listItem']);
+
+/**
+ * The inline code of each text block (#624): the source ranges of the text
+ * between the backticks of its code spans (`ContentBlock.inlineCode`), read
+ * from the block's own source. Blocks without a backtick are left alone.
+ */
+function attachInlineCode<T extends { blocks: ContentBlock[] }>(result: T, markdown: string): T {
+  for (const b of result.blocks) {
+    if (!INLINE_CODE_HOSTS.has(b.type) || b.verse || b.sourceEnd <= b.sourceStart) continue;
+    const source = markdown.slice(b.sourceStart, b.sourceEnd);
+    if (!source.includes('`')) continue;
+    const ranges: Array<{ start: number; end: number }> = [];
+    INLINE_CODE_RE.lastIndex = 0;
+    for (let m = INLINE_CODE_RE.exec(source); m; m = INLINE_CODE_RE.exec(source)) {
+      ranges.push({ start: b.sourceStart + m.index + 1, end: b.sourceStart + m.index + 1 + m[1]!.length });
+    }
+    if (ranges.length > 0) b.inlineCode = ranges;
+  }
+  return result;
 }
 
 /** The direction a `dir` attribute names (`{dir=rtl}`, any case), or
@@ -240,7 +320,9 @@ function joinedLines(
   return joinEastAsianLines(markdown, mapping.text, mapping.spans, mapping.sourceMap) ?? mapping;
 }
 
-function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+function parseBlocks(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const fences = options?.fences !== false;
+  const indentedCode = options?.indentedCode === true;
   const blocks: ContentBlock[] = [];
   const issues: ParseIssue[] = [];
   const rawLines = markdown.split('\n');
@@ -548,6 +630,94 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
    *  block closes it. */
   let openListItems: readonly number[] = [];
 
+  /**
+   * A code block (#624) of source lines `from` … `to - 1`, each cut at
+   * `cuts[k]` characters from its start (the fence's indentation, the four
+   * columns of indented code); the block's range runs from `srcStart` to
+   * `srcEnd`. The lines are kept as written (a carriage return before the
+   * line feed dropped), joined with a line feed mapped to the source's
+   * line end.
+   */
+  const codeBlock = (from: number, to: number, cuts: readonly number[], srcStart: number, srcEnd: number, info: Omit<CodeBlockInfo, 'lines' | 'lineStarts'>): ContentBlock => {
+    const lines: string[] = [];
+    const lineStarts: number[] = [];
+    let text = '';
+    const sourceMap: number[] = [];
+    for (let k = from; k < to; k++) {
+      const raw = rawLines[k]!;
+      const cut = Math.min(cuts[k - from] ?? 0, raw.length);
+      const body = raw.slice(cut).replace(/\r$/, '');
+      const at = lineOffsets[k]! + cut;
+      if (k > from) {
+        text += '\n';
+        sourceMap.push(lineEndOffset(k - 1));
+      }
+      lines.push(body);
+      lineStarts.push(at);
+      text += body;
+      for (let j = 0; j < body.length; j++) sourceMap.push(at + j);
+    }
+    return {
+      type: 'code',
+      text,
+      spans: text.length > 0 ? [{ text, bold: false, italic: false }] : [],
+      code: { ...info, lines, lineStarts },
+      sourceStart: srcStart,
+      sourceEnd: srcEnd,
+      sourceMap,
+    };
+  };
+
+  /** A fenced code block (#624) opening at line `start`, up to its closing
+   *  fence; a fence left open runs to the end of the text and is reported
+   *  (`unclosedCodeBlock`). */
+  const parseCodeFence = (start: number, open: { indent: number; marker: string; info: string }): number => {
+    let end = start + 1;
+    while (end < rawLines.length && !closesCodeFence(rawLines[end]!, open.marker)) end++;
+    const closed = end < rawLines.length;
+    const cuts: number[] = [];
+    for (let k = start + 1; k < end; k++) {
+      // The fence's indentation comes off each line, as far as it has
+      // leading spaces.
+      const lead = /^ */.exec(rawLines[k]!)![0].length;
+      cuts.push(Math.min(open.indent, lead));
+    }
+    const fence = open.marker[0] === '`' ? '```' as const : '~~~' as const;
+    const info = readCodeInfo(open.info);
+    const srcStart = lineOffsets[start]!;
+    const srcEnd = closed ? lineEndOffset(end) : lineEndOffset(rawLines.length - 1);
+    blocks.push(codeBlock(start + 1, end, cuts, srcStart, srcEnd, { ...info, info: open.info, fence }));
+    if (!closed) {
+      issues.push({
+        kind: 'unclosedCodeBlock',
+        delimiter: fence,
+        ...(info.lang ? { lang: info.lang } : {}),
+        sourceStart: srcStart,
+        sourceEnd: lineEndOffset(start),
+      });
+    }
+    return closed ? end + 1 : end;
+  };
+
+  /** Indented code (#624, `codeStyle.indentedCode`): the run of lines from
+   *  `start` indented four columns or blank, its trailing blank lines left
+   *  out. */
+  const parseIndentedCode = (start: number): number => {
+    let end = start;
+    let last = start;
+    while (end < rawLines.length) {
+      const raw = rawLines[end]!;
+      if (raw.trim() === '') { end++; continue; }
+      if (indentedCodeCut(raw) < 0) break;
+      last = end;
+      end++;
+    }
+    const cuts: number[] = [];
+    for (let k = start; k <= last; k++) cuts.push(Math.max(0, indentedCodeCut(rawLines[k]!)));
+    blocks.push(codeBlock(start, last + 1, cuts, lineOffsets[start]!, lineEndOffset(last), { info: '', attrs: {}, fence: 'indent' }));
+    return last + 1;
+  };
+
   let i = 0;
   while (i < rawLines.length) {
     const line = rawLines[i]!;
@@ -556,6 +726,25 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
     // Skip blank lines
     if (trimmed === '') {
       i++;
+      continue;
+    }
+
+    // A code block (#624): a ``` or ~~~ fence, everything up to its
+    // closing fence kept as written.
+    const fenceOpen = fences ? codeFenceOpen(line) : undefined;
+    if (fenceOpen) {
+      i = parseCodeFence(i, fenceOpen);
+      continue;
+    }
+    // Indented code, when the reading asks for it: four columns in, after
+    // a blank line (or at the start), and not a list item under a list.
+    if (
+      indentedCode
+      && (i === 0 || rawLines[i - 1]!.trim() === '')
+      && indentedCodeCut(line) >= 0
+      && !(blocks[blocks.length - 1]?.type === 'listItem' && (TASK_ITEM_RE.test(line) || ORDERED_LIST_ITEM_RE.test(line) || LIST_ITEM_RE.test(line)))
+    ) {
+      i = parseIndentedCode(i);
       continue;
     }
 
@@ -963,6 +1152,8 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       const pl = rawLine.trim();
       if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
       if (i > startIdx && isFenceLine(pl)) break;
+      // A code fence interrupts the paragraph (#624).
+      if (i > startIdx && fences && codeFenceOpen(rawLine)) break;
       // A footnote definition opens a paragraph of its own.
       if (i > startIdx && FOOTNOTE_DEF_RE.test(pl)) break;
       // A display formula on its own line interrupts the paragraph, blank

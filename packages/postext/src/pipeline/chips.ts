@@ -12,6 +12,7 @@ import type { ResolvedChipStyleConfig } from '../types';
 import type { ResolvedConfig } from '../vdt';
 import { pickChipStyle } from '../defaults/chipStyles';
 import { dimensionToPx } from '../units';
+import { INLINE_CODE_CHIP_STYLE } from './codeInline';
 
 /** What chip resolution needs from the resolved config. */
 export interface ChipContext {
@@ -62,6 +63,8 @@ export function resolveChipSpans(spans: InlineSpan[], ctx: ChipContext, baseFont
   if (!spans.some((s) => s.chip)) return spans;
   return spans.map((span) => {
     if (!span.chip) return span;
+    // Inline code set as a chip (#624) carries its own box.
+    if (span.chip.box && span.chip.style === INLINE_CODE_CHIP_STYLE) return span;
     const style = pickChipStyle(ctx.styles, span.chip.style);
     if (!style) return span;
     return { ...span, chip: { ...span.chip, box: resolveChipBox(style, ctx.dpi, baseFontSizePx) } };

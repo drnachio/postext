@@ -29,6 +29,7 @@ import { stripIndexDefaults } from './indexConfig';
 import { stripCjkDefaults } from './cjk';
 import { stripComicsDefaults } from './comics';
 import { stripLineNumbersDefaults } from './lineNumbers';
+import { stripCodeStyleDefaults } from './codeStyle';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -60,6 +61,7 @@ export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesD
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
 export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, parseFootnoteNumberFormat } from './footnotes';
 export { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults, defaultLineNumbersRestart } from './lineNumbers';
+export { DEFAULT_CODE_STYLE, DEFAULT_CODE_TOKENS, CODE_TOKEN_KINDS, CODE_OVERFLOWS, resolveCodeStyleConfig, resolvedCodeStyle, stripCodeStyleDefaults } from './codeStyle';
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './crossRefs';
 export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './citations';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
@@ -223,6 +225,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.lineNumbers = strippedLineNumbers;
   } else {
     delete result.lineNumbers;
+  }
+  const strippedCodeStyle = stripCodeStyleDefaults(config.codeStyle);
+  if (strippedCodeStyle) {
+    result.codeStyle = strippedCodeStyle;
+  } else {
+    delete result.codeStyle;
   }
   const strippedCrossRefs = stripCrossRefsDefaults(config.crossRefs);
   if (strippedCrossRefs) {

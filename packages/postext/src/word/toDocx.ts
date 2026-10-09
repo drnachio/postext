@@ -20,6 +20,7 @@ import {
 } from './template';
 import { TEMPLATE_XML_NS, TEMPLATE_XML_ROOT } from './docxRead';
 import { escapeAttr, escapeXml } from './xml';
+import { closesCodeFence, codeFenceOpen } from '../parse/codeFence';
 
 export interface ExportChapter {
   title: string;
@@ -107,7 +108,7 @@ function isBlank(line: string): boolean {
 function startsBlock(trimmed: string, raw: string): boolean {
   return HEADING_RE.test(trimmed) || trimmed.startsWith('>') || FENCE_RE.test(trimmed) || CLOSE_RE.test(trimmed)
     || TASK_RE.test(raw) || ORDERED_RE.test(raw) || BULLET_RE.test(raw) || RESOURCE_RE.test(trimmed)
-    || MATH_SINGLE_RE.test(trimmed) || MATH_FENCE_RE.test(trimmed) || NOTE_DEF_RE.test(trimmed);
+    || MATH_SINGLE_RE.test(trimmed) || MATH_FENCE_RE.test(trimmed) || NOTE_DEF_RE.test(trimmed) || codeFenceOpen(raw) !== undefined;
 }
 
 interface ParsedChapter {
@@ -163,6 +164,17 @@ function parseChapter(markdown: string, listRunBase: { n: number }): ParsedChapt
     if (isBlank(raw)) {
       blankBefore = true;
       i++;
+      continue;
+    }
+    // A code listing (#624): written verbatim, fences and all, in the
+    // Postext Markup style (no Word mapping of code yet).
+    const code = codeFenceOpen(raw);
+    if (code) {
+      endList();
+      pushBlock({ kind: 'markup', text: raw });
+      i++;
+      while (i < lines.length && !closesCodeFence(lines[i]!, code.marker)) blocks.push({ kind: 'markup', text: lines[i++]! });
+      if (i < lines.length) blocks.push({ kind: 'markup', text: lines[i++]! });
       continue;
     }
     const fence = FENCE_RE.exec(t);

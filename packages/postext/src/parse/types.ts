@@ -9,7 +9,10 @@ export type ContentBlockType =
   | 'resourceBlock'
   | 'directive'
   | 'containerStart'
-  | 'containerEnd';
+  | 'containerEnd'
+  /** A code listing (#624): a ```` ``` ```` or `~~~` fence, or indented
+   *  code under `codeStyle.indentedCode` (see {@link CodeBlockInfo}). */
+  | 'code';
 
 /** Attributes parsed from a `:::name{key="v" other=bare flag}` directive.
  *  Values are kept as strings; directive consumers validate/coerce. A bare
@@ -65,6 +68,33 @@ export interface VerseLineInfo {
   /** The line was written `+ …`: a stepped line (a line of dramatic verse
    *  shared between speakers), set to start where the line above ended. */
   stepped?: true;
+}
+
+/** A code listing (#624): the lines between a ```` ``` ```` or `~~~`
+ *  fence and its closing fence (or a run of indented lines), kept as
+ *  written: no inline Markdown, no directives, every space and tab. The
+ *  block's `text` joins the lines with a line feed, mapped to the source
+ *  line end, so the plain text and the source map read the listing as
+ *  written. */
+export interface CodeBlockInfo {
+  /** The first word of the info string (`js`, `python`, `console`),
+   *  lower-cased; absent when the fence names none. */
+  lang?: string;
+  /** The info string as written, after the fence. */
+  info: string;
+  /** The rest of the info string read in the directive attribute grammar
+   *  (`{title="backup.sh" lineNumbers start=12 highlight="3,5-7"}`). */
+  attrs: DirectiveAttrs;
+  /** The title: the `title` attribute, else a bare second word of the info
+   *  string (```` ```console Terminal ````). */
+  title?: string;
+  /** The listing's lines, the fence's indentation (or the four columns of
+   *  indented code) taken off, tabs kept. */
+  lines: string[];
+  /** Source offset of each line's first kept character. */
+  lineStarts: number[];
+  /** How the listing was written. */
+  fence: '```' | '~~~' | 'indent';
 }
 
 /** Recognized directive names. Unknown names are not parsed as directives —
@@ -459,11 +489,11 @@ export type MathSpan = InlineSpan & { math: MathMeta };
 
 export type ListKind = 'unordered' | 'ordered' | 'task';
 
-export type ParseIssueKind = 'unclosedMath' | 'unclosedMathBlock' | 'unclosedContainer';
+export type ParseIssueKind = 'unclosedMath' | 'unclosedMathBlock' | 'unclosedContainer' | 'unclosedCodeBlock';
 
 interface ParseIssueBase {
   kind: ParseIssueKind;
-  delimiter: '$' | '$$' | ':::';
+  delimiter: '$' | '$$' | ':::' | '```' | '~~~';
   /** Absolute source offset of the unmatched opening delimiter. */
   sourceStart: number;
   /** End of the scanned region (usually the line or block end). */
@@ -489,7 +519,27 @@ export interface UnclosedContainerIssue extends ParseIssueBase {
   containerId: number;
 }
 
-export type ParseIssue = UnclosedMathIssue | UnclosedContainerIssue;
+/** A ```` ``` ```` or `~~~` code fence still open at the end of the text
+ *  (#624): the listing runs to the end; `sourceStart`/`sourceEnd` cover
+ *  the opening fence line. */
+export interface UnclosedCodeBlockIssue extends ParseIssueBase {
+  kind: 'unclosedCodeBlock';
+  delimiter: '```' | '~~~';
+  /** The fence's language, when it names one. */
+  lang?: string;
+}
+
+export type ParseIssue = UnclosedMathIssue | UnclosedContainerIssue | UnclosedCodeBlockIssue;
+
+/** How a text is read (see `parseMarkdownWithIssues`). */
+export interface ParseOptions {
+  /** Read ```` ``` ```` / `~~~` fences as code blocks (#624). Default
+   *  `true`; `false` reads their lines as Markdown, as postext 1.22 did. */
+  fences?: boolean;
+  /** Read indented code (four spaces or a tab after a blank line) as a
+   *  code block. Default `false`. */
+  indentedCode?: boolean;
+}
 
 /** What one block of an expanded `:::toc` prints. */
 export interface TocBlockInfo {
@@ -683,6 +733,14 @@ export interface ContentBlock {
   /** The anchors set in this block's text (`:anchor{#id}`, `[text]{#id}`),
    *  in source order (#261). */
   anchorMarks?: AnchorMark[];
+  /** For a `code` block (#624): the listing (see {@link CodeBlockInfo}). */
+  code?: CodeBlockInfo;
+  /** The inline code spans (`` `x` ``) of a paragraph, a heading, a
+   *  quotation or a list item, as source ranges of their text (between the
+   *  backticks, absolute offsets into the markdown), in order: a layout
+   *  with `codeStyle.inline` sets the characters mapped into them in the
+   *  code face (#624). Absent when the block has none. */
+  inlineCode?: Array<{ start: number; end: number }>;
   /** For `resourceBlock` blocks: the referenced `Resource.id`. */
   resourceId?: string;
   /** For `containerStart` / `containerEnd` marker blocks: the container

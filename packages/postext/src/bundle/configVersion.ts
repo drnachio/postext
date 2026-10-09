@@ -3,13 +3,14 @@
 // the number as `configVersion` (every writer since postext 1.5 sets it);
 // the Sandbox numbers its stored projects the same way.
 
-import type { BodyTextConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig } from '../types';
+import type { BodyTextConfig, CodeStyleConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig } from '../types';
 import { DEFAULT_MATH_CONFIG } from '../defaults/math';
 import { dimensionsEqual } from '../defaults/shared';
 import { DEFAULT_TEXT_ELEMENT, resolveDesignLineHeight } from '../defaults/headerFooter';
 import { DEFAULT_PAGE_CONFIG } from '../defaults/page';
 import { dimensionToPx } from '../units';
 import { KNOWN_CONTAINERS } from '../parse/blockParser';
+import { codeFenceOpen } from '../parse/codeFence';
 
 /**
  * The configuration rules this engine writes: 9 since #620 (8 from postext
@@ -65,7 +66,7 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  *     paragraph (`bodyText.breakAfterHyphens`), where up to 1.4 a justified
  *     paragraph with no inline formatting never broke there ({@link
  *     pinLegacyHyphenBreaks}).
- * - 9 (#620), two rules:
+ * - 9 (#620, #624), four rules:
  *   - a `:::verse` poem whose fence names no layout and whose lines carry
  *     no hemistich separator is set line by line (`bodyText.verse.layout:
  *     'auto'`), where up to 1.22 its lines were single hemistichs centred
@@ -77,7 +78,10 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  *   - a backslash that ends a line of a paragraph, a quotation or a list
  *     item, and `\\` in one, is a forced line break
  *     (`bodyText.hardLineBreaks`), where up to 1.22 it printed ({@link
- *     pinLegacyHardBreaks}).
+ *     pinLegacyHardBreaks});
+ *   - a ```` ``` ```` or `~~~` fence opens a code block (#624,
+ *     `codeStyle.blocks`), where up to 1.22 its lines were read as
+ *     Markdown ({@link pinLegacyCodeBlocks}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -129,6 +133,8 @@ const PAIRED_INDENT_RULES = 9;
 /** The rules that read a backslash ending a line, or `\\`, as a forced line
  *  break. */
 const HARD_BREAK_RULES = 9;
+/** The rules that read a code fence as a code block. */
+const CODE_BLOCK_RULES = 9;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -509,6 +515,34 @@ export function pinLegacyHardBreaks<T extends Partial<PostextConfig>>(config: T)
   return { ...config, bodyText: { ...bodyText, hardLineBreaks: false } };
 }
 
+/**
+ * A configuration written before #624 (postext 1.22 or earlier), pinned to
+ * the way it read a ```` ``` ```` or `~~~` fence: `codeStyle.blocks: false`,
+ * the fence and the lines inside it read as Markdown (paragraphs, headings,
+ * lists…), where today they are a code block set as written. A
+ * configuration that names the setting already is returned as it is (the
+ * same object).
+ */
+export function pinLegacyCodeBlocks<T extends Partial<PostextConfig>>(config: T): T {
+  const codeStyle: CodeStyleConfig = isRecord(config.codeStyle) ? config.codeStyle : {};
+  if (codeStyle.blocks !== undefined) return config;
+  return { ...config, codeStyle: { ...codeStyle, blocks: false } };
+}
+
+/** Whether markdown holds a line that opens a code fence. */
+function hasCodeFence(text: string): boolean {
+  if (!text.includes('```') && !text.includes('~~~')) return false;
+  return text.split('\n').some((line) => codeFenceOpen(line) !== undefined);
+}
+
+/** Whether markdown may hold a code fence. Unknown content (undefined)
+ *  may. */
+function mayHaveCodeFences(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return hasCodeFence(content);
+  return content.some(hasCodeFence);
+}
+
 /** A line that opens a block of its own, which a paragraph's lines never
  *  run into: a heading, a fence, a display formula, a list item, a
  *  resource embed. */
@@ -852,7 +886,9 @@ export interface MigrateConfigOptions {
    * lines carry no hemistich separator is not given the 1.22 verse layout
    * (see {@link pinLegacyVerseLayout}); and text with no backslash ending a
    * line a paragraph goes on after, and no `\\` in running text, is not
-   * given the 1.22 literal backslashes (see {@link pinLegacyHardBreaks}).
+   * given the 1.22 literal backslashes (see {@link pinLegacyHardBreaks});
+   * and text with no ```` ``` ```` or `~~~` fence is not given the 1.22
+   * reading of fences (see {@link pinLegacyCodeBlocks}).
    * That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
@@ -894,9 +930,10 @@ export interface MigrateConfigOptions {
  * no compound; one older than 9 has its poems with no hemistich separator
  * pinned by {@link pinLegacyVerseLayout}, unless `options.content` shows
  * none, its paragraph styles' indents by {@link pinLegacyPairedIndents},
- * and its forced line breaks by {@link pinLegacyHardBreaks}, unless
- * `options.content` shows none. A current one is returned as it is (the
- * same object).
+ * its forced line breaks by {@link pinLegacyHardBreaks}, unless
+ * `options.content` shows none, and its code fences by {@link
+ * pinLegacyCodeBlocks}, unless `options.content` shows none. A current one
+ * is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -924,6 +961,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) out = pinLegacyVerseLayout(out);
   if (rules < PAIRED_INDENT_RULES) out = pinLegacyPairedIndents(out);
   if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) out = pinLegacyHardBreaks(out);
+  if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) out = pinLegacyCodeBlocks(out);
   return out;
 }
 
@@ -972,5 +1010,6 @@ export function migrateBundleConfig(
   if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) merged = pinLegacyVerseLayout(merged);
   if (rules < PAIRED_INDENT_RULES) merged = pinLegacyPairedIndents(merged);
   if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) merged = pinLegacyHardBreaks(merged);
+  if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) merged = pinLegacyCodeBlocks(merged);
   return merged;
 }

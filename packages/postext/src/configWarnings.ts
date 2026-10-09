@@ -24,6 +24,9 @@ import type {
   ComicCastMember,
   LineNumbersConfig,
   ResolvedLineNumbersConfig,
+  CodeStyleConfig,
+  InlineCodeStyleConfig,
+  CodeTokenStyle,
   TabStop,
   ParagraphDropCap,
   DropCapLeadIn,
@@ -44,6 +47,7 @@ import { resolvePrintConfig } from './defaults/print';
 import { isTabStopAlign, parseTabStopPosition } from './defaults/tabStops';
 import { DROP_CAP_PUNCTUATION, DROP_CAP_SHORT_PARAGRAPH, isDropCap, readDropCap } from './defaults/dropCap';
 import { outputProfileInfo } from './color/catalogue';
+import { CODE_OVERFLOWS, CODE_TOKEN_KINDS } from './defaults/codeStyle';
 import { LINE_NUMBERS_ALIGNS, LINE_NUMBERS_COUNTS, LINE_NUMBERS_MULTI_COLUMN, LINE_NUMBERS_POSITIONS, LINE_NUMBERS_RESTARTS } from './defaults/lineNumbers';
 
 /** The format fields and the decimal spelling each falls back to. A
@@ -130,6 +134,7 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   out.push(...collectComicChoiceWarnings(config));
   out.push(...collectPrintChoiceWarnings(config));
   out.push(...collectLineNumbersWarnings(config));
+  out.push(...collectCodeStyleWarnings(config));
   out.push(...collectTabStopWarnings(config));
   out.push(...collectDropCapWarnings(config));
   return out;
@@ -237,6 +242,24 @@ function collectLineNumbersWarnings(config: PostextConfig): ConfigWarning[] {
   if (c.enabled === true && resolveAllConfig(config).layout.writingMode === 'vertical-rl') {
     out.push({ kind: 'lineNumbersUnsupported', path: 'lineNumbers.enabled', value: 'true', used: 'false' });
   }
+  return out;
+}
+
+/** The code style settings that take one of a few words (#624). */
+function collectCodeStyleWarnings(config: PostextConfig): ConfigWarning[] {
+  const cs = config.codeStyle as unknown;
+  if (!cs || typeof cs !== 'object' || Array.isArray(cs)) return [];
+  const c = cs as CodeStyleConfig;
+  const out: ConfigWarning[] = [];
+  const check = (value: unknown, choices: readonly string[], key: string, used: string): void => {
+    if (value === undefined || (typeof value === 'string' && choices.includes(value))) return;
+    const written = String(value);
+    const suggestion = closestKey(written, choices);
+    out.push({ kind: 'unknownConfigValue', path: `codeStyle.${key}`, value: written, used, ...(suggestion ? { suggestion } : {}) });
+  };
+  check(c.overflow, CODE_OVERFLOWS, 'overflow', 'wrap');
+  check(c.highlight, ['builtin', 'none'], 'highlight', 'builtin');
+  check(c.span, ['column', 'page'], 'span', 'column');
   return out;
 }
 
@@ -383,6 +406,23 @@ const LINE_NUMBERS_KEYS = {
   color: true, format: true,
 } satisfies Record<keyof LineNumbersConfig, true>;
 
+// Code listings and inline code (#624).
+const CODE_STYLE_KEYS = {
+  blocks: true, indentedCode: true, fontFamily: true, fontSize: true, fontWeight: true, boldFontWeight: true,
+  lineHeight: true, snapToGrid: true, color: true, backgroundEnabled: true, background: true, padding: true,
+  border: true, borderRadius: true, marginTop: true, marginBottom: true, span: true, tabSize: true, overflow: true,
+  wrapIndent: true, wrapMarker: true, minFontScale: true, lineNumbers: true, lineNumberColor: true,
+  lineNumberGap: true, highlightBackground: true, keepTogether: true, splitMinLines: true, repeatTitle: true,
+  continuesMarkerEnabled: true, continuesMarker: true, titleStyle: true, label: true, highlight: true, tokens: true,
+  inline: true,
+} satisfies Record<keyof CodeStyleConfig, true>;
+const CODE_TOKEN_STYLE_KEYS = { color: true, bold: true, italic: true } satisfies Record<keyof CodeTokenStyle, true>;
+const INLINE_CODE_KEYS = {
+  fontFamily: true, fontSize: true, color: true, bold: true, italic: true, background: true, borderColor: true,
+  borderWidth: true, borderRadius: true, paddingX: true, paddingY: true,
+} satisfies Record<keyof InlineCodeStyleConfig, true>;
+const CODE_TOKEN_KIND_KEYS: Record<string, true> = Object.fromEntries(CODE_TOKEN_KINDS.map((k) => [k, true]));
+
 // The comics tables (#562).
 const COMICS_KEYS = {
   readingDirection: true, artDirection: true, mirrorArt: true, frame: true, gutter: true, panel: true,
@@ -483,6 +523,19 @@ function collectUnknownKeyWarnings(config: PostextConfig): ConfigWarning[] {
     check(cap.leadIn, DROP_CAP_LEAD_IN_KEYS, `${path}.leadIn`);
   }
   check(config.lineNumbers, LINE_NUMBERS_KEYS, 'lineNumbers');
+  // Code listings (#624): the section, its token kinds and inline code.
+  const codeStyle = config.codeStyle as unknown;
+  if (codeStyle && typeof codeStyle === 'object' && !Array.isArray(codeStyle)) {
+    const c = codeStyle as CodeStyleConfig;
+    check(c, CODE_STYLE_KEYS, 'codeStyle');
+    check(c.tokens, CODE_TOKEN_KIND_KEYS, 'codeStyle.tokens');
+    if (c.tokens && typeof c.tokens === 'object') {
+      for (const [kind, look] of Object.entries(c.tokens)) {
+        if (CODE_TOKEN_KIND_KEYS[kind]) check(look, CODE_TOKEN_STYLE_KEYS, `codeStyle.tokens.${kind}`);
+      }
+    }
+    check(c.inline, INLINE_CODE_KEYS, 'codeStyle.inline');
+  }
   // Comics: the section, its frame, gutters, panel styles, lettering,
   // balloon styles and cast.
   const comics = config.comics as unknown;

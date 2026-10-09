@@ -44,6 +44,9 @@ import { startEndAsLeftRight } from '../defaults/shared';
 import { prepareTabs } from './tabs';
 import { fullPlainOffset, paragraphDropCap, prepareDropCap, type MeasuredDropCap, type PreparedDropCap } from './dropCap';
 import { lineIndentAt } from '../measure/types';
+import { measureCodeLines } from './codeLines';
+import { withInlineCode } from './codeInline';
+import type { VDTBlock } from '../vdt';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -125,6 +128,12 @@ export interface MeasuredContentBlock {
   /** A paragraph a drop cap opens (#623): the letter, relative to the
    *  column. Its lines were set short of it. */
   dropCap?: MeasuredDropCap;
+  /** A code listing (#624): its language, numbers and fit (see
+   *  `VDTBlock.code`). */
+  code?: NonNullable<VDTBlock['code']>;
+  /** A code listing set from the far side of a mirrored frame (#624): its
+   *  block reads left to right. */
+  direction?: 'ltr';
 }
 
 export interface MeasureContentBlockOptions {
@@ -291,6 +300,36 @@ export function measureContentBlock(
     blockIdx,
     paragraphStyleOverride: opts?.styleOverride,
   });
+
+  // A code listing (#624): line by line as written, in its box's measure.
+  if (rawBlock.type === 'code') {
+    const mirrored = getMeasureDirection() === 'rtl' && !measuringVertically();
+    const measured = measureCodeLines({
+      block: rawBlock,
+      fontSizePx: kind.style.fontSizePx,
+      lineHeightPx: kind.style.lineHeightPx,
+      color: kind.style.color,
+      measure: columnWidth,
+      resolved,
+      bodyOffset,
+      ...(mirrored ? { mirrored: true } : {}),
+    });
+    if (measured.lines.length === 0) return null;
+    const code: NonNullable<VDTBlock['code']> = {
+      ...(rawBlock.code?.lang ? { lang: rawBlock.code.lang } : {}),
+      ...(measured.numbers ? { numbers: measured.numbers } : {}),
+      ...(measured.fit ? { fit: measured.fit } : {}),
+    };
+    return {
+      kind,
+      contentBlock: rawBlock,
+      measured: { lines: measured.lines, totalHeight: measured.totalHeight },
+      prefixLen: 0,
+      absoluteSourceMap: rawBlock.sourceMap.map((o) => o + bodyOffset),
+      code,
+      ...(mirrored ? { direction: 'ltr' as const } : {}),
+    };
+  }
   const { style, vdtType, listBullet } = kind;
   let contentBlock = kind.contentBlock;
   const mathEnabled = resolved.math.enabled;
@@ -338,6 +377,9 @@ export function measureContentBlock(
     return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
   }
 
+  // Inline code in the code face (#624, `codeStyle.inline`), before the
+  // spans are resolved: they still match the parsed text then.
+  contentBlock = withInlineCode(contentBlock, rawBlock, resolved, style.fontSizePx);
   contentBlock = resolveInlineSpans(contentBlock, style, ctx);
 
   // The orientation marks of vertical text change nothing in horizontal

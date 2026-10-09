@@ -157,6 +157,13 @@ describe('Markdown → Word → Markdown', () => {
     expect(blocksOf(back)).toEqual(blocksOf(md));
   });
 
+  it('keeps a code listing verbatim (#624)', () => {
+    const md = ['Run this:', '', '```bash {title="x.sh"}', '# not a heading', '  - not a list', '', 'echo "$HOME"  # two spaces', '```', '', 'After.'].join('\n');
+    const back = roundTrip(md);
+    expect(back).toContain('```bash {title="x.sh"}\n# not a heading\n  - not a list\n\necho "$HOME"  # two spaces\n```');
+    expect(blocksOf(back)).toEqual(blocksOf(md));
+  });
+
   it('keeps two adjacent paragraph groups of one style apart', () => {
     const md = ':::paragraphs{style="firma"}\nA\n:::\n\n:::paragraphs{style="firma"}\nB\n:::\n';
     expect(blocksOf(roundTrip(md))).toEqual(blocksOf(md));

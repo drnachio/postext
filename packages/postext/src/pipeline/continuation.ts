@@ -15,6 +15,7 @@ import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, Post
 import { computeHeadingContext, computeResourceNumberingState } from './resourceNumbering';
 import { planParts } from './parts';
 import { resolveAllConfig } from './config';
+import { codeParseOptions } from './codeBlocks';
 import { headingIsNumbered } from './headingStyles';
 import { computeOutline, hasIndexDirective, hasTocDirective } from './outline';
 import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes';
@@ -33,8 +34,8 @@ export function continuationAfter(
   before?: LayoutContinuation,
 ): LayoutContinuation {
   const body = extractFrontmatter(content.markdown).content;
-  const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
   const headingContext = computeHeadingContext(blocks, before?.headings, (b) => headingIsNumbered(b, resolved));
   const headings = headingContext.length > 0
     ? headingContext[headingContext.length - 1]!
@@ -116,8 +117,8 @@ export function contentOutline(
   before?: LayoutContinuation,
 ): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean; hasRefs: boolean } {
   const body = extractFrontmatter(content.markdown).content;
-  const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
   return {
     outline: computeOutline(blocks, resolved, before?.headings, before?.statementCounters),
     hasToc: hasTocDirective(blocks),

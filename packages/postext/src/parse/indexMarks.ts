@@ -14,6 +14,7 @@ import type { AnchorMark, ContentBlock, IndexMark, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { stripInlineFormatting } from './inlineFormatting';
 import { findAnnotations } from './annotations';
+import { closesCodeFence, codeFenceOpen } from './codeFence';
 
 /** `:index[text]{attrs}`, `:index[text]` or `:index{attrs}`: not after a
  *  colon (the `:::index` directive) or a backslash (an escaped mark). The
@@ -216,17 +217,34 @@ function lineMatches(line: string): LineMatch[] {
   return kept;
 }
 
-export function extractIndexMarks(markdown: string): IndexMarkExtraction | null {
+export function extractIndexMarks(markdown: string, options: { fences?: boolean } = {}): IndexMarkExtraction | null {
   if (!mayHoldMark(markdown)) return null;
+  const fences = options.fences !== false && (markdown.includes('```') || markdown.includes('~~~'));
   const pending: { mark: IndexMark | AnchorMark; at: number; textStart?: number }[] = [];
   const removals: Removal[] = [];
   let out = '';
   let lineStart = 0;
+  /** The marker of the code fence open at this line (#624): the lines of
+   *  a code block are kept as written, marks and all. */
+  let openFence: string | undefined;
   while (lineStart <= markdown.length) {
     const nl = markdown.indexOf('\n', lineStart);
     const lineEnd = nl === -1 ? markdown.length : nl;
     const line = markdown.slice(lineStart, lineEnd);
-    if (!mayHoldMark(line)) {
+    let verbatim = false;
+    if (fences) {
+      if (openFence !== undefined) {
+        if (closesCodeFence(line, openFence)) openFence = undefined;
+        verbatim = true;
+      } else {
+        const open = codeFenceOpen(line);
+        if (open) {
+          openFence = open.marker;
+          verbatim = true;
+        }
+      }
+    }
+    if (verbatim || !mayHoldMark(line)) {
       out += line;
       if (nl !== -1) out += '\n';
       lineStart = lineEnd + 1;

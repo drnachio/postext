@@ -8,6 +8,8 @@ import type { ContentBlock } from '../parse';
 import { DEFAULT_TEXT_ELEMENT, defaultCjkEmphasis, resolveBodyTextConfig, resolveHeaderFooterConfig, resolveHeadingsConfig, resolveOrderedListsConfig, resolveUnorderedListsConfig } from '../defaults';
 import { primaryFontFamily } from '../measure/font';
 import { comicFontFamilies } from '../comics/fonts';
+import { DEFAULT_CODE_STYLE } from '../defaults/codeStyle';
+import { codeFenceOpen } from '../parse/codeFence';
 
 /** The text of the document (one string, or the chapters of a book): the
  *  families a config names are not all the families a build uses — comic
@@ -116,9 +118,32 @@ export function configFontFamilies(config: PostextConfig, markdown?: FontContent
   // Comic pages: the lettering, balloon-style and sound-effect faces, by
   // default those of the document language.
   for (const family of comicFontFamilies(config, markdown)) families.add(family);
+  // Code listings (#624): the code face (by default `Source Code Pro`)
+  // when the text holds a fence, and the inline code face when the
+  // configuration sets one.
+  for (const family of codeFontFamilies(config, markdown)) families.add(family);
   // A CSS font stack sets its text in the first family (the engine's
   // `primaryFontFamily`): load that one.
   return [...new Set(Array.from(families, primaryFontFamily))];
+}
+
+/** Whether `text` holds a line that opens a code fence. */
+function hasCodeFence(text: FontContentText): boolean {
+  if (text === undefined) return false;
+  const texts = typeof text === 'string' ? [text] : text;
+  return texts.some((t) => (t.includes('```') || t.includes('~~~')) && t.split('\n').some((line) => codeFenceOpen(line) !== undefined));
+}
+
+/** The faces code is set in (#624): the listings' when the text holds a
+ *  fence (and the configuration reads fences) or the configuration has a
+ *  `codeStyle` section, the inline code's when it sets inline code. */
+export function codeFontFamilies(config: PostextConfig, markdown?: FontContentText): string[] {
+  const cs = config.codeStyle;
+  const family = cs?.fontFamily?.trim() || DEFAULT_CODE_STYLE.fontFamily;
+  const out: string[] = [];
+  if ((cs !== undefined && cs.blocks !== false) || (cs?.blocks !== false && hasCodeFence(markdown))) out.push(family);
+  if (cs?.inline) out.push(cs.inline.fontFamily?.trim() || family);
+  return out;
 }
 
 export interface FontVariantUse { weight: number; style: 'normal' | 'italic' }
@@ -137,6 +162,9 @@ export interface FontUsageDocument {
    *  emphasis is set as dots ({@link hasLatinEmphasis}). Unset when the
    *  text is not known. */
   latinEmphasis?: boolean;
+  /** The text the configuration lays out: a code fence in it asks for the
+   *  code face (#624). */
+  markdown?: FontContentText;
 }
 
 /** Letters and digits outside Chinese and Japanese script. */
@@ -225,6 +253,17 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
       style: c.italic === true ? 'italic' : 'normal',
     });
   };
+  // Code (#624): the regular and bold weights of the code face, upright
+  // and slanted (tokens may be bold or italic: a comment, a prompt).
+  const codeFamilies = codeFontFamilies(config, doc?.markdown);
+  if (codeFamilies.length > 0) {
+    const cs = config.codeStyle;
+    const regular = typeof cs?.fontWeight === 'number' ? cs.fontWeight : DEFAULT_CODE_STYLE.fontWeight;
+    const bold = typeof cs?.boldFontWeight === 'number' ? cs.boldFontWeight : DEFAULT_CODE_STYLE.boldFontWeight;
+    for (const family of codeFamilies) {
+      for (const weight of [regular, bold]) for (const style of ['normal', 'italic'] as const) add(primaryFontFamily(family), { weight, style });
+    }
+  }
   for (const style of config.paragraphStyles ?? []) capUse(style.dropCap, style.fontFamily, style.fontWeight);
   for (const level of config.headings?.levels ?? []) capUse(level.dropCap, undefined, undefined);
   for (const style of config.headingStyles ?? []) capUse(style.dropCap, undefined, undefined);

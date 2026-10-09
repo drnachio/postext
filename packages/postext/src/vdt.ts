@@ -45,6 +45,7 @@ import type {
   FolioPaperConfig,
   ResolvedComicsConfig,
   ResolvedLineNumbersConfig,
+  ResolvedCodeStyleConfig,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -137,6 +138,10 @@ export interface ResolvedConfig {
   /** Line numbers (`PostextConfig.lineNumbers`, #621), resolved, when the
    *  config sets the section; absent otherwise (no numbers). */
   lineNumbers?: ResolvedLineNumbersConfig;
+  /** Code listings and inline code (`PostextConfig.codeStyle`, #624),
+   *  resolved, when the config sets the section; absent otherwise (the
+   *  defaults apply, `resolvedCodeStyle`). */
+  codeStyle?: ResolvedCodeStyleConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +156,10 @@ export type VDTBlockType =
   | 'listItem'
   | 'footnoteRef'
   | 'mathDisplay'
-  | 'callout';
+  | 'callout'
+  /** A line of a code listing (#624): one line per source line, set as
+   *  written (see `VDTLine.codeLine`), inside the listing's box. */
+  | 'code';
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
@@ -772,6 +780,15 @@ export interface VDTLine {
    *  widths of the line's segments are final (the block is set flush
    *  left): renderers paint them as they are. Absent on any other line. */
   verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true };
+  /** A line of a code listing (#624, a `code` block): `line` is the source
+   *  line it sets (0-based in the listing), `number` its printed number
+   *  when the listing is numbered (never on a continuation), `continued`
+   *  a continuation of a wrapped line, `highlight` a line the fence's
+   *  `highlight` names, `wrapped` a line that goes on in the next one,
+   *  `clipped` a line cut at the box's edge. The segments carry final
+   *  widths from the block's left edge (spaces are kept, never
+   *  stretched). Absent on any other line. */
+  codeLine?: { line: number; number?: string; continued?: true; highlight?: true; wrapped?: true; clipped?: true };
   /** The first line of an entry of a back-of-book index (`:::index`): the
    *  entry's level (0 a main entry, 1 a sub-entry…). A block of the index
    *  may set more than one entry (the page-less entries heading its
@@ -1611,6 +1628,16 @@ export interface VDTBlock {
    *  its first line only: renderers paint it beside the lines, which were
    *  set short of it. */
   dropCap?: VDTDropCap;
+  /** A code listing's lines (#624, `type: 'code'`): its language as the
+   *  fence names it; when its lines are numbered, the numbers' face and
+   *  colour and the room between them and the code (they are set in the
+   *  page's `lineNumbers` slot, out of the text, right-aligned before the
+   *  code); and how its lines were fitted when one was too wide. */
+  code?: {
+    lang?: string;
+    numbers?: { gap: number; fontString: string; color: string };
+    fit?: { mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale: number };
+  };
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
@@ -2611,6 +2638,12 @@ export type ContentWarning = ContentWarningBase & (
    *  letter or digit to set large (a reference, a formula, a note mark).
    *  `text` is the paragraph's first line. Found by the layout. */
   | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
+  /** `codeOverflow` (#624): a code listing has lines wider than its box,
+   *  fitted as `codeStyle.overflow` says: turned over (`'wrap'`), set
+   *  smaller (`'shrink'`, at `scale` of its size; past `minFontScale` its
+   *  lines wrap too) or cut at the box's edge (`'clip'`). `lines` counts
+   *  the source lines too wide. Found by the layout. */
+  | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

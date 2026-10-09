@@ -204,6 +204,20 @@ export function resolveBlockKind(
         strikethroughText: false,
       };
     }
+    case 'code': {
+      // A code listing (#624): the face, size, leading and colour of its
+      // box's body (the code style); set flush left as written, never
+      // indented, hyphenated or spaced apart (`pipeline/codeLines.ts`).
+      const { hyphenationZonePx: _zone, hangingIndentPx: _hang, indentPx: _indent, endIndentPx: _end, letterSpacingPx: _track, ...rest } = bodyStyle;
+      void _zone; void _hang; void _indent; void _end; void _track;
+      return {
+        style: { ...rest, textAlign: 'left', hyphenate: false, firstLineIndentPx: 0, hangingIndent: false, marginTopPx: 0, marginBottomPx: 0 },
+        vdtType: 'code',
+        contentBlock: rawBlock,
+        bulletXOffsetInColumn: 0,
+        strikethroughText: false,
+      };
+    }
     case 'blockquote':
       return {
         style: blockquoteStyle,

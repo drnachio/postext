@@ -25,6 +25,7 @@ import {
   resolveIndexConfig,
   resolveFootnotesConfig,
   resolveLineNumbersConfig,
+  resolveCodeStyleConfig,
   resolveCrossRefsConfig,
   resolveCitationsConfig,
   resolveCjkConfig,
@@ -137,6 +138,10 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     // Line numbers (#621): only a config that sets the section carries
     // it, so a document without them resolves (and hashes) as before.
     ...(config?.lineNumbers ? { lineNumbers: resolveLineNumbersConfig(config.lineNumbers, bodyText) } : {}),
+    // Code listings (#624): only a config that sets the section carries
+    // it, so a document without one resolves (and hashes) as before; the
+    // layout reads the defaults then (`resolvedCodeStyle`).
+    ...(config?.codeStyle ? { codeStyle: resolveCodeStyleConfig(config.codeStyle, bodyText) } : {}),
     // Comic pages: only a config that sets the section carries it (a
     // `:::page` without one reads the defaults, `resolvedComics`).
     ...(config?.comics ? { comics: resolveComicsConfig(config.comics, documentLocale) } : {}),
