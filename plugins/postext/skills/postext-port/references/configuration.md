@@ -262,6 +262,7 @@ bodyText
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true, indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
+├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0 }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading
 └─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true }
                       locale: any BCP 47 tag; patterns for 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl' (region ignored; other languages → en-us + console warning)
                       ragged: also hyphenate ragged text, only where the word does not fit and sending it down would leave a gap wider than zone (em = text size); line by line ≤ 2 hyphenated lines in a row, with optimalRagged two in a row are only discouraged
@@ -736,7 +737,9 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
   endIndent: Dimension = 0       (≥ 1.16; from the END side: right of a horizontal line, foot of a vertical
                                  one; em = the style's size). With textAlign 'end': 地からN字上げ; textAlign
                                  'end' alone is 地付き (a letter's date and signature)
-  hangingIndent: Dimension = 0   (non-zero replaces firstLineIndent; counts from indent)
+  hangingIndent: Dimension = 0   (lines 2+, from indent. The first line keeps a firstLineIndent the style
+                                 sets ITSELF (≥ 1.23: first at indent + firstLineIndent, turnovers at
+                                 indent + hangingIndent); an inherited one gives way and line 1 starts at indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
   textTransform = 'none'         ('uppercase' = capitals, chip words and :ref labels too, length-preserving; maths untouched)

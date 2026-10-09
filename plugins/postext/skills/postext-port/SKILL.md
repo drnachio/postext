@@ -74,16 +74,18 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   `:::columns`, only inside a callout, and `:::paper`, a run of pages on
   another paper stock for the Folio viewer) and six directives
   (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`,
-  `:::index`), the fenced `:::references` and `:::verse` (a classical Arabic
-  poem, one bayt a line split at `||`), plus inline index marks
+  `:::index`), the fenced `:::references` and `:::verse` (a poem: line by
+  line as written, or a classical Arabic poem, one bayt a line split at
+  `||`), plus inline index marks
   (`:index[…]`, `:index{term="…"}`), and the comic blocks `:::page` and
   `:::strip` (comics.md). Anything else prints literally.
 - **Extra blank lines add no space.** Where the source has deliberate
   vertical space (a scene break, room above a signature), write
   `:::space` (one body line) or `:::space{lines=N}`.
-- **No hard line breaks**: verse (other than an Arabic poem in `:::verse`),
-  addresses and code lines need one paragraph per line inside
-  `:::paragraphs{style="…"}`.
+- **No hard line breaks in paragraphs**: write a poem as `:::verse`, one
+  line of verse a line, a blank line between stanzas, leading spaces for its
+  indents (postext ≥ 1.23; document-format.md §12). Addresses and code
+  lines still need one paragraph per line inside `:::paragraphs{style="…"}`.
 
 Config traps:
 
@@ -203,7 +205,8 @@ Arabic and right-to-left traps (postext ≥ 1.15; playbooks F7–F8; configurati
   orthography (فى، مائة), the harakat. Quranic ﴿…﴾ typed U+FD3F first.
   Strip only justification tatweels a PDF extraction brings in.
 - **Verse**: a classical poem is `:::verse`, one bayt a line `ṣadr || ʿajuz`;
-  give vocalised verse a paragraph style with 1.9–2.1 em leading.
+  give vocalised verse a paragraph style with 1.9–2.1 em leading. Free verse
+  (no `||`) is the same fence set line by line.
 - **Fonts**: one family per style, no fallback: Amiri, Noto Naskh Arabic,
   Scheherazade New (Noto Kufi Arabic, Reem Kufi, Aref Ruqaa for headings);
   subset with `--ranges latin,punct,arabic` keeping GSUB/GPOS (`lint_project.py`
@@ -445,7 +448,8 @@ Read each chapter against the source pages and apply
   rebuilt from the source's markup or, for a printed index,
   `scripts/index_marks.py parse|place` once the text is final
   (playbooks A10);
-- verse one line per paragraph;
+- poems as `:::verse` blocks, line by line with their indents and stanza
+  breaks (`keepStanzas` for haiku and tanka);
 - sizes that grow with the text and reflowable content wherever they make
   sense, not fixed sizes or breaks copied from the source pages (see Rules
   of thumb).

@@ -14,7 +14,7 @@ Where the online docs disagree, this file is right (§14).
 - Constructs the parser does not recognise are **never dropped silently**. They become literal paragraph text, except that inline images are removed. A link `[text](url)` is recognised: its text is set in the flow and its URL becomes a live link in the HTML and PDF output (§4).
 - Figures, images, SVGs and tables are **not written in Markdown**. They are `Resource` objects (JSON) kept outside the text and cited by id (§9).
 - Visual styling lives in the config and is selected by id: callout `type`, paragraph-container `style`, heading `style`, chip `style`, palette ids. An unknown id falls back to a default and triggers a sandbox warning (§13).
-- Blank lines separate blocks. **Consecutive non-blank lines join into one paragraph with a single space.** No hard line break syntax exists (§3.3).
+- Blank lines separate blocks. **Consecutive non-blank lines join into one paragraph with a single space.** No hard line break syntax exists in paragraphs (§3.3); a poem keeps its lines in `:::verse` (§12, postext ≥ 1.23).
 
 Block-level dispatch order for each non-blank line:
 1. single-line display math `$$…$$`
@@ -163,7 +163,7 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 
 ### 3.3 Line breaks, whitespace, special characters
 
-- **No hard line break.** Trailing two spaces are trimmed away, and a trailing `\` stays as a literal backslash. Each verse line or address line must be **its own paragraph** (blank line between), usually inside a `:::paragraphs{style="verse"}` container (§6.2). This is how the Don Quijote preset sets verse.
+- **No hard line break in a paragraph.** Trailing two spaces are trimmed away, and a trailing `\` stays as a literal backslash. **Verse goes in `:::verse`** (postext ≥ 1.23, §12): one line of verse a line, blank lines between stanzas, leading spaces as indents, turnovers hung. An address or signature line must still be **its own paragraph** (blank line between), inside a `:::paragraphs{style="…"}` container (§6.2).
 - Leading and trailing whitespace of every line is trimmed. Internal runs of spaces survive in the text but are measured as spaces.
 - **Non-breaking spaces (postext ≥ 1.5):** U+00A0, the narrow U+202F and the figure space U+2007 **glue** the words on either side, on every breaker (plain and rich text, Knuth–Plass, captions, cells, boxes, design text): a number and its unit (37 °C, with U+202F), a group of thousands (225 000, with U+00A0), a label and its number. Each keeps its own width; justification stretches only the word spaces. The word joiner U+2060 glues with no width. Type the character itself, not `&nbsp;` (HTML is not interpreted). A glued group wider than the whole line breaks at its last no-break space. The atomic inline units are therefore NBSP-glued groups, text that touches with no space (`**word**.`, `(:ref{…})`), a `:chip` and a `:ref` label. Up to 1.4 a paragraph with inline formatting or a `:ref` could break at a NBSP, and the port scripts replaced it with a plain space; they keep it now.
 - **Soft hyphen U+00AD** is honoured as a discretionary break, with a hyphen added at the break (; `knuthPlass/`).
@@ -271,7 +271,7 @@ Earlier passes shield their content from later ones. Math is extracted before em
 
 **Known containers:** `callout`, `paragraphs`, `part`, `columns`, `paper`.
 
-**Unknown names** such as `:::verse`, `:::note`, `:::figure` or `:::aside` are **not** containers. The fence line becomes paragraph text, the content parses normally, and the closing `:::` becomes a literal paragraph too. The sandbox raises `unknownDirective`.
+**Unknown names** such as `:::note`, `:::figure` or `:::aside` are **not** containers (`:::verse` is a raw-body block, §12, not a container either). The fence line becomes paragraph text, the content parses normally, and the closing `:::` becomes a literal paragraph too. The sandbox raises `unknownDirective`.
 
 - Fences end a running paragraph, list or quote without a blank line, but blank lines around fences are still recommended.
 - An unclosed container is auto-closed at the end of the document, with an `unclosedContainer` issue.
@@ -325,15 +325,14 @@ Answer box.
 - The container's `marginTop` is applied on entry and `marginBottom` after the last paragraph. Negative margins pull the flow up.
 - Works inside callouts too (nested boxes included). Unset fields inherit the document's `bodyText`, not the box's `body`.
 - A style may set `fontWeight` / `boldFontWeight`, `italic: true` (stage directions; `*…*` runs turn upright) and `smallCaps: true` (a cast list).
-- This is **the** way to do verse, epigraphs, colophons, dedications, small print, lead-ins, signatures, code-like text (with a mono style) and centred lines. **Each line of a poem is its own paragraph (blank line between)**:
+- This is **the** way to do epigraphs, colophons, dedications, small print, lead-ins, signatures, code-like text (with a mono style) and centred lines. **Verse is not**: a poem goes in `:::verse{style="verso"}` (§12), which keeps its lines, indents and stanzas; the same paragraph style gives it face, size, leading and margins:
 
 ```md
-:::paragraphs{style="verso"}
+:::verse{style="verso"}
 Nunca fuera caballero
-
 de damas tan bien servido
-
-como fuera don Quijote
+  como fuera don Quijote
+  cuando de su aldea vino
 :::
 ```
 
@@ -596,7 +595,7 @@ Heart failure:index{term="Heart!failure" range="start"} … :index{term="Heart!f
 - **Brackets:** type `(…)`, `«…»` in logical order (opening first); renderers mirror them. Quranic ﴿…﴾: type U+FD3F ﴿ first, U+FD3E ﴾ last; never mirrored. Use ؟ ، ؛ (U+061F, U+060C, U+061B), not ASCII `?` `,` `;`, in Arabic text.
 - **Digits:** keep the source's typed digits (the engine never rewrites them); a list item `٣.` starts at 3; `{startAt=٥}` reads 5. Generated numbers follow config `numerals`.
 - **Notes:** write `[^id]` markers before a following punctuation mark (`الكتاب[^1]،`); never type «(١)» — `footnotes.markerTemplate: '({n})'` prints it.
-- **Verse:** classical poems → `:::verse` (§12); Wikisource `{{أبيات|ṣadr \\ ʿajuz …}}` maps line by line.
+- **Verse:** classical poems → `:::verse` (§12); Wikisource `{{أبيات|ṣadr \\ ʿajuz …}}` maps line by line. Free verse (no `||`) is the same fence, set line by line; a Latin poem in an Arabic book takes `{dir=ltr lang=en}` on it.
 
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
 
@@ -635,7 +634,8 @@ Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`, `inde
 | `:::space` | `lines`: body lines (baseline grid), default `1`; fractions allowed; > 0 and ≤ 20, else one line and the sandbox warns `spaceInvalidLines`. | Vertical space between two blocks, **added** to their margin (not collapsed into a heading's top margin); repeated lines add up. Dropped at a column/page top; one that does not fit ends the column without carrying over. A paragraph right after it loses its first-line indent when `indentAfterHeading` is off. Keep-with-next counts it. The only directive honoured inside a `:::callout`/`:::columns` (measured in the box's body lines). Before a box's first block it is dropped, **except** right under the title or in a box holding nothing else (answer box sized in lines: `:::callout{type="answer" title="Q1"}` + `:::space{lines=4}` + `:::`). Always dropped at the top of a `:::columns` group, at each of its column heads, and at the top of a split box's continuation. Works inside `:::paragraphs`. Extra blank lines in the Markdown never add space. |
 | `:::numbering` | `format`: `decimal` \| `lower-roman` \| `upper-roman` \| `lower-alpha` \| `upper-alpha`. `startAt`: integer ≥ 1. Both optional; invalid values are ignored, with `numberingInvalidFormat`/`numberingInvalidStartAt` warnings. | Switches the page-number format and/or restarts the counter **at the next page boundary** (or at the current page if it has no numbered content yet). Canonical form: `:::pagebreak{parity="odd"}` followed by `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | `:::toc` | none | Expands, before layout, into one entry per listed heading (levels in `toc.levels`, default level 1) and one row per part. Page labels converge over passes. In the sandbox the book outline is supplied, so chapter files work. Exclude the contents heading itself with `{toc="false"}`. |
-| `:::verse` … `:::` | `gap` (default `2em`; bare number = em), `width` (fixed hemistich width), `align` (`center` default \| `start`), `ornament` (mark printed mid-gap, not text), `style` (paragraph style id), `dir`. | Classical Arabic poem (#378): one bayt per line, hemistichs split at `||` (or a spaced `\\`); a line without one is a single centred hemistich. Every hemistich justified to one common width (widest, ≤ half the measure less the gap), kashida first (2× `kashidaMaxLength`) then spaces; ṣadr on the start side, ʿajuz on the end side; poem centred. Too wide even at `minWordSpacing` → staggered (ṣadr flush start, ʿajuz flush end on the next line). A bayt never splits between columns; paragraph orphan/widow rules apply; the paragraph before it (the introducer, «فأنشد يقول:») keeps its last line with the poem. Vocalised verse: give it a `style` with more leading. Map Wikisource `{{أبيات}}` blocks to it. |
+| `:::verse` … `:::` (line layout, postext ≥ 1.23) | `layout` (`auto` default \| `lines` \| `bayt`), `indentStep` (default `0.5em`: two spaces = 1 em), `turnover` (`hang` default \| `right`), `hang` (default the style's `hangingIndent`, else `2em`), `turnoverMark` (default `[`), `stanzaSpace` (bare number = lines of the poem's leading, default 1; or a length), `keepStanzas` (N: stanzas of ≤ N lines stay whole; haiku 3, tanka 5), `keepSpaces` (flag: runs of ≥ 2 spaces inside a line keep their width), `align` (`center` on the longest line, default; `start`, default in vertical text), `style`, `dir`, `lang`. Defaults in config `bodyText.verse`. | A poem with no `||` (or `layout=lines`): every non-blank line is a line of verse (inline Markdown per line), a run of blank lines one stanza break, leading spaces the indent (tab = 4, U+3000 = 2), `+ ` opens a stepped line that starts where the line above ended (`\\+` for a literal plus). Each stanza is a block: pages break between stanzas, inside one by orphan/widow rules; a line never parts from its turnover. Overlong lines turn over at word spaces (no hyphenation unless the style sets `hyphenation: true` itself). Copy, EPUB and tagged PDF read it line by line. |
+| `:::verse` … `:::` (bayt layout) | `gap` (default `2em`; bare number = em), `width` (fixed hemistich width), `align` (`center` default \| `start`), `ornament` (mark printed mid-gap, not text), `style` (paragraph style id), `dir`. | Classical Arabic poem (#378), chosen when any line carries `||` (or `layout=bayt`): one bayt per line, hemistichs split at `||` (or a spaced `\\`); a line without one is a single centred hemistich. Every hemistich justified to one common width (widest, ≤ half the measure less the gap), kashida first (2× `kashidaMaxLength`) then spaces; ṣadr on the start side, ʿajuz on the end side; poem centred. Too wide even at `minWordSpacing` → staggered (ṣadr flush start, ʿajuz flush end on the next line). A bayt never splits between columns; paragraph orphan/widow rules apply; the paragraph before it (the introducer, «فأنشد يقول:») keeps its last line with the poem. Vocalised verse: give it a `style` with more leading. Map Wikisource `{{أبيات}}` blocks to it. |
 | `:::index` | `index`: name of a separate index (default: the main one) | Expands into the back-of-book index: every `:index` mark of the book (all chapters in the sandbox and `buildBundle`), sorted in the `locale`'s alphabetical order, grouped by first letter, with its page labels, which converge like `:::toc`. Put it under a heading style with a two-column `layout`. Styling: config `index`. |
 
 ### 12.1 Comic pages and strips: `:::page`, `:::strip` (postext ≥ 1.20)
@@ -742,7 +742,8 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Title with a manual break | `\\` in the heading. |
 | Paragraph | Lines separated by blank lines. Watch §3.2 line-start traps (`- ` dialogue, `1998.` openings). |
 | Dialogue dash | `—` (U+2014), never `- `. |
-| Verse / poetry / address / signature | `:::paragraphs{style="verse"}`, one paragraph per line with blank lines between. Stanza gaps come from the style's margins, or from separate containers. A classical Arabic poem (two hemistichs a line) is `:::verse` with `ṣadr || ʿajuz` per line. |
+| Verse / poetry / song lyrics | `:::verse` (postext ≥ 1.23): one line of verse a line, a blank line between stanzas, leading spaces for indents; `{style="verse"}` for the face and margins, `turnover=right` for bracketed turnovers, `keepStanzas=N` for short forms. A classical Arabic poem (two hemistichs a line) is the same fence with `ṣadr || ʿajuz` per line. |
+| Address / signature | `:::paragraphs{style="…"}`, one paragraph per line with blank lines between. |
 | Arabic text in a Latin book, Latin in an Arabic one | Block: `:::paragraphs{dir=ltr}` / `{dir=rtl}`; phrase: `:ltr[…]{lang=en}` / `:rtl[…]{lang=ar}` (§10.8). |
 | Epigraph, dedication, colophon, lead-in | `:::paragraphs{style="…"}`, with the style defined in config. |
 | Block quotation | `> …` (single block), or `:::paragraphs{style="quote"}` for multiple paragraphs. |

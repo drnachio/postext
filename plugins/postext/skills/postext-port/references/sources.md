@@ -207,8 +207,8 @@ Gotchas:
   `*` and `_`.
 - ALL-CAPS headings → sentence case, with a list of proper nouns to restore.
 - **Verse**: a block of 2 or more short lines (≤ ~58 characters) is a stanza.
-  Emit `:::paragraphs{style="verse"}` with **one paragraph per line**, blank
-  lines between. Postext has no hard line break.
+  Emit a `:::verse{style="verse"}` block (postext ≥ 1.23): the lines as they
+  are, a blank line between stanzas, the source's indents as leading spaces.
 
 ## Chinese, Japanese and Korean sources
 

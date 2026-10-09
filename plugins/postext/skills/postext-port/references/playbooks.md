@@ -290,23 +290,41 @@ paper, `pintura-espanola` lay-flat on 170 g matte, `openstax-fisica` and
 ## B. Text
 
 ### B1. Verse, poems, song lyrics
-(Classical Arabic poems, a bayt in two hemistichs, are `:::verse`: F8.)
-Use one paragraph per line, blank lines between, inside a paragraph style
-with no indent, no hyphenation, left alignment, a hanging indent for wrapped
-lines and `spaceBetween: 0`. Put stanza gaps between separate containers. A
-poem title goes in its own style.
+Postext ≥ 1.23 sets a poem as it is written in `:::verse` (document-format.md
+§12; classical Arabic poems with `||` take the bayt layout of the same fence:
+F8). Write one line of verse a line, a blank line between stanzas, and the
+source's indents as leading spaces (two spaces = 1 em at the default
+`indentStep`; set `indentStep` to the source's step). Give the poem a paragraph
+style for its face, size, leading, `indent` and margins, and its
+`hangingIndent` for wrapped lines (2 em when none); `turnover=right` sets
+turnovers flush right behind `[` as English and Spanish editions do. A poem
+title goes in its own style, outside the fence.
 
 ```md
-:::paragraphs{style="song-title"}
-Grisóstomo's song
+:::paragraphs{style="poem-title"}
+Stopping by Woods on a Snowy Evening
 :::
 
-:::paragraphs{style="verse"}
-Since thou dost in thy cruelty desire
+:::verse{style="verse"}
+Whose woods these are I think I know.
+His house is in the village though;
+  He will not see me stopping here
+  To watch his woods fill up with snow.
 
-the ruthless rigour of thy tyranny
+My little horse must think it queer
+To stop without a farmhouse near
 :::
 ```
+
+- Stanza space: one line of the poem's leading (`stanzaSpace`), whole grid
+  lines on the grid. Short forms that must not break: `keepStanzas=3` (haiku),
+  `keepStanzas=5` (tanka), not invisible callouts.
+- Shared lines of dramatic verse: `+ ` opens a line that starts where the line
+  above ended. A caesura or a gap the poet set: `keepSpaces` on the fence.
+- Vertical Japanese or Chinese poems: leading U+3000 (two units each) or
+  spaces indent from the head; `align` defaults to `start` there.
+- Do not number lines in the text: line numbers in the margin are a separate
+  feature; until it lands, a preprocessor may keep adding them.
 
 ### B2. Margin glosses and side notes
 Use `layout.layoutType: "oneAndHalf"`, `sideColumnRole: "floats"` and
