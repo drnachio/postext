@@ -121,6 +121,9 @@ export const CjkSection = memo(function CjkSection() {
   const spaceAfterQuestion = raw?.spaceAfterQuestion ?? DEFAULT_CJK_CONFIG.spaceAfterQuestion;
   const paragraphStartBracket = raw?.paragraphStartBracket ?? DEFAULT_CJK_CONFIG.paragraphStartBracket;
   const wordBreak = raw?.wordBreak ?? DEFAULT_CJK_CONFIG.wordBreak;
+  const titleMinChars = raw?.titleMinChars ?? DEFAULT_CJK_CONFIG.titleMinChars;
+  const circledNumbers = raw?.circledNumbers ?? DEFAULT_CJK_CONFIG.circledNumbers;
+  const composeDesignText = raw?.composeDesignText ?? DEFAULT_CJK_CONFIG.composeDesignText;
   const latinSpacing = raw?.latinSpacing ?? DEFAULT_CJK_CONFIG.latinSpacing;
   const uprightDigits = raw?.uprightDigits ?? DEFAULT_CJK_CONFIG.uprightDigits;
   const autoRegion = cjkRegionOf(locale) ?? 'mainland';
@@ -255,6 +258,36 @@ export const CjkSection = memo(function CjkSection() {
               tooltip={labels.cjkWordBreakTooltip}
               isDefault={wordBreak === DEFAULT_CJK_CONFIG.wordBreak}
               onReset={() => resetField('wordBreak')}
+            />
+            <NumberInput
+              label={labels.cjkTitleMinChars}
+              value={titleMinChars}
+              onChange={(v) => write({ ...raw, titleMinChars: Math.max(1, Math.round(v)) })}
+              min={1}
+              max={6}
+              tooltip={labels.cjkTitleMinCharsTooltip}
+              isDefault={titleMinChars === DEFAULT_CJK_CONFIG.titleMinChars}
+              onReset={() => resetField('titleMinChars')}
+            />
+            <SelectInput
+              label={labels.cjkCircledNumbers}
+              value={circledNumbers}
+              options={[
+                { value: 'cjk', label: labels.cjkCircledNumbersCjk },
+                { value: 'western', label: labels.cjkCircledNumbersWestern },
+              ]}
+              onChange={(v) => write({ ...raw, circledNumbers: v as CjkConfig['circledNumbers'] })}
+              tooltip={labels.cjkCircledNumbersTooltip}
+              isDefault={circledNumbers === DEFAULT_CJK_CONFIG.circledNumbers}
+              onReset={() => resetField('circledNumbers')}
+            />
+            <ToggleSwitch
+              label={labels.cjkComposeDesignText}
+              checked={composeDesignText}
+              onChange={(v) => write({ ...raw, composeDesignText: v })}
+              tooltip={labels.cjkComposeDesignTextTooltip}
+              isDefault={composeDesignText === DEFAULT_CJK_CONFIG.composeDesignText}
+              onReset={() => resetField('composeDesignText')}
             />
             <SelectInput
               label={labels.cjkTrimLineStart}

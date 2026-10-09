@@ -692,6 +692,14 @@ export interface SandboxLabels {
   cjkWordBreakTooltip: string;
   cjkWordBreakNormal: string;
   cjkWordBreakKeepAll: string;
+  cjkTitleMinChars: string;
+  cjkTitleMinCharsTooltip: string;
+  cjkCircledNumbers: string;
+  cjkCircledNumbersTooltip: string;
+  cjkCircledNumbersCjk: string;
+  cjkCircledNumbersWestern: string;
+  cjkComposeDesignText: string;
+  cjkComposeDesignTextTooltip: string;
   cjkPunctuationWidth: string;
   cjkPunctuationWidthTooltip: string;
   cjkPunctuationWidthKaiming: string;
