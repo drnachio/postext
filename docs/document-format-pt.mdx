@@ -51,7 +51,7 @@ Coloque um valor entre aspas para imprimi-lo exatamente como está escrito, seja
 
 ## Construções de bloco
 
-O Postext reconhece sete tipos de bloco de texto, além das diretivas e dos recursos incorporados descritos mais adiante nesta página. Um bloco sempre termina com uma linha em branco ou com o início de outro bloco.
+O Postext reconhece sete tipos de bloco de texto e as listagens de código, além das diretivas e dos recursos incorporados descritos mais adiante nesta página. Um bloco sempre termina com uma linha em branco ou com o início de outro bloco.
 
 <Illustration name="BlockTypesGallery" data='{"title": "As construções de bloco de texto, de relance", "desc": "Os sete tipos de bloco de texto que o Postext reconhece: título, parágrafo, citação, lista não ordenada, lista ordenada, lista de tarefas e fórmula destacada, cada um com a sua sintaxe em Markdown. As diretivas e os recursos incorporados são tratados à parte.", "caption": "Cada tipo de bloco de texto e a sua forma de entrada em Markdown.", "blocks": [{"name": "Título", "syntax": "# Title", "color": "blue"}, {"name": "Parágrafo", "syntax": "Linhas de texto simples", "color": "orange"}, {"name": "Citação", "syntax": "> quoted text", "color": "green"}, {"name": "Lista não ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tarefas", "syntax": "- [x] done", "color": "teal"}, {"name": "Fórmula destacada", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -98,6 +98,11 @@ O Postext reconhece sete tipos de bloco de texto, além das diretivas e dos recu
       <td>Fórmula destacada</td>
       <td><code>$$ … $$</code></td>
       <td>Uma fórmula LaTeX composta como bloco próprio. Sai centralizada na coluna, ajustada à grade de linhas de base como um título, e se mantém vetorial na saída em PDF. As formas de uma linha e de várias linhas entre cercas são descritas em <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
+    </tr>
+    <tr>
+      <td>Bloco de código</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>Uma listagem, mantida como foi escrita: cada espaço, tabulação e quebra de linha, sem nada lido como Markdown. É composta linha a linha na fonte de código, dentro de uma caixa. Veja <a href="#blocos-de-código">Blocos de código</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -153,6 +158,62 @@ The lamp of the first entry opens with an initial.
 ```
 
 Na linha de um título, `dropcap=false` deixa o parágrafo depois desse título sem a capitular que o seu nível ou estilo define, `dropcap=N` a compõe sobre `N` linhas, e um `dropcap` sozinho dá uma a esse parágrafo (três linhas, a fonte do parágrafo) onde o nível não define nenhuma. Na abertura de um `:::paragraphs`, o atributo faz o mesmo com o primeiro parágrafo do grupo, ou com todos os parágrafos quando o estilo diz `each: true`. O parágrafo depois de um título é procurado passando por aberturas e fechos de contêiner, diretivas, boxes que saíram do fluxo e figuras flutuantes; um parágrafo dentro de um boxe, de um item de lista, de uma citação ou de um poema nunca leva capitular. Desde o postext 1.23.
+
+### Blocos de código
+
+Uma listagem vai entre duas cercas de três ou mais acentos graves (ou de três ou mais tis), cada uma numa linha própria, com no máximo três espaços de recuo. Tudo o que fica entre elas é mantido como foi escrito: os espaços iniciais e as sequências de espaços, as tabulações, as linhas em branco e as linhas que começam com `#`, `-`, `1.`, `>`, `$` ou `:::`. Nada do que está dentro é lido como Markdown: não há ênfase, `:ref`, fórmulas, chips, diretivas nem títulos. A cerca de fechamento usa o mesmo caractere da de abertura e tem pelo menos o mesmo comprimento, de modo que uma listagem que mostra uma cerca vai dentro de uma mais longa ou de uma de tis:
+
+~~~markdown
+```bash {title="backup.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copia as fotos para o disco de backup
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "done: $(date)"
+```
+~~~
+
+A info string depois da cerca de abertura nomeia a linguagem (a sua primeira palavra: `js`, `ts`, `python`, `bash`, `console`, `json`…), e o resto é lido como atributos na [sintaxe de atributos](#valores-de-atributo), entre chaves ou soltos (`title="app.js" lineNumbers`). Qualquer outra coisa depois da linguagem é o título: ```` ```console Terminal ```` e ```` ```python normalize.py ```` imprimem *Terminal* e *normalize.py* sobre a listagem.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Atributo</th>
+      <th>Efeito</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>Um título sobre a listagem, numa linha de título (ou numa aba de rótulo na borda da caixa, quando <code>codeStyle.label</code> está definido).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>O texto da aba de rótulo da caixa, como o de um <code>:::callout</code> (com <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numera as linhas desta listagem (ou não), diga o que disser <code>codeStyle.lineNumbers</code>. Os números ficam numa margem antes do código e não são copiados com ele.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>O número da primeira linha (numera a listagem quando nada mais o faz).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Destaca com um fundo as linhas indicadas (contadas a partir da primeira linha da listagem, começando em 1): linhas soltas e intervalos, separados por vírgulas.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>Numa página de várias colunas, a listagem ocupa todas elas.</td>
+    </tr>
+  </tbody>
+</table>
+
+Uma cerca encerra o parágrafo de cima, com ou sem linha em branco, e o texto depois da cerca de fechamento começa um parágrafo novo. Uma cerca que fica aberta vai até o fim do texto e é assinalada (`unclosedCodeBlock`). Uma cerca dentro de um `:::callout` é um boxe aninhado nele; dentro de `:::paragraphs`, a listagem mantém o estilo de código, não o estilo de parágrafo. O Postext não tem continuação de item de lista, então uma cerca depois de um item de lista fecha a lista. As marcas de índice e as âncoras escritas dentro de uma listagem ficam como foram escritas.
+
+O código recuado (quatro espaços ou uma tabulação, depois de uma linha em branco) só é lido como listagem quando `codeStyle.indentedCode` está ativado: os textos do Postext costumam recuar com espaços, e os itens de lista aninhados leem os espaços iniciais.
+
+A aparência de uma listagem (a fonte, a caixa, a largura da tabulação, o que acontece com uma linha mais larga que a caixa, os números de linha, as cores dos elementos) é definida por `codeStyle`; veja [Configuração › Listagens de código](/pt/docs/configuration#listagens-de-código). O código em linha (`` `x` ``) fica na fonte do texto, a menos que `codeStyle.inline` lhe dê outra. Um livro salvo antes do postext 1.23 com cercas no texto as lê como então, como Markdown (`codeStyle.blocks: false`). Desde o postext 1.23.
 
 ## Diretivas
 
@@ -754,7 +815,7 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
     <tr>
       <td>Código em linha</td>
       <td><code>`code`</code></td>
-      <td>Os acentos graves são removidos; o trecho é renderizado como texto simples, exatamente como foi escrito: um <code>{':ref{…}'}</code>, um chip, uma fórmula, um link ou um marcador de ênfase dentro dele sai literal, e é assim que um texto mostra a sintaxe. Um estilo próprio para código está no roadmap.</td>
+      <td>Os acentos graves são removidos; o trecho é renderizado como texto simples, exatamente como foi escrito: um <code>{':ref{…}'}</code>, um chip, uma fórmula, um link ou um marcador de ênfase dentro dele sai literal, e é assim que um texto mostra a sintaxe. Ele é composto na fonte do texto ou, com <code>codeStyle.inline</code>, na fonte de código, como uma unidade (veja <a href="/pt/docs/configuration#listagens-de-código">Configuração › Listagens de código</a>). Uma listagem vai num <a href="#blocos-de-código">bloco de código</a>.</td>
     </tr>
     <tr>
       <td>Escape</td>
@@ -1770,7 +1831,6 @@ Um `:::strip` tem o corpo de uma página, mas fica no texto como uma única caix
 O Postext não reconhece os seguintes recursos do CommonMark. Eles são tratados como texto simples (e por isso aparecem literalmente na saída) ou descartados sem aviso:
 
 - **Títulos no estilo Setext**: a forma sublinhada com `===` / `---`. Use títulos ATX (`#`).
-- **Blocos de código cercados ou recuados**: cercas ` ``` ` ou `~~~` e recuo de 4 espaços. As linhas de dentro são lidas como Markdown comum, não mantidas como listagem: linhas sem linha em branco entre elas se juntam num só parágrafo e perdem os espaços iniciais, uma linha que começa com `#` e um espaço vira título (`#!/usr/bin/env` continua texto) e uma que começa com `-` ou `1.` e um espaço vira item de lista, um par de sinais `$` vira fórmula, e as linhas da cerca saem impressas como texto: uma cerca ` ``` ` como um único acento grave, a de abertura seguida da info string (`` `bash``), e uma cerca `~~~` como um pequeno `~` composto como subscrito. Para compor uma listagem, escreva cada linha como um parágrafo próprio (com uma linha em branco entre as linhas) dentro de um bloco `:::paragraphs` cujo estilo de parágrafo defina uma `fontFamily` monoespaçada, e envolva cada linha em acentos graves, que mantêm `#`, `$`, `*` e o resto como foram escritos. Os espaços comuns no início de uma linha são descartados e uma sequência deles dentro de uma linha se reduz a um, também dentro dos acentos graves; por isso, recue e alinhe com espaços inseparáveis (U+00A0) e coloque-os dentro dos acentos graves: um antes do acento grave de abertura também é descartado. O código em linha é reconhecido, mas não tem fonte de código: veja [Formatação em linha](#formatação-em-linha).
 - **Passagem de HTML**: `<tags>` brutas não são interpretadas. Tags no estilo MDX também não são suportadas; o código-fonte do Postext é markdown puro.
 - **Linhas horizontais**: `---`, `***`, `___`.
 - **Tabelas**: tabelas com barras verticais não são analisadas. As tabelas são modeladas como recursos estruturados em `PostextContent.resources`.

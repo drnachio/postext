@@ -50,6 +50,7 @@ Aquesta referència és llarga. Aquests són els blocs principals:
 - [Estil de diagrames](#estil-dels-diagrames) — recoloració a una sola tinta dels diagrames SVG incrustats per a impressió amb tinta plana.
 - [Estils de paràgraf](#estils-de-paràgraf) — estils amb nom per a contenidors `:::paragraphs`: bibliografies, glossaris, notes.
 - [Estils d'avís](#estils-davís) — notes, consells i objectius en caixa per a contenidors `:::callout`.
+- [Llistats de codi](#llistats-de-codi) — `codeStyle`: la lletra, la caixa, l'amplada del tabulador, les línies llargues, els números de línia i els colors dels elements dels llistats ```` ``` ````, l'acoloriment de sintaxi i el seu punt d'enganxament per a ressaltadors, i el codi en línia en una lletra de codi.
 - [Parts](#parts) — pàgines separadores de part per a contenidors `:::part`: paritat, àrea de cos, disseny d'obertura, tipografia del cos.
 - [Estils d'encapçalament](#estils-dencapçalament) — estils amb nom per a encapçalaments `{style="…"}`: capítols sense numerar, preliminars amb capçaleres pròpies, geometria i paleta.
 - [Sumari](#índex-de-continguts) — el que imprimeix `:::toc`: tipografia de les entrades, línies de punts, números de pàgina, línies d'autors, files de part.
@@ -5656,6 +5657,309 @@ const style = pickChipStyle(resolved, 'key');
 ```
 
 
+## Llistats de codi
+
+La propietat `codeStyle` fixa l'aspecte dels llistats de codi: les tanques ```` ``` ```` i `~~~` del text (vegeu [Format del document › Blocs de codi](/ca/docs/document-format#blocs-de-codi)), i el codi en línia quan demana una lletra de codi. Un llistat es compon línia a línia tal com està escrit, en una lletra monoespaiada, dins d'una caixa: cap línia no es parteix amb guionet ni es justifica, cada espai conserva la seva amplada i un tabulador avança fins a la tabulació següent. La caixa surt del mateix mecanisme que la d'un `:::callout`, de manera que un llistat es divideix entre línies a través de columnes i pàgines, cada part en una caixa pròpia, i una tanca dins d'un avís és una caixa niada dins seu. Totes les propietats són opcionals. Des de postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '150px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Llegeix les tanques com a blocs de codi. Amb <code>false</code>, una tanca i les seves línies es llegeixen com a Markdown, com feia postext 1.22; una configuració desada abans de la 1.23 amb alguna tanca al text el rep (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Llegeix també com a llistat una sèrie de línies sagnades quatre columnes (quatre espais o un tabulador) després d'una línia en blanc; a cada línia se li treuen quatre columnes. Desactivat per defecte: els textos de Postext sovint sagnen amb espais, i les llistes niades llegeixen els espais del principi.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>La lletra del codi. Una lletra monoespaiada manté les columnes alineades; per a comentaris en xinès o japonès, una amb kanji (BIZ UDGothic), els caràcters d'amplada completa de la qual ocupen dues cel·les.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> és el cos del text principal.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>Els pesos del codi i dels elements en negreta.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>la línia de la retícula del text principal</td>
+      <td>L'interlineat de les línies de codi; <code>em</code> és el cos del codi. Sense fixar, les línies cauen a la retícula de base.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El text que segueix un llistat torna a la retícula de base; <code>false</code> conserva el <code>marginBottom</code> exacte, com el d'un avís.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el color del text principal</td>
+      <td>El color del codi, que conserven els elements que no en tenen un de propi.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>El fons de la caixa.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>desactivada, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>La vora de la caixa.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Cantonades arrodonides; cada part d'un llistat dividit les conserva, com una caixa partida.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> cadascun</td>
+      <td><code>em</code> és el cos del codi.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>L'espai de damunt i de sota de la caixa.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>Un llistat a l'amplada de la pàgina travessa totes les columnes d'una pàgina a diverses columnes, com una caixa <code>span: 'page'</code>. Una tanca fixa el seu amb <code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>Un tabulador avança fins al múltiple següent d'aquest nombre de cel·les de caràcter (un caràcter d'amplada completa en compta dues). Continua sent un tabulador: el text copiat el conserva.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>Una línia més ampla que la caixa. <code>'wrap'</code>: es talla després de l'últim espai o signe de puntuació que hi cap (entre dos caràcters quan no n'hi cap cap), i la resta continua a sota, <code>wrapIndent</code> cel·les endins, darrere de <code>wrapMarker</code>; una part d'un llistat dividit no comença mai amb una d'aquestes restes si hi cap un altre tall. <code>'shrink'</code>: tot el llistat es compon més petit fins que hi cap la seva línia més ampla, com a molt fins a <code>minFontScale</code>, i el que tot i així no hi cap es parteix. <code>'clip'</code>: la línia s'atura a la vora interior de la caixa; els caràcters que la sobrepassen no s'imprimeixen. Cada cas genera un avís <code>codeOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>El sagnat de la resta d'una línia partida, en cel·les de caràcter.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>Va en aquest sagnat, del color dels números de línia; no forma part del text (les còpies el deixen fora, i un PDF etiquetat el pinta com a artefacte). <code>''</code> no en posa cap. <code>↪</code> no és a la majoria de lletres de codi, on s'imprimeix com un quadre buit.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>Amb <code>'shrink'</code>, la fracció més petita de <code>fontSize</code> a què es compon un llistat.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Numera les línies de tots els llistats, en un marge davant del codi. Una tanca fixa el seu amb <code>lineNumbers</code>, <code>lineNumbers=false</code> i <code>start=N</code>. La resta d'una línia partida no porta número. Els números es componen al costat del text, no dins seu: el visor HTML els amaga de la selecció i de les tecnologies d'assistència, i un PDF etiquetat els pinta com a artefactes.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>El color dels números (i el de la marca de continuació).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>L'espai entre el número més ample i el codi; <code>em</code> és el cos del codi.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>La banda, d'un costat a l'altre de la caixa, darrere de les línies que una tanca indica amb <code>highlight="3,5-7"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Com el d'un estil d'avís: <code>false</code> divideix entre línies un llistat més alt que l'espai que queda; <code>true</code> el fa passar sencer, i només el divideix quan és més alt que una columna.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>El mínim de línies a cada costat d'una divisió, perquè cap part no tingui una sola línia.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repeteix el títol al principi de cada part, amb el sufix «(cont.)» de la llengua del document.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / «Continua»</td>
+      <td>Una indicació sota l'última línia d'una part que continua.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>la lletra del codi, en negreta, a 0,9 del seu cos</td>
+      <td>La fila de títol que imprimeix el <code>title</code> d'una tanca (els camps són a <a href="#estils-davís">Estils d'avís</a>).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>cap</td>
+      <td>Si es fixa, el títol s'imprimeix en canvi en una pestanya d'etiqueta sobre la vora superior de la caixa (amb la lletra i el cos del codi, llevat que l'etiqueta en doni uns de propis).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>Acoloreix els elements amb l'analitzador integrat (i qualsevol ressaltador registrat); <code>'none'</code> compon tots els llistats en <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>una paleta discreta</td>
+      <td>L'aspecte de cada tipus d'element, combinat tipus per tipus amb els valors per defecte (vegeu més avall). Un color vinculat a la paleta segueix <code>colorPalette</code> i la paleta d'una part.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>sense fixar</td>
+      <td>El codi en línia en una lletra de codi (vegeu més avall). Sense fixar, el codi en línia es compon en la lletra del text, com abans de la 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Colors de sintaxi
+
+Un petit analitzador integrat al motor identifica els elements de `js` i `ts` (`javascript`, `jsx`, `typescript`, `tsx`), `json`, `python`, `bash` (`sh`, `zsh`, `shell`), `console` (una sessió de terminal), `css`, `html` i `xml` (`svg`), `markdown` i `sql`; un llistat en qualsevol altre llenguatge, o sense llenguatge, es compon en `color`. Llegeix tot el llistat, de manera que un comentari o una cadena que ocupa diverses línies continua sent un sol element. En un llistat `console`, una línia que comença amb un indicador d'ordres (`$ `, `% `, `# `, `> `, `>>> `, `PS …> `) és el que ha escrit l'usuari (`prompt`), i totes les altres són el que han imprès els programes (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Tipus</th>
+      <th style={{ width: '200px' }}>Per defecte</th>
+      <th>Què identifica</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>Paraules reservades: <code>const</code>, <code>def</code>, <code>if</code>, <code>SELECT</code>, el nom d'una etiqueta HTML, una regla @ de CSS.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>Cadenes, plantilles literals, valors d'atribut.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>Números i constants (<code>true</code>, <code>None</code>, <code>null</code>), colors, entitats.</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>, cursiva</td><td>Comentaris.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>Un nom seguit d'un parèntesi; les ordres internes del shell.</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>Tipus i noms de classe en majúscula, selectors CSS.</td></tr>
+    <tr><td><code>operator</code></td><td>el color del codi</td><td>Operadors, canonades i redireccions del shell.</td></tr>
+    <tr><td><code>punctuation</code></td><td>el color del codi</td><td>Parèntesis i claudàtors, separadors.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>Variables del shell, claus JSON, propietats CSS, atributs HTML, <code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>Decoradors, opcions de línia d'ordres (<code>-l</code>, <code>--all</code>), un doctype.</td></tr>
+    <tr><td><code>prompt</code></td><td>el color del codi, en negreta</td><td>La línia escrita d'una sessió de terminal.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>El que han imprès els programes.</td></tr>
+  </tbody>
+</table>
+
+Una aplicació amfitriona connecta el seu propi ressaltador (Shiki, Prism, highlight.js) amb `registerCodeHighlighter`. Les configuracions són dades serialitzables, així que la funció es registra al motor, no s'escriu a `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) retorna les línies del llistat, cadascuna com a trams els textos dels quals, units, formen la línia.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // treu el registrat per a tots els llenguatges
+```
+
+Un ressaltador registrat per a un llenguatge té preferència sobre un de registrat per a `'*'`, que té preferència sobre l'analitzador integrat. Un tram indica un tipus d'element `token` (acolorit per `tokens`) o un `color` propi (un hexadecimal CSS). Un ressaltador que retorna `undefined`, que llança una excepció o que retorna línies que, unides, no donen les del llistat es descarta. La composició consulta el registre quan compon un llistat: registra'l abans de compondre, i en un web worker (el Sandbox compon en un) registra'l dins del worker.
+
+### Codi en línia
+
+`codeStyle.inline` compon el text entre accents greus en una lletra de codi: com una sola unitat, igual que un xip, que una línia no parteix mai. Sense fixar, el codi en línia conserva la lletra del text.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>La lletra.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> és el cos del text que l'envolta.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>el del text</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>S'afegeixen a les marques pròpies del text (el codi dins d'una negreta va en negreta).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>cap</td><td>Un fons darrere del tram.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>cap / <code>0.5pt</code></td><td>Un contorn.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> és el cos del tram.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> amb fons o contorn, i si no <code>0</code> / <code>0.1em</code></td><td>L'espai dins del fons; el farciment vertical es pinta fora de la caixa de la línia.</td></tr>
+  </tbody>
+</table>
+
+### Com es compon un llistat
+
+- **Una línia per línia de la font.** Les línies es construeixen amb els avanços propis de la lletra del codi, no amb el divisor de paràgrafs: els espais conserven la seva amplada, una sèrie d'espais es manté i els espais del principi sagnen. Un llistat en un llibre de dreta a esquerra es llegeix d'esquerra a dreta, amb les línies compostes des del costat més allunyat de la caixa com una cita d'esquerra a dreta, i els números al marge de la seva esquerra. En un llibre vertical, un llistat segueix el flux vertical (amb el text llatí ajagut, com el compon el text vertical) i no porta números de línia.
+- **Divisió.** Un llistat més alt que l'espai que queda es divideix entre línies a través de columnes i pàgines, cada part emmarcada en una caixa pròpia, sense deixar mai menys de `splitMinLines` línies a cap costat; la resta d'una línia partida es queda amb ella si hi cap un altre tall.
+- **Sortides.** El llenç, el visor HTML i el PDF pinten les línies i la caixa tal com s'han compost. El visor HTML conserva els espais (`white-space: pre`), de manera que una selecció copia el llistat amb el seu sagnat i un salt de línia després de cada línia de la font, sense números ni marques de continuació. Un PDF etiquetat compon cada llistat com un paràgraf que conté un element `Code`, amb glifs d'espai reals, i els números i les marques de continuació com a artefactes. L'EPUB adaptable escriu `<pre><code class="language-…">` amb els colors dels elements i un full d'estil a partir de `codeStyle`; l'EPUB de maquetació fixa és el de la impressió.
+- **Fonts.** El Sandbox i `configFontFamilies` carreguen la lletra del codi quan el text té una tanca (o la configuració té una secció `codeStyle`), en els pesos normal i negreta, rodona i cursiva; el PDF incrusta les lletres que fan servir les línies.
+
 ## Estils d'avís
 
 La propietat `calloutStyles` declara els estils de caixa amb nom que el document aplica mitjançant un contenidor `:::callout{type="…"}` — notes, consells, advertiments, objectius d'aprenentatge, qualsevol contingut separat del text corregut en una caixa tintada o amb vora. Per defecte s'inclou un estil neutre, `note` (fons gris clar, sense vora, sense franja, sense icona, sense títol), de manera que `:::callout` funciona sense cap configuració; declarar `calloutStyles` substitueix aquesta llista per defecte.
@@ -8455,6 +8759,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Un paràgraf que comença amb una <a href="#caplletres">caplletra</a> i que no la pot portar tal com està configurada. <code>reason</code>: <code>'shortParagraph'</code> (té menys línies de les que baixa la inicial; <code>handling</code> és el que ha fet <code>shortParagraph</code>, <code>lines</code> les línies que abasta una inicial reduïda), <code>'split'</code> (es talla abans de l'última línia de la inicial, sol en una columna massa curta), <code>'joiningScript'</code> (la seva primera lletra s'enllaça amb la següent), <code>'verticalText'</code> o <code>'noLetter'</code> (comença amb una referència, una fórmula o una marca de nota). <code>text</code> és la seva primera línia.</td>
       <td>Es reserva l'espai, la inicial es redueix o es deixa fora, segons digui l'avís.</td>
     </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td>Un <a href="#llistats-de-codi">llistat de codi</a> té línies més amples que la seva caixa. <code>mode</code> és el que ha fet <code>codeStyle.overflow</code> (<code>'wrap'</code>, <code>'shrink'</code>, <code>'clip'</code>), <code>lines</code> quantes línies de la font eren massa amples, <code>scale</code> la mida a què s'ha compost un llistat reduït (una fracció de <code>fontSize</code>), <code>lang</code> el llenguatge de la tanca. Assenyala el llistat.</td>
+      <td>Les línies es parteixen, es componen més petites o es tallen, segons diu <code>mode</code>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9733,7 +10042,7 @@ El **`fileId` de cada fitxer és la seva ruta dins del paquet**. `resource.svg.f
 
 #### Paquets escrits per postext 1.4 o anterior
 
-Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 9`: les regles de configuració per a les quals es va escriure la seva `config`. Un manifest sense aquest camp el va escriure postext 1.4 o anterior, que resolia setze coses d'una altra manera:
+Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 9`: les regles de configuració per a les quals es va escriure la seva `config`. Un manifest sense aquest camp el va escriure postext 1.4 o anterior, que resolia disset coses d'una altra manera:
 
 - **Els salts d'encapçalament** (regles 3): fins a la 1.4, un objecte `headings` sense salt d'H1 no en tenia cap (vegeu [Configuració per nivell](#configuració-per-nivell)).
 - **La mida de les fórmules** (regles 4): fins a la 1.4, les fórmules sortien 1,131 vegades més grans del que diu `fontSizeScale` (vegeu [Mida de les fórmules](#matemàtiques)).
@@ -9751,8 +10060,9 @@ Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 9`: 
 - **Els poemes sense separador** (regles 9): fins a la 1.22, un poema `:::verse` les línies del qual no portaven `||` es componia en hemistiquis solts, cada línia centrada (vegeu `bodyText.verse.layout` a [Vers](#vers)).
 - **Un sagnat de primera línia al costat d'un de francès** (regles 9): fins a la 1.22, la `hangingIndent` d'un estil de paràgraf substituïa la seva `firstLineIndent`, i la primera línia començava a `indent` (vegeu [Estils de paràgraf](#estils-de-paràgraf)).
 - **Una barra inversa al final d'una línia** (regles 9): fins a la 1.22, una barra inversa al final d'una línia d'un paràgraf, una cita o un element de llista, i `\\` davant d'un espai, s'imprimien, i les línies s'unien amb un espai (vegeu `bodyText.hardLineBreaks` a [Text de cos](#text-de-cos)).
+- **Les tanques de codi** (regles 9): fins a la 1.22, una tanca ```` ``` ```` o `~~~` i les línies de dins es llegien com a Markdown: les línies s'unien en paràgrafs, una línia amb `#` es convertia en un encapçalament i les tanques s'imprimien (vegeu `codeStyle.blocks` a [Llistats de codi](#llistats-de-codi)).
 
-`openBundle` i `readBundle` llegeixen la `config` d'un manifest així, i la configuració de cada llengua a `localized`, a través de `migrateConfig`, que escriu els salts tal com els componia la 1.4 i multiplica l'escala de les fórmules per 1,131 (i divideix per aquest factor els marges de les fórmules en bloc donats en `em`). A un manifest marcat de `3` a `7`, que va escriure una versió preliminar de la 1.5, només se li apliquen les fixacions de les regles posteriors a la seva marca: amb `3`, la mida de les fórmules, l'espai en línia, les cinc fixacions de les regles 6, les dues de les regles 7 i les tres de les regles 8; amb `4`, l'espai en línia i les de les regles 6, 7 i 8; amb `5`, les de les regles 6, 7 i 8; amb `6`, les de les regles 7 i 8; amb `7`, només les de les regles 8. La divisió sota un encapçalament (`pinLegacyHeadingSplit`) s'escriu com a `headings.keepWithNextSplit: 'fill'` sobre el `headings` que deixen en vigor les capes, quan algun capítol llegit té un encapçalament i la configuració no anomena un valor propi, manté activat `headings.keepWithNext` i no desactiva `bodyText.avoidOrphans`. Els salts després del guionet d'un compost (`pinLegacyHyphenBreaks`) s'escriuen com a `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor quan un capítol llegit té un guionet entre dues lletres i la configuració ni el fixa ja ni desactiva `optimalLineBreaking`. L'espai sota els contenidors (`pinLegacyParagraphContainerSpacing`) s'escriu com a `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor quan la configuració declara algun estil de paràgraf (a `paragraphStyles` o a la configuració pròpia del visor HTML), un capítol llegit obre un contenidor `:::paragraphs` en una línia pròpia i la configuració no el fixa ja. Els salts després d'un guió llarg (`pinLegacyDashBreaks`) s'escriuen com a `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor quan un capítol llegit té un guió llarg o un guió mitjà entre paraules sense espais (una lletra, una xifra o un signe de tancament davant, i una lletra, una xifra o un signe d'obertura darrere; unes cometes davant del guió compten quan les precedeix una lletra, una xifra, un signe de tancament o un espai de no separació, com a `«no»—y`, no a `dijo "—Hola`; una marca en línia enganxada al guió o a les cometes, com els `**` de `**I.**—Que`, compta a qualsevol dels dos costats) i la configuració no el fixa ja. La composició del text en bandera (`pinLegacyRaggedBreaking`) s'escriu com a `bodyText.optimalRagged: false` sobre el `bodyText` en vigor quan la configuració posa en bandera algun text corregut (un `textAlign` diferent de `'justify'` al text de cos, un estil de paràgraf, el cos d'un requadre, el d'una part o el d'un estil de secció (`headingStyles[].bodyStyle`), o a la configuració pròpia del visor HTML), no el fixa ja i no desactiva `optimalLineBreaking`. L'espai als requadres (`pinLegacyBoxResourceGap`) s'escriu com a `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor quan un recurs s'insereix en una línia pròpia dins d'un `:::callout` dels capítols llegits i la configuració no el fixa ja. El tall de les caixes (`pinLegacyBoxChildCut`) s'escriu com a `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor quan un capítol llegit obre un `:::callout` en una línia pròpia i la configuració no el fixa ja. Les marques dels encapçalaments (`pinLegacyHeadingMarks`) s'escriuen com a `headings.inlineMarks: false` sobre el `headings` que deixen en vigor les capes, quan algun encapçalament dels capítols llegits porta una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enllaç al títol) i la configuració no anomena un valor propi. A les caplletres (`pinLegacyDropCapSize`) se'ls escriu la mida de la 1.4 com a `dropCap.fontSize`, siguin on siguin: en la unitat de l'interlineat de l'element quan és una longitud, i si no, en la unitat del seu cos. El lloc sota els dos punts (`pinLegacyColonListRoom`) s'escriu com a `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor quan una llista dels capítols llegits segueix una línia que acaba en dos punts (encara que hi hagi línies en blanc entre elles) i la configuració ni anomena un lloc ni desactiva `keepColonWithList`. L'espai en línia (`pinLegacyInlineGap`) s'escriu com a `layout.inlineResourceGap: 'above'` sobre el `layout` que deixen en vigor les capes, quan una línia dels capítols llegits insereix un recurs (`::resource{id="…"}` sola a la seva línia, tal com la llegeix l'analitzador: una menció al text o en un fragment de codi no compta) i la configuració no anomena un espai propi. La mida es fixa sobre el `math` que deixen en vigor les capes (el `math` propi d'una llengua substitueix el compartit), i només quan els capítols llegits tenen algun `$`: un paquet sense fórmules conserva la seva `config` tal com es va escriure. Si ni el manifest ni la llengua donen un `math`, el que queda en vigor és el de la `baseConfig` de `readBundle` (la del lector), i també es fixa, perquè la 1.4 componia les fórmules del paquet a aquesta mida: una base amb `fontSizeScale: 1.5` es llegeix com a 1,5 × 1,1312. Els salts d'encapçalament de la base es prenen tal com vénen. Així un paquet antic conserva el que componien aquestes regles, i `bundle.config` mostra els salts, la mida de les fórmules, els espais, les marques dels encapçalaments, la mida de les caplletres, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, els salts després del guionet d'un compost, la composició del text en bandera, la divisió sota un encapçalament i l'espai sota els contenidors amb què es compon. Les correccions de composició de la 1.5 no tenen fixació i se li apliquen com a qualsevol llibre, així que una pàgina a la qual afectin encara es pot moure (la llista és a [Mida de les fórmules](#matemàtiques)). Un `preset.json` escrit a mà per a les regles actuals posa `"configVersion": 9`; marcar així el manifest d'un paquet antic és també la manera de llegir-lo, amb una línia, amb les regles actuals (un paquet sense versió perd llavors també la fixació dels seus salts d'encapçalament). Un manifest marcat `8`, escrit per postext 1.5 a 1.22, rep només les tres fixacions de les regles 9, com també tots els anteriors: la composició del vers (`pinLegacyVerseLayout`) s'escriu com a `bodyText.verse.layout: 'bayt'` al `bodyText` vigent, quan un capítol llegit compon un poema `:::verse` l'obertura del qual no anomena composició i les línies del qual no porten separador d'hemistiquis, i la configuració no el fixa ja; els sagnats aparellats (`pinLegacyPairedIndents`) treuen la `firstLineIndent` de tot estil de paràgraf (a `paragraphStyles` o als ajustos del visor HTML) que fixa també una `hangingIndent` diferent de zero; els salts de línia forçats (`pinLegacyHardBreaks`) s'escriuen com a `bodyText.hardLineBreaks: false` al `bodyText` vigent, quan un capítol llegit acaba una línia d'un paràgraf, una cita o un element de llista amb una barra inversa i el bloc continua a sota, o posa `\\` davant d'un espai i més text (llevat del codi en línia i les fórmules, les fórmules destacades, els títols i els poemes `:::verse`), i la configuració no el fixa ja.
+`openBundle` i `readBundle` llegeixen la `config` d'un manifest així, i la configuració de cada llengua a `localized`, a través de `migrateConfig`, que escriu els salts tal com els componia la 1.4 i multiplica l'escala de les fórmules per 1,131 (i divideix per aquest factor els marges de les fórmules en bloc donats en `em`). A un manifest marcat de `3` a `7`, que va escriure una versió preliminar de la 1.5, només se li apliquen les fixacions de les regles posteriors a la seva marca: amb `3`, la mida de les fórmules, l'espai en línia, les cinc fixacions de les regles 6, les dues de les regles 7 i les tres de les regles 8; amb `4`, l'espai en línia i les de les regles 6, 7 i 8; amb `5`, les de les regles 6, 7 i 8; amb `6`, les de les regles 7 i 8; amb `7`, només les de les regles 8. La divisió sota un encapçalament (`pinLegacyHeadingSplit`) s'escriu com a `headings.keepWithNextSplit: 'fill'` sobre el `headings` que deixen en vigor les capes, quan algun capítol llegit té un encapçalament i la configuració no anomena un valor propi, manté activat `headings.keepWithNext` i no desactiva `bodyText.avoidOrphans`. Els salts després del guionet d'un compost (`pinLegacyHyphenBreaks`) s'escriuen com a `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor quan un capítol llegit té un guionet entre dues lletres i la configuració ni el fixa ja ni desactiva `optimalLineBreaking`. L'espai sota els contenidors (`pinLegacyParagraphContainerSpacing`) s'escriu com a `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor quan la configuració declara algun estil de paràgraf (a `paragraphStyles` o a la configuració pròpia del visor HTML), un capítol llegit obre un contenidor `:::paragraphs` en una línia pròpia i la configuració no el fixa ja. Els salts després d'un guió llarg (`pinLegacyDashBreaks`) s'escriuen com a `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor quan un capítol llegit té un guió llarg o un guió mitjà entre paraules sense espais (una lletra, una xifra o un signe de tancament davant, i una lletra, una xifra o un signe d'obertura darrere; unes cometes davant del guió compten quan les precedeix una lletra, una xifra, un signe de tancament o un espai de no separació, com a `«no»—y`, no a `dijo "—Hola`; una marca en línia enganxada al guió o a les cometes, com els `**` de `**I.**—Que`, compta a qualsevol dels dos costats) i la configuració no el fixa ja. La composició del text en bandera (`pinLegacyRaggedBreaking`) s'escriu com a `bodyText.optimalRagged: false` sobre el `bodyText` en vigor quan la configuració posa en bandera algun text corregut (un `textAlign` diferent de `'justify'` al text de cos, un estil de paràgraf, el cos d'un requadre, el d'una part o el d'un estil de secció (`headingStyles[].bodyStyle`), o a la configuració pròpia del visor HTML), no el fixa ja i no desactiva `optimalLineBreaking`. L'espai als requadres (`pinLegacyBoxResourceGap`) s'escriu com a `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor quan un recurs s'insereix en una línia pròpia dins d'un `:::callout` dels capítols llegits i la configuració no el fixa ja. El tall de les caixes (`pinLegacyBoxChildCut`) s'escriu com a `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor quan un capítol llegit obre un `:::callout` en una línia pròpia i la configuració no el fixa ja. Les marques dels encapçalaments (`pinLegacyHeadingMarks`) s'escriuen com a `headings.inlineMarks: false` sobre el `headings` que deixen en vigor les capes, quan algun encapçalament dels capítols llegits porta una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enllaç al títol) i la configuració no anomena un valor propi. A les caplletres (`pinLegacyDropCapSize`) se'ls escriu la mida de la 1.4 com a `dropCap.fontSize`, siguin on siguin: en la unitat de l'interlineat de l'element quan és una longitud, i si no, en la unitat del seu cos. El lloc sota els dos punts (`pinLegacyColonListRoom`) s'escriu com a `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor quan una llista dels capítols llegits segueix una línia que acaba en dos punts (encara que hi hagi línies en blanc entre elles) i la configuració ni anomena un lloc ni desactiva `keepColonWithList`. L'espai en línia (`pinLegacyInlineGap`) s'escriu com a `layout.inlineResourceGap: 'above'` sobre el `layout` que deixen en vigor les capes, quan una línia dels capítols llegits insereix un recurs (`::resource{id="…"}` sola a la seva línia, tal com la llegeix l'analitzador: una menció al text o en un fragment de codi no compta) i la configuració no anomena un espai propi. La mida es fixa sobre el `math` que deixen en vigor les capes (el `math` propi d'una llengua substitueix el compartit), i només quan els capítols llegits tenen algun `$`: un paquet sense fórmules conserva la seva `config` tal com es va escriure. Si ni el manifest ni la llengua donen un `math`, el que queda en vigor és el de la `baseConfig` de `readBundle` (la del lector), i també es fixa, perquè la 1.4 componia les fórmules del paquet a aquesta mida: una base amb `fontSizeScale: 1.5` es llegeix com a 1,5 × 1,1312. Els salts d'encapçalament de la base es prenen tal com vénen. Així un paquet antic conserva el que componien aquestes regles, i `bundle.config` mostra els salts, la mida de les fórmules, els espais, les marques dels encapçalaments, la mida de les caplletres, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, els salts després del guionet d'un compost, la composició del text en bandera, la divisió sota un encapçalament i l'espai sota els contenidors amb què es compon. Les correccions de composició de la 1.5 no tenen fixació i se li apliquen com a qualsevol llibre, així que una pàgina a la qual afectin encara es pot moure (la llista és a [Mida de les fórmules](#matemàtiques)). Un `preset.json` escrit a mà per a les regles actuals posa `"configVersion": 9`; marcar així el manifest d'un paquet antic és també la manera de llegir-lo, amb una línia, amb les regles actuals (un paquet sense versió perd llavors també la fixació dels seus salts d'encapçalament). Un manifest marcat `8`, escrit per postext 1.5 a 1.22, rep només les quatre fixacions de les regles 9, com també tots els anteriors: la composició del vers (`pinLegacyVerseLayout`) s'escriu com a `bodyText.verse.layout: 'bayt'` al `bodyText` vigent, quan un capítol llegit compon un poema `:::verse` l'obertura del qual no anomena composició i les línies del qual no porten separador d'hemistiquis, i la configuració no el fixa ja; els sagnats aparellats (`pinLegacyPairedIndents`) treuen la `firstLineIndent` de tot estil de paràgraf (a `paragraphStyles` o als ajustos del visor HTML) que fixa també una `hangingIndent` diferent de zero; els salts de línia forçats (`pinLegacyHardBreaks`) s'escriuen com a `bodyText.hardLineBreaks: false` al `bodyText` vigent, quan un capítol llegit acaba una línia d'un paràgraf, una cita o un element de llista amb una barra inversa i el bloc continua a sota, o posa `\\` davant d'un espai i més text (llevat del codi en línia i les fórmules, les fórmules destacades, els títols i els poemes `:::verse`), i la configuració no el fixa ja; i les tanques de codi (`pinLegacyCodeBlocks`) s'escriuen com a `codeStyle.blocks: false` quan un capítol llegit obre una tanca ```` ``` ```` o `~~~` (de tres caràcters o més, amb tres espais de sagnat com a màxim) i la configuració no el fixa ja.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -9762,7 +10072,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'Un
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -9776,7 +10086,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'Un exercic
 migrateConfig(config, CONFIG_VERSION); // regles actuals: la mateixa `config`
 ```
 
-`content` és el markdown que compon la configuració (una cadena o una llista de capítols). Sense aquest camp, els dos espais, les marques dels encapçalaments, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, la divisió sota un encapçalament i els salts després del guionet d'un compost es fixen sempre, la mida de les fórmules sempre que les matemàtiques estiguin activades i l'espai sota els contenidors sempre que la configuració declari algun estil de paràgraf, perquè el motor no pot saber si el llibre té cap fórmula, cap contenidor `:::paragraphs`, cap figura en línia, cap encapçalament amb marques, cap llista introduïda amb dos punts, cap caixa, cap guió llarg entre paraules, cap encapçalament o cap compost. La composició del text en bandera es fixa només segons la configuració, hi hagi contingut o no. Migra una configuració desada una sola vegada i torna-la a desar amb `CONFIG_VERSION`: la fixació de la mida multiplica l'escala, així que una configuració migrada dues vegades creixeria dues vegades. Sense ell també es fixa la composició del vers, perquè el llibre pot tenir un poema `:::verse` sense separador, i els sagnats aparellats es fixen només per la configuració.
+`content` és el markdown que compon la configuració (una cadena o una llista de capítols). Sense aquest camp, els dos espais, les marques dels encapçalaments, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, la divisió sota un encapçalament i els salts després del guionet d'un compost es fixen sempre, la mida de les fórmules sempre que les matemàtiques estiguin activades i l'espai sota els contenidors sempre que la configuració declari algun estil de paràgraf, perquè el motor no pot saber si el llibre té cap fórmula, cap contenidor `:::paragraphs`, cap figura en línia, cap encapçalament amb marques, cap llista introduïda amb dos punts, cap caixa, cap guió llarg entre paraules, cap encapçalament o cap compost. La composició del text en bandera es fixa només segons la configuració, hi hagi contingut o no. Migra una configuració desada una sola vegada i torna-la a desar amb `CONFIG_VERSION`: la fixació de la mida multiplica l'escala, així que una configuració migrada dues vegades creixeria dues vegades. Sense ell també es fixen la composició del vers i les tanques de codi, perquè el llibre pot tenir un poema `:::verse` sense separador o una tanca, i els sagnats aparellats es fixen només per la configuració.
 
 ### Compondre i renderitzar un paquet
 

@@ -51,7 +51,7 @@ Quote a value to print it exactly as written — a number that must keep its dig
 
 ## Block constructs
 
-Postext recognises seven prose block types, plus the directives and resource embeds covered later on this page. Blocks are always terminated by a blank line or by the start of another block.
+Postext recognises seven prose block types and code listings, plus the directives and resource embeds covered later on this page. Blocks are always terminated by a blank line or by the start of another block.
 
 <Illustration name="BlockTypesGallery" data='{"title": "Prose block constructs at a glance", "desc": "The seven prose block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, task list, and display math, each with its markdown syntax. Directives and resource embeds are covered separately.", "caption": "Every prose block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}, {"name": "Display math", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -98,6 +98,11 @@ Postext recognises seven prose block types, plus the directives and resource emb
       <td>Display math</td>
       <td><code>$$ … $$</code></td>
       <td>A LaTeX formula set as its own block. Rendered centred on the column, snapped to the baseline grid like a heading, and kept vectorial in the PDF output. The single-line and fenced multi-line forms are described under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
+    </tr>
+    <tr>
+      <td>Code block</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>A listing, kept as written: every space, tab and line break, nothing read as Markdown. Set line by line in the code face, in a box. See <a href="#code-blocks">Code blocks</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -153,6 +158,62 @@ The lamp of the first entry opens with an initial.
 ```
 
 On a heading line, `dropcap=false` leaves the paragraph after that heading without the drop cap its level or style sets, `dropcap=N` sets it over `N` lines, and a bare `dropcap` gives that paragraph one (three lines, the paragraph's face) where the level sets none. On a `:::paragraphs` fence the attribute does the same for the group's first paragraph, or for every paragraph when the style says `each: true`. The paragraph after a heading is found past fences, directives, boxes that left the flow and floated figures; a paragraph inside a box, a list item, a quotation or a poem never takes a drop cap. Since postext 1.23.
+
+### Code blocks
+
+A listing goes between two fences of three or more backticks (or three or more tildes), each on a line of its own, up to three spaces in. Everything between them is kept as written: leading spaces and runs of spaces, tabs, blank lines, and lines that start with `#`, `-`, `1.`, `>`, `$` or `:::`. Nothing inside is read as Markdown: no emphasis, no `:ref`, no maths, no chips, no directives, no headings. The closing fence uses the opening one's character and is at least as long, so a listing that shows a fence goes in a longer one or in tildes:
+
+~~~markdown
+```bash {title="backup.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copy the photos to the backup disk
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "done: $(date)"
+```
+~~~
+
+The info string after the opening fence names the language (its first word: `js`, `ts`, `python`, `bash`, `console`, `json`…), and the rest is read as attributes in the [attribute syntax](#attribute-values), in braces or bare (`title="app.js" lineNumbers`). Anything else after the language is the title: ```` ```console Terminal ```` and ```` ```python normalize.py ```` print *Terminal* and *normalize.py* over the listing.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>A title over the listing, in a title row (or in a label tab on the box's edge when <code>codeStyle.label</code> is set).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>The text of the box's label tab, as a <code>:::callout</code>'s (with <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numbers the lines of this listing (or not), whatever <code>codeStyle.lineNumbers</code> says. The numbers stand in a gutter before the code and are not copied with it.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>The first line's number (numbers the listing when nothing else does).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Tints the lines named (counted from the listing's first line, 1-based): single lines and ranges, separated by commas.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>On a page of several columns, the listing spans them all.</td>
+    </tr>
+  </tbody>
+</table>
+
+A fence ends the paragraph above it, blank line or not, and the text after the closing fence starts a new paragraph. A fence left open runs to the end of the text and is reported (`unclosedCodeBlock`). A fence inside a `:::callout` is a box nested in it; inside `:::paragraphs` the listing keeps the code style, not the paragraph style. Postext has no list-item continuation, so a fence after a list item closes the list. Index marks and anchors written inside a listing stay as written.
+
+Indented code (four spaces or a tab, after a blank line) is read as a listing only when `codeStyle.indentedCode` is on: Postext text often indents with spaces, and nested list items read leading spaces.
+
+How a listing looks (its face, box, tab width, what happens to a line wider than the box, line numbers, the colours of its tokens) is set by `codeStyle`; see [Configuration › Code listings](/en/docs/configuration#code-listings). Inline code (`` `x` ``) stays in the text's face unless `codeStyle.inline` gives it one. A book stored before postext 1.23 with fences in its text reads them as it did then, as Markdown (`codeStyle.blocks: false`). Since postext 1.23.
 
 ## Directives
 
@@ -755,7 +816,7 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
-      <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. Distinct code styling is on the roadmap.</td>
+      <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. It is set in the text's face, or, with <code>codeStyle.inline</code>, in the code face as one unit (see <a href="/en/docs/configuration#code-listings">Configuration › Code listings</a>). A listing goes in a <a href="#code-blocks">code block</a>.</td>
     </tr>
     <tr>
       <td>Escape</td>
@@ -1771,7 +1832,6 @@ A `:::strip` has the body of a page but sits in the text as one unbreakable box,
 Postext does not recognise the following CommonMark features. They are either treated as plain text (and therefore will appear literally in the output) or silently dropped:
 
 - **Setext-style headings** — the `===` / `---` underline form. Use ATX (`#`) headings.
-- **Fenced or indented code blocks** — ` ``` ` or `~~~` fences and 4-space indentation. The lines inside are read as ordinary Markdown, not kept as a listing: lines with no blank line between them join into one paragraph and lose their leading spaces, a line that starts with `#` and a space becomes a heading (`#!/usr/bin/env` stays text) and one that starts with `-` or `1.` and a space a list item, a pair of `$` signs becomes a formula, and the fence lines print as text: a ` ``` ` fence as one backtick, the opening one followed by the info string (`` `bash``), and a `~~~` fence as one small `~` set as a subscript. To set a listing, write each line as a paragraph of its own (a blank line between lines) inside a `:::paragraphs` block whose paragraph style sets a monospaced `fontFamily`, and wrap each line in backticks, which keep `#`, `$`, `*` and the rest as written. Ordinary spaces at the start of a line are dropped and a run of them inside a line shrinks to one, inside the backticks too, so indent and align with no-break spaces (U+00A0) and put them inside the backticks: one before the opening backtick is dropped as well. Inline code is recognised, but it has no code face: see [Inline formatting](#inline-formatting).
 - **HTML passthrough** — raw `<tags>` are not interpreted. MDX-style tags are not supported either; Postext source is pure markdown.
 - **Horizontal rules** — `---`, `***`, `___`.
 - **Tables** — pipe tables are not parsed. Tables are modeled as structured resources on `PostextContent.resources`.

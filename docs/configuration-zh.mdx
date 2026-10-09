@@ -50,6 +50,7 @@ const document = buildDocument(content, {
 - [图示样式](#图示样式)：把嵌入的SVG图示改为单一油墨，用于专色印刷。
 - [段落样式](#段落样式)：供`:::paragraphs`容器使用的命名样式，如参考文献、术语表、注释。
 - [标注框样式](#标注框样式)：供`:::callout`容器使用的带框注释、提示和学习目标。
+- [代码清单](#代码清单)：`codeStyle`，即```` ``` ````清单的字体、框、制表符宽度、过长的行、行号和记号颜色，语法着色及其高亮器接口，以及用代码字体排的行内代码。
 - [篇](#篇)：`:::part`容器生成的篇章分隔页，包括奇偶页、正文区域、篇首页版面设计、正文排印。
 - [标题样式](#标题样式)：供`{style="…"}`标题使用的命名样式，如不编号的章、带独立书眉的前置部分、页面几何与调色板。
 - [目录](#目录)：`:::toc`排出的内容，包括条目排印、前导符、页码、作者行、篇条目。
@@ -5665,6 +5666,310 @@ const minimal  = stripChipStylesDefaults(config.chipStyles);
 const style = pickChipStyle(resolved, 'key');
 // => `key`样式，否则取第一个
 ```
+
+## 代码清单
+
+`codeStyle`属性设定代码清单的外观：正文中的```` ``` ````和`~~~`围栏（见[文档格式 › 代码块](/zh/docs/document-format#代码块)），以及要求用代码字体时的行内代码。清单按原样逐行排，用等宽字体，排在一个框中：任何一行都不断词、不两端对齐，每个空格保持自己的宽度，制表符前进到下一个制表位。这个框与`:::callout`出自同一套机制，所以清单可以在行与行之间断开，跨栏跨页，每部分各有一个框；标注框中的围栏是嵌套在其中的框。所有属性都是可选的。自postext 1.23起。
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>属性</th>
+      <th style={{ width: '180px' }}>类型</th>
+      <th style={{ width: '150px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>把围栏读作代码块。<code>false</code>时，围栏及其中的行按Markdown读取，与postext 1.22相同；1.23之前存储、正文含围栏的配置会得到这个值（见<a href="#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>空行之后缩进四列（四个空格或一个制表符）的连续多行也读作清单；每行去掉四列。默认关闭：Postext的正文常用空格缩进，嵌套列表项也要读行首空格。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>代码字体。等宽字体能让各列对齐；代码注释是中文或日文时，选带汉字的等宽字体（BIZ UDGothic），其中的全角字符占两格。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code>指正文字号。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>代码和粗体记号的字重。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>正文的网格行</td>
+      <td>代码行的行距；<code>em</code>指代码字号。未设置时，各行落在基线网格上。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>清单之后的文字回到基线网格上；<code>false</code>时保持精确的<code>marginBottom</code>，与标注框相同。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>正文颜色</td>
+      <td>代码的颜色，没有自己颜色的记号都用它。</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>框的底色。</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>关闭、<code>#cccccc</code>、<code>0.5pt</code></td>
+      <td>框的轮廓。</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>圆角；拆分清单的每一部分都保留圆角，与拆分的框相同。</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td>各为<code>0.6em</code></td>
+      <td><code>em</code>指代码字号。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>框上方和下方的间距。</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>跨页面的清单横跨多栏页面的所有栏，与<code>span: 'page'</code>的框相同。单个围栏可用<code>span=page</code>自行设定。</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>制表符前进到这个字符格数的下一个整数倍位置（全角字符算两格）。它仍是制表符：复制出的文字保留它。</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>比框更宽的行。<code>'wrap'</code>：在放得下的最后一个空格或标点之后断开（都没有时在两个字符之间断开），余下部分接在下一行，缩进<code>wrapIndent</code>格，前面带<code>wrapMarker</code>；只要有别的切口可用，拆分清单的任何一部分都不会以这样的余下部分开头。<code>'shrink'</code>：整段清单缩小，直到最宽的一行放得下，最多缩到<code>minFontScale</code>，仍放不下的部分折行。<code>'clip'</code>：行在框的内边缘止住，超出的字符不印出。每种情况都会引发<code>codeOverflow</code>警告。</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>折行余下部分的缩进，以字符格计。</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>排在这段缩进中，用行号的颜色；它不属于文字（复制时不带上，带标签的PDF把它画成artifact）。<code>''</code>表示不加标记。大多数代码字体没有<code>↪</code>，用这类字体时它会印成一个空框。</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>使用<code>'shrink'</code>时，清单最小可缩到<code>fontSize</code>的多大比例。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在代码前的边栏中为每段清单的行编号。单个围栏可用<code>lineNumbers</code>、<code>lineNumbers=false</code>和<code>start=N</code>自行设定。折行的余下部分不编号。行号排在文字旁边，不属于文字：HTML查看器不让选区和辅助技术读到它们，带标签的PDF把它们画成artifact。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>行号（以及续行标记）的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>最宽的行号与代码之间的间距；<code>em</code>指代码字号。</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>围栏用<code>highlight="3,5-7"</code>指定的行背后的色带，横贯整个框。</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>与标注框样式的相同：<code>false</code>时，比剩余空间高的清单在行与行之间拆分；<code>true</code>时整段移走，只有比一栏还高时才拆分。</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>拆分时每侧至少保留的行数，使任何一部分都不只有一行。</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在每一部分的开头重复标题，后接文档语言的“（续）”后缀。</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / “续”</td>
+      <td>在还要接续的那一部分的最后一行下方加一个标记。</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>代码字体，粗体，其字号的0.9</td>
+      <td>围栏的<code>title</code>所印出的标题行（各字段见<a href="#标注框样式">标注框样式</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>无</td>
+      <td>设置后，标题改为印在框顶边的标签中（除非标签指定了自己的字体和字号，否则用代码字体和代码字号）。</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>用内置分词器（以及已注册的高亮器）为记号着色；<code>'none'</code>时所有清单都用<code>color</code>排。</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>一套素淡的配色</td>
+      <td>每类记号的外观，按类别逐一合并到默认值上（见下文）。与调色板关联的颜色随<code>colorPalette</code>和篇的调色板变化。</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>未设置</td>
+      <td>用代码字体排的行内代码（见下文）。未设置时，行内代码用正文字体排，与1.23之前相同。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 语法着色
+
+引擎内置一个小型分词器，能识别以下语言的记号：`js`和`ts`（`javascript`、`jsx`、`typescript`、`tsx`）、`json`、`python`、`bash`（`sh`、`zsh`、`shell`）、`console`（shell会话）、`css`、`html`和`xml`（`svg`）、`markdown`以及`sql`；其他语言或未注明语言的清单都用`color`排。它读取整段清单，所以跨行的注释或字符串仍是一个记号。在`console`清单中，以提示符（`$ `、`% `、`# `、`> `、`>>> `、`PS …> `）开头的行是用户输入的内容（`prompt`），其他各行都是程序印出的内容（`output`）。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>类别</th>
+      <th style={{ width: '200px' }}>默认值</th>
+      <th>所指内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>保留字：<code>const</code>、<code>def</code>、<code>if</code>、<code>SELECT</code>、HTML标签名、CSS的at规则。</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>字符串、模板字面量、属性值。</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>数字和常量（<code>true</code>、<code>None</code>、<code>null</code>）、颜色、实体。</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>，斜体</td><td>注释。</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>后跟圆括号的名称；shell内置命令。</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>类型和首字母大写的类名、CSS选择器。</td></tr>
+    <tr><td><code>operator</code></td><td>代码的颜色</td><td>运算符、shell管道和重定向。</td></tr>
+    <tr><td><code>punctuation</code></td><td>代码的颜色</td><td>括号、分隔符。</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>shell变量、JSON键名、CSS属性、HTML属性、<code>self</code>。</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>装饰器、命令行选项（<code>-l</code>、<code>--all</code>）、doctype。</td></tr>
+    <tr><td><code>prompt</code></td><td>代码的颜色，粗体</td><td>shell会话中输入的行。</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>程序印出的内容。</td></tr>
+  </tbody>
+</table>
+
+宿主程序可以用`registerCodeHighlighter`接入自己的高亮器（Shiki、Prism、highlight.js）。配置是可序列化的数据，所以这个函数注册到引擎上，而不是写在`codeStyle`中：
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) returns the listing's lines, each as runs whose texts join into the line.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // remove the one registered for every language
+```
+
+为某种语言注册的高亮器优先于为`'*'`注册的高亮器，后者又优先于内置分词器。每个片段要么指明一个`token`类别（由`tokens`着色），要么带有自己的`color`（CSS十六进制值）。高亮器返回`undefined`、抛出异常，或返回的各行拼不回清单本身的各行时，就跳过它。排版在排清单时读取注册表：要在构建之前注册；在web worker中排版时（沙盒就在worker中排版），要在worker内注册。
+
+### 行内代码
+
+`codeStyle.inline`让反引号之间的文字用代码字体排：作为一个整体，与行内标签一样，行内不会在其中断开。未设置时，行内代码保持正文字体。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>属性</th>
+      <th style={{ width: '120px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>字体。</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code>指周围文字的字号。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>正文的颜色</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>叠加在文字自身的标记之上（粗体中的代码是粗体）。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>无</td><td>片段背后的底色。</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>无 / <code>0.5pt</code></td><td>轮廓。</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code>指片段的字号。</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td>有底色或轮廓时为<code>0.2em</code>，否则为<code>0</code> / <code>0.1em</code></td><td>底色内的空白；垂直内边距画在行框之外。</td></tr>
+  </tbody>
+</table>
+
+### 清单如何排版
+
+- **一行源文对应一行。** 各行按代码字体自身的前进宽度构建，不经过段落断行器：空格保持宽度，连续的空格都保留，行首空格形成缩进。在从右向左的书中，清单从左向右读，各行从框的另一侧排起，与从左向右的引文相同，行号在它们左侧的边栏中。在竖排的书中，清单随竖排方向排（其中的拉丁文按竖排的惯例横躺），不带行号。
+- **拆分。** 比剩余空间高的清单在行与行之间断开，跨栏跨页，每部分各自成框，每侧至少留下`splitMinLines`行；只要有别的切口可用，折行的余下部分就与它所属的行留在一起。
+- **输出。** 画布、HTML查看器和PDF按排版结果画出各行和框。HTML查看器保留空格（`white-space: pre`），所以选区复制出的清单带有缩进，每行源文之后有一个换行，不带行号和续行标记。带标签的PDF把每段清单设为一个包含`Code`元素的段落，空格是真正的空格字形，行号和续行标记是artifact。可重排的EPUB写出`<pre><code class="language-…">`，带有记号的颜色和一份由`codeStyle`生成的样式表；固定版式的EPUB与印刷版相同。
+- **字体。** 正文含有围栏（或配置中有`codeStyle`分区）时，沙盒和`configFontFamilies`会加载代码字体的常规和粗体字重，直体和斜体都有；PDF嵌入各行所用的字体。
+
 ## 标注框样式
 
 `calloutStyles`属性声明一组具名的框样式，文档用`:::callout{type="…"}`容器来套用：注释、提示、警告、学习目标，以及任何需要用底色框或描边框与正文区分开的内容。默认只带一种中性样式`note`（浅灰底色，无边框、无色条、无图标、无标题），所以不做任何配置也能使用`:::callout`；一旦声明`calloutStyles`，就会替换这份默认列表。
@@ -8469,6 +8774,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>以<a href="#首字下沉">首字下沉</a>开头的段落无法按配置排出首字。<code>reason</code>：<code>'shortParagraph'</code>（段落行数少于首字下沉的行数；<code>handling</code>是<code>shortParagraph</code>所做的处理，<code>lines</code>是缩小后的首字所跨的行数）、<code>'split'</code>（段落单独位于过短的栏中，在首字的最后一行之前断开）、<code>'joiningScript'</code>（第一个字母与下一个字母相连）、<code>'verticalText'</code>或<code>'noLetter'</code>（以引用、公式或注释标记开头）。<code>text</code>是它的第一行。</td>
       <td>按警告所说，保留空间、缩小首字或不排首字。</td>
     </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td><a href="#代码清单">代码清单</a>中有比框更宽的行。<code>mode</code>是<code>codeStyle.overflow</code>所做的处理（<code>'wrap'</code>、<code>'shrink'</code>、<code>'clip'</code>），<code>lines</code>是过宽的源文行数，<code>scale</code>是缩小后的清单所用的字号（<code>fontSize</code>的比例），<code>lang</code>是围栏的语言。指向该清单。</td>
+      <td>按<code>mode</code>所说，这些行折行、缩小或截断。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9748,7 +10058,7 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 
 #### postext 1.4及更早版本写出的文件包
 
-`createBundle`和沙盒写出的每份清单都带有`configVersion: 9`，表示其`config`是按哪一版配置规则写的。没有这个字段的清单出自postext 1.4或更早版本，当时有十六处设定与现在不同：
+`createBundle`和沙盒写出的每份清单都带有`configVersion: 9`，表示其`config`是按哪一版配置规则写的。没有这个字段的清单出自postext 1.4或更早版本，当时有十七处设定与现在不同：
 
 - **标题分页**（规则3）：1.4及以前，`headings`对象若没有给H1设置分页，H1就不分页（见[按级别覆盖](#按级别覆盖)）。
 - **公式字号**（规则4）：1.4及以前，公式排出的大小是`fontSizeScale`所规定的1.131倍（见[公式字号](#数学公式)）。
@@ -9766,8 +10076,9 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 - **无分隔符的诗**（规则9）：1.22及以前，各行不含`||`的`:::verse`诗按单独的半句排，每行居中（见[诗歌](#诗歌)下的`bodyText.verse.layout`）。
 - **首行缩进与悬挂缩进并用**（规则9）：1.22及以前，段落样式的`hangingIndent`取代其`firstLineIndent`，首行从`indent`开始（见[段落样式](#段落样式)）。
 - **行末的反斜杠**（规则9）：1.22及以前，段落、引文或列表项中行末的反斜杠，以及后跟空格的`\\`，都照样印出，各行用空格连接（见[正文](#正文)下的`bodyText.hardLineBreaks`）。
+- **代码围栏**（规则9）：1.22及以前，```` ``` ````或`~~~`围栏及其中的行按Markdown读取：各行合并成段落，以`#`开头的行变成标题，围栏照样印出（见[代码清单](#代码清单)下的`codeStyle.blocks`）。
 
-`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 9`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的三项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项。
+`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 9`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -9777,7 +10088,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A 
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -9791,7 +10102,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-kno
 migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 ```
 
-`content`是该配置要排版的Markdown（一个字符串或一组章节）。不提供它时，只要开启了公式就固定公式字号，只要配置声明了段落样式就固定容器下方的间距，而两项间距、标题标记、冒号行下方空间、框的切分、破折号断行、标题下方的切分和复合词断行总是固定，因为引擎无法判断书中是否有公式、`:::paragraphs`容器、行内图、带标记的标题、冒号引出的列表、框、不留空格的破折号、标题或复合词。齐左断行只看配置决定是否固定，与有无内容无关。存储的配置只迁移一次，然后以`CONFIG_VERSION`重新存储：公式的固定值会乘以缩放，迁移两次就会放大两次。没有它时，诗的排法也会被固定，因为书中可能有不带分隔符的`:::verse`诗；成对的缩进则只看配置本身。
+`content`是该配置要排版的Markdown（一个字符串或一组章节）。不提供它时，只要开启了公式就固定公式字号，只要配置声明了段落样式就固定容器下方的间距，而两项间距、标题标记、冒号行下方空间、框的切分、破折号断行、标题下方的切分和复合词断行总是固定，因为引擎无法判断书中是否有公式、`:::paragraphs`容器、行内图、带标记的标题、冒号引出的列表、框、不留空格的破折号、标题或复合词。齐左断行只看配置决定是否固定，与有无内容无关。存储的配置只迁移一次，然后以`CONFIG_VERSION`重新存储：公式的固定值会乘以缩放，迁移两次就会放大两次。没有它时，诗的排法和代码围栏也会被固定，因为书中可能有不带分隔符的`:::verse`诗或围栏；成对的缩进则只看配置本身。
 
 ### 排版和渲染文件包
 

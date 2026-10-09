@@ -69,8 +69,8 @@ const CONFIGURATION_PAGES: { page: string; title: string; sections: string[] }[]
   },
   {
     page: "Configuration-Styles",
-    title: "Configuration: paragraph, chip, callout and heading styles, parts",
-    sections: ["Paragraph styles", "Chip styles", "Callout styles", "Parts", "Heading styles"],
+    title: "Configuration: paragraph, chip, code, callout and heading styles, parts",
+    sections: ["Paragraph styles", "Chip styles", "Code listings", "Callout styles", "Parts", "Heading styles"],
   },
   {
     page: "Configuration-Comics",

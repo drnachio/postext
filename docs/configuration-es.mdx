@@ -50,6 +50,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Estilo de diagramas](#estilo-de-diagramas) — recoloreado a una sola tinta de los diagramas SVG incrustados para impresión con tinta plana.
 - [Estilos de párrafo](#estilos-de-párrafo) — estilos con nombre para contenedores `:::paragraphs`: bibliografías, glosarios, notas.
 - [Estilos de aviso](#estilos-de-aviso) — notas, consejos y objetivos en caja para contenedores `:::callout`.
+- [Listados de código](#listados-de-código) — `codeStyle`: la letra, la caja, el ancho del tabulador, las líneas largas, los números de línea y los colores de los elementos de los listados ```` ``` ````, el coloreado de sintaxis y su enganche para resaltadores, y el código en línea en una letra de código.
 - [Partes](#partes) — páginas separadoras de parte para contenedores `:::part`: paridad, área de cuerpo, diseño de apertura, tipografía del cuerpo.
 - [Estilos de encabezado](#estilos-de-encabezado) — estilos con nombre para encabezados `{style="…"}`: capítulos sin numerar, preliminares con sus propias cabeceras, geometría y paleta.
 - [Índice de contenidos](#índice-de-contenidos) — lo que imprime `:::toc`: tipografía de las entradas, líneas de puntos, números de página, líneas de autores, filas de parte.
@@ -5670,6 +5671,309 @@ const style = pickChipStyle(resolved, 'key');
 ```
 
 
+## Listados de código
+
+La propiedad `codeStyle` fija el aspecto de los listados de código: las vallas ```` ``` ```` y `~~~` del texto (ver [Formato del documento › Bloques de código](/es/docs/document-format#bloques-de-código)), y el código en línea cuando pide una letra de código. Un listado se compone línea a línea tal como está escrito, en una letra monoespaciada y dentro de una caja: ninguna línea se divide ni se justifica, cada espacio conserva su ancho y un tabulador avanza hasta la siguiente tabulación. La caja sale del mismo mecanismo que un `:::callout`, así que un listado se parte entre líneas a través de columnas y páginas, cada parte en su propia caja, y una valla dentro de un aviso es una caja anidada en él. Todas las propiedades son opcionales. Desde postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '150px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Lee las vallas como bloques de código. <code>false</code> lee una valla y sus líneas como Markdown, como hacía postext 1.22; lo recibe una configuración guardada antes de 1.23 cuyo texto tiene una valla (ver <a href="#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lee también como listado una serie de líneas sangradas cuatro columnas (cuatro espacios o un tabulador) tras una línea en blanco; a cada línea se le quitan cuatro columnas. Desactivado por defecto: los textos de Postext sangran a menudo con espacios, y las listas anidadas leen los espacios del principio.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>La letra del código. Una monoespaciada mantiene alineadas las columnas; para comentarios en chino o japonés, una con kanji (BIZ UDGothic), cuyos caracteres de ancho completo ocupan dos celdas.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> es el cuerpo del texto principal.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>Los pesos del código y de los elementos en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>la línea de la rejilla del texto principal</td>
+      <td>El interlineado de las líneas de código; <code>em</code> es el cuerpo del código. Sin fijar, las líneas caen en la rejilla base.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El texto que sigue a un listado vuelve a la rejilla base; <code>false</code> conserva el <code>marginBottom</code> exacto, como en un aviso.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el color del texto principal</td>
+      <td>El color del código, que conservan los elementos sin color propio.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>El fondo de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>desactivado, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>El contorno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Esquinas redondeadas; cada parte de un listado partido las conserva, como una caja partida.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> cada uno</td>
+      <td><code>em</code> es el cuerpo del código.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>El espacio sobre la caja y bajo ella.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>Un listado a ancho de página cruza todas las columnas de una página a varias columnas, como una caja <code>span: 'page'</code>. Una valla fija el suyo con <code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>Un tabulador avanza hasta el siguiente múltiplo de este número de celdas de carácter (un carácter de ancho completo cuenta dos). Sigue siendo un tabulador: el texto copiado lo conserva.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>Una línea más ancha que la caja. <code>'wrap'</code>: se corta tras el último espacio o signo de puntuación que cabe (entre dos caracteres cuando no cabe ninguno) y el resto sigue debajo, sangrado <code>wrapIndent</code> celdas, tras <code>wrapMarker</code>; una parte de un listado partido nunca empieza con ese resto si cabe otro corte. <code>'shrink'</code>: todo el listado se compone más pequeño hasta que cabe su línea más ancha, como mucho hasta <code>minFontScale</code>, y lo que aun así no cabe se parte. <code>'clip'</code>: la línea se detiene en el borde interior de la caja; los caracteres que lo pasan no se imprimen. Cada caso da un aviso <code>codeOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>La sangría del resto de una línea partida, en celdas de carácter.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>Va en esa sangría, en el color de los números de línea; no forma parte del texto (al copiar se omite, y un PDF etiquetado lo pinta como artefacto). <code>''</code> no pone ninguna. <code>↪</code> falta en la mayoría de las letras de código, que lo imprimen como un recuadro vacío.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>Con <code>'shrink'</code>, la menor fracción de <code>fontSize</code> a la que se compone un listado.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Numera las líneas de todos los listados, en un margen delante del código. Una valla fija lo suyo con <code>lineNumbers</code>, <code>lineNumbers=false</code> y <code>start=N</code>. El resto de una línea partida no lleva número. Los números se componen junto al texto, no dentro de él: el visor HTML los oculta a la selección y a las tecnologías de apoyo, y un PDF etiquetado los pinta como artefactos.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>El color de los números (y el de la marca de continuación).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>El espacio entre el número más ancho y el código; <code>em</code> es el cuerpo del código.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>La banda, de lado a lado de la caja, detrás de las líneas que una valla indica con <code>highlight="3,5-7"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Como en un estilo de aviso: <code>false</code> parte entre líneas un listado más alto que el espacio que queda; <code>true</code> lo pasa entero, y solo lo parte si es más alto que una columna.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>El mínimo de líneas a cada lado de un corte, para que ninguna parte se quede con una sola línea.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repite el título al principio de cada parte, con el sufijo «(cont.)» del idioma del documento.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / «Continúa»</td>
+      <td>Un indicador bajo la última línea de una parte que continúa.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>la letra del código, en negrita, a 0,9 de su cuerpo</td>
+      <td>La fila de título que imprime el <code>title</code> de una valla (ver <a href="#estilos-de-aviso">Estilos de aviso</a> para los campos).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>ninguna</td>
+      <td>Si se fija, el título se imprime en cambio en una pestaña de etiqueta sobre el borde superior de la caja (en la letra y el cuerpo del código, salvo que la etiqueta indique los suyos).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>Colorea los elementos con el analizador integrado (y con cualquier resaltador registrado); <code>'none'</code> compone todos los listados en <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>una paleta discreta</td>
+      <td>El aspecto de cada clase de elemento, fusionado clase a clase sobre los valores por defecto (ver más abajo). Un color vinculado a la paleta sigue a <code>colorPalette</code> y a la paleta de una parte.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>sin fijar</td>
+      <td>El código en línea en una letra de código (ver más abajo). Sin fijar, el código en línea se compone en la letra del texto, como antes de 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Coloreado de sintaxis
+
+Un pequeño analizador integrado en el motor reconoce los elementos de `js` y `ts` (`javascript`, `jsx`, `typescript`, `tsx`), `json`, `python`, `bash` (`sh`, `zsh`, `shell`), `console` (una sesión de terminal), `css`, `html` y `xml` (`svg`), `markdown` y `sql`; un listado en cualquier otro lenguaje, o sin lenguaje, se compone en `color`. Lee el listado entero, así que un comentario o una cadena que ocupa varias líneas sigue siendo un solo elemento. En un listado `console`, una línea que empieza por un indicador (`$ `, `% `, `# `, `> `, `>>> `, `PS …> `) es lo que escribió el usuario (`prompt`), y cualquier otra línea es lo que imprimieron los programas (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Clase</th>
+      <th style={{ width: '200px' }}>Por defecto</th>
+      <th>Qué nombra</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>Palabras reservadas: <code>const</code>, <code>def</code>, <code>if</code>, <code>SELECT</code>, el nombre de una etiqueta HTML, una regla arroba de CSS.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>Cadenas, plantillas literales, valores de atributo.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>Números y constantes (<code>true</code>, <code>None</code>, <code>null</code>), colores, entidades.</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>, cursiva</td><td>Comentarios.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>Un nombre seguido de un paréntesis; las órdenes internas de la shell.</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>Tipos y nombres de clase con mayúscula inicial, selectores CSS.</td></tr>
+    <tr><td><code>operator</code></td><td>el color del código</td><td>Operadores, tuberías y redirecciones de la shell.</td></tr>
+    <tr><td><code>punctuation</code></td><td>el color del código</td><td>Paréntesis, corchetes y llaves, separadores.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>Variables de la shell, claves JSON, propiedades CSS, atributos HTML, <code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>Decoradores, opciones de la línea de órdenes (<code>-l</code>, <code>--all</code>), un doctype.</td></tr>
+    <tr><td><code>prompt</code></td><td>el color del código, en negrita</td><td>La línea escrita de una sesión de terminal.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>Lo que imprimieron los programas.</td></tr>
+  </tbody>
+</table>
+
+Una aplicación conecta su propio resaltador (Shiki, Prism, highlight.js) con `registerCodeHighlighter`. Las configuraciones son datos serializables, así que la función se registra en el motor, no se escribe en `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) devuelve las líneas del listado, cada una como tramos cuyos textos, unidos, forman la línea.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // quita el registrado para todos los lenguajes
+```
+
+Un resaltador registrado para un lenguaje tiene prioridad sobre uno registrado para `'*'`, que a su vez la tiene sobre el analizador integrado. Un tramo nombra una clase de elemento en `token` (coloreada por `tokens`) o un `color` propio (un hex de CSS). Un resaltador que devuelve `undefined`, lanza una excepción o devuelve líneas que, unidas, no forman las del listado se pasa por alto. La composición lee el registro al componer un listado: registra antes de construir, y en un web worker (el Sandbox compone en uno) registra dentro del worker.
+
+### Código en línea
+
+`codeStyle.inline` compone el texto entre comillas invertidas en una letra de código: como una unidad, igual que un chip, que una línea nunca parte. Sin fijar, el código en línea conserva la letra del texto.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>La letra.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> es el cuerpo del texto que lo rodea.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>el del texto</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Se suman a las marcas del propio texto (el código dentro de una negrita va en negrita).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>ninguno</td><td>Un fondo detrás del tramo.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>ninguno / <code>0.5pt</code></td><td>Un contorno.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> es el cuerpo del tramo.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> con fondo o contorno, si no <code>0</code> / <code>0.1em</code></td><td>El espacio dentro del fondo; el relleno vertical se pinta fuera de la caja de línea.</td></tr>
+  </tbody>
+</table>
+
+### Cómo se compone un listado
+
+- **Una línea por cada línea del fuente.** Las líneas se construyen con los avances de la propia letra del código, no con el algoritmo de corte de párrafos: los espacios conservan su ancho, una serie de ellos se mantiene y los espacios del principio sangran. Un listado en un libro de derecha a izquierda se lee de izquierda a derecha, con sus líneas compuestas desde el lado opuesto de la caja, como una cita de izquierda a derecha, y sus números en el margen, a su izquierda. En un libro vertical, un listado sigue el flujo vertical (con su texto latino tumbado, como lo compone el texto vertical) y no lleva números de línea.
+- **Partición.** Un listado más alto que el espacio que queda se parte entre líneas a través de columnas y páginas, cada parte enmarcada como una caja propia, sin dejar nunca menos de `splitMinLines` líneas a un lado; el resto de una línea partida se queda con ella si cabe otro corte.
+- **Salidas.** El canvas, el visor HTML y el PDF pintan las líneas y la caja tal como se compusieron. El visor HTML conserva los espacios (`white-space: pre`), así que una selección copia el listado con su sangría y un salto de línea tras cada línea del fuente, sin números ni marcas de continuación. Un PDF etiquetado compone cada listado como un párrafo que contiene un elemento `Code`, con glifos de espacio reales y sus números y marcas de continuación como artefactos. El EPUB de maquetación fluida escribe `<pre><code class="language-…">` con los colores de los elementos y una hoja de estilo sacada de `codeStyle`; el EPUB de maquetación fija es la versión impresa.
+- **Fuentes.** El Sandbox y `configFontFamilies` cargan la letra del código cuando el texto tiene una valla (o la configuración tiene una sección `codeStyle`), en sus pesos normal y negrita, redonda y cursiva; el PDF incrusta las letras que usan las líneas.
+
 ## Estilos de aviso
 
 La propiedad `calloutStyles` declara los estilos de caja con nombre que el documento aplica mediante un contenedor `:::callout{type="…"}` — notas, consejos, advertencias, objetivos de aprendizaje, cualquier contenido separado del texto corrido en una caja tintada o con borde. Por defecto se incluye un estilo neutro, `note` (fondo gris claro, sin borde, sin franja, sin icono, sin título), de modo que `:::callout` funciona sin configuración alguna; declarar `calloutStyles` sustituye esa lista por defecto.
@@ -8474,6 +8778,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>Un párrafo que abre una <a href="#letras-capitulares">capitular</a> y que no puede llevarla tal como está configurada. <code>reason</code>: <code>'shortParagraph'</code> (tiene menos líneas de las que baja la capitular; <code>handling</code> es lo que hizo <code>shortParagraph</code>, y <code>lines</code>, las líneas que abarca una capitular reducida), <code>'split'</code> (se corta antes de la última línea de la capitular, solo en una columna demasiado corta), <code>'joiningScript'</code> (su primera letra se enlaza con la siguiente), <code>'verticalText'</code> o <code>'noLetter'</code> (empieza por una referencia, una fórmula o una llamada de nota). <code>text</code> es su primera línea.</td>
       <td>Se reserva el espacio, o la capitular se reduce o se omite, según diga el aviso.</td>
     </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td>Un <a href="#listados-de-código">listado de código</a> tiene líneas más anchas que su caja. <code>mode</code> es lo que hizo <code>codeStyle.overflow</code> (<code>'wrap'</code>, <code>'shrink'</code>, <code>'clip'</code>), <code>lines</code> cuántas líneas del fuente eran demasiado anchas, <code>scale</code> el tamaño al que se compuso un listado reducido (una fracción de <code>fontSize</code>), <code>lang</code> el lenguaje de la valla. Señala el listado.</td>
+      <td>Las líneas se parten, se componen más pequeñas o se cortan, según diga <code>mode</code>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9755,7 +10064,7 @@ El **`fileId` de cada archivo es su ruta dentro del paquete**. `resource.svg.fil
 
 #### Paquetes escritos por postext 1.4 o anterior
 
-Todo manifiesto que escriben `createBundle` y el Sandbox lleva `configVersion: 9`: las reglas de configuración para las que se escribió su `config`. Un manifiesto sin él lo escribió postext 1.4 o anterior, que resolvía dieciséis cosas de otra manera:
+Todo manifiesto que escriben `createBundle` y el Sandbox lleva `configVersion: 9`: las reglas de configuración para las que se escribió su `config`. Un manifiesto sin él lo escribió postext 1.4 o anterior, que resolvía diecisiete cosas de otra manera:
 
 - **Los saltos de encabezado** (reglas 3): hasta la 1.4, un objeto `headings` sin salto de H1 no tenía ninguno (ver [Configuración por nivel](#configuración-por-nivel)).
 - **El tamaño de las fórmulas** (reglas 4): hasta la 1.4, las fórmulas salían 1,131 veces más grandes de lo que dice `fontSizeScale` (ver [Tamaño de las fórmulas](#matemáticas)).
@@ -9773,8 +10082,9 @@ Todo manifiesto que escriben `createBundle` y el Sandbox lleva `configVersion: 9
 - **Los poemas sin separador** (reglas 9): hasta la 1.22, un poema `:::verse` cuyas líneas no llevaban `||` se componía en hemistiquios sueltos, cada línea centrada (véase `bodyText.verse.layout` en [Verso](#verso)).
 - **Una sangría de primera línea junto a una francesa** (reglas 9): hasta la 1.22, la `hangingIndent` de un estilo de párrafo sustituía a su `firstLineIndent`, y la primera línea empezaba en `indent` (véase [Estilos de párrafo](#estilos-de-párrafo)).
 - **Una barra invertida al final de una línea** (reglas 9): hasta la 1.22, una barra invertida al final de una línea de un párrafo, una cita o un elemento de lista, y `\\` ante un espacio, se imprimían, y las líneas se unían con un espacio (ver `bodyText.hardLineBreaks` en [Texto de cuerpo](#texto-de-cuerpo)).
+- **Las vallas de código** (reglas 9): hasta la 1.22, una valla ```` ``` ```` o `~~~` y las líneas que encierra se leían como Markdown: las líneas se unían en párrafos, una línea con `#` se convertía en encabezado y las vallas se imprimían (ver `codeStyle.blocks` en [Listados de código](#listados-de-código)).
 
-`openBundle` y `readBundle` leen el `config` de un manifiesto así, y la configuración de cada idioma en `localized`, a través de `migrateConfig`, que escribe los saltos tal como los componía la 1.4 y multiplica la escala de las fórmulas por 1,131 (y divide por ese factor los márgenes de las fórmulas en bloque dados en `em`). A un manifiesto marcado con `3` a `7`, que escribió una versión preliminar de la 1.5, solo se le aplican las fijaciones de las reglas posteriores a su marca: con `3`, el tamaño de las fórmulas, el hueco en línea, las cinco fijaciones de las reglas 6, las dos de las reglas 7 y las tres de las reglas 8; con `4`, el hueco en línea y las de las reglas 6, 7 y 8; con `5`, las de las reglas 6, 7 y 8; con `6`, las de las reglas 7 y 8; con `7`, solo las de las reglas 8. La división bajo un encabezado (`pinLegacyHeadingSplit`) se escribe como `headings.keepWithNextSplit: 'fill'` sobre el `headings` que dejan en vigor las capas, cuando algún capítulo leído tiene un encabezado y la configuración no nombra un valor propio, mantiene activado `headings.keepWithNext` y no desactiva `bodyText.avoidOrphans`. Los cortes tras el guion de un compuesto (`pinLegacyHyphenBreaks`) se escriben como `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene un guion entre dos letras y la configuración ni lo fija ya ni desactiva `optimalLineBreaking`. El espacio bajo los contenedores (`pinLegacyParagraphContainerSpacing`) se escribe como `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor cuando la configuración declara algún estilo de párrafo (en `paragraphStyles` o en los ajustes propios del visor HTML), un capítulo leído abre un contenedor `:::paragraphs` en una línea propia y la configuración no lo fija ya. Los cortes tras una raya (`pinLegacyDashBreaks`) se escriben como `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene una raya o una semirraya entre palabras sin espacios (una letra, una cifra o un signo de cierre delante, y una letra, una cifra o un signo de apertura detrás; unas comillas delante de la raya cuentan cuando las precede una letra, una cifra, un signo de cierre o un espacio de no separación, como en `«no»—y`, no en `dijo "—Hola`; una marca en línea pegada a la raya o a las comillas, como los `**` de `**I.**—Que`, cuenta a cualquiera de los dos lados) y la configuración no lo fija ya. La composición del texto en bandera (`pinLegacyRaggedBreaking`) se escribe como `bodyText.optimalRagged: false` sobre el `bodyText` en vigor cuando la configuración pone en bandera algún texto corrido (un `textAlign` distinto de `'justify'` en el texto de cuerpo, un estilo de párrafo, el cuerpo de un recuadro, el de una parte o el de un estilo de sección (`headingStyles[].bodyStyle`), o en los ajustes propios del visor HTML), no lo fija ya y no desactiva `optimalLineBreaking`. El hueco en los recuadros (`pinLegacyBoxResourceGap`) se escribe como `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor cuando un recurso se inserta en su propia línea dentro de un `:::callout` de los capítulos leídos y la configuración no lo fija ya. El corte de las cajas (`pinLegacyBoxChildCut`) se escribe como `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor cuando un capítulo leído abre un `:::callout` en una línea propia y la configuración no lo fija ya. Las marcas de los encabezados (`pinLegacyHeadingMarks`) se escriben como `headings.inlineMarks: false` sobre el `headings` que dejan en vigor las capas, cuando algún encabezado de los capítulos leídos lleva una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enlace en su título) y la configuración no nombra un valor propio. A las letras capitales (`pinLegacyDropCapSize`) se les escribe su tamaño de la 1.4 como `dropCap.fontSize`, estén donde estén: en la unidad del interlineado del elemento cuando es una longitud, y si no en la unidad de su cuerpo. El sitio bajo los dos puntos (`pinLegacyColonListRoom`) se escribe como `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor cuando una lista de los capítulos leídos sigue a una línea que termina en dos puntos (aunque haya líneas en blanco entre ellas) y la configuración ni nombra un sitio ni desactiva `keepColonWithList`. El hueco en línea (`pinLegacyInlineGap`) se escribe como `layout.inlineResourceGap: 'above'` sobre el `layout` que dejan en vigor las capas, cuando una línea de los capítulos leídos inserta un recurso (`::resource{id="…"}` sola en su línea, tal como la lee el analizador: una mención en el texto o en un fragmento de código no cuenta) y la configuración no nombra un hueco propio. El tamaño se fija sobre el `math` que dejan en vigor las capas (el `math` propio de un idioma sustituye al compartido), y solo cuando los capítulos leídos tienen algún `$`: un paquete sin fórmulas conserva su `config` tal como se escribió. Si ni el manifiesto ni el idioma dan un `math`, el que queda en vigor es el de la `baseConfig` de `readBundle` (la del lector), y también se fija, porque la 1.4 componía las fórmulas del paquete a ese tamaño: una base con `fontSizeScale: 1.5` se lee como 1,5 × 1,1312. Los saltos de encabezado de la base se toman tal como vienen. Así un paquete antiguo conserva lo que componían esas reglas, y `bundle.config` muestra los saltos, el tamaño de las fórmulas, los huecos, las marcas de los encabezados, el tamaño de las letras capitales, el sitio bajo los dos puntos, el corte de las cajas, los cortes tras una raya, los cortes tras el guion de un compuesto, la composición del texto en bandera, la división bajo un encabezado y el espacio bajo los contenedores con los que se compone. Las correcciones de composición de la 1.5 no tienen fijación y se le aplican como a cualquier libro, así que una página a la que afecten aún puede moverse (la lista está en [Tamaño de las fórmulas](#matemáticas)). Un `preset.json` escrito a mano para las reglas actuales pone `"configVersion": 9`; marcar así el manifiesto de un paquete antiguo es también la forma de leerlo, con una línea, con las reglas actuales (un paquete sin versión pierde entonces también la fijación de sus saltos de encabezado). Un manifiesto marcado `8`, escrito por postext 1.5 a 1.22, recibe solo los tres fijados de las reglas 9, como también todos los anteriores: la composición del verso (`pinLegacyVerseLayout`) se escribe como `bodyText.verse.layout: 'bayt'` en el `bodyText` vigente, cuando un capítulo leído compone un poema `:::verse` cuya apertura no nombra composición y cuyas líneas no llevan separador de hemistiquios, y la configuración no lo fija ya; las sangrías emparejadas (`pinLegacyPairedIndents`) quitan la `firstLineIndent` de todo estilo de párrafo (en `paragraphStyles` o en los ajustes del visor HTML) que fija también una `hangingIndent` distinta de cero; los saltos de línea forzados (`pinLegacyHardBreaks`) se escriben como `bodyText.hardLineBreaks: false` en el `bodyText` vigente, cuando un capítulo leído termina una línea de un párrafo, una cita o un elemento de lista con una barra invertida y el bloque sigue debajo, o pone `\\` ante un espacio y más texto (salvo el código en línea y las fórmulas, las fórmulas destacadas, los títulos y los poemas `:::verse`), y la configuración no lo fija ya.
+`openBundle` y `readBundle` leen el `config` de un manifiesto así, y la configuración de cada idioma en `localized`, a través de `migrateConfig`, que escribe los saltos tal como los componía la 1.4 y multiplica la escala de las fórmulas por 1,131 (y divide por ese factor los márgenes de las fórmulas en bloque dados en `em`). A un manifiesto marcado con `3` a `7`, que escribió una versión preliminar de la 1.5, solo se le aplican las fijaciones de las reglas posteriores a su marca: con `3`, el tamaño de las fórmulas, el hueco en línea, las cinco fijaciones de las reglas 6, las dos de las reglas 7 y las tres de las reglas 8; con `4`, el hueco en línea y las de las reglas 6, 7 y 8; con `5`, las de las reglas 6, 7 y 8; con `6`, las de las reglas 7 y 8; con `7`, solo las de las reglas 8. La división bajo un encabezado (`pinLegacyHeadingSplit`) se escribe como `headings.keepWithNextSplit: 'fill'` sobre el `headings` que dejan en vigor las capas, cuando algún capítulo leído tiene un encabezado y la configuración no nombra un valor propio, mantiene activado `headings.keepWithNext` y no desactiva `bodyText.avoidOrphans`. Los cortes tras el guion de un compuesto (`pinLegacyHyphenBreaks`) se escriben como `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene un guion entre dos letras y la configuración ni lo fija ya ni desactiva `optimalLineBreaking`. El espacio bajo los contenedores (`pinLegacyParagraphContainerSpacing`) se escribe como `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor cuando la configuración declara algún estilo de párrafo (en `paragraphStyles` o en los ajustes propios del visor HTML), un capítulo leído abre un contenedor `:::paragraphs` en una línea propia y la configuración no lo fija ya. Los cortes tras una raya (`pinLegacyDashBreaks`) se escriben como `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene una raya o una semirraya entre palabras sin espacios (una letra, una cifra o un signo de cierre delante, y una letra, una cifra o un signo de apertura detrás; unas comillas delante de la raya cuentan cuando las precede una letra, una cifra, un signo de cierre o un espacio de no separación, como en `«no»—y`, no en `dijo "—Hola`; una marca en línea pegada a la raya o a las comillas, como los `**` de `**I.**—Que`, cuenta a cualquiera de los dos lados) y la configuración no lo fija ya. La composición del texto en bandera (`pinLegacyRaggedBreaking`) se escribe como `bodyText.optimalRagged: false` sobre el `bodyText` en vigor cuando la configuración pone en bandera algún texto corrido (un `textAlign` distinto de `'justify'` en el texto de cuerpo, un estilo de párrafo, el cuerpo de un recuadro, el de una parte o el de un estilo de sección (`headingStyles[].bodyStyle`), o en los ajustes propios del visor HTML), no lo fija ya y no desactiva `optimalLineBreaking`. El hueco en los recuadros (`pinLegacyBoxResourceGap`) se escribe como `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor cuando un recurso se inserta en su propia línea dentro de un `:::callout` de los capítulos leídos y la configuración no lo fija ya. El corte de las cajas (`pinLegacyBoxChildCut`) se escribe como `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor cuando un capítulo leído abre un `:::callout` en una línea propia y la configuración no lo fija ya. Las marcas de los encabezados (`pinLegacyHeadingMarks`) se escriben como `headings.inlineMarks: false` sobre el `headings` que dejan en vigor las capas, cuando algún encabezado de los capítulos leídos lleva una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enlace en su título) y la configuración no nombra un valor propio. A las letras capitales (`pinLegacyDropCapSize`) se les escribe su tamaño de la 1.4 como `dropCap.fontSize`, estén donde estén: en la unidad del interlineado del elemento cuando es una longitud, y si no en la unidad de su cuerpo. El sitio bajo los dos puntos (`pinLegacyColonListRoom`) se escribe como `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor cuando una lista de los capítulos leídos sigue a una línea que termina en dos puntos (aunque haya líneas en blanco entre ellas) y la configuración ni nombra un sitio ni desactiva `keepColonWithList`. El hueco en línea (`pinLegacyInlineGap`) se escribe como `layout.inlineResourceGap: 'above'` sobre el `layout` que dejan en vigor las capas, cuando una línea de los capítulos leídos inserta un recurso (`::resource{id="…"}` sola en su línea, tal como la lee el analizador: una mención en el texto o en un fragmento de código no cuenta) y la configuración no nombra un hueco propio. El tamaño se fija sobre el `math` que dejan en vigor las capas (el `math` propio de un idioma sustituye al compartido), y solo cuando los capítulos leídos tienen algún `$`: un paquete sin fórmulas conserva su `config` tal como se escribió. Si ni el manifiesto ni el idioma dan un `math`, el que queda en vigor es el de la `baseConfig` de `readBundle` (la del lector), y también se fija, porque la 1.4 componía las fórmulas del paquete a ese tamaño: una base con `fontSizeScale: 1.5` se lee como 1,5 × 1,1312. Los saltos de encabezado de la base se toman tal como vienen. Así un paquete antiguo conserva lo que componían esas reglas, y `bundle.config` muestra los saltos, el tamaño de las fórmulas, los huecos, las marcas de los encabezados, el tamaño de las letras capitales, el sitio bajo los dos puntos, el corte de las cajas, los cortes tras una raya, los cortes tras el guion de un compuesto, la composición del texto en bandera, la división bajo un encabezado y el espacio bajo los contenedores con los que se compone. Las correcciones de composición de la 1.5 no tienen fijación y se le aplican como a cualquier libro, así que una página a la que afecten aún puede moverse (la lista está en [Tamaño de las fórmulas](#matemáticas)). Un `preset.json` escrito a mano para las reglas actuales pone `"configVersion": 9`; marcar así el manifiesto de un paquete antiguo es también la forma de leerlo, con una línea, con las reglas actuales (un paquete sin versión pierde entonces también la fijación de sus saltos de encabezado). Un manifiesto marcado `8`, escrito por postext 1.5 a 1.22, recibe solo los cuatro fijados de las reglas 9, como también todos los anteriores: la composición del verso (`pinLegacyVerseLayout`) se escribe como `bodyText.verse.layout: 'bayt'` en el `bodyText` vigente, cuando un capítulo leído compone un poema `:::verse` cuya apertura no nombra composición y cuyas líneas no llevan separador de hemistiquios, y la configuración no lo fija ya; las sangrías emparejadas (`pinLegacyPairedIndents`) quitan la `firstLineIndent` de todo estilo de párrafo (en `paragraphStyles` o en los ajustes del visor HTML) que fija también una `hangingIndent` distinta de cero; los saltos de línea forzados (`pinLegacyHardBreaks`) se escriben como `bodyText.hardLineBreaks: false` en el `bodyText` vigente, cuando un capítulo leído termina una línea de un párrafo, una cita o un elemento de lista con una barra invertida y el bloque sigue debajo, o pone `\\` ante un espacio y más texto (salvo el código en línea y las fórmulas, las fórmulas destacadas, los títulos y los poemas `:::verse`), y la configuración no lo fija ya; y las vallas de código (`pinLegacyCodeBlocks`) se escriben como `codeStyle.blocks: false`, cuando un capítulo leído abre una valla ```` ``` ```` o `~~~` (de tres o más caracteres, con hasta tres espacios delante) y la configuración no lo fija ya.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -9784,7 +10094,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'Un
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Texto.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nTexto.\n\n::resource{id="fig"}\n:::' });
@@ -9798,7 +10108,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'Un ejercic
 migrateConfig(config, CONFIG_VERSION); // reglas actuales: el propio `config`
 ```
 
-`content` es el markdown que compone la configuración (una cadena o una lista de capítulos). Sin él, los dos huecos, las marcas de los encabezados, el sitio bajo los dos puntos, el corte de las cajas, los cortes tras una raya, la división bajo un encabezado y los cortes tras el guion de un compuesto se fijan siempre, el tamaño de las fórmulas siempre que las matemáticas estén activadas y el espacio bajo los contenedores siempre que la configuración declare algún estilo de párrafo, porque el motor no puede saber si el libro tiene alguna fórmula, algún contenedor `:::paragraphs`, alguna figura en línea, algún encabezado con marcas, alguna lista introducida con dos puntos, alguna caja, alguna raya entre palabras, algún encabezado o algún compuesto. La composición del texto en bandera se fija solo según la configuración, haya contenido o no. Migra una configuración guardada una sola vez y vuelve a guardarla con `CONFIG_VERSION`: la fijación del tamaño multiplica la escala, así que una configuración migrada dos veces crecería dos veces. Sin él también se fija la composición del verso, porque el libro puede tener un poema `:::verse` sin separador, y las sangrías emparejadas se fijan solo por la configuración.
+`content` es el markdown que compone la configuración (una cadena o una lista de capítulos). Sin él, los dos huecos, las marcas de los encabezados, el sitio bajo los dos puntos, el corte de las cajas, los cortes tras una raya, la división bajo un encabezado y los cortes tras el guion de un compuesto se fijan siempre, el tamaño de las fórmulas siempre que las matemáticas estén activadas y el espacio bajo los contenedores siempre que la configuración declare algún estilo de párrafo, porque el motor no puede saber si el libro tiene alguna fórmula, algún contenedor `:::paragraphs`, alguna figura en línea, algún encabezado con marcas, alguna lista introducida con dos puntos, alguna caja, alguna raya entre palabras, algún encabezado o algún compuesto. La composición del texto en bandera se fija solo según la configuración, haya contenido o no. Migra una configuración guardada una sola vez y vuelve a guardarla con `CONFIG_VERSION`: la fijación del tamaño multiplica la escala, así que una configuración migrada dos veces crecería dos veces. Sin él también se fijan la composición del verso y las vallas de código, porque el libro puede tener un poema `:::verse` sin separador o una valla, y las sangrías emparejadas se fijan solo por la configuración.
 
 ### Componer y renderizar un paquete
 

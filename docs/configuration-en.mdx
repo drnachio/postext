@@ -50,6 +50,7 @@ This reference is long. These are the main blocks:
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
 - [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
 - [Callout styles](#callout-styles) — boxed notes, tips and objectives for `:::callout` containers.
+- [Code listings](#code-listings) — `codeStyle`: the face, box, tab width, long lines, line numbers and token colours of ```` ``` ```` listings, the syntax colouring and its highlighter hook, and inline code in a code face.
 - [Parts](#parts) — part-divider pages for `:::part` containers: parity, body area, opener design, body typography.
 - [Heading styles](#heading-styles) — named styles for `{style="…"}` headings: unnumbered chapters, front matter with its own running heads, geometry and palette.
 - [Table of contents](#table-of-contents) — what `:::toc` prints: entry typography, leaders, page numbers, author lines, part rows.
@@ -5670,6 +5671,309 @@ const style = pickChipStyle(resolved, 'key');
 ```
 
 
+## Code listings
+
+The `codeStyle` property sets how code listings look: the ```` ``` ```` and `~~~` fences of the text (see [Document format › Code blocks](/en/docs/document-format#code-blocks)), and inline code when it asks for a code face. A listing is set line by line as written, in a monospaced face, in a box: no line is hyphenated or justified, every space keeps its width, and a tab goes on to the next tab stop. The box comes from the same machinery as a `:::callout`, so a listing splits between lines across columns and pages, each part in a box of its own, and a fence inside a callout is a box nested in it. Every property is optional. Since postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '150px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Read fences as code blocks. <code>false</code> reads a fence and its lines as Markdown, as postext 1.22 did; a configuration stored before 1.23 whose text has a fence gets it (see <a href="#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Also read a run of lines indented four columns (four spaces, or a tab), after a blank line, as a listing; four columns come off each line. Off by default: Postext text often indents with spaces, and nested list items read leading spaces.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>The code face. A monospaced face keeps columns aligned; for Chinese or Japanese comments, one with kanji (BIZ UDGothic), whose full-width characters take two cells.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> is the body size.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>The weights of the code and of bold tokens.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>the body's grid line</td>
+      <td>The leading of the code lines; <code>em</code> is the code size. Unset, the lines sit on the baseline grid.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>The text after a listing goes back to the baseline grid; <code>false</code> keeps the exact <code>marginBottom</code>, as a callout's.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the body colour</td>
+      <td>The code's colour, which tokens without a colour of their own keep.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>The box's fill.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>off, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>The box's outline.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Rounded corners; a part of a split listing keeps them, as a split box does.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> each</td>
+      <td><code>em</code> is the code size.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>The space above and below the box.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>A page-span listing crosses every column of a multi-column page, as a <code>span: 'page'</code> box does. A fence sets its own with <code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>A tab goes on to the next multiple of this many character cells (a full-width character counts two). It stays a tab: copied text keeps it.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>A line wider than the box. <code>'wrap'</code>: it breaks after the last space or punctuation that fits (between two characters when none does), and the rest goes on below, <code>wrapIndent</code> cells in, behind <code>wrapMarker</code>; a part of a split listing never starts with such a rest when another cut fits. <code>'shrink'</code>: the whole listing is set smaller until its widest line fits, down to <code>minFontScale</code>, and what still does not fit wraps. <code>'clip'</code>: the line stops at the box's inner edge; the characters past it are not printed. Each one raises a <code>codeOverflow</code> warning.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>The indent of a wrapped line's rest, in character cells.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>Set in that indent, in the line numbers' colour; not part of the text (copies leave it out, a tagged PDF paints it as an artifact). <code>''</code> sets none. <code>↪</code> is missing from most code faces, where it prints as an empty box.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>With <code>'shrink'</code>, the smallest share of <code>fontSize</code> a listing is set at.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Number the lines of every listing, in a gutter before the code. A fence sets its own with <code>lineNumbers</code>, <code>lineNumbers=false</code> and <code>start=N</code>. The rest of a wrapped line has no number. The numbers are set beside the text, not in it: the HTML viewer hides them from a selection and from assistive technology, a tagged PDF paints them as artifacts.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>The numbers' colour (and the wrap marker's).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>The room between the widest number and the code; <code>em</code> is the code size.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>The band behind the lines a fence names with <code>highlight="3,5-7"</code>, across the box.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>As a callout style's: <code>false</code> splits a listing taller than the room left between lines; <code>true</code> moves it whole, and splits it only when it is taller than a column.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>The fewest lines on each side of a split, so no part holds a single line.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repeat the title at the head of each part, with the "(cont.)" suffix of the document language.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / "Continued"</td>
+      <td>A mark under the last line of a part that goes on.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>the code face, bold, 0.9 of its size</td>
+      <td>The title row a fence's <code>title</code> prints (see <a href="#callout-styles">Callout styles</a> for the fields).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>none</td>
+      <td>When set, the title prints in a label tab on the box's top edge instead (the code face and size unless the label names its own).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>Colour the tokens with the built-in tokenizer (and any registered highlighter); <code>'none'</code> sets every listing in <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>a quiet palette</td>
+      <td>The look of each kind of token, merged kind by kind onto the defaults (see below). A palette-linked colour follows <code>colorPalette</code> and a part's palette.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>unset</td>
+      <td>Inline code in a code face (see below). Unset, inline code is set in the text's face, as before 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Syntax colouring
+
+A small tokenizer built into the engine names the tokens of `js` and `ts` (`javascript`, `jsx`, `typescript`, `tsx`), `json`, `python`, `bash` (`sh`, `zsh`, `shell`), `console` (a shell session), `css`, `html` and `xml` (`svg`), `markdown` and `sql`; a listing in any other language, or with none, is set in `color`. It reads the whole listing, so a comment or a string that runs over lines stays one token. In a `console` listing, a line that opens with a prompt (`$ `, `% `, `# `, `> `, `>>> `, `PS …> `) is what the user typed (`prompt`) and every other line is what the programs printed (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Kind</th>
+      <th style={{ width: '200px' }}>Default</th>
+      <th>What it names</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>Reserved words: <code>const</code>, <code>def</code>, <code>if</code>, <code>SELECT</code>, an HTML tag name, a CSS at-rule.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>Strings, template literals, attribute values.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>Numbers and constants (<code>true</code>, <code>None</code>, <code>null</code>), colours, entities.</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>, italic</td><td>Comments.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>A name followed by a parenthesis; shell builtins.</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>Types and capitalised class names, CSS selectors.</td></tr>
+    <tr><td><code>operator</code></td><td>the code's colour</td><td>Operators, shell pipes and redirections.</td></tr>
+    <tr><td><code>punctuation</code></td><td>the code's colour</td><td>Brackets, separators.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>Shell variables, JSON keys, CSS properties, HTML attributes, <code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>Decorators, command-line options (<code>-l</code>, <code>--all</code>), a doctype.</td></tr>
+    <tr><td><code>prompt</code></td><td>the code's colour, bold</td><td>The typed line of a shell session.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>What the programs printed.</td></tr>
+  </tbody>
+</table>
+
+A host plugs its own highlighter in (Shiki, Prism, highlight.js) with `registerCodeHighlighter`. Configurations are serialisable data, so the function is registered with the engine, not written in `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) returns the listing's lines, each as runs whose texts join into the line.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // remove the one registered for every language
+```
+
+A highlighter registered for a language takes precedence over one registered for `'*'`, which takes precedence over the built-in tokenizer. A run names a `token` kind (coloured by `tokens`) or a `color` of its own (a CSS hex). A highlighter that returns `undefined`, throws, or returns lines that do not join into the listing's own is passed over. Layout reads the registry when it sets a listing: register before building, and in a web worker (the Sandbox lays out in one) register inside the worker.
+
+### Inline code
+
+`codeStyle.inline` sets text between backticks in a code face: as one unit, as a chip is, which a line never breaks inside. Unset, inline code keeps the text's face.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Property</th>
+      <th style={{ width: '120px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>The face.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> is the size of the text around it.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>the text's</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>On top of the text's own marks (code inside bold is bold).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>none</td><td>A fill behind the span.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>none / <code>0.5pt</code></td><td>An outline.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> is the span's size.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> with a fill or outline, else <code>0</code> / <code>0.1em</code></td><td>Room inside the fill; the vertical padding paints outside the line box.</td></tr>
+  </tbody>
+</table>
+
+### How a listing is set
+
+- **One line per source line.** The lines are built from the code face's own advances, not by the paragraph breaker: spaces keep their width, a run of them is kept, leading spaces indent. A listing in a right-to-left book reads left to right, its lines set from the far side of the box as a left-to-right quotation is, its numbers in the gutter on their left. In a vertical book a listing follows the vertical flow (its Latin turned sideways, as vertical text sets it) and takes no line numbers.
+- **Splitting.** A listing taller than the room left splits between lines across columns and pages, each part framed as a box of its own, never leaving fewer than `splitMinLines` lines on a side; the rest of a wrapped line stays with it when another cut fits.
+- **Outputs.** The canvas, the HTML viewer and the PDF paint the lines and the box as laid out. The HTML viewer keeps the spaces (`white-space: pre`), so a selection copies the listing with its indentation and a line feed after each source line, without numbers or wrap markers. A tagged PDF sets each listing as a paragraph holding a `Code` element, with real space glyphs, its numbers and wrap markers as artifacts. The reflowable EPUB writes `<pre><code class="language-…">` with the tokens' colours and a stylesheet from `codeStyle`; the fixed-layout EPUB is the print.
+- **Fonts.** The Sandbox and `configFontFamilies` load the code face when the text holds a fence (or the configuration has a `codeStyle` section), in its regular and bold weights, upright and italic; the PDF embeds the faces the lines use.
+
 ## Callout styles
 
 The `calloutStyles` property declares the named box styles a document applies with a `:::callout{type="…"}` container — notes, tips, warnings, learning objectives, any content set apart from the running text in a tinted or bordered box. One neutral style, `note`, ships by default (light grey background, no border, no stripe, no icon, no title), so `:::callout` works without any configuration; declaring `calloutStyles` replaces that default list.
@@ -8474,6 +8778,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>A paragraph a <a href="#drop-caps">drop cap</a> opens that cannot take it as configured. <code>reason</code>: <code>'shortParagraph'</code> (fewer lines than the initial sinks; <code>handling</code> is what <code>shortParagraph</code> did, <code>lines</code> the lines a shrunk initial spans), <code>'split'</code> (it breaks before the initial's last line, alone in a column too short), <code>'joiningScript'</code> (its first letter joins the next), <code>'verticalText'</code> or <code>'noLetter'</code> (it opens with a reference, a formula or a note mark). <code>text</code> is its first line.</td>
       <td>The room is kept, the initial shrinks or is left out, as the warning says.</td>
     </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td>A <a href="#code-listings">code listing</a> has lines wider than its box. <code>mode</code> is what <code>codeStyle.overflow</code> did (<code>'wrap'</code>, <code>'shrink'</code>, <code>'clip'</code>), <code>lines</code> how many source lines were too wide, <code>scale</code> the size a shrunk listing was set at (a share of <code>fontSize</code>), <code>lang</code> the fence's language. Points at the listing.</td>
+      <td>The lines are turned over, set smaller or cut, as <code>mode</code> says.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9753,7 +10062,7 @@ A payload's **`fileId` is its path inside the bundle**. `resource.svg.fileId`, `
 
 #### Bundles written by postext 1.4 or earlier
 
-Every manifest `createBundle` and the Sandbox write carries `configVersion: 9`: the configuration rules its `config` was written for. A manifest without it was written by postext 1.4 or earlier, which set sixteen things differently:
+Every manifest `createBundle` and the Sandbox write carries `configVersion: 9`: the configuration rules its `config` was written for. A manifest without it was written by postext 1.4 or earlier, which set seventeen things differently:
 
 - **Heading breaks** (rules 3): up to 1.4, a `headings` object with no H1 break had none (see [Per-level overrides](#per-level-overrides)).
 - **The maths size** (rules 4): up to 1.4, formulas came out 1.131 times larger than `fontSizeScale` says (see [Formula size](#math)).
@@ -9771,8 +10080,9 @@ Every manifest `createBundle` and the Sandbox write carries `configVersion: 9`: 
 - **Poems with no separator** (rules 9): up to 1.22, a `:::verse` poem whose lines carried no `||` was set as single hemistichs, each line centred (see `bodyText.verse.layout` under [Verse](#verse)).
 - **A first-line indent beside a hanging indent** (rules 9): up to 1.22, a paragraph style's `hangingIndent` replaced its `firstLineIndent`, and the first line started at `indent` (see [Paragraph styles](#paragraph-styles)).
 - **A backslash at the end of a line** (rules 9): up to 1.22, a backslash that ended a line of a paragraph, a quotation or a list item, and `\\` before a space, printed, and the lines joined with a space (see `bodyText.hardLineBreaks` under [Body text](#body-text)).
+- **Code fences** (rules 9): up to 1.22, a ```` ``` ```` or `~~~` fence and the lines inside it were read as Markdown: lines joined into paragraphs, a `#` line became a heading, the fences printed (see `codeStyle.blocks` under [Code listings](#code-listings)).
 
-`openBundle` and `readBundle` read such a manifest's `config`, and each locale's `localized` configuration, through `migrateConfig`, which writes out the breaks 1.4 laid out and multiplies the maths scale by 1.131 (its `em` display margins divided by it). A manifest stamped `3` to `7`, written by a 1.5 prerelease, only gets the pins of the rules after its stamp. With `3` that is the maths size, the inline gap, the five pins of rules 6, the two of rules 7 and the three of rules 8; with `4`, the inline gap and the pins of rules 6, 7 and 8; with `5`, the pins of rules 6, 7 and 8; with `6`, the pins of rules 7 and 8; with `7`, the pins of rules 8 alone. The split under a heading (`pinLegacyHeadingSplit`) is written as `headings.keepWithNextSplit: 'fill'` on the `headings` the layers leave in force, when a chapter read has a heading and the configuration names no value of its own, keeps `headings.keepWithNext` on and does not turn `bodyText.avoidOrphans` off. The compound breaks (`pinLegacyHyphenBreaks`) are written as `bodyText.breakAfterHyphens: false` on the `bodyText` in force, when a chapter read sets a hyphen between two letters and the configuration neither sets it already nor turns `optimalLineBreaking` off. The space under containers (`pinLegacyParagraphContainerSpacing`) is written as `bodyText.paragraphContainerSpacing: 'add'` on the `bodyText` in force, when the configuration declares a paragraph style (in `paragraphStyles` or the HTML viewer's overrides), a chapter read opens a `:::paragraphs` container on a line of its own, and the configuration does not set it already. The dash breaks (`pinLegacyDashBreaks`) are written as `bodyText.breakAfterDashes: false` on the `bodyText` in force, when a chapter read sets an em or en dash closed between words (a letter, a digit or closing punctuation before it, a letter, a digit or an opening bracket or quote after it; a quotation mark before it counts when a letter, a digit, closing punctuation or a no-break space stands before the quote, as in `"no"—and`, not in `said "—Hola`; an inline mark touching the dash or the quote, such as the `**` of `**riddles.**—I`, counts on either side) and the configuration does not set it already. The ragged breaking (`pinLegacyRaggedBreaking`) is written as `bodyText.optimalRagged: false` on the `bodyText` in force, when the configuration sets some running text ragged (a `textAlign` other than `'justify'` on the body text, a paragraph style, a box body, the body of a part or the body of a section style (`headingStyles[].bodyStyle`), or in the HTML viewer's overrides), does not set it already and does not turn `optimalLineBreaking` off. The gap in boxes (`pinLegacyBoxResourceGap`) is written as `layout.inlineResourceGapInBoxes: false` on the `layout` in force, when a resource is embedded on its own line inside a `:::callout` of the chapters read and the configuration does not set it already. The box cut (`pinLegacyBoxChildCut`) is written as `layout.boxChildSplitMinLines: 1` on the `layout` in force, when a chapter read opens a `:::callout` on a line of its own and the configuration does not set it already. The heading marks (`pinLegacyHeadingMarks`) are written as `headings.inlineMarks: false` on the `headings` the layers leave in force, when a heading of the chapters read carries a mark (`*`, `_`, `^`, `~`, `:smallcaps[` or a link in its title) and the configuration names no value of its own. The drop caps (`pinLegacyDropCapSize`) get their 1.4 size written out as `dropCap.fontSize`, wherever they sit: in the unit of the element's leading when that is a length, else in the unit of its font size. The colon-line room (`pinLegacyColonListRoom`) is written as `bodyText.colonListRoom: 'line'` on the `bodyText` in force, when a list of the chapters read follows a line ending in a colon (blank lines between them allowed) and the configuration neither names a room nor turns `keepColonWithList` off. The inline gap (`pinLegacyInlineGap`) is written as `layout.inlineResourceGap: 'above'` on the `layout` the layers leave in force, when a line of the chapters read embeds a resource (`::resource{id="…"}` alone on its line, as the parser reads it: a mention in running text or in a code span does not count) and the configuration names no gap of its own. The size is pinned on the `math` the layers leave in force (a locale's own `math` replaces the shared one), and only when the chapters read have a `$`: a bundle without maths keeps its `config` as written. When neither the manifest nor the locale names a `math`, the one in force is `readBundle`'s `baseConfig` (the reader's own), and it is pinned too, since 1.4 set the bundle's formulas at that size: a base `fontSizeScale: 1.5` reads as 1.5 × 1.1312. The base's heading breaks are taken as they are. An old bundle therefore keeps what these rules laid out, and `bundle.config` shows the breaks, the maths size, the gaps, the heading marks, the drop-cap sizes, the colon-line room, the box cut, the dash breaks, the compound breaks, the ragged breaking, the split under a heading and the space under containers it is laid out with. The layout fixes of 1.5 have no pin and apply to it as to any book, so a page they touch can still move (see [Formula size](#math) for the list). A `preset.json` written by hand for today's rules sets `"configVersion": 9`; stamping an old bundle's manifest with it is also the one-line way to read it with today's rules (an unversioned bundle then loses its heading-break pin too). A manifest stamped `8`, written by postext 1.5 to 1.22, gets the three pins of rules 9 alone, as every older one does too: the verse layout (`pinLegacyVerseLayout`) is written as `bodyText.verse.layout: 'bayt'` on the `bodyText` in force, when a chapter read sets a `:::verse` poem whose fence names no layout and whose lines carry no hemistich separator and the configuration does not set it already; the paired indents (`pinLegacyPairedIndents`) drop the `firstLineIndent` of every paragraph style (in `paragraphStyles` or the HTML viewer's overrides) that also sets a non-zero `hangingIndent`; the forced line breaks (`pinLegacyHardBreaks`) are written as `bodyText.hardLineBreaks: false` on the `bodyText` in force, when a chapter read ends a line of a paragraph, a quotation or a list item with a backslash and the block goes on below it, or sets `\\` before a space and more text (inline code and maths, display formulas, headings and `:::verse` poems aside), and the configuration does not set it already.
+`openBundle` and `readBundle` read such a manifest's `config`, and each locale's `localized` configuration, through `migrateConfig`, which writes out the breaks 1.4 laid out and multiplies the maths scale by 1.131 (its `em` display margins divided by it). A manifest stamped `3` to `7`, written by a 1.5 prerelease, only gets the pins of the rules after its stamp. With `3` that is the maths size, the inline gap, the five pins of rules 6, the two of rules 7 and the three of rules 8; with `4`, the inline gap and the pins of rules 6, 7 and 8; with `5`, the pins of rules 6, 7 and 8; with `6`, the pins of rules 7 and 8; with `7`, the pins of rules 8 alone. The split under a heading (`pinLegacyHeadingSplit`) is written as `headings.keepWithNextSplit: 'fill'` on the `headings` the layers leave in force, when a chapter read has a heading and the configuration names no value of its own, keeps `headings.keepWithNext` on and does not turn `bodyText.avoidOrphans` off. The compound breaks (`pinLegacyHyphenBreaks`) are written as `bodyText.breakAfterHyphens: false` on the `bodyText` in force, when a chapter read sets a hyphen between two letters and the configuration neither sets it already nor turns `optimalLineBreaking` off. The space under containers (`pinLegacyParagraphContainerSpacing`) is written as `bodyText.paragraphContainerSpacing: 'add'` on the `bodyText` in force, when the configuration declares a paragraph style (in `paragraphStyles` or the HTML viewer's overrides), a chapter read opens a `:::paragraphs` container on a line of its own, and the configuration does not set it already. The dash breaks (`pinLegacyDashBreaks`) are written as `bodyText.breakAfterDashes: false` on the `bodyText` in force, when a chapter read sets an em or en dash closed between words (a letter, a digit or closing punctuation before it, a letter, a digit or an opening bracket or quote after it; a quotation mark before it counts when a letter, a digit, closing punctuation or a no-break space stands before the quote, as in `"no"—and`, not in `said "—Hola`; an inline mark touching the dash or the quote, such as the `**` of `**riddles.**—I`, counts on either side) and the configuration does not set it already. The ragged breaking (`pinLegacyRaggedBreaking`) is written as `bodyText.optimalRagged: false` on the `bodyText` in force, when the configuration sets some running text ragged (a `textAlign` other than `'justify'` on the body text, a paragraph style, a box body, the body of a part or the body of a section style (`headingStyles[].bodyStyle`), or in the HTML viewer's overrides), does not set it already and does not turn `optimalLineBreaking` off. The gap in boxes (`pinLegacyBoxResourceGap`) is written as `layout.inlineResourceGapInBoxes: false` on the `layout` in force, when a resource is embedded on its own line inside a `:::callout` of the chapters read and the configuration does not set it already. The box cut (`pinLegacyBoxChildCut`) is written as `layout.boxChildSplitMinLines: 1` on the `layout` in force, when a chapter read opens a `:::callout` on a line of its own and the configuration does not set it already. The heading marks (`pinLegacyHeadingMarks`) are written as `headings.inlineMarks: false` on the `headings` the layers leave in force, when a heading of the chapters read carries a mark (`*`, `_`, `^`, `~`, `:smallcaps[` or a link in its title) and the configuration names no value of its own. The drop caps (`pinLegacyDropCapSize`) get their 1.4 size written out as `dropCap.fontSize`, wherever they sit: in the unit of the element's leading when that is a length, else in the unit of its font size. The colon-line room (`pinLegacyColonListRoom`) is written as `bodyText.colonListRoom: 'line'` on the `bodyText` in force, when a list of the chapters read follows a line ending in a colon (blank lines between them allowed) and the configuration neither names a room nor turns `keepColonWithList` off. The inline gap (`pinLegacyInlineGap`) is written as `layout.inlineResourceGap: 'above'` on the `layout` the layers leave in force, when a line of the chapters read embeds a resource (`::resource{id="…"}` alone on its line, as the parser reads it: a mention in running text or in a code span does not count) and the configuration names no gap of its own. The size is pinned on the `math` the layers leave in force (a locale's own `math` replaces the shared one), and only when the chapters read have a `$`: a bundle without maths keeps its `config` as written. When neither the manifest nor the locale names a `math`, the one in force is `readBundle`'s `baseConfig` (the reader's own), and it is pinned too, since 1.4 set the bundle's formulas at that size: a base `fontSizeScale: 1.5` reads as 1.5 × 1.1312. The base's heading breaks are taken as they are. An old bundle therefore keeps what these rules laid out, and `bundle.config` shows the breaks, the maths size, the gaps, the heading marks, the drop-cap sizes, the colon-line room, the box cut, the dash breaks, the compound breaks, the ragged breaking, the split under a heading and the space under containers it is laid out with. The layout fixes of 1.5 have no pin and apply to it as to any book, so a page they touch can still move (see [Formula size](#math) for the list). A `preset.json` written by hand for today's rules sets `"configVersion": 9`; stamping an old bundle's manifest with it is also the one-line way to read it with today's rules (an unversioned bundle then loses its heading-break pin too). A manifest stamped `8`, written by postext 1.5 to 1.22, gets the four pins of rules 9 alone, as every older one does too: the verse layout (`pinLegacyVerseLayout`) is written as `bodyText.verse.layout: 'bayt'` on the `bodyText` in force, when a chapter read sets a `:::verse` poem whose fence names no layout and whose lines carry no hemistich separator and the configuration does not set it already; the paired indents (`pinLegacyPairedIndents`) drop the `firstLineIndent` of every paragraph style (in `paragraphStyles` or the HTML viewer's overrides) that also sets a non-zero `hangingIndent`; the forced line breaks (`pinLegacyHardBreaks`) are written as `bodyText.hardLineBreaks: false` on the `bodyText` in force, when a chapter read ends a line of a paragraph, a quotation or a list item with a backslash and the block goes on below it, or sets `\\` before a space and more text (inline code and maths, display formulas, headings and `:::verse` poems aside), and the configuration does not set it already; and the code fences (`pinLegacyCodeBlocks`) are written as `codeStyle.blocks: false`, when a chapter read opens a ```` ``` ```` or `~~~` fence (three or more, up to three spaces in) and the configuration does not set it already.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -9782,7 +10092,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A 
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -9796,7 +10106,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-kno
 migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 ```
 
-`content` is the markdown the configuration lays out (a string or a list of chapters). Without it the maths size is pinned whenever maths is on, the space under containers whenever the configuration declares a paragraph style, and the two gaps, the heading marks, the colon-line room, the box cut, the dash breaks, the split under a heading and the compound breaks always, since the engine cannot tell whether the book has a formula, a `:::paragraphs` container, an inline figure, a marked heading, a list introduced by a colon, a box, a closed dash, a heading or a compound. The ragged breaking is pinned by the configuration alone, content or not. Migrate a stored configuration once and store it again under `CONFIG_VERSION`: the maths pin multiplies the scale, so a configuration migrated twice would grow twice. The verse layout is pinned without it too, since the book may hold a `:::verse` poem with no separator, and the paired indents are pinned by the configuration alone.
+`content` is the markdown the configuration lays out (a string or a list of chapters). Without it the maths size is pinned whenever maths is on, the space under containers whenever the configuration declares a paragraph style, and the two gaps, the heading marks, the colon-line room, the box cut, the dash breaks, the split under a heading and the compound breaks always, since the engine cannot tell whether the book has a formula, a `:::paragraphs` container, an inline figure, a marked heading, a list introduced by a colon, a box, a closed dash, a heading or a compound. The ragged breaking is pinned by the configuration alone, content or not. Migrate a stored configuration once and store it again under `CONFIG_VERSION`: the maths pin multiplies the scale, so a configuration migrated twice would grow twice. The verse layout and the code fences are pinned without it too, since the book may hold a `:::verse` poem with no separator or a fence, and the paired indents are pinned by the configuration alone.
 
 ### Laying out and rendering a bundle
 

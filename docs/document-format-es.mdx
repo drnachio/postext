@@ -51,7 +51,7 @@ Pon el valor entre comillas para imprimirlo exactamente como está escrito —un
 
 ## Construcciones de bloque
 
-Postext reconoce siete tipos de bloque de prosa, además de las directivas y las inserciones de recursos que se describen más adelante en esta página. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
+Postext reconoce siete tipos de bloque de prosa y los listados de código, además de las directivas y las inserciones de recursos que se describen más adelante en esta página. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
 
 <Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de prosa de un vistazo", "desc": "Los siete tipos de bloque de prosa que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en bloque, cada uno con su sintaxis markdown. Las directivas y las inserciones de recursos se describen por separado.", "caption": "Cada tipo de bloque de prosa y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula en bloque", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -98,6 +98,11 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
       <td>Fórmula en bloque</td>
       <td><code>$$ … $$</code></td>
       <td>Una fórmula LaTeX compuesta como bloque propio. Se renderiza centrada en la columna, ajustada a la rejilla de línea base como una cabecera, y se mantiene vectorial en el PDF. Las formas de una sola línea y de valla multilínea se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
+    </tr>
+    <tr>
+      <td>Bloque de código</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>Un listado, conservado tal como está escrito: cada espacio, cada tabulador y cada salto de línea, sin leer nada como Markdown. Se compone línea a línea en la letra del código, dentro de una caja. Ver <a href="#bloques-de-código">Bloques de código</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -153,6 +158,62 @@ La lámpara de la primera entrada se abre con una capitular.
 ```
 
 En la línea de un encabezado, `dropcap=false` deja sin la capitular que fija su nivel o su estilo al párrafo que sigue a ese encabezado, `dropcap=N` la compone sobre `N` líneas, y un `dropcap` solo le da una a ese párrafo (de tres líneas, en la fuente del párrafo) cuando el nivel no fija ninguna. En la valla de un `:::paragraphs`, el atributo hace lo mismo con el primer párrafo del grupo, o con todos cuando el estilo dice `each: true`. El párrafo que sigue a un encabezado se busca pasando por encima de vallas, directivas, cajas que salieron del flujo y figuras flotantes; un párrafo dentro de un recuadro, de un elemento de lista, de una cita o de un poema nunca lleva capitular. Desde postext 1.23.
+
+### Bloques de código
+
+Un listado va entre dos vallas de tres o más comillas invertidas (o de tres o más virgulillas), cada una en su propia línea y con hasta tres espacios delante. Todo lo que queda entre ellas se conserva tal como está escrito: los espacios del principio y las series de espacios, los tabuladores, las líneas en blanco y las líneas que empiezan por `#`, `-`, `1.`, `>`, `$` o `:::`. Dentro no se lee nada como Markdown: ni énfasis, ni `:ref`, ni fórmulas, ni chips, ni directivas, ni encabezados. La valla de cierre usa el mismo carácter que la de apertura y es al menos igual de larga, así que un listado que muestra una valla va en una más larga o en una de virgulillas:
+
+~~~markdown
+```bash {title="copia.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copia las fotos al disco de respaldo
+rsync -a --delete ~/Fotos/ /Volumes/Respaldo/Fotos/
+echo "hecho: $(date)"
+```
+~~~
+
+La cadena de información que sigue a la valla de apertura nombra el lenguaje (su primera palabra: `js`, `ts`, `python`, `bash`, `console`, `json`…), y el resto se lee como atributos con la [sintaxis de atributos](#valores-de-los-atributos), entre llaves o sin ellas (`title="app.js" lineNumbers`). Cualquier otra cosa que siga al lenguaje es el título: ```` ```console Terminal ```` y ```` ```python normalize.py ```` imprimen *Terminal* y *normalize.py* sobre el listado.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>Un título sobre el listado, en una fila de título (o en una pestaña de etiqueta en el borde de la caja cuando se fija <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>El texto de la pestaña de etiqueta de la caja, como el de un <code>:::callout</code> (con <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numera las líneas de este listado (o no), diga lo que diga <code>codeStyle.lineNumbers</code>. Los números van en un margen delante del código y no se copian con él.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>El número de la primera línea (numera el listado aunque nada más lo haga).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Tiñe las líneas indicadas (contadas desde la primera línea del listado, empezando en 1): líneas sueltas e intervalos, separados por comas.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>En una página de varias columnas, el listado las ocupa todas.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una valla termina el párrafo de encima, haya línea en blanco o no, y el texto que sigue a la valla de cierre empieza un párrafo nuevo. Una valla que se queda abierta llega hasta el final del texto y se señala (`unclosedCodeBlock`). Una valla dentro de un `:::callout` es una caja anidada en él; dentro de `:::paragraphs`, el listado conserva el estilo de código, no el estilo de párrafo. Postext no continúa los elementos de lista, así que una valla tras un elemento de lista cierra la lista. Las marcas de índice y las anclas escritas dentro de un listado se quedan tal como están escritas.
+
+El código sangrado (cuatro espacios o un tabulador, tras una línea en blanco) se lee como listado solo cuando `codeStyle.indentedCode` está activado: los textos de Postext sangran a menudo con espacios, y las listas anidadas leen los espacios del principio.
+
+El aspecto de un listado (su letra, su caja, el ancho del tabulador, qué pasa con una línea más ancha que la caja, los números de línea, los colores de sus elementos) lo fija `codeStyle`; ver [Configuración › Listados de código](/es/docs/configuration#listados-de-código). El código en línea (`` `x` ``) se queda en la letra del texto salvo que `codeStyle.inline` le dé otra. Un libro guardado antes de postext 1.23 con vallas en su texto las lee como entonces, como Markdown (`codeStyle.blocks: false`). Desde postext 1.23.
 
 ## Directivas
 
@@ -755,7 +816,7 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Código en línea</td>
       <td><code>`código`</code></td>
-      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. El estilo diferenciado para código está en el roadmap.</td>
+      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. Se compone en la letra del texto o, con <code>codeStyle.inline</code>, en la letra del código como una sola unidad (ver <a href="/es/docs/configuration#listados-de-código">Configuración › Listados de código</a>). Un listado va en un <a href="#bloques-de-código">bloque de código</a>.</td>
     </tr>
     <tr>
       <td>Escape</td>
@@ -1771,7 +1832,6 @@ Un `:::strip` tiene el cuerpo de una página pero va en el texto como una sola c
 Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:
 
 - **Encabezados tipo setext** — la forma con subrayado `===` / `---`. Usa encabezados ATX (`#`).
-- **Bloques de código con cercas o con indentación** — cercas ` ``` ` o `~~~` e indentación de 4 espacios. Las líneas de dentro se leen como Markdown corriente, no se conservan como un listado: las líneas sin una línea en blanco entre ellas se unen en un solo párrafo y pierden sus espacios iniciales, una línea que empieza por `#` y un espacio se convierte en un título (`#!/usr/bin/env` sigue siendo texto) y una que empieza por `-` o `1.` y un espacio en un elemento de lista, un par de signos `$` se convierte en una fórmula, y las líneas de la cerca se imprimen como texto: una cerca ` ``` ` como un acento grave, la de apertura seguida de la cadena de información (`` `bash``), y una cerca `~~~` como una `~` pequeña compuesta como subíndice. Para componer un listado, escribe cada línea como un párrafo propio (con una línea en blanco entre líneas) dentro de un bloque `:::paragraphs` cuyo estilo de párrafo fije una `fontFamily` monoespaciada, y encierra cada línea entre acentos graves, que conservan `#`, `$`, `*` y los demás tal como están escritos. Los espacios normales al principio de una línea se descartan y una serie de ellos dentro de la línea se reduce a uno, también entre los acentos graves, así que sangra y alinea con espacios de no separación (U+00A0) y ponlos dentro de los acentos graves: uno delante del acento grave de apertura también se descarta. El código en línea se reconoce, pero no tiene tipografía de código: ver [Formato en línea](#formato-en-línea).
 - **HTML en crudo** — las etiquetas `<tag>` no se interpretan. Tampoco se admiten etiquetas estilo MDX; la fuente Postext es markdown puro.
 - **Líneas horizontales** — `---`, `***`, `___`.
 - **Tablas** — las tablas con pipes no se parsean. Las tablas se modelan como recursos estructurados en `PostextContent.resources`.

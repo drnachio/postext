@@ -51,7 +51,7 @@ YAML会给值赋予类型：`1984`是数字，`2026-04-15`是日期，`[Ana Gil,
 
 ## 块结构
 
-Postext识别七种正文块类型，另外还有本页后文介绍的指令和资源嵌入。块总是以空行或另一个块的开始作为结束。
+Postext识别七种正文块类型和代码清单，另外还有本页后文介绍的指令和资源嵌入。块总是以空行或另一个块的开始作为结束。
 
 <Illustration name="BlockTypesGallery" data='{"title": "正文块结构一览", "desc": "Postext识别的七种正文块类型：标题、段落、引用块、无序列表、有序列表、任务列表和行间公式，以及各自的Markdown语法。指令和资源嵌入另行介绍。", "caption": "每种正文块类型及其Markdown写法。", "blocks": [{"name": "标题", "syntax": "# Title", "color": "blue"}, {"name": "段落", "syntax": "纯文本行", "color": "orange"}, {"name": "引用块", "syntax": "> quoted text", "color": "green"}, {"name": "无序列表", "syntax": "- item", "color": "purple"}, {"name": "有序列表", "syntax": "1. item", "color": "pink"}, {"name": "任务列表", "syntax": "- [x] done", "color": "teal"}, {"name": "行间公式", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -98,6 +98,11 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
       <td>行间公式</td>
       <td><code>$$ … $$</code></td>
       <td>单独成块排版的LaTeX公式。在栏内居中渲染，像标题一样对齐基线网格，在PDF输出中保持矢量。单行形式和围栏多行形式见<a href="#mathematical-formulas">数学公式</a>。</td>
+    </tr>
+    <tr>
+      <td>代码块</td>
+      <td><code>```js</code> … <code>```</code>、<code>~~~</code> … <code>~~~</code></td>
+      <td>一段代码清单，按原样保留：每个空格、制表符和换行都保留，其中的内容都不按Markdown读取。用代码字体逐行排在框中。见<a href="#代码块">代码块</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -153,6 +158,62 @@ The lamp of the first entry opens with an initial.
 ```
 
 在标题行上，`dropcap=false`让该标题后的段落不带其级别或样式设定的首字下沉，`dropcap=N`把首字下沉设为`N`行，单独的`dropcap`在级别没有设定时也给这一段加上首字下沉（三行，用段落的字体）。在`:::paragraphs`围栏上，这个属性对组的第一段起同样的作用，样式设为`each: true`时对每一段都起作用。标题后的段落会越过围栏、指令、离开文字流的框和浮动图来查找；框、列表项、引文或诗中的段落从不带首字下沉。自postext 1.23起。
+
+### 代码块
+
+代码清单写在两条由三个或更多反引号（或三个或更多波浪号）组成的围栏之间，每条围栏单独占一行，最多缩进三个空格。两条围栏之间的内容都按原样保留：行首空格和连续的空格、制表符、空行，以及以`#`、`-`、`1.`、`>`、`$`或`:::`开头的行。其中的内容都不按Markdown读取：没有强调，没有`:ref`，没有公式，没有行内标签，没有指令，也没有标题。结束围栏所用的字符与开始围栏相同，长度至少与它相等，所以要展示围栏的清单，就放进更长的围栏或波浪号围栏中：
+
+~~~markdown
+```bash {title="backup.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copy the photos to the backup disk
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "done: $(date)"
+```
+~~~
+
+开始围栏后的信息字符串给出语言（它的第一个词：`js`、`ts`、`python`、`bash`、`console`、`json`……），其余部分按[属性写法](#属性值)读作属性，放在花括号里或不加花括号都可以（`title="app.js" lineNumbers`）。语言之后的其他文字是标题：```` ```console Terminal ````和```` ```python normalize.py ````在清单上方印出*Terminal*和*normalize.py*。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>清单上方的标题，排在标题行中（设了<code>codeStyle.label</code>时排在框边的标签中）。</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>框的标签中的文字，与<code>:::callout</code>的相同（需设<code>codeStyle.label</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>、<code>lineNumbers=false</code></td>
+      <td>为这段清单的行编号（或不编号），不管<code>codeStyle.lineNumbers</code>怎样设置。行号排在代码前的边栏中，复制代码时不会带上。</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>第一行的行号（其他设置都不编号时，它也让清单带上行号）。</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>为指定的行加底色（从清单的第一行起算，从1开始）：单独的行和范围，用逗号分隔。</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>在分为几栏的页面上，清单横跨所有栏。</td>
+    </tr>
+  </tbody>
+</table>
+
+围栏会结束它上面的段落，不论中间有没有空行；结束围栏之后的文字开始一个新段落。没有闭合的围栏一直延续到文字末尾，并给出警告（`unclosedCodeBlock`）。`:::callout`中的围栏是嵌套在其中的框；在`:::paragraphs`中，清单保持代码样式，而不采用段落样式。Postext没有列表项的延续写法，所以列表项之后的围栏会结束列表。写在清单中的索引标记和锚点照原样保留。
+
+缩进代码（空行之后以四个空格或一个制表符缩进）只有在打开`codeStyle.indentedCode`时才读作代码清单：Postext的正文常用空格缩进，嵌套列表项也要读行首空格。
+
+清单的外观（字体、框、制表符宽度、比框更宽的行如何处理、行号、各类记号的颜色）由`codeStyle`设定，见[配置 › 代码清单](/zh/docs/configuration#代码清单)。行内代码（`` `x` ``）用正文字体，除非`codeStyle.inline`给它指定一种字体。postext 1.23之前保存、正文含围栏的书仍按当时的方式读取这些围栏，即按Markdown读取（`codeStyle.blocks: false`）。自postext 1.23起。
 
 ## 指令
 
@@ -755,7 +816,7 @@ Two lines lower still.
     <tr>
       <td>行内代码</td>
       <td><code>`code`</code></td>
-      <td>去掉反引号，片段按原样以纯文本渲染：其中的<code>{':ref{…}'}</code>、行内标签、公式、链接或强调符号都照字面印出，正文要展示语法时就这样写。独立的代码样式已列入路线图。</td>
+      <td>去掉反引号，片段按原样以纯文本渲染：其中的<code>{':ref{…}'}</code>、行内标签、公式、链接或强调符号都照字面印出，正文要展示语法时就这样写。它用正文字体排，设了<code>codeStyle.inline</code>时则用代码字体，作为一个整体排出（见<a href="/zh/docs/configuration#代码清单">配置 › 代码清单</a>）。代码清单写在<a href="#代码块">代码块</a>中。</td>
     </tr>
     <tr>
       <td>转义</td>
@@ -1772,7 +1833,6 @@ otto: 好吗？
 Postext不识别以下CommonMark功能。它们要么被当作普通文本（因此会原样出现在输出中），要么被悄悄丢弃：
 
 - **Setext式标题**：即`===` / `---`下划线形式。请使用ATX（`#`）标题。
-- **围栏式或缩进式代码块**：即` ``` `或`~~~`围栏以及4个空格的缩进。其中的行会作为普通Markdown读取，而不是保留为代码清单：彼此之间没有空行的行会合并为一个段落，并丢失行首空格；以`#`加空格开头的行会变成标题（`#!/usr/bin/env`仍是文本），以`-`或`1.`加空格开头的行会变成列表项，一对`$`符号会变成公式，围栏行则作为文本印出：` ``` `围栏印成一个反引号，开头的那个后面还跟着信息字符串（`` `bash``），`~~~`围栏印成一个作为下标排出的小`~`。要排代码清单，把每一行写成单独的段落（行与行之间空一行），放进一个`:::paragraphs`块，其段落样式设置等宽的`fontFamily`，并用反引号包住每一行，反引号会让`#`、`$`、`*`等字符照原样保留。行首的普通空格会被丢弃，行内连续的空格会缩成一个，反引号内也是如此，所以要用不换行空格（U+00A0）来缩进和对齐，并把它们放在反引号之内：开头反引号之前的不换行空格同样会被丢弃。行内代码能被识别，但没有代码字体：见[行内格式](#行内格式)。
 - **HTML透传**：原始的`<tags>`不会被解释。MDX式标签也不支持；Postext源文件是纯Markdown。
 - **水平线**：`---`、`***`、`___`。
 - **表格**：管道表格不会被解析。表格作为结构化资源建模，位于`PostextContent.resources`中。

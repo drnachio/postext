@@ -51,7 +51,7 @@ Posa el valor entre cometes per imprimir-lo exactament com està escrit —un no
 
 ## Construccions de bloc
 
-Postext reconeix set tipus de bloc de prosa, a més de les directives i les insercions de recursos que es descriuen més endavant en aquesta pàgina. Els blocs sempre acaben en trobar una línia en blanc o l'inici d'un altre bloc.
+Postext reconeix set tipus de bloc de prosa i els llistats de codi, a més de les directives i les insercions de recursos que es descriuen més endavant en aquesta pàgina. Els blocs sempre acaben en trobar una línia en blanc o l'inici d'un altre bloc.
 
 <Illustration name="BlockTypesGallery" data='{"title": "Construccions de bloc de prosa d’un cop d’ull", "desc": "Els set tipus de bloc de prosa que reconeix Postext: encapçalament, paràgraf, cita, llista no ordenada, llista ordenada, llista de tasques i fórmula en bloc, cadascun amb la seva sintaxi markdown. Les directives i les insercions de recursos es descriuen per separat.", "caption": "Cada tipus de bloc de prosa i la seva entrada en markdown.", "blocks": [{"name": "Encapçalament", "syntax": "# Títol", "color": "blue"}, {"name": "Paràgraf", "syntax": "Línies de text pla", "color": "orange"}, {"name": "Cita", "syntax": "> text citat", "color": "green"}, {"name": "Llista no ordenada", "syntax": "- element", "color": "purple"}, {"name": "Llista ordenada", "syntax": "1. element", "color": "pink"}, {"name": "Llista de tasques", "syntax": "- [x] fet", "color": "teal"}, {"name": "Fórmula en bloc", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -98,6 +98,11 @@ Postext reconeix set tipus de bloc de prosa, a més de les directives i les inse
       <td>Fórmula en bloc</td>
       <td><code>$$ … $$</code></td>
       <td>Una fórmula LaTeX composta com a bloc propi. Es renderitza centrada a la columna, ajustada a la retícula de base com una capçalera, i es manté vectorial al PDF. Les formes d'una sola línia i de tanca multilínia es descriuen a <a href="#fórmules-matemàtiques">Fórmules matemàtiques</a>.</td>
+    </tr>
+    <tr>
+      <td>Bloc de codi</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>Un llistat, conservat tal com està escrit: cada espai, cada tabulador i cada salt de línia, sense llegir res com a Markdown. Es compon línia a línia en la lletra del codi, dins d'una caixa. Vegeu <a href="#blocs-de-codi">Blocs de codi</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -153,6 +158,62 @@ El fanal de la primera entrada comença amb una inicial.
 ```
 
 En una línia d'encapçalament, `dropcap=false` deixa el paràgraf que segueix l'encapçalament sense la caplletra que fixa el seu nivell o el seu estil, `dropcap=N` la compon sobre `N` línies, i un `dropcap` sol dona una caplletra a aquest paràgraf (de tres línies, amb la font del paràgraf) quan el nivell no en fixa cap. A la línia d'obertura d'un `:::paragraphs`, l'atribut fa el mateix per al primer paràgraf del grup, o per a tots els paràgrafs quan l'estil diu `each: true`. El paràgraf que segueix un encapçalament es busca més enllà de les línies d'obertura i tancament dels contenidors, les directives, les caixes que han sortit del flux i les figures flotants; un paràgraf dins d'una caixa, un element de llista, una cita o un poema no porta mai caplletra. Des de postext 1.23.
+
+### Blocs de codi
+
+Un llistat va entre dues tanques de tres o més accents greus (o tres o més titlles), cadascuna en una línia pròpia i amb tres espais de sagnat com a màxim. Tot el que hi ha entre elles es conserva tal com està escrit: els espais del principi i les sèries d'espais, els tabuladors, les línies en blanc i les línies que comencen per `#`, `-`, `1.`, `>`, `$` o `:::`. A dins no es llegeix res com a Markdown: ni èmfasis, ni `:ref`, ni fórmules, ni xips, ni directives, ni encapçalaments. La tanca de tancament fa servir el mateix caràcter que la d'obertura i és almenys igual de llarga, de manera que un llistat que mostra una tanca va dins d'una de més llarga o de titlles:
+
+~~~markdown
+```bash {title="copia.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copia les fotos al disc de còpies de seguretat
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "fet: $(date)"
+```
+~~~
+
+La cadena d'informació que segueix la tanca d'obertura indica el llenguatge (la seva primera paraula: `js`, `ts`, `python`, `bash`, `console`, `json`…), i la resta es llegeix com a atributs amb la [sintaxi dels atributs](#valors-dels-atributs), entre claus o sense (`title="app.js" lineNumbers`). Qualsevol altra cosa després del llenguatge és el títol: ```` ```console Terminal ```` i ```` ```python normalize.py ```` imprimeixen *Terminal* i *normalize.py* damunt del llistat.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>Un títol damunt del llistat, en una fila de títol (o en una pestanya d'etiqueta a la vora de la caixa quan hi ha <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>El text de la pestanya d'etiqueta de la caixa, com el d'un <code>:::callout</code> (amb <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numera les línies d'aquest llistat (o no), digui el que digui <code>codeStyle.lineNumbers</code>. Els números van en un marge davant del codi i no es copien amb ell.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>El número de la primera línia (numera el llistat quan res més no ho fa).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Acoloreix el fons de les línies indicades (comptades des de la primera línia del llistat, que és l'1): línies soltes i intervals, separats per comes.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>En una pàgina de diverses columnes, el llistat les ocupa totes.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una tanca acaba el paràgraf de damunt, amb línia en blanc o sense, i el text que segueix la tanca de tancament comença un paràgraf nou. Una tanca que es queda oberta arriba fins al final del text i apareix als avisos (`unclosedCodeBlock`). Una tanca dins d'un `:::callout` és una caixa niada dins seu; dins de `:::paragraphs`, el llistat conserva l'estil del codi, no el de paràgraf. Postext no continua els elements de llista, així que una tanca després d'un element de llista tanca la llista. Les marques d'índex i les àncores escrites dins d'un llistat es queden tal com estan escrites.
+
+El codi sagnat (quatre espais o un tabulador, després d'una línia en blanc) només es llegeix com a llistat quan `codeStyle.indentedCode` està activat: els textos de Postext sovint sagnen amb espais, i les llistes niades llegeixen els espais del principi.
+
+L'aspecte d'un llistat (la lletra, la caixa, l'amplada del tabulador, què passa amb una línia més ampla que la caixa, els números de línia, els colors dels seus elements) el fixa `codeStyle`; vegeu [Configuració › Llistats de codi](/ca/docs/configuration#llistats-de-codi). El codi en línia (`` `x` ``) es queda en la lletra del text llevat que `codeStyle.inline` li'n doni una. Un llibre desat abans de postext 1.23 amb tanques al text les continua llegint com aleshores, com a Markdown (`codeStyle.blocks: false`). Des de postext 1.23.
 
 ## Directives
 
@@ -755,7 +816,7 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
     <tr>
       <td>Codi en línia</td>
       <td><code>`código`</code></td>
-      <td>Les cometes inverses s'eliminen; el tram es renderitza com a text pla, tal com es va escriure: un <code>{':ref{…}'}</code>, un xip, una fórmula, un enllaç o un signe de marca a dins s'imprimeixen literalment, que és com un text mostra la sintaxi. L'estil diferenciat per al codi és al full de ruta.</td>
+      <td>Les cometes inverses s'eliminen; el tram es renderitza com a text pla, tal com es va escriure: un <code>{':ref{…}'}</code>, un xip, una fórmula, un enllaç o un signe de marca a dins s'imprimeixen literalment, que és com un text mostra la sintaxi. Es compon en la lletra del text o, amb <code>codeStyle.inline</code>, en la lletra del codi com una sola unitat (vegeu <a href="/ca/docs/configuration#llistats-de-codi">Configuració › Llistats de codi</a>). Un llistat va en un <a href="#blocs-de-codi">bloc de codi</a>.</td>
     </tr>
     <tr>
       <td>Escapament</td>
@@ -1770,7 +1831,6 @@ Un `:::strip` té el cos d'una pàgina però va dins del text com una sola caixa
 Postext no reconeix les característiques següents de CommonMark. O es tracten com a text pla (i per tant apareixeran literalment a la sortida) o es descarten silenciosament:
 
 - **Encapçalaments tipus setext** — la forma amb subratllat `===` / `---`. Usa encapçalaments ATX (`#`).
-- **Blocs de codi amb tanques o amb sagnat** — tanques ` ``` ` o `~~~` i sagnat de 4 espais. Les línies de dins es llegeixen com a Markdown corrent, no es conserven com un llistat: les línies sense una línia en blanc entre elles s'uneixen en un sol paràgraf i perden els espais inicials, una línia que comença per `#` i un espai es converteix en un títol (`#!/usr/bin/env` continua sent text) i una que comença per `-` o `1.` i un espai, en un element de llista, un parell de signes `$` es converteix en una fórmula, i les línies de la tanca s'imprimeixen com a text: una tanca ` ``` ` com un accent greu, la d'obertura seguida de la cadena d'informació (`` `bash``), i una tanca `~~~` com una `~` petita composta com a subíndex. Per compondre un llistat, escriu cada línia com un paràgraf propi (amb una línia en blanc entre línies) dins d'un bloc `:::paragraphs` amb un estil de paràgraf que fixi una `fontFamily` monoespaiada, i tanca cada línia entre accents greus, que conserven `#`, `$`, `*` i els altres tal com estan escrits. Els espais normals al principi d'una línia es descarten i una sèrie d'espais dins de la línia es redueix a un, també entre els accents greus, així que sagna i alinea amb espais de no separació (U+00A0) i posa'ls dins dels accents greus: un davant de l'accent greu d'obertura també es descarta. El codi en línia es reconeix, però no té tipografia de codi: vegeu [Format en línia](#format-en-línia).
 - **HTML en brut** — les etiquetes `<tag>` no s'interpreten. Tampoc no s'admeten etiquetes d'estil MDX; la font Postext és markdown pur.
 - **Línies horitzontals** — `---`, `***`, `___`.
 - **Taules** — les taules amb barres verticals no s'analitzen. Les taules es modelen com a recursos estructurats a `PostextContent.resources`.

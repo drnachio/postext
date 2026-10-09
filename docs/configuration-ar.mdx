@@ -50,6 +50,7 @@ const document = buildDocument(content, {
 - [نمط المخططات](#نمط-المخططات) — إعادة تلوين مخططات SVG المضمّنة بحبر واحد للطباعة بالألوان الخاصة (spot colours).
 - [أنماط الفقرات](#أنماط-الفقرات) — أنماط مسمّاة لحاويات `:::paragraphs`: قوائم المراجع والمسارد والملاحظات.
 - [أنماط الإطارات](#أنماط-الإطارات) — ملاحظات ونصائح وأهداف داخل إطارات لحاويات `:::callout`.
+- [قوائم الشيفرة](#قوائم-الشيفرة) — `codeStyle`: الخط والإطار وعرض الجدولة والأسطر الطويلة وأرقام الأسطر وألوان الرموز في قوائم ```` ``` ````، وتلوين الصياغة ومنفذ الملوّن الخارجي، والشيفرة المضمّنة بخط الشيفرة.
 - [الأجزاء](#الأجزاء) — صفحات فواصل الأجزاء لحاويات `:::part`: زوجية الصفحة ومساحة المتن وتصميم صفحة الافتتاح وتنضيد المتن.
 - [أنماط العناوين](#أنماط-العناوين) — أنماط مسمّاة لعناوين `{style="…"}`: فصول غير مرقّمة، وصفحات تمهيدية بترويساتها الخاصة، والهندسة ولوحة الألوان.
 - [جدول المحتويات](#جدول-المحتويات) — ما يطبعه `:::toc`: تنضيد المداخل، والنقاط الموصِلة، وأرقام الصفحات، وأسطر المؤلفين، وصفوف الأجزاء.
@@ -5670,6 +5671,309 @@ const style = pickChipStyle(resolved, 'key');
 ```
 
 
+## قوائم الشيفرة
+
+تضبط الخاصية `codeStyle` مظهر قوائم الشيفرة: أسوار ```` ``` ```` و`~~~` في النص (انظر [صيغة المستند › كتل الشيفرة](/ar/docs/document-format#كتل-الشيفرة))، والشيفرة المضمّنة حين يُطلب لها خط شيفرة. تُنضَّد القائمة سطرًا سطرًا كما كُتبت، بخط ثابت العرض، داخل إطار: لا يُقسَّم أي سطر بالواصلة ولا يُضبط، وتحتفظ كل مسافة بعرضها، وتتقدّم الجدولة إلى موضع الجدولة التالي. ويأتي الإطار من الآلية نفسها التي تُخرج `:::callout`، فتنقسم القائمة بين أسطرها عبر الأعمدة والصفحات، ولكل جزء إطاره، والسور داخل إطار هو إطار متداخل فيه. كل الخصائص اختيارية. منذ postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '150px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>تُقرأ الأسوار كتلَ شيفرة. ومع <code>false</code> يُقرأ السور وأسطره Markdown كما في postext 1.22؛ وتأخذ هذه القيمةَ الإعداداتُ المخزّنة قبل 1.23 إذا كان في نصها سور (انظر <a href="#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم التي كتبها postext 1.4 أو ما قبله</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تُقرأ أيضًا الأسطر المتتالية المزاحة أربعة أعمدة (أربع مسافات أو جدولة)، بعد سطر فارغ، قائمةَ شيفرة، ويُحذف من كل سطر أربعة أعمدة. موقوفة افتراضيًا: فكثيرًا ما تُزاح نصوص Postext بالمسافات، وعناصر القوائم المتداخلة تقرأ المسافات البادئة.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>خط الشيفرة. الخط ثابت العرض يُبقي الأعمدة مصطفّة؛ ولتعليقات بالصينية أو اليابانية اختر خطًا فيه كانجي (BIZ UDGothic)، تأخذ محارفه كاملة العرض خليتين.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> هو حجم المتن.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>وزن الشيفرة ووزن الرموز العريضة.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>سطر الشبكة في المتن</td>
+      <td>تباعد أسطر الشيفرة؛ و<code>em</code> هو حجم الشيفرة. وإن لم يُضبط وقعت الأسطر على شبكة خطوط الأساس.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يعود النص الذي يلي القائمة إلى شبكة خطوط الأساس؛ ومع <code>false</code> يُحفظ <code>marginBottom</code> الدقيق، كما في الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون المتن</td>
+      <td>لون الشيفرة، وتأخذه الرموز التي ليس لها لون خاص.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>تعبئة الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>موقوف، <code>#cccccc</code>، <code>0.5pt</code></td>
+      <td>حدّ الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>زوايا مستديرة؛ ويحتفظ بها كل جزء من القائمة المقسومة، كما في الإطار المقسوم.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> لكلٍّ منها</td>
+      <td><code>em</code> هو حجم الشيفرة.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>المسافة فوق الإطار وتحته.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>القائمة الممتدة على الصفحة تعبر كل أعمدة الصفحة متعددة الأعمدة، كما يفعل الإطار <code>span: 'page'</code>. ويضبط السور قيمته بـ<code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>تتقدّم الجدولة إلى المضاعف التالي لهذا العدد من خلايا المحارف (ويُعدّ المحرف كامل العرض خليتين). وتبقى جدولةً: يحتفظ بها النص المنسوخ.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>السطر الأعرض من الإطار. <code>'wrap'</code>: ينكسر بعد آخر مسافة أو علامة ترقيم تتسع (وبين محرفين إن لم تتسع أي منهما)، ويستمر الباقي تحته، مزاحًا بمقدار <code>wrapIndent</code> من الخلايا، خلف <code>wrapMarker</code>؛ ولا يبدأ جزء من قائمة مقسومة ببقية كهذه ما دام قطع آخر يتسع. <code>'shrink'</code>: تُنضَّد القائمة كلها أصغر حتى يتسع أعرض أسطرها، إلى <code>minFontScale</code> على الأكثر، ويُكسر ما لا يزال لا يتسع. <code>'clip'</code>: يتوقف السطر عند الحافة الداخلية للإطار، ولا تُطبع المحارف التي تتجاوزها. وكلٌّ منها يُطلق تحذير <code>codeOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>إزاحة بقية السطر المكسور، بخلايا المحارف.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>توضع في تلك الإزاحة، بلون أرقام الأسطر، وليست جزءًا من النص (لا تُنسخ، ويرسمها ملف PDF الموسوم عنصرًا زخرفيًا (artifact)). و<code>''</code> لا تضع شيئًا. والمحرف <code>↪</code> غائب عن معظم خطوط الشيفرة، فيُطبع فيها مربعًا فارغًا.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>مع <code>'shrink'</code>، أصغر نسبة من <code>fontSize</code> تُنضَّد بها القائمة.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ترقيم أسطر كل قائمة، في هامش قبل الشيفرة. ويضبط السور قيمته بـ<code>lineNumbers</code> و<code>lineNumbers=false</code> و<code>start=N</code>. ولا رقم لبقية السطر المكسور. تُنضَّد الأرقام بجانب النص لا فيه: يخفيها عارض HTML عن التحديد وعن التقنيات المساعدة، ويرسمها ملف PDF الموسوم عناصرَ زخرفية.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>لون الأرقام (ولون علامة التتمة).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>المسافة بين أعرض رقم والشيفرة؛ و<code>em</code> هو حجم الشيفرة.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>الشريط الملوّن خلف الأسطر التي يسمّيها السور بـ<code>highlight="3,5-7"</code>، على عرض الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>كما في نمط الإطار: <code>false</code> تقسم القائمة الأطول من المساحة المتبقية بين أسطرها؛ و<code>true</code> تنقلها كاملة، ولا تقسمها إلا إذا كانت أطول من عمود.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>أقل عدد من الأسطر على كل جانب من القطع، فلا يضم أي جزء سطرًا واحدًا.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تكرار العنوان في رأس كل جزء، مع لاحقة «(cont.)» بلغة المستند.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / «Continued»</td>
+      <td>علامة تحت السطر الأخير من كل جزء له تتمة.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>خط الشيفرة، عريض، 0.9 من حجمه</td>
+      <td>صف العنوان الذي يطبعه <code>title</code> في السور (انظر <a href="#أنماط-الإطارات">أنماط الإطارات</a> للحقول).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>لا شيء</td>
+      <td>إذا ضُبط طُبع العنوان بدلًا من ذلك في لسان تسمية على الحافة العليا للإطار (بخط الشيفرة وحجمها ما لم يحدّد اللسان خطه).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>تلوين الرموز بالمُقطِّع المدمج (وبأي ملوّن مسجَّل)؛ و<code>'none'</code> تنضّد كل القوائم بلون <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>لوحة ألوان هادئة</td>
+      <td>مظهر كل نوع من الرموز، يُدمج نوعًا نوعًا مع القيم الافتراضية (انظر أدناه). واللون المرتبط باللوحة يتبع <code>colorPalette</code> ولوحة الجزء.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>غير مضبوط</td>
+      <td>الشيفرة المضمّنة بخط الشيفرة (انظر أدناه). وإن لم يُضبط نُضّدت الشيفرة المضمّنة بخط النص، كما قبل 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### تلوين الصياغة
+
+يسمّي مُقطِّع صغير مدمج في المحرّك رموزَ `js` و`ts` (`javascript` و`jsx` و`typescript` و`tsx`) و`json` و`python` و`bash` (`sh` و`zsh` و`shell`) و`console` (جلسة طرفية) و`css` و`html` و`xml` (`svg`) و`markdown` و`sql`؛ أما القائمة بأي لغة أخرى، أو بلا لغة، فتُنضَّد بلون `color`. وهو يقرأ القائمة كلها، فالتعليق أو السلسلة النصية الممتدة على عدة أسطر تبقى رمزًا واحدًا. وفي قائمة `console`، السطر الذي يبدأ بموجّه أوامر (`$ ` أو `% ` أو `# ` أو `> ` أو `>>> ` أو `PS …> `) هو ما كتبه المستخدم (`prompt`)، وكل سطر آخر هو ما طبعته البرامج (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>النوع</th>
+      <th style={{ width: '200px' }}>القيمة الافتراضية</th>
+      <th>ما يسمّيه</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>الكلمات المحجوزة: <code>const</code> و<code>def</code> و<code>if</code> و<code>SELECT</code>، واسم وسم HTML، وقاعدة @ في CSS.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>السلاسل النصية، والقوالب النصية (template literals)، وقيم السمات.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>الأرقام والثوابت (<code>true</code> و<code>None</code> و<code>null</code>)، والألوان، والكيانات (entities).</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>، مائل</td><td>التعليقات.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>اسم يليه قوس؛ والأوامر المدمجة في الصدفة (shell).</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>الأنواع وأسماء الأصناف المبدوءة بحرف كبير، ومحدِّدات CSS.</td></tr>
+    <tr><td><code>operator</code></td><td>لون الشيفرة</td><td>المعاملات، وأنابيب الصدفة وعمليات إعادة التوجيه.</td></tr>
+    <tr><td><code>punctuation</code></td><td>لون الشيفرة</td><td>الأقواس والفواصل.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>متغيرات الصدفة، ومفاتيح JSON، وخصائص CSS، وسمات HTML، و<code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>المزخرفات (decorators)، وخيارات سطر الأوامر (<code>-l</code> و<code>--all</code>)، وتعريف نوع المستند (doctype).</td></tr>
+    <tr><td><code>prompt</code></td><td>لون الشيفرة، عريض</td><td>السطر المكتوب في جلسة الطرفية.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>ما طبعته البرامج.</td></tr>
+  </tbody>
+</table>
+
+يستطيع التطبيق المضيف أن يركّب ملوّنه الخاص (Shiki أو Prism أو highlight.js) عبر `registerCodeHighlighter`. والإعدادات بيانات قابلة للتسلسل، فتُسجَّل الدالة لدى المحرّك ولا تُكتب في `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) returns the listing's lines, each as runs whose texts join into the line.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // remove the one registered for every language
+```
+
+الملوّن المسجَّل للغة ما يتقدّم على المسجَّل لـ`'*'`، وهذا يتقدّم على المُقطِّع المدمج. ويسمّي كل مقطع (run) نوعَ رمز في `token` (يلوّنه `tokens`) أو لونًا خاصًا به في `color` (قيمة CSS سداسية عشرية). ويُتجاوز الملوّن الذي يعيد `undefined`، أو يرمي استثناءً، أو يعيد أسطرًا لا تُكوِّن بضمّها أسطر القائمة نفسها. ويقرأ الإخراجُ السجلَّ حين ينضّد القائمة: سجّل الملوّن قبل البناء، وفي Web Worker (وSandbox يُخرج في واحد منها) سجّله داخل العامل نفسه.
+
+### الشيفرة المضمّنة
+
+يضبط `codeStyle.inline` النص الواقع بين علامتي الاقتباس المائلة بخط الشيفرة: وحدةً واحدة، كما الشارة، لا ينكسر السطر داخلها. وإن لم يُضبط احتفظت الشيفرة المضمّنة بخط النص.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>الخاصية</th>
+      <th style={{ width: '120px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>الخط.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> هو حجم النص المحيط بها.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>لون النص</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>فوق علامات النص نفسه (الشيفرة داخل العريض عريضة).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>لا شيء</td><td>تعبئة خلف المقطع.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>لا شيء / <code>0.5pt</code></td><td>خط محيط.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> هو حجم المقطع.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> مع تعبئة أو خط محيط، وإلا <code>0</code> / <code>0.1em</code></td><td>المساحة داخل التعبئة؛ والحشوة العمودية تُرسم خارج مربع السطر.</td></tr>
+  </tbody>
+</table>
+
+### طريقة تنضيد القائمة
+
+- **سطر لكل سطر في المصدر.** تُبنى الأسطر من مسافات التقدّم (advances) في خط الشيفرة نفسه، لا بمقسِّم أسطر الفقرة: تحتفظ المسافات بعرضها، وتُحفظ سلسلة المسافات كما هي، وتُزيح المسافات البادئة السطر. والقائمة في كتاب من اليمين إلى اليسار تُقرأ من اليسار إلى اليمين، وتُنضَّد أسطرها من الجهة البعيدة للإطار كما يُنضَّد اقتباس مكتوب من اليسار إلى اليمين، وأرقامها في الهامش على يسارها. وفي الكتاب العمودي تتبع القائمة التدفق العمودي (وتُدار حروفها اللاتينية على جنبها، كما يُنضّدها النص العمودي) ولا تأخذ أرقام أسطر.
+- **التقسيم.** القائمة الأطول من المساحة المتبقية تنقسم بين أسطرها عبر الأعمدة والصفحات، ولكل جزء إطاره الخاص، ولا تترك أبدًا أقل من `splitMinLines` سطرًا على أي جانب؛ وتبقى بقية السطر المكسور معه ما دام قطع آخر يتسع.
+- **المخرجات.** ترسم اللوحة (canvas) وعارض HTML وملف PDF الأسطر والإطار كما أُخرجت. ويحتفظ عارض HTML بالمسافات (`white-space: pre`)، فينسخ التحديد القائمة بإزاحتها وبفاصل سطر بعد كل سطر من المصدر، بلا أرقام ولا علامات تتمة. وينضّد ملف PDF الموسوم كل قائمة فقرةً تضم عنصر `Code`، بمحارف مسافة حقيقية، وأرقامها وعلامات تتمتها عناصر زخرفية. ويكتب EPUB القابل لإعادة التدفق `<pre><code class="language-…">` بألوان الرموز وبورقة أنماط مأخوذة من `codeStyle`؛ أما EPUB ثابت التخطيط فهو نسخة الطباعة.
+- **الخطوط.** يحمّل Sandbox و`configFontFamilies` خط الشيفرة حين يحتوي النص سورًا (أو حين يكون في الإعدادات قسم `codeStyle`)، بوزنيه العادي والعريض، قائمًا ومائلًا؛ ويضمّن ملف PDF الخطوط التي تستعملها الأسطر.
+
 ## أنماط الإطارات
 
 تُعرِّف الخاصية `calloutStyles` أنماط الإطارات (callouts) المسمّاة التي يطبّقها المستند بالحاوية `:::callout{type="…"}`: الملاحظات والنصائح والتحذيرات وأهداف التعلّم، وكل محتوى يُفصل عن النص الجاري في إطار ملوّن الخلفية أو محاط بحدّ. يأتي افتراضيًا نمط محايد واحد هو `note` (خلفية رمادية فاتحة، بلا حدّ ولا شريط جانبي (stripe) ولا أيقونة ولا عنوان)، فتعمل `:::callout` دون أي إعداد؛ وتعريف `calloutStyles` يستبدل هذه القائمة الافتراضية.
@@ -8474,6 +8778,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>فقرة يفتتحها <a href="#الحروف-الاستهلالية">حرف استهلالي</a> ولا تستطيع أخذه كما ضُبط. <code>reason</code>: <code>'shortParagraph'</code> (أسطرها أقل مما ينزله الحرف الاستهلالي؛ و<code>handling</code> هو ما فعله <code>shortParagraph</code>، و<code>lines</code> عدد الأسطر التي يمتد عليها الحرف المصغَّر)، أو <code>'split'</code> (تنكسر قبل آخر سطر يجاور الحرف الاستهلالي، وهي وحدها في عمود أقصر من أن يسعه)، أو <code>'joiningScript'</code> (حرفها الأول يتصل بما بعده)، أو <code>'verticalText'</code>، أو <code>'noLetter'</code> (تُفتتح بإحالة أو صيغة أو علامة حاشية). و<code>text</code> هو سطرها الأول.</td>
       <td>يُحفظ المكان، أو يُصغَّر الحرف الاستهلالي، أو يُترك، كما يقول التحذير.</td>
     </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td>في <a href="#قوائم-الشيفرة">قائمة شيفرة</a> أسطر أعرض من إطارها. <code>mode</code> هو ما فعله <code>codeStyle.overflow</code> (<code>'wrap'</code> أو <code>'shrink'</code> أو <code>'clip'</code>)، و<code>lines</code> عدد أسطر المصدر التي زاد عرضها، و<code>scale</code> الحجم الذي نُضّدت به القائمة المصغَّرة (نسبةً من <code>fontSize</code>)، و<code>lang</code> لغة السور. يشير إلى القائمة.</td>
+      <td>تُكسر الأسطر، أو تُنضَّد أصغر، أو تُقطع، كما يقول <code>mode</code>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -9753,7 +10062,7 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
 
 #### الحزم التي كتبها postext 1.4 أو ما قبله
 
-كل بيان يكتبه `createBundle` أو Sandbox يحمل `configVersion: 9`: قواعد الإعدادات التي كُتب لها `config` الخاص به. والبيان الذي يخلو منه كتبه postext 1.4 أو ما قبله، وكان يضبط ستة عشر أمرًا على نحو مختلف:
+كل بيان يكتبه `createBundle` أو Sandbox يحمل `configVersion: 9`: قواعد الإعدادات التي كُتب لها `config` الخاص به. والبيان الذي يخلو منه كتبه postext 1.4 أو ما قبله، وكان يضبط سبعة عشر أمرًا على نحو مختلف:
 
 - **فواصل العناوين** (القواعد 3): حتى 1.4، كان كائن `headings` الذي لا فاصل فيه لـH1 بلا أي فاصل (انظر [التجاوزات حسب المستوى](#تجاوزات-كل-مستوى)).
 - **حجم الصيغ الرياضية** (القواعد 4): حتى 1.4، كانت الصيغ تخرج أكبر بـ1.131 مرة مما يقوله `fontSizeScale` (انظر [حجم الصيغ](#الصيغ-الرياضية)).
@@ -9771,8 +10080,9 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
 - **القصائد بلا فاصل** (القواعد 9): حتى 1.22 كانت قصيدة `:::verse` التي لا تحمل أسطرها `||` تُصَفّ أشطرًا مفردة، كل سطر في الوسط (انظر `bodyText.verse.layout` في [الشعر](#الشعر)).
 - **إزاحة السطر الأول بجانب إزاحة معلّقة** (القواعد 9): حتى 1.22 كانت `hangingIndent` في نمط الفقرة تحلّ محل `firstLineIndent`، فيبدأ السطر الأول عند `indent` (انظر [أنماط الفقرات](#أنماط-الفقرات)).
 - **الشرطة المائلة العكسية في آخر السطر** (القواعد 9): حتى 1.22 كانت الشرطة المائلة العكسية في آخر سطر من فقرة أو اقتباس أو عنصر قائمة، و`\\` المتبوعة بمسافة، تُطبع كما هي، وتُوصل الأسطر بمسافة (انظر `bodyText.hardLineBreaks` تحت [نص المتن](#نص-المتن)).
+- **أسوار الشيفرة** (القواعد 9): حتى 1.22 كان سور ```` ``` ```` أو `~~~` والأسطر داخله تُقرأ Markdown: تندمج الأسطر في فقرات، ويصير السطر الذي يبدأ بـ`#` عنوانًا، وتُطبع الأسوار (انظر `codeStyle.blocks` تحت [قوائم الشيفرة](#قوائم-الشيفرة)).
 
-يقرأ `openBundle` و`readBundle` الحقل `config` في بيان كهذا، وإعدادات كل لغة في `localized`، عبر `migrateConfig`، التي تكتب صراحةً فواصل العناوين كما أخرجها الإصدار 1.4، وتضرب مقياس الصيغ في 1.131 (وتقسم عليه هوامش الصيغ المعروضة المعبَّر عنها بوحدة `em`). أما البيان الموسوم بقيمة من `3` إلى `7`، الذي كتبه إصدار تجريبي من 1.5، فلا يتلقى إلا تثبيتات (pins) القواعد اللاحقة لوسمه. مع `3` يعني ذلك حجم الصيغ، والفراغ تحت المورد المضمَّن، وتثبيتات القواعد 6 الخمسة، وتثبيتَي القواعد 7، وتثبيتات القواعد 8 الثلاثة؛ ومع `4`، الفراغ تحت المورد المضمَّن وتثبيتات القواعد 6 و7 و8؛ ومع `5`، تثبيتات القواعد 6 و7 و8؛ ومع `6`، تثبيتات القواعد 7 و8؛ ومع `7`، تثبيتات القواعد 8 وحدها. يُكتب التقسيم تحت العنوان (`pinLegacyHeadingSplit`) على شكل `headings.keepWithNextSplit: 'fill'` في كائن `headings` الذي تُبقيه الطبقات ساريًا، إذا كان في أحد الفصول المقروءة عنوان، ولم تحدد الإعدادات قيمة خاصة بها، وأبقت `headings.keepWithNext` مفعَّلًا، ولم تعطّل `bodyText.avoidOrphans`. وتُكتب فواصل الكلمات المركبة (`pinLegacyHyphenBreaks`) على شكل `bodyText.breakAfterHyphens: false` في `bodyText` الساري، إذا وضع أحد الفصول المقروءة واصلة بين حرفين، ولم تكن الإعدادات تضبطه أصلًا ولا تعطّل `optimalLineBreaking`. ويُكتب الفراغ تحت الحاويات (`pinLegacyParagraphContainerSpacing`) على شكل `bodyText.paragraphContainerSpacing: 'add'` في `bodyText` الساري، إذا عرّفت الإعدادات نمط فقرة (في `paragraphStyles` أو في تجاوزات عارض HTML)، وفتح أحد الفصول المقروءة حاوية `:::paragraphs` في سطر مستقل، ولم تكن الإعدادات تضبطه أصلًا. وتُكتب فواصل الشرطات (`pinLegacyDashBreaks`) على شكل `bodyText.breakAfterDashes: false` في `bodyText` الساري، إذا وضع أحد الفصول المقروءة شرطة طويلة أو متوسطة ملتصقة بين كلمتين (قبلها حرف أو رقم أو علامة ترقيم إغلاق، وبعدها حرف أو رقم أو قوس فتح أو علامة اقتباس فتح؛ وتُحتسب علامة الاقتباس التي قبلها إذا سبقها حرف أو رقم أو علامة ترقيم إغلاق أو مسافة غير قابلة للكسر، كما في `"no"—and`، لا في `said "—Hola`؛ وتُحتسب علامة التنسيق المضمَّنة الملاصقة للشرطة أو لعلامة الاقتباس، مثل `**` في `**riddles.**—I`، من أي الجانبين)، ولم تكن الإعدادات تضبطه أصلًا. ويُكتب تقسيم الأسطر غير المضبوطة (`pinLegacyRaggedBreaking`) على شكل `bodyText.optimalRagged: false` في `bodyText` الساري، إذا جعلت الإعدادات بعض النص الجاري غير مضبوط (قيمة `textAlign` غير `'justify'` على النص الأساسي، أو على نمط فقرة، أو متن إطار، أو متن جزء، أو متن نمط قسم (`headingStyles[].bodyStyle`)، أو في تجاوزات عارض HTML)، ولم تكن تضبطه أصلًا، ولا تعطّل `optimalLineBreaking`. ويُكتب الفراغ في الأطر (`pinLegacyBoxResourceGap`) على شكل `layout.inlineResourceGapInBoxes: false` في `layout` الساري، إذا ضُمِّن مورد في سطر مستقل داخل `:::callout` في الفصول المقروءة، ولم تكن الإعدادات تضبطه أصلًا. ويُكتب قطع الإطار (`pinLegacyBoxChildCut`) على شكل `layout.boxChildSplitMinLines: 1` في `layout` الساري، إذا فتح أحد الفصول المقروءة `:::callout` في سطر مستقل، ولم تكن الإعدادات تضبطه أصلًا. وتُكتب علامات العناوين (`pinLegacyHeadingMarks`) على شكل `headings.inlineMarks: false` في `headings` الذي تُبقيه الطبقات ساريًا، إذا حمل عنوانٌ في الفصول المقروءة علامةً (`*` أو `_` أو `^` أو `~` أو `:smallcaps[` أو رابطًا في نصه) ولم تحدد الإعدادات قيمة خاصة بها. أما الحروف الاستهلالية (`pinLegacyDropCapSize`) فيُكتب حجمها في 1.4 صراحةً على شكل `dropCap.fontSize`، أينما كانت: بوحدة تباعد أسطر العنصر إن كان طولًا، وإلا فبوحدة حجم خطه. وتُكتب المساحة تحت سطر النقطتين (`pinLegacyColonListRoom`) على شكل `bodyText.colonListRoom: 'line'` في `bodyText` الساري، إذا جاءت قائمة في الفصول المقروءة بعد سطر ينتهي بنقطتين (ويُسمح بأسطر فارغة بينهما)، ولم تحدد الإعدادات مساحة ولا عطّلت `keepColonWithList`. ويُكتب الفراغ تحت المورد المضمَّن (`pinLegacyInlineGap`) على شكل `layout.inlineResourceGap: 'above'` في `layout` الذي تُبقيه الطبقات ساريًا، إذا ضمَّن سطرٌ من الفصول المقروءة موردًا (`::resource{id="…"}` وحده في سطره، كما يقرؤه المحلِّل: ذكره في النص الجاري أو في مقطع شيفرة لا يُحتسب) ولم تحدد الإعدادات فراغًا خاصًا بها. ويُثبَّت الحجم على `math` الذي تُبقيه الطبقات ساريًا (إذ يحلّ `math` الخاص بلغةٍ ما محلّ المشترك)، ولا يُثبَّت إلا إذا كان في الفصول المقروءة الرمز `$`: فالحزمة التي لا صيغ فيها تحتفظ بـ`config` كما كُتب. وإذا لم يحدد البيان ولا اللغة `math`، فالساري هو `baseConfig` الخاص بـ`readBundle` (إعدادات القارئ نفسه)، ويُثبَّت هو أيضًا، لأن 1.4 كان ينضّد صيغ الحزمة بذلك الحجم: فالقيمة الأساسية `fontSizeScale: 1.5` تُقرأ 1.5 × 1.1312. أما فواصل العناوين في الإعدادات الأساسية فتؤخذ كما هي. وهكذا تحتفظ الحزمة القديمة بما أخرجته هذه القواعد، ويُظهر `bundle.config` ما تُخرَج به من فواصل، وحجم صيغ، وفراغات، وعلامات عناوين، وأحجام حروف استهلالية، ومساحة تحت سطر النقطتين، وقطع إطار، وفواصل شرطات، وفواصل كلمات مركبة، وتقسيم للأسطر غير المضبوطة، وتقسيم تحت العنوان، وفراغ تحت الحاويات. أما إصلاحات الإخراج في 1.5 فلا تثبيت لها، وتسري عليها كما تسري على أي كتاب، لذا قد تتحرك صفحة تمسّها (انظر [حجم الصيغ](#الصيغ-الرياضية) للاطلاع على القائمة). ملف `preset.json` المكتوب يدويًا لقواعد اليوم يضبط `"configVersion": 9`؛ ووسم بيان حزمة قديمة بهذه القيمة هو أيضًا الطريقة ذات السطر الواحد لقراءتها بقواعد اليوم (وعندها تفقد الحزمة التي لا إصدار لها تثبيت فواصل العناوين أيضًا). والبيان الموسوم `8`، الذي كتبه postext من 1.5 إلى 1.22، يتلقى التثبيتات الثلاثة التي في القواعد 9 وحدها، كما يتلقاها كل بيان أقدم: يُكتب تخطيط الشعر (`pinLegacyVerseLayout`) بصفته `bodyText.verse.layout: 'bayt'` على `bodyText` النافذ، حين يصفّ فصل مقروء قصيدة `:::verse` لا يسمّي سطر فتحها تخطيطًا ولا تحمل أسطرها فاصل شطرين، ولا تحدّده الإعدادات بعد؛ وتحذف الإزاحات المزدوجة (`pinLegacyPairedIndents`) قيمة `firstLineIndent` من كل نمط فقرة (في `paragraphStyles` أو في تجاوزات عارض HTML) يحدّد أيضًا `hangingIndent` غير صفرية؛ وتُكتب فواصل الأسطر الإجبارية (`pinLegacyHardBreaks`) بصفتها `bodyText.hardLineBreaks: false` على `bodyText` النافذ، حين يختم فصل مقروء سطرًا من فقرة أو اقتباس أو عنصر قائمة بشرطة مائلة عكسية والكتلة مستمرة تحته، أو يضع `\\` متبوعة بمسافة ونص (ما عدا الشيفرة والصيغ المضمّنة، والصيغ المعروضة، والعناوين، وقصائد `:::verse`)، ولا تحدّده الإعدادات بعد.
+يقرأ `openBundle` و`readBundle` الحقل `config` في بيان كهذا، وإعدادات كل لغة في `localized`، عبر `migrateConfig`، التي تكتب صراحةً فواصل العناوين كما أخرجها الإصدار 1.4، وتضرب مقياس الصيغ في 1.131 (وتقسم عليه هوامش الصيغ المعروضة المعبَّر عنها بوحدة `em`). أما البيان الموسوم بقيمة من `3` إلى `7`، الذي كتبه إصدار تجريبي من 1.5، فلا يتلقى إلا تثبيتات (pins) القواعد اللاحقة لوسمه. مع `3` يعني ذلك حجم الصيغ، والفراغ تحت المورد المضمَّن، وتثبيتات القواعد 6 الخمسة، وتثبيتَي القواعد 7، وتثبيتات القواعد 8 الثلاثة؛ ومع `4`، الفراغ تحت المورد المضمَّن وتثبيتات القواعد 6 و7 و8؛ ومع `5`، تثبيتات القواعد 6 و7 و8؛ ومع `6`، تثبيتات القواعد 7 و8؛ ومع `7`، تثبيتات القواعد 8 وحدها. يُكتب التقسيم تحت العنوان (`pinLegacyHeadingSplit`) على شكل `headings.keepWithNextSplit: 'fill'` في كائن `headings` الذي تُبقيه الطبقات ساريًا، إذا كان في أحد الفصول المقروءة عنوان، ولم تحدد الإعدادات قيمة خاصة بها، وأبقت `headings.keepWithNext` مفعَّلًا، ولم تعطّل `bodyText.avoidOrphans`. وتُكتب فواصل الكلمات المركبة (`pinLegacyHyphenBreaks`) على شكل `bodyText.breakAfterHyphens: false` في `bodyText` الساري، إذا وضع أحد الفصول المقروءة واصلة بين حرفين، ولم تكن الإعدادات تضبطه أصلًا ولا تعطّل `optimalLineBreaking`. ويُكتب الفراغ تحت الحاويات (`pinLegacyParagraphContainerSpacing`) على شكل `bodyText.paragraphContainerSpacing: 'add'` في `bodyText` الساري، إذا عرّفت الإعدادات نمط فقرة (في `paragraphStyles` أو في تجاوزات عارض HTML)، وفتح أحد الفصول المقروءة حاوية `:::paragraphs` في سطر مستقل، ولم تكن الإعدادات تضبطه أصلًا. وتُكتب فواصل الشرطات (`pinLegacyDashBreaks`) على شكل `bodyText.breakAfterDashes: false` في `bodyText` الساري، إذا وضع أحد الفصول المقروءة شرطة طويلة أو متوسطة ملتصقة بين كلمتين (قبلها حرف أو رقم أو علامة ترقيم إغلاق، وبعدها حرف أو رقم أو قوس فتح أو علامة اقتباس فتح؛ وتُحتسب علامة الاقتباس التي قبلها إذا سبقها حرف أو رقم أو علامة ترقيم إغلاق أو مسافة غير قابلة للكسر، كما في `"no"—and`، لا في `said "—Hola`؛ وتُحتسب علامة التنسيق المضمَّنة الملاصقة للشرطة أو لعلامة الاقتباس، مثل `**` في `**riddles.**—I`، من أي الجانبين)، ولم تكن الإعدادات تضبطه أصلًا. ويُكتب تقسيم الأسطر غير المضبوطة (`pinLegacyRaggedBreaking`) على شكل `bodyText.optimalRagged: false` في `bodyText` الساري، إذا جعلت الإعدادات بعض النص الجاري غير مضبوط (قيمة `textAlign` غير `'justify'` على النص الأساسي، أو على نمط فقرة، أو متن إطار، أو متن جزء، أو متن نمط قسم (`headingStyles[].bodyStyle`)، أو في تجاوزات عارض HTML)، ولم تكن تضبطه أصلًا، ولا تعطّل `optimalLineBreaking`. ويُكتب الفراغ في الأطر (`pinLegacyBoxResourceGap`) على شكل `layout.inlineResourceGapInBoxes: false` في `layout` الساري، إذا ضُمِّن مورد في سطر مستقل داخل `:::callout` في الفصول المقروءة، ولم تكن الإعدادات تضبطه أصلًا. ويُكتب قطع الإطار (`pinLegacyBoxChildCut`) على شكل `layout.boxChildSplitMinLines: 1` في `layout` الساري، إذا فتح أحد الفصول المقروءة `:::callout` في سطر مستقل، ولم تكن الإعدادات تضبطه أصلًا. وتُكتب علامات العناوين (`pinLegacyHeadingMarks`) على شكل `headings.inlineMarks: false` في `headings` الذي تُبقيه الطبقات ساريًا، إذا حمل عنوانٌ في الفصول المقروءة علامةً (`*` أو `_` أو `^` أو `~` أو `:smallcaps[` أو رابطًا في نصه) ولم تحدد الإعدادات قيمة خاصة بها. أما الحروف الاستهلالية (`pinLegacyDropCapSize`) فيُكتب حجمها في 1.4 صراحةً على شكل `dropCap.fontSize`، أينما كانت: بوحدة تباعد أسطر العنصر إن كان طولًا، وإلا فبوحدة حجم خطه. وتُكتب المساحة تحت سطر النقطتين (`pinLegacyColonListRoom`) على شكل `bodyText.colonListRoom: 'line'` في `bodyText` الساري، إذا جاءت قائمة في الفصول المقروءة بعد سطر ينتهي بنقطتين (ويُسمح بأسطر فارغة بينهما)، ولم تحدد الإعدادات مساحة ولا عطّلت `keepColonWithList`. ويُكتب الفراغ تحت المورد المضمَّن (`pinLegacyInlineGap`) على شكل `layout.inlineResourceGap: 'above'` في `layout` الذي تُبقيه الطبقات ساريًا، إذا ضمَّن سطرٌ من الفصول المقروءة موردًا (`::resource{id="…"}` وحده في سطره، كما يقرؤه المحلِّل: ذكره في النص الجاري أو في مقطع شيفرة لا يُحتسب) ولم تحدد الإعدادات فراغًا خاصًا بها. ويُثبَّت الحجم على `math` الذي تُبقيه الطبقات ساريًا (إذ يحلّ `math` الخاص بلغةٍ ما محلّ المشترك)، ولا يُثبَّت إلا إذا كان في الفصول المقروءة الرمز `$`: فالحزمة التي لا صيغ فيها تحتفظ بـ`config` كما كُتب. وإذا لم يحدد البيان ولا اللغة `math`، فالساري هو `baseConfig` الخاص بـ`readBundle` (إعدادات القارئ نفسه)، ويُثبَّت هو أيضًا، لأن 1.4 كان ينضّد صيغ الحزمة بذلك الحجم: فالقيمة الأساسية `fontSizeScale: 1.5` تُقرأ 1.5 × 1.1312. أما فواصل العناوين في الإعدادات الأساسية فتؤخذ كما هي. وهكذا تحتفظ الحزمة القديمة بما أخرجته هذه القواعد، ويُظهر `bundle.config` ما تُخرَج به من فواصل، وحجم صيغ، وفراغات، وعلامات عناوين، وأحجام حروف استهلالية، ومساحة تحت سطر النقطتين، وقطع إطار، وفواصل شرطات، وفواصل كلمات مركبة، وتقسيم للأسطر غير المضبوطة، وتقسيم تحت العنوان، وفراغ تحت الحاويات. أما إصلاحات الإخراج في 1.5 فلا تثبيت لها، وتسري عليها كما تسري على أي كتاب، لذا قد تتحرك صفحة تمسّها (انظر [حجم الصيغ](#الصيغ-الرياضية) للاطلاع على القائمة). ملف `preset.json` المكتوب يدويًا لقواعد اليوم يضبط `"configVersion": 9`؛ ووسم بيان حزمة قديمة بهذه القيمة هو أيضًا الطريقة ذات السطر الواحد لقراءتها بقواعد اليوم (وعندها تفقد الحزمة التي لا إصدار لها تثبيت فواصل العناوين أيضًا). والبيان الموسوم `8`، الذي كتبه postext من 1.5 إلى 1.22، يتلقى التثبيتات الأربعة التي في القواعد 9 وحدها، كما يتلقاها كل بيان أقدم: يُكتب تخطيط الشعر (`pinLegacyVerseLayout`) بصفته `bodyText.verse.layout: 'bayt'` على `bodyText` النافذ، حين يصفّ فصل مقروء قصيدة `:::verse` لا يسمّي سطر فتحها تخطيطًا ولا تحمل أسطرها فاصل شطرين، ولا تحدّده الإعدادات بعد؛ وتحذف الإزاحات المزدوجة (`pinLegacyPairedIndents`) قيمة `firstLineIndent` من كل نمط فقرة (في `paragraphStyles` أو في تجاوزات عارض HTML) يحدّد أيضًا `hangingIndent` غير صفرية؛ وتُكتب فواصل الأسطر الإجبارية (`pinLegacyHardBreaks`) بصفتها `bodyText.hardLineBreaks: false` على `bodyText` النافذ، حين يختم فصل مقروء سطرًا من فقرة أو اقتباس أو عنصر قائمة بشرطة مائلة عكسية والكتلة مستمرة تحته، أو يضع `\\` متبوعة بمسافة ونص (ما عدا الشيفرة والصيغ المضمّنة، والصيغ المعروضة، والعناوين، وقصائد `:::verse`)، ولا تحدّده الإعدادات بعد؛ وتُكتب أسوار الشيفرة (`pinLegacyCodeBlocks`) بصفتها `codeStyle.blocks: false`، حين يفتح فصل مقروء سور ```` ``` ```` أو `~~~` (من ثلاث علامات أو أكثر، بإزاحة لا تزيد على ثلاث مسافات) ولا تحدّده الإعدادات بعد.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -9782,7 +10092,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A 
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -9796,7 +10106,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-kno
 migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 ```
 
-`content` هو نص Markdown الذي تُخرجه الإعدادات (سلسلة نصية أو قائمة فصول). من دونه يُثبَّت حجم الصيغ كلما كانت الرياضيات مفعَّلة، والفراغ تحت الحاويات كلما عرّفت الإعدادات نمط فقرة، أما الفراغان وعلامات العناوين والمساحة تحت سطر النقطتين وقطع الإطار وفواصل الشرطات والتقسيم تحت العنوان وفواصل الكلمات المركبة فتُثبَّت دائمًا، إذ لا يستطيع المحرّك أن يعرف هل في الكتاب صيغة، أو حاوية `:::paragraphs`، أو شكل مضمَّن، أو عنوان فيه علامة، أو قائمة تمهّد لها نقطتان، أو إطار، أو شرطة ملتصقة، أو عنوان، أو كلمة مركبة. أما تقسيم الأسطر غير المضبوطة فيُثبَّت بناءً على الإعدادات وحدها، سواء وُجد المحتوى أم لا. رحِّل الإعدادات المخزنة مرة واحدة وخزّنها من جديد تحت `CONFIG_VERSION`: فتثبيت الصيغ يضرب المقياس، والإعدادات التي تُرحَّل مرتين تكبر مرتين. ومن دونه يُثبَّت تخطيط الشعر أيضًا، لأن الكتاب قد يحمل قصيدة `:::verse` بلا فاصل، أما الإزاحات المزدوجة فتُثبَّت بحسب الإعدادات وحدها.
+`content` هو نص Markdown الذي تُخرجه الإعدادات (سلسلة نصية أو قائمة فصول). من دونه يُثبَّت حجم الصيغ كلما كانت الرياضيات مفعَّلة، والفراغ تحت الحاويات كلما عرّفت الإعدادات نمط فقرة، أما الفراغان وعلامات العناوين والمساحة تحت سطر النقطتين وقطع الإطار وفواصل الشرطات والتقسيم تحت العنوان وفواصل الكلمات المركبة فتُثبَّت دائمًا، إذ لا يستطيع المحرّك أن يعرف هل في الكتاب صيغة، أو حاوية `:::paragraphs`، أو شكل مضمَّن، أو عنوان فيه علامة، أو قائمة تمهّد لها نقطتان، أو إطار، أو شرطة ملتصقة، أو عنوان، أو كلمة مركبة. أما تقسيم الأسطر غير المضبوطة فيُثبَّت بناءً على الإعدادات وحدها، سواء وُجد المحتوى أم لا. رحِّل الإعدادات المخزنة مرة واحدة وخزّنها من جديد تحت `CONFIG_VERSION`: فتثبيت الصيغ يضرب المقياس، والإعدادات التي تُرحَّل مرتين تكبر مرتين. ومن دونه يُثبَّت تخطيط الشعر وأسوار الشيفرة أيضًا، لأن الكتاب قد يحمل قصيدة `:::verse` بلا فاصل أو سورًا، أما الإزاحات المزدوجة فتُثبَّت بحسب الإعدادات وحدها.
 
 ### إخراج حزمة ورسمها
 
