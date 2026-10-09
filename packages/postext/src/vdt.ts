@@ -1902,6 +1902,15 @@ export interface VDTDesignTextRun {
    *  {@link VDTLineSegment.rtl}: shaped as one run, its brackets mirrored,
    *  never tracked. Absent on left-to-right runs. */
   rtl?: true;
+  /** Paint-only shift of the run's glyphs, px, as on
+   *  {@link VDTLineSegment.inkOffset}: present when the run's `width` is
+   *  its box rather than its glyphs' advance, in a design text set by the
+   *  CJK composer (#637): a full-width mark that gave up blank (negative
+   *  when the blank before its glyph went), a space set at the Han–Latin
+   *  width, a run that takes a Han–Latin space after it (0). Renderers
+   *  paint the glyphs at `x + inkOffset` and advance by `width`; the HTML
+   *  sets such a run in a box `width` wide. Absent on every other run. */
+  inkOffset?: number;
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */

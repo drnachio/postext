@@ -225,10 +225,13 @@ export function renderTextBlock(
       const runFont = fontCache.get(run.fontString) ?? font;
       const runSize = parseFontString(run.fontString)?.sizePx ?? size;
       const y = line.baselineY + (run.baselineShift ?? 0);
-      if (run.rtl && actualText !== undefined) drawTextPx(ctx, run.text, x, y, runFont, runSize, color, outline, actualText, undefined, 'rtl');
-      else if (run.rtl) drawRightToLeftRun(ctx, run.text, x, y, runFont, runSize, color, outline);
+      // A run whose width is its box (a CJK mark that gave up blank, #637)
+      // paints its glyphs `inkOffset` into it.
+      const gx = x + (run.inkOffset ?? 0);
+      if (run.rtl && actualText !== undefined) drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, undefined, 'rtl');
+      else if (run.rtl) drawRightToLeftRun(ctx, run.text, gx, y, runFont, runSize, color, outline);
       // A vertical line: the orientation its author gave the run.
-      else drawTextPx(ctx, run.text, x, y, runFont, runSize, color, outline, actualText, segmentOrientation(run));
+      else drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, segmentOrientation(run));
       x += run.width;
     }
   }

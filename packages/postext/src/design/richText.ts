@@ -9,6 +9,7 @@ import { flowTextWidth, fontEm, measuringVertically } from '../measure/vertical'
 import { measureTextWidth } from '../measure/canvas';
 import type { ForcedOrientation } from '../writingMode';
 import { parseInlineFormatting } from '../parse/inlineFormatting';
+import type { InlineSpan } from '../parse/types';
 import { buildFontString } from '../measure';
 import { scriptMetrics, stackedScriptPairs } from '../measure/rich';
 import { graphemeCount } from '../measure/graphemes';
@@ -36,10 +37,19 @@ export interface DesignTextRun {
   orientation?: 'upright' | 'sideways';
   /** Painted right to left (see `VDTDesignTextRun.rtl`). */
   rtl?: true;
+  /** The run's `width` is its box, not its glyphs' advance: a CJK mark
+   *  that gave up blank, a space set at the Han–Latin width (#637). Its
+   *  glyphs are painted from `x + inkOffset` (see
+   *  `VDTDesignTextRun.inkOffset`). */
+  inkOffset?: number;
 }
 
 interface RunStyle {
   font: string;
+  /** The marks the style was made from (the CJK composer picks its fonts
+   *  by them, `design/cjkText.ts`); absent on the element's own. */
+  bold?: boolean;
+  italic?: boolean;
   shift?: number;
   /** The script, for stacking a subscript and a superscript that touch;
    *  `stackedShift` is a subscript's drop under a superscript. */
@@ -76,6 +86,20 @@ export interface RichFontSpec {
 const fontFor = (spec: RichFontSpec, weight: number, italic: boolean): string =>
   buildFontString(spec.family, spec.sizePx, weight === 400 ? 'normal' : String(weight), italic ? 'italic' : 'normal');
 
+/** The fonts the runs of a design text with inline marks take: the
+ *  element's, bold (700, or the element's weight when heavier), italic
+ *  (the element's slant flipped) and both, as {@link parseRichDesignText}
+ *  picks them. */
+export function richFontSet(spec: RichFontSpec): { normal: string; bold: string; italic: string; boldItalic: string } {
+  const heavy = Math.max(700, spec.weight);
+  return {
+    normal: fontFor(spec, spec.weight, spec.italic),
+    bold: fontFor(spec, heavy, spec.italic),
+    italic: fontFor(spec, spec.weight, !spec.italic),
+    boldItalic: fontFor(spec, heavy, !spec.italic),
+  };
+}
+
 /** Read `text` for inline marks. Bold runs take weight 700 (the element's
  *  own weight when it is heavier); italic runs flip the element's slant;
  *  scripts use the body text's script size and shift. In vertical text
@@ -94,7 +118,7 @@ export function parseRichDesignText(text: string, spec: RichFontSpec): RichDesig
     let idx = keys.get(key);
     if (idx === undefined) {
       const base = fontFor(spec, span.bold ? Math.max(700, spec.weight) : spec.weight, span.italic ? !spec.italic : spec.italic);
-      const style: RunStyle = { font: base };
+      const style: RunStyle = { font: base, ...(span.bold ? { bold: true } : {}), ...(span.italic ? { italic: true } : {}) };
       if (span.script) {
         const m = scriptMetrics(base, span.script);
         style.font = m.font;
@@ -136,6 +160,29 @@ export function parseRichDesignText(text: string, spec: RichFontSpec): RichDesig
  *  as `parseRichDesignText` sets it. */
 export function plainDesignText(text: string): string {
   return parseInlineFormatting(text).map((span) => span.text).join('');
+}
+
+/** The spans of `[a, b)` of a rich design text, one per change of style,
+ *  for the CJK composer (`design/cjkText.ts`): bold, italic, script and
+ *  orientation as the parser read them. */
+export function richDesignSpans(rt: RichDesignText, a: number, b: number): InlineSpan[] {
+  const out: InlineSpan[] = [];
+  let i = a;
+  while (i < b) {
+    const idx = rt.styleAt[i]!;
+    let j = i + 1;
+    while (j < b && rt.styleAt[j] === idx) j++;
+    const st = rt.styles[idx]!;
+    out.push({
+      text: rt.text.slice(i, j),
+      bold: st.bold === true,
+      italic: st.italic === true,
+      ...(st.script ? { script: st.script } : {}),
+      ...(st.orient === 'tcy' ? { combineUpright: true } : st.orient ? { orientation: st.orient } : {}),
+    });
+    i = j;
+  }
+  return out;
 }
 
 /** A laid-out line: its visible pieces in order (a hyphen or an ellipsis

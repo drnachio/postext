@@ -1648,7 +1648,9 @@ function verticalDesignLines(block: VDTDesignTextBlock, v: VerticalHtml, originX
     for (const run of runs) {
       const runFont = quoteFontString(run.fontString);
       const decl = runFont !== font ? `font:${runFont};` : '';
-      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run), run.fontString, block.letterSpacingPx ?? 0), decl));
+      // A run whose width is its box (a CJK mark that gave up blank, #637)
+      // sets its glyphs `inkOffset` into it.
+      inner.push(verticalSpan(x + (run.inkOffset ?? 0), axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run), run.fontString, block.letterSpacingPx ?? 0), decl));
       x += run.width;
     }
     const width = Math.max(line.width, x);
@@ -2195,7 +2197,13 @@ function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): 
             ? 'display:inline-block;width:0;'
             : line.runs![i - 1]?.stacked ? `display:inline-block;min-width:${run.width.toFixed(3)}px;` : '';
           const shiftDecl = run.baselineShift ? `position:relative;top:${run.baselineShift.toFixed(3)}px;` : '';
-          return fontDecl || cjkDecl || stackDecl || shiftDecl ? `<span style="${fontDecl}${cjkDecl}${stackDecl}${shiftDecl}">${esc(run.text)}</span>` : esc(run.text);
+          // A run whose width is its box, not its glyphs' advance (a CJK
+          // mark that gave up blank, a Han–Latin space, #637): a box that
+          // wide, its glyphs set `inkOffset` into it.
+          const boxDecl = run.inkOffset !== undefined && !run.stacked
+            ? `display:inline-block;width:${run.width.toFixed(3)}px;${run.inkOffset !== 0 ? `text-indent:${run.inkOffset.toFixed(3)}px;` : ''}`
+            : '';
+          return fontDecl || cjkDecl || stackDecl || shiftDecl || boxDecl ? `<span style="${fontDecl}${cjkDecl}${stackDecl}${shiftDecl}${boxDecl}">${esc(run.text)}</span>` : esc(run.text);
         }).join('')
       : esc(line.text);
     const lineDecl = !line.runs && hasCJK(line.text) ? CJK_TEXT_DECL : '';
