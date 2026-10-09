@@ -131,7 +131,9 @@ describe('settings search index', () => {
         }
         expect(rows).toBeGreaterThan(300);
         expect(missing).toEqual([]);
-      }, 60_000);
+        // The column-and-a-half biochemistry book renders every section of
+        // the panel: 46–59 s on a CI runner, so a minute was a coin toss.
+      }, 180_000);
     }
   }
 });

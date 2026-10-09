@@ -66,7 +66,12 @@ async function main(argv: string[]): Promise<number> {
     // Skia and the canvas globals load only for the commands that measure
     // or paint text (help, pack or unpack start without them).
     const loading = performance.now();
-    if (spec.canvas) await import('./env');
+    // The book's fonts only, never the computer's: the same book must break
+    // the same way on every machine (and scanning them costs time).
+    if (spec.canvas) {
+      process.env.DISABLE_SYSTEM_FONTS_LOAD = '1';
+      await import('./env');
+    }
     reporter.timings.canvas = Math.round(performance.now() - loading);
     const mod = await spec.run();
     reporter.timings.load = Math.round(performance.now() - loading);

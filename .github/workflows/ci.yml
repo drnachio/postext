@@ -32,8 +32,16 @@ jobs:
       # runner and run with nothing else (the release builds every platform).
       - name: CLI executable
         run: |
-          pnpm --filter postext-cli build:bin linux-x64
+          pnpm --filter postext-cli build:bin linux-x64 windows-x64
           sh packages/postext-cli/scripts/smoke.sh packages/postext-cli/bin/postext-linux-x64
+
+      # Windows has needs of its own (Skia's ICU data beside the addon): the
+      # cli-windows job runs this executable on a Windows runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: postext-cli-windows
+          path: packages/postext-cli/bin/postext-windows-x64.exe
+          retention-days: 3
 
       # W3C EPUBCheck on postext-epub's sample books (src/epubcheck.test.ts,
       # skipped by `pnpm test`): fixed and reflowable, with and without a
@@ -54,3 +62,19 @@ jobs:
       - run: pnpm turbo run check-types
 
       - run: pnpm turbo run lint
+
+  cli-windows:
+    name: CLI on Windows
+    needs: ci
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: packages/postext-cli/scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: postext-cli-windows
+          path: bin
+      - name: Smoke test
+        shell: bash
+        run: sh packages/postext-cli/scripts/smoke.sh bin/postext-windows-x64.exe
