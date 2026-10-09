@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 082 · A Chinese official document to GB/T 9704 ═════════
 // https://postext.dev/en/cookbook/chinese-official-document
 // Code: MIT · Text: a fictitious notice written for the recipe (CC BY 4.0) · Pictures: none
-// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, parseTSV, mergeCells,
 } from 'https://esm.sh/postext';
@@ -50,15 +50,14 @@ const bodyText = {
 
 // #region levels: 一、 in Hei, （一） in Kai, 1. and （1） in the text face, all 三号 on the grid
 // One line each at the body size, nothing above or below: every head stays on the grid.
-// Headings have no indent of their own, so two ideographic spaces open each template.
 const level = (n, fontFamily, fontWeight, numberingTemplate) => ({ level: n, fontFamily,
   fontWeight, numberingTemplate, numberSeparator: '', fontSize: pt(BODY), lineHeight: pt(LEAD),
-  marginTop: pt(0), marginBottom: pt(0) });
+  marginTop: pt(0), marginBottom: pt(0), firstLineIndent: em(2) }); // 空二字，回行顶格
 const levels = [
-  level(2, HEI, 500, '　　{2:一}、'), // 一 is the informal numeral in the document's script
-  level(3, KAI, 400, '　　（{3:一}）'),
-  level(4, SONG, 400, '　　{4}.'),
-  level(5, SONG, 400, '　　（{5}）'),
+  level(2, HEI, 500, '{2:一}、'), // 一 is the informal numeral in the document's script
+  level(3, KAI, 400, '（{3:一}）'),
+  level(4, SONG, 400, '{4}.'),
+  level(5, SONG, 400, '（{5}）'),
 ];
 // #endregion
 

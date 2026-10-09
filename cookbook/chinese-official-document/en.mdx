@@ -26,7 +26,7 @@ Every mark takes a whole cell and gives none of it up, so in a line of Chinese t
 
 <Excerpt region="levels" />
 
-The standard sets 一、 in 黑体, （一） in 楷体, and 1. and （1） in the text face, all at the text size. `{2:一}` prints the informal Chinese numeral in the script of `locale` ([Numbering](/en/docs/configuration#numbering)). With the body’s size and leading and no margins, a head takes one line of the grid, and the text under it stays on the grid too. Heads have no indent of their own, so the two ideographic spaces at the start of each template are the two cells the standard leaves ([Per-level overrides](/en/docs/configuration#per-level-overrides)).
+The standard sets 一、 in 黑体, （一） in 楷体, and 1. and （1） in the text face, all at the text size. `{2:一}` prints the informal Chinese numeral in the script of `locale` ([Numbering](/en/docs/configuration#numbering)). With the body’s size and leading and no margins, a head takes one line of the grid, and the text under it stays on the grid too. `firstLineIndent: em(2)` sets each head two cells in, counted in body ems, and a head that runs to a second line starts it at the margin, as the standard wants; the number follows the indent, so the contents and the PDF bookmarks read 一、 with no spaces in front ([Per-level overrides](/en/docs/configuration#per-level-overrides)).
 
 ### 3 · The letterhead, line by line
 
