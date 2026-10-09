@@ -2529,6 +2529,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td>Indent of the heading from the line start (字下げ), <code>em</code> being the <strong>body</strong> size, as Japanese books count heading indents in body characters (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> is 6字下げ whatever the heading's size. The measure narrows by it, and a centred heading centres in the rest. Since postext 1.16.</td>
     </tr>
     <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of the heading's first line only, measured from <code>indent</code> and, like it, in <strong>body</strong> ems: the lines a long heading wraps onto start at <code>indent</code> (at the line start when it is unset), as GB/T 9704 sets every level of head two cells in with its turnover at the margin: <code>&#123; value: 2, unit: 'em' &#125;</code>. With <code>cjk.grid</code> on, two body ems are two cells of the grid. A numbered heading prints its number after the indent, so the numbering template needs no ideographic spaces, which would also print in the contents and the PDF bookmarks. It works in vertical text (from the top of the line), with the CJK composer (an opening bracket at the start of the heading follows the line-start rules, as in a paragraph) and with Knuth–Plass. A centred heading takes it as a centred paragraph does: its first line centres in the room after the indent. <code>&#123;firstLineIndent=N&#125;</code> after a heading's title sets one heading, and <code>&#123;firstLineIndent=0&#125;</code> takes its level's off. Since postext 1.24.</td>
+    </tr>
+    <tr>
       <td><code>jidori</code></td>
       <td><code>number</code></td>
       <td>unset</td>
@@ -6713,7 +6719,7 @@ const config: PostextConfig = {
       <td>level fields</td>
       <td>as in <code>headings.levels[]</code></td>
       <td>the level's values</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

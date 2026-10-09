@@ -2522,6 +2522,12 @@ Les configuracions per nivell admeten les mateixes propietats que els valors gen
       <td>Sagnat de l'encapçalament des del principi de la línia (字下げ), amb <code>em</code> igual al cos del <strong>text</strong>, perquè els llibres japonesos compten els sagnats dels títols en caràcters del text (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> és 6字下げ sigui quin sigui el cos de l'encapçalament. La mesura s'estreny en aquesta quantitat, i un encapçalament centrat es centra en el que queda. Des de postext 1.16.</td>
     </tr>
     <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sagnat només de la primera línia de l'encapçalament, comptat des d'<code>indent</code> i, com aquest, en quadratins del <strong>text</strong>: les línies següents d'un encapçalament llarg comencen a <code>indent</code> (al principi de la línia si no es fixa), com la GB/T 9704 compon tots els nivells de títol dos caràcters endins amb les línies següents al marge: <code>&#123; value: 2, unit: 'em' &#125;</code>. Amb <code>cjk.grid</code> activat, dos quadratins del text són dues cel·les de la retícula. Un encapçalament numerat imprimeix el número després del sagnat, de manera que la plantilla de numeració no necessita espais ideogràfics, que s'imprimirien també a l'índex i als marcadors del PDF. Funciona en text vertical (des del capdamunt de la línia), amb el compositor CJK (un parèntesi d'obertura al principi de l'encapçalament segueix les regles de principi de línia, com en un paràgraf) i amb Knuth–Plass. Un encapçalament centrat el pren com un paràgraf centrat: la primera línia es centra en el que queda després del sagnat. <code>&#123;firstLineIndent=N&#125;</code> després del títol d'un encapçalament el fixa per a aquell encapçalament, i <code>&#123;firstLineIndent=0&#125;</code> treu el del seu nivell. Des de postext 1.24.</td>
+    </tr>
+    <tr>
       <td><code>jidori</code></td>
       <td><code>number</code></td>
       <td>sense fixar</td>
@@ -6696,7 +6702,7 @@ const config: PostextConfig = {
       <td>camps de nivell</td>
       <td>com a <code>headings.levels[]</code></td>
       <td>els valors del nivell</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cadascun que es fixi substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp a camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la seva paritat (fins a postext 1.4, el camp que faltava sortia en canvi del valor sense salt).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cadascun que es fixi substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp a camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la seva paritat (fins a postext 1.4, el camp que faltava sortia en canvi del valor sense salt).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

@@ -2530,6 +2530,12 @@ As sobrescritas por nível aceitam as mesmas propriedades que os padrões gerais
       <td>Recuo do título a partir do início da linha (字下げ), sendo <code>em</code> o corpo do <strong>texto</strong>, como os livros japoneses contam os recuos de títulos em caracteres do corpo (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> é 6字下げ qualquer que seja o corpo do título. A medida diminui na mesma quantidade, e um título centralizado se centraliza no restante. Desde o postext 1.16.</td>
     </tr>
     <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Recuo apenas da primeira linha do título, contado a partir de <code>indent</code> e, como ele, em ems do <strong>corpo</strong>: as linhas seguintes de um título longo começam em <code>indent</code> (no início da linha quando não está definido), como a GB/T 9704 compõe todos os níveis de título dois caracteres para dentro com as linhas seguintes na margem: <code>&#123; value: 2, unit: 'em' &#125;</code>. Com <code>cjk.grid</code> ativado, dois ems do corpo são duas células da grade. Um título numerado imprime o número depois do recuo, então o modelo de numeração não precisa de espaços ideográficos, que também sairiam no sumário e nos marcadores do PDF. Funciona em texto vertical (a partir do topo da linha), com o compositor CJK (um parêntese de abertura no início do título segue as regras de início de linha, como num parágrafo) e com Knuth–Plass. Um título centralizado o recebe como um parágrafo centralizado: a primeira linha se centraliza no espaço que sobra depois do recuo. <code>&#123;firstLineIndent=N&#125;</code> depois do texto de um título define o recuo desse título, e <code>&#123;firstLineIndent=0&#125;</code> tira o do seu nível. Desde o postext 1.24.</td>
+    </tr>
+    <tr>
       <td><code>jidori</code></td>
       <td><code>number</code></td>
       <td>não definido</td>
@@ -6715,7 +6721,7 @@ const config: PostextConfig = {
       <td>campos do nível</td>
       <td>como em <code>headings.levels[]</code></td>
       <td>os valores do nível</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada um que for definido substitui o valor do nível do título para os títulos deste estilo (<code>dropCap: false</code> tira a capitular do nível). <code>breakBefore</code> é mesclado campo a campo sobre o do nível: um estilo que só define <code>parity</code> mantém o <code>enabled</code> do nível, e um que só define <code>enabled: true</code> mantém a paridade do nível (até o postext 1.4, o campo ausente vinha do padrão sem quebra).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada um que for definido substitui o valor do nível do título para os títulos deste estilo (<code>dropCap: false</code> tira a capitular do nível). <code>breakBefore</code> é mesclado campo a campo sobre o do nível: um estilo que só define <code>parity</code> mantém o <code>enabled</code> do nível, e um que só define <code>enabled: true</code> mantém a paridade do nível (até o postext 1.4, o campo ausente vinha do padrão sem quebra).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

@@ -2529,6 +2529,12 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td>見出しの行頭からの字下げ。<code>em</code>は<strong>本文</strong>のサイズで、日本の書籍が見出しの字下げを本文の字数で数えるのに合わせています（JLReq §4.1.3）。<code>&#123; value: 6, unit: 'em' &#125;</code>は、見出しのサイズにかかわらず6字下げです。行長はその分狭くなり、中央そろえの見出しは残りの幅の中央に置かれます。postext 1.16以降。</td>
     </tr>
     <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>見出しの1行目だけの字下げ。<code>indent</code>の位置から測り、<code>indent</code>と同じく<strong>本文</strong>のemで数えます。長い見出しの2行目以降は<code>indent</code>の位置（未設定なら行頭）から始まります。GB/T 9704は各レベルの見出しを2字下げ、折り返した行を行頭に戻して組みます：<code>&#123; value: 2, unit: 'em' &#125;</code>。<code>cjk.grid</code>が有効なら、本文の2 emはグリッドの2マスです。番号付きの見出しは字下げのあとに番号を置くので、番号テンプレートに全角スペースを入れる必要はありません（入れると目次とPDFのしおりにも出力されます）。縦組み（行頭から）、CJKコンポーザー（見出しの先頭の始め括弧は段落と同じく行頭の規則に従います）、Knuth–Plassで働きます。中央そろえの見出しは中央そろえの段落と同じ扱いで、1行目を字下げのあとに残る幅の中央に置きます。見出しのタイトルのあとに<code>&#123;firstLineIndent=N&#125;</code>と書くとその見出しだけに指定でき、<code>&#123;firstLineIndent=0&#125;</code>はレベルの指定を外します。postext 1.24以降。</td>
+    </tr>
+    <tr>
       <td><code>jidori</code></td>
       <td><code>number</code></td>
       <td>未設定</td>
@@ -6713,7 +6719,7 @@ const config: PostextConfig = {
       <td>レベルのフィールド</td>
       <td><code>headings.levels[]</code>と同じ</td>
       <td>そのレベルの値</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
+      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

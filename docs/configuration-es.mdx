@@ -2529,6 +2529,12 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td>Sangría del encabezado desde el principio de la línea (字下げ), con <code>em</code> igual al cuerpo del <strong>texto</strong>, porque los libros japoneses cuentan las sangrías de los títulos en caracteres del texto (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> es 6字下げ sea cual sea el cuerpo del encabezado. La medida se estrecha en esa cantidad, y un encabezado centrado se centra en lo que queda. Desde postext 1.16.</td>
     </tr>
     <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría solo de la primera línea del encabezado, contada desde <code>indent</code> y, como ella, en cuadratines del <strong>texto</strong>: las líneas siguientes de un encabezado largo empiezan en <code>indent</code> (al principio de la línea si no se fija), como la GB/T 9704 compone todos los niveles de título dos caracteres adentro con las líneas siguientes al margen: <code>&#123; value: 2, unit: 'em' &#125;</code>. Con <code>cjk.grid</code> activado, dos cuadratines del texto son dos celdas de la retícula. Un encabezado numerado imprime su número después de la sangría, así que la plantilla de numeración no necesita espacios ideográficos, que se imprimirían también en el índice y en los marcadores del PDF. Funciona en texto vertical (desde la cabeza de la línea), con el compositor CJK (un paréntesis de apertura al principio del encabezado sigue las reglas de principio de línea, como en un párrafo) y con Knuth–Plass. Un encabezado centrado la toma como un párrafo centrado: su primera línea se centra en lo que queda después de la sangría. <code>&#123;firstLineIndent=N&#125;</code> tras el título de un encabezado la fija para ese encabezado, y <code>&#123;firstLineIndent=0&#125;</code> quita la de su nivel. Desde postext 1.24.</td>
+    </tr>
+    <tr>
       <td><code>jidori</code></td>
       <td><code>number</code></td>
       <td>sin fijar</td>
@@ -6713,7 +6719,7 @@ const config: PostextConfig = {
       <td>campos de nivel</td>
       <td>como en <code>headings.levels[]</code></td>
       <td>los valores del nivel</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada uno que se fije sustituye al valor del nivel para los encabezados de este estilo (<code>dropCap: false</code> quita la capitular del nivel). <code>breakBefore</code> se combina campo a campo con el del nivel: un estilo que solo fija <code>parity</code> conserva el <code>enabled</code> del nivel, y uno que solo fija <code>enabled: true</code> conserva su paridad (hasta postext 1.4, el campo que faltaba salía en cambio del valor sin salto).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada uno que se fije sustituye al valor del nivel para los encabezados de este estilo (<code>dropCap: false</code> quita la capitular del nivel). <code>breakBefore</code> se combina campo a campo con el del nivel: un estilo que solo fija <code>parity</code> conserva el <code>enabled</code> del nivel, y uno que solo fija <code>enabled: true</code> conserva su paridad (hasta postext 1.4, el campo que faltaba salía en cambio del valor sin salto).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

@@ -2529,6 +2529,12 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td>إزاحة العنوان عن بداية السطر (字下げ)، و<code>em</code> هو حجم <strong>المتن</strong>، لأن الكتب اليابانية تعدّ إزاحات العناوين بمحارف المتن (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> هو 6字下げ مهما كان حجم العنوان. ويضيق عرض السطر بقدرها، والعنوان الموسَّط يتوسط ما بقي. منذ postext 1.16.</td>
     </tr>
     <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>إزاحة السطر الأول وحده من العنوان، محسوبة من <code>indent</code> وبوحدات em من <strong>المتن</strong> مثلها: الأسطر التي يلتفّ إليها العنوان الطويل تبدأ عند <code>indent</code> (عند بداية السطر إن لم تُضبط)، كما يضع معيار GB/T 9704 كل مستويات العناوين بإزاحة خانتين ويعيد ما يلتفّ منها إلى الهامش: <code>&#123; value: 2, unit: 'em' &#125;</code>. ومع تفعيل <code>cjk.grid</code> تكون وحدتا em من المتن خانتين من الشبكة. والعنوان المرقّم يطبع رقمه بعد الإزاحة، فلا يحتاج قالب الترقيم إلى مسافات إيديوغرافية كانت ستُطبع أيضًا في الفهرس وفي علامات PDF المرجعية. وتعمل في النص العمودي (من رأس السطر)، ومع مُنضِّد CJK (القوس الافتتاحي في بداية العنوان يتبع قواعد بداية السطر كما في الفقرة)، ومع Knuth–Plass. والعنوان الموسَّط يأخذها كما تأخذها الفقرة الموسَّطة: يتوسّط سطره الأول ما يبقى بعد الإزاحة. وتضبط <code>&#123;firstLineIndent=N&#125;</code> بعد نص العنوان عنوانًا واحدًا، وتلغي <code>&#123;firstLineIndent=0&#125;</code> إزاحة مستواه. منذ postext 1.24.</td>
+    </tr>
+    <tr>
       <td><code>jidori</code></td>
       <td><code>number</code></td>
       <td>غير مضبوط</td>
@@ -6713,7 +6719,7 @@ const config: PostextConfig = {
       <td>حقول المستوى</td>
       <td>كما في <code>headings.levels[]</code></td>
       <td>قيم المستوى</td>
-      <td><code>fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>breakBefore</code>، <code>span</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا عُيِّن، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها).</td>
+      <td><code>fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>breakBefore</code>، <code>span</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>firstLineIndent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا عُيِّن، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
