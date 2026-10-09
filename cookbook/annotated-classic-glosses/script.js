@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 032 · Annotated classic with margin glosses ════════════
 // https://postext.dev/en/cookbook/annotated-classic-glosses
 // Code: MIT · Text: Lewis Carroll (PD), glosses (CC BY 4.0) · Headpiece: diffusion models
-// Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 // The mad tea-party as an annotated edition: the text keeps to one column, and its glosses stand
 // in the outer margin beside the lines they explain, changing sides with the spread.
 import {
@@ -137,9 +137,7 @@ const opener = { enabled: true, slot: { elements: [
     placement: { anchor: { to: 'container', edge: 'top-left' },
       offset: { y: mm(HEADPIECE - TOP + 8) } } }, // 8 mm under the painting's foot
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY,
-    fontSize: pt(40), lineHeight: 1.05, color: col('ink'), align: 'left',
-    // A longer title wraps instead of ending in '…' (gotcha: overflow-ellipsis-default).
-    overflow: 'wrap',
+    fontSize: pt(40), lineHeight: 1.05, color: col('ink'), align: 'left', // wraps when longer
     placement: below('kicker', 2, 'fill') },
   // Drop caps exist only in design text, which is set ragged
   // (gotcha: design-text-ragged): the headnote is the editor's voice, italic and ragged;
@@ -149,7 +147,7 @@ const opener = { enabled: true, slot: { elements: [
     // A design text's lineHeight multiplies its size
     // (gotcha: design-lineheight-multiple).
     lineHeight: HEADNOTE.lead / HEADNOTE.size, color: col('ink'),
-    align: 'left', overflow: 'wrap', // a drop cap needs wrapping text
+    align: 'left',
     dropCap: { lines: 2, fontFamily: DISPLAY, fontSize: dropSize(2), color: col('lawn'),
       gap: mm(1.5) },
     placement: below('title', 5, mm(TEXT_W)) },
@@ -160,7 +158,6 @@ const opener = { enabled: true, slot: { elements: [
       offset: { x: layout.gutterWidth }, size: { width: mm(SIDE_W) } } },
   { kind: 'text', id: 'edition', content: '{attr.source}', fontFamily: TEXT,
     fontSize: pt(7.5), lineHeight: 10 / 7.5, color: col('muted'), align: 'left',
-    overflow: 'wrap',
     placement: { anchor: { to: '#edition-label', edge: 'below' }, offset: { y: mm(0.8) },
       size: { width: mm(SIDE_W) } } },
 ] } };

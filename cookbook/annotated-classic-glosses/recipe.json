@@ -30,14 +30,13 @@
     { "followup": "EF-90", "package": "postext", "note": "the headpiece is an image element and reserves no height (gotcha opener-image-no-reserve). The kicker is offset HEADPIECE - TOP + 8 mm from the top of the opener, and the title and headnote hang below it: those text elements count, so the reserve they carry runs past the drawing and the text starts on line 23, under the headnote" },
     { "followup": "EF-113", "package": "postext", "note": "level 1 sets span: 'page' so that the opener paints unclipped: kept in the text column, its design is clipped at the column's top edge, which cuts the top 22 mm of the drawing (the sides are painted), and width 'fill' resolves to the 87.5 mm column, which wraps the title" },
     { "followup": "EF-109", "package": "postext", "note": "design text is never justified (gotcha design-text-ragged), so the drop cap opens the editor's italic headnote, set ragged, and Carroll's justified text starts in the flow below it" },
-    { "followup": "EF-106", "package": "postext", "note": "the headnote sets overflow: 'wrap', without which its dropCap is dropped silently" },
     { "followup": "EF-127", "package": "postext", "note": "dropSize() gives the initial an explicit fontSize from the cap heights of Unna (0.597 em) and Rozha One (0.56 em): the default size is as tall as both line boxes and its top rises above the headnote's first capitals" },
     { "followup": "EF-56", "package": "postext", "note": "every design text lineHeight is a multiple of its size (HEADNOTE.lead / HEADNOTE.size, 10 / 7.5, 1.05), never a dimension (gotcha design-lineheight-multiple)" },
     { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (kicker, title, headnote, drop cap, note on this edition, running heads, folios) from the hex, not from the palette (gotcha palette-skips-designs)" },
     { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated with parity 'odd' because a headings object drops it (gotcha headings-drop-h1-break)" }
   ],
   "related": ["critical-edition-line-numbers", "textbook-margin-column", "endnotes-instead-of-footnotes", "spanish-pocket-novel"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.24.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -84,5 +83,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-09"
 }

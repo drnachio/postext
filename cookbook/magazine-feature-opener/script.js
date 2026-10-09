@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 004 · Magazine feature: photo opener to end mark ═══════
 // https://postext.dev/en/cookbook/magazine-feature-opener
 // Code: MIT · Text: original (CC BY 4.0) · Photos: Ales Krivec, Hannah Donze (CC0)
-// Fonts: Literata, Instrument Serif, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Literata, Instrument Serif, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 // A nature feature from a winter issue. The level-1 heading carries its kicker, standfirst,
 // byline and photo credit as attributes, and one opener design lays them out under a bleed
 // photograph; the story runs on with a pull quote, a fact box, a photo band, a numbers panel
@@ -60,13 +60,12 @@ const opener = (resourceId, depth) => ({ // depth: how far down the page the pic
         letterSpacing: pt(1.7), color: col('lake'), align: 'left',
         placement: at('container', 'top-left', 0, depth - TOP + 9) },
       { kind: 'text', id: 'headline', content: '{titleText}', fontFamily: 'Instrument Serif',
-        fontSize: pt(58), color: col('ink'), align: 'left', overflow: 'wrap', box: air,
+        fontSize: pt(58), color: col('ink'), align: 'left', box: air, // wraps: a heading design
         lineHeight: 0.94, // a multiple of the size (gotcha: design-lineheight-multiple)
         placement: at('#kicker', 'below', 0, 2.5, HEAD) },
       { kind: 'text', id: 'standfirst', content: '{attr.standfirst}', italic: true,
         fontFamily: 'Instrument Serif', fontSize: pt(13.5), lineHeight: 1.22, // a multiple
         color: col('ink'), align: 'left',
-        overflow: 'wrap', // gotcha: overflow-ellipsis-default
         placement: at('#headline', 'right-of', 7, 3.2) }, // wraps at the container's edge
       { kind: 'text', id: 'byline', content: '{attr.byline}', ...sans, fontSize: pt(7.5),
         letterSpacing: pt(1.3), color: col('ink'), align: 'left', box: air,

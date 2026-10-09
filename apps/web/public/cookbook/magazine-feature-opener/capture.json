@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-feature-opener",
-  "sourceHash": "d9b1cdf549e38e62fda88f0833e9dfa5ae9fc8c4c3583c2a503c07f1a80dcdfd",
+  "sourceHash": "f221be6a48bc296e03a29ff68bbb766c9cac742a921dadcc0ce3d9f12b83e7e0",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.154Z",
+  "capturedAt": "2026-10-09T21:08:28.828Z",
   "variants": {
     "en": {
-      "hash8": "a9e48589",
+      "hash8": "4f4282c6",
       "vdtHash": "8ec19b83be518534c718c9ebf0cfe01191e476f8",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 62,
-        "buildMs": 72,
-        "totalMs": 989,
+        "importMs": 164,
+        "fontsMs": 57,
+        "buildMs": 62,
+        "totalMs": 4004,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Literata"
         ],
         "pages": 4,
-        "ownLines": 248
+        "ownLines": 247
       },
       "pages": [
         {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "magazine-feature-opener.postext",
-        "bytes": 768184,
+        "bytes": 768165,
         "folio": "da2eb3c6"
       },
       "detected": {
@@ -302,7 +302,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 437,
+        "configLeaves": 433,
         "designElements": 20,
         "directives": [
           ":::callout",
@@ -397,13 +397,13 @@
       }
     },
     "es": {
-      "hash8": "601abaf8",
+      "hash8": "c274d29d",
       "vdtHash": "56bd2a999f90be001e267e01002006bc64369925",
       "timings": {
-        "importMs": 164,
-        "fontsMs": 66,
-        "buildMs": 76,
-        "totalMs": 1073,
+        "importMs": 136,
+        "fontsMs": 45,
+        "buildMs": 63,
+        "totalMs": 996,
         "builds": 2
       },
       "specimen": {
@@ -426,7 +426,7 @@
           "Literata"
         ],
         "pages": 4,
-        "ownLines": 248
+        "ownLines": 247
       },
       "pages": [
         {
@@ -502,7 +502,7 @@
       },
       "sandbox": {
         "file": "magazine-feature-opener.postext",
-        "bytes": 768177,
+        "bytes": 768156,
         "folio": "da2eb3c6"
       },
       "detected": {
@@ -689,7 +689,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 437,
+        "configLeaves": 433,
         "designElements": 20,
         "directives": [
           ":::callout",

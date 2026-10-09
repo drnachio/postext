@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 003 · Chapter opener on a full-bleed band ══════════════
 // https://postext.dev/en/cookbook/chapter-opener-bleed-band
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Roboto Serif, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Roboto Serif, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 // Two chapters of a geology textbook. Every level-1 heading becomes a colour band bled off the
 // top of the page, its number standing on the band's foot; a heading style recolours chapter 4.
 import {
@@ -46,8 +46,8 @@ const PT = 25.4 / 72; // mm in a point
 const AIR = 12; // mm, foot to text: ≥ 0.2 × NUMERAL × PT ≈ 11.9, the numeral box below its baseline
 const BEARING = 2; // mm past the text edge: a rough optical nudge, as each digit's bearing differs
 const bleedTop = { to: 'bleed', edge: 'top-left' }; // the trim's corner, pushed out by BLEED
-// Design text centres and cuts with '…' by default (gotcha: overflow-ellipsis-default).
-const onBand = { color: col('paper'), align: 'left', overflow: 'wrap' };
+// Design text centres by default; in a heading design it wraps by default too.
+const onBand = { color: col('paper'), align: 'left' };
 const below = (id, y, width) => ({ anchor: { to: `#${id}`, edge: 'below' }, offset: { y: mm(y) },
   size: { width: mm(width) } }); // chained: a longer title pushes the standfirst down
 const opener = { enabled: true,

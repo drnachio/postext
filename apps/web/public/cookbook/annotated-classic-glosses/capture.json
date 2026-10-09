@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "annotated-classic-glosses",
-  "sourceHash": "44cbdcc0ed145614e59f961e6d6962f7697fabc01d6919c1845180473db2ab24",
+  "sourceHash": "59ca656384b599c38935c2e4e6d11df64fd75dc12032941b2d8c8511158589c1",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.595Z",
+  "capturedAt": "2026-10-09T21:08:28.839Z",
   "variants": {
     "en": {
-      "hash8": "da536ebb",
+      "hash8": "1c06707f",
       "vdtHash": "049a0a0d8b1d507eb126c2b88daebb95f4deb600",
       "timings": {
-        "importMs": 152,
+        "importMs": 137,
         "fontsMs": 42,
-        "buildMs": 43,
-        "totalMs": 918,
+        "buildMs": 38,
+        "totalMs": 907,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Unna"
         ],
         "pages": 3,
-        "ownLines": 219
+        "ownLines": 216
       },
       "pages": [
         {
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "annotated-classic-glosses.postext",
-        "bytes": 319056,
+        "bytes": 319039,
         "folio": "923d57f4"
       },
       "detected": {
@@ -227,7 +227,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 256,
+        "configLeaves": 253,
         "designElements": 11,
         "directives": [
           ":::callout",
