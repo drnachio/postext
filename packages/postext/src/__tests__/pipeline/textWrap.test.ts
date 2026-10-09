@@ -439,9 +439,9 @@ describe('text wrap in CJK and vertical text (#627)', () => {
     const doc = build(`::resource{id="fig"}\n\n${'春眠不覚暁'.repeat(30)}`, [figure({ wrap: 'right', width: 0.4 })], cfg);
     expect(doc.pages.flatMap((p) => p.columns).some((c) => c.exclusions)).toBe(false);
     expect(warnings(doc).map((w) => w.reason)).toEqual(['verticalText']);
-    const typed = buildDocument({ markdown: 'Text.', resources: [] }, { ...cfg, resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'none', counterFormat: 'decimal', captionPrefix: 'Figure', defaultPlacement: { wrap: 'start' } }] } as PostextConfig, createMeasurementCache());
+    const typed = buildDocument({ markdown: 'Text.', resources: [] }, { ...cfg, resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Figure', defaultPlacement: { wrap: 'start' } }] } as PostextConfig, createMeasurementCache());
     expect(typed.configWarnings?.filter((w) => w.kind === 'wrapUnsupported').map((w) => w.path)).toEqual(['resourceTypes[0].defaultPlacement.wrap']);
-    const misspelt = buildDocument({ markdown: 'Text.', resources: [] }, { ...config(), resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'none', counterFormat: 'decimal', captionPrefix: 'Figure', defaultPlacement: { wrap: 'rigth' as never } }] } as PostextConfig, createMeasurementCache());
+    const misspelt = buildDocument({ markdown: 'Text.', resources: [] }, { ...config(), resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Figure', defaultPlacement: { wrap: 'rigth' as never } }] } as PostextConfig, createMeasurementCache());
     expect(misspelt.configWarnings?.find((w) => w.kind === 'unknownConfigValue')?.suggestion).toBe('right');
   });
 });
