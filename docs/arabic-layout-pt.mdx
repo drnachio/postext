@@ -289,6 +289,7 @@ Escreva o poema em um bloco `:::verse`, um bayt por linha, com os hemistíquios 
 - **Um hemistíquio longo demais** primeiro aperta seus espaços; se ainda não couber, o bayt é composto em escada: o ṣadr alinhado à direita em uma linha própria, o ʿajuz alinhado à esquerda na seguinte.
 - **Manter junto.** Um bayt nunca é dividido entre colunas ou páginas, um poema segue as regras de órfãs e viúvas dos parágrafos, e a linha que o introduz («فأنشد يقول:») fica com seus primeiros bayts.
 - **Tipo.** O poema usa a fonte e o corpo do texto corrido; `style` indica um estilo de parágrafo, e é assim que um poema vocalizado recebe a entrelinha de que seus sinais precisam. Um poema em transliteração latina em um livro em inglês é composto da mesma forma, com o ṣadr à esquerda.
+- **Numeração de linhas.** Com `lineNumbers` ligado, um poema conta um número por bayt, impresso na margem ao lado dele; o ʿajuz de um bayt composto em escada, numa linha própria, não recebe número. `position: 'start'` põe os números à direita de todas as páginas de um livro árabe. Veja [Configuração › Numeração de linhas](/pt/docs/configuration#numeração-de-linhas).
 
 O texto simples mantém o poema como foi escrito, um bayt por linha, e deixa de fora as kashidas e o ornamento. Veja [`:::verse`](/pt/docs/document-format#verse) no formato de documento.
 
@@ -446,7 +447,7 @@ Os capítulos começam com `:::numbering{format="abjad" startAt=1}` antes da int
 - **Sinais vocálicos** podem ultrapassar a borda de um boxe ou de uma célula de tabela, cujo recorte não cresce por causa deles; `tashkil` mantém os sinais de legendas, células de tabela e texto de design.
 - **Números.** Os números de citação são impressos em algarismos europeus; os ordinais por extenso são escritos na forma definida e no nominativo que os títulos usam.
 - **Índice remissivo**: ة fica sob ه, e os nomes não são ordenados ignorando ابن ou أبو; não há índices de rimas nem de raízes.
-- **Verso**: não há verso corrido dentro da prosa, nem bayts numerados, nem formas estróficas com refrão centralizado além de linhas centralizadas soltas; um hemistíquio mais largo que a medida quebra a partir do lado de início, sem recuo deslocado.
+- **Verso**: não há verso corrido dentro da prosa, nem formas estróficas com refrão centralizado além de linhas centralizadas soltas; um hemistíquio mais largo que a medida quebra a partir do lado de início, sem recuo deslocado.
 - **Kashida**: o texto copiado da saída HTML ainda contém os tatweels inseridos, e nada impede que kashidas de linhas vizinhas se empilhem uma sobre a outra.
 
 ## Fontes de consulta

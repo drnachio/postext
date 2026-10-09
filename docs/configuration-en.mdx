@@ -44,6 +44,7 @@ This reference is long. These are the main blocks:
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
+- [Line numbers](#line-numbers) — `lineNumbers`: the number of every fifth line of verse, or of the text, in the margin; what is counted, where the count starts again, which side the numbers stand on.
 - [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
 - [Table style](#table-style) (with [named table styles](#named-table-styles)) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
@@ -3404,6 +3405,175 @@ resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields t
 ```
 
 
+## Line numbers
+
+The `lineNumbers` property prints the number of every fifth line (or every Nth) in the margin beside it, as critical editions, anthologies of poetry, legal texts and school editions do. It counts the lines of `:::verse` poems, or every line of the text. It is off by default. Each number is painted on the baseline of its line, in a size of its own, and never moves a line: the page is laid out exactly as it would be without numbers. Since postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // Off by default.
+  count?: 'verse' | 'all';  // The lines of poems, or every line of the text.
+  interval?: number;        // Print the multiples of N.
+  numberFirst?: boolean;    // Also print the first line after each restart.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // Where the count starts again.
+  startAt?: number;         // The number of the first line after a restart.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // Pages of two or more columns.
+  gap?: Dimension;          // From the text to the number; em is the number's size.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // The body family when unset.
+  fontSize?: Dimension;     // em is the body size.
+  fontWeight?: number;      // The body weight when unset.
+  italic?: boolean;
+  color?: ColorValue;       // The body colour when unset.
+  format?: string;          // decimal, lower-roman, arabic-indic, 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Print line numbers. A vertical document (<code>layout.writingMode: 'vertical-rl'</code>) gets none, and <code>true</code> there is reported as <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> counts the lines of <code>:::verse</code> poems, each line of verse once: a turnover (the rest of a line too long for the measure, set on the next line) takes no number, and the space between stanzas is not counted. A poem in the classical Arabic layout counts one line per bayt; the second line of a staggered bayt is not counted. <code>'all'</code> counts every line of body paragraphs, list items, blockquotes and verse, in reading order: page by page, column by column, top to bottom.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>Print the number of every line that is a multiple of this one (5, 10, 15…). A poem whose first line is 37 prints 40, 45… A poem's fence may set its own (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Also print the number of the first counted line after each restart.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> with <code>count: 'verse'</code>, <code>'page'</code> with <code>count: 'all'</code></td>
+      <td>Where the count starts again: never (<code>'document'</code>, which runs on through the chapters of a book), at every level-1 heading (<code>'chapter'</code>), at every level-1 or level-2 heading (<code>'section'</code>), on every page (<code>'page'</code>) or at every <code>:::verse</code> poem (<code>'poem'</code>). A poem's <code>lineStart=N</code> and the <code>:::numbering</code> directive's <code>lines=N</code> restart it anywhere, in any mode.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>The number of the first line after a restart.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>The side the numbers stand on. <code>'outer'</code> is away from the spine: the right of an odd page and the left of an even one, the other way round in a book bound on the right. <code>'inner'</code> is the spine side. <code>'left'</code> and <code>'right'</code> are the same on every page. <code>'start'</code> and <code>'end'</code> follow the document's direction: <code>'start'</code> is the right in a right-to-left book. <code>'side'</code> sets them in the side column of a <code>'oneAndHalf'</code> layout with <code>layout.sideColumnRole: 'floats'</code>, flush with the side column's edge next to the text (<code>gap</code> is not used); on a page with no side column it falls back to <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>Pages with two or more text columns side by side. <code>'outer-edges'</code> puts the first column's numbers on its left and the last column's on its right; the columns between them follow <code>'each'</code>. <code>'gutter'</code> puts them in the gutters: the first column's on its right, the others' on their left. <code>'each'</code> puts every column's numbers on the <code>position</code> side.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>The distance from the edge of the column to the number; <code>em</code> is the number's own size.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> sets each number flush toward the text: right-aligned in a left margin, left-aligned in a right one. <code>'left'</code> and <code>'right'</code> align the numbers within the width of the widest number on the page.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body family</td>
+      <td>Typeface of the numbers. It is loaded and embedded like any other family.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Size of the numbers; <code>em</code> is the body size.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>body weight</td>
+      <td>Weight of the numbers.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the numbers in italics.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body colour</td>
+      <td>Colour of the numbers. A colour linked to the palette follows the palettes of parts and sections.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>decimal</td>
+      <td>How the numbers are written, in any of the <a href="#numbering-format-spellings">numbering format spellings</a> (<code>'lower-roman'</code>, <code>'arabic-indic'</code>, <code>'一'</code>…). Decimal numbers are written in the document's digits (<code>numerals</code>). An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // one count through the whole book
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+What is counted, and what is not:
+
+- **Never counted**: headings, captions, tables and pictures, display formulas, design text (openers, running heads), footnotes and chapter-end notes, the contents, the entries of the index and of the bibliography, and blank pages.
+- **Boxes and prose.** The text of a callout is not counted, and under `count: 'verse'` neither is prose, unless the paragraph style it is set in says `lineNumbers: true`; a style with `lineNumbers: false` is never counted (see [Paragraph styles](#paragraph-styles)).
+- **One poem.** A poem's fence takes `numbered=false` (its lines are not counted), `lineStart=N` (its first line is N, and the count starts again there) and `interval=N`. `:::numbering{lines=N}` numbers the next counted line N, wherever it stands. See [Document format › `:::verse`](/en/docs/document-format#verse) and [`:::numbering`](/en/docs/document-format#numbering).
+
+In a book laid out chapter by chapter, `restart: 'document'` carries the count from one chapter to the next through `continuation.lineNumber`. `continuationAfter` counts the lines of verse from the text; with `count: 'all'` the count depends on the layout, so the host passes on the `lastLineNumber` of the previous chapter's document, as the Sandbox does.
+
+With `position: 'side'` the numbers share the side column with side boxes, side captions and side figures. A number that overlaps one of them is painted anyway, neither of them moves, and the build reports a `lineNumberOverlap` content warning that points at the numbered line.
+
+**Output.** The canvas, the PDF, the HTML viewer and the fixed-layout EPUB paint the numbers. In a tagged PDF they are layout artifacts and each one carries an empty `/ActualText`, so copied or extracted text runs from line to line without them. The HTML output hides them from assistive technology (`aria-hidden`), from selection and from copied text. The reflowable EPUB, whose lines are set by the reading system, keeps the numbers of verse only: a `pt-line-number` span (also `aria-hidden`) in the start margin of the stanza, beside each line that carries a number in print. In the VDT the numbers are a design slot of each page (`page.lineNumbers`, its text blocks flagged `artifact`) and a list of marks (`page.lineNumberMarks`: `number`, `label`, `columnIndex`, `blockId`, `lineIndex`); the document records `lastLineNumber`.
+
+**Not supported**: line numbers in vertical text, a cross-reference that prints the number of a line, notes keyed to line numbers, and numbers for the lines of table cells, captions or code listings.
+
+In the Sandbox these settings are the **Line numbers** section of the Design panel. Resolver and stripper match the other sections; the font, the weight and the colour come from the body text:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // unset font, weight and colour follow the body
+```
+
+
 ## Cross-references
 
 The `crossRefs` property sets the words a [cross-reference](/en/docs/document-format#cross-references-and-anchors) prints around a number or a page, and the style a `:ref` takes when it sets none. Each template holds `{n}` where the number goes; one without it gets the number after a no-break space (`"§"` prints *§ 3.2*). An unset template follows the document language: *chapter / section / p.* in English, *capítulo / sección / pág.* in Spanish, `第{n}章` / `第{n}节` / `第{n}页` in Chinese, and so on for French, German, Italian, Portuguese, Catalan and Dutch.
@@ -5066,6 +5236,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>cjk.wordBreak</code></td>
       <td>Where the paragraphs' CJK lines break between characters (see <code>cjk.wordBreak</code>): <code>'keep-all'</code> for a primer in phrase-spaced kana quoted in a book of ordinary prose, <code>'normal'</code> for the reverse. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>unset</td>
+      <td>Whether <a href="#line-numbers">line numbers</a> count the paragraphs' lines. Unset: counted when <code>lineNumbers.count</code> is <code>'all'</code>, and in a poem set in the style when it counts verse. <code>true</code>: counted under <code>'verse'</code> too, and inside a callout, whose text is otherwise never counted. <code>false</code>: never counted. Since postext 1.23.</td>
     </tr>
   </tbody>
 </table>
@@ -7910,7 +8086,7 @@ Besides these, the panel always lists the warnings the layout itself raises (`VD
 
 ### Configuration warnings
 
-Seven mistakes in the configuration itself are never silent, and no toggle hides them. The engine does not fail on any of them; it substitutes a value, or leaves the setting out, and says so:
+Eight mistakes in the configuration itself are never silent, and no toggle hides them. The engine does not fail on any of them; it substitutes a value, or leaves the setting out, and says so:
 
 - **Unknown number format** — an ordered-list `numberFormat`, a `page.pageNumbering.format` or a resource type's `counterFormat` that is none of the [numbering format spellings](#numbering-format-spellings). It numbers in decimal.
 - **Font stack in a font family** — a `fontFamily` (or any `…FontFamily`) that holds a CSS font stack. The text is set in the stack's first family (see [One family per `fontFamily`](#one-family-per-fontfamily)).
@@ -7919,6 +8095,7 @@ Seven mistakes in the configuration itself are never silent, and no toggle hides
 - **Character grid too large** — a `cjk.grid` with more characters per line or lines per page than the margins leave room for. The grid is set with the most that fit, and `used` names the number (`cjkGridClamped`; see [Character grid](#character-grid)).
 - **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
 - **Unknown setting value** — a setting that takes one of a few words holding another, such as `direction: 'right'` (it takes `auto`, `ltr` or `rtl`). The engine reads the default instead, and `used` names what that came to: for `direction`, the direction of the document language (`unknownConfigValue`). The words of the comics settings are checked too ([Comics › Comic warnings](/en/docs/comics#comic-warnings)): `used` is the value the setting resolved to (a balloon style's own default, for a built-in style), and `suggestion` names the word the value is closest to, when one is close.
+- **Line numbers in vertical text** — `lineNumbers.enabled: true` in a document set vertically (`layout.writingMode: 'vertical-rl'`). Vertical pages get no line numbers, and `used` is `false` (`lineNumbersUnsupported`; see [Line numbers](#line-numbers)).
 
 The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:
 
@@ -8062,6 +8239,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>raggedTableGrid</code></td>
       <td>A table's grid is not rectangular once its merges are counted (see <a href="#building-table-models">Building table models</a>).</td>
       <td>Cells shift onto a merge or leave a hole. <code>reason</code> (<code>'spanOverlap'</code> / <code>'missingCells'</code>), <code>row</code> and <code>col</code> locate the first issue; <code>count</code> says how many there are.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td>With <code>lineNumbers.position: 'side'</code>, a line number overlaps a side box, a side caption or a figure in the side column. Points at the numbered line; <code>number</code> is the number as printed.</td>
+      <td>The number is painted anyway, and neither moves.</td>
     </tr>
   </tbody>
 </table>

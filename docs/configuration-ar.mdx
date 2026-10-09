@@ -44,6 +44,7 @@ const document = buildDocument(content, {
 - [العناوين](#العناوين) — القيم الافتراضية المشتركة وتجاوزات H1–H6.
 - [القوائم غير المرقّمة](#القوائم-غير-المرقّمة) و[القوائم المرقّمة](#القوائم-المرقّمة) — النقاط والترقيم والتداخل.
 - [الرياضيات](#الصيغ-الرياضية) — رسم LaTeX والمقياس واللون والهوامش.
+- [ترقيم الأسطر](#ترقيم-الأسطر) — `lineNumbers`: رقم كل سطر خامس من الأبيات أو من النص في الهامش؛ ما يُعدّ، وأين يبدأ العدّ من جديد، وفي أي جهة تقف الأرقام.
 - [أنواع الموارد](#أنواع-الموارد) — ترقيم مصنّف للأشكال والجداول والأنواع المخصّصة.
 - [نمط الجداول](#نمط-الجداول) (مع [أنماط الجداول المسمّاة](#أنماط-الجداول-المسمّاة)) و[نمط التعليقات](#نمط-التعليقات) — التنضيد والزخرفة لموارد الجداول وتعليقاتها.
 - [نمط المخططات](#نمط-المخططات) — إعادة تلوين مخططات SVG المضمّنة بحبر واحد للطباعة بالألوان الخاصة (spot colours).
@@ -3404,6 +3405,175 @@ resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields t
 ```
 
 
+## ترقيم الأسطر
+
+تطبع الخاصية `lineNumbers` في الهامش رقمَ كل سطر خامس (أو كل سطر رقمه من مضاعفات N) بجوار السطر، كما تفعل الطبعات المحققة ومختارات الشعر والنصوص القانونية والطبعات المدرسية. وهي تعدّ أبيات قصائد `:::verse`، أو كل أسطر النص. وهي معطّلة افتراضيًا. يُرسم كل رقم على خط قاعدة سطره، بحجم خاص به، ولا يحرّك أي سطر أبدًا: تُخرَج الصفحة تمامًا كما تُخرَج بلا أرقام. منذ postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // معطّلة افتراضيًا.
+  count?: 'verse' | 'all';  // أبيات القصائد، أو كل أسطر النص.
+  interval?: number;        // اطبع مضاعفات N.
+  numberFirst?: boolean;    // اطبع أيضًا أول سطر بعد كل إعادة للعدّ.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // أين يبدأ العدّ من جديد.
+  startAt?: number;         // رقم أول سطر بعد إعادة العدّ.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // الصفحات ذات العمودين أو أكثر.
+  gap?: Dimension;          // من النص إلى الرقم؛ وem حجم الرقم.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // عائلة خط المتن إن لم تُحدَّد.
+  fontSize?: Dimension;     // وem حجم المتن.
+  fontWeight?: number;      // وزن المتن إن لم يُحدَّد.
+  italic?: boolean;
+  color?: ColorValue;       // لون المتن إن لم يُحدَّد.
+  format?: string;          // decimal، lower-roman، arabic-indic، 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '160px' }}>الافتراضي</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يطبع أرقام الأسطر. المستند العمودي (<code>layout.writingMode: 'vertical-rl'</code>) لا يأخذ أي رقم، ويُبلَّغ عن <code>true</code> فيه بالتحذير <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> يعدّ أبيات قصائد <code>:::verse</code>، كل بيت مرة واحدة: ما ينتقل إلى السطر التالي من بيت أطول من العرض لا يأخذ رقمًا، والمسافة بين المقاطع لا تُعدّ. والقصيدة المنضّدة بالتخطيط العربي الكلاسيكي تعدّ سطرًا واحدًا لكل بيت؛ والسطر الثاني من البيت المدرَّج لا يُعدّ. و<code>'all'</code> يعدّ كل أسطر فقرات المتن وعناصر القوائم والاقتباسات والأبيات، بترتيب القراءة: صفحةً صفحة، وعمودًا عمودًا، من الأعلى إلى الأسفل.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>يطبع رقم كل سطر رقمه من مضاعفات هذا العدد (5، 10، 15…). والقصيدة التي أول أبياتها 37 تطبع 40، 45… ويمكن لسطر فتح القصيدة أن يحدّد فاصلًا خاصًا بها (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يطبع أيضًا رقم أول سطر يُعدّ بعد كل إعادة للعدّ.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> مع <code>count: 'verse'</code>، و<code>'page'</code> مع <code>count: 'all'</code></td>
+      <td>أين يبدأ العدّ من جديد: أبدًا (<code>'document'</code>، فيستمر عبر فصول الكتاب)، أو عند كل عنوان من المستوى 1 (<code>'chapter'</code>)، أو عند كل عنوان من المستوى 1 أو 2 (<code>'section'</code>)، أو في كل صفحة (<code>'page'</code>)، أو عند كل قصيدة <code>:::verse</code> (<code>'poem'</code>). ويعيد <code>lineStart=N</code> في قصيدة و<code>lines=N</code> في الموجّه <code>:::numbering</code> العدَّ في أي موضع، أيًّا كان الوضع.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>رقم أول سطر بعد إعادة العدّ.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>الجهة التي تقف فيها الأرقام. <code>'outer'</code> هي الجهة البعيدة عن الكعب: يمين الصفحة الفردية ويسار الزوجية، وبالعكس في الكتاب المجلَّد من اليمين. و<code>'inner'</code> جهة الكعب. و<code>'left'</code> و<code>'right'</code> ثابتتان في كل الصفحات. و<code>'start'</code> و<code>'end'</code> تتبعان اتجاه المستند: <code>'start'</code> هي اليمين في كتاب من اليمين إلى اليسار. و<code>'side'</code> تضعها في العمود الجانبي لتخطيط <code>'oneAndHalf'</code> مع <code>layout.sideColumnRole: 'floats'</code>، ملاصقةً لحافة العمود الجانبي المجاورة للنص (ولا يُستعمل <code>gap</code>)؛ وفي صفحة بلا عمود جانبي تعود إلى <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>الصفحات التي فيها عمودان من النص أو أكثر جنبًا إلى جنب. <code>'outer-edges'</code> تضع أرقام العمود الأول على يساره وأرقام العمود الأخير على يمينه، وتتبع الأعمدة بينهما <code>'each'</code>. و<code>'gutter'</code> تضعها في الفواصل بين الأعمدة: أرقام العمود الأول على يمينه، وأرقام غيره على يسارها. و<code>'each'</code> تضع أرقام كل عمود في جهة <code>position</code>.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>المسافة من حافة العمود إلى الرقم؛ و<code>em</code> حجم الرقم نفسه.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> تحاذي كل رقم نحو النص: إلى اليمين في هامش أيسر، وإلى اليسار في هامش أيمن. و<code>'left'</code> و<code>'right'</code> تحاذيان الأرقام داخل عرض أعرض رقم في الصفحة.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>عائلة خط المتن</td>
+      <td>خط الأرقام. يُحمَّل ويُضمَّن كأي عائلة أخرى.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>حجم الأرقام؛ و<code>em</code> حجم المتن.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>وزن المتن</td>
+      <td>وزن الأرقام.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ينضّد الأرقام بخط مائل.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون المتن</td>
+      <td>لون الأرقام. واللون المرتبط باللوحة يتبع لوحات الأجزاء والأقسام.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>عشري</td>
+      <td>كيف تُكتب الأرقام، بأي من <a href="#صيغ-كتابة-أنماط-الترقيم">صيغ كتابة أنماط الترقيم</a> (<code>'lower-roman'</code>، <code>'arabic-indic'</code>، <code>'一'</code>…). وتُكتب الأرقام العشرية بأرقام المستند (<code>numerals</code>). والاسم غير المعروف يرقّم بالعشري، مع التحذير <code>unknownNumberFormat</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // عدّ واحد للكتاب كله
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+ما يُعدّ وما لا يُعدّ:
+
+- **لا يُعدّ أبدًا**: العناوين، والتعليقات، والجداول والصور، والصيغ المنفصلة، ونصوص التصميم (صفحات الافتتاح والترويسات)، والحواشي السفلية وحواشي آخر الفصل، وجدول المحتويات، ومداخل الفهرس وقائمة المراجع، والصفحات الفارغة.
+- **الإطارات والنثر.** نص الإطار لا يُعدّ، ومع `count: 'verse'` لا يُعدّ النثر أيضًا، إلا إذا قال نمط الفقرة الذي يُنضَّد به `lineNumbers: true`؛ والنمط الذي فيه `lineNumbers: false` لا يُعدّ أبدًا (انظر [أنماط الفقرات](#أنماط-الفقرات)).
+- **قصيدة واحدة.** يقبل سطر فتح القصيدة `numbered=false` (لا تُعدّ أبياتها)، و`lineStart=N` (أول أبياتها رقمه N، ومنه يبدأ العدّ من جديد)، و`interval=N`. و`:::numbering{lines=N}` يعطي السطرَ المعدود التالي الرقمَ N، أينما كان. انظر [صيغة المستند › `:::verse`](/ar/docs/document-format#verse) و[`:::numbering`](/ar/docs/document-format#numbering).
+
+في كتاب يُخرَج فصلًا فصلًا، ينقل `restart: 'document'` العدّ من فصل إلى الذي يليه عبر `continuation.lineNumber`. ويعدّ `continuationAfter` الأبيات من النص؛ أما مع `count: 'all'` فيتوقف العدّ على الإخراج، فيمرّر التطبيق المضيف `lastLineNumber` من مستند الفصل السابق، كما يفعل Sandbox.
+
+مع `position: 'side'` تتقاسم الأرقام العمود الجانبي مع الإطارات والتعليقات والأشكال الجانبية. والرقم الذي يتراكب مع أحدها يُرسم مع ذلك، ولا يتحرك أيٌّ منهما، ويصدر الإخراج تحذير محتوى `lineNumberOverlap` يشير إلى السطر المرقَّم.
+
+**المُخرجات.** ترسم Canvas وPDF وعارض HTML وEPUB ذو التخطيط الثابت الأرقام. وفي PDF الموسوم تكون عناصر زخرفية (artifacts) في الإخراج، ويحمل كل منها `/ActualText` فارغًا، فينتقل النص المنسوخ أو المستخرج من سطر إلى سطر بدونها. ويخفيها مُخرَج HTML عن التقنيات المساعدة (`aria-hidden`) وعن التحديد وعن النص المنسوخ. أما EPUB المتدفق، الذي ينضّد نظام القراءة أسطره، فيحتفظ بأرقام الأبيات وحدها: عنصر `span` من الصنف `pt-line-number` (و`aria-hidden` هو أيضًا) في هامش البداية من المقطع، بجوار كل بيت يحمل رقمًا في النسخة المطبوعة. وفي VDT تكون الأرقام خانة تصميم في كل صفحة (`page.lineNumbers`، وكتل نصها معلَّمة بـ `artifact`) وقائمة علامات (`page.lineNumberMarks`: `number` و`label` و`columnIndex` و`blockId` و`lineIndex`)؛ ويسجّل المستند `lastLineNumber`.
+
+**غير مدعوم**: أرقام الأسطر في النص العمودي، والإحالة المرجعية التي تطبع رقم سطر، والحواشي المربوطة بأرقام الأسطر، وأرقام أسطر خلايا الجداول والتعليقات وقوائم الشيفرة.
+
+في Sandbox هذه الإعدادات هي قسم **ترقيم الأسطر** في لوحة التصميم. ودالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى؛ والخط والوزن واللون تأتي من المتن:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // الخط والوزن واللون غير المحدَّدة تتبع المتن
+```
+
+
 ## الإحالات المرجعية
 
 تحدد الخاصية `crossRefs` الكلمات التي تطبعها [الإحالة المرجعية](/ar/docs/document-format#الإحالات-والمراسي) حول رقم أو صفحة، والنمطَ الذي تأخذه `:ref` حين لا تحدد نمطًا. يحمل كل قالب `{n}` حيث يوضع الرقم؛ والقالب الذي يخلو منه يأتي الرقم بعده مسبوقًا بمسافة غير قابلة للكسر (`"§"` يطبع *§ 3.2*). والقالب غير المعيَّن يتبع لغة المستند: *chapter / section / p.* بالإنجليزية، و*capítulo / sección / pág.* بالإسبانية، و`第{n}章` / `第{n}节` / `第{n}页` بالصينية، وهكذا للفرنسية والألمانية والإيطالية والبرتغالية والكتالونية والهولندية.
@@ -5066,6 +5236,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>cjk.wordBreak</code></td>
       <td>أين تنكسر أسطر الفقرات الصينية أو اليابانية أو الكورية بين المحارف (انظر <code>cjk.wordBreak</code>): <code>'keep-all'</code> لكتاب قراءة بالكانا مع مسافات بين العبارات يُقتبس في كتاب نثر عادي، و<code>'normal'</code> للعكس. منذ postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>غير محدَّد</td>
+      <td>هل يعدّ <a href="#ترقيم-الأسطر">ترقيم الأسطر</a> أسطر الفقرات. غير محدَّد: تُعدّ حين يكون <code>lineNumbers.count</code> هو <code>'all'</code>، وفي قصيدة منضّدة بالنمط حين تُعدّ الأبيات. <code>true</code>: تُعدّ مع <code>'verse'</code> أيضًا، وداخل الإطار، الذي لا يُعدّ نصه أبدًا في غير ذلك. <code>false</code>: لا تُعدّ أبدًا. منذ postext 1.23.</td>
     </tr>
   </tbody>
 </table>
@@ -7910,7 +8086,7 @@ debug: {
 
 ### تحذيرات الإعدادات
 
-سبعة أخطاء في الإعدادات نفسها لا تمرّ أبدًا بصمت، ولا يخفيها أي مفتاح تبديل. لا يتعطّل المحرّك عند أيّ منها؛ بل يستبدل قيمة، أو يُسقط الإعداد، ويُعلن ذلك:
+ثمانية أخطاء في الإعدادات نفسها لا تمرّ أبدًا بصمت، ولا يخفيها أي مفتاح تبديل. لا يتعطّل المحرّك عند أيّ منها؛ بل يستبدل قيمة، أو يُسقط الإعداد، ويُعلن ذلك:
 
 - **صيغة ترقيم غير معروفة**: قيمة `numberFormat` لقائمة مرقّمة، أو `page.pageNumbering.format`، أو `counterFormat` لنوع مورد، ليست أيًّا من [تهجئات صيغ الترقيم](#صيغ-كتابة-أنماط-الترقيم). يُرقَّم بالأرقام العشرية.
 - **قائمة خطوط في عائلة خط**: قيمة `fontFamily` (أو أي `…FontFamily`) تحوي مكدّس خطوط CSS. يُنضَّد النص بالعائلة الأولى في المكدّس (انظر [عائلة واحدة لكل `fontFamily`](#عائلة-واحدة-لكل-fontfamily)).
@@ -7919,6 +8095,7 @@ debug: {
 - **شبكة الحروف أكبر من اللازم**: `cjk.grid` بعدد محارف في السطر أو أسطر في الصفحة أكبر مما تتّسع له الهوامش. تُضبط الشبكة بأكبر عدد يتّسع، ويسمّي `used` ذلك العدد (`cjkGridClamped`؛ انظر [شبكة الحروف](#شبكة-الحروف)).
 - **إعداد عنوان غير معروف**: مفتاح لا يوجد في `headings`، أو `headings.balancing`، أو مستوى عنوان، أو نمط عنوان، أو نمط فقرة: مثل `letterSpacng` مكتوبًا خطأً، أو `tracking` مستعارًا من أداة أخرى، أو `level` في نمط عنوان، أو `fontStyle: 'italic'` في نمط فقرة (الذي يأخذ `italic: true`). يتجاهله المحرّك (وحتى postext 1.4 كان يفعل ذلك دون أي إشعار). `value` هو المفتاح، و`used` فارغ، و`suggestion` يسمّي الإعداد الأقرب إليه، حين يبعد عنه حرفًا أو حرفين أو لا يختلف عنه إلا في حالة الأحرف (`unknownConfigKey`).
 - **قيمة إعداد غير معروفة**: إعداد يأخذ كلمة من بضع كلمات يحمل كلمة أخرى، مثل `direction: 'right'` (الذي يأخذ `auto` أو `ltr` أو `rtl`). يقرأ المحرّك القيمة الافتراضية بدلًا منها، ويسمّي `used` ما آلت إليه: في `direction`، اتجاه لغة المستند (`unknownConfigValue`). وتُفحص كلمات إعدادات القصص المصورة أيضًا ([القصص المصورة › تحذيرات القصص المصورة](/ar/docs/comics#تحذيرات-القصص-المصورة)): `used` هي القيمة التي آل إليها الإعداد (القيمة الافتراضية لنمط الفقاعة نفسه، في النمط المدمج)، و`suggestion` تسمّي الكلمة الأقرب إلى القيمة، حين تكون إحداها قريبة.
+- **أرقام الأسطر في النص العمودي**: `lineNumbers.enabled: true` في مستند منضّد عموديًا (`layout.writingMode: 'vertical-rl'`). الصفحات العمودية لا تأخذ أرقام أسطر، و`used` هو `false` (`lineNumbersUnsupported`؛ انظر [ترقيم الأسطر](#ترقيم-الأسطر)).
 
 يُدرجها Sandbox في لوحة **الفحوص** مع مسار الإعداد. وفي الشيفرة، يضعها `buildDocument` على المستند باسم `configWarnings` (وتغيب حين تكون الإعدادات سليمة)، ويعيدها `collectConfigWarnings(config)` دون إخراج أي شيء:
 
@@ -8062,6 +8239,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>raggedTableGrid</code></td>
       <td>شبكة جدول ليست مستطيلة بعد احتساب دمج خلاياها (انظر <a href="#بناء-نماذج-الجداول">بناء نماذج الجداول</a>).</td>
       <td>تنزاح الخلايا فوق خلية مدموجة أو تترك فراغًا. يحدّد <code>reason</code> (<code>'spanOverlap'</code> / <code>'missingCells'</code>) و<code>row</code> و<code>col</code> موضع المشكلة الأولى؛ ويبيّن <code>count</code> عدد المشكلات.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td>مع <code>lineNumbers.position: 'side'</code>، يتراكب رقم سطر مع إطار أو تعليق أو شكل في العمود الجانبي. يشير إلى السطر المرقَّم؛ و<code>number</code> هو الرقم كما يُطبع.</td>
+      <td>يُرسم الرقم مع ذلك، ولا يتحرك أيٌّ منهما.</td>
     </tr>
   </tbody>
 </table>

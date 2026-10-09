@@ -490,6 +490,14 @@ Els canvis només de format (sense `startAt`) mantenen el comptador viu — úti
 
 `format` accepta qualsevol grafia d'un format de numeració: `roman-lower` i `i` funcionen igual que `lower-roman`, `arabic` igual que `decimal`, i `一` i `あ` igual que `japanese-informal` i `hiragana` (consulta [Configuració › Grafies dels formats de numeració](/ca/docs/configuration#grafies-dels-formats-de-numeració)). Un valor que no és cap d'aquestes deixa el format com estava, i el sandbox ho assenyala.
 
+`lines` reinicia el compte de la [numeració de línies](/ca/docs/configuration#numeració-de-línies), no el comptador de pàgines: la línia següent que es compta porta el número donat, digui el que digui `lineNumbers.restart`. Un valor que no és un nombre enter igual o més gran que 0 s'ignora.
+
+```md
+## Acte II
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space` deixa espai vertical entre dos blocs: per separar una línia de tancament del text que la precedeix, baixar una mica un epígraf o una signatura, o obrir un *blanc de separació* entre dos trams de text. Les línies en blanc de més al Markdown no ho fan — com en qualsevol Markdown, una sèrie de línies en blanc és un únic separador de paràgrafs, i així un document no canvia de maquetació quan un editor o un formatador afegeix o retalla espais.
@@ -572,10 +580,23 @@ tot dorm sota l'om antic.
     <tr><td><code>keepSpaces</code></td><td>desactivat</td><td>Conservar les sèries de dos o més espais dins d'un vers.</td></tr>
     <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> en text vertical)</td><td>Centrar el poema sobre el seu vers més llarg o alinear-lo a l'inici.</td></tr>
     <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Estil de paràgraf, direcció i idioma del poema.</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code> deixa el poema fora de la numeració de línies: els seus versos no es compten.</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>El número de línia del primer vers del poema. El compte torna a començar aquí, digui el que digui <code>lineNumbers.restart</code>.</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>L'interval propi del poema: imprimir el número de cada enèsim vers.</td></tr>
   </tbody>
 </table>
 
 `bodyText.verse` fixa els valors per defecte de tots els poemes (vegeu [Configuració › Vers](/ca/docs/configuration#vers)). El text pla conserva el poema tal com es va escriure, un salt de línia entre versos i una línia en blanc entre estrofes, de manera que un passatge copiat i una cerca el llegeixen vers a vers; l'EPUB adaptable compon cada estrofa com un element els versos del qual pengen la seva resta, i el PDF etiquetat marca cada estrofa com un paràgraf.
+
+**Numeració de línies.** Amb `lineNumbers` activat, els versos d'un poema es compten (vegeu [Configuració › Numeració de línies](/ca/docs/configuration#numeració-de-línies)). Cada vers compta una vegada: la seva resta no porta número, i l'espai entre estrofes no es compta. Per defecte cada cinquè vers imprimeix el seu número al marge exterior i el compte torna a començar a cada poema. Un poema a la manera àrab clàssica compta una línia per bayt. L'obertura ajusta un poema: `lineStart=N` dona un número al seu primer vers, `interval=N` li dona un interval propi i `numbered=false` el deixa fora.
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+Amb l'interval per defecte, 5, aquest poema imprimeix 40, 45, etc. al costat dels seus versos.
 
 #### Manera àrab clàssica
 

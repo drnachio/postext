@@ -491,6 +491,14 @@ title: "A Book With Front Matter"
 
 `format`には、番号書式のどの表記でも使えます。`lower-roman`の代わりに`roman-lower`や`i`、`decimal`の代わりに`arabic`、`japanese-informal`や`hiragana`の代わりに`一`や`あ`が使えます（[設定 › 番号書式の表記](/ja/docs/configuration#番号書式の表記)を参照）。どれにも当たらない値では書式は変わらず、Sandboxが警告します。
 
+`lines`はページのカウンターではなく、[行番号](/ja/docs/configuration#行番号)の数を振り直します。`lineNumbers.restart`の設定にかかわらず、次に数える行が指定した番号になります。0以上の整数でない値は無視されます。
+
+```md
+## 第二幕
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space`は、2つのブロックの間に縦の空きを入れます。結びの行を上のテキストから離す、エピグラフや署名を少し下げる、2つのテキストの間に場面転換の空き（space break）を入れる、といった用途です。Markdownの余分な空行ではこうはなりません。どのMarkdownとも同じく、空行がいくつ続いても段落の区切り1つにすぎないからです。そのため、エディターやフォーマッターが空白を足したり削ったりしても、文書のレイアウトは変わりません。
@@ -573,10 +581,23 @@ Two lines lower still.
     <tr><td><code>keepSpaces</code></td><td>オフ</td><td>行の中で2つ以上続く空白を保つ。</td></tr>
     <tr><td><code>align</code></td><td><code>center</code>（縦組みでは<code>start</code>）</td><td>いちばん長い行を基準に中央に置くか、行頭にそろえる。</td></tr>
     <tr><td><code>style</code>、<code>dir</code>、<code>lang</code></td><td>—</td><td>詩の段落スタイル、方向、言語。</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code>でこの詩を行番号から外します。詩の行は数えません。</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>詩の最初の行の行番号です。<code>lineNumbers.restart</code>の設定にかかわらず、そこから数え直します。</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>この詩だけの間隔です。N行ごとに番号を印字します。</td></tr>
   </tbody>
 </table>
 
 `bodyText.verse`はすべての詩の既定値を決めます（[設定 › 詩](/ja/docs/configuration#詩)を参照）。プレーンテキストは詩を書いたとおりに保ち、行のあいだに改行、連のあいだに空行が入るので、コピーした文章も検索も1行ずつ読めます。リフロー型EPUBは各連を1つの要素にして各行の折り返しをぶら下げ、タグ付きPDFは各連を1つの段落としてタグ付けします。
+
+**行番号。** `lineNumbers`を有効にすると、詩の行が数えられます（[設定 › 行番号](/ja/docs/configuration#行番号)を参照）。詩の各行は1回だけ数えます。折り返した部分には番号が付かず、連と連のあきも数えません。既定では5行ごとに小口側の余白に番号を印字し、詩ごとに数え直します。古典アラビア語の配置で組んだ詩は、1ベイトを1行と数えます。開始行で1つの詩を調整できます。`lineStart=N`で最初の行に番号を与え、`interval=N`で独自の間隔にし、`numbered=false`で数えないようにします。
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+既定の間隔5では、この詩の行の横に40、45などが印字されます。
 
 #### 古典アラビア語の配置
 

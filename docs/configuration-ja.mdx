@@ -44,6 +44,7 @@ const document = buildDocument(content, {
 - [見出し](#見出し)：共通の既定値と、H1〜H6ごとの上書き。
 - [箇条書きリスト](#箇条書きリスト)と[番号付きリスト](#番号付きリスト)：行頭記号、番号付け、入れ子。
 - [数式](#数式)：LaTeXの描画、倍率、色、余白。
+- [行番号](#行番号)：`lineNumbers`。詩の行や本文の5行ごとの番号を余白に印字します。数える行、数え直す位置、番号を置く側。
 - [リソースの種類](#リソースの種類)：図、表、独自の種類に付ける種類別の番号。
 - [表スタイル](#表スタイル)（[名前付きの表スタイル](#名前付きの表スタイル)を含む）と[キャプションスタイル](#キャプションスタイル)：表リソースとそのキャプションの文字組みと装飾。
 - [ダイアグラムスタイル](#ダイアグラムスタイル)：特色印刷のために、埋め込んだSVGのダイアグラムを単色に塗り替えます。
@@ -3404,6 +3405,175 @@ resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields t
 ```
 
 
+## 行番号
+
+`lineNumbers`プロパティは、5行ごと（またはN行ごと）の行の番号を、その行の横の余白に印字します。校訂版、詩のアンソロジー、法令の本文、学校向けの版がこうして行番号を付けます。数えるのは`:::verse`の詩の行か、本文のすべての行です。既定では無効です。各番号は自分の行のベースライン上に独自のサイズで描かれ、行を動かすことはありません。ページは番号がない場合とまったく同じにレイアウトされます。postext 1.23から使えます。
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // 既定では無効。
+  count?: 'verse' | 'all';  // 詩の行か、本文のすべての行。
+  interval?: number;        // Nの倍数を印字する。
+  numberFirst?: boolean;    // 数え直しの後の最初の行も印字する。
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // 数え直す位置。
+  startAt?: number;         // 数え直しの後の最初の行の番号。
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // 2段以上のページ。
+  gap?: Dimension;          // 本文から番号までの距離。emは番号のサイズ。
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // 未設定なら本文のファミリー。
+  fontSize?: Dimension;     // emは本文のサイズ。
+  fontWeight?: number;      // 未設定なら本文のウェイト。
+  italic?: boolean;
+  color?: ColorValue;       // 未設定なら本文の色。
+  format?: string;          // decimal、lower-roman、arabic-indic、一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>行番号を印字します。縦組みの文書（<code>layout.writingMode: 'vertical-rl'</code>）には付かず、そこで<code>true</code>にすると<code>lineNumbersUnsupported</code>として報告されます。</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code>は<code>:::verse</code>の詩の行を、1行につき1回数えます。行長に収まらない詩の行が次の行に折り返した部分には番号が付かず、連と連のあきも数えません。古典アラビア語の配置で組んだ詩は、1ベイトを1行と数えます。段違いに組んだベイトの2行目は数えません。<code>'all'</code>は本文の段落、リストの項目、引用、詩のすべての行を、読む順に数えます。ページごと、段ごと、上から下へです。</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>この数の倍数にあたる行（5、10、15…）の番号を印字します。最初の行が37の詩では40、45…が印字されます。詩の開始行で独自の値を指定できます（<code>interval=N</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>数え直しのたびに、最初に数える行の番号も印字します。</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>count: 'verse'</code>では<code>'poem'</code>、<code>count: 'all'</code>では<code>'page'</code></td>
+      <td>数え直す位置です。数え直さない（<code>'document'</code>。本の章をまたいで続きます）、レベル1の見出しごと（<code>'chapter'</code>）、レベル1か2の見出しごと（<code>'section'</code>）、ページごと（<code>'page'</code>）、<code>:::verse</code>の詩ごと（<code>'poem'</code>）のいずれかです。詩の<code>lineStart=N</code>と、<code>:::numbering</code>ディレクティブの<code>lines=N</code>は、どのモードでも任意の位置で数え直します。</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>数え直しの後の最初の行の番号です。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>番号を置く側です。<code>'outer'</code>は小口側で、奇数ページでは右、偶数ページでは左、右綴じの本では逆になります。<code>'inner'</code>はのど側です。<code>'left'</code>と<code>'right'</code>はどのページでも同じ側です。<code>'start'</code>と<code>'end'</code>は文書の方向に従い、右から左へ書く本では<code>'start'</code>が右になります。<code>'side'</code>は、<code>layout.sideColumnRole: 'floats'</code>の<code>'oneAndHalf'</code>レイアウトのサイド段に、本文側の辺にそろえて置きます（<code>gap</code>は使いません）。サイド段のないページでは<code>'outer'</code>になります。</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>本文の段が2つ以上並ぶページの場合です。<code>'outer-edges'</code>は最初の段の番号をその左に、最後の段の番号をその右に置き、間の段は<code>'each'</code>に従います。<code>'gutter'</code>は段間に置きます。最初の段の番号はその右、ほかの段の番号はその左です。<code>'each'</code>は各段の番号を<code>position</code>の側に置きます。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>段の端から番号までの距離です。<code>em</code>は番号自身のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>は各番号を本文側にそろえます。左の余白では右そろえ、右の余白では左そろえです。<code>'left'</code>と<code>'right'</code>は、そのページでいちばん幅の広い番号の幅の中でそろえます。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>本文のファミリー</td>
+      <td>番号の書体です。ほかのファミリーと同じく読み込まれ、埋め込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>番号のサイズです。<code>em</code>は本文のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>本文のウェイト</td>
+      <td>番号のウェイトです。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>番号をイタリックで組みます。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>番号の色です。パレットにリンクした色は、部やセクションのパレットに従います。</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>十進数</td>
+      <td>番号の書き方で、<a href="#番号書式の表記">番号書式の表記</a>のどれでも使えます（<code>'lower-roman'</code>、<code>'arabic-indic'</code>、<code>'一'</code>…）。十進数の番号は文書の数字（<code>numerals</code>）で書かれます。不明な名前では十進数になり、<code>unknownNumberFormat</code>の警告が出ます。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // 本全体で1つの通し番号
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+数える行と数えない行：
+
+- **数えないもの**：見出し、キャプション、表と画像、別行立て数式、デザインのテキスト（扉、柱）、脚注と章末の注、目次、索引と参考文献の項目、白ページ。
+- **囲みと散文。** 囲みの中のテキストは数えません。`count: 'verse'`では散文も数えません。ただし、そのテキストを組む段落スタイルが`lineNumbers: true`を指定していれば数えます。`lineNumbers: false`のスタイルは決して数えません（[段落スタイル](#段落スタイル)を参照）。
+- **1つの詩。** 詩の開始行には`numbered=false`（その詩の行を数えない）、`lineStart=N`（最初の行をNとし、そこから数え直す）、`interval=N`を書けます。`:::numbering{lines=N}`は、どこにあっても、次に数える行をNにします。[文書の書式 › `:::verse`](/ja/docs/document-format#verse)と[`:::numbering`](/ja/docs/document-format#numbering)を参照してください。
+
+章ごとにレイアウトする本では、`restart: 'document'`は`continuation.lineNumber`で章から次の章へ数を引き継ぎます。`continuationAfter`は詩の行をテキストから数えます。`count: 'all'`では数がレイアウトによって決まるので、ホストは前の章の文書の`lastLineNumber`を渡します。Sandboxはそうしています。
+
+`position: 'side'`では、番号はサイドの囲み、キャプション、図とサイド段を共有します。そのどれかに重なる番号もそのまま描かれ、どちらも動きません。レイアウトは、番号を付けた行を指す内容の警告`lineNumberOverlap`を出します。
+
+**出力。** Canvas、PDF、HTMLビューアー、固定レイアウトのEPUBが番号を描画します。タグ付きPDFでは番号はレイアウトのアーティファクトで、それぞれに空の`/ActualText`が付くので、コピーや抽出したテキストは番号を含まずに行から行へ続きます。HTML出力は番号を支援技術（`aria-hidden`）、選択、コピーするテキストから隠します。行を閲覧システムが組むリフロー型のEPUBでは、詩の行の番号だけが残ります。印刷版で番号の付く行の横、連の行頭側の余白に置く`pt-line-number`のspan（これも`aria-hidden`）です。VDTでは、番号は各ページのデザインスロット（`page.lineNumbers`。そのテキストブロックには`artifact`の印が付きます）と、マークのリスト（`page.lineNumberMarks`：`number`、`label`、`columnIndex`、`blockId`、`lineIndex`）です。文書は`lastLineNumber`を記録します。
+
+**対応していないもの**：縦組みの行番号、行の番号を印字する相互参照、行番号に結び付けた注、表のセル、キャプション、コードリストの行の番号。
+
+Sandboxでは、これらの設定はデザインパネルの**行番号**セクションです。解決関数と除去関数は、ほかのセクションと同じ形です。書体、ウェイト、色は本文から取ります。
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // 未設定の書体、ウェイト、色は本文に従う
+```
+
+
 ## 相互参照
 
 `crossRefs`プロパティは、[相互参照](/ja/docs/document-format#相互参照とアンカー)が番号やページの前後に印字する語と、スタイルを指定しない`:ref`に使うスタイルを設定します。各テンプレートには、番号が入る位置に`{n}`を書きます。これを含まないテンプレートでは、ノーブレークスペースの後に番号が入ります（`"§"`は「*§ 3.2*」と印字されます）。未設定のテンプレートは文書の言語に従い、英語では*chapter / section / p.*、スペイン語では*capítulo / sección / pág.*、中国語では`第{n}章` / `第{n}节` / `第{n}页`となります。フランス語、ドイツ語、イタリア語、ポルトガル語、カタルーニャ語、オランダ語も同様です。
@@ -5066,6 +5236,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>cjk.wordBreak</code></td>
       <td>段落のCJKの行が、文字の間のどこで改行できるかです（<code>cjk.wordBreak</code>を参照）。通常の文章の本の中で引用する、分かち書きのかなの入門書には<code>'keep-all'</code>を、その逆には<code>'normal'</code>を使います。postext 1.16から使えます。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>未設定</td>
+      <td><a href="#行番号">行番号</a>で段落の行を数えるかどうかです。未設定：<code>lineNumbers.count</code>が<code>'all'</code>のときと、詩の行を数えるときにこのスタイルで組んだ詩で数えます。<code>true</code>：<code>'verse'</code>でも数え、囲みの中でも数えます（囲みのテキストは、そうでなければ決して数えません）。<code>false</code>：決して数えません。postext 1.23から使えます。</td>
     </tr>
   </tbody>
 </table>
@@ -7909,7 +8085,7 @@ debug: {
 
 ### 設定の警告
 
-設定そのものにある次の7種類の誤りは、決して黙って処理されず、どの切り替えでも隠せません。エンジンはどれについても失敗せず、値を置き換えるか設定を除外し、そのことを報告します：
+設定そのものにある次の8種類の誤りは、決して黙って処理されず、どの切り替えでも隠せません。エンジンはどれについても失敗せず、値を置き換えるか設定を除外し、そのことを報告します：
 
 - **不明な番号形式**：番号付きリストの`numberFormat`、`page.pageNumbering.format`、リソースタイプの`counterFormat`のいずれかが、[番号書式の表記](#番号書式の表記)のどれでもない場合です。10進数で番号を振ります。
 - **フォントファミリーにフォントスタックを指定**：`fontFamily`（または任意の`…FontFamily`）がCSSのフォントスタックを持つ場合です。テキストはスタックの最初のファミリーで組まれます（[`fontFamily`には1つのファミリー](#fontfamilyには1つのファミリー)を参照）。
@@ -7918,6 +8094,7 @@ debug: {
 - **大きすぎる文字グリッド**：`cjk.grid`の1行の字数または1ページの行数が、余白の内側に収まる数より多い場合です。グリッドは収まる最大の数で組まれ、`used`がその数を示します（`cjkGridClamped`。[文字グリッド](#文字グリッド)を参照）。
 - **不明な設定**：`headings`、`headings.balancing`、見出しレベル、見出しスタイル、段落スタイルにないキーです。たとえば綴りを誤った`letterSpacng`、別のツールから持ち込んだ`tracking`、見出しスタイルに付けた`level`、段落スタイルに付けた`fontStyle: 'italic'`（段落スタイルは`italic: true`を取ります）などです。エンジンはこれを無視します（postext 1.4までは何も知らせずに無視していました）。`value`はそのキー、`used`は空で、`suggestion`は、1、2文字の違いか大文字小文字の違いだけで済む設定があれば、その最も近い設定の名前を示します（`unknownConfigKey`）。
 - **不明な設定値**：いくつかの語のうち1つを取る設定に、別の値が入っている場合です。たとえば`direction: 'right'`です（`auto`、`ltr`、`rtl`のいずれかを取ります）。エンジンは代わりに既定値を読み、`used`がその結果を示します。`direction`なら文書の言語の方向になります（`unknownConfigValue`）。漫画の設定の語も検査されます（[漫画 › 漫画の警告](/ja/docs/comics#漫画の警告)）。そのとき`used`は設定が解決された値（組み込みの吹き出しのスタイルでは、そのスタイル自身の既定値）で、近い語があれば`suggestion`がその語を示します。
+- **縦組みの行番号**：縦組みの文書（`layout.writingMode: 'vertical-rl'`）で`lineNumbers.enabled: true`を指定した場合です。縦組みのページには行番号が付かず、`used`は`false`です（`lineNumbersUnsupported`。[行番号](#行番号)を参照）。
 
 Sandboxはこれらを**検査**パネルに、設定のパスとともに表示します。コードでは、`buildDocument`が文書に`configWarnings`として付け（設定に問題がなければ存在しません）、`collectConfigWarnings(config)`はレイアウトを行わずにこれらを返します：
 
@@ -8061,6 +8238,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>raggedTableGrid</code></td>
       <td>結合を数に入れると、表のグリッドが長方形にならない（<a href="#表モデルの構築">表モデルの構築</a>を参照）。</td>
       <td>セルが結合部分にずれ込むか、穴が残ります。<code>reason</code>（<code>'spanOverlap'</code> / <code>'missingCells'</code>）、<code>row</code>、<code>col</code>が最初の問題の位置を示し、<code>count</code>が問題の数を示します。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td><code>lineNumbers.position: 'side'</code>で、行番号がサイド段の囲み、キャプション、図に重なる。番号を付けた行を指し、<code>number</code>は印字される番号です。</td>
+      <td>番号はそのまま描かれ、どちらも動きません。</td>
     </tr>
   </tbody>
 </table>

@@ -491,6 +491,14 @@ Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil
 
 `format` acepta cualquier grafía de un formato de numeración: `roman-lower` e `i` funcionan igual que `lower-roman`, `arabic` igual que `decimal`, y `一` y `あ` igual que `japanese-informal` y `hiragana` (consulta [Configuración › Grafías de los formatos de numeración](/es/docs/configuration#grafías-de-los-formatos-de-numeración)). Un valor que no es ninguna de ellas deja el formato como estaba, y el sandbox lo señala.
 
+`lines` reinicia la cuenta de la [numeración de líneas](/es/docs/configuration#numeración-de-líneas), no el contador de páginas: la siguiente línea que se cuenta lleva el número dado, diga lo que diga `lineNumbers.restart`. Un valor que no es un número entero igual o mayor que 0 se ignora.
+
+```md
+## Acto II
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space` deja espacio vertical entre dos bloques: para separar una línea de cierre del texto que la precede, bajar un poco un epígrafe o una firma, o abrir un *blanco de separación* entre dos tramos de texto. Las líneas en blanco de más en el Markdown no lo hacen — como en cualquier Markdown, una serie de líneas en blanco es un único separador de párrafos, y así un documento no cambia de maquetación cuando un editor o un formateador añade o recorta espacios.
@@ -573,10 +581,23 @@ doncellas del su rocino.
     <tr><td><code>keepSpaces</code></td><td>desactivado</td><td>Conservar las series de dos o más espacios dentro de un verso.</td></tr>
     <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> en texto vertical)</td><td>Centrar el poema sobre su verso más largo o alinearlo al comienzo.</td></tr>
     <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Estilo de párrafo, dirección e idioma del poema.</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code> deja el poema fuera de la numeración de líneas: sus versos no se cuentan.</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>El número de línea del primer verso del poema. La cuenta vuelve a empezar ahí, diga lo que diga <code>lineNumbers.restart</code>.</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>El intervalo propio del poema: imprimir el número de cada enésimo verso.</td></tr>
   </tbody>
 </table>
 
 `bodyText.verse` fija los valores por defecto de todos los poemas (véase [Configuración › Verso](/es/docs/configuration#verso)). El texto plano conserva el poema como se escribió, un salto de línea entre versos y una línea en blanco entre estrofas, así que un pasaje copiado y una búsqueda lo leen verso a verso; el EPUB adaptable compone cada estrofa como un elemento cuyos versos cuelgan sus restos, y el PDF etiquetado marca cada estrofa como un párrafo.
+
+**Numeración de líneas.** Con `lineNumbers` activado, los versos de un poema se cuentan (véase [Configuración › Numeración de líneas](/es/docs/configuration#numeración-de-líneas)). Cada verso cuenta una vez: su resto no lleva número, y el espacio entre estrofas no se cuenta. Por defecto cada quinto verso imprime su número en el margen exterior y la cuenta vuelve a empezar en cada poema. Un poema a la manera árabe clásica cuenta una línea por bayt. La apertura ajusta un poema: `lineStart=N` da un número a su primer verso, `interval=N` le da su propio intervalo y `numbered=false` lo deja fuera.
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+Con el intervalo por defecto, 5, este poema imprime 40, 45, etc. junto a sus versos.
 
 #### Manera árabe clásica
 

@@ -44,6 +44,7 @@ Esta referência é longa. Estes são os blocos principais:
 - [Títulos](#títulos) — padrões comuns e substituições de H1 a H6.
 - [Listas com marcadores](#listas-com-marcadores) e [Listas numeradas](#listas-numeradas) — marcadores, numeração, aninhamento.
 - [Matemática](#matemática) — renderização de LaTeX, escala, cor, margens.
+- [Numeração de linhas](#numeração-de-linhas) — `lineNumbers`: o número de cada quinta linha dos versos, ou do texto, na margem; o que é contado, onde a contagem recomeça, de que lado ficam os números.
 - [Tipos de recurso](#tipos-de-recurso) — numeração por tipo para figuras, tabelas e tipos personalizados.
 - [Estilo de tabela](#estilo-de-tabela) (com [estilos de tabela nomeados](#estilos-de-tabela-nomeados)) e [Estilo de legenda](#estilo-de-legenda) — tipografia e decoração das tabelas-recurso e de suas legendas.
 - [Estilo de diagramas](#estilo-de-diagramas) — recoloração a uma só tinta dos diagramas SVG incorporados, para impressão em cor especial.
@@ -3406,6 +3407,175 @@ resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // os campos não
 ```
 
 
+## Numeração de linhas
+
+A propriedade `lineNumbers` imprime na margem o número de cada quinta linha (ou de cada enésima), ao lado dela, como fazem as edições críticas, as antologias de poesia, os textos legais e as edições escolares. Ela conta os versos dos poemas `:::verse`, ou todas as linhas do texto. Vem desligada por padrão. Cada número é pintado na linha de base da sua linha, num corpo próprio, e nunca move uma linha: a página é diagramada exatamente como seria sem números. Desde postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // Desligada por padrão.
+  count?: 'verse' | 'all';  // Os versos dos poemas, ou todas as linhas do texto.
+  interval?: number;        // Imprimir os múltiplos de N.
+  numberFirst?: boolean;    // Imprimir também a primeira linha depois de cada reinício.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // Onde a contagem recomeça.
+  startAt?: number;         // O número da primeira linha depois de um reinício.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // Páginas com duas colunas ou mais.
+  gap?: Dimension;          // Do texto ao número; em é o corpo do número.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // A família do texto corrido quando não definida.
+  fontSize?: Dimension;     // em é o corpo do texto.
+  fontWeight?: number;      // O peso do texto corrido quando não definido.
+  italic?: boolean;
+  color?: ColorValue;       // A cor do texto corrido quando não definida.
+  format?: string;          // decimal, lower-roman, arabic-indic, 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprime os números de linha. Um documento vertical (<code>layout.writingMode: 'vertical-rl'</code>) não recebe nenhum, e um <code>true</code> nele é avisado como <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> conta os versos dos poemas <code>:::verse</code>, cada verso uma vez: a parte de um verso longo demais para a mancha que passa para a linha seguinte não recebe número, e o espaço entre estrofes não é contado. Um poema na disposição árabe clássica conta uma linha por bayt; a segunda linha de um bayt composto em escada não é contada. <code>'all'</code> conta todas as linhas dos parágrafos do texto corrido, dos itens de lista, das citações e dos versos, em ordem de leitura: página por página, coluna por coluna, de cima para baixo.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>Imprime o número de cada linha que é múltiplo deste (5, 10, 15…). Um poema cujo primeiro verso é o 37 imprime 40, 45… A abertura de um poema pode definir o seu (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprime também o número da primeira linha contada depois de cada reinício.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> com <code>count: 'verse'</code>, <code>'page'</code> com <code>count: 'all'</code></td>
+      <td>Onde a contagem recomeça: nunca (<code>'document'</code>, que segue por todos os capítulos de um livro), a cada título de nível 1 (<code>'chapter'</code>), a cada título de nível 1 ou 2 (<code>'section'</code>), a cada página (<code>'page'</code>) ou a cada poema <code>:::verse</code> (<code>'poem'</code>). O <code>lineStart=N</code> de um poema e o <code>lines=N</code> da diretiva <code>:::numbering</code> a reiniciam em qualquer ponto, seja qual for o modo.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>O número da primeira linha depois de um reinício.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>O lado em que ficam os números. <code>'outer'</code> é o lado oposto à lombada: a direita de uma página ímpar e a esquerda de uma par, ao contrário num livro encadernado pela direita. <code>'inner'</code> é o lado da lombada. <code>'left'</code> e <code>'right'</code> são o mesmo em todas as páginas. <code>'start'</code> e <code>'end'</code> seguem a direção do documento: <code>'start'</code> é a direita num livro da direita para a esquerda. <code>'side'</code> os coloca na coluna lateral de um layout <code>'oneAndHalf'</code> com <code>layout.sideColumnRole: 'floats'</code>, encostados à borda da coluna lateral voltada para o texto (<code>gap</code> não é usado); numa página sem coluna lateral volta a <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>Páginas com duas ou mais colunas de texto lado a lado. <code>'outer-edges'</code> põe os números da primeira coluna à esquerda dela e os da última à direita dela; as colunas do meio seguem <code>'each'</code>. <code>'gutter'</code> os põe nas medianizes: os da primeira coluna à direita dela, os das outras à esquerda delas. <code>'each'</code> põe os de cada coluna no lado de <code>position</code>.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>A distância da borda da coluna até o número; <code>em</code> é o corpo do próprio número.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> alinha cada número em direção ao texto: à direita numa margem esquerda, à esquerda numa margem direita. <code>'left'</code> e <code>'right'</code> alinham os números dentro da largura do número mais largo da página.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>família do texto corrido</td>
+      <td>Fonte dos números. É carregada e incorporada como qualquer outra família.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Corpo dos números; <code>em</code> é o corpo do texto.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>peso do texto corrido</td>
+      <td>Peso dos números.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe os números em itálico.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>cor do texto corrido</td>
+      <td>Cor dos números. Uma cor ligada à paleta segue as paletas de partes e seções.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>decimal</td>
+      <td>Como os números são escritos, em qualquer das <a href="#grafias-dos-formatos-de-numeração">grafias dos formatos de numeração</a> (<code>'lower-roman'</code>, <code>'arabic-indic'</code>, <code>'一'</code>…). Os números decimais são escritos com os algarismos do documento (<code>numerals</code>). Um nome desconhecido numera em decimal, com um aviso <code>unknownNumberFormat</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // uma só contagem para o livro inteiro
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+O que é contado e o que não é:
+
+- **Nunca são contados** os títulos, as legendas, as tabelas e as imagens, as fórmulas em destaque, o texto de design (aberturas, cabeços), as notas de rodapé e as notas de fim de capítulo, o sumário, as entradas do índice remissivo e da bibliografia, nem as páginas em branco.
+- **Boxes e prosa.** O texto de um boxe não é contado, e com `count: 'verse'` a prosa também não, a menos que o estilo de parágrafo em que é composta diga `lineNumbers: true`; um estilo com `lineNumbers: false` nunca é contado (veja [Estilos de parágrafo](#estilos-de-parágrafo)).
+- **Um poema.** A abertura de um poema aceita `numbered=false` (os seus versos não são contados), `lineStart=N` (o seu primeiro verso é o N, e a contagem recomeça ali) e `interval=N`. `:::numbering{lines=N}` dá o número N à próxima linha contada, onde quer que esteja. Veja [Formato do documento › `:::verse`](/pt/docs/document-format#verse) e [`:::numbering`](/pt/docs/document-format#numbering).
+
+Num livro diagramado capítulo por capítulo, `restart: 'document'` leva a contagem de um capítulo para o seguinte em `continuation.lineNumber`. `continuationAfter` conta os versos a partir do texto; com `count: 'all'` a contagem depende da diagramação, então a aplicação repassa o `lastLineNumber` do documento do capítulo anterior, como faz o Sandbox.
+
+Com `position: 'side'` os números dividem a coluna lateral com os boxes, as legendas e as figuras laterais. Um número que se sobrepõe a um deles é pintado mesmo assim, nenhum dos dois se move, e a diagramação dá um aviso de conteúdo `lineNumberOverlap` que aponta para a linha numerada.
+
+**Saída.** Canvas, PDF, o visualizador HTML e o EPUB de layout fixo pintam os números. Num PDF etiquetado eles são artefatos de paginação e cada um leva um `/ActualText` vazio, de modo que o texto copiado ou extraído passa de uma linha para a outra sem eles. A saída HTML os esconde das tecnologias assistivas (`aria-hidden`), da seleção e do texto copiado. O EPUB refluível, cujas linhas são compostas pelo sistema de leitura, guarda só os números dos versos: um `span` `pt-line-number` (também `aria-hidden`) na margem inicial da estrofe, ao lado de cada verso que leva número na versão impressa. No VDT os números são um bloco de design de cada página (`page.lineNumbers`, com os blocos de texto marcados `artifact`) e uma lista de marcas (`page.lineNumberMarks`: `number`, `label`, `columnIndex`, `blockId`, `lineIndex`); o documento registra `lastLineNumber`.
+
+**Não há suporte** para números de linha em texto vertical, uma referência cruzada que imprima o número de uma linha, notas ligadas a números de linha, nem números para as linhas de células de tabela, legendas ou listagens de código.
+
+No Sandbox essas configurações são a seção **Numeração de linhas** do painel Design. O resolvedor e o removedor de padrões seguem as outras seções; a fonte, o peso e a cor vêm do texto corrido:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // fonte, peso e cor não definidos seguem o texto corrido
+```
+
+
 ## Referências cruzadas
 
 A propriedade `crossRefs` define as palavras que uma [referência cruzada](/pt/docs/document-format#referências-cruzadas-e-âncoras) imprime em volta de um número ou de uma página, e o estilo que um `:ref` assume quando não define nenhum. Cada modelo contém `{n}` onde vai o número; um modelo sem ele recebe o número depois de um espaço inseparável (`"§"` imprime *§ 3.2*). Um modelo não definido segue o idioma do documento: *chapter / section / p.* em inglês, *capítulo / sección / pág.* em espanhol, `第{n}章` / `第{n}节` / `第{n}页` em chinês, e assim por diante em francês, alemão, italiano, português, catalão e neerlandês.
@@ -5068,6 +5238,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>cjk.wordBreak</code></td>
       <td>Onde as linhas CJK dos parágrafos quebram entre caracteres (veja <code>cjk.wordBreak</code>): <code>'keep-all'</code> para uma cartilha em kana com espaços entre frases citada num livro de prosa comum, <code>'normal'</code> para o contrário. Desde o postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>não definido</td>
+      <td>Se a <a href="#numeração-de-linhas">numeração de linhas</a> conta as linhas dos parágrafos. Não definido: são contadas quando <code>lineNumbers.count</code> é <code>'all'</code>, e num poema composto no estilo quando se contam versos. <code>true</code>: são contadas também com <code>'verse'</code>, e dentro de um boxe, cujo texto de outro modo nunca é contado. <code>false</code>: nunca são contadas. Desde postext 1.23.</td>
     </tr>
   </tbody>
 </table>
@@ -7912,7 +8088,7 @@ Além desses, o painel sempre lista os avisos que a própria diagramação gera 
 
 ### Avisos de configuração
 
-Sete erros na própria configuração nunca passam em silêncio, e nenhuma opção os oculta. O motor não falha em nenhum deles; ele substitui o valor, ou ignora a configuração, e avisa:
+Oito erros na própria configuração nunca passam em silêncio, e nenhuma opção os oculta. O motor não falha em nenhum deles; ele substitui o valor, ou ignora a configuração, e avisa:
 
 - **Formato de numeração desconhecido**: um `numberFormat` de lista numerada, um `page.pageNumbering.format` ou o `counterFormat` de um tipo de recurso que não é nenhuma das [grafias de formato de numeração](#grafias-dos-formatos-de-numeração). A numeração sai em decimal.
 - **Pilha de fontes em uma família**: um `fontFamily` (ou qualquer `…FontFamily`) que contém uma pilha de fontes CSS. O texto é composto na primeira família da pilha (veja [Uma família por `fontFamily`](#uma-família-por-fontfamily)).
@@ -7921,6 +8097,7 @@ Sete erros na própria configuração nunca passam em silêncio, e nenhuma opç�
 - **Grade de caracteres grande demais**: uma `cjk.grid` com mais caracteres por linha ou linhas por página do que as margens permitem. A grade é montada com o máximo que cabe, e `used` informa esse número (`cjkGridClamped`; veja [Grade de caracteres](#grade-de-caracteres)).
 - **Configuração de título desconhecida**: uma chave que `headings`, `headings.balancing`, um nível de título, um estilo de título ou um estilo de parágrafo não tem: um `letterSpacng` com erro de digitação, um `tracking` emprestado de outra ferramenta, um `level` em um estilo de título, um `fontStyle: 'italic'` em um estilo de parágrafo (que usa `italic: true`). O motor a ignora (até o postext 1.4, fazia isso sem dizer nada). `value` é a chave, `used` fica vazio e `suggestion` indica a configuração mais próxima, quando há uma a uma ou duas letras de distância ou que difere só em maiúsculas e minúsculas (`unknownConfigKey`).
 - **Valor de configuração desconhecido**: uma configuração que aceita uma entre poucas palavras contendo outra, como `direction: 'right'` (ela aceita `auto`, `ltr` ou `rtl`). O motor lê o valor padrão no lugar, e `used` informa no que ele resultou: para `direction`, a direção do idioma do documento (`unknownConfigValue`). As palavras das configurações de quadrinhos também são verificadas ([Quadrinhos › Avisos de quadrinhos](/pt/docs/comics#avisos-de-quadrinhos)): `used` é o valor em que a configuração se resolveu (o padrão próprio de um estilo de balão, no caso de um estilo embutido), e `suggestion` indica a palavra mais próxima do valor, quando há uma próxima.
+- **Números de linha em texto vertical**: `lineNumbers.enabled: true` num documento composto na vertical (`layout.writingMode: 'vertical-rl'`). Páginas verticais não recebem números de linha, e `used` é `false` (`lineNumbersUnsupported`; veja [Numeração de linhas](#numeração-de-linhas)).
 
 O Sandbox os lista no painel **Verificações** com o caminho da configuração. No código, `buildDocument` os coloca no documento como `configWarnings` (ausente quando a configuração está limpa), e `collectConfigWarnings(config)` os devolve sem diagramar nada:
 
@@ -8064,6 +8241,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>raggedTableGrid</code></td>
       <td>A grade de uma tabela não é retangular depois de contadas as mesclagens (veja <a href="#construção-de-modelos-de-tabela">Montar modelos de tabela</a>).</td>
       <td>Células se deslocam sobre uma mesclagem ou deixam um buraco. <code>reason</code> (<code>'spanOverlap'</code> / <code>'missingCells'</code>), <code>row</code> e <code>col</code> localizam o primeiro problema; <code>count</code> diz quantos são.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td>Com <code>lineNumbers.position: 'side'</code>, um número de linha se sobrepõe a um boxe, uma legenda ou uma figura da coluna lateral. Aponta para a linha numerada; <code>number</code> é o número como é impresso.</td>
+      <td>O número é pintado mesmo assim, e nenhum dos dois se move.</td>
     </tr>
   </tbody>
 </table>

@@ -585,6 +585,7 @@ The showcase shelf has Natsume Sōseki's *Kokoro* (<span lang="ja" className="fo
 - **Index**: the separator stays `, `; Latin entries come before the kana, with no option to put them last; an invisible mark does not borrow a reading from ruby elsewhere on the line.
 - **Citations**: SIST 02 is the only Japanese style bundled; author-date citations keep ASCII punctuation; bibliographies are not sorted by reading.
 - **Tables**: cell and caption text is horizontal on every page.
+- **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
 - **Fonts**: one family per style with no fallback; CFF faces embedded whole; vertical proportional metrics (`vpal`) are not used.
 - **Design text** (running heads, openers, box titles) breaks Japanese between any two characters, without kinsoku or yakumono spacing, and prints readings and marks as plain text.
 

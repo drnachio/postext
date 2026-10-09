@@ -44,6 +44,7 @@ Aquesta referència és llarga. Aquests són els blocs principals:
 - [Encapçalaments](#encapçalaments) — valors generals i sobreescriptures H1–H6.
 - [Llistes no ordenades](#llistes-no-ordenades) i [Llistes ordenades](#llistes-ordenades) — vinyetes, numeració, imbricació.
 - [Matemàtiques](#matemàtiques) — renderització LaTeX, escala, color, marges.
+- [Numeració de línies](#numeració-de-línies) — `lineNumbers`: el número de cada cinquena línia dels versos, o del text, al marge; què es compta, on torna a començar el compte, a quin costat van els números.
 - [Tipus de recurs](#tipus-de-recurs) — numeració tipada per a figures, taules i tipus personalitzats.
 - [Estil de taules](#estil-de-taules) (amb [estils de taula amb nom](#estils-de-taula-amb-nom)) i [Estil de peus de recurs](#estil-dels-peus-de-recurs) — tipografia i decoració de les taules-recurs i els seus peus.
 - [Estil de diagrames](#estil-dels-diagrames) — recoloració a una sola tinta dels diagrames SVG incrustats per a impressió amb tinta plana.
@@ -3393,6 +3394,175 @@ resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // els camps sens
 ```
 
 
+## Numeració de línies
+
+La propietat `lineNumbers` imprimeix al marge el número de cada cinquena línia (o de cada enèsima), al seu costat, com fan les edicions crítiques, les antologies de poesia, els textos legals i les edicions escolars. Compta els versos dels poemes `:::verse`, o totes les línies del text. Està desactivada per defecte. Cada número es pinta sobre la línia de base de la seva línia, amb un cos propi, i no mou mai cap línia: la pàgina es compon exactament igual que sense números. Des de postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // Desactivada per defecte.
+  count?: 'verse' | 'all';  // Els versos dels poemes, o totes les línies del text.
+  interval?: number;        // Imprimir els múltiples de N.
+  numberFirst?: boolean;    // Imprimir també la primera línia després de cada reinici.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // On torna a començar el compte.
+  startAt?: number;         // El número de la primera línia després d'un reinici.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // Pàgines de dues columnes o més.
+  gap?: Dimension;          // Del text al número; em és el cos del número.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // La família del cos si no es fixa.
+  fontSize?: Dimension;     // em és el cos del text.
+  fontWeight?: number;      // El pes del cos si no es fixa.
+  italic?: boolean;
+  color?: ColorValue;       // El color del cos si no es fixa.
+  format?: string;          // decimal, lower-roman, arabic-indic, 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprimeix els números de línia. Un document vertical (<code>layout.writingMode: 'vertical-rl'</code>) no en porta cap, i un <code>true</code> en un document així s'avisa com a <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> compta els versos dels poemes <code>:::verse</code>, cada vers una vegada: la part d'un vers massa llarg per a la caixa que passa a la línia següent no porta número, i l'espai entre estrofes no es compta. Un poema compost a la manera àrab clàssica compta una línia per bayt; la segona línia d'un bayt esglaonat no es compta. <code>'all'</code> compta totes les línies dels paràgrafs del cos, dels elements de llista, de les citacions i dels versos, en ordre de lectura: pàgina a pàgina, columna a columna, de dalt a baix.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>Imprimeix el número de cada línia que és múltiple d'aquest (5, 10, 15…). Un poema el primer vers del qual és el 37 imprimeix 40, 45… L'obertura d'un poema pot fixar-ne un de propi (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprimeix també el número de la primera línia comptada després de cada reinici.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> amb <code>count: 'verse'</code>, <code>'page'</code> amb <code>count: 'all'</code></td>
+      <td>On torna a començar el compte: mai (<code>'document'</code>, que continua per tots els capítols d'un llibre), a cada encapçalament de nivell 1 (<code>'chapter'</code>), a cada encapçalament de nivell 1 o 2 (<code>'section'</code>), a cada pàgina (<code>'page'</code>) o a cada poema <code>:::verse</code> (<code>'poem'</code>). El <code>lineStart=N</code> d'un poema i el <code>lines=N</code> de la directiva <code>:::numbering</code> el reinicien en qualsevol punt, sigui quin sigui el mode.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>El número de la primera línia després d'un reinici.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>El costat on van els números. <code>'outer'</code> és el costat oposat al llom: la dreta d'una pàgina senar i l'esquerra d'una de parell, al revés en un llibre enquadernat per la dreta. <code>'inner'</code> és el costat del llom. <code>'left'</code> i <code>'right'</code> són el mateix a totes les pàgines. <code>'start'</code> i <code>'end'</code> segueixen la direcció del document: <code>'start'</code> és la dreta en un llibre de dreta a esquerra. <code>'side'</code> els posa a la columna lateral d'una disposició <code>'oneAndHalf'</code> amb <code>layout.sideColumnRole: 'floats'</code>, contra la vora de la columna lateral que dona al text (<code>gap</code> no s'usa); en una pàgina sense columna lateral torna a <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>Pàgines amb dues columnes de text o més, l'una al costat de l'altra. <code>'outer-edges'</code> posa els números de la primera columna a la seva esquerra i els de l'última a la seva dreta; les columnes del mig segueixen <code>'each'</code>. <code>'gutter'</code> els posa als intercolumnis: els de la primera columna a la seva dreta, els de les altres a la seva esquerra. <code>'each'</code> posa els de cada columna al costat de <code>position</code>.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>La distància de la vora de la columna al número; <code>em</code> és el cos del número mateix.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> alinea cada número cap al text: a la dreta en un marge esquerre, a l'esquerra en un de dret. <code>'left'</code> i <code>'right'</code> alineen els números dins l'amplada del número més ample de la pàgina.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>família del cos</td>
+      <td>Tipus de lletra dels números. Es carrega i s'incrusta com qualsevol altra família.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Cos dels números; <code>em</code> és el cos del text.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>pes del cos</td>
+      <td>Pes dels números.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compon els números en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color dels números. Un color enllaçat a la paleta segueix les paletes de parts i seccions.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>decimal</td>
+      <td>Com s'escriuen els números, amb qualsevol de les <a href="#grafies-dels-formats-de-numeració">grafies dels formats de numeració</a> (<code>'lower-roman'</code>, <code>'arabic-indic'</code>, <code>'一'</code>…). Els números decimals s'escriuen amb les xifres del document (<code>numerals</code>). Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // un sol compte per a tot el llibre
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+Què es compta i què no:
+
+- **No es compten mai** els encapçalaments, els peus, les taules i les imatges, les fórmules en bloc, el text de disseny (obertures, capçaleres), les notes a peu de pàgina i les notes de final de capítol, l'índex de continguts, les entrades de l'índex alfabètic i de la bibliografia, ni les pàgines en blanc.
+- **Requadres i prosa.** El text d'un requadre no es compta, i amb `count: 'verse'` tampoc la prosa, llevat que l'estil de paràgraf amb què es compon digui `lineNumbers: true`; un estil amb `lineNumbers: false` no es compta mai (vegeu [Estils de paràgraf](#estils-de-paràgraf)).
+- **Un poema.** L'obertura d'un poema admet `numbered=false` (els seus versos no es compten), `lineStart=N` (el seu primer vers és l'N, i el compte torna a començar aquí) i `interval=N`. `:::numbering{lines=N}` dona el número N a la línia comptada següent, sigui on sigui. Vegeu [Format del document › `:::verse`](/ca/docs/document-format#verse) i [`:::numbering`](/ca/docs/document-format#numbering).
+
+En un llibre compost capítol a capítol, `restart: 'document'` porta el compte d'un capítol al següent a `continuation.lineNumber`. `continuationAfter` compta els versos a partir del text; amb `count: 'all'` el compte depèn de la composició, així que l'aplicació passa el `lastLineNumber` del document del capítol anterior, com fa el Sandbox.
+
+Amb `position: 'side'` els números comparteixen la columna lateral amb els requadres, els peus i les figures laterals. Un número que se superposa a un d'ells es pinta igualment, cap dels dos no es mou, i la composició dona un avís de contingut `lineNumberOverlap` que assenyala la línia numerada.
+
+**Sortida.** El canvas, el PDF, el visor HTML i l'EPUB de maquetació fixa pinten els números. En un PDF etiquetat són artefactes de paginació i cadascun porta un `/ActualText` buit, de manera que el text copiat o extret passa d'una línia a l'altra sense ells. La sortida HTML els amaga a les tecnologies d'assistència (`aria-hidden`), a la selecció i al text copiat. L'EPUB de maquetació fluida, les línies del qual compon el sistema de lectura, conserva només els números dels versos: un `span` `pt-line-number` (també `aria-hidden`) al marge inicial de l'estrofa, al costat de cada vers que porta número a la versió impresa. Al VDT els números són una ranura de disseny de cada pàgina (`page.lineNumbers`, amb els blocs de text marcats `artifact`) i una llista de marques (`page.lineNumberMarks`: `number`, `label`, `columnIndex`, `blockId`, `lineIndex`); el document desa `lastLineNumber`.
+
+**No s'admeten**: números de línia en text vertical, una referència creuada que imprimeixi el número d'una línia, notes enllaçades a números de línia, ni números per a les línies de cel·les de taula, peus o llistats de codi.
+
+Al Sandbox aquests ajustos són la secció **Numeració de línies** del tauler de disseny. El resolutor i el depurador segueixen el patró de les altres seccions; la font, el pes i el color surten del text de cos:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // font, pes i color sense fixar segueixen el cos
+```
+
+
 ## Referències creuades
 
 La propietat `crossRefs` fixa les paraules que una [referència creuada](/ca/docs/document-format#referències-creuades-i-àncores) imprimeix al voltant d'un número o d'una pàgina, i l'estil que pren un `:ref` que no n'indica cap. Cada plantilla porta `{n}` on va el número; una que no el porta rep el número després d'un espai no separable (`"§"` imprimeix *§ 3.2*). Una plantilla sense definir segueix la llengua del document: *capítulo / sección / pág.* en castellà, *chapter / section / p.* en anglès, `第{n}章` / `第{n}节` / `第{n}页` en xinès, i el mateix per al francès, l'alemany, l'italià, el portuguès, el català i el neerlandès.
@@ -5052,6 +5222,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>cjk.wordBreak</code></td>
       <td>On es tallen entre caràcters les línies CJK dels paràgrafs (vegeu <code>cjk.wordBreak</code>): <code>'keep-all'</code> per a una cartilla en kana amb espais entre frases citada en un llibre de prosa corrent, <code>'normal'</code> per al contrari. Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>sense fixar</td>
+      <td>Si la <a href="#numeració-de-línies">numeració de línies</a> compta les línies dels paràgrafs. Sense fixar: es compten quan <code>lineNumbers.count</code> és <code>'all'</code>, i en un poema compost amb l'estil quan es compten versos. <code>true</code>: es compten també amb <code>'verse'</code>, i dins d'un requadre, el text del qual no es compta mai altrament. <code>false</code>: no es compten mai. Des de postext 1.23.</td>
     </tr>
   </tbody>
 </table>
@@ -7890,7 +8066,7 @@ A més d'aquests, el tauler mostra sempre els avisos que emet la mateixa maqueta
 
 ### Avisos de configuració
 
-Set errors de la configuració mateixa no passen mai en silenci, i cap interruptor no els amaga. El motor no falla per cap d'ells: substitueix el valor, o prescindeix de l'ajust, i ho diu.
+Vuit errors de la configuració mateixa no passen mai en silenci, i cap interruptor no els amaga. El motor no falla per cap d'ells: substitueix el valor, o prescindeix de l'ajust, i ho diu.
 
 - **Format de numeració desconegut**: un `numberFormat` de llista numerada, un `page.pageNumbering.format` o el `counterFormat` d'un tipus de recurs que no és cap de les [grafies dels formats de numeració](#grafies-dels-formats-de-numeració). Numera en decimal.
 - **Llista de fonts en una família**: un `fontFamily` (o qualsevol `…FontFamily`) que conté una llista de fonts CSS. El text es compon en la primera família de la llista (vegeu [Una sola família per `fontFamily`](#una-sola-família-per-fontfamily)).
@@ -7899,6 +8075,7 @@ Set errors de la configuració mateixa no passen mai en silenci, i cap interrupt
 - **Retícula de caràcters massa gran**: un `cjk.grid` amb més caràcters per línia o més línies per pàgina dels que caben entre els marges. La retícula es compon amb els que hi caben, i `used` n'indica el nombre (`cjkGridClamped`; vegeu [Retícula de caràcters](#retícula-de-caràcters)).
 - **Ajust d'encapçalament desconegut**: una clau que no existeix a `headings`, `headings.balancing`, un nivell d'encapçalament, un estil d'encapçalament o un estil de paràgraf: un `letterSpacng` mal escrit, un `tracking` pres d'una altra eina, un `level` en un estil d'encapçalament, un `fontStyle: 'italic'` en un estil de paràgraf (que porta `italic: true`). El motor la ignora (fins a postext 1.4 ho feia sense dir res). `value` és la clau, `used` va buit i `suggestion` anomena l'ajust al qual s'assembla més, quan en dista una o dues lletres o només canvia en majúscules (`unknownConfigKey`).
 - **Valor d'ajust desconegut**: un ajust que admet unes poques paraules en porta una altra, com ara `direction: 'right'` (admet `auto`, `ltr` o `rtl`). El motor llegeix en el seu lloc el valor per defecte, i `used` diu en què ha quedat: per a `direction`, la direcció de la llengua del document (`unknownConfigValue`). També es comproven les paraules dels ajustos de còmic ([Còmics › Avisos de còmic](/ca/docs/comics#avisos-de-còmic)): `used` és el valor en què s'ha resolt l'ajust (el valor per defecte propi d'un estil de bafarada, si és un estil integrat), i `suggestion` anomena la paraula a què més s'assembla el valor, quan n'hi ha una de propera.
+- **Números de línia en text vertical**: `lineNumbers.enabled: true` en un document compost en vertical (`layout.writingMode: 'vertical-rl'`). Les pàgines verticals no porten números de línia, i `used` és `false` (`lineNumbersUnsupported`; vegeu [Numeració de línies](#numeració-de-línies)).
 
 El Sandbox els mostra al tauler **Revisió** amb la ruta de l'ajust. En codi, `buildDocument` els deixa al document com a `configWarnings` (absent quan la configuració està neta), i `collectConfigWarnings(config)` els retorna sense compondre res:
 
@@ -8042,6 +8219,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td><code>raggedTableGrid</code></td>
       <td>La quadrícula d'una taula no és rectangular un cop comptades les seves combinacions (vegeu <a href="#construir-models-de-taula">Construir models de taula</a>).</td>
       <td>Les cel·les es desplacen sobre una combinació o deixen un buit. <code>reason</code> (<code>'spanOverlap'</code> / <code>'missingCells'</code>), <code>row</code> i <code>col</code> situen el primer problema; <code>count</code> indica quants n'hi ha.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td>Amb <code>lineNumbers.position: 'side'</code>, un número de línia se superposa a un requadre, un peu o una figura de la columna lateral. Assenyala la línia numerada; <code>number</code> és el número tal com s'imprimeix.</td>
+      <td>El número es pinta igualment, i cap dels dos no es mou.</td>
     </tr>
   </tbody>
 </table>

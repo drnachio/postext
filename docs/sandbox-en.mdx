@@ -275,12 +275,13 @@ The groups, in browsing order:
     - **Blockquotes** (collapsible): the colour of `>` quotes, **Italic Blockquotes**, **Blockquote Indent** and **Blockquote First Line Indent** (`bodyText.blockquote`).
     - **Verse** (collapsible): **Poems Without Separator** (*Line by line*, or *As hemistichs (1.22)*), **Indent per Space**, **Turnover** (*Hanging* or *Flush right*) with its **Turnover Indent** or **Turnover Mark**, **Space Between Stanzas** and **Keep Short Stanzas Whole** (`bodyText.verse`, the defaults of `:::verse` poems set line by line).
     - **Cross-references** (collapsible).
-  - *Paragraph styles* (`paragraphStyles`): named styles for `:::paragraphs{style="…"}` containers. You can add, remove and rename ids, then set the font, size, line height, colour, the colours of bold and italic runs, regular and bold weights, **italic** and **small caps** switches, alignment, hyphenation, the left indent of every line, first-line and hanging indents (measured from the left indent), space between paragraphs, margins, **Snap to grid** (`paragraphStyles[].snapToGrid`) and **Letter case** (`textTransform`, capitals). Unset fields inherit the body text. Above the styles, **Space under a container** (`bodyText.paragraphContainerSpacing`) says how the space under a container meets the block after it: *Collapse*, or *Add (1.4)*.
+  - *Paragraph styles* (`paragraphStyles`): named styles for `:::paragraphs{style="…"}` containers. You can add, remove and rename ids, then set the font, size, line height, colour, the colours of bold and italic runs, regular and bold weights, **italic** and **small caps** switches, alignment, hyphenation, the left indent of every line, first-line and hanging indents (measured from the left indent), space between paragraphs, margins, **Snap to grid** (`paragraphStyles[].snapToGrid`), **Letter case** (`textTransform`, capitals) and **Line numbers** (`paragraphStyles[].lineNumbers`: *As the document*, *Counted* or *Not counted*). Unset fields inherit the body text. Above the styles, **Space under a container** (`bodyText.paragraphContainerSpacing`) says how the space under a container meets the block after it: *Collapse*, or *Add (1.4)*.
   - *Inline labels* (`chipStyles`): named styles for the inline `:chip[text]{style="…"}`. The built-in `chip` style is shown while the configuration has none. You can add, remove and rename ids, then set:
     - **Text**: font, size, colour, bold and italic. Each inherits the surrounding text until you set it.
     - **Box**: fill, outline width and colour, corner radius, horizontal and vertical padding (with **Top padding** and **Bottom padding** to pad them apart, which centres a capital in a round chip), and the minimum gap to the neighbouring words.
   - *Formulas* (`math`), with **Indent after a display** (`math.indentAfterDisplay`) and **Keep with its lead-in line** (`math.keepWithLeadIn`).
   - *Footnotes* (`footnotes`): **Placement** (column foot or end of chapter), **Position in the column** at the end of a chapter, **Numbering** (per chapter or continuous), the note size, leading, colour, alignment and hanging indent, the spaces above and between the notes, and the **Separator rule** (length, thickness, colour). See [Footnotes](/en/docs/configuration#footnotes).
+  - *Line numbers* (`lineNumbers`): **Number lines**, **Count** (*Verse* or *Every line*), **Every** (the interval), **Number the first line**, **Start again** (never, or at each chapter, section, page or poem) with the **First number**, **Position** (outer or inner margin, left, right, line start, line end, side column), **With columns** (outer edges, in the gutters, beside each column), **Distance from the text**, **Alignment**, and the typeface, size, weight, italics, colour and **Number format** of the numbers. See [Line numbers](/en/docs/configuration#line-numbers).
 - **Headings & contents**
   - *Headings*: general defaults plus per-level H1–H6 settings. They include:
     - letter case, **Letter spacing** (`levels[].letterSpacing`, negative to tighten), alignment (ragged right, justified, centred or ragged left), break-before with parity, and span;
@@ -415,8 +416,9 @@ Live diagnostics, recomputed from the text, the design, the figures and the last
   - *Column count out of range*: a `multiple` layout's column count that is not a whole number from 3 to 8, which the engine clamped;
   - *Unknown number format*: a list, page or resource-type number format the engine does not know, which numbers in decimal;
   - *Unknown setting*: a key that the headings, a heading level or a heading style does not have (a misspelt `letterSpacng`), which the engine ignores; the entry suggests the setting it is closest to, when one is.
+  - *No line numbers in vertical text*: line numbers turned on in a vertical document, which gets none.
 
-  These last three, like *Font stack in a font family*, come from the configuration rather than the text: the entry names the setting's path, and clicking it does not move the editor.
+  These last four, like *Font stack in a font family*, come from the configuration rather than the text: the entry names the setting's path, and clicking it does not move the editor.
 - **Typesetting**:
   - loose lines (word spacing stretched past the configured threshold);
   - *CJK line set short*: a line of Chinese, Japanese or Korean text left short of its measure because filling it would spread its characters past the limit;
@@ -424,6 +426,7 @@ Live diagnostics, recomputed from the text, the design, the figures and the last
   - boxes that overflow their column;
   - *Chips touch the next line*: a chip whose box runs into a chip on the line above or below (the overlap is given in points); a tall chip with no chip above or below it is not flagged;
   - parity cascades;
+  - *Line number over a side box*: a line number in the side column (`lineNumbers.position: 'side'`) that stands over a box, a caption or a figure there; both are printed where they are;
   - *No hyphenation patterns for this language*: the document language (its hyphenation locale, else `locale`) has no bundled patterns, so its text is hyphenated with the US English ones. It goes away when hyphenation is switched off.
 - **Preflight**, for a book set up for print (a PDF/X standard, a CMYK PDF or crop marks), critical findings first:
   - *Low image resolution*: a picture under the minimum resolution at its printed size (critical under the critical one);

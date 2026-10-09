@@ -289,6 +289,7 @@ Escriu el poema en un bloc `:::verse`, un bayt per línia, amb els hemistiquis s
 - **Un hemistiqui massa llarg** estreny primer els espais; si tot i així no hi cap, el seu bayt es compon esglaonat: el ṣadr alineat a la dreta en una línia pròpia i l'ʿajuz alineat a l'esquerra a la següent.
 - **Cohesió.** Un bayt no es reparteix mai entre columnes ni entre pàgines, un poema segueix les regles d'òrfenes i vídues dels paràgrafs, i la línia que el presenta («فأنشد يقول:») es queda amb els primers bayts.
 - **Tipus de lletra.** El poema pren el tipus i el cos del text; `style` anomena un estil de paràgraf, i així és com un poema vocalitzat rep l'interlineat que demanen els seus signes. Un poema en transliteració llatina dins d'un llibre en català es compon igual, amb el ṣadr a l'esquerra.
+- **Numeració de línies.** Amb `lineNumbers` activat, un poema compta un número per bayt, imprès al marge al seu costat; l'ʿajuz d'un bayt esglaonat, en una línia pròpia, no porta número. `position: 'start'` posa els números a la dreta de totes les pàgines d'un llibre àrab. Vegeu [Configuració › Numeració de línies](/ca/docs/configuration#numeració-de-línies).
 
 El text pla conserva el poema tal com es va escriure, un bayt per línia, i en deixa fora les caixides i l'ornament. Vegeu [`:::verse`](/ca/docs/document-format#verse) al format de document.
 
@@ -446,7 +447,7 @@ Els capítols comencen amb `:::numbering{format="abjad" startAt=1}` abans de la 
 - **Els signes vocàlics** poden sobresortir de la vora d'un requadre o d'una cel·la de taula, el retall dels quals no creix per ells; `tashkil` deixa els signes dels peus, les cel·les de taula i el text dels dissenys.
 - **Números.** Els números de cita s'imprimeixen en xifres europees; els ordinals en lletres s'escriuen en la forma determinada i en nominatiu que fan servir els títols.
 - **Índex analític**: ة s'ordena sota ه, i els noms no s'ordenen saltant ابن o أبو; no hi ha índexs de rimes ni d'arrels.
-- **Vers**: no hi ha vers seguit dins de la prosa, ni bayts numerats, ni formes estròfiques amb una tornada centrada més enllà de línies centrades soltes; un hemistiqui més ample que la mesura es parteix des del costat d'inici, sense sagnat francès.
+- **Vers**: no hi ha vers seguit dins de la prosa, ni formes estròfiques amb una tornada centrada més enllà de línies centrades soltes; un hemistiqui més ample que la mesura es parteix des del costat d'inici, sense sagnat francès.
 - **Caixida**: el text que es copia de la sortida HTML conserva els tatweels inserits, i res no impedeix que les caixides de línies veïnes s'apilin l'una sobre l'altra.
 
 ## Referències

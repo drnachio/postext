@@ -491,6 +491,14 @@ Format-only changes (no `startAt`) keep the counter flowing — useful for, say,
 
 `format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal`, `一` and `あ` as well as `japanese-informal` and `hiragana` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
 
+`lines` restarts the count of [line numbers](/en/docs/configuration#line-numbers), not the page counter: the next line that is counted takes the number given, whatever `lineNumbers.restart` says. A value that is not a whole number of 0 or more is ignored.
+
+```md
+## Act II
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space` leaves vertical space between two blocks: to separate a closing line from the text above it, to push an epigraph or a signature down a little, or to open a *space break* between two runs of text. Extra blank lines in the Markdown do not do this — as in any Markdown, a run of blank lines is just one paragraph separator, which keeps a document from changing layout when an editor or formatter adds or trims whitespace.
@@ -573,10 +581,23 @@ To stop without a farmhouse near
     <tr><td><code>keepSpaces</code></td><td>off</td><td>Keep runs of two or more spaces inside a line.</td></tr>
     <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> in vertical text)</td><td>Centre the poem on its longest line, or set it flush with the start.</td></tr>
     <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Paragraph style, direction and language of the poem.</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code> leaves the poem out of the line numbers: its lines are not counted.</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>The line number of the poem's first line. The count starts again there, whatever <code>lineNumbers.restart</code> says.</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>The poem's own interval: print the number of every Nth line.</td></tr>
   </tbody>
 </table>
 
 `bodyText.verse` sets the defaults for every poem (see [Configuration › Verse](/en/docs/configuration#verse)). The plain text keeps the poem as written, a line feed between lines and a blank line between stanzas, so a copied passage and a search read it line by line; the reflowable EPUB sets a stanza an element whose lines hang their turnovers, and the tagged PDF tags a stanza a paragraph.
+
+**Line numbers.** With `lineNumbers` on, the lines of a poem are counted (see [Configuration › Line numbers](/en/docs/configuration#line-numbers)). Each line of verse counts once: a turnover takes no number, and the space between stanzas is not counted. By default every fifth line prints its number in the outer margin and the count starts again at each poem. A poem in the classical Arabic layout counts one line per bayt. The fence adjusts one poem: `lineStart=N` gives its first line a number, `interval=N` its own interval, and `numbered=false` leaves it out.
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+With the default interval of 5, this poem prints 40, 45 and so on beside its lines.
 
 #### Classical Arabic layout
 

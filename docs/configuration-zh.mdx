@@ -44,6 +44,7 @@ const document = buildDocument(content, {
 - [标题](#标题)：共享默认值以及H1–H6各自的覆盖设置。
 - [无序列表](#无序列表)与[有序列表](#有序列表)：项目符号、编号、嵌套。
 - [数学公式](#数学公式)：LaTeX渲染、缩放、颜色、外边距。
+- [行号](#行号)：`lineNumbers`，在页边印出诗行或正文每第五行的行号；哪些行计数，在哪里重新计数，行号放在哪一侧。
 - [资源类型](#资源类型)：图、表及自定义类型的分类编号。
 - [表格样式](#表格样式)（含[命名表格样式](#命名表格样式)）与[题注样式](#题注样式)：表格资源及其题注的排印与装饰。
 - [图示样式](#图示样式)：把嵌入的SVG图示改为单一油墨，用于专色印刷。
@@ -3401,6 +3402,175 @@ resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // 未设置的�
 ```
 
 
+## 行号
+
+`lineNumbers`属性在页边、紧挨着行的位置印出每第五行（或每第N行）的行号，校勘本、诗选、法律文本和教学版本都这样做。它数`:::verse`诗的诗行，或正文的所有行。默认关闭。每个行号都画在所属行的基线上，用自己的字号，从不移动任何一行：页面的排版与没有行号时完全相同。自postext 1.23起。
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // 默认关闭。
+  count?: 'verse' | 'all';  // 诗的诗行，或正文的所有行。
+  interval?: number;        // 印出N的倍数。
+  numberFirst?: boolean;    // 每次重新计数后的第一行也印出行号。
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // 在哪里重新计数。
+  startAt?: number;         // 重新计数后第一行的行号。
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // 两栏或多栏的页面。
+  gap?: Dimension;          // 从正文到行号的距离；em为行号的字号。
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // 未设置时用正文字体家族。
+  fontSize?: Dimension;     // em为正文字号。
+  fontWeight?: number;      // 未设置时用正文字重。
+  italic?: boolean;
+  color?: ColorValue;       // 未设置时用正文颜色。
+  format?: string;          // decimal、lower-roman、arabic-indic、一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>印出行号。竖排文档（<code>layout.writingMode: 'vertical-rl'</code>）不标行号，在其中设为<code>true</code>会报告<code>lineNumbersUnsupported</code>。</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code>数<code>:::verse</code>诗的诗行，每个诗行数一次：比版心宽的诗行转到下一行的部分不编号，诗节之间的空白也不计数。按古典阿拉伯排法排的诗每联数一行；错开排的联，其第二行不计数。<code>'all'</code>按阅读顺序数正文段落、列表项、引文和诗的每一行：逐页、逐栏、从上到下。</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>印出行号为该数倍数的行（5、10、15…）。第一行为37的诗印出40、45…。诗的开始标记可以设定自己的间隔（<code>interval=N</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>每次重新计数后，第一个计入的行也印出行号。</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>count: 'verse'</code>时为<code>'poem'</code>，<code>count: 'all'</code>时为<code>'page'</code></td>
+      <td>在哪里重新计数：从不（<code>'document'</code>，贯穿一本书的各章），每个一级标题处（<code>'chapter'</code>），每个一级或二级标题处（<code>'section'</code>），每一页（<code>'page'</code>），或每首<code>:::verse</code>诗（<code>'poem'</code>）。诗的<code>lineStart=N</code>和<code>:::numbering</code>指令的<code>lines=N</code>可以在任何位置重新计数，不论哪种模式。</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>重新计数后第一行的行号。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>行号所在的一侧。<code>'outer'</code>是远离书脊的一侧：奇数页的右边、偶数页的左边，右侧装订的书则相反。<code>'inner'</code>是书脊一侧。<code>'left'</code>和<code>'right'</code>在每一页都一样。<code>'start'</code>和<code>'end'</code>跟随文档的方向：在从右到左的书中，<code>'start'</code>是右边。<code>'side'</code>把行号放进<code>'oneAndHalf'</code>版式（<code>layout.sideColumnRole: 'floats'</code>）的侧栏，贴齐侧栏靠正文的一边（不使用<code>gap</code>）；没有侧栏的页面上退回<code>'outer'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>并排有两栏或更多正文栏的页面。<code>'outer-edges'</code>把第一栏的行号放在其左边，最后一栏的放在其右边；中间各栏按<code>'each'</code>处理。<code>'gutter'</code>把行号放在栏间：第一栏的在其右边，其余各栏的在其左边。<code>'each'</code>把每一栏的行号都放在<code>position</code>指定的一侧。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>从栏边到行号的距离；<code>em</code>为行号自身的字号。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>让每个行号靠向正文：在左边页边中右对齐，在右边页边中左对齐。<code>'left'</code>和<code>'right'</code>在本页最宽行号的宽度内对齐。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>正文字体家族</td>
+      <td>行号的字体。与其他字体家族一样加载和嵌入。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>行号的字号；<code>em</code>为正文字号。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>正文字重</td>
+      <td>行号的字重。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>用斜体排行号。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>正文颜色</td>
+      <td>行号的颜色。链接到调色板的颜色会跟随篇和章节的调色板。</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>十进制</td>
+      <td>行号的写法，可用任何一种<a href="#编号格式的写法">编号格式写法</a>（<code>'lower-roman'</code>、<code>'arabic-indic'</code>、<code>'一'</code>…）。十进制行号用文档的数字（<code>numerals</code>）书写。未知的名称按十进制编号，并给出<code>unknownNumberFormat</code>警告。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // 整本书连续计数
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+哪些行计数，哪些不计：
+
+- **从不计数**：标题、题注、表格和图片、独立公式、版面设计文字（章首、页眉）、脚注和章末注、目录、索引和参考文献的条目，以及空白页。
+- **标注框和散文。** 标注框中的文字不计数；`count: 'verse'`时散文也不计数，除非排它所用的段落样式写了`lineNumbers: true`；设了`lineNumbers: false`的样式从不计数（见[段落样式](#段落样式)）。
+- **单首诗。** 诗的开始标记可以写`numbered=false`（它的诗行不计数）、`lineStart=N`（它的第一行为N，并从这里重新计数）和`interval=N`。`:::numbering{lines=N}`让下一个计入的行编为N，不论它在哪里。见[文档格式 › `:::verse`](/zh/docs/document-format#verse)和[`:::numbering`](/zh/docs/document-format#numbering)。
+
+逐章排版的书中，`restart: 'document'`通过`continuation.lineNumber`把计数从一章带到下一章。`continuationAfter`根据文本数诗行；`count: 'all'`时计数取决于排版结果，所以宿主程序要传入上一章文档的`lastLineNumber`，沙盒就是这样做的。
+
+`position: 'side'`时，行号与侧栏中的框、题注和图共用侧栏。与其中之一重叠的行号照样画出，两者都不移动，排版会给出指向该编号行的内容警告`lineNumberOverlap`。
+
+**输出。** Canvas、PDF、HTML查看器和固定版式EPUB都会画出行号。在带标签的PDF中，行号是版面artifact，每个都带一个空的`/ActualText`，所以复制或提取出的文字从一行接到下一行，不含行号。HTML输出对辅助技术（`aria-hidden`）、选择和复制的文字都隐藏行号。流式EPUB的行由阅读系统排，只保留诗行的行号：在诗节起始一侧的页边放一个`pt-line-number` span（同样`aria-hidden`），紧挨着印刷版中带行号的每个诗行。在VDT中，行号是每页的一个设计槽位（`page.lineNumbers`，其中的文字块标记为`artifact`）和一张标记列表（`page.lineNumberMarks`：`number`、`label`、`columnIndex`、`blockId`、`lineIndex`）；文档记录`lastLineNumber`。
+
+**不支持**：竖排文字中的行号、印出某一行行号的交叉引用、按行号自动对应的注释，以及表格单元格、题注或代码清单各行的行号。
+
+在沙盒中，这些设置是版面设计面板中的**行号**一节。解析函数和精简函数与其他部分一致；字体、字重和颜色取自正文：
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // 未设置的字体、字重和颜色跟随正文
+```
+
+
 ## 交叉引用
 
 `crossRefs`属性设定[交叉引用](/zh/docs/document-format#交叉引用与锚点)在编号或页码前后印出的文字，以及未设`style`的`:ref`采用的样式。每个模板用`{n}`表示编号的位置；没有`{n}`的模板，编号放在文字之后，中间用不换行空格（`"§"`印为*§ 3.2*）。未设定的模板随文档语言：中文为`第{n}章` / `第{n}节` / `第{n}页`，英文为*chapter / section / p.*，西班牙文为*capítulo / sección / pág.*，法文、德文、意大利文、葡萄牙文、加泰罗尼亚文和荷兰文亦各有默认文字。
@@ -5063,6 +5233,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>cjk.wordBreak</code></td>
       <td>这些段落的中日韩文行在字符之间的断开方式（见<code>cjk.wordBreak</code>）：普通散文书里引用的一段词组间加空格的假名课文用<code>'keep-all'</code>，反过来用<code>'normal'</code>。自postext 1.16起。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>未设置</td>
+      <td><a href="#行号">行号</a>是否计入这些段落的行。未设置：<code>lineNumbers.count</code>为<code>'all'</code>时计入，以本样式排的诗在计数诗行时计入。<code>true</code>：<code>'verse'</code>时也计入，在标注框中也计入（框中文字本来从不计数）。<code>false</code>：从不计入。自postext 1.23起。</td>
     </tr>
   </tbody>
 </table>
@@ -7905,7 +8081,7 @@ debug: {
 
 ### 配置警告
 
-配置本身的七类错误从不静默，也没有开关能隐藏它们。引擎不会因此失败：它会替换一个值，或略去该设置，并给出说明：
+配置本身的八类错误从不静默，也没有开关能隐藏它们。引擎不会因此失败：它会替换一个值，或略去该设置，并给出说明：
 
 - **未知编号格式**：有序列表的`numberFormat`、`page.pageNumbering.format`或资源类型的`counterFormat`不属于任何一种[编号格式写法](#编号格式的写法)。此时按十进制编号。
 - **字体家族中写了字体栈**：`fontFamily`（或任何`…FontFamily`）中写了CSS字体栈。文字用字体栈中的第一个字体家族排（见[每个`fontFamily`只写一个字体家族](#每个fontfamily只写一个字体族)）。
@@ -7914,6 +8090,7 @@ debug: {
 - **字符网格过大**：`cjk.grid`的每行字数或每页行数超出了页边距内能容纳的数量。网格按能容纳的最大数量排，`used`给出这个数（`cjkGridClamped`；见[字符网格](#字格)）。
 - **未知标题设置**：`headings`、`headings.balancing`、某个标题级别、标题样式或段落样式中没有的键：拼错的`letterSpacng`、从其他工具借来的`tracking`、标题样式上的`level`、段落样式上的`fontStyle: 'italic'`（段落样式要用`italic: true`）。引擎会忽略它（postext 1.4及以前是悄无声息地忽略）。`value`是这个键，`used`为空，如果某个设置与它只差一两个字母或只有大小写不同，`suggestion`会给出最接近的那个设置（`unknownConfigKey`）。
 - **未知设置值**：只能取几个固定词的设置写了别的值，例如`direction: 'right'`（可取`auto`、`ltr`或`rtl`）。引擎改用默认值，`used`给出实际结果：对`direction`而言，是文档语言的书写方向（`unknownConfigValue`）。漫画设置中的词同样会检查（[漫画 › 漫画警告](/zh/docs/comics#漫画警告)）：`used`是该设置最终解析出的值（对内置样式而言，是该对白框样式自己的默认值），值与某个词接近时，`suggestion`给出最接近的那个词。
+- **竖排文字中的行号**：竖排文档（`layout.writingMode: 'vertical-rl'`）中写了`lineNumbers.enabled: true`。竖排页面不标行号，`used`为`false`（`lineNumbersUnsupported`；见[行号](#行号)）。
 
 沙盒在**检查**面板中列出这些警告，并附上设置的路径。在代码中，`buildDocument`把它们作为`configWarnings`放在文档上（配置没有问题时不存在该字段），`collectConfigWarnings(config)`则不做排版直接返回它们：
 
@@ -8057,6 +8234,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>raggedTableGrid</code></td>
       <td>把合并单元格计算在内后，表格的网格不是矩形（见<a href="#building-table-models">构建表格模型</a>）。</td>
       <td>单元格会移到合并区域上，或留下空洞。<code>reason</code>（<code>'spanOverlap'</code> / <code>'missingCells'</code>）、<code>row</code>和<code>col</code>定位第一处问题；<code>count</code>给出问题总数。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td><code>lineNumbers.position: 'side'</code>时，某个行号与侧栏中的框、题注或图重叠。指向被编号的行；<code>number</code>是印出的行号。</td>
+      <td>行号照样画出，两者都不移动。</td>
     </tr>
   </tbody>
 </table>

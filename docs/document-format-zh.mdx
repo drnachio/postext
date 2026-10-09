@@ -491,6 +491,14 @@ title: "A Book With Front Matter"
 
 `format`接受编号格式的任何写法：`roman-lower`和`i`与`lower-roman`等效，`arabic`与`decimal`等效，`一`和`あ`与`japanese-informal`和`hiragana`等效（见[配置 › 编号格式的写法](/zh/docs/configuration#编号格式的写法)）。不属于其中任何一种的值会保留原有格式，沙盒会标出它。
 
+`lines`重新开始的是[行号](/zh/docs/configuration#行号)的计数，而不是页码：下一个计入的行编为给定的号，不论`lineNumbers.restart`怎样设置。不是0或更大整数的值会被忽略。
+
+```md
+## 第二幕
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space`在两个块之间留出垂直空白：把结尾的一行与上方文字隔开，把题词或署名稍稍往下推，或者在两段文字之间形成*空行分隔*。Markdown中多余的空行做不到这一点：与任何Markdown一样，连续的空行只是一个段落分隔符，这样编辑器或格式化工具增删空白时，文档的版面不会改变。
@@ -573,10 +581,23 @@ Two lines lower still.
     <tr><td><code>keepSpaces</code></td><td>关闭</td><td>保留行内两个及以上的连续空格。</td></tr>
     <tr><td><code>align</code></td><td><code>center</code>（竖排为<code>start</code>）</td><td>以最长的一行为准居中，或与起点对齐。</td></tr>
     <tr><td><code>style</code>、<code>dir</code>、<code>lang</code></td><td>—</td><td>诗的段落样式、方向和语言。</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code>让这首诗不参加行号：它的诗行不计数。</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>诗第一行的行号。计数从这里重新开始，不论<code>lineNumbers.restart</code>怎样设置。</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>这首诗自己的间隔：每第N行印出行号。</td></tr>
   </tbody>
 </table>
 
 `bodyText.verse`设置所有诗的默认值（见[配置 › 诗歌](/zh/docs/configuration#诗歌)）。纯文本按原样保留诗：行与行之间一个换行，诗节之间一个空行，所以复制的段落和搜索都逐行读取；流式EPUB把每个诗节排成一个元素，其中各行悬挂转行，带标签的PDF把每个诗节标为一个段落。
+
+**行号。** 打开`lineNumbers`时，诗的诗行会被计数（见[配置 › 行号](/zh/docs/configuration#行号)）。每个诗行只数一次：转行的部分不编号，诗节之间的空白也不计数。默认每第五行在外侧页边印出行号，每首诗重新计数。按古典阿拉伯排法排的诗每联数一行。开始标记可以调整单首诗：`lineStart=N`给它的第一行编号，`interval=N`设定它自己的间隔，`numbered=false`让它不参加计数。
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+按默认间隔5，这首诗在诗行旁印出40、45等行号。
 
 #### 古典阿拉伯排法
 

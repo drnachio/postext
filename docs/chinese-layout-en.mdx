@@ -412,6 +412,7 @@ In the Sandbox, **Design › Writing system** holds the document language, the w
 - **Korean** is set with the mainland Chinese defaults; its own rules (KLREQ) are not implemented. Japanese follows its own rules since postext 1.16 ([Japanese layout](/en/docs/japanese-layout)).
 - **Design text** (running heads, openers, box titles) breaks Chinese between any two characters, without the line-start and line-end rules or the punctuation widths. Fit such titles by hand.
 - **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
+- **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
 - **Sizes in points.** There are no 号 or Q units.
 - **Vertical metrics.** Every upright character advances one em; proportional vertical metrics (`vpal`) and vertical kerning are not used.
 - **Ruby and warichu**: no double-sided ruby, no automatic readings, no single-row notes; notes and readings in design text print as plain text.
