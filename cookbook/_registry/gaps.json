@@ -458,24 +458,24 @@
       ]
     },
     "explanation": {
-      "en": "Floats take whole bands of a column or the page; text never flows beside a picture inside one column. Use a side column, a narrow float in a two-column page, or a page-span band.",
-      "es": "Los flotantes ocupan bandas enteras de una columna o de la página; el texto nunca rodea una imagen dentro de una misma columna. Usa una columna lateral, un flotante estrecho en una página a dos columnas o una banda a todo el ancho.",
-      "ca": "Els flotants ocupen bandes senceres d'una columna o de la pàgina; el text mai no envolta una imatge dins d'una mateixa columna. Fes servir una columna lateral, un flotant estret en una pàgina a dues columnes o una banda a tota l'amplada.",
-      "zh": "浮动体占据一栏或整页的完整横条；在同一栏内，文字不会从图片旁边流过。可以改用边栏、两栏页面中的窄浮动体，或通栏横条。",
-      "ar": "تأخذ العناصر العائمة أشرطة كاملة من العمود أو الصفحة؛ ولا يتدفق النص أبدًا بجانب صورة داخل عمود واحد. استعمل عمودًا جانبيًّا، أو عنصرًا عائمًا ضيقًا في صفحة من عمودين، أو شريطًا بعرض الصفحة.",
-      "ja": "フロートは段またはページの帯を丸ごと占めます。1つの段の中で、画像の横に文字が流れることはありません。サイド段、2段組みページの細いフロート、またはページ幅の帯を使ってください。",
-      "pt": "Os flutuantes ocupam faixas inteiras de uma coluna ou da página; o texto nunca corre ao lado de uma imagem dentro de uma mesma coluna. Use uma coluna lateral, um flutuante estreito em uma página de duas colunas ou uma faixa da largura da página."
+      "en": "Fixed in postext 1.24: placement.wrap sets a picture narrower than its column at one side of it, and the text after it runs beside it, then full width under it: a ::resource placed 'here', or a one-column float at the head or foot of a column. layout.wrap holds the gap, the narrowest text beside it and the default width. A box takes :::callout{wrap=\"right\" width=0.4}. A :::columns group holding the text and the picture is no longer needed.",
+      "es": "Resuelto en postext 1.24: placement.wrap coloca una imagen más estrecha que su columna en uno de sus lados, y el texto que le sigue se compone a su lado y después a todo el ancho debajo: un ::resource colocado 'here', o un flotante de una columna en la cabecera o el pie de una columna. layout.wrap guarda la separación, el texto más estrecho a su lado y el ancho por defecto. Una caja admite :::callout{wrap=\"right\" width=0.4}. Ya no hace falta un grupo :::columns con el texto y la imagen.",
+      "ca": "Resolt a postext 1.24: placement.wrap col·loca una imatge més estreta que la columna a un dels costats, i el text que la segueix es compon al costat i després a tota l'amplada a sota: un ::resource col·locat 'here', o un flotant d'una columna al capdamunt o al peu d'una columna. layout.wrap desa la separació, el text més estret al costat i l'amplada per defecte. Una caixa admet :::callout{wrap=\"right\" width=0.4}. Ja no cal un grup :::columns amb el text i la imatge.",
+      "zh": "已在postext 1.24中解决：placement.wrap把比栏窄的图片放在栏的一侧，后面的正文排在它旁边，到它下方后恢复全宽：可以是放在'here'的::resource，也可以是位于栏首或栏尾、宽一栏的浮动体。layout.wrap存放间距、旁边正文的最小宽度和默认宽度。框可以写成:::callout{wrap=\"right\" width=0.4}。不再需要用:::columns组把正文和图片放在一起。",
+      "ar": "حُلّت في postext 1.24: يضع placement.wrap صورة أضيق من عمودها في أحد جانبيه، ويُصفّ النص الذي يليها بجانبها ثم بكامل العرض تحتها: ::resource موضوع 'here'، أو عنصر عائم بعرض عمود واحد في أعلى عمود أو أسفله. ويحفظ layout.wrap المسافة وأضيق نص بجانبها والعرض الافتراضي. ويقبل الصندوق :::callout{wrap=\"right\" width=0.4}. ولم تعد هناك حاجة إلى مجموعة :::columns تضم النص والصورة.",
+      "ja": "postext 1.24で解決：placement.wrapは段より狭い図版を段の片側に置き、続く本文をその横に、下では全幅で組みます。'here'に置いた::resourceにも、段頭や段末に置く1段幅のフロートにも使えます。layout.wrapには間隔、横の本文の最小幅、既定の幅があります。ボックスは:::callout{wrap=\"right\" width=0.4}と書けます。本文と図版を:::columnsグループにまとめる必要はもうありません。",
+      "pt": "Resolvido no postext 1.24: placement.wrap põe uma imagem mais estreita que a coluna de um lado dela, e o texto seguinte é composto ao lado e depois na largura toda embaixo: um ::resource posto em 'here', ou um flutuante de uma coluna no alto ou no pé de uma coluna. layout.wrap guarda o espaço, o texto mais estreito ao lado e a largura padrão. Uma caixa aceita :::callout{wrap=\"right\" width=0.4}. Não é mais preciso um grupo :::columns com o texto e a imagem."
     },
     "docs": {
       "slug": "document-format",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Text wrap",
+        "es": "Ajuste del texto",
+        "ca": "Ajust del text",
+        "zh": "文字绕排",
+        "ar": "التفاف النص",
+        "ja": "回り込み",
+        "pt": "Contorno de texto"
       }
     }
   },

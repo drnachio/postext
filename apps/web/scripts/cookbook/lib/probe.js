@@ -19,7 +19,7 @@ const LATIN = [
 ];
 const MAIN_COLOR = '#295AA3';
 /** Content warnings on how the text is set that C5 reports. */
-const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing', 'lineNumberOverlap', 'tabInVerticalText', 'dropCap', 'codeOverflow']);
+const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing', 'lineNumberOverlap', 'tabInVerticalText', 'dropCap', 'codeOverflow', 'textWrap']);
 /** What a comic warning names: the picture, the panel, the speaker, the style. */
 function comicDetail(w) {
   return [w.resourceId, w.anchorId, w.panel === undefined ? undefined : `panel ${w.panel + 1}`,
@@ -739,7 +739,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     .map((w) => ({
       kind: w.kind,
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
-      detail: w.kind === 'floatShrunk' ? `${w.resourceId} at ${Math.round(w.scale * 100)} %: ${w.overflowPx} px past the text block` : w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
+      detail: w.kind === 'floatShrunk' ? `${w.resourceId} at ${Math.round(w.scale * 100)} %: ${w.overflowPx} px past the text block` : w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.kind === 'textWrap' ? `${w.resourceId ?? `box ${w.box ?? ''}`.trim()}: ${w.reason}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
     })));
   // C31: config values the engine replaced (a character grid cut to the
   // page, an unknown numbering format, a key no setting has). Every
