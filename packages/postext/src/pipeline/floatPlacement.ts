@@ -19,7 +19,9 @@
 import { resourceRefId } from './crossRefs';
 import type { ContentBlock } from '../parse';
 import type {
+  Dimension,
   FloatShrinkMode,
+  ResolvedTextWrapConfig,
   Resource,
   ResourceType,
   ResourceFloatPosition,
@@ -28,6 +30,7 @@ import type {
 } from '../types';
 import { floatColumnCount, startEndAsLeftRight } from '../defaults/shared';
 import { DEFAULT_FLOAT_MIN_SCALE, floatMinScaleOf, floatShrinkModeOf } from '../defaults/layout';
+import { resolveResourceWrap } from './textWrap';
 
 export { floatColumnCount };
 
@@ -83,6 +86,14 @@ export interface PlannedFloat {
    *  `'never'`. */
   shrink?: 'page' | 'slot';
   minScale?: number;
+  /** Text wraps round the float (#627, `placement.wrap`): a one-column
+   *  float at the head or foot of its column, at this side of it; the
+   *  column's first or last lines run beside it. `widthFraction` and
+   *  `align` then say where it stands. Absent for a float that keeps its
+   *  band whole. */
+  wrap?: 'left' | 'right';
+  /** The wrap's own gap (`placement.wrapGap`, else `layout.wrap.gap`). */
+  wrapGap?: Dimension;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -161,6 +172,9 @@ export function computeFloatPlan(
   noRotation: boolean | ((blockIdx: number) => boolean) = false,
   /** `layout.floatShrink`: the default of `placement.shrink`. */
   shrinkDefault?: FloatShrinkDefault,
+  /** `layout.wrap`: how a float that asks for text wrap is set (#627);
+   *  absent, no float wraps. */
+  wrapSettings?: ResolvedTextWrapConfig,
 ): PlannedFloat[] {
   const noRotationAt = typeof noRotation === 'function' ? noRotation : () => noRotation;
   const resourceById = new Map<string, Resource>();
@@ -180,6 +194,20 @@ export function computeFloatPlan(
     const upright = noRotationAt(blockIdx);
     const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale } = resolveResourcePlacement(resource, type, upright, shrinkDefault);
     if (position === 'here') return;
+    // Text wrap (#627): a one-column float of horizontal text, upright,
+    // its caption under it; any other keeps its band whole.
+    const wrap = wrapSettings && !upright && !rotate && span === 'column' && columns === 1 && !captionSide
+      ? resolveResourceWrap(resource, type, wrapSettings)
+      : undefined;
+    if (wrap) {
+      plan.push({
+        resourceId, firstBlockIdx: blockIdx, position, span,
+        widthFraction: wrap.width, align: wrap.side, wrap: wrap.side,
+        ...(wrap.gap ? { wrapGap: wrap.gap } : {}),
+        ...(shrink !== 'never' ? { shrink, minScale } : {}),
+      });
+      return;
+    }
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
       ...(rotate ? { rotate } : {}),

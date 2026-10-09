@@ -781,7 +781,7 @@ function placeDocumentPass(
   // mode of the styled section the reference sits in (a horizontal
   // appendix of a vertical book turns its figures as asked).
   const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated,
-    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl', resolved.layout.floatShrink);
+    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl', resolved.layout.floatShrink, resolved.layout.wrap);
   const floatedIds = floatedResourceIds(floatPlan, incorporated, resources, resourceTypes);
   const floatsByFirstBlock = new Map<number, PlannedFloat[]>();
   for (const f of floatPlan) {
@@ -1474,6 +1474,40 @@ function placeDocumentPass(
   const centredPages = new Set<number>();
   const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
     floatReserved.get(col) ?? { top: 0, bottom: 0 };
+  /** Text wrap (#627): floats set in a band at the head or foot of one
+   *  column that text may run beside, per column. The band stays a band
+   *  until running text comes to take it back (`openFloatWraps`). */
+  /** The `textWrap` warnings of this pass (#627). */
+  const textWrapNotes: ContentWarning[] = [];
+  const floatWraps = new Map<VDTColumn, { position: FloatSlotPosition; need: number; ex: VDTExclusion }[]>();
+  /** Give the bands of the wrapped floats of `col` back to the flow, as
+   *  exclusions the text runs beside: a float at the head of a column the
+   *  text has not entered yet, one at its foot the text has not reached. */
+  const openFloatWraps = (col: VDTColumn): void => {
+    const list = floatWraps.get(col);
+    if (!list) return;
+    floatWraps.delete(col);
+    for (const w of list) {
+      const r = { ...reservedOf(col) };
+      if (w.position === 'top') {
+        // A block already stands under it, or another band between: it
+        // keeps its band.
+        if (col.blocks.length > 0 || Math.abs(w.ex.y + w.need - col.bbox.y) > 0.5) continue;
+        col.bbox.y -= w.need;
+        col.bbox.height += w.need;
+        col.availableHeight += w.need;
+        r.top = Math.max(0, r.top - w.need);
+        openColumnWrap(col, w.ex, 'top');
+      } else {
+        if (uncappedBottoms.has(col) || Math.abs(col.bbox.y + col.bbox.height - w.ex.y) > 0.5 || columnCursorY(col) > w.ex.y + 0.01) continue;
+        col.bbox.height += w.need;
+        col.availableHeight += w.need;
+        r.bottom = Math.max(0, r.bottom - w.need);
+        openColumnWrap(col, w.ex, 'bottom');
+      }
+      floatReserved.set(col, r);
+    }
+  };
   const floatHeadOf = (col: VDTColumn): number => reservedOf(col).top;
   /** `BandCap.headPx` for a cap proposed on `cols`: how far the float bands
    *  every column holds at its head put the band's top below its bare one. */
@@ -2049,6 +2083,39 @@ function placeDocumentPass(
 
     // A gallery page keeps no text room between its bands.
     if (galleryFill) for (const col of targetCols) col.availableHeight = 0;
+
+    // Text wrap (#627): a one-column float at the head or foot of its
+    // column, which running text may take back to run beside it — unless
+    // the text left beside it would be too narrow, or the float too short
+    // for lines beside it.
+    if (f.wrap && !pageSpan && !side && targetCols.length === 1 && !rotated && !aside && !cut && !galleryFill
+      && !(position === 'bottom' && uncappedBottoms.has(first))) {
+      const gap = wrapGapPx(f.wrapGap, dpi, bodyStyle.fontSizePx, floatGapPx);
+      const settings = resolved.layout.wrap;
+      const reason = first.bbox.width - width - gap + 0.01 < minTextWidthPx(settings.minTextWidth, first.bbox.width, dpi, bodyStyle.fontSizePx)
+        ? 'tooNarrow' as const
+        : Math.round(need / bodyStyle.lineHeightPx) < settings.minLinesBeside ? 'fewLines' as const : undefined;
+      if (reason) {
+        textWrapNotes.push({ kind: 'textWrap', reason, resourceId: f.resourceId, pageIndex: page.index });
+      } else {
+        const exWidth = Math.min(first.bbox.width, width + gap);
+        const exY = position === 'top' ? first.bbox.y - need : first.bbox.y + first.bbox.height;
+        const list = floatWraps.get(first) ?? [];
+        list.push({
+          position,
+          need,
+          ex: {
+            x: f.wrap === 'left' ? first.bbox.x : first.bbox.x + first.bbox.width - exWidth,
+            y: exY,
+            width: exWidth,
+            height: need,
+            side: f.wrap,
+            ownerId: built.block.id,
+          },
+        });
+        floatWraps.set(first, list);
+      }
+    }
 
     commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
     floatsPlaced++;
@@ -3236,8 +3303,6 @@ function placeDocumentPass(
    *  band the next block takes back to run beside it when it can (see
    *  `pipeline/textWrap.ts`). */
   let pendingWrap: { col: VDTColumn; block: VDTBlock; ex: VDTExclusion } | null = null;
-  /** The `textWrap` warnings of this pass. */
-  const textWrapNotes: ContentWarning[] = [];
 
   const closeFlowSegment = (boundaryIndex: number): void => {
     // What text wrapped round in the column the segment ends in keeps its
@@ -5738,6 +5803,9 @@ function placeDocumentPass(
     while (remainingLines.length > 0) {
       enterBand(blockIdx, partIndex);
       const curCol = currentColumn(doc, cursor);
+      // A wrapped float at the head or foot of this column (#627): running
+      // text takes its band back to run beside it.
+      if (wrapsBeside) openFloatWraps(curCol);
       // The rest of the block goes into a column of another width than the
       // one it was broken for (EF-157): break it again for this one. Up to
       // postext 1.4 it kept the lines of the column it started in, and a

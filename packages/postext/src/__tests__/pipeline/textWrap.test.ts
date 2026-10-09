@@ -293,3 +293,86 @@ describe('layout.wrap (#627)', () => {
     expect(stripLayoutDefaults({ wrap: { defaultWidth: 0.4 } })).toEqual({ wrap: { defaultWidth: 0.4 } });
   });
 });
+
+// #627 Phase 3: a column float with `wrap` at the head or foot of one
+// column of a two-column page.
+describe('a column float with wrap: the column\'s first or last lines run beside it (#627)', () => {
+  const two = (extra: Partial<PostextConfig> = {}): PostextConfig => {
+    const c = config({ layout: { layoutType: 'double', gutterWidth: pt(10) }, ...extra });
+    c.page = { ...c.page, width: pt(560) };
+    return c;
+  };
+  const floated = (position: 'top' | 'bottom', wrap: 'left' | 'right', span: 'column' | 'page' = 'column'): Resource => ({
+    ...figure({ wrap, width: 0.45 }), placement: { position, span, wrap, width: 0.45 },
+  });
+  const md = `${para(4)} :ref{id="fig"}\n\n${para(30)}\n\n${para(30)}`;
+
+  it('top: the float heads the next column at its side, the column\'s first lines beside it', () => {
+    const doc = build(md, [floated('top', 'right')], two());
+    const col = colOf(doc, 0, 1);
+    expect(col.exclusions).toHaveLength(1);
+    const ex = col.exclusions![0]!;
+    const float = doc.pages[0]!.floats!.find((b) => b.id === 'float-fig')!;
+    expect(ex.ownerId).toBe('float-fig');
+    expect(ex.y).toBeCloseTo(col.bbox.y, 6);
+    expect(float.bbox.y).toBeCloseTo(col.bbox.y, 6);
+    expect(float.bbox.x + float.bbox.width).toBeCloseTo(col.bbox.x + col.bbox.width, 1);
+    expect(ex.x + ex.width).toBeCloseTo(col.bbox.x + col.bbox.width, 1);
+    // The column's text starts at its head, beside the float.
+    const lines = col.blocks.flatMap((b) => b.lines);
+    expect(lines[0]!.bbox.y).toBeCloseTo(col.bbox.y, 6);
+    for (const l of lines) {
+      const beside = l.bbox.y < ex.y + ex.height - 0.01;
+      expect(!!l.measure, `${l.bbox.y}`).toBe(beside);
+      if (beside) expect(l.measure!.width).toBeCloseTo(col.bbox.width - ex.width, 6);
+    }
+    expect(lines.filter((l) => l.measure).length).toBeGreaterThanOrEqual(5);
+    // The other column runs full.
+    expect(colOf(doc, 0, 0).blocks.flatMap((b) => b.lines).every((l) => !l.measure)).toBe(true);
+    // The text is all there, in order (the reference prints its label).
+    expect(words(doc).slice(-2 * para(30).split(' ').length)).toEqual(`${para(30)} ${para(30)}`.split(/\s+/));
+  });
+
+  it('bottom: the column\'s last lines run beside the float, the column fills to its foot', () => {
+    const doc = build(md, [floated('bottom', 'left')], two());
+    const col = colOf(doc, 0, 0);
+    expect(col.exclusions).toHaveLength(1);
+    const ex = col.exclusions![0]!;
+    expect(ex.side).toBe('left');
+    expect(ex.y + ex.height).toBeCloseTo(col.bbox.y + col.bbox.height, 1);
+    const lines = col.blocks.flatMap((b) => b.lines);
+    const beside = lines.filter((l) => l.bbox.y + LINE > ex.y + 0.01);
+    expect(beside.length).toBeGreaterThanOrEqual(5);
+    for (const l of beside) {
+      expect(l.bbox.x).toBeCloseTo(col.bbox.x + ex.width, 6);
+      expect(l.measure?.wrap).toBe(true);
+    }
+    // The last line reaches the column's foot.
+    const last = lines[lines.length - 1]!;
+    expect(last.bbox.y + LINE).toBeGreaterThan(col.bbox.y + col.bbox.height - LINE);
+  });
+
+  it('keeps the band when the column opens with a heading', () => {
+    const doc = build(`${para(4)} :ref{id="fig"}\n\n${para(14)}\n\n## A heading\n\n${para(30)}`, [floated('top', 'right')], two());
+    for (const page of doc.pages) for (const c of page.columns) {
+      if (c.blocks[0]?.type === 'heading' && (page.floats ?? []).some((f) => f.columnIndex === c.index)) expect(c.exclusions).toBeUndefined();
+    }
+  });
+
+  it('a page-span float keeps its band whole', () => {
+    const doc = build(md, [floated('top', 'right', 'page')], two());
+    for (const page of doc.pages) for (const c of page.columns) expect(c.exclusions).toBeUndefined();
+  });
+
+  it('a column with a wrapped float is left out of balancing, and the build settles', () => {
+    const cfg = two({ headings: { balancing: { enabled: true } } } as Partial<PostextConfig>);
+    const text = `${para(4)} :ref{id="fig"}\n\n${para(12)}\n\n## End\n\n${para(5)}`;
+    const a = build(text, [floated('top', 'right')], cfg);
+    const b = build(text, [floated('top', 'right')], cfg);
+    const shape = (doc: VDTDocument) => doc.pages.map((p) => p.columns.map((c) => [c.exclusions?.length ?? 0, c.blocks.map((blk) => [blk.id, blk.bbox.y, blk.lines.map((l) => [l.text, l.bbox.x, l.measure?.width])])]));
+    expect(shape(a)).toEqual(shape(b));
+    for (const page of a.pages) for (const c of page.columns) {
+      if (c.exclusions) for (const blk of c.blocks) expect(blk.balancing).toBeUndefined();
+    }
+  });
+});
