@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "japanese-technical-manual",
-  "sourceHash": "c2e08e9fb64b99f6604a110eb7e10960e39fdd19d94abeaa47bf9c00bcb93f19",
+  "sourceHash": "ceb436bdba98608d46f53d19d017f12bc8c7c74955e192618d21cb82b45d4a47",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.041Z",
+  "capturedAt": "2026-10-09T18:24:38.006Z",
   "variants": {
     "en": {
-      "hash8": "6ad1bfb2",
-      "vdtHash": "6ebacac9c1240a7f3aa380915dd7a81edf714dd1",
+      "hash8": "021d5685",
+      "vdtHash": "166148fc47f465d4f1bb13ed6d27e2111a0f5bb0",
       "timings": {
-        "importMs": 215,
-        "fontsMs": 278,
-        "buildMs": 22,
-        "totalMs": 1188,
+        "importMs": 164,
+        "fontsMs": 230,
+        "buildMs": 17,
+        "totalMs": 1065,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif JP"
         ],
         "pages": 5,
-        "ownLines": 206
+        "ownLines": 196
       },
       "pages": [
         {
@@ -83,7 +83,7 @@
           "h": 1419,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 86056,
+          "bytes": 85912,
           "alt": "Page 44: 3.4 検索キーを作るときの注意."
         },
         {
@@ -126,12 +126,12 @@
       },
       "pdf": {
         "file": "japanese-technical-manual.pdf",
-        "bytes": 284091,
+        "bytes": 284104,
         "pages": 5
       },
       "sandbox": {
         "file": "japanese-technical-manual.postext",
-        "bytes": 40951,
+        "bytes": 40867,
         "folio": "90d2b4f0"
       },
       "detected": {
@@ -162,7 +162,6 @@
           "bodyText.referenceColor",
           "bodyText.textAlign",
           "calloutStyles",
-          "calloutStyles[].background",
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
           "calloutStyles[].body.color",
@@ -170,7 +169,6 @@
           "calloutStyles[].body.fontFamily",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
-          "calloutStyles[].body.paragraphSpacing",
           "calloutStyles[].body.textAlign",
           "calloutStyles[].id",
           "calloutStyles[].marginBottom",
@@ -180,7 +178,6 @@
           "calloutStyles[].padding.left",
           "calloutStyles[].padding.right",
           "calloutStyles[].padding.top",
-          "calloutStyles[].snapToGrid",
           "calloutStyles[].stripe",
           "calloutStyles[].stripe.color",
           "calloutStyles[].stripe.enabled",
@@ -197,15 +194,6 @@
           "captionStyle.fontSize",
           "captionStyle.labelBold",
           "captionStyle.labelColor",
-          "chipStyles",
-          "chipStyles[].backgroundEnabled",
-          "chipStyles[].borderWidth",
-          "chipStyles[].color",
-          "chipStyles[].fontFamily",
-          "chipStyles[].fontSize",
-          "chipStyles[].gap",
-          "chipStyles[].id",
-          "chipStyles[].paddingX",
           "cjk",
           "cjk.grid",
           "cjk.grid.charsPerLine",
@@ -216,6 +204,29 @@
           "cjk.lineBreak",
           "cjk.paragraphStartBracket",
           "cjk.punctuationWidth",
+          "codeStyle",
+          "codeStyle.background",
+          "codeStyle.color",
+          "codeStyle.fontFamily",
+          "codeStyle.fontSize",
+          "codeStyle.highlight",
+          "codeStyle.inline",
+          "codeStyle.inline.color",
+          "codeStyle.inline.fontSize",
+          "codeStyle.lineHeight",
+          "codeStyle.marginBottom",
+          "codeStyle.marginTop",
+          "codeStyle.padding",
+          "codeStyle.padding.bottom",
+          "codeStyle.padding.left",
+          "codeStyle.padding.right",
+          "codeStyle.padding.top",
+          "codeStyle.snapToGrid",
+          "codeStyle.titleStyle",
+          "codeStyle.titleStyle.color",
+          "codeStyle.titleStyle.fontFamily",
+          "codeStyle.titleStyle.fontSize",
+          "codeStyle.titleStyle.fontWeight",
           "colorPalette",
           "colorPalette[].id",
           "colorPalette[].name",
@@ -312,8 +323,8 @@
           "bodyText",
           "calloutStyles",
           "captionStyle",
-          "chipStyles",
           "cjk",
+          "codeStyle",
           "colorPalette",
           "footer",
           "footnotes",
@@ -327,16 +338,14 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 269,
+        "configLeaves": 260,
         "designElements": 9,
         "directives": [
           ":::paragraphs",
           "::resource",
           ":::callout"
         ],
-        "inline": [
-          ":chip"
-        ],
+        "inline": [],
         "resources": {
           "svg": 1,
           "bitmap": 0,
@@ -367,10 +376,10 @@
         "features": [
           "callout-styles",
           "character-grid",
-          "chips",
           "citation-styles",
           "cjk-line-breaking",
           "cjk-punctuation",
+          "code-listings",
           "column-balancing",
           "cross-references",
           "footnotes",
@@ -379,7 +388,6 @@
           "heading-numbering",
           "inline-embeds",
           "localised-labels",
-          "off-grid-spacing",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
@@ -406,6 +414,11 @@
         },
         "findings": [
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 40 dropped (even: same page sides)"
@@ -419,13 +432,13 @@
       }
     },
     "es": {
-      "hash8": "962a1409",
-      "vdtHash": "f6f5bd6600ba1d9e372c397e6a8cce24efaf2ec2",
+      "hash8": "bf6b24ac",
+      "vdtHash": "0ca554649f2a76d0d54a81a7403aeef16283f216",
       "timings": {
-        "importMs": 196,
-        "fontsMs": 257,
-        "buildMs": 21,
-        "totalMs": 3012,
+        "importMs": 172,
+        "fontsMs": 214,
+        "buildMs": 17,
+        "totalMs": 1032,
         "builds": 2
       },
       "specimen": {
@@ -447,7 +460,7 @@
           "Noto Serif JP"
         ],
         "pages": 5,
-        "ownLines": 206
+        "ownLines": 196
       },
       "pages": [
         {
@@ -491,7 +504,7 @@
           "h": 1419,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 86056,
+          "bytes": 85912,
           "alt": "Página 44: 3.4 検索キーを作るときの注意."
         },
         {
@@ -534,12 +547,12 @@
       },
       "pdf": {
         "file": "japanese-technical-manual.pdf",
-        "bytes": 284158,
+        "bytes": 284167,
         "pages": 5
       },
       "sandbox": {
         "file": "japanese-technical-manual.postext",
-        "bytes": 41006,
+        "bytes": 40924,
         "folio": "90d2b4f0"
       },
       "detected": {
@@ -570,7 +583,6 @@
           "bodyText.referenceColor",
           "bodyText.textAlign",
           "calloutStyles",
-          "calloutStyles[].background",
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
           "calloutStyles[].body.color",
@@ -578,7 +590,6 @@
           "calloutStyles[].body.fontFamily",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
-          "calloutStyles[].body.paragraphSpacing",
           "calloutStyles[].body.textAlign",
           "calloutStyles[].id",
           "calloutStyles[].marginBottom",
@@ -588,7 +599,6 @@
           "calloutStyles[].padding.left",
           "calloutStyles[].padding.right",
           "calloutStyles[].padding.top",
-          "calloutStyles[].snapToGrid",
           "calloutStyles[].stripe",
           "calloutStyles[].stripe.color",
           "calloutStyles[].stripe.enabled",
@@ -605,15 +615,6 @@
           "captionStyle.fontSize",
           "captionStyle.labelBold",
           "captionStyle.labelColor",
-          "chipStyles",
-          "chipStyles[].backgroundEnabled",
-          "chipStyles[].borderWidth",
-          "chipStyles[].color",
-          "chipStyles[].fontFamily",
-          "chipStyles[].fontSize",
-          "chipStyles[].gap",
-          "chipStyles[].id",
-          "chipStyles[].paddingX",
           "cjk",
           "cjk.grid",
           "cjk.grid.charsPerLine",
@@ -624,6 +625,29 @@
           "cjk.lineBreak",
           "cjk.paragraphStartBracket",
           "cjk.punctuationWidth",
+          "codeStyle",
+          "codeStyle.background",
+          "codeStyle.color",
+          "codeStyle.fontFamily",
+          "codeStyle.fontSize",
+          "codeStyle.highlight",
+          "codeStyle.inline",
+          "codeStyle.inline.color",
+          "codeStyle.inline.fontSize",
+          "codeStyle.lineHeight",
+          "codeStyle.marginBottom",
+          "codeStyle.marginTop",
+          "codeStyle.padding",
+          "codeStyle.padding.bottom",
+          "codeStyle.padding.left",
+          "codeStyle.padding.right",
+          "codeStyle.padding.top",
+          "codeStyle.snapToGrid",
+          "codeStyle.titleStyle",
+          "codeStyle.titleStyle.color",
+          "codeStyle.titleStyle.fontFamily",
+          "codeStyle.titleStyle.fontSize",
+          "codeStyle.titleStyle.fontWeight",
           "colorPalette",
           "colorPalette[].id",
           "colorPalette[].name",
@@ -720,8 +744,8 @@
           "bodyText",
           "calloutStyles",
           "captionStyle",
-          "chipStyles",
           "cjk",
+          "codeStyle",
           "colorPalette",
           "footer",
           "footnotes",
@@ -735,16 +759,14 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 269,
+        "configLeaves": 260,
         "designElements": 9,
         "directives": [
           ":::paragraphs",
           "::resource",
           ":::callout"
         ],
-        "inline": [
-          ":chip"
-        ],
+        "inline": [],
         "resources": {
           "svg": 1,
           "bitmap": 0,
@@ -775,10 +797,10 @@
         "features": [
           "callout-styles",
           "character-grid",
-          "chips",
           "citation-styles",
           "cjk-line-breaking",
           "cjk-punctuation",
+          "code-listings",
           "column-balancing",
           "cross-references",
           "footnotes",
@@ -787,7 +809,6 @@
           "heading-numbering",
           "inline-embeds",
           "localised-labels",
-          "off-grid-spacing",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
@@ -813,6 +834,11 @@
           "worst": 0.13
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

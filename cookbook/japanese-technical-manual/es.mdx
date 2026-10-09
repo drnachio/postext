@@ -26,7 +26,7 @@ La diferencia con el chino está en los signos. Un libro chino del continente po
 
 <Excerpt region="listing" />
 
-Postext no compone bloques de código cercados, así que el pen reescribe el Markdown antes de componer. Cada línea de la valla pasa a ser un párrafo de un recuadro tintado, y cada `` `nombre` `` un chip en BIZ UDGothic. La letra importa: la cadena del ejemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, necesita katakana de medio ancho, letras de ancho completo y cifras en círculo, que una letra de código occidental no tiene. BIZ UDGothic compone el latín de medio ancho y el kana de ancho completo con paso fijo, así que el listado conserva sus columnas ([Chips en línea](/es/docs/document-format#chips-en-línea)).
+La valla es un [bloque de código](/es/docs/document-format#bloques-de-código): Postext compone sus líneas tal como están escritas, en la letra que nombra `codeStyle`, dentro de un recuadro tintado bajo el título `normalize.py` que trae la línea de la valla ([listados de código](/es/docs/configuration#listados-de-código)). `highlight: 'none'` deja el listado en una sola tinta, como el resto de la página, y `codeStyle.inline` compone cada `` `nombre` `` en la misma letra, en verde azulado. La letra importa: la cadena del ejemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, necesita katakana de medio ancho, letras de ancho completo y cifras en círculo, que una letra de código occidental no tiene. BIZ UDGothic compone el latín de medio ancho y el kana de ancho completo con paso fijo, y un listado cuenta cada carácter de ancho completo como dos celdas, así que las columnas se mantienen.
 
 ### 3 · 図3-1 y 表3-1
 
@@ -70,4 +70,4 @@ Algunas editoriales componen las palabras latinas pegadas al kana, sin el cuarto
 
 - Una palabra latina no se puede cortar dentro de una línea japonesa, así que una larga al final de la línea deja la anterior espaciada entre sus caracteres. El primer borrador de este capítulo glosaba los términos en inglés, 正準等価（canonical equivalence）, y dos líneas salieron flojas; se quitaron los términos ingleses donde no ayudaban al lector.
 - Elige la letra del código por los caracteres que lleva. M PLUS 1 Code, la primera que se probó aquí, no tiene katakana de medio ancho: la pantalla recurrió a una letra del sistema para ｶﾞｲﾄﾞ y al PDF le faltaban los glifos.
-- Un listado es un recuadro, y por omisión no se parte. En la página 43, las cuatro líneas que quedaban bajo 3.3 no bastaban, así que abre la página 44.
+- Un listado se parte entre líneas de una página a otra, con al menos dos líneas a cada lado (`codeStyle.splitMinLines`). En la página 43, el espacio que queda bajo 3.3 admite el título y una línea, no dos, así que el listado entero abre la página 44; `keepTogether: true` mantiene cada listado de una pieza.

@@ -1,40 +1,40 @@
 ---
-title: "Code listings and keycaps without code blocks"
-summary: "A shell guide whose fenced code becomes dark listing boxes before the build, with bold and italic runs as syntax colours and keys set as keycap chips."
-plain: "Three pages of a beginner's guide to the computer command line. It shows how to turn code examples into dark coloured boxes and draw keys like Ctrl as small buttons in the text."
-description: "Code listings and keyboard keys in Postext: fenced code is rewritten into dark boxes that reach into the margin, and keys such as Ctrl become keycap chips."
-question: "How do I show code listings and keyboard shortcuts when fenced code blocks aren't supported?"
-aliases: ["code block", "fenced code", "source code", "shell session", "terminal output", "monospace", "syntax colouring", "keyboard shortcut", "kbd", "keycap", "cheat sheet", "inline code"]
-pageNotes: { "1": "The opener of chapter 4: a small amber CHAPTER 4 kicker, the title “Small tools, joined” in a heavy sans, an italic lead and two justified paragraphs with command names in a monospace face and an Enter keycap, beside a margin note headed The prompt under an amber rule. Below them a near-black box with a Terminal tab runs from the text column into the outer margin: typed commands in amber bold after a dollar prompt, the shell's answers in light grey. The paragraph under the box starts flush.", "2": "The section “When a command will not stop”: an On a Mac note in the outer margin beside the heading, keys such as Ctrl, C, Tab and the up arrow are small outlined keycaps inside the justified lines, and four steps are numbered in amber with a grey › separator. At the foot, a near-black “Cheat sheet · bash and zsh” box across the text and the margin pairs Ctrl-and-letter keycaps with their actions in two columns.", "3": "The section “A script to keep”: a near-black box under a backup.sh tab lettered in green, its keywords in amber bold, strings in green italic and comments in grey; then two paragraphs about the script beside an Archive mode note, the closing paragraph and the colophon in the margin." }
+title: "Code listings and keycaps"
+summary: "A shell guide whose fenced code is set as dark listing boxes, coloured by token, with keys set as keycap chips."
+plain: "Three pages of a beginner's guide to the computer command line. It shows how to set code examples in dark coloured boxes and draw keys like Ctrl as small buttons in the text."
+description: "Code listings and keyboard keys in Postext: fenced code set in dark boxes that reach into the margin, coloured by token, and keys such as Ctrl as keycap chips."
+question: "How do I show code listings and keyboard shortcuts?"
+aliases: ["code block", "fenced code", "source code", "shell session", "terminal output", "monospace", "syntax colouring", "codeStyle", "keyboard shortcut", "kbd", "keycap", "cheat sheet", "inline code"]
+pageNotes: { "1": "The opener of chapter 4: a small amber CHAPTER 4 kicker, the title “Small tools, joined” in a heavy sans, an italic lead and two justified paragraphs with command names in a monospace face and an Enter keycap, beside a margin note headed The prompt under an amber rule. Below them a near-black box with a Terminal tab runs from the text column into the outer margin: the typed lines, dollar prompt included, in amber bold, the shell's answers in light grey. The paragraph under the box starts flush.", "2": "The section “When a command will not stop”: an On a Mac note in the outer margin beside the heading, keys such as Ctrl, C, Tab and the up arrow are small outlined keycaps inside the justified lines, and four steps are numbered in amber with a grey › separator. At the foot, a near-black “Cheat sheet · bash and zsh” box across the text and the margin pairs Ctrl-and-letter keycaps with their actions in two columns.", "3": "The section “A script to keep”: a near-black box under a backup.sh tab lettered in green, its keywords in amber bold, strings in green italic and comments in grey, the loop body indented; then two paragraphs about the script beside an Archive mode note, the closing paragraph and the colophon in the margin." }
 ---
 
 ## What you'll build
 
-Three pages from chapter 4 of *The Shell, Gently*, an invented pocket guide to the command line, on a 178 × 229 mm page. The text is justified Charis SIL in a 100 mm column, with a margin column on the outer side for notes. Each listing is a near-black box of JetBrains Mono that runs into that column, under a tab with the name of the file or the session. Keywords and typed commands print in amber, strings in green and comments in grey. Keys such as Ctrl and Tab are small outlined keycaps inside the justified lines, and a two-column cheat sheet of Ctrl shortcuts fills the foot of page 50. The Markdown keeps ordinary fenced code blocks; a short function turns each one into a box before the build.
+Three pages from chapter 4 of *The Shell, Gently*, an invented pocket guide to the command line, on a 178 × 229 mm page. The text is justified Charis SIL in a 100 mm column, with a margin column on the outer side for notes. Each listing is a near-black box of JetBrains Mono that runs into that column, under a tab with the name of the file or the session. Keywords and typed commands print in amber, strings in green and comments in grey. Keys such as Ctrl and Tab are small outlined keycaps inside the justified lines, and a two-column cheat sheet of Ctrl shortcuts fills the foot of page 50. The Markdown keeps ordinary fenced code blocks, and the engine sets them as they are.
 
 ## Method
 
-### 1 · Turn each fence into a box before the build
+### 1 · Give the fences a box
 
-The code for this step is [the short answer](#the-short-answer) above. Postext 1.4.1 reads a fenced block as ordinary Markdown: its lines run together into one paragraph, each pair of dollar signs becomes a formula, an underscore opens italics and the comment `# Copy each folder…` turns into a chapter heading. `listings()` rewrites every fence into a `listing` box with one paragraph per line and a backslash before each character Markdown would read. The word joiner (U+2060) that opens each line keeps the indentation. Without it the parser trims the no-break spaces, the loop body of `backup.sh` loses its indent and the two blank lines of the script disappear. Whatever follows the language on the fence line (`backup.sh`, `Terminal`) prints on the box's [label tab](/en/docs/configuration#callout-styles). The paragraph after a listing goes in `:::paragraphs{style="resume"}`, so it starts flush, as it would after a heading.
+The code for this step is [the short answer](#the-short-answer) above. Each ```` ``` ```` fence in the Markdown is a [code block](/en/docs/document-format#code-blocks): Postext sets its lines as typed, one line of code to a line of type, with the indents, the blank lines of the script and the two-column output of `du` kept. `codeStyle` designs every listing at once ([code listings](/en/docs/configuration#code-listings)): the face and its leading, the near-black fill, the padding and the room above and below. Whatever follows the language on the fence line (`Terminal`, `backup.sh`) is the listing's title, and because `codeStyle.label` is set it prints on a [label tab](/en/docs/configuration#callout-styles) on the box's top edge rather than in a title row. `codeStyle.inline` sets the inline code of the running text, `ls` or `grep -c`, in the same face at 0.88 em ([inline code](/en/docs/configuration#inline-code)). The paragraph after a listing goes in `:::paragraphs{style="resume"}`, so it starts flush, as it would after a heading.
 
 ### 2 · Keep the text narrow and let the code cross the margin
 
 <Excerpt region="page" />
 
-At 10 pt, Charis SIL sets about 62 characters in the 100 mm column. The side column of this [column-and-a-half layout](/en/docs/configuration#layout-types) takes only floats and notes, so the text never runs into it. The listing style's `span: 'page'` (in the short answer) stretches every listing across both columns, 143 mm. Inside its padding a box holds 73 characters of JetBrains Mono at 8.6 pt; the longest line on these pages, the second line of `backup.sh`, has 71.
+At 10 pt, Charis SIL sets about 62 characters in the 100 mm column. The side column of this [column-and-a-half layout](/en/docs/configuration#layout-types) takes only floats and notes, so the text never runs into it. `span: 'page'` in `codeStyle` stretches every listing across both columns, 143 mm. Inside its padding a box holds 73 characters of JetBrains Mono at 8.6 pt; the longest line on these pages, the comment that opens `backup.sh`, has 71.
 
-### 3 · Colour the code with bold and italic
+### 3 · Colour the code by token
 
 <Excerpt region="paint" />
 
-Postext has no syntax highlighting, but a box prints its bold runs in its own `boldColor` and its italic runs in `italicColor`, so `paint()` makes keywords bold (amber) and quoted strings italic (green). Comments take a third colour from `rem`, a chip style with no fill, outline, padding or gap, which prints its text in grey in the mono face. `KEYWORDS` lists the shell's reserved words and a few builtins (`set`, `echo`, `cd`); programs like `mkdir` and `rsync` stay plain. In a `console` fence, `session()` sets what you type after the prompt in bold and leaves the shell's answer plain.
+The language on the fence (`console`, `bash`) picks the built-in tokenizer, and `codeStyle.tokens` gives each kind of token its colour, weight and slant ([syntax colouring](/en/docs/configuration#syntax-colouring)). In `backup.sh`, keywords such as `for` and `done` and builtins such as `set` and `echo` print in amber bold, strings in green italic and comments in grey; programs like `mkdir` and `rsync` stay plain. The default style sets comments in italics, so `italic: false` keeps them upright. In a `console` fence a line that opens with a prompt is a `prompt` token and every other line is `output`, so the commands you type print in amber bold and the shell's answer stays in the listing's light grey. The kinds the recipe does not want coloured, numbers, variables and options among them, take that grey too.
 
-### 4 · Set keys and inline code as chips
+### 4 · Set keys as chips
 
 <Excerpt region="keycaps" />
 
-Postext drops the backticks and sets inline code in the body face ([inline formatting](/en/docs/document-format#inline-formatting)), so `inlineCode()` turns each span into a `code` chip: the mono face at 0.88 em with no box. Keys are `key` chips with a light fill and a 0.6 pt outline. Their size is given in points, so a key measures 7.8 pt in the 10 pt text, in the 8.6 pt margin note and in the 8.4 pt cheat sheet; `em(0.78)` would shrink the cheat sheet's keys to 6.6 pt. A chip never breaks across lines and never stretches ([inline chips](/en/docs/document-format#inline-chips)), so a line with keys puts all its slack in its word spaces. `spacing` makes the line breaker try other breaks before a space grows past 140 % of its normal width. At the default, 200 %, six lines of these pages stretch further than that; with the setting, the widest reaches 132 %.
+Keys are `key` chips with a light fill and a 0.6 pt outline. Their size is given in points, so a key measures 7.8 pt in the 10 pt text, in the 8.6 pt margin note and in the 8.4 pt cheat sheet; `em(0.78)` would shrink the cheat sheet's keys to 6.6 pt. A chip never breaks across lines and never stretches ([inline chips](/en/docs/document-format#inline-chips)), so a line with keys puts all its slack in its word spaces. `spacing` makes the line breaker try other breaks before a space grows past 140 % of its normal width. At the default, 200 %, six lines of these pages stretch further than that; with the setting, the widest reaches 132 %.
 
 ### 5 · Number the steps on the grid
 
@@ -46,7 +46,7 @@ The numbers are Sora 800 in the accent, and the separator is a mono `›` in gre
 
 <Excerpt region="sheet" />
 
-The cheat sheet reuses the listing style with Sora for the actions, and `placement: 'bottom'` floats it to the foot of page 50 ([floated boxes](/en/docs/configuration#the-callout-container)). Left in the flow, a box across the page needs room for itself and two lines of text under it. Here the box would move to page 51, leaving 58 mm empty under the steps, and the chapter would run to four pages. In the Markdown, `:::columns{count=2 breaks="8"}` opens the right column at the eighth block, its heading. Balancing alone cuts by height, and when one action runs to a second line it leaves *Commands and history* at the foot of the left column. Every entry opens with the same two chips, `Ctrl` and a letter, both in the mono face, so each action begins at the same distance from the left edge of its column.
+The cheat sheet is a callout style with the listings' fill, Sora for the actions, and `placement: 'bottom'`, which floats it to the foot of page 50 ([floated boxes](/en/docs/configuration#the-callout-container)). Left in the flow, a box across the page needs room for itself and two lines of text under it. Here the box would move to page 51, leaving 58 mm empty under the steps, and the chapter would run to four pages. In the Markdown, `:::columns{count=2 breaks="8"}` opens the right column at the eighth block, its heading. Balancing alone cuts by height, and when one action runs to a second line it leaves *Commands and history* at the foot of the left column. Every entry opens with the same two chips, `Ctrl` and a letter, both in the mono face, so each action begins at the same distance from the left edge of its column.
 
 ## Variations
 
@@ -59,17 +59,26 @@ The tab moves to the box's top-right corner, which on a recto stands over the ma
 +    position: 'top-right' },
 ```
 
-### Give comments the colour of strings
+### Number the lines
 
-Without the `rem` chip a comment is an italic run, so it prints in the same green as the strings.
+Every listing gets line numbers in grey in a gutter inside its box. The gutter takes about four characters of the 73, so the comment that opens `backup.sh` no longer fits: it turns over after `backup`, and `disk.` goes on below behind a `»`. The Cookbook's check reports it as a `codeOverflow` warning; shorten the comment to keep the script on its 13 lines. A single listing takes numbers with `{lineNumbers}` on its fence line.
 
 ```diff
--    else if (comment) out += `:chip[${chipText(comment)}]{style="rem"}`;
-+    else if (comment) out += `*${escape(comment)}*`;
++  lineNumbers: true, lineNumberColor: col('slate'),
+   tokens: tokens(), // the colours, below
+```
+
+### Give comments the colour of strings
+
+The comments take the green of the strings, in italics.
+
+```diff
+-    comment: { color: col('slate'), italic: false }, // upright: the default comment is italic
++    comment: { color: col('phosphor'), italic: true }, // the strings' green italic
 ```
 
 ## Pitfalls
 
-- Indent listings with spaces. `codeLine()` turns leading spaces and runs of spaces into no-break spaces, while a tab prints as one ordinary space.
-- Keep every code line within 73 characters. A longer line wraps at a space, and a comment, which is a chip, never breaks: it drops to a line of its own and runs past the edge of the box.
-- The escapes of `codeLine()` work in prose too. A paragraph that opens with a year, such as `1998. The lab opened`, becomes item 1998 of a list unless a word joiner comes first, and `\$40` keeps a price out of maths. Dialogue that opens with an em dash needs no escape; a hyphen and a space would start a list.
+- Keep every code line within 73 characters. A longer one turns over at its last space or punctuation that fits and goes on below behind a `»`, and the engine reports a `codeOverflow` warning; `overflow: 'shrink'` sets the whole listing smaller instead, and `'clip'` cuts the line at the box's edge.
+- A tab in a listing advances to the next multiple of four columns (`codeStyle.tabSize`). A script indented with tabs that your editor shows eight columns wide comes out narrower here.
+- With `codeStyle.inline` set, inline code never breaks across lines, as a chip does. A long path in running text, such as `~/Pictures/2025/IMG_0977.MOV`, moves whole to the next line and can leave a loose one behind it.

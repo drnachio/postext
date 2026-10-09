@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 123 · A Japanese technical manual: kana, kanji and Latin ═══
 // https://postext.dev/en/cookbook/japanese-technical-manual
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
-// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes, parseTSV,
   registerResourceImage,
@@ -54,22 +54,19 @@ const bodyText = {
 };
 // #endregion
 
-// #region listing: a fenced block becomes a tinted box, one paragraph per line of code
-// Postext sets no fenced code (gap: code-blocks): the Markdown is rewritten before the build.
-// A word joiner (U+2060) opens each line so a leading '#' stays text, and the leading
-// spaces become no-break spaces, which parsing keeps after it. Inline `code` becomes a chip
-// in the monospaced face, which has kana and kanji too.
-const NBSP = '\u00a0';
-const escape = (text) => text.replace(/[*_^~`$[\]]/g, '\\$&');
-const codeLine = (line) => `\u2060${line.replace(/^ +| {2,}/g, (s) => NBSP.repeat(s.length))
-  .replace(/[^\u00a0]+/g, escape)}`;
-const listings = (md) => md.replace(/^```\w* *([^\n]*)\n([\s\S]*?)^```$/gm, (_, file, code) =>
-  [`:::callout{type="listing" title="${file}"}`, ...code.trimEnd().split('\n').map(codeLine),
-    ':::'].join('\n\n'));
-const inlineCode = (md) => md.replace(/(?<!\\)`([^`\n]+)`/g,
-  (_, code) => `:chip[${code.replace(/[*_^~\]]/g, '\\$&')}]{style="code"}`);
-const chipStyles = [{ id: 'code', fontFamily: CODE, fontSize: pt(8.5), color: col('teal'),
-  backgroundEnabled: false, borderWidth: pt(0), paddingX: em(0), gap: em(0) }];
+// #region listing: a fenced block is a code listing in a tinted box
+// A ``` fence is set line by line as written, in codeStyle's face: the monospaced face,
+// which has kana and kanji too, so a full-width character takes two half-width cells.
+// The rest of the fence line (normalize.py) is the listing's title. Inline `code` is set
+// in the same face, in the accent.
+const codeStyle = {
+  fontFamily: CODE, fontSize: pt(8), lineHeight: pt(12), color: col('ink'),
+  background: col('tint'), snapToGrid: false, highlight: 'none', // one ink, as in print
+  padding: { top: mm(2.5), right: mm(4), bottom: mm(3), left: mm(4) },
+  marginTop: mm(2), marginBottom: mm(2),
+  titleStyle: { fontFamily: CODE, fontSize: pt(7), fontWeight: 400, color: col('teal') },
+  inline: { fontSize: pt(8.5), color: col('teal') },
+};
 // #endregion
 
 // #region opener: a tinted band, the chapter number large in the accent, the title under it
@@ -132,14 +129,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   // #endregion
   unorderedLists: { bulletChar: '・', color: col('teal'), fontWeight: 400,
     marginTop: pt(0), marginBottom: pt(0) },
-  chipStyles,
+  codeStyle,
   calloutStyles: [
-    { id: 'listing', background: col('tint'), snapToGrid: false,
-      padding: { top: mm(2.5), right: mm(4), bottom: mm(3), left: mm(4) },
-      marginTop: mm(2), marginBottom: mm(2),
-      titleStyle: { fontFamily: CODE, fontSize: pt(7), fontWeight: 400, color: col('teal') },
-      body: { fontFamily: CODE, fontSize: pt(8), lineHeight: pt(12), color: col('ink'),
-        textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: false } },
     { id: 'point', backgroundEnabled: false,
       stripe: { enabled: true, side: 'left', width: pt(3), color: col('teal') },
       padding: { top: mm(0), right: mm(0), bottom: mm(0), left: mm(5) },
@@ -167,8 +158,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
-const source = /* @content */ ''; // content.<lang>.md: the same Japanese chapter in both
-const markdown = inlineCode(listings(source));
+const markdown = /* @content */ ''; // content.<lang>.md: the same Japanese chapter in both
 
 // #region resources: the table of forms, and the bytes of が drawn in code
 const FORMS = `入力\tNFC\tNFD\tNFKC
@@ -234,7 +224,7 @@ const gothic = `${all(/^#+ .*$/gm)}${all(/:::paragraphs\{style="lead"\}\n[^\n]*/
 await loadFonts(FONTS, markdown);
 await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, `${markdown}${FORMS}`);
 await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] }, gothic);
-const code = (source.match(/^```[\s\S]*?^```$|`[^`\n]+`/gm) ?? []).join('');
+const code = (markdown.match(/^```[\s\S]*?^```$|`[^`\n]+`/gm) ?? []).join('');
 await loadCjkFonts({ [CODE]: FONTS[CODE] }, code);
 await loadSvg('bytes.svg', bytesArt(await codeFace()));
 const continuation = { pageIndexOffset: 40, pageNumbering: { startAt: 41 }, headings: { h1: 2 } };

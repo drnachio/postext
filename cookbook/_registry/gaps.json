@@ -85,7 +85,8 @@
         "ja": "コードブロック",
         "pt": "Blocos de código"
       }
-    }
+    },
+    "fixedIn": "1.23.0"
   },
   "syntax-highlighting": {
     "label": {
@@ -160,7 +161,8 @@
         "ja": "構文の色分け",
         "pt": "Coloração de sintaxe"
       }
-    }
+    },
+    "fixedIn": "1.23.0"
   },
   "pipe-tables": {
     "label": {

@@ -29,7 +29,7 @@
       "gyodori-headings",
       "character-grid",
       "cjk-fonts",
-      "chips",
+      "code-listings",
       "callout-styles",
       "table-style",
       "captions",
@@ -45,9 +45,7 @@
     "Q136",
     "Q146"
   ],
-  "gaps": [
-    "code-blocks"
-  ],
+  "gaps": [],
   "gotchas": [
     "ja-locale-tag",
     "ja-fonts-kana",
@@ -62,8 +60,8 @@
     "technical-book-crossref-chapters"
   ],
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1"
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0"
   },
   "kit": [
     "core",
@@ -145,5 +143,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-09"
 }

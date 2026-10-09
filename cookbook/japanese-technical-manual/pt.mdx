@@ -26,7 +26,7 @@ A diferença em relação ao chinês está nos sinais. Um livro chinês do conti
 
 <Excerpt region="listing" />
 
-O Postext não compõe blocos de código cercados, então o pen reescreve o Markdown antes da composição. Cada linha do bloco vira um parágrafo de um boxe com fundo de cor, e cada `` `name` `` vira um chip em BIZ UDGothic. A fonte faz diferença: a string do exemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, precisa de katakana de meia largura, letras de largura inteira e algarismos em círculo, que uma fonte de código ocidental não tem. A BIZ UDGothic compõe o latim de meia largura e o kana de largura inteira com passo fixo, e assim a listagem mantém suas colunas ([Chips no texto](/pt/docs/document-format#chips-em-linha)).
+A cerca é um [bloco de código](/pt/docs/document-format#blocos-de-código): o Postext compõe suas linhas como foram escritas, na fonte que `codeStyle` indica, num boxe com fundo de cor sob o título `normalize.py`, tirado da linha da cerca ([listagens de código](/pt/docs/configuration#listagens-de-código)). `highlight: 'none'` deixa a listagem numa só tinta, como o resto da página, e `codeStyle.inline` compõe cada `` `name` `` na mesma fonte, em verde-azulado. A fonte faz diferença: a string do exemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, precisa de katakana de meia largura, letras de largura inteira e algarismos em círculo, que uma fonte de código ocidental não tem. A BIZ UDGothic compõe o latim de meia largura e o kana de largura inteira com passo fixo, e uma listagem conta cada caractere de largura inteira como duas células; assim as colunas se mantêm.
 
 ### 3 · 図3-1 e 表3-1
 
@@ -70,4 +70,4 @@ Algumas editoras compõem as palavras latinas coladas ao kana, sem o quarto de e
 
 - Uma palavra latina não pode ser quebrada dentro de uma linha japonesa, então uma palavra longa no fim da linha deixa a linha anterior espaçada entre os caracteres. O primeiro rascunho deste capítulo glosava os termos em inglês, 正準等価（canonical equivalence）, e duas linhas saíram frouxas; os termos em inglês foram retirados onde não ajudavam o leitor.
 - Escolha a fonte de código pelos caracteres que o código contém. A M PLUS 1 Code, a primeira testada aqui, não tem katakana de meia largura: a tela recorreu a uma fonte do sistema para ｶﾞｲﾄﾞ e faltaram os glifos no PDF.
-- Uma listagem é um boxe só, mantido inteiro por padrão. Na página 43, as quatro linhas que sobravam sob 3.3 não comportavam a listagem, e ela abre a página 44.
+- Uma listagem se divide entre linhas de uma página para outra, com pelo menos duas linhas de cada lado (`codeStyle.splitMinLines`). Na página 43, o espaço que sobra sob 3.3 comporta o título e uma linha, não duas, então a listagem inteira abre a página 44; `keepTogether: true` mantém cada listagem inteira.
