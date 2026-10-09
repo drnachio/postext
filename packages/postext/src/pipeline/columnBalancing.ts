@@ -344,6 +344,10 @@ export function collectColumnGaps(
       }
       // A `:::columnbreak` ended this column on purpose — leave its gap.
       if (col.forcedBreak) continue;
+      // Text wraps round a picture or a box in this column (#627): its
+      // lines are broken for where they stand, and a lever moving them
+      // would set them beside nothing. Left as it is.
+      if (col.exclusions && col.exclusions.length > 0) continue;
 
       // A column closed by a list tail: the tail's box bakes the list's
       // bottom margin and grid snap in (so the flow after it lands on the

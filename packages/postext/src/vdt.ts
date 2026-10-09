@@ -2706,6 +2706,16 @@ export type ContentWarning = ContentWarningBase & (
    *  where it had nowhere else to go. Found by the layout; information
    *  more than a fault, unless it overflows. */
   | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowPx?: number }
+  /** `textWrap` (#627): a resource or a box set to wrap text round it
+   *  (`placement.wrap`, a box's `wrap`) that does not as asked.
+   *  `'tooNarrow'`: the text beside it would be narrower than
+   *  `layout.wrap.minTextWidth`, so it takes its band whole; `'fewLines'`:
+   *  it is shorter than `layout.wrap.minLinesBeside` lines, so it takes
+   *  its band whole; `'moved'`: an inline one was too tall for the room
+   *  left in its column and moved on to the next, its anchor with it.
+   *  `resourceId` names a resource, `box` a box's style. Found by the
+   *  layout. */
+  | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved'; resourceId?: string; box?: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

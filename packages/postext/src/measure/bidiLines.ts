@@ -230,7 +230,7 @@ export function mirrorLineSpans(lines: VDTLine[], maxWidthPx: number, restWidths
  *  share it. */
 export function shiftLineX(line: VDTLine, dx: number): void {
   line.bbox.x += dx;
-  if (line.measure) line.measure = { x: line.measure.x + dx, width: line.measure.width };
+  if (line.measure) line.measure = { ...line.measure, x: line.measure.x + dx };
 }
 
 /** A stretch of a paragraph's text in a language the author named on an

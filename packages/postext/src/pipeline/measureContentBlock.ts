@@ -42,6 +42,7 @@ import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
 import { startEndAsLeftRight } from '../defaults/shared';
 import { prepareTabs } from './tabs';
+import { resolveResourceWrap } from './textWrap';
 import { fullPlainOffset, paragraphDropCap, prepareDropCap, type MeasuredDropCap, type PreparedDropCap } from './dropCap';
 import { lineIndentAt, lineInsetsAt, type LineInsetStep } from '../measure/types';
 import { measureCodeLines } from './codeLines';
@@ -348,9 +349,12 @@ export function measureContentBlock(
     if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
     // A resource narrower than its column (`placement.width`) sits in it
     // per `placement.align`.
+    // A picture text wraps round (#627) takes its share of the column at
+    // its side (horizontal text only).
+    const wrap = measuringVertically() ? undefined : resolveResourceWrap(kind.resource, kind.resourceType, resolved.layout.wrap);
     const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
-    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
-    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
+    const frac = wrap ? wrap.width : typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
+    const align = wrap ? wrap.side : startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
     const { resourceBlock, measured } = runMeasurement({
       vdtType,

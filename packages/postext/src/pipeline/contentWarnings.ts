@@ -795,6 +795,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
           : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
       break;
     }
+    case 'textWrap': {
+      const what = w.resourceId !== undefined ? `The resource "${w.resourceId}"` : `A "${w.box ?? 'callout'}" box`;
+      text = w.reason === 'moved'
+        ? `${what} wraps text round it but is too tall for the room left in its column — it moved on to the next column with its anchor`
+        : w.reason === 'tooNarrow'
+          ? `${what} would leave the text beside it narrower than layout.wrap.minTextWidth — it takes its band whole, with no text beside it`
+          : `${what} is shorter than layout.wrap.minLinesBeside lines — it takes its band whole, with no text beside it`;
+      break;
+    }
     case 'floatShrunk':
       text = w.overflowPx !== undefined
         ? `The picture "${w.resourceId}" is set at its smallest scale, ${Math.round(w.scale * 100)} % of its size, and still runs ${w.overflowPx} px past the foot of the page's text block`
