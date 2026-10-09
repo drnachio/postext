@@ -97,6 +97,9 @@ function ParagraphStyleCard({
   // style follows the document's `cjk.wordBreak`.
   const cjkDocument = useSandboxSelector((s) => isCjkLanguage(s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale)));
   const documentWordBreak = useSandboxSelector((s) => s.config.cjk?.wordBreak ?? DEFAULT_CJK_CONFIG.wordBreak);
+  // Line numbers (#621): shown once the document numbers lines, or when
+  // the style says whether its lines are counted.
+  const lineNumbersOn = useSandboxSelector((s) => s.config.lineNumbers?.enabled === true);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -306,6 +309,23 @@ function ParagraphStyleCard({
           tooltip={labels.cjkWordBreakTooltip}
           isDefault={unset('wordBreak')}
           onReset={() => onResetField('wordBreak')}
+        />
+      )}
+      {(lineNumbersOn || style.lineNumbers !== undefined) && (
+        <SelectInput
+          label={labels.paragraphStyleLineNumbers}
+          value={style.lineNumbers === undefined ? 'auto' : style.lineNumbers ? 'on' : 'off'}
+          variant="segmented"
+          stacked
+          options={[
+            { value: 'auto', label: labels.paragraphStyleLineNumbersAuto },
+            { value: 'on', label: labels.paragraphStyleLineNumbersOn },
+            { value: 'off', label: labels.paragraphStyleLineNumbersOff },
+          ]}
+          onChange={(v) => (v === 'auto' ? onResetField('lineNumbers') : onChange({ lineNumbers: v === 'on' }))}
+          tooltip={labels.paragraphStyleLineNumbersTooltip}
+          isDefault={unset('lineNumbers')}
+          onReset={() => onResetField('lineNumbers')}
         />
       )}
       {(resolved.textAlign === 'justify' || raggedHyphenation) && (

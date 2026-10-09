@@ -109,7 +109,7 @@ const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
   'indexSeeUnknown', 'indexRangeUnclosed', 'indexReadingMissing', 'cjkLooseLine',
   'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
   'unbreakableWordOverflow', 'joiningScriptLetterSpacing',
-  'comicPanelLetterbox', 'comicBalloonOverflow',
+  'comicPanelLetterbox', 'comicBalloonOverflow', 'lineNumberOverlap',
 ]);
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine

@@ -374,6 +374,46 @@ describe('createBookPlanner', () => {
   });
 });
 
+describe('createBookPlanner: line numbers through the book (#621)', () => {
+  const numbered: PostextConfig = { lineNumbers: { enabled: true, count: 'all', restart: 'document' } };
+  const book = [newChapter('a', 'A', '# One\n\nText.', 1), newChapter('b', 'B', '# Two\n\nText.', 1), newChapter('c', 'C', '# Three\n\nText.', 1)];
+  const record = (plan: ChapterPlan, over: Partial<ChapterLayout>): ChapterLayout => ({
+    chapterId: plan.chapterId, markdown: book.find((c) => c.id === plan.chapterId)!.markdown,
+    configKey: configKeyOf(numbered), resourcesKey: resourcesKeyOf([]), engine: ENGINE_KEY, continuationKey: plan.continuationKey,
+    pageCount: 1, leadingBlankPages: 0, firstContentPageNumber: { delta: 0 }, firstContentPageFormat: 'decimal',
+    lastPageNumber: { delta: 0 }, lastPageFormat: 'decimal', outlinePages: [], outlineKey: '', ...over,
+  });
+
+  it('hands each chapter the last line number of the chapters before it, from their layouts', () => {
+    const planner = createBookPlanner();
+    const p0 = planner.plan(book, numbered, [], {});
+    expect(p0.byId.b!.continuation?.lineNumber).toBeUndefined();
+    const a = record(p0.byId.a!, { lastLineNumber: { delta: 40 } });
+    const p1 = planner.plan(book, numbered, [], { a });
+    expect(p1.byId.b!.continuation?.lineNumber).toBe(40);
+    expect(sameLayoutInputs(p0.byId.b!, p1.byId.b!)).toBe(false);
+    const b = record(p1.byId.b!, { lastLineNumber: { delta: 12 } });
+    const p2 = planner.plan(book, numbered, [], { a, b });
+    expect(p2.byId.c!.continuation?.lineNumber).toBe(52);
+    // A chapter whose count started again: the next goes on from its value.
+    const restarted = record(p1.byId.b!, { lastLineNumber: { value: 7 } });
+    expect(planner.plan(book, numbered, [], { a, b: restarted }).byId.c!.continuation?.lineNumber).toBe(7);
+    // The first chapter's count changes: the rest follow without new layouts.
+    const longer = record(p0.byId.a!, { lastLineNumber: { delta: 45 } });
+    expect(planner.plan(book, numbered, [], { a: longer, b }).byId.c!.continuation?.lineNumber).toBe(57);
+  });
+
+  it('records the last line relative to what the chapter inherited', () => {
+    const plan: ChapterPlan = { chapterId: 'b', index: 1, number: 2, continuation: { lineNumber: 40 }, paginated: true, continuationKey: 'k', outlineKey: '', layout: null, outlineStale: false };
+    const doc = (extra: Partial<VDTDocument>) => ({ pages: [{ index: 0, pageNumberValue: 1, pageNumberFormat: 'decimal' }], blocks: [{ pageIndex: 0 }], ...extra }) as unknown as VDTDocument;
+    const inputs = { markdown: '# B', config: numbered, resources: [] };
+    expect(chapterLayoutFromDoc(doc({ lastLineNumber: 52 }), plan, inputs)!.lastLineNumber).toEqual({ delta: 12 });
+    expect(chapterLayoutFromDoc(doc({ lastLineNumber: 7, lineNumberRestarted: true }), plan, inputs)!.lastLineNumber).toEqual({ value: 7 });
+    expect(chapterLayoutFromDoc(doc({ lastLineNumber: 9 }), { ...plan, continuation: undefined }, inputs)!.lastLineNumber).toEqual({ delta: 9 });
+    expect(chapterLayoutFromDoc(doc({}), plan, inputs)!.lastLineNumber).toBeUndefined();
+  });
+});
+
 describe('chapterLayoutFromDoc', () => {
   const doc = (pages: Array<{ value: number; format?: NumeralStyle }>, blockPages: number[], restarts?: number[]): VDTDocument => ({
     pages: pages.map((p, index) => ({ index, pageNumberValue: p.value, pageNumberFormat: p.format ?? 'decimal' })),

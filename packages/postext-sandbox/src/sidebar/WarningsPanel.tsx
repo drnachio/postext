@@ -47,6 +47,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'rubyExceedsLeading':
     case 'kuntenExceedsLeading':
     case 'arabicMarksExceedLeading':
+    case 'lineNumberOverlap':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -120,6 +121,7 @@ function iconFor(kind: WarningPayload['kind']) {
       return Type;
     case 'unknownNumberFormat':
     case 'unknownNumerals':
+    case 'lineNumbersUnsupported':
       return List;
     case 'unknownConfigKey':
     case 'unknownConfigValue':
@@ -294,6 +296,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownNumberFormatTitle;
     case 'unknownNumerals':
       return labels.warningsUnknownNumeralsTitle;
+    case 'lineNumbersUnsupported':
+      return labels.warningsLineNumbersUnsupportedTitle;
+    case 'lineNumberOverlap':
+      return labels.warningsLineNumberOverlapTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
     case 'unknownConfigValue':
@@ -547,6 +553,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumberFormatDetail.replace('__used__', payload.used)}`;
     case 'unknownNumerals':
       return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumeralsDetail.replace('__used__', payload.used)}`;
+    case 'lineNumbersUnsupported':
+      return `${payload.path} — ${labels.warningsLineNumbersUnsupportedDetail}`;
+    case 'lineNumberOverlap':
+      return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
     case 'unknownConfigKey':
       return `${payload.path} — ${labels.warningsUnknownConfigKeyDetail}${payload.suggestion ? ` ${labels.warningsUnknownConfigKeySuggestion.replace('__suggestion__', payload.suggestion)}` : ''}`;
     case 'unknownConfigValue':

@@ -77,6 +77,8 @@ export type WarningKind =
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
   | 'unknownNumerals'
+  | 'lineNumbersUnsupported'
+  | 'lineNumberOverlap'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -312,6 +314,12 @@ export type WarningPayload =
   /** A `numerals` value that names no digit system: the digits follow
    *  the document language, `used` the system that gives. */
   | { kind: 'unknownNumerals'; path: string; value: string; used: string }
+  /** `lineNumbers.enabled` on a vertical document (#621): it gets no line
+   *  numbers. */
+  | { kind: 'lineNumbersUnsupported'; path: string; value: string; used: string }
+  /** A line number set in the side column overlaps a side box, caption or
+   *  figure (#621); both are painted. `number` as printed. */
+  | { kind: 'lineNumberOverlap'; number: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
    *  key; `suggestion` names the setting it is closest to, when one is. */
