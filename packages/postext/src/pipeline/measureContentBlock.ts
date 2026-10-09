@@ -10,7 +10,7 @@
 
 import type { ContentBlock } from '../parse';
 import type { Resource, ResourceType } from '../types';
-import type { ResolvedResourceBlock, VDTLine } from '../vdt';
+import type { ResolvedConfig, ResolvedResourceBlock, VDTLine } from '../vdt';
 import type { BreakTrace, MeasuredBlock, MeasurementCache } from '../measure';
 import type { renderMath } from '../math';
 import type { BlockStyle } from './styles';
@@ -137,6 +137,28 @@ export interface MeasuredContentBlock {
   direction?: 'ltr';
 }
 
+/** The most a justified line may spread between two letters, px
+ * (`bodyText.maxJustifyTracking`, EF-65), or undefined when off, so the
+ * common-case cache keys stay unchanged. A loose paragraph on a character
+ * grid (`gridEm`, #632) the CJK composer sets is held to the balancing
+ * cap as well; a cap of zero is passed as a hair above it, since the
+ * composer reads zero as no cap. */
+function justifyTrackingPx(
+  resolved: ResolvedConfig,
+  style: BlockStyle,
+  vdtType: string,
+  text: string,
+  gridEm: number | undefined,
+): number | undefined {
+  const justified = style.textAlign === 'justify' && vdtType !== 'heading';
+  const own = resolved.bodyText.maxJustifyTracking > 0 && justified
+    ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
+    : undefined;
+  if (gridEm === undefined || !justified || !composesAsCjk(text)) return own;
+  const grid = Math.max(1e-6, gridEm * style.fontSizePx);
+  return own === undefined ? grid : Math.min(own, grid);
+}
+
 export interface MeasureContentBlockOptions {
   /** Column-balancing "run a paragraph long" — Knuth-Plass looseness. Left
    *  undefined for the common case so measurement cache keys are unchanged. */
@@ -144,6 +166,12 @@ export interface MeasureContentBlockOptions {
   /** Column-balancing tracking for a loose paragraph, in em per glyph
    *  (`headings.balancing.maxTracking / 1000` at most). Rich path only. */
   trackingEm?: number;
+  /** Column balancing on a character grid (#632): the most a justified
+   *  line of a paragraph the CJK composer sets may spread between two
+   *  characters, in em (`headings.balancing.maxTracking / 1000`). A line
+   *  that needs more is set ragged and flagged `cjkLoose`, so the loose
+   *  paragraph is refused. Other paragraphs ignore it. */
+  gridTrackingEm?: number;
   /** Paragraph style forced by an enclosing `:::paragraphs` container. */
   styleOverride?: BlockStyle;
   /** Resource blocks: the widest a figure's image may be set, its caption
@@ -607,9 +635,7 @@ export function measureContentBlock(
     hyphenationZonePx: style.hyphenationZonePx,
     // Justification tracking (EF-65): left undefined when off, so the
     // common-case cache keys stay unchanged.
-    justifyTrackingPx: resolved.bodyText.maxJustifyTracking > 0 && style.textAlign === 'justify' && vdtType !== 'heading'
-      ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
-      : undefined,
+    justifyTrackingPx: justifyTrackingPx(resolved, style, vdtType, contentBlock.text, opts?.gridTrackingEm),
     // Kashida justification (#375): undefined when off (every document
     // not in an Arabic-script language), so those cache keys are unchanged.
     kashida: style.textAlign === 'justify' && vdtType !== 'heading'

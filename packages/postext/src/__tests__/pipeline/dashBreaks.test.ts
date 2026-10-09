@@ -323,7 +323,7 @@ describe('breakAfterDashes in the configuration', () => {
   });
 
   it('is pinned off for configurations stored before rules 7 whose text sets a closed dash', () => {
-    expect(CONFIG_VERSION).toBe(10);
+    expect(CONFIG_VERSION).toBe(11);
     const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     for (const version of [undefined, 3, 5, 6]) {
       expect(migrateConfig(stored, version, { content: ALICE }).bodyText?.breakAfterDashes, `${version}`).toBe(false);

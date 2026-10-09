@@ -114,6 +114,7 @@ describe("package exports", () => {
       "cjkGridGeometry",
       "cjkGridCells",
       "CHARACTER_GRID_COLOR",
+      "balancingOnByDefault",
       "findLooseLines",
       "drawLooseLines",
       "lineLooseness",

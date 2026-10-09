@@ -20,6 +20,8 @@ import {
   type BoundingBox,
   type ResolvedResourceBlock,
   type VDTBalancing,
+  type VDTGridBalancing,
+  type BalanceLever,
   type VDTLine,
   type ResolvedConfig,
   type ContentWarning,
@@ -187,7 +189,7 @@ import { buildLineNumbers, lineNumberWarnings } from './lineNumbers';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
-import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey, candidateKey, flexFigureKey, flexFloatKey } from './columnBalancing';
+import { proposeBalanceLines, GRID_LINE_LEVERS, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey, candidateKey, flexFigureKey, flexFloatKey } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -206,6 +208,7 @@ import { raggedLooseLines } from './raggedLines';
 import { cjkLooseLineWarnings, collectContentWarnings, designTruncationWarnings, dropCapWarnings, floatShrinkWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
 import { dropCapSinkAfter } from './dropCap';
 import { mostlyJoiningScript } from '../measure/joining';
+import { composesAsCjk } from '../measure/cjkCompose';
 import { annotateDocument } from '../cjkMarks';
 import { annotateArabicMarks } from '../arabicMarks';
 import { literalBreaksFor } from './hardBreaks';
@@ -334,6 +337,9 @@ export interface PassResult extends BandPassReport {
    *  of the ladder did, so the driver can blacklist it. Candidates left
    *  untried because their column's budget was already met are absent. */
   looseOutcome: Map<number, number | null>;
+  /** Column balancing on a character grid (#632): the loose paragraphs of
+   *  this pass that would have gained their line only off the grid. */
+  looseOffGrid: Set<number>;
   /** Figures whose side caption this pass found in the way of a side box or
    *  side float that had to overflow the side column: candidates for
    *  `PassHints.captionUnder` in the next pass. */
@@ -406,6 +412,7 @@ function measureLooseParagraph(
   extraLines: number,
   trackingLadder: readonly number[],
   looseOutcome: Map<number, number | null>,
+  offGrid?: Set<number>,
 ): MeasuredContentBlock | null {
   const base = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride });
   if (!base) return null;
@@ -422,27 +429,40 @@ function measureLooseParagraph(
   // A paragraph mostly in a joining script (Arabic…) is not tracked: its
   // words take no letter-spacing (`measure/joining.ts`), so only the first
   // rung, word spacing alone, can gain it the line.
-  const ladder = trackingLadder.length > 1 && mostlyJoiningScript(rawBlock.text) ? trackingLadder.slice(0, 1) : trackingLadder;
+  // On a character grid (#632) a paragraph the CJK composer sets keeps
+  // every character in its one-em cell: no tracking is added to its
+  // letters, and a line it breaks short may spread between its characters
+  // no more than `maxTracking` (on a grid of whole cells that refuses any
+  // line a character short, whose spread is an em over the line's gaps).
+  const onGrid = ctx.resolved.cjk.grid.enabled && composesAsCjk(rawBlock.text);
+  const ladder = trackingLadder.length > 1 && (onGrid || mostlyJoiningScript(rawBlock.text)) ? trackingLadder.slice(0, 1) : trackingLadder;
+  const gridCap = onGrid ? { gridTrackingEm: ctx.resolved.headings.balancing.maxTracking / 1000 } : {};
   const maxWordSpacing = ctx.resolved.bodyText.maxWordSpacing + 1e-9;
   // A CJK line spread past its tracking cap (`cjkLoose`) is past the
   // limit too.
   const withinLimit = (lines: readonly VDTLine[]): boolean =>
     lines.every((l) => l.isLastLine || ((l.justifiedSpaceRatio === undefined || l.justifiedSpaceRatio <= maxWordSpacing) && !l.cjkLoose));
+  const gains = (loose: MeasuredContentBlock | null): loose is MeasuredContentBlock =>
+    loose !== null
+    && loose.measured.lines.length === target
+    && !loose.measured.lastLineRunt
+    && withinLimit(loose.measured.lines);
   for (const tracking of ladder) {
     const loose = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, {
       styleOverride,
       looseness,
       trackingEm: tracking > 0 ? tracking / 1000 : undefined,
+      ...gridCap,
     });
-    if (
-      loose
-      && loose.measured.lines.length === target
-      && !loose.measured.lastLineRunt
-      && withinLimit(loose.measured.lines)
-    ) {
+    if (gains(loose)) {
       looseOutcome.set(blockIdx, tracking);
       return loose;
     }
+  }
+  // Refused for the grid's sake alone: the paragraph would gain its line
+  // off the grid. Recorded, so the column says why it ends short.
+  if (onGrid && offGrid && gains(measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness }))) {
+    offGrid.add(blockIdx);
   }
   looseOutcome.set(blockIdx, null);
   return base;
@@ -518,6 +538,7 @@ function placeDocumentPass(
     trackingLadder.push(balancingCfg.maxTracking);
   }
   const looseOutcome = new Map<number, number | null>();
+  const looseOffGrid = new Set<number>();
   // Lines gained so far per column budget group (see `LooseBudget`).
   const looseGained = new Map<number, number>();
   // Level configs with heading-style overrides merged in (`{style="…"}`).
@@ -5537,7 +5558,7 @@ function placeDocumentPass(
     const figureGrowPx = rawBlock.type === 'resourceBlock' ? balanceExtraPx?.get(flexFigureKey(blockIdx)) ?? 0 : 0;
     const figureDelta = figureGrowPx > 0 ? { figureHeightDelta: figureGrowPx } : {};
     let measuredBlock = tryLoose
-      ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome)
+      ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome, looseOffGrid)
       : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright, ...figureDelta });
     // An inline picture with a safe area a little too tall for the room
     // left in its column is cropped within its safe area to stay there
@@ -7069,7 +7090,7 @@ function placeDocumentPass(
   if (shrunk.length > 0) floatShrinkWarningsByDoc.set(doc, shrunk);
   if (textWrapNotes.length > 0) textWrapWarningsByDoc.set(doc, textWrapNotes);
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals };
 }
 
 /** Passes a document printing its own contents gets at most, beyond the
@@ -7315,11 +7336,15 @@ function* buildDocumentBalanced(
   // Side captions moved under their figure (see `PassHints.captionUnder`):
   // once a pass asks for one, every later pass keeps it.
   const captionUnder = new Set<string>();
+  // Loose paragraphs any pass found would gain their line only off the
+  // character grid (#632): the columns they leave short say so.
+  const looseOffGrid = new Set<number>();
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
     const started = onPass ? now() : 0;
     const result = buildDocumentPass(content, config, cache, passOptions, { ...hints, captionUnder, ...(footnoteNumbers ? { footnoteNumbers } : {}) });
     for (const id of result.captionUnderProposals) captionUnder.add(id);
+    for (const k of result.looseOffGrid) looseOffGrid.add(k);
     onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
     return result;
   };
@@ -7368,7 +7393,19 @@ function* buildDocumentBalanced(
   // balances exactly as its chapters would one by one, instead of one
   // cascade anywhere costing every page of the book a pass.
   const balancing = best.doc.config.headings.balancing;
-  if (!balancing.enabled) return best.doc;
+  const onGrid = best.doc.config.cjk.grid.enabled;
+  // Why the columns of a page on a character grid may end short (#632):
+  // balancing off by the grid's default (vertical text has it off by its
+  // own), or its whole-line levers kept out.
+  const gridBalancing = onGrid
+    ? (!balancing.enabled
+      ? (config?.headings?.balancing?.enabled === undefined && best.doc.config.layout.writingMode !== 'vertical-rl' ? { off: true as const } : undefined)
+      : (balancing.gridLines === 'off' ? { gridLines: 'off' as const } : undefined))
+    : undefined;
+  if (!balancing.enabled) {
+    if (gridBalancing) best.doc.gridBalancing = gridBalancing;
+    return best.doc;
+  }
 
   interface Segment {
     range: PageRange;
@@ -7519,6 +7556,7 @@ function* buildDocumentBalanced(
       spanPlacedInBand: mergeSet(best.spanPlacedInBand, next.spanPlacedInBand),
       bandCapsApplied: mergeSet(best.bandCapsApplied, next.bandCapsApplied),
       looseOutcome: mergeMap(best.looseOutcome, next.looseOutcome),
+      looseOffGrid: new Set([...best.looseOffGrid, ...next.looseOffGrid]),
       captionUnderProposals: new Set([...best.captionUnderProposals, ...next.captionUnderProposals]),
     };
   };
@@ -7583,6 +7621,7 @@ function* buildDocumentBalanced(
         failedLoose,
         failedLines,
         closingBox: balancing.closingBox,
+        ...(onGrid && balancing.gridLines === 'off' ? { gridLines: false } : {}),
       });
       // The levers newly proposed, by segment; those of a segment that is
       // done (plateaued, out of attempts) are withdrawn from the pass.
@@ -7727,8 +7766,41 @@ function* buildDocumentBalanced(
 
   best.doc.iterationCount = passCount;
   best.doc.converged = segments.every((s) => s.stable || s.bestScore === 0);
+  if (onGrid) markGridRefusals(best.doc, best.forcedBreakPages, looseOffGrid, gridBalancing);
   return best.doc;
 }
+
+/**
+ * Column balancing on a character grid (#632): stamp the document with why
+ * its balancing is limited (`VDTDocument.gridBalancing`) and every column
+ * still short with the levers the grid kept from it
+ * (`VDTColumn.gridRefused`): the loose paragraphs that would have gained
+ * their line off the grid (`offGrid`), and the whole-line levers under
+ * `headings.balancing.gridLines: 'off'`.
+ */
+function markGridRefusals(
+  doc: VDTDocument,
+  forcedBreakPages: ReadonlySet<number>,
+  offGrid: ReadonlySet<number>,
+  gridBalancing: VDTGridBalancing | undefined,
+): void {
+  if (gridBalancing) doc.gridBalancing = gridBalancing;
+  const noLines = gridBalancing?.gridLines === 'off';
+  for (const gap of collectColumnGaps(doc, forcedBreakPages)) {
+    if (gap.gapLines < 1) continue;
+    const refused = new Set<BalanceLever>();
+    for (const c of gap.candidates) {
+      if (noLines && GRID_LINE_LEVERS.includes(c.kind)) refused.add(c.kind);
+      else if (c.kind === 'looseParagraph' && offGrid.has(c.contentIndex)) refused.add(c.kind);
+    }
+    if (refused.size === 0) continue;
+    const col = doc.pages[gap.pageIndex]?.columns[gap.columnIndex];
+    if (col) col.gridRefused = BALANCE_LEVER_ORDER.filter((l) => refused.has(l));
+  }
+}
+
+/** The balancing levers in the order `BalanceLever` lists them. */
+const BALANCE_LEVER_ORDER: readonly BalanceLever[] = ['trailingCallout', 'flexFigure', 'heading', 'listEnd', 'afterDisplay', 'afterFloat', 'looseParagraph'];
 
 /** Whether two lines set one bayt of a poem (`VDTLine.verse`), which a
  *  column never cuts. */

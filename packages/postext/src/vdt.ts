@@ -1766,6 +1766,18 @@ export interface ResolvedCalloutBlock {
  *    when word spacing alone could not gain the line). */
 export type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 
+/** Column balancing on a character grid (`VDTDocument.gridBalancing`,
+ *  #632). */
+export interface VDTGridBalancing {
+  /** Balancing is off because the document is set on the grid in
+   *  horizontal text and its configuration does not turn it on
+   *  (`headings.balancing.enabled`): short columns are left short.
+   *  (Vertical text has balancing off by default on or off the grid.) */
+  off?: true;
+  /** `headings.balancing.gridLines: 'off'`: no lever adds grid lines. */
+  gridLines?: 'off';
+}
+
 /** What column balancing did to one block (`VDTBlock.balancing`). */
 export interface VDTBalancing {
   /** The levers that fired on the block, in the order above. Usually one;
@@ -1822,6 +1834,13 @@ export interface VDTColumn {
    *  height in whole grid lines from its top. Absent when nothing in the
    *  column wraps. */
   exclusions?: VDTExclusion[];
+  /** On a character grid (#632), the levers balancing would have used on
+   *  this short column and the grid kept out: `'looseParagraph'` when a
+   *  paragraph could gain its line only by spreading its characters off
+   *  their cells, the whole-line levers (`'heading'`, `'listEnd'`,
+   *  `'afterDisplay'`, `'afterFloat'`) under `headings.balancing.gridLines:
+   *  'off'`. Why the column ends short; absent when nothing was refused. */
+  gridRefused?: BalanceLever[];
 }
 
 /** A region of a column that text wraps round (see `VDTColumn.exclusions`,
@@ -2809,6 +2828,8 @@ export interface VDTDocument {
   configWarnings?: ConfigWarning[];
   config: ResolvedConfig;
   baselineGrid: number;
+  /** Column balancing on a character grid (#632); absent off the grid. */
+  gridBalancing?: VDTGridBalancing;
   /** Pixel offset from canvas edge to trim edge (0 when cutLines disabled) */
   trimOffset: number;
   converged: boolean;

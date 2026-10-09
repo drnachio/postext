@@ -70,7 +70,7 @@ describe('pinLegacyDesignOverflow (#628)', () => {
   });
 
   it('pins every version before 10, none from 10', () => {
-    expect(CONFIG_VERSION).toBe(10);
+    expect(CONFIG_VERSION).toBe(11);
     for (const v of [undefined, 1, 5, 8, 9]) {
       expect(overflowOf(migrateConfig(stored(), v).parts!.design, 'partTitle'), String(v)).toBe('ellipsis-end');
     }

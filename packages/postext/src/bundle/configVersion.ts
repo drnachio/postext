@@ -13,8 +13,8 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
 import { codeFenceOpen } from '../parse/codeFence';
 
 /**
- * The configuration rules this engine writes: 10 since the #620 follow-up
- * (9 from postext 1.23, 8 from 1.5). Thirteen rules changed in 1.5 and
+ * The configuration rules this engine writes: 11 since #632 (10 from
+ * postext 1.24, 9 from 1.23, 8 from 1.5). Thirteen rules changed in 1.5 and
  * more since, and a configuration
  * stored under an older
  * number (or none) is read through {@link migrateConfig}:
@@ -91,6 +91,10 @@ import { codeFenceOpen } from '../parse/codeFence';
  *   - a text element of a heading design or a part page that sets no
  *     `overflow` wraps onto more lines (#628), where up to 1.23 it was cut
  *     with an ellipsis ({@link pinLegacyDesignOverflow}).
+ * - 11, one rule:
+ *   - a horizontal page on a character grid (`cjk.grid.enabled`) is not
+ *     balanced unless `headings.balancing.enabled` says so (#632), where
+ *     up to 1.24 it was ({@link pinLegacyGridBalancing}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -101,9 +105,11 @@ import { codeFenceOpen } from '../parse/codeFence';
  * version-8 pins, under 7 the version-8 pins. One stored under 8 was
  * written by postext 1.5 to 1.22 and gets the version-9 pins (which every
  * older one gets too); one stored under 9 was written by postext 1.23 and
- * gets the version-10 pins (which every older one gets too).
+ * gets the version-10 pins (which every older one gets too); one stored
+ * under 10 was written by postext 1.24 and gets the version-11 pin (which
+ * every older one gets too).
  */
-export const CONFIG_VERSION = 10;
+export const CONFIG_VERSION = 11;
 
 /** The rules that merge a partial heading break onto its level's. */
 const HEADING_BREAK_RULES = 3;
@@ -151,6 +157,9 @@ const VERSE_TIGHTEN_RULES = 10;
 /** The rules that wrap a heading or part design text that sets no
  *  `overflow`. */
 const DESIGN_OVERFLOW_RULES = 10;
+/** The rules that leave a horizontal page on a character grid unbalanced
+ *  by default. */
+const GRID_BALANCING_RULES = 11;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -566,6 +575,25 @@ export function pinLegacyDesignOverflow<T extends Partial<PostextConfig>>(config
     if (overrides !== viewer.overrides) out = { ...out, htmlViewer: { ...viewer, overrides } };
   }
   return out as T;
+}
+
+/**
+ * A configuration written before #632 (postext 1.24 or earlier), pinned to
+ * the way 1.24 balanced a horizontal page on a character grid: a config
+ * with `cjk.grid.enabled` in horizontal text that does not set
+ * `headings.balancing.enabled` gets `true`, where today such a page is
+ * not balanced by default. (The levers it runs keep every character in
+ * its cell now, which 1.24's loose paragraphs did not.) A vertical one
+ * was not balanced then either, and any other configuration is returned
+ * as it is (the same object).
+ */
+export function pinLegacyGridBalancing<T extends Partial<PostextConfig>>(config: T): T {
+  if (!isRecord(config.cjk) || !isRecord(config.cjk.grid) || config.cjk.grid.enabled !== true) return config;
+  if (isRecord(config.layout) && config.layout.writingMode === 'vertical-rl') return config;
+  const headings: HeadingsConfig = isRecord(config.headings) ? config.headings : {};
+  const balancing = isRecord(headings.balancing) ? headings.balancing : {};
+  if (balancing.enabled !== undefined) return config;
+  return { ...config, headings: { ...headings, balancing: { ...balancing, enabled: true } } };
 }
 
 /** Whether markdown holds a poem set line by line: a `:::verse` fence
@@ -1072,9 +1100,11 @@ export interface MigrateConfigOptions {
  * pinLegacyCodeBlocks}, unless `options.content` shows none; one older
  * than 10 has its verse turnovers pinned by {@link
  * pinLegacyVerseTightening}, unless `options.content` shows no poem set
- * line by line, and the text elements of its heading and part designs
- * that set no `overflow` by {@link pinLegacyDesignOverflow}. A current one
- * is returned as it is (the same object).
+ * line by line, the text elements of its heading and part designs
+ * that set no `overflow` by {@link pinLegacyDesignOverflow}; one older
+ * than 11 has the balancing of a horizontal page on a character grid
+ * pinned by {@link pinLegacyGridBalancing}. A current one is returned as it is (the same
+ * object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -1105,6 +1135,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) out = pinLegacyCodeBlocks(out);
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, out)) out = pinLegacyVerseTightening(out);
   if (rules < DESIGN_OVERFLOW_RULES) out = pinLegacyDesignOverflow(out);
+  if (rules < GRID_BALANCING_RULES) out = pinLegacyGridBalancing(out);
   return out;
 }
 
@@ -1122,9 +1153,10 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * `:::paragraphs` containers on the `bodyText` in force (the ragged
  * breaking when the merged configuration sets some running text ragged,
  * the container space when it declares a paragraph style), the heading
- * marks and the split under a heading on the `headings` in force, and the
+ * marks and the split under a heading on the `headings` in force, the
  * drop caps and the overflow of heading and part design texts wherever
- * they sit in the merged configuration.
+ * they sit in the merged configuration, and the balancing of a horizontal
+ * character grid on the merged `cjk`, `layout` and `headings`.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
 export function migrateBundleConfig(
@@ -1157,5 +1189,6 @@ export function migrateBundleConfig(
   if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) merged = pinLegacyCodeBlocks(merged);
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, merged)) merged = pinLegacyVerseTightening(merged);
   if (rules < DESIGN_OVERFLOW_RULES) merged = pinLegacyDesignOverflow(merged);
+  if (rules < GRID_BALANCING_RULES) merged = pinLegacyGridBalancing(merged);
   return merged;
 }

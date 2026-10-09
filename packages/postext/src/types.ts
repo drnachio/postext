@@ -3698,6 +3698,10 @@ export interface HeadingsConfig {
 }
 
 export interface ColumnBalancingConfig {
+  /** Default `true`, except in vertical text (`layout.writingMode:
+   *  'vertical-rl'`) and on a character grid (`cjk.grid.enabled`, #632),
+   *  where columns are filled line by line and a column that ends short is
+   *  left short unless the configuration sets `true` itself. */
   enabled?: boolean;
   /** Maximum extra grid lines that may be added above a single heading. */
   maxLinesPerHeading?: number;
@@ -3772,11 +3776,24 @@ export interface ColumnBalancingConfig {
    *  the last line of the column beside it; `'off'` leaves it where it is
    *  there too. Any other value reads as `'first'`. */
   closingBox?: ClosingBoxLever;
+  /** On a character grid (`cjk.grid.enabled`, #632): whether the levers
+   *  that add whole grid lines — above a heading, where a list ends, under
+   *  a display or a box, under a float band — may run. They keep every
+   *  character in its cell (the baseline grid is the grid's line pitch),
+   *  but a standard that counts the lines of a page (GB/T 9704: 22 lines
+   *  of 28 characters) has no empty rows to give: `'off'` keeps them out
+   *  and leaves the other levers. Off the grid it has no effect. Default
+   *  `'allow'`; any other value reads as `'allow'`. */
+  gridLines?: GridLinesLever;
 }
 
 /** Where the column-balancing lever of a box closing a column runs
  *  (`ColumnBalancingConfig.closingBox`). */
 export type ClosingBoxLever = 'first' | 'last' | 'off';
+
+/** Whether the whole-line balancing levers run on a character grid
+ *  (`ColumnBalancingConfig.gridLines`). */
+export type GridLinesLever = 'allow' | 'off';
 
 /** How a paragraph kept with the heading above it splits at a column's foot
  *  (`HeadingsConfig.keepWithNextSplit`). */
@@ -3810,6 +3827,9 @@ export interface ResolvedHeadingsConfig {
     trailing: boolean;
     beforeSpan: boolean;
     closingBox: ClosingBoxLever;
+    /** Present only when `'off'` (#632): every other configuration
+     *  resolves as before. */
+    gridLines?: 'off';
   };
   levels: ResolvedHeadingLevelConfig[];
 }
