@@ -3,7 +3,13 @@ title: "Five Ways to Begin"
 subtitle: "Notes on the chapter opener"
 ---
 
-# The Voice {kicker="Chapter One" lead="Most books begin quietly. A novel opens each chapter with a number, sometimes a title, some white space and then the first sentence, set in the same face as the rest of the text. The arrangement is meant to go unnoticed. It tells a reader who has finished one chapter that the next one has started, and lets them go on reading without stopping to look at the page."}
+# The Voice {kicker="Chapter One"}
+
+:::paragraphs{style="lead"}
+Most books begin quietly. A novel opens each chapter with a number, sometimes a title, some white space and then the first sentence, set in the same face as the rest of the text. The arrangement is meant to go unnoticed. It tells a reader who has finished one chapter that the next one has started, and lets them go on reading without stopping to look at the page.
+:::
+
+:::space
 
 The one ornament the novel has kept is the initial. It goes back to the rubricator, the scribe who went through a finished manuscript adding the headings and the capital letters in red ink; the word *rubric* comes from *rubrica*, the Latin for red ochre. The custom survived into print. Many early printed books leave a blank square where a chapter begins, sometimes with a small guide letter printed in it, so that a rubricator could paint the initial by hand once the sheets came off the press. Some copies were finished in gold and colour and others never were; in those the squares are still empty but for the guide letter.
 
@@ -25,7 +31,13 @@ On the chapter’s second page the running heads come back, the book’s title o
 
 This book sets each chapter in the opener it describes, and so far it has followed the conventions of the novel. The next four chapters depart from them: a framed title for a gift edition, a title stacked on a colour field for a magazine, a numbered and ruled opener for a manual, and a title set low on an empty page for a coda.
 
-# The Frame {style="framed" kicker="Chapter the Second" lead="Long before books had title pages, the start of a text was marked in the manuscript itself, with a painted border round the first leaf and a large coloured initial, often under a band of leaves or knotwork."}
+# The Frame {style="framed" kicker="Chapter the Second"}
+
+:::paragraphs{style="lead"}
+Long before books had title pages, the start of a text was marked in the manuscript itself, with a painted border round the first leaf and a large coloured initial, often under a band of leaves or knotwork.
+:::
+
+:::space
 
 The first printers took the practice over from the manuscripts they imitated and made it mechanical. They kept cases of cast ornaments in the shape of flowers, leaves and knots, which the trade calls fleurons, and built borders of any size from them, piece by piece, as a mason builds a wall. Initials were woodcuts, each letter cut into a block of foliage. A thrifty shop kept a few blocks with an empty centre, into which any capital from the case could be set; printers called such a block a factotum, from the Latin for “do everything”.
 
@@ -33,7 +45,13 @@ A frame now appears mostly on reissued classics and anniversary editions, books 
 
 Below the frame the text has the face, size and measure of the rest of the book. Only the margins change, so that the text block is centred under the frame.
 
-# Say it \\ out \\ loud. {style="stacked" kicker="Chapter Three · Magazines, posters, manifestos" lead="Magazines, posters and manifestos give their first page to the title, set as large as the page allows and often with no picture at all."}
+# Say it \\ out \\ loud. {style="stacked" kicker="Chapter Three · Magazines, posters, manifestos"}
+
+:::paragraphs{style="lead"}
+Magazines, posters and manifestos give their first page to the title, set as large as the page allows and often with no picture at all.
+:::
+
+:::space
 
 A stacked title has few words, one phrase to each line, and the writer decides where the lines break. Left to wrap wherever the measure runs out, a title can split an article from its noun and end a line on *the*; broken where a speaker would pause, it reads as a headline.
 
@@ -61,7 +79,13 @@ The rules divide the page. A heavy rule across the top of the text block marks t
 
 The only colour is the orange of the badge, and the figure printed on it is black. Everything else a reader has to read is black or dark grey, so a black-and-white photocopy of the page loses no information.
 
-# Leave Room {style="quiet" kicker="Coda" lead="Some books need no signal at all. A collection of poems or a memoir can use its openers to slow the reader down."}
+# Leave Room {style="quiet" kicker="Coda"}
+
+:::paragraphs{style="coda-lead"}
+Some books need no signal at all. A collection of poems or a memoir can use its openers to slow the reader down.
+:::
+
+:::space
 
 This coda does it with white space: its title starts more than 90 mm down the text block, and its initial rises above the first line into the empty page.
 

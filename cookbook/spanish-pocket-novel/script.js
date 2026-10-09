@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 016 · Justified Spanish in a pocket novel ═════════════════
 // https://postext.dev/en/cookbook/spanish-pocket-novel
 // Code: MIT · Text: B. Pérez Galdós, Marianela, 1878 (PD, Gutenberg #17340) · Map: drawn in code
-// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.12.2
+// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
   registerResourceImage } from 'https://esm.sh/postext';
 
@@ -47,7 +47,7 @@ const bodyText = { // config().bodyText
   fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
   referenceBold: false, // '[fig. 1]' reads in roman, like the words around it
-  firstLineIndent: mm(4), indentAfterHeading: false, // the lead's paragraph goes on flush
+  firstLineIndent: mm(4), indentAfterHeading: false, // a paragraph after a heading starts flush
   // The defaults justify, hyphenate, break by Knuth–Plass and keep widows and orphans out.
   // Long Spanish words on an 86 mm measure need two more settings. Spaces under 1.7×: at
   // the default 2×, eight lines here open past 1.6×; at 1.7 it hyphenates hie-rro, ca-lles.
@@ -60,19 +60,17 @@ const resourceTypes = defaultResourceTypes(LOCALE)
   .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
 // #endregion
 
-// #region opener: the chapter spelled out, its title, and the lead under a raised initial
+// #region opener: the chapter spelled out, its title, and a raised initial on the text
 const [LABEL_Y, RULE_Y, TITLE_Y] = [4, 10.5, 13.5]; // mm below the top of the text block
-const SINK = 8; // lines of LEAD above the lead: the chapter drops a quarter of the page
+const SINK = 8; // lines of LEAD above the text: the chapter drops a quarter of the page
 const INITIAL = 3 * LEAD; // pt: the initial's size, three leads
-// Design text is set ragged (gotcha: design-text-ragged): the lead is the one line beside
-// the initial, fitted flush by the gap; the paragraph goes on in the Markdown.
-const INITIAL_GAP = 0.55; // mm: the line ends 0.1 mm short of the measure
+const RISE = 2; // lines of LEAD the raised initial keeps clear above the first line
 const centred = (y) => ({ anchor: { to: 'container', edge: 'top' }, offset: { y: mm(y) } });
 const opener = {
   enabled: true,
   slot: { elements: [
     // Numbering templates print numerals only (1, 01, I, i, A, a); a number in words comes
-    // from the heading's own attribute: # Perdido {ordinal="primero" lead="Se puso el sol. …"}
+    // from the heading's own attribute: # Perdido {ordinal="primero"}
     { kind: 'text', id: 'chapter', content: 'capítulo {attr.ordinal}', ...smallCaps,
       placement: centred(LABEL_Y) },
     { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(0.6),
@@ -81,20 +79,18 @@ const opener = {
       fontSize: pt(26), lineHeight: 1.1, color: col('ink'), align: 'center',
       overflow: 'wrap', // longer titles wrap, not '…' (gotcha: overflow-ellipsis-default)
       placement: centred(TITLE_Y) },
-    { kind: 'text', id: 'lead', content: '{attr.lead}', fontFamily: TEXT, fontSize: pt(BODY),
-      lineHeight: LEAD / BODY, // a multiple, never a pt (gotcha: design-lineheight-multiple)
-      color: col('ink'), align: 'left', overflow: 'wrap', // a dropCap needs wrapping text
-      dropCap: { lines: 1, fontFamily: DISPLAY, fontWeight: 700, fontSize: pt(INITIAL),
-        color: col('oxblood'), gap: mm(INITIAL_GAP) }, // lines: 1, a raised initial
-      placement: { anchor: { to: 'container', edge: 'top-left' },
-        offset: { y: pt(SINK * LEAD) }, size: { width: mm(MEASURE) } } },
   ] },
+  // The text starts SINK lines down; the initial's rise takes the last RISE of them.
+  minHeight: pt((SINK - RISE) * LEAD),
 };
 // The break restated (gotcha: headings-drop-h1-break): the next page, as pocket books do.
-// marginBottom replaces the level's default, a blank line of its own: the text goes on
-// on the line under the lead.
+// marginBottom replaces the level's default, a blank line of its own. The first paragraph
+// of the chapter opens with a raised initial: lines: 1 stands it on the first baseline,
+// three leads tall, and the paragraph keeps its rise clear above it.
 const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
-  marginBottom: pt(0), advancedDesign: opener };
+  marginBottom: pt(0), advancedDesign: opener,
+  dropCap: { lines: 1, fontFamily: DISPLAY, fontWeight: 700, fontSize: pt(INITIAL),
+    color: col('oxblood') } };
 // #endregion
 
 // #region heads: the author on the verso, the title on the recto; a drop folio on the opener

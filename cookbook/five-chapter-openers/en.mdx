@@ -18,19 +18,19 @@ pageNotes: { "1": "Chapter One, “The Voice”: a small red tracked kicker, a l
 
 <Excerpt region="literary" />
 
-Chapter one has no style, so it takes level 1's own design, which every style starts from ([the short answer](#the-short-answer) shows the level and the styles). Drop caps exist only in design text, so the chapter's first paragraph comes from `lead="…"` on the heading line and `lead()` sets it in the opener; the body text flows on below. The engine stands the letter on the fifth baseline, but at its default size the capital is as tall as all five line boxes and rises 2.2 mm above the first line's capitals. `dropSize()` sizes it from the capital height of Lora and Fraunces (0.7 em), so the top of the M lines up with them.
+Chapter one has no style, so it takes level 1's own design, which every style starts from ([the short answer](#the-short-answer) shows the level and the styles). The chapter's first paragraph is in the Markdown, in a `:::paragraphs{style="lead"}` group a size larger than the text (12/17 pt against 10.8/14.5), and the level's `dropCap` opens it ([drop caps](/en/docs/configuration#drop-caps)): the M stands on the fifth baseline, and with no `fontSize` its top is level with the first line's capitals, both cap heights measured from Fraunces and Lora. The opener ends with an empty box, `room()`, 17 mm under the title, where the lead starts; a `:::space` under the lead leaves a line and starts the text flush.
 
 ### 2 · Frame the title in two boxes
 
 <Excerpt region="framed" />
 
-Array order is paint order, so the boxes come first and the type on top; the ornament is an image element, which draws a registered SVG resource that is never numbered or cited. An image element is also how each chapter gets a photo of its own: since postext 1.8 its `resourceId` takes placeholders, so with `resourceId: '{attr.photo}'` one style draws the photo each heading names, `# The Frame {style="framed" photo="lake"}`, as the dishes of <RecipeLink slug="recipe-card">the recipe card</RecipeLink> do ([image elements](/en/docs/configuration#image-elements)). The `framed` style in the short answer sets `palette` to turn `accent` blue on this chapter's pages, so the rules, the kicker and the drop folio print blue, and its `margins` centre the text block under the frame. In 1.4.1 a drop cap's `color` ignores the section palette, so the initial names the blue with `col('lapis')`.
+Array order is paint order, so the boxes come first and the type on top; the ornament is an image element, which draws a registered SVG resource that is never numbered or cited. An image element is also how each chapter gets a photo of its own: since postext 1.8 its `resourceId` takes placeholders, so with `resourceId: '{attr.photo}'` one style draws the photo each heading names, `# The Frame {style="framed" photo="lake"}`, as the dishes of <RecipeLink slug="recipe-card">the recipe card</RecipeLink> do ([image elements](/en/docs/configuration#image-elements)). The `framed` style in the short answer sets `palette` to turn `accent` blue on this chapter's pages, so the rules, the kicker and the drop folio print blue, and its `margins` centre the text block under the frame. The style's own `dropCap` names `col('accent')`, which the palette turns blue too, so the three-line L matches the frame.
 
 ### 3 · Stack the title, box the initial
 
 <Excerpt region="stacked" />
 
-The stack is written in the Markdown: `# Say it \\ out \\ loud.` breaks `{titleText}` at each `\\`, while running heads and the PDF outline read the title on one line ([line breaks in titles](/en/docs/document-format#line-breaks-in-titles)). The field hangs from the top of the bleed, full width and 130 mm deep, and the lead starts 8 mm under it. The boxed initial is two elements. The lead's drop cap sets the M over three lines, and the magenta box painted before it is sized from the lead's line box and Geist Mono's metrics, so the colour above and below the M is as wide as its side bearings.
+The stack is written in the Markdown: `# Say it \\ out \\ loud.` breaks `{titleText}` at each `\\`, while running heads and the PDF outline read the title on one line ([line breaks in titles](/en/docs/document-format#line-breaks-in-titles)). The field hangs from the top of the bleed, full width and 130 mm deep, and the lead starts on the first grid line 8 mm under it (`TEXT_TOP`). The boxed initial is two pieces. The style's `dropCap` sets the M over three lines of the lead, in white, and the opener paints a magenta box under it, placed from `TEXT_TOP`, the lead's leading and Geist Mono's metrics, so the colour above and below the M is as wide as its side bearings. The box takes no room in the opener (`reserve: false`); an empty `room` box ends the opener where the lead starts.
 
 ### 4 · Give the manual a badge, two columns and its own heads
 
@@ -42,7 +42,7 @@ The badge is a text element with a fill and padding but no width, so its width f
 
 <Excerpt region="quiet" />
 
-The kicker hangs 92 mm below the top of the text block, and the raised initial is a one-line drop cap: its foot stands on the first baseline and, at 46 pt, it rises into the white above instead of sinking into the paragraph. In the `quiet` style, `margins` narrow the measure to 106 mm, `bodyStyle` sets the text ragged at 12.5/17.5 pt, `footer` swaps the drop folio for a small one at the outer corner and `palette` turns the kicker grey. Nothing on this page prints a chapter number, so `numbered: false` would show only in a chapter added after the coda, which would still be the fifth.
+The kicker hangs 92 mm below the top of the text block, and the raised initial is the `quiet` style's one-line drop cap: its foot stands on the first baseline and, at 46 pt, it rises into the white above instead of sinking into the paragraph. The paragraph keeps that rise clear above it in whole lines, so the opener's `room` under the title is only 3 mm. In the `quiet` style, `margins` narrow the measure to 106 mm, `bodyStyle` sets the text ragged at 12.5/17.5 pt, `footer` swaps the drop folio for a small one at the outer corner and `palette` turns the kicker grey. Nothing on this page prints a chapter number, so `numbered: false` would show only in a chapter added after the coda, which would still be the fifth.
 
 ## Variations
 
@@ -57,16 +57,24 @@ With `'odd'`, every chapter opens on a right-hand page and chapters two to five 
 
 ### Drop the initial three lines
 
-`dropSize()` takes the number of lines, so a three-line initial still lines up with the first line's capitals.
+With no `fontSize`, the size follows the number of lines, so a three-line initial still lines up with the first line's capitals.
 
 ```diff
--    lines: 5, fontSize: dropSize(5), fontFamily: 'Fraunces', fontWeight: 400,
-+    lines: 3, fontSize: dropSize(3), fontFamily: 'Fraunces', fontWeight: 400,
+-  dropCap: { lines: 5, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
++  dropCap: { lines: 3, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
+```
+
+### Small capitals after the initial
+
+`leadIn` sets the first words after the letter in small capitals, as many novels do; `words: 'line'` takes the whole first line.
+
+```diff
+-    gap: mm(2.5) } });
++    gap: mm(2.5), leadIn: { words: 'line' } } });
 ```
 
 ## Pitfalls
 
-- Design text is never justified, so a lead in the opener is set ragged even in a justified book. Give it a size of its own (here 12/17 pt against the text's 10.8/14.5) so the ragged edge looks intended.
-- The boxed initial is fitted by hand to Lora 12/17, to Geist Mono's M and to the design baseline, which 1.4.1 places 0.8 down the line box (`BASE`) and does not expose. If you change the lead's face, size or leading, the letter, the number of lines or the engine version, check the box against the first line's capitals again.
-- A drop cap that spans every line of its paragraph still reserves its whole line box: in 1.4.1 the opener's height runs 3.5 mm past chapter three's lead, which can push the text down one line of the grid. With the field 130 mm deep, the overhang adds no grid line; if you change the depth, check the white under the lead.
+- The leads are set ragged, as in a magazine opener; a justified lead beside a five-line initial can open its spaces wide on a line of few words.
+- The magenta box is fitted by hand to Lora 12/17, to Geist Mono's M and to the line's baseline, 0.8 down its line box (`BASE`). If you change the lead's face, size or leading, the letter, the number of lines or the depth of the field, check the box against the first line's capitals again.
 - Titles never rotate or run vertically: design text is always horizontal. Stack the words with `\\` instead, as chapter three does.

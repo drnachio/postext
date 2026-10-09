@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 034 · Catalogue entries facing their plates ══════════════
 // https://postext.dev/en/cookbook/catalogue-facing-plates
 // Code: MIT · Text: original (CC BY 4.0), Ormsby 1885 (PD) · Plates: Doré and Pisan, 1863 (PD)
-// Fonts: Ibarra Real Nova, Libre Bodoni, Sofia Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Ibarra Real Nova, Libre Bodoni, Sofia Sans Condensed (OFL 1.1) · Needs postext ≥ 1.23.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -42,6 +42,7 @@ const entryLevel = () => ({
   // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
   breakBefore: { enabled: true, parity: 'even' },
   marginBottom: pt(LEAD), advancedDesign: entryOpener(),
+  dropCap: { lines: 3, fontFamily: DISPLAY, color: col('sepia'), gap: mm(1.6) }, // the lead's
 });
 const plateType = {
   id: 'plate', name: 'Cat.', shortLabel: 'Cat.', captionPrefix: 'Cat.', // 'Cat. 1. …'
@@ -83,19 +84,17 @@ const caps = (size) => ({ fontWeight: 600, textTransform: 'uppercase',
 const [KICKER, NUMERAL] = [8.5, { size: 80, y: 7 }]; // pt: labels; the numeral, y in mm
 const TITLE = { size: 30, lineHeight: 1.08 }; // pt (gotcha: design-lineheight-multiple)
 const HEAD_RULE = NUMERAL.y + NUMERAL.size * PT + 3; // mm: the hairline under the numeral
-const LEAD_Y = HEAD_RULE + 5; // mm: the lead paragraph, with the tombstone beside it
+// mm: the lead, the entry's first paragraph, 5 mm under the hairline on the next grid line;
+// the opener ends a line above it (the level's marginBottom), and the tombstone faces it.
+const LEAD_Y = Math.ceil((HEAD_RULE + 5) / PT / LEAD) * LEAD * PT;
 const [LEADIN, TOMB] = [{ size: 13.5, lead: 19 }, { size: 8.5, lead: 12.5 }]; // pt
-const LEAD_LINES = 5; // the longest lead: shorter ones keep the commentary on the same line
-const BASE = 0.8; // 1.4.1 sets a design text's first baseline 0.8 down its line box
-// em: cap heights, and Libre Bodoni's figures, which stop short of its capitals ('1': 0.716)
-const [CAP_HEIGHT, FIGURE_HEIGHT] = [{ [TEXT]: 0.673, [DISPLAY]: 0.754 }, 0.716];
+const BASE = 0.8; // a line's first baseline stands 0.8 down its line box
+// em: Libre Bodoni's capitals, and its figures, which stop short of them ('1': 0.716)
+const [CAP_HEIGHT, FIGURE_HEIGHT] = [0.754, 0.716];
 const inkTop = (size, lineHeight, height) => (BASE * lineHeight - height) * size; // pt to the ink
 // The title's capitals level with the numeral's figures: 1.2 mm below the numeral's top.
 const TITLE_Y = NUMERAL.y + (inkTop(NUMERAL.size, 1, FIGURE_HEIGHT)
-  - inkTop(TITLE.size, TITLE.lineHeight, CAP_HEIGHT[DISPLAY])) * PT;
-// The initial's top on the first line's capitals, its foot on the third baseline.
-const dropSize = (lines) => pt(((lines - 1) * LEADIN.lead + CAP_HEIGHT[TEXT] * LEADIN.size)
-  / CAP_HEIGHT[DISPLAY]);
+  - inkTop(TITLE.size, TITLE.lineHeight, CAP_HEIGHT)) * PT;
 // Entries open on versos, whose outer column is on the left: the side column is at x = 0.
 const head = (label, numeral) => [
   text('label', label, LABEL, KICKER, 'sepia', at('container', 'top-left', 0, 0), caps(KICKER)),
@@ -106,18 +105,15 @@ const head = (label, numeral) => [
   { kind: 'rule', id: 'head-rule', direction: 'horizontal', thickness: pt(0.5), color: col('rule'),
     placement: at('container', 'top-left', 0, HEAD_RULE, 'fill') },
 ];
-const entryOpener = () => ({ enabled: true, minHeight: mm(LEAD_Y + LEAD_LINES * LEADIN.lead * PT),
+const entryOpener = () => ({ enabled: true, minHeight: mm(LEAD_Y - LEAD * PT),
   slot: { elements: [...head('Cat.', '{number}'),
   text('chapter', '{attr.chapter}', LABEL, KICKER, 'sepia',
     at('container', 'top-left', MAIN_X, 0, MAIN), caps(KICKER)),
   // Baseline on the lead's; \n breaks only with a paragraphIndent (gotcha: design-text-newline).
   text('tombstone', '{attr.tombstone}', LABEL, TOMB.size, 'muted',
     at('container', 'top-left', 0, LEAD_Y + BASE * (LEADIN.lead - TOMB.lead) * PT, SIDE - 6),
-    { lineHeight: TOMB.lead / TOMB.size, paragraphIndent: pt(0.01) }),
-  // Drop caps exist only in design text, so the lead is an attribute (gotcha: design-text-ragged).
-  text('lead', '{attr.lead}', TEXT, LEADIN.size, 'ink', at('container', 'top-left', MAIN_X,
-    LEAD_Y, MAIN), { lineHeight: LEADIN.lead / LEADIN.size, dropCap: { lines: 3,
-    fontFamily: DISPLAY, fontSize: dropSize(3), color: col('sepia'), gap: mm(1.6) } }),
+    { lineHeight: TOMB.lead / TOMB.size, paragraphIndent: pt(0.01),
+      reserve: false }), // beside the lead: it holds no room of its own
 ] } });
 // #endregion
 
@@ -152,7 +148,7 @@ const coverStyle = () => ({
 // #region checklist: a table of the works with a thumbnail in each first cell
 const THUMB_PX = 300; // px wide: 25 mm at 300 dpi, about the width the cell prints it
 // The entries' head, label and numeral from attributes; the level gives span, break and margin.
-const checklistStyle = () => ({ id: 'checklist', numbered: false,
+const checklistStyle = () => ({ id: 'checklist', numbered: false, dropCap: false, // no initial
   advancedDesign: { enabled: true, slot: { elements: head('{attr.kicker}', '{attr.range}') } } });
 const cell = (content, more) => ({ content, verticalAlign: 'middle', ...more });
 const checklist = (plates) => ({
@@ -209,8 +205,12 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     cellPadding: mm(1.8), headerBackground: col('ink'), headerColor: col('paper'),
     headerFontFamily: LABEL, headerFontSize: pt(8), bodyFontFamily: TEXT, bodyFontSize: pt(9.5) },
-  paragraphStyles: [{ id: 'colophon', fontFamily: LABEL, fontSize: pt(7.5), lineHeight: pt(11),
-    color: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) }],
+  paragraphStyles: [
+    // The entry's lead, a size larger and ragged; a :::space under it starts the commentary flush.
+    { id: 'lead', fontSize: pt(LEADIN.size), lineHeight: pt(LEADIN.lead), textAlign: 'left',
+      firstLineIndent: pt(0) },
+    { id: 'colophon', fontFamily: LABEL, fontSize: pt(7.5), lineHeight: pt(11),
+      color: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) }],
   header: { elements: [] }, footer,
 });
 

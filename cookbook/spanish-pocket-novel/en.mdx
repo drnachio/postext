@@ -28,9 +28,9 @@ The bottom margin is computed from the trim, the top margin and `LINES`, so the 
 
 <Excerpt region="opener" />
 
-Numbering templates print only numerals (1, 01, I, i, A, a), never words, so *capítulo primero* comes from the heading’s own `ordinal` attribute ([heading attributes](/en/docs/document-format#heading-attributes)). Postext draws an initial only in design text, which is set ragged, and only when that text has `overflow: 'wrap'`. To hide the ragged edge, the initial gets a single line: `lines: 1` raises it beside the one line held in the `lead` attribute, and `INITIAL_GAP` was adjusted until that line ends flush, 0.1 mm short of the measure. The paragraph carries on in the Markdown with no indent ([text elements](/en/docs/configuration#text-elements)). The chapter level’s `marginBottom: 0` replaces the default margin, which would add a blank line, so the text goes on in the line under the lead.
+Numbering templates print only numerals (1, 01, I, i, A, a), never words, so *capítulo primero* comes from the heading’s own `ordinal` attribute ([heading attributes](/en/docs/document-format#heading-attributes)). The initial belongs to the chapter level: its `dropCap` opens the first paragraph after every level-1 heading, and the paragraph is written in the Markdown as it reads ([drop caps](/en/docs/configuration#drop-caps)). `lines: 1` with a `fontSize` of three leads makes it a raised initial, standing on the first baseline; the first line is shortened by its width and the default gap, and justified with the rest of the paragraph. The letter rises above the first line, and the paragraph keeps that rise clear above it in whole lines: two here (`RISE`), so `minHeight` ends the opener at `SINK - RISE` lines and the first line of text still falls on line `SINK`, a quarter of the way down. The chapter level’s `marginBottom: 0` replaces the default margin, which would add a blank line. A paragraph with a drop cap drops its first-line indent.
 
-<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Page 9: the chapter’s label and title, and the raised initial beside a first line that ends flush with the justified text under it." />
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Page 9: the chapter’s label and title, and the raised initial beside the first line of the justified text." />
 
 ### 4 · The map faces the chapter as Figura 1
 
@@ -74,5 +74,5 @@ Left as they come, the built-in Spanish types number figures within each first-l
 ## Pitfalls
 
 - A sink of nine lines instead of eight left page 11 one line short, because `avoidWidows` would not start a paragraph on the last line of the page. After any change to the settings or the text, check the foot of every page.
-- The `lead` attribute stops mid-sentence (*…vino tranquila*) where the Markdown paragraph picks up (*y oscura la noche*), because it holds exactly the words that fit beside the initial. Another face, size, measure or `INITIAL_GAP` breaks the flush fit: move words between the two until the line ends flush again.
+- `RISE` is the number of lines the raised initial keeps clear above the text. Another face or size changes that rise: a smaller initial may need one line, and the text then starts a line higher unless `minHeight` changes with it.
 - None of these faces has the asterism ⁂ (U+2042) in its Fontsource latin file, so the browser would take it from a system font. Spanish books mark the break with three spaced asterisks in any case.

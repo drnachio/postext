@@ -18,19 +18,19 @@ pageNotes: { "1": "Chapter One, “The Voice”: um chapéu vermelho pequeno e e
 
 <Excerpt region="literary" />
 
-O capítulo um não tem estilo, então recebe o design do nível 1, do qual todo estilo parte (a [resposta curta](#a-resposta-curta) mostra o nível e os estilos). Capitulares só existem no texto de design, por isso o primeiro parágrafo do capítulo vem de `lead="…"` na linha do título e `lead()` o compõe na abertura; o texto corrido continua embaixo. O motor apoia a letra na quinta linha de base, mas no tamanho padrão a maiúscula tem a altura das cinco caixas de linha juntas e sobe 2,2 mm acima das maiúsculas da primeira linha. `dropSize()` calcula o tamanho a partir da altura das maiúsculas da Lora e da Fraunces (0,7 em), e assim o alto do M se alinha com elas.
+O capítulo um não tem estilo, então recebe o design do nível 1, do qual todo estilo parte (a [resposta curta](#a-resposta-curta) mostra o nível e os estilos). O primeiro parágrafo do capítulo está no Markdown, num grupo `:::paragraphs{style="lead"}` um corpo acima do texto (12/17 pt contra 10,8/14,5), e o `dropCap` do nível o abre ([capitulares](/pt/docs/configuration#capitulares)): o M se apoia na quinta linha de base e, sem `fontSize`, o seu alto fica na altura das maiúsculas da primeira linha, com as duas alturas de maiúsculas medidas na Fraunces e na Lora. A abertura termina com uma caixa vazia, `room()`, 17 mm abaixo do título, onde começa o parágrafo de abertura; um `:::space` sob o parágrafo de abertura deixa uma linha e faz o texto começar sem recuo.
 
 ### 2 · Emoldure o título com duas caixas
 
 <Excerpt region="framed" />
 
-A ordem do array é a ordem de pintura, então as caixas vêm primeiro e o texto por cima; o florão é um elemento de imagem, que desenha um recurso SVG registrado que nunca é numerado nem citado. Um elemento de imagem também é o jeito de dar a cada capítulo uma foto própria: desde o postext 1.8 seu `resourceId` aceita marcadores, então com `resourceId: '{attr.photo}'` um mesmo estilo desenha a foto que cada título nomeia, `# The Frame {style="framed" photo="lake"}`, como fazem os pratos da <RecipeLink slug="recipe-card">ficha de receita</RecipeLink> ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). O estilo `framed` da resposta curta usa `palette` para deixar `accent` azul nas páginas deste capítulo, de modo que os fios, o chapéu e o fólio do pé saem em azul, e suas `margins` centralizam a mancha sob a moldura. Na 1.4.1, o `color` de uma capitular ignora a paleta da seção, por isso a inicial nomeia o azul com `col('lapis')`.
+A ordem do array é a ordem de pintura, então as caixas vêm primeiro e o texto por cima; o florão é um elemento de imagem, que desenha um recurso SVG registrado que nunca é numerado nem citado. Um elemento de imagem também é o jeito de dar a cada capítulo uma foto própria: desde o postext 1.8 seu `resourceId` aceita marcadores, então com `resourceId: '{attr.photo}'` um mesmo estilo desenha a foto que cada título nomeia, `# The Frame {style="framed" photo="lake"}`, como fazem os pratos da <RecipeLink slug="recipe-card">ficha de receita</RecipeLink> ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). O estilo `framed` da resposta curta usa `palette` para deixar `accent` azul nas páginas deste capítulo, de modo que os fios, o chapéu e o fólio do pé saem em azul, e suas `margins` centralizam a mancha sob a moldura. O `dropCap` do próprio estilo nomeia `col('accent')`, que a paleta também deixa azul, e assim o L de três linhas combina com a moldura.
 
 ### 3 · Empilhe o título e ponha a inicial numa caixa
 
 <Excerpt region="stacked" />
 
-A pilha se escreve no Markdown: `# Say it \\ out \\ loud.` quebra `{titleText}` em cada `\\`, enquanto os cabeços e os marcadores do PDF leem o título numa linha só ([quebras de linha em títulos](/pt/docs/document-format#quebras-de-linha-em-títulos)). O campo pende do alto da sangria, na largura inteira e com 130 mm de altura, e o parágrafo de abertura começa 8 mm abaixo dele. A inicial em caixa são dois elementos. A capitular do parágrafo de abertura compõe o M em três linhas, e a caixa magenta pintada antes dela é calculada a partir da caixa de linha do parágrafo e das métricas da Geist Mono, de modo que a cor acima e abaixo do M tem a largura do seu espaço lateral.
+A pilha se escreve no Markdown: `# Say it \\ out \\ loud.` quebra `{titleText}` em cada `\\`, enquanto os cabeços e os marcadores do PDF leem o título numa linha só ([quebras de linha em títulos](/pt/docs/document-format#quebras-de-linha-em-títulos)). O campo pende do alto da sangria, na largura inteira e com 130 mm de altura, e o parágrafo de abertura começa na primeira linha da grade, 8 mm abaixo dele (`TEXT_TOP`). A inicial em caixa são duas peças. O `dropCap` do estilo compõe o M em branco ao longo de três linhas do parágrafo de abertura, e a abertura pinta embaixo dele uma caixa magenta, posicionada a partir de `TEXT_TOP`, da entrelinha do parágrafo e das métricas da Geist Mono, de modo que a cor acima e abaixo do M tem a largura do seu espaço lateral. A caixa não ocupa espaço na abertura (`reserve: false`); uma caixa `room` vazia termina a abertura onde começa o parágrafo de abertura.
 
 ### 4 · Dê ao manual um selo, duas colunas e cabeços próprios
 
@@ -42,7 +42,7 @@ O selo é um elemento de texto com preenchimento e espaçamento interno, mas sem
 
 <Excerpt region="quiet" />
 
-O chapéu pende 92 mm abaixo do alto da mancha, e a inicial elevada é uma capitular de uma linha: o pé dela se apoia na primeira linha de base e, com 46 pt, ela sobe para o branco de cima em vez de afundar no parágrafo. No estilo `quiet`, `margins` estreitam a medida para 106 mm, `bodyStyle` compõe o texto em bandeira a 12,5/17,5 pt, `footer` troca o fólio do pé por um pequeno no canto externo e `palette` deixa o chapéu cinza. Nada nesta página imprime número de capítulo, então `numbered: false` só apareceria num capítulo acrescentado depois da coda, que continuaria sendo o quinto.
+O chapéu pende 92 mm abaixo do alto da mancha, e a inicial elevada é a capitular de uma linha do estilo `quiet`: o pé dela se apoia na primeira linha de base e, com 46 pt, ela sobe para o branco de cima em vez de afundar no parágrafo. O parágrafo mantém essa subida livre acima dele em linhas inteiras, por isso o `room` da abertura sob o título tem só 3 mm. No estilo `quiet`, `margins` estreitam a medida para 106 mm, `bodyStyle` compõe o texto em bandeira a 12,5/17,5 pt, `footer` troca o fólio do pé por um pequeno no canto externo e `palette` deixa o chapéu cinza. Nada nesta página imprime número de capítulo, então `numbered: false` só apareceria num capítulo acrescentado depois da coda, que continuaria sendo o quinto.
 
 ## Variações
 
@@ -57,16 +57,24 @@ Com `'odd'`, todo capítulo abre numa página da direita e os capítulos dois a 
 
 ### Deixe a capitular em três linhas
 
-`dropSize()` recebe o número de linhas, então uma capitular de três linhas também se alinha com as maiúsculas da primeira linha.
+Sem `fontSize`, o tamanho acompanha o número de linhas, então uma capitular de três linhas também se alinha com as maiúsculas da primeira linha.
 
 ```diff
--    lines: 5, fontSize: dropSize(5), fontFamily: 'Fraunces', fontWeight: 400,
-+    lines: 3, fontSize: dropSize(3), fontFamily: 'Fraunces', fontWeight: 400,
+-  dropCap: { lines: 5, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
++  dropCap: { lines: 3, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
+```
+
+### Versaletes depois da inicial
+
+`leadIn` compõe em versaletes as primeiras palavras depois da letra, como fazem muitos romances; `words: 'line'` pega a primeira linha inteira.
+
+```diff
+-    gap: mm(2.5) } });
++    gap: mm(2.5), leadIn: { words: 'line' } } });
 ```
 
 ## Erros comuns
 
-- O texto de design nunca é justificado, então um parágrafo de abertura sai em bandeira mesmo num livro justificado. Dê a ele um tamanho próprio (aqui 12/17 pt contra os 10,8/14,5 do texto) para que a bandeira pareça proposital.
-- A inicial em caixa está ajustada à mão para Lora 12/17, para o M da Geist Mono e para a linha de base do texto de design, que a 1.4.1 põe a 0,8 da caixa de linha (`BASE`) e não expõe. Se você mudar a fonte, o tamanho ou a entrelinha do parágrafo de abertura, a letra, o número de linhas ou a versão do motor, confira de novo a caixa contra as maiúsculas da primeira linha.
-- Uma capitular que ocupa todas as linhas do seu parágrafo continua reservando a caixa de linha inteira: na 1.4.1 a altura da abertura passa 3,5 mm do parágrafo de abertura do capítulo três, o que pode empurrar o texto uma linha da grade para baixo. Com o campo a 130 mm de altura, essa sobra não acrescenta linha da grade; se você mudar a altura, confira o branco embaixo do parágrafo de abertura.
+- Os parágrafos de abertura são compostos em bandeira, como numa abertura de revista; um parágrafo de abertura justificado ao lado de uma inicial de cinco linhas pode abrir muito os espaços numa linha de poucas palavras.
+- A caixa magenta está ajustada à mão para Lora 12/17, para o M da Geist Mono e para a linha de base da linha, a 0,8 da sua caixa de linha (`BASE`). Se você mudar a fonte, o tamanho ou a entrelinha do parágrafo de abertura, a letra, o número de linhas ou a altura do campo, confira de novo a caixa contra as maiúsculas da primeira linha.
 - Títulos nunca giram nem correm na vertical: o texto de design é sempre horizontal. Empilhe as palavras com `\\`, como faz o capítulo três.

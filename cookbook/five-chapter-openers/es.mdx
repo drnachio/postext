@@ -18,19 +18,19 @@ pageNotes: { "1": "Capítulo uno, «La voz»: un antetítulo rojo espaciado, un 
 
 <Excerpt region="literary" />
 
-El capítulo uno no lleva estilo, así que toma el diseño del nivel 1, del que parte cada estilo ([la respuesta corta](#la-respuesta-corta) muestra el nivel y los estilos). Las capitulares solo existen en el texto de diseño, de modo que el primer párrafo del capítulo sale de `lead="…"` en la línea del título y `lead()` lo compone en la apertura; el cuerpo del texto sigue debajo. El motor apoya la letra en la quinta línea de base, pero con el cuerpo por defecto la mayúscula mide lo mismo que las cinco cajas de línea juntas y sobresale 2,2 mm por encima de las mayúsculas de la primera línea. `dropSize()` calcula el cuerpo a partir de la altura de las mayúsculas de Lora y Fraunces (0,7 em), y así la M queda enrasada por arriba con ellas.
+El capítulo uno no lleva estilo, así que toma el diseño del nivel 1, del que parte cada estilo ([la respuesta corta](#la-respuesta-corta) muestra el nivel y los estilos). El primer párrafo del capítulo está en el Markdown, en un grupo `:::paragraphs{style="lead"}` un cuerpo mayor que el texto (12/17 puntos frente a 10,8/14,5), y lo abre la capitular del nivel, `dropCap` ([letras capitulares](/es/docs/configuration#letras-capitulares)): la M se apoya en la quinta línea de base y, sin `fontSize`, su parte alta queda a la altura de las mayúsculas de la primera línea, con las dos alturas de mayúsculas medidas en Fraunces y en Lora. La apertura termina con una caja vacía, `room()`, 17 mm por debajo del título, donde empieza la entradilla; un `:::space` bajo la entradilla deja una línea en blanco y el texto empieza sin sangría.
 
 ### 2 · Enmarca el título con dos cajas
 
 <Excerpt region="framed" />
 
-El orden del array es el orden de pintado: primero las cajas y encima el texto; el florón es un elemento de imagen, que dibuja un recurso SVG registrado que nunca se numera ni se cita. Un elemento de imagen sirve también para dar a cada capítulo su propia foto: desde postext 1.8 su `resourceId` admite marcadores, así que con `resourceId: '{attr.foto}'` un mismo estilo dibuja la foto que nombra cada título, `# El marco {style="framed" foto="lago"}`, como las recetas de <RecipeLink slug="recipe-card">la ficha de cocina</RecipeLink> ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). El estilo `framed` de la respuesta corta usa `palette` para volver azul `accent` en las páginas de este capítulo, así que los filetes, el antetítulo y el folio salen en azul, y sus `margins` centran la caja de texto bajo el marco. En la 1.4.1, el `color` de una capitular no sigue la paleta de la sección; por eso la inicial lleva el azul escrito con `col('lapis')`.
+El orden del array es el orden de pintado: primero las cajas y encima el texto; el florón es un elemento de imagen, que dibuja un recurso SVG registrado que nunca se numera ni se cita. Un elemento de imagen sirve también para dar a cada capítulo su propia foto: desde postext 1.8 su `resourceId` admite marcadores, así que con `resourceId: '{attr.foto}'` un mismo estilo dibuja la foto que nombra cada título, `# El marco {style="framed" foto="lago"}`, como las recetas de <RecipeLink slug="recipe-card">la ficha de cocina</RecipeLink> ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). El estilo `framed` de la respuesta corta usa `palette` para volver azul `accent` en las páginas de este capítulo, así que los filetes, el antetítulo y el folio salen en azul, y sus `margins` centran la caja de texto bajo el marco. La `dropCap` propia del estilo usa `col('accent')`, que la paleta también vuelve azul, así que la S de tres líneas va a juego con el marco.
 
 ### 3 · Apila el título y mete la inicial en una caja
 
 <Excerpt region="stacked" />
 
-Los cortes del título se escriben en el Markdown: `# Salta \\ a la \\ vista.` parte `{titleText}` en cada `\\`, mientras que las cabeceras y los marcadores del PDF leen el título en una sola línea ([saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)). El campo cuelga del borde superior del sangrado, a todo lo ancho y con 130 mm de alto, y la entradilla empieza 8 mm por debajo. La inicial en caja se hace con dos elementos. La capitular de la entradilla compone la M en tres líneas, y la caja magenta que se pinta antes se calcula a partir de la caja de línea de la entradilla y de las medidas de Geist Mono, de modo que el color que queda encima y debajo de la M mide lo mismo que su blanco lateral.
+Los cortes del título se escriben en el Markdown: `# Salta \\ a la \\ vista.` parte `{titleText}` en cada `\\`, mientras que las cabeceras y los marcadores del PDF leen el título en una sola línea ([saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)). El campo cuelga del borde superior del sangrado, a todo lo ancho y con 130 mm de alto, y la entradilla empieza en la primera línea de la rejilla que queda 8 mm por debajo (`TEXT_TOP`). La inicial en caja se hace con dos piezas. La `dropCap` del estilo compone la M en tres líneas de la entradilla, en blanco, y la apertura pinta debajo una caja magenta, colocada a partir de `TEXT_TOP`, del interlineado de la entradilla y de las medidas de Geist Mono, de modo que el color que queda encima y debajo de la M mide lo mismo que su blanco lateral. La caja no ocupa sitio en la apertura (`reserve: false`); una caja `room` vacía cierra la apertura donde empieza la entradilla.
 
 ### 4 · Dale al manual su insignia, dos columnas y sus cabeceras
 
@@ -42,7 +42,7 @@ La insignia es un elemento de texto con fondo y relleno interior pero sin anchur
 
 <Excerpt region="quiet" />
 
-El antetítulo cuelga 92 mm por debajo del comienzo de la caja de texto, y la inicial elevada es una capitular de una sola línea: su pie se apoya en la primera línea de base y, con 46 puntos, sobresale hacia el blanco de arriba en lugar de hundirse en el párrafo. En el estilo `quiet`, `margins` estrechan la medida a 106 mm, `bodyStyle` compone el texto en bandera a 12,5/17,5 puntos, `footer` cambia el folio de la apertura por uno pequeño en la esquina exterior del pie y `palette` vuelve gris el antetítulo. En esta página no se imprime ningún número de capítulo, así que `numbered: false` solo se notaría en un capítulo añadido después de la coda, que seguiría siendo el quinto.
+El antetítulo cuelga 92 mm por debajo del comienzo de la caja de texto, y la inicial elevada es la capitular de una sola línea del estilo `quiet`: su pie se apoya en la primera línea de base y, con 46 puntos, sobresale hacia el blanco de arriba en lugar de hundirse en el párrafo. El párrafo deja libre por encima, en líneas enteras, lo que sobresale la letra, así que la caja `room` de la apertura bajo el título mide solo 3 mm. En el estilo `quiet`, `margins` estrechan la medida a 106 mm, `bodyStyle` compone el texto en bandera a 12,5/17,5 puntos, `footer` cambia el folio de la apertura por uno pequeño en la esquina exterior del pie y `palette` vuelve gris el antetítulo. En esta página no se imprime ningún número de capítulo, así que `numbered: false` solo se notaría en un capítulo añadido después de la coda, que seguiría siendo el quinto.
 
 ## Variantes
 
@@ -57,16 +57,24 @@ Con `'odd'`, todos los capítulos empiezan en página impar y del segundo al qui
 
 ### Deja la capitular en tres líneas
 
-`dropSize()` recibe el número de líneas, así que una capitular de tres líneas también queda enrasada con las mayúsculas de la primera.
+Sin `fontSize`, el cuerpo sigue al número de líneas, así que una capitular de tres líneas también queda enrasada con las mayúsculas de la primera.
 
 ```diff
--    lines: 5, fontSize: dropSize(5), fontFamily: 'Fraunces', fontWeight: 400,
-+    lines: 3, fontSize: dropSize(3), fontFamily: 'Fraunces', fontWeight: 400,
+-  dropCap: { lines: 5, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
++  dropCap: { lines: 3, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
+```
+
+### Versalitas tras la capitular
+
+`leadIn` compone en versalitas las primeras palabras que siguen a la letra, como hacen muchas novelas; con `words: 'line'` abarca toda la primera línea.
+
+```diff
+-    gap: mm(2.5) } });
++    gap: mm(2.5), leadIn: { words: 'line' } } });
 ```
 
 ## Errores frecuentes
 
-- El texto de diseño nunca se justifica, así que el primer párrafo de una apertura sale en bandera aunque el libro vaya justificado. Dale un cuerpo propio (aquí 12/17 puntos frente a los 10,8/14,5 del texto) para que la bandera parezca buscada.
-- La inicial en caja está ajustada a mano a Lora 12/17, a la M de Geist Mono y a la línea de base del texto de diseño, que la 1.4.1 sitúa a 0,8 de la caja de línea (`BASE`) sin ninguna opción para leerla. Si cambias la fuente, el cuerpo o el interlineado de la entradilla, la letra inicial, el número de líneas o la versión del motor, vuelve a comprobar la caja contra las mayúsculas de la primera línea.
-- Una capitular que ocupa todas las líneas de su párrafo reserva igualmente su caja de línea completa: en la versión 1.4.1, la altura de la apertura se alarga 3,5 mm por debajo de la entradilla del capítulo tres, y eso puede bajar el texto una línea de la rejilla base. Con el campo a 130 mm de alto, ese sobrante no añade ninguna línea de la rejilla; si cambias la altura, revisa el blanco bajo la entradilla.
+- Las entradillas van en bandera, como en la apertura de una revista; justificada junto a una capitular de cinco líneas, una entradilla puede abrir mucho los espacios en una línea de pocas palabras.
+- La caja magenta está ajustada a mano a Lora 12/17, a la M de Geist Mono y a la línea de base de la entradilla, situada a 0,8 de su caja de línea (`BASE`). Si cambias la fuente, el cuerpo o el interlineado de la entradilla, la letra inicial, el número de líneas o la altura del campo, vuelve a comprobar la caja contra las mayúsculas de la primera línea.
 - Los títulos nunca se giran ni van en vertical: el texto de diseño es siempre horizontal. Apila las palabras con `\\`, como hace el capítulo tres.

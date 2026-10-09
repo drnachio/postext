@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 017 · Five chapter openers in one book ═════════════════
 // https://postext.dev/en/cookbook/five-chapter-openers
 // Code: MIT · Text: original (CC BY 4.0) · Ornament: generated in code (CC BY 4.0)
-// Fonts: Lora, Fraunces, Geist, Geist Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Lora, Fraunces, Geist, Geist Mono (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 // A small book about openers, each chapter set in the one it describes. Every heading style
 // brings its opener and palette; three move the margins, two bring their own type and folios.
 import {
@@ -14,23 +14,29 @@ const RECIPE = 'five-chapter-openers';
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
 // #region answer: one opener per chapter: the level's own, then heading styles by name
 // A heading line picks a style by id, and its attributes feed the opener's {attr.…} texts:
-//   # The Frame {style="framed" kicker="Chapter the Second" lead="Long before there…"}
-// A style overrides the level fields it names (here the opener) and, until the next level-1
-// heading, the section fields it names; what it leaves out comes from the level and document.
+//   # The Frame {style="framed" kicker="Chapter the Second"}
+// A style overrides the level fields it names (opener, drop cap) and, until the next level-1
+// heading, the section fields it names; the rest comes from the level and the document.
 const level1 = () => ({ level: 1,
   // span 'page' opens each chapter at the head of a new page and runs its opener across
   // every column (chapter four has two). Any headings object drops the default break to a
   // recto (gotcha: headings-drop-h1-break): restate the side, 'any' for short chapters.
   span: 'page',
   breakBefore: { enabled: true, parity: 'any' },
-  marginBottom: pt(LEAD), // one line of air between the opener and the text
-  advancedDesign: literary }); // chapter one, unstyled: the book's own opener
+  marginBottom: pt(0), // each opener ends where its first paragraph starts
+  advancedDesign: literary, // chapter one, unstyled: the book's own opener
+  dropCap: { lines: 5, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
+    gap: mm(2.5) } }); // a five-line drop in rubric red
 const headingStyles = () => [ // factories, called by config() once every design exists
   // Each style brings its opener and swaps 'accent' for a colour of its own, on its pages.
   { id: 'framed', advancedDesign: framed, palette: { accent: palette.lapis },
-    margins: { left: mm(EVEN), right: mm(EVEN) } }, // a centred text block
-  { id: 'stacked', advancedDesign: stacked, palette: { accent: palette.magenta } },
-  { id: 'spec', advancedDesign: spec, palette: { accent: palette.signal },
+    margins: { left: mm(EVEN), right: mm(EVEN) }, // a centred text block; 'accent' is blue:
+    dropCap: { lines: 3, fontFamily: 'Fraunces', fontWeight: 600, color: col('accent'),
+      gap: mm(2) } },
+  { id: 'stacked', advancedDesign: stacked, palette: { accent: palette.magenta }, // white, on
+    dropCap: { lines: BOXED, fontFamily: 'Geist Mono', fontWeight: 700, color: col('paper'),
+      gap: mm(2.2) } }, // the square the opener draws for it
+  { id: 'spec', advancedDesign: spec, palette: { accent: palette.signal }, dropCap: false,
     marginBottom: pt(0), // the hairline under the title is the separator
     margins: { left: mm(SPEC), right: mm(SPEC) }, // a 144 mm text block
     layout: { layoutType: 'double', gutterWidth: mm(7) },
@@ -39,6 +45,8 @@ const headingStyles = () => [ // factories, called by config() once every design
     footer: { elements: [] } }, // no folio at the foot: the head gives the page
   { id: 'quiet', numbered: false, // a coda: it advances no chapter counter
     advancedDesign: quiet, palette: { accent: palette.graphite }, footer: tinyFolio,
+    dropCap: { lines: 1, fontFamily: 'Fraunces', fontWeight: 300, fontSize: pt(46), // raised:
+      color: col('accent'), gap: mm(1.2) }, // on the first baseline, rising into the white
     margins: { left: mm(QUIET.inner), right: mm(QUIET.outer) }, // a 106 mm measure
     bodyStyle: { fontSize: pt(QUIET.size), lineHeight: pt(QUIET.lead), textAlign: 'left' } },
 ]; // hook-up in config(): headings: { levels: [level1(), …] }, headingStyles()
@@ -65,7 +73,7 @@ const TOP = 22, INNER = 20, OUTER = 36; // margins, mm: a wide outer margin keep
 const MEASURE = TRIM.w - INNER - OUTER; // mm
 const EVEN = (TRIM.w - MEASURE) / 2; // mm: equal side margins, for the framed chapter
 const LEAD = 14.5; // body leading, pt: the baseline grid
-const LEADIN = { size: 12, lead: 17 }; // pt: the opening paragraph each opener sets itself
+const LEADIN = { size: 12, lead: 17 }; // pt: a chapter's opening paragraph, a size larger
 const QUIET = { size: 12.5, lead: 17.5, inner: 30, outer: 44 }; // the coda: pt, and mm margins
 
 // Design-slot shorthands. at(): a placement from an anchor's edge, x and y in mm.
@@ -81,26 +89,19 @@ const caps = (tracking, weight = 600) => ({ fontWeight: weight, letterSpacing: p
 const centred = (y) => at('container', 'top', 0, y, 'fill'); // a full-width line, centred
 // No minHeight: the text starts under the lowest element of each opener.
 const design = (elements) => ({ enabled: true, slot: { elements } });
+// An empty box reserves room: the text starts y mm under the element it hangs from.
+const room = (anchor, y, edge = 'below') => ({ kind: 'box', id: 'room', style: {},
+  placement: { ...at(anchor, edge, 0, 0, 'fill'), size: { width: 'fill', height: mm(y) } } });
 
 // #region literary: chapter one, the level's own opener: a five-line drop in rubric red
-// The opening paragraph comes from lead="…" on the heading line: drop caps exist only in
-// design text, so the lead is part of the opener (gap: body-drop-cap).
-const lead = (placement, dropCap, extra = {}) => text('lead', '{attr.lead}', 'Lora',
-  LEADIN.size, placement, { lineHeight: LEADIN.lead / LEADIN.size, dropCap, ...extra });
-const CAPS = 0.7; // the height of a capital in Lora and in Fraunces, em
-// A drop cap's foot stands on the last baseline it spans. Its default size makes the capital
-// as tall as all those line boxes, so it rises above the first line (2.2 mm for five lines
-// here); this size puts its top on the first line's capitals instead.
-const dropSize = (lines) => pt(((lines - 1) * LEADIN.lead + CAPS * LEADIN.size) / CAPS);
+// The first paragraph, in :::paragraphs{style="lead"}, starts 17 mm under the title.
 const literary = design([
   text('kicker', '{attr.kicker}', 'Geist', 8, centred(22), { ...caps(1.7), align: 'center' }),
   text('title', '{titleText}', 'Fraunces', 32, at('#kicker', 'below', 0, 4, 'fill'),
     { fontWeight: 300, italic: true, lineHeight: 1.05, align: 'center' }),
   { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(0.8), color: col('accent'),
     placement: at('#title', 'below', (MEASURE - 18) / 2, 6, 18) }, // an 18 mm rule, centred
-  lead(at('#title', 'below', 0, 17, 'fill'), {
-    lines: 5, fontSize: dropSize(5), fontFamily: 'Fraunces', fontWeight: 400,
-    color: col('accent'), gap: mm(2.5) }),
+  room('#title', 17),
 ]);
 // #endregion
 
@@ -122,26 +123,26 @@ const framed = design([ // array order is paint order: the boxes first, the type
   // may be '{attr.photo}' (postext ≥ 1.8): then each heading names its own photo.
   { kind: 'image', id: 'fleuron', resourceId: 'fleuron',
     placement: at('#title', 'below', (MEASURE - FLEURON) / 2, 4.5, FLEURON) },
-  // The section's palette does not reach dropCap.color: name the blue (gotcha: drop-cap-palette).
-  lead(at('container', 'top-left', 0, FRAME + 9, 'fill'), { lines: 3, fontSize: dropSize(3),
-    fontFamily: 'Fraunces', fontWeight: 600, color: col('lapis'), gap: mm(2) }),
+  room('#frame', 9), // the text starts 9 mm under the frame
 ]);
 // #endregion
 
 // #region stacked: a colour field, the title's words stacked, a boxed initial
 const FIELD = 130; // mm from the trim: the foot of the colour field
 const S_BEARING = 1.2; // mm: the white left of the title's S (0.0365 em at 94 pt)
-// The boxed initial: the engine sets the letter, a drop cap on the third baseline; the box
-// behind it is fitted by hand, in pt from the top of the lead's first line box.
-const BASE = 0.8; // 1.4.1 sets a design text's baseline 0.8 down its line box; no option
+// The boxed initial: the style's drop cap sets the white letter; the opener draws the square,
+// fitted by hand in pt. The text starts on the grid line 8 mm under the field (from the trim).
+const TEXT_TOP = Math.ceil(((FIELD - TOP + 8) * 72) / 25.4 / LEAD) * LEAD; // pt
+const BASE = 0.8; // a line's baseline stands 0.8 down its line box
+const CAPS = 0.7; // the height of a capital in Lora, em
 // Geist Mono, em: cap height, the advance every capital shares, the white either side of an M
 const MONO = { caps: 0.71, advance: 0.6, side: 0.044 };
 const BOXED = 3; // lines the initial spans
-const capsTop = BASE * LEADIN.lead - CAPS * LEADIN.size; // the first line's capitals: box top
-const foot = (BOXED - 1 + BASE) * LEADIN.lead; // the third baseline: the letter's foot
-// The M's top sits as far under the box's top as its sides sit in, and the box runs as far
-// under its foot, so the colour is as wide on all four sides.
-const letter = (foot - capsTop) / (MONO.caps + MONO.side), pad = MONO.side * letter;
+const capsTop = TEXT_TOP + BASE * LEADIN.lead - CAPS * LEADIN.size; // the first line's capitals
+const foot = TEXT_TOP + (BOXED - 1 + BASE) * LEADIN.lead; // the third baseline: the letter's foot
+// The M runs from the first line's capitals to its foot; the square runs past both as far as
+// the M's sides sit in, so the colour is as wide on all four sides.
+const letter = (foot - capsTop) / MONO.caps, pad = MONO.side * letter;
 const stacked = design([
   { kind: 'box', id: 'field', style: { backgroundColor: col('accent') },
     placement: { anchor: { to: 'bleed', edge: 'top-left' }, size: { height: mm(FIELD) } } },
@@ -152,14 +153,10 @@ const stacked = design([
   text('title', '{titleText}', 'Fraunces', 94,
     at('container', 'top-left', -S_BEARING, 15, 'fill'),
     { fontWeight: 900, lineHeight: 0.84, color: col('paper') }),
-  { kind: 'box', id: 'initial', style: { backgroundColor: col('accent') }, // behind the lead
-    placement: { anchor: { to: '#lead', edge: 'align-top' }, offset: { y: pt(capsTop) },
-      size: { width: pt(MONO.advance * letter), height: pt(foot + pad - capsTop) } } },
-  // The lead: 8 mm under the field (FIELD is from the trim). Its drop cap's line box
-  // counts in the opener's height, 3.5 mm under the lead: FIELD is set so it costs no line.
-  lead(at('container', 'top-left', 0, FIELD - TOP + 8, 'fill'), { lines: BOXED,
-    fontSize: pt(letter), fontFamily: 'Geist Mono', fontWeight: 700, color: col('paper'),
-    gap: mm(2.2) }),
+  { kind: 'box', id: 'initial', style: { backgroundColor: col('accent') }, reserve: false,
+    placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { y: pt(capsTop - pad) },
+      size: { width: pt(MONO.advance * letter), height: pt(foot - capsTop + 2 * pad) } } },
+  room('container', (TEXT_TOP * 25.4) / 72, 'top-left'), // the opener ends where the text starts
 ]);
 // #endregion
 
@@ -217,16 +214,14 @@ const quiet = design([ // the kicker is in the accent, which this style turns gr
     caps(1.6, 500)),
   text('title', '{titleText}', 'Fraunces', 26, at('#kicker', 'below', 0, 3),
     { fontWeight: 300, lineHeight: 1.1 }),
-  // One line: the letter stands on the first baseline and rises into the white above it.
-  lead(at('#title', 'below', 0, 16, 'fill'), { lines: 1, fontFamily: 'Fraunces',
-    fontWeight: 300, fontSize: pt(46), color: col('graphite'), gap: mm(1.2) },
-  { fontSize: pt(QUIET.size), lineHeight: QUIET.lead / QUIET.size }),
+  room('#title', 3), // and the initial's rise, in whole lines: the text 16 mm under the title
 ]);
 const tiny = (parity, edge) => text(`tiny-${parity}`, '{pageNumber}', 'Geist', 6.5,
   at('container', edge, 0, -12), { fontWeight: 500, color: col('muted'), parity });
 const tinyFolio = { elements: [tiny('even', 'bottom-left'), tiny('odd', 'bottom-right')] };
 // #endregion
 
+const flush = { textAlign: 'left', firstLineIndent: pt(0) };
 const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
   colorPalette,
   locale: t({ en: 'en-us', es: 'es' }), // hyphenation, by exact code (gotcha: hyphenation-locales)
@@ -241,8 +236,13 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), fontWeight: 700, // the manual's
       numberingTemplate: '{1}.{2}', marginTop: pt(LEAD), marginBottom: pt(0) }] },
   headingStyles: headingStyles(),
-  paragraphStyles: [{ id: 'colophon', fontFamily: 'Geist', fontSize: pt(7), lineHeight: pt(10),
-    color: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(2 * LEAD) }],
+  paragraphStyles: [
+    // A chapter's opening paragraph, a size larger and ragged (the coda's in its own size);
+    // a :::space under it in the Markdown leaves a line and starts the text flush.
+    { id: 'lead', fontSize: pt(LEADIN.size), lineHeight: pt(LEADIN.lead), ...flush },
+    { id: 'coda-lead', fontSize: pt(QUIET.size), lineHeight: pt(QUIET.lead), ...flush },
+    { id: 'colophon', fontFamily: 'Geist', fontSize: pt(7), lineHeight: pt(10),
+      color: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(2 * LEAD) }],
   header, footer,
 });
 

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "catalogue-facing-plates",
-  "sourceHash": "17e33fcea2897649cbe0114d9a38d10b87fe2be11490297f9320da47b4bca5a2",
+  "sourceHash": "cd7c9075cd36555160b10dae4fbc604da776d9ef25e43f5a3941cdf555238d40",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.779Z",
+  "capturedAt": "2026-10-09T18:30:14.533Z",
   "variants": {
     "en": {
-      "hash8": "930835fe",
-      "vdtHash": "3b2678f8a64d5cb05a5c03af9181cd077fd9692d",
+      "hash8": "d0a1457c",
+      "vdtHash": "c0b910a6f1eb5124b2cb6ad5fba45810f17fb875",
       "timings": {
-        "importMs": 165,
-        "fontsMs": 64,
-        "buildMs": 18,
-        "totalMs": 902,
+        "importMs": 457,
+        "fontsMs": 1860,
+        "buildMs": 14,
+        "totalMs": 2960,
         "builds": 2
       },
       "specimen": {
@@ -61,7 +61,7 @@
           "h": 1217,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 87000,
+          "bytes": 86800,
           "alt": "Opening page 2: 1 Don Quixote in His Library."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1217,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 80184,
+          "bytes": 80024,
           "alt": "Opening page 4: 2 The Vigil of Arms."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1217,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 77516,
+          "bytes": 76976,
           "alt": "Opening page 6: 3 The Adventure of the Windmills."
         },
         {
@@ -167,7 +167,7 @@
       },
       "sandbox": {
         "file": "catalogue-facing-plates.postext",
-        "bytes": 1603934,
+        "bytes": 1603988,
         "folio": "2f38e47f"
       },
       "detected": {
@@ -226,6 +226,7 @@
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
           "headingStyles[].advancedDesign.slot",
+          "headingStyles[].dropCap",
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].header",
@@ -239,6 +240,7 @@
           "headings.levels",
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
+          "headings.levels[].dropCap",
           "headings.levels[].level",
           "headings.levels[].marginBottom",
           "headings.levels[].numberingTemplate",
@@ -307,11 +309,12 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 408,
-        "designElements": 21,
+        "configLeaves": 400,
+        "designElements": 20,
         "directives": [
-          "::resource",
-          ":::paragraphs"
+          ":::paragraphs",
+          ":::space",
+          "::resource"
         ],
         "inline": [
           "{attrs}",
@@ -361,8 +364,8 @@
           }
         ],
         "features": [
+          "body-drop-caps",
           "column-and-a-half",
-          "drop-caps",
           "figure-citations",
           "heading-attributes",
           "heading-numbering",
@@ -377,7 +380,8 @@
           "section-running-heads",
           "side-column-floats",
           "title-line-breaks",
-          "unnumbered-headings"
+          "unnumbered-headings",
+          "vertical-space"
         ],
         "suggestedLevel": 3
       },

@@ -9,7 +9,7 @@
   "genres": ["novel"],
   "outputs": ["canvas"],
   "features": {
-    "primary": ["hyphenation-languages", "knuth-plass", "drop-caps"],
+    "primary": ["hyphenation-languages", "knuth-plass", "body-drop-caps"],
     "also": [
       "opener-design",
       "heading-attributes",
@@ -31,15 +31,13 @@
     ]
   },
   "answers": ["Q20", "Q21", "Q54", "Q74", "Q28"],
-  "gaps": ["body-drop-cap", "markdown-extras"],
+  "gaps": ["markdown-extras"],
   "gotchas": [
     "hyphenation-locales",
     "resource-types-locale",
-    "design-text-ragged",
     "digit-period-list",
     "attr-values",
     "headings-drop-h1-break",
-    "design-lineheight-multiple",
     "overflow-ellipsis-default",
     "palette-skips-designs",
     "style-italic-colour",
@@ -77,11 +75,6 @@
       "note": "every frontmatter value is quoted (title and author feed the running heads)"
     },
     {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the lead's design-text lineHeight is the multiple LEAD / BODY, never a Dimension, which would drop the opener's reservation"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "the plate's heading style restates breakBefore with parity 'any': it would inherit the chapter level's break, so with parity 'odd' the map would move to a recto behind a blank page and face another blank page"
@@ -95,19 +88,9 @@
       "followup": "EF-71",
       "package": "postext",
       "note": "col() writes the hex beside the paletteId, because design slots (opener, heads, plate) do not read the palette"
-    },
-    {
-      "followup": "EF-109",
-      "package": "postext",
-      "note": "design text has no justification, so the lead beside the initial is a single line whose gap (INITIAL_GAP 0.55 mm) is copy-fitted to end flush with the measure; a three-line drop cap would set three ragged lines"
-    },
-    {
-      "followup": "EF-106",
-      "package": "postext",
-      "note": "a design text's dropCap is drawn only when overflow is 'wrap' (the default 'ellipsis-end' drops the initial with no warning), so the lead sets overflow: 'wrap' though it is one line"
     }
   ],
-  "engine": { "postext": "1.12.2" },
+  "engine": { "postext": "1.23.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["es"] },
   "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": {"pages": [5, 5]} },
@@ -156,5 +139,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-25",
-  "updated": "2026-10-02"
+  "updated": "2026-10-09"
 }
