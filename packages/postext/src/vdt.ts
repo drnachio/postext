@@ -2760,6 +2760,15 @@ export type ContentWarning = ContentWarningBase & (
    *  warning). `sourceStart` / `sourceEnd` when the text mirrors a heading
    *  or a frontmatter field. Found by the layout. */
   | { kind: 'designTextTruncated'; slot: VDTDesignSlotKind; elementId: string; text: string; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip' }
+  /** A face the document's text was set in that the font set could not
+   *  give when the build ran (#629): no face of the family was loaded nor
+   *  installed (`missing`: the text was measured and drawn with a fallback
+   *  face), or the weight or slant came from another face of the family,
+   *  which the browser draws bolder or slanted (`synthesized`). Checked
+   *  where there is a font set (`document.fonts`, a worker's `self.fonts`,
+   *  `BuildDocumentOptions.fontSet`), behind
+   *  `debug.warnings.missingFont`. No page and no source range. */
+  | { kind: 'fontFallback'; family: string; weight: number; style: 'normal' | 'italic'; reason: 'missing' | 'synthesized' }
 );
 
 /** Where a design slot is painted: a running head (`'header'`), a folio

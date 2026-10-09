@@ -1,7 +1,7 @@
 import { clearCache } from '@chenglou/pretext';
 import type { LocaleTag } from '../types';
 import { setHyphenationLocale } from '../hyphenate';
-import { clearTextWidthCache } from './canvas';
+import { clearTextWidthCache, evictTextWidths, measurementGeneration } from './canvas';
 import type { MeasurementCache } from './types';
 
 /**
@@ -108,6 +108,18 @@ export function clearMeasurementCache(): void {
   clearTextWidthCache();
 }
 
+/**
+ * Drop what was measured in `families` (#629): the engine's widths of
+ * those families and, at the next lookup, the blocks of every
+ * `MeasurementCache` that set text in them. Pretext's own cache holds no
+ * family index and is cleared whole. Called when faces of these families
+ * arrive or leave; {@link clearMeasurementCache} drops every family.
+ */
+export function evictFontFamilies(families: Iterable<string>): void {
+  clearCache();
+  evictTextWidths(families);
+}
+
 export function createMeasurementCache(): MeasurementCache {
-  return { _blocks: new Map() };
+  return { _blocks: new Map(), _generation: measurementGeneration() };
 }

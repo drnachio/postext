@@ -46,7 +46,10 @@ import { orientLinesToFrames } from './mirrorFrame';
 import { verseMarginTopPx } from './buildBlockKind';
 import { verseLinesSettings, versesLineByLine } from './verseLines';
 import type { MeasurementCache } from '../measure';
-import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
+import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale, validateConfigCache } from './config';
+import { resolveDebugConfig } from '../defaults/debug';
+import { defaultFontSet, documentFontFaces, fontFallbacks, type FontFaceSetLike } from '../fonts/faces';
+import { syncFontSet } from '../fonts/fontSet';
 import { asciiDigits } from '../arabicNumerals';
 import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
 import {
@@ -254,6 +257,15 @@ export interface BuildDocumentOptions {
    * contents rounds); dev tooling shows where a build's time went.
    */
   onPass?: (info: BuildPassInfo) => void;
+  /**
+   * The font set the build measures against (#629): by default
+   * `document.fonts`, or `self.fonts` in a worker. At its start the build
+   * drops what was measured in families whose faces changed since the
+   * last build; at its end it lists the faces its text was set in that
+   * the set could not give (`fontFallback` content warnings). `null`
+   * skips both.
+   */
+  fontSet?: FontFaceSetLike | null;
 }
 
 /** One placement pass of a build, as reported to {@link BuildDocumentOptions.onPass}. */
@@ -7407,6 +7419,11 @@ export function* buildDocumentGen(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): Generator<void, VDTDocument, void> {
+  // Faces that arrived since the last build drop what was measured in
+  // their families, and a config changed in place resolves again (#629).
+  const fontSet = options?.fontSet === undefined ? defaultFontSet() : options.fontSet;
+  if (fontSet) syncFontSet(fontSet);
+  validateConfigCache(config);
   const doc = yield* buildDocumentRounds(content, config, cache, options);
   // References and markup the source names wrongly: read from the source
   // once, located on the pages of the finished layout. Kept apart from
@@ -7440,8 +7457,12 @@ export function* buildDocumentGen(
   const harakat = annotateArabicMarks(doc);
   // The rules over `*…*` runs under `bodyText.emphasis: 'overline'`.
   overlineEmphasis(doc);
-  if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0) {
-    doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat];
+  // Faces the text was set in that the font set could not give (#629).
+  const fallbacks: ContentWarning[] = fontSet && resolveDebugConfig(config?.debug).warnings.missingFont
+    ? fontFallbacks(documentFontFaces(doc), fontSet).map((f) => ({ kind: 'fontFallback', family: f.family, weight: f.weight, style: f.style, reason: f.reason }))
+    : [];
+  if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0 || fallbacks.length > 0) {
+    doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat, ...fallbacks];
   }
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,

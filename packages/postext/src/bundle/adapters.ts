@@ -13,6 +13,9 @@ import { decodeSvgImage, prepareSvgMarkup, svgPictureFontWarning } from '../svg/
 import type { PostextBundle } from './api';
 import { mimeForFile } from './manifest';
 import { videoMimeType } from '../video/url';
+import { evictFontFamilies } from '../measure/font';
+import { syncFontSet } from '../fonts/fontSet';
+import type { FontFaceSetLike } from '../fonts/faces';
 
 /** The fields of a bundle the adapters read: an opened `PostextBundle`, or
  *  any object with the same shape. */
@@ -110,8 +113,9 @@ function pictureBlob(bundle: BundleSource, r: Resource, inkHex: string | null, o
 }
 
 /** Register the bundle's fonts with the browser (`document.fonts` by
- *  default) so layout measures text with them. Call it — and await it —
- *  before `buildDocument`. Resolves to the faces added. */
+ *  default) so layout measures text with them, and drop what was measured
+ *  in their families before. Call it — and await it — before
+ *  `buildDocument`. Resolves to the faces added. */
 export async function loadBundleFonts(
   bundle: Pick<PostextBundle, 'fonts'>,
   fontSet: FontFaceSet | undefined = typeof document !== 'undefined' ? document.fonts : undefined,
@@ -120,12 +124,19 @@ export async function loadBundleFonts(
   // `document.fonts`, and a FontFace keeps no bytes.
   for (const f of bundle.fonts) registerFontBytes(f.family, f.weight, f.style, bytesOfFace(f.bytes));
   if (!fontSet || typeof FontFace === 'undefined') return [];
-  return Promise.all(bundle.fonts.map(async (f) => {
+  const faces = await Promise.all(bundle.fonts.map(async (f) => {
     const face = new FontFace(f.family, f.bytes, { weight: String(f.weight), style: f.style });
     await face.load();
-    fontSet.add(face);
     return face;
   }));
+  // Added in the bundle's order, whatever order they loaded in; then what
+  // was measured in these families before they arrived is dropped (#629).
+  for (const face of faces) fontSet.add(face);
+  if (faces.length > 0) {
+    evictFontFamilies(new Set(bundle.fonts.map((f) => f.family)));
+    syncFontSet(fontSet as unknown as FontFaceSetLike, { evict: false });
+  }
+  return faces;
 }
 
 /** Decode the bundle's pictures and register them with the canvas backend

@@ -66,8 +66,9 @@ describe('EF-175: the resolved configuration keeps its own copy of the palette',
     expect(first).toEqual({ heading: RED, swatch: RED, cell: RED });
     config.colorPalette![0]!.value.hex = TEAL;
     const second = colours(buildDocument(content, config));
-    // Same object, same resolution: every colour keeps the first palette.
-    expect(second).toEqual(first);
+    // Same object changed in place: the build notices (#629) and every
+    // colour takes the new palette, none keeps the old one.
+    expect(second).toEqual({ heading: TEAL, swatch: TEAL, cell: TEAL });
     // A new object is resolved afresh: every colour takes the new palette.
     const third = colours(buildDocument(content, { ...config }));
     expect(third).toEqual({ heading: TEAL, swatch: TEAL, cell: TEAL });

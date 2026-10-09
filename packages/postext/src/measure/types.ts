@@ -152,6 +152,10 @@ export interface MeasuredBlock {
 
 export interface MeasurementCache {
   _blocks: Map<string, MeasuredBlock>;
+  /** The measurement generation the blocks were measured under (#629):
+   *  when faces arrive or `clearMeasurementCache` runs, the next lookup
+   *  drops the blocks set in the families that changed. */
+  _generation?: number;
 }
 
 export interface MeasureBlockOptions {

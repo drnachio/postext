@@ -40,6 +40,7 @@
  */
 
 import { flowTextWidth, lineBaselineOffset } from '../measure/vertical';
+import { onTextWidthCacheClear } from '../measure/canvas';
 import type { ContentBlock, DirectiveAttrs } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
 import { spaceDirectiveLines } from '../parse/attrs';
@@ -314,7 +315,11 @@ export interface CalloutLayoutInput {
 /** The measures of `layoutCallout`'s first child across widths (see
  *  `CalloutLayoutInput.lineWidths`), per resolved configuration and
  *  content block: a build lays a split box out again on every pass. */
-const acrossWidthsMemo = new WeakMap<ResolvedConfig, WeakMap<ContentBlock, Map<string, ReturnType<typeof measureContentBlock> | undefined>>>();
+let acrossWidthsMemo = new WeakMap<ResolvedConfig, WeakMap<ContentBlock, Map<string, ReturnType<typeof measureContentBlock> | undefined>>>();
+// Measures: dropped with the widths when faces change (#629).
+onTextWidthCacheClear(() => {
+  acrossWidthsMemo = new WeakMap();
+});
 
 /** A box width the first child of a continuation was counted at (see
  *  `CalloutLayoutInput.lineWidths`). */

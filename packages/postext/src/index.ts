@@ -531,8 +531,23 @@ export { applySingleInkToSvg } from './svg/singleInk';
 // The document's fonts inside SVG pictures (#630).
 export { svgFontRequests, svgDeclaredFontFamilies, inlineSvgFonts, inlineSvgFontsSync, inlineSvgFontsDetailed, inlineSvgFontsDetailedSync, chainSvgFontProviders, injectSvgStyle, fontFaceRule, sniffFontFormat, parseFontFamilyList, isFontFaceOnlyStyleSheet, DEFAULT_SVG_FONT_MAX_BYTES } from './svg/fonts';
 export type { SvgFontRequest, SvgFontProvider, SvgFontSyncProvider, SvgFontProviderRequest, SvgFontStyle, SvgFontFormat, SvgFontStatus, SvgFontFaceReport, SvgFontWarning, InlineSvgFontsOptions, SvgFontInlining } from './svg/fonts';
-export { registerFontBytes, registerFontUrl, unregisterFontFamily, clearRegisteredFonts, registeredFontGeneration, registeredFontProvider, registeredFontSyncProvider, parseUnicodeRange } from './svg/fontRegistry';
-export type { RegisterFontOptions, RegisteredFontProviderOptions } from './svg/fontRegistry';
+export { registerFontBytes, registerFontUrl, unregisterFontFamily, clearRegisteredFonts, registeredFontGeneration, registeredFontProvider, registeredFontSyncProvider, parseUnicodeRange, registeredFontFiles } from './svg/fontRegistry';
+export type { RegisterFontOptions, RegisteredFontProviderOptions, RegisteredFontFile } from './svg/fontRegistry';
+// Faces loaded before layout, measurements dropped when they change, and
+// configs checked for changes made in place (#629).
+export { prepareFonts, withLoadedFonts, fontSampleText, configFontFaces } from './fonts/prepare';
+export type { PrepareFontsOptions, LoadedFontsOptions, FontReport, FontResolver, FontResolverAnswer, FontResolveRequest, FontFile, FontFileSource, BuiltDocuments } from './fonts/prepare';
+export { buildDocumentWithFonts } from './fonts/buildWithFonts';
+export type { BuildDocumentWithFontsOptions } from './fonts/buildWithFonts';
+export { watchFonts, onFontsChanged, syncFontSet } from './fonts/fontSet';
+export type { FontsChangedListener } from './fonts/fontSet';
+export { documentFontFaces, documentFontFamilies, fontFallbacks, defaultFontSet } from './fonts/faces';
+export type { FontFaceLike, FontFaceSetLike, FontFallback, FontFallbackReason, FontFallbackOptions, FontFaceRequest } from './fonts/faces';
+export { evictFontFamilies } from './measure/font';
+export { measurementGeneration } from './measure/canvas';
+export { parseFontString } from './measure/fontString';
+export { invalidateConfig } from './pipeline/config';
+export { stableStringify, stableHash, hashString, hashStringWide } from './util/stableHash';
 export { registerSvgImage, prepareSvgMarkup, decodeSvgImage } from './svg/image';
 export type { RegisterSvgImageOptions, PrepareSvgOptions } from './svg/image';
 

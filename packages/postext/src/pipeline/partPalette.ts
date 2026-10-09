@@ -265,6 +265,12 @@ export function flowColorValues(
 
 const valuesMemo = new WeakMap<PostextConfig, Map<string, { resourceTypes: readonly ResourceType[] | undefined; values: FlowColorValues }>>();
 
+/** Forget the colour values memoised for `config` (changed in place,
+ *  #629: `invalidateConfig`). */
+export function forgetFlowColorValues(config: PostextConfig): void {
+  valuesMemo.delete(config);
+}
+
 function computeFlowColorValues(
   config: PostextConfig,
   overrides: Readonly<Record<string, string>>,

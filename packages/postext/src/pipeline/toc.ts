@@ -11,6 +11,7 @@
  */
 
 import { flowTextWidth } from '../measure/vertical';
+import { onTextWidthCacheClear } from '../measure/canvas';
 import { fitLeader } from '../measure/leader';
 import type { ContentBlock, InlineSpan, TocBlockInfo } from '../parse';
 import type { OutlineEntry, ResolvedTocEntryStyleConfig } from '../types';
@@ -96,7 +97,11 @@ function tocBlocksFor(directive: ContentBlock, outline: readonly OutlineEntry[],
 
 /** The widest of a level's numbers in `font`, memoised per array and
  *  font (every entry of the level asks with the same array). */
-const widestCache = new WeakMap<readonly string[], Map<string, number>>();
+let widestCache = new WeakMap<readonly string[], Map<string, number>>();
+// Widths: dropped with the engine's when faces change (#629).
+onTextWidthCacheClear(() => {
+  widestCache = new WeakMap();
+});
 function widestNumber(numbers: readonly string[], font: string): number {
   let byFont = widestCache.get(numbers);
   if (!byFont) {

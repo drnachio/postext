@@ -41,12 +41,19 @@ import {
 import { dimensionToPx } from '../units';
 import { applyCjkGrid } from './cjkGrid';
 import { directionOf, presentTag, resolveNumerals } from '../locale';
+import { configFingerprint } from '../util/stableHash';
+import { forgetFlowColorValues } from './partPalette';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
 // Resolved configs are never mutated (derived variants spread them), so
 // one resolution per config object serves every pass of a build and every
-// chapter counted against the same config on the main thread.
+// chapter counted against the same config on the main thread. A raw
+// config may be changed in place by its host, though (#629): each
+// resolution keeps the config's text as it was (`configFingerprint`), and
+// every build compares it first (`validateConfigCache`), dropping the
+// resolution when it no longer matches.
 const resolvedByConfig = new WeakMap<PostextConfig, ResolvedConfig>();
+const fingerprints = new WeakMap<PostextConfig, string>();
 let resolvedDefault: ResolvedConfig | null = null;
 
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
@@ -56,9 +63,41 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
   }
   const hit = resolvedByConfig.get(rawConfig);
   if (hit) return hit;
+  if (!fingerprints.has(rawConfig)) {
+    const fingerprint = configFingerprint(rawConfig);
+    if (fingerprint !== undefined) fingerprints.set(rawConfig, fingerprint);
+  }
   const resolved = resolveAllConfigUncached(rawConfig);
   resolvedByConfig.set(rawConfig, resolved);
   return resolved;
+}
+
+/**
+ * Forget what the engine derived from `config` (its resolution, the part
+ * palette's colour values): the next build resolves it again. For hosts
+ * that change a config object in place on purpose; builds also notice a
+ * change on their own (see {@link validateConfigCache}).
+ */
+export function invalidateConfig(config: PostextConfig): void {
+  resolvedByConfig.delete(config);
+  fingerprints.delete(config);
+  forgetFlowColorValues(config);
+}
+
+/**
+ * Check, once per build, that `config` still reads as it did when it was
+ * resolved; if it was changed in place since, drop the cached resolution
+ * (and the part palette memo) so the build sees the change. Costs one
+ * `JSON.stringify` of the config.
+ */
+export function validateConfigCache(config: PostextConfig | undefined): void {
+  if (!config) return;
+  const fingerprint = configFingerprint(config);
+  if (fingerprint === undefined) return;
+  const known = fingerprints.get(config);
+  if (known === fingerprint) return;
+  if (known !== undefined) invalidateConfig(config);
+  fingerprints.set(config, fingerprint);
 }
 
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {

@@ -1,5 +1,6 @@
 import { cjkMarkPieces } from './cjkClasses';
 import { hasCJK } from './cjk';
+import { fontStringFamily } from './fontString';
 
 let _measureCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null = null;
 /** Font string currently set on the measure context, to skip redundant
@@ -98,10 +99,71 @@ export function measureRunWidth(text: string, font: string): number {
 /** Drop all cached text widths. Must be called whenever font faces are
  *  (un)registered: widths measured against fallback glyphs are stale. */
 export function clearTextWidthCache(): void {
-  _widthCaches = new Map();
-  _widthCacheEntries = 0;
-  _runCaches = new Map();
-  _runCacheEntries = 0;
+  evictTextWidths(null);
+}
+
+// The measurement generation (#629): bumped whenever widths are dropped, so
+// caches filled under another generation (a host's `MeasurementCache`) know
+// to drop what was measured with the faces that changed. The log says which
+// families each bump concerned (null: all of them).
+let _generation = 0;
+const _evictions: { generation: number; families: ReadonlySet<string> | null }[] = [];
+const MAX_EVICTIONS = 64;
+
+/** The current measurement generation: a counter bumped by every
+ *  {@link evictTextWidths} (and so by `clearMeasurementCache` and the
+ *  per-family eviction when faces arrive). */
+export function measurementGeneration(): number {
+  return _generation;
+}
+
+/** What changed since `generation`: every family (`all`), or the
+ *  families named by the evictions after it (lower case). */
+export function evictionsSince(generation: number): { all: boolean; families: Set<string> } {
+  const families = new Set<string>();
+  if (generation >= _generation) return { all: false, families };
+  const oldest = _evictions[0];
+  if (!oldest || oldest.generation > generation + 1) return { all: true, families };
+  for (const e of _evictions) {
+    if (e.generation <= generation) continue;
+    if (e.families === null) return { all: true, families };
+    for (const f of e.families) families.add(f);
+  }
+  return { all: false, families };
+}
+
+function dropFamilies(caches: Map<string, Map<string, number>>, families: ReadonlySet<string>): number {
+  let dropped = 0;
+  for (const [font, byText] of caches) {
+    const family = fontStringFamily(font);
+    if (family !== null && families.has(family.toLowerCase())) {
+      dropped += byText.size;
+      caches.delete(font);
+    }
+  }
+  return dropped;
+}
+
+/** Drop the cached widths measured in `families` (case-insensitive), or
+ *  every width when `families` is null, and bump the measurement
+ *  generation. The listeners of {@link onTextWidthCacheClear} (caches of
+ *  ink and baselines) clear whole. */
+export function evictTextWidths(families: Iterable<string> | null): void {
+  const set = families === null ? null : new Set(Array.from(families, (f) => f.toLowerCase()));
+  if (set === null) {
+    _widthCaches = new Map();
+    _widthCacheEntries = 0;
+    _runCaches = new Map();
+    _runCacheEntries = 0;
+  } else {
+    _widthCacheEntries -= dropFamilies(_widthCaches, set);
+    _runCacheEntries -= dropFamilies(_runCaches, set);
+  }
+  // The context resolves its font again on the next measure.
+  _currentFont = '';
+  _generation++;
+  _evictions.push({ generation: _generation, families: set });
+  if (_evictions.length > MAX_EVICTIONS) _evictions.shift();
   for (const listener of _fontChangeListeners) listener();
 }
 

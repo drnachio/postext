@@ -821,6 +821,13 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;
+    case 'fontFallback': {
+      const face = `"${w.family}" ${w.weight}${w.style === 'italic' ? ' italic' : ''}`;
+      text = w.reason === 'missing'
+        ? `The face ${face} was not loaded when the document was laid out — its text was measured with a fallback face; load it first (prepareFonts, buildDocumentWithFonts)`
+        : `The face ${face} has no file of its own — the browser draws it from another weight or slant of the family; load that face or set a weight the family has`;
+      break;
+    }
     case 'designTextTruncated':
       text = w.mode === 'clip'
         ? `The ${w.slot} text "${w.text}" (element "${w.elementId}") is wider than its box and clipped`

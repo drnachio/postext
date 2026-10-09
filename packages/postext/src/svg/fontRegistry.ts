@@ -281,3 +281,58 @@ export function registeredFontSyncProvider(): SvgFontSyncProvider {
     return got.length === 0 ? null : got.length === 1 ? got[0]! : got;
   };
 }
+
+/** A registered file, with the descriptors a `FontFace` takes. */
+export interface RegisteredFontFile {
+  family: string;
+  /** `'400'`, or a variable range `'100 900'`. */
+  weight: string;
+  style: SvgFontStyle;
+  /** The file's `unicode-range`, when it is a slice. */
+  unicodeRange?: string;
+  bytes: Uint8Array;
+}
+
+function rangeText(ranges: [number, number][] | null): string | undefined {
+  if (!ranges) return undefined;
+  const hex = (n: number) => n.toString(16).toUpperCase().padStart(4, '0');
+  return ranges.map(([lo, hi]) => (lo === hi ? `U+${hex(lo)}` : `U+${hex(lo)}-${hex(hi)}`)).join(', ');
+}
+
+/**
+ * The files of a face the registry holds (#629): the cut nearest to
+ * (weight, style), and of a family served as slices only the slices that
+ * hold `codePoints` (all of them when absent), each with its descriptors —
+ * what a layout worker needs to declare the face (`registerFonts`). URL
+ * faces are fetched; with `styleSheets`, a family nothing registered is
+ * read from the page's `@font-face` rules, as {@link registeredFontProvider}
+ * does. Files that cannot be had are left out.
+ */
+export async function registeredFontFiles(
+  family: string,
+  weight: number,
+  style: SvgFontStyle,
+  options?: { codePoints?: ReadonlySet<number>; styleSheets?: boolean; fetch?: typeof fetch },
+): Promise<RegisteredFontFile[]> {
+  const fetchImpl = options?.fetch ?? (typeof fetch !== 'undefined' ? fetch.bind(globalThis) : undefined);
+  let found = pick(familyEntries(family), weight, style, options?.codePoints);
+  if (found.length === 0 && options?.styleSheets && familyEntries(family).length === 0) {
+    const lower = family.toLowerCase();
+    found = pick(styleSheetEntries().filter((e) => e.family.toLowerCase() === lower), weight, style, options?.codePoints);
+  }
+  const files = await Promise.all(found.map(async (e): Promise<RegisteredFontFile | null> => {
+    let bytes = e.bytes;
+    if (!bytes && e.url && fetchImpl) {
+      try {
+        bytes = await fetchBytes(e.url, fetchImpl);
+        settled.set(e.url, bytes);
+      } catch {
+        return null;
+      }
+    }
+    if (!bytes) return null;
+    const w = e.weight[0] === e.weight[1] ? String(e.weight[0]) : `${e.weight[0]} ${e.weight[1]}`;
+    return { family, weight: w, style: e.style, unicodeRange: rangeText(e.ranges), bytes };
+  }));
+  return files.filter((f): f is RegisteredFontFile => f !== null);
+}

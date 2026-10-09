@@ -5,6 +5,8 @@ import type { BuildProgress } from '../pipeline/build';
 export type { BuildProgress } from '../pipeline/build';
 import type { BuildStats, FontPayload, RequestMessage, ResponseMessage } from './protocol';
 import { cdnWorkerEntryUrl } from './entryUrl';
+import { fontSampleText, prepareFonts, type FontReport, type PrepareFontsOptions } from '../fonts/prepare';
+import { registeredFontFiles } from '../svg/fontRegistry';
 
 export type { BuildStats, FontPayload } from './protocol';
 export type { BuildPassInfo } from '../pipeline/build';
@@ -47,6 +49,13 @@ export interface LayoutWorkerHandle {
     config: PostextConfig | undefined,
     opts: BuildOptions & { cacheKey: string },
   ): Promise<void>;
+  /**
+   * `prepareFonts` on the page (#629), then the files of every face it
+   * found that the font registry holds — the resolver's, a bundle's, the
+   * page's readable `@font-face` rules — sent with `registerFonts`: the
+   * worker has a font set of its own. Resolves with the page's report.
+   */
+  prepareFonts(content: PostextContent, config?: PostextConfig, options?: PrepareFontsOptions): Promise<FontReport>;
   dispose(): void;
 }
 
@@ -203,6 +212,24 @@ export function createLayoutWorker(
         });
         send({ kind: 'unregisterFonts', id, families });
       });
+    },
+    async prepareFonts(content, config, options) {
+      const report = await prepareFonts(content, config, options);
+      const codePoints = new Set<number>();
+      for (const ch of fontSampleText(content, config)) codePoints.add(ch.codePointAt(0)!);
+      const files = (await Promise.all([...report.loaded, ...report.synthesized].map((f) =>
+        registeredFontFiles(f.family, f.weight, f.style, { codePoints, styleSheets: true })))).flat();
+      const seen = new Set<string>();
+      const payloads: FontPayloadInput[] = [];
+      for (const f of files) {
+        const key = `${f.family}|${f.weight}|${f.style}|${f.unicodeRange ?? ''}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        // A copy: the transfer detaches the buffer, the registry keeps its own.
+        payloads.push({ family: f.family, weight: f.weight, style: f.style, unicodeRange: f.unicodeRange, buffer: f.bytes.slice().buffer });
+      }
+      if (payloads.length > 0) await this.registerFonts(payloads);
+      return report;
     },
     warm(content, config, opts) {
       return this.build(content, config, { ...opts, wantDoc: false }).then(() => undefined);
