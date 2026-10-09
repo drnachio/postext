@@ -41,9 +41,10 @@ geometry, media and scan pages, and names the next command.
    design role is usually one unique (font, size, colour). Name the roles:
    body, h1–h6, caption, footnote, box text (`callout:<type>`), box titles
    (`callout-title:<type>`), special paragraphs (`paragraphs:<style>`),
-   credits, and `skip` for running heads, folios and label text inside
-   artwork. Split a style with position conditions (`top_mm`, `x_mm`) when
-   the same face serves two roles.
+   credits, and `skip` for running heads, folios, marginal line numbers
+   (they come back from `config.lineNumbers`, configuration.md §19f) and
+   label text inside artwork. Split a style with position conditions
+   (`top_mm`, `x_mm`) when the same face serves two roles.
 3. `pdf_extract.py markdown book.pdf --roles roles.json --out draft --lang es --link-refs`.
    The extractor:
    - reads column by column, with page-wide bands between;

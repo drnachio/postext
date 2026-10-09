@@ -323,8 +323,22 @@ To stop without a farmhouse near
   above ended. A caesura or a gap the poet set: `keepSpaces` on the fence.
 - Vertical Japanese or Chinese poems: leading U+3000 (two units each) or
   spaces indent from the head; `align` defaults to `start` there.
-- Do not number lines in the text: line numbers in the margin are a separate
-  feature; until it lands, a preprocessor may keep adding them.
+- Line numbers (postext ≥ 1.23): set config `lineNumbers` (configuration.md
+  §19f), never typed in the text and never side boxes after every fifth line.
+  Poems: `{"enabled": true}` numbers every fifth line of verse in the outer
+  margin, from 1 in each poem; `restart: "document"` runs on through a long
+  poem split into chapters (books, cantos); a poem resumed after a commentary
+  takes `:::verse{lineStart=37}`; a motto or song left out takes
+  `numbered=false`. Prose (statutes, Bibles, line-referenced teaching texts):
+  `count: "all"`, `restart: "page"` (or `"chapter"`), and `multiColumn:
+  "gutter"` on a two-column page; a paragraph style with `lineNumbers: false`
+  keeps headnotes and summaries out. A critical edition with a narrow
+  fore-edge column: `position: "side"` in a `oneAndHalf` layout with
+  `sideColumnRole: "floats"`; side glosses there may collide with a number
+  (`lineNumberOverlap`). Match the source's interval, side, size and italics;
+  strip the source's own numbers when extracting (they come out of PDFs as
+  stray digits at line ends). Notes keyed to lines keep the number typed in
+  the note (`:chip[8]{style="line"}`): the engine does not key them.
 
 ### B2. Margin glosses and side notes
 Use `layout.layoutType: "oneAndHalf"`, `sideColumnRole: "floats"` and

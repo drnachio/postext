@@ -255,8 +255,8 @@ Full references (load the one you need):
   geometry, grid, type, colour, boxes, openers and placement, and mapping
   them to config.
 - [references/playbooks.md](references/playbooks.md): the unusual cases
-  already solved (parts with palettes, openers, verse, glosses, footnotes,
-  back-of-book indexes,
+  already solved (parts with palettes, openers, verse, line numbers, glosses,
+  footnotes, back-of-book indexes,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions, Chinese books set
   horizontally and vertically, CJK fonts, Japanese books (horizontal, and
@@ -453,6 +453,9 @@ Read each chapter against the source pages and apply
   (playbooks A10);
 - poems as `:::verse` blocks, line by line with their indents and stanza
   breaks (`keepStanzas` for haiku and tanka);
+- line numbers in the margin (critical editions, poetry, statutes) from the
+  config `lineNumbers` (postext ≥ 1.23, configuration.md §19f), with the
+  source's typed numbers removed from the text, never side boxes;
 - sizes that grow with the text and reflowable content wherever they make
   sense, not fixed sizes or breaks copied from the source pages (see Rules
   of thumb).

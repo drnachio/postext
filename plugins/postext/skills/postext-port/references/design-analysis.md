@@ -262,6 +262,13 @@ paint order: text, rule, box and image elements (configuration.md §7).
   and chapter list), `parts.versoDesign` (the back), `parts.breakBefore`
   (`always-odd` for a blank leaf before) and `breakAfter`, and
   `parts.bodyStyle` (the chapter list typography).
+- **Line numbers** (postext ≥ 1.23): not a design slot but `config.lineNumbers`
+  (configuration.md §19f). Read off the source: what is counted (verse only
+  or every line), the interval, where the count restarts (poem, page,
+  chapter, the whole work), the side (outer, inner, gutter, the side column),
+  the distance from the text edge (`gap`, in em of the number's size), the
+  size against the body, italics and colour. The numbers take no room from
+  the text: check the margin holds the widest one.
 - **Screen (HTML viewer)**: there are no leaves or bleed there, so give it a
   simpler opener under `htmlViewer.overrides` (arrays such as `headingStyles`
   and `calloutStyles` are replaced wholesale: restate them).

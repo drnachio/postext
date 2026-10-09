@@ -179,6 +179,34 @@ describe.skipIf(!python)("postext-port lint on the Folio settings", () => {
   });
 });
 
+describe.skipIf(!python)("postext-port lint on line numbers", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+  const poem = CHAPTER + "\n:::verse{lineStart=x interval=0}\n滿紙荒唐言，\n一把辛酸淚！\n:::\n\n:::numbering{lines=-1}\n";
+
+  it("checks lineNumbers values, the vertical case and the per-block attributes", () => {
+    const { out } = lint(project({
+      ...fonts,
+      layout: { layoutType: "single", writingMode: "vertical-rl" },
+      lineNumbers: { enabled: true, count: "prose", interval: 0, every: 5 },
+      paragraphStyles: [{ id: "verse", lineNumbers: "yes" }],
+    }, poem));
+    expect(out).toContain("lineNumbers.count 'prose' is not one of ['all', 'verse']");
+    expect(out).toContain("lineNumbers.interval 0 is not a whole number >= 1");
+    expect(out).toContain("lineNumbers.every is not a lineNumbers key (ignored)");
+    expect(out).toContain("lineNumbers.enabled: vertical documents get no line numbers (lineNumbersUnsupported)");
+    expect(out).toContain("paragraphStyles[0].lineNumbers must be true or false");
+    expect(out).toContain("verse lineStart 'x' is not a whole number >= 0");
+    expect(out).toContain("verse interval '0' is not a whole number >= 1");
+    expect(out).toContain("numbering lines '-1' is not a whole number >= 0");
+  });
+
+  it("passes well-formed line numbers", () => {
+    const text = CHAPTER + "\n:::verse{lineStart=37 interval=5}\n滿紙荒唐言，\n一把辛酸淚！\n:::\n\n:::numbering{lines=1}\n";
+    const { out } = lint(project({ ...fonts, lineNumbers: { enabled: true, count: "all", restart: "page", multiColumn: "gutter" } }, text));
+    expect(out).not.toMatch(/lineNumbers|verse lineStart|verse interval|numbering lines/);
+  });
+});
+
 /** An Arabic chapter with a Latin marker word, in a one-locale project. */
 function arabicProject(config: object, text?: string, fonts: object[] = []): string {
   const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ar-"));

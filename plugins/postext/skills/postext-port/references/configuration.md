@@ -106,6 +106,7 @@ Conversion at `page.dpi` (default 300):
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
+| `lineNumbers` | LineNumbersConfig | §19f | line numbers in the margin, the gutter or the side column (postext ≥ 1.23): verse or every body line, interval, restarts, position, face; off by default |
 | `comics` | ComicsConfig | §19e | comic pages and strips (`:::page`, `:::strip`, postext ≥ 1.20): reading direction, frame, gutters, panel styles, lettering, balloon styles, cast; full reference in comics.md |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off. Japanese (`'ja'`, `'ja-JP'`; never `'jp'`, ≥ 1.16): the `japan` region (§19c2), 図/表, （続き）, 第{n}章 references, 参考文献, `{1:一}` = 百一 (japanese-informal), note defaults by writing mode (§19a), gojūon index, ja-JP citations, JAN glyph forms in the PDF |
@@ -745,7 +746,10 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
   textTransform = 'none'         ('uppercase' = capitals, chip words and :ref labels too, length-preserving; maths untouched)
-  wordBreak?: 'normal'|'keep-all' (≥ 1.16; unset = cjk.wordBreak; CJK lines only) }
+  wordBreak?: 'normal'|'keep-all' (≥ 1.16; unset = cjk.wordBreak; CJK lines only)
+  lineNumbers?: boolean          (≥ 1.23, §19f; unset = counted when lineNumbers.count is 'all', and a poem
+                                 set in the style counts under 'verse'; true = counted under 'verse' too and
+                                 inside a callout; false = never) }
 ```
 Inside the container the flow leaves the baseline grid. When it closes on a paragraph, the space under it merges
 with the next block's own (a heading's `marginTop`) and is at least the text's paragraph spacing
@@ -770,7 +774,7 @@ All em values = the callout body font size.
   sideAtColumnEnd = 'before'         side box whose following text continues on the next page (full column, or a
                                      paragraph/heading the break rules move on): 'before' = at the fence, beside
                                      the text before it (slides up; glosses), 'after' = level with the first line
-                                     of the text after it, on that page (line numbers, marginal heads)
+                                     of the text after it, on that page (marginal heads)
   fixed = { anchor: {to:'container', edge:'bottom-left'}, offset: {x:0pt, y:0pt} }   for placement:'fixed' (container = content area)
   floatBarrier = false               pending figures placed before this box (chapter-closing summaries)
   width = 'fill'                     'auto' = shrink-wrap title only (badge), children ignored
@@ -1277,6 +1281,74 @@ balloon style key, cast, reading direction) is in
 panel `borderWidth`/`borderRadius` in em throw (use mm/pt); balloon
 `padding`, `tailWidth`, `strokeWidth`, `halo` and `letterSpacing` are in em
 of the balloon text. Bundle the lettering and sound-effect faces.
+
+## 19f. `lineNumbers` — LineNumbersConfig (postext ≥ 1.23)
+
+Numbers beside every Nth line, as critical editions, poetry editions, legal
+texts and line-referenced teaching texts print them. The numbers are painted
+in the margin (or the gutter, or the side column) and never move a line: they
+take no room from the text, so leave a margin at least `gap` + the widest
+number wide. Never number lines in the text or with side boxes.
+
+| key | default | notes |
+|---|---|---|
+| `enabled` | `false` | |
+| `count` | `'verse'` | `'verse'` = the lines of `:::verse` poems, one number per line of verse (a turnover takes none, stanza gaps are not counted; a bayt counts once); `'all'` = every laid-out line of body paragraphs, list items, blockquotes and verse, in reading order (page by page, column by column, top to bottom) |
+| `interval` | `5` | print the multiples of N (5, 10, 15…); `1` = every line |
+| `numberFirst` | `false` | also print the first line after each restart |
+| `restart` | `'poem'` for `count:'verse'`, `'page'` for `'all'` | `'document'` (runs on through the chapters of a book), `'chapter'` (each level-1 heading), `'section'` (each level-1 or level-2 heading), `'page'`, `'poem'` (each `:::verse`) |
+| `startAt` | `1` | number of the first line after a restart |
+| `position` | `'outer'` | `'outer'` = away from the spine (right on a recto, left on a verso; mirrored for a right-bound book), `'inner'`, physical `'left'`/`'right'`, `'start'`/`'end'` (follow the document direction: `start` is the right in an RTL book), `'side'` = in the side column of a `oneAndHalf` layout with `sideColumnRole:'floats'`, flush with its edge next to the text (`gap` unused; a page without a side column falls back to `'outer'`) |
+| `multiColumn` | `'outer-edges'` | pages with 2+ columns side by side: `'outer-edges'` = first column's numbers on its left, last column's on its right, the ones between as `each`; `'gutter'` = in the gutters (first column on its right, the others on their left); `'each'` = every column on the `position` side |
+| `gap` | `1em` | text edge → number; em = the number's own size |
+| `align` | `'auto'` | `'auto'` = flush toward the text (right-aligned in a left margin, left-aligned in a right one); `'left'`/`'right'` within the width of the page's widest number |
+| `fontFamily` / `fontWeight` | body | bundle the family like any other face |
+| `fontSize` | `0.8em` | em = body size; each number sits on its line's baseline in its own size |
+| `italic` | `false` | |
+| `color` | body colour | a palette-linked colour follows part and section palettes |
+| `format` | decimal in the document's digits (`numerals`) | any numbering spelling: `'lower-roman'`, `'upper-roman'`, `'arabic-indic'`, `'一'`… |
+
+Never counted: headings, captions, tables and pictures, display maths,
+design text (openers, running heads), footnotes and chapter-end notes, the
+contents, the index and bibliography entries, blank pages, and callout text.
+Prose under `count:'verse'` and the text of a callout are counted only when
+their paragraph style says `lineNumbers: true` (§11); `lineNumbers: false`
+keeps a style out under `'all'`.
+
+Per block (document-format.md §12): `:::verse{numbered=false}` skips a poem,
+`lineStart=N` numbers its first line N and restarts the count there in any
+mode (a poem resumed after a commentary), `interval=N` is the poem's own
+interval; `:::numbering{lines=N}` numbers the next counted line N.
+
+- Books: with `restart:'document'` the count runs on through the chapters
+  (`continuation.lineNumber`; for `count:'all'` the Sandbox takes it from the
+  previous chapter's layout).
+- Vertical documents (`layout.writingMode:'vertical-rl'`) get no numbers; the
+  Sandbox warns `lineNumbersUnsupported`.
+- With `position:'side'` a number that falls on a side box, side caption or
+  float in the side column is painted anyway and the Sandbox warns
+  `lineNumberOverlap` (it points at the numbered line).
+- Outputs: canvas, PDF, HTML viewer and fixed EPUB paint them; tagged PDF
+  sets them as artifacts (copied and read-aloud text runs line to line), the
+  HTML hides them from copy and screen readers. Reflowable EPUB prints only
+  the verse numbers, beside the stanza. VDT: `page.lineNumbers` (a design
+  slot) and `page.lineNumberMarks` (`{number, label, columnIndex, blockId,
+  lineIndex}`).
+- Not supported: a `:ref` to a line, notes keyed to line numbers by the
+  engine (type the line number in the note: `:chip[8]{style="line"}`),
+  numbers inside table cells, captions or code.
+
+```json
+"lineNumbers": { "enabled": true, "interval": 5, "position": "outer",
+  "fontSize": {"value": 0.75, "unit": "em"}, "italic": true }
+```
+A Bible or statute numbered by page, every line, in the gutter of a
+two-column page: `{ "enabled": true, "count": "all", "restart": "page",
+"multiColumn": "gutter" }`. A critical edition with the numbers in a narrow
+fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
+8, "sideColumnRole": "floats", "sideColumnSide": "outer"}` (with
+`page.margins.mirror`) and `"lineNumbers": {"enabled": true, "position":
+"side"}`.
 
 ## 20. Fonts — `customFonts` and what goes in preset.json
 

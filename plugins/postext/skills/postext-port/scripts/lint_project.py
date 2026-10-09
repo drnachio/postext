@@ -229,6 +229,53 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
                             "the PDF and headless renders need the files)")
 
 
+LINE_NUMBERS_ENUMS = {
+    "count": {"verse", "all"},
+    "restart": {"document", "chapter", "section", "page", "poem"},
+    "position": {"outer", "inner", "left", "right", "start", "end", "side"},
+    "multiColumn": {"each", "gutter", "outer-edges"},
+    "align": {"auto", "left", "right"},
+}
+LINE_NUMBERS_KEYS = set(LINE_NUMBERS_ENUMS) | {"enabled", "interval", "numberFirst", "startAt", "gap", "fontFamily",
+                                               "fontSize", "fontWeight", "italic", "color", "format"}
+
+
+def _whole(v, lo: int) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v == int(v) and v >= lo
+
+
+def check_line_numbers(cfg: dict, where: str, rep: Report) -> None:
+    """`lineNumbers` (postext >= 1.23): keys, values the resolver drops, and
+    settings that print no numbers."""
+    for i, ps in enumerate(cfg.get("paragraphStyles") or []):
+        if isinstance(ps, dict) and "lineNumbers" in ps and not isinstance(ps["lineNumbers"], bool):
+            rep.warn(where, f"paragraphStyles[{i}].lineNumbers must be true or false (ignored)")
+    ln = cfg.get("lineNumbers")
+    if ln is None:
+        return
+    if not isinstance(ln, dict):
+        rep.error(where, "lineNumbers must be an object")
+        return
+    for k, v in ln.items():
+        if k not in LINE_NUMBERS_KEYS:
+            rep.warn(where, f"lineNumbers.{k} is not a lineNumbers key (ignored)")
+        elif k in LINE_NUMBERS_ENUMS and v not in LINE_NUMBERS_ENUMS[k]:
+            rep.warn(where, f"lineNumbers.{k} {v!r} is not one of {sorted(LINE_NUMBERS_ENUMS[k])}: the default is used")
+    for k, lo in (("interval", 1), ("startAt", 0)):
+        if k in ln and not _whole(ln[k], lo):
+            rep.warn(where, f"lineNumbers.{k} {ln[k]!r} is not a whole number >= {lo}: the default is used")
+    if not ln.get("enabled"):
+        if len(ln) > 1:
+            rep.info(where, "lineNumbers is set but not enabled: no numbers are printed")
+        return
+    if (cfg.get("layout") or {}).get("writingMode") == "vertical-rl":
+        rep.warn(where, "lineNumbers.enabled: vertical documents get no line numbers (lineNumbersUnsupported)")
+    lay = cfg.get("layout") or {}
+    if ln.get("position") == "side" and not (lay.get("layoutType") == "oneAndHalf" and lay.get("sideColumnRole") == "floats"):
+        rep.info(where, "lineNumbers.position 'side' needs layout oneAndHalf with sideColumnRole 'floats'; "
+                        "pages without that side column set the numbers 'outer'")
+
+
 FOLIO_ENUMS = {
     "paper.type": {"uncoated", "bookWove", "coatedMatte", "coatedSilk", "coatedGloss", "bible", "newsprint", "cardStock", "board"},
     "paper.finish": {"auto", "uncoated", "matte", "silk", "gloss"},
@@ -1792,6 +1839,12 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     in_refs = True
                 if fname == "numbering" and "format" in attrs and attrs["format"] not in NUMBERING_FORMATS | NUMBERING_TOKENS:
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
+                if fname == "numbering" and "lines" in attrs and not re.fullmatch(r"\s*\d+\s*", attrs["lines"]):
+                    rep.warn(where, f"numbering lines {attrs['lines']!r} is not a whole number >= 0 (ignored)")
+                if fname == "verse":
+                    for k, lo in (("lineStart", 0), ("interval", 1)):
+                        if k in attrs and not (re.fullmatch(r"\s*\d+\s*", attrs[k]) and int(attrs[k]) >= lo):
+                            rep.warn(where, f"verse {k} {attrs[k]!r} is not a whole number >= {lo} (ignored)")
             else:
                 rep.error(where, f":::{fname} is not a Postext container or directive (prints literally). "
                                  f"Containers: {sorted(KNOWN_CONTAINERS)}; directives: {sorted(KNOWN_DIRECTIVES - COMIC_BLOCKS)}; "
@@ -2045,6 +2098,7 @@ def main() -> None:
             for k, v in loc["config"].items():
                 if isinstance(v, dict) and isinstance(shared.get(k), dict) and set(shared[k]) - set(v):
                     rep.warn(f"localized.{lang}.config.{k}", f"replaces the shared `{k}` wholesale; missing keys {sorted(set(shared[k]) - set(v))[:6]} fall back to defaults")
+        check_line_numbers(cfg, f"config ({lang})", rep)
         ids = style_ids(cfg)
         for r in resources:
             if r.get("typeId") and r["typeId"] not in ids["types"]:
