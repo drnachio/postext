@@ -1521,6 +1521,12 @@ export interface SandboxLabels {
   hashBundleReplaceMessage: string;
   hashBundleReplaceKeep: string;
   hashBundleReplaceConfirm: string;
+  /** A homepage link (`restore=ask`) to an example book the reader edited:
+   *  open their version or restore the original. */
+  presetDraftReplaceTitle: string;
+  presetDraftReplaceMessage: string;
+  presetDraftReplaceKeep: string;
+  presetDraftReplaceConfirm: string;
 
   // Projects panel
   projects: string;

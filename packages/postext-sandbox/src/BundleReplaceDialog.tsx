@@ -6,14 +6,16 @@ import { useSandboxBundleReplacePrompt, useSandboxLabels } from './context/Sandb
 import { Button, usePortalContainer } from './ui';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from './ui/surface';
 
-/** Asks, when a host bundle link (`#recipe=…`) names a book the reader
- *  imported before, whether to open their copy or replace it with the
- *  published one. Escape keeps the copy. */
+/** Asks, when a link names a book the reader has their own version of — a
+ *  host bundle link (`#recipe=…`) to a book imported before, or a homepage
+ *  link (`restore=ask`) to a preset they edited — whether to open their
+ *  version or replace it with the published one. Escape keeps theirs. */
 export function BundleReplaceDialog() {
   const labels = useSandboxLabels();
   const { prompt, answer } = useSandboxBundleReplacePrompt();
   const container = usePortalContainer();
   const keepRef = useRef<HTMLButtonElement>(null);
+  const preset = prompt?.kind === 'preset';
 
   return (
     <AlertDialog.Root open={prompt !== null} onOpenChange={(open) => { if (!open) answer(false); }}>
@@ -36,17 +38,17 @@ export function BundleReplaceDialog() {
           }}
         >
           <AlertDialog.Title style={{ fontSize: 15, lineHeight: '20px', fontWeight: 600, margin: '0 0 8px' }}>
-            {labels.hashBundleReplaceTitle}
+            {preset ? labels.presetDraftReplaceTitle : labels.hashBundleReplaceTitle}
           </AlertDialog.Title>
           <AlertDialog.Description style={{ margin: '0 0 16px' }}>
-            {labels.hashBundleReplaceMessage.replace('__name__', prompt?.name ?? '')}
+            {(preset ? labels.presetDraftReplaceMessage : labels.hashBundleReplaceMessage).replace('__name__', prompt?.name ?? '')}
           </AlertDialog.Description>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button ref={keepRef} variant="outline" size="sm" onClick={() => answer(false)}>
-              {labels.hashBundleReplaceKeep}
+              {preset ? labels.presetDraftReplaceKeep : labels.hashBundleReplaceKeep}
             </Button>
             <Button variant="primary" size="sm" onClick={() => answer(true)}>
-              {labels.hashBundleReplaceConfirm}
+              {preset ? labels.presetDraftReplaceConfirm : labels.hashBundleReplaceConfirm}
             </Button>
           </div>
         </AlertDialog.Popup>
