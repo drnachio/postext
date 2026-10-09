@@ -893,7 +893,8 @@
         "ja": "配置",
         "pt": "Posicionamento"
       }
-    }
+    },
+    "fixedIn": "1.24.0"
   },
   "math-in-captions": {
     "label": {

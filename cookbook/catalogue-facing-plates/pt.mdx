@@ -1,6 +1,6 @@
 ---
 title: "Verbetes de catálogo diante das suas pranchas"
-summary: "Cada verbete abre uma página par e cita a sua prancha na primeira frase do comentário; a prancha flutua para a ímpar em frente, com 221 mm de altura."
+summary: "Cada verbete abre uma página par e cita a prancha na primeira frase do comentário; a prancha flutua para a ímpar em frente, reduzida até encher a mancha."
 plain: "Um pequeno catálogo de exposição com três gravuras antigas do Dom Quixote. Cada texto fica numa página da esquerda, e a gravura ocupa inteira a página da direita, bem em frente."
 description: "Catálogo de gravuras composto no Postext: três gravuras de Doré, cada verbete numa página par diante da sua prancha e uma lista de obras com miniaturas."
 question: "Como faço para pôr cada verbete do catálogo na página da esquerda com a prancha em frente, na direita?"
@@ -10,13 +10,13 @@ pageNotes: { "1": "A capa: sobre um preto quente, um fio dourado emoldura um det
 
 ## O que você vai compor
 
-Um pequeno catálogo para uma exposição de gabinete com três xilogravuras do *Dom Quixote* de Gustave Doré (Paris, 1863), numa página de 230 × 280 mm. A capa compõe DORÉ em Libre Bodoni de 88 pt sobre preto quente, sob um detalhe emoldurado da prancha dos moinhos. Cada verbete abre uma página da esquerda com um número de catálogo em sépia ao lado de um título em itálico, a ficha técnica na coluna externa, um texto de abertura com capitular de três linhas e o comentário. A primeira frase do comentário cita a prancha, que abre a página da direita em frente, centrada e com 221 mm de altura, de modo que prancha, legenda e linha de crédito preenchem a mancha. A última página é uma lista de obras com uma miniatura na primeira célula de cada linha e a página em que cada prancha é impressa.
+Um pequeno catálogo para uma exposição de gabinete com três xilogravuras do *Dom Quixote* de Gustave Doré (Paris, 1863), numa página de 230 × 280 mm. A capa compõe DORÉ em Libre Bodoni de 88 pt sobre preto quente, sob um detalhe emoldurado da prancha dos moinhos. Cada verbete abre uma página da esquerda com um número de catálogo em sépia ao lado de um título em itálico, a ficha técnica na coluna externa, um texto de abertura com capitular de três linhas e o comentário. A primeira frase do comentário cita a prancha, que abre a página da direita em frente, centrada e reduzida até que prancha, legenda e linha de crédito preencham a mancha, com 215 mm de altura. A última página é uma lista de obras com uma miniatura na primeira célula de cada linha e a página em que cada prancha é impressa.
 
 ## Preparo
 
 ### 1 · A prancha espera pela página em frente
 
-O código é [a resposta curta](#a-resposta-curta) lá em cima. Cada verbete quebra para uma página par, e um flutuante `top` nunca cai na página que o cita, então a prancha citada na primeira frase do comentário pula o verso e abre o recto em frente. O Postext 1.4.1 não reduz um flutuante ao espaço que sobra na sua página, por isso `plate()` calcula a largura do flutuante a partir da proporção do escaneamento e da altura que resta na mancha depois da legenda e da linha de crédito. `layout.fitFiguresToPage` reduziria uma prancha alta demais para a página, mas a 1.4.1 encosta então a imagem menor à esquerda, num flutuante que continua ocupando toda a largura. Uma fração de largura estreita o próprio flutuante, e `align: 'center'` centra a prancha junto com a legenda.
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Cada verbete quebra para uma página par, e um flutuante `top` nunca cai na página que o cita, então a prancha citada na primeira frase do comentário pula o verso e abre o recto em frente. O `defaultPlacement` do tipo de prancha pede `shrink: 'page'`: na largura toda, uma prancha teria 242 mm de altura, mais do que cabe na mancha da ímpar, então o Postext a reduz, mantendo as proporções, até que prancha, legenda e linha de crédito caibam na faixa que sobra acima do espaço do flutuante ([posicionamento](/pt/docs/document-format#posicionamento)). `minScale: 0.5` deixaria uma prancha descer até metade da largura; aqui cada uma mantém cerca de nove décimos. `captionMeasure: 'body'` compõe a legenda e a linha de crédito na largura da prancha, e `align: 'center'` centra as duas na página.
 
 ### 2 · O alto do verbete sai do seu título
 
@@ -28,7 +28,7 @@ Cada título `#` leva como atributos o capítulo e a ficha técnica, e o espaço
 
 <Excerpt region="scans" />
 
-O Postext dimensiona um bitmap pelos pixels que declara, na resolução do documento, e nunca o imprime mais largo do que esses pixels permitem. `plate()` declara o original de cada prancha, o escaneamento do Commons reduzido a 2.400 px de altura: 1.900 × 2.400 px em Cat. 1, que com `page.dpi: 150` poderia chegar a 322 mm. Quem manda no tamanho é, portanto, a fração de largura, 221 mm de altura, e nessa altura 2.400 px dão uns 275 dpi. Com os 300 dpi padrão, a prancha pararia em 161 mm de largura. O canvas desenha nessa caixa a imagem que estiver registrada, então o pen busca as três cópias de 835 px em `assets/`, 0,97 MB contra 5,8 MB dos originais. Desenhadas a partir dos originais de 2.400 px, os céus se enchem de faixas de moiré e as imagens da captura crescem cerca de 0,3 MB, acima do limite de 1,4 MB das Receitas.
+O Postext dimensiona um bitmap pelos pixels que declara, na resolução do documento, e nunca o imprime mais largo do que esses pixels permitem. `plate()` declara o original de cada prancha, o escaneamento do Commons reduzido a 2.400 px de altura: 1.900 × 2.400 px em Cat. 1, que com `page.dpi: 150` poderia chegar a 322 mm. Quem manda no tamanho é, portanto, a mancha, 215 mm de altura, e nessa altura 2.400 px dão uns 283 dpi. Com os 300 dpi padrão, a prancha pararia em 161 mm de largura. O canvas desenha nessa caixa a imagem que estiver registrada, então o pen busca as três cópias de 835 px em `assets/`, 0,97 MB contra 5,8 MB dos originais. Desenhadas a partir dos originais de 2.400 px, os céus se enchem de faixas de moiré e as imagens da captura crescem cerca de 0,3 MB, acima do limite de 1,4 MB das Receitas.
 
 ### 4 · Uma capa a partir de um estilo de título
 
@@ -52,11 +52,12 @@ Um verbete que passa do seu verso continua mandando a prancha para a página seg
 
 ### Deixar respiro sob as pranchas
 
-Uma altura fixa põe todas as pranchas com 190 mm, centradas, com uns 31 mm de mancha vazia sob a linha de crédito.
+Uma fração de largura estreita o próprio flutuante: a 78 % da mancha, todas as pranchas ficam com uns 188 mm de altura, centradas, com uns 27 mm de mancha vazia sob a linha de crédito, e nenhuma precisa ser reduzida.
 
 ```diff
--const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
-+const PLATE_H = 190; // mm: the same height for every plate, with air below
+-  defaultPlacement: { position: 'top', span: 'page', align: 'center',
+-    shrink: 'page', minScale: 0.5, captionMeasure: 'body' },
++  defaultPlacement: { position: 'top', span: 'page', align: 'center', width: 0.78 },
 ```
 
 ### Pôr figuras na coluna externa

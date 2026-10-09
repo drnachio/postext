@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 034 · Catalogue entries facing their plates ══════════════
 // https://postext.dev/en/cookbook/catalogue-facing-plates
 // Code: MIT · Text: original (CC BY 4.0), Ormsby 1885 (PD) · Plates: Doré and Pisan, 1863 (PD)
-// Fonts: Ibarra Real Nova, Libre Bodoni, Sofia Sans Condensed (OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Ibarra Real Nova, Libre Bodoni, Sofia Sans Condensed (OFL 1.1) · Needs postext ≥ 1.24.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -47,19 +47,17 @@ const entryLevel = () => ({
 const plateType = {
   id: 'plate', name: 'Cat.', shortLabel: 'Cat.', captionPrefix: 'Cat.', // 'Cat. 1. …'
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal',
-  defaultPlacement: { position: 'top', span: 'page', align: 'center' },
+  // A plate taller than the recto's text block is scaled, proportions kept, until plate, caption
+  // and credit line fit it; the caption takes the plate's width, and both are centred.
+  defaultPlacement: { position: 'top', span: 'page', align: 'center',
+    shrink: 'page', minScale: 0.5, captionMeasure: 'body' },
 };
-// Under the plate (pt): a caption and a credit line at the body's leading ratio, and their gaps.
+// Under the plate (pt): a caption and a credit line, and their gaps.
 const CAPTION = { size: 8.5, gap: 6, note: 7.2, noteGap: 1.5 };
-const UNDER = (CAPTION.size + CAPTION.note) * (LEAD / SIZE) + CAPTION.gap + CAPTION.noteGap;
-const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
-// A float is not shrunk to fit the room left on its page (gap: float-shrink); fitFiguresToPage
-// sets the smaller picture flush left. A width fraction narrows the float, and 'center' centres it.
 const plate = ({ id, file, caption, altText }, [pxW, pxH]) => ({
   id, typeId: 'plate', kind: 'bitmap', caption, note: CREDIT, altText,
-  // The print master's pixels, about 275 dpi at this size (gotcha: bitmap-print-size).
-  bitmap: { fileId: file, format: 'jpeg', width: pxW, height: pxH },
-  placement: { width: Math.min(1, ((pxW / pxH) * PLATE_H) / BLOCK_W) }, createdAt: 0, updatedAt: 0,
+  // The print master's pixels, about 283 dpi at this size (gotcha: bitmap-print-size).
+  bitmap: { fileId: file, format: 'jpeg', width: pxW, height: pxH }, createdAt: 0, updatedAt: 0,
 });
 // #endregion
 const MASTER_PX = { library: [1900, 2400], vigil: [1921, 2400], windmills: [1923, 2400] };
@@ -183,7 +181,7 @@ const footer = { elements: [ // folios at the outer foot; entries (versos) add t
 const config = () => ({ // a factory: the engine caches resolved configs per object
   colorPalette, resourceTypes: [plateType, listType],
   // A bitmap is never set wider than its declared pixels at this dpi: at 150 dpi a 1,900-px
-  // scan may reach 322 mm, so the width fraction decides (at 300 dpi it stops at 161 mm).
+  // scan may reach 322 mm, so the text block decides (at 300 dpi it stops at 161 mm).
   page: { width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(TOP), bottom: mm(TRIM.h - TOP - BLOCK_H), left: mm(INNER),
       right: mm(OUTER), mirror: true } },

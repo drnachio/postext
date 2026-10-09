@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "catalogue-facing-plates",
-  "sourceHash": "cd7c9075cd36555160b10dae4fbc604da776d9ef25e43f5a3941cdf555238d40",
+  "sourceHash": "c0f3b261375cb709c0f312e2b6c6e5b0964376ebfb0e198cc6dc1ed197f28866",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:30:14.533Z",
+  "capturedAt": "2026-10-09T21:08:28.784Z",
   "variants": {
     "en": {
-      "hash8": "d0a1457c",
-      "vdtHash": "c0b910a6f1eb5124b2cb6ad5fba45810f17fb875",
+      "hash8": "1c93f3e2",
+      "vdtHash": "3471f104367eae809252e1b615e2cec7ce71a064",
       "timings": {
-        "importMs": 457,
-        "fontsMs": 1860,
-        "buildMs": 14,
-        "totalMs": 2960,
+        "importMs": 23734,
+        "fontsMs": 1071,
+        "buildMs": 112,
+        "totalMs": 29543,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Sofia Sans Condensed"
         ],
         "pages": 8,
-        "ownLines": 250
+        "ownLines": 248
       },
       "pages": [
         {
@@ -72,7 +72,7 @@
           "h": 1217,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 240882,
+          "bytes": 230782,
           "alt": "Page 3. Cat. 1. Don Quixote in His Library."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1217,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 153802,
+          "bytes": 148004,
           "alt": "Page 5. Cat. 2. The Vigil of Arms."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1217,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 269648,
+          "bytes": 257424,
           "alt": "Page 7. Cat. 3. The Adventure of the Windmills."
         },
         {
@@ -167,7 +167,7 @@
       },
       "sandbox": {
         "file": "catalogue-facing-plates.postext",
-        "bytes": 1603988,
+        "bytes": 1603576,
         "folio": "2f38e47f"
       },
       "detected": {
@@ -276,7 +276,10 @@
           "resourceTypes[].counterFormat",
           "resourceTypes[].defaultPlacement",
           "resourceTypes[].defaultPlacement.align",
+          "resourceTypes[].defaultPlacement.captionMeasure",
+          "resourceTypes[].defaultPlacement.minScale",
           "resourceTypes[].defaultPlacement.position",
+          "resourceTypes[].defaultPlacement.shrink",
           "resourceTypes[].defaultPlacement.span",
           "resourceTypes[].id",
           "resourceTypes[].name",
@@ -309,7 +312,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 400,
+        "configLeaves": 403,
         "designElements": 20,
         "directives": [
           ":::paragraphs",
@@ -397,7 +400,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.21 MB (warning at 0.9 MB for 8 pages)"
+            "detail": "the edition's images weigh 1.18 MB (warning at 0.9 MB for 8 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

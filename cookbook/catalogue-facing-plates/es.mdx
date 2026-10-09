@@ -1,6 +1,6 @@
 ---
 title: "Fichas de catálogo frente a sus láminas"
-summary: "Cada ficha abre página par y cita su lámina al empezar el comentario; la lámina flota a la impar de enfrente con 221 mm de alto y el ancho que da su proporción."
+summary: "Cada ficha abre página par y cita su lámina al empezar el comentario; la lámina flota a la impar de enfrente, reducida hasta llenar la caja de texto."
 plain: "Un pequeño catálogo de exposición con tres grabados antiguos del Quijote. Cada ficha va en una página izquierda y su imagen ocupa entera la página derecha de enfrente."
 description: "Catálogo de gabinete compuesto con Postext: tres grabados de Doré, cada ficha en página par frente a su lámina y, al final, una lista de obras con miniaturas."
 question: "¿Cómo compongo cada ficha de catálogo en la página izquierda con su lámina enfrente, en la derecha?"
@@ -10,13 +10,13 @@ pageNotes: { "1": "La cubierta: sobre un negro cálido, un filete dorado enmarca
 
 ## Lo que vas a componer
 
-Un pequeño catálogo en inglés para una exposición de gabinete: tres grabados en madera del *Quijote* de Gustave Doré (París, 1863), en página de 230 × 280 mm. La cubierta compone DORÉ en Libre Bodoni de 88 pt sobre un negro cálido, bajo un detalle enmarcado de la lámina de los molinos. Cada ficha abre una página par con un número de catálogo en sepia junto a un título en cursiva, la ficha técnica en la columna exterior, una entradilla con capitular de tres líneas y el comentario. La primera frase del comentario cita la lámina, que abre la página impar de enfrente, centrada y con 221 mm de alto; lámina, pie y línea de crédito llenan así la caja de texto. La última página es una lista de obras con una miniatura en la primera celda de cada fila y la página en que se imprime cada lámina.
+Un pequeño catálogo en inglés para una exposición de gabinete: tres grabados en madera del *Quijote* de Gustave Doré (París, 1863), en página de 230 × 280 mm. La cubierta compone DORÉ en Libre Bodoni de 88 pt sobre un negro cálido, bajo un detalle enmarcado de la lámina de los molinos. Cada ficha abre una página par con un número de catálogo en sepia junto a un título en cursiva, la ficha técnica en la columna exterior, una entradilla con capitular de tres líneas y el comentario. La primera frase del comentario cita la lámina, que abre la página impar de enfrente, centrada y reducida hasta que lámina, pie y línea de crédito llenan la caja de texto, con 215 mm de alto. La última página es una lista de obras con una miniatura en la primera celda de cada fila y la página en que se imprime cada lámina.
 
 ## Elaboración
 
 ### 1 · La lámina espera a la página de enfrente
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada ficha salta a página par, y un flotante `top` nunca cae en la página que lo cita, así que la lámina citada en la primera frase del comentario se salta la par y abre la impar de enfrente. Postext 1.4.1 no reduce un flotante para que quepa en el hueco que le queda en su página, de modo que `plate()` calcula el ancho del flotante a partir de la proporción del escaneado y de la altura que deja la caja de texto una vez descontados el pie y la línea de crédito. `layout.fitFiguresToPage` reduciría una lámina demasiado alta para la página, pero la 1.4.1 pega entonces la imagen reducida a la izquierda de un flotante que sigue ocupando todo el ancho. Una fracción de ancho estrecha el propio flotante, y `align: 'center'` centra la lámina junto con su pie.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada ficha salta a página par, y un flotante `top` nunca cae en la página que lo cita, así que la lámina citada en la primera frase del comentario se salta la par y abre la impar de enfrente. La `defaultPlacement` del tipo de lámina pide `shrink: 'page'`: a toda la medida una lámina tendría 242 mm de alto, más de lo que cabe en la caja de texto de la impar, así que Postext la reduce, sin cambiar sus proporciones, hasta que lámina, pie y línea de crédito caben en la banda que queda sobre el espacio del flotante ([colocación](/es/docs/document-format#colocación)). `minScale: 0.5` dejaría bajar una lámina hasta la mitad de su anchura; aquí cada una conserva unas nueve décimas. `captionMeasure: 'body'` compone el pie y la línea de crédito a la anchura de la lámina, y `align: 'center'` centra ambos en la página.
 
 ### 2 · La cabeza de la ficha sale de su título
 
@@ -28,7 +28,7 @@ Cada título `#` lleva como atributos su capítulo y su ficha técnica, y la ape
 
 <Excerpt region="scans" />
 
-Postext mide un mapa de bits por los píxeles que declara, a la resolución del documento, y nunca lo imprime más ancho de lo que esos píxeles permiten. `plate()` declara el original de cada lámina, el escaneado de Commons reducido a 2400 px de alto: 1900 × 2400 px en Cat. 1, que a `page.dpi: 150` podría llegar a 322 mm. Por eso manda la fracción de ancho: la lámina mide 221 mm de alto, y a esa altura 2400 px dan unos 275 ppp. Con los 300 ppp por defecto, se quedaría en 161 mm de ancho. El lienzo dibuja en esa caja la imagen que esté registrada, así que la receta carga de `assets/` tres copias de 835 px, 0,97 MB frente a los 5,8 MB de los originales. Si dibujara los originales de 2400 px, los cielos se llenarían de bandas de muaré y las imágenes de la captura pesarían unos 0,3 MB más, por encima del límite de 1,4 MB del Recetario.
+Postext mide un mapa de bits por los píxeles que declara, a la resolución del documento, y nunca lo imprime más ancho de lo que esos píxeles permiten. `plate()` declara el original de cada lámina, el escaneado de Commons reducido a 2400 px de alto: 1900 × 2400 px en Cat. 1, que a `page.dpi: 150` podría llegar a 322 mm. Por eso manda la caja de texto: la lámina mide 215 mm de alto, y a esa altura 2400 px dan unos 283 ppp. Con los 300 ppp por defecto, se quedaría en 161 mm de ancho. El lienzo dibuja en esa caja la imagen que esté registrada, así que la receta carga de `assets/` tres copias de 835 px, 0,97 MB frente a los 5,8 MB de los originales. Si dibujara los originales de 2400 px, los cielos se llenarían de bandas de muaré y las imágenes de la captura pesarían unos 0,3 MB más, por encima del límite de 1,4 MB del Recetario.
 
 ### 4 · Una cubierta desde un estilo de título
 
@@ -52,11 +52,12 @@ Una ficha que se pasa de su página par sigue mandando la lámina a la página s
 
 ### Deja aire bajo las láminas
 
-Con una altura fija, todas las láminas miden 190 mm, centradas, con unos 31 mm de caja de texto vacía bajo la línea de crédito.
+Una fracción de ancho estrecha el propio flotante: al 78 % de la caja de texto, todas las láminas miden unos 188 mm de alto, centradas, con unos 27 mm de caja de texto vacía bajo la línea de crédito, y ninguna necesita reducirse.
 
 ```diff
--const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
-+const PLATE_H = 190; // mm: the same height for every plate, with air below
+-  defaultPlacement: { position: 'top', span: 'page', align: 'center',
+-    shrink: 'page', minScale: 0.5, captionMeasure: 'body' },
++  defaultPlacement: { position: 'top', span: 'page', align: 'center', width: 0.78 },
 ```
 
 ### Pon figuras en la columna exterior

@@ -1,6 +1,6 @@
 ---
 title: "Catalogue entries facing their plates"
-summary: "Each entry opens a verso and cites its plate in the commentary’s first sentence; the plate floats to the facing recto, 221 mm tall at the scan’s proportions."
+summary: "Each entry opens a verso and cites its plate in the commentary’s first sentence; the plate floats to the facing recto, scaled to fill the text block."
 plain: "A small exhibition catalogue of three old book illustrations of Don Quixote. Each description sits on a left-hand page, with its picture filling the right-hand page opposite."
 description: "A print-room catalogue of three Doré engravings set in Postext, each entry on a verso facing its plate on the recto, and a checklist of works with thumbnails."
 question: "How do I set each catalogue entry on a left-hand page with its plate facing it on the right?"
@@ -10,13 +10,13 @@ pageNotes: { "1": "The cover: on warm black, a gilt hairline frames a square det
 
 ## What you'll build
 
-A small catalogue for a cabinet exhibition of three wood engravings from Gustave Doré’s *Don Quixote* (Paris, 1863), on a 230 × 280 mm page. The cover sets DORÉ in 88-pt Libre Bodoni on warm black, under a framed detail of the windmills plate. Each entry opens a left-hand page with a sepia catalogue number beside an italic title, the tombstone in the outer column, a lead with a three-line drop cap, and the commentary. The commentary’s first sentence cites the plate, which opens the right-hand page opposite, centred and 221 mm tall, so that plate, caption and credit line fill the text block. The last page is a checklist with a thumbnail in the first cell of each row and the page on which each plate prints.
+A small catalogue for a cabinet exhibition of three wood engravings from Gustave Doré’s *Don Quixote* (Paris, 1863), on a 230 × 280 mm page. The cover sets DORÉ in 88-pt Libre Bodoni on warm black, under a framed detail of the windmills plate. Each entry opens a left-hand page with a sepia catalogue number beside an italic title, the tombstone in the outer column, a lead with a three-line drop cap, and the commentary. The commentary’s first sentence cites the plate, which opens the right-hand page opposite, centred and scaled until plate, caption and credit line fill the text block, 215 mm tall. The last page is a checklist with a thumbnail in the first cell of each row and the page on which each plate prints.
 
 ## Method
 
 ### 1 · The plate waits for the page opposite
 
-The code is [the short answer](#the-short-answer) above. Every entry breaks to an even page, and a `top` float never lands on the page that cites it, so the plate cited in the commentary’s first sentence skips the verso and opens the recto facing it. Postext 1.4.1 does not shrink a float to the room left on its page, so `plate()` works out the float’s width from the scan’s aspect ratio and the height the text block has left after the caption and credit line. `layout.fitFiguresToPage` would shrink a plate too tall for the page, but 1.4.1 then sets the smaller picture flush left in a float that still spans the page. A width fraction narrows the float itself, and `align: 'center'` centres the plate together with its caption.
+The code is [the short answer](#the-short-answer) above. Every entry breaks to an even page, and a `top` float never lands on the page that cites it, so the plate cited in the commentary’s first sentence skips the verso and opens the recto facing it. The plate type’s `defaultPlacement` asks for `shrink: 'page'`: at the full measure a plate would stand 242 mm tall, more than the recto’s text block holds, so Postext scales it, keeping its proportions, until plate, caption and credit line fit the band left above the float gap ([placement](/en/docs/document-format#placement)). `minScale: 0.5` would let a plate go down to half its width; here each keeps about nine tenths of it. `captionMeasure: 'body'` sets the caption and credit line at the plate’s width, and `align: 'center'` centres both on the page.
 
 ### 2 · The entry’s head comes from its heading
 
@@ -28,7 +28,7 @@ Each `#` heading carries its chapter and tombstone as attributes, and the opener
 
 <Excerpt region="scans" />
 
-Postext sizes a bitmap from the pixels it declares, at the document’s dpi, and never prints it wider than those pixels allow. `plate()` declares each plate’s master, the Commons scan reduced to 2,400 px tall: 1,900 × 2,400 px for Cat. 1, which could reach 322 mm at `page.dpi: 150`. The width fraction therefore sets the size, 221 mm tall, and at that height 2,400 px come to about 275 dpi. At the default 300 dpi the plate would stop at 161 mm wide. The canvas draws whatever picture is registered into that box, so the pen fetches the three 835-px copies in `assets/`, 0.97 MB against 5.8 MB for the masters. Drawn from the 2,400-px masters instead, the skies fill with moiré bands and the capture’s images grow by about 0.3 MB, past the Cookbook’s 1.4 MB limit.
+Postext sizes a bitmap from the pixels it declares, at the document’s dpi, and never prints it wider than those pixels allow. `plate()` declares each plate’s master, the Commons scan reduced to 2,400 px tall: 1,900 × 2,400 px for Cat. 1, which could reach 322 mm at `page.dpi: 150`. The text block therefore sets the size, 215 mm tall, and at that height 2,400 px come to about 283 dpi. At the default 300 dpi the plate would stop at 161 mm wide. The canvas draws whatever picture is registered into that box, so the pen fetches the three 835-px copies in `assets/`, 0.97 MB against 5.8 MB for the masters. Drawn from the 2,400-px masters instead, the skies fill with moiré bands and the capture’s images grow by about 0.3 MB, past the Cookbook’s 1.4 MB limit.
 
 ### 4 · A cover from a heading style
 
@@ -52,11 +52,12 @@ An entry that runs past its verso still sends its plate to the next page. The re
 
 ### Leave air under the plates
 
-A fixed height sets every plate at 190 mm, centred, with about 31 mm of empty text block under its credit line.
+A width fraction narrows the float itself: at 78 % of the text block every plate stands about 188 mm tall, centred, with about 27 mm of empty text block under its credit line, and none needs shrinking.
 
 ```diff
--const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
-+const PLATE_H = 190; // mm: the same height for every plate, with air below
+-  defaultPlacement: { position: 'top', span: 'page', align: 'center',
+-    shrink: 'page', minScale: 0.5, captionMeasure: 'body' },
++  defaultPlacement: { position: 'top', span: 'page', align: 'center', width: 0.78 },
 ```
 
 ### Set figures in the outer column
