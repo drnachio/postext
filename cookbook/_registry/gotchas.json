@@ -110,22 +110,22 @@
   },
   "top-float-next-page": {
     "title": {
-      "en": "A 'top' float never lands on its citing page",
-      "es": "Un flotante 'top' nunca cae en la página que lo cita",
-      "ca": "Un flotant 'top' no cau mai a la pàgina que el cita",
-      "zh": "'top'浮动体不会出现在引用它的那一页",
-      "ar": "العنصر العائم 'top' لا يقع أبدًا في صفحة الإحالة إليه",
-      "ja": "'top'のフロートは参照したページには入らない",
-      "pt": "Um flutuante 'top' nunca cai na página que o cita"
+      "en": "A 'top' float goes to the page after its citation unless it may head the citing page",
+      "es": "Un flotante 'top' va a la página siguiente a su cita salvo que pueda encabezar la página que lo cita",
+      "ca": "Un flotant 'top' va a la pàgina següent a la seva cita tret que pugui encapçalar la pàgina que el cita",
+      "zh": "'top'浮动体默认排在引用页的下一页，除非允许它置于引用页顶",
+      "ar": "العنصر العائم 'top' يذهب إلى الصفحة التالية لإحالته ما لم يُسمح له بتصدر صفحة الإحالة",
+      "ja": "'top'のフロートは参照ページの先頭を許さない限り次のページに置かれる",
+      "pt": "Um flutuante 'top' vai para a página seguinte à sua citação, a menos que possa encabeçar a página que o cita"
     },
     "body": {
-      "en": "A float never goes above its own reference, so a page-wide 'top' float cited on page N opens page N+1. Cite it earlier, or use position 'auto' or 'bottom', which can take the foot of the citing page.",
-      "es": "Un flotante nunca va por encima de su propia referencia, así que un flotante 'top' a todo el ancho citado en la página N abre la página N+1. Cítalo antes, o usa la posición 'auto' o 'bottom', que pueden ocupar el pie de la página que lo cita.",
-      "ca": "Un flotant no va mai per sobre de la seva pròpia referència, així que un flotant 'top' a tota l'amplada citat a la pàgina N obre la pàgina N+1. Cita'l abans, o fes servir la posició 'auto' o 'bottom', que poden ocupar el peu de la pàgina que el cita.",
-      "zh": "浮动体不会排在自己的引用之前，所以在第N页引用的整页宽'top'浮动体会出现在第N+1页的顶部。把引用提前，或者使用position 'auto'或'bottom'，它们可以占用引用页的底部。",
-      "ar": "لا يصعد العنصر العائم أبدًا فوق الإحالة إليه، فالعنصر العائم 'top' الممتد بعرض الصفحة والمُحال إليه في الصفحة N يفتتح الصفحة N+1. أحِل إليه في موضع أبكر، أو استخدم الموضع 'auto' أو 'bottom' الذي يمكنه أن يشغل أسفل صفحة الإحالة.",
-      "ja": "フロートが自分の参照より上に置かれることはありません。そのため、Nページで参照したページ幅の'top'フロートはN+1ページの頭に置かれます。もっと前で参照するか、参照したページの下端に入れる位置'auto'または'bottom'を使ってください。",
-      "pt": "Um flutuante nunca fica acima da própria referência, então um flutuante 'top' na largura da página citado na página N abre a página N+1. Cite-o antes, ou use a posição 'auto' ou 'bottom', que podem ocupar o pé da página que o cita."
+      "en": "By default a float never goes above its own reference, so a page-wide 'top' float cited on page N opens page N+1. Set placement.citingPage: true on the resource or its type's defaultPlacement (or layout.floatsAtCitingPage for the whole book, since postext 1.25) and it heads page N instead, the text above the reference moving down under it, when it fits within layout.maxTopFraction and the citing line stays on that page. It never heads a chapter's first page or a page after a forced break: there it still opens the next page, and 'auto' or 'bottom' can take the foot of the citing page.",
+      "es": "Por defecto un flotante nunca va por encima de su propia referencia, así que un flotante 'top' a todo el ancho citado en la página N abre la página N+1. Con placement.citingPage: true en el recurso o en el defaultPlacement de su tipo (o layout.floatsAtCitingPage para todo el libro, desde postext 1.25) encabeza en cambio la página N, y el texto de encima de la referencia baja bajo él, cuando cabe dentro de layout.maxTopFraction y la línea que lo cita sigue en esa página. Nunca encabeza la primera página de un capítulo ni una página tras un salto forzado: allí sigue abriendo la página siguiente, y 'auto' o 'bottom' pueden ocupar el pie de la página que lo cita.",
+      "ca": "Per defecte un flotant no va mai per sobre de la seva pròpia referència, així que un flotant 'top' a tota l'amplada citat a la pàgina N obre la pàgina N+1. Amb placement.citingPage: true al recurs o al defaultPlacement del seu tipus (o layout.floatsAtCitingPage per a tot el llibre, des de postext 1.25) encapçala en canvi la pàgina N, i el text de damunt de la referència baixa sota seu, quan hi cap dins de layout.maxTopFraction i la línia que el cita continua en aquesta pàgina. No encapçala mai la primera pàgina d'un capítol ni una pàgina després d'un salt forçat: allà continua obrint la pàgina següent, i 'auto' o 'bottom' poden ocupar el peu de la pàgina que el cita.",
+      "zh": "默认情况下浮动体不会排在自己的引用之前，所以在第N页引用的整页宽'top'浮动体会出现在第N+1页的顶部。在资源或其类型的defaultPlacement上设置placement.citingPage: true（或者对全书设置layout.floatsAtCitingPage，自postext 1.25起），它就改为置于第N页顶部，引用处之上的文字移到它下方，前提是它不超过layout.maxTopFraction且引用行仍留在该页。它不会置于章首页或强制分页之后的页面顶部：那时仍排在下一页，而'auto'或'bottom'可以占用引用页的底部。",
+      "ar": "افتراضيًا لا يصعد العنصر العائم أبدًا فوق الإحالة إليه، فالعنصر العائم 'top' الممتد بعرض الصفحة والمُحال إليه في الصفحة N يفتتح الصفحة N+1. اضبط placement.citingPage: true على المورد أو على defaultPlacement لنوعه (أو layout.floatsAtCitingPage للكتاب كله، منذ postext 1.25) فيتصدر الصفحة N بدلًا من ذلك، وينزل النص الذي فوق الإحالة تحته، إذا اتسع له المكان في حدود layout.maxTopFraction وبقي سطر الإحالة في تلك الصفحة. ولا يتصدر أبدًا الصفحة الأولى من فصل ولا صفحة بعد فاصل قسري: فهناك يظل يفتتح الصفحة التالية، ويمكن للموضع 'auto' أو 'bottom' أن يشغل أسفل صفحة الإحالة.",
+      "ja": "既定では、フロートが自分の参照より上に置かれることはありません。そのため、Nページで参照したページ幅の'top'フロートはN+1ページの頭に置かれます。リソースまたはその種類のdefaultPlacementにplacement.citingPage: trueを設定すると（本全体ならlayout.floatsAtCitingPage、postext 1.25から）、layout.maxTopFraction以内に収まり参照行がそのページに残る場合は代わりにNページの先頭に置かれ、参照より前の本文はその下に送られます。章の最初のページと強制改ページの後のページの先頭には置かれません。その場合は次のページに置かれ、'auto'または'bottom'なら参照したページの下端に入れられます。",
+      "pt": "Por padrão um flutuante nunca fica acima da própria referência, então um flutuante 'top' na largura da página citado na página N abre a página N+1. Com placement.citingPage: true no recurso ou no defaultPlacement do seu tipo (ou layout.floatsAtCitingPage para o livro todo, desde o postext 1.25) ele encabeça a página N, e o texto acima da referência desce para baixo dele, quando cabe dentro de layout.maxTopFraction e a linha que o cita continua nessa página. Nunca encabeça a primeira página de um capítulo nem uma página depois de uma quebra forçada: ali continua abrindo a página seguinte, e 'auto' ou 'bottom' podem ocupar o pé da página que o cita."
     },
     "feature": "float-placement"
   },
