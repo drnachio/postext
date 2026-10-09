@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EditorState, type TransactionSpec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { CompletionContext, type Completion } from '@codemirror/autocomplete';
-import { verseCompletionSource, verseLineKinds, verseSeparator } from './verseSyntax';
+import { poemLayout, verseCompletionSource, verseLineKinds, verseLineMarks, verseSeparator } from './verseSyntax';
 
 describe(':::verse highlighting (#378)', () => {
   it('marks the fences and the bayt lines of a poem, nothing outside it', () => {
@@ -17,6 +17,31 @@ describe(':::verse highlighting (#378)', () => {
     expect(verseSeparator('a \\\\ b')).toEqual({ from: 2, to: 4 });
     expect(verseSeparator('a\\\\b')).toBeNull();
     expect(verseSeparator('one hemistich')).toBeNull();
+  });
+});
+
+describe(':::verse line by line (#620)', () => {
+  it('reads a poem with no separator as lines, and never marks a || it does not carry', () => {
+    const lines = [':::verse', 'Whose woods these are', '  His house is', '', 'He will not see', ':::', 'A || B'];
+    expect(verseLineKinds(lines)).toEqual(['fence', 'line', 'line', 'line', 'line', 'fence', null]);
+    // `layout=lines` sets a line with || as text; `layout=bayt` the other way.
+    expect(verseLineKinds([':::verse{layout=lines}', 'A || B', ':::'])).toEqual(['fence', 'line', 'fence']);
+    expect(verseLineKinds([':::verse{layout=bayt}', 'single', ':::'])).toEqual(['fence', 'bayt', 'fence']);
+    expect(verseLineKinds(['indented', ':::'], 'lines')).toEqual(['line', 'fence']);
+  });
+
+  it('picks the layout as the engine does', () => {
+    expect(poemLayout(':::verse', ['a', 'b || c'])).toBe('bayt');
+    expect(poemLayout(':::verse', ['a', 'b'])).toBe('lines');
+    expect(poemLayout(':::verse{layout="lines"}', ['a || b'])).toBe('lines');
+  });
+
+  it('finds a line\'s indent and the + of a stepped line', () => {
+    expect(verseLineMarks('  His house')).toEqual({ indent: 2 });
+    expect(verseLineMarks('\t\u3000Line')).toEqual({ indent: 2 });
+    expect(verseLineMarks('+ Nay, answer me')).toEqual({ indent: 0, step: 0 });
+    expect(verseLineMarks('  + Stand')).toEqual({ indent: 2, step: 2 });
+    expect(verseLineMarks('+Plus')).toEqual({ indent: 0 });
   });
 });
 

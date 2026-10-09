@@ -22,6 +22,7 @@ import { defaultDocumentLocale } from '../../../controls/hyphenation';
 import { useOpenSettingsGroup } from '../../../context/settingsNavigation';
 import { JustificationSubsection, KashidaFields, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
+import { VerseSubsection } from './VerseSubsection';
 import { RaggedHyphenationSubsection } from './HyphenationFields';
 import { TypeSample } from '../../settings/TypeSample';
 import { AlignPicture } from '../../settings/pictures';
@@ -510,6 +511,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
         )}
       </CollapsibleSection>
       <BlockquoteSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
+      <VerseSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
       <CollapsibleSection title={labels.bodyGroupReferences} sectionId="bodyText-references" variant="subsection">
         <ColorPicker
           label={labels.bodyReferenceColor}
