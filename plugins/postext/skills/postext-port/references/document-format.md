@@ -91,6 +91,7 @@ The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is take
 | `style` | id of a `headingStyles[]` entry | Merges the style's level overrides and opens a *styled section* (running heads, geometry, body typography, palette) up to the next heading of the same or higher level, or the next part. The style's `numbered: false` makes the heading unnumbered (no counter advance, no number, `{chapterNumber}` empty). An unknown id is ignored. | , 54-72`;  |
 | `toc` | `false`/`no`/`0` or `true`/`yes`/`1` | Overrides whether `:::toc` lists this heading. Default: the style's `toc`, else `true`. |  |
 | `jidori` | number (≥ 1.16) | 字取り: a one-line heading narrower than N of its own ems is spaced evenly to that width (`# 序章 {jidori=3}` → 序　章); `0` turns its level's `jidori` off. |  |
+| `dropcap` | bare, `false`/`no`/`0`, or a number of lines (≥ 1.23) | The drop cap of the first body paragraph after this heading (configuration.md §4b): `{dropcap=false}` leaves this chapter without its level's or style's, `{dropcap=2}` sets it over 2 lines, a bare `{dropcap}` gives one (3 lines) where the level sets none. |  |
 | `indent` | length; a bare number is **body** ems (≥ 1.16) | 字下げ of this heading: `## 一 {indent=5}` sets it 5 body characters from the line start (the top of a vertical line), over its level's or heading style's `indent`; `em` counts body ems too, `pt`/`mm` work; `0` sets it at the line start. A value that is no length is ignored. Same in vertical and horizontal text. |  |
 
 - A heading's 字下げ is usually the same for a whole level: set it once as the level's (or a heading style's) `indent` (configuration.md §5.1) and use `{indent=N}` for the heading that differs. `aozora.py` writes `{indent="5"}` from the source's ［＃５字下げ］ on every heading; it takes effect as written (before 1.16 it was a free attribute and did nothing).
@@ -106,6 +107,8 @@ The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is take
 `toc.subtitle.attr` (config) chooses the attr printed as the TOC subtitle line, e.g. `author`.
 
 Real presets use: `{style="…" toc="false" series="…" publisher="…"}`, `{lead="…" catlabel="…" cat="…" tombstone="…"}`, `{style="…" kicker="…" standfirst="…"}`, `{author="…"}`.
+
+**A chapter's first sentences are text, not an attribute** (postext ≥ 1.23): when the source opens a chapter with a drop cap or a raised initial, keep the opening paragraph in the body and give the heading level (or style) a `dropCap` (configuration.md §4b), not `{lead="…"}` drawn by a design text with its own `dropCap`. A `lead` attribute is for a standfirst set apart from the text (a summary above the chapter), never for the first words of the chapter.
 
 ### 2.3 Forced line break in titles: `\\`
 
@@ -323,6 +326,7 @@ Answer box.
 | `style` | id of a `paragraphStyles[]` entry | Required unless the fence sets `align`/`indent`/`endIndent`. Unknown: the paragraphs render as body text, with an `unknownParagraphStyle` warning. |
 | `align` (≥ 1.16) | `start` \| `end` \| `left` \| `right` \| `center` \| `justify` | overrides the style's (or, without `style`, the enclosing text's) alignment: 地付き = `{align=end}` |
 | `indent` / `endIndent` (≥ 1.16) | length; a bare number is ems (`indent=2` = 2字下げ) | every line from the start / from the end (right of a horizontal line, foot of a vertical one): 地から1字上げ = `{align=end endIndent=1}` |
+| `dropcap` (≥ 1.23) | bare, `false`, or a number of lines | the group's first paragraph (every one when the style's `dropCap.each`) opens with a drop cap: the style's (configuration.md §4b), switched off by `false`, set over N lines by a number, or a default one (3 lines) where the style has none |
 
 - The style applies **only to `paragraph` blocks** inside the container. Lists, quotes and headings inside keep their normal styles.
 - The container's `marginTop` is applied on entry and `marginBottom` after the last paragraph. Negative margins pull the flow up.
@@ -778,6 +782,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `chapterFrontmatterIgnored`, `calloutOverflow`
 - `tabInVerticalText` (≥ 1.23: a `:tab` in vertical text, set as a word space), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a tab stop's unknown key, `align` or position (configuration.md §4a)
 - `lineNumberOverlap` (≥ 1.23: a line number in the side column falls on a side box, side caption or float; painted anyway), and the config warning `lineNumbersUnsupported` (`lineNumbers.enabled` on a vertical document, which gets no numbers)
+- `dropCap` (≥ 1.23: a paragraph a drop cap opens could not take it as configured; `reason` `shortParagraph` (with `handling` reserve/shrink/skip), `split`, `joiningScript`, `verticalText`, `noLetter`), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a drop cap's unknown key, `punctuation`, `shortParagraph`, `lines`, `sink` or `characters` (configuration.md §4b)
 - `fullwidthMarkup` (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊` typed with a Chinese input method: set as text), `attributeKeyInvalid` (a key outside ASCII, `作者=曹雪芹`: dropped, the block's other keys still apply)
 
 ---
@@ -824,6 +829,8 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Address / signature | One paragraph whose lines end in a backslash (postext ≥ 1.23, §3.3), inside `:::paragraphs{style="…"}` for its style; up to 1.22 one paragraph per line with blank lines between. |
 | Arabic text in a Latin book, Latin in an Arabic one | Block: `:::paragraphs{dir=ltr}` / `{dir=rtl}`; phrase: `:ltr[…]{lang=en}` / `:rtl[…]{lang=ar}` (§10.8). |
 | Epigraph, dedication, colophon, lead-in | `:::paragraphs{style="…"}`, with the style defined in config. |
+| Drop cap or raised initial opening a chapter or a section | Keep the paragraph in the text; the heading level's (or heading style's) `dropCap` (configuration.md §4b): `{ lines: 3 }`, a raised initial `{ lines: 1, fontSize: … }` or `{ lines: 3, sink: 1 }`, small capitals after it with `leadIn: { words: 3 }`. A chapter without one: `# Title {dropcap=false}`. Never `{lead="…"}` + a design text `dropCap`. |
+| Catalogue, dictionary or glossary entries each opening with an initial | `:::paragraphs{style="entry"}` with `dropCap: { lines: 2, each: true }` in the style. |
 | Block quotation | `> …` (single block), or `:::paragraphs{style="quote"}` for multiple paragraphs. |
 | Bulleted/numbered list | One line per item. 2 spaces per nesting level. Type the real numbers. Letter or roman item labels are set by the config `numberFormat`, not the source. |
 | List item with several paragraphs | Not possible. Merge into one line, or follow the item with a plain paragraph. |

@@ -246,6 +246,46 @@ describe.skipIf(!python)("postext-port lint on tab stops", () => {
   });
 });
 
+describe.skipIf(!python)("postext-port lint on drop caps", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+
+  it("checks the settings and the dropcap attribute", () => {
+    const text = CHAPTER.replace("# 第一回　甄士隱夢幻識通靈", "# 第一回　甄士隱夢幻識通靈 {dropcap=big}");
+    const { out } = lint(project({
+      ...fonts,
+      paragraphStyles: [{ id: "entry", dropCap: { line: 3, punctuation: "hanging", shortParagraph: "skipp", sink: 0, leadIn: { word: 2 } } }],
+      headingStyles: [{ id: "none", dropCap: false }, { id: "bad", dropCap: 3 }],
+    }, text));
+    expect(out).toContain("paragraphStyles[0].dropCap.line is not a drop cap key (lines?) (ignored)");
+    expect(out).toContain("paragraphStyles[0].dropCap.punctuation 'hanging' is not one of ['hang', 'text', 'with-cap']");
+    expect(out).toContain("paragraphStyles[0].dropCap.shortParagraph 'skipp' is not one of");
+    expect(out).toContain("paragraphStyles[0].dropCap.sink 0 is not a whole number >= 1");
+    expect(out).toContain("paragraphStyles[0].dropCap.leadIn.word is not a lead-in key (words?) (ignored)");
+    expect(out).toContain("headingStyles[1].dropCap must be an object");
+    expect(out).not.toContain("headingStyles[0].dropCap");
+    expect(out).toContain("{dropcap=big} reads as nothing");
+  });
+
+  it("flags drop caps in vertical text and openings drawn as a heading attribute", () => {
+    const vertical = lint(project({ ...fonts, layout: { layoutType: "single", writingMode: "vertical-rl" }, paragraphStyles: [{ id: "e", dropCap: { lines: 2 } }] }));
+    expect(vertical.out).toContain("drop caps are set in horizontal text only");
+    const lead = CHAPTER.replace("# 第一回　甄士隱夢幻識通靈", '# 第一回　甄士隱夢幻識通靈 {lead="此開卷第一回也。"}');
+    const design = { enabled: true, slot: { elements: [{ kind: "text", id: "lead", content: "{attr.lead}", overflow: "wrap", dropCap: { lines: 2 } }] } };
+    const { out } = lint(project({ ...fonts, headings: { ...fonts.headings, levels: [{ level: 1, breakBefore: { enabled: true }, advancedDesign: design }] } }, lead));
+    expect(out).toContain("keep the chapter's opening words in its first paragraph and give the heading level a dropCap");
+  });
+
+  it("passes well-formed drop caps", () => {
+    const text = CHAPTER.replace("# 第一回　甄士隱夢幻識通靈", "# 第一回　甄士隱夢幻識通靈 {dropcap=2}");
+    const { out } = lint(project({
+      ...fonts,
+      headings: { ...fonts.headings, levels: [{ level: 1, breakBefore: { enabled: true }, dropCap: { lines: 3, sink: 1, punctuation: "hang", leadIn: { words: "line" } } }] },
+      paragraphStyles: [{ id: "entry", dropCap: { lines: 2, each: true, shortParagraph: "shrink" } }],
+    }, text));
+    expect(out).not.toMatch(/dropCap|dropcap|drop caps/);
+  });
+});
+
 /** An Arabic chapter with a Latin marker word, in a one-locale project. */
 function arabicProject(config: object, text?: string, fonts: object[] = []): string {
   const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ar-"));

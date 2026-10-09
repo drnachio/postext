@@ -122,7 +122,6 @@ Conversion at `page.dpi` (default 300):
 Not configurable (no config exists — don't look for it): margin notes (emulate with
 `span:'side'` callouts; footnotes and endnotes are `footnotes`, §19a), a blockquote's own family, size,
 leading or alignment (quotes take the body's; colour, italics and indents are `bodyText.blockquote`),
-body drop caps (only design text elements have `dropCap`),
 table line height (= body leading ratio × table font size), heading hyphenation (off),
 per-level heading `textAlign` (only `headings.textAlign`). Document metadata (`{title}`,
 `{subtitle}`, `{author}`, `{publishDate}`) comes from the **front matter of the first chapter**,
@@ -390,6 +389,64 @@ printed width. VDT: `line.tabbed`, the tab's `space` segment carries
 ]
 ```
 
+### 4b. Drop caps — `ParagraphDropCap` (postext ≥ 1.23)
+
+A body paragraph opening with its first letter set large beside its first
+lines (a chapter's first paragraph, each entry of a catalogue). **Set it on
+the paragraph, never as a heading attribute drawn by an opener design
+(`{attr.lead}` + a design text `dropCap`)**: the paragraph is then broken,
+justified and hyphenated with the rest of the text, the letter keeps its
+lines across columns and pages, and copying reads the word whole.
+
+Where it goes (all absent by default):
+- `headings.levels[].dropCap` / `headingStyles[].dropCap`: the first body
+  paragraph after a heading of that level or style (one setting per chapter
+  level, one per opener style). A style's `dropCap: false` takes the level's
+  off. Found past fences, directives, side/floated/fixed boxes and floated
+  figures; never a paragraph inside a box, a list, a quotation or a poem.
+- `paragraphStyles[].dropCap`: the first paragraph of each
+  `:::paragraphs{style=…}` group; `each: true` = every paragraph (entries).
+- In the Markdown: `# Title {dropcap=false}` (off for that chapter),
+  `{dropcap=2}` (two lines), bare `{dropcap}` (on, 3 lines); the same on a
+  `:::paragraphs` fence. No paragraph-level syntax.
+
+| `ParagraphDropCap` key | default | notes |
+|---|---|---|
+| `lines` | 3 | lines it spans (top of its capitals to its baseline); `1` + a larger `fontSize` = a raised initial on the first baseline |
+| `sink` | `lines` | lines it drops into the text (stands on line `sink`'s baseline; those lines are shortened). < `lines` = raised; the paragraph keeps the rise clear above it in whole grid lines |
+| `characters` | 1 | grapheme clusters set large (É, a combining mark, a surrogate pair = 1); no further than the first word |
+| `fontFamily`, `fontWeight`, `italic` | the paragraph's; false | collected for loading and embedding |
+| `fontSize` | auto | unset: its capitals level with line 1's, both cap heights MEASURED from the faces (0.72 fallback): no per-face CAP_HEIGHT table needed |
+| `color` | paragraph's | palette-linked colours follow part/section palettes |
+| `gap` | `0.15em` | between the letter and the shortened lines (em = text size) |
+| `punctuation` | `'with-cap'` | an opening “ ¿ ¡ ( before the letter: `'with-cap'` (large, part of the initial), `'hang'` (text size, outside the measure), `'text'` (text size, start of line 1) |
+| `leadIn` | none | `{ words: N | 'line', smallCaps?: true, uppercase?: false }`: first words after the initial in small caps (or capitals) |
+| `shortParagraph` | `'reserve'` | fewer lines than `sink`: `'reserve'` (block keeps `sink` lines), `'shrink'` (initial over the paragraph's lines), `'skip'` (none); each raises a `dropCap` content warning |
+| `each` | false | paragraph styles only |
+
+Rules: the rest of the first word follows the initial with no space (a
+one-letter word keeps its space); the paragraph's first-line indent is
+dropped; it never breaks before line `sink` (moves on whole; alone in a
+too-short column it breaks and warns `dropCap` `split`); a heading kept with
+its text keeps those lines under it; the continuation fragment has no
+initial. Start side: left in Latin, right in Arabic/Hebrew; a letter that
+joins the next (Arabic, Syriac, N'Ko) is not set apart (warning); horizontal
+CJK takes a one-character initial; vertical text none (warning). Outputs:
+canvas, PDF (tagged: the initial + rest of the word = a `Span` with
+`/ActualText` of the word), HTML viewer / fixed EPUB, reflowable EPUB (CSS
+`initial-letter`). VDT: `VDTBlock.dropCap` on the first fragment. Unknown
+keys → `unknownConfigKey`; a bad `punctuation`/`shortParagraph`/`lines`/
+`sink`/`characters` → `unknownConfigValue`.
+
+```json
+"headings": { "levels": [
+  { "level": 1, "dropCap": { "lines": 3, "fontFamily": "Libre Bodoni", "fontWeight": 700,
+    "color": {"hex": "#8b2e2a", "model": "hex", "paletteId": "accent"}, "leadIn": { "words": 3 } } } ] },
+"paragraphStyles": [
+  { "id": "entry", "dropCap": { "lines": 2, "each": true } }
+]
+```
+
 ---------------------------------------------------------------------------------
 
 ## 5. `headings` — HeadingsConfig
@@ -436,6 +493,7 @@ headings
   breakBefore: { enabled: boolean, parity: 'any'|'odd'|'even'|'always-odd'|'always-even' }
   span: 'column'|'page'                'column'
   advancedDesign: { enabled: boolean, slot: DesignSlot, minHeight?: Dimension(abs) }
+  dropCap?: ParagraphDropCap | false   (≥ 1.23, §4b) the first body paragraph after the heading opens with a drop cap
   hidden: boolean                      false → structural heading: prints nothing, takes no room
                                        (in the flow and inside callouts), still breaks / counts /
                                        is listed / bookmarked
@@ -555,7 +613,8 @@ running heads, margins, layout, body typography, palette.
   // any HeadingLevelConfig field except level:
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
-  advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's)
+  advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
+  dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
   margins?: PageMargins                          each side inherits page margin; pair with breakBefore
   layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!),
@@ -638,7 +697,8 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
     counts neither for centre/right alignment nor for an auto width, and a justified line's last glyph
     ends on the edge), textTransform?: 'none'|'uppercase',
   hyphenate?: boolean (wrap only), box?: ElementBoxStyle,
-  dropCap?: { lines=2, fontFamily?, fontWeight?, fontSize?, color?, gap? }   (the text wraps whatever its
+  dropCap?: { lines=2, fontFamily?, fontWeight?, fontSize?, color?, gap? }   (design text only; a chapter's
+            first PARAGRAPH takes a body drop cap instead, §4b; capitals fixed at 0.72; the text wraps whatever its
     overflow; default size = text size + (lines−1) × leading / 0.72, top level with the first line's
     capitals; a preset without configVersion 6 gets its 1.4 size written out as fontSize),
   paragraphIndent?: Dimension     ('\n' in content separates paragraphs)
@@ -830,7 +890,8 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
                                  inside a callout; false = never)
   tabStops?: TabStop[]           (≥ 1.23, §4a; unset = bodyText.tabStops, [] = none; a tab character in the
                                  style's text is then a tab too) — menus, price lists, cast lists, forms, marks
-  tabInterval?: Dimension        (≥ 1.23, §4a; unset = the body's) }
+  tabInterval?: Dimension        (≥ 1.23, §4a; unset = the body's)
+  dropCap?: ParagraphDropCap     (≥ 1.23, §4b; the group's first paragraph, every one with each: true) }
 ```
 Inside the container the flow leaves the baseline grid. When it closes on a paragraph, the space under it merges
 with the next block's own (a heading's `marginTop`) and is at least the text's paragraph spacing

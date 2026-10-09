@@ -17,7 +17,9 @@ chapters set (with fontTools installed; without it that check is skipped);
 for Arabic text, the document language and direction, the fonts that set it
 (and their glyphs and shaping tables), letter-spacing on its styles, forced
 hyphenation and italic emphasis; tab stops (`tabStops`, `:tab{…}`, `:tab`
-in vertical text, tab characters no style turns into tabs); for comics
+in vertical text, tab characters no style turns into tabs); drop caps
+(`dropCap` settings, `{dropcap}` attributes, a chapter's opening words drawn
+as a heading attribute by a design's drop cap); for comics
 (`:::page`, `:::strip`), the split expressions, panels, script lines,
 balloon and panel styles, the `comics` config, speaker anchors and safe
 areas, the lettering faces, and whether every edition sets the same pages.
@@ -386,6 +388,107 @@ def check_tab_stops(cfg: dict, where: str, texts: list[tuple[str, str]], rep: Re
         if literal_tab_at is not None and not any_stops and not vertical:
             rep.warn(f"{name}:{literal_tab_at}", "a tab character inside a line is a word space unless the paragraph's "
                                                  "style sets tabStops or tabInterval; give the style stops, or write :tab")
+
+
+DROP_CAP_KEYS = {"lines", "sink", "characters", "fontFamily", "fontWeight", "italic", "fontSize", "color",
+                 "gap", "punctuation", "leadIn", "shortParagraph", "each"}
+DROP_CAP_ENUMS = {"punctuation": {"with-cap", "hang", "text"}, "shortParagraph": {"reserve", "shrink", "skip"}}
+LEAD_IN_KEYS = {"words", "smallCaps", "uppercase"}
+DROPCAP_ATTR_RE = re.compile(r"\{[^{}\n]*\bdrop[cC]ap(?:=(\"[^\"]*\"|'[^']*'|[^\s}]*))?[^{}\n]*\}")
+
+
+def _drop_cap_settings(cfg: dict):
+    """Every drop cap setting of a config: paragraph styles, heading levels
+    and heading styles (a level's or style's `false` is a valid "none")."""
+    for i, ps in enumerate(cfg.get("paragraphStyles") or []):
+        if isinstance(ps, dict) and "dropCap" in ps:
+            yield f"paragraphStyles[{i}].dropCap", ps["dropCap"], False
+    for i, lvl in enumerate((cfg.get("headings") or {}).get("levels") or []):
+        if isinstance(lvl, dict) and "dropCap" in lvl:
+            yield f"headings.levels[{i}].dropCap", lvl["dropCap"], True
+    for i, hs in enumerate(cfg.get("headingStyles") or []):
+        if isinstance(hs, dict) and "dropCap" in hs:
+            yield f"headingStyles[{i}].dropCap", hs["dropCap"], True
+
+
+def _design_lead_caps(cfg: dict) -> bool:
+    """Whether a heading design draws a heading attribute with a design
+    text `dropCap` (the chapter's opening words set apart from the text)."""
+    slots = []
+    for lvl in (cfg.get("headings") or {}).get("levels") or []:
+        if isinstance(lvl, dict):
+            slots.append(((lvl.get("advancedDesign") or {}).get("slot") or {}))
+    for hs in cfg.get("headingStyles") or []:
+        if isinstance(hs, dict):
+            slots.append(((hs.get("advancedDesign") or {}).get("slot") or {}))
+    for slot in slots:
+        for el in slot.get("elements") or []:
+            if isinstance(el, dict) and el.get("kind") == "text" and el.get("dropCap") and "{attr." in str(el.get("content", "")):
+                return True
+    return False
+
+
+def check_drop_caps(cfg: dict, where: str, texts: list[tuple[str, str]], rep: Report) -> None:
+    """Drop caps in body paragraphs (postext >= 1.23): the `dropCap`
+    settings of paragraph styles, heading levels and heading styles, the
+    `{dropcap}` attribute, and the chapter openings still drawn as a heading
+    attribute by a design text's `dropCap`."""
+    any_cap = False
+    for path, cap, may_be_false in _drop_cap_settings(cfg):
+        if cap is False and may_be_false:
+            continue
+        if not isinstance(cap, dict):
+            rep.warn(where, f"{path} must be an object (or false on a heading level or style): ignored")
+            continue
+        any_cap = True
+        for k in cap:
+            if k not in DROP_CAP_KEYS:
+                near = difflib.get_close_matches(k, sorted(DROP_CAP_KEYS), n=1)
+                rep.warn(where, f"{path}.{k} is not a drop cap key{f' ({near[0]}?)' if near else ''} (ignored)")
+        for k, words in DROP_CAP_ENUMS.items():
+            if k in cap and cap[k] not in words:
+                rep.warn(where, f"{path}.{k} {cap[k]!r} is not one of {sorted(words)}: the default is used")
+        for k in ("lines", "sink", "characters"):
+            v = cap.get(k)
+            if v is not None and not (isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 1):
+                rep.warn(where, f"{path}.{k} {v!r} is not a whole number >= 1: the default is used")
+        if isinstance(cap.get("sink"), (int, float)) and isinstance(cap.get("lines"), (int, float)) and cap["sink"] > cap["lines"]:
+            rep.info(where, f"{path}.sink is more than lines: it sinks no further than its lines")
+        if "each" in cap and path.startswith(("headings", "headingStyles")):
+            rep.info(where, f"{path}.each only counts in a paragraph style")
+        lead = cap.get("leadIn")
+        if lead is not None:
+            if not isinstance(lead, dict):
+                rep.warn(where, f"{path}.leadIn must be an object {{words, smallCaps?, uppercase?}}: ignored")
+            else:
+                for k in lead:
+                    if k not in LEAD_IN_KEYS:
+                        near = difflib.get_close_matches(k, sorted(LEAD_IN_KEYS), n=1)
+                        rep.warn(where, f"{path}.leadIn.{k} is not a lead-in key{f' ({near[0]}?)' if near else ''} (ignored)")
+                w = lead.get("words")
+                if w is not None and w != "line" and not (isinstance(w, int) and not isinstance(w, bool) and w >= 1):
+                    rep.warn(where, f"{path}.leadIn.words {w!r} must be a whole number >= 1 or 'line': no lead-in")
+    vertical = (cfg.get("layout") or {}).get("writingMode") == "vertical-rl"
+    used_attr = False
+    lead_attrs = False
+    for name, text in texts:
+        for i, raw in enumerate(text.split("\n")):
+            line = raw.strip()
+            if not (line.startswith("#") or line.startswith(":::paragraphs")):
+                continue
+            for m in DROPCAP_ATTR_RE.finditer(line):
+                used_attr = True
+                v = (m.group(1) or "").strip("\"'").strip().lower()
+                if v and v not in ("true", "yes", "on", "false", "no", "off", "0", "none") and not (v.isdigit() and int(v) >= 1):
+                    rep.warn(f"{name}:{i + 1}", f"{{dropcap={v}}} reads as nothing: write dropcap, dropcap=false or dropcap=N (lines)")
+            if line.startswith("#") and re.search(r"\blead=", line):
+                lead_attrs = True
+    if vertical and (any_cap or used_attr):
+        rep.warn(where, "drop caps are set in horizontal text only: a vertical book sets none (dropCap content warning)")
+    if lead_attrs and _design_lead_caps(cfg):
+        rep.warn(where, "a heading design draws a `lead` attribute with a design text dropCap: keep the chapter's opening "
+                        "words in its first paragraph and give the heading level a dropCap (postext >= 1.23, "
+                        "configuration.md §4b)")
 
 
 FOLIO_ENUMS = {
@@ -2241,6 +2344,7 @@ def main() -> None:
                     len(KANA_RE.findall(chapter)), len(HAN_RE.findall(chapter))))
         check_index(index, rep, lang, japanese_book)
         check_tab_stops(cfg, f"config ({lang})", texts, rep)
+        check_drop_caps(cfg, f"config ({lang})", texts, rep)
         embedded |= comic_ctx["arts"]  # panel pictures are placed by art=, not cited
         check_comic_edition(lang, cfg, comic_ctx, resources, m.get("fonts", []), rep)
         if comic_ctx["blocks"]:

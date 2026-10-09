@@ -257,8 +257,10 @@ paint order: text, rule, box and image elements (configuration.md §7).
   - big number `{chapterNumber}`;
   - label ("Chapter {chapterNumber}");
   - `{titleText}` with `overflow: "wrap"` and a fixed width;
-  - author, standfirst and lead from heading attributes (`{attr.lead}`), with
-    an optional `dropCap`;
+  - author and standfirst from heading attributes (`{attr.standfirst}`). The
+    chapter's first paragraph stays in the text; its drop cap or raised
+    initial is the level's `dropCap` (configuration.md §4b), measured as
+    lines spanned and sunk, face, colour and lead-in in small capitals;
   - illustration (an `image` element pointing at a resource);
   - credit.
 

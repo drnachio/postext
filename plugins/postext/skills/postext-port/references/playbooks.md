@@ -144,11 +144,20 @@ Use H1 with `span: "page"`, `breakBefore` (parity from the book) and an
 
 - band, big number (`{chapterNumber}`), label and `{titleText}` (wrapped,
   fixed width);
-- author (`{attr.author}`), lead and standfirst (`{attr.lead}`, with an
-  optional `dropCap`);
+- author (`{attr.author}`) and a standfirst set apart from the text
+  (`{attr.standfirst}`);
 - illustration (`image` element), credit;
 - `minHeight` = the distance from the top margin to where the body starts.
 
+- The chapter's first paragraph stays in the body text (postext ≥ 1.23). A
+  drop cap, a raised initial or a first line in small capitals is the
+  level's `dropCap` (configuration.md §4b): `{ lines: 3 }` for a three-line
+  initial, `{ lines: 1, fontSize: … }` (or `{ lines: 3, sink: 1 }`) for a
+  raised one, `leadIn: { words: 'line' }` for the first line in small
+  capitals, the face and colour of the opener. One heading style per opener
+  kind can carry its own. Never copy the opening words into a `lead`
+  attribute drawn by a design text: that text is set apart, ragged, and
+  copy-fitted by hand.
 - `\\` in the heading forces a break in the designed title only. The TOC,
   running heads and bookmarks show one line. In Chinese the bookmarks and the
   PDF title join the break with nothing where a Chinese character meets a

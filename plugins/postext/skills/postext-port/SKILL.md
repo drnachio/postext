@@ -94,6 +94,13 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   style `tabStops` (document-format.md §10.9, configuration.md §4a). A tab
   character is a tab only in a paragraph whose style has stops; elsewhere it
   is a word space.
+- **Drop caps** (postext ≥ 1.23): a chapter's first paragraph stays in the
+  text, and its drop cap, raised initial or small-capital first words come
+  from the heading level's (or heading style's) `dropCap`; a catalogue's
+  entries from a paragraph style's `dropCap` with `each: true`
+  (configuration.md §4b). `# Title {dropcap=false}` leaves one chapter
+  without it. Never copy the opening words into a `lead` attribute drawn by
+  a design text.
 
 Config traps:
 
@@ -464,6 +471,9 @@ Read each chapter against the source pages and apply
 - menus, price lists, cast lists, exam marks, forms and run-in indexes as
   paragraphs with tab stops and `:tab` (postext ≥ 1.23, playbooks B13), never
   as two-column tables or runs of spaces;
+- drop caps and raised initials on the chapter's own first paragraph, from
+  the heading level's `dropCap` (postext ≥ 1.23, playbooks A5), never as a
+  heading attribute set apart by the opener design;
 - sizes that grow with the text and reflowable content wherever they make
   sense, not fixed sizes or breaks copied from the source pages (see Rules
   of thumb).
