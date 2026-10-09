@@ -376,3 +376,72 @@ describe('a column float with wrap: the column\'s first or last lines run beside
     }
   });
 });
+
+// #627 Phase 4: boxes text wraps round (`:::callout{wrap=… width=…}`).
+describe('a box with wrap: pull quotes and sidebars (#627)', () => {
+  it('here: the box sits at its side, the text after it runs beside it', () => {
+    const md = `${para(1)}\n\n:::callout{wrap="right" width=0.4}\nA short pull quote set in the box.\n:::\n\n${para(6)}`;
+    const doc = build(md, []);
+    const col = colOf(doc);
+    expect(col.exclusions).toHaveLength(1);
+    const ex = col.exclusions![0]!;
+    const frame = doc.blocks.find((b) => b.type === 'callout')!;
+    expect(ex.ownerId).toBe(frame.id);
+    expect(doc.pages[0]!.floats).toContain(frame);
+    expect(frame.bbox.width).toBeCloseTo(0.4 * MEASURE, 1);
+    expect(frame.bbox.x + frame.bbox.width).toBeCloseTo(LEFT + MEASURE, 1);
+    const p = col.blocks.filter((b) => b.type === 'paragraph')[1]!;
+    expect(p.lines[0]!.bbox.y).toBeCloseTo(frame.bbox.y, 6);
+    expect(p.lines[0]!.measure).toEqual({ x: LEFT, width: MEASURE - ex.width, wrap: true });
+    expect(p.lines[p.lines.length - 1]!.measure).toBeUndefined();
+    // The box's text is inside its frame.
+    for (const child of doc.blocks.filter((b) => b.containerId !== undefined && b.type !== 'callout')) {
+      for (const l of child.lines) expect(l.bbox.x).toBeGreaterThanOrEqual(frame.bbox.x - 0.01);
+    }
+  });
+
+  it('floated: a column box at the head of a column with its text beside it', () => {
+    const c = config({ layout: { layoutType: 'double', gutterWidth: pt(10) } });
+    c.page = { ...c.page, width: pt(560) };
+    const md = `${para(4)}\n\n:::callout{placement="top" wrap="left" width=0.45}\nA sidebar of a few words, set in the box at the head of a column.\n:::\n\n${para(40)}`;
+    const doc = build(md, [], c);
+    const withEx = doc.pages.flatMap((p) => p.columns).filter((col) => col.exclusions);
+    expect(withEx).toHaveLength(1);
+    const col = withEx[0]!;
+    const ex = col.exclusions![0]!;
+    expect(ex.side).toBe('left');
+    const first = col.blocks[0]!.lines[0]!;
+    expect(first.bbox.y).toBeCloseTo(col.bbox.y, 6);
+    expect(first.bbox.x).toBeCloseTo(col.bbox.x + ex.width, 6);
+  });
+
+  it('a box too wide to leave text beside it is set in the flow as any, with a warning', () => {
+    const doc = build(`:::callout{wrap="right" width=0.7}\nA box.\n:::\n\n${para(3)}`, []);
+    expect(colOf(doc).exclusions).toBeUndefined();
+    expect(warnings(doc).map((w) => [w.reason, w.box !== undefined])).toEqual([['tooNarrow', true]]);
+    expect(colOf(doc).blocks.some((b) => b.type === 'callout')).toBe(true);
+  });
+});
+
+describe('text wrap in CJK and vertical text (#627)', () => {
+  it('under a character grid the room a picture takes is whole characters', () => {
+    const chinese = '春眠不觉晓处处闻啼鸟夜来风雨声花落知多少'.repeat(12);
+    const doc = build(`::resource{id="fig"}\n\n${chinese}`, [figure({ wrap: 'right', width: 0.4 })], config({ locale: 'zh-Hans', cjk: { grid: { enabled: true, charsPerLine: 24 } } } as Partial<PostextConfig>));
+    const ex = colOf(doc).exclusions![0]!;
+    const em = 10;
+    expect(ex.width / em).toBeCloseTo(Math.round(ex.width / em), 6);
+    const p = doc.blocks.find((b) => b.type === 'paragraph')!;
+    expect(p.lines[0]!.measure!.width / em).toBeCloseTo(Math.round(p.lines[0]!.measure!.width / em), 6);
+  });
+
+  it('vertical text keeps the band whole and says so; a type default warns in the config', () => {
+    const cfg = config({ locale: 'ja', layout: { layoutType: 'single', writingMode: 'vertical-rl' } } as Partial<PostextConfig>);
+    const doc = build(`::resource{id="fig"}\n\n${'春眠不覚暁'.repeat(30)}`, [figure({ wrap: 'right', width: 0.4 })], cfg);
+    expect(doc.pages.flatMap((p) => p.columns).some((c) => c.exclusions)).toBe(false);
+    expect(warnings(doc).map((w) => w.reason)).toEqual(['verticalText']);
+    const typed = buildDocument({ markdown: 'Text.', resources: [] }, { ...cfg, resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'none', counterFormat: 'decimal', captionPrefix: 'Figure', defaultPlacement: { wrap: 'start' } }] } as PostextConfig, createMeasurementCache());
+    expect(typed.configWarnings?.filter((w) => w.kind === 'wrapUnsupported').map((w) => w.path)).toEqual(['resourceTypes[0].defaultPlacement.wrap']);
+    const misspelt = buildDocument({ markdown: 'Text.', resources: [] }, { ...config(), resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'none', counterFormat: 'decimal', captionPrefix: 'Figure', defaultPlacement: { wrap: 'rigth' as never } }] } as PostextConfig, createMeasurementCache());
+    expect(misspelt.configWarnings?.find((w) => w.kind === 'unknownConfigValue')?.suggestion).toBe('right');
+  });
+});

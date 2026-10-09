@@ -2447,8 +2447,11 @@ export interface ConfigWarning {
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
    *  language, and `used` is the digit system that gives.
    *  `lineNumbersUnsupported`: `lineNumbers.enabled` on a vertical
-   *  document (#621), which gets no line numbers; `used` is `false`. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported';
+   *  document (#621), which gets no line numbers; `used` is `false`.
+   *  `wrapUnsupported`: a resource type's `defaultPlacement.wrap` in a
+   *  vertical document (#627), whose figures keep their bands whole;
+   *  `used` is `none`. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported' | 'wrapUnsupported';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
@@ -2719,10 +2722,11 @@ export type ContentWarning = ContentWarningBase & (
    *  `layout.wrap.minTextWidth`, so it takes its band whole; `'fewLines'`:
    *  it is shorter than `layout.wrap.minLinesBeside` lines, so it takes
    *  its band whole; `'moved'`: an inline one was too tall for the room
-   *  left in its column and moved on to the next, its anchor with it.
-   *  `resourceId` names a resource, `box` a box's style. Found by the
-   *  layout. */
-  | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved'; resourceId?: string; box?: string }
+   *  left in its column and moved on to the next, its anchor with it;
+   *  `'verticalText'`: text wraps in horizontal text only, so in a
+   *  vertical flow it takes its band whole. `resourceId` names a
+   *  resource, `box` a box's style. Found by the layout. */
+  | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
   /** `designTextTruncated` (#628): a design text element did not fit its
    *  width and lost part of a line: cut by an ellipsis (`mode`
    *  `'ellipsis-*'`, its `overflow`) or clipped with ink past its box

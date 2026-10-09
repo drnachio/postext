@@ -852,7 +852,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
         ? `${what} wraps text round it but is too tall for the room left in its column — it moved on to the next column with its anchor`
         : w.reason === 'tooNarrow'
           ? `${what} would leave the text beside it narrower than layout.wrap.minTextWidth — it takes its band whole, with no text beside it`
-          : `${what} is shorter than layout.wrap.minLinesBeside lines — it takes its band whole, with no text beside it`;
+          : w.reason === 'verticalText'
+            ? `${what} asks for text wrap, which is set in horizontal text only — in vertical text it takes its band whole`
+            : `${what} is shorter than layout.wrap.minLinesBeside lines — it takes its band whole, with no text beside it`;
       break;
     }
     case 'floatShrunk':
@@ -923,6 +925,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'comicAnchorOutsideSafeArea':
       text = `The anchor "${w.anchorId}" of "${w.resourceId}" lies outside the picture's safe area — a crop may cut it off`;
+      break;
+    case 'wrapUnsupported':
+      text = `${w.path}: text wraps in horizontal text only — in this vertical document "${w.value}" is ignored and the figures keep their bands whole`;
       break;
     case 'cjkGridClamped':
       text = `${w.path}: ${w.value} ${w.path.endsWith('charsPerLine') ? 'characters per line' : 'lines'} do not fit inside the margins — the grid is set with ${w.used}`;

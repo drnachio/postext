@@ -134,6 +134,7 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   out.push(...collectComicChoiceWarnings(config));
   out.push(...collectPrintChoiceWarnings(config));
   out.push(...collectLineNumbersWarnings(config));
+  out.push(...collectWrapWarnings(config));
   out.push(...collectCodeStyleWarnings(config));
   out.push(...collectTabStopWarnings(config));
   out.push(...collectDropCapWarnings(config));
@@ -242,6 +243,31 @@ function collectLineNumbersWarnings(config: PostextConfig): ConfigWarning[] {
   if (c.enabled === true && resolveAllConfig(config).layout.writingMode === 'vertical-rl') {
     out.push({ kind: 'lineNumbersUnsupported', path: 'lineNumbers.enabled', value: 'true', used: 'false' });
   }
+  return out;
+}
+
+const WRAP_SIDES = ['none', 'left', 'right', 'start', 'end'] as const;
+
+/** Text wrap (#627): a resource type's `defaultPlacement.wrap` that is no
+ *  side (`unknownConfigValue`), and one asked of a vertical document,
+ *  which sets no text beside a figure (`wrapUnsupported`). */
+function collectWrapWarnings(config: PostextConfig): ConfigWarning[] {
+  const types = config.resourceTypes;
+  if (!Array.isArray(types)) return [];
+  const out: ConfigWarning[] = [];
+  let vertical: boolean | undefined;
+  types.forEach((t, i) => {
+    const wrap = (t as { defaultPlacement?: { wrap?: unknown } } | undefined)?.defaultPlacement?.wrap;
+    if (wrap === undefined || wrap === 'none') return;
+    const path = `resourceTypes[${i}].defaultPlacement.wrap`;
+    if (typeof wrap !== 'string' || !(WRAP_SIDES as readonly string[]).includes(wrap)) {
+      const suggestion = closestKey(String(wrap), WRAP_SIDES);
+      out.push({ kind: 'unknownConfigValue', path, value: String(wrap), used: 'none', ...(suggestion ? { suggestion } : {}) });
+      return;
+    }
+    vertical ??= resolveAllConfig(config).layout.writingMode === 'vertical-rl';
+    if (vertical) out.push({ kind: 'wrapUnsupported', path, value: wrap, used: 'none' });
+  });
   return out;
 }
 

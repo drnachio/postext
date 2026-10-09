@@ -213,7 +213,7 @@ import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
 import { headingLineSpanBand } from './lineSpan';
-import { columnCursorY, insetsBefore, minTextWidthPx, openColumnWrap, resolveResourceWrap, runsBesideWrap, sameInsetsFrom, settleColumnWraps, transparentToWrap, wrapGapPx, wrapInsetSteps } from './textWrap';
+import { columnCursorY, insetsBefore, minTextWidthPx, openColumnWrap, resolveCalloutWrap, resolveResourceWrap, type ResolvedWrap, runsBesideWrap, sameInsetsFrom, settleColumnWraps, transparentToWrap, wrapGapPx, wrapInsetSteps } from './textWrap';
 import { lineInsetsAt, type LineInsetStep } from '../measure/types';
 
 /** Tolerance for "does this block fit" checks against a column's free
@@ -1163,6 +1163,8 @@ function placeDocumentPass(
     L: CalloutLayouter,
     placement: 'auto' | 'top' | 'bottom',
     span: CalloutSpan,
+    /** Text wraps round the box (#627): a one-column float at its side. */
+    wrap?: ResolvedWrap,
   ): void => {
     const key = `${CALLOUT_FLOAT_PREFIX}${startIdx}`;
     const columns = plan.attrs.columns !== undefined ? floatColumnCount(plan.attrs.columns) : style.columns;
@@ -1179,6 +1181,9 @@ function placeDocumentPass(
         span: span === 'page' ? 'page' : 'column',
         ...(span === 'column' && columns > 1 ? { columns } : {}),
         callout: { startIdx },
+        ...(wrap && span === 'column' && columns === 1
+          ? { widthFraction: wrap.width, align: wrap.side, wrap: wrap.side, ...(wrap.gap ? { wrapGap: wrap.gap } : {}) }
+          : {}),
         ...(col ? { refPageIndex: page!.index, refY: col.bbox.y + (col.bbox.height - col.availableHeight) } : {}),
       });
     }
@@ -1477,6 +1482,14 @@ function placeDocumentPass(
   /** Text wrap (#627): floats set in a band at the head or foot of one
    *  column that text may run beside, per column. The band stays a band
    *  until running text comes to take it back (`openFloatWraps`). */
+  /** The room a wrapped item takes from the lines beside it (#627): its
+   *  width and gap, in whole characters of the body under a CJK character
+   *  grid (`cjk.grid`), so the lines beside it keep to the grid. */
+  const wrapExclusionWidth = (columnWidth: number, itemWidth: number, gap: number): number => {
+    const w = itemWidth + gap;
+    const em = bodyStyle.fontSizePx;
+    return Math.min(columnWidth, resolved.cjk.grid.enabled && em > 0 ? Math.ceil((w - 0.01) / em) * em : w);
+  };
   /** The `textWrap` warnings of this pass (#627). */
   const textWrapNotes: ContentWarning[] = [];
   const floatWraps = new Map<VDTColumn, { position: FloatSlotPosition; need: number; ex: VDTExclusion }[]>();
@@ -2098,7 +2111,7 @@ function placeDocumentPass(
       if (reason) {
         textWrapNotes.push({ kind: 'textWrap', reason, resourceId: f.resourceId, pageIndex: page.index });
       } else {
-        const exWidth = Math.min(first.bbox.width, width + gap);
+        const exWidth = wrapExclusionWidth(first.bbox.width, width, gap);
         const exY = position === 'top' ? first.bbox.y - need : first.bbox.y + first.bbox.height;
         const list = floatWraps.get(first) ?? [];
         list.push({
@@ -3302,7 +3315,7 @@ function placeDocumentPass(
   /** Text wrap (#627): an inline figure that wraps, placed as a band, whose
    *  band the next block takes back to run beside it when it can (see
    *  `pipeline/textWrap.ts`). */
-  let pendingWrap: { col: VDTColumn; block: VDTBlock; ex: VDTExclusion } | null = null;
+  let pendingWrap: { col: VDTColumn; blocks: number; cursorY: number; ex: VDTExclusion } | null = null;
 
   const closeFlowSegment = (boundaryIndex: number): void => {
     // What text wrapped round in the column the segment ends in keeps its
@@ -4646,6 +4659,89 @@ function placeDocumentPass(
    * boxes) still fall back to this inline placement for v1 — the frame's
    * `callout.placement` records the request.
    */
+  /**
+   * A box set `here` that text wraps round (#627): laid out whole at its
+   * share of the column, at its side, level with the next line's top, then
+   * set as a band the next running text takes back to run beside it (see
+   * `pendingWrap`). It never splits: too tall for the room left, it moves
+   * on to the next column (a `textWrap` warning says so). Frame and
+   * children go to the page's floats, where a floated box goes. Returns
+   * false, the box set in the flow as any, when the text beside it would
+   * be too narrow or the box too short for lines beside it.
+   */
+  const placeCalloutWrapped = (
+    startIdx: number,
+    plan: PlannedCallout,
+    style: ResolvedCalloutStyleConfig,
+    L: CalloutLayouter,
+    frameId: string,
+    wrap: ResolvedWrap,
+  ): boolean => {
+    const settings = resolved.layout.wrap;
+    const gap = wrapGapPx(wrap.gap, dpi, bodyStyle.fontSizePx, floatGapPx);
+    const note = (reason: 'tooNarrow' | 'fewLines' | 'moved') => {
+      const start = contentBlocks[startIdx]!;
+      textWrapNotes.push({ kind: 'textWrap', reason, box: style.id, sourceStart: start.sourceStart + bodyOffset, sourceEnd: start.sourceEnd + bodyOffset, pageIndex: cursor.pageIndex });
+    };
+    let col = currentColumn(doc, cursor);
+    if (col.bbox.width * (1 - wrap.width) - gap + 0.01 < minTextWidthPx(settings.minTextWidth, col.bbox.width, dpi, bodyStyle.fontSizePx)) {
+      note('tooNarrow');
+      return false;
+    }
+    for (let attempt = 0; ; attempt++) {
+      col = currentColumn(doc, cursor);
+      const page = doc.pages[cursor.pageIndex]!;
+      const width = col.bbox.width * wrap.width;
+      const result = L.layoutRange(CUT_START, L.end, width, frameId, false, mirroredOf(page));
+      if (attempt === 0 && Math.ceil((result.totalHeight + gap - 0.01) / bodyStyle.lineHeightPx) < settings.minLinesBeside) {
+        note('fewLines');
+        return false;
+      }
+      const spacing = col.blocks.length === 0 ? 0 : pendingSpacing;
+      if (result.totalHeight > col.availableHeight - spacing + 0.01 && col.blocks.length > 0 && attempt < 4) {
+        if (attempt === 0) note('moved');
+        pendingSpacing = 0;
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        continue;
+      }
+      const top = columnCursorY(col) + spacing;
+      const x = wrap.side === 'left' ? col.bbox.x : col.bbox.x + col.bbox.width - width;
+      const frame = result.frame;
+      stampCalloutSource(frame, startIdx, plan);
+      frame.pageIndex = page.index;
+      frame.columnIndex = col.index;
+      offsetCalloutToAbsolute(result, x, top);
+      const floats = (page.floats ??= []);
+      doc.blocks.push(frame);
+      floats.push(frame);
+      for (const child of result.children) {
+        child.pageIndex = page.index;
+        child.columnIndex = col.index;
+        doc.blocks.push(child);
+        floats.push(child);
+      }
+      const bottomRel = Math.ceil((top - col.bbox.y + result.totalHeight + gap - 0.01) / baselineGrid) * baselineGrid;
+      col.availableHeight = Math.max(0, Math.min(col.availableHeight, col.bbox.height - bottomRel));
+      pendingSpacing = 0;
+      inlineGapOwed = null;
+      const exWidth = wrapExclusionWidth(col.bbox.width, width, gap);
+      pendingWrap = {
+        col,
+        blocks: col.blocks.length,
+        cursorY: columnCursorY(col),
+        ex: {
+          x: wrap.side === 'left' ? col.bbox.x : col.bbox.x + col.bbox.width - exWidth,
+          y: top,
+          width: exWidth,
+          height: col.bbox.y + bottomRel - top,
+          side: wrap.side,
+          ownerId: frame.id,
+        },
+      };
+      return true;
+    }
+  };
+
   const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
     const style = pickCalloutStyle(calloutStyles, plan.attrs.type)!;
     const firstFrameId = `block-${blockIdCounter++}`;
@@ -4675,7 +4771,17 @@ function placeDocumentPass(
       const inFlow = tallerThanColumn(L.layoutRange(CUT_START, L.end, width, 'float-probe', false))
         && splitCalloutFragment(L, CUT_START, width, contentArea.height, 'float-probe', false, style.splitMinLines) !== null;
       if (!inFlow) {
-        enqueueCalloutFloat(startIdx, plan, style, L, placement, span);
+        const wrap = pageIsVertical(page) ? undefined : resolveCalloutWrap(plan.attrs, resolved.layout.wrap);
+        enqueueCalloutFloat(startIdx, plan, style, L, placement, span, wrap);
+        calloutsOutOfFlow.add(startIdx);
+        return undefined;
+      }
+    }
+    // A box text wraps round (#627): at its side of the column, the text
+    // after it beside it.
+    if (placement === 'here' && span === 'column' && !pageIsVertical(doc.pages[cursor.pageIndex]!)) {
+      const wrap = resolveCalloutWrap(plan.attrs, resolved.layout.wrap);
+      if (wrap && placeCalloutWrapped(startIdx, plan, style, L, firstFrameId, wrap)) {
         calloutsOutOfFlow.add(startIdx);
         return undefined;
       }
@@ -5021,9 +5127,9 @@ function placeDocumentPass(
       const wrapCol = currentColumn(doc, cursor);
       const beside = runsBesideWrap(rawBlock);
       if (pendingWrap) {
-        const { col, block, ex } = pendingWrap;
+        const { col, blocks, cursorY, ex } = pendingWrap;
         pendingWrap = null;
-        if (beside && col === wrapCol && col.blocks[col.blocks.length - 1] === block) {
+        if (beside && col === wrapCol && col.blocks.length === blocks && Math.abs(columnCursorY(col) - cursorY) < 0.01) {
           // The cursor goes back to the figure's top; the text starts there.
           col.availableHeight += columnCursorY(col) - ex.y;
           pendingSpacing = 0;
@@ -5525,6 +5631,13 @@ function placeDocumentPass(
       const wrapSpec = kind.resource && !pageIsVertical(blockPage)
         ? resolveResourceWrap(kind.resource, kind.resourceType, wrapSettings)
         : undefined;
+      // Vertical text keeps its figures' bands whole (horizontal wrap only).
+      if (kind.resource && pageIsVertical(blockPage) && resolveResourceWrap(kind.resource, kind.resourceType, wrapSettings)) {
+        textWrapNotes.push({
+          kind: 'textWrap', reason: 'verticalText', resourceId: kind.resource.id,
+          sourceStart: rawBlock.sourceStart + bodyOffset, sourceEnd: rawBlock.sourceEnd + bodyOffset, pageIndex: cursor.pageIndex,
+        });
+      }
       let wrapGap = 0;
       let wraps = false;
       if (wrapSpec) {
@@ -5582,10 +5695,11 @@ function placeDocumentPass(
         rCol.availableHeight = Math.max(0, Math.min(rCol.availableHeight, rCol.bbox.height - bottomRel));
         pendingSpacing = 0;
         inlineGapOwed = null;
-        const exWidth = Math.min(rCol.bbox.width, rCol.bbox.width * wrapSpec.width + wrapGap);
+        const exWidth = wrapExclusionWidth(rCol.bbox.width, rCol.bbox.width * wrapSpec.width, wrapGap);
         pendingWrap = {
           col: rCol,
-          block: blk,
+          blocks: rCol.blocks.length,
+          cursorY: columnCursorY(rCol),
           ex: {
             x: wrapSpec.side === 'left' ? rCol.bbox.x : rCol.bbox.x + rCol.bbox.width - exWidth,
             y: top,

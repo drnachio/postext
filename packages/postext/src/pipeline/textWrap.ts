@@ -28,6 +28,7 @@ import type { LineInsetStep } from '../measure/types';
 import { lineInsetsAt } from '../measure/types';
 import { dimensionToPx } from '../units';
 import { wrapWidthOf } from '../defaults/layout';
+import { parseLengthText } from '../defaults/tabStops';
 
 /** A `wrap` value as a side of the flow: `'start'` is `'left'`, `'end'` is
  *  `'right'`; `'none'` and anything else are no wrap. */
@@ -194,4 +195,21 @@ export function sameInsetsFrom(a: readonly LineInsetStep[], b: readonly LineInse
     if (Math.abs(x.start - y.start) > 0.01 || Math.abs(x.end - y.end) > 0.01) return false;
   }
   return true;
+}
+
+/** The wrap a box asks for with its fence's attributes (#627):
+ *  `wrap="left|right|start|end"`, `width` (a share of the column, 0 to 1;
+ *  else `layout.wrap.defaultWidth`) and `wrapGap` (a length, `6pt`).
+ *  `undefined` when it does not wrap. */
+export function resolveCalloutWrap(
+  attrs: Readonly<Record<string, string | undefined>>,
+  settings: ResolvedTextWrapConfig,
+): ResolvedWrap | undefined {
+  const side = wrapSideOf(attrs.wrap?.trim().toLowerCase());
+  if (!side) return undefined;
+  const raw = attrs.width !== undefined ? Number(attrs.width.trim()) : undefined;
+  const width = wrapWidthOf(raw) ?? settings.defaultWidth;
+  const gap = attrs.wrapGap !== undefined ? parseLengthText(attrs.wrapGap) : undefined;
+  const ownGap = gap && gap.value >= 0 ? gap : settings.gap;
+  return { side, width, ...(ownGap ? { gap: ownGap } : {}) };
 }
