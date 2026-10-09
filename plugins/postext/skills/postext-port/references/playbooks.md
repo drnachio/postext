@@ -188,9 +188,11 @@ next page, because the opener owns the top band.
 ### A7. Catalogue: entry on the verso, plate on the facing recto
 Open each entry on a verso (H1 `breakBefore: {"parity": "even"}`). Give the
 plate type the default placement `top`/`page`, and cite the plate on the
-opener page. It floats onto the next page, the facing recto. Size tall plates
-with `width = min(1, aspect × maxHeight / textWidth)`, because the engine does
-not shrink an over-tall page float. One part per artist
+opener page. It floats onto the next page, the facing recto. Let the engine
+size a plate taller than the page (≥ 1.24): `shrink: "page"` scales it to the
+band the recto keeps, `captionMeasure: "body"` and `align: "center"` set the
+caption at the plate's width under it, and `minScale` (default 0.7) is the
+smallest share of its width it may shrink to. One part per artist
 (`:::part{title="El Greco" palette="band=#3d4a63"}` with the artist's dates
 and bio as the part body).
 

@@ -298,7 +298,8 @@ per-resource `placement`:
 | Across some of a newspaper's columns (2 of 5) | `span: "column"`, `columns: 2` (≥ 1.18; boxes: callout `columns`) |
 | Narrower than the column | `width: 0.7`, `align: "center"` |
 | Landscape table on its own page | `span: "page"`, `rotate: "ccw"` |
-| Tall plate that must fit the page | `width = min(1, aspect × maxHeight / textWidth)`: the engine does not shrink an over-tall page float |
+| Tall plate that must fit the page | `shrink: "page"` (≥ 1.24; `minScale` default 0.7), `captionMeasure: "body"`, `align: "center"` |
+| Figure that should stay on the page that cites it, a little smaller, rather than move on | `shrink: "slot"`, `minScale: 0.8` (≥ 1.24) |
 
 Floats of one numbering sequence never overtake each other. Resources are
 numbered by their first mention.

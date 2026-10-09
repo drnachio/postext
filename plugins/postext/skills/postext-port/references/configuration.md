@@ -185,7 +185,8 @@ layout
 ├─ sideColumnRole     'text' | 'floats'                      default 'text'   oneAndHalf only
 ├─ sideColumnSide     'right'|'left'|'outer'|'inner'         default 'right'  oneAndHalf only
 ├─ columnRule         { enabled=false, color=#cccccc, lineWidth=0.5pt }
-├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)
+├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)   hard cap at the content area
+├─ floatShrink        { mode='never', minScale=0.7 }          ≥ 1.24 document default of placement.shrink / minScale (see §ResourcePlacement)
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
@@ -1068,6 +1069,16 @@ captionSide?: boolean    caption in the float-only side column, level with the f
 columns?: number         ≥ 1.18: a span:'column' float across this many adjacent columns (picture across 2 of 5);
                          ≥ the page's column count = page-wide; ignored for page/side spans, rotate, here;
                          captionSide only on 1-column floats
+shrink?:  'never' (default) | 'page' | 'slot'   ≥ 1.24, pictures only (bitmap, svg, video poster): scale the float,
+                         proportions kept, to the room of its slot instead of moving it on. 'page': only when it is
+                         too tall for a fresh page's band (opener, other floats, footnotes deducted); 'slot': also into
+                         a slot of the citing page when it fits at minScale or more. Safe area cropped first.
+                         Falls back to layout.floatShrink.mode. Tables split instead; rotated floats keep their own fit
+minScale?: number        ≥ 1.24, 0–1, default 0.7 (then layout.floatShrink.minScale): smallest scale. A slot needing
+                         less is skipped; on a fresh page the picture is set at minScale and overruns (floatShrunk
+                         warning with overflowPx)
+captionMeasure?: 'slot' (default) | 'body'   ≥ 1.24: caption and note of a picture narrower than its slot at the
+                         picture's width, placed per align (floats and inline embeds)
 ```
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the
@@ -1346,7 +1357,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
