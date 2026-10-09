@@ -433,7 +433,10 @@ Read each chapter against the source pages and apply
   rebuilt from the source's markup or, for a printed index,
   `scripts/index_marks.py parse|place` once the text is final
   (playbooks A10);
-- verse one line per paragraph.
+- verse one line per paragraph;
+- sizes that grow with the text and reflowable content wherever they make
+  sense, not fixed sizes or breaks copied from the source pages (see Rules
+  of thumb).
 
 Resources get descriptive ids, captions without the number, `note` credit
 lines, `altText`, and bitmap `width`/`height`. Keep the source's wording;
@@ -543,6 +546,18 @@ Use it when:
   If Postext cannot express something, say so, choose the closest
   expression, and note it as a gap.
 - **Measure, don't guess.** Every number in the generator has a source page.
+- **Let it grow with the text.** When Postext can express something as a
+  size that follows its content (auto heights, widths as fractions of the
+  measure, spacing in lines or em, boxes, tables and chips that size to
+  what they hold), prefer it to a fixed size copied from the source. Keep
+  whatever can reflow reflowable: live text over text baked into images,
+  real tables over pictures of tables, `:::space` and style spacing over
+  empty paragraphs, no hard line, column or page breaks the flow would
+  produce anyway. The text will be edited, translated and set at other
+  sizes; a fixed size that only fits today's wording breaks then. Fix a
+  size only where it is the design itself (page and type area, a cover, a
+  band or plate of set height, a comics panel) or where reflow makes no
+  sense, and note why.
 - **Draft, then curate.** Extractors produce drafts. Never re-run an
   extractor over curated chapters.
 - **Semantic ids and styles.** Name things by role (`keypoints`, `band`,
