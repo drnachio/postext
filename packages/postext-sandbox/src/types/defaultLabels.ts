@@ -213,6 +213,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   warningsConsecutiveHeadingsDetail: 'This heading follows another heading with no text in between.',
   warningsListAfterHeadingTitle: 'List after heading',
   warningsListAfterHeadingDetail: 'A list starts right after a heading. Consider adding an introductory paragraph.',
+  warningsInvalidFrontmatterTitle: "Invalid front matter",
+  warningsInvalidFrontmatterDetail: "The block between the `---` lines is not valid YAML: check quotes, colons and indentation. Until it is fixed the chapter is set without its metadata (title, author, language\u2026).",
   warningsUnknownDirectiveTitle: 'Unknown directive',
   warningsUnknownDirectiveDetail: 'A `:::name` directive is not recognized. Supported names: __names__.',
   warningsMalformedEmbedTitle: 'Embed set as text',

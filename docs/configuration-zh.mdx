@@ -8762,6 +8762,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>照样放置，超出所在栏<code>overflowPx</code>（位于<code>pageIndex</code> / <code>columnIndex</code>）。这是<code>doc.warnings</code>中唯一的类型；下面各类型都在<code>doc.contentWarnings</code>中。</td>
     </tr>
     <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>前置元数据不是有效的YAML（引号未闭合、带引号的值后面还有文字）。<code>message</code>是解析器给出的原因及其行号和列号。</td>
+      <td>文档在没有元数据的情况下排版；结束<code>---</code>之后的正文照常排版。</td>
+    </tr>
+    <tr>
       <td><code>unknownResourceId</code></td>
       <td><code>::resource</code>嵌入（<code>usage: 'embed'</code>）、行内<code>:ref</code>（<code>'ref'</code>）或表格单元格的图片（<code>'cellImage'</code>）指定的id不属于任何资源。</td>
       <td>嵌入被省略；引用印出<code>?</code>（或其<code>text=</code>标签），不带编号和链接；单元格只保留文字。<code>inResource</code>指出引用位于哪个资源的题注、注释或单元格中。</td>

@@ -40,6 +40,8 @@ The story begins here…
 
 フロントマターは[`gray-matter`](https://github.com/jonschlinkert/gray-matter)で解析するので、YAMLの形は問いません。Postext自身が見るのは`title`、`subtitle`、`author`、`publishDate`だけです。それ以外のキーは`PostextContent.metadata`にそのまま残るので、自由に使えます。
 
+正しいYAMLでないブロック（閉じていない引用符、引用符で囲んだ値の後に続く文字など）があっても組版は止まりません。`extractFrontmatter`はメタデータを返さず、閉じの`---`より後の文字を本文とし、パーサーが示す理由を`error`に入れます。文書はメタデータなしで組版され、ビルドは`contentWarnings`に`invalidFrontmatter`を1件加えます（サンドボックスでは**フロントマターが無効です**と表示されます）。
+
 YAMLは値に型を付けます。`1984`は数値、`2026-04-15`は日付、`[Ana Gil, Luis Paz]`はリストです。Postextはこの4つのフィールドを、型にかかわらずテキストとして出力します。
 
 - 数値は通常の10進表記で、真偽値は`true`または`false`として出力します（`title: 1984`は「1984」と出力）。YAMLは数値を1桁ずつではなく値として読むので、`1.50`は「1.5」、`017`（8進数）は「15」、`1:30`（60進数）は「90」と出力します。

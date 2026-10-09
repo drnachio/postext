@@ -40,6 +40,8 @@ Crida `extractFrontmatter(source)` per separar el frontmatter del cos. L'objecte
 
 El frontmatter s'analitza amb [`gray-matter`](https://github.com/jonschlinkert/gray-matter), de manera que s'accepta qualsevol forma vàlida de YAML. Postext només consulta `title`, `subtitle`, `author` i `publishDate`; les altres claus es conserven a `PostextContent.metadata` i queden disponibles per al teu ús.
 
+Un bloc que no és YAML vàlid —unes cometes sense tancar, text després d'un valor entre cometes— no atura la composició: `extractFrontmatter` no retorna metadades, pren com a cos el text que segueix el `---` de tancament i deixa el motiu de l'analitzador a `error`. El document es compon sense les seves metadades i la construcció afegeix una entrada `invalidFrontmatter` a `contentWarnings` (el sandbox la mostra com a **Front matter no vàlid**).
+
 YAML dona tipus als seus valors: `1984` és un nombre, `2026-04-15` una data, `[Ana Gil, Luis Paz]` una llista. Postext imprimeix aquests quatre camps com a text, sigui quin sigui el seu tipus:
 
 - un nombre, en la seva forma decimal simple, i un booleà, com a `true` o `false` (`title: 1984` imprimeix *1984*). YAML llegeix un nombre com un valor, no xifra a xifra: `1.50` imprimeix *1.5*, `017` (octal) *15* i `1:30` (base 60) *90*;

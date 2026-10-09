@@ -40,6 +40,8 @@ Llama a `extractFrontmatter(source)` para separar el frontmatter del cuerpo. El 
 
 El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gray-matter), por lo que se acepta cualquier forma válida de YAML. Postext solo consulta `title`, `subtitle`, `author` y `publishDate`; las demás claves se conservan en `PostextContent.metadata` y quedan disponibles para tu uso.
 
+Un bloque que no es YAML válido —unas comillas sin cerrar, texto tras un valor entre comillas— no detiene la composición: `extractFrontmatter` no devuelve metadatos, toma como cuerpo el texto que sigue al `---` de cierre y deja el motivo del analizador en `error`. El documento se compone sin sus metadatos y la construcción añade una entrada `invalidFrontmatter` a `contentWarnings` (el sandbox la muestra como **Front matter no válido**).
+
 YAML da tipo a sus valores: `1984` es un número, `2026-04-15` una fecha, `[Ana Gil, Luis Paz]` una lista. Postext imprime esos cuatro campos como texto, sea cual sea su tipo:
 
 - un número, en su forma decimal simple, y un booleano, como `true` o `false` (`title: 1984` imprime *1984*). YAML lee un número como un valor, no cifra a cifra: `1.50` imprime *1.5*, `017` (octal) *15* y `1:30` (base 60) *90*;

@@ -8765,6 +8765,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>それでも配置され、段から<code>overflowPx</code>だけはみ出します（<code>pageIndex</code> / <code>columnIndex</code>の位置）。<code>doc.warnings</code>に入る唯一の種類で、以下の種類は<code>doc.contentWarnings</code>に入ります。</td>
     </tr>
     <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>フロントマターが正しいYAMLではありません（閉じていない引用符、引用符で囲んだ値の後に続く文字など）。<code>message</code>はパーサーが示す理由と、その行と列です。</td>
+      <td>文書はメタデータなしで組版されます。閉じの<code>---</code>より後の本文は通常どおり組版されます。</td>
+    </tr>
+    <tr>
       <td><code>unknownResourceId</code></td>
       <td><code>::resource</code>の埋め込み（<code>usage: 'embed'</code>）、インラインの<code>:ref</code>（<code>'ref'</code>）、表のセルの画像（<code>'cellImage'</code>）が、どのリソースにもないidを指している。</td>
       <td>埋め込みは省かれ、参照は番号もリンクもなしに<code>?</code>（または<code>text=</code>のラベル）を印字し、セルはテキストだけになります。<code>inResource</code>は、その参照をキャプション、注、セルに含むリソースを示します。</td>

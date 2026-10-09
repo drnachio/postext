@@ -835,6 +835,8 @@
     "warningsConsecutiveHeadingsDetail": "Este título vem logo depois de outro título, sem texto entre eles.",
     "warningsListAfterHeadingTitle": "Lista depois de título",
     "warningsListAfterHeadingDetail": "Uma lista começa logo depois de um título. Considere acrescentar um parágrafo introdutório.",
+    "warningsInvalidFrontmatterTitle": "Front matter inválido",
+    "warningsInvalidFrontmatterDetail": "O bloco entre as linhas `---` não é YAML válido: confira as aspas, os dois-pontos e o recuo. Até ser corrigido, o capítulo é composto sem seus metadados (título, autor, idioma…).",
     "warningsUnknownDirectiveTitle": "Diretiva desconhecida",
     "warningsUnknownDirectiveDetail": "Uma diretiva `:::name` não foi reconhecida. Nomes aceitos: __names__.",
     "warningsMalformedEmbedTitle": "Inserção composta como texto",

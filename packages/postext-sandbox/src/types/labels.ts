@@ -237,6 +237,8 @@ export interface SandboxLabels {
   warningsConsecutiveHeadingsDetail: string;
   warningsListAfterHeadingTitle: string;
   warningsListAfterHeadingDetail: string;
+  warningsInvalidFrontmatterTitle: string;
+  warningsInvalidFrontmatterDetail: string;
   warningsUnknownDirectiveTitle: string;
   warningsUnknownDirectiveDetail: string;
   warningsMalformedEmbedTitle: string;

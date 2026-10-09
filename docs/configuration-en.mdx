@@ -8766,6 +8766,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>It is placed anyway, overflowing its column by <code>overflowPx</code> (on <code>pageIndex</code> / <code>columnIndex</code>). The one kind listed in <code>doc.warnings</code>; the kinds below are in <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>The front matter is not valid YAML (an unclosed quote, text after a quoted value). <code>message</code> is the parser's reason with its line and column.</td>
+      <td>The document is set without its metadata; the body after the closing <code>---</code> is laid out as usual.</td>
+    </tr>
+    <tr>
       <td><code>unknownResourceId</code></td>
       <td>A <code>::resource</code> embed (<code>usage: 'embed'</code>), an inline <code>:ref</code> (<code>'ref'</code>) or a table cell's image (<code>'cellImage'</code>) names an id no resource has.</td>
       <td>The embed is left out, the reference prints <code>?</code> (or its <code>text=</code> label) with no number or link, the cell stays text-only. <code>inResource</code> names the resource whose caption, note or cell holds the reference.</td>

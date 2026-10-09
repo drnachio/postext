@@ -40,6 +40,8 @@ Call `extractFrontmatter(source)` to split the frontmatter from the body. The pa
 
 Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray-matter), so any shape of YAML is accepted. Postext itself only looks at `title`, `subtitle`, `author`, and `publishDate`; additional keys are preserved on `PostextContent.metadata` and are yours to use.
 
+A block that is not valid YAML — an unclosed quote, text after a quoted value — does not stop the layout: `extractFrontmatter` returns no metadata, the text after the closing `---` as the body, and the parser's reason in `error`. The document is set without its metadata, and the build lists an `invalidFrontmatter` entry in `contentWarnings` (the sandbox shows it as **Invalid front matter**).
+
 YAML gives its values types: `1984` is a number, `2026-04-15` a date, `[Ana Gil, Luis Paz]` a list. Postext prints each of those four fields as text whatever its type:
 
 - a number in its plain decimal form, and a boolean as `true` or `false` (`title: 1984` prints *1984*). YAML reads a number as a value, not digit by digit: `1.50` prints *1.5*, `017` (octal) *15*, `1:30` (base 60) *90*;

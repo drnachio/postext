@@ -63,6 +63,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headerFooterUnknownPlaceholder':
     case 'headerFooterMetadataMissing':
       return FileText;
+    case 'invalidFrontmatter':
     case 'unknownDirective':
     case 'malformedEmbed':
     case 'fullwidthMarkup':
@@ -196,6 +197,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeaderFooterUnknownPlaceholderTitle;
     case 'headerFooterMetadataMissing':
       return labels.warningsHeaderFooterMetadataMissingTitle;
+    case 'invalidFrontmatter':
+      return labels.warningsInvalidFrontmatterTitle;
     case 'unknownDirective':
       return labels.warningsUnknownDirectiveTitle;
     case 'malformedEmbed':
@@ -441,6 +444,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${slotWhere(payload)} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
     case 'headerFooterMetadataMissing':
       return `${slotWhere(payload)} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
+    case 'invalidFrontmatter':
+      return `--- — ${payload.message} — ${labels.warningsInvalidFrontmatterDetail}`;
     case 'unknownDirective':
       return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail.replace('__names__', KNOWN_FENCE_NAMES)}`;
     case 'unclosedContainer':

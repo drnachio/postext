@@ -24,6 +24,7 @@ export type WarningKind =
   | 'unclosedMath'
   | 'headerFooterUnknownPlaceholder'
   | 'headerFooterMetadataMissing'
+  | 'invalidFrontmatter'
   | 'unknownDirective'
   | 'malformedEmbed'
   | 'fullwidthMarkup'
@@ -157,6 +158,9 @@ export type WarningPayload =
       elementIndex: number;
       name: string;
     }
+  /** The front matter is not valid YAML; the chapter is set without its
+   *  metadata. `message` is the parser's reason (line:column). */
+  | { kind: 'invalidFrontmatter'; message: string }
   | { kind: 'unknownDirective'; name: string }
   /** A `::name` line that is not a well-formed embed on its own (after a
    *  blank line, `::resource{id="…"}`): it prints as text. */

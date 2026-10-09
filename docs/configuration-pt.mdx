@@ -8768,6 +8768,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Ele é colocado mesmo assim, transbordando a coluna em <code>overflowPx</code> (em <code>pageIndex</code> / <code>columnIndex</code>). É o único tipo listado em <code>doc.warnings</code>; os tipos abaixo ficam em <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>O front matter não é YAML válido (aspas sem fechar, texto depois de um valor entre aspas). <code>message</code> é o motivo do analisador, com linha e coluna.</td>
+      <td>O documento é composto sem seus metadados; o corpo depois do <code>---</code> de fechamento é composto normalmente.</td>
+    </tr>
+    <tr>
       <td><code>unknownResourceId</code></td>
       <td>Uma inserção <code>::resource</code> (<code>usage: 'embed'</code>), uma <code>:ref</code> em linha (<code>'ref'</code>) ou a imagem de uma célula de tabela (<code>'cellImage'</code>) cita um id que nenhum recurso tem.</td>
       <td>A inserção é omitida, a referência imprime <code>?</code> (ou seu rótulo <code>text=</code>) sem número nem link, a célula fica só com texto. <code>inResource</code> indica o recurso cuja legenda, nota ou célula contém a referência.</td>

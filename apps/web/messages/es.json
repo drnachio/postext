@@ -1498,6 +1498,8 @@
     "warningsConsecutiveHeadingsDetail": "Este título sigue a otro título sin texto entre ambos.",
     "warningsListAfterHeadingTitle": "Lista tras título",
     "warningsListAfterHeadingDetail": "Una lista comienza justo después de un título. Considera añadir un párrafo introductorio.",
+    "warningsInvalidFrontmatterTitle": "Front matter no válido",
+    "warningsInvalidFrontmatterDetail": "El bloque entre las líneas `---` no es YAML válido: revisa las comillas, los dos puntos y la sangría. Mientras no se corrija, el capítulo se compone sin sus metadatos (título, autor, idioma…).",
     "warningsUnknownDirectiveTitle": "Directiva desconocida",
     "warningsUnknownDirectiveDetail": "Una directiva `:::nombre` no está reconocida. Nombres admitidos: __names__.",
     "warningsMalformedEmbedTitle": "Inserción compuesta como texto",

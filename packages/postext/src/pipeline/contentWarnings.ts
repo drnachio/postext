@@ -146,17 +146,14 @@ export function collectContentWarnings(
    *  of its chapters; its own references count either way. */
   bookCitationKeys?: ReadonlySet<string>,
 ): ContentWarning[] {
-  let body = markdown;
-  let offset = 0;
-  try {
-    const fm = extractFrontmatter(markdown);
-    body = fm.content;
-    offset = fm.contentOffset;
-  } catch {
-    // Malformed frontmatter: the build reports it; scan the text as is.
-  }
+  const fm = extractFrontmatter(markdown);
+  const body = fm.content;
+  const offset = fm.contentOffset;
   const blocks = parseMarkdownMemo(body, codeParseOptions(resolveAllConfig(config)));
   const out: ContentWarning[] = [];
+  // Front matter that does not parse: the document is set without its
+  // metadata.
+  if (fm.error) out.push({ kind: 'invalidFrontmatter', message: fm.error.message, sourceStart: fm.error.sourceStart, sourceEnd: fm.error.sourceEnd });
   const abs = (r: SourceRange) => ({ sourceStart: r.start + offset, sourceEnd: r.end + offset });
 
   const byId = new Map<string, Resource>();
@@ -443,12 +440,7 @@ export function collectContentWarnings(
   }
 
   // Citations (#268): keys no reference defines, data that cannot be read.
-  let metadata: Record<string, unknown> | undefined;
-  try {
-    metadata = extractFrontmatter(markdown).metadata as Record<string, unknown>;
-  } catch {
-    metadata = undefined;
-  }
+  const metadata = fm.metadata as Record<string, unknown>;
   if (needsCitationContext(blocks, metadata)) {
     const ctx = bookCitationContexts([{ metadata, blocks }])[0]!;
     const keys = bookCitationKeys ? new Set([...bookCitationKeys, ...ctx.items.map((i) => i.id)]) : undefined;
@@ -701,6 +693,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
         : w.usage === 'cellImage'
           ? `Unknown resource id "${w.resourceId}" for a table cell image${inRes} — the cell stays text-only`
           : `Unknown resource id "${w.resourceId}" in :ref${inRes} — it prints "?" (or its text= label), with no number or link`;
+      break;
+    case 'invalidFrontmatter':
+      text = `The front matter cannot be read: ${w.message} — the document is set without its metadata`;
       break;
     case 'unknownDirective':
       text = `Unknown directive ":::${w.name}" — the line is set as text`;

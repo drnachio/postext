@@ -835,6 +835,8 @@
     "warningsConsecutiveHeadingsDetail": "この見出しは、間に本文を挟まずに別の見出しの直後に続いています。",
     "warningsListAfterHeadingTitle": "見出し直後のリスト",
     "warningsListAfterHeadingDetail": "見出しのすぐ後にリストが始まっています。導入の段落を加えることを検討してください。",
+    "warningsInvalidFrontmatterTitle": "フロントマターが無効です",
+    "warningsInvalidFrontmatterDetail": "`---` 行に挟まれたブロックが正しい YAML ではありません。引用符、コロン、インデントを確認してください。修正されるまで、この章はメタデータ（タイトル、著者、言語など）なしで組版されます。",
     "warningsUnknownDirectiveTitle": "不明なディレクティブ",
     "warningsUnknownDirectiveDetail": "`:::name`ディレクティブが認識されません。使用できる名前：__names__。",
     "warningsMalformedEmbedTitle": "テキストとして組まれた埋め込み",

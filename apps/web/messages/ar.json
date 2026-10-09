@@ -835,6 +835,8 @@
     "warningsConsecutiveHeadingsDetail": "يلي هذا العنوان عنوانًا آخر دون نص بينهما.",
     "warningsListAfterHeadingTitle": "قائمة بعد عنوان",
     "warningsListAfterHeadingDetail": "تبدأ قائمة مباشرة بعد عنوان. يُستحسن إضافة فقرة تمهيدية.",
+    "warningsInvalidFrontmatterTitle": "بيانات تمهيدية غير صالحة",
+    "warningsInvalidFrontmatterDetail": "الكتلة بين سطري `---` ليست YAML صالحة: راجع علامات الاقتباس والنقطتين والإزاحة. إلى أن تُصحَّح، يُصفّ الفصل دون بياناته الوصفية (العنوان والمؤلف واللغة…).",
     "warningsUnknownDirectiveTitle": "توجيه غير معروف",
     "warningsUnknownDirectiveDetail": "التوجيه `:::name` غير معروف. الأسماء المدعومة: __names__.",
     "warningsMalformedEmbedTitle": "تضمين نُضِّد نصًا",

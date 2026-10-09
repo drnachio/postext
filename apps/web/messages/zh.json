@@ -835,6 +835,8 @@
     "warningsConsecutiveHeadingsDetail": "这个标题紧跟在另一个标题后面，中间没有正文。",
     "warningsListAfterHeadingTitle": "标题后接列表",
     "warningsListAfterHeadingDetail": "标题之后直接开始列表。可以考虑加一个引导段落。",
+    "warningsInvalidFrontmatterTitle": "前置元数据无效",
+    "warningsInvalidFrontmatterDetail": "`---` 行之间的内容不是有效的 YAML：请检查引号、冒号和缩进。修正之前，本章在排版时不使用其元数据（标题、作者、语言等）。",
     "warningsUnknownDirectiveTitle": "未知指令",
     "warningsUnknownDirectiveDetail": "无法识别`:::name`指令。支持的名称：__names__。",
     "warningsMalformedEmbedTitle": "嵌入被排成文字",

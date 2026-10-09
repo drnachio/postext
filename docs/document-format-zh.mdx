@@ -40,6 +40,8 @@ The story begins here…
 
 前置元数据由[`gray-matter`](https://github.com/jonschlinkert/gray-matter)解析，因此任何结构的YAML都能接受。Postext本身只看`title`、`subtitle`、`author`和`publishDate`；其他键保留在`PostextContent.metadata`上，供你自行使用。
 
+不是有效YAML的块（引号未闭合、带引号的值后面还有文字）不会中断排版：`extractFrontmatter`不返回元数据，把结束`---`之后的文字作为正文，并在`error`中给出解析器的原因。文档在没有元数据的情况下排版，构建结果在`contentWarnings`中列出一条`invalidFrontmatter`（沙盒中显示为**前置元数据无效**）。
+
 YAML会给值赋予类型：`1984`是数字，`2026-04-15`是日期，`[Ana Gil, Luis Paz]`是列表。无论类型如何，Postext都把这四个字段作为文本输出：
 
 - 数字按普通十进制形式输出，布尔值输出为`true`或`false`（`title: 1984`输出*1984*）。YAML把数字当作一个值来读，而不是逐位读取：`1.50`输出*1.5*，`017`（八进制）输出*15*，`1:30`（六十进制）输出*90*；

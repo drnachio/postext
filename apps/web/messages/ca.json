@@ -835,6 +835,8 @@
     "warningsConsecutiveHeadingsDetail": "Aquest títol en segueix un altre sense text entre tots dos.",
     "warningsListAfterHeadingTitle": "Llista després d'un títol",
     "warningsListAfterHeadingDetail": "Una llista comença just després d'un títol. Pots afegir-hi un paràgraf introductori.",
+    "warningsInvalidFrontmatterTitle": "Front matter no vàlid",
+    "warningsInvalidFrontmatterDetail": "El bloc entre les línies `---` no és YAML vàlid: revisa les cometes, els dos punts i el sagnat. Mentre no es corregeixi, el capítol es compon sense les seves metadades (títol, autor, llengua…).",
     "warningsUnknownDirectiveTitle": "Directiva desconeguda",
     "warningsUnknownDirectiveDetail": "No es reconeix una directiva `:::nombre`. Noms admesos: __names__.",
     "warningsMalformedEmbedTitle": "Inserció composta com a text",

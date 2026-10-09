@@ -8766,6 +8766,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>يُوضع على أي حال، فيتجاوز عموده بمقدار <code>overflowPx</code> (في <code>pageIndex</code> / <code>columnIndex</code>). وهو النوع الوحيد المُدرج في <code>doc.warnings</code>؛ أما الأنواع التالية فتقع في <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>البيانات التمهيدية ليست YAML صالحة (علامة اقتباس لم تُغلق، نص بعد قيمة بين علامتي اقتباس). <code>message</code> هو سبب المحلّل مع السطر والعمود.</td>
+      <td>يُصفّ المستند دون بياناته الوصفية؛ ويُصفّ المتن الذي يلي سطر <code>---</code> الختامي كالمعتاد.</td>
+    </tr>
+    <tr>
       <td><code>unknownResourceId</code></td>
       <td>تضمين <code>::resource</code> (<code>usage: 'embed'</code>) أو <code>:ref</code> سطري (<code>'ref'</code>) أو صورة في خلية جدول (<code>'cellImage'</code>) يذكر معرّفًا لا يحمله أي مورد.</td>
       <td>يُحذف التضمين، ويطبع المرجع <code>?</code> (أو تسميته في <code>text=</code>) بلا رقم ولا رابط، وتبقى الخلية نصًا فقط. يذكر <code>inResource</code> المورد الذي يحوي تعليقُه أو ملاحظته أو خليته ذلك المرجع.</td>

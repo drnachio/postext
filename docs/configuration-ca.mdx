@@ -8747,6 +8747,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Es col·loca igualment, desbordant la seva columna en <code>overflowPx</code> (a <code>pageIndex</code> / <code>columnIndex</code>). És l'únic tipus que apareix a <code>doc.warnings</code>; els de sota són a <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>El front matter no és YAML vàlid (unes cometes sense tancar, text després d'un valor entre cometes). <code>message</code> és el motiu de l'analitzador, amb la seva línia i columna.</td>
+      <td>El document es compon sense les seves metadades; el cos que segueix el <code>---</code> de tancament es compon com sempre.</td>
+    </tr>
+    <tr>
       <td><code>unknownResourceId</code></td>
       <td>Una inserció <code>::resource</code> (<code>usage: 'embed'</code>), una referència en línia <code>:ref</code> (<code>'ref'</code>) o la imatge d'una cel·la de taula (<code>'cellImage'</code>) anomena un id que no té cap recurs.</td>
       <td>La inserció s'omet, la referència imprimeix <code>?</code> (o la seva etiqueta <code>text=</code>) sense número ni enllaç, la cel·la queda només amb text. <code>inResource</code> anomena el recurs en el peu, la nota o la cel·la del qual hi ha la referència.</td>

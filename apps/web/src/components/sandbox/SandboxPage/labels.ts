@@ -216,6 +216,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsConsecutiveHeadingsDetail: t("warningsConsecutiveHeadingsDetail"),
     warningsListAfterHeadingTitle: t("warningsListAfterHeadingTitle"),
     warningsListAfterHeadingDetail: t("warningsListAfterHeadingDetail"),
+    warningsInvalidFrontmatterTitle: t("warningsInvalidFrontmatterTitle"),
+    warningsInvalidFrontmatterDetail: t("warningsInvalidFrontmatterDetail"),
     warningsUnknownDirectiveTitle: t("warningsUnknownDirectiveTitle"),
     warningsUnknownDirectiveDetail: t("warningsUnknownDirectiveDetail"),
     warningsMalformedEmbedTitle: t("warningsMalformedEmbedTitle"),
