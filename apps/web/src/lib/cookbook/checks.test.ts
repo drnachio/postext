@@ -56,14 +56,16 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "arabicMarksExceedLeading", page: 3, detail: "وَقَالَ" },
     { kind: "unbreakableWordOverflow", page: null, detail: "https://example.org/a-very-long-path" },
     { kind: "joiningScriptLetterSpacing", page: 1, detail: "كتاب" },
+    { kind: "lineNumberOverlap", page: 2, detail: "line 40" },
   ];
 
-  it("fails a recipe on the Arabic and word-overflow warnings it does not expect", () => {
+  it("fails a recipe on the Arabic, word-overflow and line-number warnings it does not expect", () => {
     const c5 = of("C5", runChecks(input({ facts: facts({ textWarnings }) })));
     expect(c5.map((f) => [f.severity, f.detail])).toEqual([
       ["fail", 'arabicMarksExceedLeading "وَقَالَ" on page 3'],
       ["fail", 'unbreakableWordOverflow "https://example.org/a-very-long-path"'],
       ["fail", 'joiningScriptLetterSpacing "كتاب" on page 1'],
+      ["fail", 'lineNumberOverlap "line 40" on page 2'],
     ]);
   });
 
@@ -322,6 +324,7 @@ describe("C31: config values the engine replaced (#468)", () => {
       { kind: "unknownConfigValue", path: "footnotes.placement", value: "spread", used: "column" },
       { kind: "unknownConfigValue", path: "comics.balloonStyles[0].shape", value: "ovl", used: "oval", suggestion: "oval" },
       { kind: "unknownConfigKey", path: "headingStyles[3].minHeight", value: "minHeight", used: "", suggestion: "lineHeight" },
+      { kind: "lineNumbersUnsupported", path: "lineNumbers.enabled", value: "true", used: "false" },
       { kind: "fontFamilyStack", path: "bodyText.fontFamily", value: "Zen Old Mincho, serif", used: "Zen Old Mincho" },
     ];
     const c31 = of("C31", runChecks(input({ facts: facts({ configWarnings }) })));
@@ -333,6 +336,7 @@ describe("C31: config values the engine replaced (#468)", () => {
       ["fail", 'unknownConfigValue: footnotes.placement "spread" is not one of its choices; the engine used column'],
       ["fail", 'unknownConfigValue: comics.balloonStyles[0].shape "ovl" is not one of its choices (oval?); the engine used oval'],
       ["fail", "unknownConfigKey: headingStyles[3].minHeight is no key of that setting (lineHeight?); the engine ignores it"],
+      ["fail", "lineNumbersUnsupported: lineNumbers.enabled: vertical documents get no line numbers"],
       ["warn", 'fontFamilyStack: bodyText.fontFamily "Zen Old Mincho, serif" is a font stack; the text is set in Zen Old Mincho alone'],
     ]);
   });

@@ -1649,7 +1649,8 @@
         "verse numbers",
         "line numbers in the margin",
         "every fifth line",
-        "critical edition"
+        "critical edition",
+        "lineNumbers"
       ],
       "es": [
         "números de línea",
@@ -1657,7 +1658,8 @@
         "versos numerados",
         "numeración al margen",
         "cada cinco versos",
-        "edición crítica"
+        "edición crítica",
+        "lineNumbers"
       ],
       "ca": [
         "números de línia",
@@ -1665,7 +1667,8 @@
         "versos numerats",
         "numeració al marge",
         "cada cinc versos",
-        "edició crítica"
+        "edició crítica",
+        "lineNumbers"
       ],
       "zh": [
         "行号",
@@ -1674,7 +1677,8 @@
         "页边行号",
         "每五行一个行号",
         "校勘本",
-        "line numbers"
+        "line numbers",
+        "lineNumbers"
       ],
       "ar": [
         "ترقيم الأسطر",
@@ -1682,7 +1686,8 @@
         "أرقام الأبيات",
         "أرقام الأسطر في الهامش",
         "كل سطر خامس",
-        "طبعة محققة"
+        "طبعة محققة",
+        "lineNumbers"
       ],
       "ja": [
         "行番号",
@@ -1690,7 +1695,8 @@
         "詩の行番号",
         "余白の行番号",
         "5行ごとの番号",
-        "校訂版"
+        "校訂版",
+        "lineNumbers"
       ],
       "pt": [
         "números de linha",
@@ -1698,28 +1704,29 @@
         "numeração de versos",
         "números na margem",
         "a cada cinco linhas",
-        "edição crítica"
+        "edição crítica",
+        "lineNumbers"
       ]
     },
     "explanation": {
-      "en": "Postext does not count or number lines. For verse, give each line a paragraph of its own and count them with a short preprocessor that adds, after every fifth line, a side box holding the number, set in a side column reserved for floats.",
-      "es": "Postext no cuenta ni numera líneas. En verso, da a cada línea un párrafo propio y cuéntalas con un preprocesador breve que, tras cada quinto verso, añade un recuadro lateral con el número, compuesto en una columna lateral reservada a los flotantes.",
-      "ca": "Postext no compta ni numera línies. En vers, dona a cada línia un paràgraf propi i compta-les amb un preprocessador breu que, després de cada cinquè vers, afegeix un requadre lateral amb el número, compost en una columna lateral reservada als flotants.",
-      "zh": "Postext不统计也不编排行号。排诗时，让每一行自成一段，用一个简短的预处理脚本来数行，每隔五行加一个装有行号的侧框，排在为浮动体预留的边栏中。",
-      "ar": "لا يعدّ Postext الأسطر ولا يرقّمها. للشعر، أعطِ كل سطر فقرة مستقلة وعُدّها بمعالج مسبق قصير يضيف بعد كل سطر خامس صندوقًا جانبيًّا يحمل الرقم، يُنضَّد في عمود جانبي مخصص للعناصر العائمة.",
-      "ja": "Postextは行を数えず、番号も振りません。韻文では各行を独立した段落にし、短い前処理スクリプトで行を数えて、5行ごとに番号を入れたサイドボックスを追加します。そのボックスは、フロート用に確保したサイド段に組みます。",
-      "pt": "O Postext não conta nem numera linhas. Em verso, dê a cada linha um parágrafo próprio e conte-as com um pré-processador curto que acrescenta, depois de cada quinta linha, um boxe lateral com o número, composto em uma coluna lateral reservada aos flutuantes."
+      "en": "The lineNumbers setting prints the number of every fifth line (or every Nth) in the margin, the gutter or the side column. With count 'verse' it counts the lines of :::verse poems, a turnover taking no number; with 'all', every line of the text. The count starts again at each poem, page, chapter or section, or runs on through the book; :::verse{lineStart=37} resumes a poem part-way, numbered=false leaves one out and :::numbering{lines=1} restarts the count anywhere. The numbers never move a line, stay out of copied text and are artifacts in a tagged PDF. Vertical text gets no numbers. Up to postext 1.22 each line of verse needed a paragraph of its own, and a preprocessor added after every fifth line a side box holding the number, in a side column reserved for floats.",
+      "es": "El ajuste lineNumbers imprime el número de cada quinta línea (o de cada N) en el margen, en el medianil o en la columna lateral. Con count 'verse' cuenta los versos de los poemas :::verse, sin numerar las partes que se pasan a la línea siguiente; con 'all', todas las líneas del texto. La cuenta vuelve a empezar en cada poema, página, capítulo o sección, o sigue a lo largo del libro; :::verse{lineStart=37} retoma un poema a medias, numbered=false deja uno fuera y :::numbering{lines=1} reinicia la cuenta en cualquier punto. Los números nunca mueven una línea, quedan fuera del texto copiado y son artefactos en un PDF etiquetado. El texto vertical no lleva números. Hasta postext 1.22 cada verso necesitaba un párrafo propio, y un preprocesador añadía tras cada quinto verso un recuadro lateral con el número, en una columna lateral reservada a los flotantes.",
+      "ca": "L'ajust lineNumbers imprimeix el número de cada cinquena línia (o de cada N) al marge, a l'entrecolumna o a la columna lateral. Amb count 'verse' compta els versos dels poemes :::verse, sense numerar les parts que passen a la línia següent; amb 'all', totes les línies del text. El compte torna a començar a cada poema, pàgina, capítol o secció, o continua al llarg del llibre; :::verse{lineStart=37} reprèn un poema a mitges, numbered=false en deixa un fora i :::numbering{lines=1} reinicia el compte en qualsevol punt. Els números no mouen mai cap línia, queden fora del text copiat i són artefactes en un PDF etiquetat. El text vertical no porta números. Fins a postext 1.22 cada vers necessitava un paràgraf propi, i un preprocessador afegia després de cada cinquè vers un requadre lateral amb el número, en una columna lateral reservada als flotants.",
+      "zh": "lineNumbers设置在页边、栏间或边栏中为每第五行（或每第N行）印出行号。count为'verse'时数:::verse诗中的诗行，转行部分不编号；为'all'时数正文的每一行。计数可以在每首诗、每页、每章或每节重新开始，也可以贯穿全书；:::verse{lineStart=37}让一首诗从中间接着编号，numbered=false让某首诗不编号，:::numbering{lines=1}可在任意位置重新计数。行号从不移动任何一行，不进入复制的文本，在带标签的PDF中作为工件。竖排文本不编行号。在postext 1.22及以前，每行诗都要自成一段，再由预处理脚本每隔五行加一个装有行号的侧框，排在为浮动体预留的边栏中。",
+      "ar": "يطبع الإعداد lineNumbers رقم كل سطر خامس (أو كل N أسطر) في الهامش أو بين العمودين أو في العمود الجانبي. مع count 'verse' تُعدّ أسطر قصائد :::verse ولا تأخذ تتمة السطر رقمًا؛ ومع 'all' تُعدّ كل أسطر النص. ويبدأ العدّ من جديد عند كل قصيدة أو صفحة أو فصل أو قسم، أو يستمر على امتداد الكتاب؛ ويستأنف :::verse{lineStart=37} قصيدةً من منتصفها، ويستثني numbered=false قصيدةً، ويعيد :::numbering{lines=1} العدّ في أي موضع. لا تحرّك الأرقام أي سطر، ولا تدخل في النص المنسوخ، وهي عناصر غير محتوى (artifacts) في ملف PDF الموسوم. ولا يُرقَّم النص العمودي. وحتى postext 1.22 كان كل سطر من الشعر يحتاج إلى فقرة مستقلة، ويضيف معالج مسبق بعد كل سطر خامس صندوقًا جانبيًّا يحمل الرقم، في عمود جانبي مخصص للعناصر العائمة.",
+      "ja": "lineNumbers設定は、5行ごと（またはN行ごと）の行番号を余白、段間、またはサイド段に印字します。countを'verse'にすると:::verseの詩の行を数え（折り返した部分には番号を振りません）、'all'にすると本文のすべての行を数えます。番号は詩、ページ、章、節ごとに振り直すか、本全体で通します。:::verse{lineStart=37}は途中から続く詩の番号を引き継ぎ、numbered=falseはその詩を数えず、:::numbering{lines=1}は任意の位置で数え直します。番号が行を動かすことはなく、コピーしたテキストには入らず、タグ付きPDFではアーティファクトになります。縦組みには番号を振りません。postext 1.22までは、詩の各行を独立した段落にし、前処理スクリプトで5行ごとに番号入りのサイドボックスを加えて、フロート用に確保したサイド段に組む必要がありました。",
+      "pt": "A configuração lineNumbers imprime o número de cada quinta linha (ou de cada N) na margem, no intercolúnio ou na coluna lateral. Com count 'verse' ela conta os versos dos poemas :::verse, sem numerar as partes que passam para a linha seguinte; com 'all', todas as linhas do texto. A contagem recomeça a cada poema, página, capítulo ou seção, ou segue ao longo do livro; :::verse{lineStart=37} retoma um poema pela metade, numbered=false deixa um de fora e :::numbering{lines=1} reinicia a contagem em qualquer ponto. Os números nunca movem uma linha, ficam fora do texto copiado e são artefatos em um PDF etiquetado. O texto vertical não recebe números. Até o postext 1.22 cada verso precisava de um parágrafo próprio, e um pré-processador acrescentava depois de cada quinto verso um boxe lateral com o número, em uma coluna lateral reservada aos flutuantes."
     },
     "docs": {
-      "slug": "document-format",
+      "slug": "configuration",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Line numbers",
+        "es": "Numeración de líneas",
+        "ca": "Numeració de línies",
+        "zh": "行号",
+        "ar": "ترقيم الأسطر",
+        "ja": "行番号",
+        "pt": "Numeração de linhas"
       }
     }
   },

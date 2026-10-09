@@ -2290,6 +2290,109 @@
     },
     "since": "1.23.0"
   },
+  "line-numbers": {
+    "label": {
+      "en": "Line numbers",
+      "es": "Numeración de líneas",
+      "ca": "Numeració de línies",
+      "zh": "行号",
+      "ar": "ترقيم الأسطر",
+      "ja": "行番号",
+      "pt": "Numeração de linhas"
+    },
+    "definition": {
+      "en": "lineNumbers prints the number of every fifth line (or every Nth) in the margin, the gutter or the side column: the lines of :::verse poems or every line of the text, restarting at each poem, page, chapter or section or running on through the book, without moving a line.",
+      "es": "lineNumbers imprime el número de cada quinta línea (o de cada N) en el margen, en el medianil o en la columna lateral: los versos de los poemas :::verse o todas las líneas del texto, con la cuenta reiniciada en cada poema, página, capítulo o sección o seguida a lo largo del libro, sin mover ninguna línea.",
+      "ca": "lineNumbers imprimeix el número de cada cinquena línia (o de cada N) al marge, a l'entrecolumna o a la columna lateral: els versos dels poemes :::verse o totes les línies del text, amb el compte reiniciat a cada poema, pàgina, capítol o secció o seguit al llarg del llibre, sense moure cap línia.",
+      "zh": "lineNumbers在页边、栏间或边栏中为每第五行（或每第N行）印出行号：可数:::verse诗中的诗行，也可数正文的每一行；计数在每首诗、每页、每章或每节重新开始，或贯穿全书，不移动任何一行。",
+      "ar": "يطبع lineNumbers رقم كل سطر خامس (أو كل N أسطر) في الهامش أو بين العمودين أو في العمود الجانبي: أسطر قصائد :::verse أو كل أسطر النص، ويبدأ العدّ من جديد عند كل قصيدة أو صفحة أو فصل أو قسم أو يستمر على امتداد الكتاب، دون أن يحرّك أي سطر.",
+      "ja": "lineNumbersは5行ごと（またはN行ごと）の行番号を余白、段間、サイド段に印字します。数えるのは:::verseの詩の行か本文のすべての行で、詩、ページ、章、節ごとに振り直すか本全体で通し、行は動かしません。",
+      "pt": "lineNumbers imprime o número de cada quinta linha (ou de cada N) na margem, no intercolúnio ou na coluna lateral: os versos dos poemas :::verse ou todas as linhas do texto, com a contagem reiniciada a cada poema, página, capítulo ou seção ou seguida ao longo do livro, sem mover nenhuma linha."
+    },
+    "aliases": {
+      "en": [
+        "line numbering",
+        "numbered lines",
+        "verse numbers",
+        "line numbers in the margin",
+        "every fifth line",
+        "critical edition",
+        "lineNumbers"
+      ],
+      "es": [
+        "números de línea",
+        "numeración de versos",
+        "versos numerados",
+        "numeración al margen",
+        "cada cinco versos",
+        "edición crítica",
+        "lineNumbers"
+      ],
+      "ca": [
+        "números de línia",
+        "numeració de versos",
+        "versos numerats",
+        "numeració al marge",
+        "cada cinc versos",
+        "edició crítica",
+        "lineNumbers"
+      ],
+      "zh": [
+        "行号",
+        "给行编号",
+        "诗行编号",
+        "页边行号",
+        "每五行一个行号",
+        "校勘本",
+        "lineNumbers"
+      ],
+      "ar": [
+        "أرقام الأسطر",
+        "أسطر مرقّمة",
+        "أرقام الأبيات",
+        "أرقام الأسطر في الهامش",
+        "كل سطر خامس",
+        "طبعة محققة",
+        "lineNumbers"
+      ],
+      "ja": [
+        "行の番号付け",
+        "詩の行番号",
+        "余白の行番号",
+        "5行ごとの番号",
+        "校訂版",
+        "lineNumbers"
+      ],
+      "pt": [
+        "números de linha",
+        "linhas numeradas",
+        "numeração de versos",
+        "números na margem",
+        "a cada cinco linhas",
+        "edição crítica",
+        "lineNumbers"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Line numbers",
+        "es": "Numeración de líneas",
+        "ca": "Numeració de línies",
+        "zh": "行号",
+        "ar": "ترقيم الأسطر",
+        "ja": "行番号",
+        "pt": "Numeração de linhas"
+      }
+    },
+    "detect": {
+      "config": [
+        "lineNumbers"
+      ]
+    },
+    "since": "1.23.0"
+  },
   "bibliography": {
     "label": {
       "en": "Bibliographies and glossaries",

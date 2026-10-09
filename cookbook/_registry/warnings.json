@@ -3785,5 +3785,89 @@
         "pt": "Preflight"
       }
     }
+  },
+  "lineNumbersUnsupported": {
+    "source": "engine",
+    "label": {
+      "en": "Line numbers in vertical text",
+      "es": "Numeración de líneas en texto vertical",
+      "ca": "Numeració de línies en text vertical",
+      "zh": "竖排文本的行号",
+      "ar": "ترقيم الأسطر في النص العمودي",
+      "ja": "縦組みの行番号",
+      "pt": "Numeração de linhas em texto vertical"
+    },
+    "cause": {
+      "en": "`lineNumbers.enabled` is on in a document set vertically (`layout.writingMode: 'vertical-rl'`). Vertical pages get no line numbers.",
+      "es": "`lineNumbers.enabled` está activado en un documento compuesto en vertical (`layout.writingMode: 'vertical-rl'`). Las páginas verticales no llevan números de línea.",
+      "ca": "`lineNumbers.enabled` està activat en un document compost en vertical (`layout.writingMode: 'vertical-rl'`). Les pàgines verticals no porten números de línia.",
+      "zh": "竖排文档（`layout.writingMode: 'vertical-rl'`）中开启了`lineNumbers.enabled`。竖排页面不印行号。",
+      "ar": "`lineNumbers.enabled` مفعَّل في مستند منضَّد عموديًّا (`layout.writingMode: 'vertical-rl'`). والصفحات العمودية لا تُطبع فيها أرقام الأسطر.",
+      "ja": "縦組みの文書（`layout.writingMode: 'vertical-rl'`）で`lineNumbers.enabled`がオンになっています。縦組みのページには行番号を印字しません。",
+      "pt": "`lineNumbers.enabled` está ligado em um documento composto na vertical (`layout.writingMode: 'vertical-rl'`). As páginas verticais não recebem números de linha."
+    },
+    "fix": {
+      "en": "Remove `lineNumbers` from the vertical edition, or set that edition horizontally.",
+      "es": "Quita `lineNumbers` de la edición vertical, o compón esa edición en horizontal.",
+      "ca": "Treu `lineNumbers` de l'edició vertical, o compon aquesta edició en horitzontal.",
+      "zh": "从竖排版本中删掉`lineNumbers`，或把该版本改为横排。",
+      "ar": "أزل `lineNumbers` من الطبعة العمودية، أو نضّد تلك الطبعة أفقيًّا.",
+      "ja": "縦組みの版から`lineNumbers`を削除するか、その版を横組みにしてください。",
+      "pt": "Remova `lineNumbers` da edição vertical, ou componha essa edição na horizontal."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración",
+        "ca": "Avisos de configuració",
+        "zh": "配置警告",
+        "ar": "تحذيرات الإعدادات",
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
+      }
+    }
+  },
+  "lineNumberOverlap": {
+    "source": "engine",
+    "label": {
+      "en": "Line number on a side box",
+      "es": "Número de línea sobre un recuadro lateral",
+      "ca": "Número de línia sobre un requadre lateral",
+      "zh": "行号压在侧框上",
+      "ar": "رقم سطر فوق إطار جانبي",
+      "ja": "行番号がサイドの囲みと重なる",
+      "pt": "Número de linha sobre um boxe lateral"
+    },
+    "cause": {
+      "en": "With `lineNumbers.position: 'side'`, a line number falls on a side box, a side caption or a figure in the side column. The number is painted anyway and neither of them moves.",
+      "es": "Con `lineNumbers.position: 'side'`, un número de línea cae sobre un recuadro lateral, un pie lateral o una figura de la columna lateral. El número se pinta igualmente y ninguno de los dos se mueve.",
+      "ca": "Amb `lineNumbers.position: 'side'`, un número de línia cau sobre un requadre lateral, un peu lateral o una figura de la columna lateral. El número es pinta igualment i cap dels dos no es mou.",
+      "zh": "在`lineNumbers.position: 'side'`下，某个行号落在边栏中的侧框、侧边图注或图上。行号照样印出，两者都不移动。",
+      "ar": "مع `lineNumbers.position: 'side'` يقع رقم سطر على إطار جانبي أو تعليق جانبي أو شكل في العمود الجانبي. ويُرسم الرقم رغم ذلك، ولا يتحرك أيّ منهما.",
+      "ja": "`lineNumbers.position: 'side'`のとき、行番号がサイド段の囲み、横置きのキャプション、図に重なっています。番号はそのまま印字され、どちらも動きません。",
+      "pt": "Com `lineNumbers.position: 'side'`, um número de linha cai sobre um boxe lateral, uma legenda lateral ou uma figura da coluna lateral. O número é pintado mesmo assim e nenhum dos dois se move."
+    },
+    "fix": {
+      "en": "Move the box or figure to a line that carries no number, put the numbers in the margin (`position: 'outer'`), or change the interval.",
+      "es": "Lleva el recuadro o la figura a una línea sin número, pon los números en el margen (`position: 'outer'`) o cambia el intervalo.",
+      "ca": "Porta el requadre o la figura a una línia sense número, posa els números al marge (`position: 'outer'`) o canvia l'interval.",
+      "zh": "把侧框或图移到不带行号的行旁，把行号改排在页边（`position: 'outer'`），或改变间隔。",
+      "ar": "انقل الإطار أو الشكل إلى سطر لا يحمل رقمًا، أو ضع الأرقام في الهامش (`position: 'outer'`)، أو غيّر الفاصل.",
+      "ja": "囲みや図を番号のない行の横へ移すか、番号を余白に置く（`position: 'outer'`）か、間隔を変えてください。",
+      "pt": "Leve o boxe ou a figura para uma linha sem número, ponha os números na margem (`position: 'outer'`) ou mude o intervalo."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Line numbers",
+        "es": "Numeración de líneas",
+        "ca": "Numeració de línies",
+        "zh": "行号",
+        "ar": "ترقيم الأسطر",
+        "ja": "行番号",
+        "pt": "Numeração de linhas"
+      }
+    }
   }
 }
