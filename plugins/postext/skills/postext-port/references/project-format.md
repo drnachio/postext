@@ -320,7 +320,8 @@ import { renderToPdf, decompressWoff2 } from 'postext-pdf';
 
 // Open: chapters, config (customFonts wired to the bundle's files), resources.
 const bundle = await openBundle(bytes, { locale: 'es' }); // Uint8Array | ArrayBuffer | Blob
-await loadBundleFonts(bundle);        // browser: FontFace for every bundled face
+await loadBundleFonts(bundle);        // browser: FontFace for every bundled face (drops stale widths)
+// Google families the bundle names but does not carry: prepareFonts(chapters, bundle.config, { resolve })
 await registerBundleImages(bundle);   // canvas backend; bundleImageUrl(bundle) for renderToHtml
 const docs = buildBundle(bundle);     // one VDTDocument per chapter, chained like the Sandbox
 const pdf = await renderToPdf(docs, {

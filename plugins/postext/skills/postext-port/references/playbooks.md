@@ -799,7 +799,8 @@ A Chinese family is tens of MB and thousands of glyphs; ship it cut to the book.
   Latin of the book (Amiri has its own). Headings default to Open Sans, the body to EB Garamond: neither has
   Arabic — `lint_project.py` flags it.
 - In the browser, the `arabic` subset file loads only when a character needs it; the Sandbox and the kit's
-  `loadArabicFonts` load it before layout, a host checks `document.fonts.load('16px Amiri', 'ب')`.
+  `loadArabicFonts` load it before layout; a host calls `prepareFonts(content, config, { resolve })`
+  (≥ 1.25), which loads every face for the characters the text sets, the `arabic` slice included.
 
 ### E8. Japanese faces
 - **Body (mincho 明朝)**: **Noto Serif JP** (variable 200–900; full JIS X 0213, so Aozora's 第3・第4水準 外字

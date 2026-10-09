@@ -802,6 +802,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `lineNumberOverlap` (≥ 1.23: a line number in the side column falls on a side box, side caption or float; painted anyway), and the config warning `lineNumbersUnsupported` (`lineNumbers.enabled` on a vertical document, which gets no numbers)
 - `textWrap` (≥ 1.24: a resource or box with `wrap` kept its band whole: `tooNarrow` (text beside it under `layout.wrap.minTextWidth`), `fewLines` (shorter than `minLinesBeside`), `verticalText`; or `moved`: an inline one too tall for the room left moved to the next column with its anchor), and the config warning `wrapUnsupported` (a type's `defaultPlacement.wrap` in vertical text)
 - `dropCap` (≥ 1.23: a paragraph a drop cap opens could not take it as configured; `reason` `shortParagraph` (with `handling` reserve/shrink/skip), `split`, `joiningScript`, `verticalText`, `noLetter`), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a drop cap's unknown key, `punctuation`, `shortParagraph`, `lines`, `sink` or `characters` (configuration.md §4b)
+- `fontFallback` (≥ 1.25, browser and worker builds: a face the text was set in that was not loaded, `missing`, or that the browser drew from another weight or slant, `synthesized`; load it with `prepareFonts` / `buildDocumentWithFonts`)
 - `fullwidthMarkup` (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊` typed with a Chinese input method: set as text), `attributeKeyInvalid` (a key outside ASCII, `作者=曹雪芹`: dropped, the block's other keys still apply)
 
 ---

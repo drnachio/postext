@@ -1782,6 +1782,19 @@ shows the reverse page more than any stock but bible (its coldset ink soaks into
 `debug`: `cursorSync {enabled=true,color}`, `selectionSync {enabled=true,color}`,
 `looseLineHighlight {enabled=false,color,threshold=3}`, `pageNegative {enabled=false}`,
 `warnings { missingFont=true, looseLines=true, headingHierarchy=true, consecutiveHeadings=false, listAfterHeading=false, designIssues=true }`.
+`missingFont` also gates the engine's `fontFallback` content warning (≥ 1.25): a face the text was set in
+that the browser's font set could not give when the build ran (`reason` `missing` or `synthesized`, a
+bold or italic drawn from another face). Only builds with a font set check it (the browser, a worker);
+`render.mjs` and the CLI do not.
+
+**Fonts and caches in browser code (≥ 1.25).** Build with `buildDocumentWithFonts(content, config,
+{ resolve })`, or call `prepareFonts(content, config, { resolve })` before `buildDocument`: it loads
+every face the config and the text ask for (all weights and slants, for the characters the text sets,
+so Arabic, Greek or CJK slices come in), from the page's `@font-face` rules or from `resolve(family,
+weight, style, { text })`, which answers with files like a PDF font provider. Faces that arrive later
+drop their family's measurements by themselves (`watchFonts` + `onFontsChanged(relayout)` for a live
+view); never call `clearMeasurementCache()` and rebuild by hand. A config object changed in place is
+resolved again on the next build, so a `config()` factory per build is not needed.
 
 ---------------------------------------------------------------------------------
 
