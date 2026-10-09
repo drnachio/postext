@@ -50,6 +50,7 @@ describe("package exports", () => {
       "registerCodeHighlighter",
       "highlightCode",
       "builtinCodeLanguage",
+      "fencedCodeLines",
       "buildDocument",
       "BuildCancelledError",
       "continuationAfter",

@@ -26,3 +26,27 @@ export function closesCodeFence(line: string, marker: string): boolean {
   const m = CODE_FENCE_CLOSE_RE.exec(line);
   return !!m && m[1]![0] === marker[0] && m[1]!.length >= marker.length;
 }
+
+/**
+ * For each of `lines`, whether it belongs to a fenced code block: its
+ * opening fence, its lines and its closing fence (a fence left open runs
+ * to the end). For editors that mark a listing as one region and leave
+ * the Markdown inside it alone.
+ */
+export function fencedCodeLines(lines: readonly string[]): boolean[] {
+  const out: boolean[] = new Array(lines.length).fill(false);
+  let open: string | undefined;
+  lines.forEach((line, i) => {
+    if (open !== undefined) {
+      out[i] = true;
+      if (closesCodeFence(line, open)) open = undefined;
+      return;
+    }
+    const fence = codeFenceOpen(line);
+    if (fence) {
+      open = fence.marker;
+      out[i] = true;
+    }
+  });
+  return out;
+}

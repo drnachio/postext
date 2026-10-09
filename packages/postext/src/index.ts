@@ -1,5 +1,6 @@
 export { createLayout } from './createLayout';
 export { registerCodeHighlighter, highlightCode, builtinCodeLanguage } from './code/highlight';
+export { fencedCodeLines } from './parse/codeFence';
 export type { CodeHighlighter, CodeToken } from './code/highlight';
 export { buildDocument, BuildCancelledError, continuationAfter, contentOutline, computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline, anchorOutline, hasAnchors, locateAnchors, duplicateAnchors } from './pipeline';
 export type { BuildDocumentOptions } from './pipeline';

@@ -7,6 +7,7 @@ import { resolveCodeStyleConfig, stripCodeStyleDefaults, DEFAULT_CODE_STYLE } fr
 import { resolveBodyTextConfig } from '../defaults/bodyText';
 import { stripConfigDefaults } from '../defaults';
 import { highlightCode, registerCodeHighlighter } from '../code/highlight';
+import { fencedCodeLines } from '../parse/codeFence';
 import { collectConfigWarnings } from '../configWarnings';
 import { configFontFamilies, collectFontUsage } from '../fonts/usage';
 import { formatWarning } from '../pipeline/contentWarnings';
@@ -158,6 +159,10 @@ describe('code fences: the markup', () => {
     expect(blocks[1]!.code!.lines).toEqual(['B :index[x] and :anchor{#a}']);
     expect(blocks[0]!.indexMarks?.length).toBe(1);
     expect(blocks[1]!.indexMarks).toBeUndefined();
+  });
+
+  it('tells editors which lines a listing takes', () => {
+    expect(fencedCodeLines(['a', '```js', '# x', '```', 'b', '~~~', 'c'])).toEqual([false, true, true, true, false, true, true]);
   });
 
   it('records the inline code of text blocks', () => {
