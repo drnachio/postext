@@ -653,22 +653,22 @@
   },
   "svg-no-webfonts": {
     "title": {
-      "en": "Text inside an SVG <img> cannot use web fonts",
-      "es": "El texto dentro de un SVG <img> no puede usar fuentes web",
-      "ca": "El text dins d'un SVG <img> no pot fer servir fonts web",
-      "zh": "SVG <img>中的文字不能使用网络字体",
-      "ar": "النص داخل SVG في <img> لا يستطيع استخدام خطوط الويب",
-      "ja": "SVGの<img>内のテキストはWebフォントを使えない",
-      "pt": "O texto dentro de um SVG <img> não pode usar fontes web"
+      "en": "SVG text: name the family and let the engine embed the face",
+      "es": "Texto en SVG: nombra la familia y deja que el motor incruste la fuente",
+      "ca": "Text en SVG: anomena la família i deixa que el motor n'incrusti la font",
+      "zh": "SVG文字：写明字体族，让引擎嵌入字体",
+      "ar": "نص SVG: سمِّ العائلة ودع المحرك يضمّن الخط",
+      "ja": "SVGのテキスト：ファミリー名を書き、フォントの埋め込みはエンジンに任せる",
+      "pt": "Texto em SVG: nomeie a família e deixe o motor incorporar a fonte"
     },
     "body": {
-      "en": "An SVG is drawn as an image, and an image has no access to the page's web fonts, so its labels fall back to a system face. Outline the text, embed an @font-face subset in the SVG, or move the labels to the caption.",
-      "es": "Un SVG se dibuja como imagen, y una imagen no tiene acceso a las fuentes web de la página, así que sus rótulos salen con una fuente del sistema. Convierte el texto en trazados, incrusta un subconjunto @font-face en el SVG o lleva los rótulos al pie.",
-      "ca": "Un SVG es dibuixa com a imatge, i una imatge no té accés a les fonts web de la pàgina, de manera que els seus rètols surten amb una font del sistema. Converteix el text en traçats, incrusta un subconjunt @font-face a l'SVG o porta els rètols al peu.",
-      "zh": "SVG作为图像绘制，而图像无法使用页面的网络字体，所以其中的标签会退回系统字体。把文字转成轮廓，在SVG中嵌入@font-face子集，或者把标签移到题注里。",
-      "ar": "يُرسَم SVG صورةً، والصورة لا تصل إلى خطوط الويب في الصفحة، فتعود تسمياته إلى خط من النظام. حوّل النص إلى مسارات، أو ضمّن مجموعة فرعية بـ @font-face داخل SVG، أو انقل التسميات إلى التعليق.",
-      "ja": "SVGは画像として描かれ、画像はページのWebフォントにアクセスできないため、ラベルはシステムの書体にフォールバックします。テキストをアウトライン化するか、SVGに@font-faceのサブセットを埋め込むか、ラベルをキャプションに移してください。",
-      "pt": "Um SVG é desenhado como imagem, e uma imagem não tem acesso às fontes web da página, então os rótulos dele caem em uma fonte do sistema. Converta o texto em contornos, incorpore um subconjunto @font-face no SVG ou passe os rótulos para a legenda."
+      "en": "An SVG is shown as an image, which cannot see the page's web fonts. Since 1.25 the engine embeds the faces its text names as @font-face data URIs before it is shown (registerSvgImage, registerBundleImages, bundleImageUrl, EPUB), from the faces you registered (loadBundleFonts, registerFontBytes) or a font provider, and the PDF sets the text in its embedded fonts. Write font-family plainly; skip hand-made @font-face and outlined labels, and set svg.inlineFonts: false for an SVG that must stay as stored.",
+      "es": "Un SVG se muestra como imagen, y una imagen no ve las fuentes web de la página. Desde la 1.25 el motor incrusta las fuentes que nombra su texto como URI de datos @font-face antes de mostrarlo (registerSvgImage, registerBundleImages, bundleImageUrl, EPUB), a partir de las fuentes que registraste (loadBundleFonts, registerFontBytes) o de un proveedor de fuentes, y el PDF compone el texto con sus fuentes incrustadas. Escribe font-family sin más; ahórrate el @font-face hecho a mano y los rótulos convertidos en trazados, y pon svg.inlineFonts: false en un SVG que deba quedar tal como está guardado.",
+      "ca": "Un SVG es mostra com a imatge, i una imatge no veu les fonts web de la pàgina. Des de la 1.25 el motor incrusta les fonts que anomena el seu text com a URI de dades @font-face abans de mostrar-lo (registerSvgImage, registerBundleImages, bundleImageUrl, EPUB), a partir de les fonts que has registrat (loadBundleFonts, registerFontBytes) o d'un proveïdor de fonts, i el PDF compon el text amb les seves fonts incrustades. Escriu font-family i prou; estalvia't el @font-face fet a mà i els rètols convertits en traçats, i posa svg.inlineFonts: false en un SVG que hagi de quedar tal com està desat.",
+      "zh": "SVG作为图像显示，而图像看不到页面的网络字体。自1.25起，引擎在显示前会把其文字所用的字体以@font-face数据URI嵌入SVG（registerSvgImage、registerBundleImages、bundleImageUrl、EPUB），字体来自你注册的字体（loadBundleFonts、registerFontBytes）或字体提供者；PDF则以嵌入的字体排出文字。直接写font-family即可，不必手写@font-face，也不必把标签转成轮廓；对必须保持存储原样的SVG，设svg.inlineFonts: false。",
+      "ar": "يُعرض SVG صورةً، والصورة لا ترى خطوط الويب في الصفحة. منذ الإصدار 1.25 يضمّن المحرك الخطوط التي يسمّيها نصه في صورة URI بيانات @font-face قبل عرضه (registerSvgImage، registerBundleImages، bundleImageUrl، EPUB)، من الخطوط التي سجّلتها (loadBundleFonts، registerFontBytes) أو من مزوّد خطوط، ويصفّ PDF النص بخطوطه المضمَّنة. اكتب font-family ببساطة؛ واستغنِ عن @font-face المكتوب يدويًا وعن التسميات المحوَّلة إلى مسارات، واضبط svg.inlineFonts: false لملف SVG يجب أن يبقى كما حُفظ.",
+      "ja": "SVGは画像として表示され、画像はページのWebフォントを参照できません。1.25からは、表示の前にエンジンがテキストの指定するフォントを@font-faceのデータURIとしてSVGに埋め込みます（registerSvgImage、registerBundleImages、bundleImageUrl、EPUB）。フォントは登録したもの（loadBundleFonts、registerFontBytes）かフォントプロバイダーから取り、PDFは埋め込みフォントでテキストを組みます。font-familyをそのまま書けばよく、手書きの@font-faceやアウトライン化したラベルは不要です。保存したままにすべきSVGにはsvg.inlineFonts: falseを設定してください。",
+      "pt": "Um SVG é exibido como imagem, e uma imagem não enxerga as fontes web da página. Desde a 1.25 o motor incorpora as fontes que o texto dele nomeia como URIs de dados @font-face antes de exibi-lo (registerSvgImage, registerBundleImages, bundleImageUrl, EPUB), a partir das fontes que você registrou (loadBundleFonts, registerFontBytes) ou de um provedor de fontes, e o PDF compõe o texto com as fontes incorporadas. Escreva font-family e pronto; dispense o @font-face feito à mão e os rótulos convertidos em contornos, e defina svg.inlineFonts: false num SVG que precise ficar como foi salvo."
     },
     "feature": "resources"
   },
