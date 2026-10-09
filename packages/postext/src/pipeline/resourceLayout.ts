@@ -40,6 +40,7 @@ import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeAre
 import { layoutVideo } from './videoOverlay';
 import type {
   ColorPaletteEntry,
+  Dimension,
   ResolvedCaptionStyleConfig,
   ResolvedCjkConfig,
   ResolvedMathConfig,
@@ -72,6 +73,7 @@ import { isBlankText } from '../measure/spaces';
 import { linkSegments } from '../measure/links';
 import { graphemeCount } from '../measure/graphemes';
 import { dimensionToPx } from '../units';
+import { booktabsStrokes, type BooktabsRuleSpec } from '../table/booktabs';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
@@ -685,6 +687,13 @@ function fitCellImage(
  *  on screen, but 0.5pt (≈0.67px at 96dpi) hairlines must survive intact —
  *  the previous `max(1, round(px))` rounded them up to a full pixel. */
 const MIN_BORDER_PX = 0.25;
+
+/** A booktabs rule width (px): `0` drops the rule, anything thinner than
+ *  {@link MIN_BORDER_PX} is raised to it. `em` is the body cell size. */
+function rulePx(width: Dimension, dpi: number, bodyFontPx: number): number {
+  const px = dimensionToPx(width, dpi, bodyFontPx);
+  return px > 0 ? Math.max(MIN_BORDER_PX, px) : 0;
+}
 
 /**
  * Column x-edges (length = columnCount + 1) for a table model laid out at
@@ -1350,6 +1359,20 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const hBase = ts.headerItalic ? 'italic' : 'normal';
     const hFlip = ts.headerItalic ? 'normal' : 'italic';
     const headerTrackingPx = dimensionToPx(ts.headerLetterSpacing, dpi, headerFontPx);
+    // Booktabs (#625): its own three widths, all resolved against the body
+    // cell size (a larger header size must not thicken the header rule); a
+    // width of 0 drops that rule.
+    const booktabs: BooktabsRuleSpec | undefined = ts.borders && ts.rules === 'booktabs'
+      ? {
+          heavyPx: rulePx(ts.heavyRuleWidth, dpi, bodyFontPx),
+          lightPx: rulePx(ts.lightRuleWidth, dpi, bodyFontPx),
+          spanPx: rulePx(ts.spanRuleWidth, dpi, bodyFontPx),
+          spanRules: ts.spanRules,
+          spanTrimPx: Math.max(0, dimensionToPx(ts.spanRuleTrim, dpi, bodyFontPx)),
+          groupRules: ts.groupRules,
+          continuedFootRule: ts.continuedFootRule,
+        }
+      : undefined;
     const style: TableLayoutStyle = {
       body: {
         fontString: buildFontString(ts.bodyFontFamily, bodyFontPx, normalWeight),
@@ -1370,9 +1393,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
         ...(ts.headerTextTransform === 'uppercase' ? { uppercase: true } : {}),
       },
       borderColor: ts.borderColor.hex,
-      borderWidthPx: ts.borders && ts.rules !== 'none'
-        ? Math.max(MIN_BORDER_PX, dimensionToPx(ts.borderWidth, dpi))
-        : 0,
+      borderWidthPx: booktabs
+        ? Math.max(booktabs.heavyPx, booktabs.lightPx, booktabs.spanPx)
+        : ts.borders && ts.rules !== 'none'
+          ? Math.max(MIN_BORDER_PX, dimensionToPx(ts.borderWidth, dpi))
+          : 0,
       cellPaddingPx: dimensionToPx(ts.cellPadding, dpi, bodyFontPx),
       headerBackground: ts.headerBackgroundEnabled ? ts.headerBackground.hex : undefined,
       bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
@@ -1401,9 +1426,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const radiusPx = Math.min(dimensionToPx(ts.borderRadius, dpi, bodyFontPx), columnWidth / 2, height / 2);
     const top = slice?.continued ? 0 : radiusPx;
     const bottom = slice?.continues ? 0 : radiusPx;
-    table = radiusPx > 0 && (top > 0 || bottom > 0)
-      ? { ...layout, frameRadii: [top, top, bottom, bottom] }
-      : layout;
+    // Booktabs rules are computed here, where the slice is known and the
+    // cells of a table that runs the other way are already mirrored.
+    const strokes = booktabs
+      ? booktabsStrokes(layout, tableHeaderRowCount(resource.table.model), booktabs, slice?.continues ?? false)
+      : undefined;
+    table = {
+      ...layout,
+      ...(radiusPx > 0 && (top > 0 || bottom > 0) ? { frameRadii: [top, top, bottom, bottom] as [number, number, number, number] } : {}),
+      ...(strokes ? { strokes } : {}),
+    };
     tableRows = metrics;
     bodyWidth = columnWidth;
     bodyHeight = height;

@@ -611,7 +611,20 @@ function renderTable(
     }
   }
   if (rounded) ctx.restore();
-  if (t.borderWidthPx > 0) {
+  if (t.strokes) {
+    // Booktabs (#625): the layout's strokes, straight, each its own width.
+    ctx.save();
+    ctx.strokeStyle = t.borderColor;
+    ctx.lineCap = 'butt';
+    for (const s of t.strokes) {
+      ctx.lineWidth = s.widthPx;
+      ctx.beginPath();
+      ctx.moveTo(bx + s.x1, by + s.y1);
+      ctx.lineTo(bx + s.x2, by + s.y2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  } else if (t.borderWidthPx > 0) {
     ctx.save();
     ctx.strokeStyle = t.borderColor;
     ctx.lineWidth = t.borderWidthPx;

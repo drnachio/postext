@@ -1896,7 +1896,23 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
     }
   }
   parts.push(rounded ? clipToOutline(fills.join(''), outline(0)) : fills.join(''));
-  if (t.borderWidthPx > 0) {
+  if (t.strokes) {
+    // Booktabs (#625): one box per stroke of the layout, centred on its
+    // line (the rules are horizontal; a vertical one is drawn as tall).
+    for (const s of t.strokes) {
+      const x = bx + Math.min(s.x1, s.x2);
+      const y = by + Math.min(s.y1, s.y2);
+      const w = Math.abs(s.x2 - s.x1);
+      const h = Math.abs(s.y2 - s.y1);
+      parts.push(
+        `<div aria-hidden="true" style="position:absolute;` +
+        (h === 0
+          ? `left:${x}px;top:${y - s.widthPx / 2}px;width:${w}px;height:${s.widthPx}px;`
+          : `left:${x - s.widthPx / 2}px;top:${y}px;width:${s.widthPx}px;height:${h}px;`) +
+        `background:${t.borderColor};"></div>`,
+      );
+    }
+  } else if (t.borderWidthPx > 0) {
     // Border boxes are inflated by half the stroke so the border centres on
     // the cell edge — adjacent cells overlap exactly, like canvas strokeRect.
     const bw = t.borderWidthPx;

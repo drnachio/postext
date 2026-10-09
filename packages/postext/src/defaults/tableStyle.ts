@@ -38,6 +38,15 @@ const STATIC_DEFAULTS = {
   cellPadding: { value: 0.375, unit: 'em' as const },
   rules: 'grid' as const,
   borderRadius: { value: 0, unit: 'pt' as const },
+  // Booktabs (#625): LaTeX's \heavyrulewidth, \lightrulewidth,
+  // \cmidrulewidth and \cmidrulekern, resolved against the body cell size.
+  heavyRuleWidth: { value: 0.08, unit: 'em' as const },
+  lightRuleWidth: { value: 0.05, unit: 'em' as const },
+  spanRuleWidth: { value: 0.03, unit: 'em' as const },
+  spanRules: 'trimmed' as const,
+  spanRuleTrim: { value: 0.5, unit: 'em' as const },
+  groupRules: false,
+  continuedFootRule: 'light' as const,
   overflow: 'split' as const,
   continuesMarkerEnabled: true,
 } satisfies Partial<ResolvedTableStyleConfig>;
@@ -109,6 +118,13 @@ export function resolveTableStyleConfig(
     cellPadding: p.cellPadding ?? STATIC_DEFAULTS.cellPadding,
     rules: p.rules ?? STATIC_DEFAULTS.rules,
     borderRadius: p.borderRadius ?? STATIC_DEFAULTS.borderRadius,
+    heavyRuleWidth: p.heavyRuleWidth ?? STATIC_DEFAULTS.heavyRuleWidth,
+    lightRuleWidth: p.lightRuleWidth ?? STATIC_DEFAULTS.lightRuleWidth,
+    spanRuleWidth: p.spanRuleWidth ?? STATIC_DEFAULTS.spanRuleWidth,
+    spanRules: p.spanRules ?? STATIC_DEFAULTS.spanRules,
+    spanRuleTrim: p.spanRuleTrim ?? STATIC_DEFAULTS.spanRuleTrim,
+    groupRules: p.groupRules ?? STATIC_DEFAULTS.groupRules,
+    continuedFootRule: p.continuedFootRule ?? STATIC_DEFAULTS.continuedFootRule,
     overflow: p.overflow ?? STATIC_DEFAULTS.overflow,
     continuedSuffix: p.continuedSuffix ?? strings.continuedSuffix,
     continuesMarkerEnabled: p.continuesMarkerEnabled ?? STATIC_DEFAULTS.continuesMarkerEnabled,
@@ -161,6 +177,13 @@ export function stripTableStyleDefaults(
   if (tableStyle.cellPadding !== undefined && !dimensionsEqual(tableStyle.cellPadding, STATIC_DEFAULTS.cellPadding)) { r.cellPadding = tableStyle.cellPadding; has = true; }
   if (tableStyle.rules !== undefined && tableStyle.rules !== STATIC_DEFAULTS.rules) { r.rules = tableStyle.rules; has = true; }
   if (tableStyle.borderRadius !== undefined && tableStyle.borderRadius.value !== 0) { r.borderRadius = tableStyle.borderRadius; has = true; }
+  if (tableStyle.heavyRuleWidth !== undefined && !dimensionsEqual(tableStyle.heavyRuleWidth, STATIC_DEFAULTS.heavyRuleWidth)) { r.heavyRuleWidth = tableStyle.heavyRuleWidth; has = true; }
+  if (tableStyle.lightRuleWidth !== undefined && !dimensionsEqual(tableStyle.lightRuleWidth, STATIC_DEFAULTS.lightRuleWidth)) { r.lightRuleWidth = tableStyle.lightRuleWidth; has = true; }
+  if (tableStyle.spanRuleWidth !== undefined && !dimensionsEqual(tableStyle.spanRuleWidth, STATIC_DEFAULTS.spanRuleWidth)) { r.spanRuleWidth = tableStyle.spanRuleWidth; has = true; }
+  if (tableStyle.spanRules !== undefined && tableStyle.spanRules !== STATIC_DEFAULTS.spanRules) { r.spanRules = tableStyle.spanRules; has = true; }
+  if (tableStyle.spanRuleTrim !== undefined && !dimensionsEqual(tableStyle.spanRuleTrim, STATIC_DEFAULTS.spanRuleTrim)) { r.spanRuleTrim = tableStyle.spanRuleTrim; has = true; }
+  if (tableStyle.groupRules !== undefined && tableStyle.groupRules !== STATIC_DEFAULTS.groupRules) { r.groupRules = tableStyle.groupRules; has = true; }
+  if (tableStyle.continuedFootRule !== undefined && tableStyle.continuedFootRule !== STATIC_DEFAULTS.continuedFootRule) { r.continuedFootRule = tableStyle.continuedFootRule; has = true; }
   if (tableStyle.overflow !== undefined && tableStyle.overflow !== STATIC_DEFAULTS.overflow) { r.overflow = tableStyle.overflow; has = true; }
   if (tableStyle.continuesMarkerEnabled !== undefined && tableStyle.continuesMarkerEnabled !== STATIC_DEFAULTS.continuesMarkerEnabled) { r.continuesMarkerEnabled = tableStyle.continuesMarkerEnabled; has = true; }
 

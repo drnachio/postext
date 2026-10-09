@@ -1952,14 +1952,50 @@ export interface TableStyleConfig {
   borderWidth?: Dimension;
   /** Inner padding inside each cell. Default `0.375em`. */
   cellPadding?: Dimension;
-  /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
+  /** Which rules to stroke when {@link borders} is on. Default `'grid'`.
+   *  `'booktabs'` strokes its own widths ({@link heavyRuleWidth},
+   *  {@link lightRuleWidth}, {@link spanRuleWidth}) and ignores
+   *  {@link borderWidth}. */
   rules?: TableRules;
   /** Corner radius of the table's outer frame. Default `0` (square). The
    *  cell fills are clipped to the rounded frame, whatever the rules (with
    *  `'none'` the fills alone show the rounded shape); the inner rules stay
    *  straight. A table split across pages rounds the top corners of its
-   *  first part and the bottom corners of its last. */
+   *  first part and the bottom corners of its last. `'booktabs'` rules
+   *  have no frame to round: they stay straight (the fills are still
+   *  clipped). */
   borderRadius?: Dimension;
+  /** `'booktabs'` (#625): width of the rules above the table and under its
+   *  last row (LaTeX `\heavyrulewidth`). An `em` value is relative to
+   *  {@link bodyFontSize}. Default `0.08em`. */
+  heavyRuleWidth?: Dimension;
+  /** `'booktabs'`: width of the rule under the header rows and of the
+   *  group rules (`\lightrulewidth`). An `em` value is relative to
+   *  {@link bodyFontSize}. Default `0.05em`. */
+  lightRuleWidth?: Dimension;
+  /** `'booktabs'`: width of the rules under header cells that span several
+   *  columns (`\cmidrulewidth`). An `em` value is relative to
+   *  {@link bodyFontSize}. Default `0.03em`. */
+  spanRuleWidth?: Dimension;
+  /** `'booktabs'`: the rules under header cells that span more than one
+   *  column, above the last header row: shortened at both ends by
+   *  {@link spanRuleTrim} so neighbouring rules do not touch
+   *  (`'trimmed'`, the default, `\cmidrule(lr)`), across the whole cell
+   *  (`'full'`), or none (`'none'`). */
+  spanRules?: TableSpanRules;
+  /** `'booktabs'`: how much a `'trimmed'` span rule is shortened at each
+   *  end. An `em` value is relative to {@link bodyFontSize}. Default
+   *  `0.5em`. */
+  spanRuleTrim?: Dimension;
+  /** `'booktabs'`: a light rule above every body row that heads a group
+   *  (one cell across every column, or all header cells), except one that
+   *  opens a page. Default `false`. */
+  groupRules?: boolean;
+  /** `'booktabs'`: the rule that closes a part of a split table that goes
+   *  on overleaf: the heavy bottom rule (`'bottom'`), a light rule
+   *  (`'light'`, the default: the heavy rule closes only the real last
+   *  row), or none (`'none'`). */
+  continuedFootRule?: TableContinuedFootRule;
   /** What happens to a table taller than the space a page offers: continue
    *  it on the following pages (`'split'`, the default), keep only the rows
    *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
@@ -1995,8 +2031,19 @@ export interface ResolvedNamedTableStyleConfig extends ResolvedTableStyleConfig 
 export type TableTextTransform = 'none' | 'uppercase';
 
 /** Rule pattern of a table: the full cell grid, horizontal rules only (top
- *  and bottom edge of every row), the outer frame only, or none. */
-export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none';
+ *  and bottom edge of every row), the outer frame only, none, or the
+ *  booktabs pattern of journal tables (#625): a heavy rule above the table
+ *  and under its last row, a light rule under the header, short rules
+ *  under spanning header cells and no vertical rules. */
+export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs';
+
+/** Rules of a `'booktabs'` table under header cells that span several
+ *  columns (`TableStyleConfig.spanRules`). */
+export type TableSpanRules = 'trimmed' | 'full' | 'none';
+
+/** What closes a part of a `'booktabs'` table that continues on the next
+ *  page (`TableStyleConfig.continuedFootRule`). */
+export type TableContinuedFootRule = 'bottom' | 'light' | 'none';
 
 /** Behaviour of a table taller than the page: `'split'` breaks it between
  *  rows and continues on the following pages, repeating the header rows and
@@ -2027,6 +2074,13 @@ export interface ResolvedTableStyleConfig {
   cellPadding: Dimension;
   rules: TableRules;
   borderRadius: Dimension;
+  heavyRuleWidth: Dimension;
+  lightRuleWidth: Dimension;
+  spanRuleWidth: Dimension;
+  spanRules: TableSpanRules;
+  spanRuleTrim: Dimension;
+  groupRules: boolean;
+  continuedFootRule: TableContinuedFootRule;
   overflow: TableOverflow;
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;

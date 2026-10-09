@@ -887,12 +887,29 @@ export interface VDTResourceTableLayout {
   rowEdges: number[];
   /** Which rules to stroke with `borderWidthPx` (`'grid'` when absent). */
   rules?: TableRules;
+  /** The rules of a `'booktabs'` table (#625), computed by the layout: the
+   *  renderers stroke exactly these, in `borderColor`, and skip the
+   *  {@link rules} pattern (and the rounded frame). Coordinates are
+   *  relative to the table body's top-left corner, like {@link rowEdges};
+   *  each stroke is centred on its line. `borderWidthPx` is then the
+   *  widest stroke. Absent for the other patterns. */
+  strokes?: VDTTableStroke[];
   /** Radii (px) of the outer frame's corners — top-left, top-right,
    *  bottom-right, bottom-left — from `tableStyle.borderRadius`, clamped to
    *  half the table's width and height. The frame is stroked round and the
    *  cell fills are clipped to it. A part of a split table keeps square the
    *  corners where it continues. Absent for a square frame. */
   frameRadii?: [number, number, number, number];
+}
+
+/** One rule of a table (`VDTResourceTableLayout.strokes`): a straight
+ *  line from `(x1, y1)` to `(x2, y2)`, `widthPx` thick, with butt ends. */
+export interface VDTTableStroke {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  widthPx: number;
 }
 
 /** A rounded outline: a rect and its corner radii (top-left, top-right,

@@ -314,7 +314,11 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
         }
         const table = rb.table;
         if (table) {
-          if (table.borderWidthPx > 0) checkRule(table.borderWidthPx, table.borderColor, pageIndex, body);
+          // Booktabs strokes (#625) have their own widths: the thinnest counts.
+          const rulePx = table.strokes
+            ? table.strokes.reduce((min, s) => Math.min(min, s.widthPx), Infinity)
+            : table.borderWidthPx;
+          if (rulePx > 0 && Number.isFinite(rulePx)) checkRule(rulePx, table.borderColor, pageIndex, body);
           for (const cell of table.cells ?? []) {
             const img = cell.image;
             if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, 1, 1, pageIndex, body, img.resourceId, src);
