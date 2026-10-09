@@ -1217,6 +1217,19 @@ export interface BodyTextConfig {
    *  `pinLegacyHyphenBreaks`). Applies to the running text, headings, lists,
    *  blockquotes and boxes. */
   breakAfterHyphens?: boolean;
+  /** Read a backslash at the end of a source line, and `\\` before a space,
+   *  as a forced line break inside a paragraph, a quotation or a list item
+   *  (CommonMark's hard break, #620): the next words start a new line
+   *  of the same paragraph, and the line before the break is set at its
+   *  natural width, as a paragraph's last line is. A backslash that ends
+   *  the paragraph prints. Two trailing spaces are no break (they are
+   *  invisible, and editors leave them behind). Default `true`. `false`
+   *  keeps postext 1.22's reading: the backslashes print and the lines
+   *  join with a space (configurations stored before `configVersion` 9
+   *  whose text has such a backslash read with it, see
+   *  `pinLegacyHardBreaks`). Titles (`\\` in a heading), captions, notes
+   *  and table cells break at `\\` either way. */
+  hardLineBreaks?: boolean;
   /** Start the line after a break at a compound's hyphen with a hyphen too:
    *  "vencer-" | "-se", as Portuguese spelling and the Spanish Academy's
    *  2010 rules ask ("léxico-" | "-semántico"), so the reader knows the
@@ -1523,6 +1536,7 @@ export interface ResolvedBodyTextConfig {
   optimalRagged: boolean;
   breakAfterDashes: boolean;
   breakAfterHyphens: boolean;
+  hardLineBreaks: boolean;
   repeatHyphen: boolean;
   blockquote: ResolvedBlockquoteConfig;
   verse: ResolvedVerseConfig;

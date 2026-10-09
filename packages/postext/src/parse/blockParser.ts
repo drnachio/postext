@@ -9,7 +9,7 @@ import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKi
 import { attachEquationAnchors } from './equationLabels';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, replaceBodyBreaks, BODY_BREAK_MARK, bodyBreakSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
@@ -263,20 +263,47 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
   /** The spans, plain text and source map of a run of inline Markdown
    *  (`raw`, whose source runs from `srcStart` to `srcEnd`): chips,
    *  footnote markers, references, citations, swatches, maths and the
-   *  inline formatting, as a paragraph's text is read. */
-  const inlineRun = (raw: string, srcStart: number, srcEnd: number): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
+   *  inline formatting, as a paragraph's text is read. With `hardBreaks`
+   *  its forced line breaks (#620) become `BREAK_PLACEHOLDER` (see
+   *  `replaceBodyBreaks`; `raw` joins its lines with a line feed after a
+   *  line that ends in a backslash). Maths issues are reported once, by
+   *  the reading with `report`. */
+  const inlineRun = (raw: string, srcStart: number, srcEnd: number, hardBreaks = false, report = true): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
     const chipExtract = extractInlineChips(protectCodeSpans(raw), srcStart);
     const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
     const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
     const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
     const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
     const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-    issues.push(...mathExtract.issues);
+    if (report) issues.push(...mathExtract.issues);
+    const formatted = hardBreaks
+      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(mathExtract.cleaned, BODY_BREAK_MARK)))
+      : parseInlineFormatting(mathExtract.cleaned);
     const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-      injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
+      injectMathSpans(formatted, mathExtract.maths), swExtract.swatches), citeExtract.citations),
       refExtract.refs,
     ), fnExtract.markers), chipExtract.chips);
     return joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
+  };
+
+  /**
+   * A block's lines (trimmed) read as one run of inline Markdown with its
+   * forced line breaks (#620): joined with a space, or with a line feed
+   * after a line that ends in a backslash, for `replaceBodyBreaks`. When
+   * the block has a break, `literalBreaks` is the reading postext 1.22
+   * made of it (every line joined with a space, the backslashes printed).
+   */
+  const breakingRun = (lines: readonly string[], srcStart: number, srcEnd: number): ReturnType<typeof inlineRun> & { literalBreaks?: ContentBlock['literalBreaks'] } => {
+    let raw = '';
+    lines.forEach((l, k) => {
+      if (k > 0) raw += lines[k - 1]!.endsWith('\\') ? '\n' : ' ';
+      raw += l;
+    });
+    if (!raw.includes('\\')) return inlineRun(raw, srcStart, srcEnd);
+    const mapping = inlineRun(raw, srcStart, srcEnd, true);
+    if (!mapping.text.includes(BREAK_PLACEHOLDER)) return mapping;
+    const literal = inlineRun(lines.join(' '), srcStart, srcEnd, false, false);
+    return { ...mapping, literalBreaks: { text: literal.text, spans: literal.spans, sourceMap: literal.sourceMap } };
   };
 
   /** Poems in the line layout read so far (`VerseStanza.poem`). */
@@ -858,23 +885,13 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
 
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
-          const chipExtract = extractInlineChips(protectCodeSpans(itemText), itemSrcStart);
-          const fnExtract = extractInlineFootnotes(chipExtract.cleaned, itemSrcStart);
-          const refExtract = extractInlineRefs(fnExtract.cleaned, itemSrcStart);
-          const citeExtract = extractInlineCitations(refExtract.cleaned, itemSrcStart);
-          const swExtract = extractInlineSwatches(citeExtract.cleaned, itemSrcStart);
-          const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
-          issues.push(...mathExtract.issues);
-          const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
-            refExtract.refs,
-          ), fnExtract.markers), chipExtract.chips);
-          const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
-          fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
+          // A `\\` in the item is a forced line break (#620).
+          const mapping = breakingRun([itemText], itemSrcStart, srcEnd);
           const block: ContentBlock = {
             type: 'listItem',
             text: mapping.text,
             spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
+            ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
             depth,
             listKind,
             sourceStart: srcStart,
@@ -917,20 +934,9 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       }
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const chipExtract = extractInlineChips(protectCodeSpans(quoteLines.join(' ')), srcStart);
-      const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
-      const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
-      const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
-      const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
-      const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-      issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
-        refExtract.refs,
-      ), fnExtract.markers), chipExtract.chips);
       // Lines join with a space, except between Chinese or Japanese
-      // characters (#181).
-      const mapping = joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
+      // characters (#181) and at a forced line break (#620).
+      const mapping = breakingRun(quoteLines, srcStart, srcEnd);
       blocks.push({
         type: 'blockquote',
         text: mapping.text,
@@ -938,6 +944,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         sourceStart: srcStart,
         sourceEnd: srcEnd,
         sourceMap: mapping.sourceMap,
+        ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
       });
       continue;
     }
@@ -982,11 +989,12 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         srcStart += rawLines[startIdx]!.indexOf(def[0]) + def[0].length;
       }
       const srcEnd = lineEndOffset(lastIdx);
-      const mapping = inlineRun(paraLines.join(' '), srcStart, srcEnd);
+      const mapping = breakingRun(paraLines, srcStart, srcEnd);
       blocks.push({
         type: 'paragraph',
         text: mapping.text,
         spans: mapping.spans,
+        ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
         ...(startIdx === lastDisplayEnd + 1 && !def ? { continuesParagraph: true } : {}),
         ...(def ? { footnoteDef: def[1]! } : {}),
         sourceStart: srcStart,

@@ -73,7 +73,11 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  *   - a paragraph style that sets `firstLineIndent` itself and a non-zero
  *     `hangingIndent` indents its first line by the one and its turnovers
  *     by the other, where up to 1.22 the hanging indent replaced the
- *     first-line indent ({@link pinLegacyPairedIndents}).
+ *     first-line indent ({@link pinLegacyPairedIndents});
+ *   - a backslash that ends a line of a paragraph, a quotation or a list
+ *     item, and `\\` in one, is a forced line break
+ *     (`bodyText.hardLineBreaks`), where up to 1.22 it printed ({@link
+ *     pinLegacyHardBreaks}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -122,6 +126,9 @@ const VERSE_LAYOUT_RULES = 9;
 /** The rules that pair a paragraph style's own first-line indent with its
  *  hanging one. */
 const PAIRED_INDENT_RULES = 9;
+/** The rules that read a backslash ending a line, or `\\`, as a forced line
+ *  break. */
+const HARD_BREAK_RULES = 9;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -488,6 +495,73 @@ function isRaggedAlign(value: unknown): boolean {
   return typeof value === 'string' && value !== 'justify';
 }
 
+/**
+ * A configuration written before #620 (postext 1.22 or earlier), pinned to
+ * the way it read a backslash that ends a line of a paragraph, a quotation
+ * or a list item, and `\\` in one: `bodyText.hardLineBreaks: false`, the
+ * backslashes printed and the lines joined with a space, where today they
+ * are forced line breaks. A configuration that names the setting already
+ * is returned as it is (the same object).
+ */
+export function pinLegacyHardBreaks<T extends Partial<PostextConfig>>(config: T): T {
+  const bodyText: BodyTextConfig = isRecord(config.bodyText) ? config.bodyText : {};
+  if (bodyText.hardLineBreaks !== undefined) return config;
+  return { ...config, bodyText: { ...bodyText, hardLineBreaks: false } };
+}
+
+/** A line that opens a block of its own, which a paragraph's lines never
+ *  run into: a heading, a fence, a display formula, a list item, a
+ *  resource embed. */
+const BLOCK_LINE_RE = /^(?:#{1,6}\s|:::|::resource\b|\$\$|(?:[-*+]|\d+[.)]|[\u0660-\u0669]+[.)]|[\u06f0-\u06f9]+[.)])\s)/;
+const LIST_LINE_RE = /^(?:[-*+]|\d+[.)]|[\u0660-\u0669]+[.)]|[\u06f0-\u06f9]+[.)])\s/;
+
+/** Whether markdown holds a forced line break as #620 reads one: in a
+ *  paragraph, a quotation or a list item, `\\` before a space and more
+ *  text, or a backslash ending a line the block goes on after (a list item
+ *  is one line). Inline code and maths, display formulas, headings (whose
+ *  `\\` always broke the title) and `:::verse` poems (whose spaced `\\`
+ *  cuts a bayt) are passed over. */
+function hasForcedBreak(text: string): boolean {
+  if (!text.includes('\\')) return false;
+  const lines = text.split('\n').map((l) => l.trim());
+  let verse = false;
+  let display = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (display) {
+      if (line.endsWith('$$')) display = false;
+      continue;
+    }
+    if (verse) {
+      if (FENCE_CLOSE_RE.test(line)) verse = false;
+      continue;
+    }
+    if (/^:::\s*verse\b/.test(line)) {
+      verse = true;
+      continue;
+    }
+    if (line.startsWith('$$')) {
+      display = !(line.length > 2 && line.endsWith('$$'));
+      continue;
+    }
+    if (!line.includes('\\') || /^#{1,6}\s/.test(line)) continue;
+    const body = line.replace(/^>\s?/, '').replace(/`[^`\n]+?`/g, '').replace(/\$[^$\n]*\$/g, '');
+    if (/\\\\[ \t]+\S/.test(body)) return true;
+    if (!body.endsWith('\\') || LIST_LINE_RE.test(body)) continue;
+    const next = lines[i + 1] ?? '';
+    if (next !== '' && !BLOCK_LINE_RE.test(next) && (next.startsWith('>') === line.startsWith('>'))) return true;
+  }
+  return false;
+}
+
+/** Whether markdown may hold a forced line break. Unknown content
+ *  (undefined) may. */
+function mayHaveForcedBreaks(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return hasForcedBreak(content);
+  return content.some(hasForcedBreak);
+}
+
 /** Whether `config` (or the screen overrides of its HTML viewer) sets some
  *  running text ragged: the body text (and so its blockquotes and lists), a
  *  paragraph style, a box body, the body of a part or the body of a
@@ -776,11 +850,14 @@ export interface MigrateConfigOptions {
    * hyphen between two letters is not given the 1.4 compound breaks (see
    * {@link pinLegacyHyphenBreaks}); and text with no `:::verse` poem whose
    * lines carry no hemistich separator is not given the 1.22 verse layout
-   * (see {@link pinLegacyVerseLayout}). That keeps a stored configuration as
+   * (see {@link pinLegacyVerseLayout}); and text with no backslash ending a
+   * line a paragraph goes on after, and no `\\` in running text, is not
+   * given the 1.22 literal backslashes (see {@link pinLegacyHardBreaks}).
+   * That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
-   * breaks, the split under a heading, the compound breaks and the verse
-   * layout always, and
+   * breaks, the split under a heading, the compound breaks, the verse
+   * layout and the literal backslashes always, and
    * the container space always when the configuration declares a paragraph
    * style.
    * Any iterable of texts will do, a generator or a Map's `values()`
@@ -816,9 +893,10 @@ export interface MigrateConfigOptions {
  * breaks by {@link pinLegacyHyphenBreaks}, unless `options.content` shows
  * no compound; one older than 9 has its poems with no hemistich separator
  * pinned by {@link pinLegacyVerseLayout}, unless `options.content` shows
- * none, and its paragraph styles' indents by {@link
- * pinLegacyPairedIndents}. A current one is returned as it is (the same
- * object).
+ * none, its paragraph styles' indents by {@link pinLegacyPairedIndents},
+ * and its forced line breaks by {@link pinLegacyHardBreaks}, unless
+ * `options.content` shows none. A current one is returned as it is (the
+ * same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -845,6 +923,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < HYPHEN_BREAK_RULES && mayHaveCompounds(content)) out = pinLegacyHyphenBreaks(out);
   if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) out = pinLegacyVerseLayout(out);
   if (rules < PAIRED_INDENT_RULES) out = pinLegacyPairedIndents(out);
+  if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) out = pinLegacyHardBreaks(out);
   return out;
 }
 
@@ -892,5 +971,6 @@ export function migrateBundleConfig(
   if (rules < HYPHEN_BREAK_RULES && mayHaveCompounds(content)) merged = pinLegacyHyphenBreaks(merged);
   if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) merged = pinLegacyVerseLayout(merged);
   if (rules < PAIRED_INDENT_RULES) merged = pinLegacyPairedIndents(merged);
+  if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) merged = pinLegacyHardBreaks(merged);
   return merged;
 }

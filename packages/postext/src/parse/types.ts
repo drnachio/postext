@@ -583,6 +583,14 @@ export interface ContentBlock {
   attrSources?: Record<string, { start: number; end: number }>;
   /** Plain-text indices of forced title breaks (`\\` in the source). */
   titleBreaks?: number[];
+  /** A paragraph, quotation or list item with forced line breaks (#620): a
+   *  backslash ending a source line, or `\\`, which its text holds as
+   *  `BREAK_PLACEHOLDER` (U+2028). This is the block as postext 1.22 read
+   *  it, every such backslash printed and the lines joined with a space,
+   *  which a configuration stored before #620 lays out instead
+   *  (`bodyText.hardLineBreaks: false`, see `literalBreaksFor`). Absent on
+   *  a block with no forced break. */
+  literalBreaks?: { text: string; spans: InlineSpan[]; sourceMap: number[] };
   /** A numbered heading whose level or style sets `numberPosition:
    *  'replace'`: its title is emptied before layout and the generated
    *  number is printed (and listed) as the whole title (#401). */

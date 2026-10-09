@@ -46,6 +46,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   optimalRagged: true,
   breakAfterDashes: true,
   breakAfterHyphens: true,
+  hardLineBreaks: true,
   repeatHyphen: false,
   blockquote: DEFAULT_BLOCKQUOTE_CONFIG,
   verse: DEFAULT_VERSE_CONFIG,
@@ -297,6 +298,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     optimalRagged: partial.optimalRagged ?? DEFAULT_BODY_TEXT_CONFIG.optimalRagged,
     breakAfterDashes: partial.breakAfterDashes ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterDashes,
     breakAfterHyphens: partial.breakAfterHyphens ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens,
+    hardLineBreaks: partial.hardLineBreaks ?? DEFAULT_BODY_TEXT_CONFIG.hardLineBreaks,
     repeatHyphen: partial.repeatHyphen ?? DEFAULT_BODY_TEXT_CONFIG.repeatHyphen,
     blockquote: resolveBlockquoteConfig(partial.blockquote, documentLocale),
     verse: resolveVerseConfig(partial.verse),
@@ -452,6 +454,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
   }
   if (bodyText.breakAfterHyphens !== undefined && bodyText.breakAfterHyphens !== DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens) {
     result.breakAfterHyphens = bodyText.breakAfterHyphens;
+    hasOverride = true;
+  }
+  if (bodyText.hardLineBreaks !== undefined && bodyText.hardLineBreaks !== DEFAULT_BODY_TEXT_CONFIG.hardLineBreaks) {
+    result.hardLineBreaks = bodyText.hardLineBreaks;
     hasOverride = true;
   }
   if (bodyText.repeatHyphen !== undefined && bodyText.repeatHyphen !== DEFAULT_BODY_TEXT_CONFIG.repeatHyphen) {

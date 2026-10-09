@@ -900,6 +900,54 @@ export function replaceSnippetBreaks(text: string): string {
   });
 }
 
+/** A forced line break in body text (#620): `\\` before a space or the end
+ *  of a line, or a backslash that ends a source line, with the spaces
+ *  before it and, after `\\`, the spaces and the line end that follow. A
+ *  `\\` glued to the next character is no break (`\\*` prints a
+ *  backslash and an escaped asterisk, `C:\\path` both backslashes). The
+ *  block parser joins a paragraph's lines with a space, except after a line
+ *  that ends in a backslash, which it joins with a line feed for this
+ *  pattern to find. */
+const BODY_BREAK_RE = /[ \t]*(?:\\\\(?=[ \t\n]|$)[ \t]*\n?|\\\n)/g;
+
+/**
+ * Turn the forced line breaks of a paragraph, a quotation or a list item
+ * (#620, see `BODY_BREAK_RE`) into {@link BREAK_PLACEHOLDER}, as
+ * {@link replaceSnippetBreaks} does in a caption: a backslash at the end of
+ * a source line (CommonMark's hard break) or `\\` before a space. Run on
+ * the text with its maths and chips already taken out, and its inline code
+ * protected, so a `\\` in a formula or in code stays; one inside a link
+ * destination or a directive's attributes stays too. A break that opens or
+ * ends the block is no break (CommonMark: a backslash at the end of a
+ * paragraph prints), and two in a row are one. A line feed left (a line
+ * join no break took) reads as the space it stands for. The break is
+ * written as `mark`: the block parser passes {@link BODY_BREAK_MARK}, which
+ * the emphasis patterns read as any character (U+2028 is a line terminator
+ * to a regular expression's `.`), and turns it into the placeholder in the
+ * spans ({@link bodyBreakSpans}).
+ */
+export function replaceBodyBreaks(text: string, mark: string = BREAK_PLACEHOLDER): string {
+  if (!text.includes('\\')) return text;
+  const kept = dataRanges(text);
+  const out = text.replace(BODY_BREAK_RE, (match: string, offset: number) => {
+    const at = offset + match.indexOf('\\');
+    const edge = text.slice(0, offset).trim() === '' || text.slice(offset + match.length).trim() === '';
+    return edge || kept.some(([s, e]) => at >= s && at < e) ? match.replace(/\n/g, ' ') : mark;
+  });
+  const twice = new RegExp(`${mark}(?:[ \\t]*${mark})+`, 'g');
+  return out.replace(twice, mark).replace(/\n/g, ' ');
+}
+
+/** A forced line break of body text while its inline formatting is read
+ *  (see {@link replaceBodyBreaks}). */
+export const BODY_BREAK_MARK = '\uE1A7';
+
+/** The spans with every {@link BODY_BREAK_MARK} set as
+ *  {@link BREAK_PLACEHOLDER} (the same length: link ranges hold). */
+export function bodyBreakSpans(spans: InlineSpan[]): InlineSpan[] {
+  return spans.map((s) => (s.text.includes(BODY_BREAK_MARK) ? { ...s, text: s.text.replaceAll(BODY_BREAK_MARK, BREAK_PLACEHOLDER) } : s));
+}
+
 /** `[start, end)` of the parts of `text` that are data rather than text to
  *  set: link and image destinations, and the `{…}` attributes of the
  *  inline directives. */

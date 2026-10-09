@@ -1,3 +1,4 @@
+import { FORCED_BREAK, measureForcedBreaks } from './hardBreaks';
 import type { VDTAnnotationRun, VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { uprightArabicSpans, uprightFace } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
@@ -1594,6 +1595,13 @@ function measureRichText(
   if (options?.writingMode !== undefined && options.writingMode !== getMeasureWritingMode()) {
     const opts = options;
     return withMeasureWritingMode(opts.writingMode!, () => measureRichText(spans, plainText, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
+  }
+  // Forced line breaks (#620): the text between two of them is broken on
+  // its own, by whichever breaker sets it, and the pieces stacked
+  // (`measure/hardBreaks.ts`).
+  if (plainText.includes(FORCED_BREAK)) {
+    return measureForcedBreaks(spans, maxWidthPx, lineHeightPx, options, (piece, opts) =>
+      measureRichText(piece, piece.map((s) => s.text).join(''), normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
   }
   // Vertical text: a short number inside a Latin sentence runs sideways
   // with it, read against the whole paragraph (#222).

@@ -1,3 +1,4 @@
+import { FORCED_BREAK } from './hardBreaks';
 import {
   prepareWithSegments,
   layoutNextLine,
@@ -228,6 +229,11 @@ export function measureBlock(
     return withMeasureWritingMode(opts.writingMode!, () => measureBlock(text, font, maxWidthPx, lineHeightPx, opts));
   }
 
+  // A forced line break (#620): the word-by-word breaker breaks the text
+  // between two of them on its own (`measure/hardBreaks.ts`).
+  if (text.includes(FORCED_BREAK)) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
   // Words set without spaces (Chinese, Japanese, Korean): the formatted
   // path's breaker, which composes a CJK paragraph (clreq line breaking,
   // inter-character justification) and breaks a Latin one that quotes CJK

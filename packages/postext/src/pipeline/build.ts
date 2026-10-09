@@ -200,6 +200,7 @@ import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarni
 import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
 import { annotateArabicMarks } from '../arabicMarks';
+import { literalBreaksFor } from './hardBreaks';
 import { tashkilFor } from './tashkil';
 import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
@@ -594,7 +595,9 @@ function placeDocumentPass(
   // bibliography takes `:::bibliography`'s place or follows the text.
   // Arabic vowel marks out of the text when `bodyText.tashkil` says so
   // (#376), for the outline and the layout alike.
-  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved), resolved);
+  // A configuration stored before #620 prints the backslashes of forced
+  // line breaks (`bodyText.hardLineBreaks: false`).
+  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(literalBreaksFor(parseMarkdownMemo(markdownBody), resolved), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
     ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }], content.resources)[0] : undefined);
   const citationsApplied = citationContext

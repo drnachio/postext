@@ -631,6 +631,12 @@ export interface VDTLine {
   segments?: VDTLineSegment[];
   /** Whether this is the last line of the paragraph (ragged even when justified) */
   isLastLine?: boolean;
+  /** The line ends at a forced line break the author typed inside the
+   *  paragraph (#620: a backslash ending a source line, or `\\`): it is set
+   *  at its natural width like a last line ({@link isLastLine} is set), the
+   *  paragraph goes on on the next line, copied text takes a line feed
+   *  there, the reflowable EPUB a `<br/>`. Absent otherwise. */
+  hardBreak?: true;
   /** Set ragged inside a justified paragraph: a line a URL made unfillable
    *  (its few word spaces would stretch past the loose-line threshold), or
    *  a CJK line flagged {@link cjkLoose}. */

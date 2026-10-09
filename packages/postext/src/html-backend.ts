@@ -734,7 +734,8 @@ function lineEndHtml(text: string, x: number): string {
  * (`next`), or after a block's last line (#403): nothing after a line that
  * ends inside a word or on a hyphen or dash (`VDTLine.hyphenated`); a
  * space before the turnover of a line of verse, a blank line after a
- * stanza (#620); a newline after a line of verse and after the last line
+ * stanza (#620); a newline after a line of verse, after a line that ends
+ * at a forced line break (`VDTLine.hardBreak`, #620) and after the last line
  * of a paragraph (or of a heading, a caption, a cell); between two lines of a block, a space
  * where the break consumed one — the plain text skips a character between
  * them (`plainEnd` / `plainStart`) — and nothing where it did not (between
@@ -748,7 +749,8 @@ function lineEndText(line: VDTLine, next: VDTLine | undefined): string {
   // A line of verse in the line layout (#620): a space before its
   // turnover, a newline after it, a blank line after a stanza.
   if (line.verseLine) return next?.verseLine?.turnover ? ' ' : line.verseLine.stanzaEnd ? '\n\n' : '\n';
-  if (line.verse || (!next && line.isLastLine !== false)) return '\n';
+  // A forced line break the author typed (#620).
+  if (line.verse || line.hardBreak || (!next && line.isLastLine !== false)) return '\n';
   if (next && line.plainEnd !== undefined && next.plainStart !== undefined) return next.plainStart > line.plainEnd ? ' ' : '';
   return cjkAt(Array.from(line.text.trimEnd()).pop()) || cjkAt(next && Array.from(next.text.trimStart())[0]) ? '' : ' ';
 }
