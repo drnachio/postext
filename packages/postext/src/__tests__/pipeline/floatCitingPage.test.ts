@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build';
 import { resolveResourcePlacement } from '../../pipeline/floatPlacement';
 import { createMeasurementCache } from '../../measure';
+import { renderToHtml } from '../../html-backend';
 import type { PostextConfig, Resource, VDTDocument } from '../../index';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -98,6 +99,19 @@ describe('floats at the head of the page or column that cites them (#633)', () =
     for (const c of page.columns) {
       for (const b of c.blocks) expect(b.bbox.y).toBeGreaterThanOrEqual(f.bbox.y + f.bbox.height - 0.5);
     }
+  }, 60_000);
+
+  it('the HTML viewer reads the figure after the paragraph that cites it', () => {
+    const doc = build(citing(320), [figure('fig', { ...PAGE_TOP, citingPage: true })]);
+    expect(floatOf(doc, 'fig')!.page).toBe(2);
+    // The page's blocks come in reading order, its floats after its text:
+    // the link to the figure, then the figure's block.
+    const html = renderToHtml(doc);
+    const page = html.slice(html.indexOf('id="pt-p-2"'), html.indexOf('id="pt-p-3"'));
+    const cited = page.indexOf('href="#pt-res-fig"');
+    const float = page.indexOf('data-block-id="float-fig"');
+    expect(cited).toBeGreaterThan(0);
+    expect(float).toBeGreaterThan(cited);
   }, 60_000);
 
   it('changes nothing unless asked', () => {
