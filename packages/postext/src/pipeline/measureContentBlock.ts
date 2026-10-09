@@ -427,7 +427,8 @@ export function measureContentBlock(
   // A poem in the line layout (#620): each line of verse measured on its
   // own by `pipeline/verseLines.ts`, against the poem's other stanzas
   // (their longest line centres the poem); none of the paragraph's levers
-  // apply.
+  // apply but the word spaces' shrink, down to `minWordSpacing`, that
+  // keeps a line a little too wide on one line.
   if (contentBlock.verse?.stanza && versesLineByLine(rawBlock, resolved)) {
     const direction = contentBlock.direction ?? getMeasureDirection();
     const indices = poemStanzaIndices(contentBlocks, rawBlock, blockIdx);
@@ -444,6 +445,7 @@ export function measureContentBlock(
       settings: verseLinesSettings(contentBlock.verse.attrs, style, resolved, vertical),
       direction,
       frameDirection: getMeasureDirection(),
+      minWordSpacing: resolved.bodyText.minWordSpacing,
       ...(cache ? { cache } : {}),
     });
     if (measured.lines.length === 0) return null;

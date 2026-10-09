@@ -776,10 +776,13 @@ export interface VDTLine {
    *  `indent` is the line's indent (px, from the poem's start side: its
    *  leading spaces × `indentStep`, or where a stepped line starts), set
    *  on its first line when not 0. `stanzaEnd` is set on the last line of
-   *  a stanza another follows (copied text puts a blank line there). The
-   *  widths of the line's segments are final (the block is set flush
+   *  a stanza another follows (copied text puts a blank line there).
+   *  `spaceRatio` is set on a line a little too wide for the measure whose
+   *  word spaces were tightened so it stays on one line: their width as a
+   *  share of their natural width (never under `bodyText.minWordSpacing`).
+   *  The widths of the line's segments are final (the block is set flush
    *  left): renderers paint them as they are. Absent on any other line. */
-  verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true };
+  verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true; spaceRatio?: number };
   /** A line of a code listing (#624, a `code` block): `line` is the source
    *  line it sets (0-based in the listing), `number` its printed number
    *  when the listing is numbered (never on a continuation), `continued`

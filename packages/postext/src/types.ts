@@ -1541,6 +1541,13 @@ export interface VerseConfig {
    *  column (a haiku, a tanka): it moves on whole when it does not fit.
    *  Default `0`, off. */
   keepStanzas?: number;
+  /** A line of verse a little wider than the measure tightens its word
+   *  spaces, down to `bodyText.minWordSpacing` of their natural width, and
+   *  stays on one line; only a line that does not fit even then turns
+   *  over. `false`: every line wider than the measure turns over, as
+   *  postext 1.23 set them (configurations stored by 1.23 are read with it
+   *  when they hold a poem set line by line). Default `true`. */
+  tighten?: boolean;
 }
 
 export interface ResolvedVerseConfig {
@@ -1551,6 +1558,7 @@ export interface ResolvedVerseConfig {
   turnoverMark: string;
   stanzaSpace: number;
   keepStanzas: number;
+  tighten: boolean;
 }
 
 /** What `lineNumbers` counts (#621): `'verse'`, the lines of `:::verse`

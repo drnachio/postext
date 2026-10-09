@@ -208,7 +208,7 @@ describe('configurations stored before rules 8 keep the 1.4 space under containe
   const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' }, paragraphStyles: [{ id: 's' }] };
 
   it('pins \'add\' when the book holds a :::paragraphs container', () => {
-    expect(CONFIG_VERSION).toBe(9);
+    expect(CONFIG_VERSION).toBe(10);
     for (const version of [undefined, 3, 5, 6, 7]) {
       expect(migrateConfig(stored, version, { content: GROUP_THEN_HEADING }).bodyText?.paragraphContainerSpacing, `${version}`).toBe('add');
     }

@@ -144,7 +144,7 @@ describe('layout.inlineResourceGap and configurations stored before postext 1.5 
 
   it('pins a stored configuration whose book embeds a resource, once', () => {
     const config: PostextConfig = { layout: { layoutType: 'single' } };
-    expect(CONFIG_VERSION).toBe(9);
+    expect(CONFIG_VERSION).toBe(10);
     const pinned = migrateConfig(config, undefined, { content: MD });
     expect(pinned.layout).toEqual({ layoutType: 'single', inlineResourceGap: 'above' });
     // Stamped 4 (a 1.5 prerelease): the gap is the only pin it gets.

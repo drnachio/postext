@@ -13,8 +13,9 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
 import { codeFenceOpen } from '../parse/codeFence';
 
 /**
- * The configuration rules this engine writes: 9 since #620 (8 from postext
- * 1.5). Thirteen rules changed in 1.5 and two since, and a configuration
+ * The configuration rules this engine writes: 10 since the #620 follow-up
+ * (9 from postext 1.23, 8 from 1.5). Thirteen rules changed in 1.5 and
+ * more since, and a configuration
  * stored under an older
  * number (or none) is read through {@link migrateConfig}:
  * - 3: a heading level's `breakBefore` (and a heading style's) merges field
@@ -82,6 +83,11 @@ import { codeFenceOpen } from '../parse/codeFence';
  *   - a ```` ``` ```` or `~~~` fence opens a code block (#624,
  *     `codeStyle.blocks`), where up to 1.22 its lines were read as
  *     Markdown ({@link pinLegacyCodeBlocks}).
+ * - 10 (#620 follow-up): a line of a poem set line by line that is a
+ *   little wider than the measure tightens its word spaces, down to
+ *   `bodyText.minWordSpacing`, and stays on one line
+ *   (`bodyText.verse.tighten`), where 1.23 turned it over ({@link
+ *   pinLegacyVerseTightening}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -91,9 +97,10 @@ import { codeFenceOpen } from '../parse/codeFence';
  * version-6, version-7 and version-8 pins, under 6 the version-7 and
  * version-8 pins, under 7 the version-8 pins. One stored under 8 was
  * written by postext 1.5 to 1.22 and gets the version-9 pins (which every
- * older one gets too).
+ * older one gets too); one stored under 9 was written by postext 1.23 and
+ * gets the version-10 pin (which every older one gets too).
  */
-export const CONFIG_VERSION = 9;
+export const CONFIG_VERSION = 10;
 
 /** The rules that merge a partial heading break onto its level's. */
 const HEADING_BREAK_RULES = 3;
@@ -135,6 +142,9 @@ const PAIRED_INDENT_RULES = 9;
 const HARD_BREAK_RULES = 9;
 /** The rules that read a code fence as a code block. */
 const CODE_BLOCK_RULES = 9;
+/** The rules that tighten a line of verse a little too wide for the
+ *  measure instead of turning it over. */
+const VERSE_TIGHTEN_RULES = 10;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -458,6 +468,48 @@ function mayHavePlainPoems(content: string | readonly string[] | undefined): boo
   if (content === undefined) return true;
   if (typeof content === 'string') return hasPlainPoem(content);
   return content.some(hasPlainPoem);
+}
+
+/**
+ * A configuration written before the #620 follow-up (postext 1.23 or
+ * earlier), pinned to the way 1.23 set a line of a poem in the line layout
+ * that is wider than the measure: `bodyText.verse.tighten: false`, the line
+ * turned over at its natural word spacing, where today one that fits with
+ * its word spaces tightened down to `bodyText.minWordSpacing` stays on one
+ * line. A configuration that names the setting already is returned as it
+ * is (the same object).
+ */
+export function pinLegacyVerseTightening<T extends Partial<PostextConfig>>(config: T): T {
+  const bodyText: BodyTextConfig = isRecord(config.bodyText) ? config.bodyText : {};
+  const verse = isRecord(bodyText.verse) ? bodyText.verse : {};
+  if (verse.tighten !== undefined) return config;
+  return { ...config, bodyText: { ...bodyText, verse: { ...verse, tighten: false } } };
+}
+
+/** Whether markdown holds a poem set line by line: a `:::verse` fence
+ *  naming `layout=lines`, or naming no layout over lines with no
+ *  hemistich separator, unless the configuration sets such poems as
+ *  bayts (`bayt`, `bodyText.verse.layout: 'bayt'`). */
+function hasLinePoem(text: string, bayt: boolean): boolean {
+  if (!text.includes(':::')) return false;
+  for (const m of text.matchAll(VERSE_POEM_RE)) {
+    const layout = m[1] ? /\blayout\s*=\s*"?([a-z]*)/.exec(m[1])?.[1] : undefined;
+    if (layout === 'lines') return true;
+    if (layout && layout !== 'auto') continue;
+    const body = m[2] ?? '';
+    if (!bayt && body.trim() !== '' && !body.includes('||') && !/\s\\\\\s/.test(body)) return true;
+  }
+  return false;
+}
+
+/** Whether markdown may hold a poem set line by line under `config` (see
+ *  {@link hasLinePoem}). Unknown content (undefined) may. */
+function mayHaveLinePoems(content: string | readonly string[] | undefined, config: Partial<PostextConfig>): boolean {
+  if (content === undefined) return true;
+  const verse = isRecord(config.bodyText) && isRecord(config.bodyText.verse) ? config.bodyText.verse : {};
+  const bayt = verse.layout === 'bayt';
+  if (typeof content === 'string') return hasLinePoem(content, bayt);
+  return content.some((text) => hasLinePoem(text, bayt));
 }
 
 /**
@@ -888,12 +940,15 @@ export interface MigrateConfigOptions {
    * line a paragraph goes on after, and no `\\` in running text, is not
    * given the 1.22 literal backslashes (see {@link pinLegacyHardBreaks});
    * and text with no ```` ``` ```` or `~~~` fence is not given the 1.22
-   * reading of fences (see {@link pinLegacyCodeBlocks}).
+   * reading of fences (see {@link pinLegacyCodeBlocks}); and text with no
+   * poem set line by line is not given the 1.23 turnovers (see {@link
+   * pinLegacyVerseTightening}).
    * That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
    * breaks, the split under a heading, the compound breaks, the verse
-   * layout and the literal backslashes always, and
+   * layout, the literal backslashes and the 1.23 verse turnovers always,
+   * and
    * the container space always when the configuration declares a paragraph
    * style.
    * Any iterable of texts will do, a generator or a Map's `values()`
@@ -932,7 +987,10 @@ export interface MigrateConfigOptions {
  * none, its paragraph styles' indents by {@link pinLegacyPairedIndents},
  * its forced line breaks by {@link pinLegacyHardBreaks}, unless
  * `options.content` shows none, and its code fences by {@link
- * pinLegacyCodeBlocks}, unless `options.content` shows none. A current one
+ * pinLegacyCodeBlocks}, unless `options.content` shows none; one older
+ * than 10 has its verse turnovers pinned by {@link
+ * pinLegacyVerseTightening}, unless `options.content` shows no poem set
+ * line by line. A current one
  * is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
@@ -962,6 +1020,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < PAIRED_INDENT_RULES) out = pinLegacyPairedIndents(out);
   if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) out = pinLegacyHardBreaks(out);
   if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) out = pinLegacyCodeBlocks(out);
+  if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, out)) out = pinLegacyVerseTightening(out);
   return out;
 }
 
@@ -1011,5 +1070,6 @@ export function migrateBundleConfig(
   if (rules < PAIRED_INDENT_RULES) merged = pinLegacyPairedIndents(merged);
   if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) merged = pinLegacyHardBreaks(merged);
   if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) merged = pinLegacyCodeBlocks(merged);
+  if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, merged)) merged = pinLegacyVerseTightening(merged);
   return merged;
 }
