@@ -2,11 +2,10 @@
 
 import { Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
-import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT, resolveBodyTextConfig } from 'postext';
+import { DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT, resolveBodyTextConfig } from 'postext';
 import type {
   DesignSlot,
   DesignElement,
-  DesignTextElement,
   DesignRuleElement,
   DesignBoxElement,
   DesignImageElement,
@@ -23,6 +22,7 @@ import { BoxElementEditor } from './BoxElementEditor';
 import { ImageElementEditor } from './ImageElementEditor';
 import { applyAlign, type SlotKind } from './placementAdapter';
 import { foreEdgeElements } from './foreEdge';
+import { newTextElement } from './elementTemplates';
 
 interface SlotEditorProps {
   slotKey: SlotKind;
@@ -54,15 +54,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
   const existingIds = new Set(currentRaw.map((el) => el.id));
 
   const addText = () => {
-    const id = generateId('text', existingIds);
-    const template: DesignTextElement = {
-      ...DEFAULT_TEXT_ELEMENT,
-      id,
-      content: '',
-      // Default anchor aligned to the body edge for this slot.
-      placement: applyAlign(DEFAULT_TEXT_ELEMENT.placement, slotKey, 'center'),
-    };
-    commit([...currentRaw, template]);
+    commit([...currentRaw, newTextElement(generateId('text', existingIds), slotKey)]);
   };
 
   const addRule = () => {

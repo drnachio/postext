@@ -376,7 +376,7 @@ export function HeadingLevelSection({
           <SlotEditor
             slotKey="heading"
             raw={rawAdvanced?.slot}
-            resolved={(resolveDesignSlot(rawAdvanced?.slot, 'header') as ResolvedDesignSlot)}
+            resolved={(resolveDesignSlot(rawAdvanced?.slot, rawAdvanced?.slot === undefined ? 'header' : 'heading') as ResolvedDesignSlot)}
             onUpdate={(slot: DesignSlot | undefined) => {
               updateAdvanced({ enabled: true, slot: slot ?? { elements: [] } });
             }}

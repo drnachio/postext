@@ -463,6 +463,13 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         ]}
         onChange={(v) => update({ overflow: v as DesignTextElement['overflow'] })}
         tooltip={labels.headerFooterElementOverflowTooltip}
+        // Unset, the slot decides (#628): shown resolved, reset to it.
+        isDefault={raw.overflow === undefined}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.overflow;
+          onChange(next);
+        }}
       />
       <ToggleSwitch
         label={labels.headerFooterElementHyphenate}

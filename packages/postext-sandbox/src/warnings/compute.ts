@@ -173,6 +173,33 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   return out;
 }
 
+/** Design texts the layout cut to fit their width (#628, the engine's
+ *  `designTextTruncated`): one per element and page, a running head or
+ *  folio once a chapter. Each names the book page it was cut on, which a
+ *  click opens; one that prints a heading or a frontmatter field maps back
+ *  to its source too. */
+function collectDesignTruncationWarnings(doc: VDTDocument, markdown: string): Warning[] {
+  const out: Warning[] = [];
+  (doc.contentWarnings ?? []).forEach((w, i) => {
+    if (w.kind !== 'designTextTruncated') return;
+    out.push({
+      id: `design-truncated-${w.slot}-${w.elementId}-${w.pageIndex ?? 'x'}-${i}`,
+      payload: {
+        kind: 'designTextTruncated',
+        slot: w.slot,
+        elementId: w.elementId,
+        text: w.text,
+        mode: w.mode,
+        page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0),
+      },
+      sourceStart: w.sourceStart,
+      sourceEnd: w.sourceEnd,
+      line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+    });
+  });
+  return out;
+}
+
 /** Heading designs taller than their page can hold (EF-91), as the engine
  *  finds them (`collectHeadingDesignCuts`): text of the design laid out
  *  past the foot of the page (an opener, painted across the page) or past
@@ -492,7 +519,7 @@ function collectDesignWarnings(config: PostextConfig): Warning[] {
 
   // Part opener anchor integrity
   {
-    const part = resolveDesignSlot(config.parts?.design, 'header');
+    const part = resolveDesignSlot(config.parts?.design, 'part');
     const { cyclic, dangling } = detectAnchorIssues(part.elements);
     for (const id of cyclic) {
       out.push({
@@ -598,10 +625,10 @@ function partRowSlots(config: PostextConfig): Array<{
 }> {
   const out: ReturnType<typeof partRowSlots> = [];
   if (config.parts?.versoDesign) {
-    out.push({ configPath: 'parts.versoDesign', tag: 'part-verso', elements: resolveDesignSlot(config.parts.versoDesign, 'header').elements });
+    out.push({ configPath: 'parts.versoDesign', tag: 'part-verso', elements: resolveDesignSlot(config.parts.versoDesign, 'part').elements });
   }
   if (config.toc?.parts?.design) {
-    out.push({ configPath: 'toc.parts.design', tag: 'toc-part', elements: resolveDesignSlot(config.toc.parts.design, 'header').elements });
+    out.push({ configPath: 'toc.parts.design', tag: 'toc-part', elements: resolveDesignSlot(config.toc.parts.design, 'tocRow').elements });
   }
   return out;
 }
@@ -618,7 +645,7 @@ function headingStyleSlots(config: PostextConfig): Array<{
   for (const style of config.headingStyles ?? []) {
     if (!style || typeof style.id !== 'string') continue;
     if (style.advancedDesign?.enabled) {
-      out.push({ styleId: style.id, slot: 'heading', elements: resolveDesignSlot(style.advancedDesign.slot, 'header').elements });
+      out.push({ styleId: style.id, slot: 'heading', elements: resolveDesignSlot(style.advancedDesign.slot, style.advancedDesign.slot === undefined ? 'header' : 'heading').elements });
     }
     if (style.header) out.push({ styleId: style.id, slot: 'header', elements: resolveDesignSlot(style.header, 'header').elements });
     if (style.footer) out.push({ styleId: style.id, slot: 'footer', elements: resolveDesignSlot(style.footer, 'footer').elements });
@@ -1250,6 +1277,7 @@ function computeDocumentWarnings(params: {
   warnings.push(...collectAlphaOverflowWarnings(doc));
   if (toggles.designIssues) {
     warnings.push(...collectDesignWarnings(config));
+    if (doc) warnings.push(...collectDesignTruncationWarnings(doc, markdown));
   }
 
   warnings.push(
@@ -1336,7 +1364,7 @@ function collectHeaderFooterWarnings(
   for (const lvl of resolveHeadingsConfig(config.headings).levels) {
     if (lvl.advancedDesign.enabled) check('heading', lvl.advancedDesign.slot.elements, { level: lvl.level });
   }
-  check('part', resolveDesignSlot(config.parts?.design, 'header').elements);
+  check('part', resolveDesignSlot(config.parts?.design, 'part').elements);
   for (const s of partRowSlots(config)) check('part', s.elements, { configPath: s.configPath, tag: s.tag });
   for (const s of headingStyleSlots(config)) check(s.slot, s.elements, { styleId: s.styleId });
 

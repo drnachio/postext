@@ -40,6 +40,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
     case 'designTextClipAlwaysTruncates':
+    case 'designTextTruncated':
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
     case 'sideColumnPercentClamped':

@@ -63,6 +63,7 @@ export type WarningKind =
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
+  | 'designTextTruncated'
   | 'headingSpanWithoutBreak'
   | 'headingAdvancedWithoutTitleText'
   | 'unknownResourceId'
@@ -269,6 +270,18 @@ export type WarningPayload =
       slot: WarningSlotKind;
       level?: number;
       elementId: string;
+    }
+  /** A design text the layout cut to fit its width (#628): with an
+   *  ellipsis (`mode` its `overflow`) or clipped with ink past its box.
+   *  `slot` is where the design is painted, `page` the book page it was
+   *  first cut on (a running head once a chapter), `text` the whole text. */
+  | {
+      kind: 'designTextTruncated';
+      slot: 'header' | 'footer' | 'heading' | 'part' | 'tocRow';
+      elementId: string;
+      text: string;
+      mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip';
+      page: number;
     }
   | { kind: 'headingSpanWithoutBreak'; level: number }
   | { kind: 'headingAdvancedWithoutTitleText'; level: number }

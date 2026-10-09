@@ -642,7 +642,7 @@ export const TocSection = memo(function TocSection() {
             <SlotEditor
               slotKey="part"
               raw={raw?.parts?.design}
-              resolved={raw?.parts?.design ? resolveDesignSlot(raw.parts.design, 'header') : { elements: [] }}
+              resolved={raw?.parts?.design ? resolveDesignSlot(raw.parts.design, 'tocRow') : { elements: [] }}
               onUpdate={(slot: DesignSlot | undefined) =>
                 updateParts({ design: slot && slot.elements.length > 0 ? slot : undefined })
               }

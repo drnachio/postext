@@ -101,6 +101,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
     case 'designTextClipAlwaysTruncates':
+    case 'designTextTruncated':
       return FileWarning;
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
@@ -274,6 +275,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDesignDanglingAnchorTitle;
     case 'designTextClipAlwaysTruncates':
       return labels.warningsDesignTextClipAlwaysTruncatesTitle;
+    case 'designTextTruncated':
+      return labels.warningsDesignTextTruncatedTitle;
     case 'headingSpanWithoutBreak':
       return labels.warningsHeadingSpanWithoutBreakTitle;
     case 'headingAdvancedWithoutTitleText':
@@ -534,6 +537,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       const where = slotWhere(payload);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail}`;
     }
+    case 'designTextTruncated': {
+      const where = payload.slot === 'tocRow' ? 'toc.parts.design' : payload.slot;
+      const detail = payload.mode === 'clip' ? labels.warningsDesignTextTruncatedClipDetail : labels.warningsDesignTextTruncatedDetail;
+      return `${where} · #${payload.elementId} — ${detail.replace('__text__', payload.text)}`;
+    }
     case 'headingSpanWithoutBreak':
       return `H${payload.level} — ${labels.warningsHeadingSpanWithoutBreakDetail}`;
     case 'headingAdvancedWithoutTitleText':
@@ -683,7 +691,9 @@ function WarningItem({
   onClick: (w: Warning) => void;
 }) {
   const Icon = iconFor(warning.payload.kind);
-  const preflightPage = warning.payload.kind === 'preflight' ? warning.payload.page : undefined;
+  // A preflight finding, or a design text cut on a page (#628), names its
+  // book page.
+  const preflightPage = warning.payload.kind === 'preflight' || warning.payload.kind === 'designTextTruncated' ? warning.payload.page : undefined;
   const critical = warning.payload.kind === 'preflight' && warning.payload.check.severity === 'critical';
   const clickable = warning.sourceStart !== undefined || isFontWarning(warning.payload.kind) || preflightPage !== undefined;
   const title = titleFor(warning.payload, labels);
@@ -727,6 +737,9 @@ export function WarningsPanel() {
       goToBookPage(w.payload.page);
       return;
     }
+    // A cut design text opens its page; one that prints a heading or a
+    // frontmatter field also selects it in the editor.
+    if (w.payload.kind === 'designTextTruncated') goToBookPage(w.payload.page);
     if (isFontWarning(w.payload.kind)) {
       // Surface the custom-font manager so the user can upload the missing
       // variant, re-add the family, or disambiguate duplicates.

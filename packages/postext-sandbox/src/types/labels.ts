@@ -314,6 +314,9 @@ export interface SandboxLabels {
   warningsDesignDanglingAnchorDetail: string;
   warningsDesignTextClipAlwaysTruncatesTitle: string;
   warningsDesignTextClipAlwaysTruncatesDetail: string;
+  warningsDesignTextTruncatedTitle: string;
+  warningsDesignTextTruncatedDetail: string;
+  warningsDesignTextTruncatedClipDetail: string;
   warningsHeadingSpanWithoutBreakTitle: string;
   warningsHeadingSpanWithoutBreakDetail: string;
   warningsHeadingAdvancedWithoutTitleTextTitle: string;

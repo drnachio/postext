@@ -659,7 +659,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
             <SlotEditor
               slotKey="heading"
               raw={rawAdvanced?.slot}
-              resolved={resolveDesignSlot(rawAdvanced?.slot, 'header')}
+              resolved={resolveDesignSlot(rawAdvanced?.slot, rawAdvanced?.slot === undefined ? 'header' : 'heading')}
               onUpdate={(slot: DesignSlot | undefined) => updateAdvanced({ enabled: true, slot: slot ?? { elements: [] } })}
             />
           </NestedGroup>
