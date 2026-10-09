@@ -138,6 +138,22 @@ Outros dois mudam o que um título imprime e como ele conta. `hidden="true"` (ou
 # Raw data {style="appendix"}
 ```
 
+### Capitulares
+
+Um parágrafo abre com uma capitular quando o nível ou o estilo do seu título, ou o estilo de parágrafo do seu grupo `:::paragraphs`, define uma (veja [Configuração › Capitulares](/pt/docs/configuration#capitulares)): a primeira letra é composta em tamanho grande ao lado das primeiras linhas, que são encurtadas em volta dela. Não há marcação no próprio parágrafo; o texto é escrito como de costume, e a letra continua fazendo parte da sua palavra para a cópia, a busca e o mapa de origem. Um atributo `dropcap` a liga ou desliga num capítulo ou num grupo:
+
+```markdown
+# Lost {dropcap=false}
+
+# The mines {dropcap=2}
+
+:::paragraphs{style="entry" dropcap}
+The lamp of the first entry opens with an initial.
+:::
+```
+
+Na linha de um título, `dropcap=false` deixa o parágrafo depois desse título sem a capitular que o seu nível ou estilo define, `dropcap=N` a compõe sobre `N` linhas, e um `dropcap` sozinho dá uma a esse parágrafo (três linhas, a fonte do parágrafo) onde o nível não define nenhuma. Na abertura de um `:::paragraphs`, o atributo faz o mesmo com o primeiro parágrafo do grupo, ou com todos os parágrafos quando o estilo diz `each: true`. O parágrafo depois de um título é procurado passando por aberturas e fechos de contêiner, diretivas, boxes que saíram do fluxo e figuras flutuantes; um parágrafo dentro de um boxe, de um item de lista, de uma citação ou de um poema nunca leva capitular. Desde o postext 1.23.
+
 ## Diretivas
 
 As diretivas são marcas de controle de uma linha, escritas como `:::name` ou `:::name{attrs}` em uma linha própria. Elas não produzem nada visível: comandam o posicionamento e a numeração.
@@ -259,7 +275,7 @@ Quatro nomes de contêiner são reconhecidos no fluxo do texto (um quinto, `:::c
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Uma sequência de parágrafos composta com um estilo de parágrafo com nome (uma entrada, uma epígrafe, um conjunto de notas em corpo pequeno) em vez do estilo do corpo. <code>align</code>, <code>indent</code> e <code>endIndent</code> definem o alinhamento e os recuos, com ou sem estilo: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compõe uma data um caractere antes do fim da linha (地から1字上げ).</td>
+      <td>Uma sequência de parágrafos composta com um estilo de parágrafo com nome (uma entrada, uma epígrafe, um conjunto de notas em corpo pequeno) em vez do estilo do corpo. <code>align</code>, <code>indent</code> e <code>endIndent</code> definem o alinhamento e os recuos, com ou sem estilo: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compõe uma data um caractere antes do fim da linha (地から1字上げ). <code>dropcap</code> liga ou desliga uma <a href="#capitulares">capitular</a> no seu primeiro parágrafo.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>

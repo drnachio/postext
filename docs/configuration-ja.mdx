@@ -722,7 +722,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>dropCap</code></td>
       <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
       <td>—</td>
-      <td>ドロップキャップ。最初の文字を、最初の<code>lines</code>行（既定は2）の横に大きく組みます。書体、ウェイト、色は独自に指定でき、テキストとの間隔は<code>gap</code>です。この文字は、またがる最後の行のベースラインに立ちます。<code>fontSize</code>の既定値は、文字の上端が1行目の大文字の高さとそろうサイズで、テキストのサイズに<code>lines</code> − 1行分の行送りを足したものです。大文字の高さは文字サイズの0.72とみなします（大文字がこれよりかなり高い、または低い書体では、独自の<code>fontSize</code>を指定してください）。ドロップキャップを持つテキストは、<code>overflow</code>にかかわらず折り返します。<code>'clip'</code>の場合も、高さ固定のボックスの端で行は切り取られます。パレットにリンクした<code>color</code>は、デザインのほかの部分と同じく部と節のパレットに従います。見出しのデザインでは、この文字はテキストの下にスペースを確保しません。ベースラインより下にある行ボックスの部分は本文を押し下げません。そのため、ベースラインより下に伸びる文字（多くの書体のQやJ）は、デザインの下のスペースに入り込むことがあります。その場合は見出しに<code>marginBottom</code>を指定してください。postext 1.4までは、既定のサイズでは文字がまたがる行ボックス全体と同じ高さになったため、文字の上端が1行目より上に出ていました。また、<code>'wrap'</code>以外の<code>overflow</code>では警告なしに文字が消え、節や部のパレットでも色は変わらず、横のテキストと同じ深さまで下がる文字が本文をグリッド1行分押し下げることがありました。それより前に保存された設定は、1.4のサイズを<code>fontSize</code>として書き出した形で保持します（<a href="#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。</td>
+      <td>ドロップキャップ。最初の文字を、最初の<code>lines</code>行（既定は2）の横に大きく組みます。書体、ウェイト、色は独自に指定でき、テキストとの間隔は<code>gap</code>です。この文字は、またがる最後の行のベースラインに立ちます。<code>fontSize</code>の既定値は、文字の上端が1行目の大文字の高さとそろうサイズで、テキストのサイズに<code>lines</code> − 1行分の行送りを足したものです。大文字の高さは文字サイズの0.72とみなします（大文字がこれよりかなり高い、または低い書体では、独自の<code>fontSize</code>を指定してください）。ドロップキャップを持つテキストは、<code>overflow</code>にかかわらず折り返します。<code>'clip'</code>の場合も、高さ固定のボックスの端で行は切り取られます。パレットにリンクした<code>color</code>は、デザインのほかの部分と同じく部と節のパレットに従います。見出しのデザインでは、この文字はテキストの下にスペースを確保しません。ベースラインより下にある行ボックスの部分は本文を押し下げません。そのため、ベースラインより下に伸びる文字（多くの書体のQやJ）は、デザインの下のスペースに入り込むことがあります。その場合は見出しに<code>marginBottom</code>を指定してください。postext 1.4までは、既定のサイズでは文字がまたがる行ボックス全体と同じ高さになったため、文字の上端が1行目より上に出ていました。また、<code>'wrap'</code>以外の<code>overflow</code>では警告なしに文字が消え、節や部のパレットでも色は変わらず、横のテキストと同じ深さまで下がる文字が本文をグリッド1行分押し下げることがありました。それより前に保存された設定は、1.4のサイズを<code>fontSize</code>として書き出した形で保持します（<a href="#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。本文中のドロップキャップは、代わりに段落スタイルと見出しスタイルで設定し（<a href="#ドロップキャップ">ドロップキャップ</a>を参照）、大文字の高さは書体から計測します。</td>
     </tr>
     <tr>
       <td><code>paragraphIndent</code></td>
@@ -1670,6 +1670,108 @@ bodyText: {
 
 リーダーの色と書体は段落のものです。リーダー専用の設定はまだありません。
 
+### ドロップキャップ
+
+本文の段落は、ドロップキャップで始めることができます。最初の文字を最初の数行の横に大きく組み、それらの行は文字の幅とアキの分だけ短くなって、ほかの行と同じく組まれます（Knuth-Plassで改行し、両端そろえとハイフネーションを行います）。段落スタイルは、そのスタイルの各`:::paragraphs`グループの最初の段落にドロップキャップを付けます（`each: true`ならすべての段落に付けるので、項目の並ぶカタログに使えます）。見出しのレベルや見出しスタイルは、見出しの後の最初の本文の段落に付けます（[レベルごとの上書き](#レベルごとの上書き)、[段落スタイル](#段落スタイル)、[見出しスタイル](#見出しスタイル)の`dropCap`フィールドを参照）。見出しの後の段落は、`indentAfterHeading`と同じく、コンテナーのフェンス、ディレクティブ、本文の外に置かれた囲み、フロートの図を飛ばして探します。囲み、リスト項目、引用、詩、注の中の段落には付きません。テキストでは、見出しの行や`:::paragraphs`のフェンスに`{dropcap}`、`{dropcap=false}`、`{dropcap=N}`と書くと、その章やグループについてドロップキャップを有効にし、解除し、またはその行数を指定できます（[文書形式 › ドロップキャップ](/ja/docs/document-format#ドロップキャップ)を参照）。postext 1.23以降。
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>頭文字がまたがる行数で、大文字の上端からベースラインまでを数えます。<code>1</code>にして<code>fontSize</code>を大きくすると、1行目のベースラインに立つ突き出した頭文字（レイズドキャップ）になります。</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>頭文字がテキストの中へ沈む行数です。頭文字は<code>sink</code>行目のベースラインに立ち、それらの行が短くなります。<code>lines</code>より少なくすると、頭文字は1行目より上に突き出します。</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>大きく組む書記素クラスターの数です。<em>É</em>、結合記号の付いた文字、基本多言語面の外の文字は1つと数えます。最初の語を越えることはありません。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontWeight</code>, <code>italic</code></td>
+      <td><code>string</code>, <code>number</code>, <code>boolean</code></td>
+      <td>段落のもの、<code>false</code></td>
+      <td>頭文字の書体です。文書のほかの書体と一緒に読み込まれ、埋め込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>下記を参照</td>
+      <td>頭文字のサイズです。未設定なら、<code>lines</code>行下がった位置に立つときに、大文字の上端が1行目の大文字の高さとそろうサイズになります。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>段落のもの</td>
+      <td>パレットにリンクした色は、部と節のパレットに従います。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>頭文字と短くした行とのあいだのアキで、<code>em</code>はテキストのサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>文字の前にある始め引用符、<code>¿</code>、<code>¡</code>、始め括弧の扱いです。頭文字の一部として大きく組むか、テキストのサイズで頭文字の前の行長の外にぶら下げるか、テキストのサイズで1行目の先頭、頭文字の後に組むかのいずれかです。</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>なし</td>
+      <td>頭文字の後の最初の<code>words</code>語を、スモールキャピタル（既定）または大文字（<code>uppercase: true</code>）で組みます。<code>words: 'line'</code>は1行目の語を対象にします。1行目のリードインは、1回目の組版で語を数え、2回目で組みます。スモールキャピタルではその行にもう1語入ることがあり、その語は書かれたとおりに組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td><code>sink</code>より行数の少ない段落の扱いです。次のブロックが頭文字にかからないようにブロックを<code>sink</code>行の高さに保つか、段落自身の行数に合わせて頭文字を組むか、ドロップキャップなしで段落を組むかのいずれかです。どの場合もコンテンツ警告<code>dropCap</code>が出ます。</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>段落スタイルのみ。最初の段落だけでなく、グループのすべての段落をドロップキャップで始めます。</td>
+    </tr>
+  </tbody>
+</table>
+
+文字は次のように組まれます。
+
+- **サイズ**：テキストと頭文字の2つの大文字の高さは、どちらも書体から計測します（`H`のインクの高さ。中国語や日本語のテキストでは頭文字そのもののインクの高さ）。インクの計量値を持たない書体では、大文字をサイズの0.72とみなします。既定のサイズはどの書体の組み合わせにも合うので、書体ごとの補正は要りません。デザインテキストの`dropCap`は固定の0.72のままです（[テキスト要素](#テキスト要素)を参照）。
+- **文字とその語**：頭文字は書記素クラスターを丸ごと取ります。最初の語の残りはスペースなしでその後に続きます。1文字の語（*A*、*Y*）は、1行目の先頭に語間スペースを保ちます。段落自身の1行目の字下げは取り除かれます。コピー、検索、ソースマップ、Sandboxのキャレットは、段落を書かれたとおりに読みます。ブロックのプレーンテキストは頭文字を含み、1行目の`plainStart`は頭文字の後から数え、`VDTBlock.dropCap`は1行目を含む断片に頭文字の範囲と配置を持ちます。
+- **突き出した頭文字**（`lines: 1`で`fontSize`を大きくしたもの、または`sink`を`lines`より小さくしたもの）は1行目より上に出ます。段落はその分の空きをグリッドの行単位で上に確保するので、上のテキストに重なりません。
+- **分割**：段落は`sink`行目より前では分割されません。代わりに全体が次の段やページへ移ります。ただし、その行数を収められない空の段に単独で置かれた場合は、そのまま分割して`dropCap`の警告を出します。本文とともに保たれる見出しは、それらの行を自分の下に保ちます。次の段へ続く部分には頭文字がなく、行は全幅になります。幅の異なる段のために再び分割された場合も、最初の数行は字下げを保ちます。段の高さそろえは、ほかの段落と同じくこの段落をゆるく、またはきつく組むことがありますが、短くした行のあいだにアキを加えることはありません。
+- **用字**：行は始端側で短くなります。ラテン文字のテキストでは左、アラビア文字とヘブライ文字では右です。次の文字と連結する文字（アラビア文字、シリア文字、ンコ文字）は切り離さず、段落は`dropCap`の警告を出します。横組みの中国語と日本語は1文字の頭文字（首字下沉）を取ります。縦組みのテキストには付きません（警告）。文字や数字で始まらない段落（参照、数式、注の印）にも付きません（警告）。
+- **出力**：Canvas、HTMLビューアー、固定レイアウトのEPUBは、頭文字を行の横に描きます。HTMLは頭文字を1行目のテキストの直前に、あいだに何も入れずに書くので、スクリーンリーダーは語をひと続きに読みます。タグ付きPDFでは、頭文字は段落の`P`の一部になり、語の残りとともに、その語を`/ActualText`に持つ`Span`になります。テキストを抽出すると*L ong before*ではなく*Long before*と読めます。リフロー型のEPUBではCSSの`initial-letter`（行数、沈む行数）で組み、リーディングシステムがこれに対応していない場合はフロートにします。
+
+設定は設定のほかの部分と一緒に検査されます（[設定の警告](#設定の警告)を参照）。ドロップキャップやそのリードインの不明なキーは`unknownConfigKey`として報告されます。どの語にも当たらない`punctuation`や`shortParagraph`、1以上の整数でない`lines`、`sink`、`characters`は`unknownConfigValue`として報告され、既定値が使われます。ドロップキャップは既定で無効なので、保存済みの文書は変わりません。
+
 ### `fontFamily`には1つのファミリー
 
 `fontFamily`は、ここでもほかのフォントファミリーの項目（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、チップスタイルやデザイン要素の`fontFamily`など）でも、**1つの**ファミリーを指定します。Canvas、HTML出力、PDFは同じ書体で組む必要があり、PDFはフォールバックの連鎖なしにファミリーごとに1つのフォントを埋め込むため、CSSのフォントスタックが代替として使えるものはありません。スタックを指定すると最初のファミリーで組まれ、[設定の警告](#設定の警告)として報告されます。
@@ -2406,6 +2508,12 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td><code>number</code></td>
       <td>未設定</td>
       <td>字取り。見出し<strong>自身の</strong>emでこの数より狭い1行の見出しを、ちょうどその幅になるよう均等に割り付けます。<code>3</code>なら序章を序　章と組みます。それより広いタイトルや複数行の見出しはそのままです。見出しのタイトルの後に<code>&#123;jidori=N&#125;</code>と書くとその見出しだけに指定でき、<code>&#123;jidori=0&#125;</code>でそのレベルの字取りを解除します。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>なし</td>
+      <td>このレベルの見出しの後の最初の本文の段落を始めるドロップキャップです（<a href="#ドロップキャップ">ドロップキャップ</a>を参照）。1つの設定で、すべての章に頭文字が付きます。見出しに<code>&#123;dropcap=false&#125;</code>と書くと解除し、<code>&#123;dropcap=2&#125;</code>と書くと行数を指定します。postext 1.23以降。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5330,6 +5438,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>bodyText.tabInterval</code></td>
       <td><code>tabStops</code>の最後のタブ位置より先の既定のタブ位置です。未設定なら本文のものを使います。postext 1.23から使えます。</td>
     </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>なし</td>
+      <td>このスタイルの各<code>:::paragraphs</code>グループの最初の段落を、<code>each: true</code>ならすべての段落を始めるドロップキャップです（<a href="#ドロップキャップ">ドロップキャップ</a>を参照）。グループのフェンスに<code>&#123;dropcap=false&#125;</code>と書くと解除し、<code>&#123;dropcap=2&#125;</code>と書くと行数を指定します。postext 1.23から使えます。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -6204,7 +6318,7 @@ const config: PostextConfig = {
       <td>レベルのフィールド</td>
       <td><code>headings.levels[]</code>と同じ</td>
       <td>そのレベルの値</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
+      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8353,6 +8467,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>lineNumberOverlap</code></td>
       <td><code>lineNumbers.position: 'side'</code>で、行番号がサイド段の囲み、キャプション、図に重なる。番号を付けた行を指し、<code>number</code>は印字される番号です。</td>
       <td>番号はそのまま描かれ、どちらも動きません。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><a href="#ドロップキャップ">ドロップキャップ</a>で始まる段落が、設定どおりにそれを組めない。<code>reason</code>は、<code>'shortParagraph'</code>（頭文字が沈む行数より段落の行が少ない。<code>handling</code>は<code>shortParagraph</code>が行った処理、<code>lines</code>は縮めた頭文字がまたがる行数）、<code>'split'</code>（短すぎる段に単独で置かれ、頭文字の最後の行より前で分割される）、<code>'joiningScript'</code>（最初の文字が次の文字と連結する）、<code>'verticalText'</code>、<code>'noLetter'</code>（参照、数式、注の印で始まる）のいずれかです。<code>text</code>はその1行目です。</td>
+      <td>警告が示すとおり、スペースが確保されるか、頭文字が縮むか、頭文字が省かれます。</td>
     </tr>
   </tbody>
 </table>

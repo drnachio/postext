@@ -722,7 +722,7 @@ The defaults in the table below are those of a text element you add yourself. Th
       <td><code>dropCap</code></td>
       <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
       <td>—</td>
-      <td>Drop cap: the first letter set large beside the first <code>lines</code> lines (default 2), in its own face, weight and colour, <code>gap</code> from the text. The letter stands on the baseline of the last line it spans, and <code>fontSize</code> defaults to the size that brings its top level with the capitals of the first line: the text size plus <code>lines</code> − 1 line spacings, capitals taken as 0.72 of a letter's size (a face whose capitals are much taller or shorter than that wants a <code>fontSize</code> of its own). A text with a drop cap wraps whatever its <code>overflow</code>; with <code>'clip'</code> its lines are still cut at the edge of a box of fixed height. A palette-linked <code>color</code> follows the part and section palettes like the rest of the design. In a heading design the letter reserves no room below the text: the part of its line box under its baseline does not push the body down. A letter that descends below its baseline (a Q or a J in many faces) can then reach into the space under the design: give the heading a <code>marginBottom</code> for it. Up to postext 1.4 the default size made the letter as tall as all the line boxes it spans, so its top stood above the first line; an <code>overflow</code> other than <code>'wrap'</code> dropped the letter without a warning; a section or part palette left its colour as it was; and a letter as deep as the text beside it could push the body a grid line lower. Configurations stored earlier keep the 1.4 size, written out as <code>fontSize</code> (see <a href="#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>).</td>
+      <td>Drop cap: the first letter set large beside the first <code>lines</code> lines (default 2), in its own face, weight and colour, <code>gap</code> from the text. The letter stands on the baseline of the last line it spans, and <code>fontSize</code> defaults to the size that brings its top level with the capitals of the first line: the text size plus <code>lines</code> − 1 line spacings, capitals taken as 0.72 of a letter's size (a face whose capitals are much taller or shorter than that wants a <code>fontSize</code> of its own). A text with a drop cap wraps whatever its <code>overflow</code>; with <code>'clip'</code> its lines are still cut at the edge of a box of fixed height. A palette-linked <code>color</code> follows the part and section palettes like the rest of the design. In a heading design the letter reserves no room below the text: the part of its line box under its baseline does not push the body down. A letter that descends below its baseline (a Q or a J in many faces) can then reach into the space under the design: give the heading a <code>marginBottom</code> for it. Up to postext 1.4 the default size made the letter as tall as all the line boxes it spans, so its top stood above the first line; an <code>overflow</code> other than <code>'wrap'</code> dropped the letter without a warning; a section or part palette left its colour as it was; and a letter as deep as the text beside it could push the body a grid line lower. Configurations stored earlier keep the 1.4 size, written out as <code>fontSize</code> (see <a href="#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>). A drop cap in the running text is set from the paragraph and heading styles instead (see <a href="#drop-caps">Drop caps</a>), its cap heights measured from the faces.</td>
     </tr>
     <tr>
       <td><code>paragraphIndent</code></td>
@@ -1670,6 +1670,108 @@ The stops are checked with the rest of the configuration (see [Configuration war
 
 The leader colour and face are the paragraph's; there is no setting of their own yet.
 
+### Drop caps
+
+A body paragraph can open with a drop cap: its first letter set large beside its first lines, which are shortened by the letter's width and a gap and set like any other lines (broken by Knuth–Plass, justified, hyphenated). A paragraph style gives one to the first paragraph of each `:::paragraphs` group in the style (every paragraph with `each: true`, for a catalogue of entries); a heading level or a heading style gives one to the first body paragraph after the heading (see the `dropCap` field of [Per-level overrides](#per-level-overrides), [Paragraph styles](#paragraph-styles) and [Heading styles](#heading-styles)). The paragraph after the heading is found past container fences, directives, boxes that left the flow and floated figures, as `indentAfterHeading` finds it; a paragraph inside a box, a list item, a quotation, a poem or a note never takes one. In the text, `{dropcap}`, `{dropcap=false}` and `{dropcap=N}` on a heading line or a `:::paragraphs` fence turn it on, off, or set its lines for that chapter or group (see [Document format › Drop caps](/en/docs/document-format#drop-caps)). Since postext 1.23.
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Lines the initial spans, from the top of its capitals to its baseline. <code>1</code> with a larger <code>fontSize</code> is a raised initial standing on the first baseline.</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>Lines the initial drops into the text: it stands on the baseline of line <code>sink</code>, and those lines are shortened. Fewer than <code>lines</code> raises it above the first line.</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Grapheme clusters set large: <em>É</em>, a letter with a combining mark or a character outside the Basic Multilingual Plane counts as one. No further than the first word.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontWeight</code>, <code>italic</code></td>
+      <td><code>string</code>, <code>number</code>, <code>boolean</code></td>
+      <td>the paragraph's; <code>false</code></td>
+      <td>Face of the initial. It is loaded and embedded with the document's other faces.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>see below</td>
+      <td>Size of the initial. Unset: the size that sets the top of its capitals level with the capitals of the first line while it stands <code>lines</code> lines down.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the paragraph's</td>
+      <td>A palette-linked colour follows part and section palettes.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>Space between the initial and the shortened lines, <code>em</code> being the text size.</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>An opening quote, <code>¿</code>, <code>¡</code> or bracket before the letter: set large as part of the initial, hung at text size outside the measure before it, or set at text size at the start of the first line, after the initial.</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>none</td>
+      <td>The first <code>words</code> words after the initial in small capitals (the default) or in capitals (<code>uppercase: true</code>); <code>words: 'line'</code> takes the words of the first line. A lead-in of the first line is counted on a first setting and set on a second: in small capitals the line may then hold a word more, set as written.</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td>A paragraph of fewer lines than <code>sink</code>: keep the block <code>sink</code> lines tall so the next block clears the initial, set the initial over the paragraph's own lines, or set the paragraph without one. Each case raises a <code>dropCap</code> content warning.</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paragraph styles only: every paragraph of the group opens with the drop cap, not the first only.</td>
+    </tr>
+  </tbody>
+</table>
+
+How the letter is set:
+
+- **Size.** Both cap heights, the text's and the initial's, are measured from their faces (the ink of an `H`; of the initial itself in Chinese or Japanese text), and a face that gives no ink metrics counts its capitals as 0.72 of its size. The default size suits any pair of faces, so a per-face correction is not needed. A design text's `dropCap` keeps its fixed 0.72 (see [Text elements](#text-elements)).
+- **The letter and its word.** The initial takes whole grapheme clusters. The rest of the first word goes on after it with no space; a one-letter word (*A*, *Y*) keeps its word space at the start of the first line. The paragraph's own first-line indent is dropped. Copying, search, the source map and the Sandbox's caret read the paragraph as written: the block's plain text includes the letter, the first line's `plainStart` counts past it, and `VDTBlock.dropCap` holds its range and geometry on the fragment with the first line.
+- **A raised initial** (`lines: 1` with a larger `fontSize`, or `sink` under `lines`) rises above the first line, and the paragraph keeps that rise clear above it, in whole grid lines, so it does not overprint the text above.
+- **Breaking.** The paragraph never breaks before line `sink`: it moves on whole to the next column or page instead, unless it is alone in an empty column that cannot hold those lines, where it breaks all the same and raises a `dropCap` warning. A heading kept with its text keeps those lines under it. The part that goes on in the next column carries no initial and full-width lines; broken again for a column of another width, the first lines keep their indent. Column balancing may set the paragraph loose or tight like any other, and never adds space between the shortened lines.
+- **Scripts.** The lines are shortened on the start side: the left in Latin text, the right in Arabic and Hebrew. A letter that joins the next one (Arabic, Syriac, N'Ko) is not set apart, and the paragraph raises a `dropCap` warning; horizontal Chinese and Japanese take a one-character initial (首字下沉). Vertical text takes none (warning). A paragraph that opens with no letter or digit (a reference, a formula, a note mark) takes none either (warning).
+- **Outputs.** The canvas, the HTML viewer and fixed EPUB paint the initial beside the lines; the HTML writes it right before the first line's text with nothing between, so a screen reader reads the word whole. In a tagged PDF the initial is part of the paragraph's `P`, and with the rest of its word a `Span` whose `/ActualText` is the word: text extraction reads *Long before*, never *L ong before*. A reflowable EPUB sets it as a CSS `initial-letter` (lines, sink), floated where the reading system does not support it.
+
+The settings are checked with the rest of the configuration (see [Configuration warnings](#configuration-warnings)): an unknown key in a drop cap or its lead-in is reported as `unknownConfigKey`, a `punctuation` or `shortParagraph` that is none of its words, or a `lines`, `sink` or `characters` that is no whole number from 1, as `unknownConfigValue`, and the default is used. Drop caps are off by default, so no stored document changes.
+
 ### One family per `fontFamily`
 
 `fontFamily` — here and in every other font-family field (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, a chip style's or a design element's `fontFamily`…) — names **one** family. The canvas, the HTML output and the PDF must set the same face, and the PDF embeds one font per family with no fallback chain, so there is nothing for a CSS font stack to fall back to. A stack is set in its first family and reported as a [configuration warning](#configuration-warnings):
@@ -2406,6 +2508,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>number</code></td>
       <td>unset</td>
       <td>Even spacing (字取り): a one-line heading narrower than this many of its <strong>own</strong> ems is spaced evenly to exactly that width, so <code>3</code> sets 序章 as 序　章. Wider titles and headings of several lines are left as they are. <code>&#123;jidori=N&#125;</code> after a heading's title sets one heading, and <code>&#123;jidori=0&#125;</code> turns its level's off. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>none</td>
+      <td>A drop cap opening the first body paragraph after a heading of this level (see <a href="#drop-caps">Drop caps</a>): one setting gives every chapter its initial. A heading turns it off with <code>&#123;dropcap=false&#125;</code> or sets its lines with <code>&#123;dropcap=2&#125;</code>. Since postext 1.23.</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5330,6 +5438,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>bodyText.tabInterval</code></td>
       <td>Default stops past the last of <code>tabStops</code>. Unset: the body's. Since postext 1.23.</td>
     </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>none</td>
+      <td>A drop cap opening the first paragraph of each <code>:::paragraphs</code> group in the style, or every paragraph with <code>each: true</code> (see <a href="#drop-caps">Drop caps</a>). <code>&#123;dropcap=false&#125;</code> on a group's fence turns it off, <code>&#123;dropcap=2&#125;</code> sets its lines. Since postext 1.23.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -6204,7 +6318,7 @@ const config: PostextConfig = {
       <td>level fields</td>
       <td>as in <code>headings.levels[]</code></td>
       <td>the level's values</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style. <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8354,6 +8468,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>lineNumberOverlap</code></td>
       <td>With <code>lineNumbers.position: 'side'</code>, a line number overlaps a side box, a side caption or a figure in the side column. Points at the numbered line; <code>number</code> is the number as printed.</td>
       <td>The number is painted anyway, and neither moves.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td>A paragraph a <a href="#drop-caps">drop cap</a> opens that cannot take it as configured. <code>reason</code>: <code>'shortParagraph'</code> (fewer lines than the initial sinks; <code>handling</code> is what <code>shortParagraph</code> did, <code>lines</code> the lines a shrunk initial spans), <code>'split'</code> (it breaks before the initial's last line, alone in a column too short), <code>'joiningScript'</code> (its first letter joins the next), <code>'verticalText'</code> or <code>'noLetter'</code> (it opens with a reference, a formula or a note mark). <code>text</code> is its first line.</td>
+      <td>The room is kept, the initial shrinks or is left out, as the warning says.</td>
     </tr>
   </tbody>
 </table>

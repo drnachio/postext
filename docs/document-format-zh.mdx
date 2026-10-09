@@ -138,6 +138,22 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
 # Raw data {style="appendix"}
 ```
 
+### 首字下沉
+
+当段落所在的标题级别或标题样式，或其`:::paragraphs`组的段落样式设了首字下沉时，段落以首字下沉开头（见[配置 › 首字下沉](/zh/docs/configuration#首字下沉)）：第一个字母放大，排在前几行旁边，这几行围绕它缩短。段落本身不需要任何标记，文字照常书写，这个字母在复制、搜索和源映射中仍属于它所在的词。`dropcap`属性为某一章或某一组切换首字下沉：
+
+```markdown
+# Lost {dropcap=false}
+
+# The mines {dropcap=2}
+
+:::paragraphs{style="entry" dropcap}
+The lamp of the first entry opens with an initial.
+:::
+```
+
+在标题行上，`dropcap=false`让该标题后的段落不带其级别或样式设定的首字下沉，`dropcap=N`把首字下沉设为`N`行，单独的`dropcap`在级别没有设定时也给这一段加上首字下沉（三行，用段落的字体）。在`:::paragraphs`围栏上，这个属性对组的第一段起同样的作用，样式设为`each: true`时对每一段都起作用。标题后的段落会越过围栏、指令、离开文字流的框和浮动图来查找；框、列表项、引文或诗中的段落从不带首字下沉。自postext 1.23起。
+
 ## 指令
 
 指令是单行控制标记，单独写在一行，形式为`:::name`或`:::name{attrs}`。它们不产生可见输出，而是驱动定位和编号流程。
@@ -259,7 +275,7 @@ Keep the lantern lit **every** night.
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>一段用命名段落样式（导语、题词、一组小字注释）而不是正文样式排版的段落。<code>align</code>、<code>indent</code>和<code>endIndent</code>设置对齐和缩进，有没有样式都可以：<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>把日期排在离行尾一个字的位置（地から1字上げ）。</td>
+      <td>一段用命名段落样式（导语、题词、一组小字注释）而不是正文样式排版的段落。<code>align</code>、<code>indent</code>和<code>endIndent</code>设置对齐和缩进，有没有样式都可以：<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>把日期排在离行尾一个字的位置（地から1字上げ）。<code>dropcap</code>切换其第一段的<a href="#首字下沉">首字下沉</a>。</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>

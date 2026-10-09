@@ -138,6 +138,22 @@ Two more change what a heading prints and how it counts. `hidden="true"` (or `"f
 # Raw data {style="appendix"}
 ```
 
+### Drop caps
+
+A paragraph opens with a drop cap when its heading level or style, or the paragraph style of its `:::paragraphs` group, sets one (see [Configuration › Drop caps](/en/docs/configuration#drop-caps)): the first letter is set large beside the first lines, which are shortened around it. There is no markup in the paragraph itself; the text is written as usual, and the letter stays part of its word for copying, search and the source map. A `dropcap` attribute switches it for one chapter or one group:
+
+```markdown
+# Lost {dropcap=false}
+
+# The mines {dropcap=2}
+
+:::paragraphs{style="entry" dropcap}
+The lamp of the first entry opens with an initial.
+:::
+```
+
+On a heading line, `dropcap=false` leaves the paragraph after that heading without the drop cap its level or style sets, `dropcap=N` sets it over `N` lines, and a bare `dropcap` gives that paragraph one (three lines, the paragraph's face) where the level sets none. On a `:::paragraphs` fence the attribute does the same for the group's first paragraph, or for every paragraph when the style says `each: true`. The paragraph after a heading is found past fences, directives, boxes that left the flow and floated figures; a paragraph inside a box, a list item, a quotation or a poem never takes a drop cap. Since postext 1.23.
+
 ## Directives
 
 Directives are single-line control tags written as `:::name` or `:::name{attrs}` on their own line. They produce no visible output — they drive the placement and numbering pipeline.
@@ -259,7 +275,7 @@ Four container names are recognized in the text flow (a fifth, `:::columns`, wor
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style. <code>align</code>, <code>indent</code> and <code>endIndent</code> set the alignment and indents with or without a style: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> sets a date one character up from the end of the line (地から1字上げ).</td>
+      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style. <code>align</code>, <code>indent</code> and <code>endIndent</code> set the alignment and indents with or without a style: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> sets a date one character up from the end of the line (地から1字上げ). <code>dropcap</code> switches a <a href="#drop-caps">drop cap</a> on its first paragraph.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>

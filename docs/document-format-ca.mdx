@@ -138,6 +138,22 @@ Uns altres dos canvien el que imprimeix un encapçalament i com compta. `hidden=
 # Dades en brut {style="apendice"}
 ```
 
+### Caplletres
+
+Un paràgraf comença amb una caplletra quan la hi dona el nivell o l'estil del seu encapçalament, o l'estil de paràgraf del seu grup `:::paragraphs` (vegeu [Configuració › Caplletres](/ca/docs/configuration#caplletres)): la primera lletra es compon gran al costat de les primeres línies, que s'escurcen al seu voltant. El paràgraf no porta cap marcatge; el text s'escriu com sempre, i la lletra continua formant part de la seva paraula per a la còpia, la cerca i el mapa d'origen. Un atribut `dropcap` la canvia per a un capítol o un grup:
+
+```markdown
+# Perduts {dropcap=false}
+
+# Les mines {dropcap=2}
+
+:::paragraphs{style="entrada" dropcap}
+El fanal de la primera entrada comença amb una inicial.
+:::
+```
+
+En una línia d'encapçalament, `dropcap=false` deixa el paràgraf que segueix l'encapçalament sense la caplletra que fixa el seu nivell o el seu estil, `dropcap=N` la compon sobre `N` línies, i un `dropcap` sol dona una caplletra a aquest paràgraf (de tres línies, amb la font del paràgraf) quan el nivell no en fixa cap. A la línia d'obertura d'un `:::paragraphs`, l'atribut fa el mateix per al primer paràgraf del grup, o per a tots els paràgrafs quan l'estil diu `each: true`. El paràgraf que segueix un encapçalament es busca més enllà de les línies d'obertura i tancament dels contenidors, les directives, les caixes que han sortit del flux i les figures flotants; un paràgraf dins d'una caixa, un element de llista, una cita o un poema no porta mai caplletra. Des de postext 1.23.
+
 ## Directives
 
 Les directives són etiquetes de control d'una sola línia escrites com a `:::nombre` o `:::nombre{atributos}` en una línia pròpia. No produeixen cap sortida visible — controlen el pipeline de col·locació i numeració.
@@ -259,7 +275,7 @@ Es reconeixen quatre noms de contenidor al flux del text (un cinquè, `:::column
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Una sèrie de paràgrafs composta amb un estil de paràgraf amb nom (una entradeta, un epígraf, unes notes en lletra petita) en lloc de l'estil del cos. <code>align</code>, <code>indent</code> i <code>endIndent</code> fixen l'alineació i els sagnats, amb estil o sense: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compon una data a un caràcter del final de la línia (地から1字上げ).</td>
+      <td>Una sèrie de paràgrafs composta amb un estil de paràgraf amb nom (una entradeta, un epígraf, unes notes en lletra petita) en lloc de l'estil del cos. <code>align</code>, <code>indent</code> i <code>endIndent</code> fixen l'alineació i els sagnats, amb estil o sense: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compon una data a un caràcter del final de la línia (地から1字上げ). <code>dropcap</code> activa o desactiva una <a href="#caplletres">caplletra</a> al seu primer paràgraf.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>

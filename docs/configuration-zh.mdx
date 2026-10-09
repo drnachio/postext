@@ -720,7 +720,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>dropCap</code></td>
       <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
       <td>—</td>
-      <td>首字下沉：第一个字母放大，排在前<code>lines</code>行（默认2行）旁边，使用自己的字体、字重和颜色，与文本相隔<code>gap</code>。这个字母立在它所跨最后一行的基线上，<code>fontSize</code>默认取让它的顶部与第一行大写字母顶部齐平的字号：文本字号加上<code>lines</code> − 1个行距，大写字母高度按字号的0.72计算（大写字母明显高于或低于这个比例的字体，应单独设置<code>fontSize</code>）。带首字下沉的文本无论<code>overflow</code>怎么设都会折行；设为<code>'clip'</code>时，它的行仍会在固定高度方框的边缘被裁掉。与调色板关联的<code>color</code>像设计的其他部分一样随篇和节的调色板变化。在标题设计中，这个字母不在文本下方预留空间：它的行框中位于基线以下的部分不会把正文往下推。基线以下还有笔画的字母（许多字体中的Q或J）因此可能伸进设计下方的空间：给标题设一个<code>marginBottom</code>来容纳它。postext 1.4及更早版本中，默认字号让这个字母与它所跨的所有行框一样高，所以它的顶部高出第一行；<code>overflow</code>不是<code>'wrap'</code>时，这个字母会被丢掉且不发出警告；节或篇的调色板不改变它的颜色；与旁边文本一样深的字母还可能把正文推低一条网格线。早先保存的配置保留1.4的字号，并以<code>fontSize</code>的形式写明（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。</td>
+      <td>首字下沉：第一个字母放大，排在前<code>lines</code>行（默认2行）旁边，使用自己的字体、字重和颜色，与文本相隔<code>gap</code>。这个字母立在它所跨最后一行的基线上，<code>fontSize</code>默认取让它的顶部与第一行大写字母顶部齐平的字号：文本字号加上<code>lines</code> − 1个行距，大写字母高度按字号的0.72计算（大写字母明显高于或低于这个比例的字体，应单独设置<code>fontSize</code>）。带首字下沉的文本无论<code>overflow</code>怎么设都会折行；设为<code>'clip'</code>时，它的行仍会在固定高度方框的边缘被裁掉。与调色板关联的<code>color</code>像设计的其他部分一样随篇和节的调色板变化。在标题设计中，这个字母不在文本下方预留空间：它的行框中位于基线以下的部分不会把正文往下推。基线以下还有笔画的字母（许多字体中的Q或J）因此可能伸进设计下方的空间：给标题设一个<code>marginBottom</code>来容纳它。postext 1.4及更早版本中，默认字号让这个字母与它所跨的所有行框一样高，所以它的顶部高出第一行；<code>overflow</code>不是<code>'wrap'</code>时，这个字母会被丢掉且不发出警告；节或篇的调色板不改变它的颜色；与旁边文本一样深的字母还可能把正文推低一条网格线。早先保存的配置保留1.4的字号，并以<code>fontSize</code>的形式写明（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4及更早版本写出的文件包</a>）。正文中的首字下沉改由段落样式和标题样式设置（见<a href="#首字下沉">首字下沉</a>），其大写字母高度从字体中测量。</td>
     </tr>
     <tr>
       <td><code>paragraphIndent</code></td>
@@ -1667,6 +1667,108 @@ bodyText: {
 
 前导符的颜色和字体取段落的，目前还没有单独的设置。
 
+### 首字下沉
+
+正文段落可以以首字下沉开头：第一个字母放大，排在段落的前几行旁边，这几行让出字母的宽度和一段间隙，其余照常排（用Knuth-Plass断行、两端对齐、断词）。段落样式给样式中每个`:::paragraphs`组的第一段加上首字下沉（设`each: true`时每一段都加，适合条目式的目录）；标题级别或标题样式给标题后的第一个正文段落加上首字下沉（见[按级别覆盖](#按级别覆盖)、[段落样式](#段落样式)和[标题样式](#标题样式)中的`dropCap`字段）。标题后的这一段与`indentAfterHeading`的找法相同，会越过容器围栏、指令、离开文字流的框和浮动图；框、列表项、引文、诗或注释中的段落从不带首字下沉。在文字中，写在标题行或`:::paragraphs`围栏上的`{dropcap}`、`{dropcap=false}`和`{dropcap=N}`为该章或该组开启、关闭首字下沉，或设定它的行数（见[文档格式 › 首字下沉](/zh/docs/document-format#首字下沉)）。自postext 1.23起。
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>首字跨越的行数，从它的大写字母顶端量到它的基线。<code>1</code>配上更大的<code>fontSize</code>，就是立在第一条基线上的升起首字。</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>首字沉入文字的行数：它立在第<code>sink</code>行的基线上，这几行都缩短。小于<code>lines</code>时，首字高出第一行。</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>放大的字素簇个数：<em>É</em>、带组合符号的字母或基本多文种平面以外的字符都算一个。不超出第一个词。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>、<code>fontWeight</code>、<code>italic</code></td>
+      <td><code>string</code>、<code>number</code>、<code>boolean</code></td>
+      <td>段落的；<code>false</code></td>
+      <td>首字的字体。它与文档的其他字体一起加载和嵌入。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>见说明</td>
+      <td>首字的字号。未设置：首字下沉<code>lines</code>行时，使其大写字母顶端与第一行大写字母顶端齐平的字号。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>段落的</td>
+      <td>与调色板关联的颜色随篇和节的调色板变化。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>首字与缩短的行之间的空白，<code>em</code>指文字的字号。</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>字母前的开引号、<code>¿</code>、<code>¡</code>或括号：作为首字的一部分放大；按文字字号悬挂在首字前面的版心之外；或按文字字号排在第一行开头、首字之后。</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>无</td>
+      <td>首字之后的前<code>words</code>个词排成小型大写字母（默认）或大写字母（<code>uppercase: true</code>）；<code>words: 'line'</code>取第一行的词。取第一行的引导词在第一遍排版时计数，第二遍时排出：排成小型大写字母后，这一行可能多容纳一个词，这个词按原样排。</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td>行数少于<code>sink</code>的段落：保持块有<code>sink</code>行高，使下一块避开首字；把首字缩小到段落自身的行数；或不带首字排这一段。每种情况都会引发内容警告<code>dropCap</code>。</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>仅用于段落样式：组中每一段都以首字下沉开头，而不只是第一段。</td>
+    </tr>
+  </tbody>
+</table>
+
+首字的排法：
+
+- **字号**：文字和首字的大写字母高度都从各自的字体中测量（取`H`的墨迹；在中文或日文文字中取首字本身的墨迹），不提供墨迹度量的字体按字号的0.72计算大写字母高度。默认字号适合任意一对字体，所以不需要逐个字体修正。设计文本的`dropCap`仍按固定的0.72计算（见[文本元素](#文本元素)）。
+- **首字与它所在的词**：首字取完整的字素簇。第一个词的其余部分紧接在它之后，不加空格；单字母词（*A*、*Y*）在第一行开头保留它的词间空格。段落自身的首行缩进取消。复制、搜索、源映射和沙盒的光标都按原文读这一段：块的纯文本包含这个字母，第一行的`plainStart`从它之后计数，`VDTBlock.dropCap`在含第一行的片段上记录它的范围和几何信息。
+- **升起首字**（`lines: 1`配上更大的`fontSize`，或`sink`小于`lines`）高出第一行，段落在上方为高出的部分留出整条网格线的空间，所以不会压到上方的文字。
+- **断开**：段落从不在第`sink`行之前断开，而是整段移到下一栏或下一页；只有当它单独位于一个放不下这几行的空栏中时，才照样断开，并引发`dropCap`警告。与正文保持在一起的标题会把这几行留在自己下面。在下一栏接排的部分不带首字，各行排满全宽；如果为另一宽度的栏再次断开，前几行保留缩进。各栏齐底可以像对待其他段落一样把这一段排松或排紧，但从不在缩短的行之间加空白。
+- **文字**：各行在起始一侧缩短：拉丁文字在左边，阿拉伯文和希伯来文在右边。与下一个字母相连的字母（阿拉伯文、叙利亚文、N'Ko）不单独排出，段落引发`dropCap`警告；横排的中文和日文取一个字的首字（首字下沉）。竖排文字不带首字下沉（给出警告）。不以字母或数字开头的段落（引用、公式、注释标记）也不带（给出警告）。
+- **输出**：Canvas、HTML查看器和固定版式EPUB把首字画在各行旁边；HTML把它写在第一行文字的紧前面，中间不隔任何东西，所以屏幕阅读器把这个词作为一个整体读出。在带标签的PDF中，首字属于段落的`P`，并与它所在词的其余部分组成一个`Span`，其`/ActualText`就是这个词：提取文字时读出*Long before*，而不是*L ong before*。流式EPUB把它排成CSS的`initial-letter`（行数、下沉），阅读系统不支持时改为浮动。
+
+这些设置与配置的其余部分一起检查（见[配置警告](#配置警告)）：首字下沉或其引导词中的未知键报告为`unknownConfigKey`；不属于其取值的`punctuation`或`shortParagraph`，以及不是从1起的整数的`lines`、`sink`或`characters`，报告为`unknownConfigValue`，并使用默认值。首字下沉默认关闭，所以已保存的文档都不会改变。
+
 ### 每个`fontFamily`只写一个字体族
 
 `fontFamily`，无论是这里还是其他任何字体族字段（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、行内标签样式或设计元素的`fontFamily`……），都只指定**一个**字体族。Canvas、HTML输出和PDF必须使用同一款字体，而PDF对每个字体族只嵌入一款字体，没有回退链，所以CSS字体栈没有可以回退的对象。写成字体栈时，按其中第一个字体族排版，并报告一条[配置警告](#配置警告)：
@@ -2403,6 +2505,12 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td><code>number</code></td>
       <td>未设置</td>
       <td>均排（字取り）：比标题<strong>自身</strong>字宽的这么多倍窄的单行标题，均匀拉开到恰好这个宽度，所以<code>3</code>把序章排作序　章。更宽的标题和多行标题保持原样。在标题文字后写<code>&#123;jidori=N&#125;</code>只设置这一个标题，<code>&#123;jidori=0&#125;</code>关闭其级别的均排。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>无</td>
+      <td>该级别标题之后第一个正文段落开头的首字下沉（见<a href="#首字下沉">首字下沉</a>）：设一次，每一章都有首字。标题用<code>&#123;dropcap=false&#125;</code>关闭它，或用<code>&#123;dropcap=2&#125;</code>设定它的行数。自postext 1.23起。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5327,6 +5435,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>bodyText.tabInterval</code></td>
       <td><code>tabStops</code>最后一个制表位之后的默认制表位。未设置：取正文的。自postext 1.23起。</td>
     </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>无</td>
+      <td>样式中每个<code>:::paragraphs</code>组第一段开头的首字下沉，设<code>each: true</code>时每一段开头都有（见<a href="#首字下沉">首字下沉</a>）。组围栏上的<code>&#123;dropcap=false&#125;</code>关闭它，<code>&#123;dropcap=2&#125;</code>设定它的行数。自postext 1.23起。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -6199,7 +6313,7 @@ const config: PostextConfig = {
       <td>级别字段</td>
       <td>同<code>headings.levels[]</code></td>
       <td>该级别的值</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>hidden</code>：设置了哪一项，这种样式的标题就用它替换标题级别的值。<code>breakBefore</code>逐个字段合并到级别的设置上：只设<code>parity</code>的样式保留级别的<code>enabled</code>，只设<code>enabled: true</code>的样式保留级别的奇偶（postext 1.4及以前，缺少的字段取自不断页的默认值）。</td>
+      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：设置了哪一项，这种样式的标题就用它替换标题级别的值（<code>dropCap: false</code>去掉级别的首字下沉）。<code>breakBefore</code>逐个字段合并到级别的设置上：只设<code>parity</code>的样式保留级别的<code>enabled</code>，只设<code>enabled: true</code>的样式保留级别的奇偶（postext 1.4及以前，缺少的字段取自不断页的默认值）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8349,6 +8463,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>lineNumberOverlap</code></td>
       <td><code>lineNumbers.position: 'side'</code>时，某个行号与侧栏中的框、题注或图重叠。指向被编号的行；<code>number</code>是印出的行号。</td>
       <td>行号照样画出，两者都不移动。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td>以<a href="#首字下沉">首字下沉</a>开头的段落无法按配置排出首字。<code>reason</code>：<code>'shortParagraph'</code>（段落行数少于首字下沉的行数；<code>handling</code>是<code>shortParagraph</code>所做的处理，<code>lines</code>是缩小后的首字所跨的行数）、<code>'split'</code>（段落单独位于过短的栏中，在首字的最后一行之前断开）、<code>'joiningScript'</code>（第一个字母与下一个字母相连）、<code>'verticalText'</code>或<code>'noLetter'</code>（以引用、公式或注释标记开头）。<code>text</code>是它的第一行。</td>
+      <td>按警告所说，保留空间、缩小首字或不排首字。</td>
     </tr>
   </tbody>
 </table>

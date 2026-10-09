@@ -138,6 +138,22 @@ Otros dos cambian lo que imprime un encabezado y cómo cuenta. `hidden="true"` (
 # Datos en bruto {style="apendice"}
 ```
 
+### Letras capitulares
+
+Un párrafo se abre con una capitular cuando la fija el nivel o el estilo de su encabezado, o el estilo de párrafo de su grupo `:::paragraphs` (ver [Configuración › Letras capitulares](/es/docs/configuration#letras-capitulares)): la primera letra se compone en grande junto a las primeras líneas, que se acortan a su alrededor. El párrafo no lleva marcado propio; el texto se escribe como siempre, y la letra sigue formando parte de su palabra al copiar, al buscar y en el mapa de fuente. Un atributo `dropcap` la cambia para un capítulo o para un grupo:
+
+```markdown
+# Perdidos {dropcap=false}
+
+# Las minas {dropcap=2}
+
+:::paragraphs{style="entrada" dropcap}
+La lámpara de la primera entrada se abre con una capitular.
+:::
+```
+
+En la línea de un encabezado, `dropcap=false` deja sin la capitular que fija su nivel o su estilo al párrafo que sigue a ese encabezado, `dropcap=N` la compone sobre `N` líneas, y un `dropcap` solo le da una a ese párrafo (de tres líneas, en la fuente del párrafo) cuando el nivel no fija ninguna. En la valla de un `:::paragraphs`, el atributo hace lo mismo con el primer párrafo del grupo, o con todos cuando el estilo dice `each: true`. El párrafo que sigue a un encabezado se busca pasando por encima de vallas, directivas, cajas que salieron del flujo y figuras flotantes; un párrafo dentro de un recuadro, de un elemento de lista, de una cita o de un poema nunca lleva capitular. Desde postext 1.23.
+
 ## Directivas
 
 Las directivas son etiquetas de control de una sola línea escritas como `:::nombre` o `:::nombre{atributos}` en su propia línea. No producen salida visible — controlan el pipeline de colocación y numeración.
@@ -259,7 +275,7 @@ Se reconocen cuatro nombres de contenedor en el flujo del texto (un quinto, `:::
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo. <code>align</code>, <code>indent</code> y <code>endIndent</code> fijan la alineación y las sangrías, con estilo o sin él: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compone una fecha a un carácter del final de la línea (地から1字上げ).</td>
+      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo. <code>align</code>, <code>indent</code> y <code>endIndent</code> fijan la alineación y las sangrías, con estilo o sin él: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compone una fecha a un carácter del final de la línea (地から1字上げ). <code>dropcap</code> activa o desactiva una <a href="#letras-capitulares">capitular</a> en su primer párrafo.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>

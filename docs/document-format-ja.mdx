@@ -138,6 +138,22 @@ Postextが認識する本文のブロックは7種類で、ほかにこのペー
 # Raw data {style="appendix"}
 ```
 
+### ドロップキャップ
+
+見出しのレベルやスタイル、または`:::paragraphs`グループの段落スタイルがドロップキャップを設定していると、段落はドロップキャップで始まります（[設定 › ドロップキャップ](/ja/docs/configuration#ドロップキャップ)を参照）。最初の文字を最初の数行の横に大きく組み、それらの行は文字を避けて短くなります。段落そのものに書く記法はなく、テキストはふだんどおりに書きます。この文字はコピー、検索、ソースマップでは語の一部のままです。`dropcap`属性で、1つの章または1つのグループについて切り替えられます。
+
+```markdown
+# Lost {dropcap=false}
+
+# The mines {dropcap=2}
+
+:::paragraphs{style="entry" dropcap}
+The lamp of the first entry opens with an initial.
+:::
+```
+
+見出しの行では、`dropcap=false`はその見出しの後の段落から、レベルやスタイルが設定したドロップキャップを外します。`dropcap=N`はドロップキャップを`N`行にわたって組み、値のない`dropcap`は、レベルが何も設定していない場合にその段落にドロップキャップを付けます（3行、段落の書体）。`:::paragraphs`のフェンスでは、この属性はグループの最初の段落に、スタイルが`each: true`ならすべての段落に、同じことをします。見出しの後の段落は、フェンス、ディレクティブ、本文の外に置かれた囲み、フロートの図を飛ばして探します。囲み、リスト項目、引用、詩の中の段落にはドロップキャップは付きません。postext 1.23以降。
+
 ## ディレクティブ
 
 ディレクティブは、単独の行に`:::name`または`:::name{attrs}`と書く1行の制御タグです。目に見える出力はなく、配置と番号付けの処理を動かします。
@@ -259,7 +275,7 @@ Keep the lantern lit **every** night.
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>本文のスタイルではなく、名前付きの段落スタイルで組むひと続きの段落です（リード文、エピグラフ、小さな文字の注記など）。<code>align</code>、<code>indent</code>、<code>endIndent</code>は、スタイルの有無にかかわらず、そろえと字下げを設定します。<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>は、日付を行末から1字上げて組みます（地から1字上げ）。</td>
+      <td>本文のスタイルではなく、名前付きの段落スタイルで組むひと続きの段落です（リード文、エピグラフ、小さな文字の注記など）。<code>align</code>、<code>indent</code>、<code>endIndent</code>は、スタイルの有無にかかわらず、そろえと字下げを設定します。<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>は、日付を行末から1字上げて組みます（地から1字上げ）。<code>dropcap</code>は、最初の段落の<a href="#ドロップキャップ">ドロップキャップ</a>を切り替えます。</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>

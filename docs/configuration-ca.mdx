@@ -719,7 +719,7 @@ Els valors per defecte de la taula següent són els d'un element de text que af
       <td><code>dropCap</code></td>
       <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
       <td>—</td>
-      <td>Caplletra: la primera lletra, gran, al costat de les primeres <code>lines</code> línies (2 per defecte), amb la seva pròpia font, gruix i color, i a <code>gap</code> del text. La lletra s'assenta a la línia de base de l'última línia que abasta, i <code>fontSize</code> val per defecte la mida que enrasa la seva part alta amb les majúscules de la primera línia: el cos del text més <code>lines</code> − 1 interlineats, prenent l'alçada de les majúscules com a 0,72 del cos (una font amb majúscules molt més altes o més baixes demana el seu propi <code>fontSize</code>). Un text amb caplletra s'ajusta a línies noves sigui quin sigui el seu <code>overflow</code>; amb <code>'clip'</code> les seves línies es continuen tallant a la vora d'una caixa d'alçada fixa. Un <code>color</code> enllaçat a la paleta segueix les paletes de la part i de la secció, com la resta del disseny. En el disseny d'un encapçalament, la lletra no reserva espai per sota del text: la part de la seva caixa de línia que queda sota la seva línia de base no empeny el cos cap avall. Una lletra que baixa de la seva línia de base (la Q o la J de moltes fonts) pot llavors entrar en l'espai que hi ha sota el disseny: dona a l'encapçalament un <code>marginBottom</code> per a ella. Fins a postext 1.4, la mida per defecte feia la lletra tan alta com totes les caixes de línia que abasta, de manera que sobresortia per damunt de la primera línia; qualsevol <code>overflow</code> diferent de <code>'wrap'</code> treia la lletra sense avisar; la paleta d'una secció o d'una part no en canviava el color; i una lletra tan profunda com el text del seu costat podia baixar el cos una línia de la retícula. Les configuracions desades abans conserven la mida de la 1.4, escrita com a <code>fontSize</code> (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>).</td>
+      <td>Caplletra: la primera lletra, gran, al costat de les primeres <code>lines</code> línies (2 per defecte), amb la seva pròpia font, gruix i color, i a <code>gap</code> del text. La lletra s'assenta a la línia de base de l'última línia que abasta, i <code>fontSize</code> val per defecte la mida que enrasa la seva part alta amb les majúscules de la primera línia: el cos del text més <code>lines</code> − 1 interlineats, prenent l'alçada de les majúscules com a 0,72 del cos (una font amb majúscules molt més altes o més baixes demana el seu propi <code>fontSize</code>). Un text amb caplletra s'ajusta a línies noves sigui quin sigui el seu <code>overflow</code>; amb <code>'clip'</code> les seves línies es continuen tallant a la vora d'una caixa d'alçada fixa. Un <code>color</code> enllaçat a la paleta segueix les paletes de la part i de la secció, com la resta del disseny. En el disseny d'un encapçalament, la lletra no reserva espai per sota del text: la part de la seva caixa de línia que queda sota la seva línia de base no empeny el cos cap avall. Una lletra que baixa de la seva línia de base (la Q o la J de moltes fonts) pot llavors entrar en l'espai que hi ha sota el disseny: dona a l'encapçalament un <code>marginBottom</code> per a ella. Fins a postext 1.4, la mida per defecte feia la lletra tan alta com totes les caixes de línia que abasta, de manera que sobresortia per damunt de la primera línia; qualsevol <code>overflow</code> diferent de <code>'wrap'</code> treia la lletra sense avisar; la paleta d'una secció o d'una part no en canviava el color; i una lletra tan profunda com el text del seu costat podia baixar el cos una línia de la retícula. Les configuracions desades abans conserven la mida de la 1.4, escrita com a <code>fontSize</code> (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>). La caplletra del text corrent es fixa en canvi des dels estils de paràgraf i d'encapçalament (vegeu <a href="#caplletres">Caplletres</a>), amb les alçades de les majúscules mesurades a les fonts.</td>
     </tr>
     <tr>
       <td><code>paragraphIndent</code></td>
@@ -1665,6 +1665,108 @@ Les tabulacions es comproven amb la resta de la configuració (vegeu [Avisos de 
 
 El color i la lletra del farciment són els del paràgraf; encara no tenen cap ajust propi.
 
+### Caplletres
+
+Un paràgraf de cos pot començar amb una caplletra: la primera lletra, gran, al costat de les primeres línies, que s'escurcen en l'amplada de la lletra més un espai i es componen com qualsevol altra línia (tallades amb Knuth–Plass, justificades, partides per síl·labes). Un estil de paràgraf en dona una al primer paràgraf de cada grup `:::paragraphs` de l'estil (a tots els paràgrafs amb `each: true`, per a un catàleg d'entrades); un nivell d'encapçalament o un estil d'encapçalament en dona una al primer paràgraf de cos després de l'encapçalament (vegeu el camp `dropCap` de [Configuració per nivell](#configuració-per-nivell), [Estils de paràgraf](#estils-de-paràgraf) i [Estils d'encapçalament](#estils-dencapçalament)). El paràgraf que segueix l'encapçalament es busca més enllà de les línies d'obertura i tancament dels contenidors, les directives, les caixes que han sortit del flux i les figures flotants, igual que el troba `indentAfterHeading`; un paràgraf dins d'una caixa, un element de llista, una cita, un poema o una nota no en porta mai. Al text, `{dropcap}`, `{dropcap=false}` i `{dropcap=N}` en una línia d'encapçalament o en la línia d'obertura d'un `:::paragraphs` l'activen, la desactiven o en fixen les línies per a aquell capítol o grup (vegeu [Format del document › Caplletres](/ca/docs/document-format#caplletres)). Des de postext 1.23.
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Línies que abasta la inicial, des de la part alta de les seves majúscules fins a la seva línia de base. <code>1</code> amb un <code>fontSize</code> més gran és una inicial alçada, assentada a la primera línia de base.</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>Línies que la inicial baixa dins del text: s'assenta a la línia de base de la línia <code>sink</code>, i aquestes línies s'escurcen. Un valor inferior a <code>lines</code> l'alça per damunt de la primera línia.</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Grups de grafemes que es componen grans: <em>É</em>, una lletra amb un signe combinant o un caràcter de fora del pla multilingüe bàsic compten com un. Mai més enllà de la primera paraula.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontWeight</code>, <code>italic</code></td>
+      <td><code>string</code>, <code>number</code>, <code>boolean</code></td>
+      <td>els del paràgraf; <code>false</code></td>
+      <td>Font de la inicial. Es carrega i s'incrusta amb les altres fonts del document.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>vegeu a sota</td>
+      <td>Mida de la inicial. Sense fixar: la mida que enrasa la part alta de les seves majúscules amb les majúscules de la primera línia mentre s'assenta <code>lines</code> línies més avall.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del paràgraf</td>
+      <td>Un color enllaçat a la paleta segueix les paletes de la part i de la secció.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>Espai entre la inicial i les línies escurçades; l'<code>em</code> és el cos del text.</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>Unes cometes d'obertura, un <code>¿</code>, un <code>¡</code> o un parèntesi davant de la lletra: compost gran com a part de la inicial, penjat al cos del text fora de la mesura, davant seu, o compost al cos del text a l'inici de la primera línia, després de la inicial.</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>cap</td>
+      <td>Les primeres <code>words</code> paraules després de la inicial, en versaletes (per defecte) o en majúscules (<code>uppercase: true</code>); <code>words: 'line'</code> pren les paraules de la primera línia. Les paraules de la primera línia es compten en una primera composició i es componen en una segona: en versaletes, la línia pot encabir llavors una paraula més, que es compon tal com està escrita.</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td>Un paràgraf de menys línies que <code>sink</code>: manté el bloc amb una alçada de <code>sink</code> línies perquè el bloc següent quedi per sota de la inicial, compon la inicial sobre les línies pròpies del paràgraf, o compon el paràgraf sense caplletra. Cada cas genera un avís de contingut <code>dropCap</code>.</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Només en estils de paràgraf: tots els paràgrafs del grup comencen amb la caplletra, no només el primer.</td>
+    </tr>
+  </tbody>
+</table>
+
+Com es compon la lletra:
+
+- **Mida.** Les dues alçades de majúscula, la del text i la de la inicial, es mesuren a les seves fonts (la tinta d'una `H`; la de la inicial mateixa en text xinès o japonès), i una font que no dona mètriques de tinta compta les seves majúscules com a 0,72 del seu cos. La mida per defecte serveix per a qualsevol parell de fonts, així que no cal cap correcció per font. El `dropCap` d'un text de disseny conserva el seu 0,72 fix (vegeu [Elements de text](#elements-de-text)).
+- **La lletra i la seva paraula.** La inicial pren grups de grafemes sencers. La resta de la primera paraula continua darrere seu sense espai; una paraula d'una sola lletra (*A*, *I*) conserva el seu espai entre paraules a l'inici de la primera línia. Es descarta el sagnat de primera línia propi del paràgraf. La còpia, la cerca, el mapa d'origen i el cursor del Sandbox llegeixen el paràgraf tal com està escrit: el text pla del bloc inclou la lletra, el `plainStart` de la primera línia compta a partir d'ella, i `VDTBlock.dropCap` en desa el rang i la geometria al fragment que porta la primera línia.
+- **Una inicial alçada** (`lines: 1` amb un `fontSize` més gran, o un `sink` inferior a `lines`) s'alça per damunt de la primera línia, i el paràgraf manté aquesta alçada lliure al damunt, en línies senceres de la retícula, perquè no se sobreimprimeixi al text anterior.
+- **Talls.** El paràgraf no es talla mai abans de la línia `sink`: passa sencer a la columna o la pàgina següent, tret que estigui sol en una columna buida que no pot encabir aquestes línies; llavors es talla igualment i genera un avís `dropCap`. Un encapçalament lligat al seu text manté aquestes línies a sota. La part que continua a la columna següent no porta inicial i té les línies a amplada completa; si es torna a tallar per a una columna d'una altra amplada, les primeres línies conserven el seu sagnat. L'equilibratge de columnes pot compondre el paràgraf fluix o estret com qualsevol altre, i no afegeix mai espai entre les línies escurçades.
+- **Escriptures.** Les línies s'escurcen pel costat d'inici: l'esquerra en text llatí, la dreta en àrab i hebreu. Una lletra que s'enllaça amb la següent (àrab, siríac, n'ko) no se separa, i el paràgraf genera un avís `dropCap`; el xinès i el japonès horitzontals prenen una inicial d'un caràcter (首字下沉). El text vertical no en porta (avís). Un paràgraf que no comença amb cap lletra ni xifra (una referència, una fórmula, una marca de nota) tampoc no en porta (avís).
+- **Sortides.** El canvas, el visor HTML i l'EPUB de maquetació fixa pinten la inicial al costat de les línies; l'HTML l'escriu just abans del text de la primera línia, sense res entremig, de manera que un lector de pantalla llegeix la paraula sencera. En un PDF etiquetat la inicial forma part del `P` del paràgraf, i amb la resta de la seva paraula, d'un `Span` l'`/ActualText` del qual és la paraula: l'extracció de text llegeix *Molt abans*, mai *M olt abans*. Un EPUB de maquetació fluida la compon com un `initial-letter` de CSS (línies, enfonsament), flotant on el sistema de lectura no l'admet.
+
+Els ajustos es comproven amb la resta de la configuració (vegeu [Avisos de configuració](#avisos-de-configuració)): una clau desconeguda en una caplletra o en les seves paraules inicials es notifica com a `unknownConfigKey`; un `punctuation` o un `shortParagraph` que no és cap dels seus valors, o un `lines`, un `sink` o un `characters` que no és un nombre enter a partir d'1, com a `unknownConfigValue`, i es fa servir el valor per defecte. Les caplletres estan desactivades per defecte, de manera que cap document desat no canvia.
+
 ### Una sola família per `fontFamily`
 
 `fontFamily` —aquí i en qualsevol altre camp de família tipogràfica (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, el `fontFamily` d'un estil de xip o d'un element de disseny…)— anomena **una** família. El canvas, la sortida HTML i el PDF han de compondre amb la mateixa font, i el PDF incrusta una font per família, sense cadena de reserva, de manera que una llista de fonts CSS no té a què recórrer. Una llista es compon en la seva primera família i es notifica com a [avís de configuració](#avisos-de-configuració):
@@ -2399,6 +2501,12 @@ Les configuracions per nivell admeten les mateixes propietats que els valors gen
       <td><code>number</code></td>
       <td>sense fixar</td>
       <td>Espaiat uniforme (字取り): un encapçalament d'una línia més estret que aquest nombre dels seus quadratins <strong>propis</strong> s'espaia per igual fins a mesurar exactament aquesta amplada, així que <code>3</code> compon 序章 com a 序　章. Els títols més amples i els encapçalaments de diverses línies es queden com són. <code>&#123;jidori=N&#125;</code> després del títol d'un encapçalament el fixa per a aquest encapçalament, i <code>&#123;jidori=0&#125;</code> desactiva el del seu nivell. Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>cap</td>
+      <td>Una caplletra que obre el primer paràgraf de cos després d'un encapçalament d'aquest nivell (vegeu <a href="#caplletres">Caplletres</a>): un sol ajust dona la seva inicial a tots els capítols. Un encapçalament la desactiva amb <code>&#123;dropcap=false&#125;</code> o en fixa les línies amb <code>&#123;dropcap=2&#125;</code>. Des de postext 1.23.</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5316,6 +5424,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>bodyText.tabInterval</code></td>
       <td>Tabulacions predeterminades passada l'última de <code>tabStops</code>. Sense fixar: el del text de cos. Des de postext 1.23.</td>
     </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>cap</td>
+      <td>Una caplletra que obre el primer paràgraf de cada grup <code>:::paragraphs</code> de l'estil, o tots els paràgrafs amb <code>each: true</code> (vegeu <a href="#caplletres">Caplletres</a>). <code>&#123;dropcap=false&#125;</code> a la línia d'obertura d'un grup la desactiva, <code>&#123;dropcap=2&#125;</code> en fixa les línies. Des de postext 1.23.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -6187,7 +6301,7 @@ const config: PostextConfig = {
       <td>camps de nivell</td>
       <td>com a <code>headings.levels[]</code></td>
       <td>els valors del nivell</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>hidden</code>: cadascun que es fixi substitueix el valor del nivell per als encapçalaments d'aquest estil. <code>breakBefore</code> es combina camp a camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la seva paritat (fins a postext 1.4, el camp que faltava sortia en canvi del valor sense salt).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cadascun que es fixi substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp a camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la seva paritat (fins a postext 1.4, el camp que faltava sortia en canvi del valor sense salt).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8335,6 +8449,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td><code>lineNumberOverlap</code></td>
       <td>Amb <code>lineNumbers.position: 'side'</code>, un número de línia se superposa a un requadre, un peu o una figura de la columna lateral. Assenyala la línia numerada; <code>number</code> és el número tal com s'imprimeix.</td>
       <td>El número es pinta igualment, i cap dels dos no es mou.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td>Un paràgraf que comença amb una <a href="#caplletres">caplletra</a> i que no la pot portar tal com està configurada. <code>reason</code>: <code>'shortParagraph'</code> (té menys línies de les que baixa la inicial; <code>handling</code> és el que ha fet <code>shortParagraph</code>, <code>lines</code> les línies que abasta una inicial reduïda), <code>'split'</code> (es talla abans de l'última línia de la inicial, sol en una columna massa curta), <code>'joiningScript'</code> (la seva primera lletra s'enllaça amb la següent), <code>'verticalText'</code> o <code>'noLetter'</code> (comença amb una referència, una fórmula o una marca de nota). <code>text</code> és la seva primera línia.</td>
+      <td>Es reserva l'espai, la inicial es redueix o es deixa fora, segons digui l'avís.</td>
     </tr>
   </tbody>
 </table>

@@ -722,7 +722,7 @@ Os padrões da tabela abaixo são os de um elemento de texto que você mesmo adi
       <td><code>dropCap</code></td>
       <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
       <td>—</td>
-      <td>Capitular: a primeira letra composta em tamanho grande ao lado das primeiras <code>lines</code> linhas (padrão 2), com família, peso e cor próprios, a <code>gap</code> de distância do texto. A letra assenta na linha de base da última linha que ocupa, e <code>fontSize</code> tem como padrão o tamanho que alinha o topo dela com as maiúsculas da primeira linha: o tamanho do texto mais <code>lines</code> − 1 entrelinhas, considerando as maiúsculas como 0,72 do tamanho da letra (uma família cujas maiúsculas sejam bem mais altas ou mais baixas que isso pede um <code>fontSize</code> próprio). Um texto com capitular quebra linhas qualquer que seja o seu <code>overflow</code>; com <code>'clip'</code>, suas linhas ainda são cortadas na borda de uma caixa de altura fixa. Uma <code>color</code> vinculada à paleta acompanha as paletas de parte e de seção, como o resto do design. No design de um título, a letra não reserva espaço abaixo do texto: a parte da caixa da sua linha que fica abaixo da linha de base não empurra o corpo para baixo. Uma letra que desce abaixo da linha de base (um Q ou um J em muitas famílias) pode então invadir o espaço sob o design: dê ao título uma <code>marginBottom</code> para isso. Até o postext 1.4, o tamanho padrão deixava a letra tão alta quanto todas as caixas de linha que ela ocupa, de modo que o topo dela ficava acima da primeira linha; um <code>overflow</code> diferente de <code>'wrap'</code> descartava a letra sem aviso; uma paleta de seção ou de parte deixava a cor dela como estava; e uma letra tão profunda quanto o texto ao lado podia empurrar o corpo uma linha da grade para baixo. Configurações salvas antes mantêm o tamanho do 1.4, escrito como <code>fontSize</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>).</td>
+      <td>Capitular: a primeira letra composta em tamanho grande ao lado das primeiras <code>lines</code> linhas (padrão 2), com família, peso e cor próprios, a <code>gap</code> de distância do texto. A letra assenta na linha de base da última linha que ocupa, e <code>fontSize</code> tem como padrão o tamanho que alinha o topo dela com as maiúsculas da primeira linha: o tamanho do texto mais <code>lines</code> − 1 entrelinhas, considerando as maiúsculas como 0,72 do tamanho da letra (uma família cujas maiúsculas sejam bem mais altas ou mais baixas que isso pede um <code>fontSize</code> próprio). Um texto com capitular quebra linhas qualquer que seja o seu <code>overflow</code>; com <code>'clip'</code>, suas linhas ainda são cortadas na borda de uma caixa de altura fixa. Uma <code>color</code> vinculada à paleta acompanha as paletas de parte e de seção, como o resto do design. No design de um título, a letra não reserva espaço abaixo do texto: a parte da caixa da sua linha que fica abaixo da linha de base não empurra o corpo para baixo. Uma letra que desce abaixo da linha de base (um Q ou um J em muitas famílias) pode então invadir o espaço sob o design: dê ao título uma <code>marginBottom</code> para isso. Até o postext 1.4, o tamanho padrão deixava a letra tão alta quanto todas as caixas de linha que ela ocupa, de modo que o topo dela ficava acima da primeira linha; um <code>overflow</code> diferente de <code>'wrap'</code> descartava a letra sem aviso; uma paleta de seção ou de parte deixava a cor dela como estava; e uma letra tão profunda quanto o texto ao lado podia empurrar o corpo uma linha da grade para baixo. Configurações salvas antes mantêm o tamanho do 1.4, escrito como <code>fontSize</code> (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes escritos pelo postext 1.4 ou anterior</a>). Uma capitular no texto corrido é definida pelos estilos de parágrafo e de título (veja <a href="#capitulares">Capitulares</a>), com as alturas das maiúsculas medidas nas fontes.</td>
     </tr>
     <tr>
       <td><code>paragraphIndent</code></td>
@@ -1670,6 +1670,108 @@ As paradas são verificadas com o resto da configuração (veja [Avisos de confi
 
 A cor e a fonte do preenchimento são as do parágrafo; ainda não há uma configuração própria para elas.
 
+### Capitulares
+
+Um parágrafo do corpo pode abrir com uma capitular: a primeira letra composta em tamanho grande ao lado das primeiras linhas, que são encurtadas pela largura da letra e por um espaço e compostas como quaisquer outras linhas (quebradas pelo Knuth-Plass, justificadas, hifenizadas). Um estilo de parágrafo a dá ao primeiro parágrafo de cada grupo `:::paragraphs` no estilo (a todos os parágrafos com `each: true`, para um catálogo de verbetes); um nível de título ou um estilo de título a dá ao primeiro parágrafo do corpo depois do título (veja o campo `dropCap` de [Sobrescritas por nível](#sobrescritas-por-nível), [Estilos de parágrafo](#estilos-de-parágrafo) e [Estilos de título](#estilos-de-título)). O parágrafo depois do título é procurado passando por aberturas e fechos de contêiner, diretivas, boxes que saíram do fluxo e figuras flutuantes, como faz `indentAfterHeading`; um parágrafo dentro de um boxe, de um item de lista, de uma citação, de um poema ou de uma nota nunca leva capitular. No texto, `{dropcap}`, `{dropcap=false}` e `{dropcap=N}` na linha de um título ou na abertura de um `:::paragraphs` a ligam, a desligam ou definem as suas linhas para aquele capítulo ou grupo (veja [Formato do documento › Capitulares](/pt/docs/document-format#capitulares)). Desde o postext 1.23.
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Linhas que a inicial ocupa, do topo das suas maiúsculas até a sua linha de base. <code>1</code> com um <code>fontSize</code> maior é uma inicial elevada, apoiada na primeira linha de base.</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>Linhas que a inicial desce no texto: ela se apoia na linha de base da linha <code>sink</code>, e essas linhas são encurtadas. Um valor menor que <code>lines</code> a eleva acima da primeira linha.</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Agrupamentos de grafemas compostos em tamanho grande: <em>É</em>, uma letra com um diacrítico combinado ou um caractere fora do Plano Multilíngue Básico contam como um. Nunca além da primeira palavra.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontWeight</code>, <code>italic</code></td>
+      <td><code>string</code>, <code>number</code>, <code>boolean</code></td>
+      <td>os do parágrafo; <code>false</code></td>
+      <td>Fonte da inicial. É carregada e incorporada junto com as outras fontes do documento.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>veja abaixo</td>
+      <td>Tamanho da inicial. Sem valor: o tamanho que deixa o topo das suas maiúsculas no nível das maiúsculas da primeira linha enquanto ela se apoia <code>lines</code> linhas abaixo.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a do parágrafo</td>
+      <td>Uma cor vinculada à paleta acompanha as paletas de parte e de seção.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>Espaço entre a inicial e as linhas encurtadas; <code>em</code> é o corpo do texto.</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>Aspas de abertura, <code>¿</code>, <code>¡</code> ou um parêntese antes da letra: em tamanho grande como parte da inicial, pendurado no corpo do texto fora da medida, antes dela, ou no corpo do texto no início da primeira linha, depois da inicial.</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>nenhuma</td>
+      <td>As primeiras <code>words</code> palavras depois da inicial em versaletes (o padrão) ou em maiúsculas (<code>uppercase: true</code>); <code>words: 'line'</code> toma as palavras da primeira linha. Uma abertura da primeira linha é contada numa primeira composição e aplicada numa segunda: em versaletes, a linha pode então comportar uma palavra a mais, composta como foi escrita.</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td>Um parágrafo com menos linhas que <code>sink</code>: manter o bloco com <code>sink</code> linhas de altura para que o bloco seguinte passe livre da inicial, compor a inicial sobre as linhas do próprio parágrafo ou compor o parágrafo sem ela. Cada caso emite um aviso de conteúdo <code>dropCap</code>.</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Só nos estilos de parágrafo: todos os parágrafos do grupo abrem com a capitular, não só o primeiro.</td>
+    </tr>
+  </tbody>
+</table>
+
+Como a letra é composta:
+
+- **Tamanho.** As duas alturas das maiúsculas, a do texto e a da inicial, são medidas nas suas fontes (a tinta de um `H`; da própria inicial em texto chinês ou japonês), e uma fonte que não dá métricas de tinta conta as maiúsculas como 0,72 do seu tamanho. O tamanho padrão serve para qualquer par de fontes, então não é preciso uma correção por fonte. O `dropCap` de um texto de design mantém o seu 0,72 fixo (veja [Elementos de texto](#elementos-de-texto)).
+- **A letra e a sua palavra.** A inicial toma agrupamentos de grafemas inteiros. O resto da primeira palavra continua depois dela sem espaço; uma palavra de uma letra só (*A*, *E*) mantém o seu espaço entre palavras no início da primeira linha. O recuo de primeira linha do próprio parágrafo é descartado. A cópia, a busca, o mapa de origem e o cursor do Sandbox leem o parágrafo como foi escrito: o texto simples do bloco inclui a letra, o `plainStart` da primeira linha conta a partir de depois dela, e `VDTBlock.dropCap` guarda o seu intervalo e a sua geometria no fragmento que tem a primeira linha.
+- **Uma inicial elevada** (`lines: 1` com um `fontSize` maior, ou `sink` abaixo de `lines`) sobe acima da primeira linha, e o parágrafo mantém essa elevação livre acima dele, em linhas inteiras da grade, para que ela não se sobreponha ao texto de cima.
+- **Quebra.** O parágrafo nunca se divide antes da linha `sink`: em vez disso, passa inteiro para a coluna ou a página seguinte, a menos que esteja sozinho numa coluna vazia que não comporta essas linhas, e então se divide mesmo assim e emite um aviso `dropCap`. Um título mantido com o seu texto mantém essas linhas abaixo dele. A parte que continua na coluna seguinte não leva inicial e tem linhas de largura inteira; quebrado de novo para uma coluna de outra largura, as primeiras linhas mantêm o seu recuo. O balanceamento de colunas pode afrouxar ou apertar o parágrafo como qualquer outro, e nunca acrescenta espaço entre as linhas encurtadas.
+- **Escritas.** As linhas são encurtadas do lado inicial: a esquerda no texto latino, a direita no árabe e no hebraico. Uma letra que se liga à seguinte (árabe, siríaco, N'Ko) não é separada, e o parágrafo emite um aviso `dropCap`; o chinês e o japonês horizontais levam uma inicial de um caractere (首字下沉). O texto vertical não leva nenhuma (aviso). Um parágrafo que não abre com uma letra ou um algarismo (uma referência, uma fórmula, uma chamada de nota) também não leva (aviso).
+- **Saídas.** O canvas, o visualizador HTML e o EPUB de layout fixo pintam a inicial ao lado das linhas; o HTML a escreve logo antes do texto da primeira linha, sem nada entre as duas, para que um leitor de tela leia a palavra inteira. Num PDF etiquetado a inicial faz parte do `P` do parágrafo e, com o resto da sua palavra, de um `Span` cujo `/ActualText` é a palavra: a extração de texto lê *Muito antes*, nunca *M uito antes*. Um EPUB refluível a compõe como um `initial-letter` de CSS (linhas, descida), flutuante onde o sistema de leitura não oferece suporte a ele.
+
+As configurações são verificadas com o resto da configuração (veja [Avisos de configuração](#avisos-de-configuração)): uma chave desconhecida numa capitular ou na sua abertura é avisada como `unknownConfigKey`; um `punctuation` ou `shortParagraph` que não é nenhuma das suas palavras, ou um `lines`, `sink` ou `characters` que não é um número inteiro a partir de 1, como `unknownConfigValue`, e o padrão é usado. As capitulares vêm desligadas por padrão, então nenhum documento salvo muda.
+
 ### Uma família por `fontFamily`
 
 `fontFamily` (aqui e em todos os outros campos de família tipográfica: `headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, o `fontFamily` de um estilo de chip ou de um elemento de design…) nomeia **uma** família. O canvas, a saída HTML e o PDF precisam compor com a mesma fonte, e o PDF incorpora uma fonte por família, sem cadeia de alternativas, então não há para onde uma pilha de fontes CSS recorrer. Uma pilha é composta na primeira família e reportada como [aviso de configuração](#avisos-de-configuração):
@@ -2407,6 +2509,12 @@ As sobrescritas por nível aceitam as mesmas propriedades que os padrões gerais
       <td><code>number</code></td>
       <td>não definido</td>
       <td>Espaçamento uniforme (字取り): um título de uma linha mais estreito que esse número de emes do <strong>próprio</strong> corpo é espaçado por igual até exatamente essa largura, então <code>3</code> compõe 序章 como 序　章. Títulos mais largos e títulos de várias linhas ficam como estão. <code>&#123;jidori=N&#125;</code> depois do texto de um título define um título só, e <code>&#123;jidori=0&#125;</code> desliga o do seu nível. Desde o postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>nenhuma</td>
+      <td>Uma capitular que abre o primeiro parágrafo do corpo depois de um título deste nível (veja <a href="#capitulares">Capitulares</a>): uma só configuração dá a cada capítulo a sua inicial. Um título a desliga com <code>&#123;dropcap=false&#125;</code> ou define as suas linhas com <code>&#123;dropcap=2&#125;</code>. Desde o postext 1.23.</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5332,6 +5440,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>bodyText.tabInterval</code></td>
       <td>Paradas padrão depois da última de <code>tabStops</code>. Sem valor: o do corpo. Desde postext 1.23.</td>
     </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>nenhuma</td>
+      <td>Uma capitular que abre o primeiro parágrafo de cada grupo <code>:::paragraphs</code> no estilo, ou todos os parágrafos com <code>each: true</code> (veja <a href="#capitulares">Capitulares</a>). <code>&#123;dropcap=false&#125;</code> na abertura de um grupo a desliga, e <code>&#123;dropcap=2&#125;</code> define as suas linhas. Desde o postext 1.23.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -6206,7 +6320,7 @@ const config: PostextConfig = {
       <td>campos do nível</td>
       <td>como em <code>headings.levels[]</code></td>
       <td>os valores do nível</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>hidden</code>: cada um que for definido substitui o valor do nível do título para os títulos deste estilo. <code>breakBefore</code> é mesclado campo a campo sobre o do nível: um estilo que só define <code>parity</code> mantém o <code>enabled</code> do nível, e um que só define <code>enabled: true</code> mantém a paridade do nível (até o postext 1.4, o campo ausente vinha do padrão sem quebra).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada um que for definido substitui o valor do nível do título para os títulos deste estilo (<code>dropCap: false</code> tira a capitular do nível). <code>breakBefore</code> é mesclado campo a campo sobre o do nível: um estilo que só define <code>parity</code> mantém o <code>enabled</code> do nível, e um que só define <code>enabled: true</code> mantém a paridade do nível (até o postext 1.4, o campo ausente vinha do padrão sem quebra).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8356,6 +8470,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>lineNumberOverlap</code></td>
       <td>Com <code>lineNumbers.position: 'side'</code>, um número de linha se sobrepõe a um boxe, uma legenda ou uma figura da coluna lateral. Aponta para a linha numerada; <code>number</code> é o número como é impresso.</td>
       <td>O número é pintado mesmo assim, e nenhum dos dois se move.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td>Um parágrafo aberto por uma <a href="#capitulares">capitular</a> que não pode levá-la como está configurada. <code>reason</code>: <code>'shortParagraph'</code> (menos linhas do que a inicial desce; <code>handling</code> é o que <code>shortParagraph</code> fez, <code>lines</code> as linhas que uma inicial reduzida ocupa), <code>'split'</code> (ele se divide antes da última linha da inicial, sozinho numa coluna curta demais), <code>'joiningScript'</code> (a sua primeira letra se liga à seguinte), <code>'verticalText'</code> ou <code>'noLetter'</code> (abre com uma referência, uma fórmula ou uma chamada de nota). <code>text</code> é a sua primeira linha.</td>
+      <td>O espaço é mantido, a inicial é reduzida ou deixada de fora, como diz o aviso.</td>
     </tr>
   </tbody>
 </table>
