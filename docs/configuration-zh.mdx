@@ -2267,6 +2267,8 @@ headings: {
 4. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
 5. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在<strong>`bodyText.maxWordSpacing`以下</strong>时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
 
+在字符网格上（`cjk.grid`，见[中文排版 › 字符网格](/zh/docs/chinese-layout#字符网格)），每个字占一个一em宽的格子，每一行都落在网格的行距上，这个行距同时也是基线网格。和竖排一样，网格上默认不做齐底：在网格上逐行排的页面，就像GB/T 9704按每页22行、每行28字计数那样，短栏就保持短栏。配置中设了`enabled: true`时，使用的是保持网格的手段：标题、列表结尾、行间公式和图都按整数个网格行加空，其下的文字整行下移；对于没有空行可让的标准，`gridLines: 'off'`把这些手段排除在外。中文或日文段落只有在任意两个字之间的间距都不超过`maxTracking`时才多排一行，也不对其中的字符另加字距：少一个字的行要把一个em分摊到各个字间，远超默认的0.01 em，所以在由整格组成的网格上，放松段落的手段通常找不到可用的段落。结束一栏的框和有安全区的图片本来就不受网格约束，在这里与在别处一样起作用。
+
 只有当页面自然延续到下一页时，才会对该页最后一栏做齐底；一章的末页本来就可以短一截。这样的页面，以及由`trailing`截平的收尾区段，还会让各栏的栏首保持平齐：栏首为图或表时，不会在其下方加行（浮动体后手段）；在这样的图下方开栏的标题或框，无论`stretchAfterFloats`如何设置，都留在栏首。这样就不会为了让栏底对齐而让某一栏比旁边一栏起得更低。
 
 <table>
@@ -2283,7 +2285,7 @@ headings: {
       <td><code>enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>是否让各栏底部平齐。</td>
+      <td>是否让各栏底部平齐。在竖排（<code>layout.writingMode: 'vertical-rl'</code>）和字符网格（<code>cjk.grid.enabled</code>，postext 1.25 起）上默认关闭；设为<code>true</code>时在那里也会开启。</td>
     </tr>
     <tr>
       <td><code>maxLinesPerHeading</code></td>
@@ -2357,12 +2359,20 @@ headings: {
       <td><code>'first'</code></td>
       <td>结束短栏的框何时占用其底部下方的空余（手段1，记录为<code>trailingCallout</code>）。<code>'first'</code>：先于其他所有手段，与postext 1.4及以前相同。框占用整段空余，即使有好几行，其上方的标题一行也分不到。<code>'last'</code>：在标题、列表结尾、行间公式和浮动体手段之后执行，它们先占用整行；框随上方的文字一起下移，然后只占用它们剩下的部分，通常不足一行，这样框底仍对齐最后一个网格位置，框也仍靠近它所注释的文字。<code>'off'</code>：从不执行；框保留其底部下方的空余，但其他手段在框上方加空时，仍可以把它整行下移，框下剩余的不足一行的空间保持不变。在末页上，框是唯一能让其底部与相邻栏对齐的手段，<code>'off'</code>让它留在文字流放置的位置。其他任何值都按<code>'first'</code>处理。区段中唯一一栏文字以框结尾时（单栏页面提前结束、下一个块另起下一页），该框不会移动：旁边没有可对齐的栏（postext 1.19 起）。</td>
     </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>用于字符网格：是否允许按整数个网格行加空的手段（标题上方、列表结束处、行间公式或框下方、栏首图下方）运行。这些手段让每个字都留在自己的格子里；<code>'off'</code>适合按页计算行数的标准，让该栏短一截结束。不在网格上时不起作用。其他任何值都按<code>'allow'</code>处理。postext 1.25 起。</td>
+    </tr>
   </tbody>
 </table>
 
 #### 哪个手段起了作用
 
 排版会把它使用的每个手段记录在所作用的块上，即`buildDocument`返回的VDT中的`block.balancing`。校样、测试或报告可以据此说明某一栏为何平齐，以及哪些栏没有任何手段能补齐。齐底没有处理的块不带`balancing`，用`enabled: false`构建的文档则完全没有。
+
+在字符网格上，文档会说明某一栏为何可能短一截：页面在网格上、配置又没有开启齐底，因而齐底关闭时，`doc.gridBalancing`为`{ off: true }`；齐底运行但不带整行手段时，它为`{ gridLines: 'off' }`。仍然偏短的栏带有`column.gridRefused`，即网格不允许它使用的手段（段落只有把字匀开到格子之外才能多排一行时为`'looseParagraph'`，在`gridLines: 'off'`下则是各个整行手段）。不在网格上时两者都不存在。
 
 ```ts
 interface VDTBalancing {
@@ -10172,7 +10182,7 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 
 #### postext 1.4及更早版本写出的文件包
 
-`createBundle`和沙盒写出的每份清单都带有`configVersion: 10`，表示其`config`是按哪一版配置规则写的。没有这个字段的清单出自postext 1.4或更早版本，当时有十八处设定与现在不同：
+`createBundle`和沙盒写出的每份清单都带有`configVersion: 11`，表示其`config`是按哪一版配置规则写的。没有这个字段的清单出自postext 1.4或更早版本，当时有十八处设定与现在不同：
 
 - **标题分页**（规则3）：1.4及以前，`headings`对象若没有给H1设置分页，H1就不分页（见[按级别覆盖](#按级别覆盖)）。
 - **公式字号**（规则4）：1.4及以前，公式排出的大小是`fontSizeScale`所规定的1.131倍（见[公式字号](#数学公式)）。
@@ -10193,7 +10203,7 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 - **代码围栏**（规则9）：1.22及以前，```` ``` ````或`~~~`围栏及其中的行按Markdown读取：各行合并成段落，以`#`开头的行变成标题，围栏照样印出（见[代码清单](#代码清单)下的`codeStyle.blocks`）。
 - **诗行转行**（规则10）：在1.23中，逐行排的诗里比版心宽的诗行一律以自然词距转行，哪怕只超出一点（见[诗歌](#诗歌)下的`bodyText.verse.tighten`）。
 
-`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 10`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。标为`9`的清单（由postext 1.23写出）只得到规则10的固定值，更早的清单也都会得到：诗行转行（`pinLegacyVerseTightening`）写成生效的`bodyText`上的`bodyText.verse.tighten: false`，条件是读取的章节中有逐行排的诗（`:::verse`开始标记写明`layout=lines`，或未写排法且各行没有半句分隔符，而配置并未把这类诗排成双半句），且配置尚未设置该项。
+`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 11`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。标为`9`的清单（由postext 1.23写出）只得到规则10的固定值，更早的清单也都会得到：诗行转行（`pinLegacyVerseTightening`）写成生效的`bodyText`上的`bodyText.verse.tighten: false`，条件是读取的章节中有逐行排的诗（`:::verse`开始标记写明`layout=lines`，或未写排法且各行没有半句分隔符，而配置并未把这类诗排成双半句），且配置尚未设置该项。标为`10`的清单（由postext 1.24写出）只得到规则11的固定值，更早的清单也都会得到：字符网格的齐底（`pinLegacyGridBalancing`）写成生效的`headings`上的`headings.balancing.enabled: true`，条件是合并后的配置在横排中设置了`cjk.grid.enabled`，且本身没有设置`enabled`，因为1.24默认会对这样的页面做齐底。
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';

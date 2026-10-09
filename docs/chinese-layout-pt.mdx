@@ -169,6 +169,8 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 Cada coluna passa a ter `charsPerLine` ems do corpo do texto, e a mancha, `linesPerPage` linhas da entrelinha do texto. As `page.margins` configuradas funcionam como mínimos: a mancha é centralizada no espaço que elas deixam, e cada margem cresce metade da diferença. Com duas colunas, a medianiz é arredondada para um número inteiro de ems. Um número maior do que cabe é reduzido e informado (`cjkGridClamped`); um não definido recebe tantos quantos couberem. `show` desenha a grade (稿纸) na tela, um quadrado por posição de caractere; o PDF a omite, a menos que `renderToPdf` receba `characterGrid: true`.
 
+Uma página sobre a grade é preenchida linha a linha e não é equilibrada: uma coluna que termina curta, por exemplo porque um título passa com o seu texto para a página seguinte, fica curta, do mesmo modo que um documento GB/T 9704 conta as suas 22 linhas. `headings.balancing.enabled: true` ativa o equilíbrio com recursos que respeitam a grade: as linhas somadas acima dos títulos e abaixo das listas, das fórmulas em destaque e das figuras são linhas inteiras da grade, que `headings.balancing.gridLines: 'off'` deixa de fora, e um parágrafo ganha uma linha só quando os seus caracteres não se afastam mais que `headings.balancing.maxTracking`, o que, com o padrão, uma linha a que falta um caractere inteiro nunca consegue. Em ambos os casos cada caractere fica na sua célula. Veja [Configuração › Equilíbrio de colunas](/pt/docs/configuration#equilíbrio-de-colunas).
+
 Os livros habituais, em 五号 (10,5 pt) com 6 pt de espaço entre linhas, ou seja, uma entrelinha de 16,5 pt:
 
 - 大32开, 140 × 203 mm, 28 × 28 caracteres: uma medida de 103,7 mm e uma mancha de 163 mm.

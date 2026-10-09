@@ -169,6 +169,8 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 Cada columna pasa a medir `charsPerLine` cuadratines del cuerpo del texto, y la caja, `linesPerPage` líneas del interlineado. Los márgenes de `page.margins` funcionan como mínimos: la caja se centra en el sitio que dejan, y cada margen crece la mitad de la diferencia. A dos columnas, el medianil se redondea a un número entero de cuadratines. Un número mayor de lo que cabe se reduce y se avisa (`cjkGridClamped`); uno que no se fija toma todos los que caben. `show` dibuja la retícula (稿纸) en pantalla, un cuadrado por posición de carácter; el PDF no la incluye salvo que `renderToPdf` reciba `characterGrid: true`.
 
+Una página sobre la retícula se llena línea a línea y no se equilibra: una columna que termina corta, por ejemplo porque un título pasa con su texto a la página siguiente, se queda corta, igual que un documento GB/T 9704 cuenta sus 22 líneas. `headings.balancing.enabled: true` activa el equilibrado con palancas que respetan la retícula: las líneas que se añaden sobre los títulos y bajo las listas, las fórmulas en bloque y las figuras son líneas enteras de la retícula, que `headings.balancing.gridLines: 'off'` deja fuera, y un párrafo gana una línea solo cuando sus caracteres no se separan más de `headings.balancing.maxTracking`, cosa que con el valor por defecto nunca logra una línea a la que le falta un carácter entero. En los dos casos cada carácter se queda en su casilla. Véase [Configuración › Equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas).
+
 Los libros más habituales, en 五号 (10,5 pt) con 6 pt de interlínea, un interlineado de 16,5 pt:
 
 - 大32开, 140 × 203 mm, 28 × 28 caracteres: una medida de 103,7 mm y una caja de 163 mm.

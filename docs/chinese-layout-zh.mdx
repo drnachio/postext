@@ -169,6 +169,8 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 每栏宽为`charsPerLine`个正文字号的字宽，版心高为`linesPerPage`个正文行高。配置的`page.margins`作为最小值：版心在其留出的空间中居中，每边页边距各增加差值的一半。双栏时，栏间距取整为整数个字宽。超出可容纳数量的值会被减小并报告（`cjkGridClamped`）；未设置的值取能容纳的最大数量。`show`在屏幕上画出网格（稿纸），每个字位一个方格；PDF不画网格，除非给`renderToPdf`传入`characterGrid: true`。
 
+网格上的页面逐行排满，不做齐底：一栏如果短一截结束（比如某个标题要和正文一起转到下一页），就保持短栏，就像GB/T 9704的公文按22行计数那样。`headings.balancing.enabled: true`开启齐底，所用的手段都保持网格：在标题上方以及列表、行间公式和图下方增加的都是整数个网格行，`headings.balancing.gridLines: 'off'`可以把这些排除在外；段落只有在字间距不超过`headings.balancing.maxTracking`时才多排一行，而在默认值下，少一整个字的行从来做不到这一点。无论哪种情况，每个字都留在自己的格子里。见[配置 › 各栏齐底](/zh/docs/configuration#各栏齐底)。
+
 常见的书，五号（10.5 pt）字，行间距6 pt，行高16.5 pt：
 
 - 大32开，140 × 203 mm，28 × 28字：行长103.7 mm，版心高163 mm。

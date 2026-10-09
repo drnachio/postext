@@ -169,6 +169,8 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 Each column becomes `charsPerLine` ems of the body size and the type area `linesPerPage` lines of the body line height. The configured `page.margins` act as minimums: the type area is centred in the room they leave, each margin growing by half the difference. With two columns the gutter is rounded to a whole number of ems. A number larger than fits is reduced and reported (`cjkGridClamped`); an unset one takes as many as fit. `show` draws the grid (稿纸) on screen, one square per character position; the PDF leaves it out unless `renderToPdf` is given `characterGrid: true`.
 
+A page on the grid is filled line by line and is not balanced: a column that ends short, a heading kept with its text on the next page say, stays short, the way a GB/T 9704 document counts its 22 lines. `headings.balancing.enabled: true` turns balancing on with levers that keep the grid: lines added above headings and under lists, displays and figures are whole lines of the grid, which `headings.balancing.gridLines: 'off'` keeps out, and a paragraph runs a line long only when its characters spread no more than `headings.balancing.maxTracking` apart, which a line a whole character short never does at the default. Every character stays in its cell either way. See [Configuration › Column balancing](/en/docs/configuration#column-balancing).
+
 The usual books, at 五号 (10.5 pt) with a 6 pt line gap, a 16.5 pt line height:
 
 - 大32开, 140 × 203 mm, 28 × 28 characters: a 103.7 mm measure and a 163 mm type area.
