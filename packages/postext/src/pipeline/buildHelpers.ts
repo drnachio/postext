@@ -426,7 +426,8 @@ export function stampSourceRanges(
       for (const seg of line.segments) {
         // Brackets the layout added (a book title's 《》, a warichu note's)
         // are no plain text.
-        if (seg.refContinues || seg.inserted) continue;
+        // A leader (#622) is no character either.
+        if (seg.refContinues || seg.inserted || seg.leader) continue;
         if (seg.refResourceId !== undefined) units.push(null);
         else {
           // Tatweels kashida justification inserted are no plain text.

@@ -96,6 +96,22 @@ export interface MathMeta {
 
 /** A Markdown link inside an inline span: the characters `[start, end)` of
  *  the span's `text`, pointing at `href` (see {@link InlineSpan.links}). */
+/** A tab of the text (see {@link InlineSpan.tab}). */
+export interface InlineTab {
+  /** A tab character of the source (not `:tab`). */
+  literal?: true;
+  /** Tab characters in a row (with nothing but spaces between them): one
+   *  character of the plain text, which goes on this many stops. Read as
+   *  a word space, they are one, as collapsed whitespace always was. */
+  count?: number;
+  /** The one-off stop of `:tab{at=…}`: the tab goes there, whatever the
+   *  paragraph's own stops. */
+  stop?: import('../types').TabStop;
+  /** {@link stop} in px, resolved by the pipeline against the paragraph's
+   *  size (see `resolveTabStop`). */
+  px?: import('../measure/tabs').TabStopPx;
+}
+
 export interface InlineLink {
   start: number;
   end: number;
@@ -140,6 +156,14 @@ export interface InlineSpan {
    *  (a right-aligned label). Neither breaks nor stretches. Set by the
    *  pipeline. */
   labelTab?: 'lead' | 'gap';
+  /** A tab (#622): `:tab` or `:tab{at=… align=… leader=…}`, or a tab
+   *  character inside a line of a paragraph, a list item or a quotation
+   *  (`literal`). The span's `text` is `'\t'`, one character of the plain
+   *  text, and the spaces around the tab are taken into it. A literal tab
+   *  stays a tab only in a paragraph whose style sets tab stops; elsewhere
+   *  the pipeline sets it back as the word space it always was
+   *  (`pipeline/tabs.ts`). */
+  tab?: InlineTab;
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */

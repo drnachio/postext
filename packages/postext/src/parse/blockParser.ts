@@ -9,7 +9,7 @@ import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKi
 import { attachEquationAnchors } from './equationLabels';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, replaceBodyBreaks, BODY_BREAK_MARK, bodyBreakSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, replaceBodyBreaks, BODY_BREAK_MARK, bodyBreakSpans, titleBreakIndices, trimSpans, extractInlineTabs, injectTabSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
@@ -276,11 +276,13 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
     const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
     const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
     if (report) issues.push(...mathExtract.issues);
+    // Tabs (#622): `:tab` and tab characters, outside code and maths.
+    const tabExtract = extractInlineTabs(mathExtract.cleaned);
     const formatted = hardBreaks
-      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(mathExtract.cleaned, BODY_BREAK_MARK)))
-      : parseInlineFormatting(mathExtract.cleaned);
+      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(tabExtract.cleaned, BODY_BREAK_MARK)))
+      : parseInlineFormatting(tabExtract.cleaned);
     const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-      injectMathSpans(formatted, mathExtract.maths), swExtract.swatches), citeExtract.citations),
+      injectMathSpans(injectTabSpans(formatted, tabExtract.tabs), mathExtract.maths), swExtract.swatches), citeExtract.citations),
       refExtract.refs,
     ), fnExtract.markers), chipExtract.chips);
     return joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));

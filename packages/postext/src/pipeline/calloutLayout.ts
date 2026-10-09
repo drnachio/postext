@@ -175,6 +175,9 @@ export function deriveCalloutResolvedConfig(
       hyphenation: { ...resolved.bodyText.hyphenation, enabled: body.hyphenation },
       paragraphSpacing: body.paragraphSpacing,
       firstLineIndent: body.firstLineIndent,
+      // The box's own tab stops replace the body's (#622).
+      ...(body.tabStops ? { tabStops: body.tabStops } : {}),
+      ...(body.tabInterval ? { tabInterval: body.tabInterval } : {}),
     },
     unorderedLists: {
       ...ul,

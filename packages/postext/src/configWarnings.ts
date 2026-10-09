@@ -24,6 +24,7 @@ import type {
   ComicCastMember,
   LineNumbersConfig,
   ResolvedLineNumbersConfig,
+  TabStop,
 } from './types';
 import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
@@ -38,6 +39,7 @@ import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/b
 import { parseFootnoteNumberFormat } from './defaults/footnotes';
 import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics';
 import { resolvePrintConfig } from './defaults/print';
+import { isTabStopAlign, parseTabStopPosition } from './defaults/tabStops';
 import { outputProfileInfo } from './color/catalogue';
 import { LINE_NUMBERS_ALIGNS, LINE_NUMBERS_COUNTS, LINE_NUMBERS_MULTI_COLUMN, LINE_NUMBERS_POSITIONS, LINE_NUMBERS_RESTARTS } from './defaults/lineNumbers';
 
@@ -125,6 +127,40 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   out.push(...collectComicChoiceWarnings(config));
   out.push(...collectPrintChoiceWarnings(config));
   out.push(...collectLineNumbersWarnings(config));
+  out.push(...collectTabStopWarnings(config));
+  return out;
+}
+
+/** The tab stop lists of a config (#622): the body's, each paragraph
+ *  style's and each callout body's, with their paths. */
+function tabStopLists(config: PostextConfig): { stops: unknown[]; path: string }[] {
+  const out: { stops: unknown[]; path: string }[] = [];
+  const add = (stops: unknown, path: string) => {
+    if (Array.isArray(stops)) out.push({ stops, path });
+  };
+  add(config.bodyText?.tabStops, 'bodyText.tabStops');
+  (config.paragraphStyles ?? []).forEach((s, i) => add((s as { tabStops?: unknown } | undefined)?.tabStops, `paragraphStyles[${i}].tabStops`));
+  (config.calloutStyles ?? []).forEach((s, i) => add((s as { body?: { tabStops?: unknown } } | undefined)?.body?.tabStops, `calloutStyles[${i}].body.tabStops`));
+  return out;
+}
+
+/** A tab stop whose `align` is not one of its words (read as `'start'`),
+ *  or whose `position` is no length, `'end'` or percentage (the stop is
+ *  left out: `used` `'none'`). */
+function collectTabStopWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  for (const { stops, path } of tabStopLists(config)) {
+    stops.forEach((raw, i) => {
+      if (!raw || typeof raw !== 'object') return;
+      const stop = raw as { position?: unknown; align?: unknown };
+      if (stop.align !== undefined && !isTabStopAlign(stop.align)) {
+        out.push({ kind: 'unknownConfigValue', path: `${path}[${i}].align`, value: String(stop.align), used: 'start' });
+      }
+      if (parseTabStopPosition(stop.position) === undefined) {
+        out.push({ kind: 'unknownConfigValue', path: `${path}[${i}].position`, value: typeof stop.position === 'object' ? JSON.stringify(stop.position) : String(stop.position), used: 'none' });
+      }
+    });
+  }
   return out;
 }
 
@@ -277,7 +313,12 @@ const PARAGRAPH_STYLE_KEYS = {
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
   hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
   marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true, lineNumbers: true,
+  tabStops: true, tabInterval: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
+// A tab stop (#622).
+const TAB_STOP_KEYS = {
+  position: true, align: true, leader: true, leaderGap: true, decimalChar: true,
+} satisfies Record<keyof TabStop, true>;
 
 // Line numbers (#621).
 const LINE_NUMBERS_KEYS = {
@@ -380,6 +421,7 @@ function collectUnknownKeyWarnings(config: PostextConfig): ConfigWarning[] {
   };
   checkConfig(config, '');
   checkConfig(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
+  for (const { stops, path } of tabStopLists(config)) stops.forEach((st, i) => check(st, TAB_STOP_KEYS, `${path}[${i}]`));
   check(config.lineNumbers, LINE_NUMBERS_KEYS, 'lineNumbers');
   // Comics: the section, its frame, gutters, panel styles, lettering,
   // balloon styles and cast.

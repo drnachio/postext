@@ -1,4 +1,5 @@
 import { FORCED_BREAK, measureForcedBreaks } from './hardBreaks';
+import { placeTab, type TabLeaderPlacement, type TabRun, type TabStopPx } from './tabs';
 import type { VDTAnnotationRun, VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { uprightArabicSpans, uprightFace } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
@@ -156,6 +157,13 @@ export interface RichToken {
   /** How far kashidas may widen this word, px: its box's stretch in
    *  Knuth–Plass (`measure/kashida.ts`). Absent on any other token. */
   kashida?: number;
+  /** A tab (#622, `InlineSpan.tab`): a `space` token whose width the line
+   *  breaker sets where its line has got to (`measure/tabs.ts`); `stop` is
+   *  the one-off stop of `:tab{at=…}`. Never skipped at a line's start nor
+   *  trimmed at its end. */
+  tab?: { stop?: TabStopPx };
+  /** A tab placed at its stop, with a leader (see {@link setTabbedLine}). */
+  tabLeader?: TabLeaderPlacement;
 }
 
 /** Whether a resolved swatch colour can fill the square: a six- or
@@ -354,7 +362,9 @@ export function expandSmallCaps(
   for (const line of lines) {
     const segs = line.segments as PendingSegment[] | undefined;
     if (!segs || !segs.some((s) => s.smallCaps)) continue;
-    const before = segs.map((s) => s.text).join('');
+    // A leader (#622) is no text of the line.
+    const spelled = (list: readonly VDTLineSegment[]) => list.filter((s) => !s.leader).map((s) => s.text).join('');
+    const before = spelled(segs);
     const out: VDTLineSegment[] = [];
     for (const seg of segs) {
       if (!seg.smallCaps) { out.push(seg); continue; }
@@ -384,7 +394,7 @@ export function expandSmallCaps(
       });
     }
     line.segments = out;
-    if (line.text === before) line.text = out.map((s) => s.text).join('');
+    if (line.text === before) line.text = spelled(out);
   }
 }
 
@@ -522,7 +532,8 @@ const TRAILING_NO_BREAK_RE = new RegExp(`[${NO_BREAK_SPACES}]+$`);
 function applyChipGaps(tokens: RichToken[], noBreakWidth: (token: RichToken, run: string) => number): void {
   for (let i = 0; i < tokens.length; i++) {
     const space = tokens[i]!;
-    if (space.kind !== 'space') continue;
+    // A tab makes its own room (#622).
+    if (space.kind !== 'space' || space.tab) continue;
     const left = tokens[i - 1]?.chip ? tokens[i - 1]! : undefined;
     const right = tokens[i + 1]?.chip ? tokens[i + 1]! : undefined;
     if (!left && !right) continue;
@@ -1058,7 +1069,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId, ...(t.refAnchor ? { refAnchor: true as const } : {}), ...(t.refPageIndex !== undefined ? { refPageIndex: t.refPageIndex } : {}) } : {}),
     ...(t.footnoteId !== undefined ? { footnoteId: t.footnoteId } : {}),
     ...(t.captionLabel ? { captionLabel: true } : {}),
-    ...(t.labelTab ? { labelTab: true as const } : {}),
+    ...(t.labelTab || t.tab ? { labelTab: true as const } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.markerFont && !t.script ? { fontString: t.markerFont } : {}),
     ...(t.sideRuns ? { sideMarker: { runs: t.sideRuns } } : {}),
@@ -1149,6 +1160,16 @@ function tokenizeSpans(
   for (const span of spans) {
     const spanBase = spanStart;
     spanStart += span.text.length;
+    // A tab (#622): its width is set where its line gets to it.
+    // Tab characters in a row are one character of the text that goes on
+    // that many stops: the later ones have no text.
+    if (span.tab) {
+      const tab = span.tab.px ? { stop: span.tab.px } : {};
+      for (let k = 0; k < Math.max(1, span.tab.count ?? 1); k++) {
+        tokens.push({ text: k === 0 ? span.text : '', bold: span.bold, italic: span.italic, kind: 'space', width: 0, tab });
+      }
+      continue;
+    }
     const atomic = atomicSpanToken(span, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
     if (atomic) {
       tokens.push(atomic);
@@ -1603,6 +1624,8 @@ function measureRichText(
     return measureForcedBreaks(spans, maxWidthPx, lineHeightPx, options, (piece, opts) =>
       measureRichText(piece, piece.map((s) => s.text).join(''), normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
   }
+  // Tabs (#622) are word spaces in vertical text.
+  if (measuringVertically() && spans.some((sp) => sp.tab)) spans = tabsAsSpaces(spans);
   // Vertical text: a short number inside a Latin sentence runs sideways
   // with it, read against the whole paragraph (#222).
   if (measuringVertically()) spans = sidewaysNumberSpans(spans, getMeasureUprightDigits(), getMeasureRegion());
@@ -1617,9 +1640,15 @@ function measureRichText(
   // #195, #430), which the composer alone lays out.
   // The paragraph is looked at for CJK text once (`cjkText`); a Latin one
   // then never looks into its words.
+  // A paragraph with a tab (#622) is set by the line breaker below, which
+  // breaks Chinese and Japanese words between their characters under the
+  // document's rules; one with ruby, a warichu note or kanbun marks keeps
+  // the composer, its tabs set as word spaces.
   const cjkText = hasCJK(plainText);
-  if ((cjkText && composesAsCjk(plainText)) || spans.some((s) => s.ruby || s.warichu || s.kunten)) {
-    return composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
+  const annotated = spans.some((s) => s.ruby || s.warichu || s.kunten);
+  const hasTabs = spans.some((s) => s.tab);
+  if ((cjkText && composesAsCjk(plainText) && !hasTabs) || annotated) {
+    return composeCjkParagraph(hasTabs ? tabsAsSpaces(spans) : spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   }
 
   const shouldHyphenate = options?.hyphenate ?? false;
@@ -1660,7 +1689,9 @@ function measureRichText(
   // it too with `optimalRagged`: its word spaces keep their width and each
   // line gets the ragged stretch instead.
   const ragged = textAlign !== 'justify';
-  if (options?.optimal && (!ragged || options.optimalRagged)) {
+  // A paragraph that holds a tab is set line by line (#622): a tab's width
+  // depends on where its line starts.
+  if (options?.optimal && (!ragged || options.optimalRagged) && !hasTabs) {
     const maxStretchRatio = ragged ? 1 : options.maxStretchRatio ?? 1.5;
     const minShrinkRatio = ragged ? 1 : options.minShrinkRatio ?? 0.8;
     // The runt threshold counts word spaces on ragged text too.
@@ -1722,6 +1753,12 @@ function measureRichText(
   // The line before broke after a compound's hyphen, which this one repeats
   // (`repeatHyphen`).
   let repeatPending = false;
+  // Tabs (#622): a leader is measured in the paragraph's face, tracked as
+  // its words are; a tab past the last stop is a word space.
+  const leaderWidth = (text: string): number => measureTextWidth(text, normalFont) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(text));
+  const tabSpaceWidth = hasTabs ? normalSpaceWidthFor(normalFont) + letterSpacingPx : 0;
+  // A word space a line may start or end at (a tab is none).
+  const isBreakSpace = (t: RichToken): boolean => t.kind === 'space' && !t.tab;
 
   while (tokenIdx < tokens.length) {
     const lineIndent = indentOf(lineIndex);
@@ -1735,9 +1772,11 @@ function measureRichText(
     let lineHardHyphen = false;
     // A word of a joining script wider than the line runs past it.
     let lineWordOverflow = false;
+    // The line holds a tab placed at a stop (#622).
+    let lineTabbed = false;
 
     // Consume leading spaces at line start (skip them)
-    while (tokenIdx < tokens.length && tokens[tokenIdx]!.kind === 'space') {
+    while (tokenIdx < tokens.length && isBreakSpace(tokens[tokenIdx]!)) {
       tokenIdx++;
     }
     // The compound's hyphen, repeated: the tail it broke from opens the
@@ -1750,10 +1789,61 @@ function measureRichText(
     repeatPending = false;
     // This line ends after a compound's hyphen the next one repeats.
     let lineRepeatNext = false;
+    // Tabs (#622): the stop the line's last tab took, and that tab's place
+    // among the line's tokens.
+    let tabUsedPos = -Infinity;
+    let lastTabAt = -1;
 
     // Greedy: add tokens until we overflow
     while (tokenIdx < tokens.length) {
-      const token = tokens[tokenIdx]!;
+      let token = tokens[tokenIdx]!;
+
+      if (token.tab) {
+        const x = lineIndent + lineWidth;
+        const placement = placeTab(
+          x,
+          tabRun(tokens, tokenIdx, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx),
+          { start: lineIndent, end: lineIndent + lineMaxWidth, measure: maxWidthPx, usedPos: tabUsedPos },
+          options?.tabs,
+          token.tab.stop,
+          leaderWidth,
+        );
+        if (placement.kind === 'stop' || (placement.kind === 'overrun' && !lineTokens.some((t) => t.kind !== 'space'))) {
+          // At its stop; or opening its line with no stop the text after
+          // it fits: it takes no room.
+          const width = placement.kind === 'stop' ? placement.width : 0;
+          lineTokens.push({ ...token, width, ...(placement.kind === 'stop' && placement.leader ? { tabLeader: placement.leader } : {}) });
+          lineWidth += width;
+          tokenIdx++;
+          if (placement.kind === 'stop') tabUsedPos = placement.pos;
+          lastTabAt = lineTokens.length - 1;
+          lineTabbed = true;
+          continue;
+        }
+        if (placement.kind === 'overrun') {
+          // An end, centre or decimal stop the text before it has passed
+          // takes that text's last word down with it; a start stop breaks
+          // the line before the tab.
+          if (placement.align !== 'start') {
+            let k = lineTokens.length - 1;
+            while (k > lastTabAt + 1 && !(lineTokens[k]!.kind === 'space' && !lineTokens[k]!.tab)) k--;
+            if (k > lastTabAt + 1 && lineTokens.slice(lastTabAt + 1, k).some((t) => t.kind !== 'space')) {
+              tokenIdx -= lineTokens.length - k;
+              while (lineTokens.length > k) lineWidth -= lineTokens.pop()!.width;
+            }
+          }
+          break;
+        }
+        // Past the last stop with no default stops: a word space, none at
+        // the line's start.
+        if (!lineTokens.some((t) => t.kind !== 'space')) {
+          tokenIdx++;
+          continue;
+        }
+        const { tab: _tab, ...space } = token;
+        void _tab;
+        token = { ...space, width: tabSpaceWidth, labelTab: 'gap' };
+      }
 
       if (lineWidth + token.width <= lineMaxWidth) {
         lineTokens.push(token);
@@ -1919,8 +2009,9 @@ function measureRichText(
     syllableRun = lineSyllable ? syllableRun + 1 : 0;
     repeatPending = lineRepeatNext;
 
-    // Trim trailing spaces from line tokens
-    while (lineTokens.length > 0 && lineTokens[lineTokens.length - 1]!.kind === 'space') {
+    // Trim trailing spaces from line tokens (a tab stays: a rule to the
+    // line's end is a form's blank)
+    while (lineTokens.length > 0 && isBreakSpace(lineTokens[lineTokens.length - 1]!)) {
       lineWidth -= lineTokens[lineTokens.length - 1]!.width;
       lineTokens.pop();
     }
@@ -1928,18 +2019,20 @@ function measureRichText(
     // Check if this is the last line
     // Skip remaining leading spaces to check if there's more content
     let peekIdx = tokenIdx;
-    while (peekIdx < tokens.length && tokens[peekIdx]!.kind === 'space') {
+    while (peekIdx < tokens.length && isBreakSpace(tokens[peekIdx]!)) {
       peekIdx++;
     }
     const isLastLine = peekIdx >= tokens.length;
 
     // Build segments for justified rendering
-    const segments: VDTLineSegment[] = trimChipLineEdges(lineTokens.map(tokenSegment));
+    let segments: VDTLineSegment[] = trimChipLineEdges(lineTokens.map(tokenSegment));
+    if (lineTabbed) segments = setTabbedLine(segments, lineTokens, lineMaxWidth, textAlign, isLastLine);
 
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');
     const contentWidth = segments.reduce((sum, t) => sum + t.width, 0);
 
-    const justifiedSpaceRatio = computeJustifiedSpaceRatio(
+    // A tabbed line is set as measured: its widths are final.
+    const justifiedSpaceRatio = lineTabbed ? undefined : computeJustifiedSpaceRatio(
       segments,
       lineMaxWidth,
       normalSpaceWidth,
@@ -1958,6 +2051,7 @@ function measureRichText(
       isLastLine,
       ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
       ...(lineWordOverflow ? { wordOverflow: true as const } : {}),
+      ...(lineTabbed ? { tabbed: true as const, ...(textAlign === 'justify' ? { ragged: true } : {}) } : {}),
     });
 
     y += lineHeightPx;
@@ -1969,6 +2063,102 @@ function measureRichText(
   if (languages.length > 0) applySegmentLanguages(lines, plainText, languages);
   withKashida(lines);
   return { lines, totalHeight: y };
+}
+
+/** The text a tab at `at` sends to its stop (#622): the tokens after it up
+ *  to the next tab or the paragraph's end, spaces at either end left out. */
+function tabRun(
+  tokens: readonly RichToken[],
+  at: number,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+  letterSpacingPx: number,
+): TabRun {
+  let from = at + 1;
+  while (from < tokens.length && tokens[from]!.kind === 'space' && !tokens[from]!.tab) from++;
+  let to = from;
+  while (to < tokens.length && !tokens[to]!.tab) to++;
+  while (to > from && tokens[to - 1]!.kind === 'space') to--;
+  let width = 0;
+  for (let k = from; k < to; k++) width += tokens[k]!.width;
+  return {
+    width,
+    decimalWidth: (char: string) => {
+      if (char.length === 0) return undefined;
+      let before = 0;
+      for (let k = from; k < to; k++) {
+        const t = tokens[k]!;
+        const idx = t.kind === 'text' && !t.mathRender && !t.chip && !t.swatch ? t.text.indexOf(char) : -1;
+        if (idx >= 0) {
+          const head = cleanSoftHyphens(t.text.slice(0, idx));
+          const font = tokenFont(t, normalFont, boldFont, italicFont, boldItalicFont);
+          return before + textWidth(head, font, t.smallCaps) + (letterSpacingPx === 0 ? 0 : wordLetterSpacing(head, letterSpacingPx) * graphemeCount(head));
+        }
+        before += t.width;
+      }
+      return undefined;
+    },
+  };
+}
+
+/**
+ * The segments of a line holding a tab at its stop (#622): each tab with a
+ * leader becomes the tab's space up to the leader, the leader (`leader`,
+ * no character of the text) and the gap after it (an empty space). In a
+ * justified paragraph the word spaces after the line's last tab take the
+ * slack, the line not being the paragraph's last (the renderers set the
+ * line as it is: it is `ragged`); in a centred or right-aligned one an empty
+ * space fills the line to its measure, so it is set from its start side as
+ * its stops are.
+ */
+function setTabbedLine(
+  segments: VDTLineSegment[],
+  lineTokens: readonly RichToken[],
+  lineMaxWidth: number,
+  textAlign: string,
+  isLastLine: boolean,
+): VDTLineSegment[] {
+  const out: VDTLineSegment[] = [];
+  let lastTab = -1;
+  segments.forEach((seg, i) => {
+    const token = lineTokens[i];
+    if (token?.tab) lastTab = out.length;
+    const leader = token?.tabLeader;
+    if (!token?.tab || !leader) {
+      out.push(seg);
+      return;
+    }
+    out.push({ ...seg, width: Math.max(0, leader.end - leader.width) });
+    out.push({ kind: 'text', text: leader.text, width: leader.width, leader: leader.rule ? 'rule' : 'text' });
+    const after = seg.width - leader.end;
+    if (after > 0) out.push({ kind: 'space', text: '', width: after, labelTab: true });
+    lastTab = out.length - 1;
+  });
+  const natural = out.reduce((sum, seg) => sum + seg.width, 0);
+  const slack = lineMaxWidth - natural;
+  if (slack > 0.01 && textAlign === 'justify' && !isLastLine) {
+    const spaces = out.map((seg, k) => (k > lastTab && seg.kind === 'space' && !seg.labelTab ? k : -1)).filter((k) => k >= 0);
+    if (spaces.length > 0) {
+      const share = slack / spaces.length;
+      for (const k of spaces) out[k] = { ...out[k]!, width: out[k]!.width + share };
+    }
+  } else if (slack > 0.01 && (textAlign === 'center' || textAlign === 'right')) {
+    out.push({ kind: 'space', text: '', width: slack, labelTab: true });
+  }
+  return out;
+}
+
+/** `spans` with their tabs (#622) set as word spaces: vertical text, and a
+ *  paragraph the CJK composer sets for its ruby, warichu or kanbun marks. */
+export function tabsAsSpaces(spans: readonly InlineSpan[]): InlineSpan[] {
+  return spans.map((s) => {
+    if (!s.tab) return s;
+    const { tab: _tab, ...rest } = s;
+    void _tab;
+    return { ...rest, text: ' ' };
+  });
 }
 
 /** Give each Arabic word of a justified paragraph its kashida capacity

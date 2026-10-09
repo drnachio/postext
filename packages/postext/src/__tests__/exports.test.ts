@@ -472,6 +472,7 @@ describe("package exports", () => {
       "pageIsMirrored",
       "verticalFlowOf",
       "lineTextAlign",
+      "leaderRuleGeometry",
       "DEFAULT_CENTRAL_BASELINE",
       "verticalOrientation",
       "verticalRuns",

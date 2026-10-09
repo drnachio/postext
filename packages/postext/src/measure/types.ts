@@ -92,6 +92,12 @@ export interface MeasureBlockOptions {
    *  the line's start: the spans' `labelTab` spaces are widened so the
    *  entry's text starts there. */
   labelColumnPx?: number;
+  /** The paragraph's tab stops (#622, `measure/tabs.ts`): where its tabs
+   *  (`InlineSpan.tab`) send the text after them. A paragraph that holds a
+   *  tab is set line by line, whatever {@link optimal} says. Unset: a tab
+   *  without a stop of its own (`:tab{at=…}`) is a word space. Joins the
+   *  cache key only when set. */
+  tabs?: import('./tabs').TabSettings;
   /** Use Knuth-Plass optimal line breaking instead of greedy. */
   optimal?: boolean;
   /** Max space stretch ratio (for K-P glue model). Default 1.5. */

@@ -231,6 +231,11 @@ export function collectContentWarnings(
       if (style !== undefined && !chipStyles.has(style)) {
         out.push({ kind: 'unknownChipStyle', style, ...abs(inlineRange(body, at, b.sourceEnd)) });
       }
+      // A `:tab` down a vertical page is a word space (#622).
+      if (span.tab && !span.tab.literal && verticalAt(blockIdx)) {
+        const end = body.startsWith(':tab{', at) ? body.indexOf('}', at) + 1 : at + 4;
+        out.push({ kind: 'tabInVerticalText', ...abs({ start: at, end: end > at ? end : at + 4 }) });
+      }
       plain += span.text.length;
     }
     // Index marks that name no term index nothing.
@@ -693,6 +698,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'attributeKeyInvalid':
       text = `The attribute key "${w.key}" is not read — keys are written in ASCII letters, digits, _ and -`;
+      break;
+    case 'tabInVerticalText':
+      text = 'A :tab in vertical text is set as a word space — tab stops are set in horizontal text only';
       break;
     case 'raggedTableGrid':
       text = w.reason === 'spanOverlap'

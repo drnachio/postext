@@ -22,7 +22,7 @@ import type {
   RoundedOutline,
   RenderWarning,
 } from './vdt';
-import { lineTextAlign, tableCellFillRects, tableFrameOutline } from './vdt';
+import { leaderRuleGeometry, lineTextAlign, tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
@@ -823,7 +823,7 @@ function renderSegments(
   // so honor that by compressing the spaces to fit the measure exactly.
   const useJustify =
     block.textAlign === 'justify' && spaceCount > 0 &&
-    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+    !line.tabbed && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
@@ -842,7 +842,7 @@ function renderSegments(
   // x are taken in that order; the markup stays in logical order, so the
   // text copies as written.
   const at = line.order ? orderedOffsets(segs, line.order, leadingGap, useJustify ? justifiedSpaceWidth : undefined) : undefined;
-  const cjk = block.tocEntry !== undefined || hasCJK(line.text);
+  const cjk = block.tocEntry !== undefined || hasCJK(line.text) || (line.tabbed === true && segs.some((sg) => sg.leader === 'text'));
   const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
     const font = quoteFontString(pickSegmentFont(seg, block));
     const color = pickSegmentColor(seg, block);
@@ -859,6 +859,13 @@ function renderSegments(
       parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
       parts.push(copyTextHtml(seg.text, x, useJustify ? justifiedSpaceWidth - seg.width : 0));
       x += useJustify ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    if (seg.leader) {
+      // A leader (#622): painted, hidden from assistive technology and
+      // left out of a selection.
+      parts.push(leaderHtml(seg, x, line.baseline - line.bbox.y, block));
+      x += seg.width;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));
@@ -956,7 +963,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   // so honor that by compressing the spaces to fit the measure exactly.
   const useJustify =
     block.textAlign === 'justify' && spaceCount > 0 &&
-    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+    !line.tabbed && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
@@ -994,6 +1001,13 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
       parts.push(copyTextHtml(seg.text, x, gap - seg.width));
       x += gap;
+      continue;
+    }
+    if (seg.leader) {
+      // A leader (#622): painted, hidden from assistive technology and
+      // left out of a selection.
+      parts.push(leaderHtml(seg, x, line.baseline - line.bbox.y, block));
+      x += seg.width;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));
@@ -1049,6 +1063,28 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
+}
+
+/** A leader (#622, `VDTLineSegment.leader`): a contents row's or a tab
+ *  stop's dots in the segment's font, or a rule under the baseline
+ *  (`baselineOffset` from the line top), `aria-hidden` and unselectable,
+ *  so neither a screen reader nor a copy reads it. */
+function leaderHtml(seg: VDTLineSegment, x: number, baselineOffset: number, block: VDTBlock): string {
+  const color = pickSegmentColor(seg, block);
+  const hidden = 'aria-hidden="true"';
+  const noSelect = 'user-select:none;-webkit-user-select:none;pointer-events:none;';
+  if (seg.leader === 'rule') {
+    const m = /(\d*\.?\d+)px/.exec(block.fontString);
+    const { dy, thickness } = leaderRuleGeometry(m ? Number(m[1]) : 16);
+    return `<span ${hidden} style="position:absolute;left:${x.toFixed(3)}px;top:${(baselineOffset + dy - thickness / 2).toFixed(3)}px;`
+      + `width:${seg.width.toFixed(3)}px;height:${thickness.toFixed(3)}px;background:${color};${noSelect}"></span>`;
+  }
+  const font = quoteFontString(pickSegmentFont(seg, block));
+  const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
+  const colorDecl = color !== block.color ? `color:${color};` : '';
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${noSelect}`;
+  if (fontDecl) return `<span ${hidden} style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${esc(seg.text)}</span></span>`;
+  return `<span ${hidden} style="${pos}${colorDecl}">${esc(seg.text)}</span>`;
 }
 
 /** Inline colour swatch (`:swatch{…}`): a square of `side` px on the line's
@@ -1352,7 +1388,7 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
   }
   const contentWidth = line.segments && line.segments.length > 0 ? lineInkExtent(line, 0).width : line.bbox.width;
   const useJustify = block.textAlign === 'justify' && spaceCount > 0
-    && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+    && !line.tabbed && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify ? (effectiveWidth - wordWidth) / spaceCount : 0;
   const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
   let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;

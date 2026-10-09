@@ -299,6 +299,9 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     breakAfterDashes: partial.breakAfterDashes ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterDashes,
     breakAfterHyphens: partial.breakAfterHyphens ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens,
     hardLineBreaks: partial.hardLineBreaks ?? DEFAULT_BODY_TEXT_CONFIG.hardLineBreaks,
+    // Absent unless set, so a document without tab stops resolves as before (#622).
+    ...(Array.isArray(partial.tabStops) ? { tabStops: partial.tabStops } : {}),
+    ...(partial.tabInterval ? { tabInterval: partial.tabInterval } : {}),
     repeatHyphen: partial.repeatHyphen ?? DEFAULT_BODY_TEXT_CONFIG.repeatHyphen,
     blockquote: resolveBlockquoteConfig(partial.blockquote, documentLocale),
     verse: resolveVerseConfig(partial.verse),
@@ -458,6 +461,14 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
   }
   if (bodyText.hardLineBreaks !== undefined && bodyText.hardLineBreaks !== DEFAULT_BODY_TEXT_CONFIG.hardLineBreaks) {
     result.hardLineBreaks = bodyText.hardLineBreaks;
+    hasOverride = true;
+  }
+  if (Array.isArray(bodyText.tabStops)) {
+    result.tabStops = bodyText.tabStops;
+    hasOverride = true;
+  }
+  if (bodyText.tabInterval !== undefined) {
+    result.tabInterval = bodyText.tabInterval;
     hasOverride = true;
   }
   if (bodyText.repeatHyphen !== undefined && bodyText.repeatHyphen !== DEFAULT_BODY_TEXT_CONFIG.repeatHyphen) {

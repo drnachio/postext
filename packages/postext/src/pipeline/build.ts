@@ -400,6 +400,12 @@ function measureLooseParagraph(
 ): MeasuredContentBlock | null {
   const base = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride });
   if (!base) return null;
+  // A paragraph with a tab at a stop (#622) is set line by line, as
+  // measured: neither looseness nor tracking moves its stops' text.
+  if (base.measured.lines.some((l) => l.tabbed)) {
+    looseOutcome.set(blockIdx, null);
+    return base;
+  }
   const target = base.measured.lines.length + extraLines;
   // The breaker's optimum, before any runt fix (a looseness of 0 skips it).
   const optimum = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness: 0 });

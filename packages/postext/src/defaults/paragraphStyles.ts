@@ -51,6 +51,9 @@ function resolveParagraphStyleConfig(
     ...(typeof partial.lineNumbers === 'boolean' ? { lineNumbers: partial.lineNumbers } : {}),
     // Absent unless set: the paragraphs follow `cjk.wordBreak`.
     ...(partial.wordBreak === 'normal' || partial.wordBreak === 'keep-all' ? { wordBreak: partial.wordBreak } : {}),
+    // Absent unless set: the paragraphs take the body's tab stops (#622).
+    ...(Array.isArray(partial.tabStops) ? { tabStops: partial.tabStops } : {}),
+    ...(partial.tabInterval ? { tabInterval: partial.tabInterval } : {}),
   };
 }
 
@@ -96,6 +99,8 @@ export function stripParagraphStylesDefaults(
     if (s.textTransform !== undefined && s.textTransform !== 'none') r.textTransform = s.textTransform;
     if (s.wordBreak !== undefined) r.wordBreak = s.wordBreak;
     if (s.lineNumbers !== undefined) r.lineNumbers = s.lineNumbers;
+    if (Array.isArray(s.tabStops)) r.tabStops = s.tabStops;
+    if (s.tabInterval !== undefined) r.tabInterval = s.tabInterval;
     return r;
   });
 }

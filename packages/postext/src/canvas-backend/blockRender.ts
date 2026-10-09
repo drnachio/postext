@@ -1,5 +1,5 @@
 import type { VDTBlock, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
-import { lineTextAlign } from '../vdt';
+import { leaderRuleGeometry, lineTextAlign } from '../vdt';
 import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -161,6 +161,13 @@ function renderSegments(
       x += justifiedSpaceWidth ?? seg.width;
       continue;
     }
+    if (seg.leader === 'rule') {
+      // A tab stop's rule leader (#622).
+      paintRuleLeader(ctx, x, baseline, seg.width, seg.color ?? style.color, style.font);
+      currentFill = '';
+      x += seg.width;
+      continue;
+    }
     if (seg.kind === 'math') {
       renderMathSegment(ctx, seg, x, baseline, style.color);
       x += seg.width;
@@ -216,7 +223,17 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined || s.sideMarker !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined || s.sideMarker !== undefined
+    || s.leader !== undefined;
+}
+
+/** A rule leader (#622): a line across `width` px under the baseline, its
+ *  geometry from the block's text size (`leaderRuleGeometry`). */
+function paintRuleLeader(ctx: CanvasRenderingContext2D, x: number, baseline: number, width: number, color: string, font: string): void {
+  const m = /(\d*\.?\d+)px/.exec(font);
+  const { dy, thickness } = leaderRuleGeometry(m ? Number(m[1]) : 16);
+  ctx.fillStyle = color;
+  ctx.fillRect(x, baseline + dy - thickness / 2, width, thickness);
 }
 
 /**
@@ -360,7 +377,9 @@ function renderLine(
     renderComposedLine(ctx, line, style, textAlign, columnWidth, columnX, trailing, tracking);
     return;
   }
-  const cjk = tocEntry || hasCJK(line.text);
+  // A leader's text (a contents row's, a tab stop's, #622) is not in the
+  // line's text: its segments are looked at.
+  const cjk = tocEntry || hasCJK(line.text) || (line.tabbed === true && line.segments?.some((sg) => sg.leader === 'text') === true);
   ctx.textBaseline = 'alphabetic';
 
   // A line whose block runs against its frame (a right-to-left paragraph on
@@ -393,7 +412,7 @@ function renderLine(
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
-    if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
+    if (spaceCount > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
       renderSegments(ctx, segments, lineX, line.baseline, style, justifiedSpaceWidth, cjk, tracking, order);
       return;
@@ -466,7 +485,7 @@ function renderComposedLine(
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
-    if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
+    if (spaceCount > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
       renderComposedSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, tracking, cuts);
       return;

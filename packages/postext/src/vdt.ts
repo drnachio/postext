@@ -273,6 +273,15 @@ export interface VDTLineSegment {
   /** A space of a bibliography entry's label column (#290): its width is
    *  set, so renderers paint the line segment by segment. */
   labelTab?: true;
+  /** A leader (#622): the dots of a contents row, or of a tab stop in body
+   *  text, painted over the room before the text at the stop. `'text'`:
+   *  `text` is the run of the leader character, painted like a word;
+   *  `'rule'`: a line drawn across the segment's `width` a little under the
+   *  baseline (`text` is empty). A leader is no character of the
+   *  paragraph: it is not in the line's `text`, copied or extracted text,
+   *  search or the source map; the HTML viewer hides it from assistive
+   *  technology and the tagged PDF paints it as an artifact. */
+  leader?: 'text' | 'rule';
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;
@@ -641,9 +650,19 @@ export interface VDTLine {
    *  paragraph goes on on the next line, copied text takes a line feed
    *  there, the reflowable EPUB a `<br/>`. Absent otherwise. */
   hardBreak?: true;
+  /** The line holds a tab that went to a tab stop (#622): its `space`
+   *  segment flagged `labelTab`, `text` `'\t'`, is as wide as the stop asks,
+   *  followed, when the stop has a leader, by the leader's segment and the
+   *  gap after it (an empty `space`). The widths are final: in a justified
+   *  paragraph the line is {@link ragged} and the measurer gave the slack
+   *  to the word spaces after the last tab; in a centred or right-aligned
+   *  one a last empty `space` fills the line to its measure, so every
+   *  renderer sets it from its start side. Absent otherwise. */
+  tabbed?: true;
   /** Set ragged inside a justified paragraph: a line a URL made unfillable
-   *  (its few word spaces would stretch past the loose-line threshold), or
-   *  a CJK line flagged {@link cjkLoose}. */
+   *  (its few word spaces would stretch past the loose-line threshold), a
+   *  CJK line flagged {@link cjkLoose}, or a line holding a tab stop
+   *  ({@link tabbed}). */
   ragged?: boolean;
   /** A justified CJK line that needed more inter-character spacing than the
    *  cap (½ em, or `bodyText.maxJustifyTracking` when it is set): it is set
@@ -1159,6 +1178,13 @@ export function pageIsVertical(page: Pick<VDTPage, 'flow'>): boolean {
 export function lineTextAlign(line: Pick<VDTLine, 'measure'>, textAlign: TextAlign): TextAlign {
   if (!line.measure) return textAlign;
   return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
+}
+
+/** A rule leader (`VDTLineSegment.leader: 'rule'`, #622) at a text size of
+ *  `fontSizePx`: its centre `dy` px under the baseline and its stroke
+ *  `thickness` px, the same on every renderer. */
+export function leaderRuleGeometry(fontSizePx: number): { dy: number; thickness: number } {
+  return { dy: fontSizePx * 0.1, thickness: Math.max(0.5, fontSizePx * 0.05) };
 }
 
 export function pageIsMirrored(page: Pick<VDTPage, 'flow'>): boolean {
@@ -2469,6 +2495,9 @@ export type ContentWarning = ContentWarningBase & (
    *  not applied, and the resource floats in its own `span` (#188). Points
    *  at its first use. */
   | { kind: 'rotateIgnoredVertical'; resourceId: string }
+  /** A `:tab` in a block set in vertical text (#622): tab stops are set in
+   *  horizontal text only, so the tab is a word space. */
+  | { kind: 'tabInVerticalText' }
   /** A comic page's `split` attribute the grammar cannot read whole (a
    *  stray character, an unclosed `[`, `/` and `|` mixed in one list, a
    *  bracketed list on its parent's axis): the readable part is used, an

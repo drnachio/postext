@@ -1,4 +1,4 @@
-import type { CjkWordBreak, EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
+import type { CjkWordBreak, Dimension, EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TabStop, TextAlign } from '../types';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
@@ -72,6 +72,16 @@ export interface BlockStyle {
   /** Where the block's CJK lines break between characters (a paragraph
    *  style's `wordBreak`). Unset: the document's `cjk.wordBreak`. */
   cjkWordBreak?: CjkWordBreak;
+  /** The block's tab stops and default interval (#622): a paragraph
+   *  style's, a callout body's or the body's (`bodyText.tabStops`), as
+   *  written; `measureContentBlock` resolves them. Unset: none. */
+  tabStops?: TabStop[];
+  tabInterval?: Dimension;
+}
+
+/** The tab stop fields of a style (#622), absent when unset. */
+function tabFields(stops: TabStop[] | undefined, interval: Dimension | undefined): Pick<BlockStyle, 'tabStops' | 'tabInterval'> {
+  return { ...(stops ? { tabStops: stops } : {}), ...(interval ? { tabInterval: interval } : {}) };
 }
 
 /** The four faces of a text style: `italic` sets the regular text in
@@ -147,7 +157,7 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const firstLineIndentPx = dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = body.hangingIndent;
   const marginBottomPx = body.paragraphSpacing ? lineHeightPx : 0;
-  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}) };
+  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}), ...tabFields(body.tabStops, body.tabInterval) };
 }
 
 export function resolveHeadingStyle(
@@ -264,6 +274,7 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
     ...(body.smallCaps ? { smallCaps: true } : {}),
     ...(body.emphasis ? { emphasis: body.emphasis } : {}),
+    ...tabFields(body.tabStops, body.tabInterval),
   };
 }
 
@@ -325,5 +336,6 @@ export function resolveParagraphStyle(
     ...(style.smallCaps ? { smallCaps: true } : {}),
     ...(style.textTransform === 'uppercase' ? { uppercase: true } : {}),
     ...(style.wordBreak ? { cjkWordBreak: style.wordBreak } : {}),
+    ...tabFields(style.tabStops ?? body.tabStops, style.tabInterval ?? body.tabInterval),
   };
 }

@@ -1,6 +1,6 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
-import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER, TAB_PLACEHOLDER } from './inlineFormatting';
 import { sliceSpan } from './links';
 import { orientationOpenerAt } from './orientationMarks';
 import { annotationSourceSkips } from './annotations';
@@ -140,6 +140,33 @@ export function computeSourceMap(
       r = j;
       continue;
     }
+    // Tab placeholder (#622): a tab character, or `:tab` with its
+    // attributes. Map to it and skip past it.
+    if (ch === TAB_PLACEHOLDER) {
+      const tabAt = (i: number): number => {
+        if (markdown[i] === '\t') {
+          // Tabs in a row are one (see `extractInlineTabs`).
+          let j = i + 1;
+          for (let k = j; k < blockSrcEnd && (markdown[k] === ' ' || markdown[k] === '\t'); k++) if (markdown[k] === '\t') j = k + 1;
+          return j - i;
+        }
+        if (!markdown.startsWith(':tab', i)) return 0;
+        let j = i + 4;
+        if (markdown[j] === '{') {
+          const close = markdown.indexOf('}', j);
+          if (close >= 0 && close < blockSrcEnd && !markdown.slice(j, close).includes('\n')) j = close + 1;
+        }
+        return j - i;
+      };
+      while (r < blockSrcEnd && tabAt(r) === 0) r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      r += tabAt(r);
+      continue;
+    }
     if (ch === BREAK_PLACEHOLDER) {
       // Forced break: the plain char stands for the `\\` pair in the source
       // (a title, a snippet) — with the spaces and the one newline after it
@@ -243,6 +270,14 @@ function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let inSpace = true; // start true to strip leading whitespace
   for (const span of spans) {
+    // A tab (#622) takes the spaces around it: the one collapsed before it
+    // is dropped, and the ones after it are not kept.
+    if (span.tab && span.text === TAB_PLACEHOLDER) {
+      dropTrailingSpace(out);
+      out.push({ ...span, text: '\t' });
+      inSpace = true;
+      continue;
+    }
     const result: string[] = [];
     // `kept[i]`: characters kept before `span.text[i]` — remaps link ranges.
     const kept: number[] | undefined = span.links ? [] : undefined;
@@ -283,6 +318,17 @@ function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
   return out.filter((s) => s.text.length > 0);
 }
 
+/** Drop the space the spans so far end on (collapsed whitespace before a
+ *  tab, #622), if any. */
+function dropTrailingSpace(out: InlineSpan[]): void {
+  for (let i = out.length - 1; i >= 0; i--) {
+    const text = out[i]!.text;
+    if (text.length === 0) continue;
+    if (text.endsWith(' ') && !out[i]!.tab) out[i] = sliceSpan(out[i]!, 0, text.length - 1);
+    return;
+  }
+}
+
 /**
  * Build normalized text, spans, and sourceMap for a block. The plain text is
  * whitespace-normalized to match pretext's internal normalization so that the
@@ -304,14 +350,25 @@ export function buildBlockMapping(
   // normalized character onto the rawSourceMap to obtain the source offset.
   const sourceMap: number[] = [];
   let inSpace = true;
+  // Whether the last entry is a collapsed space (a tab drops it, #622).
+  let collapsed = false;
   for (let i = 0; i < rawText.length; i++) {
     const ch = rawText[i]!;
+    if (ch === TAB_PLACEHOLDER) {
+      if (collapsed) sourceMap.pop();
+      sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
+      inSpace = true;
+      collapsed = false;
+      continue;
+    }
     if (COLLAPSIBLE_WS.has(ch)) {
       if (!inSpace) {
         sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
         inSpace = true;
+        collapsed = true;
       }
     } else {
+      collapsed = false;
       sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
       inSpace = false;
     }

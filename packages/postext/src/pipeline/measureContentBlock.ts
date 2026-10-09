@@ -41,6 +41,7 @@ import { dimensionToPx } from '../units';
 import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
 import { startEndAsLeftRight } from '../defaults/shared';
+import { prepareTabs } from './tabs';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -320,7 +321,12 @@ export function measureContentBlock(
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
   const vertical = measuringVertically();
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
+  // Tabs (#622): a tab character is a tab only under tab stops, and only
+  // the formatted-text breaker sets tabs.
+  const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
+  const prepared = prepareTabs(contentBlock, style, resolved, { vertical, rich: hasRichFonts });
+  contentBlock = prepared.block;
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab || s.tab
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline || s.kunten
     // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
     || s.direction !== undefined
@@ -345,7 +351,7 @@ export function measureContentBlock(
     const poem = indices.length === 0 ? [contentBlock] : indices.map((j) => {
       if (j === blockIdx) return contentBlock;
       const sibling = resolveBlockKind(contentBlocks[j]!, { ...ctx, blockIdx: j, paragraphStyleOverride: opts?.styleOverride });
-      return resolveInlineSpans(sibling.contentBlock, sibling.style, ctx);
+      return prepareTabs(resolveInlineSpans(sibling.contentBlock, sibling.style, ctx), sibling.style, resolved, { vertical, rich: hasRichFonts }).block;
     });
     const measured = measureVerseLines({
       contentBlock,
@@ -443,7 +449,6 @@ export function measureContentBlock(
       || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
   // Tracking is measured on the rich path (per-token canvas widths); left
   // undefined when unused so the common-case cache keys stay unchanged.
-  const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
   // The style's own tracking (a heading level's `letterSpacing`, EF-83),
   // plus what column balancing asks of a loose paragraph.
   const letterSpacingPx = hasRichFonts
@@ -472,6 +477,8 @@ export function measureContentBlock(
     // A numbered bibliography entry (#290): its label in a column as wide
     // as the turnover lines' indent.
     ...(measureHangingIndent && !measureLineIndents && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
+    // Tab stops (#622): passed only to a block that holds a tab.
+    ...(prepared.tabs ? { tabs: prepared.tabs } : {}),
     optimal: resolved.bodyText.optimalLineBreaking,
     maxStretchRatio: resolved.bodyText.maxWordSpacing,
     minShrinkRatio: resolved.bodyText.minWordSpacing,

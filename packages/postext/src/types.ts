@@ -1237,6 +1237,15 @@ export interface BodyTextConfig {
    *  `pinLegacyHardBreaks`). Titles (`\\` in a heading), captions, notes
    *  and table cells break at `\\` either way. */
   hardLineBreaks?: boolean;
+  /** Tab stops of every paragraph, list item and quotation (#622): where a
+   *  tab (`:tab`, or a tab character in the text) sends the words after
+   *  it. A paragraph style or a callout body that sets its own replaces
+   *  them. Unset: none; a tab character is then a word space, as before. */
+  tabStops?: TabStop[];
+  /** Default stops every `tabInterval` past the last of {@link tabStops}
+   *  (#622), from the start of the measure. Unset: a tab past the last stop
+   *  is a word space. */
+  tabInterval?: Dimension;
   /** Start the line after a break at a compound's hyphen with a hyphen too:
    *  "vencer-" | "-se", as Portuguese spelling and the Spanish Academy's
    *  2010 rules ask ("léxico-" | "-semántico"), so the reader knows the
@@ -1638,6 +1647,10 @@ export interface ResolvedBodyTextConfig {
   breakAfterDashes: boolean;
   breakAfterHyphens: boolean;
   hardLineBreaks: boolean;
+  /** Absent when unset (see {@link BodyTextConfig.tabStops}). */
+  tabStops?: TabStop[];
+  /** Absent when unset (see {@link BodyTextConfig.tabInterval}). */
+  tabInterval?: Dimension;
   repeatHyphen: boolean;
   blockquote: ResolvedBlockquoteConfig;
   verse: ResolvedVerseConfig;
@@ -2144,6 +2157,47 @@ export interface ParagraphStyleConfig {
    *  `true` counts them under `'verse'` too, and inside a callout, whose
    *  text is otherwise never counted; `false` never. */
   lineNumbers?: boolean;
+  /** Tab stops of the style's paragraphs (#622; see {@link TabStop}). A
+   *  tab character in their text is then a tab, and `:tab` goes to them.
+   *  Unset: the body's (`bodyText.tabStops`). An empty list sets none. */
+  tabStops?: TabStop[];
+  /** Default stops past the last of {@link tabStops}. Unset: the body's. */
+  tabInterval?: Dimension;
+}
+
+/** Where a tab stop stands (#622): a length from the start edge of the
+ *  paragraph's measure (after a paragraph style's `indent`; `em` being the
+ *  paragraph's own size), `'end'` for the measure's end edge, or a share of
+ *  the measure (`'50%'`). */
+export type TabStopPosition = Dimension | 'end' | `${number}%`;
+
+/** How the text after a tab sits at its stop (#622): `'start'` starts
+ *  there, `'end'` ends there, `'center'` is centred on it and `'decimal'`
+ *  puts its decimal separator on it (a run with none ends there). */
+export type TabStopAlign = 'start' | 'end' | 'center' | 'decimal';
+
+/**
+ * A tab stop of body text (#622): a menu's prices flush right, a cast
+ * list's actors after a dot leader, an exam's marks at the margin. A tab
+ * goes to the first stop past the text before it; a line holding a tab is
+ * set by the line-by-line breaker (never Knuth–Plass), and in justified
+ * text only its word spaces after the last tab take the slack.
+ */
+export interface TabStop {
+  position: TabStopPosition;
+  /** Default `'start'`. */
+  align?: TabStopAlign;
+  /** Repeated over the room before the stop, flush with its end so the
+   *  leaders of several lines line up: `'.'`, `'. '`, `'·'`, `'_'`, `'-'`
+   *  or any short text in the paragraph's face; `'rule'` draws a line on
+   *  the baseline (a form's blank). Default none. */
+  leader?: string;
+  /** Room kept between the text and the leader, and between the leader and
+   *  the text at the stop. Default `0.5em` (the contents' `leader.gap`). */
+  leaderGap?: Dimension;
+  /** `'decimal'` stops: the separator. Default the document language's
+   *  (`.` in English, `,` in Spanish, Catalan, Portuguese…). */
+  decimalChar?: string;
 }
 
 export type ParagraphTextTransform = 'none' | 'uppercase';
@@ -2186,6 +2240,10 @@ export interface ResolvedParagraphStyleConfig {
   /** Absent when the style sets none (see
    *  {@link ParagraphStyleConfig.lineNumbers}). */
   lineNumbers?: boolean;
+  /** Absent when the style sets none: its paragraphs take the body's. */
+  tabStops?: TabStop[];
+  /** Absent when the style sets none. */
+  tabInterval?: Dimension;
 }
 
 // ---------------------------------------------------------------------------
@@ -2413,6 +2471,11 @@ export interface CalloutBodyStyleConfig {
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
   firstLineIndent?: Dimension;
+  /** Tab stops of the box's paragraphs and list items (#622). Unset: the
+   *  body's (`bodyText.tabStops`). */
+  tabStops?: TabStop[];
+  /** Default stops past the last of {@link tabStops}. Unset: the body's. */
+  tabInterval?: Dimension;
 }
 
 /** List typography inside the callout. Every field inherits
@@ -2707,6 +2770,9 @@ export interface ResolvedCalloutStyleConfig {
     hyphenation: boolean;
     paragraphSpacing: boolean;
     firstLineIndent: Dimension;
+    /** Absent when the style sets none. */
+    tabStops?: TabStop[];
+    tabInterval?: Dimension;
   };
   lists: {
     bulletChar: string;

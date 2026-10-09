@@ -102,7 +102,7 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
     let lineChanged = false;
     const segments: VDTLineSegment[] = [];
     for (const seg of line.segments) {
-      if (seg.inserted) {
+      if (seg.inserted || seg.leader) {
         segments.push(seg);
         continue;
       }

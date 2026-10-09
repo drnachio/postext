@@ -4,6 +4,8 @@ import { injectPlaceholderSpans } from './injectSpans';
 import { sliceSpan } from './links';
 import { parseDirectiveAttrs } from './attrs';
 import { applyAnnotationMarks, markAnnotations, stripAnnotations, type QueuedAnnotation } from './annotations';
+import type { TabStop } from '../types';
+import { tabStopFromAttrs } from '../defaults/tabStops';
 
 /** Atomic plain-text placeholder for an inline reference span. One code unit
  *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
@@ -390,6 +392,64 @@ export function extractInlineSwatches(
   }
   out += text.slice(last);
   return { cleaned: out, swatches };
+}
+
+/** Plain-text placeholder of a tab (#622) while a paragraph's inline marks
+ *  are read; the spans' text has `'\t'` in its place (`buildBlockMapping`). */
+export const TAB_PLACEHOLDER = '\uE1A8';
+
+/** Metadata of a tab (#622): a tab character of the source (`literal`), or
+ *  `:tab` with the one-off stop of its attributes. */
+export interface TabMeta {
+  literal?: true;
+  /** Tab characters in a row (spaces between them aside): one tab of the
+   *  plain text that goes on this many stops. */
+  count?: number;
+  stop?: TabStop;
+}
+
+/** `:tab`, `:tab{…}` or a tab character. A bare `:tab` is followed by
+ *  anything but a letter (`3:table` is text). */
+const INLINE_TAB_RE = /:tab(?:\{([^}\n]*)\}|(?!\p{L}))|\t(?:[ \t]*\t)*/gu;
+
+/**
+ * Take the tabs of a paragraph's text out (#622): every `:tab` (with its
+ * attributes, see `tabStopFromAttrs`) and every tab character becomes
+ * {@link TAB_PLACEHOLDER}, outside inline code, link destinations and
+ * directive attributes. Runs on the text with its chips, references,
+ * swatches and maths already taken out.
+ */
+export function extractInlineTabs(text: string): { cleaned: string; tabs: TabMeta[] } {
+  if (!text.includes('\t') && !text.includes(':tab')) return { cleaned: text, tabs: [] };
+  const kept = dataRanges(text);
+  CODE_SPAN_RE.lastIndex = 0;
+  let c: RegExpExecArray | null;
+  while ((c = CODE_SPAN_RE.exec(text)) !== null) kept.push([c.index, c.index + c[0].length]);
+  const tabs: TabMeta[] = [];
+  INLINE_TAB_RE.lastIndex = 0;
+  const cleaned = text.replace(INLINE_TAB_RE, (match: string, attrs: string | undefined, offset: number) => {
+    if (kept.some(([st, e]) => offset >= st && offset < e)) return match;
+    if (match.startsWith('\t')) {
+      const count = match.split('\t').length - 1;
+      tabs.push({ literal: true, ...(count > 1 ? { count } : {}) });
+    } else {
+      const stop = attrs !== undefined ? tabStopFromAttrs(parseDirectiveAttrs(attrs)) : undefined;
+      tabs.push(stop ? { stop } : {});
+    }
+    return TAB_PLACEHOLDER;
+  });
+  return { cleaned, tabs };
+}
+
+/** Attach a `tab` to each {@link TAB_PLACEHOLDER} in order; the tab is a
+ *  span of its own. */
+export function injectTabSpans(spans: InlineSpan[], tabs: TabMeta[]): InlineSpan[] {
+  return injectPlaceholderSpans(spans, tabs, TAB_PLACEHOLDER, (meta, bold, italic) => ({
+    text: TAB_PLACEHOLDER,
+    bold,
+    italic,
+    tab: { ...(meta.literal ? { literal: true as const } : {}), ...(meta.count ? { count: meta.count } : {}), ...(meta.stop ? { stop: meta.stop } : {}) },
+  }));
 }
 
 /** Metadata of an inline `:chip[text]{style="…"}`: the text as written
