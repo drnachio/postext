@@ -287,7 +287,9 @@ export function collectContentWarnings(
       case 'paragraph': {
         // A poem's `{style=…}` names a paragraph style (#378): its fence
         // line is the range.
-        const verseStyle = b.verse?.attrs.style;
+        // A poem set line by line (#620) is a block a stanza: its first
+        // reports it.
+        const verseStyle = (b.verse?.stanza?.index ?? 0) === 0 ? b.verse?.attrs.style : undefined;
         if (verseStyle !== undefined && !paragraphStyles.has(verseStyle)) {
           const fenceEnd = body.indexOf('\n', b.sourceStart);
           out.push({ kind: 'unknownParagraphStyle', style: verseStyle, ...abs({ start: b.sourceStart, end: fenceEnd < 0 ? b.sourceEnd : fenceEnd }) });

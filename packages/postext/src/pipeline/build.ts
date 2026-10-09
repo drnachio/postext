@@ -40,6 +40,7 @@ import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMe
 import { stampCentralBaselines } from './verticalMetrics';
 import { orientLinesToFrames } from './mirrorFrame';
 import { verseMarginTopPx } from './buildBlockKind';
+import { verseLinesSettings, versesLineByLine } from './verseLines';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
 import { asciiDigits } from '../arabicNumerals';
@@ -5388,7 +5389,12 @@ function placeDocumentPass(
       (vdtType === 'paragraph' && isContainerTail && paragraphContainer?.snapToGrid !== false) ||
       // A poem, like a container of one block: its own leading and the
       // margins of its style are off the grid, the text after it is not.
-      (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)) ||
+      // A stanza between two of a poem in the line layout snaps too, so the
+      // space between stanzas is whole grid lines (#620); one of a poem set
+      // as single hemistichs (a configuration stored before #620) does not,
+      // as the one block postext 1.22 set it in did not.
+      (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)
+        && (rawBlock.verse.stanza === undefined || rawBlock.verse.stanza.last || versesLineByLine(rawBlock, resolved))) ||
       vdtType === 'mathDisplay'
     );
 
@@ -6223,10 +6229,16 @@ function placeDocumentPass(
           }
         }
         // A poem's bayt set staggered over two lines (or more) stays in one
-        // column (#378): the cut goes before it — in an empty column, which
-        // the poem cannot leave, after its first line at least.
-        while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameBayt(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
+        // column (#378), and so does a line of verse with its turnovers
+        // (#620): the cut goes before it — in an empty column, which the
+        // poem cannot leave, after its first line at least.
+        while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameVerseLine(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
           choice = { splitAt: choice.splitAt - 1, demerit: choice.demerit };
+        }
+        // A stanza `keepStanzas` covers (a haiku, a tanka) moves on whole,
+        // unless the column is empty: it cannot do better anywhere.
+        if (choice.splitAt > 0 && partIndex === 0 && curCol.blocks.length > 0 && keepsStanzaWhole(rawBlock, resolved)) {
+          choice = { splitAt: 0, demerit: choice.demerit };
         }
         if (choice.splitAt > 0) {
           // Consume spacing (negative: a container margin pulling the block up)
@@ -7157,6 +7169,22 @@ function* buildDocumentBalanced(
  *  column never cuts. */
 function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
   return a?.verse !== undefined && b?.verse !== undefined && a.verse.bayt === b.verse.bayt;
+}
+
+/** Whether a column may not break between two lines of verse: they set one
+ *  bayt (#378), or `b` is a turnover of the line of verse `a` sets or
+ *  turns over (#620). */
+function sameVerseLine(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
+  return sameBayt(a, b) || (a?.verseLine !== undefined && b?.verseLine?.turnover === true);
+}
+
+/** Whether a stanza of the line layout is kept whole (#620): it has no
+ *  more lines of verse than `keepStanzas` asks for. */
+function keepsStanzaWhole(raw: ContentBlock, resolved: ResolvedConfig): boolean {
+  const stanza = raw.verse?.stanza;
+  if (!stanza || !versesLineByLine(raw, resolved)) return false;
+  const keep = verseLinesSettings(raw.verse!.attrs, { fontSizePx: 0, lineHeightPx: 0 }, resolved, false).keepStanzas;
+  return keep > 0 && stanza.lines.length <= keep;
 }
 
 /** Whether the text after a poem goes back to the baseline grid: unless

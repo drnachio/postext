@@ -12,8 +12,9 @@ import { dimensionToPx } from '../units';
 import { KNOWN_CONTAINERS } from '../parse/blockParser';
 
 /**
- * The configuration rules this engine writes: 8 since postext 1.5. Thirteen
- * rules changed in that release, and a configuration stored under an older
+ * The configuration rules this engine writes: 9 since #620 (8 from postext
+ * 1.5). Thirteen rules changed in 1.5 and two since, and a configuration
+ * stored under an older
  * number (or none) is read through {@link migrateConfig}:
  * - 3: a heading level's `breakBefore` (and a heading style's) merges field
  *   by field onto the level's default — H1's being `always-odd`
@@ -64,6 +65,15 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  *     paragraph (`bodyText.breakAfterHyphens`), where up to 1.4 a justified
  *     paragraph with no inline formatting never broke there ({@link
  *     pinLegacyHyphenBreaks}).
+ * - 9 (#620), two rules:
+ *   - a `:::verse` poem whose fence names no layout and whose lines carry
+ *     no hemistich separator is set line by line (`bodyText.verse.layout:
+ *     'auto'`), where up to 1.22 its lines were single hemistichs centred
+ *     in the measure ({@link pinLegacyVerseLayout});
+ *   - a paragraph style that sets `firstLineIndent` itself and a non-zero
+ *     `hangingIndent` indents its first line by the one and its turnovers
+ *     by the other, where up to 1.22 the hanging indent replaced the
+ *     first-line indent ({@link pinLegacyPairedIndents}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -71,9 +81,11 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  * inline-gap, version-6, version-7 and version-8 pins, under 4 the
  * inline-gap, version-6, version-7 and version-8 pins, under 5 the
  * version-6, version-7 and version-8 pins, under 6 the version-7 and
- * version-8 pins, under 7 the version-8 pins.
+ * version-8 pins, under 7 the version-8 pins. One stored under 8 was
+ * written by postext 1.5 to 1.22 and gets the version-9 pins (which every
+ * older one gets too).
  */
-export const CONFIG_VERSION = 8;
+export const CONFIG_VERSION = 9;
 
 /** The rules that merge a partial heading break onto its level's. */
 const HEADING_BREAK_RULES = 3;
@@ -105,6 +117,11 @@ const PARAGRAPH_CONTAINER_RULES = 8;
 /** The rules that let Knuth–Plass break after a compound's hyphen in every
  *  paragraph. */
 const HYPHEN_BREAK_RULES = 8;
+/** The rules that set a poem with no hemistich separator line by line. */
+const VERSE_LAYOUT_RULES = 9;
+/** The rules that pair a paragraph style's own first-line indent with its
+ *  hanging one. */
+const PAIRED_INDENT_RULES = 9;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -389,6 +406,80 @@ function mayHaveCompounds(content: string | readonly string[] | undefined): bool
   if (content === undefined) return true;
   if (typeof content === 'string') return COMPOUND_RE.test(content);
   return content.some((text) => COMPOUND_RE.test(text));
+}
+
+/**
+ * A configuration written before #620 (postext 1.22 or earlier), pinned to
+ * the way it set a `:::verse` poem with no hemistich separator:
+ * `bodyText.verse.layout: 'bayt'`, every line a single hemistich centred in
+ * the measure, where today such a poem is set line by line. A
+ * configuration that names the setting already is returned as it is (the
+ * same object).
+ */
+export function pinLegacyVerseLayout<T extends Partial<PostextConfig>>(config: T): T {
+  const bodyText: BodyTextConfig = isRecord(config.bodyText) ? config.bodyText : {};
+  const verse = isRecord(bodyText.verse) ? bodyText.verse : {};
+  if (verse.layout !== undefined) return config;
+  return { ...config, bodyText: { ...bodyText, verse: { ...verse, layout: 'bayt' } } };
+}
+
+/** A `:::verse` fence on a line of its own, its attributes, and the poem's
+ *  lines up to its closing `:::` (or the end of the text). */
+const VERSE_POEM_RE = /^[^\S\n]*:::[^\S\n]*verse[^\S\n]*(\{[^}\n]*\})?[^\S\n]*\n([\s\S]*?)(?:^[^\S\n]*:::[^\S\n]*$|(?![\s\S]))/gm;
+
+/** Whether markdown holds a poem the line layout changes: a `:::verse`
+ *  fence naming no layout over lines with no hemistich separator. */
+function hasPlainPoem(text: string): boolean {
+  if (!text.includes(':::')) return false;
+  for (const m of text.matchAll(VERSE_POEM_RE)) {
+    if (m[1] && /\blayout\s*=/.test(m[1])) continue;
+    const body = m[2] ?? '';
+    if (body.trim() !== '' && !body.includes('||') && !/\s\\\\\s/.test(body)) return true;
+  }
+  return false;
+}
+
+/** Whether markdown may hold such a poem. Unknown content (undefined)
+ *  may. */
+function mayHavePlainPoems(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return hasPlainPoem(content);
+  return content.some(hasPlainPoem);
+}
+
+/**
+ * A configuration written before #620 (postext 1.22 or earlier), pinned to
+ * the indents of its paragraph styles: a style that sets both
+ * `firstLineIndent` and a non-zero `hangingIndent` loses the
+ * `firstLineIndent`, which up to 1.22 the hanging indent replaced (today
+ * the first line starts at it). The styles of its HTML viewer's overrides
+ * are pinned the same way. A configuration with no such style is returned
+ * as it is (the same object).
+ */
+export function pinLegacyPairedIndents<T extends Partial<PostextConfig>>(config: T): T {
+  const pinStyles = (styles: unknown): unknown[] | undefined => {
+    if (!Array.isArray(styles)) return undefined;
+    let changed = false;
+    const out = styles.map((s: unknown) => {
+      if (!isRecord(s) || s.firstLineIndent === undefined || !isRecord(s.hangingIndent)) return s;
+      const hang = s.hangingIndent.value;
+      if (typeof hang !== 'number' || !(hang > 0)) return s;
+      changed = true;
+      const { firstLineIndent: _first, ...rest } = s;
+      void _first;
+      return rest;
+    });
+    return changed ? out : undefined;
+  };
+  let out: T = config;
+  const own = pinStyles((config as Record<string, unknown>).paragraphStyles);
+  if (own) out = { ...out, paragraphStyles: own };
+  const viewer = (config as Record<string, unknown>).htmlViewer;
+  if (isRecord(viewer) && isRecord(viewer.overrides)) {
+    const overrides = pinStyles(viewer.overrides.paragraphStyles);
+    if (overrides) out = { ...out, htmlViewer: { ...viewer, overrides: { ...viewer.overrides, paragraphStyles: overrides } } };
+  }
+  return out;
 }
 
 /** Whether a `textAlign` value sets text ragged (anything but `'justify'`;
@@ -683,10 +774,13 @@ export interface MigrateConfigOptions {
    * `:::paragraphs` container is not given the 1.4 space under containers
    * (see {@link pinLegacyParagraphContainerSpacing}); and text with no
    * hyphen between two letters is not given the 1.4 compound breaks (see
-   * {@link pinLegacyHyphenBreaks}). That keeps a stored configuration as
+   * {@link pinLegacyHyphenBreaks}); and text with no `:::verse` poem whose
+   * lines carry no hemistich separator is not given the 1.22 verse layout
+   * (see {@link pinLegacyVerseLayout}). That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
-   * breaks, the split under a heading and the compound breaks always, and
+   * breaks, the split under a heading, the compound breaks and the verse
+   * layout always, and
    * the container space always when the configuration declares a paragraph
    * style.
    * Any iterable of texts will do, a generator or a Map's `values()`
@@ -720,7 +814,11 @@ export interface MigrateConfigOptions {
  * pinLegacyParagraphContainerSpacing}, when it declares a paragraph style,
  * unless `options.content` shows no such container, and its compound
  * breaks by {@link pinLegacyHyphenBreaks}, unless `options.content` shows
- * no compound. A current one is returned as it is (the same object).
+ * no compound; one older than 9 has its poems with no hemistich separator
+ * pinned by {@link pinLegacyVerseLayout}, unless `options.content` shows
+ * none, and its paragraph styles' indents by {@link
+ * pinLegacyPairedIndents}. A current one is returned as it is (the same
+ * object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -745,6 +843,8 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < HEADING_SPLIT_RULES && mayHaveHeadings(content)) out = pinLegacyHeadingSplit(out);
   if (rules < PARAGRAPH_CONTAINER_RULES && mayHaveParagraphContainers(content)) out = pinLegacyParagraphContainerSpacing(out);
   if (rules < HYPHEN_BREAK_RULES && mayHaveCompounds(content)) out = pinLegacyHyphenBreaks(out);
+  if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) out = pinLegacyVerseLayout(out);
+  if (rules < PAIRED_INDENT_RULES) out = pinLegacyPairedIndents(out);
   return out;
 }
 
@@ -790,5 +890,7 @@ export function migrateBundleConfig(
   if (rules < HEADING_SPLIT_RULES && mayHaveHeadings(content)) merged = pinLegacyHeadingSplit(merged);
   if (rules < PARAGRAPH_CONTAINER_RULES && mayHaveParagraphContainers(content)) merged = pinLegacyParagraphContainerSpacing(merged);
   if (rules < HYPHEN_BREAK_RULES && mayHaveCompounds(content)) merged = pinLegacyHyphenBreaks(merged);
+  if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) merged = pinLegacyVerseLayout(merged);
+  if (rules < PAIRED_INDENT_RULES) merged = pinLegacyPairedIndents(merged);
   return merged;
 }

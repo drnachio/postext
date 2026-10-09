@@ -1,6 +1,7 @@
 import type { BlockquoteConfig, BodyTextConfig, EmphasisStyle, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, ResolvedKashidaConfig, HyphenationConfig, KashidaPatterns, LocaleTag, TashkilMode } from '../types';
 import { hyphenationLocaleFor, isUnhyphenatedLanguage, localeScript, presentTag } from '../locale';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared';
+import { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './verse';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
   enabled: true,
@@ -47,6 +48,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   breakAfterHyphens: true,
   repeatHyphen: false,
   blockquote: DEFAULT_BLOCKQUOTE_CONFIG,
+  verse: DEFAULT_VERSE_CONFIG,
   avoidOrphans: true,
   orphanMinLines: 2,
   // Penalties below are normalized to a shared 0–10000 scale. Each expresses
@@ -297,6 +299,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     breakAfterHyphens: partial.breakAfterHyphens ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens,
     repeatHyphen: partial.repeatHyphen ?? DEFAULT_BODY_TEXT_CONFIG.repeatHyphen,
     blockquote: resolveBlockquoteConfig(partial.blockquote, documentLocale),
+    verse: resolveVerseConfig(partial.verse),
     avoidOrphans: partial.avoidOrphans ?? DEFAULT_BODY_TEXT_CONFIG.avoidOrphans,
     orphanMinLines: partial.orphanMinLines ?? DEFAULT_BODY_TEXT_CONFIG.orphanMinLines,
     orphanPenalty: partial.orphanPenalty ?? DEFAULT_BODY_TEXT_CONFIG.orphanPenalty,
@@ -458,6 +461,11 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
   const blockquote = stripBlockquoteDefaults(bodyText.blockquote, documentLocale);
   if (blockquote) {
     result.blockquote = blockquote;
+    hasOverride = true;
+  }
+  const verse = stripVerseDefaults(bodyText.verse);
+  if (verse) {
+    result.verse = verse;
     hasOverride = true;
   }
   if (bodyText.avoidOrphans !== undefined && bodyText.avoidOrphans !== DEFAULT_BODY_TEXT_CONFIG.avoidOrphans) {

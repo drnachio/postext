@@ -6,6 +6,7 @@ import { cachedMeasureBlock as cachedPlainBlock, cachedMeasureRichBlock as cache
 import { hasCompound } from './breakRules';
 
 export type { BreakTrace, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
+export { lineIndentAt, maxLineIndent } from './types';
 export { buildFontString, initHyphenator, clearMeasurementCache, createMeasurementCache } from './font';
 export { measureGlyphWidth, measureTextWidth } from './canvas';
 export { measureBlock } from './plain';

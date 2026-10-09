@@ -14,6 +14,7 @@ import { resolveHeadingStyle, resolveMathDisplayStyle, resolveParagraphStyle } f
 import type { ListBulletStyle, ListItemResolved, OrderedListMetrics } from './lists';
 import type { HeadingLevelResolver } from './headingStyles';
 import { lengthAttr } from './verse';
+import { verseLinesSettings, versesLineByLine } from './verseLines';
 import {
   resolveOrderedListItemStyle,
   resolveUnorderedListItemStyle,
@@ -253,7 +254,12 @@ export function resolveBlockKind(
       // A poem (#378): its fence's paragraph style (`{style=…}`) gives its
       // face, size and leading; its lines are set by `pipeline/verse.ts`,
       // flush left with final widths, never indented or hyphenated.
-      const style = rawBlock.verse ? verseBlockStyle(verseStyleOf(rawBlock.verse.attrs.style, resolved) ?? base) : base;
+      // A poem in the line layout (#620) keeps the style's indent, and each
+      // stanza takes the poem's margins or the space between stanzas.
+      const verseStyle = rawBlock.verse ? verseStyleOf(rawBlock.verse.attrs.style, resolved) ?? base : undefined;
+      const style = !rawBlock.verse || !verseStyle ? base
+        : versesLineByLine(rawBlock, resolved) ? verseStanzaStyle(verseStyle, rawBlock, resolved)
+          : stanzaMargins(verseBlockStyle(verseStyle), rawBlock, 0);
       // A paragraph style's `textTransform` (EF-173), length-preserving as
       // a heading's, so the source map stays 1:1. Maths is left alone; the
       // words of a chip are set in capitals too (a `:ref` label is, once
@@ -313,6 +319,42 @@ function verseStyleOf(id: string | undefined, resolved: ResolvedConfig): BlockSt
 /** The space a poem's paragraph style asks above it (0 without one). */
 export function verseMarginTopPx(styleId: string | undefined, resolved: ResolvedConfig): number {
   return verseStyleOf(styleId, resolved)?.marginTopPx ?? 0;
+}
+
+/** A stanza's margins (#620): the poem's above the first and below the
+ *  last, `betweenPx` between two. A poem in the bayt layout is one block,
+ *  which keeps both. */
+function stanzaMargins(style: BlockStyle, raw: ContentBlock, betweenPx: number): BlockStyle {
+  const stanza = raw.verse?.stanza;
+  if (!stanza) return style;
+  return {
+    ...style,
+    marginTopPx: stanza.index === 0 ? style.marginTopPx : 0,
+    marginBottomPx: stanza.last ? style.marginBottomPx : betweenPx,
+  };
+}
+
+/** A stanza's block style in the line layout (#620): flush left (its lines
+ *  carry their own geometry), the style's `indent` and `endIndent` kept,
+ *  no first-line or hanging indent (`pipeline/verseLines.ts` sets the
+ *  turnovers), hyphenated only when the poem's paragraph style sets
+ *  `hyphenation: true` itself. */
+function verseStanzaStyle(style: BlockStyle, raw: ContentBlock, resolved: ResolvedConfig): BlockStyle {
+  const { hyphenationZonePx: _zone, hangingIndentPx: _hang, ...rest } = style;
+  void _zone;
+  void _hang;
+  const id = raw.verse?.attrs.style?.trim();
+  const own = !!id && resolved.paragraphStyles.find((s) => s.id === id)?.ownHyphenation === true;
+  const zone = own ? Math.max(0, dimensionToPx(resolved.bodyText.hyphenation.zone, resolved.page.dpi, style.fontSizePx)) : undefined;
+  const settings = verseLinesSettings(raw.verse!.attrs, style, resolved, false);
+  return stanzaMargins({
+    ...rest,
+    textAlign: 'left',
+    hyphenate: own,
+    ...(zone !== undefined ? { hyphenationZonePx: zone } : {}),
+    firstLineIndentPx: 0,
+    hangingIndent: false,
+  }, raw, settings.stanzaSpacePx);
 }
 
 /** A poem's block style: flush left (its lines carry their own geometry),

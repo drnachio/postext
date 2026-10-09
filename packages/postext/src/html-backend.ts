@@ -733,8 +733,9 @@ function lineEndHtml(text: string, x: number): string {
  * What a copy puts between a line and the one after it in the same block
  * (`next`), or after a block's last line (#403): nothing after a line that
  * ends inside a word or on a hyphen or dash (`VDTLine.hyphenated`); a
- * newline after a line of verse and after the last line of a paragraph (or
- * of a heading, a caption, a cell); between two lines of a block, a space
+ * space before the turnover of a line of verse, a blank line after a
+ * stanza (#620); a newline after a line of verse and after the last line
+ * of a paragraph (or of a heading, a caption, a cell); between two lines of a block, a space
  * where the break consumed one — the plain text skips a character between
  * them (`plainEnd` / `plainStart`) — and nothing where it did not (between
  * two ideographs). Lines without those offsets, and a block's last line
@@ -744,6 +745,9 @@ function lineEndHtml(text: string, x: number): string {
  */
 function lineEndText(line: VDTLine, next: VDTLine | undefined): string {
   if (line.hyphenated) return '';
+  // A line of verse in the line layout (#620): a space before its
+  // turnover, a newline after it, a blank line after a stanza.
+  if (line.verseLine) return next?.verseLine?.turnover ? ' ' : line.verseLine.stanzaEnd ? '\n\n' : '\n';
   if (line.verse || (!next && line.isLastLine !== false)) return '\n';
   if (next && line.plainEnd !== undefined && next.plainStart !== undefined) return next.plainStart > line.plainEnd ? ' ' : '';
   return cjkAt(Array.from(line.text.trimEnd()).pop()) || cjkAt(next && Array.from(next.text.trimStart())[0]) ? '' : ' ';

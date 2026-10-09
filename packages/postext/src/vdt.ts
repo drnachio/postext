@@ -724,6 +724,16 @@ export interface VDTLine {
    *  paint them as they are. A column or page never breaks between two
    *  lines of one bayt. Absent on any other line. */
   verse?: { bayt: number; part: 'bayt' | 'sadr' | 'ajuz' | 'single' };
+  /** A line of a `:::verse` poem in the line layout (#620): the stanza it
+   *  sets (0-based, in its poem), the line of verse (0-based, counted
+   *  through the whole poem) and whether it is a turnover, the part of a
+   *  line of verse too wide for the measure set on the line after it. A
+   *  column or page never breaks between a line and its turnover.
+   *  `stanzaEnd` is set on the last line of a stanza another follows
+   *  (copied text puts a blank line there). The widths of the line's
+   *  segments are final (the block is set flush left): renderers paint
+   *  them as they are. Absent on any other line. */
+  verseLine?: { stanza: number; line: number; turnover: boolean; stanzaEnd?: true };
   /** The first line of an entry of a back-of-book index (`:::index`): the
    *  entry's level (0 a main entry, 1 a sub-entry…). A block of the index
    *  may set more than one entry (the page-less entries heading its

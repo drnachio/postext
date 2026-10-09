@@ -33,6 +33,7 @@ export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, 
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
 export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults } from './layout';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
+export { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './verse';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
 export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './tableStyle';
 export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, defaultCaptionLabels } from './captionStyle';

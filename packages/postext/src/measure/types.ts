@@ -36,6 +36,24 @@ export function uniformMeasureFrom(steps: readonly LineWidthStep[] | undefined):
   return from;
 }
 
+/** The indent of line `li` (0-based) the options ask for: its entry in
+ *  `lineIndentsPx`, else the first-line indent on line 0 (or, hanging, on
+ *  every line but line 0). Never negative. */
+export function lineIndentAt(options: MeasureBlockOptions | undefined, li: number): number {
+  const table = options?.lineIndentsPx;
+  if (table && table.length > 0) return Math.max(0, table[Math.min(li, table.length - 1)]!);
+  const indent = options?.firstLineIndentPx ?? 0;
+  if (!(indent > 0)) return 0;
+  return options?.hangingIndent ? (li === 0 ? 0 : indent) : (li === 0 ? indent : 0);
+}
+
+/** The largest indent any line of the block takes (see {@link lineIndentAt}). */
+export function maxLineIndent(options: MeasureBlockOptions | undefined): number {
+  const table = options?.lineIndentsPx;
+  if (table && table.length > 0) return Math.max(0, ...table);
+  return Math.max(0, options?.firstLineIndentPx ?? 0);
+}
+
 export interface MeasuredBlock {
   lines: VDTLine[];
   totalHeight: number;
@@ -57,8 +75,19 @@ export interface MeasurementCache {
 export interface MeasureBlockOptions {
   textAlign?: TextAlign;
   hyphenate?: boolean;
+  /** The first line's indent (px); with {@link hangingIndent}, the indent
+   *  of every line but the first instead. A negative value counts as 0.
+   *  {@link lineIndentsPx} takes the place of both when set. */
   firstLineIndentPx?: number;
   hangingIndent?: boolean;
+  /** The indent of each line (px, from the measure's start) in line
+   *  order, from line 0; the last entry holds for every line after it.
+   *  `[first, rest]` pairs a first-line indent with a hanging one (a
+   *  paragraph style that sets both, a turnover of verse, #620); a longer
+   *  table indents the first lines each its own way. Takes the place of
+   *  {@link firstLineIndentPx} and {@link hangingIndent} when set; see
+   *  {@link lineIndentAt}. Joins the cache key only when set. */
+  lineIndentsPx?: readonly number[];
   /** The label column of a numbered bibliography entry (#290), in px from
    *  the line's start: the spans' `labelTab` spaces are widened so the
    *  entry's text starts there. */

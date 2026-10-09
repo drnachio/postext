@@ -31,6 +31,12 @@ export interface BlockStyle {
   marginBottomPx: number;
   firstLineIndentPx: number;
   hangingIndent: boolean;
+  /** The indent of every line but the first (px) when the style pairs a
+   *  first-line indent with a hanging one (#620): `firstLineIndentPx` is
+   *  then the first line's own and `hangingIndent` is on. Unset: with
+   *  `hangingIndent`, `firstLineIndentPx` is the hang and the first line
+   *  is not indented. */
+  hangingIndentPx?: number;
   /** Indent of every line (px) from the left edge of the column or box —
    *  a paragraph style's `indent`; the first-line and hanging indents are
    *  measured from it. Unset: none. */
@@ -266,7 +272,8 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
  *  text; the bold and italic colours too, unless the style sets its own)
  *  with the style's own face, weights, slant, size, leading, alignment,
  *  indents and small caps. A non-zero `hangingIndent`
- *  turns into the measurer's hanging mode (lines 2+ indented), and `indent`
+ *  turns into the measurer's hanging mode (lines 2+ indented; the first
+ *  line keeps a first-line indent the style sets itself, #620), and `indent`
  *  shifts every line (`indentPx`); `spaceBetween` lands in
  *  `marginBottomPx`, the same slot body `paragraphSpacing` uses, so the gap
  *  flows through pending spacing and the grid snap like any other margin. */
@@ -286,7 +293,10 @@ export function resolveParagraphStyle(
   const hyphenation = hyphenationFor(style.hyphenation, textAlign, resolved, fontSizePx);
   const hangingIndentPx = dimensionToPx(style.hangingIndent, dpi, fontSizePx);
   const hangingIndent = hangingIndentPx > 0;
-  const firstLineIndentPx = hangingIndent
+  // A first-line indent the style sets itself pairs with its hanging one
+  // (#620); one inherited from the body gives way to it.
+  const paired = hangingIndent && style.ownFirstLineIndent === true;
+  const firstLineIndentPx = hangingIndent && !paired
     ? hangingIndentPx
     : dimensionToPx(style.firstLineIndent, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(style.spaceBetween, dpi, fontSizePx);
@@ -309,6 +319,7 @@ export function resolveParagraphStyle(
     marginBottomPx,
     firstLineIndentPx,
     hangingIndent,
+    ...(paired ? { hangingIndentPx } : {}),
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
     ...(Number.isFinite(endIndentPx) && endIndentPx > 0 ? { endIndentPx } : {}),
     ...(style.smallCaps ? { smallCaps: true } : {}),

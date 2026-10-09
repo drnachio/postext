@@ -37,7 +37,7 @@ import type { InlineKunten, InlineRuby, InlineSpan, InlineWarichu } from '../par
 import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTWarichu } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import { isJapaneseLanguage } from '../locale';
-import { lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineIndentAt, lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { measureInkBox, measureInkExtent, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import {
   atomicSpanToken,
@@ -2784,10 +2784,10 @@ export function composeCjkParagraph(
   const levelBreaks = breakOpportunities(units, level);
   const breaks = keepAll ? keepAllBreaks(units, levelBreaks) : levelBreaks;
   const emergency = keepAll ? levelBreaks : undefined;
-  const indentPx = options?.firstLineIndentPx ?? 0;
-  const hanging = options?.hangingIndent ?? false;
-  const firstIndent = hanging ? 0 : paragraphStartIndent(units, indentPx, composition);
-  const indentOf = (li: number): number => (indentPx > 0 ? (hanging ? (li === 0 ? 0 : indentPx) : (li === 0 ? firstIndent : 0)) : 0);
+  // The first line's indent gives way to an opening bracket that starts it
+  // (`paragraphStartIndent`); the others are as asked (`lineIndentAt`).
+  const firstIndent = paragraphStartIndent(units, lineIndentAt(options, 0), composition);
+  const indentOf = (li: number): number => (li === 0 ? firstIndent : lineIndentAt(options, li));
   const measureOf = (li: number): number => lineMeasure(maxWidthPx, options?.restWidths, li) - indentOf(li);
   const sizeMatch = FONT_SIZE_RE.exec(normalFont);
   const em = sizeMatch ? parseFloat(sizeMatch[1]!) : 16;

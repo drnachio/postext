@@ -33,10 +33,14 @@ function resolveParagraphStyleConfig(
     italic: partial.italic ?? false,
     smallCaps: partial.smallCaps ?? false,
     hyphenation: partial.hyphenation ?? bodyText.hyphenation.enabled,
+    ...(partial.hyphenation === true ? { ownHyphenation: true as const } : {}),
     indent: partial.indent ?? ZERO,
     // Absent unless set, so styles without it resolve as before (#424).
     ...(partial.endIndent && partial.endIndent.value > 0 ? { endIndent: partial.endIndent } : {}),
     firstLineIndent: partial.firstLineIndent ?? bodyText.firstLineIndent,
+    // Set or inherited: a first-line indent pairs with a hanging one only
+    // when the style sets it (#620).
+    ...(partial.firstLineIndent !== undefined ? { ownFirstLineIndent: true as const } : {}),
     hangingIndent: partial.hangingIndent ?? ZERO,
     spaceBetween: partial.spaceBetween ?? ZERO,
     marginTop: partial.marginTop ?? ZERO,

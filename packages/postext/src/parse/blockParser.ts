@@ -5,7 +5,7 @@
  * positions back into the original markdown.
  */
 
-import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
+import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue, VerseLineInfo, VerseStanza } from './types';
 import { attachEquationAnchors } from './equationLabels';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
@@ -26,6 +26,9 @@ const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 /** A bare `:::` line: closes the innermost open container. */
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
+/** A bayt's hemistichs cut at a `\\` with a space on each side (the
+ *  Wikisource markup, #378). */
+const HEMISTICH_WIKI_RE = /\s\\\\\s/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
 export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page', 'strip']);
@@ -190,7 +193,9 @@ function attachDirections<T extends { blocks: ContentBlock[] }>(result: T): T {
     const own = b.type === 'heading' ? directionAttr(b.attrs) : b.verse ? directionAttr(b.verse.attrs) : undefined;
     const d = own ?? inherited;
     if (d) b.direction = d;
-    if (inheritedLang) b.lang = inheritedLang;
+    // A poem's own `lang` (`:::verse{dir=ltr lang=en}`, #620).
+    const lang = (b.verse ? langAttr(b.verse.attrs) : undefined) ?? inheritedLang;
+    if (lang) b.lang = lang;
   }
   return result;
 }
@@ -274,19 +279,38 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
     return joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
   };
 
+  /** Poems in the line layout read so far (`VerseStanza.poem`). */
+  let poemCount = 0;
+
   /**
-   * A `:::verse` poem whose fence is line `start` (#378): every non-blank
-   * line up to the closing `:::` is a bayt, its two hemistichs split at the
-   * first `||` (or a `\\` with a space on each side, the Wikisource
-   * markup); a line without one is a single hemistich. The poem is one
-   * paragraph block (`ContentBlock.verse`) whose text joins the
-   * hemistichs with a tab and the bayts with a line feed; each hemistich
-   * is read as inline Markdown on its own, and the tab maps to the
-   * separator in the source, the line feed to the line's end. An unclosed
-   * poem runs to the end of the text. A poem with no line is dropped.
+   * A `:::verse` poem whose fence is line `start` (#378, #620), up to the
+   * closing `:::` (an unclosed poem runs to the end of the text). The fence's
+   * `layout` picks how its lines are read: `bayt` (see {@link parseBayts}),
+   * `lines` (see {@link parseVerseLines}), or, unset or `auto`, `bayt` when
+   * any line carries a hemistich separator (`||`, a spaced `\\`) and
+   * `lines` otherwise.
    */
-  const parseVerse = (start: number, attrsRaw: string): { block?: ContentBlock; next: number } => {
-    let k = start + 1;
+  const parseVerse = (start: number, attrsRaw: string): { blocks: ContentBlock[]; next: number } => {
+    const attrs = parseDirectiveAttrs(attrsRaw);
+    let end = start + 1;
+    while (end < rawLines.length && !CONTAINER_CLOSE_RE.test(rawLines[end]!.trim())) end++;
+    const layout = attrs.layout?.trim().toLowerCase();
+    const separated = rawLines.slice(start + 1, end).some((raw) => raw.includes('||') || HEMISTICH_WIKI_RE.test(raw));
+    if (layout === 'bayt' || (layout !== 'lines' && separated)) return parseBayts(start, end, attrs);
+    return parseVerseLines(start, end, attrs, layout !== 'lines');
+  };
+
+  /**
+   * A poem in the bayt layout (#378): every non-blank line is a bayt, its
+   * two hemistichs split at the first `||` (or a `\\` with a space on
+   * each side, the Wikisource markup); a line without one is a single
+   * hemistich. The poem is one paragraph block (`ContentBlock.verse`) whose
+   * text joins the hemistichs with a tab and the bayts with a line feed;
+   * each hemistich is read as inline Markdown on its own, and the tab maps
+   * to the separator in the source, the line feed to the line's end. A
+   * poem with no line is dropped.
+   */
+  const parseBayts = (start: number, end: number, attrs: DirectiveAttrs): { blocks: ContentBlock[]; next: number } => {
     let text = '';
     const spans: ContentBlock['spans'] = [];
     const sourceMap: number[] = [];
@@ -306,14 +330,13 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       sourceMap.push(...run.sourceMap);
     };
     let lastLine = start;
-    for (; k < rawLines.length; k++) {
+    for (let k = start + 1; k < end; k++) {
       const raw = rawLines[k]!;
-      if (CONTAINER_CLOSE_RE.test(raw.trim())) break;
       if (raw.trim() === '') continue;
       if (text !== '') sep('\n', lineOffsets[k]! - 1);
       const lineStart = lineOffsets[k]!;
       const bar = raw.indexOf('||');
-      const wiki = bar < 0 ? /\s\\\\\s/.exec(raw) : null;
+      const wiki = bar < 0 ? HEMISTICH_WIKI_RE.exec(raw) : null;
       const cut = bar >= 0 ? bar : wiki ? wiki.index + 1 : -1;
       if (cut >= 0) {
         hemistich(lineStart, lineStart + cut);
@@ -324,22 +347,137 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       }
       lastLine = k;
     }
-    const closed = k < rawLines.length;
-    const next = closed ? k + 1 : k;
-    if (text === '') return { next };
-    const attrs = parseDirectiveAttrs(attrsRaw);
+    const closed = end < rawLines.length;
+    const next = closed ? end + 1 : end;
+    if (text === '') return { blocks: [], next };
     return {
-      block: {
+      blocks: [{
         type: 'paragraph',
         text,
         spans,
         verse: { attrs },
         sourceStart: lineOffsets[start]!,
-        sourceEnd: closed ? lineEndOffset(k) : lineEndOffset(lastLine),
+        sourceEnd: closed ? lineEndOffset(end) : lineEndOffset(lastLine),
         sourceMap,
-      },
+      }],
       next,
     };
+  };
+
+  /**
+   * A poem in the line layout (#620): every non-blank line is a line of
+   * verse, read as inline Markdown on its own; a run of blank lines ends a
+   * stanza. Each stanza is a paragraph block (`VerseInfo.stanza`) whose text
+   * joins its lines with a line feed, mapped to the source's line end. A
+   * line's leading whitespace is its indent (`VerseLineInfo.indent`), kept
+   * out of the text; a line written `+ …` is a stepped line. With
+   * `keepSpaces` on the fence, a run of two or more spaces inside a line (a
+   * caesura) is kept as a fixed space of its width. The first stanza opens
+   * on the fence line, the last closes on the closing fence.
+   */
+  const parseVerseLines = (start: number, end: number, attrs: DirectiveAttrs, auto: boolean): { blocks: ContentBlock[]; next: number } => {
+    const closed = end < rawLines.length;
+    const next = closed ? end + 1 : end;
+    const keepSpaces = attrs.keepSpaces !== undefined && attrs.keepSpaces.trim().toLowerCase() !== 'false';
+    // The stanzas, as runs of source line indices.
+    const groups: number[][] = [];
+    let run: number[] = [];
+    for (let k = start + 1; k < end; k++) {
+      if (rawLines[k]!.trim() === '') {
+        if (run.length > 0) groups.push(run);
+        run = [];
+      } else {
+        run.push(k);
+      }
+    }
+    if (run.length > 0) groups.push(run);
+    interface Stanza { text: string; spans: ContentBlock['spans']; sourceMap: number[]; lines: VerseLineInfo[]; from: number; to: number }
+    const stanzas: Stanza[] = [];
+    for (const rows of groups) {
+      const st: Stanza = { text: '', spans: [], sourceMap: [], lines: [], from: rows[0]!, to: rows[0]! };
+      for (const k of rows) {
+        const raw = rawLines[k]!;
+        const lineStart = lineOffsets[k]!;
+        let p = 0;
+        let indent = 0;
+        for (; p < raw.length; p++) {
+          const c = raw[p];
+          if (c === ' ') indent += 1;
+          else if (c === '\t') indent += 4;
+          else if (c === '\u3000') indent += 2;
+          else break;
+        }
+        let stepped = false;
+        if (raw[p] === '+' && (raw[p + 1] === ' ' || raw[p + 1] === '\t')) {
+          stepped = true;
+          p++;
+          while (raw[p] === ' ' || raw[p] === '\t') p++;
+        }
+        const bodyEnd = raw.trimEnd().length;
+        // The line's pieces of text, and the caesura gaps between them.
+        const pieces: { from: number; to: number; gap: boolean }[] = [];
+        if (keepSpaces) {
+          const gapRe = / {2,}/g;
+          let at = p;
+          for (let m = gapRe.exec(raw); m && m.index < bodyEnd; m = gapRe.exec(raw)) {
+            if (m.index < p) continue;
+            if (m.index > at) pieces.push({ from: at, to: m.index, gap: false });
+            pieces.push({ from: m.index, to: m.index + m[0].length, gap: true });
+            at = m.index + m[0].length;
+          }
+          if (at < bodyEnd) pieces.push({ from: at, to: bodyEnd, gap: false });
+        } else if (p < bodyEnd) {
+          pieces.push({ from: p, to: bodyEnd, gap: false });
+        }
+        let text = '';
+        const spans: ContentBlock['spans'] = [];
+        const sourceMap: number[] = [];
+        for (const piece of pieces) {
+          if (piece.gap) {
+            if (text === '') continue;
+            const width = piece.to - piece.from;
+            text += ' '.repeat(width);
+            spans.push({ text: ' '.repeat(width), bold: false, italic: false, fixedSpace: true });
+            for (let c = piece.from; c < piece.to; c++) sourceMap.push(lineStart + c);
+            continue;
+          }
+          const r = inlineRun(raw.slice(piece.from, piece.to), lineStart + piece.from, lineStart + piece.to);
+          text += r.text;
+          spans.push(...r.spans);
+          sourceMap.push(...r.sourceMap);
+        }
+        if (text.trim() === '') continue;
+        if (st.text !== '') {
+          st.text += '\n';
+          st.spans.push({ text: '\n', bold: false, italic: false });
+          st.sourceMap.push(lineStart - 1);
+        }
+        st.text += text;
+        st.spans.push(...spans);
+        st.sourceMap.push(...sourceMap);
+        st.lines.push({ indent, ...(stepped ? { stepped: true as const } : {}) });
+        st.to = k;
+      }
+      if (st.lines.length > 0) stanzas.push(st);
+    }
+    if (stanzas.length === 0) return { blocks: [], next };
+    const poem = poemCount++;
+    let firstLine = 0;
+    const blocks = stanzas.map((st, index): ContentBlock => {
+      const last = index === stanzas.length - 1;
+      const stanza: VerseStanza = { poem, index, last, firstLine, lines: st.lines, ...(auto ? { auto: true as const } : {}) };
+      firstLine += st.lines.length;
+      return {
+        type: 'paragraph',
+        text: st.text,
+        spans: st.spans,
+        verse: { attrs, stanza },
+        sourceStart: index === 0 ? lineOffsets[start]! : lineOffsets[st.from]!,
+        sourceEnd: last && closed ? lineEndOffset(end) : lineEndOffset(st.to),
+        sourceMap: st.sourceMap,
+      };
+    });
+    return { blocks, next };
   };
 
   // Open fenced containers, innermost last. Each entry remembers what it
@@ -539,10 +677,11 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       continue;
     }
 
-    // A poem (#378): `:::verse{attrs}` … `:::`, one bayt a line.
+    // A poem (#378, #620): `:::verse{attrs}` … `:::`, a bayt or a line of
+    // verse a line.
     if (refsMatch && refsMatch[1] === 'verse') {
       const verse = parseVerse(i, refsMatch[2] ?? '');
-      if (verse.block) blocks.push(verse.block);
+      blocks.push(...verse.blocks);
       i = verse.next;
       continue;
     }

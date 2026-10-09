@@ -1233,6 +1233,9 @@ export interface BodyTextConfig {
    *  postext 1.4 gave them: grey (`#666666`), italic, the body's first-line
    *  indent and no side indent. */
   blockquote?: BlockquoteConfig;
+  /** How `:::verse` poems in the line layout are set (#620): each fence
+   *  attribute of the same name overrides the setting for its poem. */
+  verse?: VerseConfig;
   /** When true, discourage a paragraph from ending with fewer than `orphanMinLines`
    *  lines at the top of the next column. Soft (penalty-based). Default true. */
   avoidOrphans?: boolean;
@@ -1426,6 +1429,56 @@ export interface BlockquoteConfig {
   firstLineIndent?: Dimension;
 }
 
+/** How a turnover of verse is set (#620): `'hang'` on a line of its own,
+ *  indented from the line's start; `'right'` flush with the end side,
+ *  behind an opening bracket (`turnoverMark`), the custom of English and
+ *  Spanish editions of poetry. */
+export type VerseTurnover = 'hang' | 'right';
+
+/** The defaults of `:::verse` poems (#620). A poem's fence names any of
+ *  them for itself (`:::verse{indentStep=1em turnover=right}`). */
+export interface VerseConfig {
+  /** How a poem whose fence names no `layout` is set. `'auto'` (default):
+   *  as bayts (#378) when a line carries a hemistich separator (`||`, a
+   *  spaced `\\`), line by line otherwise. `'bayt'`: as bayts always, a
+   *  poem with no separator as centred single hemistichs, as postext 1.22
+   *  set it (configurations stored before #620 are read with it when they
+   *  hold such a poem). */
+  layout?: 'auto' | 'bayt';
+  /** The width of one leading space of a line of verse (a tab counts four,
+   *  an ideographic space two); `em` is the poem's size. Default `0.5em`:
+   *  two spaces indent a line one em. */
+  indentStep?: Dimension;
+  /** How a line wider than the measure turns over. Default `'hang'`. */
+  turnover?: VerseTurnover;
+  /** The indent of a hanging turnover, from its line's own start, when
+   *  the poem's paragraph style sets no `hangingIndent`; `em` is the
+   *  poem's size. Default `2em`. */
+  hang?: Dimension;
+  /** The mark before a turnover set flush right (`turnover: 'right'`).
+   *  Default `[`. */
+  turnoverMark?: string;
+  /** The space between two stanzas, in lines of the poem's leading. On
+   *  the baseline grid it comes out a whole number of grid lines (a
+   *  paragraph style with `snapToGrid: false` keeps it exact). Default
+   *  `1`. */
+  stanzaSpace?: number;
+  /** Keep any stanza of this many lines of verse or fewer whole in one
+   *  column (a haiku, a tanka): it moves on whole when it does not fit.
+   *  Default `0`, off. */
+  keepStanzas?: number;
+}
+
+export interface ResolvedVerseConfig {
+  layout: 'auto' | 'bayt';
+  indentStep: Dimension;
+  turnover: VerseTurnover;
+  hang: Dimension;
+  turnoverMark: string;
+  stanzaSpace: number;
+  keepStanzas: number;
+}
+
 export interface ResolvedBlockquoteConfig {
   color: ColorValue;
   italic: boolean;
@@ -1472,6 +1525,7 @@ export interface ResolvedBodyTextConfig {
   breakAfterHyphens: boolean;
   repeatHyphen: boolean;
   blockquote: ResolvedBlockquoteConfig;
+  verse: ResolvedVerseConfig;
   avoidOrphans: boolean;
   orphanMinLines: number;
   orphanPenalty: number;
@@ -1927,12 +1981,19 @@ export interface ParagraphStyleConfig {
    *  N字上げ) is `textAlign: 'end'` with `endIndent: 'Nem'`; 地付き is the
    *  same at `0`. Default `0`; a negative value counts as `0`. */
   endIndent?: Dimension;
-  /** Defaults to the body first-line indent. Ignored when
-   *  {@link hangingIndent} is non-zero. */
+  /** Indent of the first line, from {@link indent}. Defaults to the body
+   *  first-line indent. With a non-zero {@link hangingIndent} it applies
+   *  only when the style sets it itself: the first line starts at
+   *  `indent + firstLineIndent` and its turnovers at `indent +
+   *  hangingIndent` (a line of verse indented one em that hangs its
+   *  turnover three, #620); inherited from the body it gives way, and the
+   *  first line starts at `indent`. */
   firstLineIndent?: Dimension;
   /** Indent applied to every line except the first (bibliographies,
-   *  glossaries), from {@link indent}. Non-zero replaces
-   *  {@link firstLineIndent}. Default `0`. */
+   *  glossaries, the turnover of a line of verse), from {@link indent}.
+   *  The first line starts at {@link indent}, or at `indent +
+   *  firstLineIndent` when the style sets {@link firstLineIndent} itself.
+   *  Default `0`. */
   hangingIndent?: Dimension;
   /** Vertical gap between consecutive paragraphs in the container. Default
    *  `0` — entries abut, off the baseline grid until the container closes. */
@@ -1982,10 +2043,17 @@ export interface ResolvedParagraphStyleConfig {
   italic: boolean;
   smallCaps: boolean;
   hyphenation: boolean;
+  /** The style sets {@link hyphenation} itself: a poem in the style
+   *  hyphenates its turnovers only then (#620). Absent when inherited. */
+  ownHyphenation?: true;
   indent: Dimension;
   /** Absent when the style sets none (or `0`). */
   endIndent?: Dimension;
   firstLineIndent: Dimension;
+  /** The style sets {@link firstLineIndent} itself (it is not the body's):
+   *  with a non-zero {@link hangingIndent} the two pair up (#620). Absent
+   *  when inherited. */
+  ownFirstLineIndent?: true;
   hangingIndent: Dimension;
   spaceBetween: Dimension;
   marginTop: Dimension;

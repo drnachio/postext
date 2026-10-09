@@ -16,13 +16,55 @@ export type ContentBlockType =
  *  `flag` becomes `{ flag: '' }`. */
 export type DirectiveAttrs = Record<string, string>;
 
-/** A `:::verse` poem (#378): one bayt per source line, its hemistichs (the
- *  ṣadr, then the ʿajuz) split at `||` (or a spaced `\\`, the Wikisource
- *  convention); a line without one is a single hemistich, centred. */
+/** A `:::verse` poem. The bayt layout (#378): one bayt per source line,
+ *  its hemistichs (the ṣadr, then the ʿajuz) split at `||` (or a spaced
+ *  `\\`, the Wikisource convention); a line without one is a single
+ *  hemistich, centred. The line layout (#620): one line of verse per
+ *  source line, a stanza per run of lines between blank lines, each stanza
+ *  a block of its own (see {@link VerseStanza}). */
 export interface VerseInfo {
   /** The fence's attributes as written (`gap`, `width`, `align`,
-   *  `ornament`, `style`, `dir`); `pipeline/verse.ts` reads them. */
+   *  `ornament`, `style`, `dir`, `layout`, `indentStep`, `turnover`,
+   *  `stanzaSpace`, `keepStanzas`, …); `pipeline/verse.ts` and
+   *  `pipeline/verseLines.ts` read them. */
   attrs: DirectiveAttrs;
+  /** Set on the blocks of a poem in the line layout (#620): which stanza
+   *  of which poem the block sets. Unset: the bayt layout, one block. */
+  stanza?: VerseStanza;
+}
+
+/** One stanza of a poem in the line layout (#620). Its block's text holds
+ *  the lines of verse, a line feed (`\n`) between two, mapped to the
+ *  source's line end; leading whitespace is not in the text but in
+ *  {@link lines}. */
+export interface VerseStanza {
+  /** The poem, numbered from 0 in the document's order: the stanzas of a
+   *  poem share it. */
+  poem: number;
+  /** The stanza's index in its poem, from 0. */
+  index: number;
+  /** Whether it is the poem's last stanza. */
+  last: boolean;
+  /** Poem-wide index of the stanza's first line of verse, from 0. */
+  firstLine: number;
+  /** The stanza's lines, in order. */
+  lines: VerseLineInfo[];
+  /** The fence named no layout and the poem has no hemistich separator:
+   *  the line layout was picked by `layout="auto"`. A configuration
+   *  stored before #620 (`bodyText.verse.layout: 'bayt'`) sets such a
+   *  stanza as single hemistichs, as postext 1.22 did. */
+  auto?: true;
+}
+
+/** A line of verse in the line layout (#620). */
+export interface VerseLineInfo {
+  /** Its indent in spaces as written: each leading space counts 1, a tab
+   *  4, an ideographic space (U+3000) 2. Multiplied by the poem's
+   *  `indentStep`. */
+  indent: number;
+  /** The line was written `+ …`: a stepped line (a line of dramatic verse
+   *  shared between speakers), set to start where the line above ended. */
+  stepped?: true;
 }
 
 /** Recognized directive names. Unknown names are not parsed as directives —
@@ -583,7 +625,9 @@ export interface ContentBlock {
    *  block's `type` is `'paragraph'`; its text holds the hemistichs, a tab
    *  (`\t`) where a bayt's two hemistichs meet (the source's `||`) and a
    *  line feed (`\n`) between bayts, so the plain text and the source map
-   *  read the poem as written (see `pipeline/verse.ts`). */
+   *  read the poem as written (see `pipeline/verse.ts`). A poem in the line
+   *  layout (#620) is one such block per stanza, its lines joined by line
+   *  feeds (`VerseInfo.stanza`, `pipeline/verseLines.ts`). */
   verse?: VerseInfo;
   /** For a `:::page` block (a comic page, #555) or a `:::strip` block (a
    *  comic in the text flow, #566): its split, panels and script, read

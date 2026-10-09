@@ -10,7 +10,7 @@ import {
   reconstructRichLines,
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
-import { lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineIndentAt, lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
@@ -1615,8 +1615,7 @@ function measureRichText(
   }
 
   const shouldHyphenate = options?.hyphenate ?? false;
-  const indentPx = options?.firstLineIndentPx ?? 0;
-  const hanging = options?.hangingIndent ?? false;
+  const indentOf = (li: number): number => lineIndentAt(options, li);
   const textAlign = options?.textAlign ?? 'left';
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const hyphenationZonePx = shouldHyphenate ? options?.hyphenationZonePx : undefined;
@@ -1643,8 +1642,7 @@ function measureRichText(
   const withKashida = (lines: VDTLine[]) => {
     if (!kashida) return;
     justifyLinesWithKashida(lines, (li) => {
-      const indent = indentPx > 0 ? (hanging ? (li === 0 ? 0 : indentPx) : (li === 0 ? indentPx : 0)) : 0;
-      return lineMeasure(maxWidthPx, options?.restWidths, li) - indent;
+      return lineMeasure(maxWidthPx, options?.restWidths, li) - indentOf(li);
     }, normalSpaceWidth, kashida, (seg, text) => textWidth(text, fontOf(seg), false));
   };
 
@@ -1660,19 +1658,8 @@ function measureRichText(
     // The runt threshold counts word spaces on ragged text too.
     const spaceWidth = ragged ? normalSpaceWidthFor(normalFont) + letterSpacingPx : normalSpaceWidth;
     const items = richTokensToItems(tokens, spaceWidth, maxStretchRatio, minShrinkRatio, repeatHyphen);
-    const lineWidthFn = (li: number) => {
-      const isFirst = li === 0;
-      const indent = indentPx > 0
-        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
-        : 0;
-      return lineMeasure(maxWidthPx, options.restWidths, li) - indent;
-    };
-    const lineIndentFn = (li: number) => {
-      const isFirst = li === 0;
-      return indentPx > 0
-        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
-        : 0;
-    };
+    const lineWidthFn = (li: number) => lineMeasure(maxWidthPx, options.restWidths, li) - indentOf(li);
+    const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
     const runtMinWidth = runtPenalty > 0
       ? (options.runtMinCharacters ?? 0) * spaceWidth
@@ -1729,10 +1716,7 @@ function measureRichText(
   let repeatPending = false;
 
   while (tokenIdx < tokens.length) {
-    const isFirstLine = lineIndex === 0;
-    const lineIndent = indentPx > 0
-      ? (hanging ? (isFirstLine ? 0 : indentPx) : (isFirstLine ? indentPx : 0))
-      : 0;
+    const lineIndent = indentOf(lineIndex);
     const lineMaxWidth = lineMeasure(maxWidthPx, options?.restWidths, lineIndex) - lineIndent;
 
     const lineTokens: RichToken[] = [];

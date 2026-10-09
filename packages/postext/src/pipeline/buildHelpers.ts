@@ -306,6 +306,9 @@ export interface MeasureViewport {
   lineXShift: number;
   measureFirstLineIndent: number;
   measureHangingIndent: boolean;
+  /** Each line's indent (`MeasureBlockOptions.lineIndentsPx`) when the
+   *  style pairs a first-line indent with a hanging one (#620). */
+  measureLineIndents?: number[];
 }
 
 /** Compute measurement viewport: list items reserve horizontal space for indent + bullet + gap. */
@@ -347,7 +350,11 @@ export function computeMeasureViewport(
     }
   }
 
-  return { measureMaxWidth, lineXShift, measureFirstLineIndent, measureHangingIndent };
+  // A first-line indent paired with a hanging one (#620).
+  const measureLineIndents = !listBullet && style.hangingIndentPx !== undefined
+    ? [Math.max(0, style.firstLineIndentPx), Math.max(0, style.hangingIndentPx)]
+    : undefined;
+  return { measureMaxWidth, lineXShift, measureFirstLineIndent, measureHangingIndent, ...(measureLineIndents ? { measureLineIndents } : {}) };
 }
 
 // ---------------------------------------------------------------------------

@@ -3,6 +3,8 @@ export type {
   DirectiveName,
   DirectiveAttrs,
   VerseInfo,
+  VerseStanza,
+  VerseLineInfo,
   ContainerName,
   RefCase,
   RefStyle,

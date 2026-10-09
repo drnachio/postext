@@ -25,6 +25,7 @@ import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
 import { kashidaMeasureOptions } from '../measure/kashida';
 import { measureVerse } from './verse';
+import { measureVerseLines, verseLinesSettings, versesLineByLine } from './verseLines';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
@@ -146,72 +147,12 @@ export interface MeasureContentBlockOptions {
  * there is nothing to place inline: empty text, an unknown resource id, or a
  * resource that floats to a page band.
  */
-export function measureContentBlock(
-  rawBlock: ContentBlock,
-  blockIdx: number,
-  columnWidth: number,
-  ctx: BlockMeasureContext,
-  opts?: MeasureContentBlockOptions,
-): MeasuredContentBlock | null {
-  const { resolved, bodyStyle, contentBlocks, cache, bodyOffset } = ctx;
-
-  // A block of an expanded `:::toc`: title, number, leader, page label.
-  if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
-  // A block of an expanded `:::index`: an entry and its page numbers.
-  if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
-
-  const kind = resolveBlockKind(rawBlock, {
-    ...ctx,
-    blockIdx,
-    paragraphStyleOverride: opts?.styleOverride,
-  });
-  const { style, vdtType, listBullet } = kind;
-  let contentBlock = kind.contentBlock;
-  const mathEnabled = resolved.math.enabled;
-
-  // --- Resource blocks (image / svg / table + caption) -----------------
-  // Laid out as one atomic group. Unknown ids produce nothing (the warnings
-  // phase surfaces them); floated resources are anchored by their directive
-  // but land in a page band, so they are never measured inline.
-  if (vdtType === 'resource') {
-    if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
-    // A resource narrower than its column (`placement.width`) sits in it
-    // per `placement.align`.
-    const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
-    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
-    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
-    const embedWidth = columnWidth * frac;
-    const { resourceBlock, measured } = runMeasurement({
-      vdtType,
-      rawBlock,
-      contentBlock,
-      style,
-      measureMaxWidth: embedWidth,
-      measureOptions: { textAlign: style.textAlign },
-      mathEnabled,
-      useRich: false,
-      resolved,
-      resources: ctx.resources,
-      resourceTypes: ctx.resourceTypes,
-      resourceNumbering: ctx.resourceNumbering,
-      ...(ctx.captionCitations ? { captionCitations: ctx.captionCitations } : {}),
-      resource: kind.resource,
-      resourceType: kind.resourceType,
-      resourceNumber: kind.resourceNumber,
-      ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
-      ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
-      ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
-    });
-    if (!resourceBlock) return null;
-    if (frac < 1) {
-      const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
-      // An upright block (a vertical page) moves its frame along the flow.
-      if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
-      else shiftResourceBlockX(resourceBlock, dx);
-    }
-    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
-  }
-
+/** The spans of a block as they are measured: inline maths rendered,
+ *  `:ref` labels, footnote markers, swatches and chips resolved, small
+ *  capitals and Chinese and Japanese annotations applied. */
+function resolveInlineSpans(block: ContentBlock, style: BlockStyle, ctx: BlockMeasureContext): ContentBlock {
+  const { resolved, bodyStyle } = ctx;
+  let contentBlock = block;
   // Resolve inline math on spans (no-op when the block has no math).
   contentBlock = enrichMathSpans(contentBlock, style, resolved);
 
@@ -290,6 +231,91 @@ export function measureContentBlock(
       spans: resolveAnnotationSpans(contentBlock.spans, { cjk: resolved.cjk, dpi: resolved.page.dpi, fontString: style.fontString, fontSizePx: style.fontSizePx }),
     };
   }
+  return contentBlock;
+}
+
+/** The stanzas of the poem `raw` (a stanza of the line layout, #620) sets,
+ *  in order, as content indices: the run of blocks around it that carry
+ *  the same poem. */
+function poemStanzaIndices(contentBlocks: readonly ContentBlock[], raw: ContentBlock, blockIdx: number): number[] {
+  const stanza = raw.verse?.stanza;
+  const at = contentBlocks[blockIdx] === raw ? blockIdx : contentBlocks.indexOf(raw);
+  if (!stanza || at < 0) return [];
+  const of = (i: number) => contentBlocks[i]?.verse?.stanza;
+  let from = at;
+  while (from > 0 && of(from - 1)?.poem === stanza.poem && of(from - 1)!.index === of(from)!.index - 1) from--;
+  let to = at;
+  while (to + 1 < contentBlocks.length && of(to + 1)?.poem === stanza.poem && of(to + 1)!.index === of(to)!.index + 1) to++;
+  return Array.from({ length: to - from + 1 }, (_, k) => from + k);
+}
+
+export function measureContentBlock(
+  rawBlock: ContentBlock,
+  blockIdx: number,
+  columnWidth: number,
+  ctx: BlockMeasureContext,
+  opts?: MeasureContentBlockOptions,
+): MeasuredContentBlock | null {
+  const { resolved, contentBlocks, cache, bodyOffset } = ctx;
+
+  // A block of an expanded `:::toc`: title, number, leader, page label.
+  if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
+  // A block of an expanded `:::index`: an entry and its page numbers.
+  if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
+
+  const kind = resolveBlockKind(rawBlock, {
+    ...ctx,
+    blockIdx,
+    paragraphStyleOverride: opts?.styleOverride,
+  });
+  const { style, vdtType, listBullet } = kind;
+  let contentBlock = kind.contentBlock;
+  const mathEnabled = resolved.math.enabled;
+
+  // --- Resource blocks (image / svg / table + caption) -----------------
+  // Laid out as one atomic group. Unknown ids produce nothing (the warnings
+  // phase surfaces them); floated resources are anchored by their directive
+  // but land in a page band, so they are never measured inline.
+  if (vdtType === 'resource') {
+    if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
+    // A resource narrower than its column (`placement.width`) sits in it
+    // per `placement.align`.
+    const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
+    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
+    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
+    const embedWidth = columnWidth * frac;
+    const { resourceBlock, measured } = runMeasurement({
+      vdtType,
+      rawBlock,
+      contentBlock,
+      style,
+      measureMaxWidth: embedWidth,
+      measureOptions: { textAlign: style.textAlign },
+      mathEnabled,
+      useRich: false,
+      resolved,
+      resources: ctx.resources,
+      resourceTypes: ctx.resourceTypes,
+      resourceNumbering: ctx.resourceNumbering,
+      ...(ctx.captionCitations ? { captionCitations: ctx.captionCitations } : {}),
+      resource: kind.resource,
+      resourceType: kind.resourceType,
+      resourceNumber: kind.resourceNumber,
+      ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
+      ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
+      ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
+    });
+    if (!resourceBlock) return null;
+    if (frac < 1) {
+      const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
+      // An upright block (a vertical page) moves its frame along the flow.
+      if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
+      else shiftResourceBlockX(resourceBlock, dx);
+    }
+    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
+  }
+
+  contentBlock = resolveInlineSpans(contentBlock, style, ctx);
 
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
@@ -306,7 +332,37 @@ export function measureContentBlock(
     lineXShift,
     measureFirstLineIndent,
     measureHangingIndent,
+    measureLineIndents,
   } = computeMeasureViewport(columnWidth, style, listBullet);
+
+  // A poem in the line layout (#620): each line of verse measured on its
+  // own by `pipeline/verseLines.ts`, against the poem's other stanzas
+  // (their longest line centres the poem); none of the paragraph's levers
+  // apply.
+  if (contentBlock.verse?.stanza && versesLineByLine(rawBlock, resolved)) {
+    const direction = contentBlock.direction ?? getMeasureDirection();
+    const indices = poemStanzaIndices(contentBlocks, rawBlock, blockIdx);
+    const poem = indices.length === 0 ? [contentBlock] : indices.map((j) => {
+      if (j === blockIdx) return contentBlock;
+      const sibling = resolveBlockKind(contentBlocks[j]!, { ...ctx, blockIdx: j, paragraphStyleOverride: opts?.styleOverride });
+      return resolveInlineSpans(sibling.contentBlock, sibling.style, ctx);
+    });
+    const measured = measureVerseLines({
+      contentBlock,
+      poem,
+      style,
+      measureMaxWidth,
+      settings: verseLinesSettings(contentBlock.verse.attrs, style, resolved, vertical),
+      direction,
+      frameDirection: getMeasureDirection(),
+      ...(cache ? { cache } : {}),
+    });
+    if (measured.lines.length === 0) return null;
+    if (lineXShift > 0) for (const line of measured.lines) shiftLineX(line, lineXShift);
+    const linked = { ...measured, lines: linkSegments(measured.lines, contentBlock.spans) };
+    const { prefixLen, absoluteSourceMap } = stampSourceRanges(linked, rawBlock, contentBlock, bodyOffset, ctx.source);
+    return { kind, contentBlock, measured: linked, prefixLen, absoluteSourceMap };
+  }
 
   // A poem (#378): its bayts are laid out by `pipeline/verse.ts`, each
   // hemistich measured on its own; none of the paragraph's levers apply.
@@ -410,9 +466,12 @@ export function measureContentBlock(
     ...(style.cjkWordBreak !== undefined ? { cjkWordBreak: style.cjkWordBreak } : {}),
     firstLineIndentPx: effectiveFirstLineIndent,
     hangingIndent: measureHangingIndent,
+    // A first-line indent paired with a hanging one (#620): passed only
+    // then, so every other block keeps its cache key.
+    ...(measureLineIndents ? { lineIndentsPx: measureLineIndents } : {}),
     // A numbered bibliography entry (#290): its label in a column as wide
     // as the turnover lines' indent.
-    ...(measureHangingIndent && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
+    ...(measureHangingIndent && !measureLineIndents && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
     optimal: resolved.bodyText.optimalLineBreaking,
     maxStretchRatio: resolved.bodyText.maxWordSpacing,
     minShrinkRatio: resolved.bodyText.minWordSpacing,

@@ -112,7 +112,7 @@ describe('a paragraph kept with the heading above it splits by the orphan rule t
     }
     // Stored under today's rules, it is read as it is.
     expect(migrateConfig(stored, CONFIG_VERSION, { content: markdown })).toBe(stored);
-    expect(CONFIG_VERSION).toBe(8);
+    expect(CONFIG_VERSION).toBe(9);
   });
 
   it('pins only what the setting changes', () => {
